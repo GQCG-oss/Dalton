@@ -915,11 +915,13 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
 !  type(Matrix) :: GbXc(3), GbDXc(3)
   type(Matrix),pointer ::  RHSk(:),Xk(:)
   type(Matrix) :: ProdA(3),TmpA(3),TmpB(3),tempm1
-  integer              :: ntrial,nrhs,nsol,nomega,nstart,nAtomsSelected
-  integer              :: istart,iend,iAtom,kcoor,offset,iy,Xcoor
+  integer :: ntrial,nrhs,nsol,nomega,nstart,nAtomsSelected,nnonZero2
+  integer :: istart,iend,iAtom,kcoor,offset,iy,Xcoor,nnonZero
   integer,pointer :: AtomList(:)
   character(len=1)        :: CHRXYZ(-3:3)
   logical :: FoundNMRLabel
+  logical,pointer :: NonZero(:)
+  real(realk),pointer :: magderivKcont(:,:)
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
   Factor=53.2513539566280 !1e6*alpha^2 
 
@@ -1022,17 +1024,20 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      !Contribution: -SD0J^b(D)
      call mat_mul(tempm1,TmpA(icoor),'t','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
   enddo
-  do icoor=1,3      
-     call mat_zero(TmpA(icoor))
-  enddo
-  call II_get_magderivK(LUPRI,LUERR,molcfg%SETTING,nbast,D,TmpA)   !Add K^b 
-  !TmpA is now GbK
-  do icoor=1,3      
-     !Contribution: K^b(D)D0S      
-     call mat_mul(TmpA(icoor),tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
-     !Contribution: - SD0K^b(D) 
-     call mat_mul(tempm1,TmpA(icoor),'t','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
-  enddo
+!==============================================================================
+  !  This contribution is treated in a special way due to efficiency
+!  do icoor=1,3      
+!     call mat_zero(TmpA(icoor))
+!  enddo
+!  call II_get_magderivK(LUPRI,LUERR,molcfg%SETTING,nbast,D,TmpA)   !Add K^b 
+!  !TmpA is now GbK
+!  do icoor=1,3      
+!     !Contribution: K^b(D)D0S      
+!     call mat_mul(TmpA(icoor),tempm1,'n','n',1E0_realk,1E0_realk,ProdA(icoor)) 
+!     !Contribution: - SD0K^b(D) 
+!     call mat_mul(tempm1,TmpA(icoor),'t','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
+!  enddo
+!==============================================================================
   call di_GET_GbDs(lupri,luerr,TmpB,TmpA,3,molcfg%setting)  ! G(D0^B)
   !TmpA is now GbDX = G(D0^B)
   do icoor=1,3      
@@ -1107,11 +1112,17 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      eivalkF=0.0E0_realk
      write(lupri,*)'Calling rsp solver for all Xk  '
      allocate(Xk(3*nAtomsSelected))   
+     nnonZero = 0
+     call mem_alloc(NonZero,3*nAtomsSelected)
      do jcoor=1,3*nAtomsSelected
         call mat_init(Xk(jcoor),nbast,nbast)                           
         call util_scriptPx('T',D(1),S,RHSk(jcoor))     
         if ( mat_dotproduct(RHSk(jcoor),RHSk(jcoor)).LT.1.0d-10) then
            print*,'WARNING RHS(jcoor=',jcoor,') = Zero '
+           NonZero(jcoor) = .FALSE.
+        else
+           NonZero(jcoor) = .TRUE.
+           nnonZero = nnonZero + 1
         endif
      enddo
      ntrial = 3*nAtomsSelected !# of trial vectors in a given iteration (number of RHS)
@@ -1130,11 +1141,44 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      enddo
      do jcoor=1,3*nAtomsSelected
         call mat_free(RHSk(jcoor))
+     enddo
+     call mem_dealloc(eivalkF)
+     deallocate(RHSk)
+     !Contribution Tr(K^b(D)*[D,X]_S) ( the missing term to ProdA: K^b(D)D0S - SD0K^b(D) )
+     !First: DSX-XSD  
+     nnonZero2 = 0
+     do jcoor=1,3*nAtomsSelected
+        IF(NonZero(jcoor))THEN !This should only be done for non Zero X's 
+           nnonZero2 = nnonZero2 + 1
+           call mat_mul(tempm1,Xk(jcoor),'n','n',1E0_realk,0E0_realk,ProdA(1)) 
+           call mat_mul(Xk(jcoor),tempm1,'n','t',-1E0_realk,1E0_realk,ProdA(1)) 
+           call mat_assign(Xk(nnonZero2),ProdA(1))
+        ENDIF
+     enddo
+     IF(nnonZero.NE.nnonZero2)call lsquit('dimmismatch for nuclear selected MagderivKcont',-1)
+     do jcoor=nnonZero+1,3*nAtomsSelected
+        call mat_free(Xk(jcoor))
+     enddo
+     !Xk is now [D,X]_S a contribution to the perturbed density matrix
+     call mem_alloc(magderivKcont,3,nnonZero)
+     call II_get_magderivKcont(LUPRI,LUERR,molcfg%SETTING,Xk,&
+          & nnonZero,magderivKcont,D)
+     nnonZero2 = 0
+     do jcoor=1,3*nAtomsSelected
+        IF(NonZero(jcoor))THEN
+           nnonZero2 = nnonZero2 + 1
+           do icoor=1,3
+              Prodtotal(icoor,jcoor)=Prodtotal(icoor,jcoor)+&
+                   & 4E0_realk*factor*magderivKcont(icoor,nnonZero2)
+           enddo
+        ENDIF
+     enddo     
+     call mem_dealloc(NonZero)
+     call mem_dealloc(magderivKcont)
+     do jcoor=1,nnonZero2
         call mat_free(Xk(jcoor))
      enddo
      deallocate(Xk)     
-     call mem_dealloc(eivalkF)
-     deallocate(RHSk)
   ELSE
      !#############################################################################
      !##                                                                         ## 
@@ -1145,11 +1189,12 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      ! Generation of hkDS      
      allocate(RHSk(1))   ! RHSk - R.H.S. to solve eq. 70 for D^K      
      !tempm1 = DS
-     allocate(Xk(1))   
-     call mat_init(Xk(1),nbast,nbast)                                
+     allocate(Xk(3*nAtomsSelected))   
      call mem_alloc(eivalkF,1)
      call mat_init(RHSk(1),nbast,nbast)
+     call mem_alloc(NonZero,3*nAtomsSelected)
      eivalkF=0.0E0_realk
+     nNonZero = 0 
      do jcoor=1,nAtomsSelected
         istart=3*jcoor-2
         iend=istart+2
@@ -1168,6 +1213,8 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
            write(lupri,*)'Calling rsp solver for Xk  '
            call util_scriptPx('T',D(1),S,RHSk(1))
            if ( mat_dotproduct(RHSk(1),RHSk(1))>1.0d-10) then
+              NonZero(Xcoor+(jcoor-1)*3) = .TRUE.
+              nNonZero = nNonZero + 1
               ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
               nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
               nsol = 1   !# of solution (output) vectors
@@ -1176,11 +1223,13 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
               nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
               !ntrial and nstart seem to be obsolete 
               call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
-              call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(1:1),EIVALKF,Xk)
+              call mat_init(Xk(nNonZero),nbast,nbast)
+              call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(1:1),EIVALKF,Xk(nNonZero:nNonZero))
               do icoor = 1,3 
-                 Prodtotal(icoor,Xcoor+(jcoor-1)*3)=-4E0_realk*factor*mat_trAB(Xk(1),ProdA(icoor))
+                 Prodtotal(icoor,Xcoor+(jcoor-1)*3)=-4E0_realk*factor*mat_trAB(Xk(nNonZero),ProdA(icoor))
               enddo
            else
+              NonZero(Xcoor+(jcoor-1)*3) = .FALSE.
               write(lupri,*) 'WARNING: RHSk norm is less than threshold'
               write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '
               do icoor = 1,3 
@@ -1190,13 +1239,38 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
         enddo
      enddo
      call mat_free(RHSk(1))
-     call mem_dealloc(eivalkF)
-     call mat_free(Xk(1)) 
-     deallocate(Xk)           
      deallocate(RHSk)
+     call mem_dealloc(eivalkF)
      do icoor = 1,3
         call mat_free(TmpA(icoor))
      enddo
+     !Contribution Tr(K^b(D)*[D,X]_S) ( the missing term to ProdA: K^b(D)D0S - SD0K^b(D) )
+     !First: DSX-XSD  
+     do jcoor=1,nnonZero
+        call mat_mul(tempm1,Xk(jcoor),'n','n',1E0_realk,0E0_realk,ProdA(1)) 
+        call mat_mul(Xk(jcoor),tempm1,'n','t',-1E0_realk,1E0_realk,ProdA(1)) 
+        call mat_assign(Xk(jcoor),ProdA(1))
+     enddo
+     !Xk is now [D,X]_S a contribution to the perturbed density matrix
+     call mem_alloc(magderivKcont,3,nnonZero)
+     call II_get_magderivKcont(LUPRI,LUERR,molcfg%SETTING,Xk(1:nnonZero),&
+          & nnonZero,magderivKcont,D)
+     nnonZero2 = 0
+     do jcoor=1,3*nAtomsSelected
+        IF(NonZero(jcoor))THEN
+           nnonZero2 = nnonZero2 + 1
+           do icoor=1,3
+              Prodtotal(icoor,jcoor)=Prodtotal(icoor,jcoor)+&
+                   & 4E0_realk*factor*magderivKcont(icoor,nnonZero2)
+           enddo     
+        ENDIF
+     enddo
+     call mem_dealloc(magderivKcont)
+     do jcoor=1,nnonZero
+        call mat_free(Xk(jcoor))
+     enddo
+     deallocate(Xk)     
+     call mem_dealloc(NonZero)
   ENDIF
   do icoor=1,3
     call mat_free(ProdA(icoor))

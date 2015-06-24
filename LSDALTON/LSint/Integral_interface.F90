@@ -94,7 +94,7 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
        & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2,&
-       & ii_get_2int_batchscreenmat, II_get_nst_spec_expval
+       & ii_get_2int_batchscreenmat, II_get_nst_spec_expval, II_get_magderivKcont
   private
 
 INTERFACE II_get_coulomb_mat
@@ -4562,8 +4562,9 @@ setting%scheme%LSdaLinK = .TRUE.
 setting%scheme%Dascreen_thrlog = 0 !do not tighten 
 CALL LSTIMER('START ',TS,TE,LUPRI)
 !attach matrices
-CALL ls_attachDmatToSetting(DLHS,nLHS,setting,'RHS',1,3,.FALSE.,lupri)
-CALL ls_attachDmatToSetting(DRHS,1,setting,'LHS',2,4,.FALSE.,lupri)
+!Make Tr(K^b(DRHS),DLHS) = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+CALL ls_attachDmatToSetting(DRHS,1,setting,'RHS',2,4,.FALSE.,lupri)
+CALL ls_attachDmatToSetting(DLHS,nLHS,setting,'LHS',1,3,.FALSE.,lupri)
 IF (SETTING%SCHEME%CAM) THEN
   Oper = CAMOperator       !Coulomb attenuated method
 ELSEIF (SETTING%SCHEME%SR_EXCHANGE) THEN

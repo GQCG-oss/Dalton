@@ -1304,23 +1304,42 @@ DO iPassP=1,P%nPasses
     permuteOD = SameODs.AND..NOT.((batchA.EQ.batchC).AND.(atomA.EQ.atomC).AND.&
    &                          (batchB.EQ.batchD).AND.(atomB.EQ.atomD) )
 
-    CA = Dlhs%index(atomC,atomA,1,1)
-    rCA => Dlhs%lsao(CA)%elms
-    DB = Dlhs%index(atomD,atomB,1,1)
-    lDB => Dlhs%lsao(DB)%elms       
-    n3 = Dlhs%lsao(CA)%nLocal(1) 
-    n1 = Dlhs%lsao(CA)%nLocal(2) 
-    n4 = Dlhs%lsao(DB)%nLocal(1) 
-    n2 = Dlhs%lsao(DB)%nLocal(2) 
-    maxBat = Dlhs%lsao(CA)%maxBat
-    maxAng = Dlhs%lsao(CA)%maxAng
-    s3 = Dlhs%lsao(CA)%startLocalOrb(1+(batchC-1)*maxAng)-1
-    s1 = Dlhs%lsao(CA)%startLocalOrb(1+(batchA-1)*maxAng+maxAng*maxBat)-1
-    maxBat = Dlhs%lsao(DB)%maxBat
-    maxAng = Dlhs%lsao(DB)%maxAng
-    s4 = Dlhs%lsao(DB)%startLocalOrb(1+(batchD-1)*maxAng)-1
-    s2 = Dlhs%lsao(DB)%startLocalOrb(1+(batchB-1)*maxAng+maxAng*maxBat)-1
-    call magfull5(tmpKcont,rCA,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+!!$    CA = Dlhs%index(atomC,atomA,1,1)
+!!$    rCA => Dlhs%lsao(CA)%elms
+!!$    DB = Dlhs%index(atomD,atomB,1,1)
+!!$    lDB => Dlhs%lsao(DB)%elms       
+!!$    n3 = Dlhs%lsao(CA)%nLocal(1) 
+!!$    n1 = Dlhs%lsao(CA)%nLocal(2) 
+!!$    n4 = Dlhs%lsao(DB)%nLocal(1) 
+!!$    n2 = Dlhs%lsao(DB)%nLocal(2) 
+!!$    maxBat = Dlhs%lsao(CA)%maxBat
+!!$    maxAng = Dlhs%lsao(CA)%maxAng
+!!$    s3 = Dlhs%lsao(CA)%startLocalOrb(1+(batchC-1)*maxAng)-1
+!!$    s1 = Dlhs%lsao(CA)%startLocalOrb(1+(batchA-1)*maxAng+maxAng*maxBat)-1
+!!$    maxBat = Dlhs%lsao(DB)%maxBat
+!!$    maxAng = Dlhs%lsao(DB)%maxAng
+!!$    s4 = Dlhs%lsao(DB)%startLocalOrb(1+(batchD-1)*maxAng)-1
+!!$    s2 = Dlhs%lsao(DB)%startLocalOrb(1+(batchB-1)*maxAng+maxAng*maxBat)-1
+    
+    !LHS
+    AC = Dlhs%index(atomA,atomC,1,1)
+    lAC => Dlhs%lsao(AC)%elms
+    n1 = Dlhs%lsao(AC)%nLocal(1) 
+    n3 = Dlhs%lsao(AC)%nLocal(2) 
+    maxBat = Dlhs%lsao(AC)%maxBat
+    maxAng = Dlhs%lsao(AC)%maxAng
+    s1 = Dlhs%lsao(AC)%startLocalOrb(1+(batchA-1)*maxAng)-1
+    s3 = Dlhs%lsao(AC)%startLocalOrb(1+(batchC-1)*maxAng+maxAng*maxBat)-1
+    !RHS 
+    BD = Drhs%index(atomB,atomD,1,1)
+    rBD => Drhs%lsao(BD)%elms       
+    n2 = Drhs%lsao(BD)%nLocal(1) 
+    n4 = Drhs%lsao(BD)%nLocal(2) 
+    maxBat = Drhs%lsao(BD)%maxBat
+    maxAng = Drhs%lsao(BD)%maxAng
+    s2 = Drhs%lsao(BD)%startLocalOrb(1+(batchB-1)*maxAng)-1
+    s4 = Drhs%lsao(BD)%startLocalOrb(1+(batchD-1)*maxAng+maxAng*maxBat)-1
+    call magfull5A(tmpKcont,lAC,rBD,n1,n2,n3,n4,s1,s2,s3,s4,&
          & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
   ENDDO !iPassQ
 ENDDO !iPassP
@@ -1332,9 +1351,68 @@ DO idmat=1,ndmat
    Kcont(2,idmat) = Kcont(2,idmat) - tmpKcont(2,idmat)
    Kcont(3,idmat) = Kcont(3,idmat) - tmpKcont(3,idmat)
 ENDDO
+
+!iPassP=2
+!DO idmat=1,ndmat
+!   print*,'tmpKcont(',iPassP,',',idmat,')',tmpKcont(iPassP,idmat)
+!ENDDO
+!DO idmat=1,ndmat
+!   print*,'Kcont(',iPassP,',',idmat,')',Kcont(iPassP,idmat)
+!ENDDO
 !!$OMP END CRITICAL (distributeKgradBlock)
 
 CONTAINS
+subroutine magfull5A(Kcont,DLHS_AC,DRHS_BD,n1,n2,n3,n4,s1,s2,s3,s4,&
+     & CDAB,nA,nB,nC,nD,iPass,nPasses,nLHS,lupri)
+implicit none
+Integer,intent(IN)     :: nA,nB,nC,nD,iPass,nPasses,lupri,nLHS
+Integer,intent(IN)     :: n1,n2,n3,n4,s1,s2,s3,s4
+Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,3,nPasses)
+Real(realk),intent(IN) :: DRHS_BD(n2,n4),DLHS_AC(n1,n3,nLHS)
+Real(realk),intent(INOUT) :: Kcont(3,nLHS)
+!
+Integer     :: iA,iB,iC,iD,idmat
+Real(realk) :: tmpBD(3)
+real(realk),parameter :: D0=0.0E0_realk
+!!$DO iB=1,nB
+!!$ DO iA=1,nA
+!!$  DO iD=1,nD
+!!$   DO iC=1,nC
+!!$    DO idmat=1,ndmat
+!!$     Kcont(1,idmat)=Kcont(1,idmat)+DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,1,iPass)*DRHS_BD(s2+iB,s4+iD)
+!!$     Kcont(2,idmat)=Kcont(2,idmat)+DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,2,iPass)*DRHS_BD(s2+iB,s4+iD)
+!!$     Kcont(3,idmat)=Kcont(3,idmat)+DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,3,iPass)*DRHS_BD(s2+iB,s4+iD)
+!!$    ENDDO
+!!$!    idmat=1
+!!$!    IF(ABS(DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,2,iPass)*DRHS_BD(s2+iB,s4+iD)).GT.1.0E-8_realk)THEN
+!!$!       print*,'IntQ=',CDAB(iC,iD,iA,iB,2,iPass),DLHS_AC(s1+iA,s3+iC,idmat),DRHS_BD(s2+iB,s4+iD)
+!!$!       print*,'Q=',DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,2,iPass)*DRHS_BD(s2+iB,s4+iD)
+!!$!    ENDIF    
+!!$   ENDDO
+!!$  ENDDO
+!!$ ENDDO
+!!$ENDDO
+DO iB=1,nB
+ DO iA=1,nA
+  DO iD=1,nD
+   DO idmat=1,nLHS
+    tmpBD(1) = D0
+    tmpBD(2) = D0
+    tmpBD(3) = D0
+    DO iC=1,nC
+     tmpBD(1) = tmpBD(1) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpBD(2) = tmpBD(2) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpBD(3) = tmpBD(3) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,3,iPass)
+    ENDDO
+    Kcont(1,idmat) = Kcont(1,idmat) + tmpBD(1) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(2,idmat) = Kcont(2,idmat) + tmpBD(2) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(3,idmat) = Kcont(3,idmat) + tmpBD(3) * DRHS_BD(s2+iB,s4+iD)
+   ENDDO    
+  ENDDO
+ ENDDO
+ENDDO
+end subroutine magfull5A
+
 subroutine magfull5(Kcont,DRHS_CA,DLHS_DB,n1,n2,n3,n4,s1,s2,s3,s4,&
      & CDAB,nA,nB,nC,nD,iPass,nPasses,nLHS,lupri)
 implicit none

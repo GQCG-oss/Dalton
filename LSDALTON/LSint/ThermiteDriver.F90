@@ -6,6 +6,8 @@
 !> \author T. Kjaergaard and S. Reine
 !> \date 2008 
 MODULE integraldriver
+  use LSTENSOR_TYPETYPE
+  use LSTENSOR_OPERATIONSMOD
   use TYPEDEF
   use READMOLEFILE
   use BuildBasisSet
@@ -1677,7 +1679,7 @@ integer :: IRHSI(1),nLHSbatches,nA,node,numnodes
 integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS,IOMPLHSCOUNT,nEcont
 integer,pointer :: Belms(:)
 integer,pointer :: IODelms(:)
-real(realk)           :: ReductionECONT(input%NDMAT_RHS*3)
+real(realk)           :: ReductionECONT(MAX(input%NDMAT_RHS,input%NDMAT_LHS*3))
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -1857,8 +1859,8 @@ IF(PerformCALC)THEN
     call mem_alloc(RED_DMAT_RHS,dim2,dim4)
     call Build_full_shortint2dim_from_lstensor(input%LST_DRHS,RED_DMAT_RHS,dim2,dim4,lupri)
     IF (input%sameODs) call symmetrize_SDMAT(RED_DMAT_RHS,dim2,dim4)
-    !WRITE(lupri,*)'The Dmat output'
-    !call shortint_output(RED_DMAT_RHS,dim1,dim3,lupri)
+!    WRITE(lupri,*)'The Dmat output'
+!    call shortint_output(RED_DMAT_RHS,dim2,dim4,lupri)
  ELSE
     !no screening so we set the screening Dmat quantity to 1000
     call mem_alloc(RED_DMAT_RHS,dim2,dim4)
@@ -1868,14 +1870,14 @@ IF(PerformCALC)THEN
        ENDDO
     ENDDO
  ENDIF
-
  IF(DALINK)THEN
     IF(SameODs)THEN
        RED_DMAT_LHS => RED_DMAT_RHS 
     ELSE
        call mem_alloc(RED_DMAT_LHS,dim1,dim3)
        IF(INPUT%CS_SCREEN)THEN
-          call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,RED_DMAT_LHS,dim1,dim3,lupri)
+          call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,&
+               & RED_DMAT_LHS,dim1,dim3,lupri)
        ELSE
           DO D=1,dim3
              DO C=1,dim1
@@ -1883,6 +1885,8 @@ IF(PerformCALC)THEN
              ENDDO
           ENDDO
        ENDIF
+!       print*,'DALINK RED_DMAT_LHS'
+!       call shortint_output(RED_DMAT_LHS,dim1,dim3,6)
     ENDIF
     call mem_alloc(batchindex1,nRHSoverlaps)
     call mem_alloc(batchindex2,nRHSoverlaps)
@@ -2020,7 +2024,7 @@ IF(PerformCALC)THEN
  ENDDO
 
  call mem_alloc(numpasses,nPassTypes)
- numpasses = 0
+ numpasses(1:nPassTypes) = 0
  call mem_alloc(LIST,dim3*dim4+nPassTypes)
  call mem_alloc(DoINT,dim3*dim4)
  NULLIFY(SIZEOFDOINT)
@@ -2041,7 +2045,9 @@ IF(PerformCALC)THEN
  CALL allocIntegralsWRAP(PQ,Integral,Input,Allocations,iODtype,nPassTypes,&
       &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
  nEcont = input%NDMAT_RHS
- IF(INPUT%magderivorder.EQ.1)nEcont = input%NDMAT_RHS*3
+ IF(INPUT%magderivorder.EQ.1)THEN
+    nEcont = input%NDMAT_LHS*3
+ ENDIF
  call mem_alloc(Integral%Econt,nEcont) 
  IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk
  TOTmaxpasses = 0
@@ -2183,6 +2189,7 @@ IF(PerformCALC)THEN
             C=Belms(nC)
             IRHS = IODelms(nC)
             !SINCE THINGS ARE NOW IN BATCHES WITH THE SAME VALUES THIS COULD MAYBE BE MODIFIED
+            !K(A,C) = Integral(A,B,C,D)*DRHS(B,D)
             IF(TMP_short+RED_GAB_TMP(nC) .LE. CS_THRLOG )EXIT LOOPD
             NOELEMENTSADDED = .FALSE.
             IF(MBIE_SCREEN)THEN
@@ -2213,7 +2220,9 @@ IF(PerformCALC)THEN
             LOOPD2: DO nC=1,ketshell(D)%DIM
                C=Belms(nC)
                IRHS = IODelms(nC)
-               IF(TMP_short+RED_GAB_TMP(nC) .LE. CS_THRLOG ) EXIT LOOPD2
+               !Same LHS aos:  Permute A,B
+               !K(B,C) = Integral(B,A,C,D)*DRHS(A,D)
+               IF(TMP_short+RED_GAB_TMP(nC) .LE. CS_THRLOG )EXIT LOOPD2
                NOELEMENTSADDED = .FALSE.
                IF(MBIE_SCREEN)THEN
                   screen = .FALSE.
@@ -2254,15 +2263,22 @@ IF(PerformCALC)THEN
          !EXTRA DENSITY ACCELERATED SCREENING
          C=batchindex1(IRHS)
          D=batchindex2(IRHS)
-         DMATELM1=RED_DMAT_RHS(B,D)+RED_DMAT_LHS(A,C)
+         !K(A,C) = Integral(A,B,C,D)*DRHS(B,D)
+         !Same LHS aos:  Permute A,B
+         !K(B,C) = Integral(B,A,C,D)*DRHS(A,D)
+
+         !Energy = DLHS(A,C)*Integral(A,B,C,D)*DRHS(B,D)
+         ! or if sameLHSaos
+         !Energy = DLHS(B,C)*Integral(B,A,C,D)*DRHS(A,D)
+         DMATELM1=RED_DMAT_LHS(A,C)+RED_DMAT_RHS(B,D)
          IF(INPUT%sameLHSaos)then
-            DMATELM2=RED_DMAT_RHS(A,D)+RED_DMAT_LHS(B,C)
+            DMATELM2=RED_DMAT_LHS(B,C)+RED_DMAT_RHS(A,D)
             MAXDMAT=MAX(DMATELM1,DMATELM2)
          ELSE
             MAXDMAT=DMATELM1
          ENDIF
          IF(MAXDMAT.LT.shortzero)MAXDMAT=shortzero
-         IF(MAXDMAT+REDGABLHS+RED_GAB_RHS(IRHS) .LT. DALINK_THRLOG ) CYCLE LOOPRHS
+         IF(MAXDMAT+REDGABLHS+RED_GAB_RHS(IRHS).LT.DALINK_THRLOG) CYCLE LOOPRHS
       ENDIF
       IF(doPasses(iPassType)) THEN
          numPasses(iPassType) = numPasses(iPassType) + 1
@@ -2298,6 +2314,7 @@ IF(PerformCALC)THEN
       ENDIF
    ENDDO LOOPRHS
    DO iPassType=1,nPassTypes
+      IF(.NOT.doPasses(iPassType))numPasses(iPassType)=0
       IF(numPasses(iPassType).GT. 0) THEN
          call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
          CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
@@ -2897,7 +2914,7 @@ ELSE
               & input%LST_DRHS,input%NDMAT_RHS,PQ,Input,output,LUPRI,IPRINT)
         ELSEIF(INPUT%fullcontraction)THEN
            IF(INPUT%magderivorder.EQ.1)THEN
-              IF(input%NDMAT_RHS.NE.1)CALL LSQUIT('FFFFFFFFFFF',-1)
+              IF(input%NDMAT_RHS.NE.1)call lsquit('distributemagKcont assumes 1 RHS Dmat',-1)
               call distributemagKcont(integral%integralsABCD,input%LST_DLHS,&
                    & input%LST_DRHS,input%NDMAT_LHS,PQ,Input,output,&
                    & Integral%Econt,LUPRI,IPRINT)
@@ -6336,7 +6353,7 @@ implicit none
 Integer :: lupri
 TYPE(Integrand)    :: PQ
 TYPE(Integralitem) :: Integral
-Integer :: maxTUVdim,maxPrim,maxOrb
+Integer,intent(in) :: maxTUVdim,maxPrim,maxOrb
 logical :: orderAngPrim
 integer (kind=long) :: nsize1,nsize2
 
