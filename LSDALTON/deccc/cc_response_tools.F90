@@ -1627,7 +1627,7 @@ module cc_response_tools_module
       real(realk),intent(in) :: fAO(nbasis,nbasis)
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
-      !> Occ and virt MO coefficients
+      !> Occ and virt MO coefficients. Note: Co=xo (particle) and Cv=yv (hole)
       type(tensor),intent(inout) :: Co,Cv
       !> Singles and doubles amplitudes  (in practice these are intent(in))
       type(tensor),intent(inout) :: t1,t2
@@ -1638,12 +1638,10 @@ module cc_response_tools_module
       type(tensor) :: xo,xv,yo,yv,t1fock,fAO_tensor
       integer :: i,j
 
-
       ! Init tensors for hole and particle transformation coefficients + T1-transformed Fock
       call tensor_minit(xo,[nbasis,nocc],2)
       call tensor_minit(xv,[nbasis,nvirt],2)
       call tensor_minit(yo,[nbasis,nocc],2)
-      call tensor_minit(yv,[nbasis,nvirt],2)
       call tensor_minit(yv,[nbasis,nvirt],2)
       call tensor_minit(t1fock,[nbasis,nbasis],2)
 
@@ -2613,7 +2611,7 @@ module cc_response_tools_module
     !> \author Kasper Kristensen
     !> \date June 2015
     subroutine ccsd_eigenvalue_solver(nbasis,nocc,nvirt,fAO,foo,fvv,mylsitem,&
-         & xo_tensor,xv_tensor,yo_tensor,yv_tensor,t1,t2)
+         & xo,xv,yo,yv,t1,t2)
       implicit none
       !> Number of atomic/occupied/virtual orbitals
       integer,intent(in) :: nbasis,nocc,nvirt
@@ -2625,9 +2623,11 @@ module cc_response_tools_module
       type(lsitem), intent(inout) :: MyLsItem
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
       !> and virt (dimension nbasis,nvirt) transformations
-      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> (effectively intent(in) but need to be intent(inout) for practical purposes)
+      type(tensor),intent(inout) :: xo,xv,yo,yv
       !> Singles and doubles amplitudes
-      type(tensor),intent(in) :: t1,t2
+      !> (effectively intent(in) but need to be intent(inout) for practical purposes)
+      type(tensor),intent(inout) :: t1,t2
       real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
       integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter
@@ -2637,7 +2637,10 @@ module cc_response_tools_module
       real(realk) :: tmp1,tmp2,thr,fac,bTzeta,bnorm,sc
       real(realk),pointer :: res(:)
       logical,pointer :: conv(:)
-      logical :: allconv
+      logical :: allconv,lhtr
+
+      ! KKHACK FIXME - make it possible to change this by input
+      lhtr = DECinfo%hack2
 
       ! Convergence threshold
       thr = 1.0e-7_realk
@@ -2669,18 +2672,17 @@ module cc_response_tools_module
       ! Doubles: t_ii^aa --> O*V
       !          t_ij^aa --> O*(O-1)*V / 2
       !          t_ii^ab --> O*V*(V-1) / 2
-      !          t_ij^ab --> O*(O-1)*V*(V-1) / 4
+      !          t_ij^ab --> O*(O-1)*V*(V-1) / 2
       !          
-      ! Division by 2 or 4 is due to symmetry: t_ij^ab = t_ji^ba
+      ! Division by 2 is due to symmetry: t_ij^ab = t_ji^ba
       ! 
-      maxnumeival = O*V + O*V + O*(O-1)*V/2 + O*V*(V-1)/2 + O*(O-1)*V*(V-1)/4
+      maxnumeival = O*V + O*V + O*(O-1)*V/2 + O*V*(V-1)/2 + O*(O-1)*V*(V-1)/2
       if( int(M,kind=8) > maxnumeival) then
          print *, 'Number of startvectors ', M
          print *, 'Max number of eigenvalues ',maxnumeival
          call lsquit('ccsd_eigenvalue_solver: Number of requested &
               & start vectors is too large!',-1)
       end if
-      ! KKHACK: Also check maxdim??
 
 
       ! ********************************************************************************
@@ -2717,8 +2719,11 @@ module cc_response_tools_module
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
       ! --------------------------------------------------------------------------
       do i=1,M
-         call cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-              & yv_tensor,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+         if(lhtr) then
+            call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,fAO,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+         else
+            call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+         end if
       end do
 
 
@@ -2746,14 +2751,23 @@ module cc_response_tools_module
       ! *                                MAIN SOLVER ITERATIONS                               *
       ! ***************************************************************************************
 
+      write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC        Information for Jacobian eigenvalue solver       '
+      write(DECinfo%output,'(1X,a)') 'JAC        ------------------------------------------       '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,*) 'JAC Number of eigenvalues      ',k
+      write(DECinfo%output,*) 'JAC Initial subspace dimension ',M
+      write(DECinfo%output,*) 'JAC Maximum subspace dimension ',maxnumeival
+      write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
 
-      write(DECinfo%output,'(1X,a)') '###'
-      write(DECinfo%output,'(1X,a)') '### Jacobian eigenvalue solver'
-      write(DECinfo%output,'(1X,a)') '###'
-      write(DECinfo%output,'(1X,a)') '### Subspace  Which     Eigenvalue         Residual       Conv?  '
+
+      write(DECinfo%output,'(1X,a)') 'JAC'
+      write(DECinfo%output,'(1X,a)') 'JAC Jacobian eigenvalue solver'
+      write(DECinfo%output,'(1X,a)') 'JAC'
+      write(DECinfo%output,'(1X,a)') 'JAC Subspace  Which     Eigenvalue         Residual       Conv?  '
 
       SolverLoop: do iter=1,maxiter
-         
+
          ! Copy elements of reduced Jacobian into array having the proper dimensions
          call mem_alloc(Ar,M,M)
          do j=1,M
@@ -2802,7 +2816,7 @@ module cc_response_tools_module
             ! Check for convergence
             conv(p) = (res(p)<thr) 
             write(DECinfo%output,'(1X,a,i6,2X,i6,2X,g18.8,1X,g18.8,3X,L2)') &
-                 & '###',M,p,lambda(p),res(p),conv(p)
+                 & 'JAC',M,p,lambda(p),res(p),conv(p)
             if(conv(p)) cycle ploop
             ! KKHACK - also store optimal vector if converged!
 
@@ -2843,6 +2857,20 @@ module cc_response_tools_module
                call tensor_add(b2(M),bTzeta,b2(i))
             end do
 
+! KKHACK remove this
+!            print *, 'q1 q2',M,tensor_ddot(q1,q1),tensor_ddot(q2,q2)
+!            print *, 'b1 b2',M,tensor_ddot(b1(M),b1(M)),tensor_ddot(b2(M),b2(M))
+!!$            write(DECinfo%output,*) 'doubles vector b2'
+!!$            do j=1,nocc
+!!$               do b=1,nvirt
+!!$                  do i=1,nocc
+!!$                     do a=1,nvirt
+!!$                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,b2(M)%elm4(a,i,b,j)
+!!$                     end do
+!!$                  end do
+!!$               end do
+!!$            end do
+
             ! Normalize b(M)
             bnorm = tensor_ddot(b1(M),b1(M)) + tensor_ddot(b2(M),b2(M))
             if(bnorm < 1.0e-14_realk) then
@@ -2856,8 +2884,13 @@ module cc_response_tools_module
             ! Form Ab(M)
             call tensor_minit(Ab1(M),[nvirt,nocc],2)
             call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
-            call cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-                 & yv_tensor,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
+            if(lhtr) then
+               call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,&
+                    & fAO,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+            else
+               call cc_jacobian_rhtr(mylsitem,xo,xv,yo,&
+                    & yv,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
+            end if
 
          end do ploop
 
@@ -3021,10 +3054,15 @@ module cc_response_tools_module
       maxeival = huge(1.0)
       maxidx=1
       d1=0; d2=0; d3=0; d4=0
-      do i=1,nocc
-         do j=i,nocc
-            do a=1,nvirt
-               do b=a,nvirt
+      iloop: do i=1,nocc
+         jloop: do j=1,nocc
+            aloop: do a=1,nvirt
+               bloop: do b=a,nvirt
+
+                  ! avoid taking (a,i,a,j) combination twice
+                  if(a==b .and. i>j) cycle bloop  
+
+
                   ex = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
 
                   if(ex < maxeival) then
@@ -3038,10 +3076,10 @@ module cc_response_tools_module
                      maxidx = maxloc(eivalD)
                   end if
 
-               end do
-            end do
-         end do
-      end do
+               end do bloop
+            end do aloop
+         end do jloop
+      end do iloop
 
 
       ! M lowest excitation energies - singles OR doubles
