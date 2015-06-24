@@ -25,7 +25,13 @@ Integer :: derivComp
 Integer, pointer :: dirComp(:,:) 
 !For each ngeoDerivcomp this returns the AO the contribution is added to (1-4 mean A,B,C,D, 1,4 means AD, etc.)
 Integer, pointer :: AO(:,:)
-Integer :: translate      !0 if no translational symmetry, n to translate other contibutions to n
+Integer          :: translate      !0 if no translational symmetry, n to translate other contibutions to n
+Integer          :: nDerviComp       !number of derivative components in each direction
+Integer          :: HODIorder        !order of derivative for hodi
+Integer, pointer :: pack2(:,:)       !triangular packing index for second derivatives
+Integer, pointer :: pack3(:,:,:)     !triangular packing index for third derivatives
+Integer, pointer :: pack4(:,:,:,:)   !triangular packing index for fourth derivatives
+!Integer, pointer :: pack5(:,:,:,:,:) !triangular packing index for fifth derivatives
 END TYPE derivativeInfo
 
 CONTAINS
@@ -42,7 +48,7 @@ Type(IntegralInput),intent(in)      :: Input
 Type(derivativeInfo), intent(INOUT) :: derivInfo
 !
 Logical :: emptyA,emptyB,emptyC,emptyD,singleP,singleQ,emptyP,emptyQ
-Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv,startDer,endDer
+Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv,startDer,endDer,nAtom
 
 Logical :: dohodi
 
@@ -108,6 +114,254 @@ DO iDer=endDer,startDer,-1
     ENDDO
   ENDIF
 ENDDO
+
+derivInfo%HODIorder = 0
+IF (dohodi) THEN
+  nAtom = Input%AO(1)%p%natoms
+  N=3*nAtom
+  IF (derP.NE.derQ) CALL LSQUIT('Programming error: initDerivativeOverlapInfo derP.NE.derQ',-1)
+  derivInfo%HODIorder = derP
+  IF (derP.EQ.2) THEN
+    call mem_alloc(derivInfo%pack2,N,N)
+    call get_packIndex2(derivInfo%pack2,N)
+  ELSE IF (derP.EQ.3) THEN
+    call mem_alloc(derivInfo%pack3,N,N,N)
+    call get_packIndex3(derivInfo%pack3,N)
+  ELSE IF (derP.EQ.4) THEN
+    call mem_alloc(derivInfo%pack4,N,N,N,N)
+    call get_packIndex4(derivInfo%pack4,N)
+! ELSE IF (derP.EQ.5) THEN
+!   call mem_alloc(derivInfo%pack5,derP,derP,derP,derP,derP)
+!   call get_packIndex5(derivInfo%pack5,derP)
+  ELSE IF (derP.GE.5) THEN
+    CALL LSQUIT('Programming error: initDerivativeOverlapInfo derP>4',-1)
+  ENDIF
+ENDIF
+contains 
+SUBROUTINE get_packIndex2(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N)
+!
+Integer :: i,j,iPack
+
+iPack = 0
+DO j=1,N
+  DO i=j,N
+    iPack=iPack+1
+    packindex(i,j) = iPack
+    packindex(j,i) = iPack
+  ENDDO
+ENDDO
+END SUBROUTINE get_packIndex2
+
+SUBROUTINE get_packIndex3(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N,N)
+!
+Integer :: i,j,k,iPack
+
+iPack = 0
+DO k=1,N
+ DO j=k,N
+  DO i=j,N
+    iPack=iPack+1
+    packindex(i,j,k) = iPack
+    packindex(j,i,k) = iPack
+    packindex(i,k,j) = iPack
+    packindex(j,k,i) = iPack
+    packindex(k,i,j) = iPack
+    packindex(k,j,i) = iPack
+  ENDDO
+ ENDDO
+ENDDO
+END SUBROUTINE get_packIndex3
+
+SUBROUTINE get_packIndex4(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N,N,N)
+!
+Integer :: i,j,k,l,iPack
+
+iPack = 0
+DO l=1,N
+ DO k=l,N
+  DO j=k,N
+   DO i=j,N
+    iPack=iPack+1
+    packindex(i,j,k,l) = iPack
+    packindex(j,i,k,l) = iPack
+    packindex(i,k,j,l) = iPack
+    packindex(j,k,i,l) = iPack
+    packindex(k,i,j,l) = iPack
+    packindex(k,j,i,l) = iPack
+    packindex(i,j,l,k) = iPack
+    packindex(j,i,l,k) = iPack
+    packindex(i,k,l,j) = iPack
+    packindex(j,k,l,i) = iPack
+    packindex(k,i,l,j) = iPack
+    packindex(k,j,l,i) = iPack
+    packindex(i,l,j,k) = iPack
+    packindex(j,l,i,k) = iPack
+    packindex(i,l,k,j) = iPack
+    packindex(j,l,k,i) = iPack
+    packindex(k,l,i,j) = iPack
+    packindex(k,l,j,i) = iPack
+    packindex(l,i,j,k) = iPack
+    packindex(l,j,i,k) = iPack
+    packindex(l,i,k,j) = iPack
+    packindex(l,j,k,i) = iPack
+    packindex(l,k,i,j) = iPack
+    packindex(l,k,j,i) = iPack
+   ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+END SUBROUTINE get_packIndex4
+
+SUBROUTINE get_packIndex5(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N,N,N,N)
+!
+Integer :: i,j,k,l,m,iPack
+
+iPack = 0
+DO m=1,N
+DO l=m,N
+ DO k=l,N
+  DO j=k,N
+   DO i=j,N
+    iPack=iPack+1
+    packindex(i,j,k,l,m) = iPack
+    packindex(j,i,k,l,m) = iPack
+    packindex(i,k,j,l,m) = iPack
+    packindex(j,k,i,l,m) = iPack
+    packindex(k,i,j,l,m) = iPack
+    packindex(k,j,i,l,m) = iPack
+    packindex(i,j,l,k,m) = iPack
+    packindex(j,i,l,k,m) = iPack
+    packindex(i,k,l,j,m) = iPack
+    packindex(j,k,l,i,m) = iPack
+    packindex(k,i,l,j,m) = iPack
+    packindex(k,j,l,i,m) = iPack
+    packindex(i,l,j,k,m) = iPack
+    packindex(j,l,i,k,m) = iPack
+    packindex(i,l,k,j,m) = iPack
+    packindex(j,l,k,i,m) = iPack
+    packindex(k,l,i,j,m) = iPack
+    packindex(k,l,j,i,m) = iPack
+    packindex(l,i,j,k,m) = iPack
+    packindex(l,j,i,k,m) = iPack
+    packindex(l,i,k,j,m) = iPack
+    packindex(l,j,k,i,m) = iPack
+    packindex(l,k,i,j,m) = iPack
+    packindex(l,k,j,i,m) = iPack
+    packindex(i,j,k,m,l) = iPack
+    packindex(j,i,k,m,l) = iPack
+    packindex(i,k,j,m,l) = iPack
+    packindex(j,k,i,m,l) = iPack
+    packindex(k,i,j,m,l) = iPack
+    packindex(k,j,i,m,l) = iPack
+    packindex(i,j,l,m,k) = iPack
+    packindex(j,i,l,m,k) = iPack
+    packindex(i,k,l,m,j) = iPack
+    packindex(j,k,l,m,i) = iPack
+    packindex(k,i,l,m,j) = iPack
+    packindex(k,j,l,m,i) = iPack
+    packindex(i,l,j,m,k) = iPack
+    packindex(j,l,i,m,k) = iPack
+    packindex(i,l,k,m,j) = iPack
+    packindex(j,l,k,m,i) = iPack
+    packindex(k,l,i,m,j) = iPack
+    packindex(k,l,j,m,i) = iPack
+    packindex(l,i,j,m,k) = iPack
+    packindex(l,j,i,m,k) = iPack
+    packindex(l,i,k,m,j) = iPack
+    packindex(l,j,k,m,i) = iPack
+    packindex(l,k,i,m,j) = iPack
+    packindex(l,k,j,m,i) = iPack
+    packindex(i,j,m,k,l) = iPack
+    packindex(j,i,m,k,l) = iPack
+    packindex(i,k,m,j,l) = iPack
+    packindex(j,k,m,i,l) = iPack
+    packindex(k,i,m,j,l) = iPack
+    packindex(k,j,m,i,l) = iPack
+    packindex(i,j,m,l,k) = iPack
+    packindex(j,i,m,l,k) = iPack
+    packindex(i,k,m,l,j) = iPack
+    packindex(j,k,m,l,i) = iPack
+    packindex(k,i,m,l,j) = iPack
+    packindex(k,j,m,l,i) = iPack
+    packindex(i,l,m,j,k) = iPack
+    packindex(j,l,m,i,k) = iPack
+    packindex(i,l,m,k,j) = iPack
+    packindex(j,l,m,k,i) = iPack
+    packindex(k,l,m,i,j) = iPack
+    packindex(k,l,m,j,i) = iPack
+    packindex(l,i,m,j,k) = iPack
+    packindex(l,j,m,i,k) = iPack
+    packindex(l,i,m,k,j) = iPack
+    packindex(l,j,m,k,i) = iPack
+    packindex(l,k,m,i,j) = iPack
+    packindex(l,k,m,j,i) = iPack
+    packindex(i,m,j,k,l) = iPack
+    packindex(j,m,i,k,l) = iPack
+    packindex(i,m,k,j,l) = iPack
+    packindex(j,m,k,i,l) = iPack
+    packindex(k,m,i,j,l) = iPack
+    packindex(k,m,j,i,l) = iPack
+    packindex(i,m,j,l,k) = iPack
+    packindex(j,m,i,l,k) = iPack
+    packindex(i,m,k,l,j) = iPack
+    packindex(j,m,k,l,i) = iPack
+    packindex(k,m,i,l,j) = iPack
+    packindex(k,m,j,l,i) = iPack
+    packindex(i,m,l,j,k) = iPack
+    packindex(j,m,l,i,k) = iPack
+    packindex(i,m,l,k,j) = iPack
+    packindex(j,m,l,k,i) = iPack
+    packindex(k,m,l,i,j) = iPack
+    packindex(k,m,l,j,i) = iPack
+    packindex(l,m,i,j,k) = iPack
+    packindex(l,m,j,i,k) = iPack
+    packindex(l,m,i,k,j) = iPack
+    packindex(l,m,j,k,i) = iPack
+    packindex(l,m,k,i,j) = iPack
+    packindex(l,m,k,j,i) = iPack
+    packindex(m,i,j,k,l) = iPack
+    packindex(m,j,i,k,l) = iPack
+    packindex(m,i,k,j,l) = iPack
+    packindex(m,j,k,i,l) = iPack
+    packindex(m,k,i,j,l) = iPack
+    packindex(m,k,j,i,l) = iPack
+    packindex(m,i,j,l,k) = iPack
+    packindex(m,j,i,l,k) = iPack
+    packindex(m,i,k,l,j) = iPack
+    packindex(m,j,k,l,i) = iPack
+    packindex(m,k,i,l,j) = iPack
+    packindex(m,k,j,l,i) = iPack
+    packindex(m,i,l,j,k) = iPack
+    packindex(m,j,l,i,k) = iPack
+    packindex(m,i,l,k,j) = iPack
+    packindex(m,j,l,k,i) = iPack
+    packindex(m,k,l,i,j) = iPack
+    packindex(m,k,l,j,i) = iPack
+    packindex(m,l,i,j,k) = iPack
+    packindex(m,l,j,i,k) = iPack
+    packindex(m,l,i,k,j) = iPack
+    packindex(m,l,j,k,i) = iPack
+    packindex(m,l,k,i,j) = iPack
+    packindex(m,l,k,j,i) = iPack
+   ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+ENDDO
+END SUBROUTINE get_packIndex5
+
 END SUBROUTINE initDerivativeOverlapInfo
 
 !> \brief Print the derivative info
@@ -350,6 +604,10 @@ derivInfo%ngeoderivcomp = 0
 derivInfo%derivComp = 0
 call mem_dealloc(derivInfo%dirComp)
 call mem_dealloc(derivInfo%AO)
+IF (derivInfo%HODIorder.EQ.2) call mem_dealloc(derivInfo%pack2)
+IF (derivInfo%HODIorder.EQ.3) call mem_dealloc(derivInfo%pack3)
+IF (derivInfo%HODIorder.EQ.4) call mem_dealloc(derivInfo%pack4)
+!IF (derivInfo%HODIorder.EQ.5) call mem_dealloc(derivInfo%pack5)
 END SUBROUTINE freeDerivativeOverlapInfo
 
 !> \brief new distributePQ to lstensor
@@ -396,7 +654,6 @@ integer :: iAtom1,iAtom2,iAtom3,i1,i2,i3,iPermute,nPermute,nAtoms,iPack
 integer,pointer :: dim5(:)
 logical,pointer :: negative(:)
 integer :: nDimGeo,nTranslate
-integer,pointer :: packIndex(:,:,:)
 
 antiAB=.FALSE.
 antiCD=.FALSE.
@@ -481,32 +738,8 @@ if(input%geoDerivOrder.GE.1)then
      nDimGeo = 1
    ELSE IF (input%geoDerivOrder.EQ.2) THEN
      nDimGeo = 2
-     call mem_alloc(packIndex,3*nAtoms,3*nAtoms,1)
-     iPack=0
-     DO i1=1,3*nAtoms
-       DO i2=i1,3*nAtoms
-           iPack=iPack+1
-           packIndex(i1,i2,1) = iPack
-           packIndex(i2,i1,1) = iPack
-       ENDDO
-     ENDDO
    ELSE IF (input%geoDerivOrder.EQ.3) THEN
      nDimGeo = 6
-     call mem_alloc(packIndex,3*nAtoms,3*nAtoms,3*nAtoms)
-     iPack=0
-     DO i1=1,3*nAtoms
-       DO i2=i1,3*nAtoms
-         DO i3=i2,3*nAtoms
-           iPack=iPack+1
-           packIndex(i1,i2,i3) = iPack
-           packIndex(i1,i3,i2) = iPack
-           packIndex(i2,i1,i3) = iPack
-           packIndex(i2,i3,i1) = iPack
-           packIndex(i3,i1,i2) = iPack
-           packIndex(i3,i2,i1) = iPack
-         ENDDO
-       ENDDO
-     ENDDO
    ELSE 
      call lsquit('nDimGeo not yet implemented for geoDerivOrder > 3 !',-1)
    ENDIF
@@ -674,8 +907,8 @@ DO iPassP=1,P%nPasses
           iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
           i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
           i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
-          Dim5(1) = packIndex(i1,i2,1)
-          Dim5(2) = packIndex(i1,i2,1)
+          Dim5(1) = derivInfo%pack2(i1,i2)
+          Dim5(2) = derivInfo%pack2(i1,i2)
           same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
           nPermute=1
           IF ((i1.EQ.i2).AND..NOT.same12) nPermute=2
@@ -727,12 +960,12 @@ DO iPassP=1,P%nPasses
           i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
  
           nPermute = 1
-          Dim5(1)  = packIndex(i1,i2,i3)
-          Dim5(2)  = packIndex(i1,i2,i3)
-          Dim5(3)  = packIndex(i1,i2,i3)
-          Dim5(4)  = packIndex(i1,i2,i3)
-          Dim5(5)  = packIndex(i1,i2,i3)
-          Dim5(6)  = packIndex(i1,i2,i3)
+          Dim5(1)  = derivInfo%pack3(i1,i2,i3)
+          Dim5(2)  = derivInfo%pack3(i1,i2,i3)
+          Dim5(3)  = derivInfo%pack3(i1,i2,i3)
+          Dim5(4)  = derivInfo%pack3(i1,i2,i3)
+          Dim5(5)  = derivInfo%pack3(i1,i2,i3)
+          Dim5(6)  = derivInfo%pack3(i1,i2,i3)
           same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
           same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
           same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
@@ -932,7 +1165,6 @@ IF(Input%LinComCarmomType.GT.0)THEN
 ELSEIF(PQ%reverseOrder)THEN
    call mem_workpointer_dealloc(QPmat4)
 ENDIF
-IF (input%geoDerivOrder.GE.2) call mem_dealloc(packIndex)
 
 end SUBROUTINE GeneraldistributePQ
 
