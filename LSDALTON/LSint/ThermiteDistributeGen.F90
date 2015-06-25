@@ -638,7 +638,7 @@ INTEGER, INTENT(IN)            :: nAtoms,iDeriv
 !
 INTEGER :: iTrans,iDer,iAtom,i1,i2,i3,it1,it2,iAtom1,iAtom2,iAtom3
 LOGICAL :: same12,same13,same23
-real(realk),parameter :: D1=1.0E0_realk, M1=-1.0E0_realk
+real(realk),parameter :: D1=1.0E0_realk, M1=-1.0E0_realk,D2=2.0E0_realk,D3=3.0E0_realk,D6=6.0E0_realk
 
 IF (translate) iTrans = derivInfo%Atom(derivInfo%translate)
 
@@ -647,6 +647,7 @@ IF (input%geoDerivOrder.EQ. 1)THEN
    iDer = derivInfo%dirComp(1,iDeriv)
    iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
    Dim5(1) = 3*(iAtom-1)+ider
+   fac5(1) = D1
    IF (translate) THEN
      nPermute = nPermute + 1
      Dim5(2) = 3*(iTrans-1)+ider
@@ -658,11 +659,11 @@ ELSEIF (input%geoDerivOrder.EQ. 2)THEN
    i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
    i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
    Dim5(1) = derivInfo%pack2(i1,i2)
-   Dim5(2) = derivInfo%pack2(i1,i2)
-   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+   fac5(1) = D1
    nPermute=1
+   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
    !Case with d^2/dAx^2 with different AO indeces = factor 2
-   IF ((i1.EQ.i2).AND..NOT.same12) nPermute=2 
+   IF ((i1.EQ.i2).AND..NOT.same12) fac5(1)=D2
    IF (translate) THEN
      IF (iAtom1.EQ.iAtom2) THEN
        IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
@@ -714,31 +715,24 @@ ELSEIF (input%geoDerivOrder.EQ. 3)THEN
 
    nPermute = 1
    Dim5(1)  = derivInfo%pack3(i1,i2,i3)
-   Dim5(2)  = derivInfo%pack3(i1,i2,i3)
-   Dim5(3)  = derivInfo%pack3(i1,i2,i3)
-   Dim5(4)  = derivInfo%pack3(i1,i2,i3)
-   Dim5(5)  = derivInfo%pack3(i1,i2,i3)
-   Dim5(6)  = derivInfo%pack3(i1,i2,i3)
+   fac5(1)  = D1
    same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
    same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
    same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
    IF ((i1.EQ.i2).AND.(i1.EQ.i3)) THEN
       IF (same12.AND.same13) THEN !All the same AO index
-        nPermute=1
+        fac5(1)  = D1
       ELSE IF (same12.OR.same13.OR.same23) THEN !Two are the same AO index
-        nPermute=3
+        fac5(1)  = D3
       ELSE !All different AO indeces
-        nPermute=6
+        fac5(1)  = D6
       ENDIF
-   ELSE IF (i1.EQ.i2) THEN
-      nPermute=2
-      IF (same12) nPermute=1
-   ELSE IF (i1.EQ.i3) THEN
-      nPermute=2
-      IF (same13) nPermute=1
-   ELSE IF (i2.EQ.i3) THEN
-      nPermute=2
-      IF (same23) nPermute=1
+   ELSE IF ((i1.EQ.i2).AND..NOT.same12) THEN
+      fac5(1)  = D2
+   ELSE IF ((i1.EQ.i3).AND..NOT.same13) THEN
+      fac5(1)  = D2
+   ELSE IF ((i2.EQ.i3).AND..NOT.same23) THEN
+      fac5(1)  = D2
    ENDIF
    IF (translate) THEN
      call lsquit('Error in getDerivativeIndeces - geoDerivORder 3 and translate not implemented',-1)
