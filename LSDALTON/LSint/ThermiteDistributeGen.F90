@@ -50,7 +50,7 @@ Type(derivativeInfo), intent(INOUT) :: derivInfo
 Logical :: emptyA,emptyB,emptyC,emptyD,singleP,singleQ,emptyP,emptyQ
 Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv,startDer,endDer,nAtom
 
-Logical :: dohodi
+Logical :: dohodi,natom_set
 
 dohodi = (input%geoderOrderP.GT.0) .AND. (input%geoderOrderQ .GT.0)
 !
@@ -117,10 +117,25 @@ ENDDO
 
 derivInfo%HODIorder = 0
 IF (dohodi) THEN
-  nAtom = Input%AO(1)%p%natoms
+  !Set nAtoms and test for consistency
+!Simen: This needs to be changed for MPI. I think the easiest is to pass down some local to 
+!Simen: global information
+  natom_set = .FALSE.
+  DO n=1,4
+    IF (.NOT.Input%AO(n)%p%Empty) THEN
+      IF (natom_set) THEN
+        IF (Input%AO(n)%p%natoms.NE.nAtom) CALL LSQUIT('Programming error: initDerivativeOverlapInfo natoms different',-1)
+      ELSE
+        nAtom=Input%AO(n)%p%natoms
+        natom_set = .TRUE.
+      ENDIF
+    ENDIF
+  ENDDO
   N=3*nAtom
   IF (derP.NE.derQ) CALL LSQUIT('Programming error: initDerivativeOverlapInfo derP.NE.derQ',-1)
   derivInfo%HODIorder = derP
+! Sets up indices for quadratic to triangular packing packing i.e. from N*N to N*(N+1)/2,
+! N*N*N to N*(N+1)*N+2)/6, etc
   IF (derP.EQ.2) THEN
     call mem_alloc(derivInfo%pack2,N,N)
     call get_packIndex2(derivInfo%pack2,N)
@@ -610,6 +625,126 @@ IF (derivInfo%HODIorder.EQ.4) call mem_dealloc(derivInfo%pack4)
 !IF (derivInfo%HODIorder.EQ.5) call mem_dealloc(derivInfo%pack5)
 END SUBROUTINE freeDerivativeOverlapInfo
 
+
+SUBROUTINE getDerivativeIndeces(derivInfo,npermute,Dim5,negative,input,nAtoms,translate,iDeriv)
+implicit none
+TYPE(derivativeInfo), intent(INOUT) :: derivInfo
+INTEGER, INTENT(INOUT)         :: Dim5(:)
+INTEGER, INTENT(INOUT)         :: npermute
+TYPE(integralInput),INTENT(IN) :: input
+LOGICAL, INTENT(IN)            :: translate
+LOGICAL, INTENT(INOUT)         :: negative(:)
+INTEGER, INTENT(IN)            :: nAtoms,iDeriv
+!
+INTEGER :: iTrans,iDer,iAtom,i1,i2,i3,it1,it2,iAtom1,iAtom2,iAtom3
+LOGICAL :: same12,same13,same23
+
+
+IF (translate) iTrans = derivInfo%Atom(derivInfo%translate)
+IF (input%geoDerivOrder.EQ. 1)THEN
+   iDer = derivInfo%dirComp(1,iDeriv)
+   iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   Dim5(1) = 3*(iAtom-1)+ider
+   IF (translate) THEN
+     nPermute = nPermute + 1
+     Dim5(2) = 3*(iTrans-1)+ider
+     negative(2) = .TRUE.
+   ENDIF
+ELSEIF (input%geoDerivOrder.EQ. 2)THEN
+   iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+   i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
+   i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
+   Dim5(1) = derivInfo%pack2(i1,i2)
+   Dim5(2) = derivInfo%pack2(i1,i2)
+   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+   nPermute=1
+   IF ((i1.EQ.i2).AND..NOT.same12) nPermute=2
+   IF (translate) THEN
+     IF (iAtom1.EQ.iAtom2) THEN
+       IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
+         nPermute = nPermute - 1
+       ENDIF
+       it1 = 3*(iTrans-1)+derivInfo%dirComp(1,iDeriv)
+       it2 = 3*(iTrans-1)+derivInfo%dirComp(2,iDeriv)
+       Dim5(nPermute+1) = derivInfo%pack2(i1,it2)
+       Dim5(nPermute+2) = derivInfo%pack2(it1,i2)
+       Dim5(nPermute+3) = derivInfo%pack2(it1,it2)
+       Dim5(nPermute+4) = derivInfo%pack2(it2,it1)
+       negative(nPermute+1) = .TRUE.
+       negative(nPermute+2) = .TRUE.
+       nPermute = nPermute + 4
+       IF (same12.OR.(iAtom1.EQ.iTrans)) nPermute = nPermute-1
+     ELSE
+       Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
+       Dim5(nPermute+2) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
+       negative(nPermute+1) = .TRUE.
+       negative(nPermute+2) = .TRUE.
+       IF (iAtom1.EQ.iTrans.AND.i1.EQ.i2) THEN
+         nPermute = nPermute - 1
+       ELSE
+         Dim5(nPermute+3) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
+         negative(nPermute+3) = .TRUE.
+       ENDIF
+       IF (iAtom2.EQ.iTrans.AND.i1.EQ.i2) THEN
+         nPermute = nPermute - 1
+       ELSE
+         Dim5(nPermute+4) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
+         negative(nPermute+4) = .TRUE.
+       ENDIF
+       Dim5(nPermute+5) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
+       IF (i1.EQ.i2.AND.((iAtom1.EQ.iTrans).OR.(iAtom2.EQ.iTrans))) THEN
+         nPermute = nPermute - 1
+       ELSE
+         Dim5(nPermute+6) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
+       ENDIF
+       nPermute = nPermute + 6
+     ENDIF
+   ENDIF
+ELSEIF (input%geoDerivOrder.EQ. 3)THEN
+   iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+   iAtom3 = derivInfo%Atom(derivInfo%AO(3,iDeriv))
+   i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
+   i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
+   i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
+
+   nPermute = 1
+   Dim5(1)  = derivInfo%pack3(i1,i2,i3)
+   Dim5(2)  = derivInfo%pack3(i1,i2,i3)
+   Dim5(3)  = derivInfo%pack3(i1,i2,i3)
+   Dim5(4)  = derivInfo%pack3(i1,i2,i3)
+   Dim5(5)  = derivInfo%pack3(i1,i2,i3)
+   Dim5(6)  = derivInfo%pack3(i1,i2,i3)
+   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+   same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+   same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+   IF ((i1.EQ.i2).AND.(i1.EQ.i3)) THEN
+      IF (same12.AND.same13) THEN !All the same AO index
+        nPermute=1
+      ELSE IF (same12.OR.same13.OR.same23) THEN !Two are the same AO index
+        nPermute=3
+      ELSE !All different AO indeces
+        nPermute=6
+      ENDIF
+   ELSE IF (i1.EQ.i2) THEN
+      nPermute=2
+      IF (same12) nPermute=1
+   ELSE IF (i1.EQ.i3) THEN
+      nPermute=2
+      IF (same13) nPermute=1
+   ELSE IF (i2.EQ.i3) THEN
+      nPermute=2
+      IF (same23) nPermute=1
+   ENDIF
+   IF (translate) THEN
+     call lsquit('Error in getDerivativeIndeces - geoDerivORder 3 and translate not implemented',-1)
+   ENDIF
+ELSE IF (input%geoDerivOrder.GE. 4)THEN
+  call lsquit('Error in getDerivativeIndeces - geoDerivORder > 3 not implemented',-1)
+ENDIF
+END SUBROUTINE getDerivativeIndeces
+
 !> \brief new distributePQ to lstensor
 !> \author \latexonly T. Kj{\ae}rgaard  \endlatexonly
 !> \date 2009-02-05
@@ -891,108 +1026,8 @@ DO iPassP=1,P%nPasses
        ENDIF
        Dim5(1) = iDim5
        nPermute = 1
-       IF (translate) iTrans = derivInfo%Atom(derivInfo%translate)
        negative(:) = .FALSE.
-       IF (input%geoDerivOrder.EQ. 1)THEN
-          iDer = derivInfo%dirComp(1,iDeriv)
-          iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-          Dim5(1) = 3*(iAtom-1)+ider
-          IF (translate) THEN
-            nPermute = nPermute + 1
-            Dim5(2) = 3*(iTrans-1)+ider
-            negative(2) = .TRUE.
-          ENDIF
-       ELSEIF (input%geoDerivOrder.EQ. 2)THEN
-          iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-          iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
-          i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
-          i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
-          Dim5(1) = derivInfo%pack2(i1,i2)
-          Dim5(2) = derivInfo%pack2(i1,i2)
-          same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
-          nPermute=1
-          IF ((i1.EQ.i2).AND..NOT.same12) nPermute=2
-          IF (translate) THEN
-            IF (iAtom1.EQ.iAtom2) THEN
-              IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
-                nPermute = nPermute - 1
-              ENDIF
-              Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
-              Dim5(nPermute+2) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
-              Dim5(nPermute+3) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
-              Dim5(nPermute+4) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
-              negative(nPermute+1) = .TRUE.
-              negative(nPermute+2) = .TRUE.
-              nPermute = nPermute + 4
-              IF (same12.OR.(iAtom1.EQ.iTrans)) nPermute = nPermute-1
-            ELSE
-              Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
-              Dim5(nPermute+2) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
-              negative(nPermute+1) = .TRUE.
-              negative(nPermute+2) = .TRUE.
-              IF (iAtom1.EQ.iTrans.AND.i1.EQ.i2) THEN
-                nPermute = nPermute - 1
-              ELSE
-                Dim5(nPermute+3) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
-                negative(nPermute+3) = .TRUE.
-              ENDIF
-              IF (iAtom2.EQ.iTrans.AND.i1.EQ.i2) THEN
-                nPermute = nPermute - 1
-              ELSE
-                Dim5(nPermute+4) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
-                negative(nPermute+4) = .TRUE.
-              ENDIF
-              Dim5(nPermute+5) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
-              IF (i1.EQ.i2.AND.((iAtom1.EQ.iTrans).OR.(iAtom2.EQ.iTrans))) THEN
-                nPermute = nPermute - 1
-              ELSE
-                Dim5(nPermute+6) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
-              ENDIF
-              nPermute = nPermute + 6
-            ENDIF
-          ENDIF
-       ELSEIF (input%geoDerivOrder.EQ. 3)THEN
-          iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-          iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
-          iAtom3 = derivInfo%Atom(derivInfo%AO(3,iDeriv))
-          i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
-          i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
-          i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
- 
-          nPermute = 1
-          Dim5(1)  = derivInfo%pack3(i1,i2,i3)
-          Dim5(2)  = derivInfo%pack3(i1,i2,i3)
-          Dim5(3)  = derivInfo%pack3(i1,i2,i3)
-          Dim5(4)  = derivInfo%pack3(i1,i2,i3)
-          Dim5(5)  = derivInfo%pack3(i1,i2,i3)
-          Dim5(6)  = derivInfo%pack3(i1,i2,i3)
-          same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
-          same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-          same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-          IF ((i1.EQ.i2).AND.(i1.EQ.i3)) THEN
-             IF (same12.AND.same13) THEN !All the same AO index
-               nPermute=1
-             ELSE IF (same12.OR.same13.OR.same23) THEN !Two are the same AO index
-               nPermute=3
-             ELSE !All different AO indeces
-               nPermute=6
-             ENDIF
-          ELSE IF (i1.EQ.i2) THEN
-             nPermute=2
-             IF (same12) nPermute=1
-          ELSE IF (i1.EQ.i3) THEN
-             nPermute=2
-             IF (same13) nPermute=1
-          ELSE IF (i2.EQ.i3) THEN
-             nPermute=2
-             IF (same23) nPermute=1
-          ENDIF
-          IF (translate) THEN
-            call lsquit('Error in generalDistributePQ - geoDerivORder 3 and translate not implemented',-1)
-          ENDIF
-       ELSE IF (input%geoDerivOrder.GE. 4)THEN
-         call lsquit('Error in generalDistributePQ - geoDerivORder > 3 not implemented',-1)
-       ENDIF
+       call getDerivativeIndeces(derivInfo,npermute,Dim5,negative,input,nAtoms,translate,iDeriv)
        DO iPermute=1,nPermute
         iDim5 = Dim5(iPermute)
         IF (negative(iPermute)) THEN
