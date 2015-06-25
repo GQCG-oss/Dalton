@@ -2333,6 +2333,14 @@ contains
        nullify(batch2orbGamma)
        nullify(batchindexGamma)
     ENDIF
+#ifdef VAR_MPI
+    if(master)then
+       call time_start_phase( PHASE_COMM )
+       if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,&
+            &trafo4,mylsitem,collective)
+       call time_start_phase( PHASE_WORK )
+    endif
+#endif
     !==================================================
     !                  Batch construction             !
     !==================================================
@@ -2340,19 +2348,18 @@ contains
     use_bg_buf = mem_is_background_buf_init()
     if(use_bg_buf)then
        nbu = mem_get_bg_buf_free()
+#ifdef VAR_MPI
+       call lsmpi_reduce_min(nbu,infpar%master,infpar%lg_comm)
+#endif
     else
        nbu = 0
     endif
+    
 
     ! Get free memory and determine maximum batch sizes
     ! -------------------------------------------------
     if(master)then
-#ifdef VAR_MPI
-       call time_start_phase( PHASE_COMM )
-       if(.not.local)call wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,&
-            &trafo4,mylsitem,collective)
-       call time_start_phase( PHASE_WORK )
-#endif
+
        IF(DECinfo%useIchor)THEN
           !Determine the minimum allowed AObatch size MinAObatch
           !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
@@ -2570,7 +2577,8 @@ contains
 
     if( use_bg_buf ) then
        if(maxsize > nbu) then
-          print *, "Warning(get_mo_integral_par):  This should not happen, if the memory counting is correct"
+          print *, "Warning(get_mo_integral_par):  This should not happen, if the memory counting is correct&
+             &, Node:",me," requests ",maxsize," in buffer ",nbu
           !call mem_change_background_alloc(maxsize*8_long)
        endif
 
@@ -2763,6 +2771,10 @@ contains
           endif
        endif
 
+       if(DECinfo%ccsolverskip)then
+          call random_number(w1)
+          call random_number(w2)
+       else
        if(.not.completely_distributed)then
           IF(DECinfo%useIchor)THEN
              lg = AOGammabatchinfo(gammaB)%dim               ! Dimension of gamma batch
@@ -3107,6 +3119,7 @@ contains
           call tensor_free( t3_fa )
           call tensor_free( t4_fg )
        endif
+       endif
 
     enddo BatchLoop
 
@@ -3207,6 +3220,10 @@ contains
     else
        call mem_dealloc( w2 )
        call mem_dealloc( w1 )
+    endif
+
+    if(DECinfo%ccsolverskip)then
+       call tensor_random(integral)
     endif
 
 

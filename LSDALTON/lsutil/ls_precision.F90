@@ -44,7 +44,13 @@ MODULE precision
 #else
   INTEGER, PARAMETER :: MAXINT = 2147483640
 #endif
+#ifdef VAR_LAPACK_INT64
+  INTEGER, PARAMETER :: INTLAPACKK = SELECTED_INT_KIND(17)! = 8
+#else
+  INTEGER, PARAMETER :: INTLAPACKK = SELECTED_INT_KIND(9) ! = 4
+#endif
   
+
 INTERFACE Test_if_64bit_integer_required
    MODULE PROCEDURE Test_if_64bit_integer_required_2d,&
         & Test_if_64bit_integer_required_3d,&

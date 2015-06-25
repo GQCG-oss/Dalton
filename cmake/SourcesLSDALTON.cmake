@@ -103,6 +103,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
+    LSDALTON/deccc/rimp2_gradient.F90
     LSDALTON/deccc/ccsd_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
@@ -778,6 +779,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/gridgeneration_memory.F90
     LSDALTON/lsutil/Time.F90
     LSDALTON/lsutil/common_utilities.F90
+    LSDALTON/lsutil/lapack_interface.F90
     LSDALTON/lsutil/ls_parameters.F90
     LSDALTON/lsutil/par_mod.F90
     LSDALTON/lsutil/lsmpiType.F90

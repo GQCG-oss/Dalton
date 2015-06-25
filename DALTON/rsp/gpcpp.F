@@ -81,7 +81,7 @@ C
       IF (LABX1 .EQ. 'EOFLABEL') GOTO 200
 c      write(luabspri,*)'freq',ABS(FREQ),FREQX1,LABEL,LABX1,DAMP1,
 c     &                        ABS_DAMP,ABS_GRADSYM,ISYMX1
-         IF (((ABS(ABS(FREQ)-FREQX1)).LE.THR)
+         IF (((ABS(ABS(FREQ)-abs(FREQX1))).LE.THR)
      &        .AND. (LABEL.EQ.LABX1) .AND. (ISYM.EQ.ISYMX1) .AND. 
      &        (DAMP1.EQ.ABS_DAMP)) THEN
 c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN 
@@ -92,10 +92,18 @@ c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
      &          ' LEN      : ',LEN,N
                 GOTO 200
              ENDIF
-            FOUND = .TRUE.
-            IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
-            IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
-            GOTO 199
+            D3=freq*freqx1
+            if (d3 .gt.d0) then
+              FOUND = .TRUE.
+              IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
+              IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
+              GOTO 199
+            else
+              DO I=1,LEN
+                READ(LU) SCR
+              END DO
+              GO TO 100
+            endif
          ELSE
 c            IF (LEN .GT. 0) READ (LU)
             IF (LEN .GT. 0) THEN

@@ -135,6 +135,12 @@ module lsmpi_type
           & lsmpi_allreduce_D1N8_parts, lsmpi_allreduce_D1N4_parts
   END INTERFACE lsmpi_allreduce
 
+  interface lsmpi_reduce_min
+     module procedure lsmpi_reduce_realk_min,lsmpi_reduce_i8_min
+  end interface lsmpi_reduce_min
+  interface lsmpi_reduce_max
+     module procedure lsmpi_reduce_realk_max,lsmpi_reduce_i8_max
+  end interface lsmpi_reduce_max
 
   interface lsmpi_local_allgatherv
     module procedure lsmpi_localallgatherv_realk4,lsmpi_localallgatherv_realk8
@@ -3654,6 +3660,21 @@ contains
            & dest,comm, IERR)
 #endif
   end subroutine lsmpi_reduce_realk_min
+  subroutine lsmpi_reduce_i8_min(buffer,dest,comm)
+    implicit none
+    integer(kind=8), intent(inout):: buffer
+    integer(kind=ls_mpik),intent(in) :: comm,dest
+    integer(kind=ls_mpik) :: one_el, IERR
+    integer(kind=8) :: sendbuffer
+    IERR = 0
+    one_el = int(1,kind=ls_mpik)
+#ifdef VAR_MPI
+
+    sendbuffer = buffer
+    CALL MPI_REDUCE(sendbuffer,BUFFER,one_el,MPI_INTEGER8,MPI_MIN,&
+           & dest,comm, IERR)
+#endif
+  end subroutine lsmpi_reduce_i8_min
   subroutine lsmpi_reduce_realk_max(buffer,dest,comm)
     implicit none
     real(realk), intent(inout):: buffer
@@ -3669,6 +3690,21 @@ contains
            & dest,comm, IERR)
 #endif
   end subroutine lsmpi_reduce_realk_max
+  subroutine lsmpi_reduce_i8_max(buffer,dest,comm)
+    implicit none
+    integer(kind=8), intent(inout):: buffer
+    integer(kind=ls_mpik),intent(in) :: comm,dest
+    integer(kind=ls_mpik) :: one_el, IERR
+    integer(kind=8) :: sendbuffer
+    IERR = 0
+    one_el = int(1,kind=ls_mpik)
+#ifdef VAR_MPI
+
+    sendbuffer = buffer
+    CALL MPI_REDUCE(sendbuffer,BUFFER,one_el,MPI_INTEGER8,MPI_MAX,&
+           & dest,comm, IERR)
+#endif
+  end subroutine lsmpi_reduce_i8_max
 
   ! MPI all reduce within local group (infpar%lg_comm communicator)
   subroutine lsmpi_allreduce_int8V_wrapper8(rbuffer,n1,comm)
