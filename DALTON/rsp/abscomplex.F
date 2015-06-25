@@ -954,13 +954,8 @@ C     local
 C
 C
       IF (IPRABSLRS.GT.0) CALL TIMER('START ',TIMSTR,TIMEND)
-<<<<<<< HEAD
 C
       NGD=1
-=======
-C 
-      negf=.false.
->>>>>>> master
       DO ISYM=1,NSYM
 C
          IF (ABS_NOPER(ISYM).GT.0) THEN
@@ -1037,23 +1032,9 @@ c                   CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),
                    ENDDO
                  WRITE(LUPRI,*) 'Vectors equal to zero'
                ELSE
-<<<<<<< HEAD
                  CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),NGD,WRK(KXSOL),
      &                        ABS_FREQ_ALPHA,ABS_NFREQ_INTERVAL,
      &                        LUABSVECS,
-=======
-                 nfreqs=abs_nfreq_interval
-                 do i=1,abs_nfreq_interval
-                   if (abs_freq_alpha(i) .lt. 0.d0) negf=.true.
-                   wrk(kfreqs-1+i)=abs(abs_freq_alpha(i))
-                 enddo
-                 if (negf) then
-                   call gpdsrt(nfreqs,wrk(kfreqs),thd)
-                 endif
-                 
-                 CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                        wrk(kfreqs),nfreqs,
->>>>>>> master
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
                ENDIF
@@ -2631,22 +2612,12 @@ C
             CALL GETGPV(LABGD,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &           WRK(KGD),LFREE)
             DO IFREQ=1,ABS_NFREQ_INTERVAL
-<<<<<<< HEAD
 c                 CALL READ_XVEC(LU,2*KZYVAR,WRK(KVEC),
 c    &              LABEL,ABS_GRADSYM,
 c    &              ABS(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV) 
                  CALL READ_XVEC2(LU,2*KZYVAR,WRK(KVEC),
      &              LABEL,BLANK,ABS_GRADSYM,
      &              ABS(FREQ_ABS(IFREQ)),0.0d0,ABS_THCLR,FOUND,CONV)
-=======
-                 CALL READ_XVEC(LU,2*KZYVAR,WRK(KVEC),
-     &              LABEL,ABS_GRADSYM,
-c     &              ABS(FREQ_ABS(IFREQ),ABS_THCLR,FOUND,CONV)
-     &              abs(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
-               if (freq_abs(ifreq) .lt. d0) then
-                 call abs_vec_swap(2*kzyvar,wrk(kvec))
-               endif
->>>>>>> master
                RESLRF(1,IFREQ,INXGD,INDEX,ITYPE) =
      &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC),1)
                RESLRF(2,IFREQ,INXGD,INDEX,ITYPE) =
@@ -3011,26 +2982,6 @@ C     End of ABS_QRCHK
 C
       RETURN
       END
-<<<<<<< HEAD
 C
 C
 C
-=======
-      SUBROUTINE ABS_VEC_SWAP(NDIM,XVEC)
-C
-      DIMENSION XVEC(NDIM,4)
-      REAL YVEC(NDIM,4)
-      parameter (dm1=-1.0d0)
-
-      call dzero(yvec,4*ndim)
-      call dcopy(ndim,xvec(1,1),1,yvec(1,2),1)      
-      call dcopy(ndim,xvec(1,2),1,yvec(1,1),1)
-      call dscal(2*ndim,dm1,yvec(1,1),1)
-      call dcopy(ndim,xvec(1,3),1,yvec(1,4),1)      
-      call dcopy(ndim,xvec(1,4),1,yvec(1,3),1)
-      call dcopy(4*ndim,yvec,1,xvec,1)      
-
-      RETURN
-      END
-
->>>>>>> master
