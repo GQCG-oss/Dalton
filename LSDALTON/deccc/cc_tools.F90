@@ -167,8 +167,6 @@ module cc_tools_module
       call mem_alloc(buf1,t2%tsize)
       call mem_alloc(buf2,t2%tsize)
 
-      if(infpar%lg_mynum /=0 )call lsmpi_barrier(infpar%lg_comm)
-
       do lt = 1, tpl%nlti
 
          gtnr = tpl%ti(lt)%gt
@@ -493,10 +491,7 @@ module cc_tools_module
       call mem_dealloc(buf1)
       call mem_dealloc(buf2)
 
-      !stop 0
-      if(infpar%lg_mynum ==0 )call lsmpi_barrier(infpar%lg_comm)
       call lsmpi_barrier(infpar%lg_comm)
-      !stop 0
 #endif
    end subroutine lspdm_get_tpl_and_tmi
 
