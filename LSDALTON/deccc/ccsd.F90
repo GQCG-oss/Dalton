@@ -1420,38 +1420,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
 
-        ! Use the dense amplitudes
-        ! ------------------------
-
-        !get the t+ and t- for the Kobayshi-like B2 term
-#ifdef DIL_ACTIVE
-        scheme=scheme_tmp !```DIL: remove
-#endif
-        if(scheme==1.or.scheme==2) then
-           write(def_atype,'(A4)')'TDAR'
-        else
-           write(def_atype,'(A4)')'LDAR'
-        endif
-        call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype)
-        call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype)
-
-        call get_tpl_and_tmi(t2,tpl,tmi)
-        if(print_debug)then
-           call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
-           call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
-        endif
-
-#ifdef VAR_MPI
-        if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
-           call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
-           call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
-        endif
-#endif
-
-#ifdef DIL_ACTIVE
-     scheme=2 !``DIL: remove
-#endif
-
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
@@ -1512,7 +1480,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
         if(alloc_in_dummy.and.(scheme/=1.or.DIL_LOCK_OUTSIDE)) then
-         call tensor_lock_wins(u2,'s',all_nodes = .true.)
+            call tensor_lock_wins(u2,'s',all_nodes = .true.)
         endif
 
         call time_start_phase(PHASE_WORK, at = time_init_comm )
@@ -1603,8 +1571,35 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      Gbi = 0.0E0_realk
      !$OMP END WORKSHARE
 
-     !call get_currently_available_memory(MemFree2)
-     !call get_available_memory(DECinfo%output,MemFree4,memfound,suppress_print=.true.)
+     !get the t+ and t- for the Kobayshi-like B2 term
+#ifdef DIL_ACTIVE
+     scheme=scheme_tmp !```DIL: remove
+#endif
+     if(scheme==1.or.scheme==2) then
+        write(def_atype,'(A4)')'TDAR'
+     else
+        write(def_atype,'(A4)')'LDAR'
+     endif
+     call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype, bg=use_bg_buf )
+     call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype, bg=use_bg_buf )
+
+     call get_tpl_and_tmi(t2,tpl,tmi)
+
+     if(print_debug)then
+        call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
+        call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
+     endif
+
+#ifdef VAR_MPI
+     if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE))) then
+        call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
+        call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
+     endif
+#endif
+
+#ifdef DIL_ACTIVE
+     scheme=2 !``DIL: remove
+#endif
 
 
      if(use_bg_buf)then
@@ -2457,6 +2452,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
+
+
+
+#ifdef VAR_MPI
+     ! Finish the MPI part of the Residual calculation
+     call time_start_phase(PHASE_IDLE, at = time_intloop_work )
+
+     !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     call lsmpi_barrier(infpar%lg_comm)
+     !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#endif
+
+     call tensor_free(tmi)
+     call tensor_free(tpl)
+
      ! free working matrices and adapt to new requirements
      if( use_bg_buf )then
         call mem_pseudo_dealloc(w3)
@@ -2533,17 +2543,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      endif
 
-     ! Finish the MPI part of the Residual calculation
-     call time_start_phase(PHASE_IDLE, at = time_intloop_work )
-
-     !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     call lsmpi_barrier(infpar%lg_comm)
-     !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-#endif
-     call tensor_free(tpl)
-     call tensor_free(tmi)
-#ifdef VAR_MPI
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
 
@@ -5876,10 +5875,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           !memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           ! tpl tmi
+           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
            ! uigcj 
            memin = memin +1.0E0_realk*(i8*no*no)*nv*nbg
         endif
@@ -5936,10 +5937,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi
-           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
+           !memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           ! tpl tmi
+           memin = memin + (i8*nor)*nvr*2.0E0_realk + 1.0E0_realk*(i8*no*no)*nor
            ! uigcj 
            memin = memin +1.0E0_realk*(i8*no*no)*nv*nbg
         endif
@@ -5999,10 +6002,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
            ! tpl tmi sio4
-           memin = memin + nloctilestpm*tszetpm*2.0E0_realk + 1.0E0_realk*nloctilessio4*tszesio4
+           memin = memin + 1.0E0_realk*nloctilessio4*tszesio4
         endif
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           ! tpl tmi
+           memin = memin + nloctilestpm*tszetpm*2.0E0_realk 
            ! uigcj 
            memin = memin +1.0E0_realk*(i8*no*no)*nv*nbg
         endif
