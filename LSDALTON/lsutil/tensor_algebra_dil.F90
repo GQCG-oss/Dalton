@@ -199,7 +199,11 @@
          real(realk), private:: beta               !scaling factor for the destination tensor (always implicit)
          integer(INTD), private:: num_async        !number of asynchronous outstanding MPI uploads left after the contraction
          type(rank_win_t), private:: list_async(1:MAX_TILES_PER_PART)  !asynchronous outstanding MPI uploads left after the contraction
+#ifdef VAR_PGF90
+         real(realk), pointer, contiguous :: buffer(:)=>NULL() !work buffer
+#else
          real(realk), pointer, contiguous, private:: buffer(:)=>NULL() !work buffer
+#endif
          integer(INTD), private:: alloc_type=DIL_ALLOC_NOT             !allocation type for the work buffer
         end type dil_tens_contr_t
  !Subtensor part specification:

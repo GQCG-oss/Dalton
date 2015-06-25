@@ -409,7 +409,7 @@ C
       CALL MEMGET('REAL',KHCOPY,NZ*NZ,W,KW,LW)
       CALL DCOPY(NZ*NZ,H0,1,W(KHCOPY),1)
       CALL DSYEV('N','U',NZ,W(KHCOPY),NZ,W(KH),W(KW),LW,INFO)
-      IF (INFO.NE.0) STOP 'DSYEV FAILED'
+      IF (INFO.NE.0) CALL QUIT('DSYEV call in LOCSUM failed')
       ISMAX=.TRUE.
       HSIG(1)=0
       HSIG(2)=0
@@ -457,7 +457,7 @@ C
       call dcopy(nz,g,1,w(kg),1)
       call dcopy(nz*nz,h,1,w(kh),1)
       CALL DGESV(NZ,1,H,NZ,W(IPIV),G,NZ,INFO)
-      IF (INFO.NE.0) STOP  'NR FAILED'
+      IF (INFO.NE.0) CALL QUIT('DGESV call in NR failed')
       CALL MEMREL('NR:dgesv',W,IPIV,IPIV,KW,LW)
 
 C

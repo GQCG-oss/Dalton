@@ -277,6 +277,7 @@ C
 #include "dftcom.h"
 #include "rspprp.h"
 #include "esg.h"
+#include "pcmlog.h"
 C defined parallel calculation types 
 #include "iprtyp.h"
 
@@ -628,10 +629,11 @@ C
                CALL HEADER('Molecular gradient',-1)
                CALL ADDGRD(GRADFS)
                CALL ADDGRD(GRADKE)
-               IF (SOLVNT) THEN
+               IF (SOLVNT .OR. PCM) THEN
                   CALL ADDGRD(GSOLTT)
                   CALL ADDGRD(GSOLNN)
                END IF
+               IF (PCM) CALL ADDGRD(GSOLCV)
                CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
                NCDEP3 = 3*NUCDEP

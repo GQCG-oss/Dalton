@@ -153,7 +153,8 @@ contains
     call molecule_mo_fock(molecule)
 
  
-    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+    if(DECinfo%use_canonical) then
+       ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule,mylsitem)
     end if
      
@@ -532,6 +533,15 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     integer :: nbasis,i,nocc,nvirt
     real(realk), pointer :: eival(:), C(:,:), S(:,:)
+
+    ! KK quick fix: Do NOT call this subroutine when nMO/=nbasis,
+    !               this is the case for SNOOP subsystems. 
+    !               A proper fix is needed here, on my todo-list... 
+    if(molecule%nMO/=molecule%nbasis) then
+       write(DECinfo%output,*) 'WARNING: Quitting dec_get_canonical_orbitals because nMO/=nbasis!'
+       write(DECinfo%output,*) 'WARNING: Proper solution is required!'
+       return
+    end if
 
     if(DECinfo%noaofock) then
        call lsquit('ERROR(dec_get_canonical_orbitals): You cannot use canonical orbitals &
@@ -1208,11 +1218,10 @@ contains
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     real(realk), intent(inout) :: molmem
-    real(realk) :: O,V,A,tmp,GB
+    real(realk) :: O,V,A,tmp
     integer :: nnod, nblocks, nlocal_blocks
-
     ! GB conversion
-    GB = 1.000E9_realk ! 1 GB
+    real(realk), parameter :: GB=1.024E3_realk**3! 1GB
 
 
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
@@ -1236,15 +1245,15 @@ contains
     !Do we need to distribute the arrays? -> if more than 3GB and keyword, do distribute
 #ifdef VAR_MPI
     if(Decinfo%distribute_fullmolecule)then
-       if(molmem>((3*GB)/realk))then
+       !if(molmem>((1*GB)/realk))then
           MyMolecule%mem_distributed = .true.
-       else
-          print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
-          & molecular structure has been requested. However, the memory&
-          & requirements for this structure are so low, that we keep it in local&
-          & memory"
-          MyMolecule%mem_distributed = .false.
-       endif
+       !else
+       !   print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
+       !   & molecular structure has been requested. However, the memory&
+       !   & requirements for this structure are so low, that we keep it in local&
+       !   & memory"
+       !   MyMolecule%mem_distributed = .false.
+       !endif
     else
        MyMolecule%mem_distributed = .false.
     endif

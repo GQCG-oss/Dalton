@@ -239,13 +239,14 @@ contains
     DECinfo%RIMP2PDMTENSOR           = .false.
     DECinfo%RIMP2ForcePDMCalpha      = .false.
     DECinfo%RIMP2_tiling             = .false.
-    DECinfo%RIMP2_lowdin             = .false.
+    DECinfo%RIMP2_lowdin             = .true.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
+    DECinfo%ccsolverskip             = .false.
     DECinfo%use_preconditioner_in_b  = .true.
     DECinfo%use_crop                 = .true.
     DECinfo%array4OnFile             = .false.
@@ -260,6 +261,7 @@ contains
     DECinfo%abc_nbuffs        = 1000000
     DECinfo%acc_sync          = .false.
     DECinfo%pt_hack           = .false.
+    DECinfo%pt_hack2          = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -291,8 +293,8 @@ contains
     DECinfo%THCNOPRUN = .FALSE.
     DECinfo%THCDUMP = .FALSE.
     DECinfo%THCradint = 1E-6_realk
-    DECinfo%THC_MIN_RAD_PT = 20
-    DECinfo%THCangint = 2
+    DECinfo%THC_MIN_RAD_PT = 8
+    DECinfo%THCangint = 5
     DECinfo%THCHRDNES = 3
     DECinfo%THCTURBO = 1
     DECinfo%THCRADIALGRID = 3
@@ -520,6 +522,7 @@ contains
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
+       case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
 
        ! DEC CALCULATION 
        ! ===============
@@ -768,8 +771,8 @@ contains
           DECinfo%RIMP2ForcePDMCalpha = .true.
        case('.RIMP2_TILING')
           DECinfo%RIMP2_tiling        = .true.
-       case('.RIMP2_LOWDIN')
-          DECinfo%RIMP2_lowdin        = .true.
+       case('.RIMP2_CHOL')
+          DECinfo%RIMP2_lowdin        = .false.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -813,6 +816,8 @@ contains
        case('.PRECWITHFULL')
           DECinfo%precondition_with_full=.true.
           DECinfo%ccsolver_overwrite_prec = .true.
+       case('.CCSOLVERSKIP')
+          DECinfo%ccsolverskip = .true.
        case('.MAXITER')
           read(input,*) DECinfo%MaxIter
        case('.TENSOR_SEGMENTING_SCHEME')
@@ -968,6 +973,29 @@ contains
 
        ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
        ! ***********************
+       case('.THC_GRID'); 
+          read(input,*) myword
+          call capitalize_string(myword)
+          DECinfo%THCradint = 1.0E-6_realk
+          DECinfo%THCZdependenMaxAng=.FALSE.
+          IF (INDEX(myword,'VCOARSE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 0
+             DECinfo%THCangint = 2
+             DECinfo%THCNOPRUN = .FALSE.
+          ELSEIF (INDEX(myword,'COARSE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 3
+             DECinfo%THCangint = 2
+             DECinfo%THCNOPRUN = .FALSE.
+          ELSEIF (INDEX(myword,'MEDIUM') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 8
+             DECinfo%THCangint = 5
+          ELSEIF (INDEX(myword,'VFINE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 16
+             DECinfo%THCangint = 9             
+          ELSEIF (INDEX(myword,'FINE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 12
+             DECinfo%THCangint = 5
+          ENDIF
        case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
        case('.THC_DUMP'); DECinfo%THCDUMP = .TRUE.
        case('.THC_RADINT'); read(input,*) DECinfo%THCradint 
@@ -1294,6 +1322,11 @@ contains
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
+
+       if(DECinfo%use_bg_buffer)then
+          call lsquit("ERROR: bg buffer not implemented for fragment adapted orbitals",-1)
+       endif
+
     end if
 
     if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)

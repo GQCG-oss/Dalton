@@ -91,12 +91,13 @@ contains
 
 
 
-function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
+function precondition_doubles_newarr(omega2,ppfock,qqfock,loc,bg) result(prec)
 
    implicit none
    type(tensor), intent(in) :: omega2
    type(tensor), intent(inout) :: ppfock, qqfock
    logical, intent(in) :: loc
+   logical, intent(in), optional :: bg
    type(tensor) :: prec
    integer, dimension(4) :: dims
    integer :: a,i,b,j
@@ -112,7 +113,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
 
    !make sure all data is local
    if(loc)then
-      call tensor_init(prec,dims,4)
+      call tensor_init(prec,dims,4,bg=bg)
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
       !$OMP PRIVATE(i,j,a,b)
@@ -138,7 +139,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
       !make sure all data is in the correct for this routine, that is omega2 is
       !TT_TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      call tensor_minit(prec,dims,4,atype="TDAR",tdims=omega2%tdim,fo=omega2%offset)
+      call tensor_minit(prec,dims,4,atype="TDAR",tdims=omega2%tdim,fo=omega2%offset,bg=bg)
       call tensor_change_atype_to_rep(ppfock,loc)
       call tensor_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -737,6 +738,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
+
     !PART OF THE FIXME
     call tensor_free(ppfock)
     call tensor_free(pqfock)
@@ -937,7 +939,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os
-     integer(kind=8) :: nb4,o2v2,no4,buf_size
+     integer(kind=8) :: nb4,o2v2,no4,buf_size,nbuffer
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy,batch
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
@@ -1076,6 +1078,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         doscreen = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
      ENDIF
 
+     use_bg_buf = mem_is_background_buf_init()
+     if(use_bg_buf)then
+        nbuffer    = mem_get_bg_buf_free()
+     else
+        nbuffer=0
+     endif
+
      ! Set MPI related info
      ! ********************
      master                   = .true.
@@ -1104,7 +1113,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, at = time_init_comm)
      endif StartUpSlaves
 
-     call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
+     call lsmpi_reduce_min(MemFree,infpar%master,infpar%lg_comm)
+     call lsmpi_reduce_min(nbuffer,infpar%master,infpar%lg_comm)
 #endif
 
      if(master.and.print_debug)then
@@ -1155,7 +1165,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
         ENDIF
         call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.,mylsitem%setting,intspec)
+           &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,nbuffer,.true.,els2add,local,.false.,&
+           &mylsitem%setting,intspec)
 
         !SOME WORDS ABOUT THE CHOSEN SCHEME:
         ! Depending on the availability of memory on the nodes a certain scheme
@@ -1177,7 +1188,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      endif
 
-     use_bg_buf = mem_is_background_buf_init()
 
 #ifdef DIL_ACTIVE
      scheme=scheme_tmp !```DIL: remove
@@ -1813,6 +1823,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            fg         = GammaStart
            lg         = dimGamma
 
+           if(.not.DECinfo%ccsolverskip)then
            !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
 #ifdef DIL_ACTIVE
            scheme=scheme_tmp !``DIL: remove
@@ -1889,6 +1900,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
            scheme=2 !``DIL: remove
 #endif
+        endif
         endif NewGammaBatch
 
 
@@ -1925,6 +1937,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 #endif
 #endif
+        if(.not.DECinfo%ccsolverskip)then
 
         !u[k gamma  c j] * Lambda^p [alpha j] ^T = u [k gamma c alpha]
         call dgemm('n','t',no*nv*lg,la,no,1.0E0_realk,uigcj%d,no*nv*lg,xo(fa),nb,0.0E0_realk,w1%d,nv*no*lg) !`DIL: uigcj,w1 used
@@ -2343,6 +2356,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
         if(scheme/=1) call lsmpi_poke()
 
+     endif
 
         !end do BatchAlpha
      end do BatchLoop
@@ -2355,6 +2369,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 #endif
+     if(DECinfo%ccsolverskip)then
+        call random_number(w0%d)
+        call random_number(w1%d)
+        call random_number(w2%d)
+        call random_number(w3%d)
+        call tensor_random(sio4)
+        call tensor_random(gvoova)
+        call tensor_random(gvvooa)
+     endif
 
      ! Free integral stuff
      ! *******************
@@ -2478,7 +2501,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      if((scheme==4.or.scheme==3).and.(ccmodel > MODEL_CC2).and.(.not.local))then
 
-        if(scheme == 3.and.use_bg_buf)then
+        call tensor_allocate_dense( govov, bg=use_bg_buf )
+
+        if(scheme==3.and.use_bg_buf)then
            call mem_pseudo_alloc( gvvoo, o2v2, simple=.true. )
            call mem_pseudo_alloc( gvoov, o2v2, simple=.true. )
         endif
@@ -2493,7 +2518,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call tensor_lock_wins( govov, 's', mode, all_nodes = alloc_in_dummy )
         endif
 
-        call tensor_allocate_dense( govov )
 
         call time_start_phase(PHASE_COMM, twall = time_Bcnd )
         call tensor_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2,wrk=buf1,iwrk=buf_size)
@@ -2738,10 +2762,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call mem_pseudo_dealloc(gvoov)
               call mem_pseudo_dealloc(gvvoo)
            else
-              call mem_dealloc(gvvoo)
               call mem_dealloc(gvoov)
+              call mem_dealloc(gvvoo)
            endif
         endif
+     endif
+
+     !free local part
+     if(.not.local)then
+        if(scheme==4.or.scheme==3) call tensor_deallocate_dense(govov)
+        govov%itype      = TT_TILED_DIST
      endif
 
      if( use_bg_buf )then
@@ -2803,13 +2833,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_WORK, dt = time_reduction2)
 
-     !convert stuff
-     !set for correct access again, save as i a j b
-     if(.not.local)then
-        if(scheme==4.or.scheme==3) call tensor_deallocate_dense(govov)
-        govov%itype      = TT_TILED_DIST
-     endif
 
+     !set for correct access again
      govov%access_type  = AT_MASTER_ACCESS
      omega2%access_type = AT_MASTER_ACCESS
      t2%access_type     = AT_MASTER_ACCESS
@@ -2828,7 +2853,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(.not. master) then
         call mem_dealloc(Had)
         call mem_dealloc(Gbi)
-        if(scheme==4.or.scheme==3)call tensor_free(u2)
+        if(scheme==4.or.scheme==3)then
+
+           call tensor_free(u2)
+
+           if( .not.local )then
+
+              call tensor_deallocate_dense( omega2 )
+              call tensor_deallocate_dense( t2 )
+
+           endif
+        endif
 
         return
 
@@ -3420,7 +3455,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! Get free memory and determine maximum batch sizes
         ! -------------------------------------------------
         call get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,MaxActualDimAlpha,MaxActualDimGamma,MinAObatch,&
-           &DECinfo%manual_batchsizes,iter,MemFreeMin,.true.,els2add,local,.false.,mylsitem%setting,intspec,&
+           &DECinfo%manual_batchsizes,iter,MemFreeMin,0_long,.true.,els2add,local,.false.,mylsitem%setting,intspec,&
            &nbuf=nbuffs)
         call time_start_phase(PHASE_WORK, ttot = time_get_batch_sizes )
 
@@ -5334,8 +5369,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk) :: MemFree
     integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
     integer :: dimMO, nMObatch, ntot,os,vs
-    integer(kind=8) :: dummy
-    logical :: mo_ccsd, local_moccsd, mpi_split
+    integer(kind=8) :: dummy, nbg_buf
+    logical :: mo_ccsd, local_moccsd, mpi_split, bg
     integer :: bs
 
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
@@ -5343,6 +5378,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     nocc = MyFragment%noccAOS
     nvir = MyFragment%nvirtAOS 
     bs   = get_split_scheme_0(MyFragment%nbasis)
+    bg   = mem_is_background_buf_init()
+    if(bg)then
+       nbg_buf = mem_get_bg_buf_free()
+    else
+       nbg_buf = 0
+    endif
 
     ! For MO-CCSD part
     ntot    = nocc + nvir
@@ -5380,7 +5421,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,MyFragment%nbasis,bs,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
-           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
+           & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,nbg_buf, &
            & .true.,dummy,(.not.DECinfo%solver_par),mpi_split,MyFragment%mylsitem%setting,['R','R','R','R','C'])
     end if
 
@@ -5390,10 +5431,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \author Patrick Ettenhuber
   !> \date January 2012
   subroutine get_max_batch_sizes(scheme,nb,bs,nv,vs,no,os,nba,nbg,&
-        &minbsize,manual,iter,MemIn,first,e2a,local,mpi_split,se,is,nbuf)
+        &minbsize,manual,iter,MemIn,nbg_buf,first,e2a,local,mpi_split,se,is,nbuf)
      implicit none
      integer, intent(inout) :: scheme
      integer, intent(in)    :: nb,bs,nv,vs,no,os
+     integer(kind=8)        :: nbg_buf
      integer :: iter
      integer, intent(inout) :: nba,nbg,minbsize
      real(realk),intent(in) :: MemIn
@@ -5429,7 +5471,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !they will be associated to the backtground buffer
      checkbg = mem_is_background_buf_init()
      if( checkbg )then
-        bg_buf_size = mem_get_bg_buf_free()
+        bg_buf_size = nbg_buf
         choice = 4
         MemFree = MemIn*frac_of_total_mem + (dble(bg_buf_size)*8.0E0_realk)/(1024.0E0_realk**3)
      else
@@ -5867,15 +5909,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
            ! w1/Fock
            memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
-           ! w2 w3
-           memout = memout + 2.0E0_realk*(i8*no*no)*nv*nv
+           ! w2 w3 govov
+           memout = memout + 3.0E0_realk*(i8*no*no)*nv*nv
         endif
 
         ! not in bg buf
-        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
-           ! govov
-           memout = memout + (1.0E0_realk*no*no)*nv*nv
-        endif
+        !if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+        !   ! govov
+        !   memout = memout + (1.0E0_realk*no*no)*nv*nv
+        !endif
 
      case(3)
 
@@ -5930,15 +5972,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
            ! w2 w3
            memout = memout + 1.0E0_realk*max(i8*nb*nb,max(2_long*tl1,i8*tl2))
-           ! gvoov-local gvvoo-local
-           memout = memout + 2.0E0_realk*(i8*nv*nv)*no*no
+           ! gvoov-local gvvoo-local govov
+           memout = memout + 3.0E0_realk*(i8*nv*nv)*no*no
         endif
 
         ! not in bg buf
-        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
-           ! govov
-           memout = memout + (1.0E0_realk*no*no)*nv*nv
-        endif
+        !if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+        !   ! govov
+        !   memout = memout + (1.0E0_realk*no*no)*nv*nv
+        !endif
 
 
      case(2)
@@ -6825,7 +6867,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
     tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
+       !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
 
        call mem_pseudo_alloc(tmp0, tmp_size0)
        call mem_pseudo_alloc(tmp1, tmp_size1)
@@ -8293,7 +8335,8 @@ subroutine ccsd_data_preparation()
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free
-  use memory_handling, only: mem_alloc, mem_dealloc
+  use memory_handling, only: mem_alloc, mem_dealloc,mem_is_background_buf_init,mem_pseudo_alloc,&
+     & mem_pseudo_dealloc
   use tensor_interface_module, only: tensor_ainit,tensor_free,&
       &tensor_allocate_dense,tensor_deallocate_dense,&
       &get_tensor_from_parr,TT_DENSE,AT_ALL_ACCESS,AT_MASTER_ACCESS
@@ -8323,13 +8366,14 @@ subroutine ccsd_data_preparation()
   integer(kind=ls_mpik) :: xow,xvw,yow,yvw,&
                          & dfw,fw,ppfw,qqfw,pqfw,qpfw,om1w,t2w,&
                          & t2dw,xodw,xvdw,yodw,yvdw
-  logical :: parent
+  logical :: parent, bg
   integer :: addr01(infpar%pc_nodtot)
   integer :: addr02(infpar%pc_nodtot)
   integer :: addr03(infpar%pc_nodtot)
   integer(kind=ls_mpik) :: lg_me,lg_nnod
   integer(kind=8) :: ne
 
+  bg = mem_is_background_buf_init()
 
   lg_me   = infpar%lg_mynum
   lg_nnod = infpar%lg_nodtot
@@ -8342,9 +8386,9 @@ subroutine ccsd_data_preparation()
      &MyLsItem,nbas,nvirt,nocc,iter,local,res_nr)
 
   if(local)then
-      call tensor_ainit(t2,    [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
-      call tensor_ainit(govov, [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
-      call tensor_ainit(om2,   [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
+      call tensor_ainit(t2,    [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR', bg=bg )
+      call tensor_ainit(govov, [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR', bg=bg )
+      call tensor_ainit(om2,   [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR', bg=bg )
   endif
   
   ! Quantities, that need to be defined and setset
@@ -8355,14 +8399,24 @@ subroutine ccsd_data_preparation()
   !mpi_communicate_ccsd_calcdate
 
   nelms = nbas*nocc
-  call mem_alloc( yodata, nelms )
-  call mem_alloc( xodata, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( yodata, nelms )
+     call mem_pseudo_alloc( xodata, nelms )
+  else
+     call mem_alloc( yodata, nelms )
+     call mem_alloc( xodata, nelms )
+  endif
   call ls_mpibcast( xodata, nelms, infpar%master, infpar%lg_comm)
   call ls_mpibcast( yodata, nelms, infpar%master, infpar%lg_comm)
 
   nelms = nbas*nvirt
-  call mem_alloc( xvdata, nelms )
-  call mem_alloc( yvdata, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( xvdata, nelms )
+     call mem_pseudo_alloc( yvdata, nelms )
+  else
+     call mem_alloc( xvdata, nelms )
+     call mem_alloc( yvdata, nelms )
+  endif
   call ls_mpibcast( xvdata, nelms, infpar%master, infpar%lg_comm )
   call ls_mpibcast( yvdata, nelms, infpar%master, infpar%lg_comm )
   
@@ -8371,19 +8425,38 @@ subroutine ccsd_data_preparation()
   ! Quantities, that need to be defined but not set
   ! ********************************************************
   nelms=nbas*nbas
-  call mem_alloc(  f,  nelms )
-  call mem_alloc( t1f, nelms )
+  if(bg)then
+     call mem_pseudo_alloc(  f,  nelms )
+     call mem_pseudo_alloc( t1f, nelms )
+  else
+     call mem_alloc(  f,  nelms )
+     call mem_alloc( t1f, nelms )
+  endif
 
   nelms=nocc*nocc
-  call mem_alloc( ppf, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( ppf, nelms )
+  else
+     call mem_alloc( ppf, nelms )
+  endif
 
   nelms=nvirt*nocc
-  call mem_alloc( pqf, nelms )
-  call mem_alloc( qpf, nelms )
-  call mem_alloc( om1, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( pqf, nelms )
+     call mem_pseudo_alloc( qpf, nelms )
+     call mem_pseudo_alloc( om1, nelms )
+  else
+     call mem_alloc( pqf, nelms )
+     call mem_alloc( qpf, nelms )
+     call mem_alloc( om1, nelms )
+  endif
 
   nelms=nvirt*nvirt
-  call mem_alloc( qqf, nelms )
+  if(bg)then
+     call mem_pseudo_alloc( qqf, nelms )
+  else
+     call mem_alloc( qqf, nelms )
+  endif
 
   ! Calculate contribution to integrals/amplitudes for slave
   ! ********************************************************
@@ -8398,27 +8471,36 @@ subroutine ccsd_data_preparation()
 
   ! FREE EVERYTHING
   ! ***************
+  if(bg)then
+     call mem_pseudo_dealloc(    qqf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    om1, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    qpf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    pqf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    ppf, mark_deleted=.true. )
+     call mem_pseudo_dealloc(    t1f, mark_deleted=.true. )
+     call mem_pseudo_dealloc(      f, mark_deleted=.true. )
+     call mem_pseudo_dealloc( yvdata, mark_deleted=.true. )
+     call mem_pseudo_dealloc( xvdata, mark_deleted=.true. )
+     call mem_pseudo_dealloc( xodata, mark_deleted=.true. )
+     call mem_pseudo_dealloc( yodata, mark_deleted=.true. )
+  else
+     call mem_dealloc(    qqf )
+     call mem_dealloc(    om1 )
+     call mem_dealloc(    qpf )
+     call mem_dealloc(    pqf )
+     call mem_dealloc(    ppf )
+     call mem_dealloc(    t1f )
+     call mem_dealloc(      f )
+     call mem_dealloc( yvdata )
+     call mem_dealloc( xvdata )
+     call mem_dealloc( xodata )
+     call mem_dealloc( yodata )
+  endif
   if(local)then
      call tensor_free(om2)
-     call tensor_free(t2)
      call tensor_free(govov)
-  else
-     !FIXME : IS THIS DEALLOC CORRECT AND IF YES DO IT SOMEWHERE ELSE
-     call tensor_deallocate_dense(om2)
-     call tensor_deallocate_dense(t2)
+     call tensor_free(t2)
   endif
-
-  call mem_dealloc(      f )
-  call mem_dealloc(    t1f )
-  call mem_dealloc(    ppf )
-  call mem_dealloc(    pqf )
-  call mem_dealloc(    qpf )
-  call mem_dealloc(    qqf )
-  call mem_dealloc(    om1 )
-  call mem_dealloc( xodata )
-  call mem_dealloc( yodata )
-  call mem_dealloc( yvdata )
-  call mem_dealloc( xvdata )
 
   call ls_free(MyLsItem)
 

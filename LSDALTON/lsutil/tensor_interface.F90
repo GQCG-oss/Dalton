@@ -83,6 +83,7 @@ module tensor_interface_module
   public tensor_transform_basis, tensor_ddot
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
+  public tensor_print_norm_nrm
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
@@ -112,6 +113,7 @@ module tensor_interface_module
   public get_symm_tensor_segmenting_simple
   public tensor_get_ntpm, get_tile_dim
   public tensor_set_debug_mode_true, tensor_set_dil_backend_true, tensor_set_dil_backend
+  public tensor_set_global_segment_length
   public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
   public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
@@ -178,6 +180,31 @@ module tensor_interface_module
 
 
 contains
+  subroutine tensor_set_global_segment_length(seg_len)
+     implicit none
+     integer(kind=8), intent(in) :: seg_len
+     integer(kind=ls_mpik) :: me
+     integer(kind=8) :: seg
+     me  = 0
+     seg = seg_len
+
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+     if( me == 0 )then
+        call ls_mpibcast(SET_TENSOR_SEG_LENGTH,infpar%master,MPI_COMM_LSDALTON)
+     endif
+     call ls_mpibcast(seg,infpar%master,MPI_COMM_LSDALTON)
+#endif
+
+     if( seg<=0 )then
+        call lsquit("ERROR(tensor_set_global_segment_length): invalid length",-1)
+     endif
+
+     print *,"SETTING LENGTH TO",seg
+     tensor_segment_length_set  = .true.
+     tensor_segment_length      = seg
+
+  end subroutine tensor_set_global_segment_length
 
   subroutine tensor_set_debug_mode_true(call_slaves)
      implicit none
@@ -3141,7 +3168,6 @@ contains
      !get segmenting for tensors, divide dimensions until tiles are less than
      !100MB and/or until enough tiles are available such that each node gets at
      !least one and as long as a_seg>=2 and b_seg>=2
-
      nnodes = 1
 #ifdef VAR_MPI
      nnodes = infpar%lg_nodtot
@@ -3152,155 +3178,160 @@ contains
      modtilea = 0
      modtileb = 0
 
-     max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
+     if( tensor_segment_length_set )then
+        b_seg    = tensor_segment_length
+        a_seg    = tensor_segment_length
+     else
+        max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
 
-     select case(DECinfo%tensor_segmenting_scheme)
-     case (1)
+        select case(DECinfo%tensor_segmenting_scheme)
+        case (1)
 
-        counter  = 1
+           counter  = 1
 
-        !FIRST a then b
+           !FIRST a then b
 
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
-              & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
+                 & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
 
-           a_seg = a / counter + mod(a,counter)
+              a_seg = a / counter + mod(a,counter)
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
+              modtilea = 0
+              if(mod(a,a_seg)/=0)modtilea = 1
 
-        enddo
+           enddo
 
-        counter  = 1
+           counter  = 1
 
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=1.or.a_seg>=1)  .and. (b/b_seg+modtileb) <= 4   )
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+                 & .and. (b_seg>=1.or.a_seg>=1)  .and. (b/b_seg+modtileb) <= 4   )
 
-           b_seg = b / counter + mod(b,counter)
+              b_seg = b / counter + mod(b,counter)
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
+              modtileb = 0
+              if(mod(b,b_seg)/=0)modtileb = 1
 
-        enddo
+           enddo
 
-     case(2)
+        case(2)
 
-        !FIRST b then a
-        counter  = 1
+           !FIRST b then a
+           counter  = 1
 
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=1.or.a_seg>=1)   .and. (b/b_seg+modtileb) <= 4   )
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+                 & .and. (b_seg>=1.or.a_seg>=1)   .and. (b/b_seg+modtileb) <= 4   )
 
-           b_seg = b / counter + mod(b,counter)
+              b_seg = b / counter + mod(b,counter)
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
+              modtileb = 0
+              if(mod(b,b_seg)/=0)modtileb = 1
 
-        enddo
+           enddo
 
-        counter  = 1
+           counter  = 1
 
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=1.or.a_seg>=1)  .and. (a/a_seg+modtilea) <= 4  )
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+                 & .and. (b_seg>=1.or.a_seg>=1)  .and. (a/a_seg+modtilea) <= 4  )
 
-           a_seg = a / counter + mod(a,counter)
+              a_seg = a / counter + mod(a,counter)
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
+              modtilea = 0
+              if(mod(a,a_seg)/=0)modtilea = 1
 
-        enddo
-     case (3)
+           enddo
+        case (3)
 
-        counter  = 1
+           counter  = 1
 
-        !FIRST a then b
+           !FIRST a then b
 
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
-              & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
+                 & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
 
-           a_seg = min(a,b) / counter + mod(min(a,b),counter)
-           b_seg = a_seg
+              a_seg = min(a,b) / counter + mod(min(a,b),counter)
+              b_seg = a_seg
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
+              modtilea = 0
+              if(mod(a,a_seg)/=0)modtilea = 1
 
-        enddo
+           enddo
 
-     case (4)
+        case (4)
 
-        counter  = 1
+           counter  = 1
 
-        !BOTH a and b
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=10.or.a_seg>=10)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
+           !BOTH a and b
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+                 & .and. (b_seg>=10.or.a_seg>=10)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
 
-           b_seg = b / counter + mod(b,counter)
-           a_seg = a / counter + mod(a,counter)
+              b_seg = b / counter + mod(b,counter)
+              a_seg = a / counter + mod(a,counter)
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
+              modtilea = 0
+              if(mod(a,a_seg)/=0)modtilea = 1
 
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
+              modtileb = 0
+              if(mod(b,b_seg)/=0)modtileb = 1
 
-        enddo
+           enddo
 
-        !then make sure that pure virtual batches have a size < thr
+           !then make sure that pure virtual batches have a size < thr
 
-        do while(   ( ( b_seg**4)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**4 < nnodes) )&
-              & .and. ( b_seg>=10 )  )
+           do while(   ( ( b_seg**4)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 &  .or. ((b/b_seg+modtileb)**4 < nnodes) )&
+                 & .and. ( b_seg>=10 )  )
 
-           b_seg = b / counter + mod(b,counter)
+              b_seg = b / counter + mod(b,counter)
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
+              modtileb = 0
+              if(mod(b,b_seg)/=0)modtileb = 1
 
-        enddo
+           enddo
 
-     case default
+        case default
 
-        counter  = 1
+           counter  = 1
 
-        !BOTH a and b
-        do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
-              &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
-              & .and. (b_seg>=2.or.a_seg>=2)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
+           !BOTH a and b
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_realk/(1024.0E0_realk**3) > max_mem_p_tile_in_GB &
+                 &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
+                 & .and. (b_seg>=2.or.a_seg>=2)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
 
-           b_seg = b / counter + mod(b,counter)
-           a_seg = a / counter + mod(a,counter)
+              b_seg = b / counter + mod(b,counter)
+              a_seg = a / counter + mod(a,counter)
 
-           counter = counter + 1
+              counter = counter + 1
 
-           modtilea = 0
-           if(mod(a,a_seg)/=0)modtilea = 1
+              modtilea = 0
+              if(mod(a,a_seg)/=0)modtilea = 1
 
-           modtileb = 0
-           if(mod(b,b_seg)/=0)modtileb = 1
+              modtileb = 0
+              if(mod(b,b_seg)/=0)modtileb = 1
 
-        enddo
+           enddo
 
-     end select
+        end select
+        endif
 
      if(DECinfo%PL>2)then
         print *,"SPLITTING OF DIMS IN A^2B^2"
