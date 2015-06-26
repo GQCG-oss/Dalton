@@ -2972,8 +2972,8 @@ module cc_response_tools_module
          do a=1,nvirt
             Aelm = fvv(a,a) - foo(i,i)
             if(abs(Aelm-lambda)<1.0e-10) then  !KKHACK fixme
-               print *, Aelm,lambda
-               stop 'unstable Jacobian residual' 
+               print *, 'a,i,A,lambda',a,i,Aelm,lambda
+               call lsquit('singles: unstable Jacobian residual',-1) 
             end if
             zeta1%elm2(a,i) = ( 1.0_realk/(lambda-Aelm) ) * q1%elm2(a,i)
          end do
@@ -2986,8 +2986,8 @@ module cc_response_tools_module
                do a=1,nvirt
                   Aelm = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
                   if(abs(Aelm-lambda)<1.0e-10) then !KKHACK fixme
-                     print *, Aelm,lambda
-                     stop 'unstable Jacobian residual' 
+                     print *, 'a,i,b,j,A,lambda',a,i,b,j,Aelm,lambda
+                     call lsquit('doubles: unstable Jacobian residual',-1) 
                   end if
                   zeta2%elm4(a,i,b,j) = ( 1.0_realk/(lambda-Aelm) ) * q2%elm4(a,i,b,j)
                end do
