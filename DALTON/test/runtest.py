@@ -26,7 +26,7 @@ import string
 from optparse import OptionParser
 
 
-__version__ = '1.3.0'  # http://semver.org
+__version__ = '1.3.1'  # http://semver.org
 
 
 class FilterKeywordError(Exception):
@@ -47,6 +47,124 @@ class AcceptedError(Exception):
 
 class SubprocessError(Exception):
     pass
+
+# ------------------------------------------------------------------------------
+
+
+def compare_numbers(f, l1, l2):
+    """
+    Input:
+        - f -- filter task
+        - l1 -- list of numbers
+        - l2 -- another list of numbers
+
+    Returns:
+        - res -- list that contains ones (pass) or zeros (failures)
+                 l1, l2, and res have same length
+
+    Raises:
+        - FilterKeywordError
+    """
+
+    res = []
+
+    for i in range(len(l1)):
+
+        r_out = l1[i]
+        r_ref = l2[i]
+
+        if f.ignore_sign:
+            # if ignore sign take absolute values
+            r_out = abs(r_out)
+            r_ref = abs(r_ref)
+
+        is_integer_out = isinstance(r_out, int)
+        is_integer_ref = isinstance(r_ref, int)
+
+        if is_integer_out and is_integer_ref:
+            # we compare integers
+            if r_out == r_ref:
+                res.append(1)
+            else:
+                res.append(0)
+        else:
+            # we compare floats
+            if not f.tolerance_is_set:
+                raise FilterKeywordError('ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n')
+            if (abs(r_ref) > f.ignore_below) and (abs(r_ref) < f.ignore_above):
+                # calculate relative error only for
+                # significant ('nonzero') numbers
+                error = r_out - r_ref
+                if f.tolerance_is_relative:
+                    error /= r_ref
+                if abs(error) > f.tolerance:
+                    res.append(0)
+                else:
+                    res.append(1)
+            else:
+                res.append(1)
+
+    return res
+
+# ------------------------------------------------------------------------------
+
+
+def extract_numbers(f, text):
+    """
+    Input:
+        - f -- filter task
+        - text -- list of lines where we extract numbers from
+
+    Returns:
+        - numbers -- list of numbers
+        - locations -- locations of each number, list of triples
+                      (line, start position, length)
+    """
+
+    numeric_const_pattern = r"""
+    [-+]? # optional sign
+    (?:
+        (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
+        |
+        (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
+    )
+    # followed by optional exponent part if desired
+    (?: [EeDd] [+-]? \d+ ) ?
+    """
+
+    pattern_int = re.compile('^-?[0-9]+$', re.VERBOSE)
+    pattern_float = re.compile(numeric_const_pattern, re.VERBOSE)
+    pattern_d = re.compile(r'[dD]')
+
+    numbers = []
+    locations = []
+
+    for n, line in enumerate(text):
+        i = 0
+        for w in line.split():
+            # do not consider words like TzB1g
+            # otherwise we would extract 1 later
+            if re.match(r'^[0-9\.eEdD\+\-]*$', w):
+                i += 1
+                if (f.use_mask) and (i not in f.mask):
+                    continue
+                is_integer = False
+                if len(pattern_float.findall(w)) > 0:
+                    is_integer = (pattern_float.findall(w) == pattern_int.findall(w))
+                # apply floating point regex
+                for m in pattern_float.findall(w):
+                    index = line.index(m)
+                    # substitute dD by e
+                    m = pattern_d.sub('e', m)
+                    if is_integer:
+                        numbers.append(int(m))
+                    else:
+                        numbers.append(float(m))
+                    locations.append((n, index, len(m)))
+
+    return numbers, locations
+
+# ------------------------------------------------------------------------------
 
 
 class TestRun:
@@ -306,11 +424,15 @@ class Filter:
 
             out_filtered = self._filter_file(f, out_name)
             log_out.write(''.join(out_filtered))
-            out_numbers, out_location = self._extract_numbers(f, out_filtered)
+            out_numbers, out_locations = extract_numbers(f, out_filtered)
+            if f.use_mask and out_numbers == []:
+                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
             ref_filtered = self._filter_file(f, ref_name)
             log_ref.write(''.join(ref_filtered))
-            ref_numbers, ref_location = self._extract_numbers(f, ref_filtered)
+            ref_numbers, ref_locations = extract_numbers(f, ref_filtered)
+            if f.use_mask and ref_numbers == []:
+                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
             if out_numbers == [] and ref_numbers == []:
                 # no numbers are extracted
@@ -322,13 +444,13 @@ class Filter:
                     log_diff.write(''.join(ref_filtered) + '\n')
 
             if len(out_numbers) == len(ref_numbers):
-                l = self._compare_numbers(f, out_numbers, ref_numbers)
+                l = compare_numbers(f, out_numbers, ref_numbers)
                 if 0 in l:
                     log_diff.write('\n')
                     for k, line in enumerate(out_filtered):
                         log_diff.write('.       %s' % line)
                         for i, num in enumerate(out_numbers):
-                            (line_num, start_char, length) = out_location[i]
+                            (line_num, start_char, length) = out_locations[i]
                             if line_num == k:
                                 if l[i] == 0:
                                     is_integer = isinstance(num, int)
@@ -405,67 +527,6 @@ class Filter:
 
         return output_filtered
 
-    def _extract_numbers(self, f, text):
-        """
-        Input:
-            - f -- filter task
-            - text -- list of lines where we extract numbers from
-
-        Returns:
-            - numbers -- list of numbers
-            - location -- location of each number, list of triples
-                          (line, start position, length)
-
-        Raises:
-            - nothing
-        """
-
-        numeric_const_pattern = r"""
-        [-+]? # optional sign
-        (?:
-            (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
-            |
-            (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
-        )
-        # followed by optional exponent part if desired
-        (?: [EeDd] [+-]? \d+ ) ?
-        """
-
-        pattern_int = re.compile('^-?[0-9]+$', re.VERBOSE)
-        pattern_float = re.compile(numeric_const_pattern, re.VERBOSE)
-        pattern_d = re.compile(r'[dD]')
-
-        numbers = []
-        location = []
-
-        for n, line in enumerate(text):
-            i = 0
-            for w in line.split():
-                # do not consider words like TzB1g
-                # otherwise we would extract 1 later
-                if re.match(r'^[0-9\.eEdD\+\-]*$', w):
-                    i += 1
-                    if (f.use_mask) and (i not in f.mask):
-                        continue
-                    is_integer = False
-                    if len(pattern_float.findall(w)) > 0:
-                        is_integer = (pattern_float.findall(w) == pattern_int.findall(w))
-                    # apply floating point regex
-                    for m in pattern_float.findall(w):
-                        index = line.index(m)
-                        # substitute dD by e
-                        m = pattern_d.sub('e', m)
-                        if is_integer:
-                            numbers.append(int(m))
-                        else:
-                            numbers.append(float(m))
-                        location.append((n, index, len(m)))
-        if f.use_mask:
-            if numbers == []:
-                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
-
-        return numbers, location
-
     def _underline(self, f, start_char, length, reference, number, is_integer):
         """
         Input:
@@ -501,58 +562,3 @@ class Filter:
                         s += ' (abs diff: %6.2e)' % abs(number - reference)
 
         return s + '\n'
-
-    def _compare_numbers(self, f, l1, l2):
-        """
-        Input:
-            - f -- filter task
-            - l1 -- list of numbers
-            - l2 -- another list of numbers
-
-        Returns:
-            - res -- list that contains ones (pass) or zeros (failures)
-                     l1, l2, and res have same length
-
-        Raises:
-            - FilterKeywordError
-        """
-
-        res = []
-
-        for i in range(len(l1)):
-
-            r_out = l1[i]
-            r_ref = l2[i]
-
-            if f.ignore_sign:
-                # if ignore sign take absolute values
-                r_out = abs(r_out)
-                r_ref = abs(r_ref)
-
-            is_integer_out = isinstance(r_out, int)
-            is_integer_ref = isinstance(r_ref, int)
-
-            if is_integer_out and is_integer_ref:
-                # we compare integers
-                if r_out == r_ref:
-                    res.append(1)
-                else:
-                    res.append(0)
-            else:
-                # we compare floats
-                if not f.tolerance_is_set:
-                    raise FilterKeywordError('ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n')
-                if (abs(r_ref) > f.ignore_below) and (abs(r_ref) < f.ignore_above):
-                    # calculate relative error only for
-                    # significant ('nonzero') numbers
-                    error = r_out - r_ref
-                    if f.tolerance_is_relative:
-                        error /= r_ref
-                    if abs(error) > f.tolerance:
-                        res.append(0)
-                    else:
-                        res.append(1)
-                else:
-                    res.append(1)
-
-        return res
