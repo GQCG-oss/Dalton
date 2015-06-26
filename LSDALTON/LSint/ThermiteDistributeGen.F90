@@ -626,19 +626,26 @@ IF (derivInfo%HODIorder.EQ.4) call mem_dealloc(derivInfo%pack4)
 END SUBROUTINE freeDerivativeOverlapInfo
 
 
-SUBROUTINE getDerivativeIndeces(derivInfo,npermute,Dim5,fac5,input,nAtoms,translate,iDeriv)
+SUBROUTINE getDerivativeIndeces(derivInfo,npermute,maxPermute,Dim5,fac5,input,nAtoms,translate,iDeriv)
 implicit none
 TYPE(derivativeInfo), intent(INOUT) :: derivInfo
-INTEGER, INTENT(INOUT)         :: Dim5(:)
-Real(realk), INTENT(INOUT)     :: fac5(:)
+INTEGER, INTENT(INOUT)         :: Dim5(maxPermute)
+Real(realk), INTENT(INOUT)     :: fac5(maxPermute)
 INTEGER, INTENT(INOUT)         :: npermute
 TYPE(integralInput),INTENT(IN) :: input
 LOGICAL, INTENT(IN)            :: translate
-INTEGER, INTENT(IN)            :: nAtoms,iDeriv
+INTEGER, INTENT(IN)            :: nAtoms,iDeriv,maxPermute
 !
-INTEGER :: iTrans,iDer,iAtom,i1,i2,i3,it1,it2,iAtom1,iAtom2,iAtom3
-LOGICAL :: same12,same13,same23
-real(realk),parameter :: D1=1.0E0_realk, M1=-1.0E0_realk,D2=2.0E0_realk,D3=3.0E0_realk,D6=6.0E0_realk
+INTEGER :: iTrans,iDer,iAtom,i1,i2,i3,i4,it1,it2,it3,it4,iAtom1,iAtom2,iAtom3,iAtom4
+LOGICAL :: same12,same13,same23,same14,same24,same34
+real(realk),parameter :: D1=1.0E0_realk, D2=2.0E0_realk, D3=3.0E0_realk, D6=6.0E0_realk
+real(realk), pointer :: Dreal(:)
+
+
+call mem_alloc(Dreal,input%geoDerivOrder)
+DO iDer=1,input%geoDerivOrder
+  Dreal(iDer) = D1*iDer
+ENDDO
 
 IF (translate) iTrans = derivInfo%Atom(derivInfo%translate)
 
@@ -651,20 +658,31 @@ IF (input%geoDerivOrder.EQ. 1)THEN
    IF (translate) THEN
      nPermute = nPermute + 1
      Dim5(2) = 3*(iTrans-1)+ider
-     fac5(nPermute) = M1
+     fac5(nPermute) = -D1
    ENDIF
 ELSEIF (input%geoDerivOrder.EQ. 2)THEN
    iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
    iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
    i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
    i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
-   Dim5(1) = derivInfo%pack2(i1,i2)
-   fac5(1) = D1
-   nPermute=1
    same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
-   !Case with d^2/dAx^2 with different AO indeces = factor 2
-   IF ((i1.EQ.i2).AND..NOT.same12) fac5(1)=D2
+
+   Dim5(1) = derivInfo%pack2(i1,i2)
+   fac5(1) = derFac2(i1,i2,same12,.FALSE.)
+   nPermute=1
+
    IF (translate) THEN
+     it1 = 3*(iTrans-1)+derivInfo%dirComp(1,iDeriv)
+     it2 = 3*(iTrans-1)+derivInfo%dirComp(2,iDeriv)
+!    same1t = iAtom1.EQ.iTrans
+!    same2t = iAtom2.EQ.iTrans
+!    
+!    nPermute=nPermute+1
+!    Dim5(1) = derivInfo%pack2(i1,it2)
+!    fac5(nPermute) = derFac2(i1,it2,.TRUE.,.TRUE.)
+!    
+!    
+!    xxxx 
      IF (iAtom1.EQ.iAtom2) THEN
        IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
          nPermute = nPermute - 1
@@ -675,26 +693,26 @@ ELSEIF (input%geoDerivOrder.EQ. 2)THEN
        Dim5(nPermute+2) = derivInfo%pack2(it1,i2)
        Dim5(nPermute+3) = derivInfo%pack2(it1,it2)
        Dim5(nPermute+4) = derivInfo%pack2(it2,it1)
-       fac5(nPermute+1) = M1
-       fac5(nPermute+2) = M1
+       fac5(nPermute+1) = -Dreal(1)
+       fac5(nPermute+2) = -Dreal(1)
        nPermute = nPermute + 4
        IF (same12.OR.(iAtom1.EQ.iTrans)) nPermute = nPermute-1
      ELSE
        Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
        Dim5(nPermute+2) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
-       fac5(nPermute+1) = M1
-       fac5(nPermute+2) = M1
+       fac5(nPermute+1) = -Dreal(1)
+       fac5(nPermute+2) = -Dreal(1)
        IF (iAtom1.EQ.iTrans.AND.i1.EQ.i2) THEN
          nPermute = nPermute - 1
        ELSE
          Dim5(nPermute+3) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
-         fac5(nPermute+3) = M1
+         fac5(nPermute+3) = -Dreal(1)
        ENDIF
        IF (iAtom2.EQ.iTrans.AND.i1.EQ.i2) THEN
          nPermute = nPermute - 1
        ELSE
          Dim5(nPermute+4) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
-         fac5(nPermute+4) = M1
+         fac5(nPermute+4) = -Dreal(1)
        ENDIF
        Dim5(nPermute+5) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
        IF (i1.EQ.i2.AND.((iAtom1.EQ.iTrans).OR.(iAtom2.EQ.iTrans))) THEN
@@ -712,35 +730,130 @@ ELSEIF (input%geoDerivOrder.EQ. 3)THEN
    i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
    i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
    i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
-
-   nPermute = 1
-   Dim5(1)  = derivInfo%pack3(i1,i2,i3)
-   fac5(1)  = D1
    same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
    same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
    same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-   IF ((i1.EQ.i2).AND.(i1.EQ.i3)) THEN
-      IF (same12.AND.same13) THEN !All the same AO index
-        fac5(1)  = D1
-      ELSE IF (same12.OR.same13.OR.same23) THEN !Two are the same AO index
-        fac5(1)  = D3
-      ELSE !All different AO indeces
-        fac5(1)  = D6
-      ENDIF
-   ELSE IF ((i1.EQ.i2).AND..NOT.same12) THEN
-      fac5(1)  = D2
-   ELSE IF ((i1.EQ.i3).AND..NOT.same13) THEN
-      fac5(1)  = D2
-   ELSE IF ((i2.EQ.i3).AND..NOT.same23) THEN
-      fac5(1)  = D2
-   ENDIF
+
+   Dim5(1) = derivInfo%pack3(i1,i2,i3)
+   fac5(1) = derFac3(i1,i2,i3,same12,same13,same23,.FALSE.)
+   nPermute=1
+
    IF (translate) THEN
      call lsquit('Error in getDerivativeIndeces - geoDerivORder 3 and translate not implemented',-1)
    ENDIF
-ELSE IF (input%geoDerivOrder.GE. 4)THEN
-  call lsquit('Error in getDerivativeIndeces - geoDerivORder > 3 not implemented',-1)
+ELSEIF (input%geoDerivOrder.EQ. 4)THEN
+   iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+   iAtom3 = derivInfo%Atom(derivInfo%AO(3,iDeriv))
+   iAtom4 = derivInfo%Atom(derivInfo%AO(4,iDeriv))
+   i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
+   i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
+   i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
+   i4 = 3*(iAtom3-1)+derivInfo%dirComp(4,iDeriv)
+   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+   same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+   same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+   same14 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(4,iDeriv))
+   same24 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(4,iDeriv))
+   same34 = (derivInfo%AO(3,iDeriv).EQ.derivInfo%AO(4,iDeriv))
+
+   Dim5(1) = derivInfo%pack4(i1,i2,i3,i4)
+   fac5(1) = derFac4(i1,i2,i3,i4,same12,same13,same23,same14,same24,same34,.FALSE.)
+   nPermute=1
+
+   IF (translate) THEN
+     call lsquit('Error in getDerivativeIndeces - geoDerivORder 4 and translate not implemented',-1)
+   ENDIF
+ELSE IF (input%geoDerivOrder.GE. 5)THEN
+  call lsquit('Error in getDerivativeIndeces - geoDerivORder > 4 not implemented',-1)
 ENDIF
+call mem_dealloc(Dreal)
 END SUBROUTINE getDerivativeIndeces
+
+FUNCTION derFac2(i1,i2,same12,minus)
+implicit none
+INTEGER,INTENT(IN)    :: i1,i2
+LOGICAL,INTENT(IN)    :: same12,minus
+Real(realk)           :: derFac2
+!
+Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk
+logical :: permute12
+
+permute12 = (i1.EQ.i2).AND..NOT.same12
+
+derFac2 = D1
+IF (permute12) derFac2 = D2
+IF (minus) derFac2 = -derFac2
+
+END FUNCTION derFac2
+
+FUNCTION derFac3(i1,i2,i3,same12,same13,same23,minus)
+implicit none
+INTEGER,INTENT(IN)    :: i1,i2,i3
+LOGICAL,INTENT(IN)    :: same12,same13,same23,minus
+Real(realk)           :: derFac3
+!
+Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk, D3 = 3.0E0_realk
+Real(realk)           :: fac12,fac13,fac23
+logical               :: permute12,permute13,permute23
+
+permute12 = (i1.EQ.i2).AND..NOT.same12
+permute13 = (i1.EQ.i3).AND..NOT.same13
+permute23 = (i2.EQ.i3).AND..NOT.same23
+derFac3 = D1
+IF (permute12.AND.permute13.AND.permute23) THEN !All different
+  derFac3 = D2*D3
+ELSEIF (permute12.AND.permute13) THEN
+  derFac3 = D3
+ELSEIF (permute12.AND.permute23) THEN
+  derFac3 = D3
+ELSEIF (permute13.AND.permute23) THEN
+  derFac3 = D3
+ELSE
+  fac12 = derFac2(i1,i2,same12,.FALSE.)
+  fac13 = derFac2(i1,i3,same13,.FALSE.)
+  fac23 = derFac2(i2,i3,same23,.FALSE.)
+  derFac3 = max(fac12,fac13,fac23)
+ENDIF
+IF (minus) derFac3 = -derFac3
+END FUNCTION derFac3
+
+FUNCTION derFac4(i1,i2,i3,i4,same12,same13,same23,same14,same24,same34,minus)
+implicit none
+INTEGER,INTENT(IN)    :: i1,i2,i3,i4
+LOGICAL,INTENT(IN)    :: same12,same13,same23,same14,same24,same34,minus
+Real(realk)           :: derFac4
+!
+Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk, D3 = 3.0E0_realk, D4 = 4.0E0_realk
+Real(realk)           :: fac123,fac124,fac134,fac234
+logical               :: permute12,permute13,permute23,permute14,permute24,permute34
+
+permute12 = (i1.EQ.i2).AND..NOT.same12
+permute13 = (i1.EQ.i3).AND..NOT.same13
+permute23 = (i2.EQ.i3).AND..NOT.same23
+permute14 = (i1.EQ.i4).AND..NOT.same14
+permute24 = (i2.EQ.i4).AND..NOT.same24
+permute34 = (i3.EQ.i4).AND..NOT.same34
+derFac4 = D1
+IF (permute12.AND.permute13.AND.permute23.AND.permute14.AND.permute24.AND.permute34) THEN !All different
+  derFac4 = D2*D3*D4
+ELSEIF (permute12.AND.permute13) THEN
+  derFac4 = D3*D4
+ELSEIF (permute12.AND.permute23) THEN
+  derFac4 = D3*D4
+ELSEIF (permute13.AND.permute23) THEN
+  derFac4 = D3*D4
+ELSE
+  fac123 = derFac3(i1,i2,i3,same12,same13,same23,.FALSE.)
+  fac124 = derFac3(i1,i2,i4,same12,same14,same24,.FALSE.)
+  fac134 = derFac3(i1,i3,i4,same13,same14,same34,.FALSE.)
+  fac234 = derFac3(i2,i3,i4,same23,same24,same34,.FALSE.)
+  derFac4 = max(fac123,fac124,fac134,fac234)
+ENDIF
+IF (minus) derFac4 = -derFac4
+END FUNCTION derFac4
+
+
 
 !> \brief new distributePQ to lstensor
 !> \author \latexonly T. Kj{\ae}rgaard  \endlatexonly
@@ -872,8 +985,10 @@ if(input%geoDerivOrder.GE.1)then
      nDimGeo = 2
    ELSE IF (input%geoDerivOrder.EQ.3) THEN
      nDimGeo = 6
+   ELSE IF (input%geoDerivOrder.EQ.4) THEN
+     nDimGeo = 24
    ELSE 
-     call lsquit('nDimGeo not yet implemented for geoDerivOrder > 3 !',-1)
+     call lsquit('nDimGeo not yet implemented for geoDerivOrder > 4 !',-1)
    ENDIF
    IF (translate) THEN
      IF (input%geoDerivOrder.EQ.1) THEN
@@ -881,9 +996,11 @@ if(input%geoDerivOrder.GE.1)then
      ELSE IF (input%geoDerivOrder.EQ.2) THEN
        nTranslate = 6
      ELSE IF (input%geoDerivOrder.EQ.3) THEN
-       nTranslate = 7
+       nTranslate = 0
+     ELSE IF (input%geoDerivOrder.EQ.4) THEN
+       nTranslate = 0
      ELSE
-       call lsquit('Translational invariance not yet implemented for geoDerivOrder > 3 !',-1)
+       call lsquit('Translational invariance not yet implemented for geoDerivOrder > 4 !',-1)
      ENDIF
    ENDIF
 endif
@@ -1019,7 +1136,7 @@ DO iPassP=1,P%nPasses
        nPermute = 1
        ! Takes care of all permutations d^2/dAxdBy = d^2/dBydAx and 
        ! translations d/dDx = - d/dAx - d/dBx -d/dCx
-       call getDerivativeIndeces(derivInfo,npermute,Dim5,fac5,input,nAtoms,translate,iDeriv)
+       call getDerivativeIndeces(derivInfo,npermute,nDimGeo+nTranslate,Dim5,fac5,input,nAtoms,translate,iDeriv)
        DO iPermute=1,nPermute
         iDim5 = Dim5(iPermute)
         fac   = fac5(iPermute)
