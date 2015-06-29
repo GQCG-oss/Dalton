@@ -6982,13 +6982,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           idb = MOinfo%tileInd(PQ_batch,1)
           call time_start_phase(PHASE_COMM)
           call lsmpi_reduction(pgmo_diag%ti(idb)%t,pgmo_diag%ti(idb)%e,tile_master,infpar%lg_comm)
-          !call lsmpi_allreduce(pgmo_diag%ti(idb)%t,pgmo_diag%ti(idb)%e,infpar%lg_comm)
           call time_start_phase(PHASE_WORK)
         else
           iub = MOinfo%tileInd(PQ_batch,1)
           call time_start_phase(PHASE_COMM)
           call lsmpi_reduction(pgmo_up%ti(iub)%t,pgmo_up%ti(iub)%e,tile_master,infpar%lg_comm)
-          !call lsmpi_allreduce(pgmo_up%ti(iub)%t,pgmo_up%ti(iub)%e,infpar%lg_comm)
           call time_start_phase(PHASE_WORK)
         end if
       end do
@@ -7484,7 +7482,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !$OMP END PARALLEL DO
      
     ! Get: sigma[pr, ij] = sum_cd g[pr, cd] * t2red[cd, ij]
-    !n_ij= nocc*nocc
     call dgemm('n','n',dimP*ntot,n_ij,dimC*nvir,1.0E0_realk,tmp0,dimP*ntot, &
               & tmp1,dimC*nvir,0.0E0_realk,tmp2,dimP*ntot)
     !===========================================================================
