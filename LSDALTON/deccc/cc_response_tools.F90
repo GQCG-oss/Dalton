@@ -196,7 +196,6 @@ module cc_response_tools_module
 
      call array4_dealloc(gao)
 
-
      call mem_alloc(w1,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
 
      !Transform inactive Fock matrix into the different mo subspaces
@@ -225,16 +224,19 @@ module cc_response_tools_module
      !rho f
      !-----
      rho1 = 0.0E0_realk
+
      ! part1
      !sort amps(dkfj) -> dkjf
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
      ! w3 : \sum_{fj} t^{df}_{kj} (d k f j) Lovvv (j f e a)
+
      call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[1,2,3,4],0.0E0_realk,w1)
      call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[1,4,3,2],1.0E0_realk,w1)
      call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,w1,ov,0.0E0_realk,w3,ov)
      !write(msg,*)"rho f 1"
      !call print_norm(w3,int(ov3,kind=8),msg)
      ! part2
+
      ! sort t2f (e j f k) -[1,4,2,3]> t2f (e k j f)
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
      ! sort govvv(j a d f) -[1,4,2,3]> govvv (j f a d) 
@@ -248,7 +250,7 @@ module cc_response_tools_module
      !write(msg,*)"rho f 2 - added"
      !call print_norm(w3,int(ov3,kind=8),msg)
      ! part3
-    
+
      ! sort t2f (d j f k) -[1,4,2,3]> t2f (d k j f)
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
      ! \sum_{jf} t^{df}_{jk} (d k j f)(still in w2) govvv(j f e a)
@@ -261,6 +263,7 @@ module cc_response_tools_module
      !write(msg,*)"rho f1-3(LT21I)"
      !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
+
      call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
 
      !rho c - 1
@@ -280,7 +283,7 @@ module cc_response_tools_module
      !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
-   
+
      if( DECinfo%PL > 2) then
         write(msg,*)"rho1 after (LT21A)"
         call print_norm(rho1,int(ov,kind=8),msg)
@@ -757,16 +760,7 @@ module cc_response_tools_module
      endif
 
      !ADD RIGHT HAND SIDES  (not for Jacobian left transformation)
-     if(JacLT) then
-        ! Scale to use bioorthogonal basis in Eq. 13.7.60 in THE BOOK
-        ! But do not add right hand side
-        do a=1,nv
-           do i=1,no
-              rho2(a,i,a,i) = 0.5_realk*rho2(a,i,a,i)
-           end do
-        end do
-     else
-        ! Add Right hand sides but do not scale to bioorthogonal basis in Eq. 13.7.60 in THE BOOK
+     if(.not. JacLT) then
         call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
         call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
      end if
@@ -1765,14 +1759,6 @@ module cc_response_tools_module
       !>    see Eqs. 56 and 58 in JCP 105, 6921 (1996)
       !> 3. Calculate standard CCSD residual (then R1=CCSD singles, R2=CCSD doubles=t2), 
       !>    see Eqs. 13.7.80-83 and 13.7.101-105 in THE BOOK 
-      !> NOTE: This implies that we use truly biorthogonal basis 
-      !>       in Eqs. 13.7.58 and 13.7.60 in THE BOOK for (1) and (2), while we use 
-      !>       the "almost bioortogonal basis" in Eqs. 13.7.58 and 13.7.59 in THE BOOK for (3).
-      !>       Effectively this means that we scale by (1 + delta_ab delta_ij)^-1 for the (1) and (2)
-      !>       doubles components but not for the (3) doubles component. 
-      !>       This distinction is necessary to ensure that the Jacobian is
-      !>       correct but also that the noddy CCSD residual implementation here 
-      !>       is consistent with Patrick's efficient CCSD residual implementation.
       integer,intent(in) :: whattodo
       type(array2) :: fvo,fov,fvv,foo
       type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
@@ -2259,18 +2245,7 @@ module cc_response_tools_module
       end do
 
 
-      ! For Jacobian RHTR components: Multiply by (1 + delta_ab delta_ij)^-1
-      ! ********************************************************************
-      ! - see comment on bioorthogonal basis at the beginning of this subroutine
-      JacobianRHTR: if(whattodo==1 .or. whattodo==2) then
-         do i=1,nocc
-            do a=1,nvirt
-               rho2%elm4(a,i,a,i) = 0.5_realk*rho2%elm4(a,i,a,i)
-            end do
-         end do
-      end if JacobianRHTR
-
-
+ 
       ! Clean up
       call mem_dealloc(tmpoo)
       call mem_dealloc(tmpvv)
@@ -2628,12 +2603,12 @@ module cc_response_tools_module
       !> Singles and doubles amplitudes
       !> (effectively intent(in) but need to be intent(inout) for practical purposes)
       type(tensor),intent(inout) :: t1,t2
-      real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:)
+      real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),alpha(:,:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
-      integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter
+      integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter,a,b ! KKHACK remove a,b
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
-      type(tensor) :: q1,zeta1,q2,zeta2
+      type(tensor) :: q1,zeta1,q2,zeta2,R1,R2
       real(realk) :: tmp1,tmp2,thr,fac,bTzeta,bnorm,sc
       real(realk),pointer :: res(:)
       logical,pointer :: conv(:)
@@ -2699,6 +2674,9 @@ module cc_response_tools_module
       call mem_alloc(conv,k)
       conv=.false.
       allconv=.false.
+      call tensor_minit(R1,[nvirt,nocc],2)
+      call tensor_minit(R2,[nvirt,nocc,nvirt,nocc],4)
+
 
       ! Get start vectors and associated eigenvalues
       ! --------------------------------------------
@@ -2714,7 +2692,6 @@ module cc_response_tools_module
       end do
       call mem_alloc(lambda,M)
       call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda)
-      call mem_dealloc(lambda)
 
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
       ! --------------------------------------------------------------------------
@@ -2758,8 +2735,15 @@ module cc_response_tools_module
       write(DECinfo%output,*) 'JAC Number of eigenvalues      ',k
       write(DECinfo%output,*) 'JAC Initial subspace dimension ',M
       write(DECinfo%output,*) 'JAC Maximum subspace dimension ',maxnumeival
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC Start guess for eigenvalues'
+      write(DECinfo%output,'(1X,a)') 'JAC ---------------------------'
+      do i=1,k
+         write(DECinfo%output,'(1X,a,i7,g20.10)') 'JAC ',i,lambda(i)
+      end do
+      write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
-
+      call mem_dealloc(lambda)
 
       write(DECinfo%output,'(1X,a)') 'JAC'
       write(DECinfo%output,'(1X,a)') 'JAC Jacobian eigenvalue solver'
@@ -2787,6 +2771,24 @@ module cc_response_tools_module
          call mem_alloc(lambda,M)
          call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
          call mem_dealloc(Ar)
+         ! Consider left or right eigenvectors alpha?
+         call mem_alloc(alpha,M,M)
+         do j=1,M
+            do i=1,M
+               if(lhtr) then
+                  alpha(i,j) = alphaL(i,j)
+               else
+                  alpha(i,j) = alphaR(i,j)
+               end if
+            end do
+         end do
+         call mem_dealloc(alphaR)
+         call mem_dealloc(alphaL)
+
+         write(DECinfo%output,*) 'EIGENVALUES ',M
+         do i=1,M
+            write(DECinfo%output,*) i,lambda(i)
+         end do
 
          ! Save current subspace dimension
          Mold = M
@@ -2800,13 +2802,37 @@ module cc_response_tools_module
             ! Residual - two components: singles (q1) and doubles (q2)
             call tensor_zero(q1)
             call tensor_zero(q2)
+            call tensor_zero(R1)
+            call tensor_zero(R2)
             do i=1,M
-               call tensor_add(q1,alphaR(i,p),Ab1(i))
-               fac = - alphaR(i,p)*lambda(p)
+               call tensor_add(q1,alpha(i,p),Ab1(i))
+               fac = - alpha(i,p)*lambda(p)
                call tensor_add(q1,fac,b1(i))
 
-               call tensor_add(q2,alphaR(i,p),Ab2(i))
+               call tensor_add(q2,alpha(i,p),Ab2(i))
                call tensor_add(q2,fac,b2(i))
+
+               ! KK HACK current optimal vector
+               call tensor_add(R1,alpha(i,p),b1(i))
+               call tensor_add(R2,alpha(i,p),b2(i))
+            end do
+
+            write(DECinfo%output,*) 'OPTIMAL singles vector',M
+            do i=1,nocc
+               do a=1,nvirt
+                  write(DECinfo%output,'(2i5,F20.10)') a,i,R1%elm2(a,i)
+               end do
+            end do
+
+            write(DECinfo%output,*) 'OPTIMAL doubles vector',M
+            do j=1,nocc
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,R2%elm4(a,i,b,j)
+                     end do
+                  end do
+               end do
             end do
 
             ! Residual norm
@@ -2857,27 +2883,35 @@ module cc_response_tools_module
                call tensor_add(b2(M),bTzeta,b2(i))
             end do
 
-! KKHACK remove this
-!            print *, 'q1 q2',M,tensor_ddot(q1,q1),tensor_ddot(q2,q2)
-!            print *, 'b1 b2',M,tensor_ddot(b1(M),b1(M)),tensor_ddot(b2(M),b2(M))
-!!$            write(DECinfo%output,*) 'doubles vector b2'
-!!$            do j=1,nocc
-!!$               do b=1,nvirt
-!!$                  do i=1,nocc
-!!$                     do a=1,nvirt
-!!$                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,b2(M)%elm4(a,i,b,j)
-!!$                     end do
-!!$                  end do
-!!$               end do
-!!$            end do
+            ! KKHACK remove this
+            !            print *, 'q1 q2',M,tensor_ddot(q1,q1),tensor_ddot(q2,q2)
+            !            print *, 'b1 b2',M,tensor_ddot(b1(M),b1(M)),tensor_ddot(b2(M),b2(M))
+            write(DECinfo%output,*) 'singles vector b1'
+            do i=1,nocc
+               do a=1,nvirt
+                  write(DECinfo%output,'(2i5,F20.10)') a,i,b1(M)%elm2(a,i)
+               end do
+            end do
+
+            write(DECinfo%output,*) 'doubles vector b2'
+            do j=1,nocc
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,b2(M)%elm4(a,i,b,j)
+                     end do
+                  end do
+               end do
+            end do
 
             ! Normalize b(M)
             bnorm = tensor_ddot(b1(M),b1(M)) + tensor_ddot(b2(M),b2(M))
+            bnorm = sqrt(bnorm)
             if(bnorm < 1.0e-14_realk) then
                print *, 'p, bnorm', p,bnorm
                call lsquit('ccsd_eigenvalue_solver: Zero norm after projection!',-1)
             end if
-            sc = 1.0_realk/sqrt(bnorm)
+            sc = 1.0_realk/bnorm
             call tensor_scale(b1(M),sc)
             call tensor_scale(b2(M),sc)
 
@@ -2886,7 +2920,7 @@ module cc_response_tools_module
             call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
             if(lhtr) then
                call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,&
-                    & fAO,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+                    & fAO,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
             else
                call cc_jacobian_rhtr(mylsitem,xo,xv,yo,&
                     & yv,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
@@ -2895,8 +2929,7 @@ module cc_response_tools_module
          end do ploop
 
          ! Free stuff
-         call mem_dealloc(alphaR)
-         call mem_dealloc(alphaL)
+         call mem_dealloc(alpha)
          call mem_dealloc(lambda)
 
          ! Are all eigenvalues converged?
@@ -2944,6 +2977,8 @@ module cc_response_tools_module
       call tensor_free(zeta2)
       call tensor_free(q1)
       call tensor_free(q2)
+      call tensor_free(R1)
+      call tensor_free(R2)
 
     end subroutine ccsd_eigenvalue_solver
 

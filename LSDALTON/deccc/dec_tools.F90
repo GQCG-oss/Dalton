@@ -139,11 +139,14 @@ module dec_tools_module
     !> Eigenvalues
     real(realk),intent(inout) :: eival(n)
     !> Right (R) and left (L) eigenvectors
+    !> The right/left eigenvectors are stored one after another in columns of R/L.
     real(realk),intent(inout) :: R(n,n), L(n,n)
     real(realk), pointer :: B(:,:),Atmp(:,:)
     integer :: i,j,lwork,info
-    real(realk),pointer :: alphaR(:), alphaI(:), beta(:),work(:)
+    real(realk),pointer :: alphaR(:), alphaI(:), beta(:),work(:),Rtmp(:,:),Ltmp(:,:)
     real(realk),parameter :: thr=1.0e-9_realk
+    real(realk) :: eivaltmp(n)
+    integer :: tracklist(n),idx
 
     ! Overlap matrix is unit matrix
     call mem_alloc(B,n,n)
@@ -165,12 +168,14 @@ module dec_tools_module
     call mem_alloc(alphaI,n)
     call mem_alloc(beta,n)
     call mem_alloc(work,1)
+    call mem_alloc(Rtmp,n,n)
+    call mem_alloc(Ltmp,n,n)
 
     ! Determine optimal workspace
     lwork=-1
     info=0
     call DGGEV('V', 'V', n, Atmp, n, B, n, ALPHAR, ALPHAI,&
-         & BETA, L, n, R, n, WORK, LWORK, INFO )
+         & BETA, Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
     lwork = int(work(1))
 
     if(info/=0) then
@@ -185,7 +190,7 @@ module dec_tools_module
 
     ! Solve eigenvalue problem
     call DGGEV('V', 'V', n, Atmp, n, B, n, ALPHAR, ALPHAI,&
-         & BETA, L, n, R, n, WORK, LWORK, INFO )
+         & BETA, Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
 
     if(info/=0) then
        print *, 'INFO = ', INFO
@@ -203,8 +208,27 @@ module dec_tools_module
           call lsquit('solve_nonsymmetric_eigenvalue_problem_unitoverlap: &
                & Complex or ill-defined eigenvalues!',-1)          
        end if
-       eival(i) = alphaR(i) / beta(i)
+       eivaltmp(i) = alphaR(i) / beta(i)
     end do
+
+    ! Sort eigenvalues according to size (smallest first)
+    ! ---------------------------------------------------
+    ! Note: This ordering only makes sense because have required real eigenvalue above.
+
+    ! Order eigenvalues with largest ones first
+    call real_inv_sort_with_tracking(eivaltmp,tracklist,n)
+
+    ! Now we want the smallest first so we take the opposite order,
+    ! we also set the output eigenvectors accordingly.
+    do i=1,n
+       eival(i) = eivaltmp(n-i+1)
+       idx=tracklist(n-i+1)
+       do j=1,n
+          R(j,i) = Rtmp(j,idx)
+          L(j,i) = Ltmp(j,idx)
+       end do
+    end do
+
 
     ! Free stuff
     call mem_dealloc(alphaR)
@@ -213,6 +237,9 @@ module dec_tools_module
     call mem_dealloc(work)
     call mem_dealloc(B)
     call mem_dealloc(Atmp)
+    call mem_dealloc(Rtmp)
+    call mem_dealloc(Ltmp)
+
 
   end subroutine solve_nonsymmetric_eigenvalue_problem_unitoverlap
 
@@ -265,4 +292,151 @@ module dec_tools_module
      end do
      call mem_dealloc(batch%batch2orb)
   end subroutine free_batch_info
+
+
+  !> \brief Sort first 'n' elements of vector a with 'm' elements
+  subroutine int_sort(a,n,m)
+
+    implicit none
+    integer, dimension(m), intent(inout) :: a
+    integer, intent(in) :: m,n
+    integer :: i
+    integer :: tmp
+    logical :: swp
+
+    swp=.true.
+    do while (swp)
+       swp=.false.
+       do i=1,n-1
+          if(a(i)>a(i+1)) then
+
+             tmp=a(i+1)
+             a(i+1)=a(i)
+             a(i)=tmp
+
+             swp=.true.
+          endif
+       end do
+    end do
+
+    return
+  end subroutine int_sort
+
+
+  !> \brief Sort real vector, keeping track of the original indices.
+  !> Note: Largest elements first!
+  subroutine real_inv_sort_with_tracking(to_sort,to_track,n)
+
+    implicit none
+    integer, intent(in) :: n
+    real(realk), dimension(n), intent(inout) :: to_sort
+    integer, dimension(n), intent(inout) :: to_track
+    real(realk) :: tmp
+    integer :: tmp1,i
+    logical :: swp
+
+    ! Set original track order
+    do i=1,n
+       to_track(i)=i
+    end do
+
+    swp=.true.
+    do while (swp)
+       swp=.false.
+       do i=1,n-1
+          if(to_sort(i) < to_sort(i+1)) then ! reverse order
+
+             tmp = to_sort(i+1)
+             to_sort(i+1) = to_sort(i)
+             to_sort(i) = tmp
+
+             tmp1 = to_track(i+1)
+             to_track(i+1) = to_track(i)
+             to_track(i) = tmp1
+
+             swp=.true.
+          end if
+       end do
+    end do
+    return
+  end subroutine real_inv_sort_with_tracking
+
+
+  !> \brief Sort integer vector, keeping track of the original indices.
+  !> Note: Largest elements first!
+  !> \author Kasper Kristensen (based on real_inv_sort_with_tracking)
+  !> \date February 2011
+  subroutine integer_inv_sort_with_tracking(to_sort,to_track,n)
+
+    implicit none
+    !> Dimension of vector to sort
+    integer, intent(in) :: n
+    !> Vector to sort
+    integer, dimension(n), intent(inout) :: to_sort
+    !> List of sorted original indices
+    integer, dimension(n), intent(inout) :: to_track
+    integer :: tmp,tmp1,i
+    logical :: swp
+
+    ! Set original track order
+    do i=1,n
+       to_track(i)=i
+    end do
+
+    swp=.true.
+    do while (swp)
+       swp=.false.
+       do i=1,n-1
+          if(to_sort(i) < to_sort(i+1)) then ! reverse order
+
+             tmp = to_sort(i+1)
+             to_sort(i+1) = to_sort(i)
+             to_sort(i) = tmp
+
+             tmp1 = to_track(i+1)
+             to_track(i+1) = to_track(i)
+             to_track(i) = tmp1
+
+             swp=.true.
+          end if
+       end do
+    end do
+
+  end subroutine integer_inv_sort_with_tracking
+
+
+  !> \brief Get list of atoms sorted according to distance from "MyAtom".
+  !> \author Ida-Marie Hoeyvik
+  subroutine GetSortedList(ListMyAtom,ListTrack,ToSort,&
+       & n1,natoms,MyAtom)
+    implicit none
+    integer,intent(in)     :: n1,natoms,MyAtom
+    real(realk),intent(in) :: ToSort(n1,natoms)
+    real(realk)            :: ListMyAtom(n1), TempList(n1)
+    integer                :: ListTrack(n1), TempTrack(n1)
+    integer                :: counter,i
+
+    ListMyAtom(:)=ToSort(:,MyAtom)
+    ! Sort large--> small
+    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,n1)
+
+    TempList = 0.0E0_realk
+    TempTrack = 0
+    counter = 1
+
+    ! change to small-->large
+    do i=n1,1,-1
+       TempList(counter) = ListMyAtom(i)
+       TempTrack(counter)= ListTrack(i)
+       counter = counter + 1
+    end do
+
+    ListMyAtom=TempList
+    ListTrack=TempTrack
+
+  end subroutine GetSortedList
+
+
+
+
 end module dec_tools_module

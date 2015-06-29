@@ -21,6 +21,7 @@ module fullmp2
   use MemoryLeakToolMod
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
+  use dec_tools_module
   use dec_fragment_utils
   use array4_simple_operations
   use array3_simple_operations
