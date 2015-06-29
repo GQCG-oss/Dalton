@@ -211,9 +211,10 @@ module dec_tools_module
        eivaltmp(i) = alphaR(i) / beta(i)
     end do
 
+
     ! Sort eigenvalues according to size (smallest first)
     ! ---------------------------------------------------
-    ! Note: This ordering only makes sense because have required real eigenvalue above.
+    ! Note: This ordering only makes sense because we have required real eigenvalue above.
 
     ! Order eigenvalues with largest ones first
     call real_inv_sort_with_tracking(eivaltmp,tracklist,n)

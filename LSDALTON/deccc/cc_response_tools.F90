@@ -2693,8 +2693,9 @@ module cc_response_tools_module
       call mem_alloc(lambda,M)
       call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda)
 
+
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
-      ! --------------------------------------------------------------------------
+      ! -------------------------------------------------------------------------
       do i=1,M
          if(lhtr) then
             call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,fAO,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
@@ -2718,7 +2719,22 @@ module cc_response_tools_module
             ! The reduced matrix is the dotproduct <b(i),Ab(j)>,
             ! and it therefore becomes a sum of dot products of the singles
             ! and doubles components
-            Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+            if(lhtr) then
+               ! For left-hand transformation, Ab is really b^T A where
+               ! b^T is a row vector and A is a matrix. We therefore effectively
+               ! get entry (j,i) when we calculate b(i) "dot" Ab(j) which is
+               ! really equal to {b^T A}(j) b(i).
+               ! (***)
+               Arbig(j,i) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+            else
+               Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+            end if
+         end do
+      end do
+
+      do j=1,M
+         do i=1,M
+            print *, 'RED MAT',i,j,Arbig(i,j)
          end do
       end do
 
@@ -2753,6 +2769,7 @@ module cc_response_tools_module
       SolverLoop: do iter=1,maxiter
 
          ! Copy elements of reduced Jacobian into array having the proper dimensions
+         ! -------------------------------------------------------------------------
          call mem_alloc(Ar,M,M)
          do j=1,M
             do i=1,M
@@ -2761,7 +2778,7 @@ module cc_response_tools_module
          end do
 
 
-         ! Diagonalize reduced matrix Ar 
+         ! Diagonalize reduced matrix Ar
          ! -----------------------------
          ! A alphaR = lambda alphaR
          ! alphaL A = alphaL lambda
@@ -2771,7 +2788,14 @@ module cc_response_tools_module
          call mem_alloc(lambda,M)
          call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
          call mem_dealloc(Ar)
-         ! Consider left or right eigenvectors alpha?
+
+         ! NOTE: In general, for the Jacobian A we have:
+         !
+         ! A R = lambda A R 
+         ! L A = lambda L A
+         !
+         ! where A is a matrix, R/L is the right/left row/column eigenvector for eigenvalue lambda. 
+         ! For left/right eigenvectors, we need to work with left/right eigenvalues.
          call mem_alloc(alpha,M,M)
          do j=1,M
             do i=1,M
@@ -2816,6 +2840,25 @@ module cc_response_tools_module
                call tensor_add(R1,alpha(i,p),b1(i))
                call tensor_add(R2,alpha(i,p),b2(i))
             end do
+
+            write(DECinfo%output,*) 'RESIDUAL q singles vector',M
+            do i=1,nocc
+               do a=1,nvirt
+                  write(DECinfo%output,'(2i5,F20.10)') a,i,q1%elm2(a,i)
+               end do
+            end do
+
+            write(DECinfo%output,*) 'RESIDUAL q doubles vector',M
+            do j=1,nocc
+               do b=1,nvirt
+                  do i=1,nocc
+                     do a=1,nvirt
+                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,q2%elm4(a,i,b,j)
+                     end do
+                  end do
+               end do
+            end do
+
 
             write(DECinfo%output,*) 'OPTIMAL singles vector',M
             do i=1,nocc
@@ -2945,10 +2988,17 @@ module cc_response_tools_module
          ! 
          ! A(1:Mold , 1:Mold) has already been calculated, while the other blocks are
          ! calculated here.
+         ! 
+         ! Difference between right- and left transformations, see comment (***) above!
          do i=1,M
             do j=Mold+1,M
-               Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
-               if(i/=j) Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
+               if(lhtr) then
+                  Arbig(j,i) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+                  if(i/=j) Arbig(i,j) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
+               else
+                  Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+                  if(i/=j) Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
+               end if
             end do
          end do
 
