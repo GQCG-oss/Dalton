@@ -872,8 +872,8 @@ contains
     !> variables used for MO batch and integral transformation
     integer :: ntot ! total number of MO
     real(realk), pointer :: Cov(:,:), CP(:,:), CQ(:,:)
-    real(realk), pointer :: w1(:), w2(:)
-    integer(kind=long)   :: w1_size, w2_size
+    real(realk), pointer :: w1(:), w2(:), gao(:)
+    integer(kind=long)   :: w1_size, w2_size, gao_size
     integer :: Nbatch, PQ_batch, dimP, dimQ, idb, iub
     integer :: P_sta, P_end, Q_sta, Q_end
     type(MObatchInfo), intent(out) :: MOinfo
@@ -1162,7 +1162,9 @@ contains
     call mem_alloc(CP,MaxActualDimAlpha,dimP)
     call mem_alloc(CQ,MaxActualDimGamma,dimP)
 
+
     ! working arrays
+    gao_size = int(i8*nb*nb*MaxActualDimAlpha*MaxActualDimGamma, kind=long)
     w1_size = max(nb*nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*ntot*dimP*dimP)
     w1_size = int(i8*w1_size, kind=long)
     w2_size = max(ntot*nb*MaxActualDimAlpha*MaxActualDimGamma, &
@@ -1174,9 +1176,11 @@ contains
           print *, "Warning(get_t1_free_gmo):  This should not happen, if the memory counting is correct"
        endif
 
+       call mem_pseudo_alloc(gao, gao_size)
        call mem_pseudo_alloc(w1, w1_size)
        call mem_pseudo_alloc(w2, w2_size)
     else
+       call mem_alloc(gao, gao_size)
        call mem_alloc(w1, w1_size)
        call mem_alloc(w2, w2_size)
     endif
@@ -1302,7 +1306,7 @@ contains
 
           IF(DECinfo%useIchor)THEN
              call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nb,nb,dimAlpha,dimGamma,&
-                  & w1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+                  & gao,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
                   & AOGammaStart,AOGammaEnd,MoTrans,nb,nb,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
           ELSE
              ! setup RHS screening - here we only have a set of AO basisfunctions
@@ -1317,7 +1321,7 @@ contains
              ! Get AO integrals using (beta,delta,alphaB,gammaB) ordering
              ! **********************************************************
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-                  & Mylsitem%setting,w1,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
+                  & Mylsitem%setting,gao,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha, &
                   & dimGamma,fullRHS,INTSPEC,DECinfo%IntegralThreshold)
           ENDIF
@@ -1332,9 +1336,8 @@ contains
              Q_sta  = MOinfo%StartInd2(PQ_batch)
              dimQ   = MOinfo%DimInd2(PQ_batch)
 
-             ! w1 contains AO integral batch on input
              ! w2 contains MO integral batch on output
-             call gao_to_gmo(w2,w1,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
+             call gao_to_gmo(gao,w1,w2,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
                   & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,pgmo_diag, &
                   & pgmo_up,gdi_lk,gup_lk,win,dest)
 
@@ -1424,9 +1427,11 @@ contains
     if(use_bg_buf)then
        call mem_pseudo_dealloc(w2)
        call mem_pseudo_dealloc(w1)
+       call mem_pseudo_dealloc(gao)
     else
        call mem_dealloc(w2)
        call mem_dealloc(w1)
+       call mem_dealloc(gao)
     endif
     call mem_dealloc(Cov)
     call mem_dealloc(CP)
@@ -1821,7 +1826,7 @@ contains
   !           
   !> Author:  Pablo Baudin
   !> Date:    October 2013
-  subroutine gao_to_gmo(w2,w1,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
+  subroutine gao_to_gmo(gao,w1,w2,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
        & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,pgmo_diag,pgmo_up, &
        & gdi_lk,gup_lk,win,dest)
 
@@ -1829,10 +1834,10 @@ contains
 
     integer, intent(in) :: nb, AlphaStart, dimAlpha, GammaStart, dimGamma
     integer, intent(in) :: ntot, P_sta, dimP, Q_sta, dimQ
-    !> w1 contains AO integral batch on input:
-    real(realk), intent(inout) :: w1(:)
-    !> w2 contains MO integral batch on output:
-    real(realk), intent(inout) :: w2(:)
+    !> AO integral batch:
+    real(realk), intent(inout) :: gao(:)
+    !> working arrays, w2 contains MO integral batch on output:
+    real(realk), intent(inout) :: w1(:), w2(:)
     real(realk), intent(in) :: Cov(nb,ntot)
     !> MPI related:
     type(tensor), intent(in) :: pgmo_diag, pgmo_up
@@ -1854,7 +1859,7 @@ contains
 
     ! transfo Beta to r => [delta alphaB gammaB, r]
     call dgemm('t','n',nb*dimAlpha*dimGamma,ntot,nb,1.0E0_realk, &
-         & w1,nb,Cov,nb,0.0E0_realk,w2,nb*dimAlpha*dimGamma)
+         & gao,nb,Cov,nb,0.0E0_realk,w2,nb*dimAlpha*dimGamma)
 
 #ifdef VAR_MPI
     ! UNLOCK WINDOW IF (LOCK_SET)
