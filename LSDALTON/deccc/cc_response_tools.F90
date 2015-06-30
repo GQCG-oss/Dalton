@@ -2603,22 +2603,23 @@ module cc_response_tools_module
       !> Singles and doubles amplitudes
       !> (effectively intent(in) but need to be intent(inout) for practical purposes)
       type(tensor),intent(inout) :: t1,t2
-      real(realk),pointer :: lambda(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),alpha(:,:)
+      real(realk),pointer :: lambdaREAL(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),alpha(:,:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
       integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter,a,b ! KKHACK remove a,b
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
       type(tensor) :: q1,zeta1,q2,zeta2,R1,R2
       real(realk) :: tmp1,tmp2,thr,fac,bTzeta,bnorm,sc
-      real(realk),pointer :: res(:)
+      real(realk),pointer :: res(:),lambdaIMAG(:)
       logical,pointer :: conv(:)
       logical :: allconv,lhtr
+
 
       ! KKHACK FIXME - make it possible to change this by input
       lhtr = DECinfo%hack2
 
-      ! Convergence threshold
-      thr = 1.0e-7_realk
+      ! Convergence threshold  KKHACK fixme
+      thr = DECinfo%SNOOPthr
 
       ! KK FIXME
       ! Maximum number of vectors allowed. Should be thought about more carefully 
@@ -2690,8 +2691,8 @@ module cc_response_tools_module
          call tensor_minit(Ab1(i),[nvirt,nocc],2)
          call tensor_minit(Ab2(i),[nvirt,nocc,nvirt,nocc],4)
       end do
-      call mem_alloc(lambda,M)
-      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambda)
+      call mem_alloc(lambdaREAL,M)
+      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambdaREAL)
 
 
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
@@ -2732,11 +2733,6 @@ module cc_response_tools_module
          end do
       end do
 
-      do j=1,M
-         do i=1,M
-            print *, 'RED MAT',i,j,Arbig(i,j)
-         end do
-      end do
 
 
 
@@ -2755,11 +2751,11 @@ module cc_response_tools_module
       write(DECinfo%output,'(1X,a)') 'JAC Start guess for eigenvalues'
       write(DECinfo%output,'(1X,a)') 'JAC ---------------------------'
       do i=1,k
-         write(DECinfo%output,'(1X,a,i7,g20.10)') 'JAC ',i,lambda(i)
+         write(DECinfo%output,'(1X,a,i7,g20.10)') 'JAC ',i,lambdaREAL(i)
       end do
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
-      call mem_dealloc(lambda)
+      call mem_dealloc(lambdaREAL)
 
       write(DECinfo%output,'(1X,a)') 'JAC'
       write(DECinfo%output,'(1X,a)') 'JAC Jacobian eigenvalue solver'
@@ -2777,17 +2773,34 @@ module cc_response_tools_module
             end do
          end do
 
+         write(DECinfo%output,*) 'REDMAT ',M
+         do j=1,M
+            do i=1,M
+               write(DECinfo%output,*) i,j,Ar(i,j)
+            end do
+         end do
+      
+
 
          ! Diagonalize reduced matrix Ar
          ! -----------------------------
          ! A alphaR = lambda alphaR
          ! alphaL A = alphaL lambda
-         ! (lambda is a diagonal matrix with eigenvalues on the diagonal)
+         ! lambda is a diagonal matrix with eigenvalues on the diagonal
+         ! 
+         ! Note: We only consider real part of lambda! Imaginary part is simply removed
+         ! but a warning is issued if the imaginary part is sizable.
          call mem_alloc(alphaR,M,M)
          call mem_alloc(alphaL,M,M)
-         call mem_alloc(lambda,M)
-         call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambda,alphaR,alphaL)
+         call mem_alloc(lambdaREAL,M)
+         call mem_alloc(lambdaIMAG,M)
+         call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambdaREAL,&
+              & lambdaIMAG,alphaR,alphaL)
          call mem_dealloc(Ar)
+
+         ! Any imaginary eigenvalue component? Print a warning if this is the case.
+         call ccsd_eigenvalue_check(k,M,lambdaREAL,lambdaIMAG)
+
 
          ! NOTE: In general, for the Jacobian A we have:
          !
@@ -2811,7 +2824,7 @@ module cc_response_tools_module
 
          write(DECinfo%output,*) 'EIGENVALUES ',M
          do i=1,M
-            write(DECinfo%output,*) i,lambda(i)
+            write(DECinfo%output,*) i,lambdaREAL(i),lambdaIMAG(i)
          end do
 
          ! Save current subspace dimension
@@ -2830,7 +2843,7 @@ module cc_response_tools_module
             call tensor_zero(R2)
             do i=1,M
                call tensor_add(q1,alpha(i,p),Ab1(i))
-               fac = - alpha(i,p)*lambda(p)
+               fac = - alpha(i,p)*lambdaREAL(p)
                call tensor_add(q1,fac,b1(i))
 
                call tensor_add(q2,alpha(i,p),Ab2(i))
@@ -2885,7 +2898,7 @@ module cc_response_tools_module
             ! Check for convergence
             conv(p) = (res(p)<thr) 
             write(DECinfo%output,'(1X,a,i6,2X,i6,2X,g18.8,1X,g18.8,3X,L2)') &
-                 & 'JAC',M,p,lambda(p),res(p),conv(p)
+                 & 'JAC',M,p,lambdaREAL(p),res(p),conv(p)
             if(conv(p)) cycle ploop
             ! KKHACK - also store optimal vector if converged!
 
@@ -2902,7 +2915,7 @@ module cc_response_tools_module
                zeta1%elm2 = q1%elm2
                zeta2%elm4 = q2%elm4
             else
-               call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda(p),q1,q2,zeta1,zeta2)
+               call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambdaREAL(p),q1,q2,zeta1,zeta2)
             end if
 
             ! Component of precondioned residual orthogonal to current trial vectors:
@@ -2973,7 +2986,8 @@ module cc_response_tools_module
 
          ! Free stuff
          call mem_dealloc(alpha)
-         call mem_dealloc(lambda)
+         call mem_dealloc(lambdaREAL)
+         call mem_dealloc(lambdaIMAG)
 
          ! Are all eigenvalues converged?
          allconv = all(conv)
@@ -3240,7 +3254,49 @@ module cc_response_tools_module
 
       end do
 
-
     end subroutine ccsd_eigenvalue_solver_startguess
+
+
+    !> The "reality" of CCSD eigenvalues and print warnings if any eigenvalue contains a significant
+    !> imaginary component.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine ccsd_eigenvalue_check(k,M,lambdaREAL,lambdaIMAG)
+      implicit none
+      !> Number of target excitation energies
+      integer,intent(in) :: k
+      !> Dimension of current subspace
+      integer,intent(in) :: M
+      !> Real/imaginary components of the M eigenvalues
+      real(realk),dimension(M),intent(in) :: lambdaREAL, lambdaIMAG
+      !> If the imaginary eigenvalue component is above this threshold we print a warning
+      real(realk),parameter :: eivalthr=1.0e-9
+      integer :: i
+
+      ! Target eigenvalues
+      do i=1,k
+         if( abs(lambdaIMAG(i))>eivalthr) then
+            write(DECinfo%output,*) 'WARNING! Target eigenvalue contains imaginary component!'
+            write(DECinfo%output,*) 'WARNING! We ignore the imaginary component and proceed.'
+            write(DECinfo%output,*) 'WARNING! Be very careful when interpreting results!'
+            write(DECinfo%output,'(1X,a,i7)') 'Eigenvalue number:     ',i
+            write(DECinfo%output,'(1X,a,2g20.10)') 'Real/imag components:  ',&
+                 & lambdaREAL(i),lambdaIMAG(i)
+         end if
+      end do
+
+      ! Eigenvalues also present in subspace but which are not a target of calculation
+      do i=k+1,M
+         if( abs(lambdaIMAG(i))>eivalthr) then
+            write(DECinfo%output,*) 'WARNING! Eigenvalue in subspace contains imaginary component!'
+            write(DECinfo%output,*) 'WARNING! However, this is not a target eigenvalue'
+            write(DECinfo%output,*) 'WARNING! so it is probably not a problem...'
+            write(DECinfo%output,'(1X,a,i7)') 'Eigenvalue number:     ',i
+            write(DECinfo%output,'(1X,a,2g20.10)') 'Real/imag components:  ',&
+                 & lambdaREAL(i),lambdaIMAG(i)
+         end if
+      end do
+
+    end subroutine ccsd_eigenvalue_check
 
   end module cc_response_tools_module

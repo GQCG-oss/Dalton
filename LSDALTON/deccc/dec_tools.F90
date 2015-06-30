@@ -126,29 +126,38 @@ module dec_tools_module
   !> L A = L eival
   !> where A is a nonsymmetrix matrix and R and L are the left and right
   !> eigenvectors, respectively.
-  !> Note: Currently we quit if the eigenvalues are complex. This could be generalized.
+  !> Copied (and modified slightly) from dggev.f reference file (Google it!): 
+  !> If the j-th eigenvalue is real, then 
+  !> the left eigenvectors u(j) are stored one
+  !> after another in the columns of L, in the same order as
+  !> their eigenvalues.If the j-th eigenvalue is real, then
+  !> u(j) = L(:,j), the j-th column of L. If the j-th and
+  !> (j+1)-th eigenvalues form a complex conjugate pair, then
+  !> u(j) = L(:,j)+i*L(:,j+1) and u(j+1) = L(:,j)-i*L(:,j+1).
+  !> Each eigenvector is scaled so the largest component has
+  !> abs(real part)+abs(imag. part)=1.
+  !> (and similarly for right eigenvectors R)
   !> \author Kasper Kristensen
   !> \date February 2011
-  subroutine solve_nonsymmetric_eigenvalue_problem_unitoverlap(n,A,eival,R,L)
+  subroutine solve_nonsymmetric_eigenvalue_problem_unitoverlap(n,A,eivalREAL,eivalIMAG,R,L)
     implicit none
 
     !> Dimension of matrices (Number of eigenvalues)
     integer,intent(in) :: n
     !> A matrix in eigenvalue problem 
     real(realk),intent(in) :: A(n,n)
-    !> Eigenvalues
-    real(realk),intent(inout) :: eival(n)
+    !> Real and imaginary components of eigenvalues
+    real(realk),intent(inout) :: eivalREAL(n),eivalIMAG(n)
     !> Right (R) and left (L) eigenvectors
     !> The right/left eigenvectors are stored one after another in columns of R/L.
     real(realk),intent(inout) :: R(n,n), L(n,n)
-    real(realk), pointer :: B(:,:),Atmp(:,:)
-    integer :: i,j,lwork,info
-    real(realk),pointer :: alphaR(:), alphaI(:), beta(:),work(:),Rtmp(:,:),Ltmp(:,:)
-    real(realk),parameter :: thr=1.0e-9_realk
-    real(realk) :: eivaltmp(n)
-    integer :: tracklist(n),idx
+    real(realk), pointer :: B(:,:),Atmp(:,:),lambdaREAL(:),lambdaIMAG(:)
+    integer :: i,j,lwork,info,idx
+    real(realk),pointer :: beta(:),work(:),Rtmp(:,:),Ltmp(:,:)
+    real(realk),parameter :: thr=1.0e-10_realk
+    integer,pointer :: tracklist(:)
 
-    ! Overlap matrix is unit matrix
+    ! Overlap matrix assumed to be is unit matrix
     call mem_alloc(B,n,n)
     B = 0.0_realk
     do i=1,n
@@ -164,17 +173,18 @@ module dec_tools_module
     end do
 
     ! Allocate stuff
-    call mem_alloc(alphaR,n)
-    call mem_alloc(alphaI,n)
+    call mem_alloc(tracklist,n)
     call mem_alloc(beta,n)
     call mem_alloc(work,1)
     call mem_alloc(Rtmp,n,n)
     call mem_alloc(Ltmp,n,n)
+    call mem_alloc(lambdaREAL,n)
+    call mem_alloc(lambdaIMAG,n)
 
     ! Determine optimal workspace
     lwork=-1
     info=0
-    call DGGEV('V', 'V', n, Atmp, n, B, n, ALPHAR, ALPHAI,&
+    call DGGEV('V', 'V', n, Atmp, n, B, n, lambdaREAL, lambdaIMAG,&
          & BETA, Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
     lwork = int(work(1))
 
@@ -189,7 +199,7 @@ module dec_tools_module
     call mem_alloc(work,lwork)
 
     ! Solve eigenvalue problem
-    call DGGEV('V', 'V', n, Atmp, n, B, n, ALPHAR, ALPHAI,&
+    call DGGEV('V', 'V', n, Atmp, n, B, n, lambdaREAL, lambdaIMAG,&
          & BETA, Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
 
     if(info/=0) then
@@ -198,32 +208,41 @@ module dec_tools_module
             & Error2 in DGGEV!',-1)
     end if
 
-    ! Check that eigenvalues are real and well-defined
+    ! Check that eigenvalues are well-defined
     do i=1,n
-       if( (abs(alphaI(i)) > thr) .or. (abs(beta(i))<thr )  ) then
+       if( abs(beta(i))<thr ) then
           print *, 'Eigenvalue number ',i 
-          print *, 'Eigenvalue, real part ',alphaR(i)
-          print *, 'Eigenvalue, imag part ',alphaI(i)
+          print *, 'Eigenvalue, real part ',lambdaREAL(i)
+          print *, 'Eigenvalue, imag part ',lambdaIMAG(i)
           print *, 'Division factor beta  ',beta(i)
           call lsquit('solve_nonsymmetric_eigenvalue_problem_unitoverlap: &
-               & Complex or ill-defined eigenvalues!',-1)          
+               & Ill-defined eigenvalues!',-1)          
        end if
-       eivaltmp(i) = alphaR(i) / beta(i)
+
+       ! Eigenvalues should be divided by beta (see dgeev.F reference file)
+       lambdaREAL(i) = lambdaREAL(i) / beta(i)
+       lambdaIMAG(i) = lambdaIMAG(i) / beta(i)
     end do
 
 
-    ! Sort eigenvalues according to size (smallest first)
-    ! ---------------------------------------------------
+
+    ! Sort eigenvalues according to size of real part (smallest first)
+    ! ----------------------------------------------------------------
     ! Note: This ordering only makes sense because we have required real eigenvalue above.
 
     ! Order eigenvalues with largest ones first
-    call real_inv_sort_with_tracking(eivaltmp,tracklist,n)
+    call real_inv_sort_with_tracking(lambdaREAL,tracklist,n)
 
     ! Now we want the smallest first so we take the opposite order,
     ! we also set the output eigenvectors accordingly.
     do i=1,n
-       eival(i) = eivaltmp(n-i+1)
+       eivalREAL(i) = lambdaREAL(n-i+1)
+
+       ! Index in original eigenvalue order
        idx=tracklist(n-i+1)
+
+       ! Set imaginary eigenvalue and eigenvectors according to new order
+       eivalIMAG(i) = lambdaIMAG(idx)
        do j=1,n
           R(j,i) = Rtmp(j,idx)
           L(j,i) = Ltmp(j,idx)
@@ -232,8 +251,9 @@ module dec_tools_module
 
 
     ! Free stuff
-    call mem_dealloc(alphaR)
-    call mem_dealloc(alphaI)
+    call mem_dealloc(lambdaREAL)
+    call mem_dealloc(lambdaIMAG)
+    call mem_dealloc(tracklist)
     call mem_dealloc(beta)
     call mem_dealloc(work)
     call mem_dealloc(B)
