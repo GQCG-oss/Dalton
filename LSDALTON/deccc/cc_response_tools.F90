@@ -2634,7 +2634,7 @@ module cc_response_tools_module
       ! Also the convergence check is different.
 
       ! How many eigenvalues k?
-      k=1
+      k=2
 
       ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
       M=DECinfo%SNOOPMaxDIIS  ! KKHACK fix me
@@ -2659,6 +2659,7 @@ module cc_response_tools_module
          call lsquit('ccsd_eigenvalue_solver: Number of requested &
               & start vectors is too large!',-1)
       end if
+      ! KKHACK - also check that M is not smaller than k
 
 
       ! ********************************************************************************
@@ -2834,14 +2835,14 @@ module cc_response_tools_module
          ! -----------------------------------------------
          ! Note. Here we check for k residuals (p=1,k), while in J. Comp. Phys. 17, 87 (1975)
          ! only the k'th eigenvalue is considered.
-         ploop: do p=1,k
+         ExcitationEnergyLoop: do p=1,k
 
             ! Residual - two components: singles (q1) and doubles (q2)
             call tensor_zero(q1)
             call tensor_zero(q2)
             call tensor_zero(R1)
             call tensor_zero(R2)
-            do i=1,M
+            do i=1,Mold
                call tensor_add(q1,alpha(i,p),Ab1(i))
                fac = - alpha(i,p)*lambdaREAL(p)
                call tensor_add(q1,fac,b1(i))
@@ -2899,7 +2900,7 @@ module cc_response_tools_module
             conv(p) = (res(p)<thr) 
             write(DECinfo%output,'(1X,a,i6,2X,i6,2X,g18.8,1X,g18.8,3X,L2)') &
                  & 'JAC',M,p,lambdaREAL(p),res(p),conv(p)
-            if(conv(p)) cycle ploop
+            if(conv(p)) cycle ExcitationEnergyLoop
             ! KKHACK - also store optimal vector if converged!
 
             ! Update M
@@ -2910,7 +2911,7 @@ module cc_response_tools_module
                call lsquit('ccsd_eigenvalue_solver: M is too large! Not possible to extend subspace!',-1)
             end if
 
-            ! Preconditioning: b(M) = precond(q)
+            ! Preconditioning KKHACK make keyword for preconditioning
             if(DECinfo%hack) then
                zeta1%elm2 = q1%elm2
                zeta2%elm4 = q2%elm4
@@ -2982,7 +2983,7 @@ module cc_response_tools_module
                     & yv,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
             end if
 
-         end do ploop
+         end do ExcitationEnergyLoop
 
          ! Free stuff
          call mem_dealloc(alpha)
