@@ -2605,39 +2605,40 @@ module cc_response_tools_module
       type(tensor),intent(inout) :: t1,t2
       real(realk),pointer :: lambdaREAL(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),alpha(:,:)
       type(tensor) :: ASSdiag,ADDdiag,tmp
-      integer :: Mold,k,M,p,maxdim,i,j,iter,maxiter,a,b ! KKHACK remove a,b
+      integer :: Mold,k,M,p,i,j,iter
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
       type(tensor) :: q1,zeta1,q2,zeta2,R1,R2
-      real(realk) :: tmp1,tmp2,thr,fac,bTzeta,bnorm,sc
+      real(realk) :: tmp1,tmp2,fac,bTzeta,bnorm,sc
       real(realk),pointer :: res(:),lambdaIMAG(:)
       logical,pointer :: conv(:)
-      logical :: allconv,lhtr
+      logical :: allconv
 
-
-      ! KKHACK FIXME - make it possible to change this by input
-      lhtr = DECinfo%hack2
-
-      ! Convergence threshold  KKHACK fixme
-      thr = DECinfo%SNOOPthr
-
-      ! KK FIXME
-      ! Maximum number of vectors allowed. Should be thought about more carefully 
-      ! and be possible to control by input
-      maxdim=200
-
-      ! KK FIXME - maximum number of iterations
-      maxiter = 20
 
       ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
       ! except that we may solve for more than one eigenvalue at the same time.
-      ! Also the convergence check is different.
+      ! Also the convergence check is different and simply based on the residual.
 
       ! How many eigenvalues k?
-      k=2
+      k=DECinfo%JacobianNumEival
 
       ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
-      M=DECinfo%SNOOPMaxDIIS  ! KKHACK fix me
+      M = DECinfo%JacobianInitialSubspace
+      if(M==0) then
+         ! M was not set by input, set it equal to the number of requested excitation energies
+         M=k
+      else
+         ! M set by input, only modify it if it is too small
+         if(M < k) then
+            write(DECinfo%output,*) 'WARNING! Initial Jacobian subspace set to', &
+                 & M
+            write(DECinfo%output,*) 'WARNING! This is smaller than the number of excitation energies',k
+            write(DECinfo%output,*) 'WARNING! I overrule input and set initial Jacobian subspace to',k
+            M=k
+         end if
+      end if
+
+      
 
       ! Sanity check: Requested number of initial eigenvalues/start vectors is not
       ! larger than the maximum possible number of singles+doubles excitations.
@@ -2659,7 +2660,7 @@ module cc_response_tools_module
          call lsquit('ccsd_eigenvalue_solver: Number of requested &
               & start vectors is too large!',-1)
       end if
-      ! KKHACK - also check that M is not smaller than k
+
 
 
       ! ********************************************************************************
@@ -2682,10 +2683,10 @@ module cc_response_tools_module
 
       ! Get start vectors and associated eigenvalues
       ! --------------------------------------------
-      call mem_alloc(b1,maxdim)
-      call mem_alloc(b2,maxdim)
-      call mem_alloc(Ab1,maxdim)
-      call mem_alloc(Ab2,maxdim)
+      call mem_alloc(b1,DECinfo%JacobianMaxSubspace)
+      call mem_alloc(b2,DECinfo%JacobianMaxSubspace)
+      call mem_alloc(Ab1,DECinfo%JacobianMaxSubspace)
+      call mem_alloc(Ab2,DECinfo%JacobianMaxSubspace)
       do i=1,M
          call tensor_minit(b1(i),[nvirt,nocc],2)
          call tensor_minit(b2(i),[nvirt,nocc,nvirt,nocc],4)
@@ -2699,7 +2700,7 @@ module cc_response_tools_module
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
       ! -------------------------------------------------------------------------
       do i=1,M
-         if(lhtr) then
+         if(DECinfo%JacobianLhtr) then
             call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,fAO,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
          else
             call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
@@ -2713,7 +2714,7 @@ module cc_response_tools_module
       !       and it is allocated such that there is room for more elements.
       !       Ar below will contain the same elements but with the current dimensions.
 
-      call mem_alloc(Arbig,maxdim,maxdim)
+      call mem_alloc(Arbig,DECinfo%JacobianMaxSubspace,DECinfo%JacobianMaxSubspace)
       Arbig=0.0_realk
       do j=1,M
          do i=1,M
@@ -2721,7 +2722,7 @@ module cc_response_tools_module
             ! The reduced matrix is the dotproduct <b(i),Ab(j)>,
             ! and it therefore becomes a sum of dot products of the singles
             ! and doubles components
-            if(lhtr) then
+            if(DECinfo%JacobianLhtr) then
                ! For left-hand transformation, Ab is really b^T A where
                ! b^T is a row vector and A is a matrix. We therefore effectively
                ! get entry (j,i) when we calculate b(i) "dot" Ab(j) which is
@@ -2763,7 +2764,7 @@ module cc_response_tools_module
       write(DECinfo%output,'(1X,a)') 'JAC'
       write(DECinfo%output,'(1X,a)') 'JAC Subspace  Which     Eigenvalue         Residual       Conv?  '
 
-      SolverLoop: do iter=1,maxiter
+      SolverLoop: do iter=1,DECinfo%JacobianMaxIter
 
          ! Copy elements of reduced Jacobian into array having the proper dimensions
          ! -------------------------------------------------------------------------
@@ -2813,7 +2814,7 @@ module cc_response_tools_module
          call mem_alloc(alpha,M,M)
          do j=1,M
             do i=1,M
-               if(lhtr) then
+               if(DECinfo%JacobianLhtr) then
                   alpha(i,j) = alphaL(i,j)
                else
                   alpha(i,j) = alphaR(i,j)
@@ -2855,49 +2856,12 @@ module cc_response_tools_module
                call tensor_add(R2,alpha(i,p),b2(i))
             end do
 
-            write(DECinfo%output,*) 'RESIDUAL q singles vector',M
-            do i=1,nocc
-               do a=1,nvirt
-                  write(DECinfo%output,'(2i5,F20.10)') a,i,q1%elm2(a,i)
-               end do
-            end do
-
-            write(DECinfo%output,*) 'RESIDUAL q doubles vector',M
-            do j=1,nocc
-               do b=1,nvirt
-                  do i=1,nocc
-                     do a=1,nvirt
-                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,q2%elm4(a,i,b,j)
-                     end do
-                  end do
-               end do
-            end do
-
-
-            write(DECinfo%output,*) 'OPTIMAL singles vector',M
-            do i=1,nocc
-               do a=1,nvirt
-                  write(DECinfo%output,'(2i5,F20.10)') a,i,R1%elm2(a,i)
-               end do
-            end do
-
-            write(DECinfo%output,*) 'OPTIMAL doubles vector',M
-            do j=1,nocc
-               do b=1,nvirt
-                  do i=1,nocc
-                     do a=1,nvirt
-                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,R2%elm4(a,i,b,j)
-                     end do
-                  end do
-               end do
-            end do
-
             ! Residual norm
             res(p) = tensor_ddot(q1,q1) + tensor_ddot(q2,q2)
             res(p) = sqrt(res(p))
 
             ! Check for convergence
-            conv(p) = (res(p)<thr) 
+            conv(p) = (res(p)<DECinfo%JacobianThr) 
             write(DECinfo%output,'(1X,a,i6,2X,i6,2X,g18.8,1X,g18.8,3X,L2)') &
                  & 'JAC',M,p,lambdaREAL(p),res(p),conv(p)
             if(conv(p)) cycle ExcitationEnergyLoop
@@ -2907,16 +2871,17 @@ module cc_response_tools_module
             M=M+1
 
             ! Sanity check for dimensions
-            if(M > maxdim) then
+            if(M > DECinfo%JacobianMaxSubspace) then
                call lsquit('ccsd_eigenvalue_solver: M is too large! Not possible to extend subspace!',-1)
             end if
 
-            ! Preconditioning KKHACK make keyword for preconditioning
-            if(DECinfo%hack) then
+            ! Preconditioning
+            if(DECinfo%JacobianPrecond) then
+               call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambdaREAL(p),q1,q2,zeta1,zeta2)
+            else
+               ! Simply copy elements
                zeta1%elm2 = q1%elm2
                zeta2%elm4 = q2%elm4
-            else
-               call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambdaREAL(p),q1,q2,zeta1,zeta2)
             end if
 
             ! Component of precondioned residual orthogonal to current trial vectors:
@@ -2930,7 +2895,6 @@ module cc_response_tools_module
             ! b(M+p) = zeta
             call tensor_add(b1(M),1.0_realk,zeta1)
             call tensor_add(b2(M),1.0_realk,zeta2)
-            ! KKHACK why is copy_array not public? Ask PE.
 
             do i=1,M-1
                ! b(i)^T zeta  (just a number when b(i) and zeta are considered as vectors)
@@ -2938,27 +2902,6 @@ module cc_response_tools_module
                ! b(M+p) += - b(i) { b(i)^T zeta }
                call tensor_add(b1(M),bTzeta,b1(i))
                call tensor_add(b2(M),bTzeta,b2(i))
-            end do
-
-            ! KKHACK remove this
-            !            print *, 'q1 q2',M,tensor_ddot(q1,q1),tensor_ddot(q2,q2)
-            !            print *, 'b1 b2',M,tensor_ddot(b1(M),b1(M)),tensor_ddot(b2(M),b2(M))
-            write(DECinfo%output,*) 'singles vector b1'
-            do i=1,nocc
-               do a=1,nvirt
-                  write(DECinfo%output,'(2i5,F20.10)') a,i,b1(M)%elm2(a,i)
-               end do
-            end do
-
-            write(DECinfo%output,*) 'doubles vector b2'
-            do j=1,nocc
-               do b=1,nvirt
-                  do i=1,nocc
-                     do a=1,nvirt
-                        write(DECinfo%output,'(4i5,F20.10)') a,i,b,j,b2(M)%elm4(a,i,b,j)
-                     end do
-                  end do
-               end do
             end do
 
             ! Normalize b(M)
@@ -2975,7 +2918,7 @@ module cc_response_tools_module
             ! Form Ab(M)
             call tensor_minit(Ab1(M),[nvirt,nocc],2)
             call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
-            if(lhtr) then
+            if(DECinfo%JacobianLhtr) then
                call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,&
                     & fAO,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
             else
@@ -3007,7 +2950,7 @@ module cc_response_tools_module
          ! Difference between right- and left transformations, see comment (***) above!
          do i=1,M
             do j=Mold+1,M
-               if(lhtr) then
+               if(DECinfo%JacobianLhtr) then
                   Arbig(j,i) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
                   if(i/=j) Arbig(i,j) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
                else
@@ -3023,7 +2966,7 @@ module cc_response_tools_module
          call lsquit('Jacobian eigenvalue solver did not converge!',-1)
       end if
 
-      ! KKHACK fixme - deallocate Ab1,Ab2,b1,b2 properly!
+
       do i=1,M
          call tensor_free(b1(i))
          call tensor_free(b2(i))
@@ -3071,7 +3014,7 @@ module cc_response_tools_module
       do i=1,nocc
          do a=1,nvirt
             Aelm = fvv(a,a) - foo(i,i)
-            if(abs(Aelm-lambda)<1.0e-10) then  !KKHACK fixme
+            if(abs(Aelm-lambda)<1.0e-10) then  
                print *, 'a,i,A,lambda',a,i,Aelm,lambda
                call lsquit('singles: unstable Jacobian residual',-1) 
             end if
@@ -3085,7 +3028,7 @@ module cc_response_tools_module
             do i=1,nocc
                do a=1,nvirt
                   Aelm = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
-                  if(abs(Aelm-lambda)<1.0e-10) then !KKHACK fixme
+                  if(abs(Aelm-lambda)<1.0e-10) then 
                      print *, 'a,i,b,j,A,lambda',a,i,b,j,Aelm,lambda
                      call lsquit('doubles: unstable Jacobian residual',-1) 
                   end if

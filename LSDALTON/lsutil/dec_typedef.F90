@@ -117,6 +117,27 @@ module dec_typedef_module
      logical :: SNOOPlocalize
 
 
+     ! CC response (no DEC so far)
+     ! ===========================
+     !> Calculate CC Jacobian eigenvalues
+     logical :: CCeival
+     !> Number of Jacobian eigenvalues to determine
+     integer :: JacobianNumEival
+     !> Use Jacobian left-transformations when determining CC eigenvalues 
+     !> (false by default such that we use right-transformations)
+     logical :: JacobianLHTR
+     !> Convergence threshold when solving CC eigenvalue equation
+     real(realk) :: JacobianThr
+     !> Maximum dimension of subspace when solving Jacobian eigenvalue equation
+     integer :: JacobianMaxSubspace
+     !> Size of initial subspace when solving Jacobian eigenvalue equation
+     integer :: JacobianInitialSubspace
+     !> Maximum number of iterations when solving Jacobian eigenvalue equation
+     integer :: JacobianMaxIter
+     !> Use preconditioning for Jacobian eigenvalue problem
+     logical :: JacobianPrecond
+
+
      !> MAIN SETTINGS DEFINING DEC CALCULATION
      !> **************************************
 
