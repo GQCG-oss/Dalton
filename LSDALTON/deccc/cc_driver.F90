@@ -2708,6 +2708,18 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc(B)
    call mem_dealloc(c)
 
+   ! KK: Calculate CCSD eigenvalue. 
+   ! KK FIXME: This call needs to be placed somewhere else.
+   if(DECinfo%CCeival) then
+      call ccsd_eigenvalue_solver(nb,no,nv,fock_f,oofock_prec%elm2,vvfock_prec%elm2,mylsitem,xo,xv,yo,&
+           & yv,p2,p4)
+   end if
+
+
+   ! remove preconditioning matrices
+   call tensor_free(oofock_prec)
+   call tensor_free(vvfock_prec)
+
    if(use_singles) then
       !call array2_free(h1)
       call tensor_free(yv)
@@ -3066,44 +3078,6 @@ subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)
 
 end subroutine ccdriver_dealloc_workspace
 
-subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock,sync)
-   implicit none
-   type(lsitem),intent(inout) :: MyLsItem
-   type(tensor), intent(inout) :: t1, Co, Cv
-   type(tensor), intent(inout) :: xo,xv,yo,yv
-   type(tensor), intent(in)    :: fock
-   type(tensor), intent(inout) :: t1fock
-   logical, intent(in) :: sync
-   integer :: ord2(2), nb,no,nv
-   real(realk), pointer :: w1(:)
-
-   nv=t1%dims(1)
-   no=t1%dims(2)
-   nb=Co%dims(1)
-
-   ! synchronize singles data on slaves
-   if(sync)call tensor_sync_replicated(t1)
-
-   ! get the T1 transformation matrices
-   call tensor_cp_data(Cv,yv)
-   call tensor_cp_data(Cv,xv)
-   ord2 = [1,2]
-   call tensor_contract(-1.0E0_realk,Co,t1,[2],[2],1,1.0E0_realk,xv,ord2)
-
-
-   call tensor_cp_data(Co,yo)
-   call tensor_cp_data(Co,xo)
-   call tensor_contract(1.0E0_realk,Cv,t1,[2],[1],1,1.0E0_realk,yo,ord2)
-
-
-   !ONLY USE T1 PART OF THE DENSITY MATRIX AND THE FOCK 
-   call mem_alloc(w1,nb**2)
-   call dgemm('n','n',nb,no,nv,1.0E0_realk,yv%elm1,nb,t1%elm1,nv,0.0E0_realk,t1fock%elm1,nb)
-   call dgemm('n','t',nb,nb,no,1.0E0_realk,t1fock%elm1,nb,xo%elm1,nb,0.0E0_realk,w1,nb)
-   call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w1,.false.,t1fock%elm1)
-   call daxpy(nb**2,1.0E0_realk,fock%elm1,1,t1fock%elm1,1)
-   call mem_dealloc(w1)
-end subroutine get_t1_matrices
 
 function get_iter_idx(iter) result(iter_idx)
    implicit none
