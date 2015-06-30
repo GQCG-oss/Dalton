@@ -6112,7 +6112,7 @@ end function max_batch_dimension
     real(realk) :: ddot1, ddot2 
 
     call print_norm(b1,nrm=ddot1,returnsquared=.true.)
-    call print_norm(b1,nrm=ddot2,returnsquared=.true.)
+    call print_norm(b2,nrm=ddot2,returnsquared=.true.)
     SD_ddot = ddot1+ddot2
 
   end function SD_dotproduct

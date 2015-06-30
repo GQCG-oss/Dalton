@@ -12,6 +12,7 @@ module cc_response_tools_module
    use array4_simple_operations
    use cc_tools_module
    use ccintegrals
+   use dec_fragment_utils
    use dec_tools_module
 
    public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr,& 
@@ -2846,17 +2847,21 @@ module cc_response_tools_module
             end do
 
             ! Residual norm
-            res(p) = tensor_ddot(q1,q1) + tensor_ddot(q2,q2)
+            res(p) = SD_dotproduct(q1,q2)
             res(p) = sqrt(res(p))
 
             ! Check for convergence
             conv(p) = (res(p)<DECinfo%JacobianThr) 
             write(DECinfo%output,'(1X,a,i6,2X,i6,4X,g18.8,1X,g18.8,3X,L2)') &
                  & 'JAC',M,p,lambdaREAL(p),res(p),conv(p)
-            if(conv(p)) cycle ExcitationEnergyLoop
 
-            ! Update M
-            M=M+1
+            if(conv(p)) then
+               ! Do not include new vectors for eigenvalue p if it is already converged
+               cycle ExcitationEnergyLoop
+            else
+               ! Update M
+               M=M+1
+            end if
 
             ! Sanity check for dimensions
             if(M > DECinfo%JacobianMaxSubspace) then
@@ -2893,7 +2898,7 @@ module cc_response_tools_module
             end do
 
             ! Normalize b(M)
-            bnorm = tensor_ddot(b1(M),b1(M)) + tensor_ddot(b2(M),b2(M))
+            bnorm = SD_dotproduct(b1(M),b2(M))
             bnorm = sqrt(bnorm)
             if(bnorm < 1.0e-14_realk) then
                print *, 'p, bnorm', p,bnorm
