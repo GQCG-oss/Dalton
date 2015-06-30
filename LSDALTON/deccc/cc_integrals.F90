@@ -1165,8 +1165,8 @@ contains
 
     ! working arrays
     gao_size = int(i8*nb*nb*MaxActualDimAlpha*MaxActualDimGamma, kind=long)
-    w1_size = max(nb*nb*MaxActualDimAlpha*MaxActualDimGamma, ntot*ntot*dimP*dimP)
-    w1_size = int(i8*w1_size, kind=long)
+    w1_size = max(ntot*MaxActualDimAlpha*MaxActualDimGamma, ntot*dimP*dimP)
+    w1_size = int(i8*w1_size*ntot, kind=long)
     w2_size = max(ntot*nb*MaxActualDimAlpha*MaxActualDimGamma, &
        & MaxActualDimGamma*ntot*ntot*dimP, ntot*ntot*dimP*dimP)
     w2_size = int(i8*w2_size, kind=long)
