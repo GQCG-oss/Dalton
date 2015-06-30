@@ -1,24 +1,26 @@
 module cc_response_tools_module
 
-   use precision
-   use typedef
-   use typedeftype
-   use dec_typedef_module
-   use IntegralInterfaceMOD
-   use tensor_interface_module
+  use fundamental
+  use precision
+  use typedef
+  use typedeftype
+  use dec_typedef_module
+  use IntegralInterfaceMOD
+  use tensor_interface_module
 
-   ! DEC DEPENDENCIES (within deccc directory)   
-   ! *****************************************
-   use array4_simple_operations
-   use cc_tools_module
-   use ccintegrals
-   use dec_fragment_utils
-   use dec_tools_module
+  ! DEC DEPENDENCIES (within deccc directory)   
+  ! *****************************************
+  use array4_simple_operations
+  use cc_tools_module
+  use ccintegrals
+  use dec_fragment_utils
+  use dec_tools_module
 
-   public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr,& 
-        & ccsd_eigenvalue_solver
-   private
-   contains
+  public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr,& 
+       & ccsd_eigenvalue_solver
+  private
+
+contains
 
    !> \author Patrick Ettenhuber
    !> \Date September 2013
@@ -2605,14 +2607,13 @@ module cc_response_tools_module
       !> (effectively intent(in) but need to be intent(inout) for practical purposes)
       type(tensor),intent(inout) :: t1,t2
       real(realk),pointer :: lambdaREAL(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),alpha(:,:)
-      type(tensor) :: ASSdiag,ADDdiag,tmp
       integer :: Mold,k,M,p,i,j,iter
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
-      type(tensor) :: q1,zeta1,q2,zeta2
+      type(tensor) :: q1,zeta1,q2,zeta2,bopt1,bopt2
       real(realk) :: tmp1,tmp2,fac,bTzeta,bnorm,sc
-      real(realk),pointer :: res(:),lambdaIMAG(:)
-      logical,pointer :: conv(:)
+      real(realk),pointer :: res(:),lambdaIMAG(:),eival(:),singlescomp(:)
+      logical,pointer :: conv(:),singleex(:)
       logical :: allconv
 
 
@@ -2662,7 +2663,6 @@ module cc_response_tools_module
       end if
 
 
-
       ! ********************************************************************************
       !                         INITIALIZATION BEFORE SOLVER LOOP                      !
       ! ********************************************************************************
@@ -2673,8 +2673,13 @@ module cc_response_tools_module
       call tensor_minit(zeta1,[nvirt,nocc],2)
       call tensor_minit(q2,[nvirt,nocc,nvirt,nocc],4)
       call tensor_minit(zeta2,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(bopt1,[nvirt,nocc],2)
+      call tensor_minit(bopt2,[nvirt,nocc,nvirt,nocc],4)
       call mem_alloc(res,k)
       call mem_alloc(conv,k)
+      call mem_alloc(singleex,M)
+      call mem_alloc(eival,k)
+      call mem_alloc(singlescomp,k)
       conv=.false.
       allconv=.false.
 
@@ -2692,7 +2697,8 @@ module cc_response_tools_module
          call tensor_minit(Ab2(i),[nvirt,nocc,nvirt,nocc],4)
       end do
       call mem_alloc(lambdaREAL,M)
-      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambdaREAL)
+      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambdaREAL,singleex)
+      eival(1:k) = lambdaREAL(1:k)
 
 
       ! Form Jacobian right-hand transformations A b on initial M trial vectors b
@@ -2735,7 +2741,6 @@ module cc_response_tools_module
 
 
 
-
       ! ***************************************************************************************
       ! *                                MAIN SOLVER ITERATIONS                               *
       ! ***************************************************************************************
@@ -2751,7 +2756,13 @@ module cc_response_tools_module
       write(DECinfo%output,'(1X,a)') 'JAC Start guess for eigenvalues'
       write(DECinfo%output,'(1X,a)') 'JAC ---------------------------'
       do i=1,k
-         write(DECinfo%output,'(1X,a,i7,g20.10)') 'JAC ',i,lambdaREAL(i)
+         if(singleex(i)) then
+            write(DECinfo%output,'(1X,a,i7,g20.10,1X,a)') 'JAC ',i,lambdaREAL(i), '  (singles ex.)'
+            singlescomp(i) = 100.0_realk
+         else
+            write(DECinfo%output,'(1X,a,i7,g20.10,1X,a)') 'JAC ',i,lambdaREAL(i), '  (doubles ex.)'
+            singlescomp(i) = 0.0_realk
+         end if
       end do
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
@@ -2788,6 +2799,7 @@ module cc_response_tools_module
          call mem_alloc(lambdaIMAG,M)
          call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambdaREAL,&
               & lambdaIMAG,alphaR,alphaL)
+         eival(1:k) = lambdaREAL(1:k)
          call mem_dealloc(Ar)
 
          ! Any imaginary eigenvalue component? Print a warning if this is the case.
@@ -2837,14 +2849,28 @@ module cc_response_tools_module
             ! 
             call tensor_zero(q1)
             call tensor_zero(q2)
-            do i=1,Mold
-               call tensor_add(q1,alpha(i,p),Ab1(i))
-               fac = - alpha(i,p)*lambdaREAL(p)
-               call tensor_add(q1,fac,b1(i))
+            call tensor_zero(bopt1)
+            call tensor_zero(bopt2)
 
+            do i=1,Mold
+               ! Update A bopt part
+               call tensor_add(q1,alpha(i,p),Ab1(i))
                call tensor_add(q2,alpha(i,p),Ab2(i))
-               call tensor_add(q2,fac,b2(i))
+
+               ! Calculate bopt
+               call tensor_add(bopt1,alpha(i,p),b1(i))
+               call tensor_add(bopt2,alpha(i,p),b2(i))
             end do
+
+            ! Residual: A bopt - eival bopt  
+            fac = - lambdaREAL(p)
+            call tensor_add(q1,fac,bopt1)
+            call tensor_add(q2,fac,bopt2)
+
+            ! Singles component of optimal vector: |bopt1| / |bopt|
+            call print_norm(bopt1,nrm=tmp1,returnsquared=.true.)
+            tmp2 = SD_dotproduct(bopt1,bopt2)
+            singlescomp(p) = (sqrt(tmp1) / sqrt(tmp2) )*100.0_realk
 
             ! Residual norm
             res(p) = SD_dotproduct(q1,q2)
@@ -2960,6 +2986,25 @@ module cc_response_tools_module
       end if
 
 
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC CCSD excitation energies'
+      write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC      Exci.    Hartree           eV            cm-1           ||T1|| (%)'
+      do p=1,k
+         write(DECinfo%output,'(1X,a,i7,4X,3g15.7,F10.2)') 'JAC ',p,eival(p),eival(p)*hartree_to_eV,&
+              & eival(p)*hartree_to_cm1, singlescomp(p)
+      end do
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+
+
       do i=1,M
          call tensor_free(b1(i))
          call tensor_free(b2(i))
@@ -2971,6 +3016,9 @@ module cc_response_tools_module
       call mem_dealloc(Ab1)
       call mem_dealloc(Ab2)
 
+      call mem_dealloc(eival)
+      call mem_dealloc(singlescomp)
+      call mem_dealloc(singleex)
       call mem_dealloc(res)
       call mem_dealloc(conv)
       call mem_dealloc(Arbig)
@@ -2978,6 +3026,8 @@ module cc_response_tools_module
       call tensor_free(zeta2)
       call tensor_free(q1)
       call tensor_free(q2)
+      call tensor_free(bopt1)
+      call tensor_free(bopt2)
 
     end subroutine ccsd_eigenvalue_solver
 
@@ -3036,7 +3086,7 @@ module cc_response_tools_module
     !> We simply take the lowest M orbital energies differences in singles and doubles spaces.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1,b2,eival)
+    subroutine ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1,b2,eival,singleex)
       implicit none
       !> Number of start vectors requested
       integer,intent(in) :: M
@@ -3048,10 +3098,13 @@ module cc_response_tools_module
       type(tensor),intent(inout) :: b1(M), b2(M)
       !> Eigenvalues (orbital energy differences) for start vectors
       real(realk),intent(inout) :: eival(M)
+      !> Is the initial eigenvalue a single excitation (true) or double excitation (false)
+      logical,intent(inout) :: singleex(M)
       integer :: i,j,a,b,maxidx(1),MS,MD,idxS,idxD
       real(realk) :: ex,maxeival,eivalS(M),eivalD(M),mineivalD,mineivalS
       integer,dimension(M) :: s1,s2,d1,d2,d3,d4,sd
       logical,dimension(M) :: inclS, inclD
+      singleex=.true.
 
 
       ! M lowest singles excitation energies
@@ -3158,17 +3211,18 @@ module cc_response_tools_module
             ! this eigenvalue is now included and cannot be considered again
             inclS(idxS) = .true.  
             eival(i) = mineivalS
+            singleex(i) = .true.
 
             ! Singles vector - 1 in position of eigenvalue, zero elsewhere
             ! Doubles vector - zero 
             b1(i)%elm2(s1(idxS),s2(idxS)) = 1.0_realk
-            print *, 'Including singles ',s1(idxS),s2(idxS),eival(i)
 
          else ! the doubles eigenvalue is the lowest
 
             ! this eigenvalue is now included and cannot be considered again
             inclD(idxD) = .true.
             eival(i) = mineivalD
+            singleex(i) = .false.
 
             ! Singles vector - zero
             ! Doubles vector - 1 in position of eigenvalue, zero elsewhere
@@ -3182,7 +3236,6 @@ module cc_response_tools_module
                b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk/sqrt(2.0_realk)
                b2(i)%elm4(d3(idxD),d4(idxD),d1(idxD),d2(idxD)) = 1.0_realk/sqrt(2.0_realk)
             end if
-            print *, 'Including doubles ',d1(idxD),d2(idxD),d3(idxD),d4(idxD),eival(i)
 
          end if
          
@@ -3233,5 +3286,6 @@ module cc_response_tools_module
       end do
 
     end subroutine ccsd_eigenvalue_check
+
 
   end module cc_response_tools_module
