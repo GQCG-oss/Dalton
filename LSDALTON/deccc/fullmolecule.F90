@@ -54,6 +54,7 @@ contains
     type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
     real(realk) :: tcpu, twall
     
+    print*,"INITIALIZE MOLECULE"
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -71,6 +72,9 @@ contains
     call molecule_get_reference_state(molecule,mylsitem)
 
     call molecule_mo_fock(molecule)
+
+    call print_norm(molecule%oofock,"OCC OCC BLOCK")
+    call print_norm(molecule%vvfock,"VIR VIR BLOCK")
 
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule,mylsitem)
@@ -1114,8 +1118,8 @@ contains
      !     & molecule%fock,molecule%oofock)
 
      call tensor_minit(tmp, [nbasis,nocc], 2, local=loc, atype='TDAR',tdims=tdim  )
-     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Co,[2],[1],1,0.0E0_realk,tmp,ord )
-     call tensor_contract(1.0E0_realk,molecule%Co,tmp,[1],[1],1,0.0E0_realk,molecule%oofock,ord )
+     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Co,[2],[1],1,0.0E0_realk,tmp,ord,force_sync=.true.)
+     call tensor_contract(1.0E0_realk,molecule%Co,tmp,[1],[1],1,0.0E0_realk,molecule%oofock,ord,force_sync=.true.)
      call tensor_free(tmp)
 
 
@@ -1125,8 +1129,8 @@ contains
      !     & molecule%fock,molecule%qqfock)
 
      call tensor_minit(tmp, [nbasis,nvirt], 2, local=loc, atype='TDAR',tdims=tdim  )
-     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Cv,[2],[1],1,0.0E0_realk,tmp,ord)
-     call tensor_contract(1.0E0_realk,molecule%Cv,tmp,[1],[1],1,0.0E0_realk,molecule%vvfock,ord)
+     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Cv,[2],[1],1,0.0E0_realk,tmp,ord,force_sync=.true.)
+     call tensor_contract(1.0E0_realk,molecule%Cv,tmp,[1],[1],1,0.0E0_realk,molecule%vvfock,ord,force_sync=.true.)
      call tensor_free(tmp)
 
   end subroutine molecule_mo_fock
