@@ -54,8 +54,6 @@ contains
     type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
     real(realk) :: tcpu, twall
     
-    print*,"INITIALIZE MOLECULE"
-
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Init basic info (molecular dimensions etc.)
@@ -72,9 +70,6 @@ contains
     call molecule_get_reference_state(molecule,mylsitem)
 
     call molecule_mo_fock(molecule)
-
-    call print_norm(molecule%oofock,"OCC OCC BLOCK")
-    call print_norm(molecule%vvfock,"VIR VIR BLOCK")
 
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule,mylsitem)
