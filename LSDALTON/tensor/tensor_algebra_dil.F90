@@ -360,6 +360,7 @@
         public dil_array_print
         public dil_mm_pipe_efficient
         public dil_will_malloc_succeed
+        public dil_tens_pack_sym2
         public dil_distr_tens_insert_sym2
         public dil_test
 
@@ -5414,6 +5415,74 @@
          end subroutine fill_buddy_info
 
         end function dil_will_malloc_succeed
+!---------------------------------------------------------------------------------------
+        subroutine dil_tens_pack_sym2(stens,srank,sdim,ud1,ud2,fd,dtens,drank,ddim,ierr)
+!This subroutine packs two symmetric indices into a single composite index:
+!D(p,q,[r<=s],...)=S(p,q,r,s,...). The indices r and s can occupy arbitrary
+!positions in S(): <ud1>, <ud2>. The position of the composite index [r<=s] is
+!provided by the <fd> argument. The relative order of other indices {p,q,...}
+!is the same in D(...) and S(...).
+        implicit none
+        real(realk), intent(in):: stens(1:*)      !in: input tensor elements
+        integer(INTD), intent(in):: srank         !in: input tensor rank (positive integer >=2)
+        integer(INTD), intent(in):: sdim(1:*)     !in: input tensor dimensions (positive integers)
+        integer(INTD), intent(in):: ud1,ud2       !in: unfolded dimension positions in <stens> (indices r and s): ud1<ud2
+        integer(INTD), intent(in):: fd            !in: position of the composite (folded) dimension in <dtens>
+        real(realk), intent(inout):: dtens(1:*)   !out: output tensor elements
+        integer(INTD), intent(out):: drank        !out: output tensor rank
+        integer(INTD), intent(inout):: ddim(1:*)  !out: output tensor dimensions
+        integer(INTD), intent(inout):: ierr       !out: error code (0:success)
+        integer(INTD):: i,j,k,l,m,n,dpos(1:MAX_TENSOR_RANK),mlndx(1:MAX_TENSOR_RANK)
+        integer(INTL):: ll,ld,ls,sb(1:MAX_TENSOR_RANK),db(1:MAX_TENSOR_RANK)
+
+        ierr=0; drank=-1
+!Check arguments:
+        if(srank.lt.2) then; ierr=1; return; endif
+        drank=srank-1
+        if(ud1.le.0.or.ud1.gt.srank.or.ud2.le.0.or.ud2.gt.srank.or.ud1.ge.ud2.or.fd.le.0.or.fd.gt.drank) then
+         ierr=2; return
+        endif
+        if(sdim(ud1).ne.sdim(ud2)) then; ierr=3; return; endif !symmetric dimensions must have the same dimension extent
+!Establish dimension correspondence:
+        ll=1; j=0
+        do i=1,srank
+         sb(i)=ll; ll=ll*sdim(i)
+         if(i.ne.ud1.and.i.ne.ud2) then
+          j=j+1; if(j.eq.fd) j=j+1
+          dpos(i)=j; ddim(j)=sdim(i) !dpos(X)=Y: Xth index in <stens> corresponds to Yth index in <dtens>
+         else
+          dpos(i)=fd !both <ud1> and <ud2> positions in <stens> are mapped to the composite position <fd> in <dtens>
+         endif
+        enddo
+        ddim(fd)=sdim(ud1)*(sdim(ud1)+1)/2 !extent of the composite dimension <fd> in <dtens>
+        if(ll.le.0) then; ierr=4; return; endif
+        ll=1; do i=1,drank; db(i)=ll; ll=ll*ddim(i); enddo
+!Loop:
+        ld=1; ls=1; mlndx(1:srank)=0; i=1
+        do while(i.le.srank)
+         if(i.eq.1) dtens(ld)=stens(ls)
+         if(i.eq.ud1) then
+          if(mlndx(i).lt.mlndx(ud2)) then
+           ls=ls+sb(i); ld=ld+db(fd);; mlndx(i)=mlndx(i)+1; i=1
+          else
+           ls=ls-mlndx(i)*sb(i); ld=ld-mlndx(i)*db(fd); mlndx(i)=0; i=i+1
+          endif
+         elseif(i.eq.ud2) then
+          if(mlndx(i)+1.lt.sdim(i)) then
+           ls=ls+sb(i); ld=ld+(mlndx(i)+1)*db(fd); mlndx(i)=mlndx(i)+1; i=1
+          else
+           ls=ls-mlndx(i)*sb(i); ld=ld-(mlndx(i)*(mlndx(i)+1)/2)*db(fd); mlndx(i)=0; i=i+1
+          endif
+         else
+          if(mlndx(i)+1.lt.sdim(i)) then
+           ls=ls+sb(i); ld=ld+db(dpos(i)); mlndx(i)=mlndx(i)+1; i=1
+          else
+           ls=ls-mlndx(i)*sb(i); ld=ld-mlndx(i)*db(dpos(i)); mlndx(i)=0; i=i+1
+          endif
+         endif
+        enddo
+        return
+        end subroutine dil_tens_pack_sym2
 !--------------------------------------------------------------------------------
         subroutine dil_distr_tens_insert_sym2(dtens,stens,ud1,ud2,fd,ierr,locked) !PARALLEL
 !This subroutine upacks a symmetrically packed pair of indices in a distributed tensor, that is,
@@ -5534,7 +5603,7 @@
            if(n-2.gt.0) then !non-empty external multi-index
             mlndx(1:n-2)=0; m=tnum(l); i=1
             do while(i.le.n-2)
-             dtens%ti(m)%t(ld)=dtens%ti(m)%t(ld)+slice(ls)*dsgn
+             if(i.eq.1) dtens%ti(m)%t(ld)=dtens%ti(m)%t(ld)+slice(ls)*dsgn
              k=ip1(i) !position of the index in <dtens>
              j=ip2(i) !position of the index in <stens>
              if(mlndx(i).lt.sdim(j)-1) then

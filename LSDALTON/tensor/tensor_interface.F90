@@ -61,6 +61,8 @@ module tensor_interface_module
   public dil_tens_fetch               !blocking tensor slice fetching (low memory overhead)
   public dil_tens_upload              !blocking tensor slice uploading (low memory overhead)
   public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued at this time
+  public dil_tens_pack_sym2           !packs two symmetric dimensions of a local tensor into a single composite dimension
+  public dil_distr_tens_insert_sym2   !D(p,q,...,r,s)+=S(p,q,...,r<=s), where r, s, and [r<=s] can have arbitrary positions
   public thread_wtime                 !OMP thread wall time
   public process_wtime                !MPI process wall time
   public int2str                      !converts integers to strings
