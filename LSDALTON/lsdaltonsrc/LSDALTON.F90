@@ -789,7 +789,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use papi_module, only: mypapi_init, eventset
 #endif
 #ifdef VAR_OPENACC
-  use openacc
+  use gpu_device_handling 
 #endif
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
@@ -799,10 +799,6 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
   real(realk), intent(inout) :: t1,t2
-#ifdef VAR_OPENACC
-  !> device type
-  integer(acc_device_kind) :: acc_device_type
-#endif
   
   !INITIALIZING TIMERS SHOULD ALWAYS BE THE FIRST CALL
   call init_timers
@@ -812,12 +808,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call mypapi_init(eventset)
 #endif
 
-#ifdef VAR_OPENACC
-  ! probe for device type
-  acc_device_type = acc_get_device_type()
-  ! initialize the device
-  call acc_init(acc_device_type)
-#endif
+  call Init_GPU_devices   !initialize gpu(s) (acc_init) 
 
   call init_globalmemvar  !initialize the global memory counters
   call NullifyMPIbuffers  !initialize the MPI buffers
@@ -858,7 +849,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use lsmpi_type
 #endif
 #ifdef VAR_OPENACC
-  use openacc
+  use gpu_device_handling 
 #endif
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
@@ -872,17 +863,8 @@ implicit none
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
-#ifdef VAR_OPENACC
-  !> device type
-  integer(acc_device_kind) :: acc_device_type
-#endif
 
-#ifdef VAR_OPENACC
-  ! probe for device type
-  acc_device_type = acc_get_device_type()
-  ! shut down the device
-  call acc_shutdown(acc_device_type)
-#endif
+  call shutdown_GPU_devices   !shut down the device (acc_shutdown)
   
   IF(OnMaster)THEN
      !these routines free matrices and must be called while the 

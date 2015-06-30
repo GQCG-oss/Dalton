@@ -757,6 +757,7 @@ set(LSUTIL_COMMON_C_SOURCES
     LSDALTON/lsutil/crayio.c
     )
 set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/gpu_devices.F90
     LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
     LSDALTON/lsutil/tensor_type_def.F90
