@@ -19,9 +19,15 @@ private
 
 public Init_GPU_devices, Shutdown_GPU_devices,Set_GPU_devices
 
+#ifdef VAR_OPENACC
 integer(kind=acc_device_kind),save :: lsdalton_acc_device_type
 integer(kind=C_int),save :: lsdalton_max_acc_device_num
 integer(kind=C_int),save :: lsdalton_acc_device_num
+#else
+integer,save :: lsdalton_acc_device_type
+integer,save :: lsdalton_max_acc_device_num
+integer,save :: lsdalton_acc_device_num
+#endif
 CONTAINS
 
   subroutine Init_GPU_devices()
