@@ -1757,8 +1757,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    logical                :: diag_oo_block, diag_vv_block, prec, prec_not1, prec_in_b
    character(4)           :: atype
    character              :: intspec(5)
-   type(tensor) :: rho1,rho2 ! kkhack
-   real(realk) :: new1,new2
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
@@ -2690,28 +2688,17 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc(B)
    call mem_dealloc(c)
 
-   ! KKHACK
-   call ccsd_eigenvalue_solver(nb,no,nv,fock_f,oofock_prec%elm2,vvfock_prec%elm2,mylsitem,xo,xv,yo,&
-        & yv,p2,p4)
+   ! KK: Calculate CCSD eigenvalue. 
+   ! KK FIXME: This call needs to be placed somewhere else.
+   if(DECinfo%CCeival) then
+      call ccsd_eigenvalue_solver(nb,no,nv,fock_f,oofock_prec%elm2,vvfock_prec%elm2,mylsitem,xo,xv,yo,&
+           & yv,p2,p4)
+   end if
 
 
    ! remove preconditioning matrices
    call tensor_free(oofock_prec)
    call tensor_free(vvfock_prec)
-
-!!$   ! KKHACK - remove!
-!!$   call tensor_minit(rho1,[nv,no],2)
-!!$   call tensor_minit(rho2,[nv,no,nv,no],4)
-!!$   print *, 'Calling Jacobian RHTR'
-!!$   call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,p2,p4,p2,p4,rho1,rho2)
-!!$   new1 = tensor_ddot(rho1,rho1)
-!!$   new2 = tensor_ddot(rho2,rho2)
-!!$   print *, 'Jacobian1: ', new1
-!!$   print *, 'Jacobian2: ', new2
-!!$   call tensor_free(rho1)
-!!$   call tensor_free(rho2)
-
-
 
    if(use_singles) then
       !call array2_free(h1)
@@ -3054,11 +3041,9 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
    type(PNOSpaceInfo), intent(in), pointer :: pno_cv(:), pno_S(:)
    type(decfrag), intent(inout), optional    :: frag
    integer :: use_i
-   real(realk) :: old1,old2,new1,new2,diff1,diff2  ! KKHACK remove again
-   type(tensor) :: d1,d2,rho1,rho2 ! kkhack
    !FIXME: remove these by implementing a massively parallel version of the
    !multipliers residual
-   type(tensor) :: o2,tl2,ml4, ppfock, qqfock,pqfock,qpfock,p4
+   type(tensor) :: o2,tl2,ml4, ppfock, qqfock,pqfock,qpfock
    ! readme : get residuals, so far this solver supports only singles and doubles
    !          amplitudes (extension to higher iterative model is trivial); differences
    !          are mainly based on the set of residual vectors to be evaluated
@@ -3091,36 +3076,6 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
             & fock,t1fock,iajb,no,nv,xo,xv,yo,yv,nb,&
             & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
-
-
-         ! KKHACK - remove!
-         call tensor_minit(rho1,[nv,no],2)
-         call tensor_minit(rho2,[nv,no,nv,no],4)
-         call tensor_minit( p4, [nv,no,nv,no], 4)
-         call tensor_cp_data(t2(use_i), p4, order = [1,3,2,4] )
-         call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,yv,p4,t1(use_i),&
-              & p4,rho1, rho2,3)
-         call tensor_minit(d1,[nv,no],2)
-         call tensor_minit(d2,[nv,no,nv,no],4)
-
-         call tensor_cp_data(omega2(use_i), p4, order = [1,3,2,4] )
-         d1%elm2 = omega1(use_i)%elm2 - rho1%elm2
-         d2%elm4 = p4%elm4 - rho2%elm4
-         old1 = tensor_ddot(omega1(use_i),omega1(use_i))
-         old2 = tensor_ddot(p4,p4)
-         new1 = tensor_ddot(rho1,rho1)
-         new2 = tensor_ddot(rho2,rho2)
-         diff1 = tensor_ddot(d1,d1)
-         diff2 = tensor_ddot(d2,d2)
-         print *
-         print '(a,3g20.10)', 'NORM1: old,new,diff', sqrt(old1),sqrt(new1),sqrt(diff1)
-         print '(a,3g20.10)', 'NORM2: old,new,diff', sqrt(old2),sqrt(new2),sqrt(diff2)
-         print *
-         call tensor_free(rho1)
-         call tensor_free(rho2)
-         call tensor_free(p4)
-         call tensor_free(d1)
-         call tensor_free(d2)
 
 
 #ifdef MOD_UNRELEASED
