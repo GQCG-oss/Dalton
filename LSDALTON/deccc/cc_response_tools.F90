@@ -2608,7 +2608,7 @@ module cc_response_tools_module
       integer :: Mold,k,M,p,i,j,iter
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
-      type(tensor) :: q1,zeta1,q2,zeta2,R1,R2
+      type(tensor) :: q1,zeta1,q2,zeta2
       real(realk) :: tmp1,tmp2,fac,bTzeta,bnorm,sc
       real(realk),pointer :: res(:),lambdaIMAG(:)
       logical,pointer :: conv(:)
@@ -2622,7 +2622,7 @@ module cc_response_tools_module
       ! How many eigenvalues k?
       k=DECinfo%JacobianNumEival
 
-      ! Size of zero-order orthonormal subspace (M must be equal to or larger than k)
+      ! Size of zero-order orthonormal subspace M (M must be equal to or larger than k)
       M = DECinfo%JacobianInitialSubspace
       if(M==0) then
          ! M was not set by input, set it equal to the number of requested excitation energies
@@ -2639,7 +2639,6 @@ module cc_response_tools_module
       end if
 
       
-
       ! Sanity check: Requested number of initial eigenvalues/start vectors is not
       ! larger than the maximum possible number of singles+doubles excitations.
       O = int(nocc,kind=8)
@@ -2677,8 +2676,6 @@ module cc_response_tools_module
       call mem_alloc(conv,k)
       conv=.false.
       allconv=.false.
-      call tensor_minit(R1,[nvirt,nocc],2)
-      call tensor_minit(R2,[nvirt,nocc,nvirt,nocc],4)
 
 
       ! Get start vectors and associated eigenvalues
@@ -2725,7 +2722,7 @@ module cc_response_tools_module
             if(DECinfo%JacobianLhtr) then
                ! For left-hand transformation, Ab is really b^T A where
                ! b^T is a row vector and A is a matrix. We therefore effectively
-               ! get entry (j,i) when we calculate b(i) "dot" Ab(j) which is
+               ! get entry (j,i) of the reduced Jacobian when we calculate b(i) "dot" Ab(j) which is
                ! really equal to {b^T A}(j) b(i).
                ! (***)
                Arbig(j,i) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
@@ -2762,7 +2759,7 @@ module cc_response_tools_module
       write(DECinfo%output,'(1X,a)') 'JAC'
       write(DECinfo%output,'(1X,a)') 'JAC Jacobian eigenvalue solver'
       write(DECinfo%output,'(1X,a)') 'JAC'
-      write(DECinfo%output,'(1X,a)') 'JAC Subspace  Which     Eigenvalue         Residual       Conv?  '
+      write(DECinfo%output,'(1X,a)') 'JAC Which   Subspace     Eigenvalue           Residual       Conv?  '
 
       SolverLoop: do iter=1,DECinfo%JacobianMaxIter
 
@@ -2774,14 +2771,6 @@ module cc_response_tools_module
                Ar(i,j) = Arbig(i,j)
             end do
          end do
-
-         write(DECinfo%output,*) 'REDMAT ',M
-         do j=1,M
-            do i=1,M
-               write(DECinfo%output,*) i,j,Ar(i,j)
-            end do
-         end do
-      
 
 
          ! Diagonalize reduced matrix Ar
@@ -2809,7 +2798,7 @@ module cc_response_tools_module
          ! A R = lambda A R 
          ! L A = lambda L A
          !
-         ! where A is a matrix, R/L is the right/left row/column eigenvector for eigenvalue lambda. 
+         ! where A is a matrix, R/L is the right/left column/row eigenvector for eigenvalue lambda. 
          ! For left/right eigenvectors, we need to work with left/right eigenvalues.
          call mem_alloc(alpha,M,M)
          do j=1,M
@@ -2824,10 +2813,6 @@ module cc_response_tools_module
          call mem_dealloc(alphaR)
          call mem_dealloc(alphaL)
 
-         write(DECinfo%output,*) 'EIGENVALUES ',M
-         do i=1,M
-            write(DECinfo%output,*) i,lambdaREAL(i),lambdaIMAG(i)
-         end do
 
          ! Save current subspace dimension
          Mold = M
@@ -2838,11 +2823,19 @@ module cc_response_tools_module
          ! only the k'th eigenvalue is considered.
          ExcitationEnergyLoop: do p=1,k
 
-            ! Residual - two components: singles (q1) and doubles (q2)
+
+            ! Current optimal eigenvector bopt for eigenvalue p:
+            ! ''''''''''''''''''''''''''''''''''''''''''''''''''
+            ! bopt = sum_i^M alpha(i,p) b(i) 
+            ! 
+            ! Residual q:
+            ! '''''''''''
+            ! q = A bopt - eival bopt
+            ! 
+            ! Residual contains two components: singles (q1) and doubles (q2)
+            ! 
             call tensor_zero(q1)
             call tensor_zero(q2)
-            call tensor_zero(R1)
-            call tensor_zero(R2)
             do i=1,Mold
                call tensor_add(q1,alpha(i,p),Ab1(i))
                fac = - alpha(i,p)*lambdaREAL(p)
@@ -2850,10 +2843,6 @@ module cc_response_tools_module
 
                call tensor_add(q2,alpha(i,p),Ab2(i))
                call tensor_add(q2,fac,b2(i))
-
-               ! KK HACK current optimal vector
-               call tensor_add(R1,alpha(i,p),b1(i))
-               call tensor_add(R2,alpha(i,p),b2(i))
             end do
 
             ! Residual norm
@@ -2862,10 +2851,9 @@ module cc_response_tools_module
 
             ! Check for convergence
             conv(p) = (res(p)<DECinfo%JacobianThr) 
-            write(DECinfo%output,'(1X,a,i6,2X,i6,2X,g18.8,1X,g18.8,3X,L2)') &
+            write(DECinfo%output,'(1X,a,i6,2X,i6,4X,g18.8,1X,g18.8,3X,L2)') &
                  & 'JAC',M,p,lambdaREAL(p),res(p),conv(p)
             if(conv(p)) cycle ExcitationEnergyLoop
-            ! KKHACK - also store optimal vector if converged!
 
             ! Update M
             M=M+1
@@ -2985,8 +2973,6 @@ module cc_response_tools_module
       call tensor_free(zeta2)
       call tensor_free(q1)
       call tensor_free(q2)
-      call tensor_free(R1)
-      call tensor_free(R2)
 
     end subroutine ccsd_eigenvalue_solver
 

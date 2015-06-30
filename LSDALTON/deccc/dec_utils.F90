@@ -6097,4 +6097,25 @@ end function max_batch_dimension
   end subroutine restart_sanity_check
 
 
+  !> For two tensors b1 and b2, calculate sum of the following dot products:
+  !> SD_ddot = dotproduct(b1,b1) + dotproduct(b2,b2)
+  !> Intended to be used when b1/b2 decsribes singles/doubles quantities, but
+  !> can also be used for other purposes.
+  !> \author Kasper Kristensen
+  !> \date June 2015
+  function SD_dotproduct(b1,b2) result(SD_ddot)
+    implicit none
+    !> Result as described above
+    real(realk) :: SD_ddot
+    !> Input tensors may be of different dimensions
+    type(tensor),intent(in) :: b1,b2
+    real(realk) :: ddot1, ddot2 
+
+    call print_norm(b1,nrm=ddot1,returnsquared=.true.)
+    call print_norm(b1,nrm=ddot2,returnsquared=.true.)
+    SD_ddot = ddot1+ddot2
+
+  end function SD_dotproduct
+
+
 end module dec_fragment_utils
