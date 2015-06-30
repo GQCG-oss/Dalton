@@ -10,6 +10,7 @@ module ri_util_module
 #endif
   use precision
   use lstiming!, only: lstimer
+  use lapackMod
   use lowdin_module
   use screen_mod!, only: DECscreenITEM
   use dec_typedef_module
@@ -771,17 +772,17 @@ subroutine Get_InverseCholeskyFactor(n,A,lupri)
   integer                      :: i,j,np,k,info
   real(realk) :: TS,TE
   call LSTIMER('START ',TS,TE,lupri)
-  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
+  call LSDPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',INFO
      call lsquit('DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',-1)
   ENDIF
-  call DPOTRI('U', N, A, N, INFO ) !U=inverse of a original U
+  call LSDPOTRI('U', N, A, N, INFO ) !U=inverse of a original U
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRI Failed in Get_InverseCholeskyFactor',INFO
      call lsquit('DPOTRI Failed in Get_InverseCholeskyFactor',-1)
   ENDIF
-  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor of inverse of a original U
+  call LSDPOTRF('U', N, A, N, INFO ) !U=Cholesky factor of inverse of a original U
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',INFO
      call lsquit('DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',-1)

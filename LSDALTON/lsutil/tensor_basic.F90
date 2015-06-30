@@ -250,7 +250,7 @@ module tensor_basic_module
          !  call mem_dealloc(arr%elm1,arr%e1c,arr%w1)
          !else
          if( arr%bg_alloc)then
-            call mem_pseudo_dealloc(arr%elm1)
+            call mem_pseudo_dealloc(arr%elm1, mark_deleted=.true.)
          else
             call mem_dealloc(arr%elm1)
          endif

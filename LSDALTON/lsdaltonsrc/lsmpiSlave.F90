@@ -284,6 +284,9 @@ subroutine lsmpi_slave(comm)
       case(SET_TENSOR_ALWAYS_SYNC_TRUE);
          call tensor_set_always_sync_true(.false.)
 
+      case(SET_TENSOR_SEG_LENGTH);
+         call tensor_set_global_segment_length(0_long)
+
       case(INIT_BG_BUF);
          call mem_init_background_alloc_slave(comm)
       case(FREE_BG_BUF);

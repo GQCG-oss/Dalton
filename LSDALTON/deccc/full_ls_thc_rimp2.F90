@@ -45,13 +45,14 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   !
   integer :: nbasis,nocc,nvirt,naux,noccfull,mynum,numnodes,nb,nbasisAux
   integer :: nAtoms,lupri,ngrid,Iprint,NBA,M,N,K,I,J,A,B,ALPHA,P,Q,offset
-  real(realk) :: TS,TE,epsilon,TMP,TS2,TE2
+  real(realk) :: TS,TE,epsilon,TMP,TS2,TE2,CoulombEnergy,ExchangeEnergy
   real(realk),pointer :: EpsOcc(:),EpsVirt(:),X(:,:),S(:,:),S_inv(:,:),Zpq(:,:)
   real(realk),pointer :: Calpha(:),ABdecomp(:,:),Mmat(:,:),Epq(:,:),XO(:,:)
   real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
   real(realk),pointer :: SC(:,:),Identity(:,:)
   real(realk),pointer :: Tvirt(:,:),Tocc(:,:),BmatPR(:,:,:),AmatPR(:,:,:)
   real(realk),pointer :: ABmatPR(:,:,:),ZCDmat(:,:,:),IntAO(:,:,:,:)
+  real(realk),pointer :: tmpB(:,:,:),tmpE(:,:,:,:),tmpG(:,:,:),tmpH(:,:,:)
 !  integer :: BETA,GAMMA,DELTA
   logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate,WriteToDisk
   character :: intspec(5)
@@ -284,64 +285,91 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
 !  Coulomb:X(a,P)*X(i,P)*Z(P,Q)*X(b,Q)*X(j,Q)*X(a,R)*X(i,R)*Z(R,S)*X(b,S)*X(j,S)
 !  tau(i,l) = exp(-epsilon_I*amp_l)   !l is the laplace points
 !  tau(a,l) = exp(epsilon_A*amp_l)   !l is the laplace points
-!  A(P,R,l) = X(a,P)*X(a,R)*tau(a,l)
-!  B(P,R,l) = X(i,P)*X(i,R)*tau(i,l)
-!  C(Q,S,l) = X(b,Q)*X(b,S)*tau(b,l)
-!  D(Q,S,l) = X(j,Q)*X(j,S)*tau(j,l)
+!  A(P,R,l) = X(a,P)*X(a,R)*tau(a,l)           (nvirt*Ngrid**2)  
+!  B(P,R,l) = X(i,P)*X(i,R)*tau(i,l)           (nocc*Ngrid**2) 
+!  C(Q,S,l) = X(b,Q)*X(b,S)*tau(b,l)           (nvirt*Ngrid**2)  
+!  D(Q,S,l) = X(j,Q)*X(j,S)*tau(j,l)           (nocc*Ngrid**2) 
 !  Coulomb: weight_l*(A(P,R)*B(P,R))*Z(P,Q)*(C(Q,S)*D(Q,S))*Z(R,S)
-!  AB(P,R,l) = A(P,R,l)*B(P,R,l)
-!  CD(Q,S,l) = C(Q,S,l)*D(Q,S,l)
+!  AB(P,R,l) = A(P,R,l)*B(P,R,l)               (Ngrid**2)
+!  CD(Q,S,l) = C(Q,S,l)*D(Q,S,l)               (Ngrid**2)
 !  Coulomb: AB(P,R,l)*Z(P,Q)*CD(Q,S,l)*Z(R,S)  (Ngrid**3)
 
-!  call mem_alloc(Tvirt,nvirt,nLaplace)
-!  call BuildTvirt(Tvirt,nvirt,nLaplace,EpsVirt,LaplaceAmp)
-!  call mem_alloc(AmatPR,ngrid,ngrid,nLaplace)
-!  call BuildAmat(nLaplace,ngrid,nvirt,XV,Tvirt,AmatPR)
-!  call mem_dealloc(Tvirt)
+  call mem_alloc(Tvirt,nvirt,nLaplace)
+  print*,'Step1'
+  call BuildTvirt(Tvirt,nvirt,nLaplace,EpsVirt,LaplaceAmp)
+  call mem_alloc(AmatPR,ngrid,ngrid,nLaplace)
+  print*,'Step2 '
+  call ls_dzero(AmatPR,ngrid*ngrid*nLaplace)
+  call BuildAmat(nLaplace,ngrid,nvirt,XV,Tvirt,AmatPR)
 
-!  call mem_alloc(Tocc,nocc,nLaplace)
-!  call BuildTocc(Tocc,nocc,nLaplace,EpsOcc,LaplaceAmp)
-!  call mem_alloc(BmatPR,ngrid,ngrid,nLaplace)
-!  call BuildAmat(nLaplace,ngrid,nocc,XO,Tocc,BmatPR)
-!  call mem_dealloc(Tocc)
+  call mem_alloc(Tocc,nocc,nLaplace)
+  print*,'Step3'
+  call BuildTocc(Tocc,nocc,nLaplace,EpsOcc,LaplaceAmp)
+  call mem_alloc(BmatPR,ngrid,ngrid,nLaplace)
+  print*,'Step4 '
+  call ls_dzero(BmatPR,ngrid*ngrid*nLaplace)
+  call BuildAmat(nLaplace,ngrid,nocc,XO,Tocc,BmatPR)
 
-!  call mem_alloc(ABmatPR,ngrid,ngrid,nLaplace)
-!  call BuildABmat(nLaplace,ngrid,ABmatPR,AmatPR,BmatPR)
-!  call mem_dealloc(BmatPR)
-!  call mem_dealloc(AmatPR)
+  call mem_alloc(ABmatPR,ngrid,ngrid,nLaplace)
+  print*,'Step5'
+  call BuildABmat(nLaplace,ngrid,ABmatPR,AmatPR,BmatPR)
+  call mem_dealloc(BmatPR)
+  call mem_dealloc(AmatPR)
 
   !  Coulomb: AB(P,R,L)*Z(P,Q)*CD(Q,S,L)*Z(R,S)  (Ngrid**3)
-!  M = ngrid            !rows of Output Matrix
-!  N = ngrid*nLaplace   !columns of Output Matrix
-!  K = ngrid            !summation dimension
+  M = ngrid            !rows of Output Matrix
+  N = ngrid*nLaplace   !columns of Output Matrix
+  K = ngrid            !summation dimension
   !ZCD(P,S,L) = Z(P,Q)*CD(Q,S,L)
-!  call mem_alloc(ZCDmat,ngrid,ngrid,nLaplace)
-!  call dgemm('N','N',M,N,K,1.0E0_realk,Zpq,M,ABmatPR,K,0.0E0_realk,ZCDmat,M)
-!  call LS_THC_RIMP2_LaplaceEcorr(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,mp2_energy)
-!  call mem_dealloc(ZCDmat)
-!  call mem_dealloc(ABmatPR)
-!  print*,'LS-THC-RI-MP2 Laplace Coulomb energy=',mp2_energy
+  call mem_alloc(ZCDmat,ngrid,ngrid,nLaplace)
+  print*,'Step6'
+  call dgemm('N','N',M,N,K,1.0E0_realk,Zpq,M,ABmatPR,K,0.0E0_realk,ZCDmat,M)
+  print*,'Step7'
+  call LS_THC_RIMP2_LaplaceEcorrJ(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,CoulombEnergy)
+  call mem_dealloc(ZCDmat)
+  call mem_dealloc(ABmatPR)
+  print*,'LS-THC-RI-MP2 Laplace Coulomb energy=',CoulombEnergy
 
 !  Exchange:X(a,P)*X(i,P)*Z(P,Q)*X(b,Q)*X(j,Q)*X(b,R)*X(i,R)*Z(R,S)*X(a,S)*X(j,S)
+!  B(j,b,P) = X(j,Q)*X(b,Q)*Z(P,Q)                        (Ngrid**2*Nocc*Nvirt)
+!  D(j,a,R) = X(j,S)*X(a,S)*Z(R,S)                        (Ngrid**2*Nocc*Nvirt) same as B
+!  E(j,P,R,l) = tau(b,l)*X(b,R)*B(j,b,P)                  (Ngrid**2*Nocc*Nvirt)   
+!  F(j,P,R,l) = tau(a,l)*X(a,P)*D(j,a,R)                  (Ngrid**2*Nocc*Nvirt) same as E but interchage P,R 
+!  G(P,R,l)   = tau(i,l)*X(i,P)*X(i,R)                    (Ngrid**2*Nocc)   
+!  H(P,R,l)   = tau(j,l)*E(j,P,R,l)*F(j,P,R,l)            (Ngrid**2*Nocc)   
+!  Exchange: G(P,R,l)*H(P,R,l)                            (Ngrid**2)
 
-!  A(j,b,Q) = X(j,Q)*X(b,Q)                               (Ngrid*Nocc*Nvirt)
-!  B(j,b,P) = A(j,b,Q)*Z(P,Q)                             (Ngrid*2**Nocc*Nvirt)
-!  C(j,a,S) = X(j,S)*X(a,S)                               (Ngrid*Nocc*Nvirt)
-!  D(j,a,R) = Z(R,S)*C(j,a,S)                             (Ngrid**2*Nocc*Nvirt)
-  
-!  E(j,R,P) =  X(b,R)*B(j,b,P)                            (Ngrid**2*Nocc*Nvirt)   
-!  F(j,R,P) =  X(a,P)*D(j,a,R)                            (Ngrid**2*Nocc*Nvirt)   
-!  EF(R,P) = E(j,R,P)*F(j,R,P)                            (Ngrid**2*Nocc)   
-!  G(P,R) = X(i,P)*X(i,R)                                 (Ngrid**2*Nocc)   
-  
-!  Exchange: G(P,R)*EF(R,P)                               (Ngrid**2)
+  call mem_alloc(tmpB,nocc,nvirt,ngrid)
+!  B(j,b,P) = X(j,Q)*X(b,Q)*Z(P,Q)                        (Ngrid**2*Nocc*Nvirt)
+  call BuildTmpB(tmpB,nocc,nvirt,ngrid,XV,XO,Zpq)
 
-!  MY VERSION
-!  A(P,S) = X(a,P)*X(a,S)                                 (Ngrid**2*Nvirt)
-!  B(P,R) = X(i,P)*X(i,R)                                 (Ngrid**2*Nocc)
-!  C(Q,R) = X(b,Q)*X(b,R)                                 (Ngrid**2*Nvirt)
-!  D(Q,S) = X(j,Q)*X(j,S)                                 (Ngrid**2*Nocc)
-!  Exchange: A(P,S)*Z(P,Q)*B(P,R)*C(Q,R)*D(Q,S)*Z(R,S)    (Ngrid**4)
+  call mem_alloc(tmpE,nocc,ngrid,ngrid,nLaplace)
+!  E(j,R,P,l) = tau(b,l)*X(b,R)*B(j,b,P)                  (Ngrid**2*Nocc*Nvirt)   
+  call BuildTmpE(tmpE,nocc,nvirt,ngrid,XV,tmpB,Tvirt,nLaplace)
+  call mem_dealloc(tmpB)
+
+  call mem_alloc(tmpG,ngrid,ngrid,nLaplace)
+!  G(P,R,l)   = tau(i,l)*X(i,P)*X(i,R)                    (Ngrid**2*Nocc)   
+  call BuildTmpG(tmpG,nocc,ngrid,XO,Tocc,nLaplace)
+
+  call mem_alloc(tmpH,ngrid,ngrid,nLaplace)
+!  H(P,R,l)   = tau(j,l)*E(j,P,R,l)*F(j,P,R,l)            (Ngrid**2*Nocc)   
+  call BuildTmpH(tmpH,nocc,ngrid,Tocc,nLaplace,tmpE)
+  call mem_dealloc(tmpE)
+
+!  Exchange: G(P,R,l)*H(P,R,l)                            (Ngrid**2)
+  call LS_THC_RIMP2_LaplaceEcorrK(ngrid,nLaplace,tmpG,tmpH,LaplaceW,ExchangeEnergy)
+  print*,'LS-THC-RI-MP2 Laplace Exchange energy=',ExchangeEnergy
+  mp2_energy = CoulombEnergy + ExchangeEnergy
+  print*,'LS-THC-RI-MP2 Laplace energy=',mp2_energy
+
+
+  call mem_dealloc(tmpG)
+  call mem_dealloc(tmpH)
+
+  call mem_dealloc(Tvirt)
+  call mem_dealloc(Tocc)
+
 
   IF(WriteToDisk)THEN
      call mem_dealloc(X)
@@ -434,7 +462,7 @@ subroutine TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid,lupri)
   WRITE(lupri,*)'DIFF(THC-AOINT) = ',SQRT(DIFFsq)
 end subroutine TestTHCAOintegrals
 !  Coulomb: AB(P,R,l)*ZCD(P,S,l)*Z(R,S)  (Ngrid**3)
-subroutine LS_THC_RIMP2_LaplaceEcorr(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,mp2_energy)
+subroutine LS_THC_RIMP2_LaplaceEcorrJ(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,mp2_energy)
   implicit none
   integer,intent(in) ::  ngrid,nLaplace
   real(realk),intent(in) :: Zpq(ngrid,ngrid),ABmatPR(ngrid,ngrid,nLaplace)
@@ -445,12 +473,12 @@ subroutine LS_THC_RIMP2_LaplaceEcorr(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,
   integer :: P,R,S,L
   real(realk) :: E,TMPZ
   E = 0.0E0_realk  
-  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(P,R,S,L,TMPZ) SHARED(ngrid,&
-  !$OMP nLaplace,ABmatPR,ZCDmat,Zpq) REDUCTION(+:E)
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(P,R,S,L,TMPZ) SHARED(ngrid,&
+  !$OMP nLaplace,ABmatPR,ZCDmat,Zpq,LaplaceW) REDUCTION(+:E)
   DO L=1,nLaplace
      DO S=1,ngrid
         DO R=1,ngrid
-           TMPZ=Zpq(R,S)
+           TMPZ=Zpq(R,S)*LaplaceW(L)
            DO P=1,ngrid
               E = E + ABmatPR(P,R,L)*ZCDmat(P,S,L)*TMPZ
            ENDDO
@@ -458,8 +486,8 @@ subroutine LS_THC_RIMP2_LaplaceEcorr(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,
      ENDDO
   ENDDO
   !$OMP END PARALLEL DO
-  mp2_energy = E
-end subroutine LS_THC_RIMP2_LaplaceEcorr
+  mp2_energy = -2.0E0_realk*E
+end subroutine LS_THC_RIMP2_LaplaceEcorrJ
 
 subroutine BuildABmat(nLaplace,ngrid,ABmatPR,AmatPR,BmatPR)
   implicit none
@@ -477,10 +505,12 @@ subroutine BuildABmat(nLaplace,ngrid,ABmatPR,AmatPR,BmatPR)
   !$OMP END PARALLEL DO
 end subroutine BuildABmat
 
+
+!  A(P,R,l) = X(a,P)*X(a,R)*tau(a,l)
 subroutine BuildAmat(nLaplace,ngrid,nvirt,XV,Tvirt,AmatPR)
   implicit none
   integer :: nLaplace,ngrid,nvirt
-  real(realk),intent(in) :: XV(nvirt,ngrid),Tvirt(nvirt,nLaplace)
+  real(realk),intent(in) :: XV(ngrid,nvirt),Tvirt(nvirt,nLaplace)
   real(realk),intent(inout) :: AmatPR(ngrid,ngrid,nLaplace)
   !
   integer :: l,R,P,A
@@ -489,17 +519,148 @@ subroutine BuildAmat(nLaplace,ngrid,nvirt,XV,Tvirt,AmatPR)
   !$OMP R,P,A,TMP) SHARED(nvirt,nLaplace,ngrid,Tvirt,XV,AmatPR)
   do l=1,nLaplace
      do R=1,ngrid
-        do P=1,ngrid
-           TMP = 0.0E0_realk
-           do A=1,nvirt
-              TMP = TMP + XV(A,P)*XV(A,R)*Tvirt(A,L)
+        do A=1,nvirt
+           TMP = XV(R,A)*Tvirt(A,L)
+           do P=1,ngrid
+              AmatPR(P,R,l) = AmatPR(P,R,l) + XV(P,A)*TMP
            enddo
-           AmatPR(P,R,l) = TMP
         enddo
      enddo
   enddo
   !$OMP END PARALLEL DO
 end subroutine BuildAmat
+
+!  B(j,b,P) = X(j,Q)*X(b,Q)*Z(P,Q)          (Ngrid**2*Nocc*Nvirt)
+subroutine BuildTmpB(tmpB,nocc,nvirt,ngrid,XV,XO,Zpq)
+  implicit none
+  integer :: nocc,ngrid,nvirt
+  real(realk),intent(in) :: XV(ngrid,nvirt),XO(ngrid,nocc)
+  real(realk),intent(in) :: Zpq(ngrid,ngrid)
+  real(realk),intent(inout) :: tmpB(nocc,nvirt,ngrid)
+  !
+  integer :: j,b,P,Q
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(j,&
+  !$OMP b,P,Q,TMP) SHARED(nvirt,nocc,ngrid,XV,XO,Zpq,tmpB)
+  do P=1,ngrid
+     do B=1,nvirt
+        do J=1,nocc
+           TMP = 0.0E0_realk
+           do Q=1,ngrid
+              TMP = TMP + XO(Q,J)*XV(Q,B)*Zpq(P,Q)
+           enddo
+           tmpB(j,b,P) = TMP
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine BuildTmpB
+
+!  E(j,R,P,l) = tau(b,l)*X(b,R)*B(j,b,P)                  (Ngrid**2*Nocc*Nvirt)   
+subroutine BuildTmpE(tmpE,nocc,nvirt,ngrid,XV,tmpB,Tvirt,nLaplace)
+  implicit none
+  integer :: nocc,ngrid,nvirt,nLaplace
+  real(realk),intent(in) :: XV(ngrid,nvirt)
+  real(realk),intent(in) :: Tvirt(nvirt,nLaplace)
+  real(realk),intent(inout) :: tmpB(nocc,nvirt,ngrid)
+  real(realk),intent(inout) :: tmpE(nocc,ngrid,ngrid,nLaplace)
+  !
+  integer :: j,R,P,l,B
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(4) DEFAULT(none) PRIVATE(j,&
+  !$OMP R,P,l,B,TMP) SHARED(tmpE,nocc,nvirt,ngrid,XV,tmpB,Tvirt,nLaplace)
+  do l=1,nLaplace
+     do P=1,ngrid
+        do R=1,ngrid
+           do j=1,nocc
+              TMP = 0.0E0_realk
+              do B=1,nvirt
+                 TMP = TMP + Tvirt(B,l)*XV(R,B)*tmpB(j,B,P)
+              enddo
+              tmpE(j,R,P,l) = TMP
+           enddo
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine BuildTmpE
+
+!FIX ME 
+
+!  G(P,R,l)   = tau(i,l)*X(i,P)*X(i,R)                    (Ngrid**2*Nocc)   
+subroutine BuildTmpG(tmpG,nocc,ngrid,XO,Tocc,nLaplace)
+  implicit none
+  integer :: nocc,ngrid,nLaplace
+  real(realk),intent(in) :: XO(ngrid,nocc)
+  real(realk),intent(in) :: Tocc(nocc,nLaplace)
+  real(realk),intent(inout) :: tmpG(ngrid,ngrid,nLaplace)
+  !
+  integer :: i,l,P,R
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(i,&
+  !$OMP l,P,R,TMP) SHARED(tmpG,nocc,ngrid,XO,Tocc,nLaplace)
+  do l=1,nLaplace
+     do R=1,ngrid
+        do P=1,ngrid
+           TMP = 0.0E0_realk
+           do I=1,nocc
+              TMP = TMP + Tocc(I,l)*XO(P,I)*XO(R,I)
+           enddo
+           tmpG(P,R,l) = TMP
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine BuildTmpG
+
+!  H(P,R,l)   = tau(j,l)*E(j,P,R,l)*F(j,P,R,l)            (Ngrid**2*Nocc)   
+subroutine BuildTmpH(tmpH,nocc,ngrid,Tocc,nLaplace,tmpE)
+  implicit none
+  integer :: nocc,ngrid,nLaplace
+  real(realk),intent(in) :: Tocc(nocc,nLaplace)
+  real(realk),intent(in) :: tmpE(nocc,ngrid,ngrid,nLaplace)
+  real(realk),intent(inout) :: tmpH(ngrid,ngrid,nLaplace)
+  !
+  integer :: j,l,P,R
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(j,&
+  !$OMP l,P,R,TMP) SHARED(tmpH,nocc,ngrid,Tocc,nLaplace,tmpE)
+  do l=1,nLaplace
+     do R=1,ngrid
+        do P=1,ngrid
+           TMP = 0.0E0_realk
+           do J=1,nocc
+              TMP = TMP + Tocc(J,l)*tmpE(J,P,R,l)*tmpE(J,R,P,l)
+           enddo
+           tmpH(P,R,l) = TMP
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine BuildTmpH
+
+!  Exchange: G(P,R,l)*H(P,R,l)                            (Ngrid**2)
+subroutine  LS_THC_RIMP2_LaplaceEcorrK(ngrid,nLaplace,tmpG,tmpH,LaplaceW,ExchangeEnergy)
+  implicit none
+  integer,intent(in) ::  ngrid,nLaplace
+  real(realk),intent(in) :: tmpG(ngrid*ngrid,nLaplace)
+  real(realk),intent(in) :: tmpH(ngrid*ngrid,nLaplace)
+  real(realk),intent(in) :: LaplaceW(nLaplace)
+  real(realk),intent(inout) :: ExchangeEnergy
+  !
+  integer :: P,L
+  real(realk) :: E
+  E = 0.0E0_realk  
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(P,L) SHARED(ngrid,&
+  !$OMP nLaplace,tmpG,tmpH,LaplaceW) REDUCTION(+:E)
+  DO L=1,nLaplace
+     DO P=1,ngrid*ngrid
+        E = E + tmpG(P,L)*tmpH(P,L)*LaplaceW(L)
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  ExchangeEnergy = E
+end subroutine LS_THC_RIMP2_LaplaceEcorrK
 
 subroutine BuildTvirt(Tvirt,nvirt,nLaplace,EpsVirt,LaplaceAmp)
   implicit none

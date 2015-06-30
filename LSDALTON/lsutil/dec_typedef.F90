@@ -275,6 +275,8 @@ module dec_typedef_module
      logical :: CCthrSpecified
      !> Use preconditioner
      logical :: use_preconditioner
+     !> CCSOLVER skip iterations and return starting guess
+     logical :: ccsolverskip
      !> Use preconditioner in B matrix
      logical :: use_preconditioner_in_b
      !> Use CROP (if false we use DIIS)
@@ -300,8 +302,10 @@ module dec_typedef_module
      integer :: abc_nbuffs
      !> do we want to do gpu computations synchronous?
      logical :: acc_sync
-     !> (T) hack variable - presently used for omitting CCSD
+     !> (T) hack variable - used for omitting CCSD
      logical :: pt_hack
+     !> (T) hack variable - used for omitting (t) integrals (may be used in combintion with pt_hack)
+     logical :: pt_hack2
 
      !> F12 settings
      !> ************

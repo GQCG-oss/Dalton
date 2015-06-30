@@ -780,6 +780,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/gridgeneration_memory.F90
     LSDALTON/lsutil/Time.F90
     LSDALTON/lsutil/common_utilities.F90
+    LSDALTON/lsutil/lapack_interface.F90
     LSDALTON/lsutil/ls_parameters.F90
     LSDALTON/lsutil/par_mod.F90
     LSDALTON/lsutil/lsmpiType.F90

@@ -5882,6 +5882,10 @@ end function max_batch_dimension
      type(tensor),intent(inout) :: u
      integer :: i,j,a,b,nocc,nvirt
 
+     logical :: bg
+
+     bg = mem_is_background_buf_init()
+
      ! Number of occupied/virtual orbitals assuming index ordering given above
      nocc  = t2%dims(2)
      nvirt = t2%dims(1)
@@ -5890,7 +5894,7 @@ end function max_batch_dimension
      case(TT_DENSE,TT_REPLICATED)
 
         ! Init combined amplitudes
-        call tensor_init(u,t2%dims,4)
+        call tensor_init(u,t2%dims,4,bg=bg)
 
         if(DECinfo%use_singles)then
 
@@ -5919,7 +5923,7 @@ end function max_batch_dimension
 
 
         call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
-           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset )
+           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset, bg=bg )
 
         if(DECinfo%use_singles)then
 

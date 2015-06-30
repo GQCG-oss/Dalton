@@ -569,7 +569,7 @@ module lspdm_basic_module
          vector_size = dim1*realk
 #ifdef VAR_MPI
          if(arr%bg_alloc)then
-            call mem_pseudo_dealloc(arr%dummy)
+            call mem_pseudo_dealloc(arr%dummy, mark_deleted=.true.)
          else
             call mem_dealloc(arr%dummy,arr%dummyc)
          endif

@@ -137,7 +137,8 @@ MODULE lsparameters
   integer,parameter :: LSTHCRIMP2INAMP              = 70
   integer,parameter :: LSTHCRIMP2FULL               = 71
   integer,parameter :: CCSDPTSLAVE_WORK             = 72
-  integer,parameter :: DECRIMP2GRAD                 = 73
+  integer,parameter :: SET_TENSOR_SEG_LENGTH        = 73
+  integer,parameter :: DECRIMP2GRAD                 = 74
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

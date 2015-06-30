@@ -10,7 +10,8 @@ use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
 use tensor_interface_module, only: tensor_set_dil_backend_true, &
-   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer
+   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer, &
+   tensor_set_global_segment_length
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -1319,24 +1320,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
      if (WORD(1:7) == '*TENSOR') then
         READWORD=.TRUE.
-        do
-           read(LUCMD,'(A40)') word
-           if(word(1:1) == '!' .or. word(1:1) == '#') cycle
-           if(word(1:1) == '*') then ! New property or *END OF INPUT
-              backspace(LUCMD)
-              exit
-           end if
-           select case(word)
-           case('.DIL_BACKEND')
-              call tensor_set_dil_backend_true(.true.)
-           case('.DEBUG')
-              call tensor_set_debug_mode_true(.true.)
-           case default
-              print *,"UNRECOGNIZED KEYWORD: ",word
-              call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
-
-           end select
-        enddo
+        call TENSOR_INPUT(word,LUCMD)
      endif
 
      IF (WORD(1:2) == '**') THEN
@@ -1350,6 +1334,34 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
   ENDDO
 END subroutine GENERAL_INPUT
+
+subroutine TENSOR_INPUT(word,lucmd)
+   implicit none
+   character(len=80),intent(inout)  :: word
+   integer,intent(in) :: lucmd 
+   integer(kind=8)    :: seg_len
+   do
+      read(LUCMD,'(A40)') word
+      if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+      if(word(1:1) == '*') then ! New property or *END OF INPUT
+         backspace(LUCMD)
+         exit
+      end if
+      select case(word)
+      case('.DIL_BACKEND')
+         call tensor_set_dil_backend_true(.true.)
+      case('.DEBUG')
+         call tensor_set_debug_mode_true(.true.)
+      case('.SEGMENT_LENGTH')
+         read(LUCMD,*) seg_len
+         call tensor_set_global_segment_length(seg_len)
+      case default
+         print *,"UNRECOGNIZED KEYWORD: ",word
+         call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
+
+      end select
+   enddo
+end subroutine TENSOR_INPUT
 
 subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   implicit none
@@ -3190,7 +3202,7 @@ if(mod(SPLIT_MPI_MSG,8)/=0)call lsquit("INPUT ERROR: MAX_MPI_MSG_SIZE_NEL has to
 IF(nthreads.EQ.1)THEN
  IF(infpar%nodtot.GT.1)THEN
   WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
-                          & ' processors, but you are only using 1 OpenMP thread'
+                          & ' processes, but you are only using 1 OpenMP thread'
   WRITE(lupri,'(4X,A)')     'WARNING: This is NOT recommended! LSDALTON is designed as a MPI/OpenMP hybrid code'
   WRITE(lupri,'(4X,A)')     'WARNING: It is therefore HIGHLY recommended to use the command'
   WRITE(lupri,'(4X,A)')     'WARNING: export OMP_NUM_THREADS=X'
@@ -3201,18 +3213,17 @@ IF(nthreads.EQ.1)THEN
  ENDIF
 ENDIF
 #ifdef VAR_INT64
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processes'
 #ifdef VAR_MPI_32BIT_INT
 !int64,mpi & mpi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
 WRITE(lupri,'(4X,A)')'linked to a 32 bit integer MPI library.'
 #else
 !int64,mpi nompi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
 WRITE(lupri,'(4X,A)')'linked to a 64 bit integer MPI library.'
 #endif
 #else
 !int32 mpi
-WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes'
 #endif
 #else
 !no MPI
@@ -3972,7 +3983,7 @@ if (config%opt%cfg_prefer_PDMM) then
       call lsquit('PDMM not implemented for unrestricted!',config%lupri)
    else
 #ifdef VAR_MPI
-      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes combined'
       WRITE(lupri,'(4X,A)')'with PDMM for memory distribution and parallelization.'
       CALL mat_select_type(mtype_pdmm,lupri,nbast)      
 #else
@@ -3995,7 +4006,7 @@ endif
       else
 #ifdef VAR_SCALAPACK
 #ifdef VAR_MPI
-         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes combined'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
 
@@ -4016,7 +4027,7 @@ endif
 #else
          !no VAR_SCALAPACK
 #ifdef VAR_MPI
-         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
+         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
          !no VAR_SCALAPACK and no MPI         
