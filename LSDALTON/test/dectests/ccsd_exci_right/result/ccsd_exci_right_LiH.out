@@ -103,12 +103,12 @@
  C++ compiler version     | unknown
  Explicit libs            | -framework vecLib
  Static linking           | OFF
- Last Git revision        | 31e14e092d0c888ad92cd5b18655907bc5ae94cc
+ Last Git revision        | 6790babf54f3bca925712c4e539ebe124cd9e6c5
  Git branch               | master
- Configuration time       | 2015-07-01 11:16:37.107306
+ Configuration time       | 2015-07-01 14:32:25.031872
 
 Start simulation
-     Date and time (Linux)  : Wed Jul  1 11:17:51 2015
+     Date and time (Linux)  : Wed Jul  1 14:32:57 2015
      Host name              : kaspers-mbp-2.st.client.au.dk           
                       
  -----------------------------------------
@@ -243,6 +243,7 @@ basis and perform integral evaluation using this basis
     The Screening threshold used for Exchange              :  1.0000E-08
     The Screening threshold used for One-electron operators:  1.0000E-15
  The SCF Convergence Criteria is applied to the gradnorm in AO basis
+ WARNING! We enforce canonical orbitals for CC response!
 
  End of configuration!
 
@@ -263,17 +264,17 @@ Matrix type: mtype_dense
  Level 1 atomic calculation on STO-3G Charge   3
  ================================================
  The Coulomb energy contribution    4.2938701987929200     
- The Exchange energy contribution    1.7776785793060783     
+ The Exchange energy contribution    1.7776785793060785     
  The Fock energy contribution   -2.5161916194868410     
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
   1     -7.2386855826    0.00000000000    0.00      0.00000    0.00    0.0000000    3.17E-01  ###
- The Coulomb energy contribution    4.2639658761264387     
+ The Coulomb energy contribution    4.2639658761264378     
  The Exchange energy contribution    1.7627264179728392     
  The Fock energy contribution   -2.5012394581535995     
   2     -7.2449023172   -0.00621673460    0.00      0.00000    0.00    0.0000000    2.20E-02  ###
- The Coulomb energy contribution    4.2612274854120678     
+ The Coulomb energy contribution    4.2612274854120686     
  The Exchange energy contribution    1.7613572226156533     
  The Fock energy contribution   -2.4998702627964144     
   3     -7.2449319818   -0.00002966462   -1.00      0.00000    0.00    0.0000000    5.27E-05  ###
@@ -295,7 +296,7 @@ Matrix type: mtype_dense
  The Coulomb energy contribution    6.1066784972986055     
  The Exchange energy contribution    2.0995231430910661     
  The Fock energy contribution   -4.0071553542075389     
-  Iteration 0 energy:  -7.6716894534087210     
+  Iteration 0 energy:  -7.6716894534087192     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        12 sparsity:     33.333 %
 Matrix AO D  has nnz=        16 sparsity:     44.444 %
@@ -315,7 +316,7 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    6.2948204318638101     
+ The Coulomb energy contribution    6.2948204318638092     
  The Exchange energy contribution    2.2361585702551605     
  The Fock energy contribution   -4.0586618616086483     
   2     -7.6878646399   -0.00694858910    0.00      0.00000    0.00    0.0000000    1.04E-01  ###
@@ -325,7 +326,7 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    6.2950106834933877     
+ The Coulomb energy contribution    6.2950106834933859     
  The Exchange energy contribution    2.2366552862570517     
  The Fock energy contribution   -4.0583553972363351     
   3     -7.6899774932   -0.00211285337   -1.00      0.00000    0.00    0.0000000    3.95E-02  ###
@@ -345,7 +346,7 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    6.3005638964573567     
+ The Coulomb energy contribution    6.3005638964573576     
  The Exchange energy contribution    2.2382774265884176     
  The Fock energy contribution   -4.0622864698689405     
   5     -7.6903386942   -0.00000039896   -1.00      0.00000    0.00    0.0000000    2.30E-04  ###
@@ -355,9 +356,9 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    6.3004734753638836     
+ The Coulomb energy contribution    6.3004734753638818     
  The Exchange energy contribution    2.2382495301360850     
- The Fock energy contribution   -4.0622239452277977     
+ The Fock energy contribution   -4.0622239452277968     
   6     -7.6903387011   -0.00000000693   -1.00      0.00000    0.00    0.0000000    1.05E-05  ###
 ** Make average of the last F and D matrices
 ** Get new density 
@@ -365,9 +366,9 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    6.3004706885493054     
- The Exchange energy contribution    2.2382486553933756     
- The Fock energy contribution   -4.0622220331559298     
+ The Coulomb energy contribution    6.3004706885493018     
+ The Exchange energy contribution    2.2382486553933738     
+ The Fock energy contribution   -4.0622220331559271     
   7     -7.6903387011   -0.00000000002   -1.00      0.00000    0.00    0.0000000    1.75E-06  ###
 ** Make average of the last F and D matrices
 ** Get new density 
@@ -375,9 +376,9 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    6.3004696518538754     
- The Exchange energy contribution    2.2382483325670162     
- The Fock energy contribution   -4.0622213192868593     
+ The Coulomb energy contribution    6.3004696518537679     
+ The Exchange energy contribution    2.2382483325669833     
+ The Fock energy contribution   -4.0622213192867855     
   8     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    3.66E-08  ###
 ** Make average of the last F and D matrices
 ** Get new density 
@@ -385,55 +386,45 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    6.3004696791246584     
- The Exchange energy contribution    2.2382483410756948     
- The Fock energy contribution   -4.0622213380489640     
-  9     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.02E-09  ###
+ The Coulomb energy contribution    6.3004696701559615     
+ The Exchange energy contribution    2.2382483382773986     
+ The Fock energy contribution   -4.0622213318785629     
+  9     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    5.97E-09  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number  10
- The Coulomb energy contribution    6.3004697839453936     
- The Exchange energy contribution    2.2382483737804693     
- The Fock energy contribution   -4.0622214101649243     
- 10     -7.6903387011    0.00000000000   -1.00      0.00000    0.00    0.0000000    1.84E-07  ###
+ The Coulomb energy contribution    6.3004696605811352     
+ The Exchange energy contribution    2.2382483352899825     
+ The Fock energy contribution   -4.0622213252911532     
+ 10     -7.6903387011    0.00000000000   -1.00      0.00000    0.00    0.0000000    2.20E-08  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number  11
- The Coulomb energy contribution    6.3004695253999632     
- The Exchange energy contribution    2.2382482931124876     
- The Fock energy contribution   -4.0622212322874756     
- 11     -7.6903387011    0.00000000000   -1.00      0.00000    0.00    0.0000000    2.48E-07  ###
+ The Coulomb energy contribution    6.3004696616879716     
+ The Exchange energy contribution    2.2382483356353227     
+ The Fock energy contribution   -4.0622213260526490     
+ 11     -7.6903387011    0.00000000000   -1.00      0.00000    0.00    0.0000000    2.01E-08  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.01 seconds
  >>> wall Time used in SCF iteration is   0.01 seconds
 ** Get Fock matrix number  12
- The Coulomb energy contribution    6.3004696738422847     
- The Exchange energy contribution    2.2382483394276154     
- The Fock energy contribution   -4.0622213344146711     
- 12     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    1.86E-10  ###
-** Make average of the last F and D matrices
-** Get new density 
-No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.01 seconds
- >>> wall Time used in SCF iteration is   0.01 seconds
-** Get Fock matrix number  13
- The Coulomb energy contribution    6.3004696737287453     
- The Exchange energy contribution    2.2382483393921229     
- The Fock energy contribution   -4.0622213343366251     
- 13     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    1.31E-14  ###
-SCF converged in     13 iterations
- >>>  CPU Time used in **ITER is   0.15 seconds
- >>> wall Time used in **ITER is   0.15 seconds
+ The Coulomb energy contribution    6.3004696737252308     
+ The Exchange energy contribution    2.2382483393910255     
+ The Fock energy contribution   -4.0622213343342066     
+ 12     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    5.75E-12  ###
+SCF converged in     12 iterations
+ >>>  CPU Time used in **ITER is   0.14 seconds
+ >>> wall Time used in **ITER is   0.14 seconds
 
-Total no. of matmuls in SCF optimization:         68
+Total no. of matmuls in SCF optimization:         64
 
  Number of occupied orbitals:           2
  Number of virtual orbitals:           4
@@ -470,7 +461,6 @@ Calculation of virtual orbital energies converged in     2 iterations!
  10    0.00000000000   -1.0000    0.0000    0.0000000
  11    0.00000000000   -1.0000    0.0000    0.0000000
  12   -0.00000000000   -1.0000    0.0000    0.0000000
- 13   -0.00000000000   -1.0000    0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
@@ -478,17 +468,16 @@ Calculation of virtual orbital energies converged in     2 iterations!
 ======================================================================
     1            -7.68091605075678884873      0.223915424543692D+00
     2            -7.68786463985436085977      0.103985808334818D+00
-    3            -7.68997749322828738627      0.394571566496080D-01
+    3            -7.68997749322828916263      0.394571566496080D-01
     4            -7.69033829518937572800      0.133012713340123D-02
     5            -7.69033869415134851977      0.230401879167371D-03
-    6            -7.69033870108154360423      0.105343781753166D-04
-    7            -7.69033870110241402074      0.174578687572567D-05
-    8            -7.69033870110295225686      0.365692096837336D-07
-    9            -7.69033870110295936229      0.901992098634022D-08
-   10            -7.69033870110295048050      0.184253132809636D-06
-   11            -7.69033870110293982236      0.247963921874089D-06
-   12            -7.69033870110295225686      0.185562426038571D-09
-   13            -7.69033870110295403322      0.131496712291572D-13
+    6            -7.69033870108154538059      0.105343781750924D-04
+    7            -7.69033870110241402074      0.174578687314705D-05
+    8            -7.69033870110295403322      0.365694132359925D-07
+    9            -7.69033870110296113864      0.597329246016292D-08
+   10            -7.69033870110295580957      0.219795890006314D-07
+   11            -7.69033870110295580957      0.201292461172959D-07
+   12            -7.69033870110295758593      0.574870057560381D-11
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -556,7 +545,7 @@ Linesearch done, we choose previous point
 
 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
-  %LOC%   Max. sigma_2 and orb.number:    3.43    5
+  %LOC%   Max. sigma_2 and orb.number:    3.43    4
   %LOC%   Max. sigma_4 and orb.number:    4.01    5
   %LOC%   Min. sigma_2 and orb.number:    2.90    3
   %LOC%   Min. sigma_4 and orb.number:    3.57    3
@@ -583,10 +572,20 @@ FULL: Number of virt. orbitals   :      4
 FULL: Local memory use type full :  0.69E-06
 FULL: Distribute matrices        : F
 
+ Orbital energies:
+           1  -2.4032310477315537     
+           2 -0.31283424070963856     
+           3   7.2672703209527012E-002
+           4  0.15380883929688305     
+           5  0.15380883929688305     
+           6  0.59892045089978085     
  Calculating carmom matrix for DEC calculation...
  get_available_memory: System identified to be MAC!
- Available Memory (GB) =       3.5950    
- Memory found by system call to be:    3.595     GB
+ Available Memory (GB) =       1.7730    
+ Memory found by system call to be:    1.773     GB
+ Using canonical orbitals as requested in input!
+
+
 
 Full molecular calculation is carried out...
 
@@ -622,71 +621,71 @@ Singles          =    T
  The Exchange energy contribution   -0.0000000000000000     
  The Fock energy contribution   -0.0000000000000000     
  ###      1         0.464038956E-01       -0.118947774E-01
- The Coulomb energy contribution    1.7045062351999476E-006
- The Exchange energy contribution    1.1685406507040439E-005
- The Fock energy contribution    9.9809002718404907E-006
+ The Coulomb energy contribution    1.7045062352108178E-006
+ The Exchange energy contribution    1.1685406507154673E-005
+ The Fock energy contribution    9.9809002719438558E-006
  ###      2         0.163266781E-01       -0.156518082E-01
- The Coulomb energy contribution    7.4093233104481376E-006
- The Exchange energy contribution    6.7082146693530064E-005
- The Fock energy contribution    5.9672823383081911E-005
+ The Coulomb energy contribution    7.4093233105098389E-006
+ The Exchange energy contribution    6.7082146694149265E-005
+ The Fock energy contribution    5.9672823383639448E-005
  ###      3         0.351285154E-02       -0.175946379E-01
- The Coulomb energy contribution    1.4135699579507306E-005
- The Exchange energy contribution    1.5891341335076803E-004
- The Fock energy contribution    1.4477771377126072E-004
+ The Coulomb energy contribution    1.4135699579665852E-005
+ The Exchange energy contribution    1.5891341335232283E-004
+ The Fock energy contribution    1.4477771377265699E-004
  ###      4         0.146850956E-02       -0.177184440E-01
- The Coulomb energy contribution    1.9089498330806456E-005
- The Exchange energy contribution    2.3190097820063052E-004
- The Fock energy contribution    2.1281147986982403E-004
+ The Coulomb energy contribution    1.9089498330964862E-005
+ The Exchange energy contribution    2.3190097820177864E-004
+ The Fock energy contribution    2.1281147987081375E-004
  ###      5         0.263811068E-03       -0.177868917E-01
- The Coulomb energy contribution    1.9834907372411420E-005
- The Exchange energy contribution    2.4196357097381371E-004
- The Fock energy contribution    2.2212866360140227E-004
+ The Coulomb energy contribution    1.9834907372571529E-005
+ The Exchange energy contribution    2.4196357097491249E-004
+ The Fock energy contribution    2.2212866360234098E-004
  ###      6         0.403132608E-04       -0.178006516E-01
- The Coulomb energy contribution    1.9943811787378362E-005
- The Exchange energy contribution    2.4295143128266104E-004
- The Fock energy contribution    2.2300761949528268E-004
+ The Coulomb energy contribution    1.9943811787540823E-005
+ The Exchange energy contribution    2.4295143128377170E-004
+ The Fock energy contribution    2.2300761949623087E-004
  ###      7         0.733226433E-05       -0.178020710E-01
- The Coulomb energy contribution    1.9960899253338479E-005
- The Exchange energy contribution    2.4315449560528645E-004
- The Fock energy contribution    2.2319359635194800E-004
+ The Coulomb energy contribution    1.9960899253501133E-005
+ The Exchange energy contribution    2.4315449560640155E-004
+ The Fock energy contribution    2.2319359635290044E-004
  ###      8         0.414271899E-05       -0.178022431E-01
- The Coulomb energy contribution    1.9972051383646285E-005
- The Exchange energy contribution    2.4332020640703886E-004
- The Fock energy contribution    2.2334815502339259E-004
+ The Coulomb energy contribution    1.9972051383809504E-005
+ The Exchange energy contribution    2.4332020640816551E-004
+ The Fock energy contribution    2.2334815502435599E-004
  ###      9         0.215756375E-05       -0.178023688E-01
- The Coulomb energy contribution    1.9981705868786880E-005
- The Exchange energy contribution    2.4345619768474246E-004
- The Fock energy contribution    2.2347449181595559E-004
+ The Coulomb energy contribution    1.9981705868949958E-005
+ The Exchange energy contribution    2.4345619768586274E-004
+ The Fock energy contribution    2.2347449181691281E-004
  ###     10         0.291802623E-06       -0.178025034E-01
- The Coulomb energy contribution    1.9981855655237233E-005
- The Exchange energy contribution    2.4345911444789055E-004
- The Fock energy contribution    2.2347725879265330E-004
+ The Coulomb energy contribution    1.9981855655400518E-005
+ The Exchange energy contribution    2.4345911444901349E-004
+ The Fock energy contribution    2.2347725879361298E-004
  ###     11         0.738538696E-07       -0.178025181E-01
- The Coulomb energy contribution    1.9981753881226560E-005
- The Exchange energy contribution    2.4345816737210023E-004
- The Fock energy contribution    2.2347641349087369E-004
- ###     12         0.231715606E-07       -0.178025206E-01
- The Coulomb energy contribution    1.9981697040036012E-005
- The Exchange energy contribution    2.4345749093636622E-004
- The Fock energy contribution    2.2347579389633021E-004
- ###     13         0.115423021E-07       -0.178025201E-01
- The Coulomb energy contribution    1.9981654382778607E-005
- The Exchange energy contribution    2.4345689303876663E-004
- The Fock energy contribution    2.2347523865598809E-004
+ The Coulomb energy contribution    1.9981753881389366E-005
+ The Exchange energy contribution    2.4345816737322072E-004
+ The Fock energy contribution    2.2347641349183139E-004
+ ###     12         0.231715607E-07       -0.178025206E-01
+ The Coulomb energy contribution    1.9981697040199578E-005
+ The Exchange energy contribution    2.4345749093748493E-004
+ The Fock energy contribution    2.2347579389728537E-004
+ ###     13         0.115423022E-07       -0.178025201E-01
+ The Coulomb energy contribution    1.9981654382941193E-005
+ The Exchange energy contribution    2.4345689303988962E-004
+ The Fock energy contribution    2.2347523865694839E-004
  ###     14         0.411542488E-08       -0.178025196E-01
- The Coulomb energy contribution    1.9981642892409868E-005
- The Exchange energy contribution    2.4345670704631732E-004
- The Fock energy contribution    2.2347506415390742E-004
- ###     15         0.726606050E-09       -0.178025193E-01
- The Coulomb energy contribution    1.9981642260011098E-005
- The Exchange energy contribution    2.4345669376378274E-004
- The Fock energy contribution    2.2347505150377165E-004
- ###     16         0.132293773E-09       -0.178025193E-01
- The Coulomb energy contribution    1.9981642405028421E-005
- The Exchange energy contribution    2.4345669557230339E-004
- The Fock energy contribution    2.2347505316727497E-004
- ###     17         0.306211527E-10       -0.178025193E-01
- CCSOL: MAIN LOOP      :  6.26    s
+ The Coulomb energy contribution    1.9981642892572850E-005
+ The Exchange energy contribution    2.4345670704743969E-004
+ The Fock energy contribution    2.2347506415486685E-004
+ ###     15         0.726606019E-09       -0.178025193E-01
+ The Coulomb energy contribution    1.9981642260174820E-005
+ The Exchange energy contribution    2.4345669376490370E-004
+ The Fock energy contribution    2.2347505150472886E-004
+ ###     16         0.132293802E-09       -0.178025193E-01
+ The Coulomb energy contribution    1.9981642405192403E-005
+ The Exchange energy contribution    2.4345669557342511E-004
+ The Fock energy contribution    2.2347505316823273E-004
+ ###     17         0.306210653E-10       -0.178025193E-01
+ CCSOL: MAIN LOOP      :  6.31    s
 
 
 -------------------------------
@@ -694,16 +693,16 @@ Singles          =    T
 -------------------------------
 
 Hooray! CC equation is solved!
-CCSOL: Total cpu time    =  0.268     s
-CCSOL: Total wall time   =   3.46     s
+CCSOL: Total cpu time    =  0.270     s
+CCSOL: Total wall time   =   3.49     s
 Singles amplitudes norm  =  0.3100330E-01
 Doubles amplitudes norm  =  0.1330014    
 Total amplitudes norm    =  0.1365671    
 Corr. energy             =     -0.0178025193
 Number of CC iterations  =   17
- The Coulomb energy contribution    1.9981642424820613E-005
- The Exchange energy contribution    2.4345669579094864E-004
- The Fock energy contribution    2.2347505336612803E-004
+ The Coulomb energy contribution    1.9981642424984517E-005
+ The Exchange energy contribution    2.4345669579206944E-004
+ The Fock energy contribution    2.2347505336708489E-004
  JAC ********************************************************
  JAC        Information for Jacobian eigenvalue solver       
  JAC        ------------------------------------------       
@@ -714,62 +713,52 @@ Number of CC iterations  =   17
  JAC 
  JAC Start guess for eigenvalues
  JAC ---------------------------
- JAC       1    0.4146063197       (singles ex.)
+ JAC       1    0.3855069439       (singles ex.)
  JAC       2    0.4666430800       (singles ex.)
  JAC       3    0.4666430800       (singles ex.)
- JAC       4    0.8292126394       (doubles ex.)
+ JAC       4    0.7710138878       (doubles ex.)
  JAC 
  JAC ********************************************************
  JAC
  JAC Jacobian eigenvalue solver
  JAC
  JAC Which   Subspace     Eigenvalue           Residual       Conv?  
- JAC     1       4        0.19708777         0.26711276        F
- JAC     2       5        0.23652550         0.27185490        F
- JAC     3       6        0.23652550         0.24537633        F
- JAC     4       7        0.77065764         0.20551588        F
- JAC     1       8        0.12969443         0.81018282E-01    F
- JAC     2       9        0.19170316         0.92920509E-01    F
- JAC     3      10        0.19170316         0.85366107E-01    F
- JAC     4      11        0.56720127         0.20225446        F
- JAC     1      12        0.12969997         0.26342160E-01    F
- JAC     2      13        0.19120347         0.17860183E-01    F
- JAC     3      14        0.19120347         0.17276691E-01    F
- JAC     4      15        0.53901299         0.64260827E-01    F
- JAC     1      16        0.12975546         0.13796927E-02    F
- JAC     2      17        0.19122262         0.13880105E-02    F
- JAC     3      18        0.19122262         0.12815683E-02    F
- JAC     4      19        0.53820263         0.40602004E-02    F
- JAC     1      20        0.12973366         0.14368896E-03    F
- JAC     2      21        0.19122282         0.75224216E-04    F
- JAC     3      22        0.19122282         0.72802135E-04    F
- JAC     4      23        0.53825447         0.96174269E-03    F
- JAC     1      24        0.12973180         0.19441887E-04    F
- JAC     2      25        0.19122301         0.10130433E-04    F
- JAC     3      26        0.19122301         0.10134162E-04    F
- JAC     4      27        0.53827328         0.17952495E-03    F
- WARNING! Eigenvalue in subspace contains imaginary component!
- WARNING! However, this is not a target eigenvalue
- WARNING! so it is probably not a problem...
- Eigenvalue number:          17
- Real/imag components:       2.710365255       -0.2527881469E-02
- WARNING! Eigenvalue in subspace contains imaginary component!
- WARNING! However, this is not a target eigenvalue
- WARNING! so it is probably not a problem...
- Eigenvalue number:          18
- Real/imag components:       2.710365255        0.2527881469E-02
- JAC     1      28        0.12973169         0.81489234E-06    F
- JAC     2      29        0.19122302         0.92392657E-06    F
- JAC     3      30        0.19122302         0.92504592E-06    F
- JAC     4      31        0.53827489         0.52876954E-05    F
- JAC     1      32        0.12973169         0.98731405E-07    T
- JAC     2      32        0.19122302         0.19466193E-07    T
- JAC     3      32        0.19122302         0.18164117E-07    T
- JAC     4      32        0.53827491         0.75803459E-06    F
- JAC     1      33        0.12973169         0.18373723E-14    T
- JAC     2      33        0.19122302         0.21250358E-07    T
- JAC     3      33        0.19122302         0.22559012E-07    T
- JAC     4      33        0.53827491         0.35825473E-14    T
+ JAC     1       4        0.16543532         0.23067223        F
+ JAC     2       5        0.23652550         0.23425151        F
+ JAC     3       6        0.23652550         0.23425151        F
+ JAC     4       7        0.66364177         0.17296580        F
+ JAC     1       8        0.12998037         0.41209342E-01    F
+ JAC     2       9        0.19211992         0.56093238E-01    F
+ JAC     3      10        0.19211992         0.56093238E-01    F
+ JAC     4      11        0.55062178         0.11782453        F
+ JAC     1      12        0.12972401         0.72611695E-02    F
+ JAC     2      13        0.19126882         0.70778453E-02    F
+ JAC     3      14        0.19126882         0.70778453E-02    F
+ JAC     4      15        0.53925986         0.15354658E-01    F
+ JAC     1      16        0.12972839         0.79333369E-03    F
+ JAC     2      17        0.19123124         0.12710289E-02    F
+ JAC     3      18        0.19123124         0.12710289E-02    F
+ JAC     4      19        0.53836198         0.51527724E-02    F
+ JAC     1      20        0.12973151         0.66956912E-04    F
+ JAC     2      21        0.19122301         0.62125305E-04    F
+ JAC     3      22        0.19122301         0.62125305E-04    F
+ JAC     4      23        0.53828584         0.66314307E-03    F
+ JAC     1      24        0.12973166         0.80997206E-05    F
+ JAC     2      25        0.19122302         0.99801502E-05    F
+ JAC     3      26        0.19122302         0.99801502E-05    F
+ JAC     4      27        0.53827498         0.52754499E-04    F
+ JAC     1      28        0.12973169         0.42022689E-06    F
+ JAC     2      29        0.19122302         0.81008262E-06    F
+ JAC     3      30        0.19122302         0.81008262E-06    F
+ JAC     4      31        0.53827489         0.46172361E-05    F
+ JAC     1      32        0.12973169         0.15404748E-07    T
+ JAC     2      32        0.19122302         0.40651127E-08    T
+ JAC     3      32        0.19122302         0.20523996E-07    T
+ JAC     4      32        0.53827491         0.28027130E-06    F
+ JAC     1      33        0.12973169         0.23194558E-14    T
+ JAC     2      33        0.19122302         0.20922704E-07    T
+ JAC     3      33        0.19122302         0.20922704E-07    T
+ JAC     4      33        0.53827491         0.52243114E-14    T
  JAC 
  JAC 
  JAC 
@@ -790,7 +779,7 @@ Number of CC iterations  =   17
 
 
 
- CCSD correlation energy :    -0.1780251931E-01
+ CCSD correlation energy :    -0.1780251932E-01
 
 
 
@@ -825,13 +814,13 @@ Number of CC iterations  =   17
 
 
 ------------------------------------------------------
-Total CPU  time used in CC           :         1.27091     s
-Total Wall time used in CC           :         4.47000     s
+Total CPU  time used in CC           :         1.29127     s
+Total Wall time used in CC           :         4.50900     s
 ------------------------------------------------------
 
 
 Hostname       : kaspers-mbp-2.st.client.au.dk                     
-Job finished   : Date: 01/07/2015   Time: 11:17:58
+Job finished   : Date: 01/07/2015   Time: 14:33:05
 
 
 
@@ -841,11 +830,11 @@ Job finished   : Date: 01/07/2015   Time: 11:17:58
 
 
 
- >>>  CPU Time used in *SCF is   1.89 seconds
- >>> wall Time used in *SCF is   6.16 seconds
+ >>>  CPU Time used in *SCF is   1.92 seconds
+ >>> wall Time used in *SCF is   6.21 seconds
 
-Total no. of matmuls used:                       422
-Total no. of Fock/KS matrix evaluations:          14
+Total no. of matmuls used:                       418
+Total no. of Fock/KS matrix evaluations:          13
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -938,9 +927,9 @@ Total no. of Fock/KS matrix evaluations:          14
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   1.93 seconds
- >>> wall Time used in LSDALTON is   7.26 seconds
+ >>>  CPU Time used in LSDALTON is   1.96 seconds
+ >>> wall Time used in LSDALTON is   7.33 seconds
 
 End simulation
-     Date and time (Linux)  : Wed Jul  1 11:17:58 2015
+     Date and time (Linux)  : Wed Jul  1 14:33:05 2015
      Host name              : kaspers-mbp-2.st.client.au.dk           

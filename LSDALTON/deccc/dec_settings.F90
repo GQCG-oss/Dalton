@@ -1195,6 +1195,11 @@ contains
        IF(.not. DECinfo%full_molecular_cc) then
           call lsquit('CC response is not implemented for DEC! Use **CC instead of **DEC.',-1)
        end IF
+       ! For now we enforce canonical orbitals for CC response
+       if(.not. DECinfo%use_canonical) then
+          write(DECinfo%output,*) 'WARNING! We enforce canonical orbitals for CC response!'
+          DECinfo%use_canonical = .true.
+       end if
     end if CCresponse
 
 
