@@ -1250,7 +1250,7 @@ contains
     endif
 
     if(Decinfo%force_distribution)then
-       MyMolecule%mem_distributed = DECinfo% Molecule%mem_distributed
+       MyMolecule%mem_distributed = DECinfo%distribute_fullmolecule
     endif
 
     nnod = infpar%nodtot
