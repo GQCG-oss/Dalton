@@ -2230,7 +2230,6 @@ subroutine mem_pseudo_dealloc_realk(p, mark_deleted)
    integer(kind=8) :: n
    logical :: md, last_assoc, del_assoc
    integer :: i
-
    md=.false.
    if(present(mark_deleted))md=mark_deleted
 
