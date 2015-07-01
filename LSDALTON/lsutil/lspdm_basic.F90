@@ -457,8 +457,11 @@ module lspdm_basic_module
             tooo = from + arr%ti(loc_idx)%e - 1
             arr%ti(loc_idx)%t => arr%dummy(from:tooo)
          else
-            if(bg)call lsquit("ERROR(allocate tiles): this is not yet implemented",-1)
-            call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
+            if(bg)then
+               call mem_pseudo_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%e)
+            else
+               call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
+            endif
             vector_size = dble(arr%ti(loc_idx)%e)*realk
             !$OMP CRITICAL
             tensor_tiled_allocd_mem = tensor_tiled_allocd_mem + vector_size
