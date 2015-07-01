@@ -388,6 +388,7 @@ contains
        if(DECinfo%use_singles)then
           call tensor_free(t1)
        endif
+       ! the order of deallocation is important!
        call tensor_free(t2)
        call tensor_free(VOVO)
 

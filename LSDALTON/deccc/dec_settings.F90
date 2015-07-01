@@ -53,6 +53,16 @@ contains
     DECinfo%SNOOPsamespace =.true.
     DECinfo%SNOOPlocalize  = .false.
 
+    ! CC response
+    DECinfo%CCeival = .false.
+    DECinfo%JacobianNumEival = 1
+    DECinfo%JacobianLHTR = .false.
+    DECinfo%JacobianThr = 1.0e-7
+    DECinfo%JacobianMaxSubspace = 1000
+    DECinfo%JacobianMaxIter = 200
+    DECinfo%JacobianInitialSubspace = 0
+    DECinfo%JacobianPrecond = .true.
+
 
     DECinfo%doDEC                  = .false.
 
@@ -93,6 +103,7 @@ contains
     ! -- Debug modes
     DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%distribute_fullmolecule = .false.
+    DECinfo%force_distribution      = .false.
     DECinfo%CRASHCALC               = .false.
     DECinfo%CRASHESTI               = .false.
     DECinfo%cc_driver_debug         = .false.
@@ -443,6 +454,31 @@ contains
        case('.SNOOPLOCALIZE')
           DECinfo%SNOOPlocalize=.true.
 
+          ! CC RESPONSE
+          ! ===========
+       case('.EXCITATIONENERGIES')
+          DECinfo%CCeival = .true.
+          read(input,*) DECinfo%JacobianNumEival
+
+       case('.JACOBIANLEFT')
+          DECinfo%JacobianLHTR = .true.
+
+       case('.JACOBIANTHR')
+          read(input,*) DECinfo%JacobianThr 
+
+       case('.JACOBIANMAXSUBSPACE')
+          read(input,*) DECinfo%JacobianMaxSubspace
+
+       case('.JACOBIANINITSUBSPACE')
+          read(input,*) DECinfo%JacobianInitialSubspace
+
+       case('.JACOBIANMAXITER')
+          read(input,*) DECinfo%JacobianMaxIter
+
+       case('.JACOBIANNOTPRECOND')
+          DECinfo%JacobianPrecond = .false.
+
+
 
        ! GENERAL INFO
        ! ============
@@ -655,7 +691,11 @@ contains
           print *
 #endif
        case('.DISTRIBUTE_FULLINFO')
+          DECinfo%force_distribution      = .true.
           DECinfo%distribute_fullmolecule = .true.
+       case('.NOT_DISTRIBUTE_FULLINFO')
+          DECinfo%force_distribution      = .true.
+          DECinfo%distribute_fullmolecule = .false.
 
 
        !KEYWORDS RELATED TO FRAGMENT SPACES
@@ -1150,6 +1190,19 @@ contains
     end if
 
 
+    ! CC response - currently not implemented for DEC
+    CCresponse: if(DECinfo%CCeival) then
+       IF(.not. DECinfo%full_molecular_cc) then
+          call lsquit('CC response is not implemented for DEC! Use **CC instead of **DEC.',-1)
+       end IF
+       ! For now we enforce canonical orbitals for CC response
+       if(.not. DECinfo%use_canonical) then
+          write(DECinfo%output,*) 'WARNING! We enforce canonical orbitals for CC response!'
+          DECinfo%use_canonical = .true.
+       end if
+    end if CCresponse
+
+
     ! DEC orbital-based - currently limited to occupied partitioning scheme
     ! and several options are not possible
     DoDECCO: if(DECinfo%DECCO) then
@@ -1458,6 +1511,14 @@ contains
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
+    write(lupri,*) 'CCeival ', DECinfo%CCeival
+    write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
+    write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
+    write(lupri,*) 'JacobianThr ', DECinfo%JacobianThr
+    write(lupri,*) 'JacobianMaxSubspace ', DECinfo%JacobianMaxSubspace
+    write(lupri,*) 'JacobianInitialSubspace ', DECinfo%JacobianInitialSubspace
+    write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
+    write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP

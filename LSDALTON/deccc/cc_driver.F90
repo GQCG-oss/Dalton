@@ -312,6 +312,10 @@ contains
             & vovo,lrt1,loc,SOLVE_MULTIPLIERS, p2=m1f, p4=m2f, m2=t1f, m4=t2f,vovo_supplied=.true., frag=frag )
       endif
 
+      ! Calculate CCSD eigenvalues if requested
+      if(DECinfo%CCeival) then
+         call ccsd_eigenvalue_solver(nb,no,nv,fock,Co,Cv,myls,t1f,t2f)
+      end if
 
    end subroutine ccsolver_job
 
@@ -2250,7 +2254,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, intspec, local, collective )
    else
       call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
-      call tensor_free(VOVO)
+      !call tensor_free(VOVO)
    endif
 
    call mem_alloc( B, DECinfo%ccMaxDIIS, DECinfo%ccMaxDIIS )
@@ -2640,12 +2644,15 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! Free memory and save final amplitudes
    ! *************************************
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used RHS or restore the old rhs
-   call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
-   call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
+   if(.not.vovo_avail)then
+      call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+      call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
+   endif
    call tensor_free(iajb)
 
-   call tensor_free(vvfock_prec)
+   ! remove preconditioning matrices
    call tensor_free(oofock_prec)
+   call tensor_free(vvfock_prec)
 
    call tensor_free(Cv)
    call tensor_free(Co)
@@ -2708,6 +2715,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc(B)
    call mem_dealloc(c)
 
+
    if(use_singles) then
       !call array2_free(h1)
       call tensor_free(yv)
@@ -2734,9 +2742,12 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
    !initialize and copy data to output arrays
-   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
-   call tensor_cp_data(tmp2, VOVO )
-   call tensor_free(tmp2)
+   if(.not.vovo_avail)then
+      call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],&
+         &atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
+      call tensor_cp_data(tmp2, VOVO )
+      call tensor_free(tmp2)
+   endif
 
    call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", fo=tmp1%offset, bg=bg_was_init)
    call tensor_cp_data( tmp1, p4 )
@@ -3066,44 +3077,6 @@ subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)
 
 end subroutine ccdriver_dealloc_workspace
 
-subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock,sync)
-   implicit none
-   type(lsitem),intent(inout) :: MyLsItem
-   type(tensor), intent(inout) :: t1, Co, Cv
-   type(tensor), intent(inout) :: xo,xv,yo,yv
-   type(tensor), intent(in)    :: fock
-   type(tensor), intent(inout) :: t1fock
-   logical, intent(in) :: sync
-   integer :: ord2(2), nb,no,nv
-   real(realk), pointer :: w1(:)
-
-   nv=t1%dims(1)
-   no=t1%dims(2)
-   nb=Co%dims(1)
-
-   ! synchronize singles data on slaves
-   if(sync)call tensor_sync_replicated(t1)
-
-   ! get the T1 transformation matrices
-   call tensor_cp_data(Cv,yv)
-   call tensor_cp_data(Cv,xv)
-   ord2 = [1,2]
-   call tensor_contract(-1.0E0_realk,Co,t1,[2],[2],1,1.0E0_realk,xv,ord2)
-
-
-   call tensor_cp_data(Co,yo)
-   call tensor_cp_data(Co,xo)
-   call tensor_contract(1.0E0_realk,Cv,t1,[2],[1],1,1.0E0_realk,yo,ord2)
-
-
-   !ONLY USE T1 PART OF THE DENSITY MATRIX AND THE FOCK 
-   call mem_alloc(w1,nb**2)
-   call dgemm('n','n',nb,no,nv,1.0E0_realk,yv%elm1,nb,t1%elm1,nv,0.0E0_realk,t1fock%elm1,nb)
-   call dgemm('n','t',nb,nb,no,1.0E0_realk,t1fock%elm1,nb,xo%elm1,nb,0.0E0_realk,w1,nb)
-   call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w1,.false.,t1fock%elm1)
-   call daxpy(nb**2,1.0E0_realk,fock%elm1,1,t1fock%elm1,1)
-   call mem_dealloc(w1)
-end subroutine get_t1_matrices
 
 function get_iter_idx(iter) result(iter_idx)
    implicit none

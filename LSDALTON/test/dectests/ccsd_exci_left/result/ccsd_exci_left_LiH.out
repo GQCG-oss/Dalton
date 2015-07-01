@@ -1,0 +1,936 @@
+ THIS IS A DEBUG BUILD
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+      This is output from LSDALTON 2016.alpha
+  
+  
+      IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+      THE FOLLOWING PAPER SHOULD BE CITED:
+      
+      K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+      L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+      P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+      J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+      L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+      A. Halkier, C. Haettig, H. Heiberg,
+      T. Helgaker, A. C. Hennum, H. Hettema,
+      E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+      M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+      D. Jonsson, P. Joergensen, J. Kauczor,
+      S. Kirpekar, T. Kjaergaard, W. Klopper,
+      S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+      A. Krapp, K. Kristensen, A. Ligabue,
+      O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+      C. Neiss, C. B. Nielsen, P. Norman,
+      J. Olsen, J. M. H. Olsen, A. Osted,
+      M. J. Packer, F. Pawlowski, T. B. Pedersen,
+      P. F. Provasi, S. Reine, Z. Rinkevicius,
+      T. A. Ruden, K. Ruud, V. Rybkin,
+      P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+      T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+      K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+      P. R. Taylor, A. M. Teale, E. I. Tellgren,
+      D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+      O. Vahtras, M. A. Watson, D. J. D. Wilson,
+      M. Ziolkowski, and H. AAgren,
+      "The Dalton quantum chemistry program system",
+      WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                                
+      LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
+      ----------------------------------------------------------------------------
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
+      Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
+      Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
+      Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
+      Robert Izsak,            University of Oslo,        Norway    (ADMM)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
+      Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
+      Patrick Merlot,          University of Oslo,        Norway    (ADMM)
+      Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
+      Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
+      Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
+      Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
+      Mark Watson,             University of Oslo,        Norway    (FMM)
+      Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+ Who compiled             | kk
+ Host                     | kaspers-mbp-2.st.client.au.dk
+ System                   | Darwin-13.4.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran-4.8
+ Fortran compiler version | unknown
+ C compiler               | /usr/local/bin/gcc-4.8
+ C compiler version       | unknown
+ C++ compiler             | /usr/local/bin/g++-4.8
+ C++ compiler version     | unknown
+ Explicit libs            | -framework vecLib
+ Static linking           | OFF
+ Last Git revision        | 6790babf54f3bca925712c4e539ebe124cd9e6c5
+ Git branch               | master
+ Configuration time       | 2015-07-01 14:32:25.031872
+
+Start simulation
+     Date and time (Linux)  : Wed Jul  1 14:33:27 2015
+     Host name              : kaspers-mbp-2.st.client.au.dk           
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  STO-3G                                  
+                                          
+                                          
+  Atomtypes=2  Angstrom Nosymmetry                            
+  Charge=3.0 Atoms=1                                          
+  Li         -0.17632        0.11634       -1.09866           
+  Charge=1.0 Atoms=1                                          
+  H          0.70368        0.11634       -1.09866            
+                      
+ -----------------------------------------
+          PRINTING THE LSDALTON.INP FILE 
+ -----------------------------------------
+                      
+  **WAVE FUNCTIONS                                                                                    
+  .HF                                                                                                 
+  *DENSOPT                                                                                            
+  .RH                                                                                                 
+  .DIIS                                                                                               
+  .START                                                                                              
+  ATOMS                                                                                               
+  .LCM                                                                                                
+  .CONVTHR                                                                                            
+  1.0d-10                                                                                             
+  .MAXIT                                                                                              
+  1000                                                                                                
+  **CC                                                                                                
+  .CCSD                                                                                               
+  .USE_SYS_MEM_INFO                                                                                   
+  .CCTHR                                                                                              
+  1.0e-10                                                                                             
+  .EXCITATIONENERGIES                                                                                 
+  4                                                                                                   
+  .JACOBIANLEFT                                                                                       
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+  Coordinates are entered in Angstroms and converted to atomic units.
+  Conversion factor : 1 bohr = 0.52917721 A
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  6
+   Written in atomic units    
+ 
+   1   Li       x     -0.3331965119
+   2            y      0.2198507384
+   3            z     -2.0761665143
+ 
+   4   H        x      1.3297624859
+   5            y      0.2198507384
+   6            z     -2.0761665143
+ 
+ 
+ BASISSETLIBRARY  : REGULAR  
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  STO-3G                                            
+  CHARGES:    3.0000    1.0000
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
+   
+ OPENING FILE/Users/kk/dalton3/build_debug/basis/STO-3G
+ PRINT MOLECULE AND BASIS IN FULL INPUT
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :        6
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       18
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   3.000  STO-3G          F             15           5
+     2   1.000  STO-3G          F              3           1
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  Li          1       -0.33319651        0.21985074       -2.07616651
+     2  H           1        1.32976249        0.21985074       -2.07616651
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      2
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 Li     3.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      2 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+---------------------------------------------------------------------
+total          4                               18        6
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+
+ Maximum size of Fock/density queue in averaging:          10
+
+Convergence threshold for gradient:   0.10E-09
+ 
+We perform the calculation in the Grand Canonical basis
+(see PCCP 2009, 11, 5805-5813)
+To use the standard input basis use .NOGCBASIS
+ 
+Due to the presence of the keyword (default for correlation)
+.NOGCINTEGRALTRANSFORM
+We transform the input basis to the Grand Canonical
+basis and perform integral evaluation using this basis
+ 
+    The Overall Screening threshold is set to              :  1.0000E-08
+    The Screening threshold used for Coulomb               :  1.0000E-10
+    The Screening threshold used for Exchange              :  1.0000E-08
+    The Screening threshold used for One-electron operators:  1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in AO basis
+ WARNING! We enforce canonical orbitals for CC response!
+
+ End of configuration!
+
+ 
+Matrix type: mtype_dense
+ 
+ A set of atomic calculations are performed in order to construct
+ the Grand Canonical Basis set (see PCCP 11, 5805-5813 (2009))
+ as well as JCTC 5, 1027 (2009)
+ This is done in order to use the TRILEVEL starting guess and 
+ perform orbital localization
+ This is Level 1 of the TRILEVEL starting guess and is performed per default.
+ The use of the Grand Canonical Basis can be deactivated using .NOGCBASIS
+ under the **GENERAL section. This is NOT recommended if you do TRILEVEL 
+ or orbital localization.
+ 
+
+ Level 1 atomic calculation on STO-3G Charge   3
+ ================================================
+ The Coulomb energy contribution    4.2938701987929200     
+ The Exchange energy contribution    1.7776785793060785     
+ The Fock energy contribution   -2.5161916194868410     
+*******************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1     -7.2386855826    0.00000000000    0.00      0.00000    0.00    0.0000000    3.17E-01  ###
+ The Coulomb energy contribution    4.2639658761264378     
+ The Exchange energy contribution    1.7627264179728392     
+ The Fock energy contribution   -2.5012394581535995     
+  2     -7.2449023172   -0.00621673460    0.00      0.00000    0.00    0.0000000    2.20E-02  ###
+ The Coulomb energy contribution    4.2612274854120686     
+ The Exchange energy contribution    1.7613572226156533     
+ The Fock energy contribution   -2.4998702627964144     
+  3     -7.2449319818   -0.00002966462   -1.00      0.00000    0.00    0.0000000    5.27E-05  ###
+
+ Level 1 atomic calculation on STO-3G Charge   1
+ ================================================
+ The Coulomb energy contribution   0.38730296535677067     
+ The Exchange energy contribution   0.19365148267838533     
+ The Fock energy contribution  -0.19365148267838533     
+*******************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1     -0.2729303720    0.00000000000    0.00      0.00000    0.00    0.0000000    0.00E+00  ###
+ 
+Matrix type: mtype_dense
+
+ First density: Atoms in molecule guess
+
+ The Coulomb energy contribution    6.1066784972986055     
+ The Exchange energy contribution    2.0995231430910661     
+ The Fock energy contribution   -4.0071553542075389     
+  Iteration 0 energy:  -7.6716894534087210     
+ Preparing to do S^1/2 decomposition...
+Matrix S     has nnz=        12 sparsity:     33.333 %
+Matrix AO D  has nnz=        16 sparsity:     44.444 %
+  Relative convergence threshold for solver:   1.0000000000000000E-002
+  SCF Convergence criteria for gradient norm:   1.0000000000000000E-010
+** Get Fock matrix number   1
+ The Coulomb energy contribution    6.3289847489538547     
+ The Exchange energy contribution    2.2450111172589065     
+ The Fock energy contribution   -4.0839736316949473     
+*******************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1     -7.6809160508    0.00000000000    0.00      0.00000    0.00    0.0000000    2.24E-01  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number   2
+ The Coulomb energy contribution    6.2948204318638101     
+ The Exchange energy contribution    2.2361585702551605     
+ The Fock energy contribution   -4.0586618616086483     
+  2     -7.6878646399   -0.00694858910    0.00      0.00000    0.00    0.0000000    1.04E-01  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number   3
+ The Coulomb energy contribution    6.2950106834933877     
+ The Exchange energy contribution    2.2366552862570517     
+ The Fock energy contribution   -4.0583553972363351     
+  3     -7.6899774932   -0.00211285337   -1.00      0.00000    0.00    0.0000000    3.95E-02  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number   4
+ The Coulomb energy contribution    6.2997647406298247     
+ The Exchange energy contribution    2.2380345116109583     
+ The Fock energy contribution   -4.0617302290188668     
+  4     -7.6903382952   -0.00036080196   -1.00      0.00000    0.00    0.0000000    1.33E-03  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number   5
+ The Coulomb energy contribution    6.3005638964573549     
+ The Exchange energy contribution    2.2382774265884167     
+ The Fock energy contribution   -4.0622864698689387     
+  5     -7.6903386942   -0.00000039896   -1.00      0.00000    0.00    0.0000000    2.30E-04  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number   6
+ The Coulomb energy contribution    6.3004734753638818     
+ The Exchange energy contribution    2.2382495301360854     
+ The Fock energy contribution   -4.0622239452277960     
+  6     -7.6903387011   -0.00000000693   -1.00      0.00000    0.00    0.0000000    1.05E-05  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.02 seconds
+ >>> wall Time used in SCF iteration is   0.02 seconds
+** Get Fock matrix number   7
+ The Coulomb energy contribution    6.3004706885493027     
+ The Exchange energy contribution    2.2382486553933747     
+ The Fock energy contribution   -4.0622220331559280     
+  7     -7.6903387011   -0.00000000002   -1.00      0.00000    0.00    0.0000000    1.75E-06  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number   8
+ The Coulomb energy contribution    6.3004696518535113     
+ The Exchange energy contribution    2.2382483325669029     
+ The Fock energy contribution   -4.0622213192866070     
+  8     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    3.66E-08  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.02 seconds
+** Get Fock matrix number   9
+ The Coulomb energy contribution    6.3004696497126140     
+ The Exchange energy contribution    2.2382483318989292     
+ The Fock energy contribution   -4.0622213178136857     
+  9     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    4.01E-08  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number  10
+ The Coulomb energy contribution    6.3004696714393527     
+ The Exchange energy contribution    2.2382483386778245     
+ The Fock energy contribution   -4.0622213327615277     
+ 10     -7.6903387011    0.00000000000   -1.00      0.00000    0.00    0.0000000    3.83E-09  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number  11
+ The Coulomb energy contribution    6.3004696686972217     
+ The Exchange energy contribution    2.2382483378222586     
+ The Fock energy contribution   -4.0622213308749640     
+ 11     -7.6903387011   -0.00000000000   -1.00      0.00000    0.00    0.0000000    8.41E-09  ###
+** Make average of the last F and D matrices
+** Get new density 
+No. of matmuls in get_density:     1
+ >>>  CPU Time used in SCF iteration is   0.01 seconds
+ >>> wall Time used in SCF iteration is   0.01 seconds
+** Get Fock matrix number  12
+ The Coulomb energy contribution    6.3004696737563490     
+ The Exchange energy contribution    2.2382483394007520     
+ The Fock energy contribution   -4.0622213343555975     
+ 12     -7.6903387011    0.00000000000   -1.00      0.00000    0.00    0.0000000    4.51E-11  ###
+SCF converged in     12 iterations
+ >>>  CPU Time used in **ITER is   0.14 seconds
+ >>> wall Time used in **ITER is   0.14 seconds
+
+Total no. of matmuls in SCF optimization:         64
+
+ Number of occupied orbitals:           2
+ Number of virtual orbitals:           4
+
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+
+
+Calculation of HOMO-LUMO gap
+============================
+
+Calculation of occupied orbital energies converged in     2 iterations!
+
+Calculation of virtual orbital energies converged in     2 iterations!
+
+    E(LUMO):                         0.072673 au
+   -E(HOMO):                        -0.312834 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.385507 au
+
+
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.00694858910    0.0000    0.0000    0.0000000
+  3   -0.00211285337   -1.0000    0.0000    0.0000000
+  4   -0.00036080196   -1.0000    0.0000    0.0000000
+  5   -0.00000039896   -1.0000    0.0000    0.0000000
+  6   -0.00000000693   -1.0000    0.0000    0.0000000
+  7   -0.00000000002   -1.0000    0.0000    0.0000000
+  8   -0.00000000000   -1.0000    0.0000    0.0000000
+  9   -0.00000000000   -1.0000    0.0000    0.0000000
+ 10    0.00000000000   -1.0000    0.0000    0.0000000
+ 11   -0.00000000000   -1.0000    0.0000    0.0000000
+ 12    0.00000000000   -1.0000    0.0000    0.0000000
+
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 AO Gradient norm
+======================================================================
+    1            -7.68091605075678884873      0.223915424543692D+00
+    2            -7.68786463985436085977      0.103985808334818D+00
+    3            -7.68997749322828738627      0.394571566496080D-01
+    4            -7.69033829518937572800      0.133012713340123D-02
+    5            -7.69033869415134851977      0.230401879168075D-03
+    6            -7.69033870108154538059      0.105343781733380D-04
+    7            -7.69033870110241224438      0.174578687573186D-05
+    8            -7.69033870110295403322      0.365698386719841D-07
+    9            -7.69033870110295580957      0.401488255203058D-07
+   10            -7.69033870110295580957      0.382780340661434D-08
+   11            -7.69033870110295758593      0.841174569509153D-08
+   12            -7.69033870110295758593      0.451120290518003D-10
+
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+
+
+      Final HF energy:                        -7.690338701103
+      Nuclear repulsion:                       1.804013210114
+      Electronic energy:                      -9.494351911217
+
+ inside leastchange_lcm
+  %LOC%   
+  %LOC%   ********************************************
+  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *
+  %LOC%   ********************************************
+  %LOC%   
+  %LOC%  
+  %LOC% *******  LOCALIZE     1 CORE ORBITALS ******
+  %LOC%  
+  %LOC% Too few orbitals to localize...
+  %LOC%  
+  %LOC% *******  LOCALIZE     1 VALENCE ORBITALS ******
+  %LOC%  
+  %LOC% Too few orbitals to localize...
+  %LOC%  
+  %LOC% *******  LOCALIZE     4 VIRTUAL ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  3.43 mu =  0.0E+00 grd =  6.9E+01 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:           475.8
+Linesearch  :   1 Diff. in function value:           -20.6
+Linesearch  :   2 Diff. in function value:           104.6
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  3.43 mu =  0.0E+00 grd =  1.2E+01 it =  2 trust-region =  0.50 step = 0.69
+Linesearch  :   0 Original function value:           455.2
+Linesearch  :   1 Diff. in function value:            -0.6
+Linesearch  :   2 Diff. in function value:             2.3
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  3.43 mu =  0.0E+00 grd =  3.3E-02 it =  2 trust-region =  0.50 step = 0.10
+Linesearch  :   0 Original function value:           454.6
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  4 sigma_2 =  3.43 mu =  0.0E+00 grd =  1.5E-08 it =  2 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+
+  %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    0.68    1
+  %LOC%   Max. sigma_4 and orb.number:    0.92    1
+  %LOC%   Min. sigma_2 and orb.number:    0.68    1
+  %LOC%   Min. sigma_4 and orb.number:    0.92    1
+
+
+  %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    2.16    2
+  %LOC%   Max. sigma_4 and orb.number:    2.82    2
+  %LOC%   Min. sigma_2 and orb.number:    2.16    2
+  %LOC%   Min. sigma_4 and orb.number:    2.82    2
+
+
+  %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    3.43    4
+  %LOC%   Max. sigma_4 and orb.number:    4.01    5
+  %LOC%   Min. sigma_2 and orb.number:    2.90    3
+  %LOC%   Min. sigma_4 and orb.number:    3.57    3
+
+ >>>  CPU Time used in Orbital Localization is   0.26 seconds
+ >>> wall Time used in Orbital Localization is   0.26 seconds
+  %LOC%
+  %LOC% Localized orbitals written to lcm_orbitals.u
+  %LOC%
+
+
+-- Full molecular info --
+
+FULL: Overall charge of molecule :      0
+
+FULL: Number of electrons        :      4
+FULL: Number of atoms            :      2
+FULL: Number of basis func.      :      6
+FULL: Number of aux. basis func. :      0
+FULL: Number of core orbitals    :      1
+FULL: Number of valence orbitals :      1
+FULL: Number of occ. orbitals    :      2
+FULL: Number of virt. orbitals   :      4
+FULL: Local memory use type full :  0.69E-06
+FULL: Distribute matrices        : F
+
+ Orbital energies:
+           1  -2.4032310477259671     
+           2 -0.31283424070453103     
+           3   7.2672703210505257E-002
+           4  0.15380883929945408     
+           5  0.15380883929945410     
+           6  0.59892045090504942     
+ Calculating carmom matrix for DEC calculation...
+ get_available_memory: System identified to be MAC!
+ Available Memory (GB) =       1.7760    
+ Memory found by system call to be:    1.776     GB
+ Using canonical orbitals as requested in input!
+
+
+
+Full molecular calculation is carried out...
+
+
+ ================================================ 
+              Full molecular driver               
+ ================================================ 
+
+
+--------------------------
+  Coupled-cluster energy  
+--------------------------
+
+Wave function    = CCSD    
+MaxIter          =  100
+Num. b.f.        =    6
+Num. occ. orb.   =    2
+Num. unocc. orb. =    4
+Convergence      =  0.1E-09
+Debug mode       =    F
+Print level      =    2
+Use CROP         =    T
+CROP subspace    =    3
+Preconditioner   =    T
+Precond. B       =    T
+Singles          =    T
+
+ ### Starting CC iterations
+ ### ----------------------
+ ###  Iteration     Residual norm          CC energy
+ Using MO-CCSD: non-MPI scheme
+ The Coulomb energy contribution    0.0000000000000000     
+ The Exchange energy contribution   -0.0000000000000000     
+ The Fock energy contribution   -0.0000000000000000     
+ ###      1         0.464038956E-01       -0.118947774E-01
+ The Coulomb energy contribution    1.7045062351156848E-006
+ The Exchange energy contribution    1.1685406506143170E-005
+ The Fock energy contribution    9.9809002710274831E-006
+ ###      2         0.163266781E-01       -0.156518082E-01
+ The Coulomb energy contribution    7.4093233099558980E-006
+ The Exchange energy contribution    6.7082146688657063E-005
+ The Fock energy contribution    5.9672823378701165E-005
+ ###      3         0.351285154E-02       -0.175946379E-01
+ The Coulomb energy contribution    1.4135699578273062E-005
+ The Exchange energy contribution    1.5891341333859689E-004
+ The Fock energy contribution    1.4477771376032381E-004
+ ###      4         0.146850956E-02       -0.177184440E-01
+ The Coulomb energy contribution    1.9089498329566512E-005
+ The Exchange energy contribution    2.3190097819160568E-004
+ The Fock energy contribution    2.1281147986203916E-004
+ ###      5         0.263811068E-03       -0.177868917E-01
+ The Coulomb energy contribution    1.9834907371147138E-005
+ The Exchange energy contribution    2.4196357096515307E-004
+ The Fock energy contribution    2.2212866359400593E-004
+ ###      6         0.403132608E-04       -0.178006516E-01
+ The Coulomb energy contribution    1.9943811786101778E-005
+ The Exchange energy contribution    2.4295143127390411E-004
+ The Fock energy contribution    2.2300761948780234E-004
+ ###      7         0.733226433E-05       -0.178020710E-01
+ The Coulomb energy contribution    1.9960899252061221E-005
+ The Exchange energy contribution    2.4315449559651899E-004
+ The Fock energy contribution    2.2319359634445779E-004
+ ###      8         0.414271899E-05       -0.178022431E-01
+ The Coulomb energy contribution    1.9972051382365262E-005
+ The Exchange energy contribution    2.4332020639823270E-004
+ The Fock energy contribution    2.2334815501586741E-004
+ ###      9         0.215756375E-05       -0.178023688E-01
+ The Coulomb energy contribution    1.9981705867507149E-005
+ The Exchange energy contribution    2.4345619767594700E-004
+ The Fock energy contribution    2.2347449180843985E-004
+ ###     10         0.291802623E-06       -0.178025034E-01
+ The Coulomb energy contribution    1.9981855653956764E-005
+ The Exchange energy contribution    2.4345911443909054E-004
+ The Fock energy contribution    2.2347725878513384E-004
+ ###     11         0.738538695E-07       -0.178025181E-01
+ The Coulomb energy contribution    1.9981753879945961E-005
+ The Exchange energy contribution    2.4345816736329900E-004
+ The Fock energy contribution    2.2347641348335309E-004
+ ###     12         0.231715606E-07       -0.178025206E-01
+ The Coulomb energy contribution    1.9981697038756430E-005
+ The Exchange energy contribution    2.4345749092756670E-004
+ The Fock energy contribution    2.2347579388881027E-004
+ ###     13         0.115423021E-07       -0.178025201E-01
+ The Coulomb energy contribution    1.9981654381498059E-005
+ The Exchange energy contribution    2.4345689302996695E-004
+ The Fock energy contribution    2.2347523864846890E-004
+ ###     14         0.411542486E-08       -0.178025196E-01
+ The Coulomb energy contribution    1.9981642891129090E-005
+ The Exchange energy contribution    2.4345670703751791E-004
+ The Fock energy contribution    2.2347506414638877E-004
+ ###     15         0.726606020E-09       -0.178025193E-01
+ The Coulomb energy contribution    1.9981642258730876E-005
+ The Exchange energy contribution    2.4345669375498377E-004
+ The Fock energy contribution    2.2347505149625290E-004
+ ###     16         0.132293929E-09       -0.178025193E-01
+ The Coulomb energy contribution    1.9981642403749113E-005
+ The Exchange energy contribution    2.4345669556350544E-004
+ The Fock energy contribution    2.2347505315975633E-004
+ ###     17         0.306211233E-10       -0.178025193E-01
+ CCSOL: MAIN LOOP      :  6.30    s
+
+
+-------------------------------
+  Coupled-cluster job summary  
+-------------------------------
+
+Hooray! CC equation is solved!
+CCSOL: Total cpu time    =  0.270     s
+CCSOL: Total wall time   =   3.49     s
+Singles amplitudes norm  =  0.3100330E-01
+Doubles amplitudes norm  =  0.1330014    
+Total amplitudes norm    =  0.1365671    
+Corr. energy             =     -0.0178025193
+Number of CC iterations  =   17
+ The Coulomb energy contribution    1.9981642423541194E-005
+ The Exchange energy contribution    2.4345669578214831E-004
+ The Fock energy contribution    2.2347505335860714E-004
+ JAC ********************************************************
+ JAC        Information for Jacobian eigenvalue solver       
+ JAC        ------------------------------------------       
+ JAC 
+ JAC Number of eigenvalues                 4
+ JAC Initial subspace dimension            4
+ JAC Maximum subspace dimension                    44
+ JAC 
+ JAC Start guess for eigenvalues
+ JAC ---------------------------
+ JAC       1    0.3855069439       (singles ex.)
+ JAC       2    0.4666430800       (singles ex.)
+ JAC       3    0.4666430800       (singles ex.)
+ JAC       4    0.7710138878       (doubles ex.)
+ JAC 
+ JAC ********************************************************
+ JAC
+ JAC Jacobian eigenvalue solver
+ JAC
+ JAC Which   Subspace     Eigenvalue           Residual       Conv?  
+ JAC     1       4        0.16543532         0.23345694        F
+ JAC     2       5        0.23652550         0.22981103        F
+ JAC     3       6        0.23652550         0.22981103        F
+ JAC     4       7        0.66364177         0.17325370        F
+ JAC     1       8        0.13001229         0.40839419E-01    F
+ JAC     2       9        0.19171434         0.56881453E-01    F
+ JAC     3      10        0.19171434         0.56881453E-01    F
+ JAC     4      11        0.54986389         0.11696670        F
+ JAC     1      12        0.12974907         0.71455478E-02    F
+ JAC     2      13        0.19119891         0.72596511E-02    F
+ JAC     3      14        0.19119891         0.72596511E-02    F
+ JAC     4      15        0.53913953         0.17511722E-01    F
+ JAC     1      16        0.12973521         0.91103888E-03    F
+ JAC     2      17        0.19122003         0.11484505E-02    F
+ JAC     3      18        0.19122003         0.11484505E-02    F
+ JAC     4      19        0.53835238         0.47194403E-02    F
+ JAC     1      20        0.12973148         0.10746387E-03    F
+ JAC     2      21        0.19122254         0.10414042E-03    F
+ JAC     3      22        0.19122254         0.10414042E-03    F
+ JAC     4      23        0.53829133         0.10945309E-02    F
+ JAC     1      24        0.12973168         0.72049489E-05    F
+ JAC     2      25        0.19122300         0.11576178E-04    F
+ JAC     3      26        0.19122300         0.11576178E-04    F
+ JAC     4      27        0.53827516         0.64396654E-04    F
+ JAC     1      28        0.12973169         0.39660009E-06    F
+ JAC     2      29        0.19122301         0.84156180E-06    F
+ JAC     3      30        0.19122301         0.84156180E-06    F
+ JAC     4      31        0.53827492         0.49886150E-05    F
+ JAC     1      32        0.12973169         0.25870448E-07    T
+ JAC     2      32        0.19122302         0.22069700E-07    T
+ JAC     3      32        0.19122302         0.22069700E-07    T
+ JAC     4      32        0.53827491         0.40836562E-06    F
+ JAC     1      33        0.12973169         0.34210521E-14    T
+ JAC     2      33        0.19122302         0.22069700E-07    T
+ JAC     3      33        0.19122302         0.22069700E-07    T
+ JAC     4      33        0.53827491         0.26361087E-14    T
+ JAC 
+ JAC 
+ JAC 
+ JAC ******************************************************************************
+ JAC CCSD excitation energies
+ JAC ******************************************************************************
+ JAC 
+ JAC      Exci.    Hartree           eV            cm-1           ||T1|| (%)
+ JAC       1      0.1297317       3.530181       28472.81         93.63
+ JAC       2      0.1912230       5.203446       41968.60         92.80
+ JAC       3      0.1912230       5.203446       41968.60         92.80
+ JAC       4      0.5382749       14.64721       118137.7         17.43
+ JAC 
+ JAC ******************************************************************************
+ JAC 
+ JAC 
+ JAC 
+
+
+
+ CCSD correlation energy :    -0.1780251931E-01
+
+
+
+ *****************************************************************************
+ *                      Full CCSD calculation is done !                      *
+ *****************************************************************************
+
+
+
+
+
+             **********************************************************
+             *                   CC ENERGY SUMMARY                    *
+             **********************************************************
+
+               E: Hartree-Fock energy :       -7.6903387011
+               E: Correlation energy  :       -0.0178025193
+               E: Total CCSD energy   :       -7.7081412204
+
+
+
+ CC Memory summary
+ -----------------
+ Allocated memory for array4   :  0.3421E-02 GB
+ Memory in use for array4      :   0.000     GB
+ Max memory in use for array4  :  0.1037E-04 GB
+ ------------------
+ Allocated memory for array3   :   0.000     GB
+ Memory in use for array3      :   0.000     GB
+ Max memory in use for array3  :   0.000     GB
+ ------------------
+
+
+------------------------------------------------------
+Total CPU  time used in CC           :        0.581160     s
+Total Wall time used in CC           :         3.80300     s
+------------------------------------------------------
+
+
+Hostname       : kaspers-mbp-2.st.client.au.dk                     
+Job finished   : Date: 01/07/2015   Time: 14:33:34
+
+
+
+=============================================================================
+                          -- end of CC program --
+=============================================================================
+
+
+
+ >>>  CPU Time used in *SCF is   1.21 seconds
+ >>> wall Time used in *SCF is   5.50 seconds
+
+Total no. of matmuls used:                       418
+Total no. of Fock/KS matrix evaluations:          13
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                      0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MPI):                       0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (character):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMITEM):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECORBITAL):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECFRAG):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (fragmentAOS):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (PNOSpaceInfo):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lvec_data)):           0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lattice_cell)):        0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                         14.429 MB
+  Max allocated memory, type(matrix)                  25.456 kB
+  Max allocated memory, real(realk)                    8.185 MB
+  Max allocated memory, MPI                            0.000 Byte
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                       37.396 kB
+  Max allocated memory, logical                        3.092 kB
+  Max allocated memory, character                      2.496 kB
+  Max allocated memory, AOBATCH                        9.728 kB
+  Max allocated memory, DECORBITAL                     0.000 Byte
+  Max allocated memory, DECFRAG                        0.000 Byte
+  Max allocated memory, BATCHTOORB                     0.336 kB
+  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
+  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, fragmentAOS                    0.000 Byte
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                          6.048 MB
+  Max allocated memory, PNOSpaceInfo                   0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                        1.056 kB
+  Max allocated memory, LSAOTENSOR                     4.864 kB
+  Max allocated memory, SLSAOTENSOR                    6.440 kB
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOMITEM                       1.536 kB
+  Max allocated memory, LSMATRIX                       2.016 kB
+  Max allocated memory, OverlapT                      27.264 kB
+  Max allocated memory, linkshell                      0.252 kB
+  Max allocated memory, integrand                    258.048 kB
+  Max allocated memory, integralitem                   4.410 MB
+  Max allocated memory, IntWork                       54.568 kB
+  Max allocated memory, Overlap                        1.551 MB
+  Max allocated memory, ODitem                         0.768 kB
+  Max allocated memory, LStensor                      13.445 kB
+  Max allocated memory, FMM                            0.000 Byte
+  Max allocated memory, XC                             0.000 Byte
+  Max allocated memory, Lvec_data                      0.000 Byte
+  Max allocated memory, Lattice_cell                   0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+ >>>  CPU Time used in LSDALTON is   1.25 seconds
+ >>> wall Time used in LSDALTON is   6.62 seconds
+
+End simulation
+     Date and time (Linux)  : Wed Jul  1 14:33:34 2015
+     Host name              : kaspers-mbp-2.st.client.au.dk           
