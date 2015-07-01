@@ -1635,7 +1635,7 @@ contains
       type(tensor),intent(inout) :: t1,t2
       !> Singles (L1) and doubles (L2) components of trial vector
       !> (in practice intent(in))
-      type(tensor),intent(in) :: L1,L2
+      type(tensor),intent(inout) :: L1,L2
       !> Output: Singles (rho1) and doubles (rho2) components of Jacobian transformation
       !> on trial vector (L1,L2).
       type(tensor),intent(inout) :: rho1,rho2
