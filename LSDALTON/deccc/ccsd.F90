@@ -7439,20 +7439,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end do
     !$OMP END PARALLEL DO
 
-    ! Calculate sigma[p r; i<=j]
-    ! get g[PrQs]:
-    call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot,[1,3,2,4],0.0E0_realk,tmp2)
-     
-    ! get g[PrCd] from g[PrQs] 
-    ncopy = dimP*ntot*dimC
-    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ncopy,ntot,nocc,nvir,dimI,dimC,dimP,dimQ,tmp0,tmp2)&
-    !$OMP PRIVATE(i,j,pos1,pos2)
-    do i =1,nvir
-      pos1 = 1 + dimI*dimP*ntot + (nocc+i-1)*dimP*ntot*dimQ
-      pos2 = 1 + ncopy*(i-1)
-      call dcopy(ncopy,tmp2(pos1),1,tmp0(pos2),1)
-    end do
-    !$OMP END PARALLEL DO
+    call manual_1324_reordering_f2t(1,[dimP,dimC,ntot,nvir],[dimP,dimQ,ntot,ntot], &
+       & [1,1+dimI,1,1+nocc],1.0E0_realk,gmo,0.0E0_realk,tmp0)
      
     ! Get: sigma[pr, ij] = sum_cd g[pr, cd] * t2red[cd, ij]
     call dgemm('n','n',dimP*ntot,n_ij,dimC*nvir,1.0E0_realk,tmp0,dimP*ntot, &
