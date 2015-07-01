@@ -751,7 +751,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !nsize3 = noccOut*noccOut*nvirt*MaxVirtSize
         !resulting in Memreq = noccOut*noccOut*nvirt*nvirt+(nocc+noccOut)*noccOut*nvirt*MaxVirtSize
         !MaxVirtSize = (Memreq-noccOut*noccOut*nvirt*nvirt)/((nocc+noccOut)*noccOut*nvirt)
-        MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-(noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk)/((nocc+noccOut)*noccOut*nvirt*8.0E-9_realk)))
+        MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-(noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk) &
+           & /((nocc+noccOut)*noccOut*nvirt*8.0E-9_realk)))
         IF(MaxVirtSize.LT.1)call lsquit('Not enough memory for tiling in rimp2',-1)
         IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then        
            WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxVirtSize =',MaxVirtSize 

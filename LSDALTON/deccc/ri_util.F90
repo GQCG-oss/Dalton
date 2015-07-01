@@ -203,8 +203,9 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            !ENDIF
            !so we choose MaxNaux to be
            IF(use_bg_buf)THEN
-              MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc-2*nbasis1*nvirt-2*nbasis2*nocc-(nbasisAux/numnodes+1)*nocc*nvirt) &
-                   & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+              MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc- &
+                 & 2*nbasis1*nvirt-2*nbasis2*nocc-(nbasisAux/numnodes+1)*nocc*nvirt) &
+                 & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
            ELSE
               MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc-2*nbasis1*nvirt-2*nbasis2*nocc) &
                    & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
