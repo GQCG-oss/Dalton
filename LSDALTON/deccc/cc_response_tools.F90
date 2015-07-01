@@ -2653,6 +2653,13 @@ contains
       call dec_simple_basis_transform1(nbasis,nocc,Co,fAO,foo)
       call dec_simple_basis_transform1(nbasis,nvirt,Cv,fAO,fvv)
 
+      ! Quick workaround. If the model does not use singles, we simply initialize the singles
+      ! are and set the singles to zero
+      if(.not. DECinfo%use_singles) then
+         call tensor_minit(t1,[nvirt,nocc],2)
+         call tensor_zero(t1)
+      end if
+
       ! T1 transformed quantities
       call get_T1_transformed_for_eigenvalue_solver(nbasis,nocc,nvirt,mylsitem,Co,Cv,fAO,t1,&
            & xo,xv,yo,yv,t1fock)
@@ -3043,6 +3050,9 @@ contains
       call tensor_free(t1fock)
       call tensor_free(Co_tensor)
       call tensor_free(Cv_tensor)
+      if(.not. DECinfo%use_singles) then
+         call tensor_free(t1)
+      end if
 
     end subroutine ccsd_eigenvalue_solver
 
