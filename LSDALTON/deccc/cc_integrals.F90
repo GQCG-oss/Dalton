@@ -1,7 +1,7 @@
 !> @file
 !> Simple integrals related
 !> \author Marcin Ziolkowski, (Pablo Baudin: added subroutines to get 
-!          (non-T1-transformed MO int. used for MO-based CCSD and RPA)
+!          (non-T1-transformed MO int. used for MO-based CCSD)
 module ccintegrals
 
   use memory_handling
@@ -1701,7 +1701,7 @@ contains
     MemNeed = MEmNeed + nTileMax*X*X*M*(M+1)/2
 
     ! MO stuff:
-    MemNeed = MemNeed + X*X*M*M + 5*nMOB*nMOB + 1
+    MemNeed = MemNeed + 5*nMOB*nMOB + 1
 
     ! Working arrays:
     MemNeed = MemNeed + max(M*N*AlphaDim*GammaDim, M*M*GammaDim*X)
@@ -1714,7 +1714,10 @@ contains
 
   !> Purpose: Get memory required in get_ccsd_residual_mo_ccsd 
   !           depending on MO batch dimension.
-  !           Get min. required memory when X = 1 
+  !           Get min. required memory when X is set to 1 
+  !           In total this should amount to ~ 7*v2o2
+  !           + ampitudes and residual already allocated
+  !           + quantities dependent on MO batch.
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
@@ -1734,6 +1737,7 @@ contains
     real(realk), intent(out) :: MemOut
     !> intermediate memory:
     integer :: nnod, nMOB
+    integer(kind=long) :: mem0, mem1, mem2
     integer(kind=long) :: nTileMax, MemNeed
 
     nMOB = (M-1)/X + 1
@@ -1751,10 +1755,9 @@ contains
     nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
     MemNeed = MemNeed + nTileMax*X*X*M*(M+1)/2
 
-    ! Working arrays:
-    MemNeed = MemNeed + max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
-    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M, O**4)
-    MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
+    ! Working arrays (~ 3*v2o2):
+    call get_mem_mo_ccsd_warrays(o,v,x, mem0, mem1, mem2)
+    MemNeed = MemNeed + mem0 + mem1 + mem2
 
     ! T1-Transfo. matrices:
     MemNeed = MemNeed + V*M + O*M
@@ -1763,17 +1766,61 @@ contains
     MemNeed = MemNeed + X*X*M*M
 
     ! Intermediates (B2prep, u2, G_Pi, H_aQ):
-    MemNeed = MemNeed + O**4 + O*O*V*V + X*O + V*X
+    MemNeed = MemNeed + O**4 + O*O*V*V + M*O + V*M
 
     ! T1-transformed integrals:
-    MemNeed = MemNeed + O**4 + 2*V*O**3 + 3*O*O*V*V 
+    MemNeed = MemNeed + 3*O*O*V*V 
 
     ! Fock Matrix:
-    MemNeed = MemNeed + 3*N*N
+    MemNeed = MemNeed + O*O + V*V + 2*O*V
 
     MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
 
   end subroutine get_mem_MO_CCSD_residual
+
+
+  !> Purpose: Get maximum used memory for working array in the MO-based 
+  !           CCSD residual calculation.
+  !
+  !> Author:  Pablo Baudin
+  !> Date:    July 2015
+  subroutine get_mem_mo_ccsd_warrays(o,v,x, mem0, mem1, mem2)
+
+    implicit none 
+
+    ! O: number of occ. orbs.
+    ! V: number of virt. orbs.
+    ! X: dimension of MO batch.
+    integer,  intent(in) :: O, V, X
+    !> Max memory used for working arrays:
+    integer(kind=long), intent(out) :: mem0, mem1, mem2
+    !> intermediates:
+    integer:: m, vbar, obar
+
+    m = v+o
+    vbar = min(x,v)
+    obar = min(x,o)
+
+    ! I know many terms can be easily removed but it's good to keep 
+    ! a one to one  mapping between the code and this routine (and the notes).
+
+    ! Max memory used for tmp0:
+    mem0 = max(x*m*x*m, x*m*vbar*v, v*vbar*o*o, v*v*obar*o, x*x*o*v, &
+       & x*vbar*o*m, v*vbar*o*o, v*v*o*o)
+    mem0 = int(i8*mem0, kind=long)
+
+    ! Max memory used for tmp1:
+    mem1 = max(x*x*m*o, m*o*v*o, m*obar*o*x, obar*o*o*o, vbar*v*o*o/2, &
+       & obar*o*o*o/2, m*o*o*x/2, v*v*o*o/2, x*v*vbar*o, v*obar*o*x, &
+       & o*o*v*x, x*vbar*o*o, v*v*o*o)
+    mem1 = int(i8*mem1, kind=long)
+
+    ! Max memory used for tmp2:
+    mem2 = max(x*m*o*v, o*v*o*v, x*m*obar*o, m*obar*o*o, x*m*x*m, &
+       & x*m*o*o/2, v*o*o*x/2, x*vbar*o*v, v*v*o*o)
+    mem2 = int(i8*mem2, kind=long)
+
+  end subroutine get_mem_mo_ccsd_warrays
 
 
   !> Purpose: Initialization of arrays for MO integrals: 

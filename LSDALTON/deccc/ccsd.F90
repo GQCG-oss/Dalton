@@ -6809,7 +6809,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
     integer(kind=long) :: tmp_size, tmp_size0, tmp_size1, tmp_size2, no2v2
 
-    integer :: i, a, O, V, N, X
+    integer :: i, a
 
     !> debug:
     logical :: print_debug, local_moccsd, use_bg_buf
@@ -6848,46 +6848,39 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
     ! shortcuts:
-    ntot = nocc + nvir
-    O = nocc
-    V = nvir
-    N = ntot
-    X = MOinfo%DimInd1(1)
+    ntot  = nocc + nvir
+    dimMO = MOinfo%DimInd1(1)
+    use_bg_buf  = mem_is_background_buf_init()
     print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
-    use_bg_buf = mem_is_background_buf_init()
 
     ! Allocate working memory:
-    dimMO = MOinfo%DimInd1(1)
-    tmp_size0 = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
-    tmp_size0 = int(i8*tmp_size0, kind=long)
+    call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
-    tmp_size1 = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
-    tmp_size1 = int(i8*tmp_size1, kind=long)
-
-    tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
-    tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
-
-       call mem_pseudo_alloc(tmp0, tmp_size0)
-       call mem_pseudo_alloc(tmp1, tmp_size1)
-       call mem_pseudo_alloc(tmp2, tmp_size2)
+       call mem_pseudo_alloc(xvir, int(i8*nvir*ntot, kind=long))
+       call mem_pseudo_alloc(yocc, int(i8*nocc*ntot, kind=long))
+       call mem_pseudo_alloc(gmo, int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
+       call mem_pseudo_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
+       call mem_pseudo_alloc(G_Pi, int(i8*ntot*nocc, kind=long))
+       call mem_pseudo_alloc(H_aQ, int(i8*nvir*ntot, kind=long))
+       call mem_pseudo_alloc(tmp0, int(i8*tmp_size0, kind=long))
+       call mem_pseudo_alloc(tmp1, int(i8*tmp_size1, kind=long))
+       call mem_pseudo_alloc(tmp2, int(i8*tmp_size2, kind=long))
     else
+       call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
+       call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
+       call mem_alloc(gmo,  int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
+       call mem_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
+       call mem_alloc(G_Pi, ntot*nocc)
+       call mem_alloc(H_aQ, nvir*ntot)
        call mem_alloc(tmp0, tmp_size0)
        call mem_alloc(tmp1, tmp_size1)
        call mem_alloc(tmp2, tmp_size2)
     end if
 
-    call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
-    call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
-    call mem_alloc(gmo, int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
-    call mem_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
-    call mem_alloc(G_Pi, ntot*nocc)
-    call mem_alloc(H_aQ, nvir*ntot)
-
-    call tensor_init(u2, [nvir,nvir,nocc,nocc],4)
-    call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4)
-    call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4)
+    call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
+    call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
+    call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
     call tensor_zero(u2)
     call tensor_zero(gvoov)
     call tensor_zero(gvvoo)
@@ -7089,21 +7082,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
       ! Free arrays:
-      call mem_dealloc(xvir)
-      call mem_dealloc(yocc)
-      call mem_dealloc(gmo)
-      call mem_dealloc(B2prep)
-      call mem_dealloc(G_Pi)
-      call mem_dealloc(H_aQ)
       if (use_bg_buf) then
          call mem_pseudo_dealloc(tmp0)
+         call mem_pseudo_dealloc(H_aQ)
+         call mem_pseudo_dealloc(G_Pi)
+         call mem_pseudo_dealloc(B2prep)
+         call mem_pseudo_dealloc(gmo)
+         call mem_pseudo_dealloc(yocc)
+         call mem_pseudo_dealloc(xvir)
       else
          call mem_dealloc(tmp0)
+         call mem_dealloc(H_aQ)
+         call mem_dealloc(G_Pi)
+         call mem_dealloc(B2prep)
+         call mem_dealloc(gmo)
+         call mem_dealloc(yocc)
+         call mem_dealloc(xvir)
       end if
        
-      call tensor_free(u2)
-      call tensor_free(gvoov)
       call tensor_free(gvvoo)
+      call tensor_free(gvoov)
+      call tensor_free(u2)
 
       call mem_dealloc(joblist)
  
@@ -7186,21 +7185,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     ! Free arrays:
-    call mem_dealloc(xvir)
-    call mem_dealloc(yocc)
-    call mem_dealloc(gmo)
-    call mem_dealloc(B2prep)
-    call mem_dealloc(G_Pi)
-    call mem_dealloc(H_aQ)
     if (use_bg_buf) then
        call mem_pseudo_dealloc(tmp0)
+       call mem_pseudo_dealloc(H_aQ)
+       call mem_pseudo_dealloc(G_Pi)
+       call mem_pseudo_dealloc(B2prep)
+       call mem_pseudo_dealloc(gmo)
+       call mem_pseudo_dealloc(yocc)
+       call mem_pseudo_dealloc(xvir)
     else
        call mem_dealloc(tmp0)
+       call mem_dealloc(H_aQ)
+       call mem_dealloc(G_Pi)
+       call mem_dealloc(B2prep)
+       call mem_dealloc(gmo)
+       call mem_dealloc(yocc)
+       call mem_dealloc(xvir)
     end if
 
-    call tensor_free(u2)
-    call tensor_free(gvoov)
     call tensor_free(gvvoo)
+    call tensor_free(gvoov)
+    call tensor_free(u2)
 
 #ifdef VAR_MPI
     call mem_dealloc(joblist)
