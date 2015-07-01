@@ -217,9 +217,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   stat = cudaSetDevice(0)
   print*,'cudaSetDevice(0) gives stat=',stat
   print*,'known results are:'
-  print*,'cudaSuccess',cudaSuccess
-  print*,'cudaErrorInvalidDevice',cudaErrorInvalidDevice
-  print*,'cudaErrorDeviceAlreadyInUse ',cudaErrorDeviceAlreadyInUse 
+  !print*,'cudaSuccess',cudaSuccess
+  !print*,'cudaErrorInvalidDevice',cudaErrorInvalidDevice
+  !print*,'cudaErrorDeviceAlreadyInUse ',cudaErrorDeviceAlreadyInUse 
 
   ! set the cublas handle to match the synchronous openacc handle 
   stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)

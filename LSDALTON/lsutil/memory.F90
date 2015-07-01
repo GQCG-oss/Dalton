@@ -2228,8 +2228,9 @@ subroutine mem_pseudo_dealloc_realk(p, mark_deleted)
    ! buffer
    logical, optional, intent(in) :: mark_deleted
    integer(kind=8) :: n
-   logical :: md, last_assoc, del_assoc
-   integer :: i
+   logical :: md, last_assoc, del_assoc,testass
+   integer :: i,m
+   type(C_PTR) :: cpointer1,cpointer2
    md=.false.
    if(present(mark_deleted))md=mark_deleted
 
@@ -2240,10 +2241,14 @@ subroutine mem_pseudo_dealloc_realk(p, mark_deleted)
 
    if(md)then
       if(.not.buf_realk%l_mdel)then
-         FindPos:do i=1,buf_realk%n
-            if( c_associated(c_loc(p(1)),c_loc(buf_realk%p(buf_realk%f_addr(i)))))then
+         m = buf_realk%n
+         FindPos: do i=1,m
+            cpointer1 = c_loc(p(1))
+            cpointer2 = c_loc(buf_realk%p(buf_realk%f_addr(i)))
+            testass = c_associated(cpointer1,cpointer2)
+            if(testass)then
                buf_realk%f_mdel = c_loc(buf_realk%p(buf_realk%f_addr(i+1)))
-               exit FindPos
+               exit FindPos 
             endif
          enddo FindPos
       endif
