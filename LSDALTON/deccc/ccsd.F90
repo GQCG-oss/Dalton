@@ -6856,6 +6856,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Allocate working memory:
     call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
+    call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
+    call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
+    call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
+    call tensor_zero(u2)
+    call tensor_zero(gvoov)
+    call tensor_zero(gvvoo)
+
     if (use_bg_buf) then
        call mem_pseudo_alloc(xvir, int(i8*nvir*ntot, kind=long))
        call mem_pseudo_alloc(yocc, int(i8*nocc*ntot, kind=long))
@@ -6878,12 +6885,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        call mem_alloc(tmp2, tmp_size2)
     end if
 
-    call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
-    call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
-    call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
-    call tensor_zero(u2)
-    call tensor_zero(gvoov)
-    call tensor_zero(gvvoo)
 
     ! start timings:
     call LSTIMER('START',tcpu,twall,DECinfo%output)
