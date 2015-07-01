@@ -1151,19 +1151,6 @@ contains
     ! * Allocate Memory to working arrays  *
     ! **************************************
 
-
-    ! Get full MO coeficients:
-    call mem_alloc(Cov,nb,ntot)
-    Cov(:,:no)       = Co
-    Cov(:,no+1:ntot) = Cv
-
-    ! CMO arrays:
-    call get_MO_batches_info(MOinfo, dimP, ntot, Nbatch)
-    call mem_alloc(CP,MaxActualDimAlpha,dimP)
-    call mem_alloc(CQ,MaxActualDimGamma,dimP)
-
-
-    ! working arrays
     gao_size = int(i8*nb*nb*MaxActualDimAlpha*MaxActualDimGamma, kind=long)
     w1_size = max(ntot*MaxActualDimAlpha*MaxActualDimGamma, ntot*dimP*dimP)
     w1_size = int(i8*w1_size*ntot, kind=long)
@@ -1176,10 +1163,30 @@ contains
           print *, "Warning(get_t1_free_gmo):  This should not happen, if the memory counting is correct"
        endif
 
+       ! Get full MO coeficients:
+       call mem_pseudo_alloc(Cov,i8*nb,i8*ntot)
+       Cov(:,:no)       = Co
+       Cov(:,no+1:ntot) = Cv
+        
+       ! CMO arrays:
+       call get_MO_batches_info(MOinfo, dimP, ntot, Nbatch)
+       call mem_pseudo_alloc(CP,i8*MaxActualDimAlpha,i8*dimP)
+       call mem_pseudo_alloc(CQ,i8*MaxActualDimGamma,i8*dimP)
+
        call mem_pseudo_alloc(gao, gao_size)
        call mem_pseudo_alloc(w1, w1_size)
        call mem_pseudo_alloc(w2, w2_size)
     else
+       ! Get full MO coeficients:
+       call mem_alloc(Cov,nb,ntot)
+       Cov(:,:no)       = Co
+       Cov(:,no+1:ntot) = Cv
+        
+       ! CMO arrays:
+       call get_MO_batches_info(MOinfo, dimP, ntot, Nbatch)
+       call mem_alloc(CP,MaxActualDimAlpha,dimP)
+       call mem_alloc(CQ,MaxActualDimGamma,dimP)
+
        call mem_alloc(gao, gao_size)
        call mem_alloc(w1, w1_size)
        call mem_alloc(w2, w2_size)
@@ -1428,14 +1435,17 @@ contains
        call mem_pseudo_dealloc(w2)
        call mem_pseudo_dealloc(w1)
        call mem_pseudo_dealloc(gao)
+       call mem_pseudo_dealloc(CQ)
+       call mem_pseudo_dealloc(CP)
+       call mem_pseudo_dealloc(Cov)
     else
        call mem_dealloc(w2)
        call mem_dealloc(w1)
        call mem_dealloc(gao)
+       call mem_dealloc(CQ)
+       call mem_dealloc(CP)
+       call mem_dealloc(Cov)
     endif
-    call mem_dealloc(Cov)
-    call mem_dealloc(CP)
-    call mem_dealloc(CQ)
 
     call LSTIMER('get_t1_free_gmo',tcpu,twall,DECinfo%output)
 
