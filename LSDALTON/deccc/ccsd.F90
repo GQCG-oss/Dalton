@@ -7382,22 +7382,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     ! add O4 int. to B2 term
     if (dimK>0) then
-      ! reorder g[PQrs] to g[QsPr]:
-      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot,[2,4,1,3],0.0E0_realk,tmp0)
- 
-      ! Get g[QsKl from g[QsPr]:
-      ncopy = dimQ*ntot*dimK
-      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ncopy,nocc,ntot,dimP,dimQ,tmp0,tmp2)&
-      !$OMP PRIVATE(i,pos1,pos2)
-      do i =1,nocc
-        pos1 = 1 + (i-1)*dimQ*ntot*dimP
-        pos2 = 1 + ncopy*(i-1)
-        call dcopy(ncopy,tmp0(pos1),1,tmp2(pos2),1)
-      end do
-      !$OMP END PARALLEL DO
-  
-      ! transpose g[Q,sKl] to g[sKl, Q]
-      call mat_transpose(dimQ, ntot*dimK*nocc, 1.0E0_realk, tmp2, 0.0E0_realk, tmp1)
+      call manual_4132_reordering_f2t(1,[dimK,dimQ,nocc,ntot],[dimP,dimQ,ntot,ntot], &
+         & [1,1,1,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! transform Q => i and get: g[sK li]
       pos1 = 1 + (Q_sta-1)*nocc
@@ -7454,11 +7440,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Calculate sigma[p r; i<=j]
     ! get g[PrQs]:
-    if (dimK>0) then
-      call mat_transpose(dimQ*ntot, dimP*ntot, 1.0E0_realk, tmp0, 0.0E0_realk, tmp2)
-    else
-      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot,[1,3,2,4],0.0E0_realk,tmp2)
-    end if
+    call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot,[1,3,2,4],0.0E0_realk,tmp2)
      
     ! get g[PrCd] from g[PrQs] 
     ncopy = dimP*ntot*dimC
