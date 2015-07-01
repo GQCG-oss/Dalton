@@ -1733,9 +1733,9 @@ contains
       !> and virt (dimension nbasis,nvirt) transformations
       type(tensor),intent(in) :: xo,xv,yo,yv
       !> Doubles amplitudes
-      type(tensor),intent(in) :: t2
+      type(tensor),intent(in),target :: t2
       !> Singles (R1) and doubles (R2) components of trial vector
-      type(tensor),intent(in) :: R1,R2
+      type(tensor),intent(in),target :: R1,R2
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
       type(tensor),intent(inout) :: rho1,rho2
       !> What to do?
