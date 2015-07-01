@@ -788,9 +788,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
-#ifdef VAR_OPENACC
   use gpu_device_handling 
-#endif
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
 #endif
@@ -848,9 +846,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
-#ifdef VAR_OPENACC
-  use gpu_device_handling 
-#endif
+  use gpu_device_handling, only: shutdown_GPU_devices 
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
 #endif
