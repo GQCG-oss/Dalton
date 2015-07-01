@@ -2877,7 +2877,7 @@ contains
             ! Check for convergence
             conv(p) = (res(p)<DECinfo%JacobianThr) 
             write(DECinfo%output,'(1X,a,i6,2X,i6,4X,g18.8,1X,g18.8,3X,L2)') &
-                 & 'JAC',M,p,lambdaREAL(p),res(p),conv(p)
+                 & 'JAC',p,M,lambdaREAL(p),res(p),conv(p)
 
             if(conv(p)) then
                ! Do not include new vectors for eigenvalue p if it is already converged
@@ -2924,9 +2924,17 @@ contains
             ! Normalize b(M)
             bnorm = SD_dotproduct(b1(M),b2(M))
             bnorm = sqrt(bnorm)
-            if(bnorm < 1.0e-14_realk) then
-               print *, 'p, bnorm', p,bnorm
-               call lsquit('ccsd_eigenvalue_solver: Zero norm after projection!',-1)
+            if(bnorm < 1.0e-15_realk) then
+               ! Retreat! We do not want to include the current b vector anyways.
+               ! The components spanned by the current b vector were 
+               ! probably included by the b vector of one of the other excitation energies.
+               ! Reset M and deallocate b1 and b2 again.
+               call tensor_free(b1(M))
+               call tensor_free(b2(M))
+               M = M-1
+               write(DECinfo%output,'(1X,a,2i7)') &
+                    & 'WARNING: Zero norm after projection for exci/iter', p,iter
+               cycle ExcitationEnergyLoop
             end if
             sc = 1.0_realk/bnorm
             call tensor_scale(b1(M),sc)
