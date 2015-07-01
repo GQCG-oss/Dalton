@@ -293,8 +293,8 @@ contains
     DECinfo%THCNOPRUN = .FALSE.
     DECinfo%THCDUMP = .FALSE.
     DECinfo%THCradint = 1E-6_realk
-    DECinfo%THC_MIN_RAD_PT = 20
-    DECinfo%THCangint = 2
+    DECinfo%THC_MIN_RAD_PT = 8
+    DECinfo%THCangint = 5
     DECinfo%THCHRDNES = 3
     DECinfo%THCTURBO = 1
     DECinfo%THCRADIALGRID = 3
@@ -973,6 +973,29 @@ contains
 
        ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
        ! ***********************
+       case('.THC_GRID'); 
+          read(input,*) myword
+          call capitalize_string(myword)
+          DECinfo%THCradint = 1.0E-6_realk
+          DECinfo%THCZdependenMaxAng=.FALSE.
+          IF (INDEX(myword,'VCOARSE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 0
+             DECinfo%THCangint = 2
+             DECinfo%THCNOPRUN = .FALSE.
+          ELSEIF (INDEX(myword,'COARSE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 3
+             DECinfo%THCangint = 2
+             DECinfo%THCNOPRUN = .FALSE.
+          ELSEIF (INDEX(myword,'MEDIUM') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 8
+             DECinfo%THCangint = 5
+          ELSEIF (INDEX(myword,'VFINE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 16
+             DECinfo%THCangint = 9             
+          ELSEIF (INDEX(myword,'FINE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 12
+             DECinfo%THCangint = 5
+          ENDIF
        case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
        case('.THC_DUMP'); DECinfo%THCDUMP = .TRUE.
        case('.THC_RADINT'); read(input,*) DECinfo%THCradint 

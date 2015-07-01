@@ -54,6 +54,13 @@ endif()
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
     add_definitions(-DVAR_64BITS)
+    #WARNING THIS IS TEMPORARY 
+    #I know that the combi --int64 and MKL will result
+    #in linking to a 64 bit integer lapack. To my 
+    #knowledge no other combi will produce this
+    if(HAVE_MKL_LAPACK)
+      add_definitions(-DVAR_LAPACK_INT64)
+    endif()
 endif()
 
 if(ENABLE_GPU)
