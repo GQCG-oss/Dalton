@@ -7279,8 +7279,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     if (P_sta<Q_sta) then
       ! transpose gmo to get batch QP:
       call array_reorder_3d(1.0E0_realk,gmo,dimP,dimQ,ntot*ntot, &
-                          & [2,1,3],0.0E0_realk,tmp1)
-      call dcopy(dimQ*dimP*ntot*ntot,tmp1,1,gmo,1)
+                          & [2,1,3],0.0E0_realk,tmp0)
+      call dcopy(dimQ*dimP*ntot*ntot,tmp0,1,gmo,1)
 
       call get_A2_and_B2prep_terms(ccmodel,ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,gmo, &
                           & xvir,yocc,t2,B2prep,omega2,tmp0,tmp1,tmp2)
