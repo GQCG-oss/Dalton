@@ -2250,7 +2250,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, intspec, local, collective )
    else
       call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
-      call tensor_free(VOVO)
+      !call tensor_free(VOVO)
    endif
 
    call mem_alloc( B, DECinfo%ccMaxDIIS, DECinfo%ccMaxDIIS )
@@ -2640,8 +2640,10 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! Free memory and save final amplitudes
    ! *************************************
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used RHS or restore the old rhs
-   call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
-   call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
+   if(.not.vovo_avail)then
+      call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+      call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
+   endif
    call tensor_free(iajb)
 
    call tensor_free(vvfock_prec)
@@ -2734,9 +2736,12 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
    !initialize and copy data to output arrays
-   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
-   call tensor_cp_data(tmp2, VOVO )
-   call tensor_free(tmp2)
+   if(.not.vovo_avail)then
+      call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],&
+         &atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
+      call tensor_cp_data(tmp2, VOVO )
+      call tensor_free(tmp2)
+   endif
 
    call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", fo=tmp1%offset, bg=bg_was_init)
    call tensor_cp_data( tmp1, p4 )
