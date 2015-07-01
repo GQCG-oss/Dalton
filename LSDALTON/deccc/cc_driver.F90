@@ -3271,7 +3271,7 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
    fragment_job = present(frag)
 
    mo_ccsd = .true.
-   if (DECinfo%NO_MO_CCSD.or.(no+nv>200).or.use_pnos.or.(ccmodel==MODEL_MP2) &
+   if (DECinfo%NO_MO_CCSD.or.(no+nv>MAX_ORB_MOCCSD).or.use_pnos.or.(ccmodel==MODEL_MP2) &
       & .or. (ccmodel==MODEL_RPA).or.(ccmodel==MODEL_SOSEX) ) mo_ccsd = .false.
 
    if (DECinfo%force_scheme) then

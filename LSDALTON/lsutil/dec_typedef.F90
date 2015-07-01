@@ -43,6 +43,9 @@ module dec_typedef_module
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
 
+  ! Maximum number of molecular orbitals (nocc + nvir) 
+  ! for which an MO-based CCSD calculation is possible
+  integer,parameter :: MAX_ORB_MOCCSD=300
 
   ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
   ! -----------------------------------------------------------------------
