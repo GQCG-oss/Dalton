@@ -6804,7 +6804,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
     integer(kind=long) :: tmp_size, tmp_size0, tmp_size1, tmp_size2, no2v2
 
-    integer :: i, a, O, V, N, X
+    integer :: i, a
 
     !> debug:
     logical :: print_debug, local_moccsd, use_bg_buf
@@ -6843,27 +6843,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
     ! shortcuts:
-    ntot = nocc + nvir
-    O = nocc
-    V = nvir
-    N = ntot
-    X = MOinfo%DimInd1(1)
+    ntot  = nocc + nvir
+    dimMO = MOinfo%DimInd1(1)
     print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
-    use_bg_buf = mem_is_background_buf_init()
+    use_bg_buf  = mem_is_background_buf_init()
 
     ! Allocate working memory:
-    dimMO = MOinfo%DimInd1(1)
-    tmp_size0 = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
-    tmp_size0 = int(i8*tmp_size0, kind=long)
+    call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
-    tmp_size1 = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
-    tmp_size1 = int(i8*tmp_size1, kind=long)
-
-    tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
-    tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
-
        call mem_pseudo_alloc(tmp0, tmp_size0)
        call mem_pseudo_alloc(tmp1, tmp_size1)
        call mem_pseudo_alloc(tmp2, tmp_size2)
