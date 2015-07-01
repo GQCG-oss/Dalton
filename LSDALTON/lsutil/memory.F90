@@ -25,7 +25,7 @@ public DetectHeapMemoryInit,DetectHeapMemory
 public Set_PrintSCFmemory,MemInGB,stats_globalmem
 public Set_MemModParamPrintMemory, Print_Memory_info
 public MemModParamPrintMemorylupri,MemModParamPrintMemory
-public Set_PrintMemoryLowerLimit
+public Set_PrintMemoryLowerLimit,printBGinfo
 public get_available_memory
 public init_globalmemvar
 public init_threadmemvar
@@ -2009,8 +2009,9 @@ subroutine mem_init_background_alloc(bytes)
    buf_realk%e_mdel = 0
    buf_realk%n_mdel = 0
    buf_realk%l_mdel = .false.
-
+   buf_realk%max_usage = 0 
 end subroutine mem_init_background_alloc
+
 subroutine mem_change_background_alloc(bytes,not_lazy)
    implicit none
    integer(kind=8), intent(in) :: bytes
@@ -2096,6 +2097,7 @@ subroutine mem_free_background_alloc()
    buf_realk%e_mdel = 0
    buf_realk%n_mdel = 0
    buf_realk%l_mdel = .false.
+   buf_realk%max_usage = 0 
 
 end subroutine mem_free_background_alloc
 
@@ -2143,6 +2145,7 @@ subroutine mem_pseudo_alloc_realk(p,n)
    buf_realk%c_addr(buf_realk%n) = c_loc(p(1))
 
    buf_realk%offset = buf_realk%offset+n
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
 
 
    buf_realk%n = buf_realk%n + 1
@@ -2177,7 +2180,7 @@ subroutine mem_pseudo_alloc_realk2(p,n1,n2)
    buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1))
 
    buf_realk%offset = buf_realk%offset+nelms
-
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
 
    buf_realk%n = buf_realk%n + 1
 
@@ -2212,6 +2215,7 @@ subroutine mem_pseudo_alloc_realk3(p,n1,n2,n3)
    buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1))
 
    buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
    buf_realk%n = buf_realk%n + 1
 
    if(buf_realk%n > max_n_pointers)then
@@ -2375,6 +2379,11 @@ function mem_get_bg_buf_free() result(n)
    integer(kind=8) :: n
    n = buf_realk%nmax-buf_realk%offset
 end function mem_get_bg_buf_free
+
+subroutine printBGinfo()
+implicit none
+print *,"BG: Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Peak:",buf_realk%max_usage
+end subroutine printBGinfo
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
    implicit none

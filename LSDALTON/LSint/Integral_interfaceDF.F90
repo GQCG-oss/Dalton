@@ -2830,14 +2830,14 @@ END SUBROUTINE II_get_RI_AlphaCD_3CenterInt2
 !> \date 2015
 SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      & SETTING,nAux,n1,n2,intspec,MaxnAux,nMO1,nMO2,AOtoMO,C1,C2,nthreads,dim1,&
-     & GindexToLocal,DECPRINTLEVEL,use_bg_bufInput)
+     & GindexToLocal,DECPRINTLEVEL,MemDebugPrint,use_bg_bufInput)
   IMPLICIT NONE
   Integer,intent(in)     :: LUPRI,LUERR,n1,n2,nAux,MaxnAux,nthreads
   integer,intent(in)     :: nMO1,nMO2,dim1,DECPRINTLEVEL
   REAL(REALK),pointer    :: FullAlphaCD(:) !dim1,nMO1,nMO2
   TYPE(LSSETTING),intent(inout) :: SETTING
   character,intent(in)  :: intspec(4)
-  logical :: AOtoMO
+  logical :: AOtoMO,MemDebugPrint
   real(realk) :: C1(n1,nMO1),C2(n2,nMO2)  
   integer :: GindexToLocal(nAux)
   logical,optional :: use_bg_bufInput
@@ -2857,7 +2857,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
   MaxN = MaxnAux
   RestricedSize = MaxN.LT.dim1
   IF(MaxnAux.GT.dim1) MaxN = dim1
-  
+  IF(MemDebugPrint)THEN
+     print*,'RestricedSize=',RestricedSize,'MaxN=',MaxN,'dim1=',dim1
+  ENDIF
   IF(.NOT.AOtoMO)THEN
      IF(MaxN.NE.nAux)CALL LSQUIT('dim mismatch in II_get_RI_AlphaCD_3CenterIntFullOnAllNN',-1)
   ENDIF
@@ -2876,9 +2878,14 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      !MO basis with accumulation in setting%output%Result3D
 
      w1size = dim1*nMO1*nMO2
-     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
-          & '3 center RI: Allocating MO (alpha|AI)',dim1*nMO1*nMO2*8E-9_realk,' GB'
-     IF(use_bg_buf)THEN
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)THEN
+        WRITE(LUPRI,'(A,F13.5,A)')&
+             & '3 center RI: Allocating MO (alpha|AI)',dim1*nMO1*nMO2*8E-9_realk,' GB'
+     ENDIF
+     IF(use_bg_buf)THEN        
+        IF(MemDebugPrint)print*,'w1size=',dim1,'*',nMO1,'*',nMO2,'=',dim1*nMO1*nMO2
+        IF(MemDebugPrint)print*,'BG: Before a FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_alloc(FullAlphaCD, w1size)
      ELSE
         call mem_alloc(FullAlphaCD,w1size)
@@ -2886,11 +2893,14 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
 
      call InitThermiteIntTransform(n1,nMO1,n2,nMO2,C1,C2,dim1,MaxN,nthreads) !full
      call initIntegralOutputDims(setting%Output,MaxN,1,n1,n2,nthreads)
-     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A,F13.5,A)')&
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A,F13.5,A)')&
           & '3 center RI: Allocating 5dim Buffer',MaxN*n1*n2*8E-9_realk,&
           & ' GB for each thread = ',MaxN*n1*n2*nthreads*8E-9_realk,' GB'
      IF(use_bg_buf)THEN
         w0size = MaxN*n1*n2*nthreads
+        IF(MemDebugPrint)print*,'BG: w0=',MaxN,'*',n1,'*',n2,'*',nthreads,'=',MaxN*n1*n2*nthreads
+        IF(MemDebugPrint)print*,'BG: Before w0 of size=',w0size
+        IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_alloc(w0, w0size)
 !        setting%output%ResultMat(1:MaxN,1,1:n1,1:n2,1:nthreads) => w0(1:w0size)
         cpointer = c_loc(w0(1))
@@ -2900,8 +2910,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      ENDIF
      n8 = MaxN*n1*n2*nthreads
      call ls_dzero8(setting%output%ResultMat,n8) !due to screening 
-     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A)')&
           & '3 center RI: Allocating TmpArray of ',MaxN*n1*nMO2*8E-9_realk,' GB'
+
      call ThermiteIntTransform_alloc_TmpArray(use_bg_buf) !MaxN,n1,nMO2
      call ls_dzero8(FullAlphaCD,w1size)
 !     setting%output%Result3D => FullAlphaCD
@@ -2922,10 +2933,13 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      call initIntegralOutputDims(setting%Output,1,1,1,1,1)
      call mem_alloc(setting%output%ResultMat,1,1,1,1,1)
      n8 = dim1*n1*n2
-     IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A)')&
           & '3 center RI: Allocating AO (alpha|CD)',dim1*n1*n2*8E-9_realk,' GB'
      w1size = dim1*n1*n2
      IF(use_bg_buf)THEN
+        IF(MemDebugPrint)print*,'w1size=',dim1,'*',n1,'*',n2,'=',dim1*n1*n2
+        IF(MemDebugPrint)print*,'BG: Before b FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_alloc(FullAlphaCD, w1size)
      ELSE
         call mem_alloc(FullAlphaCD,w1size)
@@ -2947,7 +2961,15 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
   MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
   SETTING%SCHEME%MasterWakeSlaves = .FALSE.
   setting%output%FullAlphaCD = .TRUE.  
+  IF(MemDebugPrint)THEN
+     print*,'Memory stat before ls_getIntegrals1'
+     call stats_globalmem(6)
+  ENDIF
   call ls_getIntegrals1(ao(1),AOempty,ao(2),ao(3),Oper,RegularSpec,ContractedInttype,0,SETTING,LUPRI,LUERR)
+  IF(MemDebugPrint)THEN
+     print*,'Memory stat after ls_getIntegrals1'
+     call stats_globalmem(6)
+  ENDIF
   setting%output%FullAlphaCD = .FALSE.
   SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
   call LSTIMER('AlphaCD',TSTART,TEND,LUPRI)
@@ -2970,10 +2992,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         M = dim1*n1   !rows of Output Matrix
         N = nMO2      !columns of Output Matrix
         K = n2        !summation dimension
-        IF(DECPRINTLEVEL.GT.2)WRITE(LUPRI,'(A,F13.5,A)')&
+        IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A)')&
              & '3 center RI: Allocating Full TmpArray ',M*N*8E-9_realk,' GB'
         n8 = M*N
         IF(use_bg_buf)THEN
+           IF(MemDebugPrint)print*,'BG: Before TmpAlphaCD of size=',n8
+           IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_alloc(TmpAlphaCD,n8)
         ELSE
            call mem_alloc(TmpAlphaCD,n8)
@@ -2993,11 +3017,17 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         call DF3centerTrans4(nMO1,nMO2,n1,dim1,C1,TmpAlphaCD,FullAlphaCD(1:w1size))
 
         IF(use_bg_buf)THEN
+           IF(MemDebugPrint)print*,'BG: Before dealloc TmpAlphaCD of size=',n8
+           IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_dealloc(TmpAlphaCD)
            !This looks weird but FullAlphaCD is currently pointing to the first 1:dim1*n1*n2 elements
            !of a "permanent" memory array. I only need the first 1:dim1*nMO1*nMO2 elements
            !so I shrink the array dimension by deassociating (NOT deallocating) and reassociate
+           IF(MemDebugPrint)print*,'BG: Before dealloc FullAlphaCD of size=',Size(FullAlphaCD)
+           IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_dealloc(FullAlphaCD)
+           IF(MemDebugPrint)print*,'BG: Before alloc FullAlphaCD of size=',w1size
+           IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_alloc(FullAlphaCD, w1size)
         ELSE
            call mem_dealloc(TmpAlphaCD)
@@ -3009,6 +3039,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
   call FreeThermiteIntTransform(use_bg_buf)
   IF(RestricedSize)THEN
      IF(use_bg_buf)THEN
+        IF(MemDebugPrint)print*,'BG: Before dealloc w0 of size=',size(w0)
+        IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_dealloc(w0)
         nullify(setting%output%ResultMat)
      ELSE

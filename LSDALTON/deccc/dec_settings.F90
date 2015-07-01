@@ -40,6 +40,7 @@ contains
     ! 5: extra verbose -- will overflow every reasonable machine in no time
     ! a reduction of the print level is obtained by setting print_small_calc to .false. for > 100 nodes
     DECinfo%PL                     = 0
+    DECinfo%MemDebugPrint          =.false.
     DECinfo%print_small_calc       = .true.
 
     ! SNOOP
@@ -618,6 +619,10 @@ contains
        case('.DECPRINT')
           ! DEC print level
           read(input,*) DECinfo%PL
+
+       case('.MEMDEBUGPRINT')
+          ! DEC print level
+          DECinfo%MemDebugPrint=.true.
 
        case('.ONLYOCCPART')
           ! Use only occupied partitioning scheme
@@ -1585,6 +1590,7 @@ contains
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
     write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality
     write(lupri,*) 'PL ', DECitem%PL
+    write(lupri,*) 'MemDebugPrint ', DECitem%MemDebugPrint
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output
     write(lupri,*) 'AbsorbHatoms ', DECitem%AbsorbHatoms

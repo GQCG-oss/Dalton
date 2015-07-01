@@ -428,6 +428,8 @@ module dec_typedef_module
      logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
+     !> Memory Debug print
+     logical ::  MemDebugPrint
      !> reduce the output if a big calculation is done
      logical :: print_small_calc
      !> only do fragment part of density or gradient calculation 
