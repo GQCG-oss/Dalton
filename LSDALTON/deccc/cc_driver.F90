@@ -312,6 +312,10 @@ contains
             & vovo,lrt1,loc,SOLVE_MULTIPLIERS, p2=m1f, p4=m2f, m2=t1f, m4=t2f,vovo_supplied=.true., frag=frag )
       endif
 
+      ! Calculate CCSD eigenvalues if requested
+      if(DECinfo%CCeival) then
+         call ccsd_eigenvalue_solver(nb,no,nv,fock,Co,Cv,myls,t1f,t2f)
+      end if
 
    end subroutine ccsolver_job
 
@@ -2644,8 +2648,9 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
    call tensor_free(iajb)
 
-   call tensor_free(vvfock_prec)
+   ! remove preconditioning matrices
    call tensor_free(oofock_prec)
+   call tensor_free(vvfock_prec)
 
    call tensor_free(Cv)
    call tensor_free(Co)
@@ -2708,17 +2713,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc(B)
    call mem_dealloc(c)
 
-   ! KK: Calculate CCSD eigenvalue. 
-   ! KK FIXME: This call needs to be placed somewhere else.
-   if(DECinfo%CCeival) then
-      call ccsd_eigenvalue_solver(nb,no,nv,fock_f,oofock_prec%elm2,vvfock_prec%elm2,mylsitem,xo,xv,yo,&
-           & yv,p2,p4)
-   end if
-
-
-   ! remove preconditioning matrices
-   call tensor_free(oofock_prec)
-   call tensor_free(vvfock_prec)
 
    if(use_singles) then
       !call array2_free(h1)

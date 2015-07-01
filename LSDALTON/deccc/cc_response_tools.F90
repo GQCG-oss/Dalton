@@ -1616,57 +1616,40 @@ contains
     !> \brief Wrapper to calculate Calculate CCSD Jacobian left-hand transformation.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,Co,Cv,fAO,t1,t2,L1,L2,rho1,rho2)
+    subroutine cc_jacobian_lhtr(mylsitem,Co,Cv,xo,xv,yo,yv,t1fock,&
+         & t1,t2,L1,L2,rho1,rho2)
       implicit none
-      !> Number of atomic/occupied/virtual orbitals
-      integer,intent(in) :: nbasis,nocc,nvirt
-      !> Fock matrix in AO basis
-      real(realk),intent(in) :: fAO(nbasis,nbasis)
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
       !> Occ and virt MO coefficients. Note: Co=xo (particle) and Cv=yv (hole)
+      !> (in practice intent(in))
       type(tensor),intent(inout) :: Co,Cv
+      !> Particle (x) and hole (y) transformation matrices
+      !> (in practice intent(in))
+      type(tensor),intent(inout) :: xo,xv,yo,yv
+      ! T1-transformed Fock matrix in AO basis
+      !> (in practice intent(in))
+      type(tensor) :: t1fock
       !> Singles and doubles amplitudes  (in practice these are intent(in))
+      !> (in practice intent(in))
       type(tensor),intent(inout) :: t1,t2
       !> Singles (L1) and doubles (L2) components of trial vector
+      !> (in practice intent(in))
       type(tensor),intent(in) :: L1,L2
-      !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
+      !> Output: Singles (rho1) and doubles (rho2) components of Jacobian transformation
+      !> on trial vector (L1,L2).
       type(tensor),intent(inout) :: rho1,rho2
-      type(tensor) :: xo,xv,yo,yv,t1fock,fAO_tensor
-      integer :: i,j
+      integer :: nbasis,nocc,nvirt
 
-      ! Init tensors for hole and particle transformation coefficients + T1-transformed Fock
-      call tensor_minit(xo,[nbasis,nocc],2)
-      call tensor_minit(xv,[nbasis,nvirt],2)
-      call tensor_minit(yo,[nbasis,nocc],2)
-      call tensor_minit(yv,[nbasis,nvirt],2)
-      call tensor_minit(t1fock,[nbasis,nbasis],2)
-
-      ! Dirty workaround due to input in get_t1_matrices
-      call tensor_minit(fAO_tensor,[nbasis,nbasis],2)
-      do j=1,nbasis
-         do i=1,nbasis
-            fAO_tensor%elm2(i,j) = fAO(i,j)
-         end do
-      end do
-      
-
-      ! Calculate T1-transformed Fock matrix
-      call get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fAO_tensor,t1fock,.false.)
+      nbasis = Co%dims(1)
+      nocc = Co%dims(2)
+      nvirt = Cv%dims(2)
 
       ! Calculate left-hand transformation for Jacobian
       call get_ccsd_multipliers_simple(rho1%elm2,rho2%elm4,t1%elm2,t2%elm4,&
            & L1%elm2,L2%elm4,&
            & t1fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2,&
            & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
-
-      call tensor_free(xo)
-      call tensor_free(xv)
-      call tensor_free(yo)
-      call tensor_free(yv)
-      call tensor_free(t1fock)
-      call tensor_free(fAO_tensor)
-
 
     end subroutine cc_jacobian_lhtr
 
@@ -2588,21 +2571,17 @@ contains
     !> for Jacobian right-hand side eigenvalue problem to get CCSD excitation energies.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine ccsd_eigenvalue_solver(nbasis,nocc,nvirt,fAO,foo,fvv,mylsitem,&
-         & xo,xv,yo,yv,t1,t2)
+    subroutine ccsd_eigenvalue_solver(nbasis,nocc,nvirt,fAO,Co,Cv,mylsitem,t1,t2)
       implicit none
       !> Number of atomic/occupied/virtual orbitals
       integer,intent(in) :: nbasis,nocc,nvirt
       !> Fock matrix in AO basis
       real(realk),intent(in) :: fAO(nbasis,nbasis)
-      !> Occ-occ and virt-virt Fock matrix blocks in MO basis
-      real(realk),intent(in) :: foo(nocc,nocc), fvv(nvirt,nvirt)
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem
-      !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
-      !> and virt (dimension nbasis,nvirt) transformations
-      !> (effectively intent(in) but need to be intent(inout) for practical purposes)
-      type(tensor),intent(inout) :: xo,xv,yo,yv
+      !> Occupied and virtual MO coefficients
+      !> (in practice these are intent(in))
+      real(realk),intent(inout) :: Co(nbasis,nocc),Cv(nbasis,nvirt)
       !> Singles and doubles amplitudes
       !> (effectively intent(in) but need to be intent(inout) for practical purposes)
       type(tensor),intent(inout) :: t1,t2
@@ -2611,11 +2590,11 @@ contains
       integer(kind=long) :: maxnumeival,O,V
       type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
       type(tensor) :: q1,zeta1,q2,zeta2,bopt1,bopt2
+      type(tensor) :: xo,xv,yo,yv,t1fock,Co_tensor,Cv_tensor
       real(realk) :: tmp1,tmp2,fac,bTzeta,bnorm,sc
-      real(realk),pointer :: res(:),lambdaIMAG(:),eival(:),singlescomp(:)
+      real(realk),pointer :: res(:),lambdaIMAG(:),eival(:),singlescomp(:),foo(:,:),fvv(:,:)
       logical,pointer :: conv(:),singleex(:)
       logical :: allconv
-
 
       ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
       ! except that we may solve for more than one eigenvalue at the same time.
@@ -2663,9 +2642,27 @@ contains
       end if
 
 
+
       ! ********************************************************************************
       !                         INITIALIZATION BEFORE SOLVER LOOP                      !
       ! ********************************************************************************
+
+      ! Occ-occ and virt-virt Fock matrix blocks
+      call mem_alloc(foo,nocc,nocc)
+      call mem_alloc(fvv,nvirt,nvirt)
+      call dec_simple_basis_transform1(nbasis,nocc,Co,fAO,foo)
+      call dec_simple_basis_transform1(nbasis,nvirt,Cv,fAO,fvv)
+
+      ! T1 transformed quantities
+      call get_T1_transformed_for_eigenvalue_solver(nbasis,nocc,nvirt,mylsitem,Co,Cv,fAO,t1,&
+           & xo,xv,yo,yv,t1fock)
+
+      ! It's a mess but we need MO coefficients also in tensor format
+      call tensor_minit(Co_tensor,[nbasis,nocc],2)
+      call tensor_minit(Cv_tensor,[nbasis,nvirt],2)
+      call tensor_convert(Co,Co_tensor)
+      call tensor_convert(Cv,Cv_tensor)
+
 
       ! Allocate space for residual-related stuff
       ! -----------------------------------------
@@ -2705,7 +2702,8 @@ contains
       ! -------------------------------------------------------------------------
       do i=1,M
          if(DECinfo%JacobianLhtr) then
-            call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,fAO,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+            call cc_jacobian_lhtr(mylsitem,Co_tensor,Cv_tensor,xo,xv,yo,yv,t1fock,&
+                 & t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
          else
             call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
          end if
@@ -2938,8 +2936,8 @@ contains
             call tensor_minit(Ab1(M),[nvirt,nocc],2)
             call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
             if(DECinfo%JacobianLhtr) then
-               call cc_jacobian_lhtr(nbasis,nocc,nvirt,mylsitem,xo,yv,&
-                    & fAO,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
+               call cc_jacobian_lhtr(mylsitem,Co_tensor,Cv_tensor,xo,xv,yo,yv,t1fock,&
+                    & t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
             else
                call cc_jacobian_rhtr(mylsitem,xo,xv,yo,&
                     & yv,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
@@ -3016,6 +3014,8 @@ contains
       call mem_dealloc(Ab1)
       call mem_dealloc(Ab2)
 
+      call mem_dealloc(foo)
+      call mem_dealloc(fvv)
       call mem_dealloc(eival)
       call mem_dealloc(singlescomp)
       call mem_dealloc(singleex)
@@ -3028,6 +3028,13 @@ contains
       call tensor_free(q2)
       call tensor_free(bopt1)
       call tensor_free(bopt2)
+      call tensor_free(xo)
+      call tensor_free(xv)
+      call tensor_free(yo)
+      call tensor_free(yv)
+      call tensor_free(t1fock)
+      call tensor_free(Co_tensor)
+      call tensor_free(Cv_tensor)
 
     end subroutine ccsd_eigenvalue_solver
 
@@ -3286,6 +3293,56 @@ contains
       end do
 
     end subroutine ccsd_eigenvalue_check
+
+
+    !> \brief Wrapper to calculate the necessary T1-transformed quantity used for
+    !> CCSD Jacobian eigenvalue problem.
+    !> Note: The tensors are also initialized here!
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine get_T1_transformed_for_eigenvalue_solver(nbasis,nocc,nvirt,mylsitem,Co,Cv,fAO,t1,&
+         & xo,xv,yo,yv,t1fock)
+      implicit none
+      !> Number of atomic/occupied/virtual orbitals
+      integer,intent(in) :: nbasis,nocc,nvirt
+      !> Fock matrix in AO basis
+      real(realk),intent(in) :: fAO(nbasis,nbasis)
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Occ and virt MO coefficients. Note: Co=xo (particle) and Cv=yv (hole)
+      !> (in practice these are intent(in))
+      real(realk),intent(inout) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
+      !> Singles amplitudes  (in practice this is intent(in))
+      type(tensor),intent(inout) :: t1
+      !> Particle (x) and hole (y) matrices for occ and virt spaces (INITIALIZED HERE!)
+      type(tensor),intent(inout) :: xo,xv,yo,yv
+      !> T1 transformed Fock matrix in AO basis (INITIALIZED HERE!)
+      type(tensor),intent(inout) :: t1fock
+      type(tensor) :: fAO_tensor,Co_tensor,Cv_tensor
+
+      ! Init tensors for hole and particle transformation coefficients + T1-transformed Fock
+      call tensor_minit(xo,[nbasis,nocc],2)
+      call tensor_minit(xv,[nbasis,nvirt],2)
+      call tensor_minit(yo,[nbasis,nocc],2)
+      call tensor_minit(yv,[nbasis,nvirt],2)
+      call tensor_minit(t1fock,[nbasis,nbasis],2)
+
+      ! Dirty workaround due to input in get_t1_matrices
+      call tensor_minit(fAO_tensor,[nbasis,nbasis],2)
+      call tensor_minit(Co_tensor,[nbasis,nocc],2)
+      call tensor_minit(Cv_tensor,[nbasis,nvirt],2)
+      call tensor_convert(fAO,fAO_tensor)
+      call tensor_convert(Co,Co_tensor)
+      call tensor_convert(Cv,Cv_tensor)
+
+      ! Calculate T1-transformed Fock matrix
+      call get_t1_matrices(MyLsitem,t1,Co_tensor,Cv_tensor,xo,yo,xv,yv,fAO_tensor,t1fock,.false.)
+
+      call tensor_free(fAO_tensor)
+      call tensor_free(Co_tensor)
+      call tensor_free(Cv_tensor)
+
+    end subroutine get_T1_transformed_for_eigenvalue_solver
 
 
   end module cc_response_tools_module

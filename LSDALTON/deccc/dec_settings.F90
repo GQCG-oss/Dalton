@@ -1185,6 +1185,14 @@ contains
     end if
 
 
+    ! CC response - currently not implemented for DEC
+    CCresponse: if(DECinfo%CCeival) then
+       IF(.not. DECinfo%full_molecular_cc) then
+          call lsquit('CC response is not implemented for DEC! Use **CC instead of **DEC.',-1)
+       end IF
+    end if CCresponse
+
+
     ! DEC orbital-based - currently limited to occupied partitioning scheme
     ! and several options are not possible
     DoDECCO: if(DECinfo%DECCO) then
