@@ -153,11 +153,14 @@ module dec_tools_module
     real(realk),intent(inout) :: R(n,n), L(n,n)
     real(realk), pointer :: B(:,:),Atmp(:,:),lambdaREAL(:),lambdaIMAG(:)
     integer :: i,j,lwork,info,idx
-    real(realk),pointer :: beta(:),work(:),Rtmp(:,:),Ltmp(:,:)
+    real(realk),pointer :: work(:),Rtmp(:,:),Ltmp(:,:)
     real(realk),parameter :: thr=1.0e-10_realk
     integer,pointer :: tracklist(:)
 
-    ! Overlap matrix assumed to be is unit matrix
+    ! Initialization
+    ! --------------
+
+    ! Overlap matrix is assumed to be a unit matrix
     call mem_alloc(B,n,n)
     B = 0.0_realk
     do i=1,n
@@ -174,18 +177,23 @@ module dec_tools_module
 
     ! Allocate stuff
     call mem_alloc(tracklist,n)
-    call mem_alloc(beta,n)
     call mem_alloc(work,1)
     call mem_alloc(Rtmp,n,n)
     call mem_alloc(Ltmp,n,n)
     call mem_alloc(lambdaREAL,n)
     call mem_alloc(lambdaIMAG,n)
 
+
+
+    ! Solving eigenvalue problem
+    ! --------------------------
+
     ! Determine optimal workspace
     lwork=-1
     info=0
-    call DGGEV('V', 'V', n, Atmp, n, B, n, lambdaREAL, lambdaIMAG,&
-         & BETA, Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
+    call DGEEV('V', 'V', n, Atmp, n, lambdaREAL, lambdaIMAG,&
+         &  Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
+
     lwork = int(work(1))
 
     if(info/=0) then
@@ -199,8 +207,9 @@ module dec_tools_module
     call mem_alloc(work,lwork)
 
     ! Solve eigenvalue problem
-    call DGGEV('V', 'V', n, Atmp, n, B, n, lambdaREAL, lambdaIMAG,&
-         & BETA, Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
+    call DGEEV('V', 'V', n, Atmp, n, lambdaREAL, lambdaIMAG,&
+         &  Ltmp, n, Rtmp, n, WORK, LWORK, INFO )
+
 
     if(info/=0) then
        print *, 'INFO = ', INFO
@@ -208,27 +217,10 @@ module dec_tools_module
             & Error2 in DGGEV!',-1)
     end if
 
-    ! Check that eigenvalues are well-defined
-    do i=1,n
-       if( abs(beta(i))<thr ) then
-          print *, 'Eigenvalue number ',i 
-          print *, 'Eigenvalue, real part ',lambdaREAL(i)
-          print *, 'Eigenvalue, imag part ',lambdaIMAG(i)
-          print *, 'Division factor beta  ',beta(i)
-          call lsquit('solve_nonsymmetric_eigenvalue_problem_unitoverlap: &
-               & Ill-defined eigenvalues!',-1)          
-       end if
-
-       ! Eigenvalues should be divided by beta (see dgeev.F reference file)
-       lambdaREAL(i) = lambdaREAL(i) / beta(i)
-       lambdaIMAG(i) = lambdaIMAG(i) / beta(i)
-    end do
-
 
 
     ! Sort eigenvalues according to size of real part (smallest first)
     ! ----------------------------------------------------------------
-    ! Note: This ordering only makes sense because we have required real eigenvalue above.
 
     ! Order eigenvalues with largest ones first
     call real_inv_sort_with_tracking(lambdaREAL,tracklist,n)
@@ -254,7 +246,6 @@ module dec_tools_module
     call mem_dealloc(lambdaREAL)
     call mem_dealloc(lambdaIMAG)
     call mem_dealloc(tracklist)
-    call mem_dealloc(beta)
     call mem_dealloc(work)
     call mem_dealloc(B)
     call mem_dealloc(Atmp)
