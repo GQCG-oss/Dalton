@@ -15,7 +15,7 @@ f.add(string = 'Hartree-Fock energy',
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-5)
 
-f.add(from_string = 'CCSD excitation energies',
+f.add(from_string = 'CC excitation energies',
       num_lines   = 9,
       rel_tolerance = 1.0e-5)
 

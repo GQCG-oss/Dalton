@@ -3025,7 +3025,7 @@ contains
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
-      write(DECinfo%output,'(1X,a)') 'JAC CCSD excitation energies'
+      write(DECinfo%output,'(1X,a)') 'JAC CC excitation energies'
       write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC      Exci.    Hartree           eV            cm-1           ||T1|| (%)'
