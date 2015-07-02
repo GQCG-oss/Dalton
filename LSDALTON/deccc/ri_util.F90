@@ -2176,11 +2176,12 @@ DO X=1,ngeoComp
    !$OMP MASTER
    TMP = 0.0E0_realk
    !$OMP END MASTER
+   !$OMP BARRIER 
    startQ2 = 0
    DO iAtomQ=1,nAtomsMPI(mynum+1)
       StartQ = startAuxMPI(iAtomQ,mynum+1) !global startindex
       nQ = nAuxMPI(iAtomQ,mynum+1)
-      !$OMP DO REDUCTION(+:TMP)
+      !$OMP DO COLLAPSE(2) REDUCTION(+:TMP)
       DO Q=1,nQ
          DO P = 1,nbasisAux
             TMP = TMP + Cpq(P,startQ2+Q)*AlphaBetaDeriv(P,startQ+Q,X)   
@@ -2202,15 +2203,16 @@ integer :: nbasisAux,ngeoComp
 real(realk),intent(in) :: Cpq(nbasisAux*nbasisAux),AlphaBetaDeriv(nbasisAux*nbasisAux,ngeoComp)
 real(realk),intent(inout) :: RIMP2grad(ngeoComp)
 !
-integer :: P,Q,X
+integer :: P,X
 real(realk) TMP
 
-!$OMP PARALLEL DEFAULT(none) PRIVATE(P,Q,X) SHARED(nbasisAux,ngeoComp,&
+!$OMP PARALLEL DEFAULT(none) PRIVATE(P,X) SHARED(nbasisAux,ngeoComp,&
 !$OMP Cpq,AlphaBetaDeriv,RIMP2grad,TMP)
 DO X=1,ngeoComp
 !$OMP MASTER
    TMP = 0.0E0_realk
 !$OMP END MASTER
+!$OMP BARRIER 
 !$OMP DO REDUCTION(+:TMP)
    DO P=1,nbasisAux*nbasisAux
       TMP = TMP + Cpq(P)*AlphaBetaDeriv(P,X)   
