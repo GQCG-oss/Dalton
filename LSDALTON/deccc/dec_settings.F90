@@ -481,7 +481,7 @@ contains
           DECinfo%JacobianPrecond = .false.
 
        case('.HALDAPPROX')
-          DECinfo%HaldApprox = .false.
+          DECinfo%HaldApprox = .true.
 
 
        ! GENERAL INFO
