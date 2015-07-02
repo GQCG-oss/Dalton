@@ -1,6 +1,6 @@
 
 
-2015.1 (????-??-??)
+2015.1 (2015-07-03)
 ===================
 
 DALTON
@@ -9,7 +9,9 @@ DALTON
 - Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
 - Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
 - Fixed a bug in the preoptimization, i.e. when using smaller basis sets first to geometry optimize molecule.
-- Fixed far from optimal defaults for preoptimization
+- Fixed some far from optimal defaults for preoptimization
+- Fixed geometry optimization for HS-ROHF and HS-RODFT with symmetry - .SINGLY input option under '*SCF INPUT'
+  (use numerical gradients as analytical gradients are only implemented without symmetry).
 - Added ANO-RCC basis set
 
 
