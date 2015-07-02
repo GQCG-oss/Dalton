@@ -378,6 +378,42 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_mp2_int_and_amp
 
+  !> \brief MPI communcation of MyFragment
+  !> \author Thomas Kjaergaard
+  !> \date March 2015
+  subroutine mpi_communicate_MyFragment(MyFragment)
+    implicit none
+    !> Fragment under consideration
+    type(decfrag),intent(inout) :: MyFragment
+    !local variables
+    integer(kind=ls_mpik) :: master
+    logical :: DoBasis
+    DoBasis = .TRUE.
+    
+    call time_start_phase( PHASE_COMM )
+    master = 0
+    ! Init MPI buffer which eventually will contain all fragment info
+    ! ***************************************************************
+    ! MASTER: Prepare for writing to buffer
+    ! SLAVE: Receive buffer
+    call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    ! Buffer handling
+    ! ***************
+    ! MASTER: Put information info buffer
+    ! SLAVE: Put buffer information into decfrag structure
+    ! Fragment information
+    call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
+
+    ! Finalize MPI buffer
+    ! *******************
+    ! MASTER: Send stuff to slaves and deallocate temp. buffers
+    ! SLAVE: Deallocate buffer etc.
+   call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    call time_start_phase( PHASE_WORK )
+  end subroutine mpi_communicate_MyFragment 
+
   !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
   !> In addition, other information required for calculating F12 integrals
@@ -2339,6 +2375,15 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPort,Master)
     call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
+    call ls_mpi_buffer(DECitem%CCexci,Master)
+    call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
+    call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
+    call ls_mpi_buffer(DECitem%JacobianThr,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianInitialSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxIter,Master)
+    call ls_mpi_buffer(DECitem%JacobianPrecond,Master)
+    call ls_mpi_buffer(DECitem%HaldApprox,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%DECNP,Master)
@@ -2381,6 +2426,7 @@ contains
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
     call ls_mpi_buffer(DECitem%acc_sync,Master)
     call ls_mpi_buffer(DECitem%pt_hack,Master)
+    call ls_mpi_buffer(DECitem%pt_hack2,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
@@ -2414,6 +2460,7 @@ contains
     call ls_mpi_buffer(DECitem%ccConvergenceThreshold,Master)
     call ls_mpi_buffer(DECitem%CCthrSpecified,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
+    call ls_mpi_buffer(DECitem%ccsolverskip,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
@@ -2456,9 +2503,11 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%MemDebugPrint,Master)
     call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%distribute_fullmolecule,Master)
+    call ls_mpi_buffer(DECitem%force_distribution,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)

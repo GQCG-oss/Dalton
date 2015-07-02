@@ -34,8 +34,8 @@ module fragment_energy_module
 #ifdef MOD_UNRELEASED
   use f12_integrals_module
   use ccsd_gradient_module
-  use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-         & ccsdpt_energy_e4_pair,ccsdpt_energy_e5_pair, ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
+  use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e5_frag,&
+         & ccsdpt_energy_e5_pair, ccsdpt_decnp_e5_frag
 #endif
 
 public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
@@ -384,12 +384,13 @@ contains
 
        ! free stuff
        ! **********
-       call tensor_free(VOVO)
        call tensor_free(u)
-       call tensor_free(t2)
        if(DECinfo%use_singles)then
           call tensor_free(t1)
        endif
+       ! the order of deallocation is important!
+       call tensor_free(t2)
+       call tensor_free(VOVO)
 
     case default
 
@@ -616,7 +617,7 @@ contains
         call tensor_init(ccsdpt_t2,[frag%noccAOS,frag%noccAOS,&
              &frag%nvirtAOS,frag%nvirtAOS],4,bg=bg)
      else
-        call tensor_init(ccsdpt_t1, [frag%nvirtAOS,frag%noccAOS],2)
+        call tensor_init(ccsdpt_t1, [frag%nvirtAOS,frag%noccAOS],2,bg=bg)
         call tensor_init(ccsdpt_t2, [frag%nvirtAOS,frag%nvirtAOS,&
              &frag%noccAOS,frag%noccAOS],4,bg=bg)
      endif
@@ -636,26 +637,37 @@ contains
 
      ! Calculate (T) fragment energy contributions:
      ! ********************************************
-
-     ! extract EOS indices from doubles (CCSD and (T)):
-     call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
-        & tensor_virtEOS=ccsdpt_t2virt)
-     call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
-        & tensor_virtEOS=t2virt)
-
-     ! release ccsd(t) doubles amplitudes
-     call tensor_free(ccsdpt_t2)
-
      if (DECinfo%DECNP) then
-        call lsquit('DECNP for pT: pablo update this!!',DECinfo%output)
-        !call ccsdpt_decnp_e4_frag(frag,t2f_local,ccsdpt_t2,&
-        !   & frag%OccContribs,frag%VirtContribs)
-        !call ccsdpt_decnp_e5_frag(frag,t1,ccsdpt_t1)
+        ! Extract EOS indices, Note: EOS space is different for DECNP !!
+        call tensor_extract_decnp_indices(t2,frag,t2occ,t2virt)
+        call tensor_extract_decnp_indices(ccsdpt_t2,frag, &
+           & ccsdpt_t2occ,ccsdpt_t2virt)
+        ! release ccsd(t) doubles amplitudes
+        call tensor_free(ccsdpt_t2)
+
+        call get_decnp_fragment_energy(frag,ccsdpt_t2occ,ccsdpt_t2virt,t2occ,t2virt,.true.)
+        call ccsdpt_decnp_e5_frag(frag,t1,ccsdpt_t1)
      else if(pair) then
+        ! extract EOS indices from doubles (CCSD and (T)):
+        call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
+           & tensor_virtEOS=ccsdpt_t2virt)
+        call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
+           & tensor_virtEOS=t2virt)
+        ! release ccsd(t) doubles amplitudes
+        call tensor_free(ccsdpt_t2)
+
         call get_pair_fragment_pT4_energy(ccsdpt_t2occ,ccsdpt_t2virt,t2occ,t2virt,&
            & frag1,frag2,frag)
         call ccsdpt_energy_e5_pair(frag,t1,ccsdpt_t1)
      else
+        ! extract EOS indices from doubles (CCSD and (T)):
+        call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
+           & tensor_virtEOS=ccsdpt_t2virt)
+        call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
+           & tensor_virtEOS=t2virt)
+        ! release ccsd(t) doubles amplitudes
+        call tensor_free(ccsdpt_t2)
+
         call get_single_fragment_pT4_energy(ccsdpt_t2occ,ccsdpt_t2virt,t2occ,t2virt,frag)
         call ccsdpt_energy_e5_frag(frag,t1,ccsdpt_t1)
      end if
@@ -1234,7 +1246,7 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    Feb. 2015
-  subroutine get_decnp_fragment_energy(MyFragment,gocc,gvirt,t2occ,t2virt)
+  subroutine get_decnp_fragment_energy(MyFragment,gocc,gvirt,t2occ,t2virt,pT_contrib)
 
      implicit none
 
@@ -1248,14 +1260,15 @@ contains
      !  t2(a,i,b,j) := t2(a,i,b,j) + t1(a,i)*t1(b,j)
      type(tensor), intent(inout) :: t2occ
      type(tensor), intent(inout) :: t2virt
+     logical, intent(in), optional :: pT_contrib
 
      real(realk), pointer :: occ_tmp(:), virt_tmp(:)
      real(realk), pointer :: t(:,:,:,:), g(:,:,:,:)
 
      real(realk) :: tcpu1, twall1, tcpu2,twall2, tcpu,twall
-     real(realk) :: Eocc, lag_occ, Evirt, lag_virt
+     real(realk) :: Eocc, Evirt
      real(realk) :: prefac_coul, prefac_k, tmp
-     logical ::  something_wrong,SOS,PerformLag! ,doOccPart, doVirtPart
+     logical ::  something_wrong, dopT
      integer :: noccEOS, nvirtEOS, noccAOS, nvirtAOS
      integer :: i,j,k,a,b
 
@@ -1292,6 +1305,10 @@ contains
      MyFragment%OccContribs=0E0_realk
      MyFragment%VirtContribs=0E0_realk
       
+     ! are we calculating the (T) contributions?
+     dopT = .false.
+     if (present(pT_contrib)) dopT=pT_contrib
+
      prefac_coul=2._realk
      prefac_k=1._realk
       
@@ -1448,9 +1465,19 @@ contains
       
      ! Total atomic fragment energy
      ! ****************************
-     call put_fragment_energy_contribs_wrapper(Eocc,Evirt,MyFragment)
-      
-      
+     if (dopT) then
+        MyFragment%energies(FRAGMODEL_OCCpT4) = 2.0e0_realk*Eocc
+        MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+           &+ MyFragment%energies(FRAGMODEL_OCCpT4)
+
+        MyFragment%energies(FRAGMODEL_VIRTpT4) = 2.0e0_realk*Evirt
+        MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+           &+ MyFragment%energies(FRAGMODEL_VIRTpT4)
+     else
+        call put_fragment_energy_contribs_wrapper(Eocc,Evirt,MyFragment)
+     end if
+
+
      ! Print out contributions
      ! ***********************
      if( myfragment%isopt )then
@@ -2783,15 +2810,15 @@ contains
 
        ! Get MP2 amplitudes and energy for fragment
        call mp2_solver(AtomicFragment,g,t2,.false.)
-       call tensor_free(g)
 
        ! Get correlation density matrix for atomic fragment
        call calculate_MP2corrdens_frag(t2,AtomicFragment)
+       call tensor_free(t2)
+       call tensor_free(g)
 
        ! Reduce using fragment-adapted orbitals
        call fragopt_reduce_FOs(MyAtom,AtomicFragment,OccOrbitals,no,VirOrbitals,nv, &
           & MyMolecule,mylsitem,t2,iter)
-       call tensor_free(t2)
 
        return
     end if FragAdapt

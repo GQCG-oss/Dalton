@@ -54,7 +54,6 @@ contains
     type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
     real(realk) :: tcpu, twall
     
-
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Init basic info (molecular dimensions etc.)
@@ -1114,8 +1113,8 @@ contains
      !     & molecule%fock,molecule%oofock)
 
      call tensor_minit(tmp, [nbasis,nocc], 2, local=loc, atype='TDAR',tdims=tdim  )
-     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Co,[2],[1],1,0.0E0_realk,tmp,ord )
-     call tensor_contract(1.0E0_realk,molecule%Co,tmp,[1],[1],1,0.0E0_realk,molecule%oofock,ord )
+     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Co,[2],[1],1,0.0E0_realk,tmp,ord,force_sync=.true.)
+     call tensor_contract(1.0E0_realk,molecule%Co,tmp,[1],[1],1,0.0E0_realk,molecule%oofock,ord,force_sync=.true.)
      call tensor_free(tmp)
 
 
@@ -1125,8 +1124,8 @@ contains
      !     & molecule%fock,molecule%qqfock)
 
      call tensor_minit(tmp, [nbasis,nvirt], 2, local=loc, atype='TDAR',tdims=tdim  )
-     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Cv,[2],[1],1,0.0E0_realk,tmp,ord)
-     call tensor_contract(1.0E0_realk,molecule%Cv,tmp,[1],[1],1,0.0E0_realk,molecule%vvfock,ord)
+     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Cv,[2],[1],1,0.0E0_realk,tmp,ord,force_sync=.true.)
+     call tensor_contract(1.0E0_realk,molecule%Cv,tmp,[1],[1],1,0.0E0_realk,molecule%vvfock,ord,force_sync=.true.)
      call tensor_free(tmp)
 
   end subroutine molecule_mo_fock
@@ -1218,11 +1217,10 @@ contains
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     real(realk), intent(inout) :: molmem
-    real(realk) :: O,V,A,tmp,GB
+    real(realk) :: O,V,A,tmp
     integer :: nnod, nblocks, nlocal_blocks
-
     ! GB conversion
-    GB = 1.000E9_realk ! 1 GB
+    real(realk), parameter :: GB=1.024E3_realk**3! 1GB
 
 
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
@@ -1243,20 +1241,16 @@ contains
     molmem = molmem + tmp
 
 
-    !Do we need to distribute the arrays? -> if more than 3GB and keyword, do distribute
 #ifdef VAR_MPI
-    if(Decinfo%distribute_fullmolecule)then
-       if(molmem>((3*GB)/realk))then
-          MyMolecule%mem_distributed = .true.
-       else
-          print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
-          & molecular structure has been requested. However, the memory&
-          & requirements for this structure are so low, that we keep it in local&
-          & memory"
-          MyMolecule%mem_distributed = .false.
-       endif
+    !Do we need to distribute the arrays? -> if more than 10% of the available memory, the memory will be distributed
+    if(molmem>((0.1*DECinfo%memory*GB)/realk))then
+       MyMolecule%mem_distributed = .true.
     else
        MyMolecule%mem_distributed = .false.
+    endif
+
+    if(Decinfo%force_distribution)then
+       MyMolecule%mem_distributed = DECinfo%distribute_fullmolecule
     endif
 
     nnod = infpar%nodtot

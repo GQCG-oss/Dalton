@@ -144,6 +144,8 @@ type ConfigItem
    logical              :: skipscfloop
    !> test papi
    logical              :: papitest
+   !> Memory monitor for Matrices
+   logical            :: mat_mem_monitor
 end type ConfigItem
 
 type LowAccuracyStartType

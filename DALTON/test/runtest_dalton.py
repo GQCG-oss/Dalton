@@ -9,7 +9,7 @@ def write_stderr(log_file, s):
     Writes s to stderr and to file log_file
     unless log_file is None.
     """
-    if log_file != None:
+    if log_file:
         with open(log_file, 'w') as f:
             f.write(s)
     sys.stderr.write(s)
@@ -24,7 +24,7 @@ class Filter(runtest.Filter):
         try:
             runtest.Filter.add(self, *args, **kwargs)
         except runtest.FilterKeywordError, e:
-            sys.stderr.write(str(e)) # FIXME currently not written to any log file
+            sys.stderr.write(str(e))  # FIXME currently not written to any log file
             sys.exit(-1)
 
 

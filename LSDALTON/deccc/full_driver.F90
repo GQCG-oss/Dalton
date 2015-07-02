@@ -115,7 +115,10 @@ contains
           call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
        else
           if(DECinfo%ccModel==MODEL_MP2) then
-             if(DECinfo%use_canonical ) then
+             if(DECinfo%use_canonical .and. (.not. DECinfo%CCexci) ) then
+                ! Do not use canonical MP2 routine when CC eigenvalues are requested
+                ! because we need output amplitudes.
+
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
                 IF(DECinfo%MPMP2)THEN
@@ -397,8 +400,8 @@ contains
     !           Not frozen core: 0
     offset = noccfull - nocc
 
-    !> Singles correction
-    call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
+    !> Singles correction some issues with MPI and gives different values
+    ! call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
 
     ! Get all F12 Fock Matrices
     ! ********************
@@ -439,7 +442,7 @@ contains
   !  enddo
     
    !ES2 = 0.0E0_realk
-    !call get_ES2(ES2,Fic,Fii,MyMolecule%vvfock%elm2,Fcd,nocc,nvirt,ncabs)
+   ! call get_ES2(ES2,Fic%elms,Fii,MyMolecule%vvfock%elm2,Fcd,Fac%elms,nocc,nvirt,ncabs)
    
     !call mat_free(Fab)
 
@@ -734,9 +737,6 @@ contains
 
        endif
 
-
-
-
        if(DECinfo%F12DEBUG) then
           print *, '----------------------------------------'
           print *, ' E_22 X term                            '
@@ -920,10 +920,11 @@ contains
        write(*,'(1X,a)') '-----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 ENERGY =                   ', mp2_energy+E21_debug+E22_debug+E23_debug
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12-ES2 ENERGY =               ', mp2_energy+E21_debug+E22_debug+E23_debug+ES2
+ 
     else
 
        mp2f12_energy = 0.0E0_realk
-       mp2f12_energy = mp2_energy+E21+E22
+       mp2f12_energy = mp2_energy+E21+E22+ES2
 
        write(DECinfo%output,*) '----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') '----------------------------------------------------------------'
@@ -937,8 +938,10 @@ contains
        write(DECinfo%output,*)  'TOYCODE: F12 E21 CORRECTION TO ENERGY =  ', E21
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22 CORRECTION TO ENERGY =  ', E22
        write(DECinfo%output,*)  'TOYCODE: F12 E22 CORRECTION TO ENERGY =  ', E22
-       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22
-       write(DECinfo%output,*)  'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22       
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 ES2 CORRECTION TO ENERGY =  ', ES2
+       write(DECinfo%output,*)  'TOYCODE: F12 ES2 CORRECTION TO ENERGY =  ', ES2
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22+ES2
+       write(DECinfo%output,*)  'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22+ES2       
        ! Total MP2-F12 correlation energy
        ! Getting this energy 
        write(*,'(1X,a)') '----------------------------------------------------'
@@ -1738,7 +1741,7 @@ contains
 
     !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
-    ES2=0.0E0_realk
+    !ES2=0.0E0_realk
 
     ! F12 Specific
     call mem_dealloc(Vijij)

@@ -66,6 +66,7 @@ F90_OBJS = \
         common_utilities.o \
         file-operations.o \
         grid_utilities.o \
+	gpu_devices.o\
 	lsutilities.o\
 	lowdin.o\
 	ls_precision.o\

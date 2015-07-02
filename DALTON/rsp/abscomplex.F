@@ -701,13 +701,15 @@ c      DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*),MJWOP(*)
       DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,3),WRK(LWRK)
 C     local
-      REAL*8  DUMMY
+      REAL*8  DUMMY, thd
       INTEGER IDUMMY
-      PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
+      PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 , thd=1.0D-6  )
+      logical negf
 C
 C
       IF (IPRABSLRS.GT.0) CALL TIMER('START ',TIMSTR,TIMEND)
-C
+C 
+      negf=.false.
       DO ISYM=1,NSYM
          IF (ABS_NOPER(ISYM).GT.0) THEN
 C
@@ -717,10 +719,11 @@ C
             CALL ABSINTER(ISYM,UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
      &                    KZVAR,WRK(KFREE),LFREE)
 C
-            KGD   = 1
-            KXSOL = KGD + 2*KZVAR
-            KFREE = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
-            LFREE = LWRK - KFREE 
+            KGD    = 1
+            kfreqs = KGD + 2*KZVAR
+            KXSOL  = kfreqs + abs_nfreq_interval
+            KFREE  = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
+            LFREE  = LWRK - KFREE 
 C
             ABS_KLRED(1)=0
             ABS_KLRED(2)=0
@@ -776,8 +779,17 @@ C
                    ENDDO
                  WRITE(LUPRI,*) 'Vectors equal to zero'
                ELSE
+                 nfreqs=abs_nfreq_interval
+                 do i=1,abs_nfreq_interval
+                   if (abs_freq_alpha(i) .lt. 0.d0) negf=.true.
+                   wrk(kfreqs-1+i)=abs(abs_freq_alpha(i))
+                 enddo
+                 if (negf) then
+                   call gpdsrt(nfreqs,wrk(kfreqs),thd)
+                 endif
+                 
                  CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                        ABS_FREQ_ALPHA,ABS_NFREQ_INTERVAL,
+     &                        wrk(kfreqs),nfreqs,
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
                ENDIF
@@ -2320,6 +2332,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),
      &     WRK(LWRK),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),
      &     FREQ_ABS(NMXFREQ)
+      parameter (d0=-1.D0-16)
 C
       KFREE = 1
       LFREE = LWRK
@@ -2349,11 +2362,16 @@ C
             DO IFREQ=1,ABS_NFREQ_INTERVAL
                  CALL READ_XVEC(LU,2*KZYVAR,WRK(KVEC),
      &              LABEL,ABS_GRADSYM,
-     &              ABS(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
+c     &              ABS(FREQ_ABS(IFREQ),ABS_THCLR,FOUND,CONV)
+     &              abs(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
+               if (freq_abs(ifreq) .lt. d0) then
+                 call abs_vec_swap(2*kzyvar,wrk(kvec))
+               endif
                RESLRF(1,IFREQ,INXGD,INDEX,ITYPE) =
      &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC),1)
                RESLRF(2,IFREQ,INXGD,INDEX,ITYPE) =
-     &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC+KZYVAR),1)
+     &              DDOT(KZYVAR,WRK(KGD),
+     &              1,WRK(KVEC+KZYVAR),1)
             END DO
          END IF
       END DO
@@ -2701,6 +2719,22 @@ C
          CALL QUIT('Too many quadratic response functions specified.')
       END IF
 C
+      RETURN
+      END
+      SUBROUTINE ABS_VEC_SWAP(NDIM,XVEC)
+C
+      DIMENSION XVEC(NDIM,4)
+      REAL YVEC(NDIM,4)
+      parameter (dm1=-1.0d0)
+
+      call dzero(yvec,4*ndim)
+      call dcopy(ndim,xvec(1,1),1,yvec(1,2),1)      
+      call dcopy(ndim,xvec(1,2),1,yvec(1,1),1)
+      call dscal(2*ndim,dm1,yvec(1,1),1)
+      call dcopy(ndim,xvec(1,3),1,yvec(1,4),1)      
+      call dcopy(ndim,xvec(1,4),1,yvec(1,3),1)
+      call dcopy(4*ndim,yvec,1,xvec,1)      
+
       RETURN
       END
 ! end of DALTON/rsp/abscomplex.F

@@ -250,7 +250,7 @@ module tensor_basic_module
          !  call mem_dealloc(arr%elm1,arr%e1c,arr%w1)
          !else
          if( arr%bg_alloc)then
-            call mem_pseudo_dealloc(arr%elm1)
+            call mem_pseudo_dealloc(arr%elm1, mark_deleted=.true.)
          else
             call mem_dealloc(arr%elm1)
          endif
@@ -281,10 +281,11 @@ module tensor_basic_module
       real(realk) :: dim1,dim2,dim3,dim4
       real(realk) :: tcpu1,twall1,tcpu2,twall2
       integer :: i
+      logical :: bg
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
-      do i=1,arr%nlti
+      do i=arr%nlti,1,-1
         if(associated(arr%ti(i)%t)) then
  
            if( .not. alloc_in_dummy )then
@@ -292,7 +293,11 @@ module tensor_basic_module
               dim1 = dble(size(arr%ti(i)%t))*realk
 
 #ifdef VAR_MPI
-              call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c)
+              if(arr%bg_alloc)then
+                 call mem_pseudo_dealloc(arr%ti(i)%t)
+              else
+                 call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c)
+              endif
 #endif
               !$OMP CRITICAL
               tensor_tiled_deallocd_mem = tensor_tiled_deallocd_mem + dim1 

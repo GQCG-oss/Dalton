@@ -117,6 +117,8 @@ module tensor_type_def_module
   logical :: tensor_debug_mode           = .false.
   logical :: tensor_always_sync          = .false.
   logical :: tensor_contract_dil_backend = .false.
+  logical :: tensor_segment_length_set   = .false.
+  integer(kind=8) :: tensor_segment_length = -1
 
 
 
