@@ -337,7 +337,7 @@ C
       IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
      &    CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
-     &    (DOROSCF .AND. NSYM.gt.1) .OR.  ! high spin HF or DFT, with symmetry
+     &    (DOROSCF .AND. NSYM.gt.1 .AND. .NOT.DIRCAL) .OR.  ! high spin HF or DFT, with symmetry
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
      &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
      &    PEQM) THEN

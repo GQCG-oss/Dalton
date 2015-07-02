@@ -996,8 +996,6 @@ C&&& Nuclear model
             BGWEIN = D1 - D4*BGWEIN
             GOTO 100   
   197    CONTINUE
-            IF (NODTOT .GT. 0) CALL PARQUIT('FINDPT')
-            IF (DIRCAL) CALL QUIT('No direct calculation with FINDPT')
             ONEPRP = .TRUE. 
             DPTPOT = .TRUE.
             FINDPT = .TRUE.
@@ -1368,10 +1366,15 @@ cLig <>
      &    ' repulsion integrals with perturbation parameter:',DARFAC
       IF (ORBORB) WRITE (LUPRI,'(/A)')
      &     ' Calculate 2-electron orbit-orbit integrals'
-      IF (FINDPT) WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
+      IF (FINDPT) THEN
+         WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
      &    ' A direct relativistic perturbation is added to',
      &    ' Hamiltonian and metric with perturbation parameter:',DPTFAC,
      &    ' (perturbation parameter * c^{-2} = ',DPTFAC*ALPHAC**2,')'
+         IF (NODTOT .GT. 0) CALL PARQUIT('FINDPT')
+         IF (DIRCAL) CALL QUIT(
+     &    'Direct calculation (.DIRECT) is not compatible with .FINDPT')
+      END IF
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A)')
      &      ' The following one-electron property integrals are'
