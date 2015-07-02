@@ -115,7 +115,7 @@ contains
           call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
        else
           if(DECinfo%ccModel==MODEL_MP2) then
-             if(DECinfo%use_canonical .and. (.not. DECinfo%CCeival) ) then
+             if(DECinfo%use_canonical .and. (.not. DECinfo%CCexci) ) then
                 ! Do not use canonical MP2 routine when CC eigenvalues are requested
                 ! because we need output amplitudes.
 

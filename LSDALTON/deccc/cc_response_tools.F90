@@ -16,7 +16,7 @@ module cc_response_tools_module
   use dec_fragment_utils
   use dec_tools_module
 
-  public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr,& 
+  public get_ccsd_multipliers_simple,cc_jacobian_rhtr,& 
        & ccsd_eigenvalue_solver
   private
 
@@ -1692,7 +1692,7 @@ contains
       ! Singles component: rho11  (Eq. 55)
       ! Doubles component: rho12  (Eq. 57)
       whattodo=1
-      call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+      call jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
            & yv,t2,R1,R2,rho11,rho12,whattodo)
 
       ! Calculate 2^rho components for Jacobian RHS transformation,
@@ -1700,7 +1700,7 @@ contains
       ! Singles component: rho21  (Eq. 56)
       ! Doubles component: rho22  (Eq. 58)
       whattodo=2
-      call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+      call jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
            & yv,t2,R1,R2,rho21,rho22,whattodo)
 
       ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
@@ -1724,7 +1724,7 @@ contains
     !> the Jacobian right-hand transformation can also be calculated.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+    subroutine jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
          & yv,t2,R1,R2,rho1,rho2,whattodo)
       implicit none
       !> LS item structure
@@ -1763,7 +1763,7 @@ contains
       ! Sanity check 1
       if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
          print *, 'whattodo ', whattodo
-         call lsquit('noddy_generalized_ccsd_residual: Ill-defined whattodo!',-1)
+         call lsquit('jacobian_rhtr_workhorse: Ill-defined whattodo!',-1)
       end if
 
       ! Sanity check 2: Dimensions
@@ -1782,12 +1782,12 @@ contains
          print *, 'rho2 ', rho2%dims
          print *, 'rho1 ', rho1%dims
          print *, 'R1   ', R1%dims
-         call lsquit('noddy_generalized_ccsd_residual: Dimension error!',-1)
+         call lsquit('jacobian_rhtr_workhorse: Dimension error!',-1)
       end if
 
 
       ! Calculate all integrals 
-      call noddy_generalized_ccsd_residual_integrals(mylsitem,xo,xv,yo,&
+      call jacobian_rhtr_workhorse_integrals(mylsitem,xo,xv,yo,&
            & yv,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
            & fvo,fov,fvv,foo,whattodo)
 
@@ -2251,13 +2251,13 @@ contains
       nullify(A2)
       nullify(B2)
 
-    end subroutine noddy_generalized_ccsd_residual
+    end subroutine jacobian_rhtr_workhorse
 
 
-    !> \brief Calculate integrals for noddy_generalized_ccsd_residual.
+    !> \brief Calculate integrals for jacobian_rhtr_workhorse.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+    subroutine jacobian_rhtr_workhorse_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
          & yv_tensor,R1_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
          & fvo,fov,fvv,foo,whattodo)
       implicit none
@@ -2275,7 +2275,7 @@ contains
       !> using either T1-transformed integrals or trial-T1 transformed integrals (see below).
       !> These are allocated inside this subroutine!
       type(array2),intent(inout) :: fvo,fov,fvv,foo
-      !> What to do? See noddy_generalized_ccsd_residual.
+      !> What to do? See jacobian_rhtr_workhorse.
       !> whattodo=1: Use trial-T1 transformed integrals 
       !>             (Hamiltonian is Eq. 45 in JCP 105, 6921 (1996))
       !> whattodo=2: Use T1-transformed integrals
@@ -2456,7 +2456,7 @@ contains
       call array2_free(R1)
       call array4_free(gvooo)
 
-    end subroutine noddy_generalized_ccsd_residual_integrals
+    end subroutine jacobian_rhtr_workhorse_integrals
 
 
     !> \brief Calculate two-electron trial-T1 transformed integrals, 

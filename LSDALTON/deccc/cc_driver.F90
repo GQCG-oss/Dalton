@@ -313,7 +313,7 @@ contains
       endif
 
       ! Calculate CCSD eigenvalues if requested
-      if(DECinfo%CCeival) then
+      if(DECinfo%CCexci) then
          call ccsd_eigenvalue_solver(nb,no,nv,fock,Co,Cv,myls,t1f,t2f)
       end if
 
