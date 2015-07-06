@@ -55,7 +55,7 @@ contains
     DECinfo%SNOOPlocalize  = .false.
 
     ! CC response
-    DECinfo%CCeival = .false.
+    DECinfo%CCexci = .false.
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
     DECinfo%JacobianThr = 1.0e-7
@@ -63,6 +63,7 @@ contains
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
+    DECinfo%HaldApprox = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -458,7 +459,7 @@ contains
           ! CC RESPONSE
           ! ===========
        case('.EXCITATIONENERGIES')
-          DECinfo%CCeival = .true.
+          DECinfo%CCexci = .true.
           read(input,*) DECinfo%JacobianNumEival
 
        case('.JACOBIANLEFT')
@@ -479,6 +480,8 @@ contains
        case('.JACOBIANNOTPRECOND')
           DECinfo%JacobianPrecond = .false.
 
+       case('.HALDAPPROX')
+          DECinfo%HaldApprox = .true.
 
 
        ! GENERAL INFO
@@ -1196,7 +1199,7 @@ contains
 
 
     ! CC response - currently not implemented for DEC
-    CCresponse: if(DECinfo%CCeival) then
+    CCresponse: if(DECinfo%CCexci) then
        IF(.not. DECinfo%full_molecular_cc) then
           call lsquit('CC response is not implemented for DEC! Use **CC instead of **DEC.',-1)
        end IF
@@ -1516,7 +1519,7 @@ contains
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
-    write(lupri,*) 'CCeival ', DECinfo%CCeival
+    write(lupri,*) 'CCexci ', DECinfo%CCexci
     write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
     write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
     write(lupri,*) 'JacobianThr ', DECinfo%JacobianThr
@@ -1524,6 +1527,7 @@ contains
     write(lupri,*) 'JacobianInitialSubspace ', DECinfo%JacobianInitialSubspace
     write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
+    write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP

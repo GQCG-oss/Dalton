@@ -16,7 +16,7 @@ module cc_response_tools_module
   use dec_fragment_utils
   use dec_tools_module
 
-  public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr,& 
+  public get_ccsd_multipliers_simple,cc_jacobian_rhtr,& 
        & ccsd_eigenvalue_solver
   private
 
@@ -1667,14 +1667,13 @@ contains
       !> and virt (dimension nbasis,nvirt) transformations
       type(tensor),intent(in) :: xo,xv,yo,yv
       !> Singles and doubles amplitudes
-      type(tensor),intent(in) :: t1,t2
+      type(tensor),intent(in) :: t1,t2 
       !> Singles (R1) and doubles (R2) components of trial vector
       type(tensor),intent(in) :: R1,R2
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
       type(tensor),intent(inout) :: rho1,rho2
       type(tensor) :: rho11,rho12,rho21,rho22
       integer :: nbasis,nocc,nvirt,whattodo
-
 
       ! Dimensions
       nbasis = xo%dims(1)
@@ -1692,7 +1691,7 @@ contains
       ! Singles component: rho11  (Eq. 55)
       ! Doubles component: rho12  (Eq. 57)
       whattodo=1
-      call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+      call jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
            & yv,t2,R1,R2,rho11,rho12,whattodo)
 
       ! Calculate 2^rho components for Jacobian RHS transformation,
@@ -1700,7 +1699,7 @@ contains
       ! Singles component: rho21  (Eq. 56)
       ! Doubles component: rho22  (Eq. 58)
       whattodo=2
-      call noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+      call jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
            & yv,t2,R1,R2,rho21,rho22,whattodo)
 
       ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
@@ -1724,7 +1723,7 @@ contains
     !> the Jacobian right-hand transformation can also be calculated.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine noddy_generalized_ccsd_residual(mylsitem,xo,xv,yo,&
+    subroutine jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
          & yv,t2,R1,R2,rho1,rho2,whattodo)
       implicit none
       !> LS item structure
@@ -1733,7 +1732,7 @@ contains
       !> and virt (dimension nbasis,nvirt) transformations
       type(tensor),intent(in) :: xo,xv,yo,yv
       !> Doubles amplitudes
-      type(tensor),intent(in),target :: t2
+      type(tensor),intent(in),target :: t2 
       !> Singles (R1) and doubles (R2) components of trial vector
       type(tensor),intent(in),target :: R1,R2
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
@@ -1751,8 +1750,9 @@ contains
       integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
       real(realk) :: uA,uB,Lldkc,fac
       real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
-      logical :: somethingwrong
+      logical :: somethingwrong,includeterm
       real(realk),pointer :: A2(:,:,:,:), B2(:,:,:,:)
+      type(tensor) :: ttmp
 
 
       ! Dimensions
@@ -1763,7 +1763,7 @@ contains
       ! Sanity check 1
       if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
          print *, 'whattodo ', whattodo
-         call lsquit('noddy_generalized_ccsd_residual: Ill-defined whattodo!',-1)
+         call lsquit('jacobian_rhtr_workhorse: Ill-defined whattodo!',-1)
       end if
 
       ! Sanity check 2: Dimensions
@@ -1782,12 +1782,12 @@ contains
          print *, 'rho2 ', rho2%dims
          print *, 'rho1 ', rho1%dims
          print *, 'R1   ', R1%dims
-         call lsquit('noddy_generalized_ccsd_residual: Dimension error!',-1)
+         call lsquit('jacobian_rhtr_workhorse: Dimension error!',-1)
       end if
 
 
       ! Calculate all integrals 
-      call noddy_generalized_ccsd_residual_integrals(mylsitem,xo,xv,yo,&
+      call jacobian_rhtr_workhorse_integrals(mylsitem,xo,xv,yo,&
            & yv,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
            & fvo,fov,fvv,foo,whattodo)
 
@@ -1856,7 +1856,6 @@ contains
       end if
 
 
-
       ! DOUBLES RESIDUAL
       ! ================
 
@@ -1893,299 +1892,258 @@ contains
          end do
       end if
 
-      ! A2.2 term (B)
-      do i=1,nocc
-         do a=1,nvirt
-            do j=1,nocc
-               do b=1,nvirt
+      ! For whattodo=1 and Hald approximation all remaining terms are skipped
+      Hald1: if( whattodo/=1 .or. (.not. DECinfo%haldapprox) ) then
 
-                  do c=1,nvirt
-                     do d=1,nvirt
-                        rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + &
-                             & A2(c,i,d,j)*gvvvv%val(a,c,b,d)
-                     end do
-                  end do
-
-               end do
-            end do
-         end do
-      end do
+         ! For whattodo=2 all terms involving doubles amplitudes (B2 pointer)
+         ! are not included. This is controlled by "includeterm" logical.
+         includeterm=.true.
+         if(whattodo==2 .and. DECinfo%haldapprox) includeterm=.false.
 
 
-
-      ! B2 (A)
-      ! ******
-      ! Scaling of quadratic term (not present for 1^rho)
-      if(whattodo==1) fac=0.0_realk
-      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
-      call mem_alloc(tmp,nocc,nocc,nocc,nocc)
-      do i=1,nocc
-         do j=1,nocc
-
-            do k=1,nocc
-               do l=1,nocc
-
-                  ! Temporary quantity: 
-                  ! tmp(k,i,l,j) = g(k,i,l,j) + fac * sum_{cd} B2(c,i,d,j) * g(k,c,l,d)
-                  tmp(k,i,l,j) = goooo%val(k,i,l,j)
-                  do c=1,nvirt
-                     do d=1,nvirt
-                        tmp(k,i,l,j) = tmp(k,i,l,j) + fac*B2(c,i,d,j)*govov%val(k,c,l,d)
-                     end do
-                  end do
-
-                  ! rho2(a,b,i,j) += sum_{kl} A2(a,k,b,l) tmp(k,i,l,j)
-                  ! Note that the linear term is then included with A2, not B2:
-                  ! sum_{kl} A2(a,k,b,l) g(k,i,l,j)
-                  do a=1,nvirt
-                     do b=1,nvirt
-                        rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + A2(a,k,b,l)*tmp(k,i,l,j) 
-                     end do
-                  end do
-
-               end do
-            end do
-
-         end do
-      end do
-
-
-
-      ! For 2^rho, add quadratic term with B2 and A2 switched around,
-      ! see Table I in JCP 105, 6921 (1996)
-      Bquadratic: if(whattodo==2) then
-         do i=1,nocc
-            do j=1,nocc
-
-               do k=1,nocc
-                  do l=1,nocc
-
-                     ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} A2(c,i,d,j) * g(k,c,l,d)
-                     tmp(k,i,l,j) = 0.0_realk
-                     do c=1,nvirt
-                        do d=1,nvirt
-                           tmp(k,i,l,j) = tmp(k,i,l,j) + fac*A2(c,i,d,j)*govov%val(k,c,l,d)
-                        end do
-                     end do
-
-                     ! rho2(a,i,b,j) += sum_{kl} B2(a,k,b,l) tmp(k,i,l,j)
-                     do a=1,nvirt
-                        do b=1,nvirt
-                           rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + B2(a,k,b,l)*tmp(k,i,l,j) 
-                        end do
-                     end do
-
-                  end do
-               end do
-
-            end do
-         end do
-      end if Bquadratic
-      call mem_dealloc(tmp)
-
-
-
-      ! C2 (C)
-      ! ******
-      ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual, 
-      ! by 1.0 for 2^rho, and it is not present for 1^rho, see Table I in JCP 105, 6921 (1996)
-      ! 
-      if(whattodo==1) fac=0.0_realk
-      if(whattodo==2) fac=1.0_realk
-      if(whattodo==3) fac=0.5_realk
-      call mem_alloc(tmp,nocc,nocc,nvirt,nvirt)
-      call mem_alloc(tmp2,nvirt,nvirt,nocc,nocc)
-      tmp2=0.0_realk
-      do i=1,nocc
-         do a=1,nvirt
-
-            do k=1,nocc
-               do c=1,nvirt
-
-                  ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} B2(a,l,d,i) * govov(k,d,l,c)
-                  tmp(k,i,a,c) = goovv%val(k,i,a,c)
-                  do l=1,nocc
-                     do d=1,nvirt
-                        tmp(k,i,a,c) = tmp(k,i,a,c) - fac*B2(a,l,d,i)*govov%val(k,d,l,c)
-                     end do
-                  end do
-
-                  ! tmp2(a,b,i,j) += - sum_{kc} A2(b,k,c,j) * tmp(k,i,a,c)
-                  do j=1,nocc
-                     do b=1,nvirt
-                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - A2(b,k,c,j) * tmp(k,i,a,c)
-                     end do
-                  end do
-
-               end do
-            end do
-
-         end do
-      end do
-
-      ! Add component with i<-->j scaled properly to get final C2 component
-      ! (although still missing final symmetrization which is done commonly for C,D, and E
-      !  terms at the very end)
-      ! rho2CDE(a,i,b,j) = (0.5 + P_{ij}) * tmp2(a,b,i,j)
-      call mem_alloc(rho2CDE,nvirt,nocc,nvirt,nocc)
-      do j=1,nocc
+         ! A2.2 term (B)
          do i=1,nocc
             do a=1,nvirt
-               do b=1,nvirt
-                  rho2CDE(a,i,b,j) = 0.5_realk*tmp2(a,b,i,j) + tmp2(a,b,j,i)
-               end do
-            end do
-         end do
-      end do
-      call mem_dealloc(tmp)
-      call mem_dealloc(tmp2)
-
-
-      ! D2 (D)
-      ! ******  
-      call mem_alloc(tmp,nvirt,nocc,nocc,nvirt)
-      do i=1,nocc
-         do a=1,nvirt
-
-
-            do c=1,nvirt
-               do k=1,nocc
-
-                  ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c)
-                  ! ----------------------------------------------------------------
-
-                  ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
-                  tmp(a,i,k,c) = 2.0_realk*gvoov%val(a,i,k,c) - goovv%val(k,i,a,c)
-                  do d=1,nvirt
-                     do l=1,nocc
-                        ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
-                        Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
-                        ! uB(a,d,i,l) = 2*B2(a,i,d,l) - B2(a,l,d,i)
-                        uB = 2.0_realk*B2(a,i,d,l) - B2(a,l,d,i)
-                        ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c) 
-                        tmp(a,i,k,c) = tmp(a,i,k,c) + fac*uB*Lldkc
-                     end do
-                  end do
-
-                  ! Update:
-                  ! rho2(a,b,i,j) += rho2(a,b,i,j) + 0.5 * sum_{ck} uA(b,j,c,k) * tmp(a,i,k,c)
+               do j=1,nocc
                   do b=1,nvirt
-                     do j=1,nocc
-                        uA = 2.0_realk*A2(b,j,c,k) - A2(b,k,c,j)
-                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + 0.5_realk*uA*tmp(a,i,k,c)
+
+                     do c=1,nvirt
+                        do d=1,nvirt
+                           rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + &
+                                & A2(c,i,d,j)*gvvvv%val(a,c,b,d)
+                        end do
+                     end do
+
+                  end do
+               end do
+            end do
+         end do
+
+
+         ! B2 (A)
+         ! ******
+         ! Scaling of quadratic term (not present for 1^rho)
+         if(whattodo==1) fac=0.0_realk
+         if(whattodo==2 .or. whattodo==3) fac=1.0_realk
+
+         call mem_alloc(tmp,nocc,nocc,nocc,nocc)
+         do i=1,nocc
+            do j=1,nocc
+
+               do k=1,nocc
+                  do l=1,nocc
+
+                     ! Temporary quantity: 
+                     ! tmp(k,i,l,j) = g(k,i,l,j) + fac * sum_{cd} B2(c,i,d,j) * g(k,c,l,d)
+                     tmp(k,i,l,j) = goooo%val(k,i,l,j)
+
+                     if(includeterm) then
+                        do c=1,nvirt
+                           do d=1,nvirt
+                              tmp(k,i,l,j) = tmp(k,i,l,j) + fac*B2(c,i,d,j)*govov%val(k,c,l,d)
+                           end do
+                        end do
+                     end if
+
+                     ! rho2(a,b,i,j) += sum_{kl} A2(a,k,b,l) tmp(k,i,l,j)
+                     ! Note that the linear term is then included with A2, not B2:
+                     ! sum_{kl} A2(a,k,b,l) g(k,i,l,j)
+                     do a=1,nvirt
+                        do b=1,nvirt
+                           rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + A2(a,k,b,l)*tmp(k,i,l,j) 
+                        end do
+                     end do
+
+                  end do
+               end do
+
+            end do
+         end do
+
+
+
+         ! For 2^rho, add quadratic term with B2 and A2 switched around,
+         ! see Table I in JCP 105, 6921 (1996)
+         Bquadratic: if(whattodo==2 .and. includeterm) then
+            do i=1,nocc
+               do j=1,nocc
+
+                  do k=1,nocc
+                     do l=1,nocc
+
+                        ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} A2(c,i,d,j) * g(k,c,l,d)
+                        tmp(k,i,l,j) = 0.0_realk
+                        do c=1,nvirt
+                           do d=1,nvirt
+                              tmp(k,i,l,j) = tmp(k,i,l,j) + fac*A2(c,i,d,j)*govov%val(k,c,l,d)
+                           end do
+                        end do
+
+                        ! rho2(a,i,b,j) += sum_{kl} B2(a,k,b,l) tmp(k,i,l,j)
+                        do a=1,nvirt
+                           do b=1,nvirt
+                              rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + B2(a,k,b,l)*tmp(k,i,l,j) 
+                           end do
+                        end do
+
                      end do
                   end do
 
                end do
             end do
+         end if Bquadratic
+         call mem_dealloc(tmp)
 
 
-         end do
-      end do
-      call mem_dealloc(tmp)
+         ! C2 (C)
+         ! ******
+         ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual, 
+         ! by 1.0 for 2^rho, and it is not present for 1^rho, see Table I in JCP 105, 6921 (1996)
+         ! 
+         if(whattodo==1) fac=0.0_realk
+         if(whattodo==2) fac=1.0_realk
+         if(whattodo==3) fac=0.5_realk
+         call mem_alloc(tmp,nocc,nocc,nvirt,nvirt)
+         call mem_alloc(tmp2,nvirt,nvirt,nocc,nocc)
+         tmp2=0.0_realk
+         do i=1,nocc
+            do a=1,nvirt
 
-
-      ! E2 (E1 and E2)
-      ! **************
-      ! Scaling of quadratic term (not present for 1^rho)
-      if(whattodo==1) fac=0.0_realk
-      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
-
-      ! Construct 2-dimensional intermediates
-      call mem_alloc(tmpoo,nocc,nocc)
-      call mem_alloc(tmpvv,nvirt,nvirt)
-
-      ! tmpoo(k,j) = F(k,j) + sum_{cdl} uB(c,l,d,j) * g(k,d,l,c)
-      do j=1,nocc
-         do k=1,nocc
-            tmpoo(k,j) = foo%val(k,j)
-
-            do l=1,nocc
-               do d=1,nvirt
+               do k=1,nocc
                   do c=1,nvirt
-                     uB = 2.0_realk*B2(c,l,d,j) - B2(c,j,d,l)
-                     tmpoo(k,j) = tmpoo(k,j) + fac * uB * govov%val(k,d,l,c)
+
+                     ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} B2(a,l,d,i) * govov(k,d,l,c)
+                     tmp(k,i,a,c) = goovv%val(k,i,a,c)
+                     if(includeterm) then
+                        do l=1,nocc
+                           do d=1,nvirt
+                              tmp(k,i,a,c) = tmp(k,i,a,c) - fac*B2(a,l,d,i)*govov%val(k,d,l,c)
+                           end do
+                        end do
+                     end if
+
+                     ! tmp2(a,b,i,j) += - sum_{kc} A2(b,k,c,j) * tmp(k,i,a,c)
+                     do j=1,nocc
+                        do b=1,nvirt
+                           tmp2(a,b,i,j) = tmp2(a,b,i,j) - A2(b,k,c,j) * tmp(k,i,a,c)
+                        end do
+                     end do
+
+                  end do
+               end do
+
+            end do
+         end do
+
+         ! Add component with i<-->j scaled properly to get final C2 component
+         ! (although still missing final symmetrization which is done commonly for C,D, and E
+         !  terms at the very end)
+         ! rho2CDE(a,i,b,j) = (0.5 + P_{ij}) * tmp2(a,b,i,j)
+         call mem_alloc(rho2CDE,nvirt,nocc,nvirt,nocc)
+         do j=1,nocc
+            do i=1,nocc
+               do a=1,nvirt
+                  do b=1,nvirt
+                     rho2CDE(a,i,b,j) = 0.5_realk*tmp2(a,b,i,j) + tmp2(a,b,j,i)
                   end do
                end do
             end do
          end do
-      end do
+         call mem_dealloc(tmp)
+         call mem_dealloc(tmp2)
 
-      ! tmpvv(b,c) = F(b,c) - sum_{dkl} uB(b,k,d,l) * g(l,d,k,c)
-      do b=1,nvirt
-         do c=1,nvirt
-            tmpvv(b,c) = fvv%val(b,c)
 
-            do l=1,nocc
-               do d=1,nvirt
+         ! D2 (D)
+         ! ******  
+         call mem_alloc(tmp,nvirt,nocc,nocc,nvirt)
+         do i=1,nocc
+            do a=1,nvirt
+
+
+               do c=1,nvirt
                   do k=1,nocc
-                     uB = 2.0_realk*B2(b,k,d,l) - B2(b,l,d,k)
-                     tmpvv(b,c) = tmpvv(b,c) - fac * uB * govov%val(l,d,k,c)
+
+                     ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c)
+                     ! ----------------------------------------------------------------
+
+                     ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
+                     tmp(a,i,k,c) = 2.0_realk*gvoov%val(a,i,k,c) - goovv%val(k,i,a,c)
+                     if(includeterm) then
+                        do d=1,nvirt
+                           do l=1,nocc
+                              ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
+                              Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
+                              ! uB(a,d,i,l) = 2*B2(a,i,d,l) - B2(a,l,d,i)
+                              uB = 2.0_realk*B2(a,i,d,l) - B2(a,l,d,i)
+                              ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c) 
+                              tmp(a,i,k,c) = tmp(a,i,k,c) + fac*uB*Lldkc
+                           end do
+                        end do
+                     end if
+
+                     ! Update:
+                     ! rho2(a,b,i,j) += rho2(a,b,i,j) + 0.5 * sum_{ck} uA(b,j,c,k) * tmp(a,i,k,c)
+                     do b=1,nvirt
+                        do j=1,nocc
+                           uA = 2.0_realk*A2(b,j,c,k) - A2(b,k,c,j)
+                           rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + 0.5_realk*uA*tmp(a,i,k,c)
+                        end do
+                     end do
+
                   end do
                end do
+
+
             end do
          end do
-      end do
-
-      ! E2.1 (E1)
-      do j=1,nocc
-         do c=1,nvirt
-            do b=1,nvirt
-               do i=1,nocc
-                  do a=1,nvirt
-                     rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + A2(a,i,c,j)*tmpvv(b,c)
-                  end do
-               end do
-            end do
-         end do
-      end do
-
-      ! E2.2 (E2)
-      do j=1,nocc
-         do k=1,nocc
-            do b=1,nvirt
-               do i=1,nocc
-                  do a=1,nvirt
-                     rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - A2(a,i,b,k)*tmpoo(k,j)
-                  end do
-               end do
-            end do
-         end do
-      end do
+         call mem_dealloc(tmp)
 
 
+         ! E2 (E1 and E2)
+         ! **************
+         ! Scaling of quadratic term (not present for 1^rho)
+         if(whattodo==1) fac=0.0_realk
+         if(whattodo==2 .or. whattodo==3) fac=1.0_realk
 
-      ! Add quadratic E terms with B2 and A2 switched around
-      ! ----------------------------------------------------
-      Equadratic: if(whattodo==2) then
-         ! tmpoo(k,j) = sum_{cdl} uA(c,l,d,j) * g(k,d,l,c)
+         ! Construct 2-dimensional intermediates
+         call mem_alloc(tmpoo,nocc,nocc)
+         call mem_alloc(tmpvv,nvirt,nvirt)
+
+         ! tmpoo(k,j) = F(k,j) + sum_{cdl} uB(c,l,d,j) * g(k,d,l,c)
          do j=1,nocc
             do k=1,nocc
-               tmpoo(k,j) = 0.0_realk
-               do l=1,nocc
-                  do d=1,nvirt
-                     do c=1,nvirt
-                        uA = 2.0_realk*A2(c,l,d,j) - A2(c,j,d,l)
-                        tmpoo(k,j) = tmpoo(k,j) + fac * uA * govov%val(k,d,l,c)
+               tmpoo(k,j) = foo%val(k,j)
+
+               if(includeterm) then
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do c=1,nvirt
+                           uB = 2.0_realk*B2(c,l,d,j) - B2(c,j,d,l)
+                           tmpoo(k,j) = tmpoo(k,j) + fac * uB * govov%val(k,d,l,c)
+                        end do
                      end do
                   end do
-               end do
+               end if
+
             end do
          end do
 
-         ! tmpvv(b,c) = - sum_{dkl} uA(b,k,d,l) * g(l,d,k,c)
+         ! tmpvv(b,c) = F(b,c) - sum_{dkl} uB(b,k,d,l) * g(l,d,k,c)
          do b=1,nvirt
             do c=1,nvirt
-               tmpvv(b,c) = 0.0_realk
+               tmpvv(b,c) = fvv%val(b,c)
 
-               do l=1,nocc
-                  do d=1,nvirt
-                     do k=1,nocc
-                        uA = 2.0_realk*A2(b,k,d,l) - A2(b,l,d,k)
-                        tmpvv(b,c) = tmpvv(b,c) - fac * uA * govov%val(l,d,k,c)
+               if(includeterm) then
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do k=1,nocc
+                           uB = 2.0_realk*B2(b,k,d,l) - B2(b,l,d,k)
+                           tmpvv(b,c) = tmpvv(b,c) - fac * uB * govov%val(l,d,k,c)
+                        end do
                      end do
                   end do
-               end do
+               end if
+
             end do
          end do
 
@@ -2195,7 +2153,7 @@ contains
                do b=1,nvirt
                   do i=1,nocc
                      do a=1,nvirt
-                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + B2(a,i,c,j)*tmpvv(b,c)
+                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + A2(a,i,c,j)*tmpvv(b,c)
                      end do
                   end do
                end do
@@ -2208,34 +2166,97 @@ contains
                do b=1,nvirt
                   do i=1,nocc
                      do a=1,nvirt
-                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - B2(a,i,b,k)*tmpoo(k,j)
+                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - A2(a,i,b,k)*tmpoo(k,j)
                      end do
                   end do
                end do
             end do
          end do
 
-      end if Equadratic
 
 
-      ! Symmetrize C, D, and E terms and add to A and B terms
-      ! *****************************************************
-      do j=1,nocc
-         do b=1,nvirt
-            do i=1,nocc
-               do a=1,nvirt
-                  rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + rho2CDE(a,i,b,j) + rho2CDE(b,j,a,i)
+         ! Add quadratic E terms with B2 and A2 switched around
+         ! ----------------------------------------------------
+         Equadratic: if(whattodo==2 .and. includeterm) then
+            ! tmpoo(k,j) = sum_{cdl} uA(c,l,d,j) * g(k,d,l,c)
+            do j=1,nocc
+               do k=1,nocc
+                  tmpoo(k,j) = 0.0_realk
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do c=1,nvirt
+                           uA = 2.0_realk*A2(c,l,d,j) - A2(c,j,d,l)
+                           tmpoo(k,j) = tmpoo(k,j) + fac * uA * govov%val(k,d,l,c)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+            ! tmpvv(b,c) = - sum_{dkl} uA(b,k,d,l) * g(l,d,k,c)
+            do b=1,nvirt
+               do c=1,nvirt
+                  tmpvv(b,c) = 0.0_realk
+
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do k=1,nocc
+                           uA = 2.0_realk*A2(b,k,d,l) - A2(b,l,d,k)
+                           tmpvv(b,c) = tmpvv(b,c) - fac * uA * govov%val(l,d,k,c)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+            ! E2.1 (E1)
+            do j=1,nocc
+               do c=1,nvirt
+                  do b=1,nvirt
+                     do i=1,nocc
+                        do a=1,nvirt
+                           rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + B2(a,i,c,j)*tmpvv(b,c)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+            ! E2.2 (E2)
+            do j=1,nocc
+               do k=1,nocc
+                  do b=1,nvirt
+                     do i=1,nocc
+                        do a=1,nvirt
+                           rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - B2(a,i,b,k)*tmpoo(k,j)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+         end if Equadratic
+
+
+         ! Symmetrize C, D, and E terms and add to A and B terms
+         ! *****************************************************
+         do j=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + rho2CDE(a,i,b,j) + rho2CDE(b,j,a,i)
+                  end do
                end do
             end do
          end do
-      end do
+         call mem_dealloc(rho2CDE)
+         call mem_dealloc(tmpoo)
+         call mem_dealloc(tmpvv)
+
+      end if Hald1
 
 
- 
       ! Clean up
-      call mem_dealloc(tmpoo)
-      call mem_dealloc(tmpvv)
-      call mem_dealloc(rho2CDE)
       call array4_free(gvvov)
       call array4_free(gooov)
       call array4_free(gvovo)
@@ -2251,13 +2272,14 @@ contains
       nullify(A2)
       nullify(B2)
 
-    end subroutine noddy_generalized_ccsd_residual
+      
+    end subroutine jacobian_rhtr_workhorse
 
 
-    !> \brief Calculate integrals for noddy_generalized_ccsd_residual.
+    !> \brief Calculate integrals for jacobian_rhtr_workhorse.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+    subroutine jacobian_rhtr_workhorse_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
          & yv_tensor,R1_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
          & fvo,fov,fvv,foo,whattodo)
       implicit none
@@ -2275,7 +2297,7 @@ contains
       !> using either T1-transformed integrals or trial-T1 transformed integrals (see below).
       !> These are allocated inside this subroutine!
       type(array2),intent(inout) :: fvo,fov,fvv,foo
-      !> What to do? See noddy_generalized_ccsd_residual.
+      !> What to do? See jacobian_rhtr_workhorse.
       !> whattodo=1: Use trial-T1 transformed integrals 
       !>             (Hamiltonian is Eq. 45 in JCP 105, 6921 (1996))
       !> whattodo=2: Use T1-transformed integrals
@@ -2456,7 +2478,7 @@ contains
       call array2_free(R1)
       call array4_free(gvooo)
 
-    end subroutine noddy_generalized_ccsd_residual_integrals
+    end subroutine jacobian_rhtr_workhorse_integrals
 
 
     !> \brief Calculate two-electron trial-T1 transformed integrals, 
@@ -3003,7 +3025,7 @@ contains
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
-      write(DECinfo%output,'(1X,a)') 'JAC CCSD excitation energies'
+      write(DECinfo%output,'(1X,a)') 'JAC CC excitation energies'
       write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC      Exci.    Hartree           eV            cm-1           ||T1|| (%)'

@@ -1476,11 +1476,12 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     logical, intent(in) :: mpi_split
 
-    real(realk) :: MemNeed, MemFree
+    real(realk) :: MemNeed, MemFree, factor
     integer(kind=long) :: min_mem
     integer :: MinAOBatch, MinMOBatch, na, ng, nnod, magic,iAO
 
     MinMOBatch = min(15,ntot)
+    factor = 0.9E0_realk
     dimMO = MinMOBatch
     local = .false.
     nnod  = 1
@@ -1493,7 +1494,7 @@ contains
     call get_currently_available_memory(MemFree)
 
     if(mem_is_background_buf_init())then
-       MemFree = 0.8E0_realk*MemFree + (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
+       MemFree = factor*MemFree + (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
     endif
 
     if (nnod>1) then
@@ -1520,7 +1521,7 @@ contains
           call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
 
           ! if not enough mem then switch to full PDM scheme:
-          if (MeMNeed>0.8E0_realk*MemFree) then
+          if (MeMNeed>factor*MemFree) then
              local = .false.
           end if
        end if
@@ -1528,7 +1529,7 @@ contains
 
     call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
 
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(dimMO<=ntot))
+    do while ((MemNeed<factor*MemFree).and.(dimMO<=ntot))
        dimMO = dimMO + 1
        call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
     end do
@@ -1596,7 +1597,7 @@ contains
 
     MaxGamma = MinAObatch
     MaxAlpha = MinAObatch
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxGamma<=nb)) 
+    do while ((MemNeed<factor*MemFree).and.(MaxGamma<=nb)) 
        MaxGamma = MaxGamma + 1
        call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
             & MaxAlpha,MaxGamma,MinAObatch)  
@@ -1608,7 +1609,7 @@ contains
     else 
        MaxGamma = MaxGamma - 1
     end if
-    do while ((MemNeed<0.8E0_realk*MemFree).and.(MaxAlpha<=nb)) 
+    do while ((MemNeed<factor*MemFree).and.(MaxAlpha<=nb)) 
        MaxAlpha = MaxAlpha + 1
        call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
             & MaxAlpha,MaxGamma,MinAObatch)  
@@ -1725,9 +1726,8 @@ contains
   !> Purpose: Get memory required in get_ccsd_residual_mo_ccsd 
   !           depending on MO batch dimension.
   !           Get min. required memory when X is set to 1 
-  !           In total this should amount to ~ 7*v2o2
-  !           + ampitudes and residual already allocated
-  !           + quantities dependent on MO batch.
+  !           In total this should amount to ~ 9*v2o2
+  !           + M**4 (scheme 6) or M**4/nnodes (scheme 5)
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
@@ -1757,9 +1757,13 @@ contains
 #endif
     if (local) nnod = 1
 
+    ! Tiled array are kept as dense during the residual calc:
+    ! (govov amplitudes and residual)
+    MemNeed = 3*O*O*V*V
+
     ! Packed gmo diag blocks:
     nTileMax = (nMOB-1)/nnod + 3
-    MemNeed = nTileMax*X*(X+1)*M*(M+1)/4
+    MemNeed = MemNeed + nTileMax*X*(X+1)*M*(M+1)/4
 
     ! Packed gmo upper blocks:
     nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
@@ -1779,7 +1783,7 @@ contains
     MemNeed = MemNeed + O**4 + O*O*V*V + M*O + V*M
 
     ! T1-transformed integrals:
-    MemNeed = MemNeed + 3*O*O*V*V 
+    MemNeed = MemNeed + 2*O*O*V*V 
 
     ! Fock Matrix:
     MemNeed = MemNeed + O*O + V*V + 2*O*V

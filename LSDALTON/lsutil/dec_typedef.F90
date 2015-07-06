@@ -43,6 +43,9 @@ module dec_typedef_module
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
 
+  ! Maximum number of molecular orbitals (nocc + nvir) 
+  ! for which an MO-based CCSD calculation is possible
+  integer,parameter :: MAX_ORB_MOCCSD=300
 
   ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
   ! -----------------------------------------------------------------------
@@ -120,7 +123,7 @@ module dec_typedef_module
      ! CC response (no DEC so far)
      ! ===========================
      !> Calculate CC Jacobian eigenvalues
-     logical :: CCeival
+     logical :: CCexci
      !> Number of Jacobian eigenvalues to determine
      integer :: JacobianNumEival
      !> Use Jacobian left-transformations when determining CC eigenvalues 
@@ -136,6 +139,11 @@ module dec_typedef_module
      integer :: JacobianMaxIter
      !> Use preconditioning for Jacobian eigenvalue problem
      logical :: JacobianPrecond
+     !> For MP2 model (or, more correctly EW1 model), invoke Hald approximation
+     !> where we only keep enough terms to ensure that singles and doubles dominated 
+     !> excitations are correct to second and first order, respectively.
+     !> (See JCP 115, 671 (2001))
+     logical :: HaldApprox
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION

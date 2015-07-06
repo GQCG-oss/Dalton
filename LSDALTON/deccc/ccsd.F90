@@ -5388,7 +5388,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ntot    = nocc + nvir
     nbas    = MyFragment%nbasis
     mo_ccsd = .true.
-    if (DECinfo%NO_MO_CCSD.or.(nbas>400)) mo_ccsd = .false.
+    if (DECinfo%NO_MO_CCSD.or.((ntot)>MAX_ORB_MOCCSD)) mo_ccsd = .false.
 
     if (DECinfo%force_scheme) then
       scheme=DECinfo%en_mem
