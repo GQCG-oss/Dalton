@@ -253,6 +253,7 @@ contains
     DECinfo%RIMP2ForcePDMCalpha      = .false.
     DECinfo%RIMP2_tiling             = .false.
     DECinfo%RIMP2_lowdin             = .true.
+    DECinfo%RIMP2_Laplace            = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -821,6 +822,8 @@ contains
           DECinfo%RIMP2_tiling        = .true.
        case('.RIMP2_CHOL')
           DECinfo%RIMP2_lowdin        = .false.
+       case('.RIMP2_LAPLACE')
+          DECinfo%RIMP2_Laplace       = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
