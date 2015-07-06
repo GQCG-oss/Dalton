@@ -632,15 +632,6 @@ C  /* Deck dalton_exedrv */
           use openrsp_input, only: read_openrsp_input
 #endif
 
-#if defined(ENABLE_QMATRIX)
-!         added by Bin Gao, September 11, 2014
-          use matrix_operations, only: SET_MATRIX_DEFAULT
-          use dalton_qmatrix, only: DalQMat,
-     &                              dalton_qmatrix_init,
-     &                              dalton_qmatrix_input,
-     &                              dalton_qmatrix_test,
-     &                              dalton_qmatrix_finalize
-#endif
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
@@ -704,14 +695,8 @@ C
       real(8), allocatable :: work(:)
       logical :: openrsp_input_found
 
-#if defined(ENABLE_QMATRIX)
-      type(DalQMat) dal_qmat
-      logical qmatrix_input_found
-#endif
-
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
-
 
 #ifdef BUILD_OPENRSP
       ! radovan: we need to read the **OPENRSP input before we run anything
@@ -730,31 +715,6 @@ C
       end do
 2     rewind(lucmd)
       call gpclose(lucmd, 'KEEP')
-#endif
-
-
-#ifdef ENABLE_QMATRIX
-!     We should first read input in subroutine DALTON_EXEDRV() before any calculation,
-!     and some variables will indicate if required keyword (for instance, **QMATRIX)
-!     read. If yes, we will do the calculations after geometry optimization finished
-!     (indicated by GEOCNV) or after SCF procedure for a single point energy calculation.
-      call GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &            IDUMMY, .false.)
-!     initializes global matrix counters of LSDalton matrix module
-      call SET_MATRIX_DEFAULT()
-!     searches **QMATRIX in input
-      qmatrix_input_found = .false.
-      do
-         read(LUCMD, '(A)', end=1) WORD
-         if (WORD=='**QMATR') then
-            call dalton_qmatrix_init(dal_qmat)
-            call dalton_qmatrix_input(dal_qmat, LUCMD, LUPRI)
-            qmatrix_input_found = .true.
-            exit
-         end if
-      end do
-1     rewind(LUCMD)
-      call GPCLOSE(LUCMD, 'KEEP')
 #endif
 
 C
@@ -1115,13 +1075,6 @@ C
             END IF
  134        CONTINUE
 
-#if defined(ENABLE_QMATRIX)
-!           performs tests of QMatrix interface and library
-            if (qmatrix_input_found) then
-                call dalton_qmatrix_test(dal_qmat)
-            end if
-#endif
-
 #ifdef BUILD_OPENRSP
 C added by Bin Gao, April 2, 2009
 C for response theory in atomic orbital basis
@@ -1203,13 +1156,6 @@ C
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
 
-#if defined(ENABLE_QMATRIX)
-!        performs tests of QMatrix interface and library
-         if (qmatrix_input_found) then
-             call dalton_qmatrix_test(dal_qmat)
-         end if
-#endif
-
 #ifdef BUILD_OPENRSP
 C added by Bin Gao, April 2, 2009
 C for response theory in atomic orbital basis
@@ -1268,13 +1214,6 @@ C
 C
       CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
       CALL PLTORB(WORK(KKIND),LMWORK)
-
-#if defined(ENABLE_QMATRIX)
-!     cleans up the QMatrix interface
-      if (qmatrix_input_found) then
-          call dalton_qmatrix_finalize(dal_qmat)
-      end if
-#endif
 
 C
 !     release memory used in PElib

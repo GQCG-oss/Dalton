@@ -179,6 +179,7 @@ implicit none
   infpar%inputBLOCKSIZE = 0
   print*,'config_set_default_config:',infpar%inputBLOCKSIZE
 #endif
+  config%mat_mem_monitor = .FALSE.
 end subroutine config_set_default_config
 
 !> \brief Wrapper to routines for read input files LSDALTON.INP and MOLECULE.INP.
@@ -246,10 +247,6 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
-#if defined(ENABLE_QMATRIX)
-use ls_qmatrix, only: ls_qmatrix_init, &
-                      ls_qmatrix_input
-#endif
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -824,18 +821,6 @@ DO
    ENDIF
 #endif
 
-#if defined(ENABLE_QMATRIX)
-   ! QMatrix library
-   if (WORD=='**QMATRIX') then
-       config%do_qmatrix = .true.
-       ! initializes the QMatrix interface
-       call ls_qmatrix_init(config%ls_qmat)
-       ! processes input
-       READWORD = .true.
-       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
-   end if
-#endif
-
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.
    ENDIF
@@ -1297,6 +1282,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
         CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.MATMEM');                config%mat_mem_monitor = .TRUE.
         CASE('.GCBASIS');               config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.

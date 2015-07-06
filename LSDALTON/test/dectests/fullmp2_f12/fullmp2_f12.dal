@@ -7,7 +7,7 @@
 .START
 TRILEVEL
 .CONVTHR
-1.0d-5
+1.0d-8
 **CC
 .MP2
 .F12

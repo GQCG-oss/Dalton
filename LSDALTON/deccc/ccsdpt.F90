@@ -44,8 +44,8 @@ module ccsdpt_module
   use array4_simple_operations
   
 #ifdef MOD_UNRELEASED
-  public :: ccsdpt_driver,ccsdpt_info,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-       & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
+  public :: ccsdpt_driver,ccsdpt_info,ccsdpt_energy_e5_frag,&
+       & ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
        & ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
   private
 #endif
@@ -97,7 +97,7 @@ contains
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
-    type(array2) :: C_can_occ, C_can_virt, Uocc, Uvirt
+    type(tensor) :: C_can_occ, C_can_virt, Uocc, Uvirt
     !> dimensions
     integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
@@ -171,8 +171,6 @@ contains
 
     call mem_alloc(eivalocc,nocc)
     call mem_alloc(eivalvirt,nvirt)
-    C_can_occ  = array2_init(occAO)
-    C_can_virt = array2_init(virtAO)
 
     if (master) then
       ! *************************************
@@ -182,22 +180,25 @@ contains
       ! Uocc, Uvirt: unitary transformation matrices for canonical --> local basis (and vice versa)
       ! note: Uocc and Uvirt have indices (local,canonical)
 
-      Uocc       = array2_init(occdims)
-      Uvirt      = array2_init(virtdims)
+      call tensor_init(Uocc  ,occdims,  2, bg=use_bg )
+      call tensor_init(Uvirt ,virtdims, 2, bg=use_bg )
+
+      call tensor_init(C_can_occ  ,occAO , 2, bg=use_bg )
+      call tensor_init(C_can_virt ,virtAO, 2, bg=use_bg )
 
       if (.not. DECinfo%pt_hack) then
 
          call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
-                            & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
+                            & C_can_occ%elm2,C_can_virt%elm2,Uocc%elm2,Uvirt%elm2,eivalocc,eivalvirt)
 
       else
 
          call random_seed()
-         call random_number(C_can_occ%val)
-         call dscal(nbasis*nocc,1.0E-2_realk,C_can_occ%val,1)
+         call random_number(C_can_occ%elm2)
+         call dscal(nbasis*nocc,1.0E-2_realk,C_can_occ%elm2,1)
          call random_seed()
-         call random_number(C_can_virt%val)
-         call dscal(nbasis*nvirt,1.0E-2_realk,C_can_virt%val,1)
+         call random_number(C_can_virt%elm2)
+         call dscal(nbasis*nvirt,1.0E-2_realk,C_can_virt%elm2,1)
          call random_seed()
          call random_number(eivalocc)
          call dscal(nocc,-1.0E-2_realk,eivalocc,1)
@@ -206,6 +207,11 @@ contains
          call dscal(nvirt,1.0E-2_realk,eivalvirt,1)
 
       endif
+
+    else !Slave only allocate
+
+      call tensor_init(C_can_occ  ,occAO , 2, bg=use_bg )
+      call tensor_init(C_can_virt ,virtAO, 2, bg=use_bg )
 
     endif
 
@@ -266,8 +272,8 @@ contains
        call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
        call ls_mpi_buffer(eivalocc,nocc,infpar%master)
        call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
-       call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
-       call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
+       call ls_mpi_buffer(C_can_occ%elm2,nbasis,nocc,infpar%master)
+       call ls_mpi_buffer(C_can_virt%elm2,nbasis,nvirt,infpar%master)
        call ls_mpi_buffer(ijk_nbuffs,infpar%master)
        call ls_mpi_buffer(abc_nbuffs,infpar%master)
        call ls_mpi_buffer(ijk_tile_size,infpar%master)
@@ -292,11 +298,11 @@ contains
 
     if (abc) then
 
-       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ooov,vovv,abc_tile_size)
+       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%elm2,C_can_virt%elm2,ooov,vovv,abc_tile_size)
 
     else
 
-       call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo,ijk_tile_size)
+       call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%elm2,C_can_virt%elm2,ovoo,vvvo,ijk_tile_size)
 
     endif
 
@@ -308,8 +314,8 @@ contains
     write(DECinfo%output,*) ''
 
     ! release occ and virt canonical MOs
-    call array2_free(C_can_occ)
-    call array2_free(C_can_virt)
+    call tensor_free(C_can_virt)
+    call tensor_free(C_can_occ)
 
 
     ! ********************************
@@ -512,7 +518,6 @@ contains
 
     endif
 
-    ! now everything resides on the master...
     call tensor_free(ccsd_doubles)
     call tensor_free(vovo)
 
@@ -562,40 +567,40 @@ contains
     ! *************************************************
     ! ***** do canonical --> local transformation *****
     ! *************************************************
-
     if (.not. DECinfo%pt_hack) then
 
        if (print_frags) then
-   
+
           if (abc) then
-   
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
-   
+
+             call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
+
           else
-   
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
-   
+
+             call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+
           endif
-   
+
        else
-   
+
+
           if (abc) then
-   
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,ov=ccsdpt_singles%elm1)
-   
+
+             call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,ov=ccsdpt_singles%elm1)
+
           else
-   
-             call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vo=ccsdpt_singles%elm1)
-   
+
+             call can_local_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vo=ccsdpt_singles%elm1)
+
           endif
-   
+
        endif
 
     endif
 
     ! now, release Uocc and Uvirt
-    call array2_free(Uocc)
-    call array2_free(Uvirt)
+    call tensor_free(Uvirt)
+    call tensor_free(Uocc)
 
     ! clean up
     call mem_dealloc(eivalocc)
@@ -10725,283 +10730,6 @@ contains
   end subroutine ccsdpt_energy_e5_pair
 
 
-
-  !> \brief: calculate E[4] contribution to single fragment ccsd(t) energy correction
-  !> \author: Janus Eriksen
-  !> \date: september 2012
-  subroutine ccsdpt_energy_e4_frag(MyFragment,ccsd_doubles,ccsdpt_doubles,&
-                             & occ_contribs,virt_contribs,fragopt_pT)
-
-    implicit none
-
-    !> fragment info
-    type(decfrag), intent(inout) :: MyFragment
-    ! ccsd and ccsd(t) doubles amplitudes
-    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
-    !> is this called from inside the ccsd(t) fragment optimization routine?
-    logical, optional, intent(in) :: fragopt_pT
-    !> incomming orbital contribution vectors
-    real(realk), intent(inout) :: occ_contribs(MyFragment%noccAOS), virt_contribs(MyFragment%nvirtAOS)
-    !> integers
-    integer :: nocc_eos, nocc_aos, nvirt_eos, nvirt_aos, i,j,a,b, i_eos, j_eos, a_eos, b_eos
-    !> energy reals
-    real(realk) :: energy_tmp, energy_res_cou, energy_res_exc
-    !> which partitioning schemes?
-    logical :: do_occ, do_virt
-
-    ! init dimensions
-    nocc_eos = MyFragment%noccEOS
-    nvirt_eos = MyFragment%nvirtEOS
-    nocc_aos = MyFragment%noccAOS
-    nvirt_aos = MyFragment%nvirtAOS
-
-    ! **************************************************************
-    ! ************** do energy for single fragment *****************
-    ! **************************************************************
-
-    ! ***********************
-    !   do E[4] energy part
-    ! ***********************
-
-    ! init energy reals to be on the safe side
-    ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
-    !       as this (e4) routine is called before the e5 routine
-    MyFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
-    MyFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
-    MyFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
-    MyFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
-
-    do_occ = .false.
-    do_virt = .false.
-
-    if ((.not. DECinfo%OnlyOccPart) .and. (.not. DECinfo%OnlyVirtPart)) then
-
-       do_occ = .true.
-       do_virt = .true.
-
-    else if (DECinfo%OnlyOccPart .and. (.not. DECinfo%OnlyVirtPart)) then
-
-       do_occ = .true.
-
-    else if (DECinfo%OnlyVirtPart .and. (.not. DECinfo%OnlyOccPart)) then
-
-       do_virt = .true.
-
-    end if
-
-    ! *******************************
-    ! do occupied partitioning scheme
-    ! *******************************
-
-    if (do_occ) then
-
-       energy_res_cou = 0.0E0_realk
-       energy_res_exc = 0.0E0_realk
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
-       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
-       do j=1,nocc_eos
-          j_eos = MyFragment%idxo(j)
-          do i=1,nocc_eos
-             i_eos = MyFragment%idxo(i)
-   
-             do b=1,nvirt_aos
-                do a=1,nvirt_aos
-   
-                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j_eos) &
-                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
-                   energy_res_cou = energy_res_cou + energy_tmp
-   
-                   ! update contribution from aos orbital a
-                   virt_contribs(a) = virt_contribs(a) + energy_tmp
-   
-                   ! update contribution from aos orbital b 
-                   ! (only if different from aos orbital a to avoid double counting)
-                   if (a .ne. b) virt_contribs(b) = virt_contribs(b) + energy_tmp
-   
-                end do
-             end do
-   
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       ! reorder from (a,b,i,j) to (a,b,j,i)
-       call tensor_reorder(ccsd_doubles,[1,2,4,3])
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
-       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
-       do j=1,nocc_eos
-          j_eos = MyFragment%idxo(j)
-          do i=1,nocc_eos
-             i_eos = MyFragment%idxo(i)
-   
-             do b=1,nvirt_aos
-                do a=1,nvirt_aos
-   
-                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j_eos) &
-                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
-                   energy_res_exc = energy_res_exc - energy_tmp
-   
-                   ! update contribution from aos orbital a
-                   virt_contribs(a) = virt_contribs(a) - energy_tmp
-   
-                   ! update contribution from aos orbital b 
-                   ! (only if different from aos orbital a to avoid double counting)
-                   if (a .ne. b) virt_contribs(b) = virt_contribs(b) - energy_tmp
-   
-                end do
-             end do
-   
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       !get total fourth--order energy contribution
-       MyFragment%energies(FRAGMODEL_OCCpT4) = energy_res_cou + energy_res_exc
-   
-       ! insert into occ. part. scheme part
-       MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
-         & + MyFragment%energies(FRAGMODEL_OCCpT4)
-
-    end if
-
-    ! *********************************
-    ! do virtupied partitioning scheme
-    ! *********************************
-
-    if (do_virt) then
-
-       if (do_occ .and. do_virt) then
-
-          ! initially, reorder ccsd_doubles and ccsdpt_doubles
-          ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
-          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call tensor_reorder(ccsd_doubles,[3,4,1,2])
-          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
-
-       else
-
-          ! initially, reorder ccsd_doubles and ccsdpt_doubles
-          ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
-          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call tensor_reorder(ccsd_doubles,[4,3,1,2])
-          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
-
-       end if
-
-       energy_res_cou = 0.0E0_realk
-       energy_res_exc = 0.0E0_realk
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-       !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
-       do b=1,nvirt_eos
-          b_eos = MyFragment%idxu(b)
-          do a=1,nvirt_eos
-             a_eos = MyFragment%idxu(a)
-   
-             do j=1,nocc_aos
-                do i=1,nocc_aos
-   
-                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b_eos) &
-                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
-                   energy_res_exc = energy_res_exc - energy_tmp
-   
-                   ! update contribution from aos orbital i
-                   occ_contribs(i) = occ_contribs(i) - energy_tmp
-   
-                   ! update contribution from aos orbital j 
-                   ! (only if different from aos orbital i to avoid double counting)
-                   if (i .ne. j) occ_contribs(j) = occ_contribs(j) - energy_tmp
-   
-                end do
-             end do
-   
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       ! reorder form (j,i,a,b) to (i,j,a,b)
-       call tensor_reorder(ccsd_doubles,[2,1,3,4])
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-       !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
-       do b=1,nvirt_eos
-          b_eos = MyFragment%idxu(b)
-          do a=1,nvirt_eos
-             a_eos = MyFragment%idxu(a)
-   
-             do j=1,nocc_aos
-                do i=1,nocc_aos
-   
-                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b_eos) &
-                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
-                   energy_res_cou = energy_res_cou + energy_tmp
-   
-                   ! update contribution from aos orbital i
-                   occ_contribs(i) = occ_contribs(i) + energy_tmp
-   
-                   ! update contribution from aos orbital j 
-                   ! (only if different from aos orbital i to avoid double counting)
-                   if (i .ne. j) occ_contribs(j) = occ_contribs(j) + energy_tmp
-   
-                end do
-             end do
-   
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       !get total fourth--order energy contribution
-       MyFragment%energies(FRAGMODEL_VIRTpT4) = energy_res_cou + energy_res_exc
-   
-       ! insert into virt. part. scheme part
-       MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
-          & + MyFragment%energies(FRAGMODEL_VIRTpT4)
-
-    end if
-
-    ! ******************************
-    !   done with E[4] energy part
-    ! ******************************
-
-    ! ************************************************************************
-    !   as we need to reuse the ccsd doubles in the fragment optimization,
-    !   we here reorder back into (a,i,b,j) sequence IF fragopt_pT == .true. 
-    ! ************************************************************************
-
-    if (present(fragopt_pT)) then
-
-       if (do_occ .and. (.not. do_virt)) then
-
-          ! reorder from (a,b,j,i) to (a,i,b,j)
-          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[1,4,2,3])
-
-       else if (do_virt .and. (.not. do_virt)) then
-
-          ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
-
-       else if (do_occ .and. do_virt) then
-
-          ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
-
-       end if
-
-    end if
-
-    ! *******************************************************************
-    ! ************** done w/ energy for single fragment *****************
-    ! *******************************************************************
-
-  end subroutine ccsdpt_energy_e4_frag
-
-
   !> \brief: calculate E[4] contribution to fragment decnp-ccsd(t) energy correction
   !> \author: Pablo Baudin (based on Janus's routine)
   !> \date: Mar 2015
@@ -11272,266 +11000,6 @@ contains
     ! *******************************************************************
 
   end subroutine ccsdpt_decnp_e4_frag
-
-
-  !> \brief: calculate E[4] contribution to pair fragment ccsd(t) energy correction
-  !> \author: Janus Eriksen
-  !> \date: september 2012
-  subroutine ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,ccsd_doubles,ccsdpt_doubles)
-
-    implicit none
-
-    !> fragment # 1 in the pair fragment
-    type(decfrag),intent(in) :: Fragment1
-    !> fragment # 2 in the pair fragment
-    type(decfrag),intent(in) :: Fragment2
-    !> pair fragment info
-    type(decfrag), intent(inout) :: PairFragment
-    ! ccsd and ccsd(t) doubles amplitudes
-    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
-    ! logical pointers for keeping hold of which pairs are to be handled
-    logical, pointer :: dopair_occ(:,:), dopair_virt(:,:)
-    !> integers
-    integer :: nocc_eos, nocc_aos, nvirt_eos, nvirt_aos, i,j,a,b, i_eos, j_eos, a_eos, b_eos
-    !> temporary energy arrays
-    type(array2) :: energy_interm_cou, energy_interm_exc, energy_interm_ccsdpt
-    !> energy reals
-    real(realk) :: energy_tmp, energy_res_cou, energy_res_exc  
-    !> which partitioning schemes?
-    logical :: do_occ, do_virt
-
-    ! init dimensions
-    nocc_eos = PairFragment%noccEOS
-    nvirt_eos = PairFragment%nvirtEOS
-    nocc_aos = PairFragment%noccAOS
-    nvirt_aos = PairFragment%nvirtAOS
-
-    do_occ = .false.
-    do_virt = .false.
-
-
-    if ((.not. DECinfo%OnlyOccPart) .and. (.not. DECinfo%OnlyVirtPart)) then
-
-       do_occ = .true.
-       do_virt = .true.
-       call mem_alloc(dopair_occ,nocc_eos,nocc_eos)
-       call mem_alloc(dopair_virt,nvirt_eos,nvirt_eos)
-       call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
-       call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
-
-    else if (DECinfo%OnlyOccPart .and. (.not. DECinfo%OnlyVirtPart)) then
-
-       do_occ = .true.
-       call mem_alloc(dopair_occ,nocc_eos,nocc_eos)
-       call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
-
-    else if (DECinfo%OnlyVirtPart .and. (.not. DECinfo%OnlyOccPart)) then
-
-       do_virt = .true.
-       call mem_alloc(dopair_virt,nvirt_eos,nvirt_eos)
-       call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
-
-    end if
-
-    ! *************************************************************
-    ! ************** do energy for pair fragments *****************
-    ! *************************************************************
-
-    ! ***********************
-    !   do E[4] energy part
-    ! ***********************
-
-    ! init energy reals to be on the safe side
-    ! note: OccEnergyPT and VirtEnergyPT is also initialized from in here
-    !       as this (e4) routine is called before the e5 routine
-    PairFragment%energies(FRAGMODEL_OCCpT) = 0.0E0_realk
-    PairFragment%energies(FRAGMODEL_VIRTpT) = 0.0E0_realk
-    PairFragment%energies(FRAGMODEL_OCCpT4) = 0.0E0_realk
-    PairFragment%energies(FRAGMODEL_VIRTpT4) = 0.0E0_realk
-
-    ! *******************************
-    ! do occupied partitioning scheme
-    ! *******************************
-
-    if (do_occ) then
-
-       energy_res_cou = 0.0E0_realk
-       energy_res_exc = 0.0E0_realk
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-       !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_cou)
-       do j=1,nocc_eos
-          j_eos = PairFragment%idxo(j)
-          do i=1,nocc_eos
-             i_eos = PairFragment%idxo(i)
-   
-             if (.not. dopair_occ(i,j)) cycle 
-   
-             do b=1,nvirt_aos
-                do a=1,nvirt_aos
-   
-                   energy_tmp = ccsd_doubles%elm4(a,b,i_eos,j_eos) &
-                              & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
-                   energy_res_cou = energy_res_cou + energy_tmp
-   
-                end do
-             end do
-   
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       ! reorder from (a,b,i,j) to (a,b,j,i)
-       call tensor_reorder(ccsd_doubles,[1,2,4,3])
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-       !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_exc)
-       do j=1,nocc_eos
-          j_eos = PairFragment%idxo(j)
-          do i=1,nocc_eos
-             i_eos = PairFragment%idxo(i)
-   
-             if (.not. dopair_occ(i,j)) cycle
-   
-             do b=1,nvirt_aos
-                do a=1,nvirt_aos
-   
-                   energy_tmp = ccsd_doubles%elm4(a,b,i_eos,j_eos) &
-                              & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
-                   energy_res_exc = energy_res_exc + energy_tmp
-   
-                end do
-             end do
-   
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       ! get total fourth--order energy contribution
-       PairFragment%energies(FRAGMODEL_OCCpT4) = 4.0E0_realk * energy_res_cou &
-          & - 2.0E0_realk * energy_res_exc
-   
-       ! insert into occ. part. scheme part
-       PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) &
-          &+ PairFragment%energies(FRAGMODEL_OCCpT4)
-
-    end if
-
-    ! *********************************
-    ! do virtupied partitioning scheme
-    ! *********************************
-
-    if (do_virt) then
-
-       if (do_occ .and. do_virt) then
-
-          ! initially, reorder ccsd_doubles and ccsdpt_doubles
-          ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
-          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call tensor_reorder(ccsd_doubles,[3,4,1,2])
-          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
-
-       else
-
-          ! initially, reorder ccsd_doubles and ccsdpt_doubles
-          ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
-          ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call tensor_reorder(ccsd_doubles,[4,3,1,2])
-          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
-
-       end if
-
-       energy_res_cou = 0.0E0_realk
-       energy_res_exc = 0.0E0_realk
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-       !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_exc)
-       do b=1,nvirt_eos
-          b_eos = PairFragment%idxu(b)
-          do a=1,nvirt_eos
-             a_eos = PairFragment%idxu(a)
-   
-             if (.not. dopair_virt(a,b)) cycle
-       
-             do j=1,nocc_aos
-                do i=1,nocc_aos
-   
-                   energy_tmp = ccsd_doubles%elm4(i,j,a_eos,b_eos) &
-                              & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
-                   energy_res_exc = energy_res_exc + energy_tmp
-   
-                end do
-             end do
-       
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       ! reorder form (j,i,a,b) to (i,j,a,b)
-       call tensor_reorder(ccsd_doubles,[2,1,3,4])
-   
-       !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-       !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-       !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_cou)
-       do b=1,nvirt_eos
-          b_eos = PairFragment%idxu(b)
-          do a=1,nvirt_eos
-             a_eos = PairFragment%idxu(a)
-   
-             if (.not. dopair_virt(a,b)) cycle
-   
-             do j=1,nocc_aos
-                do i=1,nocc_aos
-   
-                   energy_tmp = ccsd_doubles%elm4(i,j,a_eos,b_eos) &
-                              & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
-                   energy_res_cou = energy_res_cou + energy_tmp
-   
-                end do
-             end do
-   
-          end do
-       end do
-       !$OMP END PARALLEL DO
-   
-       ! get total fourth--order energy contribution
-       PairFragment%energies(FRAGMODEL_VIRTpT4) = 4.0E0_realk * energy_res_cou &
-          &- 2.0E0_realk * energy_res_exc
-   
-       ! insert into virt. part. scheme part
-       PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) &
-          & + PairFragment%energies(FRAGMODEL_VIRTpT4)
-
-    end if
-
-    ! ******************************
-    !   done with E[4] energy part
-    ! ******************************
-
-    ! now release logical pair arrays
-    if (do_occ .and. do_virt) then
-
-      call mem_dealloc(dopair_occ)
-      call mem_dealloc(dopair_virt)
-
-    else if (do_occ .and. (.not. do_virt)) then
-
-      call mem_dealloc(dopair_occ)
-
-       else if (do_virt .and. (.not. do_occ)) then
-
-      call mem_dealloc(dopair_virt)
-
-    end if
-
-    ! ******************************************************************
-    ! ************** done w/ energy for pair fragments *****************
-    ! ******************************************************************
-
-  end subroutine ccsdpt_energy_e4_pair
 
 
   !> \brief Get MO integrals for ijk-CCSD(T) (in canonical basis), see integral storing order below.
@@ -13743,7 +13211,7 @@ contains
     integer, intent(in) :: nocc,nvirt,nbasis,nodtotal
     logical, intent(in) :: abc,use_bg
     integer, intent(in) :: ijk_tile_size,abc_tile_size
-    type(array2), intent(inout) :: Uocc,Uvirt
+    type(tensor), intent(inout) :: Uocc,Uvirt
     type(tensor), intent(inout) :: ccsd_doubles_in,vovo_in
     type(tensor), intent(inout) :: ccsd_doubles,vovo
     ! tmp tensors
@@ -13830,7 +13298,7 @@ contains
              call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
              !call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_1%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_1%elm1)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
              call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
@@ -13838,7 +13306,7 @@ contains
              call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
              !call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=tmp_tensor_2%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_2%elm1)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
@@ -13850,7 +13318,7 @@ contains
              call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
              call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
              !call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_1%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_1%elm1)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
              call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
@@ -13859,7 +13327,7 @@ contains
              call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
              call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
              !call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=tmp_tensor_2%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_2%elm1)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
@@ -13871,19 +13339,19 @@ contains
 
              call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=vovo%elm1)
              call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=ccsd_doubles%elm1)
 
           else
 
              call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=vovo%elm1)
              call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
              call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=ccsd_doubles%elm1)
 
           endif
 
@@ -13893,19 +13361,19 @@ contains
 
           call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,1,3],0.0E0_realk,vovo%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=vovo%elm1)
           call tensor_init(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[2,4,3,1],0.0E0_realk,ccsd_doubles%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=ccsd_doubles%elm1)
 
        else
 
           call tensor_init(vovo,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,vovo_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,2,4],0.0E0_realk,vovo%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=vovo%elm1)
           call tensor_init(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,bg=use_bg)
           call array_reorder_4d(1.0E0_realk,ccsd_doubles_in%elm1,nvirt,nocc,nvirt,nocc,[1,3,4,2],0.0E0_realk,ccsd_doubles%elm1)
-          call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+          call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=ccsd_doubles%elm1)
 
        endif
 #endif

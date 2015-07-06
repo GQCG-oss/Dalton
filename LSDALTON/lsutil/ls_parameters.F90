@@ -97,9 +97,7 @@ MODULE lsparameters
   integer,parameter :: ARRAYTEST                    = 30
   integer,parameter :: PDMA4SLV                     = 31
   integer,parameter :: LSMPI_IIDFTKSME              = 32
-#ifdef MOD_UNRELEASED
   integer,parameter :: CCSDPTSLAVE_INFO             = 33
-#endif
   integer,parameter :: CCSDSLV4E2                   = 34
   integer,parameter :: DFTADDFU                     = 35
   integer,parameter :: LSMPI_IIDFTABSVALOVERLAP     = 36
@@ -140,6 +138,7 @@ MODULE lsparameters
   integer,parameter :: LSTHCRIMP2FULL               = 71
   integer,parameter :: CCSDPTSLAVE_WORK             = 72
   integer,parameter :: SET_TENSOR_SEG_LENGTH        = 73
+  integer,parameter :: DECRIMP2GRAD                 = 74
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

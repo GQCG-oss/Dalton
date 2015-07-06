@@ -66,7 +66,7 @@
    * gen1int_cube.F90:   data module of cube files
    * gen1int_api.F90:    module of API of Gen1Int interface (some subroutines are host program specific)
    * gen1int_shell.F90:  module of AO sub-shell, might be portable with minor changes
-   * gen1int_matrix.F90: module of matrix interface, will be replaced by QMatrix library
+   * gen1int_matrix.F90: module of matrix interface, will be replaced by QcMatrix library
 
    * gen1int_host.h:     header file of Gen1Int interface (some of them are temporary
                          and will be replaced by those in Gen1Int library), in which

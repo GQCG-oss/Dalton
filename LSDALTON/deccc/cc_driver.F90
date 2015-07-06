@@ -33,7 +33,7 @@ use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
-use ccsd_lhtr_module
+use cc_response_tools_module
 use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
@@ -2250,7 +2250,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, intspec, local, collective )
    else
       call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
-      call tensor_free(VOVO)
+      !call tensor_free(VOVO)
    endif
 
    call mem_alloc( B, DECinfo%ccMaxDIIS, DECinfo%ccMaxDIIS )
@@ -2356,10 +2356,8 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          !Get the residual r = Ax - b for any of the implemented models
          !-------------------------------------------------------------
-         if(.not.DECinfo%ccsolverskip)then
-           call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
-              &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
-         endif
+         call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
+            &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
@@ -2424,7 +2422,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          ! intentionally quit prematurely
          ! ------------------------------
-         if((iter==5.and.DECinfo%CRASHCALC.and.DECinfo%full_molecular_cc).or.DECinfo%ccsolverskip)then
+         if(iter==5.and.((DECinfo%CRASHCALC.and.DECinfo%full_molecular_cc).or.DECinfo%ccsolverskip))then
             if(.not.DECinfo%ccsolverskip)then
                print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
                print*,'This keyword is only used for debug and testing purposes'
@@ -2642,8 +2640,10 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! Free memory and save final amplitudes
    ! *************************************
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used RHS or restore the old rhs
-   call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
-   call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
+   if(.not.vovo_avail)then
+      call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+      call tensor_cp_data(iajb, tmp2, order = [2,1,4,3] )
+   endif
    call tensor_free(iajb)
 
    call tensor_free(vvfock_prec)
@@ -2710,7 +2710,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc(B)
    call mem_dealloc(c)
 
-
    if(use_singles) then
       !call array2_free(h1)
       call tensor_free(yv)
@@ -2737,9 +2736,12 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 
    !initialize and copy data to output arrays
-   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
-   call tensor_cp_data(tmp2, VOVO )
-   call tensor_free(tmp2)
+   if(.not.vovo_avail)then
+      call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],&
+         &atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
+      call tensor_cp_data(tmp2, VOVO )
+      call tensor_free(tmp2)
+   endif
 
    call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", fo=tmp1%offset, bg=bg_was_init)
    call tensor_cp_data( tmp1, p4 )
@@ -3166,6 +3168,7 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
             & fock,t1fock,iajb,no,nv,xo,xv,yo,yv,nb,&
             & MyLsItem,omega1(use_i),t1(use_i),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
+
 
 #ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )

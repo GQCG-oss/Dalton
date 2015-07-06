@@ -370,7 +370,7 @@ module dec_typedef_module
      !> Manually set starting group size for local MPI group
      integer(kind=ls_mpik) :: MPIgroupsize
      !> set whether to distribute the data in the full molecule structure
-     logical :: distribute_fullmolecule
+     logical :: distribute_fullmolecule,force_distribution
 
      !> Integral batching
      !> *****************

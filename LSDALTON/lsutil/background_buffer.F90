@@ -15,7 +15,7 @@ module background_buffer_module
 
   ! maximum number of pointer to be associated ot bg buf, -> allocated on stack,
   ! may be changed if necessary
-  integer, parameter   :: max_n_pointers = 50
+  integer, parameter   :: max_n_pointers = 500
 
   type bg_buf_realk
      logical              :: init = .false.

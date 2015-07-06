@@ -8,6 +8,9 @@ DALTON
 
 - Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
 - Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
+- Fixed a bug in the preoptimization, i.e. when using smaller basis sets first to geometry optimize molecule.
+- Fixed far from optimal defaults for preoptimization
+- Added ANO-RCC basis set
 
 
 2015.0 (2015-02-18)

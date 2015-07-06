@@ -4,7 +4,7 @@ SCRATCH_DIR=/tmp/tkjaer/DaltonIfortReleaseCSR
 rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
 export PATH=/usr/local/torque/bin:/com/bin:/usr/local/bin:/bin:/usr/bin
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=3
