@@ -537,14 +537,22 @@ module lspdm_tensor_operations_module
         !if(nn>1.and.present(D).and..not.associated(D%addr_loc))&
         !&call lsquit("ERROR(pdm_tensor_sync):addr_loc for array D not associated",DECinfo%output)
       !else
-        if(nn>1.and.present(A).and..not.associated(A%addr_p_arr))&
-        &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array A not associated",DECinfo%output)
-        if(nn>1.and.present(B).and..not.associated(B%addr_p_arr))&
-        &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array B not associated",DECinfo%output)
-        if(nn>1.and.present(C).and..not.associated(C%addr_p_arr))&
-        &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array C not associated",DECinfo%output)
-        if(nn>1.and.present(D).and..not.associated(D%addr_p_arr))&
-        &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array D not associated",DECinfo%output)
+        if(nn>1.and.present(A))then
+          if(.not.associated(A%addr_p_arr))&
+          &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array A not associated",DECinfo%output)
+        endif
+        if(nn>1.and.present(B))then
+          if(.not.associated(B%addr_p_arr))&
+          &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array B not associated",DECinfo%output)
+        endif
+        if(nn>1.and.present(C))then
+          if(.not.associated(C%addr_p_arr))&
+          &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array C not associated",DECinfo%output)
+        endif
+        if(nn>1.and.present(D))then
+          if(.not.associated(D%addr_p_arr))&
+          &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array D not associated",DECinfo%output)
+        endif
       !endif
       
 
