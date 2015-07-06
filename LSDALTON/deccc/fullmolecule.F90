@@ -1241,20 +1241,16 @@ contains
     molmem = molmem + tmp
 
 
-    !Do we need to distribute the arrays? -> if more than 3GB and keyword, do distribute
 #ifdef VAR_MPI
-    if(Decinfo%distribute_fullmolecule)then
-       !if(molmem>((1*GB)/realk))then
-          MyMolecule%mem_distributed = .true.
-       !else
-       !   print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
-       !   & molecular structure has been requested. However, the memory&
-       !   & requirements for this structure are so low, that we keep it in local&
-       !   & memory"
-       !   MyMolecule%mem_distributed = .false.
-       !endif
+    !Do we need to distribute the arrays? -> if more than 10% of the available memory, the memory will be distributed
+    if(molmem>((0.1*DECinfo%memory*GB)/realk))then
+       MyMolecule%mem_distributed = .true.
     else
        MyMolecule%mem_distributed = .false.
+    endif
+
+    if(Decinfo%force_distribution)then
+       MyMolecule%mem_distributed = DECinfo%distribute_fullmolecule
     endif
 
     nnod = infpar%nodtot
