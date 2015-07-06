@@ -313,17 +313,18 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      fc =.false.
   end if
   if(first_order) then
-     IF(DECinfo%RIMP2_Laplace)THEN
-        if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating Laplace RIMP2 integrals (both energy and density) and RIMP2 amplitudes...'
-     ELSE
-        if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (both energy and density) and RIMP2 amplitudes...'
-     ENDIF
+   IF(DECinfo%RIMP2_Laplace)THEN
+    if(DECinfo%PL>0) write(DECinfo%output,*) &
+         & 'Calculating Laplace RIMP2 integrals (both energy and density) and RIMP2 amplitudes...'
+   ELSE
+    if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (both energy and density) and RIMP2 amplitudes...'
+   ENDIF
   else
-     IF(DECinfo%RIMP2_Laplace)THEN
-        if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating Laplace RIMP2 integrals (only energy) and RIMP2 amplitudes...'
-     ELSE
-        if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (only energy) and RIMP2 amplitudes...'
-     ENDIF
+   IF(DECinfo%RIMP2_Laplace)THEN
+    if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating Laplace RIMP2 integrals (only energy) and RIMP2 amplitudes...'
+   ELSE
+    if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RIMP2 integrals (only energy) and RIMP2 amplitudes...'
+   ENDIF
   end if
 
   !==================================================================
