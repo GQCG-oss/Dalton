@@ -2485,7 +2485,7 @@ subroutine BuildCtmpVLaplace2(Ctmp,NBA,nvirtEOS,nocc,TauOcc,nLaplace,Ctmp2,UoccT
   integer :: l,ILOC,IDIAG,A,ALPHA
   real(realk) :: TMP
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(l,TMP,ILOC,IDIAG,A,&
-  !$OMP ALPHA) SHARED(Calpha,NBA,nvirt,nocc,noccEOS,TauOcc,nLaplace,Ctmp,UoccEOST)
+  !$OMP ALPHA) SHARED(Ctmp,NBA,nvirtEOS,nocc,TauOcc,nLaplace,Ctmp2,UoccT)
   DO l = 1,nLaplace
      DO ILOC=1,nocc
         DO A=1,nvirtEOS
