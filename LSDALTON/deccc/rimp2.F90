@@ -762,8 +762,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(DECinfo%RIMP2_Laplace)THEN
         !toccEOS(a,i,b,j) = sum_l w_l*TauVirt(A,l)*TauVirt(B,l)*TauOcc(I,l)*TauOcc(J,l)*C(alpha,A,I)*C(alpha,B,J)*U(A,a)*U(B,b)*U(I,i)*U(J,j)
         !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
-        !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
         !Ctmp2(alpha,a,i,l) = TauVirt(A,l)*Ctmp(alpha,A,i,l)*U(A,a)
+        !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
         CALL LSTIMER('START ',TS4,TE4,LUPRI,FORCEPRINT)
         nsize1 = noccOut*(nvirt*i8)*NBA*nLaplace
         nsize2 = noccOut*(nvirt*i8)*NBA*nLaplace
@@ -788,18 +788,18 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         else
            call BuildCtmpLaplace(Calpha,NBA,nvirt,nocc,noccOut,TauOcc,nLaplace,Ctmp,UoccEOST)
         endif
-        CALL LSTIMER('RIMP2: Ctmp ',TS4,TE4,LUPRI,FORCEPRINT)
+        CALL LSTIMER('RIMP2: Ctmp1o ',TS4,TE4,LUPRI,FORCEPRINT)
         !Ctmp2(alpha,a,i,l) = TauVirt(A,l)*Ctmp(alpha,A,i,l)*U(A,a)
         call BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirt,noccOut,TauVirt,nLaplace,Ctmp2,UvirtT)
-        CALL LSTIMER('RIMP2: Ctmp2',TS4,TE4,LUPRI,FORCEPRINT)
+        CALL LSTIMER('RIMP2: Ctmp2v ',TS4,TE4,LUPRI,FORCEPRINT)
         IF(.NOT.use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc tensor toccEOS(',dimocc(1)*dimocc(2)*dimocc(3)*dimocc(4),')'
            call tensor_ainit(toccEOS,dimocc,4)
         ENDIF
         !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
-        call BuildToccLaplace(Ctmp2,NBA,nvirt,noccOut,toccEOS%elm1,nLaplace,LaplaceW)
-        CALL LSTIMER('RIMP2: ToccLaplace',TS4,TE4,LUPRI,FORCEPRINT)
+        call BuildTampLaplace(Ctmp2,NBA,nvirt,noccOut,toccEOS%elm1,nLaplace,LaplaceW)
+        CALL LSTIMER('RIMP2: TampLaplaceOcc',TS4,TE4,LUPRI,FORCEPRINT)
         IF(use_bg_buf)THEN
            call mem_pseudo_dealloc(Ctmp)
            call mem_pseudo_dealloc(Ctmp2)
@@ -1121,11 +1121,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(DECinfo%RIMP2_Laplace)THEN
            !tvirtEOS(a,i,b,j) = sum_l w_l*TauVirt(A,l)*TauVirt(B,l)*TauOcc(I,l)*TauOcc(J,l)*C(alpha,A,I)*C(alpha,B,J)*U(A,a)*U(B,b)*U(I,i)*U(J,j)
            !tvirtEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
-           !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
-           !Ctmp2(alpha,a,i,l) = TauVirt(A,l)*Ctmp(alpha,A,i,l)*U(A,a)
+           !Ctmp2(alpha,a,i,l) = TauOcc(I,l)*Ctmp(alpha,a,I,l)*U(I,i)
+           !Ctmp(alpha,a,I,l) = TauVirt(A,l)*C(alpha,A,I)*U(A,a)
            CALL LSTIMER('START ',TS4,TE4,LUPRI,FORCEPRINT)
+           nsize2 = nvirtOut*(nocc*i8)*NBA*nLaplace
            nsize1 = nvirtOut*(nocc*i8)*NBA*nLaplace
-           nsize2 = nvirt*(nocc*i8)*NBA*nLaplace
            IF(use_bg_buf)THEN
               IF(DECinfo%MemDebugPrint)call printBGinfo()
               IF(DECinfo%MemDebugPrint)print*,'BG: alloc Ctmp2(',nsize1,')'
@@ -1141,21 +1141,20 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc Ctmp(',nsize2,')'
               call mem_alloc(Ctmp,nsize2)
            ENDIF
-           !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
-           call BuildCtmpLaplace(Calpha,NBA,nvirt,nocc,nocc,TauOcc,nLaplace,Ctmp,UoccT)
-           CALL LSTIMER('RIMP2: Ctmp1o ',TS4,TE4,LUPRI,FORCEPRINT)
-
-           !Ctmp2(alpha,a,i,l) = TauVirt(A,l)*Ctmp(alpha,A,i,l)*U(A,a)
+           !Ctmp(alpha,a,I,l) = TauVirt(A,l)*C(alpha,A,I)*U(A,a)
            if (DECinfo%DECNP) then
-              call BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirtOut,noccOut,TauVirt,nLaplace,Ctmp2,UvirtT)
+              call BuildCtmpVLaplace(Calpha,NBA,nvirt,nocc,nvirtOut,TauVirt,nLaplace,Ctmp,UvirtT)
            else
-              call BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirtOut,noccOut,TauVirt,nLaplace,Ctmp2,UvirtEOST)
+              call BuildCtmpVLaplace(Calpha,NBA,nvirt,nocc,nvirtOut,TauVirt,nLaplace,Ctmp,UvirtEOST)
            endif
-           CALL LSTIMER('RIMP2: Ctmp2v ',TS4,TE4,LUPRI,FORCEPRINT)
+           CALL LSTIMER('RIMP2: Ctmp1v ',TS4,TE4,LUPRI,FORCEPRINT)
+           !Ctmp2(alpha,a,i,l) = TauOcc(I,l)*Ctmp(alpha,a,I,l)*U(I,i)
+           call BuildCtmpVLaplace2(Ctmp,NBA,nvirtOut,nocc,TauOcc,nLaplace,Ctmp2,UoccT)
+           CALL LSTIMER('RIMP2: Ctmp2o ',TS4,TE4,LUPRI,FORCEPRINT)
            !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
            IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)
-           call BuildToccLaplace(Ctmp2,NBA,nvirtOut,nocc,tvirtEOS%elm1,nLaplace,LaplaceW)
-           CALL LSTIMER('RIMP2: Ltvirt ',TS4,TE4,LUPRI,FORCEPRINT)
+           call BuildTampLaplace(Ctmp2,NBA,nvirtOut,nocc,tvirtEOS%elm1,nLaplace,LaplaceW)
+           CALL LSTIMER('RIMP2: TampLaplaceVirt',TS4,TE4,LUPRI,FORCEPRINT)
            IF(use_bg_buf)THEN
               call mem_pseudo_dealloc(Ctmp)
               call mem_pseudo_dealloc(Ctmp2)
@@ -2474,6 +2473,68 @@ subroutine RIMP2_calc_gen4DimFO(NBA,Calpha3,n1,n2,Calpha4,n3,n4,djik)
 #endif
 end subroutine RIMP2_calc_gen4DimFO
 
+!Ctmp2(alpha,a,i,l) = TauOcc(I,l)*Ctmp(alpha,a,I,l)*U(I,i)
+subroutine BuildCtmpVLaplace2(Ctmp,NBA,nvirtEOS,nocc,TauOcc,nLaplace,Ctmp2,UoccT)        
+  implicit none
+  integer,intent(in) ::  NBA,nvirtEOS,nocc,nLaplace
+  real(realk),intent(in) :: Ctmp(NBA,nvirtEOS,nocc,nLaplace)
+  real(realk),intent(in) :: TauOcc(nocc,nLaplace)
+  real(realk),intent(in) :: UoccT(nocc,nocc)
+  real(realk),intent(inout) :: Ctmp2(NBA,nvirtEOS,nocc,nLaplace)
+  !local variables
+  integer :: l,ILOC,IDIAG,A,ALPHA
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(l,TMP,ILOC,IDIAG,A,&
+  !$OMP ALPHA) SHARED(Calpha,NBA,nvirt,nocc,noccEOS,TauOcc,nLaplace,Ctmp,UoccEOST)
+  DO l = 1,nLaplace
+     DO ILOC=1,nocc
+        DO A=1,nvirtEOS
+           DO ALPHA=1,NBA
+              Ctmp2(ALPHA,A,ILOC,l) = 0.0E0_realk
+           ENDDO
+           DO IDIAG=1,nocc
+              TMP = UoccT(IDIAG,ILOC)*TauOcc(IDIAG,l)
+              DO ALPHA=1,NBA
+                 Ctmp2(ALPHA,A,ILOC,l) = Ctmp2(ALPHA,A,ILOC,l) + Ctmp(ALPHA,A,IDIAG,l)*TMP
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+end subroutine BuildCtmpVLaplace2
+
+!Ctmp(alpha,a,I,l) = TauVirt(A,l)*C(alpha,A,I)*U(A,a)
+subroutine BuildCtmpVLaplace(Calpha,NBA,nvirt,nocc,nvirtEOS,TauVirt,nLaplace,Ctmp,UvirtEOST)
+  implicit none
+  integer,intent(in) ::  NBA,nvirt,nocc,nvirtEOS,nLaplace
+  real(realk),intent(in) :: Calpha(NBA,nvirt,nocc)
+  real(realk),intent(in) :: TauVirt(nvirt,nLaplace)
+  real(realk),intent(in) :: UvirtEOST(nvirt,nvirtEOS)
+  real(realk),intent(inout) :: Ctmp(NBA,nvirtEOS,nocc,nLaplace)
+  !local variables
+  integer :: l,ALOC,ADIAG,I,ALPHA
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(l,ALOC,ADIAG,I,TMP,&
+  !$OMP ALPHA) SHARED(Calpha,NBA,nvirt,nocc,nvirtEOS,TauVirt,nLaplace,Ctmp,UvirtEOST)
+  DO l = 1,nLaplace
+     DO I=1,nocc
+        DO ALOC=1,nvirtEOS
+           DO ALPHA=1,NBA
+              Ctmp(ALPHA,ALOC,I,l) = 0.0E0_realk
+           ENDDO
+           DO ADIAG=1,nvirt
+              TMP = UvirtEOST(ADIAG,ALOC)*TauVirt(ADIAG,l)
+              DO ALPHA=1,NBA
+                 Ctmp(ALPHA,ALOC,I,l) = Ctmp(ALPHA,ALOC,I,l) + Calpha(ALPHA,ADIAG,I)*TMP
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+end subroutine BuildCtmpVLaplace
+
 !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
 subroutine BuildCtmpLaplace(Calpha,NBA,nvirt,nocc,noccEOS,TauOcc,nLaplace,Ctmp,UoccEOST)        
   implicit none
@@ -2539,7 +2600,7 @@ subroutine BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirtEOS,nocc,TauVirt,nLaplace,Ctmp2
 end subroutine BuildCtmp2Laplace
 
 !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
-subroutine BuildToccLaplace(Ctmp2,NBA,nvirt,noccEOS,toccEOS,nLaplace,LaplaceW)
+subroutine BuildTampLaplace(Ctmp2,NBA,nvirt,noccEOS,toccEOS,nLaplace,LaplaceW)
   implicit none
   integer,intent(in) :: NBA,nvirt,noccEOS,nLaplace
   real(realk),intent(in) :: LaplaceW(nLaplace)
@@ -2572,7 +2633,7 @@ subroutine BuildToccLaplace(Ctmp2,NBA,nvirt,noccEOS,toccEOS,nLaplace,LaplaceW)
   ENDDO
   !$OMP END PARALLEL DO
   
-end subroutine BuildToccLaplace
+end subroutine BuildTampLaplace
 
 end module rimp2_module
 
