@@ -1956,7 +1956,7 @@ subroutine Build_RIMP2grad(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   ! A. (P^x|bj)*CalphaTheta(P,b,j)
   ! B. (P|(beta nu)^x)*Cvirt(beta,b)*Cocc(nu,J)*CalphaTheta(P,b,j)
   call II_get_RIMP2_grad(LUPRI,LUPRI,RIMP2grad,Mylsitem%SETTING,&
-       & nbasisAux,nbasis,nvirt,nocc,Cvirt,Cocc,nsize,mynum,numnodes,natoms,&
+       & nbasisAux,nbasis,nvirt,nocc,Cvirt,Cocc,mynum,numnodes,natoms,&
        & MynbasisAuxMPI,CalphaTheta,use_bg_buf)
 
   !This only contains contributions from the Auxiliary functions assinged to this node. 
