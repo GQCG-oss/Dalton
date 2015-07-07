@@ -72,17 +72,17 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   integer :: GindexToLocal(nbasisAux),nbasisAuxMPI3(numnodes),NREDLOC,NRED
   integer :: MetricOper
   real(realk) :: epsilon
-  logical :: use_bg_buf,noOMP
+  logical :: noOMP,use_bg_buf
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
   CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
   CALL LSTIMER('START ',TS3,TE3,LUPRI,ForcePrint)
-  noOMP = mylsitem%setting%scheme%noOMP
-  use_bg_buf = .FALSE.
-  nbasisAux8 = nbasisAux  
-  IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
+  noOMP = mylsitem%setting%scheme%noOMP  
+  nbasisAux8 = nbasisAux   
   epsilon = DECinfo%NAFthreshold 
+  use_bg_buf = .FALSE.
+  IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
   IF(use_bg_buf.AND.DECinfo%NAF)call lsquit('bg_buf and NAF combi not tested',-1)
   IF(DECinfo%PL.GT.2)THEN
    IF(DECinfo%NAF)THEN
@@ -1415,23 +1415,23 @@ end subroutine PlugInToalphaCDFull
 
 subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
      & OriginalRanknbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
-     & Calpha,TMPAlphaBeta_inv,nbasisAux,MynbasisAuxMPI2)
+     & Calpha,TMPAlphaBeta_inv,nbasisAux,MynbasisAuxMPI)
   implicit none
-  integer,intent(in) :: nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI2
+  integer,intent(in) :: nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI
   integer,intent(in) :: OriginalRanknbasisAuxMPI,nbasisAux
   integer,intent(in) :: nAtomsMPI(numnodes)
   integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
   integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
   real(realk),intent(in) :: AlphaCD5(OriginalRanknbasisAuxMPI,nvirt*nocc)
-  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI2,nvirt*nocc)
-  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI2,nbasisAux)
+  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
   !
   integer :: IB,startB2,iAtomB,StartB,BETA,ALPHA
   real(realk) :: TMP
   !Step 2: Obtain part of Calpha from this contribution
 !$OMP PARALLEL DO DEFAULT(NONE) &
 !$OMP PRIVATE(IB,startB2,iAtomB,startB,TMP,ALPHA,BETA) &
-!$OMP SHARED(nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI2,&
+!$OMP SHARED(nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI,&
 !$OMP        OriginalRanknbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
 !$OMP        AlphaCD5,Calpha,TMPAlphaBeta_inv,nbasisAux)
   do IB = 1,nocc*nvirt
@@ -1440,7 +1440,7 @@ subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,n
         StartB = startAuxMPI(iAtomB,myOriginalRank+1)
         do BETA = 1,nAuxMPI(iAtomB,myOriginalRank+1)
            TMP = AlphaCD5(startB2 + BETA,IB)
-           do ALPHA = 1,MynbasisAuxMPI2
+           do ALPHA = 1,MynbasisAuxMPI
               Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
            enddo
         enddo
@@ -1452,23 +1452,23 @@ end subroutine RIMP2_buildCalphaContFromAlphaCD
 
 subroutine  RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
      & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,&
-     & TMPAlphaBeta_inv,nbasisAux,MynbasisAuxMPI2)
+     & TMPAlphaBeta_inv,nbasisAux)
   implicit none
   integer,intent(in) :: nocc,nvirt,mynum,numnodes,natoms
-  integer,intent(in) :: MynbasisAuxMPI,nbasisAux,MynbasisAuxMPI2
+  integer,intent(in) :: MynbasisAuxMPI,nbasisAux
   integer,intent(in) :: nAtomsMPI(numnodes)
   integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
   integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
   real(realk),intent(in) :: AlphaCD3(MynbasisAuxMPI,nvirt*nocc)
-  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI2,nvirt*nocc)
-  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI2,nbasisAux)
+  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
   !
   integer :: IB,startB2,iAtomB,StartB,BETA,ALPHA
   real(realk) :: TMP
 
 !$OMP PARALLEL DO DEFAULT(NONE) &
 !$OMP PRIVATE(IB,startB2,iAtomB,StartB,BETA,ALPHA,TMP) &
-!$OMP SHARED(nocc,nvirt,nAtomsMPI,startAuxMPI,mynum,MynbasisAuxMPI2,&
+!$OMP SHARED(nocc,nvirt,nAtomsMPI,startAuxMPI,mynum,&
 !$OMP        nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_inv,MynbasisAuxMPI) 
   do IB = 1,nocc*nvirt
      startB2 = 0
@@ -1476,7 +1476,7 @@ subroutine  RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
         StartB = startAuxMPI(iAtomB,mynum+1)
         do BETA = 1,nAuxMPI(iAtomB,mynum+1)
            TMP = AlphaCD3(startB2 + BETA,IB)
-           do ALPHA = 1,MynbasisAuxMPI2
+           do ALPHA = 1,MynbasisAuxMPI
               Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + &
                    & TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
            enddo
@@ -1519,12 +1519,12 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   integer(kind=ls_mpik) :: node 
   integer :: CurrentWait(2),nAwaitDealloc,iAwaitDealloc,MynAtomsMPI
   integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K,I,offset,offset2
-  integer :: ndimMax,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2,rimp2_nodtot
+  integer :: ndimMax,rimp2_nodtot,nP
   integer :: nbuf1,nbuf2,nbuf3,inode,J
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,MessageRecieved
   logical :: PerformReduction,RIMPSubGroupCreated,UseSubGroupCommunicator
+  integer :: startB2,StartB,iatomB
   PerformReduction = .TRUE.
-  MynbasisAuxMPI2 = 0
   NBA = 0 
   call get_currently_available_memory(MemInGBCollected)
   
@@ -1608,7 +1608,6 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         IF(nbasisAuxMPI(I).GT.0) rimp2_nodtot = rimp2_nodtot + 1
      ENDDO
 
-     call mem_dealloc(AtomsMPI) !not used in this subroutine 
   ELSE
      MynbasisAuxMPI = nbasisAux     
      rimp2_nodtot = numnodes
@@ -1671,45 +1670,20 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
 
   CALL LSTIMER('Calpha3',TS3,TE3,LUPRI)
 
-  !==================================================================
-  !   Determine MynbasisAuxMPI2:  Calpha(MynbasisAuxMPI2,nvirt,nocc)
-  !==================================================================
-
   IF(CollaborateWithSlaves)then 
-     ndimMax = nbasisAux/numnodes
-     do I=1,numnodes
-        nbasisAuxMPI2(I) = ndimMax
-     enddo
-     J=2 !not add to master
-     do I=1,MOD(nbasisAux,numnodes)
-        nbasisAuxMPI2(J) = nbasisAuxMPI2(J) + 1
-        J=J+1
-     enddo
-     MynbasisAuxMPI2 = nbasisAuxMPI2(mynum+1)
-     call mem_alloc(TMPAlphaBetaDecomp,MynbasisAuxMPI2,nbasisAux)
-     offset = mynum*ndimMax
-     offset2 = numnodes*ndimMax + mynum -1 +1
-     IF(MynbasisAuxMPI2.GT.ndimMax)THEN
-        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
-        !$OMP TMPAlphaBetaDecomp,AlphaBetaDecomp,offset,offset2)
-        do I=1,nbasisAux
-           do J=1,ndimMax
-              TMPAlphaBetaDecomp(J,I) = AlphaBetaDecomp(offset+J,I)
-           enddo
-           TMPAlphaBetaDecomp(ndimMax+1,I) = AlphaBetaDecomp(offset2,I)
-        enddo
-        !$OMP END PARALLEL DO
-     ELSE
-        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
-        !$OMP TMPAlphaBetaDecomp,AlphaBetaDecomp,offset)
-        do I=1,nbasisAux
-           do J=1,ndimMax
-              TMPAlphaBetaDecomp(J,I) = AlphaBetaDecomp(offset+J,I)
+     call mem_alloc(TMPAlphaBetaDecomp,MynbasisAuxMPI,nbasisAux)
+     StartB2 = 0
+     DO iAtomB=1,nAtomsMPI(mynum+1)
+        StartB = startAuxMPI(iAtomB,mynum+1)
+        nP = nAuxMPI(iAtomB,mynum+1)
+        do I=1,nbasisAux           
+           DO J=1,nP
+              TMPAlphaBetaDecomp(StartB2+J,I) = AlphaBetaDecomp(StartB+J,I)
            enddo
         enddo
-        !$OMP END PARALLEL DO
-     ENDIF
-     NBA = MynbasisAuxMPI2
+        StartB2 = StartB2 + nP
+     ENDDO
+     NBA = MynbasisAuxMPI
   ELSE
      NBA = nbasisAux
   ENDIF
@@ -1784,10 +1758,10 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
         call time_start_phase( PHASE_WORK )
 #endif
         !Calpha = TMPAlphaBetaDecomp(MynbasisAuxMPI,nbasisAux)
-        M =  MynbasisAuxMPI2   !rows of Output Matrix
+        M =  MynbasisAuxMPI   !rows of Output Matrix
         N =  nvirt*nocc       !columns of Output Matrix
         K =  nbasisAux        !summation dimension
-        call mem_alloc(Calpha,MynbasisAuxMPI2*(i8*nvirt)*nocc)
+        call mem_alloc(Calpha,MynbasisAuxMPI*(i8*nvirt)*nocc)
         call dgemm('N','N',M,N,K,1.0E0_realk,TMPAlphaBetaDecomp,&
              & M,alphaCDFull,K,0.0E0_realk,Calpha,M)
         call mem_dealloc(alphaCDFull)
@@ -1807,8 +1781,8 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      !=====================================================================================
      ! MPI scheme:  Bcast Routine
      !=====================================================================================
-     call mem_alloc(Calpha,MynbasisAuxMPI2*(i8*nvirt)*nocc)
-     nsize = MynbasisAuxMPI2*nvirt*nocc
+     call mem_alloc(Calpha,MynbasisAuxMPI*(i8*nvirt)*nocc)
+     nsize = MynbasisAuxMPI*nvirt*nocc
      call ls_dzero8(Calpha,nsize)
      DO inode = 1,rimp2_nodtot
         IF(mynum.EQ.inode-1)THEN
@@ -1824,8 +1798,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
 #endif
            call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,&
                 & natomsAux,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
-                & AlphaCD3,Calpha,TMPAlphaBetaDecomp,nbasisAux,&
-                & MynbasisAuxMPI2)
+                & AlphaCD3,Calpha,TMPAlphaBetaDecomp,nbasisAux)
            call mem_dealloc(AlphaCD3)
         ELSE
            nbuf1 = nbasisAuxMPI(inode)
@@ -1846,7 +1819,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
            call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,&
                 & numnodes,natomsAux,OriginalRanknbasisAuxMPI,&
                 & nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
-                & Calpha,TMPAlphaBetaDecomp,nbasisAux,MynbasisAuxMPI2)
+                & Calpha,TMPAlphaBetaDecomp,nbasisAux,MynbasisAuxMPI)
            call mem_dealloc(AlphaCD5)
         ENDIF
      ENDDO
@@ -1858,6 +1831,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      call mem_dealloc(startAuxMPI)
      call mem_dealloc(nAtomsMPI)
      call mem_dealloc(nAuxMPI)
+     call mem_dealloc(AtomsMPI) !not used in this subroutine 
   ENDIF
 !  call sleep(mynum*5)
 !  PRINT*,'MynbasisAuxMPI2',MynbasisAuxMPI2
@@ -1867,34 +1841,61 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
 
 end subroutine Build_CalphaMO
 
+!This subroutine calculates the DEC-RI-MP2 gradient contribution:
+!the derivatie of the 3 term energy contribution
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|bj) Thetha(a,i,b,j) +
+!sum_{a,i,b,j} (ai|alpha) C(alpha,b,j) Thetha(a,i,b,j) -
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|beta) C(beta,b,j) Thetha(a,i,b,j)
+! =
+! the 6 term gradient contribution 
+!sum_{a,i,b,j} C(alpha,a,i) (alpha^x|bj) Thetha(a,i,b,j) +
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|(bj)^x) Thetha(a,i,b,j) + 
+!sum_{a,i,b,j} ((ai)^x|alpha) C(alpha,b,j) Thetha(a,i,b,j) + 
+!sum_{a,i,b,j} (ai|alpha^x) C(alpha,b,j) Thetha(a,i,b,j) - 
+!sum_{a,i,b,j} C(alpha,a,i) (alpha^x|beta) C(beta,b,j) Thetha(a,i,b,j) -
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|beta^x) C(beta,b,j) Thetha(a,i,b,j)
+!due to symmetry this can be written as A,B,C (the last 2 terms are collected into C)
+! A. C(alpha,a,i) (alpha^x|bj) Thetha(a,i,b,j) +
+! B. C(alpha,a,i) (alpha|(bj)^x) Thetha(a,i,b,j) + 
+! C. - (P|Q)^x*Cpq(P,Q) 
+! However we do the evaluation in AO basis so it becomes
+! A. (P^x|bj)*CalphaTheta(P,b,j)
+! B. (P|(beta nu)^x)*Cvirt(beta,b)*Cocc(nu,J)*CalphaTheta(P,b,j)
+! C. - (P|Q)^x*Cpq(P,Q) 
+! using the following intermediate
+! CalphaTheta(P,b,j) = C(P,a,i) * Thetha(a,i,b,j)
+! Cpq = CalphaTheta(P,b,j)*C(Q,b,j)
 subroutine Build_RIMP2grad(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,&
-     & natoms,ThetaOcc,RIMP2grad,dopair_occ)
+     & natoms,ThetaOcc,RIMP2grad,dopair_occ,use_bg_buf)
   implicit none
   type(lsitem), intent(inout) :: mylsitem
   integer,intent(in) :: nAtomsAux,nocc,nvirt,natoms
   integer,intent(in) :: nbasisAux,LUPRI,nbasis,mynum,numnodes
   logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves
-  logical,intent(in) :: dopair_occ(nocc,nocc)
+  logical,intent(in) :: dopair_occ(nocc,nocc),use_bg_buf
   real(realk),intent(in) :: Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
   real(realk),intent(inout) :: RIMP2grad(3*natoms)
-  real(realk),intent(inout) :: ThetaOcc(nvirt*(nocc*i8*nocc)*nvirt)
+  real(realk),intent(inout) :: ThetaOcc(nvirt*(nocc*i8*nocc)*nvirt)  
   !local variables
   real(realk) :: AlphaBetaDecomp(nbasisAux,nbasisAux),maxsize
   real(realk),pointer :: Calpha(:),CalphaTheta(:),AlphaBetaDeriv(:,:,:)
   real(realk),pointer :: Cpq(:,:),CalphaTmp(:)
   logical :: SymDecomp,AlphaBetaDecompCreate
-  integer(kind=8) :: nsize 
+  integer(kind=8) :: nsize,natoms8,nbasisAux8
   integer :: MynbasisAuxMPI,MYNATOMSMPI,I,Oper,M,N,K,NBA
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
-  integer :: inode,myOriginalRank
+  integer :: inode,myOriginalRank,MynbasisAuxMPI2,nbasisAuxMPI2(numnodes)
   integer(kind=ls_mpik) :: node 
+
+  nullify(Cpq)
+  nullify(Calpha)
+  nullify(CalphaTheta)
+  nullify(CalphaTmp)
+  nullify(AlphaBetaDeriv)
 !  real(realk) :: RIMP2gradC(3*natoms)
-
-!  call OLDDEBUGROUTINE(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
-!     & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,&
-!     & natoms,ThetaOcc%elm1,RIMP2grad)
-
+  natoms8 = natoms
+  nbasisAux8 = nbasisAux  
   Oper = CoulombOperator
   SymDecomp = .FALSE.
   AlphaBetaDecompCreate = .TRUE.
@@ -1922,15 +1923,22 @@ subroutine Build_RIMP2grad(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   ELSE
      MynbasisAuxMPI = nbasisAux     
   ENDIF
-
+  
   !1. build Calpha(P,a,i) = (P|Q)^-1 (Q|ai)
+  ! Note this is (nbasisAuxMPI(mynum+1),nvirtAOS,noccEOS) so fairly small quantity 
+  ! we assume this fits on node. 
   call Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
        & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,Calpha,&
        & NBA,AlphaBetaDecomp,AlphaBetaDecompCreate,SymDecomp,Oper)
   !2. Construct CalphaTheta(P,j,b) = Calpha(P,a,i) Theta(a,i,j,b)
+  !  Size:  (nbasisAuxMPI(mynum+1),noccEOS,nvirtAOS)
   nsize = nvirt*nocc*MynbasisAuxMPI
-  call mem_alloc(CalphaTheta,nsize)
-  
+  IF(use_bg_buf)THEN
+     call mem_pseudo_alloc(Cpq,nbasisAux*i8,MynbasisAuxMPI*i8)
+     call mem_pseudo_alloc(CalphaTheta,nsize)
+  ELSE
+     call mem_alloc(CalphaTheta,nsize)
+  ENDIF
   !Build CalphaTheta(P,j,b) =  Calpha(P,a,i)*ThetaOcc(a,i,j,b)
   IF(COUNT(dopair_occ).EQ.nocc*nocc)THEN
      !Atomic fragment
@@ -1944,58 +1952,69 @@ subroutine Build_RIMP2grad(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      CALL BuildCalphaTheta(nocc,nvirt,MynbasisAuxMPI,Calpha,ThetaOcc,CalphaTheta,dopair_occ)
   ENDIF
 
-!  print*,'Calpha ',MynbasisAuxMPI,nocc,nvirt
-!  call ls_output(Calpha,1,10,1,nocc*nvirt,MynbasisAuxMPI,nocc*nvirt,1,6)
-
-!  print*,'ThetaOcc%elm1 ',nocc,nvirt
-!  call ls_output(ThetaOcc%elm1,1,nocc*nvirt,1,nocc*nvirt,nocc*nvirt,nocc*nvirt,1,6)
-
-!  print*,'CalphaTheta ',MynbasisAuxMPI,nocc,nvirt
-!  call ls_output(CalphaTheta,1,10,1,nocc*nvirt,MynbasisAuxMPI,nocc*nvirt,1,6)
-
   !3. Calculate 2 of 3 gradient contribution: 
   ! A. (P^x|bj)*CalphaTheta(P,b,j)
   ! B. (P|(beta nu)^x)*Cvirt(beta,b)*Cocc(nu,J)*CalphaTheta(P,b,j)
-  maxsize=2.0E0_realk
   call II_get_RIMP2_grad(LUPRI,LUPRI,RIMP2grad,Mylsitem%SETTING,&
-       & nbasisAux,nbasis,nvirt,nocc,Cvirt,Cocc,nsize,mynum,numnodes,natoms,&
-       & MynbasisAuxMPI,CalphaTheta)
+       & nbasisAux,nbasis,nvirt,nocc,Cvirt,Cocc,mynum,numnodes,natoms,&
+       & MynbasisAuxMPI,CalphaTheta,use_bg_buf)
 
   !This only contains contributions from the Auxiliary functions assinged to this node. 
   !A reduction will performed at the end. 
 
-!#ifdef VAR_MPI
+#ifdef VAR_MPI
 !  call lsmpi_reduction(RIMP2grad,3*natoms,infpar%master,infpar%lg_comm)
 !  print*,'RIMP2 GRAD A+B'
 !  call ls_output(RIMP2grad,1,3,1,natoms,3,natoms,1,6)
-!#endif
+#endif
 
-  !4. Calculate the remianing gradient contribution: CalphaTheta(P,b,j)*(P|Q)^x*Calpha(Q,b,j)
-  ! Calculate (P|Q)^x Full Aux
-  call mem_alloc(AlphaBetaDeriv,nbasisAux,nbasisAux,3*natoms)
-
-  !right now all nodes calculate this quantity - they should collaborate and do a reduction of the result!
-  call II_get_RI_AlphaBeta_geoderiv2CenterInt(DECinfo%output,DECinfo%output,&
-       & AlphaBetaDeriv,mylsitem%setting,nbasisAux,natoms)
-  ! Build Cpq(P,Q) = CalphaTheta(P,j,b)*Calpha(Q,j,b)  
-  call mem_alloc(Cpq,nbasisAux,nbasisAux)
   IF(numnodes.EQ.1)THEN
+     ! Build Cpq(P,Q) = CalphaTheta(P,j,b)*Calpha(Q,j,b)  
+     IF(.NOT.use_bg_buf)call mem_alloc(Cpq,nbasisAux,nbasisAux)
      call ConstructCpq(nbasisAux,nocc,nvirt,Calpha,CalphaTheta,Cpq)
-     call mem_dealloc(CalphaTheta)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(CalphaTheta)
+     ELSE
+        call mem_dealloc(CalphaTheta)
+     ENDIF
      call mem_dealloc(Calpha)
+
+     !4. Calculate the remianing gradient contribution: CalphaTheta(P,b,j)*(P|Q)^x*Calpha(Q,b,j)
+     ! Calculate (P|Q)^x Full Aux
+     IF(use_bg_buf)THEN
+        !FIXME: test memory if not enough memory have to make special fullcontraction routine. 
+        call mem_pseudo_alloc(AlphaBetaDeriv,nbasisAux*i8,nbasisAux*i8,3*natoms*i8)
+     ELSE
+        call mem_alloc(AlphaBetaDeriv,nbasisAux,nbasisAux,3*natoms)
+     ENDIF
+     call II_get_RI_AlphaBeta_geoderiv2CenterInt(DECinfo%output,DECinfo%output,&
+          & AlphaBetaDeriv,mylsitem%setting,nbasisAux,natoms)
      ! Contract grad(x) = grad(x) - (P|Q)^x*Cpq(P,Q) using MPI on outer loop , OpenMP inner loop
      call get_PQ_RIMP2_grad(Cpq,AlphaBetaDeriv,nbasisAux,3*natoms,RIMP2grad)
-!     RIMP2gradC = 0.0E0_realk
-!     call get_PQ_RIMP2_grad(Cpq,AlphaBetaDeriv,nbasisAux,3*natoms,RIMP2gradC)
-     call mem_dealloc(Cpq)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(AlphaBetaDeriv)
+        call mem_pseudo_dealloc(Cpq)
+     ELSE
+        call mem_dealloc(AlphaBetaDeriv)
+        call mem_dealloc(Cpq)
+     ENDIF
   ELSE
 #ifdef VAR_MPI
-     call mem_alloc(Cpq,nbasisAux,MynbasisAuxMPI)
-     call ls_dzero8(Cpq,nbasisAux*MynbasisAuxMPI)
+     !We want to construct Cpq(P,Q) = Calpha(P,j,b)*CalphaTheta(Q,j,b)
+     !However each node only have part of Calpha(Ppartial,j,b) and same part of 
+     !CalphaTheta(Qpartial,j,b) so we broadcast Calpha(Ppartial,j,b)
+     !building Cpq(Pfull,Qpartial) = sum_nodes Calpha(PpartialOnnode,j,b)*CalphaTheta(Qpartial,j,b)  
+     !this is the part we need to calculate part of 
+     !the remaining gradient contribution: Cpq(P,Q)*(P|Q)^x
+     !meaning we do Cpq(Pfull,Qpartial)*(Pfull|Qpartial)^x
+     !a reduction will give the full contribution. 
+     
+     IF(.NOT.use_bg_buf)call mem_alloc(Cpq,nbasisAux,MynbasisAuxMPI)
+     call ls_dzero8(Cpq,nbasisAux*MynbasisAuxMPI*i8)
      DO inode = 1,numnodes
         nsize = nbasisAuxMPI(inode)*nvirt*nocc
+        node = inode-1
         IF(mynum.EQ.inode-1)THEN
-           node = mynum
            !Bcast
            call ls_mpibcast(Calpha,nsize,node,infpar%lg_comm)
            call ConstructCpqMPI(nocc,nvirt,mynum,&
@@ -2003,30 +2022,57 @@ subroutine Build_RIMP2grad(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
                 & nAtomsMPI,startAuxMPI,nAuxMPI,Calpha,&
                 & CalphaTheta,nbasisAux,MynbasisAuxMPI,Cpq)
         ELSE
-           node = inode-1
-           call mem_alloc(CalphaTmp,nsize)
+           IF(use_bg_buf)THEN
+              call mem_pseudo_alloc(CalphaTmp,nsize)
+           ELSE
+              call mem_alloc(CalphaTmp,nsize)
+           ENDIF
            call ls_mpibcast(CalphaTmp,nsize,node,infpar%lg_comm)
            myOriginalRank = inode-1
            call ConstructCpqMPI(nocc,nvirt,myOriginalRank,&
                 & numnodes,natoms,nbasisAuxMPI(inode),&
                 & nAtomsMPI,startAuxMPI,nAuxMPI,CalphaTmp,&
                 & CalphaTheta,nbasisAux,MynbasisAuxMPI,Cpq)
-           call mem_dealloc(CalphaTmp)
+           IF(use_bg_buf)THEN
+              call mem_pseudo_dealloc(CalphaTmp)
+           ELSE
+              call mem_dealloc(CalphaTmp)
+           ENDIF
         ENDIF
      ENDDO
-     call mem_dealloc(CalphaTheta)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(CalphaTheta)
+     ELSE
+        call mem_dealloc(CalphaTheta)
+     ENDIF
      call mem_dealloc(Calpha)
+     !4. Calculate the remianing gradient contribution: CalphaTheta(P,b,j)*(P|Q)^x*Calpha(Q,b,j)
+     ! Calculate (P|Q)^x Full Aux
+     IF(use_bg_buf)THEN
+        !FIXME: test memory if not enough memory have to make special fullcontraction routine. 
+        call mem_pseudo_alloc(AlphaBetaDeriv,nbasisAux*i8,nbasisAux*i8,3*natoms*i8)
+     ELSE
+        call mem_alloc(AlphaBetaDeriv,nbasisAux,nbasisAux,3*natoms)
+     ENDIF
+     call II_get_RI_AlphaBeta_geoderiv2CenterInt(DECinfo%output,DECinfo%output,&
+          & AlphaBetaDeriv,mylsitem%setting,nbasisAux,natoms)
      ! Contract grad(x) = grad(x) - (P|Q)^x*Cpq(P,Q) using MPI on outer loop , OpenMP inner loop
      call get_PQ_RIMP2_gradMPI(Cpq,AlphaBetaDeriv,nbasisAux,MynbasisAuxMPI,3*natoms,RIMP2grad,&
           & nAtoms,numnodes,nAtomsMPI,startAuxMPI,nAuxMPI,mynum)
-     call mem_dealloc(Cpq)
+
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(AlphaBetaDeriv)
+        call mem_pseudo_dealloc(Cpq)
+     ELSE
+        call mem_dealloc(AlphaBetaDeriv)
+        call mem_dealloc(Cpq)
+     ENDIF
      !REDUCTION
      call lsmpi_reduction(RIMP2grad,3*natoms,infpar%master,infpar%lg_comm)
 #else
      call lsquit('numnodes not equal to 1, but no MPI',-1)
 #endif
   ENDIF
-  call mem_dealloc(AlphaBetaDeriv)
 
 !  IF(mynum.EQ.0)THEN
 !     print*,'RIMP2 GRAD A+B+C'
@@ -2111,6 +2157,7 @@ subroutine ConstructCpqMPI(nocc,nvirt,myOriginalRank,numnodes,natoms,&
               ENDDO
            ENDDO
            !$OMP END DO
+           startB2 = startB2 + nP
         ENDDO
      ENDDO
   ENDDO
@@ -2188,6 +2235,7 @@ DO X=1,ngeoComp
          ENDDO
       ENDDO
       !$OMP END DO
+      startQ2 = startQ2 + nQ   
    ENDDO
    !$OMP MASTER
    RIMP2grad(X) = RIMP2grad(X) - TMP
