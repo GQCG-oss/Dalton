@@ -699,7 +699,8 @@ module cc_tools_module
 #endif
 
          !acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr),nv,no,nb,nor,nvr)
-         !$acc data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr))
+         !$acc data copyin(yv(1:nb*nv))
+         !$acc data copyin(tpl%elm1(1:nor*nvr))
 
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
@@ -741,13 +742,7 @@ module cc_tools_module
          enddo
          !$acc end data
 
-#ifdef VAR_CUBLAS
-         ! Destroy the CUBLAS context
-         stat = cublasDestroy_v2 (cub_h)
-#endif
-
-         !acc exit data delete(tpl%elm1(1:nb*nv))
-         !acc enter data copyin(tmi%elm1)
+         !$acc data copyin(tmi%elm1)
 
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
@@ -758,19 +753,43 @@ module cc_tools_module
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
 
-            !(w2):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
+            !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
-            !(w0):I- [delta alpha<=gamma c] = (w2):I- [beta delta alpha<=gamma] * Lambda^h[beta c]
-            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
-            !(w2):I- [alpha<=gamma c d] = (w0):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            call dgemm('t','n',laleg*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*laleg)
-            !(w0):I- [alpha<=gamma c<=d] <= (w2):I- [alpha<=gamma c d]
-            call get_I_cged(w0,w2,laleg,nv)
-            !(w3.2):sigma- [alpha<=gamma i<=j] = (w0):I- [alpha<=gamma c>=d] * t- [c>=d i>=j]
-            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+faleg),tred)
-         enddo
+            !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
-         !acc exit data delete(yv,tmi%elm1,nv,no,nb,nor,nvr)
+            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv))
+            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
+            call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
+
+            !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+            !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
+            call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,laleg*nb*nv,nb*nv,laleg*nv*nv,acc_h,cub_h)
+
+            !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
+            call get_I_cged(w0,w2,laleg,nv)
+
+            !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
+#ifdef VAR_OPENACC
+            !(w2)  :sigma+ [i>=j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
+            !call dgemm('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w2,nor)
+            !call manual_21_reordering_t2f(100,[nor,laleg],[1,faleg],p10,w2,nul,w3)
+
+            !call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg)
+            call ls_dgemm_acc('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w2,laleg,laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
+            !$acc end data 
+            call manual_12_reordering_t2f(100,[laleg,nor],[tred,nor],[faleg,1],p10,w2,nul,w3(tred*nor+1:tred*nor+tred*nor))
+#else
+            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+1),tred)
+#endif
+         enddo
+         !$acc end data
+         !$acc end data
+
+#ifdef VAR_CUBLAS
+         ! Destroy the CUBLAS context
+         stat = cublasDestroy_v2 (cub_h)
+#endif
+
       case(2)
 
          if( s0 - tred*nvr > s2 - nor*nvr)then
