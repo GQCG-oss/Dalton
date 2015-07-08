@@ -714,39 +714,18 @@ module cc_tools_module
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
-            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
-            call print_norm(w0(nb*laleg*nv+1:),nb*laleg*nv,"w0 ref")
-
             !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w0(1:nb*laleg*nv))
+            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
-            !!$acc host_data use_device(w2,yv,w0)
-            !      stat = cublasDgemm_v2(cub_h,int(1,kind=4),int(0,kind=4),int(nb*laleg,kind=4),int(nv,kind=4),int(nb,kind=4),&
-            !                      & p10,c_loc(w2),int(nb,kind=4),c_loc(yv),int(nb,kind=4),&
-            !                      & nul,c_loc(w0),int(nb*laleg,kind=4))
-            !!$acc end host_data
-            !$acc end data 
-
-            nerrors=0
-            do i=1, nb*laleg*nv
-              if (ABS(w0(i)-w0(nb*laleg*nv+i)).gt.1E-5)then
-                if (nerrors<10) then
-                 print *, i, w0(i), w0(i+nb*laleg*nv)
-                endif
-              nerrors = nerrors+1
-              endif
-            enddo
-            print *, nerrors, "number of errors"
-
-            print *, nb*laleg, 2**31-1, "nb*laleg printout"
-            
-            !call print_norm(w2,nb*laleg*nb,"w2 after:")
-            !call print_norm(yv,nb*nv,"yv after:")
-            call print_norm(w0,nb*laleg*nv,"w0 acc")
 
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
+            !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
+            call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,laleg*nb*nv,nb*nv,laleg*nv*nv,acc_h,cub_h)
+
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
             call get_I_cged(w0,w2,laleg,nv)
+            !$acc end data 
+
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
          enddo
@@ -1815,45 +1794,57 @@ module cc_tools_module
    !> \date October 2012
    subroutine get_I_cged(Int_out,Int_in,m,nv)
       implicit none
-      !> integral output with indices reduced to c>=d
-      real(realk),intent(inout)::Int_out(:)
-      !>full integral input m*c*d
-      real(realk),intent(in) :: Int_in(:)
       !> leading dimension m and virtual dimension
       integer,intent(in)::m,nv
-      integer ::d,pos,pos2,a,b,c,cged
-      logical :: doit
-#ifdef VAR_OMP
-      integer :: tid,nthr
-      integer, external :: omp_get_thread_num,omp_get_max_threads
-      !    nthr = omp_get_max_threads()
-      !    nthr = min(nthr,nv)
-      !    call omp_set_num_threads(nthr)
+      !> integral output with indices reduced to c>=d
+      real(realk),intent(inout)::Int_out(m*(nv*(nv+1))/2)
+      !>full integral input m*c*d
+      real(realk),intent(in) :: Int_in(m*nv*nv)
+      integer ::d,pos,pos2,a,b,c,cged,dc
+      logical :: doit, stuff_here
+
+#ifdef VAR_OPENACC
+      stuff_here = acc_is_present(Int_out,m*(nv*(nv+1))/2*8) .and. acc_is_present(Int_in,m*nv*nv*8)
+#else
+      stuff_here = .false.
 #endif
-      !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-      !OMP PRIVATE(pos,pos2,d,tid,doit)
-#ifdef VAR_OMP
-      !    tid = omp_get_thread_num()
-#else 
-      !    doit = .true.
-#endif
-      !    doit = .true.
-      pos =1
-      do d=1,nv
-#ifdef VAR_OMP
-         !      doit = (mod(d,nthr) == tid)
-#endif
-         !      if(doit) then
-         pos2=1+(d-1)*m+(d-1)*nv*m
-         !        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
-         Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
-         !      endif
-         pos=pos+m*(nv-d+1)
-      enddo
-      !OMP END PARALLEL
-#ifdef VAR_OMP
-      !call omp_set_num_threads(omp_get_max_threads())
-#endif
+
+      if(stuff_here)then
+         !$acc parallel loop present(Int_out,Int_in) default(none) copyin(nv,m) private(pos,pos2,d,dc) 
+         do d=1,nv
+
+            !calculate target position in array Int_out
+            pos =1
+            do dc=1,d-1
+               pos=pos+m*(nv-dc+1)
+            enddo
+
+            !calculate origin position in array Int_in
+            pos2=1+(d-1)*m+(d-1)*nv*m
+
+            !do the copy
+            Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+
+         enddo
+         !$acc end parallel loop
+      else
+         do d=1,nv
+
+            !calculate target position in array Int_out
+            pos =1
+            do dc=1,d-1
+               pos=pos+m*(nv-dc+1)
+            enddo
+
+            !calculate origin position in array Int_in
+            pos2=1+(d-1)*m+(d-1)*nv*m
+
+            !do the copy
+            Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+
+         enddo
+      endif
+
    end subroutine get_I_cged
 
    !Even though the following two functions are only needed inside
