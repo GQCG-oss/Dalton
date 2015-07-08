@@ -2257,7 +2257,7 @@ contains
 
 
       ! Add contribution to get LW1 model (destroy size-extensivity)
-      if(DECinfo%ccModel==MODEL_MP2) then
+      if(DECinfo%ccModel==MODEL_MP2 .and. DECinfo%LW1) then
          call add_lw1_contribution(gvvov,gooov,t2,R1,rho2,whattodo)
       end if
 
@@ -3435,7 +3435,8 @@ contains
       end if
 
       ! Only do something for A21 R1 block (whattodo=1, see cc_jacobian_rhtr)
-      if(whattodo/=1) return
+      ! and never for Hald approximation
+      if(whattodo/=1 .or. DECinfo%haldapprox) return
 
       ! Dimensions
       nvirt = t2%dims(1)
