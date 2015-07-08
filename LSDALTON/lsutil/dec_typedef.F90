@@ -144,6 +144,10 @@ module dec_typedef_module
      !> excitations are correct to second and first order, respectively.
      !> (See JCP 115, 671 (2001))
      logical :: HaldApprox
+     !> Apply first-order linear wave function approximation (not size-extensive)
+     !> when calculation Jacobian eigenvalues. (Only meaningful in
+     !> combination with MP2 wave function model).
+     logical :: LW1
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION

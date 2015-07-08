@@ -64,6 +64,7 @@ contains
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
     DECinfo%HaldApprox = .false.
+    DECinfo%LW1 = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -482,6 +483,9 @@ contains
 
        case('.HALDAPPROX')
           DECinfo%HaldApprox = .true.
+
+       case('.LW1')
+          DECinfo%LW1 = .true.
 
 
        ! GENERAL INFO
@@ -1528,6 +1532,7 @@ contains
     write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
     write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
+    write(lupri,*) 'LW1 ', DECinfo%LW1
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP

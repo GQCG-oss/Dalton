@@ -2256,6 +2256,12 @@ contains
       end if Hald1
 
 
+      ! Add contribution to get LW1 model (destroy size-extensivity)
+      if(DECinfo%ccModel==MODEL_MP2) then
+         call add_lw1_contribution(gvvov,gooov,t2,R1,rho2,whattodo)
+      end if
+
+
       ! Clean up
       call array4_free(gvvov)
       call array4_free(gooov)
@@ -2617,6 +2623,12 @@ contains
       real(realk),pointer :: res(:),lambdaIMAG(:),eival(:),singlescomp(:),foo(:,:),fvv(:,:)
       logical,pointer :: conv(:),singleex(:)
       logical :: allconv
+
+      ! Sanity check
+      if(DECinfo%haldapprox .and. DECinfo%JacobianLhtr) then
+         call lsquit('Hald approximation not implemented for &
+              & Jacobian left-hand transformation!',-1)
+      end if
 
       ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
       ! except that we may solve for more than one eigenvalue at the same time.
@@ -3383,6 +3395,122 @@ contains
       call tensor_free(Cv_tensor)
 
     end subroutine get_T1_transformed_for_eigenvalue_solver
+
+
+    !> \brief Add contribution to Jacobian trial vector to get linear LW1 model 
+    !> rather than exponential EW1 model.
+    !> Note: The only non-vanishing contribution comes from the 
+    !> SINGLES part of the trial vector R to the DOUBLES component
+    !> of the vector rho which is the result of the Jacobian A working on R, i.e.:
+    !>
+    !> (rho1) = ( A11 A12 )  (R1)     ( A11 R1 + A12 R2 )
+    !> (rho2) = ( A21 A22 )  (R2)  =  ( A21 R1 + A22 R2 ) 
+    !> 
+    !> Here, only the A21 R1 contribution differs between EW1 and LW1. 
+    !> The input rho2 is updated with this difference, i.e.:
+    !>
+    !> rho2 --> rho2 + (A21 R1)_{LW1} - (A21 R1)_{EW1}
+    !> 
+    !> \author Kasper Kristensen
+    !> \date July 2015
+    subroutine add_lw1_contribution(gvvov,gooov,t2,R1,rho2,whattodo)
+      implicit none
+      !> Two-electron integrals with occupied/virtual indices as indicated (Mulliken notation)
+      type(array4),intent(in) :: gvvov, gooov
+      !> Doubles amplitudes
+      type(tensor),intent(in) :: t2 
+      !> Singles (R1) component of trial vector
+      type(tensor),intent(in) :: R1
+      !> rho2 vector to update with LW1 contribution as described above
+      type(tensor),intent(inout) :: rho2
+      !> What to do (see jacobian_rhtr_workhorse).
+      integer,intent(in) :: whattodo
+      integer :: nocc,nvirt,i,j,k,l,a,b,c,d
+      real(realk),pointer :: Q(:,:),Y(:,:),deltaNS(:,:,:,:)
+      real(realk) :: Lljkc, Lbdkc, Rai
+
+      ! Sanity check - LW1 only meaningful for MP2 model
+      if(DECinfo%ccModel/=MODEL_MP2) then
+         call lsquit('add_lw1_contribution: Only implemented for MP2 model!',-1)
+      end if
+
+      ! Only do something for A21 R1 block (whattodo=1, see cc_jacobian_rhtr)
+      if(whattodo/=1) return
+
+      ! Dimensions
+      nvirt = t2%dims(1)
+      nocc = t2%dims(2)
+
+      ! Correction delta (LW1 - EW1) is:
+      !
+      ! delta_{aibj} = P_{ij}^{ab} [ - R_ai sum_{klc} t_kl^cb L_ljkc
+      !                              + R_ai sum_{cdk} t_{kj}^{cd} L_{bdkc} ]
+      !
+
+      !  Q_bj = sum_{klc} t_kl^cb L_jlkc
+      call mem_alloc(Q,nvirt,nocc)
+      Q = 0.0_realk
+      do c=1,nvirt
+         do k=1,nocc
+            do j=1,nocc
+               do l=1,nocc
+                  Lljkc = 2.0_realk*gooov%val(l,j,k,c) - gooov%val(k,j,l,c)
+                  do b=1,nvirt
+                     Q(b,j) = Q(b,j) + t2%elm4(c,k,b,l) * Lljkc
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      !  Y_jb = sum_{cdk} t_{kj}^{cd} L_{bdkc}
+      call mem_alloc(Y,nocc,nvirt)
+      Y = 0.0_realk
+      do k=1,nocc
+         do d=1,nvirt
+            do c=1,nvirt
+               do b=1,nvirt
+                  Lbdkc = 2.0_realk*gvvov%val(b,d,k,c) - gvvov%val(b,c,k,d)
+                  do j=1,nocc
+                     Y(j,b) = Y(j,b) + t2%elm4(c,k,d,j) * Lbdkc
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      ! Non-symmetrized deltaNS_{bjai} = R_ai [ - sum_{klc} t_kl^cb L_jlkc
+      !                                         + sum_{cdk} t_{kj}^{cd} L_{bdkc} ]
+      call mem_alloc(deltaNS,nvirt,nocc,nvirt,nocc)
+      do a=1,nvirt
+         do i=1,nocc
+            Rai = R1%elm2(a,i)
+            do b=1,nvirt
+               do j=1,nocc
+                  deltaNS(b,j,a,i) = Rai * ( -Q(b,j) + Y(j,b) )
+               end do
+            end do
+         end do
+      end do
+
+      ! Update rho with symmetrized delta: 
+      ! rho2_{aibj} --> rho2_{aibj} + P_{ij}^{ab} [ deltaNS(a,i,b,j) + deltaNS(b,j,a,i) ]
+      do j=1,nocc
+         do b=1,nvirt
+            do i=1,nocc
+               do a=1,nvirt
+                  rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + deltaNS(a,i,b,j) + deltaNS(b,j,a,i)
+               end do
+            end do
+         end do
+      end do
+
+
+      call mem_dealloc(deltaNS)
+      call mem_dealloc(Q)
+      call mem_dealloc(Y)
+
+    end subroutine add_lw1_contribution
 
 
   end module cc_response_tools_module
