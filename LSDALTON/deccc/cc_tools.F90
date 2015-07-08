@@ -24,6 +24,7 @@ module cc_tools_module
    use reorder_frontend_module
    use tensor_interface_module
    use gpu_interfaces
+   use openacc
 
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
@@ -609,7 +610,7 @@ module cc_tools_module
       character(80) :: msg
       real(realk), pointer :: buf(:)
       integer(kind=8) :: nbuf
-      integer :: faleg,laleg,laleg_req
+      integer :: faleg,laleg,laleg_req,i,nerrors
 #ifdef VAR_OPENACC
       integer(kind=acc_handle_kind) :: acc_h
 #ifdef VAR_PGF90
@@ -618,7 +619,7 @@ module cc_tools_module
 #else
       integer                       :: acc_h
 #endif
-      type(c_ptr)                   :: cub_h
+      type(c_ptr)                   :: cub_h,dummy47
       real(realk) :: p10, nul
       integer(4)  :: stat
 
@@ -680,9 +681,10 @@ module cc_tools_module
          tred=la*lg
       endif
 
-      laleg_req = tred/2+1
+      laleg_req = tred/2
       !laleg_req = 1
       !laleg_req = tred
+      w0=0.0E0_realk
 
       select case(s)
       case(4,3)
@@ -691,7 +693,9 @@ module cc_tools_module
          print *,"FOOOOO TEST"
          ! initialize the CUBLAS context
          stat = cublasCreate_v2(cub_h)
-         stat = acc_set_cuda_stream(acc_h,cub_h)
+         !stat = acc_set_cuda_stream(acc_h,cub_h)
+         dummy47 = acc_get_cuda_stream(acc_async_sync)
+         stat = cublasSetStream_v2(cub_h, dummy47)
 #endif
 
          !acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr),nv,no,nb,nor,nvr)
@@ -710,15 +714,34 @@ module cc_tools_module
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
-            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
+            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
+            call print_norm(w0(nb*laleg*nv+1:),nb*laleg*nv,"w0 ref")
 
-            !$acc data copyin(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv))
+            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w0(1:nb*laleg*nv))
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
+            !!$acc host_data use_device(w2,yv,w0)
+            !      stat = cublasDgemm_v2(cub_h,int(1,kind=4),int(0,kind=4),int(nb*laleg,kind=4),int(nv,kind=4),int(nb,kind=4),&
+            !                      & p10,c_loc(w2),int(nb,kind=4),c_loc(yv),int(nb,kind=4),&
+            !                      & nul,c_loc(w0),int(nb*laleg,kind=4))
+            !!$acc end host_data
             !$acc end data 
 
+            nerrors=0
+            do i=1, nb*laleg*nv
+              if (ABS(w0(i)-w0(nb*laleg*nv+i)).gt.1E-5)then
+                if (nerrors<10) then
+                 print *, i, w0(i), w0(i+nb*laleg*nv)
+                endif
+              nerrors = nerrors+1
+              endif
+            enddo
+            print *, nerrors, "number of errors"
+
+            print *, nb*laleg, 2**31-1, "nb*laleg printout"
+            
             !call print_norm(w2,nb*laleg*nb,"w2 after:")
             !call print_norm(yv,nb*nv,"yv after:")
-            call print_norm(w0,nb*laleg*nv,"w0 after")
+            call print_norm(w0,nb*laleg*nv,"w0 acc")
 
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
             call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
