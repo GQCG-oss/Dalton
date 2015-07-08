@@ -2888,6 +2888,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_alloc(FullAlphaCD, w1size)
      ELSE
+        IF(MemDebugPrint)print*,'STD: Before a FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call stats_globalmem(6)
         call mem_alloc(FullAlphaCD,w1size)
      ENDIF
 
@@ -2906,6 +2908,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         cpointer = c_loc(w0(1))
         call c_f_pointer(cpointer,setting%output%ResultMat,[MaxN,1,n1,n2,nthreads])
      ELSE
+        IF(MemDebugPrint)print*,'STD: Before a ResultMat of size=',MaxN*n1*n2*nthreads
+        IF(MemDebugPrint)call stats_globalmem(6)
         call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads)
      ENDIF
      n8 = MaxN*n1*n2*nthreads
@@ -2942,6 +2946,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_alloc(FullAlphaCD, w1size)
      ELSE
+        IF(MemDebugPrint)print*,'w1size=',dim1,'*',n1,'*',n2,'=',dim1*n1*n2
+        IF(MemDebugPrint)print*,'STD: Before b FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call stats_globalmem(6)
         call mem_alloc(FullAlphaCD,w1size)
      ENDIF
      call ls_dzero8(FullAlphaCD,w1size)

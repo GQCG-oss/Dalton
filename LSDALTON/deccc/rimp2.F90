@@ -837,10 +837,14 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                 &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
         endif
         IF(PerformTiling)THEN 
+           IF(MemInGBCollected.LT.(2*noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk)THEN
+              call lsquit('RIMP2: Not enough memory for tiling in rimp2',-1)
+           ENDIF
            !When Performing tiling we need 3 intermediates of
-           !nsize1 = noccOut*noccOut*nvirt*nvirt
-           !nsize2 = nocc*noccOut*nvirt*MaxVirtSize
+           !nsize1 = noccOut*noccOut*nvirt*nvirt        (tocc2)
+           !nsize2 = nocc*noccOut*nvirt*MaxVirtSize     
            !nsize3 = noccOut*noccOut*nvirt*MaxVirtSize
+           !followed by a transformation using tocc2 and tocc3 of (noccOut*noccOut*nvirt*nvirt)
            !resulting in Memreq = noccOut*noccOut*nvirt*nvirt+(nocc+noccOut)*noccOut*nvirt*MaxVirtSize
            !MaxVirtSize = (Memreq-noccOut*noccOut*nvirt*nvirt)/((nocc+noccOut)*noccOut*nvirt)
            MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-(noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk) &
