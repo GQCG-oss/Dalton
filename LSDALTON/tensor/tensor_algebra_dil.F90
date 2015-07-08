@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/06/22 (started 2014/09/01).
+!REVISION: 2015/07/08 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -129,7 +129,7 @@
 #else
         integer(INTD), private:: DIL_ALLOC_TYPE=DIL_ALLOC_BASIC         !default allocator type for communication buffers
 #endif
-        integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device (defaults to screen)
+        integer(INTD), private:: CONS_OUT=6,CONS_OUT_SAVED=0            !console output device for internal use (defaults to screen)
         integer(INTD), public:: DIL_CONS_OUT=6                          !console output device for external use (defaults to screen)
         logical, private:: VERBOSE=.true.                               !verbosity (for errors)
 #ifdef DIL_DEBUG_ON
@@ -179,14 +179,17 @@
          integer(INTD), private:: rank                                !tensor rank (number of dimensions)
          integer(INTD), private:: dims(1:MAX_TENSOR_RANK)             !tensor dimension extents: dims(1:rank)
          integer(INTD), private:: base(1:MAX_TENSOR_RANK)             !offsets specifying a subtensor (similar to cspec%bases)
-!         real(tensor_dp), pointer, contiguous, private:: elems(:)=>NULL() !tensor elements (1:*)
-         real(tensor_dp), pointer, contiguous :: elems(:)=>NULL() !tensor elements (1:*)
+#ifndef VAR_PGF90
+         real(realk), pointer, contiguous, private:: elems(:)=>NULL() !tensor elements (1:*)
+#else
+         real(realk), pointer, contiguous:: elems(:)=>NULL()          !tensor elements (1:*)
+#endif
         end type tens_loc_t
  !Tensor argument:
         type, private:: tens_arg_t
          type(tens_loc_t), private:: tens_loc                  !description of a local tensor
          type(tensor), pointer, private:: tens_distr_p=>NULL() !description of a distributed tensor (pointer)
-         character(1), private:: store_type=' '                !storage type: {"L":local; "D":distributed}
+         character(1), private:: store_type=' '                !tensor argument storage type: {"L":local; "D":distributed}
         end type tens_arg_t
  !User-level complete tensor contraction specification:
         type, public:: dil_tens_contr_t
@@ -198,13 +201,13 @@
          real(tensor_dp), private:: alpha              !multiplication prefactor (can be explicit)
          real(tensor_dp), private:: beta               !scaling factor for the destination tensor (always implicit)
          integer(INTD), private:: num_async        !number of asynchronous outstanding MPI uploads left after the contraction
-         type(rank_win_t), private:: list_async(1:MAX_TILES_PER_PART)  !asynchronous outstanding MPI uploads left after the contraction
-#ifdef VAR_PGF90
-         real(tensor_dp), pointer, contiguous :: buffer(:)=>NULL() !work buffer
+         type(rank_win_t), private:: list_async(1:MAX_TILES_PER_PART) !asynchronous outstanding MPI uploads left after the contraction
+#ifndef VAR_PGF90
+         real(realk), pointer, contiguous, private:: buffer(:)=>NULL() !work buffer
 #else
-         real(tensor_dp), pointer, contiguous, private:: buffer(:)=>NULL() !work buffer
+         real(realk), pointer, contiguous:: buffer(:)=>NULL() !work buffer
 #endif
-         integer(INTD), private:: alloc_type=DIL_ALLOC_NOT             !allocation type for the work buffer
+         integer(INTD), private:: alloc_type=DIL_ALLOC_NOT !allocation type for the work buffer
         end type dil_tens_contr_t
  !Subtensor part specification:
         type, public:: subtens_t
@@ -218,7 +221,7 @@
          type(subtens_t), private:: left_arg          !left subtensor specification
          type(subtens_t), private:: right_arg         !right subtensor specification
          real(8), private:: prefac=1d0                !prefactor
-         integer(INTL), private:: flops               !number of Flops in the task
+         real(8), private:: flops                     !number of Flops in the task
          integer(INTD), private:: dev_kind            !device kind
          integer(INTD), private:: dev_id              !device id
          integer(INTD), private:: task_stat=TASK_NULL !task status (negative means error)
@@ -236,10 +239,10 @@
  !Argument buffer:
         type, private:: arg_buf_t
          integer(INTL), private:: buf_vol=0_INTL                        !buffer volume (number of elements)
-#ifdef VAR_PGF90
-         real(tensor_dp), pointer, contiguous :: buf_ptr(:)=>NULL() !buffer pointer
+#ifndef VAR_PGF90
+         real(realk), pointer, contiguous, private:: buf_ptr(:)=>NULL() !buffer pointer
 #else
-         real(tensor_dp), pointer, contiguous, private:: buf_ptr(:)=>NULL() !buffer pointer
+         real(realk), pointer, contiguous:: buf_ptr(:)=>NULL()          !buffer pointer
 #endif
         end type arg_buf_t
  !Device buffers:
@@ -521,14 +524,17 @@
 !------------------------------------------------------------------------------------------------------------
         subroutine dil_tens_arg_set(tens_arg,ttype,ierr,tens_rank,tens_dims,tens_elems,tens_bases,tens_distr) !SERIAL
 !This subroutine sets up a tensor argument: either "LOCAL" or "DISTRIBUTED".
+!For locally stored tensors, optional <base offsets> specify offsets in each
+!tensor dimension from the index numeration base IND_NUM_START, thus saying
+!that the local tensor is a tensor slice beginning from some point.
         implicit none
         type(tens_arg_t), intent(inout):: tens_arg                  !inout: tensor argument
         character(1), intent(in):: ttype                            !in: tensor storage type: {"L","D"}: local or distributed
         integer(INTD), intent(inout):: ierr                         !out: error code (0:success)
         integer(INTD), intent(in), optional:: tens_rank             !in: tensor rank (for local tensors only)
         integer(INTD), intent(in), optional:: tens_dims(1:*)        !in: tensor dimension extents (for local tensors only)
-        real(tensor_dp), intent(in), target, optional:: tens_elems(1:*) !in: tensor elements (for local tensors only)
-        integer(INTD), intent(in), optional:: tens_bases(1:*)       !in: base offsets (if a subtensor)
+        real(realk), intent(in), target, optional:: tens_elems(1:*) !in: tensor elements (for local tensors only)
+        integer(INTD), intent(in), optional:: tens_bases(1:*)       !in: base offsets (if a subtensor): defaults to zeros
         type(tensor), intent(in), target, optional:: tens_distr     !in: distributed tensor instance (for distributed tensors only)
         integer(INTD):: i
         integer(INTL):: vol
@@ -601,7 +607,7 @@
 ! (d) optionally, <tens_bases> may contain positive values specifying
 !     offsets in numeration for each tensor dimension, thus allowing
 !     local storage of tensor slices (incomplete tensors). These offsets
-!     are added to IND_NUM_START.
+!     are added to IND_NUM_START (the index numeration bottom).
         implicit none
         type(dil_tens_contr_t), intent(inout), target:: tcontr      !inout: full tensor contraction specification
         character(1), intent(in):: arg                              !in: argument selector: {'d','l','r'}
@@ -678,7 +684,7 @@
         implicit none
         type(dil_tens_contr_t), intent(in):: tcontr   !in: full tensor contraction specification
         integer(INTD), intent(inout):: ierr           !out: error code (0:success)
-        real(8), intent(in), optional:: scale         !in: scaling factor
+        real(8), intent(in), optional:: scale         !in: scaling factor (>= SCALE_FOR_SURE)
         integer(INTD), intent(in), optional:: num_dev !in: number of distinct computing devices (multi-core CPU is a single device)
 !----------------------------------------------
         real(8), parameter:: SCALE_FOR_SURE=2d0 !overestimate the min buf size to be sure
@@ -689,7 +695,7 @@
 
         ierr=0; dil_get_min_buf_size=0_INTL
         if(present(scale)) then; scl=max(scale,SCALE_FOR_SURE); else; scl=SCALE_FOR_SURE; endif
-        if(present(num_dev)) then; ndev=int(num_dev,INTL); else; ndev=1_INTL; endif
+        if(present(num_dev)) then; ndev=int(num_dev,INTL); else; ndev=1_INTL; endif !default is a single (multi-core) CPU
         if(ndev.ge.1.and.ndev.le.MAX_DEVS) then
          sz=dil_get_arg_tile_vol(tcontr%dest_arg,i); if(i.ne.0) then; ierr=1; return; endif
          dil_get_min_buf_size=max(dil_get_min_buf_size,sz)
@@ -708,11 +714,11 @@
         subroutine dil_prepare_buffer(tcontr,mem_lim,ierr,ext_buf,alloc_type) !SERIAL
 !This subroutine prepares an internal work buffer for a giving tensor contraction.
         implicit none
-        type(dil_tens_contr_t), intent(inout):: tcontr           !inout: full tensor contraction specification
-        integer(INTL), intent(in):: mem_lim                      !in: size of the buffer in bytes
-        integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
-        real(tensor_dp), intent(in), target, optional:: ext_buf(1:)  !in: external buffer space
-        integer(INTD), intent(in), optional:: alloc_type         !in: allocation type
+        type(dil_tens_contr_t), intent(inout):: tcontr                       !inout: full tensor contraction specification
+        integer(INTL), intent(in):: mem_lim                                  !in: size of the buffer in bytes
+        integer(INTD), intent(inout):: ierr                                  !out: error code (0:success)
+        real(realk), intent(in), target, contiguous, optional:: ext_buf(1:)  !in: external buffer space
+        integer(INTD), intent(in), optional:: alloc_type                     !in: allocation type
         integer(INTL):: nelems,sreal
         real(tensor_dp):: val
 
@@ -739,7 +745,7 @@
           ierr=1
          endif
         else
-         if(VERBOSE) write(CONS_OUT,'("#ERROR(dil_prepare_buffer): Work buffer deallocation failed: ",i11)') ierr
+         if(VERBOSE) write(CONS_OUT,'("#ERROR(DIL::dil_prepare_buffer): Work buffer deallocation failed: ",i11)') ierr
          ierr=2
         endif
         return
@@ -930,6 +936,7 @@
         end function dil_subtensor_vol
 !----------------------------------------------------
         subroutine dil_subtensor_copy(obji,objo,ierr) !SERIAL
+!Clones a subtensor.
         implicit none
         type(subtens_t), intent(in):: obji            !in: original object
         type(subtens_t), intent(out):: objo           !out: clone
@@ -1014,14 +1021,15 @@
         type(contr_spec_t), intent(in):: cspec         !in: general (sub)tensor contraction specification
         type(contr_task_t), intent(inout):: contr_task !inout: specific (sub)tensor contraction task
         integer(INTD), intent(inout):: ierr            !out: error code (0:success)
-        integer(INTL):: fl
+        real(8), parameter:: SCALE_FMA=2d0 !multiplication + addition are considered as two Flops (with or without FMA)
+        real(8):: fl
         integer(INTD):: i,j,n
 
-        ierr=0; fl=1_INTL
+        ierr=0; fl=SCALE_FMA
         n=contr_task%left_arg%rank
         if(n.ge.0) then
          do i=1,n
-          fl=fl*int(contr_task%left_arg%dims(i),INTL) !count all dimensions of the left tensor argument (contr + left)
+          fl=fl*real(contr_task%left_arg%dims(i),8) !count all dimensions of the left tensor argument (contr + left)
          enddo
         else
          ierr=1; return
@@ -1031,12 +1039,12 @@
          do i=1,n
           j=cspec%rprmn(i)
           if(j.ge.1.and.j.le.n) then
-           if(j.gt.cspec%ndims_contr) fl=fl*int(contr_task%right_arg%dims(i),INTL) !count only uncontracted dims of the right tensor
+           if(j.gt.cspec%ndims_contr) fl=fl*real(contr_task%right_arg%dims(i),8) !count only uncontracted dims of the right tensor
           else
            ierr=2; return
           endif
          enddo
-         contr_task%flops=fl !number of Flops required to perform this contraction task
+         contr_task%flops=fl !number of Flops required to perform this tensor contraction task
          contr_task%task_stat=TASK_SET
         else
          ierr=3; return
@@ -1045,6 +1053,7 @@
         end subroutine dil_contr_task_set_flops
 !-----------------------------------------------------
         subroutine dil_contr_task_copy(obji,objo,ierr) !SERIAL
+!Clones a tensor contraction task.
         implicit none
         type(contr_task_t), intent(in):: obji         !in: original object
         type(contr_task_t), intent(out):: objo        !out: clone
@@ -1117,10 +1126,12 @@
         end subroutine dil_contr_task_list_destroy
 !-------------------------------------------------------------------
         subroutine dil_contr_task_list_create(task_list,length,ierr) !SERIAL
-!This subroutine creates a tensor contraction tasks list.
+!This subroutine allocates a tensor contraction tasks list.
+!If <task_list> is already allocated and its length is at least <length>,
+!it will be simply reused.
         implicit none
-        type(contr_task_list_t), intent(inout):: task_list !out: tensor contraction task list
-        integer(INTD), intent(in):: length                 !in: length of the list
+        type(contr_task_list_t), intent(inout):: task_list !inout: tensor contraction task list
+        integer(INTD), intent(in):: length                 !in: required length of the list
         integer(INTD), intent(inout):: ierr                !out: error code (0:success)
         integer(INTD):: i
 
@@ -1330,13 +1341,17 @@
         endif
         return
         end subroutine dil_arg_buf_clean
-!------------------------------------------------
-        subroutine dil_set_alloc_type(alloc_type) !SERIAL
+!-----------------------------------------------------
+        subroutine dil_set_alloc_type(alloc_type,ierr) !SERIAL
         implicit none
-        integer(INTD), intent(in):: alloc_type !in: Allocation type (see DIL_ALLOC_XXX parameters on top)
+        integer(INTD), intent(in):: alloc_type        !in: allocation type (see DIL_ALLOC_XXX parameters on top)
+        integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
+        if(present(ierr)) ierr=0
         select case(alloc_type)
         case(DIL_ALLOC_BASIC,DIL_ALLOC_PINNED,DIL_ALLOC_MPI) !only these are allowed
          DIL_ALLOC_TYPE=alloc_type
+        case default
+         if(present(ierr)) ierr=1
         end select
         return
         end subroutine dil_set_alloc_type
@@ -1438,7 +1453,7 @@
         end subroutine cpu_ptr_free_r
 !--------------------------------------------------
         integer(INTD) function my_mpi_size(my_comm) !SERIAL
-!Returns the rank of an MPI process.
+!Returns the size of an MPI communicator (negative will mean an error).
         implicit none
         integer(tensor_mpi_kind), intent(in), optional:: my_comm !in: MPI communicator
         integer(tensor_mpi_kind):: i,ierr
@@ -1453,7 +1468,7 @@
         end function my_mpi_size
 !--------------------------------------------------
         integer(INTD) function my_mpi_rank(my_comm) !SERIAL
-!Returns the rank of an MPI process.
+!Returns the rank of an MPI process (negative will mean an error).
         implicit none
         integer(tensor_mpi_kind), intent(in), optional:: my_comm !in: MPI communicator
         integer(tensor_mpi_kind):: i,ierr
@@ -1658,7 +1673,7 @@
         end subroutine merge_sort_real8
 !---------------------------------------------------
 	subroutine multord_i(n,nl,mov,ip1,iv,v,ierr) !SERIAL
-!Linear-scaling ascending-order sort for key-value pairs where
+!My linear-scaling ascending-order sort for key-value pairs where
 !the key is an integer multi-index and the value is an integer.
 !Array <ip1(1:n)> contains key index priorities for sorting and
 !the first encountered zero will terminate the sorting, thus enabling
@@ -1939,8 +1954,8 @@
 !This subroutine prints a string str(1:*) into file#FH
         implicit none
         character(*), intent(in):: str            !in: string to print
-        integer(INTD), intent(in), optional:: fh  !file number (6: screen)
-        logical, intent(in), optional:: adv       !carriage return control (.false. - no carriage return)
+        integer(INTD), intent(in), optional:: fh  !in: file number (6: screen)
+        logical, intent(in), optional:: adv       !in: carriage return control (.false. - no carriage return)
         character(32):: frm
         integer(INTD):: l,k,od
 
@@ -4012,7 +4027,8 @@
         logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
         logical, parameter:: ARGS_REUSE=.true.        !argument reuse in tensor contractions
         logical, parameter:: TASK_RESHUFFLE=.true.    !task reshuffling (to reduce the number of MPI collisions)
-!-------------------------------------------------
+        real(8), parameter:: SCALE_FMA=2d0            !multiplication + addition are considered as two Flops w/ or w/o FMA
+!-----------------------------------------
         integer(INTD):: i,j,k,l,m,n
         type(dev_buf_t):: buf(0:MAX_DEVS-1)         !Host buffers for all devices (mapped to the Host buffer space)
         type(contr_task_list_t), target:: task_list !`Make it global threadsafe to allow reuse and avoid unnecessary allocations
@@ -4311,15 +4327,17 @@
          next_load=.false.; prev_store=.false.; args_here=.false.; err_curr=.false.; err_prev=.false.; err_next=.false.
          tloop: do while(task_prev(dev).ge.0_INTD) !loop over the tensor contraction tasks
           task_next(dev)=dil_get_next_task(DEV_HOST_CPU,0_INTD)
+          arg_reuse=dil_mark_arg_reuse(task_curr(dev),task_prev(dev)) !determine arguments to be reused from the previous task
+          arg_keep=dil_mark_arg_reuse(task_curr(dev),task_next(dev))  !determine arguments to be reused in the next task
           if(DIL_DEBUG) then !debug begin
-           write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): DEVICE: ",i2,": Tasks(c,p,n):",3(1x,l1,1x,i7))')&
-           &dev,(.not.err_curr),task_curr(dev),(.not.err_prev),task_prev(dev),(.not.err_next),task_next(dev) !debug
+           write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe): DEVICE: ",i2'//&
+           &',": Tasks(c,p,n):",3(1x,l1,1x,i5),": ",A3,1x,A3)') dev,(.not.err_curr),task_curr(dev),&
+           &(.not.err_prev),task_prev(dev),(.not.err_next),task_next(dev),arg_reuse,arg_keep !debug
            if(task_curr(dev).ge.1.and.task_curr(dev).le.task_list%num_tasks)&
            &call dil_contr_task_print(cspec,task_list%contr_tasks(task_curr(dev))) !debug
           endif !debug end
-          arg_reuse=dil_mark_arg_reuse(task_curr(dev),task_prev(dev)) !determine arguments to be reused from the previous task
-          arg_keep=dil_mark_arg_reuse(task_curr(dev),task_next(dev))  !determine arguments to be reused in the next task
-          if(first_task) then
+          if(first_task) then !arg_load for the very first task is formally coming from the previous iteration
+           arg_reuse=arg_keep; arg_keep='NNN' !save arg_keep in arg_use temporarily
            if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): First task arg load initiation started ... ")')
            tms=thread_wtime()
            call dil_args_load_start(task_list%contr_tasks(task_curr(dev)),i) !non-blocking
@@ -4327,6 +4345,7 @@
            next_load=.true.; first_task=.false.
            tm=thread_wtime(tms)
            if(DIL_DEBUG) write(CONS_OUT,'(1x,"Done (",l1,"): ",F10.4," s")') (.not.err_curr),tm
+           arg_keep=arg_reuse; arg_reuse='NNN' !restore the proper arg_keep
           endif
           if(next_load) then
            if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(DIL): Current task arg load completion started ... ")')
@@ -4406,7 +4425,7 @@
            prev_store=.true.; args_here=.false.
           endif
           if(task_curr(dev).ge.1.and.task_curr(dev).le.task_list%num_tasks) then !count Flops
-           tc_flops=tc_flops+dble(task_list%contr_tasks(task_curr(dev))%flops)
+           tc_flops=tc_flops+task_list%contr_tasks(task_curr(dev))%flops
           endif
           task_prev(dev)=task_curr(dev); task_curr(dev)=task_next(dev)
           err_prev=err_curr; err_curr=err_next; err_next=.false.
@@ -4416,8 +4435,8 @@
         endif
         tm=thread_wtime(tmb)
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Done in ",F10.4'&
-        &//'," s ( ",F15.4," GFlops/s VS MM ",F15.4," GFlops/s). Ok")') impir,tm,tc_flops/(tm*1024d0*1024d0*1024d0),&
-        &mm_flops/(tmm*1024d0*1024d0*1024d0) !debug
+        &//'," s ( ",F15.4," VS MM ",F15.4," GFlop/s: ",F4.2 "Eff). Ok")') impir,tm,tc_flops/(tm*1024d0*1024d0*1024d0),&
+        &mm_flops/(tmm*1024d0*1024d0*1024d0),tc_flops*tmm/(mm_flops*tm) !debug
         call cleanup(0_INTD)
         return
 
@@ -4434,19 +4453,19 @@
          errc=0
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
 !         if((darg%store_type.eq.'d'.or.darg%store_type.eq.'D').and.(.not.cspec%dest_zero)) then !distributed tensors only
-!          if(arg_reuse(1:1).ne.'R') then
+!          if(arg_keep(1:1).ne.'R') then
 !           call dil_tensor_prefetch_start(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(1,jdev)),je,win_lck)
 !           if(je.ne.0) then; errc=1; return; endif
 !          endif
 !         endif
          if(larg%store_type.eq.'d'.or.larg%store_type.eq.'D') then !distributed tensors only
-          if(arg_reuse(2:2).ne.'R') then
+          if(arg_keep(2:2).ne.'R') then
            call dil_tensor_prefetch_start(larg%tens_distr_p,tsk%left_arg,buf(jdev)%arg_buf(buf_conf(2,jdev)),je,win_lck)
            if(je.ne.0) then; errc=2; return; endif
           endif
          endif
          if(rarg%store_type.eq.'d'.or.rarg%store_type.eq.'D') then !distributed tensors only
-          if(arg_reuse(3:3).ne.'R') then
+          if(arg_keep(3:3).ne.'R') then
            call dil_tensor_prefetch_start(rarg%tens_distr_p,tsk%right_arg,buf(jdev)%arg_buf(buf_conf(3,jdev)),je,win_lck)
            if(je.ne.0) then; errc=3; return; endif
           endif
@@ -4516,7 +4535,7 @@
          jdev=dil_dev_num(tsk%dev_kind,tsk%dev_id)
          if(darg%store_type.eq.'d'.or.darg%store_type.eq.'D') then !distributed tensors only
           if(task_curr(jdev).ge.0.or.(.not.async)) then !not the last upload for this device (finalize it)
-           if(arg_keep(1:1).ne.'R') then
+           if(arg_reuse(1:1).ne.'R') then
             call dil_tensor_upload_complete(darg%tens_distr_p,tsk%dest_arg,buf(jdev)%arg_buf(buf_conf(7,jdev)),je,win_lck)
            endif
           else !last upload for this device (asynchronous)
@@ -4717,7 +4736,7 @@
           lcd=lcd*tsk%left_arg%dims(jp)
          enddo
          if(DIL_DEBUG) write(CONS_OUT,'(2x,"#DEBUG(DIL)[",i2,"]: Matrix dims:",3(1x,i11))',ADVANCE='NO') impir,lld,lrd,lcd
-         mm_flops=mm_flops+dble(lld)*dble(lrd)*dble(lcd) !count Matrix Multiplication Flops
+         mm_flops=mm_flops+dble(lld)*dble(lrd)*dble(lcd)*SCALE_FMA !count Matrix Multiplication Flops
          if(lld*lrd.gt.buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_vol) then; errc=1; return; endif !trap
          if(lcd*lld.gt.buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_vol) then; errc=2; return; endif !trap
          if(lcd*lrd.gt.buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_vol) then; errc=3; return; endif !trap
@@ -4738,7 +4757,7 @@
          endif
          if(DIL_DEBUG) then
           jtm=thread_wtime(jtb)
-          write(CONS_OUT,'(": ",F10.4," GFlops/s")') (dble(lld)*dble(lrd)*dble(lcd))/(jtm*1024d0*1024d0*1024d0)
+          write(CONS_OUT,'(": ",F10.4," GFlop/s")') (dble(lld)*dble(lrd)*dble(lcd)*SCALE_FMA)/(jtm*1024d0*1024d0*1024d0)
          endif
          return
          end subroutine dil_mm_compute
@@ -5246,12 +5265,12 @@
         logical function dil_mm_pipe_efficient(ll,lr,lc,comp_bandwidth,data_bandwidth,data_latency) !SERIAL
 !Given the tile dimensions, this function decides whether a matrix multiplication can be efficiently pipelined,
 !that is, whether a matrix multiplication with the given tile dimensions can be efficiently
-!pipelined on a given architecture (data transfer latency/bandwidth, PU Flops/s).
+!pipelined on a given architecture (data transfer latency/bandwidth, PU Flop/s).
 !Matrix tile multiplication: D(1:ll,1:lr)+=L(1:lc,1:ll)*R(1:lc,1:lr)
 !No argument validity checks!
         implicit none
         integer(INTL), intent(in):: ll,lr,lc !in: matrix tile dimensions (left, right, contracted)
-        real(8), intent(in):: comp_bandwidth !in: PU computational throughput (Flops/s)
+        real(8), intent(in):: comp_bandwidth !in: PU computational throughput (Flop/s)
         real(8), intent(in):: data_bandwidth !in: data transfer bandwidth (Words/s)
         real(8), intent(in):: data_latency   !in: data transfer latency (s)
         real(8), parameter:: much_more=5d0   !defines what "much more" exactly means
