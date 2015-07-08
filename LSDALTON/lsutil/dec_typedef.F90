@@ -393,6 +393,9 @@ module dec_typedef_module
      logical :: RIMP2_tiling
      !> Use lowdin decomposition
      logical :: RIMP2_lowdin
+     !> Use laplace transform in RIMP2 code
+     logical :: RIMP2_Laplace
+
      !> MPI group is split if #nodes > O*V/RIMPIsplit
      integer :: RIMPIsplit
 
