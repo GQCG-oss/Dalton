@@ -103,8 +103,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
 
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
-    #set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
@@ -113,8 +112,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     endif()
     if(ENABLE_OMP) 
         set(CMAKE_Fortran_FLAGS
-            #"${CMAKE_Fortran_FLAGS} -mp -Mconcur"
-            "${CMAKE_Fortran_FLAGS} -mp "
+            "${CMAKE_Fortran_FLAGS} -mp -Mconcur"
             )
     endif()
 # WARNING you may need to add -Mcuda=5.5 
