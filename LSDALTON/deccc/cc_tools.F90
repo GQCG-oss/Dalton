@@ -23,10 +23,12 @@ module cc_tools_module
    use dec_typedef_module
    use reorder_frontend_module
    use tensor_interface_module
+   use gpu_interfaces
 
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
    end interface get_tpl_and_tmi
+
    
    abstract interface
       function ab_eq_c(a,b) result(c)
@@ -37,6 +39,18 @@ module cc_tools_module
          real(realk) :: c
       end function ab_eq_c
    end interface
+!   interface
+!    integer (C_INT) function cublasDgemm_v2(handle,transa,transb,m,n,k,alpha,A,&
+!                                    & lda,B,ldb,beta,C,ldc) bind(C,name="cublasDgemm_v2")
+!      use iso_c_binding
+!      implicit none
+!      type (C_PTR), value :: handle
+!      type (C_PTR), value :: A, B, C
+!      integer (C_INT), value :: m, n, k, lda, ldb, ldc
+!      integer (C_INT), value :: transa, transb
+!      real (C_DOUBLE) :: alpha, beta
+!    end function cublasDgemm_v2
+! end interface
    
    contains
 
@@ -596,6 +610,25 @@ module cc_tools_module
       real(realk), pointer :: buf(:)
       integer(kind=8) :: nbuf
       integer :: faleg,laleg,laleg_req
+#ifdef VAR_OPENACC
+      integer(kind=acc_handle_kind) :: acc_h
+#ifdef VAR_PGF90
+    integer*4, external :: acc_set_cuda_stream
+#endif
+#else
+      integer                       :: acc_h
+#endif
+      type(c_ptr)                   :: cub_h
+      real(realk) :: p10, nul
+      integer(4)  :: stat
+
+      acc_h = 0
+      cub_h = c_null_ptr
+
+      p10 = 1.0E0_realk
+      nul = 0.0E0_realk
+
+      stat = 0
 
       call time_start_phase(PHASE_WORK)
 
@@ -647,36 +680,72 @@ module cc_tools_module
          tred=la*lg
       endif
 
-      !laleg_req = tred/2+1
+      laleg_req = tred/2+1
       !laleg_req = 1
-      laleg_req = tred
+      !laleg_req = tred
 
       select case(s)
       case(4,3)
+
+#ifdef VAR_CUBLAS
+         print *,"FOOOOO TEST"
+         ! initialize the CUBLAS context
+         stat = cublasCreate_v2(cub_h)
+         stat = acc_set_cuda_stream(acc_h,cub_h)
+#endif
+
+         !acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr),nv,no,nb,nor,nvr)
+         !$acc data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr))
+
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
-         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
+
+            call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
+
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
+
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
-            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
+
+            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
+
+            !$acc data copyin(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv))
+            call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
+            !$acc end data 
+
+            !call print_norm(w2,nb*laleg*nb,"w2 after:")
+            !call print_norm(yv,nb*nv,"yv after:")
+            call print_norm(w0,nb*laleg*nv,"w0 after")
+
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            call dgemm('t','n',laleg*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*laleg)
+            call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
             call get_I_cged(w0,w2,laleg,nv)
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
-            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,0.0E0_realk,w3(faleg),tred)
+            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
          enddo
+         !$acc end data
+
+#ifdef VAR_CUBLAS
+         ! Destroy the CUBLAS context
+         stat = cublasDestroy_v2 (cub_h)
+#endif
+
+         !acc exit data delete(tpl%elm1(1:nb*nv))
+         !acc enter data copyin(tmi%elm1)
 
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
-         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
+
+            call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
+
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
+
             !(w2):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
             !(w0):I- [delta alpha<=gamma c] = (w2):I- [beta delta alpha<=gamma] * Lambda^h[beta c]
@@ -689,6 +758,7 @@ module cc_tools_module
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+faleg),tred)
          enddo
 
+         !acc exit data delete(yv,tmi%elm1,nv,no,nb,nor,nvr)
       case(2)
 
          if( s0 - tred*nvr > s2 - nor*nvr)then
