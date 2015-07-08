@@ -978,9 +978,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
-     integer:: scheme_tmp=1
+     integer:: sch1=1,sch2=1,sch3=1,sch4=1,sch5=1
 #else
-     integer:: scheme_tmp=2
+     integer:: sch1=2,sch2=2,sch3=2,sch4=2,sch5=2
 #endif
 
      !init timing variables
@@ -1190,7 +1190,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 #ifdef DIL_ACTIVE
-     scheme=scheme_tmp !```DIL: remove
+     scheme=1 !```DIL: remove
 #endif
      if(scheme==1) then
         if(.not.alloc_in_dummy) call lsquit('ERROR(ccsd_residual_integral_driven): DIL Scheme 1 needs MPI-3!',-1)
@@ -1244,6 +1244,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      hstatus = 80
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
+
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
      if(DIL_DEBUG) then !`DIL
@@ -1468,7 +1469,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !get u2 in pdm or local
 #ifdef DIL_ACTIVE
-     scheme=scheme_tmp !```DIL: remove
+     scheme=1 !```DIL: remove
 #endif
      if(scheme==2.or.scheme==1)then
 
@@ -1571,7 +1572,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      !get the t+ and t- for the Kobayshi-like B2 term
 #ifdef DIL_ACTIVE
-     scheme=scheme_tmp !```DIL: remove
+     scheme=2 !```DIL: remove
 #endif
      if(scheme==1.or.scheme==2) then
         write(def_atype,'(A4)')'TDAR'
@@ -1819,7 +1820,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(.not.DECinfo%ccsolverskip)then
            !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
 #ifdef DIL_ACTIVE
-           scheme=scheme_tmp !``DIL: remove
+           scheme=sch1 !``DIL: remove
 #endif
            if(scheme==1) then !`DIL: Tensor contraction 1
 #ifdef DIL_ACTIVE
@@ -1847,7 +1848,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call dil_set_tens_contr_args(tch0,'l',errc,tens_rank,tens_dims,yv)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: LA: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Left arg set failed!',-1)
-              tens_rank=4; tens_dims(1:tens_rank)=(/no,lg,nv,no/); tens_bases(1:tens_rank)=(/0,fg-1_INTD,0,0/)
+              tens_rank=4; tens_dims(1:tens_rank)=(/no,lg,nv,no/); tens_bases(1:tens_rank)=(/0,fg-1,0,0/)
               call dil_set_tens_contr_args(tch0,'d',errc,tens_rank,tens_dims,uigcj%d,tens_bases)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: DA: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Destination arg set failed!',-1)
@@ -1930,6 +1931,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 #endif
 #endif
+
         if(.not.DECinfo%ccsolverskip)then
 
         !u[k gamma  c j] * Lambda^p [alpha j] ^T = u [k gamma c alpha]
@@ -2008,7 +2010,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call lsmpi_poke()
            !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
 #ifdef DIL_ACTIVE
-           scheme=scheme_tmp !``DIL: remove
+           scheme=sch2 !``DIL: remove
 #endif
            if(scheme==4)then
               call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3%d,la,1.0E0_realk,gvvooa%elm1,nv)
@@ -2079,7 +2081,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
 #ifdef DIL_ACTIVE
-           scheme=scheme_tmp !``DIL: remove
+           scheme=sch3 !``DIL: remove
 #endif
            if(scheme==4)then
               call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1%d,la,1.0E0_realk,gvoova%elm1,nv)
@@ -2174,7 +2176,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !and the difference between first element of alpha batch and last element
               !of gamma batch
 #ifdef DIL_ACTIVE
-              scheme=scheme_tmp !```DIL: remove
+              scheme=1 !```DIL: remove
 #endif
               if(scheme /= 1) then
                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
@@ -2210,7 +2212,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call lsmpi_poke()
         if( Ccmodel > MODEL_CC2 )then
 #ifdef DIL_ACTIVE
-           scheme=scheme_tmp !``DIL: remove
+           scheme=sch4 !``DIL: remove
 #endif
            select case(scheme)
            case(4,3)
@@ -2288,7 +2290,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         ! Omega += Lambda^p[alpha a]^T (w3%d):I[b i j alpha]^T
 #ifdef DIL_ACTIVE
-        scheme=scheme_tmp !``DIL: remove
+        scheme=sch5 !``DIL: remove
 #endif
         if(scheme==2)then
 #ifdef VAR_MPI
@@ -2362,6 +2364,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 #endif
+
      if(DECinfo%ccsolverskip)then
         call random_number(w0%d)
         call random_number(w1%d)
@@ -2431,6 +2434,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      else
         call mem_dealloc(uigcj)
      endif
+
 #ifdef DIL_ACTIVE
      scheme=2 !```DIL: remove
 #endif
@@ -2450,7 +2454,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=2 !``DIL: remove
 #endif
-
 
 
 #ifdef VAR_MPI
