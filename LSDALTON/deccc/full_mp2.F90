@@ -302,6 +302,24 @@ contains
        write(DECinfo%output,*)'sizetmp2             ',sizetmp2,' = ',sizetmp2*8.0E-9_realk,' GB'
        write(DECinfo%output,*)'sizetmp3             ',sizetmp3,' = ',sizetmp3*8.0E-9_realk,' GB'
        write(DECinfo%output,*)'sizetmp4             ',sizetmp4,' = ',sizetmp4*8.0E-9_realk,' GB'
+    ELSE
+       print*,'SLAVE nbasis               ',nbasis
+       print*,'SLAVE nocc                 ',nocc
+       print*,'SLAVE nvirt                ',nvirt
+       print*,'SLAVE MinAObatch           ',MinAObatch
+       print*,'SLAVE numnodes             ',numnodes
+       print*,'SLAVE nrownodes            ',nrownodes
+       print*,'SLAVE ncolnodes            ',ncolnodes
+       print*,'SLAVE MaxAllowedDimAlpha   ',MaxAllowedDimAlpha
+       print*,'SLAVE MaxAllowedDimGamma   ',MaxAllowedDimGamma
+       print*,'SLAVE MaxAllowedDimAlphaMPI',MaxAllowedDimAlphaMPI
+       print*,'SLAVE MaxAllowedDimGammaMPI',MaxAllowedDimGammaMPI
+       print*,'SLAVE nOccBatchDimImax     ',nOccBatchDimImax
+       print*,'SLAVE nOccBatchDimJmax     ',nOccBatchDimJmax
+       print*,'SLAVE sizetmp1             ',sizetmp1,' = ',sizetmp1*8.0E-9_realk,' GB'
+       print*,'SLAVE sizetmp2             ',sizetmp2,' = ',sizetmp2*8.0E-9_realk,' GB'
+       print*,'SLAVE sizetmp3             ',sizetmp3,' = ',sizetmp3*8.0E-9_realk,' GB'
+       print*,'SLAVE sizetmp4             ',sizetmp4,' = ',sizetmp4*8.0E-9_realk,' GB'
     ENDIF
 
     write(DECinfo%output,*)'Allocating tmp1'; call flush(DECinfo%output)
@@ -481,6 +499,8 @@ contains
                 GammaStart = batch2orbGamma(gammaB)%orbindex(1)      ! First index in gamma batch
                 GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma) ! Last index in gamma batch
              ENDIF
+             IF(dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI)&
+                  & call lsquit('dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI',-1)
              dimAOoffsetG = dimAOoffsetG + dimGamma
              AOstartGamma(nBlocks,jnode) = GammaStart
              AOendGamma(nBlocks,jnode) = GammaEnd
@@ -557,6 +577,8 @@ contains
                 AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)            ! First index in alpha batch
                 AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)       ! Last index in alpha batch
              ENDIF
+             IF(dimAOoffsetA + dimAlpha.GT.MaxAllowedDimAlphaMPI)&
+                  & call lsquit('dimAOoffsetA + dimAlpha.GT.MaxAllowedDimAlphaMPI',-1)
              dimAOoffsetA = dimAOoffsetA + dimAlpha
              AOstartAlpha(nBlocks,inode) = AlphaStart
              AOendAlpha(nBlocks,inode) = AlphaEnd
@@ -578,7 +600,6 @@ contains
 
     dimAlphaMPI = AOdimAlphaMPI(inode)
     dimGammaMPI = AOdimGammaMPI(jnode)
-
     !building
     !nOccBatchDimJrank(mynum)
     !OccIndexJrank(J,mynum)              
@@ -687,8 +708,10 @@ contains
 
        !construct tmp4(nb,nOccBatchDimI)
 !       call mem_alloc(tmp4,nb*nOccBatchDimI)
+!       IF(nb*nOccBatchDimI.GT.size(tmp4))CALL LSQUIT('TEST1 tmp4',-1)
        call buildCoIMPMP2(tmp4,nb,nOccBatchDimI,nocc,Mymolecule%Co%elm2,&
             & offset,iB,nOccBatchDimImax)
+!       IF(dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI.GT.size(tmp2))CALL LSQUIT('TEST1 tmp2',-1)
 !       call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
        !MemoryBookkeeping: tmp2,tmp4 = dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI+nb*nOccBatchDimI
        !dgemm:   tmp2(dimAlpha,dimGamma,nbasis,noccB)        
@@ -723,6 +746,8 @@ contains
                 ENDIF
 
                 CALL LS_GETTIM(CPU4,WALL4)
+!                IF(dimAlpha*dimGamma*nb*nb.GT.size(tmp1))CALL LSQUIT('TEST1 tmp1',-1)
+
 !                call mem_alloc(tmp1,dimAlpha*dimGamma,nb*nb)
                 !MemoryBookkeeping: tmp2,tmp4,tmp1 = dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI
                 !+nb*nOccBatchDimI+MaxdimAlpha*MaxdimGamma*nb*nb
@@ -747,6 +772,7 @@ contains
                 WALL_AOINT = WALL_AOINT + (WALL3-WALL4)
 
                 !tmp3(dimAlpha,dimGamma,nb,nOccBatchDimI)=tmp1(dimAlpha,dimGamma,nb,nb)*tmp4(nb,nOccBatchDimI)
+!                IF(dimAlpha*dimGamma*nb*nOccBatchDimI.GT.size(tmp1))CALL LSQUIT('TEST1 tmp3',-1)
 !                call mem_alloc(tmp3,dimAlpha,dimGamma,nb,nOccBatchDimI)
                 !MemoryBookkeeping: tmp2,tmp4,tmp1,tmp3 = dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI
                 !+nb*nOccBatchDimI+MaxdimAlpha*MaxdimGamma*nb*nb
@@ -769,8 +795,8 @@ contains
        CALL LS_GETTIM(CPU3,WALL3)
 !       call mem_dealloc(tmp4)
 
-
        !reorder: tmp3(nb,nOccBatchDimJ,dimAlphaMPI,dimGammaMPI) = tmp2(dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
+!       IF(nb*nOccBatchDimI*i8*dimAlphaMPI*dimGammaMPI.GT.size(tmp1))CALL LSQUIT('TEST2 tmp3',-1)
 !       call mem_alloc(tmp3,nb*nOccBatchDimI*i8*dimAlphaMPI*dimGammaMPI)
        !MemoryBookkeeping: tmp2 ,tmp3= dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI
        !+nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI
@@ -780,6 +806,7 @@ contains
 !       call mem_dealloc(tmp2)
 
        !tmp2(nvirt,nOccBatchDimI,dimAlphaMPI,dimGammaMPI) = Cv(nb,nvirt)*tmp3(nb,nOccBatchDimI,dimAlphaMPI,dimGammaMPI)
+!       IF(nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI.GT.size(tmp2))CALL LSQUIT('TEST2 tmp2',-1)
 !       call mem_alloc(tmp2,nvirt*nOccBatchDimI,dimAlphaMPI*dimGammaMPI)
        !MemoryBookkeeping: tmp3,tmp2 = nb*nOccBatchDimI*dimAlphaMPI*dimGammaMPI
        !+ nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI
@@ -854,6 +881,8 @@ contains
                    !same Alpha Batch - receiving a Gamma Batch and contract to OccJ
                    IF(dimAlpha2.NE.dimAlphaMPI)call lsquit('dimAlpha2.NE.dimAlphaMPI',-1)
 !                   call mem_alloc(tmp4,dimGamma2*i8*nOccBatchDimJ)         
+!                   IF(dimGamma2*i8*nOccBatchDimJ.GT.size(tmp4))CALL LSQUIT('TEST2 tmp4',-1)
+
                    !MemoryBookkeeping: tmp2,tmp3,tmp1,tmp4 = 
                    !+ nvirt*nOccBatchDimI*dimAlphaMPI*dimGammaMPI
                    !+ nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ 
@@ -884,6 +913,7 @@ contains
 
        !reorder: tmp2(dimAlpha,noccBJ,nvirt,noccBI) <= tmp3(nvirt,noccBI,dimAlpha,noccBJ)
 !       call mem_alloc(tmp2,dimAlphaMPI*nOccBatchDimJ*i8*nvirt*nOccBatchDimI)
+!       IF(dimAlphaMPI*nOccBatchDimJ*i8*nvirt*nOccBatchDimI.GT.size(tmp2))CALL LSQUIT('TEST3 tmp2',-1)
        !MemoryBookkeeping: tmp3,tmp2 = 
        !+ nvirt*nOccBatchDimI*dimAlphaMPI*nOccBatchDimJ
        !+ dimAlphaMPI*nOccBatchDimJ,nvirt*nOccBatchDimI
@@ -938,8 +968,8 @@ contains
 !             call mem_alloc(tmp1,nvirt*nOccBatchDimJ*i8*nvirt*nOccBatchDimI)
              !MemoryBookkeeping: tmp3,tmp1 = nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI
              !+nvirt*nOccBatchDimJ*nvirt*nOccBatchDimI
-
-             call ls_mpisendrecv(tmp1,nbuf1*i8*nbuf2,comm,sender,receiver)               
+             call ls_mpisendrecv(tmp1,nbuf1*i8*nbuf2,comm,sender,receiver)
+         
              call AddToVOVOMPMP2(tmp3,tmp1,nvirt,nOccBatchDimI,nOccBatchDimJ)
 !             call mem_dealloc(tmp1)
 #endif
@@ -1309,8 +1339,9 @@ contains
        tmpcol = numnodes/K
        IF(tmprow*tmpcol.EQ.numnodes)THEN
           IF(tmprow+tmpcol.LE.ncolnodes+ncolnodes)THEN
-             MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes) 
-             MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) 
+             !This is not correct - the AO batches of sizes (3,1,9,5) distributed among 2 nodes gives (10,8) not 9
+             MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes)+MinAObatch 
+             MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes)+MinAObatch 
              nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
              call memestimateCANONMPMP2(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
                   & nbasis,nvirt,nOccBatchDimImax,nOccBatchDimJmax,maxsize,sizetmp1T,sizetmp2T,sizetmp3T,sizetmp4T)
@@ -1327,8 +1358,8 @@ contains
        ENDIF
     enddo
     !nOccBatchesI must match number of Alpha batches(1dim) = nrownodes
-    MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes) !19/2 = 10
-    MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes) !19/2 = 10
+    MaxAllowedDimAlphaMPI = CEILING(1.0E0_realk*nbasis/nrownodes)+MinAObatch  !19/2 = 10
+    MaxAllowedDimGammaMPI = CEILING(1.0E0_realk*nbasis/ncolnodes)+MinAObatch  !19/2 = 10
     nOccBatchDimJmax = CEILING(1.0E0_realk*nocc/ncolnodes) 
     !  print*,'MinAObatch',MinAObatch
     call memestimateCANONMPMP2(MinAObatch,MinAObatch,MaxAllowedDimAlphaMPI,MaxAllowedDimGammaMPI,&
@@ -1422,6 +1453,7 @@ contains
     !call mem_alloc(tmp2,dimAlphaMPI,dimGammaMPI,nb,nOccBatchDimI)
     maxsize = MAX(maxsize,nb*nOccBI*R+dimAlphaMPI*dimGammaMPI*nb*nOccBatchDimI*R)
     sizetmp2 = MAX(sizetmp2,dimAlphaMPI*i8*dimGammaMPI*nb*i8*nOccBatchDimI)
+
     !BatchGamma: do gammaB = 1,nbatchesGamma
     ! BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
     !  call mem_alloc(tmp1,dimAlpha*dimGamma,nb*nb)
