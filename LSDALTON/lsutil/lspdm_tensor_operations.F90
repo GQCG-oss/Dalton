@@ -1082,7 +1082,7 @@ module lspdm_tensor_operations_module
           ebuf = cbuf
        endif
 
-#if defined(VAR_PTR_RESHAPE) && !defined(VAR_PGF90)
+#if defined(VAR_PTR_RESHAPE) 
        gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf(1:,cbuf)
        gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf(1:,ebuf)
        t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
