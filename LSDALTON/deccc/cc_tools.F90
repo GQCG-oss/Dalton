@@ -714,7 +714,7 @@ module cc_tools_module
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
-            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w0(1:nb*laleg*nv))
+            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv))
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
 
@@ -724,10 +724,20 @@ module cc_tools_module
 
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
             call get_I_cged(w0,w2,laleg,nv)
-            !$acc end data 
 
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
+#ifdef VAR_OPENACC
+            !(w2)  :sigma+ [i>=j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
+            !call dgemm('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w2,nor)
+            !call manual_21_reordering_t2f(100,[nor,laleg],[1,faleg],p10,w2,nul,w3)
+
+            !call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg)
+            call ls_dgemm_acc('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg,laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
+            !$acc end data 
+            call manual_12_reordering_t2f(100,[laleg,nor],[tred,nor],[faleg,1],p10,w2,nul,w3)
+#else
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
+#endif
          enddo
          !$acc end data
 
