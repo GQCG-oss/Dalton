@@ -7384,7 +7384,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! add O4 int. to B2 term
     if (dimK>0) then
       ! Extract g[sKlQ] from g[PQrs]
-      call manual_4132_reordering_f2t(100,[dimK,dimQ,nocc,ntot],[dimP,dimQ,ntot,ntot], &
+      call manual_4132_reordering_f2t([dimK,dimQ,nocc,ntot],[dimP,dimQ,ntot,ntot], &
          & [1,1,1,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! transform Q => i and get: g[sK li]
@@ -7441,7 +7441,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !$OMP END PARALLEL DO
 
     ! Extract g[PrCd] from g[PQrs]
-    call manual_1324_reordering_f2t(100,[dimP,dimC,ntot,nvir],[dimP,dimQ,ntot,ntot], &
+    call manual_1324_reordering_f2t([dimP,dimC,ntot,nvir],[dimP,dimQ,ntot,ntot], &
        & [1,1+dimI,1,1+nocc],1.0E0_realk,gmo,0.0E0_realk,tmp0)
      
     ! Get: sigma[pr, ij] = sum_cd g[pr, cd] * t2red[cd, ij]
@@ -7616,7 +7616,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call dcopy(ncopy,u2(:,D_sta:pos1,:,:),1,tmp0,1)
        
       ! Extract g[PcDk] from g[PQrs]
-      call manual_1324_reordering_f2t(100,[dimP,dimD,nvir,nocc],[dimP,dimQ,ntot,ntot], &
+      call manual_1324_reordering_f2t([dimP,dimD,nvir,nocc],[dimP,dimQ,ntot,ntot], &
          & [1,1+dimI,1+nocc,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! Get G_Pi = sum_cDk g[P, cDk] u2[cDk, i]:
@@ -7634,7 +7634,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       call dcopy(ncopy,u2(:,:,P_sta:pos1,:),1,tmp0,1)
 
       ! Extract g[cKlQ] from g[PQrs]
-      call manual_3142_reordering_f2t(100,[dimK,dimQ,nvir,nocc],[dimP,dimQ,ntot,ntot], &
+      call manual_3142_reordering_f2t([dimK,dimQ,nvir,nocc],[dimP,dimQ,ntot,ntot], &
          & [1,1,1+nocc,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! Get H_aQ = sum_cKl u2[a, cKl] g[cKl, Q]
@@ -7741,7 +7741,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
   
     ! Extract g[QjbP] from g[PQrs]
-    call manual_2341_reordering_f2t(100,[dimP,dimQ,nocc,nvir],[dimP,dimQ,ntot,ntot], &
+    call manual_2341_reordering_f2t([dimP,dimQ,nocc,nvir],[dimP,dimQ,ntot,ntot], &
        & [1,1,1,1+nocc],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
     ! transform Q to i:
