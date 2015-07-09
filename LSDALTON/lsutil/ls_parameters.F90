@@ -63,6 +63,7 @@ MODULE lsparameters
   integer,parameter :: GeoDerivCoulombSpec = 10
   integer,parameter :: GeoDerivLHSSpec     = 11
   integer,parameter :: GeoDerivRHSSpec     = 12
+  integer,parameter :: magderivEcontribSpec= 13
 
 ! THESE ARE MPI JOB SPECIFIERS 
   integer,parameter :: MATRIXTY                     =  1
@@ -144,6 +145,12 @@ MODULE lsparameters
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
   integer,parameter :: AntiSymmetricPostprocess=3
+
+! TENTATIVE OF DEFINING BS VALUES IN MANUAL REORDERING ROUTINES:
+  integer,parameter :: L2_CACHE_SIZE = 256000 ! lower estimate of cache size in bytes:
+  integer,parameter :: BS_2D = floor(sqrt(L2_CACHE_SIZE/2*8.0E0_realk))
+  integer,parameter :: BS_3D = floor((L2_CACHE_SIZE/2*8.0E0_realk)**(1/3.0E0_realk))
+  integer,parameter :: BS_4D = floor((L2_CACHE_SIZE/2*8.0E0_realk)**(1/4.0E0_realk))
 
   real(realk) :: GPUMAXMEM
 save

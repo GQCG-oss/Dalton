@@ -1562,7 +1562,7 @@ C
             PARCAL = .TRUE.
             DIRCAL = .TRUE.
             GO TO 100
-  109    CONTINUE
+  109    CONTINUE  ! .DIRECT
             DIRCAL = .TRUE.
          GO TO 100
 C        ".WALK  "

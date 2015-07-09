@@ -303,9 +303,9 @@ contains
              print*,'DECinfo%memory   =',DECinfo%memory
              call lsquit('.BGMEMORY not set correctly',-1)
           ENDIF
-          bytes_to_alloc = int(DECinfo%bg_memory*1.0E+9_realk,kind=8)
-          call mem_init_background_alloc(bytes_to_alloc)     
        ENDIF
+       bytes_to_alloc = int(DECinfo%bg_memory*1.0E+9_realk,kind=8)
+       call mem_init_background_alloc(bytes_to_alloc)     
     ENDIF
   end subroutine BackGroundBufferAllocate
 

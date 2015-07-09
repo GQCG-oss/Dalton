@@ -204,6 +204,7 @@ set(RSP_PROPERTIES_SOURCES
     LSDALTON/rsp_properties/response_prop_noOpenRSP.F90
     LSDALTON/rsp_properties/molecular_hessian.F90
     LSDALTON/rsp_properties/test_molHessian.F90
+    LSDALTON/rsp_properties/nuclei_selected_shielding.F90
     )
 set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc_compare.F90
@@ -757,6 +758,7 @@ set(LSUTIL_COMMON_C_SOURCES
     LSDALTON/lsutil/crayio.c
     )
 set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/gpu_devices.F90
     LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
     LSDALTON/lsutil/tensor_type_def.F90
@@ -779,6 +781,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/gridgeneration_memory.F90
     LSDALTON/lsutil/Time.F90
     LSDALTON/lsutil/common_utilities.F90
+    LSDALTON/lsutil/lapack_interface.F90
     LSDALTON/lsutil/ls_parameters.F90
     LSDALTON/lsutil/par_mod.F90
     LSDALTON/lsutil/lsmpiType.F90

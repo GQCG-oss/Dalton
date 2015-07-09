@@ -349,7 +349,7 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
     if ad != "": 
       for j in range(modes):
         omppar += "b"+abc[j]+"f,"
-    omppar = omppar[0:-1] + ")&\n      !$OMP SHARED(bcntr,pre1,pre2,bs,array_in,array_out, &\n      !$OMP "
+    omppar = omppar[0:-1] + ")&\n      !$OMP SHARED(bcntr,pre1,pre2,array_in,array_out, &\n      !$OMP "
     for j in range(modes):
       omppar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
     if ad != "":
@@ -811,13 +811,13 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr+= "  !   and thus requires additional attention \n"
   subheaderstr+= "  !\> \\author Patrick Ettenhuber\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
-  subheaderstr+= "  subroutine "+sname+"(bs,dims,"
+  subheaderstr+= "  subroutine "+sname+"(dims,"
   if ad != "":
     subheaderstr += "fdims,fels,"
   subheaderstr+= "pre1,array_in,pre2,array_out)\n"
   subheaderstr+= "    implicit none\n"
   subheaderstr+= "    !> input for the block size in tiled reordering\n"
-  subheaderstr+= "    integer, intent(in) :: bs\n"
+  subheaderstr+= "    integer, parameter :: bs=BS_"+str(modes)+"D\n"
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")"
   if ad != "":
@@ -943,6 +943,7 @@ def write_simple_module_header(f,idim,idx,now,args,kindof):
      sys.exit()
 
    f.write("  use precision\n")
+   f.write("  use lsparameters\n")
    if(kindof=="acc"):
      f.write("  use openacc\n")
    f.write("\n")
