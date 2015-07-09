@@ -19,6 +19,7 @@ module cc_tools_module
    use lstiming
    use typedeftype
    use integralinterfaceDEC, only: II_GET_ERI_INTEGRALBLOCK_INQUIRE
+   use IntegralInterfaceMOD
    use dec_workarounds_module
    use dec_typedef_module
    use reorder_frontend_module
@@ -31,7 +32,6 @@ module cc_tools_module
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
    end interface get_tpl_and_tmi
-
    
    abstract interface
       function ab_eq_c(a,b) result(c)
@@ -42,18 +42,6 @@ module cc_tools_module
          real(realk) :: c
       end function ab_eq_c
    end interface
-!   interface
-!    integer (C_INT) function cublasDgemm_v2(handle,transa,transb,m,n,k,alpha,A,&
-!                                    & lda,B,ldb,beta,C,ldc) bind(C,name="cublasDgemm_v2")
-!      use iso_c_binding
-!      implicit none
-!      type (C_PTR), value :: handle
-!      type (C_PTR), value :: A, B, C
-!      integer (C_INT), value :: m, n, k, lda, ldb, ldc
-!      integer (C_INT), value :: transa, transb
-!      real (C_DOUBLE) :: alpha, beta
-!    end function cublasDgemm_v2
-! end interface
    
    contains
 
@@ -613,13 +601,11 @@ module cc_tools_module
       real(realk), pointer :: buf(:)
       integer(kind=8) :: nbuf
       integer :: faleg,laleg,laleg_req,i,nerrors
+      integer, parameter :: nids = 16
 #ifdef VAR_OPENACC
-      integer(kind=acc_handle_kind) :: acc_h
-#ifdef VAR_PGF90
-    integer*4, external :: acc_set_cuda_stream
-#endif
+      integer(kind=acc_handle_kind) :: acc_h,async_id(nids)
 #else
-      integer                       :: acc_h
+      integer                       :: acc_h,async_id(nids)
 #endif
       type(c_ptr)                   :: cub_h,dummy47
       real(realk) :: p10, nul
@@ -700,27 +686,22 @@ module cc_tools_module
          stat = cublasSetStream_v2(cub_h, dummy47)
 #endif
 
-         !acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr),nv,no,nb,nor,nvr)
 #ifdef VAR_OPENACC
-         !acc data copyin(yv(1:nb*nv))
-         !acc data copyin(tpl%elm1(1:nor*nvr))
+         !$acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr)) create(w0(1:nb*laleg_req*nv))
 #endif
 
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
-
-            call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
-
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
 #ifdef VAR_OPENACC
-            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv)) copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr))
+            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor))
 #endif
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
@@ -732,28 +713,28 @@ module cc_tools_module
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
             call get_I_cged(w0,w2,laleg,nv)
 
-            !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
 #ifdef VAR_OPENACC
-            !call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg)
-            call ls_dgemm_acc('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg,laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
+            !(w3.1):sigma+ [i>= j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
+            call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w3(1+(faleg-1)*nor),nor,&
+            &laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
             !$acc end data 
-            call manual_12_reordering_t2f(100,[laleg,nor],[tred,nor],[faleg,1],p10,w2,nul,w3)
 #else
+            !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
 #endif
          enddo
 
 #ifdef VAR_OPENACC
-         !acc end data
-         !acc data copyin(tmi%elm1)
+         !$acc exit data delete(tpl%elm1(1:nor*nvr))
+         !$acc enter data copyin(tmi%elm1(1:nor*nvr))
+         call array_reorder_2d(p10,w3,nor,tred,[2,1],nul,w2)
+         call array_reorder_2d(p10,w2,tred,nor,[1,2],nul,w3)
 #endif
 
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
-
-            call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
 
@@ -762,7 +743,7 @@ module cc_tools_module
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
 #ifdef VAR_OPENACC
-            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv)) copyin(yv,tmi%elm1)
+            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))
 #endif
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
@@ -776,17 +757,17 @@ module cc_tools_module
 
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
 #ifdef VAR_OPENACC
-            !call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg)
-            call ls_dgemm_acc('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w2,laleg,laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
+            call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tmi%elm1,nvr,w0,laleg,nul,w3(tred*nor+1+(faleg-1)*nor),nor,&
+            &laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
             !$acc end data 
-            call manual_12_reordering_t2f(100,[laleg,nor],[tred,nor],[faleg,1],p10,w2,nul,w3(tred*nor+1:tred*nor+tred*nor))
 #else
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+faleg),tred)
 #endif
          enddo
 #ifdef VAR_OPENACC
-         !acc end data
-         !acc end data
+         call array_reorder_2d(p10,w3(tred*nor+1:tred*nor+tred*nor),nor,tred,[2,1],nul,w2)
+         call array_reorder_2d(p10,w2,tred,nor,[1,2],nul,w3(tred*nor+1:tred*nor+tred*nor))
+         !$acc exit data delete(yv(1:nb*nv),tmi%elm1(1:nor*nvr),w0(1:nb*laleg_req*nv))
 #endif
 
 #ifdef VAR_CUBLAS
@@ -3383,6 +3364,46 @@ module cc_tools_module
       ! ******************************
 
    end subroutine ccsdpt_decnp_e5_full
+
+
+   subroutine get_t1_matrices(MyLsitem,t1,Co,Cv,xo,yo,xv,yv,fock,t1fock,sync)
+     implicit none
+     type(lsitem),intent(inout) :: MyLsItem
+     type(tensor), intent(inout) :: t1, Co, Cv
+     type(tensor), intent(inout) :: xo,xv,yo,yv
+     type(tensor), intent(in)    :: fock
+     type(tensor), intent(inout) :: t1fock
+     logical, intent(in) :: sync
+     integer :: ord2(2), nb,no,nv
+     real(realk), pointer :: w1(:)
+
+     nv=t1%dims(1)
+     no=t1%dims(2)
+     nb=Co%dims(1)
+
+     ! synchronize singles data on slaves
+     if(sync)call tensor_sync_replicated(t1)
+
+     ! get the T1 transformation matrices
+     call tensor_cp_data(Cv,yv)
+     call tensor_cp_data(Cv,xv)
+     ord2 = [1,2]
+     call tensor_contract(-1.0E0_realk,Co,t1,[2],[2],1,1.0E0_realk,xv,ord2)
+
+
+     call tensor_cp_data(Co,yo)
+     call tensor_cp_data(Co,xo)
+     call tensor_contract(1.0E0_realk,Cv,t1,[2],[1],1,1.0E0_realk,yo,ord2)
+
+
+     !ONLY USE T1 PART OF THE DENSITY MATRIX AND THE FOCK 
+     call mem_alloc(w1,nb**2)
+     call dgemm('n','n',nb,no,nv,1.0E0_realk,yv%elm1,nb,t1%elm1,nv,0.0E0_realk,t1fock%elm1,nb)
+     call dgemm('n','t',nb,nb,no,1.0E0_realk,t1fock%elm1,nb,xo%elm1,nb,0.0E0_realk,w1,nb)
+     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,w1,.false.,t1fock%elm1)
+     call daxpy(nb**2,1.0E0_realk,fock%elm1,1,t1fock%elm1,1)
+     call mem_dealloc(w1)
+   end subroutine get_t1_matrices
 
 
    end module cc_tools_module

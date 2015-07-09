@@ -27,6 +27,14 @@ module full_ls_thc_rimp2Mod
   public :: full_canonical_ls_thc_rimp2
   private
 
+  integer,parameter :: nLaplace=10
+  real(realk),parameter,dimension(10) :: LaplaceAmp = (/ -0.003431, &
+       & -0.023534, -0.088984, -0.275603, -0.757121, -1.906218, -4.485611, &
+       & -10.008000, -21.491075, -45.877205 /)
+  real(realk),parameter,dimension(10) :: LaplaceW = (/ 0.009348, &
+       & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
+       & 7.810243, 16.172017, 35.929402 /)
+
 contains
   !> \brief Calculate canonical MP2 energy using Tensor hyper contraction
   !> 
@@ -56,16 +64,9 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
 !  integer :: BETA,GAMMA,DELTA
   logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate,WriteToDisk
   character :: intspec(5)
-  integer,parameter :: nLaplace=10
-  real(realk),parameter,dimension(10) :: LaplaceAmp = (/ -0.003431, &
-       & -0.023534, -0.088984, -0.275603, -0.757121, -1.906218, -4.485611, &
-       & -10.008000, -21.491075, -45.877205 /)
-  real(realk),parameter,dimension(10) :: LaplaceW = (/ 0.009348, &
-       & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
-       & 7.810243, 16.172017, 35.929402 /)
 
-  CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
   CALL LSTIMER('START ',TS2,TE2,DECINFO%OUTPUT)
+  CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
   mp2_energy = 0.0E0_realk
   WriteToDisk = DECinfo%THCDUMP
   !sanity check
@@ -119,36 +120,94 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   CALL LSTIMER('THC:Get_THC_AO_grid_X',TS2,TE2,DECINFO%OUTPUT)
 
   IF(WriteToDisk)THEN
-     !Keep things in the AO basis
-     !S(P,Q) = (X(P,mu)*X(Q,mu))(X(P,nu)*X(Q,nu))
-     call mem_alloc(S,ngrid,ngrid)
-     call Get_THC_grid_overlap(S,X,nbasis,ngrid)
-     CALL LSTIMER('THC:OVERLAP2',TS2,TE2,DECINFO%OUTPUT)     
-  ELSE
-     ! Change X to MO  
-     !step 2b XV(P,a)=X(P,mu)*Cv(mu,a)
-     call mem_alloc(XV,ngrid,nvirt)
-     M = ngrid   !rows of Output Matrix
-     N = nvirt   !columns of Output Matrix
-     K = nbasis  !summation dimension
-     call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Cv%elm2,K,0.0E0_realk,XV,M)
-     
-     CALL LSTIMER('THC:DGEMM1',TS2,TE2,DECINFO%OUTPUT)
-
-     !step 2c XO(P,i)=X(P,mu)*Co(mu,i)
-     call mem_alloc(XO,ngrid,nocc)
-     M = ngrid   !rows of Output Matrix
-     N = nocc    !columns of Output Matrix
-     K = nbasis  !summation dimension
-     call dgemm('N','N',M,N,K,1.0E0_realk,X,M,MyMolecule%Co%elm2,K,0.0E0_realk,XO,M)
-     CALL LSTIMER('THC:DGEMM2',TS2,TE2,DECINFO%OUTPUT)
+     Call THC_LS_THC_RIMP2_AO_driver(nb,ngrid,nocc,nvirt,naux,noccfull,natoms,nbasisAux,X,&
+          & MyMolecule,mylsitem,mp2_energy,mynum,numnodes)
      call mem_dealloc(X)
-
-     !Step 3 Construct the Grid Overlap Matrix Eq. 28 of JCP 137, 224106
-     call mem_alloc(S,ngrid,ngrid)    
-     call Get_THC_grid_overlap2(S,XO,XV,nocc,nvirt,ngrid)
-     CALL LSTIMER('THC:OVERLAP2',TS2,TE2,DECINFO%OUTPUT)
+  ELSE
+     call mem_alloc(EpsOcc,nocc)
+     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+     !$OMP SHARED(nocc,MyMolecule,EpsOcc)
+     do I=1,nocc
+!        EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset)
+        EpsOcc(I) = MyMolecule%oofock%elm2(I,I)
+     enddo
+     !$OMP END PARALLEL DO
+     call mem_alloc(EpsVirt,nvirt)
+     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
+     !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
+     do A=1,nvirt
+        EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
+     enddo
+     !$OMP END PARALLEL DO     
+     Call THC_LS_THC_RIMP2_MO_driver(nb,ngrid,nocc,nvirt,naux,noccfull,natoms,nbasisAux,X,&
+          & mylsitem,mp2_energy,mynum,numnodes,MyMolecule%Cv%elm2,MyMolecule%Co%elm2,EpsOcc,EpsVirt)
+     call mem_dealloc(EpsVirt)
+     call mem_dealloc(EpsOcc)
+     call mem_dealloc(X)
   ENDIF
+
+  CALL LSTIMER('LS_THC_RIMP2 ',TS,TE,DECINFO%OUTPUT)
+end subroutine full_canonical_ls_thc_rimp2
+
+subroutine THC_LS_THC_RIMP2_MO_driver(nb,ngrid,nocc,nvirt,naux,noccfull,natoms,nbasisAux,X,&
+     & mylsitem,mp2_energy,mynum,numnodes,&
+     & Cv,Co,EpsOcc,EpsVirt)
+  implicit none
+  !>dimensions
+  integer,intent(in) :: nocc,nvirt,naux,noccfull,nb,nbasisAux,mynum,numnodes,natoms
+  !> basisfunction values on grid points 
+  real(realk),intent(in) :: X(ngrid,nb) 
+  !> Lsitem structure
+  type(lsitem), intent(inout) :: mylsitem
+  !> Canonical MP2 correlation energy
+  real(realk),intent(inout) :: mp2_energy    
+  !> Virtual MO coefficients
+  real(realk),intent(in) :: Cv(nb,nvirt) 
+  !> Occupied MO coefficients
+  real(realk),intent(in) :: Co(nb,nocc) 
+  !> Virtual orbital energies
+  real(realk),intent(in) :: EpsVirt(nvirt) 
+  !> Occupied orbital energies
+  real(realk),intent(in) :: EpsOcc(nocc) 
+  !
+  integer :: lupri,ngrid,Iprint,NBA,M,N,K,I,J,A,B,ALPHA,P,Q,offset,nbasis
+  real(realk) :: epsilon,TMP,TS2,TE2,CoulombEnergy,ExchangeEnergy
+  real(realk),pointer :: S(:,:),S_inv(:,:),Zpq(:,:)
+  real(realk),pointer :: Calpha(:),ABdecomp(:,:),Mmat(:,:),Epq(:,:),XO(:,:)
+  real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
+  real(realk),pointer :: SC(:,:),Identity(:,:)
+  real(realk),pointer :: Tvirt(:,:),Tocc(:,:),BmatPR(:,:,:),AmatPR(:,:,:)
+  real(realk),pointer :: ABmatPR(:,:,:),ZCDmat(:,:,:),IntAO(:,:,:,:)
+  real(realk),pointer :: tmpB(:,:,:),tmpE(:,:,:,:),tmpG(:,:,:),tmpH(:,:,:)
+!  integer :: BETA,GAMMA,DELTA
+  logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate,WriteToDisk
+  character :: intspec(5)
+  real(realk) ::   Scaling1,ScalingJ,ScalingK
+
+  nbasis = nb
+  CALL LSTIMER('START ',TS2,TE2,DECINFO%OUTPUT)
+
+  ! Change X to MO  
+  !step 2b XV(P,a)=X(P,mu)*Cv(mu,a)
+  call mem_alloc(XV,ngrid,nvirt)
+  M = ngrid   !rows of Output Matrix
+  N = nvirt   !columns of Output Matrix
+  K = nbasis  !summation dimension
+  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,Cv,K,0.0E0_realk,XV,M)     
+  CALL LSTIMER('THC:DGEMM1',TS2,TE2,DECINFO%OUTPUT)
+
+  !step 2c XO(P,i)=X(P,mu)*Co(mu,i)
+  call mem_alloc(XO,ngrid,nocc)
+  M = ngrid   !rows of Output Matrix
+  N = nocc    !columns of Output Matrix
+  K = nbasis  !summation dimension
+  call dgemm('N','N',M,N,K,1.0E0_realk,X,M,Co,K,0.0E0_realk,XO,M)
+  CALL LSTIMER('THC:DGEMM2',TS2,TE2,DECINFO%OUTPUT)
+
+  !Step 3 Construct the Grid Overlap Matrix Eq. 28 of JCP 137, 224106
+  call mem_alloc(S,ngrid,ngrid)    
+  call Get_THC_grid_overlap2(S,XO,XV,nocc,nvirt,ngrid)
+  CALL LSTIMER('THC:OVERLAP2',TS2,TE2,DECINFO%OUTPUT)
 
   !Step 4 Construct the Inverse Grid Overlap Matrix
   call mem_alloc(S_inv,ngrid,ngrid)
@@ -157,59 +216,26 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   CALL LSTIMER('THC:OVERLAP_INV',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(S)
 
-  IF(WriteToDisk)THEN
-     !step 5a construct (alpha|mu nu) 
-     call mem_alloc(Identity,nbasis,nbasis)
-     call ls_dzero(Identity,nbasis*nbasis)
-     DO I=1,nbasis
-        Identity(I,I)=1.0E0_realk
-     ENDDO     
-     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-     intspec(2) = 'R' !Regular AO basis function on center 3
-     intspec(3) = 'R' !Regular AO basis function on center 4
-     intspec(4) = 'C' !Coulomb Operator
-     intspec(5) = 'C' !Coulomb Operator
-     call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
-     ABdecompCreate = .TRUE.
-     call Build_CalphaMO2(Mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
-          & FORCEPRINT,CollaborateWithSlaves,Identity,nbasis,&
-          & Identity,nbasis,mynum,numnodes,Calpha,NBA,ABdecomp,&
-          & ABdecompCreate,intspec,.FALSE.)
+  !step 5a construct (alpha|ai) 
+  intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+  intspec(2) = 'R' !Regular AO basis function on center 3
+  intspec(3) = 'R' !Regular AO basis function on center 4
+  intspec(4) = 'C' !Coulomb Operator
+  intspec(5) = 'C' !Coulomb Operator
+  call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
+  ABdecompCreate = .TRUE.
+  call Build_CalphaMO2(Mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
+       & FORCEPRINT,CollaborateWithSlaves,Cv,nvirt,Co,nocc,mynum,numnodes,&
+       & Calpha,NBA,ABdecomp,ABdecompCreate,intspec,.FALSE.)
+  call mem_dealloc(ABdecomp)
+  CALL LSTIMER('THC:Build_CalphaMO2',TS2,TE2,DECINFO%OUTPUT)
 
-     call mem_dealloc(ABdecomp)
-     CALL LSTIMER('THC:Build_CalphaMO2',TS2,TE2,DECINFO%OUTPUT)
-  ELSE
-     !step 5a construct (alpha|ai) 
-     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-     intspec(2) = 'R' !Regular AO basis function on center 3
-     intspec(3) = 'R' !Regular AO basis function on center 4
-     intspec(4) = 'C' !Coulomb Operator
-     intspec(5) = 'C' !Coulomb Operator
-     call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
-     ABdecompCreate = .TRUE.
-     call Build_CalphaMO2(Mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
-          & FORCEPRINT,CollaborateWithSlaves,MyMolecule%Cv%elm2,nvirt,&
-          & MyMolecule%Co%elm2,nocc,mynum,numnodes,Calpha,NBA,ABdecomp,&
-          & ABdecompCreate,intspec,.FALSE.)
-     call mem_dealloc(ABdecomp)
-
-     CALL LSTIMER('THC:Build_CalphaMO2',TS2,TE2,DECINFO%OUTPUT)
-  ENDIF
-
-  IF(WriteToDisk)THEN
-     !step 6 construct M(P,alpha) 
-     !M(P,alpha) = (alpha|mu nu)*X(P,mu)*X(P,nu)   !scaling: N*N*Nalpha*Ngrid
-     call mem_alloc(Mmat,ngrid,NBA)
-     CALL build_THC_MalphaP(Calpha,NBA,nbasis,nbasis,X,ngrid,X,Mmat)
-     CALL LSTIMER('THC:build_THC_MalphaP',TS2,TE2,DECINFO%OUTPUT)
-  ELSE
-     !step 6 construct M(P,alpha) 
-     !M(P,alpha) = (alpha|ai)*X(P,a)*X(P,i)   !scaling: O*V*Nalpha*Ngrid
-     call mem_alloc(Mmat,ngrid,NBA)
-     CALL build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,Mmat)
-     CALL LSTIMER('THC:build_THC_MalphaP',TS2,TE2,DECINFO%OUTPUT)
-     call mem_dealloc(Calpha)
-  ENDIF
+  !step 6 construct M(P,alpha) 
+  !M(P,alpha) = (alpha|ai)*X(P,a)*X(P,i)   !scaling: O*V*Nalpha*Ngrid
+  call mem_alloc(Mmat,ngrid,NBA)
+  CALL build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,Mmat)
+  CALL LSTIMER('THC:build_THC_MalphaP',TS2,TE2,DECINFO%OUTPUT)
+  call mem_dealloc(Calpha)
 
   !step 7 construct Epq
   !E(P,Q) = M(P,alpha)*M(Q,alpha)
@@ -220,7 +246,7 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   call dgemm('N','T',M,N,K,1.0E0_realk,Mmat,M,Mmat,M,0.0E0_realk,Epq,M)
   CALL LSTIMER('THC:DGEMM3',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(Mmat)
-
+  
   !step 8 construct Zpq(S,R) = S_inv(S,P)*Epq(P,Q)*S_inv(Q,R)
   M = ngrid   !rows of Output Matrix
   N = ngrid   !columns of Output Matrix
@@ -230,160 +256,119 @@ subroutine full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,mp2_energy)
   call dgemm('N','N',M,N,K,1.0E0_realk,S_inv,M,Epq,K,0.0E0_realk,TZpq,M)
   CALL LSTIMER('THC:DGEMM4',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(Epq)
-
+  
   !Zpq(S,R) = TZpq(S,Q)*S_inv(Q,R)
   call mem_alloc(Zpq,ngrid,ngrid)
   call dgemm('N','N',M,N,K,1.0E0_realk,TZpq,M,S_inv,K,0.0E0_realk,Zpq,M)
   CALL LSTIMER('THC:DGEMM5',TS2,TE2,DECINFO%OUTPUT)
   call mem_dealloc(TZpq)
   call mem_dealloc(S_inv)
-
-  IF(WriteToDisk)call DumpTHCmatrices(nbasis,ngrid,X,Zpq)
-
+     
   offset = 0
-  call mem_alloc(EpsOcc,nocc)
-  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-  !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
-  do I=1,nocc
-     EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset)
-  enddo
-  !$OMP END PARALLEL DO
-  call mem_alloc(EpsVirt,nvirt)
-  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
-  !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
-  do A=1,nvirt
-     EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
-  enddo
-  !$OMP END PARALLEL DO
-  mp2_energy=0.0E0_realk
-  CALL LSTIMER('THC:Eps',TS2,TE2,DECINFO%OUTPUT)
-  IF(WriteToDisk)THEN
-     !verify
-     call TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA,lupri)
-     call mem_dealloc(Calpha)
-
-     call mem_alloc(IntAO,nbasis,nbasis,nbasis,nbasis)
-     intspec(1) = 'R'
-     intspec(2) = 'R'
-     intspec(3) = 'R'
-     intspec(4) = 'R'
-     intspec(5) = 'C'
-     call II_get_4center_eri(DECINFO%OUTPUT,DECINFO%OUTPUT,mylsitem%SETTING,&
-          & IntAO,nbasis,nbasis,nbasis,nbasis,intspec)     
-     call TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid,lupri)
-     call mem_dealloc(IntAO)
-
-     call LS_THC_AO_RIMP2_Ecorr(nocc,nvirt,ngrid,X,Zpq,EpsOcc,EpsVirt,&
-          & mp2_energy,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,nbasis)
-  ELSE
+  !Ngrid*Nocc**2*Nvirt**2 
+  Scaling1 = Ngrid*(Nocc*i8)*(Nocc*i8)*Nvirt*Nvirt
+  ScalingJ = MAX(Ngrid*(Ngrid*i8)*Nocc,Ngrid*(Ngrid*i8)*Nvirt,Ngrid*(Ngrid*i8)*Ngrid)
+  ScalingK = Ngrid*(Ngrid*i8)*(Nocc*i8)*Nvirt
+  print*,'Nocc  = ',Nocc
+  print*,'Nvirt = ',Nvirt
+  print*,'Ngrid = ',Ngrid
+  print*,'Scaling1(Ngrid*Nocc*Nocc*Nvirt*Nvirt)= ',Scaling1
+  print*,'ScalingJ= ',ScalingJ
+  print*,'ScalingK= ',ScalingK
+  print*,'Scaling2= ',ScalingJ+ScalingK
+!  IF(Scaling1.LT.ScalingJ+ScalingK)THEN
+     mp2_energy=0.0E0_realk  
      call LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,mp2_energy)
-  ENDIF
-  CALL LSTIMER('THC:Ecorr',TS2,TE2,DECINFO%OUTPUT)
-  print*,'LS-THC-RI-MP2 energy=',mp2_energy
-
-!  Coulomb Contribution
-!  Coulomb:X(a,P)*X(i,P)*Z(P,Q)*X(b,Q)*X(j,Q)*X(a,R)*X(i,R)*Z(R,S)*X(b,S)*X(j,S)
-!  tau(i,l) = exp(-epsilon_I*amp_l)   !l is the laplace points
-!  tau(a,l) = exp(epsilon_A*amp_l)   !l is the laplace points
-!  A(P,R,l) = X(a,P)*X(a,R)*tau(a,l)           (nvirt*Ngrid**2)  
-!  B(P,R,l) = X(i,P)*X(i,R)*tau(i,l)           (nocc*Ngrid**2) 
-!  C(Q,S,l) = X(b,Q)*X(b,S)*tau(b,l)           (nvirt*Ngrid**2)  
-!  D(Q,S,l) = X(j,Q)*X(j,S)*tau(j,l)           (nocc*Ngrid**2) 
-!  Coulomb: weight_l*(A(P,R)*B(P,R))*Z(P,Q)*(C(Q,S)*D(Q,S))*Z(R,S)
-!  AB(P,R,l) = A(P,R,l)*B(P,R,l)               (Ngrid**2)
-!  CD(Q,S,l) = C(Q,S,l)*D(Q,S,l)               (Ngrid**2)
-!  Coulomb: AB(P,R,l)*Z(P,Q)*CD(Q,S,l)*Z(R,S)  (Ngrid**3)
-
-  call mem_alloc(Tvirt,nvirt,nLaplace)
-  print*,'Step1'
-  call BuildTvirt(Tvirt,nvirt,nLaplace,EpsVirt,LaplaceAmp)
-  call mem_alloc(AmatPR,ngrid,ngrid,nLaplace)
-  print*,'Step2 '
-  call ls_dzero(AmatPR,ngrid*ngrid*nLaplace)
-  call BuildAmat(nLaplace,ngrid,nvirt,XV,Tvirt,AmatPR)
-
-  call mem_alloc(Tocc,nocc,nLaplace)
-  print*,'Step3'
-  call BuildTocc(Tocc,nocc,nLaplace,EpsOcc,LaplaceAmp)
-  call mem_alloc(BmatPR,ngrid,ngrid,nLaplace)
-  print*,'Step4 '
-  call ls_dzero(BmatPR,ngrid*ngrid*nLaplace)
-  call BuildAmat(nLaplace,ngrid,nocc,XO,Tocc,BmatPR)
-
-  call mem_alloc(ABmatPR,ngrid,ngrid,nLaplace)
-  print*,'Step5'
-  call BuildABmat(nLaplace,ngrid,ABmatPR,AmatPR,BmatPR)
-  call mem_dealloc(BmatPR)
-  call mem_dealloc(AmatPR)
-
-  !  Coulomb: AB(P,R,L)*Z(P,Q)*CD(Q,S,L)*Z(R,S)  (Ngrid**3)
-  M = ngrid            !rows of Output Matrix
-  N = ngrid*nLaplace   !columns of Output Matrix
-  K = ngrid            !summation dimension
-  !ZCD(P,S,L) = Z(P,Q)*CD(Q,S,L)
-  call mem_alloc(ZCDmat,ngrid,ngrid,nLaplace)
-  print*,'Step6'
-  call dgemm('N','N',M,N,K,1.0E0_realk,Zpq,M,ABmatPR,K,0.0E0_realk,ZCDmat,M)
-  print*,'Step7'
-  call LS_THC_RIMP2_LaplaceEcorrJ(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,CoulombEnergy)
-  call mem_dealloc(ZCDmat)
-  call mem_dealloc(ABmatPR)
-  print*,'LS-THC-RI-MP2 Laplace Coulomb energy=',CoulombEnergy
-
-!  Exchange:X(a,P)*X(i,P)*Z(P,Q)*X(b,Q)*X(j,Q)*X(b,R)*X(i,R)*Z(R,S)*X(a,S)*X(j,S)
-!  B(j,b,P) = X(j,Q)*X(b,Q)*Z(P,Q)                        (Ngrid**2*Nocc*Nvirt)
-!  D(j,a,R) = X(j,S)*X(a,S)*Z(R,S)                        (Ngrid**2*Nocc*Nvirt) same as B
-!  E(j,P,R,l) = tau(b,l)*X(b,R)*B(j,b,P)                  (Ngrid**2*Nocc*Nvirt)   
-!  F(j,P,R,l) = tau(a,l)*X(a,P)*D(j,a,R)                  (Ngrid**2*Nocc*Nvirt) same as E but interchage P,R 
-!  G(P,R,l)   = tau(i,l)*X(i,P)*X(i,R)                    (Ngrid**2*Nocc)   
-!  H(P,R,l)   = tau(j,l)*E(j,P,R,l)*F(j,P,R,l)            (Ngrid**2*Nocc)   
-!  Exchange: G(P,R,l)*H(P,R,l)                            (Ngrid**2)
-
-  call mem_alloc(tmpB,nocc,nvirt,ngrid)
-!  B(j,b,P) = X(j,Q)*X(b,Q)*Z(P,Q)                        (Ngrid**2*Nocc*Nvirt)
-  call BuildTmpB(tmpB,nocc,nvirt,ngrid,XV,XO,Zpq)
-
-  call mem_alloc(tmpE,nocc,ngrid,ngrid,nLaplace)
-!  E(j,R,P,l) = tau(b,l)*X(b,R)*B(j,b,P)                  (Ngrid**2*Nocc*Nvirt)   
-  call BuildTmpE(tmpE,nocc,nvirt,ngrid,XV,tmpB,Tvirt,nLaplace)
-  call mem_dealloc(tmpB)
-
-  call mem_alloc(tmpG,ngrid,ngrid,nLaplace)
-!  G(P,R,l)   = tau(i,l)*X(i,P)*X(i,R)                    (Ngrid**2*Nocc)   
-  call BuildTmpG(tmpG,nocc,ngrid,XO,Tocc,nLaplace)
-
-  call mem_alloc(tmpH,ngrid,ngrid,nLaplace)
-!  H(P,R,l)   = tau(j,l)*E(j,P,R,l)*F(j,P,R,l)            (Ngrid**2*Nocc)   
-  call BuildTmpH(tmpH,nocc,ngrid,Tocc,nLaplace,tmpE)
-  call mem_dealloc(tmpE)
-
-!  Exchange: G(P,R,l)*H(P,R,l)                            (Ngrid**2)
-  call LS_THC_RIMP2_LaplaceEcorrK(ngrid,nLaplace,tmpG,tmpH,LaplaceW,ExchangeEnergy)
-  print*,'LS-THC-RI-MP2 Laplace Exchange energy=',ExchangeEnergy
-  mp2_energy = CoulombEnergy + ExchangeEnergy
-  print*,'LS-THC-RI-MP2 Laplace energy=',mp2_energy
-
-
-  call mem_dealloc(tmpG)
-  call mem_dealloc(tmpH)
-
-  call mem_dealloc(Tvirt)
-  call mem_dealloc(Tocc)
-
-
-  IF(WriteToDisk)THEN
-     call mem_dealloc(X)
-  ELSE
-     call mem_dealloc(XO)
-     call mem_dealloc(XV)
-  ENDIF
+     CALL LSTIMER('THC:Ecorr1 ',TS2,TE2,DECINFO%OUTPUT)
+     print*,'LS-THC-RI-MP2 energy=',mp2_energy
+!  ELSE
+     !  Coulomb Contribution
+     !  Coulomb:X(a,P)*X(i,P)*Z(P,Q)*X(b,Q)*X(j,Q)*X(a,R)*X(i,R)*Z(R,S)*X(b,S)*X(j,S)
+     !  tau(i,l) = exp(-epsilon_I*amp_l)   !l is the laplace points
+     !  tau(a,l) = exp(epsilon_A*amp_l)   !l is the laplace points
+     !  A(P,R,l) = X(a,P)*X(a,R)*tau(a,l)           (Ngrid**2*Nvirt)  
+     !  B(P,R,l) = X(i,P)*X(i,R)*tau(i,l)           (Ngrid**2*Nocc) 
+     !  C(Q,S,l) = X(b,Q)*X(b,S)*tau(b,l)           (Ngrid**2*Nvirt)  
+     !  D(Q,S,l) = X(j,Q)*X(j,S)*tau(j,l)           (Ngrid**2*Nocc) 
+     !  Coulomb: weight_l*(A(P,R)*B(P,R))*Z(P,Q)*(C(Q,S)*D(Q,S))*Z(R,S)
+     !  AB(P,R,l) = A(P,R,l)*B(P,R,l)               (Ngrid**2)
+     !  CD(Q,S,l) = C(Q,S,l)*D(Q,S,l)               (Ngrid**2)
+     !  Coulomb: AB(P,R,l)*Z(P,Q)*CD(Q,S,l)*Z(R,S)  (Ngrid**3)
+     
+     call mem_alloc(Tvirt,nvirt,nLaplace)
+     call BuildTvirt(Tvirt,nvirt,nLaplace,EpsVirt,LaplaceAmp)
+     call mem_alloc(AmatPR,ngrid,ngrid,nLaplace)
+     call ls_dzero(AmatPR,ngrid*ngrid*nLaplace)
+     call BuildAmat(nLaplace,ngrid,nvirt,XV,Tvirt,AmatPR)
+     
+     call mem_alloc(Tocc,nocc,nLaplace)
+     call BuildTocc(Tocc,nocc,nLaplace,EpsOcc,LaplaceAmp)
+     call mem_alloc(BmatPR,ngrid,ngrid,nLaplace)
+     call ls_dzero(BmatPR,ngrid*ngrid*nLaplace)
+     call BuildAmat(nLaplace,ngrid,nocc,XO,Tocc,BmatPR)
+     
+     call mem_alloc(ABmatPR,ngrid,ngrid,nLaplace)
+     call BuildABmat(nLaplace,ngrid,ABmatPR,AmatPR,BmatPR)
+     call mem_dealloc(BmatPR)
+     call mem_dealloc(AmatPR)
+     
+     !  Coulomb: AB(P,R,L)*Z(P,Q)*CD(Q,S,L)*Z(R,S)  (Ngrid**3)
+     M = ngrid            !rows of Output Matrix
+     N = ngrid*nLaplace   !columns of Output Matrix
+     K = ngrid            !summation dimension
+     !ZCD(P,S,L) = Z(P,Q)*CD(Q,S,L)
+     call mem_alloc(ZCDmat,ngrid,ngrid,nLaplace)
+     call dgemm('N','N',M,N,K,1.0E0_realk,Zpq,M,ABmatPR,K,0.0E0_realk,ZCDmat,M)
+     call LS_THC_RIMP2_LaplaceEcorrJ(ngrid,nLaplace,Zpq,ABmatPR,ZCDmat,LaplaceW,CoulombEnergy)
+     CALL LSTIMER('THC:EcorrJ',TS2,TE2,DECINFO%OUTPUT)
+     call mem_dealloc(ZCDmat)
+     call mem_dealloc(ABmatPR)
+     print*,'LS-THC-RI-MP2 Laplace Coulomb energy=',CoulombEnergy
+     
+     !  Exchange:X(a,P)*X(i,P)*Z(P,Q)*X(b,Q)*X(j,Q)*X(b,R)*X(i,R)*Z(R,S)*X(a,S)*X(j,S)
+     !  B(j,b,P) = X(j,Q)*X(b,Q)*Z(P,Q)                        (Ngrid**2*Nocc*Nvirt)
+     !  D(j,a,R) = X(j,S)*X(a,S)*Z(R,S)                        (Ngrid**2*Nocc*Nvirt) same as B
+     !  E(j,P,R,l) = tau(b,l)*X(b,R)*B(j,b,P)                  (Ngrid**2*Nocc*Nvirt)   
+     !  F(j,P,R,l) = tau(a,l)*X(a,P)*D(j,a,R)                  (Ngrid**2*Nocc*Nvirt) same as E but interchage P,R 
+     !  G(P,R,l)   = tau(i,l)*X(i,P)*X(i,R)                    (Ngrid**2*Nocc)   
+     !  H(P,R,l)   = tau(j,l)*E(j,P,R,l)*F(j,P,R,l)            (Ngrid**2*Nocc)   
+     !  Exchange: G(P,R,l)*H(P,R,l)                            (Ngrid**2)
+     
+     call mem_alloc(tmpB,nocc,nvirt,ngrid)
+     !  B(j,b,P) = X(j,Q)*X(b,Q)*Z(P,Q)                        (Ngrid**2*Nocc*Nvirt)
+     call BuildTmpB(tmpB,nocc,nvirt,ngrid,XV,XO,Zpq)
+     
+     call mem_alloc(tmpE,nocc,ngrid,ngrid,nLaplace)
+     !  E(j,R,P,l) = tau(b,l)*X(b,R)*B(j,b,P)                  (Ngrid**2*Nocc*Nvirt)   
+     call BuildTmpE(tmpE,nocc,nvirt,ngrid,XV,tmpB,Tvirt,nLaplace)
+     call mem_dealloc(tmpB)
+     
+     call mem_alloc(tmpG,ngrid,ngrid,nLaplace)
+     !  G(P,R,l)   = tau(i,l)*X(i,P)*X(i,R)                    (Ngrid**2*Nocc)   
+     call BuildTmpG(tmpG,nocc,ngrid,XO,Tocc,nLaplace)
+     
+     call mem_alloc(tmpH,ngrid,ngrid,nLaplace)
+     !  H(P,R,l)   = tau(j,l)*E(j,P,R,l)*F(j,P,R,l)            (Ngrid**2*Nocc)   
+     call BuildTmpH(tmpH,nocc,ngrid,Tocc,nLaplace,tmpE)
+     call mem_dealloc(tmpE)
+     
+     !  Exchange: G(P,R,l)*H(P,R,l)                            (Ngrid**2)
+     call LS_THC_RIMP2_LaplaceEcorrK(ngrid,nLaplace,tmpG,tmpH,LaplaceW,ExchangeEnergy)
+     CALL LSTIMER('THC:EcorrK',TS2,TE2,DECINFO%OUTPUT)
+     print*,'LS-THC-RI-MP2 Laplace Exchange energy=',ExchangeEnergy
+     mp2_energy = CoulombEnergy + ExchangeEnergy
+     print*,'LS-THC-RI-MP2 Laplace energy=',mp2_energy
+     call mem_dealloc(tmpG)
+     call mem_dealloc(tmpH)
+     call mem_dealloc(Tvirt)
+     call mem_dealloc(Tocc)
+!  ENDIF
+  call mem_dealloc(XO)
+  call mem_dealloc(XV)
   call mem_dealloc(Zpq)
-  call mem_dealloc(EpsOcc)
-  call mem_dealloc(EpsVirt)
-
-  CALL LSTIMER('LS_THC_RIMP2 ',TS,TE,DECINFO%OUTPUT)
-end subroutine full_canonical_ls_thc_rimp2
-
+  
+end subroutine THC_LS_THC_RIMP2_MO_driver
+  
 subroutine TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA,lupri)
   implicit none
   integer :: nbasis,nocc,nvirt,ngrid,nba,lupri
@@ -729,29 +714,11 @@ subroutine LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,Ecorr)
   call mem_alloc(Z,ngrid,nvirt,nocc)
   Ecorr=0.0E0_realk
   EcorrJ=0.0E0_realk
-!  DO A=1,nvirt
-!     DO B=1,nvirt
-!        DO I=1,nocc
-!           DO J=1,nocc
-!              gaibj = 0.0E0_realk
-!              DO P=1,ngrid
-!                 DO Q=1,ngrid
-!                    gaibj = gaibj + XV(P,A)*XO(P,I)*Zpq(P,Q)*XV(Q,B)*XO(Q,J)
-!                 ENDDO
-!              ENDDO
-!              gbiaj = 0.0E0_realk
-!              DO P=1,ngrid
-!                 DO Q=1,ngrid
-!                    gbiaj = gbiaj + XV(P,B)*XO(P,I)*Zpq(P,Q)*XV(Q,A)*XO(Q,J)
-!                 ENDDO
-!              ENDDO
-!              Ecorr = Ecorr + gaibj*(2.0E0_realk*gaibj-gbiaj)/(EpsOcc(I)+EpsOcc(J)-EpsVirt(A)-EpsVirt(B))
-!           ENDDO
-!        ENDDO
-!     ENDDO
-!  ENDDO
-!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,Q,P,&
-!$OMP TMP) SHARED(XO,XV,Z,Zpq,nocc,nvirt,ngrid)
+
+  !Step 1: Z(Q,A,I) =  XV(P,A)*XO(P,I)*Zpq(P,Q)  Scaling(V*O*N**2)
+
+  !$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,Q,P,&
+  !$OMP TMP) SHARED(XO,XV,Z,Zpq,nocc,nvirt,ngrid)
   DO I=1,nocc
    DO A=1,nvirt
     DO Q=1,ngrid
@@ -763,10 +730,13 @@ subroutine LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,Ecorr)
     ENDDO
    ENDDO
   ENDDO
-!$OMP END PARALLEL DO
-!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,B,J,Q,EpsIAB,&
-!$OMP gaibj,gbiaj) SHARED(XO,XV,Z,EpsOcc,EpsVirt,nocc,nvirt,&
-!$OMP ngrid) REDUCTION(+:Ecorr,EcorrJ) 
+  !$OMP END PARALLEL DO
+
+  !Step 2: E = Z(Q,A,I)*XV(Q,B)*XO(Q,J)  Scaling(V**2*O**2*N)
+
+  !$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(I,A,B,J,Q,EpsIAB,&
+  !$OMP gaibj,gbiaj) SHARED(XO,XV,Z,EpsOcc,EpsVirt,nocc,nvirt,&
+  !$OMP ngrid) REDUCTION(+:Ecorr,EcorrJ) 
   DO I=1,nocc
    DO A=1,nvirt
     DO B=1,nvirt
@@ -786,7 +756,7 @@ subroutine LS_THC_RIMP2_Ecorr(nocc,nvirt,ngrid,XO,XV,Zpq,EpsOcc,EpsVirt,Ecorr)
     ENDDO
    ENDDO
   ENDDO
-!$OMP END PARALLEL DO
+  !$OMP END PARALLEL DO
   print*,'EcorrJ',EcorrJ
   call mem_dealloc(Z)
 end subroutine LS_THC_RIMP2_Ecorr
@@ -911,5 +881,146 @@ subroutine build_THC_MalphaP(Calpha,NBA,nvirt,nocc,XV,ngrid,XO,M)
   ENDDO
 !$OMP END PARALLEL DO
 end subroutine build_THC_MalphaP
+
+subroutine THC_LS_THC_RIMP2_AO_driver(nb,ngrid,nocc,nvirt,naux,noccfull,natoms,nbasisAux,X,&
+     & MyMolecule,mylsitem,mp2_energy,mynum,numnodes)
+  implicit none
+  !>dimensions
+  integer,intent(in) :: nocc,nvirt,naux,noccfull,nb,nbasisAux,mynum,numnodes
+  !> Full molecule info
+  type(fullmolecule), intent(inout) :: MyMolecule
+  !> Lsitem structure
+  type(lsitem), intent(inout) :: mylsitem
+  !> Canonical MP2 correlation energy
+  real(realk),intent(inout) :: mp2_energy    
+  !
+  real(realk),intent(in) :: X(ngrid,nb)
+  !
+  integer :: nAtoms,lupri,ngrid,Iprint,NBA,M,N,K,I,J,A,B,ALPHA,P,Q,offset,nbasis
+  real(realk) :: TS,TE,epsilon,TMP,TS2,TE2,CoulombEnergy,ExchangeEnergy
+  real(realk),pointer :: EpsOcc(:),EpsVirt(:),S(:,:),S_inv(:,:),Zpq(:,:)
+  real(realk),pointer :: Calpha(:),ABdecomp(:,:),Mmat(:,:),Epq(:,:),XO(:,:)
+  real(realk),pointer :: XV(:,:),TZpq(:,:),IntTHC(:,:,:,:),IntRI(:,:,:,:)
+  real(realk),pointer :: SC(:,:),Identity(:,:)
+  real(realk),pointer :: Tvirt(:,:),Tocc(:,:),BmatPR(:,:,:),AmatPR(:,:,:)
+  real(realk),pointer :: ABmatPR(:,:,:),ZCDmat(:,:,:),IntAO(:,:,:,:)
+  real(realk),pointer :: tmpB(:,:,:),tmpE(:,:,:,:),tmpG(:,:,:),tmpH(:,:,:)
+!  integer :: BETA,GAMMA,DELTA
+  logical :: master,FORCEPRINT,CollaborateWithSlaves,ABdecompCreate,WriteToDisk
+  character :: intspec(5)
+  nbasis = nb
+
+  !Keep things in the AO basis
+  !S(P,Q) = (X(P,mu)*X(Q,mu))(X(P,nu)*X(Q,nu))
+  call mem_alloc(S,ngrid,ngrid)
+  call Get_THC_grid_overlap(S,X,nbasis,ngrid)
+  CALL LSTIMER('THC:OVERLAP2',TS2,TE2,DECINFO%OUTPUT)     
+  
+  !Step 4 Construct the Inverse Grid Overlap Matrix
+  call mem_alloc(S_inv,ngrid,ngrid)
+  epsilon = 1.0E-10_realk
+  call Get_THC_grid_overlap_inv(S,S_inv,ngrid,epsilon)
+  CALL LSTIMER('THC:OVERLAP_INV',TS2,TE2,DECINFO%OUTPUT)
+  call mem_dealloc(S)
+  
+  !step 5a construct (alpha|mu nu) 
+  call mem_alloc(Identity,nbasis,nbasis)
+  call ls_dzero(Identity,nbasis*nbasis)
+  DO I=1,nbasis
+     Identity(I,I)=1.0E0_realk
+  ENDDO
+  intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+  intspec(2) = 'R' !Regular AO basis function on center 3
+  intspec(3) = 'R' !Regular AO basis function on center 4
+  intspec(4) = 'C' !Coulomb Operator
+  intspec(5) = 'C' !Coulomb Operator
+  call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
+  ABdecompCreate = .TRUE.
+  call Build_CalphaMO2(Mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
+       & FORCEPRINT,CollaborateWithSlaves,Identity,nbasis,&
+       & Identity,nbasis,mynum,numnodes,Calpha,NBA,ABdecomp,&
+       & ABdecompCreate,intspec,.FALSE.)
+  call mem_dealloc(Identity)
+  
+  call mem_dealloc(ABdecomp)
+  CALL LSTIMER('THC:Build_CalphaMO2',TS2,TE2,DECINFO%OUTPUT)
+  
+  !step 6 construct M(P,alpha) 
+  !M(P,alpha) = (alpha|mu nu)*X(P,mu)*X(P,nu)   !scaling: N*N*Nalpha*Ngrid
+  call mem_alloc(Mmat,ngrid,NBA)
+  CALL build_THC_MalphaP(Calpha,NBA,nbasis,nbasis,X,ngrid,X,Mmat)
+  CALL LSTIMER('THC:build_THC_MalphaP',TS2,TE2,DECINFO%OUTPUT)
+  
+  !step 7 construct Epq
+  !E(P,Q) = M(P,alpha)*M(Q,alpha)
+  M = ngrid   !rows of Output Matrix
+  N = ngrid   !columns of Output Matrix
+  K = NBA     !summation dimension
+  call mem_alloc(Epq,ngrid,ngrid)
+  call dgemm('N','T',M,N,K,1.0E0_realk,Mmat,M,Mmat,M,0.0E0_realk,Epq,M)
+  CALL LSTIMER('THC:DGEMM3',TS2,TE2,DECINFO%OUTPUT)
+  call mem_dealloc(Mmat)
+
+  !step 8 construct Zpq(S,R) = S_inv(S,P)*Epq(P,Q)*S_inv(Q,R)
+  M = ngrid   !rows of Output Matrix
+  N = ngrid   !columns of Output Matrix
+  K = ngrid   !summation dimension
+  !TZpq(S,R) = S_inv(S,P)*Epq(P,Q)
+  call mem_alloc(TZpq,ngrid,ngrid)
+  call dgemm('N','N',M,N,K,1.0E0_realk,S_inv,M,Epq,K,0.0E0_realk,TZpq,M)
+  CALL LSTIMER('THC:DGEMM4',TS2,TE2,DECINFO%OUTPUT)
+  call mem_dealloc(Epq)
+
+  !Zpq(S,R) = TZpq(S,Q)*S_inv(Q,R)
+  call mem_alloc(Zpq,ngrid,ngrid)
+  call dgemm('N','N',M,N,K,1.0E0_realk,TZpq,M,S_inv,K,0.0E0_realk,Zpq,M)
+  CALL LSTIMER('THC:DGEMM5',TS2,TE2,DECINFO%OUTPUT)
+  call mem_dealloc(TZpq)
+  call mem_dealloc(S_inv)
+
+
+  call DumpTHCmatrices(nbasis,ngrid,X,Zpq)
+
+  offset = 0
+  call mem_alloc(EpsOcc,nocc)
+  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+  !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
+  do I=1,nocc
+     EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset)
+  enddo
+  !$OMP END PARALLEL DO
+  call mem_alloc(EpsVirt,nvirt)
+  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
+  !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
+  do A=1,nvirt
+     EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
+  enddo
+  !$OMP END PARALLEL DO
+  mp2_energy=0.0E0_realk
+  CALL LSTIMER('THC:Eps',TS2,TE2,DECINFO%OUTPUT)
+
+  !verify
+  call TestTHCRIAOintegrals(X,ZPQ,Calpha,nbasis,nocc,nvirt,ngrid,NBA,lupri)
+  call mem_dealloc(Calpha)
+  
+  call mem_alloc(IntAO,nbasis,nbasis,nbasis,nbasis)
+  intspec(1) = 'R'
+  intspec(2) = 'R'
+  intspec(3) = 'R'
+  intspec(4) = 'R'
+  intspec(5) = 'C'
+  call II_get_4center_eri(DECINFO%OUTPUT,DECINFO%OUTPUT,mylsitem%SETTING,&
+       & IntAO,nbasis,nbasis,nbasis,nbasis,intspec)     
+  call TestTHCAOintegrals(X,ZPQ,IntAO,nbasis,nocc,nvirt,ngrid,lupri)
+  call mem_dealloc(IntAO)
+  
+  call LS_THC_AO_RIMP2_Ecorr(nocc,nvirt,ngrid,X,Zpq,EpsOcc,EpsVirt,&
+       & mp2_energy,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,nbasis)
+
+  call mem_dealloc(Zpq)
+  call mem_dealloc(EpsOcc)
+  call mem_dealloc(EpsVirt)
+
+end subroutine THC_LS_THC_RIMP2_AO_driver
 
 end module full_ls_thc_rimp2Mod

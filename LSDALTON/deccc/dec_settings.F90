@@ -40,6 +40,7 @@ contains
     ! 5: extra verbose -- will overflow every reasonable machine in no time
     ! a reduction of the print level is obtained by setting print_small_calc to .false. for > 100 nodes
     DECinfo%PL                     = 0
+    DECinfo%MemDebugPrint          =.false.
     DECinfo%print_small_calc       = .true.
 
     ! SNOOP
@@ -52,6 +53,18 @@ contains
     DECinfo%SNOOPort       = .false.
     DECinfo%SNOOPsamespace =.true.
     DECinfo%SNOOPlocalize  = .false.
+
+    ! CC response
+    DECinfo%CCexci = .false.
+    DECinfo%JacobianNumEival = 1
+    DECinfo%JacobianLHTR = .false.
+    DECinfo%JacobianThr = 1.0e-7
+    DECinfo%JacobianMaxSubspace = 1000
+    DECinfo%JacobianMaxIter = 200
+    DECinfo%JacobianInitialSubspace = 0
+    DECinfo%JacobianPrecond = .true.
+    DECinfo%HaldApprox = .false.
+    DECinfo%LW1 = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -241,6 +254,7 @@ contains
     DECinfo%RIMP2ForcePDMCalpha      = .false.
     DECinfo%RIMP2_tiling             = .false.
     DECinfo%RIMP2_lowdin             = .true.
+    DECinfo%RIMP2_Laplace            = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -444,6 +458,36 @@ contains
        case('.SNOOPLOCALIZE')
           DECinfo%SNOOPlocalize=.true.
 
+          ! CC RESPONSE
+          ! ===========
+       case('.EXCITATIONENERGIES')
+          DECinfo%CCexci = .true.
+          read(input,*) DECinfo%JacobianNumEival
+
+       case('.JACOBIANLEFT')
+          DECinfo%JacobianLHTR = .true.
+
+       case('.JACOBIANTHR')
+          read(input,*) DECinfo%JacobianThr 
+
+       case('.JACOBIANMAXSUBSPACE')
+          read(input,*) DECinfo%JacobianMaxSubspace
+
+       case('.JACOBIANINITSUBSPACE')
+          read(input,*) DECinfo%JacobianInitialSubspace
+
+       case('.JACOBIANMAXITER')
+          read(input,*) DECinfo%JacobianMaxIter
+
+       case('.JACOBIANNOTPRECOND')
+          DECinfo%JacobianPrecond = .false.
+
+       case('.HALDAPPROX')
+          DECinfo%HaldApprox = .true.
+
+       case('.LW1')
+          DECinfo%LW1 = .true.
+
 
        ! GENERAL INFO
        ! ============
@@ -583,6 +627,10 @@ contains
        case('.DECPRINT')
           ! DEC print level
           read(input,*) DECinfo%PL
+
+       case('.MEMDEBUGPRINT')
+          ! DEC print level
+          DECinfo%MemDebugPrint=.true.
 
        case('.ONLYOCCPART')
           ! Use only occupied partitioning scheme
@@ -778,6 +826,8 @@ contains
           DECinfo%RIMP2_tiling        = .true.
        case('.RIMP2_CHOL')
           DECinfo%RIMP2_lowdin        = .false.
+       case('.RIMP2_LAPLACE')
+          DECinfo%RIMP2_Laplace       = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -1155,6 +1205,19 @@ contains
     end if
 
 
+    ! CC response - currently not implemented for DEC
+    CCresponse: if(DECinfo%CCexci) then
+       IF(.not. DECinfo%full_molecular_cc) then
+          call lsquit('CC response is not implemented for DEC! Use **CC instead of **DEC.',-1)
+       end IF
+       ! For now we enforce canonical orbitals for CC response
+       if(.not. DECinfo%use_canonical) then
+          write(DECinfo%output,*) 'WARNING! We enforce canonical orbitals for CC response!'
+          DECinfo%use_canonical = .true.
+       end if
+    end if CCresponse
+
+
     ! DEC orbital-based - currently limited to occupied partitioning scheme
     ! and several options are not possible
     DoDECCO: if(DECinfo%DECCO) then
@@ -1463,6 +1526,16 @@ contains
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
+    write(lupri,*) 'CCexci ', DECinfo%CCexci
+    write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
+    write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
+    write(lupri,*) 'JacobianThr ', DECinfo%JacobianThr
+    write(lupri,*) 'JacobianMaxSubspace ', DECinfo%JacobianMaxSubspace
+    write(lupri,*) 'JacobianInitialSubspace ', DECinfo%JacobianInitialSubspace
+    write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
+    write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
+    write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
+    write(lupri,*) 'LW1 ', DECinfo%LW1
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP
@@ -1529,6 +1602,7 @@ contains
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
     write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality
     write(lupri,*) 'PL ', DECitem%PL
+    write(lupri,*) 'MemDebugPrint ', DECitem%MemDebugPrint
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output
     write(lupri,*) 'AbsorbHatoms ', DECitem%AbsorbHatoms
