@@ -1513,8 +1513,8 @@ C
       IF (DOMP2 .OR. DOCCSD) THEN
         IF (DOCCSD. and. DOSCF .AND. (IOPRHF .GT. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell MP2/CC'//
-     &      ' not compatible with open shell RHF'
+         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell CC'//
+     &      ' is not compatible with open shell RHF'
         END IF
         IF (DOHFSRDFT) THEN
 C hjaaj May 2008 : THRRHF_MP2 too small for srMP2  NB NOTE BEMAERK TODO OBS

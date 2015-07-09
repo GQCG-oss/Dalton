@@ -5388,7 +5388,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ntot    = nocc + nvir
     nbas    = MyFragment%nbasis
     mo_ccsd = .true.
-    if (DECinfo%NO_MO_CCSD.or.(nbas>400)) mo_ccsd = .false.
+    if (DECinfo%NO_MO_CCSD.or.((ntot)>MAX_ORB_MOCCSD)) mo_ccsd = .false.
 
     if (DECinfo%force_scheme) then
       scheme=DECinfo%en_mem
@@ -6809,7 +6809,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
     integer(kind=long) :: tmp_size, tmp_size0, tmp_size1, tmp_size2, no2v2
 
-    integer :: i, a, O, V, N, X
+    integer :: i, a
 
     !> debug:
     logical :: print_debug, local_moccsd, use_bg_buf
@@ -6848,49 +6848,43 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
     ! shortcuts:
-    ntot = nocc + nvir
-    O = nocc
-    V = nvir
-    N = ntot
-    X = MOinfo%DimInd1(1)
+    ntot  = nocc + nvir
+    dimMO = MOinfo%DimInd1(1)
+    use_bg_buf  = mem_is_background_buf_init()
     print_debug = (DECinfo%PL>3.or.DECinfo%cc_driver_debug.and.master)
-    use_bg_buf = mem_is_background_buf_init()
 
     ! Allocate working memory:
-    dimMO = MOinfo%DimInd1(1)
-    tmp_size0 = max(O**4, V*O**3, V*V*O*O, X*X*N*N, X*O*O*V, X*O*V*V)
-    tmp_size0 = int(i8*tmp_size0, kind=long)
+    call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
-    tmp_size1 = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
-    tmp_size1 = int(i8*tmp_size1, kind=long)
+    call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
+    call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
+    call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
+    call tensor_zero(u2)
+    call tensor_zero(gvoov)
+    call tensor_zero(gvvoo)
 
-    tmp_size2 = max(X*O*V*N, O*O*V*V, X*X*N*N, X*O*O*N)
-    tmp_size2 = int(i8*tmp_size2, kind=long)
     if (use_bg_buf) then
-       !call mem_change_background_alloc(i8*(tmp_size1+tmp_size2)*8)
-
-       call mem_pseudo_alloc(tmp0, tmp_size0)
-       call mem_pseudo_alloc(tmp1, tmp_size1)
-       call mem_pseudo_alloc(tmp2, tmp_size2)
+       call mem_pseudo_alloc(xvir, int(i8*nvir*ntot, kind=long))
+       call mem_pseudo_alloc(yocc, int(i8*nocc*ntot, kind=long))
+       call mem_pseudo_alloc(gmo, int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
+       call mem_pseudo_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
+       call mem_pseudo_alloc(G_Pi, int(i8*ntot*nocc, kind=long))
+       call mem_pseudo_alloc(H_aQ, int(i8*nvir*ntot, kind=long))
+       call mem_pseudo_alloc(tmp0, int(i8*tmp_size0, kind=long))
+       call mem_pseudo_alloc(tmp1, int(i8*tmp_size1, kind=long))
+       call mem_pseudo_alloc(tmp2, int(i8*tmp_size2, kind=long))
     else
+       call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
+       call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
+       call mem_alloc(gmo,  int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
+       call mem_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
+       call mem_alloc(G_Pi, ntot*nocc)
+       call mem_alloc(H_aQ, nvir*ntot)
        call mem_alloc(tmp0, tmp_size0)
        call mem_alloc(tmp1, tmp_size1)
        call mem_alloc(tmp2, tmp_size2)
     end if
 
-    call mem_alloc(xvir, int(i8*nvir*ntot, kind=long))
-    call mem_alloc(yocc, int(i8*nocc*ntot, kind=long))
-    call mem_alloc(gmo, int(i8*dimMO*dimMO*ntot*ntot, kind=long)) 
-    call mem_alloc(B2prep, int(i8*nocc*nocc*nocc*nocc, kind=long))
-    call mem_alloc(G_Pi, ntot*nocc)
-    call mem_alloc(H_aQ, nvir*ntot)
-
-    call tensor_init(u2, [nvir,nvir,nocc,nocc],4)
-    call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4)
-    call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4)
-    call tensor_zero(u2)
-    call tensor_zero(gvoov)
-    call tensor_zero(gvvoo)
 
     ! start timings:
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -7089,21 +7083,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
       ! Free arrays:
-      call mem_dealloc(xvir)
-      call mem_dealloc(yocc)
-      call mem_dealloc(gmo)
-      call mem_dealloc(B2prep)
-      call mem_dealloc(G_Pi)
-      call mem_dealloc(H_aQ)
       if (use_bg_buf) then
          call mem_pseudo_dealloc(tmp0)
+         call mem_pseudo_dealloc(H_aQ)
+         call mem_pseudo_dealloc(G_Pi)
+         call mem_pseudo_dealloc(B2prep)
+         call mem_pseudo_dealloc(gmo)
+         call mem_pseudo_dealloc(yocc)
+         call mem_pseudo_dealloc(xvir)
       else
          call mem_dealloc(tmp0)
+         call mem_dealloc(H_aQ)
+         call mem_dealloc(G_Pi)
+         call mem_dealloc(B2prep)
+         call mem_dealloc(gmo)
+         call mem_dealloc(yocc)
+         call mem_dealloc(xvir)
       end if
        
-      call tensor_free(u2)
-      call tensor_free(gvoov)
       call tensor_free(gvvoo)
+      call tensor_free(gvoov)
+      call tensor_free(u2)
 
       call mem_dealloc(joblist)
  
@@ -7186,21 +7186,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     ! Free arrays:
-    call mem_dealloc(xvir)
-    call mem_dealloc(yocc)
-    call mem_dealloc(gmo)
-    call mem_dealloc(B2prep)
-    call mem_dealloc(G_Pi)
-    call mem_dealloc(H_aQ)
     if (use_bg_buf) then
        call mem_pseudo_dealloc(tmp0)
+       call mem_pseudo_dealloc(H_aQ)
+       call mem_pseudo_dealloc(G_Pi)
+       call mem_pseudo_dealloc(B2prep)
+       call mem_pseudo_dealloc(gmo)
+       call mem_pseudo_dealloc(yocc)
+       call mem_pseudo_dealloc(xvir)
     else
        call mem_dealloc(tmp0)
+       call mem_dealloc(H_aQ)
+       call mem_dealloc(G_Pi)
+       call mem_dealloc(B2prep)
+       call mem_dealloc(gmo)
+       call mem_dealloc(yocc)
+       call mem_dealloc(xvir)
     end if
 
-    call tensor_free(u2)
-    call tensor_free(gvoov)
     call tensor_free(gvvoo)
+    call tensor_free(gvoov)
+    call tensor_free(u2)
 
 #ifdef VAR_MPI
     call mem_dealloc(joblist)
@@ -7273,8 +7279,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     if (P_sta<Q_sta) then
       ! transpose gmo to get batch QP:
       call array_reorder_3d(1.0E0_realk,gmo,dimP,dimQ,ntot*ntot, &
-                          & [2,1,3],0.0E0_realk,tmp1)
-      call dcopy(dimQ*dimP*ntot*ntot,tmp1,1,gmo,1)
+                          & [2,1,3],0.0E0_realk,tmp0)
+      call dcopy(dimQ*dimP*ntot*ntot,tmp0,1,gmo,1)
 
       call get_A2_and_B2prep_terms(ccmodel,ntot,nocc,nvir,dimQ,dimP,Q_sta,P_sta,gmo, &
                           & xvir,yocc,t2,B2prep,omega2,tmp0,tmp1,tmp2)
@@ -7377,22 +7383,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     ! add O4 int. to B2 term
     if (dimK>0) then
-      ! reorder g[PQrs] to g[QsPr]:
-      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot,[2,4,1,3],0.0E0_realk,tmp0)
- 
-      ! Get g[QsKl from g[QsPr]:
-      ncopy = dimQ*ntot*dimK
-      !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ncopy,nocc,ntot,dimP,dimQ,tmp0,tmp2)&
-      !$OMP PRIVATE(i,pos1,pos2)
-      do i =1,nocc
-        pos1 = 1 + (i-1)*dimQ*ntot*dimP
-        pos2 = 1 + ncopy*(i-1)
-        call dcopy(ncopy,tmp0(pos1),1,tmp2(pos2),1)
-      end do
-      !$OMP END PARALLEL DO
-  
-      ! transpose g[Q,sKl] to g[sKl, Q]
-      call mat_transpose(dimQ, ntot*dimK*nocc, 1.0E0_realk, tmp2, 0.0E0_realk, tmp1)
+      ! Extract g[sKlQ] from g[PQrs]
+      call manual_4132_reordering_f2t([dimK,dimQ,nocc,ntot],[dimP,dimQ,ntot,ntot], &
+         & [1,1,1,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! transform Q => i and get: g[sK li]
       pos1 = 1 + (Q_sta-1)*nocc
@@ -7447,24 +7440,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end do
     !$OMP END PARALLEL DO
 
-    ! Calculate sigma[p r; i<=j]
-    ! get g[PrQs]:
-    if (dimK>0) then
-      call mat_transpose(dimQ*ntot, dimP*ntot, 1.0E0_realk, tmp0, 0.0E0_realk, tmp2)
-    else
-      call array_reorder_4d(1.0E0_realk,gmo,dimP,dimQ,ntot,ntot,[1,3,2,4],0.0E0_realk,tmp2)
-    end if
-     
-    ! get g[PrCd] from g[PrQs] 
-    ncopy = dimP*ntot*dimC
-    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(ncopy,ntot,nocc,nvir,dimI,dimC,dimP,dimQ,tmp0,tmp2)&
-    !$OMP PRIVATE(i,j,pos1,pos2)
-    do i =1,nvir
-      pos1 = 1 + dimI*dimP*ntot + (nocc+i-1)*dimP*ntot*dimQ
-      pos2 = 1 + ncopy*(i-1)
-      call dcopy(ncopy,tmp2(pos1),1,tmp0(pos2),1)
-    end do
-    !$OMP END PARALLEL DO
+    ! Extract g[PrCd] from g[PQrs]
+    call manual_1324_reordering_f2t([dimP,dimC,ntot,nvir],[dimP,dimQ,ntot,ntot], &
+       & [1,1+dimI,1,1+nocc],1.0E0_realk,gmo,0.0E0_realk,tmp0)
      
     ! Get: sigma[pr, ij] = sum_cd g[pr, cd] * t2red[cd, ij]
     call dgemm('n','n',dimP*ntot,n_ij,dimC*nvir,1.0E0_realk,tmp0,dimP*ntot, &
@@ -7637,20 +7615,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       pos1 = D_sta+dimD-1
       call dcopy(ncopy,u2(:,D_sta:pos1,:,:),1,tmp0,1)
        
-      ! Get g[PD, kc] from g[PQ, rs]; D in Q batch
-      ncopy = dimP*dimD
-      pos2 = 1
-      do c=1,nvir
-        do k=1,nocc
-          pos1 = 1 + dimP*dimI + dimP*dimQ*ntot*(nocc+c-1) + (k-1)*dimP*dimQ
-          call dcopy(ncopy,gmo(pos1),1,tmp2(pos2),1)
-          pos2 = pos2 + ncopy
-        end do
-      end do
-       
-      ! Get g[PcDk]
-      call array_reorder_4d(1.0E0_realk,tmp2,dimP,dimD,nocc,nvir, &
-                            & [1,4,2,3],0.0E0_realk,tmp1)
+      ! Extract g[PcDk] from g[PQrs]
+      call manual_1324_reordering_f2t([dimP,dimD,nvir,nocc],[dimP,dimQ,ntot,ntot], &
+         & [1,1+dimI,1+nocc,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! Get G_Pi = sum_cDk g[P, cDk] u2[cDk, i]:
       call dgemm('n','n',dimP,nocc,nvir*dimD*nocc,1.0E0_realk,tmp1,dimP, &
@@ -7666,17 +7633,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       pos1 = P_sta+dimK-1
       call dcopy(ncopy,u2(:,:,P_sta:pos1,:),1,tmp0,1)
 
-      ! get g[cKl, Q] from g[PQrs]
-      do c=1,nvir
-        do l=1,nocc
-          do q=1,dimQ
-            pos1 = 1 + (q-1)*dimP + (l-1)*dimP*dimQ + (nocc+c-1)*dimP*dimQ*ntot
-            pos2 = c + (l-1)*nvir*dimK + (q-1)*nvir*dimK*nocc
-            call dcopy(dimK,gmo(pos1),1,tmp1(pos2),nvir)
-          end do 
-        end do 
-      end do 
-      
+      ! Extract g[cKlQ] from g[PQrs]
+      call manual_3142_reordering_f2t([dimK,dimQ,nvir,nocc],[dimP,dimQ,ntot,ntot], &
+         & [1,1,1+nocc,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
+
       ! Get H_aQ = sum_cKl u2[a, cKl] g[cKl, Q]
       call dgemm('n','n',nvir,dimQ,nvir*dimK*nocc,1.0E0_realk,tmp0,nvir, &
                 & tmp1,nvir*dimK*nocc,1.0E0_realk,H_aQ(1+(Q_sta-1)*nvir),nvir)
@@ -7768,24 +7728,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !====================================================================
     ! Get gvoov integrals: g[aijb]
-    ! 1) get g[PQjb]
-    ncopy = dimP*dimQ*nocc
-    pos2 = 1 
-    do b=1,nvir
-      pos1 = 1 + (nocc+b-1)*dimP*dimQ*ntot
-      call dcopy(ncopy,gmo(pos1),1,tmp0(pos2),1)
-      pos2 = pos2 + ncopy
-    end do
-    
-    ! 2) transpose and get g[QjbP]:
-    call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
+    !! 1) get g[PQjb]
+    !ncopy = dimP*dimQ*nocc
+    !pos2 = 1 
+    !do b=1,nvir
+    !  pos1 = 1 + (nocc+b-1)*dimP*dimQ*ntot
+    !  call dcopy(ncopy,gmo(pos1),1,tmp0(pos2),1)
+    !  pos2 = pos2 + ncopy
+    !end do
+    !
+    !! 2) transpose and get g[QjbP]:
+    !call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
   
-    ! 3) transform Q to i:
+    ! Extract g[QjbP] from g[PQrs]
+    call manual_2341_reordering_f2t([dimP,dimQ,nocc,nvir],[dimP,dimQ,ntot,ntot], &
+       & [1,1,1,1+nocc],1.0E0_realk,gmo,0.0E0_realk,tmp1)
+
+    ! transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc
     call dgemm('n','n',nocc,nocc*nvir*dimP,dimQ,1.0E0_realk,yocc(pos1),nocc, &
               & tmp1,dimQ,0.0E0_realk,tmp0,nocc)
 
-    ! 4) transform P to a:
+    ! transform P to a:
     pos1 = 1 + (P_sta-1)*nvir
     call dgemm('n','t',nvir,nocc*nocc*nvir,dimP,1.0E0_realk,xvir(pos1),nvir, &
               & tmp0,nocc*nocc*nvir,1.0E0_realk,gvoov,nvir)

@@ -20,6 +20,7 @@ module background_buffer_module
   type bg_buf_realk
      logical              :: init = .false.
      integer              :: offset, nmax
+     integer              :: max_usage
      real(realk), pointer :: p(:)
      type(c_ptr)          :: c = c_null_ptr
      integer              :: n

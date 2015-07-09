@@ -417,6 +417,7 @@ endif()
 if(ENABLE_XCINT)
     add_dalton_runtest(xcint_energy "dalton;xcint;unknown")
     add_dalton_runtest(xcint_lr "dalton;xcint;unknown")
+    add_dalton_runtest(xcint_cpp "dalton;xcint;unknown")
 endif()
 
 if(ENABLE_VPOTDAMP)

@@ -60,11 +60,11 @@ CONTAINS
     ENDIF
     lsdalton_max_acc_device_num = acc_get_num_devices(lsdalton_acc_device_type)
     print*,'There are ',lsdalton_max_acc_device_num,'devices'
-    print*,'The Program only supports 1 device at present'
-    lsdalton_acc_device_num = 0_acc_handle_kind
-    IF(acc_get_num_devices(lsdalton_acc_device_type).GT.1_acc_handle_kind)THEN
+    print*,'The Program only support 1 device at present'
+    lsdalton_acc_device_num = 0
+    IF(lsdalton_max_acc_device_num.GT.1)THEN
        print*,'You can change the number of devices by'
-       print*,'export ACC_DEVICE_NUM=1'
+       print*,'export ACC_DEVICE_NUM=XXX'
        print*,'Setting the selected device number to ',lsdalton_acc_device_num
        call acc_set_device_num(lsdalton_acc_device_num,lsdalton_acc_device_type)     
     ENDIF
