@@ -63,6 +63,7 @@ MODULE lsparameters
   integer,parameter :: GeoDerivCoulombSpec = 10
   integer,parameter :: GeoDerivLHSSpec     = 11
   integer,parameter :: GeoDerivRHSSpec     = 12
+  integer,parameter :: magderivEcontribSpec= 13
 
 ! THESE ARE MPI JOB SPECIFIERS 
   integer,parameter :: MATRIXTY                     =  1
