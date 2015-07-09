@@ -1163,6 +1163,7 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      call mem_alloc(magderivKcont,3,nnonZero)
      call II_get_magderivKcont(LUPRI,LUERR,molcfg%SETTING,Xk,&
           & nnonZero,magderivKcont,D)
+
      nnonZero2 = 0
      do jcoor=1,3*nAtomsSelected
         IF(NonZero(jcoor))THEN

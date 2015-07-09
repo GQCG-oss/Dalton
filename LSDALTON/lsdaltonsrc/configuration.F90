@@ -4043,6 +4043,13 @@ endif
 #endif
    end if
 
+   !NMR sanity check
+   IF(config%decomp%cfg_gcbasis.AND.config%response%tasks%doNMRshield_selected)THEN
+      write(config%lupri,*)'*INASHIELD requies .NOGCBASIS under **GENERAL'
+      print*,'*INASHIELD requies .NOGCBASIS under **GENERAL'
+      call lsquit('*INASHIELD requies .NOGCBASIS under **GENERAL')
+   ENDIF
+
 !Local Excited state geometry optimization check:
 !================================================
 

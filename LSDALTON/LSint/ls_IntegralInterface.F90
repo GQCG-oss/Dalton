@@ -1608,13 +1608,10 @@ CASE (magderivEcontribSpec)
    INT_INPUT%magderOrderQ  = 0
    INT_INPUT%NMAGDERIVCOMPP = 3
    INT_INPUT%NMAGDERIVCOMPQ = 1
-   !INT_INPUT%sphericalEcoeff = .TRUE.!.FALSE.!
    INT_INPUT%HermiteEcoeff = .FALSE.
    INT_INPUT%MAGDERIVORDER = 1
    INT_INPUT%doMagScreen=.TRUE.
-   INT_INPUT%sameODs  = .FALSE.
-   INT_INPUT%sameRHSaos = .FALSE. !DEBUGGING
-   INT_INPUT%sameLHSaos = .FALSE. !DEBUGGING
+   INT_INPUT%sameODs  = .FALSE. !false since only derivative on LHS 
    INT_INPUT%AddToIntegral = .TRUE.
 CASE DEFAULT
    WRITE(LUPRI,'(1X,2A)') 'Error: Wrong case in set_input_from_spec =',Spec

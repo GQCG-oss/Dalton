@@ -2266,13 +2266,20 @@ IF(PerformCALC)THEN
          !K(A,C) = Integral(A,B,C,D)*DRHS(B,D)
          !Same LHS aos:  Permute A,B
          !K(B,C) = Integral(B,A,C,D)*DRHS(A,D)
+         !Same RHS aos:  Permute C,D
+         !K(A,D) = Integral(A,B,D,C)*DRHS(B,C)
 
          !Energy = DLHS(A,C)*Integral(A,B,C,D)*DRHS(B,D)
          ! or if sameLHSaos
          !Energy = DLHS(B,C)*Integral(B,A,C,D)*DRHS(A,D)
+         ! or if sameRHSaos
+         !Energy = DLHS(A,D)*Integral(A,B,D,C)*DRHS(B,C)
          DMATELM1=RED_DMAT_LHS(A,C)+RED_DMAT_RHS(B,D)
          IF(INPUT%sameLHSaos)then
             DMATELM2=RED_DMAT_LHS(B,C)+RED_DMAT_RHS(A,D)
+            MAXDMAT=MAX(DMATELM1,DMATELM2)
+         ELSEIF(INPUT%sameRHSaos)then
+            DMATELM2=RED_DMAT_LHS(A,D)+RED_DMAT_RHS(B,C)
             MAXDMAT=MAX(DMATELM1,DMATELM2)
          ELSE
             MAXDMAT=DMATELM1

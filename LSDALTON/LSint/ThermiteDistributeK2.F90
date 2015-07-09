@@ -1260,14 +1260,13 @@ Real(Realk),intent(inout)          :: Kcont(3,ndmat)
 !
 type(overlap),pointer :: P,Q
 logical :: SamePQ,SameLHSaos,SameRHSaos,SameODs
-Logical :: AntipermuteAB,permuteCD,permuteOD
+Logical :: AntipermuteAB,permuteCD
 integer :: nAngmomP,nPasses,maxBat,maxAng
 integer :: iPass,iPassP,iPassQ,idmat,DAr,CBr
 integer :: nA,nB,nC,nD,batchA,batchB,batchC,batchD,atomA,atomB,atomC,atomD
 integer :: AC,BD,DA,CB,AD,BC,n1,n2,n3,n4,s1,s2,s3,s4
 integer :: CA,DB
 Real(realk),pointer :: lAC(:),lBC(:),lAD(:),lBD(:),rBD(:),rAD(:),rBC(:),rAC(:)
-Real(realk),pointer :: lCA(:),lCB(:),lDA(:),lDB(:),rDB(:),rDA(:),rCB(:),rCA(:)
 Real(realk) :: tmpKcont(3,ndmat)
 P => PQ%P%p
 Q => PQ%Q%p
@@ -1287,8 +1286,8 @@ DO iPassP=1,P%nPasses
   batchB = P%orb2batch(iPassP)
   nB     = P%orbital2%totOrbitals
 
-  AntipermuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
-  
+  antipermuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
+
   DO iPassQ=1,Q%nPasses
     iPass = iPass + 1
 
@@ -1299,28 +1298,7 @@ DO iPassP=1,P%nPasses
     batchD = Q%orb2batch(iPassQ)
     nD     = Q%orbital2%totOrbitals
     permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
-    permuteOD = SameODs.AND.( ((batchA.NE.batchC).OR.(atomA.NE.atomC)).OR.&
-   &                          ((batchB.NE.batchD).OR.(atomB.NE.atomD)) )
-    permuteOD = SameODs.AND..NOT.((batchA.EQ.batchC).AND.(atomA.EQ.atomC).AND.&
-   &                          (batchB.EQ.batchD).AND.(atomB.EQ.atomD) )
 
-!!$    CA = Dlhs%index(atomC,atomA,1,1)
-!!$    rCA => Dlhs%lsao(CA)%elms
-!!$    DB = Dlhs%index(atomD,atomB,1,1)
-!!$    lDB => Dlhs%lsao(DB)%elms       
-!!$    n3 = Dlhs%lsao(CA)%nLocal(1) 
-!!$    n1 = Dlhs%lsao(CA)%nLocal(2) 
-!!$    n4 = Dlhs%lsao(DB)%nLocal(1) 
-!!$    n2 = Dlhs%lsao(DB)%nLocal(2) 
-!!$    maxBat = Dlhs%lsao(CA)%maxBat
-!!$    maxAng = Dlhs%lsao(CA)%maxAng
-!!$    s3 = Dlhs%lsao(CA)%startLocalOrb(1+(batchC-1)*maxAng)-1
-!!$    s1 = Dlhs%lsao(CA)%startLocalOrb(1+(batchA-1)*maxAng+maxAng*maxBat)-1
-!!$    maxBat = Dlhs%lsao(DB)%maxBat
-!!$    maxAng = Dlhs%lsao(DB)%maxAng
-!!$    s4 = Dlhs%lsao(DB)%startLocalOrb(1+(batchD-1)*maxAng)-1
-!!$    s2 = Dlhs%lsao(DB)%startLocalOrb(1+(batchB-1)*maxAng+maxAng*maxBat)-1
-    
     !LHS
     AC = Dlhs%index(atomA,atomC,1,1)
     lAC => Dlhs%lsao(AC)%elms
@@ -1339,59 +1317,78 @@ DO iPassP=1,P%nPasses
     maxAng = Drhs%lsao(BD)%maxAng
     s2 = Drhs%lsao(BD)%startLocalOrb(1+(batchB-1)*maxAng)-1
     s4 = Drhs%lsao(BD)%startLocalOrb(1+(batchD-1)*maxAng+maxAng*maxBat)-1
-    call magfull5A(tmpKcont,lAC,rBD,n1,n2,n3,n4,s1,s2,s3,s4,&
-         & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+
+    IF (AntipermuteAB.AND.permuteCD)THEN
+       BC = Dlhs%index(atomB,atomC,1,1)
+       lBC => Dlhs%lsao(BC)%elms
+       AD = Drhs%index(atomA,atomD,1,1)
+       rAD => Drhs%lsao(AD)%elms       
+
+       AD = Dlhs%index(atomA,atomD,1,1)
+       lAD => Dlhs%lsao(AD)%elms       
+       BC = Drhs%index(atomB,atomC,1,1)
+       rBC => Drhs%lsao(BC)%elms
+
+       BD = Dlhs%index(atomB,atomD,1,1)
+       lBD => Dlhs%lsao(BD)%elms       
+       AC = Drhs%index(atomA,atomC,1,1)
+       rAC => Drhs%lsao(AC)%elms
+       !Kcont = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+       !Kcont = DLHS(B,C)*Integral(A,B,D,C)^b*DRHS(A,D)
+       !Kcont = DLHS(A,D)*Integral(A,B,D,C)^b*DRHS(B,C)
+       !Kcont = DLHS(B,D)*Integral(A,B,D,C)^b*DRHS(A,C)
+       call magfullABCD(tmpKcont,lAC,rBD,lBC,rAD,lAD,rBC,lBD,rAC,&
+            & n1,n2,n3,n4,s1,s2,s3,s4,CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+    ELSEIF (AntipermuteAB) THEN
+       !
+       BC = Dlhs%index(atomB,atomC,1,1)
+       lBC => Dlhs%lsao(BC)%elms
+       AD = Drhs%index(atomA,atomD,1,1)
+       rAD => Drhs%lsao(AD)%elms       
+       !Kcont = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+       !Kcont = DLHS(B,C)*Integral(A,B,D,C)^b*DRHS(A,D)
+       call magfullAB(tmpKcont,lAC,rBD,lBC,rAD,&
+            & n1,n2,n3,n4,s1,s2,s3,s4,CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+    ELSEIF (permuteCD) THEN
+       AD = Dlhs%index(atomA,atomD,1,1)
+       lAD => Dlhs%lsao(AD)%elms       
+       BC = Drhs%index(atomB,atomC,1,1)
+       rBC => Drhs%lsao(BC)%elms
+       !Kcont = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+       !Kcont = DLHS(A,D)*Integral(A,B,D,C)^b*DRHS(B,C)
+       call magfullCD(tmpKcont,lAC,rBD,lAD,rBC,&
+            & n1,n2,n3,n4,s1,s2,s3,s4,CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+    ELSE
+       !Kcont = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+       call magfull(tmpKcont,lAC,rBD,&
+            & n1,n2,n3,n4,s1,s2,s3,s4,CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+    ENDIF
   ENDDO !iPassQ
 ENDDO !iPassP
-!not necessary ! 
-!reduction afterwards
-!!$OMP CRITICAL (distributeKgradBlock)
+!reduction afterwards - each thread have its own version of Kcont
 DO idmat=1,ndmat
    Kcont(1,idmat) = Kcont(1,idmat) - tmpKcont(1,idmat)
    Kcont(2,idmat) = Kcont(2,idmat) - tmpKcont(2,idmat)
    Kcont(3,idmat) = Kcont(3,idmat) - tmpKcont(3,idmat)
 ENDDO
 
-!iPassP=2
-!DO idmat=1,ndmat
-!   print*,'tmpKcont(',iPassP,',',idmat,')',tmpKcont(iPassP,idmat)
-!ENDDO
-!DO idmat=1,ndmat
-!   print*,'Kcont(',iPassP,',',idmat,')',Kcont(iPassP,idmat)
-!ENDDO
-!!$OMP END CRITICAL (distributeKgradBlock)
-
 CONTAINS
-subroutine magfull5A(Kcont,DLHS_AC,DRHS_BD,n1,n2,n3,n4,s1,s2,s3,s4,&
-     & CDAB,nA,nB,nC,nD,iPass,nPasses,nLHS,lupri)
+subroutine magfullABCD(Kcont,DLHS_AC,DRHS_BD,DLHS_BC,DRHS_AD,&
+     & DLHS_AD,DRHS_BC,DLHS_BD,DRHS_AC,&
+     & n1,n2,n3,n4,s1,s2,s3,s4,CDAB,nA,nB,nC,nD,iPass,nPasses,nLHS,lupri)
 implicit none
 Integer,intent(IN)     :: nA,nB,nC,nD,iPass,nPasses,lupri,nLHS
 Integer,intent(IN)     :: n1,n2,n3,n4,s1,s2,s3,s4
 Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,3,nPasses)
-Real(realk),intent(IN) :: DRHS_BD(n2,n4),DLHS_AC(n1,n3,nLHS)
+Real(realk),intent(IN) :: DLHS_AC(n1,n3,nLHS),DRHS_BD(n2,n4)
+Real(realk),intent(IN) :: DLHS_BC(n2,n3,nLHS),DRHS_AD(n1,n4)
+Real(realk),intent(IN) :: DLHS_AD(n1,n4,nLHS),DRHS_BC(n2,n3)
+Real(realk),intent(IN) :: DLHS_BD(n2,n4,nLHS),DRHS_AC(n1,n3)
 Real(realk),intent(INOUT) :: Kcont(3,nLHS)
 !
 Integer     :: iA,iB,iC,iD,idmat
-Real(realk) :: tmpBD(3)
+Real(realk) :: tmpBD(3),tmpAD(3),tmpBC(3),tmpAC(3)
 real(realk),parameter :: D0=0.0E0_realk
-!!$DO iB=1,nB
-!!$ DO iA=1,nA
-!!$  DO iD=1,nD
-!!$   DO iC=1,nC
-!!$    DO idmat=1,ndmat
-!!$     Kcont(1,idmat)=Kcont(1,idmat)+DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,1,iPass)*DRHS_BD(s2+iB,s4+iD)
-!!$     Kcont(2,idmat)=Kcont(2,idmat)+DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,2,iPass)*DRHS_BD(s2+iB,s4+iD)
-!!$     Kcont(3,idmat)=Kcont(3,idmat)+DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,3,iPass)*DRHS_BD(s2+iB,s4+iD)
-!!$    ENDDO
-!!$!    idmat=1
-!!$!    IF(ABS(DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,2,iPass)*DRHS_BD(s2+iB,s4+iD)).GT.1.0E-8_realk)THEN
-!!$!       print*,'IntQ=',CDAB(iC,iD,iA,iB,2,iPass),DLHS_AC(s1+iA,s3+iC,idmat),DRHS_BD(s2+iB,s4+iD)
-!!$!       print*,'Q=',DLHS_AC(s1+iA,s3+iC,idmat)*CDAB(iC,iD,iA,iB,2,iPass)*DRHS_BD(s2+iB,s4+iD)
-!!$!    ENDIF    
-!!$   ENDDO
-!!$  ENDDO
-!!$ ENDDO
-!!$ENDDO
 DO iB=1,nB
  DO iA=1,nA
   DO iD=1,nD
@@ -1399,6 +1396,79 @@ DO iB=1,nB
     tmpBD(1) = D0
     tmpBD(2) = D0
     tmpBD(3) = D0
+    tmpAD(1) = D0
+    tmpAD(2) = D0
+    tmpAD(3) = D0
+    tmpBC(1) = D0
+    tmpBC(2) = D0
+    tmpBC(3) = D0
+    tmpAC(1) = D0
+    tmpAC(2) = D0
+    tmpAC(3) = D0
+    !Kcont(A,B,C,D) = DLHS(A,C)*Integral((AB)^b|CD)*DRHS(B,D)
+    !Kcont(B,A,C,D) = DLHS(B,C)*Integral((BA)^b|CD)*DRHS(A,D) = - DLHS(B,C)*Integral((AB)^b|CD)*DRHS(A,D)
+    !Kcont(A,B,D,C) = DLHS(A,D)*Integral((AB)^b|DC)*DRHS(B,C) =   DLHS(A,D)*Integral((AB)^b|CD)*DRHS(B,C)
+    !Kcont(B,A,D,C) = DLHS(B,D)*Integral((BA)^b|DC)*DRHS(A,C) = - DLHS(B,D)*Integral((AB)^b|CD)*DRHS(A,C)
+    DO iC=1,nC
+     tmpBD(1) = tmpBD(1) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpBD(2) = tmpBD(2) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpBD(3) = tmpBD(3) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,3,iPass)
+     !permute AB
+     tmpAD(1) = tmpAD(1) + DLHS_BC(s2+iB,s3+iC,idmat) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpAD(2) = tmpAD(2) + DLHS_BC(s2+iB,s3+iC,idmat) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpAD(3) = tmpAD(3) + DLHS_BC(s2+iB,s3+iC,idmat) * CDAB(iC,iD,iA,iB,3,iPass)
+     !permute CD
+     tmpBC(1) = tmpBC(1) + DRHS_BC(s2+iB,s3+iC) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpBC(2) = tmpBC(2) + DRHS_BC(s2+iB,s3+iC) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpBC(3) = tmpBC(3) + DRHS_BC(s2+iB,s3+iC) * CDAB(iC,iD,iA,iB,3,iPass)
+     !permute AB and CD
+     tmpAC(1) = tmpAC(1) + DRHS_AC(s1+iA,s3+iC) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpAC(2) = tmpAC(2) + DRHS_AC(s1+iA,s3+iC) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpAC(3) = tmpAC(3) + DRHS_AC(s1+iA,s3+iC) * CDAB(iC,iD,iA,iB,3,iPass)
+    ENDDO
+    !Kcont = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+    Kcont(1,idmat) = Kcont(1,idmat) + tmpBD(1) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(2,idmat) = Kcont(2,idmat) + tmpBD(2) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(3,idmat) = Kcont(3,idmat) + tmpBD(3) * DRHS_BD(s2+iB,s4+iD)
+    !Kcont = DLHS(B,C)*Integral(B,A,C,D)^b*DRHS(A,D) (permute AB)
+    Kcont(1,idmat) = Kcont(1,idmat) - tmpAD(1) * DRHS_AD(s1+iA,s4+iD) 
+    Kcont(2,idmat) = Kcont(2,idmat) - tmpAD(2) * DRHS_AD(s1+iA,s4+iD)
+    Kcont(3,idmat) = Kcont(3,idmat) - tmpAD(3) * DRHS_AD(s1+iA,s4+iD)
+    !Kcont = DLHS(A,D)*Integral(A,B,D,C)^b*DRHS(B,C) (permute CD)
+    Kcont(1,idmat) = Kcont(1,idmat) + tmpBC(1) * DLHS_AD(s1+iA,s4+iD,idmat) 
+    Kcont(2,idmat) = Kcont(2,idmat) + tmpBC(2) * DLHS_AD(s1+iA,s4+iD,idmat)
+    Kcont(3,idmat) = Kcont(3,idmat) + tmpBC(3) * DLHS_AD(s1+iA,s4+iD,idmat)
+    !Kcont = DLHS(B,D)*Integral(B,A,C,D)^b*DRHS(A,C) (permute AB and CD)
+    Kcont(1,idmat) = Kcont(1,idmat) - tmpAC(1) * DLHS_BD(s2+iB,s4+iD,idmat) 
+    Kcont(2,idmat) = Kcont(2,idmat) - tmpAC(2) * DLHS_BD(s2+iB,s4+iD,idmat)
+    Kcont(3,idmat) = Kcont(3,idmat) - tmpAC(3) * DLHS_BD(s2+iB,s4+iD,idmat)
+   ENDDO    
+  ENDDO
+ ENDDO
+ENDDO
+end subroutine magfullABCD
+
+subroutine magfull(Kcont,DLHS_AC,DRHS_BD,&
+     & n1,n2,n3,n4,s1,s2,s3,s4,&
+     & CDAB,nA,nB,nC,nD,iPass,nPasses,nLHS,lupri)
+implicit none
+Integer,intent(IN)     :: nA,nB,nC,nD,iPass,nPasses,lupri,nLHS
+Integer,intent(IN)     :: n1,n2,n3,n4,s1,s2,s3,s4
+Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,3,nPasses)
+Real(realk),intent(IN) :: DLHS_AC(n1,n3,nLHS),DRHS_BD(n2,n4)
+Real(realk),intent(INOUT) :: Kcont(3,nLHS)
+!
+Integer     :: iA,iB,iC,iD,idmat
+Real(realk) :: tmpBD(3),tmpDB(3)
+real(realk),parameter :: D0=0.0E0_realk
+DO iB=1,nB
+ DO iA=1,nA
+  DO iD=1,nD
+   DO idmat=1,nLHS
+    tmpBD(1) = D0
+    tmpBD(2) = D0
+    tmpBD(3) = D0
+    !Kcont = DLHS(A,C)*((AB)^b|CD)*DRHS(B,D)
     DO iC=1,nC
      tmpBD(1) = tmpBD(1) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,1,iPass)
      tmpBD(2) = tmpBD(2) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,2,iPass)
@@ -1411,40 +1481,106 @@ DO iB=1,nB
   ENDDO
  ENDDO
 ENDDO
-end subroutine magfull5A
+end subroutine magfull
 
-subroutine magfull5(Kcont,DRHS_CA,DLHS_DB,n1,n2,n3,n4,s1,s2,s3,s4,&
+!include AB permutational symmetry
+subroutine magfullAB(Kcont,DLHS_AC,DRHS_BD,DLHS_BC,DRHS_AD,&
+     & n1,n2,n3,n4,s1,s2,s3,s4,&
      & CDAB,nA,nB,nC,nD,iPass,nPasses,nLHS,lupri)
 implicit none
 Integer,intent(IN)     :: nA,nB,nC,nD,iPass,nPasses,lupri,nLHS
 Integer,intent(IN)     :: n1,n2,n3,n4,s1,s2,s3,s4
 Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,3,nPasses)
-Real(realk),intent(IN) :: DRHS_CA(n3,n1),DLHS_DB(n4,n2,nLHS)
+Real(realk),intent(IN) :: DRHS_BD(n2,n4),DLHS_AC(n1,n3,nLHS)
+Real(realk),intent(IN) :: DRHS_AD(n1,n4),DLHS_BC(n2,n3,nLHS)
 Real(realk),intent(INOUT) :: Kcont(3,nLHS)
 !
 Integer     :: iA,iB,iC,iD,idmat
-Real(realk) :: tmpDB(3)
+Real(realk) :: tmpBD(3),tmpBC(3)
 real(realk),parameter :: D0=0.0E0_realk
 DO iB=1,nB
  DO iA=1,nA
   DO iD=1,nD
-   tmpDB(1) = D0
-   tmpDB(2) = D0
-   tmpDB(3) = D0
-   DO iC=1,nC
-    tmpDB(1) = tmpDB(1) + DRHS_CA(s3+iC,s1+iA) * CDAB(iC,iD,iA,iB,1,iPass)
-    tmpDB(2) = tmpDB(2) + DRHS_CA(s3+iC,s1+iA) * CDAB(iC,iD,iA,iB,2,iPass)
-    tmpDB(3) = tmpDB(3) + DRHS_CA(s3+iC,s1+iA) * CDAB(iC,iD,iA,iB,3,iPass)
-   ENDDO
    DO idmat=1,nLHS
-    Kcont(1,idmat) = Kcont(1,idmat) + tmpDB(1) * DLHS_DB(s4+iD,s2+iB,idmat)
-    Kcont(2,idmat) = Kcont(2,idmat) + tmpDB(2) * DLHS_DB(s4+iD,s2+iB,idmat)
-    Kcont(3,idmat) = Kcont(3,idmat) + tmpDB(3) * DLHS_DB(s4+iD,s2+iB,idmat)
+    tmpBD(1) = D0
+    tmpBD(2) = D0
+    tmpBD(3) = D0
+    tmpBC(1) = D0
+    tmpBC(2) = D0
+    tmpBC(3) = D0
+    !Kcont(A,B,C,D) =  DLHS(A,C)*((AB)^b|CD)*DRHS(B,D) 
+    !Kcont(B,A,C,D) =  DLHS(B,C)*((BA)^b|CD)*DRHS(A,D) = - DLHS(B,C)*((AB)^b|CD)*DRHS(A,D)
+    DO iC=1,nC
+     tmpBD(1) = tmpBD(1) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpBD(2) = tmpBD(2) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpBD(3) = tmpBD(3) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,3,iPass)
+     tmpBC(1) = tmpBC(1) + DLHS_BC(s2+iB,s3+iC,idmat) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpBC(2) = tmpBC(2) + DLHS_BC(s2+iB,s3+iC,idmat) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpBC(3) = tmpBC(3) + DLHS_BC(s2+iB,s3+iC,idmat) * CDAB(iC,iD,iA,iB,3,iPass)
+    ENDDO
+    !Kcont = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+    Kcont(1,idmat) = Kcont(1,idmat) + tmpBD(1) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(2,idmat) = Kcont(2,idmat) + tmpBD(2) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(3,idmat) = Kcont(3,idmat) + tmpBD(3) * DRHS_BD(s2+iB,s4+iD)
+    !Kcont =  DLHS(B,C)*Integral(B,A,C,D)^b*DRHS(A,D)
+    !Kcont = -DLHS(B,C)*Integral(A,B,C,D)^b*DRHS(A,D)
+    Kcont(1,idmat) = Kcont(1,idmat) - tmpBC(1) * DRHS_AD(s1+iA,s4+iD) 
+    Kcont(2,idmat) = Kcont(2,idmat) - tmpBC(2) * DRHS_AD(s1+iA,s4+iD)
+    Kcont(3,idmat) = Kcont(3,idmat) - tmpBC(3) * DRHS_AD(s1+iA,s4+iD)
    ENDDO    
   ENDDO
  ENDDO
 ENDDO
-end subroutine magfull5
+end subroutine magfullAB
+
+!include CD permutational symmetry
+subroutine magfullCD(Kcont,DLHS_AC,DRHS_BD,DLHS_AD,DRHS_BC,&
+     & n1,n2,n3,n4,s1,s2,s3,s4,&
+     & CDAB,nA,nB,nC,nD,iPass,nPasses,nLHS,lupri)
+implicit none
+Integer,intent(IN)     :: nA,nB,nC,nD,iPass,nPasses,lupri,nLHS
+Integer,intent(IN)     :: n1,n2,n3,n4,s1,s2,s3,s4
+Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,3,nPasses)
+Real(realk),intent(IN) :: DRHS_BD(n2,n4),DLHS_AC(n1,n3,nLHS)
+Real(realk),intent(IN) :: DRHS_BC(n2,n3),DLHS_AD(n1,n4,nLHS)
+Real(realk),intent(INOUT) :: Kcont(3,nLHS)
+!
+Integer     :: iA,iB,iC,iD,idmat
+Real(realk) :: tmpBD(3),tmpBC(3)
+real(realk),parameter :: D0=0.0E0_realk
+DO iB=1,nB
+ DO iA=1,nA
+  DO iD=1,nD
+   DO idmat=1,nLHS
+    tmpBD(1) = D0
+    tmpBD(2) = D0
+    tmpBD(3) = D0
+    tmpBC(1) = D0
+    tmpBC(2) = D0
+    tmpBC(3) = D0
+    !Kcont(A,B,C,D) = DLHS(A,C)*Integral((AB)^b|CD)*DRHS(B,D)
+    !Kcont(A,B,D,C) = DLHS(A,D)*Integral((AB)^b|DC)*DRHS(B,C) = DLHS(A,D)*Integral((AB)^b|CD)*DRHS(B,C)
+    DO iC=1,nC
+     tmpBD(1) = tmpBD(1) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpBD(2) = tmpBD(2) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpBD(3) = tmpBD(3) + DLHS_AC(s1+iA,s3+iC,idmat) * CDAB(iC,iD,iA,iB,3,iPass)
+     tmpBC(1) = tmpBC(1) + DRHS_BC(s2+iB,s3+iC) * CDAB(iC,iD,iA,iB,1,iPass)
+     tmpBC(2) = tmpBC(2) + DRHS_BC(s2+iB,s3+iC) * CDAB(iC,iD,iA,iB,2,iPass)
+     tmpBC(3) = tmpBC(3) + DRHS_BC(s2+iB,s3+iC) * CDAB(iC,iD,iA,iB,3,iPass)
+    ENDDO
+    !Kcont(A,B,C,D) = DLHS(A,C)*Integral((AB)^b|CD)*DRHS(B,D)
+    Kcont(1,idmat) = Kcont(1,idmat) + tmpBD(1) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(2,idmat) = Kcont(2,idmat) + tmpBD(2) * DRHS_BD(s2+iB,s4+iD)
+    Kcont(3,idmat) = Kcont(3,idmat) + tmpBD(3) * DRHS_BD(s2+iB,s4+iD)
+    !Kcont(A,B,D,C) = DLHS(A,D)*Integral((AB)^b|CD)*DRHS(B,C)
+    Kcont(1,idmat) = Kcont(1,idmat) + tmpBC(1) * DLHS_AD(s1+iA,s4+iD,idmat) 
+    Kcont(2,idmat) = Kcont(2,idmat) + tmpBC(2) * DLHS_AD(s1+iA,s4+iD,idmat)
+    Kcont(3,idmat) = Kcont(3,idmat) + tmpBC(3) * DLHS_AD(s1+iA,s4+iD,idmat)
+   ENDDO    
+  ENDDO
+ ENDDO
+ENDDO
+end subroutine magfullCD
 
 END SUBROUTINE distributemagKcont
 

@@ -4577,6 +4577,7 @@ call initIntegralOutputDims(setting%Output,1,1,1,1,3*nLHS)
 call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,Oper,&
      & magderivEcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,Econt,setting%IntegralTransformGC)
+call dscal(3*nLHS,SETTING%SCHEME%exchangeFactor,Econt,1)
 CALL ls_freeDmatFromSetting(setting)
 CALL LSTIMER('magderivKcont',TS,TE,LUPRI)
 setting%scheme%LSdaLinK = LSDaLink
