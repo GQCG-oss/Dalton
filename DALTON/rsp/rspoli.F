@@ -74,7 +74,7 @@ C  /* Deck rspoli */
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
      *                  XINDX,CMO,WRK,LWRK)
 
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_is_active,
      &                                  xcint_integrate_rks_lr
 #endif
@@ -159,7 +159,7 @@ C
       integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
 
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       real(8), allocatable :: dmat_ao(:)
       real(8), allocatable :: xc_mat(:)
       real(8), allocatable :: fmat_mo(:)
@@ -1133,12 +1133,8 @@ C          Special case of alpha density only (old code)
              call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              if (xcint_is_active()) then
-
-               !if (nosim > 1) then
-               !   call quit('NOSIM > 1 not implemented with ENABLE_XCINT')
-               !end if
 
                inquire(file='num_grid', exist=file_exists)
                if (.not. file_exists) then
@@ -1176,10 +1172,10 @@ C          Special case of alpha density only (old code)
                deallocate(fmat_mo)
 
              else
-#endif /* ENABLE_XCINT_RESPONSE */
+#endif /* ENABLE_XCINT */
              call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              endif
 #endif
            ENDIF
