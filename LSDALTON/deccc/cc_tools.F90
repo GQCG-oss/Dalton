@@ -24,7 +24,9 @@ module cc_tools_module
    use reorder_frontend_module
    use tensor_interface_module
    use gpu_interfaces
-   !use openacc, only: acc_is_present
+#ifdef VAR_OPENACC
+   use openacc, only: acc_is_present
+#endif
 
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
@@ -1836,7 +1838,6 @@ module cc_tools_module
 #ifdef VAR_OPENACC
 #ifdef VAR_PGF90
       logical :: stuff_here
-      logical, external :: acc_is_present
       stuff_here = acc_is_present(Int_out,m*(nv*(nv+1))/2*8) .and. acc_is_present(Int_in,m*nv*nv*8)
 #else
       logical, parameter :: stuff_here = .true.
