@@ -2496,6 +2496,7 @@ contains
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
     call ls_mpi_buffer(DECitem%hack2,Master)
+    call ls_mpi_buffer(DECitem%test_len,Master)
     call ls_mpi_buffer(DECitem%test_fully_distributed_integrals,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
     call ls_mpi_buffer(DECitem%tensor_test,Master)

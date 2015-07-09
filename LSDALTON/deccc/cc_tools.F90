@@ -601,7 +601,7 @@ module cc_tools_module
       real(realk), pointer :: buf(:)
       integer(kind=8) :: nbuf
       integer :: faleg,laleg,laleg_req,i,nerrors
-      integer, parameter :: nids = 2
+      integer, parameter :: nids = 15
 #ifdef VAR_OPENACC
       integer(kind=acc_handle_kind) :: acc_h(nids),transp
       integer,parameter             :: lsacc_sync    = acc_async_sync
@@ -696,10 +696,12 @@ module cc_tools_module
          tred=la*lg
       endif
 
-      laleg_req = tred/2
-      !laleg_req = 1
-      !laleg_req = tred
-      w0=0.0E0_realk
+      if(DECinfo%hack2)then
+         laleg_req = DECinfo%test_len
+      else
+         laleg_req = tred
+      endif
+
 
       select case(s)
       case(4,3)

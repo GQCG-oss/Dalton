@@ -119,6 +119,7 @@ contains
     DECinfo%batchOccJ               = 0 
     DECinfo%hack                    = .false.
     DECinfo%hack2                   = .false.
+    DECinfo%test_len                = -1
     DECinfo%mpisplit                = 10
     DECinfo%RIMPIsplit              = 8000
 #ifdef VAR_MPI
@@ -568,6 +569,7 @@ contains
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
        case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
+       case('.TEST_LEN'); read(input,*) DECinfo%test_len 
 
        ! DEC CALCULATION 
        ! ===============
