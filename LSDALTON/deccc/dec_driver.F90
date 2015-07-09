@@ -65,9 +65,9 @@ contains
     !> Estimated energy error
     real(realk),intent(inout) :: Eerr
     type(decorbital), pointer :: OccOrbitals(:)
-    type(decorbital), pointer :: UnoccOrbitals(:)
+    type(decorbital), pointer :: virtOrbitals(:)
     real(realk),pointer :: FragEnergiesOcc(:,:)
-    integer :: nBasis,nOcc,nUnocc,nAtoms,i
+    integer :: nBasis,nOcc,nvirt,nAtoms,i
     type(decfrag),pointer :: AtomicFragments(:)
 
 
@@ -75,15 +75,24 @@ contains
     call print_dec_info()
 
     nOcc   = MyMolecule%nocc
-    nUnocc = MyMolecule%nunocc
+    nvirt = MyMolecule%nvirt
     nBasis = MyMolecule%nbasis
     nAtoms = MyMolecule%natoms
 
     ! -- Analyze basis and create orbitals
     call mem_alloc(OccOrbitals,nOcc)
-    call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
-         & OccOrbitals, UnoccOrbitals)
+    call mem_alloc(virtOrbitals,nvirt)
+    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nvirt,natoms, &
+         & OccOrbitals, virtOrbitals)
+
+    if (DECinfo%only_generate_DECorbs) then
+       print*, 'Quits after DEC orbitals have been written to file'
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a)') 'Quits after DEC orbitals have been written to file'
+       call lsquit('Quitting after DEC orbitals have been written to file',DECinfo%output)
+    end if
+
+
 
     ! *************************************************
     ! Optimize all atomic fragments and calculate pairs
@@ -91,7 +100,7 @@ contains
     call mem_alloc(FragEnergiesOcc,MyMolecule%nfrags,MyMolecule%nfrags)
     call mem_alloc(AtomicFragments,MyMolecule%nfrags)
     call main_fragment_driver(MyMolecule,mylsitem,D,&
-         &OccOrbitals,UnoccOrbitals,natoms,nocc,nunocc,EHF,Ecorr,molgrad,&
+         &OccOrbitals,virtOrbitals,natoms,nocc,nvirt,EHF,Ecorr,molgrad,&
          & Eerr,FragEnergiesOcc,AtomicFragments,.false.)
 
 
@@ -100,13 +109,13 @@ contains
        call orbital_free(OccOrbitals(i))
     end do
 
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
+    do i=1,nvirt
+       call orbital_free(virtOrbitals(i))
     end do
     if(DECinfo%PL>0) write(DECinfo%output,'(a)') 'Orbitals removed'
 
     call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnoccOrbitals)
+    call mem_dealloc(virtOrbitals)
     call mem_dealloc(FragEnergiesOcc)
 
     do i=1,MyMolecule%nfrags
@@ -134,14 +143,14 @@ contains
   !> \author Kasper Kristensen
   !> \date October 2010
   subroutine main_fragment_driver(MyMolecule,mylsitem,D,&
-       & OccOrbitals,UnoccOrbitals, &
-       & natoms,nocc,nunocc,EHF,Ecorr,molgrad,dE_est1,FragEnergiesOcc,AtomicFragments,AFset)
+       & OccOrbitals,virtOrbitals, &
+       & natoms,nocc,nvirt,EHF,Ecorr,molgrad,dE_est1,FragEnergiesOcc,AtomicFragments,AFset)
 
     implicit none
     !> Number of occupied orbitals in full molecule (not changed, inout for MPI reasons)
     integer,intent(inout) :: nOcc
-    !> Number of unoccupied orbitals in full molecule (not changed, inout for MPI reasons)
-    integer,intent(inout) :: nUnocc
+    !> Number of virtupied orbitals in full molecule (not changed, inout for MPI reasons)
+    integer,intent(inout) :: nvirt
     !> Number of atoms in full molecule
     integer,intent(in) :: nAtoms
     !> Full molecule info (will be unchanged at output)
@@ -152,8 +161,8 @@ contains
     type(matrix),intent(in) :: D
     !> Occupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
     type(decorbital), intent(inout) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
-    type(decorbital), intent(inout) :: UnoccOrbitals(nunocc)
+    !> virtupied orbitals in DEC format (not changed at output, is intent(inout) for MPI purposes)
+    type(decorbital), intent(inout) :: virtOrbitals(nvirt)
     !> Hartree-Fock energy
     real(realk),intent(inout) :: EHF
     !> MP2 correlation energy
@@ -200,6 +209,7 @@ contains
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
+    dE_est3 = 0.0E0_realk
     master=0
     ForcePrintTime = .TRUE.
 
@@ -227,12 +237,12 @@ contains
     FragEnergies=0E0_realk
 
     ! Which fragments should we consider
-    call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,nfrags,&
-         & OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
+    call which_fragments_to_consider(MyMolecule%ncore,nocc,nvirt,nfrags,&
+         & OccOrbitals,virtOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     if(DECinfo%StressTest)then
-       call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,MyMolecule%ncore,&
-            & MyMolecule%DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
+       call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nvirt,MyMolecule%ncore,&
+            & MyMolecule%DistanceTable,OccOrbitals, virtOrbitals, dofrag, mylsitem)
     endif
 
     if(DECinfo%PairEstimate .and. count(dofrag)>1) then
@@ -250,7 +260,7 @@ contains
     ! to include singles polarization effects in a simple manner.
     ! Initialize appriximate full singles amplitudes here (order: virt,occ)
     if(DECinfo%SinglesPolari) then
-       dims(1) = nunocc
+       dims(1) = nvirt
        dims(2) = nocc
        t1old = array2_init_plain(dims)
     end if
@@ -272,11 +282,11 @@ contains
     call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
 
     ! Pass very basic information on dimensions to local masters (necessary to allocate arrays)
-    call mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nunocc,master)
+    call mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nvirt,master)
 
     ! Pass remaining full molecular info to local masters
-    call mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
-         & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
+    call mpi_dec_fullinfo_master_to_slaves(nocc,nvirt,&
+         & OccOrbitals, virtOrbitals, MyMolecule, MyLsitem)
 
 #else
     nworkers=0   ! master node does all jobs
@@ -297,7 +307,7 @@ contains
 
     ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
     ! ********************************************************
-    call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+    call fragopt_and_estimated_frags(nOcc,nvirt,OccOrbitals,virtOrbitals, &
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset,dE_est3)
 
     ! Send CC models and pair FOTs to use for all pairs based on estimates
@@ -356,8 +366,8 @@ contains
     ! Always calculate atomic fragment energies if AFset is true
     if(AFset) calcAF=.true.
 
-    call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
-         &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
+    call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nvirt,&
+         &OccOrbitals,virtOrbitals,AtomicFragments,dofrag,.false.,jobs)
 
     !Crash calculation on purpose to test restart option
     IF(DECinfo%CRASHCALC)THEN
@@ -409,6 +419,10 @@ contains
        ! fragment calculations) to calculate appriximate T1-transformed Fock matrix
        ! which effectively describes singles polarization effects in a simple manner.
        if(DECinfo%SinglesPolari) then
+          if(MyMolecule%mem_distributed)then
+             call lsquit("ERROR(main_fragment_driver): singles polarization does &
+             &not work with distributed molecular structure",-1)
+          endif
 
           fockt1 = array2_init([nbasis,nbasis])
           ! Get T1 transformed Fock matrix in AO basis
@@ -416,12 +430,12 @@ contains
 
           ! Set fock matrix associated with fullmolecule structure
           ! equal to T1 transformed Fock matrix
-          MyMolecule%fock(1:nbasis,1:nbasis) = fockt1%val(1:nbasis,1:nbasis)
+          MyMolecule%fock%elm2(1:nbasis,1:nbasis) = fockt1%val(1:nbasis,1:nbasis)
           call array2_free(fockt1)
 
           ! Init improved full molecular singles constructed from
           ! single and pair fragment calculations.
-          dims(1) = nunocc
+          dims(1) = nvirt
           dims(2) = nocc
           t1new = array2_init_plain(dims)
        end if
@@ -442,7 +456,7 @@ contains
              call read_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
           else
              write(DECinfo%output,*) 'Restarting pair fragments - energy...'
-             call read_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+             call read_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
           end if
        end if
        if(DECinfo%only_n_frag_jobs > 0)then
@@ -450,8 +464,8 @@ contains
           jobs%dofragopt = .false.
        endif
 
-       call fragment_jobs(nocc,nunocc,nfrags,MyMolecule,mylsitem,&
-            & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
+       call fragment_jobs(nocc,nvirt,nfrags,MyMolecule,mylsitem,&
+            & OccOrbitals,virtOrbitals,jobs,AtomicFragments,&
             & FragEnergies,esti,fullgrad=fullgrad,t1old=t1old,t1new=t1new)
 
        ! Compare amplitudes from single fragment calculations
@@ -523,7 +537,7 @@ contains
     ! ensure that the fullmolecule structure contains the standard
     ! (NOT T1 transformed) Fock matrix at output
     if(DECinfo%SinglesPolari) then
-       call mem_dealloc(MyMolecule%fock)
+       call tensor_free(MyMolecule%fock)
        call molecule_get_fock(MyMolecule,mylsitem)  ! Get standard Fock matrix again
        call array2_free(t1old)
        call array2_free(t1new)
@@ -617,6 +631,13 @@ contains
           Ecorr = energies(FRAGMODEL_VIRTRIMP2)
        ELSE
           Ecorr = energies(FRAGMODEL_OCCRIMP2)
+       ENDIF
+    case(MODEL_LSTHCRIMP2)
+       ! LS-THC-RI-MP2, use occ energy
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTLSTHCRIMP2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCLSTHCRIMP2)
        ENDIF
     case(MODEL_RPA)
        ! RPA, use occ energy
@@ -791,15 +812,15 @@ subroutine print_dec_info()
   !> the relevant quantities (energy, density, gradient, t1).
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine fragment_jobs(nocc,nunocc,nfrags,MyMolecule,mylsitem,OccOrbitals,&
-       & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
+  subroutine fragment_jobs(nocc,nvirt,nfrags,MyMolecule,mylsitem,OccOrbitals,&
+       & virtOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
        & fullgrad,t1old,t1new,fragoptjobs,estijobs,EstAtomicFragments)
 
     implicit none
     !> Number of occupied orbitals in full molecule
     integer,intent(in) :: nOcc
-    !> Number of unoccupied orbitals in full molecule
-    integer,intent(in) :: nUnocc
+    !> Number of virtupied orbitals in full molecule
+    integer,intent(in) :: nvirt
     !> Number of fragments (# atoms for atom-based DEC, #occ orbitals for DECCO)
     integer,intent(in) :: nfrags
     !> Full molecule info (will be unchanged at output)
@@ -808,8 +829,8 @@ subroutine print_dec_info()
     type(lsitem), intent(inout) :: mylsitem
     !> Occupied orbitals in DEC format 
     type(decorbital), intent(in) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals in DEC format 
-    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> virtupied orbitals in DEC format 
+    type(decorbital), intent(in) :: virtOrbitals(nvirt)
     !>  fragment job list
     type(joblist),intent(inout) :: jobs
     !> Atomic fragments with orbital spaces according to the FOT
@@ -847,6 +868,7 @@ subroutine print_dec_info()
     fragenergy=0.0_realk
     only_update=.true.
     dofragopt=.false.
+    nfragopt = 0
 
     if (jobs%njobs>0) then
        ! Do any fragment optimizations?
@@ -948,6 +970,7 @@ subroutine print_dec_info()
           if(jobs%jobsdone(k)) cycle JobLoop ! job is already done
        end if
 
+
        ! *********************************************
        ! *    MPI PARALLELIZATION OF FRAGMENT JOBS   *
        ! *********************************************
@@ -1044,7 +1067,7 @@ subroutine print_dec_info()
                 &  ' is single fragment optimization: ', atomA
           else
              write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
-                &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
+                &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nvirtAOS,&
                 &' #b',AtomicFragments(atomA)%nbasis,' is single fragment: ', atomA
           endif
 
@@ -1054,8 +1077,8 @@ subroutine print_dec_info()
           ! Get single fragment energy (and possibly density or gradient)
           ! *******************************************************************
           if(DECinfo%SinglesPolari) then
-             call atomic_driver_advanced(nocc,nunocc,&
-                  & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
+             call atomic_driver_advanced(nocc,nvirt,&
+                  & OccOrbitals,virtOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
           else
 
@@ -1063,17 +1086,17 @@ subroutine print_dec_info()
 
                 ! Fragment optimization
                 call optimize_atomic_fragment(atomA,AtomicFragments(atomA),MyMolecule%nfrags, &
-                     & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
+                     & OccOrbitals,nOcc,virtOrbitals,nvirt, &
                      & MyMolecule,mylsitem,.true.)
 
              else
 
                 ! Init fragment basis information
-                call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                     & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
+                call atomic_fragment_init_basis_part(nvirt, nocc, OccOrbitals,&
+                     & virtOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
                 ! Call main driver to get energy (and possibly density or gradient)
-                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,virtOrbitals,&
                      & AtomicFragments(atomA),grad=grad)
 
                 ! Free basis info again
@@ -1113,21 +1136,21 @@ subroutine print_dec_info()
           if(jobs%esti(jobdone)) then
              ! Estimated pair fragment
              call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
+                & nvirt, nocc, nfrags,OccOrbitals,virtOrbitals, &
                 & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
 
              write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
-                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nvirtAOS,&
                 &' #b',PairFragment%nbasis,' is pair   estimate: ', atomA,atomB
 
           else
              ! Pair fragment according to FOT precision
              call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
+                & nvirt, nocc, nfrags,OccOrbitals,virtOrbitals, &
                 & MyMolecule,mylsitem,.true.,PairFragment)
 
              write(*, '(1X,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)') 'Job: ', jobdone, ' of size ', jobs%jobsize(jobdone),&
-                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nvirtAOS,&
                 &' #b',PairFragment%nbasis,' is pair   fragment: ', atomA,atomB
 
           end if
@@ -1135,8 +1158,8 @@ subroutine print_dec_info()
 
           if(DECinfo%SinglesPolari) then
 
-             call pair_driver_singles(nfrags,nocc,nunocc,&
-                  & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
+             call pair_driver_singles(nfrags,nocc,nvirt,&
+                  & OccOrbitals,virtOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
 
           else
@@ -1194,6 +1217,17 @@ subroutine print_dec_info()
 #endif
 
 
+       ! Crash calculation on purpose to test restart option
+       if (( jobdone >= 2*nfragopt-1).and.(DECinfo%CrashEsti)) then
+          print*,'Calculation was intentionally crashed due to keyword .CRASHESTI'
+          print*,'This keyword is only used for debug and testing purposes'
+          print*,'We want to be able to test the .RESTART keyword'
+          WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHESTI'
+          WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
+          WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
+          call lsquit('Crashed Calculation due to .CRASHESTI keyword',DECinfo%output)
+       end if
+
 
        RestartStuff: if(jobdone>0) then
 
@@ -1239,8 +1273,8 @@ subroutine print_dec_info()
           !3) DECinfo%only_one_frag_job is requested -- this is only for debugging
 
           backup_files =  (((float(jobdone) < 0.25*float(jobs%njobs)) .or. &
-              &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) ) .and. & 
-              & (.not. all(jobs%dofragopt))) .or. (DECinfo%only_n_frag_jobs>0) 
+              &(dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) .or. DECinfo%CRASHESTI) &
+              & .and. (.not. all(jobs%dofragopt))) .or. (DECinfo%only_n_frag_jobs>0) 
 
           ! Backup if time passed is more than DECinfo%TimeBackup or if all jobs are done
           Backup: if( backup_files )then
@@ -1249,13 +1283,13 @@ subroutine print_dec_info()
 
              if(esti) then
                 ! Save info for estimated pair fragments restart
-                call write_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
+                call write_fragment_energies_for_restart_driver(nfrags,FragEnergies,estijobs,esti)
              else
                 ! Standard fragments, save info for restart
                 if(DECinfo%first_order) then  ! density and/or gradient 
                    call write_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
                 else ! just energy
-                   call write_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
+                   call write_fragment_energies_for_restart_driver(nfrags,FragEnergies,jobs,esti)
                 end if
 
              end if
@@ -1276,6 +1310,8 @@ subroutine print_dec_info()
 
 #ifdef VAR_MPI
     call MPI_COMM_FREE(infpar%lg_comm,IERR)
+    infpar%lg_comm  = MPI_COMM_LSDALTON
+    infpar%lg_mynum = infpar%mynum
 #else
     call free_joblist(singlejob)
 #endif
@@ -1287,7 +1323,7 @@ subroutine print_dec_info()
   !> estimated pair fragment energies.
   !> \author Kasper Kristensen
   !> \date November 2013
-  subroutine fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+  subroutine fragopt_and_estimated_frags(nOcc,nvirt,OccOrbitals,virtOrbitals, &
        & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset,dE_est3)
 
     implicit none
@@ -1298,12 +1334,12 @@ subroutine print_dec_info()
     type(lsitem), intent(inout) :: mylsitem
     !> Number of occupied orbitals in full molecule
     integer, intent(in) :: nocc
-    !> Number of unoccupied orbitals in full molecule
-    integer, intent(in) :: nunocc
+    !> Number of virtupied orbitals in full molecule
+    integer, intent(in) :: nvirt
     !> Information about DEC occupied orbitals
     type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
-    !> Information about DEC unoccupied orbitals
-    type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
+    !> Information about DEC virtupied orbitals
+    type(decorbital), dimension(nvirt), intent(in) :: virtOrbitals
     !> List of which atoms have orbitals assigned
     logical,intent(in),dimension(MyMolecule%nfrags) :: dofrag
     !> Is this a calculation with predefined small orbital spaces used to estimate frag energies?
@@ -1336,8 +1372,8 @@ subroutine print_dec_info()
 
 
     ! Initialize job list for atomic fragment optimizations
-    call create_dec_joblist_fragopt(nfrags,nocc,nunocc,MyMolecule%ncore,MyMolecule%DistanceTable,&
-         & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+    call create_dec_joblist_fragopt(nfrags,nocc,nvirt,MyMolecule%ncore,MyMolecule%DistanceTable,&
+         & OccOrbitals, virtOrbitals, dofrag, mylsitem,fragoptjobs)
 
     ! If atomic fragments have already been set, we do not carry out fragment optimization
     ! We therefore say that the job has already been done
@@ -1351,7 +1387,7 @@ subroutine print_dec_info()
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(MyMolecule,MyLsitem,OccOrbitals,&
-            & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
+            & virtOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
 
     ! Sanity Check:
@@ -1386,7 +1422,7 @@ subroutine print_dec_info()
        init_radius = DECinfo%EstimateINITradius
        DoBasis = .false.
        call mem_alloc(EstAtomicFragments,nfrags)
-       call init_estimated_atomic_fragments(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+       call init_estimated_atomic_fragments(nOcc,nvirt,OccOrbitals,virtOrbitals, &
             & MyMolecule,mylsitem,DoBasis,init_radius,dofrag,EstAtomicFragments)
 
 #ifdef VAR_MPI
@@ -1399,19 +1435,19 @@ subroutine print_dec_info()
 
        ! Get job list for estimated pair fragments
        calcAF = .false.  ! No atomic fragments, just pairs
-       call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
-            &OccOrbitals,UnoccOrbitals,EstAtomicFragments,dofrag,esti,estijobs)
+       call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nvirt,&
+            &OccOrbitals,virtOrbitals,EstAtomicFragments,dofrag,esti,estijobs)
 
        if(DECinfo%DECrestart) then
           write(DECinfo%output,*) 'Restarting pair fragment estimate calculations...'
-          call read_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
+          call read_fragment_energies_for_restart_driver(nfrags,FragEnergies,estijobs,esti)
        end if
 
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)
        call concatenate_joblists(fragoptjobs,estijobs,jobs)
 
-       call fragment_jobs(nocc,nunocc,nfrags,MyMolecule,mylsitem,OccOrbitals,&
-            & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
+       call fragment_jobs(nocc,nvirt,nfrags,MyMolecule,mylsitem,OccOrbitals,&
+            & virtOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
             & fragoptjobs=fragoptjobs,estijobs=estijobs,EstAtomicFragments=EstAtomicFragments)
        do i=1,nfrags
           if(dofrag(i)) then
@@ -1423,8 +1459,8 @@ subroutine print_dec_info()
 
        ! Just fragment opt.
        ! ******************
-       call fragment_jobs(nocc,nunocc,nfrags,MyMolecule,mylsitem,OccOrbitals,&
-            & UnoccOrbitals,fragoptjobs,AtomicFragments,FragEnergies,esti)
+       call fragment_jobs(nocc,nvirt,nfrags,MyMolecule,mylsitem,OccOrbitals,&
+            & virtOrbitals,fragoptjobs,AtomicFragments,FragEnergies,esti)
 
     end if UseEstimatedFragments
 
@@ -1542,6 +1578,7 @@ subroutine print_dec_info()
         endif
 
 
+        deltaE_p =  0.0E0_realk
         select case(maxis)
         case(1)
            deltaE_p =  dE_occ

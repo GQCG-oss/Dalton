@@ -810,8 +810,8 @@ C     RESIDUAL IS NOW IN WRK(KB) AND MODIFIED GRADIENT IN WRK(KWKAP)
 C
 C     TEST FOR CONVERGENCE OF THE N-R SOLUTIONS
 C
-      QCNORM = DNORM2(NCONF,WRK(KB),1)
-      QONORM = DNORM2(NWOPT,WRK(KB+NCONF),1)
+      QCNORM = DNRM2(NCONF,WRK(KB),1)
+      QONORM = DNRM2(NWOPT,WRK(KB+NCONF),1)
       QBTEST = SQRT(QCNORM**2+QONORM**2)
       IF (QBTEST .LE. THRGRD) THEN
 C        This should be sufficient for MC optimization to be
@@ -914,7 +914,7 @@ C            WARNING : if symmetry were broken in residual vectors,
 C                      and thus in sigma vectors, then this will
 C                      lead to constant residual.
 C
-         CNORM = DNORM2(NCONF,WRK(KB),1)
+         CNORM = DNRM2(NCONF,WRK(KB),1)
          TLINDV = SQRT(THRLDV)
          IF (CNORM .GT. TLINDV) THEN
             CNORM = D1 / CNORM

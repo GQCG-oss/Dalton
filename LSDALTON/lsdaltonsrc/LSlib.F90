@@ -519,7 +519,7 @@ Logical,intent(IN)      :: dirac
 IF (.NOT.state_set) CALL LSQUIT('LSlib_get_4center_eri_geoderiv error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_4center_eri_geoderiv. Basis-function mismatch',lupri)
 
-CALL II_get_4center_eri_diff(lupri,luerr,ls%setting,eri,nbast,nbast,nbast,nbast,nGeoComp,dirac=dirac,geoderiv=geoOrder)
+CALL II_get_hodi_eri_4center(lupri,luerr,ls%setting,eri,nbast,nbast,nbast,nbast,nGeoComp,dirac=dirac,geoderiv=geoOrder)
 
 END SUBROUTINE LSlib_get_4center_eri_geoderiv
 
@@ -557,7 +557,7 @@ Character(*),intent(IN) :: oneElType
 IF (.NOT.state_set) CALL LSQUIT('LSlib_get_1el_geoderiv error: LSlib not initialized',lupri)
 IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_1el_geoderiv. Basis-function mismatch',lupri)
 
-CALL II_get_1el_diff(lupri,luerr,ls%setting,oneEl,oneElType,nbast,nbast,nGeoComp,geoderiv=geoOrder)
+CALL II_get_hodi_1el(lupri,luerr,ls%setting,oneEl,oneElType,nbast,nbast,nGeoComp,geoderiv=geoOrder)
 
 END SUBROUTINE LSlib_get_1el_geoderiv
 
@@ -1518,6 +1518,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   LIBRARY(RegBasParam)%pointcharges = .FALSE.
   LIBRARY(RegBasParam)%phantom = .FALSE.
   LIBRARY(RegBasParam)%DunningsBasis = .TRUE.
+  LIBRARY(RegBasParam)%GeminalScalingFactor = 1.0E0_realk
   call mem_dealloc(UNIQUECHARGES)  
   call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%BINFO(RegBasParam),LIBRARY,&
        &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.,RegBasParam)

@@ -3215,7 +3215,7 @@ contains
     else ! Virtual space partitioing
 
        ! Number of virtual EOS orbitals
-       nEOS = MyFragment%nunoccEOS
+       nEOS = MyFragment%nvirtEOS
 
        ! Virtual EOS orbital indices in the AOS (EOS+buffer) list of orbitals
        call mem_alloc(EOS_idx,nEOS)
@@ -3264,7 +3264,7 @@ contains
 
     ! Number of occ and virt orbitals on central atom in fragment
     nocc = MyFragment%noccEOS
-    nvirt = MyFragment%nunoccEOS
+    nvirt = MyFragment%nvirtEOS
 
 
     ! Extract virtual EOS indices and leave occupied indices untouched
@@ -3887,9 +3887,9 @@ contains
     end if
     nvirt = t2%dims(1)
     nocc = t2%dims(2)
-    if(nvirt/=MyFragment%nunoccAOS .or. nocc/=MyFragment%noccAOS) then
+    if(nvirt/=MyFragment%nvirtAOS .or. nocc/=MyFragment%noccAOS) then
        print *, 't2%dims', t2%dims
-       print *, 'nvirt,nocc', MyFragment%nunoccAOS,MyFragment%noccAOS
+       print *, 'nvirt,nocc', MyFragment%nvirtAOS,MyFragment%noccAOS
        call lsquit('transform_virt_amp_to_FOs: Dimension mismatch for amplitudes and&
             & associated fragment',-1)
     end if

@@ -6,7 +6,11 @@ module tensor_type_def_module
   !tile structure
   type tile
     type(c_ptr)           :: c    =  c_null_ptr
+#ifdef VAR_PTR_RESHAPE
+    real(realk),pointer, contiguous :: t(:) => null()         !data in tiles
+#else
     real(realk),pointer   :: t(:) => null()         !data in tiles
+#endif
     integer,pointer       :: d(:) => null()         !actual dimension of the tiles
     integer(kind=8)       :: e                      !number of elements in current tile
     integer               :: gt                     !global ti nr.
@@ -55,10 +59,12 @@ module tensor_type_def_module
      integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
      integer :: nlti                                 !number of local tiles
      integer :: offset                               !use offset in nodes for the distribution of arrays
-     integer,pointer :: access_type                          !type of access to the array
+     integer(kind=ls_mpik) :: nnod,comm              !number of nodes and communicator
+     integer,pointer :: access_type                  !type of access to the array
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
-     !logical :: allocd_w_c_p                         ! allocated with comm_threads or not?
+     !logical :: allocd_w_c_p                        ! allocated with comm_threads or not?
      logical :: initialized = .false.                !check variable if array is initialized
+     logical :: bg_alloc
 
   end type tensor
 
@@ -111,6 +117,8 @@ module tensor_type_def_module
   logical :: tensor_debug_mode           = .false.
   logical :: tensor_always_sync          = .false.
   logical :: tensor_contract_dil_backend = .false.
+  logical :: tensor_segment_length_set   = .false.
+  integer(kind=8) :: tensor_segment_length = -1
 
 
 

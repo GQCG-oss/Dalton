@@ -656,6 +656,12 @@ CONTAINS
      EcoeffN(i,ii,7,18) = EcoeffN(i,ii,7,18)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,16,18) = EcoeffN(i,ii,16,18)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,30,18) = EcoeffN(i,ii,30,18)*PreExpFac(i,iAtomA,iAtomB)
+   ENDDO
+  ENDDO
+  DO ii = 1, nPass
+   DO i = 1, nPrimP
+     iAtomA = IatomAPass(ii)
+     iAtomB = IatomBPass(ii)
      EcoeffN(i,ii,1,19) = EcoeffN(i,ii,1,19)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,3,19) = EcoeffN(i,ii,3,19)*PreExpFac(i,iAtomA,iAtomB)
      EcoeffN(i,ii,8,19) = EcoeffN(i,ii,8,19)*PreExpFac(i,iAtomA,iAtomB)

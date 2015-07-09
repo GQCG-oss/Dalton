@@ -29,7 +29,7 @@ contains
 !> \brief Initilize lsitem and config structures from LSDALTON.INP and MOLECULE.INP
 !> \author Kasper Kristensen (based on the old lsdalton subroutine)
 !> \date December 2011
-SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config)
 
    implicit none
    !> Logical unit number for LSDALTON.OUT
@@ -42,18 +42,11 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
    TYPE(lsitem),target,intent(inout) :: ls
    !> configuration structure initialized according to information in LSDALTON.INP and MOLECULE.INP
    type(configItem),intent(inout)    :: config
-   !> Monitor memory - mostly for debugging, set to false by default
-   logical, intent(inout) :: mem_monitor
    logical             :: doDFT
    REAL(REALK) :: TIMSTR,TIMEND
    real(realk) :: DUMMY(1,1)
 
    ! Initializations 
-!#ifdef VAR_LSDEBUG
-   mem_monitor = .true.  !Mostly for memory debugging
-!#else
-!   mem_monitor = .false. !Mostly for memory debugging
-!#endif
    CALL PRINT_INTRO(LUPRI)
    call lsmpi_print(lupri)
 #ifdef BINARY_INFO_AVAILABLE
@@ -82,7 +75,7 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
    ! eventually empirical dispersion correction in case of dft
    CALL II_DFT_DISP(LS%SETTING,DUMMY,1,1,0,LUPRI)
 
-   call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
+   call mat_pass_info(LUPRI,config%opt%info_matop,config%mat_mem_monitor)
 
    CALL LSTIMER('*INPUT',TIMSTR,TIMEND,lupri)
 
@@ -151,13 +144,12 @@ SUBROUTINE get_lsitem_from_input(ls)
   TYPE(lsitem),target,intent(inout) :: ls
   type(configItem)    :: config
   integer :: lupri,luerr,nbast
-  logical :: mem_monitor
 
   ! Open LSDALTON files
   call open_lsdalton_files(lupri,luerr)
 
   ! Init lsitem structure
-  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config)
 
   ! Close files LSDALTON.OUT and LSDALTON.ERR again
   call lsclose(lupri,'KEEP')
@@ -268,29 +260,30 @@ SUBROUTINE print_intro(lupri)
   &  '                                           ',&
        &  ' LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)',&
        &  ' ----------------------------------------------------------------------------',&
-       &  ' Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)',&
+       &  ' Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)',&
        &  ' Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)',&
-       &  ' Sonia Coriani,           University of Trieste,     Italy     (response)',&
+       &  ' Pablo Baudin,            Aarhus University,         Denmark   (DEC)',&
+       &  ' Sonia Coriani,           University of Trieste,     Italy     (Response)',&
        &  ' Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)',&
-       &  ' Trygve Helgaker,         University of Oslo,        Norway    (supervision)',&
+       &  ' Trygve Helgaker,         University of Oslo,        Norway    (Supervision)',&
        &  ' Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)',&
-       &  ' Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)',&
+       &  ' Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)',&
        &  ' Robert Izsak,            University of Oslo,        Norway    (ADMM)',&
-       &  ' Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)',&
-       &  ' Poul Joergensen,         Aarhus University,         Denmark   (supervision)', &
-       &  ' Joanna Kauczor,          Aarhus University,         Denmark   (response solver)',&
-       &  ' Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)',&
+       &  ' Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)',&
+       &  ' Poul Joergensen,         Aarhus University,         Denmark   (Supervision)', &
+       &  ' Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)',&
+       &  ' Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)',&
        &  ' Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)',&
-       &  ' Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)',&
+       &  ' Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)',&
        &  ' Patrick Merlot,          University of Oslo,        Norway    (ADMM)',&
        &  ' Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)',&
-       &  ' Jeppe Olsen,             Aarhus University,         Denmark   (supervision)', &
-       &  ' Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)',&
-       &  ' Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)',&
+       &  ' Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)', &
+       &  ' Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)',&
+       &  ' Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)',&
        &  ' Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)',&
        &  ' Andrew M. Teale,         University of Nottingham   England   (E-coefficients)',&
-       &  ' Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)',&
-       &  ' Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)',&
+       &  ' Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)',&
+       &  ' Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)',&
        &  ' Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)',&
        &  ' Mark Watson,             University of Oslo,        Norway    (FMM)',&
        &  ' Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)'

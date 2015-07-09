@@ -3713,7 +3713,7 @@ Max no. of matrices allocated in Level 3:         67
   Allocated memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage ys present
   Allocated memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (ATOMITEM):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present

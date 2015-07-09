@@ -681,10 +681,6 @@ C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
 
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: dalton_xcint_interface_init
-#endif
-
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -925,10 +921,6 @@ C...  initializes Gen1Int interface
      &                       ALPHA(:,:,1), CPRIMU(:,:,:,1))
 #endif
 
-#ifdef ENABLE_XCINT
-      call dalton_xcint_interface_init()
-#endif
-
 C
 C     ***********************************
 C     ***** Process PCM speres data *****
@@ -1152,10 +1144,11 @@ C
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
+      if (ipread .gt. 10 .OR. NSETS .gt. KSETS) 
+     &   write(lupri,*) 'setting NSETS =',NSETS
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
       END IF
-      if (ipread .gt. 10) write(lupri,*) 'setting NSETS =',NSETS
 C
 C     Run over atomic centers
 C     =======================

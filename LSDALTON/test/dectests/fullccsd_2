@@ -94,7 +94,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # CCSD ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.20526[3-4]" $log | wc -l`
+CRIT1=`$GREP "Correlation energy * : * \-0\.20526[3-4]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy is not correct"

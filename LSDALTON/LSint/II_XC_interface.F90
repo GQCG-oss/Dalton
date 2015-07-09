@@ -252,7 +252,6 @@ real(realk),intent(in) :: Cmat1(nbast,nmo1)
 real(realk),intent(in) :: Cmat2(nbast,nmo2)
 !> The Absolute Valued overlap  matrix
 real(realk),intent(inout) :: S(nmo1,nmo2)
-#ifdef MOD_UNRELEASED
 !
 REAL(REALK)           :: TS,TE
 REAL(REALK),pointer   :: CMAT1AO(:,:),CMAT2AO(:,:)
@@ -297,7 +296,6 @@ SETTING%scheme%DFT%igrid = Grid_Default
 CALL LSTIMER('II_get_AbsoluteValue        ',TS,TE,LUPRI)
 call stats_dft_mem(lupri)
 !call time_II_operations2(JOB_II_get_xc_Fock_mat)
-#endif
 END SUBROUTINE II_get_AbsoluteValue_overlap
 
 SUBROUTINE II_get_AbsoluteValue_overlapSame(LUPRI,LUERR,SETTING,nbast,nmo,Cmat,S)
@@ -316,7 +314,6 @@ INTEGER,intent(in)    :: nmo
 real(realk),intent(in) :: Cmat(nbast,nmo)
 !> The Absolute Valued overlap  matrix
 real(realk),intent(inout) :: S(nmo,nmo)
-#ifdef MOD_UNRELEASED
 !
 REAL(REALK)           :: TS,TE
 REAL(REALK),pointer   :: CMAT1AO(:,:)
@@ -354,7 +351,6 @@ SETTING%scheme%DFT%igrid = Grid_Default
 CALL LSTIMER('II_get_AbsoluteValueSame    ',TS,TE,LUPRI)
 call stats_dft_mem(lupri)
 !call time_II_operations2(JOB_II_get_xc_Fock_mat)
-#endif
 END SUBROUTINE II_get_AbsoluteValue_overlapSame
 
 !> \brief Calculates the xc contribution to the Kohn-Sham energy
@@ -500,6 +496,9 @@ DO I=1,nAtoms
    case(AOdfAux)
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbAUX
    case(AOdfCABS)
+     nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbCABS &
+          & + setting%molecule(1)%p%ATOM(I)%nContOrbREG
+   case(AOdfCABO)!CABS only 
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbCABS
    case(AOdfJK)
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbJK

@@ -33,7 +33,7 @@ module dec_main_mod
   use array4_memory_manager!,only: print_memory_currents4
   use full_molecule!,only: molecule_init, molecule_finalize,molecule_init_from_inputs
   use orbital_operations!,only: check_lcm_against_canonical
-  use full_molecule!,only: molecule_copyback_FSC_matrices
+  use full_molecule
   use mp2_gradient_module
   use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
@@ -44,11 +44,11 @@ private
 
 contains
 
-  !> Wrapper for main DEC program to use when Fock,density,overlap, and MO coefficient
+  !> Wrapper for main DEC program to use when Fock,density, and MO coefficient
   !> matrices are available from HF calculation.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine dec_main_prog_input(mylsitem,config,F,D,S,C,E)
+  subroutine dec_main_prog_input(mylsitem,config,F,D,C,E)
     implicit none
 
     !> Integral info
@@ -59,8 +59,6 @@ contains
     type(matrix),intent(inout) :: F
     !> HF density matrix 
     type(matrix),intent(in) :: D
-    !> Overlap matrix
-    type(matrix),intent(inout) :: S
     !> MO coefficients 
     type(matrix),intent(inout) :: C
     !> CC Energy (intent out) 
@@ -72,14 +70,10 @@ contains
 
     print *, 'Hartree-Fock info comes directly from HF calculation...'
 
-    if(.not. DECinfo%full_molecular_cc) then
-       CALL get_AO_gradientnorm(F, D, S, gradnorm)
-       IF(gradnorm.GT.DECinfo%FOT)call SCFgradError(gradnorm)
-    endif
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,C,D)
     
     !> F12
     !call molecule_init_f12(molecule,mylsitem,D)
@@ -88,16 +82,15 @@ contains
     ! in Molecule, and there is no reason to store them twice.
     ! So we delete them now and reset them at the end.
     call mat_free(F)
-    call mat_free(S)
     call mat_free(C)
     
     call dec_main_prog(MyLsitem,config,molecule,D,E)
 
     ! Restore input matrices
-    call molecule_copyback_FSC_matrices(Molecule,F,S,C)
+    call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Delete molecule structure
-    call molecule_finalize(molecule)
+    call molecule_finalize(molecule,.true.)
 
 
   end subroutine dec_main_prog_input
@@ -161,7 +154,7 @@ contains
     call dec_main_prog(MyLsitem,config,molecule,D,E)
      
     ! Delete molecule structure and density
-    call molecule_finalize(molecule)
+    call molecule_finalize(molecule,.true.)
     call mat_free(D)
 
   end subroutine dec_main_prog_file
@@ -247,23 +240,24 @@ contains
     end if
     
     
-    if(DECinfo%F12) then
-#ifdef MOD_UNRELEASED
-       call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
-       if(DECinfo%F12debug) then
-          print *,   '----------------------------------------------------------------'
-          print *,   '                   F12-SINGLES CORRECTION                       '
-          print *,   '----------------------------------------------------------------'
-          write(*,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
-          print *,   '----------------------------------------------------------------'
-          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-          write(DECinfo%output,'(1X,a,f20.10)')'                   F12-SINGLES CORRECTION                       '
-          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-          write(DECinfo%output,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
-          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-       end if
-#endif
-    endif
+!    if(DECinfo%F12) then
+!#ifdef MOD_UNRELEASED
+!       ES2 = 0.0E0_realk
+!       !call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
+!       if(DECinfo%F12debug) then
+!          print *,   '----------------------------------------------------------------'
+!          print *,   '                   F12-SINGLES CORRECTION                       '
+!          print *,   '----------------------------------------------------------------'
+!          write(*,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
+!          print *,   '----------------------------------------------------------------'
+!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+!          write(DECinfo%output,'(1X,a,f20.10)')'                   F12-SINGLES CORRECTION                       '
+!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+!          write(DECinfo%output,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
+!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+!       end if
+!#endif
+!    endif
 
     
     if(DECinfo%full_molecular_cc) then
@@ -335,7 +329,7 @@ contains
   !> Intended to be used for MP2 geometry optimizations.
   !> \author Kasper Kristensen
   !> \date November 2011
-  subroutine get_mp2gradient_and_energy_from_inputs(MyLsitem,F,D,S,C,natoms,MP2gradient,EMP2,Eerr)
+  subroutine get_mp2gradient_and_energy_from_inputs(MyLsitem,F,D,C,natoms,MP2gradient,EMP2,Eerr)
 
     implicit none
     !> LSitem structure
@@ -344,8 +338,6 @@ contains
     type(matrix),intent(inout) :: F
     !> HF density matrix 
     type(matrix),intent(in) :: D
-    !> Overlap matrix
-    type(matrix),intent(inout) :: S
     !> MO coefficients 
     type(matrix),intent(inout) :: C
     !> Number of atoms in molecule
@@ -374,11 +366,10 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,C,D)
 
-    ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
+    ! No reason to save F and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
-    call mat_free(S)
     call mat_free(C)
 
     ! -- Calculate molecular MP2 gradient and correlation energy
@@ -388,10 +379,10 @@ contains
     EMP2 = EHF + Ecorr
 
     ! Restore input matrices
-    call molecule_copyback_FSC_matrices(Molecule,F,S,C)
+    call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Free molecule structure and other stuff
-    call molecule_finalize(Molecule)
+    call molecule_finalize(Molecule,.true.)
     
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
@@ -412,7 +403,7 @@ contains
   !> as is done in a "conventional" DEC calculation which uses the dec_main_prog subroutine.
   !> \author Kasper Kristensen
   !> \date November 2011
-  subroutine get_total_CCenergy_from_inputs(MyLsitem,F,D,S,C,ECC,Eerr)
+  subroutine get_total_CCenergy_from_inputs(MyLsitem,F,D,C,ECC,Eerr)
 
     implicit none
     !> LSitem structure
@@ -421,8 +412,6 @@ contains
     type(matrix),intent(inout) :: F
     !> HF density matrix 
     type(matrix),intent(in) :: D
-    !> Overlap matrix
-    type(matrix),intent(inout) :: S
     !> MO coefficients 
     type(matrix),intent(inout) :: C
     !> Total CC energy (Hartree-Fock + correlation contribution)
@@ -450,11 +439,10 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,C,D)
 
-    ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
+    ! No reason to save F and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
-    call mat_free(S)
     call mat_free(C)
 
     ! -- Calculate correlation energy
@@ -475,10 +463,10 @@ contains
     ! Total CC energy: EHF + Ecorr
     ECC = EHF + Ecorr
     ! Restore input matrices
-    call molecule_copyback_FSC_matrices(Molecule,F,S,C)
+    call molecule_copyback_FC_matrices(mylsitem,Molecule,F,C)
 
     ! Free molecule structure and other stuff
-    call molecule_finalize(Molecule)
+    call molecule_finalize(Molecule,.true.)
 
     ! Reset DEC parameters to the same as they were at input
     DECinfo%first_order = save_first_order

@@ -61,18 +61,34 @@ contains
     !*******************
 
     !Service variables
-    integer           :: i,j
+    integer           :: i,j,a
     integer           :: nb,noEOS,nvEOS,noAOS,nvAOS
     type(array2)      :: temp1
 
     nb    = MyFragment%nbasis
     noEOS = MyFragment%noccEOS
     noAOS = MyFragment%noccAOS
-    nvEOS = MyFragment%nunoccEOS
-    nvAOS = MyFragment%nunoccAOS
+    nvEOS = MyFragment%nvirtEOS
+    nvAOS = MyFragment%nvirtAOS
 
     !DEBUG Init MP2 gradient structure
     call init_mp2grad(MyFragment,grad)
+ 
+    !DEBUG
+    print *, "Debug print m2_aibj: "
+    do a=1,m2occ%nelms 
+      if (ABS(m2occ%elm1(a))>0.00000001)then 
+        write (*,'(i5,F12.8)') a, m2occ%elm1(a)
+      endif
+    end do 
+
+    !DEBUG
+    print *, "Debug print t2_aibj: "
+    do a=1,t2occ%nelms
+      if (ABS(t2occ%elm1(a))>0.00000001)then
+        write (*,'(i5,F12.8)') a, t2occ%elm1(a)
+      endif
+    end do
 
     !calculate the density
     !**********************
@@ -137,8 +153,8 @@ contains
     !nb    = MyFragment%nbasis
     noEOS = MyFragment%noccEOS
     noAOS = MyFragment%noccAOS
-    nvEOS = MyFragment%nunoccEOS
-    nvAOS = MyFragment%nunoccAOS
+    nvEOS = MyFragment%nvirtEOS
+    nvAOS = MyFragment%nvirtAOS
 
     !start the stopwatch
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -155,10 +171,10 @@ contains
     !****************************************
     something_wrong=.false.
     if(noAOS/=grad%dens%nocc)   something_wrong=.true.
-    if(nvAOS/=grad%dens%nunocc) something_wrong=.true.
+    if(nvAOS/=grad%dens%nvirt) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'dens%nocc  ', grad%dens%nocc
-       write(DECinfo%output,*) 'dens%nunocc', grad%dens%nunocc
+       write(DECinfo%output,*) 'dens%nvirt', grad%dens%nvirt
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvAOS
        call lsquit('single_dab_dij_formation: &
@@ -311,12 +327,12 @@ contains
     nb    = MyFragment%nbasis
     !DEBUG 
     no    = MyFragment%noccAOS
-    nv    = MyFragment%nunoccAOS
+    nv    = MyFragment%nvirtAOS
     !DEBUG
     noEOS = MyFragment%noccEOS
     noAOS = MyFragment%noccAOS
-    nvEOS = MyFragment%nunoccEOS
-    nvAOS = MyFragment%nunoccAOS
+    nvEOS = MyFragment%nvirtEOS
+    nvAOS = MyFragment%nvirtAOS
 
     !start the stopwatch
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -334,10 +350,10 @@ contains
     !****************************************
     something_wrong=.false.
     if(noAOS/=grad%dens%nocc)   something_wrong=.true.
-    if(nvAOS/=grad%dens%nunocc) something_wrong=.true.
+    if(nvAOS/=grad%dens%nvirt) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'dens%nocc  ', grad%dens%nocc
-       write(DECinfo%output,*) 'dens%nunocc', grad%dens%nunocc
+       write(DECinfo%output,*) 'dens%nvirt', grad%dens%nvirt
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvAOS
        call lsquit('single_dai_dia_formation: &
@@ -374,7 +390,7 @@ contains
           aAOS=MyFragment%idxu(aEOS) 
 
           iMOL=MyFragment%occEOSidx(iEOS) 
-          aMOL=MyFragment%unoccEOSidx(aEOS) 
+          aMOL=MyFragment%virtEOSidx(aEOS) 
 
           grad%dens%Phivo(aAOS,iAOS) = m1%elm2(aAOS,iAOS)
 
@@ -400,10 +416,11 @@ contains
     !using the virtual partitioning scheme
     !D^sd_ia = Sum_bj z^b_j*(2t^ab_ij - t^ba_ij)
     do iEOS=1,noEOS
-       iMOL=MyFragment%occEOSidx(iEOS)
+       !iMOL=MyFragment%occEOSidx(iEOS)
+       iAOS=MyFragment%idxo(iEOS)
        
       do aAOS=1,nvAOS
-         aMOL=MyFragment%unoccAOSidx(aAOS)
+         !aMOL=MyFragment%unoccAOSidx(aAOS)
             
          do jEOS=1,noEOS
             jAOS=MyFragment%idxo(jEOS)
@@ -482,8 +499,8 @@ contains
     nb    = PairFragment%nbasis
     noEOS = PairFragment%noccEOS
     noAOS = PairFragment%noccAOS
-    nvEOS = PairFragment%nunoccEOS
-    nvAOS = PairFragment%nunoccAOS
+    nvEOS = PairFragment%nvirtEOS
+    nvAOS = PairFragment%nvirtAOS
 
     !DEBUG Init MP2 gradient structure
     call init_mp2grad(PairFragment,grad)
@@ -556,14 +573,14 @@ contains
     nb    = PairFragment%nbasis
     noEOS = PairFragment%noccEOS
     noAOS = PairFragment%noccAOS
-    nvEOS = PairFragment%nunoccEOS
-    nvAOS = PairFragment%nunoccAOS
+    nvEOS = PairFragment%nvirtEOS
+    nvAOS = PairFragment%nvirtAOS
 
-    ! Which "interaction pairs" to include for occ and unocc space (avoid double counting)
+    ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
     call mem_alloc(dopair_occ,noEOS,noEOS)
     call mem_alloc(dopair_virt,nvEOS,nvEOS)
     call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
-    call which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair_virt)
+    call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
     !start the stopwatch
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -581,10 +598,10 @@ contains
     !****************************************
     something_wrong=.false.
     if(noAOS/=grad%dens%nocc)   something_wrong=.true.
-    if(nvAOS/=grad%dens%nunocc) something_wrong=.true.
+    if(nvAOS/=grad%dens%nvirt) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'dens%nocc  ', grad%dens%nocc
-       write(DECinfo%output,*) 'dens%nunocc', grad%dens%nunocc
+       write(DECinfo%output,*) 'dens%nvirt', grad%dens%nvirt
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvAOS
        call lsquit('pair_dab_dij_formation: &
@@ -638,10 +655,10 @@ contains
     grad%dens%Y(1:nvAOS,1:nvAOS) = dab%val(1:nvAOS,1:nvAOS)
 
     !fill in the rho
-    !do i=1, PairFragment%NUnOccAOS !nvAOS
-    !  iFull = PairFragment%UnOccAOSidx(i)
-    !  do j=1,PairFragment%NUnOccAOS !nvAOS
-    !    jFull = PairFragment%UnOccAOSidx(j)
+    !do i=1, PairFragment%NvirtAOS !nvAOS
+    !  iFull = PairFragment%virtAOSidx(i)
+    !  do j=1,PairFragment%NvirtAOS !nvAOS
+    !    jFull = PairFragment%virtAOSidx(j)
     !    grad%dens%rho(iFull,jFull) = dab%val(i,j)
     !  end do
     !end do
@@ -666,7 +683,7 @@ contains
     do c=1,nvEOS
       do d=1,nvEOS
 
-        ! Only update for "interaction orbital pairs" - see which_pairs_unocc
+        ! Only update for "interaction orbital pairs" - see which_pairs_virt
         if(dopair_virt(c,d)) then !XDoPair
 
           do k=1,noAOS
@@ -771,22 +788,22 @@ contains
     nb    = PairFragment%nbasis
     !DEBUG - works only for simulate full mol
     no    = PairFragment%noccAOS
-    nv    = PairFragment%nunoccAOS
+    nv    = PairFragment%nvirtAOS
     !DEBUG
     noEOS = PairFragment%noccEOS
     noAOS = PairFragment%noccAOS
-    nvEOS = PairFragment%nunoccEOS
-    nvAOS = PairFragment%nunoccAOS
+    nvEOS = PairFragment%nvirtEOS
+    nvAOS = PairFragment%nvirtAOS
 
-    ! Which "interaction pairs" to include for occ and unocc space (avoid double counting)
+    ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
     call mem_alloc(dopair_occ,noEOS,noEOS)
     call mem_alloc(dopair_virt,nvEOS,nvEOS)
     call mem_alloc(dopair_virt_occ,nvEOS,noEOS)
 !    call mem_alloc(dopair_virt_occ_aos,nvAOS,noAOS)
     call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
-    call which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair_virt)
-    call which_pairs_occ_unocc(Fragment1,Fragment2,PairFragment,dopair_virt_occ)
-!    call which_pairs_occ_unocc_aos(Fragment1,Fragment2,PairFragment,dopair_virt_occ_aos)
+    call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
+    call which_pairs_occ_virt(Fragment1,Fragment2,PairFragment,dopair_virt_occ)
+!    call which_pairs_occ_virt_aos(Fragment1,Fragment2,PairFragment,dopair_virt_occ_aos)
 
     !start the stopwatch
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -804,10 +821,10 @@ contains
     !****************************************
     something_wrong=.false.
     if(noAOS/=grad%dens%nocc)   something_wrong=.true.
-    if(nvAOS/=grad%dens%nunocc) something_wrong=.true.
+    if(nvAOS/=grad%dens%nvirt) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'dens%nocc  ', grad%dens%nocc
-       write(DECinfo%output,*) 'dens%nunocc', grad%dens%nunocc
+       write(DECinfo%output,*) 'dens%nvirt', grad%dens%nvirt
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvAOS
        call lsquit('pair_dai_dia_formation: &
@@ -841,7 +858,7 @@ contains
        do iEOS=1,noEOS
 
         ! Only update for "interaction orbital pairs":
-        ! see which_pairs_occ_unocc
+        ! see which_pairs_occ_virt
 !        print*, dopair_virt_occ(aEOS,iEOS), 'dopair_virt_occ'
         if(dopair_virt_occ(aEOS,iEOS)) then 
           
@@ -849,7 +866,7 @@ contains
           aAOS=PairFragment%idxu(aEOS) 
                
           iMOL=PairFragment%occEOSidx(iEOS) 
-          aMOL=PairFragment%unoccEOSidx(aEOS) 
+          aMOL=PairFragment%virtEOSidx(aEOS) 
 
           !dai%val(aMOL,iMOL) = m1%elm2(aAOS,iAOS)
           grad%dens%Phivo(aAOS,iAOS) = m1%elm2(aAOS,iAOS)
@@ -880,10 +897,11 @@ contains
     !****************
     !D^sd_ia = Sum_bj z^b_j*(2t^ab_ij - t^ba_ij)
     do iEOS=1,noEOS
-       iMOL=PairFragment%occEOSidx(iEOS)
+       !iMOL=PairFragment%occEOSidx(iEOS)
+       iAOS=PairFragment%idxo(iEOS)
 
       do aAOS=1,nvAOS
-         aMOL=PairFragment%unoccAOSidx(aAOS)
+         !aMOL=PairFragment%unoccAOSidx(aAOS)
 
            do jEOS=1,noEOS
               jAOS=PairFragment%idxo(jEOS)
@@ -891,7 +909,7 @@ contains
              do bAOS=1,nvAOS
          
                 ! Only update for "interaction orbital pairs":
-                ! see which_pairs_occ_unocc
+                ! see which_pairs_occ_virt
                 if(dopair_occ(iEOS,jEOS)) then 
           
                 grad%dens%Phiov(iAOS,aAOS) = grad%dens%Phiov(iAOS,aAOS)  + m1%elm2(bAOS,jAOS)*&
@@ -994,7 +1012,7 @@ contains
 
      nb = MyFragment%nbasis
      no = MyFragment%noccAOS
-     nv = MyFragment%nunoccAOS
+     nv = MyFragment%nvirtAOS
 
      b2   = nb*nb
      v2   = nv*nv
@@ -3460,11 +3478,11 @@ print *, "I AM HERE 1 "
     ! number of occupied core+valence orbitals (only different from noccAOS for frozen approx)         
 !    nocctot = VOOO%dims(4)
  
-    ! Which "interaction pairs" to include for occ and unocc space (avoid double counting)
+    ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
     call mem_alloc(dopair_occ,noccEOS,noccEOS)
     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
     call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
-    call which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair_virt)
+    call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
  
     ! Just in case, zero matrices in dens structure
     dens%X = 0e0_realk
@@ -3476,11 +3494,11 @@ print *, "I AM HERE 1 "
  !   ! Sanity check
  !   something_wrong=.false.
  !   if(noccAOS/=dens%nocc) something_wrong=.true.
- !   if(nvirtAOS/=dens%nunocc) something_wrong=.true.
+ !   if(nvirtAOS/=dens%nvirt) something_wrong=.true.
  !   if(nocctot/=dens%nocctot) something_wrong=.true.
  !   if(something_wrong) then
  !      write(DECinfo%output,*) 'dens%nocc', dens%nocc
- !      write(DECinfo%output,*) 'dens%nunocc', dens%nunocc
+ !      write(DECinfo%output,*) 'dens%nvirt', dens%nvirt
  !      write(DECinfo%output,*) 'dens%nocctot', dens%nocctot
  !      write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noccAOS
  !      write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvirtAOS
@@ -3576,7 +3594,7 @@ call mem_TurnOffThread_Memory()
 !    do a=1,nvirtEOS
 !       do b=1,nvirtEOS
 !
-!          ! Only update for "interaction orbital pairs" - see which_pairs_unocc
+!          ! Only update for "interaction orbital pairs" - see which_pairs_virt
 !          if(dopair_virt(a,b)) then !XDoPair
 !
 !             do j=1,noccAOS
@@ -3768,10 +3786,10 @@ call mem_TurnOffThread_Memory()
     ! Sanity check 1: Density input structure is correct
     something_wrong=.false.
     if(noccAOS/=dens%nocc) something_wrong=.true.
-    if(nvirtAOS/=dens%nunocc) something_wrong=.true.
+    if(nvirtAOS/=dens%nvirt) something_wrong=.true.
     if(something_wrong) then
        write(DECinfo%output,*) 'dens%nocc', dens%nocc
-       write(DECinfo%output,*) 'dens%nunocc', dens%nunocc
+       write(DECinfo%output,*) 'dens%nvirt', dens%nvirt
        write(DECinfo%output,*) 'Amplitudes, occ AOS dimension ', noccAOS
        write(DECinfo%output,*) 'Amplitudes, virt AOS dimension', nvirtAOS
        call lsquit('single_calculate_mp2density: &
@@ -3858,7 +3876,7 @@ call mem_TurnOffThread_Memory()
 !    call LSTIMER('X MATRIX',tcpu,twall,DECinfo%output)
 !
 !    ! X and Y matrices collected and transformed to AO basis (unrelaxed corr. density)
-!    call get_unrelaxed_corrdens_in_AO_basis(dens%nocc,dens%nunocc,dens%nbasis,MyFragment%Co,&
+!    call get_unrelaxed_corrdens_in_AO_basis(dens%nocc,dens%nvirt,dens%nbasis,MyFragment%Co,&
 !         & MyFragment%Cv,dens%X,dens%Y,dens%rho)
 !
 !    !print debug info if needed
@@ -3943,6 +3961,9 @@ subroutine get_CCSDgradient_main(MyMolecule,mylsitem,DHF,mp2gradient,fullgrad)
 
   call LSTIMER('START',tcpu,twall,DECinfo%output)
   call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+  if(MyMolecule%mem_distributed)then
+     call lsquit("ERROR(get_CCSDgradient_main) not implemented for distributed matrices in molecule",-1)
+  endif
 
 print*, "ready to calculate the dipole moment"
 
@@ -3950,7 +3971,7 @@ print*, "ready to calculate the dipole moment"
   ! *******************************
   nbasis = MyMolecule%nbasis
   nocc = MyMolecule%nocc
-  nvirt = MyMolecule%nunocc
+  nvirt = MyMolecule%nvirt
   ncore = MyMolecule%ncore
   nval = MyMolecule%nval
 
@@ -3958,8 +3979,8 @@ print*, "ready to calculate the dipole moment"
   ! **********************************
   call mat_init(Cocc,nbasis,nocc)
   call mat_init(Cvirt,nbasis,nvirt)
-  call mat_set_from_full(MyMolecule%Co(1:nbasis,1:nocc), 1E0_realk, Cocc)
-  call mat_set_from_full(MyMolecule%Cv(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
+  call mat_set_from_full(MyMolecule%Co%elm2(1:nbasis,1:nocc), 1E0_realk, Cocc)
+  call mat_set_from_full(MyMolecule%Cv%elm2(1:nbasis,1:nvirt), 1E0_realk, Cvirt)
 
   DMP2AO = array2_init([nbasis,nbasis])
 
@@ -3989,27 +4010,27 @@ print*, "ready to calculate the dipole moment"
   call print_matrix_real(dij%val,nocc,nocc)
 
   call dec_simple_basis_transform2(nbasis,nocc,&
-       & MyMolecule%Co,dij%val,dijao%val) 
+       & MyMolecule%Co%elm2,dij%val,dijao%val) 
 
   call dec_simple_basis_transform2(nbasis,nvirt,&
-       & MyMolecule%Cv,dab%val,dabao%val) 
+       & MyMolecule%Cv%elm2,dab%val,dabao%val) 
   
   write(*, *) ''
   write(*, *) 'Co basis'
   k=1
   do i=1,nocc
     do j=1,nbasis
-      write(*,'(f16.10)',advance='no') MyMolecule%Co(j,i)
+      write(*,'(f16.10)',advance='no') MyMolecule%Co%elm2(j,i)
       k=k+1
     end do
     write(*, *) ''
   end do
 
-  call dec_diff_basis_transform2(nbasis,nocc,nvirt,MyMolecule%Co,&
-       & MyMolecule%Cv,dia%val,diaao%val) 
+  call dec_diff_basis_transform2(nbasis,nocc,nvirt,MyMolecule%Co%elm2,&
+       & MyMolecule%Cv%elm2,dia%val,diaao%val) 
 
-  call dec_diff_basis_transform2(nbasis,nvirt,nocc,MyMolecule%Cv,&
-       & MyMolecule%Co,dai%val,daiao%val) 
+  call dec_diff_basis_transform2(nbasis,nvirt,nocc,MyMolecule%Cv%elm2,&
+       & MyMolecule%Co%elm2,dai%val,daiao%val) 
 
   DMP2AO = dijao+diaao+daiao+dabao
 
@@ -4263,12 +4284,12 @@ end subroutine get_CCSDgradient_main
     !Update the Dab matrix
     if( DECinfo%PL>2 )then
        print *, "";       print *, "Dab before updating rho"
-       call print_matrix_real(fraggrad%dens%rho,fraggrad%dens%nunocc,fraggrad%dens%nunocc)
+       call print_matrix_real(fraggrad%dens%rho,fraggrad%dens%nvirt,fraggrad%dens%nvirt)
        print *, "";    endif
 
-    do i=1,fraggrad%dens%nunocc 
+    do i=1,fraggrad%dens%nvirt 
       iFull = fraggrad%dens%basis_idx(i)
-      do j=1,fraggrad%dens%nunocc 
+      do j=1,fraggrad%dens%nvirt 
         jFull = fraggrad%dens%basis_idx(j)
         fullgrad%rho(iFull,jFull) = fullgrad%rho(iFull,jFull)+fraggrad%dens%rho(i,j)
       end do
@@ -4283,12 +4304,12 @@ end subroutine get_CCSDgradient_main
 !    !Update the Dij matrix
 !    if( DECinfo%PL>2 )then
 !       print *, "";!       print *, "Dij before updating rho"
-!       call print_matrix_real(fraggrad%dens%Y,fraggrad%dens%nunocc,fraggrad%dens%nunocc)
+!       call print_matrix_real(fraggrad%dens%Y,fraggrad%dens%nvirt,fraggrad%dens%nvirt)
 !       print *, "";!    endif
 !    
-!    do i=1,fraggrad%dens%nunocc
+!    do i=1,fraggrad%dens%nvirt
 !      iFull = fraggrad%dens%basis_idx(i)
-!      do j=1,fraggrad%dens%nunocc 
+!      do j=1,fraggrad%dens%nvirt 
 !        jFull = fraggrad%dens%basis_idx(j)
 !        fullgrad%rho(iFull,jFull) = fullgrad%rho(iFull,jFull)+fraggrad%dens%Y(i,j)
 !      end do
@@ -4359,13 +4380,13 @@ end subroutine get_CCSDgradient_main
     !Update the Dab matrix
     if( DECinfo%PL>2 )then
        print *, "";       print *, "Ready to update Y:"
-       call print_matrix_real(fraggrad%dens%Y,fraggrad%dens%nunocc,fraggrad%dens%nunocc)
+       call print_matrix_real(fraggrad%dens%Y,fraggrad%dens%nvirt,fraggrad%dens%nvirt)
        print *, "";    endif
 
-    do i=1,fragment%nunoccAOS !fraggrad%dens%nunocc 
-      iFull = fragment%UnOccAOSidx(i)
-      do j=1,fragment%nunoccAOS !fraggrad%dens%nunocc 
-        jFull = fragment%UnOccAOSidx(j)
+    do i=1,fragment%nvirtAOS !fraggrad%dens%nvirt 
+      iFull = fragment%virtAOSidx(i)
+      do j=1,fragment%nvirtAOS !fraggrad%dens%nvirt 
+        jFull = fragment%virtAOSidx(j)
         fullgrad%rho(fullgrad%nocc+iFull,fullgrad%nocc+jFull) = &
         fullgrad%rho(fullgrad%nocc+iFull,fullgrad%nocc+jFull) + fraggrad%dens%Y(i,j)
       end do
@@ -4400,14 +4421,14 @@ end subroutine get_CCSDgradient_main
     !Update the Dai and Dia matricies
     if( DECinfo%PL>2 )then
        print *, "";       print *, "Ready to update off-diagonal terms:"
-       call print_matrix_real(fraggrad%dens%Phivo,fraggrad%dens%nunocc,fraggrad%dens%nocc)
-       print *, "";       call print_matrix_real(fraggrad%dens%Phiov,fraggrad%dens%nocc,fraggrad%dens%nunocc)
+       call print_matrix_real(fraggrad%dens%Phivo,fraggrad%dens%nvirt,fraggrad%dens%nocc)
+       print *, "";       call print_matrix_real(fraggrad%dens%Phiov,fraggrad%dens%nocc,fraggrad%dens%nvirt)
        print *, "";    endif
 
     do i=1,fraggrad%dens%nocc
       iFull = fragment%OccAOSidx(i)
-      do j=1,fraggrad%dens%nunocc
-        jFull = fragment%UnOccAOSidx(j)
+      do j=1,fraggrad%dens%nvirt
+        jFull = fragment%virtAOSidx(j)
         fullgrad%rho(iFull,fullgrad%nocc+jFull) = &
         fullgrad%rho(iFull,fullgrad%nocc+jFull) + &
                                     &fraggrad%dens%Phiov(i,j)
@@ -4415,8 +4436,8 @@ end subroutine get_CCSDgradient_main
     end do
     do i=1,fraggrad%dens%nocc
       iFull = fragment%OccAOSidx(i)
-      do j=1,fraggrad%dens%nunocc
-        jFull = fragment%UnOccAOSidx(j)
+      do j=1,fraggrad%dens%nvirt
+        jFull = fragment%virtAOSidx(j)
         fullgrad%rho(fullgrad%nocc+jFull,iFull) = &
         fullgrad%rho(fullgrad%nocc+jFull,iFull) + &
                                     &fraggrad%dens%Phivo(j,i)

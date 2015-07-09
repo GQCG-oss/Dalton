@@ -32,7 +32,7 @@ CONTAINS
 !> in the BASISINFO and from the molecule 
 !>
 SUBROUTINE BUILD_AO(LUPRI,SCHEME,IPRINT,MOLECULE,BASISINFO,AO&
-     &,UNCONTRACTED,INTNRM,NORMA)
+     &,UNCONTRACTED,INTNRM,EXTEND,NORMA)
 implicit none
 !> the logical unit number for the output file
 INTEGER,intent(in)        :: LUPRI
@@ -50,20 +50,23 @@ INTEGER,intent(in)        :: IPRINT
 LOGICAL,intent(in)        :: UNCONTRACTED
 !> if INTERMIDIATE NORMALIZATION shoule be used, USED FOR SCREENING
 LOGICAL,intent(in)        :: INTNRM 
+!> extend (add to) the input AO 
+LOGICAL,intent(in)        :: EXTEND
 !> if AOS should be the normalized orbitals (default true)
 LOGICAL,optional          :: NORMA
 !
 TYPE(AOITEM),pointer      :: AOmodel(:)
+TYPE(AOITEM)              :: AOTMP
 TYPE(AOorganizer)         :: AOorganize 
 INTEGER                   :: nsegments,nAngmom,nbatches,L,A,B
 INTEGER                   :: UNIQUEMATRIXES,UNIQUEEXPONENTS,SUM
 INTEGER                   :: I,J,K,type,nPrimitives,nContracted
-INTEGER                   :: R,aobatches,UNIQUE2,AOsum
+INTEGER                   :: R,aobatches,UNIQUE2
 INTEGER                   :: orbitalIndex,tmporbitalindex
-INTEGER                   :: GHOSTFUNCS,AOmodelbat
+INTEGER                   :: GHOSTFUNCS,AOmodelbat,nrow,ncol
 INTEGER,pointer           :: MODELTYPES(:)
 INTEGER                   :: tmpprimorbitalindex,primorbitalindex,icharge
-INTEGER                   :: nbat,SUM1,nMODELEXP,itype
+INTEGER                   :: nbat,SUM1,nMODELEXP,itype,offsetAT
 INTEGER,pointer           :: MODELEXP(:)
 LOGICAL                   :: NOFAMILY,OLDATOM,NOSEGMENT,NORM
 IF(BASISINFO%natomtypes.EQ. 0)THEN
@@ -73,6 +76,21 @@ IF(BASISINFO%natomtypes.EQ. 0)THEN
    print*,'BASISINFO%nbast        ',BASISINFO%nbast
    print*,'BASISINFO%nprimbast    ',BASISINFO%nprimbast
    CALL LSQUIT('Error BUILD_AO called with empty basis',lupri)
+ENDIF
+IF(EXTEND)THEN
+   IF(IPRINT .GT. 20) THEN
+      WRITE(LUPRI,*)'The Original AO '
+      CALL PRINT_AO(LUPRI,AO)
+   ENDIF
+
+   call nullifyAOITEM(AOTMP)
+   CALL COPY_AOITEM(AO,AOTMP)
+   call free_AOitem(lupri,AO)
+
+   IF(IPRINT .GT. 20) THEN
+      WRITE(LUPRI,*)'The Copyied AO '
+      CALL PRINT_AO(LUPRI,AOTMP)      
+   ENDIF
 ENDIF
 call nullifyAOITEM(AO)
 IF(PRESENT(NORMA))THEN
@@ -86,9 +104,21 @@ DO I=1,MOLECULE%natoms
    J=J+1
 ENDDO
 AO%natoms = J
+IF(EXTEND)THEN
+   AO%natoms = AOTMP%natoms + J
+ENDIF
 CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)
 CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
 J=0
+offsetAT = 0
+IF(EXTEND)THEN
+   DO I=1,AOTMP%natoms   
+      J=J+1
+      AO%ATOMICnORB(J)=AOTMP%ATOMICnORB(J)
+      AO%ATOMICnBATCH(J)=AOTMP%ATOMICnBATCH(J)
+   ENDDO
+   offsetAT = AOTMP%natoms
+ENDIF
 DO I=1,MOLECULE%natoms   
    IF(MOLECULE%ATOM(I)%pointcharge)CYCLE 
    J=J+1
@@ -143,31 +173,13 @@ ENDIF
 AOmodelbat=L
 GHOSTFUNCS=0 !SHOULD BE CHANGED TO ACCOUNT FOR GHOST FUNCTIONS
 aobatches=(MOLECULE%natoms-GHOSTFUNCS)*SUM
+IF(EXTEND)THEN
+   aobatches=(MOLECULE%natoms-GHOSTFUNCS)*SUM + AOTMP%nbatches
+ENDIF
 CALL MEM_ALLOC(AO%BATCH,aobatches)
 call nullifyAOBATCH(AO)
 IF(IPRINT .GT. 15)WRITE(lupri,*)aobatches,' aobatches should be more than sufficient'
-AOsum=SUM
-ALLOCATE(AOmodel(AOmodelbat))
-DO I=1,AOmodelbat
-   call nullifyAOITEM(AOmodel(I))
-   AOmodel(I)%nbast = 0
-   AOmodel(I)%natoms=1
-   CALL MEM_ALLOC(AOmodel(I)%ATOMICnORB,1)
-   AOmodel(I)%ATOMICnORB(1)=1
-   CALL MEM_ALLOC(AOmodel(I)%ATOMICnBATCH,1)
-   AOmodel(I)%ATOMICnBATCH(1)=0
-   CALL MEM_ALLOC(AOmodel(I)%BATCH,SUM)
-   call nullifyAOBATCH(AOmodel(I))
-   AOmodel(I)%nbatches = 0
-   CALL MEM_ALLOC(AOmodel(I)%CC,1) !not used
-   CALL lsmat_dense_init(AOmodel(I)%CC(1),1,1)
-   AOmodel(I)%CC(1)%elms=0.0E0_realk
-   CALL MEM_ALLOC(AOmodel(I)%angmom,1) !not used
-   AOmodel(I)%angmom(1) = 0
-   AOmodel(I)%nCC = 1 !not used
-   AOmodel(I)%nExp = 0   
-   CALL MEM_ALLOC(AOmodel(I)%Exponents,SUM)
-ENDDO
+call init_AOmodel(AOmodel,AOmodelbat,SUM)
 IF(SUM .EQ. 0) CALL LSQUIT('SUM EQ ZERO SOMETHINGS WRONG',lupri)
 nMODELEXP=SUM
 call mem_alloc(MODELEXP,SUM)
@@ -181,19 +193,54 @@ DO I=1,aobatches
    ENDDO
    AOorganize%ORG(I)%atom=0
 ENDDO
-
-CALL MEM_ALLOC(AO%CC,SUM*AOmodelbat)
-CALL MEM_ALLOC(AO%Exponents,SUM*AOmodelbat)
-CALL MEM_ALLOC(AO%angmom,SUM*AOmodelbat)
-
-nbatches=0
-UNIQUEMATRIXES=0
-UNIQUEEXPONENTS=0
-ITYPE = 0 
-AO%nbatches = 0 
+IF(EXTEND)THEN
+   CALL MEM_ALLOC(AO%CC,AOTMP%nCC+SUM*AOmodelbat)
+   CALL MEM_ALLOC(AO%Exponents,AOTMP%nEXP+SUM*AOmodelbat)
+   CALL MEM_ALLOC(AO%angmom,AOTMP%nCC+SUM*AOmodelbat)
+   !COPY PARTIAL
+   nbatches=0
+   DO I=1,SIZE(AOTMP%BATCH)
+      CALL COPY_AOBATCH2(AOTMP%BATCH(I),AO%BATCH(I))
+   ENDDO
+   DO I=1,AOTMP%nCC
+      nrow = AOTMP%CC(I)%nrow
+      ncol = AOTMP%CC(I)%ncol
+      CALL lsmat_dense_init(AO%CC(I),AOTMP%CC(I)%nrow,AOTMP%CC(I)%ncol)
+      call dcopy(nrow*ncol,AOTMP%CC(I)%elms,1,AO%CC(I)%elms,1)
+      AO%angmom(I) = AOTMP%angmom(I)
+   ENDDO
+   DO I=1,AOTMP%nEXP
+      nrow = AOTMP%Exponents(I)%nrow
+      CALL lsmat_dense_init(AO%Exponents(I),AOTMP%Exponents(I)%nrow,1)
+      call dcopy(nrow,AOTMP%Exponents(I)%elms,1,AO%Exponents(I)%elms,1)
+   ENDDO
+   DO I=1,AOTMP%nbatches
+      do J = 1, AOTMP%BATCH(I)%nAngmom
+         nullify(AO%BATCH(I)%pCC(J)%p)
+         AO%BATCH(I)%pCC(J)%p => AO%CC(AO%BATCH(I)%CCindex(J))
+      enddo
+      nullify(AO%BATCH(I)%pExponents)
+      AO%BATCH(I)%pExponents => AO%Exponents(AO%BATCH(I)%ExpIndex)
+   ENDDO
+   UNIQUEEXPONENTS=AOTMP%nEXP
+   UNIQUEMATRIXES=AOTMP%nCC
+   ITYPE = AOTMP%ntype
+   AO%nbatches = AOTMP%nbatches
+   orbitalIndex = AOTMP%nbast + 1
+   primorbitalIndex = AOTMP%nprimbast + 1
+ELSE
+   CALL MEM_ALLOC(AO%CC,SUM*AOmodelbat)
+   CALL MEM_ALLOC(AO%Exponents,SUM*AOmodelbat)
+   CALL MEM_ALLOC(AO%angmom,SUM*AOmodelbat)
+   nbatches=0
+   UNIQUEMATRIXES=0
+   UNIQUEEXPONENTS=0
+   ITYPE = 0 
+   AO%nbatches = 0 
+   orbitalIndex = 1
+   primorbitalIndex = 1
+ENDIF
 AOorganize%nbatches =  0 
-orbitalIndex = 1
-primorbitalIndex = 1
 R = BASISINFO%Labelindex
 DO I=1,MOLECULE%natoms  
    IF(MOLECULE%ATOM(I)%pointcharge)CYCLE !no basis functions on this point charge
@@ -221,7 +268,7 @@ DO I=1,MOLECULE%natoms
    IF(OLDATOM) THEN
       IF(IPRINT .GT. 2) WRITE(LUPRI,*)'AS THIS IS AN OLD ATOM WE COPY FROM MODELAOBATCH'
       L=MODELTYPES(type)
-      CALL COPY_FROM_MODEL_AO(AOmodel(L),AO,I,MOLECULE,orbitalindex,primorbitalindex,lupri)
+      CALL COPY_FROM_MODEL_AO(AOmodel(L),AO,I,MOLECULE,orbitalindex,primorbitalindex,lupri,offsetAT)
    ELSE
       IF(IPRINT .GT. 2) WRITE(LUPRI,*)'THIS IS A NEW ATOM SO WE BUILD A MODELAO BATCH'
       L=MODELTYPES(type)
@@ -321,14 +368,14 @@ DO I=1,MOLECULE%natoms
              ENDDO
             ENDIF
          ENDIF
-      ENDDO
+      ENDDO      
       CALL SET_AO_EXTENT(AOmodel(L),SCHEME)
       AOmodel(L)%ATOMICnBATCH(1)=AOmodel(L)%nbatches
       IF(IPRINT .GT. 40)THEN
          WRITE(LUPRI,'(2X,A)')'The Model AO for this atom of this type and basisset'
          CALL PRINT_AO(LUPRI,AOmodel(L))
       ENDIF
-      CALL COPY_FROM_MODEL_AO(AOmodel(L),AO,I,MOLECULE,orbitalindex,primorbitalindex,lupri)
+      CALL COPY_FROM_MODEL_AO(AOmodel(L),AO,I,MOLECULE,orbitalindex,primorbitalindex,lupri,offsetAT)
    ENDIF
 ENDDO
 
@@ -351,16 +398,54 @@ AO%ntype = itype
 AO%nCC=UNIQUEMATRIXES
 AO%nExp=UNIQUEEXPONENTS
 AO%nbast = orbitalindex-1
-
+AO%nprimbast = primorbitalIndex-1
 call set_redtype(AO,lupri)
 call set_maxJ(AO,lupri)
 !CALL DETERMINE_AOBATCH_MEM(AO)
 IF(IPRINT .GT. 20) THEN
-   WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH  UNCONTRACTED',UNCONTRACTED
+   WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH.  UNCONTRACTED',UNCONTRACTED
+   IF(EXTEND)WRITE(LUPRI,*)'EXTENDED From previous AO '
    CALL PRINT_AO(LUPRI,AO)
+   IF(EXTEND)THEN
+      WRITE(LUPRI,*)'The Original AO '
+      CALL PRINT_AO(LUPRI,AOTMP)      
+   ENDIF
 ENDIF
-
+IF(EXTEND)THEN
+   call free_aoitem(lupri,AOTMP)
+ENDIF
 END SUBROUTINE BUILD_AO
+
+subroutine init_AOmodel(AOmodel,AOmodelbat,SUM)
+implicit none
+integer,intent(in) :: AOmodelbat,SUM
+TYPE(AOITEM),pointer      :: AOmodel(:)
+!
+integer :: I
+
+ALLOCATE(AOmodel(AOmodelbat))
+DO I=1,AOmodelbat
+   call nullifyAOITEM(AOmodel(I))
+   AOmodel(I)%nbast = 0
+   AOmodel(I)%nprimbast = 0
+   AOmodel(I)%natoms=1
+   CALL MEM_ALLOC(AOmodel(I)%ATOMICnORB,1)
+   AOmodel(I)%ATOMICnORB(1)=1
+   CALL MEM_ALLOC(AOmodel(I)%ATOMICnBATCH,1)
+   AOmodel(I)%ATOMICnBATCH(1)=0
+   CALL MEM_ALLOC(AOmodel(I)%BATCH,SUM)
+   call nullifyAOBATCH(AOmodel(I))
+   AOmodel(I)%nbatches = 0
+   CALL MEM_ALLOC(AOmodel(I)%CC,1) !not used
+   CALL lsmat_dense_init(AOmodel(I)%CC(1),1,1)
+   AOmodel(I)%CC(1)%elms=0.0E0_realk
+   CALL MEM_ALLOC(AOmodel(I)%angmom,1) !not used
+   AOmodel(I)%angmom(1) = 0
+   AOmodel(I)%nCC = 1 !not used
+   AOmodel(I)%nExp = 0   
+   CALL MEM_ALLOC(AOmodel(I)%Exponents,SUM)
+ENDDO
+end subroutine init_AOmodel
 
 subroutine set_redtype(AO,lupri)
 implicit none
@@ -486,6 +571,7 @@ CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
 AO%ATOMICnORB(1)=1                  
 AO%ATOMICnBATCH(1)=1                
 AO%nbast = 1                
+AO%nprimbast = 1
 
 AO%empty=.TRUE.
 AO%nbatches=1
@@ -529,6 +615,7 @@ AO%BATCH(1)%nPrimOrbComp(1)=1
 AO%BATCH(1)%nOrbitals(1)=1
 AO%BATCH(1)%pCC(1)%p => AO%CC(1)
 AO%BATCH(1)%CCindex(1) = 0
+AO%BATCH(1)%Expindex = 0
 
 !WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH'
 !CALL PRINT_AO(LUPRI,AO)
@@ -570,6 +657,7 @@ CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
 AO%ATOMICnORB(1)=0                       
 AO%ATOMICnBATCH(1)=1                     
 AO%nbast = 1                     
+AO%nprimbast = 1                     
 
 AO%empty=.TRUE.
 aobatches=nAtoms    !MOLECULE%natoms
@@ -618,6 +706,7 @@ DO K=1,MOLECULE%natoms
    AO%BATCH(I)%pCC(1)%p => AO%CC(NEWCHARGE)   
    AO%BATCH(I)%CCindex(1) = NEWCHARGE   
 ENDDO
+AO%BATCH(I)%Expindex = 1
 
 call mem_dealloc(CHARGES)
 
@@ -694,6 +783,7 @@ CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
 AO%ATOMICnORB(1)=0                       
 AO%ATOMICnBATCH(1)=1                     
 AO%nbast = 1                     
+AO%nprimbast = 1                     
 
 AO%empty=.TRUE.
 aobatches=nAtoms  ! = 1
@@ -715,6 +805,7 @@ AO%angmom(1) = 0
 AO%BATCH(1)%pCC(1)%p => AO%CC(1)
 AO%BATCH(1)%CCindex(1) = 1
 AO%Exponents(1)%elms(1)=0E0_realk
+AO%BATCH(1)%Expindex = 1
 
 I=1
 AO%BATCH(I)%itype = I
@@ -781,6 +872,7 @@ CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
 AO%ATOMICnORB(1)=0                       
 AO%ATOMICnBATCH(1)=1                     
 AO%nbast = 1
+AO%nprimbast = 1
 
 AO%empty=.TRUE.
 aobatches=nAtoms    !MOLECULE%natoms
@@ -828,6 +920,7 @@ DO K=1,MOLECULE%natoms
    ENDDO
    AO%BATCH(I)%pCC(1)%p => AO%CC(NEWCHARGE)   
    AO%BATCH(I)%CCindex(1) = NEWCHARGE   
+   AO%BATCH(I)%Expindex = 1
 ENDDO
 
 call mem_dealloc(CHARGES)
@@ -901,6 +994,7 @@ DO I=1,AO%natoms
    AO%ATOMICnBATCH(I)=MOLECULE%NATOMS
 ENDDO
 AO%nbast = MOLECULE%NATOMS    
+AO%nprimbast = MOLECULE%NATOMS    
 
 AO%empty=.TRUE.
 aobatches=MOLECULE%natoms
@@ -944,6 +1038,7 @@ DO I=1,MOLECULE%natoms
    ENDDO
    AO%BATCH(I)%pCC(1)%p => AO%CC(NEWCHARGE)   
    AO%BATCH(I)%CCindex(1) = NEWCHARGE   
+   AO%BATCH(I)%Expindex = 1
 ENDDO
 
 call mem_dealloc(CHARGES)
@@ -987,6 +1082,33 @@ AO%maxJ = 0
 
 END SUBROUTINE BUILD_EMPTY_PCHARGE_AO
 
+SUBROUTINE determinenAObatches(nAObatches,LUPRI,SCHEME,&
+              & IPRINT,molecule,BASISINFO,UNCONTRACTED,INTNRM)
+use molecule_type
+implicit none
+!> number of AO batches
+INTEGER,intent(inout)    :: nAObatches
+!> the logical unit number for the output file
+INTEGER,intent(in)           :: LUPRI
+!> contains all info about the integralscheme requested (thresholds,use cartesian,..)
+TYPE(LSINTSCHEME),intent(in) :: SCHEME
+!> the printlevel integer, determining how much output should be generated
+INTEGER,intent(in)       :: IPRINT
+!> contains all info about the molecule (atoms, charge,...)
+TYPE(MOLECULEINFO),intent(in):: MOLECULE
+!> contains all info about the basisset (exponents,number of primitives,...)
+TYPE(BASISSETINFO),intent(in) :: BASISINFO
+!> if the AOitem should be uncontracted
+LOGICAL,intent(in)       :: UNCONTRACTED
+!> if INTERMIDIATE NORMALIZATION shoule be used, USED FOR SCREENING
+LOGICAL,intent(in)       :: INTNRM 
+!
+TYPE(AOITEM)              :: AOfull
+CALL BUILD_AO(LUPRI,SCHEME,IPRINT,MOLECULE,BASISINFO,AOfull&
+     &,UNCONTRACTED,INTNRM,.FALSE.)
+nAObatches = AOfull%nbatches
+call free_aoitem(lupri,AOfull)
+end SUBROUTINE determinenAObatches
 !> \brief builds an AOitem with a single shellbatch (an S, or PxPyPz, etc.), or several
 !> \author T. Kjaergaard
 !> \date 2008
@@ -1026,18 +1148,20 @@ TYPE(AOITEM)              :: AOfull
 INTEGER :: I,A,iexp,nrow,ncol,Ifull,IATOMfullold,IATOM,norbitals,iATOMfull
 INTEGER :: nPrimOrbitals,nprim,ntype,unique,itest,itype,batch
 INTEGER :: K
+logical :: extend2
 integer,pointer :: uniquetypes(:)
 real(realk)               :: SUM
 REAL(REALK),PARAMETER     :: NULL=0.0E0_realk
-
+extend2 = .FALSE.
 CALL BUILD_AO(LUPRI,SCHEME,IPRINT,MOLECULE,BASISINFO,AOfull&
-     &,UNCONTRACTED,INTNRM)
+     &,UNCONTRACTED,INTNRM,extend2)
 
 IF(AOfull%nbatches.LT.RequestedBatchIndex+SizeRequestedBatch-1)THEN
    CALL LSQUIT('Error in BUILD_SHELLBATCH_AO',-1)
 ENDIF
-
+call nullifyAOITEM(AO_output)
 AO_output%EMPTY = AOfull%EMPTY
+
 call mem_alloc(AO_output%BATCH,SizeRequestedBatch)
 call nullifyAOBATCH(AO_output)
 
@@ -1099,18 +1223,7 @@ DO I=1,SizeRequestedBatch
       AO_output%BATCH(I)%startPrimOrbital(A) = 1 + nPrimOrbitals
       nPrimOrbitals = nPrimOrbitals + nPrim*AO_output%BATCH(I)%nOrbComp(A)
    ENDDO
-   DO iexp = 1,AO_output%nEXP
-      IF(AO_output%Exponents(Iexp)%nrow .EQ. nPrim)THEN
-         SUM=NULL
-         DO K=1,nPrim
-            SUM=SUM+ABS(AOfull%BATCH(Ifull)%pExponents%elms(K)&
-                 &-AO_output%Exponents(Iexp)%elms(K))
-         ENDDO
-         IF (SUM<ExpThr) THEN
-            AO_output%BATCH(I)%pExponents => AO_output%Exponents(iexp)
-         ENDIF
-      ENDIF
-   ENDDO
+   AO_output%BATCH(I)%pExponents => AO_output%Exponents(AO_output%BATCH(I)%Expindex)
 ENDDO
 DO I=1,AO_output%natoms
    AO_output%ATOMICnOrb(I) = 0
@@ -1149,6 +1262,7 @@ AO_output%ntype = ntype
 call set_redtype(AO_output,lupri)
 call set_maxJ(AO_output,lupri)
 AO_output%nbast = nOrbitals
+AO_output%nprimbast = nPrimOrbitals
 dim = nOrbitals
 DO I=1,AO_output%nbatches
    IATOM = AO_output%BATCH(I)%atom 
@@ -1175,28 +1289,62 @@ integer :: orbtoBatch(nbast)
 integer,intent(inout) :: nbatches,MaxOrbitals
 character(len=1),intent(in) :: AOspec
 !
-integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches
-logical :: uncont,intnrm
+integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches,extend2
+logical :: uncont,intnrm,extend
 type(AOITEM) :: AO
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
-intnrm = .false.
+intnrm = .false.; extend=.false.
+extend = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'D')THEN
    !   The Aux AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   extend = .true.
+ELSEIF(AOspec.EQ.'O')THEN
+   ! only The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
-
 call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+     & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+call build_batchesOfAOs1(lupri,maxallowedorbitals,nbast,&
+     &MaxOrbitals,batchsize,batchdim,batchindex,nbatches,orbTobatch,AO,0)
+IF(extend)THEN
+   extend2 = AO%nbatches
+   call free_aoitem(lupri,AO)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,.FALSE.)
+   call build_batchesOfAOs1(lupri,maxallowedorbitals,nbast,&
+        &MaxOrbitals,batchsize,batchdim,batchindex,nbatches,orbTobatch,AO,extend2)
+ENDIF
+call free_aoitem(lupri,AO)
+end subroutine build_batchesOfAOs
 
+subroutine build_batchesOfAOs1(lupri,maxallowedorbitals,nbast,&
+     &MaxOrbitals,batchsize,batchdim,batchindex,nbatches,orbTobatch,AO,extend)
+implicit none
+integer,intent(in)         :: lupri,maxallowedorbitals,nbast
+integer,pointer :: batchsize(:),batchdim(:),batchindex(:)
+integer,intent(inout) :: orbtoBatch(nbast)
+integer,intent(inout) :: nbatches,MaxOrbitals
+type(AOITEM),intent(in) :: AO
+integer,intent(in) :: extend
+!
+integer,pointer :: tmp(:)
+integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches,nbatchesOrig
+logical :: uncont,intnrm
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
+
+nbatchesOrig = 0
+IF(extend.GT.0)nbatchesOrig = nbatches 
 nbatches = 0
 norbitals = 0
 do I=1,AO%nbatches
@@ -1218,20 +1366,50 @@ IF(norbitals.GT.0)THEN
    nbatches = nbatches + 1
 ENDIF
 
-call mem_alloc(batchsize,nbatches)
-call mem_alloc(batchindex,nbatches)
-call mem_alloc(batchdim,nbatches)
-do I=1,nbatches
-   batchsize(I) = 0
-   batchindex(I) = 0
-   batchdim(I) = 0
-enddo
+IF(extend.GT.0)THEN
+   nbatches = nbatchesOrig+nbatches
+   call mem_alloc(tmp,nbatchesOrig)
+   do I=1,nbatchesOrig
+      tmp(I)=batchsize(I)
+   enddo
+   call mem_dealloc(batchsize)   
+   call mem_alloc(batchsize,nbatches)
+   do I=1,nbatchesOrig
+      batchsize(I)=tmp(I)
+      tmp(I)=batchindex(I)
+   enddo
+   call mem_dealloc(batchindex)
+   call mem_alloc(batchindex,nbatches)
+   do I=1,nbatchesOrig
+      batchindex(I)=tmp(I)
+      tmp(I)=batchdim(I)
+   enddo
+   call mem_dealloc(batchdim)
+   call mem_alloc(batchdim,nbatches)
+   do I=1,nbatchesOrig
+      batchdim(I)=tmp(I)
+   enddo
+   call mem_dealloc(tmp)
+   do I=nbatchesOrig+1,nbatches
+      batchsize(I) = 0
+      batchindex(I) = 0
+      batchdim(I) = 0
+   enddo
+ELSE
+   call mem_alloc(batchsize,nbatches)
+   call mem_alloc(batchindex,nbatches)
+   call mem_alloc(batchdim,nbatches)
+   do I=1,nbatches
+      batchsize(I) = 0
+      batchindex(I) = 0
+      batchdim(I) = 0
+   enddo
+ENDIF
 allocnbatches = nbatches
 nbatLoc = 0
-nbatches = 0
+nbatches = nbatchesOrig
 norbitals = 0
-batchindex = 0 
-batchindex(1) = 1 
+batchindex(nbatches+1) = extend + 1 
 do I=1,AO%nbatches
    tmporb = 0
    DO A=1,AO%BATCH(I)%nAngmom
@@ -1241,7 +1419,10 @@ do I=1,AO%nbatches
       nbatches = nbatches + 1
       batchsize(nbatches) = nbatLoc
       batchdim(nbatches) = norbitals
-      IF(nbatches+1.LE.allocnbatches)batchindex(nbatches+1) = I 
+      IF(nbatches+1.LE.allocnbatches)THEN
+         !extend = AO%nbatches of previous AO that need extending
+         batchindex(nbatches+1) = extend + I 
+      ENDIF
       nbatLoc = 1
       norbitals = tmporb
    ELSE
@@ -1259,12 +1440,17 @@ norbitals = 0
 nbatLoc = 0
 do I=1,nbatches
    norbitals=norbitals + batchdim(I)
+enddo
+do I=nbatchesOrig+1,nbatches
    nbatLoc = nbatLoc + batchsize(I) 
 enddo
-IF(norbitals.NE.nbast)call lsquit('basfunc mismatch in build_batchesOfAOs',-1)
-IF(nbatLoc.NE.AO%nbatches)call lsquit('basfunc mismatch in build_batchesOfAOs',-1)
-
-call free_aoitem(lupri,AO)
+IF(extend.GT.0)THEN
+   IF(norbitals.NE.nbast)call lsquit('basfunc mismatch1 in build_batchesOfAOs',-1)
+   IF(nbatLoc.NE.AO%nbatches)call lsquit('basfunc mismatch2 in build_batchesOfAOs',-1)
+ELSE
+   IF(norbitals.NE.AO%nbast)call lsquit('basfunc mismatch3 in build_batchesOfAOs',-1)
+   IF(nbatLoc.NE.AO%nbatches)call lsquit('basfunc mismatch4 in build_batchesOfAOs',-1)
+ENDIF
 norbitals = 0
 do I=1,nbatches
    do iOrb = 1,batchdim(I)
@@ -1277,7 +1463,7 @@ do I=1,nbatches
    MaxOrbitals = MAX(MaxOrbitals,batchdim(I))
 enddo
 
-end subroutine build_batchesOfAOs
+end subroutine build_batchesOfAOs1
 
 subroutine determine_ActualDim(lupri,setting,maxallowedorbitals,nbast,&
      &MaxOrbitals,AOspec)
@@ -1288,25 +1474,41 @@ integer,intent(inout) :: MaxOrbitals
 character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches
-logical :: uncont,intnrm
+logical :: uncont,intnrm,extend,Family
 type(AOITEM) :: AO
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
-intnrm = .false.
+intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'D')THEN
    !   The Aux AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   extend = .true.
+ELSEIF(AOspec.EQ.'O')THEN
+   ! only The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
-call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .TRUE.
+IF(extend)THEN
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,extend)
+ELSE
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
+ENDIF
+setting%SCHEME%NOFAMILY = Family
+
 norbitals = 0
 MaxOrbitals = 0
 do I=1,AO%nbatches
@@ -1343,9 +1545,9 @@ character(len=1),intent(in) :: AOspec
 !
 integer :: batchsize(4),batchindex(4),ndims(4),offset(4),start(4),ndim(4)
 integer :: I,A,norbitals,iOrb,tmporb,J
-logical :: uncont,intnrm,OutsideBatch,Family
+logical :: uncont,intnrm,extend,OutsideBatch,Family
 type(AOITEM) :: AO
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 
 start(1) = startA 
 start(2) = startB 
@@ -1357,17 +1559,33 @@ ndim(3) = ndimC
 ndim(4) = ndimD
 
 uncont=.FALSE.
-intnrm = .false.
+intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN   
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)!   The regular AO-basis
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)!   The regular AO-basis
+ELSEIF(AOspec.EQ.'D')THEN   
+   AObasis1 => setting%basis(1)%p%BINFO(AuxBasParam)!   The Aux AO-type basis
 ELSEIF(AOspec.EQ.'C')THEN   
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)!   The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)!   The CABS AO-type basis
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)!   The CABS AO-type basis
+   extend=.true.
+ELSEIF(AOspec.EQ.'O')THEN   
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)!   The CABS AO-type basis
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 
-call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .TRUE.
+IF(extend)THEN
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,extend)
+ELSE
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
+ENDIF
+setting%SCHEME%NOFAMILY = Family
 
 Family = .FALSE.
 do I=1,AO%nbatches
@@ -1438,27 +1656,39 @@ integer,intent(inout) :: nbatches
 character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,iOrb,tmporb,allocnbatches
-logical :: uncont,intnrm,Family
+logical :: uncont,intnrm,extend,Family
 type(AOITEM) :: AO
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
-intnrm = .false.
+intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'D')THEN
    !   The Aux AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   extend=.true.
+ELSEIF(AOspec.EQ.'O')THEN
+   !   The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 Family = setting%SCHEME%NOFAMILY
-setting%SCHEME%NOFAMILY = .FALSE.
-call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+setting%SCHEME%NOFAMILY = .TRUE.
+IF(extend)THEN
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,extend)
+ELSE
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
+ENDIF
 setting%SCHEME%NOFAMILY = Family
 
 Family = .FALSE.
@@ -1511,27 +1741,39 @@ integer,intent(inout) :: nbatches
 character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,iOrb,tmporb,allocnbatches
-logical :: uncont,intnrm,Family
+logical :: uncont,intnrm,extend,Family
 type(AOITEM) :: AO
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
-intnrm = .false.
+intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'D')THEN
    !   The Aux AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   extend=.true.
+ELSEIF(AOspec.EQ.'O')THEN
+   !   The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 Family = setting%SCHEME%NOFAMILY
-setting%SCHEME%NOFAMILY = .FALSE.
-call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+setting%SCHEME%NOFAMILY = .TRUE.
+IF(extend)THEN
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,extend)
+ELSE
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
+ENDIF
 setting%SCHEME%NOFAMILY = Family
 
 Family = .FALSE.
@@ -1557,6 +1799,79 @@ enddo
 call free_aoitem(lupri,AO)
 end subroutine build_minimalbatchesOfAOs2
 
+subroutine MPIdistributeAOs(setting,AOspec,nAuxMPI,numnodes,IndexToGlobal,&
+     & MaxnAuxMPI,GindexToLocal,nAuxBasis)
+implicit none
+integer,intent(in)    :: numnodes,nAuxBasis
+integer,pointer :: IndexToGlobal(:,:)
+integer,intent(inout) :: nAuxMPI(numnodes),MaxnAuxMPI,GIndexToLocal(nAuxBasis)
+type(lssetting) :: setting
+character(len=1),intent(in) :: AOspec
+!
+integer :: I,A,idx(1),lupri,J,K,NA
+integer,pointer :: load(:)
+logical :: uncont,intnrm,extend
+type(AOITEM) :: AO
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
+uncont=.FALSE.
+intnrm = .false.; extend=.false.
+IF(AOspec.EQ.'R')THEN      !    The regular AO-basis
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+ELSEIF(AOspec.EQ.'D')THEN  !    The Aux AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(AuxBasParam)
+ELSEIF(AOspec.EQ.'C')THEN  !    The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   extend=.true.
+ELSEIF(AOspec.EQ.'O')THEN  !    The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
+ELSE
+   call lsquit('Unknown specification in build_batchesOfAOs',-1)
+ENDIF
+lupri = 6
+IF(extend)THEN
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,extend)
+ELSE
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
+ENDIF
+
+call mem_alloc(load,numnodes)
+load = 0
+nAuxMPI = 0 
+do I=1,AO%nbatches
+   idx = MINLOC(load)
+   DO A=1,AO%BATCH(I)%nAngmom
+      nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + AO%BATCH(I)%norbitals(A)
+      load(idx(1)) = load(idx(1)) + AO%BATCH(I)%norbitals(A)
+   ENDDO
+enddo
+MaxnAuxMPI = MAXVAL(nAuxMPI)
+call mem_alloc(IndexToGlobal,MaxnAuxMPI,numnodes)
+load = 0
+nAuxMPI = 0 
+NA = 0
+do I=1,AO%nbatches
+   idx = MINLOC(load)
+   load(idx(1)) = load(idx(1)) + (2*AO%BATCH(I)%maxAngmom+1)
+   K=0
+   DO A=1,AO%BATCH(I)%nAngmom
+      DO J=1,AO%BATCH(I)%nOrbitals(A)
+         nA = NA + 1
+         nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + 1
+         GIndexToLocal(NA) = nAuxMPI(idx(1))
+         IndexToGlobal(nAuxMPI(idx(1)),idx(1)) = AO%BATCH(I)%startOrbital(A)+K
+         K=K+1
+      ENDDO
+   ENDDO
+enddo
+call mem_dealloc(load)
+call free_aoitem(lupri,AO)
+end subroutine MPIdistributeAOs
+
 subroutine determine_MaxOrbitals(lupri,setting,maxallowedorbitals,MaxOrbitals,AOspec)
 implicit none
 integer,intent(in)    :: lupri,maxallowedorbitals
@@ -1565,24 +1880,34 @@ integer,intent(inout) :: MaxOrbitals
 character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,tmporb
-logical :: uncont,intnrm
+logical :: uncont,intnrm,extend
 type(AOITEM) :: AO
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
-intnrm = .false.
+intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   extend=.true.
+ELSEIF(AOspec.EQ.'O')THEN  !    The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
-
 MaxOrbitals=0
-call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+IF(extend)THEN
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,extend)
+ELSE
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
+ENDIF
 
 norbitals = 0
 do I=1,AO%nbatches
@@ -1610,25 +1935,39 @@ type(lssetting) :: setting
 character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,tmporb
-logical :: uncont,intnrm
+logical :: uncont,intnrm,extend
 type(AOITEM) :: AO
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
-intnrm = .false.
+intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'D')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(AuxBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(AuxBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
+   AObasis1 => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   extend=.true.
+ELSEIF(AOspec.EQ.'O')THEN
+   !   The CABS AO-type basis
+   AObasis1 => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
+   print*,'AOSPEC',AOSpec
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
-call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
-     & setting%molecule(1)%p,AObasis,AO,uncont,intnrm)
+
+IF(extend)THEN
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis2,AO,uncont,intnrm,extend)
+ELSE
+   call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
+        & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
+ENDIF
 
 maxBatchOrbitalsize = 0
 do I=1,AO%nbatches
@@ -1660,7 +1999,7 @@ TYPE(LSINTSCHEME) :: SCHEME
 Integer :: iBatch
 
 DO iBatch=1,AO%nBatches
-  AO%BATCH(iBatch)%extent = getAObatchExtent(AO%BATCH(iBatch),SCHEME)
+   AO%BATCH(iBatch)%extent = getAObatchExtent(AO%BATCH(iBatch),SCHEME)
 ENDDO
 
 END SUBROUTINE SET_AO_EXTENT
@@ -2075,18 +2414,18 @@ ELSE !DEFAULT
       ENDDO
    ELSE
       IF(NORM)THEN
-         call dcopy (nPrim*nCont,BASISINFO%ATOMTYPE(type)%SHELL(B)%&
+         call dcopy(nPrim*nCont,BASISINFO%ATOMTYPE(type)%SHELL(B)%&
               &SEGMENT(J)%elms,1,AO%CC(UNIQUEMATRIXES)%elms,1)
       ELSE
-         call dcopy (nPrim*nCont,BASISINFO%ATOMTYPE(type)%SHELL(B)%&
+         call dcopy(nPrim*nCont,BASISINFO%ATOMTYPE(type)%SHELL(B)%&
               &SEGMENT(J)%UCCelms,1,AO%CC(UNIQUEMATRIXES)%elms,1)
       ENDIF
    ENDIF
    AO%angmom(UNIQUEMATRIXES) = B-1
-   call dcopy (nPrim,BASISINFO%ATOMTYPE(type)&
+   call dcopy(nPrim,BASISINFO%ATOMTYPE(type)&
         &%SHELL(B)%SEGMENT(J)%Exponents,1,&
         &AO%Exponents(UNIQUEEXPONENTS)%elms,1)
-   call dcopy (nPrim,BASISINFO%ATOMTYPE(type)&
+   call dcopy(nPrim,BASISINFO%ATOMTYPE(type)&
         &%SHELL(B)%SEGMENT(J)%Exponents,1,&
         &AOmodel%Exponents(AOmodel%nExp)%elms,1)
    IF(IPRINT .GT. 2)THEN
@@ -2233,7 +2572,7 @@ ELSE !DEFAULT
 !      call lsmat_dense_print(AO%CC(UNIQUEMATRIXES),&
 !           &1,nPrim,1,nCont,lupri)
 
-!      call dcopy (nPrim*nCont,BASISINFO%ATOMTYPE(type)%SHELL(B)%&
+!      call dcopy(nPrim*nCont,BASISINFO%ATOMTYPE(type)%SHELL(B)%&
 !           &SEGMENT(J)%elms,1,AO%CC(UNIQUEMATRIXES)%elms,1)
    ENDIF
    AO%angmom(UNIQUEMATRIXES) = B-1
@@ -2249,10 +2588,10 @@ ELSE !DEFAULT
       ENDDO
       iprim = iprim + nprimLoc
    ENDDO
-!   call dcopy (nPrim,BASISINFO%ATOMTYPE(type)&
+!   call dcopy(nPrim,BASISINFO%ATOMTYPE(type)&
 !        &%SHELL(B)%SEGMENT(J)%Exponents,1,&
 !        &AO%Exponents(UNIQUEEXPONENTS)%elms,1)
-!   call dcopy (nPrim,BASISINFO%ATOMTYPE(type)&
+!   call dcopy(nPrim,BASISINFO%ATOMTYPE(type)&
 !        &%SHELL(B)%SEGMENT(J)%Exponents,1,&
 !        &AOmodel%Exponents(AOmodel%nExp)%elms,1)
    IF(IPRINT .GT. 2)THEN
@@ -2333,6 +2672,7 @@ IF(UNCONTRACTED)THEN
    
       IF(IPRINT .GT. 2)WRITE(LUPRI,*)'Exp pointer to ',AOorganize%ORG(nbatches)%exponentindex
 
+      AOmodel%BATCH(nbatches)%Expindex=AOorganize%ORG(nbatches)%exponentindex
       AOmodel%BATCH(nbatches)%pExponents=>&
            &AO%Exponents(AOorganize%ORG(nbatches)%exponentindex)
 
@@ -2382,6 +2722,7 @@ ELSE
    AOmodel%BATCH(nbatches)%pCC(A)%p=>&
         &AO%CC(AOorganize%ORG(nbatches)%CC(1))
    AOmodel%BATCH(nbatches)%CCindex(A)=AOorganize%ORG(nbatches)%CC(1)
+   AOmodel%BATCH(nbatches)%Expindex=AOorganize%ORG(nbatches)%exponentindex
    
    IF(IPRINT .GT. 30) THEN
       WRITE(LUPRI,*)'Which is'
@@ -2566,11 +2907,11 @@ ELSE
       ENDDO
    ELSE
       IF(NORM)THEN
-         call dcopy (nPrim*nCont,BASISINFO%ATOMTYPE(type)&
+         call dcopy(nPrim*nCont,BASISINFO%ATOMTYPE(type)&
               &%SHELL(B)%SEGMENT(J)%elms,1,&
               &AO%CC(UNIQUEMATRIXES)%elms,1)
       ELSE
-         call dcopy (nPrim*nCont,BASISINFO%ATOMTYPE(type)&
+         call dcopy(nPrim*nCont,BASISINFO%ATOMTYPE(type)&
               &%SHELL(B)%SEGMENT(J)%UCCelms,1,&
               &AO%CC(UNIQUEMATRIXES)%elms,1)
       ENDIF
@@ -2602,6 +2943,8 @@ IF(UNCONTRACTED)THEN
       AOmodel%BATCH(nbat+I)%pCC(A)%p=>&
            &AO%CC(AOorganize%ORG(nbat+I)%CC(A))
       AOmodel%BATCH(nbat+I)%CCindex(A)=AOorganize%ORG(nbat+I)%CC(A)
+      AOmodel%BATCH(nbat+I)%Expindex=AOorganize%ORG(nbat+I)%exponentindex
+
       IF(IPRINT .GT. 2) WRITE(LUPRI,*)'CC pointer to        ',AOorganize%ORG(nbat)%CC(A)
       IF(IPRINT .GT. 5)THEN
          WRITE(LUPRI,*)'Exp already points to '
@@ -2625,6 +2968,7 @@ ELSE !DEFAULT
    AOmodel%BATCH(nbat)%pCC(A)%p=>&
         &AO%CC(AOorganize%ORG(nbat)%CC(A))
    AOmodel%BATCH(nbat)%CCindex(A)=AOorganize%ORG(nbat)%CC(A)
+   AOmodel%BATCH(nbat)%Expindex=AOorganize%ORG(nbat)%exponentindex
 
    IF(IPRINT .GT. 2) WRITE(LUPRI,*)'CC pointer to        ',AOorganize%ORG(nbat)%CC(A)
    IF(IPRINT .GT. 5)THEN
@@ -2660,21 +3004,21 @@ END SUBROUTINE DIRECT_CC_POINTERS
 !> \brief in case of old atoms we copy AObatches from a modelAO to the AO
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE COPY_FROM_MODEL_AO(AOmodel,AO,iATOM,MOLECULE,orbitalIndex,primorbitalindex,lupri)
+SUBROUTINE COPY_FROM_MODEL_AO(AOmodel,AO,iATOM,MOLECULE,orbitalIndex,primorbitalindex,lupri,offsetAT)
 use molecule_type
 IMPLICIT NONE
 TYPE(MOLECULEINFO)        :: MOLECULE
 TYPE(AOITEM)              :: AO,AOmodel
 INTEGER                   :: I,J,bat,iATOM,orbitalIndex,lupri,SUM
-INTEGER                   :: primorbitalindex,pSUM,norbitals
+INTEGER                   :: primorbitalindex,pSUM,norbitals,offsetAT
 
 SUM=0
 pSUM=0
-AO%ATOMICnBatch(IATOM) = AOmodel%nbatches 
+AO%ATOMICnBatch(offsetAT+IATOM) = AOmodel%nbatches 
 DO I=1,AOmodel%nbatches
    bat=AO%nbatches+1
    AO%nbatches = bat
-   AO%BATCH(bat)%atom = IATOM
+   AO%BATCH(bat)%atom = offsetAT+IATOM
    AO%BATCH(bat)%molecularIndex = MOLECULE%ATOM(iATOM)%molecularIndex
    AO%BATCH(bat)%batch = I
    AO%BATCH(bat)%itype = AOmodel%BATCH(I)%itype
@@ -2691,7 +3035,8 @@ DO I=1,AOmodel%nbatches
    AO%BATCH(bat)%maxAngmom = AOmodel%BATCH(I)%maxAngmom
    AO%BATCH(bat)%pExponents => AOmodel%BATCH(I)%pExponents
    AO%BATCH(bat)%nAngmom = AOmodel%BATCH(I)%nAngmom
-   AO%BATCH(bat)%extent  = AOmodel%BATCH(I)%extent 
+   AO%BATCH(bat)%extent  = AOmodel%BATCH(I)%extent
+   AO%BATCH(bat)%Expindex= AOmodel%BATCH(I)%ExpIndex
    DO J=1,AOmodel%BATCH(I)%nAngmom
       AO%BATCH(bat)%Angmom(J) = AOmodel%BATCH(I)%Angmom(J)
       AO%BATCH(bat)%nContracted(J) = AOmodel%BATCH(I)%nContracted(J)
@@ -2712,7 +3057,7 @@ DO I=1,AOmodel%nbatches
    ENDDO
 ENDDO
 orbitalIndex = orbitalIndex + SUM
-AO%ATOMICnORB(IATOM) = SUM
+AO%ATOMICnORB(offsetAT+IATOM) = SUM
 primorbitalIndex = primorbitalIndex + pSUM
 
 END SUBROUTINE COPY_FROM_MODEL_AO

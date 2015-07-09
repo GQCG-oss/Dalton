@@ -13,6 +13,7 @@ F90_OBJS = \
 	dalton-input.o\
 	gridgeneration.o\
 	gridgeneration_boxify.o\
+	HODItest.o\
 	MBIE.o\
 	Molecule.o\
 	IchorInterface.o\
@@ -35,8 +36,11 @@ F90_OBJS = \
         ThermiteDriver.o \
         ThermiteOverlapDistribution.o \
         ThermiteIntegrals.o \
+        ThermiteIntTransform.o \
         ThermiteProp.o \
         ThermiteMem.o \
+        THC_grid.o\
+        THC_util.o\
         ODbatches.o     \
         pari.o     \
         lsmpi.o     \

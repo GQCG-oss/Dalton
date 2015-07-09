@@ -6594,6 +6594,7 @@ C
       Integer kwr, kwi, kduml, kdumr, kNext, lWrk, irc, i
 
       isHurwitz=.True.
+      irc = 0
       If (n.gt.0) Then
          kwr=1
          kwi=kwr+n

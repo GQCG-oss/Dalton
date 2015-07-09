@@ -67,8 +67,14 @@ subroutine dec_lsmpi_slave(comm)
          ! DEC MP2 RI energy
       case(RIMP2INAMP);
          call RIMP2_integrals_and_amplitudes_slave
+      case(LSTHCRIMP2INAMP);
+         call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(LSTHCRIMP2FULL);
+!         call full_canonical_ls_thc_rimp2_slave
+      case(DECRIMP2GRAD);
+         call RIMP2_gradient_slave
       case(CANONMP2FULL);
          call full_canonical_mp2_slave
 #ifdef MOD_UNRELEASED 
@@ -90,8 +96,10 @@ subroutine dec_lsmpi_slave(comm)
          call cc_gmo_data_slave
       case(MOCCSDDATA);
          call moccsd_data_slave
-      case(CCSDPTSLAVE);
-         call ccsdpt_slave
+      case(CCSDPTSLAVE_INFO);
+         call ccsdpt_slave_info
+      case(CCSDPTSLAVE_WORK);
+         call ccsdpt_slave_work
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
@@ -113,6 +121,10 @@ subroutine dec_lsmpi_slave(comm)
          call lspdm_init_global_buffer(.false.)
       case(JOB_LSPDM_FREE_GLOBAL_BUFFER);
          call lspdm_free_global_buffer(.false.)
+      case(INIT_BG_BUF);
+         call mem_init_background_alloc_slave(comm)
+      case(FREE_BG_BUF);
+         call mem_free_background_alloc_slave(comm)
 
 #ifdef VAR_SCALAPACK
       case(GRIDINIT);
@@ -133,7 +145,6 @@ subroutine dec_lsmpi_slave(comm)
       end select
 
    end do
-
 
 end subroutine dec_lsmpi_slave
 

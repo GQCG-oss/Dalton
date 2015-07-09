@@ -4,7 +4,6 @@
 
 module f12_routines_module
 
-#ifdef MOD_UNRELEASED
 
   use fundamental
   use precision
@@ -27,7 +26,10 @@ module f12_routines_module
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
        & get_4Center_MO_integrals, get_4Center_F12_integrals, free_4Center_F12_integrals, &
-       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM
+       & mp2f12_Xijij_term3, mp2f12_Xjiij_term3, mp2f12_Xijij_term4, mp2f12_Xjiij_term4, &
+       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM, &
+       & mp2f12_Bijij_term2, mp2f12_Bijij_term3, mp2f12_Bijij_term4, mp2f12_Bijij_term5, mp2f12_Bijij_term6, mp2f12_Bijij_term7, &
+       & mp2f12_Bijij_term8, mp2f12_Bijij_term9
 
   private
 
@@ -37,23 +39,22 @@ module f12_routines_module
      integer :: n1
      integer :: n2
   END TYPE ctype
-#endif
   
-contains
-#ifdef MOD_UNRELEASED
-  function norm1D(A)
-    implicit none
-    real(realk), intent(in) :: A(:)
-    integer :: m,i
-    real(realk) :: norm1D   
-    
-    norm1D = 0.0E0_realk
-    
-    m = size(A,1)
-    do i=1,m
-       norm1D = norm1D + A(i)
-    enddo
-  end function norm1D
+   contains
+
+   function norm1D(A)
+      implicit none
+      real(realk), intent(in) :: A(:)
+      integer :: m,i
+      real(realk) :: norm1D   
+
+      norm1D = 0.0E0_realk
+
+      m = size(A,1)
+      do i=1,m
+         norm1D = norm1D + A(i)
+      enddo
+   end function norm1D
 
 
   !> Takes the norm of a matrix 
@@ -148,6 +149,11 @@ contains
     type(matrix) :: Fcc
     type(matrix) :: Frc  
     type(matrix) :: Fcr  
+
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(get_F12_mixed_MO_Matrices_real): this routine does not work&
+       & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
    
     !> Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
     !> hJir
@@ -155,7 +161,7 @@ contains
     call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
     call mat_init(HJir,nocc,ncabsAO)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'i',HJrc,HJir,1)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'i',HJrc,HJir,1)
     call mat_free(HJrc)
     call mat_to_full(HJir,1.0E0_realk,HJir_real)
     call mat_free(HJir)
@@ -180,7 +186,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fac,nvirt,ncabsAO)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'a',Frc,Fac,1)    
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'a',Frc,Fac,1)    
     call mat_free(Frc)
     call mat_to_full(Fac,1.0E0_realk,Fac_real)
     call mat_free(Fac)
@@ -191,7 +197,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frr,Dmat,MyLsitem,'RRRRC')
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Frr,Fii)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Frr,Fii)
     call mat_free(Frr)
     call mat_to_full(Fii,1.0E0_realk,Fii_real)
     call mat_free(Fii)
@@ -202,13 +208,13 @@ contains
 
     call mat_init(Frm,ncabsAO,noccfull)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'m',Fcr,Frm,2)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'m',Fcr,Frm,2)
     call mat_to_full(Frm,1.0E0_realk,Frm_real)
     call mat_free(Frm)
     
     call mat_init(Fcp,ncabsAO,nbasis)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'p',Fcr,Fcp,2)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'p',Fcr,Fcp,2)
     call mat_to_full(Fcp,1.0E0_realk,Fcp_real)
     call mat_free(Fcp)
     call mat_free(Fcr) 
@@ -261,13 +267,18 @@ contains
     type(matrix) :: Kcc
     type(matrix) :: Fcc
 
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(get_F12_mixed_MO_Matrices): this routine does not work&
+       & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
+
     ! Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
     !hJir
     call mat_init(HJrc,nbasis,ncabsAO)
     call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
     call mat_init(HJir,nocc,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ir',HJrc,HJir)    
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ir',HJrc,HJir)    
     call mat_free(HJrc)
 
     ! Mixed CABS/CABS exchange matrix
@@ -276,7 +287,7 @@ contains
     call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Krr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Kcc,Krr)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Kcc,Krr)
     call mat_free(Kcc)
 
     ! Mixed CABS/CABS Fock matrix
@@ -285,7 +296,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Frr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Fcc,Frr)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Fcc,Frr)
     call mat_free(Fcc)
 
     !Fcd
@@ -293,7 +304,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcd,ncabs,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
     call mat_free(Fcc)
   
     ! Mixed AO/CABS Fock matrix
@@ -302,7 +313,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ac',Frc,Fac)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
     call mat_free(Frc)
        
     !Fic
@@ -310,7 +321,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
     call mat_free(Frc)
     
     ! Mixed AO/AO full MO Fock matrix 
@@ -319,15 +330,15 @@ contains
     !Fpp
     call mat_init(Fpp,nbasis,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'pp',Fcc,Fpp)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'pp',Fcc,Fpp)
     !Fii
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fii)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Fcc,Fii)
     !Fmm
     call mat_init(Fmm,noccfull,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'mm',Fcc,Fmm)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'mm',Fcc,Fmm)
     call mat_free(Fcc)
 
     ! Mixed CABS/AO MO Fock matrix
@@ -336,11 +347,11 @@ contains
     !Frm
     call mat_init(Frm,ncabsAO,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rm',Fcc,Frm)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rm',Fcc,Frm)
     !Fcc
     call mat_init(Fcp,ncabs,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cp',Fcc,Fcp)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cp',Fcc,Fcp)
     call mat_free(Fcc)
     
   end subroutine get_F12_mixed_MO_Matrices
@@ -348,18 +359,17 @@ contains
   subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     implicit none
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Frc
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
-    type(matrix) :: Fii
-    type(matrix) :: Fac
-    type(matrix) :: Fic
-    type(matrix) :: Fcd
+    type(matrix),intent(inout) :: HJir
+    type(matrix),intent(inout) :: Krr
+    type(matrix),intent(inout) :: Frr
+    type(matrix),intent(inout) :: Fac
+    type(matrix),intent(inout) :: Frm
+    type(matrix),intent(inout) :: Fcp
+    type(matrix),intent(inout) :: Fpp
+    type(matrix),intent(inout) :: Fmm
+    type(matrix),intent(inout) :: Fii
+    type(matrix),intent(inout) :: Fic
+    type(matrix),intent(inout) :: Fcd
 
     call mat_free(HJir)
     call mat_free(Krr)
@@ -407,14 +417,19 @@ contains
     type(matrix) :: matAO,matMO
     real(realk),pointer :: elms(:)
     type(matrix) :: CMO(2)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri,tmp
     character(len=2) :: inputstring
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
     character :: string(2)
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1)=inputstring(1:1) 
     string(2)=inputstring(2:2) 
     lupri=6
@@ -461,7 +476,7 @@ contains
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -604,7 +619,7 @@ contains
   !> Brief: Get <1,2|INTSPEC|3,4> MO integrals wrapper.
   !> Author: Yang M. Wang
   !> Data: Nov 2013
-  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
+  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
@@ -615,12 +630,12 @@ contains
     integer :: nbasis
     !> Number of occupied orbitals MO in EOS space
     integer :: noccEOS
-    !> Number of occupied orbitals MO in AOS space
-    integer :: noccAOS
-    !> Number of unoccupied (virtual) orbitals MO in EOS space
-    integer :: nunoccEOS
-    !> Number of occupied + virtual MO in AOS space 
-    integer :: nocvAOS
+    !> Number of occupied orbitals MO in AOS space (includes core, also for frozen core)
+    integer :: noccAOStot
+    !> Number of virtupied (virtual) orbitals MO in EOS space
+    integer :: nvirtEOS
+    !> Number of occupied + virtual MO in AOS space (includes core, also for frozen core)
+    integer :: nocvAOStot
     !> Number of CABS AO orbitals
     integer :: ncabsAO
     !> Number of CABS MO orbitals
@@ -646,42 +661,54 @@ contains
     !> MO coefficient matrix for the occupied EOS
     real(realk), target, intent(in) :: CoccEOS(:,:) !CoccEOS(nbasis,noccEOS)
     !> MO coefficient matrix for the occupied AOS
-    real(realk), target, intent(in) :: CoccAOS(:,:) !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:) !CoccEOS(nbasis,noccAOStot)
     !> MO coefficient matrix for the occupied + virtual EOS
-    real(realk), target, intent(in) :: CocvAOS(:,:) !CocvAOS(nbasis, nocvAOS)
+    real(realk), target, intent(in) :: CocvAOStot(:,:) !CocvAOStot(nbasis, nocvAOS)
     !> MO coefficient matrix for the CABS 
     real(realk), target, intent(in) :: Ccabs(:,:) !Ccabs(ncabsAO, ncabsMO)
     !> MO coefficient matrix for the RI 
     real(realk), target, intent(in) :: Cri(:,:) !Cri(ncabsAO,ncabsAO)
     !> MO coefficient matrix for the Virtual AOS
     real(realk), target, intent(in) :: CvirtAOS(:,:) !CvritAOS(nbasis,nvirtAOS)
+    integer :: offset
 
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
-    noccAOS  =  MyFragment%noccAOS
-    nunoccEOS = MyFragment%nunoccEOS
-    nvirtAOS = MyFragment%nunoccAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
+    noccAOStot  =  MyFragment%nocctot
+    nvirtEOS = MyFragment%nvirtEOS
+    nvirtAOS = MyFragment%nvirtAOS
+    nocvAOStot =   noccAOStot + nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
+    if(DECinfo%frozencore) then
+       offset = MyFragment%ncore
+    else
+       offset = 0
+    end if
 
     do i=1,4
        if(intType(i).EQ.'i') then ! occupied EOS
           C(i)%cmat => CoccEOS
           C(i)%n1 = nbasis
           C(i)%n2 = noccEOS               
-       elseif(intType(i).EQ.'m') then ! occupied AOS
-          C(i)%cmat => CoccAOS
+       elseif(intType(i).EQ.'m') then ! all occupied (core+valence)
+          C(i)%cmat => CoccAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = noccAOS 
+          C(i)%n2 = noccAOStot 
+       elseif(intType(i).EQ.'v') then 
+          ! Frozen core: Only valence
+          ! Not frozen core: All occupied orbitals (same as 'm')
+          C(i)%cmat => CoccAOStot(1:nbasis,offset+1:noccAOStot)
+          C(i)%n1 = nbasis
+          C(i)%n2 = noccAOStot-offset 
        elseif(intType(i).EQ.'a') then ! virtual AOS
           C(i)%cmat => CvirtAOS
           C(i)%n1 = nbasis
           C(i)%n2 = nvirtAOS
        elseif(intType(i).EQ.'p') then !all occupied + virtual AOS
-          C(i)%cmat => CocvAOS
+          C(i)%cmat => CocvAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = nocvAOS 
+          C(i)%n2 = nocvAOStot 
        elseif(intType(i).EQ.'c') then !cabs
           C(i)%cmat => Ccabs
           C(i)%n1 = ncabsAO
@@ -803,9 +830,12 @@ contains
           BatchType(i) = 'C'          
        elseif(intType(i).EQ.'r') then !ri - MOs
           BatchType(i) = 'C'
+       elseif(intType(i).EQ.'v') then !only valence
+          BatchType(i) = 'R'
+       else
+          call lsquit('unknown option in get_mp2f12_AO_transform_MO',-1)
        endif
     enddo  
-    
     !Determine MinGamma and MinAlpha    
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
@@ -856,22 +886,22 @@ contains
     !MinAlphaBatchSize = AlphaBatchSize
     !MinGammaBatchSize = GammaBatchSize
 
-    if(DECinfo%F12DEBUG) then
-       print *, "call get_max_batchsize..."
-    endif
+    !if(DECinfo%F12DEBUG) then
+    !   print *, "call get_max_batchsize..."
+    !endif
     
     call get_max_batchsize(MaxdimAlpha,MaxdimGamma,MinAlphaBatchSize,MinGammaBatchSize,n11,n12,n21,n22,n31,n32,n41,n42)
 
-    if(DECinfo%F12DEBUG) then
-       print *, "exit get_max_batchsize..."
-       print *, "----------------------------"
-       print *, "MaxdimAlpha: ", MaxdimAlpha
-       print *, "MaxdimGamma: ", MaxdimGamma
-       print *, "----------------------------"
-       print *, "MindimAlpha: ", AlphaBatchSize
-       print *, "MindimGamma: ", GammaBatchSize
-       print *, "----------------------------"
-    endif
+    !if(DECinfo%F12DEBUG) then
+   !    print *, "exit get_max_batchsize..."
+   !    print *, "----------------------------"
+   !    print *, "MaxdimAlpha: ", MaxdimAlpha
+   !    print *, "MaxdimGamma: ", MaxdimGamma
+   !    print *, "----------------------------"
+   !    print *, "MindimAlpha: ", AlphaBatchSize
+   !    print *, "MindimGamma: ", GammaBatchSize
+   !    print *, "----------------------------"
+   ! endif
         
     GammaBatchSize = MaxdimGamma
     AlphaBatchSize = MaxdimAlpha
@@ -1030,7 +1060,6 @@ contains
           ELSE
              IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
              IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
@@ -1159,8 +1188,8 @@ contains
     integer :: noccEOS
     !> Number of occupied orbitals MO in AOS space
     integer :: noccAOS
-    !> Number of unoccupied (virtual) orbitals MO in EOS space
-    integer :: nunoccEOS
+    !> Number of virtupied (virtual) orbitals MO in EOS space
+    integer :: nvirtEOS
     !> Number of occupied + virtual MO in AOS space 
     integer :: nocvAOS
     !> Number of CABS AO orbitals
@@ -1201,9 +1230,9 @@ contains
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
     noccAOS  =  MyFragment%noccAOS
-    nunoccEOS = MyFragment%nunoccEOS
-    nvirtAOS = MyFragment%nunoccAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
+    nvirtEOS = MyFragment%nvirtEOS
+    nvirtAOS = MyFragment%nvirtAOS
+    nocvAOS =   MyFragment%noccAOS + MyFragment%nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
 
@@ -1735,44 +1764,49 @@ contains
     !
     real(realk),pointer :: gao(:,:,:,:)
 
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(get_4Center_F12_integrals): this routine does not work&
+       & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
+
     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
 
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Ripjq)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Ripjq)
 
     !Calculate the various Gaussian geminal integrals with four regular AO indeces
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Gipjq)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Gipjq)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRF')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Fijkl)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Fijkl)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRD')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                        MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Dijkl)
+         &                        MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Dijkl)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRR2')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Tijkl)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Tijkl)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ipia',gAO,Gipja)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipia',gAO,Gipja)
 
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'piai',gAO,Gpiaj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'piai',gAO,Gpiaj)
 
 
     call mem_dealloc(gao)
@@ -1783,19 +1817,19 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiir',gAO,Tijkr)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiir',gAO,Tijkr)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Rimjc)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Rimjc)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
 
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Gimjc)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Gimjc)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iaic',gAO,Giajc)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iaic',gAO,Giajc)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
 
@@ -1805,17 +1839,17 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRR2')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'irii',gAO,Tirjk)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'irii',gAO,Tirjk)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'irim',gAO,Girjm)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'irim',gAO,Girjm)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'icim',gAO,Gicjm)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'icim',gAO,Gicjm)
 
     call mem_dealloc(gao)
     !Calculate the various Gaussian geminal integrals with RCRC
@@ -1825,7 +1859,7 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRCG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'irir',gAO,Girjs)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'irir',gAO,Girjs)
 
     call mem_dealloc(gao)
     !Calculate the various Gaussian geminal integrals with CRRR
@@ -1834,17 +1868,17 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'rimi',gAO,Grimj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rimi',gAO,Grimj)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'cimi',gAO,Gcimj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cimi',gAO,Gcimj)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ciai',gAO,Gciaj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ciai',gAO,Gciaj)
 
     call mem_dealloc(gao)
     !Calculate the various Gaussian geminal integrals with CRCR
@@ -1852,7 +1886,7 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRCRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ciri',gAO,Gcirj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ciri',gAO,Gcirj)
     call mem_dealloc(gao)
 
   end subroutine get_4Center_F12_integrals
@@ -1912,7 +1946,7 @@ contains
     real(realk),pointer :: gAO(:,:,:,:)
     real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
     type(matrix) :: CMO(4)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri
@@ -1920,7 +1954,12 @@ contains
     real(realk),pointer :: tmp2(:,:,:,:)
     character :: string(4)
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1) = inputstring(1:1)
     string(2) = inputstring(2:2)
     string(3) = inputstring(3:3)
@@ -1968,7 +2007,7 @@ contains
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -1979,7 +2018,7 @@ contains
        elseif(string(i).EQ.'c')then !cabs
           call dcopy(ndim2(i)*ndim1(i),CMO_cabs%elms,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'r')then !ri - MOs
-          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)          
        endif
     enddo
     IF(doCABS)THEN
@@ -1989,8 +2028,8 @@ contains
        call mat_free(CMO_ri)
     ENDIF
     call mem_alloc(tmp,ndim2(1),ndim1(2),ndim1(3),ndim1(4))
-    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4))
-    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)
+    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4)) !replace with a dgemm !!
+    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)             !replace with a dgemm !!
 
     call mem_alloc(tmp2,ndim2(1),ndim2(2),ndim1(3),ndim1(4))
     call ls_dzero(tmp2,ndim2(1)*ndim2(2)*ndim1(3)*ndim1(4))
@@ -2138,14 +2177,14 @@ contains
     call get_currently_available_memory(MemAvailable)
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
   
-    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+ !   call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
  
     if(DECinfo%F12DEBUG) then
-          print *, "----------------------------------"
-          print *, " Inside get_max_batchsize summary "
-          print *, "----------------------------------"
-          print *, "MemAvailable: ", MemAvailable*UNIT
-          print *, "MAXstepmem: ", MAXstepmem*UNIT
+!!$       print *, "----------------------------------"
+!!$       print *, " Inside get_max_batchsize summary "
+!!$       print *, "----------------------------------"
+!!$       print *, "MemAvailable: ", MemAvailable*UNIT
+!!$       print *, "MAXstepmem: ", MAXstepmem*UNIT
 !!$       print *, "n11: ", n11
 !!$       print *, "n21: ", n21
 !!$       print *, "n31: ", n31
@@ -2163,10 +2202,6 @@ contains
 !!$       print *, "dimAlpha: ", dimAlpha
 !!$       print *, "dimGamma: ", dimGamma
 !!$    endif
-
-    if(DECinfo%F12DEBUG) then
-       print *, "minAlpha: ", minAlpha
-    endif
     
     dimAlpha = minAlpha
     
@@ -2194,6 +2229,10 @@ contains
 !!$             print *, "dimAlpha:", dimAlpha
 !!$          endif
           exit alpha   
+       endif
+       
+       if(k==n11) then
+          dimAlpha = n11
        endif
 
     enddo alpha
@@ -2235,76 +2274,10 @@ contains
 
   end subroutine get_maxstepmem
  
-!!$  subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
-!!$    implicit none
-!!$
-!!$    type(fullmolecule),intent(inout) :: MyMolecule
-!!$    type(lsitem), intent(inout) :: Mylsitem
-!!$    real(realk), intent(inout) :: ES2
-!!$    type(matrix), intent(in) :: Dmat
-!!$
-!!$    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-!!$
-!!$    !> Singles contribution
-!!$    type(matrix) :: Fic
-!!$    type(matrix) :: Fpp
-!!$    type(matrix) :: Fij
-!!$
-!!$    type(matrix) :: Fcc
-!!$    type(matrix) :: Frc
-!!$
-!!$    !Need to build Cabs
-!!$    ! Init stuff
-!!$    ! **********
-!!$    nbasis = MyMolecule%nbasis
-!!$    nocc   = MyMolecule%nocc
-!!$    nvirt  = MyMolecule%nunocc
-!!$    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-!!$    noccfull = nocc
-!!$
-!!$    !Fcd
-!!$    call mat_init(Fcc,ncabsAO,ncabsAO)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-!!$
-!!$    !call mat_init(Fcd,ncabs,ncabs)
-!!$    !  call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$    !     & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
-!!$    !call mat_free(Fcc)
-!!$
-!!$    !Fic
-!!$    call mat_init(Frc,nbasis,ncabsAO)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
-!!$
-!!$    call mat_init(Fic,nocc,ncabsAO)
-!!$
-!!$    !  call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$    !       & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
-!!$
-!!$    call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$         & MyMolecule%Co, MyMolecule%Cv,'i',Frc,Fic,1)
-!!$
-!!$    call mat_free(Frc)
-!!$
-!!$    !Fii
-!!$    call mat_init(Fpp,nbasis,nbasis)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fpp,Dmat,MyLsitem,'RRRRC')
-!!$    call mat_init(Fij,nocc,nocc)
-!!$    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$         & MyMolecule%Co, MyMolecule%Cv,'ii',Fpp,Fij)
-!!$    call mat_free(Fpp)
-!!$
-!!$    call get_ES2_AO(ES2,Fic,Fij,Fcc,nocc,ncabsAO)
-!!$
-!!$    call mat_free(Fic)
-!!$    call mat_free(Fij)
-!!$    call mat_free(Fcc)
-!!$
-!!$  end subroutine get_ES2_from_dec_main
-
   subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
     implicit none
     
-    type(fullmolecule),intent(inout) :: MyMolecule
+    type(fullmolecule),intent(in) :: MyMolecule
     type(lsitem), intent(inout) :: Mylsitem
     real(realk), intent(inout) :: ES2
     type(matrix), intent(in) :: Dmat
@@ -2314,301 +2287,329 @@ contains
     !> Singles contribution
     type(matrix) :: Fic
     type(matrix) :: Fcd
-    type(matrix) :: Fij
-    
+    type(matrix) :: Fac
+
+    !> Fock AO
     type(matrix) :: Fcc
     type(matrix) :: Frc
+ 
+    !> Fock matrices of type real
+    real(realk), pointer :: Fic_real(:,:)
+    real(realk), pointer :: Fcd_real(:,:)
+    real(realk), pointer :: Fac_real(:,:)
 
     !Need to build Cabs
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
+
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
+
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(get_ES2_from_dec_main): this routine does not work&
+       & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
     
     !Fcd
     call mat_init(Fcc,ncabsAO,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcd,ncabs,ncabs)
-      call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
     call mat_free(Fcc)
-
+    
+    call mem_alloc(Fcd_real,ncabs,ncabs)
+    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
+    call mat_free(Fcd)
+    
     !Fic
     call mat_init(Frc,nbasis,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
     call mat_free(Frc)
 
-    !Fii
-    call mat_init(Fcc,nbasis,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
-    call mat_init(Fij,nocc,nocc)
-    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fij)
-    call mat_free(Fcc)
-
-    call get_ES2(ES2,Fic,Fij,Fcd,nocc,ncabs)
-    
-    call mat_free(Fic)
-    call mat_free(Fcd)
-    call mat_free(Fij)
-   
-  end subroutine get_ES2_from_dec_main
-  
-  
-  subroutine get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
-    type(matrix) :: Fic
-    type(matrix) :: Fii
-    type(matrix) :: Fcd
-
-    real(realk), pointer :: Fic_real(:,:)
-    real(realk), pointer :: Fcd_real(:,:)
-    real(realk), pointer :: Fij_real(:,:)
-
-    real(realk), pointer :: Fia(:,:)
-    
-    real(realk), pointer :: eps_c(:)
-    real(realk), pointer :: eps_i(:)
-
-    real(realk), pointer :: C_cd(:,:)
-    real(realk), pointer :: C_ij(:,:)
-    
-    real(realk), intent(inout) :: ES2
-    real(realk) :: tmp
-
-    integer, intent(inout) :: nocc,ncabs
-    integer :: i,j,a,c
-
-    call mem_alloc(Fcd_real,ncabs,ncabs)
-    call mem_alloc(C_cd,ncabs,ncabs)
-    call mem_alloc(eps_c,ncabs)
-
-    ! \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-    ! subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
-
-    !Fcd
-    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-    call solve_eigenvalue_problem_unitoverlap(ncabs,Fcd_real,eps_c,C_cd)    
-
-    !print *, "norm2(Fcd_real):",  norm2(Fcd_real)  
-    !print *, "norm2(C_cd):",  norm2(C_cd)
-    !print *, "norm2(eps_c):", norm2(eps_c)    
-
-    !Fij
-    call mem_alloc(Fij_real,nocc,nocc)
-    call mem_alloc(C_ij,nocc,nocc)
-    call mem_alloc(eps_i,nocc)
-
-    call mat_to_full(Fii,1.0E0_realk,Fij_real)
-    call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
-
-    !print *, "norm2(Fij_real):",  norm2(Fij_real)  
-    !print *, "norm2(C_ij):",      norm2(C_ij)
-    !print *, "norm2(eps_i):",     norm2(eps_i)   
-
-    !Fic
     call mem_alloc(Fic_real,nocc,ncabs)
     call mat_to_full(Fic,1.0E0_realk,Fic_real)
-
-    !print *, "norm2(Fic):",  norm2(Fic_real)  
-
-!!$    !F12DEBUG
-!!$    if(DECinfo%F12debug) then
-!!$       print *, "------------ Fic(AO) ----------- "
-!!$       print *, "-------------------------------- "
-!!$       
-!!$       do i=1,nocc
-!!$          do c=1, ncabs
-!!$             if(abs(Fic_real(i,c)) > 1E-010) then
-!!$                print *, "i c Fic_real(i,c):  " , i, c, Fic_real(i,c)
-!!$             endif
-!!$          enddo
-!!$       enddo
-!!$    endif
-        
-    ! Transform to ortoghonal basis Fia'
-    call mem_alloc(Fia,nocc,ncabs)
-    do i=1,nocc
-       do a=1, ncabs
-          tmp = 0.0E0_realk
-          do j=1,nocc
-             do c=1, ncabs
-                tmp = tmp + C_ij(j,i)*Fic_real(j,c)*C_cd(c,a)
-             enddo
-          enddo
-          Fia(i,a) = tmp
-       enddo
-    enddo
-
-    !print *, "norm2D(Fia) 1:", norm2D(Fia)
-
-    !> matB = C1^T matA C2
-    !dec_diff_basis_transform1(nA,nB1,nB2,C1,C2,matA,matB)
-    !call dec_diff_basis_transform1(nocc*ncabs,nocc,ncabs,C_ij,C_cd,Fic_real,Fia)
-    !print *, "norm2D(Fia) 2:", norm2D(Fia)
-
-
-    !PRINT *, "norm2(Fic):",  norm2(Fic_real)  
-!!$    F12DEBUG
-!!$    if(DECinfo%F12debug) then
-!!$       print *, "------------ Fia(MO) ----------- "
-!!$       print *, "-------------------------------- "
-!!$       
-!!$       do i=1,nocc
-!!$          do a=1, ncabs
-!!$             if(abs(Fia(i,a)) > 1E-010) then
-!!$                print *, "i a Fia(i,a):  " , i, a, Fia(i,a)
-!!$             endif
-!!$          enddo
-!!$       enddo
-!!$    endif
-
-!!$  Print of orbital energies of eps_c
-!!$    print *, "------------ print epc ----------- "
-!!$    do a=1,ncabs
-!!$       print *, "eps_c:",a,eps_c(a)   
-!!$    enddo
-!!$    
-!!$    print *, "------------ print eps_i ----------- "
-!!$    !Print of orbital energies of eps_c
-!!$    do a=1,nocc
-!!$       print *, "eps_i:",a,eps_i(a)   
-!!$    enddo
+    call mat_free(Fic)
     
-    !Singles energy correction
-    ES2 = 0.0E0_realk
-    do i=1,nocc
-       do a=1,ncabs
-          ES2 = ES2 + (Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
-       enddo
-    enddo
+    ! Fac
+    call mat_init(Frc,nbasis,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(Fac,nvirt,ncabs)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
+    call mat_free(Frc)
 
-    !print *, "Singles Contribution: ", ES2
+    call mem_alloc(Fac_real,nvirt,ncabs)
+    call mat_to_full(Fac,1.0E0_realk,Fac_real)
+    call mat_free(Fac)
+    
+    call get_ES2(ES2,Fic_real,MyMolecule%oofock%elm2,MyMolecule%vvfock%elm2, &
+         & Fcd_real,Fac_real,nocc,nvirt,ncabs,ncabsAO)
     
     call mem_dealloc(Fcd_real)
-    call mem_dealloc(eps_c)
-    call mem_dealloc(C_cd)
-
-    call mem_dealloc(Fij_real)
-    call mem_dealloc(eps_i)
-    call mem_dealloc(C_ij)
-
-    call mem_dealloc(Fia)
     call mem_dealloc(Fic_real)
+    call mem_dealloc(Fac_real)
 
-  end subroutine get_ES2
-
- subroutine get_ES2_AO(ES2,Fic,Fii,Fcd,nocc,ncabsAO)
-    type(matrix) :: Fic
-    type(matrix) :: Fii
-    type(matrix) :: Fcd
-
-    real(realk), pointer :: Fic_real(:,:)
-    real(realk), pointer :: Fcd_real(:,:)
-    real(realk), pointer :: Fij_real(:,:)
-
-    real(realk), pointer :: Fia(:,:)
+  end subroutine get_ES2_from_dec_main
+  
+  subroutine get_ES2(ES2,Fic,Fij,Fab,Fcd,Fac,nocc,nvirt,ncabs,ncabsAO)
+    implicit none
     
-    real(realk), pointer :: eps_c(:)
-    real(realk), pointer :: eps_i(:)
-
-    real(realk), pointer :: C_cd(:,:)
-    real(realk), pointer :: C_ij(:,:)
+    real(realk), target, intent(in) :: Fcd(:,:)
+    real(realk), target, intent(in) :: Fab(:,:)
+    real(realk), target, intent(in) :: Fij(:,:)
+    real(realk), target, intent(in) :: Fac(:,:)
+    real(realk), target, intent(in) :: Fic(:,:)
     
     real(realk), intent(inout) :: ES2
-    real(realk) :: tmp
+    real(realk) :: tmp1,tmp2,tmp3,tmp4
+    real(realk) :: gamma0, gamma1, beta1, beta0, sigma1, alpha1, alpha2
+    real(realk) :: denom
+    real(realk) :: Ecorr
+    real(realk) :: Ecorr_old
 
-    integer, intent(inout) :: nocc,ncabsAO
-    integer :: i,j,a,c
- 
-    call mem_alloc(Fcd_real,ncabsAO,ncabsAO)
-    call mem_alloc(C_cd,ncabsAO,ncabsAO)
-    call mem_alloc(eps_c,ncabsAO)
+    integer, intent(inout) :: nocc,ncabs,nvirt,ncabsAO
+    integer :: i,j,a,c,iter
+   
+    !xk
+    real(realk), pointer :: x1ia(:,:) 
+    real(realk), pointer :: x1ic(:,:)
+    real(realk), pointer :: x2ia(:,:) 
+    real(realk), pointer :: x2ic(:,:)
 
-    ! \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-    ! subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
+    !rk 
+    real(realk), pointer :: r1ia(:,:) 
+    real(realk), pointer :: r1ic(:,:)
+    real(realk), pointer :: r2ia(:,:) 
+    real(realk), pointer :: r2ic(:,:)
 
-    !Fcd
-    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-    call solve_eigenvalue_problem_unitoverlap(ncabsAO,Fcd_real,eps_c,C_cd)    
-
-    !print *, "norm2D(Fcd_real):",  norm2D(Fcd_real)  
-    !print *, "norm2D(C_cd):",  norm2D(C_cd)
-    !print *, "norm2D(eps_c):", norm2D(eps_c)    
-
-    !Fij
-    call mem_alloc(Fij_real,nocc,nocc)
-    call mem_alloc(C_ij,nocc,nocc)
-    call mem_alloc(eps_i,nocc)
+    !vk
+    real(realk), pointer :: v1ia(:,:) 
+    real(realk), pointer :: v1ic(:,:)
     
-    call mat_to_full(Fii,1.0E0_realk,Fij_real)
-  
-    call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
+    !pk
+    real(realk), pointer :: p1ia(:,:) 
+    real(realk), pointer :: p1ic(:,:) 
+    real(realk), pointer :: p0ia(:,:) 
+    real(realk), pointer :: p0ic(:,:)
 
-    !print *, "norm2D(Fij_real):",  norm2D(Fij_real)  
-    !print *, "norm2D(C_ij):",      norm2D(C_ij)
-    !print *, "norm2D(eps_i):",     norm2D(eps_i)   
+    !vectors
+    call mem_alloc(x1ia,nocc,nvirt)
+    call mem_alloc(x1ic,nocc,ncabs)
+    call mem_alloc(x2ia,nocc,nvirt)
+    call mem_alloc(x2ic,nocc,ncabs)
+    
+    call mem_alloc(r1ia,nocc,nvirt)
+    call mem_alloc(r1ic,nocc,ncabs)
+    call mem_alloc(r2ia,nocc,nvirt)
+    call mem_alloc(r2ic,nocc,ncabs)
 
-    !Fic
-    call mem_alloc(Fic_real,nocc,ncabsAO)
-    call mat_to_full(Fic,1.0E0_realk,Fic_real)
+    call mem_alloc(p1ia,nocc,nvirt)
+    call mem_alloc(p1ic,nocc,ncabs)
+    call mem_alloc(p0ia,nocc,nvirt)
+    call mem_alloc(p0ic,nocc,ncabs)
+
+    call mem_alloc(v1ia,nocc,nvirt)
+    call mem_alloc(v1ic,nocc,ncabs)
+
+    !Initial start
+    Ecorr_old = 0.0E0_realk
+
+    r1ia = 0.0E0_realk
+    r1ic = -1.0E0_realk*Fic
+
+    x1ia = 0.0E0_realk
+    x1ic = 0.0E0_realk
+
+    gamma1 = 0.0E0_realk
+    gamma0 = 1.0E0_realk
+
+    !pk0 
+    p0ia = r1ia
+    p0ic = r1ic
+
+    !CG algorithm
+    CG_loop: do iter=1,1000
+
+
+       gamma1 = inner_prod(r1ia,r1ic,r1ia,r1ic,nocc,nvirt,ncabs)
+       beta1 = gamma1/gamma0
+
+       !Update pk1 vector - needs to be changed to type_matrix later
+       p1ia = r1ia + beta1*p0ia
+       p1ic = r1ic + beta1*p0ic
+
+       call mat_prod(Fij,Fab,Fac,Fcd,p1ia,p1ic,nocc,nvirt,ncabs,v1ia,v1ic)
+
+       sigma1 = inner_prod(p1ia,p1ic,v1ia,v1ic,nocc,nvirt,ncabs)
+         
+       alpha1 = gamma1/sigma1
+
+       x2ia = x1ia + alpha1*p1ia 
+       x2ic = x1ic + alpha1*p1ic
+
+       r2ia = r1ia - alpha1*v1ia
+       r2ic = r1ic - alpha1*v1ic
+
+       !Energy summation
+      ! Ecorr = 0.0E0_realk
+      ! do c=1,ncabs
+      !    do i=1,nocc
+      !       Ecorr = Ecorr + Fic(i,c)*x2ic(i,c)
+      !    enddo
+      ! enddo
+
+       ! print *, "iter norm2(r2ia) norm2(r2ic) Ecorr", iter, norm2(r2ia), norm2(r2ic), Ecorr  
+       ! print *, "iter norm2(x2ia) norm2(x2ic) ", iter, norm2(x2ia), norm2(x2ic) 
+
+       !Update variables
+       r1ia = r2ia
+       r1ic = r2ic
+    
+       gamma0 = gamma1
+
+       p0ia = p1ia
+       p0ic = p1ic
        
-    ! Transform to ortoghonal basis Fia'
-    call mem_alloc(Fia,nocc,ncabsAO)
-    do i=1,nocc
-       do a=1, ncabsAO
-          tmp = 0.0E0_realk
-          do j=1,nocc
-             do c=1, ncabsAO
-                tmp = tmp + C_ij(j,i)*Fic_real(j,c)*C_cd(c,a)
-             enddo
+       x1ia = x2ia
+       x1ic = x2ic
+       
+       Ecorr = 0.0E0_realk
+       do c=1,ncabs
+          do i=1,nocc
+             Ecorr = Ecorr + Fic(i,c)*x2ic(i,c)
           enddo
-          Fia(i,a) = tmp
+       enddo
+
+       !print*, "iter Ecorr Ecorr_old: ", iter, Ecorr, Ecorr_old
+       if(abs(Ecorr-Ecorr_old)<1.0E-9) then
+          exit 
+       endif
+
+       !Update the energy
+       Ecorr_old = Ecorr  
+
+    enddo CG_loop
+
+    !Energy summation
+    Ecorr = 0.0E0_realk 
+    do c=1,ncabs 
+       do i=1,nocc 
+          Ecorr = Ecorr + Fic(i,c)*x2ic(i,c) 
        enddo
     enddo
 
-!!$    !Print of orbital energies of eps_c
-!!$    print *, "------------ print epc ----------- "
-!!$    do a=1,ncabsAO
-!!$       print *, "eps_c:",a,eps_c(a)   
-!!$    enddo
-!!$    
-!!$    print *, "------------ print eps_i ----------- "
-!!$    !Print of orbital energies of eps_c
-!!$    do a=1,nocc
-!!$       print *, "eps_i:",a,eps_i(a)   
-!!$    enddo
+    ES2 = 2.0E0_realk*Ecorr
+
+    !Twice due to spinorbitals
+    print *,"Singles Energy Contribution: ", 2.0E0_realk*Ecorr   
+    print *,"Number of iterations: ", iter
+
+    call mem_dealloc(x1ic)
+    call mem_dealloc(x1ia)
+    call mem_dealloc(x2ic)
+    call mem_dealloc(x2ia)
     
-    !Singles energy correction
-    ES2 = 0.0E0_realk
+    call mem_dealloc(p1ic)
+    call mem_dealloc(p1ia)
+    call mem_dealloc(p0ic)
+    call mem_dealloc(p0ia)
+
+    call mem_dealloc(r1ic)
+    call mem_dealloc(r1ia)
+    call mem_dealloc(r2ic)
+    call mem_dealloc(r2ia)
+    
+    call mem_dealloc(v1ic)
+    call mem_dealloc(v1ia)
+    
+ end subroutine get_ES2
+
+ function inner_prod(t1ia,t1ic,t2ia,t2ic,nocc,nvirt,ncabs) 
+    implicit none
+    integer, intent(inout) :: nocc,ncabs,nvirt
+    real(realk), target, intent(in) :: t1ia(:,:)
+    real(realk), target, intent(in) :: t1ic(:,:)
+    real(realk), target, intent(in) :: t2ia(:,:)
+    real(realk), target, intent(in) :: t2ic(:,:)
+    real(realk) :: inner_prod
+ 
+    integer i,a,c
+
     do i=1,nocc
-       do a=1,ncabsAO
-          ES2 = ES2 + (Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
+       do a=1,nvirt
+          inner_prod = inner_prod + t1ia(i,a)*t2ia(i,a)
        enddo
     enddo
 
-    print *, "Singles Contribution: ", ES2
-    
-    call mem_dealloc(Fcd_real)
-    call mem_dealloc(eps_c)
-    call mem_dealloc(C_cd)
+    do i=1,nocc
+       do c=1,ncabs
+          inner_prod = inner_prod + t1ic(i,c)*t2ic(i,c)
+       enddo
+    enddo
 
-    call mem_dealloc(Fij_real)
-    call mem_dealloc(eps_i)
-    call mem_dealloc(C_ij)
+ end function inner_prod
 
-    call mem_dealloc(Fia)
-    call mem_dealloc(Fic_real)
+ subroutine mat_prod(Fij,Fab,Fac,Fcd,t1ia,t1ic,nocc,nvirt,ncabs,t2ia,t2ic) 
+    integer, intent(inout) :: nocc,ncabs,nvirt
+    real(realk), target, intent(in) :: t1ia(:,:)
+    real(realk), target, intent(in) :: t1ic(:,:)
 
-  end subroutine get_ES2_AO
-  
-  
-  subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
+    real(realk), target, intent(in) :: Fij(:,:)
+    real(realk), target, intent(in) :: Fab(:,:)
+    real(realk), target, intent(in) :: Fac(:,:)
+    real(realk), target, intent(in) :: Fcd(:,:)
+
+    real(realk), target, intent(inout) :: t2ia(:,:)
+    real(realk), target, intent(inout) :: t2ic(:,:)
+
+    integer i,j,a,b,c,d
+    real(realk) :: tmp1,tmp2
+
+    do i=1,nocc
+       do a=1,nvirt
+          tmp1 = 0.0E0_realk
+          do b=1, nvirt 
+             tmp1 = tmp1 + Fab(a,b)*t1ia(i,b)
+          enddo
+          do d=1, ncabs
+             tmp1 = tmp1 + Fac(a,d)*t1ic(i,d)
+          enddo
+          do j=1, nocc
+             tmp1 = tmp1 - Fij(i,j)*t1ia(j,a)
+          enddo
+          t2ia(i,a) = tmp1
+       enddo
+    enddo
+
+    do i=1,nocc
+       do c=1,ncabs
+          tmp2 = 0.0E0_realk
+          do b=1,nvirt
+             tmp2 = tmp2 + Fac(b,c)*t1ia(i,b)
+          enddo
+          do d=1,ncabs
+             tmp2 = tmp2 + Fcd(c,d)*t1ic(i,d)
+          enddo
+          do j=1,nocc
+             tmp2 = tmp2 - Fij(i,j)*t1ic(j,c)
+          enddo
+          t2ic(i,c) = tmp2
+       enddo
+    enddo
+
+ end subroutine mat_prod
+
+
+
+
+ subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
     implicit none
 
     !> Full molecule structure to be initialized
@@ -2618,7 +2619,7 @@ contains
 
     type(matrix) :: CMO_cabs
     integer :: ncabsAO,ncabs
-    
+
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     molecule%nCabsAO = ncabsAO
     molecule%nCabsMO = ncabs
@@ -2633,7 +2634,7 @@ contains
     !    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
     call mat_free(CMO_cabs)
 
-  end subroutine dec_get_CABS_orbitals
+ end subroutine dec_get_CABS_orbitals
 
   subroutine  dec_get_RI_orbitals(molecule,mylsitem)
     implicit none
@@ -2661,15 +2662,6 @@ contains
     call mat_free(CMO_RI)
 
   end subroutine dec_get_RI_orbitals
-
-#else
-
-  subroutine dummy_f12_routines()
-    implicit none
-
-  end subroutine dummy_f12_routines
-
-#endif 
 
 end module f12_routines_module
 

@@ -298,9 +298,9 @@ C
       use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
-      use iso_c_binding
-      use dalton_xcint_interface, only: use_xcint_integrator
-      use xcint_fortran_interface
+      use dalton_xcint_interface, only: xcint_integrate_rks_scf,
+     &                                  xcint_uses_own_grid,
+     &                                  xcint_is_active
 #endif
       use qmcmm_fock, only: qmnpmm_fock
 
@@ -317,14 +317,15 @@ C
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
 
 #ifdef ENABLE_XCINT
-      real(c_double)              :: xc_energy(1)
-      real(c_double), allocatable :: dmat_ao(:)
-      real(c_double), allocatable :: xc_mat(:)
-      real(c_double), allocatable :: buffer1(:)
-      real(c_double), allocatable :: buffer2(:)
-      real(c_double), allocatable :: xc_mat_tri(:)
-      logical                     :: file_exists
+      real(8)              :: xc_energy(1)
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: xc_mat(:)
+      real(8), allocatable :: buffer1(:)
+      real(8), allocatable :: buffer2(:)
+      real(8), allocatable :: xc_mat_tri(:)
+      logical              :: file_exists
 #endif
+
 #if defined (HAS_PCMSOLVER)
       real(8), allocatable :: density_ao(:), density_ao_symm(:)
       real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
@@ -880,19 +881,20 @@ C
             END IF
 
 #ifdef ENABLE_XCINT
-            if (use_xcint_integrator()) then
-               inquire(file='num_grid', exist=file_exists)
-               if (.not. file_exists) then
-                  ! ulgy hack to get the grid, we don't care about the integrated result
-                  allocate(buffer1(nbast*nbast))
-                  allocate(buffer2(nbast*nbast))
-                  dummy_energy = 0.0d0
-                  CALL DFT_ADD_KS(ONLYFC,dummy_energy,DCAO,NDMAT,
-     &            buffer1, buffer2,
-     &            WRK(KFREE),LFREE,IPR_DIIS)
-                  deallocate(buffer1)
-                  deallocate(buffer2)
-!                 call quit('ERROR: num_grid file not found')
+            if (xcint_is_active()) then
+               if (.not. xcint_uses_own_grid()) then
+                  ! ulgy hack to get dalton grid, we don't care about the integrated result
+                  inquire(file='num_grid', exist=file_exists)
+                  if (.not. file_exists) then
+                     allocate(buffer1(nbast*nbast))
+                     allocate(buffer2(nbast*nbast))
+                     dummy_energy = 0.0d0
+                     call dft_add_ks(onlyfc, dummy_energy, dcao, ndmat,
+     &                               buffer1, buffer2,
+     &                               wrk(kfree), lfree, ipr_diis)
+                     deallocate(buffer1)
+                     deallocate(buffer2)
+                  end if
                end if
                
                allocate(dmat_ao(nbast*nbast))
@@ -907,20 +909,10 @@ C
                call daxpy(nbast*nbast, 0.5d0, dcao, 1,
      &                    dmat_ao, 1)
                
-               call xcint_wakeup_workers()
-               call xcint_integrate(XCINT_MODE_RKS,
-     &                              0,        
-     &                              (/0/),    
-     &                              (/0/),    
-     &                              1,        
-     &                              (/0/),    
-     &                              (/1/),    
-     &                              dmat_ao,  
-     &                              0,  
-     &                              xc_energy,
-     &                              1,
-     &                              xc_mat,  
-     &                              xc_num_electrons)
+               call xcint_integrate_rks_scf(dmat_ao,
+     &                                xc_energy,
+     &                                xc_mat,
+     &                                xc_num_electrons)
                emy = emy + xc_energy(1)
                
                call dgetsp(nbast, xc_mat, xc_mat_tri)
@@ -983,7 +975,7 @@ c        density
 
            IF (QMNPMM) THEN
 
-             CALL GETDIM_RELMAT(IDIM,.TRUE.)
+             idim = GETDIM_RELMAT(.TRUE.)
              idim_side = idim**0.5
              allocate(relay_matrix(idim_side, idim_side, 1))
              CALL COMP_RELMAT(relay_matrix,WRK(KFREE),LFREE)

@@ -37,7 +37,6 @@ subroutine pdm_tensor_slave(comm)
    CALL PDM_tensor_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
    call time_start_phase(PHASE_WORK)
 
-
    SELECT CASE(JOB)
    CASE(JOB_PC_DEALLOC_DENSE)
       call memory_deallocate_tensor_dense_pc(A)
@@ -63,9 +62,9 @@ subroutine pdm_tensor_slave(comm)
       call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
 
       if(INT1==-1)then
-         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,intarr2,A%zeros) 
+         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,.false.,tdims=intarr2) 
       else
-         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,intarr2,A%zeros,force_offset=INT1) 
+         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,.false.,tdims=intarr2,force_offset=INT1) 
       endif
 
       call mem_dealloc(intarr2)
@@ -79,7 +78,7 @@ subroutine pdm_tensor_slave(comm)
       call mem_alloc(intarr1,A%mode)
       intarr1 =A%dims
       call tensor_free_aux(A)
-      call tensor_init_replicated(A,intarr1,A%mode,AT_MASTER_ACCESS) 
+      call tensor_init_replicated(A,intarr1,A%mode,AT_MASTER_ACCESS,.false.) 
       call mem_dealloc(intarr1)
    CASE(JOB_PRINT_MEM_INFO1)
       call print_mem_per_node(DECinfo%output,.false.)
@@ -123,6 +122,25 @@ subroutine pdm_tensor_slave(comm)
       call tensor_add_par(REAL1,A,REAL2,B,intarr1)
 
       call mem_dealloc(intarr1)
+
+   CASE(JOB_DMUL_PAR)
+      INT1 = A%mode
+      call mem_alloc(intarr1,INT1)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(REAL1,infpar%master)
+      call ls_mpi_buffer(REAL2,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(realar1,INT2)
+      call ls_mpi_buffer(realar1,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+
+      call tensor_dmul_par(REAL1,A,REAL2,realar1,B,intarr1)
+
+      call mem_dealloc(intarr1)
+      call mem_dealloc(realar1)
 
    CASE(JOB_HMUL_PAR)
       call time_start_phase(PHASE_COMM)
@@ -275,6 +293,27 @@ subroutine pdm_tensor_slave(comm)
       call tensor_zero(AUX)
 
       call lspdm_extract_eos_indices_occ(AUX,A,INT1,intarr1)
+
+      call mem_dealloc(intarr1)
+      call tensor_free(AUX)
+
+   CASE(JOB_TENSOR_EXTRACT_VDECNP)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(INT1,infpar%master)
+      call mem_alloc(intarr1,INT1)
+      call ls_mpi_buffer(intarr1,INT1,infpar%master)
+      call ls_mpi_buffer(INT2,infpar%master)
+      call mem_alloc(intarr2,INT2)
+      call ls_mpi_buffer(intarr2,INT2,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      
+      call tensor_init(AUX,intarr2,INT2)
+
+      call mem_dealloc(intarr2)
+
+      call tensor_zero(AUX)
+
+      call lspdm_extract_decnp_indices_virt(AUX,A,INT1,intarr1)
 
       call mem_dealloc(intarr1)
       call tensor_free(AUX)

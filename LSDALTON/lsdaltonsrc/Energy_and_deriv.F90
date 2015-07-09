@@ -190,7 +190,7 @@ contains
 
        If (config%doDEC.AND.(.NOT.config%noDecEnergy)) then
           ! Get dec energy
-          call get_total_CCenergy_from_inputs(ls,F(1),D(1),S,C,E(1),Eerr)
+          call get_total_CCenergy_from_inputs(ls,F(1),D(1),C,E(1),Eerr)
        elseif(config%doESGopt)then
           call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
                & config%decomp%cfg_rsp_nexcit)       
@@ -233,7 +233,7 @@ contains
       ! Check whether it is a dec calculation
       If (DECinfo%doDEC) then
          ! Gradient from DEC (currently only MP2)
-         Call get_mp2gradient_and_energy_from_inputs(ls,F,D,S,C,Natoms,gradient,E,Eerr)
+         Call get_mp2gradient_and_energy_from_inputs(ls,F,D,C,Natoms,gradient,E,Eerr)
       elseif(config%doESGopt)then
          call GET_EXCITED_STATE_GRADIENT(ls,config,F,D,S,Gradient,Natoms)
       else

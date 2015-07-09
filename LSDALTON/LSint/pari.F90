@@ -674,7 +674,7 @@ CONTAINS
     integer                    :: nRegC,startRegC,endRegC
     integer                    :: nAuxC,startAuxC,endAuxC
     integer                    :: iAtomCfrag
-    integer                    :: iAuxA,iRegB,iRegC,nAtoms,nRegFrag,iReg
+    integer                    :: iAuxA,iRegB,iRegC,iOcc,nAtoms,nRegFrag,iReg
     Real(realk),pointer        :: GQ_nusigma(:,:,:),GQ_sigmanu(:,:,:)
     Real(realk),pointer        :: matH_Q_trans(:,:,:)
     Real(realk),pointer        :: tmp(:,:,:),alpha_cd(:,:,:),tmp1(:,:,:),tmp2(:,:,:)
@@ -694,6 +694,7 @@ CONTAINS
 
     ! Loop over B
     do iAtomB=1,nAtoms
+       !write(lupri,*) 'debug: loop over B',iAtomB
        call getAtomicOrbitalInfo(orbitalInfo,iAtomB,nRegB,startRegB,endRegB,&
             nAuxB,startAuxB,endAuxB)
 
@@ -715,6 +716,7 @@ CONTAINS
        !Loop over C>B (neighbours of B)
        do iAtomC=iAtomB,nAtoms
           if (neighbours(iAtomB,iAtomC)) then
+             !write(lupri,*) 'debug: loop over C',iAtomC
              iAtomCfrag = iAtomCfrag+1
              call getAtomicOrbitalInfo(orbitalInfo,iAtomC,nRegC,&
                   startRegC,endRegC,nAuxC,startAuxC,endAuxC)
@@ -726,12 +728,29 @@ CONTAINS
                   iAtomA,iAtomB,iAtomC,iAtomCfrag,orbitalInfo,orbitalInfoFrag,&
                   setting,molecule,atoms,regCSfull,auxCSfull,&
                   lupri,luerr)
+             !write(lupri,*) 'debug: got matG'
 
              ! --- Construct HQ_nui Q in Aux(A), nu in Reg(B), i in Occ
-             !call mem_alloc(tmp,nAuxA,nRegB,nOcc)
+             call mem_alloc(tmp,nAuxA,nRegB,nOcc)
+             tmp=0E0_realk
              call dgemm('N','N',nAuxA*nRegB,nOcc,nRegC,1.0E0_realk,GQ_nusigma,&
-                  nAuxA*nRegB,MOcoeff(StartRegC:EndRegC,:),nRegC,1.0E0_realk,&
-                  matH_Q_trans(:,StartRegB:EndRegB,:),nAuxA*nRegB)
+                  nAuxA*nRegB,MOcoeff(StartRegC,1),nBastReg,0.0E0_realk,&
+                  tmp,nAuxA*nRegB)
+             !call dgemm('N','N',nAuxA*nRegB,nOcc,nRegC,1.0E0_realk,GQ_nusigma,&
+             !     nAuxA*nRegB,MOcoeff(StartRegC:EndRegC,:),nRegC,1.0E0_realk,&
+             !     matH_Q_trans(:,StartRegB:EndRegB,:),nAuxA*nRegB)
+             !write(lupri,*) 'debug: dgemm tmp'
+
+             do iRegB=1,nRegB
+                do iAuxA=1,nAuxA
+                   do iOcc = 1,nOcc
+                      matH_Q_trans(iAuxA,StartRegB+iRegB-1,iOcc) = &
+                           matH_Q_trans(iAuxA,StartRegB+iRegB-1,iOcc) + tmp(iAuxA,iRegB,iOcc)
+                   enddo
+                enddo
+             enddo
+             call mem_dealloc(tmp)
+             !write(lupri,*) 'debug: add tmp'
 
              if (.not.(iAtomB.eq.iAtomC)) then
                 call mem_alloc(GQ_sigmanu,nAuxA,nRegC,nRegB)
@@ -740,12 +759,28 @@ CONTAINS
                       GQ_sigmanu(:,iRegC,iRegB)=GQ_nusigma(:,iRegB,iRegC)
                    enddo
                 enddo
+                !write(lupri,*) 'debug: transpose matG'
+                call mem_alloc(tmp,nAuxA,nRegC,nOcc)
+                tmp=0E0_realk
                 call dgemm('N','N',nAuxA*nRegC,nOcc,nRegB,1.0E0_realk,&
-                     GQ_sigmanu,nAuxA*nRegC,MOcoeff(StartRegB:EndRegB,:),&
-                     nRegB,1.0E0_realk,matH_Q_trans(:,StartRegC:EndRegC,:),&
+                     GQ_sigmanu,nAuxA*nRegC,MOcoeff(StartRegB,1),&
+                     nBastReg,0.0E0_realk,tmp,&
                      nAuxA*nRegC)
+                !call dgemm('N','N',nAuxA*nRegC,nOcc,nRegB,1.0E0_realk,&
+                !     GQ_sigmanu,nAuxA*nRegC,MOcoeff(StartRegB:EndRegB,:),&
+                !     nRegB,1.0E0_realk,matH_Q_trans(:,StartRegC:EndRegC,:),&
+                !     nAuxA*nRegC)
                 call mem_dealloc(GQ_sigmanu)
-
+                !write(lupri,*) 'debug: dgemm matG'
+                do iRegC=1,nRegC
+                   do iAuxA=1,nAuxA
+                      do iOcc = 1,nOcc
+                         matH_Q_trans(iAuxA,StartRegC+iRegC-1,iOcc) = &
+                              matH_Q_trans(iAuxA,StartRegC+iRegC-1,iOcc) + tmp(iAuxA,iRegC,iOcc)
+                      enddo
+                   enddo
+                enddo
+                call mem_dealloc(tmp)
              endif
              call mem_dealloc(GQ_nusigma)
           endif !C is in neighbour(B)
@@ -762,7 +797,7 @@ CONTAINS
          matH_Q(iReg,iAuxA,:)=matH_Q_trans(iAuxA,iReg,:) 
        enddo
     enddo
-
+    !write(lupri,*) 'debug: transpose matH'
     call mem_dealloc(matH_Q_trans)
     !call lstimer('matH',te,ts,lupri)
   end subroutine getHQcoeff

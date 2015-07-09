@@ -933,7 +933,11 @@ CONTAINS
     IF(.NOT.useAO2) AOT(2)%p => AOTE
     IF(.NOT.useAO3) AOT(3)%p => AOTE
     IF(.NOT.useAO4) AOT(4)%p => AOTE
-    IF(nbast1.NE.AOT(1)%p%nbast)call lsquit('dim1 mismatch in init_lstensor_5dim',-1)
+    IF(nbast1.NE.AOT(1)%p%nbast)then
+       print*,'nbast1',nbast1
+       print*,'AOT(1)%p%nbast',AOT(1)%p%nbast
+       call lsquit('dim1 mismatch in init_lstensor_5dim',-1)
+    ENDIF
     IF(nbast2.NE.AOT(2)%p%nbast)call lsquit('dim2 mismatch in init_lstensor_5dim',-1)
     IF(nbast3.NE.AOT(3)%p%nbast)call lsquit('dim3 mismatch in init_lstensor_5dim',-1)
     IF(nbast4.NE.AOT(4)%p%nbast)call lsquit('dim4 mismatch in init_lstensor_5dim',-1)

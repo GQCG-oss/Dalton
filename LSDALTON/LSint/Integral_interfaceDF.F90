@@ -20,12 +20,16 @@ MODULE IntegralInterfaceModuleDF
   use dec_typedef_module, only: batchTOorb
   use screen_mod
   use BUILDAOBATCH
+  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc,C_PTR
+  use ThermiteIntTransform_module
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
        & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
        & init_IIDF_matrix,free_IIDF_matrix,&
        & II_get_RI_alphaCD_3CenterInt, II_get_RI_alphabeta_2CenterInt, &
        & II_get_RI_alphaCD_3CenterInt2,getRIbasisMPI,getMaxAtomicnAux,&
-       & II_get_df_magderivJ
+       & II_get_RI_AlphaCD_3CenterIntFullOnAllNN, GetOperatorFromCharacter,&
+       & II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim,II_get_RIMP2_grad,&
+       & II_get_RI_AlphaBeta_geoderiv2CenterInt,II_get_df_magderivJ
   private
 
   SAVE
@@ -570,7 +574,6 @@ contains
     Logical       :: FoundInMem
     Integer       :: molID,THR,THR2
     Integer       :: i
-
     THR = ABS(NINT(LOG10(SETTING%SCHEME%intTHRESHOLD)))
        molecule => SETTING%MOLECULE(1)%p
        molID = SETTING%molID(1)
@@ -1527,6 +1530,7 @@ contains
     
     !--- MO-based implementation from Manzer et al., JCTC, 2015, 11(2), pp 518-527 
     if (setting%scheme%MOPARI_K) then
+       
        call mem_alloc(MOmatK,nBastReg,nBastReg)
        MOmatK=0E0_realk
 
@@ -1540,8 +1544,13 @@ contains
        INFO=-1
        nOcc=0
        PIV(:)=0
-       matA(:,:) = Dfull(:,:,1)
-    
+       
+       do i=1,nBastReg
+          do j=1,nBastReg
+             matA(i,j) = Dfull(i,j,1)
+          enddo
+       enddo
+           
        call dpstrf('L',nBastReg,matA,nBastReg,PIV,nOcc,chol_tol,Work,INFO)
        
        call mem_alloc(MOcoeff,nBastReg,nOcc)
@@ -1555,7 +1564,7 @@ contains
        call mem_dealloc(PIV)
        call mem_dealloc(matA)
        call mem_dealloc(work)
-       
+
        !write(lupri,*) 'Rank of the Cholesky Decomposition:',nOcc
 
        !write(lupri,'(/A/)') 'Atomic Contributions to the MO'
@@ -1613,13 +1622,12 @@ contains
        neighbours(:,:) = .false.
        call get_neighbours(neighbours,orbitalInfo,regCSfull,threshold,molecule,&
             atoms_A,lupri,luerr,setting)
+      
        !write(lupri,'(/A/)') 'Matrix of atomic neighbours'
        !do iAtomA=1,nAtoms
        !   write(lupri,*) neighbours(iAtomA,:)
        !enddo
 
-       !call lstimer('neighbour',te,ts,lupri)
-                     
        ! Loop over A
        do iAtomA=1,nAtoms
           call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nRegA,startRegA,endRegA,&
@@ -1631,7 +1639,7 @@ contains
           call getHQcoeff(matH_Q,calpha_ab_mo,alpha_beta_mo,iAtomA,neighbours,&
                MOcoeff,orbitalInfo,setting,molecule,atoms_A,regCSfull,auxCSfull,&
                nOcc,lupri,luerr)
-                              
+          
           ! --- Construction of matrix D_i^muQ for AtomQ=AtomA
           call mem_alloc(matD_Q,nAuxA,nOcc,nBastReg)
           matD_Q=0E0_realk
@@ -1642,7 +1650,7 @@ contains
           ! --- Addition of the AtomQ=AtomA contribution to the matrix L^munu 
           call dgemm('N','N',nBastReg,nBastReg,nAuxA*nOcc,1.0E0_realk,matH_Q,&
                nBastReg,matD_Q,nAuxA*nOcc,1.0E0_realk,MOmatK,nBastReg)
-                    
+          
           call mem_dealloc(matD_Q)
           call mem_dealloc(matH_Q)
        Enddo !Loop A
@@ -1683,7 +1691,7 @@ contains
              MOMatK(iRegB,iRegA) =  MOMatK(iRegA,iRegB)
           enddo
        enddo
-
+       
        ! --- Add the exchange contribution (K) to the Fock matrix (F)
        call mat_set_from_full(MOMatK(:,:),&
             -Setting%Scheme%exchangeFactor,F(1),'exchange')
@@ -2829,7 +2837,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
 END SUBROUTINE II_get_RI_AlphaCD_3CenterInt
 
 SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisAux,&
-     & nbasis,nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+     & nbasis,nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes,InOper)
   IMPLICIT NONE
   Integer,intent(in)            :: LUPRI,LUERR,nbasis,nbasisAux
   Integer,intent(in)            :: nocc,nvirt,mynum,numnodes  
@@ -2838,11 +2846,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   REAL(REALK),intent(in)        :: Cvirt(nbasis,nvirt)
   TYPE(LSSETTING),intent(inout) :: SETTING
   integer(kind=long),intent(in) :: maxsize
+  integer,optional              :: InOper 
   !
   integer(kind=long)         :: nsize
   Integer                    :: nAtoms,nAtomsAux,nBastAux,nBast,N,K,M,ialpha,v,a
   Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
-  Integer                    :: ALPHA,BETA,I
+  Integer                    :: ALPHA,BETA,I,Oper 
   Real(realk) :: TSTART,TEND,tmp,TMP1
   real(realk),pointer :: AlphaCD(:,:,:),AlphaCD2(:,:,:)
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
@@ -2855,6 +2864,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   !
   integer :: iShell, nAuxShellA,nbatches
   integer, pointer :: batchdim(:)
+
+  IF(present(InOper))THEN
+     Oper = InOper
+  ELSE
+     Oper = CoulombOperator
+  ENDIF
 
   SETTING%scheme%CS_SCREEN = .FALSE.
   SETTING%scheme%PS_SCREEN = .FALSE.
@@ -2894,13 +2909,15 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      call initIntegralOutputDims(setting%Output,nBastAux,1,nbast,nbast,1)
 
      !both Master and non-master calls this
-     
      call ls_getIntegrals(AODFdefault,AOempty,AORdefault,AORdefault,&
-          & CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+          & Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
      
      call mem_alloc(AlphaCD,nbastAux,nbast,nbast)
      CALL retrieve_Output(lupri,setting,AlphaCD,.FALSE.)
      
+!     print*,'II_get_RI_AlphaCD_3CenterInt2: FullAlphaCD(1:nA,1:4) AO'
+!     call ls_output(AlphaCD,1,nbastAux,1,4,nbastAux,nbast*nbast,1,6)
+
      ! Transform index delta to diagonal occupied index 
      !(alphaAux;gamma,J) = (alphaAux;gamma,delta)*C(delta,J)
      M = nbastAux*nbast !rows of Output Matrix
@@ -2912,6 +2929,10 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      call Test_if_64bit_integer_required(M,N)
      call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,&
           & 0.0E0_realk,AlphaCD2,M)
+
+!     print*,'II_get_RI_AlphaCD_3CenterInt2: FullAlphaCD(1:nA,1:4) HALF'
+!     call ls_output(AlphaCD2,1,nbastAux,1,4,nbastAux,nbast*nocc,1,6)
+
      call mem_dealloc(AlphaCD)
      call mem_alloc(FullAlphaCD,nbasisAux,nvirt,nocc)
      !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
@@ -2931,6 +2952,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      enddo
 !$OMP END PARALLEL DO
      call mem_dealloc(AlphaCD2)
+!     print*,'II_get_RI_AlphaCD_3CenterInt2: FullAlphaCD(1:nA,1:4) MO'
+!     call ls_output(FullAlphaCD,1,nbastAux,1,4,nbastAux,nvirt*nocc,1,6)
+
   ELSE
      !need to deactivate MPI inside ls_getIntegrals. 
      !both master and slaves call this routine 
@@ -2978,7 +3002,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
                  setting%batchindex(1)=iShell
                  setting%batchdim(1)=nAuxShellA
                  call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
-                      &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+                      & Oper,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
                  setting%batchindex(1)=0
                  setting%batchdim(1)=nAuxShellA
                  call mem_alloc(alphaCD,nAuxShellA,nBast,nBast)
@@ -3004,7 +3028,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
               !Original code
               call initIntegralOutputDims(setting%Output,nAuxA,1,nBast,nBast,1)
               call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
-                   &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+                   & Oper,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
               call mem_alloc(alphaCD,nAuxA,nBast,nBast)
               CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
               ! Transform index delta to diagonal occupied index 
@@ -3027,9 +3051,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
         !restore 
         call typedef_setMolecules(setting,molecule1,1,molecule2,2,&
              & molecule3,3,molecule4,4)
-        call pari_free_atomic_fragments(ATOMS,nAtomsAux)
-        deallocate(ATOMS)
+        call pari_free_atomic_fragments(ATOMS,nAtomsAux)        
      ENDIF
+     deallocate(ATOMS)
      call mem_dealloc(AtomsMPI)
      call mem_dealloc(nAtomsMPI)
      call mem_dealloc(nAuxMPI)
@@ -3041,12 +3065,394 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   SETTING%MOLECULE(2)%p => molecule2
   SETTING%MOLECULE(3)%p => molecule3
   SETTING%MOLECULE(4)%p => molecule4
+  call ls_setDefaultFragments(setting)
   call LSTIMER('AlphaCD',TSTART,TEND,LUPRI)
   SETTING%scheme%CS_SCREEN = .TRUE.
   SETTING%scheme%PS_SCREEN = .TRUE.
   SETTING%scheme%OD_SCREEN = .TRUE.
   SETTING%scheme%OE_SCREEN = .TRUE.
 END SUBROUTINE II_get_RI_AlphaCD_3CenterInt2
+
+!> \brief Calculates the 3 center 2 electron repulsion integral assuming all nodes have full Integral
+!> This includes a allreduce! This also assumes that all slaves are alive and all call this subroutine        
+!> WARNING: in case of MPI the FullAlphaCD(:,:,:) will only contain partial contributions calculated
+!>          by this rank so you may need a lsmpi_allreduce or something, depending on your needs.
+!> \author Thomas Kjaergaard
+!> \date 2015
+SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
+     & SETTING,nAux,n1,n2,intspec,MaxnAux,nMO1,nMO2,AOtoMO,C1,C2,nthreads,dim1,&
+     & GindexToLocal,DECPRINTLEVEL,MemDebugPrint,use_bg_bufInput)
+  IMPLICIT NONE
+  Integer,intent(in)     :: LUPRI,LUERR,n1,n2,nAux,MaxnAux,nthreads
+  integer,intent(in)     :: nMO1,nMO2,dim1,DECPRINTLEVEL
+  REAL(REALK),pointer    :: FullAlphaCD(:) !dim1,nMO1,nMO2
+  TYPE(LSSETTING),intent(inout) :: SETTING
+  character,intent(in)  :: intspec(4)
+  logical :: AOtoMO,MemDebugPrint
+  real(realk) :: C1(n1,nMO1),C2(n2,nMO2)  
+  integer :: GindexToLocal(nAux)
+  logical,optional :: use_bg_bufInput
+  !
+  real(realk) :: TSTART,TEND
+  real(realk),pointer :: TmpAlphaCD(:),w0(:)
+  logical :: MasterWakeSlaves,RestricedSize,use_bg_buf
+  integer :: Oper,MaxN,i,startF,N,M,K,TID
+  integer :: ao(3),dims(3),GlobalToLocal(nAux)
+  integer(kind=8) :: n8,w0size,w1size
+  type(C_PTR) :: cpointer
+  use_bg_buf = .FALSE.
+  IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
+  call nullThermiteIntTransform()
+  call InitThermiteIntTransform1(GindexToLocal,nAux) 
+
+  MaxN = MaxnAux
+  RestricedSize = MaxN.LT.dim1
+  IF(MaxnAux.GT.dim1) MaxN = dim1
+  IF(MemDebugPrint)THEN
+     print*,'RestricedSize=',RestricedSize,'MaxN=',MaxN,'dim1=',dim1
+  ENDIF
+  IF(.NOT.AOtoMO)THEN
+     IF(MaxN.NE.nAux)CALL LSQUIT('dim mismatch in II_get_RI_AlphaCD_3CenterIntFullOnAllNN',-1)
+  ENDIF
+  call LSTIMER('START ',TSTART,TEND,LUPRI)  
+  call GetOperatorFromCharacter(Oper,intspec(4),Setting)
+  call GetAOtypes(ao,3,intspec(1:3))
+  SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+!  WRITE(LUPRI,*)'II_get_RI_AlphaCD_3CenterIntFullOnAll Integral Threshold:',SETTING%SCHEME%intTHRESHOLD
+  !(alpha|cd)  
+  call nullifyIntegralOutput(setting%Output)
+  nullify(setting%output%resulttensor)
+  IF(RestricedSize)THEN
+     !Build AO integrals in setting%output%ResultMat
+     !When AO integrals becomes bigger than (MaxN,n1,n2)
+     !the AO integrals are transformed to
+     !MO basis with accumulation in setting%output%Result3D
+
+     w1size = dim1*nMO1*nMO2
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)THEN
+        WRITE(LUPRI,'(A,F13.5,A)')&
+             & '3 center RI: Allocating MO (alpha|AI)',dim1*nMO1*nMO2*8E-9_realk,' GB'
+     ENDIF
+     IF(use_bg_buf)THEN        
+        IF(MemDebugPrint)print*,'w1size=',dim1,'*',nMO1,'*',nMO2,'=',dim1*nMO1*nMO2
+        IF(MemDebugPrint)print*,'BG: Before a FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call printBGinfo()
+        call mem_pseudo_alloc(FullAlphaCD, w1size)
+     ELSE
+        IF(MemDebugPrint)print*,'STD: Before a FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call stats_globalmem(6)
+        call mem_alloc(FullAlphaCD,w1size)
+     ENDIF
+
+     call InitThermiteIntTransform(n1,nMO1,n2,nMO2,C1,C2,dim1,MaxN,nthreads) !full
+     call initIntegralOutputDims(setting%Output,MaxN,1,n1,n2,nthreads)
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A,F13.5,A)')&
+          & '3 center RI: Allocating 5dim Buffer',MaxN*n1*n2*8E-9_realk,&
+          & ' GB for each thread = ',MaxN*n1*n2*nthreads*8E-9_realk,' GB'
+     IF(use_bg_buf)THEN
+        w0size = MaxN*n1*n2*nthreads
+        IF(MemDebugPrint)print*,'BG: w0=',MaxN,'*',n1,'*',n2,'*',nthreads,'=',MaxN*n1*n2*nthreads
+        IF(MemDebugPrint)print*,'BG: Before w0 of size=',w0size
+        IF(MemDebugPrint)call printBGinfo()
+        call mem_pseudo_alloc(w0, w0size)
+!        setting%output%ResultMat(1:MaxN,1,1:n1,1:n2,1:nthreads) => w0(1:w0size)
+        cpointer = c_loc(w0(1))
+        call c_f_pointer(cpointer,setting%output%ResultMat,[MaxN,1,n1,n2,nthreads])
+     ELSE
+        IF(MemDebugPrint)print*,'STD: Before a ResultMat of size=',MaxN*n1*n2*nthreads
+        IF(MemDebugPrint)call stats_globalmem(6)
+        call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads)
+     ENDIF
+     n8 = MaxN*n1*n2*nthreads
+     call ls_dzero8(setting%output%ResultMat,n8) !due to screening 
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A)')&
+          & '3 center RI: Allocating TmpArray of ',MaxN*n1*nMO2*8E-9_realk,' GB'
+
+     call ThermiteIntTransform_alloc_TmpArray(use_bg_buf) !MaxN,n1,nMO2
+     call ls_dzero8(FullAlphaCD,w1size)
+!     setting%output%Result3D => FullAlphaCD
+     cpointer = c_loc(FullAlphaCD(1))
+     call c_f_pointer(cpointer,setting%output%Result3D,[dim1,nMO1,nMO2])
+     setting%Output%ndim3D(1) = dim1
+     setting%Output%ndim3D(2) = nMO1
+     setting%Output%ndim3D(3) = nMO2
+     setting%Output%ndim3D(4) = nAux
+     !memory requirements:
+     !nAux*nMO1*nMO2+MaxN*(n1*nMO2+n1*n2)+n1*nMO1+n2*nMO2 
+     !choose
+     !MaxN = FLOOR((MaxSize/8.0E-9_realk-nAux*nMO1*nMO2-n1*nMO1-n2*nMO2)/(n1*nMO2+n1*n2))
+  ELSE 
+     !Full AO integral Fits so the AO integrals are build 
+     !directly in setting%output%Result3D (AO to MO happens outside Integral code)
+     DoThermiteIntTransform = .FALSE.
+     call initIntegralOutputDims(setting%Output,1,1,1,1,1)
+     call mem_alloc(setting%output%ResultMat,1,1,1,1,1)
+     n8 = dim1*n1*n2
+     IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A)')&
+          & '3 center RI: Allocating AO (alpha|CD)',dim1*n1*n2*8E-9_realk,' GB'
+     w1size = dim1*n1*n2
+     IF(use_bg_buf)THEN
+        IF(MemDebugPrint)print*,'w1size=',dim1,'*',n1,'*',n2,'=',dim1*n1*n2
+        IF(MemDebugPrint)print*,'BG: Before b FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call printBGinfo()
+        call mem_pseudo_alloc(FullAlphaCD, w1size)
+     ELSE
+        IF(MemDebugPrint)print*,'w1size=',dim1,'*',n1,'*',n2,'=',dim1*n1*n2
+        IF(MemDebugPrint)print*,'STD: Before b FullAlphaCD of size=',w1size
+        IF(MemDebugPrint)call stats_globalmem(6)
+        call mem_alloc(FullAlphaCD,w1size)
+     ENDIF
+     call ls_dzero8(FullAlphaCD,w1size)
+     cpointer = c_loc(FullAlphaCD(1))
+     call c_f_pointer(cpointer,setting%output%Result3D,[dim1,n1,n2])
+!     setting%output%Result3D => FullAlphaCD
+     setting%Output%ndim3D(1) = dim1
+     setting%Output%ndim3D(2) = n1
+     setting%Output%ndim3D(3) = n2
+     setting%Output%ndim3D(4) = nAux
+     !memory requirements:
+     !MAX(nAux*nMO1*nMO2+nAux*n1*nMO2,nAux*n1*n2+nAux*n1*nMO2)
+  ENDIF
+
+  !MPI is used inside this routine but since this is called by both master and slaves
+  !the master should not wake up the slaves
+  MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
+  SETTING%SCHEME%MasterWakeSlaves = .FALSE.
+  setting%output%FullAlphaCD = .TRUE.  
+  IF(MemDebugPrint)THEN
+     print*,'Memory stat before ls_getIntegrals1'
+     call stats_globalmem(6)
+  ENDIF
+  call ls_getIntegrals1(ao(1),AOempty,ao(2),ao(3),Oper,RegularSpec,ContractedInttype,0,SETTING,LUPRI,LUERR)
+  IF(MemDebugPrint)THEN
+     print*,'Memory stat after ls_getIntegrals1'
+     call stats_globalmem(6)
+  ENDIF
+  setting%output%FullAlphaCD = .FALSE.
+  SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
+  call LSTIMER('AlphaCD',TSTART,TEND,LUPRI)
+
+  IF(AOtoMO)THEN
+     IF(DoThermiteIntTransform)THEN
+        DO TID=1,nthreads
+           IF(iLocalTIT2(TID).NE.0)THEN
+              call InitThermiteIntThreadID(TID-1)
+              !transform last contributions to MO
+              call ThermiteIntTransform_AOtoMOInternalFinal(FullAlphaCD,&
+                   & dim1,nMO1,nMO2,setting%output%ResultMat,MaxN,n1,n2)
+           ENDIF
+        ENDDO
+     ELSE
+!        print*,'II_get_RI_AlphaCD_3CenterIntFullOnAll:    FullAlphaCD(1:nA,1:4) AO'
+!        call ls_output(FullAlphaCD,1,dim1,1,4,dim1,n1*n2,1,6)
+
+        !Perform AO to MO
+        M = dim1*n1   !rows of Output Matrix
+        N = nMO2      !columns of Output Matrix
+        K = n2        !summation dimension
+        IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A)')&
+             & '3 center RI: Allocating Full TmpArray ',M*N*8E-9_realk,' GB'
+        n8 = M*N
+        IF(use_bg_buf)THEN
+           IF(MemDebugPrint)print*,'BG: Before TmpAlphaCD of size=',n8
+           IF(MemDebugPrint)call printBGinfo()
+           call mem_pseudo_alloc(TmpAlphaCD,n8)
+        ELSE
+           call mem_alloc(TmpAlphaCD,n8)
+        ENDIF
+        call dgemm('N','N',M,N,K,1.0E0_realk,FullAlphaCD,M,C2,K,0.0E0_realk,TmpAlphaCD,M)
+
+!        print*,'II_get_RI_AlphaCD_3CenterIntFullOnAll:    FullAlphaCD(1:nA,1:4) HALF'
+!        call ls_output(TmpAlphaCD,1,dim1,1,4,dim1,n1*nMO2,1,6)
+        w1size = dim1*nMO1*nMO2
+        IF(use_bg_buf)THEN
+           !do nothing
+        ELSE
+           call mem_dealloc(FullAlphaCD)
+           call mem_alloc(FullAlphaCD,w1size)
+        ENDIF
+
+        call DF3centerTrans4(nMO1,nMO2,n1,dim1,C1,TmpAlphaCD,FullAlphaCD(1:w1size))
+
+        IF(use_bg_buf)THEN
+           IF(MemDebugPrint)print*,'BG: Before dealloc TmpAlphaCD of size=',n8
+           IF(MemDebugPrint)call printBGinfo()
+           call mem_pseudo_dealloc(TmpAlphaCD)
+           !This looks weird but FullAlphaCD is currently pointing to the first 1:dim1*n1*n2 elements
+           !of a "permanent" memory array. I only need the first 1:dim1*nMO1*nMO2 elements
+           !so I shrink the array dimension by deassociating (NOT deallocating) and reassociate
+           IF(MemDebugPrint)print*,'BG: Before dealloc FullAlphaCD of size=',Size(FullAlphaCD)
+           IF(MemDebugPrint)call printBGinfo()
+           call mem_pseudo_dealloc(FullAlphaCD)
+           IF(MemDebugPrint)print*,'BG: Before alloc FullAlphaCD of size=',w1size
+           IF(MemDebugPrint)call printBGinfo()
+           call mem_pseudo_alloc(FullAlphaCD, w1size)
+        ELSE
+           call mem_dealloc(TmpAlphaCD)
+        ENDIF
+     ENDIF
+!     print*,'II_get_RI_AlphaCD_3CenterIntFullOnAll: FullAlphaCD(1:nA,1:4) MO dim1=',dim1
+!     call ls_output(FullAlphaCD,1,dim1,1,4,dim1,n1*n2,1,6)
+  ENDIF
+  call FreeThermiteIntTransform(use_bg_buf)
+  IF(RestricedSize)THEN
+     IF(use_bg_buf)THEN
+        IF(MemDebugPrint)print*,'BG: Before dealloc w0 of size=',size(w0)
+        IF(MemDebugPrint)call printBGinfo()
+        call mem_pseudo_dealloc(w0)
+        nullify(setting%output%ResultMat)
+     ELSE
+        call mem_dealloc(setting%output%ResultMat)
+     ENDIF
+  ELSE
+     call mem_dealloc(setting%output%ResultMat)
+  ENDIF
+END SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN
+
+subroutine II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim(setting,nAuxMPI,&
+     & IndexToGlobal,numnodes,MaxnAuxMPI,AODF,GindexToLocal,nbasisAux)
+implicit none
+TYPE(LSSETTING),intent(inout) :: SETTING
+integer,intent(in) :: numnodes,nbasisAux
+integer,intent(inout) :: nAuxMPI(numnodes),MaxnAuxMPI
+integer :: GindexToLocal(nbasisAux)
+integer,pointer :: IndexToGlobal(:,:) !intent(inout)
+character,intent(in)  :: AODF
+call MPIdistributeAOs(setting,AODF,nAuxMPI,numnodes,IndexToGlobal,MaxnAuxMPI,&
+     & GindexToLocal,nbasisAux)
+end subroutine II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim
+
+subroutine DF3centerTrans4(nvirt,nocc,nbast,nAuxA,Cvirt,AlphaCD2,FullAlphaCD)
+  implicit none
+  integer,intent(in) :: nvirt,nocc,nbast,nAuxA
+  real(realk),intent(in) :: Cvirt(nbast,nvirt),AlphaCD2(nAuxA,nBast,nocc)
+  real(realk),intent(inout) :: FullAlphaCD(nAuxA,nvirt,nocc)
+  !
+  integer ::ADIAG,IDIAG,ALPHAAUX,ALPHA
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
+  !$OMP PRIVATE(ADIAG,IDIAG,ALPHAAUX,ALPHA,TMP) &
+  !$OMP SHARED(nvirt,nocc,nbast,nAuxA,Cvirt,AlphaCD2,FullAlphaCD) 
+  do IDIAG = 1,nocc
+     do ADIAG = 1,nvirt
+        do ALPHAAUX = 1,nAUXA           
+           FullAlphaCD(ALPHAAUX,ADIAG,IDIAG) = 0.0E0_realk
+        enddo
+        do ALPHA = 1,nbast
+           TMP = Cvirt(ALPHA,ADIAG)
+           do ALPHAAUX = 1,nAUXA           
+              FullAlphaCD(ALPHAAUX,ADIAG,IDIAG) = FullAlphaCD(ALPHAAUX,ADIAG,IDIAG) + TMP*AlphaCD2(ALPHAAUX,ALPHA,IDIAG)
+           enddo
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine DF3centerTrans4
+
+!subroutine ass_D5to3TK(elms,ptr,dims)
+!    implicit none
+!    integer,intent(in) :: dims(3)
+!    real(realk),target,intent(in) :: elms(dims(1),1,dims(2),dims(3),1)
+!    real(realk),pointer:: ptr(:,:,:,:,:)
+!    ptr => elms
+!end subroutine ass_D5to3TK
+
+subroutine GetAOtypes(ao,nAO,intspec)
+  implicit none
+  integer,intent(in) :: nAO
+  integer,intent(inout) :: ao(nAO)
+  character,intent(in)  :: intspec(nAO)
+  integer :: i
+  ! ***** SELECT AO TYPES *****
+  DO i=1,nAO
+     IF (intSpec(i).EQ.'R') THEN
+        !   The regular AO-basis
+        ao(i) = AORegular
+     ELSEIF(intSpec(i).EQ.'D')THEN
+        !   The Aux AO-type basis
+        ao(i) = AOdfAux
+     ELSE IF (intSpec(i).EQ.'C') THEN
+        !   The CABS AO-type basis
+        ao(i) = AOdfCABS
+     ELSE
+        call lsquit('Error in specification of ao1 in GetAOtypes',-1)
+     ENDIF
+  ENDDO
+end subroutine GetAOtypes
+
+subroutine GetOperatorFromCharacter(Oper,intspec,Setting)
+implicit none
+TYPE(LSSETTING)       :: SETTING
+character,intent(in)  :: intspec
+integer,intent(inout)  :: Oper
+
+IF (intSpec.EQ.'C') THEN
+   ! Regular Coulomb operator 1/r12
+   oper = CoulombOperator
+ELSE
+   IF (intSpec.EQ.'E') THEN
+      ! Long-Range operator erf/r12
+      oper = ErfOperator
+   ELSE
+      IF (intSpec.EQ.'G') THEN
+         oper = GGemOperator
+      ELSE IF (intSpec.EQ.'F') THEN
+         oper = GGemCouOperator
+      ELSE IF (intSpec.EQ.'D') THEN
+         oper = GGemGrdOperator
+      ELSE IF (intSpec.EQ.'2') THEN
+         oper = GGemQuaOperator
+      ELSE
+         print*,'intspec:',intspec
+         call lsquit('Error in specification of operator in GetOperatorFromCharacter',-1)
+      ENDIF
+      call setF12Operator(Oper,Setting) 
+   ENDIF
+ENDIF
+end subroutine GetOperatorFromCharacter
+
+subroutine setF12Operator(Oper,Setting) 
+  implicit none
+  TYPE(LSSETTING)       :: SETTING
+  integer,intent(in)  :: Oper
+!
+  integer             :: i,j,k,l
+  real(realk)         :: coeff(6),exponent(6),tmp
+  real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+  integer             :: IJ,nGaussian,nG2,ao(4),dummy
+        
+  IF ((oper.EQ.GGemOperator.OR.oper .EQ. GGemCouOperator).OR.&
+       & (oper .EQ. GGemGrdOperator.OR.oper .EQ. GGemQuaOperator))THEN
+     nGaussian = 6
+     nG2 = nGaussian*(nGaussian+1)/2
+     call stgfit(1E0_realk,nGaussian,exponent,coeff)
+     IJ=0
+     DO I=1,nGaussian
+        DO J=1,I
+           IJ = IJ + 1
+           coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+           prodexponent(IJ) = exponent(I) * exponent(J)
+           sumexponent(IJ) = exponent(I) + exponent(J)
+        ENDDO
+        coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+     ENDDO
+     IF (oper.EQ.GGemOperator) THEN
+        ! The Gaussian geminal operatorg 
+        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+     ELSE IF (oper .EQ. GGemCouOperator) THEN
+        ! The Gaussian geminal divided by the Coulomb operator g/r12
+        call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+     ELSE IF (oper .EQ. GGemGrdOperator) THEN
+        ! The double commutator [[T,g],g]
+        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+     ELSE IF (oper .EQ. GGemQuaOperator) THEN
+        ! The Gaussian geminal operator squared g^2
+        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+     ELSE
+        call lsquit('Error in specification of operator in setF12Operator',-1)
+     ENDIF
+  ENDIF
+end subroutine setF12Operator
 
 subroutine DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
   implicit none
@@ -3121,13 +3527,14 @@ subroutine getMaxAtomicnAux(molecule1,MaxAtomicnAux,nAtoms)
   CALL freeMolecularOrbitalInfo(orbitalInfo)
 end subroutine getMaxAtomicnAux
 
-SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAux)
+SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAux,InOper)
   IMPLICIT NONE
   Integer,intent(in)                :: LUPRI,LUERR,nbasisAux
   REAL(REALK)                       :: AlphaBeta(nbasisAux,nbasisAux)
   TYPE(LSSETTING),intent(inout)     :: SETTING
+  integer,optional                  :: InOper
   !
-  Integer                    :: nAtoms,nBastAux,nBast
+  Integer                    :: nAtoms,nBastAux,nBast,Oper
   Real(realk) :: TSTART,TEND,tmp
   logical :: MasterWakeSlaves,doMPI
   call LSTIMER('START ',TSTART,TEND,LUPRI)
@@ -3149,12 +3556,563 @@ SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAu
   SETTING%SCHEME%doMPI = .FALSE.
   MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
   SETTING%SCHEME%MasterWakeSlaves = .FALSE.
-  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
-       &                  ContractedInttype,SETTING,LUPRI,LUERR)
+  IF(present(InOper))THEN
+     Oper = InOper
+  ELSE
+     Oper = CoulombOperator
+  ENDIF
+  call setF12Operator(Oper,Setting) 
+  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
+       & Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
   SETTING%SCHEME%doMPI = doMPI
   SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
   call retrieve_Output(lupri,setting,AlphaBeta,.FALSE.)
   call LSTIMER('AlphaBeta',TSTART,TEND,LUPRI)
 END SUBROUTINE II_get_RI_AlphaBeta_2CenterInt
+
+SUBROUTINE II_get_RI_AlphaBeta_geoderiv2CenterInt(LUPRI,LUERR,AlphaBetaDeriv,&
+     & SETTING,nbasisAux,natoms)
+  IMPLICIT NONE
+  Integer,intent(in)                :: LUPRI,LUERR,nbasisAux,natoms
+  REAL(REALK)                       :: AlphaBetaDeriv(nbasisAux,nbasisAux,3*natoms)
+  TYPE(LSSETTING),intent(inout)     :: SETTING
+  !
+  Integer     :: nBastAux,nBast,natoms2,I
+  Real(realk) :: TSTART,TEND,tmp
+  logical :: MasterWakeSlaves,doMPI
+  REAL(REALK),pointer :: AlphaBetaDeriv2(:,:,:)
+  integer,pointer :: BACKUPmolindex1(:),BACKUPmolindex3(:)
+  
+  call LSTIMER('START ',TSTART,TEND,LUPRI)
+  call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms2,nBast,nBastAux)
+  call mem_alloc(BACKUPmolindex1,nAtoms2)
+  call mem_alloc(BACKUPmolindex3,nAtoms2)
+  !The molecule contains molecule%p%ATOM(i)%molecularIndex pointing to the
+  !correct atom in full molecule but in order to only allocate (nbastAux,nbastAux,3*natoms_frag)
+  !instead of (nbastAux,nbastAux,3*natoms) we modify the molecularindex
+  do i = 1,size(SETTING%MOLECULE(1)%p%ATOM)
+     BACKUPmolindex1(i) = SETTING%MOLECULE(1)%p%ATOM(i)%molecularIndex 
+     BACKUPmolindex3(i) = SETTING%MOLECULE(3)%p%ATOM(i)%molecularIndex 
+     SETTING%MOLECULE(1)%p%ATOM(i)%molecularIndex = i
+     SETTING%MOLECULE(3)%p%ATOM(i)%molecularIndex = i
+  enddo
+
+  IF(nbasisAux.NE.nBastAux)THEN
+     print*,'nbasisAux',nbasisAux
+     print*,'nbastAux',nbastAux
+     Call lsquit('dim mismatch in II_get_RI_AlphaBeta_geoderiv2CenterInt',-1)
+  ENDIF
+  IF(natoms.NE.natoms2)Call lsquit('atoms mismatch in II_get_RI_AlphaBeta_geoderiv2CenterInt',-1)
+  !set threshold 
+  SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+  !(alpha|cd)
+  !call typedef_setMolecules(setting,molecule,1,2,3,4)
+  call initIntegralOutputDims(setting%output,nbastaux,1,nbastaux,1,3*natoms)
+  !MPI is used inside this routine 
+  !but since this is called by both master and slaves
+  !the master should not wake up the slaves
+  doMPI = SETTING%SCHEME%doMPI
+  SETTING%SCHEME%doMPI = .FALSE.
+  MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
+  SETTING%SCHEME%MasterWakeSlaves = .FALSE.
+
+  !(P^x|Q)
+  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
+       & CoulombOperator,GeoDerivLHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+  call retrieve_Output(lupri,setting,AlphaBetaDeriv,.FALSE.)
+  !(P|Q^x)
+  call initIntegralOutputDims(setting%output,nbastaux,1,nbastaux,1,3*natoms)
+  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
+       & CoulombOperator,GeoDerivRHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+  call mem_alloc(AlphaBetaDeriv2,nbasisAux,nbasisAux,3*natoms)
+  call retrieve_Output(lupri,setting,AlphaBetaDeriv2,.FALSE.)
+  call dcopy(nbastaux*nbastaux*3*natoms,AlphaBetaDeriv2,1,AlphaBetaDeriv,1)
+  call mem_dealloc(AlphaBetaDeriv2)
+  SETTING%SCHEME%doMPI = doMPI
+  SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
+  do i = 1,size(SETTING%MOLECULE(1)%p%ATOM)
+     SETTING%MOLECULE(1)%p%ATOM(i)%molecularIndex = BACKUPmolindex1(i)
+     SETTING%MOLECULE(3)%p%ATOM(i)%molecularIndex = BACKUPmolindex3(i)
+  enddo
+  call mem_dealloc(BACKUPmolindex1)
+  call mem_dealloc(BACKUPmolindex3)
+
+  call LSTIMER('AlphaBetaDeriv',TSTART,TEND,LUPRI)
+END SUBROUTINE II_get_RI_AlphaBeta_geoderiv2CenterInt
+
+!3. Calculate 2 of 3 RIMP2 gradient contributions: 
+! A. (P^x|bj)*CalphaTheta(P,b,j)
+! B. (P|(beta nu)^x)*Cvirt(beta,b)*Cocc(nu,J)*CalphaTheta(P,b,j)
+! Loop over P shell (batches) belonging to this node
+!      for each P shell:
+!      A. 
+!      Calculate (P^x|bj)
+!      Contract grad(x) = (P^x|bj)*CalphaTheta(P,b,j)
+!      B.
+!      Contract  CalphaThetaAO(Pshell,beta,nu) = Cvirt(beta,b)*Cocc(nu,J)*CalphaTheta(P,b,j)
+!      Calculate (P|(beta nu)^x)
+!      Contract grad(x) = (P|(beta nu)^x)*CalphaThetaAO(Pshell,beta,nu)
+! End Loop over P shell
+SUBROUTINE II_get_RIMP2_grad(LUPRI,LUERR,Gradient,SETTING,nbasisAux,&
+     & nbasis,nvirt,nocc,Cvirt,Cocc,mynum,numnodes,natoms,&
+     & nAuxLoc,CfitLHS,use_bg_buf,InOper)
+  IMPLICIT NONE
+  Integer,intent(in)            :: LUPRI,LUERR,nbasis,nbasisAux,nAuxLoc
+  Integer,intent(in)            :: nocc,nvirt,mynum,numnodes,natoms
+  REAL(REALK),intent(inout)     :: Gradient(3,natoms)
+  REAL(REALK),intent(in)        :: Cocc(nbasis,nocc)
+  REAL(REALK),intent(in)        :: Cvirt(nbasis,nvirt)
+  REAL(REALK),intent(in)        :: CfitLHS(nAuxLoc,nocc,nvirt)
+  TYPE(LSSETTING),intent(inout) :: SETTING
+  logical,intent(in)            :: use_bg_buf
+  integer,optional              :: InOper 
+  !
+  integer(kind=long)         :: nsize
+  Integer                    :: nAtomsAux,nBastAux,nBast,N,K,M,ialpha,v,a,natoms2
+  Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
+  Integer                    :: ALPHA,BETA,I,Oper 
+  Real(realk) :: TSTART,TEND,tmp,TMP1
+  real(realk),pointer :: AlphaCD(:,:,:,:,:),AlphaCDmo1(:,:,:,:)
+  real(realk),pointer :: AlphaCDmo(:,:,:,:)
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
+  TYPE(MoleculeInfo),pointer      :: ATOMS(:)
+  TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+  Integer :: iAtomA,nAuxA,B,offsetLoc,offsetFull
+  integer :: J,mynum2,startF,iatomampi,MynbasisAuxMPI,nBastAuxT
+  logical :: doMPI,MasterWakeSlaves
+  integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+  !
+  real(realk) :: maxsize
+  integer :: iShell, nAuxShellA,nbatches,X
+  integer, pointer :: batchdim(:),BACKUPmolindex(:)
+!  REAL(REALK)     :: GradientA(3,natoms)
+!  REAL(REALK)     :: GradientB(3,natoms)
+!  GradientA = 0.0E0_realk
+!  GradientB = 0.0E0_realk
+  Gradient = 0.0E0_realk
+  maxsize = 62500000.0E0_realk !correspond to 0.5 GB (crabby lstensor memory handling)
+  IF(present(InOper))THEN
+     Oper = InOper
+  ELSE
+     Oper = CoulombOperator
+  ENDIF
+  SETTING%scheme%CS_SCREEN = .FALSE.
+  SETTING%scheme%PS_SCREEN = .FALSE.
+  SETTING%scheme%OD_SCREEN = .FALSE.
+  SETTING%scheme%OE_SCREEN = .FALSE.
+
+  nsize = (nbasis*nbasis*nbasisAux+nocc*nbasis*nbasisAux)*mem_realsize
+  !in case of setting%molBuild = .TRUE. then the setting%molecule(1)%p can 
+  !not be used as pointers
+
+  molecule1 => SETTING%MOLECULE(1)%p
+  molecule2 => SETTING%MOLECULE(2)%p
+  molecule3 => SETTING%MOLECULE(3)%p
+  molecule4 => SETTING%MOLECULE(4)%p
+  call mem_alloc(BACKUPmolindex,size(molecule3%ATOM))
+  call LSTIMER('START ',TSTART,TEND,LUPRI)
+
+  !need to deactivate MPI inside ls_getIntegrals. 
+  !both master and slaves call this routine 
+  doMPI = SETTING%SCHEME%doMPI
+  MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
+  SETTING%SCHEME%doMPI = .FALSE.
+  SETTING%SCHEME%MasterWakeSlaves = .FALSE.
+  
+  !MPI version and memory reduced version
+  call getMolecularDimensions(molecule1,nAtomsAux,nBast,nBastAux) !Aux
+  call getMolecularDimensions(molecule3,nAtoms2,nBast,nBastAuxT)!Reg 
+  IF(nAtomsAux.NE.nAtoms)call lsquit('natoms mismatch in II_get_RIMP2_grad',-1)
+  allocate(ATOMS(nAtomsAux))
+  CALL pari_set_atomic_fragments(molecule1,ATOMS,nAtomsAux,lupri)
+  
+  ! Split only on of the atomic loops over nodes
+  call mem_alloc(nbasisAuxMPI,numnodes)
+  call mem_alloc(nAtomsMPI,numnodes)    
+  call mem_alloc(startAuxMPI,nAtomsAux,numnodes)
+  call mem_alloc(AtomsMPI,nAtomsAux,numnodes)
+  call mem_alloc(nAuxMPI,nAtomsAux,numnodes)
+  call getRIbasisMPI(molecule1,nAtomsAux,numnodes,nbasisAuxMPI,startAuxMPI,&
+       & AtomsMPI,nAtomsMPI,nAuxMPI)
+  call mem_dealloc(startAuxMPI)
+  MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
+  IF(MynbasisAuxMPI.NE.nAuxLoc) call lsquit('dim mismatch in II_get_RIMP2_grad',-1)
+  call mem_dealloc(nbasisAuxMPI)
+  IF(MynbasisAuxMPI.GT.0)THEN
+   offsetFull = 0
+   DO iAtomAMPI=1,nAtomsMPI(mynum+1)
+      iAtomA = AtomsMPI(iAtomAMPI,mynum+1)
+!      offsetFull = startAuxMPI(iAtomA,mynum+1)
+      nAuxA = nAuxMPI(iAtomAMPI,mynum+1)
+
+      !While the Atom ATOMS(iAtomA)%ATOM(1) is iAtomA we set it to 1 
+      !so that we can build Integral(1:nAuxShellA,1,1:nbast,1:nbast,1:3)
+      !instead of Integral(1:nAuxShellA,1,1:nbast,1:nbast,1+(iAtomA-1)*3:3+(iAtomA-1)*3)
+      !Naturally we place it the correct place in the gradient in the subroutine
+      !RIMP2_Grad_Contract
+      ATOMS(iAtomA)%ATOM(1)%molecularIndex=1
+      !molecule3 also contain molecule3%ATOM(iatom)%molecularIndex pointing to the
+      !correct atom but in order to only allocate (nAuxShellA,nbast,nbast,3*natoms_frag)
+      !instead of (nAuxShellA,nbast,nbast,3*natoms) we modify the molecularindex
+      do iShell = 1,size(molecule3%ATOM)
+         BACKUPmolindex(iShell) = molecule3%ATOM(iShell)%molecularIndex 
+         molecule3%ATOM(iShell)%molecularIndex = iShell
+      enddo
+      call typedef_setMolecules(setting,molecule3,3,4,ATOMS(iAtomA),1)             
+         
+      IF(setting%scheme%ForceRIMP2memReduced.OR.nAuxA*nbast*nbast*3*natoms.GT.maxsize)THEN
+         !Memory reduced version:   We split up the atom into batches
+         nullify(batchdim)
+         call build_minimalbatchesOfAOs2(lupri,setting,batchdim,nbatches,'D')
+         offsetLoc = 0
+         BatchD: do iShell = 1,nbatches
+            nAuxShellA = batchdim(iShell)
+            !================================================================
+            !A.    grad(x) = (P^x|bj)*CalphaTheta(P,b,j)
+            !================================================================
+            call initIntegralOutputDims(setting%Output,nAuxShellA,1,nbast,nbast,3)
+            setting%batchindex(1)=iShell
+            setting%batchdim(1)=nAuxShellA
+            !Calculat (P^x|beta nu)
+            call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,Oper,&
+                 & GeoDerivLHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+            setting%batchindex(1)=0
+            setting%batchdim(1)=nAuxShellA
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(alphaCDmo1,nAuxShellA*i8,nbast*i8,nocc*i8,3*i8)
+               call mem_pseudo_alloc(alphaCD,nAuxShellA*i8,i8,nbast*i8,nbast*i8,3*i8)
+               alphaCD = 0.0E0_realk !obsolete?
+               CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+               !AO to MO (P^x|beta nu) -> (P^x|beta j)  
+               call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxShellA,nbast,Cocc,nocc,3)
+               !AO to MO (P^x|beta j) -> (P^x|b j)  
+               call mem_pseudo_dealloc(AlphaCD)
+               call mem_pseudo_alloc(alphaCDmo,nAuxShellA*i8,nvirt*i8,nocc*i8,3*i8)
+               call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxShellA,nbast,nocc,Cvirt,nvirt,3)
+               startF = offsetFull+offsetLoc
+               !Contract grad(x) = (P^x|bj)*CalphaTheta(P,j,b)
+               call RIMP2_Grad_ContractA(nvirt,nocc,nAuxShellA,nAuxLoc,&
+                    & CfitLHS,alphaCDmo,Gradient,startF,iAtomA,natoms)            
+               call mem_pseudo_dealloc(AlphaCDmo)
+               call mem_pseudo_dealloc(AlphaCDmo1)
+            ELSE
+               call mem_alloc(alphaCD,nAuxShellA,1,nbast,nbast,3)
+               alphaCD = 0.0E0_realk !obsolete?
+               CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+               call mem_alloc(alphaCDmo1,nAuxShellA,nbast,nocc,3)
+               !AO to MO (P^x|beta nu) -> (P^x|beta j)  
+               call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxShellA,nbast,Cocc,nocc,3)
+               call mem_dealloc(AlphaCD)
+               call mem_alloc(alphaCDmo,nAuxShellA,nvirt,nocc,3)
+               !AO to MO (P^x|beta j) -> (P^x|b j)  
+               call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxShellA,nbast,nocc,Cvirt,nvirt,3)
+               call mem_dealloc(AlphaCDmo1)
+               startF = offsetFull+offsetLoc
+               !Contract grad(x) = (P^x|bj)*CalphaTheta(P,j,b)
+               call RIMP2_Grad_ContractA(nvirt,nocc,nAuxShellA,nAuxLoc,&
+                    & CfitLHS,alphaCDmo,Gradient,startF,iAtomA,natoms)
+               call mem_dealloc(AlphaCDmo)
+            ENDIF
+            !================================================================
+            !B.    grad(x) = (P|(bj)^x)*CalphaTheta(P,b,j)
+            !================================================================
+            !Calculate (P^x|bj)
+            !WARNING: May require Batching over one of the AOs! Or Atomic Batching
+            !         Due to the 3*natoms geoderiv components.
+            !require nAuxShellA*nbast*noccEOS*3*natoms
+            call initIntegralOutputDims(setting%Output,nAuxShellA,1,nbast,nbast,3*natoms)
+            setting%batchindex(1)=iShell
+            setting%batchdim(1)=nAuxShellA
+            !Calculat (P|(beta nu)^x)
+            call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,Oper,&
+                 & GeoDerivRHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+            setting%batchindex(1)=0
+            setting%batchdim(1)=nAuxShellA
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(alphaCDmo1,nAuxShellA*i8,nbast*i8,nocc*i8,3*natoms*i8)
+               call mem_pseudo_alloc(alphaCD,nAuxShellA*i8,i8,nbast*i8,nbast*i8,3*natoms*i8)
+               
+               alphaCD = 0.0E0_realk !obsolete?
+               CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)            
+               !AO to MO (P|(beta nu)^x) -> (P^x|(beta j)^x)  
+               call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxShellA,nbast,Cocc,nocc,3*natoms)
+               call mem_pseudo_dealloc(AlphaCD)
+               call mem_pseudo_alloc(alphaCDmo,nAuxShellA*i8,nvirt*i8,nocc*i8,3*natoms*i8)
+               !AO to MO (P|(beta j)^x) -> (P|(b j)^x)  
+               call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxShellA,nbast,nocc,Cvirt,nvirt,3*natoms)
+               !Contract grad(x) = (P|(bj)^x)*CalphaTheta(P,j,b)
+               call RIMP2_Grad_ContractB(nvirt,nocc,nAuxShellA,nAuxLoc,&
+                    & CfitLHS,alphaCDmo,Gradient,startF,natoms)
+               call mem_pseudo_dealloc(AlphaCDmo)
+               call mem_pseudo_dealloc(AlphaCDmo1)
+            ELSE
+               call mem_alloc(alphaCD,nAuxShellA,1,nbast,nbast,3*natoms)
+               alphaCD = 0.0E0_realk !obsolete?
+               CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+               
+               call mem_alloc(alphaCDmo1,nAuxShellA,nbast,nocc,3*natoms)
+               !AO to MO (P|(beta nu)^x) -> (P^x|(beta j)^x)  
+               call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxShellA,nbast,Cocc,nocc,3*natoms)
+               call mem_dealloc(AlphaCD)
+               call mem_alloc(alphaCDmo,nAuxShellA,nvirt,nocc,3*natoms)
+               !AO to MO (P|(beta j)^x) -> (P|(b j)^x)  
+               call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxShellA,nbast,nocc,Cvirt,nvirt,3*natoms)
+               call mem_dealloc(AlphaCDmo1)
+               !Contract grad(x) = (P|(bj)^x)*CalphaTheta(P,j,b)
+               call RIMP2_Grad_ContractB(nvirt,nocc,nAuxShellA,nAuxLoc,&
+                    & CfitLHS,alphaCDmo,Gradient,startF,natoms)
+               !         call RIMP2_Grad_ContractB(nvirt,nocc,nAuxShellA,nBasisAux,&
+               !              & CfitLHS,alphaCDmo,GradientB,startF,natoms)
+               call mem_dealloc(AlphaCDmo)
+            ENDIF
+            offsetLoc = offsetLoc + nAuxShellA !offset in Local Aux
+         ENDDO BatchD
+         call mem_dealloc(batchdim)
+      ELSE
+         !================================================================
+         !A.    grad(x) = (P^x|bj)*CalphaTheta(P,b,j)
+         !================================================================
+         call initIntegralOutputDims(setting%Output,nAuxA,1,nbast,nbast,3)
+         !Calculat (P^x|beta nu)
+         call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,Oper,&
+              & GeoDerivLHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+         IF(use_bg_buf)THEN
+            call mem_pseudo_alloc(alphaCDmo1,nAuxA*i8,nbast*i8,nocc*i8,3*i8)
+            call mem_pseudo_alloc(alphaCD,nAuxA*i8,i8,nbast*i8,nbast*i8,3*i8)
+            alphaCD = 0.0E0_realk !obsolete?
+            CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+            !AO to MO (P^x|beta nu) -> (P^x|beta j)  
+            call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxA,nbast,Cocc,nocc,3)
+            !AO to MO (P^x|beta j) -> (P^x|b j)  
+            call mem_pseudo_dealloc(AlphaCD)
+            call mem_pseudo_alloc(alphaCDmo,nAuxA*i8,nvirt*i8,nocc*i8,3*i8)
+            call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxA,nbast,nocc,Cvirt,nvirt,3)
+            startF = offsetFull
+            !Contract grad(x) = (P^x|bj)*CalphaTheta(P,j,b)
+            call RIMP2_Grad_ContractA(nvirt,nocc,nAuxA,nAuxLoc,&
+                 & CfitLHS,alphaCDmo,Gradient,startF,iAtomA,natoms)            
+            call mem_pseudo_dealloc(AlphaCDmo)
+            call mem_pseudo_dealloc(AlphaCDmo1)
+         ELSE
+            call mem_alloc(alphaCD,nAuxA,1,nbast,nbast,3)
+            alphaCD = 0.0E0_realk !obsolete?
+            CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+            call mem_alloc(alphaCDmo1,nAuxA,nbast,nocc,3)
+            !AO to MO (P^x|beta nu) -> (P^x|beta j)  
+            call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxA,nbast,Cocc,nocc,3)
+            call mem_dealloc(AlphaCD)
+            call mem_alloc(alphaCDmo,nAuxA,nvirt,nocc,3)
+            !AO to MO (P^x|beta j) -> (P^x|b j)  
+            call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxA,nbast,nocc,Cvirt,nvirt,3)
+            call mem_dealloc(AlphaCDmo1)
+            startF = offsetFull
+            !Contract grad(x) = (P^x|bj)*CalphaTheta(P,j,b)
+            call RIMP2_Grad_ContractA(nvirt,nocc,nAuxA,nAuxLoc,&
+                 & CfitLHS,alphaCDmo,Gradient,startF,iAtomA,natoms)
+            call mem_dealloc(AlphaCDmo)
+         ENDIF
+         !================================================================
+         !B.    grad(x) = (P|(bj)^x)*CalphaTheta(P,b,j)
+         !================================================================
+         !Calculate (P^x|bj)
+         !WARNING: May require Batching over one of the AOs! Or Atomic Batching
+         !         Due to the 3*natoms geoderiv components.
+         !require nAuxA*nbast*noccEOS*3*natoms
+         call initIntegralOutputDims(setting%Output,nAuxA,1,nbast,nbast,3*natoms)
+         !Calculat (P|(beta nu)^x)
+         call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,Oper,&
+              & GeoDerivRHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+         IF(use_bg_buf)THEN
+            call mem_pseudo_alloc(alphaCDmo1,nAuxA*i8,nbast*i8,nocc*i8,3*natoms*i8)
+            call mem_pseudo_alloc(alphaCD,nAuxA*i8,i8,nbast*i8,nbast*i8,3*natoms*i8)               
+            alphaCD = 0.0E0_realk !obsolete?
+            CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)            
+            !AO to MO (P|(beta nu)^x) -> (P^x|(beta j)^x)  
+            call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxA,nbast,Cocc,nocc,3*natoms)
+            call mem_pseudo_dealloc(AlphaCD)
+            call mem_pseudo_alloc(alphaCDmo,nAuxA*i8,nvirt*i8,nocc*i8,3*natoms*i8)
+            !AO to MO (P|(beta j)^x) -> (P|(b j)^x)  
+            call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxA,nbast,nocc,Cvirt,nvirt,3*natoms)
+            !Contract grad(x) = (P|(bj)^x)*CalphaTheta(P,j,b)
+            call RIMP2_Grad_ContractB(nvirt,nocc,nAuxA,nAuxLoc,&
+                 & CfitLHS,alphaCDmo,Gradient,startF,natoms)
+            call mem_pseudo_dealloc(AlphaCDmo)
+            call mem_pseudo_dealloc(AlphaCDmo1)
+         ELSE
+            call mem_alloc(alphaCD,nAuxA,1,nbast,nbast,3*natoms)
+            alphaCD = 0.0E0_realk !obsolete?
+            CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)               
+            call mem_alloc(alphaCDmo1,nAuxA,nbast,nocc,3*natoms)
+            !AO to MO (P|(beta nu)^x) -> (P^x|(beta j)^x)  
+            call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxA,nbast,Cocc,nocc,3*natoms)
+            call mem_dealloc(AlphaCD)
+            call mem_alloc(alphaCDmo,nAuxA,nvirt,nocc,3*natoms)
+            !AO to MO (P|(beta j)^x) -> (P|(b j)^x)  
+            call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxA,nbast,nocc,Cvirt,nvirt,3*natoms)
+            call mem_dealloc(AlphaCDmo1)
+            !Contract grad(x) = (P|(bj)^x)*CalphaTheta(P,j,b)
+            call RIMP2_Grad_ContractB(nvirt,nocc,nAuxA,nAuxLoc,&
+                 & CfitLHS,alphaCDmo,Gradient,startF,natoms)
+            call mem_dealloc(AlphaCDmo)
+         ENDIF
+      ENDIF
+!      print*,'PARTIAL A'
+!      call ls_output(GradientA,1,3,1,natoms,3,natoms,1,6)      
+!      print*,'PARTIAL B'
+!      call ls_output(GradientB,1,3,1,natoms,3,natoms,1,6)      
+!      print*,'PARTIAL A+B'
+!      call ls_output(Gradient,1,3,1,natoms,3,natoms,1,6)
+      do iShell = 1,size(molecule3%ATOM)
+         molecule3%ATOM(iShell)%molecularIndex = BACKUPmolindex(iShell) 
+      enddo
+      offsetFull = offsetFull + nAuxA
+   ENDDO
+   !restore 
+   call typedef_setMolecules(setting,molecule1,1,molecule2,2,&
+        & molecule3,3,molecule4,4)
+   call pari_free_atomic_fragments(ATOMS,nAtomsAux)        
+  ENDIF
+  call mem_dealloc(BACKUPmolindex)
+  deallocate(ATOMS)
+  call mem_dealloc(AtomsMPI)
+  call mem_dealloc(nAtomsMPI)
+  call mem_dealloc(nAuxMPI)
+  SETTING%SCHEME%doMPI = doMPI
+  SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
+  !restore 
+  SETTING%MOLECULE(1)%p => molecule1
+  SETTING%MOLECULE(2)%p => molecule2
+  SETTING%MOLECULE(3)%p => molecule3
+  SETTING%MOLECULE(4)%p => molecule4
+  call ls_setDefaultFragments(setting)
+  call LSTIMER('AlphaCD',TSTART,TEND,LUPRI)
+  SETTING%scheme%CS_SCREEN = .TRUE.
+  SETTING%scheme%PS_SCREEN = .TRUE.
+  SETTING%scheme%OD_SCREEN = .TRUE.
+  SETTING%scheme%OE_SCREEN = .TRUE.
+END SUBROUTINE II_get_RIMP2_grad
+
+subroutine AOtoMO_Pgrad4cent(alphaCD,alphaCDmo,nAuxShellA,nbast,Cocc,nocc,ngradcomp)
+  implicit none
+integer,intent(in)        :: nAuxShellA,nbast,nocc,ngradcomp
+real(realk),intent(in)    :: AlphaCD(nAuxShellA*nbast,nbast,ngradcomp)
+real(realk),intent(in)    :: Cocc(nbast,nocc)
+real(realk),intent(inout) :: alphaCDmo(nAuxShellA*nbast,nocc,ngradcomp)
+!
+integer :: I,PBETA,NU,X
+real(realk) :: TMP
+!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
+!$OMP PRIVATE(I,PBETA,NU,X,TMP) &
+!$OMP SHARED(nocc,nbast,nAuxShellA,Cocc,AlphaCD,AlphaCDmo,ngradcomp) 
+DO X=1,ngradcomp
+   DO I=1,nocc
+      TMP = Cocc(1,I)
+      DO PBETA=1,nAuxShellA*nbast
+         alphaCDmo(PBETA,I,X) = AlphaCD(PBETA,1,X)*TMP
+      ENDDO
+      DO NU=2,nbast
+         TMP = Cocc(NU,I)
+         DO PBETA=1,nAuxShellA*nbast
+            alphaCDmo(PBETA,I,X) = alphaCDmo(PBETA,I,X) + AlphaCD(PBETA,NU,X)*TMP
+         ENDDO
+      ENDDO
+   ENDDO
+ENDDO
+!$OMP END PARALLEL DO
+end subroutine AOtoMO_Pgrad4cent
+
+subroutine AOtoMO_Pgrad3cent(alphaCD,alphaCDmo,nAuxShellA,nbast,nocc,Cvirt,nvirt,ngradcomp)
+  implicit none
+integer,intent(in)        :: nAuxShellA,nbast,nvirt,nocc,ngradcomp
+real(realk),intent(in)    :: AlphaCD(nAuxShellA,nbast,nocc*ngradcomp)
+real(realk),intent(in)    :: Cvirt(nbast,nvirt)
+real(realk),intent(inout) :: alphaCDmo(nAuxShellA,nvirt,nocc*ngradcomp)
+!
+integer :: B,P,BETA,X
+real(realk) :: TMP
+!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
+!$OMP PRIVATE(B,P,BETA,X,TMP) &
+!$OMP SHARED(nvirt,nocc,nbast,nAuxShellA,Cvirt,AlphaCD,AlphaCDmo,ngradcomp) 
+DO X=1,ngradcomp*nocc
+   DO B=1,nvirt
+      TMP = Cvirt(1,B)
+      DO P=1,nAuxShellA
+         alphaCDmo(P,B,X) = AlphaCD(P,1,X)*TMP
+      ENDDO
+      DO BETA=2,nbast
+         TMP = Cvirt(BETA,B)
+         DO P=1,nAuxShellA
+            alphaCDmo(P,B,X) = alphaCDmo(P,B,X) + AlphaCD(P,BETA,X)*TMP
+         ENDDO
+      ENDDO
+   ENDDO
+ENDDO
+!$OMP END PARALLEL DO
+end subroutine AOtoMO_Pgrad3cent
+
+
+!grad(1:3,iAtomAux) =+ CfitLHS(nAux,a,i)*alphaCDmo(nAuxShellA,a,i,3)
+subroutine RIMP2_Grad_ContractA(nvirt,nocc,nAuxShellA,nAux,&
+     & CfitLHS,alphaCDmo,Gradient,startF,iAtomA,natoms)
+  implicit none
+  Integer,intent(in)            :: nocc,nvirt,natoms,startF,nAux,iAtomA,nAuxShellA
+  REAL(REALK),intent(inout)     :: Gradient(3,natoms)
+  REAL(REALK),intent(in)        :: CfitLHS(nAux,nocc,nvirt)
+  REAL(REALK),intent(in)        :: alphaCDmo(nAuxShellA,nvirt,nocc,3)
+  !
+  integer :: X,A,I,ALPHA
+  real(realk) :: TMP
+  !$OMP PARALLEL DEFAULT(none) PRIVATE(X,A,I,ALPHA,TMP) SHARED(nvirt,&
+  !$OMP nocc,nAuxShellA,startF,CfitLHS,alphaCDmo,iAtomA,&
+  !$OMP Gradient)
+  do X=1,3
+     TMP = 0.0E0_realk
+     !$OMP DO COLLAPSE(2)
+     do A=1,nvirt
+        do I=1,nocc
+           do ALPHA=1,nAuxShellA
+              TMP = TMP + CfitLHS(startF + ALPHA,I,A)*alphaCDmo(ALPHA,A,I,X)
+           enddo
+        enddo
+     enddo
+     !$OMP END DO
+     !$OMP ATOMIC
+     Gradient(X,iAtomA) = Gradient(X,iAtomA) + TMP
+  enddo
+  !$OMP END PARALLEL
+
+end subroutine RIMP2_Grad_ContractA
+
+!grad(1:3,iAtomAux) =+ CfitLHS(nAux,a,i)*alphaCDmo(nAuxShellA,a,i,3)
+subroutine RIMP2_Grad_ContractB(nvirt,nocc,nAuxShellA,nAux,&
+     & CfitLHS,alphaCDmo,Gradient,startF,natoms)
+  implicit none
+  Integer,intent(in)            :: nocc,nvirt,natoms,startF,nAux,nAuxShellA
+  REAL(REALK),intent(inout)     :: Gradient(3*natoms)
+  REAL(REALK),intent(in)        :: CfitLHS(nAux,nocc,nvirt)
+  REAL(REALK),intent(in)        :: alphaCDmo(nAuxShellA,nvirt,nocc,3*natoms)
+  !
+  integer :: X,A,I,ALPHA
+  real(realk) :: TMP
+  !$OMP PARALLEL DEFAULT(none) PRIVATE(X,A,I,ALPHA,TMP) SHARED(nvirt,&
+  !$OMP nocc,nAuxShellA,startF,CfitLHS,alphaCDmo,&
+  !$OMP Gradient,natoms)
+  do X=1,3*natoms
+     TMP = 0.0E0_realk
+     !$OMP DO COLLAPSE(2)
+     do A=1,nvirt
+        do I=1,nocc
+           do ALPHA=1,nAuxShellA
+              TMP = TMP + CfitLHS(startF + ALPHA,I,A)*alphaCDmo(ALPHA,A,I,X)
+           enddo
+        enddo
+     enddo
+     !$OMP END DO
+     !$OMP ATOMIC
+     Gradient(X) = Gradient(X) + TMP
+  enddo
+  !$OMP END PARALLEL
+
+end subroutine RIMP2_Grad_ContractB
 
 END MODULE INTEGRALINTERFACEMODULEDF

@@ -138,11 +138,13 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_TENSOR_EXTRACT_VEOS    = 30
   integer,parameter :: JOB_TENSOR_EXTRACT_OEOS    = 31
   integer,parameter :: JOB_TENSOR_EXTRACT_ODECNP  = 32
-  integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 33
-  integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 34
-  integer,parameter :: JOB_GET_MP2_ST_GUESS       = 35
-  integer,parameter :: JOB_tensor_rand            = 36
-  integer,parameter :: JOB_HMUL_PAR               = 37
+  integer,parameter :: JOB_TENSOR_EXTRACT_VDECNP  = 33
+  integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 34
+  integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 35
+  integer,parameter :: JOB_GET_MP2_ST_GUESS       = 36
+  integer,parameter :: JOB_tensor_rand            = 37
+  integer,parameter :: JOB_HMUL_PAR               = 38
+  integer,parameter :: JOB_DMUL_PAR               = 39
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -289,7 +291,7 @@ module lspdm_tensor_operations_module
      if(nelms > gm_buf%n)then
 
         if((8.0E0_realk*nelms)/(1024.0**2) > 500.0E0_realk)then
-           print *,"WARNING(lspdm_reinit_global_buffer): background buffer more then&
+           print *,"WARNING(lspdm_reinit_global_buffer): background buffer more than&
               & 500MB. Smaller tiles or switching off the background buffer prevent&
               & this warning"
         endif
@@ -679,6 +681,7 @@ module lspdm_tensor_operations_module
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),fr_i,fr_j,fr_a,fr_b
     integer :: i_high,j_high,a_high,b_high
+    logical :: use_bg
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
@@ -695,7 +698,8 @@ module lspdm_tensor_operations_module
 
       call time_start_phase(PHASE_WORK)
     endif
-    call memory_allocate_tensor_dense(gmo)
+    use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+    call memory_allocate_tensor_dense(gmo,use_bg)
 
     call time_start_phase(PHASE_COMM)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
@@ -1070,7 +1074,7 @@ module lspdm_tensor_operations_module
           ebuf = cbuf
        endif
 
-#ifdef VAR_PTR_RESHAPE
+#if defined(VAR_PTR_RESHAPE) && !defined(VAR_PGF90)
        gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf(1:,cbuf)
        gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf(1:,ebuf)
        t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
@@ -1382,6 +1386,113 @@ module lspdm_tensor_operations_module
 
   end subroutine lspdm_extract_eos_indices_occ
 
+  subroutine lspdm_extract_decnp_indices_virt(Arr,tensor_full,nEOS,EOS_idx)
+     implicit none
+     !> Array where EOS indices where are extracted
+     type(tensor),intent(inout) :: Arr
+     !> Original array in the order nv,no,nv,no
+     type(tensor),intent(in) :: tensor_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j
+     integer, dimension(4) :: new_dims, o
+     integer, pointer :: idxatil(:)
+     integer :: lt, di, da, dj, db, nidxa, a_eos
+     real(realk), pointer :: tile(:,:,:,:)
+     call time_start_phase( PHASE_WORK )
+
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)    ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)    ! Total number of virtual orbitals
+     new_dims = [nEOS,nocc,nvirt,nocc] ! nEOS=Number of occupied EOS orbitals
+
+#ifdef VAR_MPI
+     if(infpar%lg_mynum == infpar%master.and. &
+        & tensor_full%access_type==AT_MASTER_ACCESS)then
+
+        call time_start_phase( PHASE_COMM )
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_VDECNP,tensor_full)
+        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call ls_mpi_buffer(nEOS,infpar%master)
+        call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
+        call ls_mpi_buffer(4,infpar%master)
+        call ls_mpi_buffer(new_dims,4,infpar%master)
+        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call time_start_phase( PHASE_WORK )
+     endif
+
+     call mem_alloc(idxatil,nEOS)
+
+     do lt=1,tensor_full%nlti
+
+        call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
+
+!#ifdef VAR_PTR_RESHAPE
+!        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
+!        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
+!#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+        call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
+!#else
+!        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+!#endif
+
+        !get offset for tile counting
+        do j=1,tensor_full%mode
+           o(j)=(o(j)-1)*tensor_full%tdim(j)
+        enddo
+
+        da = tensor_full%ti(lt)%d(1)
+        di = tensor_full%ti(lt)%d(2)
+        db = tensor_full%ti(lt)%d(3)
+        dj = tensor_full%ti(lt)%d(4)
+
+        ! GET EOS mapping to the tile
+        nidxa = 0
+        do a_eos = 1, nEOS
+           do a = 1, da
+              if( o(1) + a == EOS_idx(a_eos))then
+                 idxatil(nidxa+1) = a
+                 nidxa = nidxa + 1
+              endif
+           enddo
+        enddo
+
+        if(nidxa > 0)then
+
+           do j=1,dj
+              do b=1,db
+                 do i=1,di
+                    do a=1,nidxa
+                       Arr%elm4(o(1)+idxatil(a),o(2)+i,o(3)+b,o(4)+j) = tile(idxatil(a),i,b,j)
+                    end do
+                 end do
+              end do
+           end do
+
+        endif
+
+        tile => null()
+     enddo
+
+     call mem_dealloc(idxatil)
+
+     call time_start_phase( PHASE_COMM )
+     if(tensor_full%access_type==AT_MASTER_ACCESS)then
+        call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     else if(tensor_full%access_type==AT_ALL_ACCESS)then
+        call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     endif
+     call time_start_phase( PHASE_WORK )
+
+    if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+#endif
+
+  end subroutine lspdm_extract_decnp_indices_virt
+
+
   subroutine lspdm_extract_decnp_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
      implicit none
      !> Array where EOS indices where are extracted
@@ -1392,7 +1503,7 @@ module lspdm_tensor_operations_module
      integer,intent(in) :: nEOS
      !> List of EOS indices in the total (EOS+buffer) list of orbitals
      integer, dimension(nEOS),intent(in) :: EOS_idx
-     integer :: nocc,nvirt,i,a,b,j,ix
+     integer :: nocc,nvirt,i,a,b,j
      integer, dimension(4) :: new_dims, o
      integer, pointer :: idxitil(:)
      integer :: lt, di, da, dj, db, nidxi, i_eos
@@ -1408,6 +1519,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      if(infpar%lg_mynum == infpar%master.and. &
         & tensor_full%access_type==AT_MASTER_ACCESS)then
+
         call time_start_phase( PHASE_COMM )
         call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_ODECNP,tensor_full)
         call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1425,14 +1537,14 @@ module lspdm_tensor_operations_module
 
         call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
 
-#ifdef VAR_PTR_RESHAPE
-        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
-        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
-#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+!#ifdef VAR_PTR_RESHAPE
+!        tile(1:tensor_full%ti(lt)%d(1),1:tensor_full%ti(lt)%d(2),&
+!        &1:tensor_full%ti(lt)%d(3),1:tensor_full%ti(lt)%d(4)) => tensor_full%ti(lt)%t
+!#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
-#else
-        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
-#endif
+!#else
+!        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+!#endif
 
         !get offset for tile counting
         do j=1,tensor_full%mode
@@ -1671,13 +1783,17 @@ module lspdm_tensor_operations_module
     real(realk) :: E1,E2,Ec
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+    logical :: use_bg
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_GET_RPA_ENERGY,t2,gmo)
     endif
-    call memory_allocate_tensor_dense(gmo)
+
+    use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+
+    call memory_allocate_tensor_dense(gmo, use_bg)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
 
     E2=0.0E0_realk
@@ -1744,13 +1860,17 @@ module lspdm_tensor_operations_module
     real(realk) :: E2,Ec
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+    logical :: use_bg
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_GET_SOS_ENERGY,t2,gmo)
     endif
-    call memory_allocate_tensor_dense(gmo)
+
+    use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+
+    call memory_allocate_tensor_dense(gmo,use_bg)
     call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
 
     E2=0.0E0_realk
@@ -2413,6 +2533,258 @@ module lspdm_tensor_operations_module
 #endif
  end subroutine tensor_add_par
 
+  !> x = a * x + b diag(d)* y[order]
+  !> \brief tensor dmul for pdm tensors
+  !> \author Patrick Ettenhuber
+  !> \date January 2013
+  subroutine tensor_dmul_par(a,x,b,d,y,order)
+    implicit none
+    !> array to collect the result in
+    type(tensor), intent(inout) :: x
+    !> array to add to x
+    type(tensor), intent(in) :: y
+    !> scale factor without intent, because it might be overwiritten for the slaves
+    real(realk),intent(in) :: a,b,d(:)
+    !> order y to adapt to dims of b
+    integer, intent(in) :: order(x%mode)
+    real(realk),pointer :: buffer(:)
+    real(realk) :: prex, prey
+    integer :: i,lt,nbuffs,ibuf,ibuf_idx,cmidy,buffer_lt, d_len,m,n,mt,nt,of
+    integer :: xmidx(x%mode), ymidx(y%mode), ytdim(y%mode), ynels
+    integer(kind=ls_mpik),pointer :: req(:)
+#ifdef VAR_MPI
+    call time_start_phase( PHASE_WORK )
+
+    !check if the access_types are the same
+    if(x%access_type/=y%access_type)then
+      call lsquit("ERROR(tensor_dmul_par):different init types&
+      & impossible",DECinfo%output)
+    endif
+    if(x%mode/=2)then
+      call lsquit("ERROR(tensor_dmul_par):not implemented for mode>2",DECinfo%output)
+    endif
+    if(x%mode/=y%mode)then
+      call lsquit("ERROR(tensor_dmul_par):not implemented for x%mode /= y%mode",DECinfo%output)
+    endif
+
+    prex = a
+    prey = b
+
+    n = x%dims(1)
+    m = x%dims(2)
+
+    if (order(1) == 1 .and. order(2) == 2) then
+       d_len = m
+    else if (order(1) == 2 .and. order(2) == 1) then
+       d_len = n
+    endif
+
+
+    !IF NOT AT_MASTER_ACCESS all processes should know b on call-time, else b is
+    !broadcasted here
+    if(x%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+      call pdm_tensor_sync(infpar%lg_comm,JOB_DMUL_PAR,x,y)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(order,x%mode,infpar%master)
+      call ls_mpi_buffer(prex,infpar%master)
+      call ls_mpi_buffer(prey,infpar%master)
+      call ls_mpi_buffer(d_len,infpar%master)
+      call ls_mpi_buffer(d(1:d_len),d_len,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
+    endif
+
+    do i=1,x%mode
+       if(x%tdim(i) /= y%tdim(order(i))) then
+         call lsquit("ERROR(tensor_dmul_par): tdims of arrays not &
+          &compatible (with the given order)",-1)
+      endif
+    enddo
+
+    ! now set to two and that ought to be enough, but should work with any
+    ! number >0
+    if( gm_buf%init )then
+       nbuffs = gm_buf%n / x%tsize
+       !allocate buffer for the tiles
+       buffer => gm_buf%buf
+    else
+       nbuffs = 2
+       !allocate buffer for the tiles
+       call mem_alloc(buffer,x%tsize*nbuffs)
+    endif
+
+    if( alloc_in_dummy )then
+       call mem_alloc(req,nbuffs)
+       call tensor_lock_wins(y,'s',all_nodes=.true.)
+    endif
+    
+
+    !fill buffer
+    do lt=1,min(nbuffs-1,x%nlti)
+
+       call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
+
+       do i=1,x%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,y,ymidx)
+
+       ynels = 1
+       do i=1,y%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+
+       ibuf = mod(lt-1,nbuffs)
+       ibuf_idx = ibuf*x%tsize + 1
+
+       cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+       call time_start_phase( PHASE_COMM )
+       if(alloc_in_dummy )then
+
+          if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+             call tensor_flush_win(y, local = .true.)
+             nel_one_sided = 0
+          endif
+
+          call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
+
+          nel_one_sided = nel_one_sided + ynels
+       else
+          call tensor_lock_win(y,cmidy,'s')
+          call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+       endif
+       call time_start_phase( PHASE_WORK )
+
+    enddo
+
+  
+    !lsoop over local tiles of array x
+    do lt=1,x%nlti
+
+       !buffer last element
+       buffer_lt = lt + nbuffs - 1
+       if(buffer_lt <= x%nlti)then
+          call get_midx(x%ti(buffer_lt)%gt,xmidx,x%ntpm,x%mode)
+
+          do i=1,x%mode
+             ymidx(order(i)) = xmidx(i)
+          enddo
+
+          call get_tile_dim(ytdim,y,ymidx)
+
+          ynels = 1
+          do i=1,y%mode
+             ynels = ynels * ytdim(i)
+          enddo
+
+          if(ynels /= x%ti(buffer_lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+
+          ibuf = mod(buffer_lt-1,nbuffs)
+          ibuf_idx = ibuf*x%tsize + 1
+
+          cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+          call time_start_phase( PHASE_COMM )
+
+          if(alloc_in_dummy )then
+             if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
+                call tensor_flush_win(y, local = .true.)
+                nel_one_sided = 0
+             endif
+
+             call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
+
+             nel_one_sided = nel_one_sided + ynels
+
+          else
+
+             call tensor_lock_win(y,cmidy,'s')
+             call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+
+          endif
+
+          call time_start_phase( PHASE_WORK )
+       endif
+
+       call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
+
+       do i=1,x%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,y,ymidx)
+
+       ynels = 1
+       do i=1,y%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+
+       ibuf = mod(lt-1,nbuffs)
+       ibuf_idx = ibuf*x%tsize + 1
+
+       cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+       call time_start_phase( PHASE_COMM )
+       if(alloc_in_dummy )then
+          call lsmpi_wait(req(ibuf+1))
+          nel_one_sided = nel_one_sided - ynels
+       else
+          call tensor_unlock_win(y,cmidy)
+       endif
+       call time_start_phase( PHASE_WORK )
+
+       if(abs(prex)<1.0E-15)then
+          x%ti(lt)%t = 0.0E0_realk
+       else if(abs(prex-1.0E0_realk)>1.0E-15)then
+          call dscal(x%ti(lt)%e,prex,x%ti(lt)%t,1)
+       endif
+
+       nt = x%ti(lt)%d(1)
+       mt = x%ti(lt)%d(2)
+
+       of = (xmidx(order(1))-1)*x%tdim(order(1)) 
+
+       if (order(1) == 1 .and. order(2) == 2) then
+
+          do i=1,nt
+             call daxpy(mt,prey*d(of+i),buffer(ibuf_idx+i-1),nt,x%ti(lt)%t(i),nt)
+          enddo
+
+       else if (order(1)==2 .and. order(2)==1) then
+
+          do i=1,mt
+             call daxpy(nt,prey*d(of+i),buffer(ibuf_idx+nt*(i-1)),1,x%ti(lt)%t(i),mt)
+          enddo 
+
+       else                                                                                                                        
+          call lsquit("ERROR(tensor_dmul_par): wrong order",-1)                                                                        
+       end if
+
+    enddo
+
+    if( alloc_in_dummy )then
+       call mem_dealloc(req)
+       call tensor_unlock_wins(y,all_nodes=.true.)
+    endif
+
+    if(.not.gm_buf%init)then
+       call mem_dealloc(buffer)
+    endif
+
+    !crucial barrier, because direct memory access is used
+    call time_start_phase( PHASE_IDLE )
+    call lsmpi_barrier(infpar%lg_comm)
+    call time_start_phase( PHASE_WORK )
+#endif
+ end subroutine tensor_dmul_par
+
  !> \brief Hadamard product Cij = alpha*Aij*Bij+beta*Cij for TT_TILED_DIST arrays
  !> \author Thomas Kjærgaard and Patrick Ettenhuber
  !> \date 2015
@@ -2710,7 +3082,7 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date January 2013
   !> \brief initialized a replicated matrix on each node
-  subroutine tensor_init_replicated(arr,dims,nmodes,pdm)
+  subroutine tensor_init_replicated(arr,dims,nmodes,pdm,bg)
     implicit none
     !> array to be initialilzed
     type(tensor),intent(inout) :: arr
@@ -2718,13 +3090,14 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: nmodes,dims(nmodes)
     !> integer specifying the access_type of the array
     integer,intent(in) :: pdm
+    logical, intent(in) :: bg
     integer(kind=long) :: i,j
     integer :: addr,tdimdummy(nmodes)
     integer :: nelms
     integer(kind=ls_mpik) :: lg_nnodes,pc_nnodes
     integer(kind=ls_mpik) :: pc_me, lg_me
     integer, pointer :: lg_buf(:),pc_buf(:)
-    logical :: master,pc_master,lg_master,child
+    logical :: master,pc_master,lg_master,child, bg_int
 
     !set the initial values and overwrite them later
     pc_nnodes               = 1
@@ -2733,6 +3106,7 @@ module lspdm_tensor_operations_module
     lg_nnodes               = 1
     lg_master               = .true.
     child                   = .false.
+    bg_int                  = bg
 
 #ifdef VAR_MPI
     child     = (infpar%parent_comm /= MPI_COMM_NULL)
@@ -2758,6 +3132,14 @@ module lspdm_tensor_operations_module
     p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
+#ifdef VAR_MPI
+    p_arr%a(addr)%nnod        = infpar%lg_nodtot
+    p_arr%a(addr)%comm        = infpar%lg_comm
+#else
+    !set to invalid, since not used here
+    p_arr%a(addr)%nnod        = -1
+    p_arr%a(addr)%comm        = -1
+#endif
 
     allocate( p_arr%a(addr)%access_type )
     p_arr%a(addr)%access_type = pdm
@@ -2818,6 +3200,11 @@ module lspdm_tensor_operations_module
     !SET THE ADDRESSES ON ALL NODES     
     lg_buf(infpar%lg_mynum+1)=addr 
     call lsmpi_allreduce(lg_buf,lg_nnodes,infpar%lg_comm)
+
+    if( p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
+       call ls_mpibcast(bg_int,infpar%master,infpar%lg_comm)
+    endif
+
     call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
     !if( lspdm_use_comm_proc )then
     !  pc_buf(infpar%pc_mynum+1)=addr 
@@ -2827,7 +3214,7 @@ module lspdm_tensor_operations_module
 #endif
   
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
-    call memory_allocate_tensor_dense(p_arr%a(addr))
+    call memory_allocate_tensor_dense(p_arr%a(addr),bg_int)
 
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
@@ -2957,12 +3344,13 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief initialized a distributed tiled array
-  subroutine tensor_init_tiled(arr,dims,nmodes,at,it,pdm,tdims,ps_d,force_offset)
+  subroutine tensor_init_tiled(arr,dims,nmodes,at,it,pdm,bg,tdims,ps_d,force_offset)
     implicit none
     type(tensor),intent(inout) :: arr
     integer,intent(in) :: nmodes,dims(nmodes)
     character(4) :: at
     integer :: it, pdm
+    logical, intent(in) :: bg
     integer,optional :: tdims(nmodes)
     logical, optional :: ps_d
     integer,intent(in), optional :: force_offset
@@ -2976,7 +3364,9 @@ module lspdm_tensor_operations_module
     logical :: pc_master,lg_master,child
     integer :: infobuf(2),fo
     logical,parameter :: zeros_in_tiles=.false.
+    logical :: bg_int
    
+    bg_int                  = bg
     !set the initial values and overwrite them later
     pc_nnodes               = 1
     pc_master               = .true.
@@ -3015,6 +3405,14 @@ module lspdm_tensor_operations_module
     p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
     p_arr%a(addr)%local_addr  = addr
     p_arr%a(addr)%initialized = .true.
+#ifdef VAR_MPI
+    p_arr%a(addr)%nnod        = infpar%lg_nodtot
+    p_arr%a(addr)%comm        = infpar%lg_comm
+#else
+    !set to invalid, since not used here
+    p_arr%a(addr)%nnod        = -1
+    p_arr%a(addr)%comm        = -1
+#endif
 
     allocate( p_arr%a(addr)%access_type )
     p_arr%a(addr)%access_type = pdm
@@ -3041,7 +3439,7 @@ module lspdm_tensor_operations_module
     if(.not.defdims.and.present(tdims))then
       do i=1,nmodes
         if(dflt(i)<=0)then
-          print *,"WARNING:INVALID NUMBER --> GET DEFAULT"
+          print *,"WARNING:INVALID NUMBER --> GET DEFAULT",dflt
           defdims=.true.
           exit
         endif
@@ -3111,6 +3509,9 @@ module lspdm_tensor_operations_module
     lg_buf(infpar%lg_mynum+1)=addr 
     lg_buf(lg_nnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
     call lsmpi_allreduce(lg_buf,2*lg_nnodes,infpar%lg_comm)
+    if( p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
+       call ls_mpibcast(bg_int,infpar%master,infpar%lg_comm)
+    endif
     call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
     do i=1,lg_nnodes
       if(lg_buf(lg_nnodes+i)/=p_arr%a(addr)%offset)then
@@ -3120,12 +3521,14 @@ module lspdm_tensor_operations_module
       endif
     enddo
 #endif
+
+    p_arr%a(addr)%bg_alloc = bg_int
  
     call tensor_init_lock_set(p_arr%a(addr))
-    call memory_allocate_tiles(p_arr%a(addr))
+    call memory_allocate_tiles(p_arr%a(addr),bg_int)
 
     if(pseudo_dense .and. (lg_master.or.p_arr%a(addr)%access_type==AT_ALL_ACCESS))then
-      call memory_allocate_tensor_dense(p_arr%a(addr))
+      call memory_allocate_tensor_dense(p_arr%a(addr),bg_int)
     endif
 
     arr = p_arr%a(addr)
@@ -4210,7 +4613,6 @@ module lspdm_tensor_operations_module
      integer, intent(in), optional             :: oo(arr%mode)
      real(realk),intent(inout),target,optional :: wrk(*)
      integer(kind=8),intent(in),optional,target:: iwrk
-     integer(kind=ls_mpik) :: src,me,nnod
      integer               :: i,ltidx,o(arr%mode)
      integer               :: nelintile,fullfortdim(arr%mode)
      real(realk), pointer  :: tmp(:)
@@ -4219,6 +4621,7 @@ module lspdm_tensor_operations_module
      integer               :: maxintmp,b,e,minstart
 #ifdef VAR_MPI
      integer(kind=ls_mpik),pointer :: req(:)
+     real(realk)   :: nrm
 
      do i=1,arr%mode
         o(i)=i
@@ -4258,9 +4661,6 @@ module lspdm_tensor_operations_module
         endif
      endif
 
-     me   = infpar%lg_mynum
-     nnod = infpar%lg_nodtot
-
 #ifdef VAR_LSDEBUG
      if(nelms/=arr%nelms)call lsquit('ERROR(tensor_gather):array&
         &dimensions are not the same',DECinfo%output)
@@ -4282,7 +4682,7 @@ module lspdm_tensor_operations_module
      last_flush_i = 0
 
      lock_was_not_set = .not.arr%lock_set(1)
-     if( alloc_in_dummy .and. lock_was_not_set)call tensor_lock_wins(arr,'s', all_nodes = .true. )
+     if( lock_was_not_set .or. .not. alloc_in_dummy )call tensor_lock_wins(arr,'s', all_nodes = alloc_in_dummy,check =.true. )
 
 
      if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk.and.consecutive)then
@@ -4331,20 +4731,9 @@ module lspdm_tensor_operations_module
         call mem_alloc(req,maxintmp)
 
         do i=1,arr%ntiles
-
+           
            !set the buffer index
            bidx = mod(i-1,maxintmp)+1
-
-           if(i>maxintmp.and..not. alloc_in_dummy)then
-              b = 1 + (bidx - 1) * arr%tsize
-              !b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
-              e = b + arr%tsize -1
-
-              if(arr%lock_set(i-maxintmp))call tensor_unlock_win(arr,i-maxintmp)
-              call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
-
-
-           endif
 
            call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
 
@@ -4353,49 +4742,42 @@ module lspdm_tensor_operations_module
            !b = 1 + mod(i - 1, maxintmp) * arr%tsize
            e = b + arr%tsize - 1
 
-           if( alloc_in_dummy ) then
 
-              if(i>maxintmp)then
-                 call get_tile_dim(nelintile,i-maxintmp,arr%dims,arr%tdim,arr%mode)
+           if(i>maxintmp)then
+
+              call get_tile_dim(nelintile,i-maxintmp,arr%dims,arr%tdim,arr%mode)
+
+              if( alloc_in_dummy ) then
                  call lsmpi_wait(req(bidx))
                  nel_one_sided = nel_one_sided - nelintile
-                 call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+              else
+                 if(.not.arr%lock_set(i-maxintmp)) call lsquit("ERROR(tensor_gather): lock has to be set here 1!",-1)
+                 call tensor_unlock_win(arr,i-maxintmp)
               endif
-
-              call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
-
-              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                 call tensor_flush_win(arr, local = .true.)
-                 nel_one_sided = 0
-              endif
-
-              call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
-              nel_one_sided = nel_one_sided + nelintile
-           else
-              ls = arr%lock_set(i)
-              call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+              !call pn(tmp(b:e),nelintile,norm=nrm)
+              !write(*,'("have tile",I9," :",g9.3)')i-maxintmp,nrm
+              call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
            endif
 
+           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+
+           if( alloc_in_dummy .and. nel_one_sided > MAX_SIZE_ONE_SIDED)then
+              call tensor_flush_win(arr, local = .true.)
+              nel_one_sided = 0
+           endif
+
+           if( alloc_in_dummy) then
+              call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
+           else
+              call tensor_get_tile(arr,i,tmp(b:e),nelintile,lock_set=.true.)
+           endif
+           nel_one_sided = nel_one_sided + nelintile
 
            elms_sent = elms_sent + nelintile
 
-           !if(elms_sent > MAX_SIZE_ONE_SIDED)then
-
-           !   do j=last_flush_i+1,i
-           !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
-           !   enddo
-
-           !   last_flush_i = i
-           !   elms_sent    = 0
-
-           !endif
         enddo
 
-        if(arr%ntiles - maxintmp >= 0)then
-           minstart = arr%ntiles - maxintmp + 1
-        else
-           minstart = 1
-        endif
+        minstart = max(arr%ntiles - maxintmp + 1,1)
 
         do i=minstart, arr%ntiles
 
@@ -4404,14 +4786,18 @@ module lspdm_tensor_operations_module
            b = 1 + (bidx - 1) * arr%tsize
            e = b + arr%tsize -1
 
+           call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+
            if( alloc_in_dummy )then
-              call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
               call lsmpi_wait(req(bidx))
               nel_one_sided = nel_one_sided - nelintile
            else
-              if(arr%lock_set(i))call tensor_unlock_win(arr,i)
+              if(.not.arr%lock_set(i)) call lsquit("ERROR(tensor_gather): lock has to be set here 2!",-1)
+              call tensor_unlock_win(arr,i)
            endif
 
+           !call pn(tmp(b:e),nelintile,norm=nrm)
+           !write(*,'(I4"have til3",I9," :",g9.3)')infpar%lg_mynum,i,nrm
            call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
 
         enddo
@@ -4424,6 +4810,11 @@ module lspdm_tensor_operations_module
         call mem_dealloc(req)
      endif
      if( alloc_in_dummy .and. lock_was_not_set )call tensor_unlock_wins(arr, all_nodes = .true. )
+     if( .not. alloc_in_dummy )then
+        do i = 1, arr%nwins
+           if(arr%lock_set(i))call lsquit("ERROR(tensor_gather) a window is not freed",-1)
+        enddo
+     endif
 #else
      call lsquit('ERROR(tensor_gather):this routine is MPI only',-1)
 #endif
@@ -4890,21 +5281,23 @@ module lspdm_tensor_operations_module
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_unlock_win
 
-  subroutine tensor_lock_wins(arr,locktype,assert,all_nodes)
+  subroutine tensor_lock_wins(arr,locktype,assert,all_nodes,check)
     implicit none
     type(tensor) :: arr
     character, intent(in) :: locktype
     integer(kind=ls_mpik), optional,intent(in) :: assert
-    logical, optional,intent(in) :: all_nodes
+    logical, optional,intent(in) :: all_nodes, check
     integer(kind=ls_mpik) :: node
     integer :: i
-    logical :: an
+    logical :: an,ch
     call time_start_phase( PHASE_COMM )
 #ifdef VAR_MPI
     !Per default this routine only locks the window on the specific nodes where
     !the tiles reside
     an = .false.
     if(present(all_nodes))an = all_nodes
+    ch = .false.
+    if(present(check)) ch = check
 
     if(an)then
 
@@ -4917,10 +5310,16 @@ module lspdm_tensor_operations_module
        enddo
 
     else
-
-       do i=1,arr%nwins
-          call tensor_lock_win(arr,i,locktype,assert=assert)
-       enddo
+       if(ch)then
+          do i=1,arr%nwins
+             if( .not.arr%lock_set(i) )call tensor_lock_win(arr,i,locktype,assert=assert)
+          enddo
+       else
+          do i=1,arr%nwins
+             if( arr%lock_set(i) ) call lsquit("ERROR(tensor_lock_wins): no lock should be set here",-1)
+             call tensor_lock_win(arr,i,locktype,assert=assert)
+          enddo
+       endif
 
     endif
 
@@ -5008,7 +5407,7 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
 
-     if(arr%itype/=TT_DENSE)then
+     if(arr%itype/=TT_DENSE.or.arr%atype=="TDAR".or.arr%atype=="TDPD")then
 
         if(an)then
            !UNLOCK ALL WINDOWS ON ALL NODES
@@ -5050,10 +5449,11 @@ module lspdm_tensor_operations_module
 #endif
 
 
-  subroutine pn(a,n)
+  subroutine pn(a,n,norm)
     implicit none
     real(realk), intent(in) :: a(*)
     integer,intent(in) :: n
+    real(realk), intent(out), optional :: norm
     integer :: i
     real(realk) :: nrm
     call time_start_phase( PHASE_WORK )
@@ -5062,23 +5462,38 @@ module lspdm_tensor_operations_module
       nrm=nrm+a(i)*a(i)
     enddo
     nrm = sqrt(nrm)
-    print *,"NORM:",nrm
+    if(present(norm)) then
+       norm = nrm
+    else
+       print *,"NORM:",nrm
+    endif
     call time_start_phase( PHASE_WORK )
   end subroutine
 
-  subroutine tensor_deallocate_dense(arr)
+  subroutine tensor_deallocate_dense(arr, change)
     implicit none
-    type(tensor) :: arr
+    type(tensor), intent(inout) :: arr
+    logical, intent(in), optional :: change
     integer :: a
+    logical :: change_int
     call time_start_phase( PHASE_WORK )
     call memory_deallocate_tensor_dense(arr)
     a = 1
+    change_int = .true.
+    if(present(change)) change_int = change
 #ifdef VAR_MPI
     a = infpar%lg_mynum + 1
 #endif
     if(associated(p_arr%a(arr%addr_p_arr(a))%elm1))then
       p_arr%a(arr%addr_p_arr(a))%elm1 => null()
     endif
+
+    !this is a simple solution, but will not work if itype is changed to be a
+    !pointer, which it should
+    if(change_int)then
+       arr%itype = p_arr%a(arr%addr_p_arr(a))%itype
+    endif
+
     call time_start_phase( PHASE_WORK )
   end subroutine tensor_deallocate_dense
 
@@ -5591,7 +6006,7 @@ module lspdm_tensor_operations_module
     real(realk),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
     integer(kind=ls_mpik),intent(inout),optional :: req
-    integer(kind=ls_mpik) :: source
+    integer(kind=ls_mpik) :: source,r
     real(realk) :: sta,sto
     logical :: ls
 #ifdef VAR_MPI
@@ -5612,7 +6027,13 @@ module lspdm_tensor_operations_module
        call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
        !call lsmpi_win_flush(arr%wi(widx),source,local = .false.)
     else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),r)
+       call lsmpi_wait(r)
+       call lsmpi_win_flush(arr%wi(widx), rank=source, local=.false.)
+#else
        call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+#endif
     endif
     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
 
@@ -5821,7 +6242,8 @@ module lspdm_tensor_operations_module
       !  call pdm_tensor_sync(infpar%pc_comm,JOB_PC_ALLOC_DENSE,arr,loc_addr=.true.)
       !endif
 #endif
-      call memory_allocate_tensor_dense(arr)
+      !this is deprecated
+      call memory_allocate_tensor_dense(arr,.false.)
   end subroutine memory_allocate_tensor_dense_pc
 
   subroutine memory_deallocate_tensor_dense_pc(arr)
@@ -5944,7 +6366,6 @@ module lspdm_tensor_operations_module
      pos = 0
 #ifdef VAR_MPI
      mode = MPI_MODE_NOCHECK
-
 
      call find_tile_pos_in_buf(tilenr,buf_pos,nbuffs,pos,found)
 

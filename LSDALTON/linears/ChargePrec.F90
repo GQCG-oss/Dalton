@@ -93,7 +93,9 @@ m      = OrbLoc%m
 OrbLoc%Qkappa = 0.0d0
 call mem_alloc(factor,norb)
 do A=1,natoms
-   factor(:)=(OrbLoc%Q(:,A))**(int(m)-1)
+   do i=1,norb
+      factor(i)=(OrbLoc%Q(i,A))**(int(m)-1)
+   enddo
    call mem_alloc(temp,OrbLoc%nbasA(A),norb)
    call mat_init(lA,OrbLoc%nbasA(A),norb)
    call mat_init(lAd,norb,OrbLoc%nbasA(A))
@@ -132,8 +134,9 @@ do A=1,natoms
    !m*C(muA,:)^T *SC*kappa*diag(f)
    call mat_dmul(factor,lak,'T',1d0,0d0,lAd)
    call mat_mul(lA,lAd,'T','T',m,1d0,Hkappa)
-
-   factor(:)=(OrbLoc%Q(:,A))**(int(m)-2)*OrbLoc%Qkappa(:,A)
+   do i=1,norb
+      factor(i)=(OrbLoc%Q(i,A))**(int(m)-2)*OrbLoc%Qkappa(i,A)
+   enddo
    call mat_dmul(factor,la,'T',1d0,0d0,lAd)
    call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
    call mat_set_from_full(temp,1.0d0,lA)
@@ -187,7 +190,9 @@ m      = OrbLoc%m
 OrbLoc%Qkappa = 0.0d0
 call mem_alloc(factor,norb)
 do A=1,natoms
-   factor(:)=OrbLoc%Q(:,A)**(int(m)-1)
+   do i=1,norb
+      factor(i)=OrbLoc%Q(i,A)**(int(m)-1)
+   enddo
    call mem_alloc(temp,OrbLoc%nbasA(A),norb)
    call mat_init(lA,OrbLoc%nbasA(A),norb)
    call mat_init(lAd,norb,OrbLoc%nbasA(A))
@@ -212,7 +217,9 @@ do A=1,natoms
    call mat_dmul(factor,laK,'T',1d0,0d0,lAd)  !diag(f)*(C(muA,:)*kappa)^T
    call mat_mul(lA,lAd,'T','T',2*m,1d0,Hkappa) ! HK = HK+ (SC)^T*C*kappa*dia(Q)
 
-   factor(:)=OrbLoc%Q(:,A)**(int(m)-2)*OrbLoc%Qkappa(:,A)
+   do i=1,norb
+      factor(i)=OrbLoc%Q(i,A)**(int(m)-2)*OrbLoc%Qkappa(i,A)
+   enddo
    call mat_dmul(factor,la,'T',1d0,0d0,lAd)
    call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
    call mat_set_from_full(temp,1.0d0,lA)

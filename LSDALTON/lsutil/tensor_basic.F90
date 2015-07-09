@@ -190,9 +190,10 @@ module tensor_basic_module
 
   !> \brief Allocate memory for general arrays with memory statistics
   !> \author Patrick Ettenhuber adapted from Marcin Ziolkowski
-    subroutine memory_allocate_tensor_dense(arr)
+    subroutine memory_allocate_tensor_dense(arr,bg)
       implicit none
       type(tensor),intent(inout) :: arr
+      logical, intent(in) :: bg
       real(realk) :: vector_size
       real(realk) :: tcpu1,twall1,tcpu2,twall2
       integer(kind=8) :: ne
@@ -205,7 +206,13 @@ module tensor_basic_module
       endif
       vector_size = dble(arr%nelms)*realk
 
-      call mem_alloc(arr%elm1,arr%nelms)
+      if(bg)then
+         call mem_pseudo_alloc(arr%elm1,arr%nelms)
+         arr%bg_alloc = .true.
+      else
+         call mem_alloc(arr%elm1,arr%nelms)
+         arr%bg_alloc = .false.
+      endif
 
       if( tensor_debug_mode )then
          arr%elm1 = 0.0E0_realk
@@ -242,7 +249,11 @@ module tensor_basic_module
          !if( lspdm_use_comm_proc )then
          !  call mem_dealloc(arr%elm1,arr%e1c,arr%w1)
          !else
-           call mem_dealloc(arr%elm1)
+         if( arr%bg_alloc)then
+            call mem_pseudo_dealloc(arr%elm1, mark_deleted=.true.)
+         else
+            call mem_dealloc(arr%elm1)
+         endif
          !endif
          arr%elm1 => null()
 !$OMP CRITICAL
@@ -270,10 +281,11 @@ module tensor_basic_module
       real(realk) :: dim1,dim2,dim3,dim4
       real(realk) :: tcpu1,twall1,tcpu2,twall2
       integer :: i
+      logical :: bg
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
-      do i=1,arr%nlti
+      do i=arr%nlti,1,-1
         if(associated(arr%ti(i)%t)) then
  
            if( .not. alloc_in_dummy )then
@@ -281,7 +293,11 @@ module tensor_basic_module
               dim1 = dble(size(arr%ti(i)%t))*realk
 
 #ifdef VAR_MPI
-              call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c)
+              if(arr%bg_alloc)then
+                 call mem_pseudo_dealloc(arr%ti(i)%t)
+              else
+                 call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c)
+              endif
 #endif
               !$OMP CRITICAL
               tensor_tiled_deallocd_mem = tensor_tiled_deallocd_mem + dim1 
@@ -505,10 +521,10 @@ module tensor_basic_module
   subroutine tensor_free_basic(arr)
     implicit none
     type(tensor), intent(inout) :: arr
-    call tensor_free_aux(arr)
     if(associated(arr%elm1))call memory_deallocate_tensor_dense(arr)
     if(associated(arr%ti))  call memory_deallocate_tile(arr)
     if(associated(arr%access_type)) deallocate( arr%access_type )
+    call tensor_free_aux(arr)
   end subroutine tensor_free_basic
 
   !> \author Patrick Ettenhuber
@@ -524,6 +540,8 @@ module tensor_basic_module
      arr%offset      = -1
      arr%zeros       = .false.
      arr%initialized = .false.
+     arr%nnod        = -1
+     arr%comm        = -1
   end subroutine tensor_reset_value_defaults
 
   !> \author Patrick Ettenhuber

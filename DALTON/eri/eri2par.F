@@ -966,7 +966,7 @@ C
       use eri_basis_loops
 #endif
 #ifdef ENABLE_XCINT
-      use xcint_fortran_interface
+      use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
 
 #include "implicit.h"
@@ -1146,9 +1146,7 @@ C added by Bin Gao, May 12, 2012
 
 #ifdef ENABLE_XCINT
          else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
-            ! XCint: XC integration, added by R. Bast
-            call xcint_set_mpi_comm(MPI_COMM_WORLD)
-            call xcint_integrate_worker()
+            call xcint_integrate_worker(MPI_COMM_WORLD)
 #endif
 
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN

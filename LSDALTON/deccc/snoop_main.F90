@@ -19,6 +19,7 @@ module snoop_main_module
   use memory_handling!,only: mem_alloc,mem_dealloc, mem_turnonthread_memory,&
 !       & init_threadmemvar, collect_thread_memory, mem_turnoffthread_memory
   use dec_typedef_module
+  use lsparameters
   use IntegralInterfaceMOD!,only: ii_get_twoelectron_gradient, ii_get_reorthonormalization, &
 !       & ii_get_oneelectron_gradient, ii_get_nn_gradient
   use optimlocMOD, only: optimloc
@@ -32,7 +33,7 @@ module snoop_main_module
   use crop_tools_module
   use ccintegrals
   use full_molecule
-  use full
+  use full, only: full_driver
   use dec_driver_module
   use array2_simple_operations
   use orbital_operations
@@ -55,19 +56,27 @@ contains
     type(fullmolecule),intent(inout) :: MyMoleculeFULL
     !> Density matrix for full system
     type(matrix),intent(in) :: D
+    real(realk),pointer :: S(:,:)
     integer :: nsub
 
     ! Number of subsystems
     nsub = lsfull%input%molecule%nSubSystems
 
+    ! Overlap matrix
+    call mem_alloc(S,MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
+    call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,lsfull%SETTING,&
+         & S,MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis,AORdefault,AORdefault)
+
     if(DECinfo%SNOOPort) then
        ! SNOOP with orthogonality constraint and iteration SNOOP HF cycles
        ! to minimize sum of monomer energies
-       call snoop_driver_ortho_constraint(Lsfull,MyMoleculeFULL,D)
+       call snoop_driver_ortho_constraint(Lsfull,MyMoleculeFULL,D,S)
     else
        ! Simple SNOOP with no orthogonality constraint and no iterative SNOOP HF cycles
-       call snoop_driver_simple(Lsfull,config,MyMoleculeFULL,D)
+       call snoop_driver_simple(Lsfull,config,MyMoleculeFULL,D,S)
     end if
+
+    call mem_dealloc(S)
 
   end subroutine snoop_driver
 
@@ -75,7 +84,7 @@ contains
 
   !> Driver for calculation interaction enegy using local orbitals. 
   !> \author Kasper Kristensen
-  subroutine snoop_driver_simple(Lsfull,config,MyMoleculeFULL,D)
+  subroutine snoop_driver_simple(Lsfull,config,MyMoleculeFULL,D,S)
     implicit none
     !> LSitem for full system
     type(lsitem), intent(inout) :: lsfull
@@ -85,6 +94,8 @@ contains
     type(fullmolecule),intent(inout) :: MyMoleculeFULL
     !> Density matrix for full system
     type(matrix),intent(in) :: D
+    !> Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     real(realk),pointer :: EHFsnoop(:),Ecorrsnoop(:),EHFiso(:) 
     real(realk) :: EHFfull,Ecorrfull,Eerr
     integer :: nsub,nbasis,nvirtfull,noccfull,i,this,noccsnoop,nvirtsnoop,nbasissnoop,nelsnoop
@@ -100,8 +111,8 @@ contains
 
     ! Determine DEC orbital structures
     call mem_alloc(OccOrbitals,MyMoleculeFULL%nocc)
-    call mem_alloc(VirtOrbitals,MyMoleculeFULL%nunocc)
-    call GenerateOrbitals_driver(MyMoleculeFULL,lsfull,MyMoleculeFULL%nocc,MyMoleculeFULL%nunocc,&
+    call mem_alloc(VirtOrbitals,MyMoleculeFULL%nvirt)
+    call GenerateOrbitals_driver(MyMoleculeFULL,lsfull,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
          & MyMoleculeFULL%natoms, OccOrbitals, VirtOrbitals)
     call mem_alloc(FragEnergiesOcc,MyMoleculeFULL%nfrags,MyMoleculeFULL%nfrags) ! init frag energy array
     call mem_alloc(AFfull,MyMoleculeFULL%nfrags)
@@ -118,7 +129,7 @@ contains
        ! DEC calculation
        write(DECinfo%output,*) 'SNOOP: Starting full system calculation using DEC driver'
        call main_fragment_driver(MyMoleculeFULL,lsfull,D,&
-            & OccOrbitals,VirtOrbitals,MyMoleculeFULL%natoms,MyMoleculeFULL%nocc,MyMoleculeFULL%nunocc,&
+            & OccOrbitals,VirtOrbitals,MyMoleculeFULL%natoms,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
             & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc,AFfull,.false.)
     end if
 
@@ -136,7 +147,7 @@ contains
 
     ! Number of basis functions and virt orbitals for full system
     nbasis = MyMoleculeFULL%nbasis
-    nvirtfull = MyMoleculeFULL%nunocc
+    nvirtfull = MyMoleculeFULL%nvirt
     noccfull = MyMoleculeFULL%nocc
 
     write(DECinfo%output,'(1X,a,i6,a)') 'Starting SNOOP subsystem calculations for ', nsub, &
@@ -207,79 +218,94 @@ contains
     SNOOPLOOP: do i=1,nsub
 
        this = i
-       write(DECinfo%output,*) 'STARTING SNOOP FOR SUBSYSTEM', this
+       IdenticalSubsystems: if(config%samesubsystems .and. this>1) then
+          ! Same subsystems, we can skip calculation for all but subsystem 1 and 
+          ! just copy HF and correlation energies.
+          write(DECinfo%output,*) 'IDENTICAL SUBSYSTEMS - NO CALCULATION FOR SUBSYSTEM', this
+          EHFsnoop(this) = EHFsnoop(1)
+          Ecorrsnoop(this) = Ecorrsnoop(1)
 
-       ! LSitem for subsystem using ghost functions on the other subsystems
-       call build_subsystem_lsitem_ghost(this,lsfull,lssnoop)
-
-       ! Number of electrons/orbitals for subsystem 
-       ! ==========================================
-       nelsnoop = get_num_electrons(lssnoop)
-       ! Currently SNOOP assumes closed-shell subsystem
-       if(mod(nelsnoop,2)/=0) then
-          call lsquit('SNOOP only implemented for closed-shell systems with zero ',-1)
        else
-          noccsnoop = nelsnoop/2
-       end if
 
+          write(DECinfo%output,*) 'STARTING SNOOP FOR SUBSYSTEM', this
 
-       ! Initial occ and virt MO coefficients for subsystem
-       ! --------------------------------------------------
-       ! 1. Take occ and virt MOs from isolated monomer calculations augmented 
-       !    with zeros for basis functions on the other subsystems
-       ! 2. Add virtual orbitals (Cvirtother) from other subsystems augmented with zeros
-       !    for basis functions on this subsystem
-       ! 3. Orthogonalize Cvirtother againts MOs on this subsystem while keeping occ and virt
-       !    MOs for this subsystem fixed (they are already orthogonal).
+          ! LSitem for subsystem using ghost functions on the other subsystems
+          call build_subsystem_lsitem_ghost(this,lsfull,lssnoop)
 
-       ! NOTE: Coccsnoop is initialized here, but Cvirtsnoop is
-       !       initialized inside subroutine because we
-       !       do not yet know the dimensions!
-
-       call mat_init(Coccsnoop(this),nbasis,noccsnoop)
-
-       call get_orthogonal_basis_for_subsystem(this,nsub,&
-            & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsnoop(this),Cvirtsnoop(this))
-
-       ! Sanity check for initial orbitals
-       call subsystem_orbitals_sanity_check(Coccsnoop(this),&
-            & Cvirtsnoop(this),MyMoleculeFULL)
-
-       ! SCF optimization for subsystem "this"
-       call solve_subsystem_scf_rh(lssnoop,Coccsnoop(this),&
-            & Cvirtsnoop(this),FAOsnoop,EHFsnoop(this))
-
-       ! Sanity check for optimized orbitals
-       call subsystem_orbitals_sanity_check(Coccsnoop(this),&
-            & Cvirtsnoop(this),MyMoleculeFULL)
-
-       ! Determine orbitals for correlated SNOOP monomer calculations
-
-       ! SNOOP-DEC stuff
-       DECcalc: if(.not. DECinfo%full_molecular_cc) then
-          if(DECinfo%SNOOPlocalize) then
-             ! Localize orbitals
-             ! -----------------
-             nMO = Coccsnoop(this)%ncol + Cvirtsnoop(this)%ncol
-             call mat_init(C,nbasis,nMO)
-             call collect_MO_coeff_in_one_matrix(Coccsnoop(this),Cvirtsnoop(this),C) 
-             call optimloc(C,noccsnoop,config%decomp%cfg_mlo_m,lssnoop,&
-                  & config%davidOrbLoc)
-             call partition_MO_coeff_into_two_matrices(C,Coccsnoop(this),Cvirtsnoop(this))
-             call mat_free(C)
+          ! Number of electrons/orbitals for subsystem 
+          ! ==========================================
+          nelsnoop = get_num_electrons(lssnoop)
+          ! Currently SNOOP assumes closed-shell subsystem
+          if(mod(nelsnoop,2)/=0) then
+             call lsquit('SNOOP only implemented for closed-shell systems with zero ',-1)
           else
-             ! Rotate subsystem orbitals using natural connection such that they are as
-             ! close as possible to the full orbitals in a least-squares sense.
-             call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
-                  & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this))
+             noccsnoop = nelsnoop/2
           end if
-       end if DECcalc
 
-       ! Correlation energy for subsystem
-       if(.not. DECinfo%SNOOPjustHF) then
-          call subsystem_correlation_energy(this,MyMoleculeFULL,OccOrbitals,VirtOrbitals,AFfull,&
-               & Coccsnoop(this),Cvirtsnoop(this),FAOsnoop,lssnoop,Ecorrsnoop(this))
-       end if
+
+          ! Initial occ and virt MO coefficients for subsystem
+          ! --------------------------------------------------
+          ! 1. Take occ and virt MOs from isolated monomer calculations augmented 
+          !    with zeros for basis functions on the other subsystems
+          ! 2. Add virtual orbitals (Cvirtother) from other subsystems augmented with zeros
+          !    for basis functions on this subsystem
+          ! 3. Orthogonalize Cvirtother againts MOs on this subsystem while keeping occ and virt
+          !    MOs for this subsystem fixed (they are already orthogonal).
+
+          ! NOTE: Coccsnoop is initialized here, but Cvirtsnoop is
+          !       initialized inside subroutine because we
+          !       do not yet know the dimensions!
+
+          call mat_init(Coccsnoop(this),nbasis,noccsnoop)
+
+          call get_orthogonal_basis_for_subsystem(this,nsub,&
+               & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsnoop(this),Cvirtsnoop(this),S)
+
+          ! Sanity check for initial orbitals
+          call subsystem_orbitals_sanity_check(Coccsnoop(this),&
+               & Cvirtsnoop(this),MyMoleculeFULL,S)
+
+          ! SCF optimization for subsystem "this"
+          call solve_subsystem_scf_rh(lssnoop,Coccsnoop(this),&
+               & Cvirtsnoop(this),FAOsnoop,EHFsnoop(this))
+
+          ! Sanity check for optimized orbitals
+          call subsystem_orbitals_sanity_check(Coccsnoop(this),&
+               & Cvirtsnoop(this),MyMoleculeFULL,S)
+
+          ! Determine orbitals for correlated SNOOP monomer calculations
+
+          ! SNOOP-DEC stuff
+          DECcalc: if(.not. DECinfo%full_molecular_cc) then
+             if(DECinfo%SNOOPlocalize) then
+                ! Localize orbitals
+                ! -----------------
+                nMO = Coccsnoop(this)%ncol + Cvirtsnoop(this)%ncol
+                call mat_init(C,nbasis,nMO)
+                call collect_MO_coeff_in_one_matrix(Coccsnoop(this),Cvirtsnoop(this),C) 
+                call optimloc(C,noccsnoop,config%decomp%cfg_mlo_m,lssnoop,&
+                     & config%davidOrbLoc)
+                call partition_MO_coeff_into_two_matrices(C,Coccsnoop(this),Cvirtsnoop(this))
+                call mat_free(C)
+             else
+                ! Rotate subsystem orbitals using natural connection such that they are as
+                ! close as possible to the full orbitals in a least-squares sense.
+                call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
+                     & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this),S)
+             end if
+          end if DECcalc
+
+          ! Correlation energy for subsystem
+          if(.not. DECinfo%SNOOPjustHF) then
+             call subsystem_correlation_energy(this,MyMoleculeFULL,OccOrbitals,VirtOrbitals,AFfull,&
+                  & Coccsnoop(this),Cvirtsnoop(this),FAOsnoop,lssnoop,Ecorrsnoop(this))
+          end if
+
+          ! Free stuff for subsystem
+          call ls_free(lssnoop)
+
+
+       end if IdenticalSubsystems
 
 
        print '(1X,a,i5,a,3g20.12)', 'SNOOP subsystem: ', this, &
@@ -288,9 +314,6 @@ contains
        write(DECinfo%output,'(1X,a,i5,a,3g20.12)') 'SNOOP subsystem: ', this, &
             & '  *** HF/corr/HFdiff energy: ', EHFsnoop(this), Ecorrsnoop(this),EHFsnoop(this)-EHFiso(this)
 
-
-       ! Free stuff for subsystem
-       call ls_free(lssnoop)
 
     End do SNOOPLOOP
 
@@ -304,8 +327,10 @@ contains
     call mem_dealloc(EHFiso)
     call mem_dealloc(Ecorrsnoop)
     do i=1,nsub
-       call mat_free(Coccsnoop(i))
-       call mat_free(Cvirtsnoop(i))
+       if(i==1 .or. (.not. config%samesubsystems) ) then
+          call mat_free(Coccsnoop(i))
+          call mat_free(Cvirtsnoop(i))
+       end if
        call mat_free(Cocciso(i))
        call mat_free(Cvirtiso(i))
     end do
@@ -317,7 +342,7 @@ contains
     do i=1,MyMoleculeFULL%nocc
        call orbital_free(OccOrbitals(i))
     end do
-    do i=1,MyMoleculeFULL%nunocc
+    do i=1,MyMoleculeFULL%nvirt
        call orbital_free(VirtOrbitals(i))
     end do
     call mem_dealloc(OccOrbitals)
@@ -339,7 +364,7 @@ contains
 
   !> Driver for calculation interaction enegy using local orbitals. 
   !> \author Kasper Kristensen
-  subroutine snoop_driver_ortho_constraint(Lsfull,MyMoleculeFULL,D)
+  subroutine snoop_driver_ortho_constraint(Lsfull,MyMoleculeFULL,D,S)
     implicit none
     !> LSitem for full system
     type(lsitem), intent(inout) :: lsfull
@@ -347,6 +372,8 @@ contains
     type(fullmolecule),intent(inout) :: MyMoleculeFULL
     !> Density matrix for full system
     type(matrix),intent(in) :: D
+    !> Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     real(realk),pointer :: EHFsnoop(:),Ecorrsnoop(:),EHFiso(:) 
     real(realk) :: EHFfull,Ecorrfull,EHFold,EHFnew,Ethr
     integer :: nsub,nbasis,nvirtfull,noccfull,i,this,noccsnoop,nvirtsnoop,nbasissnoop,nelsnoop
@@ -375,7 +402,7 @@ contains
 
     ! Number of basis functions and virt orbitals for full system
     nbasis = MyMoleculeFULL%nbasis
-    nvirtfull = MyMoleculeFULL%nunocc
+    nvirtfull = MyMoleculeFULL%nvirt
     noccfull = MyMoleculeFULL%nocc
 
     write(DECinfo%output,'(1X,a,i6,a)') 'Starting SNOOP-ORTHO subsystem calculations for ', nsub, &
@@ -430,15 +457,15 @@ contains
           ! This orthogonalization of virtual orbitals is actually redundant 
           ! since the orbitals remain orthogonal when we carry out unitary transformations
           ! - but we keep it to remove possible numerical noise.
-          call get_orthogonal_basis_for_subsystem_allvirt(MyMoleculeFULL,Coccsnoop(this),Cvirtall)
+          call get_orthogonal_basis_for_subsystem_allvirt(MyMoleculeFULL,Coccsnoop(this),Cvirtall,S)
           call subsystem_orbitals_sanity_check_snooport(nsub,Coccsnoop,&
-               & Cvirtall,MyMoleculeFULL)
+               & Cvirtall,MyMoleculeFULL,S)
 
           ! SCF optimization for subsystem "this"
           call solve_subsystem_scf_rh(lssnoop,Coccsnoop(this),&
                & Cvirtall,FAOsnoop,EHFsnoop(this))
           call subsystem_orbitals_sanity_check_snooport(nsub,Coccsnoop,&
-               & Cvirtall,MyMoleculeFULL)
+               & Cvirtall,MyMoleculeFULL,S)
 
           ! Correlation energy for subsystem
           if(.not. DECinfo%SNOOPjustHF) then
@@ -740,13 +767,15 @@ contains
 
   !> Check that subsystem orbitals are properly orthogonal and normalized.
   subroutine subsystem_orbitals_sanity_check(Coccsub_mat,&
-       & Cvirtsub_mat,MyMoleculeFULL)
+       & Cvirtsub_mat,MyMoleculeFULL,S)
     implicit none
 
     !> Occ and virt MO coefficients 
     type(matrix),intent(in) :: Coccsub_mat, Cvirtsub_mat
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMoleculeFULL
+    !> Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     real(realk),pointer :: tmp(:,:),Coccsub(:,:),Cvirtsub(:,:)
     integer :: nocc,nvirt,nbasis,i,j
     real(realk) :: thr,one
@@ -769,7 +798,7 @@ contains
     ! 1. Check overlap between Coccsub and Cvirtsub: tmp = Coccsub^T SAO Cvirtsub
     call mem_alloc(tmp,nocc,nvirt)
     call dec_diff_basis_transform1(nbasis,nocc,nvirt,&
-         & Coccsub,Cvirtsub,MyMoleculeFULL%overlap,tmp)
+         & Coccsub,Cvirtsub,S,tmp)
     do j=1,nvirt
        do i=1,nocc
           if(abs(tmp(i,j))>thr) then
@@ -783,7 +812,7 @@ contains
 
     ! 2. Check that Coccsub orbitals are orthonormal
     call mem_alloc(tmp,nocc,nocc)
-    call dec_simple_basis_transform1(nbasis,nocc,Coccsub,MyMoleculeFULL%overlap,tmp)
+    call dec_simple_basis_transform1(nbasis,nocc,Coccsub,S,tmp)
     do j=1,nocc
 
        do i=1,nocc
@@ -815,7 +844,7 @@ contains
 
     ! 3. Check that Cvirtsub orbitals are orthonormal
     call mem_alloc(tmp,nvirt,nvirt)
-    call dec_simple_basis_transform1(nbasis,nvirt,Cvirtsub,MyMoleculeFULL%overlap,tmp)
+    call dec_simple_basis_transform1(nbasis,nvirt,Cvirtsub,S,tmp)
     do j=1,nvirt
 
        do i=1,nvirt
@@ -854,7 +883,7 @@ contains
   !> Check that subsystem orbitals are properly orthogonal and normalized
   !> for SNOOP scheme with orthogonality constraint.
   subroutine subsystem_orbitals_sanity_check_snooport(nsub,Cocc_mat,&
-       & Cvirt_mat,MyMoleculeFULL)
+       & Cvirt_mat,MyMoleculeFULL,S)
     implicit none
 
     !> Number of subsystems
@@ -865,6 +894,8 @@ contains
     type(matrix),intent(in) :: Cvirt_mat
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMoleculeFULL
+    !> Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     type(array2),pointer :: Cocc(:)
     real(realk),pointer :: tmp(:,:),Cvirt(:,:)
     integer :: nocc(nsub),nvirt,nbasis,i,j,k,l
@@ -894,7 +925,7 @@ contains
 
           call mem_alloc(tmp,nocc(k),nocc(l))
           call dec_diff_basis_transform1(nbasis,nocc(k),nocc(l),&
-               & Cocc(k)%val,Cocc(l)%val,MyMoleculeFULL%overlap,tmp)
+               & Cocc(k)%val,Cocc(l)%val,S,tmp)
           do j=1,nocc(l)
              do i=1,nocc(k)
 
@@ -923,7 +954,7 @@ contains
 
        call mem_alloc(tmp,nocc(k),nvirt)
        call dec_diff_basis_transform1(nbasis,nocc(k),nvirt,&
-            & Cocc(k)%val,Cvirt,MyMoleculeFULL%overlap,tmp)
+            & Cocc(k)%val,Cvirt,S,tmp)
        do j=1,nvirt
           do i=1,nocc(k)
 
@@ -943,7 +974,7 @@ contains
     ! Virt-virt overlap
     call mem_alloc(tmp,nvirt,nvirt)
     call dec_diff_basis_transform1(nbasis,nvirt,nvirt,&
-         & Cvirt,Cvirt,MyMoleculeFULL%overlap,tmp)
+         & Cvirt,Cvirt,S,tmp)
     do j=1,nvirt
        do i=1,nvirt
 
@@ -1056,7 +1087,7 @@ contains
     !> Occ orbitals for full molecule
     type(decorbital),intent(in) :: OccOrbitalsFULL(MyMoleculeFULL%nocc)
     !> Virt orbitals for full molecule
-    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nunocc)
+    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nvirt)
     !> Atomic fragments for full molecule
     type(decfrag),intent(in) :: AFfull(MyMoleculeFULL%nfrags)
     !> Occupied and virtual MO coefficients for subsystem
@@ -1067,7 +1098,7 @@ contains
     type(lsitem), intent(inout) :: lssub
     !> Subsystem correlation energy
     real(realk),intent(inout) :: Ecorr
-    type(matrix) ::D,S,C
+    type(matrix) ::D,C
     type(fullmolecule) :: MySubsystem
     real(realk) :: EHF,Eerr
     integer :: nMO,nbasis
@@ -1085,18 +1116,13 @@ contains
     call mat_init(D,nbasis,nbasis)
     call get_density_from_occ_orbitals_mat(Cocc,D)
 
-    ! Overlap matrix for subsystem
-    call mat_init(S,nbasis,nbasis)
-    call II_get_overlap(DECinfo%output,DECinfo%output,lssub%setting,S)
-
     ! Collect MO coefficients in one matrix
     call mat_init(C,nbasis,nMO)
     call collect_MO_coeff_in_one_matrix(Cocc,Cvirt,C)
 
     ! Molecule structure for subsystem
-    call molecule_init_from_inputs(MySubsystem,lssub,F,S,C,D)
+    call molecule_init_from_inputs(MySubsystem,lssub,F,C,D)
     call mat_free(C)
-    call mat_free(S)
 
 
     ! Correlation energy for subsystem
@@ -1118,7 +1144,7 @@ contains
 
 
     call mat_free(D)
-    call molecule_finalize(MySubsystem)
+    call molecule_finalize(MySubsystem,.true.)
 
   end subroutine subsystem_correlation_energy
 
@@ -1137,7 +1163,7 @@ contains
     !> Occ orbitals for full molecule
     type(decorbital),intent(in) :: OccOrbitalsFULL(MyMoleculeFULL%nocc)
     !> Virt orbitals for full molecule
-    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nunocc)
+    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nvirt)
     !> Atomic fragments for full molecule
     type(decfrag),intent(in) :: AFfull(MyMoleculeFULL%nfrags)
     !> Occupied and virtual MO coefficients for subsystem
@@ -1179,8 +1205,8 @@ contains
 
        ! Determine DEC orbital structures
        call mem_alloc(OccOrbitalsSUB,MySubsystem%nocc)
-       call mem_alloc(VirtOrbitalsSUB,MySubsystem%nunocc)
-       call GenerateOrbitals_driver(MySubsystem,lssub,MySubsystem%nocc,MySubsystem%nunocc,&
+       call mem_alloc(VirtOrbitalsSUB,MySubsystem%nvirt)
+       call GenerateOrbitals_driver(MySubsystem,lssub,MySubsystem%nocc,MySubsystem%nvirt,&
             & MySubsystem%natoms, OccOrbitalsSUB, VirtOrbitalsSUB)
 
        ! Check that orbital assignment for subsystem is consistent with that for full system
@@ -1188,12 +1214,12 @@ contains
             & OccOrbitalsFULL,VirtOrbitalsFULL,OccOrbitalsSUB,VirtOrbitalsSUB)
 
        !  List of which fragments to consider for subsystem
-       call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+       call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nvirt,&
             & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,dofragSUB,MySubsystem%PhantomAtom)
 
        !  List of which fragments to consider for full system
        call which_fragments_to_consider(MyMoleculeFULL%ncore,MyMoleculeFULL%nocc,&
-            & MyMoleculeFULL%nunocc,MyMoleculeFULL%nfrags,OccOrbitalsFULL,VirtOrbitalsFULL,&
+            & MyMoleculeFULL%nvirt,MyMoleculeFULL%nfrags,OccOrbitalsFULL,VirtOrbitalsFULL,&
             & dofragFULL,MyMoleculeFULL%PhantomAtom)
 
        ! Get atomic fragments for subsystem with one-to-one correspondence to
@@ -1209,14 +1235,14 @@ contains
        ! Run DEC fragment calculations with atomic fragment defined above
         call main_fragment_driver(MySubsystem,lssub,D,OccOrbitalsSUB,&
             & VirtOrbitalsSUB,MySubsystem%natoms,MySubsystem%nocc,&
-            & MySubsystem%nunocc,EHF,Ecorr,dummy,Eerr,FragEnergiesOcc,AFsub,.true.)
+            & MySubsystem%nvirt,EHF,Ecorr,dummy,Eerr,FragEnergiesOcc,AFsub,.true.)
 
 
        ! Free stuff
        do i=1,MySubsystem%nocc
           call orbital_free(OccOrbitalsSUB(i))
        end do
-       do i=1,MySubsystem%nunocc
+       do i=1,MySubsystem%nvirt
           call orbital_free(VirtOrbitalsSUB(i))
        end do
        call mem_dealloc(OccOrbitalsSUB)
@@ -1238,7 +1264,7 @@ contains
     end if
 
     call mem_dealloc(dummy)
-    call molecule_finalize(MySubsystem)
+    call molecule_finalize(MySubsystem,.true.)
 
   end subroutine DECsubsystem_correlation_energy
 

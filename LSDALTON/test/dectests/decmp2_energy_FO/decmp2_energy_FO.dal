@@ -7,9 +7,8 @@ TRILEVEL
 .CONVDYN
 TIGHT
 **DEC
-.FrozenCore
-.FragmentAdapted
-.no_orb_based_fragopt
+.FROZENCORE
+.FRAGMENTADAPTED
 .MEMORY
 2.0
 *END OF INPUT
