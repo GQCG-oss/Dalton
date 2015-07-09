@@ -24,7 +24,7 @@ module cc_tools_module
    use reorder_frontend_module
    use tensor_interface_module
    use gpu_interfaces
-   use openacc
+   !use openacc, only: acc_is_present
 
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
@@ -728,10 +728,6 @@ module cc_tools_module
 
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
 #ifdef VAR_OPENACC
-            !(w2)  :sigma+ [i>=j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
-            !call dgemm('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w2,nor)
-            !call manual_21_reordering_t2f(100,[nor,laleg],[1,faleg],p10,w2,nul,w3)
-
             !call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg)
             call ls_dgemm_acc('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg,laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
             !$acc end data 
@@ -770,10 +766,6 @@ module cc_tools_module
 
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
 #ifdef VAR_OPENACC
-            !(w2)  :sigma+ [i>=j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
-            !call dgemm('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w2,nor)
-            !call manual_21_reordering_t2f(100,[nor,laleg],[1,faleg],p10,w2,nul,w3)
-
             !call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w2,laleg)
             call ls_dgemm_acc('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w2,laleg,laleg*nvr,nor*nvr,laleg*nor,acc_h,cub_h)
             !$acc end data 
@@ -1830,12 +1822,17 @@ module cc_tools_module
       !>full integral input m*c*d
       real(realk),intent(in) :: Int_in(m*nv*nv)
       integer ::d,pos,pos2,a,b,c,cged,dc
-      logical :: doit, stuff_here
-
+      logical :: doit
 #ifdef VAR_OPENACC
+#ifdef VAR_PGF90
+      logical :: stuff_here
+      logical, external :: acc_is_present
       stuff_here = acc_is_present(Int_out,m*(nv*(nv+1))/2*8) .and. acc_is_present(Int_in,m*nv*nv*8)
 #else
-      stuff_here = .false.
+      logical, parameter :: stuff_here = .true.
+#endif
+#else
+      logical, parameter :: stuff_here = .false.
 #endif
 
       if(stuff_here)then
