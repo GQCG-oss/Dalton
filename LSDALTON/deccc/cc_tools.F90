@@ -700,8 +700,8 @@ module cc_tools_module
 
          !acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr),nv,no,nb,nor,nvr)
 #ifdef VAR_OPENACC
-         !$acc data copyin(yv(1:nb*nv))
-         !$acc data copyin(tpl%elm1(1:nor*nvr))
+         !acc data copyin(yv(1:nb*nv))
+         !acc data copyin(tpl%elm1(1:nor*nvr))
 #endif
 
          !!SYMMETRIC COMBINATION
@@ -718,7 +718,7 @@ module cc_tools_module
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
 #ifdef VAR_OPENACC
-            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv))
+            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv)) copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr))
 #endif
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
@@ -742,8 +742,8 @@ module cc_tools_module
          enddo
 
 #ifdef VAR_OPENACC
-         !$acc end data
-         !$acc data copyin(tmi%elm1)
+         !acc end data
+         !acc data copyin(tmi%elm1)
 #endif
 
          !!ANTI-SYMMETRIC COMBINATION
@@ -760,7 +760,7 @@ module cc_tools_module
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
 #ifdef VAR_OPENACC
-            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv))
+            !$acc data copy(w2(1:nb*laleg*nb)) create(w0(1:nb*laleg*nv)) copyin(yv,tmi%elm1)
 #endif
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h,cub_h)
@@ -779,12 +779,12 @@ module cc_tools_module
             !$acc end data 
             call manual_12_reordering_t2f(100,[laleg,nor],[tred,nor],[faleg,1],p10,w2,nul,w3(tred*nor+1:tred*nor+tred*nor))
 #else
-            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+1),tred)
+            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+faleg),tred)
 #endif
          enddo
 #ifdef VAR_OPENACC
-         !$acc end data
-         !$acc end data
+         !acc end data
+         !acc end data
 #endif
 
 #ifdef VAR_CUBLAS
