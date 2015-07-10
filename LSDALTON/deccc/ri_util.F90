@@ -70,9 +70,9 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   integer :: nthreads,PerformReduction,Oper,nAuxMPI(numnodes),MaxnAuxMPI,I
   integer :: J,offset,offset2,inode,nbuf1,nbuf2,nbuf3,dim1,MinAuxBatch,ndimMax2
   integer :: GindexToLocal(nbasisAux),nbasisAuxMPI3(numnodes),NREDLOC,NRED
-  integer :: MetricOper
+  integer :: MetricOper,AuxDimUsedInAOcode
   real(realk) :: epsilon
-  logical :: noOMP,use_bg_buf
+  logical :: noOMP,use_bg_buf,noOMPsave
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
@@ -96,9 +96,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 
   NBA = 0
   MynbasisAuxMPI2 = 0 
-  MaxNaux = 0  
   IF(use_bg_buf)THEN
-     maxsize = mem_get_bg_buf_free()*8.0E-9_realk
+     maxsize = mem_get_bg_buf_free()*8.0E-9_realk*0.90E0_realk
      IF(DECinfo%MemDebugPrint)THEN
         call printBGinfo()
      ENDIF     
@@ -130,125 +129,45 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   
   IF(master)THEN
      !Memory requirement to have the full MO integral in memory 
-     IF(use_bg_buf)THEN
-        !only looking at the memory allocated in BG buffer
-        MemForFullMOINT = (nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk &
-             & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk        
+     IF(DECinfo%RIMP2ForcePDMCalpha)THEN
+        !Force use of Bcast scheme - used when full MO cannot fit in memory       
+        PerformReduction = 0 !Perform Bcast scheme
+        IF(DECinfo%MemDebugPrint)print*,'RIMP2: Force Bcast scheme'
      ELSE
-        MemForFullMOINT = (nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
-             & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
-     ENDIF
-!     print*,'MemForFullMOINT=',MemForFullMOINT,'maxsize',maxsize
-!     print*,'MemForFullMOINT.LT.maxsize: ',MemForFullMOINT.LT.maxsize
-
-!     WRITE(DECinfo%output,*)'DECinfo%RIMP2ForcePDMCalpha',DECinfo%RIMP2ForcePDMCalpha
-
-     IF(DECinfo%RIMP2ForcePDMCalpha.OR.MemForFullMOINT.GE.maxsize)THEN
+        !Memory accounting for Reduction of full MO integral alphaCD(nbasisAux*nvirt*nocc): 
+        !allocate TMPAlphaBetaDecomp(MynbasisAuxMPI2,nbasisAux) NOT allocated in BG buffer
+        !BG  : allocate Calpha(nbasisAux*nvirt*nocc) 
+        !noBG: allocate Calpha(MynbasisAux*nvirt*nocc) 
+        !allocate alphaCD(nbasisAux*nvirt*nocc)
+        !allocate AO to MO tmp (MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))
+        IF(use_bg_buf)THEN
+           !only looking at the memory allocated in BG buffer 
+           MemForFullMOINT = (2*nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*&
+                & (nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk &
+                & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk        
+        ELSE
+           MemForFullMOINT = (nbasisAux*nvirt*nocc+nbasisAux*nvirt*nocc/(numnodes+2)&
+                & +MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)&
+                & +nbasis1*nvirt+nbasis2*nocc+nbasisAux*nbasisAux)*8.0E-9_realk
+        ENDIF
         IF(DECinfo%MemDebugPrint)THEN
            print*,'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
            IF(use_bg_buf)THEN
               print*,'RIMP2: Resulting in Memory Estimate of  ',&
                    & (buf_realk%offset+MemForFullMOINT/8.0E-9_realk)*8.0E-9_realk,' GB'           
            ENDIF
-           print*,'RIMP2: Memory available (65%/100% bg_buffer)',maxsize,' GB'
-           print*,'RIMP2: Full MO cannot fit in memory, we cannot do a simple reduction'
-        ENDIF
-        !Full MO cannot fit in memory       
-        PerformReduction = 0 !Perform Bcast scheme
-        MaxNaux = 0
-!        WRITE(DECinfo%output,*)'DECinfo%RIMP2ForcePDMCalpha: PerformReduction = ',PerformReduction
-        IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
-           MaxNaux = MinAuxBatch + 1
-        ENDIF
-     ELSE
-        IF(DECinfo%MemDebugPrint)print*,'RIMP2: Full MO can fit in memory, so we can do a simple reduction'
-        !Full MO can fit on all nodes Which means we can do a reduction.        
-        !PerformReduction will be set to a value not equal to zero soon
-        IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-           IF(.NOT.use_bg_buf)WRITE(DECinfo%output,'(A,F8.1,A)') &
-                & 'RIMP2: Memory available                     ',MemInGBCollected,' GB'
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available (65%)               ',maxsize,' GB'
-           print*,'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-           IF(.NOT.use_bg_buf)print*,'RIMP2: Memory available                     ',MemInGBCollected,' GB'
-           print*,'RIMP2: Memory available (65%)               ',maxsize,' GB'
-        ENDIF
-        !Memory requirement to have the full AO integral in memory 
-        IF(use_bg_buf)THEN
-           MemForFullAOINT = MAX(nbasisAux*nvirt*nocc+nbasisAux*nbasis1*nocc,&
-                & nbasisAux*nbasis1*nocc+nbasisAux*nbasis1*nbasis2)*8.0E-9_realk&
-                & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk
-        ELSE
-           MemForFullAOINT = MAX(nbasisAux*nvirt*nocc+nbasisAux*nbasis1*nocc,&
-                & nbasisAux*nbasis1*nocc+nbasisAux*nbasis1*nbasis2)*8.0E-9_realk
-        ENDIF
-        IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full AO (alpha|cd) integral requires ',MemForFullAOINT,' GB'
-           print*,'RIMP2: Full AO (alpha|cd) integral requires ',MemForFullAOINT,' GB'
-        ENDIF
-        IF(MemForFullAOINT.LT.maxsize)THEN 
-           !Full AO can fit on all nodes Which means we can do a reduction.
-           MaxNaux = nbasisAux
-           PerformReduction = MaxNaux
-!           print*,'MemForFullMOINT.LT.maxsize: MaxNaux',MaxNaux
-        ELSE !Full MO can fit on all nodes Which means we can do a reduction.
-           !cannot have the full AO integral in memory 
-           !so we build a subset (MaxNaux,nbasis1,nbasis2) and then 
-           !transform to MO basis during the integral evaluation. 
-           !The bigger MaxNaux the fewer times we have to do the AO to MO
-           !Memory requirement = nbasisAux*nvirt*nocc+MaxNaux*nthreads*
-           !  (nbasis1*nocc+nbasis1*nbasis2)+2*nbasis1*nvirt+2*nbasis2*nocc 
-           !IF(use_bg_buf)THEN
-           !+ (nbasisAux/numnodes+1)*nocc*nvirt
-           !ENDIF
-           !so we choose MaxNaux to be
-           IF(use_bg_buf)THEN
-              MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc- &
-                 & 2*nbasis1*nvirt-2*nbasis2*nocc-(nbasisAux/numnodes+1)*nocc*nvirt) &
-                 & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+           print*,'RIMP2: Memory available (65%/90% bg_buffer)',maxsize,' GB'
+           IF(MemForFullMOINT.GE.maxsize)THEN
+              print*,'RIMP2: Full MO cannot fit in memory, we cannot do a simple reduction'
            ELSE
-              MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc-2*nbasis1*nvirt-2*nbasis2*nocc) &
-                   & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
-           ENDIF
-           PerformReduction = MaxNaux
-!           print*,'MemForFullMOINT.LT.maxsize: MaxNaux',MaxNaux
-
-           IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
-              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available (65%)',maxsize,' GB'           
-              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available after MO int + CMO',&
-                   & (MaxSize-nbasisAux*nvirt*nocc*8.0E-9_realk-2*nbasis1*nvirt*8.0E-9_realk-2*nbasis2*nocc*8.0E-9_realk),' GB'           
-              WRITE(DECinfo%output,'(A,I8,A,I8)')'RIMP2: MaxNaux Determination: MaxNaux',MaxNaux,' compared to nAux=',nbasisAux
-              IF(use_bg_buf)THEN              
-                 WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: This MaxNaux Correspond to Memory usage of ',&
-                      &   nbasisAux*nvirt*nocc*8.0E-9_realk+2*nbasis1*nvirt*8.0E-9_realk+2*nbasis2*nocc*8.0E-9_realk&
-                      & + MaxNaux*nthreads*nbasis1*nbasis2*8.0E-9_realk + MaxNaux*nbasis1*nocc*8.0E-9_realk&
-                      & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk,' GB'
-              ELSE
-                 WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: This MaxNaux Correspond to Memory usage of ',&
-                      &   nbasisAux*nvirt*nocc*8.0E-9_realk+2*nbasis1*nvirt*8.0E-9_realk+2*nbasis2*nocc*8.0E-9_realk&
-                      & + MaxNaux*nthreads*nbasis1*nbasis2*8.0E-9_realk + MaxNaux*nbasis1*nocc*8.0E-9_realk,' GB'
-                 
-              ENDIF
-              print*,'RIMP2: MaxNaux Determination: Memory available (65%)',maxsize,' GB'           
-              print*,'RIMP2: MaxNaux Determination: Memory available after MO int + CMO',&
-                   & (MaxSize-nbasisAux*nvirt*nocc*8.0E-9_realk-2*nbasis1*nvirt*8.0E-9_realk-2*nbasis2*nocc*8.0E-9_realk),' GB'           
-              print*,'RIMP2: MaxNaux Determination: MaxNaux',MaxNaux,' compared to nAux=',nbasisAux
-              IF(use_bg_buf)THEN              
-                 print*,'RIMP2: This MaxNaux Correspond to Memory usage of ',&
-                      &   nbasisAux*nvirt*nocc*8.0E-9_realk+2*nbasis1*nvirt*8.0E-9_realk+2*nbasis2*nocc*8.0E-9_realk&
-                      & + MaxNaux*nthreads*nbasis1*nbasis2*8.0E-9_realk + MaxNaux*nbasis1*nocc*8.0E-9_realk&
-                      & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk,' GB'
-              ELSE
-                 print*,'RIMP2: This MaxNaux Correspond to Memory usage of ',&
-                      &   nbasisAux*nvirt*nocc*8.0E-9_realk+2*nbasis1*nvirt*8.0E-9_realk+2*nbasis2*nocc*8.0E-9_realk&
-                      & + MaxNaux*nthreads*nbasis1*nbasis2*8.0E-9_realk + MaxNaux*nbasis1*nocc*8.0E-9_realk,' GB'
-                 
-              ENDIF
+              print*,'RIMP2: Full MO can fit in memory, we can do a simple reduction'
            ENDIF
         ENDIF
-        IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
-           MaxNaux = MinAuxBatch + 1
-           PerformReduction = MaxNaux
+        IF(MemForFullMOINT.GE.maxsize)THEN
+           !Full MO cannot fit in memory       
+           PerformReduction = 0 !Perform Bcast scheme
+        ELSE
+           PerformReduction = 1
         ENDIF
      ENDIF
   ENDIF
@@ -256,8 +175,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   call time_start_phase( PHASE_IDLE )
   call lsmpi_barrier(infpar%lg_comm)
   call time_start_phase( PHASE_COMM )
-  call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
-  IF(PerformReduction.NE.0) MaxNaux = PerformReduction
+  call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)  
   call time_start_phase( PHASE_WORK )
 #endif
   CALL LSTIMER('DF_Calpha:Init ',TS3,TE3,LUPRI,ForcePrint)
@@ -345,7 +263,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   !==================================================================
   
   dim1 = nBasisAux
-
+  noOMP = .FALSE.
   !Output the Aux dimensions for each node nAuxMPI of the Integral
   IF(DECinfo%AuxAtomicExtent)THEN
      molecule1 => mylsitem%SETTING%MOLECULE(1)%p
@@ -382,102 +300,27 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         IF(DECinfo%MemDebugPrint)call printBGinfo()
         IF(DECinfo%MemDebugPrint)print*,'BG: alloc Calpha(',nsize,')'
         call mem_pseudo_alloc(Calpha,nsize)
-        maxsize = maxsize - nsize*8.0E-9_realk
      ENDIF
 
-     IF(PerformReduction.EQ.0)THEN
-        !Use Bcast scheme
-        IF(use_bg_buf)THEN
-           !only looking at the memory allocated in BG buffer
-           MemForPartialMOINT = (MaxnAuxMPI*nvirt*nocc+&
-                & MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk
-        ELSE
-           MemForPartialMOINT = (MaxnAuxMPI*nvirt*nocc+&
-                & MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
-                & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+     IF(PerformReduction.EQ.0)THEN 
+        dim1 = nAuxMPI(mynum+1)    !DO NOT PERFORM REDUCTION each node have part of AlphaCD(nAuxMPI(mynum+1),nvirt,nocc)
+        AuxDimUsedInAOcode = MaxnAuxMPI
+     ELSE
+        dim1 = nBasisAux           !Reduction all nodes have full AlphaCD allocated (partial filled in)
+        AuxDimUsedInAOcode = dim1
+     ENDIF
+
+     !Determine internal or external AO to MO transform 
+     IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
+        !Force Internal AO to MO transform 
+        MaxNaux = MinAuxBatch + 1
+     ELSE
+        call DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,&
+             & nocc,nvirt,MinAuxBatch,numnodes,nAuxMPI,mynum,MaxNaux,nthreads)
+        IF(noOMP)THEN
+           noOMPsave= mylsitem%setting%scheme%noOMP
+           mylsitem%setting%scheme%noOMP = .TRUE.
         ENDIF
-        IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
-           print*,'MemForPartialMOINT',MemForPartialMOINT
-           print*,'MemForPartialMOINT(Elements)',MemForPartialMOINT/8.0E-9_realk
-           IF(use_bg_buf)THEN
-              print*,'Resulting in Memory Estimate of  ',&
-                   & (buf_realk%offset+MemForPartialMOINT/8.0E-9_realk)*8.0E-9_realk,' GB'           
-           ENDIF
-           print*,'maxsize',maxsize
-           print*,'RECALC maxsize'
-        ENDIF
-        IF(use_bg_buf)THEN
-           maxsize = mem_get_bg_buf_free()*8.0E-9_realk
-           IF(DECinfo%MemDebugPrint)THEN
-              print*,'mem_get_bg_buf_free=',mem_get_bg_buf_free()
-              print*,'maxsize',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
-              call printBGinfo()
-           ENDIF
-        ELSE
-           call get_currently_available_memory(MemInGBCollected)
-           maxsize = MemInGBCollected*0.65E0_realk
-           IF(DECinfo%MemDebugPrint)print*,'maxsize',maxsize,' GB'
-        ENDIF
-        IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
-           print*,'==================================='
-           print*,'Step1(Elements): ',nAuxMPI(mynum+1)*nvirt*nocc,'=',nAuxMPI(mynum+1),'*',nvirt,'*',nocc
-           print*,'Step2(Elements): ',MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)
-           print*,'MinAuxBatch',MinAuxBatch
-           print*,'nAuxMPI(mynum+1)',nAuxMPI(mynum+1)
-           print*,'nvirt*nocc',nvirt*nocc,'nvirt,nocc',nvirt,nocc
-           print*,'nthreads',nthreads
-           print*,'nbasis1',nbasis1
-           print*,'nbasis2',nbasis2
-        ENDIF
-        IF(MemForPartialMOINT.GE.maxsize)THEN !Error 
-           IF(nthreads.GT.1)THEN
-              !use Critical instead ! 
-              !deactivating OpenMP 
-              mylsitem%setting%scheme%noOMP = .TRUE.
-              nthreads = 1              
-           ELSE
-              CALL lsquit('Not enough memory in build_calpha bcast scheme1',-1)
-           ENDIF
-           IF(use_bg_buf)THEN
-              !only looking at the memory allocated in BG buffer
-              MemForPartialMOINT = (nAuxMPI(mynum+1)*nvirt*nocc+&
-                   & MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk
-           ELSE
-              MemForPartialMOINT = (nAuxMPI(mynum+1)*nvirt*nocc+&
-                   & MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
-                   & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
-           ENDIF
-           IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
-              print*,'deactivating OpenMP'
-              print*,'MemForPartialMOINT',MemForPartialMOINT
-              print*,'maxsize',maxsize
-              print*,'==================================='
-              print*,'Step1: ',nAuxMPI(mynum+1)*nvirt*nocc
-              print*,'Step2: ',MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)
-              print*,'MinAuxBatch',MinAuxBatch
-              print*,'nAuxMPI(mynum+1)',nAuxMPI(mynum+1)
-              print*,'nvirt*nocc',nvirt*nocc,'nvirt,nocc',nvirt,nocc
-              print*,'nthreads',nthreads
-              print*,'nbasis1',nbasis1
-              print*,'nbasis2',nbasis2
-           ENDIF
-           IF(MemForPartialMOINT.GE.maxsize)THEN !Error               
-              CALL lsquit('Not enough memory in build_calpha bcast scheme2',-1)
-           ENDIF
-        ENDIF
-        MaxNaux = MIN(nAuxMPI(mynum+1),&
-             &FLOOR((MaxSize/8.0E-9_realk-nAuxMPI(mynum+1)*nvirt*nocc-&
-             & nbasis1*nvirt-nbasis2*nocc) &
-             & /((nbasis1*nocc+nbasis1*nbasis2)*nthreads)))
-        IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
-           MaxNaux = MinAuxBatch + 1
-        ENDIF
-        IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
-           print*,'MaxNaux',MaxNaux
-        ENDIF
-        dim1 = nAuxMPI(mynum+1)
-        !ELSE
-        !Perform Reduction using dim1=nbasisAux
      ENDIF
   ELSE
      !Serial Code
@@ -490,7 +333,6 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         IF(DECinfo%MemDebugPrint)call printBGinfo()
         IF(DECinfo%MemDebugPrint)print*,'BG: alloc Calpha(',nsize,')'
         call mem_pseudo_alloc(Calpha,nsize)
-        maxsize = maxsize - nsize*8.0E-9_realk
      ENDIF
   ENDIF
 
@@ -513,7 +355,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      IF(MaxNaux.LT.dim1)THEN
         print*,'NEW (alpha|AI) CODE: Internal AotoMO, ',MaxNaux,' out of ',dim1
      ELSE
-        print*,'NEW (alpha|AI) CODE: external AotoMO, MaxNaux=',MaxNaux
+        print*,'NEW (alpha|AI) CODE: external AotoMO'
      ENDIF
      print*,'NEW (alpha|AI) CODE: Number of Threads =',nthreads
   ENDIF
@@ -522,6 +364,9 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
        & AlphaCD3,mylsitem%setting,nbasisAux,nbasis1,nbasis2,intspec(1:4),MaxNaux,&
        & nvirt,nocc,.TRUE.,Cvirt,Cocc,nthreads,dim1,GindexToLocal,DECinfo%PL,&
        & DECinfo%MemDebugPrint,use_bg_buf)
+  IF(noOMP)THEN
+     mylsitem%setting%scheme%noOMP = noOMPsave  !restore default values
+  ENDIF
   CALL LSTIMER('DF_Calpha:3CenterInt',TS3,TE3,LUPRI,ForcePrint)
 
 !  call sleep(mynum*10)
@@ -949,6 +794,185 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   CALL LSTIMER('Build_CalphaMO2',TS,TE,LUPRI,ForcePrint)
 
 end subroutine Build_CalphaMO2
+
+subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,&
+     & nocc,nvirt,MinAuxBatch,numnodes,nAuxMPI,mynum,MaxNaux,nthreads)
+  implicit none       
+  logical,intent(in) :: use_bg_buf
+  logical,intent(inout) :: noOMP
+  integer,intent(in)    :: dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,nocc,nvirt,MinAuxBatch
+  integer,intent(in)    :: numnodes,mynum
+  integer,intent(in)    :: nAuxMPI(numnodes)
+  integer,intent(inout) :: MaxNaux,nthreads
+  !
+  real(realk) :: maxsize,MemInGBCollected,ExternalAOtoMO,InternalAOtoMO 
+  !Determine memory available 
+  IF(use_bg_buf)THEN
+     maxsize = (mem_get_bg_buf_free()+1)*8.0E-9_realk
+     IF(DECinfo%MemDebugPrint)THEN
+        print*,'DetermineMaxNauxRI: mem_get_bg_buf_free=',mem_get_bg_buf_free()
+        print*,'DetermineMaxNauxRI: maxsize',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
+        call printBGinfo()
+     ENDIF
+  ELSE
+     call get_currently_available_memory(MemInGBCollected)
+     maxsize = MemInGBCollected*0.65E0_realk
+     IF(DECinfo%MemDebugPrint)print*,'BCAST Scheme: maxsize',maxsize,' GB'
+  ENDIF
+  !Memory estimate for the external AO to MO transformation
+  ExternalAOtoMO = (MAX(AuxDimUsedInAOcode*nbasis1*nbasis2+AuxDimUsedInAOcode*nbasis1*nocc,&
+       &                AuxDimUsedInAOcode*nbasis1*nocc+AuxDimUsedInAOcode*nvirt*nocc))*8.0E-9_realk
+  IF(DECinfo%MemDebugPrint)print*,'External AO to MO requires',ExternalAOtoMO,' GB' 
+  
+  IF(ExternalAotoMO.LE.maxsize)THEN 
+     !External AO to MO chosen
+     MaxNaux = dim1
+  ELSE
+     !Internal AO to MO chosen. We determine the parameter MaxNaux
+     !which denotes the block (MaxNaux,nbasis1,nbasis2) that should be calculated 
+     !before it is transformed into (MaxNaux,nMO1,nMO2) and pluged into AlphaCD(dim1,nvirt,nocc)
+     
+     IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+        print*,'ExternalAOtoMO',ExternalAOtoMO
+        print*,'ExternalAOtoMO(Elements)',ExternalAOtoMO/8.0E-9_realk
+        IF(use_bg_buf)THEN
+           print*,'Resulting in Memory Estimate of  ',&
+                & (buf_realk%offset+ExternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+        ENDIF
+        print*,'maxsize',maxsize
+        print*,'==================================='
+        print*,'Step1(Elements): ',nAuxMPI(mynum+1)*nvirt*nocc,'=',nAuxMPI(mynum+1),'*',nvirt,'*',nocc
+        print*,'Step2(Elements): ',MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)
+        print*,'MinAuxBatch',MinAuxBatch
+        print*,'nAuxMPI(mynum+1)',nAuxMPI(mynum+1)
+        print*,'nvirt*nocc',nvirt*nocc,'nvirt,nocc',nvirt,nocc
+        print*,'nthreads',nthreads
+        print*,'nbasis1',nbasis1
+        print*,'nbasis2',nbasis2
+     ENDIF
+     !Assume minimal MaxNaux (MaxNaux=MinAuxBatch) - If this is still too much memory 
+     !We need to deactivate OpenMP!
+     !   FullAlphaCD+                        W0
+     IF(use_bg_buf)THEN
+        InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc)*8.0E-9_realk
+     ELSE
+        InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc+&
+             & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+     ENDIF
+     IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+        print*,'Minimal MaxNaux = ',MinAuxBatch
+        print*,'InternalAOtoMO',InternalAOtoMO
+        print*,'InternalAOtoMO(Elements)',NINT(InternalAOtoMO/8.0E-9_realk)
+        print*,'BG        Used(Elements)',buf_realk%offset
+        print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+        print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+        print*,'BG        SIZE(GB)      ',maxsize
+        print*,'Usage(GB)               ',InternalAOtoMO
+        IF(use_bg_buf)THEN
+           print*,'Resulting in Memory Estimate of  ',&
+                & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+        ENDIF
+     ENDIF
+     IF(InternalAOtoMO.GT.maxsize)THEN        
+        IF(nthreads.GT.1)THEN
+           IF(DECinfo%MemDebugPrint)print*,'Deactivating OpenMP due to memory requirements'
+           !use Critical instead ! 
+           !Deactivating OpenMP 
+           noOMP = .TRUE.
+           nthreads = 1                           
+        ELSE
+           CALL lsquit('Not enough memory in build_calpha X1',-1)
+        ENDIF
+        IF(use_bg_buf)THEN
+           InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc)*8.0E-9_realk
+        ELSE
+           InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc+&
+                & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+        ENDIF
+        print*,'Minimal MaxNaux = ',MinAuxBatch,' and No OpenMP '
+        print*,'InternalAOtoMO',InternalAOtoMO
+        print*,'InternalAOtoMO(Elements)',NINT(InternalAOtoMO/8.0E-9_realk)
+        print*,'BG        Used(Elements)',buf_realk%offset
+        print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+        print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+        print*,'BG        SIZE(GB)      ',maxsize
+        print*,'Usage(GB)               ',InternalAOtoMO
+        IF(use_bg_buf)THEN
+           print*,'Resulting in Memory Estimate of  ',&
+                & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+        ENDIF
+        IF(InternalAOtoMO.GT.maxsize)THEN
+           CALL lsquit('Not enough memory in build_calpha X2, even with OpenMP deactivated',-1)
+        ELSE           
+           !find Optimal MaxNaux (with nthreads=1)
+           IF(use_bg_buf)THEN
+              MaxNaux = MAX(dim1,&
+                   &FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc) &
+                   & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+              IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+                 InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc)*8.0E-9_realk
+                 print*,'MaxNaux',MaxNaux
+                 print*,'InternalAOtoMO',InternalAOtoMO
+                 print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk
+                 print*,'BG        Used(Elements)',buf_realk%offset
+                 print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+                 print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+                 print*,'BG        SIZE(GB)      ',maxsize
+                 print*,'Usage(GB)               ',InternalAOtoMO
+                 print*,'Resulting in Memory Estimate of  ',&
+                      & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+              ENDIF
+           ELSE
+              MaxNaux = MAX(dim1,&
+                   &FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc-nbasis1*nvirt-nbasis2*nocc) &
+                   & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+              IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+                 InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc &
+                      & +nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+                 print*,'InternalAOtoMO',InternalAOtoMO
+                 print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk,' of the allowed',maxsize,' GB'
+              ENDIF
+           ENDIF
+        ENDIF
+     ELSE
+        IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+           print*,'minimal MaxNaux=',MinAuxBatch,' OK -> Find optimal MaxNaux:'
+        ENDIF
+        !minimal MaxNaux OK -> Find optimal MaxNaux
+        !MinAuxBatch = (maxsize/8.0E-9_realk-dim1*nocc*nvirt)/(nbasis1*nbasis2*nthreads+nbasis1*nocc)
+        IF(use_bg_buf)THEN
+           MaxNaux = MIN(dim1,&
+                & FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc) &
+                & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+
+           IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+              print*,'MaxNaux',MaxNaux
+              InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc)*8.0E-9_realk
+              print*,'InternalAOtoMO',InternalAOtoMO
+              print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk
+              print*,'BG        Used(Elements)',buf_realk%offset
+              print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+              print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+              print*,'BG        SIZE(GB)      ',maxsize
+              print*,'Usage(GB)               ',InternalAOtoMO
+              print*,'Resulting in Memory Estimate of  ',&
+                   & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+           ENDIF
+        ELSE
+           MaxNaux = MIN(dim1,&
+                &FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc-nbasis1*nvirt-nbasis2*nocc) &
+                & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+           IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+              print*,'MaxNaux',MaxNaux
+              InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc &
+                   & +nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+              print*,'InternalAOtoMO',InternalAOtoMO
+              print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk,' of the allowed',maxsize,' GB'
+           ENDIF
+        ENDIF
+     ENDIF
+  ENDIF
+END subroutine DetermineMaxNauxRI
 
 !This should be call my master and slaves
 subroutine Build_RobustERImatU(myLSitem,master,nbasis1,nbasis2,nbasisAux,&

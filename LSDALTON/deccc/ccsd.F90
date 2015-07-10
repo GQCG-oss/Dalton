@@ -7383,7 +7383,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     ! add O4 int. to B2 term
     if (dimK>0) then
-      call manual_4132_reordering_f2t(1,[dimK,dimQ,nocc,ntot],[dimP,dimQ,ntot,ntot], &
+      ! Extract g[sKlQ] from g[PQrs]
+      call manual_4132_reordering_f2t([dimK,dimQ,nocc,ntot],[dimP,dimQ,ntot,ntot], &
          & [1,1,1,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! transform Q => i and get: g[sK li]
@@ -7439,7 +7440,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end do
     !$OMP END PARALLEL DO
 
-    call manual_1324_reordering_f2t(1,[dimP,dimC,ntot,nvir],[dimP,dimQ,ntot,ntot], &
+    ! Extract g[PrCd] from g[PQrs]
+    call manual_1324_reordering_f2t([dimP,dimC,ntot,nvir],[dimP,dimQ,ntot,ntot], &
        & [1,1+dimI,1,1+nocc],1.0E0_realk,gmo,0.0E0_realk,tmp0)
      
     ! Get: sigma[pr, ij] = sum_cd g[pr, cd] * t2red[cd, ij]
@@ -7613,20 +7615,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       pos1 = D_sta+dimD-1
       call dcopy(ncopy,u2(:,D_sta:pos1,:,:),1,tmp0,1)
        
-      ! Get g[PD, kc] from g[PQ, rs]; D in Q batch
-      ncopy = dimP*dimD
-      pos2 = 1
-      do c=1,nvir
-        do k=1,nocc
-          pos1 = 1 + dimP*dimI + dimP*dimQ*ntot*(nocc+c-1) + (k-1)*dimP*dimQ
-          call dcopy(ncopy,gmo(pos1),1,tmp2(pos2),1)
-          pos2 = pos2 + ncopy
-        end do
-      end do
-       
-      ! Get g[PcDk]
-      call array_reorder_4d(1.0E0_realk,tmp2,dimP,dimD,nocc,nvir, &
-                            & [1,4,2,3],0.0E0_realk,tmp1)
+      ! Extract g[PcDk] from g[PQrs]
+      call manual_1324_reordering_f2t([dimP,dimD,nvir,nocc],[dimP,dimQ,ntot,ntot], &
+         & [1,1+dimI,1+nocc,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
 
       ! Get G_Pi = sum_cDk g[P, cDk] u2[cDk, i]:
       call dgemm('n','n',dimP,nocc,nvir*dimD*nocc,1.0E0_realk,tmp1,dimP, &
@@ -7642,17 +7633,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       pos1 = P_sta+dimK-1
       call dcopy(ncopy,u2(:,:,P_sta:pos1,:),1,tmp0,1)
 
-      ! get g[cKl, Q] from g[PQrs]
-      do c=1,nvir
-        do l=1,nocc
-          do q=1,dimQ
-            pos1 = 1 + (q-1)*dimP + (l-1)*dimP*dimQ + (nocc+c-1)*dimP*dimQ*ntot
-            pos2 = c + (l-1)*nvir*dimK + (q-1)*nvir*dimK*nocc
-            call dcopy(dimK,gmo(pos1),1,tmp1(pos2),nvir)
-          end do 
-        end do 
-      end do 
-      
+      ! Extract g[cKlQ] from g[PQrs]
+      call manual_3142_reordering_f2t([dimK,dimQ,nvir,nocc],[dimP,dimQ,ntot,ntot], &
+         & [1,1,1+nocc,1],1.0E0_realk,gmo,0.0E0_realk,tmp1)
+
       ! Get H_aQ = sum_cKl u2[a, cKl] g[cKl, Q]
       call dgemm('n','n',nvir,dimQ,nvir*dimK*nocc,1.0E0_realk,tmp0,nvir, &
                 & tmp1,nvir*dimK*nocc,1.0E0_realk,H_aQ(1+(Q_sta-1)*nvir),nvir)
@@ -7744,24 +7728,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !====================================================================
     ! Get gvoov integrals: g[aijb]
-    ! 1) get g[PQjb]
-    ncopy = dimP*dimQ*nocc
-    pos2 = 1 
-    do b=1,nvir
-      pos1 = 1 + (nocc+b-1)*dimP*dimQ*ntot
-      call dcopy(ncopy,gmo(pos1),1,tmp0(pos2),1)
-      pos2 = pos2 + ncopy
-    end do
-    
-    ! 2) transpose and get g[QjbP]:
-    call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
+    !! 1) get g[PQjb]
+    !ncopy = dimP*dimQ*nocc
+    !pos2 = 1 
+    !do b=1,nvir
+    !  pos1 = 1 + (nocc+b-1)*dimP*dimQ*ntot
+    !  call dcopy(ncopy,gmo(pos1),1,tmp0(pos2),1)
+    !  pos2 = pos2 + ncopy
+    !end do
+    !
+    !! 2) transpose and get g[QjbP]:
+    !call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
   
-    ! 3) transform Q to i:
+    ! Extract g[QjbP] from g[PQrs]
+    call manual_2341_reordering_f2t([dimP,dimQ,nocc,nvir],[dimP,dimQ,ntot,ntot], &
+       & [1,1,1,1+nocc],1.0E0_realk,gmo,0.0E0_realk,tmp1)
+
+    ! transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc
     call dgemm('n','n',nocc,nocc*nvir*dimP,dimQ,1.0E0_realk,yocc(pos1),nocc, &
               & tmp1,dimQ,0.0E0_realk,tmp0,nocc)
 
-    ! 4) transform P to a:
+    ! transform P to a:
     pos1 = 1 + (P_sta-1)*nvir
     call dgemm('n','t',nvir,nocc*nocc*nvir,dimP,1.0E0_realk,xvir(pos1),nvir, &
               & tmp0,nocc*nocc*nvir,1.0E0_realk,gvoov,nvir)
