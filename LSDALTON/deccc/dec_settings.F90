@@ -59,7 +59,7 @@ contains
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
     DECinfo%JacobianThr = 1.0e-7
-    DECinfo%JacobianMaxSubspace = 1000
+    DECinfo%JacobianMaxSubspace = 10000
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
