@@ -142,11 +142,13 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         !allocate AO to MO tmp (MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))
         IF(use_bg_buf)THEN
            !only looking at the memory allocated in BG buffer 
-           MemForFullMOINT = (2*nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk &
+           MemForFullMOINT = (2*nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*&
+                & (nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk &
                 & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk        
         ELSE
-           MemForFullMOINT = (nbasisAux*nvirt*nocc+nbasisAux*nvirt*nocc/(numnodes+2)+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
-                & nbasis1*nvirt+nbasis2*nocc+nbasisAux*nbasisAux)*8.0E-9_realk
+           MemForFullMOINT = (nbasisAux*nvirt*nocc+nbasisAux*nvirt*nocc/(numnodes+2)&
+                & +MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)&
+                & +nbasis1*nvirt+nbasis2*nocc+nbasisAux*nbasisAux)*8.0E-9_realk
         ENDIF
         IF(DECinfo%MemDebugPrint)THEN
            print*,'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
