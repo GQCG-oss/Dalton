@@ -730,12 +730,12 @@ module cc_tools_module
 
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
-            &nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
+            &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
 
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
             !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
             call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
-            &laleg*nb*nv,nb*nv,laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
+            &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
 
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
             call get_I_cged(w0,w2,laleg,nv,acc_h=acc_h(curr_id))
@@ -743,7 +743,7 @@ module cc_tools_module
 #ifdef VAR_OPENACC
             !(w3.1):sigma+ [i>= j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
             call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w3(1+(faleg-1)*nor),nor,&
-            &laleg*nvr,nor*nvr,laleg*nor,acc_h(curr_id),cub_h(curr_id))
+            &i8*laleg*nvr,i8*nor*nvr,i8*laleg*nor,acc_h(curr_id),cub_h(curr_id))
 #else
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
@@ -782,12 +782,12 @@ module cc_tools_module
 #endif
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
-            &nb*laleg*nb,nv*nb,nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
+            &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
 
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
             !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
             call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
-            &laleg*nb*nv,nb*nv,laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
+            &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
 
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
             call get_I_cged(w0,w2,laleg,nv,acc_h=acc_h(curr_id))
@@ -795,7 +795,7 @@ module cc_tools_module
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
 #ifdef VAR_OPENACC
             call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tmi%elm1,nvr,w0,laleg,nul,w3(tred*nor+1+(faleg-1)*nor),nor,&
-            &laleg*nvr,nor*nvr,laleg*nor,acc_h(curr_id),cub_h(curr_id))
+            &i8*laleg*nvr,i8*nor*nvr,i8*laleg*nor,acc_h(curr_id),cub_h(curr_id))
 #else
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+faleg),tred)
 #endif
