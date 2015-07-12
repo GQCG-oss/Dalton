@@ -6780,7 +6780,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
-     logical, intent(in) :: local
+    logical, intent(in) :: local
 
     !> Batches info:
     type(MObatchInfo), intent(in) :: MOinfo
@@ -7313,7 +7313,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> transformation matrices:
     real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> doubles amplitudes:
-    real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc)
+    real(realk), intent(in) :: t2(nvir*nvir*nocc*nocc)
     !> Intermediates used to calculate the B2 term.
     !  B2prep = g_kilj + sigma_kilj
     real(realk), intent(inout) :: B2prep(nocc*nocc*nocc*nocc)
@@ -7426,15 +7426,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! else calculate sigma and A2.2 and B2.2 contribution:
 
     ! Extract t2[Cd, i<=j] from t2[cd, ij]:
-    call dcopy(nvir*nvir*nocc*nocc,t2,1,tmp2,1)
-    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,nvir,C_sta,dimC,tmp1,tmp2)&
+    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,nvir,C_sta,dimC,tmp1,t2)&
     !$OMP PRIVATE(i,j,d,pos1,pos2)
     do j = 1,nocc
       do i = 1,j
         do d = 1, nvir
           pos2 = C_sta + (d-1)*nvir + (i-1)*nvir*nvir + (j-1)*nvir*nvir*nocc
           pos1 = 1 + (d-1)*dimC + (j*(j-1)/2 + i-1)*dimC*nvir
-          call dcopy(dimC,tmp2(pos2),1,tmp1(pos1),1)
+          call dcopy(dimC,t2(pos2),1,tmp1(pos1),1)
         end do
       end do
     end do
