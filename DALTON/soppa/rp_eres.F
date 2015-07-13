@@ -260,7 +260,7 @@ C
       if (numprocs.gt.1) then
           call mpixbcast(85, 1, 'INTEGE', 0)
           call mpixbcast(0, 1, 'INTEGE', 0)
-          CALL PAR_RP_ERES(WORK, LWORK, 0, LUPRI, IPRINT)
+          CALL PAR_RP_ERES(WORK, LWORK, 0)
           goto 888
       endif
 #endif
@@ -633,6 +633,7 @@ C     MPI related and load balancing variables
       integer, allocatable, dimension(:,:) :: presortarray !only used by master
       integer, allocatable, dimension(:,:) :: finalsorted !only used by master
       real*8,  allocatable, dimension(:)   :: tempfock
+      integer :: workindex
       
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
@@ -769,6 +770,8 @@ C**********************************************************
 
       call getbytespan(gradml, gnrinfLAST, bytesize) 
       call mpi_bcast(gradml, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
+
+      call stupid_isao_bcast_routine()
 
       ! Common blocks with explicitly set sizes, no need to calculate bytespan
       call mpi_bcast(basdir,612, mpi_character, 0, mpi_comm_world, ierr)
@@ -1121,7 +1124,8 @@ C      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 
       integer, intent(out) :: bytespan
       intent(in)           :: firstvar, lastvar
-      integer*8            :: firstmem, lastmem
+CRF This should be mpi_address_kind
+      integer(mpi_address_kind) :: firstmem, lastmem
       integer              :: totaltransfer = 0
       integer, parameter   :: approxeager = 4096 ! Approximate upper limit for eager protocol transfers. Implementation dependent.
       integer              :: numeagersends=0, numrendezsends=0 
@@ -1362,7 +1366,7 @@ C
 
       integer, dimension(:,:), allocatable :: sumofwork
       integer, dimension(2) :: tempavail, templazy
-      integer :: numprocs
+      integer :: numprocs, availloc, targetrow
       integer :: allocstatus, deallocstatus
 
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)

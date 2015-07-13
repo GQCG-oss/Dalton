@@ -191,23 +191,6 @@ C
       NEWDEF = (WORD .EQ. '*CC INP' .OR. WORD .EQ. '**CC   '.OR.
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
-         IF (PARCAL) THEN
-C Beyer 
-C       SOPPA runs in parallel now and needs Coupled Cluster 
-C       Amplitudes. Hard coding a stop in parallel CC code will break all 
-C       parallel SOPPA routines. 
-C
-C       When CC runs in parallel you can remove this check and the #include "soppinf.h"
-C       from the list of COMMON block inclusions.
-           IF (.NOT. (AORPA.OR.AOHRP.OR.AOSOP.OR.DCRPA.OR.AOSOC) ) THEN 
-              WRITE(LUPRI,*) "WARNING: CC is not MPI parallelized!"
-              WRITE(LUPRI,*)
-     &        "For parallelization speedup, e.g. use parallel MKL"
-              !CALL PARQUIT("Unable to employ requested resources. 
-       !&                      Coupled Cluster ")
-           ENDIF
-C End Beyer
-         ENDIF
          WORD1 = WORD
  1000    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -803,6 +786,27 @@ C                  write(lupri,*)'SONIA: activated SOSEX (DRCCD)'
             END IF
       END IF
   300 CONTINUE
+
+#ifdef VAR_MPI      
+         IF (NEWDEF.AND.PARCAL) THEN
+CRF moved this to after the input is read  
+C
+C Beyer 
+C       SOPPA runs in parallel now and needs Coupled Cluster 
+C       Amplitudes. Hard coding a stop in parallel CC code will break all 
+C       parallel SOPPA routines. 
+C
+C       When CC runs in parallel you can remove this check and the #include "soppinf.h"
+C       from the list of COMMON block inclusions.
+           IF ( (.NOT. AOSOPPA) ) THEN 
+              WRITE(LUPRI,*) "WARNING: CC is not MPI parallelized!"
+              WRITE(LUPRI,*)
+     &        "For parallelization speedup, e.g. use parallel MKL"
+              CALL PARQUIT("CC ")
+           ENDIF
+C End Beyer
+         ENDIF
+#endif 
 C
 C---------------------------------------------------
 C     set some defaults...

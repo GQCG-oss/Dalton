@@ -62,7 +62,7 @@ C
       END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
-      IF (DEBUG) THEN
+      IF (INFPAR_DEBUG) THEN
          IPRNOD = IPRINT
       ELSE
          IPRNOD = 0
@@ -1178,9 +1178,9 @@ C added by Bin Gao, May 12, 2012
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
          ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
-            CALL PAR_RP_ERES(work, mwork, mytid )
+            CALL PAR_RP_ERES(work(1), mwork, mytid )
          ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
-            CALL PAR_SO_ERES(work, mwork, mytid )
+            CALL PAR_SO_ERES(work(1), mwork, mytid )
 #ifdef MOD_CGTO_DIFF_ERI
          ! added by Bin Gao, Oct. 27, 2012
          ! cgto-diff-eri code to calculate arbitray order geometric derivatives

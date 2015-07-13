@@ -21,8 +21,10 @@ C     PARSOPPA = Parallel Second order Polarization Propagator Approximation  (t
      &           copyinewtr
 
       logical :: forceupdate
-      logical, save :: getdensai
-      character*5 :: copymodel 
+      logical :: getdensai
+      character*5 :: copymodel
+C  Pad using a dummy variable      
+      character(len=3) :: padding_dummy
 
       common /parsoppa/
      & NTOT  , NUMDIS, KODCL1, KODCL2, KODBC1, LWORKSV,
@@ -36,8 +38,9 @@ C     PARSOPPA = Parallel Second order Polarization Propagator Approximation  (t
      & LSIGDA1,LSIGDA2,LAIJ,   LAAB,   KTR2E,  KTR2D,
      & KRES2E, KRES2D, KSIGAI1,KSIGAI2,KSIGDA1,KSIGDA2,
      & forceupdate,    LT2AMP, KAIJ,   KAAB,  isyres, 
-     & LCMO,   icdel1, copymodel, copyldensai , 
-     & copynit,  copyisymtr, copyinewtr, getdensai
+     & LCMO,   icdel1, copyldensai , 
+     & copynit,  copyisymtr, copyinewtr, getdensai,
+     & copymodel, padding_dummy
 
 
       common /parsoppa/ parsoppalast

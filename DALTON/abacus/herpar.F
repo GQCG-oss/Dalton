@@ -2709,7 +2709,7 @@ C     For infpar.h
 C
       SLAVE  = .FALSE.
 C     ... this is the master in a parallel run
-      DEBUG  = .FALSE.
+      INFPAR_DEBUG  = .FALSE.
       NTASK  = 1
       IPRPAR = 0
       NDEGDI = 5
@@ -2785,7 +2785,7 @@ C
 #endif
                GO TO 100
     5          CONTINUE
-                  DEBUG = .TRUE.
+                  INFPAR_DEBUG = .TRUE.
                GO TO 100
     6          CONTINUE
                   rma_model = .true.

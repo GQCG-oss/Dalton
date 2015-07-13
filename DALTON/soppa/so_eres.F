@@ -319,8 +319,11 @@ C***********************************************************
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       parallelsoppa: if (numprocs.gt.1) then
 
-         ! make every slave join the parallel calculation 
+         ! make every slave join the parallel calculation
+         ! Signal for PARA_SO_ERES=87 in iprtyp.h, maybe insert macro
+         ! directly 
          call mpixbcast(87, 1, 'INTEGE', 0)
+         ! Second broadcast -> printlevel for the slaves
          call mpixbcast( 0, 1, 'INTEGE', 0)
 
          ! Ready slaves for massive amount of updates.
@@ -906,7 +909,7 @@ C     Pre-sorting load balancing variables
       integer, allocatable, dimension(:), save :: AssignedIndices
 
 C     Timing variables used for load monitoring
-      integer :: comm_timers, color
+      integer :: comm_timers, color, workindex
       integer :: counti, countf, count_rate
       real    :: timespent
       real, dimension(:), allocatable, save :: timings
@@ -933,6 +936,7 @@ C**************************************************
 C     Initialization variables.
 C**************************************************
 
+      aijreduce = .false.
       ! This bcast determines how many variables and common blocks
       ! need to be updated before the parallel calculation can start.
       if (myid.ne.0) then
@@ -1122,14 +1126,19 @@ C**********************************************************
       call getbytespan(gradml, gnrinfLAST, bytesize) 
       call mpi_bcast(gradml, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
 
+      call stupid_isao_bcast_routine()
+
       ! Common blocks with explicitly set sizes, no need to calculate bytespan
+      ! Though we should probably still insert the actual parameter governing
+      ! their length, eg. lbasdir+12 = 612
       call mpi_bcast(basdir,612, mpi_character, 0, mpi_comm_world, ierr)
       call mpi_bcast(fnvajkl, 10, mpi_character, 0, mpi_comm_world,ierr)
       call mpi_bcast(vclthr, 24, mpi_byte, 0, mpi_comm_world, ierr)
 
       ! The slaves need to create the iadrpk array by 
       ! calling the module functions rather than with a bcast
-      call mpi_bcast(iadrpk_dim, 1, mpi_integer, 0,mpi_comm_world,ierr) 
+      ! iadrpk_dim is initialized in get_iadrpk, no need to send it 
+!      call mpi_bcast(iadrpk_dim, 1, mpi_integer, 0,mpi_comm_world,ierr) 
       if (.not. allocated(iadrpk) ) then
          call get_iadrpk(lupri,nsym,muld2h,nbas,
      &                   nbast,i2bst,iaodis,iaodpk)
@@ -1145,15 +1154,22 @@ C**********************************************************
 C**************************************************
 C     This data needs to be updated every time PAR_SO_ERES is called 
 C**************************************************
-      call mpi_bcast(work, kendsv, mpi_real8, 0, mpi_comm_world, ierr)
 
-      call mpi_bcast( work(kindxb), (8*MXSHEL*MXCONT + 1)/IRAT, 
+C
+C This broadcasts the trial-vectors, ao-to-mo matrix, as well as 
+C the result vectors and temporary stuff. The latter need probably only
+C be explicitly zeroed here.  
+      call mpi_bcast(work(KCMO), kendsv, mpi_real8, 0, mpi_comm_world,
+     &                ierr)
+
+      call mpi_bcast( work(kindxb), (8*MXSHEL*MXCON+ 1)/IRAT, 
      & mpi_real8, 0, mpi_comm_world, ierr)
 
       call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)
 
 
-      if (resetvectors) then
+C      if (resetvectors) then
+      if(myid.ne.0) then
          call dzero( work(kfock),   lfock)
          call dzero( work(kres1e),  lres1e)
          CALL dzero( work(kres1d),  lres1d)
@@ -1233,6 +1249,8 @@ C**************************************************
          IF (myid.ne.0) then
 
 C           Get the number of tasks and allocate memory for the indices
+C           Maybe these should be made blocking (since we basically
+C           just pol untill the finish, with nothing i between.
             call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
      &                  mpi_comm_world, getnumjobs, ierr)
 001         continue
@@ -1608,7 +1626,7 @@ C**************************************************
 C      Clean up allocated arrays 
 C************************************************** 
       deallocate(temp, stat=deallocstatus)
-      if(.not.(allocstatus.eq.0) ) then
+      if(.not.(deallocstatus.eq.0) ) then
          call quit('Deallocation error in PAR_SO_ERES (temp)')
       endif
 
@@ -1648,6 +1666,7 @@ C F.Beyer Oct. 2014.
       real, dimension(:), allocatable   :: sumofwork
       integer :: maxrows, maxcols, numprocs, numrecipients
       integer :: getnumjobs, targetID, myid
+      integer :: colindex, rowindex, assignILLL, col
 
       ! Evict slaves from the routine
       call mpi_comm_rank(mpi_comm_world, myid, ierr)
@@ -1702,6 +1721,7 @@ C F.Beyer Oct. 2014.
          
        
       ! Send the info to every slave that does computation (some slaves might be stalled in the polling barrier in case there are too many MPI processes compared to the number of tasks).
+      ! Use scatter instead?
       numcols = min(numprocs, ntot)
       DO col=2, numcols
          TargetID = col-1 
@@ -1714,6 +1734,10 @@ C F.Beyer Oct. 2014.
       ! Update the master's own array of ILLL indices
       temparray(1:allocsize) = sortedindices(:,1)
 
+      ! Are we in anyway guaranteed that the above sends finish
+      ! before deallocation, or do we need to store all getindices
+      ! call mpi_waitall( numcols-1, getindices, mpi_statuses_ignore)
+      ! 
       deallocate(sortedindices)
       deallocate(numassignjobs)
       deallocate(sumofwork)
@@ -1756,6 +1780,7 @@ C     Pre-sorting load balancing variables
       integer :: allocstatus, maxnumjobs, TargetID, 
      &           getnumjobs, getindices, myid, numprocs, ierr
       integer, allocatable, dimension(:,:) :: presortarray, finalsorted
+      integer :: col
     
 
       call mpi_comm_size(mpi_comm_world, numprocs, ierr) 
@@ -1833,8 +1858,10 @@ C     F.Beyer Oct. 2014
       integer, intent(in)                 :: pollinginterval !in milliseconds
       integer                             :: myid, request
       logical                             :: flag, exitbarrier
+      volatile                            :: exitbarrier
 
       call mpi_comm_rank(mpi_comm_world, myid, ierr)
+      print *, 'I am in the polling barrier ', myid
            
       ! Initiate the polling variables and ask for the non-blocking update
       exitbarrier = .false. 
@@ -1847,6 +1874,9 @@ C     F.Beyer Oct. 2014
       call sleepqq(pollinginterval)  
 #endif
       call mpi_test(request, flag, mpistatus, ierr)
+      if (.not. flag) goto 130
+      ! Warning, seems that we'll go into an infinite loop,
+      ! if exitbarrier is ever sent as .false.
       if (.not.exitbarrier) then
          goto 130 ! Cycle to the top of the barrier.
       else
@@ -1856,5 +1886,77 @@ C     F.Beyer Oct. 2014
       return
       end subroutine
 
+      subroutine stupid_isao_bcast_routine()
+#include "implicit.h"
+#include "mpif.h"
+#include "maxorb.h"
+#include "ccisao.h"
+#include "infpar.h"
+C
+C  This is a simple (but stupid) work-around to the problem that
+C  the array ISAO exist in both infind.h and ccisao.h and that it seem
+C  pretty random which version is needed by which routine
+C  (the content appear to be the same).
+C  A better solution would maybe be to remove isao from common block
+C  in infind.h and explicitly include ccisao.h there...
+C  Or even just replace ISAO with the function
+C
+C  pure function isao ( aoindex ) result(isym)
+C  #include ! something that sets nbas(8), nsym
+C  integer, intent(in) :: aoindex
+C  integer :: i, isym, popsum
+C  sum = 0
+C  do isym = 1, nsym
+C     popsum = nbas(isym) + popsum
+C     if ( aoindex .le. popsum ) return 
+C  enddo
+C  ! Some error statement, here would be in order
+C  end function isao
+C
+      integer  :: bytesize, ierr
+
+C    This size SHOULD be MXCORB x "integer size"
+C    But since this is a cc block, someone may change that to MXCORB_CC       
+      call getbytespan(isao, ccisaolast, bytesize )
+      call mpi_bcast(isao, bytesize, mpi_byte, master, mpi_comm_world,
+     &               ierr)
+
+      end subroutine stupid_isao_bcast_routine
+
 
 #endif !VAR_MPI at the beginning of PAR_SO_ERES
+
+#ifdef NOTDEFINED
+      subroutine stupid_checksum( nameofdata , checkdata, ldata )
+C   For debugging purposes
+C  Calculate a few "checksums" of the data in order to ensure 
+C  that it is (relatively) intact
+C
+C  This is not a cryptografic checksum, just calculat the sum
+C  in a few different ways (also since we want to keep the order
+C  of the significant bits) 
+         implicit none 
+#include "priunit.h"
+         integer, parameter  :: dp = kind(1.0D0)
+         character(len=*),intent(in):: nameofdata
+         integer, intent(in) :: ldata
+         real(dp), intent(in):: checkdata(ldata)
+         real(dp)            :: signed_sum, abs_sum, squared_sum, temp
+         integer             :: i
+         
+         signed_sum = 0.0_dp
+         abs_sum = 0.0_dp
+         squared_sum = 0.0_dp
+
+         do i = 1, ldata 
+            temp = checkdata(i)
+            signed_sum = temp + signed_sum
+            abs_sum = abs(temp) + abs_sum
+            squared_sum = temp*temp + squared_sum
+         enddo
+
+         write (lupri,90) nameofdata, squared_sum, abs_sum, signed_sum
+90       format(A6,3F23.15)
+
+      end subroutine stupid_checksum
+#endif
