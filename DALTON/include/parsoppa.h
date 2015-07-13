@@ -26,6 +26,8 @@ C     PARSOPPA = Parallel Second order Polarization Propagator Approximation  (t
 C  Pad using a dummy variable      
       character(len=3) :: padding_dummy
 
+      integer :: soppa_comm_active
+
       common /parsoppa/
      & NTOT  , NUMDIS, KODCL1, KODCL2, KODBC1, LWORKSV,
      & KODBC2, KRDBC1, KRDBC2, KODPP1, KODPP2, KRDPP1, 
@@ -55,3 +57,5 @@ C  Pad using a dummy variable
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
 
       save /parsoppa/
+
+      common /soppa_communicators/ soppa_comm_active

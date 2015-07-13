@@ -620,7 +620,7 @@ C     Pre-sorting load balancing variables
       integer, allocatable, dimension(:), save :: AssignedIndices
 
 C     Timing variables used for load monitoring
-      integer :: comm_timers, color
+      integer :: color
       integer :: counti, countf, count_rate
       real    :: timespent
       real, dimension(:), allocatable, save :: timings
@@ -810,7 +810,8 @@ C   redirected. They will return from the polling barrier when
 C   the master sends a non-blocking logical equal to .true.
       if (myid.ge.ntot) color = 1
       if (myid.lt.ntot) color = 0 !these are the ones performing timings, other processes stall in the polling barrier.
-      call mpi_comm_split(mpi_comm_world, color, myid, comm_timers,ierr)
+      call mpi_comm_split(mpi_comm_world, color, myid, 
+     &                    soppa_comm_active,ierr)
       if (myid.ge.ntot) then
          call pollingbarrier(1)
          goto  800 !skip to assembly of matrices. 
@@ -861,31 +862,33 @@ C**************************************************
          IF (myid.ne.0) then
 
 C           Get the number of tasks and allocate memory for the indices
-            call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
-     &                  mpi_comm_world, getnumjobs, ierr)
-001         continue
-            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
-            if (assignnow)  then
+C            call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
+C     &                  mpi_comm_world, getnumjobs, ierr)
+C001         continue
+C            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
+C            if (assignnow)  then
+            maxnumjobs = ntot - min(nodtot,ntot) + 1
                if (.not. allocated(AssignedIndices) ) then
                   allocate(AssignedIndices(maxnumjobs),stat=allocstatus)
                   if(.not.(allocstatus.eq.0) ) then
                      call quit('Allocation error; AssignedIndices ')
                   endif
                endif
-            else 
-               goto 001
-            endif
+C            else 
+C               goto 001
+C            endif
 
 C           Get the pre-sorted ILLL indices.
-            call mpi_irecv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
-     &                  myid, mpi_comm_world, getindices, ierr)
-002         continue 
-            call mpi_test(getindices, workreceived, mpistatus, ierr)
-            if (workreceived)  then
-               continue 
-            else 
-               goto 002
-            endif
+            call mpi_scatter(AssignedIndices, maxnumjobs, mpi_integer, 
+     &                       AssignedIndices, maxnumjobs, mpi_integer,
+     &                       0, soppa_comm_active, ierr)
+C002         continue 
+C            call mpi_test(getindices, workreceived, mpistatus, ierr)
+C            if (workreceived)  then
+C               continue 
+C            else 
+C               goto 002
+C            endif
 
          ENDIF 
          endif
@@ -1002,10 +1005,10 @@ C----------------------------------------------
               !assemble the array with timings 
               if (myid.eq.0) then
                  call mpi_reduce(mpi_in_place, timings, ntot, MPI_REAL,
-     &                           MPI_SUM, 0, COMM_TIMERS, ierr)
+     &                           MPI_SUM, 0, soppa_comm_active, ierr)
               else
                  call mpi_reduce(timings, temparray, ntot, MPI_REAL,
-     &                           MPI_SUM, 0, COMM_TIMERS, ierr)
+     &                           MPI_SUM, 0, soppa_comm_active, ierr)
               endif
       endif
 

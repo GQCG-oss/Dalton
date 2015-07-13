@@ -909,7 +909,7 @@ C     Pre-sorting load balancing variables
       integer, allocatable, dimension(:), save :: AssignedIndices
 
 C     Timing variables used for load monitoring
-      integer :: comm_timers, color, workindex
+      integer :: color, workindex
       integer :: counti, countf, count_rate
       real    :: timespent
       real, dimension(:), allocatable, save :: timings
@@ -1200,7 +1200,8 @@ C   redirected. They will return from the polling barrier when
 C   the master sends a non-blocking logical equal to .true.
       if (myid.ge.ntot) color = 1
       if (myid.lt.ntot) color = 0 !these are the ones performing timings, other processes stall in the polling barrier.
-      call mpi_comm_split(mpi_comm_world, color, myid, comm_timers,ierr)
+      call mpi_comm_split(mpi_comm_world, color, myid, soppa_comm_active
+     &                    ,ierr)
       if (myid.ge.ntot) then
          call pollingbarrier(1)
          goto  800 !skip to assembly of matrices. 
@@ -1251,31 +1252,41 @@ C**************************************************
 C           Get the number of tasks and allocate memory for the indices
 C           Maybe these should be made blocking (since we basically
 C           just pol untill the finish, with nothing i between.
-            call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
-     &                  mpi_comm_world, getnumjobs, ierr)
-001         continue
-            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
-            if (assignnow)  then
+C            call mpi_scatter(maxnumjobs, 1, mpi_integer, 0, myid,
+C     &                  mpi_comm_world, getnumjobs, ierr)
+C            call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
+C     &                  mpi_comm_world, getnumjobs, ierr)
+C001         continue
+C            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
+C            if (assignnow)  then
+               maxnumjobs = ntot - min(nodtot, ntot) + 1  
                if (.not. allocated(AssignedIndices) ) then
                   allocate(AssignedIndices(maxnumjobs),stat=allocstatus)
                   if(.not.(allocstatus.eq.0) ) then
                      call quit('Allocation error; AssignedIndices ')
                   endif
                endif
-            else 
-               goto 001
-            endif
+C            else 
+C               goto 001
+C            endif
+
+
 
 C           Get the pre-sorted ILLL indices.
-            call mpi_irecv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
-     &                  myid, mpi_comm_world, getindices, ierr)
-002         continue 
-            call mpi_test(getindices, workreceived, mpistatus, ierr)
-            if (workreceived)  then
-               continue 
-            else 
-               goto 002
-            endif
+C           Recieve the scatter, send arguments should be ignored
+            call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
+     &                        AssignedIndices, maxnumjobs, mpi_integer,
+     &                        0, soppa_comm_active, ierr )
+
+C            call mpi_irecv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
+C     &                  myid, mpi_comm_world, getindices, ierr)
+C002         continue 
+C            call mpi_test(getindices, workreceived, mpistatus, ierr)
+C            if (workreceived)  then
+C               continue 
+C            else 
+C               goto 002
+C            endif
 
          ENDIF 
          endif
@@ -1504,10 +1515,10 @@ C
               !assemble the array with timings 
               if (myid.eq.0) then
                  call mpi_reduce(mpi_in_place, timings, ntot, MPI_REAL,
-     &                           MPI_SUM, 0, COMM_TIMERS, ierr)
+     &                           MPI_SUM, 0, soppa_comm_active, ierr)
               else
                  call mpi_reduce(timings, temparray, ntot, MPI_REAL,
-     &                           MPI_SUM, 0, COMM_TIMERS, ierr)
+     &                           MPI_SUM, 0, soppa_comm_active, ierr)
               endif
       endif
 
@@ -1712,24 +1723,30 @@ C F.Beyer Oct. 2014.
 
 
       ! Tell the slaves how much space to allocate.
+      ! Let the slave calculate this themself 
+      ! (if the slaves doesn't even agree with master on this, we're in
+      ! deep shit)
       allocsize = maxrows
-      numrecipients = min(numprocs, ntot)
-      do targetID=1, (numrecipients-1)
-         call mpi_isend(allocsize, 1, mpi_integer, targetID, 
-     &                  targetID, mpi_comm_world, getnumjobs, ierr) 
-      enddo
+C      numrecipients = min(numprocs, ntot)
+C      do targetID=1, (numrecipients-1)
+C         call mpi_isend(allocsize, 1, mpi_integer, targetID, 
+C     &                  targetID, mpi_comm_world, getnumjobs, ierr) 
+C      enddo
          
        
       ! Send the info to every slave that does computation (some slaves might be stalled in the polling barrier in case there are too many MPI processes compared to the number of tasks).
-      ! Use scatter instead?
-      numcols = min(numprocs, ntot)
-      DO col=2, numcols
-         TargetID = col-1 
-         ! Note this isend makes use of column major storage in FORTAN.
-         call mpi_isend(sortedindices(1,col),allocsize,mpi_integer, 
-     &   TargetID, TargetID, mpi_comm_world, getindices,  ierr) 
-      ENDDO
+C      ! Use scatter instead?
+C      numcols = min(numprocs, ntot)
+C      DO col=2, numcols
+C         TargetID = col-1 
+C         ! Note this isend makes use of column major storage in FORTAN.
+C         call mpi_isend(sortedindices(1,col),allocsize,mpi_integer, 
+C     &   TargetID, TargetID, mpi_comm_world, getindices,  ierr) 
+C      ENDDO
 
+      call mpi_scatter( sortedindices, allocsize, mpi_integer, 
+     &                  temparray, allocsize, mpi_integer,
+     &                  0, soppa_comm_active, ierr) 
 
       ! Update the master's own array of ILLL indices
       temparray(1:allocsize) = sortedindices(:,1)
@@ -1799,11 +1816,11 @@ C     FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
       !call getallocsize(ntot, presortarray, maxnumjobs) 
 
 C     The master tells the slaves how much space to allocate ...
-      numrecipients = min(numprocs, ntot)
-      do targetID=1, (numrecipients-1)
-         call mpi_isend(maxnumjobs, 1, mpi_integer, targetID, 
-     &                  targetID, mpi_comm_world, getnumjobs, ierr) 
-      enddo
+C      numrecipients = min(numprocs, ntot)
+C      do targetID=1, (numrecipients-1)
+C         call mpi_isend(maxnumjobs, 1, mpi_integer, targetID, 
+C     &                  targetID, mpi_comm_world, getnumjobs, ierr) 
+C      enddo
          
 
 C     CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
@@ -1818,16 +1835,20 @@ C     CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
 
 
 C     TRANSFER AO INDICES TO SLAVES
-      numcols = min(numprocs, ntot)
-      DO col=2, numcols
-         TargetID = col-1 
-         call mpi_isend(finalsorted(1,col),maxnumjobs,mpi_integer, 
-     &   TargetID, TargetID, mpi_comm_world, getindices,  ierr) 
-      ENDDO
+C      numcols = min(numprocs, ntot)
+C      DO col=2, numcols
+C         TargetID = col-1 
+C         call mpi_isend(finalsorted(1,col),maxnumjobs,mpi_integer, 
+C     &   TargetID, TargetID, mpi_comm_world, getindices,  ierr) 
+C      ENDDO
+C     Use scatter instead
+      call mpi_scatter( finalsorted, maxnumjobs, mpi_integer,
+     &                  temparray, maxnumjobs, mpi_integer,
+     &                  0, soppa_comm_active, ierr )
 
 C     Keep own work in a vector and don't leak memory...
       allocsize = maxnumjobs
-      temparray(1:maxnumjobs) = finalsorted(:,1)  
+!     temparray(1:maxnumjobs) = finalsorted(:,1)  
       deallocate(finalsorted)
       deallocate(presortarray)
 
