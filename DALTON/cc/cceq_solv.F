@@ -226,7 +226,6 @@ C
 C
          TIM    = SECOND()
 C
-C
 C--------------------------------
 C LINEAR TRANSFORMATIONS ON NUPVEC TRIAL VECTORS ON LUB
 C THE LINEAR TRANSFORMED VECTORS ARE RETURNED ON LUS
@@ -270,7 +269,6 @@ C
      *              EIVAL,SOLEQ,WRK,LWRK,DEBUG)
          CALL FLSHFO(LUPRI)
          TIMRED = TIMRED + SECOND()
-C
 C
 C        CREATE NVEC NEW LINEAR INDEPENDENT TRIAL VECTORS IN CCNEX()
 C        FROM THE SOLUTIONS OF THE REDUCED  EQUATIONS
@@ -384,7 +382,6 @@ C               WRITE(LUPRI,*) 'last - NREDH,NUPVEC:',NREDH,NUPVEC
      *         ITLE,' REACHED.'
                CALL QUIT(' *** CCEQ_SOL-MAX. MICROITERATIONS REACHED')
          END IF
-C
 C
 C=====================
 C     End of 100 Loop.
@@ -515,6 +512,7 @@ C
 C     ----------------------------
 C     Initialize NUPVEC and NREDH:
 C     ----------------------------
+C
       NUPVEC = 0
       NREDH  = 0
 C
@@ -668,7 +666,6 @@ C              --------------------
      *               ' of symmetry',ISYMTR,' generated from gradient'
                  END IF
                END IF
-
 C              ------------------------------------------
 C              Scale with diagonal.(including frequency).
 C              (not for Cauchy vectors. CH.H. 20-11-97)
@@ -696,7 +693,6 @@ C
          ENDIF
 
          NFIN = 1
-
 C
 C-------------------------------------------------------------
 C        if requested, project excited reference state out:
@@ -712,6 +708,15 @@ C
             CALL PRJDRV(ISIDE,ISTATPRJ,ISYMPR,NFIN,NCCVAR,
      *                             WORK(KV),WORK(KPRJC)) 
          ENDIF
+C
+C-------------------------------------------------------------
+C        if requested, project out valence excitation elements
+C -------------------------------------------------------------  
+C     
+         IF (CVSEPARA.or.LIONISATION) THEN
+           write(lupri,*)'CCEQ_STR: CVS or IONISATION freeze'
+           CALL CC_FREEZE_EXCI(WORK(KV),ISYMTR)
+         END IF
 CCN
 C
 C        calculate metric for new b-vectors:
@@ -834,7 +839,6 @@ C
       LOGICAL LINQCC,CCRSTRS,LPROJECT,TRIPLET
       DIMENSION EIVAL(*), SOLEQ(MAXRED,*),WRK(*)
 C
-C
 C Space for CCNEX:
 C
 C MAXNEX: Maximum number of simultaneous vectors in CCNEX
@@ -904,7 +908,6 @@ C        -----------------------------------------------------------
             IF (LWRK2 .LT. 0 ) THEN 
                CALL QUIT('Too little work in CCNEX xx')
             END IF
-
 C           ----------------------------------------------------------
 C           Construct the solution vectors in full space:
 C             Save norm of solution vector in WRK(KTST) and the
@@ -972,6 +975,10 @@ C        -----------------------------------------------
          DO K = 1,NREDH
             CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                     TRIPLET,K,WRK(KWRK1))
+            IF (CVSEPARA.or.LIONISATION) THEN
+               !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
+               CALL CC_FREEZE_EXCI(WRK(KWRK1),ISYMTR)
+            END IF
             DO JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
                EVAL1  = SOLEQ(K,JROOTJ)
@@ -1003,7 +1010,16 @@ C        -----------------------------------------
            CALL PRJDRV(ISIDE,ISTATPRJ,ISYMPR,NBX,NCCVAR,
      *                             WRK(KRES),WRK(KWRK2))
          ENDIF
-C
+C        -------------------------------------------------------
+C        Remove specific excitations from residual if requested:
+C        -------------------------------------------------------
+         IF (CVSEPARA.or.LIONISATION) THEN
+            DO JR = 1,NBX
+            !WRITE(LUPRI,*)'CCNEX CVS or IONISATION  (resid)'
+               KOFF = KRES+(JR-1)*NCCVAR
+               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR)
+            END DO
+         END IF
 C        ------------------------------------------
 C        Test for convergence of the N-R solutions:
 C        ------------------------------------------
@@ -1100,6 +1116,16 @@ C        ------------------------------
            CALL PRJDRV(ISIDE,ISTATPRJ,ISYMPR,NFIN,NCCVAR,
      *                             WRK(KRES),WRK(KPRJ))
          ENDIF
+C        -----------------------------------------------------------
+C        Projection specific orbital excitations from updated trials
+C        -----------------------------------------------------------
+         IF (CVSEPARA.or.LIONISATION) THEN
+            DO JR = 1,NFIN
+            !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
+               koff = KRES+(JR-1)*NCCVAR
+               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR)
+            end do
+         END IF
 CCN
 C        -----------------------------------
 C        calculate metric for trial vectors:
@@ -1332,6 +1358,13 @@ C
                IVENU = IREDH + IVEC-1 + INUM
                CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                        TRIPLET,IVENU,WRK(LSVEC))
+!sonia
+               IF (CVSEPARA.or.LIONISATION) THEN
+                 write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
+     &           'project out core or virtual'
+                 CALL CC_FREEZE_EXCI(WRK(LSVEC),ISYMTR)
+               END IF
+!sonia
                LSVEC = LSVEC + NCCVAR
             END DO
             IF (LOCDBG) THEN
@@ -1423,6 +1456,11 @@ C
                DO J = 1,IREDH
                   CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                           TRIPLET,J,WRK(KSVEC))
+                  IF (CVSEPARA.or.LIONISATION) THEN
+                    !write(lupri,*)'CCRED CVS or IONISATION sigma_',J
+                    CALL CC_FREEZE_EXCI(WRK(KSVEC),ISYMTR)
+                  END IF
+
                   IF (LREDS) THEN
                    IF (IANR12.EQ.1 .OR. IANR12.EQ.3) THEN
                      CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFS12,
