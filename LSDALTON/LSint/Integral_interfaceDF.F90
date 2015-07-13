@@ -3088,9 +3088,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
   REAL(REALK),pointer    :: FullAlphaCD(:) !dim1,nMO1,nMO2
   TYPE(LSSETTING),intent(inout) :: SETTING
   character,intent(in)  :: intspec(4)
-  logical :: AOtoMO,MemDebugPrint
-  real(realk) :: C1(n1,nMO1),C2(n2,nMO2)  
-  integer :: GindexToLocal(nAux)
+  logical,intent(in) :: AOtoMO,MemDebugPrint
+  real(realk),intent(in) :: C1(n1,nMO1),C2(n2,nMO2)  
+  integer,intent(in) :: GindexToLocal(nAux)
   logical,optional :: use_bg_bufInput
   !
   real(realk) :: TSTART,TEND

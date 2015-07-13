@@ -3,7 +3,7 @@
 MODULE ThermiteIntTransform_module
 use precision
 use memory_handling
-!use ls_util
+use ls_util
 !!
 use infpar_module
 private
@@ -110,13 +110,19 @@ IF(m3.NE.nT2)call lsquit('dimmismatch5 in ThermiteIntTransform_AOtoMOInternal',-
 M = nTMaxN*nT1   !rows of Output Matrix
 N = nTMO2        !columns of Output Matrix
 K = m3           !summation dimension
-!#ifdef VAR_OMP
-!call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
-!     & K,0.0E0_realk,TmpAlphaCD,M)
-!#else
+#ifdef VAR_OMP
+IF(nTITthreads.GT.1)THEN
+   call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
+        & K,0.0E0_realk,TmpAlphaCD,M)
+ELSE
+   call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
+        & K,0.0E0_realk,TmpAlphaCD,M)
+ENDIF
+#else
 call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
      & K,0.0E0_realk,TmpAlphaCD,M)
-!#endif
+#endif
+!TmpAlphaCD(nTMaxN*nT1,nTMO2)
 call DF3centerTrans2(nTMO1,nTMO2,nT1,nTMaxN,nTA,TCMO1,TmpAlphaCD,FullAlphaCD)
 !$OMP END CRITICAL (AOtoMOInternal)
 iLocalTIT(TITThreadID) = 0
