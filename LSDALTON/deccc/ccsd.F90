@@ -7045,8 +7045,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ, &
        & gvoov%elm1,gvvoo%elm1)
-    !call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
-    !            & govoo,gvooo,gvoov%elm1,gvvoo%elm1)
 
     if (use_bg_buf) then
        call mem_pseudo_dealloc(tmp2)
