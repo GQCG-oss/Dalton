@@ -3536,7 +3536,7 @@ SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAu
   !
   Integer                    :: nAtoms,nBastAux,nBast,Oper
   Real(realk) :: TSTART,TEND,tmp
-  logical :: MasterWakeSlaves,doMPI
+  logical :: MasterWakeSlaves,doMPI,CS_SCREEN,PS_SCREEN
   call LSTIMER('START ',TSTART,TEND,LUPRI)
   call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
   IF(nbasisAux.NE.nBastAux)THEN
@@ -3562,8 +3562,14 @@ SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAu
      Oper = CoulombOperator
   ENDIF
   call setF12Operator(Oper,Setting) 
+  PS_SCREEN = setting%scheme%PS_SCREEN
+  setting%scheme%PS_SCREEN = .FALSE.
+  CS_SCREEN = setting%scheme%CS_SCREEN
+  setting%scheme%CS_SCREEN = .FALSE.
   call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
        & Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+  setting%scheme%PS_SCREEN = PS_SCREEN
+  setting%scheme%CS_SCREEN = CS_SCREEN
   SETTING%SCHEME%doMPI = doMPI
   SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
   call retrieve_Output(lupri,setting,AlphaBeta,.FALSE.)
