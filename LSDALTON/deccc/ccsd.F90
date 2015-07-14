@@ -6856,6 +6856,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Allocate working memory:
     call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
+#ifdef VAR_MPI
+    ! Change array type to be dense:
+    if (.not.local.and.master) then
+      call tensor_cp_tiled2dense(t2,.false.,bg=use_bg_buf)
+      call tensor_cp_tiled2dense(govov,.false.,bg=use_bg_buf)
+    end if 
+#endif
+
     call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
     call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
     call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
@@ -6889,14 +6897,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! start timings:
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-
-#ifdef VAR_MPI
-    ! Change array type to be dense:
-    if (.not.local.and.master) then
-      call tensor_cp_tiled2dense(t2,.false.,bg=use_bg_buf)
-      call tensor_cp_tiled2dense(govov,.false.,bg=use_bg_buf)
-    end if 
-#endif
 
     !===========================================================================
     ! Calculate transformation matrix:
@@ -6981,7 +6981,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
    t2%access_type     = AT_ALL_ACCESS
    omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
-     call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
+     !call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
+     call tensor_allocate_dense(omega2,change=.true.)
      govov%itype  = TT_DENSE
    end if
 #endif
@@ -7213,10 +7214,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
-      call tensor_deallocate_dense(t2)
+      call tensor_mv_dense2tiled(omega2,.true.)
       call tensor_deallocate_dense(govov)
       govov%itype = TT_TILED_DIST
-      call tensor_mv_dense2tiled(omega2,.true.)
+      call tensor_deallocate_dense(t2)
     endif
 #endif 
 

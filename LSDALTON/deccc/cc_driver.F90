@@ -2643,6 +2643,9 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Free memory and save final amplitudes
    ! *************************************
+   call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
+      &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
+
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used RHS or restore the old rhs
    if(.not.vovo_avail)then
       call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
@@ -2736,9 +2739,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2,nm1=t1fnorm2,nm2=t2fnorm2)
    
    call ccdriver_dealloc_workspace(saferun,local,bg_was_init)
-
-   call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
-      &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
 
 
    !initialize and copy data to output arrays
