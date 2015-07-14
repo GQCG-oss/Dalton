@@ -255,6 +255,7 @@ contains
     DECinfo%RIMP2_tiling             = .false.
     DECinfo%RIMP2_lowdin             = .true.
     DECinfo%RIMP2_Laplace            = .false.
+    DECinfo%RIMP2_deactivateopenmp   = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -828,6 +829,8 @@ contains
           DECinfo%RIMP2_lowdin        = .false.
        case('.RIMP2_LAPLACE')
           DECinfo%RIMP2_Laplace       = .true.
+       case('.RIMP2_NOOMP')
+          DECinfo%RIMP2_deactivateopenmp = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************

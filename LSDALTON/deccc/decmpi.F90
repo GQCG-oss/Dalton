@@ -2482,6 +2482,7 @@ contains
     call ls_mpi_buffer(DECinfo%RIMP2_tiling,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_lowdin,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_Laplace,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_deactivateopenmp,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%rimpisplit,Master)

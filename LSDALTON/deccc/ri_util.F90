@@ -336,6 +336,13 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
   ENDIF
 
+  IF(DECinfo%RIMP2_deactivateOpenMP)THEN
+     noOMP = .TRUE.
+     noOMPsave= mylsitem%setting%scheme%noOMP
+     mylsitem%setting%scheme%noOMP = .TRUE.
+     nthreads = 1                           
+  ENDIF
+
   !=====================================================================================
   ! Obtain 3 center RI integrals (alpha,a,i) 
   !=====================================================================================
