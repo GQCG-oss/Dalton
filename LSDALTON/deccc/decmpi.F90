@@ -1324,12 +1324,12 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,ccsd_t1,mylsitem,print_frags,abc)
 
     implicit none
 
     integer                             :: nocc,nvirt,nbasis,ierr
-    type(tensor), intent(inout)         :: vovo,ccsd_t2
+    type(tensor), intent(inout)         :: vovo,ccsd_t2,ccsd_t1
     type(lsitem)                        :: mylsitem
     logical                             :: print_frags,abc
     integer,dimension(infpar%lg_nodtot) :: vovo_addr,t2_addr
@@ -1358,6 +1358,12 @@ contains
 
     ccsd_t2%access_type = AT_ALL_ACCESS
     vovo%access_type = AT_ALL_ACCESS
+
+    if ((infpar%lg_mynum .eq. infpar%master) .and. (.not. print_frags)) then
+
+       call ls_mpibcast(ccsd_t1%elm1,nvirt*nocc,infpar%master,infpar%lg_comm)
+
+    endif
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 
@@ -2376,6 +2382,7 @@ contains
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
     call ls_mpi_buffer(DECitem%acc_sync,Master)
+    call ls_mpi_buffer(DECitem%pt_single_prec,Master)
     call ls_mpi_buffer(DECitem%pt_hack,Master)
     call ls_mpi_buffer(DECitem%pt_hack2,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)

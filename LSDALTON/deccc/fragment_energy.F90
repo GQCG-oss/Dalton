@@ -622,9 +622,9 @@ contains
      endif
 
      ! call ccsd(t) driver and single fragment evaluation
-     call ccsdpt_driver(frag%noccAOS,frag%nvirtAOS,frag%nbasis,frag%ppfock, &
-          & frag%qqfock,frag%Co,frag%Cv,frag%mylsitem,VOVO,t2,ccsdpt_t1, &
-          & DECinfo%print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+     call ccsdpt_driver(frag%noccAOS,frag%nvirtAOS,frag%nbasis,frag%ppfock,&
+          & frag%qqfock,frag%Co,frag%Cv,frag%mylsitem,VOVO,t2,&
+          & DECinfo%print_frags,abc,ccsdpt_singles=ccsdpt_t1,ccsdpt_doubles=ccsdpt_t2)
 
      if (abc) then
         call tensor_reorder(ccsdpt_t2,[3,1,4,2]) ! ccsdpt_doubles in the order (a,i,b,j)
