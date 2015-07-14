@@ -11,6 +11,8 @@ Common
 DALTON
 ------
 
+- Fixed a bug in an LRESC correction. 
+- Improved calculation of one LRESC correction.
 - Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
 - Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
 - Fixed a bug for parallel build on some systems
