@@ -430,6 +430,7 @@ MODULE matrix_operations
        endif
 #endif
      END SUBROUTINE mat_finalize
+
 !> \brief Pass info about e.g. logical unit number for LSDALTON.OUT to matrix module 
 !> \author L. Thogersen
 !> \date 2003

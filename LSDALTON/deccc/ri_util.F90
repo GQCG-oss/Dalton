@@ -97,7 +97,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   NBA = 0
   MynbasisAuxMPI2 = 0 
   IF(use_bg_buf)THEN
-     maxsize = mem_get_bg_buf_free()*8.0E-9_realk
+     maxsize = mem_get_bg_buf_free()*8.0E-9_realk*0.90E0_realk
      IF(DECinfo%MemDebugPrint)THEN
         call printBGinfo()
      ENDIF     
@@ -134,13 +134,21 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         PerformReduction = 0 !Perform Bcast scheme
         IF(DECinfo%MemDebugPrint)print*,'RIMP2: Force Bcast scheme'
      ELSE
+        !Memory accounting for Reduction of full MO integral alphaCD(nbasisAux*nvirt*nocc): 
+        !allocate TMPAlphaBetaDecomp(MynbasisAuxMPI2,nbasisAux) NOT allocated in BG buffer
+        !BG  : allocate Calpha(nbasisAux*nvirt*nocc) 
+        !noBG: allocate Calpha(MynbasisAux*nvirt*nocc) 
+        !allocate alphaCD(nbasisAux*nvirt*nocc)
+        !allocate AO to MO tmp (MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))
         IF(use_bg_buf)THEN
-           !only looking at the memory allocated in BG buffer
-           MemForFullMOINT = (nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk &
+           !only looking at the memory allocated in BG buffer 
+           MemForFullMOINT = (2*nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*&
+                & (nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk &
                 & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk        
         ELSE
-           MemForFullMOINT = (nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
-                & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+           MemForFullMOINT = (nbasisAux*nvirt*nocc+nbasisAux*nvirt*nocc/(numnodes+2)&
+                & +MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)&
+                & +nbasis1*nvirt+nbasis2*nocc+nbasisAux*nbasisAux)*8.0E-9_realk
         ENDIF
         IF(DECinfo%MemDebugPrint)THEN
            print*,'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
@@ -148,7 +156,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
               print*,'RIMP2: Resulting in Memory Estimate of  ',&
                    & (buf_realk%offset+MemForFullMOINT/8.0E-9_realk)*8.0E-9_realk,' GB'           
            ENDIF
-           print*,'RIMP2: Memory available (65%/100% bg_buffer)',maxsize,' GB'
+           print*,'RIMP2: Memory available (65%/90% bg_buffer)',maxsize,' GB'
            IF(MemForFullMOINT.GE.maxsize)THEN
               print*,'RIMP2: Full MO cannot fit in memory, we cannot do a simple reduction'
            ELSE
@@ -800,7 +808,7 @@ subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,n
   real(realk) :: maxsize,MemInGBCollected,ExternalAOtoMO,InternalAOtoMO 
   !Determine memory available 
   IF(use_bg_buf)THEN
-     maxsize = (mem_get_bg_buf_free()+1)*8.0E-9_realk
+     maxsize = mem_get_bg_buf_free()*8.0E-9_realk*0.90E0_realk
      IF(DECinfo%MemDebugPrint)THEN
         print*,'DetermineMaxNauxRI: mem_get_bg_buf_free=',mem_get_bg_buf_free()
         print*,'DetermineMaxNauxRI: maxsize',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
@@ -1383,7 +1391,7 @@ subroutine RIMP2_buildCalphaFromAlphaCD(nocc,nvirt,numnodes,&
   !
   integer :: IB,B,BETA,ALPHA
   real(realk) :: TMP
-  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+  !$OMP PARALLEL DO DEFAULT(NONE) &
   !$OMP PRIVATE(IB,B,BETA,ALPHA,TMP) &
   !$OMP SHARED(nocc,nvirt,nAux2,IndexToGlobal2,NBA,&
   !$OMP        AlphaCDi,Calpha,TMPAlphaBetaDecomp,integralnum)

@@ -44,9 +44,6 @@ option(ENABLE_XCINT "Enable XCint interface" OFF)
 if(ENABLE_XCINT)
     add_definitions(-DENABLE_XCINT)
 
-    # has to be deactivated for multiple frequencies
-    add_definitions(-DENABLE_XCINT_RESPONSE)
-
     add_library(dalton_xcint_interface DALTON/xcint/dalton_xcint_interface.F90)
 
     set(ExternalProjectCMakeArgs

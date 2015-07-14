@@ -928,7 +928,7 @@ C
       SUBROUTINE ABS_LINE2(KZVAR,XTMP,ZYMB,ISYMDM,ISYMB,NNMAX,
      &                     CMO,FC,FCAC,FV,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_is_active,
      &                                  xcint_integrate_rks_lr
 #endif
@@ -973,7 +973,7 @@ C     local
       INTEGER IDUMMY
       PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
 C
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       real(8), allocatable :: dmat_ao(:)
       real(8), allocatable :: xc_mat(:)
       real(8), allocatable :: fmat_mo(:)
@@ -1163,7 +1163,7 @@ C         Proceed normal way otherwise
      &                            ZYMB(1,1,NKD-NASIM+1),.FALSE.,
      &                            ISYMB,WRK(KFREE),LFREE,IPRDFT)
           ELSE
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              if (xcint_is_active()) then
 
 c             if (nasim > 1) then
@@ -1208,13 +1208,13 @@ c             end if
              deallocate(xc_mat)
              deallocate(fmat_mo)
          else
-#endif /* ENABLE_XCINT_RESPONSE */
+#endif /* ENABLE_XCINT */
 c         call dft_lin_respf(NNMAX,WRK(KFMMO(1)),CMO,ZYMB,
 c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
             call dft_lin_respf(NASIM,WRK(KFMMO(NKD-NASIM+1)),CMO,
      &                         ZYMB(1,1,NKD-NASIM+1),
      &                        .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              endif
 #endif
           END IF

@@ -95,7 +95,7 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
        & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2,&
-       & ii_get_2int_batchscreenmat
+       & ii_get_2int_batchscreenmat, II_get_nst_spec_expval, II_get_magderivKcont
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2051,7 +2051,14 @@ call time_II_operations2(JOB_II_get_prop)
 
 END SUBROUTINE II_get_prop
 
-!Get specific nuclei moment derivative 
+!> \brief specific nuclei moment derivative 
+!> \author T. Kjaergaard
+!> \date 2015
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param matArray the matrices of property integrals
+!> \param iAtom chosen atom to calculate the 3 PSO X,Y,Z components
 recursive SUBROUTINE II_get_PSO_spec(LUPRI,LUERR,SETTING,MatArray,iAtom)
 IMPLICIT NONE
 INTEGER              :: LUPRI,LUERR,IATOM
@@ -2072,7 +2079,7 @@ call param_oper_paramfromString('PSO    ',Operparam)
 setting%scheme%do_prop = .TRUE.
 setting%scheme%propoper = Operparam
 nbast = MatArray(1)%nrow
-!PROVIDE IATOM
+setting%scheme%AONuclearSpecID = iAtom
 call initIntegralOutputDims(setting%output,nbast,nbast,1,1,3)
 CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
      & Operparam,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
@@ -2162,20 +2169,20 @@ END SUBROUTINE II_get_prop_expval
 !> \brief routine for calculation of expectation value of Specific nuclei PSO integrals
 !> So in Other words does dotproduct(PSOIntegral,D)
 !> \author T. Kjaergaard
-!> \date 2010
+!> \date 2015
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-!> \param expval the matrices of property integrals
+!> \param expval the matrices of property integrals Order: (3 PSO components, ndmat)
 !> \param Dmat the matrices the should be contracted with the property integral
-!> \param nOperatorComp the number of matrices 
-!> \param Oper the label of property integral
-recursive SUBROUTINE II_get_pso_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,ndmat)
+!> \param nDmat
+!> \param iAtom Chosen atom to calculate the PSO integral for 
+recursive SUBROUTINE II_get_pso_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,ndmat,iAtom)
 IMPLICIT NONE
-INTEGER              :: LUPRI,LUERR
+INTEGER              :: LUPRI,LUERR,iAtom
 TYPE(LSSETTING)      :: SETTING
 TYPE(MATRIX)         :: DMat(ndmat)
-real(realk)          :: expval(3*ndmat)
+real(realk)          :: expval(3*ndmat) !Order: 3,ndmat
 !
 TYPE(MATRIX)         :: DMat_AO(ndmat)
 integer :: I,ndmat,J,operparam
@@ -2199,6 +2206,7 @@ IF(setting%IntegralTransformGC)THEN
 ELSE
    CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
 ENDIF
+setting%scheme%AONuclearSpecID = iAtom
 call initIntegralOutputDims(setting%output,1,1,1,1,3*ndmat)
 CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
      & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
@@ -2214,6 +2222,71 @@ CALL LSTIMER('PSOSpecExpVal:',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_prop_expval)
 
 END SUBROUTINE II_get_pso_spec_expval
+
+!> \brief routine for calculation of expectation value of Specific nuclei PSO integrals
+!> So in Other words does dotproduct(PSOIntegral,D)
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param expval the matrices of property integrals (3,3) order: Magnetic comp, Magnetic Moment comp
+!> \param Dmat the matrices the should be contracted with the property integral
+!> \param iAtom the chosen atom for which this should be calculated
+recursive SUBROUTINE II_get_nst_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,iAtom)
+IMPLICIT NONE
+INTEGER              :: LUPRI,LUERR,iAtom
+TYPE(LSSETTING)      :: SETTING
+TYPE(MATRIX)         :: DMat(1)
+real(realk)          :: expval(9)
+!
+TYPE(MATRIX)         :: DMat_AO(1)
+integer :: I,ndmat,J,operparam
+real(realk) :: TS,TE
+logical :: CS_screenSAVE, PS_screenSAVE
+real(realk) :: TMPexpval(9)
+call time_II_operations1()
+CALL LSTIMER('START ',TS,TE,LUPRI)
+ndmat = 1
+IF(setting%IntegralTransformGC)THEN
+   CALL mat_init(Dmat_AO(1),Dmat(1)%nrow,Dmat(1)%ncol)
+   call GCAO2AO_transform_matrixD2(Dmat(1),Dmat_AO(1),setting,lupri)
+   CALL ls_attachDmatToSetting(Dmat_AO,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ELSE
+   CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ENDIF
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+
+!set threshold 
+call param_oper_paramfromString('NSTLON ',Operparam)
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+setting%scheme%AONuclearSpecID = iAtom
+call initIntegralOutputDims(setting%output,1,1,1,1,9)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,TMPexpval,setting%IntegralTransformGC)   
+
+call param_oper_paramfromString('NSTNOL ',Operparam)
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+setting%scheme%AONuclearSpecID = iAtom
+call initIntegralOutputDims(setting%output,1,1,1,1,9)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,expval,setting%IntegralTransformGC)   
+do I=1,9
+   expval(I) = expval(I) + TMPexpval(I) 
+enddo
+CALL ls_freeDmatFromSetting(setting)
+IF(setting%IntegralTransformGC)THEN   
+   CALL mat_free(Dmat_AO(1))
+ENDIF
+setting%scheme%do_prop = .FALSE.
+CALL LSTIMER('NSTSpecExpVal:',TS,TE,LUPRI)
+call time_II_operations2(JOB_II_get_prop_expval)
+
+END SUBROUTINE II_get_nst_spec_expval
 
 !> \brief Calculates property integrals
 !> \author T. Kjaergaard
@@ -4968,7 +5041,7 @@ IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15_realk)RETURN
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(1.0E0_realk/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(2.0E0_realk/maxCoor)
 IF(matrix_type .EQ. mtype_unres_dense)call lsquit('unres magderiv K not testet- not implemented',-1)
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat
@@ -4979,7 +5052,6 @@ IF(setting%IntegralTransformGC)THEN
 ELSE
    CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'RHS',2,4,.FALSE.,lupri)
 ENDIF
-
 
 IF (SETTING%SCHEME%CAM) THEN
   Oper = CAMOperator       !Coulomb attenuated method
@@ -5001,6 +5073,65 @@ CALL retrieve_Output(lupri,setting,Kx,setting%IntegralTransformGC)
 CALL ls_freeDmatFromSetting(setting)
 END SUBROUTINE II_get_magderivK1
 
+SUBROUTINE II_get_magderivKcont(LUPRI,LUERR,SETTING,DLHS,nLHS,Econt,DRHS)
+IMPLICIT NONE
+Integer               :: nLHS
+TYPE(MATRIX),target   :: DLHS(nLHS)
+TYPE(MATRIX),target   :: DRHS(1)
+real(realk)           :: Econt(3,nLHS)
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR
+!
+Integer             :: idmat,incdmat,nrow,ncol
+Real(realk),pointer :: DfullLHS(:,:,:)
+Real(realk),pointer :: DfullRHS(:,:,:)
+Real(realk)         :: fac,KFAC,maxCoor,OLDTHRESH,TS,TE
+integer    :: Oper,dascreen_thrlog
+Logical :: DaLink,LSDaLink,LSDaScreen
+IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15_realk)RETURN
+!The size of the magnetic derivative integral will increase with 
+!the size of the system so we modify the threshold with the 
+!largest X,Y or Z distance in the molecule. 
+call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(2.0E0_realk/maxCoor)
+IF(matrix_type .EQ. mtype_unres_dense)call lsquit('unres magderiv K not testet- not implemented',-1)
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC in II_get_magderivKcont use .NOGCBASIS',-1)
+ENDIF
+LSDaLink = setting%scheme%LSdaLinK
+DaLink = setting%scheme%daLinK
+LSDaScreen = setting%scheme%LSDASCREEN 
+Dascreen_thrlog = setting%scheme%Dascreen_thrlog
+setting%scheme%LSDASCREEN = .TRUE.
+setting%scheme%daLinK = .TRUE.
+setting%scheme%LSdaLinK = .TRUE.
+setting%scheme%Dascreen_thrlog = 0 !do not tighten 
+CALL LSTIMER('START ',TS,TE,LUPRI)
+!attach matrices
+!Make Tr(K^b(DRHS),DLHS) = DLHS(A,C)*Integral(A,B,C,D)^b*DRHS(B,D)
+CALL ls_attachDmatToSetting(DRHS,1,setting,'RHS',2,4,.FALSE.,lupri)
+CALL ls_attachDmatToSetting(DLHS,nLHS,setting,'LHS',1,3,.FALSE.,lupri)
+IF (SETTING%SCHEME%CAM) THEN
+  Oper = CAMOperator       !Coulomb attenuated method
+ELSEIF (SETTING%SCHEME%SR_EXCHANGE) THEN
+  Oper = ErfcOperator      !Short-Range Coulomb screened exchange
+ELSE
+  Oper = CoulombOperator   !Regular Coulomb metric 
+ENDIF
+!Calculates the HF-exchange contribution
+call initIntegralOutputDims(setting%Output,1,1,1,1,3*nLHS)
+call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,Oper,&
+     & magderivEcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,Econt,setting%IntegralTransformGC)
+call dscal(3*nLHS,SETTING%SCHEME%exchangeFactor,Econt,1)
+CALL ls_freeDmatFromSetting(setting)
+CALL LSTIMER('magderivKcont',TS,TE,LUPRI)
+setting%scheme%LSdaLinK = LSDaLink
+setting%scheme%daLinK = DaLink
+setting%scheme%LSDASCREEN  = LSDaScreen
+setting%scheme%Dascreen_thrlog = Dascreen_thrlog
+END SUBROUTINE II_get_magderivKcont
+
 !> \brief Calculates the magnetic derivative Coulomb integrals
 !> \author T. Kjaergaard
 !> \date 2010
@@ -5019,49 +5150,52 @@ real(realk) :: TS,TE
 type(matrix),pointer  :: Jx2(:)
 type(matrix) :: D2(1)
 call time_II_operations1()
-CALL LSTIMER('START ',TS,TE,LUPRI)
-
-ndmat = 1
-ISYM = mat_get_isym(Dmat(1))
-IF(ISYM.EQ.1)THEN !sym
-   !we can use the jengine where we only differentiate on the LHS
-   !as the magderiv on the RHS is zero for sym D mat
-   call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,Dmat,Jx,ndmat)
-   DO idmat=1,3
-      call mat_scal(0.5E0_realk,Jx(Idmat))
-   ENDDO   
-ELSEIF(ISYM.EQ.2)THEN !antisym
-   call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,Dmat(1),Jx,ndmat)
-ELSEIF(ISYM.EQ.3)THEN !nonsym
-   !we split up into sym and anti sym part
-   !SYM PART
-   call mat_init(D2(1),Dmat(1)%nrow,Dmat(1)%ncol)
-   call mat_assign(D2(1),Dmat(1))
-   call util_get_symm_part(D2(1))
-   call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,D2,Jx,ndmat)
-   DO idmat=1,3
-      call mat_scal(0.5E0_realk,Jx(Idmat))
-   ENDDO   
-   !ASYM PART
-   call util_get_antisymm_part(Dmat(1),D2(1))
-   call mem_alloc(Jx2,3)
-   do idmat=1,3
-      call mat_init(Jx2(idmat),Jx(1)%nrow,Jx(1)%ncol)
-   enddo
-   call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,D2,Jx2,ndmat)
-   call mat_free(D2(1))
-   DO idmat=1,3
-      call mat_daxpy(-1.0E0_realk,Jx2(Idmat),Jx(idmat))
-      call mat_free(Jx2(idmat))
-   ENDDO
-   call mem_dealloc(Jx2)
+IF (setting%scheme%densfit) THEN
+   CALL II_get_df_magderivJ(LUPRI,LUERR,SETTING,nbast,Dmat,Jx)
 ELSE
-   !zero Dmat
-   call mat_zero(Jx(1))
-   call mat_zero(Jx(2))
-   call mat_zero(Jx(3))
+   CALL LSTIMER('START ',TS,TE,LUPRI)
+   ndmat = 1
+   ISYM = mat_get_isym(Dmat(1))
+   IF(ISYM.EQ.1)THEN !sym
+      !we can use the jengine where we only differentiate on the LHS
+      !as the magderiv on the RHS is zero for sym D mat
+      call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,Dmat,Jx,ndmat)
+      DO idmat=1,3
+         call mat_scal(0.5E0_realk,Jx(Idmat))
+      ENDDO
+   ELSEIF(ISYM.EQ.2)THEN !antisym
+      call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,Dmat(1),Jx,ndmat)
+   ELSEIF(ISYM.EQ.3)THEN !nonsym
+      !we split up into sym and anti sym part
+      !SYM PART
+      call mat_init(D2(1),Dmat(1)%nrow,Dmat(1)%ncol)
+      call mat_assign(D2(1),Dmat(1))
+      call util_get_symm_part(D2(1))
+      call II_get_magderivJ1(LUPRI,LUERR,SETTING,nbast,D2,Jx,ndmat)
+      DO idmat=1,3
+         call mat_scal(0.5E0_realk,Jx(Idmat))
+      ENDDO
+      !ASYM PART
+      call util_get_antisymm_part(Dmat(1),D2(1))
+      call mem_alloc(Jx2,3)
+      do idmat=1,3
+         call mat_init(Jx2(idmat),Jx(1)%nrow,Jx(1)%ncol)
+      enddo
+      call II_get_magderivJ1asym(LUPRI,LUERR,SETTING,nbast,D2,Jx2,ndmat)
+      call mat_free(D2(1))
+      DO idmat=1,3
+         call mat_daxpy(-1.0E0_realk,Jx2(Idmat),Jx(idmat))
+         call mat_free(Jx2(idmat))
+      ENDDO
+      call mem_dealloc(Jx2)
+   ELSE
+      !zero Dmat
+      call mat_zero(Jx(1))
+      call mat_zero(Jx(2))
+      call mat_zero(Jx(3))
+   ENDIF
+   CALL LSTIMER('magJengin',TS,TE,LUPRI)
 ENDIF
-CALL LSTIMER('magJengin',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_magderivJ_4center_eri)
 end SUBROUTINE II_get_magderivJ
 
@@ -7112,56 +7246,61 @@ IF(.NOT.DSYM)THEN
       ENDIF
    enddo
    ndmat2 = idmat2
-   if(ndmat2.GT.0)THEN
-      call mem_alloc(D2,ndmat2)
-      do idmat2=1,ndmat2
-         call mat_init(D2(idmat2),D(1)%nrow,D(1)%ncol)
-      enddo
-      idmat2 = 0
-      do idmat=1,ndmat
-         IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
-            idmat2 = idmat2 + 1
-            call mat_copy(1.0E0_realk,D(idmat), D2(idmat2))
-         ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
-            call mat_assign(D2(idmat2+1),D(idmat))
-            call util_get_symm_part(D2(idmat2+1))
-            call util_get_antisymm_part(D(idmat),D2(idmat2+2))
-            idmat2 = idmat2 + 2 !we split up into sym and anti sym part
-         ELSE
-            !do nothing
-         ENDIF
-      enddo
-      call mem_alloc(F2,ndmat2)
-      do idmat2=1,ndmat2
-         call mat_init(F2(idmat2),F(1)%nrow,F(1)%ncol)
-         call mat_zero(F2(idmat2)) 
-      enddo
-      call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D2,ndmat2,F2,AO1,AO3,AO2,AO4,Oper)
-      do idmat2=1,ndmat2
-         call mat_free(D2(idmat2))
-      enddo
-      call mem_dealloc(D2)
-      idmat2 = 0
-      do idmat=1,ndmat
-         IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
-            idmat2 = idmat2 + 1
-            call mat_copy(1.0E0_realk,F2(idmat2), F(idmat))
-         ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
-            call mat_add(1E0_realk,F2(idmat2+1),1E0_realk,F2(idmat2+2),F(idmat))
-            idmat2 = idmat2 + 2
-         ELSE
+   IF(ndmat2.EQ.ndmat)THEN
+      !all matrices are sym or asym 
+      call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D,ndmat,F,AO1,AO3,AO2,AO4,Oper)
+   ELSE
+      if(ndmat2.GT.0)THEN
+         call mem_alloc(D2,ndmat2)
+         do idmat2=1,ndmat2
+            call mat_init(D2(idmat2),D(1)%nrow,D(1)%ncol)
+         enddo
+         idmat2 = 0
+         do idmat=1,ndmat
+            IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
+               idmat2 = idmat2 + 1
+               call mat_copy(1.0E0_realk,D(idmat), D2(idmat2))
+            ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
+               call mat_assign(D2(idmat2+1),D(idmat))
+               call util_get_symm_part(D2(idmat2+1))
+               call util_get_antisymm_part(D(idmat),D2(idmat2+2))
+               idmat2 = idmat2 + 2 !we split up into sym and anti sym part
+            ELSE
+               !do nothing
+            ENDIF
+         enddo
+         call mem_alloc(F2,ndmat2)
+         do idmat2=1,ndmat2
+            call mat_init(F2(idmat2),F(1)%nrow,F(1)%ncol)
+            call mat_zero(F2(idmat2)) 
+         enddo
+         call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D2,ndmat2,F2,AO1,AO3,AO2,AO4,Oper)
+         do idmat2=1,ndmat2
+            call mat_free(D2(idmat2))
+         enddo
+         call mem_dealloc(D2)
+         idmat2 = 0
+         do idmat=1,ndmat
+            IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
+               idmat2 = idmat2 + 1
+               call mat_copy(1.0E0_realk,F2(idmat2), F(idmat))
+            ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym
+               call mat_add(1E0_realk,F2(idmat2+1),1E0_realk,F2(idmat2+2),F(idmat))
+               idmat2 = idmat2 + 2
+            ELSE
+               call mat_zero(F(idmat))
+            ENDIF
+         enddo
+         do idmat2=1,ndmat2
+            call mat_free(F2(idmat2))
+         enddo
+         call mem_dealloc(F2)
+      else
+         do idmat=1,ndmat
             call mat_zero(F(idmat))
-         ENDIF
-      enddo
-      do idmat2=1,ndmat2
-         call mat_free(F2(idmat2))
-      enddo
-      call mem_dealloc(F2)
-   else
-      do idmat=1,ndmat
-         call mat_zero(F(idmat))
-      enddo
-   endif
+         enddo
+      endif
+   ENDIF
 ELSE
    call II_get_exchange_mat1(LUPRI,LUERR,SETTING,D,ndmat,F,AO1,AO3,AO2,AO4,Oper)
 ENDIF
