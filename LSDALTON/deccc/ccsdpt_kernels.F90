@@ -92,7 +92,7 @@ contains
     !> orbital energiesi
     real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt) 
     !> loop integers
-    integer :: b_size,njobs,ij_comp,ij_count
+    integer :: b_size,njobs,ij_comp,ij_count,ij_max_count
     integer, pointer :: ij_array(:),jobs(:)
     integer :: i,j,k,tuple_type
     integer :: i_tile,j_tile,k_tile,i_pos,j_pos,k_pos,i_count,j_count,k_count
@@ -147,7 +147,7 @@ contains
 
     full_no_frags = .false.
     use_bg_buf    = mem_is_background_buf_init()
-    dynamic_load  = .false.
+    dynamic_load  = DECinfo%dyn_load
     plus_one      = 1
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.
@@ -285,7 +285,7 @@ contains
        call mem_alloc( dyn_i, dyn_c, 1)
 
        dyn_i = 0
-       if(infpar%lg_mynum == 0) dyn_i(1) = infpar%lg_nodtot+1
+       if(infpar%lg_mynum == 0) dyn_i(1) = infpar%lg_nodtot
 
        call lsmpi_win_create(dyn_i,dyn_w,1,infpar%lg_comm)
 #ifdef VAR_HAVE_MPI3
@@ -293,8 +293,10 @@ contains
 #else
        call lsquit("ERROR(ijk_loop_par): dynamic load only implemented for MPI3",-1)
 #endif
+       ij_max_count = njobs
     else
-       ij_count=1
+       ij_count=0
+       ij_max_count = b_size + 1
     endif
 
     ! now follows the main loop, which is collapsed.
@@ -307,40 +309,35 @@ contains
 
 !$acc wait
 
-!    ijrun_par: do while (ij_count <= b_size + 1)
-!
-!          !Get Job index
-!          if(dynamic_load)then
-!
-!             if(ij_count == 0) then
-!                ij_count = infpar%lg_mynum + 1
-!             else
-!                call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
-!                call lsmpi_win_flush(dyn_w,local=.true.)
-!                ij_count = ij_count + 1
-!             endif
-!
-!             if(ij_count <= njobs)then
-!                ij_comp  = ij_array(ij_count)
-!             else
-!                ij_comp  = -1
-!             endif
-!
-!          else
-!             ij_count = ij_count + 1
-!             ij_comp  = jobs(ij_count)
-!          endif
-!
-!          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
-!             &infpar%lg_mynum,ij_comp,njobs
+    ijrun_par: do while (ij_count <= ij_max_count)
 
- ijrun_par: do ij_count = 1,b_size + 1
+          !Get Job index
+          if(dynamic_load)then
 
-          ! get value of ij from job disttribution list
-          ij_comp = jobs(ij_count)
+             if(ij_count == 0) then
+                ij_count = infpar%lg_mynum + 1
+             else
+                call lsmpi_get_acc(plus_one,ij_count,infpar%master,1,dyn_w)
+                call lsmpi_win_flush(dyn_w,local=.true.)
+                ij_count = ij_count + 1
+             endif
 
-          ! no more jobs to be done? otherwise leave the loop
-          if (ij_comp .lt. 0) exit
+             if(ij_count <= njobs)then
+                ij_comp  = ij_array(ij_count)
+             else
+                exit ijrun_par
+             endif
+
+          else
+             ij_count = ij_count + 1
+             if (ij_count > b_size + 1) exit ijrun_par
+             ij_comp  = jobs(ij_count)
+             ! no more jobs to be done? otherwise leave the loop
+             if (ij_comp .lt. 0) exit ijrun_par
+          endif
+
+          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
+             &infpar%lg_mynum,ij_comp,njobs
 
           ! calculate i and j from composite ij value
           call calc_i_leq_j(ij_comp,dim_ts,i_tile,j_tile)
@@ -579,6 +576,11 @@ contains
 
                       k_count = k_count+1
 
+                      if(DECinfo%ccsolverskip)then
+                         call random_number(trip_ampl)
+                         call random_number(trip_tmp)
+                      else
+
                       ! generate tuple(s)
                       TypeOfTuple_par_ijk: select case(tuple_type)
 
@@ -754,6 +756,7 @@ contains
                          endif
 
                       end select TypeOfTuple_par_ijk
+                      endif
 
                       if (k_count .eq. tile_size_tmp_k) k_count = 0
 
@@ -873,6 +876,9 @@ contains
 
     enddo ijrun_par
 
+    ! release ij_array
+    call mem_dealloc(ij_array)
+
     call time_start_phase(PHASE_WORK)
 
 !$acc wait
@@ -889,9 +895,6 @@ contains
     call time_start_phase(PHASE_IDLE)
     call lsmpi_barrier(infpar%lg_comm)
     call time_start_phase(PHASE_WORK)
-
-    ! release ij_array
-    call mem_dealloc(ij_array)
 
     if (alloc_in_dummy) then
        call tensor_unlock_wins(vvvo,all_nodes=.true.)
@@ -1121,6 +1124,7 @@ contains
     integer :: i,j,k,tuple_type
     !> async handles
     integer :: num_ids,m
+    logical :: use_bg_buf
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind), pointer, dimension(:) :: async_id
     integer(kind=acc_device_kind) :: acc_device_type
@@ -1135,6 +1139,8 @@ contains
 
     full_no_frags = .false.
 
+    use_bg_buf    = mem_is_background_buf_init()
+
     if (present(e4) .and. present(e5)) full_no_frags = .true.
 
     if (full_no_frags) call mem_alloc(tmp_res_e5,i8*nvirt)
@@ -1143,10 +1149,24 @@ contains
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                    & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
 
+#ifndef VAR_REAL_SP
+    if(use_bg_buf)then
+       ! init triples tuples structure
+       call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nvirt,i8*nvirt)
+       ! init 3d wrk array
+       call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nvirt,i8*nvirt)
+    else
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
+    endif
+#else
     ! init triples tuples structure
     call mem_alloc(trip_ampl,nvirt,nvirt,nvirt)
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nvirt,nvirt,nvirt)
+#endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles and vvvo / ovoo integrals
@@ -1538,9 +1558,18 @@ contains
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                    & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
 
-    ! release triples ampl structures
-    call mem_dealloc(trip_ampl)
+#ifndef VAR_REAL_SP
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(trip_tmp)
+       call mem_pseudo_dealloc(trip_ampl)
+    else
+       call mem_dealloc(trip_tmp)
+       call mem_dealloc(trip_ampl)
+    endif
+#else
     call mem_dealloc(trip_tmp)
+    call mem_dealloc(trip_ampl)
+#endif
 
     call LSTIMER('IJK_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
@@ -1683,10 +1712,24 @@ contains
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                    & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
 
+#ifndef VAR_REAL_SP
+    if(use_bg_buf)then
+       ! init triples tuples structure
+       call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nocc,i8*nocc)
+       ! init 3d wrk array
+       call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nocc,i8*nocc)
+    else
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nvirt,nocc,nocc)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nvirt,nocc,nocc)
+    endif
+#else
     ! init triples tuples structure
     call mem_alloc(trip_ampl,nvirt,nocc,nocc)
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nvirt,nocc,nocc)
+#endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles
@@ -2345,6 +2388,19 @@ contains
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                    & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
 
+#ifndef VAR_REAL_SP
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(trip_tmp)
+       call mem_pseudo_dealloc(trip_ampl)
+    else
+       call mem_dealloc(trip_tmp)
+       call mem_dealloc(trip_ampl)
+    endif
+#else
+    call mem_dealloc(trip_tmp)
+    call mem_dealloc(trip_ampl)
+#endif
+
     ! release preloading stuff
     if( use_bg_buf )then
        call mem_pseudo_dealloc(oovv_pdm_buff)
@@ -2365,10 +2421,6 @@ contains
     call mem_dealloc(tiles_in_buf_ccsd)
     call mem_dealloc(tiles_in_buf_oovv)
     call mem_dealloc(jobs)
-
-    ! release triples ampl structures
-    call mem_dealloc(trip_ampl)
-    call mem_dealloc(trip_tmp)
     
     call time_phases_get_diff(current_wt=phase_cntrs)
     call time_start_phase( PHASE_WORK, ttot = time_pt_abc )
@@ -2530,6 +2582,7 @@ contains
     integer :: a,b,c,tuple_type
     !> async handles
     integer :: num_ids,m
+    logical :: use_bg_buf
 #ifdef VAR_OPENACC
     integer(kind=acc_handle_kind), pointer, dimension(:) :: async_id
     integer(kind=acc_device_kind) :: acc_device_type
@@ -2544,6 +2597,8 @@ contains
 
     full_no_frags = .false.
 
+    use_bg_buf = mem_is_background_buf_init()
+
     if (present(e4) .and. present(e5)) full_no_frags = .true.
 
     if (full_no_frags) call mem_alloc(tmp_res_e5,i8*nocc)
@@ -2552,10 +2607,24 @@ contains
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                    & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
 
+#ifndef VAR_REAL_SP
+    if(use_bg_buf)then
+       ! init triples tuples structure
+       call mem_pseudo_alloc(trip_ampl,i8*nvirt,i8*nocc,i8*nocc)
+       ! init 3d wrk array
+       call mem_pseudo_alloc(trip_tmp,i8*nvirt,i8*nocc,i8*nocc)
+    else
+       ! init triples tuples structure
+       call mem_alloc(trip_ampl,nvirt,nocc,nocc)
+       ! init 3d wrk array
+       call mem_alloc(trip_tmp,nvirt,nocc,nocc)
+    endif
+#else
     ! init triples tuples structure
     call mem_alloc(trip_ampl,nvirt,nocc,nocc)
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nvirt,nocc,nocc)
+#endif
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
     ! handle 1: ccsd_doubles and vovv / ooov integrals
@@ -2944,9 +3013,18 @@ contains
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                    & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
 
-    ! release triples ampl structures
-    call mem_dealloc(trip_ampl)
+#ifndef VAR_REAL_SP
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(trip_tmp)
+       call mem_pseudo_dealloc(trip_ampl)
+    else
+       call mem_dealloc(trip_tmp)
+       call mem_dealloc(trip_ampl)
+    endif
+#else
     call mem_dealloc(trip_tmp)
+    call mem_dealloc(trip_ampl)
+#endif
 
     call LSTIMER('ABC_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 

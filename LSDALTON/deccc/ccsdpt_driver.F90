@@ -2041,7 +2041,7 @@ contains
     type(c_ptr)           :: distributionc
     integer(kind=ls_mpik) :: distributionw
     Character            :: intSpec(5)
-    integer :: myload,first_el_i_block,nelms,tile_size_tmp,total_num_tiles,tile
+    integer :: myload,first_el_i_block,nelms,tile_size_tmp,total_num_tiles,tile,ats1,ats2
     logical :: master
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
@@ -2434,6 +2434,15 @@ contains
           AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
        endif
 
+       if(DECinfo%ccsolverskip)then
+          if(first_round)then
+          call random_number(tmp1)
+          call random_number(tmp2)
+          call random_number(tmp3)
+          call random_number(ovoo%elm1)
+          first_round=.false.
+          endif
+       else
 
        ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
        ! ************************************************************************************
@@ -2612,6 +2621,7 @@ contains
        end do
 
 #endif
+       endif
 
     end do BatchLoop
 
@@ -2650,6 +2660,17 @@ contains
     endif
 
 #endif
+
+    if(DECinfo%ccsolverskip)then
+       ats1 = vvvo%access_type
+       ats2 = ovoo%access_type
+       vvvo%access_type = AT_ALL_ACCESS
+       ovoo%access_type = AT_ALL_ACCESS
+       call tensor_random(vvvo)
+       call tensor_random(ovoo)
+       vvvo%access_type = ats1
+       ovoo%access_type = ats2
+    endif
 
     ! free stuff
     ! **********
