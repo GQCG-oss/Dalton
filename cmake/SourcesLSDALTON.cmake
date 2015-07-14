@@ -204,6 +204,7 @@ set(RSP_PROPERTIES_SOURCES
     LSDALTON/rsp_properties/response_prop_noOpenRSP.F90
     LSDALTON/rsp_properties/molecular_hessian.F90
     LSDALTON/rsp_properties/test_molHessian.F90
+    LSDALTON/rsp_properties/nuclei_selected_shielding.F90
     )
 set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc_compare.F90

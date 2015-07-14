@@ -1819,19 +1819,18 @@ contains
     ! a one to one  mapping between the code and this routine (and the notes).
 
     ! Max memory used for tmp0:
-    mem0 = max(x*m*x*m, x*m*vbar*v, v*vbar*o*o, v*v*obar*o, x*x*o*v, &
-       & x*vbar*o*m, v*vbar*o*o, v*v*o*o)
+    mem0 = max(x*m*x*m, v*vbar*o*o, v*v*obar*o, o*o*v*x, x*vbar*o*m, &
+       & v*vbar*o*o, v*v*o*o)
     mem0 = int(i8*mem0, kind=long)
 
     ! Max memory used for tmp1:
     mem1 = max(x*x*m*o, m*o*v*o, m*obar*o*x, obar*o*o*o, vbar*v*o*o/2, &
        & obar*o*o*o/2, m*o*o*x/2, v*v*o*o/2, x*v*vbar*o, v*obar*o*x, &
-       & o*o*v*x, x*vbar*o*o, v*v*o*o)
+       & x*o*v*x, x*vbar*o*o, v*v*o*o)
     mem1 = int(i8*mem1, kind=long)
 
     ! Max memory used for tmp2:
-    mem2 = max(x*m*o*v, o*v*o*v, x*m*obar*o, m*obar*o*o, x*m*x*m, &
-       & x*m*o*o/2, v*o*o*x/2, x*vbar*o*v, v*v*o*o)
+    mem2 = max(x*m*o*v, o*v*o*v, m*obar*o*o, x*m*o*o/2, v*o*o*x/2, v*v*o*o)
     mem2 = int(i8*mem2, kind=long)
 
   end subroutine get_mem_mo_ccsd_warrays

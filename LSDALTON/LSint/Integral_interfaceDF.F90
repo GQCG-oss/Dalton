@@ -29,7 +29,7 @@ MODULE IntegralInterfaceModuleDF
        & II_get_RI_alphaCD_3CenterInt2,getRIbasisMPI,getMaxAtomicnAux,&
        & II_get_RI_AlphaCD_3CenterIntFullOnAllNN, GetOperatorFromCharacter,&
        & II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim,II_get_RIMP2_grad,&
-       & II_get_RI_AlphaBeta_geoderiv2CenterInt
+       & II_get_RI_AlphaBeta_geoderiv2CenterInt,II_get_df_magderivJ
   private
 
   SAVE
@@ -2544,6 +2544,257 @@ CALL LSTIMER('FIT-JO',TSTART,TEND,LUPRI)
 
 END SUBROUTINE II_get_overlap_df_coulomb_mat
 
+!> \brief Calculates the density fitted magnetic derivative Coulomb integrals
+!> \author T. Kjaergaard
+!> \date 2015
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param nbast The number of basis functions
+SUBROUTINE II_get_df_magderivJ(LUPRI,LUERR,SETTING,nbast,Dmat,Jx)
+IMPLICIT NONE
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR,nbast
+type(matrix)          :: Dmat(1),Jx(3)
+!
+type(matrix)          :: TmpJx(3)
+type(matrix)          :: Dmat_AO(1)
+real(realk),pointer   :: g1alpha(:,:)
+real(realk),pointer   :: gX1alpha(:,:),cX2alpha(:,:,:)
+real(realk),pointer   :: calpha(:,:,:)
+INTEGER               :: ideriv,i,ndmat,nderiv,nAux,natoms,nbasis,Oper
+logical               :: Coulomb
+real(realk)           :: maxCoor,MagneticThreshold,StandardThreshold
+ndmat = 1
+nderiv= 3
+CALL mat_init(Dmat_AO(1),nbast,nbast)
+IF(setting%IntegralTransformGC)THEN
+   call GCAO2AO_transform_matrixD2(Dmat(1),Dmat_AO(1),setting,lupri)
+ELSE
+   CALL mat_assign(Dmat_AO(1),Dmat(1))   
+ENDIF
+do ideriv=1,3
+   call mat_init(TmpJx(ideriv),nbast,nbast)
+!   call mat_zero(TmpJx(ideriv))
+!   call mat_zero(Jx(ideriv))
+enddo
+IF(SETTING%SCHEME%FMM)CALL LSQUIT('FMM and df_magderivJ not working',-1)
+
+!set threshold 
+!The size of the magnetic derivative integral will increase with 
+!the size of the system so we modify the threshold with the 
+!largest X,Y or Z distance in the molecule. 
+call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
+MagneticThreshold = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0_realk/maxCoor)
+StandardThreshold = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+oper=CoulombOperator
+Coulomb = oper.EQ.CoulombOperator
+call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBasis,nAux)
+
+call mem_alloc(g1alpha,naux,1)
+call mem_alloc(calpha,naux,1,1)
+call mem_alloc(gX1alpha,naux,3)
+call mem_alloc(cX2alpha,naux,1,3)
+
+!===================================================
+!Step 1.
+!((ab)^b|rho_fit)  = ((ab)^b|alpha) C^alpha 
+!===================================================
+
+!g1alpha  = (alpha|rho) = (alpha|cd)D_cd
+CALL ls_attachDmatToSetting(Dmat_AO,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
+call initIntegralOutputDims(setting%Output,naux,1,1,1,1)
+SETTING%SCHEME%intTHRESHOLD=StandardThreshold
+call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,oper,RegularSpec,ContractedInttype,&
+     &          SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,g1alpha,.FALSE.)
+CALL ls_freeDmatFromSetting(setting)
+!|rho_fit) = (alpha|beta)^-1 (beta|rho)
+call linsolv_df(calpha,g1alpha,AODFdefault,oper,naux,ndmat,SETTING,LUPRI,LUERR)
+
+!J^b_ab = ((ab)^b|rho_fit)
+CALL ls_attachDmatToSetting(calpha,naux,1,ndmat,setting,'RHS',3,4,lupri)
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,3)
+SETTING%SCHEME%intTHRESHOLD=MagneticThreshold
+call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,MagderivLSpec,&
+     & ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,Jx,.FALSE.)
+CALL ls_freeDmatFromSetting(setting)
+
+!===================================================
+!Step 2.
+!(ab|alpha^b) C^alpha 
+!===================================================
+!J^b_ab = (ab|alpha^b) C^alpha
+CALL ls_attachDmatToSetting(calpha,naux,1,ndmat,setting,'RHS',3,4,lupri)
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,3)
+SETTING%SCHEME%intTHRESHOLD=MagneticThreshold
+!call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,MagderivRSpec,&
+!     & ContractedInttype,SETTING,LUPRI,LUERR)
+call ls_get_coulomb_mat(AORdefault,AORdefault,AODFdefault,AOempty,&
+     &CoulombOperator,MagderivRSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,TmpJx,.FALSE.)
+do ideriv=1,3
+   call mat_daxpy(1E0_realk,TmpJx(ideriv),Jx(ideriv))
+enddo
+CALL ls_freeDmatFromSetting(setting)
+
+!===================================================
+!Step 3.
+!C^alpha_ab (alpha^b|cd) Dcd = (ab|beta)(beta|alpha)^-1((alpha)^b|cd)D_cd 
+!                            = (ab|beta) G_beta
+!Where G_beta = (beta|alpha)^-1 ((alpha)^b|cd)D_cd 
+!===================================================
+
+!g1alpha  = (alpha^b|rho) = (alpha^b|cd)D_cd
+CALL ls_attachDmatToSetting(Dmat_AO,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
+call initIntegralOutputDims(setting%Output,naux,1,1,1,3)
+SETTING%SCHEME%intTHRESHOLD=MagneticThreshold
+call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,oper,MagderivLspec,ContractedInttype,&
+     &          SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,gX1alpha,.FALSE.)
+CALL ls_freeDmatFromSetting(setting)
+!C^alpha_ab = (alpha|beta)^-1 (beta|ab) so
+!C^alpha_ab*g1alpha = g1alpha*(alpha|beta)^-1 (beta|ab)
+!G_alpha = (alpha|beta)^-1 ((beta)^b|rho)
+call linsolv_df(cX2alpha,gX1alpha,AODFdefault,oper,naux,nderiv,SETTING,LUPRI,LUERR)
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,nderiv)
+CALL ls_attachDmatToSetting(cX2alpha,nAux,1,nderiv,setting,'RHS',3,4,lupri)
+!J^b_ab =+ (ab|beta) G_beta
+SETTING%SCHEME%intTHRESHOLD=StandardThreshold
+call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
+     & ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,TmpJx,.FALSE.)
+do ideriv=1,nderiv
+   call mat_daxpy(1E0_realk,TmpJx(ideriv),Jx(ideriv))
+enddo
+CALL ls_freeDmatFromSetting(setting)
+
+!===================================================
+!Step 4. Zero if Symmetric Density matrix 
+!C^alpha_ab (alpha|(cd)^b) Dcd = (ab|beta)(beta|alpha)^-1(alpha|(cd)^b)D_cd 
+!                            = (ab|beta) G_beta
+!Where G_beta = (beta|alpha)^-1 (alpha|(cd)^b)D_cd 
+!===================================================
+!g1alpha  = (alpha^b|rho) = (alpha^b|cd)D_cd
+CALL ls_attachDmatToSetting(Dmat_AO,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
+call initIntegralOutputDims(setting%Output,naux,1,1,1,nderiv)
+SETTING%SCHEME%intTHRESHOLD=MagneticThreshold
+!call ls_jengine(AODFdefault,AOempty,AORdefault,AORdefault,oper,MagderivRspec,ContractedInttype,&
+!     &          SETTING,LUPRI,LUERR)
+call ls_get_coulomb_mat(AODFdefault,AOempty,AORdefault,AORdefault,&
+     &CoulombOperator,MagderivRSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,gX1alpha,.FALSE.)
+CALL ls_freeDmatFromSetting(setting)
+!C^alpha_ab = (alpha|beta)^-1 (beta|ab) so
+!C^alpha_ab*g1alpha = g1alpha*(alpha|beta)^-1 (beta|ab)
+!G_alpha = (alpha|beta)^-1 ((beta)^b|rho)
+call linsolv_df(cX2alpha,gX1alpha,AODFdefault,oper,naux,nderiv,SETTING,LUPRI,LUERR)
+CALL ls_attachDmatToSetting(cX2alpha,nAux,1,nderiv,setting,'RHS',3,4,lupri)
+!J^b_ab =+ (ab|beta) G_beta
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,nderiv)
+SETTING%SCHEME%intTHRESHOLD=StandardThreshold
+call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
+     & ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,TmpJx,.FALSE.)
+do ideriv=1,nderiv
+   call mat_daxpy(1E0_realk,TmpJx(ideriv),Jx(ideriv))
+enddo
+CALL ls_freeDmatFromSetting(setting)
+
+!===================================================
+!Step 5. 
+!C^alpha_ab [(alpha|(beta)^b)+(alpha^b|beta)] C^beta
+!             = (ab|alpha)(alpha|beta)^-1 [(beta|gamma^b)+(beta^b|gamma)] C^gamma
+!             = (ab|alpha)G_alpha
+!Where G_alpha = (alpha|beta)^-1 [(beta|gamma^b)+(beta^b|gamma)] C^gamma
+!===================================================
+
+!g1alpha  = [(beta|gamma^b)+(beta^b|gamma)] C^gamma
+CALL ls_attachDmatToSetting(Calpha,naux,1,ndmat,setting,'RHS',3,4,lupri)
+call initIntegralOutputDims(setting%Output,naux,1,1,1,3)
+SETTING%SCHEME%intTHRESHOLD=MagneticThreshold
+!call ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,oper,MagderivRspec,ContractedInttype,&
+!     &          SETTING,LUPRI,LUERR)
+call ls_get_coulomb_mat(AODFdefault,AOempty,AODFdefault,AOempty,&
+     &CoulombOperator,MagderivRSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,gX1alpha,.FALSE.)
+call initIntegralOutputDims(setting%Output,naux,1,1,1,3)
+SETTING%SCHEME%intTHRESHOLD=MagneticThreshold
+call ls_jengine(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,MagderivLspec,&
+     & ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,cX2alpha,.FALSE.)
+do ideriv=1,nderiv
+   do i=1,naux
+      gX1alpha(i,ideriv) = gX1alpha(i,ideriv) + cX2alpha(i,1,ideriv)
+   enddo
+enddo
+CALL ls_freeDmatFromSetting(setting)
+
+!C^alpha_ab = (alpha|beta)^-1 (beta|ab) so
+!C^alpha_ab*g1alpha = g1alpha*(alpha|beta)^-1 (beta|ab)
+
+!G_alpha = (alpha|beta)^-1 [(beta|gamma^b)+(beta^b|gamma)] C^gamma
+call linsolv_df(cX2alpha,gX1alpha,AODFdefault,oper,naux,nderiv,SETTING,LUPRI,LUERR)
+CALL ls_attachDmatToSetting(cX2alpha,nAux,1,nderiv,setting,'RHS',3,4,lupri)
+!J^b_ab =+ (ab|alpha) G_alpha
+call initIntegralOutputDims(setting%Output,nbast,nbast,1,1,nderiv)
+SETTING%SCHEME%intTHRESHOLD=StandardThreshold
+call ls_jengine(AORdefault,AORdefault,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
+     & ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,TmpJx,.FALSE.)
+do ideriv=1,nderiv
+   call mat_daxpy(-1E0_realk,TmpJx(ideriv),Jx(ideriv))
+enddo
+CALL ls_freeDmatFromSetting(setting)
+
+!===================================================
+
+! The Variational terms 
+
+!Step 6.
+!Cbar^alpha_ab (alpha^b|cd) Dcd = [(ab|beta)-C^gamma_ab(gamma|beta)](beta|alpha)^-1((alpha)^b|cd)D_cd 
+!   = [(ab|beta)-C^gamma_ab(gamma|beta)](beta|alpha)^-1((alpha)^b|cd)D_cd 
+!   = [(ab|beta)-(ab|delta)(delta|gamma)^-1 (gamma|beta)](beta|alpha)^-1((alpha)^b|cd)D_cd 
+!   = (ab|beta)(beta|alpha)^-1((alpha)^b|cd)D_cd  -  (ab|delta)(delta|alpha)^-1((alpha)^b|cd)D_cd 
+!   = 0 due to Coulomb operator
+!Step 7.   Zero is Symmetric Density Matrix
+!Cbar^alpha_ab (alpha|(cd^b) Dcd = [(ab|beta)-C^gamma_ab(gamma|beta)](beta|alpha)^-1 (alpha|(cd^b) Dcd
+!   = [(ab|beta)-C^gamma_ab(gamma|beta)](beta|alpha)^-1 (alpha|(cd^b) Dcd
+!   = 0 due to Coulomb operator
+!Step 8. 
+!Cbar^alpha_ab [(alpha|delta^b)+(alpha^b|delta)] C^delta
+![(ab|beta)-C^gamma_ab(gamma|beta)](beta|alpha)^-1 [(alpha|(delta)^b)+(alpha^b|delta)] C^delta
+!   = 0 due to Coulomb operator
+!Step 9.
+!   = 0 due to Coulomb operator
+!Step 10.
+!   = 0 due to Coulomb operator
+!Step 11.
+!   = 0 due to Coulomb operator
+!===================================================
+
+CALL mat_free(Dmat_AO(1))
+do ideriv=1,nderiv
+   call mat_free(TmpJx(ideriv))
+enddo
+call mem_dealloc(g1alpha)
+call mem_dealloc(calpha)
+call mem_dealloc(gX1alpha)
+call mem_dealloc(cX2alpha)
+
+IF(setting%IntegralTransformGC)THEN
+   do ideriv=1,nderiv
+      call AO2GCAO_transform_matrixF(Jx(ideriv),setting,lupri)
+   enddo   
+ENDIF
+!do ideriv=1,nderiv
+!   WRITE(lupri,*)'DF: Jx(',ideriv,')'
+!   call mat_scal(0.5E0_realk,Jx(Ideriv))
+!   call mat_print(Jx(ideriv),1,Jx(ideriv)%nrow,1,Jx(ideriv)%ncol,lupri)
+!enddo
+end SUBROUTINE II_get_df_magderivJ
+
 SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
      & nbasisAux,nbasis)
   IMPLICIT NONE
@@ -2837,9 +3088,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
   REAL(REALK),pointer    :: FullAlphaCD(:) !dim1,nMO1,nMO2
   TYPE(LSSETTING),intent(inout) :: SETTING
   character,intent(in)  :: intspec(4)
-  logical :: AOtoMO,MemDebugPrint
-  real(realk) :: C1(n1,nMO1),C2(n2,nMO2)  
-  integer :: GindexToLocal(nAux)
+  logical,intent(in) :: AOtoMO,MemDebugPrint
+  real(realk),intent(in) :: C1(n1,nMO1),C2(n2,nMO2)  
+  integer,intent(in) :: GindexToLocal(nAux)
   logical,optional :: use_bg_bufInput
   !
   real(realk) :: TSTART,TEND

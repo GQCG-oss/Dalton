@@ -109,6 +109,7 @@ F90_OBJS = \
         tensor_interface.o\
         lspdm_slave.o\
         tensor_basic.o\
+	lapack_interface.o\
         lspdm_basic.o\
 	lstensorType.o\
 	lstensor_Mem.o\

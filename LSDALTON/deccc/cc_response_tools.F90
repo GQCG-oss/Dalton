@@ -1651,6 +1651,12 @@ contains
            & t1fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2,&
            & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
 
+      ! Add contribution to get LW1 model
+      if(DECinfo%ccModel==MODEL_MP2 .and. DECinfo%LW1) then
+         call add_lw1_contribution(nbasis,mylsitem,xo,&
+              & yv,t2,L1,L2,rho1,rho2,.false.)
+      end if
+
     end subroutine cc_jacobian_lhtr
 
 
@@ -2256,9 +2262,10 @@ contains
       end if Hald1
 
 
-      ! Add contribution to get LW1 model (destroy size-extensivity)
-      if(DECinfo%ccModel==MODEL_MP2 .and. DECinfo%LW1) then
-         call add_lw1_contribution(gvvov,gooov,t2,R1,rho2,whattodo)
+      ! Add contribution to get LW1 model
+      if(DECinfo%ccModel==MODEL_MP2 .and. whattodo==1 .and. DECinfo%LW1) then
+         call add_lw1_contribution(nbasis,mylsitem,xo,&
+              & yv,t2,R1,R2,rho1,rho2,.true.)
       end if
 
 
@@ -2623,7 +2630,7 @@ contains
       real(realk),pointer :: res(:),lambdaIMAG(:),eival(:),singlescomp(:),foo(:,:),fvv(:,:)
       logical,pointer :: conv(:),singleex(:)
       logical :: allconv
-
+      
       ! Sanity check
       if(DECinfo%haldapprox .and. DECinfo%JacobianLhtr) then
          call lsquit('Hald approximation not implemented for &
@@ -2653,7 +2660,7 @@ contains
          end if
       end if
 
-      
+
       ! Sanity check: Requested number of initial eigenvalues/start vectors is not
       ! larger than the maximum possible number of singles+doubles excitations.
       O = int(nocc,kind=8)
@@ -2668,13 +2675,13 @@ contains
       ! Division by 2 is due to symmetry: t_ij^ab = t_ji^ba
       ! 
       maxnumeival = O*V + O*V + O*(O-1)*V/2 + O*V*(V-1)/2 + O*(O-1)*V*(V-1)/2
+
       if( int(M,kind=8) > maxnumeival) then
          print *, 'Number of startvectors ', M
          print *, 'Max number of eigenvalues ',maxnumeival
          call lsquit('ccsd_eigenvalue_solver: Number of requested &
               & start vectors is too large!',-1)
       end if
-
 
 
       ! ********************************************************************************
@@ -2735,7 +2742,8 @@ contains
          call tensor_minit(Ab2(i),[nvirt,nocc,nvirt,nocc],4)
       end do
       call mem_alloc(lambdaREAL,M)
-      call ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambdaREAL,singleex)
+      call ccsd_eigenvalue_solver_startguess(nbasis,mylsitem,xo,xv,&
+           & yo,yv,M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambdaREAL,singleex)
       eival(1:k) = lambdaREAL(1:k)
 
 
@@ -2805,6 +2813,7 @@ contains
       end do
       write(DECinfo%output,'(1X,a)') 'JAC '
       write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
+
       call mem_dealloc(lambdaREAL)
 
       write(DECinfo%output,'(1X,a)') 'JAC'
@@ -2901,6 +2910,7 @@ contains
                call tensor_add(bopt2,alpha(i,p),b2(i))
             end do
 
+
             ! Residual: A bopt - eival bopt  
             fac = - lambdaREAL(p)
             call tensor_add(q1,fac,bopt1)
@@ -2977,6 +2987,7 @@ contains
                     & 'WARNING: Zero norm after projection for exci/iter', p,iter
                cycle ExcitationEnergyLoop
             end if
+
             sc = 1.0_realk/bnorm
             call tensor_scale(b1(M),sc)
             call tensor_scale(b2(M),sc)
@@ -3142,11 +3153,15 @@ contains
 
 
     !> \brief Calculate start vector and associated eigenvalues for CCSD eigenvalue solver.
-    !> We simply take the lowest M orbital energies differences in singles and doubles spaces.
+    !> We simply take the lowest M orbital energies differences in singles and doubles spaces. Correction - also add dominating two-electron integrals.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine ccsd_eigenvalue_solver_startguess(M,nocc,nvirt,foo,fvv,b1,b2,eival,singleex)
+    subroutine ccsd_eigenvalue_solver_startguess(nbasis,mylsitem,xo_tensor,xv_tensor,yo_tensor,yv_tensor,&
+         & M,nocc,nvirt,foo,fvv,b1,b2,eival,singleex)
       implicit none
+      integer,intent(in) :: nbasis
+      type(lsitem) :: mylsitem
+      type(tensor) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
       !> Number of start vectors requested
       integer,intent(in) :: M
       !> Number of occupied/virtual orbitals in molecule
@@ -3163,7 +3178,24 @@ contains
       real(realk) :: ex,maxeival,eivalS(M),eivalD(M),mineivalD,mineivalS
       integer,dimension(M) :: s1,s2,d1,d2,d3,d4,sd
       logical,dimension(M) :: inclS, inclD
+      type(array4) :: gao,gvoov,gvvoo
+      type(array2) :: xo,xv,yo,yv
+
       singleex=.true.
+
+      xo = array2_init([nbasis,nocc],xo_tensor%elm2)
+      xv = array2_init([nbasis,nvirt],xv_tensor%elm2)
+      yo = array2_init([nbasis,nocc],yo_tensor%elm2)
+      yv = array2_init([nbasis,nvirt],yv_tensor%elm2)
+
+
+
+      ! Calculate full AO integrals
+      call get_full_eri(mylsitem,nbasis,gao)
+      gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+      gvvoo = get_gmo_simple(gao,xv,yv,xo,yo)
+      call array4_free(gao)
+
 
 
       ! M lowest singles excitation energies
@@ -3176,7 +3208,7 @@ contains
          do a=1,nvirt
 
             ! Zero-order excitation energy (orbital difference)
-            ex = fvv(a,a) - foo(i,i)
+            ex = fvv(a,a) - foo(i,i) + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i)
 
             ! Is excitation energy lower than current maximum eigenvalue?
             if(ex < maxeival) then
@@ -3209,7 +3241,9 @@ contains
                   if(a==b .and. i>j) cycle bloop  
 
 
-                  ex = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
+                  ex = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j) &
+                       & + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i) &
+                       & + 2.0_realk*gvoov%val(b,j,j,a) - gvvoo%val(b,b,j,j) 
 
                   if(ex < maxeival) then
                      eivalD( maxidx(1) ) = ex
@@ -3300,6 +3334,13 @@ contains
          
 
       end do
+
+      call array2_free(xo)
+      call array2_free(xv)
+      call array2_free(yo)
+      call array2_free(yv)
+      call array4_free(gvoov)
+      call array4_free(gvvoo)
 
     end subroutine ccsd_eigenvalue_solver_startguess
 
@@ -3399,56 +3440,76 @@ contains
 
     !> \brief Add contribution to Jacobian trial vector to get linear LW1 model 
     !> rather than exponential EW1 model.
-    !> Note: The only non-vanishing contribution comes from the 
-    !> SINGLES part of the trial vector R to the DOUBLES component
-    !> of the vector rho which is the result of the Jacobian A working on R, i.e.:
+    !> Note: For the Jacobian A only the doubles-singles block
+    !> differs between LW1 and EW1.
+    !> For right transformation, we get:
     !>
-    !> (rho1) = ( A11 A12 )  (R1)     ( A11 R1 + A12 R2 )
-    !> (rho2) = ( A21 A22 )  (R2)  =  ( A21 R1 + A22 R2 ) 
+    !> (rho1) = ( A11 A12 )  (V1)     ( A11 V1 + A12 V2 )
+    !> (rho2) = ( A21 A22 )  (V2)  =  ( A21 V1 + A22 V2 ) 
     !> 
-    !> Here, only the A21 R1 contribution differs between EW1 and LW1. 
+    !> Here, only the A21 V1 contribution differs between EW1 and LW1. 
     !> The input rho2 is updated with this difference, i.e.:
     !>
-    !> rho2 --> rho2 + (A21 R1)_{LW1} - (A21 R1)_{EW1}
+    !> rho2 --> rho2 + (A21 V1)_{LW1} - (A21 V1)_{EW1}
+    !> 
+    !> rho1 is not modified for right transformation. 
+    !> 
+    !> For left transformation we only change V2 A21 contribution.
+    !> Thus, rho1 is changed, while rho2 is not.
     !> 
     !> \author Kasper Kristensen
     !> \date July 2015
-    subroutine add_lw1_contribution(gvvov,gooov,t2,R1,rho2,whattodo)
+    subroutine add_lw1_contribution(nbasis,mylsitem,Co_tensor,&
+         & Cv_tensor,t2,V1,V2,rho1,rho2,righttrans)
       implicit none
-      !> Two-electron integrals with occupied/virtual indices as indicated (Mulliken notation)
-      type(array4),intent(in) :: gvvov, gooov
+      !> Number of basis functions
+      integer,intent(in) :: nbasis
+      !> LSitem
+      type(lsitem) :: mylsitem
+      !> Occ and virt MO coefficients
+      type(tensor) :: Co_tensor,Cv_tensor
       !> Doubles amplitudes
       type(tensor),intent(in) :: t2 
-      !> Singles (R1) component of trial vector
-      type(tensor),intent(in) :: R1
-      !> rho2 vector to update with LW1 contribution as described above
-      type(tensor),intent(inout) :: rho2
-      !> What to do (see jacobian_rhtr_workhorse).
-      integer,intent(in) :: whattodo
+      !> Singles (V1) and doubles (V2) component of trial vector
+      type(tensor),intent(in) :: V1,V2
+      !> rho1 and rho2 vectors corresponding to Jacobian transf. on trial vectors
+      type(tensor),intent(inout) :: rho1,rho2
+      !> Right transformation (true) or left (false)
+      logical,intent(in) :: righttrans
       integer :: nocc,nvirt,i,j,k,l,a,b,c,d
       real(realk),pointer :: Q(:,:),Y(:,:),deltaNS(:,:,:,:)
       real(realk) :: Lljkc, Lbdkc, Rai
+      type(array4) :: gao,gooov,gvvov
+      type(array2) :: Co,Cv
+
+      ! Never do this for Hald approximation
+      if(DECinfo%haldapprox) return
 
       ! Sanity check - LW1 only meaningful for MP2 model
       if(DECinfo%ccModel/=MODEL_MP2) then
          call lsquit('add_lw1_contribution: Only implemented for MP2 model!',-1)
       end if
 
-      ! Only do something for A21 R1 block (whattodo=1, see cc_jacobian_rhtr)
-      ! and never for Hald approximation
-      if(whattodo/=1 .or. DECinfo%haldapprox) return
-
       ! Dimensions
       nvirt = t2%dims(1)
       nocc = t2%dims(2)
 
-      ! Correction delta (LW1 - EW1) is:
+      ! Calculate necessary MO integrals
+      Co = array2_init([nbasis,nocc],Co_tensor%elm2)
+      Cv = array2_init([nbasis,nvirt],Cv_tensor%elm2)
+      call get_full_eri(mylsitem,nbasis,gao)
+      gooov = get_gmo_simple(gao,Co,Co,Co,Cv)
+      gvvov = get_gmo_simple(gao,Cv,Cv,Co,Cv)
+      call array4_free(gao)
+
+
+      ! For right-hand vector correction delta (LW1 - EW1) is:
       !
       ! delta_{aibj} = P_{ij}^{ab} [ - R_ai sum_{klc} t_kl^cb L_ljkc
       !                              + R_ai sum_{cdk} t_{kj}^{cd} L_{bdkc} ]
       !
 
-      !  Q_bj = sum_{klc} t_kl^cb L_jlkc
+      !  Q_bj = sum_{klc} t_kl^cb L_ljkc  
       call mem_alloc(Q,nvirt,nocc)
       Q = 0.0_realk
       do c=1,nvirt
@@ -3480,36 +3541,58 @@ contains
          end do
       end do
 
-      ! Non-symmetrized deltaNS_{bjai} = R_ai [ - sum_{klc} t_kl^cb L_jlkc
-      !                                         + sum_{cdk} t_{kj}^{cd} L_{bdkc} ]
-      call mem_alloc(deltaNS,nvirt,nocc,nvirt,nocc)
-      do a=1,nvirt
-         do i=1,nocc
-            Rai = R1%elm2(a,i)
-            do b=1,nvirt
-               do j=1,nocc
-                  deltaNS(b,j,a,i) = Rai * ( -Q(b,j) + Y(j,b) )
-               end do
-            end do
-         end do
-      end do
+      RightOrLeft: if(righttrans) then  ! right-hand side
 
-      ! Update rho with symmetrized delta: 
-      ! rho2_{aibj} --> rho2_{aibj} + P_{ij}^{ab} [ deltaNS(a,i,b,j) + deltaNS(b,j,a,i) ]
-      do j=1,nocc
-         do b=1,nvirt
+         ! Non-symmetrized deltaNS_{bjai} = R_ai [ - sum_{klc} t_kl^cb L_jlkc
+         !                                         + sum_{cdk} t_{kj}^{cd} L_{bdkc} ]
+         call mem_alloc(deltaNS,nvirt,nocc,nvirt,nocc)
+         do a=1,nvirt
             do i=1,nocc
-               do a=1,nvirt
-                  rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + deltaNS(a,i,b,j) + deltaNS(b,j,a,i)
+               Rai = V1%elm2(a,i)
+               do b=1,nvirt
+                  do j=1,nocc
+                     deltaNS(b,j,a,i) = Rai * ( -Q(b,j) + Y(j,b) )
+                  end do
                end do
             end do
          end do
-      end do
 
+         ! Update rho with symmetrized delta: 
+         ! rho2_{aibj} --> rho2_{aibj} + P_{ij}^{ab} [ deltaNS(a,i,b,j) + deltaNS(b,j,a,i) ]
+         do j=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + deltaNS(a,i,b,j) + deltaNS(b,j,a,i) 
+                  end do
+               end do
+            end do
+         end do
+         call mem_dealloc(deltaNS)
 
-      call mem_dealloc(deltaNS)
+      else
+
+         ! Left-hand side
+         do i=1,nocc
+            do a=1,nvirt
+               do j=1,nocc
+                  do b=1,nvirt
+                     rho1%elm2(a,i) = rho1%elm2(a,i) &
+                          & + ( Y(j,b) - Q(b,j) ) * V2%elm4(b,j,a,i)
+                  end do
+               end do
+            end do
+         end do
+
+      end if RightOrLeft
+
       call mem_dealloc(Q)
       call mem_dealloc(Y)
+
+      call array2_free(Co)
+      call array2_free(Cv)
+      call array4_free(gooov)
+      call array4_free(gvvov)
 
     end subroutine add_lw1_contribution
 
