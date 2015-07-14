@@ -6893,8 +6893,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
     ! Change array type to be dense:
     if (.not.local.and.master) then
-      call tensor_cp_tiled2dense(t2,.false.)
-      call tensor_cp_tiled2dense(govov,.false.)
+      call tensor_cp_tiled2dense(t2,.false.,bg=use_bg_buf)
+      call tensor_cp_tiled2dense(govov,.false.,bg=use_bg_buf)
     end if 
 #endif
 
@@ -6981,8 +6981,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
    t2%access_type     = AT_ALL_ACCESS
    omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
-     call tensor_allocate_dense(omega2)
-     omega2%itype = TT_DENSE
+     call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
      govov%itype  = TT_DENSE
    end if
 #endif
@@ -7214,10 +7213,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
+      call tensor_deallocate_dense(t2)
       call tensor_deallocate_dense(govov)
-      govov%itype      = TT_TILED_DIST
+      govov%itype = TT_TILED_DIST
       call tensor_mv_dense2tiled(omega2,.true.)
-      call tensor_mv_dense2tiled(t2,.true.)
     endif
 #endif 
 
