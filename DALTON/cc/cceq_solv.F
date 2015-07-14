@@ -134,6 +134,11 @@ Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
 C
+#include "ccsdsym.h"
+CSonia:
+! Consider moving the CVSEPARA in the argument list for better control 
+! when not needed
+#include "ccexcicvs.h"
       PARAMETER (TOL = 1.0D-14)
 Cholesky
       PARAMETER (D0 = 0.0D0 )
@@ -159,7 +164,11 @@ C
          WRITE(LUPRI,*) 'CCEQ_SOL: NVEC    =    ',NVEC
          WRITE(LUPRI,*) 'CCEQ_SOL: NUPVEC  =    ',NUPVEC
          WRITE(LUPRI,*) 'CCEQ_SOL: NCCVAR  =    ',NCCVAR
+         WRITE(LUPRI,*) 'CCEQ_SOL: CVSEPARA=    ',LCVSEXCI
+         WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
       ENDIF
+      WRITE(LUPRI,*) 'CCEQ_SOL: CVSEPARA=    ',LCVSEXCI
+      WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
 C
       CALL GETTIM(CSTR,WSTR)
 C
@@ -459,6 +468,7 @@ C Based on original EVALST routine.
 C
 C Modified by Ove Christiansen to calculate diagonal when needed.
 C Included projection, Sonia Coriani 1997
+C Included CVS, Sonia Coriani 2015
 C 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
@@ -478,6 +488,9 @@ C
 #include "dummy.h"
 #include "r12int.h"
 C
+#include "ccexcicvs.h"
+
+>>>>>>> 7d1f7a1... Better control of CVS and IONIS in std solver
       LOGICAL LOCDBG, LNOREAD
       PARAMETER (LOCDBG = .FALSE.) 
       CHARACTER*(*)  FC1AM,FC2AM,FC12AM,FS12AM,FS2AM
@@ -493,8 +506,14 @@ C
           WRITE(LUPRI,*) 'CCEQ_STR: TRIPLET  =',TRIPLET
           WRITE(LUPRI,*) 'CCEQ_STR: LPROJECT =',LPROJECT
           WRITE(LUPRI,*) 'NCCVAR             =',NCCVAR
+          WRITE(LUPRI,*) 'CCEQ_STR: NCCVAR   =',NCCVAR
+          WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARA =',LCVSEXCI
+          WRITE(LUPRI,*) 'CCEQ_STR: LIONISAT =',LIONIZEXCI
           CALL FLSHFO(LUPRI)
       ENDIF
+      WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARATION = ',LCVSEXCI
+      WRITE(LUPRI,*) 'CCEQ_STR: IONIZATION = ',LIONIZEXCI
+      CALL FLSHFO(LUPRI)
 C
       MODEL = 'CCSD      '
       IF (CCS) MODEL = 'CCS       '
@@ -713,9 +732,12 @@ C-------------------------------------------------------------
 C        if requested, project out valence excitation elements
 C -------------------------------------------------------------  
 C     
-         IF (CVSEPARA.or.LIONISATION) THEN
+         IF (LCVSEXCI.or.LIONIZEXCI) THEN
            write(lupri,*)'CCEQ_STR: CVS or IONISATION freeze'
-           CALL CC_FREEZE_EXCI(WORK(KV),ISYMTR)
+           CALL CC_FREEZE_EXCI(WORK(KV),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
          END IF
 CCN
 C
@@ -828,6 +850,9 @@ Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
 Cholesky
+CVS Sonia
+#include "ccexcicvs.h"
+C
       LOGICAL LOCDBG,LNOREAD
       PARAMETER ( LOCDBG = .FALSE. )
       PARAMETER ( THRLDP = 1.D-20 )
@@ -975,9 +1000,12 @@ C        -----------------------------------------------
          DO K = 1,NREDH
             CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                     TRIPLET,K,WRK(KWRK1))
-            IF (CVSEPARA.or.LIONISATION) THEN
+            IF (LCVSEXCI.or.LIONIZEXCI) THEN
                !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
-               CALL CC_FREEZE_EXCI(WRK(KWRK1),ISYMTR)
+               CALL CC_FREEZE_EXCI(WRK(KWRK1),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
             END IF
             DO JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
@@ -1013,11 +1041,14 @@ C        -----------------------------------------
 C        -------------------------------------------------------
 C        Remove specific excitations from residual if requested:
 C        -------------------------------------------------------
-         IF (CVSEPARA.or.LIONISATION) THEN
+         IF (LCVSEXCI.or.LIONIZEXCI) THEN
             DO JR = 1,NBX
             !WRITE(LUPRI,*)'CCNEX CVS or IONISATION  (resid)'
                KOFF = KRES+(JR-1)*NCCVAR
-               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR)
+               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
             END DO
          END IF
 C        ------------------------------------------
@@ -1119,11 +1150,14 @@ C        ------------------------------
 C        -----------------------------------------------------------
 C        Projection specific orbital excitations from updated trials
 C        -----------------------------------------------------------
-         IF (CVSEPARA.or.LIONISATION) THEN
+         IF (LCVSEXCI.or.LIONIZEXCI) THEN
             DO JR = 1,NFIN
             !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
                koff = KRES+(JR-1)*NCCVAR
-               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR)
+               CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
             end do
          END IF
 CCN
@@ -1308,6 +1342,8 @@ C
 #include "ccrc1rsp.h"
 #include "r12int.h"
 #include "ccsdsym.h"
+CSonia: orbital excitations projection
+#include "ccexcicvs.h"
 C
       PARAMETER (D1 = 1.0D0 , D0 = 0.0D0, THRZER = 1.0D-99 )
 C
@@ -1332,6 +1368,8 @@ C
          WRITE(LUPRI,*)' NUPVEC ',NUPVEC
          WRITE(LUPRI,*)' NVEC   ',NVEC
          WRITE(LUPRI,*)' LWRK   ',LWRK
+         WRITE(LUPRI,*)' CVSEPARA', LCVSEXCI
+         WRITE(LUPRI,*)' IONISATI', LIONIZEXCI
       END IF
 C
       IF (NUPVEC.GT.0) THEN 
@@ -1359,10 +1397,13 @@ C
                CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                        TRIPLET,IVENU,WRK(LSVEC))
 !sonia
-               IF (CVSEPARA.or.LIONISATION) THEN
+               IF (LCVSEXCI.or.LIONIZEXCI) THEN
                  write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
      &           'project out core or virtual'
-                 CALL CC_FREEZE_EXCI(WRK(LSVEC),ISYMTR)
+                 CALL CC_FREEZE_EXCI(WRK(LSVEC),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,LBOTHEXCI)
                END IF
 !sonia
                LSVEC = LSVEC + NCCVAR
@@ -1405,6 +1446,15 @@ C
             DO I = 1,NREDH
                CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                        TRIPLET,I,WRK(KBVEC))
+!sonia
+!               IF (CVSEPARA) THEN
+!                 write(lupri,*)'SONIAREDCVS 2: Project out i=/ core'
+!                 CALL CC_FREEZE_EXCI(WRK(KBVEC),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,LBOTHEXCI)
+!               END IF
+!sonia
                IF (LOCDBG) THEN
                  WRITE(LUPRI,'(a,i3)') 'C for ',I
                  CALL OUTPUT(WRK(KBVEC),1,NCCVAR,1,1,NCCVAR,1,1,LUPRI)
@@ -1443,6 +1493,15 @@ C
                   IVENU = IREDH + IVEC -1 + INUM
                   CALL CC_GETVEC(LUFC1,FC1AM,LUFC2,FC2AM,LUFC12,FC12AM,
      *                           TRIPLET,IVENU,WRK(LBVEC))
+!sonia
+!               IF (CVSEPARA) THEN
+!                 write(lupri,*)'SONIAREDCVS 3: Project out i=/ core'
+!                 CALL CC_FREEZE_EXCI(WRK(LBVEC),ISYMTR,
+!     &          MAXCORE,MAXION,
+!     &          NRHFCORE,IRHFCORE,
+!     &          NVIRION,IVIRION,LBOTHEXCI)
+!               END IF
+!sonia
                   LBVEC = LBVEC + NCCVAR
                END DO
                IF (LOCDBG) THEN
@@ -1456,9 +1515,12 @@ C
                DO J = 1,IREDH
                   CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                           TRIPLET,J,WRK(KSVEC))
-                  IF (CVSEPARA.or.LIONISATION) THEN
+                  IF (LCVSEXCI.or.LIONIZEXCI) THEN
                     !write(lupri,*)'CCRED CVS or IONISATION sigma_',J
-                    CALL CC_FREEZE_EXCI(WRK(KSVEC),ISYMTR)
+                    CALL CC_FREEZE_EXCI(WRK(KSVEC),ISYMTR,
+     &                   MAXCORE,MAXION,
+     &                   NRHFCORE,IRHFCORE,
+     &                   NVIRION,IVIRION,LBOTHEXCI)
                   END IF
 
                   IF (LREDS) THEN
