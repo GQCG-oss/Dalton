@@ -1391,7 +1391,7 @@ subroutine RIMP2_buildCalphaFromAlphaCD(nocc,nvirt,numnodes,&
   !
   integer :: IB,B,BETA,ALPHA
   real(realk) :: TMP
-  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+  !$OMP PARALLEL DO DEFAULT(NONE) &
   !$OMP PRIVATE(IB,B,BETA,ALPHA,TMP) &
   !$OMP SHARED(nocc,nvirt,nAux2,IndexToGlobal2,NBA,&
   !$OMP        AlphaCDi,Calpha,TMPAlphaBetaDecomp,integralnum)
