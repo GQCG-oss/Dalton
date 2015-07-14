@@ -4186,6 +4186,7 @@ contains
     type(tensor), intent(inout) :: ccsd_doubles,vovo
     ! tmp tensors
     type(tensor) :: tmp_tensor_1,tmp_tensor_2
+    logical :: transform_bg
 
     if (DECinfo%pt_hack) then
 
@@ -4260,37 +4261,37 @@ contains
 
           if (abc) then
 
-             call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4)
-             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
-             !call tensor_reorder(tmp_tensor_1,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_1%elm1)
              call tensor_minit(vovo,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,abc_tile_size,abc_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_1,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
+             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[2,4,1,3])
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_1%elm1)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4)
-             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
-             !call tensor_reorder(tmp_tensor_2,[2,4,3,1]) ! ccsd_doubles in the order (i,j,b,a)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_2%elm1)
              call tensor_minit(ccsd_doubles,[nocc,nocc,nvirt,nvirt],4,tdims=[nocc,nocc,nvirt,abc_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_2,[nocc,nocc,nvirt,nvirt],4,bg=transform_bg)
+             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[2,4,3,1])
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,oovv=tmp_tensor_2%elm1)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
           else
 
-             call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4)
-             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
-             !call tensor_reorder(tmp_tensor_1,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_1%elm1)
              call tensor_minit(vovo,[nvirt,nvirt,nocc,nocc],4,&
                 &tdims=[nvirt,nvirt,ijk_tile_size,ijk_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_1,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
+             call tensor_cp_data(vovo_in,tmp_tensor_1,order=[1,3,2,4])
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_1%elm1)
              call tensor_cp_data(tmp_tensor_1,vovo)
              call tensor_free(tmp_tensor_1)
-             call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4)
-             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
-             !call tensor_reorder(tmp_tensor_2,[1,3,4,2]) ! ccsd_doubles in the order (a,b,j,i)
-             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_2%elm1)
              call tensor_minit(ccsd_doubles,[nvirt,nvirt,nocc,nocc],4,&
                 &tdims=[nvirt,nvirt,nocc,ijk_tile_size],atype='TDAR',bg=use_bg)
+             transform_bg = use_bg .and.  (mem_get_bg_buf_free()>=(i8*nocc*nocc)*nvirt*nvirt)
+             call tensor_init(tmp_tensor_2,[nvirt,nvirt,nocc,nocc],4,bg=transform_bg)
+             call tensor_cp_data(ccsd_doubles_in,tmp_tensor_2,order=[1,3,4,2])
+             call local_can_trans(nocc,nvirt,nbasis,Uocc%elm2,Uvirt%elm2,vvoo=tmp_tensor_2%elm1)
              call tensor_cp_data(tmp_tensor_2,ccsd_doubles)
              call tensor_free(tmp_tensor_2)
 
