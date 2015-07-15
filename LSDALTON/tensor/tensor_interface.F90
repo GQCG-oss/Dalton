@@ -174,6 +174,13 @@ module tensor_interface_module
      module procedure tensor_add_normal, tensor_add_arr2fullfort,tensor_add_fullfort2arr
   end interface tensor_add
 
+  interface tensor_ainit
+     module procedure tensor_ainit88,&
+                     &tensor_ainit84,&
+                     &tensor_ainit48,&
+                     &tensor_ainit44
+  end interface tensor_ainit
+
   !interface tensor_contract
   !  module procedure tensor_contract_pref
   !end interface tensor_contract
@@ -1864,28 +1871,97 @@ contains
 
   end subroutine tensor_minit
 
-  subroutine tensor_ainit(arr, dims, nmodes, local, atype, tdims, fo, bg )
+  subroutine tensor_ainit88(arr, dims, nmodes, local, atype, tdims, fo, bg )
     !> the output array
     type(tensor),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
-    integer, intent(in)              :: nmodes, dims(nmodes)
-    integer, intent(in),optional     :: tdims(nmodes)
+    integer(kind=tensor_long_int), intent(in)              :: nmodes
+    integer(kind=tensor_long_int), intent(in)              :: dims(nmodes)
+    integer(kind=tensor_int), intent(in),optional     :: tdims(nmodes)
+    logical, intent(in),optional     :: local
+    logical, intent(in),optional     :: bg
+    character(4),intent(in),optional :: atype
+    integer(kind=tensor_int),intent(in),optional :: fo
+    call tensor_ainit_central(arr, &
+       &int(dims,kind=tensor_long_int), &
+       &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
+       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+  end subroutine tensor_ainit88
+  subroutine tensor_ainit84(arr, dims, nmodes, local, atype, tdims, fo, bg )
+    !> the output array
+    type(tensor),intent(inout) :: arr
+    !> nmodes=order of the array, dims=dimensions in each mode
+    integer(kind=tensor_standard_int), intent(in)              :: nmodes
+    integer(kind=tensor_long_int), intent(in)              :: dims(nmodes)
+    integer(kind=tensor_int), intent(in),optional     :: tdims(nmodes)
+    logical, intent(in),optional     :: local
+    logical, intent(in),optional     :: bg
+    character(4),intent(in),optional :: atype
+    integer(kind=tensor_int),intent(in),optional :: fo
+    call tensor_ainit_central(arr, &
+       &int(dims,kind=tensor_long_int), &
+       &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
+       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+  end subroutine tensor_ainit84
+  subroutine tensor_ainit48(arr, dims, nmodes, local, atype, tdims, fo, bg )
+    !> the output array
+    type(tensor),intent(inout) :: arr
+    !> nmodes=order of the array, dims=dimensions in each mode
+    integer(kind=tensor_long_int), intent(in)              :: nmodes
+    integer(kind=tensor_standard_int), intent(in)              :: dims(nmodes)
+    integer(kind=tensor_int), intent(in),optional     :: tdims(nmodes)
+    logical, intent(in),optional     :: local
+    logical, intent(in),optional     :: bg
+    character(4),intent(in),optional :: atype
+    integer(kind=tensor_int),intent(in),optional :: fo
+    call tensor_ainit_central(arr, &
+       &int(dims,kind=tensor_long_int), &
+       &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
+       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+  end subroutine tensor_ainit48
+  subroutine tensor_ainit44(arr, dims, nmodes, local, atype, tdims, fo, bg )
+    !> the output array
+    type(tensor),intent(inout) :: arr
+    !> nmodes=order of the array, dims=dimensions in each mode
+    integer(kind=tensor_standard_int), intent(in)                  :: nmodes
+    integer(kind=tensor_standard_int), intent(in)              :: dims(nmodes)
+    integer(kind=tensor_int), intent(in),optional     :: tdims(nmodes)
+    logical, intent(in),optional     :: local
+    logical, intent(in),optional     :: bg
+    character(4),intent(in),optional :: atype
+    integer(kind=tensor_int),intent(in),optional :: fo
+    call tensor_ainit_central(arr, &
+       &int(dims,kind=tensor_long_int), &
+       &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
+       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+  end subroutine tensor_ainit44
+
+  subroutine tensor_ainit_central(arr, dims_in, nmodes_in, local, atype, tdims, fo, bg )
+    !> the output array
+    type(tensor),intent(inout) :: arr
+    !> nmodes=order of the array, dims=dimensions in each mode
+    integer(kind=tensor_long_int), intent(in)              :: nmodes_in
+    integer(kind=tensor_long_int), intent(in)              :: dims_in(nmodes_in)
+    integer(kind=tensor_long_int), intent(in),optional     :: tdims(nmodes_in)
     logical, intent(in),optional     :: local, bg
     character(4),intent(in),optional :: atype
-    integer,intent(in),optional :: fo
+    integer(kind=tensor_int),intent(in),optional :: fo
     character(4)  :: at
     integer(kind=tensor_standard_int):: it
     logical :: loc, bg_int
     real(tensor_real) :: time_ainit
+    integer :: dims(nmodes_in),nmodes
     call time_start_phase(PHASE_WORK, twall = time_ainit )
+    dims = dims_in
+    nmodes = nmodes_in
  
     bg_int = .false.
     if(present(bg))bg_int = bg
 
     ! Sanity check
-    if(arr%initialized)call lsquit("ERROR(tensor_ainit):tensor already initialized",-1) 
+    if(arr%initialized)call lsquit("ERROR(tensor_ainit_central):tensor already initialized",-1) 
     do i=1, nmodes
-      if (dims(i) == 0) call lsquit("ERROR(tensor_minit): 0 dimendion not allowed",-1)
+      if (dims(i) == 0) call lsquit("ERROR(tensor_ainit_central): 0 dimendion not allowed",-1)
     end do
  
     !set defaults
@@ -1910,7 +1986,7 @@ contains
       select case(at)
       case('LDAR','REAR','REPD','TDAR','TDPD')
         !if local recast to a local dense array
-        call tensor_init_standard(arr,dims,nmodes,AT_NO_PDM_ACCESS,bg_int)
+        call tensor_init_standard(arr,int(dims),int(nmodes),AT_NO_PDM_ACCESS,bg_int)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
       !  arr=tensor_init_tiled(dims,nmodes,pdm=AT_NO_PDM_ACCESS)
@@ -1927,7 +2003,8 @@ contains
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
         it               = TT_TILED_DIST
-        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,&
+           &tdims=int(tdims,kind=tensor_int),force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
@@ -1938,7 +2015,8 @@ contains
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         it               = TT_TILED_DIST ! for tensor_init_tiled routine
-        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,ps_d=.true.,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,&
+           &tdims=int(tdims,kind=tensor_int),ps_d=.true.,force_offset=fo)
         arr%itype        = TT_DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
@@ -1948,7 +2026,7 @@ contains
         arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
       case default 
-        call lsquit("ERROR(tensor_ainit): atype not known",-1)
+        call lsquit("ERROR(tensor_ainit_central): atype not known",-1)
       end select
     endif
 #else
@@ -1959,7 +2037,7 @@ contains
 
     call time_start_phase(PHASE_WORK, ttot = time_ainit )
     tensor_time_init = tensor_time_init + time_ainit
-  end subroutine tensor_ainit
+  end subroutine tensor_ainit_central
 
   !> \author Patrick Ettenhuber
   !> \date September 2012
@@ -2034,7 +2112,7 @@ contains
   end subroutine tensor_init
 
 
-  !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
+  !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief get mode index from composite index
   subroutine tensor_init_standard(arr,dims,nmodes,pdm,bg)

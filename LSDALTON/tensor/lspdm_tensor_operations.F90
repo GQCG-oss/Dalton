@@ -25,8 +25,10 @@ module lspdm_tensor_operations_module
   !INTERFACES
   !**********
   interface tensor_get_tile
-    module procedure tensor_gettile_combidx4,&
-                    &tensor_gettile_combidx8,&
+    module procedure tensor_gett44,&
+                    &tensor_gett48,&
+                    &tensor_gett84,&
+                    &tensor_gett88,&
                     &tensor_gettile_modeidx
   end interface tensor_get_tile
 
@@ -172,8 +174,8 @@ module lspdm_tensor_operations_module
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
   procedure(tensor_acct4),pointer :: acc_ti4 
   procedure(tensor_acct8),pointer :: acc_ti8 
-  procedure(tensor_gett4),pointer :: get_ti4 
-  procedure(tensor_gett8),pointer :: get_ti8 
+  procedure(tensor_gett44),pointer :: get_ti4 
+  procedure(tensor_gett88),pointer :: get_ti8 
   procedure(tensor_putt4),pointer :: put_ti4 
   procedure(tensor_putt8),pointer :: put_ti8 
 #endif
@@ -6057,7 +6059,18 @@ module lspdm_tensor_operations_module
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
     call tensor_get_tile(arr,cidx,fort,nelms,lock_set=ls,flush_it=flush_it,req=req)
   end subroutine tensor_gettile_modeidx
-  subroutine tensor_gett8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+  subroutine tensor_gett88(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+    implicit none
+    type(tensor),intent(in) :: arr
+    integer(kind=tensor_long_int),intent(in) :: globtilenr
+    integer(kind=tensor_long_int),intent(in) :: nelms
+    real(tensor_real),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set,flush_it
+    integer(kind=tensor_mpi_kind),intent(inout),optional :: req
+    call tensor_gettile_combidx(arr,globtilenr,&
+       &fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_gett88
+  subroutine tensor_gett48(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) :: arr
     integer(kind=tensor_standard_int),intent(in) :: globtilenr
@@ -6065,12 +6078,36 @@ module lspdm_tensor_operations_module
     real(tensor_real),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
     integer(kind=tensor_mpi_kind),intent(inout),optional :: req
-    call tensor_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
-  end subroutine tensor_gett8
-  subroutine tensor_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+    call tensor_gettile_combidx(arr,int(globtilenr,kind=tensor_long_int),&
+       &fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_gett48
+  subroutine tensor_gett84(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+    implicit none
+    type(tensor),intent(in) :: arr
+    integer(kind=tensor_long_int),intent(in) :: globtilenr
+    integer(kind=tensor_standard_int),intent(in) :: nelms
+    real(tensor_real),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set,flush_it
+    integer(kind=tensor_mpi_kind),intent(inout),optional :: req
+    call tensor_gettile_combidx(arr,globtilenr,&
+       &fort,int(nelms,kind=tensor_long_int),lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_gett84
+  subroutine tensor_gett44(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
     implicit none
     type(tensor),intent(in) :: arr
     integer(kind=tensor_standard_int),intent(in) :: globtilenr
+    integer(kind=tensor_standard_int),intent(in) :: nelms
+    real(tensor_real),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set,flush_it
+    integer(kind=tensor_mpi_kind),intent(inout),optional :: req
+    call tensor_gettile_combidx(arr,int(globtilenr,kind=tensor_long_int),&
+       &fort,int(nelms,kind=tensor_long_int),lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_gett44
+
+  subroutine tensor_gettile_combidx(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+    implicit none
+    type(tensor),intent(in) :: arr
+    integer(kind=tensor_long_int),intent(in) :: globtilenr
     integer(kind=tensor_long_int),intent(in) :: nelms
     real(tensor_real),intent(inout) :: fort(*)
     logical, optional, intent(in) :: lock_set,flush_it
@@ -6117,63 +6154,53 @@ module lspdm_tensor_operations_module
 
     call time_start_phase( PHASE_WORK )
 #endif
-  end subroutine tensor_gettile_combidx8
-  subroutine tensor_gett4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-    implicit none
-    type(tensor),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=tensor_standard_int),intent(in) :: nelms
-    real(tensor_real),intent(inout) :: fort(*)
-    logical, optional, intent(in) :: lock_set,flush_it
-    integer(kind=tensor_mpi_kind),intent(inout),optional :: req
-    call tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
-  end subroutine tensor_gett4
+  end subroutine tensor_gettile_combidx
 
 
-  subroutine tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-    implicit none
-    type(tensor),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=tensor_standard_int),intent(in) :: nelms
-    real(tensor_real),intent(inout) :: fort(*)
-    logical, optional, intent(in) :: lock_set,flush_it
-    integer(kind=tensor_mpi_kind),intent(inout),optional :: req
-    integer(kind=tensor_mpi_kind) :: source
-    integer(kind=tensor_standard_int) :: gt
-    real(tensor_real) :: sta,sto
-    logical :: ls
-#ifdef VAR_MPI
-    integer :: maxsze,p,pos,widx
-    call time_start_phase( PHASE_COMM )
-
-    gt = globtilenr
-
-    maxsze = MAX_SIZE_ONE_SIDED
-
-    ls = .false.
-    if(present(lock_set))ls=lock_set
-
-    call get_residence_of_tile(source,gt,arr,idx_on_node=p,window_index=widx)
-
-    sta    = MPI_WTIME()
-
-    if(.not.ls)call lsmpi_win_lock(source,arr%wi(widx),'s')
-    if(present(req))then
-       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
-    else
-       call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
-    endif
-    if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
-
-    sto = MPI_WTIME()
-
-    time_pdm_get          = time_pdm_get + sto - sta
-    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
-    nmsg_get              = nmsg_get + 1
-
-    call time_start_phase( PHASE_WORK )
-#endif
-  end subroutine tensor_gettile_combidx4
+!  subroutine tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+!    implicit none
+!    type(tensor),intent(in) :: arr
+!    integer,intent(in) :: globtilenr
+!    integer(kind=tensor_standard_int),intent(in) :: nelms
+!    real(tensor_real),intent(inout) :: fort(*)
+!    logical, optional, intent(in) :: lock_set,flush_it
+!    integer(kind=tensor_mpi_kind),intent(inout),optional :: req
+!    integer(kind=tensor_mpi_kind) :: source
+!    integer(kind=tensor_standard_int) :: gt
+!    real(tensor_real) :: sta,sto
+!    logical :: ls
+!#ifdef VAR_MPI
+!    integer :: maxsze,p,pos,widx
+!    call time_start_phase( PHASE_COMM )
+!
+!    gt = globtilenr
+!
+!    maxsze = MAX_SIZE_ONE_SIDED
+!
+!    ls = .false.
+!    if(present(lock_set))ls=lock_set
+!
+!    call get_residence_of_tile(source,gt,arr,idx_on_node=p,window_index=widx)
+!
+!    sta    = MPI_WTIME()
+!
+!    if(.not.ls)call lsmpi_win_lock(source,arr%wi(widx),'s')
+!    if(present(req))then
+!       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
+!    else
+!       call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+!    endif
+!    if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
+!
+!    sto = MPI_WTIME()
+!
+!    time_pdm_get          = time_pdm_get + sto - sta
+!    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
+!    nmsg_get              = nmsg_get + 1
+!
+!    call time_start_phase( PHASE_WORK )
+!#endif
+!  end subroutine tensor_gettile_combidx4
 
   subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
     implicit none

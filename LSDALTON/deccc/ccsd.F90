@@ -139,7 +139,8 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc,bg) result(prec)
       !make sure all data is in the correct for this routine, that is omega2 is
       !TT_TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      call tensor_minit(prec,dims,4,atype="TDAR",tdims=omega2%tdim,fo=omega2%offset,bg=bg)
+      call tensor_minit(prec,dims,4,atype="TDAR",tdims=int(omega2%tdim,kind=tensor_int)&
+         &,fo=int(omega2%offset,kind=tensor_int),bg=bg)
       call tensor_change_atype_to_rep(ppfock,loc)
       call tensor_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -4733,7 +4734,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      order4 = [1,2,3,4]
      call tensor_contract(-1.0E0_realk,t2,int2,[4],[1],1,1.0E0_realk,omega2,order4,force_sync=.true.)
 
-     call tensor_minit(int3,omega2%dims,4,tdims=omega2%tdim,atype="TDAR",local=local)
+     call tensor_minit(int3,omega2%dims,4,tdims=int(omega2%tdim,kind=tensor_int),atype="TDAR",local=local)
 
      call tensor_free(int1)
      call tensor_free(int2)
@@ -4902,7 +4903,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ord = [1,2,3,4]
         call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord, force_sync=.true.)
 
-        call tensor_ainit(Pijab_om2,omega2%dims,4,tdims=omega2%tdim,atype="TDAR")
+        call tensor_ainit(Pijab_om2,omega2%dims,4,tdims=int(omega2%tdim,kind=tensor_int),atype="TDAR")
 
         call tensor_lock_local_wins(Pijab_om2,'e',mode)
         call tensor_unlock_local_wins(omega2)
@@ -5001,7 +5002,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=int(sdim1,kind=tensor_int),&
+        &atype=atype,local=local,fo = int(omega2%offset,kind=tensor_int))
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      !now allow for access to the completed tiles
@@ -5052,7 +5054,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=int(sdim1,kind=tensor_int),&
+        &atype=atype,local=local,fo = int(omega2%offset,kind=tensor_int))
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      call tensor_unlock_local_wins(Dvoov)
@@ -6856,6 +6859,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Allocate working memory:
     call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
+#ifdef VAR_MPI
+    ! Change array type to be dense:
+    if (.not.local.and.master) then
+      call tensor_cp_tiled2dense(t2,.false.,bg=use_bg_buf)
+      call tensor_cp_tiled2dense(govov,.false.,bg=use_bg_buf)
+    end if 
+#endif
+
     call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
     call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
     call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
@@ -6889,14 +6900,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! start timings:
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-
-#ifdef VAR_MPI
-    ! Change array type to be dense:
-    if (.not.local.and.master) then
-      call tensor_cp_tiled2dense(t2,.false.)
-      call tensor_cp_tiled2dense(govov,.false.)
-    end if 
-#endif
 
     !===========================================================================
     ! Calculate transformation matrix:
@@ -6981,8 +6984,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
    t2%access_type     = AT_ALL_ACCESS
    omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
-     call tensor_allocate_dense(omega2)
-     omega2%itype = TT_DENSE
+     !call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
+     call tensor_allocate_dense(omega2,change=.true.)
      govov%itype  = TT_DENSE
    end if
 #endif
@@ -7214,10 +7217,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
-      call tensor_deallocate_dense(govov)
-      govov%itype      = TT_TILED_DIST
       call tensor_mv_dense2tiled(omega2,.true.)
-      call tensor_mv_dense2tiled(t2,.true.)
+      call tensor_deallocate_dense(govov)
+      govov%itype = TT_TILED_DIST
+      call tensor_deallocate_dense(t2)
     endif
 #endif 
 

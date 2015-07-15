@@ -79,7 +79,11 @@ set(DEC_SOURCES
     LSDALTON/deccc/rimp2.F90
     LSDALTON/deccc/ri_util.F90
     LSDALTON/deccc/ls_thc_rimp2.F90
-    LSDALTON/deccc/ccsdpt.F90
+    LSDALTON/deccc/ccsdpt_driver.F90
+    LSDALTON/deccc/ccsdpt_kernels.F90
+    LSDALTON/deccc/ccsdpt_tools.F90
+    LSDALTON/deccc/ccsdpt_full.F90
+    LSDALTON/deccc/ccsdpt_dec.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
     LSDALTON/deccc/cc_response_tools.F90
