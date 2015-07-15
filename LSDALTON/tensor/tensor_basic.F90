@@ -15,86 +15,58 @@ module tensor_basic_module
   use lspdm_basic_module
   use tensor_type_def_module
 
+  interface tensor_set_tdims
+     module procedure tensor_set_tdims4,tensor_set_tdims8
+  end interface tensor_set_tdims
+  interface tensor_set_dims
+     module procedure tensor_set_dims88,tensor_set_dims44
+  end interface tensor_set_dims
+
 
   contains
 
     !> \brief to accurately account for mem on each node
     ! count mem allocated in each of the arrays many pointers
     !> \author Patrick Ettenhuber
-    subroutine tensor_set_dims(arr,dims,mode)
+    subroutine tensor_set_dims88(arr,dims,mode)
       implicit none
       type(tensor),intent(inout) :: arr
-      integer,intent(in) :: dims(*)
-      integer, optional :: mode
-      real(tensor_real) :: vector_size
-      integer :: i
-      if (present(mode))then
-        if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
-          print *,"mode",mode,"arr%mode",arr%mode      
-          call lsquit("wrong use of tensor_set_dims",lspdm_errout)
-        else
-          arr%mode=mode
-        endif
-      endif
-      if (associated(arr%dims))then
-!$OMP CRITICAL
-        vector_size = dble(size(arr%dims)*INTK)
-        tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
-        tensor_counter_memory_in_use    = tensor_counter_memory_in_use  - vector_size
-!$OMP END CRITICAL
-        call mem_dealloc(arr%dims)
-      endif
-      if(.not.associated(arr%dims))then
-        call mem_alloc(arr%dims,arr%mode)
-!$OMP CRITICAL
-        vector_size = dble(size(arr%dims)*INTK)
-        tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
-        tensor_counter_memory_in_use  = tensor_counter_memory_in_use  + vector_size
-!$OMP END CRITICAL
-      endif
-      do i=1,arr%mode
-        arr%dims(i)=dims(i)
-      enddo
-    end subroutine tensor_set_dims
+      integer(kind=tensor_long_int),intent(in) :: dims(*)
+      integer(kind=tensor_long_int), optional :: mode
+      include "tensor_set_dims.inc"
+    end subroutine tensor_set_dims88
+    !subroutine tensor_set_dims84(arr,dims,mode)
+    !  implicit none
+    !  type(tensor),intent(inout) :: arr
+    !  integer(kind=tensor_long_int),intent(in) :: dims(*)
+    !  integer(kind=tensor_standard_int), optional :: mode
+    !  include "tensor_set_dims.inc"
+    !end subroutine tensor_set_dims84
+    subroutine tensor_set_dims44(arr,dims,mode)
+      implicit none
+      type(tensor),intent(inout) :: arr
+      integer(kind=tensor_standard_int),intent(in) :: dims(*)
+      integer(kind=tensor_standard_int), optional :: mode
+      include "tensor_set_dims.inc"
+    end subroutine tensor_set_dims44
 
     !> \brief to accurately account for mem on each node
     ! count mem allocated in each of the arrays many pointers
     !> \author Patrick Ettenhuber
-    subroutine tensor_set_tdims(arr,tdims,mode)
+    subroutine tensor_set_tdims4(arr,tdims,mode)
       implicit none
       type(tensor),intent(inout) :: arr
-      integer,intent(in) :: tdims(*)
+      integer(kind=tensor_standard_int),intent(in) :: tdims(arr%mode)
       integer, optional :: mode
-      real(tensor_real) :: vector_size
-      integer :: i
-      if (present(mode))then
-        if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
-          print *,"mode",mode,"arr%mode",arr%mode      
-          call lsquit("wrong use of tensor_set_tdim",lspdm_errout)
-        else
-          arr%mode=mode
-        endif
-      endif
-      if (associated(arr%tdim))then
-!$OMP CRITICAL
-        vector_size = dble(size(arr%tdim)*INTK)
-        tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
-        tensor_counter_memory_in_use    = tensor_counter_memory_in_use  - vector_size
-!$OMP END CRITICAL
-        call mem_dealloc(arr%tdim)
-      endif
-      if(.not.associated(arr%tdim))then
-        call mem_alloc(arr%tdim,arr%mode)
-!$OMP CRITICAL
-        vector_size = dble(size(arr%tdim)*INTK)
-        tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
-        tensor_counter_memory_in_use  = tensor_counter_memory_in_use  + vector_size
-!$OMP END CRITICAL
-      endif
-      do i=1,arr%mode
-        arr%tdim(i)=tdims(i)
-      enddo
-    end subroutine tensor_set_tdims
+      include "tensor_set_tdims.inc"
+    end subroutine tensor_set_tdims4
+    subroutine tensor_set_tdims8(arr,tdims,mode)
+      implicit none
+      type(tensor),intent(inout) :: arr
+      integer(kind=tensor_long_int),intent(in) :: tdims(arr%mode)
+      integer, optional :: mode
+      include "tensor_set_tdims.inc"
+    end subroutine tensor_set_tdims8
   
     subroutine tensor_init_lock_set(arr)
       implicit none
@@ -119,7 +91,7 @@ module tensor_basic_module
     subroutine tensor_set_ntpm(arr,ntpm,mode)
        implicit none
        type(tensor),intent(inout) :: arr
-       integer,intent(in) :: ntpm(*)
+       integer(kind=tensor_standard_int),intent(in) :: ntpm(arr%mode)
        integer, optional :: mode
        real(tensor_real) :: vector_size
        integer :: i

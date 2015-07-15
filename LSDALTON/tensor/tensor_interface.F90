@@ -293,10 +293,10 @@ contains
     tensor_out%nelms = tensor_in%nelms
     tensor_out%ntiles = tensor_in%ntiles
     tensor_out%access_type => tensor_in%access_type
-    if(associated(tensor_in%dims))call tensor_set_dims(tensor_out,tensor_in%dims,tensor_out%mode)
-    if(associated(tensor_in%ntpm))call tensor_set_ntpm(tensor_out,tensor_in%ntpm,tensor_out%mode)
-    if(associated(tensor_in%tdim))call tensor_set_tdims(tensor_out,tensor_in%tdim,tensor_out%mode)
-    if(associated(tensor_in%addr_p_arr))call tensor_set_addr(tensor_out,tensor_in%addr_p_arr,&
+    if(associated(tensor_in%dims))call tensor_set_dims(tensor_out,tensor_in%dims)
+    if(associated(tensor_in%ntpm))call tensor_set_ntpm(tensor_out,tensor_in%ntpm,int(tensor_out%mode))
+    if(associated(tensor_in%tdim))call tensor_set_tdims(tensor_out,tensor_in%tdim,int(tensor_out%mode))
+    if(associated(tensor_in%addr_p_arr))call tensor_set_addr(tensor_out,int(tensor_in%addr_p_arr),&
        &size(tensor_in%addr_p_arr,kind=tensor_mpi_kind))
     !tensor_out%dims = tensor_in%dims
     !tensor_out%tdim = tensor_in%tdim
@@ -391,10 +391,10 @@ contains
               call get_tile_dim(nel,y,ti)
 
               call time_start_phase( PHASE_COMM )
-              call tensor_get_tile(y,ti,buffer,nel)
+              call tensor_get_tile(y,int(ti,kind=tensor_standard_int),buffer,nel)
               call time_start_phase( PHASE_WORK )
 
-              call tile_in_fort(b,buffer,ti,y%tdim,pre2,x%elm1,x%dims,x%mode,o)
+              call tile_in_fort(b,buffer,ti,int(y%tdim),pre2,x%elm1,x%dims,int(x%mode),o)
            enddo
            call mem_dealloc(buffer)
 
@@ -556,8 +556,8 @@ contains
         call tensor_init(AUX, tens(itens)%dims, it_mode, &
            & pdm         = tens(itens)%access_type, &
            & tensor_type = tens(itens)%itype, &
-           & tdims       = tens(itens)%tdim, &
-           & fo          = tens(itens)%offset, &
+           & tdims       = int(tens(itens)%tdim), &
+           & fo          = int(tens(itens)%offset), &
            & bg          = bg ) 
 
         do imode = 1, it_mode
@@ -1770,7 +1770,7 @@ contains
     character(4),intent(in),optional :: atype
     integer,intent(in),optional :: fo
     character(4)  :: at
-    integer       :: it
+    integer(kind=tensor_standard_int) :: it
     logical :: loc, bg_int
     real(tensor_real) :: time_minit
     call time_start_phase(PHASE_WORK, twall = time_minit )
@@ -1874,7 +1874,7 @@ contains
     character(4),intent(in),optional :: atype
     integer,intent(in),optional :: fo
     character(4)  :: at
-    integer       :: it
+    integer(kind=tensor_standard_int):: it
     logical :: loc, bg_int
     real(tensor_real) :: time_ainit
     call time_start_phase(PHASE_WORK, twall = time_ainit )
@@ -1972,13 +1972,15 @@ contains
     integer, intent(in) :: nmodes, dims(nmodes)
     !> integer specifying the type of array (a list of possible types is found
     !> at the beginning of tensor_memory.f90
-    integer, optional :: tensor_type
+    integer(kind=tensor_standard_int), optional :: tensor_type
     !> if tiled then the size of the tile in each mode can be specified explicitly 
     integer, optional :: tdims(nmodes)
     !> specifies the type of access to the array (AT_NO_PDM_ACCESS,AT_MASTER_ACCESS,AT_ALL_ACCESS)
-    integer, optional :: pdm,fo
+    integer(kind=tensor_standard_int), optional :: pdm
+    integer, optional :: fo
     logical, optional :: bg 
-    integer :: sel_type,pdmtype,it
+    integer :: sel_type
+    integer(kind=tensor_standard_int) :: pdmtype,it
     logical :: zeros_in_tiles,wcps, bg_int
     real(tensor_real) :: time_init
 
@@ -2037,7 +2039,8 @@ contains
   !> \brief get mode index from composite index
   subroutine tensor_init_standard(arr,dims,nmodes,pdm,bg)
     implicit none
-    integer, intent(in)   :: nmodes,dims(nmodes),pdm
+    integer, intent(in)   :: nmodes,dims(nmodes)
+    integer(kind=tensor_standard_int), intent(in)   :: pdm
     type(tensor),intent(inout) :: arr
     logical, intent(in)   :: bg
     logical               :: master
@@ -2491,14 +2494,14 @@ contains
 
     case(TT_TILED)
 
-       call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
+       call cp_data2tiled_lowmem(arr,fortarr,arr%dims,int(arr%mode))
 
     case(TT_TILED_DIST)
 
        if(arr%access_type==AT_ALL_ACCESS)then
           do i=1,arr%nlti
-             call tile_from_fort(1.0E0_tensor_real,fortarr,fullfortdims,arr%mode,&
-                &0.0E0_tensor_real,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
+             call tile_from_fort(1.0E0_tensor_real,fortarr,fullfortdims,int(arr%mode),&
+                &0.0E0_tensor_real,arr%ti(i)%t,int(arr%ti(i)%gt),int(arr%tdim),o)
           enddo
        else
           call tensor_scatter(1.0E0_tensor_real,fortarr,0.0E0_tensor_real,arr,nelms,oo=o,wrk=wrk,iwrk=iwrk)
@@ -2665,8 +2668,8 @@ contains
 
           if(to_arr%access_type==AT_ALL_ACCESS)then
              do i=1,to_arr%nlti
-                call tile_from_fort(1.0E0_tensor_real,from_arr%elm1,from_arr%dims,to_arr%mode,&
-                   &0.0E0_tensor_real,to_arr%ti(i)%t,to_arr%ti(i)%gt,to_arr%tdim,o)
+                call tile_from_fort(1.0E0_tensor_real,from_arr%elm1,from_arr%dims,int(to_arr%mode),&
+                   &0.0E0_tensor_real,to_arr%ti(i)%t,int(to_arr%ti(i)%gt),int(to_arr%tdim),o)
              enddo
           else
              call tensor_scatter(1.0E0_tensor_real,from_arr%elm1,0.0E0_tensor_real,to_arr,from_arr%nelms,oo=o,wrk=wrk,iwrk=iwrk)
@@ -3439,7 +3442,7 @@ contains
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_GET"
       do ti = 1, test1%ntiles
-        call get_residence_of_tile(to_get_from,ti,test1)
+        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -3456,7 +3459,7 @@ contains
       write(DECinfo%output,'("NORM OF TILE IN ARRAY   : ",f20.15)')ref
       if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT BEFORE GET : ",f20.15)')normher
-      if(nnod>1) call tensor_get_tile(test1,ti,tileget,j)
+      if(nnod>1) call tensor_get_tile(test1,int(ti,kind=tensor_standard_int),tileget,j)
       if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT AFTER GET  : ",f20.15)')normher
       if(nnod>1)then
@@ -3473,7 +3476,7 @@ contains
       write(DECinfo%output,*)"TESTING MPI_PUT"
       teststatus="SUCCESS"
       do ti = test1%ntiles,1, -1
-        call get_residence_of_tile(to_get_from,ti,test1)
+        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -3623,7 +3626,7 @@ contains
     teststatus="SUCCESS"
     rnk = nnod - 1
     do ti = test1%ntiles,1, -1
-      call get_residence_of_tile(to_get_from,ti,test1)
+      call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
       if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
        testint = ti
        exit
@@ -3664,7 +3667,7 @@ contains
       if(.not.master)then
         call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
-        call tensor_get_tile(test2,ti,tileget,j)
+        call tensor_get_tile(test2,int(ti,kind=tensor_standard_int),tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         do i=1,j
@@ -3743,8 +3746,8 @@ contains
     do i=1,test2%ntiles
       call get_tile_dim(j,test2,i)
       call mem_alloc(tileget,j)
-      call tensor_get_tile(test2,i,tileget,j)
-      call tile_in_fort(1.0E0_tensor_real,tileget,i,test2%tdim,0.0E0_tensor_real,&
+      call tensor_get_tile(test2,int(i,kind=tensor_standard_int),tileget,j)
+      call tile_in_fort(1.0E0_tensor_real,tileget,i,int(test2%tdim),0.0E0_tensor_real,&
                         &test2%elm1,test1%dims,4,[3,2,4,1])
       call mem_dealloc(tileget)
     enddo

@@ -19,16 +19,16 @@ module tensor_parameters_and_counters
 !#endif
 
    !parameters to define the data distribution in the tensor type
-   integer, parameter :: TT_DENSE        = 1
-   integer, parameter :: TT_REPLICATED   = 2
-   integer, parameter :: TT_TILED        = 3
-   integer, parameter :: TT_TILED_DIST   = 4
-   integer, parameter :: TT_TILED_REPL   = 5
+   integer(kind=tensor_standard_int), parameter :: TT_DENSE        = 1
+   integer(kind=tensor_standard_int), parameter :: TT_REPLICATED   = 2
+   integer(kind=tensor_standard_int), parameter :: TT_TILED        = 3
+   integer(kind=tensor_standard_int), parameter :: TT_TILED_DIST   = 4
+   integer(kind=tensor_standard_int), parameter :: TT_TILED_REPL   = 5
    
    !parameters for ACCESS TYPE:
-   integer,parameter :: AT_NO_PDM_ACCESS = 0
-   integer,parameter :: AT_MASTER_ACCESS = 1
-   integer,parameter :: AT_ALL_ACCESS    = 2
+   integer(kind=tensor_standard_int),parameter :: AT_NO_PDM_ACCESS = 0
+   integer(kind=tensor_standard_int),parameter :: AT_MASTER_ACCESS = 1
+   integer(kind=tensor_standard_int),parameter :: AT_ALL_ACCESS    = 2
    
    !other parameters
    integer,parameter :: TENSOR_MSG_LEN = 30

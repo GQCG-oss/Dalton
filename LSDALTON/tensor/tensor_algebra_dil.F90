@@ -2583,13 +2583,14 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
+          call tensor_get_tile(tens_arr,int(tile_num,kind=tensor_standard_int),&
+             &buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -2620,7 +2621,7 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -2661,7 +2662,7 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
@@ -2707,7 +2708,7 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -2829,13 +2830,14 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,tile_num,bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
+          call tensor_get_tile(tens_arr,int(tile_num,kind=tensor_standard_int),&
+             &bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -2866,7 +2868,7 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
@@ -2925,7 +2927,7 @@
 !          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
 !           &tm,dble(2_INTL*tile_vol*tensor_real)/(tm*1024d0*1024d0*1024d0),i
           if(i.ne.0) then; ierr=1; return; endif
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -2959,7 +2961,7 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)

@@ -2161,7 +2161,7 @@ contains
 
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,int(tile,kind=4),tmp,ncopy)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
@@ -2199,7 +2199,7 @@ contains
 
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,int(tile,kind=4),tmp,ncopy)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
