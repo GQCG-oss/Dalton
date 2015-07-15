@@ -5728,7 +5728,7 @@ C
       RETURN
       END
 C  /* Deck ccrda1 */
-      SUBROUTINE CCRDA1(XINT,IBUF,RBUF,IDELTA,IDEL2,KADR1,KADR2,
+      SUBROUTINE CCRDA1(XINT,IBUF4,RBUF,IDELTA,IDEL2,KADR1,KADR2,
      *                  IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993

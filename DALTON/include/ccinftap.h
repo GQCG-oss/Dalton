@@ -21,7 +21,17 @@
 !     &                FNDKBC2, FNDKBC3, FNDKBC4, FNDKBC5
 
        INTEGER         LUIAJB, LUBFDN, LURES, LUCSOL, LUPRPC,           &
-     &                 LUMMMO, LUCCEF, LUCCPO
+     &                 LUMMMO, LUCCEF, LUCCPO, CC_TAPLAST
        COMMON /CC_TAP/ LUIAJB, LUBFDN, LURES, LUCSOL, LUPRPC,           &
      &                 LUMMMO, LUCCEF, LUCCPO
-
+!
+       COMMON /CC_TAP/ CC_TAPLAST
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
