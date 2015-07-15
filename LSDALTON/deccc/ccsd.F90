@@ -6864,6 +6864,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     if (.not.local.and.master) then
       call tensor_cp_tiled2dense(t2,.false.,bg=use_bg_buf)
       call tensor_cp_tiled2dense(govov,.false.,bg=use_bg_buf)
+      call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
     end if 
 #endif
 
@@ -6984,8 +6985,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
    t2%access_type     = AT_ALL_ACCESS
    omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
-     !call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
-     call tensor_allocate_dense(omega2,change=.true.)
      govov%itype  = TT_DENSE
    end if
 #endif
@@ -8546,6 +8545,7 @@ subroutine moccsd_data_slave()
   use tensor_interface_module
   use typedeftype, only: lsitem
   use decmpi_module, only: mpi_communicate_moccsd_data
+  use memory_handling
 
   implicit none
 
@@ -8584,7 +8584,9 @@ subroutine moccsd_data_slave()
   
   integer :: k
   integer(kind=long) :: nelms
-  logical :: local
+  logical :: local, bg
+
+  bg = mem_is_background_buf_init()
 
   call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
          & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
@@ -8592,13 +8594,14 @@ subroutine moccsd_data_slave()
   !==============================================================================
   ! Initialize arrays:
   if (local) then 
-    call tensor_ainit(t1    , [nvir,nocc],           2, local=local, atype='LDAR' )
-    call tensor_ainit(t2    , [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
-    call tensor_ainit(omega2, [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
-    call tensor_ainit(govov , [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
+    call tensor_ainit(t1    , [nvir,nocc],           2, local=local, atype='LDAR', bg=bg)
+    call tensor_ainit(t2    , [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR', bg=bg)
+    call tensor_ainit(govov , [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR', bg=bg)
+    call tensor_ainit(omega2, [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR', bg=bg)
   else
-    call tensor_allocate_dense(t2)
-    call tensor_allocate_dense(govov)
+    call tensor_allocate_dense(t2, bg=bg)
+    call tensor_allocate_dense(govov, bg=bg)
+    call tensor_allocate_dense(omega2, bg=bg, change=.true.)
   end if
 
   !split messages in 2GB parts, compare to counterpart in
@@ -8624,14 +8627,14 @@ subroutine moccsd_data_slave()
   call mem_dealloc(MOinfo%tileInd)
 
   if (local) then 
-    call tensor_free(t1)
-    call tensor_free(t2)
     call tensor_free(omega2)
     call tensor_free(govov)
+    call tensor_free(t2)
+    call tensor_free(t1)
   else
     call tensor_deallocate_dense(omega2)
-    call tensor_deallocate_dense(t2)
     call tensor_deallocate_dense(govov)
+    call tensor_deallocate_dense(t2)
   end if
 end subroutine moccsd_data_slave
 #endif
