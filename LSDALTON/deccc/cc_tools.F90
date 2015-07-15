@@ -25,9 +25,9 @@ module cc_tools_module
    use reorder_frontend_module
    use tensor_interface_module
    use gpu_interfaces
-#ifdef VAR_OPENACC
-   use openacc, only: acc_is_present
-#endif
+!#ifdef VAR_OPENACC
+!   use openacc, only: acc_is_present
+!#endif
 
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
@@ -130,7 +130,6 @@ module cc_tools_module
    end subroutine get_tpl_and_tmi_tensors
 
    subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
-      use, intrinsic:: ISO_C_BINDING
       implicit none
       type(tensor),intent(inout) :: t2 !intent(in)
       type(tensor),intent(inout) :: tpl, tmi !tpl[nor,nvr],tmi[nor,nvr]
@@ -637,7 +636,6 @@ module cc_tools_module
       endif
 
 #ifdef VAR_CUBLAS
-      print *,"ACC HANDLE SET TO",acc_h,transp
       do curr_id = 1,nids
          ! initialize the CUBLAS context
          stat = cublasCreate_v2(cub_h(curr_id))
@@ -708,16 +706,20 @@ module cc_tools_module
 
 
          !$acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr)) create(w0(1:nb*laleg_req*nv)) async(transp)
-         !$acc wait
 
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
          curr_id = 0
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
+            
 
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
+
+            if(DECinfo%hack2)then
+               print *,faleg, laleg
+            endif
 
             curr_id = mod(curr_id,nids)+1
 
@@ -726,7 +728,7 @@ module cc_tools_module
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
             !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
-            !$acc& async(acc_h(curr_id)) 
+            !$acc& wait(transp) async(acc_h(curr_id)) 
 
             !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
@@ -751,10 +753,9 @@ module cc_tools_module
             !$acc end data 
          enddo
 
-         !$acc wait
-         !$acc exit data delete(tpl%elm1(1:nor*nvr))
+         !$acc wait async(transp)
+         !$acc exit data delete(tpl%elm1(1:nor*nvr)) async(transp)
          !$acc enter data copyin(tmi%elm1(1:nor*nvr)) async(transp)
-         !$acc wait
 
 #ifdef VAR_OPENACC
          call array_reorder_2d(p10,w3,nor,tred,[2,1],nul,w2)

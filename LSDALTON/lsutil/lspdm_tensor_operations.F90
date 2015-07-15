@@ -819,18 +819,17 @@ module lspdm_tensor_operations_module
     type(tensor), intent(inout),optional :: t1
     !> on return Ec contains the correlation energy
     real(realk) :: E1,E2,Ec
-    real(realk),pointer :: t2tile(:,:,:,:),gmotile(:,:,:,:),gmotile1d(:)
     real(realk),pointer :: gmo_tile(:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj,gmo_ts
     integer :: order_c(gmo%mode), gmo_ctidx(gmo%mode), gmo_ctdim(gmo%mode), cbuf, gmo_ccidx
-    real(realk), pointer :: gmo_ctile_buf(:,:),gmo_ctile(:,:,:,:)
+    real(realk), pointer :: gmo_ctile_buf(:,:)
     integer :: order_e(gmo%mode), gmo_etidx(gmo%mode), gmo_etdim(gmo%mode), ebuf, gmo_ecidx
-    real(realk), pointer :: gmo_etile(:,:,:,:)
 #ifdef VAR_PTR_RESHAPE
-    real(realk), contiguous, pointer :: gmo_tile_buf(:,:)
+    real(realk), contiguous, pointer :: h1(:),h2(:), gmo_ctile(:,:,:,:), gmo_etile(:,:,:,:), t2tile(:,:,:,:)
 #else
-    real(realk), pointer :: gmo_tile_buf(:,:)
+    real(realk), pointer :: h1(:),h2(:), gmo_ctile(:,:,:,:), gmo_etile(:,:,:,:), t2tile(:,:,:,:)
 #endif
+    real(realk), pointer :: gmo_tile_buf(:,:)
     integer :: nt,nbuffs,nbuffs_c, nbuffs_e
     integer(kind=ls_mpik) :: mode
     integer(kind=long) :: tiledim
@@ -1082,10 +1081,17 @@ module lspdm_tensor_operations_module
           ebuf = cbuf
        endif
 
+       da = t2%ti(lt)%d(1)
+       db = t2%ti(lt)%d(2)
+       di = t2%ti(lt)%d(3)
+       dj = t2%ti(lt)%d(4)
+
 #if defined(VAR_PTR_RESHAPE) 
-       gmo_ctile(1:gmo_ctdim(1),1:gmo_ctdim(2),1:gmo_ctdim(3),1:gmo_ctdim(4)) => gmo_tile_buf(1:,cbuf)
-       gmo_etile(1:gmo_etdim(1),1:gmo_etdim(2),1:gmo_etdim(3),1:gmo_etdim(4)) => gmo_tile_buf(1:,ebuf)
-       t2tile(1:t2%ti(lt)%d(1),1:t2%ti(lt)%d(2),1:t2%ti(lt)%d(3),1:t2%ti(lt)%d(4)) => t2%ti(lt)%t
+       h1 => gmo_tile_buf(:,cbuf)
+       gmo_ctile(1:di,1:da,1:dj,1:db) => h1
+       h2 => gmo_tile_buf(:,ebuf)
+       gmo_etile(1:di,1:db,1:dj,1:da) => h2
+       t2tile(1:da,1:db,1:di,1:dj)    => t2%ti(lt)%t
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
        call c_f_pointer(c_loc(gmo_tile_buf(1,cbuf)),gmo_ctile,gmo_ctdim)
        call c_f_pointer(c_loc(gmo_tile_buf(1,ebuf)),gmo_etile,gmo_etdim)
@@ -1094,10 +1100,6 @@ module lspdm_tensor_operations_module
       call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
-       da = t2%ti(lt)%d(1)
-       db = t2%ti(lt)%d(2)
-       di = t2%ti(lt)%d(3)
-       dj = t2%ti(lt)%d(4)
        !count over local indices
        !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t2tile,gmo_ctile,gmo_etile,&
        !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
@@ -1133,6 +1135,8 @@ module lspdm_tensor_operations_module
        t2tile    => null()
        gmo_ctile => null()
        gmo_etile => null()
+       h1        => null()
+       h2        => null()
     enddo
 
     if( alloc_in_dummy )then
