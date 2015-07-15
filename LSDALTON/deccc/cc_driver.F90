@@ -2736,12 +2736,13 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !initialize and copy data to output arrays
    if(.not.vovo_avail)then
       call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],&
-         &atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
+         &atype = "TDAR", fo=int(tmp2%offset,kind=tensor_int), bg=bg_was_init )
       call tensor_cp_data(tmp2, VOVO )
       call tensor_free(tmp2)
    endif
 
-   call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", fo=tmp1%offset, bg=bg_was_init)
+   call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], &
+      &atype = "TDAR", fo=int(tmp1%offset,kind=tensor_int), bg=bg_was_init)
    call tensor_cp_data( tmp1, p4 )
    call tensor_free(tmp1)
 
