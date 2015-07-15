@@ -100,35 +100,87 @@ if(ENABLE_GPU)
         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord.F90
        )
 endif()
+if(ENABLE_REAL_SP)
+    set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord_sp.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord_sp.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord_sp.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord_sp.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord_sp.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord_sp.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord_sp.F90
+        ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord_sp.F90
+       )
+       if(ENABLE_GPU)
+          set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
+              ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_acc_reord_sp.F90
+              ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_acc_reord_sp.F90
+              ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_acc_reord_sp.F90
+             )
+       endif()
+endif()
 
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
 if(ENABLE_GPU)
-add_custom_command(
-    OUTPUT
-    ${MANUAL_REORDERING_SOURCES}
-    COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering acc ${LIST_OF_DEFINITIONS}
-    DEPENDS
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
-    )
+    if(ENABLE_REAL_SP)
+      add_custom_command(
+      OUTPUT
+      ${MANUAL_REORDERING_SOURCES}
+      COMMAND
+      python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering acc real_sp ${LIST_OF_DEFINITIONS}
+      DEPENDS
+      ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+      )
+    else()
+      add_custom_command(
+      OUTPUT
+      ${MANUAL_REORDERING_SOURCES}
+      COMMAND
+      python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering acc ${LIST_OF_DEFINITIONS}
+      DEPENDS
+      ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+      )
+    endif()
 elseif(ENABLE_COLLAPSE)
-add_custom_command(
-    OUTPUT
-    ${MANUAL_REORDERING_SOURCES}
-    COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
-    DEPENDS
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
-    )
+    if(ENABLE_REAL_SP)
+      add_custom_command(
+      OUTPUT
+      ${MANUAL_REORDERING_SOURCES}
+      COMMAND
+      python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering real_sp ${LIST_OF_DEFINITIONS}
+      DEPENDS
+      ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+      )
+    else()
+      add_custom_command(
+      OUTPUT
+      ${MANUAL_REORDERING_SOURCES}
+      COMMAND
+      python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+      DEPENDS
+      ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+      )
+    endif()
 else()
-add_custom_command(
-    OUTPUT
-    ${MANUAL_REORDERING_SOURCES}
-    COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering nocollapse ${LIST_OF_DEFINITIONS}
-    DEPENDS
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
-    )
+    if(ENABLE_REAL_SP)
+      add_custom_command(
+      OUTPUT
+      ${MANUAL_REORDERING_SOURCES}
+      COMMAND
+      python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering nocollapse real_sp ${LIST_OF_DEFINITIONS}
+      DEPENDS
+      ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+      )
+    else()
+      add_custom_command(
+      OUTPUT
+      ${MANUAL_REORDERING_SOURCES}
+      COMMAND
+      python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering nocollapse ${LIST_OF_DEFINITIONS}
+      DEPENDS
+      ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+      )
+    endif()
 endif()
 unset(LIST_OF_DEFINITIONS)
 
@@ -357,10 +409,43 @@ add_dependencies(linearslib ls-openrsp)
 add_dependencies(linearslib ls-matrix-defop)
 endif()
 
-add_library(
-    declib
-    ${DEC_SOURCES}
-    )
+if(ENABLE_REAL_SP)
+   set(CCSDPT_SINGLE_PREC_SOURCE
+       ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90
+       ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90
+       )
+endif()
+
+if(ENABLE_REAL_SP)
+   get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+   if(${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90 OR
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90)
+     add_custom_command(
+     OUTPUT
+     ${CCSDPT_SINGLE_PREC_SOURCE}
+     COMMAND
+     bash ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_sp.sh CMAKE_BUILD=${CMAKE_SOURCE_DIR}/LSDALTON/deccc ${LIST_OF_DEFINITIONS}
+     DEPENDS
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_sp.sh
+     )
+   endif()
+   unset(LIST_OF_DEFINITIONS)
+endif()
+
+if(ENABLE_REAL_SP)
+   add_library(
+       declib
+       ${CCSDPT_SINGLE_PREC_SOURCE}
+       ${DEC_SOURCES}
+       )
+else()
+   add_library(
+       declib
+       ${DEC_SOURCES}
+       )
+endif()
 
 target_link_libraries(declib lsutiltypelib_common)
 target_link_libraries(declib lsutillib_common)

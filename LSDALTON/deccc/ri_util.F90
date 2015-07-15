@@ -336,6 +336,13 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
   ENDIF
 
+  IF(DECinfo%RIMP2_deactivateOpenMP)THEN
+     noOMP = .TRUE.
+     noOMPsave= mylsitem%setting%scheme%noOMP
+     mylsitem%setting%scheme%noOMP = .TRUE.
+     nthreads = 1                           
+  ENDIF
+
   !=====================================================================================
   ! Obtain 3 center RI integrals (alpha,a,i) 
   !=====================================================================================
@@ -808,7 +815,7 @@ subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,n
   real(realk) :: maxsize,MemInGBCollected,ExternalAOtoMO,InternalAOtoMO 
   !Determine memory available 
   IF(use_bg_buf)THEN
-     maxsize = (mem_get_bg_buf_free()+1)*8.0E-9_realk
+     maxsize = mem_get_bg_buf_free()*8.0E-9_realk*0.90E0_realk
      IF(DECinfo%MemDebugPrint)THEN
         print*,'DetermineMaxNauxRI: mem_get_bg_buf_free=',mem_get_bg_buf_free()
         print*,'DetermineMaxNauxRI: maxsize',mem_get_bg_buf_free()*8.0E-9_realk,' GB'

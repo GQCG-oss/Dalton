@@ -112,14 +112,19 @@ N = nTMO2        !columns of Output Matrix
 K = m3           !summation dimension
 #ifdef VAR_OMP
 IF(nTITthreads.GT.1)THEN
-   call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
-        & K,0.0E0_realk,TmpAlphaCD,M)
+   IF(TITThreadID.EQ.1)THEN
+      call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray,M,TCMO2,&
+           & K,0.0E0_realk,TmpAlphaCD,M)
+   ELSE
+      call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray(1,1,1,TITThreadID),M,TCMO2,&
+           & K,0.0E0_realk,TmpAlphaCD,M)
+   ENDIF
 ELSE
-   call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
+   call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray,M,TCMO2,&
         & K,0.0E0_realk,TmpAlphaCD,M)
 ENDIF
 #else
-call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
+call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray(1,1,1,TITThreadID),M,TCMO2,&
      & K,0.0E0_realk,TmpAlphaCD,M)
 #endif
 !TmpAlphaCD(nTMaxN*nT1,nTMO2)

@@ -165,7 +165,7 @@ contains
     real(realk) :: CPU1,CPU2,WALL1,WALL2,CPU_INT,WALL_INT,CPU_AOTOMO,WALL_AOTOMO
     integer(kind=short) :: CS_THRLOG
     logical :: use_bg_buf, dynamic_load, first
-    integer(kind=ls_mpik) :: lg_me
+    integer(kind=ls_mpik) :: lg_me, mode
     integer :: old_gammaB, batch
 #ifdef VAR_TIME
     FORCEPRINT = .TRUE.
@@ -184,6 +184,7 @@ contains
 ! If MPI is not used, consider the single node to be "master"
     dynamic_load = DECinfo%dyn_load
 #ifdef VAR_MPI
+    mode = MPI_MODE_NOCHECK
     master       = (infpar%lg_mynum == infpar%master)
     lg_me        = infpar%lg_mynum
 #else
@@ -673,7 +674,7 @@ contains
 
         call lsmpi_win_create(decmpitasks,decmpitaskw,1,infpar%lg_comm)
 #ifdef VAR_HAVE_MPI3
-        call lsmpi_win_lock_all(decmpitaskw,ass=MPI_MODE_NOCHECK)
+        call lsmpi_win_lock_all(decmpitaskw,ass=mode)
 #endif
     else
        call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
@@ -3251,9 +3252,6 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
    call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset,bg=bg)
 
-   call tensor_free(E2)
-   call tensor_free(E1)
-
 #ifdef VAR_MPI
    if(.not.local) call tensor_lock_local_wins(Pijab_om2,'e',mode)
    if(.not.local) call tensor_unlock_local_wins(omega2)
@@ -3284,7 +3282,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 #endif
 
    call tensor_free(Pijab_om2)
-
+   call tensor_free(E2)
+   call tensor_free(E1)
 
 
 end subroutine get_simple_parallel_mp2_residual
