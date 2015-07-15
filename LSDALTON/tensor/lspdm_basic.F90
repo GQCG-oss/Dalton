@@ -19,8 +19,10 @@ module lspdm_basic_module
                     &get_tileinfo_nelspmode_frombas,&
                     &get_tileinfo_nels_fromarr8,&
                     &get_tileinfo_nels_fromarr4,&
-                    &get_tileinfo_nels_fromarr8mode,&
-                    &get_tileinfo_nels_fromarr4mode,&
+                    &get_tileinfo_nels4_fromarr8mode,&
+                    &get_tileinfo_nels8_fromarr8mode,&
+                    &get_tileinfo_nels4_fromarr4mode,&
+                    &get_tileinfo_nels8_fromarr4mode,&
                     &get_tileinfo_nelspermode_fromarr4mode,&
                     &get_tileinfo_nelspermode_fromarr8mode,&
                     &get_tileinfo_nelspermode_fromarr4,&
@@ -49,10 +51,13 @@ module lspdm_basic_module
     !integer,intent(in),optional :: offset
     integer :: j,orig_addr(mode),offs,ntpm(mode)
     integer(kind=tensor_int) :: dims_long(mode)
+    integer(kind=tensor_standard_int) :: tdim_std(mode), ntpm_std(mode)
     dims_long = dims
+    tdim_std  = tdim
     offs=1
     !if(present(offset))offs=offset
-    call tensor_get_ntpm(dims_long,tdim,mode,ntpm)
+    call tensor_get_ntpm(dims_long,tdim_std,int(mode,kind=tensor_standard_int),ntpm_std)
+    ntpm = ntpm_std
     call get_midx(tileidx,orig_addr,ntpm,mode)
     sze=1
     do j=offs, mode
@@ -69,8 +74,11 @@ module lspdm_basic_module
     integer, intent(out) :: sze(mode)
     integer :: j,orig_addr(mode),ntpm(mode)
     integer(kind=tensor_int) :: dims_long(mode)
+    integer(kind=tensor_standard_int) :: tdim_std(mode),ntpm_std(mode)
     dims_long = dims
-    call tensor_get_ntpm(dims_long,tdim,mode,ntpm)
+    tdim_std  = tdim
+    call tensor_get_ntpm(dims_long,tdim_std,int(mode,kind=tensor_standard_int),ntpm_std)
+    ntpm = ntpm_std
     call get_midx(tileidx,orig_addr,ntpm,mode)
     do j=1, mode
       if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
@@ -82,14 +90,14 @@ module lspdm_basic_module
   end subroutine get_tileinfo_nelspmode_frombas
 
   !> \author Patrick Ettenhuber
-  subroutine get_tileinfo_nels_fromarr8mode(nels,arr,orig_addr)
+  subroutine get_tileinfo_nels4_fromarr8mode(nels,arr,orig_addr)
     implicit none
     !> array for which nels shoulb be calculated
     type(tensor),intent(in) :: arr
     !> global mode index of the tile
-    integer(kind=long), intent(in) :: orig_addr(arr%mode)
+    integer(kind=tensor_long_int), intent(in) :: orig_addr(arr%mode)
     !> return value, number of elements in the desired tile
-    integer :: nels
+    integer(kind=tensor_standard_int) :: nels
     integer ::j
     nels=1
     do j=1, arr%mode
@@ -99,16 +107,34 @@ module lspdm_basic_module
         nels=nels*mod(arr%dims(j),arr%tdim(j))
       endif
     enddo
-  end subroutine get_tileinfo_nels_fromarr8mode
+  end subroutine get_tileinfo_nels4_fromarr8mode
+  subroutine get_tileinfo_nels8_fromarr8mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=tensor_long_int), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer(kind=tensor_long_int) :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels8_fromarr8mode
   !> \author Patrick Ettenhuber
-  subroutine get_tileinfo_nels_fromarr4mode(nels,arr,orig_addr)
+  subroutine get_tileinfo_nels8_fromarr4mode(nels,arr,orig_addr)
     implicit none
     !> array for which nels shoulb be calculated
     type(tensor),intent(in) :: arr
     !> global mode index of the tile
     integer(kind=tensor_standard_int), intent(in) :: orig_addr(arr%mode)
     !> return value, number of elements in the desired tile
-    integer :: nels
+    integer(kind=tensor_long_int) :: nels
     integer ::j
     nels=1
     do j=1, arr%mode
@@ -118,7 +144,25 @@ module lspdm_basic_module
         nels=nels*mod(arr%dims(j),arr%tdim(j))
       endif
     enddo
-  end subroutine get_tileinfo_nels_fromarr4mode
+  end subroutine get_tileinfo_nels8_fromarr4mode
+  subroutine get_tileinfo_nels4_fromarr4mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=tensor_standard_int), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer(kind=tensor_standard_int) :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels4_fromarr4mode
 
   !> \brief this function returns the number of elements of a tile where the tile index is
   ! a global tile index
@@ -224,7 +268,7 @@ module lspdm_basic_module
     !> array for which nels shoulb be calculated
     type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
-    integer(kind=4), intent(in) :: tnumber
+    integer(kind=tensor_standard_int), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
     integer :: nels(arr%mode)
     integer ::orig_addr(arr%mode),j
@@ -363,13 +407,13 @@ module lspdm_basic_module
 
     !get zero dummy matrix in size of largest tile --> size(dummy)=tsize
     if( alloc_in_dummy )then
-       call memory_allocate_dummy(arr,bg, nel = arr%tsize*arr%nlti)
+       call memory_allocate_dummy(arr,bg, nel = int(arr%tsize*arr%nlti,kind=tensor_long_int))
 #ifdef VAR_MPI
        call memory_allocate_window(arr,nwins = 1)
        call lsmpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
 #endif
     else
-       call memory_allocate_dummy( arr,bg, nel = 1)
+       call memory_allocate_dummy( arr,bg, nel = 1_tensor_long_int)
        !prepare the integer window in the array --> ntiles windows should be created
        call memory_allocate_window(arr)
     endif
@@ -511,7 +555,7 @@ module lspdm_basic_module
       implicit none
       type(tensor),intent(inout) :: arr
       logical, intent(in) :: bg
-      integer, intent(in),optional :: nel
+      integer(kind=tensor_long_int), intent(in),optional :: nel
       integer(kind=tensor_long_int) :: nelms
       real(tensor_real)     :: vector_size
       real(tensor_real)     :: tcpu1,twall1,tcpu2,twall2

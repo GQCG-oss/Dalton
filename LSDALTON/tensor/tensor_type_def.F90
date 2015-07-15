@@ -11,7 +11,7 @@ module tensor_type_def_module
 #else
     real(tensor_real),pointer     :: t(:) => null()         !data in tiles
 #endif
-    integer(kind=tensor_standard_int), pointer  :: d(:) => null()  !actual dimension of the tiles
+    integer(kind=tensor_int), pointer  :: d(:) => null()  !actual dimension of the tiles
     integer(kind=tensor_long_int)     :: e               !number of elements in current tile
     integer(kind=tensor_standard_int) :: gt              !global ti nr.
     integer(kind=tensor_mpi_kind)     :: wi              !window in pc group

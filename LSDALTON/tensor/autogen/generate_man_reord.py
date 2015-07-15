@@ -88,8 +88,9 @@ def main():
 #    reordmod  = time.ctime(os.path.getmtime(installdir+"reorder_frontend.F90"))
     reordmod  = os.path.getmtime(installdir+"reorder_frontend.F90")
 #    scriptmod = time.ctime(os.path.getmtime(sys.argv[0]))
-    scriptmod = min(os.path.getmtime(sys.argv[0]),os.path.getmtime(tensordir+"/autogen/reorder_header.F90"))
-    print "reordmod",reordmod,"scriptmod",scriptmod
+    scriptmod = os.path.getmtime(sys.argv[0])
+    if(os.path.getmtime(tensordir+"/autogen/reorder_header.F90")>scriptmod):
+       scriptmod = os.path.getmtime(tensordir+"/autogen/reorder_header.F90")
   # radovan: this should not be done here but taken care of by (c)make
     if(scriptmod>reordmod or writenew):
       print "REORDER GENERATOR IS NEWER THAN REORDERING FILES - GENERATING NEW ONES"
@@ -982,6 +983,8 @@ def write_main_header(f,now,args,tensordir,minr,maxr,skip):
 
    f.write("module reorder_frontend_module\n")
    f.write("  use precision\n")
+   f.write("  use tensor_parameters_and_counters\n")
+   f.write("  use get_idx_mod\n")
    f.write("  use memory_handling\n")
    
    for mode in range(maxr,minr-1,-1):
