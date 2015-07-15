@@ -832,11 +832,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            Maxsize = MAX(MemStep1,MemStep2)
         ENDIF
         PerformTiling = MaxSize.GT.MemInGBCollected
-        IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-           WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Perform Tiling  MaxSize=',&
-                &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
-        endif
         IF(PerformTiling)THEN 
+           IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
+              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Performing Tiling MaxSize=',&
+                   &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
+           endif
            IF(MemInGBCollected.LT.(2*noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk)THEN
               call lsquit('RIMP2: Not enough memory for tiling in rimp2',-1)
            ENDIF
@@ -855,6 +855,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            endif
            nTiles =  nvirt/MaxVirtSize 
            IF(nTiles.EQ.0)PerformTiling = .FALSE.
+        ELSE
+           IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
+              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: No Tiling MaxSize=',&
+                   &MaxSize,' GB < memory available = ',MemInGBCollected,' GB'
+           ENDIF
         ENDIF
 #if defined(VAR_OPENACC) && defined(VAR_CUDA)
         !In case of GPU usage tocc must also fit on device memory

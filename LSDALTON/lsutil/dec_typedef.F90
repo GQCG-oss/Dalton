@@ -395,7 +395,8 @@ module dec_typedef_module
      logical :: RIMP2_lowdin
      !> Use laplace transform in RIMP2 code
      logical :: RIMP2_Laplace
-
+     !> Deactivate OpenMP in RI_UTIL
+     logical :: RIMP2_deactivateopenmp
      !> MPI group is split if #nodes > O*V/RIMPIsplit
      integer :: RIMPIsplit
 
