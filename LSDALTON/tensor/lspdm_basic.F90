@@ -42,15 +42,17 @@ module lspdm_basic_module
 
   
 
-  subroutine get_tileinfo_nels_frombas(sze,tileidx,dims,tdim,mode,offset)
+  subroutine get_tileinfo_nels_frombas(sze,tileidx,dims,tdim,mode)
     implicit none
     integer, intent(out) :: sze
     integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
-    integer,intent(in),optional :: offset
+    !integer,intent(in),optional :: offset
     integer :: j,orig_addr(mode),offs,ntpm(mode)
+    integer(kind=tensor_int) :: dims_long(mode)
+    dims_long = dims
     offs=1
-    if(present(offset))offs=offset
-    call tensor_get_ntpm(dims,tdim,mode,ntpm)
+    !if(present(offset))offs=offset
+    call tensor_get_ntpm(dims_long,tdim,mode,ntpm)
     call get_midx(tileidx,orig_addr,ntpm,mode)
     sze=1
     do j=offs, mode
@@ -61,6 +63,23 @@ module lspdm_basic_module
       endif
     enddo
   end subroutine get_tileinfo_nels_frombas
+  subroutine get_tileinfo_nelspmode_frombas(sze,tileidx,dims,tdim,mode)
+    implicit none
+    integer, intent(in)  :: tileidx,mode,dims(mode),tdim(mode)
+    integer, intent(out) :: sze(mode)
+    integer :: j,orig_addr(mode),ntpm(mode)
+    integer(kind=tensor_int) :: dims_long(mode)
+    dims_long = dims
+    call tensor_get_ntpm(dims_long,tdim,mode,ntpm)
+    call get_midx(tileidx,orig_addr,ntpm,mode)
+    do j=1, mode
+      if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
+        sze(j)=tdim(j)
+      else
+        sze(j)=mod(dims(j),tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspmode_frombas
 
   !> \author Patrick Ettenhuber
   subroutine get_tileinfo_nels_fromarr8mode(nels,arr,orig_addr)
@@ -87,7 +106,7 @@ module lspdm_basic_module
     !> array for which nels shoulb be calculated
     type(tensor),intent(in) :: arr
     !> global mode index of the tile
-    integer(kind=4), intent(in) :: orig_addr(arr%mode)
+    integer(kind=tensor_standard_int), intent(in) :: orig_addr(arr%mode)
     !> return value, number of elements in the desired tile
     integer :: nels
     integer ::j
@@ -109,7 +128,7 @@ module lspdm_basic_module
     !> array for which nels shoulb be calculated
     type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
-    integer(kind=long), intent(in) :: tnumber
+    integer(kind=tensor_long_int), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
     integer :: nels
     integer ::orig_addr(arr%mode),j
@@ -129,7 +148,7 @@ module lspdm_basic_module
     !> array for which nels shoulb be calculated
     type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
-    integer(kind=4), intent(in) :: tnumber
+    integer(kind=tensor_standard_int), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
     integer :: nels
     integer ::orig_addr(arr%mode),j
@@ -149,7 +168,7 @@ module lspdm_basic_module
     !> array for which nels shoulb be calculated
     type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
-    integer(kind=long), intent(in) :: tnumber
+    integer(kind=tensor_long_int), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
     integer :: nels(arr%mode)
     integer ::orig_addr(arr%mode),j
@@ -220,31 +239,17 @@ module lspdm_basic_module
     enddo
   end subroutine get_tileinfo_nelspermode_fromarr4
 
-  subroutine get_tileinfo_nelspmode_frombas(sze,tileidx,dims,tdim,mode)
-    implicit none
-    integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
-    integer, dimension(mode),intent(out) :: sze
-    integer :: j,orig_addr(mode),ntpm(mode)
-    call tensor_get_ntpm(dims,tdim,mode,ntpm)
-    call get_midx(tileidx,orig_addr,ntpm,mode)
-    do j=1, mode
-      if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
-        sze(j)=tdim(j)
-      else
-        sze(j)=mod(dims(j),tdim(j))
-      endif
-    enddo
-  end subroutine get_tileinfo_nelspmode_frombas
 
   !> \brief calculate the number of tiles per mode
   !> \author Patrick Ettenhuber
   !> \date march 2013
   subroutine tensor_get_ntpm(dims,tdim,mode,ntpm,ntiles)
      implicit none
-     integer, intent(in)  :: mode
-     integer, intent(out) :: ntpm(mode)
-     integer, intent(in)  :: dims(mode), tdim(mode)
-     integer, optional, intent(out) :: ntiles
+     integer(kind=tensor_standard_int), intent(in)  :: mode
+     integer(kind=tensor_standard_int), intent(out) :: ntpm(mode)
+     integer(kind=tensor_int),     intent(in)  :: dims(mode)
+     integer(kind=tensor_standard_int), intent(in)  :: tdim(mode)
+     integer(kind=tensor_standard_int), optional, intent(out) :: ntiles
      integer :: j
      if(present(ntiles)) ntiles = 1
      do j=1,mode
@@ -257,8 +262,8 @@ module lspdm_basic_module
   subroutine memory_deallocate_window(arr)
     implicit none
     type(tensor),intent(inout) :: arr
-    real(realk) :: vector_size
-    real(realk) :: tcpu1,twall1,tcpu2,twall2
+    integer(kind=tensor_long_int) :: vector_size
+    real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
     integer :: i,ierr
 
     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
@@ -275,11 +280,11 @@ module lspdm_basic_module
        print *,"THIS MESSAGE SHOULD NEVER APPEAR,WHY ARE MPI_WINs ALLOCD?"
 #endif
 
-       vector_size = dble(arr%nwins*ls_mpik)
+       vector_size = int(arr%nwins*tensor_mpi_kind,kind=tensor_long_int)
        call mem_dealloc(arr%wi)
        !$OMP CRITICAL
-       tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
-       tensor_memory_in_use = tensor_memory_in_use - vector_size
+       tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
+       tensor_counter_memory_in_use = tensor_counter_memory_in_use - vector_size
        !$OMP END CRITICAL
 
        arr%nwins = 0
@@ -294,8 +299,8 @@ module lspdm_basic_module
     implicit none
     type(tensor),intent(inout) :: arr
     integer, intent(in), optional :: nwins
-    real(realk) :: vector_size
-    real(realk) :: tcpu1,twall1,tcpu2,twall2
+    integer(kind=tensor_long_int) :: vector_size
+    real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
     integer :: n
 
     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
@@ -311,15 +316,15 @@ module lspdm_basic_module
        arr%nwins = arr%ntiles
     endif
 
-    vector_size = dble( arr%nwins * ls_mpik ) 
+    vector_size = int( arr%nwins * tensor_mpi_kind, kind=tensor_long_int ) 
    
     call mem_alloc( arr%wi, arr%nwins )
 
     !print *,infpar%lg_mynum,"mem update"
 !$OMP CRITICAL
-    tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
-    tensor_memory_in_use = tensor_memory_in_use + vector_size
-    tensor_max_memory = max(tensor_max_memory,tensor_memory_in_use)
+    tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
+    tensor_counter_memory_in_use = tensor_counter_memory_in_use + vector_size
+    tensor_counter_max_memory = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
 !$OMP END CRITICAL
 
     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
@@ -333,14 +338,14 @@ module lspdm_basic_module
     implicit none
     type(tensor) :: arr
     logical, intent(in) :: bg
-    real(realk) :: vector_size
-    real(realk) :: tcpu1,twall1,tcpu2,twall2
+    integer(kind=tensor_long_int) :: vector_size
+    real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: i,counter
     integer :: j,loc_idx
     integer, pointer :: idx(:)
-    integer(kind=ls_mpik) :: ibuf(2)
+    integer(kind=tensor_mpi_kind) :: ibuf(2)
     logical :: doit=.true.,lg_master
-    integer(kind=ls_mpik) :: lg_me,lg_nnod,pc_me,pc_nnod
+    integer(kind=tensor_mpi_kind) :: lg_me,lg_nnod,pc_me,pc_nnod
     integer(kind=8)       :: ne,tooo
     integer               :: res,from,tidx
     lg_master = .true.
@@ -375,10 +380,10 @@ module lspdm_basic_module
     !write(*,'(I2," in here and nlti ",I5)'),infpar%lg_mynum,arr%nlti
     allocate(arr%ti(arr%nlti))
 
-    vector_size = dble(size(arr%ti))
+    vector_size = int(size(arr%ti)*tensor_bytes_per_tile,kind=tensor_long_int)
     !$OMP CRITICAL
-    tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
-    tensor_memory_in_use  = tensor_memory_in_use  + vector_size
+    tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
+    tensor_counter_memory_in_use  = tensor_counter_memory_in_use  + vector_size
     !$OMP END CRITICAL
     counter = 1 
     !allocate tiles with zeros wherever there is mod --> this is experimental
@@ -393,17 +398,17 @@ module lspdm_basic_module
            call mem_alloc(arr%ti(counter)%t,arr%tsize)
            call mem_alloc(arr%ti(counter)%d,arr%mode)
            if( tensor_debug_mode )then
-              arr%ti(counter)%t=0.0E0_realk
+              arr%ti(counter)%t=0.0E0_tensor_real
            endif
            arr%ti(counter)%e=arr%tsize
-           vector_size = dble(arr%ti(counter)%e)*realk
+           vector_size = int((arr%ti(counter)%e)*tensor_real,kind=tensor_long_int)
            !$OMP CRITICAL
-           tensor_tiled_allocd_mem = tensor_tiled_allocd_mem + vector_size
-           tensor_memory_in_use    = tensor_memory_in_use    + vector_size
-           vector_size             = dble(size(arr%ti(counter)%d))
-           tensor_aux_allocd_mem   = tensor_aux_allocd_mem   + vector_size
-           tensor_memory_in_use    = tensor_memory_in_use    + vector_size
-           tensor_max_memory       = max(tensor_max_memory,tensor_memory_in_use)
+           tensor_counter_tiled_a_mem   = tensor_counter_tiled_a_mem + vector_size
+           tensor_counter_memory_in_use  = tensor_counter_memory_in_use    + vector_size
+           vector_size                  = int(size(arr%ti(counter)%d)*tensor_standard_int,kind=tensor_long_int)
+           tensor_counter_aux_a_mem     = tensor_counter_aux_a_mem    + vector_size
+           tensor_counter_memory_in_use  = tensor_counter_memory_in_use + vector_size
+           tensor_counter_max_memory    = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
            !$OMP END CRITICAL
            do j=1,arr%mode
               arr%ti(counter)%d(j)=arr%tdim(j)
@@ -438,10 +443,10 @@ module lspdm_basic_module
           arr%ti(loc_idx)%gt=i
           
           call mem_alloc(arr%ti(loc_idx)%d,arr%mode)
-          vector_size = dble(size(arr%ti(loc_idx)%d)*INTK)
+          vector_size = int(size(arr%ti(loc_idx)%d)*tensor_standard_int,kind=tensor_long_int)
           !$OMP CRITICAL
-          tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
-          tensor_memory_in_use  = tensor_memory_in_use  + vector_size
+          tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
+          tensor_counter_memory_in_use  = tensor_counter_memory_in_use  + vector_size
           !$OMP END CRITICAL
 
           !get the actual tile size of current tile, here the index is per mode
@@ -462,18 +467,18 @@ module lspdm_basic_module
             else
                call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
             endif
-            vector_size = dble(arr%ti(loc_idx)%e)*realk
+            vector_size = int(arr%ti(loc_idx)%e*tensor_real,kind=tensor_long_int)
             !$OMP CRITICAL
-            tensor_tiled_allocd_mem = tensor_tiled_allocd_mem + vector_size
-            tensor_memory_in_use    = tensor_memory_in_use + vector_size
-            tensor_max_memory       = max(tensor_max_memory,tensor_memory_in_use)
+            tensor_counter_tiled_a_mem = tensor_counter_tiled_a_mem + vector_size
+            tensor_counter_memory_in_use    = tensor_counter_memory_in_use + vector_size
+            tensor_counter_max_memory       = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
             !$OMP END CRITICAL
             call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm) 
          endif
 
 
          if( tensor_debug_mode )then
-            arr%ti(loc_idx)%t=0.0E0_realk
+            arr%ti(loc_idx)%t=0.0E0_tensor_real
          endif
 #endif
 
@@ -507,10 +512,10 @@ module lspdm_basic_module
       type(tensor),intent(inout) :: arr
       logical, intent(in) :: bg
       integer, intent(in),optional :: nel
-      integer(kind=8) :: nelms
-      real(realk)     :: vector_size
-      real(realk)     :: tcpu1,twall1,tcpu2,twall2
-      integer(kind=8) :: ne
+      integer(kind=tensor_long_int) :: nelms
+      real(tensor_real)     :: vector_size
+      real(tensor_real)     :: tcpu1,twall1,tcpu2,twall2
+      integer(kind=tensor_long_int) :: ne
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
@@ -527,31 +532,24 @@ module lspdm_basic_module
         nelms=arr%tsize
       endif
 
-      vector_size = dble(nelms)*realk
+      vector_size = int(nelms*tensor_real,kind=tensor_long_int)
 
 #ifdef VAR_MPI
-      if( lspdm_use_comm_proc )then
-         if(bg) call lsquit("ERROR(memory_allocate_dummy): this is not implemented",-1)
-        ne = 0_long
-        if(infpar%pc_mynum==infpar%pc_nodtot-1) ne = arr%nelms
-        call mem_alloc(arr%dummy,arr%dummyc,ne,arr%dummyw,infpar%pc_comm,nelms)
+      if( bg )then
+         call mem_pseudo_alloc(arr%dummy,nelms)
       else
-         if( bg )then
-            call mem_pseudo_alloc(arr%dummy,nelms)
-         else
-            call mem_alloc(arr%dummy,arr%dummyc,nelms)
-         endif
+         call mem_alloc(arr%dummy,arr%dummyc,nelms)
       endif
 
       if( tensor_debug_mode )then
-         arr%dummy = 0.0E0_realk
+         arr%dummy = 0.0E0_tensor_real
       endif
 #endif
 
       !$OMP CRITICAL
-      tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
-      tensor_memory_in_use = tensor_memory_in_use + vector_size
-      tensor_max_memory = max(tensor_max_memory,tensor_memory_in_use)
+      tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
+      tensor_counter_memory_in_use = tensor_counter_memory_in_use + vector_size
+      tensor_counter_max_memory = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
       !$OMP END CRITICAL
 
       call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
@@ -561,15 +559,14 @@ module lspdm_basic_module
     subroutine memory_deallocate_dummy(arr)
       implicit none
       type(tensor) :: arr
-      real(realk) :: vector_size
-      real(realk) :: dim1
-      real(realk) :: tcpu1,twall1,tcpu2,twall2
+      integer(kind=tensor_long_int) :: vector_size,dim1
+      real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
       if(associated(arr%dummy)) then
-         dim1 = dble(size(arr%dummy(:)))
-         vector_size = dim1*realk
+         dim1 = int(size(arr%dummy(:)),kind=tensor_long_int)
+         vector_size = int(dim1*tensor_real,kind=tensor_long_int)
 #ifdef VAR_MPI
          if(arr%bg_alloc)then
             call mem_pseudo_dealloc(arr%dummy, mark_deleted=.true.)
@@ -580,8 +577,8 @@ module lspdm_basic_module
          nullify(arr%dummy)
 
          !$OMP CRITICAL
-         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
-         tensor_memory_in_use = tensor_memory_in_use - vector_size
+         tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
+         tensor_counter_memory_in_use = tensor_counter_memory_in_use - vector_size
          !$OMP END CRITICAL
       end if
 

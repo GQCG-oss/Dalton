@@ -1,6 +1,7 @@
 
   interface get_midx
-    module procedure get_mode_idx8,get_mode_idx4
+    module procedure get_mode_idx8888,get_mode_idx8844,get_mode_idx8444,&
+       &get_mode_idx4888,get_mode_idx4484,get_mode_idx4444
   end interface get_midx
 
   interface get_cidx
@@ -24,40 +25,121 @@
   !> \author Patrick Ettenhuber
   !> \date June 2012
   !> \brief get mode index from composite index
-  subroutine get_mode_idx8(a,inds,dims,modes)
-    implicit none
-    integer(kind=8),intent(in):: a
-    integer,intent(in)        :: dims(*),modes
-    integer,intent(inout)     :: inds(*)
-    integer(kind=8)           :: i,cind,ndim
-    select case(modes)
-    case default
-      cind=a
-      do i=1,modes
-        ndim = dims(i)
-        inds(i)=mod(cind-1,ndim)+1
-        cind=(cind-inds(i))/dims(i) + 1
-      enddo
-    end select
-  end subroutine get_mode_idx8
   !> \author Patrick Ettenhuber
   !> \date June 2012
   !> \brief get mode index from composite index
-  subroutine get_mode_idx4(a,inds,dims,modes)
+  subroutine get_mode_idx8888(a,inds,dims,modes)
     implicit none
-    integer(kind=4),intent(in):: a
-    integer,intent(in)        :: dims(*),modes
-    integer,intent(inout)     :: inds(*)
-    integer(kind=4)           :: i,cind
-    select case(modes)
-    case default
-      cind=a
-      do i=1,modes
-        inds(i)=mod(cind-1,dims(i))+1
-        cind=(cind-inds(i))/dims(i) + 1
-      enddo
-    end select
-  end subroutine get_mode_idx4
+    integer(kind=8),intent(in)    :: a
+    integer(kind=8),intent(in)    :: modes
+    integer(kind=8),intent(inout) :: inds(modes)
+    integer(kind=8),intent(in)    :: dims(modes)
+    integer(kind=8)               :: i
+    integer(kind=8)               :: cind
+    integer(kind=8)               :: ndim
+    cind=a
+    do i=1,modes
+       ndim = dims(i)
+       inds(i)=mod(cind-1,ndim)+1
+       cind=(cind-inds(i))/dims(i) + 1
+    enddo
+  end subroutine get_mode_idx8888
+  subroutine get_mode_idx8844(a,inds,dims,modes)
+    implicit none
+    integer(kind=8),intent(in)    :: a
+    integer(kind=4),intent(in)    :: modes
+    integer(kind=8),intent(inout) :: inds(modes)
+    integer(kind=4),intent(in)    :: dims(modes)
+    integer(kind=8)               :: i
+    integer(kind=8)               :: cind
+    integer(kind=8)               :: ndim
+    cind=a
+    do i=1,modes
+       ndim = dims(i)
+       inds(i)=mod(cind-1,ndim)+1
+       cind=(cind-inds(i))/dims(i) + 1
+    enddo
+  end subroutine get_mode_idx8844
+  subroutine get_mode_idx8444(a,inds,dims,modes)
+    implicit none
+    integer(kind=8),intent(in)    :: a
+    integer(kind=4),intent(in)    :: modes
+    integer(kind=4),intent(inout) :: inds(modes)
+    integer(kind=4),intent(in)    :: dims(modes)
+    integer(kind=8)               :: i
+    integer(kind=8)               :: cind
+    integer(kind=8)               :: ndim
+    cind=a
+    do i=1,modes
+       ndim = dims(i)
+       inds(i)=mod(cind-1,ndim)+1
+       cind=(cind-inds(i))/dims(i) + 1
+    enddo
+  end subroutine get_mode_idx8444
+  subroutine get_mode_idx4888(a,inds,dims,modes)
+    implicit none
+    integer(kind=4),intent(in)    :: a
+    integer(kind=8),intent(in)    :: modes
+    integer(kind=8),intent(inout) :: inds(modes)
+    integer(kind=8),intent(in)    :: dims(modes)
+    integer(kind=8)               :: i
+    integer(kind=4)               :: cind
+    integer(kind=8)               :: ndim
+    cind=a
+    do i=1,modes
+       ndim = dims(i)
+       inds(i)=mod(cind-1,ndim)+1
+       cind=(cind-inds(i))/dims(i) + 1
+    enddo
+  end subroutine get_mode_idx4888
+  subroutine get_mode_idx4488(a,inds,dims,modes)
+    implicit none
+    integer(kind=4),intent(in)    :: a
+    integer(kind=8),intent(in)    :: modes
+    integer(kind=4),intent(inout) :: inds(modes)
+    integer(kind=8),intent(in)    :: dims(modes)
+    integer(kind=8)               :: i
+    integer(kind=4)               :: cind
+    integer(kind=4)               :: ndim
+    cind=a
+    do i=1,modes
+       ndim = dims(i)
+       inds(i)=mod(cind-1,ndim)+1
+       cind=(cind-inds(i))/dims(i) + 1
+    enddo
+  end subroutine get_mode_idx4488
+  subroutine get_mode_idx4484(a,inds,dims,modes)
+    implicit none
+    integer(kind=4),intent(in)    :: a
+    integer(kind=4),intent(in)    :: modes
+    integer(kind=8),intent(in)    :: dims(modes)
+    integer(kind=4),intent(inout) :: inds(modes)
+    integer(kind=8)               :: i
+    integer(kind=4)               :: cind
+    integer(kind=4)               :: ndim
+    cind=a
+    do i=1,modes
+       ndim = dims(i)
+       inds(i)=mod(cind-1,ndim)+1
+       cind=(cind-inds(i))/dims(i) + 1
+    enddo
+  end subroutine get_mode_idx4484
+  subroutine get_mode_idx4444(a,inds,dims,modes)
+    implicit none
+    integer(kind=4),intent(in)    :: a
+    integer(kind=4),intent(in)    :: modes
+    integer(kind=4),intent(in)    :: dims(modes)
+    integer(kind=4),intent(inout) :: inds(modes)
+    integer(kind=8)               :: i
+    integer(kind=4)               :: cind
+    integer(kind=4)               :: ndim
+    cind=a
+    do i=1,modes
+       ndim = dims(i)
+       inds(i)=mod(cind-1,ndim)+1
+       cind=(cind-inds(i))/dims(i) + 1
+    enddo
+  end subroutine get_mode_idx4444
 
   !> \author Patrick Ettenhuber
   !> \date June 2012

@@ -107,27 +107,27 @@ add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering acc ${LIST_OF_DEFINITIONS}
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering acc ${LIST_OF_DEFINITIONS}
     DEPENDS
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+    ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
     )
 elseif(ENABLE_COLLAPSE)
 add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
     DEPENDS
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+    ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
     )
 else()
 add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering nocollapse ${LIST_OF_DEFINITIONS}
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering nocollapse ${LIST_OF_DEFINITIONS}
     DEPENDS
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py
+    ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
     )
 endif()
 unset(LIST_OF_DEFINITIONS)

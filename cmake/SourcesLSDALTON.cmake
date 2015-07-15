@@ -761,7 +761,6 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/gpu_devices.F90
     LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
-    LSDALTON/lsutil/tensor_type_def.F90
     LSDALTON/lsutil/response_prop_type.F90
     LSDALTON/lsutil/ls_IOType.F90
     LSDALTON/lsutil/AOType.F90
@@ -796,14 +795,17 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/SphCartMatrices.F90
     LSDALTON/lsutil/OverlapDistributionType.F90
     LSDALTON/lsutil/pbc_lattice_type.F90
+    LSDALTON/lsutil/dec_workarounds.F90
     )
 set(LSUTIL_TENSOR_SOURCES
-    LSDALTON/lsutil/dec_workarounds.F90
-    LSDALTON/lsutil/tensor_interface.F90
-    LSDALTON/lsutil/lspdm_tensor_operations.F90
-    LSDALTON/lsutil/tensor_algebra_dil.F90
-    LSDALTON/lsutil/tensor_basic.F90
-    LSDALTON/lsutil/lspdm_basic.F90
+    LSDALTON/tensor/tensor_parameters.F90
+    LSDALTON/tensor/tensor_type_def.F90
+    LSDALTON/tensor/tensor_basic.F90
+    LSDALTON/tensor/lspdm_basic.F90
+    LSDALTON/tensor/tensor_interface.F90
+    LSDALTON/tensor/lspdm_tensor_operations.F90
+    LSDALTON/tensor/tensor_algebra_dil.F90
+    LSDALTON/tensor/lspdm_slave.F90
     )
 set(LSUTIL_MATRIXO_SOURCES
     LSDALTON/lsutil/matop_csr.F90
@@ -850,7 +852,6 @@ set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/ddynType.F90
     LSDALTON/lsutil/ProfileType.F90
     LSDALTON/lsutil/pbc_lattice_vectors.F90
-    LSDALTON/lsutil/lspdm_slave.F90
     )
 set(LSLIB_SOURCES
     LSDALTON/lsdaltonsrc/LSlib.F90
