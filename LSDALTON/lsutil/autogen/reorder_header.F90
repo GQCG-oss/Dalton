@@ -317,7 +317,7 @@
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
     integer :: i,j,l
-    integer :: aa,bb,cc,dd,block_size,fina,finb,finc,find
+    integer :: aa,bb,cc,dd,fina,finb,finc,find
     integer :: order_type,m,n
     integer :: di3(3), di2(2)
     real(realk) :: tcpu1,twall1,tcpu2,twall2
@@ -342,7 +342,6 @@
     dims(3)=d3
     dims(4)=d4
 
-    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/4.0))
     ! select  invalid reordering type
     order_type = -1
 
@@ -419,113 +418,101 @@
 
     case(1)
        ! CASE 3 4 1 2
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)*dims(4)
-       call manual_21_reordering_sp(block_size,di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
     case(2)
        ! CASE 4 1 2 3
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
        di2(1) = dims(1)*dims(2)*dims(3)
        di2(2) = dims(4)
-       call manual_21_reordering_sp(block_size,di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
     case(3)
        ! CASE 2 3 4 1
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
        di2(1) = dims(1)
        di2(2) = dims(2)*dims(3)*dims(4)
-       call manual_21_reordering_sp(block_size,di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
 
     case(4)
        ! CASE  1 2 4 3
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(5)
        ! CASE  1 4 2 3
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(6)
        ! CASE  1 3 4 2
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_132_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
 
 
     case(7)
        ! CASE 3 1 2 4
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(8)
        ! CASE  2 3 1 4
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(9)
        ! CASE 2 1 3 4
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_213_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
 
     case(10)
        ! CASE  4 3 1 2
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(11)
        ! CASE  4 2 3 1
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(12)
        ! CASE  3 4 2 1
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_321_reordering_sp(block_size,di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
 
 
     case(13)
-       call manual_2413_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_2413_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(14)
-       call manual_3214_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_3214_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(15)
-       call manual_1324_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_1324_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(16)
-       call manual_4132_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_4132_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(17)
-       call manual_2143_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_2143_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(18)
-       call manual_4321_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_4321_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(19)
-       call manual_2431_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_2431_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(20)
-       call manual_1432_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_1432_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(21)
-       call manual_3142_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_3142_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(22)
-       call manual_3241_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_3241_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(23)
-       call manual_4213_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_4213_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case default
        print *,'4d_reordering_sp case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -1544,7 +1531,7 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: aa,bb,cc,block_size
+    integer :: aa,bb,cc
     integer :: order_type
     integer :: vec_size
     integer :: di2(2)
@@ -1552,9 +1539,6 @@
     real(realk) :: tcpu1,twall1,tcpu2,twall2
 
     call LSTIMER('START',tcpu1,twall1,-1)
-
-    ! assuming available cache memory is 8 MB and we need to store two blocks at a time 
-    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
 
     vec_size64 = int(d1*d2*d3,kind=8)
     if(vec_size64>MAXINT)then
@@ -1639,7 +1623,7 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: aa,bb,cc,block_size
+    integer :: aa,bb,cc
     integer :: order_type
     integer :: vec_size
     integer :: di2(2)
@@ -1651,9 +1635,6 @@
     pre2_sp = real(pre2,kind=4)
 
     call LSTIMER('START',tcpu1,twall1,-1)
-
-    ! assuming available cache memory is 8 MB and we need to store two blocks at a time 
-    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
 
     vec_size64 = int(d1*d2*d3,kind=8)
     if(vec_size64>MAXINT)then
@@ -1701,21 +1682,19 @@
        ! CASE 3 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
-       call manual_21_reordering_sp(block_size,di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
     case(2)
        ! CASE 2 3 1
        di2(1) = dims(1)
        di2(2) = dims(2) * dims(3)
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
-       call manual_21_reordering_sp(block_size,di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
 
     case(3)
-       call manual_132_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(4)
-       call manual_213_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(5)
-       call manual_321_reordering_sp(block_size,dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case default
        print *,'3d_reordering_sp case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -1905,7 +1884,7 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: aa,bb,cc,block_size
+    integer :: aa,bb,cc
     integer :: order_type
     integer :: di2(2)
     integer(kind=long) :: vec_size64
