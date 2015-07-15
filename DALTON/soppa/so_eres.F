@@ -1259,7 +1259,10 @@ C     &                  mpi_comm_world, getnumjobs, ierr)
 C001         continue
 C            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
 C            if (assignnow)  then
-               maxnumjobs = ntot - min(nodtot, ntot) + 1  
+C
+C            Note that nodtot is the number of nodes - 1 (i.e. not
+C            counting the master)
+               maxnumjobs = ntot - min(nodtot+1, ntot) + 1  
                if (.not. allocated(AssignedIndices) ) then
                   allocate(AssignedIndices(maxnumjobs),stat=allocstatus)
                   if(.not.(allocstatus.eq.0) ) then
@@ -1947,7 +1950,7 @@ C    But since this is a cc block, someone may change that to MXCORB_CC
 
 #endif !VAR_MPI at the beginning of PAR_SO_ERES
 
-#ifdef NOTDEFINED
+!#ifdef NOTDEFINED
       subroutine stupid_checksum( nameofdata , checkdata, ldata )
 C   For debugging purposes
 C  Calculate a few "checksums" of the data in order to ensure 
@@ -1980,4 +1983,4 @@ C  of the significant bits)
 90       format(A6,3F23.15)
 
       end subroutine stupid_checksum
-#endif
+!#endif

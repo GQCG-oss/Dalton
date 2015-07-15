@@ -867,7 +867,7 @@ C     &                  mpi_comm_world, getnumjobs, ierr)
 C001         continue
 C            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
 C            if (assignnow)  then
-            maxnumjobs = ntot - min(nodtot,ntot) + 1
+            maxnumjobs = ntot - min(nodtot+1,ntot) + 1
                if (.not. allocated(AssignedIndices) ) then
                   allocate(AssignedIndices(maxnumjobs),stat=allocstatus)
                   if(.not.(allocstatus.eq.0) ) then
