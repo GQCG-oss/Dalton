@@ -133,8 +133,10 @@ contains
     ! remote counter and additional variables for dynamic load
     integer, pointer      :: dyn_i(:)
     type(c_ptr)           :: dyn_c
-    integer(kind=ls_mpik) :: dyn_w
+    integer(kind=ls_mpik) :: dyn_w,mode
     integer               :: plus_one
+
+    mode = MPI_MODE_NOCHECK 
 
     ! init timings
     unlock_time   = time_lsmpi_win_unlock
@@ -299,7 +301,7 @@ contains
 
        call lsmpi_win_create(dyn_i,dyn_w,1,infpar%lg_comm)
 #ifdef VAR_HAVE_MPI3
-       call lsmpi_win_lock_all(dyn_w,ass=MPI_MODE_NOCHECK)
+       call lsmpi_win_lock_all(dyn_w,ass=mode)
 #else
        call lsquit("ERROR(ijk_loop_par): dynamic load only implemented for MPI3",-1)
 #endif
