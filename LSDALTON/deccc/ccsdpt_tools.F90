@@ -18,169 +18,180 @@ contains
 
 #ifdef MOD_UNRELEASED
 
-  subroutine ptr_init_ijk_par(nvirt,nocc,t1,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine ptr_init_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nvirt,nocc), target :: t1
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:) :: ccsd_i,ccsd_j,ccsd_k
     real(realk), pointer, dimension(:) :: vvvo_i,vvvo_j,vvvo_k
     real(realk), pointer, dimension(:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(realk), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(realk), dimension(nvirt,nocc), target, optional :: t1
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
-    t1_ptr => t1
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in ptr_init_ijk_par",-1)
+    if (present(t1) .and. present(t1_ptr)) t1_ptr => t1
 
   end subroutine ptr_init_ijk_par
 
-  subroutine ptr_init_ijk_ser(nvirt,nocc,t1,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine ptr_init_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nvirt,nocc), target :: t1
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:,:,:) :: ccsd_i,ccsd_j,ccsd_k
     real(realk), pointer, dimension(:,:,:) :: vvvo_i,vvvo_j,vvvo_k
     real(realk), pointer, dimension(:,:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(realk), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(realk), dimension(nvirt,nocc), target, optional :: t1
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
-    t1_ptr => t1
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in ptr_init_ijk_ser",-1)
+    if (present(t1) .and. present(t1_ptr)) t1_ptr => t1
 
   end subroutine ptr_init_ijk_ser
 
-  subroutine ptr_init_abc_par(nvirt,nocc,t1,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine ptr_init_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nocc,nvirt), target :: t1
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:) :: ccsd_a,ccsd_b,ccsd_c
     real(realk), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(realk), pointer, dimension(:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(realk), pointer, dimension(:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(realk), dimension(nocc,nvirt), target, optional :: t1
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
-    t1_ptr => t1
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in ptr_init_abc_par",-1)
+    if (present(t1) .and. present(t1_ptr)) t1_ptr => t1
 
   end subroutine ptr_init_abc_par
 
-  subroutine ptr_init_abc_ser(nvirt,nocc,t1,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine ptr_init_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nocc,nvirt), target :: t1
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:,:,:) :: ccsd_a,ccsd_b,ccsd_c
     real(realk), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(realk), pointer, dimension(:,:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(realk), pointer, dimension(:,:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(realk), dimension(nocc,nvirt), target, optional :: t1
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
-    t1_ptr => t1
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in ptr_init_abc_ser",-1)
+    if (present(t1) .and. present(t1_ptr)) t1_ptr => t1
 
   end subroutine ptr_init_abc_ser
 
-  subroutine ptr_final_ijk_par(nvirt,nocc,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine ptr_final_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:) :: ccsd_i,ccsd_j,ccsd_k
     real(realk), pointer, dimension(:) :: vvvo_i,vvvo_j,vvvo_k
     real(realk), pointer, dimension(:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(realk), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
     ! empty dummy routine
 
   end subroutine ptr_final_ijk_par
 
-  subroutine ptr_final_ijk_ser(nvirt,nocc,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine ptr_final_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:,:,:) :: ccsd_i,ccsd_j,ccsd_k
     real(realk), pointer, dimension(:,:,:) :: vvvo_i,vvvo_j,vvvo_k
     real(realk), pointer, dimension(:,:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(realk), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
     ! empty dummy routine
 
   end subroutine ptr_final_ijk_ser
 
-  subroutine ptr_final_abc_par(nvirt,nocc,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine ptr_final_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:) :: ccsd_a,ccsd_b,ccsd_c
     real(realk), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(realk), pointer, dimension(:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(realk), pointer, dimension(:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
     ! empty dummy routine
 
   end subroutine ptr_final_abc_par
 
-  subroutine ptr_final_abc_ser(nvirt,nocc,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine ptr_final_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), pointer, dimension(:,:) :: t1_ptr
     real(realk), pointer, dimension(:,:,:) :: ccsd_a,ccsd_b,ccsd_c
     real(realk), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(realk), pointer, dimension(:,:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(realk), pointer, dimension(:,:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(realk), pointer, dimension(:,:), optional :: t1_ptr
 
     ! empty dummy routine
 
   end subroutine ptr_final_abc_ser
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_init_ijk_par(nvirt,nocc,t1,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine sp_ptr_init_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nvirt,nocc), target :: t1
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:) :: ccsd_i,ccsd_j,ccsd_k
     real(real_sp), pointer, dimension(:) :: vvvo_i,vvvo_j,vvvo_k
     real(real_sp), pointer, dimension(:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(real_sp), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(realk), dimension(nvirt,nocc), target, optional :: t1
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in sp_ptr_init_ijk_par",-1)
 
     call mem_alloc(t1_ptr,nvirt,nocc)
     t1_ptr = real(t1,kind=4)
@@ -199,20 +210,23 @@ contains
 #endif
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_init_ijk_ser(nvirt,nocc,t1,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine sp_ptr_init_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nvirt,nocc), target :: t1
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:,:,:) :: ccsd_i,ccsd_j,ccsd_k
     real(real_sp), pointer, dimension(:,:,:) :: vvvo_i,vvvo_j,vvvo_k
     real(real_sp), pointer, dimension(:,:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(real_sp), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(realk), dimension(nvirt,nocc), target, optional :: t1
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in sp_ptr_init_ijk_ser",-1)
 
     call mem_alloc(t1_ptr,nvirt,nocc)
     t1_ptr = real(t1,kind=4)
@@ -227,20 +241,23 @@ contains
 #endif
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_init_abc_par(nvirt,nocc,t1,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine sp_ptr_init_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nocc,nvirt) :: t1
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:) :: ccsd_a,ccsd_b,ccsd_c
     real(real_sp), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(real_sp), pointer, dimension(:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(real_sp), pointer, dimension(:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(realk), dimension(nocc,nvirt), optional :: t1
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in sp_ptr_init_abc_par",-1)
 
     call mem_alloc(t1_ptr,nocc,nvirt)
     t1_ptr = real(t1,kind=4)
@@ -257,20 +274,23 @@ contains
 #endif
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_init_abc_ser(nvirt,nocc,t1,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine sp_ptr_init_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(realk), dimension(nocc,nvirt) :: t1
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:,:,:) :: ccsd_a,ccsd_b,ccsd_c
     real(real_sp), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(real_sp), pointer, dimension(:,:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(real_sp), pointer, dimension(:,:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(realk), dimension(nocc,nvirt), optional :: t1
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if ((present(t1) .and. (.not. present(t1_ptr))) .or. &
+          & ((.not. present(t1)) .and. present(t1_ptr))) call lsquit("missing args in sp_ptr_init_abc_ser",-1)
 
     call mem_alloc(t1_ptr,nocc,nvirt)
     t1_ptr = real(t1,kind=4)
@@ -285,19 +305,21 @@ contains
 #endif
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_final_ijk_par(nvirt,nocc,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine sp_ptr_final_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:) :: ccsd_i,ccsd_j,ccsd_k
     real(real_sp), pointer, dimension(:) :: vvvo_i,vvvo_j,vvvo_k
     real(real_sp), pointer, dimension(:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(real_sp), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if (.not. present(t1_ptr)) call lsquit("missing arg in sp_ptr_final_ijk_par",-1)
 
     call mem_dealloc(t1_ptr)
     call mem_dealloc(ccsd_i); call mem_dealloc(ccsd_j); call mem_dealloc(ccsd_k)
@@ -311,19 +333,21 @@ contains
 #endif
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_final_ijk_ser(nvirt,nocc,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+  subroutine sp_ptr_final_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:,:,:) :: ccsd_i,ccsd_j,ccsd_k
     real(real_sp), pointer, dimension(:,:,:) :: vvvo_i,vvvo_j,vvvo_k
     real(real_sp), pointer, dimension(:,:) :: vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj
     real(real_sp), pointer, dimension(:,:) :: ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if (.not. present(t1_ptr)) call lsquit("missing arg in sp_ptr_final_ijk_ser",-1)
 
     call mem_dealloc(t1_ptr)
     call mem_dealloc(ccsd_i); call mem_dealloc(ccsd_j); call mem_dealloc(ccsd_k)
@@ -337,19 +361,21 @@ contains
 #endif
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_final_abc_par(nvirt,nocc,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine sp_ptr_final_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:) :: ccsd_a,ccsd_b,ccsd_c
     real(real_sp), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(real_sp), pointer, dimension(:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(real_sp), pointer, dimension(:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if (.not. present(t1_ptr)) call lsquit("missing arg in sp_ptr_final_abc_par",-1)
 
     call mem_dealloc(t1_ptr)
     call mem_dealloc(ccsd_a); call mem_dealloc(ccsd_b); call mem_dealloc(ccsd_c)
@@ -363,19 +389,21 @@ contains
 #endif
 
 #ifdef VAR_REAL_SP
-  subroutine sp_ptr_final_abc_ser(nvirt,nocc,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+  subroutine sp_ptr_final_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
                    & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1_ptr)
 
     implicit none
 
     !> pointers
     integer :: nvirt,nocc
-    real(real_sp), pointer, dimension(:,:) :: t1_ptr
     real(real_sp), pointer, dimension(:,:,:) :: ccsd_a,ccsd_b,ccsd_c
     real(real_sp), pointer, dimension(:,:,:) :: ooov_a,ooov_b,ooov_c
     real(real_sp), pointer, dimension(:,:) :: oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb
     real(real_sp), pointer, dimension(:,:) :: vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb
+    real(real_sp), pointer, dimension(:,:), optional :: t1_ptr
+
+    if (.not. present(t1_ptr)) call lsquit("missing arg in sp_ptr_final_abc_ser",-1)
 
     call mem_dealloc(t1_ptr)
     call mem_dealloc(ccsd_a); call mem_dealloc(ccsd_b); call mem_dealloc(ccsd_c)

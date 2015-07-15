@@ -296,8 +296,17 @@ contains
           call ls_mpibcast(CCSDPTSLAVE_WORK,infpar%master,infpar%lg_comm)
    
           ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-          call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_doubles,ccsd_singles,&
-                                             & mylsitem,print_frags,abc)
+          if (print_frags) then
+
+             call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_doubles,&
+                                                & mylsitem,print_frags,abc)
+
+          else
+
+             call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_doubles,&
+                                                & mylsitem,print_frags,abc,ccsd_singles)
+
+          endif
    
        end if waking_the_slaves_work
    
@@ -318,7 +327,6 @@ contains
        endif
 
     endif
-
 
     call time_start_phase(PHASE_WORK)
 #endif
@@ -4434,7 +4442,15 @@ end module ccsdpt_module
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,ccsd_t1,mylsitem,print_frags,abc)
+    if (print_frags) then
+
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc)
+
+    else
+
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc,ccsd_t1)
+
+    endif
 
     if (print_frags) then
  

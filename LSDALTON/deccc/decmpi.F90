@@ -1324,15 +1324,16 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,ccsd_t1,mylsitem,print_frags,abc)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc,ccsd_t1)
 
     implicit none
 
     integer                             :: nocc,nvirt,nbasis,ierr
-    type(tensor), intent(inout)         :: vovo,ccsd_t2,ccsd_t1
+    type(tensor), intent(inout)         :: vovo,ccsd_t2
     type(lsitem)                        :: mylsitem
     logical                             :: print_frags,abc
     integer,dimension(infpar%lg_nodtot) :: vovo_addr,t2_addr
+    type(tensor), intent(inout), optional :: ccsd_t1
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1359,7 +1360,7 @@ contains
     ccsd_t2%access_type = AT_ALL_ACCESS
     vovo%access_type = AT_ALL_ACCESS
 
-    if ((infpar%lg_mynum .eq. infpar%master) .and. (.not. print_frags)) then
+    if ((infpar%lg_mynum .eq. infpar%master) .and. (.not. print_frags) .and. present(ccsd_t1)) then
 
        call ls_mpibcast(ccsd_t1%elm1,nvirt*nocc,infpar%master,infpar%lg_comm)
 

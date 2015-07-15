@@ -152,7 +152,21 @@ contains
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.
 
-    if (full_no_frags) call mem_alloc(tmp_res_e5,i8*nvirt)
+    if (full_no_frags) then
+
+       call mem_alloc(tmp_res_e5,i8*nvirt)
+
+       call ptr_init_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1,t1_ptr)
+
+    else
+
+       call ptr_init_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+
+    endif
 
     call time_start_phase(PHASE_WORK)
 
@@ -186,10 +200,6 @@ contains
     tiles_in_buf_vvvo = -1
     tiles_in_buf_ccsd = -1
     tiles_in_buf_vvoo = -1
-
-    call ptr_init_ijk_par(nvirt,nocc,t1,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
-                   & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
 
 #ifndef VAR_REAL_SP
     if(use_bg_buf)then
@@ -912,11 +922,21 @@ contains
     ! release async handles array
     call mem_dealloc(async_id)
 
-    if (full_no_frags) call mem_dealloc(tmp_res_e5)
+    if (full_no_frags) then
 
-    call ptr_final_ijk_par(nvirt,nocc,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
-                   & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+       call mem_dealloc(tmp_res_e5)
+
+       call ptr_final_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1_ptr)
+
+    else
+
+       call ptr_final_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+
+    endif
 
     ! release triples ampl structures
 #ifndef VAR_REAL_SP
@@ -1143,11 +1163,21 @@ contains
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.
 
-    if (full_no_frags) call mem_alloc(tmp_res_e5,i8*nvirt)
+    if (full_no_frags) then
 
-    call ptr_init_ijk_ser(nvirt,nocc,t1,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
-                   & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+       call mem_alloc(tmp_res_e5,i8*nvirt)
+
+       call ptr_init_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1,t1_ptr)
+
+    else
+
+       call ptr_init_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+
+    endif
 
 #ifndef VAR_REAL_SP
     if(use_bg_buf)then
@@ -1301,7 +1331,7 @@ contains
 
                     ! generate tuple(s)
                     TypeOfTuple_ser_ijk: select case(tuple_type)
-    
+
                     case(1)
 
 !$acc wait(async_id(1),async_id(5)) async(async_id(4))
@@ -1444,9 +1474,9 @@ contains
 !$acc wait(async_id(3),async_id(4)) async(async_id(5))
 
                           call ccsdpt_driver_ijk_case3_ser(i,j,k,nocc,nvirt,&
-                                               & vvvo_i,vvvo_j,vvvo_k,&
-                                               & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
                                                & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                                               & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
+                                               & vvvo_i,vvvo_j,vvvo_k,&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
                                                & ccsdpt_doubles(:,:,:,i),ccsdpt_doubles(:,:,:,j),ccsdpt_doubles(:,:,:,k),&
                                                & trip_tmp,trip_ampl,async_id,num_ids,cublas_handle)
@@ -1552,11 +1582,21 @@ contains
     ! release async handles array
     call mem_dealloc(async_id)
 
-    if (full_no_frags) call mem_dealloc(tmp_res_e5)
+    if (full_no_frags) then
 
-    call ptr_final_ijk_ser(nvirt,nocc,t1_ptr,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
-                   & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
-                   & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+       call mem_dealloc(tmp_res_e5)
+
+       call ptr_final_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1_ptr)
+
+    else
+
+       call ptr_final_ijk_ser(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
+                      & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
+                      & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj)
+
+    endif
 
 #ifndef VAR_REAL_SP
     if( use_bg_buf )then
@@ -1673,7 +1713,21 @@ contains
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.
 
-    if (full_no_frags) call mem_alloc(tmp_res_e5,i8*nocc)
+    if (full_no_frags) then
+
+       call mem_alloc(tmp_res_e5,i8*nocc)
+
+       call ptr_init_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1,t1_ptr)
+
+    else
+
+       call ptr_init_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+
+    endif
 
     call time_start_phase(PHASE_WORK)
 
@@ -1707,10 +1761,6 @@ contains
     tiles_in_buf_vovv = -1
     tiles_in_buf_ccsd = -1
     tiles_in_buf_oovv = -1
-
-    call ptr_init_abc_par(nvirt,nocc,t1,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
-                   & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
 
 #ifndef VAR_REAL_SP
     if(use_bg_buf)then
@@ -2382,11 +2432,21 @@ contains
     ! release async handles array
     call mem_dealloc(async_id)
 
-    if (full_no_frags) call mem_dealloc(tmp_res_e5)
+    if (full_no_frags) then
 
-    call ptr_final_abc_par(nvirt,nocc,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
-                   & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+       call mem_dealloc(tmp_res_e5)
+
+       call ptr_final_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1_ptr)
+
+    else
+
+       call ptr_final_abc_par(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+
+    endif
 
 #ifndef VAR_REAL_SP
     if( use_bg_buf )then
@@ -2601,11 +2661,21 @@ contains
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.
 
-    if (full_no_frags) call mem_alloc(tmp_res_e5,i8*nocc)
+    if (full_no_frags) then
 
-    call ptr_init_abc_ser(nvirt,nocc,t1,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
-                   & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+       call mem_alloc(tmp_res_e5,i8*nocc)
+
+       call ptr_init_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1,t1_ptr)
+
+    else
+
+       call ptr_init_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+
+    endif
 
 #ifndef VAR_REAL_SP
     if(use_bg_buf)then
@@ -3007,11 +3077,21 @@ contains
     ! release async handles array
     call mem_dealloc(async_id)
 
-    if (full_no_frags) call mem_dealloc(tmp_res_e5)
+    if (full_no_frags) then
 
-    call ptr_final_abc_ser(nvirt,nocc,t1_ptr,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
-                   & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                   & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+       call mem_dealloc(tmp_res_e5)
+
+       call ptr_final_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,t1_ptr)
+
+    else
+
+       call ptr_final_abc_ser(nvirt,nocc,ccsd_a,ccsd_b,ccsd_c,ooov_a,ooov_b,ooov_c,&
+                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
+                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb)
+
+    endif
 
 #ifndef VAR_REAL_SP
     if( use_bg_buf )then
