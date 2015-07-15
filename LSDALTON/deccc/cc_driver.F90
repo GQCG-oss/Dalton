@@ -470,7 +470,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
 
          call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,&
-            & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+            & print_frags,abc,ccsdpt_singles=ccsdpt_t1,ccsdpt_doubles=ccsdpt_t2)
 
          if (DECinfo%pt_hack) then
 
@@ -665,7 +665,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
       else
 
-         call tensor_init(t1_final,[nvirt,nocc],2)
+         if (abc) then
+            call tensor_init(t1_final,[nocc,nvirt],2)
+         else
+            call tensor_init(t1_final,[nvirt,nocc],2)
+         endif
          call tensor_random(t1_final)
          call tensor_scale(t1_final,1.0E-1_realk)
 
@@ -673,17 +677,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
  
       if(ccmodel == MODEL_CCSDpT)then
 
-         if (abc) then
-            call tensor_init(ccsdpt_t1,[nocc,nvirt],2,bg=bg)
-         else
-            call tensor_init(ccsdpt_t1,[nvirt,nocc],2,bg=bg)
-         endif
+         if (abc) call tensor_reorder(t1_final,[2,1]) 
 
-         call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags, &
-            & abc,e4=ccenergies(pT_4_o))
-
-         if (abc) call tensor_reorder(ccsdpt_t1,[2,1])
-         call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5_o))
+         call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,print_frags,&
+            & abc,e4=ccenergies(pT_4_o),e5=ccenergies(pT_5_o),ccsd_singles=t1_final)
 
          ! sum up energies
          ccenergies(pT_full_o) = ccenergies(pT_4_o) + ccenergies(pT_5_o)
@@ -694,9 +691,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwcomm = 'MASTER COMM pT: ',&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
-
-!         ! free integrals
-!         call tensor_free(vovo)
 
       endif
 
@@ -768,11 +762,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ccenergy = ccenergies(cc_sol_o) + ccenergies(pT_full_o)
 
 
-   if(ccmodel == MODEL_CCSDpT)then
+   if (ccmodel == MODEL_CCSDpT) then
       if (DECinfo%print_frags) then
          call tensor_free(ccsdpt_t2)
-         call tensor_free(ccsdpt_t1)
-      else
          call tensor_free(ccsdpt_t1)
       endif
    endif

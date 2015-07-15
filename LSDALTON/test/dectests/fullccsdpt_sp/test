@@ -28,7 +28,7 @@ f.add(string = 'Allocated memory (TOTAL)')
 
 f.add(string = 'Allocated MPI memory a cross all slaves')
 
-test.run(['fullccsdpt_abc.dal'], ['H2O.mol'], {'out': f})
+test.run(['fullccsdpt_sp.dal'], ['H2O.mol'], {'out': f})
 
 sys.exit(test.return_code)
 

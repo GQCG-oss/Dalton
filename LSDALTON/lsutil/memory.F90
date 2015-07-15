@@ -319,7 +319,7 @@ INTERFACE mem_alloc
       &             real_allocate_1dim_sp, real_allocate_2dim, &
       &             real_allocate_2dim_sp, real_allocate_2dim_zero, real_allocate_3dim, &
       &             real_allocate_3dim_sp, real_allocate_3dim_zero, real_allocate_4dim, &
-      &             real_allocate_5dim, real_allocate_5dim_zero, &
+      &             real_allocate_4dim_sp, real_allocate_5dim, real_allocate_5dim_zero, &
       &             real_allocate_7dim_zero, &
       &             complex_allocate_1dim, complex_allocate_2dim, &
       &             intS_allocate_1dim,intS_allocate_1dim_wrapper4, &
@@ -359,7 +359,7 @@ INTERFACE mem_alloc
    !
    INTERFACE mem_dealloc
       MODULE PROCEDURE real_deallocate_1dim, real_deallocate_2dim,  &
-         &             real_deallocate_1dim_sp, real_deallocate_2dim_sp, real_deallocate_3dim_sp,&
+         &             real_deallocate_1dim_sp, real_deallocate_2dim_sp, real_deallocate_3dim_sp, real_deallocate_4dim_sp,&
          &             real_deallocate_3dim, real_deallocate_4dim, &
          &             real_deallocate_5dim, real_deallocate_7dim, &
          &             complex_deallocate_1dim, complex_deallocate_2dim, &
@@ -2620,7 +2620,7 @@ END SUBROUTINE real_allocate_1dim
 
 SUBROUTINE real_allocate_1dim_sp(A,n)  ! single precision
    implicit none
-   integer,intent(in)  :: n
+   integer(kind=8),intent(in)  :: n
    REAL(4),pointer :: A(:)
    integer :: IERR
    integer (kind=long) :: nsize
@@ -2813,6 +2813,22 @@ SUBROUTINE real_allocate_4dim(A,n1,n2,n3,n4)
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_4dim
+
+SUBROUTINE real_allocate_4dim_sp(A,n1,n2,n3,n4)
+   implicit none
+   integer,intent(in)  :: n1,n2,n3,n4
+   REAL(4),pointer :: A(:,:,:,:)
+   integer :: IERR
+   integer (kind=long) :: nsize
+   nullify(A)
+   ALLOCATE(A(n1,n2,n3,n4),STAT = IERR)
+   nsize = size(A,KIND=long)*4
+   IF (IERR.NE. 0) THEN
+      write(*,*) 'Error in real_allocate_4dim_sp',IERR,n1,n2,n3,n4
+      CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim_sp',nsize)
+   ENDIF
+   call mem_allocated_mem_real(nsize)
+END SUBROUTINE real_allocate_4dim_sp
 
 SUBROUTINE real_allocate_5dim(A,n1,n2,n3,n4,n5)
    implicit none
@@ -3030,6 +3046,25 @@ SUBROUTINE real_deallocate_4dim(A)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_4dim
+
+SUBROUTINE real_deallocate_4dim_sp(A)
+   implicit none
+   REAL(4),pointer :: A(:,:,:,:)
+   integer :: IERR
+   integer (kind=long) :: nsize
+   nsize = size(A,KIND=long)*4
+   call mem_deallocated_mem_real(nsize)
+   if (.not.ASSOCIATED(A)) then
+      print *,'Memory previously released!!'
+      call memory_error_quit('Error in real_deallocate_4dim_sp - memory previously released',nsize)
+   endif
+   DEALLOCATE(A,STAT = IERR)
+   IF (IERR.NE. 0) THEN
+      write(*,*) 'Error in real_deallocate_4dim_sp',IERR
+      CALL MEMORY_ERROR_QUIT('Error in real_deallocate_4dim_sp',nsize)
+   ENDIF
+   nullify(A)
+END SUBROUTINE real_deallocate_4dim_sp
 
 SUBROUTINE real_deallocate_5dim(A)
    implicit none

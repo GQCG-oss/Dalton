@@ -22,7 +22,11 @@ F90_OBJS = dec_settings.o \
 	mp2.o \
 	rimp2.o \
 	ri_util.o \
-	ccsdpt.o \
+	ccsdpt_driver.o \
+	ccsdpt_tools.o \
+	ccsdpt_kernels.o \
+	ccsdpt_full.o \
+	ccsdpt_dec.o \
 	ccorbital.o \
 	cc_integrals.o \
 	ccsd.o \

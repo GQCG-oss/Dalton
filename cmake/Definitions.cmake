@@ -71,6 +71,10 @@ if(ENABLE_GPU)
     endif()
 endif()
 
+if(ENABLE_REAL_SP)
+    add_definitions(-DVAR_REAL_SP)
+endif()
+
 if(ENABLE_CSR)
     add_definitions(-DVAR_MKL)
     add_definitions(-DVAR_CSR)

@@ -828,7 +828,9 @@ end subroutine ls_dcopy
       logical    :: first = .true.
       real(realk), save :: TCPU0, twall0
       real(realk)       :: tcpu1, twall1
-      integer           :: dateandtime0(8), dateandtime1(8)
+      integer        :: dateandtime0(8), dateandtime1(8)
+      dateandtime0 = 0
+      dateandtime1 = 0
 
       if (first) then
          first = .false.

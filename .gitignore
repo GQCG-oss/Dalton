@@ -12,6 +12,7 @@ LSDALTON/doc_LSDALTON/*.ind
 LSDALTON/doc_LSDALTON/*.toc
 LSDALTON/lsutil/reord*.F90
 LSDALTON/test/TESTLOG
+LSDALTON/deccc/*_sp.F90
 DALTON/Doc/*.aux
 DALTON/Doc/*.pdf
 DALTON/Doc/*.log
