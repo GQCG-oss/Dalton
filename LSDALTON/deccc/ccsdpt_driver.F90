@@ -3911,6 +3911,7 @@ contains
                write(DECinfo%output,'(a,i4)')     'ABC tile size          = ',abc_tile_size
             endif
          endif
+         write(DECinfo%output,'(a,l4)')     'Single. prec. calc.?   = ',DECinfo%pt_single_prec
          write(DECinfo%output,'(a,g11.4)')     'Free CPU memory (GB)   = ',free_cpu
          write(DECinfo%output,'(a,l4)')     'Are we using GPUs?     = ',gpu
          if (gpu) then

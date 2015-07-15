@@ -14,15 +14,14 @@ list="ccsdpt_kernels"
          sed "s/call abc_loop/call sp_abc_loop/g" $pwd_dir/tmp2 > $pwd_dir/tmp1
          sed "s/call ccsdpt_energy_full/call sp_ccsdpt_energy_full/g" $pwd_dir/tmp1 > $pwd_dir/tmp2
          sed "s/call trip_generator/call sp_trip_generator/g" $pwd_dir/tmp2 > $pwd_dir/tmp1
-         sed "s/call ccsdpt_driver_/call sp_ccsdpt_driver_/g" $pwd_dir/tmp1 > $pwd_dir/tmp2
-         sed "s/call ptr_init_/call sp_ptr_init_/g" $pwd_dir/tmp2 > $pwd_dir/tmp1
-         sed "s/call ptr_final_/call sp_ptr_final_/g" $pwd_dir/tmp1 > $pwd_dir/tmp2
-         sed "s/call ptr_aliasing_/call sp_ptr_aliasing_/g" $pwd_dir/tmp2 > $pwd_dir/tmp1
-         sed "s/public :: abc/public :: sp_abc/g" $pwd_dir/tmp1 > $pwd_dir/tmp2
-         sed "s/public :: ijk/public :: sp_ijk/g" $pwd_dir/tmp2 > $pwd_dir/tmp1
+         sed "s/call ptr_init_/call sp_ptr_init_/g" $pwd_dir/tmp1 > $pwd_dir/tmp2
+         sed "s/call ptr_final_/call sp_ptr_final_/g" $pwd_dir/tmp2 > $pwd_dir/tmp1
+         sed "s/call ptr_aliasing_/call sp_ptr_aliasing_/g" $pwd_dir/tmp1 > $pwd_dir/tmp2
+         sed "s/public :: abc/public :: sp_abc/g" $pwd_dir/tmp2 > $pwd_dir/tmp1
+         sed "s/public :: ijk/public :: sp_ijk/g" $pwd_dir/tmp1 > $pwd_dir/tmp2
 
-	 mv $pwd_dir/tmp1 $pwd_dir/$i\_sp.F90
-         rm $pwd_dir/tmp2
+	 mv $pwd_dir/tmp2 $pwd_dir/$i\_sp.F90
+         rm $pwd_dir/tmp1
      done
 
 list="ccsdpt_full"
