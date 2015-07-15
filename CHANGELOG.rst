@@ -23,6 +23,7 @@ DALTON
 - Fixed geometry optimization for HS-ROHF and HS-RODFT with symmetry - .SINGLY input option under '\*SCF INPUT'
   (use numerical gradients as analytical gradients are only implemented without symmetry).
 - Some minor corrections to the Dalton manual.
+- More reasonable output for TPCD.
 
 
 LSDALTON
