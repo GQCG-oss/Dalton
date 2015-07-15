@@ -2476,6 +2476,27 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                     !cfg_rsp_run_mag = .true.
                     !!Sonia: Make separate set of options: use_eq_79 etc..
                     !!cfg_rsp_run_hes = .true.
+       !CHANDAN_IANS       
+       CASE('*INASHIELD')
+          config%response%tasks%doNMRshield_selected=.true.
+          config%response%tasks%doResponse=.true.
+          do
+             READ(LUCMD,'(A40)') word
+             if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+             if(word(1:1) == '*')THEN
+                READWORD=.FALSE.
+                exit
+             endif
+             SELECT CASE(word)
+             CASE('.SOLVERESPONSESIMULTANT')
+                !Solve the response equations at the same time. 
+                config%integral%SolveNMRResponseSimultan = .TRUE.
+             CASE DEFAULT
+                WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
+                     & '" not recognized in RESPONSE *INASHIELD input.'
+                CALL lsQUIT('Illegal keyword in config_rsp_input.',config%lupri)
+             END SELECT
+          enddo
        !THOMAS_NEW
        CASE('*SHIELD')
           config%response%tasks%doNMRshield=.true.
@@ -4052,6 +4073,13 @@ endif
       call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
 #endif
    end if
+
+   !NMR sanity check
+   IF(config%decomp%cfg_gcbasis.AND.config%response%tasks%doNMRshield_selected)THEN
+      write(config%lupri,*)'*INASHIELD requies .NOGCBASIS under **GENERAL'
+      print*,'*INASHIELD requies .NOGCBASIS under **GENERAL'
+      call lsquit('*INASHIELD requies .NOGCBASIS under **GENERAL',-1)
+   ENDIF
 
 !Local Excited state geometry optimization check:
 !================================================

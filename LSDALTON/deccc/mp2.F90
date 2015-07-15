@@ -3251,9 +3251,6 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
    call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset,bg=bg)
 
-   call tensor_free(E2)
-   call tensor_free(E1)
-
 #ifdef VAR_MPI
    if(.not.local) call tensor_lock_local_wins(Pijab_om2,'e',mode)
    if(.not.local) call tensor_unlock_local_wins(omega2)
@@ -3284,7 +3281,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 #endif
 
    call tensor_free(Pijab_om2)
-
+   call tensor_free(E2)
+   call tensor_free(E1)
 
 
 end subroutine get_simple_parallel_mp2_residual

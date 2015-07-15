@@ -6,6 +6,7 @@ INCLUDES := $(INCLUDES) -I../LSint -I../lsutil -I../linears -I../cuda
 
 F90_OBJS = dec_settings.o \
         cc_tools.o \
+        cc_response_tools.o \
 	decmpi.o \
 	decmpiSlave.o \
 	CABS.o \
@@ -33,9 +34,9 @@ F90_OBJS = dec_settings.o \
 	wangy_playground.o \
 	cc_driver.o \
 	dec_atom.o \
+	rimp2_gradient.o \
 	mp2_gradient.o \
         ccsd_gradient.o \
-	ccsd_lhtr.o\
 	fragment_energy.o \
 	dec_driver.o \
 	dec_driver_slave.o \

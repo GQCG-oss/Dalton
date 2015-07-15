@@ -6780,7 +6780,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
-     logical, intent(in) :: local
+    logical, intent(in) :: local
 
     !> Batches info:
     type(MObatchInfo), intent(in) :: MOinfo
@@ -6856,6 +6856,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Allocate working memory:
     call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
+#ifdef VAR_MPI
+    ! Change array type to be dense:
+    if (.not.local.and.master) then
+      call tensor_cp_tiled2dense(t2,.false.,bg=use_bg_buf)
+      call tensor_cp_tiled2dense(govov,.false.,bg=use_bg_buf)
+    end if 
+#endif
+
     call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
     call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
     call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
@@ -6889,14 +6897,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! start timings:
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-
-#ifdef VAR_MPI
-    ! Change array type to be dense:
-    if (.not.local.and.master) then
-      call tensor_cp_tiled2dense(t2,.false.)
-      call tensor_cp_tiled2dense(govov,.false.)
-    end if 
-#endif
 
     !===========================================================================
     ! Calculate transformation matrix:
@@ -6981,8 +6981,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
    t2%access_type     = AT_ALL_ACCESS
    omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
-     call tensor_allocate_dense(omega2)
-     omega2%itype = TT_DENSE
+     !call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
+     call tensor_allocate_dense(omega2,change=.true.)
      govov%itype  = TT_DENSE
    end if
 #endif
@@ -7045,8 +7045,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ, &
        & gvoov%elm1,gvvoo%elm1)
-    !call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
-    !            & govoo,gvooo,gvoov%elm1,gvvoo%elm1)
 
     if (use_bg_buf) then
        call mem_pseudo_dealloc(tmp2)
@@ -7216,10 +7214,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
-      call tensor_deallocate_dense(govov)
-      govov%itype      = TT_TILED_DIST
       call tensor_mv_dense2tiled(omega2,.true.)
-      call tensor_mv_dense2tiled(t2,.true.)
+      call tensor_deallocate_dense(govov)
+      govov%itype = TT_TILED_DIST
+      call tensor_deallocate_dense(t2)
     endif
 #endif 
 
@@ -7313,7 +7311,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> transformation matrices:
     real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> doubles amplitudes:
-    real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc)
+    real(realk), intent(in) :: t2(nvir*nvir*nocc*nocc)
     !> Intermediates used to calculate the B2 term.
     !  B2prep = g_kilj + sigma_kilj
     real(realk), intent(inout) :: B2prep(nocc*nocc*nocc*nocc)
@@ -7426,15 +7424,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! else calculate sigma and A2.2 and B2.2 contribution:
 
     ! Extract t2[Cd, i<=j] from t2[cd, ij]:
-    call dcopy(nvir*nvir*nocc*nocc,t2,1,tmp2,1)
-    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,nvir,C_sta,dimC,tmp1,tmp2)&
+    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,nvir,C_sta,dimC,tmp1,t2)&
     !$OMP PRIVATE(i,j,d,pos1,pos2)
     do j = 1,nocc
       do i = 1,j
         do d = 1, nvir
           pos2 = C_sta + (d-1)*nvir + (i-1)*nvir*nvir + (j-1)*nvir*nvir*nocc
           pos1 = 1 + (d-1)*dimC + (j*(j-1)/2 + i-1)*dimC*nvir
-          call dcopy(dimC,tmp2(pos2),1,tmp1(pos1),1)
+          call dcopy(dimC,t2(pos2),1,tmp1(pos1),1)
         end do
       end do
     end do

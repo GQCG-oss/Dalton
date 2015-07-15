@@ -722,7 +722,7 @@ CONTAINS
    DO ILHS=1,OD_LHS%nbatches
       idx = MINLOC(load)
       DO A=1,OD_LHS%BATCH(ILHS)%AO(1)%p%nAngmom
-         load(idx(1)) = load(idx(1)) + OD_LHS%BATCH(ILHS)%AO(1)%p%norbitals(A)
+         load(idx(1))  = load(idx(1))  + OD_LHS%BATCH(ILHS)%AO(1)%p%norbitals(A)
          nsize(idx(1)) = nsize(idx(1)) + OD_LHS%BATCH(ILHS)%AO(1)%p%norbitals(A)
       ENDDO
       Myjobs(ILHS) = idx(1)-1
@@ -762,6 +762,7 @@ CONTAINS
          iA = P%indexAng1(iAngmomP)
          startA  = P%orbital1%startOrbital(iA)-1 
          IF(output%ndim3D(1).NE.output%ndim3D(4))THEN
+            !Part of the full dimension 
             startA  = TITGindexToLocal(startA+1)-1
          ENDIF
          DO iAngA=1,nAngA
@@ -859,14 +860,16 @@ CONTAINS
                batchD = Q%orb2batch(iPassQ)
                permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
                IF (permuteCD) THEN
-                  call DEC3centerDistributeSUb2(DECRES(:,:,:,TITThreadID),dim1,dim3,dim4,QPmat2,nA,nC,nD,&
-                       & iPassQ,nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri)
+                  call DEC3centerDistributeSUb2(DECRES,dim1,dim3,dim4,QPmat2,nA,nC,nD,&
+                       & iPassQ,nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,&
+                       & nAngD,lupri,nTITthreads,TITThreadID)
                ELSE
-                  call DEC3centerDistributeSUb1(DECRES(:,:,:,TITThreadID),dim1,dim3,dim4,QPmat2,nA,nC,nD,&
-                       & iPassQ,nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri)
+                  call DEC3centerDistributeSUb1(DECRES,dim1,dim3,dim4,QPmat2,nA,nC,nD,&
+                       & iPassQ,nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,&
+                       & nAngD,lupri,nTITthreads,TITThreadID)
                ENDIF
             ENDDO !iPassQ
-         ELSE !place result directly into RES3D                  
+         ELSE !place result directly into RES3D
             DO iPassQ=1,Q%nPasses
                iPass = iPassQ
                startC  = Q%orbital1%startOrbital(iC+(iPassQ-1)*Q%orbital1%nAngmom) - 1
@@ -878,10 +881,10 @@ CONTAINS
                permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
                IF (permuteCD) THEN
                   call DEC3centerDistributeSUb2(RES3D,dimAux1,dimAux3,dimAux4,QPmat2,nA,nC,nD,iPassQ,nPasses,&
-                       & startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri)
+                       & startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri,1,1)
                ELSE
                   call DEC3centerDistributeSUb1(RES3D,dimAux1,dimAux3,dimAux4,QPmat2,nA,nC,nD,iPassQ,nPasses,&
-                       & startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri)
+                       & startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri,1,1)
                ENDIF
             ENDDO !iPassQ
          ENDIF
@@ -890,12 +893,13 @@ CONTAINS
 
  CONTAINS
    subroutine DEC3centerDistributeSUb1(DECRES,dim1,dim3,dim4,CDAB,nA,nC,nD,iPass,&
-        & nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri)
+        & nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri,&
+        & nTITthreads,TITThreadID)
      implicit none
      integer,intent(in) :: dim1,dim3,dim4,nA,nC,nD,iPass,nPasses,lupri
      integer,intent(in) :: startA,startC,startD,nContA,nContC,nContD
-     integer,intent(in) :: nAngA,nAngC,nAngD
-     real(realk) :: DECRES(dim1,dim3,dim4)
+     integer,intent(in) :: nAngA,nAngC,nAngD,nTITthreads,TITThreadID
+     real(realk) :: DECRES(dim1,dim3,dim4,nTITthreads)
      real(realk) :: CDAB(nC,nD,nA,nPasses)
      !
      integer :: iContA,iContC,iContD,iAngA,iAngC,iAngD
@@ -918,7 +922,7 @@ CONTAINS
                     sC1 = startC + (iAngC-1)*nContC
                     sC2 = (iAngC-1)*nContC
                     DO iContC=1,nContC
-                       DECRES(iA1,sC1+iContC,iD1)=CDAB(sC2+iContC,iD2,iA2,iPass)
+                       DECRES(iA1,sC1+iContC,iD1,TITThreadID)=CDAB(sC2+iContC,iD2,iA2,iPass)
                     ENDDO
                  ENDDO
               ENDDO
@@ -929,12 +933,13 @@ CONTAINS
 
    !Include Permutational Symmetry 
    subroutine DEC3centerDistributeSUb2(DECRES,dim1,dim3,dim4,CDAB,nA,nC,nD,iPass,&
-        & nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri)
+        & nPasses,startA,startC,startD,nContA,nContC,nContD,nAngA,nAngC,nAngD,lupri,&
+        & nTITthreads,TITThreadID)
      implicit none
      integer,intent(in) :: dim1,dim3,dim4,nA,nC,nD,iPass,nPasses,lupri
      integer,intent(in) :: startA,startC,startD,nContA,nContC,nContD
-     integer,intent(in) :: nAngA,nAngC,nAngD
-     real(realk) :: DECRES(dim1,dim3,dim4)
+     integer,intent(in) :: nAngA,nAngC,nAngD,nTITthreads,TITThreadID
+     real(realk) :: DECRES(dim1,dim3,dim4,nTITthreads)
      real(realk) :: CDAB(nC,nD,nA,nPasses)
      !
      integer :: iContA,iContC,iContD,iAngA,iAngC,iAngD
@@ -957,8 +962,8 @@ CONTAINS
                     sC1 = startC + (iAngC-1)*nContC
                     sC2 = (iAngC-1)*nContC
                     DO iContC=1,nContC
-                       DECRES(iA1,sC1+iContC,iD1)=CDAB(sC2+iContC,iD2,iA2,iPass)
-                       DECRES(iA1,iD1,sC1+iContC)=CDAB(sC2+iContC,iD2,iA2,iPass)
+                       DECRES(iA1,sC1+iContC,iD1,TITThreadID)=CDAB(sC2+iContC,iD2,iA2,iPass)
+                       DECRES(iA1,iD1,sC1+iContC,TITThreadID)=CDAB(sC2+iContC,iD2,iA2,iPass)
                     ENDDO
                  ENDDO
               ENDDO

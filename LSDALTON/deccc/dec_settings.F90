@@ -59,7 +59,7 @@ contains
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
     DECinfo%JacobianThr = 1.0e-7
-    DECinfo%JacobianMaxSubspace = 1000
+    DECinfo%JacobianMaxSubspace = 10000
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
@@ -255,6 +255,7 @@ contains
     DECinfo%RIMP2_tiling             = .false.
     DECinfo%RIMP2_lowdin             = .true.
     DECinfo%RIMP2_Laplace            = .false.
+    DECinfo%RIMP2_deactivateopenmp   = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -828,6 +829,8 @@ contains
           DECinfo%RIMP2_lowdin        = .false.
        case('.RIMP2_LAPLACE')
           DECinfo%RIMP2_Laplace       = .true.
+       case('.RIMP2_NOOMP')
+          DECinfo%RIMP2_deactivateopenmp = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -1371,22 +1374,6 @@ contains
             & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
-    if(DECinfo%use_bg_buffer.AND.DECinfo%bg_memory.LT.0.0E0_realk) then
-       write(DECinfo%output,*) 'Background Memory buffer size not set!'
-       write(DECinfo%output,*) 'Please specify .BG_MEMORY keyword (in gigabytes)'
-#ifdef VAR_MPI
-       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
-       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
-#else
-       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
-       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
-#endif
-       write(DECinfo%output,*) '.BG_MEMORY'
-       write(DECinfo%output,*) '8.0'
-       write(DECinfo%output,*) ''
-       call lsquit('.BACKGROUND_BUFFER requires specification of .BG_MEMORY keyword!',-1)
-    end if
-
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
@@ -1398,6 +1385,28 @@ contains
     end if
 
     if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)
+
+    if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
+       DECinfo%bg_memory = 0.8_realk*DECinfo%memory
+       write(DECinfo%output,*) 'WARNING: User di not specify the amount of memory to be used'
+       write(DECinfo%output,*) '         in connection with the background buffer.'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'
+       write(DECinfo%output,*) 'Total memory             = ', DECinfo%memory,   ' GB'
+       write(DECinfo%output,*) 'Background buffer memory = ', DECinfo%bg_memory,' GB'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'You can specify the amount of BG buffer memory yourself:'
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#endif
+       write(DECinfo%output,*) '.BG_MEMORY'
+       write(DECinfo%output,*) '8.0'
+       write(DECinfo%output,*) ''
+    end if
 
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
