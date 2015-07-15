@@ -1205,6 +1205,10 @@ contains
      new_ij_needed = .false.; new_ji_needed = .false.
      new_ik_needed = .false.; new_ki_needed = .false.
      new_jk_needed = .false.; new_kj_needed = .false.
+     found = .false.
+     found_ij = .false.; found_ji = .false.
+     found_ik = .false.; found_ki = .false.
+     found_jk = .false.; found_kj = .false.
 
      if (scheme) then
         ts2 = nvirt**2*tdim**2 ! vovo ts
@@ -1329,6 +1333,8 @@ contains
                           needed(jkbuf_test) = .true.
                           tiles_in_buf(jkbuf_test) = jk_test
                        endif
+                    else
+                       found_jk = .false.
                     endif
 
                  elseif (tuple_type .eq. 3) then
