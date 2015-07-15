@@ -34,8 +34,8 @@ module fragment_energy_module
 #ifdef MOD_UNRELEASED
   use f12_integrals_module
   use ccsd_gradient_module
-  use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
-         & ccsdpt_energy_e4_pair,ccsdpt_energy_e5_pair, ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
+  use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e5_frag,&
+         & ccsdpt_energy_e5_pair, ccsdpt_decnp_e5_frag
 #endif
 
 public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
