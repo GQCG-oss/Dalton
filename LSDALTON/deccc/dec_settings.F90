@@ -1359,7 +1359,8 @@ contains
     if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
          & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
 
-       write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
        write(DECinfo%output,*) 'The recommended way is using .MEMORY and specifying the memory in GB'
 #ifdef VAR_MPI
@@ -1388,12 +1389,13 @@ contains
 
     if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
        DECinfo%bg_memory = 0.8_realk*DECinfo%memory
+       write(DECinfo%output,*) ''
        write(DECinfo%output,*) 'WARNING: User di not specify the amount of memory to be used'
        write(DECinfo%output,*) '         in connection with the background buffer.'
        write(DECinfo%output,*) ''
        write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'
-       write(DECinfo%output,*) 'Total memory             = ', DECinfo%memory,   ' GB'
-       write(DECinfo%output,*) 'Background buffer memory = ', DECinfo%bg_memory,' GB'
+       write(DECinfo%output,'(A,F6.3,A)') ' Total memory             = ', DECinfo%memory,   ' GB'
+       write(DECinfo%output,'(A,F6.3,A)') ' Background buffer memory = ', DECinfo%bg_memory,' GB'
        write(DECinfo%output,*) ''
        write(DECinfo%output,*) 'You can specify the amount of BG buffer memory yourself:'
 #ifdef VAR_MPI
@@ -1405,7 +1407,6 @@ contains
 #endif
        write(DECinfo%output,*) '.BG_MEMORY'
        write(DECinfo%output,*) '8.0'
-       write(DECinfo%output,*) ''
     end if
 
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
