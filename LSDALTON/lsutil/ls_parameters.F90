@@ -14,6 +14,7 @@ MODULE lsparameters
   integer,parameter :: AOelField = 9
   integer,parameter :: AOadmm = 10  !ADMM basis
   integer,parameter :: AONuclearSpec = 11 !single Nuclei
+  integer,parameter :: AOdfCABO = 12
 ! THESE ARE STRING SPECIFIERS FOR THE Operator
   integer,parameter :: CoulombOperator = 1
   integer,parameter :: OverlapOperator = 2
@@ -62,6 +63,7 @@ MODULE lsparameters
   integer,parameter :: GeoDerivCoulombSpec = 10
   integer,parameter :: GeoDerivLHSSpec     = 11
   integer,parameter :: GeoDerivRHSSpec     = 12
+  integer,parameter :: magderivEcontribSpec= 13
 
 ! THESE ARE MPI JOB SPECIFIERS 
   integer,parameter :: MATRIXTY                     =  1
@@ -96,9 +98,7 @@ MODULE lsparameters
   integer,parameter :: ARRAYTEST                    = 30
   integer,parameter :: PDMA4SLV                     = 31
   integer,parameter :: LSMPI_IIDFTKSME              = 32
-#ifdef MOD_UNRELEASED
   integer,parameter :: CCSDPTSLAVE_INFO             = 33
-#endif
   integer,parameter :: CCSDSLV4E2                   = 34
   integer,parameter :: DFTADDFU                     = 35
   integer,parameter :: LSMPI_IIDFTABSVALOVERLAP     = 36
@@ -137,14 +137,27 @@ MODULE lsparameters
   integer,parameter :: CHANGE_BG_BUF                = 69
   integer,parameter :: LSTHCRIMP2INAMP              = 70
   integer,parameter :: LSTHCRIMP2FULL               = 71
-#ifdef MOD_UNRELEASED
   integer,parameter :: CCSDPTSLAVE_WORK             = 72
-#endif
+  integer,parameter :: SET_TENSOR_SEG_LENGTH        = 73
+  integer,parameter :: DECRIMP2GRAD                 = 74
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
   integer,parameter :: AntiSymmetricPostprocess=3
+
+! TENTATIVE OF DEFINING BS VALUES IN MANUAL REORDERING ROUTINES:
+!
+! L2_CACHE_SIZE = 256000 ! lower estimate of cache size in bytes:
+! BS_2D = floor(sqrt(L2_CACHE_SIZE/(2*8.0E0_realk)))
+! BS_3D = floor((L2_CACHE_SIZE/(2*8.0E0_realk))**(1/3.0E0_realk))
+! BS_4D = floor((L2_CACHE_SIZE/(2*8.0E0_realk))**(1/4.0E0_realk))
+!
+! We write the explicit values to avoid internal compiler error 
+! with the gnu compiler 4.4.7 and the power function:
+  integer,parameter :: BS_2D = 126.0_realk
+  integer,parameter :: BS_3D =  25.0_realk
+  integer,parameter :: BS_4D =  11.0_realk
 
   real(realk) :: GPUMAXMEM
 save
@@ -334,6 +347,8 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
      AO1 = 'pCharge '
   CASE(AOdfCABS) 
      AO1 = 'CABS    '
+  CASE(AOdfCABO) 
+     AO1 = 'CABSonly'
   CASE(AOdfJK) 
      AO1 = 'JKAUX   '
   CASE(AOVAL) 

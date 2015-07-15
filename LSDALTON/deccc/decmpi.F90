@@ -378,6 +378,42 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_mp2_int_and_amp
 
+  !> \brief MPI communcation of MyFragment
+  !> \author Thomas Kjaergaard
+  !> \date March 2015
+  subroutine mpi_communicate_MyFragment(MyFragment)
+    implicit none
+    !> Fragment under consideration
+    type(decfrag),intent(inout) :: MyFragment
+    !local variables
+    integer(kind=ls_mpik) :: master
+    logical :: DoBasis
+    DoBasis = .TRUE.
+    
+    call time_start_phase( PHASE_COMM )
+    master = 0
+    ! Init MPI buffer which eventually will contain all fragment info
+    ! ***************************************************************
+    ! MASTER: Prepare for writing to buffer
+    ! SLAVE: Receive buffer
+    call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    ! Buffer handling
+    ! ***************
+    ! MASTER: Put information info buffer
+    ! SLAVE: Put buffer information into decfrag structure
+    ! Fragment information
+    call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
+
+    ! Finalize MPI buffer
+    ! *******************
+    ! MASTER: Send stuff to slaves and deallocate temp. buffers
+    ! SLAVE: Deallocate buffer etc.
+   call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    call time_start_phase( PHASE_WORK )
+  end subroutine mpi_communicate_MyFragment 
+
   !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
   !> In addition, other information required for calculating F12 integrals
@@ -607,7 +643,7 @@ contains
 
     IF(infpar%mynum==0)THEN ! Global master
        gm=.true.
-    else ! Local master
+    else ! global slave
        gm=.false.
     end IF
 
@@ -634,7 +670,7 @@ contains
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
 
-    ! Allocate pointers if local master
+    ! Allocate pointers if global slave
     if(.not. gm) then
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
        call mem_alloc(MyMolecule%atom_start,MyMolecule%natoms)
@@ -664,17 +700,19 @@ contains
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nvirt)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
-       IF(DECinfo%F12)THEN
-          call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
-          call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
-          call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-          call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-          !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
-          call mem_alloc(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO)
-          !Warning MyMolecule%Frm is allocated with noccfull ?????
-          call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
-          !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
-          call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
+       IF(DECinfo%F12)THEN          
+          IF(.NOT.DECinfo%full_molecular_cc)THEN
+             call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
+             call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
+             call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             call mem_alloc(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
+             call mem_alloc(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO)
+             !Warning MyMolecule%Frm is allocated with noccfull ?????
+             call mem_alloc(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc)
+             !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+             call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
+          ENDIF
        ENDIF
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
        call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
@@ -755,16 +793,18 @@ contains
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
-       call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
-       call ls_mpibcast(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-       !Warning MyMolecule%Frm is allocated with noccfull ?????
-       call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
-       !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
-       call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       IF(.NOT.DECinfo%full_molecular_cc)THEN
+          call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%Frs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          !HACK NOT MyMolecule%nvirt,MyMolecule%nCabsMO
+          call ls_mpibcast(MyMolecule%Fac,MyMolecule%nvirt,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          !Warning MyMolecule%Frm is allocated with noccfull ?????
+          call ls_mpibcast(MyMolecule%Frm,MyMolecule%nCabsAO,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
+          !HACK NOT MyMolecule%nCabsMO,MyMolecule%nbasis
+          call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
+       ENDIF
     ENDIF
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
@@ -2342,6 +2382,16 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPort,Master)
     call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
+    call ls_mpi_buffer(DECitem%CCexci,Master)
+    call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
+    call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
+    call ls_mpi_buffer(DECitem%JacobianThr,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianInitialSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxIter,Master)
+    call ls_mpi_buffer(DECitem%JacobianPrecond,Master)
+    call ls_mpi_buffer(DECitem%HaldApprox,Master)
+    call ls_mpi_buffer(DECitem%LW1,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%DECNP,Master)
@@ -2425,6 +2475,7 @@ contains
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
+    call ls_mpi_buffer(DECitem%F12Ccoupling,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
@@ -2438,6 +2489,8 @@ contains
     call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_tiling,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_lowdin,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_Laplace,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_deactivateopenmp,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%rimpisplit,Master)
@@ -2461,9 +2514,11 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%MemDebugPrint,Master)
     call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%distribute_fullmolecule,Master)
+    call ls_mpi_buffer(DECitem%force_distribution,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)
@@ -2534,6 +2589,7 @@ contains
     call ls_mpi_buffer(DECitem%IntegralThreshold,Master)
     call ls_mpi_buffer(DECitem%noaofock,Master)
     call ls_mpi_buffer(DECitem%THCNOPRUN,Master)
+    call ls_mpi_buffer(DECitem%THCDUMP,Master)
     call ls_mpi_buffer(DECitem%THCradint,Master)
     call ls_mpi_buffer(DECitem%THC_MIN_RAD_PT,Master)
     call ls_mpi_buffer(DECitem%THCangint,Master)

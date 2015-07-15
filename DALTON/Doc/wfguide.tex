@@ -425,14 +425,18 @@ start a B3LYP geometry optimization:
 **END OF DALTON INPUT
 \end{verbatim}
 
-We finish this list of examples with a high-spin open-shell DFT input.
+We finish this list of examples with a high-spin open-shell DFT geometry optimization.
+Analytical molecular gradients are only implemented for direct calculations,
+therefore we recommend to use \Key{DIRECT}
+(for non-direct high-spin open-shell geometry optimizations numerical gradients will be calculated).
 We need to specify the number of singly as well as doubly occupied orbitals 
 in each symmetry in the \Sec{SCF INPUT} section using the \Key{SINGLY OCCUPIED}
 and \Key{DOUBLY OCCUPIED} keywords respectively
 (here assuming D$_{2h}$ symmetry):
 \begin{verbatim}
 **DALTON
-.RUN WAVE FUNCTIONS
+.DIRECT
+.OPTIMIZE
 **WAVE FUNCTION
 .DFT
  B3LYP

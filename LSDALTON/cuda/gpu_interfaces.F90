@@ -32,6 +32,12 @@ module gpu_interfaces
        type (C_PTR), value :: handle
      end function cublasDestroy_v2
 
+     integer(C_INT) function cudaSetDevice(device) bind(C, name="cudaSetDevice")
+       use:: ISO_C_BINDING
+       implicit none
+       integer(c_int), value :: device
+     end function cudaSetDevice
+
     ! cublasDgemm_v2
     integer (C_INT) function cublasDgemm_v2(handle,transa,transb,m,n,k,alpha,A,&
                                     & lda,B,ldb,beta,C,ldc) bind(C,name="cublasDgemm_v2")

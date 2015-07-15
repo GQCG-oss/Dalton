@@ -1334,7 +1334,7 @@ C
 
       REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 
-      PARAMETER (D0 = 0.0D0)
+      PARAMETER (THR_DIFMAX = 1.0D-5) ! corresponding to a wave function convergence of 1.d-5
 
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
@@ -1349,7 +1349,7 @@ C
       END IF
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       IIND = 0
-      DIFMAX = D0
+      DIFMAX = 0.0D0
       DO 100 ISCOOR = 1, NCRREP(0,1)
          IF (DEPEND(ISCOOR)) THEN
             IIND = IIND + 1
@@ -1367,7 +1367,7 @@ C
             END IF
          END IF
   100 CONTINUE
-      IF (DIFMAX.GT.1.D-06) THEN
+      IF (DIFMAX.GT.THR_DIFMAX) THEN
          IF (.NOT.LPRINT) THEN
             LPRINT = .TRUE.
             GO TO 10
@@ -1397,10 +1397,9 @@ C
 #include "abainf.h"
 #include "trkoor.h"
       REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
-      PARAMETER (D0 = 0.0D0)
 
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
-      DIFMAX = D0
+      DIFMAX = 0.0D0
       DO 100 I = 1, NCOOR
          DO 200 J = 1, I
             HESM = HESMOL(I,J)
@@ -1442,12 +1441,11 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.0D0)
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "moldip.h"
 #include "trkoor.h"
-      DIFMAX = D0
+      DIFMAX = 0.0D0
       DO 100 I = 1, 3
          DO 200 J = 1, NCOOR
             DIPF = DIP1(I,J)

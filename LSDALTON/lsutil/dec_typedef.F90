@@ -43,6 +43,9 @@ module dec_typedef_module
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
 
+  ! Maximum number of molecular orbitals (nocc + nvir) 
+  ! for which an MO-based CCSD calculation is possible
+  integer,parameter :: MAX_ORB_MOCCSD=300
 
   ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
   ! -----------------------------------------------------------------------
@@ -78,6 +81,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_LAGLSTHCRIMP2  = 24 ! LS-THC-RI-MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCLSTHCRIMP2  = 25 ! LS-THC-RI-MP2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTLSTHCRIMP2 = 26 ! LS-THC-RI-MP2 virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_RIMP2f12 = 27  ! RI-MP2F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -114,6 +118,36 @@ module dec_typedef_module
      logical :: SNOOPsamespace
      !> Localize SNOOP subsystem orbitals (cannot be used in connection with SNOOPsamespace)
      logical :: SNOOPlocalize
+
+
+     ! CC response (no DEC so far)
+     ! ===========================
+     !> Calculate CC Jacobian eigenvalues
+     logical :: CCexci
+     !> Number of Jacobian eigenvalues to determine
+     integer :: JacobianNumEival
+     !> Use Jacobian left-transformations when determining CC eigenvalues 
+     !> (false by default such that we use right-transformations)
+     logical :: JacobianLHTR
+     !> Convergence threshold when solving CC eigenvalue equation
+     real(realk) :: JacobianThr
+     !> Maximum dimension of subspace when solving Jacobian eigenvalue equation
+     integer :: JacobianMaxSubspace
+     !> Size of initial subspace when solving Jacobian eigenvalue equation
+     integer :: JacobianInitialSubspace
+     !> Maximum number of iterations when solving Jacobian eigenvalue equation
+     integer :: JacobianMaxIter
+     !> Use preconditioning for Jacobian eigenvalue problem
+     logical :: JacobianPrecond
+     !> For MP2 model (or, more correctly EW1 model), invoke Hald approximation
+     !> where we only keep enough terms to ensure that singles and doubles dominated 
+     !> excitations are correct to second and first order, respectively.
+     !> (See JCP 115, 671 (2001))
+     logical :: HaldApprox
+     !> Apply first-order linear wave function approximation (not size-extensive)
+     !> when calculation Jacobian eigenvalues. (Only meaningful in
+     !> combination with MP2 wave function model).
+     logical :: LW1
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -314,6 +348,8 @@ module dec_typedef_module
      logical :: F12
      !> Do F12 also for fragment optimization
      logical :: F12fragopt
+     !> Do C coupling in F12 scheme
+     logical :: F12Ccoupling
 
      !> F12 debug settings
      !> ******************
@@ -359,6 +395,10 @@ module dec_typedef_module
      logical :: RIMP2_tiling
      !> Use lowdin decomposition
      logical :: RIMP2_lowdin
+     !> Use laplace transform in RIMP2 code
+     logical :: RIMP2_Laplace
+     !> Deactivate OpenMP in RI_UTIL
+     logical :: RIMP2_deactivateopenmp
      !> MPI group is split if #nodes > O*V/RIMPIsplit
      integer :: RIMPIsplit
 
@@ -369,7 +409,7 @@ module dec_typedef_module
      !> Manually set starting group size for local MPI group
      integer(kind=ls_mpik) :: MPIgroupsize
      !> set whether to distribute the data in the full molecule structure
-     logical :: distribute_fullmolecule
+     logical :: distribute_fullmolecule,force_distribution
 
      !> Integral batching
      !> *****************
@@ -406,6 +446,8 @@ module dec_typedef_module
      logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
+     !> Memory Debug print
+     logical ::  MemDebugPrint
      !> reduce the output if a big calculation is done
      logical :: print_small_calc
      !> only do fragment part of density or gradient calculation 
@@ -575,6 +617,7 @@ module dec_typedef_module
 
      !> THC keywords
      logical     :: THCNOPRUN
+     logical     :: THCDUMP
      real(realk) :: THCradint
      integer     :: THC_MIN_RAD_PT
      integer     :: THCangint

@@ -20,7 +20,7 @@ Implicit none
 REAL(realk) CVEL, ALPHAC, ALPHA2, PI, SQRTPI,R2PI52
 REAL(realk) bohr_to_angstrom,XFAMU,ECHARGE,HBAR,XFMOL
 REAL(realk) XTJ,XTKAYS,XTHZ,XTEV,XKJMOL,XKCMOL,XTKJML,XTKCML,XTNM,XAJOUL,bohr_to_angstromM10,XPRTMAS
-REAL(realk) XFSEC,XTKMML,TESLA,AUTK,DEBYE,PMASS,EMASS,CCM
+REAL(realk) XFSEC,XTKMML,TESLA,AUTK,DEBYE,PMASS,EMASS,CCM,hartree_to_eV,hartree_to_cm1
 !
 PARAMETER ( bohr_to_angstrom = 0.5291772083E0_realk, XFAMU  = 1822.88848E0_realk, &   
      &    ECHARGE = 1.602176462E-19_realk, HBAR = 1.054571596E-34_realk)
@@ -28,6 +28,8 @@ PARAMETER ( XFMOL = 6.02214199E23_realk )
 PARAMETER ( bohr_to_angstromM10 = bohr_to_angstrom*1.0E-10_realk)
 !
 PARAMETER ( PMASS = 1.007276470E0_realk, EMASS = 9.10938188E-31_realk)
+PARAMETER (hartree_to_eV = 27.211399)
+PARAMETER (hartree_to_cm1 = 219474.63)
 !
 !-- Pi number
       PARAMETER (PI     = 3.14159265358979323846E00_realk, &

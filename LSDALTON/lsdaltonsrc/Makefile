@@ -2,7 +2,7 @@ all: liblsdaltonsrc.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities -I../xcfun_host -I../IchorIntegrals -I../responsesolver
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities -I../xcfun_host -I../IchorIntegrals -I../responsesolver -I../cuda
 
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
@@ -51,7 +51,7 @@ clean :
 
 
 Makefile.depend depend: $(FORTFILES)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -M../xcfun_host -M../IchorIntegrals -M../responsesolver -- $(FORTFILES) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -M../xcfun_host -M../IchorIntegrals -M../responsesolver -M../cuda -- $(FORTFILES) > Makefile.depend
 
 
 include Makefile.depend

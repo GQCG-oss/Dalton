@@ -535,7 +535,6 @@ C
          DX0(0) = D1
          DY0(0) = D1
          DZ0(0) = D1
-CDIR$    NORECURRENCE
          DO 400 L = 1, LCAVMX
             DX0(L) = PXDIF ** L
             DY0(L) = PYDIF ** L

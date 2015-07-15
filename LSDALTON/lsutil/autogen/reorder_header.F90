@@ -101,7 +101,7 @@
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
     integer :: i,j,l
-    integer :: aa,bb,cc,dd,block_size,fina,finb,finc,find
+    integer :: aa,bb,cc,dd,fina,finb,finc,find
     integer :: order_type,m,n
     integer :: di3(3), di2(2)
     real(realk) :: tcpu1,twall1,tcpu2,twall2
@@ -122,7 +122,6 @@
     dims(3)=d3
     dims(4)=d4
 
-    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/4.0))
     ! select  invalid reordering type
     order_type = -1
 
@@ -199,113 +198,101 @@
 
     case(1)
        ! CASE 3 4 1 2
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)*dims(4)
-       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
     case(2)
        ! CASE 4 1 2 3
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
        di2(1) = dims(1)*dims(2)*dims(3)
        di2(2) = dims(4)
-       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
     case(3)
        ! CASE 2 3 4 1
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
        di2(1) = dims(1)
        di2(2) = dims(2)*dims(3)*dims(4)
-       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
 
     case(4)
        ! CASE  1 2 4 3
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_132_reordering(di3,pre1,array_in,pre2,array_out)
     case(5)
        ! CASE  1 4 2 3
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_132_reordering(di3,pre1,array_in,pre2,array_out)
     case(6)
        ! CASE  1 3 4 2
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_132_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_132_reordering(di3,pre1,array_in,pre2,array_out)
 
 
     case(7)
        ! CASE 3 1 2 4
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_213_reordering(di3,pre1,array_in,pre2,array_out)
     case(8)
        ! CASE  2 3 1 4
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_213_reordering(di3,pre1,array_in,pre2,array_out)
     case(9)
        ! CASE 2 1 3 4
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_213_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_213_reordering(di3,pre1,array_in,pre2,array_out)
 
     case(10)
        ! CASE  4 3 1 2
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_321_reordering(di3,pre1,array_in,pre2,array_out)
     case(11)
        ! CASE  4 2 3 1
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_321_reordering(di3,pre1,array_in,pre2,array_out)
     case(12)
        ! CASE  3 4 2 1
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_321_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+       call manual_321_reordering(di3,pre1,array_in,pre2,array_out)
 
 
     case(13)
-       call manual_2413_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_2413_reordering(dims,pre1,array_in,pre2,array_out)
     case(14)
-       call manual_3214_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_3214_reordering(dims,pre1,array_in,pre2,array_out)
     case(15)
-       call manual_1324_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_1324_reordering(dims,pre1,array_in,pre2,array_out)
     case(16)
-       call manual_4132_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_4132_reordering(dims,pre1,array_in,pre2,array_out)
     case(17)
-       call manual_2143_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_2143_reordering(dims,pre1,array_in,pre2,array_out)
     case(18)
-       call manual_4321_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_4321_reordering(dims,pre1,array_in,pre2,array_out)
     case(19)
-       call manual_2431_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_2431_reordering(dims,pre1,array_in,pre2,array_out)
     case(20)
-       call manual_1432_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_1432_reordering(dims,pre1,array_in,pre2,array_out)
     case(21)
-       call manual_3142_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_3142_reordering(dims,pre1,array_in,pre2,array_out)
     case(22)
-       call manual_3241_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_3241_reordering(dims,pre1,array_in,pre2,array_out)
     case(23)
-       call manual_4213_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_4213_reordering(dims,pre1,array_in,pre2,array_out)
     case default
        print *,'4d_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -1615,21 +1602,19 @@
        ! CASE 3 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
-       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
     case(2)
        ! CASE 2 3 1
        di2(1) = dims(1)
        di2(2) = dims(2) * dims(3)
-       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
-       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
 
     case(3)
-       call manual_132_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_132_reordering(dims,pre1,array_in,pre2,array_out)
     case(4)
-       call manual_213_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_213_reordering(dims,pre1,array_in,pre2,array_out)
     case(5)
-       call manual_321_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_321_reordering(dims,pre1,array_in,pre2,array_out)
     case default
        print *,'3d_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -1760,7 +1745,7 @@
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
-    integer :: aa,bb,cc,block_size
+    integer :: aa,bb,cc
     integer :: order_type
     integer :: di2(2)
     integer(kind=long) :: vec_size64
@@ -2098,18 +2083,14 @@
     real(realk), intent(inout):: y((i8*c)*r)
 
     integer, dimension(2) :: dims
-    integer :: block_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
 
     call LSTIMER('START',tcpu1,twall1,-1)
 
-    ! assuming available cache memory is 8 MB and we need to store two blocks at a time 
-    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
-
     dims(1)=r
     dims(2)=c
 
-    call manual_21_reordering(block_size,dims,p1,x,p2,y)
+    call manual_21_reordering(dims,p1,x,p2,y)
 
     call LSTIMER('START',tcpu2,twall2,-1)
 
@@ -2259,10 +2240,8 @@
      integer :: idxintile(mode),ro(mode),full_dim_tiled_arr(mode)
      integer :: ccels,ntimes,acttdim(mode),fels(mode)
      integer :: pos1,ntpm(mode),glbmodeidx(mode)
-     integer :: order_type,bs
+     integer :: order_type
 
-     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-     !bs=5
      order_type=0
      do i=1,mode
         if(o(i)/=i)order_type=-1
@@ -2347,63 +2326,63 @@
            endif
         enddo
      case(1)
-        call manual_3412_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_3412_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(2)
-        call manual_4123_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_4123_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(3)
-        call manual_2341_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_2341_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(4)
-        call manual_1243_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_1243_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(5)
-        call manual_1423_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_1423_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(6)
-        call manual_1342_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_1342_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(7)
-        call manual_3124_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_3124_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(8)
-        call manual_2314_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_2314_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(9)
-        call manual_2134_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_2134_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(10)
-        call manual_4312_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_4312_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(11)
-        call manual_4231_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_4231_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(12)
-        call manual_3421_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_3421_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(13)
-        call manual_2413_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_2413_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(14)
-        call manual_3214_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_3214_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(15)
-        call manual_1324_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_1324_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(16)
-        call manual_4132_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_4132_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(17)
-        call manual_2143_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_2143_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(18)
-        call manual_4321_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_4321_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(19)
-        call manual_2431_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_2431_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(20)
-        call manual_1432_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_1432_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(21)
-        call manual_3142_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_3142_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(22)
-        call manual_3241_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_3241_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case(23)
-        call manual_4213_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_4213_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case(24)
-        call manual_312_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_312_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case(25)
-        call manual_231_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_231_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case(26)
-        call manual_132_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_132_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case(27)
-        call manual_213_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_213_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case(28)
-        call manual_321_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_321_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case(29)
-        call manual_21_reordering_t2f(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+        call manual_21_reordering_t2f(acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
      case default
         print *,"expensive default tile_in_fort",o
         !print *,"order  :",o
@@ -2462,11 +2441,9 @@
     integer :: idxintile(mode),glbidx
     integer :: ccels,ntimes,el,acttdim(mode),full_dim_tiled_arr(mode),nelms
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
-    integer :: order_type,bs,a,b,c,d
+    integer :: order_type,a,b,c,d
 
 
-    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    !bs=5
     order_type=0
     do i=1,mode
       if(o(i)/=i)order_type=-1
@@ -2565,63 +2542,63 @@
           endif
         enddo
       case(1)
-        call manual_3412_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_3412_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(2)
-        call manual_4123_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_4123_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(3)
-        call manual_2341_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_2341_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(4)
-        call manual_1243_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_1243_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(5)
-        call manual_1423_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_1423_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(6)
-        call manual_1342_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_1342_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(7)
-        call manual_3124_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_3124_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(8)
-        call manual_2314_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_2314_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(9)
-        call manual_2134_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_2134_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(10)
-        call manual_4312_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_4312_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(11)
-        call manual_4231_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_4231_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(12)
-        call manual_3421_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_3421_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(13)
-        call manual_2413_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_2413_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(14)
-        call manual_3214_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_3214_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(15)
-        call manual_1324_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_1324_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(16)
-        call manual_4132_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_4132_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(17)
-        call manual_2143_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_2143_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(18)
-        call manual_4321_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_4321_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(19)
-        call manual_2431_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_2431_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(20)
-        call manual_1432_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_1432_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(21)
-        call manual_3142_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_3142_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(22)
-        call manual_3241_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_3241_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(23)
-        call manual_4213_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_4213_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(24)
-        call manual_312_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_312_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(25)
-        call manual_231_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_231_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(26)
-        call manual_132_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_132_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(27)
-        call manual_213_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_213_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(28)
-        call manual_321_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_321_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(29)
-        call manual_21_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+        call manual_21_reordering_f2t(rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case default
         print *,"expensive default tile_from_fort",o
         print *,"order  :",o

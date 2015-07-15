@@ -289,6 +289,7 @@ C     local
       INTEGER I,J,K,INFO,NOS,NOA
 c      DOUBLE PRECISION FREQI
 C
+      INFO=0
       KREDZGD = 1
       KREDZ   = KREDZGD + KZLRED
       KFREE   = KREDZ   + KZLRED*KZLRED
@@ -443,6 +444,8 @@ C     local
       INTEGER I,J,K,NOS,NOA,INFO
 c      DOUBLE PRECISION FREQI 
 C     
+      !initialize INFO to prevent problems with DGESV on 64bit
+      INFO=0
       KREDZGD = 1
       KREDZ   = KREDZGD + KZLRED
       KFREE   = KREDZ   + KZLRED*KZLRED

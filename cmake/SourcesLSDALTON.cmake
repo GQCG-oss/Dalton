@@ -86,7 +86,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsdpt_dec.F90
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
-    LSDALTON/deccc/ccsd_lhtr.F90
+    LSDALTON/deccc/cc_response_tools.F90
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90
@@ -107,6 +107,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
+    LSDALTON/deccc/rimp2_gradient.F90
     LSDALTON/deccc/ccsd_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
@@ -207,6 +208,7 @@ set(RSP_PROPERTIES_SOURCES
     LSDALTON/rsp_properties/response_prop_noOpenRSP.F90
     LSDALTON/rsp_properties/molecular_hessian.F90
     LSDALTON/rsp_properties/test_molHessian.F90
+    LSDALTON/rsp_properties/nuclei_selected_shielding.F90
     )
 set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc_compare.F90
@@ -760,6 +762,7 @@ set(LSUTIL_COMMON_C_SOURCES
     LSDALTON/lsutil/crayio.c
     )
 set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/gpu_devices.F90
     LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
     LSDALTON/lsutil/tensor_type_def.F90
@@ -782,6 +785,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/gridgeneration_memory.F90
     LSDALTON/lsutil/Time.F90
     LSDALTON/lsutil/common_utilities.F90
+    LSDALTON/lsutil/lapack_interface.F90
     LSDALTON/lsutil/ls_parameters.F90
     LSDALTON/lsutil/par_mod.F90
     LSDALTON/lsutil/lsmpiType.F90
@@ -878,15 +882,6 @@ set(LSDALTON_OWN_LAPACK_SOURCES
     LSDALTON/pdpack/gp_dlapack.F
     LSDALTON/pdpack/gp_zlapack.F
     )
-# backend matrix module and interface of QMatrix library
-if(ENABLE_QMATRIX)
-    set(LSUTIL_MATRIXU_SOURCES
-        ${LSUTIL_MATRIXU_SOURCES}
-        LSDALTON/qmatrix/qmatrix_backend.F90
-        )
-    set(LS_QMATRIX_SOURCES
-        LSDALTON/qmatrix/ls_qmatrix.F90)
-endif()
 # collect all free fortran sources
 set(LSDALTON_FREE_FORTRAN_SOURCES
     ${CUDA_GPU_INTERFACE_SOURCES}
@@ -914,7 +909,6 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${LSUTILLIB_SOURCES}
     ${LSLIB_SOURCES}
     ${ICHORLIB_SOURCES}
-    ${LS_QMATRIX_SOURCES}
  )
 if(ENABLE_PCMSOLVER)
     set(LSDALTON_FREE_FORTRAN_SOURCES

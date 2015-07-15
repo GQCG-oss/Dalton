@@ -103,10 +103,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
-#if defined(ENABLE_QMATRIX)
-  use ls_qmatrix, only: ls_qmatrix_test, &
-                        ls_qmatrix_finalize
-#endif
 #ifdef HAS_PCMSOLVER
   use ls_pcm_utils, only: init_molecule
   use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
@@ -125,7 +121,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   REAL(REALK)         :: mx
   ! Energy
   REAL(REALK)         :: E(1),ExcitE
-  logical             :: mem_monitor,do_decomp
+  logical             :: do_decomp
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
   integer     :: lusoeo,funit
@@ -148,7 +144,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures, and perform
   ! basic tests
-  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config)
 
 #ifdef HAS_PCMSOLVER
         !
@@ -355,7 +351,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call II_ichor_LinK_test(lupri,luerr,ls%setting,D)
         ENDIF
 
-        if (mem_monitor) then
+        if (config%mat_mem_monitor) then
            write(lupri,*)
            WRITE(LUPRI,'("Max no. of matrices allocated in Level 2 / get_initial_dens: ",I10)') max_no_of_matrices
            max_no_of_matrices = no_of_matrices
@@ -627,18 +623,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
-#if defined(ENABLE_QMATRIX)
-        if (config%do_qmatrix) then
-            ! performs the Fortran test of the QMatrix library
-            call ls_qmatrix_test(config%ls_qmat)
-            !- performs Delta-SCF using the QMatrix library (NB! this is not linear-scaling)
-            !-call ls_qmatrix_scf()
-            ! finalizes the QMatrix interface
-            call ls_qmatrix_finalize(config%ls_qmat)
-            config%do_qmatrix = .false.
-        end if
-#endif
-
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives
         if(config%response%tasks%doNumHess .or. &
@@ -767,7 +751,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   call mat_no_of_matmuls(no_of_matmuls)
   WRITE(LUPRI,'("Total no. of matmuls used:                ",I10)') no_of_matmuls
   WRITE(LUPRI,'("Total no. of Fock/KS matrix evaluations:  ",I10)') ls%input%nfock
-  if (mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
+  if (config%mat_mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
 
   if(.not. HFdone) then  ! ensure there's no memory leak when HF calc was skipped
      call config_shutdown(config)
@@ -804,9 +788,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
-#ifdef VAR_OPENACC
-  use openacc
-#endif
+  use gpu_device_handling 
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
 #endif
@@ -815,10 +797,6 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
   real(realk), intent(inout) :: t1,t2
-#ifdef VAR_OPENACC
-  !> device type
-  integer(acc_device_kind) :: acc_device_type
-#endif
   
   !INITIALIZING TIMERS SHOULD ALWAYS BE THE FIRST CALL
   call init_timers
@@ -828,12 +806,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call mypapi_init(eventset)
 #endif
 
-#ifdef VAR_OPENACC
-  ! probe for device type
-  acc_device_type = acc_get_device_type()
-  ! initialize the device
-  call acc_init(acc_device_type)
-#endif
+  call Init_GPU_devices   !initialize gpu(s) (acc_init) 
 
   call init_globalmemvar  !initialize the global memory counters
   call NullifyMPIbuffers  !initialize the MPI buffers
@@ -873,9 +846,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
-#ifdef VAR_OPENACC
-  use openacc
-#endif
+  use gpu_device_handling, only: shutdown_GPU_devices 
 #ifdef VAR_ICHOR
   use IchorSaveGabMod
 #endif
@@ -888,17 +859,8 @@ implicit none
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
-#ifdef VAR_OPENACC
-  !> device type
-  integer(acc_device_kind) :: acc_device_type
-#endif
 
-#ifdef VAR_OPENACC
-  ! probe for device type
-  acc_device_type = acc_get_device_type()
-  ! shut down the device
-  call acc_shutdown(acc_device_type)
-#endif
+  call shutdown_GPU_devices   !shut down the device (acc_shutdown)
   
   IF(OnMaster)THEN
      !these routines free matrices and must be called while the 

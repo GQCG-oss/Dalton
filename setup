@@ -197,18 +197,18 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable interest external library [default: %(default)s]')
-    group.add_argument('--qmatrix',
+    group.add_argument('--qcmatrix',
             action='store_true',
             default=False,
-            help='enable QMatrix external library [default: %(default)s]')
+            help='enable QcMatrix external library [default: %(default)s]')
     group.add_argument('--openrsp',
             action='store_true',
             default=False,
-            help='enable OpenRSP external library (need QMatrix library) [default: %(default)s]')
+            help='enable OpenRSP external library (need QcMatrix library) [default: %(default)s]')
     group.add_argument('--tdrsp',
             action='store_true',
             default=False,
-            help='enable TDRSP external library (need QMatrix library) [default: %(default)s]')
+            help='enable TDRSP external library (need QcMatrix library) [default: %(default)s]')
 
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
@@ -283,7 +283,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
-    command += ' -DENABLE_QMATRIX=%s'        % translate_cmake(args.qmatrix)
+    command += ' -DENABLE_QCMATRIX=%s'       % translate_cmake(args.qcmatrix)
     command += ' -DENABLE_TDRSP=%s'          % translate_cmake(args.tdrsp)
     command += ' -DENABLE_OPENRSP=%s'        % translate_cmake(args.openrsp)
 

@@ -36,7 +36,7 @@ contains
     ls_setting%SCHEME%nofamily = .TRUE.
     call BUILD_AO(luprint,ls_setting%SCHEME,ls_setting%SCHEME%AOPRINT,&
          & ls_setting%molecule(1)%p,ls_setting%Basis(1)%p%REGULAR, ao_items,&
-         & .false.,.false.)
+         & .false.,.false.,.false.)
     
     call mem_alloc(CENTER,3,AO_items%nbatches)
     call mem_alloc(ANGMOM,AO_items%nbatches)

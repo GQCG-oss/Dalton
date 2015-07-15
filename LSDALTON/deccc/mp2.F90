@@ -1743,7 +1743,7 @@ contains
     call dec_simple_dgemm(m,nvirt,nvirt, tmp2%p(1:dim2), Uvirt%val, tmp1%p(1:dim1), 'n', 't')
 
 
-    ! Put amplitudes into output array in the correct order
+    ! Put amplitudes into output array in the correct order toccEOS(d,j,c,i)
     toccEOS=array4_init(dimocc)
     call array_reorder_4d(1.0E0_realk,tmp1%p,nvirt,noccEOS,noccEOS,nvirt,[1,3,4,2],0.0E0_realk,toccEOS%val)
 
@@ -3208,11 +3208,12 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    integer(kind=ls_mpik) :: mode
    type(tensor) :: E1,E2, Pijab_om2
    integer :: ord(4)
-   logical :: lock_safe,lock_outside,traf1,traf2,trafi
+   logical :: lock_safe,lock_outside,traf1,traf2,trafi,bg
 
 
    me   = 0
    nnod = 1
+   bg = mem_is_background_buf_init()
 
    !GET SLAVES
 #ifdef VAR_MPI
@@ -3233,8 +3234,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    no = iajb%dims(1)
    nv = iajb%dims(2)
 
-   call tensor_ainit(E1,[nv,nv],2,tdims = [vs,vs],local=local, atype="TDAR")
-   call tensor_ainit(E2,[no,no],2,tdims = [os,os],local=local, atype="TDAR")
+   call tensor_ainit(E1,[nv,nv],2,tdims = [vs,vs],local=local, atype="TDAR", bg=bg)
+   call tensor_ainit(E2,[no,no],2,tdims = [os,os],local=local, atype="TDAR", bg=bg)
 
    call tensor_cp_data(vvf,E1)
    call tensor_cp_data(oof,E2)
@@ -3248,10 +3249,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
 
 
-   call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset)
-
-   call tensor_free(E1)
-   call tensor_free(E2)
+   call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset,bg=bg)
 
 #ifdef VAR_MPI
    if(.not.local) call tensor_lock_local_wins(Pijab_om2,'e',mode)
@@ -3283,7 +3281,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 #endif
 
    call tensor_free(Pijab_om2)
-
+   call tensor_free(E2)
+   call tensor_free(E1)
 
 
 end subroutine get_simple_parallel_mp2_residual

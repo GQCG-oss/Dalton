@@ -9,6 +9,7 @@ INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../responsesolver 
 
 F90_OBJS = \
 	molecular_hessian.o\
+	nuclei_selected_shielding.o\
 	response_prop_noOpenRSP.o\
 	test_molHessian.o
 

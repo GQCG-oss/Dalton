@@ -11,9 +11,9 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final geometry',
       num_lines = 12,
-      rel_tolerance = 1.0e-4)
+      abs_tolerance = 5.0e-4)
 f.add(string = 'Energy at final geometry is',
-      rel_tolerance = 1.0e-4)
+      abs_tolerance = 1.0e-4)
 
 test.run(['preopt.dal'], ['acrolein.mol'], f={'out': f})
 

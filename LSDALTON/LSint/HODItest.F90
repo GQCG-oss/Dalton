@@ -25,12 +25,19 @@ Integer                  :: i
 TYPE(Matrix)             :: ContractMat1(ncontract)
 Real(realk),parameter    :: D1=1.E0_realk
 Real(realk),parameter    :: D2=2.E0_realk
+Logical                  :: doMPI_save
 
 DO i=1,ncontract
   call mat_init(ContractMat1(i),nbast,nbast)
   call mat_assign(ContractMat1(i),D)
   call mat_scal(D1*i,ContractMat1(i))
 ENDDO
+
+doMPI_save = setting%scheme%doMPI
+IF (doMPI_save) THEN
+  WRITE(lupri,'(A)') 'WARNING: Turning off MPI for HODI test'
+  setting%scheme%doMPI = .FALSE.
+ENDIF
 
 !******** First order *********
 !Coulomb-type matrix - first-order geometrical derivative
@@ -104,6 +111,8 @@ call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'kinetic',ContractMat1,ncontra
 DO i=1,ncontract
   call mat_free(ContractMat1(i))
 ENDDO
+
+setting%scheme%doMPI = doMPI_save 
 
 END SUBROUTINE debugTestHODI
 
