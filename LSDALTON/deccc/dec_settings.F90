@@ -1360,7 +1360,7 @@ contains
          & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
 
        write(DECinfo%output,*) ''
-       write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) 'Memory not defined or ambiguously defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
        write(DECinfo%output,*) 'The recommended way is using .MEMORY and specifying the memory in GB'
 #ifdef VAR_MPI
@@ -1390,7 +1390,7 @@ contains
     if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
        DECinfo%bg_memory = 0.8_realk*DECinfo%memory
        write(DECinfo%output,*) ''
-       write(DECinfo%output,*) 'WARNING: User di not specify the amount of memory to be used'
+       write(DECinfo%output,*) 'WARNING: User dit not specify the amount of memory to be used'
        write(DECinfo%output,*) '         in connection with the background buffer.'
        write(DECinfo%output,*) ''
        write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'
