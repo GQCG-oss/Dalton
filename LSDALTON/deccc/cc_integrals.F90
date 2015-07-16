@@ -1576,6 +1576,20 @@ contains
        end if
        return
     end if
+
+    ! Check that there is enough mem in bg buffer:
+    if(mem_is_background_buf_init())then
+       MemNeed = get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO,2)
+       MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
+       if ((MemFree-MemNeed)<=0.0E0_realk) then
+          mo_ccsd = .false.
+          write(DECinfo%output,*) 'WARNING: Insufficient memory in background buffer for &
+             & MO-based CCSD, back to standard algorithm.'
+          write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
+          write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+          return
+       end if
+    endif
     Nbatch = (ntot-1)/dimMO + 1
 
     !===========================================================
@@ -1652,7 +1666,7 @@ contains
     if ((MemFree-MemNeed)<=0.0E0_realk) then
        mo_ccsd = .false.
        write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
-            & back to standard algorithm.'
+            & back to standard algorithm. (2)'
        write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
        write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
        return
@@ -1661,12 +1675,11 @@ contains
     ! Check that there is enough mem in bg buffer:
     if(mem_is_background_buf_init())then
        MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma,2)
-       MemNeed = MemNeed + get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO,2)
        MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
        if ((MemFree-MemNeed)<=0.0E0_realk) then
           mo_ccsd = .false.
           write(DECinfo%output,*) 'WARNING: Insufficient memory in background buffer for &
-             & MO-based CCSD, back to standard algorithm.'
+             & MO-based CCSD, back to standard algorithm. (2)'
           write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
           write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
           return
