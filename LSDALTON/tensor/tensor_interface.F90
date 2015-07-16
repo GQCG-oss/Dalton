@@ -79,7 +79,8 @@ module tensor_interface_module
   public tensor_init, tensor_minit, tensor_ainit, tensor_free
 
   ! User-level subroutines for tensor operations
-  public tensor_convert, print_norm, tensor_add, tensor_contract
+  public tensor_convert, print_norm, tensor_print_tile_norm
+  public tensor_add, tensor_contract
   public tensor_transform_basis, tensor_ddot
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul

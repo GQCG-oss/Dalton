@@ -128,7 +128,7 @@ contains
     !Array test
     if (DECinfo%tensor_test)then
       print *,"TEST ARRAY MODULE"
-      call test_tensor_struct()
+      call test_tensor_struct(DECinfo%output)
       return
     endif
     ! Reorder test
