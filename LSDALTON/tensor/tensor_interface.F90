@@ -1885,7 +1885,7 @@ contains
     call tensor_ainit_central(arr, &
        &int(dims,kind=tensor_long_int), &
        &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
-       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+       &tdims=tdims, fo=fo, bg=bg )
   end subroutine tensor_ainit88
   subroutine tensor_ainit84(arr, dims, nmodes, local, atype, tdims, fo, bg )
     !> the output array
@@ -1901,7 +1901,7 @@ contains
     call tensor_ainit_central(arr, &
        &int(dims,kind=tensor_long_int), &
        &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
-       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+       &tdims=tdims, fo=fo, bg=bg )
   end subroutine tensor_ainit84
   subroutine tensor_ainit48(arr, dims, nmodes, local, atype, tdims, fo, bg )
     !> the output array
@@ -1917,7 +1917,7 @@ contains
     call tensor_ainit_central(arr, &
        &int(dims,kind=tensor_long_int), &
        &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
-       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+       &tdims=tdims, fo=fo, bg=bg )
   end subroutine tensor_ainit48
   subroutine tensor_ainit44(arr, dims, nmodes, local, atype, tdims, fo, bg )
     !> the output array
@@ -1933,7 +1933,7 @@ contains
     call tensor_ainit_central(arr, &
        &int(dims,kind=tensor_long_int), &
        &int(nmodes,kind=tensor_long_int), local=local, atype=atype, &
-       &tdims=int(tdims,kind=tensor_long_int), fo=fo, bg=bg )
+       &tdims=tdims, fo=fo, bg=bg )
   end subroutine tensor_ainit44
 
   subroutine tensor_ainit_central(arr, dims_in, nmodes_in, local, atype, tdims, fo, bg )
@@ -1942,7 +1942,7 @@ contains
     !> nmodes=order of the array, dims=dimensions in each mode
     integer(kind=tensor_long_int), intent(in)              :: nmodes_in
     integer(kind=tensor_long_int), intent(in)              :: dims_in(nmodes_in)
-    integer(kind=tensor_long_int), intent(in),optional     :: tdims(nmodes_in)
+    integer, intent(in),optional     :: tdims(nmodes_in)
     logical, intent(in),optional     :: local, bg
     character(4),intent(in),optional :: atype
     integer(kind=tensor_int),intent(in),optional :: fo
