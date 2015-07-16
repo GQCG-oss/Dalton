@@ -764,7 +764,7 @@ set(LSUTIL_COMMON_C_SOURCES
 set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/gpu_devices.F90
     LSDALTON/tensor/tensor_parameters.F90
-    LSDALTON/tensor/autogen/get_idx.F90
+    LSDALTON/tensor/get_idx.F90
     LSDALTON/tensor/tensor_type_def.F90
     LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
@@ -807,9 +807,10 @@ set(LSUTIL_COMMON_SOURCES
 set(LSUTIL_TENSOR_SOURCES
     LSDALTON/tensor/tensor_basic.F90
     LSDALTON/tensor/lspdm_basic.F90
-    LSDALTON/tensor/tensor_interface.F90
     LSDALTON/tensor/lspdm_tensor_operations.F90
     LSDALTON/tensor/tensor_algebra_dil.F90
+    LSDALTON/tensor/tensor_interface.F90
+    LSDALTON/tensor/tensor_tester.F90
     )
 set(LSUTIL_MATRIXO_SOURCES
     LSDALTON/lsutil/matop_csr.F90

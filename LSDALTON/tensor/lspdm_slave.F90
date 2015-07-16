@@ -22,10 +22,10 @@ subroutine pdm_tensor_slave(comm)
    type(tensor)  :: A, B, C, D, AUX
    CHARACTER    :: T(2)
    INTEGER      :: JOB
-   real(tensor_real),pointer :: realar1(:)
+   real(tensor_dp),pointer :: realar1(:)
    integer, pointer    :: intarr1(:), intarr2(:), intarr3(:), intarr4(:)
    integer             :: INT1,       INT2,       INT3,       INT4
-   real(tensor_real)   :: REAL1,      REAL2
+   real(tensor_dp)   :: REAL1,      REAL2
    logical             :: LOG1
    logical :: loc
    character (4) :: at 

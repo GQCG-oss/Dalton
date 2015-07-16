@@ -312,7 +312,7 @@ module lspdm_basic_module
     implicit none
     type(tensor),intent(inout) :: arr
     integer(kind=tensor_long_int) :: vector_size
-    real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
+    real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     integer :: i,ierr
 
     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
@@ -349,7 +349,7 @@ module lspdm_basic_module
     type(tensor),intent(inout) :: arr
     integer, intent(in), optional :: nwins
     integer(kind=tensor_long_int) :: vector_size
-    real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
+    real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     integer :: n
 
     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
@@ -388,7 +388,7 @@ module lspdm_basic_module
     type(tensor) :: arr
     logical, intent(in) :: bg
     integer(kind=tensor_long_int) :: vector_size
-    real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
+    real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: i,counter
     integer :: j,loc_idx
     integer, pointer :: idx(:)
@@ -448,10 +448,10 @@ module lspdm_basic_module
            call mem_alloc(arr%ti(counter)%t,arr%tsize)
            call mem_alloc(arr%ti(counter)%d,arr%mode)
            if( tensor_debug_mode )then
-              arr%ti(counter)%t=0.0E0_tensor_real
+              arr%ti(counter)%t=0.0E0_tensor_dp
            endif
            arr%ti(counter)%e=arr%tsize
-           vector_size = int((arr%ti(counter)%e)*tensor_real,kind=tensor_long_int)
+           vector_size = int((arr%ti(counter)%e)*tensor_dp,kind=tensor_long_int)
            !$OMP CRITICAL
            tensor_counter_tiled_a_mem   = tensor_counter_tiled_a_mem + vector_size
            tensor_counter_memory_in_use  = tensor_counter_memory_in_use    + vector_size
@@ -517,7 +517,7 @@ module lspdm_basic_module
             else
                call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
             endif
-            vector_size = int(arr%ti(loc_idx)%e*tensor_real,kind=tensor_long_int)
+            vector_size = int(arr%ti(loc_idx)%e*tensor_dp,kind=tensor_long_int)
             !$OMP CRITICAL
             tensor_counter_tiled_a_mem = tensor_counter_tiled_a_mem + vector_size
             tensor_counter_memory_in_use    = tensor_counter_memory_in_use + vector_size
@@ -528,7 +528,7 @@ module lspdm_basic_module
 
 
          if( tensor_debug_mode )then
-            arr%ti(loc_idx)%t=0.0E0_tensor_real
+            arr%ti(loc_idx)%t=0.0E0_tensor_dp
          endif
 #endif
 
@@ -563,8 +563,8 @@ module lspdm_basic_module
       logical, intent(in) :: bg
       integer(kind=tensor_long_int), intent(in),optional :: nel
       integer(kind=tensor_long_int) :: nelms
-      real(tensor_real)     :: vector_size
-      real(tensor_real)     :: tcpu1,twall1,tcpu2,twall2
+      real(tensor_dp)     :: vector_size
+      real(tensor_dp)     :: tcpu1,twall1,tcpu2,twall2
       integer(kind=tensor_long_int) :: ne
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
@@ -582,7 +582,7 @@ module lspdm_basic_module
         nelms=arr%tsize
       endif
 
-      vector_size = int(nelms*tensor_real,kind=tensor_long_int)
+      vector_size = int(nelms*tensor_dp,kind=tensor_long_int)
 
 #ifdef VAR_MPI
       if( bg )then
@@ -592,7 +592,7 @@ module lspdm_basic_module
       endif
 
       if( tensor_debug_mode )then
-         arr%dummy = 0.0E0_tensor_real
+         arr%dummy = 0.0E0_tensor_dp
       endif
 #endif
 
@@ -610,13 +610,13 @@ module lspdm_basic_module
       implicit none
       type(tensor) :: arr
       integer(kind=tensor_long_int) :: vector_size,dim1
-      real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
+      real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
       if(associated(arr%dummy)) then
          dim1 = int(size(arr%dummy(:)),kind=tensor_long_int)
-         vector_size = int(dim1*tensor_real,kind=tensor_long_int)
+         vector_size = int(dim1*tensor_dp,kind=tensor_long_int)
 #ifdef VAR_MPI
          if(arr%bg_alloc)then
             call mem_pseudo_dealloc(arr%dummy, mark_deleted=.true.)
