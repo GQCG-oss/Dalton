@@ -1700,9 +1700,6 @@ contains
        end if
     endif
 
-    ! if user forced scheme 5 or 6 and not enough memory then quit
-    if ((.not.mo_ccsd).and.)
-
   end subroutine get_MO_and_AO_batches_size
 
 
