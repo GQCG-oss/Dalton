@@ -5274,7 +5274,6 @@ module lspdm_tensor_operations_module
   !specified lock and assertion
   !\> \author Patrick Ettenhuber
   !\> \date July 2013
-#ifdef VAR_MPI
   subroutine tensor_lock_win8(arr,ti_idx,locktype,assert)
     implicit none
     type(tensor) :: arr
@@ -5283,6 +5282,7 @@ module lspdm_tensor_operations_module
     integer(kind=tensor_mpi_kind), optional,intent(in) :: assert
     integer(kind=tensor_mpi_kind) ::node
     integer :: wi_idx
+#ifdef VAR_MPI
     call time_start_phase( PHASE_COMM )
 
     call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
@@ -5290,6 +5290,7 @@ module lspdm_tensor_operations_module
     arr%lock_set(wi_idx)=.true.
 
     call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_lock_win8
   subroutine tensor_lock_win4(arr,ti_idx,locktype,assert)
     implicit none
@@ -5299,6 +5300,7 @@ module lspdm_tensor_operations_module
     integer(kind=tensor_mpi_kind), optional,intent(in) :: assert
     integer(kind=tensor_mpi_kind) ::node
     integer :: wi_idx
+#ifdef VAR_MPI
     call time_start_phase( PHASE_COMM )
 
     call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
@@ -5306,6 +5308,7 @@ module lspdm_tensor_operations_module
     arr%lock_set(wi_idx)=.true.
 
     call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_lock_win4
 
   subroutine tensor_lock_win_on_all_nodes(arr,ti_idx,locktype,assert)
@@ -5316,12 +5319,14 @@ module lspdm_tensor_operations_module
     integer(kind=tensor_mpi_kind), optional,intent(in) :: assert
     integer(kind=tensor_mpi_kind) ::node
     integer :: wi_idx
+#ifdef VAR_MPI
     call time_start_phase( PHASE_COMM )
     call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
     call lsmpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
     arr%lock_set(wi_idx)=.true.
 
     call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_lock_win_on_all_nodes
 
   subroutine tensor_unlock_win(arr,ti_idx)
@@ -5330,6 +5335,7 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: ti_idx
     integer(kind=tensor_mpi_kind) :: node
     integer :: wi_idx
+#ifdef VAR_MPI
     call time_start_phase( PHASE_COMM )
     
 
@@ -5338,6 +5344,7 @@ module lspdm_tensor_operations_module
     arr%lock_set(wi_idx) = .false.
 
     call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_unlock_win
 
   subroutine tensor_lock_wins(arr,locktype,assert,all_nodes,check)
@@ -5455,6 +5462,7 @@ module lspdm_tensor_operations_module
      integer :: i
      logical :: ch,an
 
+#ifdef VAR_MPI
      ch = .false.
      if(present(check))     ch = check
      an = .false.
@@ -5504,8 +5512,8 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_WORK )
 
-  end subroutine tensor_unlock_wins
 #endif
+  end subroutine tensor_unlock_wins
 
 
   subroutine pn(a,n,norm)
