@@ -1,10 +1,10 @@
-      INTEGER MXCALL, ICLFRS, ICLLST, ICLBCH, ICLDST, 
-     &        DISTCLLAST
+      INTEGER MXCALL, ICLFRS, ICLLST, ICLBCH, ICLDST,                   &
+     &        DISTCLLAST                                                
 
 
-      COMMON /DISTCL/ MXCALL,
-     &                ICLFRS(MXSHEL), ICLLST(MXSHEL),
-     &                ICLBCH(MXSHEL), ICLDST(MXSHEL)
+      COMMON /DISTCL/ MXCALL,                                           &
+     &                ICLFRS(MXSHEL), ICLLST(MXSHEL),                   &
+     &                ICLBCH(MXSHEL), ICLDST(MXSHEL)                    
 
 
       COMMON /DISTCL/ DISTCLLAST

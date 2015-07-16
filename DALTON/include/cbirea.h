@@ -5,7 +5,7 @@
 !     MAXPRD = default value for MAXPRI
       INTEGER MAXPRD
       INTEGER CBIREALAST, CBIREA_CLAST, CMMBASLAST
-C
+!
       PARAMETER ( MAXPRD = 35 )
 !     MAXFAMEXP = maximum number of exponents in family basis sets
       INTEGER MXFAMEXP
@@ -19,9 +19,9 @@ C
       COMMON /CBIREA/ ZCMVAL, TOL_SYMADD,     FAMEXP, FAMPAR,           &
      &        IPREAD, MAXPRI, LUMLCL, LCMMAX, NCMSTR, NCMEND, NFAMEXP,  &
      &        BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  PRIBAS, ATOMBA,   &
-     &        UNCONT, WRTLIN, ANGS,   ATOMDF, CNTMAT, NODDYDF,
+     &        UNCONT, WRTLIN, ANGS,   ATOMDF, CNTMAT, NODDYDF,          &
      &        LCNTNUUM
-C
+!
       COMMON /CBIREA/ CBIREALAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 
@@ -32,7 +32,7 @@ C
       !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
       !   to get the number of bytes needed to transfer the common block.
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
-C
+!
 !
 !     Info for multiple basis sets (p.t. used with r12int.h in Dalton)
 
@@ -40,7 +40,7 @@ C
       PARAMETER (MXMULB = 2)
       CHARACTER*80 MULNAM(MXMULB)
       COMMON /CBIREA_C/ MULNAM
-C
+!
       COMMON /CBIREA_C/ CBIREA_CLAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 
@@ -51,11 +51,11 @@ C
       !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
       !   to get the number of bytes needed to transfer the common block.
       !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
-C
+!
       INTEGER NMULBS
       LOGICAL LMULBS
       COMMON /CMMBAS/ NMULBS, LMULBS
-C
+!
       COMMON /CMMBAS/ CMMBASLAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 

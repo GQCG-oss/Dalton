@@ -1,18 +1,18 @@
-C
-C------------------------------------------------------------
-C information for the packing of the AO integrals on the
-C presorted CCAOIN_* files
-C------------------------------------------------------------
-C
+!
+!------------------------------------------------------------
+! information for the packing of the AO integrals on the
+! presorted CCAOIN_* files
+!------------------------------------------------------------
+!
       LOGICAL LPACKINT
       INTEGER IPCKTABINT(0:255)
       INTEGER IOFFINT(MXCORB)
       INTEGER NPCKINT(MXCORB)
       INTEGER NTOTINT, NTOTPCK
       INTEGER CCPACKLAST
-C
-C
-C
+!
+!
+!
 #if defined (SYS_CRAY)
       REAL THRPCKINT, PCKRATIO, PCKTIME
 #else
@@ -21,7 +21,7 @@ C
       COMMON /CCPACK/ THRPCKINT, PCKRATIO, PCKTIME,
      &                IPCKTABINT, IOFFINT, NPCKINT,
      &                NTOTINT, NTOTPCK, LPACKINT
-C
+!
       COMMON /CCPACK/ CCPACKLAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 

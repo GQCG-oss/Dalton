@@ -1,4 +1,4 @@
-C erimem.h
+! erimem.h
       LOGICAL MEMOK
       INTEGER ERIMEMLAST
 

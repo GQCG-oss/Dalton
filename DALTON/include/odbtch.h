@@ -3,8 +3,8 @@
       INTEGER ODBTCHLAST
 
       COMMON /ODBTCH/ NODBCH, NODCLS, NODPPR, DOSORT(NPSORT)
-C     NPSORT has been increased from 8 to 9 for basis-set identifiers
-C     (WK/UniKA/31-10-2002).
+!     NPSORT has been increased from 8 to 9 for basis-set identifiers
+!     (WK/UniKA/31-10-2002).
 
 
 

@@ -2,11 +2,11 @@
 
       INTEGER ERIDSTLAST
 
-      COMMON /ERIDST/ NDISTR, MLTDST, KHKDST, NACDST, IRPDST,
-     &                MAXCML, NTCLAS, NDST,   LPNBCH,
-     &                INDDST(MXDIST), IACDST(MXDIST),
-     &                INDXDS(MXSHEL), NCLASS(MXSHEL), MCLASS(MXSHEL),
-     &                KCLASS(MXSHEL), KLAOBT(MXSHEL), LUINTD(MXCOOR),
+      COMMON /ERIDST/ NDISTR, MLTDST, KHKDST, NACDST, IRPDST,           &
+     &                MAXCML, NTCLAS, NDST,   LPNBCH,                   &
+     &                INDDST(MXDIST), IACDST(MXDIST),                   &
+     &                INDXDS(MXSHEL), NCLASS(MXSHEL), MCLASS(MXSHEL),   &
+     &                KCLASS(MXSHEL), KLAOBT(MXSHEL), LUINTD(MXCOOR),   &
      &                NCCDST(MXDIST), NCCFST(MXDIST)
 
 

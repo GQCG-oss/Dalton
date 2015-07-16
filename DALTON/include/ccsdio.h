@@ -7,7 +7,7 @@
       INTEGER IT2DEL, IT2DLR, CCSDIOLAST
 
 
-      COMMON /CCSDIO/ IT2DEL(MXCORB),
+      COMMON /CCSDIO/ IT2DEL(MXCORB),                                   &
      &                DUMPCD,IT2DLR(MXCORB,MAXSIM)
 
 

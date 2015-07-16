@@ -1,7 +1,7 @@
       INTEGER ERISELLAST
       COMMON /ERISEL/ NSELCT(4), NACTAO(MXPRIM,4)
-C
-C
+!
+!
       COMMON /ERISEL/ ERISELLAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 
