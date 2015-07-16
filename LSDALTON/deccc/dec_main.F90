@@ -18,7 +18,7 @@ module dec_main_mod
   use dec_typedef_module
   use files !,only:lsopen,lsclose
   use reorder_frontend_module 
-  use tensor_interface_module
+  use tensor_tester_module
   use Matrix_util!, only: get_AO_gradient
   use configurationType
 
@@ -128,7 +128,7 @@ contains
     !Array test
     if (DECinfo%tensor_test)then
       print *,"TEST ARRAY MODULE"
-      call test_tensor_struct()
+      call test_tensor_struct(DECinfo%output)
       return
     endif
     ! Reorder test

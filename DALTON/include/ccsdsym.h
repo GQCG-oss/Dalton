@@ -1,4 +1,7 @@
       INTEGER NCKIJMAX, NCKAMAX
+
+      INTEGER CCSDMAXLAST, CCSDSYMLAST !parallelization synchronization target variables
+
       INTEGER NT1AMX, NT2AMX, NT1AM, NT2AM, NT2AMA, NT2AMT, NNBST,
      &        NDISAO, NDSRHF, IDSAOG, ILMRHF, NDISAOSQ, NDSRHFSQ,
      &        ILMVIR, IT1AM, IT2AM, IAODIS, IDSAOGSQ,
@@ -43,10 +46,29 @@
      &        IRHFA,IRHFB,
      &        NMATKL,NMATKI,NTR12AM,NR12R12P,NTR12SQ,NR12R12SQ,
      &        IMATKL,IMATKI,ITR12AM,IR12R12P,ITR12SQ,ITR12SQT,
-     &        IR12R12SQ,NT2R12,IT2R12,NTG2SQ,ITG2SQ
+     &        IR12R12SQ,NT2R12,IT2R12,NTG2SQ,ITG2SQ 
+
       LOGICAL OMEGSQ,T2TCOR,OMEGOR,CC3LR,RSPIM,LSEC,LCOR,NEWGAM,INTTR,
      &        TRIPIM
+
+
+
       COMMON /CCSDMAX/ NCKIJMAX, NCKAMAX
+
+
+      COMMON /CCSDMAX/ CCSDMAXLAST
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+
+
+
       COMMON /CCSDSYM/ NT1AMX, NT2AMX, NT1AM(8), NT2AM(8), NT2AMA(8),
      &                 NT2AMT(8), NNBST(8),
      &                 NDISAO(8),NDISAOSQ(8),IDSAOG(8,8),IDSAOGSQ(8,8),
@@ -103,4 +125,17 @@
      &                 IR12R12SQ(8,8),NT2R12(8),IT2R12(8,8),
      &                 NTG2SQ(8),ITG2SQ(8,8)
 C
+
+      COMMON /CCSDSYM/ CCSDSYMLAST
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+
+
       INTEGER A,B,C,D,E,F,G,P,Q,R,S,I,J,K,L,M,N

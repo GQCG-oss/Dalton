@@ -3,6 +3,7 @@
 #EMAIL : pett@chem.au.dk, pettenhuber@gmail.com
 #DATE  : JUNE, 2013
 import sys,datetime,os,time#,itertools,math
+from math import factorial
 from random import randrange
 """This file is inteded for the automatic generation of a data sorting module in LSDALTON
 As data sorting is under constant development and features many lines of code this script was
@@ -11,7 +12,7 @@ of optimal code might depend on the architecture which can be at some point intr
 as well
 
 Currently the routine does not take any command-line arguments, but is dependet on the LSDALTON
-folder structure, i.e. it needs LSDALTON/lsutil and LSDALTON/lsutil/autogen/reord_headers.F90
+folder structure, i.e. it needs LSDALTON/tensor and LSDALTON/tensor/autogen/reord_headers.F90
 which can be found as long as LSDALTON is in the execution path, or one layer below execution
 folder."""
 
@@ -26,9 +27,16 @@ def main():
   args.append(False)
   args.append("")
   args.append(False)
+  args.append(False)
 # print sys.argv
   force_rewrite = False 
   acc_write = False
+  real_sp_write = False
+
+  lsdalton="/LSDALTON"
+  tensor=lsdalton+"/tensor"
+
+
   for i in range(len(sys.argv)):
     if "VAR_LSDEBUG" in sys.argv[i]:
       args[1] = True
@@ -39,28 +47,29 @@ def main():
     if "acc" in sys.argv[i]:
       args[4] = True
       acc_write = True
+    if "real_sp" in sys.argv[i]:
+      args[5] = True
+      real_sp_write = True
 
     if "FORCE_REWRITE" in sys.argv[i] :
       force_rewrite = True
     
-  
-# print args
   #GET THE FOLDER TO STORE THE manual_reorderings.F90
   cwd = os.getcwd()
-  lsutildir = args[0]
-  if ("/LSDALTON/lsutil" in lsutildir ):
+  tensordir = args[0]
+  if (tensor in tensordir ):
 
-    lsutildir = lsutildir[0:lsutildir.find("/LSDALTON/lsutil")]+"/LSDALTON/lsutil/"
+    tensordir = tensordir[0:tensordir.find(tensor)]+tensor+"/"
 
   else:
 
-    for paths,dirs,files in os.walk(cwd+"/../LSDALTON"):
-      if("/LSDALTON/lsutil" in paths):
-        lsutildir = paths[0:paths.find("/LSDALTON/lsutil")]+"/LSDALTON/lsutil/"
+    for paths,dirs,files in os.walk(cwd+"/.."+lsdalton):
+      if(tensor in paths):
+        tensordir = paths[0:paths.find(tensor)]+tensor+"/"
         break
 
-    if not os.path.exists(lsutildir):
-      print "COULD NOT FIND LSDALTON/lsutil, exiting"
+    if not os.path.exists(tensordir):
+      print "COULD NOT FIND "+tensor+", exiting"
       sys.exit()
 
 
@@ -68,7 +77,7 @@ def main():
   if args[3] != "" :
      installdir = args[3] +"/"
   else:
-     installdir = lsutildir
+     installdir = tensordir
 
   # if output path does not exist, create it
   if not os.path.exists(installdir):
@@ -89,51 +98,41 @@ def main():
     reordmod  = os.path.getmtime(installdir+"reorder_frontend.F90")
 #    scriptmod = time.ctime(os.path.getmtime(sys.argv[0]))
     scriptmod = os.path.getmtime(sys.argv[0])
+    if(os.path.getmtime(tensordir+"/autogen/reorder_header.F90")>scriptmod):
+       scriptmod = os.path.getmtime(tensordir+"/autogen/reorder_header.F90")
   # radovan: this should not be done here but taken care of by (c)make
     if(scriptmod>reordmod or writenew):
       print "REORDER GENERATOR IS NEWER THAN REORDERING FILES - GENERATING NEW ONES"
       writenew = True
-  if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
-    writenew = True
-  if (acc_write):
-    if(not os.path.exists(installdir+"reord2d_acc_reord.F90")):
-      writenew = True
-  if(not os.path.exists(installdir+"reord3d_1_reord.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord3d_2_reord.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord3d_3_reord.F90")):
-    writenew = True
-  if (acc_write):
-    if(not os.path.exists(installdir+"reord3d_acc_reord.F90")):
-      writenew = True
-  if(not os.path.exists(installdir+"reord4d_1_reord.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_2_reord.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_3_reord.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_4_reord.F90")):
-    writenew = True
-  if (acc_write):
-    if(not os.path.exists(installdir+"reord4d_acc_reord.F90")):
-      writenew = True
-  if(not os.path.exists(installdir+"reord4d_1_utils_f2t.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_2_utils_f2t.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_3_utils_f2t.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_4_utils_f2t.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_1_utils_t2f.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_2_utils_t2f.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_3_utils_t2f.F90")):
-    writenew = True
-  if(not os.path.exists(installdir+"reord4d_4_utils_t2f.F90")):
-    writenew = True
+
+
+  #RANGE INDICES
+  maxr = 4
+  minr = 2
+
+  #SET THE NAMES FOR THE FILES TO GENERATE
+  num_types  = 6
+  names      = [ [] for i in range(num_types)]
+  names[0] = [[ installdir+"reord"+str(i+minr)+"d_"+str(j+1)+"_reord.F90" for j in range(factorial(i + minr)) ] for i in range(maxr-minr+1) ]
+  names[1] = [[ installdir+"reord"+str(i+minr)+"d_"+str(j+1)+"_utils_f2t.F90" for j in range(factorial(i + minr))] for i in range(maxr-minr+1)]
+  names[2] = [[ installdir+"reord"+str(i+minr)+"d_"+str(j+1)+"_utils_t2f.F90" for j in range(factorial(i + minr))] for i in range(maxr-minr+1)]
+
+  if(real_sp_write):
+     names[3] = [[ installdir+"reord"+str(i+minr)+"d_"+str(j+1)+"_reord_sp.F90" for j in range(factorial(i + minr)) ] for i in range(maxr-minr+1) ]
+  if(acc_write):
+     names[4] = [[ installdir+"reord"+str(i+minr)+"d_"+str(j+1)+"_acc_reord.F90" for j in range(factorial(i + minr)) ] for i in range(maxr-minr+1) ]
+  if(acc_write and real_sp_write):
+     names[5] = [[ installdir+"reord"+str(i+minr)+"d_"+str(j+1)+"_acc_reord_sp.F90" for j in range(factorial(i + minr)) ] for i in range(maxr-minr+1) ]
+  
+  names_flat = [ path for sublist in names for subsublist in sublist for  path in subsublist]
+
+  #check if all necessary files exist
+  for path in names_flat:
+     write_new_old = writenew
+     if(not os.path.exists(path)):
+        writenew = True
+     if(writenew and not write_new_old):
+        print "SOME FILES MISSING, GENERATING FROM SCRATCH"
 
   if(not writenew):
     c = open(installdir+"reorder_frontend.F90",'r')
@@ -166,6 +165,11 @@ def main():
         writenew = (not line.split()[-1] == str(args[4]))
         if writenew:
           break
+
+      if "!ARG5:" in line:
+        writenew = (not line.split()[-1] == str(args[5]))
+        if writenew:
+          break
  
       if "!END VARS" in line:
         endvars_found = True
@@ -179,146 +183,107 @@ def main():
 
 
   if writenew:
-    produce_files(installdir,lsutildir,args)
+    produce_files(installdir,tensordir,args,names,minr,maxr)
 
 ##################################################################################################
 ##################################################################################################
-def produce_files(installdir,lsutildir,args):
-   maxr = 4
-   minr = 2
-   hack_only_4d_for_utils = False
+def produce_files(installdir,tensordir,args,names,minr,maxr):
+   now         = datetime.datetime.now()
+
+   # WRITE REORDERINGS FRONTEND FILE
    f=open(installdir+"reorder_frontend.F90",'w')
-   utils = []
-   reord = []
-   acc_reord = []
-   acc = args[4]
+   all_names = [get_namestub_from_path(item) for sublist in names for subsublist in sublist for  item in subsublist]
+   write_main_header(f,now,all_names,args,tensordir)
+   f.write("\nend module reorder_frontend_module")
+   f.close()
 
-   for idx in range(maxr-minr+1):
-     #if(idx==maxr-minr):
-     sho3 = []
-     sho = []
-     sho_acc = []
-     
-     for i in range(idx+minr) :
-       sho.append(open(installdir+"reord"+str(idx+minr)+"d_"+str(i+1)+"_reord.F90",'w'))
-
-
-       sho2 = []
-      
-       if(idx+minr != 4 and hack_only_4d_for_utils):
-         sho2.append(False)
-         sho2.append(False)
-
-       else:
-         sho2.append(open(installdir+"reord"+str(idx+minr)+"d_"+str(i+1)+"_utils_f2t.F90",'w'))
-         sho2.append(open(installdir+"reord"+str(idx+minr)+"d_"+str(i+1)+"_utils_t2f.F90",'w'))
-       sho3.append(sho2)
-
-     if (acc):
-       sho_acc.append(open(installdir+"reord"+str(idx+minr)+"d_acc_reord.F90",'w'))       
-
-     reord.append(sho)
-     utils.append(sho3)
-     acc_reord.append(sho_acc)
-
+   #TODO: MAKE TESTER INTERFACE TEST T2F, F2T, ACC AND SP VERSIONS
+   write_testing_framework(installdir,minr,maxr)
 
    #GET COMMAND LINE ARGUMENTS
    debug_loops = args[1]
    nocollapse  = args[2]
-    
-    
-   now = datetime.datetime.now()
-   #FULL TO TILE OR TILE TO FULL
-   forutils = ["f2t","t2f"]
+   acc         = args[4]
+   real_sp     = args[5]
 
-   # WRITE REORDERINGS FRONTEND FILE
-   write_main_header(f,now,args,lsutildir,minr,maxr,hack_only_4d_for_utils)
-   write_testing_framework(f,minr,maxr)
-   f.write("\nend module reorder_frontend_module")
-   f.close()
+   #SET THE NAMES FOR THE FILES TO GENERATE
+   for iname,name in enumerate(names):
 
-   #WRITE THE HEADERS OF ALL FILES
-   for idx in range(maxr-minr+1):
-     for i in range(minr+idx):
-       write_simple_module_header(reord[idx][i],idx+minr,i+1,now,args,"r")
+      #ONLY DO THE ITERATION ID THE NAME LIST IS NOT EMPTY
+      if( len(name) > 0):
 
-       if (idx+minr != 4 and hack_only_4d_for_utils):
-         continue
+         #iname = 0 : normal full dense reorderings
+         #iname = 1 : reoderings full to tiled
+         #iname = 2 : reoderings tiled to full
+         #iname = 3 : single precision reorderings
+         #iname = 4 : acc dense reorderings
+         #iname = 5 : acc single precision reorderings
+         if( iname == 0 ):
+            local_acc = False
+            addition = "normal"
+         elif (iname == 1):
+            local_acc = False
+            addition = "f2t"
+         elif (iname == 2):
+            local_acc = False
+            addition = "t2f"
+         elif (iname == 3):
+            local_acc = False
+            addition = "sp"
+         elif (iname == 4):
+            local_acc = True
+            addition = "normal"
+         elif (iname == 5):
+            local_acc = True
+            addition = "sp"
+         else:
+            print "MAKE SURE YOUR CASE IS IMPLEMENTED AND SET THE SWITCHES CORRECTLY"
+            exit(0)
 
-       for k in range(len(forutils)):
-         write_simple_module_header(utils[idx][i][k],idx+minr,i+1,now,args,forutils[k])
+         #OPEN THE FILES TO GENERATE
+         reord = [[ open(name[i][j],'w')        for j in range(factorial(i + minr)) ] for i in range(maxr-minr+1) ]
 
-     if(acc):
-       write_simple_module_header(acc_reord[idx][0],idx+minr,i+1,now,args,"acc")
-
-   #SPECIFY THE ORDER OF REODERINGS
-   for idx in range(maxr-minr+1):
-     modes = idx + minr
-     # GENERATE ORIGINAL ORDER AND STARTING POINT FOR NEW ORDER
-     idxarr = [0]*modes
-     for i in range(modes):
-       idxarr[i] = i
-   
-     #GET ALL PERMUTATION
-     #all_permutations=itertools.permutations(idxarr)
-     all_permutations=permutations(idxarr)
-    
-     #LOOP OVER PERMUTATIONS AND WRITE SUBROUTINES
-     for perm in all_permutations:
-       #CHECK IF THE ORDERING IS NECESSARY, ELSE JUST SKIP IT
-       doreord = True
-       for i in range(len(perm)-1):
-         if(perm[i]+1==perm[i+1]):
-           doreord = False
-
-       if doreord :
-         emptystr = ""
-         # WRITE THE CPU SUBROUTINE HEADER AND GET ITS NAME
-         sub = write_subroutine_header(reord[idx][perm[0]],idxarr,perm,now,modes,emptystr,debug_loops)
-         #Write the CPU subroutine body
-         write_subroutine_body(reord[idx][perm[0]],idxarr,perm,modes,args,emptystr)
-         #END THE CPU SUBROUTINE
-         reord[idx][perm[0]].write("  end subroutine "+sub+"\n\n")
-         # WRITE THE ANALOGOUS GPU STUFF
-         # we have six precases
-         if (acc):
-           for acc_case in range(6):
-             sub_acc = write_subroutine_header_acc(acc_reord[idx][0],idxarr,perm,now,modes,acc_case)
-             write_subroutine_body_acc(acc_reord[idx][0],idxarr,perm,modes,args,acc_case)
-             acc_reord[idx][0].write("  end subroutine "+sub_acc+"\n\n")
-
-       if(idx+minr!=4 and hack_only_4d_for_utils):
-         continue
-
-       for  ad in range(len(forutils)):
-         addition = forutils[ad]
-         #if(hack_only_4d_for_utils and modes!=4):
-         #  break
-         # WRITE THE SUBROUTINE HEADER AND GET ITS NAME
-         sub =  write_subroutine_header(utils[idx][perm[0]][ad],idxarr,perm,now,modes,addition,debug_loops)
-         #Write the subroutine body
-         write_subroutine_body(utils[idx][perm[0]][ad],idxarr,perm,modes,args,addition)
-         #END THE SUBROUTINE
-         #print "  end subroutine "+subroutinename+"\n\n"
-         utils[idx][perm[0]][ad].write("  end subroutine "+sub+"\n\n")
+         #WRITE THE HEADERS OF ALL FILES
+         for idx in range(maxr-minr+1):
+           for i in range(factorial(minr+idx)):
+             write_simple_module_header(reord[idx][i],idx+minr,i+1,now,args,local_acc)
 
 
+         #SPECIFY THE ORDER OF REODERINGS
+         for idx in range(maxr-minr+1):
+           modes = idx + minr
+           # GENERATE ORIGINAL ORDER AND STARTING POINT FOR NEW ORDER
+           idxarr = [0]*modes
+           for i in range(modes):
+             idxarr[i] = i
+         
+           #GET ALL PERMUTATION
+           #all_permutations=itertools.permutations(idxarr)
+           all_permutations=permutations(idxarr)
+          
+           #LOOP OVER PERMUTATIONS AND WRITE SUBROUTINES
+           for pnum,perm in enumerate(all_permutations):
+             #CHECK IF THE ORDERING IS NECESSARY, ELSE JUST SKIP IT
+             doreord = True
+             for i in range(len(perm)-1):
+               if(perm[i]+1==perm[i+1]):
+                 doreord = False
+             #always write the file for
+             doreord = doreord or i
 
-   #END the file
-   for idx in range(maxr-minr+1):
-     for i in range(minr+idx):
-       write_simple_module_end_and_close(reord[idx][i],idx+minr,i+1,now,args,'r')
-       if(idx+minr!=4 and hack_only_4d_for_utils):
-         continue
-
-       for ad in range(len(forutils)):
-         write_simple_module_end_and_close(utils[idx][i][ad],idx+minr,i+1,now,args,forutils[ad])
-
-     if (acc):
-       write_simple_module_end_and_close(acc_reord[idx][0],idx+minr,i+1,now,args,'acc')
-
-   #remove empty file
-   os.system("rm "+installdir+"reord2d_1_reord.F90")
+             if doreord :
+               # WRITE THE CPU SUBROUTINE HEADER AND GET ITS NAME
+               sub = write_subroutine_header(reord[idx][pnum],idxarr,perm,now,modes,addition,debug_loops)
+               #Write the CPU subroutine body
+               write_subroutine_body(reord[idx][pnum],idxarr,perm,modes,args,addition)
+               #END THE CPU SUBROUTINE
+               reord[idx][pnum].write("  end subroutine "+sub+"\n\n")
+               write_simple_module_end_and_close(reord[idx][pnum])
+             else:
+               
+               reord[idx][pnum].write("\n  subroutine dummy()\n  end subroutine dummy\n\n")
+               write_simple_module_end_and_close(reord[idx][pnum])
+               #os.system("rm "+reord[idx][pnum].name)
 
 
 def write_subroutine_body(f,idxarr,perm,modes,args,ad):
@@ -326,12 +291,16 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
   nocollapse  = args[2]
   #GENERAL CASE pre1/=1 pre2/=0 or 1
   if(not debug_loops):
-    cases = ["pre2 == 0.0E0_realk .and. pre1 == 1.0E0_realk"]
-    cases.append("pre2 == 0.0E0_realk .and. pre1 /= 1.0E0_realk")
-    cases.append("pre2 == 1.0E0_realk .and. pre1 == 1.0E0_realk")
-    cases.append("pre2 == 1.0E0_realk .and. pre1 /= 1.0E0_realk")
-    cases.append("pre2 /= 1.0E0_realk .and. pre1 == 1.0E0_realk")
-    cases.append("pre2 /= 1.0E0_realk .and. pre1 /= 1.0E0_realk")
+    if ad == "sp":
+       prec = "tensor_sp"
+    else:
+       prec = "tensor_dp"
+    cases = ["pre2 == 0.0E0_"+prec+" .and. pre1 == 1.0E0_"+prec]
+    cases.append("pre2 == 0.0E0_"+prec+" .and. pre1 /= 1.0E0_"+prec)
+    cases.append("pre2 == 1.0E0_"+prec+" .and. pre1 == 1.0E0_"+prec)
+    cases.append("pre2 == 1.0E0_"+prec+" .and. pre1 /= 1.0E0_"+prec)
+    cases.append("pre2 /= 1.0E0_"+prec+" .and. pre1 == 1.0E0_"+prec)
+    cases.append("pre2 /= 1.0E0_"+prec+" .and. pre1 /= 1.0E0_"+prec)
   else:
     cases = [".true."]
 
@@ -346,22 +315,20 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
     omppar ="      !$OMP PARALLEL DEFAULT(NONE),PRIVATE("
     for j in range(modes):
       omppar += abc[j]+",b"+abc[j]+","
-    if ad != "": 
+    if ((ad != "normal") and (ad != "sp")): 
       for j in range(modes):
         omppar += "b"+abc[j]+"f,"
     omppar = omppar[0:-1] + ")&\n      !$OMP SHARED(bcntr,pre1,pre2,array_in,array_out, &\n      !$OMP "
     for j in range(modes):
       omppar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
-    if ad != "":
+    if ((ad != "normal") and (ad != "sp")):
       omppar += "&\n      !$OMP "
       for j in range(modes):
         omppar += "f"+abc[j] +","
     omppar = omppar[0:-1]+")\n"
  
     if(not debug_loops): 
-      f.write("#ifndef VAR_LSESSL\n")
       f.write(omppar)
-      f.write("#endif\n")
   
     #get the batched space
     casecounter = 1
@@ -422,14 +389,10 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
             ompdo ="        !$OMP DO" 
             if (modes-len(oldr)>1 and (not nocollapse)):
               ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
-              f.write("#ifndef VAR_LSESSL\n")
               f.write(ompdo)
-              f.write("#endif\n")
             else:
               ompdo += "\n"
-              f.write("#ifndef VAR_LSESSL\n")
               f.write(ompdo)
-              f.write("#endif\n")
  
         #ORDER THE LOOPS, this depends on the architecture and may be modified
         #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
@@ -482,7 +445,7 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
         if(not debug_loops):
           offsetstr2 = offsetstr + "  "
           for j in  range(len(outeri)):
-            if ad != "":
+            if ((ad != "normal") and (ad != "sp")):
               f.write(offsetstr2+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")          
         else:
           offsetstr2 = offsetstr + "  "        
@@ -591,15 +554,13 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
       if(not debug_loops):
         if(i==modes-1):
           ompdo = "      !$OMP END PARALLEL\n"
-          f.write("#ifndef VAR_LSESSL\n")
           f.write(ompdo)
-          f.write("#endif\n")
   
     if(cas==len(cases)-1):
       f.write("    endif precase\n")
    
 
-def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
+def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case,ad):
   
   x = 0
   while x < 2:
@@ -788,6 +749,10 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   reordstr1 = ""
   reordstr2 = ""
   reordstr3 = ""
+  if ad == "sp":
+     prec = "tensor_sp"
+  else:
+     prec = "tensor_dp"
   var_underscore = ""
   for i in range(modes):
     reordstr1 += str(perm[i]+1)
@@ -795,15 +760,22 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
     if ad == "f2t":
       intermed = "f"+intermed
       var_underscore = "_"
+    if ad == "sp":
+      var_underscore = "_"
     reordstr2 += intermed
     intermed = "dims("+str(perm[i]+1)+"),"
     if ad == "t2f":
       intermed = "f"+intermed
       var_underscore = "_"
+    if ad == "sp":
+      var_underscore = "_"
     reordstr3 += intermed
   reordstr2 = reordstr2[0:-1]
   reordstr3 = reordstr3[0:-1]
-  sname =  "manual_"+reordstr1+"_reordering"+var_underscore+ad
+  if (ad == "normal"):
+    sname =  "manual_"+reordstr1+"_reordering"
+  else:
+    sname =  "manual_"+reordstr1+"_reordering"+var_underscore+ad
 
   #GET THE SUBROUTINE HEADER
   subheaderstr= "  !\> \\brief reorder a "+str(modes)+" diensional array  to get the indices\n"
@@ -812,7 +784,7 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr+= "  !\> \\author Patrick Ettenhuber\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
   subheaderstr+= "  subroutine "+sname+"(dims,"
-  if ad != "":
+  if ((ad != "normal") and (ad != "sp")):
     subheaderstr += "fdims,fels,"
   subheaderstr+= "pre1,array_in,pre2,array_out)\n"
   subheaderstr+= "    implicit none\n"
@@ -820,21 +792,21 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr+= "    integer, parameter :: bs=BS_"+str(modes)+"D\n"
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")"
-  if ad != "":
+  if ((ad != "normal") and (ad != "sp")):
     subheaderstr += ",fdims("+str(modes)+"),fels("+str(modes)+")"
   subheaderstr+= "\n"
   subheaderstr+= "    !> as this routine can be used for adding and scaling these are the prefactors\n"
-  subheaderstr+= "    real(realk),intent(in) :: pre1,pre2\n"
+  subheaderstr+= "    real("+prec+"),intent(in) :: pre1,pre2\n"
   subheaderstr+= "    !> array to be reordered\n"
-  subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
+  subheaderstr+= "    real("+prec+"),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
-  subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
+  subheaderstr+= "    real("+prec+"),intent(inout) :: array_out("+reordstr3+")\n"
   subheaderstr+= "    integer :: bcntr,"
   for i in range(modes):
     subheaderstr+= abc[i]+",b"+abc[i]+",d"+abc[i]+",d"+abc[i]+"2,"
   subheaderstr = subheaderstr[0:-1]
   subheaderstr += "\n"
-  if ad != "":
+  if ((ad != "normal") and (ad != "sp")):
     subheaderstr+= "    integer :: "
     for i in range(modes):
       subheaderstr+= "b"+abc[i]+"f,f"+abc[i]+","
@@ -847,7 +819,7 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
   subheaderstr+= "\n"
-  if ad != "":
+  if ((ad != "normal") and (ad != "sp")):
     for i in range(modes):
       subheaderstr+= "    f"+abc[i]+"=fels("+str(i+1)+")-1\n"
   subheaderstr+= "\n"
@@ -860,19 +832,22 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
 
   if deb :
     if ad == "t2f":
-      subheaderstr += "\n    if(pre2==0.0E0_realk)array_out(&\n"
+      subheaderstr += "\n    if(pre2==0.0E0_tensor_dp)array_out(&\n"
       for i in range(modes):
         subheaderstr += "                 &fels("+str(perm[i]+1)+"):fels("+str(perm[i]+1)+")+dims("+str(perm[i]+1)+")-1,&\n"
-      subheaderstr = subheaderstr[0:-3]+") = 0.0E0_realk\n\n"
+      subheaderstr = subheaderstr[0:-3]+") = 0.0E0_tensor_dp\n\n"
     else:
-      subheaderstr += "\n    if(pre2==0.0E0_realk)array_out = 0.0E0_realk\n\n"
+      if ad == "sp":
+        subheaderstr += "\n    if(pre2==0.0E0_tensor_sp)array_out = 0.0E0_tensor_sp\n\n"
+      else:
+        subheaderstr += "\n    if(pre2==0.0E0_tensor_dp)array_out = 0.0E0_tensor_dp\n\n"
   
   f.write(subheaderstr)
   return sname
 
 
 #WRITE THE HEADER AND GET THE SUBROUTINE NAME
-def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
+def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case,ad):
   reordstr1 = ""
   reordstr2 = ""
   reordstr3 = ""
@@ -885,7 +860,11 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
     reordstr3 += intermed
   reordstr2 = reordstr2[0:-1]
   reordstr3 = reordstr3[0:-1]
-  sname =  "manual_acc_"+reordstr1+"_reordering_"+str(acc_case)
+  if (ad == "normal"):
+    sname =  "manual_acc_"+reordstr1+"_reordering_"+str(acc_case)
+  else:
+    var_underscore = '_'
+    sname =  "manual_acc_"+reordstr1+"_reordering_"+str(acc_case)+var_underscore+ad
 
   #GET THE SUBROUTINE HEADER
   subheaderstr= "  !\> \\brief reorder a "+str(modes)+" diensional array (case "+str(acc_case)+") on a device\n"
@@ -899,11 +878,20 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")\n"
   subheaderstr+= "    !> as this routine can be used for adding and scaling these are the prefactors\n"
-  subheaderstr+= "    real(realk),intent(in) :: pre1,pre2\n"
+  if ad == "sp":
+    subheaderstr+= "    real(tensor_sp),intent(in) :: pre1,pre2\n"
+  else:
+    subheaderstr+= "    real(tensor_dp),intent(in) :: pre1,pre2\n"
   subheaderstr+= "    !> array to be reordered\n"
-  subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
+  if ad == "sp":
+    subheaderstr+= "    real(tensor_sp),intent(in) :: array_in("+reordstr2+")\n"
+  else:
+    subheaderstr+= "    real(tensor_dp),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
-  subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
+  if ad == "sp":
+    subheaderstr+= "    real(tensor_sp),intent(inout) :: array_out("+reordstr3+")\n"
+  else:
+    subheaderstr+= "    real(tensor_dp),intent(inout) :: array_out("+reordstr3+")\n"
   subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id1\n"
   subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id2\n"
   subheaderstr+= "    logical,intent(in) :: wait_arg\n"
@@ -921,7 +909,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   return sname
 
 
-def write_simple_module_header(f,idim,idx,now,args,kindof):
+def write_simple_module_header(f,idim,idx,now,args,acc):
    f.write("!\> \\brief this autogenerated module is inteded to contain high performance reorderings for\n!mutlidimensional arrays to tiles in a different distribution.\n!\> \\author Patrick Ettenhuber\n!\> \\date March 2013, file produced: "+str(now.month)+", "+str(now.year)+"\n")
    #WRITE THE VARIABLES WITH WHICH THE FILE WAS PRODUCED HERE 
    #--> FOR LATER READOUT AND SEE IF IT IS NECESSARY TO PRODUCE A NEW INSTANCE OF IT
@@ -930,38 +918,20 @@ def write_simple_module_header(f,idim,idx,now,args,kindof):
 
    f.write("!END VARS\n\n")
 
-   if("f2t" in kindof):
-     f.write("module reord"+str(idim)+"d_"+str(idx)+"_utils_f2t_module\n")
-   elif("t2f" in kindof):
-     f.write("module reord"+str(idim)+"d_"+str(idx)+"_utils_t2f_module\n")
-   elif(kindof=="r"):
-     f.write("module reord"+str(idim)+"d_"+str(idx)+"_reord_module\n")
-   elif(kindof=="acc"):
-     f.write("module reord"+str(idim)+"d_acc_reord_module\n")
-   else:
-     print "NO VALID OPTION1 " + kindof
-     sys.exit()
+   namestub = get_namestub_from_path(f.name)
 
-   f.write("  use precision\n")
-   f.write("  use lsparameters\n")
-   if(kindof=="acc"):
+   f.write("module "+namestub+"_module\n")
+   f.write("  use tensor_parameters_and_counters\n")
+   if(acc):
      f.write("  use openacc\n")
    f.write("\n")
    f.write("  contains\n")
 
-def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
+def get_namestub_from_path(path):
+   return path[path.rfind("/")+1:].replace(".F90","") 
 
-   if(kindof=='f2t'):
-     f.write("end module reord"+str(idim)+"d_"+str(idx)+"_utils_f2t_module\n")
-   elif(kindof=='t2f'):
-     f.write("end module reord"+str(idim)+"d_"+str(idx)+"_utils_t2f_module\n")
-   elif(kindof=='r'):
-     f.write("end module reord"+str(idim)+"d_"+str(idx)+"_reord_module\n")
-   elif(kindof=='acc'):
-     f.write("end module reord"+str(idim)+"d_acc_reord_module\n")
-   else:
-     print "NO VALID OPTION2"+kindof
-     sys.exit()
+def write_simple_module_end_and_close(f):
+   f.write("end module "+get_namestub_from_path(f.name)+"_module\n")
    f.close()
 
 
@@ -970,7 +940,7 @@ def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
 
 
 
-def write_main_header(f,now,args,lsutildir,minr,maxr,skip):
+def write_main_header(f,now,names,args,tensordir):
    f.write("!\> \\brief this autogenerated module is inteded to contain high performance reorderings for\n!mutlidimensional arrays.\n!\> \\author Patrick Ettenhuber & Janus Juul Eriksen\n!\> \\date November 2012, file produced: "+str(now.month)+", "+str(now.year)+"\n")
    #WRITE THE VARIABLES WITH WHICH THE FILE WAS PRODUCED HERE 
    #--> FOR LATER READOUT AND SEE IF IT IS NECESSARY TO PRODUCE A NEW INSTANCE OF IT
@@ -981,37 +951,32 @@ def write_main_header(f,now,args,lsutildir,minr,maxr,skip):
 
    f.write("module reorder_frontend_module\n")
    f.write("  use precision\n")
+   f.write("  use tensor_parameters_and_counters\n")
+   f.write("  use get_idx_mod\n")
    f.write("  use memory_handling\n")
    
-   for mode in range(maxr,minr-1,-1):
-     for i in range(mode):
-       if (mode == 4 or ( mode == 3 or mode == 2 and not skip)):
-         f.write("  use reord"+str(mode)+"d_"+str(i+1)+"_utils_t2f_module\n")
-         f.write("  use reord"+str(mode)+"d_"+str(i+1)+"_utils_f2t_module\n")
-       if(mode==2 and i == 0):
-         continue
-       f.write("  use ""reord"+str(mode)+"d_"+str(i+1)+"_reord_module\n")
-   if(args[4]):
-     f.write("#ifdef VAR_OPENACC\n")
-     f.write("  use reord2d_acc_reord_module\n")
-     f.write("  use reord3d_acc_reord_module\n")
-     f.write("  use reord4d_acc_reord_module\n")
-     f.write("#endif\n")
+   for name in names:
+      f.write("  use "+name+"_module\n")
+
    f.write("  use LSTIMING\n")
    #f.write("  contains\n")
    #Write the subroutines called by the user
-   basic = open(lsutildir+"/autogen/reorder_header.F90",'r')
+   basic = open(tensordir+"/autogen/reorder_header.F90",'r')
    for line in basic:
      f.write(line)
    basic.close
 
 
-def write_testing_framework(f,minr,maxr):
+def write_testing_framework(installdir,minr,maxr):
+  f=open(installdir+"reorder_tester.F90",'w')
   header="\
+module reorder_tester_module\n\
+  use reorder_frontend_module\n\
+  contains\n\
   subroutine test_array_reorderings(LUPRI)\n    implicit none\n\n\
-    real(realk),pointer :: in1(:),sto(:)\n\
-    real(realk),pointer :: res(:),til(:)\n\
-    real(realk) :: ref(6),ref1s,ref2s,ref1,ref2\n\
+    real(tensor_dp),pointer :: in1(:),sto(:)\n\
+    real(tensor_dp),pointer :: res(:),til(:)\n\
+    real(tensor_dp) :: ref(6),ref1s,ref2s,ref1,ref2\n\
     integer :: tile_idx,LUPRI\n\
     logical :: master,rigorous\n\
     integer :: "
@@ -1019,7 +984,7 @@ def write_testing_framework(f,minr,maxr):
   for i in range(maxr):
     header += abc[i]+",n"+abc[i]+","
   header = header[0:-1]+"\n    integer :: p1,p2\n\
-    real(realk) :: pr1,pr2,begc1,begw1,endc1,endw1,begc2,begw2,endc2,endw2\n\
+    real(tensor_dp) :: pr1,pr2,begc1,begw1,endc1,endw1,begc2,begw2,endc2,endw2\n\
     character(len=7) :: teststatus\n\
     logical :: "
   for i in range(minr,maxr+1):
@@ -1124,7 +1089,7 @@ def write_testing_framework(f,minr,maxr):
           for j in range(i):
             testcase += "*n"+abc[perm[j]]
         testcase += "+"
-      testcase = testcase[0:-1]+"))>1.0E-11_realk)teststatus=\"FAILED \"\n"
+      testcase = testcase[0:-1]+"))>1.0E-11_tensor_dp)teststatus=\"FAILED \"\n"
       ofstr = ofstr[0:-2]
       for i in range(mode):
         testcase += ofstr+"enddo\n"
@@ -1208,10 +1173,10 @@ def write_testing_framework(f,minr,maxr):
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
           call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
-          do tile_idx=1,3\n            call tile_from_fort(1.0E0_realk,in1,["
+          do tile_idx=1,3\n            call tile_from_fort(1.0E0_tensor_dp,in1,["
       for i in range(mode):
         testcase += "n"+abc[i]+","
-      testcase = testcase[0:-1] +"],"+str(mode)+",0.0E0_realk,til,tile_idx,["
+      testcase = testcase[0:-1] +"],"+str(mode)+",0.0E0_tensor_dp,til,tile_idx,["
       for i in range(mode):
         if(i==mode-1):
           testcase += "n"+abc[i]+"/2],["
@@ -1268,7 +1233,7 @@ def write_testing_framework(f,minr,maxr):
           for j in range(i):
             testcase += "*n"+abc[perm[j]]
         testcase += "+"
-      testcase = testcase[0:-1]+"))>1.0E-11_realk)teststatus=\"FAILED \"\n"
+      testcase = testcase[0:-1]+"))>1.0E-11_tensor_dp)teststatus=\"FAILED \"\n"
       ofstr = ofstr[0:-2]
       for i in range(mode):
         testcase += ofstr+"enddo\n"
@@ -1293,10 +1258,10 @@ def write_testing_framework(f,minr,maxr):
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
           call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
-          do tile_idx=1,3\n            call tile_from_fort(1.0E0_realk,sto,["
+          do tile_idx=1,3\n            call tile_from_fort(1.0E0_tensor_dp,sto,["
       for i in range(mode):
         testcase += "n"+abc[i]+","
-      testcase = testcase[0:-1] +"],"+str(mode)+",0.0E0_realk,til,tile_idx,["
+      testcase = testcase[0:-1] +"],"+str(mode)+",0.0E0_tensor_dp,til,tile_idx,["
       for i in range(mode):
         if(perm[i]==mode-1):
           testcase += "n"+abc[perm[i]]+"/2,"
@@ -1317,13 +1282,13 @@ def write_testing_framework(f,minr,maxr):
       testcase = testcase[0:-1] + "],["
       for i in range(mode):
         testcase += str(perm[i]+1)+","
-      testcase = testcase[0:-1] + "])\n            call tile_in_fort(1.0E0_realk,til,tile_idx,["
+      testcase = testcase[0:-1] + "])\n            call tile_in_fort(1.0E0_tensor_dp,til,tile_idx,["
       for i in range(mode):
         if(perm[i]==mode-1):
           testcase += "n"+abc[perm[i]]+"/2,"
         else:
           testcase += "n"+abc[perm[i]]+","
-      testcase = testcase[0:-1] + "],0.0E0_realk,res,["
+      testcase = testcase[0:-1] + "],0.0E0_tensor_dp,res,["
       for i in range(mode):
           testcase += "n"+abc[perm[i]]+","
       testcase = testcase[0:-1] + "],"+str(mode)+",["
@@ -1363,7 +1328,7 @@ def write_testing_framework(f,minr,maxr):
           for j in range(i):
             testcase += "*n"+abc[perm[j]]
         testcase += "+"
-      testcase = testcase[0:-1]+"))>1.0E-11_realk)teststatus=\"FAILED \"\n"
+      testcase = testcase[0:-1]+"))>1.0E-11_tensor_dp)teststatus=\"FAILED \"\n"
       ofstr = ofstr[0:-2]
       for i in range(mode):
         testcase += ofstr+"enddo\n"
@@ -1389,7 +1354,8 @@ def write_testing_framework(f,minr,maxr):
 
 
 
-  f.write("  end subroutine test_array_reorderings")
+  f.write("  end subroutine test_array_reorderings\nend module reorder_tester_module")
+  f.close()
 
 #ITERTOOLS COMBINATIONS AND PERMUTATIONS ARE NOT IMPLEMENTED BELOW PYTHON 2.6, THUS I COPIED THE
 #SOURCE CODE OF THE HOMEPAGE DIRECTLY
