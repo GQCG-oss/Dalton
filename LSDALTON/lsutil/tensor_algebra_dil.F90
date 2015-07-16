@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/07/08 (started 2014/09/01).
+!REVISION: 2015/07/13 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -1764,30 +1764,60 @@
         if(present(ierr)) ierr=errc
         return
         end subroutine multord_i
-!---------------------------------------------
-        integer function mlndx_cmp(m1,m2,ierr) !SERIAL
+!------------------------------------------------------
+        integer function mlndx_cmp(m1,m2,ierr,ipr,diff) !SERIAL
 !This function compares two integer multi-indices and returns:
 ! -1 if m1 is less than m2;
 !  0 if m1 is equal to m2;
 ! +1 if m1 is greater than m2;
+!An optional argument <ipr> specifies index priorities.
+!It defaults to the 1st index being the most senior,
+!each subsequent index having less priority than the previous one.
         implicit none
-        integer(INTD), intent(in):: m1(1:),m2(1:)     !in: multi-indices of the same length
+        integer(INTD), intent(in):: m1(1:),m2(1:)     !in: multi-indices, possibly of different lengths
         integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
-        integer(INTD):: i,n,errc
+        integer(INTD), intent(in), optional:: ipr(1:) !in: index priorities (only for the same length multi-indices)
+        logical, intent(in), optional:: diff          !in: .false. will prohibit multi-indices of different lengths, default=.true.
+        integer(INTD):: i,j,n1,n2,errc
+        logical:: df
 
-        errc=0; mlndx_cmp=0; n=size(m1)
-        if(size(m2).eq.n) then
-         if(n.gt.0) then
-          do i=1,n
-           if(m1(i).lt.m2(i)) then
-            mlndx_cmp=-1; exit
-           elseif(m1(i).gt.m2(i)) then
-            mlndx_cmp=+1; exit
+        errc=0; mlndx_cmp=0; n1=size(m1); n2=size(m2)
+        df=.true.; if(present(diff)) df=diff
+        if(n1.eq.n2) then
+         if(n1.gt.0) then
+          if(present(ipr)) then
+           if(size(ipr).ge.n1) then
+            do i=1,n1
+             j=ipr(i) !index j has priority i
+             if(j.ge.1.and.j.le.n1) then
+              if(m1(j).lt.m2(j)) then
+               mlndx_cmp=-1; exit
+              elseif(m1(j).gt.m2(j)) then
+               mlndx_cmp=+1; exit
+              endif
+             else
+              errc=1; exit
+             endif
+            enddo
+           else
+            errc=2
            endif
-          enddo
+          else
+           do i=1,n1
+            if(m1(i).lt.m2(i)) then
+             mlndx_cmp=-1; exit
+            elseif(m1(i).gt.m2(i)) then
+             mlndx_cmp=+1; exit
+            endif
+           enddo
+          endif
          endif
         else
-         errc=1
+         if(df) then
+          if(n1.lt.n2) then; mlndx_cmp=-1; else; mlndx_cmp=+1; endif
+         else
+          errc=3
+         endif
         endif
         if(present(ierr)) ierr=errc
         return
@@ -3137,22 +3167,22 @@
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
           call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
-!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
-!           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(.not.win_lck) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,tile_num,bufi(1:tile_vol),tile_vol,lock_set=.true.)
-!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:n)
-!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
-!           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
+          call tensor_get_tile(tens_arr,tile_num,bufi,tile_vol,lock_set=.true.)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:n)
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
+           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(win_lck) then
            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
           else
            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
           endif
-!          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:n)
-!          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",16(1x,i6))',ADVANCE='NO') signa(1:n)
+          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:n)
+          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unpacking:",16(1x,i6))',ADVANCE='NO') signa(1:n)
           call dil_tensor_insert(n,bufo,tens_part%dims,bufi(1:tile_vol),tile_dims,signa(1:n)-tens_part%lbnd(1:n),i)
-!          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
+          if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: Status ",i9)') i
           if(i.ne.0) then; call proc_clean(-2_INTD); return; endif
          elseif(k.gt.0) then
           call proc_clean(-1_INTD); return
@@ -4433,7 +4463,7 @@
         endif
         tm=thread_wtime(tmb)
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Done in ",F10.4'&
-        &//'," s ( ",F15.4," VS MM ",F15.4," GFlop/s: ",F4.2 "Eff). Ok")') impir,tm,tc_flops/(tm*1024d0*1024d0*1024d0),&
+        &//'," s ( ",F15.4," VS MM ",F15.4," GFlop/s: ",F4.2 " Eff). Ok")') impir,tm,tc_flops/(tm*1024d0*1024d0*1024d0),&
         &mm_flops/(tmm*1024d0*1024d0*1024d0),tc_flops*tmm/(mm_flops*tm) !debug
         call cleanup(0_INTD)
         return
@@ -5504,7 +5534,7 @@
 !Performance will suffer if either r or s (or both) is the leading (first) index in <dtens>
 !and/or the composite index (r<=s) is the leading (first) index in <stens>.
         implicit none
-        type(tensor), intent(inout):: dtens    !inout: destination tensor (rank>0)
+        type(tensor), intent(inout):: dtens    !inout: destination tensor (rank>=2)
         type(tensor), intent(in):: stens       !in: source tensor (rank one less than <dtens>)
         integer(INTD), intent(in):: ud1,ud2    !in: unfolded dimension positions in <dtens> (position of r and s)
         integer(INTD), intent(in):: fd         !in: folded dimension position in <stens> (position of [r<=s])
@@ -5514,55 +5544,71 @@
         integer(INTD):: ip1(MAX_TENSOR_RANK),ip2(MAX_TENSOR_RANK),cml(MAX_TENSOR_RANK),nml(MAX_TENSOR_RANK)
         integer(INTD):: sbas(MAX_TENSOR_RANK),sdim(MAX_TENSOR_RANK)
         integer:: mlndx(MAX_TENSOR_RANK)
-        integer(INTL):: ll,ld,ls,max_slice_vol,db(MAX_TENSOR_RANK),sb(MAX_TENSOR_RANK)
+        integer(INTL):: ll,ld,ls,max_slice_vol,db(MAX_TENSOR_RANK),sb(MAX_TENSOR_RANK),dbc
         integer(INTD), allocatable:: tkey(:,:),tnum(:)
         type(subtens_t):: subt
         real(realk), pointer, contiguous:: slice(:),tile(:)
         real(realk):: dsgn
 
+        print *,'#DIL: CHECK: DIL_DEBUG = ',DIL_DEBUG
         ierr=0; nullify(slice); nullify(tile)
+        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2): Entered process ",i7,":")') infpar%mynum
         if(stens%mode.lt.1.or.dtens%mode.ne.stens%mode+1) then; call proc_clean(1_INTD); return; endif
         n=dtens%mode !n: destination tensor rank, (n-1): source tensor rank
         if(ud1.le.0.or.ud1.gt.n.or.ud2.le.0.or.ud2.gt.n.or.ud1.eq.ud2.or.fd.le.0.or.fd.gt.stens%mode) then
          call proc_clean(2_INTD); return
         endif
-        ntb=0; do i=1,n; ntb=max(ntb,int(dtens%ntpm(i),INTD)); enddo
+!Determine sorting parameters:
+        ntb=0; do i=1,n; ntb=max(ntb,int(dtens%ntpm(i),INTD)); enddo !ntb: max number of segments per dimension in <dtens>
         if(ntb.le.0) then; call proc_clean(3_INTD); return; endif
-        ntl=dtens%nlti; if(ntl.le.0.or.ntl.gt.dtens%ntiles) then; call proc_clean(4_INTD); return; endif
+        ntl=dtens%nlti !ntl: number of local tiles of <dtens>
+        if(ntl.le.0) then; call proc_clean(0_INTD); return; endif !no local tiles --> no work
+        if(ntl.gt.dtens%ntiles) then; call proc_clean(4_INTD); return; endif
         allocate(tkey(n,ntl),tnum(ntl),STAT=ierr); if(ierr.ne.0) then; call proc_clean(5_INTD); return; endif
+        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: List length/height = ",i5,1x,i5,1x,i2)')&
+         &infpar%mynum,ntl,ntb,n
 !Create a list of local tiles of <dtens>:
         do i=1,ntl
-         tnum(i)=dtens%ti(i)%gt !global tile number is the value
+         tnum(i)=i !local tile number is the value
          call get_midx(dtens%ti(i)%gt,mlndx,dtens%ntpm,dtens%mode)
          do j=1,n; tkey(j,i)=int(mlndx(j),INTD); enddo !tile multi-index is the key
         enddo
-!Set dimension priorities for sorting:
-        j=0
-        do i=1,stens%mode
-         if(i.ne.fd) then; j=j+1; ip2(j)=i; endif
-        enddo
-        if(j.ne.n-2) then; call proc_clean(6_INTD); return; endif
-        j=0
-        do i=1,n
-         if(i.ne.ud1.and.i.ne.ud2) then; j=j+1; ip1(j)=i; endif !these are external dimensions (common between <dtens> and <stens>)
-        enddo
+!Set dimension priorities for sorting (external dimensions, common between <dtens> and <stens>):
+        j=0; do i=1,stens%mode; if(i.ne.fd) then; j=j+1; ip2(j)=i; endif; enddo; ip2(j+1:stens%mode)=0
+        if(j.ne.n-2) then; call proc_clean(6_INTD); return; endif !(n-2) is the number of external dimensions
+        j=0; do i=1,n; if(i.ne.ud1.and.i.ne.ud2) then; j=j+1; ip1(j)=i; endif; enddo
         ip1(j+1:n)=0 !two internal dimensions (ud1,ud2) do not participate in sorting
         if(j.ne.n-2) then; call proc_clean(7_INTD); return; endif
+        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: ip1 = ",16(1x,i2))')&
+         &infpar%mynum,ip1(1:n)
+        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: ip2 = ",16(1x,i2))')&
+         &infpar%mynum,ip2(1:stens%mode)
 !Sort the list of local tiles:
+        if(DIL_DEBUG) then !debug begin
+         write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: Unordered tile list: ",i5)') infpar%mynum,ntl
+         do i=1,ntl; write(*,'(1x,i7,3x,16(1x,i3))') tnum(i),tkey(1:n,i); enddo
+        endif !debug end
         if(n-2.gt.0) call multord_i(n,ntb,ntl,ip1,tkey,tnum,ierr)
         if(ierr.ne.0) then; call proc_clean(8_INTD); return; endif
+        if(DIL_DEBUG) then !debug begin
+         write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: Ordered tile list:",i5)') infpar%mynum,ntl
+         do i=1,ntl; write(*,'(1x,i7,3x,16(1x,i3))') tnum(i),tkey(1:n,i); enddo
+        endif !debug end
 !Allocate temporary buffers:
         max_slice_vol=stens%dims(fd) !the composite dimension (r<=s) is taken fully
         do i=1,stens%mode
-         if(i.ne.fd) max_slice_vol=max_slice_vol*stens%tdim(i)
+         if(i.ne.fd) max_slice_vol=max_slice_vol*stens%tdim(i) !other source dimensions are segmented
         enddo
         call cpu_ptr_alloc(slice,max_slice_vol,ierr)
         if(ierr.ne.0) then; call proc_clean(9_INTD); return; endif
         call cpu_ptr_alloc(tile,int(stens%tsize,INTL),ierr)
         if(ierr.ne.0) then; call proc_clean(10_INTD); return; endif
+        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: max_slice/tile_size = ",i11,1x,i11)')&
+         &infpar%mynum,max_slice_vol,stens%tsize
 !Process local tiles:
         l=1; cml(1:n-2)=-1; m=+1
         tloop: do while(l.le.ntl) !loop over local <dtens> tiles
+         dbc=0 !debug
          do i=1,n-2; nml(i)=tkey(ip1(i),l); enddo !get external multi-index
          if(n-2.gt.0) then; m=mlndx_cmp(nml(1:n-2),cml(1:n-2),ierr); if(ierr.ne.0) exit tloop; endif
          if(m.gt.0) then !new external multi-index --> fetch a new <stens> slice
@@ -5571,25 +5617,31 @@
   !Set slice bounds:
           sbas(fd)=1              !sbas(1:n-1): slice bases (dimension #fd starts from the beginning)
           sdim(fd)=stens%dims(fd) !sdim(1:n-1): slice dimension extents (dimension #fd is full)
-          j=0
           do i=1,n-2 !loop over the external dimensions
            k=ip1(i) !k: position in <dtens>
-           j=j+1; if(j.eq.fd) j=j+1 !j: corresponding position in <stens>
+           j=ip2(i) !j: corresponding position in <stens>
            sbas(j)=(tkey(k,l)-1)*dtens%tdim(k)+1 !dimension base offset (numeration from 1)
            sdim(j)=dtens%ti(tnum(l))%d(k)        !dimension extent
           enddo
           ll=1; do i=1,stens%mode; sb(i)=ll; ll=ll*sdim(i); enddo !addressing bases for the current <stens> slice
           call dil_subtensor_set(subt,int(stens%mode,INTD),sbas(1:stens%mode),sbas(1:stens%mode)+sdim(1:stens%mode)-1_INTD,ierr)
           if(ierr.ne.0) exit tloop
+          if(DIL_DEBUG) then !debug begin
+           write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: New tensor slice:")') infpar%mynum
+           write(*,'(i7,3x,16(1x,i4))') infpar%mynum,sbas(1:stens%mode)
+           write(*,'(i7,3x,16(1x,i4))') infpar%mynum,sdim(1:stens%mode)
+          endif !debug end
   !Fetch/prepare the slice:
           if(present(locked)) then
-           call dil_tens_fetch(stens,subt,slice,ierr,locked,tile); if(ierr.ne.0) exit tloop
+           call dil_tens_fetch(stens,subt,slice,ierr,locked,bufe=tile); if(ierr.ne.0) exit tloop
           else
            call dil_tens_fetch(stens,subt,slice,ierr,bufe=tile); if(ierr.ne.0) exit tloop
           endif
          elseif(m.lt.0) then !invalid order of external multi-indices (not sorted)
           ierr=1; exit tloop
          endif
+         write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2)[",i4,"]: Slice vol/norm = ",i13,1x,D22.14)')&
+          &infpar%mynum,dil_subtensor_vol(subt),dil_array_norm1(slice,dil_subtensor_vol(subt))
  !Set addressing arithmetic:
          bd1=(tkey(ud1,l)-1)*dtens%tdim(ud1)+1 !base orbital for index r (numeration from 1)
          bd2=(tkey(ud2,l)-1)*dtens%tdim(ud2)+1 !base orbital for index s (numeration from 1)
@@ -5615,7 +5667,10 @@
            if(n-2.gt.0) then !non-empty external multi-index
             mlndx(1:n-2)=0; m=tnum(l); i=1
             do while(i.le.n-2)
-             if(i.eq.1) dtens%ti(m)%t(ld)=dtens%ti(m)%t(ld)+slice(ls)*dsgn
+             if(i.eq.1) then
+              if(dtens%ti(m)%t(ld).ne.0d0) dbc=dbc+1 !debug
+              dtens%ti(m)%t(ld)=dtens%ti(m)%t(ld)+slice(ls)*dsgn
+             endif
              k=ip1(i) !position of the index in <dtens>
              j=ip2(i) !position of the index in <stens>
              if(mlndx(i).lt.sdim(j)-1) then
@@ -5638,9 +5693,12 @@
           enddo !i1
           ld=ld-i2*db(ud2) !unmount
          enddo !i2
+         print *,'#DIL: Process ',infpar%mynum,': dbc = ',dbc
          m=0; l=l+1 !next local tile
         enddo tloop
         if(ierr.eq.0) then; call proc_clean(0_INTD); else; call proc_clean(11_INTD); endif
+        !`Synchronize public and private window for omega2
+        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2): Exited process ",i7)') infpar%mynum
         return
 
         contains
