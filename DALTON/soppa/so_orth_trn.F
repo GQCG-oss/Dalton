@@ -306,7 +306,7 @@ C
          IF((DABS(DNORM).LE.T1MIN).AND.(LTYPE.EQ.'LINEAR')) THEN
 C
            IF(IPRSOP.GT.10) WRITE(LUPRI,'(1X,A,D15.8)')
-     &       'I make a first nomralization with norm',DNORM
+     &       'I make a first normalization with norm',DNORM
 C
            DNORMI = ONE  / DSQRT(DABS(DNORM))
 C
