@@ -1583,10 +1583,15 @@ contains
        MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
        if ((MemFree-MemNeed)<=0.0E0_realk) then
           mo_ccsd = .false.
-          write(DECinfo%output,*) 'WARNING: Insufficient memory in background buffer for &
-             & MO-based CCSD, back to standard algorithm.'
           write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
           write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+          if (DECinfo%force_scheme) then
+             call lsquit('Insufficient memory in background buffer for MO-based CCSD &
+                & (remove force scheme)',DECinfo%output)
+          else
+             write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                  & back to standard algorithm.'
+          end if
           return
        end if
     endif
@@ -1665,10 +1670,14 @@ contains
     MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma)
     if ((MemFree-MemNeed)<=0.0E0_realk) then
        mo_ccsd = .false.
-       write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
-            & back to standard algorithm. (2)'
        write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
        write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+       if (DECinfo%force_scheme) then
+          call lsquit('Insufficient memory in MO-based CCSD (2) (remove force scheme)',DECinfo%output)
+       else
+          write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+               & back to standard algorithm. (2)'
+       end if
        return
     end if
 
@@ -1678,13 +1687,21 @@ contains
        MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
        if ((MemFree-MemNeed)<=0.0E0_realk) then
           mo_ccsd = .false.
-          write(DECinfo%output,*) 'WARNING: Insufficient memory in background buffer for &
-             & MO-based CCSD, back to standard algorithm. (2)'
           write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
           write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+          if (DECinfo%force_scheme) then
+             call lsquit('Insufficient memory in background buffer for MO-based CCSD (2) &
+                & (remove force scheme)',DECinfo%output)
+          else
+             write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                  & back to standard algorithm. (2)'
+          end if
           return
        end if
     endif
+
+    ! if user forced scheme 5 or 6 and not enough memory then quit
+    if ((.not.mo_ccsd).and.)
 
   end subroutine get_MO_and_AO_batches_size
 
