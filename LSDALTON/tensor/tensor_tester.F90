@@ -49,7 +49,6 @@ module tensor_tester_module
     nnod = infpar%lg_nodtot
     if(nnod < 3) print*,"WARNING(test_tensor_struct): not enough MPI processes to test1 all features"
     output = fu_out
-    call ls_mpibcast(output,infpar%master,MPI_COMM_LSDALTON)
 #endif
     nb =  21
     nv =  18
@@ -268,6 +267,7 @@ module tensor_tester_module
     else
       print *,"SLAVE ARRIVED",infpar%lg_mynum
     endif
+    call ls_mpibcast(output,infpar%master,MPI_COMM_LSDALTON)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!ALL OF THE SLAVES WILL BE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
