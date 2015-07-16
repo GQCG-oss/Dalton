@@ -979,6 +979,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      integer:: sch1=1,sch2=1,sch3=1,sch4=1,sch5=1
+#ifdef DIL_DEBUG_ON
+     integer(INTL):: dsz,ssz,daddr,saddr
+     real(realk), allocatable:: darr(:),sarr(:)
+     type(tensor):: dtnsr,stnsr
+#endif
 #else
      integer:: sch1=2,sch2=2,sch3=2,sch4=2,sch5=2
 #endif
@@ -1055,6 +1060,33 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)')&
            &infpar%lg_mynum,infpar%mynum,MemFree
      endif
+     ssz=nv*nv*no*no
+     dsz=nv*nv*(no*(no+1)/2)
+     allocate(sarr(ssz),darr(dsz))
+     call random_number(sarr)
+     ldims(1:4)=(/nv,nv,no,no/)
+     call dil_tens_pack_sym2(sarr,4_INTD,ldims,3_INTD,4_INTD,3_INTD,darr,tens_rank,ddims,errc)
+     if(errc.eq.0) then
+      do i3=1,no
+       do i2=1,i3
+        do i1=1,nv
+         do i0=1,nv
+          daddr = nv*nv*((i2-1)+i3*(i3-1)/2) + nv*(i1-1) + i0
+          saddr = nv*nv*no*(i3-1) + nv*nv*(i2-1) + nv*(i1-1) + i0
+          if(darr(daddr).ne.sarr(saddr)) then
+           print *,'#DIL(TEST1): MISMATCH: ',infpar%mynum,i0,i1,i2,i3,daddr,saddr
+           call lsquit('ERROR(ccsd_residual_integral_driven): DIL TEST1 FAILED!',-1)
+          endif
+         enddo
+        enddo
+       enddo
+      enddo
+     else
+      print *,'#DIL(TET): sym2 failed: ',errc
+      call lsquit('ERROR(ccsd_residual_integral_driven): DIL TEST1 FAILED!',-1)
+     endif
+     print *,'DIL TEST1 SUCCEEDED: ',infpar%mynum,tens_rank,ddims(1:tens_rank),errc
+     deallocate(sarr,darr)
 #endif
 #endif
 
@@ -1501,7 +1533,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if( CCmodel > MODEL_CC2 )then
 
 #ifdef DIL_ACTIVE
-        scheme=2 !```DIL: remove
+        scheme=1 !```DIL: remove
 #endif
         if(scheme==4)then
            write(def_atype,'(A4)')'LDAR'
@@ -1513,11 +1545,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
 
-        if(scheme == 1)then
+        if(scheme==1)then
            !`Maybe we should use the bg buffer here as well
            call tensor_ainit(o2ilej, [nv,nv,nor], 3, local=local, atype='TDAR', tdims=[vs,vs,nor])
-           call tensor_zero(o2ilej)
+           call dil_tensor_init(o2ilej,1d-3)
+           call tensor_lock_wins(o2ilej,'s',all_nodes = .true.)
         endif
+#ifdef DIL_ACTIVE
+        scheme=2
+#endif
 
         select case (scheme)
         case(4,3)
@@ -2430,38 +2466,47 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(uigcj)
      endif
 
-#ifdef DIL_ACTIVE
-     scheme=2 !```DIL: remove
-#endif
-
 #ifdef VAR_MPI
+
+#ifdef DIL_ACTIVE
+     scheme=1 !```DIL: remove
+#endif
+     ! Finish the MPI part of the Residual calculation
+     call time_start_phase(PHASE_IDLE, at = time_intloop_work )
+
+     if(scheme==1) then
+        print *,'BEFORE FREEING o2ilej we need to update the full residual o2: ',infpar%mynum
+!        call lsmpi_barrier(infpar%lg_comm)
+!        print *,'#DIL[',infpar%mynum,']: omega2 norm before the init = ',dil_tensor_norm1(omega2),&
+!         &omega2%access_type,AT_ALL_ACCESS,AT_MASTER_ACCESS
+!        call dil_tensor_init(omega2)
+!        call lsmpi_barrier(infpar%lg_comm)
+!        print *,'#DIL[',infpar%mynum,']: omega2 norm before the test = ',dil_tensor_norm1(omega2),&
+!         &omega2%access_type,AT_ALL_ACCESS,AT_MASTER_ACCESS
+!        call lsmpi_barrier(infpar%lg_comm)
+!        call dil_distr_tens_insert_sym2(omega2,o2ilej,3_INTD,4_INTD,3_INTD,errc,locked=.true.)
+!        call lsmpi_barrier(infpar%lg_comm)
+!        print *,'#DIL TEST2 NORMS ',infpar%mynum,dil_tensor_norm1(o2ilej),dil_tensor_norm1(omega2)
+     endif
+
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
         call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
+        if(scheme==1) call tensor_unlock_wins(o2ilej,all_nodes=.true.)
      endif
-#endif
-
-     if(scheme==1) then
-        print *,"BEFORE FREEING o2ilej we need to update the full residual o2"
-        call tensor_free(o2ilej)
-        stop 0
-     endif
-#ifdef DIL_ACTIVE
-     scheme=2 !``DIL: remove
-#endif
-
-
-#ifdef VAR_MPI
-     ! Finish the MPI part of the Residual calculation
-     call time_start_phase(PHASE_IDLE, at = time_intloop_work )
 
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#endif
 
      call tensor_free(tmi)
      call tensor_free(tpl)
+     if(scheme==1) call tensor_free(o2ilej)
+#ifdef DIL_ACTIVE
+     scheme=2 !``DIL: remove
+#endif
+
+#endif
 
      ! free working matrices and adapt to new requirements
      if( use_bg_buf )then
