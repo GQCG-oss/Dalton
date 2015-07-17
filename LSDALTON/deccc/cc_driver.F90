@@ -470,7 +470,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
 
          call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,&
-            & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+            & print_frags,abc,ccsdpt_singles=ccsdpt_t1,ccsdpt_doubles=ccsdpt_t2)
 
          if (DECinfo%pt_hack) then
 
@@ -665,7 +665,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
       else
 
-         call tensor_init(t1_final,[nvirt,nocc],2)
+         if (abc) then
+            call tensor_init(t1_final,[nocc,nvirt],2)
+         else
+            call tensor_init(t1_final,[nvirt,nocc],2)
+         endif
          call tensor_random(t1_final)
          call tensor_scale(t1_final,1.0E-1_realk)
 
@@ -673,17 +677,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
  
       if(ccmodel == MODEL_CCSDpT)then
 
-         if (abc) then
-            call tensor_init(ccsdpt_t1,[nocc,nvirt],2,bg=bg)
-         else
-            call tensor_init(ccsdpt_t1,[nvirt,nocc],2,bg=bg)
-         endif
+         if (abc) call tensor_reorder(t1_final,[2,1]) 
 
-         call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags, &
-            & abc,e4=ccenergies(pT_4_o))
-
-         if (abc) call tensor_reorder(ccsdpt_t1,[2,1])
-         call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5_o))
+         call ccsdpt_driver(nocc,nvirt,nbasis,oof,vvf,Co,Cv,mylsitem,VOVO,t2_final,print_frags,&
+            & abc,e4=ccenergies(pT_4_o),e5=ccenergies(pT_5_o),ccsd_singles=t1_final)
 
          ! sum up energies
          ccenergies(pT_full_o) = ccenergies(pT_4_o) + ccenergies(pT_5_o)
@@ -694,9 +691,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwcomm = 'MASTER COMM pT: ',&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
-
-!         ! free integrals
-!         call tensor_free(vovo)
 
       endif
 
@@ -768,11 +762,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ccenergy = ccenergies(cc_sol_o) + ccenergies(pT_full_o)
 
 
-   if(ccmodel == MODEL_CCSDpT)then
+   if (ccmodel == MODEL_CCSDpT) then
       if (DECinfo%print_frags) then
          call tensor_free(ccsdpt_t2)
-         call tensor_free(ccsdpt_t1)
-      else
          call tensor_free(ccsdpt_t1)
       endif
    endif
@@ -2643,6 +2635,9 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Free memory and save final amplitudes
    ! *************************************
+   call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
+      &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
+
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used RHS or restore the old rhs
    if(.not.vovo_avail)then
       call tensor_minit( tmp2, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
@@ -2737,19 +2732,17 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    
    call ccdriver_dealloc_workspace(saferun,local,bg_was_init)
 
-   call ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart_from_converged,&
-      &mo_ccsd,pno_cv,pno_S,nspaces,use_pnos,frag)
-
 
    !initialize and copy data to output arrays
    if(.not.vovo_avail)then
       call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],&
-         &atype = "TDAR", fo=tmp2%offset, bg=bg_was_init )
+         &atype = "TDAR", fo=int(tmp2%offset,kind=tensor_int), bg=bg_was_init )
       call tensor_cp_data(tmp2, VOVO )
       call tensor_free(tmp2)
    endif
 
-   call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR", fo=tmp1%offset, bg=bg_was_init)
+   call tensor_minit( p4, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], &
+      &atype = "TDAR", fo=int(tmp1%offset,kind=tensor_int), bg=bg_was_init)
    call tensor_cp_data( tmp1, p4 )
    call tensor_free(tmp1)
 
@@ -2822,201 +2815,202 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    bg_was_init = mem_is_background_buf_init()
    if(use_bg)then
 
-      if( .not. bg_was_init )then
-         !get free memory GB -> bytes conversion, use 80% of the free memory
-         call get_currently_available_memory(MemFree)
-         Freebytes = int(MemFree * (1024.0E0_realk**3) * 0.8E0_realk,kind=8)
+      !if( .not. bg_was_init )then
+      !   !get free memory GB -> bytes conversion, use 80% of the free memory
+      !   call get_currently_available_memory(MemFree)
+      !   Freebytes = int(MemFree * (1024.0E0_realk**3) * 0.8E0_realk,kind=8)
+        
+      !   !CCSOLVER OUTSIDE BG BUFFER
+      !   !**************************
+      !   !estimate memory use in solver while the residual is build, the other
+      !   ! FOck matrix, MO trafo matrices (bv,bo), Lambda matrices, basis trafo matrices, fock-blocks
+      !   nelms_ccdriver = 1_long*nb*no + 1_long*nb*nv + 1_long*no**2 + 1_long*nv**2 + 1_long*no*nv
+      !   !singles vectors and residuals, and t1 fock matrix
+      !   if( use_singles )then
+      !      elm = i8*nb**2
+      !      nelms_ccdriver = nelms_ccdriver + elm
+      !   endif
+      !   mem_out_basic = nelms_ccdriver * 8
+      !   mem_out = nelms_ccdriver * 8
+        
+      !   !CCSOLVER INSIDE BG BUFFER
+      !   !*************************
+      !   ! residual-, trial- and integral vectors, additional two tiles for buffering
+      !   !singles vectors and residuals, and t1 fock matrix
+      !   nelms_ccdriver = i8*nb**2 + 2_long*nb*no + 2_long*nb*nv + 1_long*no**2 + 1_long*nv**2 + 1_long*no*nv
+      !   if( use_singles )then
+      !      elm = (i8*nv)*no * (2*DECinfo%ccMaxDIIS )
+      !      nelms_ccdriver = nelms_ccdriver + elm
+      !   endif
+      !   if( local )then
+      !      elm = (i8*nv*nv)*no*no * (2*DECinfo%ccMaxDIIS + 1)
+      !   else
+      !      !memory requirements are negligible 
+      !      call tensor_get_ntpm([nv,nv,no,no],[vs,vs,os,os],4,ntpm,ntiles=nt)
+      !      nt = ceiling(float(nt)/float(nnod))
+        
+      !      elm = nt * (i8*vs**2) * os**2 * (2*DECinfo%ccMaxDIIS + 3 )  
+      !   endif
+      !   nelms_ccdriver = nelms_ccdriver + elm
+      !   mem_in_basic = nelms_ccdriver * 8
+        
+        
+      !   !estimate memory use in residual without workspaces
+      !   if(DECinfo%useIchor)then
+      !      iAO = 4 
+      !      call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAO)
+      !   else
+      !      call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAO,'R')
+      !   endif
+        
+      !   !find buffer size for integral calculation
+      !   nbuffs = ceiling(float(nv)/float(vs))
+      !   bs     = get_split_scheme_0(nb)
+      !   s      = 0
+      !   w1     = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      !   w2     = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      !   nelms_int0 = w1 + w2 + (i8*no*nv)*no*nv
+        
+      !   s = 1
+      !   nelms_int1 = w1 + w2
+        
+        
+      !   s = 2
+      !   w1 = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      !   w2 = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      !   nelms_int2 = w1 + w2 + (nbuffs*i8*os*vs)*os*vs
+        
+      !   s      = 3
+      !   nbuffs = get_nbuffs_scheme_0()
+      !   w1 = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      !   w2 = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
+      !   nelms_int3 = w1 + w2 
+        
+      !   mem_in = min(nelms_int0,nelms_int1,nelms_int2,nelms_int3) * 8
+        
+      !   nelms_res_in  = 0
+      !   nelms_res_out = 0
+        
+      !   if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_CCSD)then     
+        
+      !      ! Find memory requirements in CCSD residual WITHOUT the space needed for the matrices, that use the background buffer
+      !      mem41=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !      mem31=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !      mem21=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !      !find minimum requirements for all that IS allocated on the BG buffer
+      !      mem42=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !      mem32=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !      mem22=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+        
+      !      if(DECinfo%PL>2)then
+      !         write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g9.2," GB")')&
+      !            &Freebytes/1024.0E0_realk**3
+      !         write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4 out : ",g9.2," GB, in :",g9.2," GB")')&
+      !            &(mem41)/1024.0E0_realk**3,(mem42)/1024.0E0_realk**3
+      !         write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3 out : ",g9.2," GB, in :",g9.2," GB")')&
+      !            &(mem31)/1024.0E0_realk**3,(mem32)/1024.0E0_realk**3
+      !         write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2 out : ",g9.2," GB, in :",g9.2," GB")')&
+      !            &(mem21)/1024.0E0_realk**3,(mem22)/1024.0E0_realk**3
+      !      endif
+        
+      !      if(mem41+mem42<=Freebytes)then
+      !         sch   = 4
+      !      else if(mem31+mem32<=Freebytes)then
+      !         sch   = 3
+      !      else if(mem21+mem22<=Freebytes)then
+      !         sch   = 2
+      !      else
+      !         call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+      !            & calculation is too big for the available memory",-1)
+      !      endif
+        
+      !      if(DECinfo%force_scheme)then
+      !         sch=DECinfo%en_mem
+      !      endif
+        
+      !      if(DECinfo%PL>2)then
+      !         if(DECinfo%force_scheme)then
+      !            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Force scheme :",I2)')sch
+      !         else
+      !            write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
+      !         endif
+      !      endif
+        
+        
+      !      !simple increase buffer size
+      !      BufferAdaption: do buf = MinAO, nb
+      !         mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,5,sch,.false.,&
+      !            &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !         mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,8,sch,.false.,&
+      !            &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !         if( mem_o + mem_i > Freebytes)then
+      !            mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,5,&
+      !               &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+      !            mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,8,&
+      !               &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
+        
+      !            exit BufferAdaption
+        
+      !         endif
+      !      enddo BufferAdaption
+        
+      !      nelms_res_out = ceiling(float(mem_o)/8.0)
+      !      nelms_res_in  = ceiling(float(mem_i)/8.0)
+        
+      !   else if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_MP2)then     
+        
+        
+      !      call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+      !         & background buffering not implemented for MP2 and amplitudes calculation",-1)
+        
+      !   else
+        
+      !      call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+      !         & background buffering not implemented for your model/job combination",-1)
+        
+      !   endif
+        
+      !   mem_out = mem_out + nelms_res_out*8
+      !   mem_in  = max(mem_in,nelms_res_in*8)
+        
+      !   bytes = mem_out
+        
+      !   !we may use 80% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
+      !   bytes_to_alloc = max(min( (Freebytes - bytes) * 8 / 10, 5 * mem_in +mem_in_basic, &
+      !      &int(DECinfo%bg_memory * 1024.0E0**3,kind=8)),mem_in+mem_in_basic)
+        
+      !   if(DECinfo%PL>1)then
+        
+      !      write (DECinfo%output,*) "cc driver info:"
+      !      write (DECinfo%output,*) "---------------"
+      !      write (DECinfo%output,'("Free memory is                   : ",g9.2," GB")')Freebytes/1024.0E0_realk**3
+      !      write (DECinfo%output,'("Requirement for the solver   (o) : ",g9.2," GB")')mem_out_basic/1024.0E0_realk**3
+      !      write (DECinfo%output,'("Requirement for the solver   (i) : ",g9.2," GB")')mem_in_basic /1024.0E0_realk**3
+      !      write (DECinfo%output,'("Requirement for int trafo    (i) : ",g9.2," GB")')&
+      !         &(min(nelms_int0,nelms_int1,nelms_int2,nelms_int3)*8)/1024.0E0_realk**3
+      !      write (DECinfo%output,'("Requirement for the residual (o) : ",g9.2," GB")')(nelms_res_out*8)/1024.0E0_realk**3
+      !      write (DECinfo%output,'("Requirement for the residual (i) : ",g9.2," GB")')(nelms_res_in*8)/1024.0E0_realk**3
+        
+      !      write (DECinfo%output,'("Min heap memory requirement (=o) : ",g9.2," GB")') mem_out/1024.0E0_realk**3
+      !      write (DECinfo%output,'("Min buffer requirement      (=i) : ",g9.2," GB")') (mem_in+mem_in_basic)/1024.0E0_realk**3
+        
+      !      write (DECinfo%output,'("Requesting                       : ",g9.2," GB to be allocated in BG buffer")')&
+      !         &bytes_to_alloc/1024.0E0_realk**3
+        
+!#ifdef! COMPILER_UNDERSTANDS_FORTRAN_2003
+      !     flush(DECinfo%output)
+!#endif!
+        
+      !   endif
+        
+      !   if(bytes_to_alloc <= 0) then
+      !      print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes_to_alloc/1024.0**3,"GB"
+      !      call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
+      !         & not enough space",-1)
+      !   endif
+      !endif
 
-         !CCSOLVER OUTSIDE BG BUFFER
-         !**************************
-         !estimate memory use in solver while the residual is build, the other
-         ! FOck matrix, MO trafo matrices (bv,bo), Lambda matrices, basis trafo matrices, fock-blocks
-         nelms_ccdriver = 1_long*nb*no + 1_long*nb*nv + 1_long*no**2 + 1_long*nv**2 + 1_long*no*nv
-         !singles vectors and residuals, and t1 fock matrix
-         if( use_singles )then
-            elm = i8*nb**2
-            nelms_ccdriver = nelms_ccdriver + elm
-         endif
-         mem_out_basic = nelms_ccdriver * 8
-         mem_out = nelms_ccdriver * 8
-
-         !CCSOLVER INSIDE BG BUFFER
-         !*************************
-         ! residual-, trial- and integral vectors, additional two tiles for buffering
-         !singles vectors and residuals, and t1 fock matrix
-         nelms_ccdriver = i8*nb**2 + 2_long*nb*no + 2_long*nb*nv + 1_long*no**2 + 1_long*nv**2 + 1_long*no*nv
-         if( use_singles )then
-            elm = (i8*nv)*no * (2*DECinfo%ccMaxDIIS )
-            nelms_ccdriver = nelms_ccdriver + elm
-         endif
-         if( local )then
-            elm = (i8*nv*nv)*no*no * (2*DECinfo%ccMaxDIIS + 1)
-         else
-            !memory requirements are negligible 
-            call tensor_get_ntpm([nv,nv,no,no],[vs,vs,os,os],4,ntpm,ntiles=nt)
-            nt = ceiling(float(nt)/float(nnod))
-
-            elm = nt * (i8*vs**2) * os**2 * (2*DECinfo%ccMaxDIIS + 3 )  
-         endif
-         nelms_ccdriver = nelms_ccdriver + elm
-         mem_in_basic = nelms_ccdriver * 8
-
-
-         !estimate memory use in residual without workspaces
-         if(DECinfo%useIchor)then
-            iAO = 4 
-            call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAO)
-         else
-            call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAO,'R')
-         endif
-
-         !find buffer size for integral calculation
-         nbuffs = ceiling(float(nv)/float(vs))
-         bs     = get_split_scheme_0(nb)
-         s      = 0
-         w1     = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
-         w2     = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
-         nelms_int0 = w1 + w2 + (i8*no*nv)*no*nv
-
-         s = 1
-         nelms_int1 = w1 + w2
-
-
-         s = 2
-         w1 = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
-         w2 = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
-         nelms_int2 = w1 + w2 + (nbuffs*i8*os*vs)*os*vs
-
-         s      = 3
-         nbuffs = get_nbuffs_scheme_0()
-         w1 = get_work_array_size(1,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
-         w2 = get_work_array_size(2,nv,no,nv,no,vs,os,vs,os,nb,bs,MinAO,MinAO,s,nbuffs,MyLsItem%setting)
-         nelms_int3 = w1 + w2 
-
-         mem_in = min(nelms_int0,nelms_int1,nelms_int2,nelms_int3) * 8
-
-         nelms_res_in  = 0
-         nelms_res_out = 0
-
-         if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_CCSD)then     
-
-            ! Find memory requirements in CCSD residual WITHOUT the space needed for the matrices, that use the background buffer
-            mem41=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-            mem31=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-            mem21=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,5,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-            !find minimum requirements for all that IS allocated on the BG buffer
-            mem42=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,4,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-            mem32=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,3,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-            mem22=int(get_min_mem_req(no,os,nv,vs,nb,0,MinAO,MinAO,0,8,2,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-
-            if(DECinfo%PL>2)then
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Free         : ",g9.2," GB")')&
-                  &Freebytes/1024.0E0_realk**3
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 4 out : ",g9.2," GB, in :",g9.2," GB")')&
-                  &(mem41)/1024.0E0_realk**3,(mem42)/1024.0E0_realk**3
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 3 out : ",g9.2," GB, in :",g9.2," GB")')&
-                  &(mem31)/1024.0E0_realk**3,(mem32)/1024.0E0_realk**3
-               write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): scheme 2 out : ",g9.2," GB, in :",g9.2," GB")')&
-                  &(mem21)/1024.0E0_realk**3,(mem22)/1024.0E0_realk**3
-            endif
-
-            if(mem41+mem42<=Freebytes)then
-               sch   = 4
-            else if(mem31+mem32<=Freebytes)then
-               sch   = 3
-            else if(mem21+mem22<=Freebytes)then
-               sch   = 2
-            else
-               call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-                  & calculation is too big for the available memory",-1)
-            endif
-
-            if(DECinfo%force_scheme)then
-               sch=DECinfo%en_mem
-            endif
-
-            if(DECinfo%PL>2)then
-               if(DECinfo%force_scheme)then
-                  write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Force scheme :",I2)')sch
-               else
-                  write( *,'("INFO(ccdriver_set_tensor_segments_and_alloc_workspace): Found scheme :",I2)')sch
-               endif
-            endif
-
-
-            !simple increase buffer size
-            BufferAdaption: do buf = MinAO, nb
-               mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,5,sch,.false.,&
-                  &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-               mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf,2*buf,0,8,sch,.false.,&
-                  &MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-               if( mem_o + mem_i > Freebytes)then
-                  mem_o=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,5,&
-                     &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-                  mem_i=int(get_min_mem_req(no,os,nv,vs,nb,0,buf-1,2*(buf-1),0,8,&
-                     &sch,.false.,MyLsItem%setting,'RRRRC')*1024.0E0_realk**3,kind=8)
-
-                  exit BufferAdaption
-
-               endif
-            enddo BufferAdaption
-
-            nelms_res_out = ceiling(float(mem_o)/8.0)
-            nelms_res_in  = ceiling(float(mem_i)/8.0)
-
-         else if(JOB == SOLVE_AMPLITUDES .and. ccmodel == MODEL_MP2)then     
-
-
-            call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-               & background buffering not implemented for MP2 and amplitudes calculation",-1)
-
-         else
-
-            call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-               & background buffering not implemented for your model/job combination",-1)
-
-         endif
-
-         mem_out = mem_out + nelms_res_out*8
-         mem_in  = max(mem_in,nelms_res_in*8)
-
-         bytes = mem_out
-
-         !we may use 80% of the difference between bytes and Freebytes now as the background buffer or 2*mem_in
-         bytes_to_alloc = max(min( (Freebytes - bytes) * 8 / 10, 5 * mem_in +mem_in_basic, &
-            &int(DECinfo%bg_memory * 1024.0E0**3,kind=8)),mem_in+mem_in_basic)
-
-         if(DECinfo%PL>1)then
-
-            write (DECinfo%output,*) "cc driver info:"
-            write (DECinfo%output,*) "---------------"
-            write (DECinfo%output,'("Free memory is                   : ",g9.2," GB")')Freebytes/1024.0E0_realk**3
-            write (DECinfo%output,'("Requirement for the solver   (o) : ",g9.2," GB")')mem_out_basic/1024.0E0_realk**3
-            write (DECinfo%output,'("Requirement for the solver   (i) : ",g9.2," GB")')mem_in_basic /1024.0E0_realk**3
-            write (DECinfo%output,'("Requirement for int trafo    (i) : ",g9.2," GB")')&
-               &(min(nelms_int0,nelms_int1,nelms_int2,nelms_int3)*8)/1024.0E0_realk**3
-            write (DECinfo%output,'("Requirement for the residual (o) : ",g9.2," GB")')(nelms_res_out*8)/1024.0E0_realk**3
-            write (DECinfo%output,'("Requirement for the residual (i) : ",g9.2," GB")')(nelms_res_in*8)/1024.0E0_realk**3
-
-            write (DECinfo%output,'("Min heap memory requirement (=o) : ",g9.2," GB")') mem_out/1024.0E0_realk**3
-            write (DECinfo%output,'("Min buffer requirement      (=i) : ",g9.2," GB")') (mem_in+mem_in_basic)/1024.0E0_realk**3
-
-            write (DECinfo%output,'("Requesting                       : ",g9.2," GB to be allocated in BG buffer")')&
-               &bytes_to_alloc/1024.0E0_realk**3
-
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-           flush(DECinfo%output)
-#endif
-
-         endif
-
-         if(bytes_to_alloc <= 0) then
-            print *,Freebytes/1024.0**3,"GB free, need to alloc",bytes_to_alloc/1024.0**3,"GB"
-            call lsquit("ERROR(ccdriver_set_tensor_segments_and_alloc_workspace):&
-               & not enough space",-1)
-         endif
-      endif
-
+      bytes_to_alloc = int(DECinfo%bg_memory*1024.0**3, kind=8)
       if( bg_was_init )then
          if( .not. local )then
 #ifdef VAR_MPI

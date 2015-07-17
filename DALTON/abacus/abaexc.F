@@ -200,6 +200,14 @@ C
      &         ' Program is stopped after EXCITA.'
          END IF
       END IF
+
+      IF (PARCAL.AND.EXCTRP.AND.ABASOP) THEN
+          WRITE (LUPRI, '(A,A)' ) 'Parallel calculations of '//
+     &                 'triplet excitation energies',
+     &                 ' is not implemented in the SOPPA module'
+          CALL PARQUIT('EXCTRP for ABASOP')
+      ENDIF
+
       RETURN
       END
 C  /* Deck excini */
