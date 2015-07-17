@@ -23,8 +23,9 @@
   subroutine array_reorder_4d(pre1,array_in,d1,d2,d3,d4,order,pre2,array_out)
     implicit none
     integer,intent(in) ::        d1,d2,d3,d4
-    real(tensor_dp), intent(in)::    array_in(i8*d1*d2*d3*d4),pre1,pre2
-    real(tensor_dp), intent(inout):: array_out(i8*d1*d2*d3*d4)
+    real(tensor_dp), intent(in)::    pre1,pre2
+    real(tensor_dp), intent(in) ::    array_in(i8*d1*d2*d3*d4)
+    real(tensor_dp), intent(inout) :: array_out(i8*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
 
     integer, dimension(4) :: new_order,order1,order2,dims
@@ -34,7 +35,7 @@
     integer :: order_type,m,n
     integer :: di3(3), di2(2)
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
-    integer :: vec_size
+    integer :: vs
     integer(kind=long) :: vec_size64
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
@@ -43,7 +44,7 @@
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
     endif
-    vec_size = d1*d2*d3*d4
+    vs = d1*d2*d3*d4
 
     call LSTIMER('START',tcpu1,twall1,-1)
     dims(1)=d1
@@ -92,12 +93,12 @@
     case(0)
       ! CASE 1 2 3 4
        if (pre2 /= 0.0E0_tensor_dp) then
-         call dscal(vec_size,pre2,array_out,1)
-         call daxpy(vec_size,pre1,array_in,1,array_out,1)
+         call dscal(vs,pre2,array_out,1)
+         call daxpy(vs,pre1,array_in,1,array_out,1)
        else
-         call dcopy(vec_size,array_in,1,array_out,1)
+         call dcopy(vs,array_in,1,array_out,1)
          if (pre1 /= 1.0E0_tensor_dp) then
-           call dscal(vec_size,pre1,array_out,1)
+           call dscal(vs,pre1,array_out,1)
          endif
        endif
 
@@ -105,36 +106,36 @@
        ! CASE 3 4 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering_dp(di2,pre1,array_in,pre2,array_out)
     case(2)
        ! CASE 4 1 2 3
        di2(1) = dims(1)*dims(2)*dims(3)
        di2(2) = dims(4)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering_dp(di2,pre1,array_in,pre2,array_out)
     case(3)
        ! CASE 2 3 4 1
        di2(1) = dims(1)
        di2(2) = dims(2)*dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering_dp(di2,pre1,array_in,pre2,array_out)
 
     case(4)
        ! CASE  1 2 4 3
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_132_reordering_dp(di3,pre1,array_in,pre2,array_out)
     case(5)
        ! CASE  1 4 2 3
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_132_reordering_dp(di3,pre1,array_in,pre2,array_out)
     case(6)
        ! CASE  1 3 4 2
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_132_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_132_reordering_dp(di3,pre1,array_in,pre2,array_out)
 
 
     case(7)
@@ -142,62 +143,62 @@
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_213_reordering_dp(di3,pre1,array_in,pre2,array_out)
     case(8)
        ! CASE  2 3 1 4
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_213_reordering_dp(di3,pre1,array_in,pre2,array_out)
     case(9)
        ! CASE 2 1 3 4
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_213_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_213_reordering_dp(di3,pre1,array_in,pre2,array_out)
 
     case(10)
        ! CASE  4 3 1 2
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_321_reordering_dp(di3,pre1,array_in,pre2,array_out)
     case(11)
        ! CASE  4 2 3 1
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_321_reordering_dp(di3,pre1,array_in,pre2,array_out)
     case(12)
        ! CASE  3 4 2 1
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_321_reordering(di3,pre1,array_in,pre2,array_out)
+       call manual_321_reordering_dp(di3,pre1,array_in,pre2,array_out)
 
 
     case(13)
-       call manual_2413_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_2413_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(14)
-       call manual_3214_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_3214_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(15)
-       call manual_1324_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_1324_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(16)
-       call manual_4132_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_4132_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(17)
-       call manual_2143_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_2143_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(18)
-       call manual_4321_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_4321_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(19)
-       call manual_2431_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_2431_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(20)
-       call manual_1432_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_1432_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(21)
-       call manual_3142_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_3142_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(22)
-       call manual_3241_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_3241_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(23)
-       call manual_4213_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_4213_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case default
        print *,'4d_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -301,36 +302,36 @@
        ! CASE 3 4 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
     case(2)
        ! CASE 4 1 2 3
        di2(1) = dims(1)*dims(2)*dims(3)
        di2(2) = dims(4)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
     case(3)
        ! CASE 2 3 4 1
        di2(1) = dims(1)
        di2(2) = dims(2)*dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
 
     case(4)
        ! CASE  1 2 4 3
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(5)
        ! CASE  1 4 2 3
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(6)
        ! CASE  1 3 4 2
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_132_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
 
 
     case(7)
@@ -338,62 +339,62 @@
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(8)
        ! CASE  2 3 1 4
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(9)
        ! CASE 2 1 3 4
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_213_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
 
     case(10)
        ! CASE  4 3 1 2
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(11)
        ! CASE  4 2 3 1
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
     case(12)
        ! CASE  3 4 2 1
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_321_reordering(di3,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(di3,pre1_sp,array_in,pre2_sp,array_out)
 
 
     case(13)
-       call manual_2413_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_2413_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(14)
-       call manual_3214_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_3214_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(15)
-       call manual_1324_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_1324_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(16)
-       call manual_4132_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_4132_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(17)
-       call manual_2143_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_2143_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(18)
-       call manual_4321_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_4321_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(19)
-       call manual_2431_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_2431_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(20)
-       call manual_1432_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_1432_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(21)
-       call manual_3142_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_3142_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(22)
-       call manual_3241_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_3241_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(23)
-       call manual_4213_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_4213_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case default
        print *,'4d_reordering_sp case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -500,93 +501,93 @@
        ! CASE 3 4 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_dp_acc(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(2)
        ! CASE 4 1 2 3
        di2(1) = dims(1)*dims(2)*dims(3)
        di2(2) = dims(4)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_dp_acc(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(3)
        ! CASE 2 3 4 1
        di2(1) = dims(1)
        di2(2) = dims(2)*dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_dp_acc(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(4)
        ! CASE  1 2 4 3
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(5)
        ! CASE  1 4 2 3
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(6)
        ! CASE  1 3 4 2
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_132_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(7)
        ! CASE 3 1 2 4
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(8)
        ! CASE  2 3 1 4
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(9)
        ! CASE 2 1 3 4
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_213_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(10)
        ! CASE  4 3 1 2
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(11)
        ! CASE  4 2 3 1
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(12)
        ! CASE  3 4 2 1
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_321_reordering(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_dp_acc(di3,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(13)
-       call manual_2413_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_2413_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(14)
-       call manual_3214_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_3214_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(15)
-       call manual_1324_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_1324_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(16)
-       call manual_4132_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_4132_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(17)
-       call manual_2143_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_2143_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(18)
-       call manual_4321_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_4321_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(19)
-       call manual_2431_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_2431_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(20)
-       call manual_1432_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_1432_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(21)
-       call manual_3142_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_3142_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(22)
-       call manual_3241_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_3241_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(23)
-       call manual_4213_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_4213_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case default
        print *,'4d_acc_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
           & SOMEBODY DID SOMETHING STUPID'
@@ -698,93 +699,93 @@
        ! CASE 3 4 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_sp_acc(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(2)
        ! CASE 4 1 2 3
        di2(1) = dims(1)*dims(2)*dims(3)
        di2(2) = dims(4)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_sp_acc(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(3)
        ! CASE 2 3 4 1
        di2(1) = dims(1)
        di2(2) = dims(2)*dims(3)*dims(4)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_sp_acc(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(4)
        ! CASE  1 2 4 3
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_132_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(5)
        ! CASE  1 4 2 3
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_acc_132_reordering_0_sp(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(6)
        ! CASE  1 3 4 2
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_132_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(7)
        ! CASE 3 1 2 4
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(8)
        ! CASE  2 3 1 4
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_213_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(9)
        ! CASE 2 1 3 4
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_213_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(10)
        ! CASE  4 3 1 2
        di3(1) = dims(1)*dims(2)
        di3(2) = dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(11)
        ! CASE  4 2 3 1
        di3(1) = dims(1)
        di3(2) = dims(2)*dims(3)
        di3(3) = dims(4)
-       call manual_321_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(12)
        ! CASE  3 4 2 1
        di3(1) = dims(1)
        di3(2) = dims(2)
        di3(3) = dims(3)*dims(4)
-       call manual_321_reordering(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_sp_acc(di3,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(13)
-       call manual_2413_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_2413_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(14)
-       call manual_3214_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_3214_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(15)
-       call manual_1324_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_1324_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(16)
-       call manual_4132_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_4132_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(17)
-       call manual_2143_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_2143_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(18)
-       call manual_4321_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_4321_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(19)
-       call manual_2431_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_2431_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(20)
-       call manual_1432_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_1432_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(21)
-       call manual_3142_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_3142_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(22)
-       call manual_3241_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_3241_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(23)
-       call manual_4213_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_4213_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case default
        print *,'4d_acc_reordering_sp case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -857,19 +858,19 @@
        ! CASE 3 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering_dp(di2,pre1,array_in,pre2,array_out)
     case(2)
        ! CASE 2 3 1
        di2(1) = dims(1)
        di2(2) = dims(2) * dims(3)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out)
+       call manual_21_reordering_dp(di2,pre1,array_in,pre2,array_out)
 
     case(3)
-       call manual_132_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_132_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(4)
-       call manual_213_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_213_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case(5)
-       call manual_321_reordering(dims,pre1,array_in,pre2,array_out)
+       call manual_321_reordering_dp(dims,pre1,array_in,pre2,array_out)
     case default
        print *,'3d_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -947,19 +948,19 @@
        ! CASE 3 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
     case(2)
        ! CASE 2 3 1
        di2(1) = dims(1)
        di2(2) = dims(2) * dims(3)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_21_reordering_sp(di2,pre1_sp,array_in,pre2_sp,array_out)
 
     case(3)
-       call manual_132_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_132_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(4)
-       call manual_213_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_213_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case(5)
-       call manual_321_reordering(dims,pre1_sp,array_in,pre2_sp,array_out)
+       call manual_321_reordering_sp(dims,pre1_sp,array_in,pre2_sp,array_out)
     case default
        print *,'3d_reordering_sp case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -1024,17 +1025,12 @@
     if(order(1)==1 .and. order(2)==2 .and. order(3)==3) order_type = 0
     !CASE 2 D REORDERINGS
     ! rephrase to 2 1
-    if(order(1)==3 .and. order(2)==1 .and. &
-         order(3)==2) order_type = 1
-    if(order(1)==2 .and. order(2)==3 .and. &
-         order(3)==1) order_type = 2
+    if(order(1)==3 .and. order(2)==1 .and. order(3)==2) order_type = 1
+    if(order(1)==2 .and. order(2)==3 .and. order(3)==1) order_type = 2
     !REAL 3D REORDERINGS
-    if(order(1)==1 .and. order(2)==3 .and. &
-         order(3)==2) order_type = 3
-    if(order(1)==2 .and. order(2)==1 .and. &
-         order(3)==3) order_type = 4
-    if(order(1)==3 .and. order(2)==2 .and. &
-         order(3)==1) order_type = 5
+    if(order(1)==1 .and. order(2)==3 .and. order(3)==2) order_type = 3
+    if(order(1)==2 .and. order(2)==1 .and. order(3)==3) order_type = 4
+    if(order(1)==3 .and. order(2)==2 .and. order(3)==1) order_type = 5
 
     ! do the reordering
     TypeOfReordering3d_acc: select case(order_type)
@@ -1045,18 +1041,18 @@
        ! CASE 3 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_dp_acc(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(2)
        ! CASE 2 3 1
        di2(1) = dims(1)
        di2(2) = dims(2) * dims(3)
-       call manual_21_reordering(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_dp_acc(di2,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(3)
-       call manual_132_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(4)
-       call manual_213_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case(5)
-       call manual_321_reordering(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_dp_acc(dims,pre1,array_in,pre2,array_out,async_idx,async_idx2,wait_arg)
     case default
        print *,'3d_reordering_acc case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -1142,19 +1138,19 @@
        ! CASE 3 1 2
        di2(1) = dims(1)*dims(2)
        di2(2) = dims(3)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_sp_acc(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(2)
        ! CASE 2 3 1
        di2(1) = dims(1)
        di2(2) = dims(2) * dims(3)
-       call manual_21_reordering(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_21_reordering_sp_acc(di2,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
 
     case(3)
-       call manual_132_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_132_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(4)
-       call manual_213_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_213_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case(5)
-       call manual_321_reordering(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
+       call manual_321_reordering_sp_acc(dims,pre1_sp,array_in,pre2_sp,array_out,async_idx,async_idx2,wait_arg)
     case default
        print *,'3d_reordering_sp_acc case does not exist, THIS IS IMPOSSIBLE UNLESS&
        & SOMEBODY DID SOMETHING STUPID'
@@ -1206,7 +1202,7 @@
     dims(1)=r
     dims(2)=c
 
-    call manual_21_reordering(dims,p1,x,p2,y)
+    call manual_21_reordering_dp(dims,p1,x,p2,y)
 
     call LSTIMER('START',tcpu2,twall2,-1)
 

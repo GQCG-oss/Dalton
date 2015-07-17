@@ -212,7 +212,7 @@ def produce_files(installdir,tensordir,args,names,minr,maxr):
          #iname = 5 : acc single precision reorderings
          if( iname == 0 ):
             acc = False
-            addition = "normal"
+            addition = "dp"
          elif (iname == 1):
             acc = False
             addition = "f2t"
@@ -224,7 +224,7 @@ def produce_files(installdir,tensordir,args,names,minr,maxr):
             addition = "sp"
          elif (iname == 4):
             acc = True
-            addition = "normal"
+            addition = "dp"
          elif (iname == 5):
             acc = True
             addition = "sp"
@@ -355,13 +355,13 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
     omppar ="      !$OMP PARALLEL DEFAULT(NONE),PRIVATE("
     for j in range(modes):
       omppar += abc[j]+",b"+abc[j]+","
-    if ((ad != "normal") and (ad != "sp")): 
+    if (ad == "f2t" or ad == "t2f"): 
       for j in range(modes):
         omppar += "b"+abc[j]+"f,"
     omppar = omppar[0:-1] + ")&\n      !$OMP SHARED(bcntr,pre1,pre2,array_in,array_out, &\n      !$OMP "
     for j in range(modes):
       omppar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
-    if ((ad != "normal") and (ad != "sp")):
+    if ((ad == "f2t") or (ad == "t2f")):
       omppar += "&\n      !$OMP "
       for j in range(modes):
         omppar += "f"+abc[j] +","
@@ -663,7 +663,7 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb,acc):
   subheaderstr+= "\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
   subheaderstr+= "  subroutine "+sname+"(dims,"
-  if ((ad != "normal") and (ad != "sp")):
+  if ((ad == "f2t") or (ad == "t2f")):
     subheaderstr += "fdims,fels,"
   subheaderstr+= "pre1,array_in,pre2,array_out"
   if acc :
@@ -675,7 +675,7 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb,acc):
     subheaderstr+= "    integer, parameter :: bs=BS_"+str(modes)+"D\n"
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")"
-  if ((ad != "normal") and (ad != "sp")):
+  if ((ad == "f2t") or (ad == "t2f")):
     subheaderstr += ",fdims("+str(modes)+"),fels("+str(modes)+")"
   subheaderstr+= "\n"
   subheaderstr+= "    !> as this routine can be used for adding and scaling these are the prefactors\n"
