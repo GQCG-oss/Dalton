@@ -446,27 +446,15 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
             break
           
         #BUILD THE ORDER OF THE LOOPS ACCORDING TO THE PREVIOUS CONDITIONS
-        outer =[]
-        inner =[]
-        for j in range(len(perm)):
-          if useold:
-            inner.append(idxarr[j])
-          else:
-            inner.append(perm[j])
-        
         if useold:
-          for j in range(len(oldu)):
-            outer.append(oldu[j])
+          outer = oldu
+          inner = idxarr
         else:
-          for j in range(len(newu)):
-            outer.append(newu[j])
-        inneri = []
-        outeri = []
-        for j in reversed(inner):
-          inneri.append(j)
-        for j in reversed(outer):
-          outeri.append(j)
-      
+          outer = newu
+          inner = perm
+
+        inneri = [j for j in reversed(inner)]
+        outeri = [j for j in reversed(outer)]
   
         #WRITING THE OUTER FOR LOOPS HERE:
         if(not debug_loops and not acc):
@@ -813,8 +801,8 @@ def write_main_header(f,now,names,args,tensordir,minr,maxr,interface_types):
                     interface += "       &"
                  else:
                     write_interface = True
-                 interface += sname +"&\n"
-        interface = interface[:-2] + "\n  end interface "+iname+"\n\n"
+                 interface += sname +",&\n"
+        interface = interface[:-3] + "\n  end interface "+iname+"\n\n"
 
         if write_interface:
            f.write(interface)
