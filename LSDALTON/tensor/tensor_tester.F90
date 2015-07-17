@@ -58,6 +58,8 @@ module tensor_tester_module
 
 #ifdef VAR_MPI
     if(master)then
+      !call tensor_print_mem_info(output,.true.,.false.,succ)
+
       write(output,*)"TESTING PDM TT_TILED ARRAY ALLOCATIONS"
       write(output,'(" Using",f8.3," GB of mem for the testarray")')&
       &(nv*no*(nv+nb)*8.0E0_tensor_dp)/(1024.E0_tensor_dp*1024.E0_tensor_dp*1024.E0_tensor_dp)
@@ -289,7 +291,7 @@ module tensor_tester_module
     if(master) write (output,*)"DONE -- NOW COMMUNICATION"
     if(master) write(output,*)""
     if(master) write(output,*)""
-    print *,"ALL-INIT ALLOC-DEALLOC TESTS",teststatus
+    if(master) print *,"ALL-INIT ALLOC-DEALLOC TESTS",teststatus
     !call lsmpi_barrier(infpar%lg_comm)
 
     !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the

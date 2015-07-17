@@ -7,9 +7,7 @@
 module lspdm_tensor_operations_module
   use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
-
-  ! Outside DEC directory
-  use precision
+  use tensor_parameters_and_counters
   use dec_typedef_module
   use memory_handling
   use dec_workarounds_module
@@ -52,7 +50,7 @@ module lspdm_tensor_operations_module
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
   abstract interface
     subroutine put_acc_tile(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-      use precision
+      use tensor_parameters_and_counters
       import
       implicit none
       type(tensor),intent(in) :: arr
@@ -5021,8 +5019,8 @@ module lspdm_tensor_operations_module
     implicit none
     integer, intent(in) :: output
     logical,intent(in)  :: allaccs
-    real(tensor_dp),pointer,optional  :: infoonmaster(:)
-    real(tensor_dp) :: get_mem(8)
+    integer(kind=tensor_long_int),pointer,optional  :: infoonmaster(:)
+    integer(kind=tensor_long_int) :: get_mem(8)
     integer(kind=tensor_mpi_kind) :: i
     integer :: allallocd
     logical :: master
@@ -5072,7 +5070,16 @@ module lspdm_tensor_operations_module
       if(master.and..not.allaccs)then
         call pdm_tensor_sync(infpar%lg_comm,JOB_PRINT_MEM_INFO2)
       endif
-      call tensor_print_memory_currents(output,get_mem)
+      !do i=1,infpar%lg_nodtot
+      !  if(infpar%lg_mynum+1==i)then
+      !    write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
+      !    write(*,'("Printing memory information for rank",I3)') infpar%lg_mynum
+      !    write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
+      !    call tensor_print_memory_currents(output)
+      !  endif
+      !  call lsmpi_barrier(infpar%lg_comm)
+      !enddo
+      !call tensor_print_memory_currents(output,get_mem)
 
       if(master)then
         infoonmaster(1:8)=get_mem(1:8)
@@ -5083,15 +5090,17 @@ module lspdm_tensor_operations_module
         endif
         if(master)call ls_mpisendrecv(infoonmaster(i*8+1:i*8+8),8,infpar%lg_comm,i,infpar%master)
       enddo
-      allallocd=p_arr%arrays_in_use
+
+      allallocd = p_arr%arrays_in_use
       call lsmpi_local_reduction(allallocd,infpar%master)
+
       if(master)then
-        infoonmaster(1)=0.0E0_tensor_dp
+        infoonmaster(1)=0_tensor_long_int
         do i=1,infpar%lg_nodtot
           infoonmaster(1)=infoonmaster(1)+infoonmaster(7+(i-1)*8)
         enddo
         ! if no memory leaks are present infooonmaster is zero
-        infoonmaster(1) =infoonmaster(1) + 1.0E0_tensor_dp*allallocd
+        infoonmaster(1) =infoonmaster(1) + allallocd
         !write (output,'("SUM OF CURRENTLY ALLOCATED ARRAYS:",I5)'),allallocd
       endif
     endif

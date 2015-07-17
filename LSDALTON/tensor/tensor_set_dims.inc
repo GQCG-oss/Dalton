@@ -8,9 +8,9 @@
           arr%mode=mode
         endif
       endif
+      vector_size = int(arr%mode*tensor_int,kind=tensor_long_int)
       if (associated(arr%dims))then
 !$OMP CRITICAL
-        vector_size = int(size(arr%dims)*tensor_standard_int,kind=tensor_long_int)
         tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
         tensor_counter_memory_in_use    = tensor_counter_memory_in_use  - vector_size
 !$OMP END CRITICAL
@@ -19,7 +19,6 @@
       if(.not.associated(arr%dims))then
         call mem_alloc(arr%dims,arr%mode)
 !$OMP CRITICAL
-        vector_size = int(size(arr%dims)*tensor_standard_int,kind=tensor_long_int)
         tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
         tensor_counter_memory_in_use  = tensor_counter_memory_in_use  + vector_size
 !$OMP END CRITICAL

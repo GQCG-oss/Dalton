@@ -16,7 +16,7 @@ module tensor_interface_module
 
   ! Outside DEC directory
   use memory_handling
-  use precision
+  use tensor_parameters_and_counters
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
   use reorder_frontend_module
@@ -2981,7 +2981,7 @@ contains
     integer, intent(inout), optional :: reducetocheck
     logical :: alln,red,master
     integer :: nnod
-    real(tensor_dp),pointer :: red_info(:)
+    integer(kind=tensor_long_int),pointer :: red_info(:)
     alln = .false.
     red = .false.
     master=.true.
@@ -3009,7 +3009,7 @@ contains
       call tensor_print_memory_currents(output)
     endif
     if(red.and.master)then
-      if(abs(red_info(1))<1.0E-11_tensor_dp)then
+      if(abs(red_info(1))==0)then
         reducetocheck=0
       else
         reducetocheck=1
