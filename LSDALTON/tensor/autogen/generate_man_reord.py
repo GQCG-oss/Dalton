@@ -336,11 +336,12 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
        oaccloop_worker = "!$acc loop worker\n"
        oaccloop_vector = "!$acc loop vector\n"
 
-     f.write("    "+oaccparallel_init+oaccparallel_async)
-     f.write("\n\n")
+     f.write("\n")
      f.write("    if (wait_arg) then\n\n")
-     f.write("       "+oaccparallel_wait+"\n\n")
+     f.write("       "+oaccparallel_wait+oaccparallel_async+"\n\n")
      f.write("    endif\n\n")
+     f.write("    "+oaccparallel_init+oaccparallel_async)
+     f.write("\n")
 
 
   #write sfuff for all the cases above
