@@ -47,6 +47,7 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*5
       integer :: inewtr, nnewtr, isymd1, ntosym
+      integer :: thisinewtr
 C   
       integer, save :: inew=0
 C
@@ -1162,7 +1163,7 @@ C be explicitly zeroed here.
       call mpi_bcast(work(KCMO), kendsv, mpi_real8, 0, mpi_comm_world,
      &                ierr)
 
-      call mpi_bcast( work(kindxb), (8*MXSHEL*MXCON+ 1)/IRAT, 
+      call mpi_bcast( work(kindxb), (8*MXSHEL*MXCONT+1)/IRAT, 
      & mpi_real8, 0, mpi_comm_world, ierr)
 
       call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)

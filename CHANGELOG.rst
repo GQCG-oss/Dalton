@@ -12,9 +12,11 @@ Common
 DALTON
 ------
 
-- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake.
-- Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters.
-- Fixed a bug for parallel build on some systems.
+- Fixed a bug in an LRESC correction. 
+- Improved calculation of one LRESC correction.
+- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
+- Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
+- Fixed a bug for parallel build on some systems
 - Fixed a segmentation fault for approx. 3000 basis functions
   (an array was allocated in stack memory, and became too big for default size of stack memory).
 - Fixed a bug in CC sumrules.

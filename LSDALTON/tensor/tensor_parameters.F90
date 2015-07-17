@@ -1,8 +1,8 @@
 module tensor_parameters_and_counters
-   use precision
 
    !Define atomic types used in the tensor module
-   integer, parameter :: tensor_real     = 8
+   integer, parameter :: tensor_dp     = 8
+   integer, parameter :: tensor_sp     = 4
 #ifdef VAR_INT64
    integer, parameter :: tensor_int      = 8
 #else
@@ -17,6 +17,17 @@ module tensor_parameters_and_counters
 !#else
 !   integer, parameter :: tensor_mpi_kind = 8
 !#endif
+   !
+   !L2_CACHE_SIZE = 256000 ! lower estimate of cache size in bytes:
+   !BS_2D = floor(sqrt(L2_CACHE_SIZE/(2*8.0E0_realk)))
+   !BS_3D = floor((L2_CACHE_SIZE/(2*8.0E0_realk))**(1/3.0E0_realk))
+   !BS_4D = floor((L2_CACHE_SIZE/(2*8.0E0_realk))**(1/4.0E0_realk))
+   !
+   !We write the explicit values to avoid internal compiler error 
+   !with the gnu compiler 4.4.7 and the power function:
+   integer,parameter :: BS_2D = 126
+   integer,parameter :: BS_3D =  25
+   integer,parameter :: BS_4D =  11
 
    !parameters to define the data distribution in the tensor type
    integer(kind=tensor_standard_int), parameter :: TT_DENSE        = 1

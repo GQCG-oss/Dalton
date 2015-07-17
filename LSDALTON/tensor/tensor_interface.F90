@@ -79,7 +79,8 @@ module tensor_interface_module
   public tensor_init, tensor_minit, tensor_ainit, tensor_free
 
   ! User-level subroutines for tensor operations
-  public tensor_convert, print_norm, tensor_add, tensor_contract
+  public tensor_convert, print_norm, tensor_print_tile_norm
+  public tensor_add, tensor_contract
   public tensor_transform_basis, tensor_ddot
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
@@ -106,7 +107,7 @@ module tensor_interface_module
   public tensor_dmul
 
   ! Only for testing and debugging
-  public test_tensor_struct, tensor_print_mem_info
+  public tensor_print_mem_info
   public lspdm_start_up_comm_procs, lspdm_shut_down_comm_procs
 
   ! Auxiliary functions on the user level
@@ -133,7 +134,7 @@ module tensor_interface_module
 
   
   !> TIMINGS
-  real(tensor_real) :: tensor_time_init = 0
+  real(tensor_dp) :: tensor_time_init = 0
 
 
   !> convert arrays, the idea is for a general conversion only the interface
@@ -333,17 +334,17 @@ contains
      !> array to add
      type(tensor),intent(in) :: y
      !> scaling factor for array y
-     real(tensor_real),intent(in) :: b
+     real(tensor_dp),intent(in) :: b
      !> order the second array such that it fits the first
      integer, intent(in), optional :: order(x%mode)
      !> optional argument to scale x on the fly
-     real(tensor_real), intent(in), optional :: a
-     real(tensor_real),pointer :: buffer(:)
-     real(tensor_real) :: pre2
+     real(tensor_dp), intent(in), optional :: a
+     real(tensor_dp),pointer :: buffer(:)
+     real(tensor_dp) :: pre2
      integer :: ti,i,nel,o(x%mode)
      call time_start_phase( PHASE_WORK )
 
-     pre2 = 1.0E0_tensor_real
+     pre2 = 1.0E0_tensor_dp
      if(present(a))pre2 = a
 
      if(x%mode/=y%mode)call lsquit("ERROR(tensor_add_normal): modes of arrays not compatible",-1)
@@ -368,9 +369,9 @@ contains
 
            if( x%mode == 1 .or. .not.present(order))then
               if(present(a))then
-                 if(a==0.0E0_tensor_real)then
-                    x%elm1 = 0.0E0_tensor_real
-                 else if(a/=1.0E0_tensor_real)then
+                 if(a==0.0E0_tensor_dp)then
+                    x%elm1 = 0.0E0_tensor_dp
+                 else if(a/=1.0E0_tensor_dp)then
                     call dscal(int(x%nelms),a,x%elm1,1)
                  endif
               endif
@@ -445,17 +446,17 @@ contains
      !> array to add
      type(tensor),intent(in) :: y
      !> scaling factor for array y
-     real(tensor_real),intent(in) :: b,d(:)
+     real(tensor_dp),intent(in) :: b,d(:)
      !> order the second array such that it fits the first
      integer, intent(in), optional :: order(x%mode)
      !> optional argument to scale x on the fly
-     real(tensor_real), intent(in), optional :: a
-     real(tensor_real),pointer :: buffer(:)
-     real(tensor_real) :: pre2
+     real(tensor_dp), intent(in), optional :: a
+     real(tensor_dp),pointer :: buffer(:)
+     real(tensor_dp) :: pre2
      integer :: ti,i,nel,o(x%mode),m,n
      call time_start_phase( PHASE_WORK )
 
-     pre2 = 1.0E0_tensor_real
+     pre2 = 1.0E0_tensor_dp
      if(present(a))pre2 = a
 
      if(x%mode /= 2) call lsquit("ERROR(tensor_dmul): only implemented for mode 2 tensors",-1)
@@ -484,8 +485,8 @@ contains
            m = x%dims(2)
 
            if(abs(pre2)<1.0E-15)then
-              x%elm1 = 0.0E0_tensor_real
-           else if(abs(pre2-1.0E0_tensor_real)>1.0E-15)then
+              x%elm1 = 0.0E0_tensor_dp
+           else if(abs(pre2-1.0E0_tensor_dp)>1.0E-15)then
               call dscal(x%nelms,pre2,x%elm1,1)
            endif
 
@@ -550,8 +551,8 @@ contains
      integer :: itens, imode, it_mode, isort
      integer :: ord(maxtensmode)
      type(tensor) :: AUX, AUX1, AUX2
-     real(tensor_real), parameter :: p10 = 1.0E0_tensor_real
-     real(tensor_real), parameter :: p00 = 0.0E0_tensor_real
+     real(tensor_dp), parameter :: p10 = 1.0E0_tensor_dp
+     real(tensor_dp), parameter :: p00 = 0.0E0_tensor_dp
 
      do itens=1,ntens
 
@@ -607,20 +608,20 @@ contains
   subroutine tensor_add_fullfort2arr(arrx,b,fortarry,order,wrk,iwrk)
     implicit none
     !> full fortan arra´y, this corresponds to y
-    real(tensor_real), intent(in) :: fortarry(*)
+    real(tensor_dp), intent(in) :: fortarry(*)
     !> scaling factor for fortran array
-    real(tensor_real), intent(in) :: b
+    real(tensor_dp), intent(in) :: b
     !> array which is overwritten
     type(tensor), intent(inout) :: arrx
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arrx%mode)
     !> optinally workspace can be passed, the size is defined as iwrk
     integer(kind=8), intent(in),optional :: iwrk
-    real(tensor_real), intent(inout),optional :: wrk(*)
+    real(tensor_dp), intent(inout),optional :: wrk(*)
     integer :: o(arrx%mode)
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
-    real(tensor_real) :: MemFree,tilemem
+    real(tensor_dp) :: MemFree,tilemem
     call time_start_phase( PHASE_WORK )
 
     do i=1,arrx%mode
@@ -637,7 +638,7 @@ contains
       case(TT_TILED)
         call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
       case(TT_TILED_DIST)
-        call tensor_scatter(b,fortarry,1.0E0_tensor_real,arrx,arrx%nelms,oo=order,wrk=wrk,iwrk=iwrk)
+        call tensor_scatter(b,fortarry,1.0E0_tensor_dp,arrx,arrx%nelms,oo=order,wrk=wrk,iwrk=iwrk)
     end select
 
     call time_start_phase( PHASE_WORK )
@@ -651,19 +652,19 @@ contains
   subroutine tensor_add_arr2fullfort(fortarrx,b,arry,order,wrk,iwrk)
     implicit none
     !> full fortan arra´y, this corresponds to x and is overwritten
-    real(tensor_real), intent(inout) :: fortarrx(*)
+    real(tensor_dp), intent(inout) :: fortarrx(*)
     !> scaling factor for the array y
-    real(tensor_real), intent(in) :: b
+    real(tensor_dp), intent(in) :: b
     !> array to add --> y
     type(tensor), intent(in) :: arry
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arry%mode)
     !> optinally workspace can be passed, the size is defined as iwrk
     integer(kind=8), intent(in),optional :: iwrk
-    real(tensor_real), intent(inout),optional :: wrk(*)
+    real(tensor_dp), intent(inout),optional :: wrk(*)
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
-    real(tensor_real) :: MemFree,tilemem
+    real(tensor_dp) :: MemFree,tilemem
     call time_start_phase( PHASE_WORK )
 
     select case(arry%itype)
@@ -673,7 +674,7 @@ contains
         call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
       !case(TT_TILED_DIST)
       !  !call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.,order = order)
-      !  call tensor_gather(b,arry,1.0E0_tensor_real,fortarrx,arry%nelms,oo=order,wrk=wrk,iwrk=iwrk)
+      !  call tensor_gather(b,arry,1.0E0_tensor_dp,fortarrx,arry%nelms,oo=order,wrk=wrk,iwrk=iwrk)
      case default
         call lsquit("ERROR(tensor_add_arr2fullfort) not implemented",-1)
     end select
@@ -690,9 +691,9 @@ contains
      type(tensor),intent(inout) :: C
      type(tensor),intent(in) :: A,B
      !> scaling factor for array C
-     real(tensor_real),intent(in) :: beta
+     real(tensor_dp),intent(in) :: beta
      !> scaling factor for array A and B
-     real(tensor_real),intent(in) :: alpha
+     real(tensor_dp),intent(in) :: alpha
      call time_start_phase( PHASE_WORK )
      if(A%mode/=B%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
      if(A%mode/=C%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
@@ -731,14 +732,14 @@ contains
   !> \author Patrick Ettenhuber, Dmitry I. Lyakh (MPI-3 DIL backend)
   subroutine tensor_contract(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk,force_sync)
      implicit none
-     real(tensor_real), intent(in):: pre1,pre2                  !prefactors
+     real(tensor_dp), intent(in):: pre1,pre2                  !prefactors
      type(tensor), intent(in):: A,B                       !left and right tensors
      integer, intent(in):: nmodes2c                       !number of contracted dims
      integer, intent(in):: m2cA(nmodes2c), m2cB(nmodes2c) !contracted dims in left and right tensors
      type(tensor), intent(inout):: C                      !destination tensor
      integer, intent(inout):: order(C%mode)               !C dim x maps onto (A*B) dim order(x)
-     real(tensor_real), intent(in), optional:: mem              !???
-     real(tensor_real), intent(inout), optional:: wrk(:)        !external buffer
+     real(tensor_dp), intent(in), optional:: mem              !???
+     real(tensor_dp), intent(inout), optional:: wrk(:)        !external buffer
      integer(kind=long), intent(in), optional:: iwrk      !???
      logical, intent(in), optional:: force_sync           !???
      !internal variables (PETT)
@@ -924,17 +925,17 @@ contains
 
   subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
      implicit none
-     real(tensor_real), intent(in)    :: pre1,pre2
+     real(tensor_dp), intent(in)    :: pre1,pre2
      type(tensor), intent(in)    :: A,B
      integer, intent(in)        :: nmodes2c
      integer, intent(in)        :: m2cA(nmodes2c), m2cB(nmodes2c)
      type(tensor), intent(inout) :: C
      integer, intent(inout)     :: order(C%mode)
-     real(tensor_real), intent(in),    optional :: mem
-     real(tensor_real), intent(inout), target, optional :: wrk(:)
+     real(tensor_dp), intent(in),    optional :: mem
+     real(tensor_dp), intent(inout), target, optional :: wrk(:)
      integer(kind=long), intent(in),     optional :: iwrk
      !internal variables
-     real(tensor_real), pointer :: wA(:),  wB(:), wC(:)
+     real(tensor_dp), pointer :: wA(:),  wB(:), wC(:)
      integer :: ordA(A%mode), ordB(B%mode), ro(C%mode), dims_product(C%mode)
      integer :: m_gemm, n_gemm, k_gemm, ldA,ldB
      integer :: i,j,k,l
@@ -1092,28 +1093,28 @@ contains
 
         select case (A%mode)
         case(2)
-           call array_reorder_2d(1.0E0_tensor_real,A%elm1,A%dims(1),A%dims(2),ordA,0.0E0_tensor_real,wA)
+           call array_reorder_2d(1.0E0_tensor_dp,A%elm1,A%dims(1),A%dims(2),ordA,0.0E0_tensor_dp,wA)
         case(3)
-           call array_reorder_3d(1.0E0_tensor_real,A%elm1,A%dims(1),A%dims(2),A%dims(3),ordA,0.0E0_tensor_real,wA)
+           call array_reorder_3d(1.0E0_tensor_dp,A%elm1,A%dims(1),A%dims(2),A%dims(3),ordA,0.0E0_tensor_dp,wA)
         case(4)
-           call array_reorder_4d(1.0E0_tensor_real,A%elm1,A%dims(1),A%dims(2),A%dims(3),A%dims(4),ordA,0.0E0_tensor_real,wA)
+           call array_reorder_4d(1.0E0_tensor_dp,A%elm1,A%dims(1),A%dims(2),A%dims(3),A%dims(4),ordA,0.0E0_tensor_dp,wA)
         case default
            call lsquit("ERROR(tensor_contract_dense_simple): sorting A not implemented",-1)
         end select
 
         select case (B%mode)
         case(2)
-           call array_reorder_2d(1.0E0_tensor_real,B%elm1,B%dims(1),B%dims(2),ordB,0.0E0_tensor_real,wB)
+           call array_reorder_2d(1.0E0_tensor_dp,B%elm1,B%dims(1),B%dims(2),ordB,0.0E0_tensor_dp,wB)
         case(3)
-           call array_reorder_3d(1.0E0_tensor_real,B%elm1,B%dims(1),B%dims(2),B%dims(3),ordB,0.0E0_tensor_real,wB)
+           call array_reorder_3d(1.0E0_tensor_dp,B%elm1,B%dims(1),B%dims(2),B%dims(3),ordB,0.0E0_tensor_dp,wB)
         case(4)
-           call array_reorder_4d(1.0E0_tensor_real,B%elm1,B%dims(1),B%dims(2),B%dims(3),B%dims(4),ordB,0.0E0_tensor_real,wB)
+           call array_reorder_4d(1.0E0_tensor_dp,B%elm1,B%dims(1),B%dims(2),B%dims(3),B%dims(4),ordB,0.0E0_tensor_dp,wB)
         case default
            call lsquit("ERROR(tensor_contract_dense_simple): sorting B not implemented",-1)
         end select
 
 
-        call dgemm('n','n',m_gemm,n_gemm,k_gemm,1.0E0_tensor_real,wA,m_gemm,wB,k_gemm,0.0E0_tensor_real,wC,m_gemm)
+        call dgemm('n','n',m_gemm,n_gemm,k_gemm,1.0E0_tensor_dp,wA,m_gemm,wB,k_gemm,0.0E0_tensor_dp,wC,m_gemm)
 
 
         do i=1,C%mode
@@ -1154,9 +1155,9 @@ contains
     type(tensor),intent(in) :: arr1,arr2
     !> optional integer specifying on which node the result should be stored
     integer,optional,intent(in) :: opt_par
-    real(tensor_real) :: res
+    real(tensor_dp) :: res
     integer :: dest
-    real(tensor_real), external :: ddot
+    real(tensor_dp), external :: ddot
     
     if(arr1%nelms/=arr2%nelms)then
       call lsquit("ERROR(tensor_ddot):operation not defined for arrays with&
@@ -1621,11 +1622,11 @@ contains
      type(tensor), intent(inout) :: iajb, t2, oof, vvf
      logical, intent(in) :: local, prec
      character(*), intent(in) :: spec
-     real(tensor_real), pointer :: o2v2(:)
-     real(tensor_real), pointer :: wrk(:)
+     real(tensor_dp), pointer :: o2v2(:)
+     real(tensor_dp), pointer :: wrk(:)
      integer(kind=long) :: iwrk
      integer :: no,nv,i,j,a,b, specint
-     real(tensor_real), pointer :: elm4(:,:,:,:)
+     real(tensor_dp), pointer :: elm4(:,:,:,:)
 
      no = t2%dims(4)
      nv = t2%dims(1)
@@ -1636,15 +1637,15 @@ contains
         select case(spec)
         case("MP2AMP")
 
-           call array_reorder_4d(1.0E0_tensor_real,iajb%elm1,iajb%dims(1),iajb%dims(2),&
-              &iajb%dims(3),iajb%dims(4),[2,4,1,3],0.0E0_tensor_real,t2%elm1)
+           call array_reorder_4d(1.0E0_tensor_dp,iajb%elm1,iajb%dims(1),iajb%dims(2),&
+              &iajb%dims(3),iajb%dims(4),[2,4,1,3],0.0E0_tensor_dp,t2%elm1)
 
         case ("CCSD_LAG_RHS")
 
-           call array_reorder_4d(-4.0E0_tensor_real,iajb%elm1,iajb%dims(1),iajb%dims(2),&
-              &iajb%dims(3),iajb%dims(4),[2,4,1,3],0.0E0_tensor_real,t2%elm1)
-           call array_reorder_4d(2.0E0_tensor_real,iajb%elm1,iajb%dims(1),iajb%dims(2),&
-              &iajb%dims(3),iajb%dims(4),[2,4,3,1],1.0E0_tensor_real,t2%elm1)
+           call array_reorder_4d(-4.0E0_tensor_dp,iajb%elm1,iajb%dims(1),iajb%dims(2),&
+              &iajb%dims(3),iajb%dims(4),[2,4,1,3],0.0E0_tensor_dp,t2%elm1)
+           call array_reorder_4d(2.0E0_tensor_dp,iajb%elm1,iajb%dims(1),iajb%dims(2),&
+              &iajb%dims(3),iajb%dims(4),[2,4,3,1],1.0E0_tensor_dp,t2%elm1)
 
         case default
            call lsquit("ERROR(get_starting_guess): unknown spec",-1)
@@ -1689,13 +1690,13 @@ contains
      type(tensor), intent(inout) :: arr
      integer, dimension(arr%mode), intent(in) :: order
      integer, dimension(arr%mode) :: new_dims,order1,order2
-     real(tensor_real), pointer :: new_data(:)
+     real(tensor_dp), pointer :: new_data(:)
      integer :: a,b,c,d
      integer :: dim1,dim2,dim3,dim4
      integer :: i,j
      integer :: aa,bb,cc,dd
      integer :: order_type,m,n
-     real(tensor_real) :: tcpu1,twall1,tcpu2,twall2
+     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
      integer(kind=long) :: nelms
      logical :: bg
 
@@ -1723,14 +1724,14 @@ contains
 
         select case(arr%mode)
         case(2)
-           call array_reorder_2d(1.0E0_tensor_real,arr%elm1,arr%dims(1),arr%dims(2),&
-              & order,0.0E0_tensor_real,new_data)
+           call array_reorder_2d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
+              & order,0.0E0_tensor_dp,new_data)
         case(3)
-           call array_reorder_3d(1.0E0_tensor_real,arr%elm1,arr%dims(1),arr%dims(2),&
-              &arr%dims(3),order,0.0E0_tensor_real,new_data)
+           call array_reorder_3d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
+              &arr%dims(3),order,0.0E0_tensor_dp,new_data)
         case(4)
-           call array_reorder_4d(1.0E0_tensor_real,arr%elm1,arr%dims(1),arr%dims(2),&
-              &arr%dims(3),arr%dims(4),order,0.0E0_tensor_real,new_data)
+           call array_reorder_4d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
+              &arr%dims(3),arr%dims(4),order,0.0E0_tensor_dp,new_data)
         case default
            call lsquit("ERROR(tensor_reorder) no default for arbitrary modes",-1)
         end select
@@ -1779,7 +1780,7 @@ contains
     character(4)  :: at
     integer(kind=tensor_standard_int) :: it
     logical :: loc, bg_int
-    real(tensor_real) :: time_minit
+    real(tensor_dp) :: time_minit
     call time_start_phase(PHASE_WORK, twall = time_minit )
 
     bg_int = .false.
@@ -1949,7 +1950,7 @@ contains
     character(4)  :: at
     integer(kind=tensor_standard_int):: it
     logical :: loc, bg_int
-    real(tensor_real) :: time_ainit
+    real(tensor_dp) :: time_ainit
     integer :: dims(nmodes_in),nmodes
     call time_start_phase(PHASE_WORK, twall = time_ainit )
     dims = dims_in
@@ -2060,7 +2061,7 @@ contains
     integer :: sel_type
     integer(kind=tensor_standard_int) :: pdmtype,it
     logical :: zeros_in_tiles,wcps, bg_int
-    real(tensor_real) :: time_init
+    real(tensor_dp) :: time_init
 
     bg_int = .false.
     if(present(bg))bg_int = bg
@@ -2432,36 +2433,36 @@ contains
   subroutine tensor_convert_tensor2fort_wrapper1(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(tensor_real), intent(inout) :: fort(:)
+    real(tensor_dp), intent(inout) :: fort(:)
     integer, intent(in), optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper1
   subroutine tensor_convert_tensor2fort_wrapper2(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(tensor_real), intent(inout) :: fort(:,:)
+    real(tensor_dp), intent(inout) :: fort(:,:)
     integer, intent(in), optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper2
   subroutine tensor_convert_tensor2fort_wrapper3(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(tensor_real), intent(inout) :: fort(:,:,:)
+    real(tensor_dp), intent(inout) :: fort(:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper3
   subroutine tensor_convert_tensor2fort_wrapper4(arr,fort,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(tensor_real), intent(inout) :: fort(:,:,:,:)
+    real(tensor_dp), intent(inout) :: fort(:,:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_tensor2fort_wrapper4
@@ -2471,36 +2472,36 @@ contains
   subroutine tensor_convert_fort2tensor_wrapper1(fortarr,arr,order,wrk,iwrk)
     implicit none
     type(tensor), intent(inout) :: arr
-    real(tensor_real), intent(in) :: fortarr(arr%nelms)
+    real(tensor_dp), intent(in) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper1
   subroutine tensor_convert_fort2tensor_wrapper2(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(tensor_real), intent(in) :: fortarr(:,:)
+    real(tensor_dp), intent(in) :: fortarr(:,:)
     type(tensor), intent(inout) :: arr
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     integer, intent(in),optional :: order(arr%mode)
     call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper2
   subroutine tensor_convert_fort2tensor_wrapper3(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(tensor_real), intent(in) :: fortarr(:,:,:)
+    real(tensor_dp), intent(in) :: fortarr(:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper3
   subroutine tensor_convert_fort2tensor_wrapper4(fortarr,arr,order,wrk,iwrk)
     implicit none
-    real(tensor_real), intent(in) :: fortarr(:,:,:,:)
+    real(tensor_dp), intent(in) :: fortarr(:,:,:,:)
     type(tensor), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     call tensor_convert_fort2arr(fortarr,arr,arr%nelms,order=order,wrk=wrk,iwrk=iwrk)
   end subroutine tensor_convert_fort2tensor_wrapper4
@@ -2512,7 +2513,7 @@ contains
   subroutine tensor_convert_fort2arr(fortarr,arr,nelms,order,wrk,iwrk)
     implicit none
     !> the fortran array with the data
-    real(tensor_real), intent(in) :: fortarr(*)
+    real(tensor_dp), intent(in) :: fortarr(*)
     !> the array which should contain the data after the operation
     type(tensor), intent(inout) :: arr
     !> number of elements to copy from the fortan array to the array
@@ -2520,11 +2521,11 @@ contains
     !> if the array should have a different ordering than the fortran array,
     ! this can be specified with order
     integer, intent(in),optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
-    real(tensor_real) :: tilemem,MemFree
+    real(tensor_dp) :: tilemem,MemFree
     integer :: i,o(arr%mode),fullfortdims(arr%mode)
-    real(tensor_real) :: nrm
+    real(tensor_dp) :: nrm
     logical :: simpleord
 
     simpleord = .true.
@@ -2555,14 +2556,14 @@ contains
        else
           select case(arr%mode)
           case(2)
-             call array_reorder_2d(1.0E0_tensor_real,fortarr,fullfortdims(1),fullfortdims(2),&
-                &o,0.0E0_tensor_real,arr%elm1)
+             call array_reorder_2d(1.0E0_tensor_dp,fortarr,fullfortdims(1),fullfortdims(2),&
+                &o,0.0E0_tensor_dp,arr%elm1)
           case(3)
-             call array_reorder_3d(1.0E0_tensor_real,fortarr,fullfortdims(1),fullfortdims(2),&
-                &fullfortdims(3),o,0.0E0_tensor_real,arr%elm1)
+             call array_reorder_3d(1.0E0_tensor_dp,fortarr,fullfortdims(1),fullfortdims(2),&
+                &fullfortdims(3),o,0.0E0_tensor_dp,arr%elm1)
           case(4)
-             call array_reorder_4d(1.0E0_tensor_real,fortarr,fullfortdims(1),fullfortdims(2),&
-                &fullfortdims(3),fullfortdims(4),o,0.0E0_tensor_real,arr%elm1)
+             call array_reorder_4d(1.0E0_tensor_dp,fortarr,fullfortdims(1),fullfortdims(2),&
+                &fullfortdims(3),fullfortdims(4),o,0.0E0_tensor_dp,arr%elm1)
           case default
              call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
           end select
@@ -2578,11 +2579,11 @@ contains
 
        if(arr%access_type==AT_ALL_ACCESS)then
           do i=1,arr%nlti
-             call tile_from_fort(1.0E0_tensor_real,fortarr,fullfortdims,int(arr%mode),&
-                &0.0E0_tensor_real,arr%ti(i)%t,int(arr%ti(i)%gt),int(arr%tdim),o)
+             call tile_from_fort(1.0E0_tensor_dp,fortarr,fullfortdims,int(arr%mode),&
+                &0.0E0_tensor_dp,arr%ti(i)%t,int(arr%ti(i)%gt),int(arr%tdim),o)
           enddo
        else
-          call tensor_scatter(1.0E0_tensor_real,fortarr,0.0E0_tensor_real,arr,nelms,oo=o,wrk=wrk,iwrk=iwrk)
+          call tensor_scatter(1.0E0_tensor_dp,fortarr,0.0E0_tensor_dp,arr,nelms,oo=o,wrk=wrk,iwrk=iwrk)
        endif
 
     case default
@@ -2616,17 +2617,17 @@ contains
     !> array with the data at the beginning
     type(tensor), intent(inout) :: arr
     !> fortan array to contain the data in the end
-    real(tensor_real), intent(inout) :: fort(*)
+    real(tensor_dp), intent(inout) :: fort(*)
     !> number of elements to convert, must be the same as elements in the array
     integer(kind=8), intent(in) :: nelms
     !> if the fortan array has a different order than the array this specifies
     !the reordering
     integer, intent(in), optional :: order(arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
-    real(tensor_real) :: tilemem,MemFree
+    real(tensor_dp) :: tilemem,MemFree
     integer :: i,o(arr%mode),fullfortdims(arr%mode)
-    real(tensor_real) :: nrm
+    real(tensor_dp) :: nrm
     logical :: simpleord
 
     simpleord = .true.
@@ -2662,14 +2663,14 @@ contains
 
           select case(arr%mode)
           case(2)
-             call array_reorder_2d(1.0E0_tensor_real,arr%elm1,arr%dims(1),arr%dims(2),&
-                &o,0.0E0_tensor_real,fort)
+             call array_reorder_2d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
+                &o,0.0E0_tensor_dp,fort)
           case(3)
-             call array_reorder_3d(1.0E0_tensor_real,arr%elm1,arr%dims(1),arr%dims(2),&
-                &arr%dims(3),o,0.0E0_tensor_real,fort)
+             call array_reorder_3d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
+                &arr%dims(3),o,0.0E0_tensor_dp,fort)
           case(4)
-             call array_reorder_4d(1.0E0_tensor_real,arr%elm1,arr%dims(1),arr%dims(2),&
-                &arr%dims(3),arr%dims(4),o,0.0E0_tensor_real,fort)
+             call array_reorder_4d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
+                &arr%dims(3),arr%dims(4),o,0.0E0_tensor_dp,fort)
           case default
              call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
           end select
@@ -2679,7 +2680,7 @@ contains
     case(TT_TILED)
        call cp_tileddata2fort(arr,fort,nelms,.false.,order=order)
     case(TT_TILED_DIST)
-       call tensor_gather(1.0E0_tensor_real,arr,0.0E0_tensor_real,fort,nelms,oo=order,wrk=wrk,iwrk=iwrk)
+       call tensor_gather(1.0E0_tensor_dp,arr,0.0E0_tensor_dp,fort,nelms,oo=order,wrk=wrk,iwrk=iwrk)
     end select
   end subroutine tensor_convert_tensor2fort
 
@@ -2716,10 +2717,10 @@ contains
     type(tensor),intent(inout) :: from_arr
     type(tensor),intent(inout) :: to_arr
     integer, intent(in),optional :: order(to_arr%mode)
-    real(tensor_real),intent(inout),target,optional :: wrk(*)
+    real(tensor_dp),intent(inout),target,optional :: wrk(*)
     integer(kind=8),intent(in),optional,target:: iwrk
     integer :: i
-    real(tensor_real) :: tilemem,MemFree
+    real(tensor_dp) :: tilemem,MemFree
     integer :: o(from_arr%mode)
     if(from_arr%nelms/=to_arr%nelms)then
       call lsquit("ERROR(tensor_cp_data):arrays need the same number of& 
@@ -2746,11 +2747,11 @@ contains
 
           if(to_arr%access_type==AT_ALL_ACCESS)then
              do i=1,to_arr%nlti
-                call tile_from_fort(1.0E0_tensor_real,from_arr%elm1,from_arr%dims,int(to_arr%mode),&
-                   &0.0E0_tensor_real,to_arr%ti(i)%t,int(to_arr%ti(i)%gt),int(to_arr%tdim),o)
+                call tile_from_fort(1.0E0_tensor_dp,from_arr%elm1,from_arr%dims,int(to_arr%mode),&
+                   &0.0E0_tensor_dp,to_arr%ti(i)%t,int(to_arr%ti(i)%gt),int(to_arr%tdim),o)
              enddo
           else
-             call tensor_scatter(1.0E0_tensor_real,from_arr%elm1,0.0E0_tensor_real,to_arr,from_arr%nelms,oo=o,wrk=wrk,iwrk=iwrk)
+             call tensor_scatter(1.0E0_tensor_dp,from_arr%elm1,0.0E0_tensor_dp,to_arr,from_arr%nelms,oo=o,wrk=wrk,iwrk=iwrk)
           endif
 
        case default
@@ -2790,16 +2791,16 @@ contains
 
      select case(zeroed%itype)
      case(TT_DENSE)
-        zeroed%elm1=0.0E0_tensor_real
+        zeroed%elm1=0.0E0_tensor_dp
      case(TT_REPLICATED)
-        zeroed%elm1=0.0E0_tensor_real
+        zeroed%elm1=0.0E0_tensor_dp
         call tensor_sync_replicated(zeroed)
      case(TT_TILED)
         if (zeroed%atype=='RTAR') then
            call tensor_zero_tiled_dist(zeroed)
         else
            do i=1,zeroed%ntiles
-              zeroed%ti(i)%t=0.0E0_tensor_real
+              zeroed%ti(i)%t=0.0E0_tensor_dp
            enddo
         end if
      case(TT_TILED_DIST,TT_TILED_REPL)
@@ -2845,9 +2846,9 @@ contains
     implicit none
     type(tensor),intent(in) :: arr
     integer,intent(in) :: globtinr
-    real(tensor_real),intent(inout),optional::nrm
+    real(tensor_dp),intent(inout),optional::nrm
     logical,intent(in),optional :: returnsquared
-    real(tensor_real)::norm
+    real(tensor_dp)::norm
     integer :: loctinr,i,j,on
     logical :: squareback
     squareback=.false.
@@ -2881,10 +2882,10 @@ contains
 
   subroutine tensor_print_norm_nrm(arr,nrm,returnsquared)
     implicit none
-    real(tensor_real),intent(inout),optional :: nrm
+    real(tensor_dp),intent(inout),optional :: nrm
     type(tensor),intent(in) :: arr
     logical,intent(in),optional :: returnsquared
-    real(tensor_real)::norm
+    real(tensor_dp)::norm
     integer(kind=8) :: i,j
     logical :: squareback
     squareback=.false.
@@ -2924,7 +2925,7 @@ contains
     type(tensor),intent(in) :: arr
     logical,intent(in),optional :: returnsquared
     integer,intent(in),optional :: print_on_rank
-    real(tensor_real)::norm
+    real(tensor_dp)::norm
     integer(kind=8) :: i,j
     logical :: squareback
     integer(kind=tensor_mpi_kind) :: me,nnod
@@ -2980,7 +2981,7 @@ contains
     integer, intent(inout), optional :: reducetocheck
     logical :: alln,red,master
     integer :: nnod
-    real(tensor_real),pointer :: red_info(:)
+    real(tensor_dp),pointer :: red_info(:)
     alln = .false.
     red = .false.
     master=.true.
@@ -3008,7 +3009,7 @@ contains
       call tensor_print_memory_currents(output)
     endif
     if(red.and.master)then
-      if(abs(red_info(1))<1.0E-11_tensor_real)then
+      if(abs(red_info(1))<1.0E-11_tensor_dp)then
         reducetocheck=0
       else
         reducetocheck=1
@@ -3020,9 +3021,9 @@ contains
 
   subroutine print_norm_fort_wrapper1_nrm(fort,nelms,nrm,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:)
+    real(tensor_dp),intent(in) :: fort(:)
     integer(kind=8),intent(in) ::  nelms
-    real(tensor_real),intent(out),optional :: nrm
+    real(tensor_dp),intent(out),optional :: nrm
     logical,intent(in),optional :: square
     if(present(nrm))call print_norm_fort_nrm(fort,nelms,nrm)
     if(present(nrm).and.present(square))call print_norm_fort_nrm(fort,nelms,nrm,square)
@@ -3030,9 +3031,9 @@ contains
   end subroutine print_norm_fort_wrapper1_nrm
   subroutine print_norm_fort_wrapper2_nrm(fort,nelms,nrm,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:)
+    real(tensor_dp),intent(in) :: fort(:,:)
     integer(kind=8),intent(in) ::  nelms
-    real(tensor_real),intent(out),optional :: nrm
+    real(tensor_dp),intent(out),optional :: nrm
     logical,intent(in),optional :: square
     if(present(nrm))call print_norm_fort_nrm(fort,nelms,nrm)
     if(present(nrm).and.present(square))call print_norm_fort_nrm(fort,nelms,nrm,square)
@@ -3040,9 +3041,9 @@ contains
   end subroutine print_norm_fort_wrapper2_nrm
   subroutine print_norm_fort_wrapper3_nrm(fort,nelms,nrm,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:,:)
+    real(tensor_dp),intent(in) :: fort(:,:,:)
     integer(kind=8),intent(in) ::  nelms
-    real(tensor_real),intent(out),optional :: nrm
+    real(tensor_dp),intent(out),optional :: nrm
     logical,intent(in),optional :: square
     if(present(nrm))call print_norm_fort_nrm(fort,nelms,nrm)
     if(present(nrm).and.present(square))call print_norm_fort_nrm(fort,nelms,nrm,square)
@@ -3050,9 +3051,9 @@ contains
   end subroutine print_norm_fort_wrapper3_nrm
   subroutine print_norm_fort_wrapper4_nrm(fort,nelms,nrm,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:,:,:)
+    real(tensor_dp),intent(in) :: fort(:,:,:,:)
     integer(kind=8),intent(in) ::  nelms
-    real(tensor_real),intent(out),optional :: nrm
+    real(tensor_dp),intent(out),optional :: nrm
     logical,intent(in),optional :: square
     if(present(nrm))call print_norm_fort_nrm(fort,nelms,nrm)
     if(present(nrm).and.present(square))call print_norm_fort_nrm(fort,nelms,nrm,square)
@@ -3060,7 +3061,7 @@ contains
   end subroutine print_norm_fort_wrapper4_nrm
   subroutine print_norm_fort_nolen1_customprint(fort,msg)
     implicit none
-    real(tensor_real),intent(in) :: fort(:)
+    real(tensor_dp),intent(in) :: fort(:)
     character*(*),intent(in) :: msg
     integer(kind=8) ::  nelms
     nelms = size(fort)
@@ -3068,7 +3069,7 @@ contains
   end subroutine print_norm_fort_nolen1_customprint
   subroutine print_norm_fort_nolen2_customprint(fort,msg)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:)
+    real(tensor_dp),intent(in) :: fort(:,:)
     character*(*),intent(in) :: msg
     integer(kind=8) ::  nelms
     nelms = size(fort)
@@ -3076,7 +3077,7 @@ contains
   end subroutine print_norm_fort_nolen2_customprint
   subroutine print_norm_fort_nolen3_customprint(fort,msg)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:,:)
+    real(tensor_dp),intent(in) :: fort(:,:,:)
     character*(*),intent(in) :: msg
     integer(kind=8) ::  nelms
     nelms = size(fort)
@@ -3084,7 +3085,7 @@ contains
   end subroutine print_norm_fort_nolen3_customprint
   subroutine print_norm_fort_nolen4_customprint(fort,msg)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:,:,:)
+    real(tensor_dp),intent(in) :: fort(:,:,:,:)
     character*(*),intent(in) :: msg
     integer(kind=8) ::  nelms
     nelms = size(fort)
@@ -3092,7 +3093,7 @@ contains
   end subroutine print_norm_fort_nolen4_customprint
   subroutine print_norm_fort_wrapper1_customprint(fort,nelms,msg,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:)
+    real(tensor_dp),intent(in) :: fort(:)
     integer(kind=8),intent(in) ::  nelms
     character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
@@ -3101,7 +3102,7 @@ contains
   end subroutine print_norm_fort_wrapper1_customprint
   subroutine print_norm_fort_wrapper2_customprint(fort,nelms,msg,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:)
+    real(tensor_dp),intent(in) :: fort(:,:)
     integer(kind=8),intent(in) ::  nelms
     character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
@@ -3110,7 +3111,7 @@ contains
   end subroutine print_norm_fort_wrapper2_customprint
   subroutine print_norm_fort_wrapper3_customprint(fort,nelms,msg,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:,:)
+    real(tensor_dp),intent(in) :: fort(:,:,:)
     integer(kind=8),intent(in) ::  nelms
     character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
@@ -3119,7 +3120,7 @@ contains
   end subroutine print_norm_fort_wrapper3_customprint
   subroutine print_norm_fort_wrapper4_customprint(fort,nelms,msg,square)
     implicit none
-    real(tensor_real),intent(in) :: fort(:,:,:,:)
+    real(tensor_dp),intent(in) :: fort(:,:,:,:)
     integer(kind=8),intent(in) ::  nelms
     character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
@@ -3130,7 +3131,7 @@ contains
   subroutine array2_print_norm_nrm(arrtwo,nrm,square)
     implicit none
     type(array2),intent(in) :: arrtwo
-    real(tensor_real),intent(inout), optional :: nrm
+    real(tensor_dp),intent(inout), optional :: nrm
     integer(kind=8) :: nelms
     logical,intent(in),optional :: square
     nelms = int(arrtwo%dims(1)*arrtwo%dims(2),kind=8)
@@ -3151,7 +3152,7 @@ contains
   subroutine array4_print_norm_nrm(arrf,nrm,square)
     implicit none
     type(array4),intent(in) :: arrf
-    real(tensor_real),intent(inout), optional :: nrm
+    real(tensor_dp),intent(inout), optional :: nrm
     logical,intent(in),optional :: square
     integer(kind=8) :: nelms
     nelms = int(arrf%dims(1)*arrf%dims(2)*arrf%dims(3)*arrf%dims(4),kind=8)
@@ -3172,7 +3173,7 @@ contains
   subroutine matrix_print_norm_nrm(mat,nrm,square)
     implicit none
     type(matrix),intent(in) :: mat
-    real(tensor_real),intent(inout), optional :: nrm
+    real(tensor_dp),intent(inout), optional :: nrm
     logical,intent(in),optional :: square
     integer(kind=8) :: nelms
     nelms = int(mat%nrow*mat%ncol,kind=8)
@@ -3183,16 +3184,16 @@ contains
 
   subroutine print_norm_fort_nrm(fort,nelms,nrm,returnsquared)
     implicit none
-    real(tensor_real),intent(in) :: fort(*)
+    real(tensor_dp),intent(in) :: fort(*)
     integer(kind=8),intent(in) ::  nelms
-    real(tensor_real),intent(out),optional :: nrm
+    real(tensor_dp),intent(out),optional :: nrm
     logical,intent(in),optional :: returnsquared
     integer(kind=8) :: i
-    real(tensor_real) :: norm
+    real(tensor_dp) :: norm
     logical :: squareback
     squareback=.false.
     if(present(returnsquared))squareback=returnsquared
-    norm=0.0E0_tensor_real
+    norm=0.0E0_tensor_dp
     do i=1,nelms
       norm = norm + fort(i) * fort(i)
     enddo
@@ -3203,16 +3204,16 @@ contains
   end subroutine print_norm_fort_nrm
   subroutine print_norm_fort_customprint(fort,nelms,string,returnsquared)
     implicit none
-    real(tensor_real),intent(in) :: fort(*)
+    real(tensor_dp),intent(in) :: fort(*)
     integer(kind=8),intent(in) ::  nelms
     character*(*),intent(in) :: string
     logical,intent(in),optional :: returnsquared
     integer(kind=8) :: i
-    real(tensor_real) :: norm
+    real(tensor_dp) :: norm
     logical :: squareback
     squareback=.false.
     if(present(returnsquared))squareback=returnsquared
-    norm=0.0E0_tensor_real
+    norm=0.0E0_tensor_dp
     do i=1,nelms
       norm = norm + fort(i) * fort(i)
     enddo
@@ -3225,7 +3226,7 @@ contains
   subroutine tensor_scale(arr,sc)
     implicit none
     type(tensor) :: arr
-    real(tensor_real) :: sc
+    real(tensor_dp) :: sc
     
     select case(arr%itype)
     case(TT_DENSE)
@@ -3245,7 +3246,7 @@ contains
      integer, intent(out) :: a_seg, b_seg
      integer :: counter, nnodes
      integer :: modtilea, modtileb
-     real(tensor_real) :: max_mem_p_tile_in_GB
+     real(tensor_dp) :: max_mem_p_tile_in_GB
      !get segmenting for tensors, divide dimensions until tiles are less than
      !100MB and/or until enough tiles are available such that each node gets at
      !least one and as long as a_seg>=2 and b_seg>=2
@@ -3272,7 +3273,7 @@ contains
 
            !FIRST a then b
 
-           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
                  & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
 
@@ -3287,7 +3288,7 @@ contains
 
            counter  = 1
 
-           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
                  & .and. (b_seg>=1.or.a_seg>=1)  .and. (b/b_seg+modtileb) <= 4   )
 
@@ -3305,7 +3306,7 @@ contains
            !FIRST b then a
            counter  = 1
 
-           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
                  & .and. (b_seg>=1.or.a_seg>=1)   .and. (b/b_seg+modtileb) <= 4   )
 
@@ -3320,7 +3321,7 @@ contains
 
            counter  = 1
 
-           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
                  & .and. (b_seg>=1.or.a_seg>=1)  .and. (a/a_seg+modtilea) <= 4  )
 
@@ -3338,7 +3339,7 @@ contains
 
            !FIRST a then b
 
-           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  & .or.((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)                  )&
                  & .and. (b_seg>=1.or.a_seg>=1) .and. (a/a_seg+modtilea) <= 4 )
 
@@ -3357,7 +3358,7 @@ contains
            counter  = 1
 
            !BOTH a and b
-           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
                  & .and. (b_seg>=10.or.a_seg>=10)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
 
@@ -3376,7 +3377,7 @@ contains
 
            !then make sure that pure virtual batches have a size < thr
 
-           do while(   ( ( b_seg**4)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**4)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  &  .or. ((b/b_seg+modtileb)**4 < nnodes) )&
                  & .and. ( b_seg>=10 )  )
 
@@ -3394,7 +3395,7 @@ contains
            counter  = 1
 
            !BOTH a and b
-           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_real/(1024.0E0_tensor_real**3) > max_mem_p_tile_in_GB &
+           do while(   ( ( b_seg**2*a_seg**2)*8.0E0_tensor_dp/(1024.0E0_tensor_dp**3) > max_mem_p_tile_in_GB &
                  &  .or. ((b/b_seg+modtileb)**2*(a/a_seg+modtilea)**2<nnodes)      )&
                  & .and. (b_seg>=2.or.a_seg>=2)  .and. (a/a_seg+modtilea) <= 4 .and. (b/b_seg+modtileb) <= 4  )
 
@@ -3422,526 +3423,5 @@ contains
 
   end subroutine get_symm_tensor_segmenting_simple
 
-
-
-
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!!!!   ARRAY TESTCASES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-  !> \brief Test the array structure 
-  !> \author Patrick Ettenhuber
-  !> \date September 2012
-  subroutine test_tensor_struct()
-    implicit none
-
-    type(tensor) :: test1,test2,test3
-    real(tensor_real),pointer :: dummy1(:),tileget(:),dummy2(:)
-    real(tensor_real),pointer :: tileget2(:),buf1(:), buf2(:), buf3(:)
-    real(tensor_real) :: normher,ref,ref2,ref3
-    integer(kind=long) :: testint
-    logical :: master
-    integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4)
-    integer(kind=tensor_mpi_kind) :: sender, recver, nnod, rnk, me
-    character(len=7) :: teststatus
-    character(tensor_MSG_LEN) :: msg
-    integer,pointer :: ord(:)
-    master = .true.
-    nnod   = 1_tensor_mpi_kind
-    me     = 0
-#ifdef VAR_MPI
-    me = infpar%lg_mynum
-    if(me /= 0) then
-      master =.false.
-    endif
-    nnod = infpar%lg_nodtot
-    if(nnod < 3) print*,"WARNING(test_tensor_struct): not enough MPI processes to test1 all features"
-#endif
-    nb =  21
-    nv =  18
-    no =  12
-    na =  7
- 
-
-#ifdef VAR_MPI
-    if(master)then
-      write(DECinfo%output,*)"TESTING PDM TT_TILED ARRAY ALLOCATIONS"
-      write(DECinfo%output,'(" Using",f8.3," GB of mem for the testarray")')&
-      &(nv*no*(nv+nb)*8.0E0_tensor_real)/(1024.E0_tensor_real*1024.E0_tensor_real*1024.E0_tensor_real)
-      testint=2
-
-      call mem_alloc(dummy1,nb*na*nv*no)
-      call mem_alloc(dummy2,nb*na*nv*no)
-      call random_number(dummy1)
-      call print_norm(dummy1,int(nb*na*nv*no,kind=8),ref)
-      write(DECinfo%output,'("REFERENCE NORM:",f19.12)')ref
-     
-
-      !DIFFERENT ALLOCATION AND DEALLOCATION STEPS
-      write (DECinfo%output,*) ""
-      write (DECinfo%output,*) ""
-      write (DECinfo%output,*) "TESTING SIMPLE ARRAY FUNCTIONS - MASTER DIRECTED"
-      write (DECinfo%output,*) ""
-      write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
-      print *,"alloc dealloc tests"
-      teststatus="SUCCESS"
-      call tensor_init(test1,[nv,na,nv,nb],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nv,no-1,1,2])
-      call tensor_init(test2,[na,nb,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nv,no-1,1,2])
-      call tensor_free(test2)
-      call tensor_init(test2,[no,no+1,no-1,no+1],4,TT_TILED_DIST,AT_MASTER_ACCESS,[no,no-1,nv,nb])
-      call tensor_free(test1)
-      call tensor_free(test2)
-      call tensor_print_mem_info(DECinfo%output,.true.,.false.,succ)
-      if(succ/=0)teststatus=" FAILED"
-      call tensor_init(test2,[nb,no,nv,no+1],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nb,2,3,4])
-      write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
-      print *,"DIFFERENT ALLOCATION AND DEALLOCATION STEPS: ",teststatus
-
-      !ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY
-      !check for errors via norm
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)""
-      teststatus="SUCCESS"
-      call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nb,na-1,3,no/2])
-      write (DECinfo%output,*) "CONVERT PREVIOUS ARRAY TO PDM TT_TILED" 
-      call tensor_convert(dummy1,test1,[1,2,3,4])
-      call print_norm(test1,normher)
-      write(DECinfo%output,'("NORM OF PDM ARRAY  : ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-      write (DECinfo%output,'("CNVRT: NORM, TEST STATUS:",f19.10," : ",A7)')normher,teststatus
-      print *,"ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY: ",normher,teststatus
-
-
-      !GET A TILE OF A PDM ARRAY
-      !calculate how many elements are in the desired tile, and allocate the
-      !respective amount of memory in a fortran array
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)"TESTING MPI_GET"
-      do ti = 1, test1%ntiles
-        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
-        if(to_get_from /= me .or. nnod==1)then
-         testint = ti
-         exit
-        endif 
-      enddo
-      call get_tile_dim(j,test1,testint)
-      print *,"trying to get",testint," with size", j
-      call mem_alloc(tileget,j)
-      call random_number(tileget)
-      !initiatilize with some weird number here 10 and after get compare the
-      !norms of the tile and the local fortran array
-      teststatus="SUCCESS"
-      if(nnod>1) call tensor_print_tile_norm(test1,ti,ref)
-      write(DECinfo%output,'("NORM OF TILE IN ARRAY   : ",f20.15)')ref
-      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
-      write(DECinfo%output,'("NORM OF FORT BEFORE GET : ",f20.15)')normher
-      if(nnod>1) call tensor_get_tile(test1,int(ti,kind=tensor_standard_int),tileget,j)
-      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
-      write(DECinfo%output,'("NORM OF FORT AFTER GET  : ",f20.15)')normher
-      if(nnod>1)then
-        if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-      else
-        print *,"GET A TILE OF A PDM ARRAY has been skipped"
-      endif
-      write (DECinfo%output,'("GET: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
-      call mem_dealloc(tileget)
-      print *,"GET A TILE OF A PDM ARRAY: ",normher,teststatus
-
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)"TESTING MPI_PUT"
-      teststatus="SUCCESS"
-      do ti = test1%ntiles,1, -1
-        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
-        if(to_get_from /= me .or. nnod==1)then
-         testint = ti
-         exit
-        endif 
-      enddo
-      call get_tile_dim(j,test1,testint)
-      call mem_alloc(tileget,j)
-      call random_number(tileget)
-      !initiatilize with some weird number here 10 and after get compare the
-      !norms of the tile and the local fortran array
-      if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
-      write(DECinfo%output,'("NORM OF TILE BEFORE PUT : ",f20.15)')normher
-      if(nnod>1) call print_norm(tileget,int(j,kind=8),ref)
-      write(DECinfo%output,'("NORM OF FORT TO PUT     : ",f20.15)')ref
-      if(nnod>1) call tensor_put_tile(test1,ti,tileget,j)
-      if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
-      write(DECinfo%output,'("NORM OF TILE AFTER PUT  : ",f20.15)')normher
-      if(nnod>1)then 
-        if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-      else
-        print *,"PUT A TILE OF A PDM ARRAY has been skipped"
-      endif
-      write (DECinfo%output,'("PUT: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
-      print *,"TESTING MPI_PUT",normher,teststatus
-     
-
-      !GET A TILE FROM YOURSELF AS CHECK
-      !testint=1
-      !call mem_dealloc(tileget)
-      !j=get_tileinfo_nels(test1,testint)
-      !call mem_alloc(tileget,j)
-      !call tensor_get_tile(test1,1,tileget,j)
-      !call print_norm(tileget,j)
-      !call tensor_print_tile_norm(test1,1)
-      !call sleep(4)
-
-
-      !CHECK MPI PUT AND ACCUMULATE IN THE SAME WAY
-      !add three to the current tile and print the norm
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)"TESTING MPI_ACCUMULATE"
-      teststatus="SUCCESS"
-      if(nnod>1)then
-        do i=1,j
-          tileget(i)=tileget(i)+3.0E0_tensor_real
-        enddo
-        call print_norm(tileget,int(j,kind=8),ref)
-      endif
-      write(DECinfo%output,'("NORM LOCAL ACCUMULATION : ",f20.15)')ref
-      !initialize the local tile with 3 and accumulate it --> compare norm
-      tileget=3.0E0_tensor_real
-      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
-      write(DECinfo%output,'("NORM OF FORT TO ADD:      ",f20.15)')normher
-      if(nnod>1) call tensor_accumulate_tile(test1,ti,tileget,j)
-      if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
-      write(DECinfo%output,'("NORM REMOTE ACCUMULATION: ",f20.15)')normher
-      !use the tile with three in it, print its norm put and compare norms
-      if(nnod>1)then 
-        if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-      else
-        print *,"ACCUMULATE A TILE OF A PDM ARRAY has been skipped"
-      endif
-      write (DECinfo%output,'("ACC: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
-      print *,"TESTING MPI_ACCUMULATE: ",normher,teststatus
-
-
-      call tensor_free(test1)
-      call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[0,0,0,0])
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)""
-      write(DECinfo%output,*)"TESTING CONVERSION TO FORT"
-      call tensor_convert(dummy1,test1)
-      teststatus="SUCCESS"
-      call print_norm(dummy1,int(nb*na*nv*no,kind=8),ref)
-      write(DECinfo%output,'("NORM OF TT_DENSE ARRAY:      ",f20.15)')ref
-      call print_norm(dummy1,int(no*nv*na*nb,kind=8),normher)
-      write(DECinfo%output,'("NORM OF PDM ARRAY :       ",f20.15)')normher
-      dummy2=1.0E13_tensor_real
-      call tensor_convert(test1,dummy2)
-      call print_norm(dummy2,int(no*nv*na*nb,kind=8),normher)
-      write(DECinfo%output,'("NORM OF CONTRACTED ARRAY: ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-      write (DECinfo%output,'("CTR: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
-      teststatus="SUCCESS"
-      do i=1,no*nv*na*nb
-        if(abs(dummy1(i)-dummy2(i))>1.0E-12)then
-          print *,"element",i,dummy1(i),dummy2(i)
-          teststatus=" FAILED"
-        endif
-      enddo
-      write (DECinfo%output,'("ORDER: TEST STATUS:                              ",A7)')teststatus
-      print *,"TESTING CONVERSION TO FORT: ",teststatus
-
-
-
-      call mem_dealloc(dummy1)
-      call mem_dealloc(dummy2)
-      call mem_dealloc(tileget)
-      !call tensor_print_mem_info(DECinfo%output,.true.,.false.)
-      call tensor_free(test1)
-      call tensor_free(test2)
-
-      teststatus="SUCCESS"
-      call tensor_print_mem_info(DECinfo%output,.true.,.false.,succ)
-      !call tensor_print_mem_info(DECinfo%output,.true.,.false.)
-      if(succ/=0)teststatus=" FAILED"
-       write (DECinfo%output,'("FIRST HALF ALLOCATION: ",A7)')teststatus  
-    endif
-    !get the slaves into this routine
-    if(master)then
-      print *,"MASTER GETTING SLAVES"
-      call ls_mpibcast(ARRAYTEST,infpar%master,infpar%lg_comm)
-      write (DECinfo%output,*)""
-      write (DECinfo%output,*)""
-      write (DECinfo%output,*)"TESTING PARALLEL ACCESS TO THE SAME ROUTINES"
-      write (DECinfo%output,*)""
-    else
-      print *,"SLAVE ARRIVED",infpar%lg_mynum
-    endif
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !!!!!!ALL OF THE SLAVES WILL BE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    testint=2
-
-    !initialize a matrix
-    teststatus="SUCCESS"
-    if(master) write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
-    call tensor_init(test1,[nb,nb+2,nb+3,nb+4],4,TT_TILED_DIST,AT_ALL_ACCESS,[nb,nb+2,40,2])
-    call tensor_init(test2,[no+3,no+2,no+1,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no,40,40,10])
-    call tensor_free(test1)
-    call tensor_free(test2)
-    call tensor_init(test2,[nb,na,nv,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[nb,nv-1,1,2])
-    call tensor_free(test2)
-    call tensor_print_mem_info(DECinfo%output,.true.,.true.,succ)
-    if(succ/=0)teststatus=" FAILED"
-    call tensor_init(test2,[nb,no,nv,no+1],4,TT_TILED_DIST,AT_ALL_ACCESS,[nb,2,3,4])
-    if(master) write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
-    if(master) write (DECinfo%output,*)"DONE -- NOW COMMUNICATION"
-    if(master) write(DECinfo%output,*)""
-    if(master) write(DECinfo%output,*)""
-    print *,"ALL-INIT ALLOC-DEALLOC TESTS",teststatus
-    !call lsmpi_barrier(infpar%lg_comm)
-
-    !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the
-    !current rank
-    teststatus="SUCCESS"
-    rnk = nnod - 1
-    do ti = test1%ntiles,1, -1
-      call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
-      if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
-       testint = ti
-       exit
-      endif 
-    enddo
-
-
-    if((infpar%lg_mynum==rnk.or.master).and. nnod > 2)then
-
-      recver=rnk
-
-      if(.not.master)then
-        call get_tile_dim(j,test2,ti)
-        call mem_alloc(tileget,j)
-        tileget = 1.0E1_tensor_real
-        call tensor_put_tile(test2,ti,tileget,j)
-        call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
-        call mem_dealloc(tileget)
-
-      else
-        call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
-        write(DECinfo%output,'("NORM PARALLEL 3LPN: ",f20.15)')ref
-      endif
-
-    else
-      if(master) print*,"WARNING: skipping test1 NORM PARALLEL 3LPN, not enough nodes"
-    endif
-
-
-    !BEFORE rank NNOD - 2  CAN GET THE TILE
-    rnk = nnod - 2
-
-    
-    call lsmpi_barrier(infpar%lg_comm)
-    if((infpar%lg_mynum==rnk.or.master).and.nnod>2)then
-      recver=rnk
-      if(.not.master)then
-        call get_tile_dim(j,test2,ti)
-        call mem_alloc(tileget,j)
-        call tensor_get_tile(test2,int(ti,kind=tensor_standard_int),tileget,j)
-        call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
-        do i=1,j
-          tileget(i) = tileget(i) + 2.4E0_tensor_real
-        enddo
-        call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
-        tileget = 2.4E0_tensor_real
-        call get_midx(ti,midx,test2%ntpm,test2%mode)
-        call tensor_accumulate_tile(test2,midx,tileget,j)
-        call mem_dealloc(tileget)
-      else
-        teststatus="SUCCESS"
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
-        write(DECinfo%output,'("NORM PARALLEL 2LGN: ",f20.15)')normher
-        if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-        write (DECinfo%output,'("PUT-GET: NORM, TEST STATUS: ",f19.10," : ",A7)')normher,teststatus
-
-        call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
-        write(DECinfo%output,'("NORM PARALLEL 2LAC: ",f20.15)')ref
-      endif
-    endif
-
-    !BE CAREFUL ABOUT WHETER THE INFORMATION IS ALREADY TRANSMITTED --> AT
-    !CRITICAL POINTS INSERT BARRIER STATEMENTS TO SYNCHONIZE THE NODES 
-    call lsmpi_barrier(infpar%lg_comm)
-
-    if(nnod>2)call tensor_print_tile_norm(test2,ti,normher)
-    call tensor_free(test2)
-    if(master)then
-       teststatus="SUCCESS"
-       write(DECinfo%output,'("NORM PARALLEL WORK: ",f20.15)')normher
-       if(nnod>2)then
-         if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-       else
-         print *,"AS TEST WAS SKIPPED WE DO NOT CHECK FOR THE RESULT"
-       endif
-       write (DECinfo%output,'("ACC2    : NORM, TEST STATUS: ",f19.10," : ",A7)')ref,teststatus
-       print *,"ACC2    : NORM, TEST STATUS:",teststatus
-    endif
-    if(master) write (DECinfo%output,*)""
-
-  
-    !test1 extracting a tile with a different ordering than the dense matrix, put
-    !that into pdm, get these tiles on each node and put them in reversed
-    !reordering back into the full array, check norms and order
-    teststatus="SUCCESS"
-    call lsmpi_barrier(infpar%lg_comm)
-    call tensor_init(test2,[no-4,nv+3,nv/7,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no-4,nv+3,5,2])
-    call tensor_init(test1,[nv/7,nv+3,no,no-4],4,TT_TILED_DIST,AT_ALL_ACCESS)
-    call memory_allocate_tensor_dense(test1,.false.)
-    call random_number(test1%elm1)
-    call lsmpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
-    if(infpar%lg_mynum==0)then
-      write (msg,*)"local test1 norm master"
-      call print_norm(test1%elm1,test1%nelms,msg)
-    endif
-    if(infpar%lg_nodtot>1)then
-      rnk = 1
-    else
-      rnk = 0
-    endif
-    if(me==rnk)then
-      write (msg,*)"local test1 norm slave"
-      call print_norm(test1%elm1,test1%nelms,msg)
-    endif
-    call print_norm(test1%elm1,test1%nelms,ref)
-    call tensor_convert(test1%elm1,test2,[4,2,1,3])
-    call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(test2,normher)
-    print *,"convert",ref,normher
-    call tensor_mv_dense2tiled(test1,.false.)
-    call memory_allocate_tensor_dense(test2,.false.)
-    call lsmpi_barrier(infpar%lg_comm)
-    test2%elm1=0.0E0_tensor_real
-    do i=1,test2%ntiles
-      call get_tile_dim(j,test2,i)
-      call mem_alloc(tileget,j)
-      call tensor_get_tile(test2,int(i,kind=tensor_standard_int),tileget,j)
-      call tile_in_fort(1.0E0_tensor_real,tileget,i,int(test2%tdim),0.0E0_tensor_real,&
-                        &test2%elm1,test1%dims,4,[3,2,4,1])
-      call mem_dealloc(tileget)
-    enddo
-    call lsmpi_barrier(infpar%lg_comm)
-    call tensor_cp_tiled2dense(test1,.true.)
-    call lsmpi_barrier(infpar%lg_comm)
-    if(infpar%lg_mynum==0)then
-      write (msg,*)"local test1 2 norm master"
-      call print_norm(test2%elm1,test2%nelms,msg)
-    endif
-    if(infpar%lg_nodtot>1)then
-      rnk = 1
-    else
-      rnk = 0
-    endif
-    if(infpar%lg_mynum==rnk)then
-      write (msg,*)"local test1 2 norm slave"
-      call print_norm(test2%elm1,test2%nelms,msg)
-    endif
-    call print_norm(test2%elm1,test2%nelms,normher)
-    do i=1,test1%nelms
-      if(abs(test1%elm1(i)-test2%elm1(i))>1.0E-12)then
-        teststatus=" FAILED"
-      endif
-    enddo
-    call tensor_deallocate_dense(test1)
-    call tensor_deallocate_dense(test2)
-    test1%itype=TT_TILED_DIST
-    test2%itype=TT_TILED_DIST
-    call tensor_free(test1)
-    call tensor_free(test2)
-    if(master)then
-       write(DECinfo%output,'("PDM REORDERINGS: ",f20.15)')normher
-       if(abs(normher-ref)>1.0E-12_tensor_real)teststatus=" FAILED"
-       write (DECinfo%output,'("PDMR    : NORM, TEST STATUS: ",f19.10," : ",A7)')ref,teststatus
-    endif
-    if(master) write (DECinfo%output,*)""
-
-    !Test parallel tensor contractions
-    teststatus="SUCCESS"
-    call tensor_ainit(test1,[no,nv,no,nv],4,tdims=[no/2,nv/2,no/2,nv/2],atype="TDPD")
-    call tensor_ainit(test2,[nv,no,nv],   3,tdims=[nv/2,no/2,nv/2],     atype="TDPD")
-    call tensor_ainit(test3,[nv,no,nv],   3,tdims=[nv/2,no/2,nv/2],     atype="TDAR")
-    call tensor_zero(test3)
-    !do the local reference calculation on the master
-    call mem_alloc(buf3,nv*no*nv)
-    if(master)then
-       call random_number(test1%elm1)
-       call random_number(test2%elm1)
-       call print_norm(test1%elm1,int(no*nv*no*nv,kind=8))
-       call print_norm(test2%elm1,int(nv*no*nv,kind=8))
-       call mem_alloc(buf1,no*nv*no*nv)
-       call mem_alloc(buf2,nv*no*nv)
-       call array_reorder_4d(1.0E0_tensor_real,test1%elm1,no,nv,no,nv,[1,4,2,3],0.0E0_tensor_real,buf1)
-       call array_reorder_3d(1.0E0_tensor_real,test2%elm1,nv,no,nv,     [3,2,1],0.0E0_tensor_real,buf2)
-       call dgemm('n','n',no*nv,nv,no*nv,1.0E0_tensor_real,buf1,no*nv,buf2,no*nv,0.0E0_tensor_real,buf3,no*nv)
-       call print_norm(buf3,int(no*nv*nv,kind=8),ref)
-       call mem_dealloc(buf1)
-       call mem_dealloc(buf2)
-    endif
-    call ls_mpibcast(test1%elm1,test1%nelms,infpar%master,infpar%lg_comm)
-    call ls_mpibcast(test2%elm1,test2%nelms,infpar%master,infpar%lg_comm)
-    call lsmpi_barrier(infpar%lg_comm)
-    call tensor_mv_dense2tiled(test1,.true.)
-    call tensor_mv_dense2tiled(test2,.true.)
-    call lsmpi_barrier(infpar%lg_comm)
-    call print_norm(test1)
-    call print_norm(test2)
-
-    call mem_alloc(ord,3)
-    call mem_alloc(buf2,nv*no*nv)
-
-    ord = [2,1,3]
-    buf2 = 0.0E0_tensor_real
-
-    call tensor_lock_local_wins(test3,'e')
-    call tensor_contract(1.0E0_tensor_real,test1,test2,[2,3],[3,2],2,0.0E0_tensor_real,test3,ord)
-    call tensor_unlock_local_wins(test3)
-
-    call mem_dealloc(ord)
-
-    call tensor_gather(1.0E0_tensor_real,test3,0.0E0_tensor_real,buf2,test3%nelms,oo=[2,1,3])
-    call print_norm(buf2,test3%nelms,normher)
-    if(master)then
-       write(DECinfo%output,'("PDM CONTRACTION: ",f20.15)') normher
-       if(abs(normher-ref)>1.0E-10_tensor_real) teststatus=" FAILED"
-       write (DECinfo%output,'("PDCONTR : NORM, TEST STATUS: ",f19.10," : ",A7)') ref,teststatus
-    endif
-    if(master)then
-       do i=1,test3%nelms
-          if(abs(buf2(i)-buf3(i))>1.0E-10_tensor_real)then
-             teststatus=" FAILED"
-             if(infpar%lg_mynum==0)print *,i,buf2(i),buf3(i)
-          endif
-       end do
-       write (DECinfo%output,'("PDCWORD :       TEST STATUS:                     : ",A7)') teststatus
-    endif 
-
-    call mem_dealloc(buf2)
-    call mem_dealloc(buf3)
-
-    call tensor_free(test1)
-    call tensor_free(test2)
-    call tensor_free(test3)
-
-#endif
-
-  end subroutine test_tensor_struct 
 end module tensor_interface_module
 
-
-#ifdef VAR_MPI
-subroutine get_slaves_to_tensor_test()
-  use precision
-  use tensor_interface_module,only:test_tensor_struct
-  implicit none
-  call test_tensor_struct()
-end subroutine get_slaves_to_tensor_test
-#endif

@@ -7,9 +7,9 @@ module tensor_type_def_module
   type tile
     type(c_ptr)           :: c    =  c_null_ptr
 #ifdef VAR_PTR_RESHAPE
-    real(tensor_real),pointer, contiguous :: t(:) => null()         !data in tiles
+    real(tensor_dp),pointer, contiguous :: t(:) => null()         !data in tiles
 #else
-    real(tensor_real),pointer     :: t(:) => null()         !data in tiles
+    real(tensor_dp),pointer     :: t(:) => null()         !data in tiles
 #endif
     integer(kind=tensor_int), pointer  :: d(:) => null()  !actual dimension of the tiles
     integer(kind=tensor_long_int)     :: e               !number of elements in current tile
@@ -33,20 +33,20 @@ module tensor_type_def_module
      !to reference the data in the first pointer
      integer(kind=tensor_mpi_kind):: w1                                    ! windows for local chunk of memory
      type(c_ptr)                :: e1c                   =  c_null_ptr   ! cpointer for local chunk, maily as fail-check
-     real(tensor_real), pointer :: elm1(:)               => null()       ! local chunk of memory
+     real(tensor_dp), pointer :: elm1(:)               => null()       ! local chunk of memory
 
      ! the following should just point to elm1
-     real(tensor_real), pointer :: elm2(:,:)             => null()
-     real(tensor_real), pointer :: elm3(:,:,:)           => null()
-     real(tensor_real), pointer :: elm4(:,:,:,:)         => null()
-     real(tensor_real), pointer :: elm5(:,:,:,:,:)       => null()
-     real(tensor_real), pointer :: elm6(:,:,:,:,:,:)     => null()
-     real(tensor_real), pointer :: elm7(:,:,:,:,:,:,:)   => null()
+     real(tensor_dp), pointer :: elm2(:,:)             => null()
+     real(tensor_dp), pointer :: elm3(:,:,:)           => null()
+     real(tensor_dp), pointer :: elm4(:,:,:,:)         => null()
+     real(tensor_dp), pointer :: elm5(:,:,:,:,:)       => null()
+     real(tensor_dp), pointer :: elm6(:,:,:,:,:,:)     => null()
+     real(tensor_dp), pointer :: elm7(:,:,:,:,:,:,:)   => null()
 
      !in order to have only one array type the tile information is always there
      integer(kind=tensor_mpi_kind) :: dummyw
      type(c_ptr)                   :: dummyc   =  c_null_ptr
-     real(tensor_real),pointer     :: dummy(:) => null()       !for the creation of mpi windows a dummy is required
+     real(tensor_dp),pointer     :: dummy(:) => null()       !for the creation of mpi windows a dummy is required
      type(tile),pointer    :: ti(:)   => null()       !tiles, if matrix should be distributed
      integer(kind=tensor_mpi_kind),pointer  :: wi(:)     => null()       !windows for tiles, if matrix should be distributed, there are ntiles windows to be inited
      integer(kind=tensor_int)               :: nwins                = 0             !number of windows allocated
