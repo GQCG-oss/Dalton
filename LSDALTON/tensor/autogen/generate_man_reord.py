@@ -314,9 +314,9 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
      oaccloop_end = "!$acc end loop\n"
      oaccparallel_end = "!$acc end parallel\n"
      oaccparallel_async = " async(async_id1)"
-     oaccparallel_wait  = " wait(async_id2)"
+     oaccparallel_wait  = "!$acc wait(async_id2)"
      oaccparallel_init = "!$acc parallel present(array_in,array_out)&\n"
-     oaccparallel_init += "       !$acc& firstprivate(pre1,pre2,d"
+     oaccparallel_init += "    !$acc& firstprivate(pre1,pre2,d"
      for j in range(modes):
         oaccparallel_init += abc[j]+",d"
      oaccparallel_init = oaccparallel_init[:-2] + ") private("
@@ -336,11 +336,10 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
        oaccloop_worker = "!$acc loop worker\n"
        oaccloop_vector = "!$acc loop vector\n"
 
+     f.write("    "+oaccparallel_init+oaccparallel_async)
      f.write("\n\n")
      f.write("    if (wait_arg) then\n\n")
-     f.write("       "+oaccparallel_init+oaccparallel_async+oaccparallel_wait+"\n\n")
-     f.write("    else\n\n")
-     f.write("       "+oaccparallel_init+oaccparallel_async+"\n\n")
+     f.write("       "+oaccparallel_wait+"\n\n")
      f.write("    endif\n\n")
 
 
