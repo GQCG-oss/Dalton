@@ -18,14 +18,14 @@ subroutine pdm_tensor_slave(comm)
   use tensor_interface_module
 
    IMPLICIT NONE
-   INTEGER(kind=ls_mpik),intent(in) :: comm
+   INTEGER(kind=tensor_mpi_kind),intent(in) :: comm
    type(tensor)  :: A, B, C, D, AUX
    CHARACTER    :: T(2)
    INTEGER      :: JOB
-   real(REALK),pointer :: realar1(:)
+   real(tensor_dp),pointer :: realar1(:)
    integer, pointer    :: intarr1(:), intarr2(:), intarr3(:), intarr4(:)
    integer             :: INT1,       INT2,       INT3,       INT4
-   real(realk)         :: REAL1,      REAL2
+   real(tensor_dp)   :: REAL1,      REAL2
    logical             :: LOG1
    logical :: loc
    character (4) :: at 
@@ -62,9 +62,11 @@ subroutine pdm_tensor_slave(comm)
       call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
 
       if(INT1==-1)then
-         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,.false.,tdims=intarr2) 
+         call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
+            &AT_MASTER_ACCESS,.false.,tdims=intarr2) 
       else
-         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,.false.,tdims=intarr2,force_offset=INT1) 
+         call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
+            &AT_MASTER_ACCESS,.false.,tdims=intarr2,force_offset=INT1) 
       endif
 
       call mem_dealloc(intarr2)
@@ -78,7 +80,7 @@ subroutine pdm_tensor_slave(comm)
       call mem_alloc(intarr1,A%mode)
       intarr1 =A%dims
       call tensor_free_aux(A)
-      call tensor_init_replicated(A,intarr1,A%mode,AT_MASTER_ACCESS,.false.) 
+      call tensor_init_replicated(A,intarr1,int(A%mode),AT_MASTER_ACCESS,.false.) 
       call mem_dealloc(intarr1)
    CASE(JOB_PRINT_MEM_INFO1)
       call print_mem_per_node(DECinfo%output,.false.)
@@ -97,7 +99,7 @@ subroutine pdm_tensor_slave(comm)
       call mem_dealloc(realar1)
    CASE(JOB_GET_TILE_SEND)
       !INT1,realar1 and INT2 are just dummy arguments
-      call tensor_get_tile(A,INT1,realar1,INT2)
+      call tensor_get_tile(A,int(INT1,kind=tensor_standard_int),realar1,INT2)
    CASE(JOB_PRINT_TI_NRM)
       call tensor_tiled_pdm_print_ti_nrm(A,0)
    CASE(JOB_SYNC_REPLICATED)

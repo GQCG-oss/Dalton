@@ -36,9 +36,9 @@ endif()
 add_definitions(-DBINARY_INFO_AVAILABLE)
 
 if(cmake_build_type_tolower STREQUAL "debug")
-    add_definitions(-DVAR_LSDEBUGINT)
-    add_definitions(-DVAR_LSDEBUG)
-    add_definitions(-DVAR_DEBUGICHOR)
+  add_definitions(-DVAR_LSDEBUGINT)
+  add_definitions(-DVAR_LSDEBUG)
+  add_definitions(-DVAR_DEBUGICHOR)
 endif()
 
 add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
@@ -69,6 +69,10 @@ if(ENABLE_GPU)
     if(ENABLE_CUBLAS)
         add_definitions(-DVAR_CUBLAS)
     endif()
+endif()
+
+if(ENABLE_REAL_SP)
+    add_definitions(-DVAR_REAL_SP)
 endif()
 
 if(ENABLE_CSR)

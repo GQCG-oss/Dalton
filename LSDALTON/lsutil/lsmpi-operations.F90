@@ -1403,6 +1403,8 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 call LS_MPI_BUFFER(dalton%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(dalton%SolveNMRResponseSimultan,Master)
+call LS_MPI_BUFFER(dalton%ResponseMatNormConvTest,Master)
 call LS_MPI_BUFFER(dalton%PreCalcDFscreening,Master)
 call LS_MPI_BUFFER(dalton%PreCalcF12screening,Master)
 
@@ -1559,6 +1561,7 @@ call LS_MPI_BUFFER(scheme%DO_PROP,Master)
 call LS_MPI_BUFFER(scheme%PropOper,Master)
 
 call LS_MPI_BUFFER(scheme%ForceRIMP2memReduced,Master)
+call LS_MPI_BUFFER(scheme%AONuclearSpecID,Master)
 call LS_MPI_BUFFER(scheme%PreCalcDFscreening,Master)
 call LS_MPI_BUFFER(scheme%PreCalcF12screening,Master)
 

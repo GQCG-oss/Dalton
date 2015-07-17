@@ -896,11 +896,11 @@ C
                      deallocate(buffer2)
                   end if
                end if
-               
+
                allocate(dmat_ao(nbast*nbast))
                allocate(xc_mat(nbast*nbast))
                allocate(xc_mat_tri(nnbast))
-               
+
                dmat_ao     = 0.0d0
                xc_mat     = 0.0d0
                xc_mat_tri = 0.0d0
@@ -908,17 +908,17 @@ C
                xc_num_electrons = 0.0d0
                call daxpy(nbast*nbast, 0.5d0, dcao, 1,
      &                    dmat_ao, 1)
-               
+
                call xcint_integrate_rks_scf(dmat_ao,
      &                                xc_energy,
      &                                xc_mat,
      &                                xc_num_electrons)
                emy = emy + xc_energy(1)
-               
+
                call dgetsp(nbast, xc_mat, xc_mat_tri)
                call daxpy(nnbast, 1.0d0, xc_mat_tri, 1,
      &                    faosav(1, indevc, 1), 1)
-               
+
                deallocate(dmat_ao)
                deallocate(xc_mat)
                deallocate(xc_mat_tri)

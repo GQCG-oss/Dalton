@@ -240,116 +240,6 @@ end function max_batch_dimension
     return
   end subroutine remove_repeted_entries
 
-  !> \brief Sort first 'n' elements of vector a with 'm' elements
-  subroutine int_sort(a,n,m)
-
-    implicit none
-    integer, dimension(m), intent(inout) :: a
-    integer, intent(in) :: m,n
-    integer :: i
-    integer :: tmp
-    logical :: swp
-
-    swp=.true.
-    do while (swp)
-       swp=.false.
-       do i=1,n-1
-          if(a(i)>a(i+1)) then
-
-             tmp=a(i+1)
-             a(i+1)=a(i)
-             a(i)=tmp
-
-             swp=.true.
-          endif
-       end do
-    end do
-
-    return
-  end subroutine int_sort
-
-
-  !> \brief Sort real vector, keeping track of the original indices.
-  !> Note: Largest elements first!
-  subroutine real_inv_sort_with_tracking(to_sort,to_track,n)
-
-    implicit none
-    integer, intent(in) :: n
-    real(realk), dimension(n), intent(inout) :: to_sort
-    integer, dimension(n), intent(inout) :: to_track
-    real(realk) :: tmp
-    integer :: tmp1,i
-    logical :: swp
-
-    ! Set original track order
-    do i=1,n
-       to_track(i)=i
-    end do
-
-    swp=.true.
-    do while (swp)
-       swp=.false.
-       do i=1,n-1
-          if(to_sort(i) < to_sort(i+1)) then ! reverse order
-
-             tmp = to_sort(i+1)
-             to_sort(i+1) = to_sort(i)
-             to_sort(i) = tmp
-
-             tmp1 = to_track(i+1)
-             to_track(i+1) = to_track(i)
-             to_track(i) = tmp1
-
-             swp=.true.
-          end if
-       end do
-    end do
-    return
-  end subroutine real_inv_sort_with_tracking
-
-
-  !> \brief Sort integer vector, keeping track of the original indices.
-  !> Note: Largest elements first!
-  !> \author Kasper Kristensen (based on real_inv_sort_with_tracking)
-  !> \date February 2011
-  subroutine integer_inv_sort_with_tracking(to_sort,to_track,n)
-
-    implicit none
-    !> Dimension of vector to sort
-    integer, intent(in) :: n
-    !> Vector to sort
-    integer, dimension(n), intent(inout) :: to_sort
-    !> List of sorted original indices
-    integer, dimension(n), intent(inout) :: to_track
-    integer :: tmp,tmp1,i
-    logical :: swp
-
-    ! Set original track order
-    do i=1,n
-       to_track(i)=i
-    end do
-
-    swp=.true.
-    do while (swp)
-       swp=.false.
-       do i=1,n-1
-          if(to_sort(i) < to_sort(i+1)) then ! reverse order
-
-             tmp = to_sort(i+1)
-             to_sort(i+1) = to_sort(i)
-             to_sort(i) = tmp
-
-             tmp1 = to_track(i+1)
-             to_track(i+1) = to_track(i)
-             to_track(i) = tmp1
-
-             swp=.true.
-          end if
-       end do
-    end do
-
-  end subroutine integer_inv_sort_with_tracking
-
 
   subroutine ExpandBufferKraken(BufferVec,TrackMatrix,&
        & MyAtom,natoms,zetacount)
@@ -2245,39 +2135,6 @@ end function max_batch_dimension
 
 
   end subroutine get_currently_available_memory
-
-
-
-  !> \brief Get list of atoms sorted according to distance from "MyAtom".
-  !> \author Ida-Marie Hoeyvik
-  subroutine GetSortedList(ListMyAtom,ListTrack,ToSort,&
-       & n1,natoms,MyAtom)
-    implicit none
-    integer,intent(in)     :: n1,natoms,MyAtom
-    real(realk),intent(in) :: ToSort(n1,natoms)
-    real(realk)            :: ListMyAtom(n1), TempList(n1)
-    integer                :: ListTrack(n1), TempTrack(n1)
-    integer                :: counter,i
-
-    ListMyAtom(:)=ToSort(:,MyAtom)
-    ! Sort large--> small
-    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,n1)
-
-    TempList = 0.0E0_realk
-    TempTrack = 0
-    counter = 1
-
-    ! change to small-->large
-    do i=n1,1,-1
-       TempList(counter) = ListMyAtom(i)
-       TempTrack(counter)= ListTrack(i)
-       counter = counter + 1
-    end do
-
-    ListMyAtom=TempList
-    ListTrack=TempTrack
-
-  end subroutine GetSortedList
 
 
 
@@ -5922,8 +5779,8 @@ end function max_batch_dimension
      case( TT_TILED_DIST )
 
 
-        call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
-           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset, bg=bg )
+        call tensor_init(u, t2%dims, int(t2%mode), tensor_type = t2%itype,&
+           &pdm = t2%access_type, tdims = int(t2%tdim), fo = int(t2%offset), bg=bg )
 
         if(DECinfo%use_singles)then
 
@@ -6242,6 +6099,27 @@ end function max_batch_dimension
     end if
 
   end subroutine restart_sanity_check
+
+
+  !> For two tensors b1 and b2, calculate sum of the following dot products:
+  !> SD_ddot = dotproduct(b1,b1) + dotproduct(b2,b2)
+  !> Intended to be used when b1/b2 decsribes singles/doubles quantities, but
+  !> can also be used for other purposes.
+  !> \author Kasper Kristensen
+  !> \date June 2015
+  function SD_dotproduct(b1,b2) result(SD_ddot)
+    implicit none
+    !> Result as described above
+    real(realk) :: SD_ddot
+    !> Input tensors may be of different dimensions
+    type(tensor),intent(in) :: b1,b2
+    real(realk) :: ddot1, ddot2 
+
+    call print_norm(b1,nrm=ddot1,returnsquared=.true.)
+    call print_norm(b2,nrm=ddot2,returnsquared=.true.)
+    SD_ddot = ddot1+ddot2
+
+  end function SD_dotproduct
 
 
 end module dec_fragment_utils

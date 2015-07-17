@@ -1,20 +1,26 @@
 module cc_response_tools_module
 
-   use precision
-   use typedef
-   use typedeftype
-   use dec_typedef_module
-   use IntegralInterfaceMOD
+  use fundamental
+  use precision
+  use typedef
+  use typedeftype
+  use dec_typedef_module
+  use IntegralInterfaceMOD
+  use tensor_interface_module
 
-   ! DEC DEPENDENCIES (within deccc directory)   
-   ! *****************************************
-   use array4_simple_operations
-   use cc_tools_module
-   use ccintegrals
+  ! DEC DEPENDENCIES (within deccc directory)   
+  ! *****************************************
+  use array4_simple_operations
+  use cc_tools_module
+  use ccintegrals
+  use dec_fragment_utils
+  use dec_tools_module
 
-   public get_ccsd_multipliers_simple,noddy_generalized_ccsd_residual,cc_jacobian_rhtr
-   private
-   contains
+  public get_ccsd_multipliers_simple,cc_jacobian_rhtr,& 
+       & ccsd_eigenvalue_solver
+  private
+
+contains
 
    !> \author Patrick Ettenhuber
    !> \Date September 2013
@@ -193,7 +199,6 @@ module cc_response_tools_module
 
      call array4_dealloc(gao)
 
-
      call mem_alloc(w1,max(max(max(max(o2v2,ov3),v4),o2*v2),o4))
 
      !Transform inactive Fock matrix into the different mo subspaces
@@ -222,16 +227,19 @@ module cc_response_tools_module
      !rho f
      !-----
      rho1 = 0.0E0_realk
+
      ! part1
      !sort amps(dkfj) -> dkjf
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,2,4,3],0.0E0_realk,w2)
      ! w3 : \sum_{fj} t^{df}_{kj} (d k f j) Lovvv (j f e a)
+
      call array_reorder_4d(2.0E0_realk,govvv,no,nv,nv,nv,[1,2,3,4],0.0E0_realk,w1)
      call array_reorder_4d(-1.0E0_realk,govvv,no,nv,nv,nv,[1,4,3,2],1.0E0_realk,w1)
      call dgemm('n','n',ov,v2,ov,1.0E0_realk,w2,ov,w1,ov,0.0E0_realk,w3,ov)
      !write(msg,*)"rho f 1"
      !call print_norm(w3,int(ov3,kind=8),msg)
      ! part2
+
      ! sort t2f (e j f k) -[1,4,2,3]> t2f (e k j f)
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
      ! sort govvv(j a d f) -[1,4,2,3]> govvv (j f a d) 
@@ -245,7 +253,7 @@ module cc_response_tools_module
      !write(msg,*)"rho f 2 - added"
      !call print_norm(w3,int(ov3,kind=8),msg)
      ! part3
-    
+
      ! sort t2f (d j f k) -[1,4,2,3]> t2f (d k j f)
      call array_reorder_4d(1.0E0_realk,t2f,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
      ! \sum_{jf} t^{df}_{jk} (d k j f)(still in w2) govvv(j f e a)
@@ -258,6 +266,7 @@ module cc_response_tools_module
      !write(msg,*)"rho f1-3(LT21I)"
      !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
+
      call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
 
      !rho c - 1
@@ -277,7 +286,7 @@ module cc_response_tools_module
      !call print_norm(w2,int(ov,kind=8),msg)
      !rho1 += w2(i a)^T
      call mat_transpose(no,nv,1.0E0_realk,w2,1.0E0_realk,rho1)
-   
+
      if( DECinfo%PL > 2) then
         write(msg,*)"rho1 after (LT21A)"
         call print_norm(rho1,int(ov,kind=8),msg)
@@ -754,16 +763,7 @@ module cc_response_tools_module
      endif
 
      !ADD RIGHT HAND SIDES  (not for Jacobian left transformation)
-     if(JacLT) then
-        ! Scale to use bioorthogonal basis in Eq. 13.7.60 in THE BOOK
-        ! But do not add right hand side
-        do a=1,nv
-           do i=1,no
-              rho2(a,i,a,i) = 0.5_realk*rho2(a,i,a,i)
-           end do
-        end do
-     else
-        ! Add Right hand sides but do not scale to bioorthogonal basis in Eq. 13.7.60 in THE BOOK
+     if(.not. JacLT) then
         call array_reorder_4d(2.0E0_realk,Lovov,no,nv,no,nv,[2,1,4,3],1.0E0_realk,rho2)
         call mat_transpose(no,nv,2.0E0_realk,ovf,1.0E0_realk,rho1)
      end if
@@ -1613,19 +1613,67 @@ module cc_response_tools_module
     end subroutine get_ccsd_lhtr_integral_driven
 
 
+    !> \brief Wrapper to calculate Calculate CCSD Jacobian left-hand transformation.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine cc_jacobian_lhtr(mylsitem,Co,Cv,xo,xv,yo,yv,t1fock,&
+         & t1,t2,L1,L2,rho1,rho2)
+      implicit none
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Occ and virt MO coefficients. Note: Co=xo (particle) and Cv=yv (hole)
+      !> (in practice intent(in))
+      type(tensor),intent(inout) :: Co,Cv
+      !> Particle (x) and hole (y) transformation matrices
+      !> (in practice intent(in))
+      type(tensor),intent(inout) :: xo,xv,yo,yv
+      ! T1-transformed Fock matrix in AO basis
+      !> (in practice intent(in))
+      type(tensor) :: t1fock
+      !> Singles and doubles amplitudes  (in practice these are intent(in))
+      !> (in practice intent(in))
+      type(tensor),intent(inout) :: t1,t2
+      !> Singles (L1) and doubles (L2) components of trial vector
+      !> (in practice intent(in))
+      type(tensor),intent(inout) :: L1,L2
+      !> Output: Singles (rho1) and doubles (rho2) components of Jacobian transformation
+      !> on trial vector (L1,L2).
+      type(tensor),intent(inout) :: rho1,rho2
+      integer :: nbasis,nocc,nvirt
+
+      nbasis = Co%dims(1)
+      nocc = Co%dims(2)
+      nvirt = Cv%dims(2)
+
+      ! Calculate left-hand transformation for Jacobian
+      call get_ccsd_multipliers_simple(rho1%elm2,rho2%elm4,t1%elm2,t2%elm4,&
+           & L1%elm2,L2%elm4,&
+           & t1fock%elm2,xo%elm2,yo%elm2,xv%elm2,yv%elm2,&
+           & nocc,nvirt,nbasis,MyLsItem,JacobianLT=.true.)
+
+      ! Add contribution to get LW1 model
+      if(DECinfo%ccModel==MODEL_MP2 .and. DECinfo%LW1) then
+         call add_lw1_contribution(nbasis,mylsitem,xo,&
+              & yv,t2,L1,L2,rho1,rho2,.false.)
+      end if
+
+    end subroutine cc_jacobian_lhtr
+
+
+
     !> \brief Calculate CCSD Jacobian right-hand transformation.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine cc_jacobian_rhtr(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-         & yv_tensor,t1,t2,R1,R2,rho1,rho2)
+    subroutine cc_jacobian_rhtr(mylsitem,xo,xv,yo,&
+         & yv,t1,t2,R1,R2,rho1,rho2)
       implicit none
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
       !> and virt (dimension nbasis,nvirt) transformations
-      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      type(tensor),intent(in) :: xo,xv,yo,yv
       !> Singles and doubles amplitudes
-      type(tensor),intent(in) :: t1,t2
+      type(tensor),intent(in) :: t1,t2 
       !> Singles (R1) and doubles (R2) components of trial vector
       type(tensor),intent(in) :: R1,R2
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
@@ -1633,11 +1681,10 @@ module cc_response_tools_module
       type(tensor) :: rho11,rho12,rho21,rho22
       integer :: nbasis,nocc,nvirt,whattodo
 
-
       ! Dimensions
-      nbasis = xo_tensor%dims(1)
-      nocc = xo_tensor%dims(2)
-      nvirt = xv_tensor%dims(2)
+      nbasis = xo%dims(1)
+      nocc = xo%dims(2)
+      nvirt = xv%dims(2)
 
       call tensor_minit(rho11,[nvirt,nocc],2)
       call tensor_minit(rho12,[nvirt,nocc,nvirt,nocc],4)
@@ -1650,16 +1697,16 @@ module cc_response_tools_module
       ! Singles component: rho11  (Eq. 55)
       ! Doubles component: rho12  (Eq. 57)
       whattodo=1
-      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,t2,R1,R2,rho11,rho12,whattodo)
+      call jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
+           & yv,t2,R1,R2,rho11,rho12,whattodo)
 
       ! Calculate 2^rho components for Jacobian RHS transformation,
       ! see Eqs. 56 and 58 in JCP 105, 6921 (1996)     
       ! Singles component: rho21  (Eq. 56)
       ! Doubles component: rho22  (Eq. 58)
       whattodo=2
-      call noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,t2,R1,R2,rho21,rho22,whattodo)
+      call jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
+           & yv,t2,R1,R2,rho21,rho22,whattodo)
 
       ! Add rho contributions (Eq. 34 in JCP 105, 6921 (1996))
       call tensor_zero(rho1)
@@ -1682,18 +1729,18 @@ module cc_response_tools_module
     !> the Jacobian right-hand transformation can also be calculated.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine noddy_generalized_ccsd_residual(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-         & yv_tensor,t2,R1,R2,rho1,rho2,whattodo)
+    subroutine jacobian_rhtr_workhorse(mylsitem,xo,xv,yo,&
+         & yv,t2,R1,R2,rho1,rho2,whattodo)
       implicit none
       !> LS item structure
       type(lsitem), intent(inout) :: MyLsItem      
       !> Particle (x) and hole (y) transformation matrices for occ (dimension nbasis,nocc)
       !> and virt (dimension nbasis,nvirt) transformations
-      type(tensor),intent(in) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      type(tensor),intent(in) :: xo,xv,yo,yv
       !> Doubles amplitudes
-      type(tensor),intent(in) :: t2
+      type(tensor),intent(in),target :: t2 
       !> Singles (R1) and doubles (R2) components of trial vector
-      type(tensor),intent(in) :: R1,R2
+      type(tensor),intent(in),target :: R1,R2
       !> Singles (rho1) and doubles (rho2) components of Jacobian transformation on trial vector.
       type(tensor),intent(inout) :: rho1,rho2
       !> What to do?
@@ -1703,33 +1750,26 @@ module cc_response_tools_module
       !>    see Eqs. 56 and 58 in JCP 105, 6921 (1996)
       !> 3. Calculate standard CCSD residual (then R1=CCSD singles, R2=CCSD doubles=t2), 
       !>    see Eqs. 13.7.80-83 and 13.7.101-105 in THE BOOK 
-      !> NOTE: This implies that we use truly biorthogonal basis 
-      !>       in Eqs. 13.7.58 and 13.7.60 in THE BOOK for (1) and (2), while we use 
-      !>       the "almost bioortogonal basis" in Eqs. 13.7.58 and 13.7.59 in THE BOOK for (3).
-      !>       Effectively this means that we scale by (1 + delta_ab delta_ij)^-1 for the (1) and (2)
-      !>       doubles components but not for the (3) doubles component. 
-      !>       This distinction is necessary to ensure that the Jacobian is
-      !>       correct but also that the noddy CCSD residual implementation here 
-      !>       is consistent with Patrick's efficient CCSD residual implementation.
       integer,intent(in) :: whattodo
       type(array2) :: fvo,fov,fvv,foo
       type(array4) :: gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov
       integer :: nbasis,nocc,nvirt,i,j,k,l,m,a,b,c,d,e
       real(realk) :: uA,uB,Lldkc,fac
       real(realk),pointer :: tmp(:,:,:,:),tmp2(:,:,:,:),rho2CDE(:,:,:,:),tmpvv(:,:),tmpoo(:,:)
-      logical :: somethingwrong
+      logical :: somethingwrong,includeterm
       real(realk),pointer :: A2(:,:,:,:), B2(:,:,:,:)
+      type(tensor) :: ttmp
 
 
       ! Dimensions
-      nbasis = xo_tensor%dims(1)
-      nocc = xo_tensor%dims(2)
-      nvirt = xv_tensor%dims(2)
+      nbasis = xo%dims(1)
+      nocc = xo%dims(2)
+      nvirt = xv%dims(2)
 
       ! Sanity check 1
       if(whattodo/=1 .and. whattodo/=2 .and. whattodo/=3) then
          print *, 'whattodo ', whattodo
-         call lsquit('noddy_generalized_ccsd_residual: Ill-defined whattodo!',-1)
+         call lsquit('jacobian_rhtr_workhorse: Ill-defined whattodo!',-1)
       end if
 
       ! Sanity check 2: Dimensions
@@ -1748,13 +1788,13 @@ module cc_response_tools_module
          print *, 'rho2 ', rho2%dims
          print *, 'rho1 ', rho1%dims
          print *, 'R1   ', R1%dims
-         call lsquit('noddy_generalized_ccsd_residual: Dimension error!',-1)
+         call lsquit('jacobian_rhtr_workhorse: Dimension error!',-1)
       end if
 
 
       ! Calculate all integrals 
-      call noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
-           & yv_tensor,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
+      call jacobian_rhtr_workhorse_integrals(mylsitem,xo,xv,yo,&
+           & yv,R1,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
            & fvo,fov,fvv,foo,whattodo)
 
 
@@ -1822,7 +1862,6 @@ module cc_response_tools_module
       end if
 
 
-
       ! DOUBLES RESIDUAL
       ! ================
 
@@ -1859,299 +1898,258 @@ module cc_response_tools_module
          end do
       end if
 
-      ! A2.2 term (B)
-      do i=1,nocc
-         do a=1,nvirt
-            do j=1,nocc
-               do b=1,nvirt
+      ! For whattodo=1 and Hald approximation all remaining terms are skipped
+      Hald1: if( whattodo/=1 .or. (.not. DECinfo%haldapprox) ) then
 
-                  do c=1,nvirt
-                     do d=1,nvirt
-                        rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + &
-                             & A2(c,i,d,j)*gvvvv%val(a,c,b,d)
-                     end do
-                  end do
-
-               end do
-            end do
-         end do
-      end do
+         ! For whattodo=2 all terms involving doubles amplitudes (B2 pointer)
+         ! are not included. This is controlled by "includeterm" logical.
+         includeterm=.true.
+         if(whattodo==2 .and. DECinfo%haldapprox) includeterm=.false.
 
 
-
-      ! B2 (A)
-      ! ******
-      ! Scaling of quadratic term (not present for 1^rho)
-      if(whattodo==1) fac=0.0_realk
-      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
-      call mem_alloc(tmp,nocc,nocc,nocc,nocc)
-      do i=1,nocc
-         do j=1,nocc
-
-            do k=1,nocc
-               do l=1,nocc
-
-                  ! Temporary quantity: 
-                  ! tmp(k,i,l,j) = g(k,i,l,j) + fac * sum_{cd} B2(c,i,d,j) * g(k,c,l,d)
-                  tmp(k,i,l,j) = goooo%val(k,i,l,j)
-                  do c=1,nvirt
-                     do d=1,nvirt
-                        tmp(k,i,l,j) = tmp(k,i,l,j) + fac*B2(c,i,d,j)*govov%val(k,c,l,d)
-                     end do
-                  end do
-
-                  ! rho2(a,b,i,j) += sum_{kl} A2(a,k,b,l) tmp(k,i,l,j)
-                  ! Note that the linear term is then included with A2, not B2:
-                  ! sum_{kl} A2(a,k,b,l) g(k,i,l,j)
-                  do a=1,nvirt
-                     do b=1,nvirt
-                        rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + A2(a,k,b,l)*tmp(k,i,l,j) 
-                     end do
-                  end do
-
-               end do
-            end do
-
-         end do
-      end do
-
-
-
-      ! For 2^rho, add quadratic term with B2 and A2 switched around,
-      ! see Table I in JCP 105, 6921 (1996)
-      Bquadratic: if(whattodo==2) then
-         do i=1,nocc
-            do j=1,nocc
-
-               do k=1,nocc
-                  do l=1,nocc
-
-                     ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} A2(c,i,d,j) * g(k,c,l,d)
-                     tmp(k,i,l,j) = 0.0_realk
-                     do c=1,nvirt
-                        do d=1,nvirt
-                           tmp(k,i,l,j) = tmp(k,i,l,j) + fac*A2(c,i,d,j)*govov%val(k,c,l,d)
-                        end do
-                     end do
-
-                     ! rho2(a,i,b,j) += sum_{kl} B2(a,k,b,l) tmp(k,i,l,j)
-                     do a=1,nvirt
-                        do b=1,nvirt
-                           rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + B2(a,k,b,l)*tmp(k,i,l,j) 
-                        end do
-                     end do
-
-                  end do
-               end do
-
-            end do
-         end do
-      end if Bquadratic
-      call mem_dealloc(tmp)
-
-
-
-      ! C2 (C)
-      ! ******
-      ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual, 
-      ! by 1.0 for 2^rho, and it is not present for 1^rho, see Table I in JCP 105, 6921 (1996)
-      ! 
-      if(whattodo==1) fac=0.0_realk
-      if(whattodo==2) fac=1.0_realk
-      if(whattodo==3) fac=0.5_realk
-      call mem_alloc(tmp,nocc,nocc,nvirt,nvirt)
-      call mem_alloc(tmp2,nvirt,nvirt,nocc,nocc)
-      tmp2=0.0_realk
-      do i=1,nocc
-         do a=1,nvirt
-
-            do k=1,nocc
-               do c=1,nvirt
-
-                  ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} B2(a,l,d,i) * govov(k,d,l,c)
-                  tmp(k,i,a,c) = goovv%val(k,i,a,c)
-                  do l=1,nocc
-                     do d=1,nvirt
-                        tmp(k,i,a,c) = tmp(k,i,a,c) - fac*B2(a,l,d,i)*govov%val(k,d,l,c)
-                     end do
-                  end do
-
-                  ! tmp2(a,b,i,j) += - sum_{kc} A2(b,k,c,j) * tmp(k,i,a,c)
-                  do j=1,nocc
-                     do b=1,nvirt
-                        tmp2(a,b,i,j) = tmp2(a,b,i,j) - A2(b,k,c,j) * tmp(k,i,a,c)
-                     end do
-                  end do
-
-               end do
-            end do
-
-         end do
-      end do
-
-      ! Add component with i<-->j scaled properly to get final C2 component
-      ! (although still missing final symmetrization which is done commonly for C,D, and E
-      !  terms at the very end)
-      ! rho2CDE(a,i,b,j) = (0.5 + P_{ij}) * tmp2(a,b,i,j)
-      call mem_alloc(rho2CDE,nvirt,nocc,nvirt,nocc)
-      do j=1,nocc
+         ! A2.2 term (B)
          do i=1,nocc
             do a=1,nvirt
-               do b=1,nvirt
-                  rho2CDE(a,i,b,j) = 0.5_realk*tmp2(a,b,i,j) + tmp2(a,b,j,i)
-               end do
-            end do
-         end do
-      end do
-      call mem_dealloc(tmp)
-      call mem_dealloc(tmp2)
-
-
-      ! D2 (D)
-      ! ******  
-      call mem_alloc(tmp,nvirt,nocc,nocc,nvirt)
-      do i=1,nocc
-         do a=1,nvirt
-
-
-            do c=1,nvirt
-               do k=1,nocc
-
-                  ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c)
-                  ! ----------------------------------------------------------------
-
-                  ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
-                  tmp(a,i,k,c) = 2.0_realk*gvoov%val(a,i,k,c) - goovv%val(k,i,a,c)
-                  do d=1,nvirt
-                     do l=1,nocc
-                        ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
-                        Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
-                        ! uB(a,d,i,l) = 2*B2(a,i,d,l) - B2(a,l,d,i)
-                        uB = 2.0_realk*B2(a,i,d,l) - B2(a,l,d,i)
-                        ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c) 
-                        tmp(a,i,k,c) = tmp(a,i,k,c) + fac*uB*Lldkc
-                     end do
-                  end do
-
-                  ! Update:
-                  ! rho2(a,b,i,j) += rho2(a,b,i,j) + 0.5 * sum_{ck} uA(b,j,c,k) * tmp(a,i,k,c)
+               do j=1,nocc
                   do b=1,nvirt
-                     do j=1,nocc
-                        uA = 2.0_realk*A2(b,j,c,k) - A2(b,k,c,j)
-                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + 0.5_realk*uA*tmp(a,i,k,c)
+
+                     do c=1,nvirt
+                        do d=1,nvirt
+                           rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + &
+                                & A2(c,i,d,j)*gvvvv%val(a,c,b,d)
+                        end do
+                     end do
+
+                  end do
+               end do
+            end do
+         end do
+
+
+         ! B2 (A)
+         ! ******
+         ! Scaling of quadratic term (not present for 1^rho)
+         if(whattodo==1) fac=0.0_realk
+         if(whattodo==2 .or. whattodo==3) fac=1.0_realk
+
+         call mem_alloc(tmp,nocc,nocc,nocc,nocc)
+         do i=1,nocc
+            do j=1,nocc
+
+               do k=1,nocc
+                  do l=1,nocc
+
+                     ! Temporary quantity: 
+                     ! tmp(k,i,l,j) = g(k,i,l,j) + fac * sum_{cd} B2(c,i,d,j) * g(k,c,l,d)
+                     tmp(k,i,l,j) = goooo%val(k,i,l,j)
+
+                     if(includeterm) then
+                        do c=1,nvirt
+                           do d=1,nvirt
+                              tmp(k,i,l,j) = tmp(k,i,l,j) + fac*B2(c,i,d,j)*govov%val(k,c,l,d)
+                           end do
+                        end do
+                     end if
+
+                     ! rho2(a,b,i,j) += sum_{kl} A2(a,k,b,l) tmp(k,i,l,j)
+                     ! Note that the linear term is then included with A2, not B2:
+                     ! sum_{kl} A2(a,k,b,l) g(k,i,l,j)
+                     do a=1,nvirt
+                        do b=1,nvirt
+                           rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + A2(a,k,b,l)*tmp(k,i,l,j) 
+                        end do
+                     end do
+
+                  end do
+               end do
+
+            end do
+         end do
+
+
+
+         ! For 2^rho, add quadratic term with B2 and A2 switched around,
+         ! see Table I in JCP 105, 6921 (1996)
+         Bquadratic: if(whattodo==2 .and. includeterm) then
+            do i=1,nocc
+               do j=1,nocc
+
+                  do k=1,nocc
+                     do l=1,nocc
+
+                        ! Temporary quantity: tmp(k,i,l,j) = sum_{cd} A2(c,i,d,j) * g(k,c,l,d)
+                        tmp(k,i,l,j) = 0.0_realk
+                        do c=1,nvirt
+                           do d=1,nvirt
+                              tmp(k,i,l,j) = tmp(k,i,l,j) + fac*A2(c,i,d,j)*govov%val(k,c,l,d)
+                           end do
+                        end do
+
+                        ! rho2(a,i,b,j) += sum_{kl} B2(a,k,b,l) tmp(k,i,l,j)
+                        do a=1,nvirt
+                           do b=1,nvirt
+                              rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + B2(a,k,b,l)*tmp(k,i,l,j) 
+                           end do
+                        end do
+
                      end do
                   end do
 
                end do
             end do
+         end if Bquadratic
+         call mem_dealloc(tmp)
 
 
-         end do
-      end do
-      call mem_dealloc(tmp)
+         ! C2 (C)
+         ! ******
+         ! NOTE: Here the quadratic term is scaled by 0.5 for CCSD residual, 
+         ! by 1.0 for 2^rho, and it is not present for 1^rho, see Table I in JCP 105, 6921 (1996)
+         ! 
+         if(whattodo==1) fac=0.0_realk
+         if(whattodo==2) fac=1.0_realk
+         if(whattodo==3) fac=0.5_realk
+         call mem_alloc(tmp,nocc,nocc,nvirt,nvirt)
+         call mem_alloc(tmp2,nvirt,nvirt,nocc,nocc)
+         tmp2=0.0_realk
+         do i=1,nocc
+            do a=1,nvirt
 
-
-      ! E2 (E1 and E2)
-      ! **************
-      ! Scaling of quadratic term (not present for 1^rho)
-      if(whattodo==1) fac=0.0_realk
-      if(whattodo==2 .or. whattodo==3) fac=1.0_realk
-
-      ! Construct 2-dimensional intermediates
-      call mem_alloc(tmpoo,nocc,nocc)
-      call mem_alloc(tmpvv,nvirt,nvirt)
-
-      ! tmpoo(k,j) = F(k,j) + sum_{cdl} uB(c,l,d,j) * g(k,d,l,c)
-      do j=1,nocc
-         do k=1,nocc
-            tmpoo(k,j) = foo%val(k,j)
-
-            do l=1,nocc
-               do d=1,nvirt
+               do k=1,nocc
                   do c=1,nvirt
-                     uB = 2.0_realk*B2(c,l,d,j) - B2(c,j,d,l)
-                     tmpoo(k,j) = tmpoo(k,j) + fac * uB * govov%val(k,d,l,c)
+
+                     ! tmp(k,i,a,c) = g(k,i,a,c) - fac * sum_{dl} B2(a,l,d,i) * govov(k,d,l,c)
+                     tmp(k,i,a,c) = goovv%val(k,i,a,c)
+                     if(includeterm) then
+                        do l=1,nocc
+                           do d=1,nvirt
+                              tmp(k,i,a,c) = tmp(k,i,a,c) - fac*B2(a,l,d,i)*govov%val(k,d,l,c)
+                           end do
+                        end do
+                     end if
+
+                     ! tmp2(a,b,i,j) += - sum_{kc} A2(b,k,c,j) * tmp(k,i,a,c)
+                     do j=1,nocc
+                        do b=1,nvirt
+                           tmp2(a,b,i,j) = tmp2(a,b,i,j) - A2(b,k,c,j) * tmp(k,i,a,c)
+                        end do
+                     end do
+
+                  end do
+               end do
+
+            end do
+         end do
+
+         ! Add component with i<-->j scaled properly to get final C2 component
+         ! (although still missing final symmetrization which is done commonly for C,D, and E
+         !  terms at the very end)
+         ! rho2CDE(a,i,b,j) = (0.5 + P_{ij}) * tmp2(a,b,i,j)
+         call mem_alloc(rho2CDE,nvirt,nocc,nvirt,nocc)
+         do j=1,nocc
+            do i=1,nocc
+               do a=1,nvirt
+                  do b=1,nvirt
+                     rho2CDE(a,i,b,j) = 0.5_realk*tmp2(a,b,i,j) + tmp2(a,b,j,i)
                   end do
                end do
             end do
          end do
-      end do
+         call mem_dealloc(tmp)
+         call mem_dealloc(tmp2)
 
-      ! tmpvv(b,c) = F(b,c) - sum_{dkl} uB(b,k,d,l) * g(l,d,k,c)
-      do b=1,nvirt
-         do c=1,nvirt
-            tmpvv(b,c) = fvv%val(b,c)
 
-            do l=1,nocc
-               do d=1,nvirt
+         ! D2 (D)
+         ! ******  
+         call mem_alloc(tmp,nvirt,nocc,nocc,nvirt)
+         do i=1,nocc
+            do a=1,nvirt
+
+
+               do c=1,nvirt
                   do k=1,nocc
-                     uB = 2.0_realk*B2(b,k,d,l) - B2(b,l,d,k)
-                     tmpvv(b,c) = tmpvv(b,c) - fac * uB * govov%val(l,d,k,c)
+
+                     ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c)
+                     ! ----------------------------------------------------------------
+
+                     ! L(a,i,k,c) = 2*g(a,i,k,c) - g(a,c,k,i) = 2*g(a,i,k,c) - g(k,i,a,c) 
+                     tmp(a,i,k,c) = 2.0_realk*gvoov%val(a,i,k,c) - goovv%val(k,i,a,c)
+                     if(includeterm) then
+                        do d=1,nvirt
+                           do l=1,nocc
+                              ! L(l,d,k,c) = 2*g(l,d,k,c) - g(l,c,k,d)
+                              Lldkc = 2.0_realk*govov%val(l,d,k,c) - govov%val(l,c,k,d)
+                              ! uB(a,d,i,l) = 2*B2(a,i,d,l) - B2(a,l,d,i)
+                              uB = 2.0_realk*B2(a,i,d,l) - B2(a,l,d,i)
+                              ! tmp(a,i,k,c) = L(a,i,k,c) + fac * sum_{dl} uB(a,i,d,l)*L(l,d,k,c) 
+                              tmp(a,i,k,c) = tmp(a,i,k,c) + fac*uB*Lldkc
+                           end do
+                        end do
+                     end if
+
+                     ! Update:
+                     ! rho2(a,b,i,j) += rho2(a,b,i,j) + 0.5 * sum_{ck} uA(b,j,c,k) * tmp(a,i,k,c)
+                     do b=1,nvirt
+                        do j=1,nocc
+                           uA = 2.0_realk*A2(b,j,c,k) - A2(b,k,c,j)
+                           rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + 0.5_realk*uA*tmp(a,i,k,c)
+                        end do
+                     end do
+
                   end do
                end do
+
+
             end do
          end do
-      end do
-
-      ! E2.1 (E1)
-      do j=1,nocc
-         do c=1,nvirt
-            do b=1,nvirt
-               do i=1,nocc
-                  do a=1,nvirt
-                     rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + A2(a,i,c,j)*tmpvv(b,c)
-                  end do
-               end do
-            end do
-         end do
-      end do
-
-      ! E2.2 (E2)
-      do j=1,nocc
-         do k=1,nocc
-            do b=1,nvirt
-               do i=1,nocc
-                  do a=1,nvirt
-                     rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - A2(a,i,b,k)*tmpoo(k,j)
-                  end do
-               end do
-            end do
-         end do
-      end do
+         call mem_dealloc(tmp)
 
 
+         ! E2 (E1 and E2)
+         ! **************
+         ! Scaling of quadratic term (not present for 1^rho)
+         if(whattodo==1) fac=0.0_realk
+         if(whattodo==2 .or. whattodo==3) fac=1.0_realk
 
-      ! Add quadratic E terms with B2 and A2 switched around
-      ! ----------------------------------------------------
-      Equadratic: if(whattodo==2) then
-         ! tmpoo(k,j) = sum_{cdl} uA(c,l,d,j) * g(k,d,l,c)
+         ! Construct 2-dimensional intermediates
+         call mem_alloc(tmpoo,nocc,nocc)
+         call mem_alloc(tmpvv,nvirt,nvirt)
+
+         ! tmpoo(k,j) = F(k,j) + sum_{cdl} uB(c,l,d,j) * g(k,d,l,c)
          do j=1,nocc
             do k=1,nocc
-               tmpoo(k,j) = 0.0_realk
-               do l=1,nocc
-                  do d=1,nvirt
-                     do c=1,nvirt
-                        uA = 2.0_realk*A2(c,l,d,j) - A2(c,j,d,l)
-                        tmpoo(k,j) = tmpoo(k,j) + fac * uA * govov%val(k,d,l,c)
+               tmpoo(k,j) = foo%val(k,j)
+
+               if(includeterm) then
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do c=1,nvirt
+                           uB = 2.0_realk*B2(c,l,d,j) - B2(c,j,d,l)
+                           tmpoo(k,j) = tmpoo(k,j) + fac * uB * govov%val(k,d,l,c)
+                        end do
                      end do
                   end do
-               end do
+               end if
+
             end do
          end do
 
-         ! tmpvv(b,c) = - sum_{dkl} uA(b,k,d,l) * g(l,d,k,c)
+         ! tmpvv(b,c) = F(b,c) - sum_{dkl} uB(b,k,d,l) * g(l,d,k,c)
          do b=1,nvirt
             do c=1,nvirt
-               tmpvv(b,c) = 0.0_realk
+               tmpvv(b,c) = fvv%val(b,c)
 
-               do l=1,nocc
-                  do d=1,nvirt
-                     do k=1,nocc
-                        uA = 2.0_realk*A2(b,k,d,l) - A2(b,l,d,k)
-                        tmpvv(b,c) = tmpvv(b,c) - fac * uA * govov%val(l,d,k,c)
+               if(includeterm) then
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do k=1,nocc
+                           uB = 2.0_realk*B2(b,k,d,l) - B2(b,l,d,k)
+                           tmpvv(b,c) = tmpvv(b,c) - fac * uB * govov%val(l,d,k,c)
+                        end do
                      end do
                   end do
-               end do
+               end if
+
             end do
          end do
 
@@ -2161,7 +2159,7 @@ module cc_response_tools_module
                do b=1,nvirt
                   do i=1,nocc
                      do a=1,nvirt
-                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + B2(a,i,c,j)*tmpvv(b,c)
+                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + A2(a,i,c,j)*tmpvv(b,c)
                      end do
                   end do
                end do
@@ -2174,45 +2172,104 @@ module cc_response_tools_module
                do b=1,nvirt
                   do i=1,nocc
                      do a=1,nvirt
-                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - B2(a,i,b,k)*tmpoo(k,j)
+                        rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - A2(a,i,b,k)*tmpoo(k,j)
                      end do
                   end do
                end do
             end do
          end do
 
-      end if Equadratic
 
 
-      ! Symmetrize C, D, and E terms and add to A and B terms
-      ! *****************************************************
-      do j=1,nocc
-         do b=1,nvirt
-            do i=1,nocc
-               do a=1,nvirt
-                  rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + rho2CDE(a,i,b,j) + rho2CDE(b,j,a,i)
+         ! Add quadratic E terms with B2 and A2 switched around
+         ! ----------------------------------------------------
+         Equadratic: if(whattodo==2 .and. includeterm) then
+            ! tmpoo(k,j) = sum_{cdl} uA(c,l,d,j) * g(k,d,l,c)
+            do j=1,nocc
+               do k=1,nocc
+                  tmpoo(k,j) = 0.0_realk
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do c=1,nvirt
+                           uA = 2.0_realk*A2(c,l,d,j) - A2(c,j,d,l)
+                           tmpoo(k,j) = tmpoo(k,j) + fac * uA * govov%val(k,d,l,c)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+            ! tmpvv(b,c) = - sum_{dkl} uA(b,k,d,l) * g(l,d,k,c)
+            do b=1,nvirt
+               do c=1,nvirt
+                  tmpvv(b,c) = 0.0_realk
+
+                  do l=1,nocc
+                     do d=1,nvirt
+                        do k=1,nocc
+                           uA = 2.0_realk*A2(b,k,d,l) - A2(b,l,d,k)
+                           tmpvv(b,c) = tmpvv(b,c) - fac * uA * govov%val(l,d,k,c)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+            ! E2.1 (E1)
+            do j=1,nocc
+               do c=1,nvirt
+                  do b=1,nvirt
+                     do i=1,nocc
+                        do a=1,nvirt
+                           rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) + B2(a,i,c,j)*tmpvv(b,c)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+            ! E2.2 (E2)
+            do j=1,nocc
+               do k=1,nocc
+                  do b=1,nvirt
+                     do i=1,nocc
+                        do a=1,nvirt
+                           rho2CDE(a,i,b,j) = rho2CDE(a,i,b,j) - B2(a,i,b,k)*tmpoo(k,j)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+
+         end if Equadratic
+
+
+         ! Symmetrize C, D, and E terms and add to A and B terms
+         ! *****************************************************
+         do j=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + rho2CDE(a,i,b,j) + rho2CDE(b,j,a,i)
+                  end do
                end do
             end do
          end do
-      end do
+         call mem_dealloc(rho2CDE)
+         call mem_dealloc(tmpoo)
+         call mem_dealloc(tmpvv)
+
+      end if Hald1
 
 
-      ! For Jacobian RHTR components: Multiply by (1 + delta_ab delta_ij)^-1
-      ! ********************************************************************
-      ! - see comment on bioorthogonal basis at the beginning of this subroutine
-      JacobianRHTR: if(whattodo==1 .or. whattodo==2) then
-         do i=1,nocc
-            do a=1,nvirt
-               rho2%elm4(a,i,a,i) = 0.5_realk*rho2%elm4(a,i,a,i)
-            end do
-         end do
-      end if JacobianRHTR
+      ! Add contribution to get LW1 model
+      if(DECinfo%ccModel==MODEL_MP2 .and. whattodo==1 .and. DECinfo%LW1) then
+         call add_lw1_contribution(nbasis,mylsitem,xo,&
+              & yv,t2,R1,R2,rho1,rho2,.true.)
+      end if
 
 
       ! Clean up
-      call mem_dealloc(tmpoo)
-      call mem_dealloc(tmpvv)
-      call mem_dealloc(rho2CDE)
       call array4_free(gvvov)
       call array4_free(gooov)
       call array4_free(gvovo)
@@ -2228,13 +2285,14 @@ module cc_response_tools_module
       nullify(A2)
       nullify(B2)
 
-    end subroutine noddy_generalized_ccsd_residual
+      
+    end subroutine jacobian_rhtr_workhorse
 
 
-    !> \brief Calculate integrals for noddy_generalized_ccsd_residual.
+    !> \brief Calculate integrals for jacobian_rhtr_workhorse.
     !> \author Kasper Kristensen
     !> \date June 2015
-    subroutine noddy_generalized_ccsd_residual_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
+    subroutine jacobian_rhtr_workhorse_integrals(mylsitem,xo_tensor,xv_tensor,yo_tensor,&
          & yv_tensor,R1_tensor,gvvov,gooov,gvovo,gvvvv,goooo,govov,goovv,gvoov, &
          & fvo,fov,fvv,foo,whattodo)
       implicit none
@@ -2252,7 +2310,7 @@ module cc_response_tools_module
       !> using either T1-transformed integrals or trial-T1 transformed integrals (see below).
       !> These are allocated inside this subroutine!
       type(array2),intent(inout) :: fvo,fov,fvv,foo
-      !> What to do? See noddy_generalized_ccsd_residual.
+      !> What to do? See jacobian_rhtr_workhorse.
       !> whattodo=1: Use trial-T1 transformed integrals 
       !>             (Hamiltonian is Eq. 45 in JCP 105, 6921 (1996))
       !> whattodo=2: Use T1-transformed integrals
@@ -2433,7 +2491,7 @@ module cc_response_tools_module
       call array2_free(R1)
       call array4_free(gvooo)
 
-    end subroutine noddy_generalized_ccsd_residual_integrals
+    end subroutine jacobian_rhtr_workhorse_integrals
 
 
     !> \brief Calculate two-electron trial-T1 transformed integrals, 
@@ -2543,6 +2601,1000 @@ module cc_response_tools_module
 
     end subroutine one_electron_trial_T1_integrals
 
+
+    !> \brief Noddy code implementation of Davidson eigenvalue solver (J. Comp. Phys. 17, 87 (1975))
+    !> for Jacobian right-hand side eigenvalue problem to get CCSD excitation energies.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine ccsd_eigenvalue_solver(nbasis,nocc,nvirt,fAO,Co,Cv,mylsitem,t1,t2)
+      implicit none
+      !> Number of atomic/occupied/virtual orbitals
+      integer,intent(in) :: nbasis,nocc,nvirt
+      !> Fock matrix in AO basis
+      real(realk),intent(in) :: fAO(nbasis,nbasis)
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem
+      !> Occupied and virtual MO coefficients
+      !> (in practice these are intent(in))
+      real(realk),intent(inout) :: Co(nbasis,nocc),Cv(nbasis,nvirt)
+      !> Singles and doubles amplitudes
+      !> (effectively intent(in) but need to be intent(inout) for practical purposes)
+      type(tensor),intent(inout) :: t1,t2
+      real(realk),pointer :: lambdaREAL(:),Arbig(:,:),alphaR(:,:),alphaL(:,:),Ar(:,:),alpha(:,:)
+      integer :: Mold,k,M,p,i,j,iter
+      integer(kind=long) :: maxnumeival,O,V
+      type(tensor),pointer :: b1(:), b2(:),Ab1(:),Ab2(:)
+      type(tensor) :: q1,zeta1,q2,zeta2,bopt1,bopt2
+      type(tensor) :: xo,xv,yo,yv,t1fock,Co_tensor,Cv_tensor
+      real(realk) :: tmp1,tmp2,fac,bTzeta,bnorm,sc
+      real(realk),pointer :: res(:),lambdaIMAG(:),eival(:),singlescomp(:),foo(:,:),fvv(:,:)
+      logical,pointer :: conv(:),singleex(:)
+      logical :: allconv
+      
+      ! Sanity check
+      if(DECinfo%haldapprox .and. DECinfo%JacobianLhtr) then
+         call lsquit('Hald approximation not implemented for &
+              & Jacobian left-hand transformation!',-1)
+      end if
+
+      ! Notation and implementation is exactly like p. 91 of J. Comp. Phys. 17, 87 (1975), 
+      ! except that we may solve for more than one eigenvalue at the same time.
+      ! Also the convergence check is different and simply based on the residual.
+
+      ! How many eigenvalues k?
+      k=DECinfo%JacobianNumEival
+
+      ! Size of zero-order orthonormal subspace M (M must be equal to or larger than k)
+      M = DECinfo%JacobianInitialSubspace
+      if(M==0) then
+         ! M was not set by input, set it equal to the number of requested excitation energies
+         M=k
+      else
+         ! M set by input, only modify it if it is too small
+         if(M < k) then
+            write(DECinfo%output,*) 'WARNING! Initial Jacobian subspace set to', &
+                 & M
+            write(DECinfo%output,*) 'WARNING! This is smaller than the number of excitation energies',k
+            write(DECinfo%output,*) 'WARNING! I overrule input and set initial Jacobian subspace to',k
+            M=k
+         end if
+      end if
+
+
+      ! Sanity check: Requested number of initial eigenvalues/start vectors is not
+      ! larger than the maximum possible number of singles+doubles excitations.
+      O = int(nocc,kind=8)
+      V = int(nvirt,kind=8)
+      ! Different unique exciations (i/=j and a/=b):
+      ! Singles: t_i^a  --> O*V
+      ! Doubles: t_ii^aa --> O*V
+      !          t_ij^aa --> O*(O-1)*V / 2
+      !          t_ii^ab --> O*V*(V-1) / 2
+      !          t_ij^ab --> O*(O-1)*V*(V-1) / 2
+      !          
+      ! Division by 2 is due to symmetry: t_ij^ab = t_ji^ba
+      ! 
+      maxnumeival = O*V + O*V + O*(O-1)*V/2 + O*V*(V-1)/2 + O*(O-1)*V*(V-1)/2
+
+      if( int(M,kind=8) > maxnumeival) then
+         print *, 'Number of startvectors ', M
+         print *, 'Max number of eigenvalues ',maxnumeival
+         call lsquit('ccsd_eigenvalue_solver: Number of requested &
+              & start vectors is too large!',-1)
+      end if
+
+
+      ! ********************************************************************************
+      !                         INITIALIZATION BEFORE SOLVER LOOP                      !
+      ! ********************************************************************************
+
+      ! Occ-occ and virt-virt Fock matrix blocks
+      call mem_alloc(foo,nocc,nocc)
+      call mem_alloc(fvv,nvirt,nvirt)
+      call dec_simple_basis_transform1(nbasis,nocc,Co,fAO,foo)
+      call dec_simple_basis_transform1(nbasis,nvirt,Cv,fAO,fvv)
+
+      ! Quick workaround. If the model does not use singles, we simply initialize the singles
+      ! are and set the singles to zero
+      if(.not. DECinfo%use_singles) then
+         call tensor_minit(t1,[nvirt,nocc],2)
+         call tensor_zero(t1)
+      end if
+
+      ! T1 transformed quantities
+      call get_T1_transformed_for_eigenvalue_solver(nbasis,nocc,nvirt,mylsitem,Co,Cv,fAO,t1,&
+           & xo,xv,yo,yv,t1fock)
+
+      ! It's a mess but we need MO coefficients also in tensor format
+      call tensor_minit(Co_tensor,[nbasis,nocc],2)
+      call tensor_minit(Cv_tensor,[nbasis,nvirt],2)
+      call tensor_convert(Co,Co_tensor)
+      call tensor_convert(Cv,Cv_tensor)
+
+
+      ! Allocate space for residual-related stuff
+      ! -----------------------------------------
+      call tensor_minit(q1,[nvirt,nocc],2)
+      call tensor_minit(zeta1,[nvirt,nocc],2)
+      call tensor_minit(q2,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(zeta2,[nvirt,nocc,nvirt,nocc],4)
+      call tensor_minit(bopt1,[nvirt,nocc],2)
+      call tensor_minit(bopt2,[nvirt,nocc,nvirt,nocc],4)
+      call mem_alloc(res,k)
+      call mem_alloc(conv,k)
+      call mem_alloc(singleex,M)
+      call mem_alloc(eival,k)
+      call mem_alloc(singlescomp,k)
+      conv=.false.
+      allconv=.false.
+
+
+      ! Get start vectors and associated eigenvalues
+      ! --------------------------------------------
+      call mem_alloc(b1,DECinfo%JacobianMaxSubspace)
+      call mem_alloc(b2,DECinfo%JacobianMaxSubspace)
+      call mem_alloc(Ab1,DECinfo%JacobianMaxSubspace)
+      call mem_alloc(Ab2,DECinfo%JacobianMaxSubspace)
+      do i=1,M
+         call tensor_minit(b1(i),[nvirt,nocc],2)
+         call tensor_minit(b2(i),[nvirt,nocc,nvirt,nocc],4)
+         call tensor_minit(Ab1(i),[nvirt,nocc],2)
+         call tensor_minit(Ab2(i),[nvirt,nocc,nvirt,nocc],4)
+      end do
+      call mem_alloc(lambdaREAL,M)
+      call ccsd_eigenvalue_solver_startguess(nbasis,mylsitem,xo,xv,&
+           & yo,yv,M,nocc,nvirt,foo,fvv,b1(1:M),b2(1:M),lambdaREAL,singleex)
+      eival(1:k) = lambdaREAL(1:k)
+
+
+      ! Form Jacobian right-hand transformations A b on initial M trial vectors b
+      ! -------------------------------------------------------------------------
+      do i=1,M
+         if(DECinfo%JacobianLhtr) then
+            call cc_jacobian_lhtr(mylsitem,Co_tensor,Cv_tensor,xo,xv,yo,yv,t1fock,&
+                 & t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+         else
+            call cc_jacobian_rhtr(mylsitem,xo,xv,yo,yv,t1,t2,b1(i),b2(i),Ab1(i),Ab2(i))
+         end if
+      end do
+
+
+      ! Form Jacobian in reduced space
+      ! -------------------------------
+      ! Note: Arbig always contains the components of the Jacobian constructed at the given time,
+      !       and it is allocated such that there is room for more elements.
+      !       Ar below will contain the same elements but with the current dimensions.
+
+      call mem_alloc(Arbig,DECinfo%JacobianMaxSubspace,DECinfo%JacobianMaxSubspace)
+      Arbig=0.0_realk
+      do j=1,M
+         do i=1,M
+            ! Note that b(i) and Ab(i) both have structures (singles, doubles).
+            ! The reduced matrix is the dotproduct <b(i),Ab(j)>,
+            ! and it therefore becomes a sum of dot products of the singles
+            ! and doubles components
+            if(DECinfo%JacobianLhtr) then
+               ! For left-hand transformation, Ab is really b^T A where
+               ! b^T is a row vector and A is a matrix. We therefore effectively
+               ! get entry (j,i) of the reduced Jacobian when we calculate b(i) "dot" Ab(j) which is
+               ! really equal to {b^T A}(j) b(i).
+               ! (***)
+               Arbig(j,i) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+            else
+               Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+            end if
+         end do
+      end do
+
+
+
+      ! ***************************************************************************************
+      ! *                                MAIN SOLVER ITERATIONS                               *
+      ! ***************************************************************************************
+
+      write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC        Information for Jacobian eigenvalue solver       '
+      write(DECinfo%output,'(1X,a)') 'JAC        ------------------------------------------       '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,*) 'JAC Number of eigenvalues      ',k
+      write(DECinfo%output,*) 'JAC Initial subspace dimension ',M
+      write(DECinfo%output,*) 'JAC Maximum subspace dimension ',maxnumeival
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC Start guess for eigenvalues'
+      write(DECinfo%output,'(1X,a)') 'JAC ---------------------------'
+      do i=1,k
+         if(singleex(i)) then
+            write(DECinfo%output,'(1X,a,i7,g20.10,1X,a)') 'JAC ',i,lambdaREAL(i), '  (singles ex.)'
+            singlescomp(i) = 100.0_realk
+         else
+            write(DECinfo%output,'(1X,a,i7,g20.10,1X,a)') 'JAC ',i,lambdaREAL(i), '  (doubles ex.)'
+            singlescomp(i) = 0.0_realk
+         end if
+      end do
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC ********************************************************'
+
+      call mem_dealloc(lambdaREAL)
+
+      write(DECinfo%output,'(1X,a)') 'JAC'
+      write(DECinfo%output,'(1X,a)') 'JAC Jacobian eigenvalue solver'
+      write(DECinfo%output,'(1X,a)') 'JAC'
+      write(DECinfo%output,'(1X,a)') 'JAC Which   Subspace     Eigenvalue           Residual       Conv?  '
+
+      SolverLoop: do iter=1,DECinfo%JacobianMaxIter
+
+         ! Copy elements of reduced Jacobian into array having the proper dimensions
+         ! -------------------------------------------------------------------------
+         call mem_alloc(Ar,M,M)
+         do j=1,M
+            do i=1,M
+               Ar(i,j) = Arbig(i,j)
+            end do
+         end do
+
+
+         ! Diagonalize reduced matrix Ar
+         ! -----------------------------
+         ! A alphaR = lambda alphaR
+         ! alphaL A = alphaL lambda
+         ! lambda is a diagonal matrix with eigenvalues on the diagonal
+         ! 
+         ! Note: We only consider real part of lambda! Imaginary part is simply removed
+         ! but a warning is issued if the imaginary part is sizable.
+         call mem_alloc(alphaR,M,M)
+         call mem_alloc(alphaL,M,M)
+         call mem_alloc(lambdaREAL,M)
+         call mem_alloc(lambdaIMAG,M)
+         call solve_nonsymmetric_eigenvalue_problem_unitoverlap(M,Ar,lambdaREAL,&
+              & lambdaIMAG,alphaR,alphaL)
+         eival(1:k) = lambdaREAL(1:k)
+         call mem_dealloc(Ar)
+
+         ! Any imaginary eigenvalue component? Print a warning if this is the case.
+         call ccsd_eigenvalue_check(k,M,lambdaREAL,lambdaIMAG)
+
+
+         ! NOTE: In general, for the Jacobian A we have:
+         !
+         ! A R = lambda A R 
+         ! L A = lambda L A
+         !
+         ! where A is a matrix, R/L is the right/left column/row eigenvector for eigenvalue lambda. 
+         ! For left/right eigenvectors, we need to work with left/right eigenvalues.
+         call mem_alloc(alpha,M,M)
+         do j=1,M
+            do i=1,M
+               if(DECinfo%JacobianLhtr) then
+                  alpha(i,j) = alphaL(i,j)
+               else
+                  alpha(i,j) = alphaR(i,j)
+               end if
+            end do
+         end do
+         call mem_dealloc(alphaR)
+         call mem_dealloc(alphaL)
+
+
+         ! Save current subspace dimension
+         Mold = M
+
+         ! Residual, preconditioning and new trial vectors
+         ! -----------------------------------------------
+         ! Note. Here we check for k residuals (p=1,k), while in J. Comp. Phys. 17, 87 (1975)
+         ! only the k'th eigenvalue is considered.
+         ExcitationEnergyLoop: do p=1,k
+
+
+            ! Current optimal eigenvector bopt for eigenvalue p:
+            ! ''''''''''''''''''''''''''''''''''''''''''''''''''
+            ! bopt = sum_i^M alpha(i,p) b(i) 
+            ! 
+            ! Residual q:
+            ! '''''''''''
+            ! q = A bopt - eival bopt
+            ! 
+            ! Residual contains two components: singles (q1) and doubles (q2)
+            ! 
+            call tensor_zero(q1)
+            call tensor_zero(q2)
+            call tensor_zero(bopt1)
+            call tensor_zero(bopt2)
+
+            do i=1,Mold
+               ! Update A bopt part
+               call tensor_add(q1,alpha(i,p),Ab1(i))
+               call tensor_add(q2,alpha(i,p),Ab2(i))
+
+               ! Calculate bopt
+               call tensor_add(bopt1,alpha(i,p),b1(i))
+               call tensor_add(bopt2,alpha(i,p),b2(i))
+            end do
+
+
+            ! Residual: A bopt - eival bopt  
+            fac = - lambdaREAL(p)
+            call tensor_add(q1,fac,bopt1)
+            call tensor_add(q2,fac,bopt2)
+
+            ! Singles component of optimal vector: |bopt1| / |bopt|
+            call print_norm(bopt1,nrm=tmp1,returnsquared=.true.)
+            tmp2 = SD_dotproduct(bopt1,bopt2)
+            singlescomp(p) = (sqrt(tmp1) / sqrt(tmp2) )*100.0_realk
+
+            ! Residual norm
+            res(p) = SD_dotproduct(q1,q2)
+            res(p) = sqrt(res(p))
+
+            ! Check for convergence
+            conv(p) = (res(p)<DECinfo%JacobianThr) 
+            write(DECinfo%output,'(1X,a,i6,2X,i6,4X,g18.8,1X,g18.8,3X,L2)') &
+                 & 'JAC',p,M,lambdaREAL(p),res(p),conv(p)
+
+            if(conv(p)) then
+               ! Do not include new vectors for eigenvalue p if it is already converged
+               cycle ExcitationEnergyLoop
+            else
+               ! Update M
+               M=M+1
+            end if
+
+            ! Sanity check for dimensions
+            if(M > DECinfo%JacobianMaxSubspace) then
+               call lsquit('ccsd_eigenvalue_solver: M is too large! Not possible to extend subspace!',-1)
+            end if
+
+            ! Preconditioning
+            if(DECinfo%JacobianPrecond) then
+               call precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambdaREAL(p),q1,q2,zeta1,zeta2)
+            else
+               ! Simply copy elements
+               zeta1%elm2 = q1%elm2
+               zeta2%elm4 = q2%elm4
+            end if
+
+            ! Component of precondioned residual orthogonal to current trial vectors:
+            !
+            ! b(M) = [ 1 - sum_{i=1}^{M-1} b(i) b(i)^T ] zeta
+            !
+            call tensor_minit(b1(M),[nvirt,nocc],2)
+            call tensor_minit(b2(M),[nvirt,nocc,nvirt,nocc],4)
+            call tensor_zero(b1(M))
+            call tensor_zero(b2(M))
+            ! b(M+p) = zeta
+            call tensor_add(b1(M),1.0_realk,zeta1)
+            call tensor_add(b2(M),1.0_realk,zeta2)
+
+            do i=1,M-1
+               ! b(i)^T zeta  (just a number when b(i) and zeta are considered as vectors)
+               bTzeta = - ( tensor_ddot(b1(i),zeta1) + tensor_ddot(b2(i),zeta2) )
+               ! b(M+p) += - b(i) { b(i)^T zeta }
+               call tensor_add(b1(M),bTzeta,b1(i))
+               call tensor_add(b2(M),bTzeta,b2(i))
+            end do
+
+            ! Normalize b(M)
+            bnorm = SD_dotproduct(b1(M),b2(M))
+            bnorm = sqrt(bnorm)
+            if(bnorm < 1.0e-15_realk) then
+               ! Retreat! We do not want to include the current b vector anyways.
+               ! The components spanned by the current b vector were 
+               ! probably included by the b vector of one of the other excitation energies.
+               ! Reset M and deallocate b1 and b2 again.
+               call tensor_free(b1(M))
+               call tensor_free(b2(M))
+               M = M-1
+               write(DECinfo%output,'(1X,a,2i7)') &
+                    & 'WARNING: Zero norm after projection for exci/iter', p,iter
+               cycle ExcitationEnergyLoop
+            end if
+
+            sc = 1.0_realk/bnorm
+            call tensor_scale(b1(M),sc)
+            call tensor_scale(b2(M),sc)
+
+            ! Form Ab(M)
+            call tensor_minit(Ab1(M),[nvirt,nocc],2)
+            call tensor_minit(Ab2(M),[nvirt,nocc,nvirt,nocc],4)
+            if(DECinfo%JacobianLhtr) then
+               call cc_jacobian_lhtr(mylsitem,Co_tensor,Cv_tensor,xo,xv,yo,yv,t1fock,&
+                    & t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
+            else
+               call cc_jacobian_rhtr(mylsitem,xo,xv,yo,&
+                    & yv,t1,t2,b1(M),b2(M),Ab1(M),Ab2(M))
+            end if
+
+         end do ExcitationEnergyLoop
+
+         ! Free stuff
+         call mem_dealloc(alpha)
+         call mem_dealloc(lambdaREAL)
+         call mem_dealloc(lambdaIMAG)
+
+         ! Are all eigenvalues converged?
+         allconv = all(conv)
+         if(allconv) then
+            exit SolverLoop
+         end if
+
+         ! Calculate new blocks of reduced Jacobian matrix A with new M. A is:
+         !
+         !      |   A(1:Mold ,   1:Mold)       A(1:Mold ,   Mold+1:M)    |
+         ! A =  |   A(Mold+1:M , 1:Mold)       A(Mold+1:M , Mold+1:M)    |
+         ! 
+         ! A(1:Mold , 1:Mold) has already been calculated, while the other blocks are
+         ! calculated here.
+         ! 
+         ! Difference between right- and left transformations, see comment (***) above!
+         do i=1,M
+            do j=Mold+1,M
+               if(DECinfo%JacobianLhtr) then
+                  Arbig(j,i) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+                  if(i/=j) Arbig(i,j) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
+               else
+                  Arbig(i,j) = tensor_ddot(b1(i),Ab1(j)) + tensor_ddot(b2(i),Ab2(j))
+                  if(i/=j) Arbig(j,i) = tensor_ddot(b1(j),Ab1(i)) + tensor_ddot(b2(j),Ab2(i))
+               end if
+            end do
+         end do
+
+      end do SolverLoop
+
+      if(.not. allconv) then
+         call lsquit('Jacobian eigenvalue solver did not converge!',-1)
+      end if
+
+
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC CC excitation energies'
+      write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC      Exci.    Hartree           eV            cm-1           ||T1|| (%)'
+      do p=1,k
+         write(DECinfo%output,'(1X,a,i7,4X,3g15.7,F10.2)') 'JAC ',p,eival(p),eival(p)*hartree_to_eV,&
+              & eival(p)*hartree_to_cm1, singlescomp(p)
+      end do
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC ******************************************************************************'
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+      write(DECinfo%output,'(1X,a)') 'JAC '
+
+
+      do i=1,M
+         call tensor_free(b1(i))
+         call tensor_free(b2(i))
+         call tensor_free(Ab1(i))
+         call tensor_free(Ab2(i))
+      end do
+      call mem_dealloc(b1)
+      call mem_dealloc(b2)
+      call mem_dealloc(Ab1)
+      call mem_dealloc(Ab2)
+
+      call mem_dealloc(foo)
+      call mem_dealloc(fvv)
+      call mem_dealloc(eival)
+      call mem_dealloc(singlescomp)
+      call mem_dealloc(singleex)
+      call mem_dealloc(res)
+      call mem_dealloc(conv)
+      call mem_dealloc(Arbig)
+      call tensor_free(zeta1)
+      call tensor_free(zeta2)
+      call tensor_free(q1)
+      call tensor_free(q2)
+      call tensor_free(bopt1)
+      call tensor_free(bopt2)
+      call tensor_free(xo)
+      call tensor_free(xv)
+      call tensor_free(yo)
+      call tensor_free(yv)
+      call tensor_free(t1fock)
+      call tensor_free(Co_tensor)
+      call tensor_free(Cv_tensor)
+      if(.not. DECinfo%use_singles) then
+         call tensor_free(t1)
+      end if
+
+    end subroutine ccsd_eigenvalue_solver
+
+
+
+    !> Precondition singles and doubles block for Jacobian trial vectors.
+    !> This corresponds to step D of J. Comp. Phys. 17, 87 (1975) where we simply use
+    !> Fock matrix differences to represent Jacobian diagonal.
+    subroutine precondition_jacobian_residual(nocc,nvirt,foo,fvv,lambda,q1,q2,zeta1,zeta2)
+      implicit none
+      !> Number of occupied/virtual orbitals in molecule
+      integer,intent(in) :: nocc,nvirt
+      !> Occ-occ and virt-virt Fock matrix blocks in MO basis
+      real(realk),intent(in) ::  foo(nocc,nocc),fvv(nvirt,nvirt)
+      !> Eigenvalue lambda
+      real(realk),intent(in) :: lambda
+      !> Residual before preconditioning (singles "1" and doubles "2" components)
+      type(tensor),intent(in) :: q1,q2
+      !> Preconditioned residual (singles "1" and doubles "2" components)
+      type(tensor),intent(inout) :: zeta1,zeta2
+      integer :: i,j,a,b
+      real(realk) :: Aelm
+
+      ! Singles preconditioning
+      do i=1,nocc
+         do a=1,nvirt
+            Aelm = fvv(a,a) - foo(i,i)
+            if(abs(Aelm-lambda)<1.0e-10) then  
+               print *, 'a,i,A,lambda',a,i,Aelm,lambda
+               call lsquit('singles: unstable Jacobian residual',-1) 
+            end if
+            zeta1%elm2(a,i) = ( 1.0_realk/(lambda-Aelm) ) * q1%elm2(a,i)
+         end do
+      end do
+
+      ! Doubles preconditioning
+      do j=1,nocc
+         do b=1,nvirt
+            do i=1,nocc
+               do a=1,nvirt
+                  Aelm = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j)
+                  if(abs(Aelm-lambda)<1.0e-10) then 
+                     print *, 'a,i,b,j,A,lambda',a,i,b,j,Aelm,lambda
+                     call lsquit('doubles: unstable Jacobian residual',-1) 
+                  end if
+                  zeta2%elm4(a,i,b,j) = ( 1.0_realk/(lambda-Aelm) ) * q2%elm4(a,i,b,j)
+               end do
+            end do
+         end do
+      end do
+
+    end subroutine precondition_jacobian_residual
+
+
+    !> \brief Calculate start vector and associated eigenvalues for CCSD eigenvalue solver.
+    !> We simply take the lowest M orbital energies differences in singles and doubles spaces. Correction - also add dominating two-electron integrals.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine ccsd_eigenvalue_solver_startguess(nbasis,mylsitem,xo_tensor,xv_tensor,yo_tensor,yv_tensor,&
+         & M,nocc,nvirt,foo,fvv,b1,b2,eival,singleex)
+      implicit none
+      integer,intent(in) :: nbasis
+      type(lsitem) :: mylsitem
+      type(tensor) :: xo_tensor,xv_tensor,yo_tensor,yv_tensor
+      !> Number of start vectors requested
+      integer,intent(in) :: M
+      !> Number of occupied/virtual orbitals in molecule
+      integer,intent(in) :: nocc,nvirt
+      !> Occ-occ and virt-virt Fock matrix blocks in MO basis
+      real(realk),intent(in) ::  foo(nocc,nocc),fvv(nvirt,nvirt)
+      !> Singles and Doubles components of start vectors
+      type(tensor),intent(inout) :: b1(M), b2(M)
+      !> Eigenvalues (orbital energy differences) for start vectors
+      real(realk),intent(inout) :: eival(M)
+      !> Is the initial eigenvalue a single excitation (true) or double excitation (false)
+      logical,intent(inout) :: singleex(M)
+      integer :: i,j,a,b,maxidx(1),MS,MD,idxS,idxD
+      real(realk) :: ex,maxeival,eivalS(M),eivalD(M),mineivalD,mineivalS
+      integer,dimension(M) :: s1,s2,d1,d2,d3,d4,sd
+      logical,dimension(M) :: inclS, inclD
+      type(array4) :: gao,gvoov,gvvoo
+      type(array2) :: xo,xv,yo,yv
+
+      singleex=.true.
+
+      xo = array2_init([nbasis,nocc],xo_tensor%elm2)
+      xv = array2_init([nbasis,nvirt],xv_tensor%elm2)
+      yo = array2_init([nbasis,nocc],yo_tensor%elm2)
+      yv = array2_init([nbasis,nvirt],yv_tensor%elm2)
+
+
+
+      ! Calculate full AO integrals
+      call get_full_eri(mylsitem,nbasis,gao)
+      gvoov = get_gmo_simple(gao,xv,yo,xo,yv)
+      gvvoo = get_gmo_simple(gao,xv,yv,xo,yo)
+      call array4_free(gao)
+
+
+
+      ! M lowest singles excitation energies
+      ! ************************************
+      eivalS = huge(1.0)
+      maxeival = huge(1.0)
+      maxidx=1
+      s1=0; s2=0
+      do i=1,nocc
+         do a=1,nvirt
+
+            ! Zero-order excitation energy (orbital difference)
+            ex = fvv(a,a) - foo(i,i) + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i)
+
+            ! Is excitation energy lower than current maximum eigenvalue?
+            if(ex < maxeival) then
+               ! Replace largest excitation energy by excitation energy under consideration
+               ! and also save indices
+               eivalS( maxidx(1) ) = ex  
+               s1( maxidx(1) ) = a
+               s2( maxidx(1) ) = i
+
+               ! New maximum eigenvalue and position of it
+               maxeival = maxval(eivalS)
+               maxidx = maxloc(eivalS)
+            end if
+
+         end do
+      end do
+
+      ! M lowest doubles excitation energies: Same strategy as for singles
+      ! ******************************************************************
+      eivalD = huge(1.0)
+      maxeival = huge(1.0)
+      maxidx=1
+      d1=0; d2=0; d3=0; d4=0
+      iloop: do i=1,nocc
+         jloop: do j=1,nocc
+            aloop: do a=1,nvirt
+               bloop: do b=a,nvirt
+
+                  ! avoid taking (a,i,a,j) combination twice
+                  if(a==b .and. i>j) cycle bloop  
+
+
+                  ex = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j) &
+                       & + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i) &
+                       & + 2.0_realk*gvoov%val(b,j,j,a) - gvvoo%val(b,b,j,j) 
+
+                  if(ex < maxeival) then
+                     eivalD( maxidx(1) ) = ex
+                     d1( maxidx(1) ) = a
+                     d2( maxidx(1) ) = i
+                     d3( maxidx(1) ) = b
+                     d4( maxidx(1) ) = j
+
+                     maxeival = maxval(eivalD)
+                     maxidx = maxloc(eivalD)
+                  end if
+
+               end do bloop
+            end do aloop
+         end do jloop
+      end do iloop
+
+
+      ! M lowest excitation energies - singles OR doubles
+      ! *************************************************
+      inclS = .false.
+      inclD = .false.
+
+      do i=1,M  
+         ! Find i'th lowest eigenvalue, regardless of whether it's singles or doubles
+         mineivalS = huge(1.0)
+         mineivalD = huge(1.0)
+
+
+         do j=1,M
+
+            ! Find minimum singles eigenvalue and corresponding index not already included
+            if(.not. inclS(j)) then
+               if(eivalS(j) < mineivalS) then
+                  idxS = j   
+                  mineivalS = eivalS(j)
+               end if
+            end if
+
+            ! Find minimum doubles eigenvalue and corresponding index not already included
+            if(.not. inclD(j)) then
+               if(eivalD(j) < mineivalD) then
+                  idxD = j
+                  mineivalD = eivalD(j)
+               end if
+            end if
+
+         end do
+
+         ! Initialize singles and doubles start vectors
+         call tensor_zero(b1(i))
+         call tensor_zero(b2(i))
+
+         ! Set i'th eigenvalue
+         ! -------------------
+         if(mineivalS < mineivalD) then ! the singles eigenvalue is the lowest
+
+            ! this eigenvalue is now included and cannot be considered again
+            inclS(idxS) = .true.  
+            eival(i) = mineivalS
+            singleex(i) = .true.
+
+            ! Singles vector - 1 in position of eigenvalue, zero elsewhere
+            ! Doubles vector - zero 
+            b1(i)%elm2(s1(idxS),s2(idxS)) = 1.0_realk
+
+         else ! the doubles eigenvalue is the lowest
+
+            ! this eigenvalue is now included and cannot be considered again
+            inclD(idxD) = .true.
+            eival(i) = mineivalD
+            singleex(i) = .false.
+
+            ! Singles vector - zero
+            ! Doubles vector - 1 in position of eigenvalue, zero elsewhere
+            ! However, since doubles vector must have symmetry:
+            ! X_bjai = X_aibj
+            ! we need to set X_bjai = X_aibj = 1/sqrt(2)
+            ! unless a=b and i=j
+            if(d1(idxD)==d3(idxD) .and. d2(idxD)==d4(idxD)) then
+               b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk
+            else
+               b2(i)%elm4(d1(idxD),d2(idxD),d3(idxD),d4(idxD)) = 1.0_realk/sqrt(2.0_realk)
+               b2(i)%elm4(d3(idxD),d4(idxD),d1(idxD),d2(idxD)) = 1.0_realk/sqrt(2.0_realk)
+            end if
+
+         end if
+         
+
+      end do
+
+      call array2_free(xo)
+      call array2_free(xv)
+      call array2_free(yo)
+      call array2_free(yv)
+      call array4_free(gvoov)
+      call array4_free(gvvoo)
+
+    end subroutine ccsd_eigenvalue_solver_startguess
+
+
+    !> The "reality" of CCSD eigenvalues and print warnings if any eigenvalue contains a significant
+    !> imaginary component.
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine ccsd_eigenvalue_check(k,M,lambdaREAL,lambdaIMAG)
+      implicit none
+      !> Number of target excitation energies
+      integer,intent(in) :: k
+      !> Dimension of current subspace
+      integer,intent(in) :: M
+      !> Real/imaginary components of the M eigenvalues
+      real(realk),dimension(M),intent(in) :: lambdaREAL, lambdaIMAG
+      !> If the imaginary eigenvalue component is above this threshold we print a warning
+      real(realk),parameter :: eivalthr=1.0e-9
+      integer :: i
+
+      ! Target eigenvalues
+      do i=1,k
+         if( abs(lambdaIMAG(i))>eivalthr) then
+            write(DECinfo%output,*) 'WARNING! Target eigenvalue contains imaginary component!'
+            write(DECinfo%output,*) 'WARNING! We ignore the imaginary component and proceed.'
+            write(DECinfo%output,*) 'WARNING! Be very careful when interpreting results!'
+            write(DECinfo%output,'(1X,a,i7)') 'Eigenvalue number:     ',i
+            write(DECinfo%output,'(1X,a,2g20.10)') 'Real/imag components:  ',&
+                 & lambdaREAL(i),lambdaIMAG(i)
+         end if
+      end do
+
+      ! Eigenvalues also present in subspace but which are not a target of calculation
+      do i=k+1,M
+         if( abs(lambdaIMAG(i))>eivalthr) then
+            write(DECinfo%output,*) 'WARNING! Eigenvalue in subspace contains imaginary component!'
+            write(DECinfo%output,*) 'WARNING! However, this is not a target eigenvalue'
+            write(DECinfo%output,*) 'WARNING! so it is probably not a problem...'
+            write(DECinfo%output,'(1X,a,i7)') 'Eigenvalue number:     ',i
+            write(DECinfo%output,'(1X,a,2g20.10)') 'Real/imag components:  ',&
+                 & lambdaREAL(i),lambdaIMAG(i)
+         end if
+      end do
+
+    end subroutine ccsd_eigenvalue_check
+
+
+    !> \brief Wrapper to calculate the necessary T1-transformed quantity used for
+    !> CCSD Jacobian eigenvalue problem.
+    !> Note: The tensors are also initialized here!
+    !> \author Kasper Kristensen
+    !> \date June 2015
+    subroutine get_T1_transformed_for_eigenvalue_solver(nbasis,nocc,nvirt,mylsitem,Co,Cv,fAO,t1,&
+         & xo,xv,yo,yv,t1fock)
+      implicit none
+      !> Number of atomic/occupied/virtual orbitals
+      integer,intent(in) :: nbasis,nocc,nvirt
+      !> Fock matrix in AO basis
+      real(realk),intent(in) :: fAO(nbasis,nbasis)
+      !> LS item structure
+      type(lsitem), intent(inout) :: MyLsItem      
+      !> Occ and virt MO coefficients. Note: Co=xo (particle) and Cv=yv (hole)
+      !> (in practice these are intent(in))
+      real(realk),intent(inout) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
+      !> Singles amplitudes  (in practice this is intent(in))
+      type(tensor),intent(inout) :: t1
+      !> Particle (x) and hole (y) matrices for occ and virt spaces (INITIALIZED HERE!)
+      type(tensor),intent(inout) :: xo,xv,yo,yv
+      !> T1 transformed Fock matrix in AO basis (INITIALIZED HERE!)
+      type(tensor),intent(inout) :: t1fock
+      type(tensor) :: fAO_tensor,Co_tensor,Cv_tensor
+
+      ! Init tensors for hole and particle transformation coefficients + T1-transformed Fock
+      call tensor_minit(xo,[nbasis,nocc],2)
+      call tensor_minit(xv,[nbasis,nvirt],2)
+      call tensor_minit(yo,[nbasis,nocc],2)
+      call tensor_minit(yv,[nbasis,nvirt],2)
+      call tensor_minit(t1fock,[nbasis,nbasis],2)
+
+      ! Dirty workaround due to input in get_t1_matrices
+      call tensor_minit(fAO_tensor,[nbasis,nbasis],2)
+      call tensor_minit(Co_tensor,[nbasis,nocc],2)
+      call tensor_minit(Cv_tensor,[nbasis,nvirt],2)
+      call tensor_convert(fAO,fAO_tensor)
+      call tensor_convert(Co,Co_tensor)
+      call tensor_convert(Cv,Cv_tensor)
+
+      ! Calculate T1-transformed Fock matrix
+      call get_t1_matrices(MyLsitem,t1,Co_tensor,Cv_tensor,xo,yo,xv,yv,fAO_tensor,t1fock,.false.)
+
+      call tensor_free(fAO_tensor)
+      call tensor_free(Co_tensor)
+      call tensor_free(Cv_tensor)
+
+    end subroutine get_T1_transformed_for_eigenvalue_solver
+
+
+    !> \brief Add contribution to Jacobian trial vector to get linear LW1 model 
+    !> rather than exponential EW1 model.
+    !> Note: For the Jacobian A only the doubles-singles block
+    !> differs between LW1 and EW1.
+    !> For right transformation, we get:
+    !>
+    !> (rho1) = ( A11 A12 )  (V1)     ( A11 V1 + A12 V2 )
+    !> (rho2) = ( A21 A22 )  (V2)  =  ( A21 V1 + A22 V2 ) 
+    !> 
+    !> Here, only the A21 V1 contribution differs between EW1 and LW1. 
+    !> The input rho2 is updated with this difference, i.e.:
+    !>
+    !> rho2 --> rho2 + (A21 V1)_{LW1} - (A21 V1)_{EW1}
+    !> 
+    !> rho1 is not modified for right transformation. 
+    !> 
+    !> For left transformation we only change V2 A21 contribution.
+    !> Thus, rho1 is changed, while rho2 is not.
+    !> 
+    !> \author Kasper Kristensen
+    !> \date July 2015
+    subroutine add_lw1_contribution(nbasis,mylsitem,Co_tensor,&
+         & Cv_tensor,t2,V1,V2,rho1,rho2,righttrans)
+      implicit none
+      !> Number of basis functions
+      integer,intent(in) :: nbasis
+      !> LSitem
+      type(lsitem) :: mylsitem
+      !> Occ and virt MO coefficients
+      type(tensor) :: Co_tensor,Cv_tensor
+      !> Doubles amplitudes
+      type(tensor),intent(in) :: t2 
+      !> Singles (V1) and doubles (V2) component of trial vector
+      type(tensor),intent(in) :: V1,V2
+      !> rho1 and rho2 vectors corresponding to Jacobian transf. on trial vectors
+      type(tensor),intent(inout) :: rho1,rho2
+      !> Right transformation (true) or left (false)
+      logical,intent(in) :: righttrans
+      integer :: nocc,nvirt,i,j,k,l,a,b,c,d
+      real(realk),pointer :: Q(:,:),Y(:,:),deltaNS(:,:,:,:)
+      real(realk) :: Lljkc, Lbdkc, Rai
+      type(array4) :: gao,gooov,gvvov
+      type(array2) :: Co,Cv
+
+      ! Never do this for Hald approximation
+      if(DECinfo%haldapprox) return
+
+      ! Sanity check - LW1 only meaningful for MP2 model
+      if(DECinfo%ccModel/=MODEL_MP2) then
+         call lsquit('add_lw1_contribution: Only implemented for MP2 model!',-1)
+      end if
+
+      ! Dimensions
+      nvirt = t2%dims(1)
+      nocc = t2%dims(2)
+
+      ! Calculate necessary MO integrals
+      Co = array2_init([nbasis,nocc],Co_tensor%elm2)
+      Cv = array2_init([nbasis,nvirt],Cv_tensor%elm2)
+      call get_full_eri(mylsitem,nbasis,gao)
+      gooov = get_gmo_simple(gao,Co,Co,Co,Cv)
+      gvvov = get_gmo_simple(gao,Cv,Cv,Co,Cv)
+      call array4_free(gao)
+
+
+      ! For right-hand vector correction delta (LW1 - EW1) is:
+      !
+      ! delta_{aibj} = P_{ij}^{ab} [ - R_ai sum_{klc} t_kl^cb L_ljkc
+      !                              + R_ai sum_{cdk} t_{kj}^{cd} L_{bdkc} ]
+      !
+
+      !  Q_bj = sum_{klc} t_kl^cb L_ljkc  
+      call mem_alloc(Q,nvirt,nocc)
+      Q = 0.0_realk
+      do c=1,nvirt
+         do k=1,nocc
+            do j=1,nocc
+               do l=1,nocc
+                  Lljkc = 2.0_realk*gooov%val(l,j,k,c) - gooov%val(k,j,l,c)
+                  do b=1,nvirt
+                     Q(b,j) = Q(b,j) + t2%elm4(c,k,b,l) * Lljkc
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      !  Y_jb = sum_{cdk} t_{kj}^{cd} L_{bdkc}
+      call mem_alloc(Y,nocc,nvirt)
+      Y = 0.0_realk
+      do k=1,nocc
+         do d=1,nvirt
+            do c=1,nvirt
+               do b=1,nvirt
+                  Lbdkc = 2.0_realk*gvvov%val(b,d,k,c) - gvvov%val(b,c,k,d)
+                  do j=1,nocc
+                     Y(j,b) = Y(j,b) + t2%elm4(c,k,d,j) * Lbdkc
+                  end do
+               end do
+            end do
+         end do
+      end do
+
+      RightOrLeft: if(righttrans) then  ! right-hand side
+
+         ! Non-symmetrized deltaNS_{bjai} = R_ai [ - sum_{klc} t_kl^cb L_jlkc
+         !                                         + sum_{cdk} t_{kj}^{cd} L_{bdkc} ]
+         call mem_alloc(deltaNS,nvirt,nocc,nvirt,nocc)
+         do a=1,nvirt
+            do i=1,nocc
+               Rai = V1%elm2(a,i)
+               do b=1,nvirt
+                  do j=1,nocc
+                     deltaNS(b,j,a,i) = Rai * ( -Q(b,j) + Y(j,b) )
+                  end do
+               end do
+            end do
+         end do
+
+         ! Update rho with symmetrized delta: 
+         ! rho2_{aibj} --> rho2_{aibj} + P_{ij}^{ab} [ deltaNS(a,i,b,j) + deltaNS(b,j,a,i) ]
+         do j=1,nocc
+            do b=1,nvirt
+               do i=1,nocc
+                  do a=1,nvirt
+                     rho2%elm4(a,i,b,j) = rho2%elm4(a,i,b,j) + deltaNS(a,i,b,j) + deltaNS(b,j,a,i) 
+                  end do
+               end do
+            end do
+         end do
+         call mem_dealloc(deltaNS)
+
+      else
+
+         ! Left-hand side
+         do i=1,nocc
+            do a=1,nvirt
+               do j=1,nocc
+                  do b=1,nvirt
+                     rho1%elm2(a,i) = rho1%elm2(a,i) &
+                          & + ( Y(j,b) - Q(b,j) ) * V2%elm4(b,j,a,i)
+                  end do
+               end do
+            end do
+         end do
+
+      end if RightOrLeft
+
+      call mem_dealloc(Q)
+      call mem_dealloc(Y)
+
+      call array2_free(Co)
+      call array2_free(Cv)
+      call array4_free(gooov)
+      call array4_free(gvvov)
+
+    end subroutine add_lw1_contribution
 
 
   end module cc_response_tools_module

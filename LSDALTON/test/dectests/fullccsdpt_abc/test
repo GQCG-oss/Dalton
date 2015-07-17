@@ -15,7 +15,7 @@ f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-6)
 
 f.add(from_string = 'Print frag. energies',
-      to_string   = 'Input ABC tile size')
+      to_string   = 'Single. prec. calc.?')
 
 f.add(from_string = 'CCSD correlation energy',
       to_string   = 'CC Memory summary',

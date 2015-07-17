@@ -254,8 +254,8 @@ C
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
 CPFP   2009-Jun: new triplet variables
-C           NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM)))
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+            !NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM))) ! todo triple excitations are not fully implemented yet
 Cend-PFP
 C
          END DO
@@ -290,8 +290,8 @@ C
 C
             NEXCTX(ISYM) = NEXCIT(ISYM)
 CPFP   2009-Jun: new triplet variables
-C            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
-            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM)))
+            NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+NT2AM(ISYM)))
+            !NEXCIT(ISYM) = MIN(NEXCIT(ISYM),(NT1AM(ISYM)+N2P2HOP(ISYM))) ! todo triple excitations are not fully implemented yet
 Cend-PFP
 C
          END DO

@@ -1364,7 +1364,7 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc,ccsd_t1)
 
     implicit none
 
@@ -1373,6 +1373,7 @@ contains
     type(lsitem)                        :: mylsitem
     logical                             :: print_frags,abc
     integer,dimension(infpar%lg_nodtot) :: vovo_addr,t2_addr
+    type(tensor), intent(inout), optional :: ccsd_t1
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1398,6 +1399,12 @@ contains
 
     ccsd_t2%access_type = AT_ALL_ACCESS
     vovo%access_type = AT_ALL_ACCESS
+
+    if ((infpar%lg_mynum .eq. infpar%master) .and. (.not. print_frags) .and. present(ccsd_t1)) then
+
+       call ls_mpibcast(ccsd_t1%elm1,nvirt*nocc,infpar%master,infpar%lg_comm)
+
+    endif
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 
@@ -2375,6 +2382,16 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPort,Master)
     call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
+    call ls_mpi_buffer(DECitem%CCexci,Master)
+    call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
+    call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
+    call ls_mpi_buffer(DECitem%JacobianThr,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianInitialSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxIter,Master)
+    call ls_mpi_buffer(DECitem%JacobianPrecond,Master)
+    call ls_mpi_buffer(DECitem%HaldApprox,Master)
+    call ls_mpi_buffer(DECitem%LW1,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%DECNP,Master)
@@ -2416,6 +2433,7 @@ contains
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
     call ls_mpi_buffer(DECitem%acc_sync,Master)
+    call ls_mpi_buffer(DECitem%pt_single_prec,Master)
     call ls_mpi_buffer(DECitem%pt_hack,Master)
     call ls_mpi_buffer(DECitem%pt_hack2,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
@@ -2471,6 +2489,8 @@ contains
     call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_tiling,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_lowdin,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_Laplace,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_deactivateopenmp,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%rimpisplit,Master)
@@ -2494,9 +2514,11 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%MemDebugPrint,Master)
     call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%distribute_fullmolecule,Master)
+    call ls_mpi_buffer(DECitem%force_distribution,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)

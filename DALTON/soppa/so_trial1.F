@@ -107,7 +107,8 @@ C
 C
       ELSE
 C
-         CALL QUIT('ERROR: Locical mistake occured in SO_TRIAL1')
+         CALL QUIT('ERROR: Logical mistake occured in SO_TRIAL1')
+
 C
       END IF
 C

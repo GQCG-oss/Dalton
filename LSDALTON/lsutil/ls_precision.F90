@@ -6,6 +6,10 @@ MODULE precision
 #else
   INTEGER, PARAMETER :: realk = 8
 #endif
+#ifdef VAR_REAL_SP
+  INTEGER, PARAMETER :: real_sp = 4
+#endif
+  INTEGER, PARAMETER :: real_pt = 8
 ! Long integer is equivalent to 64 bit integers (8 bytes) and ranges 
 ! from -9223372036854775808 to 9223372036854775807 (i.e., -2**63 to 2**63-1)
   integer, parameter :: long = 8

@@ -620,6 +620,7 @@ contains
        call RIMP2_gradient_driver(MyFragment,ThetaOCC%val,Grad%Ltheta,natoms,&
             & nbasis,MyFragment%noccEOS,nvirtAOS,CoccEOS%val,CvirtAOS%val,&
             & dopair_occ)
+
        call mem_dealloc(dopair_occ)
        call array2_free(CvirtAOS)
        call array2_free(CoccEOS)
