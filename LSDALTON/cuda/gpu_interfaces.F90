@@ -408,9 +408,9 @@ contains
 
 !$acc host_data use_device(a,b,res)
 !       stat = cublasSdot_v2(cublas_handle,int(n,kind=4),a,int(1,kind=4),b,int(1,kind=4),res)
-       !stat = cublasSgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
-       !                      & 1.0E0_realk,c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
-       !                      & 0.0E0_realk,c_loc(res),int(1,kind=4))
+       stat = cublasSgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
+                             & 1.0E0_realk,c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
+                             & 0.0E0_realk,c_loc(res),int(1,kind=4))
 !$acc end host_data
 
 #endif
