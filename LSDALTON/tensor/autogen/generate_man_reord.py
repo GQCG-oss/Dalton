@@ -38,7 +38,7 @@ def main():
 
 
   for i in range(len(sys.argv)):
-    if "VAR_LSDEBUG" in sys.argv[i]:
+    if "debug_version" in sys.argv[i]:
       args[1] = True
     if "nocollapse" in sys.argv[i]:
       args[2] = True
