@@ -2181,7 +2181,6 @@ C                        WRITE(LUPRI,'(/A,3ES18.7)')
                            END IF                                       !MK
                            END IF                                       !MK
                            IF (TWOPHO) THEN
-                              write(lupri,*)'ic,msymc=',ic,msymc
                               IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
                               IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
                               RESFRE(IC,MSYMC)=
