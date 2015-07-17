@@ -69,5 +69,8 @@ module tensor_type_def_module
   end type tensor
 
 
+  contains
+  subroutine tensor_dummy42()
+  end subroutine tensor_dummy42
 
 end module tensor_type_def_module
