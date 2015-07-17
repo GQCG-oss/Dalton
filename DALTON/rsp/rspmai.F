@@ -1222,7 +1222,7 @@ C     Initialization of INFHYP
       DATA IAABB/0/
 C     Initialization of INFSMO
       DATA SOMOM/.FALSE./ , TWOPHO/.FALSE./, MCDCAL/.FALSE./,
-     &     MCDPRJ/.FALSE./
+     &     MCDPRJ/.FALSE./, LTPCD/.FALSE./
       DATA IPRSMO/2/
       DATA NBSMFR/1/ , BSMFR(1)/0.0D0/
 C     Initialization of INFESR

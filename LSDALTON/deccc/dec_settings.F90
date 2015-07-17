@@ -59,11 +59,12 @@ contains
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
     DECinfo%JacobianThr = 1.0e-7
-    DECinfo%JacobianMaxSubspace = 1000
+    DECinfo%JacobianMaxSubspace = 10000
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
     DECinfo%HaldApprox = .false.
+    DECinfo%LW1 = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -253,6 +254,8 @@ contains
     DECinfo%RIMP2ForcePDMCalpha      = .false.
     DECinfo%RIMP2_tiling             = .false.
     DECinfo%RIMP2_lowdin             = .true.
+    DECinfo%RIMP2_Laplace            = .false.
+    DECinfo%RIMP2_deactivateopenmp   = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -273,6 +276,7 @@ contains
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
     DECinfo%acc_sync          = .false.
+    DECinfo%pt_single_prec    = .false.
     DECinfo%pt_hack           = .false.
     DECinfo%pt_hack2          = .false.
 
@@ -483,6 +487,9 @@ contains
        case('.HALDAPPROX')
           DECinfo%HaldApprox = .true.
 
+       case('.LW1')
+          DECinfo%LW1 = .true.
+
 
        ! GENERAL INFO
        ! ============
@@ -561,6 +568,7 @@ contains
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
+       case('.PT_SINGLE_PREC'); DECinfo%pt_single_prec = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
        case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
 
@@ -821,6 +829,10 @@ contains
           DECinfo%RIMP2_tiling        = .true.
        case('.RIMP2_CHOL')
           DECinfo%RIMP2_lowdin        = .false.
+       case('.RIMP2_LAPLACE')
+          DECinfo%RIMP2_Laplace       = .true.
+       case('.RIMP2_NOOMP')
+          DECinfo%RIMP2_deactivateopenmp = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -1349,7 +1361,8 @@ contains
     if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
          & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
 
-       write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'Memory not defined or ambiguously defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
        write(DECinfo%output,*) 'The recommended way is using .MEMORY and specifying the memory in GB'
 #ifdef VAR_MPI
@@ -1364,22 +1377,6 @@ contains
             & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
-    if(DECinfo%use_bg_buffer.AND.DECinfo%bg_memory.LT.0.0E0_realk) then
-       write(DECinfo%output,*) 'Background Memory buffer size not set!'
-       write(DECinfo%output,*) 'Please specify .BG_MEMORY keyword (in gigabytes)'
-#ifdef VAR_MPI
-       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
-       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
-#else
-       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
-       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
-#endif
-       write(DECinfo%output,*) '.BG_MEMORY'
-       write(DECinfo%output,*) '8.0'
-       write(DECinfo%output,*) ''
-       call lsquit('.BACKGROUND_BUFFER requires specification of .BG_MEMORY keyword!',-1)
-    end if
-
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
@@ -1391,6 +1388,28 @@ contains
     end if
 
     if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)
+
+    if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
+       DECinfo%bg_memory = 0.8_realk*DECinfo%memory
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'WARNING: User dit not specify the amount of memory to be used'
+       write(DECinfo%output,*) '         in connection with the background buffer.'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'
+       write(DECinfo%output,'(A,F6.3,A)') ' Total memory             = ', DECinfo%memory,   ' GB'
+       write(DECinfo%output,'(A,F6.3,A)') ' Background buffer memory = ', DECinfo%bg_memory,' GB'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'You can specify the amount of BG buffer memory yourself:'
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#endif
+       write(DECinfo%output,*) '.BG_MEMORY'
+       write(DECinfo%output,*) '8.0'
+    end if
 
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
@@ -1528,6 +1547,7 @@ contains
     write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
     write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
+    write(lupri,*) 'LW1 ', DECinfo%LW1
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP

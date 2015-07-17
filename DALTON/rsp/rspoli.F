@@ -76,7 +76,7 @@ C  /* Deck rspoli */
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
      *                  XINDX,CMO,WRK,LWRK)
 
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_is_active,
      &                                  xcint_integrate_rks_lr
 #endif
@@ -161,7 +161,7 @@ C
       integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
 
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       real(8), allocatable :: dmat_ao(:)
       real(8), allocatable :: xc_mat(:)
       real(8), allocatable :: fmat_mo(:)
@@ -1114,52 +1114,49 @@ C          Special case of alpha density only (old code)
              call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              if (xcint_is_active()) then
 
-             if (nosim > 1) then
-                call quit('NOSIM > 1 not implemented with ENABLE_XCINT')
-             end if
+               inquire(file='num_grid', exist=file_exists)
+               if (.not. file_exists) then
+                  call quit('ERROR: num_grid file not found')
+               end if
 
-             inquire(file='num_grid', exist=file_exists)
-             if (.not. file_exists) then
-                call quit('ERROR: num_grid file not found')
-             end if
+               allocate(dmat_ao(nbast*nbast*2))
+               allocate(xc_mat(nbast*nbast))
+               allocate(fmat_mo(norbt*norbt))
 
-             allocate(dmat_ao(nbast*nbast*2))
-             allocate(xc_mat(nbast*nbast))
-             allocate(fmat_mo(norbt*norbt))
-             dmat_ao = 0.0d0
-             xc_mat = 0.0d0
-             fmat_mo = 0.0d0
-             ! get unperturbed ao density matrix
-             call dft_get_ao_dens_mat(cmo, dmat_ao,
-     &                                wrk(kfree), lfree)
-             ! get perturbed ao density matrix
-             call deq27(cmo, zymat, (/0.0d0/), dmat_ao(nbast*nbast + 1),
-     &                  (/0.0d0/), wrk(kfree), lfree)
+               do iosim = 1, nosim
+                 dmat_ao = 0.0d0
+                 xc_mat = 0.0d0
+                 fmat_mo = 0.0d0
+                 ! get unperturbed ao density matrix
+                 call dft_get_ao_dens_mat(cmo, dmat_ao,
+     &                                    wrk(kfree), lfree)
+                 ! get perturbed ao density matrix
+                 call deq27(cmo, zymat(1,iosim), (/0.0d0/),
+     &                      dmat_ao(nbast*nbast + 1),
+     &                      (/0.0d0/), wrk(kfree), lfree)
+                 ! scale density matrices
+                 call dscal(nbast*nbast*2, 0.5d0, dmat_ao, 1)
+                 call xcint_integrate_rks_lr(dmat_ao, xc_mat)
+                 ! transform ao fock matrix contribution to mo
+                 call lrao2mo(cmo, ksymop, xc_mat,
+     &                        fmat_mo, wrk(kfree), lfree)
+                 ! scale and copy on top of fcx
+                 call daxpy(norbt*norbt, 0.5d0, fmat_mo, 1,
+     &                      fcx(1,1,iosim), 1)
+               end do
 
-             ! scale density matrices
-             call dscal(nbast*nbast*2, 0.5d0, dmat_ao, 1)
-
-             call xcint_integrate_rks_lr(dmat_ao, xc_mat)
-
-             ! transform ao fock matrix contribution to mo
-             call lrao2mo(cmo, ksymop, xc_mat,
-     &                    fmat_mo, wrk(kfree), lfree)
-
-             ! scale and copy on top of fcx
-             call daxpy(norbt*norbt, 0.5d0, fmat_mo, 1, fcx, 1)
-
-             deallocate(dmat_ao)
-             deallocate(xc_mat)
-             deallocate(fmat_mo)
+               deallocate(dmat_ao)
+               deallocate(xc_mat)
+               deallocate(fmat_mo)
 
              else
-#endif /* ENABLE_XCINT_RESPONSE */
+#endif /* ENABLE_XCINT */
              call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              endif
 #endif
            ENDIF

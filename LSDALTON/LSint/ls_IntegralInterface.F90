@@ -1394,6 +1394,9 @@ IF(INT_INPUT%DO_LINK)THEN
    IF(Spec.EQ.EcontribSpec)THEN
       setting%output%postprocess = 0
    ENDIF
+   IF(Spec.EQ.magderivEcontribSpec)THEN
+      setting%output%postprocess = 0
+   ENDIF
 ENDIF
 Int_input%OD_SCREEN = SETTING%SCHEME%OD_SCREEN
 Int_input%CS_SCREEN = SETTING%SCHEME%CS_SCREEN
@@ -1606,6 +1609,18 @@ CASE(MagDerivRSpec)
    ENDIF
 CASE (EcontribSpec)
    INT_INPUT%fullcontraction = .TRUE.
+CASE (magderivEcontribSpec)
+   INT_INPUT%fullcontraction = .TRUE.
+   ! we do the derivative on the LHS 
+   INT_INPUT%magderOrderP  = 1
+   INT_INPUT%magderOrderQ  = 0
+   INT_INPUT%NMAGDERIVCOMPP = 3
+   INT_INPUT%NMAGDERIVCOMPQ = 1
+   INT_INPUT%HermiteEcoeff = .FALSE.
+   INT_INPUT%MAGDERIVORDER = 1
+   INT_INPUT%doMagScreen=.TRUE.
+   INT_INPUT%sameODs  = .FALSE. !false since only derivative on LHS 
+   INT_INPUT%AddToIntegral = .TRUE.
 CASE DEFAULT
    WRITE(LUPRI,'(1X,2A)') 'Error: Wrong case in set_input_from_spec =',Spec
    CALL LSQUIT('Wrong case in set_input_from_spec',lupri)
@@ -1682,7 +1697,7 @@ call set_input_from_spec(INT_INPUT,SPEC,AO1,AO2,AO3,AO4,Oper,lupri,dograd,.FALSE
 
 nullify(setting%output%resultTensor)
 allocate(setting%output%resultTensor)
-IF(Spec.EQ.EcontribSpec)THEN
+IF(Spec.EQ.EcontribSpec.OR.Spec.EQ.magderivEcontribSpec)THEN
    call init_lstensor_1dim(setting%output%resultTensor,ndim2(5),lupri)
 ELSE
    call init_lstensor_5dim(setting%output%resultTensor,Int_Input%AO(1)%p,Int_Input%AO(2)%p,&
@@ -3794,7 +3809,7 @@ CASE (AONuclear)
 CASE (AONuclearSpec)
    !specific nuclei 
    emptyAO = .true.
-   IATOM = 1 !FIXME
+   IATOM = scheme%AONuclearSpecID 
    CALL BUILD_EMPTY_SINGLE_NUCLEAR_AO(AObatch,Molecule,LUPRI,IATOM)
    nDim = 1
 CASE (AOpCharge)
@@ -5615,6 +5630,9 @@ CASE(MagDerivRSpec)
 CASE (EcontribSpec)
    call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
    PermuteResultTensor = .FALSE.
+CASE (magderivEcontribSpec)
+   call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
+   PermuteResultTensor = .FALSE.
 CASE DEFAULT
   CALL LSQUIT('Error in ls_create_lstensor_full. Wrong Spec case',lupri)
 END SELECT
@@ -6000,6 +6018,9 @@ CASE(MagDerivRSpec)
    INT_INPUT%sameLHSAOs  = .FALSE.
    INT_INPUT%sameODs  = .FALSE.
 CASE (EcontribSpec)
+   call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
+   PermuteResultTensor = .FALSE.
+CASE (magderivEcontribSpec)
    call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
    PermuteResultTensor = .FALSE.
 CASE DEFAULT

@@ -1284,6 +1284,7 @@ c jim-dbg : setting all integrals for LRESC module
             OZKE   = .TRUE. ! 215.Lkin
             PSOKE  = .TRUE. ! 216.PsoKin
             DNSKE  = .TRUE. ! 217.DiaKin
+            PSOOZ  = .TRUE. ! 221. PSO-OZ for AngPso          
 Cxx  el problema es que el origen de gauge debe estar en el atomo q elegimos, LRATOM. 
 c       1 - Leer INP file y buscar LRATOM 
 c       2 - hacer que GAGORG = CORD(LRATOM)

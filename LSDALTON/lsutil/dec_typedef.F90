@@ -144,6 +144,10 @@ module dec_typedef_module
      !> excitations are correct to second and first order, respectively.
      !> (See JCP 115, 671 (2001))
      logical :: HaldApprox
+     !> Apply first-order linear wave function approximation (not size-extensive)
+     !> when calculation Jacobian eigenvalues. (Only meaningful in
+     !> combination with MP2 wave function model).
+     logical :: LW1
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -331,6 +335,8 @@ module dec_typedef_module
      integer :: abc_nbuffs
      !> do we want to do gpu computations synchronous?
      logical :: acc_sync
+     !> do (T) in single precision
+     logical :: pt_single_prec
      !> (T) hack variable - used for omitting CCSD
      logical :: pt_hack
      !> (T) hack variable - used for omitting (t) integrals (may be used in combintion with pt_hack)
@@ -389,6 +395,10 @@ module dec_typedef_module
      logical :: RIMP2_tiling
      !> Use lowdin decomposition
      logical :: RIMP2_lowdin
+     !> Use laplace transform in RIMP2 code
+     logical :: RIMP2_Laplace
+     !> Deactivate OpenMP in RI_UTIL
+     logical :: RIMP2_deactivateopenmp
      !> MPI group is split if #nodes > O*V/RIMPIsplit
      integer :: RIMPIsplit
 

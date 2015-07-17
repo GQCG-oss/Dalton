@@ -42,7 +42,7 @@ C
 C Used from common blocks
 C
 C MXORB  : MXSHEL (for INFPAR)
-C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DEBUG
+C INFPAR : MASTER, NODTOT, IPRPAR,  NCODE, DBG
 C GNRINF : BASDIR, LENBAS
 C
 #include "infpar.h"
@@ -62,7 +62,7 @@ C
       END IF
       IF (IPRPAR .GT. 0) CALL GETTIM(CPU1,WALL1)
 C
-      IF (DEBUG) THEN
+      IF (INFPAR_DEBUG) THEN
          IPRNOD = IPRINT
       ELSE
          IPRNOD = 0
@@ -962,6 +962,47 @@ C  /* Deck dalton_nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE DALTON_NODEDRIVER(MWORK,WRKDLM)
 C
+C Slaves are sent to this nodedriver from abacus/dalton.F where they 
+C idle until the keyword IPRTYP is set with an MPI_BCAST (this is 
+C mediated via the subroutine MPIXBCAST from /gp/mpimacro.F)
+C Once the slaves have received the IPRTYP.ne.0 broadcast, they need a 
+C broadcast with the print level.
+C IPRTYP is set in iprtyp.h. This file associates every parallel 
+C computation in Dalton with an specific integer and a character string.
+C This iprtyp.h file has to be imported in every subroutine that wants to 
+C communicate with this nodedriver.
+C 
+C If you add a parallel routine to Dalton it needs to be added to 
+C iprtyp.h
+C 
+C  This idling works because MPIXBCAST in a collective and blocking 
+C communication. Every slave will be blocked by the broadcast at label 
+C 100 until the master participates in the broadcast. As soon as an 
+C IPRTYP broadcast is made, every slave executes the computation 
+C associated with the broadcast once, exits the if-statement and is 
+C blocked/idles once again by the MPI_COMM_WORLD broadcast at label 100.
+C 
+C If IPRTYP is set to 0 the nodes exit the loop.
+C 
+C As of Aug 2013, you have to broadcast the IPRTYP from the master node 
+C using MPIXBCAST or MPI_BCAST, to communicate with the nodedriver. 
+C This mean you can change IPRTYP locally if you need it for whatever 
+C reason. To start a parallel calculation the master HAS to broadcast 
+C the IPRTYP and the needed parameters for the calculation.
+C 
+C IMPORTANT: The communication is always via the communicator 
+C MPI_COMM_WORLD, so if another communicator is made, only those nodes 
+C included in the new communicator will receive the broadcast IPRTYP. 
+C This is because the nodedriver uses the MPIXBCAST subroutine to 
+C communicate and as of Nov 2014 this is hardcoded to MPI_COMM_WORLD.
+C 
+C todo beyer
+      !use polarizable_embedding, only: pe_mpi
+C todo ... beyer
+#ifdef VAR_IFORT
+!     subroutine sleep is in IFPORT module
+      use IFPORT, ONLY: SLEEPQQ
+#endif
 #ifdef MOD_CGTO_DIFF_ERI
       use eri_basis_loops
 #endif
@@ -990,13 +1031,14 @@ C iprtyp.h: define parallel calculation types
       N_TASKS = 0
 C
 C     Get calculation type (IPRTYP)
-C
   100 CONTINUE
 #ifdef VAR_IFORT
 !     Nov 2013 hjaaj: sleep 10 millisecond before next check for a task
 !     - this saves a lot of cpu time on other cores in a sequential section
 !     - may make it possible to go into turbo mode
 !     - may make it possible to exploit e.g. parallel DGEMM in MKL in serial sections
+C      CALL SLEEP(1)
+c
 !     - only intel ifort has a sleepqq counting in milliseconds (that I know of),
 !       the more common sleep(n) sleeps in at least one second, which is too long.
 !       (One could use an interface to the C routine usleep.)
@@ -1137,7 +1179,10 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
-
+         ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
+            CALL PAR_RP_ERES(work(1), mwork, mytid )
+         ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
+            CALL PAR_SO_ERES(work(1), mwork, mytid )
 #ifdef MOD_CGTO_DIFF_ERI
          ! added by Bin Gao, Oct. 27, 2012
          ! cgto-diff-eri code to calculate arbitray order geometric derivatives
@@ -1149,6 +1194,25 @@ C added by Bin Gao, May 12, 2012
 #ifdef ENABLE_XCINT
          else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
             call xcint_integrate_worker(MPI_COMM_WORLD)
+#endif
+         ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
+#ifdef ENABLE_VPOTDAMP
+            CALL vpotdamped_slave()
+#else
+            call quit('VPOTDAMP not compiled in this version')
+#endif
+
+#if defined(ENABLE_EFS)
+         else if (IPRTYP.eq.efs_add_atomtype_work) then
+            call efs_add_atomtype_slave()
+         else if (IPRTYP.eq.efs_init_work) then
+            call efs_init_slave()
+         else if (IPRTYP.eq.efs_generate_basis_work) then
+            call efs_generate_basis_product_slave()
+         else if (IPRTYP.eq.efs_init_2efock_work) then
+            call efs_init_2efock_slave()
+         else if (IPRTYP.eq.efs_fock_update_work) then
+            call efs_fock_update_slave()
 #endif
 
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
@@ -1415,7 +1479,7 @@ C
 C
 C     This kludge fixes the current non-implementation of MPI_CHARACTER
 C     on the Cray-T3E, K.Ruud-Nov.96
-C
+C     This Kludge fix is soon old enough to start at University...
       DIMENSION ITMP(4000)
       EQUIVALENCE (ITMP,MLINE)
 #endif

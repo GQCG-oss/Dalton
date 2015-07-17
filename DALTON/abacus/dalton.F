@@ -37,7 +37,7 @@ C=========================================================================
 C
       use parallel_models_mpi
 #ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_finalize
+      use dalton_xcint_interface, only: xcint_is_active, xcint_finalize
 #endif
 C
 #include "implicit.h"
@@ -718,7 +718,9 @@ C
 
 
 #ifdef ENABLE_XCINT
-      call xcint_finalize()
+      if (xcint_is_active()) then
+        call xcint_finalize()
+      end if
 #endif
 
 

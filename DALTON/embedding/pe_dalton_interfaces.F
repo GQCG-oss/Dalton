@@ -100,6 +100,28 @@
 
 !-----------------------------------------------------------------------------
 
+      subroutine pe_ifc_response(denmats, fckmats, nmats)
+        use polarizable_embedding, only: pe_master
+        implicit none
+#include "inforb.h"
+        integer, intent(in) :: nmats
+        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
+        call qenter('pe_ifc_response')
+#if defined(VAR_MPI)
+        call pe_ifc_start_slaves(3)
+#endif
+        call pe_master(runtype='dynamic_response',
+     &                 triang=.true.,
+     &                 ndim=nbast,
+     &                 nmats=nmats,
+     &                 denmats=denmats,
+     &                 fckmats=fckmats)
+        call qexit('pe_ifc_response')
+      end subroutine pe_ifc_response
+
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_london(fckmats)
         use polarizable_embedding, only: pe_master
         implicit none
@@ -440,15 +462,7 @@
 
             ! Fxc = -R<0|Fe|B>Fe in fxcaos
             allocate(fxcaos(ncsim*nnbasx))
-#if defined(VAR_MPI)
-            call pe_ifc_start_slaves(3)
-#endif
-            call pe_master(runtype='dynamic_response',
-     &                     triang=.true.,
-     &                     ndim=nbast,
-     &                     nmats=ncsim,
-     &                     denmats=fdtvaos,
-     &                     fckmats=fxcaos)
+            call pe_ifc_response(fdtvaos, fxcaos, ncsim)
             deallocate(fdtvaos)
 
             do i = 1, ncsim
@@ -563,17 +577,8 @@
             deallocate(ubodcao, ubodvao)
 
             allocate(fxoaos(nosim*nnbasx))
-#if defined(VAR_MPI)
-            call pe_ifc_start_slaves(3)
-#endif
-            call pe_master(runtype='dynamic_response',
-     &                     triang=.true.,
-     &                     ndim=nbast,
-     &                     nmats=nosim,
-     &                     denmats=bodtaos,
-     &                     fckmats=fxoaos)
+            call pe_ifc_response(bodtaos, fxoaos, nosim)
             deallocate(bodtaos)
-
 
             allocate(fxos(nnorbx,nosim))
             do i = 1, nosim
@@ -766,15 +771,7 @@
 
             allocate(fxcaos(ncsim*nnbasx))
             fxcaos = 0.0d0
-#if defined(VAR_MPI)
-            call pe_ifc_start_slaves(3)
-#endif
-            call pe_master(runtype='dynamic_response',
-     &                     triang=.true.,
-     &                     ndim=nbast,
-     &                     nmats=ncsim,
-     &                     denmats=fdtvaos,
-     &                     fckmats=fxcaos)
+            call pe_ifc_response(fdtvaos, fxcaos, ncsim)
             deallocate(fdtvaos)
 
             do i = 1, ncsim
@@ -963,15 +960,7 @@
         deallocate(dcao, dvao)
 
         allocate(fckaos(nosim*nnbasx))
-#if defined(VAR_MPI)
-        call pe_ifc_start_slaves(3)
-#endif
-        call pe_master(runtype='dynamic_response',
-     &                 triang=.true.,
-     &                 ndim=nbast,
-     &                 nmats=nosim,
-     &                 denmats=daos,
-     &                 fckmats=fckaos)
+        call pe_ifc_response(daos, fckaos, nosim)
         deallocate(daos)
 
         allocate(evec(nnorbx))
@@ -1084,15 +1073,7 @@
         deallocate(udcao)
 
         allocate(fcaos(4*nnbasx))
-#if defined(VAR_MPI)
-         call pe_ifc_start_slaves(3)
-#endif
-         call pe_master(runtype='dynamic_response',
-     &                  triang=.true.,
-     &                  ndim=nbast,
-     &                  nmats=4,
-     &                  denmats=dcaos,
-     &                  fckmats=fcaos)
+        call pe_ifc_response(dcaos, fcaos, 4)
         deallocate(dcaos)
 
         allocate(fcmo(nnorbx))
@@ -1247,15 +1228,7 @@
         deallocate(udcao)
 
         allocate(fcaos(15*nnbasx))
-#if defined(VAR_MPI)
-         call pe_ifc_start_slaves(3)
-#endif
-         call pe_master(runtype='dynamic_response',
-     &                  triang=.true.,
-     &                  ndim=nbast,
-     &                  nmats=15,
-     &                  denmats=dcaos,
-     &                  fckmats=fcaos)
+        call pe_ifc_response(dcaos, fcaos, 15)
         deallocate(dcaos)
 
         allocate(fcmo(nnorbx))

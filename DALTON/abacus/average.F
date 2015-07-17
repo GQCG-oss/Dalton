@@ -335,27 +335,43 @@ C
 C
 C ---------------------------------------------------------------------
 C
-C   AngPso is done with a unity matrix inside : AngPso = ANGMOM.1.PSO
-C
+C      Look for LABELS : ANGPSO
+C     ---------------------------
       IF(KEY.EQ."ANGP") THEN
-        NLAB = 3   ! this is to control loop ahead when calling angpso
-C
-C        Look for LABELS : ANGPSO
-C       ---------------------------
-        LISTA1(1)='XANGMOM'
-        LISTA1(2)='YANGMOM'
-        LISTA1(3)='ZANGMOM'
-C
-C        Look for LABELS : PSO 
-C       ----------------------       
-        LABEL1='PSO'
-        IJ = 4
+        NLAB=3 
+        LABEL2='PSOZ'
+        IJ = 1
         DO I=npos1,npos1+2
-           LISTA1(IJ)= 'PSO '//CHRNOS(I/100)//CHRNOS(I/10)//
-     &            CHRNOS(MOD(I,10))
-           IJ = IJ + 1
+           LISTA1(IJ)= CHRNOS(I/100)//CHRNOS(I/10)//
+     &               CHRNOS(MOD(I,10))//'PSOZ'// CHRXYZ(IJ)
+c           write(*,*) LISTA1(IJ)
+          IJ = IJ + 1
         END DO
       ENDIF
+C
+C
+C
+C   AngPso is done with a unity matrix inside : AngPso = ANGMOM.1.PSO
+C
+cx      IF(KEY.EQ."ANGP") THEN
+cx        NLAB = 3   ! this is to control loop ahead when calling angpso
+cxC
+cxC        Look for LABELS : ANGPSO
+cxC       ---------------------------
+cx        LISTA1(1)='XANGMOM'
+cx        LISTA1(2)='YANGMOM'
+cx        LISTA1(3)='ZANGMOM'
+cxC
+cxC       Look for LABELS : PSO 
+cxC       ----------------------       
+cx        LABEL1='PSO'
+cx        IJ = 4
+cx        DO I=npos1,npos1+2
+cx           LISTA1(IJ)= 'PSO '//CHRNOS(I/100)//CHRNOS(I/10)//
+cx     &            CHRNOS(MOD(I,10))
+cx           IJ = IJ + 1
+cx        END DO
+cx      ENDIF
 C
 C ---------------------------------------------------------------------
 
@@ -414,15 +430,15 @@ C
 C        Starting Calculations depending on angpso or not
 C        
          KJ = KJ+1 
-         IF (KEY.EQ.'ANGP') THEN
-            CALL ANGPSO(WORK(KCMO),LWORK,JIMPRT,LISTA1(IDIP),
-     $      LISTA1(IDIP+3),SNDPRP)
-            IF (JIMPRT.GE.2) THEN
-               WRITE (LUPRI,'(1A,I2,5A,F20.12)')
-     &         '#',KJ,' Expectation Value for Operator : < ',
-     &         LISTA1(IDIP), '.',LISTA1(IDIP+3),' > = ',SNDPRP
-            ENDIF
-         ELSE 
+cx         IF (KEY.EQ.'ANGP') THEN
+cx            CALL ANGPSO(WORK(KCMO),LWORK,JIMPRT,LISTA1(IDIP),
+cx     $      LISTA1(IDIP+3),SNDPRP)
+cx            IF (JIMPRT.GE.2) THEN
+cx               WRITE (LUPRI,'(1A,I2,5A,F20.12)')
+cx     &         '#',KJ,' Expectation Value for Operator : < ',
+cx     &         LISTA1(IDIP), '.',LISTA1(IDIP+3),' > = ',SNDPRP
+cx            ENDIF
+cx         ELSE 
             CALL PRP1AVE(LISTA1(IDIP),SNDPRP,WORK(KCMO),WORK(KUDV),
      $      WORK(KWRKG1),LWRKG1,JIMPRT)
             IF (JIMPRT.GE.2) THEN
@@ -430,7 +446,7 @@ C
      &         '#',KJ,' Expectation Value for Operator : < ',
      &         LISTA1(IDIP), ' > = ',SNDPRP
             ENDIF
-         ENDIF
+cx         ENDIF
 C
 C       =========================================================
 C
