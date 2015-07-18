@@ -791,6 +791,7 @@ module cc_tools_module
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
+     integer(INTD):: sch_sym=2
 !}
 
       call time_start_phase(PHASE_WORK)
@@ -857,7 +858,7 @@ module cc_tools_module
          !(w0):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
          call get_I_cged(w0,w2,tred,nv)
          !(w3.1):sigma+ [alpha<=gamma i>=j] = (w0):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
-!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tpl,nvr,0.0E0_realk,w3,tred) !`DIL: replace
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tpl,nvr,0.0E0_realk,w3,tred)
          if(DIL_DEBUG) then !`DIL: Tensor contraction 6
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 6:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
@@ -898,7 +899,7 @@ module cc_tools_module
          !(w0):I- [alpha<=gamma c<=d] <= (w2):I- [alpha<=gamma c d]
          call get_I_cged(w0,w2,tred,nv)
          !(w3.2):sigma- [alpha<=gamma i<=j] = (w0):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
-!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred) !`DIL replace
+!        call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w0,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
          if(DIL_DEBUG) then !`DIL: Tensor contraction 7
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 7:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum,nor,nvr,tred
@@ -936,7 +937,7 @@ module cc_tools_module
       s0 = wszes(1)
       s2 = wszes(3)
       s3 = wszes(4)
-      if(s==1) then; scheme=2; else; scheme=s; endif  !```DIL: remove
+      if(s==1) then; scheme=sch_sym; else; scheme=s; endif  !`DIL: remove
       call combine_and_transform_sigma(om2,w0,w2,w3,s0,s2,s3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
          &no,nv,nb,goffs,aoffs,scheme,lo,twork,tcomm,order=order,rest_occ_om2=rest_occ_om2,scal=scal,& !`DIL: scheme --> s
          &sio4_ilej=(s/=2.and.s/=1),o2tens=o2ilej)
