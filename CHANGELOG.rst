@@ -122,7 +122,7 @@ DALTON
 - More efficient evaluation of numerical Hessian when C1 symmetry
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
-- Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS".
+- Fix of error which sometimes caused a geometry optimization to stop with "\*\*\* ERROR, Wrong interval in WLKBIS".
 - Fix of a bug which occasionally caused DALTON to abort a .STEX calculation.
 - Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
 - Append PID to scratch directory to avoid multiple tests running in the same directory.
