@@ -29,7 +29,7 @@ contains
 !> \brief Initilize lsitem and config structures from LSDALTON.INP and MOLECULE.INP
 !> \author Kasper Kristensen (based on the old lsdalton subroutine)
 !> \date December 2011
-SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config)
 
    implicit none
    !> Logical unit number for LSDALTON.OUT
@@ -42,18 +42,11 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
    TYPE(lsitem),target,intent(inout) :: ls
    !> configuration structure initialized according to information in LSDALTON.INP and MOLECULE.INP
    type(configItem),intent(inout)    :: config
-   !> Monitor memory - mostly for debugging, set to false by default
-   logical, intent(inout) :: mem_monitor
    logical             :: doDFT
    REAL(REALK) :: TIMSTR,TIMEND
    real(realk) :: DUMMY(1,1)
 
    ! Initializations 
-#ifdef VAR_LSDEBUGINT
-   mem_monitor = .true.  !Mostly for memory debugging
-#else
-   mem_monitor = .false. !Mostly for memory debugging
-#endif
    CALL PRINT_INTRO(LUPRI)
    call lsmpi_print(lupri)
 #ifdef BINARY_INFO_AVAILABLE
@@ -82,7 +75,7 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
    ! eventually empirical dispersion correction in case of dft
    CALL II_DFT_DISP(LS%SETTING,DUMMY,1,1,0,LUPRI)
 
-   call mat_pass_info(LUPRI,config%opt%info_matop,mem_monitor)
+   call mat_pass_info(LUPRI,config%opt%info_matop,config%mat_mem_monitor)
 
    CALL LSTIMER('*INPUT',TIMSTR,TIMEND,lupri)
 
@@ -151,13 +144,12 @@ SUBROUTINE get_lsitem_from_input(ls)
   TYPE(lsitem),target,intent(inout) :: ls
   type(configItem)    :: config
   integer :: lupri,luerr,nbast
-  logical :: mem_monitor
 
   ! Open LSDALTON files
   call open_lsdalton_files(lupri,luerr)
 
   ! Init lsitem structure
-  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config)
 
   ! Close files LSDALTON.OUT and LSDALTON.ERR again
   call lsclose(lupri,'KEEP')

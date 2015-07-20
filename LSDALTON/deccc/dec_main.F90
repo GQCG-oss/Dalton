@@ -18,7 +18,7 @@ module dec_main_mod
   use dec_typedef_module
   use files !,only:lsopen,lsclose
   use reorder_frontend_module 
-  use tensor_interface_module
+  use tensor_tester_module
   use Matrix_util!, only: get_AO_gradient
   use configurationType
 
@@ -128,7 +128,7 @@ contains
     !Array test
     if (DECinfo%tensor_test)then
       print *,"TEST ARRAY MODULE"
-      call test_tensor_struct()
+      call test_tensor_struct(DECinfo%output)
       return
     endif
     ! Reorder test
@@ -240,23 +240,24 @@ contains
     end if
     
     
-    if(DECinfo%F12) then
-#ifdef MOD_UNRELEASED
-       call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
-       if(DECinfo%F12debug) then
-          print *,   '----------------------------------------------------------------'
-          print *,   '                   F12-SINGLES CORRECTION                       '
-          print *,   '----------------------------------------------------------------'
-          write(*,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
-          print *,   '----------------------------------------------------------------'
-          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-          write(DECinfo%output,'(1X,a,f20.10)')'                   F12-SINGLES CORRECTION                       '
-          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-          write(DECinfo%output,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
-          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-       end if
-#endif
-    endif
+!    if(DECinfo%F12) then
+!#ifdef MOD_UNRELEASED
+!       ES2 = 0.0E0_realk
+!       !call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
+!       if(DECinfo%F12debug) then
+!          print *,   '----------------------------------------------------------------'
+!          print *,   '                   F12-SINGLES CORRECTION                       '
+!          print *,   '----------------------------------------------------------------'
+!          write(*,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
+!          print *,   '----------------------------------------------------------------'
+!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+!          write(DECinfo%output,'(1X,a,f20.10)')'                   F12-SINGLES CORRECTION                       '
+!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+!          write(DECinfo%output,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
+!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
+!       end if
+!#endif
+!    endif
 
     
     if(DECinfo%full_molecular_cc) then

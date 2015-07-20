@@ -40,6 +40,7 @@ contains
     ! 5: extra verbose -- will overflow every reasonable machine in no time
     ! a reduction of the print level is obtained by setting print_small_calc to .false. for > 100 nodes
     DECinfo%PL                     = 0
+    DECinfo%MemDebugPrint          =.false.
     DECinfo%print_small_calc       = .true.
 
     ! SNOOP
@@ -52,6 +53,18 @@ contains
     DECinfo%SNOOPort       = .false.
     DECinfo%SNOOPsamespace =.true.
     DECinfo%SNOOPlocalize  = .false.
+
+    ! CC response
+    DECinfo%CCexci = .false.
+    DECinfo%JacobianNumEival = 1
+    DECinfo%JacobianLHTR = .false.
+    DECinfo%JacobianThr = 1.0e-7
+    DECinfo%JacobianMaxSubspace = 10000
+    DECinfo%JacobianMaxIter = 200
+    DECinfo%JacobianInitialSubspace = 0
+    DECinfo%JacobianPrecond = .true.
+    DECinfo%HaldApprox = .false.
+    DECinfo%LW1 = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -93,6 +106,7 @@ contains
     ! -- Debug modes
     DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%distribute_fullmolecule = .false.
+    DECinfo%force_distribution      = .false.
     DECinfo%CRASHCALC               = .false.
     DECinfo%CRASHESTI               = .false.
     DECinfo%cc_driver_debug         = .false.
@@ -239,13 +253,16 @@ contains
     DECinfo%RIMP2PDMTENSOR           = .false.
     DECinfo%RIMP2ForcePDMCalpha      = .false.
     DECinfo%RIMP2_tiling             = .false.
-    DECinfo%RIMP2_lowdin             = .false.
+    DECinfo%RIMP2_lowdin             = .true.
+    DECinfo%RIMP2_Laplace            = .false.
+    DECinfo%RIMP2_deactivateopenmp   = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
     DECinfo%CCthrSpecified           = .false.
     DECinfo%use_singles              = .false.
     DECinfo%use_preconditioner       = .true.
+    DECinfo%ccsolverskip             = .false.
     DECinfo%use_preconditioner_in_b  = .true.
     DECinfo%use_crop                 = .true.
     DECinfo%array4OnFile             = .false.
@@ -259,7 +276,9 @@ contains
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
     DECinfo%acc_sync          = .false.
+    DECinfo%pt_single_prec    = .false.
     DECinfo%pt_hack           = .false.
+    DECinfo%pt_hack2          = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -289,9 +308,10 @@ contains
     DECinfo%noaofock=.false.
 
     DECinfo%THCNOPRUN = .FALSE.
+    DECinfo%THCDUMP = .FALSE.
     DECinfo%THCradint = 1E-6_realk
-    DECinfo%THC_MIN_RAD_PT = 20
-    DECinfo%THCangint = 2
+    DECinfo%THC_MIN_RAD_PT = 8
+    DECinfo%THCangint = 5
     DECinfo%THCHRDNES = 3
     DECinfo%THCTURBO = 1
     DECinfo%THCRADIALGRID = 3
@@ -440,6 +460,36 @@ contains
        case('.SNOOPLOCALIZE')
           DECinfo%SNOOPlocalize=.true.
 
+          ! CC RESPONSE
+          ! ===========
+       case('.EXCITATIONENERGIES')
+          DECinfo%CCexci = .true.
+          read(input,*) DECinfo%JacobianNumEival
+
+       case('.JACOBIANLEFT')
+          DECinfo%JacobianLHTR = .true.
+
+       case('.JACOBIANTHR')
+          read(input,*) DECinfo%JacobianThr 
+
+       case('.JACOBIANMAXSUBSPACE')
+          read(input,*) DECinfo%JacobianMaxSubspace
+
+       case('.JACOBIANINITSUBSPACE')
+          read(input,*) DECinfo%JacobianInitialSubspace
+
+       case('.JACOBIANMAXITER')
+          read(input,*) DECinfo%JacobianMaxIter
+
+       case('.JACOBIANNOTPRECOND')
+          DECinfo%JacobianPrecond = .false.
+
+       case('.HALDAPPROX')
+          DECinfo%HaldApprox = .true.
+
+       case('.LW1')
+          DECinfo%LW1 = .true.
+
 
        ! GENERAL INFO
        ! ============
@@ -518,7 +568,9 @@ contains
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
+       case('.PT_SINGLE_PREC'); DECinfo%pt_single_prec = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
+       case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
 
        ! DEC CALCULATION 
        ! ===============
@@ -578,6 +630,10 @@ contains
        case('.DECPRINT')
           ! DEC print level
           read(input,*) DECinfo%PL
+
+       case('.MEMDEBUGPRINT')
+          ! DEC print level
+          DECinfo%MemDebugPrint=.true.
 
        case('.ONLYOCCPART')
           ! Use only occupied partitioning scheme
@@ -651,7 +707,11 @@ contains
           print *
 #endif
        case('.DISTRIBUTE_FULLINFO')
+          DECinfo%force_distribution      = .true.
           DECinfo%distribute_fullmolecule = .true.
+       case('.NOT_DISTRIBUTE_FULLINFO')
+          DECinfo%force_distribution      = .true.
+          DECinfo%distribute_fullmolecule = .false.
 
 
        !KEYWORDS RELATED TO FRAGMENT SPACES
@@ -767,8 +827,12 @@ contains
           DECinfo%RIMP2ForcePDMCalpha = .true.
        case('.RIMP2_TILING')
           DECinfo%RIMP2_tiling        = .true.
-       case('.RIMP2_LOWDIN')
-          DECinfo%RIMP2_lowdin        = .true.
+       case('.RIMP2_CHOL')
+          DECinfo%RIMP2_lowdin        = .false.
+       case('.RIMP2_LAPLACE')
+          DECinfo%RIMP2_Laplace       = .true.
+       case('.RIMP2_NOOMP')
+          DECinfo%RIMP2_deactivateopenmp = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -787,11 +851,15 @@ contains
        case('.ICHOR'); DECinfo%UseIchor = .true.
 
 
+       ! MEMORY HANDLING KEYWORDS
+       ! **************************
+       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
+
+
 #ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
-       case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
        case('.CCSOLVER_LOCAL');       DECinfo%solver_par              = .false.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical    = .true.
        case('.SPAWN_COMM_PROC');      DECinfo%spawn_comm_proc         = .true.
@@ -808,6 +876,8 @@ contains
        case('.PRECWITHFULL')
           DECinfo%precondition_with_full=.true.
           DECinfo%ccsolver_overwrite_prec = .true.
+       case('.CCSOLVERSKIP')
+          DECinfo%ccsolverskip = .true.
        case('.MAXITER')
           read(input,*) DECinfo%MaxIter
        case('.TENSOR_SEGMENTING_SCHEME')
@@ -863,6 +933,7 @@ contains
        case('.F12CCOUPLING')     
           DECinfo%F12Ccoupling=.true.
 
+#endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
@@ -960,10 +1031,33 @@ contains
           DECinfo%SkipReadIn=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
 
-#endif
        ! KEYWORDS RELATED TO TENSOR HYPER CONTRACTION (THC)
        ! ***********************
+       case('.THC_GRID'); 
+          read(input,*) myword
+          call capitalize_string(myword)
+          DECinfo%THCradint = 1.0E-6_realk
+          DECinfo%THCZdependenMaxAng=.FALSE.
+          IF (INDEX(myword,'VCOARSE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 0
+             DECinfo%THCangint = 2
+             DECinfo%THCNOPRUN = .FALSE.
+          ELSEIF (INDEX(myword,'COARSE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 3
+             DECinfo%THCangint = 2
+             DECinfo%THCNOPRUN = .FALSE.
+          ELSEIF (INDEX(myword,'MEDIUM') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 8
+             DECinfo%THCangint = 5
+          ELSEIF (INDEX(myword,'VFINE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 16
+             DECinfo%THCangint = 9             
+          ELSEIF (INDEX(myword,'FINE') .NE. 0) THEN 
+             DECinfo%THC_MIN_RAD_PT = 12
+             DECinfo%THCangint = 5
+          ENDIF
        case('.THC_PRUNE'); DECinfo%THCNOPRUN = .FALSE.
+       case('.THC_DUMP'); DECinfo%THCDUMP = .TRUE.
        case('.THC_RADINT'); read(input,*) DECinfo%THCradint 
        case('.THC_MIN_RAD_PT'); read(input,*) DECinfo%THC_MIN_RAD_PT
        case('.THC_ANGINT'); read(input,*) DECinfo%THCangint
@@ -1116,6 +1210,19 @@ contains
     end if
 
 
+    ! CC response - currently not implemented for DEC
+    CCresponse: if(DECinfo%CCexci) then
+       IF(.not. DECinfo%full_molecular_cc) then
+          call lsquit('CC response is not implemented for DEC! Use **CC instead of **DEC.',-1)
+       end IF
+       ! For now we enforce canonical orbitals for CC response
+       if(.not. DECinfo%use_canonical) then
+          write(DECinfo%output,*) 'WARNING! We enforce canonical orbitals for CC response!'
+          DECinfo%use_canonical = .true.
+       end if
+    end if CCresponse
+
+
     ! DEC orbital-based - currently limited to occupied partitioning scheme
     ! and several options are not possible
     DoDECCO: if(DECinfo%DECCO) then
@@ -1254,7 +1361,8 @@ contains
     if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
          & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
 
-       write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'Memory not defined or ambiguously defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
        write(DECinfo%output,*) 'The recommended way is using .MEMORY and specifying the memory in GB'
 #ifdef VAR_MPI
@@ -1269,9 +1377,29 @@ contains
             & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
-    if(DECinfo%use_bg_buffer.AND.DECinfo%bg_memory.LT.0.0E0_realk) then
-       write(DECinfo%output,*) 'Background Memory buffer size not set!'
-       write(DECinfo%output,*) 'Please specify .BG_MEMORY keyword (in gigabytes)'
+    ! Use purification of FOs when using fragment-adapted orbitals.
+    if(DECinfo%fragadapt) then
+       DECinfo%purifyMOs=.true.
+
+       if(DECinfo%use_bg_buffer)then
+          call lsquit("ERROR: bg buffer not implemented for fragment adapted orbitals",-1)
+       endif
+
+    end if
+
+    if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)
+
+    if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
+       DECinfo%bg_memory = 0.8_realk*DECinfo%memory
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'WARNING: User dit not specify the amount of memory to be used'
+       write(DECinfo%output,*) '         in connection with the background buffer.'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'
+       write(DECinfo%output,'(A,F6.3,A)') ' Total memory             = ', DECinfo%memory,   ' GB'
+       write(DECinfo%output,'(A,F6.3,A)') ' Background buffer memory = ', DECinfo%bg_memory,' GB'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'You can specify the amount of BG buffer memory yourself:'
 #ifdef VAR_MPI
        write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
        write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
@@ -1281,16 +1409,7 @@ contains
 #endif
        write(DECinfo%output,*) '.BG_MEMORY'
        write(DECinfo%output,*) '8.0'
-       write(DECinfo%output,*) ''
-       call lsquit('.BACKGROUND_BUFFER requires specification of .BG_MEMORY keyword!',-1)
     end if
-
-    ! Use purification of FOs when using fragment-adapted orbitals.
-    if(DECinfo%fragadapt) then
-       DECinfo%purifyMOs=.true.
-    end if
-
-    if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)
 
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
@@ -1419,6 +1538,16 @@ contains
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
+    write(lupri,*) 'CCexci ', DECinfo%CCexci
+    write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
+    write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
+    write(lupri,*) 'JacobianThr ', DECinfo%JacobianThr
+    write(lupri,*) 'JacobianMaxSubspace ', DECinfo%JacobianMaxSubspace
+    write(lupri,*) 'JacobianInitialSubspace ', DECinfo%JacobianInitialSubspace
+    write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
+    write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
+    write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
+    write(lupri,*) 'LW1 ', DECinfo%LW1
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP
@@ -1485,6 +1614,7 @@ contains
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
     write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality
     write(lupri,*) 'PL ', DECitem%PL
+    write(lupri,*) 'MemDebugPrint ', DECitem%MemDebugPrint
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output
     write(lupri,*) 'AbsorbHatoms ', DECitem%AbsorbHatoms

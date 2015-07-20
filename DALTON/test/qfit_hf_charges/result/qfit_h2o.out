@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2014.0
+    This is output from DALTON 2016.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2014.0 (2014), see http://daltonprogram.org
+       Release Dalton2016.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Jan  7 15:16:59 2015
+     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
      Host name              : sparta                                  
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/cstein/Development/fortran/dalton/build_release_gfortran_noblas_nolapack/test/qfit_hf_charges
-   2) /home/cstein/Development/fortran/dalton/build_release_gfortran_noblas_nolapack/basis
+   1) /home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/test/qfit_hf_charges
+   2) /home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis
 
 
 Compilation information
@@ -155,16 +155,19 @@ Compilation information
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
+ MPI                      | ON
+ Fortran compiler         | /home/cstein/Programs/openmpi-1.8/bin/mpif90
  Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C compiler               | /usr/bin/gcc
+ C compiler               | /home/cstein/Programs/openmpi-1.8/bin/mpicc
  C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ compiler             | /home/cstein/Programs/openmpi-1.8/bin/mpicxx
+ C++ compiler version     | unknown
  Static linking           | OFF
- Last Git revision        | 90c9e7f5c5116f386856dd1c7bd7a25369b88fa5
- Configuration time       | 2015-01-07 15:16:44.955530
+ Last Git revision        | 758784111c611868304820e928b45a5a43f85adb
+ Git branch               | feature/qfitlib-higher-order-moments
+ Configuration time       | 2015-06-01 22:02:07.819049
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -185,6 +188,8 @@ DIPOLE
  4                                                
 .PTDENS                                           
  0.28                                             
+.MPRANK                                           
+0                                                 
 **WAVE FUNCTIONS                                  
 .HF                                               
 **END OF                                          
@@ -241,7 +246,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/cstein/Development/fortran/dalton/build_release_gfortran_noblas_nolapack/basis/STO-3G"
+     "/home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -249,7 +254,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/cstein/Development/fortran/dalton/build_release_gfortran_noblas_nolapack/basis/STO-3G"
+     "/home/cstein/Development/fortran/dalton-gitlab/build_master_gfortran_noblas_nolapack/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -385,8 +390,8 @@ H            -0.3600000000    0.8600000000    0.0000000000
      ************************** Output from HERINT **************************
      ************************************************************************
 
- >>>> Total CPU  time used in HERMIT:   0.00 seconds
- >>>> Total wall time used in HERMIT:   0.00 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -419,7 +424,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Jan  7 15:16:59 2015
+     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
      Host name              : sparta                                  
 
  Title lines from ".mol" input file:
@@ -448,13 +453,13 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
      Orbital specifications
      ======================
-     Abelian symmetry species          All |    1
-                                           |  A  
+@    Abelian symmetry species          All |    1
+@                                          |  A  
                                        --- |  ---
 @    Occupied SCF orbitals               5 |    5
-     Secondary orbitals                  2 |    2
-     Total number of orbitals            7 |    7
-     Number of basis functions           7 |    7
+@    Secondary orbitals                  2 |    2
+@    Total number of orbitals            7 |    7
+@    Number of basis functions           7 |    7
 
      Optimization information
      ========================
@@ -477,32 +482,32 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    T  1.78D-03  1.00D-03
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    T  4.90D-03  5.00D-03
 @  1    -74.9055801662        7.19374D-01   -7.49D+01    1
       Virial theorem: -V/T =      2.003759
 @      MULPOP O      -0.45; H       0.22; H       0.23; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    2    T  1.64D-03  1.00D-03
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    2    T  4.64D-03  5.00D-03
 @  2    -74.9444715591        1.60968D-01   -3.89D-02    2
       Virial theorem: -V/T =      2.004315
 @      MULPOP O      -0.42; H       0.21; H       0.20; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  1.60D-03  1.00D-03
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    3    F  4.62D-03  4.00D-03
 @  3    -74.9469353925        1.67833D-02   -2.46D-03    3
       Virial theorem: -V/T =      2.003483
 @      MULPOP O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    T  1.60D-03  1.00D-03
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    4    T  4.59D-03  5.00D-03
 @  4    -74.9469640583        2.19098D-03   -2.87D-05    4
       Virial theorem: -V/T =      2.003364
 @      MULPOP O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    T  1.60D-03  1.00D-03
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    T  4.59D-03  5.00D-03
 @  5    -74.9469649686        3.80692D-05   -9.10D-07    5
       Virial theorem: -V/T =      2.003354
 @      MULPOP O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    T  1.64D-03  1.00D-03
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    T  4.64D-03  4.00D-03
 @  6    -74.9469649688        8.22195D-06   -1.75D-10    6
 
 @ *** DIIS converged in   6 iterations !
@@ -511,8 +516,6 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
 
  *** SCF orbital energy analysis ***
-
- Only the five lowest virtual orbital energies printed in each symmetry.
 
  Number of electrons :   10
  Orbital occupations :    5
@@ -529,7 +532,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.012       0.013
+ >>>> CPU and wall time for SCF :       0.034       0.035
 
 
                        .-----------------------------------.
@@ -548,7 +551,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
 @    Final gradient norm:           0.000008221946
 
  
-     Date and time (Linux)  : Wed Jan  7 15:16:59 2015
+     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
      Host name              : sparta                                  
 
 
@@ -556,30 +559,32 @@ H            -0.3600000000    0.8600000000    0.0000000000
                         ---------------------------------
 
 
+          Fitting charges to the molecular ESP.
+
           Generating surface using  4 layers. Each layer is
           scaled by 1.4 plus  0.2 for each successive layer.
 
           Point density is  0.28 au^-2.
 
-          Constraining partial charges to reproduce the
+          Constraining fitted charges to reproduce the
           molecular charge.
 
-          Constraining partial charges to reproduce the
+          Constraining fitted charges to reproduce the
           molecular dipole.
 
 
                         Potential fitted charges (QFITLIB)
                         ----------------------------------
 
-    Charges have been fitted to the molecular electrostatic potential.
-
+ Charges:
+              Q   
 @ O      -0.703270
 @ H       0.359189
 @ H       0.344081
 
   Sum = total charge:    0.000000
 
-File label for MO orbitals:   7Jan15   FOCKDIIS
+File label for MO orbitals:   1Jun15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -597,11 +602,11 @@ File label for MO orbitals:   7Jan15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.04 seconds
- >>>> Total wall time used in SIRIUS :      0.04 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.11 seconds
+ >>>> Total wall time used in SIRIUS :      0.11 seconds
 
  
-     Date and time (Linux)  : Wed Jan  7 15:16:59 2015
+     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
      Host name              : sparta                                  
 
 
@@ -609,9 +614,9 @@ File label for MO orbitals:   7Jan15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.04 seconds
- >>>> Total wall time used in DALTON:   0.04 seconds
+ >>>> Total CPU  time used in DALTON:   0.13 seconds
+ >>>> Total wall time used in DALTON:   0.13 seconds
 
  
-     Date and time (Linux)  : Wed Jan  7 15:16:59 2015
+     Date and time (Linux)  : Mon Jun  1 22:10:28 2015
      Host name              : sparta                                  

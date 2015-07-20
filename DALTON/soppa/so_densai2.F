@@ -10,7 +10,9 @@ C
 C     PURPOSE: Calculate the final SOPPA second order one particle
 C              density matrix my multipling the sums added into
 C              DENSAI in SO_DENSAI1 with inverse MO-energy differences.
-C
+C     F. beyer May 2014:
+C     DATA DICTIONARY: DENSAI intent(inout)
+C     FOCKD: intent(in)
 #include "implicit.h"
 #include "priunit.h"
 C

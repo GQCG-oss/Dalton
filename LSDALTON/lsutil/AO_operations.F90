@@ -11,7 +11,7 @@ private
 public :: SET_EMPTY_AO, FREE_EMPTY_AO, copy_aobatch, copy_aobatch2,&
      & PRINT_AO, PRINT_AOBATCH, FREE_AOITEM, initBatchOrbitalInfo,&
      & setBatchOrbitalInfo, freeBatchOrbitalInfo, SET_MAXJ, &
-     & nullifyAOBATCH, nullifyAOITEM
+     & nullifyAOBATCH, nullifyAOITEM, COPY_AOITEM
 Contains
 
 subroutine nullifyAOITEM(AO)
@@ -30,10 +30,73 @@ AO%natoms=0
 AO%ntype=0
 AO%nredtype=0
 AO%nbast=0
+AO%nprimbast=0
 AO%maxJ=0
 nullify(AO%ATOMICnORB)
 nullify(AO%ATOMICnBATCH)
 end subroutine nullifyAOITEM
+
+subroutine copy_aoitem(AO,AONEW)
+implicit none
+type(aoitem) :: AO,AONEW
+integer :: I,nrow,ncol,iangmom
+
+AONEW%EMPTY = AO%EMPTY
+nullify(AONEW%BATCH)
+call mem_alloc(AONEW%BATCH,AO%nbatches)
+AONEW%nbatches = AO%nbatches
+DO I=1,AONEW%nbatches
+   call copy_aobatch2(AO%BATCH(I),AONEW%BATCH(I))
+ENDDO
+nullify(AONEW%CC)
+call mem_alloc(AONEW%CC,AO%nCC)
+AONEW%nCC=AO%nCC
+DO I=1,AONEW%nCC
+   nrow = AO%CC(I)%nrow
+   ncol = AO%CC(I)%ncol
+   CALL lsmat_dense_init(AONEW%CC(I),AO%CC(I)%nrow,AO%CC(I)%ncol)
+   call dcopy(nrow*ncol,AO%CC(I)%elms,1,AONEW%CC(I)%elms,1)   
+ENDDO
+nullify(AONEW%Angmom)
+call mem_alloc(AONEW%Angmom,SIZE(AO%Angmom))
+DO I=1,SIZE(AO%Angmom)
+   AONEW%angmom(I) = AO%angmom(I)
+ENDDO
+AONEW%nExp=AO%nExp
+nullify(AONEW%Exponents)
+call mem_alloc(AONEW%Exponents,AO%nExp)
+DO I=1,AONEW%nEXP
+   nrow = AO%Exponents(I)%nrow
+   CALL lsmat_dense_init(AONEW%Exponents(I),AO%Exponents(I)%nrow,1)
+   call dcopy(nrow,AO%Exponents(I)%elms,1,AONEW%Exponents(I)%elms,1)
+ENDDO
+
+DO I=1,AONEW%nbatches
+   nullify(AONEW%BATCH(I)%pExponents)
+   AONEW%BATCH(I)%pExponents => AONEW%Exponents(AONEW%BATCH(I)%ExpIndex)
+   do iangmom = 1, AONEW%BATCH(I)%nAngmom
+      nullify(AONEW%BATCH(I)%pCC(iangmom)%p)
+      AONEW%BATCH(I)%pCC(iangmom)%p => AONEW%CC(AONEW%BATCH(I)%CCindex(iangmom))
+   enddo
+ENDDO
+
+AONEW%natoms=AO%natoms
+AONEW%ntype=AO%ntype
+AONEW%nredtype=AO%nredtype
+AONEW%nbast=AO%nbast
+AONEW%nprimbast=AO%nprimbast
+AONEW%maxJ=AO%maxJ
+nullify(AONEW%ATOMICnORB)
+call mem_alloc(AONEW%ATOMICnORB,SIZE(AO%ATOMICnORB))
+DO I=1,SIZE(AO%ATOMICnORB)
+   AONEW%ATOMICnORB(I) = AO%ATOMICnORB(I)
+ENDDO
+nullify(AONEW%ATOMICnBATCH)
+call mem_alloc(AONEW%ATOMICnBATCH,SIZE(AO%ATOMICnBATCH))
+DO I=1,SIZE(AO%ATOMICnBATCH)
+   AONEW%ATOMICnBATCH(I) = AO%ATOMICnBATCH(I)
+ENDDO
+end subroutine copy_aoitem
 
 subroutine nullifyAOBATCH(AO)
 implicit none
@@ -70,6 +133,7 @@ do I=1,n
       nullify(AO%BATCH(I)%pCC(J)%p) 
       AO%BATCH(I)%CCindex(J)  = 0
    ENDDO
+   AO%BATCH(I)%Expindex = 0
    AO%BATCH(I)%itype = 0
    AO%BATCH(I)%redtype = 0
 enddo
@@ -89,6 +153,7 @@ CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
 AO%ATOMICnORB(1)=1
 AO%ATOMICnBATCH(1)=1
 AO%nbast = 1                        
+AO%nprimbast = 1
 AO%empty=.TRUE.
 AO%nbatches=1
 AO%nCC=1
@@ -150,10 +215,12 @@ type(AOBATCH),intent(inout) :: AO2
 AO2%TYPE_Empty = AO1%TYPE_Empty
 AO2%TYPE_pCharge = AO1%TYPE_pCharge
 AO2%TYPE_Nucleus = AO1%TYPE_Nucleus
+AO2%TYPE_elField = AO1%TYPE_elField
 AO2%spherical = AO1%spherical
 AO2%CENTER = AO1%CENTER
 AO2%nPrimitives = AO1%nPrimitives
 AO2%atom= AO1%atom
+AO2%molecularIndex = AO1% molecularIndex
 AO2%batch = AO1%batch
 AO2%maxContracted = AO1%maxContracted
 AO2%maxAngmom = AO1%maxAngmom
@@ -167,6 +234,7 @@ AO2%nOrbComp = AO1%nOrbComp
 AO2%nPrimOrbComp = AO1%nPrimOrbComp
 AO2%nOrbitals = AO1%nOrbitals
 AO2%CCindex = AO1%CCindex
+AO2%Expindex = AO1%Expindex
 AO2%itype = AO1%itype
 AO2%redtype = AO1%redtype
 end subroutine copy_aobatch2
@@ -183,9 +251,10 @@ INTEGER             :: LUPRI
 
    WRITE(LUPRI,*) '                     '
    WRITE(LUPRI,'(A)')'PRINTING AO BATCH '
-   WRITE(LUPRI,'(3X,A18,I7)')'# ATOMS           ',AO%natoms
-   WRITE(LUPRI,'(3X,A18,I7)')'# BASISFUNCTIONS  ',AO%nbast
-   WRITE(LUPRI,'(3X,A18,I7)')'# BATCHES         ',AO%nbatches
+   WRITE(LUPRI,'(3X,A,I7)')'# ATOMS             ',AO%natoms
+   WRITE(LUPRI,'(3X,A,I7)')'# BASISFUNCTIONS    ',AO%nbast
+   WRITE(LUPRI,'(3X,A,I7)')'# PRIMITIVEFUNCTIONS',AO%nprimbast
+   WRITE(LUPRI,'(3X,A,I7)')'# BATCHES           ',AO%nbatches
    WRITE(LUPRI,'(3X,A6,2X,A10,2X,A11)')'ATOM  ','# ORBITALS','# AOBATCHES'
    DO I=1,AO%natoms
       WRITE(LUPRI,'(3X,I6,6X,I6,7X,I6)')I,AO%ATOMICnORB(I),AO%ATOMICnBATCH(I)

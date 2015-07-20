@@ -115,7 +115,10 @@ contains
           call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
        else
           if(DECinfo%ccModel==MODEL_MP2) then
-             if(DECinfo%use_canonical ) then
+             if(DECinfo%use_canonical .and. (.not. DECinfo%CCexci) ) then
+                ! Do not use canonical MP2 routine when CC eigenvalues are requested
+                ! because we need output amplitudes.
+
                 !simple conventional MP2 calculation only works for canonical orbitals
                 !no amplitudes stored. MP2B requires (nb,nb,nb) can be fully distributed
                 IF(DECinfo%MPMP2)THEN
@@ -354,6 +357,7 @@ contains
     !> Singles correction
     type(matrix) :: Fcd
     type(matrix) :: Fic  
+    type(matrix) :: Fab
         
     !> Singles correction energy
     real(realk)  :: ES2
@@ -363,6 +367,7 @@ contains
     integer :: vs, os,offset
     logical :: local
     local = .true.
+    ES2=0.0E0_realk
 #ifdef VAR_MPI
     local = (infpar%lg_nodtot==1)
 #endif
@@ -395,6 +400,8 @@ contains
     !           Not frozen core: 0
     offset = noccfull - nocc
 
+    !> Singles correction some issues with MPI and gives different values
+    ! call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
 
     ! Get all F12 Fock Matrices
     ! ********************
@@ -426,8 +433,21 @@ contains
     
     ! MP2-F12 Singles correction (Yang M. Wang 03.12.2014)
     ! ***************************    
-    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+    ! Fab
+  !  call mat_init(Fab,nvirt,nvirt)
+  !  do i = 1, nvirt
+  !     do j = 1, nvirt
+  !            Fab(i,j) = MyMolecule%vvfock(i,j)
+  !     enddo
+  !  enddo
+    
+   !ES2 = 0.0E0_realk
+   ! call get_ES2(ES2,Fic%elms,Fii,MyMolecule%vvfock%elm2,Fcd,Fac%elms,nocc,nvirt,ncabs)
    
+    !call mat_free(Fab)
+
+    E21 = 0.0E0_realk
+    E21_debug = 0.0E0_realk
     DoCanonical: if(DECinfo%use_canonical) then
        !construct canonical T amplitudes
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
@@ -454,12 +474,12 @@ contains
                 do A=1,nvirt
 
                    ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
-                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
-                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+!                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+!                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
+!                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
 
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
-                   mp2_energy = mp2_energy + gmo(A,I,B,J)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))/eps
+                   mp2_energy = mp2_energy + Taibj(a,i,b,j)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))
 
                 end do
              end do
@@ -467,24 +487,23 @@ contains
        end do
        IF(DECinfo%F12Ccoupling)THEN
           !overwrite the amplitudes with F12 modified amplitudes which includes the C coupling. TK
-          do J=1,nocc
-             do B=1,nvirt
-                do I=1,nocc
-                   do A=1,nvirt
+          !Build delta T amplitudes with ONLY C coupling 
+          tmp = 0.0E0_realk
+          do B=1,nvirt
+             do J=1,nocc
+                do A=1,nvirt
+                   do I=1,nocc
                       ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                      eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
-                           & + MyMolecule%oofock%elm2(J+offset,J+offset) &
+                      eps = MyMolecule%oofock%elm2(I+offset,I+offset) + MyMolecule%oofock%elm2(J+offset,J+offset) &
                            & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
-                      eps = (gmo(A,I,B,J) + 3.0E0_realk/8.0E0_realk*Ciajb(I,A,J,B) &
-                           & + 1.0E0_realk/8.0E0_realk*Ciajb(J,A,I,B))/eps
-                      Taibj(a,i,b,j) = eps
+                      tmp = tmp + (7.0E0_realk*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 1.0E0_realk*Ciajb(I,A,J,B)*Ciajb(J,A,I,B))/eps
                    enddo
                 enddo
              enddo
           enddo
+          E21 = E21 + tmp/32.0E0_realk
+          E21_debug = E21_debug + tmp/32.0E0_realk
        ENDIF
-
-
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
        !    ! Get full MP2 (as specified in input)
@@ -519,7 +538,7 @@ contains
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
 
     !> Calculate E21 Energy
-    E21 = 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+    E21 = E21 + 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
 
     if(DECinfo%F12DEBUG) then    
        call mem_alloc(Vijij_term1,nocc,nocc)
@@ -543,27 +562,35 @@ contains
        call mp2f12_Vjiij_term2(Vjiij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
        call mp2f12_Vjiij_term3(Vjiij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
        call mp2f12_Vjiij_term4(Vjiij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-
-       !> Coupling with the C-matrix, only needs to be done once
-       call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
-       call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
-
+       
+!       IF(DECinfo%F12Ccoupling)THEN
+          !> Coupling with the C-matrix, only needs to be done once
+          call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
+          call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
+!       ENDIF
        print *, '----------------------------------------'
        print *, ' E21 V terms                            '
        print *, '----------------------------------------'
+       print *, ' E21_CC_term: ', E21_debug
        print *, ' E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
        print *, ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
        print *, ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
        print *, ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
-       print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
+!       IF(DECinfo%F12Ccoupling)THEN
+          print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
+!       ENDIF
        print *, '----------------------------------------'
 
-       E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)   &
-            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
-
+!       IF(DECinfo%F12Ccoupling)THEN
+          E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
+               & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
+               & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
+!       ELSE
+!          E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
+!               & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc))  
+!       ENDIF
        print *, ' E21_Vsum: ', E21_debug
-       print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
     endif
 
     call mem_dealloc(Vijij)
@@ -696,7 +723,8 @@ contains
   !     ENDDO
   !  ENDDO
 
-
+       E22 = 0.0E0_realk
+       E22_debug = 0.0E0_realk
        if(DECinfo%F12DEBUG) then
           !> Setting Bmatrix = 0
           Bijij_debug = 0.0E0_realk
@@ -708,9 +736,6 @@ contains
           call submp2f12_EBX(E22,Bijij,Bjiij,Xijij,Xjiij,Fii%elms,nocc)
 
        endif
-
-
-
 
        if(DECinfo%F12DEBUG) then
           print *, '----------------------------------------'
@@ -895,10 +920,11 @@ contains
        write(*,'(1X,a)') '-----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12 ENERGY =                   ', mp2_energy+E21_debug+E22_debug+E23_debug
        write(*,'(1X,a,f20.10)') 'TOYCODE: MP2-F12-ES2 ENERGY =               ', mp2_energy+E21_debug+E22_debug+E23_debug+ES2
+ 
     else
 
        mp2f12_energy = 0.0E0_realk
-       mp2f12_energy = mp2_energy+E21+E22
+       mp2f12_energy = mp2_energy+E21+E22+ES2
 
        write(DECinfo%output,*) '----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') '----------------------------------------------------------------'
@@ -912,8 +938,10 @@ contains
        write(DECinfo%output,*)  'TOYCODE: F12 E21 CORRECTION TO ENERGY =  ', E21
        write(*,'(1X,a,f20.10)') 'TOYCODE: F12 E22 CORRECTION TO ENERGY =  ', E22
        write(DECinfo%output,*)  'TOYCODE: F12 E22 CORRECTION TO ENERGY =  ', E22
-       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22
-       write(DECinfo%output,*)  'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22       
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 ES2 CORRECTION TO ENERGY =  ', ES2
+       write(DECinfo%output,*)  'TOYCODE: F12 ES2 CORRECTION TO ENERGY =  ', ES2
+       write(*,'(1X,a,f20.10)') 'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22+ES2
+       write(DECinfo%output,*)  'TOYCODE: F12 CORRECTION TO ENERGY =      ', E21+E22+ES2       
        ! Total MP2-F12 correlation energy
        ! Getting this energy 
        write(*,'(1X,a)') '----------------------------------------------------'
@@ -935,28 +963,42 @@ contains
     Real(realk),intent(IN)    :: Fii(nocc,nocc)
     Integer,intent(IN)        :: nocc
     !
-    Integer     :: i,j,k
+    Integer     :: i,j
     Real(realk) :: tmp
 
+    mp2f12_EBX = 0.0E0_realk
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(nocc,Fii,Xijij,Bijij)
     DO j=1,nocc
        DO i=1,nocc
           Bijij(i,j) = Bijij(i,j)-(Fii(i,i)+Fii(j,j))*Xijij(i,j)
-          Bjiij(i,j) = Bjiij(i,j)-(Fii(i,i)+Fii(j,j))*Xjiij(i,j)
        ENDDO
     ENDDO
+    !$OMP END PARALLEL DO
 
     tmp = 0E0_realk
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(nocc,Fii,Xijij,Bijij) REDUCTION(+:tmp)
     DO i=1,nocc
        tmp = tmp + Bijij(i,i)
     ENDDO
-    mp2f12_EBX = 0.25E0_realk*tmp
+    !$OMP END PARALLEL DO 
+    mp2f12_EBX = mp2f12_EBX + 0.25E0_realk*tmp
+
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(nocc,Fii,Xjiij,Bjiij)
+    DO j=1,nocc
+       DO i=1,nocc
+          Bjiij(i,j) = Bjiij(i,j)-(Fii(i,i)+Fii(j,j))*Xjiij(i,j)
+       ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
 
     tmp = 0E0_realk
+    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(i,j) SHARED(nocc,Bjiij,Bijij) REDUCTION(+:tmp)
     DO j=1,nocc
        DO i=j+1,nocc
           tmp = tmp + 7E0_realk * Bijij(i,j) + Bjiij(i,j)
        ENDDO
     ENDDO
+    !$OMP END PARALLEL DO 
     mp2f12_EBX = mp2f12_EBX + tmp/16E0_realk
   end subroutine submp2f12_EBX
 
@@ -1312,14 +1354,12 @@ contains
     if(MyMolecule%mem_distributed)then
        call lsquit("ERROR(full_get_ccsd_f12_energy): does not work with PDM fullmolecule",-1)
     endif
-
     ! Init dimensions
     nocc = MyMolecule%nocc
     nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
     noccfull = nocc
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-
     ! Get full CCSD singles (Tai) and doubles (Taibj) amplitudes
     call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai,Taibj)
 
@@ -1701,6 +1741,7 @@ contains
 
     !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
+    !ES2=0.0E0_realk
 
     ! F12 Specific
     call mem_dealloc(Vijij)
@@ -1789,8 +1830,9 @@ contains
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
     endif
 
+    ES2=0.0E0_realk
     ! CCSD-F12 Singles Correction Energy
-    call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
+    !call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
 
 
     call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)

@@ -734,7 +734,8 @@ C
 C              Option 14 .TPACD calculates tensor components for Tinoco
 C              original, gauge invariant formulation
  14            CONTINUE
-                  TWOPHO = .TRUE.
+                  TWOPHO = .TRUE. 
+                  LTPCD  = .TRUE.
 C                 A operators
                   LABEL='XDIPVEL'
                   ASMOP( INDPRP(LABEL)) = .TRUE.

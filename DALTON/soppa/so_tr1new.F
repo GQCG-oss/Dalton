@@ -10,6 +10,17 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Determine new initial trialvectors.
 C
+C     'Atomic integral driven second order polarization propagator 
+C     calculations of the excitation spectra of napthalene and anthracene'
+C     Keld L. Bak, Henrik Koch, Jens Oddershede, Ove Christiansen 
+C     and Stephan P. A Sauer
+C     Journal of Chemical Physics, 112, 9, (2000)
+C
+C     Section C pp. 4176
+C     SO_TR1NEW is called to create a brand new set of trial vectors for 
+C     SOPPA or SOPPA(CCSD) based on approximate diagonal elements of the 
+C     Hessian.
+
 #include "implicit.h"
 #include "priunit.h"
 C

@@ -39,7 +39,9 @@ Cend-PFP
       PARAMETER (LSOWTI = 4)
       PARAMETER (LORWCI = 4)
       PARAMETER (LSOSUB = 100)
+C
       CHARACTER*16 SOSUBNM
+C
       INTEGER    LUTR1E, LUTR1D, LUTR2E, LUTR2D,
      &           LURS1E, LURS1D, LURS2E, LURS2D,
      &           LURO1E, LURO1D,
@@ -52,6 +54,10 @@ Cend-PFP
      &           LURV1E, LURV1D, LURV2E, LURV2D,
      &           LUGPVE, LUSOLA, LUGPV1, LUGPV2,
      &           SOMEMO
+C
+C
+      INTEGER SOPPINFLAST, SOPPEXCLAST, RWINFLAST
+C
       COMMON /SOPPINF/ SOTIME(LSOTIM), SOWTIM(LSOWTI),
      &                 SOSUBNM(LSOSUB), SOMEMO(LSOSUB), ISOSUB, LWTOTAL,
      &                 SOPCHK,IIJDEN(8,8),
@@ -81,5 +87,45 @@ Cend-PFP
      &                 LUSV1E, LUSV1D, LUSV2E, LUSV2D,
      &                 LURV1E, LURV1D, LURV2E, LURV2D,
      &                 LUGPVE, LUSOLA, LUGPV1, LUGPV2
+C
+      COMMON /SOPPINF/ SOPPINFLAST
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+C
+C
+C
       COMMON /SOPPEXC/ NEXCI2(8),THREX2
-      COMMON /RWINF  / SOORWC(LORWCI)
+C
+      COMMON /SOPPEXC/ SOPPEXCLAST
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+C
+C
+C
+C
+      COMMON /RWINF/ SOORWC(LORWCI)
+C
+      COMMON /RWINF/ RWINFLAST
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)

@@ -10,6 +10,7 @@ module ri_util_module
 #endif
   use precision
   use lstiming!, only: lstimer
+  use lapackMod
   use lowdin_module
   use screen_mod!, only: DECscreenITEM
   use dec_typedef_module
@@ -26,386 +27,18 @@ module ri_util_module
   use IntegralInterfaceModuleDF
   use IchorErimoduleHost
   use iso_c_binding
+  use background_buffer_module
 #ifdef VAR_OPENACC
   use openacc
 #endif
 #if defined(VAR_CUDA) || defined(VAR_OPENACC)
   use gpu_interfaces
-#endif
+#endif  
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
   use dec_fragment_utils
 
 contains
-subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
-     & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,Calpha,&
-     & NBA,AlphaBetaDecomp,AlphaBetaDecompCreate,Oper)
-  implicit none
-  type(lsitem), intent(inout) :: mylsitem
-  integer,intent(inout) :: NBA
-  integer,intent(in) :: nAtomsAux,nocc,nvirt
-  integer,intent(in) :: nbasisAux,LUPRI,nbasis,mynum,numnodes
-  logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves,AlphaBetaDecompCreate
-  real(realk) :: AlphaBetaDecomp(nbasisAux,nbasisAux)
-  real(realk),intent(in) :: Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
-  real(realk),pointer :: Calpha(:,:,:)
-  integer,optional :: Oper
-  !
-  integer :: MynbasisAuxMPI
-  integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
-  real(realk),pointer :: AlphaBeta(:,:)
-  real(realk),pointer :: TMPAlphaBetaDecomp(:,:),AlphaCD3(:,:,:)
-  real(realk),pointer :: AlphaCD5(:,:,:),AlphaCDFull(:,:,:)
-  real(realk) :: TS3,TE3,MemInGBCollected,SizeCalpha
-  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
-  integer(kind=long)    :: maxsize,nSize,n8
-  integer(kind=ls_mpik) :: node 
-  integer :: CurrentWait(2),nAwaitDealloc,iAwaitDealloc,MynAtomsMPI
-  integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K,I,offset,offset2
-  integer :: ndimMax,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2,rimp2_nodtot
-  integer :: nbuf1,nbuf2,nbuf3,inode,J
-  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,MessageRecieved
-  logical :: PerformReduction,RIMPSubGroupCreated,UseSubGroupCommunicator
-  PerformReduction = .TRUE.
-  MynbasisAuxMPI2 = 0
-  NBA = 0 
-  call get_currently_available_memory(MemInGBCollected)
-  
-  !===========================================================
-  !   Determine Scheme to Use (AllReduce, Bcast Method)
-  !===========================================================
-  CALL LSTIMER('START ',TS3,TE3,LUPRI)
-
-  IF(master)THEN
-     IF(DECinfo%RIMP2ForcePDMCalpha)THEN
-        PerformReduction = .FALSE.
-        IF(numnodes.EQ.1)THEN           
-           PerformReduction = .TRUE.
-        ENDIF
-     ELSE
-        !maxsize = max number of floating point elements
-        SizeCalpha = (nbasisAux+nbasisAux/numnodes)*nocc*nvirt*8E-9_realk
-        IF(SizeCalpha.LT.MemInGBCollected*0.75E0_realk.OR.numnodes.EQ.1)THEN
-           !Calpha can fit on all nodes Which means we can do a reduction.
-           PerformReduction = .TRUE.
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full (alpha|cd) integral requires ',SizeCalpha,' GB'
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                  ',MemInGBCollected,' GB'
-        ELSE
-           !Calpha cannot fit so we distribute this - which means more MPI communication.
-           PerformReduction = .FALSE.
-           !Determine number of nodes to use to construct Calpha. (use same to determine the MPI split)
-        ENDIF
-     ENDIF
-#ifdef VAR_MPI
-     call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
-     call time_start_phase( PHASE_COMM )
-     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
-     call time_start_phase( PHASE_WORK )
-#endif
-  ELSE
-#ifdef VAR_MPI
-     call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
-     call time_start_phase( PHASE_COMM )
-     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
-     call time_start_phase( PHASE_WORK )
-#endif
-     IF(PerformReduction)THEN
-        !the master have enough space 
-        !maxsize = max number of floating point elements
-        SizeCalpha = nbasisAux*nocc*nvirt*8E-9_realk
-        IF(SizeCalpha.GT.MemInGBCollected*0.6E0_realk)THEN
-           print*,'WARNING: Master have space for (alpha|cd) but slave do not'
-           print*,'WARNING: Full (alpha|cd) integral requires ',SizeCalpha,' GB'
-           print*,'WARNING: Memory available                  ',MemInGBCollected,' GB'
-        ENDIF
-     ENDIF
-  ENDIF
-
-  CALL LSTIMER('Calpha1',TS3,TE3,LUPRI)
-
-  !===========================================================
-  !   Determine Sizes1: used to calc 3 center integrals
-  !===========================================================
-
-  IF(CollaborateWithSlaves)then 
-     !all nodes have info about all nodes 
-     call mem_alloc(nbasisAuxMPI,numnodes)           !number of Aux basis func assigned to rank
-     nbasisAuxMPI = 0 
-     call mem_alloc(nAtomsMPI,numnodes)              !atoms assign to rank
-     call mem_alloc(startAuxMPI,nAtomsAux,numnodes)  !startindex in full (nbasisAux)
-     call mem_alloc(AtomsMPI,nAtomsAux,numnodes)     !identity of atoms in full molecule
-     call mem_alloc(nAuxMPI,nAtomsAux,numnodes)      !nauxBasis functions for each of the nAtomsMPI
-     IF(DECinfo%AuxAtomicExtent)THEN   
-        call getRIbasisMPI(mylsitem%INPUT%AUXMOLECULE,nAtomsAux,numnodes,&
-             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
-     ELSE
-        call getRIbasisMPI(mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,numnodes,&
-             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
-     ENDIF
-     MynAtomsMPI = nAtomsMPI(mynum+1)
-     MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
-     rimp2_nodtot = 0 
-     DO I = 1,numnodes
-        IF(nbasisAuxMPI(I).GT.0) rimp2_nodtot = rimp2_nodtot + 1
-     ENDDO
-
-     call mem_dealloc(AtomsMPI) !not used in this subroutine 
-  ELSE
-     MynbasisAuxMPI = nbasisAux     
-     rimp2_nodtot = numnodes
-  ENDIF
-
-  CALL LSTIMER('Calpha2',TS3,TE3,LUPRI)
-  
-  !=====================================================================================
-  ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
-  !=====================================================================================
-  IF(AlphaBetaDecompCreate)THEN
-
-     IF(master)THEN
-        call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
-        IF(DECinfo%AuxAtomicExtent)THEN
-           molecule1 => mylsitem%SETTING%MOLECULE(1)%p
-           molecule2 => mylsitem%SETTING%MOLECULE(2)%p
-           molecule3 => mylsitem%SETTING%MOLECULE(3)%p
-           molecule4 => mylsitem%SETTING%MOLECULE(4)%p
-           mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
-           mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
-           mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
-           mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
-        ENDIF
-        IF(present(Oper))THEN
-           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-                & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
-        ELSE
-           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-                & AlphaBeta,mylsitem%setting,nbasisAux)
-        ENDIF
-        IF(DECinfo%AuxAtomicExtent)THEN
-           mylsitem%SETTING%MOLECULE(1)%p => molecule1
-           mylsitem%SETTING%MOLECULE(2)%p => molecule2
-           mylsitem%SETTING%MOLECULE(3)%p => molecule3
-           mylsitem%SETTING%MOLECULE(4)%p => molecule4
-        ENDIF
-        
-        CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
-        ! Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
-        ! Warning the inverse is not unique so in order to make sure all slaves have the same
-        ! inverse matrix we calculate it on the master a BCAST to slaves
-        call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp, lupri)
-        call mem_dealloc(AlphaBeta)
-        CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
-     ENDIF
-#ifdef VAR_MPI
-     call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
-     call time_start_phase( PHASE_COMM )
-     call ls_mpibcast(AlphaBetaDecomp,nbasisAux,nbasisAux,infpar%master,infpar%lg_comm)
-     call time_start_phase(PHASE_WORK)   
-#endif
-  ENDIF
-
-  CALL LSTIMER('Calpha3',TS3,TE3,LUPRI)
-
-  !==================================================================
-  !   Determine MynbasisAuxMPI2:  Calpha(MynbasisAuxMPI2,nvirt,nocc)
-  !==================================================================
-
-  IF(CollaborateWithSlaves)then 
-     ndimMax = nbasisAux/numnodes
-     do I=1,numnodes
-        nbasisAuxMPI2(I) = ndimMax
-     enddo
-     J=2 !not add to master
-     do I=1,MOD(nbasisAux,numnodes)
-        nbasisAuxMPI2(J) = nbasisAuxMPI2(J) + 1
-        J=J+1
-     enddo
-     MynbasisAuxMPI2 = nbasisAuxMPI2(mynum+1)
-     call mem_alloc(TMPAlphaBetaDecomp,MynbasisAuxMPI2,nbasisAux)
-     offset = mynum*ndimMax
-     offset2 = numnodes*ndimMax + mynum -1 +1
-     IF(MynbasisAuxMPI2.GT.ndimMax)THEN
-        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
-        !$OMP TMPAlphaBetaDecomp,AlphaBetaDecomp,offset,offset2)
-        do I=1,nbasisAux
-           do J=1,ndimMax
-              TMPAlphaBetaDecomp(J,I) = AlphaBetaDecomp(offset+J,I)
-           enddo
-           TMPAlphaBetaDecomp(ndimMax+1,I) = AlphaBetaDecomp(offset2,I)
-        enddo
-        !$OMP END PARALLEL DO
-     ELSE
-        !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax,&
-        !$OMP TMPAlphaBetaDecomp,AlphaBetaDecomp,offset)
-        do I=1,nbasisAux
-           do J=1,ndimMax
-              TMPAlphaBetaDecomp(J,I) = AlphaBetaDecomp(offset+J,I)
-           enddo
-        enddo
-        !$OMP END PARALLEL DO
-     ENDIF
-     NBA = MynbasisAuxMPI2
-  ELSE
-     NBA = nbasisAux
-  ENDIF
-
-  CALL LSTIMER('Calpha4',TS3,TE3,LUPRI)
-
-  !=====================================================================================
-  ! Obtain 3 center RI integrals (alpha,a,i) 
-  !=====================================================================================
-
-  IF(MynbasisAuxMPI.GT.0)THEN
-     call get_currently_available_memory(MemInGBCollected)
-     !maxsize = max number of floating point elements
-     !allow to building of 3 center integral to use 60 procent of 
-     !currently available memory
-     maxsize = 0.60E0_realk*NINT(MemInGBCollected*1.E9_realk)
-     !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
-     !It is very annoying but I allocated AlphaCD3 inside 
-     !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
-     !This Part of the Code is MPI/OpenMP parallel and AlphaCD3 
-     !will have the dimensions (MynbasisAuxMPI,nvirt,nocc) 
-     !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
-     !nbasisAuxMPI = nbasisAux/numnodes
-     IF(DECinfo%AuxAtomicExtent)THEN
-        molecule1 => mylsitem%SETTING%MOLECULE(1)%p
-        molecule2 => mylsitem%SETTING%MOLECULE(2)%p
-        mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
-        mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
-     ENDIF
-     IF(present(Oper))THEN
-        call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
-             & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
-             & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes,Oper)
-     ELSE
-        call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
-             & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
-             & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
-     ENDIF
-     IF(DECinfo%AuxAtomicExtent)THEN
-        mylsitem%SETTING%MOLECULE(1)%p => molecule1
-        mylsitem%SETTING%MOLECULE(2)%p => molecule2
-     ENDIF
-  ENDIF
-
-  CALL LSTIMER('Calpha5',TS3,TE3,LUPRI)
-
-  !=====================================================================================
-  ! MPI scheme:  PerformReduction  or   a Bcast Routine
-  !=====================================================================================
-
-  IF(PerformReduction)THEN
-
-     !=====================================================================================
-     ! MPI scheme:  PerformReduction
-     !=====================================================================================
-
-     WRITE(DECinfo%output,'(A)')'RIMP2 Calpha Scheme 1: Using Allreduce on (alpha|cd) integral'
-     IF(CollaborateWithSlaves)then 
-        call mem_alloc(alphaCDFull,nbasisAux,nvirt,nocc)
-        n8 = nbasisAux*nocc*nvirt
-        call ls_dzero8(alphaCDFull,n8)
-        IF(MynbasisAuxMPI.GT.0)THEN
-           call PlugInToalphaCDFull(mynum,nAtomsMPI,startAuxMPI,nocc,nvirt,nAuxMPI,&
-                & alphaCDFull,alphaCD3,nbasisAux,MynbasisAuxMPI,numnodes,nAtomsAux)
-           call mem_dealloc(alphaCD3)
-        ENDIF
-#ifdef VAR_MPI
-        call time_start_phase( PHASE_IDLE )
-        call lsmpi_barrier(infpar%lg_comm)
-        call time_start_phase( PHASE_COMM )
-        call lsmpi_allreduce(alphaCDFull,nbasisAux,nvirt,nocc,infpar%lg_comm)
-        call time_start_phase( PHASE_WORK )
-#endif
-        !Calpha = TMPAlphaBetaDecomp(MynbasisAuxMPI,nbasisAux)
-        M =  MynbasisAuxMPI2   !rows of Output Matrix
-        N =  nvirt*nocc       !columns of Output Matrix
-        K =  nbasisAux        !summation dimension
-        call mem_alloc(Calpha,MynbasisAuxMPI2,nvirt,nocc)
-        call dgemm('N','N',M,N,K,1.0E0_realk,TMPAlphaBetaDecomp,&
-             & M,alphaCDFull,K,0.0E0_realk,Calpha,M)
-        call mem_dealloc(alphaCDFull)
-        call mem_dealloc(TMPAlphaBetaDecomp)
-     ELSE
-        !Serial version
-        M =  MynbasisAuxMPI   !rows of Output Matrix
-        N =  nvirt*nocc       !columns of Output Matrix
-        K =  nbasisAux        !summation dimension
-        call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
-        call dgemm('N','N',M,N,K,1.0E0_realk,AlphaBetaDecomp,&
-             & M,AlphaCD3,K,0.0E0_realk,Calpha,M)
-        call mem_dealloc(AlphaCD3)
-     ENDIF
-  ELSE
-
-     !=====================================================================================
-     ! MPI scheme:  Bcast Routine
-     !=====================================================================================
-     call mem_alloc(Calpha,MynbasisAuxMPI2,nvirt,nocc)
-     nsize = MynbasisAuxMPI2*nvirt*nocc
-     call ls_dzero8(Calpha,nsize)
-     DO inode = 1,rimp2_nodtot
-        IF(mynum.EQ.inode-1)THEN
-           nbuf1 = nbasisAuxMPI(mynum+1)
-           nbuf2 = nvirt
-           nbuf3 = nocc
-#ifdef VAR_MPI
-           call time_start_phase( PHASE_IDLE )
-           call lsmpi_barrier(infpar%lg_comm)
-           call time_start_phase( PHASE_COMM )
-           node = mynum
-           call ls_mpibcast(AlphaCD3,nbuf1,nbuf2,nbuf3,node,infpar%lg_comm)
-#endif
-           call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,&
-                & natomsAux,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
-                & AlphaCD3,Calpha,TMPAlphaBetaDecomp,nbasisAux,&
-                & MynbasisAuxMPI2)
-           call mem_dealloc(AlphaCD3)
-        ELSE
-           nbuf1 = nbasisAuxMPI(inode)
-           nbuf2 = nvirt
-           nbuf3 = nocc
-           node = inode-1
-           !recieve
-           call mem_alloc(AlphaCD5,nbasisAuxMPI(inode),nvirt,nocc)
-#ifdef VAR_MPI
-           call time_start_phase( PHASE_IDLE )
-           call lsmpi_barrier(infpar%lg_comm)
-           call time_start_phase( PHASE_COMM )
-           call ls_mpibcast(AlphaCD5,nbuf1,nbuf2,nbuf3,node,infpar%lg_comm)
-           call time_start_phase( PHASE_WORK )
-#endif
-           myOriginalRank = inode-1
-           OriginalRanknbasisAuxMPI = nbasisAuxMPI(inode)
-           call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,&
-                & numnodes,natomsAux,OriginalRanknbasisAuxMPI,&
-                & nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
-                & Calpha,TMPAlphaBetaDecomp,nbasisAux,MynbasisAuxMPI2)
-           call mem_dealloc(AlphaCD5)
-        ENDIF
-     ENDDO
-     call mem_dealloc(TMPAlphaBetaDecomp)
-  ENDIF
-  CALL LSTIMER('Calpha6',TS3,TE3,LUPRI)
-  IF(CollaborateWithSlaves)then 
-     call mem_dealloc(nbasisAuxMPI)
-     call mem_dealloc(startAuxMPI)
-     call mem_dealloc(nAtomsMPI)
-     call mem_dealloc(nAuxMPI)
-  ENDIF
-!  call sleep(mynum*5)
-!  PRINT*,'MynbasisAuxMPI2',MynbasisAuxMPI2
-!  WRITE(6,*)'Final Calph(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
-!  WRITE(6,*)'Print Subset Final Calph(NBA=',NBA,',1:4)  MYNUM',MYNUM
-!  call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
-
-end subroutine Build_CalphaMO
-
 !This should be call my master and slaves
 subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCEPRINT,&
      & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,Calpha,&
@@ -431,24 +64,25 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   real(realk) :: MemForFullAOINT,MemForFullMOINT,maxsize,MemForPartialMOINT
   real(realk) :: TS4,TE4
   TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
-  integer(kind=long)    :: nSize,n8
+  integer(kind=long)    :: nSize,n8,nbasisAux8
   integer(kind=ls_mpik) :: node 
   integer :: MaxNaux,M,N,K,ndimMax1,nbasisAuxMPI2(numnodes),MynbasisAuxMPI2
   integer :: nthreads,PerformReduction,Oper,nAuxMPI(numnodes),MaxnAuxMPI,I
   integer :: J,offset,offset2,inode,nbuf1,nbuf2,nbuf3,dim1,MinAuxBatch,ndimMax2
   integer :: GindexToLocal(nbasisAux),nbasisAuxMPI3(numnodes),NREDLOC,NRED
-  integer :: MetricOper
+  integer :: MetricOper,AuxDimUsedInAOcode
   real(realk) :: epsilon
-  logical :: use_bg_buf,noOMP
+  logical :: noOMP,use_bg_buf,noOMPsave
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
   CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
   CALL LSTIMER('START ',TS3,TE3,LUPRI,ForcePrint)
-  noOMP = mylsitem%setting%scheme%noOMP
+  noOMP = mylsitem%setting%scheme%noOMP  
+  nbasisAux8 = nbasisAux   
+  epsilon = DECinfo%NAFthreshold 
   use_bg_buf = .FALSE.
   IF(present(use_bg_bufInput)) use_bg_buf = use_bg_bufInput
-  epsilon = DECinfo%NAFthreshold 
   IF(use_bg_buf.AND.DECinfo%NAF)call lsquit('bg_buf and NAF combi not tested',-1)
   IF(DECinfo%PL.GT.2)THEN
    IF(DECinfo%NAF)THEN
@@ -456,12 +90,17 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
          & epsilon
    ENDIF
   ENDIF
-  PerformReduction = -1
+  PerformReduction = -1 !Initialization.
+  !PerformReduction=0 means No Reduction
+  !PerformReduction=X means Perform Reduction
+
   NBA = 0
   MynbasisAuxMPI2 = 0 
-  MaxNaux = 0
   IF(use_bg_buf)THEN
-     maxsize = mem_get_bg_buf_free()*8.0E-9_realk
+     maxsize = mem_get_bg_buf_free()*8.0E-9_realk*0.90E0_realk
+     IF(DECinfo%MemDebugPrint)THEN
+        call printBGinfo()
+     ENDIF     
   ELSE
      call get_currently_available_memory(MemInGBCollected)
      maxsize = MemInGBCollected*0.65E0_realk
@@ -490,68 +129,45 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   
   IF(master)THEN
      !Memory requirement to have the full MO integral in memory 
-     MemForFullMOINT = (nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
-          & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
-!     print*,'MemForFullMOINT=',MemForFullMOINT,'maxsize',maxsize
-!     print*,'MemForFullMOINT.LT.maxsize: ',MemForFullMOINT.LT.maxsize
-
-!     WRITE(DECinfo%output,*)'DECinfo%RIMP2ForcePDMCalpha',DECinfo%RIMP2ForcePDMCalpha
-     IF(DECinfo%RIMP2ForcePDMCalpha.OR.MemForFullMOINT.GE.maxsize)THEN
-        !Full MO cannot fit in memory       
-        PerformReduction = 0
-        MaxNaux = 0
-!        WRITE(DECinfo%output,*)'DECinfo%RIMP2ForcePDMCalpha: PerformReduction = ',PerformReduction
-        IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
-           MaxNaux = MinAuxBatch + 1
-        ENDIF
+     IF(DECinfo%RIMP2ForcePDMCalpha)THEN
+        !Force use of Bcast scheme - used when full MO cannot fit in memory       
+        PerformReduction = 0 !Perform Bcast scheme
+        IF(DECinfo%MemDebugPrint)print*,'RIMP2: Force Bcast scheme'
      ELSE
-        !Full MO can fit on all nodes Which means we can do a reduction.        
-        IF(DECinfo%PL.GT.0)THEN
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-           IF(.NOT.use_bg_buf)WRITE(DECinfo%output,'(A,F8.1,A)') &
-                & 'RIMP2: Memory available                     ',MemInGBCollected,' GB'
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available (65%)               ',maxsize,' GB'
+        !Memory accounting for Reduction of full MO integral alphaCD(nbasisAux*nvirt*nocc): 
+        !allocate TMPAlphaBetaDecomp(MynbasisAuxMPI2,nbasisAux) NOT allocated in BG buffer
+        !BG  : allocate Calpha(nbasisAux*nvirt*nocc) 
+        !noBG: allocate Calpha(MynbasisAux*nvirt*nocc) 
+        !allocate alphaCD(nbasisAux*nvirt*nocc)
+        !allocate AO to MO tmp (MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2))
+        IF(use_bg_buf)THEN
+           !only looking at the memory allocated in BG buffer 
+           MemForFullMOINT = (2*nbasisAux*nvirt*nocc+MinAuxBatch*nthreads*&
+                & (nbasis1*nocc+nbasis1*nbasis2))*8.0E-9_realk &
+                & + (nbasisAux/numnodes+1)*nocc*nvirt*8.0E-9_realk        
+        ELSE
+           MemForFullMOINT = (nbasisAux*nvirt*nocc+nbasisAux*nvirt*nocc/(numnodes+2)&
+                & +MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)&
+                & +nbasis1*nvirt+nbasis2*nocc+nbasisAux*nbasisAux)*8.0E-9_realk
+        ENDIF
+        IF(DECinfo%MemDebugPrint)THEN
            print*,'RIMP2: Full MO (alpha|cd) integral requires ',MemForFullMOINT,' GB'
-           IF(.NOT.use_bg_buf)print*,'RIMP2: Memory available                     ',MemInGBCollected,' GB'
-           print*,'RIMP2: Memory available (65%)               ',maxsize,' GB'
-        ENDIF
-        !Memory requirement to have the full AO integral in memory 
-        MemForFullAOINT = MAX(nbasisAux*nvirt*nocc+nbasisAux*nbasis1*nocc,&
-             & nbasisAux*nbasis1*nocc+nbasisAux*nbasis1*nbasis2)*8.0E-9_realk
-        IF(DECinfo%PL.GT.0)THEN
-           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full AO (alpha|cd) integral requires ',MemForFullAOINT,' GB'           
-        ENDIF
-        IF(MemForFullAOINT.LT.maxsize)THEN 
-           !Full AO can fit on all nodes Which means we can do a reduction.
-           MaxNaux = nbasisAux
-           PerformReduction = MaxNaux
-!           print*,'MemForFullMOINT.LT.maxsize: MaxNaux',MaxNaux
-        ELSE !Full MO can fit on all nodes Which means we can do a reduction.
-           !cannot have the full AO integral in memory 
-           !so we build a subset (MaxNaux,nbasis1,nbasis2) and then 
-           !transform to MO basis during the integral evaluation. 
-           !The bigger MaxNaux the fewer times we have to do the AO to MO
-           !Memory requirement = nbasisAux*nvirt*nocc+MaxNaux*nthreads*
-           !  (nbasis1*nocc+nbasis1*nbasis2)+nbasis1*nvirt+nbasis2*nocc 
-           !so we choose MaxNaux to be
-           MaxNaux = MIN(nbasisAux,FLOOR((MaxSize/8.0E-9_realk-nbasisAux*nvirt*nocc-2*nbasis1*nvirt-2*nbasis2*nocc) &
-                & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
-           PerformReduction = MaxNaux
-!           print*,'MemForFullMOINT.LT.maxsize: MaxNaux',MaxNaux
-
-           IF(DECinfo%PL.GT.0)THEN
-              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available (65%)',maxsize,' GB'           
-              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: MaxNaux Determination: Memory available after MO int + CMO',&
-                   & (MaxSize-nbasisAux*nvirt*nocc*8.0E-9_realk-2*nbasis1*nvirt*8.0E-9_realk-2*nbasis2*nocc*8.0E-9_realk),' GB'           
-              WRITE(DECinfo%output,'(A,I8,A,I8)')'RIMP2: MaxNaux Determination: MaxNaux',MaxNaux,' compared to nAux=',nbasisAux
-              WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: This MaxNaux Correspond to Memory usage of ',&
-                   &   nbasisAux*nvirt*nocc*8.0E-9_realk+2*nbasis1*nvirt*8.0E-9_realk+2*nbasis2*nocc*8.0E-9_realk&
-                   & + MaxNaux*nthreads*nbasis1*nbasis2*8.0E-9_realk + MaxNaux*nbasis1*nocc*8.0E-9_realk,' GB'
+           IF(use_bg_buf)THEN
+              print*,'RIMP2: Resulting in Memory Estimate of  ',&
+                   & (buf_realk%offset+MemForFullMOINT/8.0E-9_realk)*8.0E-9_realk,' GB'           
+           ENDIF
+           print*,'RIMP2: Memory available (65%/90% bg_buffer)',maxsize,' GB'
+           IF(MemForFullMOINT.GE.maxsize)THEN
+              print*,'RIMP2: Full MO cannot fit in memory, we cannot do a simple reduction'
+           ELSE
+              print*,'RIMP2: Full MO can fit in memory, we can do a simple reduction'
            ENDIF
         ENDIF
-        IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
-           MaxNaux = MinAuxBatch + 1
-           PerformReduction = MaxNaux
+        IF(MemForFullMOINT.GE.maxsize)THEN
+           !Full MO cannot fit in memory       
+           PerformReduction = 0 !Perform Bcast scheme
+        ELSE
+           PerformReduction = 1
         ENDIF
      ENDIF
   ENDIF
@@ -559,12 +175,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   call time_start_phase( PHASE_IDLE )
   call lsmpi_barrier(infpar%lg_comm)
   call time_start_phase( PHASE_COMM )
-  call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
-  IF(PerformReduction.NE.0) MaxNaux = PerformReduction
+  call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)  
   call time_start_phase( PHASE_WORK )
 #endif
   CALL LSTIMER('DF_Calpha:Init ',TS3,TE3,LUPRI,ForcePrint)
-
   !=====================================================================================
   ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
   !=====================================================================================
@@ -572,7 +186,15 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   IF(AlphaBetaDecompCreate)THEN
      IF(master)THEN
         IF(DECinfo%RIMP2_lowdin)THEN
-           call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+           IF(use_bg_buf)THEN
+              IF(DECinfo%MemDebugPrint)call printBGinfo()
+              IF(DECinfo%MemDebugPrint)print*,'BG: alloc AlphaBeta(',nbasisAux8*nbasisAux8,')'
+              call mem_pseudo_alloc(AlphaBeta,nbasisAux8,nbasisAux8)
+           ELSE
+              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+              IF(DECinfo%MemDebugPrint)print*,'STD: alloc AlphaBeta(',nbasisAux*nbasisAux,')'
+              call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+           ENDIF
         ENDIF
         IF(DECinfo%AuxAtomicExtent)THEN
            molecule1 => mylsitem%SETTING%MOLECULE(1)%p
@@ -604,7 +226,17 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         ! inverse matrix we calculate it on the master a BCAST to slaves
         IF(DECinfo%RIMP2_lowdin)THEN
            call lowdin_diag_S_minus_sqrt(nbasisAux,AlphaBeta,AlphaBetaDecomp,lupri)
-           call mem_dealloc(AlphaBeta)
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc AlphaBeta(',size(AlphaBeta),')'
+           IF(use_bg_buf)THEN
+              IF(DECinfo%MemDebugPrint)call printBGinfo()
+              IF(DECinfo%MemDebugPrint)print*,'BG: dealloc AlphaBeta(',size(AlphaBeta),')'
+              call mem_pseudo_dealloc(AlphaBeta)
+           ELSE
+              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+              IF(DECinfo%MemDebugPrint)print*,'STD: dealloc AlphaBeta(',size(AlphaBeta),')'
+              call mem_dealloc(AlphaBeta)
+           ENDIF
         ELSE
            call Get_InverseCholeskyFactor(nbasisAux,AlphaBetaDecomp,lupri)
         ENDIF
@@ -631,7 +263,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   !==================================================================
   
   dim1 = nBasisAux
-
+  noOMP = .FALSE.
   !Output the Aux dimensions for each node nAuxMPI of the Integral
   IF(DECinfo%AuxAtomicExtent)THEN
      molecule1 => mylsitem%SETTING%MOLECULE(1)%p
@@ -655,53 +287,60 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         J=J+1
      enddo
      MynbasisAuxMPI2 = nbasisAuxMPI2(mynum+1)
+     IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+     IF(DECinfo%MemDebugPrint)print*,'STD: alloc TMPAlphaBetaDecomp(',MynbasisAuxMPI2*nbasisAux,')'
      call mem_alloc(TMPAlphaBetaDecomp,MynbasisAuxMPI2,nbasisAux)
      call buildTMPAlphaBetaDecomp(TMPAlphaBetaDecomp,AlphaBetaDecomp,&
           & MynbasisAuxMPI2,nbasisAux,mynum,ndimMax1,numnodes)
      NBA = MynbasisAuxMPI2
-     IF(PerformReduction.EQ.0)THEN
-        MemForPartialMOINT = (nAuxMPI(mynum+1)*nvirt*nocc+&
-             & MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)+&
-             & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
-        IF(MemForPartialMOINT.GE.maxsize)THEN !Error 
-           print*,'MemForPartialMOINT',MemForPartialMOINT
-           print*,'maxsize',maxsize
-           print*,'==================================='
-           print*,'MinAuxBatch',MinAuxBatch
-           print*,'nAuxMPI(mynum+1)',nAuxMPI(mynum+1)
-           print*,'nvirt*nocc',nvirt*nocc,'nvirt,nocc',nvirt,nocc
-           print*,'nthreads',nthreads
-           print*,'nbasis1',nbasis1
-           print*,'nbasis2',nbasis2
-           IF(nthreads.GT.1)THEN
-              !use Critical instead ! 
-              !deactivating OpenMP 
-              mylsitem%setting%scheme%noOMP = .TRUE.
-              nthreads = 1              
-           ELSE
-              CALL lsquit('Not enough memory in build_calpha bcast schem',-1)
-           ENDIF
-        ENDIF
 
-        MaxNaux = MIN(nAuxMPI(mynum+1),&
-             &FLOOR((MaxSize/8.0E-9_realk-nAuxMPI(mynum+1)*nvirt*nocc-&
-             & nbasis1*nvirt-nbasis2*nocc) &
-             & /((nbasis1*nocc+nbasis1*nbasis2)*nthreads)))
-        
-        IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
-           MaxNaux = MinAuxBatch + 1
+     IF(use_bg_buf)THEN
+        !allocate now because I need to allocate in order due to push pop mechanisme
+        nsize = NBA*nvirt*nocc     
+        IF(DECinfo%MemDebugPrint)call printBGinfo()
+        IF(DECinfo%MemDebugPrint)print*,'BG: alloc Calpha(',nsize,')'
+        call mem_pseudo_alloc(Calpha,nsize)
+     ENDIF
+
+     IF(PerformReduction.EQ.0)THEN 
+        dim1 = nAuxMPI(mynum+1)    !DO NOT PERFORM REDUCTION each node have part of AlphaCD(nAuxMPI(mynum+1),nvirt,nocc)
+        AuxDimUsedInAOcode = MaxnAuxMPI
+     ELSE
+        dim1 = nBasisAux           !Reduction all nodes have full AlphaCD allocated (partial filled in)
+        AuxDimUsedInAOcode = dim1
+     ENDIF
+
+     !Determine internal or external AO to MO transform 
+     IF(mylsitem%setting%scheme%ForceRIMP2memReduced)THEN 
+        !Force Internal AO to MO transform 
+        MaxNaux = MinAuxBatch + 1
+     ELSE
+        call DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,&
+             & nocc,nvirt,MinAuxBatch,numnodes,nAuxMPI,mynum,MaxNaux,nthreads)
+        IF(noOMP)THEN
+           noOMPsave= mylsitem%setting%scheme%noOMP
+           mylsitem%setting%scheme%noOMP = .TRUE.
         ENDIF
-        dim1 = nAuxMPI(mynum+1)
      ENDIF
   ELSE
+     !Serial Code
      NBA = nbasisAux
      nAuxMPI = nbasisAux
+     MaxNaux = nbasisAux
+     IF(use_bg_buf)THEN
+        !allocate now because I need to allocate in order due to push pop mechanisme
+        nsize = NBA*nvirt*nocc     
+        IF(DECinfo%MemDebugPrint)call printBGinfo()
+        IF(DECinfo%MemDebugPrint)print*,'BG: alloc Calpha(',nsize,')'
+        call mem_pseudo_alloc(Calpha,nsize)
+     ENDIF
   ENDIF
 
-  IF(use_bg_buf)THEN
-     !allocate now because I need to allocate in order due to push pop mechanisme
-     nsize = NBA*nvirt*nocc
-     call mem_pseudo_alloc(Calpha,nsize)
+  IF(DECinfo%RIMP2_deactivateOpenMP)THEN
+     noOMP = .TRUE.
+     noOMPsave= mylsitem%setting%scheme%noOMP
+     mylsitem%setting%scheme%noOMP = .TRUE.
+     nthreads = 1                           
   ENDIF
 
   !=====================================================================================
@@ -714,7 +353,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
      mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
   ENDIF
-  IF(DECinfo%PL.GT.0)THEN
+  IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
      IF(dim1.EQ.nbasisAux)THEN
         print*,'NEW (alpha|AI) CODE: Perform Reduction'
      ELSE
@@ -723,7 +362,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      IF(MaxNaux.LT.dim1)THEN
         print*,'NEW (alpha|AI) CODE: Internal AotoMO, ',MaxNaux,' out of ',dim1
      ELSE
-        print*,'NEW (alpha|AI) CODE: external AotoMO, MaxNaux=',MaxNaux
+        print*,'NEW (alpha|AI) CODE: external AotoMO'
      ENDIF
      print*,'NEW (alpha|AI) CODE: Number of Threads =',nthreads
   ENDIF
@@ -731,8 +370,10 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   call II_get_RI_AlphaCD_3CenterIntFullOnAllNN(DECinfo%output,DECinfo%output,&
        & AlphaCD3,mylsitem%setting,nbasisAux,nbasis1,nbasis2,intspec(1:4),MaxNaux,&
        & nvirt,nocc,.TRUE.,Cvirt,Cocc,nthreads,dim1,GindexToLocal,DECinfo%PL,&
-       & use_bg_buf)
-
+       & DECinfo%MemDebugPrint,use_bg_buf)
+  IF(noOMP)THEN
+     mylsitem%setting%scheme%noOMP = noOMPsave  !restore default values
+  ENDIF
   CALL LSTIMER('DF_Calpha:3CenterInt',TS3,TE3,LUPRI,ForcePrint)
 
 !  call sleep(mynum*10)
@@ -758,8 +399,12 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   IF(PerformReduction.NE.0)THEN
      IF(DECinfo%NAF)THEN
         IF(CollaborateWithSlaves)then 
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc TMPAlphaBetaDecomp(',size(TMPAlphaBetaDecomp),')'
            call mem_dealloc(TMPAlphaBetaDecomp)
         ENDIF
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: alloc Wprime(',nbasisAux*nbasisAux,')'
         call mem_alloc(Wprime,nbasisAux,nbasisAux)
         call RIMP2_buildWprimeFromAlphaCD(AlphaCD3,nbasisAux,nocc,nvirt,Wprime,mynum,numnodes)
 #ifdef VAR_MPI
@@ -771,6 +416,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         call time_start_phase( PHASE_WORK )
 #endif
         IF(master)THEN
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: alloc W(',nbasisAux*nbasisAux,')'
            call mem_alloc(W,nbasisAux,nbasisAux)
            call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)
            call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED,SumSV,FullSumSV) 
@@ -781,8 +428,12 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
               WRITE(DECinfo%output,*)'NAF: Sum of neglected eigenvalues= ',FullSumSV-SumSV
               WRITE(DECinfo%output,*)'NAF: Sum of all eigenvalues      = ',FullSumSV
            ENDIF
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc Wprime(',size(W),')'
            call mem_dealloc(W)
         ENDIF
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: alloc Wprime(',size(Wprime),')'
         call mem_dealloc(Wprime)
 #ifdef VAR_MPI
         !BCAST OF NBAR
@@ -792,7 +443,11 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         call ls_mpibcast(NRED,infpar%master,infpar%lg_comm)
         nbuf1 = NRED
         nbuf2 = nbasisAux
-        IF(.NOT.master)call mem_alloc(NBAR,NRED,nbasisAux)
+        IF(.NOT.master)THEN
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: alloc NBAR(',NRED*nbasisAux,')'
+           call mem_alloc(NBAR,NRED,nbasisAux)
+        ENDIF
         call ls_mpibcast(NBAR,nbuf1,nbuf2,infpar%master,infpar%lg_comm)
         call time_start_phase( PHASE_WORK )
 #endif
@@ -806,55 +461,91 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            J=J+1
         enddo
         NREDLOC = nbasisAuxMPI3(mynum+1)
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: alloc NBARTMP(',NREDLOC*nbasisAux,')'
         call mem_alloc(NBARTMP,NREDLOC,nbasisAux)
         call buildNBARTMP(NBARTMP,NBAR,NREDLOC,NRED,nbasisAux,mynum,ndimMax2,numnodes)
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc NBAR(',size(NBAR),')'
         call mem_dealloc(NBAR)
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: alloc W(',NREDLOC*nbasisAux,')'
         call mem_alloc(W,NREDLOC,nbasisAux) !used as TMP
         M =  NREDLOC         !rows of Output Matrix
         N =  nbasisAux       !columns of Output Matrix
         K =  nbasisAux       !summation dimension
         call dgemm('N','N',M,N,K,1.0E0_realk,NBARTMP,M,AlphaBetaDecomp,K,0.0E0_realk,W,M)
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc NBARTMP(',size(NBARTMP),')'
         call mem_dealloc(NBARTMP)
         M = NREDLOC          !rows of Output Matrix
         N = nvirt*nocc       !columns of Output Matrix
         K = nbasisAux        !summation dimension
         nsize = NREDLOC*nvirt*nocc
-        IF(.NOT.use_bg_buf) call mem_alloc(Calpha,nsize)
+        IF(.NOT.use_bg_buf)THEN
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha(',nsize,')'
+           call mem_alloc(Calpha,nsize)
+        ENDIF
         call dgemm('N','N',M,N,K,1.0E0_realk,W,M,AlphaCD3,K,0.0E0_realk,Calpha,M)
         IF(use_bg_buf)THEN
+           IF(DECinfo%MemDebugPrint)call printBGinfo()
+           IF(DECinfo%MemDebugPrint)print*,'BG: dealloc alphaCD3(',size(alphaCD3),')'
            call mem_pseudo_dealloc(alphaCD3)
            !This looks weird but Calpha is currently pointing to the first 1:NBA*nvirt*nocc elements
            !of a "permanent" memory array. I only need the first 1:NREDLOC*nvirt*nocc elements
            !so I shrink the array dimension by deassociating (NOT deallocating) and reassociate
+           IF(DECinfo%MemDebugPrint)call printBGinfo()
+           IF(DECinfo%MemDebugPrint)print*,'BG: dealloc Calpha(',size(Calpha),')'
            call mem_pseudo_dealloc(Calpha)
            nsize = NREDLOC*nvirt*nocc
+           IF(DECinfo%MemDebugPrint)call printBGinfo()
+           IF(DECinfo%MemDebugPrint)print*,'BG: alloc Calpha(',nsize,')'
            call mem_pseudo_alloc(Calpha,nsize)
         ELSE
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc alphaCD3(',size(alphaCD3),')'
            call mem_dealloc(alphaCD3)
         ENDIF
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc W(',size(W),')'
         call mem_dealloc(W)
         NBA = NREDLOC
      ELSE
         IF(CollaborateWithSlaves)then 
            nsize = NBA*nvirt*(nocc*i8)
-           IF(.NOT.use_bg_buf)call mem_alloc(Calpha,nsize)
+           IF(.NOT.use_bg_buf)THEN 
+              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+              IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha(',nsize,')'
+              call mem_alloc(Calpha,nsize)
+           ENDIF
            !Calpha = TMPAlphaBetaDecomp(MynbasisAuxMPI,nbasisAux)
            M =  NBA              !rows of Output Matrix
            N =  nvirt*nocc       !columns of Output Matrix
            K =  nbasisAux        !summation dimension
            call dgemm('N','N',M,N,K,1.0E0_realk,TMPAlphaBetaDecomp,M,alphaCD3,K,0.0E0_realk,Calpha,M)
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc TMPAlphaBetaDecomp(',size(TMPAlphaBetaDecomp),')'
            call mem_dealloc(TMPAlphaBetaDecomp)
         ELSE !Serial version        
            nsize = nbasisAux*nvirt*nocc
-           IF(.NOT.use_bg_buf)call mem_alloc(Calpha,nsize)
+           IF(.NOT.use_bg_buf)THEN
+              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+              IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha(',nsize,')'
+              call mem_alloc(Calpha,nsize)
+           ENDIF
            M =  nbasisAux        !rows of Output Matrix
            N =  nvirt*nocc       !columns of Output Matrix
            K =  nbasisAux        !summation dimension
            call dgemm('N','N',M,N,K,1.0E0_realk,AlphaBetaDecomp,M,AlphaCD3,K,0.0E0_realk,Calpha,M)
         ENDIF
         IF(use_bg_buf)THEN
+           IF(DECinfo%MemDebugPrint)call printBGinfo()
+           IF(DECinfo%MemDebugPrint)print*,'BG: dealloc alphaCD3(',size(alphaCD3),')'
            call mem_pseudo_dealloc(alphaCD3)
         ELSE
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc alphaCD3(',size(alphaCD3),')'
            call mem_dealloc(alphaCD3)
         ENDIF
      ENDIF
@@ -868,12 +559,16 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 !     print*,'NBA',NBA     
      IF(.NOT.use_bg_buf)THEN
         nsize = NBA*nvirt*(nocc*i8)
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha(',nsize,')'
         call mem_alloc(Calpha,nsize)
      ENDIF
      call ls_dzero8(Calpha,nsize)
      IF(DECinfo%NAF)THEN
-        call mem_alloc(Wprime,nbasisAux,nbasisAux)
         nsize = nbasisAux*nbasisAux
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: alloc Wprime(',nsize,')'
+        call mem_alloc(Wprime,nbasisAux,nbasisAux)
         call ls_dzero8(Wprime,nsize)
      ENDIF
      DO inode = 1,numnodes
@@ -902,8 +597,12 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            !recieve
            nsize = nAuxMPI(inode)*nvirt*(nocc*i8)
            IF(use_bg_buf)THEN
+              IF(DECinfo%MemDebugPrint)call printBGinfo()
+              IF(DECinfo%MemDebugPrint)print*,'BG: dealloc alphaCD5(',size(alphaCD5),')'
               call mem_pseudo_alloc(AlphaCD5,nsize)
            ELSE
+              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+              IF(DECinfo%MemDebugPrint)print*,'STD: alloc AlphaCD5(',nsize,')'
               call mem_alloc(AlphaCD5,nsize)
            ENDIF
 #ifdef VAR_MPI
@@ -923,15 +622,23 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
                    & Wprime,nbasisAux,inode,AlphaCD3,nAuxMPI(mynum+1),mynum)
            ENDIF
            IF(use_bg_buf)THEN
+              IF(DECinfo%MemDebugPrint)call printBGinfo()
+              IF(DECinfo%MemDebugPrint)print*,'BG: dealloc alphaCD5(',size(alphaCD5),')'
               call mem_pseudo_dealloc(AlphaCD5)
            ELSE
+              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+              IF(DECinfo%MemDebugPrint)print*,'STD: dealloc alphaCD5(',size(alphaCD5),')'
               call mem_dealloc(AlphaCD5)
            ENDIF
         ENDIF
      ENDDO
      IF(use_bg_buf)THEN
+        IF(DECinfo%MemDebugPrint)call printBGinfo()
+        IF(DECinfo%MemDebugPrint)print*,'BG: dealloc alphaCD3(',size(alphaCD3),')'
         call mem_pseudo_dealloc(AlphaCD3)
      ELSE
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc alphaCD3(',size(alphaCD3),')'
         call mem_dealloc(AlphaCD3)
      ENDIF
      CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
@@ -944,6 +651,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         call time_start_phase( PHASE_WORK )
 #endif
         IF(master)THEN
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: alloc W(',nbasisAux*nbasisAux,')'
            call mem_alloc(W,nbasisAux,nbasisAux)
            call NAF_buildW(W,Wprime,AlphaBetaDecomp,nbasisAux)           
            call NAF_SVD_W(W,Wprime,NBAR,nbasisAux,epsilon,NRED,SumSV,FullSumSV) 
@@ -954,8 +663,12 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
               WRITE(DECinfo%output,*)'NAF: Sum of neglected eigenvalues= ',FullSumSV-SumSV
               WRITE(DECinfo%output,*)'NAF: Sum of all eigenvalues      = ',FullSumSV
            ENDIF
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc W(',size(W),')'
            call mem_dealloc(W)
         ENDIF
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc Wprime(',size(Wprime),')'
         call mem_dealloc(Wprime)
 #ifdef VAR_MPI
         call time_start_phase( PHASE_IDLE )
@@ -964,7 +677,11 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         call ls_mpibcast(NRED,infpar%master,infpar%lg_comm)
         nbuf1 = NRED
         nbuf2 = nbasisAux
-        IF(.NOT.master)call mem_alloc(NBAR,NRED,nbasisAux)
+        IF(.NOT.master)THEN
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: alloc NBAR(',NRED*nbasisAux,')'
+           call mem_alloc(NBAR,NRED,nbasisAux)
+        ENDIF
         call ls_mpibcast(NBAR,nbuf1,nbuf2,infpar%master,infpar%lg_comm)
         call time_start_phase( PHASE_WORK )
 #endif
@@ -979,10 +696,18 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         enddo
         NREDLOC = nbasisAuxMPI3(mynum+1)
         nsize = NREDLOC*nvirt*nocc
-        IF(.NOT.use_bg_buf)call mem_alloc(CalphaNAF,nsize)
+        IF(.NOT.use_bg_buf)THEN
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: alloc CalphaNAF(',nsize,')'
+           call mem_alloc(CalphaNAF,nsize)
+        ENDIF
         call ls_dzero8(CalphaNAF,nsize)
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: alloc NBARTMP(',NREDLOC*nbasisAux,')'
         call mem_alloc(NBARTMP,NREDLOC,nbasisAux)
         call buildNBARTMP(NBARTMP,NBAR,NREDLOC,NRED,nbasisAux,mynum,ndimMax2,numnodes)
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc NBAR(',size(NBAR),')'
         call mem_dealloc(NBAR)
         DO inode = 1,numnodes
            nbuf1 = nbasisAuxMPI2(inode) !dim1 of Calpha()
@@ -1007,8 +732,12 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
               !recieve
               nsize = nbasisAuxMPI2(inode)*nvirt*nocc
               IF(use_bg_buf)THEN
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: alloc Calpha2(',size(Calpha2),')'
                  call mem_pseudo_alloc(Calpha2,nsize)
               ELSE
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha2(',nsize,')'
                  call mem_alloc(Calpha2,nsize)
               ENDIF
 #ifdef VAR_MPI
@@ -1026,19 +755,29 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
                    & CalphaNAF,NREDLOC,NBARTMP,nbasisAux,offset,&
                    & offset2,ndimMax1,numnodes)
               IF(use_bg_buf)THEN
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: dealloc Calpha2(',size(Calpha2),')'
                  call mem_pseudo_dealloc(Calpha2)
               ELSE
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: dealloc Calpha2(',size(Calpha2),')'
                  call mem_dealloc(Calpha2)
               ENDIF
            ENDIF
         ENDDO
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc NBARTMP(',size(NBARTMP),')'
         call mem_dealloc(NBARTMP)
         NBA = NREDLOC
         IF(use_bg_buf)THEN
+           IF(DECinfo%MemDebugPrint)call printBGinfo()
+           IF(DECinfo%MemDebugPrint)print*,'BG: dealloc Calpha(',size(Calpha),')'
            call mem_pseudo_dealloc(Calpha)
            Calpha => CalphaNAF
            call lsquit('clearly not working',-1)
         ELSE
+           IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+           IF(DECinfo%MemDebugPrint)print*,'STD: dealloc Calpha(',size(Calpha),')'
            call mem_dealloc(Calpha)
            Calpha => CalphaNAF           
         ENDIF
@@ -1046,6 +785,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
      !allocated inside II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim
      IF(CollaborateWithSlaves.OR.DECinfo%RIMP2ForcePDMCalpha)THEN
+        IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+        IF(DECinfo%MemDebugPrint)print*,'STD: dealloc TMPAlphaBetaDecomp(',size(TMPAlphaBetaDecomp),')'
         call mem_dealloc(TMPAlphaBetaDecomp)        
      ENDIF
   ENDIF
@@ -1060,6 +801,185 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   CALL LSTIMER('Build_CalphaMO2',TS,TE,LUPRI,ForcePrint)
 
 end subroutine Build_CalphaMO2
+
+subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,&
+     & nocc,nvirt,MinAuxBatch,numnodes,nAuxMPI,mynum,MaxNaux,nthreads)
+  implicit none       
+  logical,intent(in) :: use_bg_buf
+  logical,intent(inout) :: noOMP
+  integer,intent(in)    :: dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,nocc,nvirt,MinAuxBatch
+  integer,intent(in)    :: numnodes,mynum
+  integer,intent(in)    :: nAuxMPI(numnodes)
+  integer,intent(inout) :: MaxNaux,nthreads
+  !
+  real(realk) :: maxsize,MemInGBCollected,ExternalAOtoMO,InternalAOtoMO 
+  !Determine memory available 
+  IF(use_bg_buf)THEN
+     maxsize = mem_get_bg_buf_free()*8.0E-9_realk*0.90E0_realk
+     IF(DECinfo%MemDebugPrint)THEN
+        print*,'DetermineMaxNauxRI: mem_get_bg_buf_free=',mem_get_bg_buf_free()
+        print*,'DetermineMaxNauxRI: maxsize',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
+        call printBGinfo()
+     ENDIF
+  ELSE
+     call get_currently_available_memory(MemInGBCollected)
+     maxsize = MemInGBCollected*0.65E0_realk
+     IF(DECinfo%MemDebugPrint)print*,'BCAST Scheme: maxsize',maxsize,' GB'
+  ENDIF
+  !Memory estimate for the external AO to MO transformation
+  ExternalAOtoMO = (MAX(AuxDimUsedInAOcode*nbasis1*nbasis2+AuxDimUsedInAOcode*nbasis1*nocc,&
+       &                AuxDimUsedInAOcode*nbasis1*nocc+AuxDimUsedInAOcode*nvirt*nocc))*8.0E-9_realk
+  IF(DECinfo%MemDebugPrint)print*,'External AO to MO requires',ExternalAOtoMO,' GB' 
+  
+  IF(ExternalAotoMO.LE.maxsize)THEN 
+     !External AO to MO chosen
+     MaxNaux = dim1
+  ELSE
+     !Internal AO to MO chosen. We determine the parameter MaxNaux
+     !which denotes the block (MaxNaux,nbasis1,nbasis2) that should be calculated 
+     !before it is transformed into (MaxNaux,nMO1,nMO2) and pluged into AlphaCD(dim1,nvirt,nocc)
+     
+     IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+        print*,'ExternalAOtoMO',ExternalAOtoMO
+        print*,'ExternalAOtoMO(Elements)',ExternalAOtoMO/8.0E-9_realk
+        IF(use_bg_buf)THEN
+           print*,'Resulting in Memory Estimate of  ',&
+                & (buf_realk%offset+ExternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+        ENDIF
+        print*,'maxsize',maxsize
+        print*,'==================================='
+        print*,'Step1(Elements): ',nAuxMPI(mynum+1)*nvirt*nocc,'=',nAuxMPI(mynum+1),'*',nvirt,'*',nocc
+        print*,'Step2(Elements): ',MinAuxBatch*nthreads*(nbasis1*nocc+nbasis1*nbasis2)
+        print*,'MinAuxBatch',MinAuxBatch
+        print*,'nAuxMPI(mynum+1)',nAuxMPI(mynum+1)
+        print*,'nvirt*nocc',nvirt*nocc,'nvirt,nocc',nvirt,nocc
+        print*,'nthreads',nthreads
+        print*,'nbasis1',nbasis1
+        print*,'nbasis2',nbasis2
+     ENDIF
+     !Assume minimal MaxNaux (MaxNaux=MinAuxBatch) - If this is still too much memory 
+     !We need to deactivate OpenMP!
+     !   FullAlphaCD+                        W0
+     IF(use_bg_buf)THEN
+        InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc)*8.0E-9_realk
+     ELSE
+        InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc+&
+             & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+     ENDIF
+     IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+        print*,'Minimal MaxNaux = ',MinAuxBatch
+        print*,'InternalAOtoMO',InternalAOtoMO
+        print*,'InternalAOtoMO(Elements)',NINT(InternalAOtoMO/8.0E-9_realk)
+        print*,'BG        Used(Elements)',buf_realk%offset
+        print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+        print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+        print*,'BG        SIZE(GB)      ',maxsize
+        print*,'Usage(GB)               ',InternalAOtoMO
+        IF(use_bg_buf)THEN
+           print*,'Resulting in Memory Estimate of  ',&
+                & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+        ENDIF
+     ENDIF
+     IF(InternalAOtoMO.GT.maxsize)THEN        
+        IF(nthreads.GT.1)THEN
+           IF(DECinfo%MemDebugPrint)print*,'Deactivating OpenMP due to memory requirements'
+           !use Critical instead ! 
+           !Deactivating OpenMP 
+           noOMP = .TRUE.
+           nthreads = 1                           
+        ELSE
+           CALL lsquit('Not enough memory in build_calpha X1',-1)
+        ENDIF
+        IF(use_bg_buf)THEN
+           InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc)*8.0E-9_realk
+        ELSE
+           InternalAOtoMO = (dim1*nocc*nvirt+MinAuxBatch*nbasis1*nbasis2*nthreads+MinAuxBatch*nbasis1*nocc+&
+                & nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+        ENDIF
+        print*,'Minimal MaxNaux = ',MinAuxBatch,' and No OpenMP '
+        print*,'InternalAOtoMO',InternalAOtoMO
+        print*,'InternalAOtoMO(Elements)',NINT(InternalAOtoMO/8.0E-9_realk)
+        print*,'BG        Used(Elements)',buf_realk%offset
+        print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+        print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+        print*,'BG        SIZE(GB)      ',maxsize
+        print*,'Usage(GB)               ',InternalAOtoMO
+        IF(use_bg_buf)THEN
+           print*,'Resulting in Memory Estimate of  ',&
+                & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+        ENDIF
+        IF(InternalAOtoMO.GT.maxsize)THEN
+           CALL lsquit('Not enough memory in build_calpha X2, even with OpenMP deactivated',-1)
+        ELSE           
+           !find Optimal MaxNaux (with nthreads=1)
+           IF(use_bg_buf)THEN
+              MaxNaux = MAX(dim1,&
+                   &FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc) &
+                   & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+              IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+                 InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc)*8.0E-9_realk
+                 print*,'MaxNaux',MaxNaux
+                 print*,'InternalAOtoMO',InternalAOtoMO
+                 print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk
+                 print*,'BG        Used(Elements)',buf_realk%offset
+                 print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+                 print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+                 print*,'BG        SIZE(GB)      ',maxsize
+                 print*,'Usage(GB)               ',InternalAOtoMO
+                 print*,'Resulting in Memory Estimate of  ',&
+                      & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+              ENDIF
+           ELSE
+              MaxNaux = MAX(dim1,&
+                   &FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc-nbasis1*nvirt-nbasis2*nocc) &
+                   & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+              IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+                 InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc &
+                      & +nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+                 print*,'InternalAOtoMO',InternalAOtoMO
+                 print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk,' of the allowed',maxsize,' GB'
+              ENDIF
+           ENDIF
+        ENDIF
+     ELSE
+        IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+           print*,'minimal MaxNaux=',MinAuxBatch,' OK -> Find optimal MaxNaux:'
+        ENDIF
+        !minimal MaxNaux OK -> Find optimal MaxNaux
+        !MinAuxBatch = (maxsize/8.0E-9_realk-dim1*nocc*nvirt)/(nbasis1*nbasis2*nthreads+nbasis1*nocc)
+        IF(use_bg_buf)THEN
+           MaxNaux = MIN(dim1,&
+                & FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc) &
+                & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+
+           IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+              print*,'MaxNaux',MaxNaux
+              InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc)*8.0E-9_realk
+              print*,'InternalAOtoMO',InternalAOtoMO
+              print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk
+              print*,'BG        Used(Elements)',buf_realk%offset
+              print*,'BG        SIZE(Elements)',NINT(DECinfo%bg_memory/8.0E-9_realk)
+              print*,'Usage                   ',NINT(InternalAOtoMO/8.0E-9_realk)+buf_realk%offset
+              print*,'BG        SIZE(GB)      ',maxsize
+              print*,'Usage(GB)               ',InternalAOtoMO
+              print*,'Resulting in Memory Estimate of  ',&
+                   & (buf_realk%offset+InternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'           
+           ENDIF
+        ELSE
+           MaxNaux = MIN(dim1,&
+                &FLOOR((MaxSize/8.0E-9_realk-dim1*nvirt*nocc-nbasis1*nvirt-nbasis2*nocc) &
+                & /(nbasis1*nocc+nbasis1*nbasis2*nthreads)))
+           IF(DECinfo%PL.GT.0.OR.DECinfo%MemDebugPrint)THEN
+              print*,'MaxNaux',MaxNaux
+              InternalAOtoMO = (dim1*nocc*nvirt+MaxNaux*nbasis1*nbasis2*nthreads+MaxNaux*nbasis1*nocc &
+                   & +nbasis1*nvirt+nbasis2*nocc)*8.0E-9_realk
+              print*,'InternalAOtoMO',InternalAOtoMO
+              print*,'InternalAOtoMO(Elements)',InternalAOtoMO/8.0E-9_realk,' of the allowed',maxsize,' GB'
+           ENDIF
+        ENDIF
+     ENDIF
+  ENDIF
+END subroutine DetermineMaxNauxRI
 
 !This should be call my master and slaves
 subroutine Build_RobustERImatU(myLSitem,master,nbasis1,nbasis2,nbasisAux,&
@@ -1140,17 +1060,17 @@ subroutine Get_InverseCholeskyFactor(n,A,lupri)
   integer                      :: i,j,np,k,info
   real(realk) :: TS,TE
   call LSTIMER('START ',TS,TE,lupri)
-  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
+  call LSDPOTRF('U', N, A, N, INFO ) !U=Cholesky factor
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',INFO
      call lsquit('DPOTRF NR 1 Failed in Get_InverseCholeskyFactor',-1)
   ENDIF
-  call DPOTRI('U', N, A, N, INFO ) !U=inverse of a original U
+  call LSDPOTRI('U', N, A, N, INFO ) !U=inverse of a original U
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRI Failed in Get_InverseCholeskyFactor',INFO
      call lsquit('DPOTRI Failed in Get_InverseCholeskyFactor',-1)
   ENDIF
-  call DPOTRF('U', N, A, N, INFO ) !U=Cholesky factor of inverse of a original U
+  call LSDPOTRF('U', N, A, N, INFO ) !U=Cholesky factor of inverse of a original U
   IF(INFO.ne. 0) THEN
      print *, 'DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',INFO
      call lsquit('DPOTRF NR 2 Failed in Get_InverseCholeskyFactor',-1)
@@ -1478,7 +1398,7 @@ subroutine RIMP2_buildCalphaFromAlphaCD(nocc,nvirt,numnodes,&
   !
   integer :: IB,B,BETA,ALPHA
   real(realk) :: TMP
-  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(NONE) &
+  !$OMP PARALLEL DO DEFAULT(NONE) &
   !$OMP PRIVATE(IB,B,BETA,ALPHA,TMP) &
   !$OMP SHARED(nocc,nvirt,nAux2,IndexToGlobal2,NBA,&
   !$OMP        AlphaCDi,Calpha,TMPAlphaBetaDecomp,integralnum)
@@ -1526,23 +1446,23 @@ end subroutine PlugInToalphaCDFull
 
 subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
      & OriginalRanknbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
-     & Calpha,TMPAlphaBeta_inv,nbasisAux,MynbasisAuxMPI2)
+     & Calpha,TMPAlphaBeta_inv,nbasisAux,MynbasisAuxMPI)
   implicit none
-  integer,intent(in) :: nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI2
+  integer,intent(in) :: nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI
   integer,intent(in) :: OriginalRanknbasisAuxMPI,nbasisAux
   integer,intent(in) :: nAtomsMPI(numnodes)
   integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
   integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
   real(realk),intent(in) :: AlphaCD5(OriginalRanknbasisAuxMPI,nvirt*nocc)
-  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI2,nvirt*nocc)
-  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI2,nbasisAux)
+  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
   !
   integer :: IB,startB2,iAtomB,StartB,BETA,ALPHA
   real(realk) :: TMP
   !Step 2: Obtain part of Calpha from this contribution
 !$OMP PARALLEL DO DEFAULT(NONE) &
 !$OMP PRIVATE(IB,startB2,iAtomB,startB,TMP,ALPHA,BETA) &
-!$OMP SHARED(nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI2,&
+!$OMP SHARED(nocc,nvirt,myOriginalRank,numnodes,natoms,MynbasisAuxMPI,&
 !$OMP        OriginalRanknbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
 !$OMP        AlphaCD5,Calpha,TMPAlphaBeta_inv,nbasisAux)
   do IB = 1,nocc*nvirt
@@ -1551,7 +1471,7 @@ subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,n
         StartB = startAuxMPI(iAtomB,myOriginalRank+1)
         do BETA = 1,nAuxMPI(iAtomB,myOriginalRank+1)
            TMP = AlphaCD5(startB2 + BETA,IB)
-           do ALPHA = 1,MynbasisAuxMPI2
+           do ALPHA = 1,MynbasisAuxMPI
               Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
            enddo
         enddo
@@ -1563,23 +1483,23 @@ end subroutine RIMP2_buildCalphaContFromAlphaCD
 
 subroutine  RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
      & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,&
-     & TMPAlphaBeta_inv,nbasisAux,MynbasisAuxMPI2)
+     & TMPAlphaBeta_inv,nbasisAux)
   implicit none
   integer,intent(in) :: nocc,nvirt,mynum,numnodes,natoms
-  integer,intent(in) :: MynbasisAuxMPI,nbasisAux,MynbasisAuxMPI2
+  integer,intent(in) :: MynbasisAuxMPI,nbasisAux
   integer,intent(in) :: nAtomsMPI(numnodes)
   integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
   integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
   real(realk),intent(in) :: AlphaCD3(MynbasisAuxMPI,nvirt*nocc)
-  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI2,nvirt*nocc)
-  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI2,nbasisAux)
+  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
   !
   integer :: IB,startB2,iAtomB,StartB,BETA,ALPHA
   real(realk) :: TMP
 
 !$OMP PARALLEL DO DEFAULT(NONE) &
 !$OMP PRIVATE(IB,startB2,iAtomB,StartB,BETA,ALPHA,TMP) &
-!$OMP SHARED(nocc,nvirt,nAtomsMPI,startAuxMPI,mynum,MynbasisAuxMPI2,&
+!$OMP SHARED(nocc,nvirt,nAtomsMPI,startAuxMPI,mynum,&
 !$OMP        nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_inv,MynbasisAuxMPI) 
   do IB = 1,nocc*nvirt
      startB2 = 0
@@ -1587,7 +1507,7 @@ subroutine  RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
         StartB = startAuxMPI(iAtomB,mynum+1)
         do BETA = 1,nAuxMPI(iAtomB,mynum+1)
            TMP = AlphaCD3(startB2 + BETA,IB)
-           do ALPHA = 1,MynbasisAuxMPI2
+           do ALPHA = 1,MynbasisAuxMPI
               Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + &
                    & TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
            enddo
@@ -1597,6 +1517,793 @@ subroutine  RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
   enddo
 !$OMP END PARALLEL DO
 end subroutine RIMP2_buildOwnCalphaFromAlphaCD
+
+subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
+     & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,Calpha,&
+     & NBA,AlphaBetaDecomp,AlphaBetaDecompCreate,SymDecomp,Oper)
+  implicit none
+  type(lsitem), intent(inout) :: mylsitem
+  integer,intent(inout) :: NBA
+  integer,intent(in) :: nAtomsAux,nocc,nvirt
+  integer,intent(in) :: nbasisAux,LUPRI,nbasis,mynum,numnodes
+  logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves,AlphaBetaDecompCreate
+  logical,intent(in) :: SymDecomp
+  ! If SymDecomp=True apply the full apply the decomposition of (alpha|beta)^{-1} to (alpha|ai) 
+  ! in a symmetric fashion:  
+  ! C(alpha,a,i) = (alpha|beta)^{-1/2} (beta|ai) (or the corresponding Cholesky)
+  ! so that the Integral can be obtained from g(a,i,b,j) = C(alpha,a,i)*C(alpha,b,j)
+  ! If SymDecomp=False apply the full decomposition to the right: 
+  ! C(alpha,a,i) = (alpha|beta)^{-1}(beta|ai)
+  real(realk) :: AlphaBetaDecomp(nbasisAux,nbasisAux)
+  real(realk),intent(in) :: Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
+  real(realk),pointer :: Calpha(:)
+  integer,optional :: Oper
+  !
+  integer :: MynbasisAuxMPI
+  integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+  real(realk),pointer :: AlphaBeta(:,:)
+  real(realk),pointer :: TMPAlphaBetaDecomp(:,:),AlphaCD3(:,:,:)
+  real(realk),pointer :: AlphaCD5(:,:,:),AlphaCDFull(:,:,:)
+  real(realk) :: TS3,TE3,MemInGBCollected,SizeCalpha
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
+  integer(kind=long)    :: maxsize,nSize,n8
+  integer(kind=ls_mpik) :: node 
+  integer :: CurrentWait(2),nAwaitDealloc,iAwaitDealloc,MynAtomsMPI
+  integer :: myOriginalRank,OriginalRanknbasisAuxMPI,M,N,K,I,offset,offset2
+  integer :: ndimMax,rimp2_nodtot,nP
+  integer :: nbuf1,nbuf2,nbuf3,inode,J
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,MessageRecieved
+  logical :: PerformReduction,RIMPSubGroupCreated,UseSubGroupCommunicator
+  integer :: startB2,StartB,iatomB
+  PerformReduction = .TRUE.
+  NBA = 0 
+  call get_currently_available_memory(MemInGBCollected)
+  
+  !===========================================================
+  !   Determine Scheme to Use (AllReduce, Bcast Method)
+  !===========================================================
+  CALL LSTIMER('START ',TS3,TE3,LUPRI)
+
+  IF(master)THEN
+     IF(DECinfo%RIMP2ForcePDMCalpha)THEN
+        PerformReduction = .FALSE.
+        IF(numnodes.EQ.1)THEN           
+           PerformReduction = .TRUE.
+        ENDIF
+     ELSE
+        !maxsize = max number of floating point elements
+        SizeCalpha = (nbasisAux+nbasisAux/numnodes)*nocc*nvirt*8E-9_realk
+        IF(SizeCalpha.LT.MemInGBCollected*0.75E0_realk.OR.numnodes.EQ.1)THEN
+           !Calpha can fit on all nodes Which means we can do a reduction.
+           PerformReduction = .TRUE.
+           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Full (alpha|cd) integral requires ',SizeCalpha,' GB'
+           WRITE(DECinfo%output,'(A,F8.1,A)')'RIMP2: Memory available                  ',MemInGBCollected,' GB'
+        ELSE
+           !Calpha cannot fit so we distribute this - which means more MPI communication.
+           PerformReduction = .FALSE.
+           !Determine number of nodes to use to construct Calpha. (use same to determine the MPI split)
+        ENDIF
+     ENDIF
+#ifdef VAR_MPI
+     call time_start_phase( PHASE_IDLE )
+     call lsmpi_barrier(infpar%lg_comm)
+     call time_start_phase( PHASE_COMM )
+     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+     call time_start_phase( PHASE_WORK )
+#endif
+  ELSE
+#ifdef VAR_MPI
+     call time_start_phase( PHASE_IDLE )
+     call lsmpi_barrier(infpar%lg_comm)
+     call time_start_phase( PHASE_COMM )
+     call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)
+     call time_start_phase( PHASE_WORK )
+#endif
+     IF(PerformReduction)THEN
+        !the master have enough space 
+        !maxsize = max number of floating point elements
+        SizeCalpha = nbasisAux*nocc*nvirt*8E-9_realk
+        IF(SizeCalpha.GT.MemInGBCollected*0.6E0_realk)THEN
+           print*,'WARNING: Master have space for (alpha|cd) but slave do not'
+           print*,'WARNING: Full (alpha|cd) integral requires ',SizeCalpha,' GB'
+           print*,'WARNING: Memory available                  ',MemInGBCollected,' GB'
+        ENDIF
+     ENDIF
+  ENDIF
+
+  CALL LSTIMER('Calpha1',TS3,TE3,LUPRI)
+
+  !===========================================================
+  !   Determine Sizes1: used to calc 3 center integrals
+  !===========================================================
+
+  IF(CollaborateWithSlaves)then 
+     !all nodes have info about all nodes 
+     call mem_alloc(nbasisAuxMPI,numnodes)           !number of Aux basis func assigned to rank
+     nbasisAuxMPI = 0 
+     call mem_alloc(nAtomsMPI,numnodes)              !atoms assign to rank
+     call mem_alloc(startAuxMPI,nAtomsAux,numnodes)  !startindex in full (nbasisAux)
+     call mem_alloc(AtomsMPI,nAtomsAux,numnodes)     !identity of atoms in full molecule
+     call mem_alloc(nAuxMPI,nAtomsAux,numnodes)      !nauxBasis functions for each of the nAtomsMPI
+     IF(DECinfo%AuxAtomicExtent)THEN   
+        call getRIbasisMPI(mylsitem%INPUT%AUXMOLECULE,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ELSE
+        call getRIbasisMPI(mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ENDIF
+     MynAtomsMPI = nAtomsMPI(mynum+1)
+     MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
+     rimp2_nodtot = 0 
+     DO I = 1,numnodes
+        IF(nbasisAuxMPI(I).GT.0) rimp2_nodtot = rimp2_nodtot + 1
+     ENDDO
+
+  ELSE
+     MynbasisAuxMPI = nbasisAux     
+     rimp2_nodtot = numnodes
+  ENDIF
+
+  CALL LSTIMER('Calpha2',TS3,TE3,LUPRI)
+  
+  !=====================================================================================
+  ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
+  !=====================================================================================
+  IF(AlphaBetaDecompCreate)THEN
+
+     IF(master)THEN
+        call mem_alloc(AlphaBeta,nbasisAux,nbasisAux)
+        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+        IF(DECinfo%AuxAtomicExtent)THEN
+           molecule1 => mylsitem%SETTING%MOLECULE(1)%p
+           molecule2 => mylsitem%SETTING%MOLECULE(2)%p
+           molecule3 => mylsitem%SETTING%MOLECULE(3)%p
+           molecule4 => mylsitem%SETTING%MOLECULE(4)%p
+           mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
+           mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
+           mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
+           mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
+        ENDIF
+        IF(present(Oper))THEN
+           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+                & AlphaBeta,mylsitem%setting,nbasisAux,Oper)
+        ELSE
+           call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+                & AlphaBeta,mylsitem%setting,nbasisAux)
+        ENDIF
+        IF(DECinfo%AuxAtomicExtent)THEN
+           mylsitem%SETTING%MOLECULE(1)%p => molecule1
+           mylsitem%SETTING%MOLECULE(2)%p => molecule2
+           mylsitem%SETTING%MOLECULE(3)%p => molecule3
+           mylsitem%SETTING%MOLECULE(4)%p => molecule4
+        ENDIF
+        
+        CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
+        IF(SymDecomp)THEN
+           ! Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
+           ! Warning the inverse is not unique so in order to make sure all slaves have the same
+           ! inverse matrix we calculate it on the master a BCAST to slaves
+           call lowdin_diag_S_minus_sqrt(nbasisAux, AlphaBeta,AlphaBetaDecomp, lupri)
+        ELSE
+           call lowdin_diag_S_minus1(nbasisAux, AlphaBeta,AlphaBetaDecomp, lupri)
+        ENDIF
+        call mem_dealloc(AlphaBeta)
+        CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
+     ENDIF
+#ifdef VAR_MPI
+     call time_start_phase( PHASE_IDLE )
+     call lsmpi_barrier(infpar%lg_comm)
+     call time_start_phase( PHASE_COMM )
+     call ls_mpibcast(AlphaBetaDecomp,nbasisAux,nbasisAux,infpar%master,infpar%lg_comm)
+     call time_start_phase(PHASE_WORK)   
+#endif
+  ENDIF
+
+  CALL LSTIMER('Calpha3',TS3,TE3,LUPRI)
+
+  IF(CollaborateWithSlaves)then 
+     call mem_alloc(TMPAlphaBetaDecomp,MynbasisAuxMPI,nbasisAux)
+     StartB2 = 0
+     DO iAtomB=1,nAtomsMPI(mynum+1)
+        StartB = startAuxMPI(iAtomB,mynum+1)
+        nP = nAuxMPI(iAtomB,mynum+1)
+        do I=1,nbasisAux           
+           DO J=1,nP
+              TMPAlphaBetaDecomp(StartB2+J,I) = AlphaBetaDecomp(StartB+J,I)
+           enddo
+        enddo
+        StartB2 = StartB2 + nP
+     ENDDO
+     NBA = MynbasisAuxMPI
+  ELSE
+     NBA = nbasisAux
+  ENDIF
+
+  CALL LSTIMER('Calpha4',TS3,TE3,LUPRI)
+
+  !=====================================================================================
+  ! Obtain 3 center RI integrals (alpha,a,i) 
+  !=====================================================================================
+
+  IF(MynbasisAuxMPI.GT.0)THEN
+     call get_currently_available_memory(MemInGBCollected)
+     !maxsize = max number of floating point elements
+     !allow to building of 3 center integral to use 60 procent of 
+     !currently available memory
+     maxsize = 0.60E0_realk*NINT(MemInGBCollected*1.E9_realk)
+     !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
+     !It is very annoying but I allocated AlphaCD3 inside 
+     !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
+     !This Part of the Code is MPI/OpenMP parallel and AlphaCD3 
+     !will have the dimensions (MynbasisAuxMPI,nvirt,nocc) 
+     !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly 
+     !nbasisAuxMPI = nbasisAux/numnodes
+     IF(DECinfo%AuxAtomicExtent)THEN
+        molecule1 => mylsitem%SETTING%MOLECULE(1)%p
+        molecule2 => mylsitem%SETTING%MOLECULE(2)%p
+        mylsitem%SETTING%MOLECULE(1)%p => mylsitem%INPUT%AUXMOLECULE
+        mylsitem%SETTING%MOLECULE(2)%p => mylsitem%INPUT%AUXMOLECULE
+     ENDIF
+     IF(present(Oper))THEN
+        call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
+             & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
+             & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes,Oper)
+     ELSE
+        call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
+             & AlphaCD3,mylsitem%setting,nbasisAux,nbasis,&
+             & nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+     ENDIF
+     IF(DECinfo%AuxAtomicExtent)THEN
+        mylsitem%SETTING%MOLECULE(1)%p => molecule1
+        mylsitem%SETTING%MOLECULE(2)%p => molecule2
+     ENDIF
+  ENDIF
+
+  CALL LSTIMER('Calpha5',TS3,TE3,LUPRI)
+
+  !=====================================================================================
+  ! MPI scheme:  PerformReduction  or   a Bcast Routine
+  !=====================================================================================
+
+  IF(PerformReduction)THEN
+
+     !=====================================================================================
+     ! MPI scheme:  PerformReduction
+     !=====================================================================================
+
+     WRITE(DECinfo%output,'(A)')'RIMP2 Calpha Scheme 1: Using Allreduce on (alpha|cd) integral'
+     IF(CollaborateWithSlaves)then 
+        call mem_alloc(alphaCDFull,nbasisAux,nvirt,nocc)
+        n8 = nbasisAux*nocc*nvirt
+        call ls_dzero8(alphaCDFull,n8)
+        IF(MynbasisAuxMPI.GT.0)THEN
+           call PlugInToalphaCDFull(mynum,nAtomsMPI,startAuxMPI,nocc,nvirt,nAuxMPI,&
+                & alphaCDFull,alphaCD3,nbasisAux,MynbasisAuxMPI,numnodes,nAtomsAux)
+           call mem_dealloc(alphaCD3)
+        ENDIF
+#ifdef VAR_MPI
+        call time_start_phase( PHASE_IDLE )
+        call lsmpi_barrier(infpar%lg_comm)
+        call time_start_phase( PHASE_COMM )
+        call lsmpi_allreduce(alphaCDFull,nbasisAux,nvirt,nocc,infpar%lg_comm)
+        call time_start_phase( PHASE_WORK )
+#endif
+        !Calpha = TMPAlphaBetaDecomp(MynbasisAuxMPI,nbasisAux)
+        M =  MynbasisAuxMPI   !rows of Output Matrix
+        N =  nvirt*nocc       !columns of Output Matrix
+        K =  nbasisAux        !summation dimension
+        call mem_alloc(Calpha,MynbasisAuxMPI*(i8*nvirt)*nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,TMPAlphaBetaDecomp,&
+             & M,alphaCDFull,K,0.0E0_realk,Calpha,M)
+        call mem_dealloc(alphaCDFull)
+        call mem_dealloc(TMPAlphaBetaDecomp)
+     ELSE
+        !Serial version
+        M =  MynbasisAuxMPI   !rows of Output Matrix
+        N =  nvirt*nocc       !columns of Output Matrix
+        K =  nbasisAux        !summation dimension
+        call mem_alloc(Calpha,MynbasisAuxMPI*(i8*nvirt)*nocc)
+        call dgemm('N','N',M,N,K,1.0E0_realk,AlphaBetaDecomp,&
+             & M,AlphaCD3,K,0.0E0_realk,Calpha,M)
+        call mem_dealloc(AlphaCD3)
+     ENDIF
+  ELSE
+
+     !=====================================================================================
+     ! MPI scheme:  Bcast Routine
+     !=====================================================================================
+     call mem_alloc(Calpha,MynbasisAuxMPI*(i8*nvirt)*nocc)
+     nsize = MynbasisAuxMPI*nvirt*nocc
+     call ls_dzero8(Calpha,nsize)
+     DO inode = 1,rimp2_nodtot
+        IF(mynum.EQ.inode-1)THEN
+           nbuf1 = nbasisAuxMPI(mynum+1)
+           nbuf2 = nvirt
+           nbuf3 = nocc
+#ifdef VAR_MPI
+           call time_start_phase( PHASE_IDLE )
+           call lsmpi_barrier(infpar%lg_comm)
+           call time_start_phase( PHASE_COMM )
+           node = mynum
+           call ls_mpibcast(AlphaCD3,nbuf1,nbuf2,nbuf3,node,infpar%lg_comm)
+#endif
+           call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,&
+                & natomsAux,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
+                & AlphaCD3,Calpha,TMPAlphaBetaDecomp,nbasisAux)
+           call mem_dealloc(AlphaCD3)
+        ELSE
+           nbuf1 = nbasisAuxMPI(inode)
+           nbuf2 = nvirt
+           nbuf3 = nocc
+           node = inode-1
+           !recieve
+           call mem_alloc(AlphaCD5,nbasisAuxMPI(inode),nvirt,nocc)
+#ifdef VAR_MPI
+           call time_start_phase( PHASE_IDLE )
+           call lsmpi_barrier(infpar%lg_comm)
+           call time_start_phase( PHASE_COMM )
+           call ls_mpibcast(AlphaCD5,nbuf1,nbuf2,nbuf3,node,infpar%lg_comm)
+           call time_start_phase( PHASE_WORK )
+#endif
+           myOriginalRank = inode-1
+           OriginalRanknbasisAuxMPI = nbasisAuxMPI(inode)
+           call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,&
+                & numnodes,natomsAux,OriginalRanknbasisAuxMPI,&
+                & nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
+                & Calpha,TMPAlphaBetaDecomp,nbasisAux,MynbasisAuxMPI)
+           call mem_dealloc(AlphaCD5)
+        ENDIF
+     ENDDO
+     call mem_dealloc(TMPAlphaBetaDecomp)
+  ENDIF
+  CALL LSTIMER('Calpha6',TS3,TE3,LUPRI)
+  IF(CollaborateWithSlaves)then 
+     call mem_dealloc(nbasisAuxMPI)
+     call mem_dealloc(startAuxMPI)
+     call mem_dealloc(nAtomsMPI)
+     call mem_dealloc(nAuxMPI)
+     call mem_dealloc(AtomsMPI) !not used in this subroutine 
+  ENDIF
+!  call sleep(mynum*5)
+!  PRINT*,'MynbasisAuxMPI2',MynbasisAuxMPI2
+!  WRITE(6,*)'Final Calph(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
+!  WRITE(6,*)'Print Subset Final Calph(NBA=',NBA,',1:4)  MYNUM',MYNUM
+!  call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
+
+end subroutine Build_CalphaMO
+
+!This subroutine calculates the DEC-RI-MP2 gradient contribution:
+!the derivatie of the 3 term energy contribution
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|bj) Thetha(a,i,b,j) +
+!sum_{a,i,b,j} (ai|alpha) C(alpha,b,j) Thetha(a,i,b,j) -
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|beta) C(beta,b,j) Thetha(a,i,b,j)
+! =
+! the 6 term gradient contribution 
+!sum_{a,i,b,j} C(alpha,a,i) (alpha^x|bj) Thetha(a,i,b,j) +
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|(bj)^x) Thetha(a,i,b,j) + 
+!sum_{a,i,b,j} ((ai)^x|alpha) C(alpha,b,j) Thetha(a,i,b,j) + 
+!sum_{a,i,b,j} (ai|alpha^x) C(alpha,b,j) Thetha(a,i,b,j) - 
+!sum_{a,i,b,j} C(alpha,a,i) (alpha^x|beta) C(beta,b,j) Thetha(a,i,b,j) -
+!sum_{a,i,b,j} C(alpha,a,i) (alpha|beta^x) C(beta,b,j) Thetha(a,i,b,j)
+!due to symmetry this can be written as A,B,C (the last 2 terms are collected into C)
+! A. C(alpha,a,i) (alpha^x|bj) Thetha(a,i,b,j) +
+! B. C(alpha,a,i) (alpha|(bj)^x) Thetha(a,i,b,j) + 
+! C. - (P|Q)^x*Cpq(P,Q) 
+! However we do the evaluation in AO basis so it becomes
+! A. (P^x|bj)*CalphaTheta(P,b,j)
+! B. (P|(beta nu)^x)*Cvirt(beta,b)*Cocc(nu,J)*CalphaTheta(P,b,j)
+! C. - (P|Q)^x*Cpq(P,Q) 
+! using the following intermediate
+! CalphaTheta(P,b,j) = C(P,a,i) * Thetha(a,i,b,j)
+! Cpq = CalphaTheta(P,b,j)*C(Q,b,j)
+subroutine Build_RIMP2grad(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
+     & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,&
+     & natoms,ThetaOcc,RIMP2grad,dopair_occ,use_bg_buf)
+  implicit none
+  type(lsitem), intent(inout) :: mylsitem
+  integer,intent(in) :: nAtomsAux,nocc,nvirt,natoms
+  integer,intent(in) :: nbasisAux,LUPRI,nbasis,mynum,numnodes
+  logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves
+  logical,intent(in) :: dopair_occ(nocc,nocc),use_bg_buf
+  real(realk),intent(in) :: Cocc(nbasis,nocc),Cvirt(nbasis,nvirt)
+  real(realk),intent(inout) :: RIMP2grad(3*natoms)
+  real(realk),intent(inout) :: ThetaOcc(nvirt*(nocc*i8*nocc)*nvirt)  
+  !local variables
+  real(realk) :: AlphaBetaDecomp(nbasisAux,nbasisAux),maxsize
+  real(realk),pointer :: Calpha(:),CalphaTheta(:),AlphaBetaDeriv(:,:,:)
+  real(realk),pointer :: Cpq(:,:),CalphaTmp(:)
+  logical :: SymDecomp,AlphaBetaDecompCreate
+  integer(kind=8) :: nsize,natoms8,nbasisAux8
+  integer :: MynbasisAuxMPI,MYNATOMSMPI,I,Oper,M,N,K,NBA
+  integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+  integer :: inode,myOriginalRank,MynbasisAuxMPI2,nbasisAuxMPI2(numnodes)
+  integer(kind=ls_mpik) :: node 
+
+  nullify(Cpq)
+  nullify(Calpha)
+  nullify(CalphaTheta)
+  nullify(CalphaTmp)
+  nullify(AlphaBetaDeriv)
+!  real(realk) :: RIMP2gradC(3*natoms)
+  natoms8 = natoms
+  nbasisAux8 = nbasisAux  
+  Oper = CoulombOperator
+  SymDecomp = .FALSE.
+  AlphaBetaDecompCreate = .TRUE.
+  !===========================================================
+  !   Determine Sizes1: used to calc 3 center integrals
+  !===========================================================
+  IF(CollaborateWithSlaves)then 
+     !all nodes have info about all nodes 
+     call mem_alloc(nbasisAuxMPI,numnodes)           !number of Aux basis func assigned to rank
+     nbasisAuxMPI = 0 
+     call mem_alloc(nAtomsMPI,numnodes)              !atoms assign to rank
+     call mem_alloc(startAuxMPI,nAtomsAux,numnodes)  !startindex in full (nbasisAux)
+     call mem_alloc(AtomsMPI,nAtomsAux,numnodes)     !identity of atoms in full molecule
+     call mem_alloc(nAuxMPI,nAtomsAux,numnodes)      !nauxBasis functions for each of the nAtomsMPI
+     IF(DECinfo%AuxAtomicExtent)THEN   
+        call getRIbasisMPI(mylsitem%INPUT%AUXMOLECULE,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ELSE
+        call getRIbasisMPI(mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,numnodes,&
+             & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+     ENDIF
+     MynAtomsMPI = nAtomsMPI(mynum+1)
+     MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
+     call mem_dealloc(AtomsMPI) !not used in this subroutine 
+  ELSE
+     MynbasisAuxMPI = nbasisAux     
+  ENDIF
+  
+  !1. build Calpha(P,a,i) = (P|Q)^-1 (Q|ai)
+  ! Note this is (nbasisAuxMPI(mynum+1),nvirtAOS,noccEOS) so fairly small quantity 
+  ! we assume this fits on node. 
+  call Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
+       & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,nAtomsAux,Calpha,&
+       & NBA,AlphaBetaDecomp,AlphaBetaDecompCreate,SymDecomp,Oper)
+  !2. Construct CalphaTheta(P,j,b) = Calpha(P,a,i) Theta(a,i,j,b)
+  !  Size:  (nbasisAuxMPI(mynum+1),noccEOS,nvirtAOS)
+  nsize = nvirt*nocc*MynbasisAuxMPI
+  IF(use_bg_buf)THEN
+     call mem_pseudo_alloc(Cpq,nbasisAux*i8,MynbasisAuxMPI*i8)
+     call mem_pseudo_alloc(CalphaTheta,nsize)
+  ELSE
+     call mem_alloc(CalphaTheta,nsize)
+  ENDIF
+  !Build CalphaTheta(P,j,b) =  Calpha(P,a,i)*ThetaOcc(a,i,j,b)
+  IF(COUNT(dopair_occ).EQ.nocc*nocc)THEN
+     !Atomic fragment
+     M =  MynbasisAuxMPI   !rows of Output Matrix
+     N =  nocc*nvirt       !columns of Output Matrix
+     K =  nvirt*nocc       !summation dimension
+     call DGEMM('N','N',M,N,K,1.0E0_realk,Calpha,M,ThetaOcc,K,0.0E0_realk,CalphaTheta,M)     
+  ELSE
+     !pair fragment more complicated due to dopair_occ
+     !only contributions for i on center P and j on center Q and vise versa
+     CALL BuildCalphaTheta(nocc,nvirt,MynbasisAuxMPI,Calpha,ThetaOcc,CalphaTheta,dopair_occ)
+  ENDIF
+
+  !3. Calculate 2 of 3 gradient contribution: 
+  ! A. (P^x|bj)*CalphaTheta(P,b,j)
+  ! B. (P|(beta nu)^x)*Cvirt(beta,b)*Cocc(nu,J)*CalphaTheta(P,b,j)
+  call II_get_RIMP2_grad(LUPRI,LUPRI,RIMP2grad,Mylsitem%SETTING,&
+       & nbasisAux,nbasis,nvirt,nocc,Cvirt,Cocc,mynum,numnodes,natoms,&
+       & MynbasisAuxMPI,CalphaTheta,use_bg_buf)
+
+  !This only contains contributions from the Auxiliary functions assinged to this node. 
+  !A reduction will performed at the end. 
+
+#ifdef VAR_MPI
+!  call lsmpi_reduction(RIMP2grad,3*natoms,infpar%master,infpar%lg_comm)
+!  print*,'RIMP2 GRAD A+B'
+!  call ls_output(RIMP2grad,1,3,1,natoms,3,natoms,1,6)
+#endif
+
+  IF(numnodes.EQ.1)THEN
+     ! Build Cpq(P,Q) = CalphaTheta(P,j,b)*Calpha(Q,j,b)  
+     IF(.NOT.use_bg_buf)call mem_alloc(Cpq,nbasisAux,nbasisAux)
+     call ConstructCpq(nbasisAux,nocc,nvirt,Calpha,CalphaTheta,Cpq)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(CalphaTheta)
+     ELSE
+        call mem_dealloc(CalphaTheta)
+     ENDIF
+     call mem_dealloc(Calpha)
+
+     !4. Calculate the remianing gradient contribution: CalphaTheta(P,b,j)*(P|Q)^x*Calpha(Q,b,j)
+     ! Calculate (P|Q)^x Full Aux
+     IF(use_bg_buf)THEN
+        !FIXME: test memory if not enough memory have to make special fullcontraction routine. 
+        call mem_pseudo_alloc(AlphaBetaDeriv,nbasisAux*i8,nbasisAux*i8,3*natoms*i8)
+     ELSE
+        call mem_alloc(AlphaBetaDeriv,nbasisAux,nbasisAux,3*natoms)
+     ENDIF
+     call II_get_RI_AlphaBeta_geoderiv2CenterInt(DECinfo%output,DECinfo%output,&
+          & AlphaBetaDeriv,mylsitem%setting,nbasisAux,natoms)
+     ! Contract grad(x) = grad(x) - (P|Q)^x*Cpq(P,Q) using MPI on outer loop , OpenMP inner loop
+     call get_PQ_RIMP2_grad(Cpq,AlphaBetaDeriv,nbasisAux,3*natoms,RIMP2grad)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(AlphaBetaDeriv)
+        call mem_pseudo_dealloc(Cpq)
+     ELSE
+        call mem_dealloc(AlphaBetaDeriv)
+        call mem_dealloc(Cpq)
+     ENDIF
+  ELSE
+#ifdef VAR_MPI
+     !We want to construct Cpq(P,Q) = Calpha(P,j,b)*CalphaTheta(Q,j,b)
+     !However each node only have part of Calpha(Ppartial,j,b) and same part of 
+     !CalphaTheta(Qpartial,j,b) so we broadcast Calpha(Ppartial,j,b)
+     !building Cpq(Pfull,Qpartial) = sum_nodes Calpha(PpartialOnnode,j,b)*CalphaTheta(Qpartial,j,b)  
+     !this is the part we need to calculate part of 
+     !the remaining gradient contribution: Cpq(P,Q)*(P|Q)^x
+     !meaning we do Cpq(Pfull,Qpartial)*(Pfull|Qpartial)^x
+     !a reduction will give the full contribution. 
+     
+     IF(.NOT.use_bg_buf)call mem_alloc(Cpq,nbasisAux,MynbasisAuxMPI)
+     call ls_dzero8(Cpq,nbasisAux*MynbasisAuxMPI*i8)
+     DO inode = 1,numnodes
+        nsize = nbasisAuxMPI(inode)*nvirt*nocc
+        node = inode-1
+        IF(mynum.EQ.inode-1)THEN
+           !Bcast
+           call ls_mpibcast(Calpha,nsize,node,infpar%lg_comm)
+           call ConstructCpqMPI(nocc,nvirt,mynum,&
+                & numnodes,natoms,MynbasisAuxMPI,&
+                & nAtomsMPI,startAuxMPI,nAuxMPI,Calpha,&
+                & CalphaTheta,nbasisAux,MynbasisAuxMPI,Cpq)
+        ELSE
+           IF(use_bg_buf)THEN
+              call mem_pseudo_alloc(CalphaTmp,nsize)
+           ELSE
+              call mem_alloc(CalphaTmp,nsize)
+           ENDIF
+           call ls_mpibcast(CalphaTmp,nsize,node,infpar%lg_comm)
+           myOriginalRank = inode-1
+           call ConstructCpqMPI(nocc,nvirt,myOriginalRank,&
+                & numnodes,natoms,nbasisAuxMPI(inode),&
+                & nAtomsMPI,startAuxMPI,nAuxMPI,CalphaTmp,&
+                & CalphaTheta,nbasisAux,MynbasisAuxMPI,Cpq)
+           IF(use_bg_buf)THEN
+              call mem_pseudo_dealloc(CalphaTmp)
+           ELSE
+              call mem_dealloc(CalphaTmp)
+           ENDIF
+        ENDIF
+     ENDDO
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(CalphaTheta)
+     ELSE
+        call mem_dealloc(CalphaTheta)
+     ENDIF
+     call mem_dealloc(Calpha)
+     !4. Calculate the remianing gradient contribution: CalphaTheta(P,b,j)*(P|Q)^x*Calpha(Q,b,j)
+     ! Calculate (P|Q)^x Full Aux
+     IF(use_bg_buf)THEN
+        !FIXME: test memory if not enough memory have to make special fullcontraction routine. 
+        call mem_pseudo_alloc(AlphaBetaDeriv,nbasisAux*i8,nbasisAux*i8,3*natoms*i8)
+     ELSE
+        call mem_alloc(AlphaBetaDeriv,nbasisAux,nbasisAux,3*natoms)
+     ENDIF
+     call II_get_RI_AlphaBeta_geoderiv2CenterInt(DECinfo%output,DECinfo%output,&
+          & AlphaBetaDeriv,mylsitem%setting,nbasisAux,natoms)
+     ! Contract grad(x) = grad(x) - (P|Q)^x*Cpq(P,Q) using MPI on outer loop , OpenMP inner loop
+     call get_PQ_RIMP2_gradMPI(Cpq,AlphaBetaDeriv,nbasisAux,MynbasisAuxMPI,3*natoms,RIMP2grad,&
+          & nAtoms,numnodes,nAtomsMPI,startAuxMPI,nAuxMPI,mynum)
+
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(AlphaBetaDeriv)
+        call mem_pseudo_dealloc(Cpq)
+     ELSE
+        call mem_dealloc(AlphaBetaDeriv)
+        call mem_dealloc(Cpq)
+     ENDIF
+     !REDUCTION
+     call lsmpi_reduction(RIMP2grad,3*natoms,infpar%master,infpar%lg_comm)
+#else
+     call lsquit('numnodes not equal to 1, but no MPI',-1)
+#endif
+  ENDIF
+
+!  IF(mynum.EQ.0)THEN
+!     print*,'RIMP2 GRAD A+B+C'
+!     call ls_output(RIMP2grad,1,3,1,natoms,3,natoms,1,6)
+!  ENDIF
+
+  IF(CollaborateWithSlaves)then 
+     call mem_dealloc(nbasisAuxMPI)
+     call mem_dealloc(nAtomsMPI)
+     call mem_dealloc(startAuxMPI)
+     call mem_dealloc(nAuxMPI)
+  ENDIF
+
+end subroutine Build_RIMP2grad
+
+subroutine ConstructCpq(nbasisAux,nocc,nvirt,Calpha,CalphaTheta,Cpq)
+  implicit none
+  integer,intent(in) :: nbasisAux,nocc,nvirt
+  real(realk),intent(in) :: Calpha(nbasisAux,nvirt,nocc),CalphaTheta(nbasisAux,nocc,nvirt)
+  real(realk),intent(inout) :: Cpq(nbasisAux,nbasisAux)
+  !
+  integer :: P,Q,I,A
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(P,Q,A,&
+  !$OMP I) SHARED(nbasisAux,nocc,nvirt,Calpha,CalphaTheta,Cpq)
+  !$OMP DO COLLAPSE(2)
+  DO Q=1,nbasisAux
+     DO P=1,nbasisAux
+        Cpq(P,Q) = Calpha(P,1,1)*CalphaTheta(Q,1,1)
+     ENDDO
+  ENDDO
+  !$OMP END DO 
+  DO A=2,nvirt
+     !$OMP DO COLLAPSE(2)
+     DO Q=1,nbasisAux
+        DO P=1,nbasisAux
+           Cpq(P,Q) = Cpq(P,Q) + Calpha(P,A,1)*CalphaTheta(Q,1,A)
+        ENDDO
+     ENDDO
+     !$OMP END DO 
+  ENDDO
+  DO I=2,nocc
+     DO A=1,nvirt
+        !$OMP DO COLLAPSE(2)
+        DO Q=1,nbasisAux
+           DO P=1,nbasisAux
+              Cpq(P,Q) = Cpq(P,Q) + Calpha(P,A,I)*CalphaTheta(Q,I,A)
+           ENDDO
+        ENDDO
+        !$OMP END DO 
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL
+
+end subroutine ConstructCpq
+
+subroutine ConstructCpqMPI(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+     & nbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,CalphaTmp,CalphaTheta,&
+     & nbasisAux,MynbasisAuxMPI,Cpq)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,myOriginalRank,numnodes,natoms,nbasisAuxMPI
+  integer,intent(in) :: nAtomsMPI(numnodes),nbasisAux,MynbasisAuxMPI
+  integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
+  integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
+  real(realk),intent(in) :: CalphaTmp(nbasisAuxMPI,nvirt,nocc)
+  real(realk),intent(in) :: CalphaTheta(MynbasisAuxMPI,nocc,nvirt)
+  real(realk),intent(inout) :: Cpq(nbasisAux,MynbasisAuxMPI)
+  !
+  integer :: I,A,Q,startB,startB2,iatomB,P,nP
+  !$OMP PARALLEL DEFAULT(NONE) PRIVATE(I,A,Q,startB,startB2,iatomB,nP,&
+  !$OMP P) SHARED(nocc,nvirt,myOriginalRank,numnodes,natoms,nbasisAuxMPI,&
+  !$OMP nAtomsMPI,startAuxMPI,nAuxMPI,CalphaTmp,CalphaTheta,Cpq,MynbasisAuxMPI)
+  DO I=1,nocc
+     DO A=1,nvirt
+        startB2 = 0
+        DO iAtomB=1,nAtomsMPI(myOriginalRank+1)
+           StartB = startAuxMPI(iAtomB,myOriginalRank+1)
+           nP = nAuxMPI(iAtomB,myOriginalRank+1)
+           !$OMP DO COLLAPSE(2)
+           DO Q=1,MynbasisAuxMPI
+              DO P = 1,nP
+                 Cpq(startB+P,Q) = Cpq(startB+P,Q) + CalphaTmp(startB2+P,A,I)*CalphaTheta(Q,I,A)
+              ENDDO
+           ENDDO
+           !$OMP END DO
+           startB2 = startB2 + nP
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL
+
+end subroutine ConstructCpqMPI
+
+subroutine BuildCalphaTheta(nocc,nvirt,MynbasisAuxMPI,Calpha,ThetaOcc,&
+     & CalphaTheta,dopair_occ)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,MynbasisAuxMPI
+  real(realk),intent(in) :: Calpha(MynbasisAuxMPI,nvirt,nocc)
+  real(realk),intent(in) :: ThetaOcc(nvirt,nocc,nocc,nvirt)
+  real(realk),intent(inout) :: CalphaTheta(MynbasisAuxMPI,nocc,nvirt)
+  logical,intent(in) :: dopair_occ(nocc,nocc)
+  !local variables
+  integer :: I,J,A,B,ALPHA
+  real(realk) :: TMP(MynbasisAuxMPI),TMP2
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,A,B,ALPHA,TMP,&
+  !$OMP TMP2) SHARED(nocc,nvirt,MynbasisAuxMPI,Calpha,ThetaOcc,CalphaTheta,&
+  !$OMP dopair_occ)
+  DO B=1,nvirt
+     DO J=1,nocc
+        DO ALPHA=1,MynbasisAuxMPI
+           TMP(ALPHA) = 0.0E0_realk
+        ENDDO        
+        DO I=1,nocc
+           IF(dopair_occ(I,J))THEN
+              DO A=1,nvirt
+                 TMP2 = ThetaOcc(A,I,J,B)
+                 DO ALPHA=1,MynbasisAuxMPI
+                    TMP(ALPHA) = TMP(ALPHA) + Calpha(ALPHA,A,I)*TMP2
+                 ENDDO
+              ENDDO
+           ENDIF
+        ENDDO
+        DO ALPHA=1,MynbasisAuxMPI
+           CalphaTheta(ALPHA,J,B) = TMP(ALPHA)
+        ENDDO
+     ENDDO
+  ENDDO
+  !OMP END PARALLEL DO
+end subroutine BuildCalphaTheta
+
+subroutine get_PQ_RIMP2_gradMPI(Cpq,AlphaBetaDeriv,nbasisAux,MynbasisAuxMPI,ngeoComp,RIMP2grad,&
+     & nAtoms,numnodes,nAtomsMPI,startAuxMPI,nAuxMPI,mynum)
+implicit none
+integer :: nbasisAux,ngeoComp,nAtoms,numnodes,mynum
+integer,intent(in) :: nAtomsMPI(numnodes),MynbasisAuxMPI
+integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
+integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
+real(realk),intent(in) :: Cpq(nbasisAux,MynbasisAuxMPI)
+real(realk),intent(in) :: AlphaBetaDeriv(nbasisAux,nbasisAux,ngeoComp)
+real(realk),intent(inout) :: RIMP2grad(ngeoComp)
+!
+integer :: P,Q,X,startQ2,startQ,iAtomQ,nQ
+real(realk) TMP
+
+!$OMP PARALLEL DEFAULT(none) PRIVATE(P,Q,X,startQ2,startQ,iAtomQ,&
+!$OMP nQ) SHARED(Cpq,AlphaBetaDeriv,nbasisAux,MynbasisAuxMPI,ngeoComp,&
+!$OMP RIMP2grad,nAtoms,numnodes,nAtomsMPI,startAuxMPI,nAuxMPI,mynum,TMP)
+DO X=1,ngeoComp
+   !$OMP MASTER
+   TMP = 0.0E0_realk
+   !$OMP END MASTER
+   !$OMP BARRIER 
+   startQ2 = 0
+   DO iAtomQ=1,nAtomsMPI(mynum+1)
+      StartQ = startAuxMPI(iAtomQ,mynum+1) !global startindex
+      nQ = nAuxMPI(iAtomQ,mynum+1)
+      !$OMP DO COLLAPSE(2) REDUCTION(+:TMP)
+      DO Q=1,nQ
+         DO P = 1,nbasisAux
+            TMP = TMP + Cpq(P,startQ2+Q)*AlphaBetaDeriv(P,startQ+Q,X)   
+         ENDDO
+      ENDDO
+      !$OMP END DO
+      startQ2 = startQ2 + nQ   
+   ENDDO
+   !$OMP MASTER
+   RIMP2grad(X) = RIMP2grad(X) - TMP
+   !$OMP END MASTER
+ENDDO
+!$OMP END PARALLEL
+
+end subroutine get_PQ_RIMP2_gradMPI
+
+subroutine get_PQ_RIMP2_grad(Cpq,AlphaBetaDeriv,nbasisAux,ngeoComp,RIMP2grad)
+implicit none
+integer :: nbasisAux,ngeoComp
+real(realk),intent(in) :: Cpq(nbasisAux*nbasisAux),AlphaBetaDeriv(nbasisAux*nbasisAux,ngeoComp)
+real(realk),intent(inout) :: RIMP2grad(ngeoComp)
+!
+integer :: P,X
+real(realk) TMP
+
+!$OMP PARALLEL DEFAULT(none) PRIVATE(P,X) SHARED(nbasisAux,ngeoComp,&
+!$OMP Cpq,AlphaBetaDeriv,RIMP2grad,TMP)
+DO X=1,ngeoComp
+!$OMP MASTER
+   TMP = 0.0E0_realk
+!$OMP END MASTER
+!$OMP BARRIER 
+!$OMP DO REDUCTION(+:TMP)
+   DO P=1,nbasisAux*nbasisAux
+      TMP = TMP + Cpq(P)*AlphaBetaDeriv(P,X)   
+   ENDDO
+!$OMP END DO
+!$OMP MASTER
+   RIMP2grad(X) = RIMP2grad(X) - TMP
+!$OMP END MASTER
+ENDDO
+!$OMP END PARALLEL
+
+end subroutine get_PQ_RIMP2_grad
 
 end module ri_util_module
 

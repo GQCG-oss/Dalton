@@ -69,10 +69,10 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable the CUBLAS GPU library [default: %(default)s]')
-    group.add_argument('--collapse',
+    group.add_argument('--real-sp',
             action='store_true',
             default=False,
-            help='enable COLLAPSE clause for reorderings [default: %(default)s]')
+            help='enable single precision arithmetic for certain parts of LSDalton [default: %(default)s]')
     group.add_argument('--prefix',
             action='store',
             default=None,
@@ -193,18 +193,18 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable interest external library [default: %(default)s]')
-    group.add_argument('--qmatrix',
+    group.add_argument('--qcmatrix',
             action='store_true',
             default=False,
-            help='enable QMatrix external library [default: %(default)s]')
+            help='enable QcMatrix external library [default: %(default)s]')
     group.add_argument('--openrsp',
             action='store_true',
             default=False,
-            help='enable OpenRSP external library (need QMatrix library) [default: %(default)s]')
+            help='enable OpenRSP external library (need QcMatrix library) [default: %(default)s]')
     group.add_argument('--tdrsp',
             action='store_true',
             default=False,
-            help='enable TDRSP external library (need QMatrix library) [default: %(default)s]')
+            help='enable TDRSP external library (need QcMatrix library) [default: %(default)s]')
 
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
@@ -271,14 +271,14 @@ def gen_cmake_command(args):
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
     command += ' -DENABLE_GPU=%s'            % translate_cmake(args.gpu)
     command += ' -DENABLE_CUBLAS=%s'         % translate_cmake(args.cublas)
-    command += ' -DENABLE_COLLAPSE=%s'       % translate_cmake(args.collapse)
+    command += ' -DENABLE_REAL_SP=%s'        % translate_cmake(args.real_sp)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
     command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
-    command += ' -DENABLE_QMATRIX=%s'        % translate_cmake(args.qmatrix)
+    command += ' -DENABLE_QCMATRIX=%s'       % translate_cmake(args.qcmatrix)
     command += ' -DENABLE_TDRSP=%s'          % translate_cmake(args.tdrsp)
     command += ' -DENABLE_OPENRSP=%s'        % translate_cmake(args.openrsp)
 

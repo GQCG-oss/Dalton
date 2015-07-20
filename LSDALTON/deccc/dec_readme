@@ -106,7 +106,7 @@ Level 4
 rpa
 
 Level 3
-pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals
+pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals, cc_response_tools
 
 Level 2 
 fullmolecule, mp2, cc_integrals, crop_tools, rimp2, ri_util

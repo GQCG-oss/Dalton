@@ -46,6 +46,7 @@
       ----------------------------------------------------------------------------
       Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
       Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
       Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
@@ -87,28 +88,40 @@
      for further information.
   
   
- Who compiled             | yangminwang
- Host                     | YANGs-MBP.st.client.au.dk
- System                   | Darwin-14.1.0
+ Who compiled             | tkjaer
+ Host                     | localhost.localdomain
+ System                   | Linux-3.16.6-200.fc20.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran-4.9
- Fortran compiler version | unknown
- C compiler               | /usr/local/bin/gcc-4.9
- C compiler version       | unknown
- C++ compiler             | /usr/bin/g++
- BLAS                     | /usr/lib/libblas.dylib
- LAPACK                   | /usr/lib/liblapack.dylib
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
  Static linking           | OFF
- Last Git revision        | 7f4296c6740d8b5d99afb010c92c0512a8ed0fde
+ Last Git revision        | 1872d92c707f89721b6fb3539c3a962191897d26
  Git branch               | master
- Configuration time       | 2015-05-18 08:25:56.489789
+ Configuration time       | 2015-06-02 13:46:31.727686
 
 Start simulation
-     Date and time (Linux)  : Mon May 18 08:27:24 2015
-     Host name              : YANGs-MacBook-Pro.local                 
+     Date and time (Linux)  : Tue Jun  2 13:49:33 2015
+     Host name              : localhost.localdomain                   
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -138,6 +151,8 @@ Start simulation
   ATOMS                                                                                               
   .CONVTHR                                                                                            
   1.0d-8                                                                                              
+  **INFO                                                                                              
+  .DEBUG_MPI_MEM                                                                                      
   **GENERAL                                                                                           
   .NOGCBASIS                                                                                          
   **CC                                                                                                
@@ -194,15 +209,18 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/yangminwang/dalton_dev_150415/gfortran_debug/basis/6-31G
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/CcouplingF12/build-debug/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/Users/yangminwang/dalton_dev_150415/gfortran_debug/basis/cc-pV5Z-RI
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/CcouplingF12/build-debug/basis/cc-pV5Z-RI
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/Users/yangminwang/dalton_dev_150415/gfortran_debug/basis/aug-cc-pVDZ
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/CcouplingF12/build-debug/basis/aug-cc-pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -278,12 +296,12 @@ total         10                               57       41
  ==============
     This is a Single core calculation. (no OpenMP)
     This is a serial calculation (no MPI)
-
+ 
 Density subspace min. method    : DIIS                    
 Density optimization : Diagonalization                    
-
+ 
  Maximum size of Fock/density queue in averaging:          10
-
+ 
 Convergence threshold for gradient:   0.10E-07
 The F12 Geminal exponent for the Regular Basis =     1.0
 We perform the calculation in the standard input basis
@@ -293,27 +311,27 @@ We perform the calculation in the standard input basis
     The Screening threshold used for Exchange              :  1.0000E-08
     The Screening threshold used for One-electron operators:  1.0000E-15
  The SCF Convergence Criteria is applied to the gradnorm in AO basis
-
+ 
  End of configuration!
-
-
+ 
+ 
  First density: Atoms in molecule guess
-
- The Coulomb energy contribution    55.212241633038815     
- The Exchange energy contribution    9.7160688854742183     
- The Fock energy contribution   -45.496172747564600     
-  Iteration 0 energy:  -75.241300379484613     
-
+ 
+ The Coulomb energy contribution    55.2122416330388     
+ The Exchange energy contribution    9.71606888547422     
+ The Fock energy contribution   -45.4961727475646     
+  Iteration 0 energy:  -75.2413003794846     
+ 
 Max no. of matrices allocated in Level 2 / get_initial_dens:          9
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        93 sparsity:     55.030 %
 Matrix AO D  has nnz=       105 sparsity:     62.130 %
-  Relative convergence threshold for solver:   1.0000000000000000E-002
-  SCF Convergence criteria for gradient norm:   1.0000000000000000E-008
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  1.000000000000000E-008
 ** Get Fock matrix number   1
- The Coulomb energy contribution    41.377199186554655     
- The Exchange energy contribution    8.3303117036832894     
- The Fock energy contribution   -33.046887482871362     
+ The Coulomb energy contribution    41.3771991865547     
+ The Exchange energy contribution    8.33031170368330     
+ The Fock energy contribution   -33.0468874828714     
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -321,139 +339,139 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.19 seconds
+ >>> wall Time used in SCF iteration is   0.19 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    50.128959265563843     
- The Exchange energy contribution    9.3554581332383648     
- The Fock energy contribution   -40.773501132325485     
+ The Coulomb energy contribution    50.1289592655638     
+ The Exchange energy contribution    9.35545813323836     
+ The Fock energy contribution   -40.7735011323254     
   2    -75.8113401573   -0.30379843151    0.00      0.00000    0.00    0.0000000    3.04E+00  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    46.818165348279592     
- The Exchange energy contribution    8.9596453836114858     
- The Fock energy contribution   -37.858519964668112     
+ The Coulomb energy contribution    46.8181653482796     
+ The Exchange energy contribution    8.95964538361149     
+ The Fock energy contribution   -37.8585199646681     
   3    -75.9828627904   -0.17152263307   -1.00      0.00000    0.00    0.0000000    1.58E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    46.738301704610969     
- The Exchange energy contribution    8.9513905956042308     
- The Fock energy contribution   -37.786911109006731     
+ The Coulomb energy contribution    46.7383017046109     
+ The Exchange energy contribution    8.95139059560422     
+ The Fock energy contribution   -37.7869111090067     
   4    -75.9838968382   -0.00103404780   -1.00      0.00000    0.00    0.0000000    3.15E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    46.748576888690870     
- The Exchange energy contribution    8.9523898827344706     
- The Fock energy contribution   -37.796187005956391     
+ The Coulomb energy contribution    46.7485768886909     
+ The Exchange energy contribution    8.95238988273448     
+ The Fock energy contribution   -37.7961870059564     
   5    -75.9839719591   -0.00007512089   -1.00      0.00000    0.00    0.0000000    6.42E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    46.748339975495711     
- The Exchange energy contribution    8.9522970044014034     
- The Fock energy contribution   -37.796042971094309     
+ The Coulomb energy contribution    46.7483399754957     
+ The Exchange energy contribution    8.95229700440139     
+ The Fock energy contribution   -37.7960429710943     
   6    -75.9839743939   -0.00000243481   -1.00      0.00000    0.00    0.0000000    1.29E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    46.748967608116310     
- The Exchange energy contribution    8.9523689027873168     
- The Fock energy contribution   -37.796598705328996     
+ The Coulomb energy contribution    46.7489676081164     
+ The Exchange energy contribution    8.95236890278733     
+ The Fock energy contribution   -37.7965987053291     
   7    -75.9839744728   -0.00000007885   -1.00      0.00000    0.00    0.0000000    1.36E-04  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    46.748933188405537     
- The Exchange energy contribution    8.9523680030528965     
- The Fock energy contribution   -37.796565185352641     
+ The Coulomb energy contribution    46.7489331884055     
+ The Exchange energy contribution    8.95236800305289     
+ The Fock energy contribution   -37.7965651853526     
   8    -75.9839744737   -0.00000000095   -1.00      0.00000    0.00    0.0000000    1.29E-05  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.14 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    46.748924991769044     
- The Exchange energy contribution    8.9523670995775806     
- The Fock energy contribution   -37.796557892191480     
+ The Coulomb energy contribution    46.7489249917691     
+ The Exchange energy contribution    8.95236709957759     
+ The Fock energy contribution   -37.7965578921915     
   9    -75.9839744737   -0.00000000001   -1.00      0.00000    0.00    0.0000000    8.47E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number  10
- The Coulomb energy contribution    46.748924701338886     
- The Exchange energy contribution    8.9523670460610205     
- The Fock energy contribution   -37.796557655277866     
+ The Coulomb energy contribution    46.7489247013388     
+ The Exchange energy contribution    8.95236704606101     
+ The Fock energy contribution   -37.7965576552778     
  10    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    1.66E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.14 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number  11
- The Coulomb energy contribution    46.748924836729380     
- The Exchange energy contribution    8.9523670625131331     
- The Fock energy contribution   -37.796557774216240     
+ The Coulomb energy contribution    46.7489248367294     
+ The Exchange energy contribution    8.95236706251314     
+ The Fock energy contribution   -37.7965577742163     
  11    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    2.41E-08  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number  12
- The Coulomb energy contribution    46.748924842673681     
- The Exchange energy contribution    8.9523670629497438     
- The Fock energy contribution   -37.796557779723940     
- 12    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
+ The Coulomb energy contribution    46.7489248426736     
+ The Exchange energy contribution    8.95236706294974     
+ The Fock energy contribution   -37.7965577797239     
+ 12    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   0.54 seconds
- >>> wall Time used in **ITER is   0.54 seconds
-
+ >>>  CPU Time used in **ITER is   1.78 seconds
+ >>> wall Time used in **ITER is   1.79 seconds
+ 
 Total no. of matmuls in SCF optimization:         52
-
+ 
  Number of occupied orbitals:           5
  Number of virtual orbitals:           8
-
+ 
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
-
-
+ 
+ 
 Calculation of HOMO-LUMO gap
 ============================
-
+ 
 Calculation of occupied orbital energies converged in     3 iterations!
-
+ 
 Calculation of virtual orbital energies converged in     4 iterations!
-
+ 
     E(LUMO):                         0.203641 au
    -E(HOMO):                        -0.560613 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.764253 au
-
-
+ 
+ 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
@@ -468,34 +486,34 @@ Calculation of virtual orbital energies converged in     4 iterations!
   9   -0.00000000001   -1.0000    0.0000    0.0000000
  10   -0.00000000000   -1.0000    0.0000    0.0000000
  11    0.00000000000   -1.0000    0.0000    0.0000000
- 12   -0.00000000000   -1.0000    0.0000    0.0000000
-
+ 12    0.00000000000   -1.0000    0.0000    0.0000000
+ 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -75.50754172583407353159      0.467394077781431D+01
-    2           -75.81134015734033937406      0.303954501739685D+01
-    3           -75.98286279040831914244      0.158105545278061D+00
-    4           -75.98389683820607842790      0.315128716762763D-01
-    5           -75.98397195909828383265      0.641578434363912D-02
-    6           -75.98397439390805629955      0.129162743689662D-02
-    7           -75.98397447276275329386      0.136041514507976D-03
-    8           -75.98397447371624480184      0.128635572855398D-04
-    9           -75.98397447372278179500      0.846623520017402D-06
-   10           -75.98397447372283863842      0.166127378904967D-06
-   11           -75.98397447372275337329      0.241358232726484D-07
-   12           -75.98397447372286706013      0.920673972512813D-09
-
+    1           -75.50754172583404510988      0.467394077781430D+01
+    2           -75.81134015734033937406      0.303954501739677D+01
+    3           -75.98286279040829072073      0.158105545278055D+00
+    4           -75.98389683820605000619      0.315128716762799D-01
+    5           -75.98397195909831225435      0.641578434363198D-02
+    6           -75.98397439390802787784      0.129162743690490D-02
+    7           -75.98397447276283855899      0.136041514515329D-03
+    8           -75.98397447371624480184      0.128635572656104D-04
+    9           -75.98397447372278179500      0.846623524671442D-06
+   10           -75.98397447372286706013      0.166127404104286D-06
+   11           -75.98397447372283863842      0.241358179899618D-07
+   12           -75.98397447372283863842      0.920683329176370D-09
+ 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
-
-
+ 
+ 
       Final HF energy:                       -75.983974473723
       Nuclear repulsion:                       9.189534423283
       Electronic energy:                     -85.173508897006
-
-
+ 
+ 
 
 -- Full molecular info --
 
@@ -510,27 +528,28 @@ FULL: Number of valence orbitals :      4
 FULL: Number of occ. orbitals    :      5
 FULL: Number of virt. orbitals   :      8
 FULL: Local memory use type full :  0.34E-05
-FULL: Distribute matrices        : F
-
+FULL: Distribute matrices        :  F
+ 
  Orbital energies:
-           1  -20.560521096852213     
-           2  -1.3561320696583441     
-           3 -0.70984172879082352     
-           4 -0.56061253465497118     
-           5 -0.50136812868472025     
-           6  0.20364091105481036     
-           7  0.29972546483828250     
-           8   1.0572417564737191     
-           9   1.1644446952088494     
-          10   1.1868613396582286     
-          11   1.2156577874545660     
-          12   1.3793500295499861     
-          13   1.6961804296284217     
+           1  -20.5605210968522     
+           2  -1.35613206965835     
+           3 -0.709841728790828     
+           4 -0.560612534654974     
+           5 -0.501368128684725     
+           6  0.203640911054809     
+           7  0.299725464838279     
+           8   1.05724175647372     
+           9   1.16444469520885     
+          10   1.18686133965823     
+          11   1.21565778745456     
+          12   1.37935002954999     
+          13   1.69618042962841     
  Calculating carmom matrix for DEC calculation...
+ CABS basis test is successful
  Memory set in input to be:    2.000     GB
  Using canonical orbitals as requested in input!
-
-
+ 
+ 
 
 Full molecular calculation is carried out...
 
@@ -545,21 +564,21 @@ Full molecular calculation is carried out...
  >>> wall Time used in RIMP2: WakeSlaves is   0.00 seconds
  >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
  >>> wall Time used in DF_Calpha:Init is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.06 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.06 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.24 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.24 seconds
  >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
- >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.00 seconds
- >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.07 seconds
- >>> wall Time used in DF_Calpha:AlphaBeta is   0.06 seconds
- >>>  CPU Time used in DF_Calpha:3CenterInt is   0.07 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.07 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.24 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.24 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.24 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
- >>>  CPU Time used in Build_CalphaMO2 is   0.14 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.13 seconds
- >>>  CPU Time used in RIMP2: EnergyCont is   0.14 seconds
- >>> wall Time used in RIMP2: EnergyCont is   0.14 seconds
- RIMP2 CORRELATION ENERGY =  -0.12885079914004816     
+ >>>  CPU Time used in Build_CalphaMO2 is   0.48 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.48 seconds
+ >>>  CPU Time used in RIMP2: EnergyCont is   0.49 seconds
+ >>> wall Time used in RIMP2: EnergyCont is   0.49 seconds
+ RIMP2 CORRELATION ENERGY =  -0.128850799093031     
  LEAK TOOL STATISTICS IN full_canonical_rimp2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
             LeakTool Memory statistics          
@@ -573,53 +592,193 @@ Full molecular calculation is carried out...
   Max allocated memory, integer                        0.000 Byte
   Max allocated memory, logical                        0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
+ 
  >>>  CPU Time used in RIMP2: Finalize is   0.00 seconds
  >>> wall Time used in RIMP2: Finalize is   0.00 seconds
   
 
  ================================================ 
-            DEC-RI-MP2F12 ENERGY TERMS            
+            FULL-RI-MP2F12 ENERGY TERMS            
  ================================================ 
 
-                   E(V1,RI) =    -11.5707863642311
-                   E(V2,RI) =     10.5466454943000
-                   E(V3,RI) =      0.0441330913431
-                   E(V4,RI) =      0.1350110659383
-                   E(X1,RI) =     11.0053367995753
-                   E(X2,RI) =    -10.7113473029397
-                   E(X3,RI) =     -0.0076237249846
-                   E(X4,RI) =     -0.0279526409308
-                   E(B1,RI) =      0.5983327298894
-                   E(B2,RI) =     -2.0489582147568
-                   E(B3,RI) =     -5.6276757191334
-                   E(B4,RI) =     -3.1605193689206
-                   E(B5,RI) =      9.5472112346590
-                   E(B6,RI) =      0.9283636894333
-                   E(B7,RI) =     -0.0255727088826
-                   E(B8,RI) =      0.0513940588590
-                   E(B9,RI) =     -0.0008664438255
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.35 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.35 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.35 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.35 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.40 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.40 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.76 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.76 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.27 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.27 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.28 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.28 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.35 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.35 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.63 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.63 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.24 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.24 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.24 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.24 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.40 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.40 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.65 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.65 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.23 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.23 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.23 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.23 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.28 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.28 seconds
+ >>>  CPU Time used in Build_RobustERImatU is   0.29 seconds
+ >>> wall Time used in Build_RobustERImatU is   0.30 seconds
+         RIMP2F12 Energy contribution: E(V1,RI) =    -11.5707863635509
+         RIMP2F12 Energy contribution: E(X1,RI) =     11.0053367945784
+         RIMP2F12 Energy contribution: E(B1,RI) =      0.5983327290697
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   2.08 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   2.09 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.09 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.09 seconds
+         RIMP2F12 Energy contribution: E(B2,RI) =     -2.0516036485226
+         RIMP2F12 Energy contribution: E(B3,RI) =     -5.6273850947297
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.24 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.24 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.24 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.24 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.25 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.25 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>> wall Time used in DF_Calpha:AlphaBetaDecomp is   0.01 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.26 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.26 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.28 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.54 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.54 seconds
+         RIMP2F12 Energy contribution: E(V2,RI) =     10.5466455159755
+         RIMP2F12 Energy contribution: E(X2,RI) =    -10.7113473489034
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.22 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.22 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.22 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.23 seconds
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.39 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.39 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.39 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.40 seconds
+         RIMP2F12 Energy contribution: E(V3,RI) =      0.0600126430366
+         RIMP2F12 Energy contribution: E(V4,RI) =      0.2106730609816
+         RIMP2F12 Energy contribution: E(X3,RI) =     -0.0185588074779
+         RIMP2F12 Energy contribution: E(X4,RI) =     -0.0723971736859
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.40 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.41 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.41 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.42 seconds
+         RIMP2F12 Energy contribution: E(B4,RI) =     -3.1831177086910
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   0.28 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.28 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.29 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.29 seconds
+         RIMP2F12 Energy contribution: E(B5,RI) =      9.4764555695363
+         RIMP2F12 Energy contribution: E(B6,RI) =      0.9283636919078
+ >>>  CPU Time used in DF_Calpha:Init is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Init is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>> wall Time used in DF_Calpha:AlphaBeta is   0.00 seconds
+ >>>  CPU Time used in DF_Calpha:3CenterInt is   1.40 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   1.41 seconds
+ >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.40 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.41 seconds
+         RIMP2F12 Energy contribution: E(B7,RI) =     -0.0691798023038
+         RIMP2F12 Energy contribution: E(B8,RI) =      0.1385399606824
+         RIMP2F12 Energy contribution: E(B9,RI) =     -0.0016029817123
 
  ================================================ 
                  Energy Summary                   
  ================================================ 
 
- TOYCODE: RI-MP2 CORRECTION TO ENERGY =   -0.12885079914004816     
- TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =   -0.32487432460774390     
-
-
-
-
+ TOYCODE: RI-MP2 CORRECTION TO ENERGY =   -0.128850799093031     
+ TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =   -0.341618963809119     
+ 
+ 
+ 
+ 
              **********************************************************
              *                   CC ENERGY SUMMARY                    *
              **********************************************************
-
+ 
                E: Hartree-Fock energy :      -75.9839744737
-               E: Correlation energy  :       -0.4537251237
-               E: Total RIMP2 energy       :      -76.4376995975
-
-
-
+               E: Correlation energy  :       -0.4704697629
+               E: Total RIMP2 energy       :      -76.4544442366
+ 
+ 
+ 
  CC Memory summary
  -----------------
  Allocated memory for array4   :   0.000     GB
@@ -630,29 +789,28 @@ Full molecular calculation is carried out...
  Memory in use for array3      :   0.000     GB
  Max memory in use for array3  :   0.000     GB
  ------------------
-
+ 
 
 ------------------------------------------------------
-Total CPU  time used in CC           :         10.7976     s
-Total Wall time used in CC           :         10.5450     s
+Total CPU  time used in CC           :         27.1990     s
+Total Wall time used in CC           :         27.2920     s
 ------------------------------------------------------
 
-
-Hostname       : YANGs-MacBook-Pro.local                           
-Job finished   : Date: 18/05/2015   Time: 08:27:36
-
-
+ 
+Job finished   : Date: 02/06/2015   Time: 13:50:03
+ 
+ 
 
 =============================================================================
                           -- end of CC program --
 =============================================================================
 
-
-
- >>>  CPU Time used in *SCF is  11.55 seconds
- >>> wall Time used in *SCF is  11.31 seconds
-
-Total no. of matmuls used:                       115
+ 
+ 
+ >>>  CPU Time used in *SCF is  29.78 seconds
+ >>> wall Time used in *SCF is  29.88 seconds
+ 
+Total no. of matmuls used:                       109
 Total no. of Fock/KS matrix evaluations:          13
 Max no. of matrices allocated in Level 3:         45
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -703,14 +861,14 @@ Max no. of matrices allocated in Level 3:         45
   Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                          9.517 MB
-  Max allocated memory, type(matrix)                 136.120 kB
+  Max allocated memory, type(matrix)                 243.448 kB
   Max allocated memory, real(realk)                    9.433 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       83.881 kB
-  Max allocated memory, logical                        2.712 kB
-  Max allocated memory, character                      3.616 kB
-  Max allocated memory, AOBATCH                       98.280 kB
+  Max allocated memory, logical                        2.844 kB
+  Max allocated memory, character                      6.016 kB
+  Max allocated memory, AOBATCH                       99.840 kB
   Max allocated memory, DECORBITAL                     0.000 Byte
   Max allocated memory, DECFRAG                        0.000 Byte
   Max allocated memory, BATCHTOORB                     0.000 Byte
@@ -719,37 +877,74 @@ Max no. of matrices allocated in Level 3:         45
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                        672.000 kB
+  Max allocated memory, ARRAY                        852.000 kB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                       18.216 kB
-  Max allocated memory, LSAOTENSOR                     5.472 kB
-  Max allocated memory, SLSAOTENSOR                   20.424 kB
+  Max allocated memory, ODBATCH                       28.248 kB
+  Max allocated memory, LSAOTENSOR                    19.080 kB
+  Max allocated memory, SLSAOTENSOR                   46.080 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 229.584 kB
-  Max allocated memory, ATOMITEM                       1.632 kB
-  Max allocated memory, LSMATRIX                      13.216 kB
-  Max allocated memory, OverlapT                     322.624 kB
-  Max allocated memory, linkshell                      2.772 kB
+  Max allocated memory, ATOMTYPEITEM                 337.584 kB
+  Max allocated memory, ATOMITEM                       1.536 kB
+  Max allocated memory, LSMATRIX                      19.520 kB
+  Max allocated memory, OverlapT                     865.536 kB
+  Max allocated memory, linkshell                      4.068 kB
   Max allocated memory, integrand                    580.608 kB
   Max allocated memory, integralitem                   1.037 MB
   Max allocated memory, IntWork                      122.184 kB
   Max allocated memory, Overlap                        7.554 MB
-  Max allocated memory, ODitem                        13.248 kB
-  Max allocated memory, LStensor                       1.165 MB
+  Max allocated memory, ODitem                        20.544 kB
+  Max allocated memory, LStensor                       1.171 MB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
+ 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  11.68 seconds
- >>> wall Time used in LSDALTON is  11.48 seconds
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full        6            0.0000            0.0000
+   L3 mat_to_full             26            0.0000            0.0000
+   L3 mat_trans               71            0.0010            0.0000
+   L3 mat_assign              91            0.0010            0.0000
+   L3 mat_copy                20            0.0010            0.0000
+   L3 mat_mul                 97            0.0000            0.0010
+   L3 mat_add                 78            0.0010            0.0000
+   L3 mat_daxpy              176            0.0000            0.0000
+   L3 mat_dotproduct         121            0.0000            0.0000
+   L3 mat_sqnorm2            103            0.0000            0.0000
+   L3 mat_diag_f              13            0.0020            0.0020
+   L3 mat_retrieve_block       5            0.0000            0.0000
+   L3 mat_zero                76            0.0030            0.0010
+   L3 mat_density_from_o      12            0.0000            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
+   L3 mat_dsyev                1            0.0000            0.0000
+   L3 mat_identity             2            0.0000            0.0000
+   L3 mat_write_to_disk       14            0.0000            0.0000
+      ==============================================================
+   L3 TOTAL MAT                             0.0090            0.0040
+      ==============================================================
+   L3     II_get_overlap       1            0.0030            0.0020
+   L3     II_get_kinetic       9            0.0790            0.0800
+   L3   II_get_nucel_mat       9            1.1450            1.1490
+   L3 II_precalc_ScreenM       1            0.2890            0.2900
+   L3      II_get_nucpot       2            0.0000            0.0000
+   L3 II_GET_EXCHANGE_MA      20           11.0310           11.0690
+   L3 II_get_coulomb_mat      20            2.2820            2.2890
+   L3           homolumo       1            0.6820            0.6830
+      ==============================================================
+   L3 TOTAL INTEGRAL                       18.3390           18.4000
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is  30.14 seconds
+ >>> wall Time used in LSDALTON is  30.24 seconds
 
 End simulation
-     Date and time (Linux)  : Mon May 18 08:27:36 2015
-     Host name              : YANGs-MacBook-Pro.local                 
+     Date and time (Linux)  : Tue Jun  2 13:50:03 2015
+     Host name              : localhost.localdomain                   

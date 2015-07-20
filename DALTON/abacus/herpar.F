@@ -33,7 +33,7 @@ C  /* Deck her_pardrv */
      &                      WORK,LWORK,ITYPE,MAXDER,IATOM,NODV,
      &                      NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                      DINTSKP,RELCAL,GENCTR)
+     &                      DINTSKP,RELCALC,GENCTR)
 
 C
 #include "implicit.h"
@@ -45,7 +45,7 @@ Cef begin
 #include "incore.h"
 Cef end
 C
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL, rma_model_save
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCALC, rma_model_save
       LOGICAL   GENCTR
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), WORK(LWORK), HESSEE(*)
@@ -1491,7 +1491,7 @@ C
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
      &     JSTRS,NPRIM,NCONT,IORBS,
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
-     &     WORK(KDMRSO),DINTSKP,RELCAL,GENCTR)
+     &     WORK(KDMRSO),DINTSKP,RELCALC,GENCTR)
 
 !------------------------
 !     free memory windows
@@ -1954,7 +1954,7 @@ Cef begin
      &     SQ12EL,INDHER,INDHSQ,IODDHR,TSKCPU,IWHICH,IJS,
      &     ISYMDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &     IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCTR)
+     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCALC,GENCTR)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
@@ -1969,11 +1969,12 @@ C
 #include "maxorb.h"
 #include "dummy.h"
 #include "mtags.h"
+#include "pcmlog.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
-     &        SOFOCK,RELCAL,GENCTR
+     &        SOFOCK,RELCALC,GENCTR
       DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
      & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
@@ -2012,7 +2013,7 @@ C
       END IF
 C
       FIRST = .TRUE.
-      DIRAC = RELCAL
+      DIRAC = RELCALC
       IF (EXPECT .AND. .NOT.NOPV) THEN
          CALL REWSPL(LUPAO)
       END IF
@@ -2441,10 +2442,11 @@ C
             CALL HEADER('Molecular gradient',-1)
             CALL ADDGRD(GRADFS)
             CALL ADDGRD(GRADKE)
-            IF (SOLVNT) THEN
+            IF (SOLVNT .OR. PCM) THEN
                CALL ADDGRD(GSOLTT)
                CALL ADDGRD(GSOLNN)
             END IF
+            IF (PCM) CALL ADDGRD(GSOLCV)
             CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP
@@ -2709,7 +2711,7 @@ C     For infpar.h
 C
       SLAVE  = .FALSE.
 C     ... this is the master in a parallel run
-      DEBUG  = .FALSE.
+      INFPAR_DEBUG  = .FALSE.
       NTASK  = 1
       IPRPAR = 0
       NDEGDI = 5
@@ -2785,7 +2787,7 @@ C
 #endif
                GO TO 100
     5          CONTINUE
-                  DEBUG = .TRUE.
+                  INFPAR_DEBUG = .TRUE.
                GO TO 100
     6          CONTINUE
                   rma_model = .true.
