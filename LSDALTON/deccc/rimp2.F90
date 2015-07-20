@@ -224,7 +224,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! initialize the CUBLAS context
   stat = cublasCreate_v2(cublas_handle)
   print*,'cublasCreate_v2 gives stat=',stat
-  stat = cudaSetDevice(0)
+  stat = cudaSetDevice(int(0,kind=4))
   print*,'cudaSetDevice(0) gives stat=',stat
   print*,'known results are:'
   !print*,'cudaSuccess',cudaSuccess
