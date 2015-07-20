@@ -1,6 +1,6 @@
 
 subroutine pdm_tensor_slave(comm)
-  use precision
+  use tensor_parameters_and_counters
   use lstiming
   !use matrix_operations_scalapack, only: BLOCK_SIZE, SLGrid, DLEN_
   use memory_handling, only: mem_alloc,mem_dealloc
@@ -23,10 +23,11 @@ subroutine pdm_tensor_slave(comm)
    CHARACTER    :: T(2)
    INTEGER      :: JOB
    real(tensor_dp),pointer :: realar1(:)
-   integer, pointer    :: intarr1(:), intarr2(:), intarr3(:), intarr4(:)
-   integer             :: INT1,       INT2,       INT3,       INT4
+   integer(kind=tensor_long_int), pointer  :: lintar1(:)
+   integer, pointer  :: intarr1(:), intarr2(:), intarr3(:), intarr4(:)
+   integer           :: INT1,       INT2,       INT3,       INT4
    real(tensor_dp)   :: REAL1,      REAL2
-   logical             :: LOG1
+   logical           :: LOG1
    logical :: loc
    character (4) :: at 
 #ifdef VAR_MPI
@@ -85,9 +86,9 @@ subroutine pdm_tensor_slave(comm)
    CASE(JOB_PRINT_MEM_INFO1)
       call print_mem_per_node(DECinfo%output,.false.)
    CASE(JOB_PRINT_MEM_INFO2)
-      call mem_alloc(realar1,1)
-      call print_mem_per_node(DECinfo%output,.false.,realar1)
-      call mem_dealloc(realar1)
+      call mem_alloc(lintar1,1)
+      call print_mem_per_node(DECinfo%output,.false.,lintar1)
+      call mem_dealloc(lintar1)
    CASE(JOB_GET_NRM2_TILED)
       REAL1 = tensor_tiled_pdm_get_nrm2(A)
    CASE(JOB_DATA2TILED_DIST)

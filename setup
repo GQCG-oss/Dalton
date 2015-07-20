@@ -73,10 +73,6 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable single precision arithmetic for certain parts of LSDalton [default: %(default)s]')
-    group.add_argument('--collapse',
-            action='store_true',
-            default=False,
-            help='enable COLLAPSE clause for reorderings [default: %(default)s]')
     group.add_argument('--prefix',
             action='store',
             default=None,
@@ -276,7 +272,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_GPU=%s'            % translate_cmake(args.gpu)
     command += ' -DENABLE_CUBLAS=%s'         % translate_cmake(args.cublas)
     command += ' -DENABLE_REAL_SP=%s'        % translate_cmake(args.real_sp)
-    command += ' -DENABLE_COLLAPSE=%s'       % translate_cmake(args.collapse)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
     command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
