@@ -392,14 +392,15 @@ contains
 
 !$acc host_data use_device(a,b,res)
 !          call sdot_acc_openacc_async(acc_handle,n,a,1,b,1,res)
-          call sgemm_acc_openacc_async(acc_handle,'n','n',1,1,n,1.0E0_realk,a,1,b,n,0.0E0_realk,res,1)
+          call sgemm_acc_openacc_async(acc_handle,'n','n',1,1,n,real(1.0E0_realk,kind=4),&
+                             & a,1,b,n,real(0.0E0_realk,kind=4),res,1)
 !$acc end host_data
 
        else
 
 !$acc host_data use_device(a,b,res)
 !          res = sdot_acc(n,a,1,b,1)
-          call sgemm_acc('n','n',1,1,n,1.0E0_realk,a,1,b,n,0.0E0_realk,res,1)
+          call sgemm_acc('n','n',1,1,n,real(1.0E0_realk,kind=4),a,1,b,n,real(0.0E0_realk,kind=4),res,1)
 !$acc end host_data
 
        endif
@@ -409,8 +410,8 @@ contains
 !$acc host_data use_device(a,b,res)
 !       stat = cublasSdot_v2(cublas_handle,int(n,kind=4),a,int(1,kind=4),b,int(1,kind=4),res)
        stat = cublasSgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
-                             & 1.0E0_realk,c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
-                             & 0.0E0_realk,c_loc(res),int(1,kind=4))
+                             & real(1.0E0_realk,kind=4),c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
+                             & real(0.0E0_realk,kind=4),c_loc(res),int(1,kind=4))
 !$acc end host_data
 
 #endif
