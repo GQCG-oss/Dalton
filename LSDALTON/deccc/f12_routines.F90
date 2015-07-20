@@ -2542,6 +2542,8 @@ module f12_routines_module
  
     integer i,a,c
 
+    inner_prod = 0.0E0_realk
+
     do i=1,nocc
        do a=1,nvirt
           inner_prod = inner_prod + t1ia(i,a)*t2ia(i,a)
