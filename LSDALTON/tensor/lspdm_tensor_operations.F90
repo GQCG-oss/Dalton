@@ -3795,7 +3795,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_PTR_RESHAPE
      buffA(1:A%tsize,1:nbuffsA) => w
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
-     call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,nbuffsA])
+     call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,int(nbuffsA,kind=tensor_standard_int)])
 #else
      call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
