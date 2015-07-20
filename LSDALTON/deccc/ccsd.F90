@@ -1208,12 +1208,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! scheme 2: additionally to 3 also the amplitudes, u, the residual are
         !           treated in PDM, the strategy is to only use one V^2O^2 in 
         !           local mem
-        ! scheme 1: All full 4 dimensional quantities are stored in PDM
+        ! scheme 1: All full 4-dimensional quantities are stored in PDM
+     endif
 
 #ifndef VAR_MPI
-        if(scheme==3.or.scheme==2.or.scheme==1) call lsquit('ERROR(ccsd_residual_integral_driven): wrong choice of scheme!',-1)
+     if(scheme==3.or.scheme==2.or.scheme==1) call lsquit('ERROR(ccsd_residual_integral_driven): wrong choice of scheme!',-1)
 #endif
-     endif
 
 
 #ifdef DIL_ACTIVE
@@ -1289,13 +1289,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 
-        !if the residual is handeled as dense, allocate and zero it, adjust the
-        !access parameters to the data
-        if(omega2%itype/=TT_DENSE.and.(scheme==3.or.scheme==4))then
-           call tensor_allocate_dense(omega2, bg = use_bg_buf)
-           omega2%itype=TT_DENSE
-        endif
-        call tensor_zero(omega2)
+     !if the residual is handeled as dense, allocate and zero it, adjust the
+     !access parameters to the data
+     if(omega2%itype/=TT_DENSE.and.(scheme==3.or.scheme==4))then
+        call tensor_allocate_dense(omega2, bg = use_bg_buf)
+        omega2%itype=TT_DENSE
+     endif
+     call tensor_zero(omega2)
 
 
         ! ************************************************
@@ -1456,7 +1456,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
 
      w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !``DIL: w2 size must be reduced when DIL
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !`DIL: w2 size must be reduced in Scheme 1
 
      w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
@@ -1549,8 +1549,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            !`Maybe we should use the bg buffer here as well
            call tensor_ainit(o2ilej, [nv,nv,nor], 3, local=local, atype='TDAR', tdims=[vs,vs,nor])
            call tensor_zero(o2ilej)
-           if(DIL_LOCK_OUTSIDE) call tensor_lock_wins(o2ilej,'s',all_nodes = .true.)
         endif
+
 #ifdef DIL_ACTIVE
         scheme=sch_sym
 #endif
@@ -1574,11 +1574,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call tensor_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims=sio4_tdim(1:sio4_mode))
         call tensor_zero(sio4)
+
 #ifdef DIL_ACTIVE
-        scheme=2 !`DIL: remove
+        scheme=1 !`DIL: remove
 #endif
-
-
 #ifdef VAR_MPI
         if(alloc_in_dummy)then
            if(scheme==3.or.scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
@@ -1588,7 +1587,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
               call tensor_lock_wins(sio4,  's',all_nodes = .true.)
            endif
+           if(scheme==1.and.DIL_LOCK_OUTSIDE) call tensor_lock_wins(o2ilej,'s',all_nodes = .true.)
         endif
+#endif
+#ifdef DIL_ACTIVE
+        scheme=2 !`DIL: remove
 #endif
 
      endif
@@ -1627,7 +1630,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 #ifdef DIL_ACTIVE
-     scheme=2 !``DIL: remove
+     scheme=2 !`DIL: remove
 #endif
 
 
@@ -2267,7 +2270,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            case(1) !`DIL: Tensor contraction 4
 #ifdef DIL_ACTIVE
               if(sch_sym.eq.1) then
-               !```DIL: Write symmetric
+               !``DIL: Write symmetric
               else
                ! (w3):I[ gamma i j alpha] <- (w0):I[i gamma alpha  j]
                call array_reorder_4d(1.0E0_realk,w0%d,no,lg,la,no,[2,1,4,3],0.0E0_realk,w3%d) !`DIL: w0,w3 in use
@@ -2472,7 +2475,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
 
 #ifdef DIL_ACTIVE
-     scheme=sch_sym !`DIL: remove
+     scheme=1 !`DIL: remove
 #endif
      ! Finish the MPI part of the Residual calculation
      call time_start_phase(PHASE_IDLE, at = time_intloop_work )
@@ -2480,15 +2483,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
         call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
         call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
-        if(scheme==1) call tensor_unlock_wins(o2ilej,all_nodes=.true.)
+        if(scheme==1.and.DIL_LOCK_OUTSIDE) call tensor_unlock_wins(o2ilej,all_nodes=.true.)
      endif
 
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-     if(scheme==1) then
-        print *,'BEFORE FREEING o2ilej we need to update the full residual o2: ',infpar%mynum
+!     if(scheme==1) then
+!        print *,'BEFORE FREEING o2ilej we need to update the full residual o2: ',infpar%mynum
 !        call lsmpi_barrier(infpar%lg_comm)
 !        print *,'#DIL[',infpar%mynum,']: omega2 norm before the init = ',dil_tensor_norm1(omega2),&
 !         &omega2%access_type,AT_ALL_ACCESS,AT_MASTER_ACCESS
@@ -2497,10 +2500,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !        print *,'#DIL[',infpar%mynum,']: omega2 norm before the test = ',dil_tensor_norm1(omega2),&
 !         &omega2%access_type,AT_ALL_ACCESS,AT_MASTER_ACCESS
 !        call lsmpi_barrier(infpar%lg_comm)
-        call dil_distr_tens_insert_sym2(omega2,o2ilej,3_INTD,4_INTD,3_INTD,errc,locked=.false.)
+!        call dil_distr_tens_insert_sym2(omega2,o2ilej,3_INTD,4_INTD,3_INTD,errc,locked=.false.)
 !        call lsmpi_barrier(infpar%lg_comm)
 !        print *,'#DIL TEST2 NORMS ',infpar%mynum,dil_tensor_norm1(o2ilej),dil_tensor_norm1(omega2)
-     endif
+!     endif
 
      call tensor_free(tmi)
      call tensor_free(tpl)
@@ -2735,12 +2738,25 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_WORK, twall = time_Bcnd )
 
+#ifdef DIL_ACTIVE
+        scheme=sch_sym !`DIL: remove
+#endif
         !get B2.2 contributions
         !**********************
-        call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm)
-
+        if(scheme/=1) then
+         call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm)
+        else
+         call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm,&
+         &tmp_tens=o2ilej)
+        endif
+#ifdef DIL_ACTIVE
+        scheme=1 !`DIL:remove
+#endif
         call tensor_free(sio4)
-        call tensor_free(o2ilej)
+        if(scheme==1) call tensor_free(o2ilej)
+#ifdef DIL_ACTIVE
+        scheme=2 !`DIL:remove
+#endif
 
         call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
 

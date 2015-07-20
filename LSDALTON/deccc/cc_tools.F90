@@ -1976,7 +1976,7 @@ module cc_tools_module
    !> \brief Get the b2.2 contribution constructed in the kobayashi scheme after
    !the loop to avoid steep scaling ste  !> \author Patrick Ettenhuber
    !> \date December 2012
-   subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,om2,s,lock_outside,tw,tc,no_par,order)
+   subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,om2,s,lock_outside,tw,tc,no_par,order,tmp_tens)
       implicit none
       !> the sio4 matrix from the kobayashi terms on input
       type(tensor), intent(in) :: sio4
@@ -1998,6 +1998,7 @@ module cc_tools_module
       real(realk), intent(inout) :: tw,tc
       logical, intent(in),optional :: no_par
       integer, intent(in),optional :: order(4)
+      type(tensor), intent(inout), optional:: tmp_tens
       integer :: nor
       integer :: ml,l,tl,fai,lai
       integer :: tri,fri
@@ -2011,9 +2012,11 @@ module cc_tools_module
       call time_start_phase(PHASE_WORK)
 
       np = .false.
-      if(present(no_par))np = no_par
+      if(present(no_par)) np = no_par
       o = [1,2,3,4]
       if(present(order)) o  = order
+
+      if(s==1.and.(.not.present(tmp_tens))) call lsquit('ERROR(get_B22_contrib_mo): Scheme 1 requires <tmp_tens> argument!',-1)
 
       me    = 0
       massa = 0
@@ -2063,13 +2066,21 @@ module cc_tools_module
          endif
 
 
-      else if((s==2.or.s==1).and.traf)then
+      else if(s==2.and.traf)then
 
 #ifdef VAR_MPI
          o = [1,2,3,4]
          call tensor_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o,force_sync=.true.)
 #endif
 
+      else if(s==1)then
+
+#ifdef VAR_MPI
+         stop !`DIL: Write
+#endif
+
+      else
+         call lsquit('ERROR(get_B22_contrib_mo): Unknown IF-THEN branch!',-1)
       endif
 
       call time_start_phase(PHASE_COMM, at = tw )
