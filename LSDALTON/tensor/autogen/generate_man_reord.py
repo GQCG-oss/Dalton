@@ -327,17 +327,19 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
      if modes == 3:
        oaccloop_gang = "!$acc loop gang\n"
        oaccloop_worker = "!$acc loop worker\n"
-       oaccloop_vector = "!$acc loop vector\n"
      elif modes == 2 :
        oaccloop_gang = "!$acc loop gang, worker\n"
-       oaccloop_vector = "!$acc loop vector\n"
      else:
        oaccloop_gang = "!$acc loop gang collapse("+str(modes-2)+")\n"
        oaccloop_worker = "!$acc loop worker\n"
-       oaccloop_vector = "!$acc loop vector\n"
+
+     oaccloop_vector = "!$acc loop vector\n"
 
      f.write("\n")
-     f.write("    "+oaccparallel_wait+oaccparallel_async+"  if(wait_arg)\n\n")
+     f.write("    if(wait_arg)then\n\n")
+     f.write("      "+oaccparallel_wait+oaccparallel_async+"\n\n")
+     f.write("    endif\n")
+     #f.write("    "+oaccparallel_wait+oaccparallel_async+"  if(wait_arg)\n\n")
      f.write("    "+oaccparallel_init+oaccparallel_async)
      f.write("\n")
 
@@ -574,7 +576,7 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
  
         for j in  range(modes-1,-1,-1):
           f.write(offsetstr2+"enddo\n")
-          if acc:
+          if acc and (j==modes-1 or j==modes-2 or j==0):
              f.write(offsetstr2+oaccloop_end)
           offsetstr2 = offsetstr2[0:-2]
         f.write("\n")
