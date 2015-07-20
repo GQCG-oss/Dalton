@@ -356,9 +356,9 @@ contains
           i_pos = (i_tile-1)*tile_size+1
           j_pos = (j_tile-1)*tile_size+1
 
-          call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*i_tile)
+          call get_tile_dim(nelms,vvvo,i_tile)
           tile_size_tmp_i = int(nelms/nvirt**3)
-          call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*j_tile)
+          call get_tile_dim(nelms,vvvo,j_tile)
           tile_size_tmp_j = int(nelms/nvirt**3)
 
           !FIND i and j in buffer
@@ -410,7 +410,7 @@ contains
 
              k_pos = (k_tile-1)*tile_size+1
 
-             call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*k_tile)
+             call get_tile_dim(nelms,vvvo,k_tile)
              tile_size_tmp_k = int(nelms/((i8*nvirt)*(i8*nvirt**2)))
 
              !FIND k in buffer
@@ -1795,9 +1795,9 @@ contains
           a_pos = (a_tile-1)*tile_size+1
           b_pos = (b_tile-1)*tile_size+1
 
-          call get_tileinfo_nels_fromarr8(nelms,vovv,i8*a_tile)
+          call get_tile_dim(nelms,vovv,a_tile)
           tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
-          call get_tileinfo_nels_fromarr8(nelms,vovv,i8*b_tile)
+          call get_tile_dim(nelms,vovv,b_tile)
           tile_size_tmp_b = int(nelms/(nocc*nvirt**2))
 
           !FIND a and b in buffer
@@ -1852,7 +1852,7 @@ contains
 
              c_pos = (c_tile-1)*tile_size+1
 
-             call get_tileinfo_nels_fromarr8(nelms,vovv,i8*c_tile)
+             call get_tile_dim(nelms,vovv,c_tile)
              tile_size_tmp_c = int(nelms/(nocc*nvirt**2))
 
              !FIND c in buffer

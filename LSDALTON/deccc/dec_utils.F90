@@ -5779,8 +5779,8 @@ end function max_batch_dimension
      case( TT_TILED_DIST )
 
 
-        call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
-           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset, bg=bg )
+        call tensor_init(u, t2%dims, int(t2%mode), tensor_type = t2%itype,&
+           &pdm = t2%access_type, tdims = int(t2%tdim), fo = int(t2%offset), bg=bg )
 
         if(DECinfo%use_singles)then
 

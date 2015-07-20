@@ -179,8 +179,8 @@
          integer(INTD), private:: rank                                !tensor rank (number of dimensions)
          integer(INTD), private:: dims(1:MAX_TENSOR_RANK)             !tensor dimension extents: dims(1:rank)
          integer(INTD), private:: base(1:MAX_TENSOR_RANK)             !offsets specifying a subtensor (similar to cspec%bases)
-!         real(realk), pointer, contiguous, private:: elems(:)=>NULL() !tensor elements (1:*)
-         real(realk), pointer, contiguous :: elems(:)=>NULL() !tensor elements (1:*)
+!         real(tensor_dp), pointer, contiguous, private:: elems(:)=>NULL() !tensor elements (1:*)
+         real(tensor_dp), pointer, contiguous :: elems(:)=>NULL() !tensor elements (1:*)
         end type tens_loc_t
  !Tensor argument:
         type, private:: tens_arg_t
@@ -195,14 +195,14 @@
          type(tens_arg_t), private:: dest_arg      !destination tensor argument
          type(tens_arg_t), private:: left_arg      !left tensor argument
          type(tens_arg_t), private:: right_arg     !right tensor argument
-         real(realk), private:: alpha              !multiplication prefactor (can be explicit)
-         real(realk), private:: beta               !scaling factor for the destination tensor (always implicit)
+         real(tensor_dp), private:: alpha              !multiplication prefactor (can be explicit)
+         real(tensor_dp), private:: beta               !scaling factor for the destination tensor (always implicit)
          integer(INTD), private:: num_async        !number of asynchronous outstanding MPI uploads left after the contraction
          type(rank_win_t), private:: list_async(1:MAX_TILES_PER_PART)  !asynchronous outstanding MPI uploads left after the contraction
 #ifdef VAR_PGF90
-         real(realk), pointer, contiguous :: buffer(:)=>NULL() !work buffer
+         real(tensor_dp), pointer, contiguous :: buffer(:)=>NULL() !work buffer
 #else
-         real(realk), pointer, contiguous, private:: buffer(:)=>NULL() !work buffer
+         real(tensor_dp), pointer, contiguous, private:: buffer(:)=>NULL() !work buffer
 #endif
          integer(INTD), private:: alloc_type=DIL_ALLOC_NOT             !allocation type for the work buffer
         end type dil_tens_contr_t
@@ -237,9 +237,9 @@
         type, private:: arg_buf_t
          integer(INTL), private:: buf_vol=0_INTL                        !buffer volume (number of elements)
 #ifdef VAR_PGF90
-         real(realk), pointer, contiguous :: buf_ptr(:)=>NULL() !buffer pointer
+         real(tensor_dp), pointer, contiguous :: buf_ptr(:)=>NULL() !buffer pointer
 #else
-         real(realk), pointer, contiguous, private:: buf_ptr(:)=>NULL() !buffer pointer
+         real(tensor_dp), pointer, contiguous, private:: buf_ptr(:)=>NULL() !buffer pointer
 #endif
         end type arg_buf_t
  !Device buffers:
@@ -252,11 +252,11 @@
 !INTERFACES:
  !CPU pointer memory allocation:
         interface cpu_ptr_alloc
-         module procedure cpu_ptr_alloc_r !deafult real kind (realk)
+         module procedure cpu_ptr_alloc_r !deafult real kind (tensor_dp)
         end interface cpu_ptr_alloc
  !CPU pointer memory deallocation:
         interface cpu_ptr_free
-         module procedure cpu_ptr_free_r !deafult real kind (realk)
+         module procedure cpu_ptr_free_r !deafult real kind (tensor_dp)
         end interface cpu_ptr_free
  !Integer to String conversion:
         interface int2str
@@ -523,7 +523,7 @@
         integer(INTD), intent(inout):: ierr                         !out: error code (0:success)
         integer(INTD), intent(in), optional:: tens_rank             !in: tensor rank (for local tensors only)
         integer(INTD), intent(in), optional:: tens_dims(1:*)        !in: tensor dimension extents (for local tensors only)
-        real(realk), intent(in), target, optional:: tens_elems(1:*) !in: tensor elements (for local tensors only)
+        real(tensor_dp), intent(in), target, optional:: tens_elems(1:*) !in: tensor elements (for local tensors only)
         integer(INTD), intent(in), optional:: tens_bases(1:*)       !in: base offsets (if a subtensor)
         type(tensor), intent(in), target, optional:: tens_distr     !in: distributed tensor instance (for distributed tensors only)
         integer(INTD):: i
@@ -578,7 +578,7 @@
         call dil_tens_arg_clean(tcontr%dest_arg)
         call dil_tens_arg_clean(tcontr%left_arg)
         call dil_tens_arg_clean(tcontr%right_arg)
-        tcontr%alpha=1E0_realk; tcontr%beta=0E0_realk
+        tcontr%alpha=1E0_tensor_dp; tcontr%beta=0E0_tensor_dp
         tcontr%num_async=-1 !-1 means undefined because 0 will have a special meaning later!
         if(associated(tcontr%buffer)) call cpu_ptr_free(tcontr%buffer,errc,attr=tcontr%alloc_type)
         if(errc.eq.0) tcontr%alloc_type=DIL_ALLOC_NOT
@@ -604,7 +604,7 @@
         integer(INTD), intent(inout):: ierr                         !out: error code (0:success)
         integer(INTD), intent(in), optional:: tens_rank             !in: tensor rank (for local tensors only)
         integer(INTD), intent(in), optional:: tens_dims(1:*)        !in: tensor dimension extents (for local tensors only)
-        real(realk), intent(in), target, optional:: tens_elems(1:*) !in: tensor elements (for local tensors only)
+        real(tensor_dp), intent(in), target, optional:: tens_elems(1:*) !in: tensor elements (for local tensors only)
         integer(INTD), intent(in), optional:: tens_bases(1:*)       !in: base offsets (if a subtensor)
         type(tensor), intent(in), target, optional:: tens_distr     !in: distributed tensor instance (for distributed tensors only)
         type(tens_arg_t), pointer:: targ
@@ -693,7 +693,7 @@
          dil_get_min_buf_size=max(dil_get_min_buf_size,sz)
          sz=dil_get_arg_tile_vol(tcontr%right_arg,i); if(i.ne.0) then; ierr=3; return; endif
          dil_get_min_buf_size=max(dil_get_min_buf_size,sz)
-         dil_get_min_buf_size=(int(real(dil_get_min_buf_size,8)*scl,INTL)/ALIGNMENT+1_INTL)*ALIGNMENT*BUFS_PER_DEV*ndev*realk
+         dil_get_min_buf_size=(int(real(dil_get_min_buf_size,8)*scl,INTL)/ALIGNMENT+1_INTL)*ALIGNMENT*BUFS_PER_DEV*ndev*tensor_dp
          dil_get_min_buf_size=max(dil_get_min_buf_size,MIN_BUF_MEM)
         else
          ierr=4
@@ -707,17 +707,17 @@
         type(dil_tens_contr_t), intent(inout):: tcontr           !inout: full tensor contraction specification
         integer(INTL), intent(in):: mem_lim                      !in: size of the buffer in bytes
         integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
-        real(realk), intent(in), target, optional:: ext_buf(1:)  !in: external buffer space
+        real(tensor_dp), intent(in), target, optional:: ext_buf(1:)  !in: external buffer space
         integer(INTD), intent(in), optional:: alloc_type         !in: allocation type
         integer(INTL):: nelems,sreal
-        real(realk):: val
+        real(tensor_dp):: val
 
         ierr=0
         if(associated(tcontr%buffer)) call cpu_ptr_free(tcontr%buffer,ierr,attr=tcontr%alloc_type)
         if(ierr.eq.0) then
          tcontr%alloc_type=DIL_ALLOC_NOT
          if(mem_lim.ge.MIN_BUF_MEM) then
-          val=0E0_realk; sreal=int(sizeof(val),INTL)
+          val=0E0_tensor_dp; sreal=int(sizeof(val),INTL)
           if(present(ext_buf)) then !associate to a preallocated external buffer
            nelems=mem_lim/sreal !associate to at most <mem_lim> bytes
            tcontr%buffer(1:nelems)=>ext_buf; tcontr%alloc_type=DIL_ALLOC_EXT
@@ -754,7 +754,7 @@
         integer(INTD), intent(in), optional:: dbase(1:*) !in: subtensor base offsets for the destination tensor argument
         integer(INTD), intent(in), optional:: lbase(1:*) !in: subtensor base offsets for the left tensor argument
         integer(INTD), intent(in), optional:: rbase(1:*) !in: subtensor base offsets for the right tensor argument
-        real(realk), intent(in), optional:: alpha        !in: alpha prefactor
+        real(tensor_dp), intent(in), optional:: alpha        !in: alpha prefactor
         logical, intent(in), optional:: dest_zero        !in: destination zero flag
         integer(INTD):: i,j,k,l,m,n,nd,nl,nr
         integer(INTD):: dprm(1:MAX_TENSOR_RANK),lprm(1:MAX_TENSOR_RANK),rprm(1:MAX_TENSOR_RANK)
@@ -862,11 +862,11 @@
            endif
           endif
  !Other stuff:
-          if(present(alpha)) then; tcontr%alpha=alpha; else; tcontr%alpha=1E0_realk; endif
+          if(present(alpha)) then; tcontr%alpha=alpha; else; tcontr%alpha=1E0_tensor_dp; endif
           if(tcontr%dest_arg%store_type.eq.'l'.or.tcontr%dest_arg%store_type.eq.'L') then
-           tcontr%beta=1E0_realk !local destination arguments use accumulation in GEMM
+           tcontr%beta=1E0_tensor_dp !local destination arguments use accumulation in GEMM
           else
-           tcontr%beta=0E0_realk !distributed destination arguments use assignment in GEMM (accumulated via MPI)
+           tcontr%beta=0E0_tensor_dp !distributed destination arguments use assignment in GEMM (accumulated via MPI)
           endif
           if(present(dest_zero)) then; dz=dest_zero; else; dz=.false.; endif
  !Set up a formal tensor contraction specification:
@@ -1309,7 +1309,7 @@
             i1=lbound(arg_buf%buf_ptr,1)
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i0) SCHEDULE(GUIDED)
             do i0=i1,i1+ivol-1_INTL
-             arg_buf%buf_ptr(i0)=0E0_realk
+             arg_buf%buf_ptr(i0)=0E0_tensor_dp
             enddo
 !$OMP END PARALLEL DO
            else
@@ -1340,7 +1340,7 @@
         subroutine cpu_ptr_alloc_r(arr,nelems,ierr,base,attr) !SERIAL
 !This subroutine allocates memory for a 1d pointer array (default real).
         implicit none
-        real(realk), pointer, contiguous, intent(inout):: arr(:) !out: 1d array
+        real(tensor_dp), pointer, contiguous, intent(inout):: arr(:) !out: 1d array
         integer(INTL), intent(in):: nelems                       !in: number of elements to allocate
         integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
         integer(INTL), intent(in), optional:: base               !in: index numeration start offset (default is 1)
@@ -1349,10 +1349,10 @@
         integer(INTD):: flags
         integer(C_SIZE_T):: csize
         type(C_PTR):: caddr
-        real(realk), pointer, contiguous:: fptr(:)
-        real(realk):: val
+        real(tensor_dp), pointer, contiguous:: fptr(:)
+        real(tensor_dp):: val
         integer(MPI_ADDRESS_KIND):: mpi_size
-        integer(ls_mpik):: mpi_err
+        integer(tensor_mpi_kind):: mpi_err
 
         ierr=0
         if(nelems.gt.0_INTL) then
@@ -1368,13 +1368,13 @@
           endif
  !Pinned malloc:
          case(DIL_ALLOC_PINNED)
-          val=0E0_realk; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
+          val=0E0_tensor_dp; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
           !`Write (call C wrapper for cudaMallocHost)
           call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
  !MPI malloc:
          case(DIL_ALLOC_MPI)
           caddr=C_NULL_PTR
-          val=0E0_realk; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND)
+          val=0E0_tensor_dp; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND)
           call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,mpi_err)
           if(mpi_err.eq.0) then
            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
@@ -1398,12 +1398,12 @@
 !WARNING: This subroutine assumes that MPI_FREE_MEM has an explicitly declared interface in MPI.mod!
 !If not, it may NOT work correctly!!!
         implicit none
-        real(realk), pointer, contiguous, intent(inout):: arr(:) !inout: 1d array
+        real(tensor_dp), pointer, contiguous, intent(inout):: arr(:) !inout: 1d array
         integer(INTD), intent(inout):: ierr                      !out: error code (0:success)
         integer(INTD), intent(in), optional:: attr               !in: attributes (pinned, etc.)
         type(C_PTR):: caddr
         integer(INTD):: flags
-        integer(ls_mpik):: errc
+        integer(tensor_mpi_kind):: errc
 
 !#ifdef PROTO_MPI_FREE_MEM
 !        interface
@@ -1449,8 +1449,8 @@
         integer(INTD) function my_mpi_size(my_comm) !SERIAL
 !Returns the rank of an MPI process.
         implicit none
-        integer(ls_mpik), intent(in), optional:: my_comm !in: MPI communicator
-        integer(ls_mpik):: i,ierr
+        integer(tensor_mpi_kind), intent(in), optional:: my_comm !in: MPI communicator
+        integer(tensor_mpi_kind):: i,ierr
         i=0
         if(present(my_comm)) then !explicit communicator
          call MPI_COMM_SIZE(my_comm,i,ierr); if(ierr.ne.0) i=-1
@@ -1464,8 +1464,8 @@
         integer(INTD) function my_mpi_rank(my_comm) !SERIAL
 !Returns the rank of an MPI process.
         implicit none
-        integer(ls_mpik), intent(in), optional:: my_comm !in: MPI communicator
-        integer(ls_mpik):: i,ierr
+        integer(tensor_mpi_kind), intent(in), optional:: my_comm !in: MPI communicator
+        integer(tensor_mpi_kind):: i,ierr
         i=-1
         if(present(my_comm)) then !explicit communicator
          call MPI_COMM_RANK(my_comm,i,ierr); if(ierr.ne.0) i=-1
@@ -2141,7 +2141,7 @@
 !This subroutine extracts a slice from a tensor.
         implicit none
 !-------------------------------------------------
-        integer(INTD), parameter:: real_kind=realk
+        integer(INTD), parameter:: real_kind=tensor_dp
 !-------------------------------------------------
         integer(INTD), intent(in):: dim_num              !in: number of tensor dimensions
         real(real_kind), intent(in):: tens(0:*)          !in: tensor
@@ -2205,7 +2205,7 @@
 !This subroutine inserts a slice into a tensor.
         implicit none
 !-------------------------------------------------
-        integer(INTD), parameter:: real_kind=realk
+        integer(INTD), parameter:: real_kind=tensor_dp
 !-------------------------------------------------
         integer(INTD), intent(in):: dim_num              !in: number of tensor dimensions
         real(real_kind), intent(inout):: tens(0:*)       !inout: tensor
@@ -2269,7 +2269,7 @@
 !This subroutine reorders dimensions of a locally stored tensor.
         implicit none
 !-------------------------------------------------
-        integer(INTD), parameter:: real_kind=realk
+        integer(INTD), parameter:: real_kind=tensor_dp
         logical, parameter:: cache_efficiency=.true.
         integer(INTL), parameter:: cache_line_len=64/real_kind     !cache line length (words)
         integer(INTL), parameter:: cache_line_min=cache_line_len*2 !lower bound for the input/output minor volume: => L1_cache_line*2
@@ -2583,13 +2583,14 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
+          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
+          call tensor_get_tile(tens_arr,int(tile_num,kind=tensor_standard_int),&
+             &buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -2620,15 +2621,15 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
-            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+            call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
           endif
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
@@ -2661,12 +2662,12 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
           call tensor_accumulate_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
@@ -2707,16 +2708,16 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(.not.async) then
             if(win_lck) then
-             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
             else
-             call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+             call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
             endif
            else
             num_async=num_async+1
@@ -2763,7 +2764,7 @@
           buf_end=buf_end+tile_vol
           if(DIL_DEBUG) tm=thread_wtime(time_beg)
           if(DIL_DEBUG) write(CONS_OUT,'(": Unpacked: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
-           &tm,dble(2_INTL*tile_vol*realk)/(tm*1024d0*1024d0*1024d0),i
+           &tm,dble(2_INTL*tile_vol*tensor_dp)/(tm*1024d0*1024d0*1024d0),i
           if(i.ne.0) then; ierr=1; return; endif
          elseif(k.gt.0) then
           ierr=2; return
@@ -2798,7 +2799,7 @@
           buf_end=buf_end+tile_vol
           if(DIL_DEBUG) tm=thread_wtime(time_beg)
           if(DIL_DEBUG) write(CONS_OUT,'(": Packed: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
-           &tm,dble(2_INTL*tile_vol*realk)/(tm*1024d0*1024d0*1024d0),i
+           &tm,dble(2_INTL*tile_vol*tensor_dp)/(tm*1024d0*1024d0*1024d0),i
           if(i.ne.0) then; ierr=1; return; endif
          elseif(k.gt.0) then
           ierr=2; return
@@ -2812,7 +2813,7 @@
         implicit none
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
         type(subtens_t), intent(in):: tens_part !in: tensor part specification
-        real(realk), intent(inout):: bufi(1:*)  !out: local buffer where the tiles will be put in
+        real(tensor_dp), intent(inout):: bufi(1:*)  !out: local buffer where the tiles will be put in
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
@@ -2829,13 +2830,14 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,tile_num,bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
+          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
+          call tensor_get_tile(tens_arr,int(tile_num,kind=tensor_standard_int),&
+             &bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -2850,8 +2852,8 @@
         implicit none
         type(tensor), intent(in):: tens_arr     !in: tensor stored distributively in terms of tiles
         type(subtens_t), intent(in):: tens_part !in: tensor part specification
-        real(realk), intent(inout):: bufi(1:*)  !in: local buffer containing the tiles
-        real(realk), intent(inout):: bufo(1:*)  !out: local buffer that will contain the dense tensor slice
+        real(tensor_dp), intent(inout):: bufi(1:*)  !in: local buffer containing the tiles
+        real(tensor_dp), intent(inout):: bufo(1:*)  !out: local buffer that will contain the dense tensor slice
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
@@ -2866,16 +2868,16 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
-            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+            call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
           endif
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:n)
@@ -2897,8 +2899,8 @@
         implicit none
         type(tensor), intent(inout):: tens_arr  !inout: tensor stored distributively in terms of tiles
         type(subtens_t), intent(in):: tens_part !in: tensor part specification
-        real(realk), intent(in):: bufi(1:*)     !in: local buffer containing the dense tensor slice
-        real(realk), intent(inout):: bufo(1:*)  !tmp: temporary buffer from where the tiles will be uploaded
+        real(tensor_dp), intent(in):: bufi(1:*)     !in: local buffer containing the dense tensor slice
+        real(tensor_dp), intent(inout):: bufo(1:*)  !tmp: temporary buffer from where the tiles will be uploaded
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
@@ -2923,13 +2925,13 @@
                                &signa(1:n)-tens_part%lbnd(1:n),i)
 !          if(DIL_DEBUG) tm=thread_wtime(time_beg)
 !          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
-!           &tm,dble(2_INTL*tile_vol*realk)/(tm*1024d0*1024d0*1024d0),i
+!           &tm,dble(2_INTL*tile_vol*tensor_dp)/(tm*1024d0*1024d0*1024d0),i
           if(i.ne.0) then; ierr=1; return; endif
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,ls_mpik),tens_arr%wi(tile_win),'s')
+          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
           call tensor_accumulate_tile(tens_arr,tile_num,bufo(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
@@ -2945,7 +2947,7 @@
         implicit none
         type(tensor), intent(inout):: tens_arr  !inout: tensor stored distributively in terms of tiles
         type(subtens_t), intent(in):: tens_part !in: tensor part specification
-        real(realk), intent(inout):: bufo(1:*)  !in: local buffer containing the tiles to upload
+        real(tensor_dp), intent(inout):: bufo(1:*)  !in: local buffer containing the tiles to upload
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
@@ -2959,15 +2961,15 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,ls_mpik))
+            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
-            call lsmpi_win_unlock(int(tile_host,ls_mpik),tens_arr%wi(tile_win))
+            call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
           endif
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
@@ -3812,10 +3814,10 @@
         type(tens_arg_t), intent(inout):: darg                    !inout: destination tensor argument
         type(tens_arg_t), intent(in):: larg                       !in: left tensor argument
         type(tens_arg_t), intent(in):: rarg                       !in: right tensor argument
-        real(realk), intent(in):: alpha                           !in: tensor contraction prefactor (GEMM alpha)
-        real(realk), intent(in):: beta                            !in: GEMM beta
+        real(tensor_dp), intent(in):: alpha                           !in: tensor contraction prefactor (GEMM alpha)
+        real(tensor_dp), intent(in):: beta                            !in: GEMM beta
         integer(INTL), intent(in):: mem_lim                       !in: local memory limit (bytes): buffer space
-        real(realk), intent(inout), target, contiguous:: hbuf(1:) !inout: existing external buffer (to avoid mem allocations)
+        real(tensor_dp), intent(inout), target, contiguous:: hbuf(1:) !inout: existing external buffer (to avoid mem allocations)
         integer(INTD), intent(inout):: ierr                       !out: error code (0:success)
         logical, intent(in), optional:: locked                    !in: if .true., MPI wins for tens-args are assumed locked
         integer(INTD), intent(out), optional:: nasync             !out: number of outstanding async MPI uploads
@@ -3839,13 +3841,13 @@
         logical:: gpu_on,mic_on,first_task,next_load,prev_store,args_here
         logical:: win_lck,err_curr,err_prev,err_next,triv_d,triv_l,triv_r,async
         real(8):: tmb,tms,tm,tmm,tc_flops,mm_flops
-        real(realk):: val
+        real(tensor_dp):: val
 
         ierr=0; tmb=thread_wtime()
         impir=my_mpi_rank(infpar%lg_comm) !rank in local MPI communicator
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(tensor_algebra_dil::dil_tensor_contract_pipe)[",i2,"]: Entered ...")') impir !debug
 !Init:
-        val=0E0_realk; size_of_real=sizeof(val)
+        val=0E0_tensor_dp; size_of_real=sizeof(val)
         tc_flops=0d0; mm_flops=0d0; tmm=0d0
         num_dev=1; gpu_on=.false.; mic_on=.false.
         async=.false.
@@ -4497,7 +4499,7 @@
            if(DIL_DEBUG) then
             jtm=thread_wtime(jtb)
             write(CONS_OUT,'(" Done: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
-            &jtm,dble(2_INTL*jvol*realk)/(jtm*1024d0*1024d0*1024d0),je
+            &jtm,dble(2_INTL*jvol*tensor_dp)/(jtm*1024d0*1024d0*1024d0),je
            endif
            if(je.ne.0) then; errc=4; return; endif
           else
@@ -4538,12 +4540,12 @@
          if(lcd*lrd.gt.buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_vol) then; errc=3; return; endif !trap
          if(arg_reuse(1:1).eq.'R') then; bts=1d0; else; bts=beta; endif !switch to accumulation if reusing
          if(DIL_DEBUG) jtb=thread_wtime()
-         if(realk.eq.8) then
+         if(tensor_dp.eq.8) then
           call dgemm('T','N',int(lld,BLAS_INT),int(lrd,BLAS_INT),int(lcd,BLAS_INT),alpha,&
                     &buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_ptr,int(lcd,BLAS_INT),&
                     &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),bts,&
                     &buf(jdev)%arg_buf(buf_conf(4,jdev))%buf_ptr,int(lld,BLAS_INT))
-         elseif(realk.eq.4) then
+         elseif(tensor_dp.eq.4) then
           call sgemm('T','N',int(lld,BLAS_INT),int(lrd,BLAS_INT),int(lcd,BLAS_INT),alpha,&
                     &buf(jdev)%arg_buf(buf_conf(5,jdev))%buf_ptr,int(lcd,BLAS_INT),&
                     &buf(jdev)%arg_buf(buf_conf(6,jdev))%buf_ptr,int(lcd,BLAS_INT),bts,&
@@ -4724,11 +4726,11 @@
         else
          if(associated(tcontr%buffer)) then
           tcbv=size(tcontr%buffer)
-          if(tcbv*realk.ge.mem_lim) then
+          if(tcbv*tensor_dp.ge.mem_lim) then
            if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract): Preallocated work buffer volume = ",i12)') tcbv
           else
            if(VERBOSE) write(CONS_OUT,'("#ERROR(dil_tensor_contract): Work buffer is not large enough: ",i12,1x,i12)')&
-           &tcbv*realk,mem_lim
+           &tcbv*tensor_dp,mem_lim
            ierr=4; return
           endif
          else
@@ -4814,9 +4816,9 @@
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         do i=1,tcontr%num_async
          if(win_lck) then
-          call lsmpi_win_flush(int(tcontr%list_async(i)%window,ls_mpik),int(tcontr%list_async(i)%rank,ls_mpik))
+          call lsmpi_win_flush(int(tcontr%list_async(i)%window,tensor_mpi_kind),int(tcontr%list_async(i)%rank,tensor_mpi_kind))
          else
-          call lsmpi_win_unlock(int(tcontr%list_async(i)%rank,ls_mpik),int(tcontr%list_async(i)%window,ls_mpik))
+          call lsmpi_win_unlock(int(tcontr%list_async(i)%rank,tensor_mpi_kind),int(tcontr%list_async(i)%window,tensor_mpi_kind))
          endif
         enddo
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract_finalize): Number of finalized MPI uploads = ",i6)')&
@@ -4837,16 +4839,16 @@
         return
         end subroutine dil_tensor_contract_finalize
 !-------------------------------------------------------
-        real(realk) function dil_tensor_norm1(tens,ierr) !PARALLEL (MPI+OMP)
+        real(tensor_dp) function dil_tensor_norm1(tens,ierr) !PARALLEL (MPI+OMP)
 !This function computes 1-norm of a tensor.
         implicit none
         type(tensor), intent(in):: tens               !in: tensor
         integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
         integer(INTL):: i,l
-        real(realk):: nrm1
+        real(tensor_dp):: nrm1
         integer(INTD):: mpi_dtyp,errc
 
-        errc=0; dil_tensor_norm1=0E0_realk; nrm1=0E0_realk
+        errc=0; dil_tensor_norm1=0E0_tensor_dp; nrm1=0E0_tensor_dp
         call lsmpi_barrier(infpar%lg_comm) !complete all outstanding communications
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,l) REDUCTION(+:nrm1)
         do i=1,tens%nlti
@@ -4857,9 +4859,9 @@
 !$OMP END DO
         enddo
 !$OMP END PARALLEL
-        if(realk.eq.8) then
+        if(tensor_dp.eq.8) then
          mpi_dtyp=MPI_REAL8
-        elseif(realk.eq.4) then
+        elseif(tensor_dp.eq.4) then
          mpi_dtyp=MPI_REAL4
         else
          errc=1
@@ -4869,18 +4871,18 @@
         return
         end function dil_tensor_norm1
 !--------------------------------------------------------------
-        real(realk) function dil_array_norm1(arr,arr_size,ierr) !PARALLEL (OMP)
+        real(tensor_dp) function dil_array_norm1(arr,arr_size,ierr) !PARALLEL (OMP)
         implicit none
-        real(realk), intent(in):: arr(1:*)            !in: array
+        real(tensor_dp), intent(in):: arr(1:*)            !in: array
         integer(INTL), intent(in):: arr_size          !in: volume of the array (number of elements)
         integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
         integer(INTL):: i
         integer(INTD):: errc
-        real(realk):: v
+        real(tensor_dp):: v
 
-        errc=0; dil_array_norm1=0E0_realk
+        errc=0; dil_array_norm1=0E0_tensor_dp
         if(arr_size.gt.0) then
-         v=0E0_realk
+         v=0E0_tensor_dp
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i) SCHEDULE(GUIDED) REDUCTION(+:v)
          do i=1,arr_size
           v=v+abs(arr(i))
@@ -4898,15 +4900,15 @@
 !Each MPI process initializes its own tiles.
         implicit none
         type(tensor), intent(inout) :: a
-        real(realk), intent(in), optional:: val
+        real(tensor_dp), intent(in), optional:: val
         integer(INTD):: lti
-        real(realk):: vlu
+        real(tensor_dp):: vlu
  !get the slaves here
         if(a%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master) then
          call pdm_tensor_sync(infpar%lg_comm,JOB_tensor_ZERO,a)
         endif
  !loop over local tiles and zero them individually
-        vlu=0E0_realk; if(present(val)) vlu=val
+        vlu=0E0_tensor_dp; if(present(val)) vlu=val
         do lti=1,a%nlti
 !$OMP WORKSHARE
          a%ti(lti)%t=vlu
@@ -4917,13 +4919,13 @@
 !------------------------------------------
         subroutine dil_array_init(a,sz,val) !SERIAL
         implicit none
-        real(realk), intent(inout):: a(1:*)     !out: array (contiguous)
+        real(tensor_dp), intent(inout):: a(1:*)     !out: array (contiguous)
         integer(INTL), intent(in):: sz          !in: number of elements to initialize
-        real(realk), intent(in), optional:: val !in: initialization value (defaults to zero)
+        real(tensor_dp), intent(in), optional:: val !in: initialization value (defaults to zero)
         integer(INTL):: i
-        real(realk):: v
+        real(tensor_dp):: v
 
-        if(present(val)) then; v=val; else; v=0E0_realk; endif
+        if(present(val)) then; v=val; else; v=0E0_tensor_dp; endif
 !$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i) SCHEDULE(GUIDED)
         do i=1,sz
          a(i)=v
@@ -4972,14 +4974,14 @@
         subroutine dil_array_print(arr,ierr,fname,fhandle,print_first,sort,by_modulus) !SERIAL (I/O)
 !This subroutine prints a real array into a file, with an optional ordering done to it.
         implicit none
-        real(realk), intent(in), target:: arr(1:)         !inout: array to print
+        real(tensor_dp), intent(in), target:: arr(1:)         !inout: array to print
         integer(INTD), intent(inout), optional:: ierr     !out: error code (0:success)
         character(*), intent(in), optional:: fname        !in: EITHER a file name where to print
         integer(INTD), intent(in), optional:: fhandle     !in: OR a file handle of an already opened file
         integer(INTL), intent(in), optional:: print_first !in: print only the first <print_first> elements
         logical, intent(in), optional:: sort              !in: if .true., the array will be printed in a sorted order
         logical, intent(in), optional:: by_modulus        !in: if .true., the array will be sorted by modulus
-        real(realk), pointer, contiguous:: sar(:)
+        real(tensor_dp), pointer, contiguous:: sar(:)
         integer(INTL):: i,arr_size,pfe
         integer(INTD):: fh,errc
         logical:: alloc
@@ -5233,14 +5235,14 @@
         type(tensor), intent(inout), target:: rtens
         integer(INTD):: i,j,k,l,m,n,impir,impir_world,drank,lrank,rrank,errc
         integer(INTL):: mem_lim,dvol,lvol,rvol
-        integer(ls_mpik):: mpi_err
+        integer(tensor_mpi_kind):: mpi_err
         integer(INTD):: dbas(1:MAX_TENSOR_RANK),lbas(1:MAX_TENSOR_RANK),rbas(1:MAX_TENSOR_RANK)
         integer(INTD):: ddim(1:MAX_TENSOR_RANK),ldim(1:MAX_TENSOR_RANK),rdim(1:MAX_TENSOR_RANK)
         integer(INTD):: dful(1:MAX_TENSOR_RANK),lful(1:MAX_TENSOR_RANK),rful(1:MAX_TENSOR_RANK)
-        real(realk), pointer, contiguous:: darr(:),larr(:),rarr(:),barr(:)
+        real(tensor_dp), pointer, contiguous:: darr(:),larr(:),rarr(:),barr(:)
         type(dil_tens_contr_t):: tcr
         character(128):: tcs
-        real(realk):: val0,val1,val2
+        real(tensor_dp):: val0,val1,val2
         real(8):: tmb,tm
 
         errc=0
@@ -5358,17 +5360,17 @@
         allocate(darr(1:dvol),STAT=i)
         if(i.ne.0) then
          write(*,'("MEM ALLOC 1 failed!")')
-         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
+         call MPI_ABORT(infpar%lg_comm,0_tensor_mpi_kind,mpi_err)
         endif
         allocate(larr(1:lvol),STAT=i)
         if(i.ne.0) then
          write(*,'("MEM ALLOC 2 failed!")')
-         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
+         call MPI_ABORT(infpar%lg_comm,0_tensor_mpi_kind,mpi_err)
         endif
         allocate(rarr(1:rvol),STAT=i)
         if(i.ne.0) then
          write(*,'("MEM ALLOC 3 failed!")')
-         call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
+         call MPI_ABORT(infpar%lg_comm,0_tensor_mpi_kind,mpi_err)
         endif
         do i=1,lvol; larr(i)=1d-2; enddo
         do i=1,rvol; rarr(i)=1d-3; enddo
@@ -5498,7 +5500,7 @@
         if(associated(larr)) deallocate(larr)
         if(associated(rarr)) deallocate(rarr)
         call lsmpi_barrier(infpar%lg_comm)
-        call MPI_ABORT(infpar%lg_comm,0_ls_mpik,mpi_err)
+        call MPI_ABORT(infpar%lg_comm,0_tensor_mpi_kind,mpi_err)
         return
         end subroutine dil_test
 !DIL_ACTIVE (assumes Fortran-2003/2008, MPI-3):

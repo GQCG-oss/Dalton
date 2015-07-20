@@ -1816,7 +1816,7 @@ contains
 
        call lsmpi_win_create(distribution,distributionw,1,infpar%lg_comm)
 #ifdef VAR_HAVE_MPI3
-       call lsmpi_win_lock_all(distributionw,ass=MPI_MODE_NOCHECK)
+       call lsmpi_win_lock_all(distributionw,ass=mode)
 #endif
 
     else
@@ -1997,7 +1997,7 @@ contains
 
              tile = tile + 1
 
-             call get_tileinfo_nels_fromarr8(nelms,vvvo,i8*tile)
+             call get_tile_dim(nelms,vvvo,i8*tile)
              tile_size_tmp = nelms/((i8*nvirt)*(i8*nvirt**2))
 
              n = tile_size_tmp
@@ -2695,7 +2695,7 @@ contains
    
                 tile = tile + 1
    
-                call get_tileinfo_nels_fromarr8(nelms,vovv,i8*tile)
+                call get_tile_dim(nelms,vovv,i8*tile)
                 tile_size_tmp = nelms/(nocc*(i8*nvirt**2))
    
                 n = tile_size_tmp
