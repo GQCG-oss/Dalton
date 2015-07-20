@@ -1,32 +1,36 @@
 
 
-2015.1 (2015-07-03)
+2015.1 (2015-07-XX)
 ===================
 
 Common
 ------
 
-- Added ANO-RCC basis set
+- Added ANO-RCC basis set.
+
 
 DALTON
 ------
 
-- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
-- Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
-- Fixed a bug for parallel build on some systems
+- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake.
+- Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters.
+- Fixed a bug for parallel build on some systems.
 - Fixed a segmentation fault for approx. 3000 basis functions
-  (an array was allocated in stack memory, and became too big for default size of stack memory)
-- Fixed a bug in CC sumrules
+  (an array was allocated in stack memory, and became too big for default size of stack memory).
+- Fixed a bug in CC sumrules.
 - Fixed a bug in the preoptimization, i.e. when using smaller basis sets first to geometry optimize molecule.
-- Fixed some far from optimal defaults for preoptimization
-- Fixed geometry optimization for HS-ROHF and HS-RODFT with symmetry - .SINGLY input option under '*SCF INPUT'
+- Fixed some far from optimal defaults for preoptimization.
+- Fixed geometry optimization for HS-ROHF and HS-RODFT with symmetry - .SINGLY input option under '\*SCF INPUT'
   (use numerical gradients as analytical gradients are only implemented without symmetry).
-- Some minor corrections to the Dalton manual
+- Some minor corrections to the Dalton manual.
+- More reasonable output for TPCD.
+
 
 LSDALTON
 --------
 
-- fixed .UNCONT for EMSL's Dalton basis set format
+- Fixed .UNCONT for EMSL's Dalton basis set format.
+
 
 2015.0 (2015-02-18)
 ===================

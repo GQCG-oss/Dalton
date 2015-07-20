@@ -9,6 +9,7 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Get MO coefficients and reorder.
 C
+C     The coefficients are written to the array CMO w. intent(inout)
 #include "implicit.h"
 #include "priunit.h"
 C

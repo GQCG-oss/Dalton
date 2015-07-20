@@ -146,18 +146,6 @@ MODULE lsparameters
   integer,parameter :: SymmetricPostprocess=2
   integer,parameter :: AntiSymmetricPostprocess=3
 
-! TENTATIVE OF DEFINING BS VALUES IN MANUAL REORDERING ROUTINES:
-!
-! L2_CACHE_SIZE = 256000 ! lower estimate of cache size in bytes:
-! BS_2D = floor(sqrt(L2_CACHE_SIZE/(2*8.0E0_realk)))
-! BS_3D = floor((L2_CACHE_SIZE/(2*8.0E0_realk))**(1/3.0E0_realk))
-! BS_4D = floor((L2_CACHE_SIZE/(2*8.0E0_realk))**(1/4.0E0_realk))
-!
-! We write the explicit values to avoid internal compiler error 
-! with the gnu compiler 4.4.7 and the power function:
-  integer,parameter :: BS_2D = 126.0_realk
-  integer,parameter :: BS_3D =  25.0_realk
-  integer,parameter :: BS_4D =  11.0_realk
 
   real(realk) :: GPUMAXMEM
 save

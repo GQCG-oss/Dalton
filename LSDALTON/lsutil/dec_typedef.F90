@@ -335,6 +335,8 @@ module dec_typedef_module
      integer :: abc_nbuffs
      !> do we want to do gpu computations synchronous?
      logical :: acc_sync
+     !> do (T) in single precision
+     logical :: pt_single_prec
      !> (T) hack variable - used for omitting CCSD
      logical :: pt_hack
      !> (T) hack variable - used for omitting (t) integrals (may be used in combintion with pt_hack)

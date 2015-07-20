@@ -1,3 +1,4 @@
+set(reorder_definitions "")
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store -fcray-pointer")
@@ -86,6 +87,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
+    set(collapse_reoder_loops "nocollapse")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)

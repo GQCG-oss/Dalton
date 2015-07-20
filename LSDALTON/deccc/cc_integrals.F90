@@ -1576,6 +1576,25 @@ contains
        end if
        return
     end if
+
+    ! Check that there is enough mem in bg buffer:
+    if(mem_is_background_buf_init())then
+       MemNeed = get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO,2)
+       MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
+       if ((MemFree-MemNeed)<=0.0E0_realk) then
+          mo_ccsd = .false.
+          write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
+          write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+          if (DECinfo%force_scheme) then
+             call lsquit('Insufficient memory in background buffer for MO-based CCSD &
+                & (remove force scheme)',DECinfo%output)
+          else
+             write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                  & back to standard algorithm.'
+          end if
+          return
+       end if
+    endif
     Nbatch = (ntot-1)/dimMO + 1
 
     !===========================================================
@@ -1651,24 +1670,32 @@ contains
     MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma)
     if ((MemFree-MemNeed)<=0.0E0_realk) then
        mo_ccsd = .false.
-       write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
-            & back to standard algorithm.'
        write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
        write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+       if (DECinfo%force_scheme) then
+          call lsquit('Insufficient memory in MO-based CCSD (2) (remove force scheme)',DECinfo%output)
+       else
+          write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+               & back to standard algorithm. (2)'
+       end if
        return
     end if
 
     ! Check that there is enough mem in bg buffer:
     if(mem_is_background_buf_init())then
        MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma,2)
-       MemNeed = MemNeed + get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO,2)
        MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
        if ((MemFree-MemNeed)<=0.0E0_realk) then
           mo_ccsd = .false.
-          write(DECinfo%output,*) 'WARNING: Insufficient memory in background buffer for &
-             & MO-based CCSD, back to standard algorithm.'
           write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
           write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+          if (DECinfo%force_scheme) then
+             call lsquit('Insufficient memory in background buffer for MO-based CCSD (2) &
+                & (remove force scheme)',DECinfo%output)
+          else
+             write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                  & back to standard algorithm. (2)'
+          end if
           return
        end if
     endif
@@ -2215,7 +2242,7 @@ contains
 
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,int(tile,kind=4),tmp,ncopy)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
@@ -2253,7 +2280,7 @@ contains
 
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,int(tile,kind=4),tmp,ncopy)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)

@@ -12,6 +12,8 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Calculate SIGDA1(DELTA,A) and SIGDA2(DELTA,A)
 C
+
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
@@ -32,15 +34,17 @@ C------------------
 C
       CALL QENTER('SO_SIGDA')
 C
+
+
       ISYMI = ISYMDEL
       ISYMA = MULD2H(ISYMI,ISYRES)
 C
       DO 100 ISYML = 1,NSYM
 C
          ISGAM  = ISYML
-	 ISALBE = MULD2H(ISGAM,ISYDIS)
+         ISALBE = MULD2H(ISGAM,ISYDIS)
          ISYMLI = MULD2H(ISYML,ISYMI)
-	 ISDEL  = MULD2H(ISGAM,ISALBE)
+         ISDEL  = MULD2H(ISGAM,ISALBE)
          if (isdel .ne. isymdel) then
             print*,'Keld: Something is WRONG in SO_SIGDA'
             call quit('Keld: Something is WRONG in SO_SIGDA')
