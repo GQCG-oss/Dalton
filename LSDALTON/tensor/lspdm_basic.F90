@@ -4,7 +4,7 @@
 !> \author Patrick Ettenhuber
 !> \date April 2013
 module lspdm_basic_module
-  use precision
+  use tensor_type_def_module
   use LSTIMING!,only:lstimer
   use memory_handling
 #ifdef VAR_MPI
@@ -320,7 +320,6 @@ module lspdm_basic_module
     !call memory_deallocate_array(arr)
     if(associated(arr%wi)) then
 
-
 #ifdef VAR_MPI
        do i=1,arr%nwins
           call lsmpi_win_free(arr%wi(i))
@@ -332,7 +331,7 @@ module lspdm_basic_module
        vector_size = int(arr%nwins*tensor_mpi_kind,kind=tensor_long_int)
        call mem_dealloc(arr%wi)
        !$OMP CRITICAL
-       tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
+       tensor_counter_aux_f_mem     = tensor_counter_aux_f_mem     + vector_size
        tensor_counter_memory_in_use = tensor_counter_memory_in_use - vector_size
        !$OMP END CRITICAL
 
@@ -371,9 +370,9 @@ module lspdm_basic_module
 
     !print *,infpar%lg_mynum,"mem update"
 !$OMP CRITICAL
-    tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
+    tensor_counter_aux_a_mem     = tensor_counter_aux_a_mem     + vector_size
     tensor_counter_memory_in_use = tensor_counter_memory_in_use + vector_size
-    tensor_counter_max_memory = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
+    tensor_counter_max_memory    = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
 !$OMP END CRITICAL
 
     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
@@ -430,11 +429,12 @@ module lspdm_basic_module
     !write(*,'(I2," in here and nlti ",I5)'),infpar%lg_mynum,arr%nlti
     allocate(arr%ti(arr%nlti))
 
-    vector_size = int(size(arr%ti)*tensor_bytes_per_tile,kind=tensor_long_int)
+    vector_size = int(arr%nlti*tensor_bytes_per_tile,kind=tensor_long_int)
     !$OMP CRITICAL
-    tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
-    tensor_counter_memory_in_use  = tensor_counter_memory_in_use  + vector_size
+    tensor_counter_aux_a_mem     = tensor_counter_aux_a_mem     + vector_size
+    tensor_counter_memory_in_use = tensor_counter_memory_in_use + vector_size
     !$OMP END CRITICAL
+
     counter = 1 
     !allocate tiles with zeros wherever there is mod --> this is experimental
     !and not recommended
@@ -563,7 +563,7 @@ module lspdm_basic_module
       logical, intent(in) :: bg
       integer(kind=tensor_long_int), intent(in),optional :: nel
       integer(kind=tensor_long_int) :: nelms
-      real(tensor_dp)     :: vector_size
+      integer(kind=tensor_long_int) :: vector_size
       real(tensor_dp)     :: tcpu1,twall1,tcpu2,twall2
       integer(kind=tensor_long_int) :: ne
 
@@ -615,8 +615,7 @@ module lspdm_basic_module
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
       if(associated(arr%dummy)) then
-         dim1 = int(size(arr%dummy(:)),kind=tensor_long_int)
-         vector_size = int(dim1*tensor_dp,kind=tensor_long_int)
+         vector_size = int(size(arr%dummy)*tensor_dp,kind=tensor_long_int)
 #ifdef VAR_MPI
          if(arr%bg_alloc)then
             call mem_pseudo_dealloc(arr%dummy, mark_deleted=.true.)
@@ -627,7 +626,7 @@ module lspdm_basic_module
          nullify(arr%dummy)
 
          !$OMP CRITICAL
-         tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
+         tensor_counter_aux_f_mem     = tensor_counter_aux_f_mem     + vector_size
          tensor_counter_memory_in_use = tensor_counter_memory_in_use - vector_size
          !$OMP END CRITICAL
       end if
