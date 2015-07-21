@@ -508,7 +508,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/pdpack/printpkg.F
     DALTON/rsp/absorp.F
     DALTON/rsp/abscomplex.F
-    DALTON/rsp/abscrs.F
     DALTON/rsp/complexpp.F
     DALTON/rsp/gpcpp.F
     DALTON/rsp/deq27.F

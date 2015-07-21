@@ -104,15 +104,6 @@ C
      *            ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
-C     Printing the E[4] contracted over VECB, VECC, and VECD
-C
-      IF (IPRRSP .GT. 100 ) THEN
-         WRITE(LUPRI,'(//A)') ' E[4] gradient'
-         WRITE(LUPRI,'(A)')   ' ============='
-         CALL OUTPUT(WRK(KE4),1,KZYVA,1,1,KZYVA,1,1,LUPRI)
-      END IF
-C
-C
 C     Compute ( S(jklm) + S(jkml) ) N(k) N(l) N(m)
 C
       IF (FREQB .NE. D0 ) THEN
@@ -225,10 +216,8 @@ C
          CALL ORBEX(ISYMA,1,KZYVA,WRK(KFI),WRK(KDUM),WRK(KDUM),
      *              WRK(KDUM),ETRS,D1,WRK(KDUM),MJWOP)
          VAL = DDOT(KZYVA,VECA,1,ETRS,1)
-         IF (IPRRSP .GT. 100 ) THEN
-            WRITE (LUPRI,'(A,F20.12)') 'Contribution from C4FOCK:',
-     *           VAL
-         END IF
+           WRITE (LUPRI,'(A,F20.12)') 'Contribution from C4FOCK:',
+     *          VAL
          DFTADD = DFTSAV
       ELSE
          IF(DFTADD) CALL QUIT('DFT not implemented for this path.')

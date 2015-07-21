@@ -1,8 +1,0 @@
-BASIS
-6-31G
-Neon atom
--------------------------------
-Atomtypes=1 Generators=3 X Y Z Angstrom
-Charge=10 Atoms=1
- Ne   0.0   0.0   0.0
-#end of file
