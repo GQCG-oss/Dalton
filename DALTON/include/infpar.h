@@ -3,6 +3,9 @@
 !     my_MPI_INTEGER is used both in .c and .F routines in MPI calls
 !        so we can handle "-i8" compilations on 32-bit machines,
 !        using VAR_INT64 /Jan-2007 hjaaj
+!
+!    infpar.h depends on maxorb.h
+!    use #include "maxorb.h" before including infpar. - FBeyer 20140302
 #endif
 #if defined (VAR_INT64)
 #define my_MPI_INTEGER MPI_INTEGER8
@@ -45,11 +48,11 @@ extern struct common_infpar {
       PARAMETER ( MAXTSK = (MXSHEL * (MXSHEL + 1))/2 )
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID
       INTEGER NODTOT, NODEID(0:MAXNOD), NFMAT, MTOTTK
-      LOGICAL PARHER, PARIO, DEBUG, TIMING, SLAVE, rma_model
+      LOGICAL PARHER, PARIO, INFPAR_DEBUG, TIMING, SLAVE, rma_model
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
       COMMON /DALTONINFPAR/                                              &
      &        IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID         &
-     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, DEBUG, PARIO        &
+     &       ,NODTOT, NODEID, NFMAT, MTOTTK, PARHER, INFPAR_DEBUG, PARIO        &
      &       ,rma_model, TIMING, SLAVE , NODNAM, MYNAME
 #ifdef PRG_DIRAC
       EQUIVALENCE (NODTOT, NUMNOD)

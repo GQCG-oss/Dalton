@@ -22,6 +22,7 @@ module atomic_fragment_operations
 
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
+  use dec_tools_module
   use dec_fragment_utils
   use array2_simple_operations!, only: array2_init,array2_matmul,array2_free,array2_add, operator(*)
   use array4_simple_operations!, only: array4_init,array4_extract_eos_indices_both_schemes,&

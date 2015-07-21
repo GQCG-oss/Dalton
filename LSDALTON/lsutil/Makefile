@@ -66,6 +66,7 @@ F90_OBJS = \
         common_utilities.o \
         file-operations.o \
         grid_utilities.o \
+	gpu_devices.o\
 	lsutilities.o\
 	lowdin.o\
 	ls_precision.o\
@@ -108,6 +109,7 @@ F90_OBJS = \
         tensor_interface.o\
         lspdm_slave.o\
         tensor_basic.o\
+	lapack_interface.o\
         lspdm_basic.o\
 	lstensorType.o\
 	lstensor_Mem.o\

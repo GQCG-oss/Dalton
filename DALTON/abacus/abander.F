@@ -312,7 +312,7 @@ C
 #include "dftcom.h"
 #include "ecpinf.h"
 #include "ccsdinp.h"
-      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOROHF, DOCISRDFT, DOMCSRDFT,
+      LOGICAL MCSCF, DMP2, DOHFSRDFT, DOROSCF, DOCISRDFT, DOMCSRDFT,
      &        WAVTP, DPCM
 C
 C     *** Workaround to many common variables with the same name ***
@@ -323,7 +323,7 @@ C
       MCSCF      = WAVTP('MCSCF')
       DMP2       = WAVTP('MP2')
       DPCM       = WAVTP('PCM')
-      DOROHF     = WAVTP('ROHF')
+      DOROSCF    = WAVTP('ROHF')
 #ifdef MOD_SRDFT
       DOHFSRDFT  = WAVTP('HFSRDFT')
       DOCISRDFT  = WAVTP('CISRDFT')
@@ -334,21 +334,20 @@ C
       DOMCSRDFT  = .FALSE.
 #endif
 C
-      IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2
-     &    .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
+      IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
+     &    CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
+     &    (DOROSCF .AND. NSYM.gt.1 .AND. .NOT.DIRCAL) .OR.  ! high spin HF or DFT, with symmetry
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
      &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
      &    PEQM) THEN
          NAORDR = 0
-      ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
-     &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR.
+      ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. CCPT .OR.
+     &        DOROSCF .OR.  ! high spin HF or DFT, no symmetry
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
-!RPA Methods with analytic gradient only
-     &        DRCCD .OR. SOSEX .OR. RCCD .OR.
-     &        DPCM .OR. DOROHF .OR.
-CAMT Only gradients for empirical disp correction so far
-     &        DODFTD) THEN
+     &        DRCCD .OR. SOSEX .OR. RCCD .OR.  !RPA Methods with analytic gradient only
+     &        DPCM .OR.
+     &        DODFTD) THEN !AMT Only gradients for empirical disp correction so far
          NAORDR = 1
       ELSE
          NAORDR = 2

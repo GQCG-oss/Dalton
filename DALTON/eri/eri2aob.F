@@ -155,7 +155,6 @@ C
          WRITE (LUPRI,'(1X,A,10I3)')
      &      ' Number of AO batches for ang. mom.:',(NQNBT(I),I=1,MAXQN)
       END IF
-C
       RETURN
       END
 C  /* Deck aobch */

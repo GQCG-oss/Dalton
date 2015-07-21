@@ -92,18 +92,10 @@ c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
      &          ' LEN      : ',LEN,N
                 GOTO 200
              ENDIF
-            D3=freq*freqx1
-            if (d3 .gt.d0) then
-              FOUND = .TRUE.
-              IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
-              IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
-              GOTO 199
-            else
-              DO I=1,LEN
-                READ(LU) SCR
-              END DO
-              GO TO 100
-            endif
+             FOUND = .TRUE.
+             IF ((RSDX-RSD) .LT. D0) CONV = .TRUE.
+             IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
+             GOTO 199
          ELSE
 c            IF (LEN .GT. 0) READ (LU)
             IF (LEN .GT. 0) THEN
