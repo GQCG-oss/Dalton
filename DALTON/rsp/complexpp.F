@@ -32,7 +32,7 @@ C        response equations",
 C        J. Chem. Theory Comput. 7 (2011) 1610.
 C ============================================================================
 C
-      SUBROUTINE ABS_CTL(LABEL,KZVAR,GD,XSOL,FREQS,NFREQS,
+      SUBROUTINE ABS_CTL(LABEL,KZVAR,GD,NGD,XSOL,FREQS,NFREQS,LU,
      &                   MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &                   RESLRF,WRK,LWRK)
 C
@@ -49,7 +49,8 @@ C
 C     using the new rsp solver with symmetrized trial vectors
 C
       CHARACTER LABEL*8
-      DIMENSION XSOL(2*KZVAR,2,NFREQS),GD(2*KZVAR)
+      INTEGER   LU,NFREQS,NGD,KZVAR
+      DIMENSION XSOL(2*KZVAR,2,NFREQS),GD(4*KZVAR,NGD)
       DIMENSION MJWOP(*),XINDX(*)
       DIMENSION CMO(*),UDV(*),FC(*),FCAC(*),FV(*),PV(*)
       DIMENSION FREQS(NFREQS)
@@ -61,28 +62,28 @@ C
       NEQ2S=NFREQS
       KZYVAR=2*KZVAR
       KGD    = 1
-      KXTRL  = KGD   + 4*KZVAR
+      KXTRL  = KGD   + 4*NGD*KZVAR
       KXRED  = KXTRL + 4*NEQ2S*KZVAR
       KRESD  = KXRED + 4*NEQ2S*ABS_MAXRM
       KREDE  = KRESD + 4*NEQ2S*KZVAR
       KREDS  = KREDE  + 2*ABS_MAXRM*ABS_MAXRM
       KREDGD = KREDS  + ABS_MAXRM*ABS_MAXRM
-      KFREE  = KREDGD + 2*ABS_MAXRM
+      KFREE  = KREDGD + 2*ABS_MAXRM*NGD
       LFREE  = LWRK - KFREE
       IF (LFREE.LT.0) STOP 'ABS_CTL: out of memory'
 c
-      CALL ABS_CHKONFILE(LUABSVECS,CONVERGED,LABEL,ABS_GRADSYM,
-     &     ABS_DAMP,NEQ2S,FREQS,ABS_THCLR,WRK(KFREE))
-      IF (CONVERGED) THEN
-         WRITE(LUABSPRI,'(/A,I3)')
-     &        ' ABSCTL: converged response vectors found on file'//
-     &        ' RSPVEC with unit=',LUABSVECS
-         CALL GET_LRF(LUABSVECS,LABEL,NEQ2S,FREQS,FC,FV,CMO,UDV,PV,
-     &               XINDX,RESLRF,KZVAR,WRK(KFREE),LFREE)
-         GOTO 900
-      END IF
+c      CALL ABS_CHKONFILE(LU,CONVERGED,LABEL,ABS_GRADSYM,
+c     &     ABS_DAMP,NEQ2S,FREQS,ABS_THCLR,WRK(KFREE))
+c      IF (CONVERGED) THEN
+c         WRITE(LUABSPRI,'(/A,I3)')
+c     &        ' ABSCTL: converged response vectors found on file'//
+c     &        ' RSPVEC with unit=',LU
+c         CALL GET_LRF(LU,LABEL,NEQ2S,FREQS,FC,FV,CMO,UDV,PV,
+c     &               XINDX,RESLRF,KZVAR,WRK(KFREE),LFREE)
+c         GOTO 900
+c      END IF
 c
-      WRK(KGD:KGD+4*KZVAR-1) = 0.0d0
+      WRK(KGD:KGD+4*NGD*KZVAR-1) = 0.0d0
       WRK(KXRED:KXRED+4*NEQ2S*ABS_MAXRM-1) = 0.0d0
       WRK(KRESD:KRESD+4*NEQ2S*KZVAR-1) = 0.0d0
 c
@@ -90,59 +91,52 @@ c
         CONV(I)=.FALSE.
       ENDDO
 C
-      IF ((MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0).AND. ABS_REBD) THEN
-c        write(luabspri,*) 'ABS_KLRED >0, restart'
-        DO I=1,KZVAR
-          WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
-          WRK(KGD+KZVAR-1+I)=0.5d0*(GD(I)-GD(KZVAR+I))
-        END DO
-        CALL GPINQ('ABS_E1RED','EXIST',EX1)
-        CALL GPINQ('ABS_E2RED','EXIST',EX2)
-        CALL GPINQ('ABS_SRED','EXIST',EX3)
-        IF (EX1.AND.EX2.AND.EX3) THEN
-          write(luabspri,*)
-     &          'Use ABS_READIN_RED ',ABS_KLRED(1),ABS_KLRED(2)
-          CALL ABS_READIN_RED(KZVAR,WRK(KREDE),WRK(KREDS),WRK(KGD),
-     &                        WRK(KREDGD),KNVEC,WRK(KFREE),LFREE)
-        ELSE
-          write(luabspri,*)
-     &    'Use ABS_REDSPACE_REBUILD',ABS_KLRED(1),ABS_KLRED(2),
-     &                               EX1,EX2,EX3
-          CALL ABS_REDSPACE_REBUILD(KZVAR,WRK(KGD),WRK(KREDE),
-     &                            WRK(KREDS),WRK(KREDGD),KNVEC,
-     &                            WRK(KFREE),LFREE)
-        ENDIF
-        KLRED(1)=ABS_KLRED(1)
-        KLRED(2)=ABS_KLRED(2)
-        NNLT=KNVEC(1)+KNVEC(2)
-        IF (NNLT .GT.0) THEN
-          CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
-     &               WRK(KRESD),
-     &               KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
-        ENDIF
-      ELSE
+c      IF (MAX(ABS_KLRED(1),ABS_KLRED(2)).NE.0) THEN
+cc        write(luabspri,*) 'ABS_KLRED >0, restart'
+c        DO I=1,KZVAR
+c          WRK(KGD-1+I)=0.5d0*(GD(I)+GD(KZVAR+I))
+c          WRK(KGD+KZVAR-1+I)=0.5d0*(GD(I)-GD(KZVAR+I))
+c        END DO
+c        CALL GPINQ('ABS_E1RED','EXIST',EX1)
+c        CALL GPINQ('ABS_E2RED','EXIST',EX2)
+c        CALL GPINQ('ABS_SRED','EXIST',EX3)
+c        IF (EX1.AND.EX2.AND.EX3) THEN
+c          write(luabspri,*)
+c     &          'Use ABS_READIN_RED ',ABS_KLRED(1),ABS_KLRED(2)
+c          CALL ABS_READIN_RED(KZVAR,WRK(KREDE),WRK(KREDS),WRK(KGD),
+c     &                        WRK(KREDGD),KNVEC,WRK(KFREE),LFREE)
+c        ELSE
+c          write(luabspri,*)
+c     &    'Use ABS_REDSPACE_REBUILD',ABS_KLRED(1),ABS_KLRED(2),
+c     &                               EX1,EX2,EX3
+c          CALL ABS_REDSPACE_REBUILD(KZVAR,WRK(KGD),WRK(KREDE),
+c     &                            WRK(KREDS),WRK(KREDGD),KNVEC,
+c     &                            WRK(KFREE),LFREE)
+c        ENDIF
+c        KLRED(1)=ABS_KLRED(1)
+c        KLRED(2)=ABS_KLRED(2)
+c        NNLT=KNVEC(1)+KNVEC(2)
+c        IF (NNLT .GT.0) THEN
+c          CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
+c     &               WRK(KRESD),
+c     &               KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
+c        ENDIF
+c      ELSE
 c       CALL DZERO(WRK(KRESD),4*NEQ2S*KZVAR)
 c       CALL DZERO(WRK(KREDE),3*ABS_MAXRM*ABS_MAXRM)
 c       CALL DZERO(WRK(KREDGD),2*ABS_MAXRM)
         WRK(KREDE:KREDE+3*ABS_MAXRM*ABS_MAXRM-1) = 0.0d0
-        WRK(KREDGD:KREDGD+2*ABS_MAXRM-1) = 0.0d0
+        WRK(KREDGD:KREDGD+2*ABS_MAXRM*NGD-1) = 0.0d0
 c
         KNVEC(1)=2*NEQ2S
         KNVEC(2)=2*NEQ2S
         NNLT=4*NEQ2S
         KLRED(1)=0
         KLRED(2)=0
-        IF (.NOT. ABS_REBD) THEN
-          REWIND(LUSB)
-          REWIND(LUAB)
-          REWIND(LUSS)
-          REWIND(LUAS)
-        ENDIF
-        
-        CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),FREQS,NEQ2S,WRK(KXTRL),
+        CALL ABS_GETRIAL(KZVAR,GD,WRK(KGD),NGD,FREQS,NEQ2S,WRK(KXTRL),
      &               WRK(KRESD),KLRED,KNVEC,NNLT,CONV,WRK(KFREE),LFREE)
 c
-      ENDIF
+c      ENDIF
 c
 c       CALL DZERO(WRK(KRESD),4*NEQ2S*KZVAR)
 c      WRK(KRESD:KRESD+4*NEQ2S*KZVAR-1) = 0.0d0
@@ -162,7 +156,7 @@ C     Perform linear transformation and build reduce spaces
 C
       CALL ABS_RED(ITER,KZVAR,WRK(KGD),WRK(KXTRL),WRK(KRESD),
      &             WRK(KREDGD),WRK(KREDE),WRK(KREDS),NEQ2S,NNLT,KLRED,
-     &             KNVEC,MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,
+     &             KNVEC,NGD,MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &             WRK(KFREE),LFREE)
 C
 C     Solve RPA equation in a reduced space
@@ -173,17 +167,17 @@ C
      &                 WRK(KXRED),KLRED,KZLRED,CONV,WRK(KFREE),LFREE)
       ELSE
         CALL ABS_SOLV(FREQS,NEQ2S,WRK(KREDE),WRK(KREDS),WRK(KREDGD),
-     &                WRK(KXRED),KLRED,KZLRED,CONV,WRK(KFREE),LFREE)
+     &                WRK(KXRED),NGD,KLRED,KZLRED,CONV,WRK(KFREE),LFREE)
       ENDIF
 C
 C     Compute the residual in this iteration
-C     
+C
       WRK(KRESD:KRESD+4*NEQ2S*KZVAR-1) = 0.0d0
 c       call DZERO(WRK(KRESD),4*NEQ2S*KZVAR)
       CALL ABS_RSD(WRK(KXRED),LABEL,KZVAR,NEQ2S,FREQS,KLRED,
-     &             KNVEC,NNLT,WRK(KGD),
+     &             KNVEC,NNLT,NGD,WRK(KGD),
      &             WRK(KRESD),ITER,CONVERGED,
-     &             CONV,WRK(KXTRL),XSOL,WRK(KFREE),LFREE)
+     &             CONV,WRK(KXTRL),XSOL,LU,WRK(KFREE),LFREE)
 C   
 C     Calculate polarizability
 C
@@ -196,7 +190,7 @@ C
         ELSE IF (LABEL(3:7).EQ.'THETA') THEN
           ITYPE = 3
         ELSE
-          WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
+c          WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
           GO TO 778
         END IF
 C
@@ -224,7 +218,7 @@ C
  900  CONTINUE
       IF (IPRABSLRS.GE.0) THEN
          WRITE(LUABSPRI,'(/,1X,A,I4,A,I4,I4)')
-     &        '*** ABSCTL: REQUESTED',NFREQS,
+     &        '*** ABSCTL: REQUESTED',ABS_NFREQ_INTERVAL,
      &        ' SOLUTION VECTORS CONVERGED IN RED SPACES OF',KLRED(1),
      &        KLRED(2)
       END IF
@@ -232,7 +226,7 @@ C
  910  CONTINUE
       IF (IPRABSLRS.GE.0) THEN
          WRITE(LUABSPRI,'(/,1X,A,I4,A,I4,I4)')
-     &        '*** ABSCTL: REQUESTED',NFREQS,
+     &        '*** ABSCTL: REQUESTED',ABS_NFREQ_INTERVAL,
      &        ' SOLUTION VECTORS NOT CONVERGED IN RED SPACES OF',
      &        KLRED(1),KLRED(2)
          WRITE(LUABSPRI,'(/,1X,A)')
@@ -242,46 +236,42 @@ C
 C
  777  CONTINUE
 C
-      IF (ABS_REBD) THEN 
-        ABS_KLRED(1)=KLRED(1)
-        ABS_KLRED(2)=KLRED(2)
+c      ABS_KLRED(1)=KLRED(1)
+c      ABS_KLRED(2)=KLRED(2)
 C
-        CALL GPINQ('ABS_E1RED','EXIST',EX1)
-        CALL GPINQ('ABS_E2RED','EXIST',EX2)
-        CALL GPINQ('ABS_SRED','EXIST',EX3)
-c
-        IF (EX1.AND.EX2.AND.EX3) THEN
-          REWIND(LUE1RED)
-          REWIND(LUE2RED)
-          REWIND(LUSRED)
-          DO I=1,KLRED(1)
-            CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
-          ENDDO
-          DO I=1,KLRED(2)
-            CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
-     &                                           ABS_MAXRM*ABS_MAXRM))
-            CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
-          ENDDO
-        ENDIF
-       ELSE
-         ABS_KLRED(1)=0
-         ABS_KLRED(2)=0
-       ENDIF
+c      CALL GPINQ('ABS_E1RED','EXIST',EX1)
+c      CALL GPINQ('ABS_E2RED','EXIST',EX2)
+c      CALL GPINQ('ABS_SRED','EXIST',EX3)
+cc
+c      IF (EX1.AND.EX2.AND.EX3) THEN
+c        REWIND(LUE1RED)
+c        REWIND(LUE2RED)
+c        REWIND(LUSRED)
+c        DO I=1,KLRED(1)
+c          CALL WRITE_VEC(LUE1RED,KLRED(1),WRK(KREDE+(I-1)*ABS_MAXRM))
+c        ENDDO
+c        DO I=1,KLRED(2)
+c          CALL WRITE_VEC(LUE2RED,KLRED(2),WRK(KREDE+(I-1)*ABS_MAXRM+
+c     &                                         ABS_MAXRM*ABS_MAXRM))
+c          CALL WRITE_VEC(LUSRED,KLRED(1),WRK(KREDS+(I-1)*ABS_MAXRM))
+c        ENDDO
+c      ENDIF
 C
       END
-      SUBROUTINE ABS_SOLV(FREQS,NFREQS,REDE,REDS,REDGD,RDX,KLRED,
+      SUBROUTINE ABS_SOLV(FREQS,NFREQS,REDE,REDS,REDGD,RDX,NGD,KLRED,
      &                    KZLRED,CONV,WRK,LWRK)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "abslrs.h"
+#include "abscrs.h"
 C
 C PURPOSE:
 C     Solve the equation in a reduced space 4nx4n
 C
-      INTEGER NFREQS,KZLRED
+      INTEGER NFREQS,KZLRED,NGD
       DIMENSION REDE(ABS_MAXRM,ABS_MAXRM,2),REDS(ABS_MAXRM,ABS_MAXRM)
-      DIMENSION REDGD(ABS_MAXRM,2)
+      DIMENSION REDGD(ABS_MAXRM,2,NGD)
       DIMENSION RDX(ABS_MAXRM,4,NFREQS),FREQS(NFREQS),WRK(LWRK)
       INTEGER KLRED(2),KIPIV(KZLRED)
       LOGICAL CONV(NFREQS)
@@ -300,6 +290,11 @@ C
       NOA=KLRED(2)
 C
       DO K=1,NFREQS
+        IF (ABS_IDRI_XY) THEN
+           IGD=K
+        ELSE
+           IGD=1
+        ENDIF
         IF (.NOT.CONV(K)) THEN
            WRK(KREDZ:KREDZ+KZLRED*KZLRED-1)=0.0d0
 c
@@ -307,8 +302,8 @@ c          dgesv overwrites REDGD, therefore reduced RHS must be constructed
 C          for each frequency
 c
            WRK(KREDZGD:KREDZGD+KZLRED-1)=0.0d0
-           CALL DCOPY(NOS,REDGD(1,1),1,WRK(KREDZGD),1)
-           CALL DCOPY(NOA,REDGD(1,2),1,WRK(KREDZGD+NOS),1)
+           CALL DCOPY(NOS,REDGD(1,1,IGD),1,WRK(KREDZGD),1)
+           CALL DCOPY(NOA,REDGD(1,2,IGD),1,WRK(KREDZGD+NOS),1)
            DO I=1,KZLRED
              KIPIV(I)=0
            ENDDO
@@ -399,7 +394,7 @@ C
            IF (INFO /= 0) THEN
                WRITE(LUABSPRI,'(/A, i4)') 
      &            'Problem in DGESV, IERR = ', INFO
-               CALL QUIT(' Problem in DGESV')
+               STOP ' Problem in DGESV'
            ENDIF
 C
 C          Solution vector is found in RHS.
@@ -536,7 +531,7 @@ C
            IF (INFO /= 0) THEN
                WRITE(LUABSPRI,'(/A, i4)') 
      &            'Problem in DGESV, IERR = ', INFO
-               CALL QUIT(' Problem in DGESV')
+               STOP ' Problem in DGESV'
            ENDIF
 C
 C          Solution vector is found in RHS.
@@ -562,8 +557,8 @@ C
       RETURN
       END
       SUBROUTINE ABS_RSD(RDX,LABEL,KZVAR,NFREQS,FREQS,
-     &           KLRED,KNVEC,NNLT,
-     &           GD,RES,ITER,CONVERGED,CONV,XVEC,XSOL,WRK,LWRK)
+     &           KLRED,KNVEC,NNLT,NGD,
+     &           GD,RES,ITER,CONVERGED,CONV,XVEC,XSOL,LU,WRK,LWRK)
 C
 C PURPOSE:
 C     Compute the complex residual vector to the linear response 
@@ -574,12 +569,14 @@ C
       IMPLICIT REAL*8 (A-H,O-Z)
 C
 #include "abslrs.h"
+#include "abscrs.h"
 C
-      CHARACTER*8 LABEL
-      INTEGER NFREQS,KLRED(2),KNVEC(2),NNLT,ITER,KZVAR
+      CHARACTER*8 LABEL,BLANK
+      PARAMETER (BLANK='        ')
+      INTEGER NFREQS,KLRED(2),KNVEC(2),NNLT,ITER,KZVAR,NGD,LU
       LOGICAL CONV(NFREQS)
       PARAMETER (D0 = 0.0D0, D1=1.0D0)
-      DIMENSION RDX(ABS_MAXRM,4,NFREQS),FREQS(NFREQS),GD(KZVAR,4),
+      DIMENSION RDX(ABS_MAXRM,4,NFREQS),FREQS(NFREQS),GD(KZVAR,4,NGD),
      &     XVEC(KZVAR*NFREQS*4),XSOL(2*KZVAR,2,NFREQS),
      &     RES(KZVAR,NFREQS,4),WRK(LWRK)
       LOGICAL CONVERGED,ORTHO_QUIT1,ORTHO_QUIT2,SOLVER_QUIT
@@ -604,9 +601,14 @@ C
 C     Initialize residual vector
 C  
       DO K=1,NFREQS
+        IF (ABS_IDRI_XY) THEN
+          IGD=K
+        ELSE
+          IGD=1
+        ENDIF
         IF (.NOT.CONV(K)) THEN
-           CALL DCOPY(KZVAR,GD(1,1),1,RES(1,K,1),1)
-           CALL DCOPY(KZVAR,GD(1,2),1,RES(1,K,2),1)
+           CALL DCOPY(KZVAR,GD(1,1,IGD),1,RES(1,K,1),1)
+           CALL DCOPY(KZVAR,GD(1,2,IGD),1,RES(1,K,2),1)
            CALL DSCAL(KZVAR,-1.0d0,RES(1,K,1),1)
            CALL DSCAL(KZVAR,-1.0d0,RES(1,K,2),1)
         ENDIF
@@ -740,6 +742,11 @@ c
 C
       NCONV=0
       DO K=1,NFREQS
+         IF (ABS_IDRI_XY) THEN
+           IGD=K
+         ELSE
+           IGD=1
+         ENDIF
          IF (.NOT.CONV(K)) THEN
             DNORM_X=SQRT(DNRM2(KZYVAR,XSOL(1,1,K),1)+
      &                   DNRM2(KZYVAR,XSOL(1,2,K),1))
@@ -756,8 +763,8 @@ c            CALL DZERO(WRK(KTMP),KZYVAR)
             CALL DAXPY(KZVAR,-1.0d0,RES(1,K,3),1,WRK(KTMP+KZVAR),1)
             DNORM_RI = DNRM2(KZYVAR,WRK(KTMP),1)
             DNORM_RT = SQRT(DNORM_RR**2 + DNORM_RI**2)
-            DNORM_GR = DNRM2(KZVAR,GD(1,1),1)
-            DNORM_GI = DNRM2(KZVAR,GD(1,2),1)
+            DNORM_GR = DNRM2(KZVAR,GD(1,1,IGD),1)
+            DNORM_GI = DNRM2(KZVAR,GD(1,2,IGD),1)
             DNORM_GT = SQRT(2.0d0*(DNORM_GR**2 + DNORM_GI**2))
 C     
             DNORM_REL=DNORM_GT
@@ -765,18 +772,22 @@ C
               DNORM_REL=DNORM_X
             ENDIF
             RESID=DNORM_RT/DNORM_REL
-C    
+C   
             IF (DNORM_RT/DNORM_REL.LE.ABS_THCLR) THEN
                NCONV=NCONV+1
                CONV(K)=.TRUE.
-               CALL WRITE_XVEC(LUABSVECS,2*KZYVAR,XSOL(1,1,K),LABEL,
-     &              FREQS(K),RESID)
+c               CALL WRITE_XVEC(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+c     &              FREQS(K),RESID)
+               CALL WRITE_XVEC2(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+     &              BLANK,FREQS(K),0.0d0,RESID)
             ELSEIF (ITER.EQ.ABS_MAXITER) THEN
                CONVERGED=.FALSE.
                SOLVER_QUIT=.TRUE.
                IF (RESID .LE. 10.0d0*ABS_THCLR) THEN
-                  CALL WRITE_XVEC(LUABSVECS,2*KZYVAR,XSOL(1,1,K),LABEL,
-     &                 FREQS(K),RESID)
+c                  CALL WRITE_XVEC(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+c     &                 FREQS(K),RESID)
+                  CALL WRITE_XVEC2(LU,2*KZYVAR,XSOL(1,1,K),LABEL,
+     &                 BLANK,FREQS(K),0.0d0,RESID)
                   WRITE(LUABSPRI,*) 'WARNING! For',FREQS(K)
                   WRITE(LUABSPRI,*) 'CPP equations not converged'
                  WRITE(LUABSPRI,*) 'Threshold in iteration',ITER,RESID
@@ -804,14 +815,14 @@ C
      &            'Damping:',ABS_DAMP,
      &            'Residual:',DNORM_RT/DNORM_GT
             END IF
-            WRITE(LUABSPRI,'(A,2(I4),2X,A,2X,F6.4,2X,A,2(D15.7))')
+            WRITE(LUABSPRI,'(A,2(I4),2X,A,2X,F10.5,2X,A,2(D15.7))')
      &             'ITER, IVEC:',ITER,K, LABEL,FREQS(K),
      &             ' RESID, RESID/X:',DNORM_RT/DNORM_GT,DNORM_RT/DNORM_X
 c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
 c     &        DNORM_RT/DNORM_GT
          ELSE
             NCONV=NCONV+1
-            WRITE(LUABSPRI,'(A,2(I3),2X,A,2X,F6.4,A,2(L1))')
+            WRITE(LUABSPRI,'(A,2(I3),2X,A,2X,F10.5,A,2(L1))')
      *           'ITER, IVEC:',ITER,K,LABEL,FREQS(K),
      *           ' RESID, RESID/X:',CONV(K),CONV(K)
 c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
@@ -1032,7 +1043,8 @@ C
       RETURN
       END
       SUBROUTINE ABS_RED(ITER,KZVAR,GD,XVEC,XTMP,REDGD,REDE,REDS,NFREQS,
-     &                   NNLT,KLRED,KNVEC,MJWOP,CMO,UDV,FC,FCAC,FV,PV,
+     &                   NNLT,KLRED,KNVEC,NGD,MJWOP,CMO,UDV,FC,FCAC,FV,
+     &                   PV,
      &                   XINDX,WRK,LWRK)
 C
       IMPLICIT REAL*8 (A-H,O-Z)
@@ -1042,11 +1054,11 @@ C
 C PURPOSE:
 C     extend reduce subspace
 C
-      INTEGER NFREQS,NNLT,KZVAR
+      INTEGER NFREQS,NNLT,KZVAR,NGD
       INTEGER KLRED(2),KNVEC(2)
-      DIMENSION GD(4*KZVAR),XVEC(KZVAR,NNLT)
+      DIMENSION GD(4*KZVAR,NGD),XVEC(KZVAR,NNLT)
       DIMENSION REDE(ABS_MAXRM,ABS_MAXRM,2),REDS(ABS_MAXRM,ABS_MAXRM),
-     &          REDGD(ABS_MAXRM,2),E2XF(KZVAR,NNLT),XTMP(4*NFREQS*KZVAR)
+     &          REDGD(ABS_MAXRM,2,NGD),XTMP(4*NFREQS*KZVAR)
       DIMENSION MJWOP(*),XINDX(*)
       DIMENSION CMO(*),UDV(*),FC(*),FCAC(*),FV(*),PV(*)
       DIMENSION WRK(LWRK)
@@ -1068,10 +1080,6 @@ C
       LFREE = LWRK - KFREE
       IF (LFREE.LT.0) STOP 'ABS_RED: out of memory'
 c
-      IF (((KLRED(1)+KNVEC(1)).GT.ABS_MAXRM).OR.
-     &     ((KLRED(2)+KNVEC(2)).GT.ABS_MAXRM)) THEN 
-          CALL QUIT('Error in ABS_RED, Increase ABS_MAXRM!')
-      ENDIF
       IF (NNLT.GT.0) THEN
 c
 C       perform linear transformations
@@ -1096,14 +1104,16 @@ C
 C
 C       Construct the reduced gradient with trial vectors
 C
+      DO J=1,NGD
         DO I=1,NNS
-          REDGD(NOS+I,1) = 2.0d0*DDOT(KZVAR,XVEC(1,I),1,
-     &                     GD(1),1)
+          REDGD(NOS+I,1,J) = 2.0d0*DDOT(KZVAR,XVEC(1,I),1,
+     &                     GD(1,J),1)
         END DO
         DO I=1,NNA
-          REDGD(NOA+I,2) = 2.0d0*DDOT(KZVAR,XVEC(1,NNS+I),1,
-     &                     GD(1+KZVAR),1)
+          REDGD(NOA+I,2,J) = 2.0d0*DDOT(KZVAR,XVEC(1,NNS+I),1,
+     &                     GD(1+KZVAR,J),1)
         END DO 
+      END DO
 C
 C        extend reduced spaces
 c
@@ -1150,8 +1160,10 @@ c             CALL READT(LUSB,KZVAR,WRK(KBVEC))
               REDS(I,NOA+J)=2.0d0*DDOT(KZVAR,WRK(KBVEC),1,
      &            WRK(KSVEC+(NNS+J-1)*KZVAR),1)
             ENDDO
-            IF ((ITER.EQ.1) .AND. (NOLT.GT.1)) THEN 
-               REDGD(I,1) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,GD(1),1)
+            IF ((ITER.EQ.1) .AND. (NOLT.GT.1)) THEN
+             DO J=1,NGD 
+               REDGD(I,1,J) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,GD(1,J),1)
+            ENDDO
             ENDIF
           END DO
           DO I=1,NOA
@@ -1166,9 +1178,11 @@ c             CALL READT(LUAB,KZVAR,WRK(KBVEC))
               REDS(NOS+J,I)=2.0d0*DDOT(KZVAR,WRK(KBVEC),1,
      &             WRK(KSVEC+(J-1)*KZVAR),1)
             ENDDO
-            IF ((ITER.EQ.1) .AND. (NOLT.GT.1)) THEN 
-              REDGD(I,2) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),
-     &                             1,GD(1+KZVAR),1)
+            IF ((ITER.EQ.1) .AND. (NOLT.GT.1)) THEN
+              DO J=1,NGD 
+              REDGD(I,2,J) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),
+     &                             1,GD(1+KZVAR,J),1)
+            ENDDO
             ENDIF
           END DO
         END IF
@@ -1188,6 +1202,9 @@ c          CALL WRITT(LUAS,KZVAR,WRK(KE2XF+(NNS+I-1)*KZVAR))
 C
         KLRED(1)=KLRED(1)+KNVEC(1)
         KLRED(2)=KLRED(2)+KNVEC(2)
+        IF ((KLRED(1).GT.ABS_MAXRM).OR.(KLRED(2).GT.ABS_MAXRM)) THEN 
+          STOP 'Error in ABS_RED, Increase ABS_MAXRM!'
+        ENDIF
       ELSE
         REWIND(LUSB) 
         REWIND(LUAB)
@@ -1195,26 +1212,30 @@ C
           CALL READ_VEC(LUSB,KZVAR,WRK(KBVEC))
 c           CALL READT(LUSB,KZVAR,WRK(KBVEC))
           IF ((ITER.EQ.1) .AND. (NOLT.GT.1)) THEN 
-            REDGD(I,1) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,GD(1),1)
+            DO J=1,NGD
+            REDGD(I,1,J) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,GD(1,J),1)
+        END DO
           ELSE
-            CALL QUIT('ERROR IN ABS_RED, no trial vectors!')
+            STOP 'ERROR IN ABS_RED, no trial vectors!'
           ENDIF
         END DO
         DO I=1,NOA
           CALL READ_VEC(LUAB,KZVAR,WRK(KBVEC))
 c           CALL READT(LUAB,KZVAR,WRK(KBVEC))
           IF ((ITER.EQ.1) .AND. (NOLT.GT.1)) THEN 
-            REDGD(I,2) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),
-     &                   1,GD(1+KZVAR),1)
+        DO J=1,NGD
+            REDGD(I,2,J) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),
+     &                   1,GD(1+KZVAR,J),1)
+        END DO
           ELSE
-            CALL QUIT('ERROR IN ABS_RED, no trial vectors!')
+            STOP 'ERROR IN ABS_RED, no trial vectors!'
           ENDIF
         END DO
       END IF
 c
       RETURN
       END
-      SUBROUTINE ABS_GETRIAL(KZVAR,GD,GDSYM,FREQS,NFREQS,XVEC,TEMP,
+      SUBROUTINE ABS_GETRIAL(KZVAR,GD,GDSYM,NGD,FREQS,NFREQS,XVEC,TEMP,
      &                       KLRED,KNVEC,NNLT,CONV,WRK,LWRK)
 C
 C PURPOSE
@@ -1226,9 +1247,10 @@ C        /RS IS RA IA/
 C
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "abslrs.h"
-      INTEGER NFREQS,KLRED(2),KNVEC(2),NNLT,KZVAR
+#include "abscrs.h"
+      INTEGER NFREQS,KLRED(2),KNVEC(2),NNLT,KZVAR,NGD
       LOGICAL CONV(NFREQS)
-      DIMENSION GD(2*KZVAR),GDSYM(KZVAR,4),FREQS(NFREQS)
+      DIMENSION GD(4*KZVAR,NGD),GDSYM(KZVAR,4,NGD),FREQS(NFREQS)
       DIMENSION XVEC(KZVAR,NFREQS,4),TEMP(4*NFREQS*KZVAR),WRK(LWRK)
       LOGICAL ORTHO_QUIT
 C     local
@@ -1237,16 +1259,22 @@ c
       KFREE=1
       LFREE=LWRK
 C
-      DO I=1,KZVAR
-          GDSYM(I,1)=0.5d0*(GD(I)+GD(KZVAR+I))
-          GDSYM(I,2)=0.5d0*(GD(I)-GD(KZVAR+I))
+      DO J=1,NGD
+        DO I=1,KZVAR
+          GDSYM(I,1,J)=0.5d0*(GD(I,J)+GD(KZVAR+I,J))
+          GDSYM(I,2,J)=0.5d0*(GD(I,J)-GD(KZVAR+I,J))
       END DO
+      END DO
+      IF (ABS_IDRI_XY) THEN
+        CALL DCOPY(4*NGD*KZVAR,GDSYM,1,TEMP,1)
+      ELSE
       DO J=1,2
         DO I=1,NFREQS
-          CALL DCOPY(KZVAR,GDSYM(1,J),1,
+          CALL DCOPY(KZVAR,GDSYM(1,J,1),1,
      &         TEMP(1+((J-1)*NFREQS+(I-1))*KZVAR),1)
         ENDDO
       ENDDO
+      ENDIF
 c    
       CALL ABS_PRECON(KZVAR,TEMP,FREQS,NFREQS,XVEC,CONV,
      &                WRK(KFREE),LFREE)
@@ -1393,7 +1421,7 @@ c
               IF (ITURN==1) THEN
                 ORCHK(I)=.TRUE.
               ELSE
-                CALL QUIT('error in R orthonormalization')
+                STOP 'error in R orthonormalization'
               ENDIF 
             ELSE
               PR2=1.0d0/PR1
@@ -1406,7 +1434,7 @@ c
               IF (ITURN==1) THEN
                 ORCHK(NBNEW/2+I)=.TRUE.
               ELSE
-                CALL QUIT('error in I orthonormalization')
+                STOP 'error in I orthonormalization'
               ENDIF 
             ELSE
               PI2=1.0d0/PI1
