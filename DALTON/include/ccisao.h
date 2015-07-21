@@ -1,8 +1,8 @@
       INTEGER ISAO
       INTEGER CCISAOLAST
-C
+!
       COMMON /CCISAO/ ISAO(MXCORB)
-C
+!
       COMMON /CCISAO/ CCISAOLAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 

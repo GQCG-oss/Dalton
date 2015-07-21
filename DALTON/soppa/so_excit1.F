@@ -15,7 +15,13 @@ C     PURPOSE: Main driver routine for the calculation of excitation
 C              energies and transition moments with the atomic integral
 C              direct SOPPA program.
 C
+#ifdef VAR_MPI
+      use so_parutils, only: soppa_initialize_slaves,
+     &                       soppa_release_slaves 
+#endif         
+C         
 #include "implicit.h"
+C 
 #include "priunit.h"
 C
 #include "cbiexc.h"
@@ -49,6 +55,14 @@ CKeinSPASmehr
       DIMENSION WORK(LWORK)
 C
       CHARACTER MODEL*5
+#ifdef VAR_MPI
+!
+! This variable ensures that common blocks are only sent to the slaves
+! once. 
+      LOGICAL update_common_blocks
+
+      update_common_blocks = .true.
+#endif
 C
 C------------------
 C     Add to trace.
@@ -80,7 +94,7 @@ C
 Cend-PFP
 C     TODO implement triplet excitations and remove this statement
 C     only a problem for parallel calculations, an appropriat parquit
-C     har been added higher up.
+C     has been added higher up.
 C      IF (TRIPLET) THEN
 C         CALL QUIT('Triplet excitations are not yet fully integrated')
 C      ENDIF
@@ -253,6 +267,10 @@ C           For RPA do the following.
 C====================================
 C
             IF (AORPA) THEN
+C
+#ifdef VAR_MPI
+               model = "AORPA"
+#endif
 C
                NVARPT = 2*NT1AM(ISYM)
 C
@@ -523,6 +541,16 @@ C
      &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
 C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+#ifdef VAR_MPI
+               call soppa_initialize_slaves ( update_common_blocks,
+     &                                       WORK(KT2AM), LT2AM, model) 
+               update_common_blocks = .false.
+#endif
+C
 C--------------------------------
 C              Initialize DENSAI.
 C--------------------------------
@@ -565,6 +593,12 @@ C
      &                       TRLON(1,1,1,4),TRMAG(1,1,1,4),
      &                       BSRLON(1,1,1,4),EXENG(1,1,4),
      &                       WORK(KEND2),LWORK2)
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+               call soppa_release_slaves()
+#endif
 C
             END IF
 C
@@ -612,6 +646,16 @@ C
      &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
 C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+#ifdef VAR_MPI
+               call soppa_initialize_slaves ( update_common_blocks,
+     &                                       WORK(KT2AM), LT2AM, model) 
+               update_common_blocks = .false.
+#endif
+C
 C----------------------------------------------------------------------
 C              Determine SOPPA(CCSD) excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
@@ -648,6 +692,12 @@ C
      &                       TRLON(1,1,1,5),TRMAG(1,1,1,5),
      &                       BSRLON(1,1,1,5),EXENG(1,1,5),
      &                       WORK(KEND2),LWORK2)
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+               call soppa_release_slaves()
+#endif
 C
             END IF
 C

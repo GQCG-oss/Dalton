@@ -5,7 +5,7 @@
      &        DIAGAB, DIAGCD, DIAGPQ, TKMPAB, TKMPCD,TCMPAB, TCMPCD
 
       INTEGER ERICOMLAST
-C
+!
       COMMON /ERICOM/ SCRMAB, SCRMCD,                                   &
      &                MAXDER, IPATH, NPDIMA, NPDIMB, NCORS, NPERTS,     &
      &                NHKTA,  NHKTB,  NHKTC,  NHKTD,                    &

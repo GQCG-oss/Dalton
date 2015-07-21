@@ -546,7 +546,7 @@ C MYID intent(in)    Process ID in MPI_COMM_WORLD.
 
          !use mpi
       use dyn_iadrpk
-
+      use so_parutils, only: stupid_isao_bcast_routine
 #ifdef VAR_IFORT
       use IFPORT, ONLY: SLEEPQQ
 #endif
@@ -1125,7 +1125,7 @@ C      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 #include "ccsdinp.h"
 #include "mpif.h"
 
-      integer, intent(out) :: bytespan
+      integer(mpi_integer_kind), intent(out) :: bytespan
       intent(in)           :: firstvar, lastvar
 CRF This should be mpi_address_kind
       integer(mpi_address_kind) :: firstmem, lastmem
@@ -1346,7 +1346,7 @@ C
 
 C     /* deck partitionAOindices */
       SUBROUTINE  partitionAOindices(ntot, rows, cols, presortedarray,
-     &                               sorted)
+     &                               sorted, sumofwork)
 C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
 C
 C The output from this routine is the array 'sorted'.
@@ -1367,16 +1367,17 @@ C
       integer, dimension(2, ntot),    intent(inout) :: presortedarray
       integer, dimension(rows, cols), intent(out)   :: sorted
 
-      integer, dimension(:,:), allocatable :: sumofwork
+      integer, dimension(2, cols), intent(out) :: sumofwork
       integer, dimension(2) :: tempavail, templazy
       integer :: numprocs, availloc, targetrow
       integer :: allocstatus, deallocstatus
 
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
-      allocate (sumofwork(2, numprocs) , stat=allocstatus)
-      if(.not.(allocstatus.eq.0) ) then
-         call quit('Allocation error in partitionAOindices')
-      endif
+C      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
+      numprocs = cols
+C      allocate (sumofwork(2, numprocs) , stat=allocstatus)
+C      if(.not.(allocstatus.eq.0) ) then
+C         call quit('Allocation error in partitionAOindices')
+C      endif
  
       call izero(sorted, (rows*cols) )
       call izero(sumofwork, (2*numprocs) )
@@ -1403,10 +1404,10 @@ C        ADD AO-INDEX TO FIRST AVAILABLE ROW IN THE LAZY SLAVE'S COLUMN
          sorted( targetrow,lazyloc ) = aoindex
       ENDDO
       
-      deallocate(sumofwork, stat=deallocstatus)
-      if(.not.(deallocstatus.eq.0) ) then
-         call quit('Deallocation error in partitionAOindices')
-      endif
+C      deallocate(sumofwork, stat=deallocstatus)
+C      if(.not.(deallocstatus.eq.0) ) then
+C         call quit('Deallocation error in partitionAOindices')
+C      endif
 
       return
 

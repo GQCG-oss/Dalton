@@ -27,7 +27,7 @@
       character(len=3) :: padding_dummy
 
 ! Extra communicator needed in case some slaves are excluded from the calculation
-      integer :: soppa_comm_active
+      integer(mpi_integer_kind) :: soppa_comm_active
 
       common /parsoppa/
      & NTOT  , NUMDIS, KODCL1, KODCL2, KODBC1, LWORKSV,                 &

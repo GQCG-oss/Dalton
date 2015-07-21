@@ -1,8 +1,8 @@
       INTEGER HERTOPLAST
-C
+!
       COMMON /HERTOP/ JTOP, NRTOP
-C
-C
+!
+!
       COMMON /HERTOP/ HERTOPLAST
       !   Very important !!!
       !   Always keep this variable as the last variable in the common block. 

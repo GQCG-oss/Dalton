@@ -18,8 +18,8 @@
 #else
       DOUBLE PRECISION THRPCKINT, PCKRATIO, PCKTIME
 #endif
-      COMMON /CCPACK/ THRPCKINT, PCKRATIO, PCKTIME,
-     &                IPCKTABINT, IOFFINT, NPCKINT,
+      COMMON /CCPACK/ THRPCKINT, PCKRATIO, PCKTIME,                     &
+     &                IPCKTABINT, IOFFINT, NPCKINT,                     &
      &                NTOTINT, NTOTPCK, LPACKINT
 !
       COMMON /CCPACK/ CCPACKLAST

@@ -1009,6 +1009,7 @@ C todo ... beyer
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
+      use so_parutils, only: soppa_nodedriver
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1180,7 +1181,7 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
             CALL PAR_RP_ERES(work(1), mwork, mytid )
          ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
-            CALL PAR_SO_ERES(work(1), mwork, mytid )
+            CALL SOPPA_NODEDRIVER(work(1), mwork, iprint )
 #ifdef MOD_CGTO_DIFF_ERI
          ! added by Bin Gao, Oct. 27, 2012
          ! cgto-diff-eri code to calculate arbitray order geometric derivatives
