@@ -198,6 +198,7 @@ module tensor_basic_module
       integer(kind=tensor_long_int) :: vector_size
       real(tensor_dp) :: dim1
       real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
+      logical :: bg
 
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
@@ -205,11 +206,12 @@ module tensor_basic_module
 
          vector_size = int(size(arr%elm1)*tensor_dp,kind=tensor_long_int)
 
+         bg=arr%bg_alloc
+         call tensor_free_mem(arr%elm1,bg=bg)
+
+         !endif
          call deassoc_ptr_arr(arr)
 
-         call tensor_free_mem(arr%elm1,bg=arr%bg_alloc)
-         !endif
-         arr%elm1 => null()
 !$OMP CRITICAL
          tensor_counter_dense_f_mem   = tensor_counter_dense_f_mem   + vector_size
          tensor_counter_memory_in_use = tensor_counter_memory_in_use - vector_size
@@ -246,7 +248,8 @@ module tensor_basic_module
 
               vector_size = int(size(arr%ti(i)%t)*tensor_dp,kind=tensor_long_int)
 
-              call tensor_free_mem(arr%ti(i)%t,arr%ti(i)%c,bg=arr%bg_alloc)
+              bg = arr%bg_alloc
+              call tensor_free_mem(arr%ti(i)%t,arr%ti(i)%c,bg=bg)
 
               !$OMP CRITICAL
               tensor_counter_tiled_f_mem   = tensor_counter_tiled_f_mem   + vector_size

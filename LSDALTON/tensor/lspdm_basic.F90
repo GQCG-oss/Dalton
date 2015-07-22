@@ -604,6 +604,7 @@ module lspdm_basic_module
      type(tensor) :: arr
      integer(kind=tensor_long_int) :: vector_size,dim1
      real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
+     logical :: bg
 
      call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
@@ -611,7 +612,8 @@ module lspdm_basic_module
 
         vector_size = int(size(arr%dummy)*tensor_dp,kind=tensor_long_int)
 
-        call tensor_free_mem(arr%dummy,arr%dummyc,bg=arr%bg_alloc)
+        bg = arr%bg_alloc
+        call tensor_free_mem(arr%dummy,arr%dummyc,bg=bg)
 
         !$OMP CRITICAL
         tensor_counter_aux_f_mem     = tensor_counter_aux_f_mem     + vector_size
