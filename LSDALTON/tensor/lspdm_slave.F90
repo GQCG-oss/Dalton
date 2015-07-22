@@ -23,7 +23,7 @@ subroutine pdm_tensor_slave(comm)
    CHARACTER    :: T(2)
    INTEGER      :: JOB
    real(tensor_dp),pointer :: realar1(:)
-   integer(kind=tensor_long_int), pointer  :: lintar1(:)
+   integer(kind=tensor_long_int), pointer  :: lintar1(:), lintar2(:)
    integer, pointer  :: intarr1(:), intarr2(:), intarr3(:), intarr4(:)
    integer           :: INT1,       INT2,       INT3,       INT4
    real(tensor_dp)   :: REAL1,      REAL2
@@ -86,9 +86,13 @@ subroutine pdm_tensor_slave(comm)
    CASE(JOB_PRINT_MEM_INFO1)
       call print_mem_per_node(DECinfo%output,.false.)
    CASE(JOB_PRINT_MEM_INFO2)
-      call tensor_alloc_mem(lintar1,1)
-      call print_mem_per_node(DECinfo%output,.false.,lintar1)
+      call tensor_alloc_mem(lintar1,9*infpar%lg_nodtot)
+      call tensor_alloc_mem(lintar2,infpar%lg_nodtot)
+      lintar1 = 0
+      lintar2 = 0
+      call print_mem_per_node(DECinfo%output,.false.,lintar1,lintar2)
       call tensor_free_mem(lintar1)
+      call tensor_free_mem(lintar2)
    CASE(JOB_GET_NRM2_TILED)
       REAL1 = tensor_tiled_pdm_get_nrm2(A)
    CASE(JOB_DATA2TILED_DIST)

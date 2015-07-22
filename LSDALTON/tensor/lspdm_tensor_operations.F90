@@ -5023,17 +5023,25 @@ module lspdm_tensor_operations_module
 
 
 
-  subroutine print_mem_per_node(output,allaccs,infoonmaster)
+  subroutine print_mem_per_node(output,allaccs,infoonmaster,narr_allocd)
      implicit none
      integer, intent(in) :: output
      logical,intent(in)  :: allaccs
-     integer(kind=tensor_long_int),pointer,optional  :: infoonmaster(:)
-     integer(kind=tensor_long_int) :: get_mem(8)
+     integer(kind=tensor_long_int), parameter :: nmeminfo = 9
+     integer(kind=tensor_long_int),optional  :: infoonmaster(:)
+     integer(kind=tensor_long_int),optional  :: narr_allocd(infpar%lg_nodtot)
+     integer(kind=tensor_long_int) :: get_mem(nmeminfo)
      integer(kind=tensor_mpi_kind) :: i
      integer :: allallocd
      logical :: master
+     integer :: me
      real(tensor_dp) :: mb_acc,mb_put,mb_get,total(9),speed_acc,speed_get,speed_put
 #ifdef VAR_MPI
+     if(.not.present(infoonmaster))then
+        if(size(infoonmaster) < nmeminfo*infpar%lg_nodtot)then
+           call tensor_status_quit("ERROR(print_mem_per_node): infoonmaster too small",83)
+        endif
+     endif
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !NODE SPECIFIC ONE-SIDED INFO!!!!!!!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -5049,6 +5057,7 @@ module lspdm_tensor_operations_module
 
      master = .true.
      if(infpar%lg_mynum/=infpar%master)master=.false.
+     me = infpar%lg_mynum
 
      if(.not.present(infoonmaster))then
         if(master.and..not.allaccs)then
@@ -5087,30 +5096,17 @@ module lspdm_tensor_operations_module
         !  endif
         !  call lsmpi_barrier(infpar%lg_comm)
         !enddo
-        !call tensor_print_memory_currents(output,get_mem)
 
-        if(master)then
-           infoonmaster(1:8)=get_mem(1:8)
+        call tensor_print_memory_currents(output,get_mem)
+
+        infoonmaster(me*nmeminfo+1:me*nmeminfo+nmeminfo)=get_mem(1:nmeminfo)
+
+        if(present(narr_allocd))then
+           narr_allocd(me+1) = p_arr%arrays_in_use
+           call lsmpi_allreduce(narr_allocd,infpar%lg_nodtot,infpar%lg_comm)
         endif
-        do i=1,infpar%lg_nodtot-1
-           if(infpar%lg_mynum==i)then
-              call ls_mpisendrecv(get_mem,8,infpar%lg_comm,i,infpar%master)
-           endif
-           if(master)call ls_mpisendrecv(infoonmaster(i*8+1:i*8+8),8,infpar%lg_comm,i,infpar%master)
-        enddo
+        call lsmpi_allreduce(infoonmaster,nmeminfo*infpar%lg_nodtot,infpar%lg_comm)
 
-        allallocd = p_arr%arrays_in_use
-        call lsmpi_local_reduction(allallocd,infpar%master)
-
-        if(master)then
-           infoonmaster(1)=0_tensor_long_int
-           do i=1,infpar%lg_nodtot
-              infoonmaster(1)=infoonmaster(1)+infoonmaster(7+(i-1)*8)
-           enddo
-           ! if no memory leaks are present infooonmaster is zero
-           infoonmaster(1) =infoonmaster(1) + allallocd
-           !write (output,'("SUM OF CURRENTLY ALLOCATED ARRAYS:",I5)'),allallocd
-        endif
      endif
 
 

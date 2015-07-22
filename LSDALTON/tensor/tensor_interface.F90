@@ -2994,8 +2994,8 @@ contains
     !> optional logigal stating that the informaion should be gathered on master
     integer, intent(inout), optional :: reducetocheck
     logical :: alln,red,master
-    integer :: nnod
-    integer(kind=tensor_long_int),pointer :: red_info(:)
+    integer :: nnod, nod
+    integer(kind=tensor_long_int),pointer :: red_info(:),narr(:)
     alln   = .false.
     red    = .false.
     master =.true.
@@ -3007,25 +3007,31 @@ contains
     if(present(print_all_nodes))alln=print_all_nodes
     if(present(reducetocheck))then
       red=.true.
-      if(red.and.master)then
-         call tensor_alloc_mem(red_info,nnod*8)
-      endif
+      call tensor_alloc_mem(red_info,nnod*9)
+      call tensor_alloc_mem(narr,nnod)
+      red_info = 0
+      narr     = 0
     endif
     if(alln)then
-      if(present(allaccess).and.red)call print_mem_per_node(output,allaccess,red_info)
-      if(.not.present(allaccess).and.red)call print_mem_per_node(output,.false.,red_info)
+      if(present(allaccess).and.red)call print_mem_per_node(output,allaccess,red_info,narr)
+      if(.not.present(allaccess).and.red)call print_mem_per_node(output,.false.,red_info,narr)
       if(present(allaccess).and..not.red)call print_mem_per_node(output,allaccess)
       if(.not.present(allaccess).and..not.red)call print_mem_per_node(output,.false.)
     else
       call tensor_print_memory_currents(output)
     endif
-    if(red.and.master)then
-      if(abs(red_info(1))==0)then
-        reducetocheck=0
-      else
-        reducetocheck=1
-      endif
+
+    if(red)then
+       !set test status
+      reducetocheck=0
+      do nod=1,nnod
+         !check position 7 for each node, this ist the total memory currently
+         !allocated in the tensor structure
+         if(red_info(7+(nod-1)*9) /= 0) reducetocheck = 1
+         if(narr(nod) /= 0)             reducetocheck = 1
+      enddo
       call tensor_free_mem(red_info)
+      call tensor_free_mem(narr)
     endif
 
   end subroutine tensor_print_mem_info

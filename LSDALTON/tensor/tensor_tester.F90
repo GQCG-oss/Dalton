@@ -285,7 +285,7 @@ module tensor_tester_module
 
     !initialize a matrix
     teststatus="SUCCESS"
-    if(master) write (output,*)"ALLOC-DEALLOC TESTS"
+    if(master) write (output,*)"ALLOC-DEALLOC TESTS:"
     call tensor_init(test1,[nb,nb+2,nb+3,nb+4],4,TT_TILED_DIST,AT_ALL_ACCESS,[nb,nb+2,40,2])
     call tensor_init(test2,[no+3,no+2,no+1,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no,40,40,10])
     call tensor_free(test1)
@@ -299,7 +299,7 @@ module tensor_tester_module
     if(master) write (output,*)"DONE -- NOW COMMUNICATION"
     if(master) write(output,*)""
     if(master) write(output,*)""
-    if(master) print *,"ALL-INIT ALLOC-DEALLOC TESTS",teststatus
+    if(master) print *,"ALL-INIT ALLOC-DEALLOC TESTS:",teststatus
     !call lsmpi_barrier(infpar%lg_comm)
 
     !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the

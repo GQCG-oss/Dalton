@@ -379,27 +379,32 @@ module tensor_basic_module
     !> selects the output
     integer, intent(in) :: output
     !> selects to redcue it on master for checking, or outut instead
-    integer(kind=tensor_long_int),intent(inout),optional :: retour(8)
+    integer(kind=tensor_long_int), parameter :: nmeminfo = 9
+    integer(kind=tensor_long_int),intent(inout),optional :: retour(nmeminfo)
+    integer(kind=tensor_long_int) :: ret(nmeminfo)
+
+    ret(1)=tensor_counter_dense_a_mem
+    ret(2)=tensor_counter_dense_f_mem
+    ret(3)=tensor_counter_tiled_a_mem
+    ret(4)=tensor_counter_tiled_f_mem
+    ret(5)=tensor_counter_aux_a_mem
+    ret(6)=tensor_counter_aux_f_mem
+    ret(7)=tensor_counter_memory_in_use_heap
+    ret(8)=tensor_counter_max_hp_mem
+    ret(9)=tensor_counter_max_bg_mem
     
     if(.not.present(retour))then
-      write(*,'(a,i12,a)') ' Allocated memory for dense array   :',tensor_counter_dense_a_mem,' bytes'
-      write(*,'(a,i12,a)') ' Deallocated memory for dense array :',tensor_counter_dense_f_mem,' bytes'
-      write(*,'(a,i12,a)') ' Allocated memory for tiled array   :',tensor_counter_tiled_a_mem,' bytes'
-      write(*,'(a,i12,a)') ' Deallocated memory for tiled array :',tensor_counter_tiled_f_mem,' bytes'
-      write(*,'(a,i12,a)') ' Allocated aux memory for array     :',tensor_counter_aux_a_mem,' bytes'
-      write(*,'(a,i12,a)') ' Dellocated aux memory for array    :',tensor_counter_aux_f_mem,' bytes'
-      write(*,'(a,i12,a)') ' Memory in use for array            :',tensor_counter_memory_in_use_heap,' bytes'
-      write(*,'(a,i12,a)') ' Max heap memory in use for array   :',tensor_counter_max_hp_mem,' bytes'
-      write(*,'(a,i12,a)') ' Max bg memory in use for array     :',tensor_counter_max_bg_mem,' bytes'
+      write(*,'(a,i12,a)') ' Allocated memory for dense array   :',ret(1),' bytes'
+      write(*,'(a,i12,a)') ' Deallocated memory for dense array :',ret(2),' bytes'
+      write(*,'(a,i12,a)') ' Allocated memory for tiled array   :',ret(3),' bytes'
+      write(*,'(a,i12,a)') ' Deallocated memory for tiled array :',ret(4),' bytes'
+      write(*,'(a,i12,a)') ' Allocated aux memory for array     :',ret(5),' bytes'
+      write(*,'(a,i12,a)') ' Dellocated aux memory for array    :',ret(6),' bytes'
+      write(*,'(a,i12,a)') ' Memory in use for array            :',ret(7),' bytes'
+      write(*,'(a,i12,a)') ' Max heap memory in use for array   :',ret(8),' bytes'
+      write(*,'(a,i12,a)') ' Max bg memory in use for array     :',ret(9),' bytes'
     else
-      retour(1)=tensor_counter_dense_a_mem
-      retour(2)=tensor_counter_dense_f_mem
-      retour(3)=tensor_counter_tiled_a_mem
-      retour(4)=tensor_counter_tiled_f_mem
-      retour(5)=tensor_counter_aux_a_mem
-      retour(6)=tensor_counter_aux_f_mem
-      retour(7)=tensor_get_total_mem()
-      retour(8)=tensor_counter_max_hp_mem
+       retour = ret
     endif
 
   end subroutine tensor_print_memory_currents
