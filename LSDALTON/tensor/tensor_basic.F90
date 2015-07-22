@@ -170,13 +170,8 @@ module tensor_basic_module
       endif
       vector_size = int((arr%nelms)*tensor_dp,kind=tensor_long_int)
 
-      if(bg)then
-         call mem_pseudo_alloc(arr%elm1,arr%nelms)
-         arr%bg_alloc = .true.
-      else
-         call tensor_alloc_mem(arr%elm1,arr%nelms)
-         arr%bg_alloc = .false.
-      endif
+      call tensor_alloc_mem(arr%elm1,arr%nelms,bg=bg)
+      arr%bg_alloc = bg
 
       if( tensor_debug_mode )then
          arr%elm1 = 0.0E0_tensor_dp
@@ -251,13 +246,8 @@ module tensor_basic_module
 
               vector_size = int(size(arr%ti(i)%t)*tensor_dp,kind=tensor_long_int)
 
-#ifdef VAR_MPI
-              if(arr%bg_alloc)then
-                 call mem_pseudo_dealloc(arr%ti(i)%t)
-              else
-                 call tensor_free_mem(arr%ti(i)%t,arr%ti(i)%c)
-              endif
-#endif
+              call tensor_free_mem(arr%ti(i)%t,arr%ti(i)%c,bg=arr%bg_alloc)
+
               !$OMP CRITICAL
               tensor_counter_tiled_f_mem   = tensor_counter_tiled_f_mem   + vector_size
               tensor_counter_memory_in_use = tensor_counter_memory_in_use - vector_size
