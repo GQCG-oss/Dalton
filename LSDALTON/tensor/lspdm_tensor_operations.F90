@@ -192,8 +192,6 @@ module lspdm_tensor_operations_module
      implicit none
      integer :: i
 
-     print *,"I am here",infpar%lg_mynum
-
      call tensor_alloc_mem(p_arr%a,n_arrays)
      call tensor_alloc_mem(p_arr%free_addr_on_node,n_arrays)
 
@@ -5029,7 +5027,7 @@ module lspdm_tensor_operations_module
      logical,intent(in)  :: allaccs
      integer(kind=tensor_long_int), parameter :: nmeminfo = 9
      integer(kind=tensor_long_int),optional  :: infoonmaster(:)
-     integer(kind=tensor_long_int),optional  :: narr_allocd(infpar%lg_nodtot)
+     integer(kind=tensor_long_int),optional  :: narr_allocd(:)
      integer(kind=tensor_long_int) :: get_mem(nmeminfo)
      integer(kind=tensor_mpi_kind) :: i
      integer :: allallocd
@@ -5037,9 +5035,14 @@ module lspdm_tensor_operations_module
      integer :: me
      real(tensor_dp) :: mb_acc,mb_put,mb_get,total(9),speed_acc,speed_get,speed_put
 #ifdef VAR_MPI
-     if(.not.present(infoonmaster))then
+     if(present(infoonmaster))then
         if(size(infoonmaster) < nmeminfo*infpar%lg_nodtot)then
            call tensor_status_quit("ERROR(print_mem_per_node): infoonmaster too small",83)
+        endif
+     endif
+     if(present(narr_allocd))then
+        if(size(narr_allocd) < infpar%lg_nodtot)then
+           call tensor_status_quit("ERROR(print_mem_per_node): narr_allocd too small",83)
         endif
      endif
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

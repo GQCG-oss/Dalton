@@ -1,7 +1,3 @@
-      type(c_ptr), intent(inout) :: c
-      integer(kind=tensor_standard_int),intent(in) :: idx
-      integer(kind=tensor_long_int), intent(in)    :: n
-      integer, intent(out), optional               :: stat
       integer(kind=tensor_mpi_kind)  :: alloc_stat 
       integer(kind=MPI_ADDRESS_KIND) :: b
       integer(kind=tensor_mpi_kind)  :: info

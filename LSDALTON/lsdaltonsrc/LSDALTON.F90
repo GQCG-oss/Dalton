@@ -777,9 +777,12 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 END SUBROUTINE LSDALTON_DRIVER
 
 SUBROUTINE LSDALTON_DRIVER_SLAVE()
+#ifndef VAR_MPI
+   implicit none
+   call lsquit("ERROR(LSDALTON_DRIVER_SLAVE): this should never be called without MPI",-1)
+#else
    use lsmpi_type, only: MPI_COMM_LSDALTON
    implicit none
-#ifdef VAR_MPI
    call lsmpi_slave(MPI_COMM_LSDALTON)
 #endif
 END SUBROUTINE LSDALTON_DRIVER_SLAVE

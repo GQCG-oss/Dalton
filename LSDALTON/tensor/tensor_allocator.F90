@@ -354,8 +354,13 @@ module tensor_allocator
    subroutine tensor_allocate_tensor_dp_basic_mpi(p,c,n,idx,stat)
       implicit none
       real(tensor_dp),pointer, intent(inout) :: p(:)
+      include "mpi_alloc_input.inc"
 
+#ifdef VAR_MPI
       include "mpi_allocation.inc"
+#else
+      call tensor_status_quit("ERROR(tensor_free_tensor_dp_basic_mpi): called without mpi",223)
+#endif
 
    end subroutine tensor_allocate_tensor_dp_basic_mpi
 
@@ -379,8 +384,12 @@ module tensor_allocator
    subroutine tensor_free_tensor_dp_basic_mpi(p,c,idx,stat)
       implicit none
       real(tensor_dp),pointer, intent(inout) :: p(:)
-
+      include "mpi_dealloc_input.inc"
+#ifdef VAR_MPI
       include "mpi_deallocation.inc"
+#else
+      call tensor_status_quit("ERROR(tensor_free_tensor_dp_basic_mpi): called without mpi",223)
+#endif
 
    end subroutine tensor_free_tensor_dp_basic_mpi
 
