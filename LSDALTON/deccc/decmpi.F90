@@ -2392,6 +2392,7 @@ contains
     call ls_mpi_buffer(DECitem%JacobianPrecond,Master)
     call ls_mpi_buffer(DECitem%HaldApprox,Master)
     call ls_mpi_buffer(DECitem%LW1,Master)
+    call ls_mpi_buffer(DECitem%P_EOM_MBPT2,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%DECNP,Master)
