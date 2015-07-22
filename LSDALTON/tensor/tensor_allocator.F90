@@ -65,6 +65,24 @@ module tensor_allocator
    end interface tensor_free_mem
 
 
+   abstract interface
+      subroutine tensor_aif_long_int(p,idx,stat)
+         use tensor_parameters_and_counters
+         import
+         implicit none
+         integer(kind=tensor_long_int),pointer, intent(inout) :: p(:)
+         integer(kind=tensor_standard_int), intent(in) :: idx
+         integer, intent(out), optional                :: stat
+      end subroutine tensor_aif_long_int
+      subroutine tensor_aif_standard_int(p,idx,stat)
+         use tensor_parameters_and_counters
+         import
+         implicit none
+         integer(kind=tensor_standard_int),pointer, intent(inout) :: p(:)
+         integer(kind=tensor_standard_int), intent(in) :: idx
+         integer, intent(out), optional                :: stat
+      end subroutine tensor_aif_standard_int
+   end interface
 
    contains
 
@@ -500,8 +518,8 @@ module tensor_allocator
       integer(kind=tensor_long_int),pointer, intent(inout) :: p2(:,:)
 #endif
       integer(kind=tensor_long_int),pointer  :: p(:)
-      integer(kind=tensor_standard_int)                     :: idx  = tensor_mem_idx_tensor_long_int
-      procedure(tensor_free_tensor_long_int_basic), pointer :: free => tensor_free_tensor_long_int_basic
+      integer(kind=tensor_standard_int)       :: idx  = tensor_mem_idx_tensor_long_int
+      procedure(tensor_aif_long_int), pointer :: free => tensor_free_tensor_long_int_basic
 
 #ifdef VAR_PTR_RESHAPE
       include "standard_dealloc2d.inc"
@@ -636,8 +654,8 @@ module tensor_allocator
       integer(kind=tensor_standard_int), pointer, intent(inout) :: p2(:,:)
 #endif
       integer(kind=tensor_standard_int),pointer :: p(:)
-      integer(kind=tensor_standard_int)                         :: idx  = tensor_mem_idx_tensor_standard_int
-      procedure(tensor_free_tensor_standard_int_basic), pointer :: free => tensor_free_tensor_standard_int_basic
+      integer(kind=tensor_standard_int)           :: idx  = tensor_mem_idx_tensor_standard_int
+      procedure(tensor_aif_standard_int), pointer :: free => tensor_free_tensor_standard_int_basic
 
 #ifdef VAR_PTR_RESHAPE
       include "standard_dealloc2d.inc"
