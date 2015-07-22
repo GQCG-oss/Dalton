@@ -61,8 +61,8 @@ module tensor_tester_module
 
 #ifdef VAR_MPI
     if(master)then
-       print *,"TILE SIZE!",sizeof(test)
-       print *,"Tens SIZE!",sizeof(tens)
+       !print *,"TILE SIZE!",sizeof(test)
+       !print *,"Tens SIZE!",sizeof(tens)
 
       !call tensor_print_mem_info(output,.true.,.false.,succ)
 
