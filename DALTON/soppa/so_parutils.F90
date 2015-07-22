@@ -44,7 +44,7 @@ module so_parutils
    integer(mpi_integer_kind), parameter :: one_mpi = 1, zero_mpi = 0
 #undef my_MPI_INTEGER
 
-   private soppa_update_common
+!   private soppa_update_common
 contains
 
 
@@ -366,11 +366,15 @@ contains
          ldensai = naiden(1)          ! from soppinf.h
 
          kt2am   = kend 
-         kdensij = kt2am   + lt2am
-         kdensab = kdensij + ldensij
+         kdensij = kt2am   + lt2am    ! densij and densab is not
+         kdensab = kdensij + ldensij  ! currently used on slaves
          kdensai = kdensab + ldensab
          kend    = kdensai + ldensai
+         ! 
+         ! Zero densai (To mirror initialization in so_excit1)
+         call dzero( work(kdensai), ldensai )
       endif
+
 !
 !     Allocation of of space for load-balancing
 !
@@ -386,7 +390,7 @@ contains
 
       ! Recieve the stuff, which is already known. This is atleast 
       ! the MP2 amplitudes
-      call mpi_bcast( work(lt2am), lt2am, mpi_real8, 0,        & 
+      call mpi_bcast( work(kt2am), lt2am, mpi_real8, 0,        & 
      &                   mpi_comm_world, ierr )
          
 !
@@ -426,7 +430,10 @@ contains
             !
             call mpi_bcast( info_array(1), 4, my_mpi_integer, 0,     &
                             mpi_comm_world, ierr)  
-!        
+            !
+            ! Test --- common block problems?
+!            call soppa_update_common()
+!
             call so_eres( model, noldtr, nnewtr,          &! General info
                   work(kdensij), ldensij,                 &! Densij
                   work(kdensab), ldensab,                 &! Densab
@@ -435,7 +442,8 @@ contains
                   work(kdensai), ldensai,                 &! Densai
                   nit, isymtr,                            &! Info
                   work(kassignedindices),maxnumjobs,      &! Load-balancing space           
-     &            work(kend), lworkf )                     ! Work-array
+     &            work(kend), lworkf )                     ! Work-array 
+
          case default
             call quit('Slave recieved invalid job-description'//     &
                             ' in AOSOPPA nodedriver.' )

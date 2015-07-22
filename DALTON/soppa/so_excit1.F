@@ -93,7 +93,7 @@ C
 C
 Cend-PFP
 C     TODO implement triplet excitations and remove this statement
-C     only a problem for parallel calculations, an appropriat parquit
+C     only a problem for parallel calculations, an appropriate parquit
 C     has been added higher up.
 C      IF (TRIPLET) THEN
 C         CALL QUIT('Triplet excitations are not yet fully integrated')

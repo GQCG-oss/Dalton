@@ -27,6 +27,8 @@ C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
 
+      use so_parutils, only: soppa_comm_active 
+
 #include "implicit.h"
 
 #ifdef VAR_MPI
@@ -97,6 +99,7 @@ C     of the trial vector ISYMTR, and the opperator symmtry ISYMOP.
 C------------------------------------------------------------------
 C
       ISYRES  = MULD2H(ISYMOP,ISYMTR)
+      write(lupri,*) Model
 C
 C---------------------------------
 C     Work space allocation no. 1.
@@ -115,11 +118,16 @@ C-------------------------------------------------------
 C     Get the matrix which contains the MO coefficients.
 C-------------------------------------------------------
 C
-      DTIME      = SECOND()
-      CALL SO_GETMO(WORK(KCMO),LCMO,WORK(KEND1),LWORK1)
-      DTIME      = SECOND()   - DTIME
-      SOTIME(1)  = SOTIME(1) + DTIME
 #ifdef VAR_MPI
+C Only master reads...
+      IF (MYNUM .EQ. 0) THEN
+#endif
+         DTIME      = SECOND()
+         CALL SO_GETMO(WORK(KCMO),LCMO,WORK(KEND1),LWORK1)
+         DTIME      = SECOND()   - DTIME
+         SOTIME(1)  = SOTIME(1) + DTIME
+#ifdef VAR_MPI
+      ENDIF
 C Should probably use non-blocking collectives, where implemented
 !      IF (MPI_VERSION.GE.3) THEN
 !         MPI_IBCAST(WORK(KCMO),LCMO, my_MPI_INTEGER, 0,
@@ -354,19 +362,23 @@ C-----------------------------------------------------------------
 C        In MPI calculations, we need to distribute the indices.
 C        On first pass, we set this using the pre-sorted approach.
 C-----------------------------------------------------------------
-         IF ( (nit .ne. 1 .or. inewtr .ne. 1) 
-     &                  .or.  numprocs .eq. 1 ) THEN
+C         IF ( (nit .ne. 1 .or. inewtr .ne. 1) 
+         IF ( .not. (nit .eq. 1 .and. inewtr .eq. 1) 
+     &                        .or.  numprocs .eq. 1 ) THEN
 C After first pass, load-balancing has been done
             CONTINUE
          ELSEIF( mynum .eq. 0 )THEN
 C Master does the balancing
+            write(lupri,*) 'Entering load-balancing'
             call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
      &                     work(kindxb), work(kendsv), lworksv)
+!            write (luerr,'(10i5)') mynum, AssignedIndices
          ELSE 
 C Slaves receives the scatter, send arguments should be ignored
             call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
      &                        AssignedIndices, maxnumjobs, mpi_integer,
      &                        0, soppa_comm_active, ierr )
+!            write (luerr,'(10i5)') mynum, AssignedIndices
          ENDIF 
 #endif
          DO 210 ISYMD1 = 1,NTOSYM
@@ -449,12 +461,15 @@ C------------------------------------------------------------------
             DO 220 ILLLDUMMY = 1, nloopidx
                if ( numprocs .gt. 1 ) then 
                   ILLL = assignedIndices(illldummy)
+C                 A zero indicates that we have no more work, exit loop
+                  IF (ILLL .eq. 0) exit
                else
                   ILLL = ILLLDUMMY
                endif
 #else
             DO 220 ILLL = 1,NTOT
 #endif
+C               print *, ILLL
 C------------------------------------------------
 C              If direct calculate the integrals.
 C------------------------------------------------
@@ -731,48 +746,65 @@ C  second call, sigai and sigda in the third and fourth call,
 C  and the two-particle vector is just written to file.
 C  The alternative approach, is to do all these calculations
 C  one the slaves, and only reduce in the end, this would save
-C  communication of sigai and sigda
+C  communication of sigai and sigda.
 C
 C  Use the fact that memory are together
          lrestot = lres1e + lres1d + lres2e + lres2d
          lsigtot = lsigai1 + lsigai2 + lsigda1 + lsigda2
          latot   = laij + laab
-         print *, lrestot, lsigtot, latot
+!         write(*,*) lrestot, lsigtot, latot
 C  Master use inplace operations       
          if (mynum .eq. 0 ) then
+C
+C           Fock-matrix
+            call mpi_reduce( mpi_in_place, work(kfock), lfock, 
+     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       soppa_comm_active, ierr)
+C
 C           Result-vectors
-            print *, 'Result'            
             call mpi_reduce( mpi_in_place, work(kres1e), lrestot,
      &                       MPI_REAL8, MPI_SUM, 0, 
      &                       soppa_comm_active, ierr)
+C
 C           Sigai / Sigda
-            print *, 'Sigai'            
             call mpi_reduce( mpi_in_place, work(ksigai1), lsigtot,
      &                       MPI_REAL8, MPI_SUM, 0,
      &                       soppa_comm_active, ierr)
-C           Aij / Aab -- only calculated in first loop           
+C
+C           Aij / Aab -- only calculated in first pass  
             if ( inewtr .eq. 1 ) then
-               print *, 'Aij'            
+               write(lupri,*) 'Aij'            
                call mpi_reduce ( mpi_in_place, work(kaij), latot,
      &                           MPI_REAL8, MPI_SUM, 0,
      &                           soppa_comm_active, ierr)
             endif
          else
 C  Slaves pass the same buffer as the recieve-buffer...
+C
+C           Fock-matrix
+            call mpi_reduce( work(kfock), work(kfock), lfock, 
+     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       soppa_comm_active, ierr)
+C
 C           Result-vectors            
             call mpi_reduce( work(kres1e), work(kres1e), lrestot,
      &                       MPI_REAL8, MPI_SUM, 0, 
      &                       soppa_comm_active, ierr)
+C
 C           Sigai / Sigda
             call mpi_reduce( work(ksigai1), work(ksigai1), lsigtot,
      &                       MPI_REAL8, MPI_SUM, 0,
      &                       soppa_comm_active, ierr)
+C
 C           Aij / Aab            
             if ( inewtr .eq. 1 ) then
                call mpi_reduce ( work(kaij), work(kaij), latot,
-     &                           MPI_READ8, MPI_SUM, 0,
+     &                           MPI_REAL8, MPI_SUM, 0,
      &                           soppa_comm_active, ierr)
             endif
+C
+C  After the reductions, the slaves are done; cycle loop
+            goto 100
          endif
 #endif
 C
@@ -2129,7 +2161,9 @@ C  of the significant bits)
          enddo
 
          write (lupri,90) nameofdata, squared_sum, abs_sum, signed_sum
-90       format(A6,3F23.15)
+!         write (*,90) nameofdata, squared_sum, abs_sum, signed_sum
+
+90       format(A15,3F20.15)
 
       end subroutine stupid_checksum
 !#endif
