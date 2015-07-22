@@ -4,6 +4,9 @@
 !> \author Patrick Ettenhuber
 !> \date April 2013
 module lspdm_basic_module
+
+  use background_buffer_module, only: mem_is_background_buf_init
+
   use tensor_allocator
   use tensor_type_def_module
   use LSTIMING!,only:lstimer

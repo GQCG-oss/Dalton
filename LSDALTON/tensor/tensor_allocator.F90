@@ -1,8 +1,10 @@
 module tensor_allocator
    use, intrinsic :: iso_c_binding
 
+   use background_buffer_module, only: mem_is_background_buf_init
+   use memory_handling, only: mem_pseudo_alloc, mem_pseudo_dealloc
+
    use lsmpi_module
-   use memory_handling
    use tensor_error_handler
    use tensor_parameters_and_counters
    use tensor_type_def_module

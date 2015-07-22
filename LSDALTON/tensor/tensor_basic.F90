@@ -207,17 +207,16 @@ module tensor_basic_module
       call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
       if(associated(arr%elm1)) then
+
          vector_size = int(size(arr%elm1)*tensor_dp,kind=tensor_long_int)
+
          call deassoc_ptr_arr(arr)
-         if( arr%bg_alloc)then
-            call mem_pseudo_dealloc(arr%elm1, mark_deleted=.true.)
-         else
-            call tensor_free_mem(arr%elm1)
-         endif
+
+         call tensor_free_mem(arr%elm1,bg=arr%bg_alloc)
          !endif
          arr%elm1 => null()
 !$OMP CRITICAL
-         tensor_counter_dense_f_mem = tensor_counter_dense_f_mem + vector_size
+         tensor_counter_dense_f_mem   = tensor_counter_dense_f_mem   + vector_size
          tensor_counter_memory_in_use = tensor_counter_memory_in_use - vector_size
 !$OMP END CRITICAL
       end if
