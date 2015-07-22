@@ -795,7 +795,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
   use dft_memory_handling
-  use memory_handling, only: init_globalmemvar
+  use memory_handling, only: init_globalmemvar,mem_allocated_global
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
   use tensor_interface_module,only: tensor_initialize_interface
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
@@ -837,7 +837,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   ! MPI initialization
   call lsmpi_init(OnMaster)
   !tensor initialization
-  call tensor_initialize_interface()
+  call tensor_initialize_interface(mem_ctr=mem_allocated_global)
 
   !INIT TIMING AND FILES
   if(OnMaster)then

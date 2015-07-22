@@ -218,4 +218,14 @@ module tensor_type_def_module
      end select
   end subroutine write_string_for_type
 
+  subroutine set_external_mem_ctr(mem_ctr)
+     implicit none
+     integer(kind=tensor_long_int), target :: mem_ctr
+     tensor_counter_ext_mem => mem_ctr
+  end subroutine set_external_mem_ctr
+  subroutine unset_external_mem_ctr()
+     implicit none
+     tensor_counter_ext_mem => null()
+  end subroutine unset_external_mem_ctr
+
 end module tensor_type_def_module

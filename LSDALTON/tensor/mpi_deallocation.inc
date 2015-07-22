@@ -19,6 +19,7 @@
 
       !$OMP CRITICAL
       counters(idx)%curr_ = counters(idx)%curr_ - b
+      if(associated(tensor_counter_ext_mem)) tensor_counter_ext_mem = tensor_counter_ext_mem - b
       !$OMP END CRITICAL
          
 

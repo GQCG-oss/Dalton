@@ -14,6 +14,7 @@
       counters(idx)%curr_ = counters(idx)%curr_ + b
       counters(idx)%high_ = max(counters(idx)%high_,counters(idx)%curr_)
       tensor_counter_max_hp_mem = max(tensor_counter_max_hp_mem,tensor_get_total_heap_mem())
+      if(associated(tensor_counter_ext_mem)) tensor_counter_ext_mem = tensor_counter_ext_mem + b
       !$OMP END CRITICAL
          
 

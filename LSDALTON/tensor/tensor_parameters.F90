@@ -91,6 +91,9 @@ module tensor_parameters_and_counters
    integer(kind=tensor_long_int) :: tensor_counter_memory_in_use      = 0_tensor_long_int
    integer(kind=tensor_long_int) :: tensor_counter_memory_in_use_heap = 0_tensor_long_int
    integer(kind=tensor_long_int) :: tensor_counter_memory_in_use_bg   = 0_tensor_long_int
+
+   integer(kind=tensor_long_int), pointer :: tensor_counter_ext_mem => null()
+
    
    
 end module tensor_parameters_and_counters

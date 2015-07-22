@@ -64,6 +64,9 @@ module tensor_interface_module
   public int2str                      !converts integers to strings
 #endif
 
+  !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
+  public tensor_initialize_interface, tensor_finalize_interface
+
   !This defines the public interface to the tensors
   !The tensor type itself
   public tensor
@@ -86,7 +89,6 @@ module tensor_interface_module
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
   public tensor_print_norm_nrm
 
-  public tensor_initialize_interface, tensor_finalize_interface
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, new_group_reset_persistent_array
@@ -191,8 +193,11 @@ module tensor_interface_module
 
 contains
 
-  subroutine tensor_initialize_interface()
+  subroutine tensor_initialize_interface(mem_ctr)
      implicit none
+     !use an external counter for memory counting
+     integer(kind=tensor_long_int), target, optional :: mem_ctr
+     if(present(mem_ctr)) call set_external_mem_ctr(mem_ctr)
      call tensor_init_counters()
      call init_persistent_array()
   end subroutine tensor_initialize_interface
@@ -200,6 +205,7 @@ contains
      implicit none
      call free_persistent_array()
      call tensor_free_counters()
+     if(associated(tensor_counter_ext_mem))call unset_external_mem_ctr()
   end subroutine tensor_finalize_interface
 
   subroutine tensor_set_global_segment_length(seg_len)
