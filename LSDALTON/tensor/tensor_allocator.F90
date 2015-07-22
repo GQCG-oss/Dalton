@@ -489,10 +489,14 @@ module tensor_allocator
       integer(kind=tensor_long_int),pointer, intent(inout) :: p2(:,:)
 #endif
       integer(kind=tensor_long_int),pointer  :: p(:)
-      integer(kind=tensor_standard_int)            :: idx  = tensor_mem_idx_tensor_long_int
+      integer(kind=tensor_standard_int)                     :: idx  = tensor_mem_idx_tensor_long_int
       procedure(tensor_free_tensor_long_int_basic), pointer :: free => tensor_free_tensor_long_int_basic
 
+#ifdef VAR_PTR_RESHAPE
       include "standard_dealloc2d.inc"
+#else
+      include "standard_dealloc2d_cptr.inc"
+#endif
 
    end subroutine tensor_free_tensor_long_int_2d
 
@@ -621,10 +625,14 @@ module tensor_allocator
       integer(kind=tensor_standard_int), pointer, intent(inout) :: p2(:,:)
 #endif
       integer(kind=tensor_standard_int),pointer :: p(:)
-      integer(kind=tensor_standard_int)                :: idx  = tensor_mem_idx_tensor_standard_int
+      integer(kind=tensor_standard_int)                         :: idx  = tensor_mem_idx_tensor_standard_int
       procedure(tensor_free_tensor_standard_int_basic), pointer :: free => tensor_free_tensor_standard_int_basic
 
+#ifdef VAR_PTR_RESHAPE
       include "standard_dealloc2d.inc"
+#else
+      include "standard_dealloc2d_cptr.inc"
+#endif
 
    end subroutine tensor_free_tensor_standard_int_2d
 
