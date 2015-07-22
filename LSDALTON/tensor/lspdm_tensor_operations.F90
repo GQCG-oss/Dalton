@@ -190,12 +190,15 @@ module lspdm_tensor_operations_module
   subroutine init_persistent_array()
      implicit none
      integer :: i
-     call mem_alloc(p_arr%a,n_arrays)
-     call mem_alloc(p_arr%free_addr_on_node,n_arrays)
 
-     p_arr%free_addr_on_node=.true.
+     print *,"I am here",infpar%lg_mynum
+
+     call tensor_alloc_mem(p_arr%a,n_arrays)
+     call tensor_alloc_mem(p_arr%free_addr_on_node,n_arrays)
+
 
      do i = 1, n_arrays
+        p_arr%free_addr_on_node(i) = .true.
         call tensor_reset_value_defaults(p_arr%a(i)) 
         call tensor_nullify_pointers(p_arr%a(i)) 
      end do
@@ -221,12 +224,12 @@ module lspdm_tensor_operations_module
            call tensor_nullify_pointers(p_arr%a(i)) 
         end do
 
-        call mem_dealloc(p_arr%a)
+        call tensor_free_mem(p_arr%a)
 
      endif
 
      if(associated(p_arr%free_addr_on_node))then
-        call mem_dealloc(p_arr%free_addr_on_node)
+        call tensor_free_mem(p_arr%free_addr_on_node)
      endif
 
      if( lspdm_use_comm_proc ) call lsquit("ERROR(free_persistent_array) &
@@ -300,11 +303,11 @@ module lspdm_tensor_operations_module
               & this warning"
         endif
 
-        if( associated(gm_buf%buf) ) call mem_dealloc(gm_buf%buf)
+        if( associated(gm_buf%buf) ) call tensor_free_mem(gm_buf%buf)
 
         gm_buf%n = nelms
 
-        call mem_alloc(gm_buf%buf,gm_buf%n)
+        call tensor_alloc_mem(gm_buf%buf,gm_buf%n)
 
      endif
 
@@ -331,7 +334,7 @@ module lspdm_tensor_operations_module
      endif
 
      if(associated(gm_buf%buf))then
-        call mem_dealloc(gm_buf%buf)
+        call tensor_free_mem(gm_buf%buf)
      endif
 
      gm_buf%n    = 0
@@ -486,7 +489,7 @@ module lspdm_tensor_operations_module
       call ls_mpibcast(counter,root,comm)
       call time_start_phase( PHASE_WORK )
 
-      call mem_alloc(TMPI,counter)
+      call tensor_alloc_mem(TMPI,counter)
 
       !change counter and basic for checking in the end
       TMPI(1) = counter
@@ -576,7 +579,7 @@ module lspdm_tensor_operations_module
         call ls_mpisendrecv( TMPI, counter, comm, root, sendctr)
         call time_start_phase( PHASE_WORK )
       enddo
-      call mem_dealloc(TMPI)
+      call tensor_free_mem(TMPI)
 
 
     else  
@@ -586,7 +589,7 @@ module lspdm_tensor_operations_module
       !**************************************************************************************
       call time_start_phase( PHASE_COMM )
       call ls_mpibcast( counter, root, comm )
-      call mem_alloc( TMPI, counter )
+      call tensor_alloc_mem( TMPI, counter )
       call ls_mpisendrecv( TMPI, counter, comm, root, me)
       call time_start_phase( PHASE_WORK )
 
@@ -648,7 +651,7 @@ module lspdm_tensor_operations_module
            counter = counter + D%mode
          ENDIF
       ENDIF
-      call mem_dealloc(TMPI)
+      call tensor_free_mem(TMPI)
     endif
 
     call time_start_phase( PHASE_WORK )
@@ -872,7 +875,7 @@ module lspdm_tensor_operations_module
     nbuffs_c = nbuffs/2
     nbuffs_e = nbuffs/2
 
-    call mem_alloc(gmo_tile_buf,int(gmo%tsize),int(nbuffs))
+    call tensor_alloc_mem(gmo_tile_buf,int(gmo%tsize),int(nbuffs))
 
     E1=0.0E0_tensor_dp
     E2=0.0E0_tensor_dp
@@ -880,8 +883,8 @@ module lspdm_tensor_operations_module
 
     if( alloc_in_dummy )then
        call tensor_lock_wins(gmo,'s',all_nodes = .true.)
-       call mem_alloc(reqC,nbuffs_c)
-       call mem_alloc(reqE,nbuffs_e)
+       call tensor_alloc_mem(reqC,nbuffs_c)
+       call tensor_alloc_mem(reqE,nbuffs_e)
     endif
 
     !Preload nbuffs_c tiles
@@ -1142,8 +1145,8 @@ module lspdm_tensor_operations_module
 
     if( alloc_in_dummy )then
        call tensor_unlock_wins(gmo,all_nodes = .true.)
-       call mem_dealloc(reqC)
-       call mem_dealloc(reqE)
+       call tensor_free_mem(reqC)
+       call tensor_free_mem(reqE)
     endif
 
     call time_start_phase( PHASE_COMM )
@@ -1157,7 +1160,7 @@ module lspdm_tensor_operations_module
        Ec=E2
     endif
 
-    call mem_dealloc(gmo_tile_buf)
+    call tensor_free_mem(gmo_tile_buf)
 
     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
 #else
@@ -1202,8 +1205,8 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_WORK )
      endif
 
-     call mem_alloc(idxatil,nEOS)
-     call mem_alloc(idxbtil,nEOS)
+     call tensor_alloc_mem(idxatil,nEOS)
+     call tensor_alloc_mem(idxbtil,nEOS)
 
      do lt=1,tensor_full%nlti
 
@@ -1266,8 +1269,8 @@ module lspdm_tensor_operations_module
         tile => null()
      enddo
 
-     call mem_dealloc(idxatil)
-     call mem_dealloc(idxbtil)
+     call tensor_free_mem(idxatil)
+     call tensor_free_mem(idxbtil)
 
      call time_start_phase( PHASE_COMM )
      if(tensor_full%access_type==AT_MASTER_ACCESS)then
@@ -1319,8 +1322,8 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_WORK )
      endif
 
-     call mem_alloc(idxitil,nEOS)
-     call mem_alloc(idxjtil,nEOS)
+     call tensor_alloc_mem(idxitil,nEOS)
+     call tensor_alloc_mem(idxjtil,nEOS)
 
      do lt=1,tensor_full%nlti
 
@@ -1383,8 +1386,8 @@ module lspdm_tensor_operations_module
         tile => null()
      enddo
 
-     call mem_dealloc(idxitil)
-     call mem_dealloc(idxjtil)
+     call tensor_free_mem(idxitil)
+     call tensor_free_mem(idxjtil)
 
      call time_start_phase( PHASE_COMM )
      if(tensor_full%access_type==AT_MASTER_ACCESS)then
@@ -1437,7 +1440,7 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_WORK )
      endif
 
-     call mem_alloc(idxatil,nEOS)
+     call tensor_alloc_mem(idxatil,nEOS)
 
      do lt=1,tensor_full%nlti
 
@@ -1490,7 +1493,7 @@ module lspdm_tensor_operations_module
         tile => null()
      enddo
 
-     call mem_dealloc(idxatil)
+     call tensor_free_mem(idxatil)
 
      call time_start_phase( PHASE_COMM )
      if(tensor_full%access_type==AT_MASTER_ACCESS)then
@@ -1544,7 +1547,7 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_WORK )
      endif
 
-     call mem_alloc(idxitil,nEOS)
+     call tensor_alloc_mem(idxitil,nEOS)
 
      do lt=1,tensor_full%nlti
 
@@ -1597,7 +1600,7 @@ module lspdm_tensor_operations_module
         tile => null()
      enddo
 
-     call mem_dealloc(idxitil)
+     call tensor_free_mem(idxitil)
 
      call time_start_phase( PHASE_COMM )
      if(tensor_full%access_type==AT_MASTER_ACCESS)then
@@ -1645,7 +1648,7 @@ module lspdm_tensor_operations_module
      select case(t1%itype)
      case(TT_DENSE,TT_REPLICATED)
 
-        call mem_alloc(ttile,u%tsize)
+        call tensor_alloc_mem(ttile,u%tsize)
 
         do lt = 1, u%nlti
 
@@ -1698,7 +1701,7 @@ module lspdm_tensor_operations_module
            tt => null()
         enddo
 
-        call mem_dealloc(ttile)
+        call tensor_free_mem(ttile)
 
      case default
         call lsquit("ERROR(lspdm_get_combined_SingleDouble_amplitudes): not yet&
@@ -1986,9 +1989,9 @@ module lspdm_tensor_operations_module
      if( oof%itype == TT_DENSE .or. oof%itype == TT_REPLICATED )then
 
         !TODO: introduce prefetching of tiles and adapt to alloc_in_dummy
-        call mem_alloc(buf_c,iajb%tsize)
+        call tensor_alloc_mem(buf_c,iajb%tsize)
         if( spec == CCSD_LAG_RHS )then
-           call mem_alloc(buf_e,iajb%tsize)
+           call tensor_alloc_mem(buf_e,iajb%tsize)
         endif
 
         do lt=1,t2%nlti
@@ -2109,9 +2112,9 @@ module lspdm_tensor_operations_module
 
         enddo
 
-        call mem_dealloc(buf_c)
+        call tensor_free_mem(buf_c)
         if( spec == CCSD_LAG_RHS )then
-           call mem_dealloc(buf_e)
+           call tensor_free_mem(buf_e)
         endif
 
      else
@@ -2278,7 +2281,7 @@ module lspdm_tensor_operations_module
 
       !allocate buffer for the tiles
       !TODO: introduce prefetching make preftching dependent on wrk and iwrk on input
-      call mem_alloc(buffer,arr1%tsize)
+      call tensor_alloc_mem(buffer,arr1%tsize)
       buffer=0.0E0_tensor_dp
 
       !loop over local tiles of array2  and get the corresponding tiles of
@@ -2290,7 +2293,7 @@ module lspdm_tensor_operations_module
         res = res + ddot(arr2%ti(lt)%e,arr2%ti(lt)%t,1,buffer,1)
       enddo
 
-      call mem_dealloc(buffer)
+      call tensor_free_mem(buffer)
 
     else
 
@@ -2375,11 +2378,11 @@ module lspdm_tensor_operations_module
     else
        nbuffs = 2
        !allocate buffer for the tiles
-       call mem_alloc(buffer,x%tsize*nbuffs)
+       call tensor_alloc_mem(buffer,x%tsize*nbuffs)
     endif
 
     if( alloc_in_dummy )then
-       call mem_alloc(req,nbuffs)
+       call tensor_alloc_mem(req,nbuffs)
        call tensor_lock_wins(y,'s',all_nodes=.true.)
     endif
     
@@ -2530,12 +2533,12 @@ module lspdm_tensor_operations_module
     enddo
 
     if( alloc_in_dummy )then
-       call mem_dealloc(req)
+       call tensor_free_mem(req)
        call tensor_unlock_wins(y,all_nodes=.true.)
     endif
 
     if(.not.gm_buf%init)then
-       call mem_dealloc(buffer)
+       call tensor_free_mem(buffer)
     endif
 
     !crucial barrier, because direct memory access is used
@@ -2625,11 +2628,11 @@ module lspdm_tensor_operations_module
     else
        nbuffs = 2
        !allocate buffer for the tiles
-       call mem_alloc(buffer,x%tsize*nbuffs)
+       call tensor_alloc_mem(buffer,x%tsize*nbuffs)
     endif
 
     if( alloc_in_dummy )then
-       call mem_alloc(req,nbuffs)
+       call tensor_alloc_mem(req,nbuffs)
        call tensor_lock_wins(y,'s',all_nodes=.true.)
     endif
     
@@ -2784,12 +2787,12 @@ module lspdm_tensor_operations_module
     enddo
 
     if( alloc_in_dummy )then
-       call mem_dealloc(req)
+       call tensor_free_mem(req)
        call tensor_unlock_wins(y,all_nodes=.true.)
     endif
 
     if(.not.gm_buf%init)then
-       call mem_dealloc(buffer)
+       call tensor_free_mem(buffer)
     endif
 
     !crucial barrier, because direct memory access is used
@@ -2881,7 +2884,11 @@ module lspdm_tensor_operations_module
     !> drain, the copied array
     type(tensor), intent(inout) :: to_ar
     integer, intent(in) :: order(to_ar%mode)
-    real(tensor_dp),pointer :: buffer(:,:)
+#ifdef VAR_PTR_RESHAPE
+    real(tensor_dp), pointer, contiguous :: buffer(:,:)
+#else
+    real(tensor_dp), pointer :: buffer(:,:)
+#endif
     real(tensor_dp), parameter :: prex = 0.0E0_tensor_dp
     real(tensor_dp), parameter :: prey = 1.0E0_tensor_dp
     integer :: i,lt,nbuffs,ibuf,cmidy,buffer_lt
@@ -2910,9 +2917,9 @@ module lspdm_tensor_operations_module
     nbuffs = 2
       
     !allocate buffer for the tiles
-    call mem_alloc(buffer,int(to_ar%tsize),int(nbuffs))
+    call tensor_alloc_mem(buffer,to_ar%tsize,nbuffs)
     if( alloc_in_dummy )then
-       call mem_alloc(req,nbuffs)
+       call tensor_alloc_mem(req,nbuffs)
        call tensor_lock_wins(from,'s',all_nodes=.true.)
     endif
 
@@ -3032,10 +3039,10 @@ module lspdm_tensor_operations_module
        end select
     enddo
 
-    call mem_dealloc(buffer)
+    call tensor_free_mem(buffer)
 
     if( alloc_in_dummy )then
-       call mem_dealloc(req)
+       call tensor_free_mem(req)
        call tensor_unlock_wins(from,all_nodes=.true.)
     endif
 
@@ -3182,10 +3189,10 @@ module lspdm_tensor_operations_module
 
     !In the initialization the addess has to be set, since pdm_tensor_sync
     !depends on the  adresses, but setting them correctly is done later
-    call mem_alloc(lg_buf,lg_nnodes)
+    call tensor_alloc_mem(lg_buf,lg_nnodes)
     lg_buf = 0
     !if( lspdm_use_comm_proc )then
-    !  call mem_alloc(pc_buf,pc_nnodes)
+    !  call tensor_alloc_mem(pc_buf,pc_nnodes)
     !  pc_buf = 0
     !endif
     
@@ -3234,8 +3241,8 @@ module lspdm_tensor_operations_module
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
 
-    call mem_dealloc(lg_buf)
-    !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
+    call tensor_free_mem(lg_buf)
+    !if(lspdm_use_comm_proc)call tensor_free_mem(pc_buf)
   end subroutine tensor_init_replicated
 
 
@@ -3500,7 +3507,7 @@ module lspdm_tensor_operations_module
 
     !In the initialization the addess has to be set, since pdm_tensor_sync
     !depends on the  adresses, but setting them correctly is done later
-    call mem_alloc(lg_buf,2*lg_nnodes)
+    call tensor_alloc_mem(lg_buf,2*lg_nnodes)
     lg_buf = 0
     
     !if master init only master has to get addresses
@@ -3551,8 +3558,8 @@ module lspdm_tensor_operations_module
     arr = p_arr%a(addr)
     !print *,infpar%lg_mynum,associated(arr%wi),"peristent",associated(p_arr%a(addr)%wi)
 
-    call mem_dealloc(lg_buf)
-    !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
+    call tensor_free_mem(lg_buf)
+    !if(lspdm_use_comm_proc)call tensor_free_mem(pc_buf)
   end subroutine tensor_init_tiled
 
   subroutine lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk,force_sync)
@@ -3786,7 +3793,7 @@ module lspdm_tensor_operations_module
         call lspdm_reinit_global_buffer(itest)
         w => gm_buf%buf
      case( USE_INTERNAL_ALLOC )
-        call mem_alloc(w,itest)
+        call tensor_alloc_mem(w,itest)
      case default 
         call lsquit("ERROR(tensor_contract_par): unknown buffering scheme",-1)
      end select
@@ -3817,12 +3824,12 @@ module lspdm_tensor_operations_module
 
      if( alloc_in_dummy )then
 
-        call mem_alloc(reqA,nbuffsA)
+        call tensor_alloc_mem(reqA,nbuffsA)
         locA = A%lock_set(1)
         if(.not.locA)call tensor_lock_wins(A,'s',all_nodes=.true.)
 
         if(.not.B_dense)then
-           call mem_alloc(reqB,nbuffsB)
+           call tensor_alloc_mem(reqB,nbuffsB)
            locB = B%lock_set(1)
            if(.not.locB)call tensor_lock_wins(B,'s',all_nodes=.true.)
         endif
@@ -3830,14 +3837,14 @@ module lspdm_tensor_operations_module
      endif
 
      !initialize buffer book keeping
-     call mem_alloc(buf_posA,nbuffsA)
-     call mem_alloc(buf_logA,nbuffsA)
-     call mem_alloc(nfA,     nbuffsA)
+     call tensor_alloc_mem(buf_posA,nbuffsA)
+     call tensor_alloc_mem(buf_logA,nbuffsA)
+     call tensor_alloc_mem(nfA,     nbuffsA)
 
      if(.not.B_dense)then
-        call mem_alloc(buf_posB,nbuffsB)
-        call mem_alloc(buf_logB,nbuffsB)
-        call mem_alloc(nfB,     nbuffsA)
+        call tensor_alloc_mem(buf_posB,nbuffsB)
+        call tensor_alloc_mem(buf_logB,nbuffsB)
+        call tensor_alloc_mem(nfB,     nbuffsA)
      endif
 
      buf_posA = -1
@@ -4037,19 +4044,19 @@ module lspdm_tensor_operations_module
      enddo LocalTiles
 
      if(count(buf_logA) > 0 ) call lsquit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left A",-1)
-     call mem_dealloc(buf_posA)
-     call mem_dealloc(buf_logA)
-     call mem_dealloc(nfA     )
+     call tensor_free_mem(buf_posA)
+     call tensor_free_mem(buf_logA)
+     call tensor_free_mem(nfA     )
 
      if(.not.B_dense)then
         if(count(buf_logB) > 0 ) call lsquit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left B",-1)
-        call mem_dealloc(buf_posB)
-        call mem_dealloc(buf_logB)
-        call mem_dealloc(nfB)
+        call tensor_free_mem(buf_posB)
+        call tensor_free_mem(buf_logB)
+        call tensor_free_mem(nfB)
      endif
 
      if(use_wrk_space==USE_INTERNAL_ALLOC)then
-        call mem_dealloc(w)
+        call tensor_free_mem(w)
      endif
      buffA => null()
      buffB => null()
@@ -4060,11 +4067,11 @@ module lspdm_tensor_operations_module
 
      if( alloc_in_dummy )then
 
-        call mem_dealloc(reqA)
+        call tensor_free_mem(reqA)
         if(.not.locA)call tensor_unlock_wins(A,all_nodes=.true.)
 
         if(.not.B_dense)then
-           call mem_dealloc(reqB)
+           call tensor_free_mem(reqB)
            if(.not.locB)call tensor_unlock_wins(B,all_nodes=.true.)
         endif
 
@@ -4331,7 +4338,7 @@ module lspdm_tensor_operations_module
 
     !allocate space 
     if(pdm)then
-      call mem_alloc(tmp,arr%tsize)
+      call tensor_alloc_mem(tmp,arr%tsize)
     endif
 
     do i=1,arr%mode
@@ -4362,7 +4369,7 @@ module lspdm_tensor_operations_module
     enddo
 
     if(pdm)then
-      call mem_dealloc(tmp)
+      call tensor_free_mem(tmp)
     else
       nullify(tmp)
     endif
@@ -4388,7 +4395,7 @@ module lspdm_tensor_operations_module
     if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
         &dimensions are not the same",DECinfo%output)
     if(pdm)then
-      call mem_alloc(tmp,arr%tsize)
+      call tensor_alloc_mem(tmp,arr%tsize)
     endif
     do i=1,arr%mode
       o(i)=i
@@ -4413,7 +4420,7 @@ module lspdm_tensor_operations_module
     enddo
 
     if(pdm)then
-      call mem_dealloc(tmp)
+      call tensor_free_mem(tmp)
     else
       nullify(tmp)
     endif
@@ -4501,7 +4508,7 @@ module lspdm_tensor_operations_module
         print *,'WARNING(tensor_scatter):Allocating internally'
 #endif
         tmps = arr%tsize
-        call mem_alloc(tmp,tmps)
+        call tensor_alloc_mem(tmp,tmps)
      else
         if( itest > gm_buf%n )then
            tmps =  itest
@@ -4526,7 +4533,7 @@ module lspdm_tensor_operations_module
 
      maxintmp = tmps / arr%tsize
 
-     call mem_alloc(req,maxintmp)
+     call tensor_alloc_mem(req,maxintmp)
 
      lock_was_not_set = .not.arr%lock_set(1)
      if( alloc_in_dummy .and. lock_was_not_set)call tensor_lock_wins(arr,'s', all_nodes = .true. )
@@ -4617,12 +4624,12 @@ module lspdm_tensor_operations_module
 
      if(internal_alloc)then
         if(.not.lock_was_not_set.and.alloc_in_dummy)call lsmpi_win_flush(arr%wi(1), local = .true.)
-        call mem_dealloc(tmp)
+        call tensor_free_mem(tmp)
      else
         tmp  => null()
      endif
 
-     call mem_dealloc(req)
+     call tensor_free_mem(req)
 #else
      call lsquit("ERROR(tensor_scatter):this routine is FORTRAN 2003 only",-1)
 #endif
@@ -4758,12 +4765,12 @@ module lspdm_tensor_operations_module
            print *,'WARNING(tensor_gather):Allocating internally'
 #endif
            tmps = arr%tsize
-           call mem_alloc(tmp,tmps)
+           call tensor_alloc_mem(tmp,tmps)
         endif
 
         maxintmp = tmps / arr%tsize
 
-        call mem_alloc(req,maxintmp)
+        call tensor_alloc_mem(req,maxintmp)
 
         do i=1,arr%ntiles
            
@@ -4838,11 +4845,11 @@ module lspdm_tensor_operations_module
         enddo
 
         if(internal_alloc)then
-           call mem_dealloc(tmp)
+           call tensor_free_mem(tmp)
         else
            tmp  => null()
         endif
-        call mem_dealloc(req)
+        call tensor_free_mem(req)
      endif
      if( alloc_in_dummy .and. lock_was_not_set )call tensor_unlock_wins(arr, all_nodes = .true. )
      if( .not. alloc_in_dummy )then
@@ -4936,7 +4943,7 @@ module lspdm_tensor_operations_module
        print *,'WARNING(tensor_gather):Allocating internally'
 #endif
        tmps = arr%tsize
-       call mem_alloc(tmp,tmps)
+       call tensor_alloc_mem(tmp,tmps)
     else
        tmps =  iwrk
        tmp  => wrk(1:tmps)
@@ -5003,7 +5010,7 @@ module lspdm_tensor_operations_module
     enddo
 
     if(internal_alloc)then
-       call mem_dealloc(tmp)
+       call tensor_free_mem(tmp)
     else
        tmp  => null()
     endif
@@ -5180,10 +5187,10 @@ module lspdm_tensor_operations_module
       endif
     enddo
     ! corresponding elements
-    call mem_alloc(elm_in_tile,arr%mode)
-    call mem_alloc(in_tile_mode,arr%mode)
-    call mem_alloc(orig_addr,arr%mode)
-    call mem_alloc(remote_td,arr%mode)
+    call tensor_alloc_mem(elm_in_tile,arr%mode)
+    call tensor_alloc_mem(in_tile_mode,arr%mode)
+    call tensor_alloc_mem(orig_addr,arr%mode)
+    call tensor_alloc_mem(remote_td,arr%mode)
 
     !find consecutive elements in both full and tiled matrix according to tile
     !dimensions --> determines largest memory blocks that can be transferred in
@@ -5269,10 +5276,10 @@ module lspdm_tensor_operations_module
       endif
       fe_in_block=fe_in_block + act_step
     enddo
-    call mem_dealloc(remote_td)
-    call mem_dealloc(elm_in_tile)
-    call mem_dealloc(in_tile_mode)
-    call mem_dealloc(orig_addr)
+    call tensor_free_mem(remote_td)
+    call tensor_free_mem(elm_in_tile)
+    call tensor_free_mem(in_tile_mode)
+    call tensor_free_mem(orig_addr)
 
     call time_start_phase( PHASE_WORK )
   end subroutine cp_data2tiled_lowmem
@@ -5589,7 +5596,7 @@ module lspdm_tensor_operations_module
       call pdm_tensor_sync(infpar%lg_comm,JOB_FREE_tensor_PDM,arr)
 
     endif
-
+    
     p_arr%free_addr_on_node(arr%local_addr)=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
     call tensor_free_basic(p_arr%a(arr%local_addr)) 

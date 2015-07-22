@@ -22,8 +22,12 @@ SUBROUTINE LSDALTON
   ! setup the calculation 
   call lsinit_all(OnMaster,lupri,luerr,t1,t2)
 
-  ! execute the acutal calculation
-  if(OnMaster) call LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
+  if(OnMaster)then
+     ! execute the acutal calculation
+     call LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
+  else
+     call LSDALTON_DRIVER_SLAVE()
+  endif
 
   ! free everything take time and close the files
   call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
@@ -772,6 +776,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
 END SUBROUTINE LSDALTON_DRIVER
 
+SUBROUTINE LSDALTON_DRIVER_SLAVE()
+   use lsmpi_type, only: MPI_COMM_LSDALTON
+   implicit none
+#ifdef VAR_MPI
+   call lsmpi_slave(MPI_COMM_LSDALTON)
+#endif
+END SUBROUTINE LSDALTON_DRIVER_SLAVE
+
 
 SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use precision
@@ -782,7 +794,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use dft_memory_handling
   use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
-  use lspdm_tensor_operations_module,only:init_persistent_array
+  use tensor_interface_module,only: tensor_initialize_interface
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:init_IIDF_matrix
 #ifdef VAR_PAPI
@@ -819,9 +831,10 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call InitIchorSaveGabModule()
 #endif
   call init_AO2GCAO_GCAO2AO()
-  call init_persistent_array
   ! MPI initialization
   call lsmpi_init(OnMaster)
+  !tensor initialization
+  call tensor_initialize_interface()
 
   !INIT TIMING AND FILES
   if(OnMaster)then
@@ -838,7 +851,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
   use lstensorMem, only: lstmem_free
-  use lspdm_tensor_operations_module,only:free_persistent_array
+  use tensor_interface_module ,only: tensor_finalize_interface
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
   use dec_settings_mod, only:free_decinfo
@@ -854,7 +867,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use matrix_operations_scalapack
 #endif
   use matrix_operations_pdmm
-implicit none
+  implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
@@ -879,7 +892,7 @@ implicit none
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
-  call free_persistent_array
+  call tensor_finalize_interface()
   call free_decinfo()
 
 

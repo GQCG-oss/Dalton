@@ -4,6 +4,7 @@
 
 module tensor_tester_module
 
+  use tensor_allocator
   use tensor_parameters_and_counters
   use lspdm_tensor_operations_module
   use reorder_tester_module
@@ -38,6 +39,8 @@ module tensor_tester_module
     character(len=7) :: teststatus
     character(tensor_MSG_LEN) :: msg
     integer,pointer :: ord(:)
+    type(tile) :: test
+    type(tensor) :: tens
     master = .true.
     nnod   = 1_tensor_mpi_kind
     me     = 0
@@ -58,6 +61,9 @@ module tensor_tester_module
 
 #ifdef VAR_MPI
     if(master)then
+       print *,"TILE SIZE!",sizeof(test)
+       print *,"Tens SIZE!",sizeof(tens)
+
       !call tensor_print_mem_info(output,.true.,.false.,succ)
 
       write(output,*)"TESTING PDM TT_TILED ARRAY ALLOCATIONS"
@@ -65,8 +71,8 @@ module tensor_tester_module
       &(nv*no*(nv+nb)*8.0E0_tensor_dp)/(1024.E0_tensor_dp*1024.E0_tensor_dp*1024.E0_tensor_dp)
       testint=2
 
-      call mem_alloc(dummy1,nb*na*nv*no)
-      call mem_alloc(dummy2,nb*na*nv*no)
+      call tensor_alloc_mem(dummy1,nb*na*nv*no)
+      call tensor_alloc_mem(dummy2,nb*na*nv*no)
       call random_number(dummy1)
       call print_norm(dummy1,int(nb*na*nv*no,kind=8),ref)
       write(output,'("REFERENCE NORM:",f19.12)')ref
@@ -78,7 +84,6 @@ module tensor_tester_module
       write (output,*) "TESTING SIMPLE ARRAY FUNCTIONS - MASTER DIRECTED"
       write (output,*) ""
       write (output,*)"ALLOC-DEALLOC TESTS"
-      print *,"alloc dealloc tests"
       teststatus="SUCCESS"
       call tensor_init(test1,[nv,na,nv,nb],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nv,no-1,1,2])
       call tensor_init(test2,[na,nb,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nv,no-1,1,2])
@@ -96,6 +101,7 @@ module tensor_tester_module
       !check for errors via norm
       write(output,*)""
       write(output,*)""
+      print *,"conversion test 1"
       teststatus="SUCCESS"
       call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[nb,na-1,3,no/2])
       write (output,*) "CONVERT PREVIOUS ARRAY TO PDM TT_TILED" 
@@ -110,6 +116,7 @@ module tensor_tester_module
       !GET A TILE OF A PDM ARRAY
       !calculate how many elements are in the desired tile, and allocate the
       !respective amount of memory in a fortran array
+      print *,"conversion test 2"
       write(output,*)""
       write(output,*)""
       write(output,*)"TESTING MPI_GET"
@@ -122,7 +129,7 @@ module tensor_tester_module
       enddo
       call get_tile_dim(j,test1,testint)
       print *,"trying to get",testint," with size", j
-      call mem_alloc(tileget,j)
+      call tensor_alloc_mem(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
@@ -140,7 +147,7 @@ module tensor_tester_module
         print *,"GET A TILE OF A PDM ARRAY has been skipped"
       endif
       write (output,'("GET: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
-      call mem_dealloc(tileget)
+      call tensor_free_mem(tileget)
       print *,"GET A TILE OF A PDM ARRAY: ",normher,teststatus
 
       write(output,*)""
@@ -155,7 +162,7 @@ module tensor_tester_module
         endif 
       enddo
       call get_tile_dim(j,test1,testint)
-      call mem_alloc(tileget,j)
+      call tensor_alloc_mem(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
@@ -177,9 +184,9 @@ module tensor_tester_module
 
       !GET A TILE FROM YOURSELF AS CHECK
       !testint=1
-      !call mem_dealloc(tileget)
+      !call tensor_free_mem(tileget)
       !j=get_tileinfo_nels(test1,testint)
-      !call mem_alloc(tileget,j)
+      !call tensor_alloc_mem(tileget,j)
       !call tensor_get_tile(test1,1,tileget,j)
       !call print_norm(tileget,j)
       !call tensor_print_tile_norm(test1,1)
@@ -215,6 +222,7 @@ module tensor_tester_module
       write (output,'("ACC: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
       print *,"TESTING MPI_ACCUMULATE: ",normher,teststatus
 
+      print *,"conversion test foo"
 
       call tensor_free(test1)
       call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[0,0,0,0])
@@ -245,9 +253,9 @@ module tensor_tester_module
 
 
 
-      call mem_dealloc(dummy1)
-      call mem_dealloc(dummy2)
-      call mem_dealloc(tileget)
+      call tensor_free_mem(dummy1)
+      call tensor_free_mem(dummy2)
+      call tensor_free_mem(tileget)
       !call tensor_print_mem_info(output,.true.,.false.)
       call tensor_free(test1)
       call tensor_free(test2)
@@ -313,12 +321,12 @@ module tensor_tester_module
 
       if(.not.master)then
         call get_tile_dim(j,test2,ti)
-        call mem_alloc(tileget,j)
+        call tensor_alloc_mem(tileget,j)
         tileget = 1.0E1_tensor_dp
         call tensor_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
-        call mem_dealloc(tileget)
+        call tensor_free_mem(tileget)
 
       else
         call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
@@ -339,7 +347,7 @@ module tensor_tester_module
       recver=rnk
       if(.not.master)then
         call get_tile_dim(j,test2,ti)
-        call mem_alloc(tileget,j)
+        call tensor_alloc_mem(tileget,j)
         call tensor_get_tile(test2,int(ti,kind=tensor_standard_int),tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
@@ -351,7 +359,7 @@ module tensor_tester_module
         tileget = 2.4E0_tensor_dp
         call get_midx(ti,midx,test2%ntpm,test2%mode)
         call tensor_accumulate_tile(test2,midx,tileget,j)
-        call mem_dealloc(tileget)
+        call tensor_free_mem(tileget)
       else
         teststatus="SUCCESS"
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
@@ -418,11 +426,11 @@ module tensor_tester_module
     test2%elm1=0.0E0_tensor_dp
     do i=1,test2%ntiles
       call get_tile_dim(j,test2,i)
-      call mem_alloc(tileget,j)
+      call tensor_alloc_mem(tileget,j)
       call tensor_get_tile(test2,int(i,kind=tensor_standard_int),tileget,j)
       call tile_in_fort(1.0E0_tensor_dp,tileget,i,int(test2%tdim),0.0E0_tensor_dp,&
                         &test2%elm1,test1%dims,4,[3,2,4,1])
-      call mem_dealloc(tileget)
+      call tensor_free_mem(tileget)
     enddo
     call lsmpi_barrier(infpar%lg_comm)
     call tensor_cp_tiled2dense(test1,.true.)
@@ -466,20 +474,20 @@ module tensor_tester_module
     call tensor_ainit(test3,[nv,no,nv],   3,tdims=[nv/2,no/2,nv/2],     atype="TDAR")
     call tensor_zero(test3)
     !do the local reference calculation on the master
-    call mem_alloc(buf3,nv*no*nv)
+    call tensor_alloc_mem(buf3,nv*no*nv)
     if(master)then
        call random_number(test1%elm1)
        call random_number(test2%elm1)
        call print_norm(test1%elm1,int(no*nv*no*nv,kind=8))
        call print_norm(test2%elm1,int(nv*no*nv,kind=8))
-       call mem_alloc(buf1,no*nv*no*nv)
-       call mem_alloc(buf2,nv*no*nv)
+       call tensor_alloc_mem(buf1,no*nv*no*nv)
+       call tensor_alloc_mem(buf2,nv*no*nv)
        call array_reorder_4d(1.0E0_tensor_dp,test1%elm1,no,nv,no,nv,[1,4,2,3],0.0E0_tensor_dp,buf1)
        call array_reorder_3d(1.0E0_tensor_dp,test2%elm1,nv,no,nv,     [3,2,1],0.0E0_tensor_dp,buf2)
        call dgemm('n','n',no*nv,nv,no*nv,1.0E0_tensor_dp,buf1,no*nv,buf2,no*nv,0.0E0_tensor_dp,buf3,no*nv)
        call print_norm(buf3,int(no*nv*nv,kind=8),ref)
-       call mem_dealloc(buf1)
-       call mem_dealloc(buf2)
+       call tensor_free_mem(buf1)
+       call tensor_free_mem(buf2)
     endif
     call ls_mpibcast(test1%elm1,test1%nelms,infpar%master,infpar%lg_comm)
     call ls_mpibcast(test2%elm1,test2%nelms,infpar%master,infpar%lg_comm)
@@ -490,8 +498,8 @@ module tensor_tester_module
     call print_norm(test1)
     call print_norm(test2)
 
-    call mem_alloc(ord,3)
-    call mem_alloc(buf2,nv*no*nv)
+    call tensor_alloc_mem(ord,3)
+    call tensor_alloc_mem(buf2,nv*no*nv)
 
     ord = [2,1,3]
     buf2 = 0.0E0_tensor_dp
@@ -500,7 +508,7 @@ module tensor_tester_module
     call tensor_contract(1.0E0_tensor_dp,test1,test2,[2,3],[3,2],2,0.0E0_tensor_dp,test3,ord)
     call tensor_unlock_local_wins(test3)
 
-    call mem_dealloc(ord)
+    call tensor_free_mem(ord)
 
     call tensor_gather(1.0E0_tensor_dp,test3,0.0E0_tensor_dp,buf2,test3%nelms,oo=[2,1,3])
     call print_norm(buf2,test3%nelms,normher)
@@ -519,8 +527,8 @@ module tensor_tester_module
        write (output,'("PDCWORD :       TEST STATUS:                     : ",A7)') teststatus
     endif 
 
-    call mem_dealloc(buf2)
-    call mem_dealloc(buf3)
+    call tensor_free_mem(buf2)
+    call tensor_free_mem(buf3)
 
     call tensor_free(test1)
     call tensor_free(test2)

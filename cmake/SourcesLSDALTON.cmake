@@ -805,6 +805,8 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/dec_workarounds.F90
     )
 set(LSUTIL_TENSOR_SOURCES
+    LSDALTON/tensor/tensor_error_handler.F90
+    LSDALTON/tensor/tensor_allocator.F90
     LSDALTON/tensor/tensor_basic.F90
     LSDALTON/tensor/lspdm_basic.F90
     LSDALTON/tensor/lspdm_tensor_operations.F90

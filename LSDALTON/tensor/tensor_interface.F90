@@ -86,8 +86,10 @@ module tensor_interface_module
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
   public tensor_print_norm_nrm
 
+  public tensor_initialize_interface, tensor_finalize_interface
+
   ! PDM interface to the tensor structure
-  public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
+  public pdm_tensor_sync, new_group_reset_persistent_array
   public tensor_get_tile, tensor_put_tile, tensor_accumulate_tile
   public tensor_scatter, tensor_gather
   public tensor_lock_win, tensor_lock_wins, tensor_lock_local_wins
@@ -188,6 +190,18 @@ module tensor_interface_module
 
 
 contains
+
+  subroutine tensor_initialize_interface()
+     implicit none
+     call tensor_init_counters()
+     call init_persistent_array()
+  end subroutine tensor_initialize_interface
+  subroutine tensor_finalize_interface()
+     implicit none
+     call free_persistent_array()
+     call tensor_free_counters()
+  end subroutine tensor_finalize_interface
+
   subroutine tensor_set_global_segment_length(seg_len)
      implicit none
      integer(kind=8), intent(in) :: seg_len
@@ -393,7 +407,7 @@ contains
 
         case(TT_TILED_DIST)
 
-           call mem_alloc(buffer,y%tsize)
+           call tensor_alloc_mem(buffer,y%tsize)
            !TODO:IMPLEMENT MULTIPLE BUFFERING AND MOVE TO lspdm_tensor_operations!!!!!!
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
@@ -404,7 +418,7 @@ contains
 
               call tile_in_fort(b,buffer,ti,int(y%tdim),pre2,x%elm1,x%dims,int(x%mode),o)
            enddo
-           call mem_dealloc(buffer)
+           call tensor_free_mem(buffer)
 
            call time_start_phase( PHASE_COMM )
            if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
@@ -1045,9 +1059,9 @@ contains
            wB => wrk(A%nelms + 1 : A%nelms + B%nelms )
            wC => wrk(A%nelms + B%nelms + 1 : A%nelms + B%nelms + C%nelms )
         else
-           call mem_alloc(wA,A%nelms)
-           call mem_alloc(wB,B%nelms)
-           call mem_alloc(wC,C%nelms)
+           call tensor_alloc_mem(wA,A%nelms)
+           call tensor_alloc_mem(wB,B%nelms)
+           call tensor_alloc_mem(wC,C%nelms)
         endif
 
         m_gemm = 1
@@ -1138,9 +1152,9 @@ contains
            wB => null()
            wC => null()
         else
-           call mem_dealloc(wA)
-           call mem_dealloc(wB)
-           call mem_dealloc(wC)
+           call tensor_free_mem(wA)
+           call tensor_free_mem(wB)
+           call tensor_free_mem(wC)
         endif
      endif
   end subroutine tensor_contract_dense_simple
@@ -1719,7 +1733,7 @@ contains
         if(bg)then
            call mem_pseudo_alloc( new_data,nelms )
         else
-           call mem_alloc( new_data,nelms )
+           call tensor_alloc_mem( new_data,nelms )
         endif
 
         select case(arr%mode)
@@ -1749,7 +1763,7 @@ contains
         if(bg)then
            call mem_pseudo_dealloc(new_data)
         else
-           call mem_dealloc(new_data)
+           call tensor_free_mem(new_data)
         endif
 
         call assoc_ptr_arr(arr)
@@ -2183,7 +2197,7 @@ contains
     tdimdummy=0
     call tensor_set_tdims(p_arr%a(addr),tdimdummy,nmodes)
 
-    !call mem_alloc(buf,pc_nnodes)
+    !call tensor_alloc_mem(buf,pc_nnodes)
     !buf = 0
 
     !if master init only master has to init the addresses addresses before
@@ -2209,7 +2223,7 @@ contains
 
     !call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
-    !call mem_dealloc(buf)
+    !call tensor_free_mem(buf)
 
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
     call memory_allocate_tensor_dense(p_arr%a(addr),bg)
@@ -2982,9 +2996,10 @@ contains
     logical :: alln,red,master
     integer :: nnod
     integer(kind=tensor_long_int),pointer :: red_info(:)
-    alln = .false.
-    red = .false.
-    master=.true.
+    alln   = .false.
+    red    = .false.
+    master =.true.
+    nnod   = 1
 #ifdef VAR_MPI
     if(infpar%lg_mynum/=0)master=.false.
     nnod=infpar%lg_nodtot
@@ -2993,11 +3008,7 @@ contains
     if(present(reducetocheck))then
       red=.true.
       if(red.and.master)then
-#ifdef VAR_MPI
-      call mem_alloc(red_info,nnod*8)
-#else
-      call mem_alloc(red_info,8)
-#endif
+         call tensor_alloc_mem(red_info,nnod*8)
       endif
     endif
     if(alln)then
@@ -3014,7 +3025,7 @@ contains
       else
         reducetocheck=1
       endif
-      call mem_dealloc(red_info)
+      call tensor_free_mem(red_info)
     endif
 
   end subroutine tensor_print_mem_info
