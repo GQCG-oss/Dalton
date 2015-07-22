@@ -76,28 +76,15 @@ subroutine lsmpi_init(OnMaster)
    ! Assume that there will be local jobs
    infpar%lg_morejobs=.true.
 
-
-
-   if (infpar%mynum.ne.infpar%master) then
-
-      !if normal slave, listen on MPI_COMM_LSDALTON
-      call lsmpi_slave(MPI_COMM_LSDALTON)
-
-      elseif( infpar%parent_comm /= MPI_COMM_NULL )then
-
-      !if spawned process, listen on the parent-child-intracomm
-      call lsmpi_slave(infpar%pc_comm)
-
-   endif
 #else
    logical, intent(inout) :: OnMaster
    !IF NOT COMPILED WITH MPI SET MASTER = TRUE
    OnMaster = .true.
 #endif
 end subroutine lsmpi_init 
-#ifdef VAR_MPI
 
 subroutine lsmpi_slave(comm)
+#ifdef VAR_MPI
    use lsparameters
    use lstiming
    use infpar_module
@@ -314,12 +301,15 @@ subroutine lsmpi_slave(comm)
       case(LSMPIQUIT);  
          stay_in_slaveroutine = .false.
       case default
-         call free_persistent_array()
+         !call free_persistent_array()
          call lsmpi_finalize(6,.FALSE.)
          stay_in_slaveroutine = .false.
       end select
 
    end do
+#else
+   call lsquit("ERROR(lsmpi_slave): This is a non-mpi build, this routine should not be called",-1)
+#endif
 
 end subroutine lsmpi_slave
 
@@ -357,5 +347,4 @@ end subroutine lsmpi_slave
 !!$    end subroutine lsmpi_local_slave
 
 
-#endif
 

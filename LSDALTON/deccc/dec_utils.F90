@@ -13,6 +13,7 @@ module dec_fragment_utils
   use DALTONINFO!, only: ls_free
   use dec_typedef_module
   use dec_workarounds_module
+  use background_buffer_module
   use memory_handling!, only: mem_alloc, mem_dealloc, mem_allocated_global,&
   !       & stats_mem, get_avaiLable_memory
   use matrix_module!, only:matrix

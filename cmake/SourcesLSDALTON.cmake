@@ -765,6 +765,8 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/gpu_devices.F90
     LSDALTON/tensor/tensor_parameters.F90
     LSDALTON/tensor/get_idx.F90
+    LSDALTON/tensor/tensor_error_handler.F90
+    LSDALTON/tensor/tensor_allocator.F90
     LSDALTON/tensor/tensor_type_def.F90
     LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90

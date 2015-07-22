@@ -14,10 +14,10 @@
         tensor_counter_aux_f_mem = tensor_counter_aux_f_mem + vector_size
         tensor_counter_memory_in_use    = tensor_counter_memory_in_use  - vector_size
 !$OMP END CRITICAL
-        call mem_dealloc(arr%tdim)
+        call tensor_free_mem(arr%tdim)
       endif
       if(.not.associated(arr%tdim))then
-        call mem_alloc(arr%tdim,arr%mode)
+        call tensor_alloc_mem(arr%tdim,arr%mode)
 !$OMP CRITICAL
         tensor_counter_aux_a_mem = tensor_counter_aux_a_mem + vector_size
         tensor_counter_memory_in_use  = tensor_counter_memory_in_use  + vector_size
