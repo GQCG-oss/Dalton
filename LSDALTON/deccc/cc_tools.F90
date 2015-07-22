@@ -693,7 +693,8 @@ module cc_tools_module
       endif
 
       if(DECinfo%hack2)then
-         laleg_req = DECinfo%test_len
+         laleg_req = min(DECinfo%test_len,tred)
+         print *,"Selected requested length of",laleg_req
       else
          laleg_req = tred
       endif
@@ -714,10 +715,6 @@ module cc_tools_module
 
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
-
-            if(DECinfo%hack2)then
-               print *,faleg, laleg
-            endif
 
             curr_id = mod(curr_id,nids)+1
 
