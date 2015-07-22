@@ -6,6 +6,7 @@
 module lspdm_basic_module
 
   use background_buffer_module, only: mem_is_background_buf_init
+  use memory_handling, only: mem_pseudo_alloc, mem_pseudo_dealloc
 
   use tensor_allocator
   use tensor_type_def_module
