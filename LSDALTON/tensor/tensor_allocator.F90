@@ -519,7 +519,11 @@ module tensor_allocator
 #endif
       integer(kind=tensor_long_int),pointer  :: p(:)
       integer(kind=tensor_standard_int)       :: idx  = tensor_mem_idx_tensor_long_int
-      procedure(tensor_aif_long_int), pointer :: free => tensor_free_tensor_long_int_basic
+      procedure(tensor_aif_long_int), pointer :: free
+
+      include "standard_dealloc2d_var.inc"
+
+      free => tensor_free_tensor_long_int_basic
 
 #ifdef VAR_PTR_RESHAPE
       include "standard_dealloc2d.inc"
@@ -655,8 +659,9 @@ module tensor_allocator
 #endif
       integer(kind=tensor_standard_int),pointer :: p(:)
       integer(kind=tensor_standard_int)           :: idx  = tensor_mem_idx_tensor_standard_int
-      procedure(tensor_aif_standard_int), pointer :: free => tensor_free_tensor_standard_int_basic()
-
+      procedure(tensor_aif_standard_int), pointer :: free 
+      include "standard_dealloc2d_var.inc"
+      free => tensor_free_tensor_standard_int_basic
 #ifdef VAR_PTR_RESHAPE
       include "standard_dealloc2d.inc"
 #else
