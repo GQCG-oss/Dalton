@@ -2045,6 +2045,7 @@ contains
     real(realk) :: gpuGflops,totgpuflops
     real(realk) :: globalloss, tottime_ideal, slavetime, localuse
     integer :: i, minidx, maxidx,N
+    logical :: Fragoptjobs
 
 
     write(DECinfo%output,*)
@@ -2090,6 +2091,7 @@ contains
     minidx         = 0
     maxidx         = 0
     N              = 0
+    Fragoptjobs    = any(jobs%dofragopt)
 
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
@@ -2111,12 +2113,16 @@ contains
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
-       if(.not. jobs%dofragopt(i)) then
-          write(DECinfo%output,'(6i8,3X,5g11.3,a)') i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
-               &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
-               &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
-       end if
+       if (Fragoptjobs .and. .not. jobs%dofragopt(i)) then
+           write(DECinfo%output,&
+              &'("------------------------------------- Fragment optimization done -------------------------------------")')
+           Fragoptjobs = .false.
+       endif
+
+       write(DECinfo%output,'(6i8,3X,5g11.3,a)') i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
+            & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
+            &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
+            &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
 
        ! Accumulated Gflops per sec
        tmp = Gflops/jobs%LMtime(i)
