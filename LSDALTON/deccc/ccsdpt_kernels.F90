@@ -484,7 +484,7 @@ contains
                                  & ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
                                  & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                                  & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
-                                 & ovoo,1)
+                                 & ovoo,async_id,num_ids,1)
 
 !$acc enter data copyin(ccsdpt_doubles(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -507,7 +507,7 @@ contains
                                      & ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
                                      & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                                      & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
-                                     & ovoo,2)
+                                     & ovoo,async_id,num_ids,2)
 
 !$acc enter data copyin(ccsdpt_doubles(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -530,7 +530,7 @@ contains
                                         & ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
                                         & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                                         & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
-                                        & ovoo,3)
+                                        & ovoo,async_id,num_ids,3)
 
                       ! select type of tuple
                       tuple_type = -1
@@ -1208,7 +1208,7 @@ contains
                              & ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                              & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                              & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
-                             & ccsd_doubles,vvvo,vvoo,ovoo,1)
+                             & ccsd_doubles,vvvo,vvoo,ovoo,async_id,num_ids,1)
 
 !$acc enter data copyin(ccsdpt_doubles(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -1218,7 +1218,7 @@ contains
                                 & ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                                 & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                                 & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
-                                & ccsd_doubles,vvvo,vvoo,ovoo,2)
+                                & ccsd_doubles,vvvo,vvoo,ovoo,async_id,num_ids,2)
 
 !$acc enter data copyin(ccsdpt_doubles(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
 
@@ -1228,7 +1228,7 @@ contains
                                    & ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                                    & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
-                                   & ccsd_doubles,vvvo,vvoo,ovoo,3)
+                                   & ccsd_doubles,vvvo,vvoo,ovoo,async_id,num_ids,3)
 
                     ! select type of tuple
                     tuple_type = -1
@@ -1927,7 +1927,7 @@ contains
                               & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                               & ccsd_pdm_a,ccsd_pdm_b,ccsd_pdm_c,ooov,&
                               & vovv_pdm_a,vovv_pdm_b,vovv_pdm_c,&
-                              & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,1)
+                              & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,async_id,num_ids,1)
 
                 a_count = a_count+1
 
@@ -1951,7 +1951,7 @@ contains
                                  & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                                  & ccsd_pdm_a,ccsd_pdm_b,ccsd_pdm_c,ooov,&
                                  & vovv_pdm_a,vovv_pdm_b,vovv_pdm_c,&
-                                 & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,2)
+                                 & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,async_id,num_ids,2)
 
                    b_count = b_count+1
 
@@ -1988,7 +1988,7 @@ contains
                                     & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                                     & ccsd_pdm_a,ccsd_pdm_b,ccsd_pdm_c,ooov,&
                                     & vovv_pdm_a,vovv_pdm_b,vovv_pdm_c,&
-                                    & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,3)
+                                    & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,async_id,num_ids,3)
 
                       ! select type of tuple
                       tuple_type = -1
@@ -2662,7 +2662,7 @@ contains
                        & ooov_a,ooov_b,ooov_c,&
                        & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,&
                        & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                       & ccsd_doubles,ooov,vovv,oovv,1)
+                       & ccsd_doubles,ooov,vovv,oovv,async_id,num_ids,1)
 
 !!$acc enter data copyin(ccsd_doubles(:,:,:,a),&
 !!$acc& ooov(:,:,:,a)) async(async_id(1))
@@ -2676,7 +2676,7 @@ contains
                           & ooov_a,ooov_b,ooov_c,&
                           & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,&
                           & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                          & ccsd_doubles,ooov,vovv,oovv,2)
+                          & ccsd_doubles,ooov,vovv,oovv,async_id,num_ids,2)
 
 !!$acc enter data copyin(ccsd_doubles(:,:,:,b),&
 !!$acc& ooov(:,:,:,b),&
@@ -2743,7 +2743,7 @@ contains
                              & ooov_a,ooov_b,ooov_c,&
                              & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,&
                              & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                             & ccsd_doubles,ooov,vovv,oovv,3)
+                             & ccsd_doubles,ooov,vovv,oovv,async_id,num_ids,3)
 
              ! generate tuple(s)
              TypeOfTuple_ser_abc: select case(tuple_type)
