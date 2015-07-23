@@ -3,6 +3,7 @@
 2015.2 (20XX-XX-XX)
 ===================
 
+- Some minor corrections to the Dalton manual.
 - This will be the next patch.
 - Write me ...
 
