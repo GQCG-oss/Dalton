@@ -229,11 +229,6 @@ module f12_routines_module
 !!$    call mat_free(Fcd)
 !!$    call mat_free(Fcc)
       
-!!$    print *, '****************************************'
-!!$    print *, '(Norm of HJir_real):', norm2(HJir_real)       
-!!$    print *, '(Norm of HJir):', sqrt(mat_sqnorm2(HJir))
-!!$    print *, '****************************************'
-        
   end subroutine get_F12_mixed_MO_Matrices_real
 
   !> Need documentation...
