@@ -103,7 +103,7 @@ module tensor_allocator
       integer(kind=tensor_long_int) :: bytes
       integer :: i
       bytes = 0
-      do i=1,tensor_nmem
+      do i=1,tensor_nmem_idx
          bytes = bytes + counters(i)%curr_
       enddo
    end function tensor_get_total_heap_mem
@@ -112,7 +112,7 @@ module tensor_allocator
       integer(kind=tensor_long_int) :: bytes
       integer :: i
       bytes = 0
-      do i=1,tensor_nmem
+      do i=1,tensor_nmem_idx
          bytes = bytes + counters_bg(i)%curr_
       enddo
    end function tensor_get_total_bg_mem

@@ -8,7 +8,7 @@ subroutine pdm_tensor_slave(comm)
   use dec_typedef_module
 #ifdef VAR_MPI
   use infpar_module
-  use lsmpi_type
+  use tensor_mpi_interface_module
 #endif
 
   !this is a special case since this slave routine is associated with the tensor
@@ -60,7 +60,7 @@ subroutine pdm_tensor_slave(comm)
       intarr1 =A%dims
       call tensor_free_aux(A)
 
-      call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
+      call tensor_mpi_bcast(INT1,infpar%master,infpar%lg_comm)
 
       if(INT1==-1)then
          call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
@@ -160,7 +160,7 @@ subroutine pdm_tensor_slave(comm)
    CASE(JOB_CP_ARR)
       INT1 = A%mode
       call tensor_alloc_mem(intarr1,INT1)
-      call ls_mpibcast(intarr1,INT1,infpar%master,infpar%lg_comm)
+      call tensor_mpi_bcast(intarr1,INT1,infpar%master,infpar%lg_comm)
       call tensor_cp_tiled(A,B,intarr1)
       call tensor_free_mem(intarr1)
    CASE(JOB_tensor_ZERO)
@@ -189,7 +189,7 @@ subroutine pdm_tensor_slave(comm)
    CASE(JOB_CHANGE_ACCESS_TYPE)
       call change_access_type_td(A,INT1)
    CASE(JOB_tensor_SCALE)
-      call ls_mpibcast(REAL1,infpar%master,infpar%lg_comm)
+      call tensor_mpi_bcast(REAL1,infpar%master,infpar%lg_comm)
       call tensor_scale_td(A,REAL1)
    CASE(JOB_GET_RPA_ENERGY)
       write(*,*) 'Johannes RPA ene'
@@ -366,8 +366,8 @@ subroutine pdm_tensor_slave(comm)
 
       call tensor_free(AUX)
    CASE(JOB_GET_MP2_ST_GUESS)
-      call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
-      call ls_mpibcast(LOG1,infpar%master,infpar%lg_comm)
+      call tensor_mpi_bcast(INT1,infpar%master,infpar%lg_comm)
+      call tensor_mpi_bcast(LOG1,infpar%master,infpar%lg_comm)
       call lspdm_get_starting_guess(A,B,C,D,INT1,LOG1)
    CASE(JOB_tensor_rand)
       call tensor_rand_tiled_dist(A)
