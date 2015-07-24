@@ -5,7 +5,7 @@
       datatype    = stats%d_mpi
 
       stats%bytes = stats%bytes + stats%size_ * n
-      stats%time_ = stats%time_ - mpi_wtime()
+      !stats%time_ = stats%time_ - mpi_wtime()
 
       do first_el=1,n,chunk
 
@@ -23,4 +23,4 @@
 
       enddo
 
-      stats%time_ = stats%time_ + mpi_wtime()
+      !stats%time_ = stats%time_ + mpi_wtime()
