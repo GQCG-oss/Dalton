@@ -315,7 +315,7 @@ module tensor_mpi_interface_module
       buffer(1) = b
       call tensor_mpi_reduce_dp_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_reduce,tensor_mpi_idx_tensor_dp))
-      if( infpar%lg_mynum /= root) b = buffer(1)
+      b = buffer(1)
     end subroutine tensor_mpi_reduce_tensor_dp
     subroutine tensor_mpi_reduce_tensor_dp_s(buffer,n1,root,comm)
       implicit none
@@ -338,9 +338,11 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_reduce_dp_basic(buffer,n1,root,comm,stats)
       implicit none
       integer(kind=tensor_long_int), intent(in)    :: n1
-      real(tensor_dp), intent(inout)               :: buffer(n1)
+      real(tensor_dp), intent(inout)               :: buffer(:)
       type(tensor_mpi_stats_type),intent(inout)    :: stats
       include "mpi_collective_vars.inc"
+      !CHANGE THIS ACCORDING TO THE DATATYPE OF BUFFER
+      real(tensor_dp), pointer :: noelm => null()
       include "mpi_reduce_std.inc"
     end subroutine tensor_mpi_reduce_dp_basic
 #endif
