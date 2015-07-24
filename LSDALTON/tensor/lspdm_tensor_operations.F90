@@ -1276,7 +1276,7 @@ module lspdm_tensor_operations_module
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
      call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
-     call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     call tensor_mpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
   call time_start_phase( PHASE_WORK )
 
@@ -1393,7 +1393,7 @@ module lspdm_tensor_operations_module
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
      call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
-     call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     call tensor_mpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
   call time_start_phase( PHASE_WORK )
 
@@ -1499,7 +1499,7 @@ module lspdm_tensor_operations_module
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
      call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
-     call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     call tensor_mpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
   call time_start_phase( PHASE_WORK )
 
@@ -1606,7 +1606,7 @@ module lspdm_tensor_operations_module
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
      call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
-     call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     call tensor_mpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
   call time_start_phase( PHASE_WORK )
 
@@ -2305,7 +2305,7 @@ module lspdm_tensor_operations_module
      !get result on the specified node/s
      call time_start_phase( PHASE_COMM )
      if(dest==-1)then
-        call lsmpi_allreduce(res,infpar%lg_comm)
+        call tensor_mpi_allreduce(res,infpar%lg_comm)
      else
         dest_mpi=dest
         call tensor_mpi_reduce(res,dest_mpi,infpar%lg_comm)
@@ -5781,7 +5781,7 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
      if(arr%access_type==AT_MASTER_ACCESS) call tensor_mpi_reduce(nrm,infpar%master,infpar%lg_comm)
-     if(arr%access_type==AT_ALL_ACCESS)    call lsmpi_allreduce(nrm,infpar%lg_comm)
+     if(arr%access_type==AT_ALL_ACCESS)    call tensor_mpi_allreduce(nrm,infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
 
 #else
