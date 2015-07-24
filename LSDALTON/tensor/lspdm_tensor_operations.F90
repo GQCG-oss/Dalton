@@ -801,8 +801,8 @@ module lspdm_tensor_operations_module
      call tensor_deallocate_dense(gmo)
 
      call time_start_phase(PHASE_COMM)
-     call lsmpi_local_reduction(Eocc,infpar%master)
-     call lsmpi_local_reduction(Evirt,infpar%master)
+     call tensor_mpi_reduce(Eocc,  infpar%master, infpar%lg_comm)
+     call tensor_mpi_reduce(Evirt, infpar%master, infpar%lg_comm)
      call time_start_phase(PHASE_WORK)
 
      fEc = 0.50E0_tensor_dp*(Eocc + Evirt)
@@ -1150,8 +1150,8 @@ module lspdm_tensor_operations_module
   endif
 
   call time_start_phase( PHASE_COMM )
-  if(present(t1))call lsmpi_local_reduction(E1,infpar%master)
-  call lsmpi_local_reduction(E2,infpar%master)
+  if(present(t1))call tensor_mpi_reduce(E1,infpar%master,infpar%lg_comm)
+  call tensor_mpi_reduce(E2,infpar%master,infpar%lg_comm)
   call time_start_phase( PHASE_WORK )
 
   if(present(t1))then
@@ -1274,7 +1274,7 @@ module lspdm_tensor_operations_module
 
   call time_start_phase( PHASE_COMM )
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
-     call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
      call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
@@ -1391,7 +1391,7 @@ module lspdm_tensor_operations_module
 
   call time_start_phase( PHASE_COMM )
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
-     call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
      call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
@@ -1497,7 +1497,7 @@ module lspdm_tensor_operations_module
 
   call time_start_phase( PHASE_COMM )
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
-     call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
      call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
@@ -1604,7 +1604,7 @@ module lspdm_tensor_operations_module
 
   call time_start_phase( PHASE_COMM )
   if(tensor_full%access_type==AT_MASTER_ACCESS)then
-     call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     call tensor_mpi_reduce(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
   else if(tensor_full%access_type==AT_ALL_ACCESS)then
      call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
   endif
@@ -1856,7 +1856,7 @@ module lspdm_tensor_operations_module
 
      call tensor_deallocate_dense(gmo)
 
-     call lsmpi_local_reduction(E2,infpar%master)
+     call tensor_mpi_reduce(E2,infpar%master,infpar%lg_comm)
 
      Ec = E2
      if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
@@ -1932,7 +1932,7 @@ module lspdm_tensor_operations_module
 
      call tensor_deallocate_dense(gmo)
 
-     call lsmpi_local_reduction(E2,infpar%master)
+     call tensor_mpi_reduce(E2,infpar%master,infpar%lg_comm)
 
      Ec = E2
      if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
@@ -2308,7 +2308,7 @@ module lspdm_tensor_operations_module
         call lsmpi_allreduce(res,infpar%lg_comm)
      else
         dest_mpi=dest
-        call lsmpi_local_reduction(res,dest_mpi)
+        call tensor_mpi_reduce(res,dest_mpi,infpar%lg_comm)
      endif
      call time_start_phase( PHASE_WORK )
 
@@ -2407,7 +2407,7 @@ module lspdm_tensor_operations_module
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
-        fbuf_idx = ibuf_idx + ynels
+        fbuf_idx = ibuf_idx + ynels - 1
 
         cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
@@ -2454,7 +2454,7 @@ module lspdm_tensor_operations_module
 
            ibuf = mod(buffer_lt-1,nbuffs)
            ibuf_idx = ibuf*x%tsize + 1
-           fbuf_idx = ibuf_idx + ynels
+           fbuf_idx = ibuf_idx + ynels - 1 
 
 
            cmidy = get_cidx(ymidx,y%ntpm,y%mode)
@@ -2498,7 +2498,7 @@ module lspdm_tensor_operations_module
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
-        fbuf_idx = ibuf_idx + ynels
+        fbuf_idx = ibuf_idx + ynels - 1
 
         cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
@@ -5134,7 +5134,7 @@ module lspdm_tensor_operations_module
      total(7) = nmsg_acc*1.0E0_tensor_dp
      total(8) = nmsg_put*1.0E0_tensor_dp
      total(9) = nmsg_get*1.0E0_tensor_dp
-     call lsmpi_local_reduction(total,9,infpar%master)
+     call tensor_mpi_reduce(total,9,infpar%master,infpar%lg_comm)
      if(master)then
         speed_acc=0.0E0_tensor_dp
         speed_put=0.0E0_tensor_dp
@@ -5780,8 +5780,8 @@ module lspdm_tensor_operations_module
      enddo
 
      call time_start_phase( PHASE_COMM )
-     if(arr%access_type==AT_MASTER_ACCESS)call lsmpi_local_reduction(nrm,infpar%master)
-     if(arr%access_type==AT_ALL_ACCESS)call lsmpi_allreduce(nrm,infpar%lg_comm)
+     if(arr%access_type==AT_MASTER_ACCESS) call tensor_mpi_reduce(nrm,infpar%master,infpar%lg_comm)
+     if(arr%access_type==AT_ALL_ACCESS)    call lsmpi_allreduce(nrm,infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
 
 #else
