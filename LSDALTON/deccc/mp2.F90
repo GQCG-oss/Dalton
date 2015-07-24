@@ -54,11 +54,18 @@ module mp2_module
      module procedure MP2_integrals_and_amplitudes_energy
      !> Integrals for energy, integrals for first properties, and MP2 amplitudes
      module procedure MP2_integrals_and_amplitudes_energy_and_first_order
-  end interface
+ 
+ end interface
+
 
 
 contains
 
+
+
+
+  
+  
   !max_batch_dimension function moved to dec_util.F90
 
   !> \brief Workhorse for calculating EOS integrals and EOS amplitudes for MP2 calculation -
@@ -2078,6 +2085,1696 @@ contains
 
  end subroutine MP2_integrals_and_amplitudes_workhorse
 
+!> MP2F12 workhorse 
+!> Author: Y. M. Wang
+!> Date: 24.07.15
+subroutine MP2F12_Ccoupling_energy(MyFragment, E21)
+
+    implicit none
+
+    ! For frozen core all occupied indices refer to only the valence space EXCEPT
+    ! for first_order_integrals where the "k" index for blak and djik is BOTH core+valence
+    ! (See below)
+
+    !> Atomic fragment (or pair fragment)
+    type(decfrag), intent(inout) :: MyFragment
+    !> For MPI:  master rank - this is determined inside subroutine
+    !> For MPI:  slave rank - this is determined based on input (effectively intent(in))
+    type(mp2_batch_construction) :: bat
+    !> Determines whether djik and blad are calculated (true)
+    !> or not (false --> djik and blad not initialized)
+   
+    type(array2) :: CDIAGocc, CDIAGvirt, Uocc, Uvirt
+    real(realk), pointer :: EVocc(:), EVvirt(:)
+    integer :: nbasis,nocc,nvirt, noccEOS, nvirtEOS, ncabsAO, ncabsMO
+    integer :: alpha,gamma,alphaB,gammaB,dimAlpha,dimGamma
+    real(realk), pointer :: UvirtEOST(:,:)
+    type(mypointer) :: tmp1,tmp2,tmp3,tmp4,tmp5,tmp6
+    type(mypointer),pointer :: b1(:),b2(:),b3(:)
+
+    real(realk) :: taibj
+    real(realk) :: caibj
+    real(realk) :: cajbi
+
+    real(realk),pointer :: UoccEOST(:,:),  UoccEOS(:,:), UvirtEOS(:,:),CvirtT(:,:),gvirt2(:,:,:,:)
+    real(realk),pointer :: gocc(:,:,:,:),tocc(:,:,:,:),gvirt(:,:,:,:),tvirt(:,:,:,:),CoccT(:,:)
+    integer,pointer :: V(:,:)
+    integer(kind=long) :: dim1,dim2,dim3,dim4,dim5,dim6,idx,idx2,max1,max2,max3,maxdim,start,siz
+    integer:: Astart, Aend,dimA, A,B,I,J,counter,arrsize
+    real(realk) :: flops,gpuflops
+    integer,dimension(4) :: dimocc, dimvirt
+    integer :: m,k,n, nvbatches, Abat, GammaStart, GammaEnd, AlphaStart, AlphaEnd,c,d,l
+    real(realk) :: deltaEPS
+    integer :: iorb,thread_idx,nthreads
+    integer,dimension(4) :: dims
+    real(realk),pointer :: VVVO(:,:,:,:), OOOV(:,:,:,:)
+    real(realk),pointer :: LvirtEOST(:,:), LoccEOST(:,:), LvirtT(:,:)
+    type(array2) :: LoccEOS,LvirtEOS, tmparray2, LoccTALL,CDIAGoccTALL,UoccALL
+    real(realk) :: tcpu, twall,tcpuTOT,twallTOT,tcpu1,twall1,tcpu2,twall2
+    real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end
+    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches
+    integer :: MaxActualDimGamma,nbatchesGamma
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
+    type(batchtoorb), pointer :: batch2orbAlpha(:)
+    type(batchtoorb), pointer :: batch2orbGamma(:)
+    integer, pointer :: orb2batchAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    TYPE(DECscreenITEM)   :: DecScreen
+    Character(80)        :: FilenameCS,FilenamePS
+    integer, pointer :: batchdimAlpha(:), batchdimGamma(:)
+    logical :: FoundInMem,FullRHS,doscreen
+#ifdef VAR_OMP
+    integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
+#endif
+    logical :: master,wakeslave
+    real(realk) :: twmpi1,twmpi2, tcmpi1, tcmpi2, tmpidiff
+#ifdef VAR_MPI
+    INTEGER(kind=ls_mpik) :: HSTATUS
+    CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
+!    this really should be
+!    character*(MPI_MAX_PROCESSOR_NAME) :: HNAME
+#endif
+    integer,pointer       :: decmpitasks(:)
+    type(c_ptr)           :: decmpitaskc
+    integer(kind=ls_mpik) :: decmpitaskw
+    integer(kind=ls_mpik) :: masterrank = 0
+    integer(kind=ls_mpik) :: ierr
+    integer :: myload,ncore
+    !real(realk),allocatable,target :: arr(:)
+    real(realk),pointer :: arr(:)
+    integer :: num,extra,narrays,nocctot
+    type(mypointer),pointer :: CvirtTspecial(:,:)
+    real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
+    real(realk) :: time_mp2work, time_mp2comm, time_mp2idle,MemInGBCollected,MaxMemInGBCollected,MemoryNeeded
+    real(realk) :: TS2,TE2
+    logical :: ts,fc,memfound,ForcePrint
+    Character            :: intSpec(5)
+    real(realk) :: CPU1,CPU2,WALL1,WALL2,CPU_INT,WALL_INT,CPU_AOTOMO,WALL_AOTOMO
+    integer(kind=short) :: CS_THRLOG
+    logical :: use_bg_buf, dynamic_load, first
+    integer(kind=ls_mpik) :: lg_me
+    integer :: old_gammaB, batch
+
+    !Additional F12 stuff
+    !> MO coefficient matrix for the CABS MOs
+    real(realk), pointer :: CfT(:,:) !Combined matrix of Cvirt and FAc
+    real(realk), pointer :: FAc_diag(:,:)  !Diagonal virtual space for Fac matrix
+    real(realk), pointer :: Fac_local(:,:) !Local virtal space for Fac matrix
+    real(realk) :: tmp, realvalue
+    real(realk), intent(inout) :: E21
+#ifdef VAR_TIME
+    FORCEPRINT = .TRUE.
+#else
+    FORCEPRINT = .FALSE.
+#endif
+    call time_start_phase( PHASE_WORK, swwork=time_mp2work , swcomm=time_mp2comm , swidle=time_mp2idle )
+    use_bg_buf = mem_is_background_buf_init()
+
+    myload = 0
+    CPU_INT = 0.0E0_realk
+    WALL_INT = 0.0E0_realk
+    CPU_AOTOMO = 0.0E0_realk
+    WALL_AOTOMO = 0.0E0_realk
+    call Obtain_CS_THRLOG(CS_THRLOG,DECinfo%IntegralThreshold)
+! If MPI is not used, consider the single node to be "master"
+    dynamic_load = DECinfo%dyn_load
+#ifdef VAR_MPI
+    master       = (infpar%lg_mynum == infpar%master)
+    lg_me        = infpar%lg_mynum
+#else
+    master       = .true.
+    lg_me        = 0
+#endif
+
+    ! Lots of timings
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    call LSTIMER('START',tcpuTOT,twallTOT,DECinfo%output)
+    call LSTIMER('START',tcpu_start,twall_start,DECinfo%output)
+    CALL LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    ! Set integral info
+    ! *****************
+    INTSPEC(1)='C' !C = CabsAO  Basis set on the 1th center 
+    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)='G' !C = F12 operator 
+    IF(DECinfo%useIchor)THEN
+       iprint = 0           !print level for Ichor Integral code
+       MoTrans = .FALSE.    !Do not transform to MO basis! 
+       NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+       SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+       !Determine the full number of AO batches - not to be confused with the batches of AOs
+       !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
+       iAO = 1
+       call determine_Ichor_nAObatches(MyFragment%mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+    ENDIF
+    
+    doscreen = MyFragment%mylsitem%setting%scheme%cs_screen.OR.&
+         & MyFragment%mylsitem%setting%scheme%ps_screen
+
+    ! Note on the indices
+    ! *******************
+    !
+    ! Occupied AOS, diagonal basis: I,J
+    ! Virtual  AOS, diagonal basis: A,B
+    ! Occupied EOS, local basis: i,j
+    ! Occupied AOS, local basis: k,l
+    ! Virtual  EOS, local basis: a,b
+    ! Virtual  AOS, local basis: c,d
+    ! AO indices: alpha,beta,gamma,delta
+    ! Batch (AO) indices : alphaB, gammaB
+    !
+    ! The indices are connected to the two-electron distribution (Mulliken notation) as:
+    ! ( beta delta | alpha gamma) = g(beta,delta,alpha,gamma)
+    !
+    ! beta  <--> B
+    ! delta <--> J
+    ! alpha <--> A
+    ! gamma <--> I
+    !
+    ! Occupied partitioning (two occ EOS, two virt AOS):
+    ! B <--> d
+    ! J <--> j
+    ! A <--> c
+    ! I <--> i
+    !
+    ! Virtual partitioning (two occ EOS, two virt AOS):
+    ! B <--> b
+    ! J <--> l
+    ! A <--> a
+    ! I <--> k
+    !
+
+    ! Initialize stuff
+    if(master.AND.DECinfo%PL>0)THEN
+        !       MemInGBCollected = 0.0E0_realk
+        !       memfound = .FALSE.
+        !       WRITE(DECinfo%output,*)'MP2_integrals_and_amplitudes_workhorse: call get_available_memory'
+        !       call get_available_memory(DECinfo%output,MemInGBCollected,memfound)
+        MemInGBCollected = 0.0E0_realk
+        call get_currently_available_memory(MemInGBCollected)
+        WRITE(DECinfo%output,'(1X,A)')'MP2MEM: MP2_integrals_and_amplitudes_workhorse: Internal memory bookkeeping'
+        WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the beginning of the subroutine'
+        write(DECinfo%output,'(1X,a,g12.4)') 'MP2MEM: Total memory:    ', DECinfo%memory
+        WRITE(DECinfo%output,'(1X,a,g12.4)') 'MP2MEM: Memory Available:', MemInGBCollected
+        call stats_globalmem(DECinfo%output)
+    endif
+    MemInGBCollected = 0.0E0_realk
+    MaxMemInGBCollected = 0.0E0_realk
+
+    IF(DECinfo%useIchor)THEN
+       nullify(AOGammabatchinfo)
+       nullify(AOalphabatchinfo)    
+    ELSE
+       nullify(orb2batchAlpha)
+       nullify(batchdimAlpha)
+       nullify(batchsizeAlpha)
+       nullify(batch2orbAlpha)
+       nullify(batchindexAlpha)
+       nullify(orb2batchGamma)
+       nullify(batchdimGamma)
+       nullify(batchsizeGamma)
+       nullify(batch2orbGamma)
+       nullify(batchindexGamma)
+    ENDIF
+    nullify(mini1,mini2,mini3,mini4)
+    ncabsMO = size(MyFragment%Ccabs,2)
+    ncabsAO = size(MyFragment%Ccabs,1)
+    nbasis = MyFragment%nbasis
+    nocc = MyFragment%noccAOS   ! occupied AOS (only valence for frozen core)
+    nvirt = MyFragment%nvirtAOS   ! virtual AOS
+    noccEOS = MyFragment%noccEOS  ! occupied EOS
+    nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
+    nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
+    ncore = MyFragment%ncore   ! number of core orbitals
+    ! For frozen core energy calculation, we never need core orbitals
+    ! (but we do if first order integrals are required)
+    if(DECinfo%frozencore) nocctot = nocc
+
+    ! In general, for frozen core AND first order integrals, special care must be taken
+    ! No frozen core OR frozen core calculation for just energy uses the same
+    ! code from now on because the frozen core approximation is "built into" the fragment,
+
+    ! Removed if first order integrals statement "Always false"
+    fc =.false.
+
+    if(DECinfo%PL>0) write(DECinfo%output,*) 'MP2F12 (not EV5) energy contribution...'
+    
+    if(MyFragment%nEOSatoms==2) then ! pair fragment
+       if(master.and.DECinfo%print_small_calc) write(DECinfo%output,'(a,3i8)') '#PAIRDIMS# basis,occ,virt ', nbasis,nocc,nvirt
+    else ! single fragment
+       if(master.and.DECinfo%print_small_calc) write(DECinfo%output,'(a,3i8)') '#SINGLEDIMS# basis,occ,virt ', nbasis,nocc,nvirt
+    end if
+
+    ! Size of EOS arrays used for updating inside integral loop
+    ! *********************************************************
+
+!    IF(.NOT.DECinfo%OnlyVirtPart)THEN
+       ! occupied EOS dimension during integral loop (different from output dimensions!)
+       dimocc=[nvirt,noccEOS,noccEOS,nvirt]
+       if(master.AND.DECinfo%PL>0)then
+          write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate gocc using',MemInGB(nvirt,noccEOS,noccEOS,nvirt),' GB'
+          write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate tocc using',MemInGB(nvirt,noccEOS,noccEOS,nvirt),' GB'
+       endif
+       call mem_alloc(gocc,dimocc(1),dimocc(2),dimocc(3),dimocc(4) )  ! occ EOS integrals
+       call mem_alloc(tocc,dimocc(1),dimocc(2),dimocc(3),dimocc(4) )  ! occ EOS amplitudes
+       gocc=0E0_realk
+       tocc=0E0_realk
+!    ENDIF
+
+    CALL LSTIMER('MP2F12 workhorse Init: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    ! *************************************
+    ! Get arrays for transforming integrals
+    ! *************************************
+    ! CDIAGocc, CDIAGvirt:  MO coefficients for basis where Fock matrix is diagonal
+    ! Uocc, Uvirt: Transform from diagonal basis to local basis (and vice versa)
+    ! Note: Uocc and Uvirt have indices (local,diagonal)
+    call mem_alloc(EVocc,nocc) !Occ orb energies
+    call mem_alloc(EVvirt,nvirt) !Virt orb energies
+
+    call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
+       & EVocc, EVvirt)
+    LoccTALL = array2_init([nocc,nbasis])
+    call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%Co,0.0E0_realk,LoccTALL%val)
+
+    CALL LSTIMER('MP2F12 energy TransMatInit: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    ! Extract occupied and virtual EOS indices from rows of Uocc and Uvirt
+    call array2_extract_EOS(Uocc,MyFragment,'O','R',tmparray2)
+    call mem_alloc(UoccEOS,tmparray2%dims(1),tmparray2%dims(2) )
+    UoccEOS=tmparray2%val
+    call array2_free(tmparray2)
+
+    call array2_extract_EOS(Uvirt,MyFragment,'V','R',tmparray2)
+    call mem_alloc(UvirtEOS,tmparray2%dims(1),tmparray2%dims(2) )
+    UvirtEOS=tmparray2%val
+    call array2_free(tmparray2)
+
+    ! Extract occupied and virtual EOS indices from columns of MyFragment%Co
+    ! and MyFragment%Cv, i.e. the local EOS molecular orbital coefficients
+    LoccEOS = array2_init_plain([nbasis,noccEOS])
+    call extract_occupied_EOS_MO_indices(LoccEOS,MyFragment)
+    LvirtEOS = array2_init_plain([nbasis,nvirtEOS])
+    call extract_virtual_EOS_MO_indices(LvirtEOS,MyFragment)
+
+    ! For efficiency when calling dgemm, save transposed matrices
+    ! (Transposition itself is done below)
+    call mem_alloc(CoccT,nocc,nbasis)
+    call mem_alloc(CvirtT,nvirt,nbasis)
+    call mem_alloc(UoccEOST,nocc,noccEOS)
+    call mem_alloc(UvirtEOST,nvirt,nvirtEOS)
+    call mem_alloc(LoccEOST,noccEOS,nbasis)
+    call mem_alloc(LvirtEOST,nvirtEOS,nbasis)
+    call mem_alloc(LvirtT,nvirt,nbasis)
+
+    CALL LSTIMER('MP2F12 energy extractEOSInit: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    ! Determine optimal batchsizes with available memory
+    ! **************************************************
+
+    ! Removed first_order_integrals
+    
+    if(master) then
+       call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,.FALSE.,bat,.true.,.true.,MemoryNeeded,.TRUE.)
+    end if
+    
+    ! ************************************************
+    ! * Determine batch information for Gamma batch  *
+    ! ************************************************
+    ! F12 batch debug
+    bat%MaxAllowedDimGamma = nbasis
+
+    IF(DECinfo%useIchor)THEN
+       iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the bat%MaxAllowedDimGamma, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(MyFragment%mylsitem%setting,iAO,'R',bat%MaxAllowedDimGamma,&
+            & nbatchesGamma,DECinfo%output)
+       call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+       !Construct the batches of AOS based on the bat%MaxAllowedDimGamma, the requested
+       !size of the AO batches - bat%MaxAllowedDimGamma must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimGamma must be less og equal to bat%MaxAllowedDimGamma
+       call determine_Ichor_batchesofAOS(MyFragment%mylsitem%setting,iAO,'R',bat%MaxAllowedDimGamma,&
+            & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchGamma,nbasis)
+       call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
+            & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
+    ENDIF
+
+    CALL LSTIMER('MP2F12 BatchesInit: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    if(master.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
+
+    IF(.NOT.DECinfo%useIchor)THEN
+       ! Translate batchindex to orbital index
+       ! -------------------------------------
+       call mem_alloc(batch2orbGamma,nbatchesGamma)
+       do idx=1,nbatchesGamma
+          call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+          batch2orbGamma(idx)%orbindex = 0
+          batch2orbGamma(idx)%norbindex = 0
+       end do
+       do iorb=1,nbasis
+          idx = orb2batchGamma(iorb)
+          batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+          K = batch2orbGamma(idx)%norbindex
+          batch2orbGamma(idx)%orbindex(K) = iorb
+       end do
+    ENDIF
+
+    ! ************************************************
+    ! * Determine batch information for Alpha batch  *
+    ! ************************************************
+    ! F12 batch debug
+    bat%MaxAllowedDimAlpha = nbasis
+
+    IF(DECinfo%useIchor)THEN
+       iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+       !Determine how many batches of AOS based on the bat%MaxAllowedDimAlpha, the requested
+       !size of the AO batches. iAO is the center that the batching should occur on. 
+       !'R'  !Specifies that it is the Regular AO basis that should be batched 
+       call determine_Ichor_nbatchesofAOS(MyFragment%mylsitem%setting,iAO,'R',bat%MaxAllowedDimAlpha,&
+             & nbatchesAlpha,DECinfo%output)
+       call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+       !Construct the batches of AOS based on the bat%MaxAllowedDimAlpha, the requested
+       !size of the AO batches - bat%MaxAllowedDimAlpha must be unchanged since the call 
+       !to determine_Ichor_nbatchesofAOS
+       !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+       !So MaxActualDimAlpha must be less og equal to bat%MaxAllowedDimAlpha
+       call determine_Ichor_batchesofAOS(MyFragment%mylsitem%setting,iAO,'R',bat%MaxAllowedDimAlpha,&
+             & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+    ELSE
+       ! Orbital to batch information
+       ! ----------------------------
+       call mem_alloc(orb2batchAlpha,nbasis)
+       call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
+             & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+    ENDIF
+
+    if(master.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
+    IF(.NOT.DECinfo%useIchor)THEN
+       ! Translate batchindex to orbital index
+       ! -------------------------------------
+       call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+       do idx=1,nbatchesAlpha
+          call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+          batch2orbAlpha(idx)%orbindex = 0
+          batch2orbAlpha(idx)%norbindex = 0
+       end do
+       do iorb=1,nbasis
+          idx = orb2batchAlpha(iorb)
+          batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+          K = batch2orbAlpha(idx)%norbindex
+          batch2orbAlpha(idx)%orbindex(K) = iorb
+       end do
+    ENDIF
+
+    ! **************************************************
+    ! * Determine batch information for virtual batch  *
+    ! **************************************************
+
+    ! Vector for keeping track of virtual batches:
+    nvbatches = ceiling(real(nvirt)/real(bat%virtbatch)) ! Number of virtual batches
+
+    ! Structure of virtual batch vector for batch "i":
+    ! V(1,i)=(i-1)*virtbatch + 1      ! start index of batch "i"
+    ! V(2,i)=i*virtbatch              ! end index of batch "i"
+    !
+    ! Special case:  V(2,nvbatches) = nvirt
+    !
+    ! Thus, all batches have size virtbatch, except the last batch,
+    ! which may be smaller (if nvirt/virtbatch is not an integer).
+
+    call mem_alloc(V,2,nvbatches)
+    V(1,1)=1
+    do i=1,nvbatches
+       V(1,i) = bat%virtbatch*(i-1) + 1
+       V(2,i) = bat%virtbatch*i
+    end do
+    V(2,nvbatches)=nvirt
+    if(master.and.DECinfo%print_small_calc) write(DECinfo%output,*) 'BATCH: Number of virtual batches =', nvbatches
+
+
+    ! *************************************************************
+    ! *                    Start up MPI slaves                    *
+    ! *************************************************************
+
+#ifdef VAR_MPI
+
+    ! Only use slave helper if there is at least two jobs AND
+    ! there is at least one local slave available.
+    if(nbatchesAlpha*nbatchesGamma >1 .and. infpar%lg_nodtot>1) then
+       wakeslave=.true.
+    else
+       wakeslave=.false.
+    end if
+
+    ! Master starts up slave
+    StartUpSlaves: if(wakeslave .and. master) then
+
+       call time_start_phase( PHASE_COMM )
+
+       ! Wake up slaves to do the job: MP2 - integrals and amplitudes  (MP2INAMP)
+
+       call lsquit('Yang needs to add a MPI version of the current code',-1)
+       !call ls_mpibcast(MP2INAMP,infpar%master,infpar%lg_comm)
+      
+       ! Sanity check
+       if(.not. MyFragment%BasisInfoIsSet) then
+          call lsquit('MP2_integrals_and_amplitudes_workhorse: &
+               & Basis info for master is not set!',-1)
+       end if
+
+       ! Communicate fragment information to slaves
+       ! Removed first_order_integrals 
+       call mpi_communicate_mp2_int_and_amp(MyFragment,bat,.FALSE.,.true.)
+
+       call time_start_phase( PHASE_WORK )
+
+    end if StartUpSlaves
+    HSTATUS = 80
+    CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
+
+#endif
+
+    ! Transpose matrices
+    ! ******************
+    call mat_transpose(nbasis,nocc,1.0E0_realk,CDIAGocc%val,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,CDIAGvirt%val,0.0E0_realk,CvirtT)
+    call mat_transpose(noccEOS,nocc,1.0E0_realk,UoccEOS,0.0E0_realk,UoccEOST)
+    call mat_transpose(nvirtEOS,nvirt,1.0E0_realk,UvirtEOS,0.0E0_realk,UvirtEOST)
+    call mat_transpose(nbasis,noccEOS,1.0E0_realk,LoccEOS%val,0.0E0_realk,LoccEOST)
+    call mat_transpose(nbasis,nvirtEOS,1.0E0_realk,LvirtEOS%val,0.0E0_realk,LvirtEOST)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%Cv,0.0E0_realk,LvirtT)
+
+    CALL LSTIMER('MP2F12 TransposeMatrices: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    ! ***************************************************************
+    ! Make special CvirtT array to avoid passing elements which are
+    ! non-consecutive in memory inside integral loop
+    ! ***************************************************************
+    call mem_alloc(CvirtTspecial,nvbatches,nbatchesAlpha)
+    do alphaB = 1,nbatchesAlpha  ! AO batches
+       IF(DECinfo%useIchor)THEN
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+       ELSE
+          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+       ENDIF
+       do Abat=1,nvbatches
+          Astart = V(1,Abat)    ! first index in virtual batch
+          Aend = V(2,Abat)      ! last index in virtual batch
+          dimA = Aend-Astart+1  ! dimension of virtual batch
+
+          call mem_alloc(CvirtTspecial(Abat,alphaB)%p,dimAlpha*dimA)
+          counter=0
+          do alpha=AlphaStart,AlphaEnd
+             do A=Astart,Aend
+                counter=counter+1
+                CvirtTspecial(Abat,alphaB)%p(counter) = CvirtT(A,alpha)
+             end do
+          end do
+
+       end do
+    end do
+
+    CALL LSTIMER('MP2F12 CvirtTspecial: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    IF(DECinfo%useIchor)THEN
+       !Calculate Screening integrals 
+       call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,MyFragment%mylsitem%setting,INTSPEC,SameMOL)
+    ELSE
+       call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,MyFragment%mylsitem%setting,&
+            &                           nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
+       IF(doscreen)then
+          call II_getBatchOrbitalScreen(DecScreen,MyFragment%mylsitem%setting,&
+               & nbasis,nbatchesAlpha,nbatchesGamma,&
+               & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+               & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
+       endif
+       !setup LHS screening - the full AO basis is used so we can use the
+       !                      full matrices:        FilenameCS and FilenamePS
+       !Note that it is faster to calculate the integrals in the form
+       !(dimAlpha,dimGamma,nbasis,nbasis) so the full AO basis is used on the RHS
+       !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
+    ENDIF
+
+    CALL LSTIMER('MP2F12 Screening: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+#ifdef VAR_OMP
+    nthreads=OMP_GET_MAX_THREADS()
+    if(DECinfo%PL>0) write(DECinfo%output,*) &
+       &'Starting DEC-MP2 integral/amplitudes - OMP. Number of threads: ', OMP_GET_MAX_THREADS()
+#else
+    nthreads=1
+    num=1
+    if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes - NO OMP!'
+#endif
+
+
+    ! For MPI: Get array defining which jobs are done by which ranks
+#ifdef VAR_MPI
+    if(dynamic_load)then
+        call mem_alloc( decmpitasks, decmpitaskc, 1)
+
+        decmpitasks = 0
+        if(lg_me == 0) decmpitasks(1) = infpar%lg_nodtot+1
+
+        call lsmpi_win_create(decmpitasks,decmpitaskw,1,infpar%lg_comm)
+#ifdef VAR_HAVE_MPI3
+        call lsmpi_win_lock_all(decmpitaskw,ass=MPI_MODE_NOCHECK)
+#endif
+    else
+       call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
+       if(wakeslave) then  ! share workload with slave(s)
+
+          IF(DECinfo%useIchor)THEN
+             call mem_alloc(batchdimAlpha,nbatchesAlpha)
+             do idx=1,nbatchesAlpha
+                batchdimAlpha(idx) = AOAlphabatchinfo(idx)%dim 
+             enddo
+             call mem_alloc(batchdimGamma,nbatchesGamma)
+             do idx=1,nbatchesGamma
+                batchdimGamma(idx) = AOGammabatchinfo(idx)%dim 
+             enddo
+          ENDIF
+          call distribute_mpi_jobs(decmpitasks,nbatchesAlpha,nbatchesGamma,&
+             & batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
+
+          IF(DECinfo%useIchor)THEN
+             call mem_dealloc(batchdimAlpha)
+             call mem_dealloc(batchdimGamma)
+          ENDIF
+
+          if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,a,i15)') 'Rank ', infpar%mynum, ' has load ', myload
+       else ! master do all jobs
+          decmpitasks=infpar%lg_mynum
+       end if
+    endif
+#endif
+    
+      ! POINTER INITIALIZATION STUFF
+      ! ****************************
+
+      call mem_alloc(b1,nthreads)
+      call mem_alloc(b2,nthreads)
+      call mem_alloc(b3,nthreads)
+      nullify(tmp1%p,tmp2%p,tmp3%p,tmp4%p)
+      do i=1,nthreads
+         nullify(b1(i)%p,b2(i)%p,b3(i)%p)
+      end do
+
+      ! Memory requirement for big array
+      call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
+
+      CALL LSTIMER('MP2F12 BigArraymaxdim: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+      ! Print for statistics
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size1 ', bat%size1
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size2 ', bat%size2
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size3 ', bat%size3
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,3i14)') 'Tot sizes ', max1,max2,max3
+      if(DECinfo%PL>0) write(DECinfo%output,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
+      !if(infpar%lg_mynum == 0)then
+      !  !call stats_mem(DECinfo%output)
+      !  write(*,'(a,4i14)') 'size1 ', bat%size1
+      !  write(*,'(a,4i14)') 'size2 ', bat%size2
+      !  write(*,'(a,4i14)') 'size3 ', bat%size3
+      !  write(*,'(a,3i14)') 'Tot sizes ', max1,max2,max3
+      !  write(*,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
+      !endif
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+      if(master.AND.DECinfo%PL>0)then
+         write(DECinfo%output,'(A,g16.8,A)') 'MP2F12 MEM: Allocate big array using   ',MemInGB(maxdim),' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+         FLUSH(DECinfo%output)
+#endif
+      endif
+      MemInGBCollected = MemInGBCollected + MemInGB(maxdim)
+      MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+      if( use_bg_buf )then
+         call mem_pseudo_alloc(arr,maxdim)
+      else
+         call mem_alloc(arr,maxdim)
+      endif
+      if(master.AND.DECinfo%PL>0)then
+         write(DECinfo%output,'(A,g16.8,A)') 'MP2F12 MEM: Global Memory statistics after big array'
+         call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+         FLUSH(DECinfo%output)
+#endif
+      endif
+      ierr = 0
+      if(ierr == 0) then
+#ifdef VAR_MPI
+        if(DECinfo%PL>0) write(DECinfo%output,'(a,i7,i15)') 'MP2F12: Allocation OK for node/dim ', infpar%mynum,maxdim
+#else
+        if(DECinfo%PL>0) write(DECinfo%output,'(a,i15)') 'MP2F12: Allocation OK for dim ', maxdim
+#endif
+      else
+#ifdef VAR_MPI
+        write(DECinfo%output,'(a,i7,i15)') 'MP2F12: Error in allocation for node/dimm ', infpar%mynum,maxdim
+#else
+        write(DECinfo%output,'(a,i15)') 'MP2F12: Error in allocation for dim ', maxdim
+#endif
+        call lsquit('MP2F12: Something wrong for big array allocation!',-1)
+      end if
+
+#endif
+
+      CALL LSTIMER('MP2F12 C-coupling Mem: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+
+      ! Pointers for step 1
+      ! -------------------
+      ! tmp1 starts pointing to element 1 in arr and has size bat%size1(1)
+      start=1
+      call mypointer_init(maxdim,arr,start,bat%size1(1),tmp1)
+
+      ! tmp2 starts pointing to element tmp1%end+1 in arr and has size bat%size1(2)
+      start=tmp1%end+1
+      call mypointer_init(maxdim,arr,start,bat%size1(2),tmp2)
+
+      ! tmp2 starts pointing to element tmp2%end+1 in arr and has size bat%size1(3)
+      start=tmp2%end+1
+      call mypointer_init(maxdim,arr,start,bat%size1(3),tmp3)
+
+      ! Pointers for step 2
+      ! -------------------
+      ! Sanity check - size of tmp4 in step 2 cannot exceed size of tmp1+tmp2 in step 1
+      if(bat%size2(4) > bat%size1(1) + bat%size2(2)) then
+         call lsquit('MP2F12 Integral/amplitudes: tmp4 is larger than tmp1+tmp2',-1)
+      end if
+
+      ! tmp4 starts pointing to element 1 in arr and has size bat%size2(4)
+      start=1
+      call mypointer_init(maxdim,arr,start,bat%size2(4),tmp4)
+      start = tmp4%end +1
+
+      do j=1,nthreads
+         ! tmp array b1 inside OMP loop
+         call mypointer_init(maxdim,arr,start,bat%size2(1),b1(j))
+         start = b1(j)%end + 1
+         ! tmp array b2 inside OMP loop
+         call mypointer_init(maxdim,arr,start,bat%size2(2),b2(j))
+         start = b2(j)%end + 1
+         ! tmp array b3 inside OMP loop        
+         call mypointer_init(maxdim,arr,start,bat%size2(3),b3(j))
+         start = b3(j)%end + 1
+      end do
+#endif
+
+      CALL LSTIMER('MP2F12 C-coupling WorkAround: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+      if(master) call LSTIMER('INIT MP2-INT',tcpu,twall,DECinfo%output)
+      call LSTIMER('START',tcmpi1,twmpi1,DECinfo%output)
+      if(.not. master) then  ! flop counting for slaves
+         call start_flop_counter()
+      end if
+  
+
+      !> F12 Allocation
+      !==========================================
+      !=              F12 Allocation           ==
+      !==========================================
+       
+    ! Need to transform Fac to diagonal basis for A
+    call mem_alloc(FAc_diag,nvirt,ncabsMO)
+    call mem_alloc(Fac_local,nvirt,ncabsMO)
+
+    !F12-specific CfT
+    call mem_alloc(CfT, nvirt, ncabsAO)
+ 
+
+    ! Start looping over gamma and alpha batches and calculate integrals
+    ! ******************************************************************
+#ifdef VAR_MPI
+      if(DECinfo%PL>0) write(DECinfo%output,'(a,g14.4,i7)') 'Memory (GB) available before loop/node ', &
+           & (DECinfo%memory - 1.0E-9_realk*mem_allocated_global), infpar%mynum
+#endif
+    FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
+
+    old_gammaB = -1
+    batch      =  0
+    first      = .false.
+
+    if(dynamic_load)then
+       first = .true.
+       batch = lg_me + 1 
+    endif
+
+    BatchLoop: do while(batch <= nbatchesGamma*nbatchesAlpha) ! AO batches 
+
+       !check if the current job is to be done by current node                              
+       call check_job(batch,first,dynamic_load,alphaB,gammaB,nbatchesAlpha,&          
+          &nbatchesGamma,decmpitasks,decmpitaskw,DECinfo%PL>4)                                          
+
+       !exit the loop
+       if(batch > nbatchesGamma*nbatchesAlpha ) exit BatchLoop
+
+
+       ! If the new gamma is different form the old gamma batch
+       NewGammaBatch: if( gammaB /= old_gammaB )then
+
+          old_gammaB = gammaB
+
+
+          !BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+          if(DECinfo%useIchor)then
+             dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+             GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+             GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+             AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+             AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+          else
+             dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+             GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+             GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+          endif
+
+       endif NewGammaBatch
+
+       !BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+       IF(DECinfo%useIchor)THEN
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+       ELSE
+          dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+          AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+          AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+       ENDIF
+
+       !F12-specific
+       dim1 = i8*ncabsAO*nbasis*dimAlpha*dimGamma   ! dimension for integral array
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+       if(master.AND.DECinfo%PL>0)then
+          write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp1%p using   ',&
+             &MemInGB(max(bat%size1(1),dim1)),' GB Tot=',MemInGBCollected,' GB'
+          write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp2%p using   ',&
+             &MemInGB(bat%size1(2)),' GB Tot=',MemInGBCollected,' GB'
+          write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp3%p using   ',&
+             &MemInGB(bat%size1(3)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+          FLUSH(DECinfo%output)
+#endif
+       endif
+       MemInGBCollected = MemInGBCollected + MemInGB(bat%size1(3))
+       MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+       if( use_bg_buf )then
+          call mem_pseudo_alloc(tmp3%p,bat%size1(3))
+       else
+          call mem_alloc(tmp3%p,bat%size1(3))
+       endif
+       tmp3%start = 1
+       tmp3%N     = bat%size1(3)
+       tmp3%end   = tmp3%N
+        
+       MemInGBCollected = MemInGBCollected + MemInGB(bat%size1(2))
+       MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+       if( use_bg_buf )then
+          call mem_pseudo_alloc(tmp2%p,bat%size1(2))
+       else
+          call mem_alloc(tmp2%p,bat%size1(2))
+       endif
+       tmp2%start = 1
+       tmp2%N     = bat%size1(2)
+       tmp2%end   = tmp2%N 
+        
+       MemInGBCollected = MemInGBCollected + MemInGB(max(bat%size1(1),dim1))
+       MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+       
+
+       if( use_bg_buf )then
+          call mem_pseudo_alloc(tmp1%p,max(bat%size1(1),dim1))
+       else
+          call mem_alloc(tmp1%p,max(bat%size1(1),dim1))
+       endif
+       tmp1%start = 1
+       tmp1%N     = max(bat%size1(1),dim1)
+       tmp1%end   = tmp1%N
+        
+#endif
+       ! *********************************************************************
+       ! *                      STEP 0 SETTING UP CF transformation matrix
+       ! *********************************************************************
+       ! Verify that Uvirt is an unitary transformation matrix !!!
+       do a=1,nvirt
+          do c=1,ncabsMO
+             if(abs(MyFragment%Fcp(c,nocc+a))>1.0E-10) then
+               ! print *,"c a Fcp", c, a, MyFragment%Fcp(c,nocc+a)
+             endif
+          enddo
+       enddo
+
+       !Canonical
+       do c=1,ncabsMO
+          do a=1,nvirt
+             Fac_local(a,c) = MyFragment%Fcp(c,nocc+a)
+          enddo
+       enddo
+
+       m = nvirt
+       k = nvirt
+       n = ncabsMO
+       call dec_simple_dgemm(m,k,n,Uvirt%val,Fac_local,FAc_diag,'t','n') 
+
+       m = nvirt
+       k = ncabsMO
+       n = ncabsAO
+       call dec_simple_dgemm(m,k,n,FAc_diag,MyFragment%Ccabs,CfT,'n','t')
+ 
+       ! *********************************************************************
+       ! *                      STEP 1 IN INTEGRAL LOOP                      *
+       ! *********************************************************************
+       ! Step 1 is the calculation of AO integrals and transformation of three
+       ! AO indices to MO indices. For the first-order property integrals
+       ! all four indices are transformed in step 1.
+       CALL LS_GETTIM(CPU1,WALL1)
+       call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+       ! Get (beta' delta | alphaB gammaB) integrals using (beta',delta,alphaB,gammaB) ordering
+       ! ************************************************************************************
+       ! Store integral in tmp1(1:dim1) array in (beta',delta,alphaB,gammaB) order
+       IF(DECinfo%useIchor) THEN
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,MyFragment%Mylsitem%setting,&
+             & ncabsAO,nbasis,dimAlpha,dimGamma,tmp1%p,INTSPEC,FULLRHS,1,nAObatches,&
+             & 1,nAObatches,AOAlphaStart,AOAlphaEnd,AOGammaStart,AOGammaEnd,&
+             & MoTrans,ncabsAO,nbasis,dimAlpha,dimGamma,NoSymmetry,DECinfo%IntegralThreshold)
+       ELSE
+          IF(doscreen) THEN 
+             MyFragment%mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+             MyFragment%mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+             IF(DECSCREEN%masterGabLHS%maxgabelm+DECSCREEN%batchGab(alphaB,gammaB)%p%maxgabelm .LE. CS_THRLOG) THEN
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                if( use_bg_buf ) then
+                   call mem_pseudo_dealloc(tmp1%p)
+                   call mem_pseudo_dealloc(tmp2%p)
+                   call mem_pseudo_dealloc(tmp3%p)
+                else
+                   call mem_dealloc(tmp1%p)
+                   call mem_dealloc(tmp2%p)
+                   call mem_dealloc(tmp3%p)
+                endif
+#endif
+                !The integral block is zero (or less than integral threshold) so
+                !there is no reason to do the AO to MO transformation and the
+                !calculation of amplitudes and integrals. 
+                CYCLE BatchLoop
+             ENDIF
+          ENDIF
+
+          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+               & MyFragment%mylsitem%setting, tmp1%p(1:dim1),batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+               & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),ncabsAO,nbasis,dimAlpha,dimGamma,FullRHS,&
+               & INTSPEC,DECinfo%IntegralThreshold)
+
+       ENDIF
+
+       CALL LS_GETTIM(CPU2,WALL2)
+       CPU_INT = CPU_INT + (CPU2-CPU1)
+       WALL_INT = WALL_INT + (WALL2-WALL1)
+
+       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+
+       ! Loop over each (alpha,gamma) within the (alphaB,gammaB) batch
+       dim3=i8*nbasis*nocc*dimAlpha*dimGamma   ! new dimension of tmp3
+       dim2=i8*nvirt*nocc*dimAlpha*dimGamma   ! new dimension of tmp2            
+       do i=1, dimAlpha*dimGamma
+
+          ! Transform index delta to diagonal occupied index for each (alpha,gamma):
+          ! tmp3(beta,J,alpha,gamma) = sum_{delta} tmp1(beta,delta,alpha,gamma) C_{delta J}
+
+          ! NOTE!!! Due to lousy handling of pointers in Fortran it is better to make a
+          ! small pointer (mini) which points to a specific part of a larger pointer (tmp)
+          ! than to pass elements tmp(idx:idx2) to dgemm.
+          ! Therefore, the code gets slightly uglier/more complicated.
+          idx=1+i8*(i-1)*ncabsAO*nbasis     ! start index for tmp1
+          siz=ncabsAO*nbasis                ! size of (alpha,gamma) chunk of tmp1
+          mini1 => tmp1%p(idx:idx+siz-1)   ! make mini1 point to this chunk of tmp1
+          idx=1+i8*(i-1)*ncabsAO*nocc       ! start index for tmp3
+          siz=ncabsAO*nocc                  ! size of (alpha,gamma) chunk of tmp3
+          mini3 => tmp3%p(idx:idx+siz-1)   ! make mini3 point to this chunk of tmp3
+       
+         !F12 changes from (nbasis,nbasis,nocc) to (ncabsAO,nbasis,nocc)
+         call dec_simple_dgemm(ncabsAO,nbasis, nocc, mini1, &
+             & CDIAGocc%val, mini3, 'n', 'n')
+
+          ! tmp2(B,J,alpha,gamma) = sum_{beta} Cf^T_{beta B} tmp3(beta,J,alpha,gamma)
+          idx = 1+i8*(i-1)*nvirt*nocc
+          siz = nvirt*nocc
+          mini2 => tmp2%p(idx:idx+siz-1)
+          
+          ! F12 changes
+          call dec_simple_dgemm(nvirt,ncabsAO,nocc,CfT,mini3,mini2,'n','n')
+          !call dec_simple_dgemm(ncabsMO,ncabsAO,nocc,MyFragment%Ccabs,mini3,mini2, 't', 'n')
+
+       end do
+
+       CALL LS_GETTIM(CPU1,WALL1)
+       CPU_AOTOMO = CPU_AOTOMO + (CPU1-CPU2)
+       WALL_AOTOMO = WALL_AOTOMO + (WALL1-WALL2)
+
+       ! Integrals used for first-order MP2 properties
+       ! *********************************************
+       ! Removed first_order_integrals
+     
+       ! Integrals used for MP2 energy
+       ! *****************************
+
+       ! tmp3(B,J,alphaB,I) = sum_{gamma in gammaB} tmp2(B,J,alphaB,gamma) C_{gamma I}
+       ! (Same comment as (*) above)
+       ! Note: C_{gamma I} = (C^T_{I gamma})^T  (double transposition)
+       !       It is better to used the elements stored in the transposed matrix CoccT, since
+       !       then we only pass elements which are stored consecutively in memory to dgemm.
+       !       Note: For frozen core "J" is only valence, while "I" is core+valence
+       !
+       CALL LS_GETTIM(CPU1,WALL1)
+       m = nvirt*nocc*dimAlpha
+       dim3 = i8*nvirt*nocc*dimAlpha*nocctot  ! New dimension for tmp3
+       !if(fc) then
+       !   call dec_simple_dgemm(m,dimGamma, nocctot, tmp2%p(1:dim2), &
+       !      & CDIAGoccTALL%val(1:nocctot,GammaStart:GammaEnd), tmp3%p(1:dim3), 'n', 't')
+       !else
+          call dec_simple_dgemm(m,dimGamma, nocctot, tmp2%p(1:dim2), &
+             & CoccT(1:nocctot,GammaStart:GammaEnd), tmp3%p(1:dim3), 'n', 't')
+       !end if
+
+       CALL LS_GETTIM(CPU2,WALL2)
+       CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
+       WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
+
+       !print *, "norm2(tmp3)", norm2(tmp3%p(1:dim3))
+
+       ! Transition from step 1 to step 2 in integral loop
+       ! =================================================
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+       MemInGBCollected = MemInGBCollected - size(tmp1%p,kind=long)*8.0E-9_realk - size(tmp2%p,kind=long)*8.0E-9_realk
+       if(use_bg_buf )then
+          call mem_pseudo_dealloc(tmp1%p)
+          call mem_pseudo_dealloc(tmp2%p)
+       else
+          call mem_dealloc(tmp1%p)
+          call mem_dealloc(tmp2%p)
+       endif
+       if(master.and.DECinfo%PL>0)then
+          write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate tmp4%p using   ',&
+             &MemInGB(bat%size2(4)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+          FLUSH(DECinfo%output)
+#endif
+       endif
+       MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(4))
+       MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+       call mem_alloc(tmp4%p,bat%size2(4))
+       tmp4%start = 1
+       tmp4%N     = bat%size2(4)
+       tmp4%end   = tmp4%N
+#endif
+       CALL LS_GETTIM(CPU1,WALL1)
+       ! Reorder: tmp3(B,J,alphaB,I) --> tmp4(alphaB,B,J,I)
+       dim4=i8*dimAlpha*nvirt*nocc*nocctot
+       do counter=1,nocctot
+          idx=1+i8*(counter-1)*nvirt*nocc*dimAlpha
+          siz = nvirt*nocc*dimAlpha
+          mini3 => tmp3%p(idx:idx+siz-1)
+          idx   =  1 + i8*(counter-1)*nvirt*nocc*dimAlpha
+          mini4 => tmp4%p(idx:idx+siz-1)
+          call mat_transpose(nvirt*nocc,dimAlpha,1.0E0_realk,mini3,0.0E0_realk,mini4)
+       end do
+       CALL LS_GETTIM(CPU2,WALL2)
+       CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
+       WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)      
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+       MemInGBCollected = MemInGBCollected - size(tmp3%p,kind=long)*8.0E-9_realk
+       if( use_bg_buf )then
+          call mem_pseudo_dealloc(tmp3%p)
+       else
+          call mem_dealloc(tmp3%p)
+       endif
+       do j=1,nthreads
+          if(master.AND.DECinfo%PL>0)then
+             write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b1(',j,')%p using   ',&
+                &MemInGB(bat%size2(1)),' GB Tot=',MemInGBCollected,' GB'
+             write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b2(',j,')%p using   ',&
+                &MemInGB(bat%size2(2)),' GB Tot=',MemInGBCollected,' GB'
+             write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b3(',j,')%p using   ',&
+                &MemInGB(bat%size2(3)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+             FLUSH(DECinfo%output)
+#endif
+          endif
+          MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(1)) + MemInGB(bat%size2(2)) + MemInGB(bat%size2(3))
+          MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+          if( use_bg_buf )then
+             call mem_pseudo_alloc(b1(j)%p,bat%size2(1))
+          else
+             call mem_alloc(b1(j)%p,bat%size2(1))
+          endif
+          b1(j)%start = 1
+          b1(j)%N     = bat%size2(1)
+          b1(j)%end   = b1(j)%N
+          if( use_bg_buf )then
+             call mem_pseudo_alloc(b2(j)%p,bat%size2(2))
+          else
+             call mem_alloc(b2(j)%p,bat%size2(2))
+          endif
+          b2(j)%start = 1
+          b2(j)%N     = bat%size2(2)
+          b2(j)%end   = b2(j)%N
+          if( use_bg_buf )then
+             call mem_pseudo_alloc(b3(j)%p,bat%size2(3))
+          else
+             call mem_alloc(b3(j)%p,bat%size2(3))
+          endif
+          b3(j)%start = 1
+          b3(j)%N     = bat%size2(3)
+          b3(j)%end   = b3(j)%N
+       end do
+#endif
+
+       ! tmp4 will now be used in each step for each thread in step 2
+
+       ! *********************************************************************
+       ! *                      STEP 2 IN INTEGRAL LOOP                      *
+       ! *********************************************************************
+       ! Step 2 is the virtual batching where the final AO-->MO transformations
+       ! are carried out and the MP2 amplitudes are determined.
+       if(master.AND.DECinfo%PL>0)then
+          WRITE(DECinfo%output,'(A,g16.8,A)')'MP2F12 C-coupling energy MEM: MemInGBCollected = ',MemInGBCollected,&
+             &' GB Before MP2F12 C-coupling Energy OMP Loop'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+          flush(DECinfo%output)
+#endif
+       endif
+       call mem_TurnONThread_Memory()
+       !$OMP PARALLEL DEFAULT(NONE) PRIVATE(Abat,Astart,Aend,dimA,m,n,siz,ts,&
+       !$OMP dim1,dim2,dim3,counter,alpha,A,B,i,j,idx,idx2,deltaeps,num,mini1,mini2,mini3,mini4) &
+       !$OMP SHARED(nvbatches,V,nvirt,nocc,nocctot,dimAlpha,alphaB,noccEOS,dim4,gocc,tocc, &
+       !$OMP gvirt,tvirt,nvirtEOS,b1,b2,b3,tmp4,CvirtTspecial,UoccEOS,UoccEOST,UvirtEOS, &
+       !$OMP EVocc, EVvirt,fc,DECinfo)
+
+       call init_threadmemvar()
+
+#ifdef VAR_OMP
+       num = OMP_GET_THREAD_NUM() +1 ! Start counting from 1
+#else
+       num=1
+#endif
+       ts=.true.
+
+
+       !$OMP DO SCHEDULE(dynamic,1)
+       BatchA: do Abat=1,nvbatches
+          Astart = V(1,Abat)    ! first index in virtual batch
+          Aend = V(2,Abat)      ! last index in virtual batch
+          dimA = Aend-Astart+1  ! dimension of virtual batch
+
+          ! b1(Abat,B,J,I) = sum_{alpha in alphaB} C^T_{A alpha} tmp4(alpha,B,J,I)
+          ! Note: Similarly to the comment above, even though b1 contains only four indices,
+          ! behind the curtain it belongs to specific alphaB and gammaB batches, and therefore
+          ! it formally has six indices.
+          ! Note: For frozen core/gradient "I" is both core+valence here (but changes below).
+          n = nvirt*nocc*nocctot
+          dim1=i8*dimA*n
+          ! Avoid passing elements which are non-consecutive in memory
+          call dec_simple_dgemm(dimA,dimAlpha,n,CvirtTspecial(Abat,alphaB)%p, &
+             & tmp4%p(1:dim4),b1(num)%p(1:dim1), 'n', 'n',use_thread_safe=ts)
+
+
+          !             IF(.NOT.DECinfo%OnlyVirtPart)THEN
+          ! Transform from diagonal to local basis: Two-electron integrals, OCC partitioning
+          ! ********************************************************************************
+          ! Note: Here "I" is ONLY valence! (But that changes for VIRT partitioning below).
+          ! This is the reason for the special ordering of occupied orbitals in CDIAGoccTALL!
+          ! Now all core orbitals are listed LAST for the I-index in b1(Abat,B,J,I), and therefore
+          ! we may simply access b(1:dimA*nvirt*nocc*nocc) to consider only valence orbitals.
+          ! Set b1 dimension such that core orbitals are not considered:
+          
+          ! if(fc) then
+          !    ! This only applies for first order integrals AND using frozen core approx
+          !    ! (otherwise dim1 does not change)
+          !    dim1=i8*dimA*nvirt*nocc*nocc
+          ! end if
+
+          !idx=0
+
+          !> Before the canonical transformation
+         
+          ! Transform diagonal AOS index I to local EOS index i:
+          ! b3(A,B,J,i) = sum_{I} b1(Abat,B,J,I) U^T_{Ii}
+          
+          m=dimA*nvirt*nocc
+          dim3=i8*dimA*nvirt*nocc*noccEOS    ! dimension of b3
+          call dec_simple_dgemm(m,nocc, noccEOS, b1(num)%p(1:dim1), UoccEOST, &
+             & b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+
+          ! Reorder: b3(Abat,B,J,i) --> b2(J,Abat,B,i)
+          dim2=dim3
+          do counter=1,noccEOS
+             idx   =  1 + i8*(counter-1)*dimA*nvirt*nocc 
+             siz   =  dimA*nvirt*nocc
+             mini3 => b3(num)%p(idx:idx+siz-1)
+             idx   =  1 + i8*(counter-1)*dimA*nvirt*nocc
+             mini2 => b2(num)%p(idx:idx+siz-1)
+             call mat_transpose(dimA*nvirt,nocc,1.0E0_realk,mini3,0.0E0_realk,mini2)
+          end do
+
+          ! Transform diagonal AOS index J to local EOS index j:
+          ! b3(j,Abat,B,i) = sum_{J} U_{jJ} b2(J,Abat,B,i)
+          n=dimA*nvirt*noccEOS
+          dim3=i8*noccEOS*dimA*nvirt*noccEOS    ! dimension of b3
+          call dec_simple_dgemm(noccEOS,nocc, n, UoccEOS, b2(num)%p(1:dim2), &
+             &  b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+
+          ! Update gocc(B,i,j,Abat) += b3(j,Abat,B,i)
+          ! -----------------------------------------
+          idx=0
+
+          do i=1,noccEOS
+             do B=1,nvirt
+                do A=Astart,Aend ! only over A batch
+                   do j=1,noccEOS
+                      idx=idx+1
+                      gocc(B,i,j,A) = gocc(B,i,j,A) + b3(num)%p(idx)
+         !             gocc(A,j,i,B) = gocc(B,i,j,A)
+                   end do
+                end do
+             end do
+          end do
+
+          !Making the C-matrix
+          idx=0
+
+          ! Solve amplitude equation and transform amplitudes to EOS
+          ! ********************************************************
+                   
+          ! At this point b1 contains the two-electron integrals in the diagonal basis
+          ! where the solution to the amplitude equation is trivial -
+          ! The amplitudes in the diagonal basis are determined by dividing the
+          ! two-electron integral with the corresponding elements of the diagonal Fock matrix:
+          !       
+          ! b1(Abat,B,J,I) = b1(Abat,B,J,I) / (eI + eJ - eA - eB)
+          ! where 
+          !       new b1: amplitudes in the diagonal basis
+          !       old b1: two-electron integrals in the diagonal basis
+          !       eI,eJ are occupied diagonal Fock matrix elements (orbital energies for full molecule)
+          !       eA,eB are virtual diagonal Fock matrix elements (orbital energies for full molecule)
+          !       
+          ! Note: For frozen core first order calculation, we skip core orbitals here!
+          !       Since valence orbitals are ordered BEFORE core orbitals for the "I" index
+          !       (and J is already only valence orbitals), we simply need to loop from
+          !       1 to the number of valence orbitals nocc.
+                   
+          idx=0   
+          do I=1,nocc ! only run over valence for frozen core 
+             do J=1,nocc
+                do B=1,nvirt
+                   do A=Astart,Aend
+                      idx=idx+1
+                      deltaEPS = EVocc(I)+EVocc(J)-EVvirt(A)-EVvirt(B)
+                      b1(num)%p(idx)=b1(num)%p(idx)/deltaEPS
+                   end do
+                end do
+             end do
+          end do
+
+          !             IF(.NOT.DECinfo%OnlyVirtPart)THEN
+          ! The amplitudes may now be transformed to local EOS indices for
+          ! both the occupied and virtual partitioning schemes - using exactly the
+          ! same transformations as were used for the integrals above.
+
+          dim1=i8*dimA*nvirt*nocc*nocc
+
+          ! Transform from diagonal to local basis: Two-electron amplitudes, OCC partitioning
+          ! *********************************************************************************
+
+          ! Transform diagonal AOS index I to local EOS index i:
+          ! b3(A,B,J,i) = sum_{I} b1(Abat,B,J,I) U^T_{Ii}
+          m=dimA*nvirt*nocc
+          dim3=i8*dimA*nvirt*nocc*noccEOS    ! dimension of b3
+          call dec_simple_dgemm(m,nocc,noccEOS,b1(num)%p(1:dim1),UoccEOST,b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+
+          ! Reorder: b3(Abat,B,J,i) --> b2(J,Abat,B,i)
+          dim2=dim3
+          do counter=1,noccEOS
+             idx   =  1 + i8*(counter-1)*dimA*nvirt*nocc
+             siz   =  dimA*nvirt*nocc
+             mini3 => b3(num)%p(idx:idx+siz-1)
+             idx   =  1 + i8*(counter-1)*dimA*nvirt*nocc 
+             mini2 => b2(num)%p(idx:idx+siz-1)
+             call mat_transpose(dimA*nvirt,nocc,1.0E0_realk,mini3,0.0E0_realk,mini2)
+          end do
+
+          ! Transform diagonal AOS index J to local EOS index j:
+          ! b3(j,Abat,B,i) = sum_{J} U_{jJ} b2(J,Abat,B,i)
+          n=dimA*nvirt*noccEOS
+          dim3=i8*noccEOS*dimA*nvirt*noccEOS    ! dimension of b3
+          call dec_simple_dgemm(noccEOS,nocc,n,UoccEOS,b2(num)%p(1:dim2),b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+
+
+          ! Update tocc(B,i,j,Abat) += b3(j,Abat,B,i)
+          ! -----------------------------------------
+          idx=0
+
+          do i=1,noccEOS
+             do B=1,nvirt
+                do A=Astart,Aend ! only over A batch
+                   do j=1,noccEOS
+                      idx=idx+1
+                      tocc(B,i,j,A) = tocc(B,i,j,A) + b3(num)%p(idx)
+                   end do
+                end do
+             end do
+          end do
+
+       end do BatchA
+
+       !$OMP END DO NOWAIT
+
+       call collect_thread_memory()
+       !$OMP END PARALLEL
+       call mem_TurnOffThread_Memory()
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+       MemInGBCollected = MemInGBCollected - size(tmp4%p,kind=long)*8.0E-9_realk
+       call mem_dealloc(tmp4%p)
+       do j=nthreads,1,-1
+          MemInGBCollected = MemInGBCollected-size(b1(j)%p,kind=long)*8.0E-9_realk-size(b2(j)%p,kind=long)&
+             &*8.0E-9_realk-size(b3(j)%p,kind=long)*8.0E-9_realk
+          if(use_bg_buf)then
+             call mem_pseudo_dealloc(b3(j)%p)
+             call mem_pseudo_dealloc(b2(j)%p)
+             call mem_pseudo_dealloc(b1(j)%p)
+          else
+             call mem_dealloc(b3(j)%p)
+             call mem_dealloc(b2(j)%p)
+             call mem_dealloc(b1(j)%p)
+          endif
+       end do
+#endif
+    ! End gamma loop
+    end do BatchLoop
+
+    !F12 memeory deallocation 
+    call mem_dealloc(FAc_diag)
+    call mem_dealloc(Fac_local)
+    call mem_dealloc(CfT)
+
+    !*************** WORKHORSE PART 2 ******************"
+    tmp = 0.0E0_realk
+    do i=1,noccEOS
+       do j=1,noccEOS
+          do B=1,nvirt
+             do A=1,nvirt
+                tmp = tmp + tocc(B,i,j,A)*gocc(B,i,j,A)
+             enddo
+          enddo
+       enddo
+    enddo
+
+    tmp = 0.0E0_realk
+    do i=1,noccEOS
+      do j=1,noccEOS
+         do B=1,nvirt
+             do A=1,nvirt
+                 taibj =  tocc(B,i,j,A) + tocc(A,j,i,B)
+                 caibj =  gocc(B,i,j,A) + gocc(A,j,i,B)
+                 cajbi =  gocc(B,j,i,A) + gocc(A,i,j,B)
+                 tmp = tmp + (7.0E0_realk*taibj*caibj + 1.0E0_realk*taibj*cajbi)
+             enddo
+            enddo
+        enddo
+    enddo
+    E21 = tmp/32.0E0_realk
+    print *, "E21_Cterm_LOCAL_basis ....", E21
+
+    !tmp = 0.0E0_realk
+    !do B=1,nvirt
+    !   do J=1,nocc
+    !      do A=1,nvirt
+    !         do I=1,nocc
+                ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)             
+    !            deltaEPS = EVocc(I)+EVocc(J)-EVvirt(A)-EVvirt(B)                   
+    !            tmp = tmp + (7.0E0_realk*Caibj(A,I,B,J)*Caibj(A,I,B,J) + 1.0E0_realk*Caibj(A,I,B,J)*Caibj(A,J,B,I))/deltaEPS
+    !         enddo
+    !      enddo
+    !   enddo
+    ! enddo
+    ! E21 = tmp/32.0E0_realk
+    ! print *, "E21_Cterm ....", E21
+
+    CALL LSTIMER('MP2workhorse GammaLoop: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    if(master) call LSTIMER('MP2-INT LOOP',tcpu,twall,DECinfo%output)
+    call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
+    tmpidiff = twmpi2-twmpi1
+
+#ifdef VAR_MPI
+    if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,i12,g18.8)') 'RANK, LOAD, TIME(s) ', infpar%mynum,myload, tmpidiff
+    if(master) write(DECinfo%output,'(1X,a,g18.8)') 'TIME INTEGRALLOOP(s) = ', tmpidiff
+#endif
+
+    if(.not. master) then
+       ! effective time for slaves
+       MyFragment%slavetime_work(MODEL_MP2) = tmpidiff
+       ! FLOP count for integral loop for slaves
+       call end_flop_counter(flops,gpuflops)
+    end if
+
+
+#ifdef VAR_MPI
+    if( dynamic_load )then
+#ifdef VAR_HAVE_MPI3
+       call lsmpi_win_unlock_all(decmpitaskw)
+#endif
+       call lsmpi_win_free(decmpitaskw)
+       call mem_dealloc(decmpitasks,decmpitaskc)
+    else
+       call mem_dealloc(decmpitasks)
+    endif
+#endif
+
+    IF(DECinfo%useIchor)THEN
+       call FREE_SCREEN_ICHORERI()
+       call mem_dealloc(AOGammabatchinfo)
+       call mem_dealloc(AOAlphabatchinfo)
+    ELSE
+       nullify(MyFragment%mylsitem%setting%LST_GAB_LHS)
+       nullify(MyFragment%mylsitem%setting%LST_GAB_RHS)
+       call free_decscreen(DECSCREEN)
+       ! Free gamma batch stuff
+       call mem_dealloc(orb2batchGamma)
+       call mem_dealloc(batchdimGamma)
+       call mem_dealloc(batchsizeGamma)
+       call mem_dealloc(batchindexGamma)
+       orb2batchGamma => null()
+       batchdimGamma => null()
+       batchsizeGamma => null()
+       batchindexGamma => null()
+       do idx=1,nbatchesGamma
+          call mem_dealloc(batch2orbGamma(idx)%orbindex)
+          batch2orbGamma(idx)%orbindex => null()
+       end do
+
+       call mem_dealloc(batch2orbGamma)
+       batch2orbGamma => null()
+
+       ! Free alpha batch stuff
+       call mem_dealloc(orb2batchAlpha)
+       call mem_dealloc(batchdimAlpha)
+       call mem_dealloc(batchsizeAlpha)
+       call mem_dealloc(batchindexAlpha)
+       orb2batchAlpha => null()
+       batchdimAlpha => null()
+       batchsizeAlpha => null()
+       batchindexAlpha => null()
+       do idx=1,nbatchesAlpha
+          call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+          batch2orbAlpha(idx)%orbindex => null()
+       end do
+       call mem_dealloc(batch2orbAlpha)
+       batch2orbAlpha => null()
+    ENDIF
+
+    do alphaB = 1,nbatchesAlpha
+       do Abat=1,nvbatches
+          call mem_dealloc(CvirtTspecial(Abat,alphaB)%p)
+          nullify(CvirtTspecial(Abat,alphaB)%p)
+       end do
+    end do
+    call mem_dealloc(CvirtTspecial)
+
+    call mem_dealloc(EVocc)
+    call mem_dealloc(EVvirt)
+    call mem_dealloc(V)
+
+    CALL LSTIMER('MP2F12 C-coupling Dealloc: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+    ! **********************************************************************************
+    ! *                         STEP 3 IN MP2-INTEGRAL SCHEME                          *
+    ! **********************************************************************************
+    ! Status: Currently gocc and tocc (gvirt and tvirt) contain the occupied (virtual)
+    !         EOS integrals but the virtual (occupied) indices are still expressed
+    !         in the diagonal basis. All that remains is to transform the virtual (occupied)
+    !         diagonal indices for gocc and tocc (gvirt and tvirt) into the local basis
+    !         using the unitary transformation matrix Uvirt (Uocc).
+
+
+    ! Assign temporary arrays with dimensions for step 3
+    ! --------------------------------------------------
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+    start = 1
+    call mypointer_init(maxdim,arr,start,bat%size3(1),tmp1)
+    start = tmp1%end+1
+
+    call mypointer_init(maxdim,arr,start,bat%size3(2),tmp2)
+#else
+    if(master.and.DECinfo%PL>0) then
+       write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp1%p using   ',&
+          &MemInGB(bat%size3(1)),' GB Tot=',MemInGBCollected,' GB'
+       write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp2%p using   ',&
+          &MemInGB(bat%size3(2)),' GB Tot=',MemInGBCollected,' GB'
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+       FLUSH(DECinfo%output)
+#endif
+    endif 
+    MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(1))
+    MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(tmp1%p,bat%size3(1))
+    else
+       call mem_alloc(tmp1%p,bat%size3(1))
+    endif
+    tmp1%start = 1
+    tmp1%N     = bat%size3(1)
+    tmp1%end   = tmp1%N 
+
+    MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(2))
+    MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
+    if(use_bg_buf)then
+       call mem_pseudo_alloc(tmp2%p,bat%size3(2))
+    else
+       call mem_alloc(tmp2%p,bat%size3(2))
+    endif
+    tmp2%start = 1
+    tmp2%N     = bat%size3(1)
+    tmp2%end   = tmp1%N
+#endif
+
+    ! IF(.NOT.DECinfo%OnlyVirtPart)THEN
+    ! OCCUPIED PARTITIONING: Transform virtual diagonal indices to local basis
+    ! ************************************************************************
+
+    ! Integrals
+    ! =========
+
+    ! Transform: tmp2(d,i,j,A) = sum_{B} U_{dB} gocc(B,i,j,A)
+    n=noccEOS*noccEOS*nvirt
+    dim2=i8*nvirt*n    ! dimension of tmp2
+    call dec_simple_dgemm(nvirt,nvirt,n, Uvirt%val, gocc(:,:,:,:), tmp2%p(1:dim2), 'n', 'n')
+    call mem_dealloc(gocc)
+
+    ! Transform: tmp1(d,i,j,c) = sum_{A} tmp2(d,i,j,A) U^T_{Ac}
+    dim1=dim2
+    m=nvirt*noccEOS*noccEOS
+    call dec_simple_dgemm(m,nvirt,nvirt, tmp2%p(1:dim2), Uvirt%val, tmp1%p(1:dim1), 'n', 't')
+
+    ! Put integrals into output array in the correct order
+
+    ! Amplitudes
+    ! ==========
+
+    ! Transform: tmp2(d,i,j,A) = sum_{B} U_{dB} tocc(B,i,j,A)
+    n=noccEOS*noccEOS*nvirt
+    call dec_simple_dgemm(nvirt,nvirt,n, Uvirt%val, tocc(:,:,:,:), tmp2%p(1:dim2), 'n', 'n')
+    call mem_dealloc(tocc)
+
+    ! Transform: tmp1(d,i,j,c) = sum_{A} tmp2(d,i,j,A) U^T_{Ac}
+    m=nvirt*noccEOS*noccEOS
+    call dec_simple_dgemm(m,nvirt,nvirt, tmp2%p(1:dim2), Uvirt%val, tmp1%p(1:dim1), 'n', 't')
+
+
+    ! ENDIF
+    ! IF(.NOT.DECinfo%OnlyOccPart)THEN
+
+
+    ! Amplitudes
+    ! ==========
+
+    ! Finalize integrals used for first order MP2 integrals
+    ! *****************************************************
+    ! Removed first_order_integrals
+    
+    CALL LSTIMER('MP2workhorse FirstOrder: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+    MemInGBCollected = MemInGBCollected - size(tmp1%p,kind=long)*8.0E-9_realk - size(tmp2%p,kind=long)*8.0E-9_realk
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(tmp2%p)
+       call mem_pseudo_dealloc(tmp1%p)
+    else
+       call mem_dealloc(tmp2%p)
+       call mem_dealloc(tmp1%p)
+    endif
+#endif
+    ! Free stuff
+    nullify(mini1,mini2,mini3,mini4)
+    do i=1,nthreads
+       nullify(b1(i)%p)
+       nullify(b2(i)%p)
+       nullify(b3(i)%p)
+    end do
+    nullify(tmp1%P)
+    nullify(tmp2%P)
+    nullify(tmp3%P)
+    nullify(tmp4%P)
+    !deallocate(arr)
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+    MemInGBCollected = MemInGBCollected - size(arr,kind=long)*8.0E-9_realk
+    if( use_bg_buf )then
+       call mem_pseudo_dealloc(arr)
+    else
+       call mem_dealloc(arr)
+    endif
+#endif
+    call mem_dealloc(b1)
+    call mem_dealloc(b2)
+    call mem_dealloc(b3)
+    call mem_dealloc(CoccT)
+    call mem_dealloc(CvirtT)
+    call mem_dealloc(UoccEOST)
+    call mem_dealloc(UvirtEOST)
+    call mem_dealloc(UoccEOS)
+    call mem_dealloc(UvirtEOS)
+    call mem_dealloc(LoccEOST)
+    call mem_dealloc(LvirtEOST)
+    call mem_dealloc(LvirtT)
+    call array2_free(CDIAGocc)
+    call array2_free(CDIAGvirt)
+    call array2_free(Uocc)
+    call array2_free(Uvirt)
+    call array2_free(LoccEOS)
+    call array2_free(LvirtEOS)
+    call array2_free(LoccTALL)
+ 
+    if(fc) then
+       call array2_free(CDIAGoccTALL)
+       call array2_free(UoccALL)
+    end if
+
+    if(master.and.DECinfo%PL>0) then
+       IF(ABS(MemInGBCollected).GT.0.1E0_realk)THEN
+          WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:     MemInGBCollected = ',MemInGBCollected,' GB'
+       ENDIF
+       WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MaxMemInGBCollected = ',MaxMemInGBCollected,' GB'
+       WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MemoryNeeded        = ',MemoryNeeded,' GB'
+       call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+       FLUSH(DECinfo%output)
+#endif
+       !   IF(ABS(MaxMemInGBCollected-MemoryNeeded).GT.1.0E-6_realk)THEN
+       !      CALL LSQUIT('Memory Error: MP2 workhorse MemoryNeeded.NE.MaxMemInGBCollected',-1)
+       !   ENDIF
+    endif
+
+    ! MPI: Add arrays from master and all slaves to get final output arrays on master
+    ! *******************************************************************************
+#ifdef VAR_MPI
+
+    ! If slaves were not invoked
+    ! then we of course skip the addition of different components of the array.
+    MPIcollect: if(wakeslave) then
+
+       call time_start_phase( PHASE_IDLE )
+       call lsmpi_barrier(infpar%lg_comm)
+       call time_start_phase( PHASE_COMM )
+
+       !    IF(.NOT.DECinfo%onlyVirtPart)THEN
+       ! Add up contibutions to output arrays using MPI reduce
+       !    ENDIF
+       !    IF(.NOT.DECinfo%onlyOccPart)THEN
+       !    ENDIF
+
+       if(.not. master) then  ! SLAVE: Done with arrays and fragment
+          !      IF(.NOT.DECinfo%OnlyVirtPart)THEN
+          !      ENDIF
+          !      IF(.NOT.DECinfo%OnlyOccPart)THEN
+          !      ENDIF
+          call atomic_fragment_free(MyFragment)
+       end if
+
+       ! FLOP counting
+       if(master) then
+          flops=0.0E0_realk  ! we want to count only flops from slaves (these were set above)
+          gpuflops=0.0E0_realk  ! we want to count only gpu flops from slaves (these were set above)
+       end if
+
+       call lsmpi_reduction(flops,infpar%master,infpar%lg_comm)
+       call lsmpi_reduction(gpuflops,infpar%master,infpar%lg_comm)
+       if(master) MyFragment%flops_slaves = flops ! save flops for local slaves (not local master)
+       if(master) MyFragment%gpu_flops_slaves = gpuflops ! save flops for local slaves (not local master)
+
+       ! Total time for all slaves (not local master itself)
+       if(master) MyFragment%slavetime_work(MODEL_MP2)=0.0E0_realk
+       call lsmpi_reduction(MyFragment%slavetime_work(MODEL_MP2),infpar%master,infpar%lg_comm)
+
+       call time_start_phase( PHASE_WORK )
+    end if MPIcollect
+
+    ! Number of MPI tasks (=nalpha*ngamma)
+    MyFragment%ntasks= nbatchesAlpha*nbatchesGamma
+
+#endif
+
+    if(DECinfo%PL>0)THEN
+       WRITE(DECinfo%output,'(1X,A)')'MP2F12 C-coupling MEM:'
+       WRITE(DECinfo%output,'(1X,A)')'MP2F12 C-coupling MEM: Memory Statistics at the end of the subroutine'
+       call stats_globalmem(DECinfo%output)
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+       FLUSH(DECinfo%output)
+#endif
+    endif
+
+    if(master) then
+       call LSTIMER('MP2-INT FIN',tcpu,twall,DECinfo%output)
+       call LSTIMER('MP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
+       call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
+       CALL ls_TIMTXT('>>>  WALL Time used in MP2 Integral Calculation',WALL_INT,DECinfo%output)
+       CALL ls_TIMTXT('>>>  CPU Time used in MP2 Integral Calculation',CPU_INT,DECinfo%output)
+       CALL ls_TIMTXT('>>>  WALL Time used in AO to MO transformation',WALL_AOTOMO,DECinfo%output)
+       CALL ls_TIMTXT('>>>  CPU Time used in AO to MO transformation',CPU_AOTOMO,DECinfo%output)
+    end if
+    CALL LSTIMER('MP2F12 C-coupling Finalize: ',TS2,TE2,DECinfo%output,ForcePrint)
+
+  end subroutine MP2F12_Ccoupling_energy
+
+
+
+
+
+
+
   !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
   !> \author Kasper Kristensen
   !> \date February 2011
@@ -2449,6 +4146,11 @@ end subroutine Get_ijba_integrals
     call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS_arr4, toccEOS_arr4, &
          & gvirtEOS_arr4, tvirtEOS_arr4, dummy1, dummy2,bat,first_order_integrals)
 
+    ! MP2F12 workhorse
+    !if(DECinfo%F12Ccoupling) then 
+    !   call MP2F12_Ccoupling_energy(MyFragment)
+    !endif
+    
     call tensor_init(goccEOS, goccEOS_arr4%dims,4)
     call tensor_convert(goccEOS_arr4%val,goccEOS)
     call array4_free(goccEOS_arr4)
@@ -2526,10 +4228,6 @@ end subroutine Get_ijba_integrals
 
   end subroutine MP2_integrals_and_amplitudes_energy_and_first_order
 
-
-
-
-
   !> \brief Get optimal batch sizes to be used in MP2_integrals_and_amplitudes
   !> for the given available memory.
   !> Note: We multiply the estimated available memory by 85% to be on the safe side.
@@ -2539,346 +4237,390 @@ end subroutine Get_ijba_integrals
   !> STEP 3: Final transformations (diagonal->local basis) after integral loop
   !> \author Kasper Kristensen
   !> \date December 2011
-subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,&
-  & bat,printstuff,adapt_to_nnodes,FullMemoryNeeded)
-  implicit none
-  !> Fragment info
-  type(decfrag),intent(inout) :: MyFragment
-  !> Are integrals needed for first-order properties also requested
-  logical,intent(in) :: first_order_integrals
-  !> Batch sizes used for MP2 integral/amplitude calculation (see mp2_batch_construction type)
-  type(mp2_batch_construction),intent(inout) :: bat
-  !> Print memory summary for local master?
-  !> (If this subroutine is called by local slave we never print, 
-  !> regardless of value of printstuff)
-  logical,intent(in) :: printstuff, adapt_to_nnodes
-  !> Using the found optimal batch sizes how much memory will be used
-  real(realk),intent(inout) :: FullMemoryNeeded
-  real(realk) :: MemoryAvailable, GB,MemoryNeeded
-  integer :: noccEOS,nocc,nvirtEOS,nvirt,nbasis,GammaOpt,AlphaOpt,step,nvbatches
-  integer :: MaxAObatch,MinAOBatch,MaxVirtBatch,MinVirtBatch,gamma,alpha,A,nthreads
-  integer(kind=long) :: max1,max2,max3,maxdim
-  logical :: doprint
-  integer :: max_alpha, max_gamma, MaxActualDimAlpha, MaxActualDimGamma
-  integer :: iAO, nbatchesAlpha, nbatchesGamma
-  integer(kind=ls_mpik) :: nnod
-  logical :: use_bg_buf
+  subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,&
+        & bat,printstuff,adapt_to_nnodes,FullMemoryNeeded,F12)
+     implicit none
+     !> Fragment info
+     type(decfrag),intent(inout) :: MyFragment
+     !> Are integrals needed for first-order properties also requested
+     logical,intent(in) :: first_order_integrals
+     !> Batch sizes used for MP2 integral/amplitude calculation (see mp2_batch_construction type)
+     type(mp2_batch_construction),intent(inout) :: bat
+     !> Print memory summary for local master?
+     !> (If this subroutine is called by local slave we never print, 
+     !> regardless of value of printstuff)
+     logical,intent(in) :: printstuff, adapt_to_nnodes
+     !> Using the found optimal batch sizes how much memory will be used
+     real(realk),intent(inout) :: FullMemoryNeeded
+     !F12-specific Logical
+     logical,intent(in), optional :: F12
+
+     real(realk) :: MemoryAvailable, GB,MemoryNeeded
+     integer :: noccEOS,nocc,nvirtEOS,nvirt,nbasis,GammaOpt,AlphaOpt,step,nvbatches
+     integer :: MaxAObatch,MinAOBatch,MaxVirtBatch,MinVirtBatch,gamma,alpha,A,nthreads
+     integer(kind=long) :: max1,max2,max3,maxdim
+     logical :: doprint
+     integer :: max_alpha, max_gamma, MaxActualDimAlpha, MaxActualDimGamma
+     integer :: iAO, nbatchesAlpha, nbatchesGamma
+     integer(kind=ls_mpik) :: nnod
+     logical :: use_bg_buf
+
+     !F12-related
+     integer :: ncabsAO
 #ifdef VAR_OMP
-  integer, external :: OMP_GET_MAX_THREADS
+     integer, external :: OMP_GET_MAX_THREADS
 #endif
-  doprint = (printstuff.and.DECinfo%print_small_calc)
-  nnod = 1
+     doprint = (printstuff.and.DECinfo%print_small_calc)
+     nnod = 1
 #ifdef VAR_MPI
-  ! Only print for local master
-  if(infpar%lg_mynum/=0) doprint=.false.
-  nnod = infpar%lg_nodtot
+     ! Only print for local master
+     if(infpar%lg_mynum/=0) doprint=.false.
+     nnod = infpar%lg_nodtot
 #endif
 
-  use_bg_buf = mem_is_background_buf_init()
+     use_bg_buf = mem_is_background_buf_init()
 
 #ifdef VAR_OMP
-  nthreads=OMP_GET_MAX_THREADS()
+     nthreads=OMP_GET_MAX_THREADS()
 #else
-  nthreads=1
+     nthreads=1
 #endif
-  if(DECinfo%PL>0) write(DECinfo%output,*) 'Estimating batch sizes for MP2 integrals/amplitudes.'
+     if(DECinfo%PL>0) write(DECinfo%output,*) 'Estimating batch sizes for MP2 integrals/amplitudes.'
 
+     ! Init stuff
+     GB = 1.000E9_realk ! 1 GB
 
-  ! Init stuff
-  GB = 1.000E9_realk ! 1 GB
+     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
+     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
+     nocc=MyFragment%noccAOS
+     nvirt=MyFragment%nvirtAOS
 
-  ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
-  ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
-  nocc=MyFragment%noccAOS
-  nvirt=MyFragment%nvirtAOS
+     noccEOS=MyFragment%noccEOS
+     nvirtEOS=MyFragment%nvirtEOS
+     nbasis = MyFragment%nbasis
+     ncabsAO = MyFragment%ncabsAO
 
-  noccEOS=MyFragment%noccEOS
-  nvirtEOS=MyFragment%nvirtEOS
-  nbasis = MyFragment%nbasis
+     ! Memory currently available
+     ! **************************
+     if( use_bg_buf )then
+        MemoryAvailable = (mem_get_bg_buf_free() * 8.0E0_realk)/(1024.0E0_realk**3)
+     else
+        call get_currently_available_memory(MemoryAvailable)
+        ! Note: We multiply by 85 % to be on the safe side!
+        MemoryAvailable = 0.85*MemoryAvailable
+     endif
 
+     ! Maximum and minimum possible batch sizes
+     ! ****************************************
 
+     ! The largest possible AO batch is the number of basis functions
+     MaxAObatch = nbasis
 
-  ! Memory currently available
-  ! **************************
-  if( use_bg_buf )then
-     MemoryAvailable = (mem_get_bg_buf_free() * 8.0E0_realk)/(1024.0E0_realk**3)
-  else
-     call get_currently_available_memory(MemoryAvailable)
-     ! Note: We multiply by 85 % to be on the safe side!
-     MemoryAvailable = 0.85*MemoryAvailable
-  endif
+     IF(DECinfo%useIchor)THEN
+        !Determine the minimum allowed AObatch size MinAObatch
+        !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+        !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch=6 (the 2*(Px,Py,Pz))
+        !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+        !'R'  !Specifies that it is the Regular AO basis that should be batched
+        iAO = 4 !the center that the batching should occur on (they are all the same in this case)  
+        call determine_MinimumAllowedAObatchSize(MyFragment%MyLsItem%setting,iAO,'R',MinAObatch)
+     ELSE
+        ! The smallest possible AO batch depends on the basis set
+        ! (More precisely, if all batches are made as small as possible, then the
+        !  call below determines the largest of these small batches).
+        call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%setting,MinAObatch,'R')
+     ENDIF
 
+     ! The smallest/largest possible virtual batch is simply 1/number of virtual orbitals.
+     MinVirtBatch = 1
+     MaxVirtBatch = nvirt
 
-  ! Maximum and minimum possible batch sizes
-  ! ****************************************
+     ! Find optimal batch sizes for the available memory
+     ! *************************************************
 
-  ! The largest possible AO batch is the number of basis functions
-  MaxAObatch = nbasis
+     ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
+     bat%MaxAllowedDimAlpha = MinAObatch
+     bat%MaxAllowedDimGamma = MinAObatch
+     bat%virtbatch = MinVirtBatch
+     AlphaOpt=MinAObatch
+     GammaOpt=MinAObatch
 
-  IF(DECinfo%useIchor)THEN
-     !Determine the minimum allowed AObatch size MinAObatch
-     !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
-     !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch=6 (the 2*(Px,Py,Pz))
-     !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
-     !'R'  !Specifies that it is the Regular AO basis that should be batched
-     iAO = 4 !the center that the batching should occur on (they are all the same in this case)  
-     call determine_MinimumAllowedAObatchSize(MyFragment%MyLsItem%setting,iAO,'R',MinAObatch)
-  ELSE
-     ! The smallest possible AO batch depends on the basis set
-     ! (More precisely, if all batches are made as small as possible, then the
-     !  call below determines the largest of these small batches).
-     call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%setting,MinAObatch,'R')
-  ENDIF
+     ! F12 batch debug
+     MinVirtBatch = nvirt
+     bat%MaxAllowedDimAlpha = MaxAObatch
+     bat%MaxAllowedDimGamma = MaxAObatch
+     bat%virtbatch = MaxAObatch
+     AlphaOpt=MaxAObatch
+     GammaOpt=MaxAObatch
+     
+     MinAOBatch = MaxAObatch
 
-  ! The smallest/largest possible virtual batch is simply 1/number of virtual orbitals.
-  MinVirtBatch = 1
-  MaxVirtBatch = nvirt
+     ! *********************************************************************
+     ! *                      STEP 1 IN INTEGRAL LOOP                      *
+     ! *********************************************************************
+     step=1
+ 
+     ! Largest possible gamma batch size
+     ! =================================
+     GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
+       ! print *, "gamma loop"
+       if(present(F12)) then
+           call max_arraysize_for_mp2f12_integrals(MyFragment,first_order_integrals,&
+              & bat%MaxAllowedDimAlpha, gamma, bat%virtbatch, step, nthreads, bat%size1, MemoryNeeded)
+        else
+           call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+              & bat%MaxAllowedDimAlpha, gamma, bat%virtbatch, step, nthreads, bat%size1, MemoryNeeded)
+        endif
 
+        if(MemoryNeeded < MemoryAvailable) then
 
-
-  ! Find optimal batch sizes for the available memory
-  ! *************************************************
-
-  ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
-  bat%MaxAllowedDimAlpha = MinAObatch
-  bat%MaxAllowedDimGamma = MinAObatch
-  bat%virtbatch = MinVirtBatch
-  AlphaOpt=MinAObatch
-  GammaOpt=MinAObatch
-
-
-  ! *********************************************************************
-  ! *                      STEP 1 IN INTEGRAL LOOP                      *
-  ! *********************************************************************
-  step=1
-
-  ! Largest possible gamma batch size
-  ! =================================
-  GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
-
-     call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-        & bat%MaxAllowedDimAlpha, gamma, bat%virtbatch, step, nthreads, bat%size1, MemoryNeeded)
-
-     if(MemoryNeeded < MemoryAvailable) then
-
-        if(adapt_to_nnodes)then
-           if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
-              GammaOpt = gamma 
+           if(adapt_to_nnodes)then
+              if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
+                 GammaOpt = gamma 
+                 exit GammaLoop
+              endif
+           else
+              GammaOpt = gamma
               exit GammaLoop
            endif
+        end if
+
+     end do GammaLoop
+
+     !print *, " bat%size1: ",  bat%size1(1),  bat%size1(2),  bat%size1(3),  bat%size1(4)
+
+     ! If gamma batch size was set manually we use that value instead
+     if(DECinfo%ccsdGbatch/=0) then
+        if(DECinfo%PL>0) write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
+        GammaOpt=DECinfo%ccsdGbatch
+     end if
+
+     ! The optimal gamma batch size is GammaOpt.
+     ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
+     ! and store this number in bat%MaxAllowedDimGamma.
+     call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,GammaOpt,bat%MaxAllowedDimGamma,'R')
+
+     if(present(F12)) then
+        call max_arraysize_for_mp2f12_integrals(MyFragment,first_order_integrals,&
+           & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch,step,nthreads,bat%size1,MemoryNeeded)
+     else
+        ! Max size with actual batchsizes
+        call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+           & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch,step,nthreads,bat%size1,MemoryNeeded)
+     endif
+
+     ! Largest possible alpha batch size
+     ! =================================
+     AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
+        !print *, "Alpha loop" 
+        
+        if(present(F12)) then
+           call max_arraysize_for_mp2f12_integrals(MyFragment,first_order_integrals,&
+              & alpha,bat%MaxAllowedDimGamma,bat%virtbatch,step,nthreads,bat%size1,MemoryNeeded)
         else
-           GammaOpt = gamma
-           exit GammaLoop
+           call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+              & alpha,bat%MaxAllowedDimGamma,bat%virtbatch,step,nthreads,bat%size1,MemoryNeeded)
         endif
-     end if
 
+        ! Sanity check: We must ensure that the sum of the sizes of tmp1 and tmp2
+        ! in the first step is larger than the size of tmp4 in the second step.
+        ! Other we get into memory problem when changing arrays sizes from
+        ! size1 to size2 inside the integral loop.
+        if(i8*alpha*nocc*nocc*nvirt > bat%size1(1)+bat%size1(2)) then
+           if(DECinfo%PL>0) write(DECinfo%output,*) 'WARNING - reducing size1 because tmp4 is too large!'
+           cycle
+        end if
 
-  end do GammaLoop
+        if(MemoryNeeded < MemoryAvailable) then
 
-  ! If gamma batch size was set manually we use that value instead
-  if(DECinfo%ccsdGbatch/=0) then
-     if(DECinfo%PL>0) write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
-     GammaOpt=DECinfo%ccsdGbatch
-  end if
+           if( adapt_to_nnodes )then
 
-  ! The optimal gamma batch size is GammaOpt.
-  ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
-  ! and store this number in bat%MaxAllowedDimGamma.
-  call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,GammaOpt,bat%MaxAllowedDimGamma,'R')
+              if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
+                 AlphaOpt = alpha 
+                 exit AlphaLoop
+              endif
 
-  ! Max size with actual batchsizes
-  call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-     & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch,step,nthreads,bat%size1,MemoryNeeded)
-
-
-
-
-  ! Largest possible alpha batch size
-  ! =================================
-  AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
-
-     call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-        & alpha, bat%MaxAllowedDimGamma, bat%virtbatch,step,nthreads, bat%size1,MemoryNeeded)
-
-     ! Sanity check: We must ensure that the sum of the sizes of tmp1 and tmp2
-     ! in the first step is larger than the size of tmp4 in the second step.
-     ! Other we get into memory problem when changing arrays sizes from
-     ! size1 to size2 inside the integral loop.
-     if(i8*alpha*nocc*nocc*nvirt > bat%size1(1)+bat%size1(2)) then
-        if(DECinfo%PL>0) write(DECinfo%output,*) 'WARNING - reducing size1 because tmp4 is too large!'
-        cycle
-     end if
-
-     if(MemoryNeeded < MemoryAvailable) then
-
-        if( adapt_to_nnodes  )then
-
-           if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
-              AlphaOpt = alpha 
+           else
+              AlphaOpt = alpha
               exit AlphaLoop
            endif
+        end if
 
-        else
-           AlphaOpt = alpha
-           exit AlphaLoop
-        endif
+     end do AlphaLoop
+
+     ! If alpha batch size was set manually we use that value instead
+     if(DECinfo%ccsdAbatch/=0) then
+        if(DECinfo%PL>0) write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
+        AlphaOpt=DECinfo%ccsdAbatch
      end if
 
+     ! Find possible alpha batch size smaller than or equal to AlphaOpt
+     call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,AlphaOpt,bat%MaxAllowedDimAlpha,'R')
 
-  end do AlphaLoop
+     if(present(F12)) then
+        call max_arraysize_for_mp2f12_integrals(MyFragment,first_order_integrals,&
+           & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
+     else
+        call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+           & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
+     endif
 
-  ! If alpha batch size was set manually we use that value instead
-  if(DECinfo%ccsdAbatch/=0) then
-     if(DECinfo%PL>0) write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
-     AlphaOpt=DECinfo%ccsdAbatch
-  end if
+     if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual gamma size, memory (GB) =', &
+        & GammaOpt,bat%MaxAllowedDimGamma,MemoryNeeded
+     if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual alpha size, memory (GB) =', &
+        & AlphaOpt,bat%MaxAllowedDimAlpha,MemoryNeeded
 
-  ! Find possible alpha batch size smaller than or equal to AlphaOpt
-  call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,AlphaOpt,bat%MaxAllowedDimAlpha,'R')
-  call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-     & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
+     ! *********************************************************************
+     ! *                      STEP 2 IN INTEGRAL LOOP                      *
+     ! *********************************************************************
+     step=2
 
-  if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual gamma size, memory (GB) =', &
-     & GammaOpt,bat%MaxAllowedDimGamma,MemoryNeeded
-  if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual alpha size, memory (GB) =', &
-     & AlphaOpt,bat%MaxAllowedDimAlpha,MemoryNeeded
+     ! Largest possible virtual batch size
+     ! ===================================
+     ALoop: do A = MaxVirtBatch,MinVirtBatch,-1
+
+        ! Number of virtual batches must be as large as number of OMP threads
+        ! to use OMP more efficiently.
+        nvbatches = ceiling(real(nvirt)/real(A))
+        if(nvbatches < nthreads ) cycle
+
+        call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+           & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, A, step,nthreads,bat%size2,MemoryNeeded)
+
+        if(MemoryNeeded < MemoryAvailable) then
+           bat%virtbatch = A
+           if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,i8,g10.3)') 'Virtual batch size,  memory (GB) =', &
+              & bat%virtbatch,MemoryNeeded
+           if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,i8)') 'Number of virtual batches =', nvbatches
+           exit
+        end if
+
+     end do ALoop
 
 
-  ! *********************************************************************
-  ! *                      STEP 2 IN INTEGRAL LOOP                      *
-  ! *********************************************************************
-  step=2
+     ! *********************************************************************
+     ! *                      STEP 3 (AFTER INTEGRAL LOOP)                 *
+     ! *********************************************************************
 
-  ! Largest possible virtual batch size
-  ! ===================================
-  ALoop: do A = MaxVirtBatch,MinVirtBatch,-1
-
-     ! Number of virtual batches must be as large as number of OMP threads
-     ! to use OMP more efficiently.
-     nvbatches = ceiling(real(nvirt)/real(A))
-     if(nvbatches < nthreads ) cycle
-
+     step=3
 
      call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-        & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, A, step,nthreads,bat%size2,MemoryNeeded)
+        & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size3,MemoryNeeded)
 
-     if(MemoryNeeded < MemoryAvailable) then
-        bat%virtbatch = A
-        if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,i8,g10.3)') 'Virtual batch size,  memory (GB) =', &
-           & bat%virtbatch,MemoryNeeded
-        if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,i8)') 'Number of virtual batches =', nvbatches
-        exit
+     !hack
+     doprint = .true.
+
+     ! Print out and sanity check
+     ! ==========================
+     if(doprint) then
+        write(DECinfo%output,*)
+        write(DECinfo%output,*)
+        write(DECinfo%output,*) '======================================================================='
+        write(DECinfo%output,*) '                  MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             '
+        write(DECinfo%output,*) '======================================================================='
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
+        write(DECinfo%output,'(1X,a,2i8)')   'Number of occupied orbitals AOS/EOS     =', nocc, noccEOS
+        write(DECinfo%output,'(1X,a,2i8)')   'Number of virtual  orbitals AOS/EOS     =', nvirt, nvirtEOS
+        write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', bat%MaxAllowedDimAlpha
+        write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', bat%MaxAllowedDimGamma
+        write(DECinfo%output,'(1X,a,i8)')    'Maximum virtual batch dimension         =', bat%virtbatch
+        write(DECinfo%output,'(1X,a,i8)')    'Number of OMP threads                   =', nthreads
+        write(DECinfo%output,*)
      end if
 
-  end do ALoop
+     step=1
 
+     if(present(F12)) then
+        call max_arraysize_for_mp2f12_integrals(MyFragment,first_order_integrals,&
+           & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
+     else
+        call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+           & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
+     endif
 
-  ! *********************************************************************
-  ! *                      STEP 3 (AFTER INTEGRAL LOOP)                 *
-  ! *********************************************************************
+     FullMemoryNeeded = MemoryNeeded
 
-  step=3
-  call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-     & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size3,MemoryNeeded)
+     if(doprint.OR.MemoryNeeded > MemoryAvailable)then
+        write(DECinfo%output,'(1X,a)') 'STEP 1 in integral loop'
+        write(DECinfo%output,'(1X,a)') '-----------------------'
+        write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size1(1)/GB
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size1(2)/GB
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size1(3)/GB
+        write(DECinfo%output,*)
+     endif
+     if(MemoryNeeded > MemoryAvailable) then
+        call stats_mem(DECinfo%output)
+        call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
+           & larger than the available memory!',DECinfo%output)
+     end if
 
+     step=2
 
-  ! Print out and sanity check
-  ! ==========================
-  if(doprint) then
-     write(DECinfo%output,*)
-     write(DECinfo%output,*)
-     write(DECinfo%output,*) '======================================================================='
-     write(DECinfo%output,*) '                  MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             '
-     write(DECinfo%output,*) '======================================================================='
-     write(DECinfo%output,*)
-     write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
-     write(DECinfo%output,*)
-     write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
-     write(DECinfo%output,'(1X,a,2i8)')   'Number of occupied orbitals AOS/EOS     =', nocc, noccEOS
-     write(DECinfo%output,'(1X,a,2i8)')   'Number of virtual  orbitals AOS/EOS     =', nvirt, nvirtEOS
-     write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', bat%MaxAllowedDimAlpha
-     write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', bat%MaxAllowedDimGamma
-     write(DECinfo%output,'(1X,a,i8)')    'Maximum virtual batch dimension         =', bat%virtbatch
-     write(DECinfo%output,'(1X,a,i8)')    'Number of OMP threads                   =', nthreads
-     write(DECinfo%output,*)
-  end if
+     call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+        & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size2,MemoryNeeded)
 
-  step=1
-  call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-     & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
-  FullMemoryNeeded = MemoryNeeded
+     FullMemoryNeeded = MAX(FullMemoryNeeded,MemoryNeeded)
 
-  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
-     write(DECinfo%output,'(1X,a)') 'STEP 1 in integral loop'
-     write(DECinfo%output,'(1X,a)') '-----------------------'
-     write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size1(1)/GB
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size1(2)/GB
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size1(3)/GB
-     write(DECinfo%output,*)
-  endif
-  if(MemoryNeeded > MemoryAvailable) then
-     call stats_mem(DECinfo%output)
-     call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
-        & larger than the available memory!',DECinfo%output)
-  end if
+     if(doprint.OR.MemoryNeeded > MemoryAvailable)then
+        write(DECinfo%output,'(1X,a)') 'STEP 2 in integral loop'
+        write(DECinfo%output,'(1X,a)') '-----------------------'
+        write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size2(1)/GB
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size2(2)/GB
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size2(3)/GB
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 4 (GB)    =', realk*bat%size2(4)/GB
+        write(DECinfo%output,*)
+     endif
+     if(MemoryNeeded > MemoryAvailable) then
+        call stats_mem(DECinfo%output)
+        call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
+           & larger than the available memory!',DECinfo%output)
+     end if
 
-  step=2
-  call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-     & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size2,MemoryNeeded)
-  FullMemoryNeeded = MAX(FullMemoryNeeded,MemoryNeeded)
-  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
-     write(DECinfo%output,'(1X,a)') 'STEP 2 in integral loop'
-     write(DECinfo%output,'(1X,a)') '-----------------------'
-     write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size2(1)/GB
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size2(2)/GB
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size2(3)/GB
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 4 (GB)    =', realk*bat%size2(4)/GB
-     write(DECinfo%output,*)
-  endif
-  if(MemoryNeeded > MemoryAvailable) then
-     call stats_mem(DECinfo%output)
-     call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
-        & larger than the available memory!',DECinfo%output)
-  end if
+     step=3
 
-  step=3
-  call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
-       & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size3,MemoryNeeded)
-  FullMemoryNeeded = MAX(FullMemoryNeeded,MemoryNeeded)
+     call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
+        & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size3,MemoryNeeded)
 
-  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
-     write(DECinfo%output,'(1X,a)') 'STEP 3 in integral loop'
-     write(DECinfo%output,'(1X,a)') '-----------------------'
-     write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size3(1)/GB
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size3(2)/GB
-     write(DECinfo%output,*)
-  endif
+     FullMemoryNeeded = MAX(FullMemoryNeeded,MemoryNeeded)
 
-  if(MemoryNeeded > MemoryAvailable) then
-     call stats_mem(DECinfo%output)
-     call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
-          & larger than the available memory!',DECinfo%output)
-  endif
+     if(doprint.OR.MemoryNeeded > MemoryAvailable)then
+        write(DECinfo%output,'(1X,a)') 'STEP 3 in integral loop'
+        write(DECinfo%output,'(1X,a)') '-----------------------'
+        write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size3(1)/GB
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size3(2)/GB
+        write(DECinfo%output,*)
+     endif
 
-  call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
-  MemoryNeeded = maxdim*8.000E-9_realk
-  
-  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
-     write(DECinfo%output,'(1X,a)') 'Summary'
-     write(DECinfo%output,'(1X,a)') '-----------------------'
-     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required                 (GB)    =', FullMemoryNeeded
-  endif
-  call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
-  FullMemoryNeeded = maxdim*8.000E-9_realk
-  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
-     write(DECinfo%output,'(1X,a,g10.3)') 'Big Array Memory required       (GB)    =', FullMemoryNeeded
-     write(DECinfo%output,*)
-  endif
+     if(MemoryNeeded > MemoryAvailable) then
+        call stats_mem(DECinfo%output)
+        call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
+           & larger than the available memory!',DECinfo%output)
+     endif
 
-end subroutine get_optimal_batch_sizes_for_mp2_integrals
+     call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
+     MemoryNeeded = maxdim*8.000E-9_realk
+
+     if(doprint.OR.MemoryNeeded > MemoryAvailable)then
+        write(DECinfo%output,'(1X,a)') 'Summary'
+        write(DECinfo%output,'(1X,a)') '-----------------------'
+        write(DECinfo%output,'(1X,a,g10.3)') 'Memory required                 (GB)    =', FullMemoryNeeded
+     endif
+
+     call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
+     FullMemoryNeeded = maxdim*8.000E-9_realk
+     if(doprint.OR.MemoryNeeded > MemoryAvailable)then
+        write(DECinfo%output,'(1X,a,g10.3)') 'Big Array Memory required       (GB)    =', FullMemoryNeeded
+        write(DECinfo%output,*)
+     endif
+
+  end subroutine get_optimal_batch_sizes_for_mp2_integrals
+ 
 
 subroutine BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
   implicit none
@@ -3037,6 +4779,142 @@ subroutine max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
 
 end subroutine max_arraysize_for_mp2_integrals
 
+!> \brief Get maximum size of each of the four-dimensional arrays used in
+!> MP2F12_integrals_and_amplitudes for given values of virtual batch size,
+!> alpha batch size, and gamma batch size.
+!> This is done for a given step in the MP2F12 integral loop.
+!> (See MP2F12_integrals_and_amplitudes_workhorse for details)
+!> \author Kasper Kristensen
+!> \date February 2011
+subroutine max_arraysize_for_mp2f12_integrals(MyFragment,first_order_integrals,&
+      & BatchDimAlpha, BatchdimGamma, BatchdimA, step, nthreads, maxsize, MemoryNeeded)
+
+   implicit none
+
+   !> Fragment info
+   type(decfrag),intent(inout) :: MyFragment
+   !> Are integrals needed for first-order properties also requested
+   logical,intent(in) :: first_order_integrals
+   !> Maximum size of AO batch Alpha
+   integer, intent(in) :: BatchDimAlpha
+   !> Maximum size of AO batch Gamma
+   integer, intent(in) :: BatchDimGamma
+   !> Maximum size of virtual batch A
+   integer, intent(in) :: BatchDimA
+   !> Which step in integral loop (see MP2_integrals_and_amplitudes_workhorse for details)
+   integer,intent(in) :: step
+   !> Number of OMP threads (1 if OMP is not used)
+   integer,intent(in) :: nthreads
+   !> Maximum array size for each of the four arrays tmp1,tmp2,tmp3, and tmp4
+   integer(kind=long),intent(inout) :: maxsize(4)
+   !> Memory needed for each of the arrays tmp1,tmp2,tmp3, and tmp4 (measured in GB)
+   real(realk),intent(inout) :: MemoryNeeded
+   integer :: nocc,nvirt,nbasis,noccEOS,nvirtEOS,i,nocctot,ncabsAO,ncabsMO
+   real(realk) :: GB
+   integer(kind=long) :: dim1,dim2,dim3,dim4
+
+   GB = 1.000E9_realk ! 1 GB
+
+   ! Set the relevant dimensions for easy reference
+   ! **********************************************
+   nocc=MyFragment%noccAOS  ! occupied AOS (only valence for frozen core)
+   nvirt = MyFragment%nvirtAOS   ! virtual AOS
+   nbasis = MyFragment%nbasis      ! number of basis functions in atomic extent
+   noccEOS = MyFragment%noccEOS  ! occupied EOS
+   nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
+   ! ncabsAO = MyFragment%ncabsAO
+   ncabsAO = size(MyFragment%Ccabs,1)             
+      ncabsMO = size(MyFragment%Ccabs,2)
+
+   ! print *, "ncabsAO", ncabsAO
+
+   nocctot = nocc   ! core+valence without frozen core, only valence for frozen core energy calc.
+
+   ! We know go through the different steps in the integral/amplitude scheme in
+   ! MP2_integrals_and_amplitudes to find the largest array size.
+   ! Currently this is hardcoded and there are 9 possible candidates for the largest array
+
+
+   ! Set hardcoded array sizes
+   ! *************************
+
+   ! This is currently hardcoded according to the precise structure of MP2_integrals_and_amplitudes_workhorse
+   ! --- better solution is under investigation....
+
+   dim1=0
+   dim2=0
+   dim3=0
+   dim4=0
+
+   WhichStep: select case(step)
+
+   ! STEP 1
+case(1)
+
+   dim1=max(dim1, i8*ncabsAO*nbasis*BatchDimAlpha*BatchDimGamma)
+   dim3=max(dim3, i8*ncabsAO*nocc*BatchDimAlpha*BatchDimGamma)
+   dim2=max(dim2, i8*nvirt*nocc*BatchDimAlpha*BatchDimGamma)
+   dim3=max(dim3, i8*nvirt*nocc*BatchDimAlpha*nocctot)
+
+   ! Memory needed is the sum of the array sizes (no tmp4 here)
+   MemoryNeeded = real(dim1) + real(dim2) + real(dim3)
+
+   ! Convert total memory requirement to GB
+   MemoryNeeded = realk*MemoryNeeded/GB
+
+   ! STEP 2
+case(2)
+
+   dim4=i8*BatchDimAlpha*nvirt*nocc*nocctot
+   dim1=max(dim1, i8*BatchDimA*nvirt*nocc*nocctot)
+   dim3=max(dim3, i8*BatchDimA*nvirt*nocc*nocctot)
+   !     IF(.NOT.DECinfo%OnlyVirtPart)THEN
+   dim2=max(dim2, i8*BatchDimA*nvirt*nocc*noccEOS)
+   !     ENDIF
+   !     IF(.NOT.DECinfo%OnlyOccPart)THEN
+   dim2=max(dim2, i8*nvirtEOS*BatchDimA*nocc*nocctot)
+   dim2=max(dim2, i8*nvirtEOS*nvirtEOS*nocc*nocctot)
+   !     ENDIF
+   ! Memory needed is the sum of the array sizes
+   ! However, tmp1,tmp2, and tmp3 are used for EACH thread.
+   ! Thus, we multiply these by the number of threads
+   MemoryNeeded=real(nthreads)*(real(dim1) + real(dim2) + real(dim3)) +real(dim4)
+
+   !print *,"real dim1 dim2 dim3 dim4", dim1, dim2, dim3, dim4
+
+   ! After loop
+case(3)
+
+   !     IF(.NOT.DECinfo%OnlyVirtPart)THEN
+   dim1=max(dim1, i8*nvirt*noccEOS*noccEOS*nvirt)
+   !     ENDIF
+   !     IF(.NOT.DECinfo%OnlyOccPart)THEN
+   dim1=max(dim1, i8*nvirtEOS*nvirtEOS*nocc*nocctot)
+   !     ENDIF
+   dim2=dim1
+
+   ! Memory needed is the sum of the array sizes
+   MemoryNeeded=real(dim1) + real(dim2)
+
+case default
+   call lsquit('max_arraysize_for_mp2_integrals: &
+      & step must be 1,2, or 3',DECinfo%output)
+
+end select WhichStep
+
+! Convert total memory requirement to GB
+MemoryNeeded = realk*MemoryNeeded/GB
+
+
+! Set output vector
+maxsize(1) = dim1
+maxsize(2) = dim2
+maxsize(3) = dim3
+maxsize(4) = dim4
+
+!print *, "dim1 dim2 dim3 dim4", dim1,dim2,dim3,dim4
+
+end subroutine max_arraysize_for_mp2f12_integrals
 
 
 !> \brief Get memory used for updating arrays in MP2_integrals_and_amplitudes.
@@ -3285,7 +5163,6 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    call tensor_free(Pijab_om2)
    call tensor_free(E2)
    call tensor_free(E1)
-
 
 end subroutine get_simple_parallel_mp2_residual
 
