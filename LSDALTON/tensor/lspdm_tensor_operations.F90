@@ -62,7 +62,7 @@ module lspdm_tensor_operations_module
 #else
      integer(kind=tensor_standard_int),intent(in) :: nelms
 #endif
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
   end subroutine put_acc_tile
@@ -2334,7 +2334,7 @@ module lspdm_tensor_operations_module
      integer, intent(in) :: order(x%mode)
      real(tensor_dp),pointer :: buffer(:)
      real(tensor_dp) :: prex, prey
-     integer :: i,lt,nbuffs,ibuf,ibuf_idx,cmidy,buffer_lt
+     integer :: i,lt,nbuffs,ibuf,ibuf_idx,fbuf_idx,cmidy,buffer_lt
      integer :: xmidx(x%mode), ymidx(y%mode), ytdim(y%mode), ynels
      integer(kind=tensor_mpi_kind),pointer :: req(:)
 #ifdef VAR_MPI
@@ -2407,6 +2407,7 @@ module lspdm_tensor_operations_module
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
+        fbuf_idx = ibuf_idx + ynels
 
         cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
@@ -2418,12 +2419,12 @@ module lspdm_tensor_operations_module
               nel_one_sided = 0
            endif
 
-           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
+           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,req=req(ibuf+1))
 
            nel_one_sided = nel_one_sided + ynels
         else
            call tensor_lock_win(y,cmidy,'s')
-           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
         endif
         call time_start_phase( PHASE_WORK )
 
@@ -2453,6 +2454,8 @@ module lspdm_tensor_operations_module
 
            ibuf = mod(buffer_lt-1,nbuffs)
            ibuf_idx = ibuf*x%tsize + 1
+           fbuf_idx = ibuf_idx + ynels
+
 
            cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
@@ -2464,14 +2467,14 @@ module lspdm_tensor_operations_module
                  nel_one_sided = 0
               endif
 
-              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
+              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,req=req(ibuf+1))
 
               nel_one_sided = nel_one_sided + ynels
 
            else
 
               call tensor_lock_win(y,cmidy,'s')
-              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
 
            endif
 
@@ -2495,6 +2498,7 @@ module lspdm_tensor_operations_module
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
+        fbuf_idx = ibuf_idx + ynels
 
         cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
@@ -2519,14 +2523,14 @@ module lspdm_tensor_operations_module
 
            endif
 
-           call daxpy(x%ti(lt)%e,prey,buffer(ibuf_idx:),1,x%ti(lt)%t,1)
+           call daxpy(x%ti(lt)%e,prey,buffer(ibuf_idx:fbuf_idx),1,x%ti(lt)%t,1)
 
         case(2)
-           call array_reorder_2d(prey,buffer(ibuf_idx:),ytdim(1),ytdim(2),order,prex,x%ti(lt)%t)
+           call array_reorder_2d(prey,buffer(ibuf_idx:fbuf_idx),ytdim(1),ytdim(2),order,prex,x%ti(lt)%t)
         case(3)
-           call array_reorder_3d(prey,buffer(ibuf_idx:),ytdim(1),ytdim(2),ytdim(3),order,prex,x%ti(lt)%t)
+           call array_reorder_3d(prey,buffer(ibuf_idx:fbuf_idx),ytdim(1),ytdim(2),ytdim(3),order,prex,x%ti(lt)%t)
         case(4)
-           call array_reorder_4d(prey,buffer(ibuf_idx:),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
+           call array_reorder_4d(prey,buffer(ibuf_idx:fbuf_idx),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
         case default
            call lsquit("ERROR(tensor_add_par): mode>4 not yet implemented",-1)
         end select
@@ -4317,12 +4321,12 @@ module lspdm_tensor_operations_module
      implicit none
      !> array to add to the input
      type(tensor),intent(in) :: arr
-     !> basic fotran type array to which arr is added
-     real(tensor_dp),intent(inout) :: fort(*)
-     !> scaling factor for arr
-     real(tensor_dp),intent(in) :: b
      !> nuber of elements in the array
      integer(kind=tensor_long_int), intent(in) :: nelms
+     !> basic fotran type array to which arr is added
+     real(tensor_dp),intent(inout) :: fort(nelms)
+     !> scaling factor for arr
+     real(tensor_dp),intent(in) :: b
      !> logical specifying whether the tiles are in pdm
      logical, intent(in) :: pdm
      !> reorder if the array is reorder with respect to the fortran array
@@ -4383,8 +4387,8 @@ module lspdm_tensor_operations_module
   subroutine cp_tileddata2fort(arr,fort,nelms,pdm,order)
      implicit none
      type(tensor),intent(in) :: arr
-     real(tensor_dp),intent(inout) :: fort(*)
      integer(kind=tensor_long_int), intent(in) :: nelms
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, intent(in) :: pdm
      integer, intent(in), optional :: order(arr%mode)
      integer :: i,j,k,minimode(arr%mode),o(arr%mode), mode
@@ -4437,8 +4441,8 @@ module lspdm_tensor_operations_module
      implicit none
      real(tensor_dp),intent(in)          :: pre1,pre2
      type(tensor),intent(in)         :: arr
-     real(tensor_dp),intent(in)          :: fort(*)
      integer(kind=long), intent(in)  :: nelms
+     real(tensor_dp),intent(in)          :: fort(nelms)
      integer(kind=tensor_mpi_kind)           :: nod
      integer, intent(in), optional             :: oo(arr%mode)
      real(tensor_dp),intent(inout),target,optional :: wrk(*)
@@ -4647,8 +4651,8 @@ module lspdm_tensor_operations_module
      implicit none
      real(tensor_dp),intent(in)             :: pre1,pre2
      type(tensor),intent(in)            :: arr
-     real(tensor_dp),intent(inout)          :: fort(*)
      integer(kind=long), intent(in)     :: nelms
+     real(tensor_dp),intent(inout)          :: fort(nelms)
      integer(kind=tensor_mpi_kind)              :: nod
      integer, intent(in), optional             :: oo(arr%mode)
      real(tensor_dp),intent(inout),target,optional :: wrk(*)
@@ -4869,8 +4873,8 @@ module lspdm_tensor_operations_module
   subroutine tensor_gather_2cme(arr,fort,nelms,pos,oo,wrk,iwrk)
      implicit none
      type(tensor),intent(in)             :: arr
-     real(tensor_dp),intent(inout)          :: fort(*)
      integer(kind=long), intent(in)     :: nelms
+     real(tensor_dp),intent(inout)          :: fort(nelms)
      integer,intent(in)                 :: pos(2)
      integer(kind=tensor_mpi_kind)              :: nod
      integer, intent(in), optional             :: oo(arr%mode)
@@ -5538,8 +5542,8 @@ module lspdm_tensor_operations_module
 
   subroutine pn(a,n,norm)
      implicit none
-     real(tensor_dp), intent(in) :: a(*)
      integer,intent(in) :: n
+     real(tensor_dp), intent(in) :: a(n)
      real(tensor_dp), intent(out), optional :: norm
      integer :: i
      real(tensor_dp) :: nrm
@@ -5820,7 +5824,7 @@ module lspdm_tensor_operations_module
      !> input, the index of the tile in modular form and the number of elements
      integer,intent(in) :: modidx(arr%mode),nelms
      !> input the fortan array which should be transferred to the tile
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
      integer :: cidx
@@ -5832,7 +5836,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer,intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
      call tensor_accumulate_tile_combidx4(arr,globtilenr,fort,&
@@ -5844,7 +5848,7 @@ module lspdm_tensor_operations_module
      integer,intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
      !> input the fortan array which should be transferred to the tile
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set, flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
      integer(kind=tensor_mpi_kind) :: dest
@@ -5887,7 +5891,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer,intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
      call tensor_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
@@ -5900,7 +5904,7 @@ module lspdm_tensor_operations_module
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
      integer(kind=tensor_long_int),intent(in) :: nelms
      !> input the fortan array which should be transferred to the tile
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      integer(kind=tensor_mpi_kind) :: dest
      logical :: ls
      integer(kind=tensor_standard_int) :: gt
@@ -5948,7 +5952,7 @@ module lspdm_tensor_operations_module
      implicit none
      type(tensor),intent(in) ::arr
      integer,intent(in) :: modidx(arr%mode),nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
      logical :: ls
@@ -5964,7 +5968,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer,intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
      call tensor_puttile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
@@ -5974,7 +5978,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer,intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
      logical :: ls
@@ -6018,7 +6022,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer,intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
      call tensor_puttile_combidx4(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
@@ -6028,7 +6032,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer,intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
      logical :: ls
@@ -6077,7 +6081,7 @@ module lspdm_tensor_operations_module
      implicit none
      type(tensor),intent(in) ::arr
      integer,intent(in) :: modidx(arr%mode),nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout),optional :: req
      logical :: ls
@@ -6092,7 +6096,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer(kind=tensor_long_int),intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout),optional :: req
      call tensor_gettile_combidx(arr,globtilenr,&
@@ -6103,7 +6107,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer(kind=tensor_standard_int),intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout),optional :: req
      call tensor_gettile_combidx(arr,int(globtilenr,kind=tensor_long_int),&
@@ -6114,7 +6118,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer(kind=tensor_long_int),intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout),optional :: req
      call tensor_gettile_combidx(arr,globtilenr,&
@@ -6125,7 +6129,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer(kind=tensor_standard_int),intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout),optional :: req
      call tensor_gettile_combidx(arr,int(globtilenr,kind=tensor_long_int),&
@@ -6137,7 +6141,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(in) :: arr
      integer(kind=tensor_long_int),intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(*)
+     real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout),optional :: req
      integer(kind=tensor_mpi_kind) :: source,r
