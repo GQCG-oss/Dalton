@@ -2088,7 +2088,7 @@ contains
 !> MP2F12 workhorse 
 !> Author: Y. M. Wang
 !> Date: 24.07.15
-subroutine MP2F12_Ccoupling_energy(MyFragment, E21)
+subroutine MP2F12_Ccoupling_energy(MyFragment,bat,E21)
 
     implicit none
 
@@ -2100,7 +2100,7 @@ subroutine MP2F12_Ccoupling_energy(MyFragment, E21)
     type(decfrag), intent(inout) :: MyFragment
     !> For MPI:  master rank - this is determined inside subroutine
     !> For MPI:  slave rank - this is determined based on input (effectively intent(in))
-    type(mp2_batch_construction) :: bat
+    type(mp2_batch_construction), intent(inout) :: bat
     !> Determines whether djik and blad are calculated (true)
     !> or not (false --> djik and blad not initialized)
    
@@ -2558,7 +2558,7 @@ subroutine MP2F12_Ccoupling_energy(MyFragment, E21)
 
        ! Communicate fragment information to slaves
        ! Removed first_order_integrals 
-       call mpi_communicate_mp2_int_and_amp(MyFragment,bat,.FALSE.,.true.)
+       !call mpi_communicate_mp2_int_and_amp(MyFragment,bat,.FALSE.,.true.)
 
        call time_start_phase( PHASE_WORK )
 
@@ -4387,8 +4387,6 @@ end subroutine Get_ijba_integrals
 
      end do GammaLoop
 
-     !print *, " bat%size1: ",  bat%size1(1),  bat%size1(2),  bat%size1(3),  bat%size1(4)
-
      ! If gamma batch size was set manually we use that value instead
      if(DECinfo%ccsdGbatch/=0) then
         if(DECinfo%PL>0) write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
@@ -5184,7 +5182,7 @@ subroutine MP2_integrals_and_amplitudes_workhorse_slave()
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
-  use mp2_module,only: MP2_integrals_and_amplitudes_workhorse
+  use mp2_module, only: MP2_integrals_and_amplitudes_workhorse, MP2F12_Ccoupling_energy
 
   implicit none
 
