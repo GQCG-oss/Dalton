@@ -1,4 +1,5 @@
 module tensor_mpi_interface_module
+   use infpar_module
    use tensor_parameters_and_counters
    use tensor_mpi_binding_module
    use tensor_type_def_module
@@ -22,7 +23,10 @@ module tensor_mpi_interface_module
                      & tensor_mpi_bcast_tensor_dp, &
                      & tensor_mpi_bcast_log_s,&
                      & tensor_mpi_bcast_log_l, &
-                     & tensor_mpi_bcast_log
+                     & tensor_mpi_bcast_log, &
+                     & tensor_mpi_bcast_char_s,&
+                     & tensor_mpi_bcast_char_l, &
+                     & tensor_mpi_bcast_char
 #else
       module procedure tensor_mpi_dummy
 #endif
@@ -55,14 +59,14 @@ module tensor_mpi_interface_module
     !STD INTEGER BCAST
     subroutine tensor_mpi_bcast_std_int(b,root,comm)
       implicit none
-      integer(kind=tensor_standard_int), intent(inout) :: b
+      integer(kind=tensor_standard_int) :: b
       include "mpi_bcast_vars.inc"
       integer(kind=tensor_standard_int) :: buffer(1)
       n=1
       buffer(1) = b
       call tensor_mpi_bcast_std_int_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_standard_int))
-      b = buffer(1)
+      if( infpar%lg_mynum /= root) b = buffer(1)
     end subroutine tensor_mpi_bcast_std_int
     subroutine tensor_mpi_bcast_std_int_s(buffer,n1,root,comm)
       implicit none
@@ -95,14 +99,14 @@ module tensor_mpi_interface_module
     !LONG INTEGER BCAST
     subroutine tensor_mpi_bcast_long_int(b,root,comm)
       implicit none
-      integer(kind=tensor_long_int), intent(inout)  :: b
+      integer(kind=tensor_long_int) :: b
       include "mpi_bcast_vars.inc"
       integer(kind=tensor_long_int) :: buffer(1)
       n=1
       buffer(1) = b
       call tensor_mpi_bcast_long_int_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_long_int))
-      b = buffer(1)
+      if( infpar%lg_mynum /= root) b = buffer(1)
     end subroutine tensor_mpi_bcast_long_int
     subroutine tensor_mpi_bcast_long_int_s(buffer,n1,root,comm)
       implicit none
@@ -142,7 +146,7 @@ module tensor_mpi_interface_module
       buffer(1) = b
       call tensor_mpi_bcast_log_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_log))
-      b = buffer(1)
+      if( infpar%lg_mynum /= root) b = buffer(1)
     end subroutine tensor_mpi_bcast_log
     subroutine tensor_mpi_bcast_log_s(buffer,n1,root,comm)
       implicit none
@@ -182,7 +186,7 @@ module tensor_mpi_interface_module
       buffer(1) = b
       call tensor_mpi_bcast_dp_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_dp))
-      b = buffer(1)
+      if( infpar%lg_mynum /= root) b = buffer(1)
     end subroutine tensor_mpi_bcast_tensor_dp
     subroutine tensor_mpi_bcast_tensor_dp_s(buffer,n1,root,comm)
       implicit none
@@ -210,6 +214,42 @@ module tensor_mpi_interface_module
       include "mpi_bcast_vars.inc"
       include "mpi_bcast_std.inc"
     end subroutine tensor_mpi_bcast_dp_basic
+
+    !CHARACTER BCAST
+    subroutine tensor_mpi_bcast_char(buffer,root,comm)
+      implicit none
+      character*(*), intent(inout) :: buffer
+      include "mpi_bcast_vars.inc"
+      n=1
+      call tensor_mpi_bcast_char_basic(buffer,n,root,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
+    end subroutine tensor_mpi_bcast_char
+    subroutine tensor_mpi_bcast_char_s(buffer,n1,root,comm)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      character*(*), intent(inout)                  :: buffer
+      include "mpi_bcast_vars.inc"
+      n=n1
+      call tensor_mpi_bcast_char_basic(buffer,n,root,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
+    end subroutine tensor_mpi_bcast_char_s
+    subroutine tensor_mpi_bcast_char_l(buffer,n1,root,comm)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      character*(*), intent(inout)              :: buffer
+      include "mpi_bcast_vars.inc"
+      n=n1
+      call tensor_mpi_bcast_char_basic(buffer,n,root,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
+    end subroutine tensor_mpi_bcast_char_l
+    subroutine tensor_mpi_bcast_char_basic(buffer,n1,root,comm,stats)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      character*(*), intent(inout)              :: buffer
+      type(tensor_mpi_stats_type),intent(inout) :: stats
+      include "mpi_bcast_vars.inc"
+      include "mpi_bcast_std.inc"
+    end subroutine tensor_mpi_bcast_char_basic
 #endif
 
 end module tensor_mpi_interface_module

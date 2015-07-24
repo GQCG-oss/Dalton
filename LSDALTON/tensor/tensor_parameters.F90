@@ -14,6 +14,7 @@ module tensor_parameters_and_counters
    integer, parameter :: tensor_standard_log = 4
    integer, parameter :: tensor_long_int     = 8
    integer, parameter :: tensor_long_log     = 8
+   integer, parameter :: tensor_char_size    = 1
    integer, parameter :: tensor_char_4       = 4
 !#ifdef VAR_MPI_32BIT_INT
    integer, parameter :: tensor_mpi_kind     = 4

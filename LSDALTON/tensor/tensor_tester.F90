@@ -11,6 +11,7 @@ module tensor_tester_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use tensor_mpi_interface_module
 #endif
   use tensor_interface_module
 
@@ -269,7 +270,7 @@ module tensor_tester_module
     !get the slaves into this routine
     if(master)then
       print *,"MASTER GETTING SLAVES"
-      call ls_mpibcast(ARRAYTEST,infpar%master,infpar%lg_comm)
+      call tensor_mpi_bcast(ARRAYTEST,infpar%master,infpar%lg_comm)
       write (output,*)""
       write (output,*)""
       write (output,*)"TESTING PARALLEL ACCESS TO THE SAME ROUTINES"
@@ -277,7 +278,7 @@ module tensor_tester_module
     else
       print *,"SLAVE ARRIVED",infpar%lg_mynum
     endif
-    call ls_mpibcast(output,infpar%master,MPI_COMM_LSDALTON)
+    call tensor_mpi_bcast(output,infpar%master,MPI_COMM_LSDALTON)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!ALL OF THE SLAVES WILL BE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -489,8 +490,8 @@ module tensor_tester_module
        call tensor_free_mem(buf1)
        call tensor_free_mem(buf2)
     endif
-    call ls_mpibcast(test1%elm1,test1%nelms,infpar%master,infpar%lg_comm)
-    call ls_mpibcast(test2%elm1,test2%nelms,infpar%master,infpar%lg_comm)
+    call tensor_mpi_bcast(test1%elm1,test1%nelms,infpar%master,infpar%lg_comm)
+    call tensor_mpi_bcast(test2%elm1,test2%nelms,infpar%master,infpar%lg_comm)
     call lsmpi_barrier(infpar%lg_comm)
     call tensor_mv_dense2tiled(test1,.true.)
     call tensor_mv_dense2tiled(test2,.true.)

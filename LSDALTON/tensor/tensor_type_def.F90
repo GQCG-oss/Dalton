@@ -120,11 +120,12 @@ module tensor_type_def_module
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_log           = 3
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_long_int      = 4
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_standard_int  = 5
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_char                 = 6
   !MPI OPERATION INDEX
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_bcast           = 1
   !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LISTS ABOVE
   !> this counter is for the identification of the number of different data types
-  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_dat = 5
+  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_dat = 6
   !> this counter is for the identification of the number of different mpi operations
   integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 1
 
@@ -297,6 +298,9 @@ module tensor_type_def_module
         case(tensor_mpi_idx_tensor_log)
            sze = tensor_log
            d   = MPI_LOGICAL
+        case(tensor_mpi_idx_char)
+           sze = tensor_char_size 
+           d   = MPI_CHARACTER
         case default 
            call tensor_status_quit("ERROR(tensor_init_mpi_counter): wrong index in&
               & setting up the mpi counters. This is a coding error in&
