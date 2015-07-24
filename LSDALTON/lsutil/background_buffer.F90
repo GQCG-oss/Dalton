@@ -9,6 +9,7 @@ module background_buffer_module
 
   public max_n_pointers
   public buf_realk
+  public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 
 
   private
@@ -38,5 +39,25 @@ module background_buffer_module
   save
 
   type(bg_buf_realk) :: buf_realk
+
+  contains
+  function mem_is_background_buf_init() result(init)
+     implicit none
+     logical :: init
+     init = buf_realk%init
+  end function mem_is_background_buf_init
+
+  function mem_get_bg_buf_n() result(n)
+     implicit none
+     integer(kind=8) :: n
+     n = buf_realk%nmax
+  end function mem_get_bg_buf_n
+
+  function mem_get_bg_buf_free() result(n)
+     implicit none
+     integer(kind=8) :: n
+     n = buf_realk%nmax-buf_realk%offset
+  end function mem_get_bg_buf_free
+
 
 end module background_buffer_module

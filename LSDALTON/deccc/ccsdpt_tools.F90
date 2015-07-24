@@ -455,6 +455,8 @@ contains
        ccsd_i => ccsd_pdm_i(start_ccsd_i+1:end_ccsd_i)
        vvvo_i => vvvo_pdm_i(start_vvvo_i+1:end_vvvo_i)
 
+!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+
     case(2)
 
        start_ccsd_j = int(i8*j_count*(i8*nocc)*(i8*nvirt**2),kind=8)
@@ -471,12 +473,18 @@ contains
           ovoo_ij => ovoo(:,:,i,j)
           vvoo_ij => vvoo_pdm_ij(start_ij+1:end_ij)
 
+!$acc enter data pcopyin(ovoo_ij) async(1)
+!$acc enter data pcopyin(vvoo_ij) async(3)
+
        else
 
           ccsd_j => ccsd_pdm_j(start_ccsd_j+1:end_ccsd_j)
           vvvo_j => vvvo_pdm_j(start_vvvo_j+1:end_vvvo_j)
           ovoo_ij => ovoo(:,:,i,j); ovoo_ji => ovoo(:,:,j,i)
           vvoo_ij => vvoo_pdm_ij(start_ij+1:end_ij); vvoo_ji => vvoo_pdm_ji(start_ji+1:end_ji)
+
+!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
+!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
 
        endif
 
@@ -495,28 +503,37 @@ contains
        end_jk = start_jk + int(i8*nvirt**2,kind=8)
        end_kj = start_kj + int(i8*nvirt**2,kind=8)
  
-        if ((i .eq. j) .and. (j .gt. k)) then
+       if ((i .eq. j) .and. (j .gt. k)) then
 
-           ccsd_k => ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k)
-           vvvo_k => vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k)
-           ovoo_ik => ovoo(:,:,i,k); ovoo_ki => ovoo(:,:,k,i)
-           vvoo_ik => vvoo_pdm_ik(start_ik+1:end_ik); vvoo_ki => vvoo_pdm_ki(start_ki+1:end_ki)
+          ccsd_k => ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k)
+          vvvo_k => vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k)
+          ovoo_ik => ovoo(:,:,i,k); ovoo_ki => ovoo(:,:,k,i)
+          vvoo_ik => vvoo_pdm_ik(start_ik+1:end_ik); vvoo_ki => vvoo_pdm_ki(start_ki+1:end_ki)
 
-        else if ((i .gt. j) .and. (j .eq. k)) then
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
 
-           ovoo_jk => ovoo(:,:,j,k)
-           vvoo_jk => vvoo_pdm_jk(start_jk+1:end_jk)
+       else if ((i .gt. j) .and. (j .eq. k)) then
 
-        else
+          ovoo_jk => ovoo(:,:,j,k)
+          vvoo_jk => vvoo_pdm_jk(start_jk+1:end_jk)
 
-           ccsd_k => ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k)
-           vvvo_k => vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k)
-           ovoo_ik => ovoo(:,:,i,k); ovoo_ki => ovoo(:,:,k,i)
-           ovoo_jk => ovoo(:,:,j,k); ovoo_kj => ovoo(:,:,k,j)
-           vvoo_ik => vvoo_pdm_ik(start_ik+1:end_ik); vvoo_ki => vvoo_pdm_ki(start_ki+1:end_ki)
-           vvoo_jk => vvoo_pdm_jk(start_jk+1:end_jk); vvoo_kj => vvoo_pdm_kj(start_kj+1:end_kj)
+!$acc enter data pcopyin(ovoo_jk) async(1)
+!$acc enter data pcopyin(vvoo_jk) async(3)
 
-        end if
+       else
+
+          ccsd_k => ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k)
+          vvvo_k => vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k)
+          ovoo_ik => ovoo(:,:,i,k); ovoo_ki => ovoo(:,:,k,i)
+          ovoo_jk => ovoo(:,:,j,k); ovoo_kj => ovoo(:,:,k,j)
+          vvoo_ik => vvoo_pdm_ik(start_ik+1:end_ik); vvoo_ki => vvoo_pdm_ki(start_ki+1:end_ki)
+          vvoo_jk => vvoo_pdm_jk(start_jk+1:end_jk); vvoo_kj => vvoo_pdm_kj(start_kj+1:end_kj)
+
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
+
+       end if
 
     end select
 
@@ -549,6 +566,8 @@ contains
        ccsd_i => ccsd_doubles(:,:,:,i)
        vvvo_i => vvvo(:,:,:,i)
 
+!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+
     case(2)
 
        if (j .eq. i) then
@@ -556,12 +575,18 @@ contains
           ovoo_ij => ovoo(:,:,i,j)
           vvoo_ij => vvoo(:,:,i,j)
 
+!$acc enter data pcopyin(ovoo_ij) async(1)
+!$acc enter data pcopyin(vvoo_ij) async(3)
+
        else ! i .gt. j
 
           ccsd_j => ccsd_doubles(:,:,:,j)
           vvvo_j => vvvo(:,:,:,j)
           ovoo_ij => ovoo(:,:,i,j); ovoo_ji => ovoo(:,:,j,i)
           vvoo_ij => vvoo(:,:,i,j); vvoo_ji => vvoo(:,:,j,i)
+
+!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
+!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
 
        end if
 
@@ -574,10 +599,16 @@ contains
           ovoo_ik => ovoo(:,:,i,k); ovoo_ki => ovoo(:,:,k,i)
           vvoo_ik => vvoo(:,:,i,k); vvoo_ki => vvoo(:,:,k,i)
 
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
+
        else if ((i .gt. j) .and. (j .eq. k)) then
 
           ovoo_jk => ovoo(:,:,j,k)
           vvoo_jk => vvoo(:,:,j,k)
+
+!$acc enter data pcopyin(ovoo_jk) async(1)
+!$acc enter data pcopyin(vvoo_jk) async(3)
 
        else
 
@@ -587,6 +618,9 @@ contains
           ovoo_jk => ovoo(:,:,j,k); ovoo_kj => ovoo(:,:,k,j)
           vvoo_ik => vvoo(:,:,i,k); vvoo_ki => vvoo(:,:,k,i)
           vvoo_jk => vvoo(:,:,j,k); vvoo_kj => vvoo(:,:,k,j)
+
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
 
        end if
 
@@ -629,6 +663,8 @@ contains
        ccsd_a => ccsd_pdm_a(start_ccsd_a+1:end_ccsd_a)
        ooov_a => ooov(:,:,:,a)
 
+!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+
     case(2)
 
        start_ccsd_b = int(i8*b_count*(i8*nvirt)*(i8*nocc**2),kind=8)
@@ -647,6 +683,9 @@ contains
           vovv_ab => vovv_pdm_b(start_vovv_ab+1:end_vovv_ab)
           oovv_ab => oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab)
 
+!$acc enter data pcopyin(vovv_ab) async(1)
+!$acc enter data pcopyin(oovv_ab) async(3)
+
        else
 
           ccsd_b => ccsd_pdm_b(start_ccsd_b+1:end_ccsd_b)
@@ -655,6 +694,9 @@ contains
           vovv_ba => vovv_pdm_a(start_vovv_ba+1:end_vovv_ba)
           oovv_ab => oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab)
           oovv_ba => oovv_pdm_ba(start_oovv_ba+1:end_oovv_ba)
+
+!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
+!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
 
        endif
 
@@ -687,12 +729,18 @@ contains
           vovv_ca => vovv_pdm_a(start_vovv_ca+1:end_vovv_ca)
           oovv_ac => oovv_pdm_ac(start_oovv_ac+1:end_oovv_ac)
           oovv_ca => oovv_pdm_ca(start_oovv_ca+1:end_oovv_ca)
+
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
  
        else if ((a .gt. b) .and. (b .eq. c)) then
  
           vovv_bc => vovv_pdm_c(start_vovv_bc+1:end_vovv_bc)
           oovv_bc => oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc)
  
+!$acc enter data pcopyin(vovv_bc) async(1)
+!$acc enter data pcopyin(oovv_bc) async(3)
+
        else
    
           ccsd_c => ccsd_pdm_c(start_ccsd_c+1:end_ccsd_c)
@@ -705,6 +753,9 @@ contains
           oovv_ca => oovv_pdm_ca(start_oovv_ca+1:end_oovv_ca)
           oovv_bc => oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc)
           oovv_cb => oovv_pdm_cb(start_oovv_cb+1:end_oovv_cb)
+
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
    
        end if
 
@@ -739,6 +790,8 @@ contains
        ccsd_a => ccsd_doubles(:,:,:,a)
        ooov_a => ooov(:,:,:,a)
 
+!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+
     case(2)
 
        if (b .eq. a) then
@@ -746,6 +799,9 @@ contains
           vovv_ab => vovv(:,:,a,b)
           oovv_ab => oovv(:,:,a,b)
   
+!$acc enter data pcopyin(vovv_ab) async(1)
+!$acc enter data pcopyin(oovv_ab) async(3)
+
        else ! a .gt. b
   
           ccsd_b => ccsd_doubles(:,:,:,b)
@@ -753,6 +809,9 @@ contains
           vovv_ab => vovv(:,:,a,b); vovv_ba => vovv(:,:,b,a)
           oovv_ab => oovv(:,:,a,b); oovv_ba => oovv(:,:,b,a)
   
+!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
+!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
+
        endif
 
     case(3)
@@ -764,11 +823,17 @@ contains
           vovv_ac => vovv(:,:,a,c); vovv_ca => vovv(:,:,c,a)
           oovv_ac => oovv(:,:,a,c); oovv_ca => oovv(:,:,c,a)
  
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
+
        else if ((a .gt. b) .and. (b .eq. c)) then
  
           vovv_bc => vovv(:,:,b,c)
           oovv_bc => oovv(:,:,b,c)
  
+!$acc enter data pcopyin(vovv_bc) async(1)
+!$acc enter data pcopyin(oovv_bc) async(3)
+
        else
  
           ccsd_c => ccsd_doubles(:,:,:,c)
@@ -778,6 +843,9 @@ contains
           oovv_ac => oovv(:,:,a,c); oovv_ca => oovv(:,:,c,a)
           oovv_bc => oovv(:,:,b,c); oovv_cb => oovv(:,:,c,b)
  
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
+
        end if
 
     end select
@@ -824,6 +892,8 @@ contains
        ccsd_i = real(ccsd_pdm_i(start_ccsd_i+1:end_ccsd_i),kind=4)
        vvvo_i = real(vvvo_pdm_i(start_vvvo_i+1:end_vvvo_i),kind=4)
 
+!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+
     case(2)
 
        start_ccsd_j = int(i8*j_count*(i8*nocc)*(i8*nvirt**2),kind=8)
@@ -840,12 +910,18 @@ contains
           ovoo_ij = real(ovoo(:,:,i,j),kind=4)
           vvoo_ij = real(vvoo_pdm_ij(start_ij+1:end_ij),kind=4)
 
+!$acc enter data pcopyin(ovoo_ij) async(1)
+!$acc enter data pcopyin(vvoo_ij) async(3)
+
        else
 
           ccsd_j = real(ccsd_pdm_j(start_ccsd_j+1:end_ccsd_j),kind=4)
           vvvo_j = real(vvvo_pdm_j(start_vvvo_j+1:end_vvvo_j),kind=4)
           ovoo_ij = real(ovoo(:,:,i,j),kind=4); ovoo_ji = real(ovoo(:,:,j,i),kind=4)
           vvoo_ij = real(vvoo_pdm_ij(start_ij+1:end_ij),kind=4); vvoo_ji = real(vvoo_pdm_ji(start_ji+1:end_ji),kind=4)
+
+!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
+!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
 
        endif
 
@@ -864,28 +940,37 @@ contains
        end_jk = start_jk + int(i8*nvirt**2,kind=8)
        end_kj = start_kj + int(i8*nvirt**2,kind=8)
  
-        if ((i .eq. j) .and. (j .gt. k)) then
+       if ((i .eq. j) .and. (j .gt. k)) then
 
-           ccsd_k = real(ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k),kind=4)
-           vvvo_k = real(vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k),kind=4)
-           ovoo_ik = real(ovoo(:,:,i,k),kind=4); ovoo_ki = real(ovoo(:,:,k,i),kind=4)
-           vvoo_ik=real(vvoo_pdm_ik(start_ik+1:end_ik),kind=4); vvoo_ki=real(vvoo_pdm_ki(start_ki+1:end_ki),kind=4)
+          ccsd_k = real(ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k),kind=4)
+          vvvo_k = real(vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k),kind=4)
+          ovoo_ik = real(ovoo(:,:,i,k),kind=4); ovoo_ki = real(ovoo(:,:,k,i),kind=4)
+          vvoo_ik=real(vvoo_pdm_ik(start_ik+1:end_ik),kind=4); vvoo_ki=real(vvoo_pdm_ki(start_ki+1:end_ki),kind=4)
 
-        else if ((i .gt. j) .and. (j .eq. k)) then
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
 
-           ovoo_jk = real(ovoo(:,:,j,k),kind=4)
-           vvoo_jk = real(vvoo_pdm_jk(start_jk+1:end_jk),kind=4)
+       else if ((i .gt. j) .and. (j .eq. k)) then
 
-        else
+          ovoo_jk = real(ovoo(:,:,j,k),kind=4)
+          vvoo_jk = real(vvoo_pdm_jk(start_jk+1:end_jk),kind=4)
 
-           ccsd_k = real(ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k),kind=4)
-           vvvo_k = real(vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k),kind=4)
-           ovoo_ik = real(ovoo(:,:,i,k),kind=4); ovoo_ki = real(ovoo(:,:,k,i),kind=4)
-           ovoo_jk = real(ovoo(:,:,j,k),kind=4); ovoo_kj = real(ovoo(:,:,k,j),kind=4)
-           vvoo_ik=real(vvoo_pdm_ik(start_ik+1:end_ik),kind=4); vvoo_ki=real(vvoo_pdm_ki(start_ki+1:end_ki),kind=4)
-           vvoo_jk=real(vvoo_pdm_jk(start_jk+1:end_jk),kind=4); vvoo_kj=real(vvoo_pdm_kj(start_kj+1:end_kj),kind=4)
+!$acc enter data pcopyin(ovoo_jk) async(1)
+!$acc enter data pcopyin(vvoo_jk) async(3)
 
-        end if
+       else
+
+          ccsd_k = real(ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k),kind=4)
+          vvvo_k = real(vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k),kind=4)
+          ovoo_ik = real(ovoo(:,:,i,k),kind=4); ovoo_ki = real(ovoo(:,:,k,i),kind=4)
+          ovoo_jk = real(ovoo(:,:,j,k),kind=4); ovoo_kj = real(ovoo(:,:,k,j),kind=4)
+          vvoo_ik=real(vvoo_pdm_ik(start_ik+1:end_ik),kind=4); vvoo_ki=real(vvoo_pdm_ki(start_ki+1:end_ki),kind=4)
+          vvoo_jk=real(vvoo_pdm_jk(start_jk+1:end_jk),kind=4); vvoo_kj=real(vvoo_pdm_kj(start_kj+1:end_kj),kind=4)
+
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
+
+       end if
 
     end select
 
@@ -920,6 +1005,8 @@ contains
        ccsd_i = real(ccsd_doubles(:,:,:,i),kind=4)
        vvvo_i = real(vvvo(:,:,:,i),kind=4)
 
+!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+
     case(2)
 
        if (j .eq. i) then
@@ -927,12 +1014,18 @@ contains
           ovoo_ij = real(ovoo(:,:,i,j),kind=4)
           vvoo_ij = real(vvoo(:,:,i,j),kind=4)
 
+!$acc enter data pcopyin(ovoo_ij) async(1)
+!$acc enter data pcopyin(vvoo_ij) async(3)
+
        else ! i .gt. j
 
           ccsd_j = real(ccsd_doubles(:,:,:,j),kind=4)
           vvvo_j = real(vvvo(:,:,:,j),kind=4)
           ovoo_ij = real(ovoo(:,:,i,j),kind=4); ovoo_ji = real(ovoo(:,:,j,i),kind=4)
           vvoo_ij = real(vvoo(:,:,i,j),kind=4); vvoo_ji = real(vvoo(:,:,j,i),kind=4)
+
+!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
+!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
 
        end if
 
@@ -945,10 +1038,16 @@ contains
           ovoo_ik = real(ovoo(:,:,i,k),kind=4); ovoo_ki = real(ovoo(:,:,k,i),kind=4)
           vvoo_ik = real(vvoo(:,:,i,k),kind=4); vvoo_ki = real(vvoo(:,:,k,i),kind=4)
 
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
+
        else if ((i .gt. j) .and. (j .eq. k)) then
 
           ovoo_jk = real(ovoo(:,:,j,k),kind=4)
           vvoo_jk = real(vvoo(:,:,j,k),kind=4)
+
+!$acc enter data pcopyin(ovoo_jk) async(1)
+!$acc enter data pcopyin(vvoo_jk) async(3)
 
        else
 
@@ -958,6 +1057,9 @@ contains
           ovoo_jk = real(ovoo(:,:,j,k),kind=4); ovoo_kj = real(ovoo(:,:,k,j),kind=4)
           vvoo_ik = real(vvoo(:,:,i,k),kind=4); vvoo_ki = real(vvoo(:,:,k,i),kind=4)
           vvoo_jk = real(vvoo(:,:,j,k),kind=4); vvoo_kj = real(vvoo(:,:,k,j),kind=4)
+
+!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
+!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
 
        end if
 
@@ -1002,6 +1104,8 @@ contains
        ccsd_a = real(ccsd_pdm_a(start_ccsd_a+1:end_ccsd_a),kind=4)
        ooov_a = real(ooov(:,:,:,a),kind=4)
 
+!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+
     case(2)
 
        start_ccsd_b = int(i8*b_count*(i8*nvirt)*(i8*nocc**2),kind=8)
@@ -1020,6 +1124,9 @@ contains
           vovv_ab = real(vovv_pdm_b(start_vovv_ab+1:end_vovv_ab),kind=4)
           oovv_ab = real(oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab),kind=4)
 
+!$acc enter data pcopyin(vovv_ab) async(1)
+!$acc enter data pcopyin(oovv_ab) async(3)
+
        else
 
           ccsd_b = real(ccsd_pdm_b(start_ccsd_b+1:end_ccsd_b),kind=4)
@@ -1028,6 +1135,9 @@ contains
           vovv_ba = real(vovv_pdm_a(start_vovv_ba+1:end_vovv_ba),kind=4)
           oovv_ab = real(oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab),kind=4)
           oovv_ba = real(oovv_pdm_ba(start_oovv_ba+1:end_oovv_ba),kind=4)
+
+!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
+!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
 
        endif
 
@@ -1061,11 +1171,17 @@ contains
           oovv_ac = real(oovv_pdm_ac(start_oovv_ac+1:end_oovv_ac),kind=4)
           oovv_ca = real(oovv_pdm_ca(start_oovv_ca+1:end_oovv_ca),kind=4)
  
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
+
        else if ((a .gt. b) .and. (b .eq. c)) then
  
           vovv_bc = real(vovv_pdm_c(start_vovv_bc+1:end_vovv_bc),kind=4)
           oovv_bc = real(oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc),kind=4)
  
+!$acc enter data pcopyin(vovv_bc) async(1)
+!$acc enter data pcopyin(oovv_bc) async(3)
+
        else
    
           ccsd_c = real(ccsd_pdm_c(start_ccsd_c+1:end_ccsd_c),kind=4)
@@ -1079,6 +1195,9 @@ contains
           oovv_bc = real(oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc),kind=4)
           oovv_cb = real(oovv_pdm_cb(start_oovv_cb+1:end_oovv_cb),kind=4)
    
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
+
        end if
 
     end select
@@ -1114,6 +1233,8 @@ contains
         ccsd_a = real(ccsd_doubles(:,:,:,a),kind=4)
         ooov_a = real(ooov(:,:,:,a),kind=4)
 
+!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+
     case(2)
 
        if (b .eq. a) then
@@ -1121,12 +1242,18 @@ contains
           vovv_ab = real(vovv(:,:,a,b),kind=4)
           oovv_ab = real(oovv(:,:,a,b),kind=4)
 
+!$acc enter data pcopyin(vovv_ab) async(1)
+!$acc enter data pcopyin(oovv_ab) async(3)
+
        else ! a .gt. b
 
           ccsd_b = real(ccsd_doubles(:,:,:,b),kind=4)
           ooov_b = real(ooov(:,:,:,b),kind=4)
           vovv_ab = real(vovv(:,:,a,b),kind=4); vovv_ba = real(vovv(:,:,b,a),kind=4)
           oovv_ab = real(oovv(:,:,a,b),kind=4); oovv_ba = real(oovv(:,:,b,a),kind=4)
+
+!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
+!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
 
        endif
 
@@ -1139,10 +1266,16 @@ contains
           vovv_ac = real(vovv(:,:,a,c),kind=4); vovv_ca = real(vovv(:,:,c,a),kind=4)
           oovv_ac = real(oovv(:,:,a,c),kind=4); oovv_ca = real(oovv(:,:,c,a),kind=4)
 
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
+
        else if ((a .gt. b) .and. (b .eq. c)) then
 
           vovv_bc = real(vovv(:,:,b,c),kind=4)
           oovv_bc = real(oovv(:,:,b,c),kind=4)
+
+!$acc enter data pcopyin(vovv_bc) async(1)
+!$acc enter data pcopyin(oovv_bc) async(3)
 
        else
 
@@ -1152,6 +1285,9 @@ contains
           vovv_bc = real(vovv(:,:,b,c),kind=4); vovv_cb = real(vovv(:,:,c,b),kind=4)
           oovv_ac = real(oovv(:,:,a,c),kind=4); oovv_ca = real(oovv(:,:,c,a),kind=4)
           oovv_bc = real(oovv(:,:,b,c),kind=4); oovv_cb = real(oovv(:,:,c,b),kind=4)
+
+!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
+!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
 
        end if
 

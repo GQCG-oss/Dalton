@@ -4849,7 +4849,7 @@
         integer(INTD):: mpi_dtyp,errc
 
         errc=0; dil_tensor_norm1=0E0_tensor_dp; nrm1=0E0_tensor_dp
-        call lsmpi_barrier(infpar%lg_comm) !complete all outstanding communications
+        call tensor_mpi_barrier(infpar%lg_comm) !complete all outstanding communications
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,l) REDUCTION(+:nrm1)
         do i=1,tens%nlti
 !$OMP DO SCHEDULE(GUIDED)
@@ -5278,25 +5278,25 @@
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Done: Result =",3(1x,D25.15))') impir,val0,val1,val2
         flush(CONS_OUT)
 !Init tensors:
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Input tensor init started ...")') impir
         call dil_tensor_init(ltens,1d-2)
         call dil_tensor_init(rtens,1d-3)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Input tensor init finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Compute input tensor norms:
         val1=tensor_tiled_pdm_get_nrm2(ltens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val2=tensor_tiled_pdm_get_nrm2(rtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Left/Right 2-norms:",2(1x,D25.15))') val1,val2
         tcs='D(a,b,c,d)=L(e,f,d,b)*R(f,a,c,e)'
 !ALL 'DDD':
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: All-DDD tensor contraction setup started ...")') impir
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm at the beginning: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5305,16 +5305,16 @@
         call dil_set_tens_contr_spec(tcr,tcs,errc); print *,'CSPEC ERR = ',errc
         mem_lim=dil_get_min_buf_size(tcr,errc); print *,'BUF SIZE ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished: Memory limit = ",i12," bytes")') impir,mem_lim
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction started:")') impir
         if(impir.eq.0) write(*,'("Global DDD started ... ")',ADVANCE='NO')
         tmb=process_wtime()
         call dil_tensor_contract(tcr,DIL_TC_ALL,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         tm=process_wtime(tmb); if(impir.eq.0) write(*,'("Done in ",F10.4," s.")') tm
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm at the end: ",D25.15)') val0
         if(impir.eq.0) write(*,'("Destination norm at the end: ",D25.15)') val0
 !        goto 999
@@ -5374,16 +5374,16 @@
         endif
         do i=1,lvol; larr(i)=1d-2; enddo
         do i=1,rvol; rarr(i)=1d-3; enddo
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Initialization finished.")') impir
         flush(CONS_OUT)
 !Tensor contraction 'DDD':
         mem_lim=384*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: DDD tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5391,31 +5391,31 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
 !Tensor contraction 'LLL':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: LLL tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         do i=1,dvol; darr(i)=0d0; enddo
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,drank,dful,darr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_args(tcr,'l',errc,lrank,lful,larr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_args(tcr,'r',errc,rrank,rful,rarr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=0d0; do i=1,dvol; val0=val0+darr(i)**2; enddo
         print *,'Local DTENS (2-norm)^2 = ',val0,impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Tensor contraction 'LDD':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: LDD tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
@@ -5426,20 +5426,20 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=0d0; do i=1,dvol; val0=val0+darr(i)**2; enddo
         print *,'Local DTENS (2-norm)^2 = ',val0,impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Tensor contraction 'DLL':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: DLL tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5447,12 +5447,12 @@
         call dil_set_tens_contr_args(tcr,'r',errc,rrank,rful,rarr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
 !Tensor contraction 'LLD':
         mem_lim=1024*1048576_INTL
@@ -5464,20 +5464,20 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=0d0; do i=1,dvol; val0=val0+darr(i)**2; enddo
         print *,'Local DTENS (2-norm)^2 = ',val0,impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Tensor contraction 'DLD':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: DLD tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5485,12 +5485,12 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         val0=dil_tensor_norm1(dtens,errc); print *,'NORM1 ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm1: ",D25.15)') val0
@@ -5499,7 +5499,7 @@
         if(associated(darr)) deallocate(darr)
         if(associated(larr)) deallocate(larr)
         if(associated(rarr)) deallocate(rarr)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call MPI_ABORT(infpar%lg_comm,0_tensor_mpi_kind,mpi_err)
         return
         end subroutine dil_test

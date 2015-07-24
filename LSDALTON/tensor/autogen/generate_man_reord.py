@@ -773,10 +773,9 @@ def write_main_header(f,now,names,args,tensordir,minr,maxr,interface_types):
    f.write("!END VARS\n\n")
 
    f.write("module reorder_frontend_module\n")
-   f.write("  use precision\n")
    f.write("  use tensor_parameters_and_counters\n")
+   f.write("  use tensor_allocator\n")
    f.write("  use get_idx_mod\n")
-   f.write("  use memory_handling\n")
    
    for name in names:
       f.write("  use "+name+"_module\n")
@@ -868,13 +867,13 @@ module reorder_tester_module\n\
     for i in range(mode):
       words += "      n"+abc[i]+"="+str(int(((8000.0*1000.0)/(8.0*2.0))**(1.0/(mode*1.0)))+1+randrange(10))+"\n"
     words +="\
-      call mem_alloc(in1,"
+      call tensor_alloc_mem(in1,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(res,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(res,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(sto,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(sto,"
     for i in range(mode):
       words += "n" + abc[i] +"*"
     words = words[0:-1]+")\n      call random_number(in1)\n      call random_number(sto)\n\n" 
@@ -960,7 +959,7 @@ module reorder_tester_module\n\
         f.write("          write (LUPRI,*)\"\"\n\n")
       pc += 1
     f.write("        enddo\n      enddo\n")
-    f.write("      call mem_dealloc(in1)\n      call mem_dealloc(res)\n      call mem_dealloc(sto)\n")
+    f.write("      call tensor_free_mem(in1)\n      call tensor_free_mem(res)\n      call tensor_free_mem(sto)\n")
     f.write("    endif\n")
 
 
@@ -983,20 +982,20 @@ module reorder_tester_module\n\
         sze = 2*sze+1
       words += "      n"+abc[i]+"="+str(sze)+"\n"
 
-    words +="      call mem_alloc(til,"
+    words +="      call tensor_alloc_mem(til,"
     for i in range(mode):
       if(i==mode-1):
         words+="(n"+abc[i]+"/2))\n"
       else:
         words+="n"+abc[i]+"*"
     words +="\
-      call mem_alloc(in1,"
+      call tensor_alloc_mem(in1,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(res,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(res,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(sto,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(sto,"
     for i in range(mode):
       words += "n" + abc[i] +"*"
     words = words[0:-1]+")\n      call random_number(in1)\n      call random_number(sto)\n\n" 
@@ -1201,7 +1200,7 @@ module reorder_tester_module\n\
         f.write("          write (LUPRI,*)\"\"\n\n")
       pc += 1
     f.write("        enddo\n      enddo\n")
-    f.write("      call mem_dealloc(til)\n      call mem_dealloc(in1)\n      call mem_dealloc(res)\n      call mem_dealloc(sto)\n")
+    f.write("      call tensor_free_mem(til)\n      call tensor_free_mem(in1)\n      call tensor_free_mem(res)\n      call tensor_free_mem(sto)\n")
     f.write("    endif\n")
 
 
