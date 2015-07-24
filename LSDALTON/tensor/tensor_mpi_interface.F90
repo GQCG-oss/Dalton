@@ -8,6 +8,7 @@ module tensor_mpi_interface_module
    public :: tensor_mpi_bcast
    public :: tensor_mpi_reduce
    public :: tensor_mpi_allreduce
+   public :: tensor_mpi_barrier
    private
 
    interface tensor_mpi_bcast
@@ -56,6 +57,21 @@ module tensor_mpi_interface_module
     end subroutine tensor_mpi_dummy
 
 #ifdef VAR_MPI
+
+    subroutine tensor_mpi_barrier(comm)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Comm),intent(in)                :: comm
+#else
+       integer(kind=tensor_mpi_kind),intent(in) :: comm
+#endif
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       call mpi_barrier(comm, ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_barrier): barrier failed",220)
+    end subroutine tensor_mpi_barrier
+
     !STD INTEGER BCAST
     subroutine tensor_mpi_bcast_std_int(b,root,comm)
       implicit none

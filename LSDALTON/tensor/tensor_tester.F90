@@ -301,7 +301,7 @@ module tensor_tester_module
     if(master) write(output,*)""
     if(master) write(output,*)""
     if(master) print *,"ALL-INIT ALLOC-DEALLOC TESTS:",teststatus
-    !call lsmpi_barrier(infpar%lg_comm)
+    !call tensor_mpi_barrier(infpar%lg_comm)
 
     !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the
     !current rank
@@ -343,7 +343,7 @@ module tensor_tester_module
     rnk = nnod - 2
 
     
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     if((infpar%lg_mynum==rnk.or.master).and.nnod>2)then
       recver=rnk
       if(.not.master)then
@@ -375,7 +375,7 @@ module tensor_tester_module
 
     !BE CAREFUL ABOUT WHETER THE INFORMATION IS ALREADY TRANSMITTED --> AT
     !CRITICAL POINTS INSERT BARRIER STATEMENTS TO SYNCHONIZE THE NODES 
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
 
     if(nnod>2)call tensor_print_tile_norm(test2,ti,normher)
     call tensor_free(test2)
@@ -397,7 +397,7 @@ module tensor_tester_module
     !that into pdm, get these tiles on each node and put them in reversed
     !reordering back into the full array, check norms and order
     teststatus="SUCCESS"
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     call tensor_init(test2,[no-4,nv+3,nv/7,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no-4,nv+3,5,2])
     call tensor_init(test1,[nv/7,nv+3,no,no-4],4,TT_TILED_DIST,AT_ALL_ACCESS)
     call memory_allocate_tensor_dense(test1,.false.)
@@ -418,12 +418,12 @@ module tensor_tester_module
     endif
     call print_norm(test1%elm1,test1%nelms,ref)
     call tensor_convert(test1%elm1,test2,[4,2,1,3])
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     call print_norm(test2,normher)
     print *,"convert",ref,normher
     call tensor_mv_dense2tiled(test1,.false.)
     call memory_allocate_tensor_dense(test2,.false.)
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     test2%elm1=0.0E0_tensor_dp
     do i=1,test2%ntiles
       call get_tile_dim(j,test2,i)
@@ -433,9 +433,9 @@ module tensor_tester_module
                         &test2%elm1,test1%dims,4,[3,2,4,1])
       call tensor_free_mem(tileget)
     enddo
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     call tensor_cp_tiled2dense(test1,.true.)
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     if(infpar%lg_mynum==0)then
       write (msg,*)"local test1 2 norm master"
       call print_norm(test2%elm1,test2%nelms,msg)
@@ -492,10 +492,10 @@ module tensor_tester_module
     endif
     call tensor_mpi_bcast(test1%elm1,test1%nelms,infpar%master,infpar%lg_comm)
     call tensor_mpi_bcast(test2%elm1,test2%nelms,infpar%master,infpar%lg_comm)
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     call tensor_mv_dense2tiled(test1,.true.)
     call tensor_mv_dense2tiled(test2,.true.)
-    call lsmpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(infpar%lg_comm)
     call print_norm(test1)
     call print_norm(test2)
 

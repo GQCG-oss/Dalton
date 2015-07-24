@@ -363,12 +363,12 @@ module lspdm_tensor_operations_module
         endif
 
 #ifdef VAR_LSDEBUG
-        call lsmpi_barrier(infpar%pc_comm)
+        call tensor_mpi_barrier(infpar%pc_comm)
 #endif
 
         if(infpar%parent_comm == MPI_COMM_NULL)then
 #ifdef VAR_LSDEBUG
-           call lsmpi_barrier(infpar%lg_comm)
+           call tensor_mpi_barrier(infpar%lg_comm)
 #endif
            if(infpar%lg_mynum == infpar%master)then
               write(*,*) " SUCCESS"
@@ -807,7 +807,7 @@ module lspdm_tensor_operations_module
 
      fEc = 0.50E0_tensor_dp*(Eocc + Evirt)
 
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #else
      fEc = 0.0E0_tensor_dp
 #endif
@@ -1162,7 +1162,7 @@ module lspdm_tensor_operations_module
 
   call tensor_free_mem(gmo_tile_buf)
 
-  if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+  if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #else
   Ec = 0.0E0_tensor_dp
 #endif
@@ -1280,7 +1280,7 @@ module lspdm_tensor_operations_module
   endif
   call time_start_phase( PHASE_WORK )
 
-  if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+  if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
 
   end subroutine lspdm_extract_eos_indices_virt
@@ -1397,7 +1397,7 @@ module lspdm_tensor_operations_module
   endif
   call time_start_phase( PHASE_WORK )
 
-  if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+  if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
 
   end subroutine lspdm_extract_eos_indices_occ
@@ -1503,7 +1503,7 @@ module lspdm_tensor_operations_module
   endif
   call time_start_phase( PHASE_WORK )
 
-  if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+  if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
 
   end subroutine lspdm_extract_decnp_indices_virt
@@ -1610,7 +1610,7 @@ module lspdm_tensor_operations_module
   endif
   call time_start_phase( PHASE_WORK )
 
-  if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+  if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
 
   end subroutine lspdm_extract_decnp_indices_occ
@@ -1709,7 +1709,7 @@ module lspdm_tensor_operations_module
      end select
 
      call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
+     call tensor_mpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
 #endif
 
@@ -1859,7 +1859,7 @@ module lspdm_tensor_operations_module
      call lsmpi_local_reduction(E2,infpar%master)
 
      Ec = E2
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #else
      Ec = 0.0E0_tensor_dp
 #endif
@@ -1935,7 +1935,7 @@ module lspdm_tensor_operations_module
      call lsmpi_local_reduction(E2,infpar%master)
 
      Ec = E2
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #else
      Ec = 0.0E0_tensor_dp
 #endif
@@ -2122,7 +2122,7 @@ module lspdm_tensor_operations_module
      end if
 
      call time_start_phase(PHASE_IDLE)
-     call lsmpi_barrier(infpar%lg_comm)
+     call tensor_mpi_barrier(infpar%lg_comm)
      call time_start_phase(PHASE_WORK)
 #endif
   end subroutine lspdm_get_starting_guess
@@ -2220,7 +2220,7 @@ module lspdm_tensor_operations_module
   !crucial barrier, wait for all slaves to finish their jobs
   call time_start_phase(PHASE_IDLE)
 
-  call lsmpi_barrier(infpar%lg_comm)
+  call tensor_mpi_barrier(infpar%lg_comm)
 
   call time_start_phase(PHASE_WORK)
 #endif
@@ -2312,7 +2312,7 @@ module lspdm_tensor_operations_module
      endif
      call time_start_phase( PHASE_WORK )
 
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #else
      res = 0.0E0_tensor_dp
 #endif
@@ -2543,10 +2543,10 @@ module lspdm_tensor_operations_module
 
      !crucial barrier, because direct memory access is used
      call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
+     call tensor_mpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
 
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_add_par
 
@@ -2797,7 +2797,7 @@ module lspdm_tensor_operations_module
 
      !crucial barrier, because direct memory access is used
      call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
+     call tensor_mpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
 #endif
   end subroutine tensor_dmul_par
@@ -2854,7 +2854,7 @@ module lspdm_tensor_operations_module
 
      !   if( tensor_always_sync )then
      call time_start_phase( PHASE_IDLE )
-     call lsmpi_barrier(infpar%lg_comm)
+     call tensor_mpi_barrier(infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
      !   endif
 #endif
@@ -3050,8 +3050,8 @@ module lspdm_tensor_operations_module
      endif
 
      !crucial barrier, because direct memory access is used
-     call lsmpi_barrier(infpar%lg_comm)
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     call tensor_mpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_cp_tiled
 
@@ -3075,7 +3075,7 @@ module lspdm_tensor_operations_module
         a%ti(lt)%t=0.0E0_tensor_dp
      enddo
 
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_zero_tiled_dist
   !> \brief randomizing routine for tiled distributed arrays
@@ -3098,7 +3098,7 @@ module lspdm_tensor_operations_module
         call random_number(a%ti(lt)%t)
      enddo
 
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_rand_tiled_dist
 
@@ -4082,7 +4082,7 @@ module lspdm_tensor_operations_module
 
   !critical barrier if synchronization is not achieved by other measures
   call time_start_phase( PHASE_IDLE )
-  if( sync .or. tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+  if( sync .or. tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
   call time_start_phase( PHASE_WORK )
   !stop 0
 #else
@@ -5088,7 +5088,7 @@ module lspdm_tensor_operations_module
               write(*,'(" currently",I4," arrays allocated")')p_arr%arrays_in_use
               write(*,'("")')
            endif
-           call lsmpi_barrier(infpar%lg_comm)
+           call tensor_mpi_barrier(infpar%lg_comm)
         enddo
      else
         if(master.and..not.allaccs)then
@@ -5101,7 +5101,7 @@ module lspdm_tensor_operations_module
         !    write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
         !    call tensor_print_memory_currents(output)
         !  endif
-        !  call lsmpi_barrier(infpar%lg_comm)
+        !  call tensor_mpi_barrier(infpar%lg_comm)
         !enddo
 
         call tensor_print_memory_currents(output,get_mem)
@@ -6356,7 +6356,7 @@ module lspdm_tensor_operations_module
         call dscal(int(arr%ti(i)%e),sc,arr%ti(i)%t,1)
      enddo
 
-     if( tensor_always_sync ) call lsmpi_barrier(infpar%lg_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
 
 #endif
   end subroutine tensor_scale_td
