@@ -24,7 +24,7 @@
             call mpi_reduce(buffer(first_el:first_el+nMPI-1),noelm,nMPI,datatype,MPI_SUM,root,comm,ierr)
          endif
 
-         if (ierr/= 0) call tensor_status_quit("ERROR(tensor_general_bacst): mpi returns ierr=",ierr)
+         if (ierr/= 0) call tensor_status_quit("ERROR(tensor_general_reduce): mpi returns ierr=",ierr)
 
       enddo
 

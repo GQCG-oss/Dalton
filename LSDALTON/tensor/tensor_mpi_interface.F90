@@ -51,7 +51,9 @@ module tensor_mpi_interface_module
 
    interface tensor_mpi_allreduce
 #ifdef VAR_MPI
-      module procedure tensor_mpi_dummy
+      module procedure tensor_mpi_allreduce_tensor_dp_s,&
+                     & tensor_mpi_allreduce_tensor_dp_l, &
+                     & tensor_mpi_allreduce_tensor_dp
 #else
       module procedure tensor_mpi_dummy
 #endif
@@ -345,6 +347,48 @@ module tensor_mpi_interface_module
       real(tensor_dp), pointer :: noelm => null()
       include "mpi_reduce_std.inc"
     end subroutine tensor_mpi_reduce_dp_basic
+
+
+    !DOUBLE PRECISION ALLREDUCE
+    subroutine tensor_mpi_allreduce_tensor_dp(b,comm)
+      implicit none
+      real(tensor_dp), intent(inout) :: b
+      include "mpi_collective_vars_noroot.inc"
+      real(tensor_dp) :: buffer(1)
+      n=1
+      buffer(1) = b
+      call tensor_mpi_allreduce_dp_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_dp))
+      b = buffer(1)
+    end subroutine tensor_mpi_allreduce_tensor_dp
+    subroutine tensor_mpi_allreduce_tensor_dp_s(buffer,n1,comm)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      real(tensor_dp), intent(inout)                :: buffer(n1)
+      include "mpi_collective_vars_noroot.inc"
+      n=n1
+      call tensor_mpi_allreduce_dp_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_dp))
+    end subroutine tensor_mpi_allreduce_tensor_dp_s
+    subroutine tensor_mpi_allreduce_tensor_dp_l(buffer,n1,comm)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      real(tensor_dp), intent(inout)            :: buffer(n1)
+      include "mpi_collective_vars_noroot.inc"
+      n=n1
+      call tensor_mpi_allreduce_dp_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_dp))
+    end subroutine tensor_mpi_allreduce_tensor_dp_l
+    subroutine tensor_mpi_allreduce_dp_basic(buffer,n1,comm,stats)
+      implicit none
+      integer(kind=tensor_long_int), intent(in)    :: n1
+      real(tensor_dp), intent(inout)               :: buffer(:)
+      type(tensor_mpi_stats_type),intent(inout)    :: stats
+      include "mpi_collective_vars_noroot.inc"
+      !CHANGE THIS ACCORDING TO THE DATATYPE OF BUFFER
+      real(tensor_dp), pointer :: noelm => null()
+      include "mpi_allreduce_std.inc"
+    end subroutine tensor_mpi_allreduce_dp_basic
 #endif
 
 end module tensor_mpi_interface_module

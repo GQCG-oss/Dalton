@@ -124,11 +124,12 @@ module tensor_type_def_module
   !MPI OPERATION INDEX
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_bcast           = 1
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_reduce          = 2
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_allreduce       = 3
   !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LISTS ABOVE
   !> this counter is for the identification of the number of different data types
   integer(kind=tensor_standard_int), parameter :: tensor_nmpi_dat = 6
   !> this counter is for the identification of the number of different mpi operations
-  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 2
+  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 3
 
   type(tensor_mpi_stats_type) :: tensor_mpi_stats(tensor_nmpi_idx,tensor_nmpi_dat)
 #endif
