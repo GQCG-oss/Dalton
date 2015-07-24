@@ -39,7 +39,7 @@ module tensor_type_def_module
      !> Data, only allocate the first for the elements and use the others just
      !to reference the data in the first pointer
      integer(kind=tensor_mpi_kind):: w1                                    ! windows for local chunk of memory
-     type(c_ptr)                :: e1c                   =  c_null_ptr   ! cpointer for local chunk, maily as fail-check
+     type(c_ptr)                :: e1c                 =  c_null_ptr   ! cpointer for local chunk, maily as fail-check
      real(tensor_dp), pointer :: elm1(:)               => null()       ! local chunk of memory
 
      ! the following should just point to elm1
@@ -76,6 +76,8 @@ module tensor_type_def_module
   end type tensor
 
   !Type counter
+
+  !MEMORY COUNTER
   type tensor_counter_type
      integer(kind=tensor_long_int) :: size_ = 0_tensor_long_int
      integer(kind=tensor_long_int) :: curr_ = 0_tensor_long_int
@@ -92,18 +94,53 @@ module tensor_type_def_module
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tile                = 7
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor              = 8
 
-  !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE UPPER LIST
-  integer(kind=tensor_standard_int), parameter :: tensor_nmem = 8
-  type(tensor_counter_type) :: counters(tensor_nmem)
-  type(tensor_counter_type) :: counters_bg(tensor_nmem)
+  !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LIST ABOVE
+  integer(kind=tensor_standard_int), parameter :: tensor_nmem_idx = 8
+  type(tensor_counter_type) :: counters(tensor_nmem_idx)
+  type(tensor_counter_type) :: counters_bg(tensor_nmem_idx)
+
+
+  !MPI COUNTER
+#ifdef VAR_MPI
+  type tensor_mpi_stats_type
+#ifdef USE_MPI_MOD_F08
+     type(MPI_Datatype)            :: d_mpi 
+#else
+     integer(kind=tensor_mpi_kind) :: d_mpi = 0_tensor_mpi_kind
+#endif
+     integer(kind=tensor_long_int) :: size_ = 0_tensor_long_int
+     integer(kind=tensor_long_int) :: ncall = 0_tensor_long_int
+     integer(kind=tensor_long_int) :: bytes = 0_tensor_long_int
+     real(tensor_dp)               :: time_ = 0.0E0_tensor_dp
+  end type tensor_mpi_stats_type
+
+  !MPI DATA TYPE INDEX
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_dp            = 1
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_sp            = 2
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_log           = 3
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_long_int      = 4
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_standard_int  = 5
+  !MPI OPERATION INDEX
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_bcast           = 1
+  !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LISTS ABOVE
+  !> this counter is for the identification of the number of different data types
+  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_dat = 5
+  !> this counter is for the identification of the number of different mpi operations
+  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 1
+
+  type(tensor_mpi_stats_type) :: tensor_mpi_stats(tensor_nmpi_idx,tensor_nmpi_dat)
+#endif
 
 
   contains
 
   subroutine tensor_init_counters()
      implicit none
-     call tensor_init_specific_counter(counters,tensor_nmem)
-     call tensor_init_specific_counter(counters_bg,tensor_nmem)
+     call tensor_init_specific_counter(counters,tensor_nmem_idx)
+     call tensor_init_specific_counter(counters_bg,tensor_nmem_idx)
+#ifdef VAR_MPI
+     call tensor_init_mpi_counter(tensor_mpi_stats,tensor_nmpi_idx,tensor_nmpi_dat)
+#endif
   end subroutine tensor_init_counters
 
   subroutine tensor_init_specific_counter(c,l)
@@ -174,7 +211,7 @@ module tensor_type_def_module
      write (*,*) "Tensor memory finalization:"
      write (*,*) "---------------------------"
 
-     do i=1,tensor_nmem
+     do i=1,tensor_nmem_idx
 
         write (*,'(a)',advance='no') "Currently allocated bytes of type"
         call write_string_for_type(i)
@@ -227,5 +264,56 @@ module tensor_type_def_module
      implicit none
      tensor_counter_ext_mem => null()
   end subroutine unset_external_mem_ctr
+
+#ifdef VAR_MPI
+  subroutine tensor_init_mpi_counter(c,nmpi_ops,ndata_types)
+     implicit none
+     integer(kind=tensor_standard_int), intent(in) :: nmpi_ops,ndata_types
+     type(tensor_mpi_stats_type) :: c(nmpi_ops,ndata_types)
+     integer(kind=tensor_standard_int) :: tensor_mpi_op,data_type
+     integer(kind=tensor_long_int)  :: sze
+#ifdef USE_MPI_MOD_F08
+     type(MPI_Datatype)             :: d
+#else
+     integer(kind=tensor_mpi_kind)  :: d
+#endif
+
+     do data_type = 1,ndata_types
+        !DEFINE THE SIZE OF ONE UNIT
+        select case(data_type)
+        !ATOMIC TYPES
+        case(tensor_mpi_idx_tensor_dp)
+           sze = tensor_dp
+           d   = MPI_DOUBLE_PRECISION
+        case(tensor_mpi_idx_tensor_sp)
+           sze = tensor_sp
+           d   = MPI_REAL
+        case(tensor_mpi_idx_tensor_standard_int)
+           sze = tensor_standard_int
+           d   = MPI_INTEGER4
+        case(tensor_mpi_idx_tensor_long_int)
+           sze = tensor_long_int
+           d   = MPI_INTEGER8
+        case(tensor_mpi_idx_tensor_log)
+           sze = tensor_log
+           d   = MPI_LOGICAL
+        case default 
+           call tensor_status_quit("ERROR(tensor_init_mpi_counter): wrong index in&
+              & setting up the mpi counters. This is a coding error in&
+              & tensor_type_def_module",202)
+        end select
+
+        do tensor_mpi_op=1,nmpi_ops
+
+           c(tensor_mpi_op,data_type)%d_mpi = d
+           c(tensor_mpi_op,data_type)%size_ = sze
+           c(tensor_mpi_op,data_type)%ncall = 0_tensor_long_int
+           c(tensor_mpi_op,data_type)%bytes = 0_tensor_long_int
+           c(tensor_mpi_op,data_type)%time_ = 0.0E0_tensor_dp
+
+     enddo
+  enddo
+  end subroutine tensor_init_mpi_counter
+#endif
 
 end module tensor_type_def_module

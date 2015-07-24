@@ -5,8 +5,10 @@ module tensor_parameters_and_counters
    integer, parameter :: tensor_sp           = 4
 #ifdef VAR_INT64
    integer, parameter :: tensor_int          = 8
+   integer, parameter :: tensor_log          = 8
 #else
    integer, parameter :: tensor_int          = 4
+   integer, parameter :: tensor_log          = 4
 #endif
    integer, parameter :: tensor_standard_int = 4
    integer, parameter :: tensor_standard_log = 4
@@ -55,6 +57,8 @@ module tensor_parameters_and_counters
 #else
    logical,parameter :: alloc_in_dummy = .false.
 #endif
+   !STANDARD MPI MESSAGE LENGTH SET TO ~10MB
+   integer(kind=tensor_standard_int) :: TENSOR_MPI_MSG_LEN = 10000000
    
    !> execution time variables
    logical :: lspdm_use_comm_proc

@@ -5,7 +5,7 @@ module tensor_mpi_binding_module
 
 #ifdef USE_MPI_MOD_F08
   use mpi_f08
-#else if defined(USE_MPI_MOD_F90)
+#elif defined(USE_MPI_MOD_F90)
   use mpi
 #else
   include 'mpif.h'
