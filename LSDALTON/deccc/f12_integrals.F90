@@ -2660,6 +2660,10 @@ contains
     real(realk) :: tcpu,twall
     logical :: Master,Collaborate,DoBasis
     integer :: n1,n2,n3,n4,Tain1,Tain2,noccAOStot,offset
+
+    !> MPI
+    type(mp2_batch_construction) :: bat
+    
 #ifdef VAR_MPI
     Master = infpar%lg_mynum .EQ. infpar%master
     Collaborate = infpar%lg_nodtot .GT. 1
@@ -2828,7 +2832,7 @@ contains
 
     ! MP2F12 CCoupling
     if(DECinfo%F12Ccoupling) then
-        call MP2F12_Ccoupling_energy(MyFragment,E_21C)
+        call MP2F12_Ccoupling_energy(MyFragment,bat,E_21C)
         E_21 = E_21 + E_21C 
     endif
 

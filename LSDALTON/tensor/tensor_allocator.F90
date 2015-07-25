@@ -310,9 +310,9 @@ module tensor_allocator
       if(present(bg)) bg_ = bg
       
       if(bg_)then
-         if( .not. c_associated( c, c_loc(p(1))) )then
-            call tensor_status_quit("ERROR(tensor_free_tensor_dp_1d_mpi): invalid c/p combination",23)
-         endif
+         !if( .not. c_associated( c, c_loc(p(1))) )then
+         !   call tensor_status_quit("ERROR(tensor_free_tensor_dp_1d_mpi): invalid c/p combination",23)
+         !endif
          c = c_null_ptr
          call tensor_free_tensor_dp_basic_bg(p,tensor_mem_idx_tensor_dp_mpi,stat=stat)
       else
@@ -343,7 +343,7 @@ module tensor_allocator
 #ifdef VAR_PTR_RESHAPE
       p(1:n) => p2(:,:)
 #else
-      call c_f_pointer(c_loc(p2(1,1),p,[n1,n2]))
+      call c_f_pointer(c_loc(p2(1,1)),p,[n1,n2])
 #endif
       call tensor_free_tensor_dp_1d(p,bg=bg,stat=stat)
       p2 => null()
