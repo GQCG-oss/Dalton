@@ -343,7 +343,7 @@ module tensor_allocator
 #ifdef VAR_PTR_RESHAPE
       p(1:n) => p2(:,:)
 #else
-      call c_f_pointer(c_loc(p2(1,1),p,[n1,n2]))
+      call c_f_pointer(c_loc(p2(1,1)),p,[n1,n2])
 #endif
       call tensor_free_tensor_dp_1d(p,bg=bg,stat=stat)
       p2 => null()
