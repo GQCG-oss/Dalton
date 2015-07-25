@@ -2631,7 +2631,6 @@ contains
     integer :: nvirtAOS
     !> number of occupied + virtual MO orbitals in EOS 
     integer :: nocvAOStot  
-
     !> number of CABS AO orbitals
     integer :: ncabsAO
     !> number of CABS MO orbitals
@@ -2736,11 +2735,11 @@ contains
        print *, "-------------------------------------------------"
        print *, "nbasis:    ", nbasis
        print *, "noccEOS:   ", noccEOS
-       print *, "nvirtEOS: ", nvirtEOS
+       print *, "nvirtEOS:  ", nvirtEOS
        print *, "-------------------------------------------------"
        print *, "noccAOS    ", noccAOS
        print *, "noccAOStot ", noccAOStot
-       print *, "nocvAOStot    ", nocvAOStot
+       print *, "nocvAOStot ", nocvAOStot
        print *, "nvirtAOS   ", nvirtAOS
        print *, "ncabsAO    ", ncabsAO
        print *, "ncabsMO    ", ncabsMO
@@ -2837,25 +2836,26 @@ contains
        print *, '----------------------------------------'
        print *, ' E21 V term                             '
        print *, '----------------------------------------'
-       print *, " E21_CC_term:  ", E_21C
-       print *, " E21_V_term1:  ", Venergy(1)
-       print *, " E21_V_term2:  ", Venergy(2)
-       print *, " E21_V_term3:  ", Venergy(3)
-       print *, " E21_V_term4:  ", Venergy(4)
-       print *, " E21_V_term5:  ", Venergy(5)
+       write(*,'(1X,a,g25.16)') " E21_CC_term:  ", E_21C
+       write(*,'(1X,a,g25.16)') " E21_V_term1:  ", Venergy(1)
+       write(*,'(1X,a,g25.16)') " E21_V_term2:  ", Venergy(2)
+       write(*,'(1X,a,g25.16)') " E21_V_term3:  ", Venergy(3)
+       write(*,'(1X,a,g25.16)') " E21_V_term4:  ", Venergy(4)
+       write(*,'(1X,a,g25.16)') " E21_V_term5:  ", Venergy(5)
        print *, '----------------------------------------'
-       print *, " E21_Vsum:     ", E_21
-       write(DECinfo%output,*) '----------------------------------------'
-       write(DECinfo%output,*) ' E21 V term                             '
-       write(DECinfo%output,*) '----------------------------------------'
-       write(DECinfo%output,*) " E21_CC_term:  ", E_21C
-       write(DECinfo%output,*) " E21_V_term1:  ", Venergy(1)
-       write(DECinfo%output,*) " E21_V_term2:  ", Venergy(2)
-       write(DECinfo%output,*) " E21_V_term3:  ", Venergy(3)
-       write(DECinfo%output,*) " E21_V_term4:  ", Venergy(4)
-       write(DECinfo%output,*) " E21_V_term5:  ", Venergy(5)
-       write(DECinfo%output,*) '----------------------------------------'
-       write(DECinfo%output,*) " E21_Vsum:     ", E_21
+       write(*,'(1X,a,g25.16)') " E21_Vsum:     ", E_21
+
+       write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
+       write(DECinfo%output,'(1X,a,g25.16)') ' E21 V term                             '
+       write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_CC_term:  ", E_21C
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term1:  ", Venergy(1)
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term2:  ", Venergy(2)
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term3:  ", Venergy(3)
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term4:  ", Venergy(4)
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term5:  ", Venergy(5)
+       write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
+       write(DECinfo%output,'(1X,a,f15.16)') " E21_Vsum:     ", E_21
     end if
 
     call mem_dealloc(Venergy)
@@ -2936,22 +2936,22 @@ contains
        print *, '----------------------------------------'
        print *, ' E_22 X term                            '
        print *, '----------------------------------------'
-       print *, " E22_X_term1: ", Xenergy(1)
-       print *, " E22_X_term2: ", Xenergy(2)
-       print *, " E22_X_term3: ", Xenergy(3)
-       print *, " E22_X_term4: ", Xenergy(4)
+       write(*,'(1X,a,g25.16)') " E22_X_term1: ", Xenergy(1)
+       write(*,'(1X,a,g25.16)') " E22_X_term2: ", Xenergy(2)
+       write(*,'(1X,a,g25.16)') " E22_X_term3: ", Xenergy(3)
+       write(*,'(1X,a,g25.16)') " E22_X_term4: ", Xenergy(4)
        print *, '----------------------------------------'
-       print *, " E22_Xsum: ", E_22
+       write(*,'(1X,a,g25.16)') " E22_Xsum:    ", E_22
 
        write(DECinfo%output,*) '----------------------------------------'
        write(DECinfo%output,*) ' E_22 X term                            '
        write(DECinfo%output,*) '----------------------------------------'
-       write(DECinfo%output,*) " E22_X_term1: ", Xenergy(1)
-       write(DECinfo%output,*) " E22_X_term2: ", Xenergy(2)
-       write(DECinfo%output,*) " E22_X_term3: ", Xenergy(3)
-       write(DECinfo%output,*) " E22_X_term4: ", Xenergy(4)
+       write(DECinfo%output,'(1X,a,g25.16)') " E22_X_term1: ", Xenergy(1)
+       write(DECinfo%output,'(1X,a,g25.16)') " E22_X_term2: ", Xenergy(2)
+       write(DECinfo%output,'(1X,a,g25.16)') " E22_X_term3: ", Xenergy(3)
+       write(DECinfo%output,'(1X,a,g25.16)') " E22_X_term4: ", Xenergy(4)
        write(DECinfo%output,*) '----------------------------------------'
-       write(DECinfo%output,*) " E22_Xsum: ", E_22
+       write(DECinfo%output,'(1X,a,g25.16)') " E22_Xsum: ", E_22
     end if
 
     call mem_dealloc(Xenergy)
@@ -3048,32 +3048,32 @@ contains
        print *, '----------------------------------------'
        print *, ' E_22 B term                            '
        print *, '----------------------------------------'
-       print *, " E23_B_term1: ", B1energy
-       print *, " E23_B_term2: ", B2energy   
-       print *, " E23_B_term3: ", B3energy   
-       print *, " E23_B_term4: ", B4energy   
-       print *, " E23_B_term5: ", B5energy   
-       print *, " E23_B_term6: ", B6energy   
-       print *, " E23_B_term7: ", B7energy   
-       print *, " E23_B_term8: ", B8energy   
-       print *, " E23_B_term9: ", B9energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term1: ", B1energy
+       write(*,'(1X,a,g25.16)') " E23_B_term2: ", B2energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term3: ", B3energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term4: ", B4energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term5: ", B5energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term6: ", B6energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term7: ", B7energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term8: ", B8energy   
+       write(*,'(1X,a,g25.16)') " E23_B_term9: ", B9energy   
        print *, '----------------------------------------'
-       print *, " E23_B_sum: ", E_23
+       write(*,'(1X,a,g25.16)') " E23_B_sum:   ", E_23
 
        write(DECinfo%output,*) '----------------------------------------'
        write(DECinfo%output,*) ' E_22 B term                            '
        write(DECinfo%output,*) '----------------------------------------'
-       write(DECinfo%output,*) " E23_B_term1: ", B1energy
-       write(DECinfo%output,*) " E23_B_term2: ", B2energy   
-       write(DECinfo%output,*) " E23_B_term3: ", B3energy   
-       write(DECinfo%output,*) " E23_B_term4: ", B4energy   
-       write(DECinfo%output,*) " E23_B_term5: ", B5energy   
-       write(DECinfo%output,*) " E23_B_term6: ", B6energy   
-       write(DECinfo%output,*) " E23_B_term7: ", B7energy   
-       write(DECinfo%output,*) " E23_B_term8: ", B8energy   
-       write(DECinfo%output,*) " E23_B_term9: ", B9energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term1: ", B1energy
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term2: ", B2energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term3: ", B3energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term4: ", B4energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term5: ", B5energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term6: ", B6energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term7: ", B7energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term8: ", B8energy   
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_term9: ", B9energy   
        write(DECinfo%output,*) '----------------------------------------'
-       write(DECinfo%output,*) " E23_B_sum: ", E_23
+       write(DECinfo%output,'(1X,a,g25.16)') " E23_B_sum:   ", E_23
     end if
 
     E_F12 = 0.0E0_realk
@@ -3082,7 +3082,7 @@ contains
     !> MP2-energy from an MP2-calculation
     MP2energy = Myfragment%energies(FRAGMODEL_OCCMP2)
 
-   ! print *, "MP2energy: ", MP2energy
+    print *, "MP2energy: ", MP2energy
 
     if(DECinfo%F12debug) then
        print *,   '----------------------------------------------------------------'
@@ -3121,15 +3121,6 @@ contains
 
     case(MODEL_CCSD)
 
-!!$    print *,  '----------------------------------------'
-!!$    print *, '  Tai                                   '
-!!$    print *, '----------------------------------------'
-!!$    DO i=1, noccEOS
-!!$       DO a=1, nvirtAOS
-!!$          print *, "a i value: ", a,i,Tai(a,i)
-!!$       ENDDO
-!!$    ENDDO
-
        ! **********************************************
        !   CCSD Vijab
        ! **********************************************
@@ -3139,28 +3130,28 @@ contains
        call stats_globalmem(DECinfo%output)
 
        call ccsdf12_Vijab_EV1(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,&
-            & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj)
+          & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj)
        call LSTIMER('ccsdf12_Vijab_EV1_timing: ',tcpu,twall,DECinfo%output)
 
        WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijab_EV1:"  
        call stats_globalmem(DECinfo%output)
 
        call ccsdf12_Vijab_EV2(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,&
-            & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj)
+          & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj)
        call LSTIMER('ccsdf12_Vijab_EV2_timing: ',tcpu,twall,DECinfo%output)
 
        WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijab_EV2:"  
        call stats_globalmem(DECinfo%output)
 
        call ccsdf12_Vijab_EV3(ECCSD_Vijab, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,&
-            & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj)
+          & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj)
        call LSTIMER('ccsdf12_Vijab_EV3_timing: ',tcpu,twall,DECinfo%output)
 
        WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_Vijab_EV3:"  
        call stats_globalmem(DECinfo%output)
 
        call get_EV4(ECCSD_Vijab, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,&
-            & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj) 
+          & CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj) 
        call LSTIMER('get_EV4_timing: ',tcpu,twall,DECinfo%output)
 
        WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EV4:"  

@@ -619,9 +619,9 @@ contains
 #ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
           IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_VIRTMP2)
+             Ecorr = energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
           ELSE
-             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+             Ecorr = energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
           ENDIF
        endif
 #endif 

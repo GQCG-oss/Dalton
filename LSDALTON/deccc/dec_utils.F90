@@ -4271,6 +4271,7 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2      :', dE_est2
           write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3      :', dE_est3
        end if
+
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
