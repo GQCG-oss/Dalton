@@ -229,11 +229,6 @@ module f12_routines_module
 !!$    call mat_free(Fcd)
 !!$    call mat_free(Fcc)
       
-!!$    print *, '****************************************'
-!!$    print *, '(Norm of HJir_real):', norm2(HJir_real)       
-!!$    print *, '(Norm of HJir):', sqrt(mat_sqnorm2(HJir))
-!!$    print *, '****************************************'
-        
   end subroutine get_F12_mixed_MO_Matrices_real
 
   !> Need documentation...
@@ -2541,6 +2536,8 @@ module f12_routines_module
     real(realk) :: inner_prod
  
     integer i,a,c
+
+    inner_prod = 0.0E0_realk
 
     do i=1,nocc
        do a=1,nvirt

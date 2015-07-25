@@ -87,7 +87,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
-    set(collapse_reoder_loops "nocollapse")
+    set(reorder_definitions "nocollapse ${reorder_definitions}")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)

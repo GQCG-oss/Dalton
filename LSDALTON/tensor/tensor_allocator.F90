@@ -176,7 +176,7 @@ module tensor_allocator
       n = n1
       if(bg_)then
          call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
-         c = c_loc(p)
+         c = c_loc(p(1))
       else
          call tensor_allocate_tensor_dp_basic_mpi(p,c,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
       endif
@@ -197,7 +197,7 @@ module tensor_allocator
       n = n1
       if(bg_)then
          call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
-         c = c_loc(p)
+         c = c_loc(p(1))
       else
          call tensor_allocate_tensor_dp_basic_mpi(p,c,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
       endif
@@ -310,7 +310,7 @@ module tensor_allocator
       if(present(bg)) bg_ = bg
       
       if(bg_)then
-         if( .not. c_associated( c, c_loc(p)) )then
+         if( .not. c_associated( c, c_loc(p(1))) )then
             call tensor_status_quit("ERROR(tensor_free_tensor_dp_1d_mpi): invalid c/p combination",23)
          endif
          c = c_null_ptr
