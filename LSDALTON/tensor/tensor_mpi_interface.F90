@@ -18,6 +18,8 @@ module tensor_mpi_interface_module
    public :: tensor_mpi_wait
    public :: tensor_mpi_win_lock
    public :: tensor_mpi_win_unlock
+   public :: tensor_mpi_win_lock_all
+   public :: tensor_mpi_win_unlock_all
    public :: tensor_mpi_win_flush
 
    private
@@ -245,7 +247,7 @@ module tensor_mpi_interface_module
        integer(kind=tensor_mpi_kind) :: ierr   = 0
 
 #ifdef VAR_HAVE_MPI3
-       CALL MPI_WIN_UNLOCK_ALL(win,ierr)
+       CALL mpi_win_unlock_all(win,ierr)
 #else
        call lsquit("ERROR(tensor_mpi_win_unlock_all): this routine is MPI 3 only ",-1)
 #endif
@@ -254,94 +256,69 @@ module tensor_mpi_interface_module
     end subroutine tensor_mpi_win_unlock_all
 
 
-
-
-    here we continue to adapt to the stuff:
-  !> \brief simple mpi_win_free
-  !> \author Patrick Ettenhuber
-  !> \date September 2012
-  subroutine tensor_mpi_win_free(win)
-    implicit none
-    integer(kind=tensor_mpi_kind),intent(inout) :: win
-#ifdef VAR_MPI
-    integer(kind=tensor_mpi_kind) :: ierr
-    IERR=0
-    call MPI_WIN_FREE(win,ierr)
-    if(ierr.ne.0)then
-      call lsquit("Error(tensor_mpi_win_free)",ierr)
-    endif
+    subroutine tensor_mpi_win_free(win)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(inout) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(inout) :: win
 #endif
-  end subroutine tensor_mpi_win_free
+       integer(kind=tensor_mpi_kind) :: ierr = 0
 
-  !> \brief simple mpi_win_fence call for dma/rma
-  !> \author Patrick Ettenhuber
-  !> \date September 2012
-  subroutine tensor_mpi_win_fence_simple(win,assert)
-    implicit none
-    integer(kind=tensor_mpi_kind),intent(in) :: win
-    integer(kind=tensor_mpi_kind),intent(in),optional :: assert
-#ifdef VAR_MPI
-    integer(kind=tensor_mpi_kind) :: ierr,as
-    IERR=0
-    as=0
-    if(present(assert)) as = assert
-    call MPI_WIN_FENCE(as,win,ierr)
-    if(ierr.ne.0)then
-      call lsquit("Error(tensor_mpi_win_fence)",ierr)
-    endif
-#endif
-  end subroutine tensor_mpi_win_fence_simple
+       call mpi_win_free(win,ierr)
 
-  !> \brief simple call to  mpi_win_fence for intitialization
-  !> \author Patrick Ettenhuber
-  !> \date Januar 2013
-  subroutine tensor_mpi_win_fence_special(win,openwin)
-    implicit none
-    integer(kind=tensor_mpi_kind),intent(in) :: win
-    logical,intent(in) :: openwin
-#ifdef VAR_MPI
-    integer(kind=tensor_mpi_kind) :: ierr
-    IERR=0
-    if(openwin)then
-      call MPI_WIN_FENCE(MPI_MODE_NOPRECEDE,win,ierr)
-      if(ierr.ne.0)then
-        call lsquit("Error(tensor_mpi_first_fence)",ierr)
-      endif
-    else
-      IERR=0
-      call MPI_WIN_FENCE(MPI_MODE_NOSUCCEED,win,ierr)
-      if(ierr.ne.0)then
-        call lsquit("Error(tensor_mpi_last_fence)",ierr)
-      endif
-    endif
-#endif
-  end subroutine tensor_mpi_win_fence_special
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_free): failed",220)
+    end subroutine tensor_mpi_win_free
 
-  !> \brief simple mpi_win creation
-  !> \author Patrick Ettenhuber
-  !> \date September 2012
-  subroutine tensor_mpi_win_create_realk8(darr,win,nel,comm)
-    implicit none
-    integer(kind=8), intent(in) :: nel
-    real(realk),intent(in) :: darr(nel)
-    integer(kind=tensor_mpi_kind),intent(inout) :: win,comm
-#ifdef VAR_MPI
-    integer(kind=tensor_mpi_kind) :: ierr,info,rk_len
-    integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
-    IERR=0
-    info = MPI_INFO_NULL
-    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,ierr)
-    if(ierr.ne.0)then
-      call lsquit("Error(tensor_mpi_localwin_create_realk)",ierr)
-    endif
-    bytes  = nel*mpi_realk
-    rk_len = int(mpi_realk,kind=tensor_mpi_kind)
-    call MPI_WIN_CREATE(darr,bytes,rk_len,info,comm,win,ierr)
-    if(ierr.ne.0)then
-      call lsquit("Error(tensor_mpi_localwin_create_realk)",ierr)
-    endif
+    subroutine tensor_mpi_win_fence_simple(win,assert)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(inout) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(inout) :: win
 #endif
-  end subroutine tensor_mpi_win_create_realk8
+       integer(kind=tensor_mpi_kind),intent(in),optional :: assert
+       integer(kind=tensor_mpi_kind) :: as   = 0
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       if(present(assert)) as = assert
+
+       call mpi_win_fence(as,win,ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_fence): failed",220)
+    end subroutine tensor_mpi_win_fence_simple
+
+    subroutine tensor_mpi_win_fence_special(win,openwin)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(inout) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(inout) :: win
+#endif
+       logical,intent(in) :: openwin
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+       if(openwin)then
+          call mpi_win_fence(MPI_MODE_NOPRECEDE,win,ierr)
+          if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_fence_noprecede): failed",220)
+       else
+          call mpi_win_fence(MPI_MODE_NOSUCCEED,win,ierr)
+          if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_fence_noprecede): failed",220)
+       endif
+    end subroutine tensor_mpi_win_fence_special
+
+    subroutine tensor_mpi_win_create_dp_basic(darr,win,n,comm)
+       implicit none
+       integer(kind=tensor_long_int), intent(in) :: n
+       real(tensor_dp),intent(in) :: darr(n)
+#ifdef USE_MPI_MOD_F08
+       include "mpi_win_create_vars_mpif08.inc"
+#else
+       include "mpi_win_create_vars_std.inc"
+#endif
+       datatype = MPI_DOUBLE_PRECISION
+
+       include "mpi_win_create_generic.inc"
+    end subroutine tensor_mpi_win_create_dp_basic
 
 
     !STD INTEGER BCAST
