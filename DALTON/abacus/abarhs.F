@@ -2875,69 +2875,62 @@ C  /* Deck ofabhg */
       SUBROUTINE OFABHG(HWORK,UMOG,WORK,LWORK)
 #include "implicit.h"
 #include "iratdef.h"
-      PARAMETER (LBUF = 600)
 #include "inforb.h"
-      DIMENSION WORK(LWORK)
-      KIBUF = 1
-      KWONE = KIBUF + 4*LBUF
-      KTOP  = KWONE + NNBAST
-      KLEFT = LWORK - KTOP + 1
-      IF (KTOP .GT. LWORK) CALL STOPIT('OFABHG',' ',LWORK,KTOP)
-      CALL OFABH1(HWORK,UMOG,WORK(KIBUF),WORK(KWONE),
-     &            WORK(KTOP),KLEFT)
-      RETURN
-      END
-C  /* Deck ofabh1 */
-      SUBROUTINE OFABH1(HWORK,UMOG,IBUF,HWRK,WRK,LWORK)
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "iratdef.h"
-#include "inforb.h"
-      PARAMETER (LBUF=600)
-      INTEGER A, B, C, D
-      DIMENSION HWORK(NBAST,NBAST), UMOG(NBAST,NBAST,NBAST,NBAST),
-     &          HWRK(NNBAST), IBUF(4,LBUF), MBAS(8), WRK(LWORK)
-
-C
-      KFREE = 1
-      LFREE = LWORK
+      REAL*8    HWORK(NBAST,NBAST), UMOG(*), WORK(LWORK)
+      INTEGER   MBAS(8)
 C
 C     One-electron part
 C
-      CALL DZERO(HWRK,NNBAST)
-      CALL RDONEL('ONEHAMIL',.TRUE.,HWRK,NNBAST)
-      CALL DSPTSI(NBAST,HWRK,HWORK)
+      IF (NNBAST .GT. LWORK) CALL STOPIT('OFABHG',' ',LWORK,NNBAST)
+      CALL DZERO(WORK,NNBAST)
+      CALL RDONEL('ONEHAMIL',.TRUE.,WORK,NNBAST)
+      CALL DSPTSI(NBAST,WORK,HWORK)
 C
 C     Two-electron part
 C
+      CALL DZERO(UMOG,N2BASX*N2BASX)
+
       LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) MSYM, MBAS, KBUF, NIBUF, NBITS, LENINT4
-      IF (KBUF .NE. LBUF) CALL QUIT('OFABH1: KBUF .ne. LBUF')
-C
+      READ (LUINTA) MSYM, MBAS, LBUF, NIBUF, NBITS, LENINT4
+
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('INT4',KINT ,LENINT4,WRK,KFREE,LFREE)
-      KIINT = KINT + LBUF
+      CALL MEMGET2('INTE','IBUF',KIBUF,4*LBUF,WORK,KFREE,LFREE)
+      CALL MEMGET2('INT4','AOBUF',KAOBUF,LENINT4,WORK,KFREE,LFREE)
+      CALL OFABH1(UMOG,WORK(KIBUF),WORK(KAOBUF),
+     &            LUINTA,LBUF,NIBUF,NBITS,LENINT4)
+      CALL MEMREL('OFABHG',WORK,1,1,KFREE,LFREE)
+      RETURN
+      END
+C  /* Deck ofabh1 */
+      SUBROUTINE OFABH1(UMOG,IINDX4,AOBUF,
+     &                  LUINTA,LBUF,NIBUF,NBITS,LENINT4)
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "inforb.h"
+      INTEGER   IINDX4(4,LBUF)
+      REAL*8    UMOG(NBAST,NBAST,NBAST,NBAST), AOBUF(LENINT4)
+      INTEGER   A, B, C, D
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-      CALL DZERO(UMOG,N2BASX*N2BASX)
   200 CONTINUE
-         CALL READI4(LUINTA,LENINT4,WRK(KINT))
-         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,NINT)
-         IF (NINT .EQ. 0) GO TO 200
-         IF (NINT .LT. 0) GO TO 400
-         IF (NINT .GT. 0) THEN
-            DO 300 I = 1, NINT
-               GINT  = WRK(KINT + I - 1)
-               A = IBUF(1,I)
-               B = IBUF(2,I)
-               C = IBUF(3,I)
-               D = IBUF(4,I)
+         CALL READI4(LUINTA,LENINT4,AOBUF)
+         CALL AOLAB4(AOBUF(LBUF+1),LBUF,NIBUF,NBITS,IINDX4,NINTS)
+         IF (NINTS .EQ. 0) GO TO 200
+         IF (NINTS .LT. 0) GO TO 400
+         IF (NINTS .GT. 0) THEN
+            DO 300 I = 1, NINTS
+               GINT  = AOBUF(I)
+               A = IINDX4(1,I)
+               B = IINDX4(2,I)
+               C = IINDX4(3,I)
+               D = IINDX4(4,I)
                UMOG(A,B,C,D) = GINT
                UMOG(A,B,D,C) = GINT
                UMOG(B,A,C,D) = GINT
@@ -2962,32 +2955,27 @@ C  /* Deck rumoga */
       LOGICAL NOH2, NOLOND
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), WORK(LWORK)
 C
-      KIBUF  = 1
-      KLAST = KIBUF + (600 + 1)/IRAT - 1
+      KIINDX4 = 1
+      KLAST   = KIINDX4 + 4*600/IRAT - 1
       IF (KLAST .GT. LWORK) CALL STOPIT('RUMOGA',' ',KLAST,LWORK)
-      CALL RUMOG1(UMOGA,NORBT,NOH2,NOLOND,WORK(KIBUF),X,WORK(KLAST))
+      CALL RUMOG1(UMOGA,NORBT,NOH2,NOLOND,WORK(KIINDX4),X,WORK(KLAST))
       RETURN
       END
 C  /* Deck rumog1 */
-      SUBROUTINE RUMOG1(UMOGA,NORBT,NOH2,NOLOND,IBUF,X,WORK)
+      SUBROUTINE RUMOG1(UMOGA,NORBT,NOH2,NOLOND,IINDX4,X,WORK)
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
-      PARAMETER (LBUF = 600)
       LOGICAL NOH2, NOLOND
       INTEGER P,Q,R,S,X
-      DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IBUF(600), WORK(*)
+      DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IINDX4(4,600), WORK(*)
 #include "mxcent.h"
 #include "nuclei.h"
 #include "inftap.h"      
+#include "eribuf.h"
 C
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
+      CALL ERIBUF_INI
+      LBUF = 600
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT  = 1
       KIINT = KINT + LBUF
@@ -2999,18 +2987,17 @@ C
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
  150  CONTINUE
          CALL READI4(LU2DER,LENINT4,WORK(KINT))
-         CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
-               LABEL = IBUF(I)
                VALUE = WORK(KINT + I - 1)
-               S = IAND(LABEL,255)
+               S = IINDX4(4,I)
                IF (S .EQ. 0) THEN
-                  ICOMP = IAND(ISHFT(LABEL,-8),255)
+                  ICOMP = IINDX4(3,I)
                ELSE IF (ICOMP .EQ. X) THEN
-                  P = IAND(ISHFT(LABEL,-24),255)
-                  Q = IAND(ISHFT(LABEL,-16),255)
-                  R = IAND(ISHFT(LABEL, -8),255)
+                  P = IINDX4(1,I)
+                  Q = IINDX4(2,I)
+                  R = IINDX4(3,I)
                   UMOGA(P,Q,R,S) = VALUE
                   UMOGA(R,S,P,Q) = VALUE
                   UMOGA(Q,P,S,R) = -VALUE

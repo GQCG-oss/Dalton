@@ -1110,14 +1110,14 @@ C
     1 CONTINUE
 C
          CALL READI4(LU2INT,LENINT4,WRK(KINT))
-         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,WRK(KIIN4),NINT)
-         IF (NINT .EQ. 0)  GOTO 1
-         IF (NINT .EQ. -1) GOTO 2
+         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,WRK(KIIN4),NINTS)
+         IF (NINTS .EQ. 0)  GOTO 1
+         IF (NINTS .EQ. -1) GOTO 2
 C
          DO 200 I = 1,NDMAT
             IF (IFCTYP(I) .EQ. 13) THEN
 C           ... e.g. singlet, symmetric density matrix
-              CALL FCKD13(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD13(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 22
      &          .OR. IFCTYP(I) .EQ. 23
      &          .OR. IFCTYP(I) .EQ. 12) THEN
@@ -1126,21 +1126,21 @@ C               (type 23: Coulomb term is zero because antisymmetric)
 C           ... e.g. singlet, antisymmetric density matrix OR
 C           ... or   triplet,     symmetric density matrix OR
 C           ... or   triplet, antisymmetric density matrix
-              CALL FCKD12(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD12(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 11) THEN
 C           ... Symmetric, Only Coulomb
-              CALL FCKD11(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD11(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 3) THEN
 C           ... Non-symmetric, Coulomb+Exchange
 C           ... e.g. singlet, non-symmetric (general) density matrix
-              CALL FCKD03(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD03(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 2) THEN
 C           ... Non-symmetric, Only Exchange
 C           ... e.g. triplet, non-symmetric (general) density matrix
-              CALL FCKD02(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD02(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 1) THEN
 C           ... Non-symmetric, Only Coulomb
-              CALL FCKD01(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD01(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (MOD(IFCTYP(I),10).EQ. 0 .OR. IFCTYP(I).EQ.21) THEN
 C              *0:  nothing
 C              21:  antisymmetric, only Coulomb gives a zero matrix

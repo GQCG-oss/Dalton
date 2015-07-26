@@ -508,7 +508,7 @@ c/* Deck CC_FMATNEW */
 #include "cbieri.h"
 #include "distcl.h"
 #include "iratdef.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccisao.h"
 #include "ccfield.h"
 #include "aovec.h"

@@ -3107,14 +3107,14 @@ C
       RETURN
       END
 C /*deck  rdao2*/
-      SUBROUTINE RDAO2(LUINTA,BUF,IBUF,H2_RSPQ,MPQOFF)
+      SUBROUTINE RDAO2(LUINTA,BUF,IINDX4,H2_RSPQ,MPQOFF)
 C
 C 20-Mar-1990 hjaaj
 C
 C Reads two-electron integrals from file to buffer.
 C LUINTA: File to read
 C BUF   : Points to start element in integral buffer.
-C IBUF  : Points to start element in label buffer.
+C IINDX4: The 4 indices of each integral
 C H2_RSPQ : H2RSPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C MPQOFF: Offset of last element returned to calling routine
 C
@@ -3122,7 +3122,7 @@ C
 #include "iratdef.h"
 #include "priunit.h"
 #include "mxcent.h"
-      DIMENSION H2_RSPQ(*), BUF(*), IBUF(4,600)
+      DIMENSION H2_RSPQ(*), BUF(*), IINDX4(4,600)
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
@@ -3161,19 +3161,19 @@ C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  150  CONTINUE
          CALL READI4(LUINTA,LENINT4,BUF(KINT))
-         CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 200 I = 1, LENGTH
-                  JP  = IBUF(1,I)
+                  JP  = IINDX4(1,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 100
-                  JQ  = IBUF(2,I)
+                  JQ  = IINDX4(2,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 100
-                  JR  = IBUF(3,I)
+                  JR  = IINDX4(3,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 100
-                  JS  = IBUF(4,I)
+                  JS  = IINDX4(4,I)
                   JSS = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 100
 C
@@ -3197,16 +3197,16 @@ C
 
   100       CONTINUE
 
-                  JP  = IBUF(3,I)
+                  JP  = IINDX4(3,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 200
-                  JQ  = IBUF(4,I)
+                  JQ  = IINDX4(4,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 200
-                  JR  = IBUF(1,I)
+                  JR  = IINDX4(1,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 200
-                  JS  = IBUF(2,I)
+                  JS  = IINDX4(2,I)
                   JSS = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 200
 C

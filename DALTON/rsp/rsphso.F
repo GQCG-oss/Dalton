@@ -2258,12 +2258,13 @@ C
 #include "infhso.h"
 #include "priunit.h"
 #include "iratdef.h"
+#include "eribuf.h"
 C
 C LOCAL
 C
-      PARAMETER (LBUF = 600)
-      REAL*8    BUF(2*LBUF+1)
-      INTEGER   IINDX4(4,LBUF), LENGTH
+      PARAMETER (LBUF_alloc = 600)
+      REAL*8    BUF(2*LBUF_alloc+1)
+      INTEGER   IINDX4(4,LBUF_alloc), LENGTH
       INTEGER   IB, I,J,K,L,ICOOR, LUHSOAO, COMPONENT,ID
       REAL*8    LEFT(2), RIGHT(2)
       REAL*8    GIJKL,XIJKL,DIJ,DKL, DP5, D1P5, D1, D2 
@@ -2292,14 +2293,10 @@ C
      &   )
       CALL REWSPL(LUHSOAO)
 
-      IF (NBAST .GT. 255) THEN
-         NIBUF = 2
-         NBITS = 16
-      ELSE
-         NIBUF = 1
-         NBITS = 8
-      END IF
-      LEN_IBUF4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF), IBUF4(NIBUF,LBUF), LENGTH4 in integer*4 units
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+      LBUF = LBUF_alloc
+
+      LEN_BUF4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF), IBUF4(NIBUF,LBUF), LENGTH4 in integer*4 units
 
       CALL MOLLAB('AO2SOINT',LUHSOAO,LUPRI)
       IF (WORD(1:1).EQ.'X') COMPONENT = 1
@@ -2313,7 +2310,7 @@ C
 
 cF90  READFILE: DO 
  100  CONTINUE
-         CALL READI4(LUHSOAO, LEN_IBUF4, BUF)
+         CALL READI4(LUHSOAO, LEN_BUF4, BUF)
          CALL AOLAB4(BUF(LBUF+1),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
 cF90     IF (LENGTH.LE.0) EXIT
          IF (LENGTH.LE.0) GO TO 300

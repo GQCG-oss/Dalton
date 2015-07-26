@@ -61,6 +61,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
+#include "eritap.h"
 #include "eribuf.h"
 #include "ccnoddy.h"
 #include "cbirea.h"
@@ -5753,6 +5754,7 @@ C
 #include "ccinftap.h"
 #include "nuclei.h"
 #include "inftap.h"
+#include "eritap.h"
 #include "chrnos.h"
 #include "r12int.h"
 C

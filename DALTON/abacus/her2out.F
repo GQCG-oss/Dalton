@@ -49,10 +49,10 @@ C
       INTEGER   IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
 
-      PARAMETER (LBUF = 600)
 
-      REAL*8    BUF(LBUF)
-      INTEGER*4 IBUF4(LBUF*2)
+      PARAMETER (LBUF_alloc = 600)
+      REAL*8    BUF(LBUF_alloc)
+      INTEGER*4 IBUF4(LBUF_alloc*2)
       SAVE      BUF, IBUF4, ICOUNT
 
 #include "nuclei.h"
@@ -60,6 +60,7 @@ C
 #include "symmet.h"
 C inftap.h: LUINTA, LUSRINT
 #include "inftap.h"
+#include "eribuf.h"
 C
 
 C
@@ -81,17 +82,8 @@ C
          WRITE (LUPRI,'(2X,A, L5)') 'SHABAB', SHABAB
       END IF
 C
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-         IBIT1 = 2**8  - 1
-         IBIT2 = 2**16 - 1
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-         IBIT1 = 2**16 - 1
-         IBIT2 = 0 ! not used when NIBUF.eq.2
-      END IF
+      CALL ERIBUF_INI
+      LBUF = LBUF_alloc
 C
 C     *******************************************************
 C     ***** Initialization when subroutine first called *****
@@ -404,16 +396,17 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
-      PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
-      DIMENSION SO(*), BUF(LBUF), IPNTNO(4,*), IPNTRP(3,*),
+      DIMENSION SO(*), IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          FMAT(*), DMAT(*)
-      INTEGER   IBUF(4,LBUF)
 #include "twocom.h"
 #include "symmet.h"
-      SAVE BUF, IBUF, ICOUNT
+      PARAMETER (LBUF = 6000)
+      REAL*8    BUF(LBUF)
+      INTEGER   IBUF(4,LBUF)
+      SAVE      BUF, IBUF, ICOUNT
 C
 
 C
@@ -613,11 +606,12 @@ C
 #include "dorps.h"
 #include "symmet.h"
 #include "doxyz.h"
+#include "eribuf.h"
 
-      PARAMETER (LBUF = 600)
+      PARAMETER (LBUF_alloc = 600)
 
-      REAL*8    BUF(LBUF)
-      INTEGER*4 IBUF4(LBUF*2)
+      REAL*8    BUF(LBUF_alloc)
+      INTEGER*4 IBUF4(LBUF_alloc*2)
       SAVE      BUF, IBUF4, ICOUNT, NBUFCL
 
 C
@@ -625,17 +619,8 @@ C
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
 C
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-         IBIT1 = 2**8  - 1
-         IBIT2 = 2**16 - 1
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-         IBIT1 = 2**16 - 1
-         IBIT2 = 0 ! not used when NIBUF.eq.2
-      END IF
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+      LBUF = LBUF_alloc
 C
       IF (FIRST) CALL DR2WRT(BUF,IBUF4,LBUF,NIBUF,ICOUNT,
      &                       IATOM,ICOOR,IREPE,-1,SPNORB,IPRINT)
@@ -986,31 +971,23 @@ C
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-      PARAMETER (LBUF = 600)
-      DIMENSION SO(*), BUF(LBUF)
-      INTEGER*4 IBUF4(LBUF*2)
+      PARAMETER (LBUF_alloc = 600)
+      DIMENSION SO(*), BUF(LBUF_alloc)
+      INTEGER*4 IBUF4(LBUF_alloc*2)
 #include "nuclei.h"
 #include "twocom.h"
 #include "dorps.h"
 #include "symmet.h"
 #include "doxyz.h"
+#include "eribuf.h"
       SAVE BUF, IBUF4, ICOUNT, NBUFCL
 C
 
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
 
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-         IBIT1 = 2**8  - 1
-         IBIT2 = 2**16 - 1
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-         IBIT1 = 2**16 - 1
-         IBIT2 = 0 ! not used when NIBUF.eq.2
-      END IF
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+      LBUF = LBUF_alloc
 C
       IATOM  = 0
       SPNORB = .FALSE.
@@ -1261,17 +1238,7 @@ C
          WRITE (LUPRI,'(2X,A, I5)') 'NDIST ', NDIST
       END IF
 C
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-         IBIT1 = 2**8  - 1
-         IBIT2 = 2**16 - 1
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-         IBIT1 = 2**16 - 1
-         IBIT2 = 0 ! not used when NIBUF.eq.2
-      END IF
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
 C
 C     *******************************************************
 C     ***** Initialization when subroutine first called *****
@@ -1555,6 +1522,7 @@ C  /* Deck un2wrn */
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "ibtpar.h"
+#include "eritap.h"
 #include "eribuf.h"
       DIMENSION BUF(LBUF)
       INTEGER*4 IBUF4(LBUF*NIBUF), ICOUNT4
