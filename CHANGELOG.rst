@@ -3,10 +3,22 @@
 2015.2 (20XX-XX-XX)
 ===================
 
-- Some minor corrections to the Dalton manual.
 - This will be the next patch.
 - Write me ...
 
+Common
+------
+
+
+DALTON
+------
+
+- Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
+- Some minor corrections to the Dalton manual.
+
+
+LSDALTON
+--------
 
 2015.1 (2015-07-20)
 ===================

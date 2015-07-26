@@ -864,6 +864,7 @@ C
 #include "mxcent.h"
 C
 C Used from common blocsk:
+C   NUCLEI : NBASIS
 C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   INFTRL : MXNDAO
@@ -897,7 +898,7 @@ C     CALL MOLLAB(KEY,LUDERA,LUPRI)
       END IF
       LBUF = 600
 C
-      LENINT4 = 2*LBUF + LBUF + 1 ! length in integer*4 units
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! length in integer*4 units
       KINT  = 1
       KIINT = KINT + LBUF
 C

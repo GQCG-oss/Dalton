@@ -2977,9 +2977,17 @@ C  /* Deck rumog1 */
       LOGICAL NOH2, NOLOND
       INTEGER P,Q,R,S,X
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IBUF(600), WORK(*)
+#include "mxcent.h"
+#include "nuclei.h"
 #include "inftap.h"      
-
 C
+      IF (NBASIS .LE. 255) THEN
+         NIBUF = 1
+         NBITS = 8
+      ELSE
+         NIBUF = 2
+         NBITS = 16
+      END IF
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT  = 1
       KIINT = KINT + LBUF

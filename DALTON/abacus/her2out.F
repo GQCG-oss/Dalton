@@ -694,8 +694,8 @@ C
                               IF (NIBUF .EQ. 1) THEN
                                  IBUF4(ICOUNT) = INDAB*(IBIT2+1) + INDCD
                               ELSE
-                                 IBUF4(2*ICOUNT-1) = MAX(INDAB,INDCD)
-                                 IBUF4(2*ICOUNT  ) = MIN(INDAB,INDCD)
+                                 IBUF4(2*ICOUNT-1) = INDAB
+                                 IBUF4(2*ICOUNT  ) = INDCD
                               END IF
                            ELSE
                               INDCD = MAX(INDC,INDD)*IBIT1 + INDC + INDD
