@@ -130,8 +130,8 @@ C
       CALL MEMGET('INTE',KINDDI,N2BASX,WRK,KFREE,LFREE)
 C     need LW1 in TRLDRV:
       LBINT = 600
-C     record: BUF(600),IBUF(600),LENGTH
-      LBUF = LBINT*(5*IRAT+1) + 1
+C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
+      LBUF = LBINT*(IRAT + 2 + 4) + 1 ! NIBUF .le. 2
       LW1  = MAX(IRAT*NBAST*NASHT,IRAT*2*MXNDAC,LBUF)
       LW1  = (LW1-1)/IRAT + 1
 C
@@ -228,19 +228,20 @@ C
 #include "inftap.h"
 #include "infind.h"
 #include "inftrl.h"
+! eribuf: NIBUF
+#include "eribuf.h"
 C
       PARAMETER (LBINT = 600)
 C
       KFREE = KFRSAV
       LFREE = LFRSAV
-C     record: BUF(600),IBUF(600),LENGTH
-      LBUF = LBINT*(5*IRAT+1) + 1
-      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*2*MXNDAC,LBUF)
+C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
+      LENBUF = LBINT*(IRAT + NIBUF + 4) + 1
+      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*2*MXNDAC,LENBUF)
       LW1    = (LW1-1)/IRAT + 1
       CALL MEMGET('REAL',KW1,LW1,WRK,KFREE,LFREE)
       KBUFW1 = KW1
-      KBUFW1 = KW1
-      KIBUF  = KBUFW1 + LBINT*(IRAT + 1) + 1
+      KIINDX4= KBUFW1 + LBINT*(IRAT + NIBUF) + 1
       KUVRY  = KW1
       KVUYR  = KUVRY + MXNDAC
       KPVXR  = KW1
@@ -294,7 +295,7 @@ C        ... finished when ICASE .lt. 0 !
          end if
 C
          CALL DZERO(H2LBUF,NDIS*MXNDAO)
-         CALL TRLRAO(LU2DER,IBXYZ,WRK(KIBUF),H2LBUF,
+         CALL TRLRAO(LU2DER,IBXYZ,WRK(KIINDX4),H2LBUF,
      *               INDAO,INDDIS,WRK(KBUFW1))
          if (iprint .gt. 20) then
             write (lupri,*) 'TRLDRV: finished TRLRAO in pass no.',NPASS
@@ -635,21 +636,21 @@ C
       RETURN
       END
 C  /* Deck trlrao */
-      SUBROUTINE TRLRAO(LULONA,IBXYZ,IBUF,H2LAO,INDAO,INDDIS,WRK)
+      SUBROUTINE TRLRAO(LULONA,IBXYZ,IINDX4,H2LAO,INDAO,INDDIS,WRK)
 C
 C 25-Sep-1992 hjaaj / revised 6-Oct-1992
 C
 C Reads two-electron London integrals from file to H2LAO buffer.
 C LULONA: File to read
 C IBXYZ : =1,2,3 for Bx,By,Bz respectively.
-C IBUF  : Points to start element in label buffer.
+C IINDX4: the four indices of the integral
 C H2LAO : H2LAO(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "mxcent.h"
-      DIMENSION H2LAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
+      DIMENSION H2LAO(MXNDAO,*), IINDX4(4,600), WRK(*)
       DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
 C Used from common blocsk:
@@ -663,6 +664,7 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftrl.h"
+#include "eribuf.h"
 C
 C     Local variables:
 C
@@ -674,34 +676,27 @@ C
       CALL REWSPL(LULONA)
       KEY = 'AO2MGINT'
       CALL MOLLAB(KEY,LULONA,LUPRI)
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
+      CALL ERIBUF_INI
       LBUF = 600
-      JBUF = 256
 C
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
-      KINT = 1
+      KINT  = 1
       KIINT = KINT + LBUF
 C
       DOCOOR = .FALSE.
  150  CONTINUE
          CALL READI4(LULONA,LENINT4,WRK(KINT))
-         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
-               JS    = IBUF(4,I)
+               JS    = IINDX4(4,I)
                IF (JS .EQ. 0) THEN
-                  ICOOR = IBUF(3,I)
+                  ICOOR = IINDX4(3,I)
                   DOCOOR = ICOOR.EQ.IBXYZ
                ELSE IF (DOCOOR) THEN
-                  JR = IBUF(3,I)
-                  JP = IBUF(1,I)
-                  JQ = IBUF(2,I)
+                  JR = IINDX4(3,I)
+                  JP = IINDX4(1,I)
+                  JQ = IINDX4(2,I)
 C                 BUF(I) =  {P Q | R S} =  {R S | P Q}
 C                        = -{Q P | S R} = -{S R | Q P}
                   JRS = INDDIS(JR,JS)

@@ -261,13 +261,12 @@ C
          CALL FLSHFO(LUPRI)
       end if
 C
-      CALL MEMGET('REAL',KFQAOA,NBAST*NASHT,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDDI,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQAQA',KFQAOA,NBAST*NASHT,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDI', KINDDI,N2BASX,WRK,KFREE,LFREE)
 C     need LW1 in TRDDRV:
       LBINT = 600
-C     record: BUF(LBINT),IBUF(LBINT),LENGTH
-C      LBUF = LBINT*(IRAT+1) + 1
-      LBUF = LBINT*(5*IRAT+1) + 1
+C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
+      LBUF = LBINT*(IRAT + 2 + 4) + 1 ! NIBUF .le. 2
       LW1  = MAX(IRAT*NBAST*NASHT,IRAT*2*MXNDAC,LBUF)
       LW1  = (LW1-1)/IRAT + 1
 C
@@ -387,6 +386,7 @@ C
 #include "inftap.h"
 #include "infind.h"
 #include "inftrl.h"
+#include "eribuf.h"
 C
       DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
       DIMENSION H2DBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
@@ -398,17 +398,17 @@ C
       KFREE = KFRSAV
       LFREE = LFRSAV
 C
-C     record: BUF(LBINT),IBUF(LBINT),LENGTH
-      LBUF = LBINT*(5*IRAT+1) + 1
+C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
+      LENBUF = LBINT*(IRAT + NIBUF + 4) + 1
 C     LW1  = maxdim(H2DWRK,H2UVRY and PVXR,intbuffer)
 C            H2DWRK: NBAST*NASHT  if IABSYM .ne. 1
 C                    MXNDAC+NBAST if IABSYM .eq. 1
 C            H2UVRY,PVXR: MXNDAC
-      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*(MXNDAC+NBAST),LBUF)
+      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*(MXNDAC+NBAST),LENBUF)
       LW1  = (LW1-1)/IRAT + 1
       CALL MEMGET('REAL',KW1,LW1,WRK,KFREE,LFREE)
       KBUFW1 = KW1
-      KIBUF  = KBUFW1 + LBINT*(IRAT + 1) + 1
+      KIINDX4= KBUFW1 + LBINT*(IRAT + NIBUF) + 1
       KUVRY  = KW1
       KPVXR  = KW1
 C
@@ -460,7 +460,7 @@ C        ... finished when ICASE .lt. 0 !
          end if
 C
          CALL DZERO(H2DBUF,NDIS*MXNDAO)
-         CALL TRDRAO(LU2DER,JCOOR,JCORSY,WRK(KIBUF),H2DBUF,
+         CALL TRDRAO(LU2DER,JCOOR,JCORSY,WRK(KIINDX4),H2DBUF,
      *               INDAO,INDDIS,WRK(KBUFW1))
          if (iprint .gt. 20) then
             write (lupri,*) 'TRDDRV: finished TRDRAO in pass no. ',NPASS
@@ -847,7 +847,8 @@ C
       RETURN
       END
 C  /* Deck trdrao */
-      SUBROUTINE TRDRAO(LUDERA,JCOOR,JCORSY,IBUF,H2DAO,INDAO,INDDIS,WRK)
+      SUBROUTINE TRDRAO(LUDERA,JCOOR,JCORSY,IINDX4,H2DAO,INDAO,
+     &                  INDDIS,WRK)
 C
 C 25-Sep-1992 hjaaj / revised 6-Oct-1992
 C
@@ -855,7 +856,7 @@ C Reads two-electron derivative integrals from file to H2DAO buffer.
 C LUDERA: File to read
 C JCOOR : =1,2,3 for d/dx,d/dy,d/dz respectively.
 C BUF   : Points to start element in integral buffer.
-C IBUF  : Points to start element in label buffer.
+C IINDX4(1:4,i): The four indices of the integral no. i
 C H2DAO : H2DAO(rs,pq), pq=(mpqoff+1:mpqoff+npq); dim (mxndao,npq)
 C
 #include "implicit.h"
@@ -875,8 +876,9 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftrl.h"
+#include "eribuf.h"
 C
-      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(*)
+      DIMENSION H2DAO(MXNDAO,*), IINDX4(4,600), WRK(*)
       DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
 C     Local variables:
@@ -889,13 +891,6 @@ C
       CALL REWSPL(LUDERA)
 C     KEY = 'AO2DRINT'
 C     CALL MOLLAB(KEY,LUDERA,LUPRI)
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
       LBUF = 600
 C
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! length in integer*4 units
@@ -905,19 +900,19 @@ C
       DOCOOR = .FALSE.
  150  CONTINUE
          CALL READI4(LUDERA,LENINT4,WRK(KINT))
-         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
-               JS    = IBUF(4,I)
+               JS    = IINDX4(4,I)
                IF (JS .EQ. 0) THEN
-                  ICOOR  = IBUF(3,I)
-                  ICORSY = IBUF(2,I) + 1
-                  JP = IBUF(1,I)
+                  ICOOR  = IINDX4(3,I)
+                  ICORSY = IINDX4(2,I) + 1
+                  JP = IINDX4(1,I)
                   DOCOOR = ICOOR.EQ.JCOOR .AND. JCORSY.EQ.ICORSY
                ELSE IF (DOCOOR) THEN
-                  JR = IBUF(3,I)
-                  JP = IBUF(1,I)
-                  JQ = IBUF(2,I)
+                  JR = IINDX4(3,I)
+                  JP = IINDX4(1,I)
+                  JQ = IINDX4(2,I)
 C                 BUF(I) =  (P Q | R S)
                   JRS = ABS( INDDIS(JR,JS) )
                   IF (JRS .GT. 0) THEN
