@@ -337,9 +337,9 @@ subroutine pdm_tensor_slave(comm)
 
       call tensor_alloc_mem(intarr1,2)
 
-      call tensor_mpi_bcast(intarr1,2,infpar%master,comm)
+      call tensor_buffer(intarr1,2,root=infpar%master,comm=comm)
       call tensor_init(AUX,intarr1,2)
-      call tensor_mpi_bcast(AUX%elm1,AUX%nelms,infpar%master,comm)
+      call tensor_buffer(AUX%elm1,AUX%nelms,finalize=.true.)
 
       call tensor_free_mem(intarr1)
 
