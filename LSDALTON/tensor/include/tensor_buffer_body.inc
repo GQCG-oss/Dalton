@@ -4,11 +4,9 @@
 !#ifdef USE_MPI_MOD_F08
 !      type(MPI_Comm),intent(in),optional :: comm
 !      integer(kind=tensor_mpi_kind),intent(in), optional :: root
-!      type(MPI_Status) :: stat
 !#else
       integer(kind=tensor_mpi_kind),intent(in), optional :: comm
       integer(kind=tensor_mpi_kind),intent(in), optional :: root
-      integer(kind=tensor_mpi_kind) :: stat(MPI_STATUS_SIZE)
 !#endif
 
       integer(kind=tensor_long_int) :: isize, tsize

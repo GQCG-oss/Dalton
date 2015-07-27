@@ -3,9 +3,9 @@
       integer(kind=tensor_mpi_kind)  :: info
       integer(tensor_long_int) :: n
 
-      if(  .not. c_associated( c, c_loc(p(1)) )  )then
-         call tensor_status_quit("ERROR(tensor_free_generic_mpi): wrong c/p combination",440)
-      endif
+      !if(  .not. c_associated( c, c_loc(p(1)) )  )then
+      !   call tensor_status_quit("ERROR(tensor_free_generic_mpi): wrong c/p combination",440)
+      !endif
 
       info = MPI_INFO_NULL
 

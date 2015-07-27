@@ -9,7 +9,7 @@ module tensor_mpi_operations_module
    public :: tensor_buffer
    private
 
-
+#ifdef VAR_MPI
    type tensor_mpi_buffer_type
       logical                       :: is_initialized = .false.
       integer(kind=tensor_long_int) :: std_size       = 10000000
@@ -28,8 +28,10 @@ module tensor_mpi_operations_module
    end type tensor_mpi_buffer_type
 
    type(tensor_mpi_buffer_type) :: tensor_mpi_buffer
+#endif
    
    interface tensor_buffer
+#ifdef VAR_MPI
       module procedure tensor_buffer_dp_l, &
                      & tensor_buffer_dp_s, &
                      & tensor_buffer_dp, &
@@ -42,9 +44,20 @@ module tensor_mpi_operations_module
                      & tensor_buffer_log_l, &
                      & tensor_buffer_log_s, &
                      & tensor_buffer_log
+#else
+      module procedure tensor_buffer_dummy
+#endif
    end interface tensor_buffer
 
    contains
+
+
+   subroutine tensor_buffer_dummy()
+      implicit none
+      call tensor_status_quit("ERROR(tensor_buffer_dummy): you should not have been able to compile this",666)
+   end subroutine tensor_buffer_dummy
+
+#ifdef VAR_MPI
 
    subroutine tensor_initialize_mpi_buffer(this,sze,root,comm)
       implicit none
@@ -189,20 +202,20 @@ module tensor_mpi_operations_module
       integer(kind=tensor_long_int) :: n
       integer(kind=tensor_mpi_kind) :: i, c
 
-      !if(present(comm))then
-      !   c=comm
-      !else if(tensor_mpi_buffer%is_initialized)then
-      !   c=tensor_mpi_buffer%comm
-      !else
-      !   call tensor_status_quit("ERROR(tensor_buffer_long_int): buffer needs to be initialized or comm given at first call",22)
-      !endif
+      if(present(comm))then
+         c=comm
+      else if(tensor_mpi_buffer%is_initialized)then
+         c=tensor_mpi_buffer%comm
+      else
+         call tensor_status_quit("ERROR(tensor_buffer_long_int): buffer needs to be initialized or comm given at first call",22)
+      endif
 
-      !call tensor_get_rank_for_comm(c,i)
+      call tensor_get_rank_for_comm(c,i)
 
       n=1
       buf(1) = buffer
       call tensor_buffer_long_int_l(buf,n,init_size=init_size,root=root,comm=comm,finalize=finalize)
-      !if(i/= tensor_mpi_buffer%root) buffer = buf(1)
+      if(i/= tensor_mpi_buffer%root) buffer = buf(1)
    end subroutine tensor_buffer_long_int
    subroutine tensor_buffer_long_int_l(buffer,n1,init_size,root,comm,finalize)
       implicit none
@@ -315,5 +328,7 @@ module tensor_mpi_operations_module
       include "tensor_buffer_body.inc"
    end subroutine tensor_buffer_log_s
 
+!ENDIF VAR_MPI
+#endif
 
 end module tensor_mpi_operations_module
