@@ -14,7 +14,7 @@
       integer(kind=tensor_long_int) :: isize, tsize
       integer(kind=tensor_long_int) :: b,e,n
       integer(kind=tensor_mpi_kind) :: r, c, rank
-      logical :: fin = .false.
+      logical :: fin
 
       n = n1
 
@@ -32,6 +32,7 @@
 
       call tensor_get_rank_for_comm(c,rank)
 
+      fin = .false.
       if(present(finalize))  fin = finalize
       if(present(init_size)) isize = init_size
 
