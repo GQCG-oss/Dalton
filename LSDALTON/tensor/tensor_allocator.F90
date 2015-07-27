@@ -216,17 +216,20 @@ module tensor_allocator
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
       real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n, n1l, n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
+      n1l = n1
+      n2l = n2
+
+      n = n1l * n2l
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -239,17 +242,20 @@ module tensor_allocator
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
       real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n, n1l,n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
+      n1l = n1
+      n2l = n2
+
+      n = n1l * n2l
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -262,17 +268,20 @@ module tensor_allocator
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
       real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -285,17 +294,20 @@ module tensor_allocator
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
       real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -464,15 +476,18 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -483,15 +498,18 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -502,15 +520,18 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -521,15 +542,18 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -620,15 +644,17 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
+      n1l = n1
+      n2l = n2
       
-      n = n1*n2
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -639,15 +665,18 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -658,15 +687,18 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
@@ -677,15 +709,18 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n, n1l, n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
+     
+      n1l = n1
+      n2l = n2
       
-      n = n1*n2
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
 #ifdef VAR_PTR_RESHAPE
-      p2(1:n1,1:n2) => p(1:n)
+      p2(1:n1l,1:n2l) => p(1:n)
 #else
-      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
 #endif
       p => null()
 
