@@ -223,7 +223,11 @@ module tensor_allocator
       
       n = n1 * n2
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_dp_2d_ll
@@ -242,7 +246,11 @@ module tensor_allocator
       
       n = n1 * n2
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_dp_2d_sl
@@ -261,7 +269,11 @@ module tensor_allocator
       
       n = n1 * n2
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_dp_2d_ls
@@ -280,7 +292,11 @@ module tensor_allocator
       
       n = n1 * n2
       call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_dp_2d_ss
@@ -453,7 +469,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_ll
@@ -468,7 +488,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_sl
@@ -483,7 +507,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_ls
@@ -498,7 +526,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_ss
@@ -593,7 +625,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_ll
@@ -608,7 +644,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_ls
@@ -623,7 +663,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_sl
@@ -638,7 +682,11 @@ module tensor_allocator
       
       n = n1*n2
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
+#ifdef VAR_PTR_RESHAPE
       p2(1:n1,1:n2) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1,n2])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_ss
