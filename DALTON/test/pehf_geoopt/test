@@ -37,10 +37,10 @@ f.add(from_string = 'Normal Coordinates',
       abs_tolerance = 2.0e-4)
 f.add(from_string = 'Dipole Gradient in Normal Coordinate Basis',
       num_lines = 15,
-      abs_tolerance = 4.0e-5)
+      abs_tolerance = 2.0e-4)
 f.add(from_string = 'Vibrational Polarizabilities',
       num_lines = 10,
-      rel_tolerance = 5.0e-4)
+      abs_tolerance = 1.0e-3)
 
 test.run(['pehf_geoopt.dal'], ['water.mol'], ['14h2o.pot'], f={'out': f})
 
