@@ -41,38 +41,29 @@
          call tensor_status_quit("ERROR(tensor_buffer_add): buffer is already initialized, the buffer size is unnecessary",33)
       endif
 
+      tsize = n * datatype
+
+      b = tensor_mpi_buffer%offset
+      e = b + tsize - 1
+
       if( rank == r )then
-         !SENDER WRITE DATA TO BUFFER
-
-         tsize = n * datatype
-
-         b = tensor_mpi_buffer%offset
-         e = b + tsize - 1
-
+         !SENDER WRITE DATA TO BUFFER, IF BUFFER TOO SMALL, INCREASE
          if( e > tensor_mpi_buffer%nbytes ) then
             call tensor_mpi_buffer%incr_(tsize)
          endif
 
          tensor_mpi_buffer%buffer(b:e) = transfer(buffer,tensor_mpi_buffer%buffer(b:e))
 
-         tensor_mpi_buffer%offset = e + 1
-
       else
-         !RECEIVER EXTRACT DATA FROM BUFFER
-
-         tsize = n * datatype
-
-         b = tensor_mpi_buffer%offset
-         e = b + tsize - 1
-
+         !RECEIVER EXTRACT DATA FROM BUFFER, BUFFER CANNOT BE TOO SMALL
          if( e > tensor_mpi_buffer%nbytes )  call tensor_status_quit("ERROR(tensor_buffer_add): error in reading the message, &
             &possibly wrong order of arguments for the receiver",33)
 
          buffer = transfer(tensor_mpi_buffer%buffer(b:e),buffer)
 
-         tensor_mpi_buffer%offset = e + 1
-
       endif
+
+      tensor_mpi_buffer%offset = e + 1
 
       if(fin) then
          call tensor_mpi_buffer%free_()
