@@ -101,6 +101,10 @@ C
       LOGICAL AOEXIST,MOEXIST
 C
       CALL QENTER('N_TRACTL')
+
+      IF (IPRTRA.GT.0) WRITE (LUPRI,'(/A,I4)')
+     & ' "NEW" 2-ELECTRON INTEGRAL TRANSFORMATION SECTION; PARAMETER =',
+     & ITRSIR
 C
 C     (Re)calculate AO integrals, if necessary
 C     /hjaaj 11-jan-2007
@@ -143,7 +147,7 @@ C
       DELORD = (ITRSIR .LT. 0)
       JTRSIR = ABS(ITRSIR)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) USEDRC = .TRUE.
-C     ... USEDRC must be true for second order transformation
+C     ... USEDRC must be true for second order transformation;
 C         can be true by input for higher order (e.g. for RESPONS)
 C
 C     Translate from SIRIUS convention for transformation level
@@ -229,8 +233,8 @@ C
       KFREE  = 1
       LFREE  = MEMX
       LCDTRA = MMORBX
-      CALL MEMGET('INTE',KCDTRA,LCDTRA,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KTRTYP,MXCORB,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','CDTRA',KCDTRA,LCDTRA,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','TRTYP',KTRTYP,MXCORB,WRK,KFREE,LFREE)
 C
 C     Set MO loop limits for the four integral indices
 C
@@ -1284,6 +1288,17 @@ C
       IDISKM = 0
       CALL DAREAD(LUMINT,IADOUT,3*LIADUT,IDISKM)
       IDISKM = IADOUT(1,LIADUT)
+
+      IF (IPRTRA .ge. 5) THEN
+         write(lupri,*) 'MSYM  ',MSYM
+         write(lupri,*) 'MISH  ',MISH(1:MSYM)
+         write(lupri,*) 'MASH  ',MASH(1:MSYM)
+         write(lupri,*) 'MORB  ',MORB(1:MSYM)
+         write(lupri,*) 'MFRO  ',MFRO(1:MSYM)
+         write(lupri,*) 'MBAS  ',MBAS(1:MSYM)
+         write(lupri,*) 'IDISKM',IDISKM
+         write(lupri,*) 'MCOPT ',MCOPT
+      END IF
 C
 C     Loop over quadruples of symmetries (NSP,NSQ,NSR,NSS)
 C     NOTE that the integrals on LUORDA must be sorted in the same
@@ -1294,6 +1309,7 @@ C
       IF (IPRTRA .GE. 2 .AND. IPRTRA .LT. 5) WRITE(LUPRI,2000)
  2000 FORMAT(/' SYMMETRY       BASIS FUNCTION        ORBITALS',3X,
      &       ' MEMLFT     LTUPQ   USER(SEC) WALL(SEC)')
+      CALL FLSHFO(LUPRI)
 C
       ITP    = 0
       LMOP1  = 1
@@ -1309,6 +1325,7 @@ C
        LMOP2 = LMOP  +NBP*MISH(NSP)
        JMOP2 = JMOP1 +MFRO(NSP)+MISH(NSP)
        NOP   = MORB(NSP)
+       IF (NOP .EQ. 0) GO TO 104
        NOCP  = MASH(NSP)
        KEEPP = KEEP(10+NSP)
        ISP   = NSP
@@ -1327,6 +1344,7 @@ C
         JMOQ2 = JMOQ1+MFRO(NSQ)+MISH(NSQ)
         KEEPQ = KEEP(10+NSQ)
         NOQ   = MORB(NSQ)
+        IF (NOQ .EQ. 0) GO TO 103
         NOCQ  = MASH(NSQ)
         ISQ   = NSQ
         NSPQ  = IEOR(NSP-1,NSQ-1)+1
@@ -1345,6 +1363,7 @@ C
          JMOR2 = JMOR1+MFRO(NSR)+MISH(NSR)
          KEEPR = KEEP(10+NSR)
          NOR   = MORB(NSR)
+         IF (NOR .EQ. 0) GO TO 102
          NOCR  = MASH(NSR)
          NSPQR = IEOR(NSPQ-1,NSR-1)+1
          ISR   = NSR
@@ -1364,12 +1383,14 @@ C
           LMOS2 = LMOS+NBS*MISH(NSS)
           JMOS2 = JMOS1+MFRO(NSS)+MISH(NSS)
           NOS   = MORB(NSS)
+          IF (NOS .EQ. 0) GO TO 101
           NOCS  = MASH(NSS)
           KEEPS = KEEP(10+NSS)
           ISS   = NSS
 C
-C
-          IF (NOP*NOQ*NOR*NOS.EQ.0) GO TO 101
+!         IF (NOP*NOQ*NOR*NOS.EQ.0) GO TO 101
+!         hjaaj: gives zero because of integer*4 for e.g. NOP=NOQ=NOR=NOS=256 !!!
+!                (took some time to figure out this cause -- July 2015 hjaaj)
           NOCTOT = MIN(1,NOCP) + MIN(1,NOCQ)
      &           + MIN(1,NOCR) + MIN(1,NOCS)
           IF (NOCTOT .LT. 2) GO TO 101
@@ -1399,7 +1420,7 @@ C
      &         '               NPQ  =',NPQ
             WRITE(LUPRI,2000)
             WRITE(LUPRI,2100) ISP,ISQ,ISR,ISS,NBP,NBQ,NBR,NBS,
-     &                         NOP,NOQ,NOR,NOS
+     &                        NOP,NOQ,NOR,NOS
             CALL QUIT(' TR2CTL error, LADX .le. 0')
           END IF
 C
@@ -1505,6 +1526,7 @@ C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
  2100        FORMAT(1X,4I2,1X,4I5,1X,4I5,2I12,2F9.3)
              TCPU1  = TCPU
              TWALL1 = TWALL
+             CALL FLSHFO(LUPRI)
           END IF
   101    CONTINUE
   102   CONTINUE
@@ -2840,11 +2862,11 @@ C     SET ADDRESS FIELD FOR OUTPUT INTEGRAL FILE
 C     Initialize to -2 which is used as error code
 C                   -1 will mean no integrals
 C
-      DO 1 I=1,LIADUT
-       IADOUT(1,I)=-2
-       IADOUT(2,I)=-2
-       IADOUT(3,I)=-2
-    1 CONTINUE
+      DO I=1,LIADUT
+         IADOUT(1,I)=-2
+         IADOUT(2,I)=-2
+         IADOUT(3,I)=-2
+      END DO
       IDISKM = 0
       CALL DASKIP(LUMINT,3*LIADUT,IDISKM)
       NLIST = 10
@@ -3357,7 +3379,7 @@ C
   770       CONTINUE
          END IF
   780 CONTINUE
-      IF (IPRTRA .GE. 5) THEN
+      IF (IPRTRA .GE. 3) THEN
          WRITE (LUPRI,'(/A)')
      &      ' ICDTRA: list of distributions included on LUMINT:'
          DO 810 I = 1,MORBT

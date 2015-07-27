@@ -14,6 +14,8 @@ DALTON
 ------
 
 - Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
+- Fixed "new" integral transformation for 32 bit integers and e.g. 256 orbitals and no integer overflow test
+  (the first 32 bits of 256**4 are zero !!!)
 - Some minor corrections to the Dalton manual.
 
 
