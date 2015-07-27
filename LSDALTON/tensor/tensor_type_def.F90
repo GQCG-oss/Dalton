@@ -91,11 +91,12 @@ module tensor_type_def_module
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor_long_int     = 4
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor_standard_log = 5
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor_long_log     = 6
-  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tile                = 7
-  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor              = 8
+  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_character           = 7
+  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tile                = 8
+  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor              = 9
 
   !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LIST ABOVE
-  integer(kind=tensor_standard_int), parameter :: tensor_nmem_idx = 8
+  integer(kind=tensor_standard_int), parameter :: tensor_nmem_idx = 9
   type(tensor_counter_type) :: counters(tensor_nmem_idx)
   type(tensor_counter_type) :: counters_bg(tensor_nmem_idx)
 
@@ -179,6 +180,8 @@ module tensor_type_def_module
            c(i)%size_ = tensor_standard_log
         case(tensor_mem_idx_tensor_long_log)
            c(i)%size_ = tensor_long_log
+        case(tensor_mem_idx_character)
+           c(i)%size_ = tensor_char_size
 
         !DERIVED TYPES
         case(tensor_mem_idx_tile)
@@ -245,6 +248,9 @@ module tensor_type_def_module
         write (*,'(a)',advance='no') " tensor_standard_log "
      case(tensor_mem_idx_tensor_long_log)
         write (*,'(a)',advance='no') " tensor_long_log     "
+
+     case(tensor_mem_idx_character)
+        write (*,'(a)',advance='no') " character           "
 
      !DERIVED TYPES
      case(tensor_mem_idx_tile)

@@ -44,6 +44,8 @@ module tensor_allocator
                       &tensor_allocate_tensor_long_log_1d_std,&
                       &tensor_allocate_tensor_standard_log_1d,&
                       &tensor_allocate_tensor_standard_log_1d_std,&
+                      &tensor_allocate_character_1d,&
+                      &tensor_allocate_character_1d_std,&
                       &tensor_allocate_tile_1d,&
                       &tensor_allocate_tile_1d_std, &
                       &tensor_allocate_tensor_1d,&
@@ -60,6 +62,7 @@ module tensor_allocator
                       &tensor_free_tensor_standard_int_2d,&
                       &tensor_free_tensor_long_log_1d,&
                       &tensor_free_tensor_standard_log_1d,&
+                      &tensor_free_character_1d,&
                       &tensor_free_tile_1d, &
                       &tensor_free_tensor_1d
    end interface tensor_free_mem
@@ -802,6 +805,61 @@ module tensor_allocator
 
    end subroutine tensor_free_tensor_standard_log_basic
 
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!          ATOMIC TYPE: character: tensor_character             !!!!!!!!!!!!!!!!!!!!!!!!!!!!                                      
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   !ALLOCATION INTERFACES
+   subroutine tensor_allocate_character_1d_std(p,n1,stat)
+      implicit none
+      character, pointer, intent(inout)             :: p(:)
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      integer, intent(out), optional                :: stat
+      integer(kind=tensor_long_int ) :: n
+      
+      n = n1
+      call tensor_allocate_character_basic(p,n,tensor_mem_idx_character,stat=stat)
+
+   end subroutine tensor_allocate_character_1d_std
+   subroutine tensor_allocate_character_1d(p,n1,stat)
+      implicit none
+      character,pointer, intent(inout)          :: p(:)
+      integer(kind=tensor_long_int), intent(in) :: n1
+      integer, intent(out), optional            :: stat
+      integer(kind=tensor_long_int ) :: n
+      
+      n = n1
+      call tensor_allocate_character_basic(p,n,tensor_mem_idx_character,stat=stat)
+
+   end subroutine tensor_allocate_character_1d
+
+
+   !DEALLOCATION
+   subroutine tensor_free_character_1d(p,stat)
+      implicit none
+      character,pointer, intent(inout) :: p(:)
+      integer, intent(out), optional   :: stat
+
+      call tensor_free_character_basic(p,tensor_mem_idx_character,stat=stat)
+
+   end subroutine tensor_free_character_1d
+
+   !BASIC ALLOCATOR
+   subroutine tensor_allocate_character_basic(p,n,idx,stat)
+      implicit none
+      character,pointer, intent(inout) :: p(:)
+
+      include "standard_allocation.inc"
+
+   end subroutine tensor_allocate_character_basic
+   !BASIC DEALLOCATOR
+   subroutine tensor_free_character_basic(p,idx,stat)
+      implicit none
+      character,pointer, intent(inout) :: p(:)
+
+      include "standard_deallocation.inc"
+
+   end subroutine tensor_free_character_basic
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!             DERIVED TYPE: tile               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!                                      
