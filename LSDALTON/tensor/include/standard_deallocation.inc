@@ -19,7 +19,7 @@
 
       if( alloc_stat /= 0 ) then
          if(.not. present(stat))then
-            call tensor_status_quit("ERROR(tensor_free_generic): allocation failed",alloc_stat)
+            call tensor_status_quit("ERROR(tensor_free_generic): deallocation failed",alloc_stat)
          else
             stat = alloc_stat
          endif

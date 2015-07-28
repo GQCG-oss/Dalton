@@ -326,11 +326,11 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_probe(stat,comm,source,tag)
        implicit none
 #ifdef USE_MPI_MOD_F08
-       type(MPI_Comm),intent(in)                 :: comm
-       type(MPI_Status),intent(out)              :: stat
+       type(MPI_Comm),intent(in)                   :: comm
+       type(MPI_Status),intent(inout)              :: stat
 #else
-       integer(kind=tensor_mpi_kind),intent(in)  :: comm
-       integer(kind=tensor_mpi_kind),intent(out) :: stat(MPI_STATUS_SIZE)
+       integer(kind=tensor_mpi_kind),intent(in)    :: comm
+       integer(kind=tensor_mpi_kind),intent(inout) :: stat(MPI_STATUS_SIZE)
 #endif
        integer(kind=tensor_mpi_kind),intent(in), optional :: source, tag
        integer(kind=tensor_mpi_kind) :: ierr = 0
@@ -348,11 +348,11 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_get_count(stat,dat,nelms)
        implicit none
 #ifdef USE_MPI_MOD_F08
-       type(MPI_Datatype),intent(in)             :: dat
-       type(MPI_Status),intent(in)               :: stat
+       type(MPI_Datatype),intent(in)                :: dat
+       type(MPI_Status),intent(inout)               :: stat
 #else
-       integer(kind=tensor_mpi_kind),intent(in)  :: dat
-       integer(kind=tensor_mpi_kind),intent(out) :: stat(MPI_STATUS_SIZE)
+       integer(kind=tensor_mpi_kind),intent(in)    :: dat
+       integer(kind=tensor_mpi_kind),intent(inout) :: stat(MPI_STATUS_SIZE)
 #endif
        integer(kind=tensor_mpi_kind),intent(out) :: nelms
        integer(kind=tensor_mpi_kind) :: ierr = 0
@@ -621,7 +621,7 @@ module tensor_mpi_interface_module
       type(tensor_mpi_stats_type),intent(inout)    :: stats
       include "mpi_collective_vars.inc"
       !CHANGE THIS ACCORDING TO THE DATATYPE OF BUFFER
-      real(tensor_dp), pointer :: noelm => null()
+      real(tensor_dp) :: noelm = 0.0E0_tensor_dp
       include "mpi_reduce_std.inc"
     end subroutine tensor_mpi_reduce_dp_basic
 
