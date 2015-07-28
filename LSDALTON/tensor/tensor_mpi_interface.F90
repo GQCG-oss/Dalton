@@ -15,6 +15,15 @@ module tensor_mpi_interface_module
    public :: tensor_mpi_barrier
    public :: tensor_get_rank_for_comm
    public :: tensor_get_size_for_comm
+   public :: tensor_mpi_wait
+   public :: tensor_mpi_win_lock
+   public :: tensor_mpi_win_unlock
+   public :: tensor_mpi_win_lock_all
+   public :: tensor_mpi_win_unlock_all
+   public :: tensor_mpi_win_flush
+   public :: tensor_mpi_probe
+   public :: tensor_mpi_get_count
+
    private
 
    interface tensor_mpi_bcast
@@ -33,7 +42,9 @@ module tensor_mpi_interface_module
                      & tensor_mpi_bcast_log, &
                      & tensor_mpi_bcast_char_s,&
                      & tensor_mpi_bcast_char_l, &
-                     & tensor_mpi_bcast_char
+                     & tensor_mpi_bcast_char, &
+                     & tensor_mpi_bcast_char_vec_l, &
+                     & tensor_mpi_bcast_char_vec_s
 #else
       module procedure tensor_mpi_dummy
 #endif
@@ -53,7 +64,13 @@ module tensor_mpi_interface_module
 #ifdef VAR_MPI
       module procedure tensor_mpi_allreduce_tensor_dp_s,&
                      & tensor_mpi_allreduce_tensor_dp_l, &
-                     & tensor_mpi_allreduce_tensor_dp
+                     & tensor_mpi_allreduce_tensor_dp, &
+                     & tensor_mpi_allreduce_long_int_s,&
+                     & tensor_mpi_allreduce_long_int_l, &
+                     & tensor_mpi_allreduce_long_int, &
+                     & tensor_mpi_allreduce_std_int_s,&
+                     & tensor_mpi_allreduce_std_int_l, &
+                     & tensor_mpi_allreduce_std_int
 #else
       module procedure tensor_mpi_dummy
 #endif
@@ -110,6 +127,240 @@ module tensor_mpi_interface_module
 
        if(ierr /= 0) call tensor_status_quit("ERROR(tensor_get_size_for_comm): failed",220)
     end subroutine tensor_get_size_for_comm
+
+    subroutine tensor_mpi_wait(request_handle)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Request),intent(inout) :: request_handle
+#else
+       integer(kind=tensor_mpi_kind),intent(inout) :: request_handle
+#endif
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       call mpi_wait(request_handle,MPI_STATUS_IGNORE,ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_wait): failed",220)
+    end subroutine tensor_mpi_wait
+
+    subroutine tensor_mpi_win_lock(dest,win,typeoflock,ass)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win),intent(in) :: win
+#else
+       integer(kind=tensor_mpi_kind),intent(in) :: win
+#endif
+       integer(kind=tensor_mpi_kind),intent(in) :: dest
+       integer(kind=tensor_mpi_kind),intent(in),optional :: ass
+       character, intent(in) :: typeoflock
+       integer(kind=tensor_mpi_kind) :: assert = 0
+       integer(kind=tensor_mpi_kind) :: ierr   = 0
+
+       if(present(ass))assert=ass
+       if(typeoflock=='e')then
+          CALL mpi_win_lock(MPI_LOCK_EXCLUSIVE,dest,assert,win,ierr)
+       else if(typeoflock=='s')then
+          CALL mpi_win_lock(MPI_LOCK_SHARED,dest,assert,win,ierr)
+       else
+          call lsquit("ERROR(tensor_mpi_win_lock): no valid lock type selected",-1)
+       endif
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_lock): failed",220)
+    end subroutine tensor_mpi_win_lock
+
+    subroutine tensor_mpi_win_unlock(dest,win)
+       implicit none
+       integer(kind=tensor_mpi_kind),intent(in) :: dest
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(in) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(in) :: win
+#endif
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       call mpi_win_unlock(dest,win,ierr)     
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_unlock): failed",220)
+    end subroutine tensor_mpi_win_unlock
+
+    subroutine tensor_mpi_win_flush(win,rank,local)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(in) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(in) :: win
+#endif
+       integer(kind=tensor_mpi_kind), optional :: rank
+       logical, optional :: local
+       integer(kind=tensor_mpi_kind) :: ierr=0
+       logical :: loc
+       loc  = .false.
+
+       if(present(local))loc = local
+
+#ifdef VAR_HAVE_MPI3
+       if(loc)then
+          if(present(rank))then
+             call mpi_win_flush_local(rank,win,ierr)
+          else
+             call mpi_win_flush_local_all(win,ierr)
+          endif
+       else
+          if(present(rank))then
+             call mpi_win_flush(rank,win,ierr)
+          else
+             call mpi_win_flush_all(win,ierr)
+          endif
+       endif
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_flush): failed",220)
+#else
+       print *,"WARNING(tensor_mpi_win_flush)called without MPI3, unlock should force&
+          & the sync"
+#endif
+    end subroutine tensor_mpi_win_flush
+
+    subroutine tensor_mpi_win_lock_all(win,ass)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(in) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(in) :: win
+#endif
+       integer(kind=tensor_mpi_kind),intent(in),optional :: ass
+       integer(kind=tensor_mpi_kind) :: assert = 0
+       integer(kind=tensor_mpi_kind) :: ierr   = 0
+
+       if(present(ass))assert=ass
+
+#ifdef VAR_HAVE_MPI3
+       CALL mpi_win_lock_all(assert,win,ierr)
+#else
+       call tensor_status_quit("ERROR(tensor_mpi_win_lock_all): this routine is MPI 3 only ",-1)
+#endif
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_lock_all): failed",220)
+    end subroutine tensor_mpi_win_lock_all
+
+    subroutine tensor_mpi_win_unlock_all(win)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(in) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(in) :: win
+#endif
+       integer(kind=tensor_mpi_kind) :: ierr   = 0
+
+#ifdef VAR_HAVE_MPI3
+       CALL mpi_win_unlock_all(win,ierr)
+#else
+       call lsquit("ERROR(tensor_mpi_win_unlock_all): this routine is MPI 3 only ",-1)
+#endif
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_unlock_all): failed",220)
+    end subroutine tensor_mpi_win_unlock_all
+
+    subroutine tensor_mpi_win_free(win)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(inout) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(inout) :: win
+#endif
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       call mpi_win_free(win,ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_free): failed",220)
+    end subroutine tensor_mpi_win_free
+
+    subroutine tensor_mpi_win_fence_simple(win,assert)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(inout) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(inout) :: win
+#endif
+       integer(kind=tensor_mpi_kind),intent(in),optional :: assert
+       integer(kind=tensor_mpi_kind) :: as   = 0
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       if(present(assert)) as = assert
+
+       call mpi_win_fence(as,win,ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_fence): failed",220)
+    end subroutine tensor_mpi_win_fence_simple
+
+    subroutine tensor_mpi_win_fence_special(win,openwin)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Win), intent(inout) :: win
+#else
+       integer(kind=tensor_mpi_kind), intent(inout) :: win
+#endif
+       logical,intent(in) :: openwin
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+       if(openwin)then
+          call mpi_win_fence(MPI_MODE_NOPRECEDE,win,ierr)
+          if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_fence_noprecede): failed",220)
+       else
+          call mpi_win_fence(MPI_MODE_NOSUCCEED,win,ierr)
+          if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_fence_noprecede): failed",220)
+       endif
+    end subroutine tensor_mpi_win_fence_special
+
+    subroutine tensor_mpi_win_create_dp_basic(darr,win,n,comm)
+       implicit none
+       integer(kind=tensor_long_int), intent(in) :: n
+       real(tensor_dp),intent(in) :: darr(n)
+#ifdef USE_MPI_MOD_F08
+       include "mpi_win_create_vars_mpif08.inc"
+#else
+       include "mpi_win_create_vars_std.inc"
+#endif
+       datatype = MPI_DOUBLE_PRECISION
+
+       include "mpi_win_create_generic.inc"
+    end subroutine tensor_mpi_win_create_dp_basic
+
+    subroutine tensor_mpi_probe(stat,comm,source,tag)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Comm),intent(in)                 :: comm
+       type(MPI_Status),intent(out)              :: stat
+#else
+       integer(kind=tensor_mpi_kind),intent(in)  :: comm
+       integer(kind=tensor_mpi_kind),intent(out) :: stat(MPI_STATUS_SIZE)
+#endif
+       integer(kind=tensor_mpi_kind),intent(in), optional :: source, tag
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+       integer(kind=tensor_mpi_kind) :: s = MPI_ANY_SOURCE
+       integer(kind=tensor_mpi_kind) :: t = MPI_ANY_TAG
+       
+       if(present(source))s = source
+       if(present(tag))   t = tag
+
+       call mpi_probe(s, t, comm, stat, ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_probe): probe failed",220)
+    end subroutine tensor_mpi_probe
+
+    subroutine tensor_mpi_get_count(stat,dat,nelms)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Datatype),intent(in)             :: dat
+       type(MPI_Status),intent(in)               :: stat
+#else
+       integer(kind=tensor_mpi_kind),intent(in)  :: dat
+       integer(kind=tensor_mpi_kind),intent(out) :: stat(MPI_STATUS_SIZE)
+#endif
+       integer(kind=tensor_mpi_kind),intent(out) :: nelms
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       call mpi_get_count(stat, dat, nelms, ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_get_count): failed",220)
+    end subroutine tensor_mpi_get_count
 
     !STD INTEGER BCAST
     subroutine tensor_mpi_bcast_std_int(b,root,comm)
@@ -297,6 +548,24 @@ module tensor_mpi_interface_module
       call tensor_mpi_bcast_char_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
     end subroutine tensor_mpi_bcast_char_l
+    subroutine tensor_mpi_bcast_char_vec_s(buffer,n1,root,comm)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      character, intent(inout)                      :: buffer(n1)
+      include "mpi_collective_vars.inc"
+      n=n1
+      call tensor_mpi_bcast_char_vec_basic(buffer,n,root,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
+    end subroutine tensor_mpi_bcast_char_vec_s
+    subroutine tensor_mpi_bcast_char_vec_l(buffer,n1,root,comm)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      character, intent(inout)                  :: buffer(n1)
+      include "mpi_collective_vars.inc"
+      n=n1
+      call tensor_mpi_bcast_char_vec_basic(buffer,n,root,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
+    end subroutine tensor_mpi_bcast_char_vec_l
     subroutine tensor_mpi_bcast_char_basic(buffer,n1,root,comm,stats)
       implicit none
       integer(kind=tensor_long_int), intent(in) :: n1
@@ -305,6 +574,14 @@ module tensor_mpi_interface_module
       include "mpi_collective_vars.inc"
       include "mpi_bcast_std.inc"
     end subroutine tensor_mpi_bcast_char_basic
+    subroutine tensor_mpi_bcast_char_vec_basic(buffer,n1,root,comm,stats)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      character, intent(inout)                  :: buffer(n1)
+      type(tensor_mpi_stats_type),intent(inout) :: stats
+      include "mpi_collective_vars.inc"
+      include "mpi_bcast_std.inc"
+    end subroutine tensor_mpi_bcast_char_vec_basic
 
 
     !DOUBLE PRECISION REDUCE
@@ -348,6 +625,83 @@ module tensor_mpi_interface_module
       include "mpi_reduce_std.inc"
     end subroutine tensor_mpi_reduce_dp_basic
 
+    !STANDARD INTEGER ALLREDUCE
+    subroutine tensor_mpi_allreduce_std_int(b,comm)
+      implicit none
+      integer(kind=tensor_standard_int), intent(inout) :: b
+      include "mpi_collective_vars_noroot.inc"
+      integer(kind=tensor_standard_int) :: buffer(1)
+      n=1
+      buffer(1) = b
+      call tensor_mpi_allreduce_std_int_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_standard_int))
+      b = buffer(1)
+    end subroutine tensor_mpi_allreduce_std_int
+    subroutine tensor_mpi_allreduce_std_int_s(buffer,n1,comm)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in)    :: n1
+      integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
+      include "mpi_collective_vars_noroot.inc"
+      n=n1
+      call tensor_mpi_allreduce_std_int_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_standard_int))
+    end subroutine tensor_mpi_allreduce_std_int_s
+    subroutine tensor_mpi_allreduce_std_int_l(buffer,n1,comm)
+      implicit none
+      integer(kind=tensor_long_int), intent(in)        :: n1
+      integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
+      include "mpi_collective_vars_noroot.inc"
+      n=n1
+      call tensor_mpi_allreduce_std_int_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_standard_int))
+    end subroutine tensor_mpi_allreduce_std_int_l
+    subroutine tensor_mpi_allreduce_std_int_basic(buffer,n1,comm,stats)
+      implicit none
+      integer(kind=tensor_long_int), intent(in)    :: n1
+      integer(kind=tensor_standard_int), intent(inout) :: buffer(:)
+      type(tensor_mpi_stats_type),intent(inout)    :: stats
+      include "mpi_collective_vars_noroot.inc"
+      include "mpi_allreduce_std.inc"
+    end subroutine tensor_mpi_allreduce_std_int_basic
+
+    !LONG INTEGER ALLREDUCE
+    subroutine tensor_mpi_allreduce_long_int(b,comm)
+      implicit none
+      integer(kind=tensor_long_int), intent(inout) :: b
+      include "mpi_collective_vars_noroot.inc"
+      integer(kind=tensor_long_int) :: buffer(1)
+      n=1
+      buffer(1) = b
+      call tensor_mpi_allreduce_long_int_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_long_int))
+      b = buffer(1)
+    end subroutine tensor_mpi_allreduce_long_int
+    subroutine tensor_mpi_allreduce_long_int_s(buffer,n1,comm)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      integer(kind=tensor_long_int), intent(inout)  :: buffer(n1)
+      include "mpi_collective_vars_noroot.inc"
+      n=n1
+      call tensor_mpi_allreduce_long_int_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_long_int))
+    end subroutine tensor_mpi_allreduce_long_int_s
+    subroutine tensor_mpi_allreduce_long_int_l(buffer,n1,comm)
+      implicit none
+      integer(kind=tensor_long_int), intent(in)    :: n1
+      integer(kind=tensor_long_int), intent(inout) :: buffer(n1)
+      include "mpi_collective_vars_noroot.inc"
+      n=n1
+      call tensor_mpi_allreduce_long_int_basic(buffer,n,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_allreduce,tensor_mpi_idx_tensor_long_int))
+    end subroutine tensor_mpi_allreduce_long_int_l
+    subroutine tensor_mpi_allreduce_long_int_basic(buffer,n1,comm,stats)
+      implicit none
+      integer(kind=tensor_long_int), intent(in)    :: n1
+      integer(kind=tensor_long_int), intent(inout) :: buffer(:)
+      type(tensor_mpi_stats_type),intent(inout)    :: stats
+      include "mpi_collective_vars_noroot.inc"
+      include "mpi_allreduce_std.inc"
+    end subroutine tensor_mpi_allreduce_long_int_basic
 
     !DOUBLE PRECISION ALLREDUCE
     subroutine tensor_mpi_allreduce_tensor_dp(b,comm)
@@ -385,8 +739,6 @@ module tensor_mpi_interface_module
       real(tensor_dp), intent(inout)               :: buffer(:)
       type(tensor_mpi_stats_type),intent(inout)    :: stats
       include "mpi_collective_vars_noroot.inc"
-      !CHANGE THIS ACCORDING TO THE DATATYPE OF BUFFER
-      real(tensor_dp), pointer :: noelm => null()
       include "mpi_allreduce_std.inc"
     end subroutine tensor_mpi_allreduce_dp_basic
 #endif

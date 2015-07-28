@@ -2627,7 +2627,7 @@
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+            call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
             call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
@@ -2715,7 +2715,7 @@
           if(new_rw) then
            if(.not.async) then
             if(win_lck) then
-             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+             call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
             else
              call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
             endif
@@ -2875,7 +2875,7 @@
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+            call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
             call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
@@ -2967,7 +2967,7 @@
 !          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+            call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
             call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
@@ -4816,7 +4816,7 @@
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         do i=1,tcontr%num_async
          if(win_lck) then
-          call lsmpi_win_flush(int(tcontr%list_async(i)%window,tensor_mpi_kind),int(tcontr%list_async(i)%rank,tensor_mpi_kind))
+          call tensor_mpi_win_flush(int(tcontr%list_async(i)%window,tensor_mpi_kind),int(tcontr%list_async(i)%rank,tensor_mpi_kind))
          else
           call lsmpi_win_unlock(int(tcontr%list_async(i)%rank,tensor_mpi_kind),int(tcontr%list_async(i)%window,tensor_mpi_kind))
          endif

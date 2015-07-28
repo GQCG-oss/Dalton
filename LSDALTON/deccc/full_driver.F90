@@ -485,6 +485,7 @@ contains
              end do
           end do
        end do
+       print *, "DECinfo%F12Ccoupling", DECinfo%F12Ccoupling
        IF(DECinfo%F12Ccoupling)THEN
           !overwrite the amplitudes with F12 modified amplitudes which includes the C coupling. TK
           !Build delta T amplitudes with ONLY C coupling 
@@ -503,6 +504,7 @@ contains
           enddo
           E21 = E21 + tmp/32.0E0_realk
           E21_debug = E21_debug + tmp/32.0E0_realk
+          print *, "E21_Cterm_Pre ....", E21
        ENDIF
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS

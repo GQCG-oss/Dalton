@@ -10,12 +10,14 @@ module lspdm_tensor_operations_module
   use background_buffer_module, only: mem_is_background_buf_init,mem_get_bg_buf_free
 
   use tensor_parameters_and_counters
+  use tensor_mpi_operations_module
   use dec_typedef_module
   use dec_workarounds_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
   use tensor_mpi_interface_module
+  use tensor_mpi_operations_module
 #endif
 
   use tensor_basic_module
@@ -698,18 +700,21 @@ module lspdm_tensor_operations_module
      integer :: i_high,j_high,a_high,b_high
      logical :: use_bg
 
+     Eocc  = 0.0E0_tensor_dp
+     Evirt = 0.0E0_tensor_dp
+     fEc   = 0.0E0_tensor_dp
+
 #ifdef VAR_MPI
      !Get the slaves to this routine
      if(infpar%lg_mynum==infpar%master)then
         call time_start_phase(PHASE_COMM)
 
         call pdm_tensor_sync(infpar%lg_comm,JOB_GET_FRAG_CC_ENERGY,t1,t2,gmo)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(occ_num,infpar%master)
-        call ls_mpi_buffer(occ_idx,occ_num,infpar%master)
-        call ls_mpi_buffer(virt_num,infpar%master)
-        call ls_mpi_buffer(virt_idx,virt_num,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+        call tensor_buffer(occ_num,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(occ_idx,occ_num)
+        call tensor_buffer(virt_num)
+        call tensor_buffer(virt_idx,virt_num,finalize=.true.)
 
         call time_start_phase(PHASE_WORK)
      endif
@@ -720,9 +725,6 @@ module lspdm_tensor_operations_module
      call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
      call time_start_phase(PHASE_WORK)
 
-     Eocc  = 0.0E0_tensor_dp
-     Evirt = 0.0E0_tensor_dp
-     fEc   = 0.0E0_tensor_dp
 
      do lt=1,t2%nlti
 #ifdef VAR_PTR_RESHAPE
@@ -808,8 +810,7 @@ module lspdm_tensor_operations_module
      fEc = 0.50E0_tensor_dp*(Eocc + Evirt)
 
      if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
-#else
-     fEc = 0.0E0_tensor_dp
+
 #endif
   end function get_fragment_cc_energy_parallel
 
@@ -1069,7 +1070,7 @@ module lspdm_tensor_operations_module
 
         call time_start_phase( PHASE_COMM )
         if( alloc_in_dummy )then
-           call lsmpi_wait(reqC(cbuf))
+           call tensor_mpi_wait(reqC(cbuf))
            nel_one_sided = nel_one_sided - gmo_ts
         else
            call tensor_unlock_win(gmo,int(gmo_ccidx))
@@ -1080,7 +1081,7 @@ module lspdm_tensor_operations_module
            ebuf = nbuffs_c + mod(lt,nbuffs_c) + 1
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
-              call lsmpi_wait(reqE(cbuf))
+              call tensor_mpi_wait(reqE(cbuf))
               nel_one_sided = nel_one_sided - gmo_ts
            else
               call tensor_unlock_win(gmo,int(gmo_ecidx))
@@ -1196,12 +1197,11 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_VEOS,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1313,12 +1313,11 @@ module lspdm_tensor_operations_module
         & tensor_full%access_type==AT_MASTER_ACCESS)then
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_OEOS,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1431,12 +1430,11 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_VDECNP,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1538,12 +1536,11 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_ODECNP,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1635,10 +1632,8 @@ module lspdm_tensor_operations_module
            call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_1,t1,t2,u)
         else if(t1%itype == TT_DENSE)then
            call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_2,t2,u)
-           call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-           call ls_mpi_buffer(t1%dims,2,infpar%master)
-           call ls_mpi_buffer(t1%elm1,t1%nelms,infpar%master)
-           call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+           call tensor_buffer(t1%dims,2,root=infpar%master,comm=infpar%lg_comm)
+           call tensor_buffer(t1%elm1,t1%nelms,finalize=.true.)
         else
            call lsquit("ERROR(lspdm_get_combined_SingleDouble_amplitudes):no valid t1%itype",-1)
         endif
@@ -2354,11 +2349,10 @@ module lspdm_tensor_operations_module
      if(x%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
         call pdm_tensor_sync(infpar%lg_comm,JOB_ADD_PAR,x,y)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(order,x%mode,infpar%master)
-        call ls_mpi_buffer(prex,infpar%master)
-        call ls_mpi_buffer(prey,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+        call tensor_buffer(order,x%mode,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(prex)
+        call tensor_buffer(prey,finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
 
@@ -2504,7 +2498,7 @@ module lspdm_tensor_operations_module
 
         call time_start_phase( PHASE_COMM )
         if(alloc_in_dummy )then
-           call lsmpi_wait(req(ibuf+1))
+           call tensor_mpi_wait(req(ibuf+1))
            nel_one_sided = nel_one_sided - ynels
         else
            call tensor_unlock_win(y,cmidy)
@@ -2604,15 +2598,14 @@ module lspdm_tensor_operations_module
      !IF NOT AT_MASTER_ACCESS all processes should know b on call-time, else b is
      !broadcasted here
      if(x%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
-        call pdm_tensor_sync(infpar%lg_comm,JOB_DMUL_PAR,x,y)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(order,x%mode,infpar%master)
-        call ls_mpi_buffer(prex,infpar%master)
-        call ls_mpi_buffer(prey,infpar%master)
-        call ls_mpi_buffer(d_len,infpar%master)
-        call ls_mpi_buffer(d(1:d_len),d_len,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_DMUL_PAR,x,y)
+
+        call tensor_buffer(order,x%mode,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(prex)
+        call tensor_buffer(prey)
+        call tensor_buffer(d_len)
+        call tensor_buffer(d(1:d_len),d_len,finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
 
@@ -2754,7 +2747,7 @@ module lspdm_tensor_operations_module
 
         call time_start_phase( PHASE_COMM )
         if(alloc_in_dummy )then
-           call lsmpi_wait(req(ibuf+1))
+           call tensor_mpi_wait(req(ibuf+1))
            nel_one_sided = nel_one_sided - ynels
         else
            call tensor_unlock_win(y,cmidy)
@@ -2835,12 +2828,11 @@ module lspdm_tensor_operations_module
      !IF AT_MASTER_ACCESS all processes should know b on call-time, else b is
      !broadcasted here
      if(C%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
-        call pdm_tensor_sync(infpar%lg_comm,JOB_HMUL_PAR,A,B,C)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(alpha,infpar%master)
-        call ls_mpi_buffer(beta,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_HMUL_PAR,A,B,C)
+
+        call tensor_buffer(alpha,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(beta, finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
 
@@ -3026,7 +3018,7 @@ module lspdm_tensor_operations_module
         cmidy = get_cidx(ymidx,from%ntpm,from%mode)
 
         if( alloc_in_dummy )then
-           call lsmpi_wait(req(ibuf))
+           call tensor_mpi_wait(req(ibuf))
            nel_one_sided = nel_one_sided - ynels
         else
            call tensor_unlock_win(from,cmidy)
@@ -3228,7 +3220,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      !SET THE ADDRESSES ON ALL NODES     
      lg_buf(infpar%lg_mynum+1)=addr 
-     call lsmpi_allreduce(lg_buf,lg_nnodes,infpar%lg_comm)
+     call tensor_mpi_allreduce(lg_buf,lg_nnodes,infpar%lg_comm)
 
      if( p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
         call tensor_mpi_bcast(bg_int,infpar%master,infpar%lg_comm)
@@ -3539,7 +3531,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      lg_buf(infpar%lg_mynum+1)=addr 
      lg_buf(lg_nnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
-     call lsmpi_allreduce(lg_buf,2*lg_nnodes,infpar%lg_comm)
+     call tensor_mpi_allreduce(lg_buf,2*lg_nnodes,infpar%lg_comm)
      if( p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
         call tensor_mpi_bcast(bg_int,infpar%master,infpar%lg_comm)
      endif
@@ -3695,33 +3687,33 @@ module lspdm_tensor_operations_module
   call time_start_phase( PHASE_COMM )
   if(master.and.test_all_master_access)then
      if(B%itype == TT_TILED_DIST .or. B%itype == TT_REPLICATED)then
-        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_SIMPLE,A,B,C)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cA,nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cB,nmodes2c,infpar%master)
-        call ls_mpi_buffer(order,C%mode,infpar%master)
-        call ls_mpi_buffer(pre1,infpar%master)
-        call ls_mpi_buffer(pre2,infpar%master)
-        call ls_mpi_buffer(sync,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_SIMPLE,A,B,C)
+
+
+        call tensor_buffer(nmodes2c,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(m2cA,nmodes2c)
+        call tensor_buffer(m2cB,nmodes2c)
+        call tensor_buffer(order,C%mode)
+        call tensor_buffer(pre1)
+        call tensor_buffer(pre2)
+        call tensor_buffer(sync,finalize = .true.)
+
         call time_start_phase(PHASE_WORK)
      else
-        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_BDENSE,A,C)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cA,nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cB,nmodes2c,infpar%master)
-        call ls_mpi_buffer(order,C%mode,infpar%master)
-        call ls_mpi_buffer(pre1,infpar%master)
-        call ls_mpi_buffer(pre2,infpar%master)
-        call ls_mpi_buffer(sync,infpar%master)
-        call ls_mpi_buffer(B%mode,infpar%master)
-        call ls_mpi_buffer(B%dims,B%mode,infpar%master)
-        call ls_mpi_buffer(B%elm1,B%nelms,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_BDENSE,A,C)
+
+        call tensor_buffer(nmodes2c,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(m2cA,nmodes2c)
+        call tensor_buffer(m2cB,nmodes2c)
+        call tensor_buffer(order,C%mode)
+        call tensor_buffer(pre1)
+        call tensor_buffer(pre2)
+        call tensor_buffer(sync)
+        call tensor_buffer(B%mode)
+        call tensor_buffer(B%dims,B%mode)
+        call tensor_buffer(B%elm1,B%nelms, finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
   endif
@@ -4105,7 +4097,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      if( alloc_in_dummy )then
 
-        !call lsmpi_wait(reqA(ibufA))
+        !call tensor_mpi_wait(reqA(ibufA))
         if( nfT(ibufT) )then
 
            call tensor_flush_win(T, gtidx=cmidT, only_owner=.true., local = .true.)
@@ -4556,7 +4548,7 @@ module lspdm_tensor_operations_module
            if(alloc_in_dummy)then
               call get_tile_dim(nelintile,arr,i-maxintmp)
 
-              call lsmpi_wait(req(bidx))
+              call tensor_mpi_wait(req(bidx))
               !call tensor_flush_win(arr, gtidx = i-maxintmp, only_owner = .true.,local = .true.)
 
               nel_one_sided = nel_one_sided - nelintile
@@ -4599,7 +4591,7 @@ module lspdm_tensor_operations_module
         !if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
         !   do j=last_flush_i+1,i
-        !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
+        !      call tensor_mpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
         !   enddo
 
         !   last_flush_i = i
@@ -4619,7 +4611,7 @@ module lspdm_tensor_operations_module
            call get_tile_dim(nelintile,arr,i)
            bidx = mod(i-1,maxintmp)+1
            !call tensor_flush_win(arr, gtidx = i, only_owner = .true.,local = .true.)
-           call lsmpi_wait(req(bidx))
+           call tensor_mpi_wait(req(bidx))
            nel_one_sided = nel_one_sided - nelintile
         enddo
         if(arr%lock_set(1).and.lock_was_not_set)call tensor_unlock_wins(arr, all_nodes = .true.)
@@ -4630,7 +4622,7 @@ module lspdm_tensor_operations_module
      endif
 
      if(internal_alloc)then
-        if(.not.lock_was_not_set.and.alloc_in_dummy)call lsmpi_win_flush(arr%wi(1), local = .true.)
+        if(.not.lock_was_not_set.and.alloc_in_dummy)call tensor_mpi_win_flush(arr%wi(1), local = .true.)
         call tensor_free_mem(tmp)
      else
         tmp  => null()
@@ -4755,7 +4747,7 @@ module lspdm_tensor_operations_module
            !if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
            !   do j=last_flush_i+1,i
-           !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
+           !      call tensor_mpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
            !   enddo
 
            !   last_flush_i = i
@@ -4797,7 +4789,7 @@ module lspdm_tensor_operations_module
               call get_tile_dim(nelintile,arr,i-maxintmp)
 
               if( alloc_in_dummy ) then
-                 call lsmpi_wait(req(bidx))
+                 call tensor_mpi_wait(req(bidx))
                  nel_one_sided = nel_one_sided - nelintile
               else
                  if(.not.arr%lock_set(i-maxintmp)) call lsquit("ERROR(tensor_gather): lock has to be set here 1!",-1)
@@ -4838,7 +4830,7 @@ module lspdm_tensor_operations_module
            call get_tile_dim(nelintile,arr,i)
 
            if( alloc_in_dummy )then
-              call lsmpi_wait(req(bidx))
+              call tensor_mpi_wait(req(bidx))
               nel_one_sided = nel_one_sided - nelintile
            else
               if(.not.arr%lock_set(i)) call lsquit("ERROR(tensor_gather): lock has to be set here 2!",-1)
@@ -4992,7 +4984,7 @@ module lspdm_tensor_operations_module
         !if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
         !   do j=last_flush_i+1,i
-        !      call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
+        !      call tensor_mpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
         !   enddo
 
         !   last_flush_i = i
@@ -5114,9 +5106,9 @@ module lspdm_tensor_operations_module
 
         if(present(narr_allocd))then
            narr_allocd(me+1) = p_arr%arrays_in_use
-           call lsmpi_allreduce(narr_allocd,infpar%lg_nodtot,infpar%lg_comm)
+           call tensor_mpi_allreduce(narr_allocd,infpar%lg_nodtot,infpar%lg_comm)
         endif
-        call lsmpi_allreduce(infoonmaster,nmeminfo*infpar%lg_nodtot,infpar%lg_comm)
+        call tensor_mpi_allreduce(infoonmaster,nmeminfo*infpar%lg_nodtot,infpar%lg_comm)
 
      endif
 
@@ -5274,9 +5266,9 @@ module lspdm_tensor_operations_module
            endif
 #ifdef VAR_MPI
            call time_start_phase( PHASE_COMM )
-           call lsmpi_win_lock(dest,arr%wi(comp_ti),'e')
+           call tensor_mpi_win_lock(dest,arr%wi(comp_ti),'e')
            call lsmpi_put(A(fe_in_block:fe_in_block+act_step-1),act_step,comp_el,dest,arr%wi(widx))
-           call lsmpi_win_unlock(dest,arr%wi(comp_ti))
+           call tensor_mpi_win_unlock(dest,arr%wi(comp_ti))
            call time_start_phase( PHASE_WORK )
 #endif
         else
@@ -5310,7 +5302,7 @@ module lspdm_tensor_operations_module
      call time_start_phase( PHASE_COMM )
 
      call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
-     call lsmpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
+     call tensor_mpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
      arr%lock_set(wi_idx)=.true.
 
      call time_start_phase( PHASE_WORK )
@@ -5328,7 +5320,7 @@ module lspdm_tensor_operations_module
      call time_start_phase( PHASE_COMM )
 
      call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
-     call lsmpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
+     call tensor_mpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
      arr%lock_set(wi_idx)=.true.
 
      call time_start_phase( PHASE_WORK )
@@ -5346,7 +5338,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      call time_start_phase( PHASE_COMM )
      call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
-     call lsmpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
+     call tensor_mpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
      arr%lock_set(wi_idx)=.true.
 
      call time_start_phase( PHASE_WORK )
@@ -5364,7 +5356,7 @@ module lspdm_tensor_operations_module
 
 
      call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
-     call lsmpi_win_unlock(node,arr%wi(wi_idx))
+     call tensor_mpi_win_unlock(node,arr%wi(wi_idx))
      arr%lock_set(wi_idx) = .false.
 
      call time_start_phase( PHASE_WORK )
@@ -5396,7 +5388,7 @@ module lspdm_tensor_operations_module
            &that should not be done"
 
         do i=1,arr%nwins
-           call lsmpi_win_lock_all(arr%wi(i),ass=assert)
+           call tensor_mpi_win_lock_all(arr%wi(i),ass=assert)
         enddo
 
      else
@@ -5432,7 +5424,7 @@ module lspdm_tensor_operations_module
 
      if( alloc_in_dummy )then
 
-        call lsmpi_win_lock(node,arr%wi(1),locktype,ass=assert)
+        call tensor_mpi_win_lock(node,arr%wi(1),locktype,ass=assert)
         arr%lock_set(1) = .true.
 
      else
@@ -5458,7 +5450,7 @@ module lspdm_tensor_operations_module
 
      if( alloc_in_dummy )then
 
-        call lsmpi_win_unlock(node,arr%wi(1))
+        call tensor_mpi_win_unlock(node,arr%wi(1))
         arr%lock_set(1) = .false.
 
      else
@@ -5503,7 +5495,7 @@ module lspdm_tensor_operations_module
         if(an)then
            !UNLOCK ALL WINDOWS ON ALL NODES
            do i=1,arr%nwins
-              call lsmpi_win_unlock_all(arr%wi(i))
+              call tensor_mpi_win_unlock_all(arr%wi(i))
            enddo
 
            arr%lock_set =.false.
@@ -5516,7 +5508,7 @@ module lspdm_tensor_operations_module
               do i=1,arr%nwins
                  if(arr%lock_set(i))then
                     call get_residence_of_tile(node,int(i,kind=tensor_standard_int),arr)
-                    call lsmpi_win_unlock(node,arr%wi(i))
+                    call tensor_mpi_win_unlock(node,arr%wi(i))
                     arr%lock_set(i)=.false.
                  endif
               enddo
@@ -5526,7 +5518,7 @@ module lspdm_tensor_operations_module
               !UNLOCK ALL WINDOWS 
               do i=1,arr%nwins
                  call get_residence_of_tile(node,int(i,kind=tensor_standard_int),arr)
-                 call lsmpi_win_unlock(node,arr%wi(i))
+                 call tensor_mpi_win_unlock(node,arr%wi(i))
                  arr%lock_set(i)=.false.
               enddo
 
@@ -5870,13 +5862,13 @@ module lspdm_tensor_operations_module
 
      sta  = MPI_WTIME()
 
-     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(widx),'s')
+     if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
      if(present(req))then
         call lsmpi_racc(fort,nelms,p,dest,arr%wi(widx),req)
      else
         call lsmpi_acc(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it=flush_it)
      endif
-     if(.not.ls)CALL lsmpi_win_unlock(dest, arr%wi(widx))
+     if(.not.ls)CALL tensor_mpi_win_unlock(dest, arr%wi(widx))
 
      sto          = MPI_WTIME()
      time_pdm_acc = time_pdm_acc + sto - sta
@@ -5924,13 +5916,13 @@ module lspdm_tensor_operations_module
 
      sta  = MPI_WTIME()
 
-     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(widx),'s')
+     if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
      if(present(req))then
         call lsmpi_racc(fort,nelms,p,dest,arr%wi(widx),req)
      else
         call lsmpi_acc(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it=flush_it)
      endif
-     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(widx))
+     if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
 
      sto          = MPI_WTIME()
 
@@ -6000,13 +5992,13 @@ module lspdm_tensor_operations_module
 
      sta  = MPI_WTIME()
 
-     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(widx),'s')
+     if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
      if(present(req))then
         call lsmpi_rput(fort,nelms,p,dest,arr%wi(widx),req)
      else
         call lsmpi_put(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it=flush_it)
      endif
-     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(widx))
+     if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
 
      sto = MPI_WTIME()
 
@@ -6053,13 +6045,13 @@ module lspdm_tensor_operations_module
 
      sta  = MPI_WTIME()
 
-     if(.not.ls)call lsmpi_win_lock(dest,arr%wi(widx),'s')
+     if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
      if(present(req))then
         call lsmpi_rput(fort,nelms,p,dest,arr%wi(widx),req)
      else
         call lsmpi_put(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it = flush_it)
      endif
-     if(.not.ls)call lsmpi_win_unlock(dest,arr%wi(widx))
+     if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
 
      sto = MPI_WTIME()
 
@@ -6163,20 +6155,20 @@ module lspdm_tensor_operations_module
 
      sta    = MPI_WTIME()
 
-     if(.not.ls)call lsmpi_win_lock(source,arr%wi(widx),'s')
+     if(.not.ls)call tensor_mpi_win_lock(source,arr%wi(widx),'s')
      if(present(req))then
         call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
-        !call lsmpi_win_flush(arr%wi(widx),source,local = .false.)
+        !call tensor_mpi_win_flush(arr%wi(widx),source,local = .false.)
      else
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
         call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),r)
-        call lsmpi_wait(r)
-        call lsmpi_win_flush(arr%wi(widx), rank=source, local=.false.)
+        call tensor_mpi_wait(r)
+        call tensor_mpi_win_flush(arr%wi(widx), rank=source, local=.false.)
 #else
         call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
 #endif
      endif
-     if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
+     if(.not.ls)call tensor_mpi_win_unlock(source,arr%wi(widx))
 
      sto = MPI_WTIME()
 
@@ -6216,13 +6208,13 @@ module lspdm_tensor_operations_module
   !
   !    sta    = MPI_WTIME()
   !
-  !    if(.not.ls)call lsmpi_win_lock(source,arr%wi(widx),'s')
+  !    if(.not.ls)call tensor_mpi_win_lock(source,arr%wi(widx),'s')
   !    if(present(req))then
   !       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
   !    else
   !       call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
   !    endif
-  !    if(.not.ls)call lsmpi_win_unlock(source,arr%wi(widx))
+  !    if(.not.ls)call tensor_mpi_win_unlock(source,arr%wi(widx))
   !
   !    sto = MPI_WTIME()
   !
@@ -6292,9 +6284,9 @@ module lspdm_tensor_operations_module
         sta=MPI_WTIME()
         !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
         call time_start_phase( PHASE_COMM )
-        if(.not.lock_outside)call lsmpi_win_lock(node,win,'s')
+        if(.not.lock_outside)call tensor_mpi_win_lock(node,win,'s')
         call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi,.true.)
-        if(.not.lock_outside)call lsmpi_win_unlock(node,win)
+        if(.not.lock_outside)call tensor_mpi_win_unlock(node,win)
         call time_start_phase( PHASE_WORK )
         sto = MPI_WTIME()
         time_pdm_acc = time_pdm_acc + sto - sta
@@ -6328,9 +6320,9 @@ module lspdm_tensor_operations_module
         call get_int_dist_info(o2v2,fe,ne,node)
         sta=MPI_WTIME()
         call time_start_phase( PHASE_COMM )
-        call lsmpi_win_lock(node,win,'s')
+        call tensor_mpi_win_lock(node,win,'s')
         call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-        call lsmpi_win_unlock(node,win)
+        call tensor_mpi_win_unlock(node,win)
         call time_start_phase( PHASE_WORK )
         sto = MPI_WTIME()
         time_pdm_get = time_pdm_get + sto - sta
@@ -6421,7 +6413,7 @@ module lspdm_tensor_operations_module
 
            do widx = 1, T%nwins
 
-              call lsmpi_win_flush(T%wi(widx),rank=node,local=local)
+              call tensor_mpi_win_flush(T%wi(widx),rank=node,local=local)
 
            enddo
 
@@ -6431,14 +6423,14 @@ module lspdm_tensor_operations_module
 
            node2 = n
 
-           call lsmpi_win_flush(T%wi(widx),rank=node2,local=local)
+           call tensor_mpi_win_flush(T%wi(widx),rank=node2,local=local)
 
         endif
      else
         if( all_tiles )then
 
            do widx = 1, T%nwins
-              call lsmpi_win_flush(T%wi(widx),rank=node,local=local)
+              call tensor_mpi_win_flush(T%wi(widx),rank=node,local=local)
            enddo
 
         else
@@ -6449,7 +6441,7 @@ module lspdm_tensor_operations_module
               widx = gt
            endif
 
-           call lsmpi_win_flush(T%wi(widx),rank=node,local=local)
+           call tensor_mpi_win_flush(T%wi(widx),rank=node,local=local)
 
         endif
 
