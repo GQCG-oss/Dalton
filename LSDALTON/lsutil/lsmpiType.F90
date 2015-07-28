@@ -205,13 +205,13 @@ module lsmpi_type
   integer,parameter     :: LSMPIREDUCTION       = 2
   integer,parameter     :: LSMPIREDUCTIONmaster = 3
   integer,parameter     :: LSMPISENDRECV        = 4
-#ifdef VAR_MPI
 
+#ifdef VAR_MPI
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !General MPI vars, aka junkbox!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
+  integer(kind=ls_mpik) :: MPI_COMM_LSDALTON = 0
   logical               :: LSMPIASYNCP                !contains environment value of async progress
   logical               :: lsmpi_enabled_comm_procs 
 

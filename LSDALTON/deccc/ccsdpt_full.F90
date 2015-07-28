@@ -904,7 +904,7 @@ contains
 !$acc end loop
 #endif
     end do
-#ifdef VAR_OEPNACC
+#ifdef VAR_OPENACC
 !$acc end loop
 !$acc end parallel
 #else
@@ -966,7 +966,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -984,7 +984,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -997,7 +997,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1062,7 +1062,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1080,7 +1080,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1093,7 +1093,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1158,7 +1158,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1176,7 +1176,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1194,7 +1194,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1254,7 +1254,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1272,7 +1272,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1290,7 +1290,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1351,7 +1351,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 8.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1369,7 +1369,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1387,7 +1387,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1405,7 +1405,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - 4.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1423,7 +1423,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - 4.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1441,7 +1441,7 @@ contains
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*nv**2)*nv,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - 4.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1506,7 +1506,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 8.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1524,7 +1524,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1542,7 +1542,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 + 2.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1560,7 +1560,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - 4.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1578,7 +1578,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - 4.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 
@@ -1596,7 +1596,7 @@ contains
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,handle)
 
     call ls_ddot_acc(int((i8*no**2)*no,kind=8),trip_tmp,1,trip_ampl,1,e4_tmp,handle,cublas_handle)
-!$acc kernels present(e4,t4_tmp) async(handle)
+!$acc kernels present(e4,e4_tmp) async(handle)
     e4 = e4 - 4.0E0_realk * dble(e4_tmp(1))
 !$acc end kernels
 

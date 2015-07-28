@@ -1,16 +1,25 @@
 
-
   interface array_reorder
+#ifdef VAR_REAL_SP
+    module procedure array_reorder_4d,&
+                    &array_reorder_3d,&
+                    &array_reorder_2d,&
+                    &array_reorder_4d_sp,&
+                    &array_reorder_3d_sp
+#else
     module procedure array_reorder_4d,&
                     &array_reorder_3d,&
                     &array_reorder_2d
+#endif
   end interface array_reorder
 
 #ifdef VAR_OPENACC
   interface array_reorder_acc
-    module procedure array_reorder_4d_acc,array_reorder_3d_acc
 #ifdef VAR_REAL_SP
-    module procedure array_reorder_4d_acc_sp,array_reorder_3d_acc_sp
+    module procedure array_reorder_3d_acc,array_reorder_4d_acc,&
+                    &array_reorder_3d_sp_acc,array_reorder_4d_sp_acc
+#else
+    module procedure array_reorder_4d_acc,array_reorder_3d_acc
 #endif
   end interface array_reorder_acc
 #endif

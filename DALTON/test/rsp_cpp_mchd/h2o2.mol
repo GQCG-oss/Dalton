@@ -1,0 +1,12 @@
+BASIS
+3-21G
+Hydrogen Peroxide - optimized geometry
+optimized with CCSD(T)/cc-pCVQZ 
+AtomTypes=2
+Charge=8.0 Atoms=2
+O   1.3697920000     0.0000000000    -0.0587737580
+O  -1.3697920000    -0.0000000000    -0.0587737580
+Charge=1.0 Atoms=2
+H   1.6852310000    -1.4904930000     0.9327822420
+H  -1.6852310000     1.4904930000     0.9327822420
+

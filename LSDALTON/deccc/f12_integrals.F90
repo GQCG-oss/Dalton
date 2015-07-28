@@ -45,6 +45,9 @@ module f12_integrals_module
   ! Thomas free_cabs() for aa free MO_CABS_save_created, CMO_RI_save_created
   use CABS_operations
 
+  ! MP2F12 C coupling routine
+  use mp2_module
+
   ! *********************************************
   !   DEC DEPENDENCIES (within deccc directory) 
   ! *********************************************
@@ -2640,7 +2643,7 @@ contains
     real(realk) :: X1energy, X2energy, X3energy, X4energy 
     real(realk) :: B1energy, B2energy, B3energy, B4energy
     real(realk) :: B5energy, B6energy, B7energy, B8energy, B9energy  
-    real(realk) :: E_21, E_21noC, E_22, E_23, E_F12
+    real(realk) :: E_21, E_21C, E_22, E_23, E_F12
     real(realk) :: tmp, energy, tmp2
     real(realk) :: temp
     real(realk) :: MP2energy, CCSDenergy
@@ -2658,6 +2661,10 @@ contains
     real(realk) :: tcpu,twall
     logical :: Master,Collaborate,DoBasis
     integer :: n1,n2,n3,n4,Tain1,Tain2,noccAOStot,offset
+
+    !> MPI
+    type(mp2_batch_construction) :: bat
+    
 #ifdef VAR_MPI
     Master = infpar%lg_mynum .EQ. infpar%master
     Collaborate = infpar%lg_nodtot .GT. 1
@@ -2823,12 +2830,18 @@ contains
         
     E_21 = 0.0E0_realk
     E_21 = Venergy(1) + Venergy(2) + Venergy(3) + Venergy(4) + Venergy(5)
-    E_21noC = Venergy(1) + Venergy(2) + Venergy(3) + Venergy(4)
+
+    ! MP2F12 CCoupling
+    if(DECinfo%F12Ccoupling) then
+        call MP2F12_Ccoupling_energy(MyFragment,bat,E_21C)
+        E_21 = E_21 + E_21C 
+    endif
 
     if(DECinfo%F12debug) then
        print *, '----------------------------------------'
        print *, ' E21 V term                             '
        print *, '----------------------------------------'
+       print *, " E21_CC_term:  ", E_21C
        print *, " E21_V_term1:  ", Venergy(1)
        print *, " E21_V_term2:  ", Venergy(2)
        print *, " E21_V_term3:  ", Venergy(3)
@@ -2836,10 +2849,10 @@ contains
        print *, " E21_V_term5:  ", Venergy(5)
        print *, '----------------------------------------'
        print *, " E21_Vsum:     ", E_21
-       print *, " E21_Vsum_noC: ", E_21noC
        write(DECinfo%output,*) '----------------------------------------'
        write(DECinfo%output,*) ' E21 V term                             '
        write(DECinfo%output,*) '----------------------------------------'
+       write(DECinfo%output,*) " E21_CC_term:  ", E_21C
        write(DECinfo%output,*) " E21_V_term1:  ", Venergy(1)
        write(DECinfo%output,*) " E21_V_term2:  ", Venergy(2)
        write(DECinfo%output,*) " E21_V_term3:  ", Venergy(3)
@@ -2847,7 +2860,6 @@ contains
        write(DECinfo%output,*) " E21_V_term5:  ", Venergy(5)
        write(DECinfo%output,*) '----------------------------------------'
        write(DECinfo%output,*) " E21_Vsum:     ", E_21
-       write(DECinfo%output,*) " E21_Vsum_noC: ", E_21noC
     end if
 
     call mem_dealloc(Venergy)
@@ -3285,7 +3297,7 @@ contains
 
     call mem_dealloc(ECCSD_Vijaj)
 
-    E_F12 = ECCSD_E21 + E_21noC+E_22+E_23
+    E_F12 = ECCSD_E21 + E_21+E_22+E_23
     
     call get_ccsd_energy(CCSDenergy,MyFragment,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Tai,Taibj)
     call LSTIMER('get_ccsd_energy_timings: ',tcpu,twall,DECinfo%output)
@@ -3297,7 +3309,7 @@ contains
        print *,   '----------------------------------------------------------------'
        print *,   '                   DEC-CCSD-F12 CALCULATION                     '
        print *,   '----------------------------------------------------------------'
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: E21 MP2 noC CORRECTION TO ENERGY = ', E_21noC
+       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: E21 MP2 CORRECTION TO ENERGY = ', E_21
        write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: E21 CCSD    CORRECTION TO ENERGY = ', ECCSD_E21
        write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: E22+E23 MP2 CORRECTION TO ENERGY = ', E_22+E_23
        write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: CCSD-F12 CORRECTION TO ENERGY =    ', E_F12
@@ -3309,7 +3321,7 @@ contains
     write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
     write(DECinfo%output,'(1X,a,f20.10)') '                 WANGY DEC-CCSD-F12 CALCULATION                 '
     write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: E21 MP2 noC CORRECTION TO ENERGY = ', E_21noC
+    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: E21 MP2 CORRECTION TO ENERGY = ', E_21
     write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: E21 CCSD    CORRECTION TO ENERGY = ', ECCSD_E21
     write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: E22+E23 MP2 CORRECTION TO ENERGY = ', E_22+E_23
     write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: CCSD-F12 CORRECTION TO ENERGY =    ', E_F12

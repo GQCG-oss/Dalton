@@ -13,6 +13,7 @@ module cc_tools_module
 #endif
 
    use precision
+   use memory_handling
 #ifdef VAR_MPI
    use lsmpi_type
 #endif
