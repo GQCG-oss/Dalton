@@ -1749,8 +1749,7 @@ C        from SIRIUS in all TRACTL calls, if SIRIUS has
 C        not been called before ABACUS is called, then
 C        the value specified in RHSINP for DERTRA is
 C        used. This makes sure that the SIRIUS value is
-C        always used if it has been defined, and the a
-C        value is defined otherwise.
+C        always used if it has been defined.
 C
          IPRTRA_SAVE = IPRTRA
          VFIRST = .FALSE.
@@ -1760,8 +1759,14 @@ C
 C
 C
       IF (NEWTRA) THEN
+         IF (ABS( KTRLVL ) .GE. 5) THEN ! third or fourth order transformation
+            NEWTRA_USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
+         ELSE
+            NEWTRA_USEDRC = USEDRC  ! use Dirac integrals from N_TRACTL if USEDRC true
+         END IF
          CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
       ELSE
+         NEWTRA_USEDRC = .FALSE.
          KFRSAV = 1
          KFREE  = 1
          LFREE  = KWORK
@@ -1773,6 +1778,20 @@ C
          CALL TRACTL_1(KTRLVL,CMO,WORK(KITSMO),WORK(KITSAO),
      &        WORK(KITSW),WORK(KITSX),WORK(KIT),WORK(KFREE),LFREE)
          CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      END IF
+C
+C     Sort mo integrals to Dirac form, if requested
+C
+      IF (USEDRC .AND. .NOT.NEWTRA_USEDRC .AND. ITRLVL .GT. 0) THEN
+         IF (ITRLVL .GE. 4) THEN
+            LVLDRC = 1
+C           ... all occ-occ distributions
+         ELSE
+            LVLDRC = 0
+C           ... all active-active distributions
+         END IF
+         CALL DRCCTL(LVLDRC,CMO,WORK,LWORK)
+         CALL FLSHFO(LUPRI)
       END IF
       RETURN
       END
@@ -1915,8 +1934,9 @@ C                    One   index,   occupied orbitals
 C
 C           ITRLVL=10: Full integral transformation
 C
-      IF (IPRTRA.GT.0) WRITE (LUPRI,1000) ITRLVL
- 1000 FORMAT(/,' TRANSFORMATION SECTION: PARAMETER =',I4)
+      IF (IPRTRA.GT.0) WRITE (LUPRI,'(/A,I4)')
+     &   ' 2-ELECTRON INTEGRAL TRANSFORMATION SECTION; PARAMETER =',
+     &   ITRLVL
       IF (ITRLVL.GT.5 .AND. ITRLVL .NE. 10) THEN
          WRITE (LUPRI,'(//A)')
      1      ' TRACTL_1, parameter outside valid range'
@@ -2441,25 +2461,8 @@ C set JTER to 2 to suppress printing on next call of TRACTL_1/hj-840710
 C
 C
  9999 CALL FLSHFO(LUPRI)
-C
-C Sort mo integrals to Dirac form, if requested
-C 971201-hjaaj: after 9999 so we are sure Dirac form is present
-C    if needed and LUINTM is OK
-C
-      IF (USEDRC .AND. ITRLVL .GT. 0) THEN
-         IF (ITRLVL .GE. 4) THEN
-            LVLDRC = 1
-C           ... all occ-occ distributions
-         ELSE
-            LVLDRC = 0
-C           ... all active-active distributions
-         END IF
-         CALL DRCCTL(LVLDRC,CMO,WORK,LWORK)
-         CALL FLSHFO(LUPRI)
-      END IF
       CALL QEXIT('TRACTL_1')
       RETURN
-C
 C
 C     End of TRACTL_1
 C
@@ -2803,7 +2806,7 @@ C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
 C
-      IF (NEWTRA) THEN
+      IF (NEWTRA .AND. NEWTRA_USEDRC) THEN
          CALL N_NXTH2D(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
          RETURN
       END IF

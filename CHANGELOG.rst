@@ -14,8 +14,9 @@ DALTON
 ------
 
 - Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
-- Fixed "new" integral transformation for 32 bit integers and e.g. 256 orbitals and no integer overflow test
-  (the first 32 bits of 256**4 are zero !!!)
+- Fixed .NEWTRA "new" integral transformation for 32 bit integers and n*256 orbitals and no integer overflow test
+  (the first 32 bits of (n*256)**4 are zero !!!).
+- Improved performance of .NEWTRA "new" integral transformation for response calculations.
 - Some minor corrections to the Dalton manual.
 
 
