@@ -1136,6 +1136,7 @@ contains
     !> F12 integrals for the B6_term
     real(realk), pointer :: B6ijkl(:,:,:,:)
     real(realk), pointer :: Rijpa(:,:,:,:)
+    real(realk), pointer :: Fpp(:,:)
 
     integer :: noccEOS !number of occupied MO orbitals in EOS
     integer :: noccAOS
@@ -1208,6 +1209,24 @@ contains
           B6ijkl(i,j,j,i) = tmp2
        enddo
     enddo
+
+    call mem_alloc(Fpp, nvirtAOS+noccAOStot, nvirtAOS+noccAOStot)
+    Fpp = 0.0E0_realk
+
+    do p=1, noccAOStot
+       do q=1, noccAOStot
+          Fpp(p,q) = MyFragment%ppfock(p,q)
+       enddo
+    enddo
+    do p=noccAOStot+1, nvirtAOS+noccAOStot
+       do q=noccAOStot+1, nvirtAOS+noccAOStot
+          Fpp(p,q) = MyFragment%qqfock(p-noccAOStot,q-noccAOStot)
+       enddo
+    enddo
+
+    print *, "norm2(Fpp)", norm2(Fpp)
+
+    call mem_dealloc(Fpp)
 
     B6energy = 0.0E0_realk
 

@@ -3,7 +3,7 @@
 !> \author Kasper Kristensen
 !> \date March 2012
 module decmpi_module
-
+   
   use precision
   use typedeftype!, only: lsitem
   use memory_handling!,only: mem_alloc,mem_dealloc
@@ -21,7 +21,7 @@ module decmpi_module
   use array2_simple_operations
 
 contains
-
+ 
 #ifdef VAR_MPI
 
   !> \brief Send three fragment energies (for occupied, virtual, and Lagrangian schemes)
@@ -74,44 +74,44 @@ contains
   !> \date June 2012
   subroutine mpi_send_recv_mp2grad(comm,MySender,MyReceiver,grad,fragenergy,job,only_update)
 
-    implicit none
+     implicit none
 
-    !> Communicator
-    integer(kind=ls_mpik),intent(in) :: comm
-    !> Rank of sender WITHIN comm group
-    integer(kind=ls_mpik),intent(in) :: MySender
-    !> Rank of receiver WITHIN comm group
-    integer(kind=ls_mpik),intent(in) :: MyReceiver
-    !> Fragment energies, see "energy" in decfrag type def
-    real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
-    !> MP2 fragment gradient matrix information
-    type(mp2grad),intent(inout) :: grad
-    !> Fragment job info (job list containing a single job)
-    type(joblist),intent(inout) :: job
-    !> Only MPI copy information needed for update_full_mp2gradient
-    !> (this will minimize MPI communication for global master)
-    logical,intent(in) :: only_update
-    integer(kind=ls_mpik) :: mynum,master
-    master=0
+     !> Communicator
+     integer(kind=ls_mpik),intent(in) :: comm
+     !> Rank of sender WITHIN comm group
+     integer(kind=ls_mpik),intent(in) :: MySender
+     !> Rank of receiver WITHIN comm group
+     integer(kind=ls_mpik),intent(in) :: MyReceiver
+     !> Fragment energies, see "energy" in decfrag type def
+     real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
+     !> MP2 fragment gradient matrix information
+     type(mp2grad),intent(inout) :: grad
+     !> Fragment job info (job list containing a single job)
+     type(joblist),intent(inout) :: job
+     !> Only MPI copy information needed for update_full_mp2gradient
+     !> (this will minimize MPI communication for global master)
+     logical,intent(in) :: only_update
+     integer(kind=ls_mpik) :: mynum,master
+     master=0
 
-    ! Sanity check 1: Meaningful rank
-    call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
-    if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
-       print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
-       call lsquit('mpi_send_recv_mp2grad: Rank number is neither sender nor receiver!',-1)
-    end if
+     ! Sanity check 1: Meaningful rank
+     call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
+     if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
+        print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
+        call lsquit('mpi_send_recv_mp2grad: Rank number is neither sender nor receiver!',-1)
+     end if
 
-    ! Init buffer
-    call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
+     ! Init buffer
+     call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
-    ! Sender: Copy fragment info into buffer
-    ! Receiver: Read fragment info from buffer
-    call mpicopy_fragmentgradient(grad,only_update)
-    call ls_mpi_buffer(fragenergy,ndecenergies,master)
-    call mpicopy_fragment_joblist(job)
+     ! Sender: Copy fragment info into buffer
+     ! Receiver: Read fragment info from buffer
+     call mpicopy_fragmentgradient(grad,only_update)
+     call ls_mpi_buffer(fragenergy,ndecenergies,master)
+     call mpicopy_fragment_joblist(job)
 
-    ! Finalize buffer
-    call ls_mpiFinalizeBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
+     ! Finalize buffer
+     call ls_mpiFinalizeBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
   end subroutine mpi_send_recv_mp2grad
 

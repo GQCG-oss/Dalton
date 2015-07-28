@@ -4773,7 +4773,7 @@ end function max_batch_dimension
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
                & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
             if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
+               & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2F12f12_OCC')
        
        case(MODEL_CCSD)
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
@@ -4802,24 +4802,6 @@ end function max_batch_dimension
                & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_CCSDf12)
        end select
 
-!!$       if(DECinfo%F12debug) then
-!!$          write(*,'(1X,a)') '**********************************************************'
-!!$          write(*,'(1X,a)') '*                   DEC-F12 ENERGY SUMMARY               *'
-!!$          write(*,'(1X,a)') '**********************************************************'
-!!$        
-!!$          select case(DECinfo%ccmodel)
-!!$          case(MODEL_MP2)
-!!$             write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:         ', energies(FRAGMODEL_OCCMP2)  
-!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2  ENERGY:    ', energies(FRAGMODEL_MP2f12)
-!!$          case(MODEL_CCSD)
-!!$             write(*,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY:        ', energies(FRAGMODEL_OCCCCSD)
-!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD  ENERGY:   ', energies(FRAGMODEL_MP2f12)
-!!$
-!!$             write(*,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:      ', &
-!!$                  & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
-!!$          end select
-!!$       endif
-       
     endif
 #endif
 
