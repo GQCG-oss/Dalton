@@ -79,9 +79,9 @@ module tensor_type_def_module
 
   !MEMORY COUNTER
   type tensor_counter_type
-     integer(kind=tensor_long_int) :: size_ = 0_tensor_long_int
-     integer(kind=tensor_long_int) :: curr_ = 0_tensor_long_int
-     integer(kind=tensor_long_int) :: high_ = 0_tensor_long_int
+     integer(kind=tensor_long_int) :: size_ 
+     integer(kind=tensor_long_int) :: curr_
+     integer(kind=tensor_long_int) :: high_
   end type tensor_counter_type
 
   !make sure the following types all have the same structure:
@@ -91,13 +91,14 @@ module tensor_type_def_module
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor_long_int     = 4
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor_standard_log = 5
   integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor_long_log     = 6
-  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tile                = 7
-  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor              = 8
+  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_character           = 7
+  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tile                = 8
+  integer(kind=tensor_standard_int), parameter :: tensor_mem_idx_tensor              = 9
 
   !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LIST ABOVE
-  integer(kind=tensor_standard_int), parameter :: tensor_nmem_idx = 8
-  type(tensor_counter_type) :: counters(tensor_nmem_idx)
-  type(tensor_counter_type) :: counters_bg(tensor_nmem_idx)
+  integer(kind=tensor_standard_int), parameter :: tensor_nmem_idx = 9
+  type(tensor_counter_type),save :: counters(tensor_nmem_idx)
+  type(tensor_counter_type),save :: counters_bg(tensor_nmem_idx)
 
 
   !MPI COUNTER
@@ -106,12 +107,12 @@ module tensor_type_def_module
 #ifdef USE_MPI_MOD_F08
      type(MPI_Datatype)            :: d_mpi 
 #else
-     integer(kind=tensor_mpi_kind) :: d_mpi = 0_tensor_mpi_kind
+     integer(kind=tensor_mpi_kind) :: d_mpi 
 #endif
-     integer(kind=tensor_long_int) :: size_ = 0_tensor_long_int
-     integer(kind=tensor_long_int) :: ncall = 0_tensor_long_int
-     integer(kind=tensor_long_int) :: bytes = 0_tensor_long_int
-     real(tensor_dp)               :: time_ = 0.0E0_tensor_dp
+     integer(kind=tensor_long_int) :: size_ 
+     integer(kind=tensor_long_int) :: ncall 
+     integer(kind=tensor_long_int) :: bytes 
+     real(tensor_dp)               :: time_ 
   end type tensor_mpi_stats_type
 
   !MPI DATA TYPE INDEX
@@ -131,7 +132,7 @@ module tensor_type_def_module
   !> this counter is for the identification of the number of different mpi operations
   integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 3
 
-  type(tensor_mpi_stats_type) :: tensor_mpi_stats(tensor_nmpi_idx,tensor_nmpi_dat)
+  type(tensor_mpi_stats_type),save :: tensor_mpi_stats(tensor_nmpi_idx,tensor_nmpi_dat)
 #endif
 
 
@@ -179,6 +180,8 @@ module tensor_type_def_module
            c(i)%size_ = tensor_standard_log
         case(tensor_mem_idx_tensor_long_log)
            c(i)%size_ = tensor_long_log
+        case(tensor_mem_idx_character)
+           c(i)%size_ = tensor_char_size
 
         !DERIVED TYPES
         case(tensor_mem_idx_tile)
@@ -245,6 +248,9 @@ module tensor_type_def_module
         write (*,'(a)',advance='no') " tensor_standard_log "
      case(tensor_mem_idx_tensor_long_log)
         write (*,'(a)',advance='no') " tensor_long_log     "
+
+     case(tensor_mem_idx_character)
+        write (*,'(a)',advance='no') " character           "
 
      !DERIVED TYPES
      case(tensor_mem_idx_tile)

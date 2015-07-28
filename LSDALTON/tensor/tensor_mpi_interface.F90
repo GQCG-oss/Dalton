@@ -21,6 +21,8 @@ module tensor_mpi_interface_module
    public :: tensor_mpi_win_lock_all
    public :: tensor_mpi_win_unlock_all
    public :: tensor_mpi_win_flush
+   public :: tensor_mpi_probe
+   public :: tensor_mpi_get_count
 
    private
 
@@ -40,7 +42,9 @@ module tensor_mpi_interface_module
                      & tensor_mpi_bcast_log, &
                      & tensor_mpi_bcast_char_s,&
                      & tensor_mpi_bcast_char_l, &
-                     & tensor_mpi_bcast_char
+                     & tensor_mpi_bcast_char, &
+                     & tensor_mpi_bcast_char_vec_l, &
+                     & tensor_mpi_bcast_char_vec_s
 #else
       module procedure tensor_mpi_dummy
 #endif
@@ -255,7 +259,6 @@ module tensor_mpi_interface_module
        if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_unlock_all): failed",220)
     end subroutine tensor_mpi_win_unlock_all
 
-
     subroutine tensor_mpi_win_free(win)
        implicit none
 #ifdef USE_MPI_MOD_F08
@@ -320,6 +323,44 @@ module tensor_mpi_interface_module
        include "mpi_win_create_generic.inc"
     end subroutine tensor_mpi_win_create_dp_basic
 
+    subroutine tensor_mpi_probe(stat,comm,source,tag)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Comm),intent(in)                   :: comm
+       type(MPI_Status),intent(inout)              :: stat
+#else
+       integer(kind=tensor_mpi_kind),intent(in)    :: comm
+       integer(kind=tensor_mpi_kind),intent(inout) :: stat(MPI_STATUS_SIZE)
+#endif
+       integer(kind=tensor_mpi_kind),intent(in), optional :: source, tag
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+       integer(kind=tensor_mpi_kind) :: s = MPI_ANY_SOURCE
+       integer(kind=tensor_mpi_kind) :: t = MPI_ANY_TAG
+       
+       if(present(source))s = source
+       if(present(tag))   t = tag
+
+       call mpi_probe(s, t, comm, stat, ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_probe): probe failed",220)
+    end subroutine tensor_mpi_probe
+
+    subroutine tensor_mpi_get_count(stat,dat,nelms)
+       implicit none
+#ifdef USE_MPI_MOD_F08
+       type(MPI_Datatype),intent(in)                :: dat
+       type(MPI_Status),intent(inout)               :: stat
+#else
+       integer(kind=tensor_mpi_kind),intent(in)    :: dat
+       integer(kind=tensor_mpi_kind),intent(inout) :: stat(MPI_STATUS_SIZE)
+#endif
+       integer(kind=tensor_mpi_kind),intent(out) :: nelms
+       integer(kind=tensor_mpi_kind) :: ierr = 0
+
+       call mpi_get_count(stat, dat, nelms, ierr)
+
+       if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_get_count): failed",220)
+    end subroutine tensor_mpi_get_count
 
     !STD INTEGER BCAST
     subroutine tensor_mpi_bcast_std_int(b,root,comm)
@@ -507,6 +548,24 @@ module tensor_mpi_interface_module
       call tensor_mpi_bcast_char_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
     end subroutine tensor_mpi_bcast_char_l
+    subroutine tensor_mpi_bcast_char_vec_s(buffer,n1,root,comm)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      character, intent(inout)                      :: buffer(n1)
+      include "mpi_collective_vars.inc"
+      n=n1
+      call tensor_mpi_bcast_char_vec_basic(buffer,n,root,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
+    end subroutine tensor_mpi_bcast_char_vec_s
+    subroutine tensor_mpi_bcast_char_vec_l(buffer,n1,root,comm)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      character, intent(inout)                  :: buffer(n1)
+      include "mpi_collective_vars.inc"
+      n=n1
+      call tensor_mpi_bcast_char_vec_basic(buffer,n,root,comm,&
+         & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_char))
+    end subroutine tensor_mpi_bcast_char_vec_l
     subroutine tensor_mpi_bcast_char_basic(buffer,n1,root,comm,stats)
       implicit none
       integer(kind=tensor_long_int), intent(in) :: n1
@@ -515,6 +574,14 @@ module tensor_mpi_interface_module
       include "mpi_collective_vars.inc"
       include "mpi_bcast_std.inc"
     end subroutine tensor_mpi_bcast_char_basic
+    subroutine tensor_mpi_bcast_char_vec_basic(buffer,n1,root,comm,stats)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      character, intent(inout)                  :: buffer(n1)
+      type(tensor_mpi_stats_type),intent(inout) :: stats
+      include "mpi_collective_vars.inc"
+      include "mpi_bcast_std.inc"
+    end subroutine tensor_mpi_bcast_char_vec_basic
 
 
     !DOUBLE PRECISION REDUCE
@@ -554,7 +621,7 @@ module tensor_mpi_interface_module
       type(tensor_mpi_stats_type),intent(inout)    :: stats
       include "mpi_collective_vars.inc"
       !CHANGE THIS ACCORDING TO THE DATATYPE OF BUFFER
-      real(tensor_dp), pointer :: noelm => null()
+      real(tensor_dp) :: noelm = 0.0E0_tensor_dp
       include "mpi_reduce_std.inc"
     end subroutine tensor_mpi_reduce_dp_basic
 

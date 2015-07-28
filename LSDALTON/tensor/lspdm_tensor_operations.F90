@@ -10,12 +10,14 @@ module lspdm_tensor_operations_module
   use background_buffer_module, only: mem_is_background_buf_init,mem_get_bg_buf_free
 
   use tensor_parameters_and_counters
+  use tensor_mpi_operations_module
   use dec_typedef_module
   use dec_workarounds_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
   use tensor_mpi_interface_module
+  use tensor_mpi_operations_module
 #endif
 
   use tensor_basic_module
@@ -698,18 +700,21 @@ module lspdm_tensor_operations_module
      integer :: i_high,j_high,a_high,b_high
      logical :: use_bg
 
+     Eocc  = 0.0E0_tensor_dp
+     Evirt = 0.0E0_tensor_dp
+     fEc   = 0.0E0_tensor_dp
+
 #ifdef VAR_MPI
      !Get the slaves to this routine
      if(infpar%lg_mynum==infpar%master)then
         call time_start_phase(PHASE_COMM)
 
         call pdm_tensor_sync(infpar%lg_comm,JOB_GET_FRAG_CC_ENERGY,t1,t2,gmo)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(occ_num,infpar%master)
-        call ls_mpi_buffer(occ_idx,occ_num,infpar%master)
-        call ls_mpi_buffer(virt_num,infpar%master)
-        call ls_mpi_buffer(virt_idx,virt_num,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+        call tensor_buffer(occ_num,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(occ_idx,occ_num)
+        call tensor_buffer(virt_num)
+        call tensor_buffer(virt_idx,virt_num,finalize=.true.)
 
         call time_start_phase(PHASE_WORK)
      endif
@@ -720,9 +725,6 @@ module lspdm_tensor_operations_module
      call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
      call time_start_phase(PHASE_WORK)
 
-     Eocc  = 0.0E0_tensor_dp
-     Evirt = 0.0E0_tensor_dp
-     fEc   = 0.0E0_tensor_dp
 
      do lt=1,t2%nlti
 #ifdef VAR_PTR_RESHAPE
@@ -808,8 +810,7 @@ module lspdm_tensor_operations_module
      fEc = 0.50E0_tensor_dp*(Eocc + Evirt)
 
      if( tensor_always_sync ) call tensor_mpi_barrier(infpar%lg_comm)
-#else
-     fEc = 0.0E0_tensor_dp
+
 #endif
   end function get_fragment_cc_energy_parallel
 
@@ -1196,12 +1197,11 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_VEOS,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1313,12 +1313,11 @@ module lspdm_tensor_operations_module
         & tensor_full%access_type==AT_MASTER_ACCESS)then
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_OEOS,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1431,12 +1430,11 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_VDECNP,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1538,12 +1536,11 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_COMM )
      call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_ODECNP,tensor_full)
-     call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-     call ls_mpi_buffer(nEOS,infpar%master)
-     call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
-     call ls_mpi_buffer(4,infpar%master)
-     call ls_mpi_buffer(new_dims,4,infpar%master)
-     call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     call tensor_buffer(nEOS,root=infpar%master,comm=infpar%lg_comm)
+     call tensor_buffer(EOS_idx,nEOS)
+     call tensor_buffer(4)
+     call tensor_buffer(new_dims,4,finalize=.true.)
      call time_start_phase( PHASE_WORK )
   endif
 
@@ -1635,10 +1632,8 @@ module lspdm_tensor_operations_module
            call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_1,t1,t2,u)
         else if(t1%itype == TT_DENSE)then
            call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_2,t2,u)
-           call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-           call ls_mpi_buffer(t1%dims,2,infpar%master)
-           call ls_mpi_buffer(t1%elm1,t1%nelms,infpar%master)
-           call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+           call tensor_buffer(t1%dims,2,root=infpar%master,comm=infpar%lg_comm)
+           call tensor_buffer(t1%elm1,t1%nelms,finalize=.true.)
         else
            call lsquit("ERROR(lspdm_get_combined_SingleDouble_amplitudes):no valid t1%itype",-1)
         endif
@@ -2354,11 +2349,10 @@ module lspdm_tensor_operations_module
      if(x%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
         call pdm_tensor_sync(infpar%lg_comm,JOB_ADD_PAR,x,y)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(order,x%mode,infpar%master)
-        call ls_mpi_buffer(prex,infpar%master)
-        call ls_mpi_buffer(prey,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+        call tensor_buffer(order,x%mode,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(prex)
+        call tensor_buffer(prey,finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
 
@@ -2604,15 +2598,14 @@ module lspdm_tensor_operations_module
      !IF NOT AT_MASTER_ACCESS all processes should know b on call-time, else b is
      !broadcasted here
      if(x%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
-        call pdm_tensor_sync(infpar%lg_comm,JOB_DMUL_PAR,x,y)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(order,x%mode,infpar%master)
-        call ls_mpi_buffer(prex,infpar%master)
-        call ls_mpi_buffer(prey,infpar%master)
-        call ls_mpi_buffer(d_len,infpar%master)
-        call ls_mpi_buffer(d(1:d_len),d_len,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_DMUL_PAR,x,y)
+
+        call tensor_buffer(order,x%mode,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(prex)
+        call tensor_buffer(prey)
+        call tensor_buffer(d_len)
+        call tensor_buffer(d(1:d_len),d_len,finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
 
@@ -2835,12 +2828,11 @@ module lspdm_tensor_operations_module
      !IF AT_MASTER_ACCESS all processes should know b on call-time, else b is
      !broadcasted here
      if(C%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
-        call pdm_tensor_sync(infpar%lg_comm,JOB_HMUL_PAR,A,B,C)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(alpha,infpar%master)
-        call ls_mpi_buffer(beta,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_HMUL_PAR,A,B,C)
+
+        call tensor_buffer(alpha,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(beta, finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
 
@@ -3695,33 +3687,33 @@ module lspdm_tensor_operations_module
   call time_start_phase( PHASE_COMM )
   if(master.and.test_all_master_access)then
      if(B%itype == TT_TILED_DIST .or. B%itype == TT_REPLICATED)then
-        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_SIMPLE,A,B,C)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cA,nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cB,nmodes2c,infpar%master)
-        call ls_mpi_buffer(order,C%mode,infpar%master)
-        call ls_mpi_buffer(pre1,infpar%master)
-        call ls_mpi_buffer(pre2,infpar%master)
-        call ls_mpi_buffer(sync,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_SIMPLE,A,B,C)
+
+
+        call tensor_buffer(nmodes2c,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(m2cA,nmodes2c)
+        call tensor_buffer(m2cB,nmodes2c)
+        call tensor_buffer(order,C%mode)
+        call tensor_buffer(pre1)
+        call tensor_buffer(pre2)
+        call tensor_buffer(sync,finalize = .true.)
+
         call time_start_phase(PHASE_WORK)
      else
-        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_BDENSE,A,C)
         call time_start_phase(PHASE_COMM)
-        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-        call ls_mpi_buffer(nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cA,nmodes2c,infpar%master)
-        call ls_mpi_buffer(m2cB,nmodes2c,infpar%master)
-        call ls_mpi_buffer(order,C%mode,infpar%master)
-        call ls_mpi_buffer(pre1,infpar%master)
-        call ls_mpi_buffer(pre2,infpar%master)
-        call ls_mpi_buffer(sync,infpar%master)
-        call ls_mpi_buffer(B%mode,infpar%master)
-        call ls_mpi_buffer(B%dims,B%mode,infpar%master)
-        call ls_mpi_buffer(B%elm1,B%nelms,infpar%master)
-        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_BDENSE,A,C)
+
+        call tensor_buffer(nmodes2c,root=infpar%master,comm=infpar%lg_comm)
+        call tensor_buffer(m2cA,nmodes2c)
+        call tensor_buffer(m2cB,nmodes2c)
+        call tensor_buffer(order,C%mode)
+        call tensor_buffer(pre1)
+        call tensor_buffer(pre2)
+        call tensor_buffer(sync)
+        call tensor_buffer(B%mode)
+        call tensor_buffer(B%dims,B%mode)
+        call tensor_buffer(B%elm1,B%nelms, finalize=.true.)
         call time_start_phase(PHASE_WORK)
      endif
   endif

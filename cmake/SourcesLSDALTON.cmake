@@ -810,6 +810,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/dec_workarounds.F90
     )
 set(LSUTIL_TENSOR_SOURCES
+    LSDALTON/tensor/tensor_mpi_operations.F90
     LSDALTON/tensor/tensor_basic.F90
     LSDALTON/tensor/lspdm_basic.F90
     LSDALTON/tensor/lspdm_tensor_operations.F90

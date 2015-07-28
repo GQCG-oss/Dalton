@@ -44,6 +44,8 @@ module tensor_allocator
                       &tensor_allocate_tensor_long_log_1d_std,&
                       &tensor_allocate_tensor_standard_log_1d,&
                       &tensor_allocate_tensor_standard_log_1d_std,&
+                      &tensor_allocate_character_1d,&
+                      &tensor_allocate_character_1d_std,&
                       &tensor_allocate_tile_1d,&
                       &tensor_allocate_tile_1d_std, &
                       &tensor_allocate_tensor_1d,&
@@ -60,6 +62,7 @@ module tensor_allocator
                       &tensor_free_tensor_standard_int_2d,&
                       &tensor_free_tensor_long_log_1d,&
                       &tensor_free_tensor_standard_log_1d,&
+                      &tensor_free_character_1d,&
                       &tensor_free_tile_1d, &
                       &tensor_free_tensor_1d
    end interface tensor_free_mem
@@ -212,16 +215,19 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n2
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
-      real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n, n1l, n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
-      call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
-      p => null()
+      n1l = n1
+      n2l = n2
+
+      if(bg_)then
+         call tensor_status_quit("ERROR(2d alloc): not implemented with bg bufffer",3434)
+      else
+         call tensor_allocate_tensor_dp_2d_basic(p2,n1l,n2l,tensor_mem_idx_tensor_dp,stat=stat)
+      endif
 
    end subroutine tensor_allocate_tensor_dp_2d_ll
    subroutine tensor_allocate_tensor_dp_2d_sl(p2,n1,n2,bg,stat)
@@ -231,16 +237,19 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n2
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
-      real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n, n1l,n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
-      call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
-      p => null()
+      n1l = n1
+      n2l = n2
+
+      if(bg_)then
+         call tensor_status_quit("ERROR(2d alloc): not implemented with bg bufffer",3434)
+      else
+         call tensor_allocate_tensor_dp_2d_basic(p2,n1l,n2l,tensor_mem_idx_tensor_dp,stat=stat)
+      endif
 
    end subroutine tensor_allocate_tensor_dp_2d_sl
    subroutine tensor_allocate_tensor_dp_2d_ls(p2,n1,n2,bg,stat)
@@ -250,16 +259,19 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n2
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
-      real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
-      call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
-      p => null()
+      n1l = n1
+      n2l = n2
+      
+      if(bg_)then
+         call tensor_status_quit("ERROR(2d alloc): not implemented with bg bufffer",3434)
+      else
+         call tensor_allocate_tensor_dp_2d_basic(p2,n1l,n2l,tensor_mem_idx_tensor_dp,stat=stat)
+      endif
 
    end subroutine tensor_allocate_tensor_dp_2d_ls
    subroutine tensor_allocate_tensor_dp_2d_ss(p2,n1,n2,bg,stat)
@@ -269,16 +281,19 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n2
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
-      real(tensor_dp),pointer :: p(:)
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       logical :: bg_
       bg_=.false.
       if(present(bg)) bg_ = bg
       
-      n = n1 * n2
-      call tensor_allocate_tensor_dp_1d(p,n,bg=bg,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
-      p => null()
+      n1l = n1
+      n2l = n2
+      
+      if(bg_)then
+         call tensor_status_quit("ERROR(2d alloc): not implemented with bg bufffer",3434)
+      else
+         call tensor_allocate_tensor_dp_2d_basic(p2,n1l,n2l,tensor_mem_idx_tensor_dp,stat=stat)
+      endif
 
    end subroutine tensor_allocate_tensor_dp_2d_ss
 
@@ -330,29 +345,21 @@ module tensor_allocator
 #endif
       logical, intent(in),  optional         :: bg
       integer, intent(out), optional         :: stat
-      real(tensor_dp),pointer       :: p(:)
-      integer(kind=tensor_long_int) :: n
-      integer(kind=tensor_long_int) :: n1
-      integer(kind=tensor_long_int) :: n2
 
-      n1 = size(p2,1,kind=tensor_long_int)
-      n2 = size(p2,2,kind=tensor_long_int)
-
-      n = n1 * n2
-
-#ifdef VAR_PTR_RESHAPE
-      p(1:n) => p2(:,:)
-#else
-      call c_f_pointer(c_loc(p2(1,1)),p,[n1,n2])
-#endif
-      call tensor_free_tensor_dp_1d(p,bg=bg,stat=stat)
-      p2 => null()
+      call tensor_free_tensor_dp_2d_basic(p2,tensor_mem_idx_tensor_dp,stat=stat)
 
    end subroutine tensor_free_tensor_dp_2d
 
 
 
    !BASIC ALLOCATOR NORMAL
+   subroutine tensor_allocate_tensor_dp_2d_basic(p,n1,n2,idx,stat)
+      implicit none
+      real(tensor_dp),pointer, intent(inout) :: p(:,:)
+
+      include "standard_2d_allocation.inc"
+
+   end subroutine tensor_allocate_tensor_dp_2d_basic
    subroutine tensor_allocate_tensor_dp_basic(p,n,idx,stat)
       implicit none
       real(tensor_dp),pointer, intent(inout) :: p(:)
@@ -383,6 +390,13 @@ module tensor_allocator
    end subroutine tensor_allocate_tensor_dp_basic_mpi
 
    !BASIC DEALLOCATOR
+   subroutine tensor_free_tensor_dp_2d_basic(p,idx,stat)
+      implicit none
+      real(tensor_dp),pointer, intent(inout) :: p(:,:)
+
+      include "standard_deallocation.inc"
+
+   end subroutine tensor_free_tensor_dp_2d_basic
    subroutine tensor_free_tensor_dp_basic(p,idx,stat)
       implicit none
       real(tensor_dp),pointer, intent(inout) :: p(:)
@@ -445,12 +459,19 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_ll
@@ -460,12 +481,19 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_sl
@@ -475,12 +503,19 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_ls
@@ -490,12 +525,19 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_long_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_long_int_basic(p,n,tensor_mem_idx_tensor_long_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_long_int_2d_ss
@@ -585,12 +627,18 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
+      n1l = n1
+      n2l = n2
       
-      n = n1*n2
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_ll
@@ -600,12 +648,19 @@ module tensor_allocator
       integer(kind=tensor_long_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_ls
@@ -615,12 +670,19 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_long_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n,n1l,n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
       
-      n = n1*n2
+      n1l = n1
+      n2l = n2
+      
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_sl
@@ -630,12 +692,19 @@ module tensor_allocator
       integer(kind=tensor_standard_int), intent(in)   :: n1
       integer(kind=tensor_standard_int), intent(in)   :: n2
       integer, intent(out), optional         :: stat
-      integer(kind=tensor_long_int ) :: n
+      integer(kind=tensor_long_int ) :: n, n1l, n2l
       integer(kind=tensor_standard_int),pointer :: p(:)
+     
+      n1l = n1
+      n2l = n2
       
-      n = n1*n2
+      n = n1l*n2l
       call tensor_allocate_tensor_standard_int_basic(p,n,tensor_mem_idx_tensor_standard_int,stat=stat)
-      p2(1:n1,1:n2) => p(1:n)
+#ifdef VAR_PTR_RESHAPE
+      p2(1:n1l,1:n2l) => p(1:n)
+#else
+      call c_f_pointer(c_loc(p(1)),p2,[n1l,n2l])
+#endif
       p => null()
 
    end subroutine tensor_allocate_tensor_standard_int_2d_ss
@@ -802,6 +871,61 @@ module tensor_allocator
 
    end subroutine tensor_free_tensor_standard_log_basic
 
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!          ATOMIC TYPE: character: tensor_character             !!!!!!!!!!!!!!!!!!!!!!!!!!!!                                      
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   !ALLOCATION INTERFACES
+   subroutine tensor_allocate_character_1d_std(p,n1,stat)
+      implicit none
+      character, pointer, intent(inout)             :: p(:)
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      integer, intent(out), optional                :: stat
+      integer(kind=tensor_long_int ) :: n
+      
+      n = n1
+      call tensor_allocate_character_basic(p,n,tensor_mem_idx_character,stat=stat)
+
+   end subroutine tensor_allocate_character_1d_std
+   subroutine tensor_allocate_character_1d(p,n1,stat)
+      implicit none
+      character,pointer, intent(inout)          :: p(:)
+      integer(kind=tensor_long_int), intent(in) :: n1
+      integer, intent(out), optional            :: stat
+      integer(kind=tensor_long_int ) :: n
+      
+      n = n1
+      call tensor_allocate_character_basic(p,n,tensor_mem_idx_character,stat=stat)
+
+   end subroutine tensor_allocate_character_1d
+
+
+   !DEALLOCATION
+   subroutine tensor_free_character_1d(p,stat)
+      implicit none
+      character,pointer, intent(inout) :: p(:)
+      integer, intent(out), optional   :: stat
+
+      call tensor_free_character_basic(p,tensor_mem_idx_character,stat=stat)
+
+   end subroutine tensor_free_character_1d
+
+   !BASIC ALLOCATOR
+   subroutine tensor_allocate_character_basic(p,n,idx,stat)
+      implicit none
+      character,pointer, intent(inout) :: p(:)
+
+      include "standard_allocation.inc"
+
+   end subroutine tensor_allocate_character_basic
+   !BASIC DEALLOCATOR
+   subroutine tensor_free_character_basic(p,idx,stat)
+      implicit none
+      character,pointer, intent(inout) :: p(:)
+
+      include "standard_deallocation.inc"
+
+   end subroutine tensor_free_character_basic
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!             DERIVED TYPE: tile               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!                                      
