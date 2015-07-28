@@ -65,6 +65,7 @@ contains
     DECinfo%JacobianPrecond = .true.
     DECinfo%HaldApprox = .false.
     DECinfo%LW1 = .false.
+    DECinfo%P_EOM_MBPT2 = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -490,6 +491,9 @@ contains
 
        case('.LW1')
           DECinfo%LW1 = .true.
+
+       case('.P_EOM_MBPT2')
+          DECinfo%P_EOM_MBPT2 = .true.
 
 
        ! GENERAL INFO
@@ -1222,6 +1226,10 @@ contains
           write(DECinfo%output,*) 'WARNING! We enforce canonical orbitals for CC response!'
           DECinfo%use_canonical = .true.
        end if
+       ! P_EOM_MBPT2 only for right transformation
+       if(DECinfo%P_EOM_MBPT2 .and. DECinfo%JacobianLHTR) then
+          call lsquit('P_EOM_MBPT2 only for Jacobian right transformation!',-1)
+       end if
     end if CCresponse
 
 
@@ -1550,6 +1558,7 @@ contains
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
     write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
     write(lupri,*) 'LW1 ', DECinfo%LW1
+    write(lupri,*) 'P_EOM_MBPT2 ', DECinfo%P_EOM_MBPT2
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP

@@ -148,6 +148,8 @@ module dec_typedef_module
      !> when calculation Jacobian eigenvalues. (Only meaningful in
      !> combination with MP2 wave function model).
      logical :: LW1
+     !> Use P-EOM-MBPT2 model for excitation energies (Chem Phys Lett 248, 189 (1996))
+     logical :: P_EOM_MBPT2
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION

@@ -6,6 +6,8 @@
 # EXPLANATION:
 #    This file contains all classes for dec-specific information storage
 
+from output_plot import *
+
 # All fragment specific 
 class fragment_class:
    def __init__(self):
@@ -55,8 +57,8 @@ class decinfo_class:
    #DEFINE DEC ANALYSIS OPERATIONS HERE
    ####################################
 
-   #plot_pair_energies = plot_pair_energies
-   #plot_SF_energy_errors = plot_SF_energy_errors
+   plot_pair_energies = plot_pair_energies
+   plot_SF_energy_errors = plot_SF_energy_errors
 
    #READ DEC SPECIFIC INFO
    def get_dec_info(self,filelines,fragtype,fromfrag):

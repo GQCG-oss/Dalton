@@ -426,14 +426,17 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
           f.write(conditionalstatement)
     
         #WRITE OMP DO STUFF HERE
-        if(not debug_loops and not acc):
-          if(modes-len(oldr)>0):
-            ompdo ="        !$OMP DO" 
-            if (modes-len(oldr)>1 and (not nocollapse)):
-              ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
-            else:
-              ompdo += " COLLAPSE("+str(min(modes-len(oldr),3))+")\n"
-            f.write(ompdo)
+        if(not debug_loops and not acc and modes-len(oldr)):
+          if( nocollapse ):
+             ncoll = min(modes-len(oldr),1)
+          else:
+             ncoll = modes-len(oldr)
+
+          ompdo = "        !$OMP DO" 
+          if ( ncoll > 1 ):
+            ompdo += " COLLAPSE("+str(ncoll)+")"
+          ompdo += "\n"
+          f.write(ompdo)
  
         #ORDER THE LOOPS, this depends on the architecture and may be modified
         #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used

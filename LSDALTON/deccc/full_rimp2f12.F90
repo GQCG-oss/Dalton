@@ -53,15 +53,15 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !> Canonical MP2 correlation energy
    real(realk) :: mp2_energy
    !local variables
-   integer :: nbasis,nocc,nvirt,ncabsAO,ncabsMO,noccfull
+   integer :: nbasis,nocc,nvirt,ncabsAO,ncabsMO
    real(realk) :: E21,Econt(1),E23
    real(realk) :: ExchangeF12V1,CoulombF12V1
    real(realk) :: ExchangeF12X1,CoulombF12X1
    real(realk) :: ExchangeF12B1,CoulombF12B1
-   real(realk) :: EV1,EV2,EV3,EV4,EX1,EX2,EX3,EX4
+   real(realk) :: EV1,EV2,EV3,EV4,EV5,EX1,EX2,EX3,EX4
    real(realk) :: EB1,EB2,EB3,EB4,EB5,EB6,EB7,EB8,EB9
    real(realk) :: TS,TE,TS2,TE2
-   integer :: i,j,p,q,c,m,mynum,numnodes,nAtoms,lupri,nsize
+   integer :: i,j,a,b,p,q,c,m,mynum,numnodes,nAtoms,lupri,nsize
    !    type(matrix) :: HJrc
    type(matrix) :: HJir
    !    type(matrix) :: Kcc
@@ -83,15 +83,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! RI variables
    !========================================================
    integer :: nAux,NBA,N,K
-   real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:)
-   real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:)
+   real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:)
+   real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:)
    real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:)
-   real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:)
+   real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:),ABdecompC(:,:)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:),ABdecompX(:,:)
-   logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF
+   logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateC
    logical :: FORCEPRINT,use_bg_buf,LS,ABdecompCreateX
    character :: intspec(5)
    type(matrix) :: CMO_CABS,CMO_RI
+   !========================================================
+   ! Additional variables
+   !========================================================
+   integer :: offset, noccfull
+   real(realk),pointer :: Taibj(:,:,:,:) !amplitudes not integrals
+   real(realk),pointer :: gmo(:,:,:,:)
+   real(realk),pointer :: gao(:,:,:,:)
+   real(realk) :: eps
+  
    if(MyMolecule%mem_distributed)then
       call lsquit("ERROR(full_canonical_rimp2_f12): does not work with PDM type fullmolecule",-1)
    endif
@@ -122,10 +131,23 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Init stuff
    ! **********
    nbasis = MyMolecule%nbasis
-   nocc   = MyMolecule%nocc
    nvirt  = MyMolecule%nvirt
    naux   = MyMolecule%nauxbasis
    nAtoms = MyMolecule%nAtoms
+   ! Set number of occupied orbitals
+   if(DECinfo%frozencore) then
+      ! Frozen core: nocc = #valence orbitals
+      nocc = MyMolecule%nval
+   else
+      ! Not frozen core: nocc = total number of occ orbitals
+      nocc = MyMolecule%nocc
+   end if
+   ! noccfull: Always equal to total number of occ orbitals
+   noccfull = MyMolecule%nocc
+   ! Offset:   Frozen core    : ncore
+   !           Not frozen core: 0
+   offset = noccfull - nocc   
+
    call determine_CABS_nbast(ncabsAO,ncabsMO,mylsitem%setting,DECinfo%output)
 
    call mat_init(CMO_CABS,nCabsAO,ncabsMO)
@@ -423,39 +445,124 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_CABS%elms,ncabsMO,&
         & mynum,numnodes,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
    
-   !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nbasis,&
+     !Do on GPU (Async)
+     call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nbasis,&
         & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
-   
-   mp2f12_energy = mp2f12_energy  + EV3 + EV4
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
 
-   call mem_dealloc(ABdecompR)
-   call mem_dealloc(CalphaR)
-   call mem_dealloc(CalphaRcabsMO)
+     mp2f12_energy = mp2f12_energy  + EV3 + EV4
+     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
+     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
+     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
+     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
 
-   !==========================================================
-   !=                                                        =
-   != X3:         Step 3  Gimjc*Gimjc                        =
-   != X4:         Step 4  Gjmic*Gjmic                        =
-   != The Coulomb Operator Int multiplied with               =
-   != The Gaussian geminal operator g                        =
-   != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
-   !=                                                        =
-   !==========================================================
-!   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
-   
-   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-   call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,nbasis,&
+     call mem_dealloc(ABdecompR)
+     call mem_dealloc(CalphaR)
+     call mem_dealloc(CalphaRcabsMO)
+
+     !==========================================================
+     !=                                                        =
+     != V5:     Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj          =
+     !=                                                        = 
+     !=                                                        = 
+     !=                                                        =
+     !========================================================== 
+
+     ! Get all AO integrals 
+     ! ********************
+     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
+     gao = 0.0E0_realk
+     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
+     ! Transform AO integrals to MO integrals (A I | B J)
+     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
+        & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'aiai',gAO,gMO)
+     call mem_dealloc(gao)
+
+     call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
+
+     do J=1,nocc
+        do B=1,nvirt
+           do I=1,nocc
+              do A=1,nvirt
+                 ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+                 eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                    & + MyMolecule%oofock%elm2(J+offset,J+offset) &
+                    & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+                 eps = gmo(A,I,B,J)/eps
+                 Taibj(a,i,b,j) = eps
+              enddo
+           enddo
+        enddo
+     enddo
+
+     call mem_alloc(ABdecompC,nAux,nAux)
+     ABdecompCreateC = .TRUE.
+     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+     intspec(2) = 'R' !Regular AO basis function on center 4 
+     intspec(3) = 'C' !Cabs AO basis function on center 3
+     intspec(4) = 'G' !The Gaussian geminal operator g
+     intspec(5) = 'G' !The Gaussian geminal operator g
+
+     call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
+        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,CMO_CABS%elms,ncabsMO,&
+        & mynum,numnodes,CalphaCcabs,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+
+     m = NBA*nocc       
+     k = ncabsMO         ! C_mn = A_mk B_kn
+     n = nvirt  
+
+     !C(alpha*i,ncabsMO)*F(cabsMO,nvirt)
+     nsize = nBA*nocc*ncabsMO
+     call mem_alloc(CalphaD, nsize)
+     call dgemm('N','T',m,n,k,1.0E0_realk,CalphaCcabs,m,Fac%elms,n,0.0E0_realk,CalphaD,m)
+
+     !m = nvirt      
+     !k = ncabsMO         ! C_mn = A_mk B_kn
+     !n = nocc*NBA  
+     !call dgemm('N','T',m,n,k,1.0E0_realk,Fac%elms,m,CalphaCcabs,k,0.0E0_realk,CalphaD,n)
+
+     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+     intspec(2) = 'R' !Regular AO basis function on center 3
+     intspec(3) = 'R' !Regular AO basis function on center 4
+     intspec(4) = 'G' !The Gaussian geminal operator g
+     intspec(5) = 'G' !The Gaussian geminal operator g
+     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Cv%elm2,nvirt,&
+        & mynum,numnodes,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+
+     call ContractTwo4CenterF12IntegralsRIC(nBA,nocc,nvirt,CalphaCvirt,CalphaD,Taibj,EV5)
+     mp2f12_energy = mp2f12_energy  + EV5
+     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+
+     ABdecompCreateG = .FALSE.
+     call mem_dealloc(CalphaD)
+     call mem_dealloc(ABdecompC)
+     call mem_dealloc(CalphaCcabs)
+     call mem_dealloc(CalphaCvirt)
+
+     !Additional 
+     call mem_dealloc(gMO)
+     call mem_dealloc(Taibj)
+
+     !==========================================================
+     !=                                                        =
+     != X3:         Step 3  Gimjc*Gimjc                        =
+     != X4:         Step 4  Gjmic*Gjmic                        =
+     != The Coulomb Operator Int multiplied with               =
+     != The Gaussian geminal operator g                        =
+     != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
+     !=                                                        =
+     !==========================================================
+     !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
+
+     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+     call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,nbasis,&
         & CalphaGcabsMO,CalphaG,Fii%elms,EX3,EX4)
-   
-   mp2f12_energy = mp2f12_energy  + EX3 + EX4
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
+
+     mp2f12_energy = mp2f12_energy  + EX3 + EX4
+     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
+     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
+     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
 
    call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
@@ -828,6 +935,51 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK)
    !$OMP END PARALLEL DO
    EJK = ED + 2.5E0_realk*EJ - 0.50_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRI
+
+subroutine ContractTwo4CenterF12IntegralsRIC(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK)
+   implicit none 
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED,EJ,EK
+   real(realk),pointer       :: Caibj(:,:,:,:)
+   real(realk),intent(in)    :: Taibj(:,:,:,:)
+   !local variables
+   integer :: a,b,i,j,alpha,beta
+   real(realk) :: tmp,tmpR,tmpG
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO b=1,n2
+      DO a=1,n2
+         DO j=1,n1
+            !Diagonal
+            tmp = 0.0E0_realk
+            DO alpha = 1,NBA
+               tmp = tmp + CalphaV(alpha,j,a)*CalphaD(alpha,j,b) + CalphaV(alpha,j,b)*CalphaD(alpha,j,a)
+            ENDDO
+            ED = ED + tmp*Taibj(a,j,b,j)
+            !Non Diagonal
+            DO i=j+1,n1
+               tmpR = 0.0E0_realk
+               DO alpha = 1,NBA
+                  tmpR = tmpR + CalphaV(alpha,i,a)*CalphaD(alpha,j,b) + CalphaV(alpha,j,b)*CalphaD(alpha,i,a)
+               ENDDO
+               tmpG = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG = tmpG + CalphaV(beta,j,a)*CalphaD(beta,i,b) + CalphaV(beta,i,b)*CalphaD(beta,j,a)
+               ENDDO
+               EJ = EJ + tmpR*Taibj(a,i,b,j)
+               EK = EK + tmpG*Taibj(a,i,b,j)
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK = - ED - 2.5E0_realk*EJ + 0.5E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIC
 
 subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaG,Fii,EJK)
    implicit none

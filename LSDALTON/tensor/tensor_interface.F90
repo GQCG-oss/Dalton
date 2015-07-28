@@ -15,8 +15,8 @@ module tensor_interface_module
 #endif
 
   ! Outside DEC directory
-  use memory_handling
   use tensor_parameters_and_counters
+  use tensor_mpi_interface_module
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
   use reorder_frontend_module
@@ -219,9 +219,9 @@ contains
 #ifdef VAR_MPI
      me = infpar%lg_mynum
      if( me == 0 )then
-        call ls_mpibcast(SET_TENSOR_SEG_LENGTH,infpar%master,MPI_COMM_LSDALTON)
+        call tensor_mpi_bcast(SET_TENSOR_SEG_LENGTH,infpar%master,MPI_COMM_LSDALTON)
      endif
-     call ls_mpibcast(seg,infpar%master,MPI_COMM_LSDALTON)
+     call tensor_mpi_bcast(seg,infpar%master,MPI_COMM_LSDALTON)
 #endif
 
      if( seg<=0 )then
@@ -242,7 +242,7 @@ contains
 #ifdef VAR_MPI
      me = infpar%lg_mynum
      if( me == 0 .and. call_slaves )then
-        call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,me,infpar%lg_comm)
+        call tensor_mpi_bcast(SET_TENSOR_DEBUG_TRUE,me,infpar%lg_comm)
      endif
 #endif
 
@@ -258,7 +258,7 @@ contains
 #ifdef VAR_MPI
      me = infpar%lg_mynum
      if( me == 0 .and. call_slaves )then
-        call ls_mpibcast(SET_TENSOR_ALWAYS_SYNC_TRUE,me,infpar%lg_comm)
+        call tensor_mpi_bcast(SET_TENSOR_ALWAYS_SYNC_TRUE,me,infpar%lg_comm)
      endif
 #endif
 
@@ -273,7 +273,7 @@ contains
 #ifdef VAR_MPI
      me = infpar%lg_mynum
      if( me == 0.and. call_slaves )then
-        call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,me,infpar%lg_comm)
+        call tensor_mpi_bcast(SET_TENSOR_BACKEND_TRUE,me,infpar%lg_comm)
      endif
 #endif
      tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
