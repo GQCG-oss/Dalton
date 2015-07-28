@@ -23,7 +23,7 @@ module tensor_mpi_interface_module
    public :: tensor_mpi_win_flush
    public :: tensor_mpi_probe
    public :: tensor_mpi_get_count
-   public :: tensor_mpi_sendrcv
+   public :: tensor_mpi_sendrecv
 
    private
 
@@ -77,21 +77,21 @@ module tensor_mpi_interface_module
 #endif
    end interface tensor_mpi_allreduce
 
-   interface tensor_mpi_sendrcv
+   interface tensor_mpi_sendrecv
 #ifdef VAR_MPI
-      module procedure tensor_mpi_sendrcv_tensor_dp_s, &
-                     & tensor_mpi_sendrcv_tensor_dp_l, &
-                     & tensor_mpi_sendrcv_tensor_dp, &
-                     & tensor_mpi_sendrcv_tensor_standard_int_s, &
-                     & tensor_mpi_sendrcv_tensor_standard_int_l, &
-                     & tensor_mpi_sendrcv_tensor_standard_int, &
-                     & tensor_mpi_sendrcv_tensor_long_int_s, &
-                     & tensor_mpi_sendrcv_tensor_long_int_l, &
-                     & tensor_mpi_sendrcv_tensor_long_int
+      module procedure tensor_mpi_sendrecv_tensor_dp_s, &
+                     & tensor_mpi_sendrecv_tensor_dp_l, &
+                     & tensor_mpi_sendrecv_tensor_dp, &
+                     & tensor_mpi_sendrecv_tensor_standard_int_s, &
+                     & tensor_mpi_sendrecv_tensor_standard_int_l, &
+                     & tensor_mpi_sendrecv_tensor_standard_int, &
+                     & tensor_mpi_sendrecv_tensor_long_int_s, &
+                     & tensor_mpi_sendrecv_tensor_long_int_l, &
+                     & tensor_mpi_sendrecv_tensor_long_int
 #else
       module procedure tensor_mpi_dummy
 #endif
-   end interface tensor_mpi_sendrcv
+   end interface tensor_mpi_sendrecv
 
    contains
 
@@ -760,121 +760,121 @@ module tensor_mpi_interface_module
     end subroutine tensor_mpi_allreduce_dp_basic
 
     !DOUBLE PRECISION SENDRCV
-    subroutine tensor_mpi_sendrcv_tensor_dp(b,comm,sender,receiver)
+    subroutine tensor_mpi_sendrecv_tensor_dp(b,comm,sender,receiver)
       implicit none
       real(tensor_dp) :: b
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       real(tensor_dp) :: buffer(1)
       n=1
       buffer(1) = b
-      call tensor_mpi_sendrcv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_dp))
+      call tensor_mpi_sendrecv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_dp))
       if( infpar%lg_mynum == receiver) b = buffer(1)
-    end subroutine tensor_mpi_sendrcv_tensor_dp
-    subroutine tensor_mpi_sendrcv_tensor_dp_s(buffer,n1,comm,sender,receiver)
+    end subroutine tensor_mpi_sendrecv_tensor_dp
+    subroutine tensor_mpi_sendrecv_tensor_dp_s(buffer,n1,comm,sender,receiver)
       implicit none
       integer(kind=tensor_standard_int), intent(in) :: n1
       real(tensor_dp), intent(inout)            :: buffer(n1)
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       n=n1
-      call tensor_mpi_sendrcv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_dp))
-    end subroutine tensor_mpi_sendrcv_tensor_dp_s
-    subroutine tensor_mpi_sendrcv_tensor_dp_l(buffer,n1,comm,sender,receiver)
+      call tensor_mpi_sendrecv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_dp))
+    end subroutine tensor_mpi_sendrecv_tensor_dp_s
+    subroutine tensor_mpi_sendrecv_tensor_dp_l(buffer,n1,comm,sender,receiver)
       implicit none
       integer(kind=tensor_long_int), intent(in) :: n1
       real(tensor_dp), intent(inout)            :: buffer(n1)
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       n=n1
-      call tensor_mpi_sendrcv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_dp))
-    end subroutine tensor_mpi_sendrcv_tensor_dp_l
-    subroutine tensor_mpi_sendrcv_tensor_dp_basic(buffer,n1,comm,sender,receiver,stats)
+      call tensor_mpi_sendrecv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_dp))
+    end subroutine tensor_mpi_sendrecv_tensor_dp_l
+    subroutine tensor_mpi_sendrecv_tensor_dp_basic(buffer,n1,comm,sender,receiver,stats)
       implicit none
       integer(kind=tensor_long_int)  :: n1
       real(tensor_dp), intent(inout) :: buffer(n1)
       type(tensor_mpi_stats_type),intent(inout)    :: stats
-      include "mpi_sendrcv_vars.inc"
-      include "mpi_sendrcv_std.inc"
-    end subroutine tensor_mpi_sendrcv_tensor_dp_basic
+      include "mpi_sendrecv_vars.inc"
+      include "mpi_sendrecv_std.inc"
+    end subroutine tensor_mpi_sendrecv_tensor_dp_basic
 
     !STANDARD INTEGER SENDRCV
-    subroutine tensor_mpi_sendrcv_tensor_standard_int(b,comm,sender,receiver)
+    subroutine tensor_mpi_sendrecv_tensor_standard_int(b,comm,sender,receiver)
       implicit none
       integer(kind=tensor_standard_int) :: b
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       integer(kind=tensor_standard_int) :: buffer(1)
       n=1
       buffer(1) = b
-      call tensor_mpi_sendrcv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_standard_int))
+      call tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_standard_int))
       if( infpar%lg_mynum == receiver) b = buffer(1)
-    end subroutine tensor_mpi_sendrcv_tensor_standard_int
-    subroutine tensor_mpi_sendrcv_tensor_standard_int_s(buffer,n1,comm,sender,receiver)
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int
+    subroutine tensor_mpi_sendrecv_tensor_standard_int_s(buffer,n1,comm,sender,receiver)
       implicit none
       integer(kind=tensor_standard_int), intent(in) :: n1
       integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       n=n1
-      call tensor_mpi_sendrcv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_standard_int))
-    end subroutine tensor_mpi_sendrcv_tensor_standard_int_s
-    subroutine tensor_mpi_sendrcv_tensor_standard_int_l(buffer,n1,comm,sender,receiver)
+      call tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_standard_int))
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int_s
+    subroutine tensor_mpi_sendrecv_tensor_standard_int_l(buffer,n1,comm,sender,receiver)
       implicit none
       integer(kind=tensor_long_int), intent(in) :: n1
       integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       n=n1
-      call tensor_mpi_sendrcv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_standard_int))
-    end subroutine tensor_mpi_sendrcv_tensor_standard_int_l
-    subroutine tensor_mpi_sendrcv_tensor_standard_int_basic(buffer,n1,comm,sender,receiver,stats)
+      call tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_standard_int))
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int_l
+    subroutine tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n1,comm,sender,receiver,stats)
       implicit none
       integer(kind=tensor_long_int)  :: n1
       integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
       type(tensor_mpi_stats_type),intent(inout)    :: stats
-      include "mpi_sendrcv_vars.inc"
-      include "mpi_sendrcv_std.inc"
-    end subroutine tensor_mpi_sendrcv_tensor_standard_int_basic
+      include "mpi_sendrecv_vars.inc"
+      include "mpi_sendrecv_std.inc"
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int_basic
 
     !LONG INTEGER SENDRCV
-    subroutine tensor_mpi_sendrcv_tensor_long_int(b,comm,sender,receiver)
+    subroutine tensor_mpi_sendrecv_tensor_long_int(b,comm,sender,receiver)
       implicit none
       integer(kind=tensor_long_int) :: b
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       integer(kind=tensor_long_int) :: buffer(1)
       n=1
       buffer(1) = b
-      call tensor_mpi_sendrcv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_long_int))
+      call tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_long_int))
       if( infpar%lg_mynum == receiver) b = buffer(1)
-    end subroutine tensor_mpi_sendrcv_tensor_long_int
-    subroutine tensor_mpi_sendrcv_tensor_long_int_s(buffer,n1,comm,sender,receiver)
+    end subroutine tensor_mpi_sendrecv_tensor_long_int
+    subroutine tensor_mpi_sendrecv_tensor_long_int_s(buffer,n1,comm,sender,receiver)
       implicit none
       integer(kind=tensor_standard_int), intent(in) :: n1
       integer(kind=tensor_long_int), intent(inout)            :: buffer(n1)
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       n=n1
-      call tensor_mpi_sendrcv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_long_int))
-    end subroutine tensor_mpi_sendrcv_tensor_long_int_s
-    subroutine tensor_mpi_sendrcv_tensor_long_int_l(buffer,n1,comm,sender,receiver)
+      call tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_long_int))
+    end subroutine tensor_mpi_sendrecv_tensor_long_int_s
+    subroutine tensor_mpi_sendrecv_tensor_long_int_l(buffer,n1,comm,sender,receiver)
       implicit none
       integer(kind=tensor_long_int), intent(in) :: n1
       integer(kind=tensor_long_int), intent(inout)            :: buffer(n1)
-      include "mpi_sendrcv_vars.inc"
+      include "mpi_sendrecv_vars.inc"
       n=n1
-      call tensor_mpi_sendrcv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
-         & tensor_mpi_stats(tensor_mpi_idx_sendrcv,tensor_mpi_idx_tensor_long_int))
-    end subroutine tensor_mpi_sendrcv_tensor_long_int_l
-    subroutine tensor_mpi_sendrcv_tensor_long_int_basic(buffer,n1,comm,sender,receiver,stats)
+      call tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_long_int))
+    end subroutine tensor_mpi_sendrecv_tensor_long_int_l
+    subroutine tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n1,comm,sender,receiver,stats)
       implicit none
       integer(kind=tensor_long_int)  :: n1
       integer(kind=tensor_long_int), intent(inout) :: buffer(n1)
       type(tensor_mpi_stats_type),intent(inout)    :: stats
-      include "mpi_sendrcv_vars.inc"
-      include "mpi_sendrcv_std.inc"
-    end subroutine tensor_mpi_sendrcv_tensor_long_int_basic
+      include "mpi_sendrecv_vars.inc"
+      include "mpi_sendrecv_std.inc"
+    end subroutine tensor_mpi_sendrecv_tensor_long_int_basic
 #endif
 
 end module tensor_mpi_interface_module

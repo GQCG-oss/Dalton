@@ -326,11 +326,11 @@ module tensor_tester_module
         tileget = 1.0E1_tensor_dp
         call tensor_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         call tensor_free_mem(tileget)
 
       else
-        call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(ref,infpar%lg_comm,recver,infpar%master)
         write(output,'("NORM PARALLEL 3LPN: ",f20.15)')ref
       endif
 
@@ -351,24 +351,24 @@ module tensor_tester_module
         call tensor_alloc_mem(tileget,j)
         call tensor_get_tile(test2,int(ti,kind=tensor_standard_int),tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         do i=1,j
           tileget(i) = tileget(i) + 2.4E0_tensor_dp
         enddo
         call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         tileget = 2.4E0_tensor_dp
         call get_midx(ti,midx,test2%ntpm,test2%mode)
         call tensor_accumulate_tile(test2,midx,tileget,j)
         call tensor_free_mem(tileget)
       else
         teststatus="SUCCESS"
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         write(output,'("NORM PARALLEL 2LGN: ",f20.15)')normher
         if(abs(normher-ref)>1.0E-12_tensor_dp)teststatus=" FAILED"
         write (output,'("PUT-GET: NORM, TEST STATUS: ",f19.10," : ",A7)')normher,teststatus
 
-        call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(ref,infpar%lg_comm,recver,infpar%master)
         write(output,'("NORM PARALLEL 2LAC: ",f20.15)')ref
       endif
     endif

@@ -460,7 +460,7 @@ module lspdm_tensor_operations_module
      if(present(loc_addr))loc = loc_addr
      if(loc) call lsquit("ERROR(pdm_tensor_sync): this feature has been deactivated",-1)
 
-     IF( me == root) then
+     if( me == root) then
         !**************************************************************************************
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!code for MASTER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !**************************************************************************************
@@ -474,18 +474,18 @@ module lspdm_tensor_operations_module
         !9-13  = zero -> bool passed as integer for a-c
         !rest specifies dimensions
         counter = basic
-        IF (PRESENT(A)) THEN
+        if (present(A)) then
            counter     = counter+2*A%mode
-        ENDIF
-        IF (PRESENT(B)) THEN
+        endif
+        if (present(B)) then
            counter     = counter+2*B%mode
-        ENDIF
-        IF (PRESENT(C)) THEN
+        endif
+        if (present(C)) then
            counter     = counter+2*C%mode
-        ENDIF
-        IF (PRESENT(D)) THEN
+        endif
+        if (present(D)) then
            counter     = counter+2*D%mode
-        ENDIF
+        endif
 
         call time_start_phase( PHASE_COMM )
         call tensor_mpi_bcast(counter,root,comm)
@@ -501,38 +501,38 @@ module lspdm_tensor_operations_module
         !get comm vector done
         TMPI    = 0
         TMPI(1) = job
-        IF (PRESENT(A)) THEN
+        if (present(A)) then
            TMPI(6)                        = A%mode
            if(A%zeros) TMPI(10)           = 1
            TMPI(counter+1:counter+A%mode) = A%dims
            counter = counter + A%mode
            TMPI(counter+1:counter+A%mode) = A%tdim
            counter = counter + A%mode
-        ENDIF
-        IF (PRESENT(B)) THEN
+        endif
+        if (present(B)) then
            TMPI(7)                        = B%mode
            if(B%zeros) TMPI(11)            = 1
            TMPI(counter+1:counter+B%mode) = B%dims
            counter = counter + B%mode
            TMPI(counter+1:counter+B%mode) = B%tdim
            counter = counter + B%mode
-        ENDIF
-        IF (PRESENT(C)) THEN
+        endif
+        if (present(C)) then
            TMPI(8)                        = C%mode
            if(C%zeros) TMPI(12)           = 1
            TMPI(counter+1:counter+C%mode) = C%dims
            counter = counter + C%mode
            TMPI(counter+1:counter+C%mode) = C%tdim
            counter = counter + C%mode
-        ENDIF
-        IF (PRESENT(D)) THEN
+        endif
+        if (present(D)) then
            TMPI(10)                       = D%mode
            if(D%zeros) TMPI(13)           = 1
            TMPI(counter+1:counter+D%mode) = D%dims
            counter = counter + D%mode
            TMPI(counter+1:counter+D%mode) = D%tdim
            counter = counter + D%mode
-        ENDIF
+        endif
 
         if(counter/=basic)call lsquit("ERROR(pdm_tensor_sync):different number of&
            & elements for MASTER",DECinfo%output)
@@ -567,18 +567,18 @@ module lspdm_tensor_operations_module
 
         do sendctr=1,nn-1
            !if(loc)then
-           !IF (PRESENT(A)) TMPI(2)  = A%addr_loc(sendctr+1)
-           !IF (PRESENT(B)) TMPI(3)  = B%addr_loc(sendctr+1)
-           !IF (PRESENT(C)) TMPI(4)  = C%addr_loc(sendctr+1)
-           !IF (PRESENT(D)) TMPI(5)  = D%addr_loc(sendctr+1)
+           !if (present(A)) TMPI(2)  = A%addr_loc(sendctr+1)
+           !if (present(B)) TMPI(3)  = B%addr_loc(sendctr+1)
+           !if (present(C)) TMPI(4)  = C%addr_loc(sendctr+1)
+           !if (present(D)) TMPI(5)  = D%addr_loc(sendctr+1)
            !else
-           IF (PRESENT(A)) TMPI(2)  = A%addr_p_arr(sendctr+1)
-           IF (PRESENT(B)) TMPI(3)  = B%addr_p_arr(sendctr+1)
-           IF (PRESENT(C)) TMPI(4)  = C%addr_p_arr(sendctr+1)
-           IF (PRESENT(D)) TMPI(5)  = D%addr_p_arr(sendctr+1)
+           if (present(A)) TMPI(2)  = A%addr_p_arr(sendctr+1)
+           if (present(B)) TMPI(3)  = B%addr_p_arr(sendctr+1)
+           if (present(C)) TMPI(4)  = C%addr_p_arr(sendctr+1)
+           if (present(D)) TMPI(5)  = D%addr_p_arr(sendctr+1)
            !endif
            call time_start_phase( PHASE_COMM )
-           call ls_mpisendrecv( TMPI, counter, comm, root, sendctr)
+           call tensor_mpi_sendrecv( TMPI, counter, comm, root, sendctr)
            call time_start_phase( PHASE_WORK )
         enddo
         call tensor_free_mem(TMPI)
@@ -592,11 +592,11 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_COMM )
         call tensor_mpi_bcast( counter, root, comm )
         call tensor_alloc_mem( TMPI, counter )
-        call ls_mpisendrecv( TMPI, counter, comm, root, me)
+        call tensor_mpi_sendrecv( TMPI, counter, comm, root, me)
         call time_start_phase( PHASE_WORK )
 
         !get data from info vector; THIS COUNTER CONSTRUCTION HAS TO BE REWRITTEN
-        !IF NEEDED FOR NOW IT IS CONVENIENT, BECAUSE IT IS SIMPLE
+        !if NEEDED FOR NOW IT IS CONVENIENT, BECAUSE IT IS SIMPLE
         counter = basic
         job = TMPI(1) !slaves needs to know what to do
         !1     = JOB
@@ -604,55 +604,55 @@ module lspdm_tensor_operations_module
         !6-9   = modes a-c
         !10-13 = zero -> bool passed as integer for a-c
         !rest specifies dimensions
-        IF (TMPI(2).gt.0) THEN
+        if (TMPI(2).gt.0) then
            A = p_arr%a(TMPI(2))
-        ELSE
-           IF(TMPI(6).gt.0)THEN
+        else
+           if(TMPI(6).gt.0)then
               A%mode                = TMPI(6)
               if(TMPI(10)==1) A%zeros= .true.
               call tensor_set_dims(A,TMPI(counter+1:counter+A%mode),int(A%mode))
               counter = counter + A%mode
               call tensor_set_tdims(A,TMPI(counter+1:counter+A%mode),int(A%mode))
               counter = counter + A%mode
-           ENDIF
-        ENDIF
-        IF (TMPI(3).gt.0) THEN
+           endif
+        endif
+        if (TMPI(3).gt.0) then
            B = p_arr%a(TMPI(3))
-        ELSE
-           IF(TMPI(7).gt.0)THEN
+        else
+           if(TMPI(7).gt.0)then
               B%mode                = TMPI(7)
               if(TMPI(11)==1)B%zeros= .true.
               call tensor_set_dims(B,TMPI(counter+1:counter+B%mode),int(B%mode))
               counter = counter + B%mode
               call tensor_set_tdims(B,TMPI(counter+1:counter+B%mode),int(B%mode))
               counter = counter + B%mode
-           ENDIF
-        ENDIF
-        IF (TMPI(4).gt. 0) THEN
+           endif
+        endif
+        if (TMPI(4).gt. 0) then
            C = p_arr%a(TMPI(4))
-        ELSE
-           IF(TMPI(8).gt.0)THEN
+        else
+           if(TMPI(8).gt.0)then
               C%mode                = TMPI(8)
               if(TMPI(12)==1)C%zeros= .true.
               call tensor_set_dims(C,TMPI(counter+1:counter+C%mode),int(C%mode))
               counter = counter + C%mode
               call tensor_set_tdims(C,TMPI(counter+1:counter+C%mode),int(C%mode))
               counter = counter + C%mode
-           ENDIF
-        ENDIF
-        IF (TMPI(5).gt. 0) THEN
+           endif
+        endif
+        if (TMPI(5).gt. 0) then
            !C = associate_to_p_arr(TMPI(4))
            D = p_arr%a(TMPI(5))
-        ELSE
-           IF(TMPI(9).gt.0)THEN
+        else
+           if(TMPI(9).gt.0)then
               D%mode                = TMPI(9)
               if(TMPI(13)==1)D%zeros= .true.
               call tensor_set_dims(D,TMPI(counter+1:counter+D%mode),int(D%mode))
               counter = counter + D%mode
               call tensor_set_tdims(D,TMPI(counter+1:counter+D%mode),int(D%mode))
               counter = counter + D%mode
-           ENDIF
-        ENDIF
+           endif
+        endif
         call tensor_free_mem(TMPI)
      endif
 
@@ -5731,13 +5731,13 @@ module lspdm_tensor_operations_module
         enddo
 
         call time_start_phase( PHASE_COMM )
-        call ls_mpisendrecv(norm,infpar%lg_comm,infpar%lg_mynum,infpar%master)
+        call tensor_mpi_sendrecv(norm,infpar%lg_comm,infpar%lg_mynum,infpar%master)
         call time_start_phase( PHASE_WORK )
      endif
 
      if(infpar%lg_mynum==0.and.infpar%lg_mynum/=dest)then
         call time_start_phase( PHASE_COMM )
-        call ls_mpisendrecv(norm,infpar%lg_comm,dest,infpar%master)
+        call tensor_mpi_sendrecv(norm,infpar%lg_comm,dest,infpar%master)
         call time_start_phase( PHASE_WORK )
      endif
 
