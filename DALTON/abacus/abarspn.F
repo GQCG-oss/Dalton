@@ -66,11 +66,13 @@ C
 C
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL(NABAOP)
 C
 C Used from common blocks:
 C ABAINF : DODRCT
 C INFLIN : NCONRF
+C INFINP : DIRFCK,HSORHF,...
+C INFORB : NASHT,...
 C INFTRA : USEDRC
 C
 #include "abainf.h"
@@ -201,6 +203,7 @@ cSPAS IF (FABRHS) THEN
 !    &    .NOT. (SOPPA .AND. NEWTRA .AND. .NOT. CCPPA)) THEN
 cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
       IF (FABRHS) THEN
+      IF ( (NASHT .GT. 1 .AND. .NOT.HSROHF) .OR. .NOT.DIRFCK ) THEN ! no mo integrals needed for ao-direct HF or DFT
          KCMO   = 1
          KWTRA  = KCMO   + NCMOT
          LWTRA  = LWRK   - KWTRA
@@ -214,25 +217,25 @@ cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          READ (LUSIFC)
          READ (LUSIFC)
          CALL READT (LUSIFC,NCMOT,WRK(KCMO))
-         IF ( .NOT. RSPCI ) THEN
-            USEDRC = .TRUE.
-         ELSE
-            USEDRC = .FALSE.
-         ENDIF
 cs
-         IF (SOPPA .OR. NEXVAL.EQ.0) THEN
+         USEDRC = .TRUE.
+         IF (RSPCI) THEN
+            USEDRC = .FALSE.
+            JTRLVL = 0
+         ELSE IF (SOPPA .OR. NEXVAL.EQ.0) THEN  ! SOPPA or quadratic response
             JTRLVL = -10
-         ELSE IF (NEWTRA) THEN
+         ELSE IF (NEWTRA .AND. .NOT.USEDRC) THEN
             JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE
             JTRLVL = -4
          ENDIF
 cs
          FLAGSV = DORSP
-         DORSP = .TRUE.
+         DORSP  = .TRUE.
          CALL SIR_INTOPEN
-         DORSP = FLAGSV
+         DORSP  = FLAGSV
          CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA)
+      END IF
       END IF
       FABRHS = .FALSE.
 C
@@ -643,7 +646,7 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 C
-      CHARACTER*8 BLANK, LABEL
+      CHARACTER*8 BLANK, LABEL(NABAOP)
       PARAMETER (BLANK = '        ')
       LOGICAL RESFLG(8)
       DIMENSION NABATY(*)
@@ -778,10 +781,11 @@ C
 C
          DO IOP = 1,NABAOP
             IF (IPRLR .GE. 0)
-     &           WRITE (LUPRI,'(//A,I3,/A,I3,A,I3/A,(T25,5F10.6))')
+     &           WRITE (LUPRI,'(//A,I3,/A,I3,A,I3,2A/A,(T25,5F10.6))')
      &           ' RSPLLE -- linear response calculation for symmetry',
      &           KSYMOP,
-     &           ' RSPLLE -- operator no.',IOP,' out of',NABAOP,
+     &           ' RSPLLE -- operator no.',IOP,' out of',NABAOP,': ',
+     &           LABEL(IOP),
      &           ' RSPLLE -- frequencies :',(FREQ(I),I=1,NFREQ)
             IF (ABASOP .AND. IPRLR .GE. 0)
      &           WRITE (LUPRI,'(/A/A,I8,/A,I8,/A,I8)')
