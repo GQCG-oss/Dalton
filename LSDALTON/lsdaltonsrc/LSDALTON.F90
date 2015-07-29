@@ -792,6 +792,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use precision
   use matrix_operations, only: set_matrix_default
   use init_lsdalton_mod, only: open_lsdalton_files
+#ifdef VAR_MPI
+  use lsmpi_type, only: PDMA4SLV
+#endif
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
   use dft_memory_handling
@@ -812,6 +815,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
   real(realk), intent(inout) :: t1,t2
+  integer :: signal
   
   !INITIALIZING TIMERS SHOULD ALWAYS BE THE FIRST CALL
   call init_timers
@@ -837,7 +841,10 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   ! MPI initialization
   call lsmpi_init(OnMaster)
   !tensor initialization
-  call tensor_initialize_interface(mem_ctr=mem_allocated_global)
+#ifdef VAR_MPI
+  signal = PDMA4SLV
+#endif
+  call tensor_initialize_interface( mem_ctr=mem_allocated_global, pdm_slaves_signal=signal )
 
   !INIT TIMING AND FILES
   if(OnMaster)then
@@ -902,12 +909,10 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   if(OnMaster) call stats_mem(lupri)
 
 #ifdef VAR_MPI
-  if( infpar%parent_comm==MPI_COMM_NULL ) then
 
-    call ls_mpibcast(meminfo,infpar%master,MPI_COMM_LSDALTON)
-    if(meminfo)call lsmpi_print_mem_info(lupri,.false.)
+  call ls_mpibcast(meminfo,infpar%master,MPI_COMM_LSDALTON)
+  if(meminfo)call lsmpi_print_mem_info(lupri,.false.)
 
-  endif
 
 #ifdef VAR_SCALAPACK
   IF(scalapack_mpi_set)THEN

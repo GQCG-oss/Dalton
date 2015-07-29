@@ -2656,7 +2656,7 @@ subroutine MP2F12_Ccoupling_energy(MyFragment,bat,E21)
 
         call lsmpi_win_create(decmpitasks,decmpitaskw,1,infpar%lg_comm)
 #ifdef VAR_HAVE_MPI3
-        call lsmpi_win_lock_all(decmpitaskw,ass=MPI_MODE_NOCHECK)
+        call lsmpi_win_lock_all(decmpitaskw,ass=int(MPI_MODE_NOCHECK,kind=ls_mpik))
 #endif
     else
        call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)

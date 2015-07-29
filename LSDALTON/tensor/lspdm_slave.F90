@@ -26,32 +26,27 @@ subroutine pdm_tensor_slave(comm)
    real(tensor_dp),pointer :: realar1(:)
    integer(kind=tensor_long_int), pointer  :: lintar1(:), lintar2(:)
    integer, pointer  :: intarr1(:), intarr2(:), intarr3(:), intarr4(:)
+   integer(kind=tensor_long_int) :: LIN1
    integer           :: INT1,       INT2,       INT3,       INT4
    real(tensor_dp)   :: REAL1,      REAL2
    logical           :: LOG1
    logical :: loc
    character (4) :: at 
 #ifdef VAR_MPI
-   loc = (infpar%parent_comm /= MPI_COMM_NULL)
-
 
    call time_start_phase(PHASE_COMM)
-   CALL PDM_tensor_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
+   CALL PDM_tensor_SYNC(comm,JOB,A,B,C,D) !Job is output
    call time_start_phase(PHASE_WORK)
 
    SELECT CASE(JOB)
-   CASE(JOB_PC_DEALLOC_DENSE)
-      call memory_deallocate_tensor_dense_pc(A)
-   CASE(JOB_PC_ALLOC_DENSE)
-      call memory_allocate_tensor_dense_pc(A)
-   CASE(JOB_INIT_tensor_PC)
-      call tensor_alloc_mem(intarr1,A%mode)
-      intarr1 =A%dims
-      call tensor_free_aux(A)
-      print *,"this is deprecated"
-      stop 0
-      !call tensor_init_standard(A,intarr1,A%mode,AT_MASTER_ACCESS) 
-      call tensor_free_mem(intarr1)
+   !CASE(JOB_PC_DEALLOC_DENSE)
+   !   !call memory_deallocate_tensor_dense(A)
+   !   print *,"this is deprecated 1"
+   !   stop 0
+   !CASE(JOB_PC_ALLOC_DENSE)
+   !   !call memory_allocate_tensor_dense(A)
+   !   print *,"this is deprecated 2"
+   !   stop 0
 
    CASE(JOB_INIT_TENSOR_TILED)
 
@@ -352,6 +347,19 @@ subroutine pdm_tensor_slave(comm)
       call lspdm_get_starting_guess(A,B,C,D,INT1,LOG1)
    CASE(JOB_tensor_rand)
       call tensor_rand_tiled_dist(A)
+
+   case(JOB_LSPDM_INIT_GLOBAL_BUFFER)
+      call lspdm_init_global_buffer(comm,.false.)
+   case(JOB_LSPDM_FREE_GLOBAL_BUFFER)
+      call lspdm_free_global_buffer(comm,.false.)
+   case(JOB_SET_TENSOR_SEG_LENGTH)
+      call tensor_set_global_segment_length(comm,LIN1)
+   case(JOB_SET_TENSOR_DEBUG_TRUE)
+      call tensor_set_debug_mode_true(comm,.false.)
+   case(JOB_SET_TENSOR_ALWAYS_SYNC_TRUE)
+      call tensor_set_always_sync_true(comm,.false.)
+   case(JOB_SET_TENSOR_BACKEND_TRUE)
+      call tensor_set_dil_backend_true(comm,.false.)
 
    CASE DEFAULT
         call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)

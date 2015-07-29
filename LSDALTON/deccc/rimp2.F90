@@ -335,13 +335,16 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
 #endif
   
-
-  IF(DECinfo%AuxAtomicExtent)THEN
+   print *, "DECinfo%AuxAtomicExtent",DECinfo%AuxAtomicExtent
+   IF(DECinfo%AuxAtomicExtent)THEN
      call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
   ELSE
+     print *, "natomsaux nbasis2 naux",nAtomsAux,nBasis2,nbasisAux
      call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,nBasis2,nBasisAux)
      if(natoms.NE.natomsAux)call lsquit('Error in RIMP2 natoms dim mismatch',-1)
   ENDIF
+  print *, "natomsaux nbasis2 naux",nAtomsAux,nBasis2,nbasisAux
+
   nbasisAux8 = nbasisAux
   IF(nBasisAux.EQ.0)THEN
      WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Warning no Aux basis have been chosen for RIMP2, Using Regular'

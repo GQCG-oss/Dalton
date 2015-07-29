@@ -650,7 +650,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     type(tensor)              :: qqfock
     type(tensor)              :: pqfock
     type(tensor)              :: qpfock
-    logical :: parent
     integer :: lg_me,lg_nnod
     type(tensor) :: tloc,oloc,gloc
     integer   :: tdi(4), odi(4)
@@ -871,7 +870,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
 
      ! Variables for mpi
-     logical :: master,lg_master,parent
+     logical :: master,lg_master
      integer :: fintel,nintel,fe,ne
      integer(kind=ls_mpik) :: nnod
      real(realk) :: startt, stopp
@@ -1090,7 +1089,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ********************
      master                   = .true.
      lg_master                = .true.
-     parent                   = .true.
      lg_me                    = int(0,kind=ls_mpik)
      lg_nnod                  = 1
 #ifdef VAR_MPI
@@ -1099,10 +1097,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      lock_outside             = DECinfo%CCSD_NO_DEBUG_COMM
      mode                     = MPI_MODE_NOCHECK
 
-     parent                   = (infpar%parent_comm==MPI_COMM_NULL)
-
      lg_master                = (lg_me == 0)
-     master                   = lg_master.and.parent
+     master                   = lg_master
 
      call get_int_dist_info(o2v2,fintel,nintel)
     
@@ -3135,7 +3131,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: nors, nvrs, order4(4), order2(2)
 
      ! Variables for mpi
-     logical :: master,lg_master,parent
+     logical :: master,lg_master
      integer :: fintel,nintel,fe,ne
      real(realk) :: startt, stopp
      integer(kind=ls_mpik) :: ierr
@@ -5241,7 +5237,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
            enddo
-           !print *,infpar%lg_mynum,"DGEMM2 -- out",norm2(w1),norm2(w3)
         endif
 
 
@@ -8313,10 +8308,7 @@ subroutine ccsd_data_preparation()
   integer(kind=ls_mpik) :: xow,xvw,yow,yvw,&
                          & dfw,fw,ppfw,qqfw,pqfw,qpfw,om1w,t2w,&
                          & t2dw,xodw,xvdw,yodw,yvdw
-  logical :: parent, bg
-  integer :: addr01(infpar%pc_nodtot)
-  integer :: addr02(infpar%pc_nodtot)
-  integer :: addr03(infpar%pc_nodtot)
+  logical :: bg
   integer(kind=ls_mpik) :: lg_me,lg_nnod
   integer(kind=8) :: ne
 
@@ -8324,7 +8316,6 @@ subroutine ccsd_data_preparation()
 
   lg_me   = infpar%lg_mynum
   lg_nnod = infpar%lg_nodtot
-  parent  = (infpar%parent_comm == MPI_COMM_NULL)
 
   call time_start_phase(PHASE_COMM)
   !note that for the slave all allocatable arguments are just dummy indices

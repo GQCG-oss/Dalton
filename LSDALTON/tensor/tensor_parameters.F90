@@ -33,6 +33,10 @@ module tensor_parameters_and_counters
    integer,parameter :: BS_3D =  25
    integer,parameter :: BS_4D =  11
 
+   !MPI SIGNAL, GET SLAVES, MAKE SURE THE APPLICATION HAS NO OVERLAPPING SIGNAL
+   integer,parameter :: TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD =  -121
+   integer :: TENSOR_SLAVES_TO_SLAVE_ROUTINE = TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
+
    !parameters to define the data distribution in the tensor type
    integer(kind=tensor_standard_int), parameter :: TT_DENSE        = 1
    integer(kind=tensor_standard_int), parameter :: TT_REPLICATED   = 2

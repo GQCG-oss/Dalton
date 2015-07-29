@@ -1400,7 +1400,7 @@ contains
     if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
        DECinfo%bg_memory = 0.8_realk*DECinfo%memory
        write(DECinfo%output,*) ''
-       write(DECinfo%output,*) 'WARNING: User dit not specify the amount of memory to be used'
+       write(DECinfo%output,*) 'WARNING: User did not specify the amount of memory to be used'
        write(DECinfo%output,*) '         in connection with the background buffer.'
        write(DECinfo%output,*) ''
        write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'

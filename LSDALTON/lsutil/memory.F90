@@ -3310,7 +3310,6 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
 #ifdef VAR_HAVE_MPI3
       if(loc) then
          bytes = int(0,kind=MPI_ADDRESS_KIND)
-         if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * lsmpi_len_realk
 
          if(bytes<0)then
             print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk

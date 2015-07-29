@@ -10,10 +10,9 @@ module lspdm_basic_module
 
   use tensor_allocator
   use tensor_type_def_module
-  use LSTIMING!,only:lstimer
 #ifdef VAR_MPI
   use infpar_module
-  use lsmpi_type
+  use tensor_mpi_interface_module
 #endif
   use reorder_frontend_module
 
@@ -35,10 +34,38 @@ module lspdm_basic_module
   end interface get_tile_dim
 
   interface get_residence_of_tile
-     module procedure get_residence_of_tile44,&
-                     &get_residence_of_tile48,&
-                     &get_residence_of_tile84,&
-                     &get_residence_of_tile88
+     module procedure get_residence_of_tile44444, &
+                    & get_residence_of_tile44448, &
+                    & get_residence_of_tile44484, &
+                    & get_residence_of_tile44488, &
+                    & get_residence_of_tile44844, &
+                    & get_residence_of_tile44848, &
+                    & get_residence_of_tile44884, &
+                    & get_residence_of_tile44888, &
+                    & get_residence_of_tile48444, &
+                    & get_residence_of_tile48448, &
+                    & get_residence_of_tile48484, &
+                    & get_residence_of_tile48488, &
+                    & get_residence_of_tile48844, &
+                    & get_residence_of_tile48848, &
+                    & get_residence_of_tile48884, &
+                    & get_residence_of_tile48888, &
+                    & get_residence_of_tile84444, &
+                    & get_residence_of_tile84448, &
+                    & get_residence_of_tile84484, &
+                    & get_residence_of_tile84488, &
+                    & get_residence_of_tile84844, &
+                    & get_residence_of_tile84848, &
+                    & get_residence_of_tile84884, &
+                    & get_residence_of_tile84888, &
+                    & get_residence_of_tile88444, &
+                    & get_residence_of_tile88448, &
+                    & get_residence_of_tile88484, &
+                    & get_residence_of_tile88488, &
+                    & get_residence_of_tile88844, &
+                    & get_residence_of_tile88848, &
+                    & get_residence_of_tile88884, &
+                    & get_residence_of_tile88888
   end interface get_residence_of_tile
 
   interface tensor_get_ntpm
@@ -325,7 +352,7 @@ module lspdm_basic_module
 
 #ifdef VAR_MPI
         do i=1,arr%nwins
-           call lsmpi_win_free(arr%wi(i))
+           call tensor_mpi_win_free(arr%wi(i))
         enddo
 #else
         print *,"THIS MESSAGE SHOULD NEVER APPEAR,WHY ARE MPI_WINs ALLOCD?"
@@ -396,7 +423,8 @@ module lspdm_basic_module
      logical :: doit=.true.,lg_master
      integer(kind=tensor_mpi_kind) :: lg_me,lg_nnod,pc_me,pc_nnod
      integer(kind=tensor_long_int)       :: ne,tooo
-     integer               :: res,from
+     integer               :: res
+     integer(kind=tensor_long_int)     :: from, pos, widx
      integer(kind=tensor_standard_int) :: tidx
      lg_master = .true.
      lg_nnod   = 1
@@ -416,7 +444,7 @@ module lspdm_basic_module
         call memory_allocate_dummy(arr,bg, nel = int(arr%tsize*arr%nlti,kind=tensor_long_int))
 #ifdef VAR_MPI
         call memory_allocate_window(arr,nwins = 1)
-        call lsmpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
+        call tensor_mpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
 #endif
      else
         call memory_allocate_dummy( arr,bg, nel = 1_tensor_long_int)
@@ -476,7 +504,7 @@ module lspdm_basic_module
 
            !Check if the current tile resides on the current node
            doit=.true.
-           call get_residence_of_tile(res,tidx,arr,idx_on_node = from)
+           call get_residence_of_tile(arr,tidx,res,pos,from,widx)
 #ifdef VAR_MPI
            if(arr%itype==TT_TILED_DIST.and.res/=lg_me) doit = .false.
 #endif
@@ -524,7 +552,7 @@ module lspdm_basic_module
                  tensor_counter_memory_in_use    = tensor_counter_memory_in_use + vector_size
                  !tensor_counter_max_memory       = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
                  !$OMP END CRITICAL
-                 call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm) 
+                 call tensor_mpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm) 
               endif
 
 
@@ -539,12 +567,12 @@ module lspdm_basic_module
               !open a window of size zero on the nodes where the tile does not
               !reside
 #ifdef VAR_MPI
-              if( .not. alloc_in_dummy  )call lsmpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
+              if( .not. alloc_in_dummy  )call tensor_mpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
 #endif
            endif
 #ifdef VAR_MPI
            ! fence the window in preparation for comm
-           if( .not. alloc_in_dummy )call lsmpi_win_fence(arr%wi(i),.true.)
+           if( .not. alloc_in_dummy )call tensor_mpi_win_fence(arr%wi(i),.true.)
 #endif
         enddo
      endif
@@ -636,66 +664,347 @@ module lspdm_basic_module
   end subroutine tensor_pdm_free_special_aux
 
 
-  subroutine get_residence_of_tile44(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
+
+  !For all the wrappers: 
+  ! - arr is the input tensor for which the information should be generated
+  ! - globaltilenumber is the input global tile number
+  ! - rank will be the node on which the tile is stored
+  ! - pos is the local tile number on the node
+  ! - idx is the offset index for the position in the window 
+  ! - widx is !the index of the corresponding MPI window
+  subroutine get_residence_of_tile44444(arr,globaltilenumber,rank,pos,idx,widx)
      implicit none
-     integer(kind=tensor_standard_int), intent(out) :: rank_of_node
      type(tensor), intent(in) :: arr
-     integer(kind=tensor_standard_int),intent(in) :: globaltilenumber
-     integer, intent(out), optional :: pos_on_node, idx_on_node, window_index
-     integer :: nnod, pos, idx,widx
-     integer(kind=tensor_long_int) :: rank8, gt
-
-     gt = globaltilenumber
-
-     call get_residence_of_tile88(rank8,gt,arr,&
-        &pos_on_node=pos_on_node,idx_on_node=idx_on_node,window_index=window_index)
-
-     rank_of_node = int(rank8,kind=4)
-
-  end subroutine get_residence_of_tile44
-  subroutine get_residence_of_tile48(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44444
+  subroutine get_residence_of_tile44448(arr,globaltilenumber,rank,pos,idx,widx)
      implicit none
-     integer(kind=tensor_standard_int), intent(out) :: rank_of_node
      type(tensor), intent(in) :: arr
-     integer(kind=tensor_long_int),intent(in) :: globaltilenumber
-     integer, intent(out), optional :: pos_on_node, idx_on_node, window_index
-     integer :: nnod, pos, idx,widx
-     integer(kind=tensor_long_int) :: rank8
-
-
-     call get_residence_of_tile88(rank8,globaltilenumber,arr,&
-        &pos_on_node=pos_on_node,idx_on_node=idx_on_node,window_index=window_index)
-
-     rank_of_node = int(rank8,kind=4)
-
-  end subroutine get_residence_of_tile48
-
-  subroutine get_residence_of_tile84(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44448
+  subroutine get_residence_of_tile44484(arr,globaltilenumber,rank,pos,idx,widx)
      implicit none
-     integer(kind=tensor_long_int), intent(out) :: rank_of_node
      type(tensor), intent(in) :: arr
-     integer(kind=tensor_standard_int),intent(in) :: globaltilenumber
-     integer, intent(out), optional :: pos_on_node, idx_on_node, window_index
-     integer :: nnod, pos, idx,widx
-     integer(kind=tensor_long_int) :: gt
-
-     gt = globaltilenumber
-
-     call get_residence_of_tile88(rank_of_node,gt,arr,&
-        &pos_on_node=pos_on_node,idx_on_node=idx_on_node,window_index=window_index)
-
-  end subroutine get_residence_of_tile84
-
-  subroutine get_residence_of_tile88(rank_of_node,globaltilenumber,arr,pos_on_node,idx_on_node,window_index)
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44484
+  subroutine get_residence_of_tile44488(arr,globaltilenumber,rank,pos,idx,widx)
      implicit none
-     integer(kind=tensor_long_int), intent(out) :: rank_of_node
      type(tensor), intent(in) :: arr
-     integer(kind=tensor_long_int),intent(in) :: globaltilenumber
-     integer, intent(out), optional :: pos_on_node, idx_on_node,window_index
-     integer :: nnod, pos, idx,widx
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44488
+  subroutine get_residence_of_tile44844(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44844
+  subroutine get_residence_of_tile44848(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44848
+  subroutine get_residence_of_tile44884(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44884
+  subroutine get_residence_of_tile44888(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile44888
+  subroutine get_residence_of_tile48444(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48444
+  subroutine get_residence_of_tile48448(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48448
+  subroutine get_residence_of_tile48484(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48484
+  subroutine get_residence_of_tile48488(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48488
+  subroutine get_residence_of_tile48844(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48844
+  subroutine get_residence_of_tile48848(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48848
+  subroutine get_residence_of_tile48884(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48884
+  subroutine get_residence_of_tile48888(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile48888
+  subroutine get_residence_of_tile84444(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84444
+  subroutine get_residence_of_tile84448(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84448
+  subroutine get_residence_of_tile84484(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84484
+  subroutine get_residence_of_tile84488(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84488
+  subroutine get_residence_of_tile84844(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84844
+  subroutine get_residence_of_tile84848(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84848
+  subroutine get_residence_of_tile84884(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84884
+  subroutine get_residence_of_tile84888(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_standard_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile84888
+  subroutine get_residence_of_tile88444(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88444
+  subroutine get_residence_of_tile88448(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88448
+  subroutine get_residence_of_tile88484(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88484
+  subroutine get_residence_of_tile88488(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_standard_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88488
+  subroutine get_residence_of_tile88844(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88844
+  subroutine get_residence_of_tile88848(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_standard_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88848
+  subroutine get_residence_of_tile88884(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_standard_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88884
+  subroutine get_residence_of_tile88888(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     include "get_residence_wrapper.inc"
+  end subroutine get_residence_of_tile88888
 
-     nnod=arr%nnod
-     rank_of_node = mod(globaltilenumber-1+arr%offset,nnod)
+  subroutine get_residence_of_tile_basic(arr,globaltilenumber,rank,pos,idx,widx)
+     implicit none
+     type(tensor), intent(in) :: arr
+     integer(kind=tensor_long_int), intent(in)  :: globaltilenumber
+     integer(kind=tensor_long_int), intent(out) :: rank
+     integer(kind=tensor_long_int), intent(out) :: pos
+     integer(kind=tensor_long_int), intent(out) :: idx
+     integer(kind=tensor_long_int), intent(out) :: widx
+     integer :: nnod
+
+     nnod = arr%nnod
+     rank = mod(globaltilenumber-1+arr%offset,nnod)
 
      if( alloc_in_dummy ) then
         widx = 1
@@ -707,11 +1016,7 @@ module lspdm_basic_module
         idx  = 1 
      endif
 
-     !Return the node local index of the tile
-     if(present(pos_on_node)) pos_on_node = pos
-     if(present(idx_on_node)) idx_on_node = idx
-     if(present(window_index)) window_index = widx
-  end subroutine get_residence_of_tile88
+  end subroutine get_residence_of_tile_basic
 
 
 end module lspdm_basic_module

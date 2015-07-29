@@ -117,10 +117,6 @@ subroutine dec_lsmpi_slave(comm)
       case(GETSLAVETIME);
          call get_slave_timers_slave(comm)
 
-      case(JOB_LSPDM_INIT_GLOBAL_BUFFER);
-         call lspdm_init_global_buffer(.false.)
-      case(JOB_LSPDM_FREE_GLOBAL_BUFFER);
-         call lspdm_free_global_buffer(.false.)
       case(INIT_BG_BUF);
          call mem_init_background_alloc_slave(comm)
       case(FREE_BG_BUF);

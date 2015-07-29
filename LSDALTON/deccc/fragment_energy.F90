@@ -33,6 +33,7 @@ module fragment_energy_module
   use ccdriver, only: mp2_solver,fragment_ccsolver
 #ifdef MOD_UNRELEASED
   use f12_integrals_module
+  use rif12_integrals_module
   use ccsd_gradient_module
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e5_frag,&
          & ccsdpt_energy_e5_pair, ccsdpt_decnp_e5_frag
@@ -214,12 +215,14 @@ contains
              ! calculate also MP2 density integrals
              ! ************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
+             print *,"1. Myfragment%energies(FRAGMODEL_OCCMP2) (fragment energy)",  Myfragment%energies(FRAGMODEL_OCCMP2)
 
           else if (DECinfo%DECNP) then
              ! Get MP2 amplitudes and integrals using ccsolver
              ! ***********************************************
              call mp2_solver(MyFragment,VOVO,t2,.false.)
-           
+             print *,"2. Myfragment%energies(FRAGMODEL_OCCMP2) (fragment energy)",  Myfragment%energies(FRAGMODEL_OCCMP2)
+
              ! Extract EOS indices for amplitudes and integrals
              ! ************************************************
              ! Note: EOS space is different for DECNP !!
@@ -230,12 +233,12 @@ contains
              ! **********
              call tensor_free(VOVO)
              call tensor_free(t2)
-          else
+          else 
              ! calculate only MP2 energy integrals and MP2 amplitudes
              ! ******************************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
+             print *,"3. Myfragment%energies(FRAGMODEL_OCCMP2) (fragment energy)",  Myfragment%energies(FRAGMODEL_OCCMP2)
           end if
-
 #ifdef MOD_UNRELEASED
           ! MP2-F12 Code
           MP2F12: if(DECinfo%F12) then    
@@ -278,6 +281,29 @@ contains
           ! calculate also RIMP2 integrals
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        endif
+
+#ifdef MOD_UNRELEASED
+          ! MP2-F12 Code
+          RIMP2F12: if(DECinfo%F12) then    
+             if(pair) then
+                if(MyFragment%isopt) then
+                   call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
+                      &  Fragment1, Fragment2)
+                end if
+             else
+                ! Calculate F12 only for optimized fragment or if it has been requested by input
+                if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                   call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
+                end if
+             end if
+             !> Free cabs after each calculation
+             call free_cabs()
+          end if RIMP2F12
+#endif
+
+
+
+
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
 
        if(DECinfo%first_order)call lsquit('no first order LSTHCRIMP2',-1)       

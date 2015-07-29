@@ -1,6 +1,7 @@
 module tensor_mpi_interface_module
+
+   use tensor_mpi_binding_module
 #ifdef VAR_MPI
-   use lsmpi_module
    use infpar_module, only: infpar
 #endif
 
@@ -23,6 +24,13 @@ module tensor_mpi_interface_module
    public :: tensor_mpi_win_flush
    public :: tensor_mpi_probe
    public :: tensor_mpi_get_count
+   public :: tensor_mpi_sendrecv
+   public :: tensor_mpi_win_create
+   public :: tensor_mpi_win_free
+   public :: tensor_mpi_put
+   public :: tensor_mpi_get
+   public :: tensor_mpi_acc
+   public :: tensor_mpi_win_fence
 
    private
 
@@ -75,6 +83,72 @@ module tensor_mpi_interface_module
       module procedure tensor_mpi_dummy
 #endif
    end interface tensor_mpi_allreduce
+
+   interface tensor_mpi_sendrecv
+#ifdef VAR_MPI
+      module procedure tensor_mpi_sendrecv_tensor_dp_s, &
+                     & tensor_mpi_sendrecv_tensor_dp_l, &
+                     & tensor_mpi_sendrecv_tensor_dp, &
+                     & tensor_mpi_sendrecv_tensor_standard_int_s, &
+                     & tensor_mpi_sendrecv_tensor_standard_int_l, &
+                     & tensor_mpi_sendrecv_tensor_standard_int, &
+                     & tensor_mpi_sendrecv_tensor_long_int_s, &
+                     & tensor_mpi_sendrecv_tensor_long_int_l, &
+                     & tensor_mpi_sendrecv_tensor_long_int
+#else
+      module procedure tensor_mpi_dummy
+#endif
+   end interface tensor_mpi_sendrecv
+
+   interface tensor_mpi_win_create
+#ifdef VAR_MPI
+      module procedure tensor_mpi_win_create_dp_s,&
+                     & tensor_mpi_win_create_dp_l
+#else
+      module procedure tensor_mpi_dummy
+#endif
+   end interface tensor_mpi_win_create
+
+   interface tensor_mpi_win_fence
+#ifdef VAR_MPI
+      module procedure tensor_mpi_win_fence_simple, tensor_mpi_win_fence_special
+#else
+      module procedure tensor_mpi_dummy
+#endif
+   end interface tensor_mpi_win_fence
+
+   interface tensor_mpi_put
+#ifdef VAR_MPI
+      module procedure tensor_mpi_put_dp_s, &
+                     & tensor_mpi_put_dp_l, &
+                     & tensor_mpi_rput_dp_s, &
+                     & tensor_mpi_rput_dp_l
+#else
+      module procedure tensor_mpi_dummy
+#endif
+   end interface tensor_mpi_put
+
+   interface tensor_mpi_get
+#ifdef VAR_MPI
+      module procedure tensor_mpi_get_dp_s, &
+                     & tensor_mpi_get_dp_l, &
+                     & tensor_mpi_rget_dp_s, &
+                     & tensor_mpi_rget_dp_l
+#else
+      module procedure tensor_mpi_dummy
+#endif
+   end interface tensor_mpi_get
+
+   interface tensor_mpi_acc
+#ifdef VAR_MPI
+      module procedure tensor_mpi_acc_dp_s, &
+                     & tensor_mpi_acc_dp_l, &
+                     & tensor_mpi_racc_dp_s, &
+                     & tensor_mpi_racc_dp_l
+#else
+      module procedure tensor_mpi_dummy
+#endif
+   end interface tensor_mpi_acc
 
    contains
 
@@ -309,10 +383,36 @@ module tensor_mpi_interface_module
        endif
     end subroutine tensor_mpi_win_fence_special
 
-    subroutine tensor_mpi_win_create_dp_basic(darr,win,n,comm)
+    subroutine tensor_mpi_win_create_dp_s(darr,win,n1,comm)
        implicit none
-       integer(kind=tensor_long_int), intent(in) :: n
-       real(tensor_dp),intent(in) :: darr(n)
+       integer(kind=tensor_standard_int), intent(in) :: n1
+       real(tensor_dp),intent(in) :: darr(n1)
+#ifdef USE_MPI_MOD_F08
+       include "mpi_win_create_vars_mpif08.inc"
+#else
+       include "mpi_win_create_vars_std.inc"
+#endif
+       datatype = MPI_DOUBLE_PRECISION
+       n        = n1
+       call tensor_mpi_win_create_dp_basic(darr,win,n,comm)
+    end subroutine tensor_mpi_win_create_dp_s
+    subroutine tensor_mpi_win_create_dp_l(darr,win,n1,comm)
+       implicit none
+       integer(kind=tensor_long_int), intent(in) :: n1
+       real(tensor_dp),intent(in) :: darr(n1)
+#ifdef USE_MPI_MOD_F08
+       include "mpi_win_create_vars_mpif08.inc"
+#else
+       include "mpi_win_create_vars_std.inc"
+#endif
+       datatype = MPI_DOUBLE_PRECISION
+       n        = n1
+       call tensor_mpi_win_create_dp_basic(darr,win,n,comm)
+    end subroutine tensor_mpi_win_create_dp_l
+    subroutine tensor_mpi_win_create_dp_basic(darr,win,n1,comm)
+       implicit none
+       integer(kind=tensor_long_int), intent(in) :: n1
+       real(tensor_dp),intent(in) :: darr(n1)
 #ifdef USE_MPI_MOD_F08
        include "mpi_win_create_vars_mpif08.inc"
 #else
@@ -741,6 +841,310 @@ module tensor_mpi_interface_module
       include "mpi_collective_vars_noroot.inc"
       include "mpi_allreduce_std.inc"
     end subroutine tensor_mpi_allreduce_dp_basic
-#endif
 
+    !DOUBLE PRECISION SENDRCV
+    subroutine tensor_mpi_sendrecv_tensor_dp(b,comm,sender,receiver)
+      implicit none
+      real(tensor_dp) :: b
+      include "mpi_sendrecv_vars.inc"
+      real(tensor_dp) :: buffer(1)
+      n=1
+      buffer(1) = b
+      call tensor_mpi_sendrecv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_dp))
+      if( infpar%lg_mynum == receiver) b = buffer(1)
+    end subroutine tensor_mpi_sendrecv_tensor_dp
+    subroutine tensor_mpi_sendrecv_tensor_dp_s(buffer,n1,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      real(tensor_dp), intent(inout)            :: buffer(n1)
+      include "mpi_sendrecv_vars.inc"
+      n=n1
+      call tensor_mpi_sendrecv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_dp))
+    end subroutine tensor_mpi_sendrecv_tensor_dp_s
+    subroutine tensor_mpi_sendrecv_tensor_dp_l(buffer,n1,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      real(tensor_dp), intent(inout)            :: buffer(n1)
+      include "mpi_sendrecv_vars.inc"
+      n=n1
+      call tensor_mpi_sendrecv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_dp))
+    end subroutine tensor_mpi_sendrecv_tensor_dp_l
+    subroutine tensor_mpi_sendrecv_tensor_dp_basic(buffer,n1,comm,sender,receiver,stats)
+      implicit none
+      integer(kind=tensor_long_int)  :: n1
+      real(tensor_dp), intent(inout) :: buffer(n1)
+      type(tensor_mpi_stats_type),intent(inout)    :: stats
+      include "mpi_sendrecv_vars.inc"
+      include "mpi_sendrecv_std.inc"
+    end subroutine tensor_mpi_sendrecv_tensor_dp_basic
+
+    !STANDARD INTEGER SENDRCV
+    subroutine tensor_mpi_sendrecv_tensor_standard_int(b,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_standard_int) :: b
+      include "mpi_sendrecv_vars.inc"
+      integer(kind=tensor_standard_int) :: buffer(1)
+      n=1
+      buffer(1) = b
+      call tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_standard_int))
+      if( infpar%lg_mynum == receiver) b = buffer(1)
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int
+    subroutine tensor_mpi_sendrecv_tensor_standard_int_s(buffer,n1,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
+      include "mpi_sendrecv_vars.inc"
+      n=n1
+      call tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_standard_int))
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int_s
+    subroutine tensor_mpi_sendrecv_tensor_standard_int_l(buffer,n1,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
+      include "mpi_sendrecv_vars.inc"
+      n=n1
+      call tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_standard_int))
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int_l
+    subroutine tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n1,comm,sender,receiver,stats)
+      implicit none
+      integer(kind=tensor_long_int)  :: n1
+      integer(kind=tensor_standard_int), intent(inout) :: buffer(n1)
+      type(tensor_mpi_stats_type),intent(inout)    :: stats
+      include "mpi_sendrecv_vars.inc"
+      include "mpi_sendrecv_std.inc"
+    end subroutine tensor_mpi_sendrecv_tensor_standard_int_basic
+
+    !LONG INTEGER SENDRCV
+    subroutine tensor_mpi_sendrecv_tensor_long_int(b,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_long_int) :: b
+      include "mpi_sendrecv_vars.inc"
+      integer(kind=tensor_long_int) :: buffer(1)
+      n=1
+      buffer(1) = b
+      call tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_long_int))
+      if( infpar%lg_mynum == receiver) b = buffer(1)
+    end subroutine tensor_mpi_sendrecv_tensor_long_int
+    subroutine tensor_mpi_sendrecv_tensor_long_int_s(buffer,n1,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      integer(kind=tensor_long_int), intent(inout)            :: buffer(n1)
+      include "mpi_sendrecv_vars.inc"
+      n=n1
+      call tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_long_int))
+    end subroutine tensor_mpi_sendrecv_tensor_long_int_s
+    subroutine tensor_mpi_sendrecv_tensor_long_int_l(buffer,n1,comm,sender,receiver)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      integer(kind=tensor_long_int), intent(inout)            :: buffer(n1)
+      include "mpi_sendrecv_vars.inc"
+      n=n1
+      call tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
+         & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_long_int))
+    end subroutine tensor_mpi_sendrecv_tensor_long_int_l
+    subroutine tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n1,comm,sender,receiver,stats)
+      implicit none
+      integer(kind=tensor_long_int)  :: n1
+      integer(kind=tensor_long_int), intent(inout) :: buffer(n1)
+      type(tensor_mpi_stats_type),intent(inout)    :: stats
+      include "mpi_sendrecv_vars.inc"
+      include "mpi_sendrecv_std.inc"
+    end subroutine tensor_mpi_sendrecv_tensor_long_int_basic
+
+    !DOUBLE PRECISION PUT/RPUT
+    subroutine tensor_mpi_put_dp_s(buffer,n1,pos,dest,win,fl)
+       implicit none
+       integer(kind=tensor_standard_int)         :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_put_dp_basic(buffer,n,pos,dest,win, &
+          & tensor_mpi_stats(tensor_mpi_idx_put,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_put_dp_s
+    subroutine tensor_mpi_put_dp_l(buffer,n1,pos,dest,win,fl)
+       implicit none
+       integer(kind=tensor_long_int)             :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_put_dp_basic(buffer,n,pos,dest,win,&
+          & tensor_mpi_stats(tensor_mpi_idx_put,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_put_dp_l
+    subroutine tensor_mpi_put_dp_basic(buffer,n1,pos,dest,win,stats,fl)
+       implicit none
+       integer(kind=tensor_long_int)             :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       type(tensor_mpi_stats_type),intent(inout) :: stats
+       include "mpi_one_sided_vars.inc"
+       include "mpi_put_std.inc"
+    end subroutine tensor_mpi_put_dp_basic
+
+    subroutine tensor_mpi_rput_dp_s(buffer,n1,pos,dest,win,req,fl)
+       implicit none
+       integer(kind=tensor_standard_int)            :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_rput_dp_basic(buffer,n,pos,dest,win,req,&
+          & tensor_mpi_stats(tensor_mpi_idx_put,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_rput_dp_s
+    subroutine tensor_mpi_rput_dp_l(buffer,n1,pos,dest,win,req,fl)
+       implicit none
+       integer(kind=tensor_long_int)                :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_rput_dp_basic(buffer,n,pos,dest,win,req,&
+          & tensor_mpi_stats(tensor_mpi_idx_put,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_rput_dp_l
+    subroutine tensor_mpi_rput_dp_basic(buffer,n1,pos,dest,win,req,stats,fl)
+       implicit none
+       integer(kind=tensor_long_int)                :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       type(tensor_mpi_stats_type),intent(inout)    :: stats
+       include "mpi_one_sided_vars.inc"
+#ifdef VAR_HAVE_MPI3
+       include "mpi_rput_std.inc"
+#else
+       call tensor_status_quit("ERROR(tensor_mpi_rput_dp_basic): MPI_RPUT can only be used with MPI 3.0+ ",-1)
+#endif
+    end subroutine tensor_mpi_rput_dp_basic
+
+    !DOUBLE PRECISION GET/RGET
+    subroutine tensor_mpi_get_dp_s(buffer,n1,pos,dest,win,fl)
+       implicit none
+       integer(kind=tensor_standard_int)         :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_get_dp_basic(buffer,n,pos,dest,win, &
+          & tensor_mpi_stats(tensor_mpi_idx_get,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_get_dp_s
+    subroutine tensor_mpi_get_dp_l(buffer,n1,pos,dest,win,fl)
+       implicit none
+       integer(kind=tensor_long_int)             :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_get_dp_basic(buffer,n,pos,dest,win,&
+          & tensor_mpi_stats(tensor_mpi_idx_get,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_get_dp_l
+    subroutine tensor_mpi_get_dp_basic(buffer,n1,pos,dest,win,stats,fl)
+       implicit none
+       integer(kind=tensor_long_int)             :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       type(tensor_mpi_stats_type),intent(inout) :: stats
+       include "mpi_one_sided_vars.inc"
+       include "mpi_get_std.inc"
+    end subroutine tensor_mpi_get_dp_basic
+
+    subroutine tensor_mpi_rget_dp_s(buffer,n1,pos,dest,win,req,fl)
+       implicit none
+       integer(kind=tensor_standard_int)            :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_rget_dp_basic(buffer,n,pos,dest,win,req,&
+          & tensor_mpi_stats(tensor_mpi_idx_get,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_rget_dp_s
+    subroutine tensor_mpi_rget_dp_l(buffer,n1,pos,dest,win,req,fl)
+       implicit none
+       integer(kind=tensor_long_int)                :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_rget_dp_basic(buffer,n,pos,dest,win,req,&
+          & tensor_mpi_stats(tensor_mpi_idx_get,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_rget_dp_l
+    subroutine tensor_mpi_rget_dp_basic(buffer,n1,pos,dest,win,req,stats,fl)
+       implicit none
+       integer(kind=tensor_long_int)                :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       type(tensor_mpi_stats_type),intent(inout)    :: stats
+       include "mpi_one_sided_vars.inc"
+#ifdef VAR_HAVE_MPI3
+       include "mpi_rget_std.inc"
+#else
+       call tensor_status_quit("ERROR(tensor_mpi_rget_dp_basic): MPI_RPUT can only be used with MPI 3.0+ ",-1)
+#endif
+    end subroutine tensor_mpi_rget_dp_basic
+
+    !DOUBLE PRECISION PUT/RPUT
+    subroutine tensor_mpi_acc_dp_s(buffer,n1,pos,dest,win,fl)
+       implicit none
+       integer(kind=tensor_standard_int)         :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_acc_dp_basic(buffer,n,pos,dest,win, &
+          & tensor_mpi_stats(tensor_mpi_idx_acc,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_acc_dp_s
+    subroutine tensor_mpi_acc_dp_l(buffer,n1,pos,dest,win,fl)
+       implicit none
+       integer(kind=tensor_long_int)             :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_acc_dp_basic(buffer,n,pos,dest,win,&
+          & tensor_mpi_stats(tensor_mpi_idx_acc,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_acc_dp_l
+    subroutine tensor_mpi_acc_dp_basic(buffer,n1,pos,dest,win,stats,fl)
+       implicit none
+       integer(kind=tensor_long_int)             :: n1
+       real(tensor_dp),intent(in)                :: buffer(n1)
+       type(tensor_mpi_stats_type),intent(inout) :: stats
+       include "mpi_one_sided_vars.inc"
+       include "mpi_acc_std.inc"
+    end subroutine tensor_mpi_acc_dp_basic
+
+    subroutine tensor_mpi_racc_dp_s(buffer,n1,pos,dest,win,req,fl)
+       implicit none
+       integer(kind=tensor_standard_int)            :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_racc_dp_basic(buffer,n,pos,dest,win,req,&
+          & tensor_mpi_stats(tensor_mpi_idx_acc,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_racc_dp_s
+    subroutine tensor_mpi_racc_dp_l(buffer,n1,pos,dest,win,req,fl)
+       implicit none
+       integer(kind=tensor_long_int)                :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       include "mpi_one_sided_vars.inc"
+       n=n1
+       call tensor_mpi_racc_dp_basic(buffer,n,pos,dest,win,req,&
+          & tensor_mpi_stats(tensor_mpi_idx_acc,tensor_mpi_idx_tensor_dp),fl=fl)
+    end subroutine tensor_mpi_racc_dp_l
+    subroutine tensor_mpi_racc_dp_basic(buffer,n1,pos,dest,win,req,stats,fl)
+       implicit none
+       integer(kind=tensor_long_int)                :: n1
+       real(tensor_dp),intent(in)                   :: buffer(n1)
+       integer(kind=tensor_mpi_kind), intent(inout) :: req
+       type(tensor_mpi_stats_type),intent(inout)    :: stats
+       include "mpi_one_sided_vars.inc"
+#ifdef VAR_HAVE_MPI3
+       include "mpi_racc_std.inc"
+#else
+       call tensor_status_quit("ERROR(tensor_mpi_racc_dp_basic): MPI_RPUT can only be used with MPI 3.0+ ",-1)
+#endif
+    end subroutine tensor_mpi_racc_dp_basic
+
+
+#endif
 end module tensor_mpi_interface_module
