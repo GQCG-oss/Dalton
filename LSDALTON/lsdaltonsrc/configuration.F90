@@ -11,7 +11,7 @@ use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
 use tensor_interface_module, only: tensor_set_dil_backend_true, &
    &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer, &
-   tensor_set_global_segment_length
+   tensor_set_global_segment_length, tensor_set_mpi_msg_len
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -1305,6 +1305,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            READ(LUCMD,*) SPLIT_MPI_MSG 
            call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
            call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+           call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
         CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
            READ(LUCMD,*) MAX_SIZE_ONE_SIDED
            call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)

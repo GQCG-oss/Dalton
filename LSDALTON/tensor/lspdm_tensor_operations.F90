@@ -10,12 +10,11 @@ module lspdm_tensor_operations_module
   use background_buffer_module, only: mem_is_background_buf_init,mem_get_bg_buf_free
 
   use tensor_parameters_and_counters
-  use tensor_mpi_operations_module
+  use tensor_mpi_binding_module
   use dec_typedef_module
   use dec_workarounds_module
 #ifdef VAR_MPI
   use infpar_module
-  use lsmpi_type
 #endif
   use tensor_mpi_interface_module
   use tensor_mpi_operations_module
@@ -34,18 +33,21 @@ module lspdm_tensor_operations_module
         &tensor_gettile_modeidx
   end interface tensor_get_tile
 
-
   interface tensor_put_tile
-     module procedure tensor_puttile_combidx4,&
-        &tensor_puttile_combidx8,&
+     module procedure tensor_putt44,&
+        &tensor_putt48,&
+        &tensor_putt84,&
+        &tensor_putt88,&
         &tensor_puttile_modeidx
   end interface tensor_put_tile
 
-  interface tensor_accumulate_tile
-     module procedure tensor_accumulate_tile_combidx4,&
-        &tensor_accumulate_tile_combidx8,&
-        &tensor_accumulate_tile_modeidx
-  end interface tensor_accumulate_tile 
+  interface tensor_acc_tile
+     module procedure tensor_acct44,&
+        &tensor_acct48,&
+        &tensor_acct84,&
+        &tensor_acct88,&
+        &tensor_acctile_modeidx
+  end interface tensor_acc_tile
 
   interface tensor_lock_win
      module procedure tensor_lock_win8,tensor_lock_win4
@@ -58,12 +60,8 @@ module lspdm_tensor_operations_module
      import
      implicit none
      type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
-#ifdef VAR_INT64
+     integer(kind=tensor_long_int),intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
-#else
-     integer(kind=tensor_standard_int),intent(in) :: nelms
-#endif
      real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
@@ -174,12 +172,8 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-  procedure(tensor_acct4),pointer :: acc_ti4 
-  procedure(tensor_acct8),pointer :: acc_ti8 
-  procedure(tensor_gett44),pointer :: get_ti4 
-  procedure(tensor_gett88),pointer :: get_ti8 
-  procedure(tensor_putt4),pointer :: put_ti4 
-  procedure(tensor_putt8),pointer :: put_ti8 
+  procedure(tensor_acct88),pointer :: acc_ti8
+  procedure(tensor_putt88),pointer :: put_ti8 
 #endif
 #endif
 
@@ -3224,11 +3218,6 @@ module lspdm_tensor_operations_module
      endif
 
      call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
-     !if( lspdm_use_comm_proc )then
-     !  pc_buf(infpar%pc_mynum+1)=addr 
-     !  call lsmpi_allreduce(pc_buf,pc_nnodes,infpar%pc_comm)
-     !  call tensor_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
-     !endif
 #endif
 
      !ALLOCATE STORAGE SPACE FOR THE ARRAY
@@ -4439,22 +4428,20 @@ module lspdm_tensor_operations_module
      integer(kind=tensor_mpi_kind) :: src,me,nnod
      integer :: mode, tdim(arr%mode)
      integer               :: i,ltidx,o(arr%mode)
-     integer               :: nelintile,fullfortdim(arr%mode)
+     integer               :: fullfortdim(arr%mode)
      real(tensor_dp), pointer  :: tmp(:)
      integer               :: tmps, elms_sent,last_flush_i,j
      logical               :: internal_alloc,lock_outside,ls
      integer               :: maxintmp,b,e,minstart,bidx
      integer(kind=tensor_mpi_kind),pointer   :: req(:)
-     integer(kind=tensor_long_int) :: itest
+     integer(kind=tensor_long_int) :: itest,iti, nelintile
      logical :: lock_was_not_set
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
      procedure(put_acc_tile), pointer :: put_acc => null()
 
-     acc_ti8 => tensor_acct8
-     acc_ti4 => tensor_acct4
-     put_ti8 => tensor_putt8
-     put_ti4 => tensor_putt4
+     acc_ti8 => tensor_acct88
+     put_ti8 => tensor_putt88
 
      mode = arr%mode
      tdim = arr%tdim
@@ -4470,13 +4457,8 @@ module lspdm_tensor_operations_module
            & wrongly, plese check your results"
      endif
 
-#ifdef VAR_INT64
-     if(pre2==0.0E0_tensor_dp) put_acc => put_ti8
-     if(pre2/=0.0E0_tensor_dp) put_acc => acc_ti8
-#else
-     if(pre2==0.0E0_tensor_dp) put_acc => put_ti4
-     if(pre2/=0.0E0_tensor_dp) put_acc => acc_ti4
-#endif
+     if(pre2==0.0E0_tensor_dp) put_acc => tensor_putt88
+     if(pre2/=0.0E0_tensor_dp) put_acc => tensor_acct88
 
      if(pre2/=0.0E0_tensor_dp.and.pre2/=1.0E0_tensor_dp)then
         call tensor_scale_td(arr,pre2)
@@ -4568,6 +4550,8 @@ module lspdm_tensor_operations_module
 
         call tile_from_fort(pre1,fort,fullfortdim,mode,0.0E0_tensor_dp,tmp(b:e),i,tdim,o)
 
+        iti = i
+
         if( alloc_in_dummy )then
 
            if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
@@ -4575,12 +4559,12 @@ module lspdm_tensor_operations_module
               nel_one_sided = 0
            endif
 
-           call put_acc(arr,i,tmp(b:e),nelintile,lock_set=ls,req=req(bidx))
+           call put_acc(arr,iti,tmp(b:e),nelintile,lock_set=ls,req=req(bidx))
            !call put_acc(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
 
            nel_one_sided = nel_one_sided + nelintile
         else
-           call put_acc(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
+           call put_acc(arr,iti,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
         endif
 
         elms_sent = elms_sent + nelintile
@@ -5806,7 +5790,7 @@ module lspdm_tensor_operations_module
   !> \brief direct communication routine for the accumulation of arrays,
   !> interface to the combined index routine
   !> \author Patrick Ettenhuber
-  subroutine tensor_accumulate_tile_modeidx(arr,modidx,fort,nelms,lock_set,flush_it,req)
+  subroutine tensor_acctile_modeidx(arr,modidx,fort,nelms,lock_set,flush_it,req)
      implicit none
      !> input array for which a tile should be accumulated
      type(tensor),intent(in) ::arr
@@ -5816,123 +5800,108 @@ module lspdm_tensor_operations_module
      real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
-     integer :: cidx
-     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-     call tensor_accumulate_tile(arr,cidx,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
-  end subroutine tensor_accumulate_tile_modeidx
-  subroutine tensor_acct4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = get_cidx(modidx,arr%ntpm,arr%mode)
+     n  = nelms
+     call tensor_acc_tile(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_acctile_modeidx
+  subroutine tensor_acct44(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
      implicit none
      type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
+     integer(kind=tensor_standard_int),intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
      real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
-     call tensor_accumulate_tile_combidx4(arr,globtilenr,fort,&
-        &nelms,lock_set=lock_set,flush_it=flush_it,req=req)
-  end subroutine tensor_acct4
-  subroutine tensor_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_accumulate_tile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_acct44
+  subroutine tensor_acct48(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
      implicit none
      type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
+     integer(kind=tensor_standard_int),intent(in) :: globtilenr
+     integer(kind=tensor_long_int),intent(in) :: nelms
+     real(tensor_dp),intent(inout) :: fort(nelms)
+     logical, optional, intent(in) :: lock_set,flush_it
+     integer(kind=tensor_mpi_kind),intent(inout), optional :: req
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_accumulate_tile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_acct48
+  subroutine tensor_acct84(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     implicit none
+     type(tensor),intent(in) :: arr
+     integer(kind=tensor_long_int),intent(in) :: globtilenr
      integer(kind=tensor_standard_int),intent(in) :: nelms
+     real(tensor_dp),intent(inout) :: fort(nelms)
+     logical, optional, intent(in) :: lock_set,flush_it
+     integer(kind=tensor_mpi_kind),intent(inout), optional :: req
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_accumulate_tile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_acct84
+  subroutine tensor_acct88(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     implicit none
+     type(tensor),intent(in) :: arr
+     integer(kind=tensor_long_int),intent(in) :: globtilenr
+     integer(kind=tensor_long_int),intent(in) :: nelms
+     real(tensor_dp),intent(inout) :: fort(nelms)
+     logical, optional, intent(in) :: lock_set,flush_it
+     integer(kind=tensor_mpi_kind),intent(inout), optional :: req
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_accumulate_tile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_acct88
+  subroutine tensor_accumulate_tile_combidx(arr,gt,fort,nelms,lock_set,flush_it,req)
+     implicit none
+     type(tensor),intent(in) :: arr
+     integer(kind=tensor_long_int),intent(in) :: gt
+     integer(kind=tensor_long_int),intent(in) :: nelms
      !> input the fortan array which should be transferred to the tile
      real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set, flush_it
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
      integer(kind=tensor_mpi_kind) :: dest
      logical :: ls
-     integer(kind=tensor_standard_int) :: gt, dpos
-     real(tensor_dp) :: sta,sto
+     integer(kind=tensor_standard_int) :: dpos
 #ifdef VAR_MPI
-     integer :: maxsze
      integer(kind=tensor_long_int) :: p,pos,widx
      call time_start_phase( PHASE_COMM )
-
-     gt = globtilenr
-
-     maxsze = MAX_SIZE_ONE_SIDED
 
      ls = .false.
      if(present(lock_set))ls=lock_set
 
      call get_residence_of_tile( arr, gt, dest, dpos, p, widx)
 
-     sta  = MPI_WTIME()
+     time_pdm_acc = time_pdm_acc - mpi_wtime()
 
      if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
+
      if(present(req))then
-        call lsmpi_racc(fort,nelms,int(p),dest,arr%wi(widx),req)
+        call tensor_mpi_acc(fort,nelms,p,dest,arr%wi(widx),req, fl = flush_it)
      else
-        call lsmpi_acc(fort,nelms,int(p),dest,arr%wi(widx),maxsze,flush_it=flush_it)
+        call tensor_mpi_acc(fort,nelms,p,dest,arr%wi(widx), fl = flush_it)
      endif
+
      if(.not.ls)CALL tensor_mpi_win_unlock(dest, arr%wi(widx))
 
-     sto          = MPI_WTIME()
-     time_pdm_acc = time_pdm_acc + sto - sta
-     bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
+     time_pdm_acc = time_pdm_acc + mpi_wtime()
+     bytes_transferred_acc = bytes_transferred_acc + nelms * tensor_dp
      nmsg_acc     = nmsg_acc + 1
 
      call time_start_phase( PHASE_WORK )
 #endif
-  end subroutine tensor_accumulate_tile_combidx4
-  subroutine tensor_acct8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-     implicit none
-     type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
-     integer(kind=tensor_long_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(nelms)
-     logical, optional, intent(in) :: lock_set,flush_it
-     integer(kind=tensor_mpi_kind),intent(inout), optional :: req
-     call tensor_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
-  end subroutine tensor_acct8
-  subroutine tensor_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-     implicit none
-     type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
-     logical, optional, intent(in) :: lock_set,flush_it
-     integer(kind=tensor_mpi_kind),intent(inout), optional :: req
-     integer(kind=tensor_long_int),intent(in) :: nelms
-     !> input the fortan array which should be transferred to the tile
-     real(tensor_dp),intent(inout) :: fort(nelms)
-     integer(kind=tensor_mpi_kind) :: dest
-     logical :: ls
-     integer(kind=tensor_standard_int) :: gt
-     real(tensor_dp) :: sta,sto
-#ifdef VAR_MPI
-     integer :: maxsze
-     integer(kind=tensor_long_int) :: p,pos,widx, dpos
-     call time_start_phase( PHASE_COMM )
-
-     gt = globtilenr
-
-     maxsze = MAX_SIZE_ONE_SIDED
-
-     ls = .false.
-     if(present(lock_set)) ls = lock_set
-
-     call get_residence_of_tile( arr, gt, dest, dpos, p, widx )
-
-     sta  = MPI_WTIME()
-
-     if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
-     if(present(req))then
-        call lsmpi_racc(fort,nelms,int(p),dest,arr%wi(widx),req)
-     else
-        call lsmpi_acc(fort,nelms,int(p),dest,arr%wi(widx),maxsze,flush_it=flush_it)
-     endif
-     if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
-
-     sto          = MPI_WTIME()
-
-     time_pdm_acc = time_pdm_acc + sto - sta
-     bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
-     nmsg_acc     = nmsg_acc + 1
-
-     call time_start_phase( PHASE_WORK )
-#endif
-  end subroutine tensor_accumulate_tile_combidx8
-
+  end subroutine tensor_accumulate_tile_combidx
 
 
 
@@ -5946,35 +5915,82 @@ module lspdm_tensor_operations_module
      real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
-     logical :: ls
-     integer :: cidx
-     ls = .false.
-     if(present(lock_set))ls=lock_set
-     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-     call tensor_put_tile(arr,cidx,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+
+     gt= get_cidx(modidx,arr%ntpm,arr%mode)
+     n = nelms
+
+     call tensor_put_tile(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
   end subroutine tensor_puttile_modeidx
 
-  subroutine tensor_putt8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+  subroutine tensor_putt88(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
      implicit none
      type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
-     integer(kind=tensor_long_int),intent(in) :: nelms
+     integer(kind=tensor_long_int), intent(in) :: globtilenr
+     integer(kind=tensor_long_int), intent(in) :: nelms
      real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
-     call tensor_puttile_combidx8(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
-  end subroutine tensor_putt8
-  subroutine tensor_puttile_combidx8(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_puttile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_putt88
+  subroutine tensor_putt84(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
      implicit none
      type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
+     integer(kind=tensor_long_int), intent(in) :: globtilenr
+     integer(kind=tensor_standard_int), intent(in) :: nelms
+     real(tensor_dp),intent(inout) :: fort(nelms)
+     logical, optional, intent(in) :: lock_set,flush_it
+     integer(kind=tensor_mpi_kind), intent(inout), optional :: req
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_puttile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_putt84
+  subroutine tensor_putt48(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     implicit none
+     type(tensor),intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in) :: globtilenr
+     integer(kind=tensor_long_int), intent(in) :: nelms
+     real(tensor_dp),intent(inout) :: fort(nelms)
+     logical, optional, intent(in) :: lock_set,flush_it
+     integer(kind=tensor_mpi_kind), intent(inout), optional :: req
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_puttile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_putt48
+  subroutine tensor_putt44(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     implicit none
+     type(tensor),intent(in) :: arr
+     integer(kind=tensor_standard_int), intent(in) :: globtilenr
+     integer(kind=tensor_standard_int), intent(in) :: nelms
+     real(tensor_dp),intent(inout) :: fort(nelms)
+     logical, optional, intent(in) :: lock_set,flush_it
+     integer(kind=tensor_mpi_kind), intent(inout), optional :: req
+     integer(kind=tensor_long_int) :: gt
+     integer(kind=tensor_long_int) :: n
+     gt = globtilenr
+     n  = nelms
+     call tensor_puttile_combidx(arr,gt,fort,n,lock_set=lock_set,flush_it=flush_it,req=req)
+  end subroutine tensor_putt44
+
+  subroutine tensor_puttile_combidx(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
+     implicit none
+     type(tensor),intent(in) :: arr
+     integer(kind=tensor_long_int),intent(in) :: globtilenr
      integer(kind=tensor_long_int),intent(in) :: nelms
      real(tensor_dp),intent(inout) :: fort(nelms)
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind), intent(inout), optional :: req
      logical :: ls
      integer(kind=tensor_mpi_kind) :: dest
-     real(tensor_dp) :: sta,sto
      integer :: pos,dpos
      integer(kind=tensor_long_int) :: p,widx
      integer(kind=tensor_standard_int) :: gt
@@ -5988,84 +6004,25 @@ module lspdm_tensor_operations_module
 
      call get_residence_of_tile(arr,gt,dest,dpos,p,widx)
 
-     sta  = MPI_WTIME()
+     time_pdm_put          = time_pdm_put - mpi_wtime()
 
      if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
 
      if(present(req))then
-        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx),req)
+        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx),req, fl = flush_it)
      else
-        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx))
-        if(nelms>TENSOR_MPI_MSG_LEN) call tensor_mpi_win_flush(arr%wi(widx), local=.true.)
+        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx), fl = flush_it)
      endif
 
      if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
 
-     sto = MPI_WTIME()
-
-     time_pdm_put          = time_pdm_put + sto - sta
-     bytes_transferred_put = bytes_transferred_put + nelms * 8_long
+     time_pdm_put          = time_pdm_put + mpi_wtime()
+     bytes_transferred_put = bytes_transferred_put + nelms * tensor_dp
      nmsg_put              = nmsg_put + 1
 
      call time_start_phase( PHASE_WORK )
 #endif
-  end subroutine tensor_puttile_combidx8
-  subroutine tensor_putt4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-     implicit none
-     type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
-     integer(kind=tensor_standard_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(nelms)
-     logical, optional, intent(in) :: lock_set,flush_it
-     integer(kind=tensor_mpi_kind), intent(inout), optional :: req
-     call tensor_puttile_combidx4(arr,globtilenr,fort,nelms,lock_set=lock_set,flush_it=flush_it,req=req)
-  end subroutine tensor_putt4
-  subroutine tensor_puttile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-     implicit none
-     type(tensor),intent(in) :: arr
-     integer,intent(in) :: globtilenr
-     integer(kind=tensor_standard_int),intent(in) :: nelms
-     real(tensor_dp),intent(inout) :: fort(nelms)
-     logical, optional, intent(in) :: lock_set,flush_it
-     integer(kind=tensor_mpi_kind), intent(inout), optional :: req
-     logical :: ls
-     integer(kind=tensor_mpi_kind) :: dest
-     real(tensor_dp) :: sta,sto
-     integer(kind=tensor_standard_int) :: gt
-#ifdef VAR_MPI
-     integer :: dpos
-     integer(kind=tensor_long_int) :: p, widx
-     call time_start_phase( PHASE_COMM )
-
-     gt = globtilenr
-
-     ls = .false.
-     if(present(lock_set))ls=lock_set
-
-     call get_residence_of_tile(arr,gt,dest,dpos,p,widx)
-
-     sta  = MPI_WTIME()
-
-     if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
-     if(present(req))then
-        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx),req)
-     else
-        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx))
-        if(nelms>TENSOR_MPI_MSG_LEN) call tensor_mpi_win_flush(arr%wi(widx), local=.true.)
-     endif
-     if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
-
-     sto = MPI_WTIME()
-
-     time_pdm_put          = time_pdm_put + sto - sta
-     bytes_transferred_put = bytes_transferred_put + nelms * 8_long
-     nmsg_put              = nmsg_put + 1
-
-     call time_start_phase( PHASE_WORK )
-#endif
-  end subroutine tensor_puttile_combidx4
-
-
+  end subroutine tensor_puttile_combidx
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!                   GET TILES
@@ -6139,7 +6096,6 @@ module lspdm_tensor_operations_module
      logical, optional, intent(in) :: lock_set,flush_it
      integer(kind=tensor_mpi_kind),intent(inout),optional :: req
      integer(kind=tensor_mpi_kind) :: source,r
-     real(tensor_dp) :: sta,sto
      integer(kind=tensor_standard_int) :: gt
      logical :: ls
 #ifdef VAR_MPI
@@ -6156,78 +6112,30 @@ module lspdm_tensor_operations_module
 
      call get_residence_of_tile(arr,gt,source,dpos,p,widx)
 
-     sta    = MPI_WTIME()
+     time_pdm_get = time_pdm_get - mpi_wtime()
 
      if(.not.ls)call tensor_mpi_win_lock(source,arr%wi(widx),'s')
+
      if(present(req))then
-        call lsmpi_rget(fort,nelms,int(p),source,arr%wi(widx),req)
-        !call tensor_mpi_win_flush(arr%wi(widx),source,local = .false.)
+        call tensor_mpi_get(fort,nelms,p,source,arr%wi(widx),req, fl = flush_it)
      else
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call lsmpi_rget(fort,nelms,int(p),source,arr%wi(widx),r)
-        call tensor_mpi_wait(r)
-        call tensor_mpi_win_flush(arr%wi(widx), rank=source, local=.false.)
-#else
-        call lsmpi_get(fort,nelms,int(p),source,arr%wi(widx),maxsze,flush_it=flush_it)
-#endif
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!        call tensor_mpi_get(fort,nelms,int(p),source,arr%wi(widx),r,fl=.true.)
+!        call tensor_mpi_wait(r)
+!        call tensor_mpi_win_flush(arr%wi(widx), rank=source, local=.false.)
+!#else
+        call tensor_mpi_get(fort,nelms,p,source,arr%wi(widx), fl = flush_it)
      endif
+
      if(.not.ls)call tensor_mpi_win_unlock(source,arr%wi(widx))
 
-     sto = MPI_WTIME()
-
-     time_pdm_get          = time_pdm_get + sto - sta
-     bytes_transferred_get = bytes_transferred_get + nelms * 8_long
-     nmsg_get              = nmsg_get + 1
+     time_pdm_get = time_pdm_get + mpi_wtime()
+     bytes_transferred_get = bytes_transferred_get + nelms * tensor_dp
+     nmsg_get = nmsg_get + 1
 
      call time_start_phase( PHASE_WORK )
 #endif
   end subroutine tensor_gettile_combidx
-
-
-  !  subroutine tensor_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set,flush_it,req)
-  !    implicit none
-  !    type(tensor),intent(in) :: arr
-  !    integer,intent(in) :: globtilenr
-  !    integer(kind=tensor_standard_int),intent(in) :: nelms
-  !    real(tensor_dp),intent(inout) :: fort(*)
-  !    logical, optional, intent(in) :: lock_set,flush_it
-  !    integer(kind=tensor_mpi_kind),intent(inout),optional :: req
-  !    integer(kind=tensor_mpi_kind) :: source
-  !    integer(kind=tensor_standard_int) :: gt
-  !    real(tensor_dp) :: sta,sto
-  !    logical :: ls
-  !#ifdef VAR_MPI
-  !    integer :: maxsze,p,pos,widx
-  !    call time_start_phase( PHASE_COMM )
-  !
-  !    gt = globtilenr
-  !
-  !    maxsze = MAX_SIZE_ONE_SIDED
-  !
-  !    ls = .false.
-  !    if(present(lock_set))ls=lock_set
-  !
-  !    call get_residence_of_tile(source,gt,arr,idx_on_node=p,window_index=widx)
-  !
-  !    sta    = MPI_WTIME()
-  !
-  !    if(.not.ls)call tensor_mpi_win_lock(source,arr%wi(widx),'s')
-  !    if(present(req))then
-  !       call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
-  !    else
-  !       call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
-  !    endif
-  !    if(.not.ls)call tensor_mpi_win_unlock(source,arr%wi(widx))
-  !
-  !    sto = MPI_WTIME()
-  !
-  !    time_pdm_get          = time_pdm_get + sto - sta
-  !    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
-  !    nmsg_get              = nmsg_get + 1
-  !
-  !    call time_start_phase( PHASE_WORK )
-  !#endif
-  !  end subroutine tensor_gettile_combidx4
 
   subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
      implicit none
@@ -6258,84 +6166,6 @@ module lspdm_tensor_operations_module
 
      call time_start_phase( PHASE_WORK )
   end subroutine get_int_dist_info
-
-  subroutine dist_int_contributions(g,o2v2,win,lock_outside)
-     implicit none
-     integer(kind=long),intent(in) :: o2v2
-     real(tensor_dp),intent(inout) :: g(o2v2)
-     logical :: lock_outside
-     integer(kind=tensor_mpi_kind),intent(in) :: win
-     integer(kind=tensor_mpi_kind) :: nnod,node,me
-     integer :: fe,ne,msg_len_mpi
-     real(tensor_dp) :: sta,sto
-     call time_start_phase( PHASE_WORK )
-
-     fe=1
-     ne=0
-     nnod = 1
-
-#ifdef VAR_MPI
-#ifdef VAR_LSDEBUG
-     msg_len_mpi=24
-#else
-     msg_len_mpi=SPLIT_MPI_MSG
-#endif
-     nnod = infpar%lg_nodtot
-     me   = infpar%lg_mynum
-     do node=0,nnod-1
-        call get_int_dist_info(o2v2,fe,ne,node)
-        sta=MPI_WTIME()
-        !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
-        call time_start_phase( PHASE_COMM )
-        if(.not.lock_outside)call tensor_mpi_win_lock(node,win,'s')
-        call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi,.true.)
-        if(.not.lock_outside)call tensor_mpi_win_unlock(node,win)
-        call time_start_phase( PHASE_WORK )
-        sto = MPI_WTIME()
-        time_pdm_acc = time_pdm_acc + sto - sta
-        bytes_transferred_acc = bytes_transferred_acc + ne * 8_long
-        nmsg_acc = nmsg_acc + 1
-     enddo
-#endif
-     call time_start_phase( PHASE_WORK )
-  end subroutine dist_int_contributions
-
-  subroutine collect_int_contributions(g,o2v2,win)
-     implicit none
-     integer(kind=long),intent(in) :: o2v2
-     real(tensor_dp),intent(inout) :: g(o2v2)
-     integer(kind=tensor_mpi_kind),intent(in) :: win
-     integer(kind=tensor_mpi_kind) :: nnod,node,me
-     integer :: fe,ne,msg_len_mpi
-     real(tensor_dp) :: sta,sto
-     call time_start_phase( PHASE_WORK )
-
-     fe=1
-     ne=0
-     nnod = 1
-#ifdef VAR_MPI
-
-     msg_len_mpi=MAX_SIZE_ONE_SIDED
-     nnod = infpar%lg_nodtot
-     me   = infpar%lg_mynum
-     do node=0,nnod-1
-        !print *,infpar%lg_mynum,"collecting",fe,fe+ne-1,ne,o2v2,node
-        call get_int_dist_info(o2v2,fe,ne,node)
-        sta=MPI_WTIME()
-        call time_start_phase( PHASE_COMM )
-        call tensor_mpi_win_lock(node,win,'s')
-        call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-        call tensor_mpi_win_unlock(node,win)
-        call time_start_phase( PHASE_WORK )
-        sto = MPI_WTIME()
-        time_pdm_get = time_pdm_get + sto - sta
-        bytes_transferred_get = bytes_transferred_get + ne * 8_long
-        nmsg_get = nmsg_get + 1
-     enddo
-
-     call time_start_phase( PHASE_WORK )
-#endif
-  end subroutine collect_int_contributions
 
 
   subroutine tensor_scale_td(arr,sc)

@@ -259,6 +259,7 @@ subroutine lsmpi_slave(comm)
 
       case(SET_SPLIT_MPI_MSG);
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+         call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
 

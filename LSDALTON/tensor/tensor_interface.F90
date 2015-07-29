@@ -67,6 +67,13 @@ module tensor_interface_module
   !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
   public tensor_initialize_interface, tensor_finalize_interface
 
+  ! MODIFY THE BEHAVIOUR OF THE TENSOR LIB
+  public tensor_set_mpi_msg_len              ! set the maximum message length of a call to MPI
+  public tensor_set_always_sync_true         ! force synchronization after parallel operations
+  public tensor_set_debug_mode_true          ! switch on debugging mode
+  public tensor_set_dil_backend_true         ! switch on the dil backend for tensor contractions
+  public tensor_set_dil_backend
+
   !This defines the public interface to the tensors
   !The tensor type itself
   public tensor
@@ -117,9 +124,7 @@ module tensor_interface_module
   ! Auxiliary functions on the user level
   public get_symm_tensor_segmenting_simple
   public tensor_get_ntpm, get_tile_dim
-  public tensor_set_debug_mode_true, tensor_set_dil_backend_true, tensor_set_dil_backend
   public tensor_set_global_segment_length
-  public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
   public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
   public tensor_flush_win
@@ -207,6 +212,11 @@ contains
      call tensor_free_counters()
      if(associated(tensor_counter_ext_mem))call unset_external_mem_ctr()
   end subroutine tensor_finalize_interface
+  subroutine tensor_set_mpi_msg_len(len)
+     implicit none
+     integer(kind=tensor_long_int) :: len
+     TENSOR_MPI_MSG_LEN = len
+  end subroutine tensor_set_mpi_msg_len
 
   subroutine tensor_set_global_segment_length(seg_len)
      implicit none

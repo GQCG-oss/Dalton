@@ -210,7 +210,7 @@ module tensor_tester_module
       tileget=3.0E0_tensor_dp
       if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(output,'("NORM OF FORT TO ADD:      ",f20.15)')normher
-      if(nnod>1) call tensor_accumulate_tile(test1,ti,tileget,j)
+      if(nnod>1) call tensor_acc_tile(test1,ti,tileget,j)
       if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
       write(output,'("NORM REMOTE ACCUMULATION: ",f20.15)')normher
       !use the tile with three in it, print its norm put and compare norms
@@ -358,7 +358,7 @@ module tensor_tester_module
         call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         tileget = 2.4E0_tensor_dp
         call get_midx(ti,midx,test2%ntpm,test2%mode)
-        call tensor_accumulate_tile(test2,midx,tileget,j)
+        call tensor_acc_tile(test2,midx,tileget,j)
         call tensor_free_mem(tileget)
       else
         teststatus="SUCCESS"

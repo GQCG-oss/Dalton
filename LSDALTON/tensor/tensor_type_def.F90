@@ -123,13 +123,13 @@ module tensor_type_def_module
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_standard_int  = 5
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_char                 = 6
   !MPI OPERATION INDEX
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_bcast           = 1
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_reduce          = 2
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_allreduce       = 3
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_sendrecv        = 4
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_put             = 5
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_get             = 6
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_accumulate      = 7
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_bcast     = 1
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_reduce    = 2
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_allreduce = 3
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_sendrecv  = 4
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_put       = 5
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_get       = 6
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_acc       = 7
   !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LISTS ABOVE
   !> this counter is for the identification of the number of different data types
   integer(kind=tensor_standard_int), parameter :: tensor_nmpi_dat = 6
