@@ -798,9 +798,8 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
   use dft_memory_handling
-  use memory_handling, only: init_globalmemvar,mem_allocated_global
+  use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
-  use tensor_interface_module,only: tensor_initialize_interface
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:init_IIDF_matrix
 #ifdef VAR_PAPI
@@ -840,11 +839,6 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call init_AO2GCAO_GCAO2AO()
   ! MPI initialization
   call lsmpi_init(OnMaster)
-  !tensor initialization
-#ifdef VAR_MPI
-  signal = PDMA4SLV
-#endif
-  call tensor_initialize_interface( mem_ctr=mem_allocated_global, pdm_slaves_signal=signal )
 
   !INIT TIMING AND FILES
   if(OnMaster)then

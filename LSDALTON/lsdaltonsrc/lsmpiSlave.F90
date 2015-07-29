@@ -1,4 +1,7 @@
 subroutine lsmpi_init(OnMaster)
+   use tensor_interface_module,only: tensor_initialize_interface, tensor_comm_null
+   use memory_handling, only: mem_allocated_global
+
 #ifdef VAR_MPI
    use lsmpi_type
    use infpar_module
@@ -9,7 +12,7 @@ subroutine lsmpi_init(OnMaster)
 #endif
    implicit none
    logical, intent(inout) :: OnMaster
-   integer(kind=ls_mpik)  :: ierr
+   integer(kind=ls_mpik)  :: ierr, comm
 #ifdef VAR_CHEMSHELL
    integer(kind=ls_mpik)  :: lsdalton_chemsh_comm
    external lsdalton_chemsh_comm
@@ -20,6 +23,7 @@ subroutine lsmpi_init(OnMaster)
    nInteger4 = 0
    nInteger8 = 0
    nCha      = 0
+   comm      = 0
 
    if (call_mpi_init) then
 #ifdef VAR_CHEMSHELL
@@ -72,10 +76,14 @@ subroutine lsmpi_init(OnMaster)
    ! Assume that there will be local jobs
    infpar%lg_morejobs=.true.
 
+   !tensor initialization
+   call tensor_initialize_interface(MPI_COMM_LSDALTON, mem_ctr=mem_allocated_global, pdm_slaves_signal = PDMA4SLV )
+
 #else
    logical, intent(inout) :: OnMaster
    !IF NOT COMPILED WITH MPI SET MASTER = TRUE
    OnMaster = .true.
+   call tensor_initialize_interface(tensor_comm_null, mem_ctr=mem_allocated_global )
 #endif
 end subroutine lsmpi_init 
 

@@ -205,6 +205,9 @@ contains
           ! (redefine globals infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm)
           call dec_half_local_group( print_ = DECinfo%print_small_calc )
 
+          !Set the communicator fot tensor operations after splitting
+          call tensor_set_comm(infpar%lg_comm)
+
           ! Check if the current rank has become a local master (rank=master within local group)
           if(infpar%lg_mynum==master) localslave=.false.
 
@@ -541,6 +544,7 @@ contains
              else
                 PairFragment%mylsitem%setting%comm = infpar%lg_comm
              end if
+
           end if
 
 

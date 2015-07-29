@@ -276,15 +276,19 @@ contains
       type(tensor), intent(inout), optional :: m1f,m2f
       type(decfrag), intent(inout), optional :: frag
       logical :: fj
-      integer :: os,vs, solver_job, solver_ccmodel
+      integer :: os,vs, solver_job, solver_ccmodel,nnod
       type(tensor) :: mp2_amp
       type(array4) :: t2a4,VOVOa4, m2a4, mp2a4
       type(array2) :: t1a2, m1a2
+      nnod = 1
+#ifdef VAR_MPI
+      nnod = infpar%lg_nodtot
+#endif
 
       solver_ccmodel = ccmodel
       if(ccmodel == MODEL_CCSDpT) solver_ccmodel = MODEL_CCSD
       fj = present(frag)
-      call get_symm_tensor_segmenting_simple(no,nv,os,vs)
+      call get_symm_tensor_segmenting_simple(nnod,no,nv,os,vs)
 
 
       if(DECinfo%use_pnos)then
@@ -2808,7 +2812,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 #endif
 
    !get tensor segments
-   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
+   call get_symm_tensor_segmenting_simple(int(nnod),no,nv,os,vs)
 
    ! allocate the buffer in the background
    use_bg = DECinfo%use_bg_buffer.and..not.saferun

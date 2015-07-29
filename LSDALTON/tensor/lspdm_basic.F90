@@ -74,15 +74,8 @@ module lspdm_basic_module
                      &tensor_get_ntpm4444
   end interface tensor_get_ntpm
 
-  !interface get_tile_idx
-  !  module procedure get_tile_idx_from_global_idx
-  !end interface get_tile_idx
 
   contains
-  !subroutine get_tile_idx_from_global_idx()
-  !  implicit none
-  !end subroutine get_tile_idx_from_global_idx
-
 
 
   subroutine get_tileinfo_nels_frombas(sze,tileidx,dims,tdim,mode)
@@ -406,6 +399,7 @@ module lspdm_basic_module
      call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
   end subroutine memory_allocate_window
+
 
   !> \brief Allocate memory for general arrays with memory statistics and tiled
   !structure of the data
@@ -1018,5 +1012,10 @@ module lspdm_basic_module
 
   end subroutine get_residence_of_tile_basic
 
+  subroutine tensor_set_comm(comm)
+     implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
+     tensor_work_comm = comm
+  end subroutine tensor_set_comm
 
 end module lspdm_basic_module

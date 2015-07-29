@@ -3315,7 +3315,11 @@ contains
     real(realk) :: FOT
     type(array4)  :: t2
     character(4) :: stens_atype
-    integer :: os,vs
+    integer :: os,vs,nnod
+    nnod=1
+#ifdef VAR_MPI
+    nnod=infpar%lg_nodtot
+#endif
 
     ! Init stuff
     ! **********
@@ -3363,7 +3367,7 @@ contains
           call calculate_corrdens_AOS_occocc(t2,AtomicFragment)
 
           !FIXME: dirty hack-restore input tensor with the new dimensions and data
-          call get_symm_tensor_segmenting_simple(t2%dims(2),t2%dims(1),os,vs)
+          call get_symm_tensor_segmenting_simple(nnod,t2%dims(2),t2%dims(1),os,vs)
           call tensor_minit(t2tens,t2%dims,4, atype = stens_atype, tdims=[vs,os,vs,os])
           call tensor_convert(t2%val,t2tens)
           call array4_free(t2)

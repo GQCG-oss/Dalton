@@ -66,6 +66,7 @@ module tensor_interface_module
 
   !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
   public tensor_initialize_interface, tensor_finalize_interface
+  public tensor_set_comm, tensor_comm_null
 
   ! MODIFY THE BEHAVIOUR OF THE TENSOR LIB
   public tensor_set_mpi_msg_len              ! set the maximum message length of a call to MPI
@@ -200,11 +201,13 @@ module tensor_interface_module
 
 contains
 
-  subroutine tensor_initialize_interface(mem_ctr,pdm_slaves_signal)
+  subroutine tensor_initialize_interface(comm,mem_ctr,pdm_slaves_signal)
      implicit none
+     integer(kind=tensor_mpi_kind) :: comm
      !use an external counter for memory counting
      integer(kind=tensor_long_int), target, optional :: mem_ctr
      integer, intent(in), optional :: pdm_slaves_signal
+     call tensor_set_comm(comm)
      if(present(mem_ctr)) call set_external_mem_ctr(mem_ctr)
      if(present(pdm_slaves_signal)) call set_signal_for_slaves(pdm_slaves_signal)
      call tensor_init_counters()
@@ -2168,16 +2171,8 @@ contains
     integer(kind=long)    :: nelms
     integer(kind=tensor_mpi_kind) :: pc_nnodes,me
 
-    pc_nnodes = 1
     master    = .true.
     me        = 0
-!#ifdef VAR_MPI
-!    if( lspdm_use_comm_proc ) then
-!      me        = infpar%pc_mynum
-!      pc_nnodes = infpar%pc_nodtot
-!      master    = (infpar%parent_comm == MPI_COMM_NULL)
-!    endif
-!#endif
     
     
     !find space in the persistent array
@@ -2241,12 +2236,6 @@ contains
  
     me     = 0
     parent = .true.
-!#ifdef VAR_MPI
-!    if( lspdm_use_comm_proc )then
-!      me = infpar%pc_mynum
-!      if(parent) call pdm_tensor_sync(infpar%pc_comm,JOB_FREE_tensor_STD,arr,loc_addr=.true.)
-!    endif
-!#endif
     p_arr%free_addr_on_node(arr%local_addr)=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
     call tensor_free_basic(p_arr%a(arr%local_addr)) 
@@ -2931,25 +2920,21 @@ contains
     if(present(nrm))nrm=norm
   end subroutine tensor_print_norm_nrm
 
-  subroutine tensor_print_norm_customprint(arr,msg,returnsquared,print_on_rank)
+  subroutine tensor_print_norm_customprint(arr,msg,returnsquared,print_)
     implicit none
     character*(*),intent(in) :: msg
     type(tensor),intent(in) :: arr
     logical,intent(in),optional :: returnsquared
-    integer,intent(in),optional :: print_on_rank
+    logical,intent(in),optional :: print_
     real(tensor_dp)::norm
     integer(kind=8) :: i,j
     logical :: squareback
-    integer(kind=tensor_mpi_kind) :: me,nnod
+    integer(kind=tensor_mpi_kind) :: me
+
     squareback=.false.
+
     if(present(returnsquared))squareback=returnsquared
-    me   = 0
-    nnod = 1
-#ifdef VAR_MPI
-    me   = infpar%lg_mynum
-    nnod = infpar%lg_nodtot
-#endif
-    
+
     norm=0.0d0
     select case(arr%itype)
     case(TT_DENSE)
@@ -2970,11 +2955,7 @@ contains
 
     if(.not.squareback)norm = sqrt(norm)
 
-    if(present(print_on_rank))then
-       if( me == print_on_rank ) print *,msg,norm
-    else
-       print *,msg,norm
-    endif
+    if(print_)print *,msg,norm
 
   end subroutine tensor_print_norm_customprint
 
@@ -3255,21 +3236,16 @@ contains
       call lsquit("ERROR(tensor_scale):not yet implemented",DECinfo%output)
     end select
   end subroutine tensor_scale
-  subroutine get_symm_tensor_segmenting_simple(a,b,a_seg,b_seg)
+  subroutine get_symm_tensor_segmenting_simple(nnodes,a,b,a_seg,b_seg)
      implicit none
-     integer, intent(in)  :: a,b
+     integer, intent(in)  :: a,b,nnodes
      integer, intent(out) :: a_seg, b_seg
-     integer :: counter, nnodes
+     integer :: counter
      integer :: modtilea, modtileb
      real(tensor_dp) :: max_mem_p_tile_in_GB
      !get segmenting for tensors, divide dimensions until tiles are less than
      !100MB and/or until enough tiles are available such that each node gets at
      !least one and as long as a_seg>=2 and b_seg>=2
-     nnodes = 1
-#ifdef VAR_MPI
-     nnodes = infpar%lg_nodtot
-#endif
-
      b_seg    = b
      a_seg    = a
      modtilea = 0
