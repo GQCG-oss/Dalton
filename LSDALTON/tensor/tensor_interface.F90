@@ -2203,34 +2203,6 @@ contains
     tdimdummy=0
     call tensor_set_tdims(p_arr%a(addr),tdimdummy,nmodes)
 
-    !call tensor_alloc_mem(buf,pc_nnodes)
-    !buf = 0
-
-    !if master init only master has to init the addresses addresses before
-    !pdm syncronization
-!    if(master .and. p_arr%a(addr)%access_type==AT_MASTER_ACCESS .and. lspdm_use_comm_proc)then
-!      call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
-!#ifdef VAR_MPI
-!      call pdm_tensor_sync(infpar%pc_comm,JOB_INIT_tensor_PC,p_arr%a(addr),loc_addr=.true.)
-!#endif
-!    endif
-
-
-
-    !if AT_ALL_ACCESS all have to have the addresses allocated
-    !if(p_arr%a(addr)%access_type==AT_ALL_ACCESS.and. lspdm_use_comm_proc)&
-    !   &call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
-
-    !SET THE ADDRESSES ON ALL NODES     
-    !buf(me+1)=addr 
-!#ifdef VAR_MPI
-!    if( lspdm_use_comm_proc )call lsmpi_allreduce(buf,pc_nnodes,infpar%pc_comm)
-!#endif
-
-    !call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
-
-    !call tensor_free_mem(buf)
-
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
     call memory_allocate_tensor_dense(p_arr%a(addr),bg)
 

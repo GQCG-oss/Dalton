@@ -4,9 +4,9 @@ module tensor_allocator
    use background_buffer_module, only: mem_is_background_buf_init
    use memory_handling, only: mem_pseudo_alloc, mem_pseudo_dealloc
 
-   use lsmpi_module
    use tensor_error_handler
    use tensor_parameters_and_counters
+   use tensor_mpi_binding_module
    use tensor_type_def_module
 
    !Routines for the allocation and deallocation within the tensor module

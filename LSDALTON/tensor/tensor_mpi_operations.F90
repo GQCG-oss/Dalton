@@ -2,7 +2,7 @@ module tensor_mpi_operations_module
 
    use tensor_error_handler
    use tensor_parameters_and_counters
-   use lsmpi_module
+   use tensor_mpi_binding_module
    use tensor_mpi_interface_module
    use tensor_allocator
 

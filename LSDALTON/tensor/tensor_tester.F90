@@ -10,7 +10,6 @@ module tensor_tester_module
   use reorder_tester_module
 #ifdef VAR_MPI
   use infpar_module
-  use lsmpi_type
   use tensor_mpi_interface_module
 #endif
   use tensor_interface_module
@@ -36,7 +35,7 @@ module tensor_tester_module
     integer(kind=long) :: testint
     logical :: master
     integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4),output
-    integer(kind=tensor_mpi_kind) :: sender, recver, nnod, rnk, me
+    integer(kind=tensor_mpi_kind) :: sender, recver, nnod, rnk, me, dpos,didx,dwidx
     character(len=7) :: teststatus
     character(tensor_MSG_LEN) :: msg
     integer,pointer :: ord(:)
@@ -122,7 +121,7 @@ module tensor_tester_module
       write(output,*)""
       write(output,*)"TESTING MPI_GET"
       do ti = 1, test1%ntiles
-        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
+        call get_residence_of_tile(test1,ti,to_get_from,dpos,didx,dwidx)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -156,7 +155,7 @@ module tensor_tester_module
       write(output,*)"TESTING MPI_PUT"
       teststatus="SUCCESS"
       do ti = test1%ntiles,1, -1
-        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
+        call get_residence_of_tile(test1,ti,to_get_from,dpos,didx,dwidx)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -308,7 +307,7 @@ module tensor_tester_module
     teststatus="SUCCESS"
     rnk = nnod - 1
     do ti = test1%ntiles,1, -1
-      call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
+      call get_residence_of_tile(test1,ti,to_get_from,dpos,didx,dwidx)
       if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
        testint = ti
        exit
@@ -402,7 +401,7 @@ module tensor_tester_module
     call tensor_init(test1,[nv/7,nv+3,no,no-4],4,TT_TILED_DIST,AT_ALL_ACCESS)
     call memory_allocate_tensor_dense(test1,.false.)
     call random_number(test1%elm1)
-    call lsmpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
+    call tensor_mpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
     if(infpar%lg_mynum==0)then
       write (msg,*)"local test1 norm master"
       call print_norm(test1%elm1,test1%nelms,msg)

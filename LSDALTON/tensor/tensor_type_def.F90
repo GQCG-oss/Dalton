@@ -2,7 +2,7 @@
 module tensor_type_def_module
   use,intrinsic :: iso_c_binding, only:c_ptr,c_null_ptr
 
-  use lsmpi_module
+  use tensor_mpi_binding_module
   use tensor_parameters_and_counters
   use tensor_error_handler
 
@@ -127,11 +127,14 @@ module tensor_type_def_module
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_reduce          = 2
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_allreduce       = 3
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_sendrecv        = 4
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_put             = 5
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_get             = 6
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_accumulate      = 7
   !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LISTS ABOVE
   !> this counter is for the identification of the number of different data types
   integer(kind=tensor_standard_int), parameter :: tensor_nmpi_dat = 6
   !> this counter is for the identification of the number of different mpi operations
-  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 4
+  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 7
 
   type(tensor_mpi_stats_type),save :: tensor_mpi_stats(tensor_nmpi_idx,tensor_nmpi_dat)
 #endif

@@ -16,9 +16,9 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+#endif
   use tensor_mpi_interface_module
   use tensor_mpi_operations_module
-#endif
 
   use tensor_basic_module
   use lspdm_basic_module
@@ -183,9 +183,6 @@ module lspdm_tensor_operations_module
 #endif
 #endif
 
-  !procedure(lsmpi_put_tensor_dpV_dummy),pointer :: put_rk8 
-  !procedure(lsmpi_get_tensor_dpV_dummy),pointer :: get_rk8 
-  !procedure(lsmpi_acc_tensor_dpV_dummy),pointer :: acc_rk8 
   contains
 
   !> \brief intitialize storage room for the tiled distributed arrays
@@ -1727,7 +1724,7 @@ module lspdm_tensor_operations_module
      !> mode idex of the elmt in dense array
      integer ::  modeinde(4)
 
-     integer :: source, pos, k, idx, da, db, di, dj, a, b, i, j
+     integer :: source, pos, k, idx, da, db, di, dj, a, b, i, j, dpos, didx, dwidx
 #ifdef VAR_MPI
      da = dims(1)
      db = dims(2)
@@ -1737,7 +1734,7 @@ module lspdm_tensor_operations_module
      ! Make table of indices:
      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(arr,ord,t1,t1tile, &
      !$OMP  table_iajb,table_ibja,da,db,di,dj) PRIVATE(i,j,k,a,b,idx,pos, &
-     !$OMP  source,modeinde,modeinti,timode,ticomb) COLLAPSE(3)
+     !$OMP  source,modeinde,modeinti,timode,ticomb,dpos,didx,dwidx) COLLAPSE(3)
      do j=1,dj
         do i=1,di
            do b=1,db
@@ -1754,7 +1751,7 @@ module lspdm_tensor_operations_module
                  end do
                  ticomb = get_cidx(timode,arr%ntpm,arr%mode)
                  pos    = get_cidx(modeinti,arr%tdim,arr%mode)
-                 call get_residence_of_tile(source,int(ticomb,kind=tensor_standard_int),arr)
+                 call get_residence_of_tile(arr, ticomb, source, dpos, didx, dwidx)
 
                  ! get tile elmts from source:
                  table_iajb(idx,:) = [pos,source,ticomb]
@@ -1768,7 +1765,7 @@ module lspdm_tensor_operations_module
                  end do
                  ticomb = get_cidx(timode,arr%ntpm,arr%mode)
                  pos    = get_cidx(modeinti,arr%tdim,arr%mode)
-                 call get_residence_of_tile(source,int(ticomb,kind=tensor_standard_int),arr)
+                 call get_residence_of_tile(arr, ticomb, source, dpos, didx, dwidx)
 
                  ! get tile elmts from source:
                  table_ibja(idx,:) = [pos,source,ticomb]
@@ -4092,7 +4089,7 @@ module lspdm_tensor_operations_module
      integer, intent(in)      :: cmidT,nbuffs,ibufT,intT(nbuffs)
      logical, intent(inout)   :: nfT(nbuffs)
      integer, intent(inout)   :: M1ST
-     integer :: i, flushed_node, another_node, ne2
+     integer :: i, flushed_node, another_node, ne2, dpos, didx, dwidx
 
 #ifdef VAR_MPI
      if( alloc_in_dummy )then
@@ -4102,13 +4099,13 @@ module lspdm_tensor_operations_module
 
            call tensor_flush_win(T, gtidx=cmidT, only_owner=.true., local = .true.)
 
-           call get_residence_of_tile(flushed_node,int(intT(ibufT),kind=tensor_standard_int),T)
+           call get_residence_of_tile(T, intT(ibufT), flushed_node, dpos, didx, dwidx)
 
            do i = 1, nbuffs
 
               if( nfT(i) )then
 
-                 call get_residence_of_tile(another_node,int(intT(i),kind=tensor_standard_int),T)
+                 call get_residence_of_tile(T, intT(i), another_node, dpos, didx, dwidx)
 
                  if(another_node == flushed_node)then
 
@@ -5158,9 +5155,9 @@ module lspdm_tensor_operations_module
      integer,intent(in) :: mode, dims(mode)
      integer :: fib,lt,ce,j,step,mod_step,iter,nccblocks,st
      integer(kind=tensor_mpi_kind) :: nnod, me, dest, assert,ierr, act_step
-     integer :: loc_ti,comp_ti,comp_el,i,nelms,fe_in_block
+     integer :: loc_ti,i,nelms,fe_in_block
      integer, pointer :: elm_in_tile(:),in_tile_mode(:),orig_addr(:),remote_td(:)
-     integer :: widx
+     integer(kind=tensor_long_int) :: widx, comp_ti, comp_el, dpos,didx,dwidx
      logical :: pdm
      call time_start_phase( PHASE_WORK )
 
@@ -5244,7 +5241,7 @@ module lspdm_tensor_operations_module
         !check where the current tile resides and jump the following steps if not
         !master where the full matrix resides or the destination slave
         !dest = mod(comp_ti-1+arr%offset,nnod) 
-        if(pdm)call get_residence_of_tile(dest,int(comp_ti,kind=tensor_standard_int),arr) 
+        if(pdm)call get_residence_of_tile(arr,comp_ti,dest,dpos,didx,dwidx) 
 
         !get the dimensions of the remote tile
         call get_tile_dim(remote_td,arr,comp_ti)
@@ -5267,7 +5264,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
            call time_start_phase( PHASE_COMM )
            call tensor_mpi_win_lock(dest,arr%wi(comp_ti),'e')
-           call lsmpi_put(A(fe_in_block:fe_in_block+act_step-1),act_step,comp_el,dest,arr%wi(widx))
+           call tensor_mpi_put(A(fe_in_block:fe_in_block+act_step-1),act_step,comp_el,dest,arr%wi(widx))
            call tensor_mpi_win_unlock(dest,arr%wi(comp_ti))
            call time_start_phase( PHASE_WORK )
 #endif
@@ -5297,11 +5294,11 @@ module lspdm_tensor_operations_module
      character, intent(in) :: locktype
      integer(kind=tensor_mpi_kind), optional,intent(in) :: assert
      integer(kind=tensor_mpi_kind) ::node
-     integer :: wi_idx
+     integer(kind=tensor_long_int) :: wi_idx,dpos,didx,dwidx
 #ifdef VAR_MPI
      call time_start_phase( PHASE_COMM )
 
-     call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
+     call get_residence_of_tile(arr,ti_idx,node,dpos,didx,wi_idx)
      call tensor_mpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
      arr%lock_set(wi_idx)=.true.
 
@@ -5315,11 +5312,11 @@ module lspdm_tensor_operations_module
      character, intent(in) :: locktype
      integer(kind=tensor_mpi_kind), optional,intent(in) :: assert
      integer(kind=tensor_mpi_kind) ::node
-     integer :: wi_idx
+     integer(kind=tensor_long_int) :: wi_idx,dpos,didx,dwidx
 #ifdef VAR_MPI
      call time_start_phase( PHASE_COMM )
 
-     call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
+     call get_residence_of_tile(arr,ti_idx,node,dpos,didx,wi_idx)
      call tensor_mpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
      arr%lock_set(wi_idx)=.true.
 
@@ -5334,10 +5331,10 @@ module lspdm_tensor_operations_module
      character, intent(in) :: locktype
      integer(kind=tensor_mpi_kind), optional,intent(in) :: assert
      integer(kind=tensor_mpi_kind) ::node
-     integer :: wi_idx
+     integer(kind=tensor_long_int) :: wi_idx,dpos,didx,dwidx
 #ifdef VAR_MPI
      call time_start_phase( PHASE_COMM )
-     call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
+     call get_residence_of_tile(arr,ti_idx,node,dpos,didx,wi_idx)
      call tensor_mpi_win_lock(node,arr%wi(wi_idx),locktype,ass=assert)
      arr%lock_set(wi_idx)=.true.
 
@@ -5350,12 +5347,12 @@ module lspdm_tensor_operations_module
      type(tensor) :: arr
      integer,intent(in) :: ti_idx
      integer(kind=tensor_mpi_kind) :: node
-     integer :: wi_idx
+     integer(kind=tensor_long_int) :: wi_idx,dpos,didx,dwidx
 #ifdef VAR_MPI
      call time_start_phase( PHASE_COMM )
 
 
-     call get_residence_of_tile(node,int(ti_idx,kind=tensor_standard_int),arr,window_index=wi_idx)
+     call get_residence_of_tile(arr,ti_idx,node,dpos,didx,wi_idx)
      call tensor_mpi_win_unlock(node,arr%wi(wi_idx))
      arr%lock_set(wi_idx) = .false.
 
@@ -5475,7 +5472,7 @@ module lspdm_tensor_operations_module
      logical, intent(in),optional:: check
      logical, optional,intent(in) :: all_nodes
      integer(kind=tensor_mpi_kind) :: node
-     integer :: i
+     integer :: i,dpos,didx,dwidx
      logical :: ch,an
 
 #ifdef VAR_MPI
@@ -5507,7 +5504,7 @@ module lspdm_tensor_operations_module
               !UNLOCK ALL WINDOWS THAT ARE MARKED AS LOCKED
               do i=1,arr%nwins
                  if(arr%lock_set(i))then
-                    call get_residence_of_tile(node,int(i,kind=tensor_standard_int),arr)
+                    call get_residence_of_tile(arr,i,node,dpos,didx,dwidx)
                     call tensor_mpi_win_unlock(node,arr%wi(i))
                     arr%lock_set(i)=.false.
                  endif
@@ -5517,7 +5514,7 @@ module lspdm_tensor_operations_module
 
               !UNLOCK ALL WINDOWS 
               do i=1,arr%nwins
-                 call get_residence_of_tile(node,int(i,kind=tensor_standard_int),arr)
+                 call get_residence_of_tile(arr,i,node,dpos,didx,dwidx)
                  call tensor_mpi_win_unlock(node,arr%wi(i))
                  arr%lock_set(i)=.false.
               enddo
@@ -5706,7 +5703,7 @@ module lspdm_tensor_operations_module
      real(tensor_dp) :: norm
      integer :: i,j,loctinr
      integer(kind=tensor_standard_int) :: gtnr
-     integer(kind=tensor_mpi_kind) :: dest
+     integer(kind=tensor_mpi_kind) :: dest,dpos,didx,dwidx
      call time_start_phase( PHASE_WORK )
 
 #ifdef VAR_MPI
@@ -5720,7 +5717,7 @@ module lspdm_tensor_operations_module
      call tensor_mpi_bcast(gtnr,infpar%master,infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
 
-     call get_residence_of_tile(dest,gtnr,arr)
+     call get_residence_of_tile(arr,gtnr,dest,dpos,didx,dwidx)
      if(present(whichnode))whichnode=dest
 
      if(dest==infpar%lg_mynum)then
@@ -5845,10 +5842,11 @@ module lspdm_tensor_operations_module
      integer(kind=tensor_mpi_kind),intent(inout), optional :: req
      integer(kind=tensor_mpi_kind) :: dest
      logical :: ls
-     integer(kind=tensor_standard_int) :: gt
+     integer(kind=tensor_standard_int) :: gt, dpos
      real(tensor_dp) :: sta,sto
 #ifdef VAR_MPI
-     integer :: maxsze,p,pos,widx
+     integer :: maxsze
+     integer(kind=tensor_long_int) :: p,pos,widx
      call time_start_phase( PHASE_COMM )
 
      gt = globtilenr
@@ -5858,15 +5856,15 @@ module lspdm_tensor_operations_module
      ls = .false.
      if(present(lock_set))ls=lock_set
 
-     call get_residence_of_tile( dest, gt, arr, idx_on_node = p, window_index = widx)
+     call get_residence_of_tile( arr, gt, dest, dpos, p, widx)
 
      sta  = MPI_WTIME()
 
      if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
      if(present(req))then
-        call lsmpi_racc(fort,nelms,p,dest,arr%wi(widx),req)
+        call lsmpi_racc(fort,nelms,int(p),dest,arr%wi(widx),req)
      else
-        call lsmpi_acc(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it=flush_it)
+        call lsmpi_acc(fort,nelms,int(p),dest,arr%wi(widx),maxsze,flush_it=flush_it)
      endif
      if(.not.ls)CALL tensor_mpi_win_unlock(dest, arr%wi(widx))
 
@@ -5902,7 +5900,8 @@ module lspdm_tensor_operations_module
      integer(kind=tensor_standard_int) :: gt
      real(tensor_dp) :: sta,sto
 #ifdef VAR_MPI
-     integer :: maxsze,p,pos,widx
+     integer :: maxsze
+     integer(kind=tensor_long_int) :: p,pos,widx, dpos
      call time_start_phase( PHASE_COMM )
 
      gt = globtilenr
@@ -5912,15 +5911,15 @@ module lspdm_tensor_operations_module
      ls = .false.
      if(present(lock_set)) ls = lock_set
 
-     call get_residence_of_tile( dest, gt, arr, idx_on_node = p, window_index = widx )
+     call get_residence_of_tile( arr, gt, dest, dpos, p, widx )
 
      sta  = MPI_WTIME()
 
      if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
      if(present(req))then
-        call lsmpi_racc(fort,nelms,p,dest,arr%wi(widx),req)
+        call lsmpi_racc(fort,nelms,int(p),dest,arr%wi(widx),req)
      else
-        call lsmpi_acc(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it=flush_it)
+        call lsmpi_acc(fort,nelms,int(p),dest,arr%wi(widx),maxsze,flush_it=flush_it)
      endif
      if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
 
@@ -5976,28 +5975,30 @@ module lspdm_tensor_operations_module
      logical :: ls
      integer(kind=tensor_mpi_kind) :: dest
      real(tensor_dp) :: sta,sto
-     integer :: p, pos, widx
+     integer :: pos,dpos
+     integer(kind=tensor_long_int) :: p,widx
      integer(kind=tensor_standard_int) :: gt
 #ifdef VAR_MPI
-     integer :: maxsze
      call time_start_phase( PHASE_COMM )
 
      gt = globtilenr
 
-     maxsze = MAX_SIZE_ONE_SIDED
      ls = .false.
      if(present(lock_set))ls=lock_set
 
-     call get_residence_of_tile(dest,gt,arr,idx_on_node=p,window_index=widx)
+     call get_residence_of_tile(arr,gt,dest,dpos,p,widx)
 
      sta  = MPI_WTIME()
 
      if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
+
      if(present(req))then
-        call lsmpi_rput(fort,nelms,p,dest,arr%wi(widx),req)
+        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx),req)
      else
-        call lsmpi_put(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it=flush_it)
+        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx))
+        if(nelms>TENSOR_MPI_MSG_LEN) call tensor_mpi_win_flush(arr%wi(widx), local=.true.)
      endif
+
      if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
 
      sto = MPI_WTIME()
@@ -6032,24 +6033,25 @@ module lspdm_tensor_operations_module
      real(tensor_dp) :: sta,sto
      integer(kind=tensor_standard_int) :: gt
 #ifdef VAR_MPI
-     integer :: maxsze,p,pos,widx
+     integer :: dpos
+     integer(kind=tensor_long_int) :: p, widx
      call time_start_phase( PHASE_COMM )
 
-     maxsze = MAX_SIZE_ONE_SIDED
      gt = globtilenr
 
      ls = .false.
      if(present(lock_set))ls=lock_set
 
-     call get_residence_of_tile(dest,gt,arr, idx_on_node = p, window_index=widx)
+     call get_residence_of_tile(arr,gt,dest,dpos,p,widx)
 
      sta  = MPI_WTIME()
 
      if(.not.ls)call tensor_mpi_win_lock(dest,arr%wi(widx),'s')
      if(present(req))then
-        call lsmpi_rput(fort,nelms,p,dest,arr%wi(widx),req)
+        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx),req)
      else
-        call lsmpi_put(fort,nelms,p,dest,arr%wi(widx),maxsze,flush_it = flush_it)
+        call tensor_mpi_put(fort,nelms,p,dest,arr%wi(widx))
+        if(nelms>TENSOR_MPI_MSG_LEN) call tensor_mpi_win_flush(arr%wi(widx), local=.true.)
      endif
      if(.not.ls)call tensor_mpi_win_unlock(dest,arr%wi(widx))
 
@@ -6141,7 +6143,8 @@ module lspdm_tensor_operations_module
      integer(kind=tensor_standard_int) :: gt
      logical :: ls
 #ifdef VAR_MPI
-     integer :: maxsze, p, pos, widx
+     integer(kind=tensor_long_int) :: p, dpos, widx
+     integer :: maxsze
      call time_start_phase( PHASE_COMM )
 
      gt = globtilenr
@@ -6151,21 +6154,21 @@ module lspdm_tensor_operations_module
      ls = .false.
      if(present(lock_set))ls=lock_set
 
-     call get_residence_of_tile(source,gt,arr,idx_on_node=p,window_index=widx)
+     call get_residence_of_tile(arr,gt,source,dpos,p,widx)
 
      sta    = MPI_WTIME()
 
      if(.not.ls)call tensor_mpi_win_lock(source,arr%wi(widx),'s')
      if(present(req))then
-        call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),req)
+        call lsmpi_rget(fort,nelms,int(p),source,arr%wi(widx),req)
         !call tensor_mpi_win_flush(arr%wi(widx),source,local = .false.)
      else
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call lsmpi_rget(fort,nelms,p,source,arr%wi(widx),r)
+        call lsmpi_rget(fort,nelms,int(p),source,arr%wi(widx),r)
         call tensor_mpi_wait(r)
         call tensor_mpi_win_flush(arr%wi(widx), rank=source, local=.false.)
 #else
-        call lsmpi_get(fort,nelms,p,source,arr%wi(widx),maxsze,flush_it=flush_it)
+        call lsmpi_get(fort,nelms,int(p),source,arr%wi(widx),maxsze,flush_it=flush_it)
 #endif
      endif
      if(.not.ls)call tensor_mpi_win_unlock(source,arr%wi(widx))
@@ -6391,8 +6394,9 @@ module lspdm_tensor_operations_module
      integer(kind=tensor_mpi_kind), intent(in), optional :: node
      integer, intent(in), optional :: gtidx
      logical, intent(in), optional :: local,only_owner
-     integer :: widx, tidx,n
+     integer :: tidx,n
      logical :: all_tiles,oo
+     integer :: widx, pos, idx
      integer(kind=tensor_mpi_kind)     :: node2
      integer(kind=tensor_standard_int) :: gt
 
@@ -6419,9 +6423,7 @@ module lspdm_tensor_operations_module
 
         else
 
-           call get_residence_of_tile(n,gt,T,window_index=widx)
-
-           node2 = n
+           call get_residence_of_tile(T,gt, node2, pos, idx, widx)
 
            call tensor_mpi_win_flush(T%wi(widx),rank=node2,local=local)
 

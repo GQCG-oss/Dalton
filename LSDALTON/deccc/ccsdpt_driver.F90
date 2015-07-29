@@ -1516,7 +1516,7 @@ contains
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me, nodtotal
-    integer :: p,pos, batch, old_gammaB
+    integer :: p,pos, batch, old_gammaB, dpos
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf, first_round, dynamic_load
     call time_start_phase(PHASE_WORK)
@@ -2026,15 +2026,9 @@ contains
              call tensor_lock_win(vvvo,tile,'s')
 #endif
 
-             call get_residence_of_tile(dest,tile,vvvo,idx_on_node = pos)
+             call get_residence_of_tile(vvvo,tile,dest, dpos, pos, wi_idx)
 
-             if( alloc_in_dummy )then
-                wi_idx = 1
-                p      = pos - 1
-             else
-                wi_idx = tile 
-                p      = 0
-             endif
+             p = pos - 1
 
              do first_el_i_block=1,v3*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
@@ -2241,7 +2235,7 @@ contains
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, nodtotal
-    integer :: p,pos
+    integer :: p,pos,dpos
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf
     call time_start_phase(PHASE_WORK)
@@ -2707,15 +2701,9 @@ contains
 #ifdef VAR_HAVE_MPI3
                 call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
-                call get_residence_of_tile(dest,tile,vovv, idx_on_node = pos)
-   
-                if( alloc_in_dummy )then
-                   wi_idx = 1
-                   p      = pos - 1
-                else
-                   wi_idx = tile
-                   p      = 0
-                endif
+                call get_residence_of_tile(vovv,tile,dest, dpos, pos, wi_idx)
+
+                p      = pos - 1
    
                 do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
