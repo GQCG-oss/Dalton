@@ -1424,7 +1424,7 @@ contains
 
     integer, pointer :: workloads(:), easytrace(:,:), work_in_node(:)
     integer :: swapar(3)
-    integer :: nnod, njob, swap, i, j, next_nod, ijob
+    integer :: nnod, njob, swap, i, j, next_nod, ijob, dpos, didx, dwidx
 
     nnod = infpar%lg_nodtot
     njob = MOinfo%Nbatch
@@ -1467,10 +1467,10 @@ contains
     do ijob=1,min(nnod,njob)
       if (easytrace(ijob,2)==0) then 
         ! tile in pgmo_diag array
-        call get_residence_of_tile(next_nod,easytrace(ijob,1),pgmo_diag)
+        call get_residence_of_tile(pgmo_diag,easytrace(ijob,1),next_nod,dpos,didx,dwidx)
       else 
         ! tile in pgmo_up array
-        call get_residence_of_tile(next_nod,easytrace(ijob,1),pgmo_up)
+        call get_residence_of_tile(pgmo_up,easytrace(ijob,1),next_nod,dpos,didx,dwidx)
       end if
       next_nod = next_nod + 1
       ! Update joblist and workload

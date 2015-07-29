@@ -3014,7 +3014,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
       if( bg_was_init )then
          if( .not. local )then
 #ifdef VAR_MPI
-            call lspdm_init_global_buffer(.true.)
+            call lspdm_init_global_buffer(infpar%lg_comm,.true.)
 #endif
          endif
       else
@@ -3023,7 +3023,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 #ifdef VAR_MPI
          else
             call mem_init_background_alloc_all_nodes(infpar%lg_comm,bytes_to_alloc)
-            call lspdm_init_global_buffer(.true.)
+            call lspdm_init_global_buffer(infpar%lg_comm,.true.)
 #endif
          endif
       endif
@@ -3054,7 +3054,7 @@ subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)
       if (bg_was_init)then
 #ifdef VAR_MPI
          if(.not. local)then
-            call lspdm_free_global_buffer(.true.)
+            call lspdm_free_global_buffer(infpar%lg_comm,.true.)
          endif
 #endif
       else
@@ -3063,7 +3063,7 @@ subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)
 #ifdef VAR_MPI
          else
             call mem_free_background_alloc_all_nodes(infpar%lg_comm)
-            call lspdm_free_global_buffer(.true.)
+            call lspdm_free_global_buffer(infpar%lg_comm,.true.)
 #endif
          endif
       endif

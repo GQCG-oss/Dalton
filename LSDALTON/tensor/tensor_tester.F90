@@ -4,6 +4,7 @@
 
 module tensor_tester_module
 
+  use lsparameters
   use tensor_allocator
   use tensor_parameters_and_counters
   use lspdm_tensor_operations_module
@@ -36,7 +37,7 @@ module tensor_tester_module
     integer(kind=long) :: testint
     logical :: master
     integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4),output
-    integer(kind=tensor_mpi_kind) :: sender, recver, nnod, rnk, me
+    integer(kind=tensor_mpi_kind) :: sender, recver, nnod, rnk, me, dpos,didx,dwidx
     character(len=7) :: teststatus
     character(tensor_MSG_LEN) :: msg
     integer,pointer :: ord(:)
@@ -122,7 +123,7 @@ module tensor_tester_module
       write(output,*)""
       write(output,*)"TESTING MPI_GET"
       do ti = 1, test1%ntiles
-        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
+        call get_residence_of_tile(test1,ti,to_get_from,dpos,didx,dwidx)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -156,7 +157,7 @@ module tensor_tester_module
       write(output,*)"TESTING MPI_PUT"
       teststatus="SUCCESS"
       do ti = test1%ntiles,1, -1
-        call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
+        call get_residence_of_tile(test1,ti,to_get_from,dpos,didx,dwidx)
         if(to_get_from /= me .or. nnod==1)then
          testint = ti
          exit
@@ -211,7 +212,7 @@ module tensor_tester_module
       tileget=3.0E0_tensor_dp
       if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(output,'("NORM OF FORT TO ADD:      ",f20.15)')normher
-      if(nnod>1) call tensor_accumulate_tile(test1,ti,tileget,j)
+      if(nnod>1) call tensor_acc_tile(test1,ti,tileget,j)
       if(nnod>1) call tensor_print_tile_norm(test1,ti,normher)
       write(output,'("NORM REMOTE ACCUMULATION: ",f20.15)')normher
       !use the tile with three in it, print its norm put and compare norms
@@ -308,7 +309,7 @@ module tensor_tester_module
     teststatus="SUCCESS"
     rnk = nnod - 1
     do ti = test1%ntiles,1, -1
-      call get_residence_of_tile(to_get_from,int(ti,kind=tensor_standard_int),test1)
+      call get_residence_of_tile(test1,ti,to_get_from,dpos,didx,dwidx)
       if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
        testint = ti
        exit
@@ -326,11 +327,11 @@ module tensor_tester_module
         tileget = 1.0E1_tensor_dp
         call tensor_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         call tensor_free_mem(tileget)
 
       else
-        call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(ref,infpar%lg_comm,recver,infpar%master)
         write(output,'("NORM PARALLEL 3LPN: ",f20.15)')ref
       endif
 
@@ -351,24 +352,24 @@ module tensor_tester_module
         call tensor_alloc_mem(tileget,j)
         call tensor_get_tile(test2,int(ti,kind=tensor_standard_int),tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         do i=1,j
           tileget(i) = tileget(i) + 2.4E0_tensor_dp
         enddo
         call print_norm(tileget,int(j,kind=8),normher)
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         tileget = 2.4E0_tensor_dp
         call get_midx(ti,midx,test2%ntpm,test2%mode)
-        call tensor_accumulate_tile(test2,midx,tileget,j)
+        call tensor_acc_tile(test2,midx,tileget,j)
         call tensor_free_mem(tileget)
       else
         teststatus="SUCCESS"
-        call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
         write(output,'("NORM PARALLEL 2LGN: ",f20.15)')normher
         if(abs(normher-ref)>1.0E-12_tensor_dp)teststatus=" FAILED"
         write (output,'("PUT-GET: NORM, TEST STATUS: ",f19.10," : ",A7)')normher,teststatus
 
-        call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(ref,infpar%lg_comm,recver,infpar%master)
         write(output,'("NORM PARALLEL 2LAC: ",f20.15)')ref
       endif
     endif
@@ -402,7 +403,7 @@ module tensor_tester_module
     call tensor_init(test1,[nv/7,nv+3,no,no-4],4,TT_TILED_DIST,AT_ALL_ACCESS)
     call memory_allocate_tensor_dense(test1,.false.)
     call random_number(test1%elm1)
-    call lsmpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
+    call tensor_mpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
     if(infpar%lg_mynum==0)then
       write (msg,*)"local test1 norm master"
       call print_norm(test1%elm1,test1%nelms,msg)

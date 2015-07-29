@@ -2,7 +2,7 @@
 module tensor_type_def_module
   use,intrinsic :: iso_c_binding, only:c_ptr,c_null_ptr
 
-  use lsmpi_module
+  use tensor_mpi_binding_module
   use tensor_parameters_and_counters
   use tensor_error_handler
 
@@ -123,14 +123,18 @@ module tensor_type_def_module
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_tensor_standard_int  = 5
   integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_char                 = 6
   !MPI OPERATION INDEX
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_bcast           = 1
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_reduce          = 2
-  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_allreduce       = 3
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_bcast     = 1
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_reduce    = 2
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_allreduce = 3
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_sendrecv  = 4
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_put       = 5
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_get       = 6
+  integer(kind=tensor_standard_int), parameter :: tensor_mpi_idx_acc       = 7
   !MAKE SURE THIS INDEX CORRESPONDS TO THE HIGHEST COUNTER IN THE LISTS ABOVE
   !> this counter is for the identification of the number of different data types
   integer(kind=tensor_standard_int), parameter :: tensor_nmpi_dat = 6
   !> this counter is for the identification of the number of different mpi operations
-  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 3
+  integer(kind=tensor_standard_int), parameter :: tensor_nmpi_idx = 7
 
   type(tensor_mpi_stats_type),save :: tensor_mpi_stats(tensor_nmpi_idx,tensor_nmpi_dat)
 #endif
@@ -214,18 +218,20 @@ module tensor_type_def_module
      implicit none
      integer(kind=tensor_standard_int) :: i
 
-     write (*,*) "Tensor memory finalization:"
-     write (*,*) "---------------------------"
+     !write (*,*) "Tensor memory finalization:"
+     !write (*,*) "---------------------------"
 
      do i=1,tensor_nmem_idx
 
-        write (*,'(a)',advance='no') "Currently allocated bytes of type"
-        call write_string_for_type(i)
-        write (*,*) counters(i)%curr_
-        write (*,'(a)',advance='no') "Max       allocated bytes of type"
-        call write_string_for_type(i)
-        write (*,*) counters(i)%high_
-        write (*,*) "--------------------------------------------------------------------------"
+        if (counters(i)%curr_ /= 0) call tensor_status_quit("ERROR(tensor_free_counters): memory counter not zero",332)
+
+        !write (*,'(a)',advance='no') "Currently allocated bytes of type"
+        !call write_string_for_type(i)
+        !write (*,*) counters(i)%curr_
+        !write (*,'(a)',advance='no') "Max       allocated bytes of type"
+        !call write_string_for_type(i)
+        !write (*,*) counters(i)%high_
+        !write (*,*) "--------------------------------------------------------------------------"
 
      enddo
   end subroutine tensor_free_counters

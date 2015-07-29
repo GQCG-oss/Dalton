@@ -49,7 +49,6 @@ subroutine lsmpi_init(OnMaster)
    call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
 
 
-   call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
    !default number of nodes to be used with scalapack - can be changed
@@ -64,14 +63,11 @@ subroutine lsmpi_init(OnMaster)
 
    !CHECK IF WE ARE ON THE MAIN MAIN MAIN MASTER PROCESS (NOT IN LOCAL GROUP,
    !NOT A SPAWNED PROCESS)
-   OnMaster = (infpar%mynum==infpar%master .and. infpar%parent_comm == MPI_COMM_NULL) 
+   OnMaster = infpar%mynum==infpar%master 
 
    ! Set rank, sizes and communcators for local groups
    ! to be identical to those for world group by default.
    call lsmpi_default_mpi_group
-
-   !if i am a child process, set the intracommunicator to the parent proc
-   if( infpar%parent_comm /= MPI_COMM_NULL )  call get_parent_child_relation
 
    ! Assume that there will be local jobs
    infpar%lg_morejobs=.true.
@@ -227,53 +223,17 @@ subroutine lsmpi_slave(comm)
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
          call get_slave_timers_slave(comm)
-      case(GIVE_BIRTH);
-         call give_birth_to_child_process
-
-      case(LSPDM_GIVE_BIRTH);
-         call lspdm_start_up_comm_procs
       case(LSMPITEST);
          call test_mpi(comm)
-
-
       case(LSMPIPRINTINFO);
          call lsmpi_print_mem_info(6,.TRUE.)
-
-      case(SLAVES_SHUT_DOWN_CHILD)
-         if(infpar%parent_comm/=MPI_COMM_NULL)then
-            call lsquit("ERROR(SLAVES_SHUT_DOWN_CHILD):I am not a parent",-1)
-         endif
-         call shut_down_child_process
-
-      case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
-         if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
-         call lspdm_shut_down_comm_procs
-
-      case(JOB_LSPDM_INIT_GLOBAL_BUFFER);
-         call lspdm_init_global_buffer(.false.)
-      case(JOB_LSPDM_FREE_GLOBAL_BUFFER);
-         call lspdm_free_global_buffer(.false.)
-
       case(SET_GPUMAXMEM);
          call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
-
       case(SET_SPLIT_MPI_MSG);
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+         call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
-
-      case(SET_TENSOR_BACKEND_TRUE);
-         call tensor_set_dil_backend_true(.false.)
-
-      case(SET_TENSOR_DEBUG_TRUE);
-         call tensor_set_debug_mode_true(.false.)
-
-      case(SET_TENSOR_ALWAYS_SYNC_TRUE);
-         call tensor_set_always_sync_true(.false.)
-
-      case(SET_TENSOR_SEG_LENGTH);
-         call tensor_set_global_segment_length(0_long)
-
       case(INIT_BG_BUF);
          call mem_init_background_alloc_slave(comm)
       case(FREE_BG_BUF);
@@ -282,13 +242,6 @@ subroutine lsmpi_slave(comm)
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
          !##########################################
-
-      case(CHILD_SHUT_DOWN);
-         if(infpar%parent_comm==MPI_COMM_NULL)then
-            call lsquit("ERROR(SHUT_DOWN_CHILD):I am not a child to be shut down",-1)
-         endif
-         call shut_down_child_process
-         stay_in_slaveroutine = .false.
 
          ! Quit but there are more local jobs - used for local group handling
       case(QUITMOREJOBS); 

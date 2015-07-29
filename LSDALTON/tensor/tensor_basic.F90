@@ -5,13 +5,6 @@ module tensor_basic_module
 
   use tensor_parameters_and_counters
   use tensor_allocator
-  use LSTIMING!,only:lstimer
-!#ifdef VAR_MPI
-!  use infpar_module
-!  use lsmpi_type!, only: lsmpi_localwin_create_tensor_dp,&
-!       & lsmpi_fence, lsmpi_win_free, lsmpi_barrier,&
-!       & lsmpi_first_fence, lsmpi_last_fence
-!#endif
   use lspdm_basic_module
   use tensor_type_def_module
 

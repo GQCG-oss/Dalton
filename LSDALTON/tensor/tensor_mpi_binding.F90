@@ -1,17 +1,18 @@
 
 module tensor_mpi_binding_module
 
-#ifdef VAR_MPI
-
-#ifdef USE_MPI_MOD_F08
-  use mpi_f08
-#elif defined(USE_MPI_MOD_F90)
-  use mpi
-#else
-  include 'mpif.h'
-#endif
-
-#endif
+   use lsmpi_module
+!#ifdef VAR_MPI
+!
+!#ifdef USE_MPI_MOD_F08
+!  use mpi_f08
+!#elif defined(USE_MPI_MOD_F90)
+!  use mpi
+!#else
+!  include 'mpif.h'
+!#endif
+!!ENDIF VAR_MPI
+!#endif
 
   contains
 
