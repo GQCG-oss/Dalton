@@ -100,10 +100,14 @@ contains
     type(decfrag),intent(in), optional :: Fragment2
     !> Logical variable to check if this is a pair fragment
     logical :: dopair
+    !Pairfragment
+    logical,pointer :: dopair_occ(:,:)
+    !> Fragment 1 in the pair fragment
+    type(decfrag) :: PairFragment
 
-    ! ***********************************************************
+    !========================================================
     !   Allocating integer space sizes
-    ! ***********************************************************
+    !========================================================
     !> number of AO orbitals
     integer :: nbasis
     !> number of occupied MO orbitals in EOS 
@@ -133,7 +137,7 @@ contains
     real(realk) :: mp2_energy
     real(realk) :: mp2f12_energy
     !========================================================
-    ! Additional variables
+    !  Additional variables
     !========================================================
     real(realk),pointer :: gmo(:,:,:,:)
     real(realk),pointer :: gao(:,:,:,:)
@@ -141,7 +145,7 @@ contains
     real(realk),pointer :: Fac(:,:)
     real(realk),pointer :: Fpp(:,:)
     !========================================================
-    ! RI variables
+    !  RI variables
     !========================================================
     real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:)
     real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:)
@@ -209,8 +213,9 @@ contains
 #endif
     call LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
 
-    ! Init stuff
-    ! **********
+    !========================================================
+    !  Init stuff
+    !========================================================
     natoms = MyFragment%natoms
     nbasis = MyFragment%nbasis
     nvirt  = MyFragment%nvirtAOS
@@ -230,9 +235,9 @@ contains
 
     IF(DECinfo%frozencore)call lsquit('DEC RI-/MP2-F12 frozen core not implemented',-1)
 
-    ! ****************************
-    !   Special treatment of Aux
-    ! ****************************
+    !========================================================
+    !  Special treatment of Aux
+    !========================================================
     call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%SETTING,MinAuxBatch,'D')
 
     IF(DECinfo%AuxAtomicExtent)THEN
@@ -261,9 +266,9 @@ contains
        call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nAux)
     ENDIF
 
-    ! ***********************************************************
-    !   Sanity Check if we do the pair calculation
-    ! ***********************************************************
+    !========================================================
+    !  Sanity Check if we do the pair calculation
+    !========================================================
     if((present(Fragment1) .AND. (.NOT. present(Fragment2))) .OR. &
          & (present(Fragment2) .AND. (.NOT. present(Fragment1)))) then
        call lsquit("get_f12_fragment_energy: Missing optional arguments Fragment1 and Fragment2")
@@ -274,9 +279,9 @@ contains
        dopair = .TRUE.
     endif
 
-    ! ***********************************************************
-    !   Printing Input variables 
-    ! ***********************************************************
+    !========================================================
+    !  Printing Input variables 
+    !========================================================
     if(DECinfo%F12debug) then
        print *, "-------------------------------------------------"
        print *, "     F12-integrals.F90                           "
@@ -292,9 +297,9 @@ contains
        print *, "ncabsMO    ", ncabsMO
     end if
 
-    ! ***********************************************************
-    !   Creating Coeff-matrices 
-    ! ***********************************************************
+    !========================================================
+    !  Creating Coeff-matrices 
+    !========================================================
     call mem_alloc(CMO_Cabs, ncabsAO, ncabsMO)
     do i=1, ncabsMO
        CMO_Cabs(:,i) = MyFragment%Ccabs(:,i)
@@ -339,9 +344,20 @@ contains
     enddo
 
     !=================================================================
+    != Step 0: Creating of dopair_occ                                =
+    !=================================================================
+    print *, "Step 0: Creating of dopair_occ"
+    call mem_alloc(dopair_occ,nocc,nocc)
+    if(dopair) then 
+       call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
+    else
+       dopair_occ = .TRUE.
+    endif
+    !=================================================================
     != Step 1:  Fijkl,Xijkl,Dijkl                                    =
     !=          corresponding to V1,X1,B1                            =
     !=================================================================
+    print *, "Step 1:  Fijkl,Xijkl,Dijkl "
     !normally I do not like to allocate things at the beginning but 
     !due to an analysis of memory heap performance and the 
     !background buffer features of ordered allocations this is beneficial
@@ -355,7 +371,6 @@ contains
     intspec(2) = 'R' !Regular AO basis function on center 3
     intspec(3) = 'R' !Regular AO basis function on center 4
 
-
     ! Calculate the Fitting Coefficients (alpha|F|ij)
     use_bg_buf = .FALSE.
     mp2f12_energy = 0.0E0_realk 
@@ -366,8 +381,8 @@ contains
          & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
     ABdecompCreateF = .FALSE.
     !perform this suborutine on the GPU (async)  - you do not need to wait for the results
-    call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12V1,ExchangeF12V1)
-
+    call ContractOne4CenterF12IntegralsRI(NBA,nocc,CalphaF,CoulombF12V1,ExchangeF12V1,dopair_occ)
+    
     !Calculate the Fitting Coefficients (alpha|g^2|ij) 
     intspec(4) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
     intspec(5) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
@@ -377,7 +392,7 @@ contains
     ABdecompCreateX = .FALSE.
 
     !perform this suborutine on the GPU (async)  - you do not need to wait for the results
-    call ContractOne4CenterF12IntegralsRI2(NBA,nocc,CalphaX,MyFragment%ppfock,CoulombF12X1,ExchangeF12X1)
+    call ContractOne4CenterF12IntegralsRI2(NBA,nocc,CalphaX,MyFragment%ppfock,CoulombF12X1,ExchangeF12X1,dopair_occ)
 
     !Calculate the Fitting Coefficients (alpha|[[T,g],g]|ij) 
     intspec(4) = 'D' !The double commutator [[T,g],g] 
@@ -412,20 +427,20 @@ contains
     call mem_dealloc(Umat)
     !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 20
     !perform this suborutine on the GPU (Async)
-    call ContractOne4CenterF12IntegralsRobustRI(nAux,nocc,nbasis,CalphaD,CalphaR,EB1)
+    call ContractOne4CenterF12IntegralsRobustRI(nAux,nocc,nbasis,CalphaD,CalphaR,EB1,dopair_occ)
 
     !The minus is due to the Valeev factor
     EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12V1-ExchangeF12V1*0.25E0_realk)
-    mp2f12_energy = mp2f12_energy  + EV1
+    mp2f12_energy = mp2f12_energy + EV1
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V1,RI) = ',EV1
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V1,RI) = ',EV1
     !minus is due to the overall minus from equation (41) and (42) due to
     !contribution from the \bar{B}_{ij}^{ij}
     EX1 = -1.0E0_realk*(0.21875E0_realk*CoulombF12X1 + 0.03125E0_realk*ExchangeF12X1)
-    mp2f12_energy = mp2f12_energy  + EX1
+    mp2f12_energy = mp2f12_energy + EX1
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X1,RI) = ',EX1
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X1,RI) = ',EX1
-    mp2f12_energy = mp2f12_energy  + EB1
+    mp2f12_energy = mp2f12_energy + EB1
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
 
@@ -446,11 +461,11 @@ contains
          & mynum,numnodes,CalphaXcabsAO,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
 
     call ContractOne4CenterF12IntegralsRIB23(nBA,nocc,ncabsAO,CalphaXcabsAO,CalphaX,&
-         & MyFragment%hJir,1.0E0_realk,EB2,EB3)
+         & MyFragment%hJir,1.0E0_realk,EB2,EB3,dopair_occ)
     !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
-    mp2f12_energy = mp2f12_energy  + EB2
+    mp2f12_energy = mp2f12_energy + EB2
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
-    mp2f12_energy = mp2f12_energy  + EB3
+    mp2f12_energy = mp2f12_energy + EB3
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
@@ -481,7 +496,7 @@ contains
 
     !==========================================================
     !=                                                        =
-    != V2:                 Ripjq*Gipjq                        =
+    != V2: Ripjq*Gipjq                                        =
     != The Coulomb Operator Int multiplied with               =
     != The Gaussian geminal operator g                        =
     != Dim(nocc,nbasis,nocc,nbasis)                           =
@@ -500,29 +515,29 @@ contains
 
     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
 
-    call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,EV2)
-    mp2f12_energy = mp2f12_energy  + EV2
+    call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,EV2,dopair_occ)
+    mp2f12_energy = mp2f12_energy + EV2
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2       
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
 
     !==========================================================
     !=                                                        =
     != X2: Gipjq*Gipjq                                        =
-    != The Gaussian geminal operator Int multiplied with       =
+    != The Gaussian geminal operator Int multiplied with      =
     != The Gaussian geminal operator g                        =
     != Dim(nocc,nbasis,nocc,nbasis)                           =
     !=                                                        =
     !==========================================================
     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-    call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nbasis,CalphaG,MyFragment%ppfock,EX2)
-    mp2f12_energy = mp2f12_energy  + EX2
+    call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nbasis,CalphaG,MyFragment%ppfock,EX2,dopair_occ)
+    mp2f12_energy = mp2f12_energy + EX2
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X2,RI) = ',EX2
 
     !==========================================================
     !=                                                        =
-    != V3:                 Rimjc*Gimjc                        =
-    != V4:                 Rjmic*Gjmic                        =
+    != V3: Rimjc*Gimjc                                        =
+    != V4: Rjmic*Gjmic                                        =
     != The Coulomb Operator Int multiplied with               =
     != The Gaussian geminal operator g                        =
     != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
@@ -551,9 +566,9 @@ contains
 
     !Do on GPU (Async)
     call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nbasis,&
-         & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
+         & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
 
-    mp2f12_energy = mp2f12_energy  + EV3 + EV4
+    mp2f12_energy = mp2f12_energy + EV3 + EV4
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
@@ -564,7 +579,7 @@ contains
     call mem_dealloc(CalphaRcabsMO)
 
     !==========================================================
-    != V5:     Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj          =
+    != V5: Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj              =
     !========================================================== 
 
     ! **********************
@@ -613,8 +628,8 @@ contains
          & FORCEPRINT,wakeslaves,MyFragment%Co,nocc,MyFragment%Cv,nvirt,&
          & mynum,numnodes,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
 
-    call ContractTwo4CenterF12IntegralsRIC(nBA,nocc,nvirt,CalphaCvirt,CalphaD,Taibj,EV5)
-    mp2f12_energy = mp2f12_energy  + EV5
+    call ContractTwo4CenterF12IntegralsRIC(nBA,nocc,nvirt,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
+    mp2f12_energy = mp2f12_energy + EV5
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
 
@@ -640,9 +655,9 @@ contains
 
     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
     call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,nbasis,&
-         & CalphaGcabsMO,CalphaG,MyFragment%ppfock,EX3,EX4)
+         & CalphaGcabsMO,CalphaG,MyFragment%ppfock,EX3,EX4,dopair_occ)
 
-    mp2f12_energy = mp2f12_energy  + EX3 + EX4
+    mp2f12_energy = mp2f12_energy + EX3 + EX4
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
@@ -673,9 +688,9 @@ contains
     n =  ncabsAO
 
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Krs,k,0.0E0_realk,CalphaD,m)
-    call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4)
+    call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4,dopair_occ)
 
-    mp2f12_energy = mp2f12_energy  + EB4
+    mp2f12_energy = mp2f12_energy + EB4
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
 
@@ -694,9 +709,9 @@ contains
     !Do on GPU (Async)
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Myfragment%Frs,k,0.0E0_realk,CalphaD,m)
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5)
+    call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5,dopair_occ)
 
-    mp2f12_energy = mp2f12_energy  + EB5
+    mp2f12_energy = mp2f12_energy + EB5
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
 
@@ -715,7 +730,7 @@ contains
     !Do on GPU (Async)
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fpp,k,0.0E0_realk,CalphaD,m)   
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB6)
+    call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB6,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB6
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
@@ -738,8 +753,8 @@ contains
 
     !NB! Changed T to N, dont think it will matter but...
     !   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,MyFragment%ppfock,k,0.0E0_realk,CalphaD,m)   
-    call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,MyFragment%ppfock,CalphaD)
-    call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB7)
+    call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,MyFragment%ppfock,CalphaD,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB7,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB7
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
@@ -761,7 +776,7 @@ contains
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Frm,k,0.0E0_realk,CalphaD,m)
 
     !we need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
-    call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8)
+    call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB8
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
@@ -782,7 +797,7 @@ contains
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,MyFragment%Fcp,k,0.0E0_realk,CalphaD,m)
     call mem_dealloc(CalphaGcabsMO)
 
-    call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9)
+    call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB9
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
@@ -791,6 +806,8 @@ contains
     ! ***********************************************************
     !    Free Memory
     ! ***********************************************************
+    call mem_dealloc(dopair_occ)
+
     call mem_dealloc(Fac)
     call mem_dealloc(Fpp)
 

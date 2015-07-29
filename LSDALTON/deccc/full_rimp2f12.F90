@@ -135,8 +135,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    nvirt  = MyMolecule%nvirt
    naux   = MyMolecule%nauxbasis
 
-   print *, "naux: ", naux
-
    nAtoms = MyMolecule%nAtoms
    ! Set number of occupied orbitals
    if(DECinfo%frozencore) then
