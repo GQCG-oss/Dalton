@@ -266,9 +266,8 @@ C
          LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF),IBUF4(LBUF*NIBUF),ICOUNT4
          WRITE (LUINTA) MAXREP+1,NAOS(1:8),LBUF,NIBUF,NBITS,LENINT4
          CALL NEWLAB('BASTWOEL',LUINTA,LUPRI)
-         JLEN = 608
          ICOUNT = 0
-         NBUF = 0
+         NBUF   = 0
       ELSE IF (ITYPE .EQ. 0) THEN ! write next record
          ICOUNT4 = ICOUNT
          IF (INDA .NE. 0) THEN
@@ -288,14 +287,14 @@ C
                   I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
                   J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
                   K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
-                  L = IAND(       IJKL,         IBIT1)
+                  L = IAND(      IJKL,          IBIT1)
                ELSE
                   IJ = IBUF4(2*INT-1)
                   KL = IBUF4(2*INT  )
-                  I = IAND(ISHFT(IJ,  -NBITS),IBIT1)
-                  J = IAND(       IJ,         IBIT1)
-                  K = IAND(ISHFT(KL,  -NBITS),IBIT1)
-                  L = IAND(       KL,         IBIT1)
+                  I = IAND(ISHFT(IJ, -NBITS),IBIT1)
+                  J = IAND(      IJ,         IBIT1)
+                  K = IAND(ISHFT(KL, -NBITS),IBIT1)
+                  L = IAND(      KL,         IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                      ' ## ', I, J, K, L, BUF(INT)
@@ -327,14 +326,14 @@ C
                      I = IAND(ISHFT(IJKL,-3*NBITS),IBIT1)
                      J = IAND(ISHFT(IJKL,-2*NBITS),IBIT1)
                      K = IAND(ISHFT(IJKL,  -NBITS),IBIT1)
-                     L = IAND(       IJKL,         IBIT1)
+                     L = IAND(      IJKL,          IBIT1)
                   ELSE
                      IJ = IBUF4(2*INT-1)
                      KL = IBUF4(2*INT  )
                      I = IAND(ISHFT(IJ,-NBITS),IBIT1)
-                     J = IAND(       IJ,       IBIT1)
+                     J = IAND(      IJ,        IBIT1)
                      K = IAND(ISHFT(KL,-NBITS),IBIT1)
-                     L = IAND(       KL,       IBIT1)
+                     L = IAND(      KL,        IBIT1)
                   END IF
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                         ' ## ', I, J, K, L, BUF(INT)
@@ -816,10 +815,16 @@ C
             CALL GPOPEN(LU2DER,'AO2SOINT','UNKNOWN',' ','UNFORMATTED',
      *                  IDUMMY,.FALSE.)
             CALL REWSPL(LU2DER)
+            CALL NEWLAB('BASINFO ',LU2DER,LUPRI)
+            LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF),IBUF4(LBUF*NIBUF),ICOUNT4
+            WRITE (LU2DER) MAXREP+1,NAOS(1:8),LBUF,NIBUF,NBITS,LENINT4
             CALL NEWLAB('AO2SOINT',LU2DER,LUPRI)
          ELSE IF (IATOM .EQ. 0) THEN
             CALL GPOPEN (LU2DER,'AO2MGINT','UNKNOWN',' ','UNFORMATTED',
      *            IDUMMY,.FALSE.)
+            CALL NEWLAB('BASINFO ',LU2DER,LUPRI)
+            LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF),IBUF4(LBUF*NIBUF),ICOUNT4
+            WRITE (LU2DER) MAXREP+1,NAOS(1:8),LBUF,NIBUF,NBITS,LENINT4
             CALL REWSPL(LU2DER)
             CALL NEWLAB('AO2MGINT',LU2DER,LUPRI)
          ELSE
@@ -863,7 +868,12 @@ C
      &                       NDSINT(ICROLD,IRPOLD) + INTS
             ICOUNT = ICOUNT + 1
             BUF(ICOUNT)  = TEN14
-            IBUF4(ICOUNT) = IATOM*2**24+IREPE*2**16+ICOOR*2**8
+            IF (NIBUF .EQ. 1) THEN
+               IBUF4(ICOUNT) = IATOM*2**24+IREPE*2**16+ICOOR*2**8
+            ELSE
+               IBUF4(2*ICOUNT-1) = IATOM*2**16+IREPE
+               IBUF4(2*ICOUNT  ) = ICOOR*2**16
+            END IF
             ICTOLD = ICOUNT
             NBFOLD = NBUF
             IRPOLD = IREPE
