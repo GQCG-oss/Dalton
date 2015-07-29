@@ -3378,6 +3378,7 @@ end function max_batch_dimension
     write(funit) jobs%workt
     write(funit) jobs%commt
     write(funit) jobs%idlet
+    write(funit) jobs%comm_gl_master_time
     write(funit) jobs%gpu_flops
 
   end subroutine write_fragment_joblist_to_file
@@ -3425,6 +3426,7 @@ end function max_batch_dimension
     read(funit) jobs%workt
     read(funit) jobs%commt
     read(funit) jobs%idlet
+    read(funit) jobs%comm_gl_master_time
     read(funit) jobs%gpu_flops
 
     write(DECinfo%output,*)
@@ -3479,17 +3481,19 @@ end function max_batch_dimension
        call mem_alloc(jobs%workt,njobs)
        call mem_alloc(jobs%idlet,njobs)
        call mem_alloc(jobs%gpu_flops,njobs)
+       call mem_alloc(jobs%comm_gl_master_time,njobs)
        jobs%nslaves = 0
        jobs%nocc    = 0
-       jobs%nvirt  = 0
+       jobs%nvirt   = 0
        jobs%nbasis  = 0
        jobs%ntasks  = 0
-       jobs%flops   = 0.0E0_realk
-       jobs%LMtime  = 0.0E0_realk
-       jobs%commt   = 0.0E0_realk
-       jobs%workt   = 0.0E0_realk
-       jobs%idlet   = 0.0E0_realk
-       jobs%gpu_flops= 0.0E0_realk
+       jobs%flops     = 0.0E0_realk
+       jobs%LMtime    = 0.0E0_realk
+       jobs%commt     = 0.0E0_realk
+       jobs%workt     = 0.0E0_realk
+       jobs%idlet     = 0.0E0_realk
+       jobs%gpu_flops = 0.0E0_realk
+       jobs%comm_gl_master_time = 0.0E0_realk
     end if
 
   end subroutine init_joblist
@@ -3590,6 +3594,10 @@ end function max_batch_dimension
        call mem_dealloc(jobs%idlet)
        nullify(jobs%idlet)
     end if
+    if(associated(jobs%comm_gl_master_time)) then
+       call mem_dealloc(jobs%comm_gl_master_time)
+       nullify(jobs%comm_gl_master_time)
+    end if
     end if
 
   end subroutine free_joblist
@@ -3628,7 +3636,7 @@ end function max_batch_dimension
     jobs%esti(position)      = singlejob%esti(1)
     jobs%nslaves(position)   = singlejob%nslaves(1)
     jobs%nocc(position)      = singlejob%nocc(1)
-    jobs%nvirt(position)    = singlejob%nvirt(1)
+    jobs%nvirt(position)     = singlejob%nvirt(1)
     jobs%nbasis(position)    = singlejob%nbasis(1)
     jobs%ntasks(position)    = singlejob%ntasks(1)
     jobs%flops(position)     = singlejob%flops(1)
@@ -3637,6 +3645,7 @@ end function max_batch_dimension
     jobs%commt(position)     = singlejob%commt(1)
     jobs%idlet(position)     = singlejob%idlet(1)
     jobs%gpu_flops(position) = singlejob%gpu_flops(1)
+    jobs%comm_gl_master_time(position) = singlejob%comm_gl_master_time(1)
 
   end subroutine put_job_into_joblist
 
