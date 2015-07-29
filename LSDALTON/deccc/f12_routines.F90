@@ -2681,7 +2681,7 @@ subroutine ContractOne4CenterF12IntegralsRI(nBA,n,Calpha,EJ,EK,dopair_occ_in)
    EJ = 0.0E0_realk
 
    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,&
-   !$OMP ALPHA) SHARED(Calpha,n,nba) REDUCTION(+:EK,EJ)
+   !$OMP ALPHA) SHARED(Calpha,n,nba,dopair_occ) REDUCTION(+:EK,EJ)
    DO I=1,n
       DO J=1,n
          if(dopair_occ(i,j)) then
@@ -2757,7 +2757,7 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,n,nbasis,Rtilde,CalphaR,EJ
    !  EJK1 = 0.0E0_realk
    !  EJK2 = 0.0E0_realk
    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J,ALPHA,TMP_IJIJ,TMP_JIIJ) SHARED(CalphaR,Rtilde,n,&
-   !$OMP nba) REDUCTION(+:TMP,TMPD)
+   !$OMP nba,dopair_occ) REDUCTION(+:TMP,TMPD)
    !Diagonal
    DO J=1,n
       IF(dopair_occ(J,J)) THEN
@@ -2877,7 +2877,7 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair
    EJK = 0.0E0_realk
    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
    !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
-   !$OMP nba) REDUCTION(+:EJ,EK,ED)
+   !$OMP nba,dopair_occ) REDUCTION(+:EJ,EK,ED)
    DO q=1,n2
       DO p=1,n2
          DO j=1,n1
@@ -3059,7 +3059,7 @@ subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,n1,n3,n2,nbasis,&
    EJK4 = 0.0E0_realk
    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
    !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaRcabs,CalphaR,CalphaGcabs,CalphaG,&
-   !$OMP n3,n2,n1,nba) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   !$OMP n3,n2,n1,nba,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
    DO m=1,n3
       DO c=1,n2
          DO j=1,n1
@@ -3140,7 +3140,7 @@ subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
    EJK4 = 0.0E0_realk
    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
    !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
-   !$OMP nba) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   !$OMP nba,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
    DO m=1,n3
       DO c=1,n2
          DO j=1,n1
@@ -3390,9 +3390,9 @@ subroutine ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii,CalphaD,dopair
    else
       dopair_occ = .TRUE.
    endif   
-   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(i,j,alpha,m,&
-   !$OMP TMP) SHARED(NBA,nocc,noccfull,CalphaG,CalphaD,Fii)
-   !$OMP DO COLLAPSE(3)
+!   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(i,j,alpha,m,&
+!   !$OMP TMP) SHARED(NBA,nocc,noccfull,CalphaG,CalphaD,Fii)
+!   !$OMP DO COLLAPSE(3)
    DO m=1,noccfull
       DO I=1,nocc
          IF(dopair_occ(I,I)) THEN
@@ -3402,8 +3402,8 @@ subroutine ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii,CalphaD,dopair
          ENDIF
       ENDDO
    ENDDO
-   !$OMP END DO
-   !$OMP DO COLLAPSE(2) 
+!   !$OMP END DO
+!   !$OMP DO COLLAPSE(2) 
    DO m=1,noccfull
       DO I=1,nocc
          DO J=2,noccfull
@@ -3416,8 +3416,8 @@ subroutine ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii,CalphaD,dopair
          ENDDO
       ENDDO
    ENDDO
-   !$OMP END DO
-   !$OMP END PARALLEL
+!   !$OMP END DO
+!   !$OMP END PARALLEL
 end subroutine ContractOccCalpha
 
 subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,nbasis,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
@@ -3513,7 +3513,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB8(nBA,n1,n2,nbasis,CalphaR,CalphaG,C
    EJ = 0.0E0_realk
    !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,m,i,j,alpha,beta,alpha1,&
    !$OMP beta1,alpha2,beta2,tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2,tmpG,tmpGJ1,tmpGJ2,&
-   !$OMP tmpGK1,tmpGK2) SHARED(CalphaR,CalphaG,CalphaD,n2,n1,nba) REDUCTION(+:ED,EJ,EK)
+   !$OMP tmpGK1,tmpGK2) SHARED(CalphaR,CalphaG,CalphaD,n2,n1,nba,dopair_occ) REDUCTION(+:ED,EJ,EK)
    DO p=1,n2 !ncabs
       DO m=1,n1 !noccfull
          DO j=1,n1 !nocc
@@ -3654,9 +3654,9 @@ subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,nbasis,&
   EJ4 =  0.0E0_realk
   EK4 =  0.0E0_realk
   EJK4 = 0.0E0_realk
-  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
-  !$OMP tmpG13,tmpG23,tmp) SHARED(CalphaG,CalphaGcabs,n3,n2,n1,&
-  !$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+  !!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+  !!$OMP tmpG13,tmpG23,tmp) SHARED(CalphaG,CalphaGcabs,n3,n2,n1,dopair_occ) &
+  !!$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
   DO m=1,n3
      DO c=1,n2
         DO j=1,n1
@@ -3689,7 +3689,8 @@ subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,nbasis,&
         ENDDO
      ENDDO
   ENDDO
-  !$OMP END PARALLEL DO
+  !!$OMP END PARALLEL DO
+
   EJK3 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ3+1.0_realk/16.0_realk*EK3)
   EJK4 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ4+1.0_realk/16.0_realk*EK4)
  end subroutine ContractTwo4CenterF12IntegralsRI2X
