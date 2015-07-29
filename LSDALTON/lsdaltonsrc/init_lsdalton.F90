@@ -18,7 +18,7 @@ module init_lsdalton_mod
   use daltoninfo, only: ls_init,ls_free
   use IIDFTD, only: II_DFT_DISP
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
-  use lsmpi_type, only: lsmpi_finalize, lsmpi_print
+  use lsmpi_type, only: lsmpi_finalize, lsmpi_print, MPI_COMM_LSDALTON
   use memory_handling, only: Print_Memory_info
   use tensor_interface_module, only:lspdm_free_global_buffer
   private
@@ -124,7 +124,7 @@ SUBROUTINE finalize_lsdalton_driver_and_free(lupri,luerr,ls,config,meminfo_slave
 
    if(config%opt%cfg_prefer_PDMM)then
       ! Free the background buffer used with PDMM
-      call lspdm_free_global_buffer(.true.)
+      call lspdm_free_global_buffer(MPI_COMM_LSDALTON,.true.)
    endif
 
    meminfo_slaves = config%mpi_mem_monitor

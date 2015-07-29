@@ -81,6 +81,8 @@ module tensor_interface_module
   public TT_DENSE, TT_REPLICATED, TT_TILED, TT_TILED_DIST
   !The different access types in order to swith between master mediated and all at the same time accesses
   public AT_NO_PDM_ACCESS, AT_MASTER_ACCESS, AT_ALL_ACCESS
+  ! USE THIS SIGNAL TO 
+  public TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
   !Other parameters that may be useful for a user
   public alloc_in_dummy, TENSOR_MSG_LEN
   !Tensor timing
@@ -198,11 +200,13 @@ module tensor_interface_module
 
 contains
 
-  subroutine tensor_initialize_interface(mem_ctr)
+  subroutine tensor_initialize_interface(mem_ctr,pdm_slaves_signal)
      implicit none
      !use an external counter for memory counting
      integer(kind=tensor_long_int), target, optional :: mem_ctr
+     integer, intent(in), optional :: pdm_slaves_signal
      if(present(mem_ctr)) call set_external_mem_ctr(mem_ctr)
+     if(present(pdm_slaves_signal)) call set_signal_for_slaves(pdm_slaves_signal)
      call tensor_init_counters()
      call init_persistent_array()
   end subroutine tensor_initialize_interface
@@ -218,20 +222,23 @@ contains
      TENSOR_MPI_MSG_LEN = len
   end subroutine tensor_set_mpi_msg_len
 
-  subroutine tensor_set_global_segment_length(seg_len)
+  subroutine tensor_set_global_segment_length(comm,seg_len)
      implicit none
-     integer(kind=8), intent(in) :: seg_len
-     integer(kind=tensor_mpi_kind) :: me
-     integer(kind=8) :: seg
-     me  = 0
-     seg = seg_len
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
+     integer(kind=tensor_long_int), intent(in) :: seg_len
+     integer(kind=tensor_mpi_kind) :: me, master
+     integer(kind=tensor_long_int) :: seg
+     me     = 0
+     master = 0
+     seg    = seg_len
 
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
+
      if( me == 0 )then
-        call tensor_mpi_bcast(SET_TENSOR_SEG_LENGTH,infpar%master,MPI_COMM_LSDALTON)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_SEG_LENGTH)
      endif
-     call tensor_mpi_bcast(seg,infpar%master,MPI_COMM_LSDALTON)
+     call tensor_mpi_bcast(seg,master,comm)
 #endif
 
      if( seg<=0 )then
@@ -244,15 +251,16 @@ contains
 
   end subroutine tensor_set_global_segment_length
 
-  subroutine tensor_set_debug_mode_true(call_slaves)
+  subroutine tensor_set_debug_mode_true(comm,call_slaves)
      implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
      if( me == 0 .and. call_slaves )then
-        call tensor_mpi_bcast(SET_TENSOR_DEBUG_TRUE,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_DEBUG_TRUE)
      endif
 #endif
 
@@ -260,30 +268,32 @@ contains
      tensor_always_sync = .true.
   end subroutine tensor_set_debug_mode_true
 
-  subroutine tensor_set_always_sync_true(call_slaves)
+  subroutine tensor_set_always_sync_true(comm,call_slaves)
      implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
      if( me == 0 .and. call_slaves )then
-        call tensor_mpi_bcast(SET_TENSOR_ALWAYS_SYNC_TRUE,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_ALWAYS_SYNC_TRUE)
      endif
 #endif
 
      tensor_always_sync = .true.
   end subroutine tensor_set_always_sync_true
 
-  subroutine tensor_set_dil_backend_true(call_slaves)
+  subroutine tensor_set_dil_backend_true(comm,call_slaves)
      implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
      if( me == 0.and. call_slaves )then
-        call tensor_mpi_bcast(SET_TENSOR_BACKEND_TRUE,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_BACKEND_TRUE)
      endif
 #endif
      tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3

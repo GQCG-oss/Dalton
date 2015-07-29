@@ -4,12 +4,14 @@
 
 module tensor_tester_module
 
+  use lsparameters
   use tensor_allocator
   use tensor_parameters_and_counters
   use lspdm_tensor_operations_module
   use reorder_tester_module
 #ifdef VAR_MPI
   use infpar_module
+  use lsmpi_type
   use tensor_mpi_interface_module
 #endif
   use tensor_interface_module

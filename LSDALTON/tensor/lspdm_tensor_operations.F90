@@ -112,45 +112,51 @@ module lspdm_tensor_operations_module
   save
 
   ! job parameters for pdm jobs
-  integer,parameter :: JOB_PC_ALLOC_DENSE         =  1
-  integer,parameter :: JOB_PC_DEALLOC_DENSE       =  2
-  integer,parameter :: JOB_FREE_TENSOR_STD        =  3
-  integer,parameter :: JOB_INIT_TENSOR_TILED      =  4
-  integer,parameter :: JOB_FREE_TENSOR_PDM        =  5
-  integer,parameter :: JOB_INIT_TENSOR_REPLICATED =  6
-  integer,parameter :: JOB_PRINT_MEM_INFO1        =  7
-  integer,parameter :: JOB_PRINT_MEM_INFO2        =  8
-  integer,parameter :: JOB_GET_NRM2_TILED         =  9
-  integer,parameter :: JOB_DATA2TILED_DIST        = 10
-  integer,parameter :: JOB_GET_TILE_SEND          = 11
-  integer,parameter :: JOB_PRINT_TI_NRM           = 12
-  integer,parameter :: JOB_SYNC_REPLICATED        = 13
-  integer,parameter :: JOB_GET_NORM_REPLICATED    = 14
-  integer,parameter :: JOB_PREC_DOUBLES_PAR       = 15
-  integer,parameter :: JOB_DDOT_PAR               = 16
-  integer,parameter :: JOB_ADD_PAR                = 17
-  integer,parameter :: JOB_CP_ARR                 = 18
-  integer,parameter :: JOB_TENSOR_ZERO            = 19
-  integer,parameter :: JOB_GET_CC_ENERGY          = 20
-  integer,parameter :: JOB_GET_FRAG_CC_ENERGY     = 21
-  integer,parameter :: JOB_CHANGE_ACCESS_TYPE     = 22
-  integer,parameter :: JOB_TENSOR_SCALE           = 23
-  integer,parameter :: JOB_INIT_TENSOR_PC         = 24
-  integer,parameter :: JOB_GET_MP2_ENERGY         = 25
-  integer,parameter :: JOB_GET_RPA_ENERGY         = 26
-  integer,parameter :: JOB_GET_SOS_ENERGY         = 27
-  integer,parameter :: JOB_TENSOR_CONTRACT_SIMPLE = 28
-  integer,parameter :: JOB_TENSOR_CONTRACT_BDENSE = 29
-  integer,parameter :: JOB_TENSOR_EXTRACT_VEOS    = 30
-  integer,parameter :: JOB_TENSOR_EXTRACT_OEOS    = 31
-  integer,parameter :: JOB_TENSOR_EXTRACT_ODECNP  = 32
-  integer,parameter :: JOB_TENSOR_EXTRACT_VDECNP  = 33
-  integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 34
-  integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 35
-  integer,parameter :: JOB_GET_MP2_ST_GUESS       = 36
-  integer,parameter :: JOB_tensor_rand            = 37
-  integer,parameter :: JOB_HMUL_PAR               = 38
-  integer,parameter :: JOB_DMUL_PAR               = 39
+
+
+  integer,parameter :: JOB_FREE_TENSOR_STD          =  3
+  integer,parameter :: JOB_INIT_TENSOR_TILED        =  4
+  integer,parameter :: JOB_FREE_TENSOR_PDM          =  5
+  integer,parameter :: JOB_INIT_TENSOR_REPLICATED   =  6
+  integer,parameter :: JOB_PRINT_MEM_INFO1          =  7
+  integer,parameter :: JOB_PRINT_MEM_INFO2          =  8
+  integer,parameter :: JOB_GET_NRM2_TILED           =  9
+  integer,parameter :: JOB_DATA2TILED_DIST          = 10
+  integer,parameter :: JOB_GET_TILE_SEND            = 11
+  integer,parameter :: JOB_PRINT_TI_NRM             = 12
+  integer,parameter :: JOB_SYNC_REPLICATED          = 13
+  integer,parameter :: JOB_GET_NORM_REPLICATED      = 14
+  integer,parameter :: JOB_PREC_DOUBLES_PAR         = 15
+  integer,parameter :: JOB_DDOT_PAR                 = 16
+  integer,parameter :: JOB_ADD_PAR                  = 17
+  integer,parameter :: JOB_CP_ARR                   = 18
+  integer,parameter :: JOB_TENSOR_ZERO              = 19
+  integer,parameter :: JOB_GET_CC_ENERGY            = 20
+  integer,parameter :: JOB_GET_FRAG_CC_ENERGY       = 21
+  integer,parameter :: JOB_CHANGE_ACCESS_TYPE       = 22
+  integer,parameter :: JOB_TENSOR_SCALE             = 23
+
+  integer,parameter :: JOB_GET_MP2_ENERGY           = 25
+  integer,parameter :: JOB_GET_RPA_ENERGY           = 26
+  integer,parameter :: JOB_GET_SOS_ENERGY           = 27
+  integer,parameter :: JOB_TENSOR_CONTRACT_SIMPLE   = 28
+  integer,parameter :: JOB_TENSOR_CONTRACT_BDENSE   = 29
+  integer,parameter :: JOB_TENSOR_EXTRACT_VEOS      = 30
+  integer,parameter :: JOB_TENSOR_EXTRACT_OEOS      = 31
+  integer,parameter :: JOB_TENSOR_EXTRACT_ODECNP    = 32
+  integer,parameter :: JOB_TENSOR_EXTRACT_VDECNP    = 33
+  integer,parameter :: JOB_GET_COMBINEDT1T2_1       = 34
+  integer,parameter :: JOB_GET_COMBINEDT1T2_2       = 35
+  integer,parameter :: JOB_GET_MP2_ST_GUESS         = 36
+  integer,parameter :: JOB_tensor_rand              = 37
+  integer,parameter :: JOB_HMUL_PAR                 = 38
+  integer,parameter :: JOB_DMUL_PAR                 = 39
+  integer,parameter :: JOB_LSPDM_INIT_GLOBAL_BUFFER = 40
+  integer,parameter :: JOB_LSPDM_FREE_GLOBAL_BUFFER = 41
+  integer,parameter :: JOB_SET_TENSOR_SEG_LENGTH    = 42
+  integer,parameter :: JOB_SET_TENSOR_DEBUG_TRUE    = 43
+  integer,parameter :: JOB_SET_TENSOR_ALWAYS_SYNC_TRUE = 44
+  integer,parameter :: JOB_SET_TENSOR_BACKEND_TRUE  = 45
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -168,7 +174,6 @@ module lspdm_tensor_operations_module
   real(tensor_dp) :: time_pdm_get          = 0.0E0_tensor_dp
   integer(kind=long) :: bytes_transferred_get = 0
   integer(kind=long) :: nmsg_get = 0
-  integer(kind=long) :: nel_one_sided = 0
 
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -237,8 +242,9 @@ module lspdm_tensor_operations_module
 
 
   ! initalizing the global buffer array
-  subroutine lspdm_init_global_buffer(call_slaves_from_slaveroutine)
+  subroutine lspdm_init_global_buffer(comm,call_slaves_from_slaveroutine)
      implicit none
+     integer(kind=tensor_mpi_kind),intent(in) :: comm
      logical, intent(in) :: call_slaves_from_slaveroutine
      integer(kind=tensor_mpi_kind) :: me
      integer :: i, checked
@@ -246,10 +252,11 @@ module lspdm_tensor_operations_module
 
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
 
      if( me == 0 .and. call_slaves_from_slaveroutine )then
-        call tensor_mpi_bcast(JOB_LSPDM_INIT_GLOBAL_BUFFER,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_LSPDM_INIT_GLOBAL_BUFFER)
+
      endif
 
 #endif
@@ -307,17 +314,18 @@ module lspdm_tensor_operations_module
   end subroutine lspdm_reinit_global_buffer
 
   ! freeing the global buffer array
-  subroutine lspdm_free_global_buffer(call_slaves_from_slaveroutine)
+  subroutine lspdm_free_global_buffer(comm,call_slaves_from_slaveroutine)
      implicit none
+     integer(kind=tensor_mpi_kind),intent(in) :: comm
      logical, intent(in) :: call_slaves_from_slaveroutine
      integer(kind=tensor_mpi_kind) :: me
 
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
 
      if( me == 0 .and. call_slaves_from_slaveroutine )then
-        call tensor_mpi_bcast(JOB_LSPDM_FREE_GLOBAL_BUFFER,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_LSPDM_FREE_GLOBAL_BUFFER)
      endif
 
 #endif
@@ -335,89 +343,18 @@ module lspdm_tensor_operations_module
   end subroutine lspdm_free_global_buffer
 
 
-  subroutine lspdm_start_up_comm_procs
+  subroutine set_signal_for_slaves(signal_idx)
      implicit none
-#ifdef VAR_MPI
-     if(.not. lspdm_use_comm_proc)then
-
-        if(infpar%lg_mynum == infpar%master .and. infpar%parent_comm == MPI_COMM_NULL)then
-           write (*,'(55A)',advance='no')" STARTING UP THE COMMUNICATION PROCESSES (LSPDM) ..."
-           !impregnate the slaves
-           call tensor_mpi_bcast(LSPDM_GIVE_BIRTH,infpar%master,infpar%lg_comm)
-        endif
-
-        lspdm_use_comm_proc = .true.
-
-        if(infpar%parent_comm == MPI_COMM_NULL)then
-           !all slaves and master get a baby where all the communicators are set
-           call give_birth_to_child_process
-           !call slaves to set lspdm_use_comm_proc to .true.
-           call tensor_mpi_bcast(LSPDM_GIVE_BIRTH,infpar%pc_mynum,infpar%pc_comm)
-        endif
-
-#ifdef VAR_LSDEBUG
-        call tensor_mpi_barrier(infpar%pc_comm)
-#endif
-
-        if(infpar%parent_comm == MPI_COMM_NULL)then
-#ifdef VAR_LSDEBUG
-           call tensor_mpi_barrier(infpar%lg_comm)
-#endif
-           if(infpar%lg_mynum == infpar%master)then
-              write(*,*) " SUCCESS"
-           endif
-        endif
-
-     else
-        print *,"WARNING(lspdm_startup_comm_procs): comm procs are already running"
-     endif
-#else
-     call lsquit("ERROR(lspdm_start_up_comm_procs): not available without mpi",-1)
-#endif
-  end subroutine lspdm_start_up_comm_procs
-
-
-
-  subroutine lspdm_shut_down_comm_procs
-     implicit none
-#ifdef VAR_MPI
-     if( lspdm_use_comm_proc ) then
-
-        if(infpar%lg_mynum == infpar%master .and. infpar%parent_comm == MPI_COMM_NULL )then
-
-           print *,"SHUTTING DOWN THE COMMUNICATION PROCESSES (LSPDM)"
-           !kill the babies of the slaves, i.e. get the slaves here
-           call tensor_mpi_bcast(LSPDM_SLAVES_SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)
-
-        endif
-
-        if( infpar%parent_comm == MPI_COMM_NULL )then
-           ! slaves and master get their childs here
-           call tensor_mpi_bcast(LSPDM_SLAVES_SHUT_DOWN_CHILD,infpar%pc_mynum,infpar%pc_comm)
-        endif
-
-        !All master, slaves and children need to call the shut_down_child_process
-        !routine to free communicators
-        call shut_down_child_process
-        lspdm_use_comm_proc = .false.
-
-
-     else
-        print *,"WARNING(lspdm_shutdown_comm_procs): no comm procs found running"
-     endif
-#else
-     call lsquit("ERROR(lspdm_shut_down_comm_procs): not available without mpi",-1)
-#endif
-  end subroutine lspdm_shut_down_comm_procs
-
-
+     integer, intent(in) :: signal_idx
+     TENSOR_SLAVES_TO_SLAVE_ROUTINE = signal_idx
+  end subroutine set_signal_for_slaves
 
   !> \brief main subroutine for the communication of nodes on grid handling 
   !arr structures. this routine assumes, that always the process with rank 0 in
   !the given communicator is the "manager"
   !> \author Patrick Ettenhuber
   !> \date May 2012
-  subroutine pdm_tensor_sync(comm,job,a,b,c,d,loc_addr)
+  subroutine pdm_tensor_sync(comm,job,a,b,c,d)
      implicit none
      !> job is input for master and output for slaves, the arguments have to be
      !in the job paramenters list in top of this file
@@ -427,7 +364,6 @@ module lspdm_tensor_operations_module
      !the array(s) to be passed to the slaves for which the operation is
      !performed
      type(tensor),optional             :: a,b,c,d
-     logical,optional                 :: loc_addr
 
      !> comm arrays
      integer,pointer                  :: TMPI(:), dims(:)
@@ -440,15 +376,14 @@ module lspdm_tensor_operations_module
      modes=0
 #ifdef VAR_MPI
 
-     call get_rank_for_comm(comm,me)
-     call get_size_for_comm(comm,nn)
+     call tensor_get_rank_for_comm(comm,me)
+     call tensor_get_size_for_comm(comm,nn)
 
 
      root  = infpar%master
      basic = 12
 
      loc = .false.
-     if(present(loc_addr))loc = loc_addr
      if(loc) call lsquit("ERROR(pdm_tensor_sync): this feature has been deactivated",-1)
 
      if( me == root) then
@@ -457,7 +392,7 @@ module lspdm_tensor_operations_module
         !**************************************************************************************
         !Wake up slaves
         call time_start_phase( PHASE_COMM )
-        call tensor_mpi_bcast(PDMA4SLV, me, comm)
+        call tensor_mpi_bcast( TENSOR_SLAVES_TO_SLAVE_ROUTINE, me, comm)
         call time_start_phase( PHASE_WORK )
         !1     = JOB
         !2-5   = address in slot a-c
@@ -913,17 +848,13 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_COMM )
         if( alloc_in_dummy )then
 
-           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-              call tensor_flush_win(gmo, local = .true.)
-              nel_one_sided = 0
-           endif
-
            call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.,req=reqC(cbuf))
-           nel_one_sided = nel_one_sided + gmo_ts
+
         else
+
            call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
            call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
-           nel_one_sided = nel_one_sided + gmo_ts
+
         endif
         call time_start_phase( PHASE_WORK )
 
@@ -933,17 +864,12 @@ module lspdm_tensor_operations_module
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
 
-              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                 call tensor_flush_win(gmo, local = .true.)
-                 nel_one_sided = 0
-              endif
-
               call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.,req=reqE(cbuf))
-              nel_one_sided = nel_one_sided + gmo_ts
+
            else
               call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
               call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
-              nel_one_sided = nel_one_sided + gmo_ts
+
            endif
            call time_start_phase( PHASE_WORK )
         else
@@ -992,14 +918,8 @@ module lspdm_tensor_operations_module
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
 
-              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                 call tensor_flush_win(gmo, local = .true.)
-                 nel_one_sided = 0
-              endif
-
               call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.,req=reqC(cbuf))
 
-              nel_one_sided = nel_one_sided + gmo_ts
            else
               call tensor_lock_win(gmo,gmo_ccidx,'s',assert = mode)
               call tensor_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
@@ -1012,14 +932,8 @@ module lspdm_tensor_operations_module
               call time_start_phase( PHASE_COMM )
               if( alloc_in_dummy )then
 
-                 if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                    call tensor_flush_win(gmo, local = .true.)
-                    nel_one_sided = 0
-                 endif
-
                  call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.,req=reqE(cbuf))
 
-                 nel_one_sided = nel_one_sided + gmo_ts
               else
                  call tensor_lock_win(gmo,gmo_ecidx,'s',assert = mode)
                  call tensor_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
@@ -1062,7 +976,6 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_COMM )
         if( alloc_in_dummy )then
            call tensor_mpi_wait(reqC(cbuf))
-           nel_one_sided = nel_one_sided - gmo_ts
         else
            call tensor_unlock_win(gmo,int(gmo_ccidx))
         endif
@@ -1073,7 +986,6 @@ module lspdm_tensor_operations_module
            call time_start_phase( PHASE_COMM )
            if( alloc_in_dummy )then
               call tensor_mpi_wait(reqE(cbuf))
-              nel_one_sided = nel_one_sided - gmo_ts
            else
               call tensor_unlock_win(gmo,int(gmo_ecidx))
            endif
@@ -1648,7 +1560,7 @@ module lspdm_tensor_operations_module
            !distribution as t, but for the sake of generality we use the MPI_GET
            !to perform the copy. For now, prefetching is not necessary
            call time_start_phase( PHASE_COMM )
-           call tensor_get_tile(t2,int(gtnr,kind=tensor_standard_int),ttile,nelt,flush_it=(nelt>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(t2,int(gtnr,kind=tensor_standard_int),ttile,nelt)
            call time_start_phase( PHASE_WORK )
 
            !Facilitate access
@@ -2002,9 +1914,9 @@ module lspdm_tensor_operations_module
            gmo_ecidx = get_cidx(gmo_etidx,iajb%ntpm,iajb%mode)
 
            call time_start_phase(PHASE_COMM)
-           call tensor_get_tile(iajb,gmo_ccidx,buf_c,nelms,flush_it=(t2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(iajb,gmo_ccidx,buf_c,nelms)
            if( spec == CCSD_LAG_RHS .and. gmo_ccidx/=gmo_ecidx)then
-              call tensor_get_tile(iajb,gmo_ecidx,buf_e,nelms,flush_it=(t2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
+              call tensor_get_tile(iajb,gmo_ecidx,buf_e,nelms)
            endif
            call time_start_phase(PHASE_WORK)
 
@@ -2158,7 +2070,7 @@ module lspdm_tensor_operations_module
 
      call time_start_phase(PHASE_COMM)
 
-     call tensor_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e,flush_it=(prec%ti(lt)%e>MAX_SIZE_ONE_SIDED))
+     call tensor_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e)
 
      call time_start_phase(PHASE_WORK)
 
@@ -2274,7 +2186,7 @@ module lspdm_tensor_operations_module
         !array1
         do lt=1,arr2%nlti
            call time_start_phase( PHASE_COMM )
-           call tensor_get_tile(arr1,arr2%ti(lt)%gt,buffer,arr2%ti(lt)%e,flush_it=(arr2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(arr1,arr2%ti(lt)%gt,buffer,arr2%ti(lt)%e)
            call time_start_phase( PHASE_WORK )
            res = res + ddot(arr2%ti(lt)%e,arr2%ti(lt)%t,1,buffer,1)
         enddo
@@ -2399,17 +2311,11 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_COMM )
         if(alloc_in_dummy )then
 
-           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-              call tensor_flush_win(y, local = .true.)
-              nel_one_sided = 0
-           endif
-
            call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,req=req(ibuf+1))
 
-           nel_one_sided = nel_one_sided + ynels
         else
            call tensor_lock_win(y,cmidy,'s')
-           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.)
         endif
         call time_start_phase( PHASE_WORK )
 
@@ -2447,19 +2353,13 @@ module lspdm_tensor_operations_module
            call time_start_phase( PHASE_COMM )
 
            if(alloc_in_dummy )then
-              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                 call tensor_flush_win(y, local = .true.)
-                 nel_one_sided = 0
-              endif
 
               call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,req=req(ibuf+1))
-
-              nel_one_sided = nel_one_sided + ynels
 
            else
 
               call tensor_lock_win(y,cmidy,'s')
-              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:fbuf_idx),ynels,lock_set=.true.)
 
            endif
 
@@ -2490,7 +2390,6 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_COMM )
         if(alloc_in_dummy )then
            call tensor_mpi_wait(req(ibuf+1))
-           nel_one_sided = nel_one_sided - ynels
         else
            call tensor_unlock_win(y,cmidy)
         endif
@@ -2651,17 +2550,11 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_COMM )
         if(alloc_in_dummy )then
 
-           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-              call tensor_flush_win(y, local = .true.)
-              nel_one_sided = 0
-           endif
-
            call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
 
-           nel_one_sided = nel_one_sided + ynels
         else
            call tensor_lock_win(y,cmidy,'s')
-           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.)
         endif
         call time_start_phase( PHASE_WORK )
 
@@ -2697,19 +2590,13 @@ module lspdm_tensor_operations_module
            call time_start_phase( PHASE_COMM )
 
            if(alloc_in_dummy )then
-              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                 call tensor_flush_win(y, local = .true.)
-                 nel_one_sided = 0
-              endif
 
               call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,req=req(ibuf+1))
-
-              nel_one_sided = nel_one_sided + ynels
 
            else
 
               call tensor_lock_win(y,cmidy,'s')
-              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+              call tensor_get_tile(y,ymidx,buffer(ibuf_idx:),ynels,lock_set=.true.)
 
            endif
 
@@ -2739,7 +2626,6 @@ module lspdm_tensor_operations_module
         call time_start_phase( PHASE_COMM )
         if(alloc_in_dummy )then
            call tensor_mpi_wait(req(ibuf+1))
-           nel_one_sided = nel_one_sided - ynels
         else
            call tensor_unlock_win(y,cmidy)
         endif
@@ -2936,16 +2822,12 @@ module lspdm_tensor_operations_module
         cmidy = get_cidx(ymidx,from%ntpm,from%mode)
 
         if( alloc_in_dummy )then
-           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-              call tensor_flush_win(from, local = .true.)
-              nel_one_sided = 0
-           endif
+
            call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
-           nel_one_sided = nel_one_sided + ynels
 
         else
            call tensor_lock_win(from,cmidy,'s')
-           call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.)
         endif
      enddo
 
@@ -2977,15 +2859,12 @@ module lspdm_tensor_operations_module
            cmidy = get_cidx(ymidx,from%ntpm,from%mode)
 
            if( alloc_in_dummy )then
-              if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-                 call tensor_flush_win(from, local = .true.)
-                 nel_one_sided = 0
-              endif
+
               call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,req=req(ibuf))
-              nel_one_sided = nel_one_sided + ynels
+
            else
               call tensor_lock_win(from,cmidy,'s')
-              call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+              call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.)
            endif
         endif
 
@@ -3010,7 +2889,6 @@ module lspdm_tensor_operations_module
 
         if( alloc_in_dummy )then
            call tensor_mpi_wait(req(ibuf))
-           nel_one_sided = nel_one_sided - ynels
         else
            call tensor_unlock_win(from,cmidy)
         endif
@@ -3121,15 +2999,6 @@ module lspdm_tensor_operations_module
      bg_int                  = bg
 
 #ifdef VAR_MPI
-     child     = (infpar%parent_comm /= MPI_COMM_NULL)
-
-     !assign if master and the number of nodes in the local group
-     !if( lspdm_use_comm_proc ) then
-     !  pc_me        = infpar%pc_mynum
-     !  pc_nnodes    = infpar%pc_nodtot
-     !  pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
-     !endif
-
      lg_master = (infpar%lg_mynum==infpar%master)
      lg_nnodes = infpar%lg_nodtot
 #endif
@@ -3191,7 +3060,7 @@ module lspdm_tensor_operations_module
      if(lg_master .and. p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
         call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 #ifdef VAR_MPI
-        call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_TENSOR_REPLICATED,p_arr%a(addr),loc_addr=.false.)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_TENSOR_REPLICATED,p_arr%a(addr))
 #endif
      endif
 
@@ -3385,15 +3254,6 @@ module lspdm_tensor_operations_module
      child                   = .false.
      lg_me                   = 0
 #ifdef VAR_MPI
-     child     = (infpar%parent_comm /= MPI_COMM_NULL)
-
-     !assign if master and the number of nodes in the local group
-     !if( lspdm_use_comm_proc ) then
-     !  pc_me        = infpar%pc_mynum
-     !  pc_nnodes    = infpar%pc_nodtot
-     !  pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
-     !endif
-
      lg_master = (infpar%lg_mynum==infpar%master)
      lg_nnodes = infpar%lg_nodtot
      lg_me     = infpar%lg_mynum
@@ -3570,7 +3430,7 @@ module lspdm_tensor_operations_module
      integer(kind=tensor_standard_int) :: fBtdim(B%mode), ntpmB(B%mode)
      integer :: tdim_ord(B%mode)
      integer :: tdimC(C%mode),tdim_product(C%mode)
-     integer :: nelmsTA, nelmsTB, M1SA, M1SB
+     integer :: nelmsTA, nelmsTB
      integer :: i,j,k,l, sq, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
      integer :: m_gemm, n_gemm, k_gemm
      logical :: B_dense,locA,locB, found
@@ -3835,12 +3695,12 @@ module lspdm_tensor_operations_module
   buf_posA = -1
   buf_logA = .false.
   call fill_buffer_for_tensor_contract_simple(0,nbuffsA,buf_logA,buf_posA,nfA,A,buffA,&
-     &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SA)
+     &A,B,m2cA,m2cB,nmodes2c,C,order,.true.)
   if(.not.B_dense)then
      buf_posB = -1
      buf_logB = .false.
      call fill_buffer_for_tensor_contract_simple(0,nbuffsB,buf_logB,buf_posB,nfB,B,buffB,&
-        &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SB)
+        &A,B,m2cA,m2cB,nmodes2c,C,order,.true.)
   endif
 
   !loop over local tiles of C and contract corresponding 
@@ -3945,7 +3805,7 @@ module lspdm_tensor_operations_module
         if( .not. found) call lsquit("ERROR(lspdm_tensor_contract_simple): A tile must be present",-1)  
 
         call time_start_phase( PHASE_COMM )
-        call make_sure_tile_is_here(A,cmidA,nfA,buf_posA,ibufA,nbuffs,M1SA)
+        call make_sure_tile_is_here(A,cmidA,nfA,buf_posA,ibufA,nbuffs)
         call time_start_phase( PHASE_WORK )
 
         ! sort for the contraction such that in gemm the arguments are always 'n' and 'n', 
@@ -3970,7 +3830,7 @@ module lspdm_tensor_operations_module
 
         buf_logA(ibufA) = .false.
         call fill_buffer_for_tensor_contract_simple(sq,nbuffsA,buf_logA,buf_posA,nfA,A,buffA,&
-           &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SA)
+           &A,B,m2cA,m2cB,nmodes2c,C,order,.true.)
 
         if(B_dense)then
            call tile_from_fort(1.0E0_tensor_dp,B%elm1,B%dims,int(B%mode),0.0E0_tensor_dp,wB,cmidB,tdim_ord,ordB)
@@ -3981,7 +3841,7 @@ module lspdm_tensor_operations_module
            if( .not. found) call lsquit("ERROR(lspdm_tensor_contract_simple): B tile must be present",-1)  
 
            call time_start_phase( PHASE_COMM )
-           call make_sure_tile_is_here(B,cmidB,nfB,buf_posB,ibufB,nbuffs,M1SB)
+           call make_sure_tile_is_here(B,cmidB,nfB,buf_posB,ibufB,nbuffs)
            call time_start_phase( PHASE_WORK )
 
            select case(B%mode)
@@ -3998,7 +3858,7 @@ module lspdm_tensor_operations_module
 
            buf_logB(ibufB) = .false.
            call fill_buffer_for_tensor_contract_simple(sq,nbuffsB,buf_logB,buf_posB,nfB,B,buffB,&
-              &A,B,m2cA,m2cB,nmodes2c,C,order,.true.,M1SB)
+              &A,B,m2cA,m2cB,nmodes2c,C,order,.true.)
 
         endif
 
@@ -4072,12 +3932,11 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine lspdm_tensor_contract_simple
 
-  subroutine make_sure_tile_is_here(T,cmidT,nfT,intT,ibufT,nbuffs,M1ST)
+  subroutine make_sure_tile_is_here(T,cmidT,nfT,intT,ibufT,nbuffs)
      implicit none
      type(tensor), intent(in) :: T
      integer, intent(in)      :: cmidT,nbuffs,ibufT,intT(nbuffs)
      logical, intent(inout)   :: nfT(nbuffs)
-     integer, intent(inout)   :: M1ST
      integer :: i, flushed_node, another_node, ne2, dpos, didx, dwidx
 
 #ifdef VAR_MPI
@@ -4100,12 +3959,6 @@ module lspdm_tensor_operations_module
 
                     call get_tile_dim(ne2,T,intT(i))
 
-                    if( ne2 > MAX_SIZE_ONE_SIDED )then
-                       M1ST = M1ST - mod(ne2,MAX_SIZE_ONE_SIDED)
-                    else
-                       M1ST = M1ST - ne2
-                    endif
-
                     nfT(i) = .false.
 
                  endif
@@ -4125,7 +3978,7 @@ module lspdm_tensor_operations_module
   end subroutine make_sure_tile_is_here
 
   subroutine fill_buffer_for_tensor_contract_simple(current,nbuffs,loglist,intlist,&
-        &nf,T,buf,A,B,m2cA,m2cB,nm2c,C,order,load_it,maxnel)
+        &nf,T,buf,A,B,m2cA,m2cB,nm2c,C,order,load_it)
      implicit none
      type(tensor), intent(in) :: T
      type(tensor), intent(in) :: A,B,C
@@ -4133,7 +3986,7 @@ module lspdm_tensor_operations_module
      real(tensor_dp), intent(inout)  :: buf(:,:)
      integer, intent(in)         :: m2cA(nm2c),m2cB(nm2c)
      logical, intent(inout)      :: loglist(nbuffs), nf(nbuffs)
-     integer, intent(inout)      :: intlist(nbuffs), maxnel
+     integer, intent(inout)      :: intlist(nbuffs)
      logical, intent(in)         :: load_it
      integer, parameter :: one = 1
      integer, parameter :: two = 2
@@ -4251,27 +4104,12 @@ module lspdm_tensor_operations_module
 
               if( alloc_in_dummy )then
 
-                 if( maxnel >= MAX_SIZE_ONE_SIDED)then
-                    call tensor_flush_win(T, local = .true.)
-                    maxnel = 0
-                    nf     = .false.
-                 endif
-
                  !call tensor_get_tile(T,cmidT,buf(:,ibufT),nelmsTA,lock_set=.true.,req=reqA(ibufA))
-                 call tensor_get_tile(T,int(cmidT,kind=tensor_standard_int),&
-                    &buf(:,ibufT),nelmsT,lock_set=.true.,flush_it=(nelmsT>MAX_SIZE_ONE_SIDED))
-
-                 if( nelmsT > MAX_SIZE_ONE_SIDED )then
-                    maxnel = maxnel + mod(nelmsT,MAX_SIZE_ONE_SIDED)
-                 else
-                    maxnel = maxnel + nelmsT
-                 endif
-
+                 call tensor_get_tile(T,cmidT,buf(:,ibufT),nelmsT,lock_set=.true.)
 
               else
                  call tensor_lock_win(T,cmidT,'s')
-                 call tensor_get_tile(T,int(cmidT,kind=tensor_standard_int),&
-                    &buf(:,ibufT),nelmsT,lock_set=.true.,flush_it=(nelmsT>MAX_SIZE_ONE_SIDED))
+                 call tensor_get_tile(T,cmidT,buf(:,ibufT),nelmsT,lock_set=.true.)
               endif
 
               call time_start_phase( PHASE_WORK )
@@ -4344,7 +4182,7 @@ module lspdm_tensor_operations_module
         if(pdm)then
 #ifdef VAR_MPI
            call time_start_phase( PHASE_COMM )
-           call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp,nelintile,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp,nelintile)
            call time_start_phase( PHASE_WORK )
 #endif
         else
@@ -4396,7 +4234,7 @@ module lspdm_tensor_operations_module
         call get_tile_dim(nelintile,arr,i)
         if(pdm)then
 #ifdef VAR_MPI
-           call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp,nelintile,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp,nelintile)
 #endif
         else
            tmp => arr%ti(i)%t
@@ -4528,9 +4366,7 @@ module lspdm_tensor_operations_module
               call get_tile_dim(nelintile,arr,i-maxintmp)
 
               call tensor_mpi_wait(req(bidx))
-              !call tensor_flush_win(arr, gtidx = i-maxintmp, only_owner = .true.,local = .true.)
 
-              nel_one_sided = nel_one_sided - nelintile
            else
               if(arr%lock_set(i-maxintmp)) call tensor_unlock_win(arr,i-maxintmp)
            endif
@@ -4553,32 +4389,13 @@ module lspdm_tensor_operations_module
         iti = i
 
         if( alloc_in_dummy )then
-
-           if( nel_one_sided > MAX_SIZE_ONE_SIDED)then
-              call tensor_flush_win(arr, local = .true.)
-              nel_one_sided = 0
-           endif
-
            call put_acc(arr,iti,tmp(b:e),nelintile,lock_set=ls,req=req(bidx))
-           !call put_acc(arr,i,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
-
-           nel_one_sided = nel_one_sided + nelintile
         else
-           call put_acc(arr,iti,tmp(b:e),nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
+           call put_acc(arr,iti,tmp(b:e),nelintile,lock_set=ls)
         endif
 
         elms_sent = elms_sent + nelintile
 
-        !if(elms_sent > MAX_SIZE_ONE_SIDED)then
-
-        !   do j=last_flush_i+1,i
-        !      call tensor_mpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
-        !   enddo
-
-        !   last_flush_i = i
-        !   elms_sent    = 0
-
-        !endif
      enddo
 
      if(arr%ntiles - maxintmp >= 0)then
@@ -4591,9 +4408,7 @@ module lspdm_tensor_operations_module
         do i=minstart, arr%ntiles
            call get_tile_dim(nelintile,arr,i)
            bidx = mod(i-1,maxintmp)+1
-           !call tensor_flush_win(arr, gtidx = i, only_owner = .true.,local = .true.)
            call tensor_mpi_wait(req(bidx))
-           nel_one_sided = nel_one_sided - nelintile
         enddo
         if(arr%lock_set(1).and.lock_was_not_set)call tensor_unlock_wins(arr, all_nodes = .true.)
      else
@@ -4720,21 +4535,9 @@ module lspdm_tensor_operations_module
               ls = arr%lock_set(i)
            endif
 
-           call tensor_get_tile(arr,int(i,kind=tensor_standard_int),fort(b:e),&
-              &nelintile,lock_set=ls,flush_it=(nelintile > MAX_SIZE_ONE_SIDED))
+           call tensor_get_tile(arr,i,fort(b:e),nelintile,lock_set=ls)
            b = e + 1
            elms_sent = elms_sent + nelintile
-
-           !if(elms_sent > MAX_SIZE_ONE_SIDED)then
-
-           !   do j=last_flush_i+1,i
-           !      call tensor_mpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
-           !   enddo
-
-           !   last_flush_i = i
-           !   elms_sent    = 0
-
-           !endif
 
         enddo
 
@@ -4771,7 +4574,6 @@ module lspdm_tensor_operations_module
 
               if( alloc_in_dummy ) then
                  call tensor_mpi_wait(req(bidx))
-                 nel_one_sided = nel_one_sided - nelintile
               else
                  if(.not.arr%lock_set(i-maxintmp)) call lsquit("ERROR(tensor_gather): lock has to be set here 1!",-1)
                  call tensor_unlock_win(arr,i-maxintmp)
@@ -4783,17 +4585,11 @@ module lspdm_tensor_operations_module
 
            call get_tile_dim(nelintile,arr,i)
 
-           if( alloc_in_dummy .and. nel_one_sided > MAX_SIZE_ONE_SIDED)then
-              call tensor_flush_win(arr, local = .true.)
-              nel_one_sided = 0
-           endif
-
            if( alloc_in_dummy) then
               call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp(b:e),nelintile,lock_set=.true.,req = req(bidx))
            else
               call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp(b:e),nelintile,lock_set=.true.)
            endif
-           nel_one_sided = nel_one_sided + nelintile
 
            elms_sent = elms_sent + nelintile
 
@@ -4812,7 +4608,6 @@ module lspdm_tensor_operations_module
 
            if( alloc_in_dummy )then
               call tensor_mpi_wait(req(bidx))
-              nel_one_sided = nel_one_sided - nelintile
            else
               if(.not.arr%lock_set(i)) call lsquit("ERROR(tensor_gather): lock has to be set here 2!",-1)
               call tensor_unlock_win(arr,i)
@@ -4957,21 +4752,8 @@ module lspdm_tensor_operations_module
            ls = arr%lock_set(i)
         endif
 
-        call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp(b:e),&
-           &nelintile,lock_set=ls,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+        call tensor_get_tile(arr,int(i,kind=tensor_standard_int),tmp(b:e),nelintile,lock_set=ls)
 
-        elms_sent = elms_sent + nelintile
-
-        !if(elms_sent > MAX_SIZE_ONE_SIDED)then
-
-        !   do j=last_flush_i+1,i
-        !      call tensor_mpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=tensor_mpi_kind),local=.false.)
-        !   enddo
-
-        !   last_flush_i = i
-        !   elms_sent    = 0
-
-        !endif
      enddo
 
      if(arr%ntiles - maxintmp >= 0)then
@@ -5568,11 +5350,9 @@ module lspdm_tensor_operations_module
      logical     :: parent
      call time_start_phase( PHASE_WORK )
 #ifdef VAR_MPI
-     parent = (infpar%parent_comm == MPI_COMM_NULL)
 
      if( arr%access_type==AT_MASTER_ACCESS &
-        &   .and.infpar%lg_mynum==infpar%master &
-        &   .and. parent                          )then
+        &   .and.infpar%lg_mynum==infpar%master  )then
 
      call pdm_tensor_sync(infpar%lg_comm,JOB_FREE_tensor_PDM,arr)
 
@@ -6100,12 +5880,9 @@ module lspdm_tensor_operations_module
      logical :: ls
 #ifdef VAR_MPI
      integer(kind=tensor_long_int) :: p, dpos, widx
-     integer :: maxsze
      call time_start_phase( PHASE_COMM )
 
      gt = globtilenr
-
-     maxsze = MAX_SIZE_ONE_SIDED
 
      ls = .false.
      if(present(lock_set))ls=lock_set
@@ -6190,33 +5967,6 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine tensor_scale_td
 
-
-  subroutine memory_allocate_tensor_dense_pc(arr)
-     implicit none
-     type(tensor), intent(inout) :: arr
-     logical :: parent
-#ifdef VAR_MPI
-     parent = (infpar%parent_comm == MPI_COMM_NULL)
-     !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==AT_MASTER_ACCESS)then
-     !  call pdm_tensor_sync(infpar%pc_comm,JOB_PC_ALLOC_DENSE,arr,loc_addr=.true.)
-     !endif
-#endif
-     !this is deprecated
-     call memory_allocate_tensor_dense(arr,.false.)
-  end subroutine memory_allocate_tensor_dense_pc
-
-  subroutine memory_deallocate_tensor_dense_pc(arr)
-     implicit none
-     type(tensor), intent(inout) :: arr
-     logical :: parent
-#ifdef VAR_MPI
-     parent = (infpar%parent_comm == MPI_COMM_NULL)
-     !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==AT_MASTER_ACCESS)then
-     !  call pdm_tensor_sync(infpar%pc_comm,JOB_PC_DEALLOC_DENSE,arr,loc_addr=.true.)
-     !endif
-#endif
-     call tensor_deallocate_dense(arr)
-  end subroutine memory_deallocate_tensor_dense_pc
 
   subroutine tensor_flush_win(T,node,gtidx,local,only_owner)
      implicit none

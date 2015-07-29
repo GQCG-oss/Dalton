@@ -1257,9 +1257,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 #ifdef VAR_MPI
            config%opt%cfg_prefer_PDMM = .true.
            !Set tensor synchronization to always, TODO: see if this can be optimized
-           call tensor_set_always_sync_true(.true.)
+           call tensor_set_always_sync_true(MPI_COMM_LSDALTON,.true.)
            !Set the background buffer on, this will use additional memory
-           call lspdm_init_global_buffer(.true.)
+           call lspdm_init_global_buffer(MPI_COMM_LSDALTON,.true.)
 #endif
         CASE('.PDMMBLOCKSIZE');  
 #ifdef VAR_MPI
@@ -1341,6 +1341,7 @@ subroutine TENSOR_INPUT(word,lucmd)
    character(len=80),intent(inout)  :: word
    integer,intent(in) :: lucmd 
    integer(kind=8)    :: seg_len
+   integer            :: dummy
    do
       read(LUCMD,'(A40)') word
       if(word(1:1) == '!' .or. word(1:1) == '#') cycle
@@ -1350,12 +1351,24 @@ subroutine TENSOR_INPUT(word,lucmd)
       end if
       select case(word)
       case('.DIL_BACKEND')
-         call tensor_set_dil_backend_true(.true.)
+#ifdef VAR_MPI
+         call tensor_set_dil_backend_true(MPI_COMM_LSDALTON,.true.)
+#else
+         call tensor_set_dil_backend_true(dummy,.true.)
+#endif
       case('.DEBUG')
-         call tensor_set_debug_mode_true(.true.)
+#ifdef VAR_MPI
+         call tensor_set_debug_mode_true(MPI_COMM_LSDALTON,.true.)
+#else
+         call tensor_set_debug_mode_true(dummy,.true.)
+#endif
       case('.SEGMENT_LENGTH')
          read(LUCMD,*) seg_len
-         call tensor_set_global_segment_length(seg_len)
+#ifdef VAR_MPI
+         call tensor_set_global_segment_length(MPI_COMM_LSDALTON,seg_len)
+#else
+         call tensor_set_global_segment_length(dummy,seg_len)
+#endif
       case default
          print *,"UNRECOGNIZED KEYWORD: ",word
          call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
