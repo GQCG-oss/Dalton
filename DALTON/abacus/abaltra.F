@@ -84,19 +84,21 @@ C
       LFRSAV = LWRK
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-      CALL MEMGET('INTE',KINDAO,N2BASX,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDAC,N2ASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDRS,64,    WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAO',KINDAO,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAC',KINDAC,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDRS',KINDRS,64,    WRK,KFREE,LFREE)
 C
+
+      CALL IZERO(WRK(KINDRS),64)
       CALL TRLSET(WRK(KINDAO),WRK(KINDAC),WRK(KINDRS),IPRINT)
       if (iprint .gt. 2) then
          write (lupri,*) 'finished TRLSET'
-         CALL FLSHFO(lupri)
+         CALL FLSHFO(LUPRI)
       end if
 C
 C     Pack PVSQ
 C
-      CALL MEMGET('REAL',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PVFPK',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
       if (iprint .gt. 25) then
          write (lupri,*) 'Packing PV matrix'
       end if
@@ -126,16 +128,16 @@ C           ... KUVSYM = KXYSYM for PVSQ(KU,KV,KX,KY) .ne. 0
          CALL FLSHFO(LUPRI)
       end if
 C
-      CALL MEMGET('REAL',KFQAOA,NBAST*NASHT,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDDI,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQAQA',KFQAOA,NBAST*NASHT,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDI', KINDDI,N2BASX,WRK,KFREE,LFREE)
 C     need LW1 in TRLDRV:
       LBINT = 600
 C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
-      LBUF = LBINT*(IRAT + 2 + 4) + 1 ! NIBUF .le. 2
-      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*2*MXNDAC,LBUF)
-      LW1  = (LW1-1)/IRAT + 1
+      LENBUF = LBINT*(IRAT + 2 + 4) + 1 ! NIBUF .le. 2
+      LENBUF = LENBUF/IRAT + 1
+      LW1  = MAX(NBAST*NASHT,2*MXNDAC+NBAST,LENBUF)
 C
-      MXDIS = (LFREE-LW1-10) / MXNDAO
+      MXDIS = (LFREE-LW1-100) / MXNDAO
       MXDIS = MIN(MXDIS,NNBASX)
       CALL MEMGET('REAL',KH2LBU,MXDIS*MXNDAO,WRK,KFREE,LFREE)
       CALL DZERO(WRK(KFQAOA),NBAST*NASHT)
@@ -179,7 +181,7 @@ C
 C
 C     Unpack PVSQ again
 C
-      CALL MEMGET('REAL',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PVFPK',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
       DO 880 KY = 1,NASHT
          KYSYM = NSM(KY)
          DO 860 KX = 1,NASHT
@@ -231,17 +233,21 @@ C
 ! eribuf: NIBUF
 #include "eribuf.h"
 C
+C-B-HJTEMP-MAERKE
       PARAMETER (LBINT = 600)
+C-E-HJTEMP-MAERKE
 C
       KFREE = KFRSAV
       LFREE = LFRSAV
+C
 C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
-      LENBUF = LBINT*(IRAT + NIBUF + 4) + 1
-      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*2*MXNDAC,LENBUF)
-      LW1    = (LW1-1)/IRAT + 1
-      CALL MEMGET('REAL',KW1,LW1,WRK,KFREE,LFREE)
+      LENBUF = LBINT*(IRAT + NIBUF) + 1
+      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*(2*MXNDAC+NBAST),LENBUF+4*LBINT)
+      LW1  = (LW1-1)/IRAT + 1
+      CALL MEMGET2('REAL','W1',KW1,LW1,WRK,KFREE,LFREE)
+      LENBUF = LENBUF/IRAT + 1
       KBUFW1 = KW1
-      KIINDX4= KBUFW1 + LBINT*(IRAT + NIBUF) + 1
+      KIINDX4= KBUFW1 + LENBUF
       KUVRY  = KW1
       KVUYR  = KUVRY + MXNDAC
       KPVXR  = KW1
@@ -252,7 +258,7 @@ C
             JCMO1 = ICMO(ISYM) + 1
             NBASI = NBAS(ISYM)
             NORBI = NORB(ISYM)
-            write (lupri,*) 'TRLDRV: MO coefficients symmetry',ISYM
+            write (lupri,*) 'TRLDRV: MO coefficients symmetry ',ISYM
             CALL OUTPUT(CMO(JCMO1),1,NBASI,1,NORBI,NBASI,NORBI,1,LUPRI)
    10    CONTINUE
          CALL FLSHFO(LUPRI)
@@ -275,7 +281,7 @@ C        H2LBUF(pq,inddis(r,s)) all (pq/ for given /rs)
 C
          CALL TRFDIS(ICASE,LRL,LSL,INDRS,INDDIS,MXDIS,NDIS)
          IF (IPRINT .GE. 15) THEN
-            WRITE (lupri,*) 'TRLDRV: ICASE,LRL,LSL =',ICASE,LRL,LSL
+            WRITE (LUPRI,*) 'TRLDRV: ICASE,LRL,LSL =',ICASE,LRL,LSL
          END IF
          IF (ICASE .LT. 0) GO TO 9999
 C        ... finished when ICASE .lt. 0 !
@@ -287,7 +293,7 @@ C        ... finished when ICASE .lt. 0 !
                WRITE (lupri,*) 'INDRS  array:'
                CALL IWRTMA(INDRS,NSYM,NSYM,8,8)
                IF (IPRINT .GE. 20) THEN
-                  WRITE (lupri,*) 'INDDIS array:'
+                  WRITE (LUPRI,*) 'INDDIS array:'
                   CALL IWRTMA(INDDIS,NBAST,NBAST,NBAST,NBAST)
             END IF
             END IF
@@ -298,7 +304,7 @@ C
          CALL TRLRAO(LU2DER,IBXYZ,WRK(KIINDX4),H2LBUF,
      *               INDAO,INDDIS,WRK(KBUFW1))
          if (iprint .gt. 20) then
-            write (lupri,*) 'TRLDRV: finished TRLRAO in pass no.',NPASS
+            write (LUPRI,*) 'TRLDRV: finished TRLRAO in pass no.',NPASS
             CALL FLSHFO(LUPRI)
          end if
 C
@@ -353,13 +359,13 @@ C
 C   also :     KUVSYM = MULD2H(KXSYM,KRSYM)
                NDACUV = NDAC(KUVSYM)
                IF (NDACUV .EQ. 0) GO TO 700
-               if (iprint .gt. 10) then
-                  write (lupri,*) 'KR,KRSYM,KSSYM,KRSSYM',
-     &               KR,KRSYM,KSSYM,KRSSYM
-                  write (lupri,*) 'KUVSYM,NDACUV',KUVSYM,NDACUV
-                  write (lupri,*) 'IDOH2, IDOFQ ',IDOH2, IDOFQ
-               end if
 C              ... No act-act elements in this symmetry block
+               if (iprint .gt. 10) then
+                  write (lupri,*) 'KR,KRSYM,KSSYM,KRSSYM ',
+     &               KR,KRSYM,KSSYM,KRSSYM
+                  write (lupri,*) 'KUVSYM,NDACUV ',KUVSYM,NDACUV
+                  write (lupri,*) 'IDOH2, IDOFQ  ',IDOH2, IDOFQ
+               end if
 C
 C              First FQL contributions
 C              NOTE: r and s are switched in this section,
@@ -397,7 +403,7 @@ C
                      write (lupri,*) 'PVXR matrices for KR,KX=',KR,KX
                      CALL OUTPUT(WRK(KPVXR),1,NDACUV,1,2,MXNDAC,2,1,
      &                           LUPRI)
-                     write (lupri,*) 'FQAOAC for KSSYM,KX=',KSSYM,KX
+                     write (lupri,*) 'FQAOAC for KSSYM,KX = ',KSSYM,KX
                      CALL OUTPUT(FQAOAC(1,1),KS1,KSL,KX,KX,
      &                           NBAST,NASHT,1,LUPRI)
                   end if
@@ -406,7 +412,7 @@ C
 C
 C              Second and last : H2LAC contributions
 C
-  600          IF (NASHS .EQ. 0 .OR. IDOH2 .EQ. 0) GO TO 700
+  600       IF (NASHS .EQ. 0 .OR. IDOH2 .EQ. 0) GO TO 700
                NBASS  = NBAS(KSSYM)
                ICMOSA = ICMO(KSSYM) + NISH(KSSYM)*NBASS + 1
                CALL TRLAH2(KR,KRSYM,KSSYM,KUVSYM,
@@ -436,7 +442,7 @@ C  /* Deck trlset */
 C
 C Copyright 25-Sep-1992 Hans Joergen Aa. Jensen
 C
-C Set index inforamtion INDAO and INDAC and
+C Set index information INDAO and INDAC and
 C set index information for matrices in /INFTRL/.
 C Set INDRS(rsym,ssym) = 0 for sym.dist. desired
 C                      = 654321 for sym.dist. not needed
@@ -473,6 +479,7 @@ C           ... 1. IH1AO and IH1AC
             END IF
 C           ... 2. INDAO
             DO 140 JB = IBAS(IBSYM)+1,IBAS(IBSYM)+NBAS(IBSYM)
+
                DO 120 JA = IBAS(IASYM)+1,IBAS(IASYM)+NBAS(IASYM)
                   JNDAO = JNDAO + 1
                   INDAO(JA,JB) = JNDAO
@@ -482,6 +489,7 @@ C           ... 2. INDAO
             MXNDAO = MAX(MXNDAO,JNDAO)
 C           ... 3. INDAC
             DO 240 JB = IASH(IBSYM)+1,IASH(IBSYM)+NASH(IBSYM)
+
                DO 220 JA = IASH(IASYM)+1,IASH(IASYM)+NASH(IASYM)
                   JNDAC = JNDAC + 1
                   INDAC(JA,JB) = JNDAC
@@ -643,7 +651,7 @@ C
 C Reads two-electron London integrals from file to H2LAO buffer.
 C LULONA: File to read
 C IBXYZ : =1,2,3 for Bx,By,Bz respectively.
-C IINDX4: the four indices of the integral
+C IINDX4(1:4,i): The four indices of the integral no. i
 C H2LAO : H2LAO(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C
 #include "implicit.h"
@@ -657,8 +665,8 @@ C Used from common blocsk:
 C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   INFTRL : MXNDAO
+C   ERIBUF : LBUF,NIBUF
 C
-#include "nuclei.h"
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
@@ -671,7 +679,6 @@ C
       CHARACTER*8 KEY
       LOGICAL DOCOOR, FIRST
 C
-#include "ibtdef.h"
 C
       CALL REWSPL(LULONA)
       KEY = 'AO2MGINT'
@@ -691,7 +698,7 @@ C
             DO 100 I = 1, LENGTH
                JS    = IINDX4(4,I)
                IF (JS .EQ. 0) THEN
-                  ICOOR = IINDX4(3,I)
+                  ICOOR  = IINDX4(3,I)
                   DOCOOR = ICOOR.EQ.IBXYZ
                ELSE IF (DOCOOR) THEN
                   JR = IINDX4(3,I)
@@ -775,7 +782,7 @@ C                     multiply by 0.5 (921019-hjaaj)
             END IF
   200    CONTINUE
          IF (IPRINT .GT. 25) THEN
-            write (lupri,*) 'TRLAH2 H2UVRY for r,y=',KR,KY
+            write (lupri,*) 'TRLAH2 H2UVRY for r,y = ',KR,KY
             CALL OUTPUT(H2UVRY,1,NDACUV,1,1,NDACUV,1,1,LUPRI)
          END IF
 C
@@ -990,3 +997,4 @@ C         MCOPY(nrowa,ncola,A,nrdima,B,nrdimb)
 C
       RETURN
       END
+C -- end of abacus/abaltra.F --
