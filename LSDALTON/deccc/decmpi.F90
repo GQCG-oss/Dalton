@@ -1811,6 +1811,7 @@ contains
        call mem_alloc(jobs%workt,jobs%njobs)
        call mem_alloc(jobs%commt,jobs%njobs)
        call mem_alloc(jobs%idlet,jobs%njobs)
+       call mem_alloc(jobs%comm_gl_master_time,jobs%njobs)
     end if
 
     ! Buffer handling for pointers
@@ -1831,6 +1832,7 @@ contains
     call ls_mpi_buffer(jobs%workt,jobs%njobs,master)
     call ls_mpi_buffer(jobs%commt,jobs%njobs,master)
     call ls_mpi_buffer(jobs%idlet,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%comm_gl_master_time,jobs%njobs,master)
 
   end subroutine mpicopy_fragment_joblist
 
@@ -2059,13 +2061,15 @@ contains
     write(DECinfo%output,*) '-------------------'
     write(DECinfo%output,*) 'Job    : Fragment job number'
     write(DECinfo%output,*) '#occ   : Number of occupied AOS orbitals in fragment'
-    write(DECinfo%output,*) '#virt  : Number of virtual AOS orbitals in fragment'
-    write(DECinfo%output,*) '#basis : Number of basis functions in fragment'
-    write(DECinfo%output,*) 'slotsiz: Number of slaves used for fragment incl. local master (slot size)'
+    write(DECinfo%output,*) '#vir   : Number of virtual AOS orbitals in fragment'
+    write(DECinfo%output,*) '#bas   : Number of basis functions in fragment'
+    write(DECinfo%output,*) 'GrpSiz : Number of slaves used for fragment incl. local master (Groupe Size)'
     write(DECinfo%output,*) '#tasks : Number of integral tasks for fragment (nalpha*ngamma)'
     write(DECinfo%output,*) 'GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'GGFLOPS: Accumulated GPU GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'Time(s): Time (in seconds) used by local master (NOT local slaves)'
+    write(DECinfo%output,*) 'CommT  : Time (in seconds) used by local master to communicate data to the'
+    write(DECinfo%output,*) '         global master (correspond to job n+1)'
     write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice)'
     write(DECinfo%output,*) '      Load1 = (Sum of working and communication times for ALL MPI processes in slot)'
     write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
@@ -2076,8 +2080,8 @@ contains
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,4X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
-         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'GGFLOPS', 'Time(s)', 'Load1', 'Load2'
+    write(DECinfo%output,'(4X,a,X,a,X,a,X,a,X,a,X,a,3X,a,4X,a,4X,a,6X,a,4X,a,2X,a)') 'Job', '#occ', &
+         & '#vir', '#bas', 'GrpSiz', '#tasks', 'GFLOPS', 'GGFLOPS', 'Time(s)', 'CommT', 'Load1', 'Load2'
 
     avflop         = 0.0E0_realk
     totflops       = 0.0E0_realk
@@ -2112,8 +2116,10 @@ contains
        slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
        if(.not. jobs%dofragopt(i)) then
-          write(DECinfo%output,'(6i8,3X,5g11.3,a)') i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
+          write(DECinfo%output,'(i7,3i5,2i7,4g11.3,2F7.3,2X,a)')  & 
+               &i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
                & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
+               & jobs%comm_gl_master_time(i), &
                &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
                &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
        end if

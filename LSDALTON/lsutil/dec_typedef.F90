@@ -1359,6 +1359,7 @@ module dec_typedef_module
      real(realk),pointer :: commt(:)
      real(realk),pointer :: workt(:)
      real(realk),pointer :: idlet(:)
+     real(realk),pointer :: comm_gl_master_time(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
