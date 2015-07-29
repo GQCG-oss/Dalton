@@ -2,7 +2,7 @@
 #AUTHOR: PATRICK ETTENHUBER
 #EMAIL : pett@chem.au.dk, pettenhuber@gmail.com
 #DATE  : JUNE, 2013
-import sys,datetime,os,time#,itertools,math
+import sys,datetime,os,time
 from math import factorial
 from random import randrange
 """This file is inteded for the automatic generation of a data sorting module in LSDALTON
@@ -38,7 +38,7 @@ def main():
 
 
   for i in range(len(sys.argv)):
-    if "VAR_LSDEBUG" in sys.argv[i]:
+    if "debug_version" in sys.argv[i]:
       args[1] = True
     if "nocollapse" in sys.argv[i]:
       args[2] = True
@@ -190,21 +190,13 @@ def main():
 def produce_files(installdir,tensordir,args,names,minr,maxr):
    now         = datetime.datetime.now()
 
-   # WRITE REORDERINGS FRONTEND FILE
-   f=open(installdir+"reorder_frontend.F90",'w')
-   all_names = [get_namestub_from_path(item) for sublist in names for subsublist in sublist for  item in subsublist]
-   write_main_header(f,now,all_names,args,tensordir)
-   f.write("\nend module reorder_frontend_module")
-   f.close()
-
-   #TODO: MAKE TESTER INTERFACE TEST T2F, F2T, ACC AND SP VERSIONS
-   write_testing_framework(installdir,minr,maxr)
-
    #GET COMMAND LINE ARGUMENTS
    debug_loops = args[1]
    nocollapse  = args[2]
    acc         = args[4]
    real_sp     = args[5]
+
+   interface_types = [ [] for i in range(len(names)) ]
 
    #SET THE NAMES FOR THE FILES TO GENERATE
    for iname,name in enumerate(names):
@@ -219,22 +211,22 @@ def produce_files(installdir,tensordir,args,names,minr,maxr):
          #iname = 4 : acc dense reorderings
          #iname = 5 : acc single precision reorderings
          if( iname == 0 ):
-            local_acc = False
-            addition = "normal"
+            acc = False
+            addition = "dp"
          elif (iname == 1):
-            local_acc = False
+            acc = False
             addition = "f2t"
          elif (iname == 2):
-            local_acc = False
+            acc = False
             addition = "t2f"
          elif (iname == 3):
-            local_acc = False
+            acc = False
             addition = "sp"
          elif (iname == 4):
-            local_acc = True
-            addition = "normal"
+            acc = True
+            addition = "dp"
          elif (iname == 5):
-            local_acc = True
+            acc = True
             addition = "sp"
          else:
             print "MAKE SURE YOUR CASE IS IMPLEMENTED AND SET THE SWITCHES CORRECTLY"
@@ -246,19 +238,16 @@ def produce_files(installdir,tensordir,args,names,minr,maxr):
          #WRITE THE HEADERS OF ALL FILES
          for idx in range(maxr-minr+1):
            for i in range(factorial(minr+idx)):
-             write_simple_module_header(reord[idx][i],idx+minr,i+1,now,args,local_acc)
+             write_simple_module_header(reord[idx][i],idx+minr,i+1,now,args,acc)
 
 
          #SPECIFY THE ORDER OF REODERINGS
          for idx in range(maxr-minr+1):
            modes = idx + minr
            # GENERATE ORIGINAL ORDER AND STARTING POINT FOR NEW ORDER
-           idxarr = [0]*modes
-           for i in range(modes):
-             idxarr[i] = i
-         
+           idxarr = [ i for i in range(modes) ]
+
            #GET ALL PERMUTATION
-           #all_permutations=itertools.permutations(idxarr)
            all_permutations=permutations(idxarr)
           
            #LOOP OVER PERMUTATIONS AND WRITE SUBROUTINES
@@ -273,28 +262,43 @@ def produce_files(installdir,tensordir,args,names,minr,maxr):
 
              if doreord :
                # WRITE THE CPU SUBROUTINE HEADER AND GET ITS NAME
-               sub = write_subroutine_header(reord[idx][pnum],idxarr,perm,now,modes,addition,debug_loops)
+               sub = write_subroutine_header(reord[idx][pnum],idxarr,perm,now,modes,addition,debug_loops,acc)
                #Write the CPU subroutine body
-               write_subroutine_body(reord[idx][pnum],idxarr,perm,modes,args,addition)
+               write_subroutine_body(reord[idx][pnum],idxarr,perm,modes,args,addition,acc)
                #END THE CPU SUBROUTINE
                reord[idx][pnum].write("  end subroutine "+sub+"\n\n")
                write_simple_module_end_and_close(reord[idx][pnum])
+
+               #skip interfaces for f2t and t2f
+               if iname!=1 and iname!=2 :
+                  interface_types[iname].append(sub)
+
              else:
-               
                reord[idx][pnum].write("\n  subroutine dummy()\n  end subroutine dummy\n\n")
                write_simple_module_end_and_close(reord[idx][pnum])
-               #os.system("rm "+reord[idx][pnum].name)
+
+   # WRITE REORDERINGS FRONTEND FILE
+   f=open(installdir+"reorder_frontend.F90",'w')
+   all_names = [get_namestub_from_path(item) for sublist in names for subsublist in sublist for  item in subsublist]
+   write_main_header(f,now,all_names,args,tensordir,minr,maxr,interface_types)
+   f.write("\nend module reorder_frontend_module")
+   f.close()
+
+   #TODO: MAKE TESTER INTERFACE TEST T2F, F2T, ACC AND SP VERSIONS
+   write_testing_framework(installdir,minr,maxr)
 
 
-def write_subroutine_body(f,idxarr,perm,modes,args,ad):
+def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
   debug_loops = args[1]
   nocollapse  = args[2]
-  #GENERAL CASE pre1/=1 pre2/=0 or 1
-  if(not debug_loops):
+
+  #GENERAL CASE 
+  if(not debug_loops or acc):
     if ad == "sp":
        prec = "tensor_sp"
     else:
        prec = "tensor_dp"
+
     cases = ["pre2 == 0.0E0_"+prec+" .and. pre1 == 1.0E0_"+prec]
     cases.append("pre2 == 0.0E0_"+prec+" .and. pre1 /= 1.0E0_"+prec)
     cases.append("pre2 == 1.0E0_"+prec+" .and. pre1 == 1.0E0_"+prec)
@@ -303,6 +307,42 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
     cases.append("pre2 /= 1.0E0_"+prec+" .and. pre1 /= 1.0E0_"+prec)
   else:
     cases = [".true."]
+
+
+  #defining acc directives and write acc parallel
+  if acc:
+     oaccloop_end = "!$acc end loop\n"
+     oaccparallel_end = "!$acc end parallel\n"
+     oaccparallel_async = " async(async_id1)"
+     oaccparallel_wait  = "!$acc wait(async_id2)"
+     oaccparallel_init = "!$acc parallel present(array_in,array_out)&\n"
+     oaccparallel_init += "    !$acc& firstprivate(pre1,pre2,d"
+     for j in range(modes):
+        oaccparallel_init += abc[j]+",d"
+     oaccparallel_init = oaccparallel_init[:-2] + ") private("
+     for j in range(modes):
+        oaccparallel_init += abc[j]+","
+     oaccparallel_init = oaccparallel_init[:-1] + ")"
+
+     if modes == 3:
+       oaccloop_gang = "!$acc loop gang\n"
+       oaccloop_worker = "!$acc loop worker\n"
+     elif modes == 2 :
+       oaccloop_gang = "!$acc loop gang, worker\n"
+     else:
+       oaccloop_gang = "!$acc loop gang collapse("+str(modes-2)+")\n"
+       oaccloop_worker = "!$acc loop worker\n"
+
+     oaccloop_vector = "!$acc loop vector\n"
+
+     f.write("\n")
+     f.write("    if(wait_arg)then\n\n")
+     f.write("      "+oaccparallel_wait+oaccparallel_async+"\n\n")
+     f.write("    endif\n")
+     #f.write("    "+oaccparallel_wait+oaccparallel_async+"  if(wait_arg)\n\n")
+     f.write("    "+oaccparallel_init+oaccparallel_async)
+     f.write("\n")
+
 
   #write sfuff for all the cases above
   for cas in range(len(cases)):
@@ -315,31 +355,33 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
     omppar ="      !$OMP PARALLEL DEFAULT(NONE),PRIVATE("
     for j in range(modes):
       omppar += abc[j]+",b"+abc[j]+","
-    if ((ad != "normal") and (ad != "sp")): 
+    if (ad == "f2t" or ad == "t2f"): 
       for j in range(modes):
         omppar += "b"+abc[j]+"f,"
     omppar = omppar[0:-1] + ")&\n      !$OMP SHARED(bcntr,pre1,pre2,array_in,array_out, &\n      !$OMP "
     for j in range(modes):
       omppar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
-    if ((ad != "normal") and (ad != "sp")):
+    if ((ad == "f2t") or (ad == "t2f")):
       omppar += "&\n      !$OMP "
       for j in range(modes):
         omppar += "f"+abc[j] +","
     omppar = omppar[0:-1]+")\n"
  
-    if(not debug_loops): 
+    if(not debug_loops and not acc): 
       f.write(omppar)
   
     #get the batched space
     casecounter = 1
-    if(not debug_loops):
+    if(not debug_loops and not acc):
       fullrange = modes+1
     else:
       fullrange = 1
+
     for i in range(fullrange):
+
       #FIND THE RESTRICTED INDICES IN THE OLD ORDERING
       all_thingys = combinations(idxarr,i)
-      #all_thingys = itertools.combinations(idxarr,i)
+
       for oldr in all_thingys:
   
         label1 = "r"+str(casecounter)
@@ -373,8 +415,8 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
               del newr[k]
               break
         
-        #Build if-statement for current restrictions
-        if(not debug_loops):
+        #Build if-statement for current restrictions, or write 
+        if(not debug_loops and not acc):
           conditionalstatement = "      "+label1+"if("
           for j in range(len(conditions)):
             conditionalstatement += conditions[j]
@@ -384,15 +426,17 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
           f.write(conditionalstatement)
     
         #WRITE OMP DO STUFF HERE
-        if(not debug_loops):
-          if(modes-len(oldr)>0):
-            ompdo ="        !$OMP DO" 
-            if (modes-len(oldr)>1 and (not nocollapse)):
-              ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
-              f.write(ompdo)
-            else:
-              ompdo += "\n"
-              f.write(ompdo)
+        if(not debug_loops and not acc and modes-len(oldr)):
+          if( nocollapse ):
+             ncoll = min(modes-len(oldr),1)
+          else:
+             ncoll = modes-len(oldr)
+
+          ompdo = "        !$OMP DO" 
+          if ( ncoll > 1 ):
+            ompdo += " COLLAPSE("+str(ncoll)+")"
+          ompdo += "\n"
+          f.write(ompdo)
  
         #ORDER THE LOOPS, this depends on the architecture and may be modified
         #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
@@ -405,33 +449,19 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
             useold =False
             break
           
-        #f.write("!"+str(newu)+"    "+str(oldu)+"\n")
-        #f.write("!useold "+str(useold)+"\n")
         #BUILD THE ORDER OF THE LOOPS ACCORDING TO THE PREVIOUS CONDITIONS
-        outer =[]
-        inner =[]
-        for j in range(len(perm)):
-          if useold:
-            inner.append(idxarr[j])
-          else:
-            inner.append(perm[j])
-        
         if useold:
-          for j in range(len(oldu)):
-            outer.append(oldu[j])
+          outer = oldu
+          inner = idxarr
         else:
-          for j in range(len(newu)):
-            outer.append(newu[j])
-        inneri = []
-        outeri = []
-        for j in reversed(inner):
-          inneri.append(j)
-        for j in reversed(outer):
-          outeri.append(j)
-      
+          outer = newu
+          inner = perm
+
+        inneri = [j for j in reversed(inner)]
+        outeri = [j for j in reversed(outer)]
   
         #WRITING THE OUTER FOR LOOPS HERE:
-        if(not debug_loops):
+        if(not debug_loops and not acc):
           offsetstr="        "
           for j in  range(len(outeri)):
             f.write(offsetstr+"do b"+abc[outeri[j]]+"=1,d"+abc[outeri[j]]+"2,bs\n")
@@ -442,16 +472,17 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
 
         f.write("\n")
 
+        #wrtiting the first element counters for t2f and f2t versions
         if(not debug_loops):
           offsetstr2 = offsetstr + "  "
           for j in  range(len(outeri)):
-            if ((ad != "normal") and (ad != "sp")):
+            if ((ad == "t2f") or (ad == "f2t")):
               f.write(offsetstr2+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")          
         else:
           offsetstr2 = offsetstr + "  "        
        
         #WRITING THE INNER FOR LOOPS HERE: 
-        if(not debug_loops):
+        if not debug_loops and not acc :
           for j in range(modes):
             if(inneri[j] in newr):
               f.write(offsetstr2+"do "+abc[inneri[j]]+"=d"+abc[inneri[j]]+"2+1,d"+abc[inneri[j]]+"\n")
@@ -459,16 +490,33 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
               f.write(offsetstr2+"do "+abc[inneri[j]]+"=0,bcntr\n")
             offsetstr2 += "  "
         else:
-          for j in range(modes):
-            f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
-            offsetstr2 += "  "
+          #FOR OPENACC WRITE WORK SHARING DIRECTIVES
+          if acc:
+            f.write(offsetstr2+oaccloop_gang)
+            for j in range(modes):
+              if (modes == 4 and j == 2):
+                f.write(offsetstr2+oaccloop_worker)
+              if (modes == 3 and j == 1):
+                f.write(offsetstr2+oaccloop_worker)
+              if (modes == 4 and j == 3):
+                f.write(offsetstr2+oaccloop_vector)
+              if (modes == 3 and j == 2):
+                f.write(offsetstr2+oaccloop_vector)
+              if (modes == 2 and j == 1):
+                f.write(offsetstr2+oaccloop_vector)
+              f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
+              offsetstr2 += "  "
+          else:
+             for j in range(modes):
+               f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
+               offsetstr2 += "  "
   
         offsetstr2 = offsetstr2[0:-2]
         
         #CENTRAL COPYING AND ADDITION STRING
         newidx = ""
         oldidx = ""
-        if(not debug_loops):
+        if(not debug_loops and not acc):
           for j in range(modes):
             if(perm[j] in newu):
               if ad == "t2f":
@@ -531,268 +579,94 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
  
         for j in  range(modes-1,-1,-1):
           f.write(offsetstr2+"enddo\n")
+          if acc and (j==modes-1 or j==modes-2 or j==0):
+             f.write(offsetstr2+oaccloop_end)
           offsetstr2 = offsetstr2[0:-2]
         f.write("\n")
+        offsetstr2 = offsetstr2[0:-2]
   
         #WRITING THE OUTER ENDOFOR HERE:
-        if(not debug_loops):
+        if(not debug_loops and not acc):
           for j in  range(modes-len(oldr)-1,-1,-1):
             f.write(offsetstr+"enddo\n")
             offsetstr = offsetstr[0:-2]
 
           if(modes-len(oldr)> 0):
             ompdo ="        !$OMP END DO NOWAIT\n"
-            f.write("#ifndef VAR_LSESSL\n")
             f.write(ompdo)
-            f.write("#endif\n")
 
-        if(not debug_loops):
+        if(not debug_loops and not acc):
          
           conditionalstatement="      endif "+label1+"\n"
           f.write(conditionalstatement)
         
-      if(not debug_loops):
+      if(not debug_loops and not acc):
         if(i==modes-1):
           ompdo = "      !$OMP END PARALLEL\n"
           f.write(ompdo)
   
     if(cas==len(cases)-1):
       f.write("    endif precase\n")
+      if acc:
+         f.write("    "+oaccparallel_end+"\n")
    
 
-def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case,ad):
-  
-  x = 0
-  while x < 2:
-    x += 1
-    #get the batched space
-    casecounter = 1
-    fullrange = modes+1
-    #FIND THE RESTRICTED INDICES IN THE OLD ORDERING
-    all_thingys = combinations(idxarr,0)
-    for oldr in all_thingys:
-  
-      label1 = "r"+str(casecounter)
-      label1 = ""
-      casecounter += 1
-      #get conditions for the reordering
-      conditions = []
-      oldu  = []
-      newu  = []
-      newr  = []
-      for j in range(modes):
-        oldu.append(idxarr[j])
-        newu.append(perm[j])
-        newr.append(perm[j])
-  
-      #modify the conditions accordingly
-      for j in  range(len(oldr)):
-        for k in range(len(oldu)):
-          if oldu[k] == oldr[j]:
-            del oldu[k]
-            break
-        for k in range(len(newu)):
-          if newu[k] == oldr[j]:
-            del newu[k]
-            break
-      for j in  range(len(oldu)):
-        for k in range(len(newr)):
-          if newr[k] == oldu[j]:
-            del newr[k]
-            break
-  
-      #ORDER THE LOOPS, this depends on the architecture and may be modified
-      #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
-      useold = False
-      for j in range(len(oldu)):
-        if(idxarr[oldu[j]]<perm[newu[j]]):
-          useold = True
-          break
-        elif(idxarr[oldu[j]]>perm[newu[j]]):
-          useold =False
-          break
-        
-      #f.write("!"+str(newu)+"    "+str(oldu)+"\n")
-      #f.write("!useold "+str(useold)+"\n")
-      #BUILD THE ORDER OF THE LOOPS ACCORDING TO THE PREVIOUS CONDITIONS
-      outer =[]
-      inner =[]
-      for j in range(len(perm)):
-        if useold:
-          inner.append(idxarr[j])
-        else:
-          inner.append(perm[j])
-      
-      if useold:
-        for j in range(len(oldu)):
-          outer.append(oldu[j])
-      else:
-        for j in range(len(newu)):
-          outer.append(newu[j])
-      inneri = []
-      outeri = []
-      for j in reversed(inner):
-        inneri.append(j)
-      for j in reversed(outer):
-        outeri.append(j)
-  
-      offsetstr="    "
-      offsetstr2 = offsetstr + "   "
-  
-      #WRITING OPENACC DIRECTIVES:
-      oaccparallel_init1 = "!$acc parallel present(array_in,array_out)&\n"
-      oaccparallel_init2 = "!$acc parallel present(array_in,array_out)&\n"
-      if(modes == 4):
-        oaccparallel_init1 += "!$acc& firstprivate(pre1,pre2,da,db,dc,dd) private(a,b,c,d) wait(async_id2) async(async_id1)\n"
-        oaccparallel_init2 += "!$acc& firstprivate(pre1,pre2,da,db,dc,dd) private(a,b,c,d) async(async_id1)\n"
-        oaccloop_gang = "!$acc loop gang collapse(2)\n"
-        oaccloop_worker = "!$acc loop worker\n"
-        oaccloop_vector = "!$acc loop vector\n"
-      elif(modes == 3):
-        oaccparallel_init1 += "!$acc& firstprivate(pre1,pre2,da,db,dc) private(a,b,c) wait(async_id2) async(async_id1)\n"
-        oaccparallel_init2 += "!$acc& firstprivate(pre1,pre2,da,db,dc) private(a,b,c) async(async_id1)\n"
-        oaccloop_gang = "!$acc loop gang\n"
-        oaccloop_worker = "!$acc loop worker\n"
-        oaccloop_vector = "!$acc loop vector\n"
-      elif(modes == 2):
-        oaccparallel_init1 += "!$acc& firstprivate(pre1,pre2,da,db) private(a,b) wait(async_id2) async(async_id1)\n"
-        oaccparallel_init2 += "!$acc& firstprivate(pre1,pre2,da,db) private(a,b) async(async_id1)\n"
-        oaccloop_gang = "!$acc loop gang, worker\n"
-        oaccloop_vector = "!$acc loop vector\n"
-  
-      #WRITING THE INNER FOR LOOPS HERE:
-      if (x == 1):
-        f.write(offsetstr+"if (wait_arg) then\n\n")
-        f.write(oaccparallel_init1)
-      elif (x == 2):
-        f.write(offsetstr+"else\n\n")
-        f.write(oaccparallel_init2)
-      f.write(oaccloop_gang)
-      for j in range(modes):
-        if (modes == 4 and j == 2):
-          f.write(oaccloop_worker)
-        if (modes == 3 and j == 1):
-          f.write(oaccloop_worker)
-        if (modes == 4 and j == 3):
-          f.write(oaccloop_vector)
-        if (modes == 3 and j == 2):
-          f.write(oaccloop_vector)
-        if (modes == 2 and j == 1):
-          f.write(oaccloop_vector)
-        f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
-        offsetstr2 += "  "
-  
-      offsetstr2 = offsetstr2[0:-2]
-      
-      #CENTRAL COPYING AND ADDITION STRING
-      newidx = ""
-      oldidx = ""
-      for j in range(modes):
-        if(perm[j] in newu):
-          newidx += abc[perm[j]]+","
-        elif(perm[j] in newr):
-          newidx += abc[perm[j]]+","
-        else:
-          print "INVALID STUFF HAPPENING HERE"
-        if(idxarr[j] in newu):
-          oldidx += abc[idxarr[j]]+","
-        elif(idxarr[j] in newr):
-          oldidx += abc[idxarr[j]]+","
-        else:
-          print "INVALID STUFF HAPPENING HERE"
-  
-      newidx = newidx[0:-1]
-      oldidx = oldidx[0:-1]
-  
-      cpstr=offsetstr2+"  array_out("
-  #    if cas == 0:
-      if acc_case == 0:
-        cpstr += newidx+") = array_in("+oldidx+")\n"
-  #    elif cas==1:
-      elif acc_case==1:
-        cpstr += newidx+") = pre1*array_in("+oldidx+")\n"
-  #    elif cas==2:
-      elif acc_case==2:
-        cpstr += newidx+") = array_out("+newidx+") + array_in("+oldidx+")\n"
-  #    elif cas==3:
-      elif acc_case==3:
-        cpstr += newidx+") = array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
-  #    elif cas==4:
-      elif acc_case==4:
-        cpstr += newidx+") = pre2*array_out("+newidx+") + array_in("+oldidx+")\n"
-  #    elif cas==5:
-      elif acc_case==5:
-        cpstr += newidx+") = pre2*array_out("+newidx+") + pre1*array_in("+oldidx+")\n"
-  
-      f.write(cpstr)
-      
-      oaccloop_end = "!$acc end loop\n"
-      oaccparallel_end = "!$acc end parallel\n"
-  
-      for j in  range(modes-1,-1,-1):
-        f.write(offsetstr2+"enddo\n")
-        if (modes == 4 and j == 1):
-          f.write("")
-        else:
-          f.write(oaccloop_end)
-        offsetstr2 = offsetstr2[0:-2]
-      f.write(oaccparallel_end)
-      if (x == 1):
-        f.write("\n")
-      elif (x == 2):
-        f.write("\n")
-        f.write(offsetstr+"endif\n")
-        f.write("\n")
-
 #WRITE THE HEADER AND GET THE SUBROUTINE NAME
-def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
+def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb,acc):
   reordstr1 = ""
   reordstr2 = ""
   reordstr3 = ""
+
   if ad == "sp":
      prec = "tensor_sp"
   else:
      prec = "tensor_dp"
-  var_underscore = ""
+
+
   for i in range(modes):
     reordstr1 += str(perm[i]+1)
     intermed = "dims("+str(idxarr[i]+1)+"),"
     if ad == "f2t":
       intermed = "f"+intermed
-      var_underscore = "_"
-    if ad == "sp":
-      var_underscore = "_"
     reordstr2 += intermed
     intermed = "dims("+str(perm[i]+1)+"),"
     if ad == "t2f":
       intermed = "f"+intermed
-      var_underscore = "_"
-    if ad == "sp":
-      var_underscore = "_"
     reordstr3 += intermed
+
   reordstr2 = reordstr2[0:-1]
   reordstr3 = reordstr3[0:-1]
-  if (ad == "normal"):
-    sname =  "manual_"+reordstr1+"_reordering"
-  else:
-    sname =  "manual_"+reordstr1+"_reordering"+var_underscore+ad
+
+  #BUILD SUBROUTINE NAME
+  suppl = "_"+ad
+  if acc:
+    suppl += "_acc"
+
+  sname =  "manual_"+reordstr1+"_reordering"+suppl
 
   #GET THE SUBROUTINE HEADER
   subheaderstr= "  !\> \\brief reorder a "+str(modes)+" diensional array  to get the indices\n"
   subheaderstr+= "  !   in the order "+reordstr1+" , this is a quite expensive reordering\n"
   subheaderstr+= "  !   and thus requires additional attention \n"
-  subheaderstr+= "  !\> \\author Patrick Ettenhuber\n"
+  subheaderstr+= "  !\> \\author Patrick Ettenhuber"
+  if acc :
+     subheaderstr+= " and Janus Juul Eriksen"
+  subheaderstr+= "\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
   subheaderstr+= "  subroutine "+sname+"(dims,"
-  if ((ad != "normal") and (ad != "sp")):
+  if ((ad == "f2t") or (ad == "t2f")):
     subheaderstr += "fdims,fels,"
-  subheaderstr+= "pre1,array_in,pre2,array_out)\n"
+  subheaderstr+= "pre1,array_in,pre2,array_out"
+  if acc :
+    subheaderstr += ",async_id1,async_id2,wait_arg"
+  subheaderstr+=")\n"
   subheaderstr+= "    implicit none\n"
-  subheaderstr+= "    !> input for the block size in tiled reordering\n"
-  subheaderstr+= "    integer, parameter :: bs=BS_"+str(modes)+"D\n"
+  if not acc:
+    subheaderstr+= "    !> input for the block size in tiled reordering\n"
+    subheaderstr+= "    integer, parameter :: bs=BS_"+str(modes)+"D\n"
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")"
-  if ((ad != "normal") and (ad != "sp")):
+  if ((ad == "f2t") or (ad == "t2f")):
     subheaderstr += ",fdims("+str(modes)+"),fels("+str(modes)+")"
   subheaderstr+= "\n"
   subheaderstr+= "    !> as this routine can be used for adding and scaling these are the prefactors\n"
@@ -801,111 +675,65 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr+= "    real("+prec+"),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
   subheaderstr+= "    real("+prec+"),intent(inout) :: array_out("+reordstr3+")\n"
-  subheaderstr+= "    integer :: bcntr,"
+  if acc :
+    subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id1\n"
+    subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id2\n"
+    subheaderstr+= "    logical,intent(in) :: wait_arg\n"
+
+
+  subheaderstr+= "    integer :: "
+  if not acc:
+    subheaderstr+= "bcntr,"
   for i in range(modes):
-    subheaderstr+= abc[i]+",b"+abc[i]+",d"+abc[i]+",d"+abc[i]+"2,"
+    subheaderstr+= abc[i]+",d"+abc[i]+","
+    if not acc:
+      subheaderstr+= "b"+abc[i]+",d"+abc[i]+"2,"
   subheaderstr = subheaderstr[0:-1]
+
   subheaderstr += "\n"
-  if ((ad != "normal") and (ad != "sp")):
+  if (ad == "f2t" or ad == "t2f"):
     subheaderstr+= "    integer :: "
     for i in range(modes):
       subheaderstr+= "b"+abc[i]+"f,f"+abc[i]+","
     subheaderstr = subheaderstr[0:-1] + "\n"
-  subheaderstr+= "    logical :: "
-  for i in range(modes):
-    subheaderstr+= "mod"+abc[i]+","
-  subheaderstr = subheaderstr[0:-1] + "\n"
+
+  if not acc:
+    subheaderstr+= "    logical :: "
+    for i in range(modes):
+      subheaderstr+= "mod"+abc[i]+","
+    subheaderstr = subheaderstr[0:-1] + "\n"
+
   subheaderstr += "\n"
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
   subheaderstr+= "\n"
-  if ((ad != "normal") and (ad != "sp")):
+
+  if (ad == "f2t" or ad == "t2f"):
     for i in range(modes):
       subheaderstr+= "    f"+abc[i]+"=fels("+str(i+1)+")-1\n"
   subheaderstr+= "\n"
-  for i in range(modes):
-    subheaderstr+= "    d"+abc[i]+"2=(d"+abc[i]+"/bs)*bs\n"
-  subheaderstr+= "\n"
-  for i in range(modes):
-    subheaderstr+= "    mod"+abc[i]+"=(mod(d"+abc[i]+",bs)>0)\n\n"
-  subheaderstr+= "    bcntr=bs-1\n"
+
+  if not acc:
+     for i in range(modes):
+       subheaderstr+= "    d"+abc[i]+"2=(d"+abc[i]+"/bs)*bs\n"
+     subheaderstr+= "\n"
+     for i in range(modes):
+       subheaderstr+= "    mod"+abc[i]+"=(mod(d"+abc[i]+",bs)>0)\n"
+     subheaderstr+= "\n    bcntr=bs-1\n"
 
   if deb :
     if ad == "t2f":
-      subheaderstr += "\n    if(pre2==0.0E0_tensor_dp)array_out(&\n"
+      subheaderstr += "\n    if(pre2==0.0E0_"+prec+")array_out(&\n"
       for i in range(modes):
         subheaderstr += "                 &fels("+str(perm[i]+1)+"):fels("+str(perm[i]+1)+")+dims("+str(perm[i]+1)+")-1,&\n"
-      subheaderstr = subheaderstr[0:-3]+") = 0.0E0_tensor_dp\n\n"
+      subheaderstr = subheaderstr[0:-3]+") = 0.0E0_"+prec+"\n\n"
     else:
-      if ad == "sp":
-        subheaderstr += "\n    if(pre2==0.0E0_tensor_sp)array_out = 0.0E0_tensor_sp\n\n"
-      else:
-        subheaderstr += "\n    if(pre2==0.0E0_tensor_dp)array_out = 0.0E0_tensor_dp\n\n"
+      subheaderstr += "\n    if(pre2==0.0E0_"+prec+")array_out = 0.0E0_"+prec+"\n\n"
   
+  #WRITE THE HEADER TO FILE
   f.write(subheaderstr)
-  return sname
 
-
-#WRITE THE HEADER AND GET THE SUBROUTINE NAME
-def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case,ad):
-  reordstr1 = ""
-  reordstr2 = ""
-  reordstr3 = ""
-  var_underscore = ""
-  for i in range(modes):
-    reordstr1 += str(perm[i]+1)
-    intermed = "dims("+str(idxarr[i]+1)+"),"
-    reordstr2 += intermed
-    intermed = "dims("+str(perm[i]+1)+"),"
-    reordstr3 += intermed
-  reordstr2 = reordstr2[0:-1]
-  reordstr3 = reordstr3[0:-1]
-  if (ad == "normal"):
-    sname =  "manual_acc_"+reordstr1+"_reordering_"+str(acc_case)
-  else:
-    var_underscore = '_'
-    sname =  "manual_acc_"+reordstr1+"_reordering_"+str(acc_case)+var_underscore+ad
-
-  #GET THE SUBROUTINE HEADER
-  subheaderstr= "  !\> \\brief reorder a "+str(modes)+" diensional array (case "+str(acc_case)+") on a device\n"
-  subheaderstr+= "  !   to get the indices in the order "+reordstr1+" , this is a quite expensive reordering\n"
-  subheaderstr+= "  !   and thus requires additional attention \n"
-  subheaderstr+= "  !\> \\author Janus Juul Eriksen & Patrick Ettenhuber\n"
-  subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
-  subheaderstr+= "  subroutine "+sname+"(dims,"
-  subheaderstr+= "pre1,array_in,pre2,array_out,async_id1,async_id2,wait_arg)\n"
-  subheaderstr+= "    implicit none\n"
-  subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
-  subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")\n"
-  subheaderstr+= "    !> as this routine can be used for adding and scaling these are the prefactors\n"
-  if ad == "sp":
-    subheaderstr+= "    real(tensor_sp),intent(in) :: pre1,pre2\n"
-  else:
-    subheaderstr+= "    real(tensor_dp),intent(in) :: pre1,pre2\n"
-  subheaderstr+= "    !> array to be reordered\n"
-  if ad == "sp":
-    subheaderstr+= "    real(tensor_sp),intent(in) :: array_in("+reordstr2+")\n"
-  else:
-    subheaderstr+= "    real(tensor_dp),intent(in) :: array_in("+reordstr2+")\n"
-  subheaderstr+= "    !> reordered array\n"
-  if ad == "sp":
-    subheaderstr+= "    real(tensor_sp),intent(inout) :: array_out("+reordstr3+")\n"
-  else:
-    subheaderstr+= "    real(tensor_dp),intent(inout) :: array_out("+reordstr3+")\n"
-  subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id1\n"
-  subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id2\n"
-  subheaderstr+= "    logical,intent(in) :: wait_arg\n"
-  subheaderstr+= "    integer :: "
-  for i in range(modes):
-    subheaderstr+= abc[i]+",d"+abc[i]+","
-  subheaderstr = subheaderstr[0:-1]
-  subheaderstr += "\n"
-  subheaderstr += "\n"
-  for i in range(modes):
-    subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
-  subheaderstr += "\n"
-
-  f.write(subheaderstr)
+  #RETURN THE NAME OF THE SUBROUTINE
   return sname
 
 
@@ -935,12 +763,7 @@ def write_simple_module_end_and_close(f):
    f.close()
 
 
-
-
-
-
-
-def write_main_header(f,now,names,args,tensordir):
+def write_main_header(f,now,names,args,tensordir,minr,maxr,interface_types):
    f.write("!\> \\brief this autogenerated module is inteded to contain high performance reorderings for\n!mutlidimensional arrays.\n!\> \\author Patrick Ettenhuber & Janus Juul Eriksen\n!\> \\date November 2012, file produced: "+str(now.month)+", "+str(now.year)+"\n")
    #WRITE THE VARIABLES WITH WHICH THE FILE WAS PRODUCED HERE 
    #--> FOR LATER READOUT AND SEE IF IT IS NECESSARY TO PRODUCE A NEW INSTANCE OF IT
@@ -950,15 +773,43 @@ def write_main_header(f,now,names,args,tensordir):
    f.write("!END VARS\n\n")
 
    f.write("module reorder_frontend_module\n")
-   f.write("  use precision\n")
    f.write("  use tensor_parameters_and_counters\n")
+   f.write("  use tensor_allocator\n")
    f.write("  use get_idx_mod\n")
-   f.write("  use memory_handling\n")
    
    for name in names:
       f.write("  use "+name+"_module\n")
 
-   f.write("  use LSTIMING\n")
+   f.write("  use LSTIMING\n\n")
+
+   #write interfaces
+   #SPECIFY THE ORDER OF REODERINGS
+   for idx in range(maxr-minr+1):
+     modes = idx + minr
+     # GENERATE ORIGINAL ORDER AND STARTING POINT FOR NEW ORDER
+     idxarr = [ i for i in range(modes) ]
+     pdxarr = permutations(idxarr)
+     for perm in pdxarr:
+        pstr = ""
+        for i in range(len(perm)):
+           pstr += str(perm[i]+1)
+        iname = "manual_"+pstr+"_reordering"
+        interface = "  interface "+iname+"\n"
+        interface += "     module procedure "
+        write_interface = False
+        for typ in interface_types:
+           for sname in typ:
+              if iname in sname:
+                 if write_interface:
+                    interface += "       &"
+                 else:
+                    write_interface = True
+                 interface += sname +",&\n"
+        interface = interface[:-3] + "\n  end interface "+iname+"\n\n"
+
+        if write_interface:
+           f.write(interface)
+
    #f.write("  contains\n")
    #Write the subroutines called by the user
    basic = open(tensordir+"/autogen/reorder_header.F90",'r')
@@ -1016,13 +867,13 @@ module reorder_tester_module\n\
     for i in range(mode):
       words += "      n"+abc[i]+"="+str(int(((8000.0*1000.0)/(8.0*2.0))**(1.0/(mode*1.0)))+1+randrange(10))+"\n"
     words +="\
-      call mem_alloc(in1,"
+      call tensor_alloc_mem(in1,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(res,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(res,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(sto,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(sto,"
     for i in range(mode):
       words += "n" + abc[i] +"*"
     words = words[0:-1]+")\n      call random_number(in1)\n      call random_number(sto)\n\n" 
@@ -1108,7 +959,7 @@ module reorder_tester_module\n\
         f.write("          write (LUPRI,*)\"\"\n\n")
       pc += 1
     f.write("        enddo\n      enddo\n")
-    f.write("      call mem_dealloc(in1)\n      call mem_dealloc(res)\n      call mem_dealloc(sto)\n")
+    f.write("      call tensor_free_mem(in1)\n      call tensor_free_mem(res)\n      call tensor_free_mem(sto)\n")
     f.write("    endif\n")
 
 
@@ -1131,20 +982,20 @@ module reorder_tester_module\n\
         sze = 2*sze+1
       words += "      n"+abc[i]+"="+str(sze)+"\n"
 
-    words +="      call mem_alloc(til,"
+    words +="      call tensor_alloc_mem(til,"
     for i in range(mode):
       if(i==mode-1):
         words+="(n"+abc[i]+"/2))\n"
       else:
         words+="n"+abc[i]+"*"
     words +="\
-      call mem_alloc(in1,"
+      call tensor_alloc_mem(in1,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(res,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(res,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(sto,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(sto,"
     for i in range(mode):
       words += "n" + abc[i] +"*"
     words = words[0:-1]+")\n      call random_number(in1)\n      call random_number(sto)\n\n" 
@@ -1349,7 +1200,7 @@ module reorder_tester_module\n\
         f.write("          write (LUPRI,*)\"\"\n\n")
       pc += 1
     f.write("        enddo\n      enddo\n")
-    f.write("      call mem_dealloc(til)\n      call mem_dealloc(in1)\n      call mem_dealloc(res)\n      call mem_dealloc(sto)\n")
+    f.write("      call tensor_free_mem(til)\n      call tensor_free_mem(in1)\n      call tensor_free_mem(res)\n      call tensor_free_mem(sto)\n")
     f.write("    endif\n")
 
 

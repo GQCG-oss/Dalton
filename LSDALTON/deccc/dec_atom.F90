@@ -571,19 +571,19 @@ contains
     ENDIF
 
     if(DECinfo%F12debug) then
-       print *, "---------------------------------------"
-       print *, " atomic_fragment_init_f12 dec_atom.F90 "
-       print *, "---------------------------------------"
-       print *, "nbasis: ", nbasis
-       print *, "noccEOS: ", noccEOS
-       print *, "nvirtEOS: ", nvirtEOS
-       print *, "---------------------------------------"
-       print *, "nocvAOStot", nocvAOStot
-       print *, "noccAOS", noccAOS
-       print *, "nvirtAOS", nvirtAOS
-       print *, "ncabsAO", ncabsAO
-       print *, "ncabsMO", ncabsMO
-       print *, "---------------------------------------"
+      ! print *, "---------------------------------------"
+      ! print *, " atomic_fragment_init_f12 dec_atom.F90 "
+      ! print *, "---------------------------------------"
+      ! print *, "nbasis: ", nbasis
+      ! print *, "noccEOS: ", noccEOS
+      ! print *, "nvirtEOS: ", nvirtEOS
+      ! print *, "---------------------------------------"
+      ! print *, "nocvAOStot", nocvAOStot
+      ! print *, "noccAOS", noccAOS
+      ! print *, "nvirtAOS", nvirtAOS
+      ! print *, "ncabsAO", ncabsAO
+      ! print *, "ncabsMO", ncabsMO
+      ! print *, "---------------------------------------"
     end if 
 
     ! hJir
@@ -693,17 +693,6 @@ contains
     call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOStot,fragment%Ccabs,ncabsAO,ncabsMO)
     call mem_dealloc(Fcp)
 
-    if(DECinfo%F12debug) then
-       print *, "---------------------------------------"
-       print *, " atomic_fragment_init_f12 dec_atom.F90 "
-       print *, "---------------------------------------"
-       print *,"norm2D(fragment%hJir)", norm2D(fragment%hJir)
-       print *,"norm2D(fragment%Krs)" , norm2D(fragment%Krs) 
-       print *,"norm2D(fragment%Frs)" , norm2D(fragment%Frs) 
-       print *,"norm2D(fragment%Frm)" , norm2D(fragment%Frm) 
-       print *,"norm2D(fragment%Fcp)" , norm2D(fragment%Fcp) 
-       print *, "---------------------------------------"
-    endif
 #endif
 
   end subroutine atomic_fragment_init_f12
