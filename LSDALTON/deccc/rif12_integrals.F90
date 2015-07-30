@@ -102,8 +102,6 @@ contains
     logical :: dopair
     !Pairfragment
     logical,pointer :: dopair_occ(:,:)
-    !> Fragment 1 in the pair fragment
-    type(decfrag) :: PairFragment
 
     !========================================================
     !   Allocating integer space sizes
@@ -116,7 +114,7 @@ contains
     integer :: noccAOS
     !> number of occupied MO orbitals in AOS tot 
     integer :: noccAOStot
-    !> number of occupied + virtual MO orbitals in EOS 
+    !> number of occupied MO + virtual MO orbitals in AOS 
     integer :: nocv  
     !> number of CABS AO orbitals
     integer :: ncabsAO
@@ -225,6 +223,13 @@ contains
     ncabsAO = size(MyFragment%Ccabs,1)
     ncabsMO = size(MyFragment%Ccabs,2)
 
+    nocv = noccAOS + nvirt
+
+    nbasis2 = 0
+    natomsaux = 0
+    naux = 0
+    E_21C = 0.0E0_realk
+
     ! Offset: Used for frozen core
     if(DECinfo%frozencore) then
        offset = MyFragment%ncore
@@ -286,15 +291,16 @@ contains
        print *, "-------------------------------------------------"
        print *, "     F12-integrals.F90                           "
        print *, "-------------------------------------------------"
-       print *, "nbasis:    ", nbasis
-       print *, "noccEOS:   ", nocc
-       print *, "nvirtAOS:  ", nvirt
+       print *, "nbasis:       ", nbasis
+       print *, "noccEOS:      ", nocc
+       print *, "nvirtAOS:     ", nvirt
        print *, "-------------------------------------------------"
-       print *, "noccAOS    ", noccAOS 
-       print *, "noccAOStot ", noccAOStot
-       print *, "nocc+virt  ", nocc+nvirt
-       print *, "ncabsAO    ", ncabsAO
-       print *, "ncabsMO    ", ncabsMO
+       print *, "noccAOS       ", noccAOS 
+       print *, "noccAOStot    ", noccAOStot
+       print *, "nocc+nvirt    ", nocc+nvirt   
+       print *, "noccAOS+nvirt ", noccAOS+nvirt
+       print *, "ncabsAO       ", ncabsAO
+       print *, "ncabsMO       ", ncabsMO
     end if
 
     !========================================================
@@ -310,15 +316,15 @@ contains
        CMO_RI(:,i) = MyFragment%Cri(:,i)
     end do
 
-    call mem_alloc(Cfull,nbasis,nbasis)
-    do J=1,nocc
+    call mem_alloc(Cfull,nbasis,nocv)
+    do J=1,noccAOS
        do I=1,nbasis
           Cfull(I,J) = MyFragment%Co(I,J)
        enddo
     enddo
     do P=1,nvirt
        do I=1,nbasis
-          Cfull(I,nocc+P) = MyFragment%Cv(I,P)
+          Cfull(I,noccAOS+P) = MyFragment%Cv(I,P)
        enddo
     enddo
 
@@ -330,16 +336,16 @@ contains
     enddo
 
     !Slow implementation can be done with 2dgemms in B6
-    call mem_alloc(Fpp, nbasis, nbasis)
+    call mem_alloc(Fpp, noccAOS+nvirt, noccAOS+nvirt)
     Fpp = 0.0E0_realk
-    do p=1, nocc
-       do q=1, nocc
+    do p=1, noccAOS
+       do q=1, noccAOS
           Fpp(p,q) = MyFragment%ppfock(p,q)
        enddo
     enddo
-    do p=nocc+1, nbasis
-       do q=nocc+1, nbasis
-          Fpp(p,q) = MyFragment%qqfock(p-nocc,q-nocc)
+    do p=noccAOS+1, noccAOS+nvirt
+       do q=noccAOS+1, noccAOS+nvirt
+          Fpp(p,q) = MyFragment%qqfock(p-noccAOS,q-noccAOS)
        enddo
     enddo
 
@@ -347,9 +353,11 @@ contains
     != Step 0: Creating of dopair_occ                                =
     !=================================================================
     print *, "Step 0: Creating of dopair_occ"
+    print *, "dopair: ", dopair
     call mem_alloc(dopair_occ,nocc,nocc)
+    dopair_occ = .FALSE.
     if(dopair) then 
-       call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
+       call which_pairs_occ(Fragment1,Fragment2,MyFragment,dopair_occ)
     else
        dopair_occ = .TRUE.
     endif
@@ -509,13 +517,13 @@ contains
     intspec(5) = 'G' !The Gaussian geminal operator g
 
     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-         & FORCEPRINT,wakeslaves,MyFragment%Co,nocc,Cfull,nbasis,&
+         & FORCEPRINT,wakeslaves,MyFragment%Co,nocc,Cfull,nocv,&
          & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
     ABdecompCreateG = .FALSE.
 
     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
 
-    call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nbasis,CalphaR,CalphaG,EV2,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRI(nBA,nocc,nocv,CalphaR,CalphaG,EV2,dopair_occ)
     mp2f12_energy = mp2f12_energy + EV2
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2       
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
@@ -529,7 +537,7 @@ contains
     !=                                                        =
     !==========================================================
     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-    call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nbasis,CalphaG,MyFragment%ppfock,EX2,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nocv,CalphaG,MyFragment%ppfock,EX2,dopair_occ)
     mp2f12_energy = mp2f12_energy + EX2
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X2,RI) = ',EX2
@@ -654,7 +662,7 @@ contains
     !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
 
     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-    call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,nbasis,&
+    call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccAOS,ncabsMO, &
          & CalphaGcabsMO,CalphaG,MyFragment%ppfock,EX3,EX4,dopair_occ)
 
     mp2f12_energy = mp2f12_energy + EX3 + EX4
@@ -709,7 +717,7 @@ contains
     !Do on GPU (Async)
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Myfragment%Frs,k,0.0E0_realk,CalphaD,m)
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccAOS,CalphaGcabsAO,CalphaG,CalphaD,EB5,dopair_occ)
 
     mp2f12_energy = mp2f12_energy + EB5
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
@@ -721,16 +729,16 @@ contains
     !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
     !==============================================================
     !> Dgemm 
-    nsize = nBA*nocc*(nvirt+noccAOStot)
+    nsize = nBA*nocc*(nvirt+noccAOS)
     call mem_alloc(CalphaD, nsize)
     m =  nBA*nocc              ! D_jq = C_jp F_pq
-    k =  nvirt+noccAOStot
-    n =  nvirt+noccAOStot
+    k =  nvirt+noccAOS
+    n =  nvirt+noccAOS
 
     !Do on GPU (Async)
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fpp,k,0.0E0_realk,CalphaD,m)   
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB6,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB6,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB6
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
@@ -745,16 +753,17 @@ contains
     !that we already have
 
     !> Dgemm 
-    nsize = nBA*nocc*noccfull
+    nsize = nBA*nocc*noccAOS
     call mem_alloc(CalphaD, nsize)
-    m =  nBA*noccfull               ! D_jn = C_jn F_nm
-    k =  noccfull
-    n =  noccfull
+    m =  nBA*nocc               ! D_jn = C_jn F_nm
+    k =  noccAOS
+    n =  noccAOS
 
     !NB! Changed T to N, dont think it will matter but...
-    !   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,MyFragment%ppfock,k,0.0E0_realk,CalphaD,m)   
-    call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,MyFragment%ppfock,CalphaD,dopair_occ)
-    call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB7,dopair_occ)
+    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,MyFragment%ppfock,k,0.0E0_realk,CalphaD,m)   
+    ! Do not compute T.K. needs to explain this...
+    !call ContractOccCalpha(NBA,nocc,noccAOS,nbasis,CalphaG,MyFragment%ppfock,CalphaD,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,noccAOS,CalphaGcabsMO,CalphaG,CalphaD,EB7,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB7
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
@@ -776,7 +785,7 @@ contains
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Frm,k,0.0E0_realk,CalphaD,m)
 
     !we need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
-    call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nocv,CalphaGcabsMO,CalphaG,CalphaD,EB8,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB8
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
@@ -789,15 +798,15 @@ contains
     !=  B9: (ip|f12|ja)Fcp(ci|f12|aj)                             =
     !==============================================================
     !> Dgemm 
-    nsize = nBA*nocc*nbasis
+    nsize = nBA*nocc*nocv
     call mem_alloc(CalphaD, nsize)
     m =  nBA*nocc                    ! D_jp = C_jc F_cp
-    n =  nbasis
+    n =  nocv
     k =  ncabsMO   
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,MyFragment%Fcp,k,0.0E0_realk,CalphaD,m)
     call mem_dealloc(CalphaGcabsMO)
 
-    call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB9,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB9
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
@@ -951,7 +960,7 @@ contains
     write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
 
     !> Setting the MP2-F12 correction
-    Myfragment%energies(FRAGMODEL_MP2f12) = E_F12
+    Myfragment%energies(FRAGMODEL_RIMP2f12) = E_F12
 
   end subroutine get_rif12_fragment_energy
 

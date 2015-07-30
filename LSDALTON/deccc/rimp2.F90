@@ -334,16 +334,17 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #ifdef VAR_MPI
   IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
 #endif
-  
-   print *, "DECinfo%AuxAtomicExtent",DECinfo%AuxAtomicExtent
+ 
+   nBasisaux = 0
+   natomsaux = 0
+   nbasis2 = 0
+
    IF(DECinfo%AuxAtomicExtent)THEN
      call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
   ELSE
-     print *, "natomsaux nbasis2 naux",nAtomsAux,nBasis2,nbasisAux
      call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,nBasis2,nBasisAux)
      if(natoms.NE.natomsAux)call lsquit('Error in RIMP2 natoms dim mismatch',-1)
   ENDIF
-  print *, "natomsaux nbasis2 naux",nAtomsAux,nBasis2,nbasisAux
 
   nbasisAux8 = nbasisAux
   IF(nBasisAux.EQ.0)THEN

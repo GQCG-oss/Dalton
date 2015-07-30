@@ -2878,9 +2878,9 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair
    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
    !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
    !$OMP nba,dopair_occ) REDUCTION(+:EJ,EK,ED)
-   DO q=1,n2
-      DO p=1,n2
-         DO j=1,n1
+   DO q=1,n2 !nocv
+      DO p=1,n2 !nocv
+         DO j=1,n1 !nocc
             !Diagonal
             IF(dopair_occ(J,J)) THEN
                tmpR = 0.0E0_realk
@@ -3251,10 +3251,10 @@ subroutine ContractTwo4CenterF12IntegralsRIB4(nBA,n1,n2,CalphaG,CalphaD,EJK,dopa
    EJK = ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIB4                
 
-subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,nbasis,CalphaGcabs,CalphaG,CalphaD,EJK,dopair_occ_in)
+subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,n3,CalphaGcabs,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
-   integer,intent(in)        :: nBA,n1,n2,nbasis
-   real(realk),intent(in)    :: CalphaG(nBA,n1,nbasis)
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
    real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
    real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
    real(realk),intent(inout) :: EJK
@@ -3275,7 +3275,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,nbasis,CalphaGcabs,Calph
    EJ = 0.0E0_realk
    EK = 0.0E0_realk
    DO q=1,n2 !ncabsAO
-      DO m=1,n1 !nocc
+      DO m=1,n3 !noccAOS
          DO j=1,n1 !nocc
             !Diagonal
             IF(dopair_occ(J,J)) THEN
@@ -3336,7 +3336,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB6(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,d
    ED = 0.0E0_realk
    EK = 0.0E0_realk
    EJ = 0.0E0_realk
-   DO q=1,n3 !nbasis
+   DO q=1,n3 !nocv
       DO a=n1+1,n3 !nvirt
          DO j=1,n1 !nocc
             !Diagonal
@@ -3389,7 +3389,7 @@ subroutine ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii,CalphaD,dopair
       dopair_occ = dopair_occ_in
    else
       dopair_occ = .TRUE.
-   endif   
+   endif
 !   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(i,j,alpha,m,&
 !   !$OMP TMP) SHARED(NBA,nocc,noccfull,CalphaG,CalphaD,Fii)
 !   !$OMP DO COLLAPSE(3)
@@ -3420,12 +3420,13 @@ subroutine ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii,CalphaD,dopair
 !   !$OMP END PARALLEL
 end subroutine ContractOccCalpha
 
-subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,nbasis,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
+
+subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,n3,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
-   integer,intent(in)        :: nBA,n1,n2,nbasis
-   real(realk),intent(in)    :: CalphaG(nBA,n1,nbasis)
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
    real(realk),intent(in)    :: CalphaR(nBA,n1,n2)
-   real(realk),intent(in)    :: CalphaD(nBA,n1,n1)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
    real(realk),intent(inout) :: EJK
    real(realk)               :: EJ, EK, ED
    !local variables
@@ -3443,9 +3444,9 @@ subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,nbasis,CalphaR,CalphaG,C
    ED = 0.0E0_realk
    EK = 0.0E0_realk
    EJ = 0.0E0_realk
-   DO p=1,n2 !ncabs
-      DO n=1,n1 !nocc
-         DO j=1,n1 !nocc
+   DO p=1,n2 !ncabsMO
+      DO n=1,n3 !noccAOS
+         DO j=1,n1 !noccEOS
             !Diagonal
             IF(dopair_occ(J,J)) THEN
                tmpR = 0.0E0_realk
@@ -3625,12 +3626,12 @@ subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,d
    EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
 end subroutine ContractTwo4CenterF12IntegralsRIB9
 
-subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,nbasis,&
+subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,&
       & CalphaGcabs,CalphaG,Fii,EJK3,EJK4,dopair_occ_in)
   implicit none
-  integer,intent(in)        :: nBA,n1,n2,n3,nbasis
+  integer,intent(in)        :: nBA,n1,n2,n3
   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
-  real(realk),intent(in)    :: CalphaG(nBA,n1,nbasis)
+  real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
   real(realk),intent(IN)    :: Fii(n1,n1)
   real(realk),intent(inout) :: EJK3,EJK4
   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
