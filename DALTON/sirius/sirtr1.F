@@ -440,7 +440,7 @@ C         in inner loop in order to improve vectorization)
 C        DXV(p,u) = sum(v) DV(v,u) Bo(v,p) = sum(v) DV(u,v) Bo(v,p)
 C        DXVAO(a,b) =
 C        sum(u) CMO(b,u) ( sum(v) (sum(p) CMO(a,p) Bo(v,p)) DV(v,u) )
-         IF (NBASJ*NASHI*NORBJ .NE. 0) THEN
+         IF (NASHI*NORBJ .NE. 0) THEN
             CALL DGEMM('N','T',NBASJ,NASHI,NORBJ,1.D0,
      &                 CMO(ICMOJ+1),NBASJ,
      &                 UBO(IORBI+NISHI+1,IORBJ+1),NORBT,0.D0,
@@ -452,7 +452,7 @@ C        sum(u) CMO(b,u) ( sum(v) (sum(p) CMO(a,p) Bo(v,p)) DV(v,u) )
          END IF
          IOFMOV = ICMOI + 1 + NISHI*NBASI
 C
-         IF (NBASJ*NBASI*NASHI .NE. 0)
+         IF (NBASJ*NASHI .NE. 0)
      &        CALL DGEMM('N','T',NBASJ,NBASI,NASHI,1.D0,
      &                   WRK(KDXV1),NBASJ,
      &                   CMO(IOFMOV),NBASI,0.D0,
@@ -485,7 +485,7 @@ C
 C
 C **     the inactive one-index transformed dm:
 C        DXC(p,i) = 2*Bo(i,p)
-         IF (NBASJ*NORBJ*NBASI .NE. 0) THEN
+         IF (NORBJ*NBASI .NE. 0) THEN
             CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
      &                 CMO(ICMOJ+1),NBASJ,
      &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0,
