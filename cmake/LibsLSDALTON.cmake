@@ -63,6 +63,7 @@ add_library(
 
 target_link_libraries(matrixmlib cuda_gpu_interfaces)
 
+include_directories(${CMAKE_SOURCE_DIR}/LSDALTON/tensor/include)
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
    ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
@@ -276,28 +277,24 @@ if(ENABLE_REAL_SP)
    endif()
 endif()
 
-get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
 
 if(ENABLE_GPU)
-   set(LIST_OF_DEFINITIONS "acc ${LIST_OF_DEFINITIONS}")
-endif()
-if(NOT ENABLE_COLLAPSE)
-   set(LIST_OF_DEFINITIONS "nocollapse ${LIST_OF_DEFINITIONS}")
+   set(reorder_definitions "acc ${reorder_definitions}")
 endif()
 if(ENABLE_REAL_SP)
-   set(LIST_OF_DEFINITIONS "real_sp ${LIST_OF_DEFINITIONS}")
+   set(reorder_definitions "real_sp ${reorder_definitions}")
 endif()
 
 add_custom_command(
     OUTPUT
     ${MANUAL_REORDERING_SOURCES}
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${reorder_definitions}
     DEPENDS
     ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
     )
 
-unset(LIST_OF_DEFINITIONS)
+unset(reorder_definitions)
 
 add_library(
     lsutillib_common

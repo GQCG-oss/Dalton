@@ -1370,8 +1370,11 @@ C
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
-C     NEWTRA is in /INFTRA/ for practical reasons
-      NEWTRA = .FALSE.
+
+C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
+      NEWTRA = .FALSE.        ! if true, use "new" transformation for Mulliken integrals
+      NEWTRA_USEDRC = .FALSE.  ! if NEWTRA and NEWTRA_USEDRC both true, also use "new" transformation for Dirac integrals
+
       OPTNEW = .FALSE.
       NEWSYM = .FALSE.
       NEWBAS = .TRUE.

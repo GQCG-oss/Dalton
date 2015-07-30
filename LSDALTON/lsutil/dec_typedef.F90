@@ -53,7 +53,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 26
+  integer, parameter :: ndecenergies = 27
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -148,6 +148,8 @@ module dec_typedef_module
      !> when calculation Jacobian eigenvalues. (Only meaningful in
      !> combination with MP2 wave function model).
      logical :: LW1
+     !> Use P-EOM-MBPT2 model for excitation energies (Chem Phys Lett 248, 189 (1996))
+     logical :: P_EOM_MBPT2
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -1357,6 +1359,7 @@ module dec_typedef_module
      real(realk),pointer :: commt(:)
      real(realk),pointer :: workt(:)
      real(realk),pointer :: idlet(:)
+     real(realk),pointer :: comm_gl_master_time(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.

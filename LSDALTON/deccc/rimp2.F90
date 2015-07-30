@@ -224,7 +224,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! initialize the CUBLAS context
   stat = cublasCreate_v2(cublas_handle)
   print*,'cublasCreate_v2 gives stat=',stat
-  stat = cudaSetDevice(0)
+  stat = cudaSetDevice(int(0,kind=4))
   print*,'cudaSetDevice(0) gives stat=',stat
   print*,'known results are:'
   !print*,'cudaSuccess',cudaSuccess
@@ -334,14 +334,18 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #ifdef VAR_MPI
   IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
 #endif
-  
+ 
+   nBasisaux = 0
+   natomsaux = 0
+   nbasis2 = 0
 
-  IF(DECinfo%AuxAtomicExtent)THEN
+   IF(DECinfo%AuxAtomicExtent)THEN
      call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
   ELSE
      call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,nBasis2,nBasisAux)
      if(natoms.NE.natomsAux)call lsquit('Error in RIMP2 natoms dim mismatch',-1)
   ENDIF
+
   nbasisAux8 = nbasisAux
   IF(nBasisAux.EQ.0)THEN
      WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Warning no Aux basis have been chosen for RIMP2, Using Regular'

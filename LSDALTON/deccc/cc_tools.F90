@@ -13,6 +13,7 @@ module cc_tools_module
 #endif
 
    use precision
+   use memory_handling
 #ifdef VAR_MPI
    use lsmpi_type
 #endif
@@ -492,9 +493,7 @@ module cc_tools_module
       call mem_dealloc(buf1)
       call mem_dealloc(buf2)
 
-      !stop 0
       call lsmpi_barrier(infpar%lg_comm)
-      !stop 0
 #endif
    end subroutine lspdm_get_tpl_and_tmi
 

@@ -15,8 +15,8 @@ module tensor_interface_module
 #endif
 
   ! Outside DEC directory
-  use memory_handling
-  use precision
+  use tensor_parameters_and_counters
+  use tensor_mpi_interface_module
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
   use reorder_frontend_module
@@ -64,6 +64,16 @@ module tensor_interface_module
   public int2str                      !converts integers to strings
 #endif
 
+  !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
+  public tensor_initialize_interface, tensor_finalize_interface
+
+  ! MODIFY THE BEHAVIOUR OF THE TENSOR LIB
+  public tensor_set_mpi_msg_len              ! set the maximum message length of a call to MPI
+  public tensor_set_always_sync_true         ! force synchronization after parallel operations
+  public tensor_set_debug_mode_true          ! switch on debugging mode
+  public tensor_set_dil_backend_true         ! switch on the dil backend for tensor contractions
+  public tensor_set_dil_backend
+
   !This defines the public interface to the tensors
   !The tensor type itself
   public tensor
@@ -71,6 +81,8 @@ module tensor_interface_module
   public TT_DENSE, TT_REPLICATED, TT_TILED, TT_TILED_DIST
   !The different access types in order to swith between master mediated and all at the same time accesses
   public AT_NO_PDM_ACCESS, AT_MASTER_ACCESS, AT_ALL_ACCESS
+  ! USE THIS SIGNAL TO 
+  public TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
   !Other parameters that may be useful for a user
   public alloc_in_dummy, TENSOR_MSG_LEN
   !Tensor timing
@@ -86,8 +98,9 @@ module tensor_interface_module
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
   public tensor_print_norm_nrm
 
+
   ! PDM interface to the tensor structure
-  public pdm_tensor_sync, init_persistent_array, free_persistent_array, new_group_reset_persistent_array
+  public pdm_tensor_sync, new_group_reset_persistent_array
   public tensor_get_tile, tensor_put_tile, tensor_accumulate_tile
   public tensor_scatter, tensor_gather
   public tensor_lock_win, tensor_lock_wins, tensor_lock_local_wins
@@ -113,9 +126,7 @@ module tensor_interface_module
   ! Auxiliary functions on the user level
   public get_symm_tensor_segmenting_simple
   public tensor_get_ntpm, get_tile_dim
-  public tensor_set_debug_mode_true, tensor_set_dil_backend_true, tensor_set_dil_backend
   public tensor_set_global_segment_length
-  public tensor_set_always_sync_true
   public check_if_new_instance_needed, find_free_pos_in_buf, find_tile_pos_in_buf
   public assoc_ptr_to_buf, lspdm_init_global_buffer, lspdm_free_global_buffer
   public tensor_flush_win
@@ -188,20 +199,46 @@ module tensor_interface_module
 
 
 contains
-  subroutine tensor_set_global_segment_length(seg_len)
+
+  subroutine tensor_initialize_interface(mem_ctr,pdm_slaves_signal)
      implicit none
-     integer(kind=8), intent(in) :: seg_len
-     integer(kind=tensor_mpi_kind) :: me
-     integer(kind=8) :: seg
-     me  = 0
-     seg = seg_len
+     !use an external counter for memory counting
+     integer(kind=tensor_long_int), target, optional :: mem_ctr
+     integer, intent(in), optional :: pdm_slaves_signal
+     if(present(mem_ctr)) call set_external_mem_ctr(mem_ctr)
+     if(present(pdm_slaves_signal)) call set_signal_for_slaves(pdm_slaves_signal)
+     call tensor_init_counters()
+     call init_persistent_array()
+  end subroutine tensor_initialize_interface
+  subroutine tensor_finalize_interface()
+     implicit none
+     call free_persistent_array()
+     call tensor_free_counters()
+     if(associated(tensor_counter_ext_mem))call unset_external_mem_ctr()
+  end subroutine tensor_finalize_interface
+  subroutine tensor_set_mpi_msg_len(len)
+     implicit none
+     integer(kind=tensor_long_int) :: len
+     TENSOR_MPI_MSG_LEN = len
+  end subroutine tensor_set_mpi_msg_len
+
+  subroutine tensor_set_global_segment_length(comm,seg_len)
+     implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
+     integer(kind=tensor_long_int), intent(in) :: seg_len
+     integer(kind=tensor_mpi_kind) :: me, master
+     integer(kind=tensor_long_int) :: seg
+     me     = 0
+     master = 0
+     seg    = seg_len
 
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
+
      if( me == 0 )then
-        call ls_mpibcast(SET_TENSOR_SEG_LENGTH,infpar%master,MPI_COMM_LSDALTON)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_SEG_LENGTH)
      endif
-     call ls_mpibcast(seg,infpar%master,MPI_COMM_LSDALTON)
+     call tensor_mpi_bcast(seg,master,comm)
 #endif
 
      if( seg<=0 )then
@@ -214,15 +251,16 @@ contains
 
   end subroutine tensor_set_global_segment_length
 
-  subroutine tensor_set_debug_mode_true(call_slaves)
+  subroutine tensor_set_debug_mode_true(comm,call_slaves)
      implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
      if( me == 0 .and. call_slaves )then
-        call ls_mpibcast(SET_TENSOR_DEBUG_TRUE,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_DEBUG_TRUE)
      endif
 #endif
 
@@ -230,30 +268,32 @@ contains
      tensor_always_sync = .true.
   end subroutine tensor_set_debug_mode_true
 
-  subroutine tensor_set_always_sync_true(call_slaves)
+  subroutine tensor_set_always_sync_true(comm,call_slaves)
      implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
      if( me == 0 .and. call_slaves )then
-        call ls_mpibcast(SET_TENSOR_ALWAYS_SYNC_TRUE,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_ALWAYS_SYNC_TRUE)
      endif
 #endif
 
      tensor_always_sync = .true.
   end subroutine tensor_set_always_sync_true
 
-  subroutine tensor_set_dil_backend_true(call_slaves)
+  subroutine tensor_set_dil_backend_true(comm,call_slaves)
      implicit none
+     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     me = infpar%lg_mynum
+     call tensor_get_rank_for_comm(comm,me)
      if( me == 0.and. call_slaves )then
-        call ls_mpibcast(SET_TENSOR_BACKEND_TRUE,me,infpar%lg_comm)
+        call pdm_tensor_sync(comm,JOB_SET_TENSOR_BACKEND_TRUE)
      endif
 #endif
      tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
@@ -393,7 +433,7 @@ contains
 
         case(TT_TILED_DIST)
 
-           call mem_alloc(buffer,y%tsize)
+           call tensor_alloc_mem(buffer,y%tsize)
            !TODO:IMPLEMENT MULTIPLE BUFFERING AND MOVE TO lspdm_tensor_operations!!!!!!
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
@@ -404,7 +444,7 @@ contains
 
               call tile_in_fort(b,buffer,ti,int(y%tdim),pre2,x%elm1,x%dims,int(x%mode),o)
            enddo
-           call mem_dealloc(buffer)
+           call tensor_free_mem(buffer)
 
            call time_start_phase( PHASE_COMM )
            if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
@@ -1045,9 +1085,9 @@ contains
            wB => wrk(A%nelms + 1 : A%nelms + B%nelms )
            wC => wrk(A%nelms + B%nelms + 1 : A%nelms + B%nelms + C%nelms )
         else
-           call mem_alloc(wA,A%nelms)
-           call mem_alloc(wB,B%nelms)
-           call mem_alloc(wC,C%nelms)
+           call tensor_alloc_mem(wA,A%nelms)
+           call tensor_alloc_mem(wB,B%nelms)
+           call tensor_alloc_mem(wC,C%nelms)
         endif
 
         m_gemm = 1
@@ -1138,9 +1178,9 @@ contains
            wB => null()
            wC => null()
         else
-           call mem_dealloc(wA)
-           call mem_dealloc(wB)
-           call mem_dealloc(wC)
+           call tensor_free_mem(wA)
+           call tensor_free_mem(wB)
+           call tensor_free_mem(wC)
         endif
      endif
   end subroutine tensor_contract_dense_simple
@@ -1719,7 +1759,7 @@ contains
         if(bg)then
            call mem_pseudo_alloc( new_data,nelms )
         else
-           call mem_alloc( new_data,nelms )
+           call tensor_alloc_mem( new_data,nelms )
         endif
 
         select case(arr%mode)
@@ -1749,7 +1789,7 @@ contains
         if(bg)then
            call mem_pseudo_dealloc(new_data)
         else
-           call mem_dealloc(new_data)
+           call tensor_free_mem(new_data)
         endif
 
         call assoc_ptr_arr(arr)
@@ -2182,34 +2222,6 @@ contains
     !put 0 in tdim, since for the replicated array it is not important
     tdimdummy=0
     call tensor_set_tdims(p_arr%a(addr),tdimdummy,nmodes)
-
-    !call mem_alloc(buf,pc_nnodes)
-    !buf = 0
-
-    !if master init only master has to init the addresses addresses before
-    !pdm syncronization
-!    if(master .and. p_arr%a(addr)%access_type==AT_MASTER_ACCESS .and. lspdm_use_comm_proc)then
-!      call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
-!#ifdef VAR_MPI
-!      call pdm_tensor_sync(infpar%pc_comm,JOB_INIT_tensor_PC,p_arr%a(addr),loc_addr=.true.)
-!#endif
-!    endif
-
-
-
-    !if AT_ALL_ACCESS all have to have the addresses allocated
-    !if(p_arr%a(addr)%access_type==AT_ALL_ACCESS.and. lspdm_use_comm_proc)&
-    !   &call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
-
-    !SET THE ADDRESSES ON ALL NODES     
-    !buf(me+1)=addr 
-!#ifdef VAR_MPI
-!    if( lspdm_use_comm_proc )call lsmpi_allreduce(buf,pc_nnodes,infpar%pc_comm)
-!#endif
-
-    !call tensor_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
-
-    !call mem_dealloc(buf)
 
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
     call memory_allocate_tensor_dense(p_arr%a(addr),bg)
@@ -2980,11 +2992,12 @@ contains
     !> optional logigal stating that the informaion should be gathered on master
     integer, intent(inout), optional :: reducetocheck
     logical :: alln,red,master
-    integer :: nnod
-    real(tensor_dp),pointer :: red_info(:)
-    alln = .false.
-    red = .false.
-    master=.true.
+    integer :: nnod, nod
+    integer(kind=tensor_long_int),pointer :: red_info(:),narr(:)
+    alln   = .false.
+    red    = .false.
+    master =.true.
+    nnod   = 1
 #ifdef VAR_MPI
     if(infpar%lg_mynum/=0)master=.false.
     nnod=infpar%lg_nodtot
@@ -2992,29 +3005,31 @@ contains
     if(present(print_all_nodes))alln=print_all_nodes
     if(present(reducetocheck))then
       red=.true.
-      if(red.and.master)then
-#ifdef VAR_MPI
-      call mem_alloc(red_info,nnod*8)
-#else
-      call mem_alloc(red_info,8)
-#endif
-      endif
+      call tensor_alloc_mem(red_info,nnod*9)
+      call tensor_alloc_mem(narr,nnod)
+      red_info = 0
+      narr     = 0
     endif
     if(alln)then
-      if(present(allaccess).and.red)call print_mem_per_node(output,allaccess,red_info)
-      if(.not.present(allaccess).and.red)call print_mem_per_node(output,.false.,red_info)
+      if(present(allaccess).and.red)call print_mem_per_node(output,allaccess,red_info,narr)
+      if(.not.present(allaccess).and.red)call print_mem_per_node(output,.false.,red_info,narr)
       if(present(allaccess).and..not.red)call print_mem_per_node(output,allaccess)
       if(.not.present(allaccess).and..not.red)call print_mem_per_node(output,.false.)
     else
       call tensor_print_memory_currents(output)
     endif
-    if(red.and.master)then
-      if(abs(red_info(1))<1.0E-11_tensor_dp)then
-        reducetocheck=0
-      else
-        reducetocheck=1
-      endif
-      call mem_dealloc(red_info)
+
+    if(red)then
+       !set test status
+      reducetocheck=0
+      do nod=1,nnod
+         !check position 7 for each node, this ist the total memory currently
+         !allocated in the tensor structure
+         if(red_info(7+(nod-1)*9) /= 0) reducetocheck = 1
+         if(narr(nod) /= 0)             reducetocheck = 1
+      enddo
+      call tensor_free_mem(red_info)
+      call tensor_free_mem(narr)
     endif
 
   end subroutine tensor_print_mem_info

@@ -475,7 +475,7 @@ C        sum(u) CMO(b,u) ( sum(v) (sum(p) CMO(a,p) Bo(v,p)) DV(v,u) )
 C        If (DFT_SPINDNS) DXSAO(a,b) =
 C        sum(u) CMO(b,u) ( sum(v) (sum(p) CMO(a,p) Bo(v,p)) DS(v,u) )
          IOFMOV = ICMOI + 1 + NISHI*NBASI
-         IF (NBASJ*NASHI*NORBJ .NE. 0) THEN ! NASHI .ne. 0 => NBASI .ne. 0
+         IF (NASHI*NORBJ .NE. 0) THEN
             CALL DGEMM('N','T',NBASJ,NASHI,NORBJ,1.D0,
      &                 CMO(ICMOJ+1),NBASJ,
      &                 UBO(IORBI+NISHI+1,IORBJ+1),NORBT,0.D0,
@@ -531,7 +531,7 @@ C
 C
 C **     the inactive one-index transformed dm:
 C        DXC(p,i) = 2*Bo(i,p)
-         IF (NBASJ*NORBJ*NBASI .NE. 0) THEN
+         IF (NORBJ*NBASI .NE. 0) THEN
             CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,1.D0,
      &                 CMO(ICMOJ+1),NBASJ,
      &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0,

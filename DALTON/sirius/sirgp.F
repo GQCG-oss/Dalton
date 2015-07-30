@@ -522,20 +522,20 @@ C
  1010 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
      *  5X,'(only elements abs greater than',1P,D8.1,
      *     ' times max abs value)'//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
  1020 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
  1030 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
      *  5X,'(only elements less than',1P,D10.2,')'//
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1100 FORMAT(I15,I7,I3,F20.10)
- 1210 FORMAT(/1X,I8,' elements with absolute value less than',
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
+ 1100 FORMAT(I15,I7,I5,F20.10)
+ 1210 FORMAT(/I8,' elements with absolute value less than',
      *       1P,D9.2,' not printed.')
- 1220 FORMAT(/1X,I8,' zero elements not printed.')
- 1230 FORMAT(/1X,I8,' elements with value greater than',
+ 1220 FORMAT(/I8,' zero elements not printed.')
+ 1230 FORMAT(/I8,' elements with value greater than',
      *       1P,D9.2,' not printed.')
 C
 C -- end of subroutine PRKAP
@@ -604,13 +604,13 @@ C
  1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
      *  5X,'(only elements abs greater than',1P,D8.1,
      *     ' times max abs value)'//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
  1010 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1100 FORMAT(I15,I7,I3,F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
+ 1100 FORMAT(I15,I7,I5,F20.10)
+ 1200 FORMAT(/I8,' elements with absolute value less than',
      *       1P,D9.2,' not printed.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
      *       /5X,'>> NO ELEMENTS <<')

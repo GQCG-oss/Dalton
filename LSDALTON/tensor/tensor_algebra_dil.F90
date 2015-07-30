@@ -2571,7 +2571,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2583,12 +2583,12 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
+          if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
           call tensor_get_tile(tens_arr,int(tile_num,kind=tensor_standard_int),&
              &buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
@@ -2609,7 +2609,7 @@
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2621,15 +2621,15 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+            call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
-            call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
+            call tensor_mpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
           endif
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
@@ -2650,7 +2650,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2662,13 +2662,13 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_accumulate_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
+          if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
+          call tensor_acc_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -2691,7 +2691,7 @@
         integer(INTD), intent(inout), optional:: num_async         !inout: number of the outstanding MPI uploads left
         type(rank_win_t), intent(inout), optional:: list_async(1:) !out: list of the outstanding MPI uploads
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK),max_async
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck,async
 
@@ -2708,16 +2708,16 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(.not.async) then
             if(win_lck) then
-             call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+             call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
             else
-             call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
+             call tensor_mpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
             endif
            else
             num_async=num_async+1
@@ -2818,7 +2818,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2830,12 +2830,12 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
+          if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
           call tensor_get_tile(tens_arr,int(tile_num,kind=tensor_standard_int),&
              &bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
@@ -2858,7 +2858,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2868,16 +2868,16 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+            call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
-            call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
+            call tensor_mpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
           endif
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:n)
@@ -2905,7 +2905,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
         real(8):: time_beg,tm
@@ -2927,12 +2927,12 @@
 !          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
 !           &tm,dble(2_INTL*tile_vol*tensor_dp)/(tm*1024d0*1024d0*1024d0),i
           if(i.ne.0) then; ierr=1; return; endif
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
-          if((.not.win_lck).and.new_rw) call lsmpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_accumulate_tile(tens_arr,tile_num,bufo(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
+          if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
+          call tensor_acc_tile(tens_arr,tile_num,bufo(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -2951,7 +2951,7 @@
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2961,15 +2961,15 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,kind=tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !          &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(new_rw) then
            if(win_lck) then
-            call lsmpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
+            call tensor_mpi_win_flush(tens_arr%wi(tile_win),int(tile_host,tensor_mpi_kind))
            else
-            call lsmpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
+            call tensor_mpi_win_unlock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win))
            endif
           endif
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
@@ -4816,9 +4816,11 @@
         if(present(locked)) then; win_lck=locked; else; win_lck=.false.; endif
         do i=1,tcontr%num_async
          if(win_lck) then
-          call lsmpi_win_flush(int(tcontr%list_async(i)%window,tensor_mpi_kind),int(tcontr%list_async(i)%rank,tensor_mpi_kind))
+          call tensor_mpi_win_flush(int(tcontr%list_async(i)%window,tensor_mpi_kind),&
+             &int(tcontr%list_async(i)%rank,tensor_mpi_kind))
          else
-          call lsmpi_win_unlock(int(tcontr%list_async(i)%rank,tensor_mpi_kind),int(tcontr%list_async(i)%window,tensor_mpi_kind))
+          call tensor_mpi_win_unlock(int(tcontr%list_async(i)%rank,tensor_mpi_kind),&
+             &int(tcontr%list_async(i)%window,tensor_mpi_kind))
          endif
         enddo
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tensor_contract_finalize): Number of finalized MPI uploads = ",i6)')&
@@ -4849,7 +4851,7 @@
         integer(INTD):: mpi_dtyp,errc
 
         errc=0; dil_tensor_norm1=0E0_tensor_dp; nrm1=0E0_tensor_dp
-        call lsmpi_barrier(infpar%lg_comm) !complete all outstanding communications
+        call tensor_mpi_barrier(infpar%lg_comm) !complete all outstanding communications
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,l) REDUCTION(+:nrm1)
         do i=1,tens%nlti
 !$OMP DO SCHEDULE(GUIDED)
@@ -5278,25 +5280,25 @@
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Done: Result =",3(1x,D25.15))') impir,val0,val1,val2
         flush(CONS_OUT)
 !Init tensors:
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Input tensor init started ...")') impir
         call dil_tensor_init(ltens,1d-2)
         call dil_tensor_init(rtens,1d-3)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Input tensor init finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Compute input tensor norms:
         val1=tensor_tiled_pdm_get_nrm2(ltens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val2=tensor_tiled_pdm_get_nrm2(rtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Left/Right 2-norms:",2(1x,D25.15))') val1,val2
         tcs='D(a,b,c,d)=L(e,f,d,b)*R(f,a,c,e)'
 !ALL 'DDD':
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: All-DDD tensor contraction setup started ...")') impir
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm at the beginning: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5305,16 +5307,16 @@
         call dil_set_tens_contr_spec(tcr,tcs,errc); print *,'CSPEC ERR = ',errc
         mem_lim=dil_get_min_buf_size(tcr,errc); print *,'BUF SIZE ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished: Memory limit = ",i12," bytes")') impir,mem_lim
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction started:")') impir
         if(impir.eq.0) write(*,'("Global DDD started ... ")',ADVANCE='NO')
         tmb=process_wtime()
         call dil_tensor_contract(tcr,DIL_TC_ALL,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         tm=process_wtime(tmb); if(impir.eq.0) write(*,'("Done in ",F10.4," s.")') tm
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm at the end: ",D25.15)') val0
         if(impir.eq.0) write(*,'("Destination norm at the end: ",D25.15)') val0
 !        goto 999
@@ -5374,16 +5376,16 @@
         endif
         do i=1,lvol; larr(i)=1d-2; enddo
         do i=1,rvol; rarr(i)=1d-3; enddo
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Initialization finished.")') impir
         flush(CONS_OUT)
 !Tensor contraction 'DDD':
         mem_lim=384*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: DDD tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5391,31 +5393,31 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
 !Tensor contraction 'LLL':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: LLL tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         do i=1,dvol; darr(i)=0d0; enddo
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,drank,dful,darr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_args(tcr,'l',errc,lrank,lful,larr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_args(tcr,'r',errc,rrank,rful,rarr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=0d0; do i=1,dvol; val0=val0+darr(i)**2; enddo
         print *,'Local DTENS (2-norm)^2 = ',val0,impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Tensor contraction 'LDD':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: LDD tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
@@ -5426,20 +5428,20 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=0d0; do i=1,dvol; val0=val0+darr(i)**2; enddo
         print *,'Local DTENS (2-norm)^2 = ',val0,impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Tensor contraction 'DLL':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: DLL tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5447,12 +5449,12 @@
         call dil_set_tens_contr_args(tcr,'r',errc,rrank,rful,rarr); print *,'DTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
 !Tensor contraction 'LLD':
         mem_lim=1024*1048576_INTL
@@ -5464,20 +5466,20 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=0d0; do i=1,dvol; val0=val0+darr(i)**2; enddo
         print *,'Local DTENS (2-norm)^2 = ',val0,impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
 !Tensor contraction 'DLD':
         mem_lim=1024*1048576_INTL
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: DLD tensor contraction setup started (MEM_LIM = ",i12," B) ...")') impir,mem_lim
         call dil_tensor_init(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         call dil_clean_tens_contr(tcr)
         call dil_set_tens_contr_args(tcr,'d',errc,tens_distr=dtens); print *,'DTENS ERR = ',errc
@@ -5485,12 +5487,12 @@
         call dil_set_tens_contr_args(tcr,'r',errc,tens_distr=rtens); print *,'RTENS ERR = ',errc
         call dil_set_tens_contr_spec(tcr,tcs,errc,ddim,ldim,rdim,dbas,lbas,rbas); print *,'CSPEC ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction setup finished.")') impir
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call dil_tensor_contract(tcr,DIL_TC_EACH,mem_lim,errc)
         write(CONS_OUT,'("#DEBUG(DIL)[",i2,"]: Tensor contraction finished: Status ",i9)') impir,errc
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         val0=tensor_tiled_pdm_get_nrm2(dtens)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm: ",D25.15)') val0
         val0=dil_tensor_norm1(dtens,errc); print *,'NORM1 ERR = ',errc
         write(CONS_OUT,'("#DEBUG(DIL): Destination norm1: ",D25.15)') val0
@@ -5499,7 +5501,7 @@
         if(associated(darr)) deallocate(darr)
         if(associated(larr)) deallocate(larr)
         if(associated(rarr)) deallocate(rarr)
-        call lsmpi_barrier(infpar%lg_comm)
+        call tensor_mpi_barrier(infpar%lg_comm)
         call MPI_ABORT(infpar%lg_comm,0_tensor_mpi_kind,mpi_err)
         return
         end subroutine dil_test

@@ -142,6 +142,7 @@ C
 #include "ericom.h"
 #include "erithr.h"
 #include "erimem.h"
+#include "eritap.h"
 #include "eribuf.h"
 #include "aobtch.h"
 #include "odbtch.h"
@@ -184,11 +185,8 @@ C     Open files and define NIBUF in eribuf.h
 C
       IF (LUINTR.LT.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-      ELSE
-         NIBUF = 2
-      END IF
+      CALL ER2INI
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
 #if defined (SYS_NEC)
       LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
 #else

@@ -301,7 +301,8 @@ CTROND
 CTROND
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
-      integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
+      integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer(kind=MPI_OFFSET_KIND)  :: displacement
       character(len=16)              :: shared_dmat_file
       integer                        :: istat(mpi_status_size)
 #endif
@@ -1262,7 +1263,8 @@ C
 #include "mpif.h"
 #endif
       integer, parameter             :: dummy_buff = 2
-      integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
+      integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer(kind=MPI_OFFSET_KIND)  :: displacement
       integer(kind=MPI_ADDRESS_KIND) :: nelement_d, nelement_f
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
       real(8)                        :: dmat_buff(dummy_buff)

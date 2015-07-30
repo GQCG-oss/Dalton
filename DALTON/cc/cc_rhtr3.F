@@ -72,7 +72,7 @@ c*DECK CC_RHTR3
 #include "ccfield.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "cclr.h"
 #include "blocks.h"
 #include "ccsdio.h"
