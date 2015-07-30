@@ -1,5 +1,5 @@
 
-subroutine pdm_tensor_slave(comm)
+subroutine pdm_tensor_slave()
 
    use tensor_parameters_and_counters
    use tensor_allocator
@@ -15,7 +15,7 @@ subroutine pdm_tensor_slave(comm)
    use tensor_interface_module
 
    IMPLICIT NONE
-   INTEGER(kind=tensor_mpi_kind),intent(in) :: comm
+   INTEGER(kind=tensor_mpi_kind) :: comm
    type(tensor)  :: A, B, C, D, AUX
    CHARACTER    :: T(2)
    INTEGER      :: JOB
@@ -31,10 +31,10 @@ subroutine pdm_tensor_slave(comm)
    integer(kind=tensor_mpi_kind), parameter :: master = 0
    character (4) :: at 
 #ifdef VAR_MPI
-   call tensor_set_comm(comm)
 
+   comm = tensor_work_comm
    call time_start_phase(PHASE_COMM)
-   call PDM_TENSOR_SYNC(comm,JOB,A,B,C,D) !Job is output
+   call PDM_TENSOR_SYNC(JOB,A,B,C,D) !Job is output
    call time_start_phase(PHASE_WORK)
 
    SELECT CASE(JOB)
@@ -333,17 +333,17 @@ subroutine pdm_tensor_slave(comm)
       call tensor_rand_tiled_dist(A)
 
    case(JOB_LSPDM_INIT_GLOBAL_BUFFER)
-      call lspdm_init_global_buffer(comm,.false.)
+      call lspdm_init_global_buffer(.false.)
    case(JOB_LSPDM_FREE_GLOBAL_BUFFER)
-      call lspdm_free_global_buffer(comm,.false.)
+      call lspdm_free_global_buffer(.false.)
    case(JOB_SET_TENSOR_SEG_LENGTH)
-      call tensor_set_global_segment_length(comm,LIN1)
+      call tensor_set_global_segment_length(LIN1)
    case(JOB_SET_TENSOR_DEBUG_TRUE)
-      call tensor_set_debug_mode_true(comm,.false.)
+      call tensor_set_debug_mode_true(.false.)
    case(JOB_SET_TENSOR_ALWAYS_SYNC_TRUE)
-      call tensor_set_always_sync_true(comm,.false.)
+      call tensor_set_always_sync_true(.false.)
    case(JOB_SET_TENSOR_BACKEND_TRUE)
-      call tensor_set_dil_backend_true(comm,.false.)
+      call tensor_set_dil_backend_true(.false.)
 
    CASE DEFAULT
         call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)

@@ -11,8 +11,8 @@ module lspdm_basic_module
   use tensor_allocator
   use tensor_type_def_module
 #ifdef VAR_MPI
-  use infpar_module
   use tensor_mpi_interface_module
+  use tensor_mpi_operations_module
 #endif
   use reorder_frontend_module
 
@@ -420,25 +420,22 @@ module lspdm_basic_module
      integer               :: res
      integer(kind=tensor_long_int)     :: from, pos, widx
      integer(kind=tensor_standard_int) :: tidx
-     lg_master = .true.
-     lg_nnod   = 1
-     lg_me     = 0
+     integer(kind=tensor_mpi_kind), parameter :: master = 0
 
-
-#ifdef VAR_MPI
-     lg_nnod   = infpar%lg_nodtot
-     lg_me     = infpar%lg_mynum
-     lg_master = (infpar%master==lg_me)
-#else
+#ifndef VAR_MPI
      call lsquit("Do not use MPI-WINDOWS without MPI",lspdm_errout)
 #endif
+     
+     call tensor_get_size(lg_nnod)
+     call tensor_get_rank(lg_me)
+     lg_master = (lg_me == master)
 
      !get zero dummy matrix in size of largest tile --> size(dummy)=tsize
      if( alloc_in_dummy )then
         call memory_allocate_dummy(arr,bg, nel = int(arr%tsize*arr%nlti,kind=tensor_long_int))
 #ifdef VAR_MPI
         call memory_allocate_window(arr,nwins = 1)
-        call tensor_mpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,infpar%lg_comm) 
+        call tensor_mpi_win_create(arr%dummy,arr%wi(1),arr%tsize*arr%nlti,tensor_work_comm) 
 #endif
      else
         call memory_allocate_dummy( arr,bg, nel = 1_tensor_long_int)
@@ -449,7 +446,6 @@ module lspdm_basic_module
      call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
      call tensor_alloc_mem(idx,arr%mode)
 
-     !write(*,'(I2," in here and nlti ",I5)'),infpar%lg_mynum,arr%nlti
      call tensor_alloc_mem(arr%ti,arr%nlti)
 
      vector_size = int(arr%nlti*tensor_bytes_per_tile,kind=tensor_long_int)
@@ -465,7 +461,7 @@ module lspdm_basic_module
         do i=1,arr%ntiles
            doit=.true.
 #ifdef VAR_MPI
-           if(.not.mod(i+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
+           if(.not.mod(i+arr%offset,lg_nnod)==lg_me)doit=.false.
 #endif
            if(doit)then
               call tensor_alloc_mem(arr%ti(counter)%t,arr%tsize)
@@ -546,7 +542,7 @@ module lspdm_basic_module
                  tensor_counter_memory_in_use    = tensor_counter_memory_in_use + vector_size
                  !tensor_counter_max_memory       = max(tensor_counter_max_memory,tensor_counter_memory_in_use)
                  !$OMP END CRITICAL
-                 call tensor_mpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm) 
+                 call tensor_mpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,tensor_work_comm) 
               endif
 
 
@@ -561,7 +557,7 @@ module lspdm_basic_module
               !open a window of size zero on the nodes where the tile does not
               !reside
 #ifdef VAR_MPI
-              if( .not. alloc_in_dummy  )call tensor_mpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
+              if( .not. alloc_in_dummy  )call tensor_mpi_win_create(arr%dummy,arr%wi(i),0,tensor_work_comm)
 #endif
            endif
 #ifdef VAR_MPI

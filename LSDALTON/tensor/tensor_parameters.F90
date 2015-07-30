@@ -1,6 +1,6 @@
 module tensor_parameters_and_counters
 
-   !Define atomic types used in the tensor module
+   !Define atomic data types used in the tensor module
    integer, parameter :: tensor_dp           = 8
    integer, parameter :: tensor_sp           = 4
 #ifdef VAR_INT64

@@ -4,13 +4,11 @@
 
 module tensor_tester_module
 
-  use lsparameters
   use tensor_allocator
   use tensor_parameters_and_counters
   use lspdm_tensor_operations_module
   use reorder_tester_module
 #ifdef VAR_MPI
-  use infpar_module
   use lsmpi_type
   use tensor_mpi_interface_module
 #endif
@@ -43,16 +41,14 @@ module tensor_tester_module
     integer,pointer :: ord(:)
     type(tile) :: test
     type(tensor) :: tens
-    master = .true.
-    nnod   = 1_tensor_mpi_kind
-    me     = 0
+    integer(kind=tensor_mpi_kind), parameter :: root = 0
+
+    call  tensor_get_rank(me)
+    call  tensor_get_size(nnod)
+    master = (me==root)
 #ifdef VAR_MPI
-    me = infpar%lg_mynum
-    if(me /= 0) then
-      master =.false.
-    endif
-    nnod = infpar%lg_nodtot
     if(nnod < 3) print*,"WARNING(test_tensor_struct): not enough MPI processes to test1 all features"
+
     output = fu_out
 #endif
     nb =  21
@@ -271,15 +267,15 @@ module tensor_tester_module
     !get the slaves into this routine
     if(master)then
       print *,"MASTER GETTING SLAVES"
-      call tensor_mpi_bcast(ARRAYTEST,infpar%master,infpar%lg_comm)
+      call tensor_mpi_bcast(ARRAYTEST,root,tensor_work_comm)
       write (output,*)""
       write (output,*)""
       write (output,*)"TESTING PARALLEL ACCESS TO THE SAME ROUTINES"
       write (output,*)""
     else
-      print *,"SLAVE ARRIVED",infpar%lg_mynum
+      print *,"SLAVE ARRIVED",me
     endif
-    call tensor_mpi_bcast(output,infpar%master,MPI_COMM_LSDALTON)
+    call tensor_mpi_bcast(output,root,MPI_COMM_LSDALTON)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!ALL OF THE SLAVES WILL BE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -302,7 +298,7 @@ module tensor_tester_module
     if(master) write(output,*)""
     if(master) write(output,*)""
     if(master) print *,"ALL-INIT ALLOC-DEALLOC TESTS:",teststatus
-    !call tensor_mpi_barrier(infpar%lg_comm)
+    !call tensor_mpi_barrier(tensor_work_comm)
 
     !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the
     !current rank
@@ -317,7 +313,7 @@ module tensor_tester_module
     enddo
 
 
-    if((infpar%lg_mynum==rnk.or.master).and. nnod > 2)then
+    if((me==rnk.or.master).and. nnod > 2)then
 
       recver=rnk
 
@@ -327,11 +323,11 @@ module tensor_tester_module
         tileget = 1.0E1_tensor_dp
         call tensor_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
-        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,tensor_work_comm,recver,root)
         call tensor_free_mem(tileget)
 
       else
-        call tensor_mpi_sendrecv(ref,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(ref,tensor_work_comm,recver,root)
         write(output,'("NORM PARALLEL 3LPN: ",f20.15)')ref
       endif
 
@@ -344,39 +340,39 @@ module tensor_tester_module
     rnk = nnod - 2
 
     
-    call tensor_mpi_barrier(infpar%lg_comm)
-    if((infpar%lg_mynum==rnk.or.master).and.nnod>2)then
+    call tensor_mpi_barrier(tensor_work_comm)
+    if((me==rnk.or.master).and.nnod>2)then
       recver=rnk
       if(.not.master)then
         call get_tile_dim(j,test2,ti)
         call tensor_alloc_mem(tileget,j)
         call tensor_get_tile(test2,int(ti,kind=tensor_standard_int),tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
-        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,tensor_work_comm,recver,root)
         do i=1,j
           tileget(i) = tileget(i) + 2.4E0_tensor_dp
         enddo
         call print_norm(tileget,int(j,kind=8),normher)
-        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,tensor_work_comm,recver,root)
         tileget = 2.4E0_tensor_dp
         call get_midx(ti,midx,test2%ntpm,test2%mode)
         call tensor_acc_tile(test2,midx,tileget,j)
         call tensor_free_mem(tileget)
       else
         teststatus="SUCCESS"
-        call tensor_mpi_sendrecv(normher,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(normher,tensor_work_comm,recver,root)
         write(output,'("NORM PARALLEL 2LGN: ",f20.15)')normher
         if(abs(normher-ref)>1.0E-12_tensor_dp)teststatus=" FAILED"
         write (output,'("PUT-GET: NORM, TEST STATUS: ",f19.10," : ",A7)')normher,teststatus
 
-        call tensor_mpi_sendrecv(ref,infpar%lg_comm,recver,infpar%master)
+        call tensor_mpi_sendrecv(ref,tensor_work_comm,recver,root)
         write(output,'("NORM PARALLEL 2LAC: ",f20.15)')ref
       endif
     endif
 
     !BE CAREFUL ABOUT WHETER THE INFORMATION IS ALREADY TRANSMITTED --> AT
     !CRITICAL POINTS INSERT BARRIER STATEMENTS TO SYNCHONIZE THE NODES 
-    call tensor_mpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(tensor_work_comm)
 
     if(nnod>2)call tensor_print_tile_norm(test2,ti,normher)
     call tensor_free(test2)
@@ -398,17 +394,17 @@ module tensor_tester_module
     !that into pdm, get these tiles on each node and put them in reversed
     !reordering back into the full array, check norms and order
     teststatus="SUCCESS"
-    call tensor_mpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(tensor_work_comm)
     call tensor_init(test2,[no-4,nv+3,nv/7,no],4,TT_TILED_DIST,AT_ALL_ACCESS,[no-4,nv+3,5,2])
     call tensor_init(test1,[nv/7,nv+3,no,no-4],4,TT_TILED_DIST,AT_ALL_ACCESS)
     call memory_allocate_tensor_dense(test1,.false.)
     call random_number(test1%elm1)
-    call tensor_mpi_allreduce(test1%elm1,test1%nelms,infpar%lg_comm)
-    if(infpar%lg_mynum==0)then
+    call tensor_mpi_allreduce(test1%elm1,test1%nelms,tensor_work_comm)
+    if(me==0)then
       write (msg,*)"local test1 norm master"
       call print_norm(test1%elm1,test1%nelms,msg)
     endif
-    if(infpar%lg_nodtot>1)then
+    if(nnod>1)then
       rnk = 1
     else
       rnk = 0
@@ -419,12 +415,12 @@ module tensor_tester_module
     endif
     call print_norm(test1%elm1,test1%nelms,ref)
     call tensor_convert(test1%elm1,test2,[4,2,1,3])
-    call tensor_mpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(tensor_work_comm)
     call print_norm(test2,normher)
     print *,"convert",ref,normher
     call tensor_mv_dense2tiled(test1,.false.)
     call memory_allocate_tensor_dense(test2,.false.)
-    call tensor_mpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(tensor_work_comm)
     test2%elm1=0.0E0_tensor_dp
     do i=1,test2%ntiles
       call get_tile_dim(j,test2,i)
@@ -434,19 +430,19 @@ module tensor_tester_module
                         &test2%elm1,test1%dims,4,[3,2,4,1])
       call tensor_free_mem(tileget)
     enddo
-    call tensor_mpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(tensor_work_comm)
     call tensor_cp_tiled2dense(test1,.true.)
-    call tensor_mpi_barrier(infpar%lg_comm)
-    if(infpar%lg_mynum==0)then
+    call tensor_mpi_barrier(tensor_work_comm)
+    if(me==0)then
       write (msg,*)"local test1 2 norm master"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif
-    if(infpar%lg_nodtot>1)then
+    if(nnod>1)then
       rnk = 1
     else
       rnk = 0
     endif
-    if(infpar%lg_mynum==rnk)then
+    if(me==rnk)then
       write (msg,*)"local test1 2 norm slave"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif
@@ -491,12 +487,12 @@ module tensor_tester_module
        call tensor_free_mem(buf1)
        call tensor_free_mem(buf2)
     endif
-    call tensor_mpi_bcast(test1%elm1,test1%nelms,infpar%master,infpar%lg_comm)
-    call tensor_mpi_bcast(test2%elm1,test2%nelms,infpar%master,infpar%lg_comm)
-    call tensor_mpi_barrier(infpar%lg_comm)
+    call tensor_mpi_bcast(test1%elm1,test1%nelms,root,tensor_work_comm)
+    call tensor_mpi_bcast(test2%elm1,test2%nelms,root,tensor_work_comm)
+    call tensor_mpi_barrier(tensor_work_comm)
     call tensor_mv_dense2tiled(test1,.true.)
     call tensor_mv_dense2tiled(test2,.true.)
-    call tensor_mpi_barrier(infpar%lg_comm)
+    call tensor_mpi_barrier(tensor_work_comm)
     call print_norm(test1)
     call print_norm(test2)
 
@@ -523,7 +519,7 @@ module tensor_tester_module
        do i=1,test3%nelms
           if(abs(buf2(i)-buf3(i))>1.0E-10_tensor_dp)then
              teststatus=" FAILED"
-             if(infpar%lg_mynum==0)print *,i,buf2(i),buf3(i)
+             if(me==0)print *,i,buf2(i),buf3(i)
           endif
        end do
        write (output,'("PDCWORD :       TEST STATUS:                     : ",A7)') teststatus

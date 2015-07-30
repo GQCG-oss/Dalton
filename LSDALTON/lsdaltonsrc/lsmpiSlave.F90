@@ -226,7 +226,7 @@ subroutine lsmpi_slave(comm)
       case(PDMMGRIDEXIT);
          call PDMM_GRIDEXIT_SLAVE
       case(PDMA4SLV);
-         call PDM_tensor_SLAVE(comm)
+         call pdm_tensor_slave
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);

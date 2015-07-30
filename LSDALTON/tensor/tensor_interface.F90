@@ -17,12 +17,8 @@ module tensor_interface_module
   ! Outside DEC directory
   use tensor_parameters_and_counters
   use tensor_mpi_interface_module
-  use files!,only: lsopen,lsclose
-  use LSTIMING!,only:lstimer
   use reorder_frontend_module
   use lspdm_tensor_operations_module
-  use matrix_module
-  use dec_workarounds_module
 #ifdef DIL_ACTIVE
   use tensor_algebra_dil   !`DIL: Tensor Algebra
   public INTD,INTL         !integer sizes for DIL tensor algebra (default, long)
@@ -166,16 +162,16 @@ module tensor_interface_module
         &print_norm_fort_wrapper3_nrm,&
         &print_norm_fort_wrapper4_nrm,&
         &tensor_print_norm_nrm,&
-        &array2_print_norm_nrm,&
-        &array4_print_norm_nrm,&
+        !&array2_print_norm_nrm,&
+        !&array4_print_norm_nrm,&
         &matrix_print_norm_nrm,&
         &print_norm_fort_wrapper1_customprint,&
         &print_norm_fort_wrapper2_customprint,&
         &print_norm_fort_wrapper3_customprint,&
         &print_norm_fort_wrapper4_customprint,&
         &tensor_print_norm_customprint,&
-        &array2_print_norm_customprint,&
-        &array4_print_norm_customprint,&
+        !&array2_print_norm_customprint,&
+        !&array4_print_norm_customprint,&
         &print_norm_fort_nolen1_customprint,&
         &print_norm_fort_nolen2_customprint,&
         &print_norm_fort_nolen3_customprint,&
@@ -225,9 +221,8 @@ contains
      TENSOR_MPI_MSG_LEN = len
   end subroutine tensor_set_mpi_msg_len
 
-  subroutine tensor_set_global_segment_length(comm,seg_len)
+  subroutine tensor_set_global_segment_length(seg_len)
      implicit none
-     integer(kind=tensor_mpi_kind), intent(in) :: comm
      integer(kind=tensor_long_int), intent(in) :: seg_len
      integer(kind=tensor_mpi_kind) :: me, master
      integer(kind=tensor_long_int) :: seg
@@ -236,12 +231,12 @@ contains
      seg    = seg_len
 
 #ifdef VAR_MPI
-     call tensor_get_rank_for_comm(comm,me)
+     call tensor_get_rank(me)
 
      if( me == 0 )then
-        call pdm_tensor_sync(comm,JOB_SET_TENSOR_SEG_LENGTH)
+        call pdm_tensor_sync(JOB_SET_TENSOR_SEG_LENGTH)
      endif
-     call tensor_mpi_bcast(seg,master,comm)
+     call tensor_mpi_bcast(seg,master,tensor_work_comm)
 #endif
 
      if( seg<=0 )then
@@ -254,16 +249,15 @@ contains
 
   end subroutine tensor_set_global_segment_length
 
-  subroutine tensor_set_debug_mode_true(comm,call_slaves)
+  subroutine tensor_set_debug_mode_true(call_slaves)
      implicit none
-     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     call tensor_get_rank_for_comm(comm,me)
+     call tensor_get_rank(me)
      if( me == 0 .and. call_slaves )then
-        call pdm_tensor_sync(comm,JOB_SET_TENSOR_DEBUG_TRUE)
+        call pdm_tensor_sync(JOB_SET_TENSOR_DEBUG_TRUE)
      endif
 #endif
 
@@ -271,32 +265,30 @@ contains
      tensor_always_sync = .true.
   end subroutine tensor_set_debug_mode_true
 
-  subroutine tensor_set_always_sync_true(comm,call_slaves)
+  subroutine tensor_set_always_sync_true(call_slaves)
      implicit none
-     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     call tensor_get_rank_for_comm(comm,me)
+     call tensor_get_rank(me)
      if( me == 0 .and. call_slaves )then
-        call pdm_tensor_sync(comm,JOB_SET_TENSOR_ALWAYS_SYNC_TRUE)
+        call pdm_tensor_sync(JOB_SET_TENSOR_ALWAYS_SYNC_TRUE)
      endif
 #endif
 
      tensor_always_sync = .true.
   end subroutine tensor_set_always_sync_true
 
-  subroutine tensor_set_dil_backend_true(comm,call_slaves)
+  subroutine tensor_set_dil_backend_true(call_slaves)
      implicit none
-     integer(kind=tensor_mpi_kind), intent(in) :: comm
      logical, intent(in) :: call_slaves
      integer(kind=tensor_mpi_kind) :: me
      me = 0
 #ifdef VAR_MPI
-     call tensor_get_rank_for_comm(comm,me)
+     call tensor_get_rank(me)
      if( me == 0.and. call_slaves )then
-        call pdm_tensor_sync(comm,JOB_SET_TENSOR_BACKEND_TRUE)
+        call pdm_tensor_sync(JOB_SET_TENSOR_BACKEND_TRUE)
      endif
 #endif
      tensor_contract_dil_backend = alloc_in_dummy !works only with MPI-3
@@ -1781,13 +1773,13 @@ contains
 
         arr%dims=new_dims
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
+!#else
         !$OMP WORKSHARE
         arr%elm1 = new_data
         !$OMP END WORKSHARE
-#endif
+!#endif
 
         if(bg)then
            call mem_pseudo_dealloc(new_data)
@@ -2549,11 +2541,11 @@ contains
     select case(arr%itype)
     case(TT_DENSE,TT_REPLICATED)
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+!#else
           call dcopy(int(nelms),fortarr,1,arr%elm1,1)
-#endif
+!#endif
        else
           select case(arr%mode)
           case(2)
@@ -2655,11 +2647,11 @@ contains
     case(TT_DENSE,TT_REPLICATED)
 
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+!#else
           call dcopy(int(nelms),arr%elm1,1,fort,1)
-#endif
+!#endif
        else
 
           select case(arr%mode)
@@ -2928,8 +2920,9 @@ contains
     logical,intent(in),optional :: print_
     real(tensor_dp)::norm
     integer(kind=8) :: i,j
-    logical :: squareback
-    integer(kind=tensor_mpi_kind) :: me
+    logical :: squareback, prnt
+    prnt = .false.
+    if(present(print_))prnt = print_
 
     squareback=.false.
 
@@ -2955,7 +2948,7 @@ contains
 
     if(.not.squareback)norm = sqrt(norm)
 
-    if(print_)print *,msg,norm
+    if(prnt)print *,msg,norm
 
   end subroutine tensor_print_norm_customprint
 
@@ -2973,16 +2966,14 @@ contains
     !> optional logigal stating that the informaion should be gathered on master
     integer, intent(inout), optional :: reducetocheck
     logical :: alln,red,master
-    integer :: nnod, nod
+    integer(kind=tensor_mpi_kind) :: nod, nnod, me
     integer(kind=tensor_long_int),pointer :: red_info(:),narr(:)
     alln   = .false.
     red    = .false.
-    master =.true.
-    nnod   = 1
-#ifdef VAR_MPI
-    if(infpar%lg_mynum/=0)master=.false.
-    nnod=infpar%lg_nodtot
-#endif
+    call tensor_get_rank(me  )
+    call tensor_get_size(nnod)
+    master = (me == 0)
+
     if(present(print_all_nodes))alln=print_all_nodes
     if(present(reducetocheck))then
       red=.true.
