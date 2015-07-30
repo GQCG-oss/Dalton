@@ -59,20 +59,28 @@ module tensor_mpi_operations_module
    subroutine tensor_get_rank(rank)
       implicit none
       integer(kind=tensor_mpi_kind) :: rank
+#ifdef VAR_MPI
       if( tensor_work_comm /= tensor_comm_null)then
          call tensor_get_rank_for_comm(tensor_work_comm,rank)
       else
          rank=0
       endif
+#else
+      rank=0
+#endif
    end subroutine tensor_get_rank
    subroutine tensor_get_size(size_)
       implicit none
       integer(kind=tensor_mpi_kind) :: size_
+#ifdef VAR_MPI
       if( tensor_work_comm /= tensor_comm_null)then
          call tensor_get_size_for_comm(tensor_work_comm,size_)
       else
          size_=1
       endif
+#else
+      size_=1
+#endif
    end subroutine tensor_get_size
 
 

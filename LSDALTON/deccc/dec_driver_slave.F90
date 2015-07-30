@@ -170,6 +170,7 @@ contains
 
        ! Initialize new MPI groups
        call init_mpi_groups(groupsize,DECinfo%output)
+       call tensor_set_comm(infpar%lg_comm)
 
        ! Local master if rank=0 WITHIN the local group (might be different in steps 1 and 2)
        if(infpar%lg_mynum/=master) then ! local slave
@@ -240,6 +241,7 @@ contains
        call MPI_COMM_FREE(infpar%lg_comm, IERR)
        infpar%lg_comm  = MPI_COMM_LSDALTON
        infpar%lg_mynum = infpar%mynum
+       call tensor_set_comm(MPI_COMM_LSDALTON)
 
        ! Clean up estimated fragments used in step 1 and receive CC models to use for all pairs
        CleanupAndUpdateCCmodel: if(step==1 .and. esti) then

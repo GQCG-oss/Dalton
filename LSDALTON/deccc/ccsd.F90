@@ -8096,6 +8096,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      character(tensor_MSG_LEN) :: msg
      integer(kind=long) :: me
 
+     me = 0
 #ifdef VAR_MPI
      me = infpar%lg_mynum
 #endif

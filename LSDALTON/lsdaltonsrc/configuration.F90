@@ -1351,24 +1351,12 @@ subroutine TENSOR_INPUT(word,lucmd)
       end if
       select case(word)
       case('.DIL_BACKEND')
-#ifdef VAR_MPI
          call tensor_set_dil_backend_true(.true.)
-#else
-         call tensor_set_dil_backend_true(dummy,.true.)
-#endif
       case('.DEBUG')
-#ifdef VAR_MPI
          call tensor_set_debug_mode_true(.true.)
-#else
-         call tensor_set_debug_mode_true(dummy,.true.)
-#endif
       case('.SEGMENT_LENGTH')
          read(LUCMD,*) seg_len
-#ifdef VAR_MPI
          call tensor_set_global_segment_length(seg_len)
-#else
-         call tensor_set_global_segment_length(dummy,seg_len)
-#endif
       case default
          print *,"UNRECOGNIZED KEYWORD: ",word
          call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)

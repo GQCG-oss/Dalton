@@ -10,9 +10,9 @@ module lspdm_basic_module
 
   use tensor_allocator
   use tensor_type_def_module
+  use tensor_mpi_operations_module
 #ifdef VAR_MPI
   use tensor_mpi_interface_module
-  use tensor_mpi_operations_module
 #endif
   use reorder_frontend_module
 

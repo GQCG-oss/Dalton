@@ -3242,7 +3242,7 @@ module lspdm_tensor_operations_module
      !> tdim output 
      integer(kind=tensor_standard_int) :: tdim(nmodes)
      integer :: i,j
-     integer :: nlocalnodes
+     integer(kind=tensor_mpi_kind) :: nlocalnodes
      integer :: cdims
      integer(kind=tensor_mpi_kind), parameter :: root = 0
      integer(kind=tensor_mpi_kind) :: me
