@@ -53,7 +53,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 26
+  integer, parameter :: ndecenergies = 27
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme

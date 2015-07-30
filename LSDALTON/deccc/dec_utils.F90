@@ -4222,7 +4222,11 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2-F12 energy   :', Ehf+Ecorr
+          else
+             write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+          endif   
        elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
@@ -4724,6 +4728,30 @@ end function max_batch_dimension
                &'RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGRIMP2)
        end if
        write(DECinfo%output,*)
+
+#ifdef MOD_UNRELEASED
+    if(DECInfo%F12) then
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+          & 'RIMP2F12 occupied single energies','AF_MP2f12_OCC')
+       
+       if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+          & DistanceTable, 'RIMP2f12 occupied pair energies','PF_MP2F12f12_OCC')
+       
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a)') '*                  DEC ENERGY SUMMARY                    *'
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+
+       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2 CORRECTION TO ENERGY:          ', energies(FRAGMODEL_OCCRIMP2)  
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_RIMP2f12)
+       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2-F12 CORRELATION ENERGY:        ', &
+          & energies(FRAGMODEL_OCCRIMP2) + energies(FRAGMODEL_RIMP2f12)
+       write(DECinfo%output,*)       
+
+
+    endif
+#endif
+
     case(MODEL_LSTHCRIMP2)
        if(.not.DECinfo%onlyvirtpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
