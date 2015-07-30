@@ -194,8 +194,6 @@ subroutine lsmpi_slave(comm)
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
-      case(ARRAYTEST);
-         call get_slaves_to_tensor_test
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop

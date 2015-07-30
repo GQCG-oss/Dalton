@@ -7,6 +7,7 @@ subroutine pdm_tensor_slave()
    use tensor_mpi_interface_module
 #endif
    use tensor_mpi_operations_module
+   use tensor_tester_module
 
    !this is a special case since this slave routine is associated with the tensor
    !structure it is allwed to use lspdm_tensor_operaions, otherwise this is not
@@ -38,6 +39,8 @@ subroutine pdm_tensor_slave()
    call time_start_phase(PHASE_WORK)
 
    SELECT CASE(JOB)
+   case(JOB_TEST_FRAMEWORK)
+      call tensor_tester_slave
    CASE(JOB_INIT_TENSOR_TILED)
 
       call tensor_alloc_mem(intarr2,A%mode)

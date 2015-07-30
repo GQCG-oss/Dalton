@@ -95,7 +95,7 @@ MODULE lsparameters
   integer,parameter :: QUITMOREJOBS                 = 27
   integer,parameter :: QUITNOMOREJOBS               = 28
   integer,parameter :: LSMPITEST                    = 29
-  integer,parameter :: ARRAYTEST                    = 30
+
   integer,parameter :: PDMA4SLV                     = 31
   integer,parameter :: LSMPI_IIDFTKSME              = 32
   integer,parameter :: CCSDPTSLAVE_INFO             = 33

@@ -59,8 +59,6 @@ subroutine dec_lsmpi_slave(comm)
          call II_bcast_screen(comm)
       case(IISCREENFREE);
          call II_screenfree(comm)
-      case(ARRAYTEST);
-         call get_slaves_to_tensor_test
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave

@@ -8,11 +8,11 @@ module tensor_tester_module
   use tensor_parameters_and_counters
   use lspdm_tensor_operations_module
   use reorder_tester_module
-#ifdef VAR_MPI
-  use lsmpi_type
   use tensor_mpi_interface_module
-#endif
   use tensor_interface_module
+
+  !LIST OF TEST JOBS
+  integer, parameter :: TESTJOB_OVERALL_STRUCT = 1
 
   contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -267,7 +267,8 @@ module tensor_tester_module
     !get the slaves into this routine
     if(master)then
       print *,"MASTER GETTING SLAVES"
-      call tensor_mpi_bcast(ARRAYTEST,root,tensor_work_comm)
+      call pdm_tensor_sync(JOB_TEST_FRAMEWORK)
+      call tensor_mpi_bcast(TESTJOB_OVERALL_STRUCT,root,tensor_work_comm)
       write (output,*)""
       write (output,*)""
       write (output,*)"TESTING PARALLEL ACCESS TO THE SAME ROUTINES"
@@ -275,7 +276,7 @@ module tensor_tester_module
     else
       print *,"SLAVE ARRIVED",me
     endif
-    call tensor_mpi_bcast(output,root,MPI_COMM_LSDALTON)
+    call tensor_mpi_bcast(output,root,tensor_work_comm)
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!ALL OF THE SLAVES WILL BE HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -535,13 +536,24 @@ module tensor_tester_module
 #endif
 
   end subroutine test_tensor_struct 
+#ifdef VAR_MPI
+
+  subroutine tensor_tester_slave()
+     implicit none
+     integer(kind=tensor_mpi_kind), parameter :: root = 0
+     integer :: TESTJOB
+
+     call tensor_mpi_bcast(TESTJOB,root,tensor_work_comm)
+
+     select case(TESTJOB)
+     case(TESTJOB_OVERALL_STRUCT)
+        call test_tensor_struct(6)
+     case default
+        call tensor_status_quit("ERROR(tensor_tester_slave): invalid job ID",238)
+     end select
+  end subroutine tensor_tester_slave
+
+#endif
 end module tensor_tester_module
 
 
-#ifdef VAR_MPI
-subroutine get_slaves_to_tensor_test()
-  use tensor_tester_module,only:test_tensor_struct
-  implicit none
-  call test_tensor_struct(6)
-end subroutine get_slaves_to_tensor_test
-#endif

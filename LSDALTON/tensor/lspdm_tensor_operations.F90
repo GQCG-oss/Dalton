@@ -109,7 +109,7 @@ module lspdm_tensor_operations_module
   save
 
   ! job parameters for pdm jobs
-
+  integer,parameter :: JOB_TEST_FRAMEWORK           =  1
 
   integer,parameter :: JOB_FREE_TENSOR_STD          =  3
   integer,parameter :: JOB_INIT_TENSOR_TILED        =  4
