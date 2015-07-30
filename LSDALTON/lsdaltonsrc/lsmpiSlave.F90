@@ -1,6 +1,7 @@
 subroutine lsmpi_init(OnMaster)
    use tensor_interface_module,only: tensor_initialize_interface, tensor_comm_null
    use memory_handling, only: mem_allocated_global
+   use background_buffer_module, only: max_n_pointers, buf_realk
 
 #ifdef VAR_MPI
    use lsmpi_type
@@ -85,6 +86,8 @@ subroutine lsmpi_init(OnMaster)
    OnMaster = .true.
    call tensor_initialize_interface(tensor_comm_null, mem_ctr=mem_allocated_global )
 #endif
+
+
 end subroutine lsmpi_init 
 
 subroutine lsmpi_slave(comm)

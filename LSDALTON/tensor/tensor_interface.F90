@@ -63,6 +63,10 @@ module tensor_interface_module
   !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
   public tensor_initialize_interface, tensor_finalize_interface
   public tensor_set_comm, tensor_comm_null
+#ifdef TENSORS_IN_LSDALTON
+  public tensor_initialize_bg_buf_from_lsdalton_bg_buf
+  public tensor_free_bg_buf
+#endif
 
   ! MODIFY THE BEHAVIOUR OF THE TENSOR LIB
   public tensor_set_mpi_msg_len              ! set the maximum message length of a call to MPI
@@ -150,28 +154,23 @@ module tensor_interface_module
   interface tensor_convert
      module procedure tensor_convert_fort2tensor_wrapper1,&
         &tensor_convert_fort2tensor_wrapper2,tensor_convert_fort2tensor_wrapper3,&
-        &tensor_convert_fort2tensor_wrapper4,tensor_convert_array22array,&
+        &tensor_convert_fort2tensor_wrapper4,&
         &tensor_convert_tensor2fort_wrapper1,tensor_convert_tensor2fort_wrapper2,&
         &tensor_convert_tensor2fort_wrapper3,tensor_convert_tensor2fort_wrapper4
   end interface tensor_convert
   
-  !> print norms of array, array2 array3, array4 and fortran arrays
+  !> print norms of array, and fortran arrays
   interface print_norm
      module procedure print_norm_fort_wrapper1_nrm,&
         &print_norm_fort_wrapper2_nrm,&
         &print_norm_fort_wrapper3_nrm,&
         &print_norm_fort_wrapper4_nrm,&
         &tensor_print_norm_nrm,&
-        !&array2_print_norm_nrm,&
-        !&array4_print_norm_nrm,&
-        &matrix_print_norm_nrm,&
         &print_norm_fort_wrapper1_customprint,&
         &print_norm_fort_wrapper2_customprint,&
         &print_norm_fort_wrapper3_customprint,&
         &print_norm_fort_wrapper4_customprint,&
         &tensor_print_norm_customprint,&
-        !&array2_print_norm_customprint,&
-        !&array4_print_norm_customprint,&
         &print_norm_fort_nolen1_customprint,&
         &print_norm_fort_nolen2_customprint,&
         &print_norm_fort_nolen3_customprint,&
@@ -203,18 +202,34 @@ contains
      !use an external counter for memory counting
      integer(kind=tensor_long_int), target, optional :: mem_ctr
      integer, intent(in), optional :: pdm_slaves_signal
+
      call tensor_set_comm(comm)
+
      if(present(mem_ctr)) call set_external_mem_ctr(mem_ctr)
+
      if(present(pdm_slaves_signal)) call set_signal_for_slaves(pdm_slaves_signal)
+
      call tensor_init_counters()
+
      call init_persistent_array()
+
+#ifdef TENSORS_IN_LSDALTON
+     !nullify pointers
+     call tensor_free_bg_buf
+#endif
   end subroutine tensor_initialize_interface
+
   subroutine tensor_finalize_interface()
      implicit none
+
      call free_persistent_array()
+
      call tensor_free_counters()
+
      if(associated(tensor_counter_ext_mem))call unset_external_mem_ctr()
+
   end subroutine tensor_finalize_interface
+
   subroutine tensor_set_mpi_msg_len(len)
      implicit none
      integer(kind=tensor_long_int) :: len
@@ -240,7 +255,7 @@ contains
 #endif
 
      if( seg<=0 )then
-        call lsquit("ERROR(tensor_set_global_segment_length): invalid length",-1)
+        call tensor_status_quit("ERROR(tensor_set_global_segment_length): invalid length",-1)
      endif
 
      print *,"SETTING LENGTH TO",seg
@@ -382,7 +397,7 @@ contains
      pre2 = 1.0E0_tensor_dp
      if(present(a))pre2 = a
 
-     if(x%mode/=y%mode)call lsquit("ERROR(tensor_add_normal): modes of arrays not compatible",-1)
+     if(x%mode/=y%mode)call tensor_status_quit("ERROR(tensor_add_normal): modes of arrays not compatible",-1)
 
      do i=1,x%mode
         if(present(order))then
@@ -390,7 +405,7 @@ contains
         else
            o(i) = i
         endif
-        if(x%dims(i) /= y%dims(o(i)))call lsquit("ERROR(tensor_add_normal): dims of arrays not &
+        if(x%dims(i) /= y%dims(o(i)))call tensor_status_quit("ERROR(tensor_add_normal): dims of arrays not &
            &compatible (with the given order)",-1)
      enddo
 
@@ -420,7 +435,7 @@ contains
               case(4)
                  call array_reorder_4d(b,y%elm1,y%dims(1),y%dims(2),y%dims(3),y%dims(4),o,pre2,x%elm1)
               case default
-                 call lsquit("ERROR(tensor_add_normal): mode not implemented",-1)
+                 call tensor_status_quit("ERROR(tensor_add_normal): mode not implemented",-1)
               end select
            end if
 
@@ -447,7 +462,7 @@ contains
 
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_add):not yet implemented y%itype 1",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_add):not yet implemented y%itype 1",lspdm_stdout)
         end select
 
      case(TT_TILED_DIST)
@@ -459,12 +474,12 @@ contains
 
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_add):not yet implemented y%itype 2",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_add):not yet implemented y%itype 2",lspdm_stdout)
         end select
 
      case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_add_normal):not yet implemented x%itype",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_add_normal):not yet implemented x%itype",lspdm_stdout)
      end select
 
      call time_start_phase( PHASE_WORK )
@@ -494,9 +509,9 @@ contains
      pre2 = 1.0E0_tensor_dp
      if(present(a))pre2 = a
 
-     if(x%mode /= 2) call lsquit("ERROR(tensor_dmul): only implemented for mode 2 tensors",-1)
+     if(x%mode /= 2) call tensor_status_quit("ERROR(tensor_dmul): only implemented for mode 2 tensors",-1)
 
-     if(x%mode/=y%mode)call lsquit("ERROR(tensor_dmul): modes of arrays not compatible",-1)
+     if(x%mode/=y%mode)call tensor_status_quit("ERROR(tensor_dmul): modes of arrays not compatible",-1)
 
      do i=1,x%mode
         if(present(order))then
@@ -504,7 +519,7 @@ contains
         else
            o(i) = i
         endif
-        if(x%dims(i) /= y%dims(o(i)))call lsquit("ERROR(tensor_dmul): dims of arrays not &
+        if(x%dims(i) /= y%dims(o(i)))call tensor_status_quit("ERROR(tensor_dmul): dims of arrays not &
            &compatible (with the given order)",-1)
      enddo
 
@@ -537,14 +552,14 @@ contains
                  call daxpy(n,b*d(i),y%elm1(n*(i-1)+1),1,x%elm1(i),m)
               enddo
            else
-              call lsquit("ERROR(tensor_dmul): wrong order",-1)
+              call tensor_status_quit("ERROR(tensor_dmul): wrong order",-1)
            end if
 
            if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
 
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_add):not yet implemented y%itype 1",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_add):not yet implemented y%itype 1",lspdm_stdout)
         end select
 
      case(TT_TILED_DIST)
@@ -556,12 +571,12 @@ contains
 
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_add):not yet implemented y%itype 2",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_add):not yet implemented y%itype 2",lspdm_stdout)
         end select
 
      case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_dmul):not yet implemented x%itype",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_dmul):not yet implemented x%itype",lspdm_stdout)
      end select
 
      call time_start_phase( PHASE_WORK )
@@ -668,10 +683,10 @@ contains
         if(.not.present(order))then
           call daxpy(int(arrx%nelms),b,fortarry,1,arrx%elm1,1)
         else
-          call lsquit("ERROR(tensor_add_fullfort2arr1):not implemented",-1)
+          call tensor_status_quit("ERROR(tensor_add_fullfort2arr1):not implemented",-1)
         endif
       case(TT_TILED)
-        call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
+        call tensor_status_quit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
       case(TT_TILED_DIST)
         call tensor_scatter(b,fortarry,1.0E0_tensor_dp,arrx,arrx%nelms,oo=order,wrk=wrk,iwrk=iwrk)
     end select
@@ -706,12 +721,12 @@ contains
       case(TT_DENSE)
         call daxpy(int(arry%nelms),b,arry%elm1,1,fortarrx,1)
       case(TT_TILED)
-        call lsquit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
+        call tensor_status_quit("ERROR(tensor_add_fullfort2arr):not implemented",-1)
       !case(TT_TILED_DIST)
       !  !call add_tileddata2fort(arry,b,fortarrx,arry%nelms,.true.,order = order)
       !  call tensor_gather(b,arry,1.0E0_tensor_dp,fortarrx,arry%nelms,oo=order,wrk=wrk,iwrk=iwrk)
      case default
-        call lsquit("ERROR(tensor_add_arr2fullfort) not implemented",-1)
+        call tensor_status_quit("ERROR(tensor_add_arr2fullfort) not implemented",-1)
     end select
 
     call time_start_phase( PHASE_WORK )
@@ -730,8 +745,8 @@ contains
      !> scaling factor for array A and B
      real(tensor_dp),intent(in) :: alpha
      call time_start_phase( PHASE_WORK )
-     if(A%mode/=B%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
-     if(A%mode/=C%mode)call lsquit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+     if(A%mode/=B%mode)call tensor_status_quit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
+     if(A%mode/=C%mode)call tensor_status_quit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
 
      select case(C%itype)
         
@@ -748,15 +763,15 @@ contains
               call tensor_hmul_par(alpha,A,B,beta,C)
            case default
               print *,A%itype,B%itype,C%itype
-              call lsquit("ERROR(tensor_hmul_normal):not yet implemented B%itype",DECinfo%output)
+              call tensor_status_quit("ERROR(tensor_hmul_normal):not yet implemented B%itype",lspdm_stdout)
            end select
         case default
            print *,A%itype,B%itype,C%itype
-           call lsquit("ERROR(tensor_hmul_normal):not yet implemented A%itype",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_hmul_normal):not yet implemented A%itype",lspdm_stdout)
         end select
      case default
         print *,A%itype,B%itype,C%itype
-        call lsquit("ERROR(tensor_hmul_normal):not yet implemented C%itype",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_hmul_normal):not yet implemented C%itype",lspdm_stdout)
      end select 
     
      call time_start_phase( PHASE_WORK )
@@ -799,7 +814,7 @@ contains
 
 !Argument check:
      if( (A%mode-nmodes2c) + (B%mode-nmodes2c) /= C%mode) then
-        call lsquit("ERROR(tensor_contract): invalid contraction pattern",-1)
+        call tensor_status_quit("ERROR(tensor_contract): invalid contraction pattern",-1)
      endif
 
      do i = 1,C%mode
@@ -808,7 +823,7 @@ contains
 
      do i = 1,nmodes2c
         if(A%dims(m2cA(i))/=B%dims(m2cB(i))) then
-           call lsquit("ERROR(tensor_contract): Contracted modes in A and B incompatible",-1)
+           call tensor_status_quit("ERROR(tensor_contract): Contracted modes in A and B incompatible",-1)
         endif
      enddo
 
@@ -830,7 +845,7 @@ contains
            i1 = i1 + 1
            tcm(i0) = i1
            if(A%dims(i) /= C%dims(rorder(k))) then
-              call lsquit("ERROR(tensor_contract): Uncontracted modes in A and C incompatible",-1)
+              call tensor_status_quit("ERROR(tensor_contract): Uncontracted modes in A and C incompatible",-1)
            endif
            k=k+1
         else
@@ -852,7 +867,7 @@ contains
            i1 = i1 + 1
            tcm(i0) = i1
            if(B%dims(i) /= C%dims(rorder(k))) then
-              call lsquit("ERROR(tensor_contract): Uncontracted modes in B and C incompatible",-1)
+              call tensor_status_quit("ERROR(tensor_contract): Uncontracted modes in B and C incompatible",-1)
            endif
            k=k+1
         else
@@ -861,7 +876,7 @@ contains
      enddo
 
      if(k-1/=C%mode) then
-        call lsquit("ERROR(tensor_contract): this should have resulted in a seg fault earlier",-1)
+        call tensor_status_quit("ERROR(tensor_contract): this should have resulted in a seg fault earlier",-1)
      endif
 
 !Execute tensor contraction:
@@ -877,10 +892,10 @@ contains
                  &mem=mem,wrk=wrk,iwrk=iwrk)
               if(C%itype==TT_REPLICATED)call tensor_sync_replicated(C)
            case default
-              call lsquit("ERROR(tensor_contract_simple): C%itype not implemented",-1)
+              call tensor_status_quit("ERROR(tensor_contract_simple): C%itype not implemented",-1)
            end select
         case default
-           call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
+           call tensor_status_quit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
         end select
       case(TT_TILED_DIST)
 
@@ -893,7 +908,7 @@ contains
               call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
                  & mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
            case default
-              call lsquit("error(tensor_contract_simple): c%itype not implemented",-1)
+              call tensor_status_quit("error(tensor_contract_simple): c%itype not implemented",-1)
            end select
 
         case(TT_TILED_DIST)
@@ -902,14 +917,14 @@ contains
               call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
                  & mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
            case default
-              call lsquit("error(tensor_contract_simple): c%itype not implemented",-1)
+              call tensor_status_quit("error(tensor_contract_simple): c%itype not implemented",-1)
            end select
 
         case default
-           call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
+           call tensor_status_quit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
         end select
       case default
-        call lsquit("ERROR(tensor_contract_simple): A%itype not implemented",-1)
+        call tensor_status_quit("ERROR(tensor_contract_simple): A%itype not implemented",-1)
       end select
 
      else !`DIL backend (Fortran-2008 & MPI-3)
@@ -926,7 +941,7 @@ contains
            elseif(tcm(i2).lt.0) then !contracted index
              tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
            else
-             call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
+             call tensor_status_quit('ERROR(tensor_contract): DIL backend: symbolic part failed (A)!',-1)
            endif
         enddo
         if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
@@ -938,7 +953,7 @@ contains
            elseif(tcm(i2).lt.0) then !contracted index
              tcs(tcl+1:tcl+2)=elett(i1+i3:i1+i3)//','; tcl=tcl+2
            else
-             call lsquit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
+             call tensor_status_quit('ERROR(tensor_contract): DIL backend: symbolic part failed (B)!',-1)
            endif
         enddo
         if(tcs(tcl:tcl).ne.',') tcl=tcl+1; tcs(tcl:tcl)=')'
@@ -951,7 +966,7 @@ contains
         !Perform the tensor contraction:
 
 #else
-        call lsquit('ERROR(tensor_contract_simple): DIL backend requires Fortran-2008 and MPI-3 at least!',-1)
+        call tensor_status_quit('ERROR(tensor_contract_simple): DIL backend requires Fortran-2008 and MPI-3 at least!',-1)
 #endif
      endif
 
@@ -996,7 +1011,7 @@ contains
               tA = 'n'
               k_gemm = A%dims(2)
            case default
-              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode A",-1)
+              call tensor_status_quit("ERROR(tensor_contract_dense_simple): undefined contraction mode A",-1)
            end select
            select case (m2cB(1))
            case(1)
@@ -1004,7 +1019,7 @@ contains
            case(2)
               tB = 't'
            case default
-              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode B",-1)
+              call tensor_status_quit("ERROR(tensor_contract_dense_simple): undefined contraction mode B",-1)
            end select
 
 
@@ -1024,7 +1039,7 @@ contains
               tA = 't'
               k_gemm = A%dims(2)
            case default
-              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode A",-1)
+              call tensor_status_quit("ERROR(tensor_contract_dense_simple): undefined contraction mode A",-1)
            end select
            select case (m2cB(1))
            case(1)
@@ -1032,7 +1047,7 @@ contains
            case(2)
               tB = 'n'
            case default
-              call lsquit("ERROR(tensor_contract_dense_simple): undefined contraction mode B",-1)
+              call tensor_status_quit("ERROR(tensor_contract_dense_simple): undefined contraction mode B",-1)
            end select
 
            wA => B%elm1
@@ -1102,7 +1117,7 @@ contains
         enddo
 
         if(k-1/=A%mode-nmodes2c)then
-           call lsquit("ERROR(tensor_contract_dense_simple): something wrong in ordering",-1)
+           call tensor_status_quit("ERROR(tensor_contract_dense_simple): something wrong in ordering",-1)
         endif
 
         k_gemm = 1
@@ -1134,7 +1149,7 @@ contains
         case(4)
            call array_reorder_4d(1.0E0_tensor_dp,A%elm1,A%dims(1),A%dims(2),A%dims(3),A%dims(4),ordA,0.0E0_tensor_dp,wA)
         case default
-           call lsquit("ERROR(tensor_contract_dense_simple): sorting A not implemented",-1)
+           call tensor_status_quit("ERROR(tensor_contract_dense_simple): sorting A not implemented",-1)
         end select
 
         select case (B%mode)
@@ -1145,7 +1160,7 @@ contains
         case(4)
            call array_reorder_4d(1.0E0_tensor_dp,B%elm1,B%dims(1),B%dims(2),B%dims(3),B%dims(4),ordB,0.0E0_tensor_dp,wB)
         case default
-           call lsquit("ERROR(tensor_contract_dense_simple): sorting B not implemented",-1)
+           call tensor_status_quit("ERROR(tensor_contract_dense_simple): sorting B not implemented",-1)
         end select
 
 
@@ -1165,7 +1180,7 @@ contains
         case(4)
            call array_reorder_4d(pre1,wC,dims_product(1),dims_product(2),dims_product(3),dims_product(4),order,pre2,C%elm1)
         case default
-           call lsquit("ERROR(tensor_contract_dense_simple): sorting C not implemented",-1)
+           call tensor_status_quit("ERROR(tensor_contract_dense_simple): sorting C not implemented",-1)
         end select
 
         if(use_wrk_space)then
@@ -1195,8 +1210,8 @@ contains
     real(tensor_dp), external :: ddot
     
     if(arr1%nelms/=arr2%nelms)then
-      call lsquit("ERROR(tensor_ddot):operation not defined for arrays with&
-      & different nelms",DECinfo%output)
+      call tensor_status_quit("ERROR(tensor_ddot):operation not defined for arrays with&
+      & different nelms",lspdm_stdout)
     endif
 
     !get the destination of the contraction
@@ -1210,8 +1225,8 @@ contains
       case(TT_DENSE)
         res=ddot(int(arr1%nelms),arr1%elm1,1,arr2%elm1,1)
       case default
-        call lsquit("ERROR(tensor_ddot):operation not yet&
-        & implemented",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_ddot):operation not yet&
+        & implemented",lspdm_stdout)
       end select
             
     case(TT_TILED_DIST)
@@ -1219,55 +1234,51 @@ contains
       case(TT_TILED_DIST)
         res=tensor_ddot_par(arr1,arr2,dest)
       case default
-        call lsquit("ERROR(tensor_ddot):operation not yet&
-        & implemented",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_ddot):operation not yet&
+        & implemented",lspdm_stdout)
       end select
     case default
-      call lsquit("ERROR(tensor_ddot):operation not yet&
-      & implemented",DECinfo%output)
+      call tensor_status_quit("ERROR(tensor_ddot):operation not yet&
+      & implemented",lspdm_stdout)
     end select
 
   end function tensor_ddot
 
-  !> \brief Extract EOS indices from array4 for both occupied and virtual partitioning schemes:
+  !> \brief Extract EOS indices from array for both occupied and virtual partitioning schemes:
   !> 1. tensor_occEOS: The occupied orbitals not assigned to the central atom are removed while
   !>                the virtual indices are unchanged.
   !> 2. tensor_virtEOS: The virtual orbitals not assigned to the central atom are removed while
   !>                 the occupied indices are unchanged.
   !> \author Patrick Ettenhuber, adapted from Kasper Kristensen
   !> \date August 2014
-  subroutine tensor_extract_eos_indices(tensor_orig,MyFragment,tensor_occEOS,tensor_virtEOS)
+  subroutine tensor_extract_eos_indices(tensor_orig,no,nv,idxo,idxv,tensor_occEOS,tensor_virtEOS)
 
 
     implicit none
+    !> Original array with AOS fragment indices for both occ and virt spaces
+    type(tensor),intent(in) :: tensor_orig
+    !number of occupied and virtual EOS indices
+    integer, intent(in) :: no, nv
+    !mapping arrays
+    integer, intent(in) :: idxo(no), idxv(nv)
+
     !> Array where occupied EOS indices are extracted
     type(tensor),intent(inout),optional :: tensor_occEOS
     !> Array where virtual EOS indices are extracted
     type(tensor),intent(inout),optional :: tensor_virtEOS
-    !> Original array with AOS fragment indices for both occ and virt spaces
-    type(tensor),intent(in) :: tensor_orig
-    !> Atomic fragment
-    type(decfrag),intent(inout) :: MyFragment
-    integer :: nocc, nvirt
-
-    ! Number of occ and virt orbitals on central atom in fragment
-    nocc  = MyFragment%noccEOS
-    nvirt = MyFragment%nvirtEOS
 
     ! Extract virtual EOS indices and leave occupied indices untouched
     ! ****************************************************************
 
     if(present(tensor_virtEOS))then
-       call tensor_extract_eos_indices_virt(tensor_virtEOS,tensor_orig,&
-          & nvirt,MyFragment%idxu(1:nvirt))
+       call tensor_extract_eos_indices_virt(tensor_virtEOS,tensor_orig,nv,idxv(1:nv))
     endif
 
     ! Extract occupied EOS indices and leave virtual indices untouched
     ! ****************************************************************
 
     if(present(tensor_occEOS))then
-       call tensor_extract_eos_indices_occ(tensor_occEOS,tensor_orig,&
-          & nocc, MyFragment%idxo(1:nocc))
+       call tensor_extract_eos_indices_occ(tensor_occEOS,tensor_orig,no,idxo(1:no))
     endif
 
   end subroutine tensor_extract_eos_indices
@@ -1299,39 +1310,39 @@ contains
 
      ! 1. Positive number of orbitals
      if( (nocc<1) .or. (nvirt<1) ) then
-        write(DECinfo%output,*) 'nocc = ', nocc
-        write(DECinfo%output,*) 'nvirt = ', nvirt
-        call lsquit('tensor_extract_eos_indices_virt: &
-           & Negative or zero number of orbitals!',DECinfo%output)
+        write(lspdm_stdout,*) 'nocc = ', nocc
+        write(lspdm_stdout,*) 'nvirt = ', nvirt
+        call tensor_status_quit('tensor_extract_eos_indices_virt: &
+           & Negative or zero number of orbitals!',lspdm_stdout)
      end if
 
      ! 2. Array structure is (virt,occ,virt,occ)
      if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
-        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
-        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
-        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
-        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
-        call lsquit('tensor_extract_eos_indices_virt: &
-           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+        write(lspdm_stdout,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(lspdm_stdout,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(lspdm_stdout,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(lspdm_stdout,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call tensor_status_quit('tensor_extract_eos_indices_virt: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',lspdm_stdout)
      end if
 
      ! 3. EOS dimension must be smaller than (or equal to) total number of virt orbitals
      if(nEOS > nvirt) then
-        write(DECinfo%output,*) 'nvirt = ', nvirt
-        write(DECinfo%output,*) 'nEOS  = ', nEOS
-        call lsquit('array4_extract_eos_indices_virt_memory: &
+        write(lspdm_stdout,*) 'nvirt = ', nvirt
+        write(lspdm_stdout,*) 'nEOS  = ', nEOS
+        call tensor_status_quit('array_extract_eos_indices_virt_memory: &
            & Number of EOS orbitals must be smaller than (or equal to) total number of &
-           & virtual orbitals!',DECinfo%output)
+           & virtual orbitals!',lspdm_stdout)
      end if
 
      ! 4. EOS indices must not exceed total number of virtual orbitals
      do i=1,nEOS
         if(EOS_idx(i) > nvirt) then
-           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
-           write(DECinfo%output,*) 'nvirt   = ', nvirt
-           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
-           call lsquit('array4_extract_eos_indices_virt_memory: &
-              & EOS index value larger than nvirt!',DECinfo%output)
+           write(lspdm_stdout,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
+           write(lspdm_stdout,*) 'nvirt   = ', nvirt
+           write(lspdm_stdout,*) 'EOS_idx = ', EOS_idx(i)
+           call tensor_status_quit('array_extract_eos_indices_virt_memory: &
+              & EOS index value larger than nvirt!',lspdm_stdout)
         end if
      end do
 
@@ -1365,7 +1376,7 @@ contains
         call lspdm_extract_eos_indices_virt(Arr,tensor_full,nEOS,EOS_idx)
 
      case default
-        call lsquit("ERROR(tensor_extract_eos_indices_virt): NO PDM version implemented yet",-1)
+        call tensor_status_quit("ERROR(tensor_extract_eos_indices_virt): NO PDM version implemented yet",-1)
      end select
 
 
@@ -1393,44 +1404,44 @@ contains
      ! Sanity checks
      ! *************
      if( tensor_full%mode /= 4)then
-        call lsquit("ERROR(tensor_extract_eos_indices_occ): wrong mode of tensor_full",-1)
+        call tensor_status_quit("ERROR(tensor_extract_eos_indices_occ): wrong mode of tensor_full",-1)
      endif
 
      ! 1. Positive number of orbitals
      if( (nocc<1) .or. (nvirt<1) ) then
-        write(DECinfo%output,*) 'nocc = ', nocc
-        write(DECinfo%output,*) 'nvirt = ', nvirt
-        call lsquit('tensor_extract_eos_indices_occ: &
-           & Negative or zero number of orbitals!',DECinfo%output)
+        write(lspdm_stdout,*) 'nocc = ', nocc
+        write(lspdm_stdout,*) 'nvirt = ', nvirt
+        call tensor_status_quit('tensor_extract_eos_indices_occ: &
+           & Negative or zero number of orbitals!',lspdm_stdout)
      end if
 
      ! 2. Array structure is (virt,occ,virt,occ)
      if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
-        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
-        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
-        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
-        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
-        call lsquit('tensor_extract_eos_indices_occ: &
-           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+        write(lspdm_stdout,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(lspdm_stdout,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(lspdm_stdout,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(lspdm_stdout,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call tensor_status_quit('tensor_extract_eos_indices_occ: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',lspdm_stdout)
      end if
 
      ! 3. EOS dimension must be smaller than (or equal to) total number of occ orbitals
      if(nEOS > nocc) then
-        write(DECinfo%output,*) 'nocc = ', nocc
-        write(DECinfo%output,*) 'nEOS = ', nEOS
-        call lsquit('tensor_extract_eos_indices_occ: &
+        write(lspdm_stdout,*) 'nocc = ', nocc
+        write(lspdm_stdout,*) 'nEOS = ', nEOS
+        call tensor_status_quit('tensor_extract_eos_indices_occ: &
            & Number of EOS orbitals must be smaller than (or equal to) total number of &
-           & occupied orbitals!',DECinfo%output)
+           & occupied orbitals!',lspdm_stdout)
      end if
 
      ! 4. EOS indices must not exceed total number of occupied orbitals
      do i=1,nEOS
         if(EOS_idx(i) > nocc) then
-           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
-           write(DECinfo%output,*) 'nocc = ', nocc
-           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
-           call lsquit('tensor_extract_eos_indices_occ: &
-              & EOS index value larger than nocc!',DECinfo%output)
+           write(lspdm_stdout,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
+           write(lspdm_stdout,*) 'nocc = ', nocc
+           write(lspdm_stdout,*) 'EOS_idx = ', EOS_idx(i)
+           call tensor_status_quit('tensor_extract_eos_indices_occ: &
+              & EOS index value larger than nocc!',lspdm_stdout)
         end if
      end do
 
@@ -1464,7 +1475,7 @@ contains
         call lspdm_extract_eos_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
 
      case default
-        call lsquit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)
+        call tensor_status_quit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)
      end select
 
 
@@ -1475,14 +1486,14 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    Feb. 2015
-  subroutine tensor_extract_decnp_indices(tensor_full,myfragment,ArrOcc,ArrVir)
+  subroutine tensor_extract_decnp_indices(tensor_full,noEOS,nvEOS,idxo,idxv,ArrOcc,ArrVir)
 
      implicit none
 
      !> Original array
      type(tensor),intent(in) :: tensor_full
-     !> Atomic fragment
-     type(decfrag), target, intent(inout) :: MyFragment
+     integer, intent(in) :: noEOS, nvEOS
+     integer, target, intent(in) :: idxo(noEOS), idxv(nvEOS)
      !> Array where EOS indices where are extracted
      type(tensor),intent(inout) :: ArrOcc, ArrVir
 
@@ -1499,8 +1510,8 @@ contains
 
      ! Initialize stuff
      ! ****************
-     nEOS     = myfragment%noccEOS
-     EOS_idx  => myFragment%idxo(1:nEOS)
+     nEOS     = noEOS
+     EOS_idx  => idxo(1:nEOS)
      nocc     = tensor_full%dims(2)     ! Total number of occupied orbitals
      nvirt    = tensor_full%dims(1)     ! Total number of virtual orbitals
      new_dims = [nvirt,nEOS,nvirt,nocc] ! nEOS=Number of occupied EOS orbitals
@@ -1508,44 +1519,44 @@ contains
      ! Sanity checks
      ! *************
      if( tensor_full%mode /= 4)then
-        call lsquit("ERROR(tensor_extract_decnp_indices): wrong mode of tensor_full",-1)
+        call tensor_status_quit("ERROR(tensor_extract_decnp_indices): wrong mode of tensor_full",-1)
      endif
 
      ! 1. Positive number of orbitals
      if( (nocc<1) .or. (nvirt<1) ) then
-        write(DECinfo%output,*) 'nocc = ', nocc
-        write(DECinfo%output,*) 'nvirt = ', nvirt
-        call lsquit('tensor_extract_decnp_indices: &
-           & Negative or zero number of orbitals!',DECinfo%output)
+        write(lspdm_stdout,*) 'nocc = ', nocc
+        write(lspdm_stdout,*) 'nvirt = ', nvirt
+        call tensor_status_quit('tensor_extract_decnp_indices: &
+           & Negative or zero number of orbitals!',lspdm_stdout)
      end if
 
      ! 2. Array structure is (virt,occ,virt,occ)
      if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
-        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
-        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
-        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
-        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
-        call lsquit('tensor_extract_decnp_indices: &
-           & ArrOcc dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+        write(lspdm_stdout,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(lspdm_stdout,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(lspdm_stdout,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(lspdm_stdout,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call tensor_status_quit('tensor_extract_decnp_indices: &
+           & ArrOcc dimensions does not match (virt,occ,virt,occ) structure!',lspdm_stdout)
      end if
 
      ! 3. EOS dimension must be smaller than (or equal to) total number of occ orbitals
      if(nEOS > nocc) then
-        write(DECinfo%output,*) 'nocc = ', nocc
-        write(DECinfo%output,*) 'nEOS = ', nEOS
-        call lsquit('tensor_extract_decnp_indices: &
+        write(lspdm_stdout,*) 'nocc = ', nocc
+        write(lspdm_stdout,*) 'nEOS = ', nEOS
+        call tensor_status_quit('tensor_extract_decnp_indices: &
            & Number of EOS orbitals must be smaller than (or equal to) total number of &
-           & occupied orbitals!',DECinfo%output)
+           & occupied orbitals!',lspdm_stdout)
      end if
 
      ! 4. EOS indices must not exceed total number of occupied orbitals
      do i=1,nEOS
         if(EOS_idx(i) > nocc) then
-           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
-           write(DECinfo%output,*) 'nocc = ', nocc
-           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
-           call lsquit('tensor_extract_decnp_indices: &
-              & EOS index value larger than nocc!',DECinfo%output)
+           write(lspdm_stdout,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
+           write(lspdm_stdout,*) 'nocc = ', nocc
+           write(lspdm_stdout,*) 'EOS_idx = ', EOS_idx(i)
+           call tensor_status_quit('tensor_extract_decnp_indices: &
+              & EOS index value larger than nocc!',lspdm_stdout)
         end if
      end do
 
@@ -1578,7 +1589,7 @@ contains
         call lspdm_extract_decnp_indices_occ(ArrOcc,tensor_full,nEOS,EOS_idx)
 
      case default
-        call lsquit("ERROR(tensor_extract_decnp_indices): NO PDM version implemented yet",-1)
+        call tensor_status_quit("ERROR(tensor_extract_decnp_indices): NO PDM version implemented yet",-1)
      end select
 
      !---------------------------------------------------------------------
@@ -1587,8 +1598,8 @@ contains
 
      ! Initialize stuff
      ! ****************
-     nEOS     = myfragment%nvirtEOS
-     EOS_idx  => myFragment%idxu(1:nEOS)
+     nEOS     = nvEOS
+     EOS_idx  => idxv(1:nEOS)
      new_dims = [nEOS,nocc,nvirt,nocc]  ! nEOS=Number of virtual EOS orbitals
 
 
@@ -1597,21 +1608,21 @@ contains
 
      ! 5. EOS dimension must be smaller than (or equal to) total number of virt orbitals
      if(nEOS > nvirt) then
-        write(DECinfo%output,*) 'nvirt = ', nvirt
-        write(DECinfo%output,*) 'nEOS  = ', nEOS
-        call lsquit('tensor_extract_decnp_indices: &
+        write(lspdm_stdout,*) 'nvirt = ', nvirt
+        write(lspdm_stdout,*) 'nEOS  = ', nEOS
+        call tensor_status_quit('tensor_extract_decnp_indices: &
            & Number of EOS orbitals must be smaller than (or equal to) total number of &
-           & virtual orbitals!',DECinfo%output)
+           & virtual orbitals!',lspdm_stdout)
      end if
 
      ! 6. EOS indices must not exceed total number of virtual orbitals
      do i=1,nEOS
         if(EOS_idx(i) > nvirt) then
-           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
-           write(DECinfo%output,*) 'nvirt   = ', nvirt
-           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
-           call lsquit('tensor_extract_decnp_indices: &
-              & EOS index value larger than nvirt!',DECinfo%output)
+           write(lspdm_stdout,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
+           write(lspdm_stdout,*) 'nvirt   = ', nvirt
+           write(lspdm_stdout,*) 'EOS_idx = ', EOS_idx(i)
+           call tensor_status_quit('tensor_extract_decnp_indices: &
+              & EOS index value larger than nvirt!',lspdm_stdout)
         end if
      end do
 
@@ -1644,7 +1655,7 @@ contains
         call lspdm_extract_decnp_indices_virt(ArrVir,tensor_full,nEOS,EOS_idx)
 
      case default
-        call lsquit("ERROR(tensor_extract_decnp_indices): NO PDM version implemented yet",-1)
+        call tensor_status_quit("ERROR(tensor_extract_decnp_indices): NO PDM version implemented yet",-1)
      end select
 
      EOS_idx  => null()
@@ -1683,7 +1694,7 @@ contains
               &iajb%dims(3),iajb%dims(4),[2,4,3,1],1.0E0_tensor_dp,t2%elm1)
 
         case default
-           call lsquit("ERROR(get_starting_guess): unknown spec",-1)
+           call tensor_status_quit("ERROR(get_starting_guess): unknown spec",-1)
         end select
 
         if( prec )then
@@ -1710,7 +1721,7 @@ contains
         case ("CCSD_LAG_RHS")
            specint = 2
         case default
-           call lsquit("ERROR(get_starting_guess): unknown spec par",-1)
+           call tensor_status_quit("ERROR(get_starting_guess): unknown spec par",-1)
         end select
         call lspdm_get_starting_guess(iajb,t2,oof,vvf,specint,prec)
 
@@ -1736,14 +1747,14 @@ contains
      logical :: bg
 
 
-     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
 
      nelms = arr%nelms
      do i=1,arr%mode
         new_dims(i) = arr%dims(order(i))
      end do
-     bg=(mem_is_background_buf_init().and.nelms<=mem_get_bg_buf_free())
+     bg=(tensor_bg_init().and.nelms<=tensor_bg_free())
 
      if( arr%itype == TT_DENSE )then
 
@@ -1768,7 +1779,7 @@ contains
            call array_reorder_4d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
               &arr%dims(3),arr%dims(4),order,0.0E0_tensor_dp,new_data)
         case default
-           call lsquit("ERROR(tensor_reorder) no default for arbitrary modes",-1)
+           call tensor_status_quit("ERROR(tensor_reorder) no default for arbitrary modes",-1)
         end select
 
         arr%dims=new_dims
@@ -1790,10 +1801,10 @@ contains
         call assoc_ptr_arr(arr)
 
      else
-        call lsquit("ERROR(tensor_reorder) only implemented for dense arrs yet",-1)
+        call tensor_status_quit("ERROR(tensor_reorder) only implemented for dense arrs yet",-1)
      endif
 
-     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
   end subroutine tensor_reorder
 
@@ -1822,10 +1833,10 @@ contains
     if(present(bg))bg_int = bg
 
     ! Sanity check
-    if(arr%initialized)call lsquit("ERROR(tensor_minit):array already initialized",-1) 
+    if(arr%initialized)call tensor_status_quit("ERROR(tensor_minit):array already initialized",-1) 
 
     do i=1, nmodes
-      if (dims(i) == 0) call lsquit("ERROR(tensor_minit): 0 dimendion not allowed",-1)
+      if (dims(i) == 0) call tensor_status_quit("ERROR(tensor_minit): 0 dimendion not allowed",-1)
     end do
 
     !set defaults
@@ -1856,7 +1867,7 @@ contains
       !  arr=tensor_init_tiled(dims,nmodes,pdm=AT_NO_PDM_ACCESS)
       !  arr%atype='LTAR'
       case default
-        call lsquit("ERROR(tensor_minit): atype not known",-1)
+        call tensor_status_quit("ERROR(tensor_minit): atype not known",-1)
       end select
     else
       select case(at)
@@ -1893,7 +1904,7 @@ contains
         arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
       case default 
-        call lsquit("ERROR(tensor_minit): atype not known",-1)
+        call tensor_status_quit("ERROR(tensor_minit): atype not known",-1)
       end select
     endif
 #else
@@ -1995,9 +2006,9 @@ contains
     if(present(bg))bg_int = bg
 
     ! Sanity check
-    if(arr%initialized)call lsquit("ERROR(tensor_ainit_central):tensor already initialized",-1) 
+    if(arr%initialized)call tensor_status_quit("ERROR(tensor_ainit_central):tensor already initialized",-1) 
     do i=1, nmodes
-      if (dims(i) == 0) call lsquit("ERROR(tensor_ainit_central): 0 dimendion not allowed",-1)
+      if (dims(i) == 0) call tensor_status_quit("ERROR(tensor_ainit_central): 0 dimendion not allowed",-1)
     end do
  
     !set defaults
@@ -2028,7 +2039,7 @@ contains
       !  arr=tensor_init_tiled(dims,nmodes,pdm=AT_NO_PDM_ACCESS)
       !  arr%atype='LTAR'
       case default
-        call lsquit("ERROR(tensor_minit): atype not known",-1)
+        call tensor_status_quit("ERROR(tensor_minit): atype not known",-1)
       end select
     else
       select case(at)
@@ -2062,7 +2073,7 @@ contains
         arr%itype        = TT_DENSE
         arr%atype        = 'REPD'
       case default 
-        call lsquit("ERROR(tensor_ainit_central): atype not known",-1)
+        call tensor_status_quit("ERROR(tensor_ainit_central): atype not known",-1)
       end select
     endif
 #else
@@ -2104,7 +2115,7 @@ contains
     !choose which kind of array
     call time_start_phase(PHASE_WORK, twall = time_init )
 
-    !if(arr%initialized)call lsquit("ERROR(tensor_init):array already initialized",-1) 
+    !if(arr%initialized)call tensor_status_quit("ERROR(tensor_init):array already initialized",-1) 
 
     !DEFAULTS
     it      = TT_DENSE
@@ -2115,7 +2126,7 @@ contains
     if(present(pdm))         pdmtype = pdm
 
     !CHECK INPUT
-    if(pdmtype>=3)call lsquit("ERROR(tensor_init):WRONG CHOICE IN PDMTYPE",DECinfo%output)
+    if(pdmtype>=3)call tensor_status_quit("ERROR(tensor_init):WRONG CHOICE IN PDMTYPE",lspdm_stdout)
 
     !EXPERIMENTAL, THIS IS NOT RECOMMENDED!!!!!!!!!!!!!!:
     !instead of modulo dimensions in the rims of an array
@@ -2279,7 +2290,7 @@ contains
     !> array to free
     type(tensor),intent(inout) :: arr
 
-    if(.not.arr%initialized)call lsquit("ERROR(tensor_free):array not initialized",-1) 
+    if(.not.arr%initialized)call tensor_status_quit("ERROR(tensor_free):array not initialized",-1) 
 
     select case(arr%atype)
     case('LDAR')
@@ -2288,9 +2299,9 @@ contains
       call tensor_free_pdm(arr)
       DestroyedPDMArrays = DestroyedPDMArrays + 1
     case('TIAR')
-        call lsquit("ERROR(tensor_free): local tiled not maintained",-1)
+        call tensor_status_quit("ERROR(tensor_free): local tiled not maintained",-1)
     case default 
-        call lsquit("ERROR(tensor_free): atype not known",-1)
+        call tensor_status_quit("ERROR(tensor_free): atype not known",-1)
     end select
     arr%initialized = .false. 
   end subroutine tensor_free
@@ -2379,8 +2390,8 @@ contains
       if(.not.associated(arr%elm1))then
         call memory_allocate_tensor_dense(arr,bg_int)
       else
-        call lsquit("ERROR(tensor_cp_tiled2dense):dense is already allocated,&
-        & please make sure you are not doing someting stupid",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_cp_tiled2dense):dense is already allocated,&
+        & please make sure you are not doing someting stupid",lspdm_stdout)
       endif
       if(arr%access_type>0)pdm=.true.
       if(.not.present(order))call cp_tileddata2fort(arr,arr%elm1,arr%nelms,pdm)
@@ -2404,8 +2415,8 @@ contains
 #ifdef VAR_MPI
     pdm=.false.
     if(.not.associated(arr%elm1))then
-      call lsquit("ERROR(tensor_cp_dense2tiled):dense is NOT allocated,&
-      & please make sure you are not doing someting stupid",DECinfo%output)
+      call tensor_status_quit("ERROR(tensor_cp_dense2tiled):dense is NOT allocated,&
+      & please make sure you are not doing someting stupid",lspdm_stdout)
     endif
 
     dl = .true.
@@ -2535,7 +2546,7 @@ contains
       simpleord = simpleord.and.(o(i)==i)
     enddo
     
-    if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_fort2arr):array&
+    if(nelms/=arr%nelms)call tensor_status_quit("ERROR(tensor_convert_fort2arr):array&
        &dimensions are not the same",-1)
 
     select case(arr%itype)
@@ -2558,7 +2569,7 @@ contains
              call array_reorder_4d(1.0E0_tensor_dp,fortarr,fullfortdims(1),fullfortdims(2),&
                 &fullfortdims(3),fullfortdims(4),o,0.0E0_tensor_dp,arr%elm1)
           case default
-             call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
+             call tensor_status_quit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
           end select
        endif
 
@@ -2580,7 +2591,7 @@ contains
        endif
 
     case default
-       call lsquit("ERROR(tensor_convert_fort2arr) the array type is not implemented",-1)
+       call tensor_status_quit("ERROR(tensor_convert_fort2arr) the array type is not implemented",-1)
     end select
  end subroutine tensor_convert_fort2arr
 
@@ -2597,7 +2608,7 @@ contains
        & totype==TT_TILED_DIST.or.totype==TT_REPLICATED)then
        call change_access_type_td(arr,totype)
     else
-       call lsquit("ERROR(change_access_type): what you want to do is not implemented",-1)
+       call tensor_status_quit("ERROR(change_access_type): what you want to do is not implemented",-1)
     endif
   end subroutine change_access_type
 
@@ -2638,8 +2649,8 @@ contains
     enddo
 
 
-    if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_tensor2fort):array&
-    &dimensions are not the same",DECinfo%output)
+    if(nelms/=arr%nelms)call tensor_status_quit("ERROR(tensor_convert_tensor2fort):array&
+    &dimensions are not the same",lspdm_stdout)
 
 
     select case(arr%itype)
@@ -2665,7 +2676,7 @@ contains
              call array_reorder_4d(1.0E0_tensor_dp,arr%elm1,arr%dims(1),arr%dims(2),&
                 &arr%dims(3),arr%dims(4),o,0.0E0_tensor_dp,fort)
           case default
-             call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
+             call tensor_status_quit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
           end select
 
        endif
@@ -2679,28 +2690,6 @@ contains
 
 
   
-  !> \brief convert an old array2 structure to an array structure
-  !> \author Patrick Ettenhuber
-  !> \date late 2012
-  subroutine tensor_convert_array22array(arraytwo,arr)
-    implicit none
-    !> array2 input
-    type(array2),intent(inout) :: arraytwo
-    !> array output
-    type(tensor), intent(inout) :: arr
-    integer(kind=8) :: nel
-    if(arr%mode/=2)then
-      call lsquit("ERROR(tensor_convert_array22array):wrong mode in arr&
-      &input)",DECinfo%output)
-    endif
-    nel = int(arraytwo%dims(1)*arraytwo%dims(2),kind=8)
-    if(arr%nelms/=nel)then
-      call lsquit("ERROR(tensor_convert_array22array):number of elements in arr&
-      &input)",DECinfo%output)
-    endif
-    call tensor_convert_fort2arr(arraytwo%val,arr,nel)
-  end subroutine tensor_convert_array22array
-
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY UTILITIES !!!!!!!!! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2716,8 +2705,8 @@ contains
     real(tensor_dp) :: tilemem,MemFree
     integer :: o(from_arr%mode)
     if(from_arr%nelms/=to_arr%nelms)then
-      call lsquit("ERROR(tensor_cp_data):arrays need the same number of& 
-      & elements",DECinfo%output)
+      call tensor_status_quit("ERROR(tensor_cp_data):arrays need the same number of& 
+      & elements",lspdm_stdout)
     endif
 
     do i=1,from_arr%mode
@@ -2748,7 +2737,7 @@ contains
           endif
 
        case default
-          call lsquit("ERROR(tensor_cp_data):operation not yet implemented",DECinfo%output)
+          call tensor_status_quit("ERROR(tensor_cp_data):operation not yet implemented",lspdm_stdout)
        end select
 
 
@@ -2766,13 +2755,13 @@ contains
 
        case default
 
-          call lsquit("ERROR(tensor_cp_data):operation not yet  implemented",DECinfo%output)
+          call tensor_status_quit("ERROR(tensor_cp_data):operation not yet  implemented",lspdm_stdout)
 
        end select
 
 
     case default
-        call lsquit("ERROR(tensor_cp_data):operation not yet  implemented",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_cp_data):operation not yet  implemented",lspdm_stdout)
     end select
 
   end subroutine tensor_cp_data
@@ -2799,7 +2788,7 @@ contains
      case(TT_TILED_DIST,TT_TILED_REPL)
         call tensor_zero_tiled_dist(zeroed)
      case default
-        call lsquit("ERROR(tensor_zero):not yet implemented",-1)
+        call tensor_status_quit("ERROR(tensor_zero):not yet implemented",-1)
      end select
 
   end subroutine tensor_zero
@@ -2830,7 +2819,7 @@ contains
      case(TT_TILED_DIST,TT_TILED_REPL)
         call tensor_rand_tiled_dist(zeroed)
      case default
-        call lsquit("ERROR(tensor_rand):not yet implemented",-1)
+        call tensor_status_quit("ERROR(tensor_rand):not yet implemented",-1)
      end select
 
   end subroutine tensor_random
@@ -2848,7 +2837,7 @@ contains
     if(present(returnsquared))squareback=returnsquared
     norm=0.0d0
     if(globtinr>arr%ntiles)then
-      call lsquit("ERROR(tensor_print_tile_norm):tile does not exist",DECinfo%output)
+      call tensor_status_quit("ERROR(tensor_print_tile_norm):tile does not exist",lspdm_stdout)
     endif 
     select case(arr%itype)
       case(TT_DENSE)
@@ -2868,8 +2857,8 @@ contains
     if(.not.squareback)norm=sqrt(norm)
     if(present(nrm))nrm=norm
     if(.not.present(nrm))then
-    if(.not.squareback)write(DECinfo%output,'("LOCAL TILE NORM ON",I3,f20.15)')on,norm
-    if(squareback)write(DECinfo%output,'("LOCAL TILE NORM^2 ON",I3,f20.15)')on,norm
+    if(.not.squareback)write(lspdm_stdout,'("LOCAL TILE NORM ON",I3,f20.15)')on,norm
+    if(squareback)write(lspdm_stdout,'("LOCAL TILE NORM^2 ON",I3,f20.15)')on,norm
     endif
   end subroutine tensor_print_tile_norm
 
@@ -3115,60 +3104,6 @@ contains
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
   end subroutine print_norm_fort_wrapper4_customprint
 
-  subroutine array2_print_norm_nrm(arrtwo,nrm,square)
-    implicit none
-    type(array2),intent(in) :: arrtwo
-    real(tensor_dp),intent(inout), optional :: nrm
-    integer(kind=8) :: nelms
-    logical,intent(in),optional :: square
-    nelms = int(arrtwo%dims(1)*arrtwo%dims(2),kind=8)
-    if(present(nrm).and..not.present(square))call print_norm_fort_nrm(arrtwo%val,nelms,nrm)
-    if(present(nrm).and.present(square))call print_norm_fort_nrm(arrtwo%val,nelms,nrm,square)
-    if(.not.present(nrm).and..not.present(square))call print_norm_fort_nrm(arrtwo%val,nelms)
-  end subroutine array2_print_norm_nrm
-  subroutine array2_print_norm_customprint(arrtwo,msg,square)
-    implicit none
-    type(array2),intent(in) :: arrtwo
-    character*(*), intent(in) :: msg
-    integer(kind=8) :: nelms
-    logical,intent(in),optional :: square
-    nelms = int(arrtwo%dims(1)*arrtwo%dims(2),kind=8)
-    if(.not.present(square))call print_norm_fort_customprint(arrtwo%val,nelms,msg)
-    if(present(square))call print_norm_fort_customprint(arrtwo%val,nelms,msg,square)
-  end subroutine array2_print_norm_customprint
-  subroutine array4_print_norm_nrm(arrf,nrm,square)
-    implicit none
-    type(array4),intent(in) :: arrf
-    real(tensor_dp),intent(inout), optional :: nrm
-    logical,intent(in),optional :: square
-    integer(kind=8) :: nelms
-    nelms = int(arrf%dims(1)*arrf%dims(2)*arrf%dims(3)*arrf%dims(4),kind=8)
-    if(present(nrm).and..not.present(square))call print_norm_fort_nrm(arrf%val,nelms,nrm)
-    if(present(nrm).and.present(square))call print_norm_fort_nrm(arrf%val,nelms,nrm,square)
-    if(.not.present(nrm).and..not.present(square))call print_norm_fort_nrm(arrf%val,nelms)
-  end subroutine array4_print_norm_nrm
-  subroutine array4_print_norm_customprint(arrf,msg,square)
-    implicit none
-    type(array4),intent(in) :: arrf
-    character*(*),intent(in):: msg
-    logical,intent(in),optional :: square
-    integer(kind=8) :: nelms
-    nelms = int(arrf%dims(1)*arrf%dims(2)*arrf%dims(3)*arrf%dims(4),kind=8)
-    if(.not.present(square))call print_norm_fort_customprint(arrf%val,nelms,msg)
-    if(present(square))call print_norm_fort_customprint(arrf%val,nelms,msg,square)
-  end subroutine array4_print_norm_customprint
-  subroutine matrix_print_norm_nrm(mat,nrm,square)
-    implicit none
-    type(matrix),intent(in) :: mat
-    real(tensor_dp),intent(inout), optional :: nrm
-    logical,intent(in),optional :: square
-    integer(kind=8) :: nelms
-    nelms = int(mat%nrow*mat%ncol,kind=8)
-    if(present(nrm).and..not.present(square))call print_norm_fort_nrm(mat%elms,nelms,nrm)
-    if(present(nrm).and.present(square))call print_norm_fort_nrm(mat%elms,nelms,nrm,square)
-    if(.not.present(nrm).and..not.present(square))call print_norm_fort_nrm(mat%elms,nelms)
-  end subroutine matrix_print_norm_nrm
-
   subroutine print_norm_fort_nrm(fort,nelms,nrm,returnsquared)
     implicit none
     real(tensor_dp),intent(in) :: fort(*)
@@ -3224,13 +3159,14 @@ contains
     case(TT_TILED_DIST)
       call tensor_scale_td(arr,sc)
     case default
-      call lsquit("ERROR(tensor_scale):not yet implemented",DECinfo%output)
+      call tensor_status_quit("ERROR(tensor_scale):not yet implemented",lspdm_stdout)
     end select
   end subroutine tensor_scale
-  subroutine get_symm_tensor_segmenting_simple(nnodes,a,b,a_seg,b_seg)
+  subroutine get_symm_tensor_segmenting_simple(nnodes,a,b,a_seg,b_seg,mem_p_tile,seg_scheme)
      implicit none
-     integer, intent(in)  :: a,b,nnodes
+     integer, intent(in)  :: a,b,nnodes,seg_scheme
      integer, intent(out) :: a_seg, b_seg
+     real(tensor_dp), intent(in) :: mem_p_tile
      integer :: counter
      integer :: modtilea, modtileb
      real(tensor_dp) :: max_mem_p_tile_in_GB
@@ -3246,9 +3182,9 @@ contains
         b_seg    = tensor_segment_length
         a_seg    = tensor_segment_length
      else
-        max_mem_p_tile_in_GB = DECinfo%cc_solver_tile_mem
+        max_mem_p_tile_in_GB = mem_p_tile
 
-        select case(DECinfo%tensor_segmenting_scheme)
+        select case(seg_scheme)
         case (1)
 
            counter  = 1
@@ -3397,11 +3333,11 @@ contains
         end select
         endif
 
-     if(DECinfo%PL>2)then
-        print *,"SPLITTING OF DIMS IN A^2B^2"
-        print *,"#a",a,"seg:",a_seg
-        print *,"#b",b,"seg:",b_seg
-     endif
+     !if(DECinfo%PL>2)then
+     !   print *,"SPLITTING OF DIMS IN A^2B^2"
+     !   print *,"#a",a,"seg:",a_seg
+     !   print *,"#b",b,"seg:",b_seg
+     !endif
 
   end subroutine get_symm_tensor_segmenting_simple
 

@@ -5418,7 +5418,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     if (.not.mo_ccsd) then 
       iter=1
-      call get_symm_tensor_segmenting_simple(nnod,nocc,nvir,os,vs)
+      call get_symm_tensor_segmenting_simple(nnod,nocc,nvir,os,vs,DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,MyFragment%nbasis,bs,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &

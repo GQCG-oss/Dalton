@@ -7,12 +7,9 @@
 module lspdm_tensor_operations_module
   use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
-  use background_buffer_module, only: mem_is_background_buf_init,mem_get_bg_buf_free
-
   use tensor_parameters_and_counters
   use tensor_mpi_binding_module
-  use dec_typedef_module
-  use dec_workarounds_module
+  use tensor_bg_buf_module
   use tensor_mpi_interface_module
   use tensor_mpi_operations_module
 
@@ -198,7 +195,7 @@ module lspdm_tensor_operations_module
         call tensor_nullify_pointers(p_arr%a(i)) 
      end do
 
-     !if( lspdm_use_comm_proc ) call lsquit("ERROR(init_persistent_array)&
+     !if( lspdm_use_comm_proc ) call tensor_status_quit("ERROR(init_persistent_array)&
      !& lspdm_use_comm_proc cannot be true at startup",-1)
      lspdm_use_comm_proc = .false.
 
@@ -227,7 +224,7 @@ module lspdm_tensor_operations_module
         call tensor_free_mem(p_arr%free_addr_on_node)
      endif
 
-     if( lspdm_use_comm_proc ) call lsquit("ERROR(free_persistent_array) &
+     if( lspdm_use_comm_proc ) call tensor_status_quit("ERROR(free_persistent_array) &
         & lspdm_use_comm_proc has to be disabled at shutdown, otherwise there &
         & still might be processes running",-1)
   end subroutine free_persistent_array
@@ -257,7 +254,7 @@ module lspdm_tensor_operations_module
 #endif
 
      if( gm_buf%init )then
-        call lsquit("ERROR(lspdm_init_global_buffer): global buffer already initialized",-1)
+        call tensor_status_quit("ERROR(lspdm_init_global_buffer): global buffer already initialized",-1)
      endif
 
      !Find the buffer size based on the allocated arrays
@@ -325,7 +322,7 @@ module lspdm_tensor_operations_module
 #endif
 
      if( .not. gm_buf%init )then
-        call lsquit("ERROR(lspdm_free_global_buffer): global buffer not initialized",-1)
+        call tensor_status_quit("ERROR(lspdm_free_global_buffer): global buffer not initialized",-1)
      endif
 
      if(associated(gm_buf%buf))then
@@ -378,7 +375,7 @@ module lspdm_tensor_operations_module
      basic = 12
 
      loc = .false.
-     if(loc) call lsquit("ERROR(pdm_tensor_sync): this feature has been deactivated",-1)
+     if(loc) call tensor_status_quit("ERROR(pdm_tensor_sync): this feature has been deactivated",-1)
 
      if( me == root) then
         !**************************************************************************************
@@ -454,33 +451,33 @@ module lspdm_tensor_operations_module
            counter = counter + D%mode
         endif
 
-        if(counter/=basic)call lsquit("ERROR(pdm_tensor_sync):different number of&
-           & elements for MASTER",DECinfo%output)
+        if(counter/=basic)call tensor_status_quit("ERROR(pdm_tensor_sync):different number of&
+           & elements for MASTER",lspdm_stdout)
         !if(loc)then
         !if(nn>1.and.present(A).and..not.associated(A%addr_loc))&
-        !&call lsquit("ERROR(pdm_tensor_sync):addr_loc for array A not associated",DECinfo%output)
+        !&call tensor_status_quit("ERROR(pdm_tensor_sync):addr_loc for array A not associated",lspdm_stdout)
         !if(nn>1.and.present(B).and..not.associated(B%addr_loc))&
-        !&call lsquit("ERROR(pdm_tensor_sync):addr_loc for array B not associated",DECinfo%output)
+        !&call tensor_status_quit("ERROR(pdm_tensor_sync):addr_loc for array B not associated",lspdm_stdout)
         !if(nn>1.and.present(C).and..not.associated(C%addr_loc))&
-        !&call lsquit("ERROR(pdm_tensor_sync):addr_loc for array C not associated",DECinfo%output)
+        !&call tensor_status_quit("ERROR(pdm_tensor_sync):addr_loc for array C not associated",lspdm_stdout)
         !if(nn>1.and.present(D).and..not.associated(D%addr_loc))&
-        !&call lsquit("ERROR(pdm_tensor_sync):addr_loc for array D not associated",DECinfo%output)
+        !&call tensor_status_quit("ERROR(pdm_tensor_sync):addr_loc for array D not associated",lspdm_stdout)
         !else
         if(nn>1.and.present(A))then
            if(.not.associated(A%addr_p_arr))&
-              &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array A not associated",DECinfo%output)
+              &call tensor_status_quit("ERROR(pdm_tensor_sync):addr_p_arr for array A not associated",lspdm_stdout)
         endif
         if(nn>1.and.present(B))then
            if(.not.associated(B%addr_p_arr))&
-              &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array B not associated",DECinfo%output)
+              &call tensor_status_quit("ERROR(pdm_tensor_sync):addr_p_arr for array B not associated",lspdm_stdout)
         endif
         if(nn>1.and.present(C))then
            if(.not.associated(C%addr_p_arr))&
-              &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array C not associated",DECinfo%output)
+              &call tensor_status_quit("ERROR(pdm_tensor_sync):addr_p_arr for array C not associated",lspdm_stdout)
         endif
         if(nn>1.and.present(D))then
            if(.not.associated(D%addr_p_arr))&
-              &call lsquit("ERROR(pdm_tensor_sync):addr_p_arr for array D not associated",DECinfo%output)
+              &call tensor_status_quit("ERROR(pdm_tensor_sync):addr_p_arr for array D not associated",lspdm_stdout)
         endif
         !endif
 
@@ -637,7 +634,7 @@ module lspdm_tensor_operations_module
 
         call time_start_phase(PHASE_WORK)
      endif
-     use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+     use_bg = (tensor_bg_init()) .and. (tensor_bg_free() > gmo%nelms)
      call memory_allocate_tensor_dense(gmo,use_bg)
 
      call time_start_phase(PHASE_COMM)
@@ -651,7 +648,7 @@ module lspdm_tensor_operations_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
-        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
         !get offset for global indices
         call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
@@ -780,7 +777,8 @@ module lspdm_tensor_operations_module
 
      do i=1,gmo%mode
         if(gmo%dims(order_c(i)) /= t2%dims(i))then
-           call lsquit("ERROR(get_cc_energy_parallel):the assumed sorting of the gmos and t2 amplitudes is incorrect",-1)
+           call tensor_status_quit("ERROR(get_cc_energy_parallel):the assumed sorting of the&
+              & gmos and t2 amplitudes is incorrect",443)
         endif
      enddo
      !Get the slaves to this routine
@@ -795,7 +793,7 @@ module lspdm_tensor_operations_module
      endif
 
      nbuffs = 6
-     if(mod(nbuffs,2)/=0)call lsquit("ERROR(get_cc_energy_parallel): nbuffs must be an even number",-1)
+     if(mod(nbuffs,2)/=0)call tensor_status_quit("ERROR(get_cc_energy_parallel): nbuffs must be an even number",3)
      nbuffs_c = nbuffs/2
      nbuffs_e = nbuffs/2
 
@@ -830,7 +828,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_LSDEBUG
            if(gmo_ctdim(order_c(j)) /= gmo_etdim(order_e(j)))then
               print *,me,j,"wrong",gmo_ctdim(order_c(j)),gmo_etdim(order_e(j)),"tdim",gmo_ctdim,",",gmo_etdim
-              call lsquit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
+              call tensor_status_quit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
            endif
 #endif
            gmo_ts = gmo_ts * gmo_ctdim(j)
@@ -900,7 +898,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_LSDEBUG
               if(gmo_ctdim(order_c(j)) /= gmo_etdim(order_e(j)))then
                  print *,me,j,"wrong",gmo_ctdim(order_c(j)),gmo_etdim(order_e(j)),"tdim",gmo_ctdim,",",gmo_etdim
-                 call lsquit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
+                 call tensor_status_quit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
               endif
 #endif
               gmo_ts = gmo_ts * gmo_ctdim(j)
@@ -959,7 +957,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_LSDEBUG
            if(gmo_ctdim(order_c(j)) /= gmo_etdim(order_e(j)))then
               print *,me,j,"wrong",gmo_ctdim(order_c(j)),gmo_etdim(order_e(j)),"tdim",gmo_ctdim,",",gmo_etdim
-              call lsquit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
+              call tensor_status_quit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
            endif
 #endif
            gmo_ts = gmo_ts * gmo_ctdim(j)
@@ -1000,7 +998,7 @@ module lspdm_tensor_operations_module
      call c_f_pointer(c_loc(gmo_tile_buf(1,ebuf)),gmo_etile,gmo_etdim)
      call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t2tile,t2%ti(lt)%d)
 #else
-     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+     call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
      da = t2%ti(lt)%d(1)
@@ -1122,7 +1120,7 @@ module lspdm_tensor_operations_module
      !#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
      !#else
-     !        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+     !        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
      !#endif
 
      !get offset for tile counting
@@ -1241,7 +1239,7 @@ module lspdm_tensor_operations_module
      !#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
      !#else
-     !        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+     !        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
      !#endif
 
      !get offset for tile counting
@@ -1360,7 +1358,7 @@ module lspdm_tensor_operations_module
      !#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
      !#else
-     !        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+     !        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
      !#endif
 
      !get offset for tile counting
@@ -1469,7 +1467,7 @@ module lspdm_tensor_operations_module
      !#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(tensor_full%ti(lt)%t(1)),tile,tensor_full%ti(lt)%d)
      !#else
-     !        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+     !        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
      !#endif
 
      !get offset for tile counting
@@ -1552,7 +1550,7 @@ module lspdm_tensor_operations_module
            call tensor_buffer(t1%dims,2,root=root,comm=tensor_work_comm)
            call tensor_buffer(t1%elm1,t1%nelms,finalize=.true.)
         else
-           call lsquit("ERROR(lspdm_get_combined_SingleDouble_amplitudes):no valid t1%itype",-1)
+           call tensor_status_quit("ERROR(lspdm_get_combined_SingleDouble_amplitudes):no valid t1%itype",-1)
         endif
      endif
      call time_start_phase( PHASE_WORK )
@@ -1585,7 +1583,7 @@ module lspdm_tensor_operations_module
            call c_f_pointer( c_loc(u%ti(lt)%t(1)), ut, u%ti(lt)%d )
            call c_f_pointer( c_loc(ttile(1)),      tt, u%ti(lt)%d )
 #else
-           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+           call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
            !get offset for tile counting
@@ -1616,7 +1614,7 @@ module lspdm_tensor_operations_module
         call tensor_free_mem(ttile)
 
      case default
-        call lsquit("ERROR(lspdm_get_combined_SingleDouble_amplitudes): not yet&
+        call tensor_status_quit("ERROR(lspdm_get_combined_SingleDouble_amplitudes): not yet&
            & implemented for tiled t1, but it should be simple :)",-1)
      end select
 
@@ -1723,7 +1721,7 @@ module lspdm_tensor_operations_module
         call pdm_tensor_sync(JOB_GET_RPA_ENERGY,t2,gmo)
      endif
 
-     use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+     use_bg = (tensor_bg_init()) .and. (tensor_bg_free() > gmo%nelms)
 
      call memory_allocate_tensor_dense(gmo, use_bg)
      call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
@@ -1737,7 +1735,7 @@ module lspdm_tensor_operations_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
-        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
         !get offset for global indices
@@ -1804,7 +1802,7 @@ module lspdm_tensor_operations_module
         call pdm_tensor_sync(JOB_GET_SOS_ENERGY,t2,gmo)
      endif
 
-     use_bg = (mem_is_background_buf_init()) .and. (mem_get_bg_buf_free() > gmo%nelms)
+     use_bg = (tensor_bg_init()) .and. (tensor_bg_free() > gmo%nelms)
 
      call memory_allocate_tensor_dense(gmo,use_bg)
      call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
@@ -1818,7 +1816,7 @@ module lspdm_tensor_operations_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
         call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t,t2%ti(lt)%d)
 #else
-        call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
         !get offset for global indices
@@ -1885,18 +1883,18 @@ module lspdm_tensor_operations_module
 
      !sanity checks
      if(t2%access_type /= iajb%access_type)then
-        call lsquit("ERROR(lspdm_get_mp2_starting_guess): pdm tensors should have the same access types",-1)
+        call tensor_status_quit("ERROR(lspdm_get_mp2_starting_guess): pdm tensors should have the same access types",-1)
      endif
      if(oof%itype /= vvf%itype)then
-        call lsquit("ERROR(lspdm_get_mp2_starting_guess): Fock matrices should have the same types",-1)
+        call tensor_status_quit("ERROR(lspdm_get_mp2_starting_guess): Fock matrices should have the same types",-1)
      endif
 
      do i=1,t2%mode
         if( iajb%dims(i) /= t2%dims(order_c(i)))then
-           call lsquit("ERROR(lspdm_get_mp2_starting_guess): dimensions of iajb and t2 not in the assumed order",-1)
+           call tensor_status_quit("ERROR(lspdm_get_mp2_starting_guess): dimensions of iajb and t2 not in the assumed order",-1)
         endif
         if( iajb%tdim(i) /= t2%tdim(order_c(i)))then
-           call lsquit("ERROR(lspdm_get_mp2_starting_guess): tiling of iajb and t2 not as expected",-1)
+           call tensor_status_quit("ERROR(lspdm_get_mp2_starting_guess): tiling of iajb and t2 not as expected",-1)
         endif
      enddo
 
@@ -1967,7 +1965,7 @@ module lspdm_tensor_operations_module
               endif
            endif
 #else
-           call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+           call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
            do j=1,t2%mode
@@ -2007,7 +2005,7 @@ module lspdm_tensor_operations_module
               enddo
               !$OMP END PARALLEL DO
            case default
-              call lsquit("ERROR(lspdm_get_starting_guess): wrong coice of spec",-1)
+              call tensor_status_quit("ERROR(lspdm_get_starting_guess): wrong coice of spec",-1)
            end select
 
            if(prec)then
@@ -2042,7 +2040,7 @@ module lspdm_tensor_operations_module
         endif
 
      else
-        call lsquit("ERROR(lspdm_get_mp2_starting_guess): the routine does not accept this type of fock matrix",-1)
+        call tensor_status_quit("ERROR(lspdm_get_mp2_starting_guess): the routine does not accept this type of fock matrix",-1)
      end if
 
      call time_start_phase(PHASE_IDLE)
@@ -2079,8 +2077,8 @@ module lspdm_tensor_operations_module
      !are not, then this routine has to be rewritten
      if(omega2%tdim(1)/=prec%tdim(1).or.omega2%tdim(2)/=prec%tdim(2).or.&
         &omega2%tdim(3)/=prec%tdim(3).or.omega2%tdim(4)/=prec%tdim(4))then
-     call lsquit("ERROR(precondition_doubles_parallel):omega2 and prec have&
-        &different distributions", DECinfo%output)
+     call tensor_status_quit("ERROR(precondition_doubles_parallel):omega2 and prec have&
+        &different distributions", lspdm_stdout)
   endif
   !Get the slaves to this routine
   if(me==root)then
@@ -2110,7 +2108,7 @@ module lspdm_tensor_operations_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(prec%ti(lt)%t(1)),om,prec%ti(lt)%d)
 #else
-     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+     call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
      !get offset for global indices
@@ -2180,15 +2178,15 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      !check if the init-types are the same
      if(arr1%access_type/=arr2%access_type)then
-        call lsquit("ERROR(tensor_ddot_par):different init types of the&
-           & arrays is not possible",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_ddot_par):different init types of the&
+           & arrays is not possible",lspdm_stdout)
      endif
 
      !check if the destination to collet the resut makes sense in connection with
      !the access_type
      if(arr1%access_type==AT_MASTER_ACCESS.and.dest/=0)then
-        call lsquit("ERROR(tensor_ddot_par): the choice of destnation is&
-           & useless",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_ddot_par): the choice of destnation is&
+           & useless",lspdm_stdout)
      endif
 
      !get the slaves to this routine
@@ -2230,8 +2228,8 @@ module lspdm_tensor_operations_module
 
      else
 
-        call lsquit("ERROR(tensor_ddot_par):NOT YET IMPLEMENTED, if the arrays have&
-           & different distributions",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_ddot_par):NOT YET IMPLEMENTED, if the arrays have&
+           & different distributions",lspdm_stdout)
 
      endif
 
@@ -2282,8 +2280,8 @@ module lspdm_tensor_operations_module
 
      !check if the access_types are the same
      if(x%access_type/=y%access_type)then
-        call lsquit("ERROR(tensor_add_par):different init types&
-           & impossible",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_add_par):different init types&
+           & impossible",lspdm_stdout)
      endif
 
      !IF NOT AT_MASTER_ACCESS all processes should know b on call-time, else b is
@@ -2300,7 +2298,7 @@ module lspdm_tensor_operations_module
 
      do i=1,x%mode
         if(x%tdim(i) /= y%tdim(order(i))) then
-           call lsquit("ERROR(tensor_add_par): tdims of arrays not &
+           call tensor_status_quit("ERROR(tensor_add_par): tdims of arrays not &
               &compatible (with the given order)",-1)
         endif
      enddo
@@ -2339,7 +2337,7 @@ module lspdm_tensor_operations_module
            ynels = ynels * ytdim(i)
         enddo
 
-        if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
+        if(ynels /= x%ti(lt)%e)call tensor_status_quit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
@@ -2380,7 +2378,7 @@ module lspdm_tensor_operations_module
               ynels = ynels * ytdim(i)
            enddo
 
-           if(ynels /= x%ti(buffer_lt)%e)call lsquit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
+           if(ynels /= x%ti(buffer_lt)%e)call tensor_status_quit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
 
            ibuf = mod(buffer_lt-1,nbuffs)
            ibuf_idx = ibuf*x%tsize + 1
@@ -2418,7 +2416,7 @@ module lspdm_tensor_operations_module
            ynels = ynels * ytdim(i)
         enddo
 
-        if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
+        if(ynels /= x%ti(lt)%e)call tensor_status_quit("ERROR(tensor_add_par): #elements in tiles mismatch",-1)
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
@@ -2455,7 +2453,7 @@ module lspdm_tensor_operations_module
         case(4)
            call array_reorder_4d(prey,buffer(ibuf_idx:fbuf_idx),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
         case default
-           call lsquit("ERROR(tensor_add_par): mode>4 not yet implemented",-1)
+           call tensor_status_quit("ERROR(tensor_add_par): mode>4 not yet implemented",-1)
         end select
      enddo
 
@@ -2505,14 +2503,14 @@ module lspdm_tensor_operations_module
 
      !check if the access_types are the same
      if(x%access_type/=y%access_type)then
-        call lsquit("ERROR(tensor_dmul_par):different init types&
-           & impossible",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_dmul_par):different init types&
+           & impossible",lspdm_stdout)
      endif
      if(x%mode/=2)then
-        call lsquit("ERROR(tensor_dmul_par):not implemented for mode>2",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_dmul_par):not implemented for mode>2",lspdm_stdout)
      endif
      if(x%mode/=y%mode)then
-        call lsquit("ERROR(tensor_dmul_par):not implemented for x%mode /= y%mode",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_dmul_par):not implemented for x%mode /= y%mode",lspdm_stdout)
      endif
 
      prex = a
@@ -2544,7 +2542,7 @@ module lspdm_tensor_operations_module
 
      do i=1,x%mode
         if(x%tdim(i) /= y%tdim(order(i))) then
-           call lsquit("ERROR(tensor_dmul_par): tdims of arrays not &
+           call tensor_status_quit("ERROR(tensor_dmul_par): tdims of arrays not &
               &compatible (with the given order)",-1)
         endif
      enddo
@@ -2583,7 +2581,7 @@ module lspdm_tensor_operations_module
            ynels = ynels * ytdim(i)
         enddo
 
-        if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+        if(ynels /= x%ti(lt)%e)call tensor_status_quit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
@@ -2623,7 +2621,7 @@ module lspdm_tensor_operations_module
               ynels = ynels * ytdim(i)
            enddo
 
-           if(ynels /= x%ti(buffer_lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+           if(ynels /= x%ti(buffer_lt)%e)call tensor_status_quit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
 
            ibuf = mod(buffer_lt-1,nbuffs)
            ibuf_idx = ibuf*x%tsize + 1
@@ -2659,7 +2657,7 @@ module lspdm_tensor_operations_module
            ynels = ynels * ytdim(i)
         enddo
 
-        if(ynels /= x%ti(lt)%e)call lsquit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
+        if(ynels /= x%ti(lt)%e)call tensor_status_quit("ERROR(tensor_dmul_par): #elements in tiles mismatch",-1)
 
         ibuf = mod(lt-1,nbuffs)
         ibuf_idx = ibuf*x%tsize + 1
@@ -2698,7 +2696,7 @@ module lspdm_tensor_operations_module
            enddo 
 
         else                                                                                                                        
-           call lsquit("ERROR(tensor_dmul_par): wrong order",-1)                                                                        
+           call tensor_status_quit("ERROR(tensor_dmul_par): wrong order",-1)                                                                        
         end if
 
      enddo
@@ -2741,12 +2739,12 @@ module lspdm_tensor_operations_module
 
      !check if the access_types are the same
      if(A%access_type/=C%access_type)then
-        call lsquit("ERROR(tensor_hmul_par):different init types&
-           & impossible",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_hmul_par):different init types&
+           & impossible",lspdm_stdout)
      endif
      if(B%access_type/=C%access_type)then
-        call lsquit("ERROR(tensor_hmul_par):different init types&
-           & impossible",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_hmul_par):different init types&
+           & impossible",lspdm_stdout)
      endif
 
      !IF AT_MASTER_ACCESS all processes should know b on call-time, else b is
@@ -2761,10 +2759,10 @@ module lspdm_tensor_operations_module
      endif
 
      IF(A%offset.NE.C%offset)THEN
-        call lsquit('Offset not same in tensor_hmul_par',-1)
+        call tensor_status_quit('Offset not same in tensor_hmul_par',-1)
      ENDIF
      IF(B%offset.NE.C%offset)THEN
-        call lsquit('Offset not same in tensor_hmul_par',-1)
+        call tensor_status_quit('Offset not same in tensor_hmul_par',-1)
      ENDIF
 
      !lsoop over local tiles of array C
@@ -2822,12 +2820,12 @@ module lspdm_tensor_operations_module
 
      call tensor_get_rank(me)
 
-     !if(present(order)) call lsquit("ERROR(tensor_cp_tiled): order not yet implemented",-1)
+     !if(present(order)) call tensor_status_quit("ERROR(tensor_cp_tiled): order not yet implemented",-1)
 
      !check for the same access_types
      if(from%access_type/=to_ar%access_type)then
-        call lsquit("ERROR(tensor_cp_tiled):different init types&
-           & impossible",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_cp_tiled):different init types&
+           & impossible",lspdm_stdout)
      endif
 
      order_comm = order
@@ -2867,7 +2865,7 @@ module lspdm_tensor_operations_module
            ynels = ynels * ytdim(i)
         enddo
 
-        if(ynels /= to_ar%ti(lt)%e)call lsquit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
+        if(ynels /= to_ar%ti(lt)%e)call tensor_status_quit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
 
         ibuf = mod(lt-1,nbuffs)+1
 
@@ -2903,7 +2901,7 @@ module lspdm_tensor_operations_module
               ynels = ynels * ytdim(i)
            enddo
 
-           if(ynels /= to_ar%ti(buffer_lt)%e)call lsquit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
+           if(ynels /= to_ar%ti(buffer_lt)%e)call tensor_status_quit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
 
            ibuf = mod(buffer_lt-1,nbuffs)+1
 
@@ -2933,7 +2931,7 @@ module lspdm_tensor_operations_module
            ynels = ynels * ytdim(i)
         enddo
 
-        if(ynels /= to_ar%ti(lt)%e)call lsquit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
+        if(ynels /= to_ar%ti(lt)%e)call tensor_status_quit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
 
         ibuf = mod(lt-1,nbuffs)+1
 
@@ -2955,7 +2953,7 @@ module lspdm_tensor_operations_module
         case(4)
            call array_reorder_4d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,to_ar%ti(lt)%t)
         case default
-           call lsquit("ERROR(tensor_cp_tiled): mode>4 not yet implemented",-1)
+           call tensor_status_quit("ERROR(tensor_cp_tiled): mode>4 not yet implemented",-1)
         end select
      enddo
 
@@ -3202,8 +3200,8 @@ module lspdm_tensor_operations_module
 
      !give meaningful quit statement for useless input
      if(present(fromnode).and.arr%access_type==AT_MASTER_ACCESS)then
-        call lsquit("ERROR(tensor_sync_replicated): This combintion of input&
-           &elements does not give sense",DECinfo%output)
+        call tensor_status_quit("ERROR(tensor_sync_replicated): This combintion of input&
+           &elements does not give sense",lspdm_stdout)
         ! why would you want to collect the data on a node you cannot direcly
         ! access, or if you can access the data in the calling subroutine on the
         ! specified node, why is the init_tyep AT_MASTER_ACCESS?
@@ -3439,8 +3437,8 @@ module lspdm_tensor_operations_module
      do i=1,nnod
         if(lg_buf(nnod+i)/=p_arr%a(addr)%offset)then
            print * ,me,"found",lg_buf(nnod+i),p_arr%a(addr)%offset,i,fo
-           call lsquit("ERROR(tensor_init_tiled):offset &
-              &is not the same on all nodes",DECinfo%output)
+           call tensor_status_quit("ERROR(tensor_init_tiled):offset &
+              &is not the same on all nodes",lspdm_stdout)
         endif
      enddo
 #endif
@@ -3528,7 +3526,7 @@ module lspdm_tensor_operations_module
 
      if(  (.not.test_all_master_access.and..not.test_all_all_access) .or. &
         & (     test_all_master_access.and.     test_all_all_access)  )then
-     call lsquit("ERROR(lspdm_tensor_contract_simple):: Invalid access types",-1)
+     call tensor_status_quit("ERROR(lspdm_tensor_contract_simple):: Invalid access types",-1)
   endif
 
   if(test_all_master_access.and.(present(wrk).or.present(iwrk)))then
@@ -3581,7 +3579,7 @@ module lspdm_tensor_operations_module
   max_mode_ci = 0
   do cm=1,nmodes2c
      if(A%ntpm(m2cA(cm))/=ntpmB(m2cB(cm)))then
-        call lsquit("ERROR(lspdm_tensor_contract_simple):: A and B do not have the same &
+        call tensor_status_quit("ERROR(lspdm_tensor_contract_simple):: A and B do not have the same &
            &ntpm in the given contraction modes",-1)
      else
         cci = cci * A%ntpm(m2cA(cm))
@@ -3700,7 +3698,7 @@ module lspdm_tensor_operations_module
   case( USE_INTERNAL_ALLOC )
      call tensor_alloc_mem(w,itest)
   case default 
-     call lsquit("ERROR(tensor_contract_par): unknown buffering scheme",-1)
+     call tensor_status_quit("ERROR(tensor_contract_par): unknown buffering scheme",-1)
   end select
 
 
@@ -3709,7 +3707,7 @@ module lspdm_tensor_operations_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
   call c_f_pointer(c_loc(w(1)),buffA,[A%tsize,int(nbuffsA,kind=tensor_standard_int)])
 #else
-  call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+  call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
   if(B_dense)then
      buffB => null()
@@ -3719,7 +3717,7 @@ module lspdm_tensor_operations_module
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
      call c_f_pointer(c_loc(w(nbuffsA*A%tsize+1)),buffB,[tsizeB,nbuffsB])
 #else
-     call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+     call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
   endif
 
@@ -3792,7 +3790,7 @@ module lspdm_tensor_operations_module
      enddo
 
      if(k-1/=A%mode-nmodes2c)then
-        call lsquit("ERROR(lspdm_tensor_contract_simple): something wrong in ordering",-1)
+        call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): something wrong in ordering",-1)
      endif
 
      do i = 1,nmodes2c
@@ -3862,7 +3860,7 @@ module lspdm_tensor_operations_module
 
         !get buffer positions for A and B bufs
         call find_tile_pos_in_buf(int(cmidA,kind=tensor_standard_int),buf_posA,nbuffsA,ibufA,found)
-        if( .not. found) call lsquit("ERROR(lspdm_tensor_contract_simple): A tile must be present",-1)  
+        if( .not. found) call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): A tile must be present",-1)  
 
         call time_start_phase( PHASE_COMM )
         call make_sure_tile_is_here(A,cmidA,nfA,buf_posA,ibufA,nbuffs)
@@ -3885,7 +3883,7 @@ module lspdm_tensor_operations_module
         case(4)
            call array_reorder_4d(1.0E0_tensor_dp,buffA(:,ibufA),tdimA(1),tdimA(2),tdimA(3),tdimA(4),ordA,0.0E0_tensor_dp,wA)
         case default
-           call lsquit("ERROR(lspdm_tensor_contract_simple): sorting A not implemented",-1)
+           call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): sorting A not implemented",-1)
         end select
 
         buf_logA(ibufA) = .false.
@@ -3898,7 +3896,7 @@ module lspdm_tensor_operations_module
 
            call find_tile_pos_in_buf(int(cmidB,kind=tensor_standard_int),buf_posB,nbuffsB,ibufB,found)
 
-           if( .not. found) call lsquit("ERROR(lspdm_tensor_contract_simple): B tile must be present",-1)  
+           if( .not. found) call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): B tile must be present",-1)  
 
            call time_start_phase( PHASE_COMM )
            call make_sure_tile_is_here(B,cmidB,nfB,buf_posB,ibufB,nbuffs)
@@ -3913,7 +3911,7 @@ module lspdm_tensor_operations_module
               call array_reorder_4d(1.0E0_tensor_dp,buffB(:,ibufB),tdimB(1),tdimB(2),tdimB(3),tdimB(4),ordB,&
                  &0.0E0_tensor_dp,wB)
            case default
-              call lsquit("ERROR(lspdm_tensor_contract_simple): sorting B not implemented",-1)
+              call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): sorting B not implemented",-1)
            end select
 
            buf_logB(ibufB) = .false.
@@ -3943,18 +3941,18 @@ module lspdm_tensor_operations_module
      case(4)
         call array_reorder_4d(pre1,wC,tdim_product(1),tdim_product(2),tdim_product(3),tdim_product(4),order,pre2,C%ti(locC)%t)
      case default
-        call lsquit("ERROR(lspdm_tensor_contract_simple): sorting C not implemented",-1)
+        call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): sorting C not implemented",-1)
      end select
 
   enddo LocalTiles
 
-  if(count(buf_logA) > 0 ) call lsquit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left A",-1)
+  if(count(buf_logA) > 0 ) call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left A",-1)
   call tensor_free_mem(buf_posA)
   call tensor_free_mem(buf_logA)
   call tensor_free_mem(nfA     )
 
   if(.not.B_dense)then
-     if(count(buf_logB) > 0 ) call lsquit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left B",-1)
+     if(count(buf_logB) > 0 ) call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): there should be no tiles left B",-1)
      call tensor_free_mem(buf_posB)
      call tensor_free_mem(buf_logB)
      call tensor_free_mem(nfB)
@@ -3988,7 +3986,7 @@ module lspdm_tensor_operations_module
   call time_start_phase( PHASE_WORK )
   !stop 0
 #else
-  call lsquit("ERROR(lspdm_tensor_contract_simple): cannot be called without MPI",-1)
+  call tensor_status_quit("ERROR(lspdm_tensor_contract_simple): cannot be called without MPI",-1)
 #endif
   end subroutine lspdm_tensor_contract_simple
 
@@ -4073,11 +4071,11 @@ module lspdm_tensor_operations_module
      BDense = (B%itype == TT_DENSE) .or. (B%itype == TT_REPLICATED)
 
      if( TisA .eqv. TisB )then
-        call lsquit("ERROR(fill_buffer_for_tensor_contract_simple): both cannot be T, one has to be T",-1)
+        call tensor_status_quit("ERROR(fill_buffer_for_tensor_contract_simple): both cannot be T, one has to be T",-1)
      endif
 
      if( TisB .and. BDense )then
-        call lsquit("ERROR(fill_buffer_for_tensor_contract_simple): T must not be B if B is dense",-1)
+        call tensor_status_quit("ERROR(fill_buffer_for_tensor_contract_simple): T must not be B if B is dense",-1)
      endif
 
      do i = 1, C%mode
@@ -4122,7 +4120,7 @@ module lspdm_tensor_operations_module
         enddo
 
         if(k-1/=A%mode-nm2c)then
-           call lsquit("ERROR(fill_buffer_for_tensor_contract_simple): something wrong in ordering",-1)
+           call tensor_status_quit("ERROR(fill_buffer_for_tensor_contract_simple): something wrong in ordering",-1)
         endif
 
         do i = 1, B%mode
@@ -4221,8 +4219,8 @@ module lspdm_tensor_operations_module
      mode = arr%mode
 
      !check nelms
-     if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
-        &dimensions are not the same",DECinfo%output)
+     if(nelms/=arr%nelms)call tensor_status_quit("ERROR(cp_tileddate2fort):array&
+        &dimensions are not the same",lspdm_stdout)
 
      !allocate space 
      if(pdm)then
@@ -4280,8 +4278,8 @@ module lspdm_tensor_operations_module
      mode = arr%mode
 
 
-     if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
-        &dimensions are not the same",DECinfo%output)
+     if(nelms/=arr%nelms)call tensor_status_quit("ERROR(cp_tileddate2fort):array&
+        &dimensions are not the same",lspdm_stdout)
      if(pdm)then
         call tensor_alloc_mem(tmp,arr%tsize)
      endif
@@ -4376,7 +4374,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_LSDEBUG
      if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
-        call lsquit("ERROR(tensor_scatter):both or neither wrk and iwrk have to &
+        call tensor_status_quit("ERROR(tensor_scatter):both or neither wrk and iwrk have to &
            &be given",-1)
      endif
 #endif
@@ -4408,8 +4406,8 @@ module lspdm_tensor_operations_module
      endif
 
 #ifdef VAR_LSDEBUG
-     if(nelms/=arr%nelms)call lsquit("ERROR(tensor_scatter):array&
-        &dimensions are not the same",DECinfo%output)
+     if(nelms/=arr%nelms)call tensor_status_quit("ERROR(tensor_scatter):array&
+        &dimensions are not the same",lspdm_stdout)
 #endif
 
      do i = 1, arr%mode
@@ -4495,10 +4493,10 @@ module lspdm_tensor_operations_module
 
      call tensor_free_mem(req)
 #else
-     call lsquit("ERROR(tensor_scatter):this routine is FORTRAN 2003 only",-1)
+     call tensor_status_quit("ERROR(tensor_scatter):this routine is FORTRAN 2003 only",-1)
 #endif
 #else
-     call lsquit("ERROR(tensor_scatter):this routine is MPI only",-1)
+     call tensor_status_quit("ERROR(tensor_scatter):this routine is MPI only",-1)
 #endif
   end subroutine tensor_scatter
 
@@ -4540,7 +4538,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_LSDEBUG
      if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
-        call lsquit('ERROR(tensor_gather):both or neither wrk and iwrk have to &
+        call tensor_status_quit('ERROR(tensor_gather):both or neither wrk and iwrk have to &
            &be given',-1)
      endif
 #endif
@@ -4567,8 +4565,8 @@ module lspdm_tensor_operations_module
      endif
 
 #ifdef VAR_LSDEBUG
-     if(nelms/=arr%nelms)call lsquit('ERROR(tensor_gather):array&
-        &dimensions are not the same',DECinfo%output)
+     if(nelms/=arr%nelms)call tensor_status_quit('ERROR(tensor_gather):array&
+        &dimensions are not the same',lspdm_stdout)
 #endif
 
      do i = 1, arr%mode
@@ -4644,7 +4642,7 @@ module lspdm_tensor_operations_module
               if( alloc_in_dummy ) then
                  call tensor_mpi_wait(req(bidx))
               else
-                 if(.not.arr%lock_set(i-maxintmp)) call lsquit("ERROR(tensor_gather): lock has to be set here 1!",-1)
+                 if(.not.arr%lock_set(i-maxintmp)) call tensor_status_quit("ERROR(tensor_gather): lock has to be set here 1!",-1)
                  call tensor_unlock_win(arr,i-maxintmp)
               endif
               !call pn(tmp(b:e),nelintile,norm=nrm)
@@ -4678,7 +4676,7 @@ module lspdm_tensor_operations_module
            if( alloc_in_dummy )then
               call tensor_mpi_wait(req(bidx))
            else
-              if(.not.arr%lock_set(i)) call lsquit("ERROR(tensor_gather): lock has to be set here 2!",-1)
+              if(.not.arr%lock_set(i)) call tensor_status_quit("ERROR(tensor_gather): lock has to be set here 2!",-1)
               call tensor_unlock_win(arr,i)
            endif
 
@@ -4697,11 +4695,11 @@ module lspdm_tensor_operations_module
      if( alloc_in_dummy .and. lock_was_not_set )call tensor_unlock_wins(arr, all_nodes = .true. )
      if( .not. alloc_in_dummy )then
         do i = 1, arr%nwins
-           if(arr%lock_set(i))call lsquit("ERROR(tensor_gather) a window is not freed",-1)
+           if(arr%lock_set(i))call tensor_status_quit("ERROR(tensor_gather) a window is not freed",-1)
         enddo
      endif
 #else
-     call lsquit('ERROR(tensor_gather):this routine is MPI only',-1)
+     call tensor_status_quit('ERROR(tensor_gather):this routine is MPI only',-1)
 #endif
   end subroutine tensor_gather
 
@@ -4753,7 +4751,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_LSDEBUG
      if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
-        call lsquit('ERROR(tensor_gather):both or neither wrk and iwrk have to &
+        call tensor_status_quit('ERROR(tensor_gather):both or neither wrk and iwrk have to &
            &be given',-1)
      endif
 #endif
@@ -4772,8 +4770,8 @@ module lspdm_tensor_operations_module
      endif
 
 #ifdef VAR_LSDEBUG
-     if(nelms/=arr%nelms)call lsquit('ERROR(tensor_gather):array&
-        &dimensions are not the same',DECinfo%output)
+     if(nelms/=arr%nelms)call tensor_status_quit('ERROR(tensor_gather):array&
+        &dimensions are not the same',lspdm_stdout)
 #endif
 
      do i = 1, arr%mode
@@ -4850,7 +4848,7 @@ module lspdm_tensor_operations_module
      endif
 
 #else
-     call lsquit('ERROR(tensor_gather):this routine is MPI only',-1)
+     call tensor_status_quit('ERROR(tensor_gather):this routine is MPI only',-1)
 #endif
   end subroutine tensor_gather_2cme
 
@@ -5229,7 +5227,7 @@ module lspdm_tensor_operations_module
            enddo
         else
            do i=1,arr%nwins
-              if( arr%lock_set(i) ) call lsquit("ERROR(tensor_lock_wins): no lock should be set here",-1)
+              if( arr%lock_set(i) ) call tensor_status_quit("ERROR(tensor_lock_wins): no lock should be set here",-1)
               call tensor_lock_win(arr,i,locktype,assert=assert)
            enddo
         endif
@@ -5316,7 +5314,7 @@ module lspdm_tensor_operations_module
      an = .false.
      if(present(all_nodes)) an = all_nodes
 
-     if(ch.and.an)call lsquit("ERROR(tensor_unlock_wins): input error, an all &
+     if(ch.and.an)call tensor_status_quit("ERROR(tensor_unlock_wins): input error, an all &
         &node unlock can only be requested without check, since an MPI_UNLOCK_ALL &
         &needs a preceding MPI_LOCK_ALL",-1)
 
@@ -5491,7 +5489,7 @@ module lspdm_tensor_operations_module
            endif
 
         case default
-           call lsquit("ERROR(get_distribution_info): unknown array%itype",-1)
+           call tensor_status_quit("ERROR(get_distribution_info): unknown array%itype",-1)
         end select
 
      end if
@@ -5510,7 +5508,7 @@ module lspdm_tensor_operations_module
      call time_start_phase( PHASE_WORK )
 
      if(p_arr%arrays_in_use==n_arrays)then
-        call lsquit("ERROR(get_free_address):max number of arrays in p_arr allocated, change&
+        call tensor_status_quit("ERROR(get_free_address):max number of arrays in p_arr allocated, change&
            & the parameter n_arrays in lsutil/lspdm_tensor_operations.F90 and recompile",-1)
      endif
 
@@ -5584,7 +5582,7 @@ module lspdm_tensor_operations_module
      if(me==root.and.present(nrm))then
         nrm = norm
      else if(me==root)then
-        write(DECinfo%output,'("LOCAL TILE NORM ON",I3,f20.15)') dest,sqrt(norm)
+        write(lspdm_stdout,'("LOCAL TILE NORM ON",I3,f20.15)') dest,sqrt(norm)
      endif
 #endif
   end subroutine tensor_tiled_pdm_print_ti_nrm
@@ -5641,7 +5639,7 @@ module lspdm_tensor_operations_module
      call tensor_get_size(nnod)
 
      if(totype/=TT_REPLICATED.and.totype/=TT_DENSE.and.totype/=TT_TILED_DIST.and.totype/=TT_TILED)then
-        call lsquit("ERROR(change_access_type_td): wrong type given",-1)
+        call tensor_status_quit("ERROR(change_access_type_td): wrong type given",-1)
      endif
      if(me==root.and.arr%access_type==AT_MASTER_ACCESS) then
         call time_start_phase( PHASE_COMM )
@@ -6189,7 +6187,7 @@ module lspdm_tensor_operations_module
 
         if( .not. found)then
 
-           call lsquit("ERROR(assoc_ptr_to_buf):tile not found in buf and no&
+           call tensor_status_quit("ERROR(assoc_ptr_to_buf):tile not found in buf and no&
               & free position available to load",-1)
 
         endif

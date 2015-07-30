@@ -855,7 +855,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
   use lstensorMem, only: lstmem_free
-  use tensor_interface_module ,only: tensor_finalize_interface
+  use tensor_interface_module ,only: tensor_finalize_interface, tensor_free_bg_buf
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
   use dec_settings_mod, only:free_decinfo
@@ -896,6 +896,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
+  call tensor_free_bg_buf()
   call tensor_finalize_interface()
   call free_decinfo()
 

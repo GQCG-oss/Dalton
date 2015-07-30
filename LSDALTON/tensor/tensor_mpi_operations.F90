@@ -4,7 +4,7 @@ module tensor_mpi_operations_module
    use tensor_parameters_and_counters
    use tensor_mpi_binding_module
    use tensor_mpi_interface_module
-   use tensor_allocator
+   use tensor_allocator, only: tensor_alloc_mem, tensor_free_mem
 
    public :: tensor_buffer
    public :: tensor_get_rank

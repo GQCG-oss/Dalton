@@ -226,8 +226,10 @@ contains
              ! Extract EOS indices for amplitudes and integrals
              ! ************************************************
              ! Note: EOS space is different for DECNP !!
-             call tensor_extract_decnp_indices(t2,MyFragment,t2occ,t2virt)
-             call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
+             call tensor_extract_decnp_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+                &MyFragment%idxo,MyFragment%idxu,t2occ,t2virt)
+             call tensor_extract_decnp_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+                &MyFragment%idxo,MyFragment%idxu,VOVOocc,VOVOvirt)
            
              ! free stuff
              ! **********
@@ -270,8 +272,10 @@ contains
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
           ! Note: EOS space is different for DECNP !!
-          call tensor_extract_decnp_indices(t2,MyFragment,t2occ,t2virt)
-          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
+          call tensor_extract_decnp_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,t2occ,t2virt)
+          call tensor_extract_decnp_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,VOVOocc,VOVOvirt)
           
           ! free stuff
           ! **********
@@ -322,8 +326,10 @@ contains
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
           !extract the indices here for later use in CCSD first order properties
           !note: the t2occp and t2virtp are the t2 without further addmixture of t1!
-          call tensor_extract_eos_indices(m2,MyFragment,tensor_occEOS=m2occ,tensor_virtEOS=m2virt)
-          call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2occp,tensor_virtEOS=t2virtp)
+          call tensor_extract_eos_indices(m2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=m2occ,tensor_virtEOS=m2virt)
+          call tensor_extract_eos_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2occp,tensor_virtEOS=t2virtp)
        else
 #endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
@@ -360,7 +366,8 @@ contains
        ! CCSD-F12 Code
        CCSDF12: if(DECinfo%F12) then
 
-          call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2_occEOS)
+          call tensor_extract_eos_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2_occEOS)
           if(pair) then
              if(MyFragment%isopt) then
                 call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
@@ -389,20 +396,25 @@ contains
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
           ! Note: EOS space is different for DECNP !!
-          call tensor_extract_decnp_indices(u,MyFragment,t2occ,t2virt)
-          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
+          call tensor_extract_decnp_indices(u,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,t2occ,t2virt)
+          call tensor_extract_decnp_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,VOVOocc,VOVOvirt)
 
        else
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
           ! Note, t2occ and t2virt also contain singles contributions
-          call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
-          call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc, &
+          call tensor_extract_eos_indices(u,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
+          call tensor_extract_eos_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=VOVOocc, &
              & tensor_virtEOS=VOVOvirt)
 
           ! Extract also EOS indices from MP2 amplitudes:
           if (get_mp2) then
-             call tensor_extract_eos_indices(t2MP2,MyFragment,tensor_occEOS=t2MP2o,tensor_virtEOS=t2MP2v)
+             call tensor_extract_eos_indices(t2MP2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+                &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2MP2o,tensor_virtEOS=t2MP2v)
              call tensor_free(t2MP2)
           end if
            
@@ -665,8 +677,8 @@ contains
      ! ********************************************
      if (DECinfo%DECNP) then
         ! Extract EOS indices, Note: EOS space is different for DECNP !!
-        call tensor_extract_decnp_indices(t2,frag,t2occ,t2virt)
-        call tensor_extract_decnp_indices(ccsdpt_t2,frag, &
+        call tensor_extract_decnp_indices(t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,t2occ,t2virt)
+        call tensor_extract_decnp_indices(ccsdpt_t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu, &
            & ccsdpt_t2occ,ccsdpt_t2virt)
         ! release ccsd(t) doubles amplitudes
         call tensor_free(ccsdpt_t2)
@@ -675,9 +687,9 @@ contains
         call ccsdpt_decnp_e5_frag(frag,t1,ccsdpt_t1)
      else if(pair) then
         ! extract EOS indices from doubles (CCSD and (T)):
-        call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
+        call tensor_extract_eos_indices(ccsdpt_t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=ccsdpt_t2occ, &
            & tensor_virtEOS=ccsdpt_t2virt)
-        call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
+        call tensor_extract_eos_indices(t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=t2occ, &
            & tensor_virtEOS=t2virt)
         ! release ccsd(t) doubles amplitudes
         call tensor_free(ccsdpt_t2)
@@ -687,9 +699,9 @@ contains
         call ccsdpt_energy_e5_pair(frag,t1,ccsdpt_t1)
      else
         ! extract EOS indices from doubles (CCSD and (T)):
-        call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
+        call tensor_extract_eos_indices(ccsdpt_t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=ccsdpt_t2occ, &
            & tensor_virtEOS=ccsdpt_t2virt)
-        call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
+        call tensor_extract_eos_indices(t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=t2occ, &
            & tensor_virtEOS=t2virt)
         ! release ccsd(t) doubles amplitudes
         call tensor_free(ccsdpt_t2)
@@ -3367,7 +3379,8 @@ contains
           call calculate_corrdens_AOS_occocc(t2,AtomicFragment)
 
           !FIXME: dirty hack-restore input tensor with the new dimensions and data
-          call get_symm_tensor_segmenting_simple(nnod,t2%dims(2),t2%dims(1),os,vs)
+          call get_symm_tensor_segmenting_simple(nnod,t2%dims(2),t2%dims(1),os,vs,&
+             &DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
           call tensor_minit(t2tens,t2%dims,4, atype = stens_atype, tdims=[vs,os,vs,os])
           call tensor_convert(t2%val,t2tens)
           call array4_free(t2)

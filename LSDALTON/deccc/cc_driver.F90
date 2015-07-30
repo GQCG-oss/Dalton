@@ -288,7 +288,7 @@ contains
       solver_ccmodel = ccmodel
       if(ccmodel == MODEL_CCSDpT) solver_ccmodel = MODEL_CCSD
       fj = present(frag)
-      call get_symm_tensor_segmenting_simple(nnod,no,nv,os,vs)
+      call get_symm_tensor_segmenting_simple(nnod,no,nv,os,vs,DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
 
 
       if(DECinfo%use_pnos)then
@@ -2812,7 +2812,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 #endif
 
    !get tensor segments
-   call get_symm_tensor_segmenting_simple(int(nnod),no,nv,os,vs)
+   call get_symm_tensor_segmenting_simple(int(nnod),no,nv,os,vs,DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
 
    ! allocate the buffer in the background
    use_bg = DECinfo%use_bg_buffer.and..not.saferun
