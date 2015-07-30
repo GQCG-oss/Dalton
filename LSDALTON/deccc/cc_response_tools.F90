@@ -1241,7 +1241,7 @@ contains
        call array_reorder_4d(  2.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
        call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
 
-       if(print_debug) call print_norm(u2," NORM(u2)    :",print_on_rank=0)
+       if(print_debug) call print_norm(u2," NORM(u2)    :",print_=(lg_me==0))
 
         
        call tensor_ainit(sio4, [no,no,nor], 3, local=local, atype='LDAR' )

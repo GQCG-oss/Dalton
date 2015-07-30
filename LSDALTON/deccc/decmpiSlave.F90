@@ -111,7 +111,7 @@ subroutine dec_lsmpi_slave(comm)
       case(DEFAULTGROUPS);
          call lsmpi_default_mpi_group
       case(PDMA4SLV);
-         call PDM_TENSOR_SLAVE(comm)
+         call pdm_tensor_slave
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);

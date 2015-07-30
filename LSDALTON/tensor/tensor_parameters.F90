@@ -1,6 +1,6 @@
 module tensor_parameters_and_counters
 
-   !Define atomic types used in the tensor module
+   !Define atomic data types used in the tensor module
    integer, parameter :: tensor_dp           = 8
    integer, parameter :: tensor_sp           = 4
 #ifdef VAR_INT64
@@ -35,7 +35,10 @@ module tensor_parameters_and_counters
 
    !MPI SIGNAL, GET SLAVES, MAKE SURE THE APPLICATION HAS NO OVERLAPPING SIGNAL
    integer,parameter :: TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD =  -121
-   integer :: TENSOR_SLAVES_TO_SLAVE_ROUTINE = TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
+   integer ::           TENSOR_SLAVES_TO_SLAVE_ROUTINE     = TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
+   !MPI COMM TO USE IN TENSOR OPERATIONS, THIS IS UPDATED AT RUNTIME
+   integer(kind=tensor_mpi_kind), parameter :: tensor_comm_null = -124
+   integer(kind=tensor_mpi_kind) ::            tensor_work_comm = tensor_comm_null
 
    !parameters to define the data distribution in the tensor type
    integer(kind=tensor_standard_int), parameter :: TT_DENSE        = 1
