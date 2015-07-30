@@ -42,6 +42,7 @@ casm
 #include "cbieri.h"
 #include "distcl.h"
 #include "mxcent.h"
+#include "eritap.h"
 #include "eribuf.h"
 #include "ccfro.h"
 #include "ccfop.h"
@@ -1043,13 +1044,13 @@ C
       ENDIF
 C
       CALL CC_RDA1(XINT,WORK(KIBUF),WORK(KRBUF),IDELTA,IGAM,
-     *             WORK(KADR2),IBIT1,IRECNR)
+     *             WORK(KADR2),IRECNR)
 C
       RETURN
       END
 C  /* Deck cc_rda1 */
       SUBROUTINE CC_RDA1(XINT,IBUF4,RBUF,IDELTA,IGAM,KADR2,
-     *                  IBIT1,IRECNR)
+     *                  IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
@@ -1074,6 +1075,7 @@ Casm
 #include "ccorb.h"
 #include "nuclei.h"
 #include "inftap.h"
+#include "eritap.h"
 #include "chrnos.h"
 
 C
@@ -1261,6 +1263,9 @@ casm
 #include "cbieri.h"
 #include "distcl.h"
 #include "mxcent.h"
+!  eritap: NBUFX(:)
+#include "eritap.h"
+!  eribuf: NEWDIS
 #include "eribuf.h"
 #include "ccfro.h"
 #include "ccfop.h"
@@ -1402,7 +1407,7 @@ C
 #include "chorst.h"
 C
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 C
 C
       CALL QENTER('CHODRV')
@@ -3044,13 +3049,13 @@ C
       ENDIF
 C
       CALL CC_RDA1N(XINT,WORK(KIBUF),WORK(KRBUF),IDELTA,IGAM,
-     *             NUMPR,ISYMGD,WORK(KADR2),IBIT1,WORK(KGAM),IRECNR)
+     *             NUMPR,ISYMGD,WORK(KADR2),WORK(KGAM),IRECNR)
 C
       RETURN
       END
 C  /* Deck cc_rda1n */
       SUBROUTINE CC_RDA1N(XINT,IBUF4,RBUF,IDELTA,IGAM,NUMPR,ISYMGD,
-     *                  KADR2,IBIT1,KGAM,IRECNR)
+     *                  KADR2,KGAM,IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
@@ -3073,6 +3078,7 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "chrnos.h"
+#include "eritap.h"
 #include "eribuf.h"
 #include "inftap.h"
 
@@ -4328,13 +4334,13 @@ C
       ENDIF
 C
       CALL CC_RDAOX1(XINT,WORK(KIBUF),WORK(KRBUF),NUMDIA,NUMDIB,
-     *             JNDEXA,JNDEXB,ISHLA,ISHLB,IBIT1,IRECNR)
+     *             JNDEXA,JNDEXB,ISHLA,ISHLB,IRECNR)
 C
       RETURN
       END
 C  /* Deck cc_rdaox1 */
       SUBROUTINE CC_RDAOX1(XINT,IBUF4,RBUF,NUMDIA,NUMDIB,
-     *                  JNDEXA,JNDEXB,ISHLA,ISHLB,IBIT1,IRECNR)
+     *                  JNDEXA,JNDEXB,ISHLA,ISHLB,IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
 C
@@ -4356,6 +4362,7 @@ C
 #include "ccorb.h"
 #include "nuclei.h"
 #include "inftap.h"
+#include "eritap.h"
 #include "chrnos.h"
 
 C

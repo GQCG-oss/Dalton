@@ -69,7 +69,7 @@ CCN #include "infind.h" not compatible with R12!
 COMMENT COMMENT
 COMMENT COMMENT
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccfield.h"
 #include "ccfop.h"
 COMMENT COMMENT
