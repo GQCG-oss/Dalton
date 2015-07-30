@@ -3437,9 +3437,15 @@ c --- 931201-hjaaj: MOFCFV does not exist any more
          KTRLVL = 1
       END IF
 #else
-      KTRLVL = 1
+      KTRLVL = 0
 #endif
-      IF (JTRLVL .EQ. 3) THEN
+      IF (JTRLVL .EQ. 0) THEN
+         KTRLVL = 1
+      ELSE IF (JTRLVL .EQ. 1) THEN
+         KTRLVL = 1
+      ELSE IF (JTRLVL .EQ. 2) THEN
+         KTRLVL = 0
+      ELSE IF (JTRLVL .EQ. 3) THEN
          JTRLVL = 2
          KTRLVL = 1
       ELSE IF (JTRLVL .EQ. 4) THEN
@@ -3448,8 +3454,7 @@ c --- 931201-hjaaj: MOFCFV does not exist any more
       ELSE IF (JTRLVL .EQ. 5) THEN
          JTRLVL = 3
          KTRLVL = 0
-      ELSE IF (JTRLVL .GE. 6) THEN
-         IF (JTRLVL .EQ. 10) KTRLVL = 0
+      ELSE IF (JTRLVL .GE. 6) THEN ! KTRLVL is inactive
          JTRLVL = 4
       END IF
       NTRLVL = 100*KTRLVL + JTRLVL
