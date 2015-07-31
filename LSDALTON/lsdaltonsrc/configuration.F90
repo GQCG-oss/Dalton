@@ -1069,10 +1069,10 @@ subroutine DEC_meaningful_input(config)
         ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
 
-        ! Modify DECinfo to calculate first order properties (gradient) for MP2
+        ! Modify DECinfo to calculate first order properties (gradient) for RI-MP2 and MP2
         DECinfo%gradient=.true.
         DECinfo%first_order=.true.
-        if (DECinfo%ccmodel /= MODEL_MP2) then
+        if (DECinfo%ccmodel /= MODEL_MP2 .and. DECinfo%ccmodel /= MODEL_RIMP2) then
            write(DECinfo%output,*) "WARNING: DEC Geometry optimization only available for MP2"
            write(DECinfo%output,*) "WARNING: We are switching to DEC-MP2  !!!"
            DECinfo%ccmodel = MODEL_MP2
