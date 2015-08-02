@@ -791,7 +791,7 @@ module cc_tools_module
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
-     integer(INTD):: sch_sym=2
+     integer(INTD):: sch_sym=1
 !}
 
       call time_start_phase(PHASE_WORK)
@@ -1363,7 +1363,7 @@ module cc_tools_module
           call dil_set_tens_contr_spec(tch0,tcs,errc,&
                &ldims=(/int(full1,INTD),int(nv,INTD)/),lbase=(/int(fa-1,INTD),0_INTD/),&
                &rdims=(/int(nv,INTD),int(nor,INTD),int(full1,INTD)/),rbase=(/0_INTD,0_INTD,int(fa-1,INTD)/),&
-               &alpha=1E0_realk)
+               &alpha=scaleitby)
           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: CC: ',infpar%lg_mynum,errc
           if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Contr spec set failed!',-1)
           dil_mem=dil_get_min_buf_size(tch0,errc)
@@ -1395,7 +1395,7 @@ module cc_tools_module
                      !$OMP END WORKSHARE
 #endif
                   endif
-               else if(s==2.or.s==1)then
+               else if(s==2)then
 #ifdef VAR_MPI
                   if( .not.alloc_in_dummy.and.lock_outside )call tensor_lock_wins(omega,'s',mode)
                   !$OMP WORKSHARE
@@ -1404,6 +1404,9 @@ module cc_tools_module
                   call time_start_phase(PHASE_COMM, at=twork)
                   call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   call time_start_phase(PHASE_WORK, at=tcomm)
+#ifdef DIL_ACTIVE
+                  call tensor_add(o2tens,1.0E0_realk,w2,wrk=w3,iwrk=s3) !`DIL: debug: remove
+#endif
 #endif
                endif
             else
@@ -1436,6 +1439,9 @@ module cc_tools_module
                call time_start_phase(PHASE_COMM, at=twork)
                if( alloc_in_dummy )then
                   call lsmpi_win_flush(omega%wi(1),local=.true.)
+#ifdef DIL_ACTIVE
+                  call lsmpi_win_flush(o2tens%wi(1),local=.true.) !`DIL: debug: remove
+#endif
                else
                   call tensor_unlock_wins(omega,.true.)
                endif
@@ -1468,7 +1474,7 @@ module cc_tools_module
              call dil_set_tens_contr_spec(tch0,tcs,errc,&
                   &ldims=(/int(full1T,INTD),int(nv,INTD)/),lbase=(/int(l2-1,INTD),0_INTD/),&
                   &rdims=(/int(nv,INTD),int(nor,INTD),int(full1T,INTD)/),rbase=(/0_INTD,0_INTD,int(l2-1,INTD)/),&
-                  &alpha=1E0_realk)
+                  &alpha=scaleitby)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: CC: ',infpar%lg_mynum,errc
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Contr spec set failed!',-1)
              dil_mem=dil_get_min_buf_size(tch0,errc)
@@ -1497,7 +1503,7 @@ module cc_tools_module
                         !$OMP END WORKSHARE
 #endif
                      endif
-                  else if(s==2.or.s==1)then
+                  else if(s==2)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
                      call assign_in_subblocks(w2,'=',w2,o2v2,scal2=scaleitby)
 #else
@@ -1508,6 +1514,9 @@ module cc_tools_module
                      call time_start_phase(PHASE_COMM, at=twork)
                      call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                      call time_start_phase(PHASE_WORK, at=tcomm)
+#ifdef DIL_ACTIVE
+                     call tensor_add(o2tens,1.0E0_realk,w2,wrk=w3,iwrk=s3) !`DIL: debug: remove
+#endif
                   endif
                else
 #ifdef VAR_LSDEBUG
@@ -1534,6 +1543,9 @@ module cc_tools_module
             call time_start_phase(PHASE_COMM, at=twork)
             if( alloc_in_dummy )then
                call lsmpi_win_flush(omega%wi(1),local=.true.)
+#ifdef DIL_ACTIVE
+               call lsmpi_win_flush(o2tens%wi(1),local=.true.) !`DIL: debug: remove
+#endif
             else
                call tensor_unlock_wins(omega,.true.)
             endif
@@ -1998,7 +2010,7 @@ module cc_tools_module
       real(realk), intent(inout) :: tw,tc
       logical, intent(in),optional :: no_par
       integer, intent(in),optional :: order(4)
-      type(tensor), intent(inout), optional:: tmp_tens
+      type(tensor), intent(inout), optional:: tmp_tens !already contains some previous contributions
       integer :: nor
       integer :: ml,l,tl,fai,lai
       integer :: tri,fri
@@ -2008,6 +2020,15 @@ module cc_tools_module
       integer(kind=8) :: o2v2,pos1,pos2,i,j,pos
       logical :: traf,np
       integer :: o(4)
+!{`DIL:
+     character(256):: tcs
+     type(dil_tens_contr_t):: tch
+     integer(INTL):: dil_mem,l0
+     integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
+     integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
+     integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+     real(realk):: r0
+!}
 
       call time_start_phase(PHASE_WORK)
 
@@ -2076,7 +2097,34 @@ module cc_tools_module
       else if(s==1)then
 
 #ifdef VAR_MPI
-         stop !`DIL: Write
+         if(DIL_DEBUG) then !`DIL: Tensor contraction 12
+          write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 12:",3(1x,i7))')&
+          &infpar%lg_mynum,infpar%mynum
+         endif
+         tcs='D(a,b,s)+=L(a,b,i,j)*R(i,j,s)'
+         call dil_clean_tens_contr(tch)
+         call dil_set_tens_contr_args(tch,'d',errc,tens_distr=tmp_tens)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: DA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Destination arg set failed!',-1)
+         call dil_set_tens_contr_args(tch,'l',errc,tens_distr=t2)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: LA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Left arg set failed!',-1)
+         call dil_set_tens_contr_args(tch,'r',errc,tens_distr=sio4)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: RA: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Right arg set failed!',-1)
+         call dil_set_tens_contr_spec(tch,tcs,errc,alpha=0.5E0_realk)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: CC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Contr spec set failed!',-1)
+         dil_mem=dil_get_min_buf_size(tch,errc)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: BS: ',infpar%lg_mynum,errc,dil_mem
+         if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Buf size set failed!',-1)
+         call dil_tensor_contract(tch,DIL_TC_ALL,dil_mem,errc,locked=.false.)
+         if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: TC: ',infpar%lg_mynum,errc
+         if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Tens contr failed!',-1)
+         call lsmpi_barrier(infpar%lg_comm)
+         call dil_update_abij_with_abc(om2,tmp_tens,errc,locked=.false.) !omega2 is locked, tmp_tens not
+         if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Sym update failed!',-1)
+         call lsmpi_barrier(infpar%lg_comm)
 #endif
 
       else

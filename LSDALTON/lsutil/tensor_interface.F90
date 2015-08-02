@@ -50,10 +50,15 @@ module tensor_interface_module
   public dil_debug_to_file_start      !start redirecting debugging information into a file
   public dil_debug_to_file_finish     !finish redirecting debugging information into a file
   public dil_array_print              !print a whole (local) array or its part
+  public dil_tensor_print             !print a distributed tensor
   public dil_array_init               !initialize a local array
   public dil_tensor_init              !initialize a distributed tensor
   public dil_array_norm1              !compute the 1-norm of a local array
+  public dil_array_sym_norm1          !compute the 1-norm of a part of a local array with index symmetries
+  public dil_array_sym_hash           !compute a hash of a part of a local array with index symmetries
   public dil_tensor_norm1             !compute the 1-norm of a distributed tensor (blocking)
+  public dil_tensor_sym_norm1         !compute the 1-norm of a part of a distributed tensor with index symmetries
+  public dil_tensor_sym_hash          !compute a hash of a part of a distributed tensor with index symmetries
   public dil_tens_fetch_start         !non-blocking tensor slice fetching (start)
   public dil_tens_fetch_finish_prep   !non-blocking tensor slice fetching (finish)
   public dil_tens_prep_upload_start   !non-blocking tensor slice uploading (start)
@@ -63,6 +68,7 @@ module tensor_interface_module
   public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued at this time
   public dil_tens_pack_sym2           !packs two symmetric dimensions of a local tensor into a single composite dimension
   public dil_distr_tens_insert_sym2   !D(p,q,...,r,s)+=S(p,q,...,r<=s), where r, s, and [r<=s] can have arbitrary positions
+  public dil_update_abij_with_abc     !omega2+=o2ilej with symmetric indices i<=j
   public thread_wtime                 !OMP thread wall time
   public process_wtime                !MPI process wall time
   public int2str                      !converts integers to strings
