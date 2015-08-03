@@ -110,7 +110,11 @@ integer :: mostl_occ
 integer :: mostl_virt
 integer :: leastl_occ
 integer :: leastl_virt
-
+! offset that keeps track of where in CMO we are loclizing  
+! offset = 1 for core, offset = ncore+1 for valence and offset = nocc+1 for virt
+integer :: offset
+! write CMOs to restart file each orbital_save_interval-iteration
+integer :: orbital_save_interval
 !**************************
 !* ARH specific settings  *
 !**************************
@@ -233,6 +237,7 @@ CFG%global_conv_thresh = 0.01_realk
 CFG%local_conv_thresh = 0.005_realk
 CFG%lines_fit =.true.
 CFG%quit_after_10it = .true.
+CFG%orbital_save_interval = 20
 
 
 

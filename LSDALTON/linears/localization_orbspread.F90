@@ -26,24 +26,39 @@ contains
 
 !> \brief Routine that drives macro iterations for localizing orbitals using FM
 !> \author Ida-Marie Hoeyvik
-  subroutine PFM_localize_davidson(CFG,CMO,m,ls)
+  subroutine PFM_localize_davidson(CFG,CMOall,m,ls,norb)
     implicit none
     type(RedSpaceItem)           :: CFG
-    type(Matrix) , intent(inout ):: CMO
+    type(Matrix) , intent(inout ):: CMOall
     TYPE(lsitem) , intent(inout) :: ls
-    integer      , intent(in)    :: m
+    integer      , intent(in)    :: m,norb
     logical :: lower2
-    type(Matrix) :: Xsav,CMOsav
+    type(Matrix) :: Xsav,CMOsav,CMO
     type(Matrix), target  ::  X, P, G,expX
-    integer :: norb, i, nbas,iter_number
+    integer :: i, nbas,iter_number
     real(realk) :: nrmG, oVal,old_oVal, max_step,max_FM
     real(realk) :: nrm_thresh,stepsize
     real(realk) :: trial(1,1)
     real(realk),pointer :: max_orbspreads(:)  
+    real(realk), pointer :: tmp(:)
+    integer :: lun, counter
+    logical :: OnMaster
+
+    !initializations 
+    OnMaster=.true.
+    nbas=CMOall%nrow
+    counter=0
+    
+    ! Extract coefficients to be localized
+    call mem_alloc(tmp,nbas*norb)
+    call mat_init(CMO,nbas,norb)
+    ! extract matrix from CMOall(1,offset)
+    call mat_retrieve_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+    call mat_set_from_full(tmp,1.0_realk,CMO)
+    call mem_dealloc(tmp)
 
 
-    norb=CMO%ncol
-    nbas=CMO%nrow
+
     call mem_alloc(max_orbspreads,CFG%max_macroit)
     call mat_init(X,norb,norb)
     call mat_init(G,norb,norb)
@@ -79,27 +94,6 @@ contains
        FLUSH(ls%lupri)
 #endif
 
-       if(CFG%quit_after_10it)then
-          if (i>10) then
-             if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.02 .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.02  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.02  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.02  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.02  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.02) then
-                write(ls%lupri,'(a)') '  %LOC%  '
-                write(ls%lupri,'(a)') '  %LOC%   ********* Orbital localization converged ************'
-                write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
-                write(ls%lupri,'(a)') '  %LOC%   * There are insignificant changes in the  locality  *'
-                write(ls%lupri,'(a)') '  %LOC%   * of the least local orbital, and procedure is      *'
-                write(ls%lupri,'(a)') '  %LOC%   * exited irresptective of gradient norm.            *'
-                write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
-                write(ls%lupri,'(a)') '  %LOC%   *****************************************************'
-                write(ls%lupri,'(a)') '  %LOC% '
-                exit
-             endif
-          endif
-       endif
        if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
           write(ls%lupri,'(a)') '  %LOC% '
           write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
@@ -130,11 +124,11 @@ contains
        oVal=CFG%PFM_input%kurt_val
 
        if (oVal-old_oVal < 0) then 
-          write(CFG%lupri,'(a)') "  %LOC% Step accepted"
+          write(CFG%lupri,'(a)') "   Step accepted"
           CFG%stepsize=min(CFG%stepsize*2.0,CFG%max_stepsize)
           !CMOS are updated in linesearch
        else
-          write(CFG%lupri,'(a)') "  %LOC% Step rejected"
+          write(CFG%lupri,'(a)') "   Step rejected"
           call mat_copy(1d0,cmosav,cmo)
           call kurt_updateAO(CFG%PFM_input,cmo)
           call kurt_value(CFG%PFM_input)
@@ -175,6 +169,22 @@ contains
        CFG%PFM_input%P => P
        CFG%P => CFG%PFM_input%P
 
+       !make restart file
+       counter = counter + 1
+       if (counter == CFG%orbital_save_interval) then
+          call mem_alloc(tmp,nbas*norb)
+          call mat_to_full(CMO,1.0_realk,tmp)
+          call mat_create_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+          call mem_dealloc(tmp)
+          lun = -1
+          call lsopen(lun,'localized_orbitals.restart','unknown','UNFORMATTED')
+          call mat_write_to_disk(lun,CMOall,OnMaster)
+          call LSclose(LUN,'KEEP')
+          counter = 0
+          write(CFG%lupri,'(a)') '  %LOC% temporary orbitals written to localized_orbitals.restart'
+       endif
+
+
     enddo
     if (iter_number==CFG%max_macroit) then
        write(CFG%lupri,'(a)') '  %LOC% '
@@ -192,6 +202,14 @@ contains
        write(CFG%lupri,'(a)') '  %LOC%   '
        write(CFG%lupri,'(a)') '  '
     endif
+
+    
+    !Put localized block into full CMO matrix
+    call mem_alloc(tmp,nbas*norb)
+    call mat_to_full(CMO,1.0_realk,tmp)
+    call mat_free(CMO)
+    call mat_create_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+    call mem_dealloc(tmp)
 
 
     call mem_dealloc(max_orbspreads)
@@ -274,27 +292,6 @@ contains
 #endif
 
 
-       if(CFG%quit_after_10it)then
-          if (i>10) then
-             if ( abs(max_orbspreads(i)-max_orbspreads(i-10)) < 0.01 .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-9)) < 0.01  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-8)) < 0.01  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-7)) < 0.01  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-6)) < 0.01  .and. &
-                  &   abs(max_orbspreads(i)-max_orbspreads(i-5)) < 0.01) then
-                write(ls%lupri,'(a)') '  %LOC% '
-                write(ls%lupri,'(a)') '  %LOC%   ********* Orbital localization converged ************'
-                write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
-                write(ls%lupri,'(a)') '  %LOC%   * There are insignificant changes in the  locality  *'
-                write(ls%lupri,'(a)') '  %LOC%   * of the least local orbital, and procedure is      *'
-                write(ls%lupri,'(a)') '  %LOC%   * exited irresptective of gradient norm.            *'
-                write(ls%lupri,'(a)') '  %LOC%   *                                                   *'
-                write(ls%lupri,'(a)') '  %LOC%   *****************************************************'
-                write(ls%lupri,'(a)') '  %LOC% '
-                exit
-             endif
-          endif
-       endif
        if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
           write(ls%lupri,'(a)') '  %LOC% '
           write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
