@@ -10,9 +10,9 @@ module tensor_bg_buf_module
 
   public tensor_bg_init, tensor_bg_n, tensor_bg_free
   public tensor_bg_buf_dp_type
+  public buf_tensor_dp
 #ifdef TENSORS_IN_LSDALTON
   public tensor_max_bg_pointers
-  public buf_tensor_dp
   public tensor_initialize_bg_buf_from_lsdalton_bg_buf
   public tensor_free_bg_buf
 #endif

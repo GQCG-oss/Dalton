@@ -32,7 +32,7 @@ module tensor_tester_module
     real(tensor_dp),pointer :: dummy1(:),tileget(:),dummy2(:)
     real(tensor_dp),pointer :: tileget2(:),buf1(:), buf2(:), buf3(:)
     real(tensor_dp) :: normher,ref,ref2,ref3
-    integer(kind=long) :: testint
+    integer(kind=tensor_long_int) :: testint
     logical :: master
     integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4),output
     integer(kind=tensor_mpi_kind) :: sender, recver, nnod, rnk, me, dpos,didx,dwidx

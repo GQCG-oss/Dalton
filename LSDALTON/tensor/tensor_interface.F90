@@ -14,6 +14,10 @@ module tensor_interface_module
 #endif
 #endif
 
+#ifdef TENSORS_IN_LSDALTON
+  use dec_workarounds_module
+#endif
+
   ! Outside DEC directory
   use tensor_parameters_and_counters
   use tensor_mpi_interface_module
@@ -136,12 +140,12 @@ module tensor_interface_module
 
 
   !> Number of created arrays
-  integer(kind=long) :: ArraysCreated      = 0
+  integer(kind=tensor_long_int) :: ArraysCreated      = 0
   !> Number of destroyed arrays
-  integer(kind=long) :: ArraysDestroyed    = 0
+  integer(kind=tensor_long_int) :: ArraysDestroyed    = 0
   !> Number of created arrays
-  integer(kind=long) :: CreatedPDMArrays   = 0
-  integer(kind=long) :: DestroyedPDMArrays = 0
+  integer(kind=tensor_long_int) :: CreatedPDMArrays   = 0
+  integer(kind=tensor_long_int) :: DestroyedPDMArrays = 0
 
 
   
@@ -392,7 +396,9 @@ contains
      real(tensor_dp),pointer :: buffer(:)
      real(tensor_dp) :: pre2
      integer :: ti,i,nel,o(x%mode)
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
 
      pre2 = 1.0E0_tensor_dp
      if(present(a))pre2 = a
@@ -448,17 +454,25 @@ contains
            do ti=1,y%ntiles
               call get_tile_dim(nel,y,ti)
 
+#ifdef TENSORS_IN_LSDALTON
               call time_start_phase( PHASE_COMM )
+#endif
               call tensor_get_tile(y,int(ti,kind=tensor_standard_int),buffer,nel)
+#ifdef TENSORS_IN_LSDALTON
               call time_start_phase( PHASE_WORK )
+#endif
 
               call tile_in_fort(b,buffer,ti,int(y%tdim),pre2,x%elm1,x%dims,int(x%mode),o)
            enddo
            call tensor_free_mem(buffer)
 
+#ifdef TENSORS_IN_LSDALTON
            call time_start_phase( PHASE_COMM )
+#endif
            if(x%itype==TT_REPLICATED)call tensor_sync_replicated(x)
+#ifdef TENSORS_IN_LSDALTON
            call time_start_phase( PHASE_WORK )
+#endif
 
         case default
            print *,x%itype,y%itype
@@ -482,7 +496,9 @@ contains
            call tensor_status_quit("ERROR(tensor_add_normal):not yet implemented x%itype",lspdm_stdout)
      end select
 
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_add_normal
   ! x = a * x + b * d * y[order]
   !> \brief add a scaled array to another array. The data may have different
@@ -504,7 +520,9 @@ contains
      real(tensor_dp),pointer :: buffer(:)
      real(tensor_dp) :: pre2
      integer :: ti,i,nel,o(x%mode),m,n
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
 
      pre2 = 1.0E0_tensor_dp
      if(present(a))pre2 = a
@@ -579,7 +597,9 @@ contains
            call tensor_status_quit("ERROR(tensor_dmul):not yet implemented x%itype",lspdm_stdout)
      end select
 
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_dmul
 
   subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens,bg)
@@ -672,7 +692,9 @@ contains
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(tensor_dp) :: MemFree,tilemem
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase( PHASE_WORK )
+#endif
 
     do i=1,arrx%mode
       o(i) = i
@@ -691,7 +713,9 @@ contains
         call tensor_scatter(b,fortarry,1.0E0_tensor_dp,arrx,arrx%nelms,oo=order,wrk=wrk,iwrk=iwrk)
     end select
 
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_add_fullfort2arr
 
   ! x = x + b * y
@@ -715,7 +739,9 @@ contains
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(tensor_dp) :: MemFree,tilemem
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase( PHASE_WORK )
+#endif
 
     select case(arry%itype)
       case(TT_DENSE)
@@ -729,7 +755,9 @@ contains
         call tensor_status_quit("ERROR(tensor_add_arr2fullfort) not implemented",-1)
     end select
 
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_add_arr2fullfort
 
   !> \brief Hadamard product Cij = alpha*Aij*Bij+beta*Cij
@@ -744,7 +772,9 @@ contains
      real(tensor_dp),intent(in) :: beta
      !> scaling factor for array A and B
      real(tensor_dp),intent(in) :: alpha
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
      if(A%mode/=B%mode)call tensor_status_quit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
      if(A%mode/=C%mode)call tensor_status_quit("ERROR(tensor_hmul_normal): modes of arrays not compatible",-1)
 
@@ -774,7 +804,9 @@ contains
         call tensor_status_quit("ERROR(tensor_hmul_normal):not yet implemented C%itype",lspdm_stdout)
      end select 
     
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
    end subroutine tensor_hmul
 
 
@@ -790,7 +822,7 @@ contains
      integer, intent(inout):: order(C%mode)               !C dim x maps onto (A*B) dim order(x)
      real(tensor_dp), intent(in), optional:: mem              !???
      real(tensor_dp), intent(inout), optional:: wrk(:)        !external buffer
-     integer(kind=long), intent(in), optional:: iwrk      !???
+     integer(kind=tensor_long_int), intent(in), optional:: iwrk      !???
      logical, intent(in), optional:: force_sync           !???
      !internal variables (PETT)
      integer:: i,j,k
@@ -810,7 +842,9 @@ contains
 #endif
      character(26), parameter:: elett='abcdefghijklmnopqrstuvwxyz'
 
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
 
 !Argument check:
      if( (A%mode-nmodes2c) + (B%mode-nmodes2c) /= C%mode) then
@@ -970,7 +1004,9 @@ contains
 #endif
      endif
 
+#ifdef TENSORS_IN_LSDALTON
      call time_start_phase( PHASE_WORK )
+#endif
   end subroutine tensor_contract
 
   subroutine tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
@@ -983,7 +1019,7 @@ contains
      integer, intent(inout)     :: order(C%mode)
      real(tensor_dp), intent(in),    optional :: mem
      real(tensor_dp), intent(inout), target, optional :: wrk(:)
-     integer(kind=long), intent(in),     optional :: iwrk
+     integer(kind=tensor_long_int), intent(in),     optional :: iwrk
      !internal variables
      real(tensor_dp), pointer :: wA(:),  wB(:), wC(:)
      integer :: ordA(A%mode), ordB(B%mode), ro(C%mode), dims_product(C%mode)
@@ -1670,7 +1706,7 @@ contains
      character(*), intent(in) :: spec
      real(tensor_dp), pointer :: o2v2(:)
      real(tensor_dp), pointer :: wrk(:)
-     integer(kind=long) :: iwrk
+     integer(kind=tensor_long_int) :: iwrk
      integer :: no,nv,i,j,a,b, specint
      real(tensor_dp), pointer :: elm4(:,:,:,:)
 
@@ -1743,11 +1779,12 @@ contains
      integer :: aa,bb,cc,dd
      integer :: order_type,m,n
      real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
-     integer(kind=long) :: nelms
+     integer(kind=tensor_long_int) :: nelms
      logical :: bg
 
 
-     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
+     print*,"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+     print*,"THIS FUNCTION IS DEPRECATED AND SHOULD NOT BE USED ANYMORE: tensor_reorder"
 
 
      nelms = arr%nelms
@@ -1762,11 +1799,7 @@ contains
 
         call deassoc_ptr_arr(arr)
 
-        if(bg)then
-           call mem_pseudo_alloc( new_data,nelms )
-        else
-           call tensor_alloc_mem( new_data,nelms )
-        endif
+        call tensor_alloc_mem( new_data,nelms,bg=bg )
 
         select case(arr%mode)
         case(2)
@@ -1784,19 +1817,15 @@ contains
 
         arr%dims=new_dims
 
-!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-!        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
-!#else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
+#else
         !$OMP WORKSHARE
         arr%elm1 = new_data
         !$OMP END WORKSHARE
-!#endif
+#endif
 
-        if(bg)then
-           call mem_pseudo_dealloc(new_data)
-        else
-           call tensor_free_mem(new_data)
-        endif
+        call tensor_free_mem(new_data,bg=bg)
 
         call assoc_ptr_arr(arr)
 
@@ -1804,7 +1833,6 @@ contains
         call tensor_status_quit("ERROR(tensor_reorder) only implemented for dense arrs yet",-1)
      endif
 
-     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
   end subroutine tensor_reorder
 
@@ -1827,7 +1855,9 @@ contains
     integer(kind=tensor_standard_int) :: it
     logical :: loc, bg_int
     real(tensor_dp) :: time_minit
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, twall = time_minit )
+#endif
 
     bg_int = .false.
     if(present(bg))bg_int = bg
@@ -1913,7 +1943,9 @@ contains
 #endif
     arr%initialized=.true.
 
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_minit )
+#endif
     tensor_time_init = tensor_time_init + time_minit
 
   end subroutine tensor_minit
@@ -1998,7 +2030,9 @@ contains
     logical :: loc, bg_int
     real(tensor_dp) :: time_ainit
     integer :: dims(nmodes_in),nmodes
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, twall = time_ainit )
+#endif
     dims = dims_in
     nmodes = nmodes_in
  
@@ -2082,7 +2116,9 @@ contains
 #endif
     arr%initialized=.true.
 
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_ainit )
+#endif
     tensor_time_init = tensor_time_init + time_ainit
   end subroutine tensor_ainit_central
 
@@ -2113,7 +2149,9 @@ contains
     if(present(bg))bg_int = bg
 
     !choose which kind of array
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, twall = time_init )
+#endif
 
     !if(arr%initialized)call tensor_status_quit("ERROR(tensor_init):array already initialized",-1) 
 
@@ -2154,7 +2192,9 @@ contains
     arr%itype         = it
     arr%initialized   = .true.
 
+#ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_init )
+#endif
     tensor_time_init = tensor_time_init + time_init
   end subroutine tensor_init
 
@@ -2171,7 +2211,7 @@ contains
     logical               :: master
     integer               :: i,addr,tdimdummy(nmodes)
     integer,pointer       :: buf(:)
-    integer(kind=long)    :: nelms
+    integer(kind=tensor_long_int)    :: nelms
     integer(kind=tensor_mpi_kind) :: pc_nnodes,me
 
     master    = .true.
@@ -2552,11 +2592,11 @@ contains
     select case(arr%itype)
     case(TT_DENSE,TT_REPLICATED)
        if(simpleord)then
-!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-!          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
-!#else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+#else
           call dcopy(int(nelms),fortarr,1,arr%elm1,1)
-!#endif
+#endif
        else
           select case(arr%mode)
           case(2)
@@ -2658,11 +2698,11 @@ contains
     case(TT_DENSE,TT_REPLICATED)
 
        if(simpleord)then
-!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-!          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
-!#else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+#else
           call dcopy(int(nelms),arr%elm1,1,fort,1)
-!#endif
+#endif
        else
 
           select case(arr%mode)

@@ -34,9 +34,13 @@ subroutine pdm_tensor_slave()
 #ifdef VAR_MPI
 
    comm = tensor_work_comm
+#ifdef TENSORS_IN_LSDALTON
    call time_start_phase(PHASE_COMM)
+#endif
    call PDM_TENSOR_SYNC(JOB,A,B,C,D) !Job is output
+#ifdef TENSORS_IN_LSDALTON
    call time_start_phase(PHASE_WORK)
+#endif
 
    SELECT CASE(JOB)
    case(JOB_TEST_FRAMEWORK)
@@ -101,11 +105,15 @@ subroutine pdm_tensor_slave()
    CASE(JOB_ADD_PAR)
       INT1 = A%mode
       call tensor_alloc_mem(intarr1,INT1)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_COMM)
+#endif
       call tensor_buffer(intarr1,INT1,root=master,comm=comm)
       call tensor_buffer(REAL1)
       call tensor_buffer(REAL2,finalize=.true.)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_WORK)
+#endif
 
       call tensor_add_par(REAL1,A,REAL2,B,intarr1)
 
@@ -114,14 +122,18 @@ subroutine pdm_tensor_slave()
    CASE(JOB_DMUL_PAR)
       INT1 = A%mode
       call tensor_alloc_mem(intarr1,INT1)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_COMM)
+#endif
       call tensor_buffer(intarr1,INT1,root=master,comm=comm)
       call tensor_buffer(REAL1)
       call tensor_buffer(REAL2)
       call tensor_buffer(INT2)
       call tensor_alloc_mem(realar1,INT2)
       call tensor_buffer(realar1,INT2,finalize=.true.)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_WORK)
+#endif
 
       call tensor_dmul_par(REAL1,A,REAL2,realar1,B,intarr1)
 
@@ -129,10 +141,14 @@ subroutine pdm_tensor_slave()
       call tensor_free_mem(realar1)
 
    CASE(JOB_HMUL_PAR)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_COMM)
+#endif
       call tensor_buffer(REAL1,root=master,comm=comm)
       call tensor_buffer(REAL2,finalize=.true.)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_WORK)
+#endif
       call tensor_hmul_par(REAL1,A,B,REAL2,C)
    CASE(JOB_CP_ARR)
       INT1 = A%mode
@@ -148,14 +164,18 @@ subroutine pdm_tensor_slave()
       REAL1 = get_cc_energy_parallel(A,B)
    CASE(JOB_GET_FRAG_CC_ENERGY)
       !the counterpart to this buffer is in get_fragment_cc_energy
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_COMM)
+#endif
       call tensor_buffer(INT1,root=master,comm=comm)
       call tensor_alloc_mem(intarr1,INT1)
       call tensor_buffer(intarr1,INT1)
       call tensor_buffer(INT2)
       call tensor_alloc_mem(intarr2,INT2)
       call tensor_buffer(intarr2,INT2,finalize=.true.)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_WORK)
+#endif
 
       REAL1 = get_fragment_cc_energy_parallel(A,B,C,INT1,INT2,intarr1,intarr2)
 
@@ -173,7 +193,9 @@ subroutine pdm_tensor_slave()
       write(*,*) 'Johannes SOS ene'
       REAL1 = get_sosex_cont_parallel(A,B)
    CASE(JOB_TENSOR_CONTRACT_SIMPLE)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_COMM)
+#endif
       call tensor_buffer(INT1,root=master,comm=comm)
 
       INT2 = INT1
@@ -188,7 +210,9 @@ subroutine pdm_tensor_slave()
       call tensor_buffer(REAL1)
       call tensor_buffer(REAL2)
       call tensor_buffer(LOG1, finalize = .true.)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_WORK)
+#endif
 
       if(LOG1)then
          call lspdm_tensor_contract_simple(REAL1,A,B,intarr1,intarr2,INT1,REAL2,C,intarr3,force_sync=LOG1)
@@ -200,7 +224,9 @@ subroutine pdm_tensor_slave()
       call tensor_free_mem(intarr2)
       call tensor_free_mem(intarr3)
    CASE(JOB_TENSOR_CONTRACT_BDENSE)
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_COMM)
+#endif
       call tensor_buffer(INT1,root=master,comm=comm)
       INT2 = INT1
       INT3 = B%mode
@@ -221,7 +247,9 @@ subroutine pdm_tensor_slave()
 
       call tensor_buffer(AUX%elm1,AUX%nelms, finalize=.true.)
 
+#ifdef TENSORS_IN_LSDALTON
       call time_start_phase(PHASE_WORK)
+#endif
 
       if(LOG1)then
          call lspdm_tensor_contract_simple(REAL1,A,AUX,intarr1,intarr2,INT1,REAL2,B,intarr3,force_sync=LOG1)

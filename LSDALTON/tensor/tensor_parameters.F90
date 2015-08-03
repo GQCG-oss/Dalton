@@ -109,7 +109,7 @@ module tensor_parameters_and_counters
    integer(kind=tensor_long_int), pointer :: tensor_counter_ext_mem => null()
 
    integer(kind=tensor_standard_int), parameter :: tensor_max_int_standard = 2147483640
-   integer(kind=tensor_long_int), parameter     :: l1                      = 1_tensor_long_int
+   integer(kind=tensor_long_int), parameter     :: long1                   = 1_tensor_long_int
    
    
 end module tensor_parameters_and_counters

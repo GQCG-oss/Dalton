@@ -5,10 +5,12 @@
 !> \date April 2013
 module lspdm_basic_module
 
-  use background_buffer_module, only: mem_is_background_buf_init
+#ifdef TENSORS_IN_LSDALTON
   use memory_handling, only: mem_pseudo_alloc, mem_pseudo_dealloc
+#endif
 
   use tensor_allocator
+  use tensor_bg_buf_module
   use tensor_type_def_module
   use tensor_mpi_operations_module
 #ifdef VAR_MPI
@@ -338,7 +340,6 @@ module lspdm_basic_module
      real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
      integer :: i,ierr
 
-     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
      !call memory_deallocate_array(arr)
      if(associated(arr%wi)) then
@@ -362,7 +363,6 @@ module lspdm_basic_module
 
      endif
 
-     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
   end subroutine memory_deallocate_window
 
@@ -374,11 +374,10 @@ module lspdm_basic_module
      real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
      integer :: n
 
-     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
      !call memory_deallocate_array(arr)
      if(associated(arr%wi)) then
-        call lsquit("ERROR(memory_allocate_window):array already initialized, please free first",-1)
+        call tensor_status_quit("ERROR(memory_allocate_window):array already initialized, please free first",737)
      endif
 
      if(present(nwins))then
@@ -396,7 +395,6 @@ module lspdm_basic_module
      tensor_counter_memory_in_use = tensor_counter_memory_in_use + vector_size
      !$OMP END CRITICAL
 
-     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
   end subroutine memory_allocate_window
 
@@ -423,7 +421,7 @@ module lspdm_basic_module
      integer(kind=tensor_mpi_kind), parameter :: master = 0
 
 #ifndef VAR_MPI
-     call lsquit("Do not use MPI-WINDOWS without MPI",lspdm_errout)
+     call tensor_status_quit("Do not use MPI-WINDOWS without MPI",848)
 #endif
      
      call tensor_get_size(lg_nnod)
@@ -443,7 +441,6 @@ module lspdm_basic_module
         call memory_allocate_window(arr)
      endif
 
-     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
      call tensor_alloc_mem(idx,arr%mode)
 
      call tensor_alloc_mem(arr%ti,arr%nlti)
@@ -570,9 +567,8 @@ module lspdm_basic_module
 
      if(counter-1/=arr%nlti)then
         print*," counted wrong of node",lg_me,lg_nnod,counter-1,arr%nlti,arr%ntiles,arr%offset
-        call lsquit("something went wrong with the numbering of tiles on the nodes",lspdm_errout)
+        call tensor_status_quit("something went wrong with the numbering of tiles on the nodes",lspdm_errout)
      endif
-     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
   end subroutine memory_allocate_tiles
 
@@ -586,14 +582,14 @@ module lspdm_basic_module
      real(tensor_dp)     :: tcpu1,twall1,tcpu2,twall2
      integer(kind=tensor_long_int) :: ne
 
-     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
-     if(bg.and..not.mem_is_background_buf_init())then
-        call lsquit("ERROR(memory_allocate_dummy): allocation in bg buffer requested, but not bg buffer is allocated",-1)
+     if(bg.and..not.tensor_bg_init())then
+        call tensor_status_quit("ERROR(memory_allocate_dummy): allocation in bg buffer &
+           &requested, but not bg buffer is allocated",488)
      endif
 
      if(associated(arr%dummy)) then
-        call lsquit("ERROR(memory_allocate_dummy):array already initialized, please free first",lspdm_errout)
+        call tensor_status_quit("ERROR(memory_allocate_dummy):array already initialized, please free first",lspdm_errout)
      endif
      if(present(nel))then
         nelms=nel
@@ -614,7 +610,6 @@ module lspdm_basic_module
      tensor_counter_memory_in_use = tensor_counter_memory_in_use + vector_size
      !$OMP END CRITICAL
 
-     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
   end subroutine memory_allocate_dummy
 
@@ -625,7 +620,6 @@ module lspdm_basic_module
      real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
      logical :: bg
 
-     call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
      if(associated(arr%dummy)) then
 
@@ -640,7 +634,6 @@ module lspdm_basic_module
         !$OMP END CRITICAL
      end if
 
-     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
 
   end subroutine memory_deallocate_dummy
