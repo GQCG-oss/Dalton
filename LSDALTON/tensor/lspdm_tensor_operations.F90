@@ -7,6 +7,10 @@
 module lspdm_tensor_operations_module
   use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
+#ifdef TENSORS_IN_LSDALTON
+  use dec_workarounds_module
+#endif
+
   use tensor_parameters_and_counters
   use tensor_mpi_binding_module
   use tensor_bg_buf_module
