@@ -101,7 +101,6 @@ CONTAINS
     call mat_mul(CMO,SC,'T','n',1E0_realk,0E0_realk,CSC)
     call mat_identity(unitmat)
     call mat_daxpy(-1E0_realk,unitmat,CSC)
-print*, "mat_sqnorm2(CSC)", mat_sqnorm2(CSC)/CSC%nrow
     IF(ABS(mat_sqnorm2(CSC)/CSC%nrow).GT.1.0E-15_realk)THEN
        write(ls%lupri,*) '  %LOC% WARNING: ORBITALS NOT ORTHONORMAL!!!' 
     ENDIF
@@ -188,7 +187,7 @@ print*, "mat_sqnorm2(CSC)", mat_sqnorm2(CSC)/CSC%nrow
        call PFM_localize_davidson(CFG,CMO,m,ls,norb)
        return
     else
-       call charge_localize_davidson(CFG,CMO,m,ls)
+       call charge_localize_davidson(CFG,CMO,m,ls,norb)
     end if
 
 
