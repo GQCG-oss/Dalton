@@ -33,8 +33,8 @@
     implicit none
     integer,intent(in) ::        d1,d2,d3,d4
     real(tensor_dp), intent(in)::    pre1,pre2
-    real(tensor_dp), intent(in) ::    array_in(i8*d1*d2*d3*d4)
-    real(tensor_dp), intent(inout) :: array_out(i8*d1*d2*d3*d4)
+    real(tensor_dp), intent(in) ::    array_in(l1*d1*d2*d3*d4)
+    real(tensor_dp), intent(inout) :: array_out(l1*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
 
     integer, dimension(4) :: new_order,order1,order2,dims
@@ -45,17 +45,16 @@
     integer :: di3(3), di2(2)
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     integer :: vs
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_4d): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
     endif
     vs = d1*d2*d3*d4
 
-    call LSTIMER('START',tcpu1,twall1,-1)
     dims(1)=d1
     dims(2)=d2
     dims(3)=d3
@@ -215,7 +214,6 @@
     end select TypeOfReordering
 
 
-    call LSTIMER('START',tcpu2,twall2,-1)
   end subroutine array_reorder_4d
 
 #ifdef VAR_REAL_SP
@@ -224,9 +222,9 @@
   subroutine array_reorder_4d_sp(pre1,array_in,d1,d2,d3,d4,order,pre2,array_out)
     implicit none
     integer,intent(in) ::        d1,d2,d3,d4
-    real(tensor_sp), intent(in)::    array_in(i8*d1*d2*d3*d4)
+    real(tensor_sp), intent(in)::    array_in(l1*d1*d2*d3*d4)
     real(tensor_dp), intent(in) :: pre1,pre2
-    real(tensor_sp), intent(inout):: array_out(i8*d1*d2*d3*d4)
+    real(tensor_sp), intent(inout):: array_out(l1*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
 
     integer, dimension(4) :: new_order,order1,order2,dims
@@ -237,21 +235,20 @@
     integer :: di3(3), di2(2)
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     integer :: vec_size
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
     real(tensor_sp) :: pre1_sp,pre2_sp
 
     pre1_sp = real(pre1,kind=4)
     pre2_sp = real(pre2,kind=4)
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_4d_sp): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
     endif
     vec_size = d1*d2*d3*d4
 
-    call LSTIMER('START',tcpu1,twall1,-1)
     dims(1)=d1
     dims(2)=d2
     dims(3)=d3
@@ -411,7 +408,6 @@
     end select TypeOfReordering
 
 
-    call LSTIMER('START',tcpu2,twall2,-1)
   end subroutine array_reorder_4d_sp
 #endif
 
@@ -424,8 +420,8 @@
     implicit none
 
     integer,intent(in) ::        d1,d2,d3,d4
-    real(tensor_dp), intent(in)::    array_in(i8*d1*d2*d3*d4),pre1,pre2
-    real(tensor_dp), intent(inout):: array_out(i8*d1*d2*d3*d4)
+    real(tensor_dp), intent(in)::    array_in(l1*d1*d2*d3*d4),pre1,pre2
+    real(tensor_dp), intent(inout):: array_out(l1*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
     integer(kind=acc_handle_kind), intent(in) :: async_idx
     integer(kind=acc_handle_kind), intent(in), optional :: async_wait
@@ -437,12 +433,12 @@
     integer :: order_type,m,n
     integer :: di3(3), di2(2)
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
     logical :: wait_arg
     integer(kind=acc_handle_kind) :: async_idx2
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_4d_acc): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
@@ -457,7 +453,6 @@
        async_idx2 = async_idx
     endif
 
-    call LSTIMER('START',tcpu1,twall1,-1)
     dims(1)=d1
     dims(2)=d2
     dims(3)=d3
@@ -604,7 +599,6 @@
     end select TypeOfReordering4d_acc
 
 
-    call LSTIMER('START',tcpu2,twall2,-1)
   end subroutine array_reorder_4d_acc
 #endif
 
@@ -617,9 +611,9 @@
     implicit none
 
     integer,intent(in) ::        d1,d2,d3,d4
-    real(tensor_sp), intent(in)::    array_in(i8*d1*d2*d3*d4)
+    real(tensor_sp), intent(in)::    array_in(l1*d1*d2*d3*d4)
     real(tensor_dp), intent(in) :: pre1,pre2
-    real(tensor_sp), intent(inout):: array_out(i8*d1*d2*d3*d4)
+    real(tensor_sp), intent(inout):: array_out(l1*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
     integer(kind=acc_handle_kind), intent(in) :: async_idx
     integer(kind=acc_handle_kind), intent(in), optional :: async_wait
@@ -631,7 +625,7 @@
     integer :: order_type,m,n
     integer :: di3(3), di2(2)
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
     logical :: wait_arg
     integer(kind=acc_handle_kind) :: async_idx2
     real(tensor_sp) :: pre1_sp,pre2_sp
@@ -640,7 +634,7 @@
     pre2_sp = real(pre2,kind=4)
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_4d_sp_acc): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
@@ -655,7 +649,6 @@
        async_idx2 = async_idx
     endif
 
-    call LSTIMER('START',tcpu1,twall1,-1)
     dims(1)=d1
     dims(2)=d2
     dims(3)=d3
@@ -802,7 +795,6 @@
     end select TypeOfReordering4d_acc
 
 
-    call LSTIMER('START',tcpu2,twall2,-1)
   end subroutine array_reorder_4d_sp_acc
 #endif
 
@@ -812,8 +804,8 @@
   subroutine array_reorder_3d(pre1,array_in,d1,d2,d3,order,pre2,array_out)
     implicit none
     integer,intent(in) ::        d1,d2,d3
-    real(tensor_dp), intent(in)::    array_in(i8*d1*d2*d3),pre1,pre2
-    real(tensor_dp), intent(inout):: array_out(i8*d1*d2*d3)
+    real(tensor_dp), intent(in)::    array_in(l1*d1*d2*d3),pre1,pre2
+    real(tensor_dp), intent(inout):: array_out(l1*d1*d2*d3)
     integer, dimension(3), intent(in) :: order
 
     integer, dimension(3) :: new_order,order1,order2,dims
@@ -822,13 +814,12 @@
     integer :: order_type
     integer :: vec_size
     integer :: di2(2)
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
 
-    call LSTIMER('START',tcpu1,twall1,-1)
 
     vec_size64 = int(d1*d2*d3,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_3d): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
@@ -887,7 +878,6 @@
 
     end select TypeOfReordering
 
-    call LSTIMER('START',tcpu2,twall2,-1)
 
   end subroutine array_reorder_3d
 
@@ -897,9 +887,9 @@
   subroutine array_reorder_3d_sp(pre1,array_in,d1,d2,d3,order,pre2,array_out)
     implicit none
     integer,intent(in) ::        d1,d2,d3
-    real(tensor_sp), intent(in)::    array_in(i8*d1*d2*d3)
+    real(tensor_sp), intent(in)::    array_in(l1*d1*d2*d3)
     real(tensor_dp), intent(in) :: pre1,pre2
-    real(tensor_sp), intent(inout):: array_out(i8*d1*d2*d3)
+    real(tensor_sp), intent(inout):: array_out(l1*d1*d2*d3)
     integer, dimension(3), intent(in) :: order
 
     integer, dimension(3) :: new_order,order1,order2,dims
@@ -908,17 +898,16 @@
     integer :: order_type
     integer :: vec_size
     integer :: di2(2)
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     real(tensor_sp) :: pre1_sp,pre2_sp
 
     pre1_sp = real(pre1,kind=4)
     pre2_sp = real(pre2,kind=4)
 
-    call LSTIMER('START',tcpu1,twall1,-1)
 
     vec_size64 = int(d1*d2*d3,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_3d_sp): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
@@ -977,7 +966,6 @@
 
     end select TypeOfReordering
 
-    call LSTIMER('START',tcpu2,twall2,-1)
 
   end subroutine array_reorder_3d_sp
 #endif
@@ -991,8 +979,8 @@
     implicit none
 
     integer,intent(in) ::        d1,d2,d3
-    real(tensor_dp), intent(in)::    array_in((i8*d1)*d2*d3),pre1,pre2
-    real(tensor_dp), intent(inout):: array_out((i8*d1)*d2*d3)
+    real(tensor_dp), intent(in)::    array_in((l1*d1)*d2*d3),pre1,pre2
+    real(tensor_dp), intent(inout):: array_out((l1*d1)*d2*d3)
     integer, dimension(3), intent(in) :: order
     integer(kind=acc_handle_kind), intent(in) :: async_idx
     integer(kind=acc_handle_kind), intent(in), optional :: async_wait
@@ -1002,7 +990,7 @@
     integer :: aa,bb,cc
     integer :: order_type
     integer :: di2(2)
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     logical :: wait_arg
     integer(kind=acc_handle_kind) :: async_idx2
@@ -1017,13 +1005,12 @@
     endif
 
     vec_size64 = int(d1*d2*d3,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_3d_acc): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
     endif
 
-    call LSTIMER('START',tcpu1,twall1,-1)
 
     dims(1)=d1
     dims(2)=d2
@@ -1069,7 +1056,6 @@
 
     end select TypeOfReordering3d_acc
 
-    call LSTIMER('START',tcpu2,twall2,-1)
 
   end subroutine array_reorder_3d_acc
 #endif
@@ -1083,9 +1069,9 @@
     implicit none
 
     integer,intent(in) ::        d1,d2,d3
-    real(tensor_sp), intent(in)::    array_in((i8*d1)*d2*d3)
+    real(tensor_sp), intent(in)::    array_in((l1*d1)*d2*d3)
     real(tensor_dp), intent(in) :: pre1,pre2
-    real(tensor_sp), intent(inout):: array_out((i8*d1)*d2*d3)
+    real(tensor_sp), intent(inout):: array_out((l1*d1)*d2*d3)
     integer, dimension(3), intent(in) :: order
     integer(kind=acc_handle_kind), intent(in) :: async_idx
     integer(kind=acc_handle_kind), intent(in), optional :: async_wait
@@ -1095,7 +1081,7 @@
     integer :: aa,bb,cc
     integer :: order_type
     integer :: di2(2)
-    integer(kind=long) :: vec_size64
+    integer(kind=tensor_long_int) :: vec_size64
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
     logical :: wait_arg
     integer(kind=acc_handle_kind) :: async_idx2
@@ -1114,13 +1100,12 @@
     endif
 
     vec_size64 = int(d1*d2*d3,kind=8)
-    if(vec_size64>MAXINT)then
+    if(vec_size64>tensor_max_int)then
        call lsquit('ERROR(array_reorder_3d_sp_acc): size of array cannot be &
                     &described by current integer type, please try another &
                     &compilation or fix this routine', -1)
     endif
 
-    call LSTIMER('START',tcpu1,twall1,-1)
 
     dims(1)=d1
     dims(2)=d2
@@ -1167,7 +1152,6 @@
 
     end select TypeOfReordering3d_acc
 
-    call LSTIMER('START',tcpu2,twall2,-1)
 
   end subroutine array_reorder_3d_sp_acc
 #endif
@@ -1178,8 +1162,8 @@
   subroutine array_reorder_2d(pre1,array_in,d1,d2,order,pre2,array_out)
      implicit none
      integer,intent(in) ::        d1,d2
-     real(tensor_dp), intent(in)::    array_in((i8*d1)*d2),pre1,pre2
-     real(tensor_dp), intent(inout):: array_out((i8*d1)*d2)
+     real(tensor_dp), intent(in)::    array_in((l1*d1)*d2),pre1,pre2
+     real(tensor_dp), intent(inout):: array_out((l1*d1)*d2)
      integer, dimension(2), intent(in) :: order
      if (order(1) == 1 .and. order(2) == 2 )then
         if (pre2 /= 0.0E0_tensor_dp) then
@@ -1200,20 +1184,18 @@
   subroutine mat_transpose(r,c,p1,x,p2,y)
     implicit none
     integer,intent(in) ::        r,c
-    real(tensor_dp), intent(in)::    x((i8*r)*c),p1,p2
-    real(tensor_dp), intent(inout):: y((i8*c)*r)
+    real(tensor_dp), intent(in)::    x((l1*r)*c),p1,p2
+    real(tensor_dp), intent(inout):: y((l1*c)*r)
 
     integer, dimension(2) :: dims
     real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
 
-    call LSTIMER('START',tcpu1,twall1,-1)
 
     dims(1)=r
     dims(2)=c
 
     call manual_21_reordering_dp(dims,p1,x,p2,y)
 
-    call LSTIMER('START',tcpu2,twall2,-1)
 
   end subroutine mat_transpose
 

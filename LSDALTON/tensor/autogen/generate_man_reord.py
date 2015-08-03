@@ -780,8 +780,6 @@ def write_main_header(f,now,names,args,tensordir,minr,maxr,interface_types):
    for name in names:
       f.write("  use "+name+"_module\n")
 
-   f.write("  use LSTIMING\n\n")
-
    #write interfaces
    #SPECIFY THE ORDER OF REODERINGS
    for idx in range(maxr-minr+1):
@@ -891,7 +889,7 @@ module reorder_tester_module\n\
     maxperms = factorial(mode)
     for perm in permutations(list(xrange(mode))):
       testcase="\
-          call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
           !res = sto\n\
           call dcopy("
@@ -899,7 +897,7 @@ module reorder_tester_module\n\
         testcase += "n"+abc[i]+"*"
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
-          call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           call array_reorder_"+str(mode)+"d(pr1,in1,"
       for i in range(mode):
         testcase += "n"+abc[i]+","
@@ -907,7 +905,7 @@ module reorder_tester_module\n\
       for i in range(mode):
         testcase += str(perm[i]+1)+","
       testcase = testcase[0:-1] +"],pr2,res)\n\
-          call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
           if(rigorous)then\n"
       ofstr="            "
       for i in range(mode):
@@ -947,7 +945,7 @@ module reorder_tester_module\n\
         ofstr = ofstr[0:-2]
       testcase+="          endif\n"
       testcase +="\
-          call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
           write (LUPRI,&\n\
           &'(I1,I1,\"-"
       for i in range(mode):
@@ -1015,7 +1013,7 @@ module reorder_tester_module\n\
 
       #TEST THE FROM FORT REORDERINGS
       testcase="\
-          call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
           !res = sto\n\
           call dcopy("
@@ -1023,7 +1021,7 @@ module reorder_tester_module\n\
         testcase += "n"+abc[i]+"*"
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
-          call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           do tile_idx=1,3\n            call tile_from_fort(1.0E0_tensor_dp,in1,["
       for i in range(mode):
         testcase += "n"+abc[i]+","
@@ -1051,7 +1049,7 @@ module reorder_tester_module\n\
       testcase = testcase [0:-1] + "])\n          enddo\n"
 
       testcase +="\
-          call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
           if(rigorous)then\n"
       ofstr="            "
       for i in range(mode):
@@ -1091,7 +1089,7 @@ module reorder_tester_module\n\
         ofstr = ofstr[0:-2]
       testcase+="          endif\n"
       testcase +="\
-          call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
           write (LUPRI,&\n\
           &'(I1,I1,\"-"
       for i in range(mode):
@@ -1100,7 +1098,7 @@ module reorder_tester_module\n\
     
       #TEST THE IN_FORT REORDERINGS
       testcase+="\
-          call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
           !res = sto\n\
           call dcopy("
@@ -1108,7 +1106,7 @@ module reorder_tester_module\n\
         testcase += "n"+abc[i]+"*"
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
-          call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           do tile_idx=1,3\n            call tile_from_fort(1.0E0_tensor_dp,sto,["
       for i in range(mode):
         testcase += "n"+abc[i]+","
@@ -1146,7 +1144,7 @@ module reorder_tester_module\n\
       for i in range(mode):
           testcase += str(i+1)+","
       testcase = testcase[0:-1] + "])\n          enddo\n\
-          call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
           if(rigorous)then\n"
       ofstr="            "
       for i in range(mode):
@@ -1186,7 +1184,7 @@ module reorder_tester_module\n\
         ofstr = ofstr[0:-2]
       testcase+="          endif\n"
       testcase +="\
-          call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
           write (LUPRI,&\n\
           &'(I1,I1,\"-"
       for i in range(mode):

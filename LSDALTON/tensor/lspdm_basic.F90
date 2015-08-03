@@ -266,7 +266,7 @@ module lspdm_basic_module
      !> array for which nels shoulb be calculated
      type(tensor),intent(in) :: arr
      !> global tile index for which nels should be calculated
-     integer(kind=long), intent(in) :: orig_addr(arr%mode)
+     integer(kind=tensor_long_int), intent(in) :: orig_addr(arr%mode)
      !> return value, number of elements in the desired tile
      integer :: nels(arr%mode)
      integer ::j
@@ -410,7 +410,7 @@ module lspdm_basic_module
      logical, intent(in) :: bg
      integer(kind=tensor_long_int) :: vector_size
      real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
-     integer(kind=long) :: i,counter
+     integer(kind=tensor_long_int) :: i,counter
      integer :: j,loc_idx
      integer, pointer :: idx(:)
      integer(kind=tensor_mpi_kind) :: ibuf(2)
