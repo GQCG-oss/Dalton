@@ -689,7 +689,13 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            ! read orbitals
            lun = -1
            call mat_init(CMO,nbast,nbast)
-           CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
+           if (config%davidOrbLoc%orbloc_restart) then
+               WRITE(ls%lupri,'(a)') ' %LOC% Reading from "localized_orbitals.restart"'
+               CALL LSOPEN(lun,'localized_orbitals.restart','unknown','UNFORMATTED')
+           else
+               WRITE(ls%lupri,'(a)') ' %LOC% Reading from "orbitals_in.u"'
+               CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
+           endif
            call mat_read_from_disk(LUN,cmo,OnMaster)
            call LSclose(LUN,'KEEP')
            if (config%decomp%cfg_mlo) then

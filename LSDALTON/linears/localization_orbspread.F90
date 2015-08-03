@@ -58,7 +58,6 @@ contains
     call mem_dealloc(tmp)
 
 
-
     call mem_alloc(max_orbspreads,CFG%max_macroit)
     call mat_init(X,norb,norb)
     call mat_init(G,norb,norb)
@@ -157,7 +156,7 @@ contains
           write(CFG%lupri,'(a)') '  %LOC% the user manual under section **LOCALIZE ORBITALS      '
           write(CFG%lupri,'(a)') '  %LOC% and keyword .LOOSE MICRO THRESH                              ' 
           call lsquit(' %LOC% Cannot converge micro iterations. ', CFG%lupri)
-       elseif (oVal-old_oVal < 0) then
+       elseif (oVal-old_oVal > 0.0) then
           cycle
        endif
 
@@ -180,8 +179,8 @@ contains
           call lsopen(lun,'localized_orbitals.restart','unknown','UNFORMATTED')
           call mat_write_to_disk(lun,CMOall,OnMaster)
           call LSclose(LUN,'KEEP')
-          counter = 0
           write(CFG%lupri,'(a)') '  %LOC% temporary orbitals written to localized_orbitals.restart'
+          counter = 0
        endif
 
 
