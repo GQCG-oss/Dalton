@@ -182,7 +182,7 @@ print*, "mat_sqnorm2(CSC)", mat_sqnorm2(CSC)/CSC%nrow
     call davidson_reset(CFG)
 
     if (CFG%orbspread) then
-       call orbspread_localize_davidson(CFG,CMO,m,ls)
+       call orbspread_localize_davidson(CFG,CMO,m,ls,norb)
        return
     elseif (CFG%PFM) then
        call PFM_localize_davidson(CFG,CMO,m,ls,norb)

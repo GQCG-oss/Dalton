@@ -224,20 +224,36 @@ contains
 
 !> \brief Routine that drives macro iterations for localizing using SM
 !> \author Ida-Marie Hoeyvik
-  subroutine orbspread_localize_davidson(CFG,CMO,m,ls)
+  subroutine orbspread_localize_davidson(CFG,CMOall,m,ls,norb)
     implicit none
     type(RedSpaceItem)           :: CFG
-    type(Matrix) , intent(inout ):: CMO
+    type(Matrix) , intent(inout ):: CMOall
     TYPE(lsitem) , intent(inout) :: ls
-    integer      , intent(in)    :: m
-    type(Matrix) :: CMOsav
+    integer      , intent(in)    :: m,norb
+    type(Matrix) :: CMOsav, CMO
     type(Matrix), target  ::  X, P, G
-    integer :: norb, i,imx,idamax,iter_number
+    integer ::  i,imx,idamax,iter_number
     real(realk) :: nrmG, oVal,old_oVal
     real(realk) :: nrm_thresh,stepsize
     real(realk),pointer :: max_orbspreads(:)  
+    real(realk),pointer :: tmp(:)
+    integer :: lun, counter,nbas
+    logical :: onmaster
 
-    norb=CMO%ncol
+        !initializations 
+    OnMaster=.true.
+    nbas=CMOall%nrow
+    counter=0
+
+    ! Extract coefficients to be localized
+    call mem_alloc(tmp,nbas*norb)
+    call mat_init(CMO,nbas,norb)
+    ! extract matrix from CMOall(1,offset)
+    call mat_retrieve_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+    call mat_set_from_full(tmp,1.0_realk,CMO)
+    call mem_dealloc(tmp)
+
+
     call mem_alloc(max_orbspreads,CFG%max_macroit)
     call mat_init(X,norb,norb)
     call mat_init(G,norb,norb)
@@ -353,6 +369,22 @@ contains
        !new gradient
        call orbspread_gradx(G,norb,CFG%orbspread_inp)
        call orbspread_precond_matrix2(CFG%orbspread_inp,P,norb)
+    
+       !make restart file
+       counter = counter + 1
+       if (counter == CFG%orbital_save_interval) then
+          call mem_alloc(tmp,nbas*norb)
+          call mat_to_full(CMO,1.0_realk,tmp)
+          call mat_create_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+          call mem_dealloc(tmp)
+          lun = -1
+          call lsopen(lun,'localized_orbitals.restart','unknown','UNFORMATTED')
+          call mat_write_to_disk(lun,CMOall,OnMaster)
+          call LSclose(LUN,'KEEP')
+          counter = 0
+          write(CFG%lupri,'(a)') '  %LOC% temporary orbitals written to localized_orbitals.restart'
+       endif
+
 
     enddo
     if (iter_number==CFG%max_macroit) then
@@ -370,6 +402,14 @@ contains
        write(CFG%lupri,'(a)') '  %LOC%  in user manual.'
        write(CFG%lupri,'(a)') '  %LOC% '
     endif
+   
+    !Put localized block into full CMO matrix
+    call mem_alloc(tmp,nbas*norb)
+    call mat_to_full(CMO,1.0_realk,tmp)
+    call mat_free(CMO)
+    call mat_create_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+    call mem_dealloc(tmp)
+
 
     call mem_dealloc(max_orbspreads)
     call orbspread_free(CFG%orbspread_inp)
