@@ -50,10 +50,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    type(matrix),intent(in) :: Dmat
    !> MP2-F12 correlation energy
    real(realk),intent(inout) :: mp2f12_energy
-   !> Canonical MP2 correlation energy
-   real(realk) :: mp2_energy
    !local variables
    integer :: nbasis,nocc,nvirt,ncabsAO,ncabsMO
+   !> Canonical MP2 correlation energy
+   real(realk) :: mp2_energy
    real(realk) :: E21,Econt(1),E23
    real(realk) :: ExchangeF12V1,CoulombF12V1
    real(realk) :: ExchangeF12X1,CoulombF12X1
@@ -107,8 +107,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    endif
  
    E_21C = 0.0E0_realk
-   MP2_energy = 0.0E0_realk
-
+   MP2_energy = mp2f12_energy
+   mp2f12_energy = 0.0E0_realk
 
    lupri = DECinfo%output
 #ifdef VAR_TIME
@@ -262,7 +262,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    ! Calculate the Fitting Coefficients (alpha|F|ij)
    use_bg_buf = .FALSE.
-   mp2f12_energy = 0.0E0_realk 
    intspec(4) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
    intspec(5) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&

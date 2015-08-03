@@ -90,6 +90,7 @@ contains
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
              call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr_rimp2)       
+             Ecorr_rimp2f12 = Ecorr_rimp2 !in order to provide full_canonical_rimp2_f12 the MP2 energy
              call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr_rimp2f12)
              Ecorr = Ecorr_rimp2 + Ecorr_rimp2f12
              write(DECinfo%output,'(/,a)') ' ================================================ '
