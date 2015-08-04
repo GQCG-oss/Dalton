@@ -5,10 +5,6 @@
 !> \date April 2013
 module lspdm_basic_module
 
-#ifdef TENSORS_IN_LSDALTON
-  use memory_handling, only: mem_pseudo_alloc, mem_pseudo_dealloc
-#endif
-
   use tensor_allocator
   use tensor_bg_buf_module
   use tensor_type_def_module
@@ -528,11 +524,7 @@ module lspdm_basic_module
                  tooo = from + arr%ti(loc_idx)%e - 1
                  arr%ti(loc_idx)%t => arr%dummy(from:tooo)
               else
-                 if(bg)then
-                    call mem_pseudo_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%e)
-                 else
-                    call tensor_alloc_mem(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
-                 endif
+                 call tensor_alloc_mem(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e,bg=bg)
                  vector_size = int(arr%ti(loc_idx)%e*tensor_dp,kind=tensor_long_int)
                  !$OMP CRITICAL
                  tensor_counter_tiled_a_mem = tensor_counter_tiled_a_mem + vector_size

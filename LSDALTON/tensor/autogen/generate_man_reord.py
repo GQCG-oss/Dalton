@@ -774,6 +774,7 @@ def write_main_header(f,now,names,args,tensordir,minr,maxr,interface_types):
 
    f.write("module reorder_frontend_module\n")
    f.write("  use tensor_parameters_and_counters\n")
+   f.write("  use tensor_error_handler\n")
    f.write("  use tensor_allocator\n")
    f.write("  use get_idx_mod\n")
    

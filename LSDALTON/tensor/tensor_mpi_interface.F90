@@ -231,7 +231,7 @@ module tensor_mpi_interface_module
        else if(typeoflock=='s')then
           CALL mpi_win_lock(MPI_LOCK_SHARED,dest,assert,win,ierr)
        else
-          call lsquit("ERROR(tensor_mpi_win_lock): no valid lock type selected",-1)
+          call tensor_status_quit("ERROR(tensor_mpi_win_lock): no valid lock type selected",636)
        endif
 
        if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_lock): failed",220)
@@ -323,7 +323,7 @@ module tensor_mpi_interface_module
 #ifdef VAR_HAVE_MPI3
        CALL mpi_win_unlock_all(win,ierr)
 #else
-       call lsquit("ERROR(tensor_mpi_win_unlock_all): this routine is MPI 3 only ",-1)
+       call tensor_status_quit("ERROR(tensor_mpi_win_unlock_all): this routine is MPI 3 only ",636)
 #endif
 
        if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_unlock_all): failed",220)

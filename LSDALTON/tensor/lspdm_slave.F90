@@ -377,7 +377,7 @@ subroutine pdm_tensor_slave()
       call tensor_set_dil_backend_true(.false.)
 
    CASE DEFAULT
-        call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)
+        call tensor_status_quit("ERROR(pdm_tensor_slave): Unknown job",37)
    END SELECT
 #endif
 end subroutine pdm_tensor_slave
