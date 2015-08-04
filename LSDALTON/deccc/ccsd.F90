@@ -1493,7 +1493,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      scheme=2 !``DIL: remove
 #endif
 
-     if(print_debug) call print_norm(u2," NORM(u2)    :",print_on_rank=0)
+     if(print_debug) call print_norm(u2," NORM(u2)    :",print_=(lg_me==0))
 
      call mem_alloc(Had,nv*nb)
      call mem_alloc(Gbi,nb*no)
@@ -1583,8 +1583,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call get_tpl_and_tmi(t2,tpl,tmi)
 
      if(print_debug)then
-        call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
-        call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
+        call print_norm(tpl," NORM(tpl)   :",print_=(lg_me==0))
+        call print_norm(tmi," NORM(tmi)   :",print_=(lg_me==0))
      endif
 
 #ifdef VAR_MPI
@@ -3431,10 +3431,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      MemFree = MemFreeMin * nnod
 
      if(print_debug)then
-        call print_norm(xo," NORM(xo)    :",print_on_rank = 0)
-        call print_norm(xv," NORM(xv)    :",print_on_rank = 0)
-        call print_norm(yo," NORM(yo)    :",print_on_rank = 0)
-        call print_norm(yv," NORM(yv)    :",print_on_rank = 0)
+        call print_norm(xo," NORM(xo)    :",print_ = (me==0))
+        call print_norm(xv," NORM(xv)    :",print_ = (me==0))
+        call print_norm(yo," NORM(yo)    :",print_ = (me==0))
+        call print_norm(yv," NORM(yv)    :",print_ = (me==0))
      endif
 
      if(master) then
@@ -3503,8 +3503,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call tensor_zero(tmi)
 
      if(print_debug)then
-        call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
-        call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
+        call print_norm(tpl," NORM(tpl)   :",print_=(me==0))
+        call print_norm(tmi," NORM(tmi)   :",print_=(me==0))
      endif
 
      call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
@@ -3516,7 +3516,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      if( print_debug )then
-        call print_norm(u2," NORM(u2)    :",print_on_rank=0)
+        call print_norm(u2," NORM(u2)    :",print_=(me==0))
      endif
 
      print *,"alloc 1"
@@ -4626,10 +4626,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_LSDEBUG
      if(print_debug)then
-        call print_norm(Gbi,    " NORM(Gbi)       :",print_on_rank=0)
-        call print_norm(Had,    " NORM(Had)       :",print_on_rank=0)
-        call print_norm(omega2, " NORM(omega2 s-o):",print_on_rank=0)
-        call print_norm(govov,  " NORM(govov s-o) :",print_on_rank=0)
+        call print_norm(Gbi,    " NORM(Gbi)       :",print_=(me==0))
+        call print_norm(Had,    " NORM(Had)       :",print_=(me==0))
+        call print_norm(omega2, " NORM(omega2 s-o):",print_=(me==0))
+        call print_norm(govov,  " NORM(govov s-o) :",print_=(me==0))
      endif
 #endif
 
@@ -5368,7 +5368,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: dimMO, nMObatch, ntot,os,vs
     integer(kind=8) :: dummy, nbg_buf
     logical :: mo_ccsd, local_moccsd, mpi_split, bg
-    integer :: bs
+    integer :: bs, nnod
+    nnod=1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
 
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
@@ -5414,7 +5418,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     if (.not.mo_ccsd) then 
       iter=1
-      call get_symm_tensor_segmenting_simple(nocc,nvir,os,vs)
+      call get_symm_tensor_segmenting_simple(nnod,nocc,nvir,os,vs,DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,MyFragment%nbasis,bs,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
@@ -8090,6 +8094,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(mpi_realk) :: w1
      type(tensor) :: omega2,govov,gvvooa,gvoova
      character(tensor_MSG_LEN) :: msg
+     integer(kind=long) :: me
+
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+#endif
 
 #ifdef VAR_LSDEBUG
      select case(print_nr)
@@ -8105,7 +8115,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-           call print_norm(omega2," NORM(omega2):",print_on_rank = 0)
+           call print_norm(omega2," NORM(omega2):",print_ = (me==0))
 
            !DEBUG PRINT NORM GOVOV
 #ifdef VAR_MPI
@@ -8117,7 +8127,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-            call print_norm(govov," NORM(govov):",print_on_rank = 0)
+            call print_norm(govov," NORM(govov):",print_ = (me==0))
 
            if (ccmodel>MODEL_CC2) then
               !DEBUG PRINT NORM GVVOO
@@ -8130,7 +8140,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  endif
               endif
 #endif
-              call print_norm(gvvooa," NORM(gvvoo):",print_on_rank = 0)
+              call print_norm(gvvooa," NORM(gvvoo):",print_ = (me==0))
                
               !DEBUG PRINT NORM GVOOV
 #ifdef VAR_MPI
@@ -8142,7 +8152,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  endif
               endif
 #endif
-              call print_norm(gvoova," NORM(gvoov):",print_on_rank = 0)
+              call print_norm(gvoova," NORM(gvoov):",print_ = (me==0))
            endif
         endif
      case(2)
@@ -8156,7 +8166,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-           call print_norm(omega2," NORM(omega2 after B2.2):",print_on_rank = 0)
+           call print_norm(omega2," NORM(omega2 after B2.2):",print_ = (me==0))
         endif
      case(3)
         if(print_debug.and.ccmodel>MODEL_CC2)then
@@ -8169,7 +8179,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-           call print_norm(omega2," NORM(omega2 after CND):",print_on_rank=0)
+           call print_norm(omega2," NORM(omega2 after CND):",print_=(me==0))
         endif
      case default
         print *,"WARNING(ccsd_debug_print):unknown debug print selected"

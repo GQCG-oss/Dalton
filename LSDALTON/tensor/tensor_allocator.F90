@@ -1,11 +1,14 @@
 module tensor_allocator
    use, intrinsic :: iso_c_binding
 
+#ifdef TENSORS_IN_LSDALTON
    use background_buffer_module, only: mem_is_background_buf_init
    use memory_handling, only: mem_pseudo_alloc, mem_pseudo_dealloc
+#endif
 
    use tensor_error_handler
    use tensor_parameters_and_counters
+   use tensor_bg_buf_module
    use tensor_mpi_binding_module
    use tensor_type_def_module
 
@@ -139,7 +142,7 @@ module tensor_allocator
       
       n = n1
       if(bg_)then
-         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp,stat=stat)
+         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp,buf_tensor_dp,stat=stat)
       else
          call tensor_allocate_tensor_dp_basic(p,n,tensor_mem_idx_tensor_dp,stat=stat)
       endif
@@ -158,7 +161,7 @@ module tensor_allocator
       
       n = n1
       if(bg_)then
-         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp,stat=stat)
+         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp,buf_tensor_dp,stat=stat)
       else
          call tensor_allocate_tensor_dp_basic(p,n,tensor_mem_idx_tensor_dp,stat=stat)
       endif
@@ -178,7 +181,7 @@ module tensor_allocator
       
       n = n1
       if(bg_)then
-         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
+         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp_mpi,buf_tensor_dp,stat=stat)
          c = c_loc(p(1))
       else
          call tensor_allocate_tensor_dp_basic_mpi(p,c,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
@@ -199,7 +202,7 @@ module tensor_allocator
       
       n = n1
       if(bg_)then
-         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
+         call tensor_allocate_tensor_dp_basic_bg(p,n,tensor_mem_idx_tensor_dp_mpi,buf_tensor_dp,stat=stat)
          c = c_loc(p(1))
       else
          call tensor_allocate_tensor_dp_basic_mpi(p,c,n,tensor_mem_idx_tensor_dp_mpi,stat=stat)
@@ -308,7 +311,7 @@ module tensor_allocator
       if(present(bg)) bg_ = bg
       
       if(bg_)then
-         call tensor_free_tensor_dp_basic_bg(p,tensor_mem_idx_tensor_dp,stat=stat)
+         call tensor_free_tensor_dp_basic_bg(p,tensor_mem_idx_tensor_dp,buf_tensor_dp,stat=stat)
       else
          call tensor_free_tensor_dp_basic(p,tensor_mem_idx_tensor_dp,stat=stat)
       endif
@@ -329,7 +332,7 @@ module tensor_allocator
          !   call tensor_status_quit("ERROR(tensor_free_tensor_dp_1d_mpi): invalid c/p combination",23)
          !endif
          c = c_null_ptr
-         call tensor_free_tensor_dp_basic_bg(p,tensor_mem_idx_tensor_dp_mpi,stat=stat)
+         call tensor_free_tensor_dp_basic_bg(p,tensor_mem_idx_tensor_dp_mpi,buf_tensor_dp,stat=stat)
       else
          call tensor_free_tensor_dp_basic_mpi(p,c,tensor_mem_idx_tensor_dp_mpi,stat=stat)
       endif
@@ -368,11 +371,20 @@ module tensor_allocator
 
    end subroutine tensor_allocate_tensor_dp_basic
    !BASIC ALLOCATOR BACKGROUND BUFFER
-   subroutine tensor_allocate_tensor_dp_basic_bg(p,n,idx,stat)
+   subroutine tensor_allocate_tensor_dp_basic_bg(p,n,idx,buf,stat)
       implicit none
-      real(tensor_dp),pointer, intent(inout) :: p(:)
+      real(tensor_dp),pointer, intent(inout)        :: p(:)
+      integer(kind=tensor_standard_int), intent(in) :: idx
+      integer(kind=tensor_long_int), intent(in)     :: n
+      type(tensor_bg_buf_dp_type), intent(inout)    :: buf
+      integer, intent(out), optional                :: stat
 
+#ifdef TENSORS_IN_LSDALTON
       include "bg_allocation.inc"
+#else
+      call tensor_status_quit("ERROR(tensor_allocate_tensor_dp_basic_bg):&
+      & currently only available for LSDALTON",-1)
+#endif
 
    end subroutine tensor_allocate_tensor_dp_basic_bg
    !BASIC ALLOCATOR MPI
@@ -405,11 +417,19 @@ module tensor_allocator
 
    end subroutine tensor_free_tensor_dp_basic
    !BASIC DEALLOCATOR BACKGROUND BUFFER
-   subroutine tensor_free_tensor_dp_basic_bg(p,idx,stat)
+   subroutine tensor_free_tensor_dp_basic_bg(p,idx,buf,stat)
       implicit none
       real(tensor_dp),pointer, intent(inout) :: p(:)
+      integer(kind=tensor_standard_int), intent(in) :: idx
+      type(tensor_bg_buf_dp_type), intent(inout)    :: buf
+      integer, intent(out), optional                :: stat
 
+#ifdef TENSORS_IN_LSDALTON
       include "bg_deallocation.inc"
+#else
+      call tensor_status_quit("ERROR(tensor_free_tensor_dp_basic_bg):&
+      & currently only available for LSDALTON",-1)
+#endif
 
    end subroutine tensor_free_tensor_dp_basic_bg
    !BASIC DEALLOCATOR MPI

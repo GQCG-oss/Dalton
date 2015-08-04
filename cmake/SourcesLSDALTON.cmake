@@ -768,6 +768,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/tensor/tensor_mpi_binding.F90
     LSDALTON/tensor/get_idx.F90
     LSDALTON/tensor/tensor_error_handler.F90
+    LSDALTON/tensor/tensor_bg_buf.F90
     LSDALTON/tensor/tensor_allocator.F90
     LSDALTON/tensor/tensor_mpi_interface.F90
     LSDALTON/tensor/tensor_type_def.F90

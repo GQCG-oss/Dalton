@@ -615,7 +615,6 @@ contains
           Ecorr = energies(FRAGMODEL_VIRTMP2)
        ELSE
           Ecorr = energies(FRAGMODEL_OCCMP2)
-          print *, "FRAGMODEL_OCCMP2 (MP2): ",Ecorr 
        ENDIF
 #ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
@@ -623,7 +622,6 @@ contains
              Ecorr = energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
           ELSE
              Ecorr = energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
-             print *, "FRAGMODEL_OCCMP2 FRAGMODEL_MP2f12(F12):", energies(FRAGMODEL_OCCMP2), energies(FRAGMODEL_MP2f12)
           ENDIF
        endif
 #endif 

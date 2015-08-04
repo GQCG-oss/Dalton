@@ -1069,10 +1069,10 @@ subroutine DEC_meaningful_input(config)
         ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
 
-        ! Modify DECinfo to calculate first order properties (gradient) for MP2
+        ! Modify DECinfo to calculate first order properties (gradient) for RI-MP2 and MP2
         DECinfo%gradient=.true.
         DECinfo%first_order=.true.
-        if (DECinfo%ccmodel /= MODEL_MP2) then
+        if (DECinfo%ccmodel /= MODEL_MP2 .and. DECinfo%ccmodel /= MODEL_RIMP2) then
            write(DECinfo%output,*) "WARNING: DEC Geometry optimization only available for MP2"
            write(DECinfo%output,*) "WARNING: We are switching to DEC-MP2  !!!"
            DECinfo%ccmodel = MODEL_MP2
@@ -1257,9 +1257,9 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 #ifdef VAR_MPI
            config%opt%cfg_prefer_PDMM = .true.
            !Set tensor synchronization to always, TODO: see if this can be optimized
-           call tensor_set_always_sync_true(MPI_COMM_LSDALTON,.true.)
+           call tensor_set_always_sync_true(.true.)
            !Set the background buffer on, this will use additional memory
-           call lspdm_init_global_buffer(MPI_COMM_LSDALTON,.true.)
+           call lspdm_init_global_buffer(.true.)
 #endif
         CASE('.PDMMBLOCKSIZE');  
 #ifdef VAR_MPI
@@ -1351,24 +1351,12 @@ subroutine TENSOR_INPUT(word,lucmd)
       end if
       select case(word)
       case('.DIL_BACKEND')
-#ifdef VAR_MPI
-         call tensor_set_dil_backend_true(MPI_COMM_LSDALTON,.true.)
-#else
-         call tensor_set_dil_backend_true(dummy,.true.)
-#endif
+         call tensor_set_dil_backend_true(.true.)
       case('.DEBUG')
-#ifdef VAR_MPI
-         call tensor_set_debug_mode_true(MPI_COMM_LSDALTON,.true.)
-#else
-         call tensor_set_debug_mode_true(dummy,.true.)
-#endif
+         call tensor_set_debug_mode_true(.true.)
       case('.SEGMENT_LENGTH')
          read(LUCMD,*) seg_len
-#ifdef VAR_MPI
-         call tensor_set_global_segment_length(MPI_COMM_LSDALTON,seg_len)
-#else
-         call tensor_set_global_segment_length(dummy,seg_len)
-#endif
+         call tensor_set_global_segment_length(seg_len)
       case default
          print *,"UNRECOGNIZED KEYWORD: ",word
          call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)

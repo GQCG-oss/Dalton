@@ -868,7 +868,6 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "dummy.h"
-C      PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DOINDX,

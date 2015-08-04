@@ -1,10 +1,6 @@
 module tensor_mpi_interface_module
 
    use tensor_mpi_binding_module
-#ifdef VAR_MPI
-   use infpar_module, only: infpar
-#endif
-
    !use tensor_mpi_binding_module
    use tensor_parameters_and_counters
    use tensor_type_def_module
@@ -235,7 +231,7 @@ module tensor_mpi_interface_module
        else if(typeoflock=='s')then
           CALL mpi_win_lock(MPI_LOCK_SHARED,dest,assert,win,ierr)
        else
-          call lsquit("ERROR(tensor_mpi_win_lock): no valid lock type selected",-1)
+          call tensor_status_quit("ERROR(tensor_mpi_win_lock): no valid lock type selected",636)
        endif
 
        if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_lock): failed",220)
@@ -327,7 +323,7 @@ module tensor_mpi_interface_module
 #ifdef VAR_HAVE_MPI3
        CALL mpi_win_unlock_all(win,ierr)
 #else
-       call lsquit("ERROR(tensor_mpi_win_unlock_all): this routine is MPI 3 only ",-1)
+       call tensor_status_quit("ERROR(tensor_mpi_win_unlock_all): this routine is MPI 3 only ",636)
 #endif
 
        if(ierr /= 0) call tensor_status_quit("ERROR(tensor_mpi_win_unlock_all): failed",220)
@@ -466,13 +462,13 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_bcast_std_int(b,root,comm)
       implicit none
       integer(kind=tensor_standard_int) :: b
-      include "mpi_collective_vars.inc"
       integer(kind=tensor_standard_int) :: buffer(1)
+      include "mpi_collective_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_bcast_std_int_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_standard_int))
-      if( infpar%lg_mynum /= root) b = buffer(1)
+      if( rank /= root ) b = buffer(1)
     end subroutine tensor_mpi_bcast_std_int
     subroutine tensor_mpi_bcast_std_int_s(buffer,n1,root,comm)
       implicit none
@@ -506,13 +502,13 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_bcast_long_int(b,root,comm)
       implicit none
       integer(kind=tensor_long_int) :: b
-      include "mpi_collective_vars.inc"
       integer(kind=tensor_long_int) :: buffer(1)
+      include "mpi_collective_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_bcast_long_int_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_long_int))
-      if( infpar%lg_mynum /= root) b = buffer(1)
+      if( rank /= root ) b = buffer(1)
     end subroutine tensor_mpi_bcast_long_int
     subroutine tensor_mpi_bcast_long_int_s(buffer,n1,root,comm)
       implicit none
@@ -546,13 +542,13 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_bcast_log(b,root,comm)
       implicit none
       logical, intent(inout) :: b
-      include "mpi_collective_vars.inc"
       logical :: buffer(1)
+      include "mpi_collective_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_bcast_log_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_log))
-      if( infpar%lg_mynum /= root) b = buffer(1)
+      if( rank /= root ) b = buffer(1)
     end subroutine tensor_mpi_bcast_log
     subroutine tensor_mpi_bcast_log_s(buffer,n1,root,comm)
       implicit none
@@ -586,13 +582,13 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_bcast_tensor_dp(b,root,comm)
       implicit none
       real(tensor_dp), intent(inout) :: b
-      include "mpi_collective_vars.inc"
       real(tensor_dp) :: buffer(1)
+      include "mpi_collective_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_bcast_dp_basic(buffer,n,root,comm,&
          & tensor_mpi_stats(tensor_mpi_idx_bcast,tensor_mpi_idx_tensor_dp))
-      if( infpar%lg_mynum /= root) b = buffer(1)
+      if( rank /= root ) b = buffer(1)
     end subroutine tensor_mpi_bcast_tensor_dp
     subroutine tensor_mpi_bcast_tensor_dp_s(buffer,n1,root,comm)
       implicit none
@@ -688,8 +684,8 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_reduce_tensor_dp(b,root,comm)
       implicit none
       real(tensor_dp), intent(inout) :: b
-      include "mpi_collective_vars.inc"
       real(tensor_dp) :: buffer(1)
+      include "mpi_collective_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_reduce_dp_basic(buffer,n,root,comm,&
@@ -719,9 +715,9 @@ module tensor_mpi_interface_module
       integer(kind=tensor_long_int), intent(in)    :: n1
       real(tensor_dp), intent(inout)               :: buffer(:)
       type(tensor_mpi_stats_type),intent(inout)    :: stats
-      include "mpi_collective_vars.inc"
       !CHANGE THIS ACCORDING TO THE DATATYPE OF BUFFER
       real(tensor_dp) :: noelm = 0.0E0_tensor_dp
+      include "mpi_collective_vars.inc"
       include "mpi_reduce_std.inc"
     end subroutine tensor_mpi_reduce_dp_basic
 
@@ -846,13 +842,13 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_sendrecv_tensor_dp(b,comm,sender,receiver)
       implicit none
       real(tensor_dp) :: b
-      include "mpi_sendrecv_vars.inc"
       real(tensor_dp) :: buffer(1)
+      include "mpi_sendrecv_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_sendrecv_tensor_dp_basic(buffer,n,comm,sender,receiver,&
          & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_dp))
-      if( infpar%lg_mynum == receiver) b = buffer(1)
+      if( rank == receiver) b = buffer(1)
     end subroutine tensor_mpi_sendrecv_tensor_dp
     subroutine tensor_mpi_sendrecv_tensor_dp_s(buffer,n1,comm,sender,receiver)
       implicit none
@@ -885,13 +881,13 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_sendrecv_tensor_standard_int(b,comm,sender,receiver)
       implicit none
       integer(kind=tensor_standard_int) :: b
-      include "mpi_sendrecv_vars.inc"
       integer(kind=tensor_standard_int) :: buffer(1)
+      include "mpi_sendrecv_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_sendrecv_tensor_standard_int_basic(buffer,n,comm,sender,receiver,&
          & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_standard_int))
-      if( infpar%lg_mynum == receiver) b = buffer(1)
+      if( rank == receiver ) b = buffer(1)
     end subroutine tensor_mpi_sendrecv_tensor_standard_int
     subroutine tensor_mpi_sendrecv_tensor_standard_int_s(buffer,n1,comm,sender,receiver)
       implicit none
@@ -924,13 +920,13 @@ module tensor_mpi_interface_module
     subroutine tensor_mpi_sendrecv_tensor_long_int(b,comm,sender,receiver)
       implicit none
       integer(kind=tensor_long_int) :: b
-      include "mpi_sendrecv_vars.inc"
       integer(kind=tensor_long_int) :: buffer(1)
+      include "mpi_sendrecv_vars.inc"
       n=1
       buffer(1) = b
       call tensor_mpi_sendrecv_tensor_long_int_basic(buffer,n,comm,sender,receiver,&
          & tensor_mpi_stats(tensor_mpi_idx_sendrecv,tensor_mpi_idx_tensor_long_int))
-      if( infpar%lg_mynum == receiver) b = buffer(1)
+      if( rank == receiver ) b = buffer(1)
     end subroutine tensor_mpi_sendrecv_tensor_long_int
     subroutine tensor_mpi_sendrecv_tensor_long_int_s(buffer,n1,comm,sender,receiver)
       implicit none

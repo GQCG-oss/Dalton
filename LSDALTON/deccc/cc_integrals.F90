@@ -3511,7 +3511,7 @@ contains
 
 
     if(DECinfo%PL>2)then
-       call print_norm(integral," NORM of the integral :",print_on_rank=0)
+       call print_norm(integral," NORM of the integral :",print_=(me==0))
     endif
 
     if(.not.local)then

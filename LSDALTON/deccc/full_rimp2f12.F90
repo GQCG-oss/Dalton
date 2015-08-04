@@ -50,10 +50,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    type(matrix),intent(in) :: Dmat
    !> MP2-F12 correlation energy
    real(realk),intent(inout) :: mp2f12_energy
-   !> Canonical MP2 correlation energy
-   real(realk) :: mp2_energy
    !local variables
    integer :: nbasis,nocc,nvirt,ncabsAO,ncabsMO
+   !> Canonical MP2 correlation energy
+   real(realk) :: mp2_energy
    real(realk) :: E21,Econt(1),E23
    real(realk) :: ExchangeF12V1,CoulombF12V1
    real(realk) :: ExchangeF12X1,CoulombF12X1
@@ -105,6 +105,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    if(MyMolecule%mem_distributed)then
       call lsquit("ERROR(full_canonical_rimp2_f12): does not work with PDM type fullmolecule",-1)
    endif
+ 
+   E_21C = 0.0E0_realk
+   MP2_energy = mp2f12_energy
+   mp2f12_energy = 0.0E0_realk
 
    lupri = DECinfo%output
 #ifdef VAR_TIME
@@ -258,7 +262,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    ! Calculate the Fitting Coefficients (alpha|F|ij)
    use_bg_buf = .FALSE.
-   mp2f12_energy = 0.0E0_realk 
    intspec(4) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
    intspec(5) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
@@ -557,7 +560,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
 
      !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-     call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,nbasis,&
+     call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,&
         & CalphaGcabsMO,CalphaG,Fii%elms,EX3,EX4)
 
      mp2f12_energy = mp2f12_energy  + EX3 + EX4
@@ -612,7 +615,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !Do on GPU (Async)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
    !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5)
+   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,CalphaGcabsAO,CalphaG,CalphaD,EB5)
    
    mp2f12_energy = mp2f12_energy  + EB5
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
@@ -656,9 +659,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    n =  noccfull
    
    !NB! Changed T to N, dont think it will matter but...
-!   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)   
-   call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
-   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB7)
+   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)   
+   ! Commented out just for current scheme, may be changed later TK
+   !   call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
+   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,noccfull,CalphaGcabsMO,CalphaG,CalphaD,EB7)
    
    mp2f12_energy = mp2f12_energy  + EB7
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
