@@ -168,16 +168,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! cublas stuff
   type(c_ptr) :: cublas_handle
   integer*4 :: stat
-  !> async handles
-  integer :: num_ids
+  !> async handle
 #ifdef VAR_OPENACC
-  integer(kind=acc_handle_kind), pointer, dimension(:) :: async_id
+  integer(kind=acc_handle_kind) :: async_id
 #ifdef VAR_PGF90
   integer*4, external :: acc_set_cuda_stream
 #endif
   integer(c_size_t) :: total_gpu,free_gpu ! total and free gpu mem in bytes
 #else
-  integer, pointer, dimension(:) :: async_id
+  integer :: async_id
 #endif
 #ifdef VAR_PAPI
   integer(8) :: papiflops
@@ -193,30 +192,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   CALL LS_GETTIM(CPUTIME,WALLTIMESTART)
   call myPAPI_start(eventset2)
 #endif
-  ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
-  num_ids = 7
-  call mem_alloc(async_id,num_ids)
 
 #ifdef VAR_OPENACC
-
-  if (DECinfo%acc_sync) then
-     async_id = acc_async_sync
-  else
-     do m = 1,num_ids
-        async_id(m) = int(m,kind=acc_handle_kind)
-     enddo
-  endif
-
+  async_id = acc_async_sync
 #else
-
-  if (DECinfo%acc_sync) then
-     async_id = 0
-  else
-     do m = 1,num_ids
-        async_id(m) = -m
-     enddo
-  endif
-
+  async_id = 0
 #endif
 
 #ifdef VAR_CUBLAS
@@ -226,13 +206,14 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   print*,'cublasCreate_v2 gives stat=',stat
   stat = cudaSetDevice(int(0,kind=4))
   print*,'cudaSetDevice(0) gives stat=',stat
-  print*,'known results are:'
+  !print*,'known results are:'
   !print*,'cudaSuccess',cudaSuccess
   !print*,'cudaErrorInvalidDevice',cudaErrorInvalidDevice
   !print*,'cudaErrorDeviceAlreadyInUse ',cudaErrorDeviceAlreadyInUse 
 
   ! set the cublas handle to match the synchronous openacc handle 
-  stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)
+!This Breaks the code - I do not know why
+!  stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)
 
 #endif
 
@@ -602,7 +583,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   call mat_transpose(M,N,1.0E0_realk,Uocc%val,0.0E0_realk,UoccT)
   call array2_free(Uocc)
 
-!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT) async(async_id(1)) if(.not. fc)
+!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT) if(.not. fc)
 
   IF(first_order)THEN
      !CvirtAOS(nbasis,nvirt) = CDIAGvirt%val(nbasis,nvirt)*UvirtT(nvirt,nvirt)     
@@ -667,7 +648,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
 
-!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT,UoccallT) async(async_id(1)) if(fc)
+!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT,UoccallT) if(fc)
 
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
@@ -750,9 +731,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ABdecompCreate = .FALSE. !do not need to create again
   ENDIF
   !At this point we have the Calpha in the diagonal basis 
-
-! here: wait for async updates on async handle 1
-!$acc wait(async_id(1))
 
   !=====================================================================================
   !  Major Step 5: Generate toccEOS(nvirt,noccEOS,nvirt,noccEOS)
@@ -970,10 +948,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               K = nocc                 !summation dimension
               IF(DECinfo%DECNP)THEN
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ELSE
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ENDIF
               call PlugInTotocc2(tocc2,noccOut,nvirt,tocc2TMP,MaxVirtSize,offsetV)
            ENDDO
@@ -993,10 +971,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               K = nocc                       !summation dimension
               IF(DECinfo%DECNP)THEN
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ELSE
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ENDIF
               call PlugInTotocc2(tocc2,noccOut,nvirt,tocc2TMP,MaxVirtSize,offsetV)
            ENDIF
@@ -1051,10 +1029,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            !$acc enter data create(tocc2)
            IF(DECinfo%DECNP)THEN
               call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2,M,&
-                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ELSE
               call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M,&
-                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ENDIF
            !$acc exit data delete(tocc)
            IF(use_bg_buf)THEN
@@ -1083,7 +1061,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ENDIF
         !$acc enter data create(tocc3)
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
         !$acc exit data delete(tocc2)
         !Final virtual transformation and reorder to dimocc
         IF(.NOT.use_bg_buf)THEN
@@ -1096,7 +1074,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ENDIF
         !$acc enter data create(toccEOS%elm1)
         call RIMP2_calc_toccB(nvirt,noccOut,tocc3,UvirtT,toccEOS%elm1)
-        !$acc exit data copyout(toccEOS%elm1) async(async_id(2))
+        !$acc exit data copyout(toccEOS%elm1) 
         !$acc exit data delete(tocc3)
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
@@ -1226,10 +1204,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            !$acc enter data create(tvirt2)
            IF(DECinfo%DECNP)THEN
               call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M,&
-                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ELSE
               call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M,&
-                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ENDIF
            !$acc exit data delete(tvirt)
            nsize = nocc*nocc*(nvirtOut*i8)*nvirtOut
@@ -1254,13 +1232,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            K = nocc                    !summation dimension
            !$acc enter data create(tvirt3)
            call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M,&
-                & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            !$acc exit data delete(tvirt2)
            !transform last occ index to local basis and reorder 
            IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)
            !$acc enter data create(tvirtEOS%elm1)
            call RIMP2_calc_tvirtB(nvirtOut,nocc,tvirt3,UoccT,tvirtEOS%elm1)
-           !$acc exit data copyout(tvirtEOS%elm1) async(async_id(3))
+           !$acc exit data copyout(tvirtEOS%elm1) 
            !$acc exit data delete(tvirt3)
            IF(use_bg_buf)THEN
               IF(DECinfo%MemDebugPrint)call printBGinfo()
@@ -1332,11 +1310,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(Calpha2)
      IF(DECinfo%DECNP)THEN
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
 !$acc exit data delete(UoccT) if(.not. first_order)
      ELSE
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
 !$acc exit data delete(UoccEOST) if(.not. first_order)
      ENDIF
 
@@ -1352,7 +1330,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      IF(.NOT.use_bg_buf) call tensor_ainit(goccEOS,dimocc,4)
 !$acc enter data create(goccEOS%elm1)
      call RIMP2_calc_gocc(nvirt,noccOut,NBA,Calpha3,goccEOS%elm1)
-!$acc exit data copyout(goccEOS%elm1) async(async_id(4))
+!$acc exit data copyout(goccEOS%elm1) 
 !$acc exit data delete(Calpha3)
      IF(use_bg_buf)THEN
         IF(DECinfo%MemDebugPrint)call printBGinfo()
@@ -1427,7 +1405,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            K = nocctot          !summation dimension
 !$acc enter data create(Calpha2)
            call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M,&
-                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
 !$acc exit data delete(UoccallT,Calpha3) if(fc .and. (.not. first_order))
 !$acc exit data delete(Calpha3) if(fc .and. first_order)
            IF(use_bg_buf)THEN
@@ -1457,7 +1435,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
            call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
-                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
 !$acc exit data delete(UoccT,Calpha) if(.not. first_order)
         ENDIF
         nsize = nba*nvirtOut*nocctot
@@ -1482,7 +1460,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(.NOT.use_bg_buf)call tensor_ainit(gvirtEOS,dimvirt,4)
 !$acc enter data create(gvirtEOS%elm1)
         call RIMP2_calc_gvirt(nvirtOut,nocctot,NBA,nocc,Calpha3,gvirtEOS%elm1,offset)
-!$acc exit data copyout(gvirtEOS%elm1) async(async_id(5))
+!$acc exit data copyout(gvirtEOS%elm1) 
 !$acc exit data delete(Calpha3)
    
         IF(use_bg_buf)THEN
@@ -1536,9 +1514,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   !  Major Step 9: Collect toccEOS, tvirtEOS, goccEOS, and gvirtEOS
   !=====================================================================================
-
-! here: wait for async copyouts on async handles 2-5
-!$acc wait(async_id(2),async_id(3),async_id(4),async_id(5))
 
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then
@@ -1608,7 +1583,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
         !(alphaAux,nvirtAOS,noccEOS) = (alphaAux;nvirt,noccEOS)*UvirtT(nvirt,nvirtAOS)
 !$acc enter data create(Calpha3)
         call RIMP2_TransAlpha2(noccEOS,nvirt,nvirt,nba,UvirtT,Calpha2,Calpha3)
@@ -1628,7 +1603,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(djik%elm1) copyin(CalphaOcc)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,CalphaOcc,noccEOS,nocctot,djik%elm1)
 !$acc exit data delete(Calpha3,CalphaOcc)
-!$acc exit data copyout(djik%elm1) async(async_id(6))
+!$acc exit data copyout(djik%elm1) 
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
            IF(DECinfo%MemDebugPrint)print*,'BG: dealloc CalphaOcc(',size(CalphaOcc),')'
@@ -1680,7 +1655,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
 !$acc exit data delete(UoccT) 
         
         !(alphaAux,nvirtEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*Uvirt(nvirt,nvirtEOS)
@@ -1712,7 +1687,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(blad%elm1) copyin(CalphaVV)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirtEOS,nocc,CalphaVV,nvirtEOS,nvirt,blad%elm1)
 !$acc exit data delete(Calpha3,CalphaVV)
-!$acc exit data copyout(blad%elm1) async(async_id(7))
+!$acc exit data copyout(blad%elm1) 
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
            IF(DECinfo%MemDebugPrint)print*,'BG: dealloc CalphaVV(',size(CalphaVV),')'
@@ -1750,9 +1725,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !=====================================================================================
      !  first_order reduction: djik and blad 
      !=====================================================================================
-
-! here: wait for async copyouts on async handles 6 and 7
-!$acc wait(async_id(6),async_id(7))
 
 #ifdef VAR_MPI
      IF(CollaborateWithSlaves) then
@@ -1839,9 +1811,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   stat = cublasDestroy_v2(cublas_handle)
 
 #endif
-
-  ! release async handles array
-  call mem_dealloc(async_id)
 
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
