@@ -18,7 +18,7 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --extra-fc-flags="-ta=tesla:cc35 -Mcuda=7.0 -Minfo -lcuda" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Hercules-pgi15.7-gpu" -DENABLE_EFS=OFF -DENABLE_VPOTDAMP=OFF -DENABLE_XCFUN=OFF -DENABLE_RSP=OFF build-gpu
+./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --extra-fc-flags="-ta=tesla:cc35 -Mcuda=7.0 -Minfo -lcuda" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Hercules-pgi15.7-gpu" -DENABLE_EFS=OFF -DENABLE_VPOTDAMP=OFF -DENABLE_XCFUN=OFF -DENABLE_RSP=OFF build
 
 cd build
 ctest -D Nightly -L linsca
