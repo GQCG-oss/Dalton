@@ -7,8 +7,11 @@
 module lspdm_tensor_operations_module
   use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
-#ifdef TENSORS_IN_LSDALTON
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
   use dec_workarounds_module
+#endif
+#ifdef TENSORS_IN_LSDALTON
   use LSTIMING
 #endif
 
