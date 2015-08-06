@@ -78,7 +78,7 @@ subroutine lsmpi_init(OnMaster)
    infpar%lg_morejobs=.true.
 
    !tensor initialization
-   call tensor_initialize_interface(MPI_COMM_LSDALTON, mem_ctr=mem_allocated_global, pdm_slaves_signal = PDMA4SLV )
+   call tensor_initialize_interface(infpar%lg_comm, mem_ctr=mem_allocated_global, pdm_slaves_signal = PDMA4SLV )
 
 #else
    logical, intent(inout) :: OnMaster

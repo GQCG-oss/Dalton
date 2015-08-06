@@ -2084,8 +2084,7 @@ contains
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
         it               = TT_TILED_DIST
-        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,&
-           &tdims=int(tdims,kind=tensor_int),force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
@@ -2096,8 +2095,7 @@ contains
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         it               = TT_TILED_DIST ! for tensor_init_tiled routine
-        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,&
-           &tdims=int(tdims,kind=tensor_int),ps_d=.true.,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,ps_d=.true.,force_offset=fo)
         arr%itype        = TT_DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
