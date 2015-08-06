@@ -297,20 +297,10 @@ add_custom_command(
 unset(reorder_definitions)
 
 add_library(
-    lsutillib_common
-    ${MANUAL_REORDERING_SOURCES}
-    ${LSUTIL_COMMON_C_SOURCES}
-    ${LSUTIL_COMMON_SOURCES}
-    )
-
-target_link_libraries(lsutillib_common matrixmlib)
-
-add_library(
     lsutil_tensor_lib
+    ${MANUAL_REORDERING_SOURCES}
     ${LSUTIL_TENSOR_SOURCES}
     )
-
-target_link_libraries(lsutil_tensor_lib lsutillib_common)
 
 add_library(
     matrixolib
@@ -319,6 +309,17 @@ add_library(
     )
 
 target_link_libraries(matrixolib lsutil_tensor_lib)
+
+add_library(
+    lsutillib_common
+    ${LSUTIL_COMMON_C_SOURCES}
+    ${LSUTIL_COMMON_SOURCES}
+    )
+
+
+target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib)
+
+
 
 add_library(
     matrixulib

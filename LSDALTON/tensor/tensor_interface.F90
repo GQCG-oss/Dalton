@@ -67,10 +67,10 @@ module tensor_interface_module
   !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
   public tensor_initialize_interface, tensor_finalize_interface
   public tensor_set_comm, tensor_comm_null
-#ifdef TENSORS_IN_LSDALTON
+!#ifdef TENSORS_IN_LSDALTON
   public tensor_initialize_bg_buf_from_lsdalton_bg_buf
   public tensor_free_bg_buf
-#endif
+!#endif
 
   ! MODIFY THE BEHAVIOUR OF THE TENSOR LIB
   public tensor_set_mpi_msg_len              ! set the maximum message length of a call to MPI
@@ -106,7 +106,7 @@ module tensor_interface_module
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, new_group_reset_persistent_array
-  public tensor_get_tile, tensor_put_tile, tensor_accumulate_tile
+  public tensor_get_tile, tensor_put_tile, tensor_acc_tile
   public tensor_scatter, tensor_gather
   public tensor_lock_win, tensor_lock_wins, tensor_lock_local_wins
   public tensor_unlock_win, tensor_unlock_wins, tensor_unlock_local_wins
@@ -1945,8 +1945,8 @@ contains
 
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_minit )
-#endif
     tensor_time_init = tensor_time_init + time_minit
+#endif
 
   end subroutine tensor_minit
 
@@ -2118,8 +2118,8 @@ contains
 
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_ainit )
-#endif
     tensor_time_init = tensor_time_init + time_ainit
+#endif
   end subroutine tensor_ainit_central
 
   !> \author Patrick Ettenhuber
@@ -2194,8 +2194,8 @@ contains
 
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_init )
-#endif
     tensor_time_init = tensor_time_init + time_init
+#endif
   end subroutine tensor_init
 
 

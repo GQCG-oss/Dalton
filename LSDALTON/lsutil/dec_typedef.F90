@@ -9,7 +9,7 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
-  use tensor_type_def_module, only: tensor
+  use tensor_interface_module, only: tensor
   !Could someone please rename ri to something less generic. TK!!
   !  private
   !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&

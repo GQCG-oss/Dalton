@@ -1,11 +1,6 @@
 module tensor_allocator
    use, intrinsic :: iso_c_binding
 
-#ifdef TENSORS_IN_LSDALTON
-   use background_buffer_module, only: mem_is_background_buf_init
-   use memory_handling, only: mem_pseudo_alloc, mem_pseudo_dealloc
-#endif
-
    use tensor_error_handler
    use tensor_parameters_and_counters
    use tensor_bg_buf_module
@@ -379,12 +374,12 @@ module tensor_allocator
       type(tensor_bg_buf_dp_type), intent(inout)    :: buf
       integer, intent(out), optional                :: stat
 
-#ifdef TENSORS_IN_LSDALTON
+!#ifdef TENSORS_IN_LSDALTON
       include "bg_allocation.inc"
-#else
-      call tensor_status_quit("ERROR(tensor_allocate_tensor_dp_basic_bg):&
-      & currently only available for LSDALTON",-1)
-#endif
+!#else
+!      call tensor_status_quit("ERROR(tensor_allocate_tensor_dp_basic_bg):&
+!      & currently only available for LSDALTON",-1)
+!#endif
 
    end subroutine tensor_allocate_tensor_dp_basic_bg
    !BASIC ALLOCATOR MPI
@@ -424,12 +419,12 @@ module tensor_allocator
       type(tensor_bg_buf_dp_type), intent(inout)    :: buf
       integer, intent(out), optional                :: stat
 
-#ifdef TENSORS_IN_LSDALTON
+!#ifdef TENSORS_IN_LSDALTON
       include "bg_deallocation.inc"
-#else
-      call tensor_status_quit("ERROR(tensor_free_tensor_dp_basic_bg):&
-      & currently only available for LSDALTON",-1)
-#endif
+!#else
+!      call tensor_status_quit("ERROR(tensor_free_tensor_dp_basic_bg):&
+!      & currently only available for LSDALTON",-1)
+!#endif
 
    end subroutine tensor_free_tensor_dp_basic_bg
    !BASIC DEALLOCATOR MPI

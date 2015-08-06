@@ -24,7 +24,6 @@ module ccsdpt_module
   use IchorErimoduleHost
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
-  use lspdm_tensor_operations_module
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -1512,7 +1511,7 @@ contains
     integer(kind=ls_mpik) :: distributionw
     Character            :: intSpec(5)
     integer :: myload,first_el_i_block,nelms,tile_size_tmp,total_num_tiles,tile,ats1,ats2
-    logical :: master
+    logical :: master, local
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me, nodtotal
@@ -1631,28 +1630,16 @@ contains
 
     ! Integrals (AB|IC) in the order (C,B,A,I)
     dims = [nvirt,nvirt,nvirt,nocc]
+    local = .true.
 #ifdef VAR_MPI
-
     if (infpar%lg_nodtot .gt. 1) then
-
        mode   = MPI_MODE_NOCHECK
-   
-       call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
-       call tensor_zero_tiled_dist(vvvo)
-
-    else
-
-       call tensor_init(vvvo, dims,4,bg=use_bg_buf)
-       call tensor_zero(vvvo)
-
+       local = .false.
     endif
-
-#else
-
-    call tensor_init(vvvo, dims,4)
-    call tensor_zero(vvvo)
-
 #endif
+
+    call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)
+    call tensor_zero(vvvo)
 
     ! For efficiency when calling dgemm, save transposed matrices
     if(use_bg_buf)then
@@ -2231,7 +2218,7 @@ contains
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
     integer :: myload,first_el_c_block,nelms,tile_size_tmp,total_num_tiles
-    logical :: master
+    logical :: master,local
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, nodtotal
@@ -2352,30 +2339,18 @@ contains
     call tensor_zero(ooov)
 
     ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
-    dims = [nvirt,nocc,nvirt,nvirt]
+    dims  = [nvirt,nocc,nvirt,nvirt]
+    local = .true.
 
 #ifdef VAR_MPI
-
     if (infpar%lg_nodtot .gt. 1) then
-
        mode   = MPI_MODE_NOCHECK
-   
-       call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
-       call tensor_zero_tiled_dist(vovv)
-
-    else
-
-       call tensor_init(vovv,dims,4,bg=use_bg_buf)
-       call tensor_zero(vovv)
-
+       local  = .false.
     endif
-
-#else
-
-    call tensor_init(vovv,dims,4)
-    call tensor_zero(vovv)
-
 #endif
+
+    call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)
+    call tensor_zero(vovv)
 
     ! For efficiency when calling dgemm, save transposed matrices
     if(use_bg_buf)then
