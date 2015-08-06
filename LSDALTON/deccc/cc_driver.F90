@@ -2301,8 +2301,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       crop_ok          = .false.
       prev_norm        = huge(prev_norm)
 
-      print *,"getting some more of these "
-
       if(bg)then
          if(use_singles)then
             do i=1,DECinfo%ccMaxDIIS
@@ -2314,7 +2312,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                & atype='TDAR', tdims=[vs,vs,os,os], bg=bg )
          enddo
       endif
-      print *,"enddo"
 
       ! Iterate the equations
       ! ---------------------
@@ -2326,7 +2323,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          next     = get_iter_idx(iter + 1)
          nSS      = min(iter,DECinfo%ccMaxDIIS)
 
-         print *,"iterating ",iter
          ! Initialize residual vectors
          ! ---------------------------
          if(use_singles)then
@@ -2340,8 +2336,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                & atype='TDAR', tdims=[vs,vs,os,os] )
          endif
          call tensor_zero(omega2(iter_idx))
-
-         print *,"test 1"
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
 
@@ -2359,13 +2353,11 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_t1_trafo, &
             &labelttot= 'CCIT: T1 TRAFO        :', output = DECinfo%output, twall = time_residual ) 
 
-         print *,"test 2"
          !Get the residual r = Ax - b for any of the implemented models
          !-------------------------------------------------------------
          call ccsolver_get_residual(ccmodel,JOB,omega2,t2,fock,t1fock,iajb,no,nv,oofock_prec,vvfock_prec,xo,xv,yo,yv,nb,MyLsItem,&
             &omega1,t1,pgmo_diag,pgmo_up,MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,restart,frag=frag,m2=m2,m4=m4)
 
-         print *,"test 3"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
             &labelttot= 'CCIT: RESIDUAL        :', output = DECinfo%output, twall = time_crop_mat ) 
@@ -2374,14 +2366,12 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !---------------------
          call ccsolver_calculate_crop_matrix(B,nSS,omega2,omega1,oofock_prec,vvfock_prec,ccmodel,local,prec_in_b)
 
-         print *,"test 4"
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_crop_mat, &
             &labelttot= 'CCIT: CROP MATRIX     :', output = DECinfo%output, twall = time_solve_crop ) 
 
          ! solve crop/diis equation
          !-------------------------
          call CalculateDIIScoefficientsII(nSS,B,c,DECinfo%PL>3)
-         print *,"test 5"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_solve_crop, &
             &labelttot= 'CCIT: SOLVE CROP      :', output = DECinfo%output, twall = time_mixing ) 
@@ -2395,7 +2385,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call tensor_zero(omega1_opt)
             call tensor_zero(t1_opt    )
          end if
-         print *,"test 6"
 
          call tensor_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=bg )
          call tensor_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=bg )
