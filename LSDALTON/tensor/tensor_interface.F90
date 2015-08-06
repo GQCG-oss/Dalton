@@ -103,6 +103,12 @@ module tensor_interface_module
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
   public tensor_print_norm_nrm
 
+  ! Atomic datatypes used
+  public tensor_standard_int
+  public tensor_long_int
+  public tensor_dp
+  public tensor_mpi_kind
+
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, new_group_reset_persistent_array
@@ -2033,7 +2039,7 @@ contains
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, twall = time_ainit )
 #endif
-    dims = dims_in
+    dims   = dims_in
     nmodes = nmodes_in
  
     bg_int = .false.
@@ -2082,7 +2088,7 @@ contains
         call tensor_init_standard(arr,dims,nmodes,AT_ALL_ACCESS,bg_int)
         arr%atype        = 'LDAR'
       case('TDAR')
-        !INITIALIZE a Tiled Distributed ARray
+        !INITIALIZE a Tiled Distributed Array
         it               = TT_TILED_DIST
         call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
