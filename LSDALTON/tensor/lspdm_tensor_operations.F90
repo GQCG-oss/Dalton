@@ -3486,25 +3486,7 @@ module lspdm_tensor_operations_module
      call tensor_get_rank(me)
      call tensor_get_size(nlocalnodes)
 
-     !calculate how many of the last modes have to be combined to get at least
-     !the number of nodes tiles
-     cdims=1
-     do i=nmodes,1,-1
-        if(cdims*dims(i)>nlocalnodes) exit
-        cdims = cdims * dims(i)
-     enddo
-
-     !assing tiling dimensions
-     do j=1,nmodes
-        if(j<i)  tdim(j)=dims(j)
-        if(j==i)then
-           do div=1,dims(j)
-              if(cdims*div>=nlocalnodes)exit
-           enddo
-           tdim(j)=(dims(j))/div
-        endif
-        if(j>i)  tdim(j)=1
-     enddo
+     tdim = DEFAULT_TDIM
 
   end subroutine tensor_default_batches
 
@@ -3594,9 +3576,7 @@ module lspdm_tensor_operations_module
      if(.not.defdims.and.present(tdims))then
         do i=1,nmodes
            if(dflt(i)<=0)then
-              print *,"WARNING:INVALID NUMBER --> GET DEFAULT",dflt
-              defdims=.true.
-              exit
+              call tensor_status_quit("ERROR(tensor_init_tiled): invalid tile request, one of the dimensions is <= 0",33)
            endif
         enddo
      endif
@@ -3681,6 +3661,7 @@ module lspdm_tensor_operations_module
         endif
      enddo
 #endif
+     call tensor_free_mem(lg_buf)
 
      p_arr%a(addr)%bg_alloc = bg_int
 
@@ -3693,7 +3674,6 @@ module lspdm_tensor_operations_module
 
      arr = p_arr%a(addr)
 
-     call tensor_free_mem(lg_buf)
      !if(lspdm_use_comm_proc)call tensor_free_mem(pc_buf)
   end subroutine tensor_init_tiled
 
