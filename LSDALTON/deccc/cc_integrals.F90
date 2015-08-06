@@ -24,7 +24,6 @@ module ccintegrals
   use buildaobatch
   use memory_handling
   use daltoninfo
-  use lspdm_tensor_operations_module
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module

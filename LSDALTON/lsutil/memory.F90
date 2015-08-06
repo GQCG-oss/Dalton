@@ -13,8 +13,7 @@ use LSTENSOR_TYPETYPE
 use basis_typetype
 use dec_typedef_module
 use OverlapType
-use tensor_type_def_module, only: tensor
-use tensor_bg_buf_module, only: tensor_initialize_bg_buf_from_lsdalton_bg_buf, tensor_free_bg_buf
+use tensor_interface_module, only: tensor,tensor_initialize_bg_buf_from_lsdalton_bg_buf, tensor_free_bg_buf
 #ifdef MOD_UNRELEASED
 use lattice_type
 #endif

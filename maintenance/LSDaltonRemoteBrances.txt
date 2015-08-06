@@ -1,0 +1,64 @@
+This is a list of all LSDalton related branches. 
+
+We need to have a clear picture at which branches should be:
+
+1. deleted
+2. saved in LSDalton repo 
+3. saved in Dalton Repo. 
+
+therefore please update this list when you make a new branch with the intention of modifying LSDalton code. 
+
+The Status can be : 
+
+Stale 	       Will be deleted once everybody agrees that the branch is stale 
+Working        Will be saved in the LSDalton repo
+DoNotDelete    Will be saved in the LSDalton repo (maybe as read only)
+
+List of branches that people have taken responsibility for. 
+
+origin/LstensorRemovalBranch	Author: Thomas, Simen		Status: DoNotDelete
+origin/NOorbitals           	Author: Ida-Marie Høyvik    	Status: DoNotDelete
+origin/NonOrthogonalOrbitals	Author: Ida-Marie Høyvik   	Status: DoNotDelete
+origin/chandan_nmr          	Author: Thomas,Chandan	   	Status: Working
+origin/dec-cholesky         	Author: Pablo		  	Status: DoNotDelete
+origin/ichor-improvements  	Author: Thomas 			Status: Working (soon to be stale)
+origin/linsca-develop        	Author: Thomas			Status: DoNotDelete (Old LSDalton Master branch)
+origin/linsca-develop-OpenRSP 	Author: Thomas			Status: Stale
+origin/linsca-develop-xcfun  	Author: Ulf			Status: DoNotDelete
+origin/linsca-mpi             	Author: Thomas			Status: Stale
+origin/linsca-ng		Author: Thomas,Sonia,..         Status: DoNotDelete (Only place Residues are implemented,..)
+origin/linsca-optimize-2011	Author: Thomas,Simen            Status: Stale
+origin/linsca-release		Author: Thomas,Simen            Status: DoNotDelete (2011 release of lsdalton)
+origin/pe/lsdalton		Author: Magnus,Nanna,Simen	Status: DoNotDelete
+origin/dec-quad			Author: Johannes		Status: DoNotDelete
+origin/dmp2opt			Author: Johannes		Status: Working
+origin/Hackathon		Author: Patrick E.		Status: DoNotDelete
+origin/titan_branch		Author: Patrick E.		Status: Working
+origin/qcmatrix			Author: Bin Gao, Magnus, ..	Status: Working (new OpenRSP interface with QcMatrix library)
+origin/pcm_lsdalton		Author: Roberto Di Remigio	Status: stale
+origin/PE_titan_branch		Author: Patrick E.		Status: stale
+origin/DECCCO                   Author: Kasper 			Status: Stale
+origin/DECenergy		Author: Kasper 			Status: Stale 
+origin/PMinteraction		Author: Kasper 			Status: Stale
+origin/PnKs_lovenest		Author: Kasper 			Status: Stale
+
+List of branches that I (Thomas) suspect or know is lsdalton related branches 
+
+origin/ONMR-development
+origin/cuda_api_lsdalton
+origin/dec-karl
+origin/dec-patrick
+origin/dec-rpa
+origin/dec-sostest
+origin/linsca
+origin/linsca-develop-HigherDerivatives
+origin/linsca-ng-build
+origin/linsca-ng-vxcfit
+origin/linsca-numerical 
+origin/linsca-vcd-aat
+origin/localize_wannier
+origin/lresc-linear
+origin/master_with_CUDA_fh
+origin/origin/pari-k
+origin/pari-k
+

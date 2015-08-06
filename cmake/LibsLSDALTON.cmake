@@ -297,20 +297,10 @@ add_custom_command(
 unset(reorder_definitions)
 
 add_library(
-    lsutillib_common
-    ${MANUAL_REORDERING_SOURCES}
-    ${LSUTIL_COMMON_C_SOURCES}
-    ${LSUTIL_COMMON_SOURCES}
-    )
-
-target_link_libraries(lsutillib_common matrixmlib)
-
-add_library(
     lsutil_tensor_lib
+    ${MANUAL_REORDERING_SOURCES}
     ${LSUTIL_TENSOR_SOURCES}
     )
-
-target_link_libraries(lsutil_tensor_lib lsutillib_common)
 
 add_library(
     matrixolib
@@ -319,6 +309,17 @@ add_library(
     )
 
 target_link_libraries(matrixolib lsutil_tensor_lib)
+
+add_library(
+    lsutillib_common
+    ${LSUTIL_COMMON_C_SOURCES}
+    ${LSUTIL_COMMON_SOURCES}
+    )
+
+
+target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib)
+
+
 
 add_library(
     matrixulib
@@ -434,13 +435,6 @@ if(ENABLE_INTEREST)
     target_link_libraries(fmmlib interestlib)
 endif()
 
-if(ENABLE_ICHOR)
-add_library(
-    ichorintlib
-    ${ICHORINT_SOURCES}
-    )
-endif()
-
 add_library(
     dftfunclib
     ${DFTFUNC_SOURCES}
@@ -459,9 +453,8 @@ add_dependencies(lsintlib xcfun_interface)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
-if(ENABLE_ICHOR)
-     add_dependencies(lsintlib ichorintlib)
-endif()
+
+include(IchorIntegralLibrary)
 
 add_library(
     pbclib
@@ -665,18 +658,10 @@ if(ENABLE_INTEREST)
         interestlib
         )
 else()
-  if(ENABLE_ICHOR)
-    MERGE_STATIC_LIBS(
-        lsint
-	ichorintlib
-        lsintlib
-        )
-  else()
     MERGE_STATIC_LIBS(
         lsint
         lsintlib
         )
-  endif()
 endif()
 
 set(LIBS_TO_MERGE

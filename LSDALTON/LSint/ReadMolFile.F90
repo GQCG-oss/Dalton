@@ -856,10 +856,12 @@ SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
      IF(BASIS(iBas))THEN
       CALL DETERMINE_UNIQUE_BASIS(BASISSETLIBRARY(iBas),&
            & ATOMICBASISSET(iBas),unique1(iBas),basissetnumber(iBas))
-      IPOS = INDEX(ATOMICBASISSET(iBas),'cc-pV')
-      IF (IPOS .EQ. 0) THEN 
-         DunningsBasis = .FALSE.
-         !Not all atomic basis sets are Dunning basis sets
+      IF(iBas.EQ.RegBasParam)THEN
+         IPOS = INDEX(ATOMICBASISSET(iBas),'cc-pV')
+         IF (IPOS .EQ. 0) THEN 
+            DunningsBasis = .FALSE.
+            !Not all atomic basis sets are Dunning basis sets
+         ENDIF
       ENDIF
       IF(unique1(iBas) == 0)THEN !found new basisset
          basissetnumber(iBas)=basissetnumber(iBas) + 1

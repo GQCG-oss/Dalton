@@ -40,7 +40,7 @@ module tensor_parameters_and_counters
    integer ::           TENSOR_SLAVES_TO_SLAVE_ROUTINE     = TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
    !MPI COMM TO USE IN TENSOR OPERATIONS, THIS IS UPDATED AT RUNTIME
    integer(kind=tensor_mpi_kind), parameter :: tensor_comm_null = -124
-   integer(kind=tensor_mpi_kind) ::            tensor_work_comm = tensor_comm_null
+   integer(kind=tensor_mpi_kind), pointer   :: tensor_work_comm => null()
 
    !parameters to define the data distribution in the tensor type
    integer(kind=tensor_standard_int), parameter :: TT_DENSE        = 1

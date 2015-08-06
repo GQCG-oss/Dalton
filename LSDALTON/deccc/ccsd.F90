@@ -871,7 +871,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! Variables for mpi
      logical :: master,lg_master
-     integer :: fintel,nintel,fe,ne
+     integer :: fe,ne
      integer(kind=ls_mpik) :: nnod
      real(realk) :: startt, stopp
      integer(kind=ls_mpik) :: ierr
@@ -1100,8 +1100,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      lg_master                = (lg_me == 0)
      master                   = lg_master
 
-     call get_int_dist_info(o2v2,fintel,nintel)
-    
      StartUpSlaves: if(master .and. lg_nnod>1) then
         call time_start_phase(PHASE_COMM)
         call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
@@ -3132,7 +3130,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! Variables for mpi
      logical :: master,lg_master
-     integer :: fintel,nintel,fe,ne
+     integer :: fe,ne
      real(realk) :: startt, stopp
      integer(kind=ls_mpik) :: ierr
 
@@ -8281,7 +8279,7 @@ subroutine ccsd_data_preparation()
   use lstiming
   use lsparameters, only: CCSDDATA
   use dec_typedef_module
-  use typedeftype,only:lsitem,tensor
+  use typedeftype,only:lsitem
   use infpar_module
   use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,MPI_COMM_NULL,&
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
@@ -8289,7 +8287,7 @@ subroutine ccsd_data_preparation()
   use daltoninfo, only:ls_free
   use background_buffer_module, only: mem_is_background_buf_init
   use memory_handling, only: mem_alloc, mem_dealloc,mem_pseudo_alloc,mem_pseudo_dealloc
-  use tensor_interface_module, only: tensor_ainit,tensor_free,&
+  use tensor_interface_module, only: tensor, tensor_ainit,tensor_free,&
       &tensor_allocate_dense,tensor_deallocate_dense,&
       &get_tensor_from_parr,TT_DENSE,AT_ALL_ACCESS,AT_MASTER_ACCESS
   ! DEC DEPENDENCIES (within deccc directory) 
@@ -8458,7 +8456,7 @@ subroutine calculate_E2_and_permute_slave()
   use precision
   use lstiming
   use dec_typedef_module
-  use typedeftype,only:lsitem,tensor
+  use tensor_type_def_module
   use infpar_module
   use lsmpi_type, only:ls_mpibcast
   use daltoninfo, only:ls_free
@@ -8542,7 +8540,6 @@ subroutine moccsd_data_slave()
   use daltoninfo
   use dec_typedef_module
   use ccsd_module
-  use tensor_type_def_module
   use infpar_module
   use lsmpi_type
   use tensor_interface_module

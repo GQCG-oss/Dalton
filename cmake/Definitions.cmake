@@ -23,7 +23,7 @@ endif()
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
-add_definitions(-DTENSORS_IN_LSDALTON)
+#add_definitions(-DTENSORS_IN_LSDALTON)
 
 if(ENABLE_TITANBUILD)
    add_definitions(-DVAR_HAVE_MPI3)
@@ -96,10 +96,6 @@ endif()
 
 if(ENABLE_RSP)
     add_definitions(-DVAR_RSP)
-endif()
-
-if(ENABLE_ICHOR)
-    add_definitions(-DVAR_ICHOR)
 endif()
 
 if(ENABLE_QCMATRIX)

@@ -2337,7 +2337,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          endif
          call tensor_zero(omega2(iter_idx))
 
-
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
 
          ! Get special t1 matrices, else just the normal fock and trafo matrices
