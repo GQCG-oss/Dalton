@@ -24,17 +24,15 @@ DALTON_LIBS =             \
 -Lxcfun_host -lxcfun_host  \
 -Lcuda -lcuda\
 -Llsutil -llsutil
-#-LIchorIntegrals -lIchorIntegrals \
 
 # VAR_RSP needs MDO_OBJ ORS_OBJ 
 MODULES = LSU_OBJ CUD_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 \
 	DFT_OBJ SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ \
 	PCM_OBJ
-#ICH_OBJ 
+
 # VAR_RSP needs ../external/matrix-defop/src ../external/openrsp/src
 SUBDIRS = lsutil cuda xcfun_host pdpack interest/lib $(FMMDIR) LSint pbc2 dft SolverUtilities \
 	responsesolver rsp_properties deccc geomopt ddynam linears pcm lsdaltonsrc
-#IchorIntegrals 
 PDLIB = pdpack/pdlib.a
 
 OBJPRG = lsdaltonsrc/lsdalton_wrapper.f90
@@ -159,11 +157,8 @@ GEO_OBJ : LSU_OBJ LSI_OBJ
 DYN_OBJ : LSU_OBJ LSI_OBJ GEO_OBJ
 	cd ddynam && $(MAKE) all
 
-LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ DFT_OBJ #ICH_OBJ
+LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ DFT_OBJ 
 	cd LSint && $(MAKE) all
-
-#ICH_OBJ : 
-#	cd IchorIntegrals && $(MAKE) all
 
 DEC_OBJ : LSU_OBJ LSI_OBJ LIN_OBJ CUD_OBJ
 	cd deccc && $(MAKE) all
