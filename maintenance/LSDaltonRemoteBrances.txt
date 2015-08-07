@@ -41,6 +41,7 @@ origin/DECCCO                   Author: Kasper 			Status: Stale
 origin/DECenergy		Author: Kasper 			Status: Stale 
 origin/PMinteraction		Author: Kasper 			Status: Stale
 origin/PnKs_lovenest		Author: Kasper 			Status: Stale
+radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results)
 
 List of branches that I (Thomas) suspect or know is lsdalton related branches 
 
