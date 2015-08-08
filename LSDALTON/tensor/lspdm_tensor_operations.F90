@@ -112,7 +112,7 @@ module lspdm_tensor_operations_module
 
   ! job parameters for pdm jobs
   integer,parameter :: JOB_TEST_FRAMEWORK           =  1
-
+  integer,parameter :: JOB_BARRIER                  =  2
   integer,parameter :: JOB_FREE_TENSOR_STD          =  3
   integer,parameter :: JOB_INIT_TENSOR_TILED        =  4
   integer,parameter :: JOB_FREE_TENSOR_PDM          =  5
@@ -6679,6 +6679,22 @@ module lspdm_tensor_operations_module
 
   end subroutine check_if_new_instance_needed
 
+  subroutine tensor_barrier(call_slaves)
+     implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=tensor_mpi_kind), parameter :: root = 0
+     integer(kind=tensor_mpi_kind) :: nnod
+     integer(kind=tensor_mpi_kind) :: me
+#ifdef VAR_MPI
+     call tensor_get_rank(me)
+     call tensor_get_size(nnod)
+     if(me==root.and.call_slaves) then
+        call pdm_tensor_sync(JOB_BARRIER)
+     endif
+
+     call tensor_mpi_barrier(tensor_work_comm)
+#endif
+  end subroutine tensor_barrier
 end module lspdm_tensor_operations_module
 
 

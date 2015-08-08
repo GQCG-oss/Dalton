@@ -45,7 +45,9 @@ subroutine pdm_tensor_slave()
    SELECT CASE(JOB)
    case(JOB_TEST_FRAMEWORK)
       call tensor_tester_slave
-   CASE(JOB_INIT_TENSOR_TILED)
+   case(JOB_BARRIER)
+      call tensor_barrier(.false.)
+   case(JOB_INIT_TENSOR_TILED)
 
       call tensor_alloc_mem(intarr2,A%mode)
       call tensor_alloc_mem(intarr1,A%mode)
