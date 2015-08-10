@@ -30,12 +30,14 @@ module f12_routines_module
        & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM, &
        & mp2f12_Bijij_term2, mp2f12_Bijij_term3, mp2f12_Bijij_term4, mp2f12_Bijij_term5, mp2f12_Bijij_term6, mp2f12_Bijij_term7, &
        & mp2f12_Bijij_term8, mp2f12_Bijij_term9, Contractocccalpha, &
-       & ContractOne4CenterF12IntegralsRI, ContractOne4CenterF12IntegralsRI2, Contractone4centerf12integralsrib23,& 
-       & Contractone4centerf12integralsrobustri, Contracttwo4centerf12integralsri2v3v4, Contracttwo4centerf12integralsri2x, &
+       & ContractOne4CenterF12IntegralsRI, ContractOne4CenterF12IntegralsRI2, Contractone4centerf12integralsrib23, & 
+       & Contractone4centerf12integralsrobustri, Contracttwo4centerf12integralsri2v3v4, Contracttwo4centerf12integralsriX3X4, &
        & Contracttwo4centerf12integralsri, Contracttwo4centerf12integralsrib4,Contracttwo4centerf12integralsrib5, &
-       & Contracttwo4centerf12integralsrib6,Contracttwo4centerf12integralsrib7, Contracttwo4centerf12integralsrib8,&
-       & Contracttwo4centerf12integralsrib9, Contracttwo4centerf12integralsric, Contracttwo4centerf12integralsriX
-
+       & Contracttwo4centerf12integralsrib6,Contracttwo4centerf12integralsrib7, Contracttwo4centerf12integralsrib8, &
+       & Contracttwo4centerf12integralsrib9, Contracttwo4centerf12integralsric, Contracttwo4centerf12integralsriX, &
+       & ContractOne4CenterF12IntegralsRI2_nc, ContractTwo4CenterF12IntegralsRIC_p, ContractOne4CenterF12IntegralsRI2_p, &
+       & Contracttwo4centerf12integralsri2v3v4_p, Contracttwo4centerf12integralsriX3X4_nc, ContractTwo4CenterF12IntegralsRIX_nc, &
+       & Contracttwo4centerf12integralsriX3X4_nc2
   private
 
   !> Coefficient Type
@@ -2684,8 +2686,8 @@ subroutine ContractOne4CenterF12IntegralsRI(nBA,n,Calpha,EJ,EK,dopair_occ_in)
    !$OMP ALPHA) SHARED(Calpha,n,nba,dopair_occ) REDUCTION(+:EK,EJ)
    DO I=1,n
       DO J=1,n
-         if(dopair_occ(i,j)) then
-            DO ALPHA = 1,NBA
+         if(dopair_occ(I,J)) then
+            DO ALPHA = 1, NBA
                EJ = EJ + Calpha(ALPHA,I,I)*Calpha(ALPHA,J,J)
                EK = EK + Calpha(ALPHA,I,J)*Calpha(ALPHA,J,I)
             ENDDO
@@ -2733,6 +2735,51 @@ subroutine ContractOne4CenterF12IntegralsRI2(nBA,n,Calpha,Fii,EJ,EK,dopair_occ_i
    ENDDO
 
 end subroutine ContractOne4CenterF12IntegralsRI2
+
+!Perform on GPU 
+subroutine ContractOne4CenterF12IntegralsRI2_nc(nBA,n,Calpha,CalphaT,EJ,EK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n
+   real(realk),intent(in)    :: Calpha(nBA,n,n)
+   real(realk),intent(in)    :: CalphaT(nBA,n,n)
+   real(realk),intent(inout) :: EJ,EK
+   !local variables
+   integer :: i,alpha,beta,j
+   real(realk) :: tmpR1,tmpR2,tmpG1,tmpG2,TMPV(n),TMPI
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n,n)                            
+   logical :: dopair_occ(n,n)                                                     
+ 
+   if(present(dopair_occ_in)) then                                                  
+      dopair_occ = dopair_occ_in                                                
+   else                                                                        
+      dopair_occ = .TRUE.                                                     
+   endif                 
+
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   DO i=1,n
+      DO j=1,n
+         if(dopair_occ(i,j)) then
+            tmpR1 = 0.0E0_realk
+            tmpR2 = 0.0E0_realk
+            DO alpha = 1, nBA
+               tmpR1 = tmpR1 + Calpha(ALPHA,i,i)*CalphaT(ALPHA,j,j)
+               tmpR2 = tmpR2 + Calpha(ALPHA,j,j)*CalphaT(ALPHA,i,i)
+            ENDDO
+            tmpG1 = 0.0E0_realk
+            tmpG2 = 0.0E0_realk
+            DO beta = 1, nBA
+               tmpG1 = tmpG1 + Calpha(BETA,j,i)*CalphaT(BETA,i,j)
+               tmpG2 = tmpG2 + Calpha(BETA,i,j)*CalphaT(BETA,j,i)
+            ENDDO
+            EJ = EJ + tmpR1+tmpR2
+            EK = EK + tmpG1+tmpG2
+         endif
+      ENDDO
+   ENDDO
+
+end subroutine ContractOne4CenterF12IntegralsRI2_nc
 
 subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,n,nbasis,Rtilde,CalphaR,EJK,dopair_occ_in)
    implicit none
@@ -2852,10 +2899,62 @@ subroutine ContractOne4CenterF12IntegralsRIB23(nBA,n1,n2,CalphaR,CalphaG,HJir,Co
 
 end subroutine ContractOne4CenterF12IntegralsRIB23
 
-subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair_occ_in)
+subroutine ContractTwo4CenterF12IntegralsRI_p(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair_occ_in)
    implicit none
    integer,intent(in)        :: nBA,n1,n2
    real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,alpha,beta
+   real(realk) :: tmpR,tmpG1,tmpG2,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif  
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
+   !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
+   !$OMP nba,dopair_occ) REDUCTION(+:EJ,EK,ED)
+   DO q=1,n2 !nocv
+      DO p=1,n2 !nocv
+         DO j=1,n1 !nocc
+            DO i=1,n1 !nocc
+               IF(dopair_occ(I,J)) THEN
+                  tmpR = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR = tmpR + CalphaR(alpha,i,p)*CalphaR(alpha,j,q)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG1 = tmpG1 + CalphaG(beta,i,p)*CalphaG(beta,j,q)
+                     tmpG2 = tmpG2 + CalphaG(beta,j,p)*CalphaG(beta,i,q)
+                  ENDDO
+                  EJ = EJ + tmpR*tmpG1 
+                  EK = EK + tmpR*tmpG2
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = 1.25E0_realk*EJ - 0.25E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRI_p
+
+subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n2,n1)
    real(realk),intent(inout) :: EJK
    real(realk)               :: ED, EJ,EK
    !local variables
@@ -2889,7 +2988,7 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair
                ENDDO
                tmpG1 = 0.0E0_realk
                DO beta = 1,NBA
-                  tmpG1 = tmpG1 + CalphaG(beta,j,p)*CalphaG(beta,j,q)
+                  tmpG1 = tmpG1 + CalphaG(beta,p,j)*CalphaG(beta,q,j)
                ENDDO
                ED = ED + tmpR*tmpG1
             ENDIF
@@ -2903,8 +3002,8 @@ subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair
                   tmpG1 = 0.0E0_realk
                   tmpG2 = 0.0E0_realk
                   DO beta = 1,NBA
-                     tmpG1 = tmpG1 + CalphaG(beta,i,p)*CalphaG(beta,j,q)
-                     tmpG2 = tmpG2 + CalphaG(beta,j,p)*CalphaG(beta,i,q)
+                     tmpG1 = tmpG1 + CalphaG(beta,p,i)*CalphaG(beta,q,j)
+                     tmpG2 = tmpG2 + CalphaG(beta,p,j)*CalphaG(beta,q,i)
                   ENDDO
                   EJ = EJ + tmpR*tmpG1 
                   EK = EK + tmpR*tmpG2
@@ -2974,6 +3073,54 @@ subroutine ContractTwo4CenterF12IntegralsRIC(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK
    EJK = - ED - 2.5E0_realk*EJ + 0.5E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIC
 
+subroutine ContractTwo4CenterF12IntegralsRIC_p(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK,dopair_occ_in)
+   implicit none 
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED,EJ,EK
+   real(realk),pointer       :: Caibj(:,:,:,:)
+   real(realk),intent(in)    :: Taibj(:,:,:,:)
+   !local variables
+   integer :: a,b,i,j,alpha,beta
+   real(realk) :: tmp,tmpR,tmpG
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO b=1,n2
+      DO a=1,n2
+         DO j=1,n1
+            DO i=1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR = tmpR + CalphaV(alpha,i,a)*CalphaD(alpha,j,b) + CalphaV(alpha,j,b)*CalphaD(alpha,i,a)
+                  ENDDO
+                  tmpG = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG = tmpG + CalphaV(beta,j,a)*CalphaD(beta,i,b) + CalphaV(beta,i,b)*CalphaD(beta,j,a)
+                  ENDDO
+                  EJ = EJ + tmpR*Taibj(a,i,b,j)
+                  EK = EK + tmpG*Taibj(a,i,b,j)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK = -1.25E0_realk*EJ + 0.25E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIC_p
+
 subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaG,Fii,EJK,dopair_occ_in)
    implicit none
    integer,intent(in)        :: nBA,n1,n2
@@ -3029,7 +3176,282 @@ subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaG,Fii,EJK,dopair_oc
    EJK = (ED*(0.5E0_realk) + (7.0/16.0*EJ + 1.0/16.0*EK)) 
 end subroutine ContractTwo4CenterF12IntegralsRIX
 
-subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,n1,n3,n2,nbasis,&
+subroutine ContractTwo4CenterF12IntegralsRIX_nc(nBA,n1,n2,CalphaC,CalphaG,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(in)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO q=1,n2
+      DO p=1,n2
+         DO i=1,n1
+            DO j=1,n1
+               if(dopair_occ(i,j)) then
+                  tmpR1 = 0.0E0_realk
+                  DO alpha = 1, nBA
+                     tmpR1 = tmpR1 + CalphaC(ALPHA,p,i)*CalphaC(ALPHA,q,j)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     tmpG1 = tmpG1 + CalphaC(BETA,p,i)*CalphaG(BETA,q,j)
+                  ENDDO
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     tmpG2 = tmpG2 + CalphaG(BETA,p,i)*CalphaC(BETA,q,j)
+                  ENDDO
+                  tmpG3 = 0.0E0_realk
+                  tmpG4 = 0.0E0_realk
+                  DO gamma = 1, nBA
+                     tmpG3 = tmpG3 + CalphaG(GAMMA,p,j)*CalphaC(GAMMA,q,i)
+                     tmpG4 = tmpG4 + CalphaC(GAMMA,p,j)*CalphaG(GAMMA,q,i)
+                  ENDDO
+                  EJ = EJ + tmpR1*(tmpG1 + tmpG2)
+                  EK = EK + tmpR1*(tmpG3 + tmpG4)
+               endif
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   !print *,"COULOMBX2:  ", 7.0/32.0*EJ
+   !print *,"EXCHANGEX2: ", 1.0/32.0*EK
+   !print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ + 1.0/32.0*EK      
+
+end subroutine ContractTwo4CenterF12IntegralsRIX_nc
+
+subroutine ContractTwo4CenterF12IntegralsRIX_nc2(nBA,n1,n2,CalphaC,CalphaG,Fii,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaC(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: Fii(n1,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   Real(realk)               :: Xijkl(n1,n1,n1,n1)
+   !local variables
+   integer :: q,p,i,j,k,l,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO i=1,n1
+      DO j=1,n1
+         DO k=1,n1
+            DO l=1,n1
+
+               tmp = 0.0E0_realk
+               DO q=1,n2
+                  DO p=1,n2
+                     tmpR1 = 0.0E0_realk
+                     DO alpha = 1, nBA
+                        tmpR1 = tmpR1 + CalphaC(ALPHA,i,p)*CalphaC(ALPHA,j,q)
+                     ENDDO
+                     tmpG1 = 0.0E0_realk
+                     DO beta = 1, nBA
+                        tmpG1 = tmpG1 + CalphaC(BETA,k,p)*CalphaC(BETA,l,q)
+                     ENDDO
+                     tmp = tmp + tmpR1*tmpG1
+                  ENDDO
+               ENDDO
+               Xijkl(i,j,k,l) = tmp
+
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+
+   DO l=1,n1
+       DO k=1,n1
+          DO j=1,n1
+             DO i=1,n1
+                if(abs(Xijkl(i,j,k,l)) > 1E-10) then
+                   print *, "i j k l Xijkl: ", i, j, k, l, Xijkl(i,j,k,l)
+                endif
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+
+   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   print *,"COULOMBX2:  ", 7.0/32.0*EJ
+   print *,"EXCHANGEX2: ", 1.0/32.0*EK
+   print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ + 1.0/32.0*EK 
+
+end subroutine ContractTwo4CenterF12IntegralsRIX_nc2
+
+subroutine ContractTwo4CenterF12IntegralsRIX_nc3(nBA,n1,n2,CalphaC,Fii,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaC(nBA,n1,n2)
+   real(realk),intent(in)    :: Fii(n1,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,k,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO q=1,n2
+      DO p=1,n2
+         DO i=1,n1
+            DO j=1,n1
+               DO k=1,n1
+                  tmpR1 = 0.0E0_realk
+                  DO alpha = 1, nBA
+                     tmpR1 = tmpR1 + CalphaC(ALPHA,i,p)*CalphaC(ALPHA,j,q)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     !tmpG1 = tmpG1 + CalphaC(BETA,i,p)*CalphaC(BETA,k,q)*Fii(k,j)
+                     !tmpG2 = tmpG2 + CalphaC(BETA,k,p)*CalphaC(BETA,j,q)*Fii(k,i)
+                     tmpG1 = tmpG1 + CalphaC(BETA,i,p)*CalphaC(BETA,k,q)*Fii(k,j)
+                     tmpG2 = tmpG2 + CalphaC(BETA,k,p)*CalphaC(BETA,j,q)*Fii(k,i)
+                  ENDDO
+                  tmpG3 = 0.0E0_realk
+                  tmpG4 = 0.0E0_realk
+                  DO gamma = 1, nBA
+                     !tmpG3 = tmpG3 + CalphaC(GAMMA,k,p)*CalphaC(GAMMA,i,q)*Fii(k,j)
+                     !tmpG4 = tmpG4 + CalphaC(GAMMA,j,p)*CalphaC(GAMMA,k,q)*Fii(k,i)
+                     tmpG3 = tmpG3 + CalphaC(GAMMA,k,p)*CalphaC(GAMMA,i,q)*Fii(k,j)
+                     tmpG4 = tmpG4 + CalphaC(GAMMA,j,p)*CalphaC(GAMMA,k,q)*Fii(k,i)
+                  ENDDO
+                  EJ = EJ + tmpR1*(tmpG1 + tmpG2)
+                  EK = EK + tmpR1*(tmpG3 + tmpG4)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+
+   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   print *,"COULOMBX2:  ", 7.0/32.0*EJ
+   print *,"EXCHANGEX2: ", 1.0/32.0*EK
+   print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ + 1.0/32.0*EK      
+
+end subroutine ContractTwo4CenterF12IntegralsRIX_nc3
+
+subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,n1,n2,n3,nbasis,&
+      & CalphaRcabs,CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,nbasis
+   real(realk),intent(in)    :: CalphaRcabs(nBA,n1,n3),CalphaGcabs(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaR(nBA,n1,nbasis),CalphaG(nBA,nbasis,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG13,tmpG23
+   real(realk) :: tmpR4,tmpG14,tmpG24
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJK3 = 0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   EJK4 = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+   !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaRcabs,CalphaR,CalphaGcabs,CalphaG,&
+   !$OMP n3,n2,n1,nba,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   DO c=1,n3
+      DO m=1,n2
+         DO j=1,n1
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR3 = 0.0E0_realk
+               DO alpha = 1,NBA
+                  tmpR3 = tmpR3 + CalphaR(alpha,j,m)*CalphaRcabs(alpha,j,c)
+               ENDDO
+               tmpG13 = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG13 = tmpG13 + CalphaG(beta,m,j)*CalphaGcabs(beta,j,c)
+               ENDDO
+               ED = ED + tmpR3*tmpG13
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR3 = 0.0E0_realk
+                  tmpR4 = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR3 = tmpR3 + CalphaR(alpha,i,m)*CalphaRcabs(alpha,j,c)
+                     tmpR4 = tmpR4 + CalphaR(alpha,j,m)*CalphaRcabs(alpha,i,c)
+                  ENDDO              
+                  tmpG13 = 0.0E0_realk
+                  tmpG23 = 0.0E0_realk
+                  !  tmpG14 = 0.0E0_realk
+                  !  tmpG24 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG13 = tmpG13 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
+                     tmpG23 = tmpG23 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
+                     ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+                     ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*tmpG13 
+                  EK3 = EK3 + tmpR3*tmpG23
+                  EJ4 = EJ4 + tmpR4*tmpG23
+                  EK4 = EK4 + tmpR4*tmpG13
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK3 = ED + 2.5E0_realk*EJ3-0.5E0_realk*EK3
+   EJK4 = ED + 2.5E0_realk*EJ4-0.5E0_realk*EK4
+end subroutine ContractTwo4CenterF12IntegralsRI2V3V4
+
+subroutine ContractTwo4CenterF12IntegralsRI2V3V4_p(nBA,n1,n3,n2,nbasis,&
       & CalphaRcabs,CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ_in)
    implicit none
    integer,intent(in)        :: nBA,n1,n2,n3,nbasis
@@ -3063,20 +3485,7 @@ subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,n1,n3,n2,nbasis,&
    DO m=1,n3
       DO c=1,n2
          DO j=1,n1
-            !Diagonal
-            IF(dopair_occ(J,J)) THEN
-               tmpR3 = 0.0E0_realk
-               DO alpha = 1,NBA
-                  tmpR3 = tmpR3 + CalphaR(alpha,j,m)*CalphaRcabs(alpha,j,c)
-               ENDDO
-               tmpG13 = 0.0E0_realk
-               DO beta = 1,NBA
-                  tmpG13 = tmpG13 + CalphaG(beta,j,m)*CalphaGcabs(beta,j,c)
-               ENDDO
-               ED = ED + tmpR3*tmpG13
-            ENDIF
-            !Non Diagonal
-            DO i=j+1,n1
+            DO i=1,n1
                IF(dopair_occ(I,J)) THEN
                   tmpR3 = 0.0E0_realk
                   tmpR4 = 0.0E0_realk
@@ -3086,14 +3495,9 @@ subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,n1,n3,n2,nbasis,&
                   ENDDO              
                   tmpG13 = 0.0E0_realk
                   tmpG23 = 0.0E0_realk
-                  tmpG14 = 0.0E0_realk
-                  tmpG24 = 0.0E0_realk
                   DO beta = 1,NBA
                      tmpG13 = tmpG13 + CalphaG(beta,i,m)*CalphaGcabs(beta,j,c)
                      tmpG23 = tmpG23 + CalphaG(beta,j,m)*CalphaGcabs(beta,i,c)
-
-                     ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
-                     ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
                   ENDDO
                   EJ3 = EJ3 + tmpR3*tmpG13 
                   EK3 = EK3 + tmpR3*tmpG23
@@ -3105,10 +3509,10 @@ subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,n1,n3,n2,nbasis,&
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK3 = ED + 2.5E0_realk*EJ3-0.5E0_realk*EK3
-   EJK4 = ED + 2.5E0_realk*EJ4-0.5E0_realk*EK4
+   EJK3 = 1.25E0_realk*EJ3-0.25E0_realk*EK3
+   EJK4 = 1.25E0_realk*EJ4-0.25E0_realk*EK4
 
-end subroutine ContractTwo4CenterF12IntegralsRI2V3V4
+end subroutine ContractTwo4CenterF12IntegralsRI2V3V4_p
 
 subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
       & CalphaRocc,CalphaGocc,EJK3,EJK4,dopair_occ_in)
@@ -3251,10 +3655,10 @@ subroutine ContractTwo4CenterF12IntegralsRIB4(nBA,n1,n2,CalphaG,CalphaD,EJK,dopa
    EJK = ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIB4                
 
-subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,n3,CalphaGcabs,CalphaG,CalphaD,EJK,dopair_occ_in)
+subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
-   integer,intent(in)        :: nBA,n1,n2,n3
-   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
+   integer,intent(in)        :: nBA,n1,n2,n3,nbasis
+   real(realk),intent(in)    :: CalphaG(nBA,nbasis,n1)
    real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
    real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
    real(realk),intent(inout) :: EJK
@@ -3282,10 +3686,10 @@ subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,n3,CalphaGcabs,CalphaG,C
                tmpR = 0.0E0_realk
                tmpG = 0.0E0_realk
                DO alpha = 1,nBA
-                  tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,j,m)
+                  tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,m,j)
                ENDDO
                DO beta = 1,nBA
-                  tmpG = tmpG + CalphaGcabs(beta,j,q)*CalphaG(beta,j,m)
+                  tmpG = tmpG + CalphaGcabs(beta,j,q)*CalphaG(beta,m,j)
                ENDDO
                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
             ENDIF 
@@ -3295,14 +3699,14 @@ subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,n3,CalphaGcabs,CalphaG,C
                   tmpRJ1 = 0.0E0_realk
                   tmpGJ1 = 0.0E0_realk
                   DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,j,m) 
-                     tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha1,i,q)*CalphaG(alpha1,j,m)
+                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,m,j) 
+                     tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha1,i,q)*CalphaG(alpha1,m,j)
                   ENDDO
                   tmpRJ2 = 0.0E0_realk
                   tmpGJ2 = 0.0E0_realk
                   DO alpha2 = 1, nBA
-                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,i,m)
-                     tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha2,j,q)*CalphaG(alpha2,i,m)
+                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,m,i)
+                     tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha2,j,q)*CalphaG(alpha2,m,i)
                   ENDDO
                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
@@ -3317,7 +3721,7 @@ end subroutine ContractTwo4CenterF12IntegralsRIB5
 subroutine ContractTwo4CenterF12IntegralsRIB6(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
    integer,intent(in)        :: nBA,n1,n2,n3
-   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
    real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
    real(realk),intent(inout) :: EJK
    real(realk)               :: EJ, EK, ED
@@ -3344,8 +3748,8 @@ subroutine ContractTwo4CenterF12IntegralsRIB6(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,d
                tmpR = 0.0E0_realk
                tmpG = 0.0E0_realk
                DO alpha = 1,nBA
-                  tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,j,a)
-                  tmpG = tmpG + CalphaG(alpha,j,q)*CalphaG(alpha,j,a)
+                  tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
+                  tmpG = tmpG + CalphaG(alpha,q,j)*CalphaG(alpha,a,j)
                ENDDO
                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
             ENDIF
@@ -3355,14 +3759,14 @@ subroutine ContractTwo4CenterF12IntegralsRIB6(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,d
                   tmpRJ1 = 0.0E0_realk
                   tmpGJ1 = 0.0E0_realk
                   DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,j,a) 
-                     tmpGJ1 = tmpGJ1 + CalphaG(alpha1,i,q)*CalphaG(alpha1,j,a)
+                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,a,j) 
+                     tmpGJ1 = tmpGJ1 + CalphaG(alpha1,q,i)*CalphaG(alpha1,a,j)
                   ENDDO
                   tmpRJ2 = 0.0E0_realk
                   tmpGJ2 = 0.0E0_realk
                   DO alpha2 = 1, nBA
-                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,i,a)
-                     tmpGJ2 = tmpGJ2 + CalphaG(alpha2,j,q)*CalphaG(alpha2,i,a)
+                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,a,i)
+                     tmpGJ2 = tmpGJ2 + CalphaG(alpha2,q,j)*CalphaG(alpha2,a,i)
                   ENDDO
                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)           
@@ -3378,7 +3782,7 @@ end subroutine ContractTwo4CenterF12IntegralsRIB6
 subroutine ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii,CalphaD,dopair_occ_in)
    implicit none
    integer,intent(in) :: NBA,nocc,noccfull,nbasis
-   real(realk),intent(in) :: CalphaG(NBA,nocc,nbasis),Fii(noccfull,noccfull)
+   real(realk),intent(in) :: CalphaG(NBA,nbasis,nocc),Fii(noccfull,noccfull)
    real(realk),intent(inout) :: CalphaD(NBA,nocc,noccfull)
    integer :: i,j,alpha,m
    real(realk) :: TMP
@@ -3424,13 +3828,13 @@ end subroutine ContractOccCalpha
 subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,n3,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
    integer,intent(in)        :: nBA,n1,n2,n3
-   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
-   real(realk),intent(in)    :: CalphaR(nBA,n1,n2)
-   real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
    real(realk),intent(inout) :: EJK
    real(realk)               :: EJ, EK, ED
    !local variables
-   integer :: p,n,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   integer :: c,n,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
    real(realk) :: tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2
    real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
    !Dopair                                                                          
@@ -3444,18 +3848,18 @@ subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,n3,CalphaR,CalphaG,Calph
    ED = 0.0E0_realk
    EK = 0.0E0_realk
    EJ = 0.0E0_realk
-   DO p=1,n2 !ncabsMO
-      DO n=1,n3 !noccAOS
+   DO c=1,n3 !ncabsMO
+      DO n=1,n2 !noccAOS
          DO j=1,n1 !noccEOS
             !Diagonal
             IF(dopair_occ(J,J)) THEN
                tmpR = 0.0E0_realk
                tmpG = 0.0E0_realk
                DO alpha = 1,nBA
-                  tmpR = tmpR + CalphaR(alpha,j,p)*CalphaD(alpha,j,n)
+                  tmpR = tmpR + CalphaR(alpha,j,c)*CalphaD(alpha,j,n)
                ENDDO
                DO beta = 1,nBA
-                  tmpG = tmpG + CalphaR(beta,j,p)*CalphaG(beta,j,n)
+                  tmpG = tmpG + CalphaR(beta,j,c)*CalphaG(beta,j,n)
                ENDDO
                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
             ENDIF
@@ -3464,19 +3868,19 @@ subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,n3,CalphaR,CalphaG,Calph
                IF(dopair_occ(I,J)) THEN
                   tmpRJ1 = 0.0E0_realk
                   DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,p)*CalphaD(alpha1,j,n) 
+                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,c)*CalphaD(alpha1,j,n) 
                   ENDDO
                   tmpRJ2 = 0.0E0_realk
                   DO alpha2 = 1, nBA
-                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,p)*CalphaD(alpha2,i,n)
+                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,c)*CalphaD(alpha2,i,n)
                   ENDDO
                   tmpGJ1 = 0.0E0_realk
                   DO beta1 = 1, nBA
-                     tmpGJ1 = tmpGJ1 + CalphaR(beta1,i,p)*CalphaG(beta1,j,n)
+                     tmpGJ1 = tmpGJ1 + CalphaR(beta1,i,c)*CalphaG(beta1,j,n)
                   ENDDO
                   tmpGJ2 = 0.0E0_realk
                   DO beta2 = 1, nBA
-                     tmpGJ2 = tmpGJ2 + CalphaR(beta2,j,p)*CalphaG(beta2,i,n)
+                     tmpGJ2 = tmpGJ2 + CalphaR(beta2,j,c)*CalphaG(beta2,i,n)
                   ENDDO
                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
@@ -3485,14 +3889,14 @@ subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,n3,CalphaR,CalphaG,Calph
          ENDDO
       ENDDO
    ENDDO   
-   EJK = ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK
+   EJK = 1.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK) 
 
 end subroutine ContractTwo4CenterF12IntegralsRIB7
 
 subroutine ContractTwo4CenterF12IntegralsRIB8(nBA,n1,n2,nbasis,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
    integer,intent(in)        :: nBA,n1,n2,nbasis
-   real(realk),intent(in)    :: CalphaG(nBA,n1,nbasis)
+   real(realk),intent(in)    :: CalphaG(nBA,nbasis,n1)
    real(realk),intent(in)    :: CalphaR(nBA,n1,n2) !CalphaGcabsMO
    real(realk),intent(in)    :: CalphaD(nBA,n1,n1)
    real(realk),intent(inout) :: EJK
@@ -3523,7 +3927,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB8(nBA,n1,n2,nbasis,CalphaR,CalphaG,C
                tmpR = 0.0E0_realk
                tmpG = 0.0E0_realk
                DO alpha = 1,nBA
-                  tmpR = tmpR + CalphaR(alpha,j,p)*CalphaG(alpha,j,m)
+                  tmpR = tmpR + CalphaR(alpha,j,p)*CalphaG(alpha,m,j)
                ENDDO
                DO beta = 1,nBA
                   tmpG = tmpG + CalphaR(beta,j,p)*CalphaD(beta,j,m)
@@ -3535,11 +3939,11 @@ subroutine ContractTwo4CenterF12IntegralsRIB8(nBA,n1,n2,nbasis,CalphaR,CalphaG,C
                IF(dopair_occ(I,J)) THEN
                   tmpRJ1 = 0.0E0_realk
                   DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,p)*CalphaG(alpha1,j,m) 
+                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,p)*CalphaG(alpha1,m,j) 
                   ENDDO
                   tmpRJ2 = 0.0E0_realk
                   DO alpha2 = 1, nBA
-                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,p)*CalphaG(alpha2,i,m)
+                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,p)*CalphaG(alpha2,m,i)
                   ENDDO
                   tmpGJ1 = 0.0E0_realk
                   DO beta1 = 1, nBA
@@ -3563,7 +3967,7 @@ end subroutine ContractTwo4CenterF12IntegralsRIB8
 subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
    integer,intent(in)        :: nBA,n1,n2,n3
-   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
    real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
    real(realk),intent(inout) :: EJK
    real(realk)               :: EJ, EK, ED
@@ -3589,11 +3993,11 @@ subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,d
                !Diagonal
                tmpR = 0.0E0_realk
                DO alpha = 1,nBA
-                  tmpR = tmpR + CalphaG(alpha,j,p)*CalphaG(alpha,j,a)
+                  tmpR = tmpR + CalphaG(alpha,p,j)*CalphaG(alpha,a,j)
                ENDDO
                tmpG = 0.0E0_realk
                DO beta = 1,nBA
-                  tmpG = tmpG + CalphaD(beta,j,p)*CalphaG(beta,j,a)
+                  tmpG = tmpG + CalphaD(beta,j,p)*CalphaG(beta,a,j)
                ENDDO
                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
             ENDIF
@@ -3602,19 +4006,19 @@ subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,d
                IF(dopair_occ(I,J)) THEN
                   tmpRJ1 = 0.0E0_realk
                   DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaG(alpha1,i,p)*CalphaG(alpha1,j,a) 
+                     tmpRJ1 = tmpRJ1 + CalphaG(alpha1,p,i)*CalphaG(alpha1,a,j) 
                   ENDDO      
                   tmpRJ2 = 0.0E0_realk
                   DO alpha2 = 1, nBA
-                     tmpRJ2 = tmpRJ2 + CalphaG(alpha2,j,p)*CalphaG(alpha2,i,a)
+                     tmpRJ2 = tmpRJ2 + CalphaG(alpha2,p,j)*CalphaG(alpha2,a,i)
                   ENDDO
                   tmpGJ1 = 0.0E0_realk
                   DO beta1 = 1, nBA
-                     tmpGJ1 = tmpGJ1 + CalphaD(beta1,i,p)*CalphaG(beta1,j,a)
+                     tmpGJ1 = tmpGJ1 + CalphaD(beta1,i,p)*CalphaG(beta1,a,j)
                   ENDDO
                   tmpGJ2 = 0.0E0_realk
                   DO beta2 = 1, nBA
-                     tmpGJ2 = tmpGJ2 + CalphaD(beta2,j,p)*CalphaG(beta2,i,a)
+                     tmpGJ2 = tmpGJ2 + CalphaD(beta2,j,p)*CalphaG(beta2,a,i)
                   ENDDO
                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
@@ -3626,75 +4030,251 @@ subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,n1,n2,n3,CalphaG,CalphaD,EJK,d
    EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
 end subroutine ContractTwo4CenterF12IntegralsRIB9
 
-subroutine ContractTwo4CenterF12IntegralsRI2X(nBA,n1,n3,n2,&
+subroutine ContractTwo4CenterF12IntegralsRIX3X4(nBA,n1,n3,n2,&
       & CalphaGcabs,CalphaG,Fii,EJK3,EJK4,dopair_occ_in)
-  implicit none
-  integer,intent(in)        :: nBA,n1,n2,n3
-  real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
-  real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
-  real(realk),intent(IN)    :: Fii(n1,n1)
-  real(realk),intent(inout) :: EJK3,EJK4
-  real(realk)               :: EJ3, EJ4, EK3, EK4, ED
-  !local variables
-  integer :: m,c,i,j,alpha,beta
-  real(realk) :: tmpR3,tmpG13,tmpG23
-  real(realk) :: tmpR4,tmpG14,tmpG24,tmp
-  !Dopair                                                                          
-  logical,intent(in),optional :: dopair_occ_in(n1,n1)
-  logical :: dopair_occ(n1,n1)
-  if(present(dopair_occ_in)) then
-     dopair_occ = dopair_occ_in
-  else
-     dopair_occ = .TRUE.
-  endif
-  !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-  ED =  0.0E0_realk
-  EJ3 =  0.0E0_realk
-  EK3 =  0.0E0_realk
-  EJK3 = 0.0E0_realk
-  EJ4 =  0.0E0_realk
-  EK4 =  0.0E0_realk
-  EJK4 = 0.0E0_realk
-  !!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
-  !!$OMP tmpG13,tmpG23,tmp) SHARED(CalphaG,CalphaGcabs,n3,n2,n1,dopair_occ) &
-  !!$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
-  DO m=1,n3
-     DO c=1,n2
-        DO j=1,n1
-           if(dopair_occ(J,J)) then
-              !Diagonal
-              tmpG13 = 0.0E0_realk
-              DO beta = 1,NBA
-                 tmpG13 = tmpG13 + CalphaG(beta,j,m)*CalphaGcabs(beta,j,c)
-              ENDDO
-              ED = ED + tmpG13*tmpG13*Fii(j,j)
-           endif
-           !Non Diagonal
-           DO i=j+1,n1
-              IF(dopair_occ(I,J)) THEN
-                 tmpG13 = 0.0E0_realk
-                 tmpG23 = 0.0E0_realk
-                 DO beta = 1,NBA
-                    tmpG13 = tmpG13 + CalphaG(beta,i,m)*CalphaGcabs(beta,j,c)
-                    tmpG23 = tmpG23 + CalphaG(beta,j,m)*CalphaGcabs(beta,i,c)
-                    ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
-                    ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
-                 ENDDO
-                 tmp = (Fii(i,i) + Fii(j,j)) 
-                 EJ3 = EJ3 + tmpG13*tmpG13*tmp
-                 EK3 = EK3 + tmpG13*tmpG23*tmp
-                 EJ4 = EJ4 + tmpG23*tmpG23*tmp
-                 EK4 = EK4 + tmpG23*tmpG13*tmp
-              ENDIF
-           ENDDO
-        ENDDO
-     ENDDO
-  ENDDO
-  !!$OMP END PARALLEL DO
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
+   real(realk),intent(IN)    :: Fii(n1,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG13,tmpG23
+   real(realk) :: tmpR4,tmpG14,tmpG24,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJK3 = 0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   EJK4 = 0.0E0_realk
+   !!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+   !!$OMP tmpG13,tmpG23,tmp) SHARED(CalphaG,CalphaGcabs,n3,n2,n1,dopair_occ) &
+   !!$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   DO m=1,n3
+      DO c=1,n2
+         DO j=1,n1
+            if(dopair_occ(J,J)) then
+               !Diagonal
+               tmpG13 = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG13 = tmpG13 + CalphaG(beta,j,m)*CalphaGcabs(beta,j,c)
+               ENDDO
+               ED = ED + tmpG13*tmpG13*Fii(j,j)
+            endif
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpG13 = 0.0E0_realk
+                  tmpG23 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG13 = tmpG13 + CalphaG(beta,i,m)*CalphaGcabs(beta,j,c)
+                     tmpG23 = tmpG23 + CalphaG(beta,j,m)*CalphaGcabs(beta,i,c)
+                     ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+                     ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                  ENDDO
+                  tmp = (Fii(i,i) + Fii(j,j)) 
+                  EJ3 = EJ3 + tmpG13*tmpG13*tmp
+                  EK3 = EK3 + tmpG13*tmpG23*tmp
+                  EJ4 = EJ4 + tmpG23*tmpG23*tmp
+                  EK4 = EK4 + tmpG23*tmpG13*tmp
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !!$OMP END PARALLEL DO
 
-  EJK3 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ3+1.0_realk/16.0_realk*EK3)
-  EJK4 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ4+1.0_realk/16.0_realk*EK4)
- end subroutine ContractTwo4CenterF12IntegralsRI2X
+   EJK3 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ3+1.0_realk/16.0_realk*EK3)
+   EJK4 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ4+1.0_realk/16.0_realk*EK4)
+end subroutine ContractTwo4CenterF12IntegralsRIX3X4
+
+subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc(nBA,n1,n2,n3,&
+      & CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
+   real(realk),intent(IN)    :: CalphaC(nBA,n1,n2)
+   real(realk),intent(IN)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG31,tmpG32,tmpG33,tmpG34
+   real(realk) :: tmpR4,tmpG41,tmpG42,tmpG43,tmpG44
+   real(realk) :: tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJK3 = 0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   EJK4 = 0.0E0_realk
+   !!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+   !!$OMP tmpG13,tmpG23,tmp) SHARED(CalphaC,CalphT,CalphaGcabs,n3,n2,n1,dopair_occ) &
+   !!$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   DO m=1,n2
+      DO c=1,n3
+         DO j=1,n1
+            DO i=1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR3 = 0.0E0_realk
+                  tmpR4 = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR3 = tmpR3 + CalphaC(alpha,i,m)*CalphaGcabs(alpha,j,c)
+                  ENDDO
+                  tmpG31 = 0.0E0_realk
+                  tmpG32 = 0.0E0_realk
+                  tmpG33 = 0.0E0_realk
+                  tmpG34 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,c,j)
+                     tmpG32 = tmpG32 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
+                     tmpG33 = tmpG33 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
+                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,c,i)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*(tmpG31 + tmpG32)
+                  EK3 = EK3 + tmpR3*(tmpG33 + tmpG34)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !!$OMP END PARALLEL DO
+   EJK3 = 7.0/32.0_realk*EJ3+1.0_realk/32.0*EK3
+   EJK4 = EJK3
+!   print *,"COULOMBX2:  ", 7.0/32.0*EJ3
+!   print *,"EXCHANGEX2: ", 1.0/32.0*EK3
+!   print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ3 + 1.0/32.0*EK3      
+end subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc
+
+subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc2(nBA,n1,n2,n3,&
+      & CalphaGcabs,CalphaC,CalphaG,Fii,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(in)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: Fii(n2,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+   !local variables
+   integer :: m,c,i,j,k,alpha,beta
+   real(realk) :: tmpR3,tmpG31,tmpG32,tmpG33,tmpG34
+   real(realk) :: tmpR4,tmpG41,tmpG42,tmpG43,tmpG44
+   real(realk) :: tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJK3 = 0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   EJK4 = 0.0E0_realk
+
+   DO j=1,n1
+      DO i=1,n1
+         if(abs(CalphaC(1,i,j)) > 1E-10) then
+            print *, "i j  CalphaC: ", i, j, CalphaC(1,i,j)
+         endif
+      ENDDO
+   ENDDO
+   print *, "-------------------------------------------"
+   DO j=1,n1
+      DO i=1,n1
+         if(abs(CalphaG(1,j,i)) > 1E-10) then
+            print *, "i j  CalphaG: ", i, j, CalphaG(1,j,i)
+         endif
+      ENDDO
+   ENDDO
+
+   DO m=1,n2
+      DO c=1,n3
+         DO j=1,n1
+            DO i=1,n1
+               DO k=1,n1 
+                     tmpR3 = 0.0E0_realk
+                     tmpR4 = 0.0E0_realk
+                     DO alpha = 1,NBA
+                        tmpR3 = tmpR3 + CalphaC(alpha,i,m)*CalphaGcabs(alpha,j,c)
+                        tmpR4 = tmpR4 + CalphaC(alpha,j,m)*CalphaGcabs(alpha,i,c)
+                     ENDDO
+                     tmpG31 = 0.0E0_realk
+                     tmpG32 = 0.0E0_realk
+                     tmpG33 = 0.0E0_realk
+                     tmpG34 = 0.0E0_realk
+
+                     tmpG41 = 0.0E0_realk
+                     tmpG42 = 0.0E0_realk
+                     tmpG43 = 0.0E0_realk
+                     tmpG44 = 0.0E0_realk
+                     DO beta = 1,NBA
+                        tmpG31 = tmpG31 + CalphaC(beta,i,m)*CalphaGcabs(beta,k,c)*Fii(k,j)
+                        tmpG32 = tmpG32 + CalphaC(beta,k,m)*CalphaGcabs(beta,j,c)*Fii(k,i)
+
+                        tmpG41 = tmpG41 + CalphaC(beta,j,m)*CalphaGcabs(beta,i,c)*Fii(k,j)
+                        tmpG42 = tmpG42 + CalphaC(beta,j,m)*CalphaGcabs(beta,k,c)*Fii(k,i)
+                     ENDDO
+                     DO beta = 1,NBA
+                        tmpG33 = tmpG33 + CalphaC(beta,k,m)*CalphaGcabs(beta,i,c)*Fii(k,j)
+                        tmpG34 = tmpG34 + CalphaC(beta,j,m)*CalphaGcabs(beta,k,c)*Fii(k,i)
+
+                        tmpG43 = tmpG43 + CalphaC(beta,i,m)*CalphaGcabs(beta,k,c)*Fii(k,j)
+                        tmpG44 = tmpG44 + CalphaC(beta,k,m)*CalphaGcabs(beta,j,c)*Fii(k,i)
+                     ENDDO
+                     EJ3 = EJ3 + tmpR3*(tmpG31 +tmpG32)
+                     EK3 = EK3 + tmpR3*(tmpG33 +tmpG34)
+                     
+                     EJ4 = EJ4 + tmpR4*(tmpG41 +tmpG42)
+                     EK4 = EK4 + tmpR4*(tmpG43 +tmpG44)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK3 = 7.0/32.0_realk*EJ3+1.0_realk/32.0*EK3
+   print *,"COULOMBX3:  ", 7.0/32.0*EJ3
+   print *,"EXCHANGEX3: ", 1.0/32.0*EK3
+   print *,"COULOMBX3+EXCHANGEX3:", 7.0/32.0*EJ3 + 1.0/32.0*EK3      
+   
+   EJK4 = 7.0/32.0_realk*EJ4+1.0_realk/32.0*EK4
+   print *,"COULOMBX3:  ", 7.0/32.0*EJ4
+   print *,"EXCHANGEX3: ", 1.0/32.0*EK4
+   print *,"COULOMBX3+EXCHANGEX3:", 7.0/32.0*EJ4 + 1.0/32.0*EK4
+
+   print *,"X3+X4: ", 7.0/32.0*EJ3 + 1.0/32.0*EK3 + 7.0/32.0*EJ4 + 1.0/32.0*EK4       
+
+end subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc2
+
 
 end module f12_routines_module
 
