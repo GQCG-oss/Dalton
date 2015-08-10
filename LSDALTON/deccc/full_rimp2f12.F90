@@ -798,7 +798,22 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==============================================================
    !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
    !==============================================================
-   
+   !> Dgemm 
+   !nsize = nBA*nocc*nocc
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*nocc                    ! D_jm = C_jp F_pm
+   !n =  nocc   
+   !k =  ncabsAO
+   !NB! Changed T to N, dont think it will matter but...
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frm%elms,k,0.0E0_realk,CalphaD,m)
+   !we need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
+   !call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8)  
+   !mp2f12_energy = mp2f12_energy  + EB8
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+   !call mem_dealloc(CalphaGcabsAO)
+   !call mem_dealloc(CalphaD)
+  
    !> Dgemm 
    nsize = nBA*nocc*nocc
    call mem_alloc(CalphaD, nsize)
@@ -808,16 +823,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !NB! Changed T to N, dont think it will matter but...
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frm%elms,k,0.0E0_realk,CalphaD,m)
 
-   !we need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
-   !call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8)
-   
+   call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8)
    mp2f12_energy = mp2f12_energy  + EB8
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
-   
    call mem_dealloc(CalphaGcabsAO)
    call mem_dealloc(CalphaD)
-   
+
    !==============================================================
    !=  B9: (ip|f12|ja)Fcp(ci|f12|aj)                             =
    !==============================================================
