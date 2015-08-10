@@ -627,7 +627,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      call ContractTwo4CenterF12IntegralsRIX3X4_nc(NBA,nocc,noccfull,ncabsMO,&
         & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
   
-     call mem_dealloc(CalphaCocc)
      call mem_dealloc(CalphaCcabsT)
      call mem_dealloc(CalphaT)
      call mem_dealloc(CalphaP)
@@ -763,26 +762,39 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==============================================================
    !We need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis) 
    !that we already have
-   
    !> Dgemm 
-   nsize = nBA*nocc*noccfull
-   call mem_alloc(CalphaD, nsize)
-   m =  nBA*noccfull               ! D_jn = C_jn F_nm
-   k =  noccfull
-   n =  noccfull
-   
+   !nsize = nBA*nocc*noccfull
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*noccfull               ! D_jn = C_jn F_nm
+   !k =  noccfull
+   !n =  noccfull
    !NB! Changed T to N, dont think it will matter but...
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)   
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)   
    ! Commented out just for current scheme, may be changed later TK
    !   call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
    !call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,noccfull,CalphaGcabsMO,CalphaG,CalphaD,EB7)
-   
+   !mp2f12_energy = mp2f12_energy  + EB7
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
+   !call mem_dealloc(CalphaD)
+
+   !> Dgemm 
+   nsize = nBA*nocc*noccfull
+   call mem_alloc(CalphaD, nsize)
+   m =  nBA*noccfull                    ! D_jm = Cocc_jk F_km
+   k =  noccfull
+   n =  nocc
+
+   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCocc,m,Fmm%elms,k,0.0E0_realk,CalphaD,m)
+   !Commented out just for current scheme, may be changed later TK
+   !call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
+   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,CalphaCocc,CalphaD,EB7)
+   call mem_dealloc(CalphaCocc)
+   call mem_dealloc(CalphaD)
    mp2f12_energy = mp2f12_energy  + EB7
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
-   
-   call mem_dealloc(CalphaD)
-   
+
    !==============================================================
    !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
    !==============================================================
