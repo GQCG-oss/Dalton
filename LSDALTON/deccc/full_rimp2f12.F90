@@ -553,7 +553,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
 
-     ABdecompCreateG = .FALSE.
+     !ABdecompCreateG = .FALSE.
      call mem_dealloc(CalphaD)
      call mem_dealloc(ABdecompC)
      call mem_dealloc(CalphaCcabs)
@@ -713,23 +713,50 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
    !==============================================================
    !> Dgemm 
-   nsize = nBA*nocc*nbasis
-   call mem_alloc(CalphaD, nsize)
-   m =  nBA*nocc               ! D_jq = C_jp F_pq
-   k =  nbasis
-   n =  nbasis
-   
+   !nsize = nBA*nocc*nbasis
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*nocc               ! D_jq = C_jp F_pq
+   !k =  nbasis
+   !n =  nbasis
    !Do on GPU (Async)
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
+   !Do on GPU (Async)
+   !call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB6)
+   !mp2f12_energy = mp2f12_energy  + EB6
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
+   !call mem_dealloc(CalphaD)
 
+   !> Dgemm 
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 1 
+   intspec(3) = 'R' !Regular AO basis function on center 2 
+   intspec(4) = 'G' !The Gaussian geminal operator g
+   intspec(5) = 'G' !The Gaussian geminal operator g
+
+   nsize = NBA*nocc*nocv  
+  ! call mem_alloc(ABdecompG,nAux,nAux)
+   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+      & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nocv,&
+      & mynum,numnodes,CalphaP,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
+   !call mem_dealloc(ABdecompG)
+
+   nsize = nBA*nocc*nocv
+   call mem_alloc(CalphaD,nsize)
+
+   m =  nBA*nocc               ! D_jq =PP_jp F_pq
+   k =  nocv
+   n =  nocv
    !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB6)
-   
+   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaP,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
+   call mem_dealloc(CalphaP) 
+   !Do on GPU (Async)
+   call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB6)
+   call mem_dealloc(CalphaD)
+
    mp2f12_energy = mp2f12_energy  + EB6
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
-   
-   call mem_dealloc(CalphaD)
    
    !==============================================================
    !=  B7: (ic|f12|jm)Fnm(ci|F12|nj)                             =
