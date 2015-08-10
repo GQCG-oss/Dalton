@@ -834,6 +834,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !=  B9: (ip|f12|ja)Fcp(ci|f12|aj)                             =
    !==============================================================
    !> Dgemm 
+   !nsize = nBA*nocc*nbasis
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*nocc                    ! D_jp = C_jc F_cp
+   !n =  nbasis
+   !k =  ncabsMO   
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fcp%elms,k,0.0E0_realk,CalphaD,m)
+   !call mem_dealloc(CalphaGcabsMO)
+   !call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9)
+   !mp2f12_energy = mp2f12_energy  + EB9
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+  
+   !> Dgemm 
    nsize = nBA*nocc*nbasis
    call mem_alloc(CalphaD, nsize)
    m =  nBA*nocc                    ! D_jp = C_jc F_cp
@@ -841,13 +854,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    k =  ncabsMO   
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fcp%elms,k,0.0E0_realk,CalphaD,m)
    call mem_dealloc(CalphaGcabsMO)
-
-   !call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9)
-   
+   call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9)
    mp2f12_energy = mp2f12_energy  + EB9
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
-   
+ 
    call mem_dealloc(CalphaG)
    call mem_dealloc(ABdecompG)
    call mem_dealloc(CalphaD)
