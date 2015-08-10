@@ -209,6 +209,7 @@ contains
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
+    dE_est3 = 0.0E0_realk
     master=0
     ForcePrintTime = .TRUE.
 
@@ -618,9 +619,9 @@ contains
 #ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
           IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_VIRTMP2)
+             Ecorr = energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
           ELSE
-             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+             Ecorr = energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
           ENDIF
        endif
 #endif 
@@ -1577,6 +1578,7 @@ subroutine print_dec_info()
         endif
 
 
+        deltaE_p =  0.0E0_realk
         select case(maxis)
         case(1)
            deltaE_p =  dE_occ

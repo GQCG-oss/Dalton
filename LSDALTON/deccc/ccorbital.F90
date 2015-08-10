@@ -22,6 +22,7 @@ module orbital_operations
   ! DEC DEPENDENCIES (within deccc directory)    
   ! *****************************************
   use dec_fragment_utils
+  use dec_tools_module
 
 
 contains

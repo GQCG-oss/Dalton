@@ -22,6 +22,7 @@ module atomic_fragment_operations
 
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
+  use dec_tools_module
   use dec_fragment_utils
   use array2_simple_operations!, only: array2_init,array2_matmul,array2_free,array2_add, operator(*)
   use array4_simple_operations!, only: array4_init,array4_extract_eos_indices_both_schemes,&
@@ -570,19 +571,19 @@ contains
     ENDIF
 
     if(DECinfo%F12debug) then
-       print *, "---------------------------------------"
-       print *, " atomic_fragment_init_f12 dec_atom.F90 "
-       print *, "---------------------------------------"
-       print *, "nbasis: ", nbasis
-       print *, "noccEOS: ", noccEOS
-       print *, "nvirtEOS: ", nvirtEOS
-       print *, "---------------------------------------"
-       print *, "nocvAOStot", nocvAOStot
-       print *, "noccAOS", noccAOS
-       print *, "nvirtAOS", nvirtAOS
-       print *, "ncabsAO", ncabsAO
-       print *, "ncabsMO", ncabsMO
-       print *, "---------------------------------------"
+      ! print *, "---------------------------------------"
+      ! print *, " atomic_fragment_init_f12 dec_atom.F90 "
+      ! print *, "---------------------------------------"
+      ! print *, "nbasis: ", nbasis
+      ! print *, "noccEOS: ", noccEOS
+      ! print *, "nvirtEOS: ", nvirtEOS
+      ! print *, "---------------------------------------"
+      ! print *, "nocvAOStot", nocvAOStot
+      ! print *, "noccAOS", noccAOS
+      ! print *, "nvirtAOS", nvirtAOS
+      ! print *, "ncabsAO", ncabsAO
+      ! print *, "ncabsMO", ncabsMO
+      ! print *, "---------------------------------------"
     end if 
 
     ! hJir
@@ -692,17 +693,6 @@ contains
     call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOStot,fragment%Ccabs,ncabsAO,ncabsMO)
     call mem_dealloc(Fcp)
 
-    if(DECinfo%F12debug) then
-       print *, "---------------------------------------"
-       print *, " atomic_fragment_init_f12 dec_atom.F90 "
-       print *, "---------------------------------------"
-       print *,"norm2D(fragment%hJir)", norm2D(fragment%hJir)
-       print *,"norm2D(fragment%Krs)" , norm2D(fragment%Krs) 
-       print *,"norm2D(fragment%Frs)" , norm2D(fragment%Frs) 
-       print *,"norm2D(fragment%Frm)" , norm2D(fragment%Frm) 
-       print *,"norm2D(fragment%Fcp)" , norm2D(fragment%Fcp) 
-       print *, "---------------------------------------"
-    endif
 #endif
 
   end subroutine atomic_fragment_init_f12
@@ -7009,6 +6999,10 @@ contains
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
     type(decfrag),intent(inout) :: MyFragment
     type(tensor) :: t2oEOS, t2vEOS
+    integer :: noEOS, nvEOS
+
+    noEOS = MyFragment%noccEOS
+    nvEOS = MyFragment%nvirtEOS
 
     ! Delete existing correlation density matrix (if present)
     if(MyFragment%CDset) then
@@ -7026,7 +7020,7 @@ contains
     CorrDensDefinition: select case(DECinfo%CorrDensScheme)
     case(1)
        ! Construct density matrix based only on EOS amplitudes
-       call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2oEOS,tensor_virtEOS=t2vEOS)
+       call tensor_extract_eos_indices(t2,noEOS,nvEOS,MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2oEOS,tensor_virtEOS=t2vEOS)
        call calculate_MP2corrdens_EOS(MyFragment,t2oEOS=t2oEOS%elm4,t2vEOS=t2vEOS%elm4)
 
        call tensor_free(t2oEOS)

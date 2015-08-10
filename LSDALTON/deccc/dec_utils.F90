@@ -13,6 +13,7 @@ module dec_fragment_utils
   use DALTONINFO!, only: ls_free
   use dec_typedef_module
   use dec_workarounds_module
+  use background_buffer_module
   use memory_handling!, only: mem_alloc, mem_dealloc, mem_allocated_global,&
   !       & stats_mem, get_avaiLable_memory
   use matrix_module!, only:matrix
@@ -239,116 +240,6 @@ end function max_batch_dimension
 
     return
   end subroutine remove_repeted_entries
-
-  !> \brief Sort first 'n' elements of vector a with 'm' elements
-  subroutine int_sort(a,n,m)
-
-    implicit none
-    integer, dimension(m), intent(inout) :: a
-    integer, intent(in) :: m,n
-    integer :: i
-    integer :: tmp
-    logical :: swp
-
-    swp=.true.
-    do while (swp)
-       swp=.false.
-       do i=1,n-1
-          if(a(i)>a(i+1)) then
-
-             tmp=a(i+1)
-             a(i+1)=a(i)
-             a(i)=tmp
-
-             swp=.true.
-          endif
-       end do
-    end do
-
-    return
-  end subroutine int_sort
-
-
-  !> \brief Sort real vector, keeping track of the original indices.
-  !> Note: Largest elements first!
-  subroutine real_inv_sort_with_tracking(to_sort,to_track,n)
-
-    implicit none
-    integer, intent(in) :: n
-    real(realk), dimension(n), intent(inout) :: to_sort
-    integer, dimension(n), intent(inout) :: to_track
-    real(realk) :: tmp
-    integer :: tmp1,i
-    logical :: swp
-
-    ! Set original track order
-    do i=1,n
-       to_track(i)=i
-    end do
-
-    swp=.true.
-    do while (swp)
-       swp=.false.
-       do i=1,n-1
-          if(to_sort(i) < to_sort(i+1)) then ! reverse order
-
-             tmp = to_sort(i+1)
-             to_sort(i+1) = to_sort(i)
-             to_sort(i) = tmp
-
-             tmp1 = to_track(i+1)
-             to_track(i+1) = to_track(i)
-             to_track(i) = tmp1
-
-             swp=.true.
-          end if
-       end do
-    end do
-    return
-  end subroutine real_inv_sort_with_tracking
-
-
-  !> \brief Sort integer vector, keeping track of the original indices.
-  !> Note: Largest elements first!
-  !> \author Kasper Kristensen (based on real_inv_sort_with_tracking)
-  !> \date February 2011
-  subroutine integer_inv_sort_with_tracking(to_sort,to_track,n)
-
-    implicit none
-    !> Dimension of vector to sort
-    integer, intent(in) :: n
-    !> Vector to sort
-    integer, dimension(n), intent(inout) :: to_sort
-    !> List of sorted original indices
-    integer, dimension(n), intent(inout) :: to_track
-    integer :: tmp,tmp1,i
-    logical :: swp
-
-    ! Set original track order
-    do i=1,n
-       to_track(i)=i
-    end do
-
-    swp=.true.
-    do while (swp)
-       swp=.false.
-       do i=1,n-1
-          if(to_sort(i) < to_sort(i+1)) then ! reverse order
-
-             tmp = to_sort(i+1)
-             to_sort(i+1) = to_sort(i)
-             to_sort(i) = tmp
-
-             tmp1 = to_track(i+1)
-             to_track(i+1) = to_track(i)
-             to_track(i) = tmp1
-
-             swp=.true.
-          end if
-       end do
-    end do
-
-  end subroutine integer_inv_sort_with_tracking
 
 
   subroutine ExpandBufferKraken(BufferVec,TrackMatrix,&
@@ -2248,39 +2139,6 @@ end function max_batch_dimension
 
 
 
-  !> \brief Get list of atoms sorted according to distance from "MyAtom".
-  !> \author Ida-Marie Hoeyvik
-  subroutine GetSortedList(ListMyAtom,ListTrack,ToSort,&
-       & n1,natoms,MyAtom)
-    implicit none
-    integer,intent(in)     :: n1,natoms,MyAtom
-    real(realk),intent(in) :: ToSort(n1,natoms)
-    real(realk)            :: ListMyAtom(n1), TempList(n1)
-    integer                :: ListTrack(n1), TempTrack(n1)
-    integer                :: counter,i
-
-    ListMyAtom(:)=ToSort(:,MyAtom)
-    ! Sort large--> small
-    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,n1)
-
-    TempList = 0.0E0_realk
-    TempTrack = 0
-    counter = 1
-
-    ! change to small-->large
-    do i=n1,1,-1
-       TempList(counter) = ListMyAtom(i)
-       TempTrack(counter)= ListTrack(i)
-       counter = counter + 1
-    end do
-
-    ListMyAtom=TempList
-    ListTrack=TempTrack
-
-  end subroutine GetSortedList
-
-
-
   !> Fit set of {x,y} data to function y ~ f(x) = a1*x^{-p1} + a2*x^{-p2} + ...
   !> where p1,p2,... are inputs, and a1,a2,... are to be determined.
   !> Intended to be used for pair energy regression estimates, for example:
@@ -3520,6 +3378,7 @@ end function max_batch_dimension
     write(funit) jobs%workt
     write(funit) jobs%commt
     write(funit) jobs%idlet
+    write(funit) jobs%comm_gl_master_time
     write(funit) jobs%gpu_flops
 
   end subroutine write_fragment_joblist_to_file
@@ -3567,6 +3426,7 @@ end function max_batch_dimension
     read(funit) jobs%workt
     read(funit) jobs%commt
     read(funit) jobs%idlet
+    read(funit) jobs%comm_gl_master_time
     read(funit) jobs%gpu_flops
 
     write(DECinfo%output,*)
@@ -3621,17 +3481,19 @@ end function max_batch_dimension
        call mem_alloc(jobs%workt,njobs)
        call mem_alloc(jobs%idlet,njobs)
        call mem_alloc(jobs%gpu_flops,njobs)
+       call mem_alloc(jobs%comm_gl_master_time,njobs)
        jobs%nslaves = 0
        jobs%nocc    = 0
-       jobs%nvirt  = 0
+       jobs%nvirt   = 0
        jobs%nbasis  = 0
        jobs%ntasks  = 0
-       jobs%flops   = 0.0E0_realk
-       jobs%LMtime  = 0.0E0_realk
-       jobs%commt   = 0.0E0_realk
-       jobs%workt   = 0.0E0_realk
-       jobs%idlet   = 0.0E0_realk
-       jobs%gpu_flops= 0.0E0_realk
+       jobs%flops     = 0.0E0_realk
+       jobs%LMtime    = 0.0E0_realk
+       jobs%commt     = 0.0E0_realk
+       jobs%workt     = 0.0E0_realk
+       jobs%idlet     = 0.0E0_realk
+       jobs%gpu_flops = 0.0E0_realk
+       jobs%comm_gl_master_time = 0.0E0_realk
     end if
 
   end subroutine init_joblist
@@ -3732,6 +3594,10 @@ end function max_batch_dimension
        call mem_dealloc(jobs%idlet)
        nullify(jobs%idlet)
     end if
+    if(associated(jobs%comm_gl_master_time)) then
+       call mem_dealloc(jobs%comm_gl_master_time)
+       nullify(jobs%comm_gl_master_time)
+    end if
     end if
 
   end subroutine free_joblist
@@ -3770,7 +3636,7 @@ end function max_batch_dimension
     jobs%esti(position)      = singlejob%esti(1)
     jobs%nslaves(position)   = singlejob%nslaves(1)
     jobs%nocc(position)      = singlejob%nocc(1)
-    jobs%nvirt(position)    = singlejob%nvirt(1)
+    jobs%nvirt(position)     = singlejob%nvirt(1)
     jobs%nbasis(position)    = singlejob%nbasis(1)
     jobs%ntasks(position)    = singlejob%ntasks(1)
     jobs%flops(position)     = singlejob%flops(1)
@@ -3779,6 +3645,7 @@ end function max_batch_dimension
     jobs%commt(position)     = singlejob%commt(1)
     jobs%idlet(position)     = singlejob%idlet(1)
     jobs%gpu_flops(position) = singlejob%gpu_flops(1)
+    jobs%comm_gl_master_time(position) = singlejob%comm_gl_master_time(1)
 
   end subroutine put_job_into_joblist
 
@@ -4355,7 +4222,11 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2-F12 energy   :', Ehf+Ecorr
+          else
+             write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+          endif   
        elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
@@ -4413,6 +4284,7 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2      :', dE_est2
           write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3      :', dE_est3
        end if
+
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
@@ -4856,6 +4728,30 @@ end function max_batch_dimension
                &'RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGRIMP2)
        end if
        write(DECinfo%output,*)
+
+#ifdef MOD_UNRELEASED
+    if(DECInfo%F12) then
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+          & 'RIMP2F12 occupied single energies','AF_MP2f12_OCC')
+       
+       if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+          & DistanceTable, 'RIMP2f12 occupied pair energies','PF_MP2F12f12_OCC')
+       
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a)') '*                  DEC ENERGY SUMMARY                    *'
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+
+       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2 CORRECTION TO ENERGY:          ', energies(FRAGMODEL_OCCRIMP2)  
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_RIMP2f12)
+       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2-F12 CORRELATION ENERGY:        ', &
+          & energies(FRAGMODEL_OCCRIMP2) + energies(FRAGMODEL_RIMP2f12)
+       write(DECinfo%output,*)       
+
+
+    endif
+#endif
+
     case(MODEL_LSTHCRIMP2)
        if(.not.DECinfo%onlyvirtpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
@@ -4914,7 +4810,7 @@ end function max_batch_dimension
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
                & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
             if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
+               & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2F12f12_OCC')
        
        case(MODEL_CCSD)
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
@@ -4943,24 +4839,6 @@ end function max_batch_dimension
                & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_CCSDf12)
        end select
 
-!!$       if(DECinfo%F12debug) then
-!!$          write(*,'(1X,a)') '**********************************************************'
-!!$          write(*,'(1X,a)') '*                   DEC-F12 ENERGY SUMMARY               *'
-!!$          write(*,'(1X,a)') '**********************************************************'
-!!$        
-!!$          select case(DECinfo%ccmodel)
-!!$          case(MODEL_MP2)
-!!$             write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:         ', energies(FRAGMODEL_OCCMP2)  
-!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2  ENERGY:    ', energies(FRAGMODEL_MP2f12)
-!!$          case(MODEL_CCSD)
-!!$             write(*,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY:        ', energies(FRAGMODEL_OCCCCSD)
-!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD  ENERGY:   ', energies(FRAGMODEL_MP2f12)
-!!$
-!!$             write(*,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:      ', &
-!!$                  & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
-!!$          end select
-!!$       endif
-       
     endif
 #endif
 
@@ -5922,8 +5800,8 @@ end function max_batch_dimension
      case( TT_TILED_DIST )
 
 
-        call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
-           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset, bg=bg )
+        call tensor_init(u, t2%dims, int(t2%mode), tensor_type = t2%itype,&
+           &pdm = t2%access_type, tdims = int(t2%tdim), fo = int(t2%offset), bg=bg )
 
         if(DECinfo%use_singles)then
 
@@ -6242,6 +6120,27 @@ end function max_batch_dimension
     end if
 
   end subroutine restart_sanity_check
+
+
+  !> For two tensors b1 and b2, calculate sum of the following dot products:
+  !> SD_ddot = dotproduct(b1,b1) + dotproduct(b2,b2)
+  !> Intended to be used when b1/b2 decsribes singles/doubles quantities, but
+  !> can also be used for other purposes.
+  !> \author Kasper Kristensen
+  !> \date June 2015
+  function SD_dotproduct(b1,b2) result(SD_ddot)
+    implicit none
+    !> Result as described above
+    real(realk) :: SD_ddot
+    !> Input tensors may be of different dimensions
+    type(tensor),intent(in) :: b1,b2
+    real(realk) :: ddot1, ddot2 
+
+    call print_norm(b1,nrm=ddot1,returnsquared=.true.)
+    call print_norm(b2,nrm=ddot2,returnsquared=.true.)
+    SD_ddot = ddot1+ddot2
+
+  end function SD_dotproduct
 
 
 end module dec_fragment_utils

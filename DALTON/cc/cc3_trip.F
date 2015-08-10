@@ -52,7 +52,7 @@ C  /* Deck cc3_triplet */
 #include "mxcent.h"
 #include "aovec.h"
 #include "iratdef.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccorb.h"
 #include "inftap.h"
 #include "ccisao.h"
@@ -266,7 +266,7 @@ C  /* Deck cc3_triplet */
          NTOSYM = 1
 !        DTIME  = SECOND()
 !!!!        CALL HERDI1(WORK(KEND1),LWRK1,IPRINT)
-         CALL QUIT('Direct not implemented')
+         CALL QUIT('Direct not implemented in CC3_TRIPLET')
 !        DTIME  = SECOND() - DTIME
 !        TIMHER1 = TIMHER1 + DTIME
       ELSE
@@ -1373,8 +1373,6 @@ C  /* Deck cc33_transtemp */
 #include "maxash.h"
 #include "mxcent.h"
 #include "aovec.h"
-#include "iratdef.h"
-#include "eribuf.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
 !

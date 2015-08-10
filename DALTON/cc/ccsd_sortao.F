@@ -34,8 +34,6 @@ C
 #include "iratdef.h"
 #include "maxorb.h"
 C
-      PARAMETER (LBUF = 600)
-C
       LOGICAL FIRST, ENABLED
       DIMENSION WORK(LWORK)
 C
@@ -118,6 +116,7 @@ C
         NALLBAS = NBAST 
       ENDIF
 C
+      LBUF = 600
       IF (NALLBAS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8

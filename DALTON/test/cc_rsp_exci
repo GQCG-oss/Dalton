@@ -148,9 +148,9 @@ ERROR[2]="CCSD EXCITATION ENERGIES NOT CORRECT"
 # YDIPLEN   .0000   YDIPLEN   .0000     -.46661696E-01
 #          -.0235             .0235     -.46664081E-01               
 CRIT1=`$GREP "ZDIPLEN *\-*0*\.0000 * ZDIPLEN *\-*0*\.0000 * \-0*\.41777..." $log | wc -l`
-CRIT2=`$GREP  "[ ]+( \-|\-0)\.0235            ( |0)\.0235    ( \-|\-0)\.416883.." $log | wc -l`
+CRIT2=`$GREP  "[ ]+( \-|\-0)\.0235            ( |0)\.0235    ( \-|\-0)\.41688..." $log | wc -l`
 CRIT3=`$GREP "XDIPLEN (\-0| \-|  | 0)\.0000   XDIPLEN (\-0| \-|  | 0)\.0000    ( \-|\-0)\.46661...(E|D)\-01" $log | wc -l`
-CRIT4=`$GREP  "[ ]+( \-|\-0)\.0235            ( |0)\.0235    ( \-|\-0)\.466640..(E|D)\-01" $log | wc -l`
+CRIT4=`$GREP  "[ ]+( \-|\-0)\.0235            ( |0)\.0235    ( \-|\-0)\.46664...(E|D)\-01" $log | wc -l`
 CRIT5=`$GREP "YDIPLEN (\-0| \-|  | 0)\.0000   YDIPLEN (\-0| \-|  | 0)\.0000    ( \-|\-0)\.46661...(E|D)\-01" $log | wc -l`
 TEST[3]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3  \+ $CRIT4 \+ $CRIT5` 
 CTRL[3]=6
@@ -163,7 +163,7 @@ ERROR[3]="CCSD EXCITED STATE POLARIZABILITIES NOT CORRECT"
 CRIT1=`$GREP  "Testing EL1 list with  9 elements on it" $log | wc -l`
 CRIT2=`$GREP "4[ ]+ZDIPLEN[ ]+1[ ]+1[ ]* ( |0)\.97654868..  ( \-|\-0)\.0235[0]*   1\.225516....   ( |0)\.4959190" $log | wc -l`
 CRIT3=`$GREP "5[ ]+ZDIPLEN[ ]+1[ ]+1[ ]* ( |0)\.97654868..  (\-0| \-|  | 0)\.0000[0]*   1\.135943....   ( |0)\.4761680" $log | wc -l`
-CRIT4=`$GREP "6[ ]+ZDIPLEN[ ]+1[ ]+1[ ]* ( |0)\.97654868..   ( |0)\.0235[0]*   1\.05635.....   ( |0)\.4579313" $log | wc -l`
+CRIT4=`$GREP "6[ ]+ZDIPLEN[ ]+1[ ]+1[ ]* ( |0)\.97654868..   ( |0)\.0235[0]*   1\.05635.*   ( |0)\.4579313" $log | wc -l`
 TEST[4]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3  \+ $CRIT4`
 CTRL[4]=4
 ERROR[4]="PROJECTION OF EQUATIONS NOT CORRECT"

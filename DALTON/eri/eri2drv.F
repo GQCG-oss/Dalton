@@ -309,9 +309,18 @@ C  /* Deck er2ini */
 #include "cbiher.h"
 #include "cbieri.h"
 #include "erisel.h"
-#include "eribuf.h"
 #include "ericom.h"
 #include "gnrinf.h"
+
+      LOGICAL, SAVE :: FIRST_CALL = .TRUE.
+C
+C     set index packing in eribuf
+C     (before FIRST_CALL test, because NIBUF,NBITS may be reset by routines)
+C
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+
+      IF (.NOT. FIRST_CALL) RETURN
+      FIRST_CALL = .FALSE.
 C
 C     Initialize /CBIERI/
 C
@@ -343,7 +352,9 @@ C
       EXPERI = .FALSE.
       LBFINP = 600
       MAXDSD = 40
+
       MAXDST = MAXDSD
+
       DISTST = .FALSE.
       MXBCH0 = 1000000000
       MXBCH  = MXBCH0
@@ -354,6 +365,42 @@ C
       END DO
       GENCON_ERI = .FALSE.
       NCLERI = .FALSE.
+
+      RETURN
+      END
+C  /* Deck eribuf_ini */
+      SUBROUTINE ERIBUF_INI
+C
+C     July 2015, hjaaj
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+C
+C nuclei.h : NBASIS
+C cbiher.h : TWOBYTEPACKING
+C eribuf.h : NIBUF, NBITS, IBIT1, IBIT2
+C
+#include "nuclei.h"
+#include "cbiher.h"
+#include "eribuf.h"
+C
+C     set index packing in /CBIERI/
+C
+      IF (TWOBYTEPACKING .OR. NBASIS.GT.255) THEN
+         NIBUF = 2
+         NBITS = 16
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
+
+      ELSE
+         NIBUF = 1
+         NBITS = 8
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 2**(2*NBITS) - 1
+
+      END IF
 
       RETURN
       END
@@ -384,7 +431,7 @@ C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
-C     CALL ER2INI
+      CALL ER2INI
 C
 C     Memory
 C
@@ -520,6 +567,7 @@ C  /* Deck odcdrv */
 #include "aobtch.h"
 #include "iratdef.h"
 #include "infpar.h"
+#include "soppinf.h"
 C
       MAXDER = 0
       IF (GDER) MAXDER = 1
@@ -560,16 +608,13 @@ C
          NPERTS = 1
          NCORS = 1
       END IF
-      IF (NBASE .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
       IF (DGABAB) THEN
          NIBUF = 1
          NBITS = 16
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
+      ELSE
+         CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
       END IF
 C
 C     Dimensions for CSQ
@@ -598,6 +643,13 @@ C
 C
       IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
+#ifdef VAR_MPI
+C
+C     AOSOPPA in parallel makes use of slaves in this subroutine.
+C     hence the slaves are redirected to parts of the code normally
+C     only available to the master.
+      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc) goto 101
+#endif
 C
       IF (SLAVE) THEN
          MXCLS2 = NODCL1*(NODCL2 + 1)/2
@@ -627,6 +679,9 @@ C
      &                   CCFBT,INDXBT,WORK(KCOUNT),WORK(KCSQ),
      &                   WORK(KLAST),LWRK,IPRINT)
       ELSE
+#ifdef VAR_MPI
+ 101  continue  !This is AORPA/AOSOPPA related; slaves participating in parallel calculations need access to this code. See par_rp_eres
+#endif
          CALL ODCDR1(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,

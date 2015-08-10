@@ -11,6 +11,7 @@ C
 #include "implicit.h"
 #include "soppinf.h"
 C
+
       DIMENSION   ARRAY(LARRAY)
       CHARACTER*7 FILENM
 C
