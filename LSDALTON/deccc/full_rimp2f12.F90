@@ -675,6 +675,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !We need CalphaG(NBA,nocc,noccfull) but this is a subset of 
    !CalphaG(NBA,nocc,nbasis) which we already have
    !> Dgemm 
+   !nsize = nBA*nocc*ncabsAO
+   !IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
+   !m =  nBA*nocc                    ! D_jq = C_jp F_qp
+   !k =  ncabsAO
+   !n =  ncabsAO
+   !Do on GPU (Async)
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
+   !Do on GPU (Async)
+   !call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,CalphaGcabsAO,CalphaG,CalphaD,EB5)
+   !mp2f12_energy = mp2f12_energy  + EB5
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
+   !call mem_dealloc(CalphaD)
+
+
+   !We need CalphaG(NBA,nocc,noccfull) but this is a subset of 
+   !CalphaG(NBA,nocc,nbasis) which we already have
+   !> Dgemm 
    nsize = nBA*nocc*ncabsAO
    IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
    m =  nBA*nocc                    ! D_jq = C_jp F_qp
@@ -684,12 +702,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !Do on GPU (Async)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
    !Do on GPU (Async)
-   !call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,CalphaGcabsAO,CalphaG,CalphaD,EB5)
+   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5)
    
    mp2f12_energy = mp2f12_energy  + EB5
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
-   
    call mem_dealloc(CalphaD)
    
    !==============================================================
