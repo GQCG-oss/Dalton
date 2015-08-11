@@ -45,7 +45,9 @@ subroutine pdm_tensor_slave()
    SELECT CASE(JOB)
    case(JOB_TEST_FRAMEWORK)
       call tensor_tester_slave
-   CASE(JOB_INIT_TENSOR_TILED)
+   case(JOB_BARRIER)
+      call tensor_barrier(.false.)
+   case(JOB_INIT_TENSOR_TILED)
 
       call tensor_alloc_mem(intarr2,A%mode)
       call tensor_alloc_mem(intarr1,A%mode)
@@ -53,15 +55,8 @@ subroutine pdm_tensor_slave()
       intarr1 =A%dims
       call tensor_free_aux(A)
 
-      call tensor_mpi_bcast(INT1,master,comm)
-
-      if(INT1==-1)then
-         call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
+      call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
             &AT_MASTER_ACCESS,.false.,tdims=intarr2) 
-      else
-         call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
-            &AT_MASTER_ACCESS,.false.,tdims=intarr2,force_offset=INT1) 
-      endif
 
       call tensor_free_mem(intarr2)
       call tensor_free_mem(intarr1)

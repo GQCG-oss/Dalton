@@ -302,13 +302,6 @@ add_library(
     ${LSUTIL_TENSOR_SOURCES}
     )
 
-add_library(
-    matrixolib
-    ${LSUTIL_MATRIXO_SOURCES}
-    ${LSUTIL_MATRIXO_C_SOURCES}
-    )
-
-target_link_libraries(matrixolib lsutil_tensor_lib)
 
 add_library(
     lsutillib_common
@@ -316,8 +309,15 @@ add_library(
     ${LSUTIL_COMMON_SOURCES}
     )
 
-
 target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib)
+
+add_library(
+    matrixolib
+    ${LSUTIL_MATRIXO_SOURCES}
+    ${LSUTIL_MATRIXO_C_SOURCES}
+    )
+
+target_link_libraries(matrixolib lsutillib_common lsutil_tensor_lib)
 
 
 
