@@ -115,7 +115,7 @@ module lspdm_tensor_operations_module
 
   ! job parameters for pdm jobs
   integer,parameter :: JOB_TEST_FRAMEWORK           =  1
-
+  integer,parameter :: JOB_BARRIER                  =  2
   integer,parameter :: JOB_FREE_TENSOR_STD          =  3
   integer,parameter :: JOB_INIT_TENSOR_TILED        =  4
   integer,parameter :: JOB_FREE_TENSOR_PDM          =  5
@@ -3516,7 +3516,6 @@ module lspdm_tensor_operations_module
      logical :: master,defdims, pseudo_dense
      integer :: infobuf(2),fo
      logical,parameter :: zeros_in_tiles=.false.
-     logical :: bg_int
      integer(kind=tensor_mpi_kind), parameter :: root = 0
      integer(kind=tensor_mpi_kind) :: nnod
      integer(kind=tensor_mpi_kind) :: me
@@ -3527,7 +3526,6 @@ module lspdm_tensor_operations_module
      call tensor_get_rank(me)
      call tensor_get_size(nnod)
 
-     bg_int = bg
      !set the initial values and overwrite them later
      master = (me==root)
 
@@ -3545,6 +3543,7 @@ module lspdm_tensor_operations_module
      p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
      p_arr%a(addr)%local_addr  = addr
      p_arr%a(addr)%initialized = .true.
+     p_arr%a(addr)%bg_alloc    = bg
 #ifdef VAR_MPI
      p_arr%a(addr)%nnod        = nnod
      p_arr%a(addr)%comm        = tensor_work_comm
@@ -3628,31 +3627,31 @@ module lspdm_tensor_operations_module
         call tensor_set_addr(p_arr%a(addr),lg_buf,nnod)
 #ifdef VAR_MPI
         call pdm_tensor_sync(JOB_INIT_TENSOR_TILED,p_arr%a(addr))
-        call tensor_mpi_bcast(fo,root,tensor_work_comm)
 #endif
      endif
 
 #ifdef VAR_MPI
-     !call tensor_mpi_bcast(p_arr%a(addr)%itype,root,tensor_work_comm)
-     !call tensor_mpi_bcast(p_arr%a(addr)%atype,4,root,tensor_work_comm)
-     call tensor_buffer(p_arr%a(addr)%itype,init_size = tensor_standard_int + len(p_arr%a(addr)%atype)*tensor_char_size ,&
-        &root=root,comm=tensor_work_comm)
-     call tensor_buffer(p_arr%a(addr)%atype,finalize=.true.)
+     call tensor_buffer(p_arr%a(addr)%itype,&
+        & init_size = tensor_int + tensor_standard_int + len(p_arr%a(addr)%atype)*tensor_char_size + tensor_log,&
+        & root = root, comm = tensor_work_comm)
+     call tensor_buffer( fo )
+     call tensor_buffer( p_arr%a(addr)%atype )
+     call tensor_buffer( p_arr%a(addr)%bg_alloc, finalize=.true. )
 #endif
 
      !if AT_ALL_ACCESS only all have to know the addresses
      if(p_arr%a(addr)%access_type==AT_ALL_ACCESS)call tensor_set_addr(p_arr%a(addr),lg_buf,nnod)
 
-     call get_distribution_info(p_arr%a(addr),force_offset = force_offset)
+     if(fo==-1)then
+        call get_distribution_info(p_arr%a(addr))
+     else
+        call get_distribution_info(p_arr%a(addr),force_offset = fo)
+     endif
 
 #ifdef VAR_MPI
      lg_buf(me+1)=addr 
      lg_buf(nnod+me+1)=p_arr%a(addr)%offset
      call tensor_mpi_allreduce(lg_buf,2*nnod,tensor_work_comm)
-
-     if( p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
-        call tensor_mpi_bcast(bg_int,me,tensor_work_comm)
-     endif
 
      call tensor_set_addr(p_arr%a(addr),lg_buf,nnod)
 
@@ -3666,13 +3665,11 @@ module lspdm_tensor_operations_module
 #endif
      call tensor_free_mem(lg_buf)
 
-     p_arr%a(addr)%bg_alloc = bg_int
-
      call tensor_init_lock_set(p_arr%a(addr))
-     call memory_allocate_tiles(p_arr%a(addr),bg_int)
+     call memory_allocate_tiles(p_arr%a(addr),p_arr%a(addr)%bg_alloc)
 
      if(pseudo_dense .and. (master.or.p_arr%a(addr)%access_type==AT_ALL_ACCESS))then
-        call memory_allocate_tensor_dense(p_arr%a(addr),bg_int)
+        call memory_allocate_tensor_dense(p_arr%a(addr),p_arr%a(addr)%bg_alloc)
      endif
 
      arr = p_arr%a(addr)
@@ -6662,6 +6659,22 @@ module lspdm_tensor_operations_module
 
   end subroutine check_if_new_instance_needed
 
+  subroutine tensor_barrier(call_slaves)
+     implicit none
+     logical, intent(in) :: call_slaves
+     integer(kind=tensor_mpi_kind), parameter :: root = 0
+     integer(kind=tensor_mpi_kind) :: nnod
+     integer(kind=tensor_mpi_kind) :: me
+#ifdef VAR_MPI
+     call tensor_get_rank(me)
+     call tensor_get_size(nnod)
+     if(me==root.and.call_slaves) then
+        call pdm_tensor_sync(JOB_BARRIER)
+     endif
+
+     call tensor_mpi_barrier(tensor_work_comm)
+#endif
+  end subroutine tensor_barrier
 end module lspdm_tensor_operations_module
 
 

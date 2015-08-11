@@ -102,6 +102,7 @@ module tensor_interface_module
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
   public tensor_print_norm_nrm
+  public tensor_barrier
 
   ! Atomic datatypes used
   public tensor_standard_int

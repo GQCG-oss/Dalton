@@ -1,5 +1,5 @@
-TMP_DIR=/home/thomas/NightlyTesting/tmp/DaltonGfortranDebug
-SCRATCH_DIR=/tmp/thomas/DaltonGfortranDebug
+TMP_DIR=/home/thomas/NightlyTesting/tmp/DaltonPGIgpu
+SCRATCH_DIR=/tmp/thomas/DaltonPGIgpu
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 

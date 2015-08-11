@@ -84,9 +84,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! RI variables
    !========================================================
    integer :: nAux,NBA,N,K
-   real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:)
-   real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:)
-   real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:)
+   real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:), CalphaT(:)
+   real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:), CalphaP(:)
+   real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:), CalphACcabsT(:), CalphaCocc(:)
    real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:),ABdecompC(:,:)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:),ABdecompX(:,:)
    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateC
@@ -96,7 +96,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !========================================================
    ! Additional variables
    !========================================================
-   integer :: offset, noccfull
+   integer :: offset, noccfull, nocv
    real(realk),pointer :: Taibj(:,:,:,:) !amplitudes not integrals
    real(realk),pointer :: gmo(:,:,:,:)
    real(realk),pointer :: gao(:,:,:,:)
@@ -153,6 +153,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Offset:   Frozen core    : ncore
    !           Not frozen core: 0
    offset = noccfull - nocc   
+   nocv = nvirt + nocc
 
    call determine_CABS_nbast(ncabsAO,ncabsMO,mylsitem%setting,DECinfo%output)
 
@@ -397,7 +398,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(5) = 'G' !The Gaussian geminal operator g
 
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nbasis,&
+        & FORCEPRINT,wakeslaves,Cfull,nbasis,MyMolecule%Co%elm2,nocc,&
         & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
    ABdecompCreateG = .FALSE.
 
@@ -416,7 +417,21 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !=                                                        =
    !==========================================================
    !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-   call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nbasis,CalphaG,Fii%elms,EX2)
+   !call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nbasis,CalphaG,Fii%elms,EX2)
+   !mp2f12_energy = mp2f12_energy  + EX2
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2
+
+   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+   nsize = NBA*nocv*nocc
+   call mem_alloc(CalphaT,nsize)
+   M = nocv*NBA         !rows of Output Matrix
+   K = noccfull         !summation dimension
+   N = nocc             !columns of Output Matrix
+   call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fii%elms,K,0.0E0_realk,CalphaT,M)
+
+   call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
+   call mem_dealloc(CalphaT)
    mp2f12_energy = mp2f12_energy  + EX2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2
@@ -538,7 +553,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
 
-     ABdecompCreateG = .FALSE.
+     !ABdecompCreateG = .FALSE.
      call mem_dealloc(CalphaD)
      call mem_dealloc(ABdecompC)
      call mem_dealloc(CalphaCcabs)
@@ -560,14 +575,67 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
 
      !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-     call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,&
-        & CalphaGcabsMO,CalphaG,Fii%elms,EX3,EX4)
+     !call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,&
+     !   & CalphaGcabsMO,CalphaG,Fii%elms,EX3,EX4)
+     !  mp2f12_energy = mp2f12_energy  + EX3 + EX4
+     !  WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
+     !  WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
+     !  WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
+     !  WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
+     ! call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
+
+     !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
+     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+     intspec(2) = 'R' !Regular AO basis function on center 3
+     intspec(3) = 'R' !Regular AO basis function on center 4
+     intspec(4) = 'G' !The Gaussian geminal operator g
+     intspec(5) = 'G' !The Gaussian geminal operator g
+     
+     call mem_alloc(ABdecompC,nAux,nAux)
+     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+        & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,MyMolecule%Co%elm2,noccfull,&
+        & mynum,numnodes,CalphaCocc,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+     call mem_dealloc(ABdecompC)
+
+     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+     nsize = NBA*noccfull*nocc
+     call mem_alloc(CalphaT,nsize)
+     M = NBA*nocc         !rows of Output Matrix
+     K = noccfull         !summation dimension
+     N = nocc             !columns of Output Matrix
+     call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCocc,M,Fii%elms,K,0.0E0_realk,CalphaT,M)
+
+     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+     intspec(2) = 'C' !Regular AO basis function on center 4 
+     intspec(3) = 'R' !Cabs AO basis function on center 3
+     intspec(4) = 'G' !The Gaussian geminal operator g
+     intspec(5) = 'G' !The Gaussian geminal operator g
+     
+     call mem_alloc(ABdecompC,nAux,nAux)
+     call Build_CalphaMO2(mylsitem,master,ncabsAO,nbasis,nAux,LUPRI,&
+        & FORCEPRINT,wakeslaves,CMO_CABS%elms,ncabsMO,MyMolecule%Co%elm2,nocc,&
+        & mynum,numnodes,CalphaCcabsT,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+     call mem_dealloc(ABdecompC)
+     
+     nsize = NBA*nocc*ncabsMO
+     call mem_alloc(CalphaP,nsize)
+     M = NBA*ncabsMO         !rows of Output Matrix
+     K = noccfull            !summation dimension
+     N = nocc                !columns of Output Matrix
+     call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCcabsT,M,Fii%elms,K,0.0E0_realk,CalphaP,M)
+     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+     call ContractTwo4CenterF12IntegralsRIX3X4_nc(NBA,nocc,noccfull,ncabsMO,&
+        & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
+  
+     call mem_dealloc(CalphaCcabsT)
+     call mem_dealloc(CalphaT)
+     call mem_dealloc(CalphaP)
 
      mp2f12_energy = mp2f12_energy  + EX3 + EX4
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
-     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
+     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
+     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
+     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
+     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
 
    call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
 
@@ -606,6 +674,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !We need CalphaG(NBA,nocc,noccfull) but this is a subset of 
    !CalphaG(NBA,nocc,nbasis) which we already have
    !> Dgemm 
+   !nsize = nBA*nocc*ncabsAO
+   !IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
+   !m =  nBA*nocc                    ! D_jq = C_jp F_qp
+   !k =  ncabsAO
+   !n =  ncabsAO
+   !Do on GPU (Async)
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
+   !Do on GPU (Async)
+   !call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,CalphaGcabsAO,CalphaG,CalphaD,EB5)
+   !mp2f12_energy = mp2f12_energy  + EB5
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
+   !call mem_dealloc(CalphaD)
+
+
+   !We need CalphaG(NBA,nocc,noccfull) but this is a subset of 
+   !CalphaG(NBA,nocc,nbasis) which we already have
+   !> Dgemm 
    nsize = nBA*nocc*ncabsAO
    IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
    m =  nBA*nocc                    ! D_jq = C_jp F_qp
@@ -615,65 +701,119 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !Do on GPU (Async)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
    !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,CalphaGcabsAO,CalphaG,CalphaD,EB5)
+   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5)
    
    mp2f12_energy = mp2f12_energy  + EB5
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
-   
    call mem_dealloc(CalphaD)
    
    !==============================================================
    !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
    !==============================================================
    !> Dgemm 
-   nsize = nBA*nocc*nbasis
-   call mem_alloc(CalphaD, nsize)
-   m =  nBA*nocc               ! D_jq = C_jp F_pq
-   k =  nbasis
-   n =  nbasis
-   
+   !nsize = nBA*nocc*nbasis
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*nocc               ! D_jq = C_jp F_pq
+   !k =  nbasis
+   !n =  nbasis
    !Do on GPU (Async)
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
+   !Do on GPU (Async)
+   !call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB6)
+   !mp2f12_energy = mp2f12_energy  + EB6
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
+   !call mem_dealloc(CalphaD)
 
+   !> Dgemm 
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 1 
+   intspec(3) = 'R' !Regular AO basis function on center 2 
+   intspec(4) = 'G' !The Gaussian geminal operator g
+   intspec(5) = 'G' !The Gaussian geminal operator g
+
+   nsize = NBA*nocc*nocv  
+  ! call mem_alloc(ABdecompG,nAux,nAux)
+   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+      & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,nocc,Cfull,nocv,&
+      & mynum,numnodes,CalphaP,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
+   !call mem_dealloc(ABdecompG)
+
+   nsize = nBA*nocc*nocv
+   call mem_alloc(CalphaD,nsize)
+
+   m =  nBA*nocc               ! D_jq =PP_jp F_pq
+   k =  nocv
+   n =  nocv
    !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB6)
-   
+   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaP,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
+   call mem_dealloc(CalphaP) 
+   !Do on GPU (Async)
+   call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB6)
+   call mem_dealloc(CalphaD)
+
    mp2f12_energy = mp2f12_energy  + EB6
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
-   
-   call mem_dealloc(CalphaD)
    
    !==============================================================
    !=  B7: (ic|f12|jm)Fnm(ci|F12|nj)                             =
    !==============================================================
    !We need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis) 
    !that we already have
-   
+   !> Dgemm 
+   !nsize = nBA*nocc*noccfull
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*noccfull               ! D_jn = C_jn F_nm
+   !k =  noccfull
+   !n =  noccfull
+   !NB! Changed T to N, dont think it will matter but...
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)   
+   ! Commented out just for current scheme, may be changed later TK
+   !   call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
+   !call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,noccfull,CalphaGcabsMO,CalphaG,CalphaD,EB7)
+   !mp2f12_energy = mp2f12_energy  + EB7
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
+   !call mem_dealloc(CalphaD)
+
    !> Dgemm 
    nsize = nBA*nocc*noccfull
    call mem_alloc(CalphaD, nsize)
-   m =  nBA*noccfull               ! D_jn = C_jn F_nm
+   m =  nBA*noccfull                    ! D_jm = Cocc_jk F_km
    k =  noccfull
-   n =  noccfull
-   
-   !NB! Changed T to N, dont think it will matter but...
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fii%elms,k,0.0E0_realk,CalphaD,m)   
-   ! Commented out just for current scheme, may be changed later TK
-   !   call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
-   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,ncabsMO,noccfull,CalphaGcabsMO,CalphaG,CalphaD,EB7)
-   
+   n =  nocc
+
+   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCocc,m,Fmm%elms,k,0.0E0_realk,CalphaD,m)
+   !Commented out just for current scheme, may be changed later TK
+   !call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
+   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,CalphaCocc,CalphaD,EB7)
+   call mem_dealloc(CalphaCocc)
+   call mem_dealloc(CalphaD)
    mp2f12_energy = mp2f12_energy  + EB7
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
-   
-   call mem_dealloc(CalphaD)
-   
+
    !==============================================================
    !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
    !==============================================================
-   
+   !> Dgemm 
+   !nsize = nBA*nocc*nocc
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*nocc                    ! D_jm = C_jp F_pm
+   !n =  nocc   
+   !k =  ncabsAO
+   !NB! Changed T to N, dont think it will matter but...
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frm%elms,k,0.0E0_realk,CalphaD,m)
+   !we need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
+   !call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8)  
+   !mp2f12_energy = mp2f12_energy  + EB8
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+   !call mem_dealloc(CalphaGcabsAO)
+   !call mem_dealloc(CalphaD)
+  
    !> Dgemm 
    nsize = nBA*nocc*nocc
    call mem_alloc(CalphaD, nsize)
@@ -683,19 +823,29 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !NB! Changed T to N, dont think it will matter but...
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frm%elms,k,0.0E0_realk,CalphaD,m)
 
-   !we need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
    call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nbasis,CalphaGcabsMO,CalphaG,CalphaD,EB8)
-   
    mp2f12_energy = mp2f12_energy  + EB8
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
-   
    call mem_dealloc(CalphaGcabsAO)
    call mem_dealloc(CalphaD)
-   
+
    !==============================================================
    !=  B9: (ip|f12|ja)Fcp(ci|f12|aj)                             =
    !==============================================================
+   !> Dgemm 
+   !nsize = nBA*nocc*nbasis
+   !call mem_alloc(CalphaD, nsize)
+   !m =  nBA*nocc                    ! D_jp = C_jc F_cp
+   !n =  nbasis
+   !k =  ncabsMO   
+   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fcp%elms,k,0.0E0_realk,CalphaD,m)
+   !call mem_dealloc(CalphaGcabsMO)
+   !call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9)
+   !mp2f12_energy = mp2f12_energy  + EB9
+   !WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+   !WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+  
    !> Dgemm 
    nsize = nBA*nocc*nbasis
    call mem_alloc(CalphaD, nsize)
@@ -704,13 +854,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    k =  ncabsMO   
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fcp%elms,k,0.0E0_realk,CalphaD,m)
    call mem_dealloc(CalphaGcabsMO)
-
    call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nbasis,CalphaG,CalphaD,EB9)
-   
    mp2f12_energy = mp2f12_energy  + EB9
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
-   
+ 
    call mem_dealloc(CalphaG)
    call mem_dealloc(ABdecompG)
    call mem_dealloc(CalphaD)
