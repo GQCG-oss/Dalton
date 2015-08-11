@@ -71,7 +71,7 @@ module tensor_type_def_module
      logical(kind=tensor_standard_log) :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
      !logical :: allocd_w_c_p                        ! allocated with comm_threads or not?
      logical(kind=tensor_standard_log) :: initialized = .false.                !check variable if array is initialized
-     logical(kind=tensor_standard_log) :: bg_alloc
+     logical :: bg_alloc
 
   end type tensor
 

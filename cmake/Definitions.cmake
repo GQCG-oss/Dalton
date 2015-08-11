@@ -98,6 +98,10 @@ if(ENABLE_RSP)
     add_definitions(-DVAR_RSP)
 endif()
 
+if(ENABLE_ICHOR)
+    add_definitions(-DVAR_ICHOR)
+endif()
+
 if(ENABLE_QCMATRIX)
     add_definitions(-DENABLE_QCMATRIX)
 endif()

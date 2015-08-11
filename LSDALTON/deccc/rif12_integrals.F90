@@ -662,7 +662,7 @@ contains
     !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
 
     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-    call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccAOS,ncabsMO, &
+    call ContractTwo4CenterF12IntegralsRIX3X4(NBA,nocc,noccAOS,ncabsMO, &
          & CalphaGcabsMO,CalphaG,MyFragment%ppfock,EX3,EX4,dopair_occ)
 
     mp2f12_energy = mp2f12_energy + EX3 + EX4
@@ -717,7 +717,7 @@ contains
     !Do on GPU (Async)
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Myfragment%Frs,k,0.0E0_realk,CalphaD,m)
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccAOS,CalphaGcabsAO,CalphaG,CalphaD,EB5,dopair_occ)
+    call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,nocv,noccAOS,CalphaGcabsAO,CalphaG,CalphaD,EB5,dopair_occ)
 
     mp2f12_energy = mp2f12_energy + EB5
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ',EB5

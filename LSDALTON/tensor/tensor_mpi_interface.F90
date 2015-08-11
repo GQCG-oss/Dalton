@@ -57,7 +57,7 @@ module tensor_mpi_interface_module
    interface tensor_mpi_reduce
 #ifdef VAR_MPI
       module procedure tensor_mpi_reduce_tensor_dp_s,&
-                     & tensor_mpi_reduce_tensor_dp_l, &
+                     & tensor_mpi_reduce_tensor_dp_l,&
                      & tensor_mpi_reduce_tensor_dp
 #else
       module procedure tensor_mpi_dummy

@@ -112,6 +112,7 @@ module tensor_interface_module
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
   public tensor_print_norm_nrm
+  public tensor_barrier
 
   ! Atomic datatypes used
   public tensor_standard_int
@@ -1833,13 +1834,13 @@ contains
 
         arr%dims=new_dims
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
+!#else
         !$OMP WORKSHARE
         arr%elm1 = new_data
         !$OMP END WORKSHARE
-#endif
+!#endif
 
         call tensor_free_mem(new_data,bg=bg)
 
@@ -2606,11 +2607,11 @@ contains
     select case(arr%itype)
     case(TT_DENSE,TT_REPLICATED)
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+!#else
           call dcopy(int(nelms),fortarr,1,arr%elm1,1)
-#endif
+!#endif
        else
           select case(arr%mode)
           case(2)
@@ -2712,11 +2713,11 @@ contains
     case(TT_DENSE,TT_REPLICATED)
 
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+!#else
           call dcopy(int(nelms),arr%elm1,1,fort,1)
-#endif
+!#endif
        else
 
           select case(arr%mode)

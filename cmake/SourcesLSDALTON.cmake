@@ -551,6 +551,7 @@ set(LSUTIL_TENSOR_SOURCES
     LSDALTON/tensor/tensor_algebra_dil.F90
     LSDALTON/tensor/tensor_interface.F90
     LSDALTON/tensor/tensor_tester.F90
+    LSDALTON/tensor/lspdm_slave.F90
     )
 
 set(LSUTIL_COMMON_SOURCES
@@ -615,7 +616,6 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/OD_operations.F90
     LSDALTON/lsutil/lstensor_Mem.F90
     LSDALTON/lsutil/lstensor_operations.F90
-    LSDALTON/tensor/lspdm_slave.F90
     LSDALTON/lsutil/Integral_input.F90
     LSDALTON/lsutil/ls_IO.F90
     LSDALTON/lsutil/ls_screen.F90

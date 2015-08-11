@@ -23,11 +23,12 @@ subroutine pdm_tensor_slave()
    real(tensor_dp),pointer :: realar1(:)
    integer(kind=tensor_long_int), pointer  :: lintar1(:), lintar2(:)
    integer, pointer  :: intarr1(:), intarr2(:), intarr3(:), intarr4(:)
-   integer(kind=tensor_mpi_kind) :: MIT1
-   integer(kind=tensor_long_int) :: LIN1
-   integer                       :: INT1,       INT2,       INT3,       INT4
-   real(tensor_dp)               :: REAL1,      REAL2
-   logical                       :: LOG1
+   integer(kind=tensor_mpi_kind)     :: MIT1
+   integer(kind=tensor_long_int)     :: LIN1
+   integer(kind=tensor_standard_int) :: SIN1
+   integer                           :: INT1,       INT2,       INT3,       INT4
+   real(tensor_dp)                   :: REAL1,      REAL2
+   logical                           :: LOG1
    logical :: loc
    integer(kind=tensor_mpi_kind), parameter :: master = 0
    character (4) :: at 
@@ -45,23 +46,18 @@ subroutine pdm_tensor_slave()
    SELECT CASE(JOB)
    case(JOB_TEST_FRAMEWORK)
       call tensor_tester_slave
-   CASE(JOB_INIT_TENSOR_TILED)
+   case(JOB_BARRIER)
+      call tensor_barrier(.false.)
+   case(JOB_INIT_TENSOR_TILED)
 
       call tensor_alloc_mem(intarr2,A%mode)
       call tensor_alloc_mem(intarr1,A%mode)
-      intarr2=A%tdim
-      intarr1 =A%dims
+      intarr2 = A%tdim
+      intarr1 = A%dims
       call tensor_free_aux(A)
+      SIN1    = -1
 
-      call tensor_mpi_bcast(INT1,master,comm)
-
-      if(INT1==-1)then
-         call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
-            &AT_MASTER_ACCESS,.false.,tdims=intarr2) 
-      else
-         call tensor_init_tiled(A,intarr1,int(A%mode),at,int(INT1,kind=tensor_standard_int),&
-            &AT_MASTER_ACCESS,.false.,tdims=intarr2,force_offset=INT1) 
-      endif
+      call tensor_init_tiled(A,intarr1,int(A%mode),at,SIN1,AT_MASTER_ACCESS,.false.,tdims=intarr2) 
 
       call tensor_free_mem(intarr2)
       call tensor_free_mem(intarr1)
@@ -91,7 +87,7 @@ subroutine pdm_tensor_slave()
       REAL1 = tensor_tiled_pdm_get_nrm2(A)
    CASE(JOB_GET_TILE_SEND)
       !INT1,realar1 and INT2 are just dummy arguments
-      call tensor_get_tile(A,int(INT1,kind=tensor_standard_int),realar1,INT2)
+      call tensor_get_tile(A,SIN1,realar1,INT2)
    CASE(JOB_PRINT_TI_NRM)
       call tensor_tiled_pdm_print_ti_nrm(A,0)
    CASE(JOB_SYNC_REPLICATED)
