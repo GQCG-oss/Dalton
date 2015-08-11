@@ -186,7 +186,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dcopy(nbasis*nocc, MyMolecule%Co%elm2, 1, Co, 1)
    end if
 
-   !Fkj
+   ! Fkj
    if(DECinfo%frozencore) then
       call mem_alloc(Fkj,nocc,nocc)
       do j=1,nocc
@@ -198,8 +198,30 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_alloc(Fkj,nocc,nocc)
       call dcopy(nocc*nocc, MyMolecule%oofock%elm2, 1, Fkj, 1)
    endif
-
    print *, "norm2(Fkj)", norm2(Fkj)
+
+   ! Cfull
+   if(DECinfo%frozencore) then
+      call mem_alloc(Cfull,nbasis,nocv)
+      do J=1,nocc
+         do I=1,nbasis
+            Cfull(I,J) = MyMolecule%Co%elm2(I,MyMolecule%ncore+j)
+         enddo
+      enddo
+   else
+      call mem_alloc(Cfull,nbasis,nocv)
+      do J=1,nocc
+         do I=1,nbasis
+            Cfull(I,J) = MyMolecule%Co%elm2(I,J)
+         enddo
+      enddo
+   endif
+   do P=1,nvirt
+      do I=1,nbasis
+         Cfull(I,nocc+P) = MyMolecule%Cv%elm2(I,P)
+      enddo
+   enddo
+   print *,"norm2(Cfull)", norm2(Cfull)
 
    ! ***********************************************************
    !   Printing Input variables 
@@ -219,43 +241,31 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    IF(naux.EQ.0)call lsquit('Error no Aux functions in full_canonical_rimp2_f12',-1)
 
-   call mem_alloc(Cfull,nbasis,nbasis)
-   do J=1,nocc
-      do I=1,nbasis
-         Cfull(I,J) = MyMolecule%Co%elm2(I,J)
-      enddo
-   enddo
-   do P=1,nvirt
-      do I=1,nbasis
-         Cfull(I,nocc+P) = MyMolecule%Cv%elm2(I,P)
-      enddo
-   enddo
-
    call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
       & nocc,noccfull,nvirt,ncabsMO,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
    call LSTIMER('FULLRIMP2:Init',TS2,TE2,DECinfo%output,ForcePrint)
-   !=================================================================
-   != Step 1:  Fijkl,Xijkl,Dijkl                                    =
-   !=          corresponding to V1,X1,B1                            =
-   != These are special since                                       =
-   != 1. the have a very simple structure(B1 does require robust DF)=
-   != 2. They could all be done in a Linear scaling way outside DEC =
-   !=    without density fitting. 
-   != 3. The intermediates are only used once                       =
-   != 4. Due to noccEOS,noccEOS,noccEOS,noccEOS very small mem req  =
-   != Note                                                          =
-   != Fijkl:                                                        =
-   != The Gaussian geminal divided by the Coulomb operator g/r12    =
-   != Xijkl                                                         =
-   != The Gaussian geminal squared g^2                              =
-   != Dijkl                                                         =
-   != The double commutator [[T,g],g] with g = Gaussian geminal     =
-   != Since the integral (alpha|[[T,g],g]|beta) is not positive     =
-   != definite this term is done using robust density fitting       =
-   != Done according to Eq. 87 of                                   =
-   != J Comput Chem 32: 2492–2513, 2011                             =
-   !=================================================================
+   !==================================================================
+   != Step 1:  Fijkl,Xijkl,Dijkl                                     =
+   !=          corresponding to V1,X1,B1                             =
+   != These are special since                                        =
+   != 1. the have a very simple structure(B1 does require robust DF) =
+   != 2. They could all be done in a Linear scaling way outside DEC  =
+   !=    without density fitting.                                    =
+   != 3. The intermediates are only used once                        =
+   != 4. Due to noccEOS,noccEOS,noccEOS,noccEOS very small mem req   =
+   != Note                                                           =
+   != Fijkl:                                                         =
+   != The Gaussian geminal divided by the Coulomb operator g/r12     =
+   != Xijkl                                                          =
+   != The Gaussian geminal squared g^2                               =
+   != Dijkl                                                          =
+   != The double commutator [[T,g],g] with g = Gaussian geminal      =
+   != Since the integral (alpha|[[T,g],g]|beta) is not positive      =
+   != definite this term is done using robust density fitting        =
+   != Done according to Eq. 87 of                                    =
+   != J Comput Chem 32: 2492–2513, 2011                              =
+   !==================================================================
 
    write(DECinfo%output,'(/,a)') ' ================================================ '
    write(DECinfo%output,'(a)')   '            FULL-RI-MP2F12 ENERGY TERMS            '
@@ -339,8 +349,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fmm%elms,K,0.0E0_realk,CalphaT,M)
    call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fkj,K,0.0E0_realk,CalphaT,M)
    call ContractOne4CenterF12IntegralsRI2_nc(NBA,nocc,CalphaX,CalphaT,CoulombF12X1,ExchangeF12X1)
-
-   print *, "norm2(CalphaT)", norm2(CalphT)
+   print *, "norm2(CalphaT)", norm2(CalphaT)
    call mem_dealloc(CalphaT)
 
    !Calculate the Fitting Coefficients (alpha|[[T,g],g]|ij) 
