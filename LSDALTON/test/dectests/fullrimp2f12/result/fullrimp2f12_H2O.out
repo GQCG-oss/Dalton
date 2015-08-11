@@ -105,12 +105,12 @@
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 4c0c95b2949c83b1089c0f8a1d3fc8539cd74b9d
+ Last Git revision        | f8e15216132d30d491e6a38151dd98b1b237fd3d
  Git branch               | master
- Configuration time       | 2015-07-23 10:56:04.051976
+ Configuration time       | 2015-08-10 18:10:21.672846
 
 Start simulation
-     Date and time (Linux)  : Thu Jul 23 10:57:47 2015
+     Date and time (Linux)  : Mon Aug 10 18:10:48 2015
      Host name              : YANGs-MBP.st.client.au.dk               
                       
  -----------------------------------------
@@ -148,7 +148,7 @@ Start simulation
   **CC                                                                                                
   .CANONICAL                                                                                          
   .RIMP2                                                                                              
-  .F12                                                                                                
+  .F12DEBUG                                                                                           
   .MEMORY                                                                                             
   2                                                                                                   
   *END OF INPUT                                                                                       
@@ -199,15 +199,15 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug_clean/gfortran_debug/basis/6-31G
+ OPENING FILE/Users/yangminwang/dalton_debug2/gfortran_debug/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug_clean/gfortran_debug/basis/cc-pV5Z-RI
+ OPENING FILE/Users/yangminwang/dalton_debug2/gfortran_debug/basis/cc-pV5Z-RI
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug_clean/gfortran_debug/basis/aug-cc-pVDZ
+ OPENING FILE/Users/yangminwang/dalton_debug2/gfortran_debug/basis/aug-cc-pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -365,7 +365,7 @@ No. of matmuls in get_density:     1
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   6
  The Coulomb energy contribution    46.748339975495711     
  The Exchange energy contribution    8.9522970044014034     
@@ -385,7 +385,7 @@ No. of matmuls in get_density:     1
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   8
  The Coulomb energy contribution    46.748933188405537     
  The Exchange energy contribution    8.9523680030528965     
@@ -432,8 +432,8 @@ No. of matmuls in get_density:     1
  The Fock energy contribution   -37.796557779723940     
  12    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   0.52 seconds
- >>> wall Time used in **ITER is   0.52 seconds
+ >>>  CPU Time used in **ITER is   0.51 seconds
+ >>> wall Time used in **ITER is   0.51 seconds
 
 Total no. of matmuls in SCF optimization:         52
 
@@ -556,11 +556,11 @@ Full molecular calculation is carried out...
  >>>  CPU Time used in DF_Calpha:AlphaBeta is   0.15 seconds
  >>> wall Time used in DF_Calpha:AlphaBeta is   0.13 seconds
  >>>  CPU Time used in DF_Calpha:3CenterInt is   0.06 seconds
- >>> wall Time used in DF_Calpha:3CenterInt is   0.06 seconds
+ >>> wall Time used in DF_Calpha:3CenterInt is   0.07 seconds
  >>>  CPU Time used in DF_Calpha:Calpha is   0.00 seconds
  >>> wall Time used in DF_Calpha:Calpha is   0.00 seconds
  >>>  CPU Time used in Build_CalphaMO2 is   0.21 seconds
- >>> wall Time used in Build_CalphaMO2 is   0.19 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.20 seconds
  >>>  CPU Time used in RIMP2: EnergyCont is   0.22 seconds
  >>> wall Time used in RIMP2: EnergyCont is   0.20 seconds
  RIMP2 CORRELATION ENERGY =  -0.12885079913113059     
@@ -592,25 +592,69 @@ Full molecular calculation is carried out...
          RIMP2F12 Energy contribution: E(B2,RI) =     -2.0516036490147
          RIMP2F12 Energy contribution: E(B3,RI) =     -5.6273850964840
          RIMP2F12 Energy contribution: E(V2,RI) =     10.5466455349390
-         RIMP2F12 Energy contribution: E(X2,RI) =    -10.7113473814392
+         RIMP2F12 Energy contribution: E(X2,RI) =    -10.7113473814391
          RIMP2F12 Energy contribution: E(V3,RI) =      0.0600126430522
          RIMP2F12 Energy contribution: E(V4,RI) =      0.2106730610335
          RIMP2F12 Energy contribution: E(V5,RI) =      0.0046416122435
-         RIMP2F12 Energy contribution: E(X3,RI) =     -0.0185588074884
-         RIMP2F12 Energy contribution: E(X4,RI) =     -0.0723971736885
+         RIMP2F12 Energy contribution: E(X3,RI) =     -0.0454779905885
+         RIMP2F12 Energy contribution: E(X4,RI) =     -0.0454779905885
          RIMP2F12 Energy contribution: E(B4,RI) =     -3.1831177185722
          RIMP2F12 Energy contribution: E(B5,RI) =      9.4764555983961
          RIMP2F12 Energy contribution: E(B6,RI) =      0.9283636948987
          RIMP2F12 Energy contribution: E(B7,RI) =     -0.0691798023048
          RIMP2F12 Energy contribution: E(B8,RI) =      0.1385399606828
          RIMP2F12 Energy contribution: E(B9,RI) =     -0.0016029817141
+ ----------------------------------------
+  E21 V term                             
+ ----------------------------------------
+  E21_CC_term:      0.000000000000000    
+  E21_V_term1:     -11.57078636560321    
+  E21_V_term2:      10.54664553493897    
+  E21_V_term3:     0.6001264305215555E-01
+  E21_V_term4:     0.2106730610335198    
+  E21_V_term5:     0.4641612243483042E-02
+ ----------------------------------------
+  E21_Vsum:     ***************
+ ----------------------------------------
+  E_22 X term                            
+ ----------------------------------------
+  E22_X_term1:     11.00533679777892    
+  E22_X_term2:    -10.71134738143913    
+  E22_X_term3:   -0.4547799058846979E-01
+  E22_X_term4:   -0.4547799058846979E-01
+ ----------------------------------------
+  E22_Xsum:    0.2030334351628531    
+ ----------------------------------------
+  E_22 B term                            
+ ----------------------------------------
+  E23_B_term1:    0.5983327294721783    
+  E23_B_term2:    -2.051603649014706    
+  E23_B_term3:    -5.627385096484005    
+  E23_B_term4:    -3.183117718572181    
+  E23_B_term5:     9.476455598396070    
+  E23_B_term6:    0.9283636948986651    
+  E23_B_term7:   -0.6917980230475143E-01
+  E23_B_term8:    0.1385399606828342    
+  E23_B_term9:   -0.1602981714134518E-02
+ ----------------------------------------
+  E23_B_sum:      0.2088027353599705    
+ ----------------------------------------------------------------
+                   WANGY DEC-MP2-F12 CALCULATION                 
+ ----------------------------------------------------------------
+  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =         -0.1288507991
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.7488135143
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.2030334352
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.2088027354
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.4118361705
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.3369773438
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.4658281429
 
  ================================================ 
                  Energy Summary                   
  ================================================ 
 
  TOYCODE: RI-MP2 CORRECTION TO ENERGY =   -0.12885079913113059     
- TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =   -0.33697734381230704     
+ TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =   -0.33697734381226685     
 
 
 
@@ -638,13 +682,13 @@ Full molecular calculation is carried out...
 
 
 ------------------------------------------------------
-Total CPU  time used in CC           :         8.43973     s
-Total Wall time used in CC           :         8.25700     s
+Total CPU  time used in CC           :         10.2208     s
+Total Wall time used in CC           :         10.0730     s
 ------------------------------------------------------
 
 
 Hostname       : YANGs-MBP.st.client.au.dk                         
-Job finished   : Date: 23/07/2015   Time: 10:57:56
+Job finished   : Date: 10/08/2015   Time: 18:10:59
 
 
 
@@ -654,8 +698,8 @@ Job finished   : Date: 23/07/2015   Time: 10:57:56
 
 
 
- >>>  CPU Time used in *SCF is   9.20 seconds
- >>> wall Time used in *SCF is   9.02 seconds
+ >>>  CPU Time used in *SCF is  10.97 seconds
+ >>> wall Time used in *SCF is  10.83 seconds
 
 Total no. of matmuls used:                       109
 Total no. of Fock/KS matrix evaluations:          13
@@ -712,7 +756,7 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       83.881 kB
-  Max allocated memory, logical                        2.844 kB
+  Max allocated memory, logical                        1.312 kB
   Max allocated memory, character                      6.016 kB
   Max allocated memory, AOBATCH                       99.840 kB
   Max allocated memory, DECORBITAL                     0.000 Byte
@@ -723,14 +767,14 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                        672.000 kB
+  Max allocated memory, ARRAY                          0.000 Byte
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
   Max allocated memory, ODBATCH                       28.248 kB
   Max allocated memory, LSAOTENSOR                    13.680 kB
-  Max allocated memory, SLSAOTENSOR                   34.776 kB
+  Max allocated memory, SLSAOTENSOR                   36.432 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                 229.584 kB
   Max allocated memory, ATOMITEM                       1.536 kB
@@ -751,9 +795,9 @@ Total no. of Fock/KS matrix evaluations:          13
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   9.31 seconds
- >>> wall Time used in LSDALTON is   9.13 seconds
+ >>>  CPU Time used in LSDALTON is  11.08 seconds
+ >>> wall Time used in LSDALTON is  10.98 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Jul 23 10:57:56 2015
+     Date and time (Linux)  : Mon Aug 10 18:10:59 2015
      Host name              : YANGs-MBP.st.client.au.dk               
