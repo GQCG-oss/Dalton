@@ -8,9 +8,9 @@ module lspdm_tensor_operations_module
   use,intrinsic :: iso_c_binding,only:c_f_pointer,c_loc
 
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-  use dec_workarounds_module
-#endif
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!  use dec_workarounds_module
+!#endif
 #ifdef TENSORS_IN_LSDALTON
   use LSTIMING
 #endif
@@ -5008,11 +5008,11 @@ module lspdm_tensor_operations_module
      excho(pos(2)) = o(pos(1))
      excho(pos(1)) = o(pos(2))
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-     call assign_in_subblocks(fort(1:nelms),'=',fort(1:nelms),nelms,scal2=0.0E0_tensor_dp)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!     call assign_in_subblocks(fort(1:nelms),'=',fort(1:nelms),nelms,scal2=0.0E0_tensor_dp)
+!#else
      fort(1:nelms) = 0.0E0_tensor_dp
-#endif
+!#endif
 
 #ifdef VAR_LSDEBUG
      if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
