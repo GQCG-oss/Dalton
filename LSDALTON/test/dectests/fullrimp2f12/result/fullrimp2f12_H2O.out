@@ -596,7 +596,11 @@ Full molecular calculation is carried out...
          RIMP2F12 Energy contribution: E(V3,RI) =      0.0600126430522
          RIMP2F12 Energy contribution: E(V4,RI) =      0.2106730610335
          RIMP2F12 Energy contribution: E(V5,RI) =      0.0046416122435
+<<<<<<< HEAD
          RIMP2F12 Energy contribution: E(X3,RI) =     -0.0454779905885
+=======
+         RIMP2F12 Energy contribution: E(X3,RI) =     -0.0454779905885         
+>>>>>>> 1eae79b4861b52542778a3e986d1b266f1a7fdd5
          RIMP2F12 Energy contribution: E(X4,RI) =     -0.0454779905885
          RIMP2F12 Energy contribution: E(B4,RI) =     -3.1831177185722
          RIMP2F12 Energy contribution: E(B5,RI) =      9.4764555983961
