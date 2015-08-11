@@ -371,7 +371,6 @@
         public dil_tens_pack_sym2
         public dil_distr_tens_insert_sym2
         public dil_update_abij_with_abc
-        public dil_test
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------
@@ -2734,7 +2733,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2746,7 +2745,7 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
@@ -2771,7 +2770,7 @@
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2783,7 +2782,7 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -2812,7 +2811,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2824,7 +2823,7 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
@@ -2853,7 +2852,7 @@
         integer(INTD), intent(inout), optional:: num_async         !inout: number of the outstanding MPI uploads left
         type(rank_win_t), intent(inout), optional:: list_async(1:) !out: list of the outstanding MPI uploads
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK),max_async
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck,async
 
@@ -2870,7 +2869,7 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -2980,7 +2979,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -2992,7 +2991,7 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,tens_arr%mode; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
@@ -3020,7 +3019,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -3030,7 +3029,7 @@
         do while(k.ge.0) !k<0: iterations are over
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
@@ -3067,7 +3066,7 @@
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol,buf_end
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
         real(8):: time_beg,tm
@@ -3089,7 +3088,7 @@
 !          if(DIL_DEBUG) write(CONS_OUT,'(": Packed: ",F10.4," s: ",F10.4," GB/s: Status ",i9)')&
 !           &tm,dble(2_INTL*tile_vol*tensor_dp)/(tm*1024d0*1024d0*1024d0),i
           if(i.ne.0) then; ierr=1; return; endif
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -3113,7 +3112,7 @@
         integer(INTD), intent(inout):: ierr     !out: error code (0:success)
         logical, intent(in), optional:: locked  !in: if .TRUE., MPI windows are assumed already locked
         integer(INTD):: i,k,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -3123,7 +3122,7 @@
         do while(k.ge.0)
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
-          call get_residence_of_tile(tile_host,int(tile_num,tensor_standard_int),tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Accumulate) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -3154,7 +3153,7 @@
         real(tensor_dp), pointer, contiguous:: bufi(:)       !single-tile buffer
         integer(INTD):: i,k,n,tile_host,signa(1:MAX_TENSOR_RANK),tile_dims(1:MAX_TENSOR_RANK)
         integer(INTL):: tile_vol
-        integer:: tile_num,tile_win
+        integer:: tile_num,tile_win,dpos,didx
         type(rank_win_cont_t):: rwc
         logical:: new_rw,win_lck
 
@@ -3172,7 +3171,7 @@
          call dil_get_next_tile_signa(tens_arr,tens_part,signa,tile_dims,tile_num,k)
          if(k.eq.0) then
           tile_vol=1_INTL; do i=1,n; tile_vol=tile_vol*tile_dims(i); enddo
-          call get_residence_of_tile(tile_host,tile_num,tens_arr,window_index=tile_win)
+          call get_residence_of_tile(tens_arr,tile_num,tile_host,dpos,didx,tile_win)
           new_rw=dil_rank_window_new(rwc,tile_host,tile_win,i); if(i.ne.0) ierr=ierr+1
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
            &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
@@ -5874,7 +5873,7 @@
         integer:: mlndx(MAX_TENSOR_RANK)
         integer(INTL):: ll,ld,ls,max_slice_vol,db(MAX_TENSOR_RANK),sb(MAX_TENSOR_RANK)
         integer(INTD), allocatable:: tkey(:,:),tnum(:)
-        integer(ls_mpik):: errc
+        integer(tensor_mpi_kind):: errc
         type(subtens_t):: subt
         real(tensor_dp), pointer, contiguous:: slice(:),tile(:)
         real(tensor_dp):: dsgn,asgn
@@ -6056,7 +6055,7 @@
         integer(INTL):: max_slice_vol,ll,ld,ls,db(4),sb(3)
         integer(INTD), allocatable:: tkey(:,:),tnum(:)
         integer:: mlndx(MAX_TENSOR_RANK)
-        integer(ls_mpik):: errc
+        integer(tensor_mpi_kind):: errc
         real(tensor_dp), pointer, contiguous:: slice(:),tile(:)
         type(subtens_t):: subt
         logical:: invrs

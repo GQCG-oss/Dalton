@@ -982,11 +982,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk):: r0,r1
 #ifdef DIL_ACTIVE
      integer:: sch1=1,sch2=1,sch3=1,sch4=1,sch5=1,sch_sym=1
-#ifdef DIL_DEBUG_ON
-     integer(INTL):: dsz,ssz,daddr,saddr !`DIL: remove
-     real(realk), allocatable:: darr(:),sarr(:) !`DIL: remove
-     type(tensor):: dtnsr,stnsr !`DIL: remove
-#endif
 #else
      integer:: sch1=2,sch2=2,sch3=2,sch4=2,sch5=2,sch_sym=2
 #endif
