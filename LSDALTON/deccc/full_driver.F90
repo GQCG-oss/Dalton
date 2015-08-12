@@ -401,9 +401,6 @@ contains
     !           Not frozen core: 0
     offset = noccfull - nocc
 
-    !> Singles correction some issues with MPI and gives different values
-    ! call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
-
     ! Get all F12 Fock Matrices
     ! ********************
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
@@ -442,9 +439,13 @@ contains
   !     enddo
   !  enddo
     
-   !ES2 = 0.0E0_realk
-   ! call get_ES2(ES2,Fic%elms,Fii,MyMolecule%vvfock%elm2,Fcd,Fac%elms,nocc,nvirt,ncabs)
-   
+  ES2 = 0.0E0_realk
+  !> Singles correction some issues with MPI and gives different values
+  if(DECinfo%F12singles) then
+     call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
+     !   call get_ES2(ES2,Fic%elms,Fii,MyMolecule%vvfock%elm2,Fcd,Fac%elms,nocc,nvirt,ncabs)
+  endif
+
     !call mat_free(Fab)
 
     E21 = 0.0E0_realk
