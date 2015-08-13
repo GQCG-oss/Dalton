@@ -621,7 +621,7 @@ contains
 !$acc enter data copyin(ovoo_ij) async(async_id(1))
 !$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else
+       else if (j .lt. i) then
 
           ccsd_j => ccsd_pdm_j(start_ccsd_j+1:end_ccsd_j)
           vvvo_j => vvvo_pdm_j(start_vvvo_j+1:end_vvvo_j)
@@ -729,7 +729,7 @@ contains
 !$acc enter data copyin(ovoo_ij) async(async_id(1))
 !$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else ! i .gt. j
+       else if (j .lt. i) then
 
           ccsd_j => ccsd_doubles(:,:,:,j)
           vvvo_j => vvvo(:,:,:,j)
@@ -843,7 +843,7 @@ contains
 !$acc enter data copyin(vovv_ab) async(async_id(1))
 !$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else
+       else if (b .lt. a) then
 
           ccsd_b => ccsd_pdm_b(start_ccsd_b+1:end_ccsd_b)
           ooov_b => ooov(:,:,:,b)
@@ -965,7 +965,7 @@ contains
 !$acc enter data copyin(vovv_ab) async(async_id(1))
 !$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else ! a .gt. b
+       else if (b .lt. a) then
   
           ccsd_b => ccsd_doubles(:,:,:,b)
           ooov_b => ooov(:,:,:,b)
@@ -1082,7 +1082,7 @@ contains
 !$acc enter data copyin(ovoo_ij) async(async_id(1))
 !$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else
+       else if (j .lt. i) then
 
           ccsd_j = real(ccsd_pdm_j(start_ccsd_j+1:end_ccsd_j),kind=4)
           vvvo_j = real(vvvo_pdm_j(start_vvvo_j+1:end_vvvo_j),kind=4)
@@ -1192,7 +1192,7 @@ contains
 !$acc enter data copyin(ovoo_ij) async(async_id(1))
 !$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else ! i .gt. j
+       else if (j .lt. i) then
 
           ccsd_j = real(ccsd_doubles(:,:,:,j),kind=4)
           vvvo_j = real(vvvo(:,:,:,j),kind=4)
@@ -1308,7 +1308,7 @@ contains
 !$acc enter data copyin(vovv_ab) async(async_id(1))
 !$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else
+       else if (b .lt. a) then
 
           ccsd_b = real(ccsd_pdm_b(start_ccsd_b+1:end_ccsd_b),kind=4)
           ooov_b = real(ooov(:,:,:,b),kind=4)
@@ -1432,7 +1432,7 @@ contains
 !$acc enter data copyin(vovv_ab) async(async_id(1))
 !$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else ! a .gt. b
+       else if (b .lt. a) then
 
           ccsd_b = real(ccsd_doubles(:,:,:,b),kind=4)
           ooov_b = real(ooov(:,:,:,b),kind=4)
