@@ -33,20 +33,20 @@ pe/lsdalton                     Author: Magnus,Nanna,Simen      Status: DoNotDel
 dec-quad                        Author: Johannes                Status: DoNotDelete
 dmp2opt                         Author: Johannes                Status: Working
 Hackathon                       Author: Patrick E.              Status: DoNotDelete
-titan_branch                    Author: Patrick E.              Status: Working
+titan_branch                    Author: Patrick E., Janus       Status: Working
 qcmatrix                        Author: Bin Gao, Magnus, ..     Status: Working (new OpenRSP interface with QcMatrix library)
 pcm_lsdalton                    Author: Roberto Di Remigio      Status: stale
-PE_titan_branch                 Author: Patrick E.              Status: stale
+PE_titan_branch                 Author: Patrick E., Janus       Status: stale
 DECCCO                          Author: Kasper                  Status: Stale
 DECenergy                       Author: Kasper                  Status: Stale
 PMinteraction                   Author: Kasper                  Status: Stale
 PnKs_lovenest                   Author: Kasper                  Status: Stale
 radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
+cuda_api_lsdalton               Author: Janus, Radovan          Status: Stale
 
 List of branches that I (Thomas) suspect or know is lsdalton related branches
 
 ONMR-development
-cuda_api_lsdalton
 dec-karl
 dec-patrick
 dec-rpa

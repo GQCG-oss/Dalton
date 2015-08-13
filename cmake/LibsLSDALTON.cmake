@@ -518,13 +518,15 @@ if(ENABLE_REAL_SP)
    set(CCSDPT_SINGLE_PREC_SOURCE
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90
+       ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90
        )
 endif()
 
 if(ENABLE_REAL_SP)
    get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
    if(${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90 OR
-     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90)
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90 OR
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90)
      add_custom_command(
      OUTPUT
      ${CCSDPT_SINGLE_PREC_SOURCE}
@@ -533,6 +535,7 @@ if(ENABLE_REAL_SP)
      DEPENDS
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_sp.sh
      )
    endif()
