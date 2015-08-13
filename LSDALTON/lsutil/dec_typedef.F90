@@ -352,12 +352,14 @@ module dec_typedef_module
      logical :: F12fragopt
      !> Do C coupling in F12 scheme
      logical :: F12Ccoupling
+     !> Do CABS singles
+     logical :: F12singles
 
      !> F12 debug settings
      !> ******************
      !> Use F12 correction
      logical :: F12DEBUG
-
+   
      logical :: SOS
 
      !> Debug keyword to specify pure hydrogen atoms
