@@ -120,9 +120,8 @@ contains
     ! some quit statements
     if (nocc .gt. nvirt) call lsquit('CCSD(T) with nocc .gt. nvirt has not been implemented...',DECinfo%output)
     if (print_frags .and. DECinfo%pt_hack) call lsquit('print_frags .and. .PT_HACK is not allowed...',DECinfo%output) 
-#ifdef VAR_REAL_SP
-    if (print_frags) call lsquit('print_frags is currently not implemented for single prec. builds...',DECinfo%output)
-#endif
+    if (print_frags .and. DECinfo%pt_single_prec) &
+                     & call lsquit('print_frags .and. .PT_SINGLE_PREC is not allowed...',DECinfo%output)
 #ifndef VAR_REAL_SP
     if (DECinfo%pt_single_prec) call lsquit('.PT_SINGLE_PREC only works for single prec. builds! re-compile...',DECinfo%output)
 #endif
