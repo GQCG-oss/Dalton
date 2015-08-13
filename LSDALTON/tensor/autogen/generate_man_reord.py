@@ -426,14 +426,17 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad,acc):
           f.write(conditionalstatement)
     
         #WRITE OMP DO STUFF HERE
-        if(not debug_loops and not acc):
-          if(modes-len(oldr)>0):
-            ompdo ="        !$OMP DO" 
-            if (modes-len(oldr)>1 and (not nocollapse)):
-              ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
-            else:
-              ompdo += " COLLAPSE("+str(min(modes-len(oldr),3))+")\n"
-            f.write(ompdo)
+        if(not debug_loops and not acc and modes-len(oldr)):
+          if( nocollapse ):
+             ncoll = min(modes-len(oldr),1)
+          else:
+             ncoll = modes-len(oldr)
+
+          ompdo = "        !$OMP DO" 
+          if ( ncoll > 1 ):
+            ompdo += " COLLAPSE("+str(ncoll)+")"
+          ompdo += "\n"
+          f.write(ompdo)
  
         #ORDER THE LOOPS, this depends on the architecture and may be modified
         #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
@@ -770,15 +773,13 @@ def write_main_header(f,now,names,args,tensordir,minr,maxr,interface_types):
    f.write("!END VARS\n\n")
 
    f.write("module reorder_frontend_module\n")
-   f.write("  use precision\n")
    f.write("  use tensor_parameters_and_counters\n")
+   f.write("  use tensor_error_handler\n")
+   f.write("  use tensor_allocator\n")
    f.write("  use get_idx_mod\n")
-   f.write("  use memory_handling\n")
    
    for name in names:
       f.write("  use "+name+"_module\n")
-
-   f.write("  use LSTIMING\n\n")
 
    #write interfaces
    #SPECIFY THE ORDER OF REODERINGS
@@ -865,13 +866,13 @@ module reorder_tester_module\n\
     for i in range(mode):
       words += "      n"+abc[i]+"="+str(int(((8000.0*1000.0)/(8.0*2.0))**(1.0/(mode*1.0)))+1+randrange(10))+"\n"
     words +="\
-      call mem_alloc(in1,"
+      call tensor_alloc_mem(in1,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(res,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(res,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(sto,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(sto,"
     for i in range(mode):
       words += "n" + abc[i] +"*"
     words = words[0:-1]+")\n      call random_number(in1)\n      call random_number(sto)\n\n" 
@@ -889,7 +890,7 @@ module reorder_tester_module\n\
     maxperms = factorial(mode)
     for perm in permutations(list(xrange(mode))):
       testcase="\
-          call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
           !res = sto\n\
           call dcopy("
@@ -897,7 +898,7 @@ module reorder_tester_module\n\
         testcase += "n"+abc[i]+"*"
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
-          call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           call array_reorder_"+str(mode)+"d(pr1,in1,"
       for i in range(mode):
         testcase += "n"+abc[i]+","
@@ -905,7 +906,7 @@ module reorder_tester_module\n\
       for i in range(mode):
         testcase += str(perm[i]+1)+","
       testcase = testcase[0:-1] +"],pr2,res)\n\
-          call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
           if(rigorous)then\n"
       ofstr="            "
       for i in range(mode):
@@ -945,7 +946,7 @@ module reorder_tester_module\n\
         ofstr = ofstr[0:-2]
       testcase+="          endif\n"
       testcase +="\
-          call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
           write (LUPRI,&\n\
           &'(I1,I1,\"-"
       for i in range(mode):
@@ -957,7 +958,7 @@ module reorder_tester_module\n\
         f.write("          write (LUPRI,*)\"\"\n\n")
       pc += 1
     f.write("        enddo\n      enddo\n")
-    f.write("      call mem_dealloc(in1)\n      call mem_dealloc(res)\n      call mem_dealloc(sto)\n")
+    f.write("      call tensor_free_mem(in1)\n      call tensor_free_mem(res)\n      call tensor_free_mem(sto)\n")
     f.write("    endif\n")
 
 
@@ -980,20 +981,20 @@ module reorder_tester_module\n\
         sze = 2*sze+1
       words += "      n"+abc[i]+"="+str(sze)+"\n"
 
-    words +="      call mem_alloc(til,"
+    words +="      call tensor_alloc_mem(til,"
     for i in range(mode):
       if(i==mode-1):
         words+="(n"+abc[i]+"/2))\n"
       else:
         words+="n"+abc[i]+"*"
     words +="\
-      call mem_alloc(in1,"
+      call tensor_alloc_mem(in1,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(res,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(res,"
     for i in range(mode):
       words += "n" + abc[i] + "*"
-    words = words[0:-1]+")\n      call mem_alloc(sto,"
+    words = words[0:-1]+")\n      call tensor_alloc_mem(sto,"
     for i in range(mode):
       words += "n" + abc[i] +"*"
     words = words[0:-1]+")\n      call random_number(in1)\n      call random_number(sto)\n\n" 
@@ -1013,7 +1014,7 @@ module reorder_tester_module\n\
 
       #TEST THE FROM FORT REORDERINGS
       testcase="\
-          call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
           !res = sto\n\
           call dcopy("
@@ -1021,7 +1022,7 @@ module reorder_tester_module\n\
         testcase += "n"+abc[i]+"*"
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
-          call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           do tile_idx=1,3\n            call tile_from_fort(1.0E0_tensor_dp,in1,["
       for i in range(mode):
         testcase += "n"+abc[i]+","
@@ -1049,7 +1050,7 @@ module reorder_tester_module\n\
       testcase = testcase [0:-1] + "])\n          enddo\n"
 
       testcase +="\
-          call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
           if(rigorous)then\n"
       ofstr="            "
       for i in range(mode):
@@ -1089,7 +1090,7 @@ module reorder_tester_module\n\
         ofstr = ofstr[0:-2]
       testcase+="          endif\n"
       testcase +="\
-          call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
           write (LUPRI,&\n\
           &'(I1,I1,\"-"
       for i in range(mode):
@@ -1098,7 +1099,7 @@ module reorder_tester_module\n\
     
       #TEST THE IN_FORT REORDERINGS
       testcase+="\
-          call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
           !res = sto\n\
           call dcopy("
@@ -1106,7 +1107,7 @@ module reorder_tester_module\n\
         testcase += "n"+abc[i]+"*"
       testcase = testcase[0:-1] + ",sto,1,res,1)\n"
       testcase+="\
-          call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           do tile_idx=1,3\n            call tile_from_fort(1.0E0_tensor_dp,sto,["
       for i in range(mode):
         testcase += "n"+abc[i]+","
@@ -1144,7 +1145,7 @@ module reorder_tester_module\n\
       for i in range(mode):
           testcase += str(i+1)+","
       testcase = testcase[0:-1] + "])\n          enddo\n\
-          call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc2,endw2,LUPRI,.false.)\n\
           if(rigorous)then\n"
       ofstr="            "
       for i in range(mode):
@@ -1184,7 +1185,7 @@ module reorder_tester_module\n\
         ofstr = ofstr[0:-2]
       testcase+="          endif\n"
       testcase +="\
-          call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
+          !call LSTIMER('START',endc1,endw1,LUPRI,.false.)\n\
           write (LUPRI,&\n\
           &'(I1,I1,\"-"
       for i in range(mode):
@@ -1198,7 +1199,7 @@ module reorder_tester_module\n\
         f.write("          write (LUPRI,*)\"\"\n\n")
       pc += 1
     f.write("        enddo\n      enddo\n")
-    f.write("      call mem_dealloc(til)\n      call mem_dealloc(in1)\n      call mem_dealloc(res)\n      call mem_dealloc(sto)\n")
+    f.write("      call tensor_free_mem(til)\n      call tensor_free_mem(in1)\n      call tensor_free_mem(res)\n      call tensor_free_mem(sto)\n")
     f.write("    endif\n")
 
 

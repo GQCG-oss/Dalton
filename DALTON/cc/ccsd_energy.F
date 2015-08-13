@@ -2319,7 +2319,7 @@ C
 #include "ccsdsym.h"
 #include "cbieri.h"
 #include "distcl.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccfro.h"
 #include "ccfop.h"
 #include "ccsections.h"

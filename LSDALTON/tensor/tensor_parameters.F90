@@ -1,21 +1,27 @@
 module tensor_parameters_and_counters
 
-   !Define atomic types used in the tensor module
-   integer, parameter :: tensor_dp     = 8
-   integer, parameter :: tensor_sp     = 4
+   !Define atomic data types used in the tensor module
+   integer, parameter :: tensor_dp           = 8
+   integer, parameter :: tensor_sp           = 4
 #ifdef VAR_INT64
-   integer, parameter :: tensor_int      = 8
+   integer, parameter :: tensor_int          = 8
+   integer, parameter :: tensor_log          = 8
+   integer, parameter :: tensor_max_int      = 9223372036854775800
 #else
-   integer, parameter :: tensor_int      = 4
+   integer, parameter :: tensor_int          = 4
+   integer, parameter :: tensor_log          = 4
+   integer, parameter :: tensor_max_int      = 2147483640
 #endif
    integer, parameter :: tensor_standard_int = 4
    integer, parameter :: tensor_standard_log = 4
-   integer, parameter :: tensor_long_int = 8
-   integer, parameter :: tensor_char_4   = 4
+   integer, parameter :: tensor_long_int     = 8
+   integer, parameter :: tensor_long_log     = 8
+   integer, parameter :: tensor_char_size    = 1
+   integer, parameter :: tensor_char_4       = 4
 !#ifdef VAR_MPI_32BIT_INT
-   integer, parameter :: tensor_mpi_kind = 4
+   integer, parameter :: tensor_mpi_kind     = 4
 !#else
-!   integer, parameter :: tensor_mpi_kind = 8
+!   integer, parameter :: tensor_mpi_kind     = 8
 !#endif
    !
    !L2_CACHE_SIZE = 256000 ! lower estimate of cache size in bytes:
@@ -28,6 +34,13 @@ module tensor_parameters_and_counters
    integer,parameter :: BS_2D = 126
    integer,parameter :: BS_3D =  25
    integer,parameter :: BS_4D =  11
+
+   !MPI SIGNAL, GET SLAVES, MAKE SURE THE APPLICATION HAS NO OVERLAPPING SIGNAL
+   integer,parameter :: TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD =  -121
+   integer ::           TENSOR_SLAVES_TO_SLAVE_ROUTINE     = TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
+   !MPI COMM TO USE IN TENSOR OPERATIONS, THIS IS UPDATED AT RUNTIME
+   integer(kind=tensor_mpi_kind), parameter :: tensor_comm_null = -124
+   integer(kind=tensor_mpi_kind), pointer   :: tensor_work_comm => null()
 
    !parameters to define the data distribution in the tensor type
    integer(kind=tensor_standard_int), parameter :: TT_DENSE        = 1
@@ -43,7 +56,7 @@ module tensor_parameters_and_counters
    
    !other parameters
    integer,parameter :: TENSOR_MSG_LEN = 30
-   integer,parameter :: DEFAULT_TDIM   = 10
+   integer,parameter :: DEFAULT_TDIM   = 40
    
    integer,parameter :: lspdm_stdout  = 6
    integer,parameter :: lspdm_errout  = 0
@@ -54,6 +67,8 @@ module tensor_parameters_and_counters
 #else
    logical,parameter :: alloc_in_dummy = .false.
 #endif
+   !STANDARD MPI MESSAGE LENGTH SET TO ~10MB
+   integer(kind=tensor_standard_int) :: TENSOR_MPI_MSG_LEN = 10000000
    
    !> execution time variables
    logical :: lspdm_use_comm_proc
@@ -64,25 +79,9 @@ module tensor_parameters_and_counters
    integer(kind=tensor_long_int) :: tensor_segment_length = -1
    
    !ALL COUNTERS IN BYTES!!
-
-   !size of a tile in bytes, this needs to be updated whenever the tile structure is changed
-   ! right now, we assume 8 bytes for each member of the struct
-   integer, parameter :: tensor_bytes_per_tile = 7*8
-
-   !Counters for total memory usage, a = allocd, f = freed, bg = background
-   integer(kind=tensor_long_int) :: tensor_counter_total_a_mem = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_total_f_mem = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_stack_a_mem = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_stack_f_mem = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_bgmem_a_mem = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_bgmem_f_mem = 0_tensor_long_int
    !> Max allocated memory
-   integer(kind=tensor_long_int) :: tensor_counter_max_memory         = 0_tensor_long_int
-   !counters for the individual ATOMIC types which may be allocated
-   integer(kind=tensor_long_int) :: tensor_counter_tensor_real_a_mem  = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_tensor_real_f_mem  = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_tensor_real_bg_a_mem = 0_tensor_long_int
-   integer(kind=tensor_long_int) :: tensor_counter_tensor_real_bg_f_mem = 0_tensor_long_int
+   integer(kind=tensor_long_int) :: tensor_counter_max_hp_mem = 0_tensor_long_int
+   integer(kind=tensor_long_int) :: tensor_counter_max_bg_mem = 0_tensor_long_int
 
    !> Allocated memory of dense array
    integer(kind=tensor_long_int) :: tensor_counter_dense_a_mem     = 0_tensor_long_int
@@ -106,6 +105,11 @@ module tensor_parameters_and_counters
    integer(kind=tensor_long_int) :: tensor_counter_memory_in_use      = 0_tensor_long_int
    integer(kind=tensor_long_int) :: tensor_counter_memory_in_use_heap = 0_tensor_long_int
    integer(kind=tensor_long_int) :: tensor_counter_memory_in_use_bg   = 0_tensor_long_int
+
+   integer(kind=tensor_long_int), pointer :: tensor_counter_ext_mem => null()
+
+   integer(kind=tensor_standard_int), parameter :: tensor_max_int_standard = 2147483640
+   integer(kind=tensor_long_int), parameter     :: long1                   = 1_tensor_long_int
    
    
 end module tensor_parameters_and_counters

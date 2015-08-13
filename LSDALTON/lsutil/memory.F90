@@ -13,7 +13,7 @@ use LSTENSOR_TYPETYPE
 use basis_typetype
 use dec_typedef_module
 use OverlapType
-use tensor_type_def_module
+use tensor_interface_module, only: tensor,tensor_initialize_bg_buf_from_lsdalton_bg_buf, tensor_free_bg_buf
 #ifdef MOD_UNRELEASED
 use lattice_type
 #endif
@@ -42,7 +42,6 @@ public mem_pseudo_dealloc
 public mem_init_background_alloc
 public mem_change_background_alloc
 public mem_free_background_alloc
-public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -2012,6 +2011,24 @@ subroutine mem_init_background_alloc(bytes)
    buf_realk%n_mdel = 0
    buf_realk%l_mdel = .false.
    buf_realk%max_usage = 0 
+
+   call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
+      &buf_realk%init,&
+      &buf_realk%offset,&
+      &buf_realk%nmax,&
+      &buf_realk%max_usage,&
+      &buf_realk%p,&
+      &buf_realk%c,&
+      &buf_realk%n,&
+      &buf_realk%f_addr,&
+      &buf_realk%c_addr,&
+      &buf_realk%c_mdel,&
+      &buf_realk%e_mdel,&
+      &buf_realk%n_mdel,&
+      &buf_realk%n_prev,&
+      &buf_realk%l_mdel,&
+      &buf_realk%f_mdel)
+
 end subroutine mem_init_background_alloc
 
 subroutine mem_change_background_alloc(bytes,not_lazy)
@@ -2064,7 +2081,25 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
       buf_realk%e_mdel = 0
       buf_realk%n_mdel = 0
       buf_realk%l_mdel = .false.
+      call tensor_free_bg_buf()
    endif
+
+   call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
+      &buf_realk%init,&
+      &buf_realk%offset,&
+      &buf_realk%nmax,&
+      &buf_realk%max_usage,&
+      &buf_realk%p,&
+      &buf_realk%c,&
+      &buf_realk%n,&
+      &buf_realk%f_addr,&
+      &buf_realk%c_addr,&
+      &buf_realk%c_mdel,&
+      &buf_realk%e_mdel,&
+      &buf_realk%n_mdel,&
+      &buf_realk%n_prev,&
+      &buf_realk%l_mdel,&
+      &buf_realk%f_mdel)
 
 end subroutine mem_change_background_alloc
 subroutine mem_free_background_alloc()
@@ -2101,6 +2136,7 @@ subroutine mem_free_background_alloc()
    buf_realk%l_mdel = .false.
    buf_realk%max_usage = 0 
 
+   call tensor_free_bg_buf()
 end subroutine mem_free_background_alloc
 
 
@@ -2497,24 +2533,6 @@ subroutine mem_pseudo_dealloc_realk5(p)
    buf_realk%c_addr(buf_realk%n) = c_null_ptr
 
 end subroutine mem_pseudo_dealloc_realk5
-
-function mem_is_background_buf_init() result(init)
-   implicit none
-   logical :: init
-   init = buf_realk%init
-end function mem_is_background_buf_init
-
-function mem_get_bg_buf_n() result(n)
-   implicit none
-   integer(kind=8) :: n
-   n = buf_realk%nmax
-end function mem_get_bg_buf_n
-
-function mem_get_bg_buf_free() result(n)
-   implicit none
-   integer(kind=8) :: n
-   n = buf_realk%nmax-buf_realk%offset
-end function mem_get_bg_buf_free
 
 subroutine printBGinfo()
 implicit none
@@ -3329,7 +3347,6 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
 #ifdef VAR_HAVE_MPI3
       if(loc) then
          bytes = int(0,kind=MPI_ADDRESS_KIND)
-         if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * lsmpi_len_realk
 
          if(bytes<0)then
             print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk

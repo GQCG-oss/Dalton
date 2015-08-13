@@ -11,7 +11,6 @@ module ccsdpt_tools_module
   use lsmpi_type
 #endif
   use tensor_interface_module
-  use lspdm_tensor_operations_module
   use cc_tools_module
 
 contains

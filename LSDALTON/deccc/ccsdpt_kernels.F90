@@ -16,7 +16,6 @@ module ccsdpt_kernels_module
   use lstiming!, only: lstimer
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
-  use lspdm_tensor_operations_module
   use reorder_frontend_module
 #ifdef VAR_OPENACC
   use openacc
@@ -751,7 +750,7 @@ contains
 !$acc exit data delete(vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(async_id(1))
 
 !$acc wait(async_id(5)) async(async_id(3))
-!$acc exit data delete(oovv_ik,oovv_ki,oovv_jk,oovv_kj) copyout(ccsdpt_doubles(:,:,:,k)) async(async_id(3))
+!$acc exit data delete(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) copyout(ccsdpt_doubles(:,:,:,k)) async(async_id(3))
 
                          endif
 
@@ -1398,7 +1397,7 @@ contains
 !$acc exit data delete(vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(async_id(1))
 
 !$acc wait(async_id(5)) async(async_id(3))
-!$acc exit data delete(oovv_ik,oovv_ki,oovv_jk,oovv_kj) copyout(ccsdpt_doubles(:,:,:,k)) async(async_id(3))
+!$acc exit data delete(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) copyout(ccsdpt_doubles(:,:,:,k)) async(async_id(3))
 
                        endif
 

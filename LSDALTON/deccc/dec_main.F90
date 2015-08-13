@@ -356,7 +356,8 @@ contains
 
     ! Sanity check
     ! ************
-    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) .or. (DECinfo%ccmodel/=MODEL_MP2) ) then
+    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) &
+         &  .or. (DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_RIMP2 ) ) then
        call lsquit("ERROR(get_mp2gradient_and_energy_from_inputs): Inconsitent input!!",DECinfo%output)
     end if
     write(DECinfo%output,*) 'Calculating MP2 energy and gradient from Fock, density, overlap, and MO inputs...'

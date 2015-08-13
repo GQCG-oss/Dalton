@@ -1174,7 +1174,7 @@ C
 #include "ccsdsym.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "second.h"
 C
       INTEGER ISYINT, LU4V, IDLSTB, ISYMB, LWORK
@@ -1919,7 +1919,7 @@ C
 #include "ccsdsym.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 C#include "cclr.h"
 C
       INTEGER ISYMB, LWORK, LU3SRTR, LUCKJDR
