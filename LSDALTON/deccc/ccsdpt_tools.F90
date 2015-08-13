@@ -18,6 +18,146 @@ contains
 
 #ifdef MOD_UNRELEASED
 
+  subroutine ptr_init_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc), target :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc), target :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    pt_1 => ccsdpt_singles
+    pt_2 => ccsdpt_doubles
+
+  end subroutine ptr_init_ijk_pt
+
+  subroutine ptr_init_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt), target :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt), target :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    pt_1 => ccsdpt_singles
+    pt_2 => ccsdpt_doubles
+
+  end subroutine ptr_init_abc_pt
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_init_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_alloc(pt_1,nvirt,nocc)
+    call mem_alloc(pt_2,nvirt,nvirt,nocc,nocc)
+    pt_1 = real(ccsdpt_singles,kind=4)
+    pt_2 = real(ccsdpt_doubles,kind=4)
+
+  end subroutine sp_ptr_init_ijk_pt
+#endif
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_init_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_alloc(pt_1,nocc,nvirt)
+    call mem_alloc(pt_2,nocc,nocc,nvirt,nvirt)
+    pt_1 = real(ccsdpt_singles,kind=4)
+    pt_2 = real(ccsdpt_doubles,kind=4)
+
+  end subroutine sp_ptr_init_abc_pt
+#endif
+
+  subroutine ptr_final_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    ! empty dummy routine
+
+  end subroutine ptr_final_ijk_pt
+
+  subroutine ptr_final_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    ! empty dummy routine
+
+  end subroutine ptr_final_abc_pt
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_final_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_dealloc(pt_1)
+    call mem_dealloc(pt_2)
+
+  end subroutine sp_ptr_final_ijk_pt
+#endif
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_final_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_dealloc(pt_1)
+    call mem_dealloc(pt_2)
+
+  end subroutine sp_ptr_final_abc_pt
+#endif
+
+! #########################
+
   subroutine ptr_init_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                    & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,t1,t1_ptr)
