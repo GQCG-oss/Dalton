@@ -1,10 +1,17 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib.ticker
+try:
+   import matplotlib.pyplot as plt
+   imported = True
+except:
+   imported = False
 
 def open_fig_container():
-   fig = plt.figure()
-   return fig
+   if imported:
+     fig = plt.figure()
+     return fig
+   else:
+     print "This function is not available without a display"
 
 #PLOT PAIR ENERGIES IS A FUNCTION OF THE decinfo STRUCTURE
 #NECESSARY INPUTS ARE THE STRUCTURE WHICH CALLS THE FUNCTION AND FIG OBTAINED   
@@ -203,8 +210,14 @@ def plot_SF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy er
    return ax1
 
 def show_plots():
-   plt.show()
+   if imported:
+     plt.show()
+   else:
+     print "This function is not available without a display"
 
 def save_plots(name):
-       plt.savefig(name)
+   if imported:
+     plt.savefig(name)
+   else:
+     print "This function is not available without a display"
 

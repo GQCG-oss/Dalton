@@ -54,15 +54,16 @@ end subroutine get_correct_S
 
 !> \brief ROutine that drives macro iterations for charge localization
 !> \author Ida-Marie Hoeyvik
-subroutine charge_localize_davidson(CFG,CMO,m,ls)
+subroutine charge_localize_davidson(CFG,CMOall,m,ls,norb)
 implicit none
 type(RedSpaceItem)           :: CFG
+type(matrix) :: CMOall
 type(Matrix) , target        :: CMO
 TYPE(lsitem) , intent(in)    :: ls
 integer      , intent(in)    :: m
 type(Matrix)          :: CMOsav
 type(Matrix), target  ::  X, P, G
-integer     :: norb, i, imx, A,j
+integer     :: norb, i, imx, A,j,nbas
 real(realk) :: nrmG, oVal,old_oVal, r
 real(realk) :: fVal,old_fVal !function values
 real(realk) :: stepsize
@@ -71,6 +72,17 @@ integer, external :: idamax
 integer     :: nel
 real(realk) :: minel
 integer     :: minel_pos(2)
+real(realk), pointer :: tmp(:)
+
+  nbas=CMOall%nrow
+  ! Extract coefficients to be localized
+  call mem_alloc(tmp,nbas*norb)
+  call mat_init(CMO,nbas,norb)
+  ! extract matrix from CMOall(1,offset)
+  call mat_retrieve_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+  call mat_set_from_full(tmp,1.0_realk,CMO)
+  call mem_dealloc(tmp)
+   
 
 
   CFG%PM_input%cmo=>CMO
@@ -149,6 +161,15 @@ integer     :: minel_pos(2)
 
   !END OF LOCALIZATION LOOP
   enddo
+
+  !Put localized block into full CMO matrix
+  call mem_alloc(tmp,nbas*norb)
+  call mat_to_full(CMO,1.0_realk,tmp)
+  call mat_free(CMO)
+  call mat_create_block(CMOall,tmp,nbas,norb,1,CFG%offset)
+  call mem_dealloc(tmp)
+
+
 
   call FreeOrbLoc(CFG%PM_input)
   call mat_free(X)

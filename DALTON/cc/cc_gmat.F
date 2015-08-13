@@ -240,7 +240,7 @@ c/* Deck CC_GMAT */
 #include "iratdef.h"
 #include "cbieri.h"
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "maxorb.h"
 #include "distcl.h"
 #include "ccorb.h"

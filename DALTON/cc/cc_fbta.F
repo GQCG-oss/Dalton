@@ -325,7 +325,7 @@ c /* deck cc_fbta1 */
 #include "ccsdinp.h"
 #include "iratdef.h"
 #include "distcl.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccisao.h"
 #include "ccroper.h"
 #include "ccfro.h"

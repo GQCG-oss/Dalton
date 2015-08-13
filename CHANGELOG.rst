@@ -1,6 +1,30 @@
 
 
-2015.1 (2015-07-XX)
+2015.2 (20XX-XX-XX)
+===================
+
+- This will be the next patch.
+- Write me ...
+
+Common
+------
+
+
+DALTON
+------
+
+- Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
+- Fixed .NEWTRA "new" integral transformation for 32 bit integers and n*256 orbitals and no integer overflow test
+  (the first 32 bits of (n*256)**4 are zero !!!).
+- Improved performance of .NEWTRA "new" integral transformation for response calculations.
+- Do not include floating orbitals in calculation of smallest atom-atom distance
+- Some minor corrections to the Dalton manual.
+
+
+LSDALTON
+--------
+
+2015.1 (2015-07-20)
 ===================
 
 Common
@@ -12,9 +36,11 @@ Common
 DALTON
 ------
 
-- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake.
-- Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters.
-- Fixed a bug for parallel build on some systems.
+- Fixed a bug in an LRESC correction. 
+- Improved calculation of one LRESC correction.
+- Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
+- Fixed a bug with Intel Compiler 15 during initialization of Cauchy-Schwarz parameters
+- Fixed a bug for parallel build on some systems
 - Fixed a segmentation fault for approx. 3000 basis functions
   (an array was allocated in stack memory, and became too big for default size of stack memory).
 - Fixed a bug in CC sumrules.
@@ -122,7 +148,7 @@ DALTON
 - More efficient evaluation of numerical Hessian when C1 symmetry
   (in each geometry step start wave function optimization from a
   converged wave function from a neighboring geometry rather than from scratch each time).
-- Fix of error which sometimes caused a geometry optimization to stop with " *** ERROR, Wrong interval in WLKBIS".
+- Fix of error which sometimes caused a geometry optimization to stop with "\*\*\* ERROR, Wrong interval in WLKBIS".
 - Fix of a bug which occasionally caused DALTON to abort a .STEX calculation.
 - Print final geometry in xyz format (angstrom). File called "final_geometry.xyz" is put into the restart tarball.
 - Append PID to scratch directory to avoid multiple tests running in the same directory.

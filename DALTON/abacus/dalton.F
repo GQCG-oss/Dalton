@@ -889,7 +889,7 @@ C                    because unit 0 is stderr on many systems.
 C                    The number -9xxx is used for easier debugging.
 C
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "priunit.h"
 #include "inftap.h"
 #include "ccinftap.h"

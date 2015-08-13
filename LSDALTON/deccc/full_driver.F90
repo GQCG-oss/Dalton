@@ -90,6 +90,7 @@ contains
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
              call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr_rimp2)       
+             Ecorr_rimp2f12 = Ecorr_rimp2 !in order to provide full_canonical_rimp2_f12 the MP2 energy
              call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr_rimp2f12)
              Ecorr = Ecorr_rimp2 + Ecorr_rimp2f12
              write(DECinfo%output,'(/,a)') ' ================================================ '
@@ -362,7 +363,7 @@ contains
     !> Singles correction energy
     real(realk)  :: ES2
      
-    real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
+    real(realk)  :: E21, E21_C, E21_debug, E22, E22_debug, E23_debug, Gtmp
     type(tensor) :: tensor_Taibj,tensor_gmo
     integer :: vs, os,offset
     logical :: local
@@ -447,6 +448,7 @@ contains
     !call mat_free(Fab)
 
     E21 = 0.0E0_realk
+    E21_C = 0.0E0_realk
     E21_debug = 0.0E0_realk
     DoCanonical: if(DECinfo%use_canonical) then
        !construct canonical T amplitudes
@@ -501,8 +503,8 @@ contains
                 enddo
              enddo
           enddo
-          E21 = E21 + tmp/32.0E0_realk
-          E21_debug = E21_debug + tmp/32.0E0_realk
+          E21_C = tmp/32.0E0_realk
+          print *, "E21_Cterm ...", E21_C
        ENDIF
     else
        !  THIS PIECE OF CODE IS MORE GENERAL AS IT DOES NOT REQUIRE CANONICAL ORBITALS
@@ -563,34 +565,29 @@ contains
        call mp2f12_Vjiij_term3(Vjiij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
        call mp2f12_Vjiij_term4(Vjiij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
        
-!       IF(DECinfo%F12Ccoupling)THEN
-          !> Coupling with the C-matrix, only needs to be done once
-          call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
-          call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
-!       ENDIF
+       call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
+       call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
+       
+       E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
+                                        & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
+                                        & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
+
+       IF(DECinfo%F12Ccoupling)THEN
+          E21_debug = E21_debug + E21_C
+       ENDIF
+
        print *, '----------------------------------------'
        print *, ' E21 V terms                            '
        print *, '----------------------------------------'
-       print *, ' E21_CC_term: ', E21_debug
-       print *, ' E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
-       print *, ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
-       print *, ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
-       print *, ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
-!       IF(DECinfo%F12Ccoupling)THEN
-          print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
-!       ENDIF
+       write(*,'(1X,a,g25.16)') ' E21_CC_term: ', E21_C
+       write(*,'(1X,a,g25.16)') ' E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
+       write(*,'(1X,a,g25.16)') ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
+       write(*,'(1X,a,g25.16)') ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
+       write(*,'(1X,a,g25.16)') ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
+       write(*,'(1X,a,g25.16)') ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
-
-!       IF(DECinfo%F12Ccoupling)THEN
-          E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-               & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
-               & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
-!       ELSE
-!          E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-!               & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc))  
-!       ENDIF
-       print *, ' E21_Vsum: ', E21_debug
-       !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       write(*,'(1X,a,g25.16)') ' E21_Vsum:    ', E21_debug
+       write(*,'(1X,a,g25.16)') ' E21_debug:   ', E21
     endif
 
     call mem_dealloc(Vijij)
@@ -717,12 +714,6 @@ contains
 
     if(DECinfo%use_canonical) then
 
-  !DO j=1,nocc
-  !     DO i=1,nocc
-  !        print *, "i j Fij(i,j): ", i,j, Fii%elms(i+(j-1)*nocc)
-  !     ENDDO
-  !  ENDDO
-
        E22 = 0.0E0_realk
        E22_debug = 0.0E0_realk
        if(DECinfo%F12DEBUG) then
@@ -741,37 +732,36 @@ contains
           print *, '----------------------------------------'
           print *, ' E_22 X term                            '
           print *, '----------------------------------------'
-          print *, ' E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
-          print *, ' E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
-          print *, ' E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
-          print *, ' E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
+          write(*,'(1X,a,g25.16)') ' E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
+          write(*,'(1X,a,g25.16)') ' E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
+          write(*,'(1X,a,g25.16)') ' E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
+          write(*,'(1X,a,g25.16)') ' E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
           print *, '----------------------------------------'
           E22_debug = mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
                & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
                & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
-          print *, ' E22_Xsum: ', E22_debug  
-          print *, ' E22_debug: ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
+          write(*,'(1X,a,g25.16)') ' E22_Xsum:    ', E22_debug  
+          write(*,'(1X,a,g25.16)') ' E22_debug:   ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
           print *, ' E_23 B term                           '
           print *, '----------------------------------------'
-          print *, ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-          print *, ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-          print *, ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-          print *, ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-          print *, ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-          print *, ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-          print *, ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-          print *, ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-          print *, ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          write(*,'(1X,a,g25.16)') ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
                & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
-          print *, ' E23_Bsum: ',  E23_debug
-          print *, ' E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
-          print *, '----------------------------------------'
+          print *, ' E23_Bsum:       ', E23_debug
+          print *, ' E23_Bsum_debug: ', mp2f12_E23(Bijij,Bjiij,nocc)
        endif
        
     else !> Non - canoical
@@ -786,35 +776,35 @@ contains
           print *, '----------------------------------------'
           print *, ' E_22 X term                            '
           print *, '----------------------------------------'
-          print *, ' E22_X_term1: ', X1
-          print *, ' E22_X_term2: ', X2
-          print *, ' E22_X_term3: ', X3
-          print *, ' E22_X_term4: ', X4
+          write(*,'(1X,a,g25.16)') ' E22_X_term1: ', X1
+          write(*,'(1X,a,g25.16)') ' E22_X_term2: ', X2
+          write(*,'(1X,a,g25.16)') ' E22_X_term3: ', X3
+          write(*,'(1X,a,g25.16)') ' E22_X_term4: ', X4
           print *, '----------------------------------------'
           E22_debug = X1 + X2 + X3 + X4  
-          print *, 'E22_Xsum: ', E22_debug  
+          write(*,'(1X,a,g25.16)') ' E22_Xsum:    ', E22_debug  
           print *, '----------------------------------------'
           print *, ' E_23 B term                            '
           print *, '----------------------------------------'
-          print *, ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-          print *, ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-          print *, ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-          print *, ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-          print *, ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-          print *, ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-          print *, ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-          print *, ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-          print *, ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          write(*,'(1X,a,g25.16)') ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          write(*,'(1X,a,g25.16)') ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
+      
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
                & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
-          print *, ' E23_Bsum: ',  E23_debug
-          print *, ' E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
-          print *, '----------------------------------------'
-
+       
+          write(*,'(1X,a,g25.16)') ' E23_Bsum:       ', E23_debug
+          write(*,'(1X,a,g25.16)') ' E23_Bsum_debug: ', mp2f12_E23(Bijij,Bjiij,nocc)
        endif      
     endif
 
