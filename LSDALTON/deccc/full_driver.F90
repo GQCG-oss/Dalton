@@ -578,14 +578,14 @@ contains
 
        DO j=1,nocc
           DO i=1,nocc
-             EJ = EJ + Vijij_term1(i,j) 
-             EK = EK + Vjiij_term1(i,j)
+             EJ = EJ + Vijij_term2(i,j) 
+             EK = EK + Vjiij_term2(i,j)
           ENDDO
        ENDDO
 
-       print *, "EJ: ", -5.0/4.0*EJ
-       print *, "EK: ", 1.0/4.0*EK
-       print *, "EK + EJ: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
+       print *, "EJ_V2: ", -5.0/4.0*EJ
+       print *, "EK_V2: ", 1.0/4.0*EK
+       print *, "EK_V2 + EJ_V2: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
 
  
        E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
