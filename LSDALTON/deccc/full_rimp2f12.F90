@@ -692,6 +692,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
   
      call mem_dealloc(CalphaCcabsT)
+     call mem_dealloc(CalphaCocc)
      call mem_dealloc(CalphaT)
      call mem_dealloc(CalphaP)
 
@@ -847,9 +848,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fmm%elms,k,0.0E0_realk,CalphaD,m)
    !Commented out just for current scheme, may be changed later TK
    !call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
-   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,CalphaCocc,CalphaD,EB7)
+   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,CalphaCoccT,CalphaD,EB7)
    call mem_dealloc(CalphaCoccT)
-   call mem_dealloc(CalphaCocc)
    call mem_dealloc(CalphaD)
    mp2f12_energy = mp2f12_energy  + EB7
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
