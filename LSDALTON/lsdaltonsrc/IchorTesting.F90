@@ -24,13 +24,13 @@ MODULE IntegralInterfaceIchorMod
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym
   use memory_handling, only: mem_alloc, mem_dealloc, debug_mem_stats
   use IntegralInterfaceMOD, only: II_get_4center_eri, ii_get_2int_screenmat,&
-       & II_get_exchange_mat
+       & II_get_exchange_mat, ii_get_2center_erifull
   use IntegralInterfaceDEC, only: II_GET_DECPACKED4CENTER_J_ERI
   use IchorErimoduleHost!,only: MAIN_ICHORERI_DRIVER
   use lsmatrix_operations_dense
   use LSmatrix_type
   use lstiming
-  public::  II_unittest_Ichor,II_Ichor_LinK_test
+  public::  II_unittest_Ichor,II_Ichor_LinK_test, ii_unittest_ichor2center
   private
 CONTAINS
 !> \brief Calculates overlap integral matrix
@@ -921,6 +921,311 @@ CONTAINS
     !call debug_mem_stats(LUPRI)
     
   END SUBROUTINE II_unittest_Ichor
+
+!> \brief Calculates overlap integral matrix
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param S the overlap matrix
+  SUBROUTINE II_unittest_Ichor2Center(LUPRI,LUERR,SETTING)
+    IMPLICIT NONE
+    TYPE(LSSETTING)       :: SETTING
+    INTEGER               :: LUPRI,LUERR
+    !
+    real(realk),pointer   :: integralsII(:,:),integralsIchor(:,:)
+    integer :: dim1,dim3,A,C,iprint,nbast(3),ibasiselm(3)
+    integer :: iBasis1,ibasis3,icharge,nbasis,nPass,ipass,itest
+    logical :: dirac,doprint,debug
+    TYPE(MOLECULEINFO),pointer :: Originalmolecule
+    TYPE(MOLECULEINFO),pointer :: atomicmolecule(:)
+    TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)
+    CHARACTER(len=9)     :: BASISLABEL
+    TYPE(BASISINFO),pointer :: unittestBASIS(:)
+    TYPE(BASISINFO),pointer :: originalBASIS
+    CHARACTER(len=80)    :: BASISSETNAME
+    CHARACTER(len=100)   :: filename
+    CHARACTER(len=20)    :: BASISTYPE(13)
+    CHARACTER(len=20)    :: BASISTYPE2(13)
+    integer              :: iBasisType(13),iBasisType2(13)
+    real(realk)          :: Rxyz(3),ts,te,IntThreshold
+    type(lsmatrix)       :: FINALVALUE(2)
+    logical      :: spherical,savedospherical,LHS
+    logical      :: FAIL(13,13),ALLPASS,SameMOL,TestScreening
+    logical      :: MoTrans,NoSymmetry
+    Character    :: intSpec(5)
+    integer :: iBasis1Q,iBasis3Q,luoutput
+    integer :: nBasisA,nBasisC,iPassStart,iPassEnd
+    integer,pointer :: iBasisA(:),iBasisC(:)
+    integer :: nBatchA,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat,ifilename
+    logical :: generateFiles
+    generateFiles = .FALSE.
+    IntThreshold = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+    filename(1:20) = 'IchorUnitTest2Center'
+    ifilename = 21
+    NoSymmetry = .FALSE. !activate permutational symmetry
+    intSpec(1) = 'R'
+    intSpec(2) = 'R'
+    intSpec(3) = 'C'
+
+    !All types and all passes
+    nbasisA = 9; nbasisC = 9
+    IpassStart = 1; IpassEnd = 2 
+    call mem_alloc(iBasisA,nBasisA)
+    call mem_alloc(iBasisC,nBasisC)
+    do iBasis1Q=1,nbasisA
+       iBasisA(iBasis1Q) = iBasis1Q
+    enddo
+    do iBasis3Q=1,nbasisC
+       iBasisC(iBasis3Q) = iBasis3Q
+    enddo
+    
+    WRITE(lupri,*)'II_test_Ichor2Center'
+    ALLPASS = .TRUE.
+    do A=1,80
+       BASISSETNAME(A:A) = ' '
+    enddo
+    BASISTYPE(1) = 'UnitTest_segS1p     '; iBASISTYPE(1) = 15
+    BASISTYPE(2) = 'UnitTest_segP1p     '; iBASISTYPE(2) = 15
+    BASISTYPE(3) = 'UnitTest_segD1p     '; iBASISTYPE(3) = 15
+    BASISTYPE(4) = 'UnitTest_segS       '; iBASISTYPE(4) = 13
+    BASISTYPE(5) = 'UnitTest_segP       '; iBASISTYPE(5) = 13
+    BASISTYPE(6) = 'UnitTest_segD       '; iBASISTYPE(6) = 13
+    BASISTYPE(7) = 'UnitTest_genS       '; iBASISTYPE(7) = 13
+    BASISTYPE(8) = 'UnitTest_genP       '; iBASISTYPE(8) = 13
+    BASISTYPE(9) = 'UnitTest_genD       '; iBASISTYPE(9) = 13
+    BASISTYPE(10) = 'UnitTest_segF1p     '; iBASISTYPE(10) = 15
+    BASISTYPE(11) = 'UnitTest_segF       '; iBASISTYPE(11) = 13
+    BASISTYPE(12) = 'UnitTest_genF       '; iBASISTYPE(12) = 13
+    BASISTYPE(13) = 'UnitTest_segSP      '; iBASISTYPE(13) = 14
+
+    BASISTYPE2(1)  = 'segS1p'; iBASISTYPE2(1) = 6
+    BASISTYPE2(2)  = 'segP1p'; iBASISTYPE2(2) = 6
+    BASISTYPE2(3)  = 'segD1p'; iBASISTYPE2(3) = 6
+    BASISTYPE2(4)  = 'segS  '; iBASISTYPE2(4) = 4
+    BASISTYPE2(5)  = 'segP  '; iBASISTYPE2(5) = 4
+    BASISTYPE2(6)  = 'segD  '; iBASISTYPE2(6) = 4
+    BASISTYPE2(7)  = 'genS  '; iBASISTYPE2(7) = 4
+    BASISTYPE2(8)  = 'genP  '; iBASISTYPE2(8) = 4
+    BASISTYPE2(9)  = 'genD  '; iBASISTYPE2(9) = 4
+    BASISTYPE2(10) = 'segF1p'; iBASISTYPE2(10) = 6
+    BASISTYPE2(11) = 'segF  '; iBASISTYPE2(11) = 4
+    BASISTYPE2(12) = 'genF  '; iBASISTYPE2(12) = 4
+    BASISTYPE2(13) = 'segSP '; iBASISTYPE2(13) = 5
+    !issues with SP in that 
+    !       IF(dim2.GT.dim1)CYCLE
+    !       IF(dim3.GT.dim1)CYCLE
+    !       IF(dim4.GT.dim3)CYCLE
+    !       IF(dim3+dim4.GT.dim1+dim2)CYCLE
+    ! general do not work either
+    ! do not work
+
+    Originalmolecule => SETTING%MOLECULE(1)%p
+    originalBasis => SETTING%BASIS(1)%p
+
+    dirac = .FALSE.
+    iprint=0
+    setting%scheme%intprint = 0
+    doprint = .FALSE.
+    itest = 1
+
+    do Ipass = IpassStart,IpassEnd
+       WRITE(lupri,*)'Number of Passes',Ipass
+       !=========================================================================================================
+       !                    Build Molecule
+       !=========================================================================================================
+       allocate(atomicmolecule(3))
+       
+       nPass = 1
+       IF(iPass.EQ.2)nPass = 5
+       ICHARGE=6; Rxyz(1)=0.813381591740787E0_realk; Rxyz(2)=1.059191498062862E0_realk;Rxyz(3)=0.889158554601339E0_realk; 
+       call build_unittest_atomicmolecule(atomicmolecule(1),ICHARGE,Rxyz,nPass,lupri)
+        
+       IF(iPass.EQ.2)nPass = 3
+       ICHARGE=9; Rxyz(1)=0.736938390171405E0_realk; Rxyz(2)=1.108186821166992E0_realk;Rxyz(3)=0.713699152299640E0_realk; 
+       call build_unittest_atomicmolecule(atomicmolecule(3),ICHARGE,Rxyz,nPass,lupri)
+       SETTING%MOLECULE(1)%p => atomicmolecule(1)
+       setting%fragment(1)%p => setting%molecule(1)%p
+       SETTING%MOLECULE(3)%p => atomicmolecule(3)
+       setting%fragment(3)%p => setting%molecule(3)%p
+     
+       allocate(UNITTESTBASIS(3))
+       BASISLABEL='REGULAR  '     
+       FAIL = .FALSE.
+       spherical = .TRUE.!.FALSE.
+       nullify(integralsII)
+     
+       basisloop: do iBasis1Q = 1,nBasisA
+          iBasis1 = iBasisA(iBasis1Q)
+          do iBasis3Q = 1,nBasisC
+             iBasis3 = iBasisC(iBasis3Q)
+
+             ibasiselm(1) = iBasis1
+             ibasiselm(3) = iBasis3
+             ifilename = 21
+
+             A = 1       
+             BASISSETNAME(1:20) = BASISTYPE(iBasiselm(A))
+             filename(ifilename:ifilename+iBASISTYPE2(iBasiselm(A))-1) =  BASISTYPE2(iBasiselm(A))(1:iBASISTYPE2(iBasiselm(A)))
+             ifilename = ifilename+iBASISTYPE2(iBasiselm(A))             
+             call nullifyMainBasis(UNITTESTBASIS(A))
+             CALL Build_basis(LUPRI,IPRINT,&
+                  &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
+                  &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
+             UNITTESTBASIS(A)%WBASIS(RegBasParam) = .TRUE.
+             SETTING%BASIS(A)%p => UNITTESTBASIS(A)
+             call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
+             A = 3
+             BASISSETNAME(1:20) = BASISTYPE(iBasiselm(A))
+             filename(ifilename:ifilename+iBASISTYPE2(iBasiselm(A))-1) =  BASISTYPE2(iBasiselm(A))(1:iBASISTYPE2(iBasiselm(A)))
+             ifilename = ifilename+iBASISTYPE2(iBasiselm(A))             
+             call nullifyMainBasis(UNITTESTBASIS(A))
+             CALL Build_basis(LUPRI,IPRINT,&
+                  &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
+                  &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
+             UNITTESTBASIS(A)%WBASIS(RegBasParam) = .TRUE.
+             SETTING%BASIS(A)%p => UNITTESTBASIS(A)
+             call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
+
+             WRITE(filename(ifilename:ifilename),'(I1)') Ipass
+             ifilename = ifilename + 1
+             dim1 = nbast(1); dim3 = nbast(3)
+         
+             write(lupri,'(A,A,A,A,A)')'BASIS(',BASISTYPE2(iBasis1),',',BASISTYPE2(iBasis3),')'            
+             write(lupri,*)'dim:',dim1,dim3           
+             Setting%sameMol = .FALSE.
+             Setting%sameFrag = .FALSE.
+            
+             intSpec(5) = 'C' 
+               
+             if(associated(integralsII))THEN
+                call mem_dealloc(integralsII)
+             ENDIF
+             call mem_alloc(integralsII,dim1,dim3)
+             integralsII = 0.0E0_realk
+             savedospherical = setting%scheme%dospherical
+             setting%scheme%dospherical = spherical
+             setting%scheme%OD_SCREEN = .FALSE.
+             setting%scheme%CS_SCREEN = .FALSE.
+             setting%scheme%PS_SCREEN = .FALSE.
+!             setting%scheme%intprint = 1000
+             call II_get_2center_erifull(LUPRI,LUERR,SETTING,integralsII,dim1,dim3)
+!             setting%scheme%intprint = 0
+             
+             setting%scheme%dospherical = savedospherical
+             setting%scheme%OD_SCREEN = .TRUE.
+             setting%scheme%CS_SCREEN = .TRUE.
+             setting%scheme%PS_SCREEN = .TRUE.
+             setting%scheme%intprint = 0
+             Setting%sameFrag = .FALSE.
+             Setting%sameMol = .FALSE.
+             call mem_alloc(integralsIchor,dim1,dim3)
+             SameMOL = .FALSE.       
+             CALL LSTIMER('START',ts,te,lupri)
+!             IPRINT=1000
+             call MAIN_ICHOR2CenterERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim3,&
+                  & integralsIchor,intspec,.TRUE.,dim1,dim3,NoSymmetry,intThreshold)
+!             IPRINT=0
+             CALL LSTIMER('Ichor ',ts,te,lupri)
+             IF(generateFiles)THEN
+                luoutput = -1
+                call lsopen(luoutput,filename(1:ifilename-1),'UNKNOWN','FORMATTED')
+                call WRITE_ICHOR2CENTERERI_INFO(LUPRI,IPRINT,setting,&
+                     & dim1,dim3,integralsIchor,LUOUTPUT)
+                call lsclose(luoutput,'KEEP')
+             ENDIF
+             call FREE_SCREEN_ICHORERI
+             !       print*,'DONE call ICHOR WITH BASIS'
+             !setting%scheme%intprint = 0
+             write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE2(iBasis1),',',BASISTYPE2(iBasis3),') TESTING'
+             FAIL(iBasis1,ibasis3) = .FALSE.
+             DO C=1,dim3
+              DO A=1,dim1
+               IF(ABS(integralsII(A,C)).GT.1.0E-10_realk)THEN
+                IF(ABS(integralsII(A,C)-integralsIchor(A,C)).GT.1.0E-10_realk/(ABS(integralsII(A,C))))THEN
+                   FAIL(iBasis1,ibasis3) = .TRUE.
+                   write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,C)))
+                   write(lupri,'(A,4I4)')'ELEMENTS: (A,C)=',A,C
+                   write(lupri,'(A,ES16.8)')'integralsII(A,C)   ',integralsII(A,C)
+                   write(lupri,'(A,ES16.8)')'integralsIchor(A,C)',integralsIchor(A,C)
+                   write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                        & ABS(integralsII(A,C)-integralsIchor(A,C))
+                   call lsquit('ERROR',-1)
+                ENDIF
+               ELSE
+                IF(ABS(integralsII(A,C)-integralsIchor(A,C)).GT.1.0E-10_realk)THEN
+                   FAIL(iBasis1,ibasis3) = .TRUE.
+                   write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,C)))
+                   write(lupri,'(A,4I4)')'ELEMENTS: (A,C)=',A,C
+                   write(lupri,'(A,ES16.8)')'integralsII(A,C)   ',integralsII(A,C)
+                   write(lupri,'(A,ES16.8)')'integralsIchor(A,C)',integralsIchor(A,C)
+                   write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                        & ABS(integralsII(A,C)-integralsIchor(A,C))
+                   call lsquit('ERROR',-1)
+                ENDIF
+               ENDIF
+              ENDDO
+             ENDDO
+             IF(FAIL(iBasis1,ibasis3))THEN
+                WRITE(lupri,'(A)')'CALC FAILED'
+             ELSE                  
+                WRITE(lupri,'(A)')'COULOMB INTEGRALS SUCCESSFUL'
+             ENDIF
+             call mem_dealloc(integralsII)
+             call mem_dealloc(integralsIchor)
+            enddo
+         
+            call free_basissetinfo(UNITTESTBASIS(1)%BINFO(RegBasParam))
+            call free_basissetinfo(UNITTESTBASIS(3)%BINFO(RegBasParam))
+            Setting%sameMol = .TRUE.
+            Setting%sameFrag = .TRUE.
+         ENDDO basisloop
+
+         write(lupri,'(A,I4)')'Summary of Unit Test for nPasses=',ipass
+         do iBasis1Q = 1,nBasisA
+            iBasis1 = iBasisA(iBasis1Q)
+            do iBasis3Q = 1,nBasisC
+               iBasis3 = iBasisC(iBasis3Q)
+               IF(FAIL(iBasis1,ibasis3)) THEN
+                  write(lupri,'(A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE2(iBasis1)(1:6),',',&
+                         & BASISTYPE2(iBasis3)(1:6),',',ipass,') FAILED'
+                  ALLPASS = .FALSE.
+               ELSE
+                  write(lupri,'(A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE2(iBasis1)(1:6),',',&
+                         & BASISTYPE2(iBasis3)(1:6),',',ipass,') SUCCESSFUL'
+               ENDIF
+            enddo
+         enddo
+         call free_moleculeinfo(atomicmolecule(1))
+         call free_moleculeinfo(atomicmolecule(3))
+         deallocate(atomicmolecule)
+         deallocate(UNITTESTBASIS)
+      enddo !ipass 
+
+      iprint=0
+      setting%scheme%intprint = 0
+      
+      DO iao=1,4
+         SETTING%MOLECULE(iao)%p => Originalmolecule
+         setting%fragment(iao)%p => setting%molecule(iao)%p
+      ENDDO
+      
+      SETTING%BASIS(1)%p => originalBasis
+      SETTING%BASIS(2)%p => originalBasis
+      SETTING%BASIS(3)%p => originalBasis
+      SETTING%BASIS(4)%p => originalBasis
+      
+      IF(ALLPASS)THEN
+         WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: SUCCESSFUL'
+         print*,'Ichor Integrals tested against Thermite: SUCCESSFUL'
+      ELSE
+         WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: FAILED'
+         print*,'Ichor Integrals tested against Thermite: FAILED'
+      ENDIF
+      WRITE(lupri,*)'done II_test_Ichor'
+      
+  END SUBROUTINE II_unittest_Ichor2Center
   
 !!$!> \brief Calculates overlap integral matrix
 !!$!> \author T. Kjaergaard

@@ -738,7 +738,7 @@ contains
     !Do on GPU (Async)
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG,m,Fpp,k,0.0E0_realk,CalphaD,m)   
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB6,dopair_occ)
+    !call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB6,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB6
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
@@ -785,7 +785,7 @@ contains
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Frm,k,0.0E0_realk,CalphaD,m)
 
     !we need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
-    call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nocv,CalphaGcabsMO,CalphaG,CalphaD,EB8,dopair_occ)
+    !call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nocv,CalphaGcabsMO,CalphaG,CalphaD,EB8,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB8
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
@@ -806,7 +806,7 @@ contains
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,MyFragment%Fcp,k,0.0E0_realk,CalphaD,m)
     call mem_dealloc(CalphaGcabsMO)
 
-    call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB9,dopair_occ)
+    !call ContractTwo4CenterF12IntegralsRIB9(nBA,nocc,nvirt,nocv,CalphaG,CalphaD,EB9,dopair_occ)
 
     mp2f12_energy = mp2f12_energy  + EB9
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
