@@ -368,7 +368,7 @@ contains
     integer :: vs, os,offset
     logical :: local
     local = .true.
-    ES2=0.0E0_realk
+
 #ifdef VAR_MPI
     local = (infpar%lg_nodtot==1)
 #endif
@@ -429,22 +429,9 @@ contains
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)    
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
     
-    ! MP2-F12 Singles correction (Yang M. Wang 03.12.2014)
+    ! MP2-F12 Singles correction 
     ! ***************************    
-    ! Fab
-  !  call mat_init(Fab,nvirt,nvirt)
-  !  do i = 1, nvirt
-  !     do j = 1, nvirt
-  !            Fab(i,j) = MyMolecule%vvfock(i,j)
-  !     enddo
-  !  enddo
-    
-  ES2 = 0.0E0_realk
-  !> Singles correction some issues with MPI and gives different values
-  if(DECinfo%F12singles) then
-     call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
-     !   call get_ES2(ES2,Fic%elms,Fii,MyMolecule%vvfock%elm2,Fcd,Fac%elms,nocc,nvirt,ncabs)
-  endif
+    ES2 = MyMolecule%EF12singles
 
     !call mat_free(Fab)
 
@@ -1732,7 +1719,7 @@ contains
 
     !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
-    !ES2=0.0E0_realk
+    ES2=MyMolecule%EF12singles
 
     ! F12 Specific
     call mem_dealloc(Vijij)
@@ -1821,9 +1808,6 @@ contains
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
     endif
 
-    ES2=0.0E0_realk
-    ! CCSD-F12 Singles Correction Energy
-    !call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
 
 
     call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)

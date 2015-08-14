@@ -241,6 +241,11 @@ contains
     DECinfo%F12debug                 = .false.
     DECinfo%F12Ccoupling             = .false.
     DECinfo%F12singles               = .false.
+    DECinfo%F12singlesMaxIter = 200
+    DECinfo%F12singlesThr = 1.0e-7
+    DECinfo%F12singlesMaxDIIS = 3
+
+
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
@@ -939,6 +944,13 @@ contains
           DECinfo%F12SINGLES=.true.
        case('.F12CCOUPLING')     
           DECinfo%F12Ccoupling=.true.
+       case('.F12SINGLESMAXITER')
+          read(input,*) DECinfo%F12singlesMaxIter
+       case('.F12SINGLESTHR')
+          read(input,*) DECinfo%F12singlesThr
+       case('.F12SINGLESMAXDIIS')
+          read(input,*) DECinfo%F12singlesMaxDIIS
+
 #endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
