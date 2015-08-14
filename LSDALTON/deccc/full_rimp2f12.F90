@@ -88,6 +88,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:), CalphaP(:)
    real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:), CalphACcabsT(:), CalphaCocc(:), CalphaCoccT(:)
    real(realk),pointer :: CalphaTvirt(:) 
+   real(realk),pointer :: CalphaTmp(:),EpsOcc(:),EpsVirt(:)
    real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:),ABdecompC(:,:),ABdecompTvirt(:,:)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:),ABdecompX(:,:)
    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateC,ABdecompCreateTvirt
@@ -115,24 +116,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    lupri = DECinfo%output
 #ifdef VAR_TIME
-   FORCEPRINT = .TRUE.
+    FORCEPRINT = .TRUE.
 #else
-   FORCEPRINT = .FALSE.
+    FORCEPRINT = .FALSE.
 #endif    
-   call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
+    call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
 
 #ifdef VAR_MPI
-   master= (infpar%mynum == infpar%master)
-   mynum = infpar%mynum
-   numnodes = infpar%nodtot
-   wakeslaves = infpar%nodtot.GT.1
-   if(.NOT.master)lupri = 6
+    master= (infpar%mynum == infpar%master)
+    mynum = infpar%mynum
+    numnodes = infpar%nodtot
+    wakeslaves = infpar%nodtot.GT.1
+    if(.NOT.master)lupri = 6
 #else
-   ! If MPI is not used, consider the single node to be "master"
-   master=.true.
-   mynum = 0
-   numnodes = 1
-   wakeslaves = .false.
+    ! If MPI is not used, consider the single node to be "master"
+    master=.true.
+    mynum = 0
+    numnodes = 1
+    wakeslaves = .false.
 #endif
    call LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
 
@@ -199,7 +200,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_alloc(Fkj,nocc,nocc)
       call dcopy(nocc*nocc, MyMolecule%oofock%elm2, 1, Fkj, 1)
    endif
-   print *, "norm2(Fkj)", norm2(Fkj)
 
    ! Cfull
    call mem_alloc(Cfull,nbasis,nocv)
@@ -213,7 +213,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          Cfull(I,noccfull+P) = MyMolecule%Cv%elm2(I,P)
       enddo
    enddo
-   print *,"norm2(Cfull)", norm2(Cfull)
 
    ! ***********************************************************
    !   Printing Input variables 
@@ -341,7 +340,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fmm%elms,K,0.0E0_realk,CalphaT,M)
    call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fkj,K,0.0E0_realk,CalphaT,M)
    call ContractOne4CenterF12IntegralsRI2_nc(NBA,nocc,CalphaX,CalphaT,CoulombF12X1,ExchangeF12X1)
-   print *, "norm2(CalphaT)", norm2(CalphaT)
    call mem_dealloc(CalphaT)
 
    !Calculate the Fitting Coefficients (alpha|[[T,g],g]|ij) 
@@ -498,8 +496,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    K = nocc             !summation dimension
    N = nocc             !columns of Output Matrix
    call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
-   print *,"norm2(CalphaT)",norm2(CalphaT)
-
 
    call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
    call mem_dealloc(CalphaT)
@@ -536,7 +532,40 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
         & mynum,numnodes,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
-   
+
+
+     IF(DECinfo%F12Ccoupling)THEN 
+       call mem_alloc(CalphaTmp,NBA*nocc*nvirt) 
+       !CalphaTmp(NBA,nocc,nvirt) = CalphaGcabsMO(NBA,nocc,ncabsMO)*Fac(nvirt,ncabsMO)^T 
+       M = NBA*nocc     !Rows of Output Matrix  
+       N = nvirt        !Columns of Output Matrix 
+       K = ncabsMO      !summation dimension 
+       call DGEMM('N','T',M,N,K,1.0E0_realk,CalphaGcabsMO,M,Fac%elms,N,0.0E0_realk,CalphaTmp,M) 
+ 
+       call mem_alloc(EpsOcc,nocc) 
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) & 
+       !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset) 
+       do I=1,nocc 
+          EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset) 
+       enddo 
+       !$OMP END PARALLEL DO 
+       call mem_alloc(EpsVirt,nvirt) 
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) & 
+       !$OMP SHARED(nvirt,MyMolecule,EpsVirt) 
+       do A=1,nvirt 
+          EpsVirt(A) = MyMolecule%vvfock%elm2(A,A) 
+       enddo 
+       !$OMP END PARALLEL DO 
+       Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ',E_21C 
+       WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ',E_21C 
+ 
+       call mem_dealloc(CalphaTmp) 
+       call mem_dealloc(EpsVirt) 
+       call mem_dealloc(EpsOcc) 
+    ENDIF 
+  
+
      !Do on GPU (Async)
      call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nocv,&
         & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
@@ -556,38 +585,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      != V5:     Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj          =
      !=                                                        = 
      !========================================================== 
-
-     ! Get all AO integrals 
-     ! ********************
-     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
-     gao = 0.0E0_realk
-     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
-
-     ! Transform AO integrals to MO integrals (A I | B J)
-     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,&
-          & nvirt,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,'aiai',gAO,gMO)
-     call mem_dealloc(gao)
-
-     call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
-
-       print *,"norm2(gmo)", norm2(gmo)  
-
-     do J=1,nocc
-        do B=1,nvirt
-           do I=1,nocc
-              do A=1,nvirt
-                 ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                 eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
-                    & + MyMolecule%oofock%elm2(J+offset,J+offset) &
-                    & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
-                 eps = gmo(A,I,B,J)/eps
-                 Taibj(a,i,b,j) = eps
-              enddo
-           enddo
-        enddo
-     enddo
-         
-     print *,"norm2(Taibj)", norm2(Taibj)
      ABdecompCreateTvirt = .TRUE. 
      call mem_alloc(ABdecompTvirt,naux,naux)
      !   We need CalphaRocc(NBA,nocc,nocc) but this is a subset of CalphaR(NBA,nocc,nbasis)
@@ -642,10 +639,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      call mem_dealloc(ABdecompC)
      call mem_dealloc(CalphaCcabs)
      call mem_dealloc(CalphaCvirt)
-                      
-     !Additional       
-     call mem_dealloc(gMO)
-     call mem_dealloc(Taibj)
 
      !==========================================================
      !=                                                        =
@@ -942,7 +935,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call LSTIMER('FULLRIMP2F12',TS,TE,DECinfo%output,ForcePrint)
 
     E_21 = 0.0E0_realk
-    E_21 = EV1 + EV2 + EV3 + EV4 +EV5 
+    E_21 = EV1 + EV2 + EV3 + EV4 +EV5 + E_21C
 
     if(DECinfo%F12debug) then
        print *, '----------------------------------------'
@@ -1065,7 +1058,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
 
 
-end subroutine full_canonical_rimp2_f12
+  end subroutine full_canonical_rimp2_f12
 
 !Exchange Ripjq*Gjpiq
 !Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
@@ -1316,6 +1309,68 @@ end subroutine full_canonical_rimp2_f12
 !!$    ls%setting%SCHEME%NOFAMILY = NOFAMILY
 !!$
 !!$  end subroutine ContractTwo4CenterF12IntegralsExchange
+
+  subroutine FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,Galpha,&
+       & Galpha2,E,EpsOcc,EpsVirt)
+    implicit none
+    real(realk),intent(inout) :: E
+    integer,intent(in) :: NBA,nocc,nvirt,nbasis
+    real(realk),intent(in) :: Galpha(NBA,nbasis,nocc),Galpha2(NBA,nocc,nvirt)
+    real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
+    !local variables
+    integer :: A,B,J,I,ALPHA
+    real(realk) :: TMP,CtmpIAJB,CtmpIBJA,eps,T
+    !If 
+    !Ciajb = Givic(j,a,i,c)*Fvc(b,c) + Givic(i,b,j,c)*Fvc(a,c) = nonSymCjaib + nonSymCibja
+    !eps = eps(I) + eps(J) - eps(A) - eps(B)
+    !E = E +(7*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + Ciajb(I,A,J,B)*Ciajb(J,A,I,B))/eps
+    !However If
+    !Ciajb = Givic(j,a,i,c)*Fvc(b,c) = nonSymCjaib
+    !E = E + (
+    !7*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 7*Ciajb(J,B,I,A)*Ciajb(I,A,J,B)
+    !7*Ciajb(I,A,J,B)*Ciajb(J,B,I,A) + 7*Ciajb(J,B,I,A)*Ciajb(J,B,I,A)
+    !1*Ciajb(I,A,J,B)*Ciajb(J,A,I,B) + 1*Ciajb(J,B,I,A)*Ciajb(J,A,I,B)
+    !1*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 1*Ciajb(J,B,I,A)*Ciajb(I,B,J,A) )/eps
+    !===================================================================
+    !Permutational symmetry between I,J
+    !===================================================================
+    !E = E + (
+    !7*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 7*Ciajb(I,B,J,A)*Ciajb(I,A,J,B)
+    !7*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 7*Ciajb(I,B,J,A)*Ciajb(I,B,J,A)
+    !1*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 1*Ciajb(I,B,J,A)*Ciajb(I,A,J,B)
+    !1*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 1*Ciajb(I,B,J,A)*Ciajb(I,B,J,A) )/eps
+    !===================================================================
+    !E = E + (8*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 16*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 8*Ciajb(I,B,J,A)*Ciajb(I,B,J,A))/eps
+    !===================================================================
+    TMP = 0.0E0_realk
+    !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(A,B,J,I,&
+    !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,nvirt,Galpha,Galpha2,&
+    !$OMP EpsOcc,EpsVirt) REDUCTION(+:TMP)
+    DO B=1,nvirt
+     DO J=1,nocc
+      DO A=1,nvirt
+       DO I=1,nocc
+          eps = EpsOcc(I) + EpsOcc(J) - EpsVirt(A) - EpsVirt(B)
+          T = 0.0E0_realk
+          DO ALPHA=1,NBA
+             T = T  + (Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B) + Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A))/eps
+          ENDDO
+          CtmpIAJB = 0.0E0_realk
+          DO ALPHA=1,NBA
+             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B)+ Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A)
+          ENDDO
+          CtmpIBJA = 0.0E0_realk
+          DO ALPHA=1,NBA
+             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,nocc+A,J)*Galpha2(ALPHA,I,B) + Galpha(ALPHA,nocc+B,I)*Galpha2(ALPHA,J,A)
+          ENDDO
+          TMP=TMP+(7.0E0_realk*T*CtmpIAJB + 1.0E0_realk*T*CtmpIBJA)
+       ENDDO
+      ENDDO
+     ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+    E = TMP/32.0E0_realk
+  end subroutine FullRIMP2F12_CcouplingEnergyCont
 
 #else
 

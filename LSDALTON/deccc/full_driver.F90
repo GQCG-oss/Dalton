@@ -476,8 +476,6 @@ contains
           enddo
        enddo
 
-       print *,"norm2(gmo)", norm2(gmo)
-       print *, "norm2(Taibj)",norm2(Taibj)
        ! Calculate canonical MP2 energy
        ! ******************************
        mp2_energy = 0.0E0_realk
@@ -589,11 +587,9 @@ contains
           ENDDO
        ENDDO
 
-      print *, "norm2(Taibj)", norm2(Taibj)
-
-       print *, "EJ_V5: ", -5.0/4.0*EJ
-       print *, "EK_V5: ", 1.0/4.0*EK
-       print *, "EK_V5 + EJ_V5: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
+       !print *, "EJ_V5: ", -5.0/4.0*EJ
+       !print *, "EK_V5: ", 1.0/4.0*EK
+       !print *, "EK_V5 + EJ_V5: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
 
  
        E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &

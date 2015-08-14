@@ -3287,9 +3287,6 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   ENDIF
 #endif
   
-  print*,'caibj'
-  call ls_output(ciajbEOS,1,noccEOS*nvirt,1,noccEOS*nvirt,noccEOS*nvirt,noccEOS*nvirt,1,6)
-
   Call RIMP2F12_EnergyCont(TCiajbEOS,CiajbEOS,noccEOS,nvirt,EnergyF12Ccoupling,mynum,numnodes)
 
   IF(use_bg_buf)THEN
