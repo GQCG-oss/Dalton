@@ -475,6 +475,9 @@ contains
              enddo
           enddo
        enddo
+
+       print *,"norm2(gmo)", norm2(gmo)
+       print *, "norm2(Taibj)",norm2(Taibj)
        ! Calculate canonical MP2 energy
        ! ******************************
        mp2_energy = 0.0E0_realk
@@ -576,17 +579,21 @@ contains
        call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
        call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
       
+       EJ = 0.0E0_realk
+       EK = 0.0E0_realk
 
        DO j=1,nocc
           DO i=1,nocc
-             EJ = EJ + Vijij_term2(i,j) 
-             EK = EK + Vjiij_term2(i,j)
+             EJ = EJ + Vijij_term5(i,j) 
+             EK = EK + Vjiij_term5(i,j)
           ENDDO
        ENDDO
 
-       print *, "EJ_V2: ", -5.0/4.0*EJ
-       print *, "EK_V2: ", 1.0/4.0*EK
-       print *, "EK_V2 + EJ_V2: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
+      print *, "norm2(Taibj)", norm2(Taibj)
+
+       print *, "EJ_V5: ", -5.0/4.0*EJ
+       print *, "EK_V5: ", 1.0/4.0*EK
+       print *, "EK_V5 + EJ_V5: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
 
  
        E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
@@ -1115,7 +1122,7 @@ contains
     implicit none
     Integer,intent(IN)     :: nocc
     Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-    Real(realk) :: energy
+    Real(realk) :: energy,EK,EJ 
     !
     Integer     :: i,j
     real(realk) :: tmp
@@ -1135,6 +1142,19 @@ contains
     ENDDO
 
     energy = energy - 0.25E0_realk*tmp
+    EK = 0.0E0_realk
+    EJ = 0.0E0_realk
+
+    DO j=1,nocc
+       DO i=1,nocc
+          EJ = EJ + Vijij(i,j)
+          EK = EK + Vjiij(i,j)
+       ENDDO
+    ENDDO
+
+    !print *, "EJ: ", 5.0/4.0*EJ
+    !print *, "EK: ", 1.0/4.0*EK
+    !print *, "EJ + EK: ", 5.0/4.0*EJ + 1.0/4.0*EK 
 
   end function mp2f12_E21
 

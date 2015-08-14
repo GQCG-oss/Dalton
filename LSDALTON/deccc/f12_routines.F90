@@ -3077,9 +3077,6 @@ subroutine ContractTwo4CenterF12IntegralsRI_pf(nBA,n1,n2,CalphaR,CalphaG,EJK,dop
    ENDDO
    !$OMP END PARALLEL DO
    EJK = 5.0/4.0*EJ - 1.0/4.0*EK 
-   print *,"COULOMBV2:  ", 5.0/4.0*EJ
-   print *,"EXCHANGEV2: ", 1.0/4.0*EK
-   print *,"COULOMBV2+EXCHANGEV2:", EJK      
 end subroutine ContractTwo4CenterF12IntegralsRI_pf
 
 subroutine ContractTwo4CenterF12IntegralsRIC(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK,dopair_occ_in)
@@ -3139,17 +3136,19 @@ subroutine ContractTwo4CenterF12IntegralsRIC(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK
    EJK = - ED - 2.5E0_realk*EJ + 0.5E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIC
 
-subroutine ContractTwo4CenterF12IntegralsRIC_pf(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK,dopair_occ_in)
+subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,CalphaV,CalphaD,CalphaT,Taibj,EJK,dopair_occ_in)
    implicit none 
-   integer,intent(in)        :: nBA,n1,n2
+   type(fullmolecule),intent(in) :: MyMolecule
+   integer,intent(in)        :: nBA,n1,n2,offset
    real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaT(nBA,n2,n1)
    real(realk),intent(inout) :: EJK
-   real(realk)               :: ED,EJ,EK
+   real(realk)               :: ED,EJ,EK,eps
    real(realk),pointer       :: Caibj(:,:,:,:)
    real(realk),intent(in)    :: Taibj(:,:,:,:)
    !local variables
-   integer :: a,b,i,j,alpha,beta
-   real(realk) :: tmp,tmpR,tmpG
+   integer :: a,b,i,j,alpha,beta,gamma
+   real(realk) :: tmp,tmpR,tmpG,tmpT
    !Dopair                                                                          
    logical,intent(in),optional :: dopair_occ_in(n1,n1)
    logical :: dopair_occ(n1,n1)
@@ -3164,10 +3163,10 @@ subroutine ContractTwo4CenterF12IntegralsRIC_pf(nBA,n1,n2,CalphaV,CalphaD,Taibj,
    EJ =  0.0E0_realk
    EK =  0.0E0_realk
    EJK = 0.0E0_realk
-   DO b=1,n2
-      DO a=1,n2
-         DO j=1,n1
-            DO i=1,n1
+   DO j=1,n1 !nocc
+      DO b=1,n2 !nvirt
+         DO i=1,n1 !nocc
+            DO a=1,n2 !nvirt 
                IF(dopair_occ(I,J)) THEN
                   tmpR = 0.0E0_realk
                   DO alpha = 1,NBA
@@ -3177,14 +3176,28 @@ subroutine ContractTwo4CenterF12IntegralsRIC_pf(nBA,n1,n2,CalphaV,CalphaD,Taibj,
                   DO beta = 1,NBA
                      tmpG = tmpG + CalphaV(beta,j,a)*CalphaD(beta,i,b) + CalphaV(beta,i,b)*CalphaD(beta,j,a)
                   ENDDO
-                  EJ = EJ + tmpR*Taibj(a,i,b,j)
-                  EK = EK + tmpG*Taibj(a,i,b,j)
+                  tmpT = 0.0E0_realk
+                  DO gamma = 1,NBA
+                     tmpT = tmpT + CalphaT(gamma,a,i)*CalphaT(gamma,b,j) 
+                  ENDDO
+                  eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                     & + MyMolecule%oofock%elm2(J+offset,J+offset) &
+                     & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+                  eps = tmpT/eps
+                  EJ = EJ + tmpR*eps
+                  EK = EK + tmpG*eps
+                  !EJ = EJ + tmpR*Taibj(a,i,b,j)
+                  !EK = EK + tmpG*Taibj(a,i,b,j)
                ENDIF
             ENDDO
          ENDDO
       ENDDO
    ENDDO
-   EJK = -1.25E0_realk*EJ + 0.25E0_realk*EK 
+   EJK = -5.0/4.0*EJ + 1.0/4.0*EK 
+   
+   print *,"COULOMBE V5:  ", 5.0/4.0*EJ
+   print *,"EXCHANGE V5: ",  1.0/4.0*EK
+   print *,"COULOMBE V5 + EXCHANGE: V5", EJK      
 end subroutine ContractTwo4CenterF12IntegralsRIC_pf
 
 subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaG,Fii,EJK,dopair_occ_in)
@@ -3297,10 +3310,6 @@ subroutine ContractTwo4CenterF12IntegralsRIX_nc(nBA,n1,n2,CalphaC,CalphaG,EJK,do
       ENDDO
    ENDDO
    EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
-   !print *,"COULOMBX2:  ", 7.0/32.0*EJ
-   !print *,"EXCHANGEX2: ", 1.0/32.0*EK
-   !print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ + 1.0/32.0*EK      
-
 end subroutine ContractTwo4CenterF12IntegralsRIX_nc
 
 subroutine ContractTwo4CenterF12IntegralsRIX_nc2(nBA,n1,n2,CalphaC,CalphaG,Fii,EJK,dopair_occ_in)
@@ -3366,12 +3375,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX_nc2(nBA,n1,n2,CalphaC,CalphaG,Fii,E
           ENDDO
        ENDDO
     ENDDO
-
    EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
-   print *,"COULOMBX2:  ", 7.0/32.0*EJ
-   print *,"EXCHANGEX2: ", 1.0/32.0*EK
-   print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ + 1.0/32.0*EK 
-
 end subroutine ContractTwo4CenterF12IntegralsRIX_nc2
 
 subroutine ContractTwo4CenterF12IntegralsRIX_nc3(nBA,n1,n2,CalphaC,Fii,EJK,dopair_occ_in)
@@ -3430,12 +3434,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX_nc3(nBA,n1,n2,CalphaC,Fii,EJK,dopai
          ENDDO
       ENDDO
    ENDDO
-
    EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
-   print *,"COULOMBX2:  ", 7.0/32.0*EJ
-   print *,"EXCHANGEX2: ", 1.0/32.0*EK
-   print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ + 1.0/32.0*EK      
-
 end subroutine ContractTwo4CenterF12IntegralsRIX_nc3
 
 subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,n1,n2,n3,nocv,&
@@ -3899,10 +3898,9 @@ subroutine ContractTwo4CenterF12IntegralsRIB6_pf(nBA,n1,n2,n3,noccfull,CalphaG,C
       ENDDO
    ENDDO   
    EJK = 7.0/32.0*EJ + 1.0/32.0*EK
-
-   print *,"COULOMBB6:  ", 7.0/32.0*EJ
-   print *,"EXCHANGEB6: ", 1.0/32.0*EK
-   print *,"COULOMBB6+EXCHANGEB6:", 7.0/32.0*EJ + 1.0/32.0*EK     
+   !print *,"COULOMBB6:  ", 7.0/32.0*EJ
+   !print *,"EXCHANGEB6: ", 1.0/32.0*EK
+   !print *,"COULOMBB6+EXCHANGEB6:", 7.0/32.0*EJ + 1.0/32.0*EK     
 end subroutine ContractTwo4CenterF12IntegralsRIB6_pf
 
 !warning I am very unclear about the Frozen core implementation of this 
@@ -4291,9 +4289,9 @@ subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc(nBA,n1,n2,n3,&
    !!$OMP END PARALLEL DO
    EJK3 = 7.0/32.0_realk*EJ3+1.0_realk/32.0*EK3
    EJK4 = EJK3
-!   print *,"COULOMBX2:  ", 7.0/32.0*EJ3
-!   print *,"EXCHANGEX2: ", 1.0/32.0*EK3
-!   print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ3 + 1.0/32.0*EK3      
+  !print *,"COULOMBX2:  ", 7.0/32.0*EJ3
+  !print *,"EXCHANGEX2: ", 1.0/32.0*EK3
+  !print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ3 + 1.0/32.0*EK3      
 end subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc
 
 end module f12_routines_module

@@ -87,9 +87,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:), CalphaT(:)
    real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:), CalphaP(:)
    real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:), CalphACcabsT(:), CalphaCocc(:), CalphaCoccT(:)
-   real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:),ABdecompC(:,:)
+   real(realk),pointer :: CalphaTvirt(:) 
+   real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:),ABdecompC(:,:),ABdecompTvirt(:,:)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:),ABdecompX(:,:)
-   logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateC
+   logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateC,ABdecompCreateTvirt
    logical :: FORCEPRINT,use_bg_buf,LS,ABdecompCreateX
    character :: intspec(5)
    type(matrix) :: CMO_CABS,CMO_RI
@@ -561,11 +562,15 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
      gao = 0.0E0_realk
      call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
+
      ! Transform AO integrals to MO integrals (A I | B J)
-     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,Co,MyMolecule%Cv%elm2,'aiai',gAO,gMO)
+     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,&
+          & nvirt,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,'aiai',gAO,gMO)
      call mem_dealloc(gao)
 
      call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
+
+       print *,"norm2(gmo)", norm2(gmo)  
 
      do J=1,nocc
         do B=1,nvirt
@@ -581,7 +586,22 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
            enddo
         enddo
      enddo
-                      
+         
+     print *,"norm2(Taibj)", norm2(Taibj)
+     ABdecompCreateTvirt = .TRUE. 
+     call mem_alloc(ABdecompTvirt,naux,naux)
+     !   We need CalphaRocc(NBA,nocc,nocc) but this is a subset of CalphaR(NBA,nocc,nbasis)
+     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+     intspec(2) = 'R' !Regular AO basis function on center 3
+     intspec(3) = 'R' !CABS AO basis function on center 4
+     intspec(4) = 'C' !The Coulomb Operator
+     intspec(5) = 'C' !The Coulomb Operator
+     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+        & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,Co,nocc,&
+        & mynum,numnodes,CalphaTvirt,NBA,ABdecompTvirt,ABdecompCreateTvirt,intspec,use_bg_buf)
+     ABdecompCreateTvirt = .FALSE.
+     call mem_dealloc(ABdecompTvirt)
+
      call mem_alloc(ABdecompC,nAux,nAux)
      ABdecompCreateC = .TRUE.
      intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
@@ -612,11 +632,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & FORCEPRINT,wakeslaves,Co,nocc,MyMolecule%Cv%elm2,nvirt,&
         & mynum,numnodes,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
                       
-     call ContractTwo4CenterF12IntegralsRIC_pf(nBA,nocc,nvirt,CalphaCvirt,CalphaD,Taibj,EV5)
-     mp2f12_energy = mp2f12_energy  + EV5
+     call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaCvirt,CalphaD,CalphaTvirt,Taibj,EV5)
+     mp2f12_energy = mp2f12_energy + EV5
      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
-                      
+      call mem_dealloc(CalphaTvirt)                
      !ABdecompCreateG = .FALSE.
      call mem_dealloc(CalphaD)
      call mem_dealloc(ABdecompC)
@@ -636,18 +656,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
      != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
      !=                                                        =
      !==========================================================
-     !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
-
-     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-     !call ContractTwo4CenterF12IntegralsRI2X(NBA,nocc,noccfull,ncabsMO,&
-     !   & CalphaGcabsMO,CalphaG,Fii%elms,EX3,EX4)
-     !  mp2f12_energy = mp2f12_energy  + EX3 + EX4
-     !  WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
-     !  WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
-     !  WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3       
-     !  WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4       
-     ! call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
-
      !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
      intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
      intspec(2) = 'R' !Regular AO basis function on center 3
