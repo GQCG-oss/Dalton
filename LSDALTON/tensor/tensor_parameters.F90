@@ -56,7 +56,7 @@ module tensor_parameters_and_counters
    
    !other parameters
    integer,parameter :: TENSOR_MSG_LEN = 30
-   integer,parameter :: DEFAULT_TDIM   = 10
+   integer,parameter :: DEFAULT_TDIM   = 40
    
    integer,parameter :: lspdm_stdout  = 6
    integer,parameter :: lspdm_errout  = 0

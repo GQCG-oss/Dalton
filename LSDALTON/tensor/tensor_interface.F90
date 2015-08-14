@@ -104,6 +104,13 @@ module tensor_interface_module
   public tensor_print_norm_nrm
   public tensor_barrier
 
+  ! Atomic datatypes used
+  public tensor_standard_int
+  public tensor_long_int
+  public tensor_dp
+  public tensor_mpi_kind
+
+
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, new_group_reset_persistent_array
   public tensor_get_tile, tensor_put_tile, tensor_acc_tile
@@ -1817,13 +1824,13 @@ contains
 
         arr%dims=new_dims
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
+!#else
         !$OMP WORKSHARE
         arr%elm1 = new_data
         !$OMP END WORKSHARE
-#endif
+!#endif
 
         call tensor_free_mem(new_data,bg=bg)
 
@@ -2033,7 +2040,7 @@ contains
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, twall = time_ainit )
 #endif
-    dims = dims_in
+    dims   = dims_in
     nmodes = nmodes_in
  
     bg_int = .false.
@@ -2082,7 +2089,7 @@ contains
         call tensor_init_standard(arr,dims,nmodes,AT_ALL_ACCESS,bg_int)
         arr%atype        = 'LDAR'
       case('TDAR')
-        !INITIALIZE a Tiled Distributed ARray
+        !INITIALIZE a Tiled Distributed Array
         it               = TT_TILED_DIST
         call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
@@ -2590,11 +2597,11 @@ contains
     select case(arr%itype)
     case(TT_DENSE,TT_REPLICATED)
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+!#else
           call dcopy(int(nelms),fortarr,1,arr%elm1,1)
-#endif
+!#endif
        else
           select case(arr%mode)
           case(2)
@@ -2696,11 +2703,11 @@ contains
     case(TT_DENSE,TT_REPLICATED)
 
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+!#else
           call dcopy(int(nelms),arr%elm1,1,fort,1)
-#endif
+!#endif
        else
 
           select case(arr%mode)

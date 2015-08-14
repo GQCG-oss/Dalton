@@ -2741,7 +2741,7 @@ contains
     if(DECinfo%frozencore) then
        offset = MyFragment%ncore
     else
-       offset=0
+       offset = 0
     end if
     
     ncabsAO = size(MyFragment%Ccabs,1)    

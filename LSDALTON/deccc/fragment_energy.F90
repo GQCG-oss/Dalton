@@ -167,12 +167,13 @@ contains
     type(tensor) :: ccsdpt_t2, ccsdpt_t2occ, ccsdpt_t2virt
     type(tensor) :: m2,m2occ,m2virt
 
-    real(realk) :: tcpu, twall,debugenergy
+    real(realk) :: tcpu, twall,debugenergy,EnergyF12Ccoupling
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc,pair,get_mp2, use_bg
     integer :: a,b,i,j,k,l, ccmodel, nvA,noA,nvE,noE
 
+    EnergyF12Ccoupling = 0.0E0_realk
     get_mp2 = .false.
     if (present(add_mp2_opt)) get_mp2 = add_mp2_opt
     use_bg  = mem_is_background_buf_init()
@@ -287,26 +288,27 @@ contains
        endif
 
 #ifdef MOD_UNRELEASED
-          ! MP2-F12 Code
-          RIMP2F12: if(DECinfo%F12) then    
-             if(pair) then
-                if(MyFragment%isopt) then
-                   call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
-                      &  Fragment1, Fragment2)
-                end if
-             else
-                ! Calculate F12 only for optimized fragment or if it has been requested by input
-                if(MyFragment%isopt .or. DECinfo%F12fragopt) then
-                   call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
-                end if
+       ! MP2-F12 Code
+       RIMP2F12: if(DECinfo%F12) then
+          IF(DECinfo%F12Ccoupling.AND.(MyFragment%isopt.or.DECinfo%F12fragopt))THEN
+             !Only calculate F12 C (C*C) coupling if requested and for optimized fragment 
+             call RIMP2F12_Ccoupling_Energy(MyFragment,EnergyF12Ccoupling)
+          ENDIF
+          if(pair) then
+             if(MyFragment%isopt) then
+                call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
+                     &  Fragment1, Fragment2)
              end if
-             !> Free cabs after each calculation
-             call free_cabs()
-          end if RIMP2F12
+          else
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
+             end if
+          end if
+          !> Free cabs after each calculation
+          call free_cabs()
+       end if RIMP2F12
 #endif
-
-
-
 
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
 
@@ -528,6 +530,10 @@ contains
      
     end if
 
+    IF(DECinfo%F12Ccoupling)THEN
+       Call AddF12CcouplingCorrection(MyFragment,EnergyF12Ccoupling)
+    ENDIF
+
     !> Memory Stats
     if(DECinfo%F12debug) then
        WRITE(DECinfo%output,*) "Memstats before F12 fragment_energy calculation"  
@@ -619,6 +625,18 @@ contains
 
   end subroutine fragment_energy_and_prop
 
+subroutine AddF12CcouplingCorrection(MyFragment,EnergyF12Ccoupling)
+  implicit none
+  !> Atomic or pair fragment
+  type(decfrag), intent(inout) :: myfragment
+  !> Energy 
+  real(realk),intent(in) :: EnergyF12Ccoupling  
+  if(MyFragment%ccmodel==MODEL_RIMP2) then
+   MyFragment%energies(FRAGMODEL_OCCRIMP2)=MyFragment%energies(FRAGMODEL_OCCRIMP2)+EnergyF12Ccoupling
+   MyFragment%energies(FRAGMODEL_VIRTRIMP2)=MyFragment%energies(FRAGMODEL_VIRTRIMP2)+EnergyF12Ccoupling
+   MyFragment%energies(FRAGMODEL_LAGRIMP2)=MyFragment%energies(FRAGMODEL_LAGRIMP2)+EnergyF12Ccoupling 
+  end if
+end subroutine AddF12CcouplingCorrection
 
   !> Purpose: Wrapper to ccsdpt driver and fragment energy routines
   !> Author:  Pablo Baudin

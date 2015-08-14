@@ -240,6 +240,7 @@ contains
     DECinfo%F12fragopt               = .false.
     DECinfo%F12debug                 = .false.
     DECinfo%F12Ccoupling             = .false.
+    DECinfo%F12singles               = .false.
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
@@ -934,9 +935,10 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
+       case('.F12SINGLES')
+          DECinfo%F12SINGLES=.true.
        case('.F12CCOUPLING')     
           DECinfo%F12Ccoupling=.true.
-
 #endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
@@ -1607,6 +1609,7 @@ contains
     write(lupri,*) 'use_crop ', DECitem%use_crop
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
+    write(lupri,*) 'F12singles ', DECinfo%F12singles
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
     write(lupri,*) 'F12CCOUPLING',DECinfo%F12Ccoupling
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
