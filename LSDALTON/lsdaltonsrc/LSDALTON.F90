@@ -104,7 +104,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
        & II_get_Fock_mat
   use II_XC_interfaceModule, only: II_get_AbsoluteValue_overlap, &
        & II_get_AbsoluteValue_overlapSame
-  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test,&
+       & ii_unittest_ichor2center
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
 #ifdef HAS_PCMSOLVER
@@ -165,9 +166,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption,config%integral%debugIchorLink)
+     IF(config%integral%debugIchorOption.LT.13)THEN
+        call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,&
+             & config%integral%debugIchorOption,config%integral%debugIchorLink)
+     ELSE
+        call II_unittest_Ichor2Center(LUPRI,LUERR,LS%SETTING)       
+     ENDIF
      !the return statement leads to memory leaks but I do not care about this
-     !for now atleast
+     !for now atleast     
      RETURN
   ENDIF
   IF(config%papitest)THEN
