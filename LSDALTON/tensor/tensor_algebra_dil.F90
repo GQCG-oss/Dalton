@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/08/10 (started 2014/09/01).
+!REVISION: 2015/08/16 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -769,7 +769,7 @@
         integer(INTD), intent(in), optional:: dbase(1:*) !in: subtensor base offsets for the destination tensor argument
         integer(INTD), intent(in), optional:: lbase(1:*) !in: subtensor base offsets for the left tensor argument
         integer(INTD), intent(in), optional:: rbase(1:*) !in: subtensor base offsets for the right tensor argument
-        real(tensor_dp), intent(in), optional:: alpha        !in: alpha prefactor
+        real(tensor_dp), intent(in), optional:: alpha    !in: alpha prefactor
         logical, intent(in), optional:: dest_zero        !in: destination zero flag
         integer(INTD):: i,j,k,l,m,n,nd,nl,nr
         integer(INTD):: dprm(1:MAX_TENSOR_RANK),lprm(1:MAX_TENSOR_RANK),rprm(1:MAX_TENSOR_RANK)
