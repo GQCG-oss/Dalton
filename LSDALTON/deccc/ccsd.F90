@@ -973,7 +973,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !!!!!!!!!!!!!!!!!!!!!!!!!!
      logical:: DIL_LOCK_OUTSIDE
      character(256):: tcs
-     type(dil_tens_contr_t):: tch0,tch1,tch2,tch3,tch4 !tensor contraction handles for Scheme 1 (DIL)
+     type(dil_tens_contr_t):: tch0,tch1,tch2,tch3,tch4,tch5 !tensor contraction handles for Scheme 1 (DIL)
      integer(INTL):: dil_mem,ll0,ll1,ll2,ll3
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
@@ -2515,7 +2515,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
      maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
      if( use_bg_buf )then
-        call mem_pseudo_alloc(w1,maxsize64) !``DIL: Large array!!!
+        call mem_pseudo_alloc(w1,maxsize64) !``DIL: Large array: It is not used in Scheme 1 or 2!!!
      else
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
@@ -2993,12 +2993,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
 
-
-
      !CCD can be achieved by not using singles residual updates here
      if(.not. DECinfo%CCDhack)then
+
+#ifdef DIL_ACTIVE
+        scheme=1 !`DIL: remove
+#endif
+
 #ifdef VAR_MPI
-        if(scheme==2.or.scheme==1)then
+        if(scheme==2)then
            call tensor_lock_wins(u2,'s', mode, all_nodes = alloc_in_dummy )
            if( use_bg_buf )then
               call mem_pseudo_alloc(w2,u2%tsize * 3_long)
@@ -3008,10 +3011,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 #endif
         !calculate singles I term
-        ! Reorder u [c a i k] -> u [a i c k]
+        ! Reorder u [c a i k] -> u [a i k c]
         if(scheme==4.or.scheme==3)then
            call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1%d)
-        else if(scheme==2.or.scheme==1)then !``DIL: Replace this one with Scheme 1
+        else if(scheme==2)then
            call tensor_convert(u2,w1%d,[2,3,4,1],wrk=w2%d,iwrk=w2%n)
         endif
 
@@ -3024,7 +3027,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call dcopy(no*nv,qpfock,1,omega1,1)
 
 #ifdef VAR_MPI
-        if(scheme==2.or.scheme==1)then
+        if(scheme==2)then
            call tensor_unlock_wins(u2, check=.not.alloc_in_dummy, all_nodes = alloc_in_dummy )
            if( use_bg_buf )then
               call mem_pseudo_dealloc(w2)
@@ -3035,7 +3038,43 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
         ! u [a i k c] * F[k c] =+ Omega [a i]
-        call dgemv('n',nv*no,nv*no,1.0E0_realk,w1%d,nv*no,pqfock,1,1.0E0_realk,omega1,1) !``DIL: Replace this with Scheme 1
+        if(scheme==1) then !DIL: tensor contraction 13
+#ifdef DIL_ACTIVE
+           if(DIL_DEBUG) then
+              write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 13:")')&
+                 &infpar%lg_mynum,infpar%mynum
+           endif
+           tcs='D(a,i)+=L(k,c)*R(c,a,i,k)'
+           call dil_clean_tens_contr(tch5)
+           tens_rank=2; tens_dims(1:tens_rank)=(/nv,no/)
+           call dil_set_tens_contr_args(tch5,'d',errc,tens_rank,tens_dims,omega1)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: DA: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Destination arg set failed!',-1)
+           tens_rank=2; tens_dims(1:tens_rank)=(/no,nv/)
+           call dil_set_tens_contr_args(tch5,'l',errc,tens_rank,tens_dims,pqfock)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: LA: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Left arg set failed!',-1)
+           call dil_set_tens_contr_args(tch5,'r',errc,tens_distr=u2)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: RA: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Right arg set failed!',-1)
+           call dil_set_tens_contr_spec(tch5,tcs,errc)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: CC: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Contr spec set failed!',-1)
+           dil_mem=dil_get_min_buf_size(tch5,errc)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: BS: ',infpar%lg_mynum,errc,dil_mem
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Buf size set failed!',-1)
+           call dil_tensor_contract(tch5,DIL_TC_EACH,dil_mem,errc)
+           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: TC: ',infpar%lg_mynum,errc
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Tens contr failed!',-1)
+#else
+           call lsquit('ERROR(ccsd_residual_integral_driven): This part (7) of Scheme 1 requires DIL backend!',-1)
+#endif
+        else
+           call dgemv('n',nv*no,nv*no,1.0E0_realk,w1%d,nv*no,pqfock,1,1.0E0_realk,omega1,1)
+        endif
+#ifdef DIL_ACTIVE
+        scheme=2 !`DIL: remove
+#endif
 
         !calculate singles G term
         ! Lambda^p [alpha a]^T Gbi [alpha i] =+ Omega [a i]
