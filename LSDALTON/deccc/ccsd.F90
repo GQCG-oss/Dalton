@@ -810,7 +810,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 #endif
 !`DIL: temporary:
-!#undef DIL_ACTIVE
+#undef DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -1521,9 +1521,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==1)then
            call tensor_ainit(o2ilej, [nv,nv,nor], 3, local=local, atype='TDAR', tdims=[vs,vs,nor], bg=use_bg_buf)
            call tensor_zero(o2ilej)
-        elseif(scheme==2)then !`DIL: remove this alternative
-           call tensor_ainit(o2ilej, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os], bg=use_bg_buf)
-           call tensor_zero(o2ilej)
         endif
 
         select case (scheme)
@@ -1553,10 +1550,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call tensor_lock_wins(gvvooa,'s',all_nodes = .true.)
               call tensor_lock_wins(gvoova,'s',all_nodes = .true.)
            endif
-           if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) then
-              call tensor_lock_wins(sio4,  's',all_nodes = .true.)
-              call tensor_lock_wins(o2ilej,'s',all_nodes = .true.)
-           endif
+           if(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)) call tensor_lock_wins(sio4,'s',all_nodes = .true.)
+           if(scheme==1.and.DIL_LOCK_OUTSIDE) call tensor_lock_wins(o2ilej,'s',all_nodes = .true.)
         endif
 #endif
 #ifdef DIL_ACTIVE
@@ -2484,9 +2479,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call time_start_phase(PHASE_IDLE, at = time_intloop_work )
 
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
-        call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
-        call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy )
-        call tensor_unlock_wins(o2ilej,all_nodes=.true.)
+        call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
+        call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
+        if(scheme==1.and.DIL_LOCK_OUTSIDE) call tensor_unlock_wins(o2ilej,all_nodes=.true.)
      endif
 
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2736,7 +2731,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
         call tensor_free(sio4)
-        if(scheme==1.or.scheme==2) call tensor_free(o2ilej)
+        if(scheme==1) call tensor_free(o2ilej)
 #ifdef DIL_ACTIVE
         scheme=2 !`DIL:remove
 #endif
