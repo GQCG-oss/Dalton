@@ -1042,16 +1042,6 @@ module cc_tools_module
       mode = MPI_MODE_NOCHECK
 #endif
 
-!``DIL: compute the w3 norm: remove:
-!#ifdef DIL_ACTIVE
-!#ifdef DIL_DEBUG_ON
-!      if(DIL_DEBUG) then
-!       write(DIL_CONS_OUT,'("#DEBUG(DIL): low w3 1-norm in sigma  = ",D22.14)') dil_array_norm1(w3,tred*nor)
-!       write(DIL_CONS_OUT,'("#DEBUG(DIL): high w3 1-norm in sigma = ",D22.14)') dil_array_norm1(w3(tred*nor+1:),tred*nor)
-!      endif
-!#endif
-!#endif
-
       scaleitby=1.0E0_realk
       if(present(scal)) scaleitby = scal
       second_trafo_step=.false.
@@ -1404,9 +1394,6 @@ module cc_tools_module
                   call time_start_phase(PHASE_COMM, at=twork)
                   call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                   call time_start_phase(PHASE_WORK, at=tcomm)
-#ifdef DIL_ACTIVE
-                  call tensor_add(o2tens,1.0E0_realk,w2,wrk=w3,iwrk=s3) !`DIL: debug: remove
-#endif
 #endif
                endif
             else
@@ -1439,9 +1426,6 @@ module cc_tools_module
                call time_start_phase(PHASE_COMM, at=twork)
                if( alloc_in_dummy )then
                   call lsmpi_win_flush(omega%wi(1),local=.true.)
-#ifdef DIL_ACTIVE
-                  call lsmpi_win_flush(o2tens%wi(1),local=.true.) !`DIL: debug: remove
-#endif
                else
                   call tensor_unlock_wins(omega,.true.)
                endif
@@ -1514,9 +1498,6 @@ module cc_tools_module
                      call time_start_phase(PHASE_COMM, at=twork)
                      call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=s3)
                      call time_start_phase(PHASE_WORK, at=tcomm)
-#ifdef DIL_ACTIVE
-                     call tensor_add(o2tens,1.0E0_realk,w2,wrk=w3,iwrk=s3) !`DIL: debug: remove
-#endif
                   endif
                else
 #ifdef VAR_LSDEBUG
@@ -1543,9 +1524,6 @@ module cc_tools_module
             call time_start_phase(PHASE_COMM, at=twork)
             if( alloc_in_dummy )then
                call lsmpi_win_flush(omega%wi(1),local=.true.)
-#ifdef DIL_ACTIVE
-               call lsmpi_win_flush(o2tens%wi(1),local=.true.) !`DIL: debug: remove
-#endif
             else
                call tensor_unlock_wins(omega,.true.)
             endif

@@ -4059,8 +4059,8 @@
 !-----------------------------------------------------
         logical, parameter:: NO_CHECK=.false.         !argument check
         logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
-        logical, parameter:: ARGS_REUSE=.false.       !argument reuse in tensor contractions
-        logical, parameter:: TASK_RESHUFFLE=.false.   !task reshuffling (to reduce the number of MPI collisions)
+        logical, parameter:: ARGS_REUSE=.true.        !argument reuse in tensor contractions
+        logical, parameter:: TASK_RESHUFFLE=.true.    !task reshuffling (to reduce the number of MPI collisions)
         real(8), parameter:: SCALE_FMA=2d0            !multiplication + addition are considered as two Flops w/ or w/o FMA
 !-----------------------------------------
         integer(INTD):: i,j,k,l,m,n
