@@ -27,7 +27,7 @@ use IntegralInterfaceMOD
 use rimp2_module
 !#endif 
 
-public :: full_canonical_rimp2_f12
+public :: full_canonical_rimp2_f12, lsmpi_matrix_bufcopy
 
 private
 
@@ -43,7 +43,7 @@ contains
 subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    implicit none
    !> Full molecule info
-   type(fullmolecule), intent(in) :: MyMolecule
+   type(fullmolecule), intent(inout) :: MyMolecule 
    !> Lsitem structure
    type(lsitem), intent(inout) :: mylsitem
    !> HF density matrix
@@ -58,11 +58,15 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk) :: ExchangeF12V1,CoulombF12V1
    real(realk) :: ExchangeF12X1,CoulombF12X1
    real(realk) :: ExchangeF12B1,CoulombF12B1
-   real(realk) :: E_21,E_22,E_23, E_F12, E_21C
+   real(realk) :: E_21,E_22,E_23, E_F12, E_21C, E_21Ctmp
    real(realk) :: EV1,EV2,EV3,EV4,EV5,EX1,EX2,EX3,EX4
    real(realk) :: EB1,EB2,EB3,EB4,EB5,EB6,EB7,EB8,EB9
+   real(realk) :: EV1tmp,EV2tmp,EV3tmp,EV4tmp,EV5tmp,EX1tmp,EX2tmp,EX3tmp,EX4tmp
+   real(realk) :: EB1tmp,EB2tmp,EB3tmp,EB4tmp,EB5tmp,EB6tmp,EB7tmp,EB8tmp,EB9tmp
    real(realk) :: TS,TE,TS2,TE2
-   integer :: i,j,a,b,p,q,c,m,mynum,numnodes,nAtoms,lupri,nsize
+   integer :: i,j,a,b,p,q,c,m,mynum,nAtoms,lupri,nbuf1,inode
+   integer(kind=long) :: nsize,nsize2
+   integer(kind=ls_mpik) :: node,numnodes
    !    type(matrix) :: HJrc
    type(matrix) :: HJir
    !    type(matrix) :: Kcc
@@ -83,7 +87,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !========================================================
    ! RI variables
    !========================================================
-   integer :: nAux,NBA,N,K,ncore
+   integer :: nAux,NBA,N,K,ncore,NBA2
    real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:), CalphaT(:)
    real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:), CalphaP(:)
    real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:), CalphACcabsT(:), CalphaCocc(:), CalphaCoccT(:)
@@ -91,6 +95,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk),pointer :: CalphaTmp(:),EpsOcc(:),EpsVirt(:)
    real(realk),pointer :: Cfull(:,:),ABdecompR(:,:),ABdecompG(:,:),ABdecompC(:,:),ABdecompTvirt(:,:)
    real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:),ABdecompX(:,:)
+   real(realk),pointer :: CalphaMPI(:),CalphaMPI2(:)
    logical :: master,wakeslaves,ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateC,ABdecompCreateTvirt
    logical :: FORCEPRINT,use_bg_buf,LS,ABdecompCreateX
    character :: intspec(5)
@@ -99,13 +104,17 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Additional variables
    !========================================================
    integer :: offset, noccfull, nocv
+   integer,pointer :: nAuxMPI(:)
    real(realk),pointer :: Taibj(:,:,:,:) !amplitudes not integrals
    real(realk),pointer :: gmo(:,:,:,:)
    real(realk),pointer :: gao(:,:,:,:)
    real(realk) :: eps
    real(realk),pointer :: Fkj(:,:)
    real(realk),pointer :: Co(:,:)
-
+#ifdef VAR_MPI
+   real(realk) :: lsmpibufferRIMP2(20)
+   lsmpibufferRIMP2=0.0E0_realk
+#endif
    if(MyMolecule%mem_distributed)then
       call lsquit("ERROR(full_canonical_rimp2_f12): does not work with PDM type fullmolecule",-1)
    endif
@@ -163,14 +172,15 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    offset = noccfull - nocc   
    nocv = nvirt + noccfull
 
-   call determine_CABS_nbast(ncabsAO,ncabsMO,mylsitem%setting,DECinfo%output)
-   call mat_init(CMO_CABS,nCabsAO,ncabsMO)
-   call build_CABS_MO(CMO_CABS,nCabsAO,mylsitem%SETTING,lupri)    
-   call mat_init(CMO_RI,nCabsAO,nCabsAO)
-   call build_RI_MO(CMO_RI,nCabsAO,mylsitem%SETTING,lupri)
-
-   !NB Remember to have this!! Else memory leak!
-   call free_cabs()
+   IF(master)THEN
+      call determine_CABS_nbast(ncabsAO,ncabsMO,mylsitem%setting,DECinfo%output)
+      call mat_init(CMO_CABS,nCabsAO,ncabsMO)
+      call build_CABS_MO(CMO_CABS,nCabsAO,mylsitem%SETTING,lupri)    
+      call mat_init(CMO_RI,nCabsAO,nCabsAO)
+      call build_RI_MO(CMO_RI,nCabsAO,mylsitem%SETTING,lupri)
+      !NB Remember to have this!! Else memory leak!
+      call free_cabs()
+   ENDIF
 
    ! ***********************************************************
    !   Constructing Coefficient matrices 
@@ -232,8 +242,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    IF(naux.EQ.0)call lsquit('Error no Aux functions in full_canonical_rimp2_f12',-1)
 
-   call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-      & nocc,noccfull,nvirt,ncabsMO,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+   IF(master)THEN
+      call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
+           & nocc,noccfull,nvirt,ncabsMO,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+   ENDIF
 
    call LSTIMER('FULLRIMP2:Init',TS2,TE2,DECinfo%output,ForcePrint)
    !==================================================================
@@ -279,9 +291,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       E21 = -0.25E0_realk*((5.0E0_realk/2.0E0_realk)*CoulombF12V1+ExchangeF12V1)
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ',E21
       WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ', E21
+      EV1 = E21
 
-      !Note X1 cannot be done in a linear scaling way due to Fii 
-
+      !Note X1 can be done in a linear scaling way but requires the construction of 
+      !Ftmp(mu,nu) = sum_i( C(mu,i)*F(i,i)*C(nu,i)) 
+      !giving Ecoulomb = sum_mu,nu,rho,sigma Ftmp(mu,nu) (mu nu|rho sigma) D(rho,sigma)
+      !                + sum_mu,nu,rho,sigma D(mu,nu) (mu nu|rho sigma) Ftmp(rho,sigma)
+!      call mem_alloc(Ftmp,nbasis,nbasis)
+!      call BuildFtmpRIMP2F12(MyMolecule%Co%elm2,nbasis,noccfull,Fii,Ftmp)
+      !call generalized II_get_CoulombEcont with DRHS,DLHS       
+!      call II_get_exchangeEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
+!           & [Dmat],Econt,1,GGemGrdOperator)
+!      call mem_dealloc(Ftmp)
+      
       !This is how the B1 Dijkl can be done in a linear scaling manner
       call II_get_CoulombEcont(DECinfo%output,DECinfo%output,mylsitem%setting,&
            & [Dmat],Econt,1,GGemGrdOperator)
@@ -293,9 +315,46 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       E21 = -(1.0E0_realk/32.0E0_realk)*((7.0E0_realk/2.0E0_realk)*CoulombF12B1-ExchangeF12B1)
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,LS) = ',E21
       WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,LS) = ', E21
+      EB1 = E21
       call LSTIMER('FULLRIMP2:LS',TS2,TE2,DECinfo%output,ForcePrint)
    ENDIF
    call LSTIMER('START ',TS2,TE2,DECinfo%output,ForcePrint)
+
+#ifdef VAR_MPI
+   StartUpSlaves: if(wakeslaves .and. master) then
+      ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
+      ! and call full_canonical_rimp2_slave which communicate info 
+      ! then calls full_canonical_rimp2.
+      call ls_mpibcast(RIMP2F12FULL,infpar%master,infpar%lg_comm)
+      ! Communicate fragment information to slaves
+      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call mpicopy_lsitem(MyLsitem,infpar%lg_comm)
+      call lsmpi_matrix_bufcopy(Dmat,master)
+      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call mpi_bcast_fullmolecule(MyMolecule)    
+   endif StartUpSlaves
+
+   call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+   call mpicopy_lsitem(MyLsitem,infpar%lg_comm)
+   call lsmpi_matrix_bufcopy(HJir,master)
+   call lsmpi_matrix_bufcopy(Krr,master)
+   call lsmpi_matrix_bufcopy(Frr,master)
+   call lsmpi_matrix_bufcopy(Fac,master)
+   call lsmpi_matrix_bufcopy(Fpp,master)
+   call lsmpi_matrix_bufcopy(Fii,master)
+   call lsmpi_matrix_bufcopy(Fmm,master)
+   call lsmpi_matrix_bufcopy(Frm,master)
+   call lsmpi_matrix_bufcopy(Fcp,master)
+   call lsmpi_matrix_bufcopy(Fic,master)
+   call lsmpi_matrix_bufcopy(Fcd,master)
+   call lsmpi_matrix_bufcopy(CMO_CABS,master)
+   IF(.NOT.Master)THEN
+      nCabsAO = CMO_CABS%nrow
+      nCabsMO = CMO_CABS%ncol
+   ENDIF
+   call lsmpi_matrix_bufcopy(CMO_RI,master)
+   call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+#endif
 
    !normally I do not like to allocate things at the beginning but 
    !due to an analysis of memory heap performance and the 
@@ -315,7 +374,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(4) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
    intspec(5) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,FORCEPRINT, &
-      & wakeslaves,Co,nocc,Co,nocc,mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
+      & wakeslaves,Co,nocc,Co,nocc,mynum,numnodes,CalphaF,NBA,ABdecompF,&
+      & ABdecompCreateF,intspec,use_bg_buf)
    ABdecompCreateF = .FALSE.
 
    !perform this suborutine on the GPU (async)  - you do not need to wait for the results
@@ -356,7 +416,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(5) = 'C' !The metric operator = Regular Coulomb operator 1/r12
    !Build the G coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,Co,nocc,Co,nocc,&
+        & FORCEPRINT,wakeslaves,Co,nocc,Cfull,nocv,&
         & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
    !Build the U matrix in Eq. 88 of J Comput Chem 32: 2492–2513, 2011
    call mem_alloc(Umat,nAux,nAux)
@@ -376,25 +436,31 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
    !perform this suborutine on the GPU (Async)
    call ContractOne4CenterF12IntegralsRobustRI(nAux,nocc,nocv,CalphaD,CalphaR,EB1)
-   call mem_dealloc(CalphaR)
-
-   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,Co,nocc,Cfull,nocv,&
-        & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
+#ifdef VAR_MPI 
+   lsmpibufferRIMP2(1)=EB1       !we need to perform a MPI reduction at the end 
+#endif   
    !The minus is due to the Valeev factor
    EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12V1-ExchangeF12V1*0.25E0_realk)
+#ifdef VAR_MPI 
+   lsmpibufferRIMP2(2)=EV1       !we need to perform a MPI reduction at the end 
+#else
    mp2f12_energy = mp2f12_energy  + EV1
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ',EV1
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ',EV1
+#endif   
    !minus is due to the overall minus from equation (41) and (42) due to
    !contribution from the \bar{B}_{ij}^{ij}
    EX1 = -1.0E0_realk*(0.21875E0_realk*CoulombF12X1 + 0.03125E0_realk*ExchangeF12X1)
+#ifdef VAR_MPI 
+   lsmpibufferRIMP2(3)=EX1       !we need to perform a MPI reduction at the end 
+#else
    mp2f12_energy = mp2f12_energy  + EX1
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ',EX1
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ',EX1
    mp2f12_energy = mp2f12_energy  + EB1
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+#endif   
 
    call mem_dealloc(CalphaD)
    call LSTIMER('FULLRIMP2:Step1',TS2,TE2,DECinfo%output,ForcePrint)
@@ -414,6 +480,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    
    call ContractOne4CenterF12IntegralsRIB23(nBA,nocc,ncabsAO,CalphaXcabsAO,CalphaX,&
         & hJir%elms,1.0E0_realk,EB2,EB3)
+#ifdef VAR_MPI 
+   lsmpibufferRIMP2(4)=EB2       !we need to perform a MPI reduction at the end 
+   lsmpibufferRIMP2(5)=EB3       !we need to perform a MPI reduction at the end 
+#else
    !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
    mp2f12_energy = mp2f12_energy  + EB2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
@@ -421,6 +491,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
+#endif
 
    call mem_dealloc(CalphaXcabsAO)
    call mem_dealloc(CalphaX)
@@ -470,11 +541,66 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ABdecompCreateG = .FALSE.
    
    !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-   call ContractTwo4CenterF12IntegralsRI_pf(nBA,nocc,nocv,CalphaR,CalphaG,EV2)
+#ifdef VAR_MPI 
+   nsize = NBA*nocv*nocc
+   call mem_alloc(CalphaT,nsize)               ! G_qj = C_qk B_kj 
+   M = nocv*NBA         !rows of Output Matrix
+   K = nocc             !summation dimension
+   N = nocc             !columns of Output Matrix
+   call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
+
+   IF(wakeslaves)THEN
+      nbuf1=numnodes
+      call mem_alloc(nAuxMPI,nbuf1)
+      nAuxMPI=0
+      nAuxMPI(mynum+1)=NBA      
+      CALL lsmpi_allreduce(nAuxMPI,nbuf1,infpar%lg_comm)
+      EV2 = 0.0E0_realk
+      EX2 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocv*nocc
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum
+            IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 A',-1)
+            call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRI_pf(nBA,nocc,nocv,CalphaR,CalphaG,NBA2,EV2tmp)
+            call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRI_pf(nBA,nocc,nocv,CalphaR,CalphaMPI,NBA2,EV2tmp)
+            call ContractTwo4CenterF12IntegralsRIX_ncMPI(nBA,nocc,nocv,CalphaMPI,NBA2,CalphaG,&
+                 & CalphaT,EX2tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
+         ENDIF
+         EV2 = EV2 + EV2tmp
+         EX2 = EX2 + EX2tmp
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRI_pf(nBA,nocc,nocv,CalphaR,CalphaG,NBA,EV2)
+      call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)  
+   ENDIF
+   lsmpibufferRIMP2(6)=EV2      !we need to perform a MPI reduction at the end 
+   lsmpibufferRIMP2(7)=EX2      !we need to perform a MPI reduction at the end    
+   call mem_dealloc(CalphaT)
+#else
+   call ContractTwo4CenterF12IntegralsRI_pf(nBA,nocc,nocv,CalphaR,CalphaG,NBA,EV2)
    mp2f12_energy = mp2f12_energy + EV2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ',EV2       
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
-
    !==========================================================
    !=                                                        =
    != X2: Gipjq*Gipjq                                        =
@@ -496,12 +622,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    K = nocc             !summation dimension
    N = nocc             !columns of Output Matrix
    call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
-
    call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
    call mem_dealloc(CalphaT)
    mp2f12_energy = mp2f12_energy  + EX2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2
+#endif
 
    !==========================================================
    !=                                                        =
@@ -534,174 +660,364 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & mynum,numnodes,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
 
-     IF(DECinfo%F12Ccoupling)THEN 
-       call mem_alloc(CalphaTmp,NBA*nocc*nvirt) 
-       !CalphaTmp(NBA,nocc,nvirt) = CalphaGcabsMO(NBA,nocc,ncabsMO)*Fac(nvirt,ncabsMO)^T 
-       M = NBA*nocc     !Rows of Output Matrix  
-       N = nvirt        !Columns of Output Matrix 
-       K = ncabsMO      !summation dimension 
-       call DGEMM('N','T',M,N,K,1.0E0_realk,CalphaGcabsMO,M,Fac%elms,N,0.0E0_realk,CalphaTmp,M) 
- 
-       call mem_alloc(EpsOcc,nocc) 
-       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) & 
-       !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset) 
-       do I=1,nocc 
-          EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset) 
-       enddo 
-       !$OMP END PARALLEL DO 
-       call mem_alloc(EpsVirt,nvirt) 
-       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) & 
-       !$OMP SHARED(nvirt,MyMolecule,EpsVirt) 
-       do A=1,nvirt 
-          EpsVirt(A) = MyMolecule%vvfock%elm2(A,A) 
-       enddo 
-       !$OMP END PARALLEL DO 
-       Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
-       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ',E_21C 
-       WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ',E_21C 
- 
-       call mem_dealloc(CalphaTmp) 
-       call mem_dealloc(EpsVirt) 
-       call mem_dealloc(EpsOcc) 
-    ENDIF 
-  
+   IF(DECinfo%F12Ccoupling)THEN 
+      call mem_alloc(CalphaTmp,NBA*nocc*nvirt) 
+      !CalphaTmp(NBA,nocc,nvirt) = CalphaGcabsMO(NBA,nocc,ncabsMO)*Fac(nvirt,ncabsMO)^T 
+      M = NBA*nocc     !Rows of Output Matrix  
+      N = nvirt        !Columns of Output Matrix 
+      K = ncabsMO      !summation dimension 
+      call DGEMM('N','T',M,N,K,1.0E0_realk,CalphaGcabsMO,M,Fac%elms,N,0.0E0_realk,CalphaTmp,M) 
+      
+      call mem_alloc(EpsOcc,nocc) 
+      !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) & 
+      !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset) 
+      do I=1,nocc 
+         EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset) 
+      enddo
+      !$OMP END PARALLEL DO 
+      call mem_alloc(EpsVirt,nvirt) 
+      !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) & 
+      !$OMP SHARED(nvirt,MyMolecule,EpsVirt) 
+      do A=1,nvirt 
+         EpsVirt(A) = MyMolecule%vvfock%elm2(A,A) 
+      enddo
+      !$OMP END PARALLEL DO 
 
-     !Do on GPU (Async)
-     call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nocv,&
-        & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
+#ifdef VAR_MPI 
+      IF(wakeslaves)THEN
+         E_21C = 0.0E0_realk
+         DO inode = 1,numnodes
+            nbuf1 = nAuxMPI(inode)
+            NBA2 = nAuxMPI(inode)
+            nsize = nbuf1*nocv*nocc
+            nsize2 = nbuf1*nvirt*nocc
+            IF(mynum.EQ.inode-1)THEN
+               !I Bcast My Own CalphaG
+               node = mynum            
+               IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 B1',-1)
+               call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)   !CalphaTmp(NBA,nocv,nocc)
+               IF(size(CalphaTmp).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 B2',-1)
+               call ls_mpibcast(CalphaTmp,nsize2,node,infpar%lg_comm) !CalphaTmp(NBA,nocc,nvirt)
+               Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt) 
+            ELSE
+               node = inode-1
+               !recieve
+               IF(use_bg_buf)THEN
+                  call mem_pseudo_alloc(CalphaMPI,nsize)
+                  call mem_pseudo_alloc(CalphaMPI2,nsize2)
+               ELSE
+                  call mem_alloc(CalphaMPI,nsize)
+                  call mem_alloc(CalphaMPI2,nsize2)
+               ENDIF
+               call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+               call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+               call FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nbasis,CalphaMPI,&
+                    & CalphaMPI2,NBA2,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt)
+               IF(use_bg_buf)THEN
+                  call mem_pseudo_dealloc(CalphaMPI2)
+                  call mem_pseudo_dealloc(CalphaMPI)
+               ELSE
+                  call mem_dealloc(CalphaMPI)
+                  call mem_dealloc(CalphaMPI2)
+               ENDIF
+            ENDIF
+            E_21C = E_21C + E_21Ctmp
+         ENDDO
+      ELSE
+         Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+      ENDIF
+      lsmpibufferRIMP2(20)=E_21C      !we need to perform a MPI reduction at the end 
+#else
+      Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ',E_21C 
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ',E_21C 
+#endif      
+      call mem_dealloc(CalphaTmp) 
+      call mem_dealloc(EpsVirt) 
+      call mem_dealloc(EpsOcc)      
+   ENDIF
 
-     mp2f12_energy = mp2f12_energy  + EV3 + EV4
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
-     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
-     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EV3 = 0.0E0_realk
+      EV4 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocc*ncabsMO  !CalphaRcabsMO(NBA,nocc,ncabsMO)
+         nsize2 = nbuf1*nocc*nocv    !CalphaR(NBA,nocc,nocv)
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaRcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 C1',-1)
+            call ls_mpibcast(CalphaRcabsMO,nsize,node,infpar%lg_comm)   
+            IF(size(CalphaR).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 C2',-1)
+            call ls_mpibcast(CalphaR,nsize2,node,infpar%lg_comm)        
+            call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nocv,&
+                 & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3tmp,EV4tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize)
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nocv,&
+                 & CalphaMPI,CalphaGcabsMO,CalphaMPI2,CalphaG,EV3tmp,EV4tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
+         ENDIF
+         EV3 = EV3 + EV3tmp
+         EV4 = EV4 + EV4tmp         
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nocv,&
+           & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)         
+   ENDIF
+   lsmpibufferRIMP2(8)=EV3      !we need to perform a MPI reduction at the end 
+   lsmpibufferRIMP2(9)=EV4      !we need to perform a MPI reduction at the end 
+#else
+   !Do on GPU (Async)
+   call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nocv,&
+        & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)   
+   mp2f12_energy = mp2f12_energy  + EV3 + EV4
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
+   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
+   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
+#endif
 
-     call mem_dealloc(ABdecompR)
-     call mem_dealloc(CalphaR)
-     call mem_dealloc(CalphaRcabsMO)
-
-     !==========================================================
-     !=                                                        =
-     != V5:     Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj          =
-     !=                                                        = 
-     !========================================================== 
-     ABdecompCreateTvirt = .TRUE. 
-     call mem_alloc(ABdecompTvirt,naux,naux)
-     !   We need CalphaRocc(NBA,nocc,nocc) but this is a subset of CalphaR(NBA,nocc,nbasis)
-     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-     intspec(2) = 'R' !Regular AO basis function on center 3
-     intspec(3) = 'R' !CABS AO basis function on center 4
-     intspec(4) = 'C' !The Coulomb Operator
-     intspec(5) = 'C' !The Coulomb Operator
-     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+   call mem_dealloc(ABdecompR)
+   call mem_dealloc(CalphaR)
+   call mem_dealloc(CalphaRcabsMO)
+   
+   !==========================================================
+   !=                                                        =
+   != V5:     Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj          =
+   !=                                                        = 
+   !========================================================== 
+   ABdecompCreateTvirt = .TRUE. 
+   call mem_alloc(ABdecompTvirt,naux,naux)
+   !   We need CalphaRocc(NBA,nocc,nocc) but this is a subset of CalphaR(NBA,nocc,nbasis)
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 3
+   intspec(3) = 'R' !CABS AO basis function on center 4
+   intspec(4) = 'C' !The Coulomb Operator
+   intspec(5) = 'C' !The Coulomb Operator
+   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,Co,nocc,&
         & mynum,numnodes,CalphaTvirt,NBA,ABdecompTvirt,ABdecompCreateTvirt,intspec,use_bg_buf)
-     ABdecompCreateTvirt = .FALSE.
-     call mem_dealloc(ABdecompTvirt)
-
-     call mem_alloc(ABdecompC,nAux,nAux)
-     ABdecompCreateC = .TRUE.
-     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-     intspec(2) = 'R' !Regular AO basis function on center 4 
-     intspec(3) = 'C' !Cabs AO basis function on center 3
-     intspec(4) = 'G' !The Gaussian geminal operator g
-     intspec(5) = 'G' !The Gaussian geminal operator g
-                      
-     call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
+   ABdecompCreateTvirt = .FALSE.
+   call mem_dealloc(ABdecompTvirt)
+   
+   call mem_alloc(ABdecompC,nAux,nAux)
+   ABdecompCreateC = .TRUE.
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 4 
+   intspec(3) = 'C' !Cabs AO basis function on center 3
+   intspec(4) = 'G' !The Gaussian geminal operator g
+   intspec(5) = 'G' !The Gaussian geminal operator g
+   
+   call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
         & mynum,numnodes,CalphaCcabs,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-                      
-     m = NBA*nocc       
-     k = ncabsMO         ! D_ia = A_ic F_ca
-     n = nvirt        
-                      
-     !C(alpha*i,ncabsMO)*F(cabsMO,nvirt)
-     nsize = nBA*nocc*ncabsMO
-     call mem_alloc(CalphaD, nsize)
-     call dgemm('N','T',m,n,k,1.0E0_realk,CalphaCcabs,m,Fac%elms,n,0.0E0_realk,CalphaD,m)
-                      
-     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-     intspec(2) = 'R' !Regular AO basis function on center 3
-     intspec(3) = 'R' !Regular AO basis function on center 4
-     intspec(4) = 'G' !The Gaussian geminal operator g
-     intspec(5) = 'G' !The Gaussian geminal operator g
-     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+   
+   m = NBA*nocc       
+   k = ncabsMO         ! D_ia = A_ic F_ca
+   n = nvirt        
+   
+   !C(alpha*i,ncabsMO)*F(cabsMO,nvirt)
+   nsize = nBA*nocc*ncabsMO
+   call mem_alloc(CalphaD, nsize)
+   call dgemm('N','T',m,n,k,1.0E0_realk,CalphaCcabs,m,Fac%elms,n,0.0E0_realk,CalphaD,m)
+   
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 3
+   intspec(3) = 'R' !Regular AO basis function on center 4
+   intspec(4) = 'G' !The Gaussian geminal operator g
+   intspec(5) = 'G' !The Gaussian geminal operator g
+   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,MyMolecule%Cv%elm2,nvirt,&
         & mynum,numnodes,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-                      
-     call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaCvirt,CalphaD,CalphaTvirt,Taibj,EV5)
-     mp2f12_energy = mp2f12_energy + EV5
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
-     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
-      call mem_dealloc(CalphaTvirt)                
-     !ABdecompCreateG = .FALSE.
-     call mem_dealloc(CalphaD)
-     call mem_dealloc(ABdecompC)
-     call mem_dealloc(CalphaCcabs)
-     call mem_dealloc(CalphaCvirt)
 
-     !==========================================================
-     !=                                                        =
-     != X3:         Step 3  Gimjc*Gimjc                        =
-     != X4:         Step 4  Gjmic*Gjmic                        =
-     != The Coulomb Operator Int multiplied with               =
-     != The Gaussian geminal operator g                        =
-     != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
-     !=                                                        =
-     !==========================================================
-     !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
-     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-     intspec(2) = 'R' !Regular AO basis function on center 3
-     intspec(3) = 'R' !Regular AO basis function on center 4
-     intspec(4) = 'G' !The Gaussian geminal operator g
-     intspec(5) = 'G' !The Gaussian geminal operator g
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EV5 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nvirt*nocc     !CalphaTvirt(NBA,nvirt,nocc)
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaTvirt).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 D',-1)
+            call ls_mpibcast(CalphaTvirt,nsize,node,infpar%lg_comm)        
+            call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,&
+                 & CalphaCvirt,CalphaD,CalphaTvirt,NBA,EV5tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,&
+                 & CalphaCvirt,CalphaD,CalphaMPI,NBA2,EV5tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
+         ENDIF
+         EV5 = EV5 + EV5tmp
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaCvirt,&
+           & CalphaD,CalphaTvirt,NBA,EV5)
+   ENDIF
+   lsmpibufferRIMP2(10)=EV5      !we need to perform a MPI reduction at the end 
+#else
+   call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaCvirt,&
+        & CalphaD,CalphaTvirt,NBA,EV5)
+   mp2f12_energy = mp2f12_energy + EV5
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+#endif
+
+   call mem_dealloc(CalphaTvirt)                
+   !ABdecompCreateG = .FALSE.
+   call mem_dealloc(CalphaD)
+   call mem_dealloc(ABdecompC)
+   call mem_dealloc(CalphaCcabs)
+   call mem_dealloc(CalphaCvirt)
+   
+   !==========================================================
+   !=                                                        =
+   != X3:         Step 3  Gimjc*Gimjc                        =
+   != X4:         Step 4  Gjmic*Gjmic                        =
+   != The Coulomb Operator Int multiplied with               =
+   != The Gaussian geminal operator g                        =
+   != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
+   !=                                                        =
+   !==========================================================
+   !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 3
+   intspec(3) = 'R' !Regular AO basis function on center 4
+   intspec(4) = 'G' !The Gaussian geminal operator g
+   intspec(5) = 'G' !The Gaussian geminal operator g
      
-     call mem_alloc(ABdecompC,nAux,nAux)
-     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+   call mem_alloc(ABdecompC,nAux,nAux)
+   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,noccfull,Co,nocc,mynum,numnodes,CalphaCocc,&
         & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-     call mem_dealloc(ABdecompC)
+   call mem_dealloc(ABdecompC)
 
-     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-     nsize = NBA*noccfull*nocc
-     call mem_alloc(CalphaT,nsize)
-     M = NBA*noccfull         !rows of Output Matrix
-     K = nocc             !summation dimension
-     N = nocc             !columns of Output Matrix
-     call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCocc,M,Fkj,K,0.0E0_realk,CalphaT,M)
-
-     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-     intspec(2) = 'C' !Regular AO basis function on center 4 
-     intspec(3) = 'R' !Cabs AO basis function on center 3
-     intspec(4) = 'G' !The Gaussian geminal operator g
-     intspec(5) = 'G' !The Gaussian geminal operator g
+   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+   nsize = NBA*noccfull*nocc
+   call mem_alloc(CalphaT,nsize)
+   M = NBA*noccfull         !rows of Output Matrix
+   K = nocc             !summation dimension
+   N = nocc             !columns of Output Matrix
+   call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCocc,M,Fkj,K,0.0E0_realk,CalphaT,M)
+   
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'C' !Regular AO basis function on center 4 
+   intspec(3) = 'R' !Cabs AO basis function on center 3
+   intspec(4) = 'G' !The Gaussian geminal operator g
+   intspec(5) = 'G' !The Gaussian geminal operator g
      
-     call mem_alloc(ABdecompC,nAux,nAux)
-     call Build_CalphaMO2(mylsitem,master,ncabsAO,nbasis,nAux,LUPRI,&
+   call mem_alloc(ABdecompC,nAux,nAux)
+   call Build_CalphaMO2(mylsitem,master,ncabsAO,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,CMO_CABS%elms,ncabsMO,Co,nocc,&
         & mynum,numnodes,CalphaCcabsT,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-     call mem_dealloc(ABdecompC)
-     
-     nsize = NBA*nocc*ncabsMO
-     call mem_alloc(CalphaP,nsize)
-     M = NBA*ncabsMO         !rows of Output Matrix
-     K = nocc                !summation dimension
-     N = nocc                !columns of Output Matrix
-     call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCcabsT,M,Fkj,K,0.0E0_realk,CalphaP,M)
-     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-     call ContractTwo4CenterF12IntegralsRIX3X4_nc(NBA,nocc,noccfull,ncabsMO,&
-        & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
-  
-     call mem_dealloc(CalphaCcabsT)
-     call mem_dealloc(CalphaCocc)
-     call mem_dealloc(CalphaT)
-     call mem_dealloc(CalphaP)
+   call mem_dealloc(ABdecompC)
+   
+   nsize = NBA*nocc*ncabsMO
+   call mem_alloc(CalphaP,nsize)
+   M = NBA*ncabsMO         !rows of Output Matrix
+   K = nocc                !summation dimension
+   N = nocc                !columns of Output Matrix
+   call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCcabsT,M,Fkj,K,0.0E0_realk,CalphaP,M)
 
-     mp2f12_energy = mp2f12_energy  + EX3 + EX4
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
-     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
-     WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EX3 = 0.0E0_realk
+      EX4 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocc*ncabsMO     !CalphaGcabsMO(NBA,nocc,ncabsMO) 
+         nsize2 = nbuf1*noccfull*nocc   !CalphaCocc(NBA,noccfull,nocc) 
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaGcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 E1',-1)
+            call ls_mpibcast(CalphaGcabsMO,nsize,node,infpar%lg_comm)
+            IF(size(CalphaCocc).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 E2',-1)
+            call ls_mpibcast(CalphaCocc,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIX3X4_nc(NBA,nocc,noccfull,ncabsMO,&
+                 & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIX3X4_ncMPI(NBA,nocc,noccfull,ncabsMO,&
+                 & CalphaMPI,CalphaMPI2,NBA2,&
+                 & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
+         ENDIF
+         EX3 = EX3 + EX3tmp
+         EX4 = EX4 + EX4tmp         
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIX3X4_nc(NBA,nocc,noccfull,ncabsMO,&
+           & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
+   ENDIF
+   lsmpibufferRIMP2(11)=EX3      !we need to perform a MPI reduction at the end 
+   lsmpibufferRIMP2(12)=EX4      !we need to perform a MPI reduction at the end 
+#else
+   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+   call ContractTwo4CenterF12IntegralsRIX3X4_nc(NBA,nocc,noccfull,ncabsMO,&
+        & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
+   
+   mp2f12_energy = mp2f12_energy  + EX3 + EX4
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
+   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
+   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
+#endif
+
+   call mem_dealloc(CalphaCcabsT)
+   call mem_dealloc(CalphaCocc)
+   call mem_dealloc(CalphaT)
+   call mem_dealloc(CalphaP)
 
    call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
 
@@ -728,11 +1044,49 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    n =  ncabsAO
    
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Krr%elms,k,0.0E0_realk,CalphaD,m)
-   call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4)
-   
+
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EB4 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocc*ncabsAO     !CalphaGcabsAO(NBA,nocc,ncabsAO) 
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaGcabsAO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 F1',-1)
+            call ls_mpibcast(CalphaGcabsAO,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4tmp)   
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB4MPI(nBA,nocc,ncabsAO,CalphaMPI,NBA2,&
+                 & CalphaGcabsAO,CalphaD,EB4tmp)   
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
+         ENDIF
+         EB4 = EB4 + EB4tmp         
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4)   
+   ENDIF
+   lsmpibufferRIMP2(13)=EB4      !we need to perform a MPI reduction at the end 
+#else
+   call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4)   
    mp2f12_energy = mp2f12_energy  + EB4
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
+#endif
    
    !==============================================================
    !=  B5: (ir|f12|jm)Fsr(si|f12|mj)        (r,s=CabsAO)         =
@@ -767,11 +1121,59 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !Do on GPU (Async)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
    !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5)
-   
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EB5 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nbasis*nocc   !CalphaG(nBA,nbasis,occ)
+         nsize2 = nbuf1*nocc*ncabsAO !CalphaD(nBA,nocc,ncabsAO)
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 G1',-1)
+            call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)
+            IF(size(CalphaD).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 G2',-1)
+            call ls_mpibcast(CalphaD,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,nbasis,&
+                 & CalphaGcabsAO,CalphaG,CalphaD,EB5tmp)   
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB5MPI(nBA,nocc,ncabsAO,noccfull,nbasis,&
+                 & CalphaMPI,CalphaMPI2,NBA2,&
+                 & CalphaGcabsAO,CalphaG,CalphaD,EB5tmp)   
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
+         ENDIF
+         EB5 = EB5 + EB5tmp
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,nbasis,&
+           & CalphaGcabsAO,CalphaG,CalphaD,EB5)   
+   ENDIF
+   lsmpibufferRIMP2(14)=EB5      !we need to perform a MPI reduction at the end 
+#else
+   call ContractTwo4CenterF12IntegralsRIB5(nBA,nocc,ncabsAO,noccfull,nbasis,CalphaGcabsAO,CalphaG,CalphaD,EB5)   
    mp2f12_energy = mp2f12_energy  + EB5
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
+#endif
    call mem_dealloc(CalphaD)
    
    !==============================================================
@@ -816,12 +1218,50 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaP,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
    call mem_dealloc(CalphaP) 
    !Do on GPU (Async)
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EB6 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocv*nocc     !CalphaG(NBA,nocv,nocc) 
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 F1',-1)
+            call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,noccfull,&
+                 & CalphaG,CalphaD,EB6tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB6MPI(nBA,nocc,nvirt,nocv,noccfull,&
+                 & CalphaMPI,NBA2,CalphaG,CalphaD,EB6tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
+         ENDIF
+         EB6 = EB6 + EB6tmp         
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,noccfull,CalphaG,CalphaD,EB6)
+   ENDIF
+   lsmpibufferRIMP2(15)=EB6      !we need to perform a MPI reduction at the end 
+#else
    call ContractTwo4CenterF12IntegralsRIB6(nBA,nocc,nvirt,nocv,noccfull,CalphaG,CalphaD,EB6)
-   call mem_dealloc(CalphaD)
-
    mp2f12_energy = mp2f12_energy  + EB6
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
+#endif
+   call mem_dealloc(CalphaD)
    
    !==============================================================
    !=  B7: (ic|f12|jm)Fnm(ci|F12|nj)                             =
@@ -849,12 +1289,61 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fmm%elms,k,0.0E0_realk,CalphaD,m)
    !Commented out just for current scheme, may be changed later TK
    !call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
-   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,CalphaCoccT,CalphaD,EB7)
-   call mem_dealloc(CalphaCoccT)
-   call mem_dealloc(CalphaD)
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EB7 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocc*ncabsMO   !CalphaGcabsMO(NBA,nocc,ncabsMO)
+         nsize2 = nbuf1*nocc*noccfull !CalphaCoccT(NBA,nocc,noccfull)
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaGcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 H1',-1)
+            call ls_mpibcast(CalphaGcabsMO,nsize,node,infpar%lg_comm)
+            IF(size(CalphaCoccT).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 H2',-1)
+            call ls_mpibcast(CalphaCoccT,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,&
+                 & CalphaCoccT,CalphaD,EB7tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB7MPI(nBA,nocc,noccfull,ncabsMO,&
+                 & CalphaMPI,CalphaMPI2,NBA2,CalphaGcabsMO,CalphaCoccT,CalphaD,EB7tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
+         ENDIF
+         EB7 = EB7 + EB7tmp
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,&
+           & CalphaCoccT,CalphaD,EB7)
+   ENDIF
+   lsmpibufferRIMP2(17)=EB7      !we need to perform a MPI reduction at the end 
+#else
+   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,&
+        & CalphaCoccT,CalphaD,EB7)
    mp2f12_energy = mp2f12_energy  + EB7
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
+#endif
+   call mem_dealloc(CalphaCoccT)
+   call mem_dealloc(CalphaD)
 
    !==============================================================
    !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
@@ -884,10 +1373,58 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !NB! Changed T to N, dont think it will matter but...
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frm%elms,k,0.0E0_realk,CalphaD,m)
 
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EB8 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocc*ncabsMO   !CalphaGcabsMO(NBA,nocc,ncabsMO)
+         nsize2 = nbuf1*nocc*noccfull !CalphaD(NBA,nocc,noccfull)
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaGcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 I1',-1)
+            call ls_mpibcast(CalphaGcabsMO,nsize,node,infpar%lg_comm)
+            IF(size(CalphaD).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 I2',-1)
+            call ls_mpibcast(CalphaD,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nocv,noccfull,&
+                 & CalphaGcabsMO,CalphaG,CalphaD,EB8tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB8MPI(nBA,nocc,ncabsMO,nocv,noccfull,&
+                 & CalphaMPI,CalphaMPI2,NBA2,CalphaGcabsMO,CalphaG,CalphaD,EB8tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
+         ENDIF
+         EB8 = EB8 + EB8tmp
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nocv,noccfull,&
+           & CalphaGcabsMO,CalphaG,CalphaD,EB8)
+   ENDIF
+   lsmpibufferRIMP2(18)=EB8      !we need to perform a MPI reduction at the end 
+#else
    call ContractTwo4CenterF12IntegralsRIB8(nBA,nocc,ncabsMO,nocv,noccfull,CalphaGcabsMO,CalphaG,CalphaD,EB8)
    mp2f12_energy = mp2f12_energy  + EB8
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+#endif
    call mem_dealloc(CalphaGcabsAO)
    call mem_dealloc(CalphaD)
 
@@ -915,11 +1452,49 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    n =  nocv
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fcp%elms,k,0.0E0_realk,CalphaD,m)
    call mem_dealloc(CalphaGcabsMO)
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EB9 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*nocv*nocc     !CalphaG(NBA,nocv,nocc) 
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum            
+            IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 J1',-1)
+            call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB9(nBA,noccfull,nocc,nvirt,nocv,&
+                 & CalphaG,CalphaD,EB9tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIB9MPI(nBA,noccfull,nocc,nvirt,nocv,&
+                 & CalphaMPI,NBA2,CalphaG,CalphaD,EB9tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
+         ENDIF
+         EB9 = EB9 + EB9tmp         
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIB9(nBA,noccfull,nocc,nvirt,nocv,CalphaG,CalphaD,EB9)
+   ENDIF
+   lsmpibufferRIMP2(19)=EB9      !we need to perform a MPI reduction at the end 
+#else
    call ContractTwo4CenterF12IntegralsRIB9(nBA,noccfull,nocc,nvirt,nocv,CalphaG,CalphaD,EB9)
    mp2f12_energy = mp2f12_energy  + EB9
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
- 
+#endif
    call mem_dealloc(CalphaG)
    call mem_dealloc(ABdecompG)
    call mem_dealloc(CalphaD)
@@ -933,6 +1508,80 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
    call LSTIMER('FULLRIMP2:Step3',TS2,TE2,DECinfo%output,ForcePrint)
    call LSTIMER('FULLRIMP2F12',TS,TE,DECinfo%output,ForcePrint)
+
+#ifdef VAR_MPI
+   nbuf1 = 20
+   CALL lsmpi_reduction(lsmpibufferRIMP2,nbuf1,infpar%master,infpar%lg_comm)
+
+   EB1=lsmpibufferRIMP2(1)
+   EV1=lsmpibufferRIMP2(2)
+   EX1=lsmpibufferRIMP2(3)
+   EB2=lsmpibufferRIMP2(4)
+   EB3=lsmpibufferRIMP2(5)
+   EV2=lsmpibufferRIMP2(6)
+   EX2=lsmpibufferRIMP2(7)
+   EV3=lsmpibufferRIMP2(8)
+   EV4=lsmpibufferRIMP2(9)
+   EV5=lsmpibufferRIMP2(10)
+   EX3=lsmpibufferRIMP2(11)
+   EX4=lsmpibufferRIMP2(12)
+   EB4=lsmpibufferRIMP2(13)
+   EB5=lsmpibufferRIMP2(14)
+   EB6=lsmpibufferRIMP2(15)
+   !for some reason missing 16
+   EB7=lsmpibufferRIMP2(17)
+   EB8=lsmpibufferRIMP2(18)
+   EB9=lsmpibufferRIMP2(19)
+   E_21C=lsmpibufferRIMP2(20)
+   DO I=1,size(lsmpibufferRIMP2)
+      mp2f12_energy = mp2f12_energy  + lsmpibufferRIMP2(I)
+   ENDDO
+
+   IF(master)THEN
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C 
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ', EX3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ', EX4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C 
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ', EX3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ', EX4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+   ENDIF
+
+   IF(wakeslaves)THEN
+      call mem_dealloc(nAuxMPI)
+   ENDIF
+#endif
 
     E_21 = 0.0E0_realk
     E_21 = EV1 + EV2 + EV3 + EV4 +EV5 + E_21C
@@ -1043,272 +1692,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
        print *, '-------------------------------------------------------'
        write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: TOTAL CORRELATION ENERGY (For CC) =', MP2_energy+E_F12
     end if
-
-    write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,f20.10)') '                  WANGY DEC-MP2-F12 CALCULATION                 '
-    write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E_21
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E_22
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =     ', E_23
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 CORRECTION TO ENERGY =         ', E_F12
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
-
-
-
-
+    if(master)then
+       write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
+       write(DECinfo%output,'(1X,a,f20.10)') '                  WANGY DEC-MP2-F12 CALCULATION                 '
+       write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E_21
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E_22
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =     ', E_23
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 CORRECTION TO ENERGY =         ', E_F12
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
+    endif
   end subroutine full_canonical_rimp2_f12
-
-!Exchange Ripjq*Gjpiq
-!Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
-!!$  subroutine ContractTwo4CenterF12IntegralsExchange(OperR,OperG,nocc,nbasis,SETTING,INTSPEC)
-!!$    implicit none
-!!$    integer,intent(in) :: OperR,OperG,nocc,nbasis
-!!$    TYPE(LSSETTING),intent(inout)     :: SETTING
-!!$    
-!!$    NOFAMILY = ls%setting%SCHEME%NOFAMILY
-!!$    ls%setting%SCHEME%NOFAMILY = .TRUE.
-!!$    !TODO: 
-!!$    nullify(batchsize)
-!!$    nullify(batchdim)
-!!$    nullify(batchindex)
-!!$    nullify(orb2batch)
-!!$    nullify(batch2orb)
-!!$
-!!$    doscreen = ls%setting%SCHEME%CS_SCREEN.OR.ls%setting%SCHEME%PS_SCREEN
-!!$
-!!$    call build_minimalbatchesofAOS(DECinfo%output,setting,nbasis,&
-!!$         & batchsize,batchdim,batchindex,nbatches,orb2Batch,INTSPEC(1))
-!!$
-!!$    call mem_alloc(batch2orb,nbatchesAB)
-!!$    do idx=1,nbatchesAB
-!!$       call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
-!!$       batch2orb(idx)%orbindex = 0
-!!$       batch2orb(idx)%norbindex = 0
-!!$    end do
-!!$    do iorb=1,nbast
-!!$       idx = orb2batch(iorb)
-!!$       batch2orb(idx)%norbindex = batch2orb(idx)%norbindex+1
-!!$       k = batch2orb(idx)%norbindex
-!!$       batch2orb(idx)%orbindex(k) = iorb
-!!$    end do
-!!$
-!!$    call mem_alloc(Dbast,nbasis,nbasis)
-!!$    call DGEMM
-!!$    call mem_alloc(Docc,nbatches,nbatches)
-!!$    call ConvertBASTGabToBatchesGab(nbasis,nbatches,setting,Dbast,Docc,lupri,luerr)
-!!$    call mem_dealloc(Dbast)
-!!$    MaxDocc = MAXVAL(Docc)
-!!$    call mem_alloc(MaxDoccV,nbasis)
-!!$    DO J=1,nbasis
-!!$       MaxDoccV(J) = MAXVAL(MaxDocc(:,J))
-!!$    ENDDO
-!!$
-!!$    call mem_alloc(Dbast,nbasis,nbasis)
-!!$    call DGEMM
-!!$    call mem_alloc(Dvirt,nbatches,nbatches)
-!!$    call ConvertBASTGabToBatchesGab(nbasis,nbatches,setting,Dbast,Dvirt,lupri,luerr)
-!!$    call mem_dealloc(Dbast)
-!!$    MaxDvirt = MAXVAL(Dvirt)
-!!$    call mem_alloc(MaxDvirtV,nbasis)
-!!$    DO J=1,nbasis
-!!$       MaxDvirtV(J) = MAXVAL(MaxDvirt(:,J))
-!!$    ENDDO
-!!$
-!!$    call mem_alloc(Rscreen,nbatches,nbatches)
-!!$    call II_get_2int_BatchScreenMat(DECinfo%output,DECinfo%output,SETTING,&
-!!$         & nbatches,Rscreen,nbasis,OperR)
-!!$
-!!$    WRITE(lupri,*)'Rscreen'
-!!$    call ls_output(Rscreen,1,nbatches,1,nbatches,nbatches,nbatches,1,lupri)
-!!$
-!!$    MaxRscreen = MAXVAL(Rscreen)
-!!$
-!!$    call mem_alloc(Gscreen,nbatches,nbatches)
-!!$    call II_get_2int_BatchScreenMat(DECinfo%output,DECinfo%output,SETTING,&
-!!$         & nbatches,Gscreen,nbasis,OperG)
-!!$
-!!$    WRITE(lupri,*)'Gscreen'
-!!$    call ls_output(Gscreen,1,nbatches,1,nbatches,nbatches,nbatches,1,lupri)
-!!$
-!!$    MaxGscreen = MAXVAL(Gscreen)
-!!$
-!!$    Threshold_CS = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
-!!$    intThreshold = ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR
-!!$    call II_precalc_DECScreenMat(DecScreenR,lupri,luerr,ls%setting,nbatches,&
-!!$         & nbatches,INTSPEC,intThreshold)
-!!$    IF(doscreen)then
-!!$       call II_getBatchOrbitalScreen(DecScreenR,ls%setting,&
-!!$            & nbasis,nbatches,nbatches,batchsize,batchsize,batchindex,batchindex,&
-!!$            & batchdim,batchdim,INTSPEC,lupri,luerr)
-!!$    endif
-!!$
-!!$    call II_precalc_DECScreenMat(DecScreenG,lupri,luerr,ls%setting,nbatches,&
-!!$         & nbatches,INTSPEC,intThreshold)
-!!$    IF(doscreen)then
-!!$       call II_getBatchOrbitalScreen(DecScreenG,ls%setting,&
-!!$            & nbasis,nbatches,nbatches,batchsize,batchsize,batchindex,batchindex,&
-!!$            & batchdim,batchdim,INTSPEC,lupri,luerr)
-!!$    endif
-!!$    FullRHS = .FALSE.
-!!$
-!!$    !Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
-!!$    !starting loop over the most sparse of the 2 operators (create list )
-!!$    !MPI PARALLIZE THE D,C Loop
-!!$    !E = 0
-!!$    !do C
-!!$    ! do A
-!!$    !   IF(RscreenV(A)*Rscreen(C))THEN
-!!$    !    done Nac < nbatchA*nbatchC times 
-!!$    !    Calc (A,Bfull|OperR|C,Dfull)
-!!$    !    construct Rtensor(A,Bfull,C,Dfull)
-!!$    !    construct Rtensor(A,Bfull,C,Hfull)=Dvirt(Dfull,Hfull)*Rtensor(A,Bfull,C,Dfull) !N*N*N*Nac
-!!$    !    construct Rtensor(A,Ffull,C,Hfull)=Dvirt(Ffull,Bfull)*Rtensor(A,Bfull,C,Hfull)
-!!$    !    do G
-!!$    !      construct Rtensor(G,Ffull,C,Hfull)=Docc(G,A)*Rtensor(A,Ffull,C,Hfull)
-!!$    !      do E On GPU - While CPU does Integral GPU does DGEMM? 
-!!$    !        construct Rtensor(G,Ffull,E,Hfull)=Docc(C,E)*Rtensor(G,Ffull,C,Hfull)
-!!$    !        maxR = MAXVAL(Rtensor(G,Ffull,E,Hfull)) 
-!!$    !        IF(maxR*GscreenV(E)*GscreenV(G))THEN
-!!$    !          Calc (E,Ffull|OperG|G,Hfull) !Modified Screening Threshold with maxR
-!!$    !          E = E + (E,Ffull|OperG|G,Hfull)*Rtensor(G,Ffull,E,Hfull)
-!!$    !        ENDIF
-!!$    !      enddo
-!!$    !    enddo
-!!$    !   ENDIF
-!!$    ! enddo
-!!$    !enddo
-!!$
-!!$
-!!$    !TODO VERIFY THAT THE SCREENING IS CORRECT - when you do MaxValRjFiD*MaxGscreen*Gscreen(G,H)*Dvirt(D,H)*MaxCMOV(G)*MaxCMO*maxDvirt
-!!$    ! it is not correct as you are summing over the elements - but can do something like what they do in Lapalce 
-!!$    !MaxValRjFiD*MaxValGjFiH
-!!$    !where MaxValGjFiH = MaxGscreen*SUM_G (MaxCMOV(G)*Gscreen(G,H))
-!!$    !Psedo Code 
-!!$    !Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
-!!$    !starting loop over the most sparse of the 2 operators (create list )
-!!$    !MPI PARALLIZE THE D,C Loop
-!!$    !E = 0
-!!$    !do D
-!!$    ! do C
-!!$    !  IF()
-!!$    !   done Ncd < nbatchC*nbatchD times 
-!!$    !   (std integral AO to MO speed) expect taking CD screening into account 
-!!$    !   construct (AfullBfull|OperR|CD)          
-!!$    !   construct Rtensor(Afull,Bfull,C,D)       
-!!$    !   construct Rtensor(I,Bfull,C,D)=CMO(I,Afull)*Rtensor(Afull,Bfull,C,D) !DGEMM
-!!$    !   Reorder   Rtensor(C,D,I,Bfull)<=Rtensor(I,Bfull,C,D)            
-!!$    !   construct Rtensor(J,D,I,Bfull)=Rtensor(J,D,I,Bfull) + CMO(J,C)*Rtensor(C,D,I,Bfull) !DGEMM
-!!$    !  ENDIF
-!!$    ! enddo
-!!$    ! Reorder   Rtensor(J,Bfull,I,D)<=Rtensor(J,D,I,Bfull)
-!!$    ! construct Rtensor(J,Ffull,I,D)=Rtensor(J,Bfull,I,D)*Dvirt(Bfull,Ffull)
-!!$    ! MaxValRjFiD = MAXVAL(Rtensor(J,Ffull,I,D)) !This is not a small number
-!!$    ! do H 
-!!$    !  do G
-!!$    !   IF(MaxValRjFiD*MaxGscreen*Gscreen(G,H).GT.Threshold_CS)THEN 
-!!$    !    done Ngh < nbatchG*nbatchH*nbatchD times 
-!!$    !    construct Gtensor(EfullFfull|operG|GH) !USING A MODIFIED SCREENING THRESHOLD *MaxValRjFiD 
-!!$    !    MAXVAL = Gtensor(Efull,Ffull,G,H)
-!!$    !    IF(MAXVAL*MaxValRjFiD.GT.Threshold_CS)THEN 
-!!$    !      construct Gtensor(Efull,Ffull,G,H)
-!!$    !      construct Gtensor(J,Ffull,G,H)=CMO(J,Efull)*Gtensor(Efull,Ffull,G,H)                !DGEMM
-!!$    !      construct Gtensor(J,Ffull,I,H)=Gtensor(J,Ffull,I,H) + CMO(I,G)*Gtensor(J,Ffull,G,H)
-!!$    !    ENDIF
-!!$    !   ENDIF
-!!$    !  enddo
-!!$    !  construct Gtensor(J,Ffull,I,D)=Gtensor(J,Ffull,I,H)*Dvirt(D,H) !DGEMM
-!!$    ! enddo
-!!$    ! E = E + Rtensor(J,Ffull,I,D)*Gtensor(J,Ffull,I,D)
-!!$    !enddo
-!!$
-!!$    BatchD: do D = 1,nbatches
-!!$       dimD = batchdim(D)
-!!$       
-!!$       BatchC: do C = 1,nbatches
-!!$          dimC = batchdim(C)           
-!!$          
-!!$          !Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
-!!$          IF(MaxRscreen*Rscreen(C,D)*MaxGscreen*MaxGscreen*MaxDvirt(D)*MaxDocc*MaxDoccV(C)*maxDvirt.GT.Threshold_CS)THEN
-!!$
-!!$             IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREENR%masterGabLHS
-!!$             IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREENR%batchGab(C,D)%p
-!!$          
-!!$             call II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,ls%SETTING,&
-!!$                  & integralsR,batchindex(C),batchindex(D),batchsize(C),batchsize(D),&
-!!$                  & nbast,nbast,dimC,dimD,fullRHS,INTSPEC,intThreshold)
-!!$
-!!$             !          do batch_iD = 1,dimD
-!!$             !           iD = batch2orb(D)%orbindex(batch_iD) !Global index
-!!$             !           do batch_iC = 1,dimC
-!!$             !            iC = batch2orb(C)%orbindex(batch_iC) !Global index
-!!$             !Output integrals(1:nbasis,1:nbasis,batch_iC,batch_iD)
-!!$             !Reorder to Radcb <= Rabcd
-!!$             MaxValRabcd = MAXVAL(integralsR)
-!!$             BatchH: do H = 1,nbatches
-!!$                dimH = batchdim(H)
-!!$                
-!!$                BatchG: do G = 1,nbatches
-!!$                   dimG = batchdim(G)           
-!!$                   
-!!$                   !Ripjq*Gjpiq = (AB|OperR|CD)*(EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
-!!$                   IF(MaxValRabcd*MaxGscreen*Gscreen(G,H)*Dvirt(D,H)*MaxDoccV(G)*MaxDoccV(C)*maxDvirt.GT.Threshold_CS)THEN
-!!$                      
-!!$                      IF(doscreen)ls%setting%LST_GAB_LHS => DECSCREENG%masterGabLHS
-!!$                      IF(doscreen)ls%setting%LST_GAB_RHS => DECSCREENG%batchGab(G,H)%p
-!!$                      
-!!$                      call II_GET_DECPACKED4CENTER_J_ERI(LUPRI,LUERR,ls%SETTING,&
-!!$                           & integralsG,batchindex(G),batchindex(H),batchsize(G),batchsize(H),&
-!!$                           & nbast,nbast,dimG,dimH,fullRHS,INTSPEC,intThreshold)
-!!$                      
-!!$                      !          do batch_iH = 1,dimH
-!!$                      !           iH = batch2orb(H)%orbindex(batch_iH) !Global index
-!!$                      !           do batch_iG = 1,dimG
-!!$                      !            iG = batch2orb(G)%orbindex(batch_iG) !Global index
-!!$                      !Output integrals(1:nbasis,1:nbasis,batch_iG,batch_iH)
-!!$                      !Transform to Gabcd = (EF|OperR|GH)*Docc(A,G)*Docc(C,E)*Dvirt(B,F)*Dvirt(D,H)
-!!$
-!!$                      !Transform1 Gefgd = (EF|OperR|GH)*Dvirt(H,D)
-!!$                      !Transform2 Gcfgd = Docc(C,E)*Gefgd
-!!$                      !Reorder Ggdcf <= Gcfgd
-!!$                      !Transform1 Ggdcb = Ggdcf*Dvirt(B,F)
-!!$                      !Transform2 Gadcb = Docc(A,G)*Ggdcb
-!!$                      ! E = Radcb*Gadcb
-!!$                      
-!!$                   ENDIF
-!!$                enddo BatchG
-!!$             enddo BatchH
-!!$          ENDIF
-!!$       enddo BatchC
-!!$    enddo BatchD
-!!$    
-!!$
-!!$    !Ripjq*Gjpiq = Rpiqj*Gpjqi
-!!$    !starting loop over the most sparse of the 2 operators (create list )
-!!$    !do A
-!!$    ! do B
-!!$    !  do C
-!!$    !   do D
-!!$    !    construct (AB|OperR|CD)    dim: (nbastOnA,nbastOnB,nbastOnC,nbastOnD)
-!!$    !    do E 
-!!$    !     do F
-!!$    !      do G 
-!!$    !       do H
-!!$    !        construct (EF|operG|GH) dim: (nbastOnE,nbastOnF,nbastOnG,nbastOnH)  
-!!$    !        transform to (AD|operG|CB)  dim: (nbastOnA,nbastOnD,nbastOnC,nbastOnB)
-!!$    !        E = (AB|operR|CD)*(AD|operG|CB)   scaling: O(N) 
-!!$    !       enddo
-!!$    !      enddo
-!!$    !     enddo
-!!$    !    enddo
-!!$    !   enddo
-!!$    !  enddo
-!!$    ! enddo
-!!$    !enddo
-!!$    ls%setting%SCHEME%NOFAMILY = NOFAMILY
-!!$
-!!$  end subroutine ContractTwo4CenterF12IntegralsExchange
 
   subroutine FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,Galpha,&
        & Galpha2,E,EpsOcc,EpsVirt)
@@ -1320,28 +1716,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     !local variables
     integer :: A,B,J,I,ALPHA
     real(realk) :: TMP,CtmpIAJB,CtmpIBJA,eps,T
-    !If 
-    !Ciajb = Givic(j,a,i,c)*Fvc(b,c) + Givic(i,b,j,c)*Fvc(a,c) = nonSymCjaib + nonSymCibja
-    !eps = eps(I) + eps(J) - eps(A) - eps(B)
-    !E = E +(7*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + Ciajb(I,A,J,B)*Ciajb(J,A,I,B))/eps
-    !However If
-    !Ciajb = Givic(j,a,i,c)*Fvc(b,c) = nonSymCjaib
-    !E = E + (
-    !7*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 7*Ciajb(J,B,I,A)*Ciajb(I,A,J,B)
-    !7*Ciajb(I,A,J,B)*Ciajb(J,B,I,A) + 7*Ciajb(J,B,I,A)*Ciajb(J,B,I,A)
-    !1*Ciajb(I,A,J,B)*Ciajb(J,A,I,B) + 1*Ciajb(J,B,I,A)*Ciajb(J,A,I,B)
-    !1*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 1*Ciajb(J,B,I,A)*Ciajb(I,B,J,A) )/eps
-    !===================================================================
-    !Permutational symmetry between I,J
-    !===================================================================
-    !E = E + (
-    !7*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 7*Ciajb(I,B,J,A)*Ciajb(I,A,J,B)
-    !7*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 7*Ciajb(I,B,J,A)*Ciajb(I,B,J,A)
-    !1*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 1*Ciajb(I,B,J,A)*Ciajb(I,A,J,B)
-    !1*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 1*Ciajb(I,B,J,A)*Ciajb(I,B,J,A) )/eps
-    !===================================================================
-    !E = E + (8*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 16*Ciajb(I,A,J,B)*Ciajb(I,B,J,A) + 8*Ciajb(I,B,J,A)*Ciajb(I,B,J,A))/eps
-    !===================================================================
     TMP = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(A,B,J,I,&
     !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,nvirt,Galpha,Galpha2,&
@@ -1372,6 +1746,74 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     E = TMP/32.0E0_realk
   end subroutine FullRIMP2F12_CcouplingEnergyCont
 
+  subroutine FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nbasis,GalphaMPI,&
+       & Galpha2MPI,NBA2,Galpha,Galpha2,E,EpsOcc,EpsVirt)
+    implicit none
+    real(realk),intent(inout) :: E
+    integer,intent(in) :: NBA,nocc,nvirt,nbasis,NBA2
+    real(realk),intent(in) :: GalphaMPI(NBA2,nbasis,nocc),Galpha2MPI(NBA2,nocc,nvirt)
+    real(realk),intent(in) :: Galpha(NBA,nbasis,nocc),Galpha2(NBA,nocc,nvirt)
+    real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
+    !local variables
+    integer :: A,B,J,I,ALPHA
+    real(realk) :: TMP,CtmpIAJB,CtmpIBJA,eps,T
+    TMP = 0.0E0_realk
+    !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(A,B,J,I,&
+    !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,nvirt,Galpha,Galpha2,&
+    !$OMP EpsOcc,EpsVirt,GalphaMPI,Galpha2MPI,NBA2) REDUCTION(+:TMP)
+    DO B=1,nvirt
+     DO J=1,nocc
+      DO A=1,nvirt
+       DO I=1,nocc
+          eps = EpsOcc(I) + EpsOcc(J) - EpsVirt(A) - EpsVirt(B)
+          T = 0.0E0_realk
+          DO ALPHA=1,NBA2
+             T = T  + (GalphaMPI(ALPHA,nocc+A,I)*Galpha2MPI(ALPHA,J,B) + GalphaMPI(ALPHA,nocc+B,J)*Galpha2MPI(ALPHA,I,A))/eps
+          ENDDO
+          CtmpIAJB = 0.0E0_realk
+          DO ALPHA=1,NBA
+             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B)+ Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A)
+          ENDDO
+          CtmpIBJA = 0.0E0_realk
+          DO ALPHA=1,NBA
+             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,nocc+A,J)*Galpha2(ALPHA,I,B) + Galpha(ALPHA,nocc+B,I)*Galpha2(ALPHA,J,A)
+          ENDDO
+          TMP=TMP+(7.0E0_realk*T*CtmpIAJB + 1.0E0_realk*T*CtmpIBJA)
+       ENDDO
+      ENDDO
+     ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+    E = TMP/32.0E0_realk
+  end subroutine FullRIMP2F12_CcouplingEnergyContMPI
+
+  subroutine lsmpi_matrix_bufcopy(Xmat,master)
+    implicit none
+    type(matrix) :: Xmat
+    logical,intent(in) :: master
+#ifdef VAR_MPI
+    integer :: nrow,ncol
+    real(realk),pointer :: Xfull(:,:)
+    IF(master)THEN
+       nrow = Xmat%nrow
+       ncol = Xmat%ncol
+       call mem_alloc(Xfull,nrow,ncol)
+       call mat_to_full(Xmat,1.0E0_realk,Xfull)
+       CALL ls_mpi_buffer(nrow,infpar%master)
+       CALL ls_mpi_buffer(ncol,infpar%master)
+       CALL ls_mpi_buffer(Xfull,nrow,ncol,infpar%master)
+    ELSE
+       CALL ls_mpi_buffer(nrow,infpar%master)
+       CALL ls_mpi_buffer(ncol,infpar%master)
+       call mat_init(Xmat,nrow,ncol)
+       call mem_alloc(Xfull,nrow,ncol)
+       CALL ls_mpi_buffer(Xfull,nrow,ncol,infpar%master)           
+       call mat_set_from_full(Xfull,1.0E0_realk,Xmat)           
+    ENDIF
+    call mem_dealloc(Xfull)
+#endif
+  end subroutine lsmpi_matrix_bufcopy
+
 #else
 
   subroutine wangy_dummy_sub12()
@@ -1382,3 +1824,56 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
 end module fullrimp2f12
 
+#ifdef VAR_MPI
+  subroutine full_canonical_rimp2f12_slave
+    use fullrimp2f12,only: full_canonical_rimp2_f12, lsmpi_matrix_bufcopy
+    use infpar_module !infpar
+    use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
+         & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+    use lsmpi_op,only: mpicopy_lsitem
+    use precision
+    use typedeftype,only:lsitem
+    use lsparameters
+    use decmpi_module, only: mpi_bcast_fullmolecule
+    use DALTONINFO, only: ls_free
+    use matrix_module
+    use matrix_operations
+    ! DEC DEPENDENCIES (within deccc directory)   
+    ! *****************************************
+    !  use dec_fragment_utils
+    use full_molecule, only:fullmolecule, molecule_finalize
+    implicit none
+    !> Full molecule info
+    type(fullmolecule) :: MyMolecule
+    !> Lsitem structure
+    type(lsitem) :: mylsitem
+    !> Canonical MP2 correlation energy
+    real(realk) :: rimp2f12_energy    
+    !> The HF density matrix 
+    type(matrix) :: Dmat
+
+    ! Init MPI buffer
+    ! ***************
+    ! Main master:  Prepare for writing to buffer
+    ! Local master: Receive buffer
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,MPI_COMM_LSDALTON)
+    ! Integral lsitem
+    ! ---------------
+    call mpicopy_lsitem(MyLsitem,MPI_COMM_LSDALTON)
+    call lsmpi_matrix_bufcopy(Dmat,.false.)    
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,MPI_COMM_LSDALTON)
+    ! Full molecule bcasting
+    ! **********************
+    call mpi_bcast_fullmolecule(MyMolecule)
+    
+    ! Finalize MPI buffer
+    ! *******************
+    ! Main master:  Send stuff to local masters and deallocate temp. buffers
+    ! Local master: Deallocate buffer etc.
+    call full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,rimp2f12_energy)
+    call mat_free(Dmat)
+    call ls_free(MyLsitem)
+    call molecule_finalize(MyMolecule,.false.)
+    
+  end subroutine full_canonical_rimp2f12_slave
+#endif

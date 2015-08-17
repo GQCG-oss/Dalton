@@ -588,9 +588,11 @@ contains
     call mem_dealloc(energies)
 
     ! Print short summary
-    call print_total_energy_summary(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3)
+    call print_total_energy_summary(EHF,Edft,Ecorr,MyMolecule%EF12singles,&
+         & dE_est1,dE_est2,dE_est3)
     if(DECinfo%ccmodel==MODEL_RPA)then
-       call print_total_energy_summary(EHF,Edft,Esos,Eerrs,dE_est2,dE_est3,doSOS=.true.)
+       call print_total_energy_summary(EHF,Edft,Esos,MyMolecule%EF12singles,&
+            &  Eerrs,dE_est2,dE_est3,doSOS=.true.)
     endif
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 

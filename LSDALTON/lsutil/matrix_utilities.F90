@@ -979,7 +979,7 @@ contains
       type(Matrix) :: CleftX
       integer :: nao, nleft,nright
 
-      nao = X_ao%nrow
+      nao = X_ao%ncol
       nleft = Cleft%ncol
       nright = Cright%ncol
 
