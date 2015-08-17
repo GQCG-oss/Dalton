@@ -241,7 +241,7 @@ contains
     end if
     
     
-    if(DECinfo%F12singles) then
+    if(DECinfo%F12 .and. DECinfo%F12singles ) then
        call F12singles_driver(Molecule,MyLsitem,D)
     endif
 

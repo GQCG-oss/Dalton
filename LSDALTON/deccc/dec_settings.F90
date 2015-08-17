@@ -240,7 +240,7 @@ contains
     DECinfo%F12fragopt               = .false.
     DECinfo%F12debug                 = .false.
     DECinfo%F12Ccoupling             = .false.
-    DECinfo%F12singles               = .false.
+    DECinfo%F12singles               = .true.
     DECinfo%F12singlesMaxIter = 200
     DECinfo%F12singlesThr = 1.0e-7
     DECinfo%F12singlesMaxDIIS = 3
@@ -940,8 +940,8 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
-       case('.F12SINGLES')
-          DECinfo%F12SINGLES=.true.
+       case('.SKIPF12SINGLES')
+          DECinfo%F12SINGLES=.false.
        case('.F12CCOUPLING')     
           DECinfo%F12Ccoupling=.true.
        case('.F12SINGLESMAXITER')

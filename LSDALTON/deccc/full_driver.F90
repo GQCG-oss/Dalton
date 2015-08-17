@@ -146,7 +146,8 @@ contains
        endif
 
        ! Print summary, set the error estimates to zero
-       call print_total_energy_summary(EHF,Edft,Ecorr,0.0E0_realk,0.0E0_realk,0.0E0_realk)
+       call print_total_energy_summary(EHF,Edft,Ecorr,MyMolecule%EF12singles,&
+            & 0.0E0_realk,0.0E0_realk,0.0E0_realk)
 
     end if DoCorrelatedCalculation
 

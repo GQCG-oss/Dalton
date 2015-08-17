@@ -2573,10 +2573,6 @@ module f12_routines_module
             debugprint)
 
        ! mixing to get optimal
-       call mat_init(XOPTia,nocc,nvirt)
-       call mat_init(XOPTic,nocc,ncabs)
-       call mat_init(ROPTia,nocc,nvirt)
-       call mat_init(ROPTic,nocc,ncabs)
        call mat_zero(XOPTia)
        call mat_zero(XOPTic)
        call mat_zero(ROPTia)
