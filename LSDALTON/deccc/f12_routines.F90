@@ -39,10 +39,12 @@ module f12_routines_module
        & Contracttwo4centerf12integralsrib6,Contracttwo4centerf12integralsrib7, Contracttwo4centerf12integralsrib8, &
        & Contracttwo4centerf12integralsrib9, Contracttwo4centerf12integralsRIC, Contracttwo4centerf12integralsriX, &
        & ContractOne4CenterF12IntegralsRI2_nc, ContractTwo4CenterF12IntegralsRIC_pf, ContractOne4CenterF12IntegralsRI2_p, &
-       & Contracttwo4centerf12integralsri2v3v4_p, Contracttwo4centerf12integralsriX3X4_nc, ContractTwo4CenterF12IntegralsRIX_nc, &
-       & Contracttwo4centerf12integralsriX3X4_nc2, ContractTwo4CenterF12IntegralsRI_pf, ContractTwo4CenterF12IntegralsRIB6_pf,&
-       & contracttwo4centerf12integralsrix_ncmpi, contracttwo4centerf12integralsrix3x4_ncmpi, contracttwo4centerf12integralsrib4mpi,&
-       & contracttwo4centerf12integralsrib5mpi, contracttwo4centerf12integralsrib6mpi, contracttwo4centerf12integralsrib7mpi,&
+       & Contracttwo4centerf12integralsri2v3v4_p, Contracttwo4centerf12integralsriX3X4_nc, &
+       & ContractTwo4CenterF12IntegralsRIX_nc, Contracttwo4centerf12integralsriX3X4_nc2, &
+       & ContractTwo4CenterF12IntegralsRI_pf, ContractTwo4CenterF12IntegralsRIB6_pf,&
+       & contracttwo4centerf12integralsrix_ncmpi, contracttwo4centerf12integralsrix3x4_ncmpi, &
+       & contracttwo4centerf12integralsrib4mpi, contracttwo4centerf12integralsrib5mpi, &
+       & contracttwo4centerf12integralsrib6mpi, contracttwo4centerf12integralsrib7mpi,&
        & contracttwo4centerf12integralsrib8mpi, contracttwo4centerf12integralsrib9mpi
   private
 
