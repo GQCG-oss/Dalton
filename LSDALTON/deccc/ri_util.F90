@@ -1006,7 +1006,7 @@ subroutine Build_RobustERImatU(myLSitem,master,nbasis1,nbasis2,nbasisAux,&
   integer :: M,N,K,MetricOper
   integer :: J,offset
   CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
-  print*,'Build_RobustERImatU intspec=',intspec
+!  print*,'Build_RobustERImatU intspec=',intspec
   call GetOperatorFromCharacter(MetricOper,intspec,mylsitem%Setting)
 
   !=====================================================================================

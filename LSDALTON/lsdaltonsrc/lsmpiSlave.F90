@@ -118,7 +118,6 @@ subroutine lsmpi_slave(comm)
       call ls_mpibcast(job,infpar%master,comm)
       call time_start_phase(PHASE_WORK)
 
-
       select case(job)
       case(MATRIXTY);
          call lsmpi_set_matrix_type_slave
@@ -169,6 +168,8 @@ subroutine lsmpi_slave(comm)
          call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(RIMP2F12FULL);         
+         call full_canonical_rimp2f12_slave
       case(LSTHCRIMP2FULL);
 !         call full_canonical_ls_thc_rimp2_slave
       case(CANONMP2FULL);
