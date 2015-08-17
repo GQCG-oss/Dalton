@@ -95,7 +95,8 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
        & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2,&
-       & ii_get_2int_batchscreenmat, II_get_nst_spec_expval, II_get_magderivKcont
+       & ii_get_2int_batchscreenmat, II_get_nst_spec_expval,&
+       & II_get_magderivKcont, II_get_2center_erifull
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2591,8 +2592,8 @@ IPRINT=SETTING%SCHEME%INTPRINT
 nbast1 = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
 nbast2 = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
 
-IF(nBast1.NE.S%nrow)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap',-1)
-IF(nBast2.NE.S%ncol)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap',-1)
+IF(nBast1.NE.S%nrow)CALL LSQUIT('dim1 mismatch in II_get_2center_mixed_eri',-1)
+IF(nBast2.NE.S%ncol)CALL LSQUIT('dim2 mismatch in II_get_2center_mixed_eri',-1)
 call initIntegralOutputDims(setting%output,nbast1,1,nbast2,1,1)
 CALL ls_getIntegrals(AO1,AOempty,AO2,AOempty,&
      &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
@@ -2608,6 +2609,29 @@ ENDIF
 
 END SUBROUTINE II_get_2center_mixed_eri
 
+!> \brief 2 center eris from two different basis sets
+SUBROUTINE II_get_2center_erifull(LUPRI,LUERR,SETTING,F,n1,n2)
+IMPLICIT NONE
+INTEGER               :: LUPRI,LUERR,IPRINT,n1,n2
+real(realk)           :: F(n1,n2)
+TYPE(LSSETTING)       :: SETTING
+!
+Integer             :: i,j,LU,nbast2,nbast1
+
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+
+IPRINT=SETTING%SCHEME%INTPRINT
+nbast1 = getNbasis(AORdefault,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
+nbast2 = getNbasis(AORdefault,ContractedintType,SETTING%MOLECULE(3)%p,LUPRI)
+
+IF(nBast1.NE.n1)CALL LSQUIT('dim1 mismatch in II_get_2center_erifull',-1)
+IF(nBast2.NE.n2)CALL LSQUIT('dim2 mismatch in II_get_2center_erifull',-1)
+call initIntegralOutputDims(setting%output,nbast1,1,nbast2,1,1)
+CALL ls_getIntegrals(AORdefault,AOempty,AORdefault,AOempty,&
+     &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,F,.FALSE.)
+END SUBROUTINE II_get_2center_erifull
 
 
 !> \brief Calculates the explicit 4 center eri tensor in Mulliken (ab|cd) or Dirac noation <a(1)c(2)|r_12^-1|b(1)d(2)>

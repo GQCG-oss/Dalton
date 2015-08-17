@@ -207,6 +207,7 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    molecule%EF12singles = 0.0_realk
     molecule%Edisp = 0.0_realk
     molecule%Ect = 0.0_realk
     molecule%Esub = 0.0_realk

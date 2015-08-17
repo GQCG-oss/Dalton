@@ -352,12 +352,20 @@ module dec_typedef_module
      logical :: F12fragopt
      !> Do C coupling in F12 scheme
      logical :: F12Ccoupling
+     !> Do CABS singles
+     logical :: F12singles
+     !> Maximum number of iterations in F12 singles solver
+     integer :: F12singlesMaxIter
+     !> Threshold for F12 singles solver
+     real(realk) :: F12singlesThr
+     !> Maximum subspace dimension in F12 singles solver
+     integer :: F12singlesMaxDIIS
 
      !> F12 debug settings
      !> ******************
      !> Use F12 correction
      logical :: F12DEBUG
-
+   
      logical :: SOS
 
      !> Debug keyword to specify pure hydrogen atoms
@@ -848,6 +856,9 @@ module dec_typedef_module
      real(realk) :: Edisp
      real(realk) :: Ect
      real(realk) :: Esub
+
+     ! F12 singles correction energy 
+     real(realk) :: EF12singles
 
   end type fullmolecule
 

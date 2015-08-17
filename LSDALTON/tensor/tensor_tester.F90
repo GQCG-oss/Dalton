@@ -223,7 +223,7 @@ module tensor_tester_module
       print *,"conversion test foo"
 
       call tensor_free(test1)
-      call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS,[0,0,0,0])
+      call tensor_init(test1,[nb,na,nv,no],4,TT_TILED_DIST,AT_MASTER_ACCESS)
       write(output,*)""
       write(output,*)""
       write(output,*)"TESTING CONVERSION TO FORT"
