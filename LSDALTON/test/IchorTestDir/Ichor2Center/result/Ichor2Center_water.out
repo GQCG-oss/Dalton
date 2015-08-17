@@ -1,0 +1,1591 @@
+ THIS IS A DEBUG BUILD
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+      This is output from LSDALTON 2016.alpha
+  
+  
+      IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+      THE FOLLOWING PAPER SHOULD BE CITED:
+      
+      K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+      L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+      P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+      J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+      L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+      A. Halkier, C. Haettig, H. Heiberg,
+      T. Helgaker, A. C. Hennum, H. Hettema,
+      E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+      M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+      D. Jonsson, P. Joergensen, J. Kauczor,
+      S. Kirpekar, T. Kjaergaard, W. Klopper,
+      S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+      A. Krapp, K. Kristensen, A. Ligabue,
+      O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+      C. Neiss, C. B. Nielsen, P. Norman,
+      J. Olsen, J. M. H. Olsen, A. Osted,
+      M. J. Packer, F. Pawlowski, T. B. Pedersen,
+      P. F. Provasi, S. Reine, Z. Rinkevicius,
+      T. A. Ruden, K. Ruud, V. Rybkin,
+      P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+      T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+      K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+      P. R. Taylor, A. M. Teale, E. I. Tellgren,
+      D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+      O. Vahtras, M. A. Watson, D. J. D. Wilson,
+      M. Ziolkowski, and H. AAgren,
+      "The Dalton quantum chemistry program system",
+      WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                                
+      LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
+      ----------------------------------------------------------------------------
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
+      Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
+      Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
+      Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
+      Robert Izsak,            University of Oslo,        Norway    (ADMM)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
+      Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
+      Patrick Merlot,          University of Oslo,        Norway    (ADMM)
+      Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
+      Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
+      Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
+      Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
+      Mark Watson,             University of Oslo,        Norway    (FMM)
+      Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+ Who compiled             | tkjaer
+ Host                     | localhost.localdomain
+ System                   | Linux-3.16.6-200.fc20.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
+ Static linking           | OFF
+ Last Git revision        | 3a3a62fea937f85bbe25aa231feeb169084ffe74
+ Git branch               | master
+ Configuration time       | 2015-08-14 14:45:06.742504
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+   2     0         *                                                            
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like:
+ Atomtypes=2 Angstrom
+ (example using 2 atomtypes)
+ Note only integer charges are allowed in current LsDalton version
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        8.    1                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        1.    2                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+Start simulation
+     Date and time (Linux)  : Fri Aug 14 14:45:26 2015
+     Host name              : localhost.localdomain                   
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  3-21G                                   
+  water R(OH) = 0.95Aa , <HOH = 109 deg.  
+  Distance in Aangstroms                  
+     2     0         *                                        
+          8.    1                                             
+  O      0.00000   0.00000   0.00000                          
+          1.    2                                             
+  H      0.55168   0.77340   0.00000                          
+  H      0.55168  -0.77340   0.00000                          
+                      
+ -----------------------------------------
+          PRINTING THE LSDALTON.INP FILE 
+ -----------------------------------------
+                      
+  **GENERAL                                                                                           
+  .TIME                                                                                               
+  .NOGCBASIS                                                                                          
+  **INTEGRALS                                                                                         
+  .DEBUGICHOR                                                                                         
+  13                                                                                                  
+  **WAVE FUNCTIONS                                                                                    
+  .HF                                                                                                 
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+   2     0         *                                                            
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like:
+ Atomtypes=2 Angstrom
+ (example using 2 atomtypes)
+ Note only integer charges are allowed in current LsDalton version
+  Coordinates are entered in Angstroms and converted to atomic units.
+  Conversion factor : 1 bohr = 0.52917721 A
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        8.    1                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+
+
+ WARNING - deprecated old .mol fixed format input has been detected:
+        1.    2                                                                 
+ WARNING - this input format may not be supported in future releases.
+
+
+
+ New recommended format looks like
+ Charge=6.0 Atoms=2
+ Using an example of 2 Carbon atoms of this type
+ Note only integer charges are allowed in current LsDalton ve
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  9
+   Written in atomic units    
+ 
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+ 
+   4   H        x      1.0425241136
+   5            y      1.4615141920
+   6            z      0.0000000000
+ 
+   7   H        x      1.0425241136
+   8            y     -1.4615141920
+   9            z      0.0000000000
+ 
+ 
+ BASISSETLIBRARY  : REGULAR  
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  3-21G                                             
+  CHARGES:    8.0000    1.0000
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/Ichor2Center/build-debug-ichor/basis/3-21G
+ PRINT MOLECULE AND BASIS IN FULL INPUT
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :       13
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       21
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   8.000  3-21G           F             15           9
+     2   1.000  3-21G           F              3           2
+     3   1.000  3-21G           F              3           2
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  O           1        0.00000000        0.00000000        0.00000000
+     2  H           1        1.04252411        1.46151419        0.00000000
+     3  H           1        1.04252411       -1.46151419        0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      3
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 O      8.000 3-21G                     15        9 [6s3p|3s2p]                                  
+      2 H      1.000 3-21G                      3        2 [3s|2s]                                      
+      3 H      1.000 3-21G                      3        2 [3s|2s]                                      
+---------------------------------------------------------------------
+total         10                               21       13
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+ 
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+ 
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+ 
+ Maximum size of subspace in ARH linear equations:           2
+ 
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+ 
+ Maximum size of Fock/density queue in averaging:          10
+ 
+Convergence threshold for gradient:   0.10E-03
+We perform the calculation in the standard input basis
+ 
+    The Overall Screening threshold is set to              :  1.0000E-08
+    The Screening threshold used for Coulomb               :  1.0000E-10
+    The Screening threshold used for Exchange              :  1.0000E-08
+    The Screening threshold used for One-electron operators:  1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in OAO basis
+ 
+ End of configuration!
+ 
+ >>>  CPU Time used in *INPUT is   0.00 seconds
+ >>> wall Time used in *INPUT is   0.00 seconds
+ II_test_Ichor2Center
+ Number of Passes           1
+BASIS(segS1p              ,segS1p              )
+ dim:           1           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segP1p              )
+ dim:           1           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segD1p              )
+ dim:           1           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segS                )
+ dim:           1           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segP                )
+ dim:           1           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segD                )
+ dim:           1           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,genS                )
+ dim:           1           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,genP                )
+ dim:           1          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,genD                )
+ dim:           1          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segS1p              )
+ dim:           3           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segP1p              )
+ dim:           3           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segD1p              )
+ dim:           3           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segS                )
+ dim:           3           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segP                )
+ dim:           3           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segD                )
+ dim:           3           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,genS                )
+ dim:           3           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,genP                )
+ dim:           3          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,genD                )
+ dim:           3          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segS1p              )
+ dim:           5           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segP1p              )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segD1p              )
+ dim:           5           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segS                )
+ dim:           5           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segP                )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segD                )
+ dim:           5           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,genS                )
+ dim:           5           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,genP                )
+ dim:           5          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,genD                )
+ dim:           5          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segS1p              )
+ dim:           1           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segP1p              )
+ dim:           1           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segD1p              )
+ dim:           1           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segS                )
+ dim:           1           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segP                )
+ dim:           1           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segD                )
+ dim:           1           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,genS                )
+ dim:           1           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,genP                )
+ dim:           1          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,genD                )
+ dim:           1          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segS1p              )
+ dim:           3           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segP1p              )
+ dim:           3           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segD1p              )
+ dim:           3           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segS                )
+ dim:           3           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segP                )
+ dim:           3           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segD                )
+ dim:           3           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,genS                )
+ dim:           3           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,genP                )
+ dim:           3          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,genD                )
+ dim:           3          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segS1p              )
+ dim:           5           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segP1p              )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segD1p              )
+ dim:           5           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segS                )
+ dim:           5           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segP                )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segD                )
+ dim:           5           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,genS                )
+ dim:           5           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,genP                )
+ dim:           5          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,genD                )
+ dim:           5          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segS1p              )
+ dim:           2           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segP1p              )
+ dim:           2           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segD1p              )
+ dim:           2           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segS                )
+ dim:           2           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segP                )
+ dim:           2           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segD                )
+ dim:           2           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,genS                )
+ dim:           2           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,genP                )
+ dim:           2          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,genD                )
+ dim:           2          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segS1p              )
+ dim:           6           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segP1p              )
+ dim:           6           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segD1p              )
+ dim:           6           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segS                )
+ dim:           6           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segP                )
+ dim:           6           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segD                )
+ dim:           6           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,genS                )
+ dim:           6           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,genP                )
+ dim:           6          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,genD                )
+ dim:           6          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segS1p              )
+ dim:          10           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segP1p              )
+ dim:          10           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segD1p              )
+ dim:          10           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segS                )
+ dim:          10           1
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segP                )
+ dim:          10           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segD                )
+ dim:          10           5
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,genS                )
+ dim:          10           4
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,genP                )
+ dim:          10          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,genD                )
+ dim:          10          20
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+Summary of Unit Test for nPasses=   1
+BASIS(segS1p,segS1p,1) SUCCESSFUL
+BASIS(segS1p,segP1p,1) SUCCESSFUL
+BASIS(segS1p,segD1p,1) SUCCESSFUL
+BASIS(segS1p,segS  ,1) SUCCESSFUL
+BASIS(segS1p,segP  ,1) SUCCESSFUL
+BASIS(segS1p,segD  ,1) SUCCESSFUL
+BASIS(segS1p,genS  ,1) SUCCESSFUL
+BASIS(segS1p,genP  ,1) SUCCESSFUL
+BASIS(segS1p,genD  ,1) SUCCESSFUL
+BASIS(segP1p,segS1p,1) SUCCESSFUL
+BASIS(segP1p,segP1p,1) SUCCESSFUL
+BASIS(segP1p,segD1p,1) SUCCESSFUL
+BASIS(segP1p,segS  ,1) SUCCESSFUL
+BASIS(segP1p,segP  ,1) SUCCESSFUL
+BASIS(segP1p,segD  ,1) SUCCESSFUL
+BASIS(segP1p,genS  ,1) SUCCESSFUL
+BASIS(segP1p,genP  ,1) SUCCESSFUL
+BASIS(segP1p,genD  ,1) SUCCESSFUL
+BASIS(segD1p,segS1p,1) SUCCESSFUL
+BASIS(segD1p,segP1p,1) SUCCESSFUL
+BASIS(segD1p,segD1p,1) SUCCESSFUL
+BASIS(segD1p,segS  ,1) SUCCESSFUL
+BASIS(segD1p,segP  ,1) SUCCESSFUL
+BASIS(segD1p,segD  ,1) SUCCESSFUL
+BASIS(segD1p,genS  ,1) SUCCESSFUL
+BASIS(segD1p,genP  ,1) SUCCESSFUL
+BASIS(segD1p,genD  ,1) SUCCESSFUL
+BASIS(segS  ,segS1p,1) SUCCESSFUL
+BASIS(segS  ,segP1p,1) SUCCESSFUL
+BASIS(segS  ,segD1p,1) SUCCESSFUL
+BASIS(segS  ,segS  ,1) SUCCESSFUL
+BASIS(segS  ,segP  ,1) SUCCESSFUL
+BASIS(segS  ,segD  ,1) SUCCESSFUL
+BASIS(segS  ,genS  ,1) SUCCESSFUL
+BASIS(segS  ,genP  ,1) SUCCESSFUL
+BASIS(segS  ,genD  ,1) SUCCESSFUL
+BASIS(segP  ,segS1p,1) SUCCESSFUL
+BASIS(segP  ,segP1p,1) SUCCESSFUL
+BASIS(segP  ,segD1p,1) SUCCESSFUL
+BASIS(segP  ,segS  ,1) SUCCESSFUL
+BASIS(segP  ,segP  ,1) SUCCESSFUL
+BASIS(segP  ,segD  ,1) SUCCESSFUL
+BASIS(segP  ,genS  ,1) SUCCESSFUL
+BASIS(segP  ,genP  ,1) SUCCESSFUL
+BASIS(segP  ,genD  ,1) SUCCESSFUL
+BASIS(segD  ,segS1p,1) SUCCESSFUL
+BASIS(segD  ,segP1p,1) SUCCESSFUL
+BASIS(segD  ,segD1p,1) SUCCESSFUL
+BASIS(segD  ,segS  ,1) SUCCESSFUL
+BASIS(segD  ,segP  ,1) SUCCESSFUL
+BASIS(segD  ,segD  ,1) SUCCESSFUL
+BASIS(segD  ,genS  ,1) SUCCESSFUL
+BASIS(segD  ,genP  ,1) SUCCESSFUL
+BASIS(segD  ,genD  ,1) SUCCESSFUL
+BASIS(genS  ,segS1p,1) SUCCESSFUL
+BASIS(genS  ,segP1p,1) SUCCESSFUL
+BASIS(genS  ,segD1p,1) SUCCESSFUL
+BASIS(genS  ,segS  ,1) SUCCESSFUL
+BASIS(genS  ,segP  ,1) SUCCESSFUL
+BASIS(genS  ,segD  ,1) SUCCESSFUL
+BASIS(genS  ,genS  ,1) SUCCESSFUL
+BASIS(genS  ,genP  ,1) SUCCESSFUL
+BASIS(genS  ,genD  ,1) SUCCESSFUL
+BASIS(genP  ,segS1p,1) SUCCESSFUL
+BASIS(genP  ,segP1p,1) SUCCESSFUL
+BASIS(genP  ,segD1p,1) SUCCESSFUL
+BASIS(genP  ,segS  ,1) SUCCESSFUL
+BASIS(genP  ,segP  ,1) SUCCESSFUL
+BASIS(genP  ,segD  ,1) SUCCESSFUL
+BASIS(genP  ,genS  ,1) SUCCESSFUL
+BASIS(genP  ,genP  ,1) SUCCESSFUL
+BASIS(genP  ,genD  ,1) SUCCESSFUL
+BASIS(genD  ,segS1p,1) SUCCESSFUL
+BASIS(genD  ,segP1p,1) SUCCESSFUL
+BASIS(genD  ,segD1p,1) SUCCESSFUL
+BASIS(genD  ,segS  ,1) SUCCESSFUL
+BASIS(genD  ,segP  ,1) SUCCESSFUL
+BASIS(genD  ,segD  ,1) SUCCESSFUL
+BASIS(genD  ,genS  ,1) SUCCESSFUL
+BASIS(genD  ,genP  ,1) SUCCESSFUL
+BASIS(genD  ,genD  ,1) SUCCESSFUL
+ Number of Passes           2
+BASIS(segS1p              ,segS1p              )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segP1p              )
+ dim:           5           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segD1p              )
+ dim:           5          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segS                )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segP                )
+ dim:           5           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,segD                )
+ dim:           5          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,genS                )
+ dim:           5          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,genP                )
+ dim:           5          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS1p              ,genD                )
+ dim:           5          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS1p              ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segS1p              )
+ dim:          15           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segP1p              )
+ dim:          15           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segD1p              )
+ dim:          15          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segS                )
+ dim:          15           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segP                )
+ dim:          15           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,segD                )
+ dim:          15          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,genS                )
+ dim:          15          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,genP                )
+ dim:          15          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP1p              ,genD                )
+ dim:          15          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP1p              ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segS1p              )
+ dim:          25           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segP1p              )
+ dim:          25           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segD1p              )
+ dim:          25          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segS                )
+ dim:          25           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segP                )
+ dim:          25           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,segD                )
+ dim:          25          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,genS                )
+ dim:          25          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,genP                )
+ dim:          25          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD1p              ,genD                )
+ dim:          25          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD1p              ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segS1p              )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segP1p              )
+ dim:           5           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segD1p              )
+ dim:           5          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segS                )
+ dim:           5           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segP                )
+ dim:           5           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,segD                )
+ dim:           5          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,genS                )
+ dim:           5          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,genP                )
+ dim:           5          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segS                ,genD                )
+ dim:           5          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segS                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segS1p              )
+ dim:          15           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segP1p              )
+ dim:          15           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segD1p              )
+ dim:          15          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segS                )
+ dim:          15           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segP                )
+ dim:          15           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,segD                )
+ dim:          15          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,genS                )
+ dim:          15          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,genP                )
+ dim:          15          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segP                ,genD                )
+ dim:          15          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segP                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segS1p              )
+ dim:          25           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segP1p              )
+ dim:          25           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segD1p              )
+ dim:          25          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segS                )
+ dim:          25           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segP                )
+ dim:          25           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,segD                )
+ dim:          25          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,genS                )
+ dim:          25          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,genP                )
+ dim:          25          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(segD                ,genD                )
+ dim:          25          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(segD                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segS1p              )
+ dim:          10           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segP1p              )
+ dim:          10           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segD1p              )
+ dim:          10          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segS                )
+ dim:          10           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segP                )
+ dim:          10           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,segD                )
+ dim:          10          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,genS                )
+ dim:          10          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,genP                )
+ dim:          10          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genS                ,genD                )
+ dim:          10          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genS                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segS1p              )
+ dim:          30           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segP1p              )
+ dim:          30           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segD1p              )
+ dim:          30          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segS                )
+ dim:          30           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segP                )
+ dim:          30           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,segD                )
+ dim:          30          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,genS                )
+ dim:          30          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,genP                )
+ dim:          30          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genP                ,genD                )
+ dim:          30          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genP                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segS1p              )
+ dim:          50           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segS1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segP1p              )
+ dim:          50           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segP1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segD1p              )
+ dim:          50          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segD1p              ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segS                )
+ dim:          50           3
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segP                )
+ dim:          50           9
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,segD                )
+ dim:          50          15
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,segD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,genS                )
+ dim:          50          12
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,genS                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,genP                )
+ dim:          50          36
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,genP                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+BASIS(genD                ,genD                )
+ dim:          50          60
+ >>>  CPU Time used in Ichor is   0.00 seconds
+ >>> wall Time used in Ichor is   0.00 seconds
+BASIS(genD                ,genD                ) TESTING
+COULOMB INTEGRALS SUCCESSFUL
+Summary of Unit Test for nPasses=   2
+BASIS(segS1p,segS1p,2) SUCCESSFUL
+BASIS(segS1p,segP1p,2) SUCCESSFUL
+BASIS(segS1p,segD1p,2) SUCCESSFUL
+BASIS(segS1p,segS  ,2) SUCCESSFUL
+BASIS(segS1p,segP  ,2) SUCCESSFUL
+BASIS(segS1p,segD  ,2) SUCCESSFUL
+BASIS(segS1p,genS  ,2) SUCCESSFUL
+BASIS(segS1p,genP  ,2) SUCCESSFUL
+BASIS(segS1p,genD  ,2) SUCCESSFUL
+BASIS(segP1p,segS1p,2) SUCCESSFUL
+BASIS(segP1p,segP1p,2) SUCCESSFUL
+BASIS(segP1p,segD1p,2) SUCCESSFUL
+BASIS(segP1p,segS  ,2) SUCCESSFUL
+BASIS(segP1p,segP  ,2) SUCCESSFUL
+BASIS(segP1p,segD  ,2) SUCCESSFUL
+BASIS(segP1p,genS  ,2) SUCCESSFUL
+BASIS(segP1p,genP  ,2) SUCCESSFUL
+BASIS(segP1p,genD  ,2) SUCCESSFUL
+BASIS(segD1p,segS1p,2) SUCCESSFUL
+BASIS(segD1p,segP1p,2) SUCCESSFUL
+BASIS(segD1p,segD1p,2) SUCCESSFUL
+BASIS(segD1p,segS  ,2) SUCCESSFUL
+BASIS(segD1p,segP  ,2) SUCCESSFUL
+BASIS(segD1p,segD  ,2) SUCCESSFUL
+BASIS(segD1p,genS  ,2) SUCCESSFUL
+BASIS(segD1p,genP  ,2) SUCCESSFUL
+BASIS(segD1p,genD  ,2) SUCCESSFUL
+BASIS(segS  ,segS1p,2) SUCCESSFUL
+BASIS(segS  ,segP1p,2) SUCCESSFUL
+BASIS(segS  ,segD1p,2) SUCCESSFUL
+BASIS(segS  ,segS  ,2) SUCCESSFUL
+BASIS(segS  ,segP  ,2) SUCCESSFUL
+BASIS(segS  ,segD  ,2) SUCCESSFUL
+BASIS(segS  ,genS  ,2) SUCCESSFUL
+BASIS(segS  ,genP  ,2) SUCCESSFUL
+BASIS(segS  ,genD  ,2) SUCCESSFUL
+BASIS(segP  ,segS1p,2) SUCCESSFUL
+BASIS(segP  ,segP1p,2) SUCCESSFUL
+BASIS(segP  ,segD1p,2) SUCCESSFUL
+BASIS(segP  ,segS  ,2) SUCCESSFUL
+BASIS(segP  ,segP  ,2) SUCCESSFUL
+BASIS(segP  ,segD  ,2) SUCCESSFUL
+BASIS(segP  ,genS  ,2) SUCCESSFUL
+BASIS(segP  ,genP  ,2) SUCCESSFUL
+BASIS(segP  ,genD  ,2) SUCCESSFUL
+BASIS(segD  ,segS1p,2) SUCCESSFUL
+BASIS(segD  ,segP1p,2) SUCCESSFUL
+BASIS(segD  ,segD1p,2) SUCCESSFUL
+BASIS(segD  ,segS  ,2) SUCCESSFUL
+BASIS(segD  ,segP  ,2) SUCCESSFUL
+BASIS(segD  ,segD  ,2) SUCCESSFUL
+BASIS(segD  ,genS  ,2) SUCCESSFUL
+BASIS(segD  ,genP  ,2) SUCCESSFUL
+BASIS(segD  ,genD  ,2) SUCCESSFUL
+BASIS(genS  ,segS1p,2) SUCCESSFUL
+BASIS(genS  ,segP1p,2) SUCCESSFUL
+BASIS(genS  ,segD1p,2) SUCCESSFUL
+BASIS(genS  ,segS  ,2) SUCCESSFUL
+BASIS(genS  ,segP  ,2) SUCCESSFUL
+BASIS(genS  ,segD  ,2) SUCCESSFUL
+BASIS(genS  ,genS  ,2) SUCCESSFUL
+BASIS(genS  ,genP  ,2) SUCCESSFUL
+BASIS(genS  ,genD  ,2) SUCCESSFUL
+BASIS(genP  ,segS1p,2) SUCCESSFUL
+BASIS(genP  ,segP1p,2) SUCCESSFUL
+BASIS(genP  ,segD1p,2) SUCCESSFUL
+BASIS(genP  ,segS  ,2) SUCCESSFUL
+BASIS(genP  ,segP  ,2) SUCCESSFUL
+BASIS(genP  ,segD  ,2) SUCCESSFUL
+BASIS(genP  ,genS  ,2) SUCCESSFUL
+BASIS(genP  ,genP  ,2) SUCCESSFUL
+BASIS(genP  ,genD  ,2) SUCCESSFUL
+BASIS(genD  ,segS1p,2) SUCCESSFUL
+BASIS(genD  ,segP1p,2) SUCCESSFUL
+BASIS(genD  ,segD1p,2) SUCCESSFUL
+BASIS(genD  ,segS  ,2) SUCCESSFUL
+BASIS(genD  ,segP  ,2) SUCCESSFUL
+BASIS(genD  ,segD  ,2) SUCCESSFUL
+BASIS(genD  ,genS  ,2) SUCCESSFUL
+BASIS(genD  ,genP  ,2) SUCCESSFUL
+BASIS(genD  ,genD  ,2) SUCCESSFUL
+Ichor Integrals tested against Thermite: SUCCESSFUL
+ done II_test_Ichor
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):              16365656 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  34992 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MPI):                       0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               10328 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                 640 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (character):              1600 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):       16316560 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMITEM):               1536 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECORBITAL):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECFRAG):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (fragmentAOS):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (PNOSpaceInfo):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lvec_data)):           0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lattice_cell)):        0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                         16.785 MB
+  Max allocated memory, type(matrix)                   0.360 kB
+  Max allocated memory, real(realk)                  192.064 kB
+  Max allocated memory, MPI                            0.000 Byte
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                       13.253 kB
+  Max allocated memory, logical                        0.732 kB
+  Max allocated memory, character                      1.680 kB
+  Max allocated memory, AOBATCH                        5.632 kB
+  Max allocated memory, DECORBITAL                     0.000 Byte
+  Max allocated memory, DECFRAG                        0.000 Byte
+  Max allocated memory, BATCHTOORB                     0.000 Byte
+  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
+  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, fragmentAOS                    0.000 Byte
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                          0.000 Byte
+  Max allocated memory, PNOSpaceInfo                   0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                        0.704 kB
+  Max allocated memory, LSAOTENSOR                     6.360 kB
+  Max allocated memory, SLSAOTENSOR                    0.000 Byte
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                  16.429 MB
+  Max allocated memory, ATOMITEM                       3.584 kB
+  Max allocated memory, LSMATRIX                       0.640 kB
+  Max allocated memory, OverlapT                       9.408 kB
+  Max allocated memory, linkshell                      0.000 Byte
+  Max allocated memory, integrand                      1.680 kB
+  Max allocated memory, integralitem                  72.000 kB
+  Max allocated memory, IntWork                        6.096 kB
+  Max allocated memory, Overlap                        1.572 kB
+  Max allocated memory, ODitem                         0.512 kB
+  Max allocated memory, LStensor                      25.101 kB
+  Max allocated memory, FMM                            0.000 Byte
+  Max allocated memory, XC                             0.000 Byte
+  Max allocated memory, Lvec_data                      0.000 Byte
+  Max allocated memory, Lattice_cell                   0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+      ==============================================================
+   L3 TOTAL MAT                             0.0000            0.0000
+      ==============================================================
+   L3      II_get_nucpot       1            0.0000            0.0000
+      ==============================================================
+   L3 TOTAL INTEGRAL                        0.0010            0.0000
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is   0.46 seconds
+ >>> wall Time used in LSDALTON is   0.46 seconds
+
+End simulation
+     Date and time (Linux)  : Fri Aug 14 14:45:26 2015
+     Host name              : localhost.localdomain                   
