@@ -4345,15 +4345,6 @@ end subroutine Get_ijba_integrals
      AlphaOpt=MinAObatch
      GammaOpt=MinAObatch
 
-     ! F12 batch debug
-     MinVirtBatch = nvirt
-     bat%MaxAllowedDimAlpha = MaxAObatch
-     bat%MaxAllowedDimGamma = MaxAObatch
-     bat%virtbatch = MaxAObatch
-     AlphaOpt=MaxAObatch
-     GammaOpt=MaxAObatch
-     
-     MinAOBatch = MaxAObatch
 
      ! *********************************************************************
      ! *                      STEP 1 IN INTEGRAL LOOP                      *
