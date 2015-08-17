@@ -1298,6 +1298,23 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      enddo
   enddo
   call mem_dealloc(expval)
+  !############################
+  !Print D*h^kb- diamagnetic part
+  !
+  !###############################
+  allocate(atomname(natoms))
+  do jcoor=1,natomsselected  
+    iAtom = AtomList(jcoor)
+    atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(iAtom)%Name
+  enddo
+  
+  WRITE(LUPRI,*) "      D*h^kb - diamagnetic term"
+  do jcoor=1,nAtomsSelected 
+       WRITE (LUPRI,'(2X,A,I7)') 'Atom Identity:',AtomList(jcoor)
+       WRITE (LUPRI,'(2X,A8,f15.8,A8)')  atomname(jcoor), &
+        & 1.0E0_realk/3.0E0_realk*(NucSpecNMSTtotal(1,3*jCOOR-2)+NucSpecNMSTtotal(2,3*jCOOR-1) &
+        & +NucSpecNMSTtotal(3,3*jCOOR))
+  enddo
 
   !#################################################################################
   !                   Calculate (h^k)*(D0^b)
@@ -1337,6 +1354,31 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
   enddo
   call mat_free(tempm1)
 
+  !####################################################
+  !Print D*h^kb + h^k D0^b
+  !
+  !####################################################
+  WRITE(LUPRI,*) "      D*h^kb + h^k D0^b "
+  do jcoor=1,nAtomsSelected 
+       WRITE (LUPRI,'(2X,A,I7)') 'Atom Identity:',AtomList(jcoor)
+       WRITE (LUPRI,'(2X,A8,f15.8,A8)')  atomname(jcoor), &
+        & 1.0E0_realk/3.0E0_realk*(NucSpecNMSTtotal(1,3*jCOOR-2)+NucSpecNMSTtotal(2,3*jCOOR-1) &
+        & +NucSpecNMSTtotal(3,3*jCOOR))
+  enddo
+  
+  !#######################################################
+  !Print D^(B,k)*F+D^k*G^b*D+D^k*G*D0^b+D^k*h^b
+  !
+  !######################################################
+
+
+  WRITE(LUPRI,*) "      D^(B,k)*F+D^k*G^b*D+D^k*G*D0^b+D^k*h^b "
+  do jcoor=1,nAtomsSelected 
+       WRITE (LUPRI,'(2X,A,I7)') 'Atom Identity:',AtomList(jcoor)
+       WRITE (LUPRI,'(2X,A8,f15.8,A8)')  atomname(jcoor), &
+        & 1.0E0_realk/3.0E0_realk*(Prodtotal(1,3*jCOOR-2)+Prodtotal(2,3*jCOOR-1) &
+        & +Prodtotal(3,3*jCOOR))
+  enddo
  !######################################################################################
  !  Adding: Prodtotal+ NucSpecNMSTtotal
  !
@@ -1349,11 +1391,11 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
     enddo
   enddo
 
-  allocate(atomname(natoms))
-  do jcoor=1,natomsselected  
-    iAtom = AtomList(jcoor)
-    atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(iAtom)%Name
-  enddo
+!  allocate(atomname(natoms))
+!  do jcoor=1,natomsselected  
+!    iAtom = AtomList(jcoor)
+!    atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(iAtom)%Name
+!  enddo
  
   Write (lupri,*)   "The nuclear magnetic shielding for selected atoms" 
   do jcoor=1,natomsselected  
