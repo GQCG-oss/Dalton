@@ -669,6 +669,7 @@ contains
     call ls_mpibcast(MyMolecule%Edisp,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12singles,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if global slave
     if(.not. gm) then
@@ -2489,6 +2490,11 @@ contains
     call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%F12Ccoupling,Master)
+    call ls_mpi_buffer(DECitem%F12singles,Master)
+    call ls_mpi_buffer(DECitem%F12singlesMaxIter,Master)
+    call ls_mpi_buffer(DECitem%F12singlesThr,Master)
+    call ls_mpi_buffer(DECitem%F12singlesMaxDIIS,Master)
+
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
