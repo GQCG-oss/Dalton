@@ -37,17 +37,17 @@ def main():
   tensor=lsdalton+"/tensor"
 
 
-  for i in range(len(sys.argv)):
-    if "debug_version" == sys.argv[i]:
+  for i in range(1,len(sys.argv)):
+    if "--debug_version" == sys.argv[i]:
       args[1] = True
-    if "nocollapse" == sys.argv[i]:
+    if "--nocollapse" == sys.argv[i]:
       args[2] = True
-    if "CMAKE_BUILD=" in sys.argv[i]:
+    if "--CMAKE_BUILD=" in sys.argv[i]:
       args[3] = sys.argv[i][sys.argv[i].find("=")+1:]
-    if "acc" == sys.argv[i]:
+    if "--acc" == sys.argv[i]:
       args[4] = True
       acc_write = True
-    if "real_sp" == sys.argv[i]:
+    if "--real_sp" == sys.argv[i]:
       args[5] = True
       real_sp_write = True
 
