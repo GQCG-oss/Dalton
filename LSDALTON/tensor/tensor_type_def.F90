@@ -43,12 +43,21 @@ module tensor_type_def_module
      real(tensor_dp), pointer :: elm1(:)               => null()       ! local chunk of memory
 
      ! the following should just point to elm1
+#ifdef VAR_PTR_RESHAPE
+     real(tensor_dp), pointer, contiguous :: elm2(:,:)             => null()
+     real(tensor_dp), pointer, contiguous :: elm3(:,:,:)           => null()
+     real(tensor_dp), pointer, contiguous :: elm4(:,:,:,:)         => null()
+     real(tensor_dp), pointer, contiguous :: elm5(:,:,:,:,:)       => null()
+     real(tensor_dp), pointer, contiguous :: elm6(:,:,:,:,:,:)     => null()
+     real(tensor_dp), pointer, contiguous :: elm7(:,:,:,:,:,:,:)   => null()
+#else
      real(tensor_dp), pointer :: elm2(:,:)             => null()
      real(tensor_dp), pointer :: elm3(:,:,:)           => null()
      real(tensor_dp), pointer :: elm4(:,:,:,:)         => null()
      real(tensor_dp), pointer :: elm5(:,:,:,:,:)       => null()
      real(tensor_dp), pointer :: elm6(:,:,:,:,:,:)     => null()
      real(tensor_dp), pointer :: elm7(:,:,:,:,:,:,:)   => null()
+#endif
 
      !in order to have only one array type the tile information is always there
      integer(kind=tensor_mpi_kind) :: dummyw
