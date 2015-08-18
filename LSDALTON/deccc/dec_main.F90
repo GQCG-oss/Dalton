@@ -35,6 +35,7 @@ module dec_main_mod
   use orbital_operations!,only: check_lcm_against_canonical
   use full_molecule
   use mp2_gradient_module
+  use f12_routines_module
   use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
 
@@ -240,24 +241,9 @@ contains
     end if
     
     
-!    if(DECinfo%F12) then
-!#ifdef MOD_UNRELEASED
-!       ES2 = 0.0E0_realk
-!       !call get_ES2_from_dec_main(molecule,MyLsitem,D,ES2)  
-!       if(DECinfo%F12debug) then
-!          print *,   '----------------------------------------------------------------'
-!          print *,   '                   F12-SINGLES CORRECTION                       '
-!          print *,   '----------------------------------------------------------------'
-!          write(*,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
-!          print *,   '----------------------------------------------------------------'
-!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-!          write(DECinfo%output,'(1X,a,f20.10)')'                   F12-SINGLES CORRECTION                       '
-!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-!          write(DECinfo%output,'(1X,a,f20.10)') 'WANGY TOYCODE F12 SINGLES CORRECTION = ', ES2
-!          write(DECinfo%output,'(1X,a,f20.10)')'----------------------------------------------------------------'
-!       end if
-!#endif
-!    endif
+    if(DECinfo%F12singles) then
+       call F12singles_driver(Molecule,MyLsitem,D)
+    endif
 
     
     if(DECinfo%full_molecular_cc) then
@@ -356,7 +342,8 @@ contains
 
     ! Sanity check
     ! ************
-    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) .or. (DECinfo%ccmodel/=MODEL_MP2) ) then
+    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) &
+         &  .or. (DECinfo%ccmodel/=MODEL_MP2 .and. DECinfo%ccmodel/=MODEL_RIMP2 ) ) then
        call lsquit("ERROR(get_mp2gradient_and_energy_from_inputs): Inconsitent input!!",DECinfo%output)
     end if
     write(DECinfo%output,*) 'Calculating MP2 energy and gradient from Fock, density, overlap, and MO inputs...'

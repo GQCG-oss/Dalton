@@ -4909,125 +4909,6 @@ contains
     end subroutine lsmpi_default_mpi_group
 
 
-    !> \brief calling this routine from the master process will start up
-    !communication processes on all the slaves
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine local_group_start_comm_processes
-      implicit none
-#ifdef VAR_MPI
-      print *,"STARTING UP THE COMMUNICATION PROCESSES"
-      !impregnate the slaves
-      call ls_mpibcast(GIVE_BIRTH,infpar%master,infpar%lg_comm)
-      !just to find, that the master is also fertile
-      call give_birth_to_child_process
-#else
-      call lsquit("ERROR(local_group_start_comm_processes): not available without mpi",-1)
-#endif
-    end subroutine local_group_start_comm_processes
-
-    !> \brief calling this routine from the master process will kill all
-    !communication processes on all the slaves
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine local_group_kill_comm_processes
-      implicit none
-#ifdef VAR_MPI
-      print *,"SHUTTING DOWN THE COMMUNICATION PROCESSES"
-      !kill the babies of the slaves
-      call ls_mpibcast(SLAVES_SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)
-      !kill own baby
-      call shut_down_child_process
-#else
-      call lsquit("ERROR(local_group_kill_comm_processes): not available without mpi",-1)
-#endif
-    end subroutine local_group_kill_comm_processes
-
-    !> \brief make a new communicator for the child and parent process(es)
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine get_parent_child_relation
-      implicit none
-#ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr
-      logical(kind=ls_mpik) :: last
-
-      if( infpar%parent_comm == MPI_COMM_NULL ) then
-        ! if i am a parent 
-        last = .false.
-        call MPI_INTERCOMM_MERGE( infpar%child_comm, last, infpar%pc_comm, ierr )
-      else
-        ! if i am a child
-        last = .true.
-        call MPI_INTERCOMM_MERGE( infpar%parent_comm, last, infpar%pc_comm, ierr )
-      endif
-
-      call get_rank_for_comm( infpar%pc_comm, infpar%pc_mynum  )
-      call get_size_for_comm( infpar%pc_comm, infpar%pc_nodtot )
-
-      lsmpi_enabled_comm_procs = .true.
-
-      if( infpar%parent_comm == MPI_COMM_NULL .and.  infpar%pc_mynum/=infpar%master )&
-      & call lsquit("ERROR(get_parent_child_relation)&
-      & parent needs to have rank 0 in the pc_comm",-1)
-
-      if( infpar%parent_comm /= MPI_COMM_NULL .and.  infpar%pc_mynum==infpar%master )&
-      & call lsquit("ERROR(get_parent_child_relation)&
-      & child cannot have rank 0 in the pc_comm",-1)
-#endif
-    end subroutine get_parent_child_relation
-
-
-    subroutine give_birth_to_child_process
-      implicit none
-#ifdef VAR_MPI
-      integer(kind=ls_mpik) :: procs_to_spawn,root,errorcode(1),ierr
-      logical               :: localdalton
-
-          procs_to_spawn = int(1,kind=ls_mpik)
-          root           = int(0,kind=ls_mpik)
-
-          !check if the program is in the workdir, if not, spawning is not
-          !possible
-          inquire(file='lsdalton.x', exist=localdalton)
-
-          !if lsdalton.x is in workdir, spawn another process
-          if(localdalton)then
-            call MPI_COMM_SPAWN('./lsdalton.x',MPI_ARGV_NULL,procs_to_spawn,MPI_INFO_NULL,&
-             &root,MPI_COMM_SELF,infpar%child_comm,errorcode,ierr)
-            call get_parent_child_relation
-          else
-            call lsquit("ERROR(give_birth_to_child_process):lsdalton.x was not&
-             &found in the working directory, move it there and restart",-1)
-          endif
-
-#endif
-    end subroutine give_birth_to_child_process
-
-
-    !> \brief free everything related to child processes
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine shut_down_child_process
-      implicit none
-#ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr
-      logical(kind=ls_mpik) :: have_priority
-
-      if( infpar%parent_comm == MPI_COMM_NULL ) then
-        call MPI_COMM_FREE(infpar%pc_comm,ierr)
-        call MPI_COMM_FREE(infpar%child_comm,ierr)
-      else
-        ! if i am a child
-        call MPI_COMM_FREE(infpar%pc_comm,ierr)
-        call MPI_COMM_FREE(infpar%parent_comm,ierr)
-      endif
-
-      lsmpi_enabled_comm_procs = .false.
-
-#endif
-    end subroutine shut_down_child_process
-
     subroutine lsmpi_print_mem_info(lupri,mastercall)
       implicit none
       integer,intent(in) :: lupri
@@ -5138,7 +5019,7 @@ contains
       integer(kind=ls_mpik) :: ierr
       ierr = 0
 
-      if ((infpar%mynum.eq.infpar%master).and.mastercall.and.(infpar%parent_comm==MPI_COMM_NULL))&
+      if ((infpar%mynum.eq.infpar%master).and.mastercall)&
        &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

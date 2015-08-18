@@ -161,23 +161,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk),parameter,dimension(10) :: LaplaceAmp = (/ -0.003431, &
        & -0.023534, -0.088984, -0.275603, -0.757121, -1.906218, -4.485611, &
        & -10.008000, -21.491075, -45.877205 /)
-  real(realk),parameter,dimension(10) :: LaplaceW = (/ 0.009348, &
-       & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
-       & 7.810243, 16.172017, 35.929402 /)
-  
+! OpenACC cannot for some reason copyin a parameter
+!  real(realk),parameter,dimension(10) :: LaplaceW = (/ 0.009348, &
+!       & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
+!       & 7.810243, 16.172017, 35.929402 /)
+  real(realk),pointer :: LaplaceW(:)   
   ! cublas stuff
   type(c_ptr) :: cublas_handle
   integer*4 :: stat
-  !> async handles
-  integer :: num_ids
+  !> async handle
 #ifdef VAR_OPENACC
-  integer(kind=acc_handle_kind), pointer, dimension(:) :: async_id
+  integer(kind=acc_handle_kind) :: async_id
 #ifdef VAR_PGF90
   integer*4, external :: acc_set_cuda_stream
 #endif
   integer(c_size_t) :: total_gpu,free_gpu ! total and free gpu mem in bytes
 #else
-  integer, pointer, dimension(:) :: async_id
+  integer :: async_id
 #endif
 #ifdef VAR_PAPI
   integer(8) :: papiflops
@@ -193,30 +193,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   CALL LS_GETTIM(CPUTIME,WALLTIMESTART)
   call myPAPI_start(eventset2)
 #endif
-  ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
-  num_ids = 7
-  call mem_alloc(async_id,num_ids)
 
 #ifdef VAR_OPENACC
-
-  if (DECinfo%acc_sync) then
-     async_id = acc_async_sync
-  else
-     do m = 1,num_ids
-        async_id(m) = int(m,kind=acc_handle_kind)
-     enddo
-  endif
-
+  async_id = acc_async_sync
 #else
-
-  if (DECinfo%acc_sync) then
-     async_id = 0
-  else
-     do m = 1,num_ids
-        async_id(m) = -m
-     enddo
-  endif
-
+  async_id = 0
 #endif
 
 #ifdef VAR_CUBLAS
@@ -226,16 +207,22 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   print*,'cublasCreate_v2 gives stat=',stat
   stat = cudaSetDevice(int(0,kind=4))
   print*,'cudaSetDevice(0) gives stat=',stat
-  print*,'known results are:'
+  !print*,'known results are:'
   !print*,'cudaSuccess',cudaSuccess
   !print*,'cudaErrorInvalidDevice',cudaErrorInvalidDevice
   !print*,'cudaErrorDeviceAlreadyInUse ',cudaErrorDeviceAlreadyInUse 
 
   ! set the cublas handle to match the synchronous openacc handle 
-  stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)
+!This Breaks the code - I do not know why
+!  stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)
 
 #endif
-
+  IF(DECinfo%RIMP2_Laplace)THEN
+     call mem_alloc(LaplaceW,nLaplace)
+     LaplaceW = (/ 0.009348, &
+          & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
+          & 7.810243, 16.172017, 35.929402 /)
+  ENDIF
   IF(present(djik))THEN
      IF(present(blad))THEN
         first_order=.TRUE. !first order integrals are required
@@ -334,14 +321,18 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #ifdef VAR_MPI
   IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
 #endif
-  
+ 
+   nBasisaux = 0
+   natomsaux = 0
+   nbasis2 = 0
 
-  IF(DECinfo%AuxAtomicExtent)THEN
+   IF(DECinfo%AuxAtomicExtent)THEN
      call getMolecularDimensions(MyFragment%mylsitem%INPUT%AUXMOLECULE,nAtomsAux,nBasis2,nBasisAux)
   ELSE
      call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,nBasis2,nBasisAux)
      if(natoms.NE.natomsAux)call lsquit('Error in RIMP2 natoms dim mismatch',-1)
   ENDIF
+
   nbasisAux8 = nbasisAux
   IF(nBasisAux.EQ.0)THEN
      WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Warning no Aux basis have been chosen for RIMP2, Using Regular'
@@ -598,8 +589,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   call mat_transpose(M,N,1.0E0_realk,Uocc%val,0.0E0_realk,UoccT)
   call array2_free(Uocc)
 
-!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT) async(async_id(1)) if(.not. fc)
-
   IF(first_order)THEN
      !CvirtAOS(nbasis,nvirt) = CDIAGvirt%val(nbasis,nvirt)*UvirtT(nvirt,nvirt)     
      M = nbasis  !rows of Output Matrix
@@ -663,7 +652,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
 
-!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT,UoccallT) async(async_id(1)) if(fc)
+!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT) if(.not. fc)
+!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT,UoccallT) if(fc)
+!$acc enter data copyin(TauOcc,TauVirt,LaplaceW) if(DECinfo%RIMP2_Laplace)
 
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
@@ -747,9 +738,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
   !At this point we have the Calpha in the diagonal basis 
 
-! here: wait for async updates on async handle 1
-!$acc wait(async_id(1))
-
   !=====================================================================================
   !  Major Step 5: Generate toccEOS(nvirt,noccEOS,nvirt,noccEOS)
   !=====================================================================================
@@ -783,6 +771,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            call mem_alloc(Ctmp,nsize2)
         ENDIF
         !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
+        !$acc enter data create(Ctmp,Ctmp2) copyin(Calpha)
         if (DECinfo%DECNP) then
            call BuildCtmpLaplace(Calpha,NBA,nvirt,nocc,noccOut,TauOcc,nLaplace,Ctmp,UoccT)
         else
@@ -791,6 +780,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         CALL LSTIMER('RIMP2: Ctmp1o ',TS4,TE4,LUPRI,FORCEPRINT)
         !Ctmp2(alpha,a,i,l) = TauVirt(A,l)*Ctmp(alpha,A,i,l)*U(A,a)
         call BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirt,noccOut,TauVirt,nLaplace,Ctmp2,UvirtT)
+        !$acc exit data delete(Ctmp) 
         CALL LSTIMER('RIMP2: Ctmp2v ',TS4,TE4,LUPRI,FORCEPRINT)
         IF(.NOT.use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
@@ -798,7 +788,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            call tensor_ainit(toccEOS,dimocc,4)
         ENDIF
         !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
+        !$acc enter data create(toccEOS%elm1)
         call BuildTampLaplace(Ctmp2,NBA,nvirt,noccOut,toccEOS%elm1,nLaplace,LaplaceW)
+        !$acc exit data copyout(toccEOS%elm1) delete(Ctmp2)
         CALL LSTIMER('RIMP2: TampLaplaceOcc',TS4,TE4,LUPRI,FORCEPRINT)
         IF(use_bg_buf)THEN
            call mem_pseudo_dealloc(Ctmp)
@@ -966,10 +958,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               K = nocc                 !summation dimension
               IF(DECinfo%DECNP)THEN
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ELSE
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ENDIF
               call PlugInTotocc2(tocc2,noccOut,nvirt,tocc2TMP,MaxVirtSize,offsetV)
            ENDDO
@@ -989,10 +981,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               K = nocc                       !summation dimension
               IF(DECinfo%DECNP)THEN
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ELSE
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
-                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                      & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ENDIF
               call PlugInTotocc2(tocc2,noccOut,nvirt,tocc2TMP,MaxVirtSize,offsetV)
            ENDIF
@@ -1034,7 +1026,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tocc(',nsize2,')'
               call mem_alloc(tocc,nsize2)
            ENDIF
-           !$acc enter data create(tocc) copyin(Calpha)
+           !$acc enter data create(tocc,tocc2) copyin(Calpha)
            IF(DECinfo%DECNP)THEN
               call RIMP2_calc_toccA(nvirt,nocc,noccOut,NBA,Calpha,EVocc,EVvirt,tocc,UoccT,nvirt,offsetV)
            ELSE
@@ -1044,13 +1036,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            M = noccOut              !rows of Output Matrix
            N = noccOut*nvirt*nvirt  !columns of Output Matrix
            K = nocc                 !summation dimension
-           !$acc enter data create(tocc2)
            IF(DECinfo%DECNP)THEN
               call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2,M,&
-                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ELSE
               call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2,M,&
-                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ENDIF
            !$acc exit data delete(tocc)
            IF(use_bg_buf)THEN
@@ -1079,7 +1070,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ENDIF
         !$acc enter data create(tocc3)
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
         !$acc exit data delete(tocc2)
         !Final virtual transformation and reorder to dimocc
         IF(.NOT.use_bg_buf)THEN
@@ -1092,8 +1083,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ENDIF
         !$acc enter data create(toccEOS%elm1)
         call RIMP2_calc_toccB(nvirt,noccOut,tocc3,UvirtT,toccEOS%elm1)
-        !$acc exit data copyout(toccEOS%elm1) async(async_id(2))
-        !$acc exit data delete(tocc3)
+        !$acc exit data copyout(toccEOS%elm1) delete(tocc3)
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
            IF(DECinfo%MemDebugPrint)print*,'BG: dealloc tocc3(',size(tocc3),')'
@@ -1151,6 +1141,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               call mem_alloc(Ctmp,nsize2)
            ENDIF
            !Ctmp(alpha,a,I,l) = TauVirt(A,l)*C(alpha,A,I)*U(A,a)
+           !$acc enter data create(Ctmp,Ctmp2)
            if (DECinfo%DECNP) then
               call BuildCtmpVLaplace(Calpha,NBA,nvirt,nocc,nvirtOut,TauVirt,nLaplace,Ctmp,UvirtT)
            else
@@ -1159,10 +1150,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            CALL LSTIMER('RIMP2: Ctmp1v ',TS4,TE4,LUPRI,FORCEPRINT)
            !Ctmp2(alpha,a,i,l) = TauOcc(I,l)*Ctmp(alpha,a,I,l)*U(I,i)
            call BuildCtmpVLaplace2(Ctmp,NBA,nvirtOut,nocc,TauOcc,nLaplace,Ctmp2,UoccT)
+           !$acc exit data delete(Ctmp)
            CALL LSTIMER('RIMP2: Ctmp2o ',TS4,TE4,LUPRI,FORCEPRINT)
            !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
            IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)
+           !$acc enter data create(tvirtEOS%elm1)
            call BuildTampLaplace(Ctmp2,NBA,nvirtOut,nocc,tvirtEOS%elm1,nLaplace,LaplaceW)
+           !$acc exit data copyout(tvirtEOS%elm1) delete(Ctmp2)
            CALL LSTIMER('RIMP2: TampLaplaceVirt',TS4,TE4,LUPRI,FORCEPRINT)
            IF(use_bg_buf)THEN
               call mem_pseudo_dealloc(Ctmp)
@@ -1207,25 +1201,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt(',nsize1,')'
               call mem_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG
            ENDIF
-           !$acc enter data create(tvirt)
+           !$acc enter data create(tvirt,tvirt2)
            IF(DECinfo%DECNP)THEN
               call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtT)
            ELSE
               call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
            ENDIF
-           !$acc exit data delete(EVocc,EVvirt)
            
            !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
            M = nocc*nocc*nvirtOut     !rows of Output Matrix
            N = nvirtOut               !columns of Output Matrix
            K = nvirt                  !summation dimension
-           !$acc enter data create(tvirt2)
            IF(DECinfo%DECNP)THEN
               call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M,&
-                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ELSE
               call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M,&
-                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            ENDIF
            !$acc exit data delete(tvirt)
            nsize = nocc*nocc*(nvirtOut*i8)*nvirtOut
@@ -1250,14 +1242,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            K = nocc                    !summation dimension
            !$acc enter data create(tvirt3)
            call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tvirt2,M,0.0E0_realk,tvirt3,M,&
-                & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+                & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
            !$acc exit data delete(tvirt2)
            !transform last occ index to local basis and reorder 
            IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)
            !$acc enter data create(tvirtEOS%elm1)
            call RIMP2_calc_tvirtB(nvirtOut,nocc,tvirt3,UoccT,tvirtEOS%elm1)
-           !$acc exit data copyout(tvirtEOS%elm1) async(async_id(3))
-           !$acc exit data delete(tvirt3)
+           !$acc exit data copyout(tvirtEOS%elm1) delete(tvirt3)
            IF(use_bg_buf)THEN
               IF(DECinfo%MemDebugPrint)call printBGinfo()
               IF(DECinfo%MemDebugPrint)print*,'BG: dealloc tvirt3(',size(tvirt3),')'
@@ -1325,31 +1316,20 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      M = nba*nvirt  !rows of Output Matrix
      N = noccOut          !columns of Output Matrix
      K = nocc             !summation dimension
-!$acc enter data create(Calpha2)
+!$acc enter data create(Calpha2,Calpha3)
      IF(DECinfo%DECNP)THEN
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
-!$acc exit data delete(UoccT) if(.not. first_order)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
      ELSE
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
-!$acc exit data delete(UoccEOST) if(.not. first_order)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
      ENDIF
-
-!$acc enter data create(Calpha3)
      call RIMP2_TransAlpha1(nvirt,noccOut,nba,UvirtT,Calpha2,Calpha3)
-
-     IF(DECinfo%DECNP)THEN
 !$acc exit data delete(Calpha2)
-     ELSE
-!$acc exit data delete(Calpha2,UvirtT) if(.NOT.first_order)
-!$acc exit data delete(Calpha2) if(first_order)
-     ENDIF
      IF(.NOT.use_bg_buf) call tensor_ainit(goccEOS,dimocc,4)
 !$acc enter data create(goccEOS%elm1)
      call RIMP2_calc_gocc(nvirt,noccOut,NBA,Calpha3,goccEOS%elm1)
-!$acc exit data copyout(goccEOS%elm1) async(async_id(4))
-!$acc exit data delete(Calpha3)
+!$acc exit data copyout(goccEOS%elm1) delete(Calpha3)
      IF(use_bg_buf)THEN
         IF(DECinfo%MemDebugPrint)call printBGinfo()
         IF(DECinfo%MemDebugPrint)print*,'BG: dealloc Calpha3(',size(Calpha3),')'
@@ -1415,7 +1395,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            !and the order of core and valence in nocctot
 !$acc enter data create(Calpha3)
            call PlaceCoreOrbFirst(Calpha,NBA,nvirt,nocctot,ncore,nocc,Calpha3)
-!$acc exit data delete(Calpha) if(fc .and. (.not. first_order))
            ! Transform index delta to local occupied index 
            !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)    
            M = nba*nvirt        !rows of Output Matrix
@@ -1423,9 +1402,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            K = nocctot          !summation dimension
 !$acc enter data create(Calpha2)
            call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha3,M,UoccallT,K,0.0E0_realk,Calpha2,M,&
-                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
-!$acc exit data delete(UoccallT,Calpha3) if(fc .and. (.not. first_order))
-!$acc exit data delete(Calpha3) if(fc .and. first_order)
+                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+!$acc exit data delete(Calpha3)
            IF(use_bg_buf)THEN
               IF(DECinfo%MemDebugPrint)call printBGinfo()
               IF(DECinfo%MemDebugPrint)print*,'BG: dealloc Calpha3(',size(Calpha3),')'
@@ -1453,8 +1431,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            K = nocc             !summation dimension
 !$acc enter data create(Calpha2)
            call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
-                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
-!$acc exit data delete(UoccT,Calpha) if(.not. first_order)
+                & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
         ENDIF
         nsize = nba*nvirtOut*nocctot
         IF(use_bg_buf)THEN
@@ -1469,17 +1446,14 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !$acc enter data create(Calpha3)
         IF(DECinfo%DECNP)THEN
            call RIMP2_TransAlpha2(nocctot,nvirt,nvirtOut,nba,UvirtT,Calpha2,Calpha3)
-!$acc exit data delete(UvirtT) if(.NOT.first_order)
         ELSE
            call RIMP2_TransAlpha2(nocctot,nvirt,nvirtOut,nba,UvirtEOST,Calpha2,Calpha3)
         ENDIF
-!$acc exit data delete(Calpha2,UvirtEOST) if(.not. first_order)
-!$acc exit data delete(Calpha2) if(first_order)
+!$acc exit data delete(Calpha2)
         IF(.NOT.use_bg_buf)call tensor_ainit(gvirtEOS,dimvirt,4)
 !$acc enter data create(gvirtEOS%elm1)
         call RIMP2_calc_gvirt(nvirtOut,nocctot,NBA,nocc,Calpha3,gvirtEOS%elm1,offset)
-!$acc exit data copyout(gvirtEOS%elm1) async(async_id(5))
-!$acc exit data delete(Calpha3)
+!$acc exit data copyout(gvirtEOS%elm1) delete(Calpha3)
    
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
@@ -1497,6 +1471,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            call mem_dealloc(Calpha2)
         ENDIF
         IF(.NOT.first_order)THEN
+           !$acc exit data delete(Calpha)
            IF(use_bg_buf)THEN
               IF(DECinfo%MemDebugPrint)call printBGinfo()
               IF(DECinfo%MemDebugPrint)print*,'BG: dealloc Calpha(',size(Calpha),')'
@@ -1516,6 +1491,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   else ! DECNP: dealloc stuff
      if (.not.first_order) then
         if (NBA > 0) then
+           !$acc exit data delete(Calpha)
            if(use_bg_buf)then
               IF(DECinfo%MemDebugPrint)call printBGinfo()
               IF(DECinfo%MemDebugPrint)print*,'BG: dealloc Calpha(',size(Calpha),')'
@@ -1532,9 +1508,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   !  Major Step 9: Collect toccEOS, tvirtEOS, goccEOS, and gvirtEOS
   !=====================================================================================
-
-! here: wait for async copyouts on async handles 2-5
-!$acc wait(async_id(2),async_id(3),async_id(4),async_id(5))
 
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then
@@ -1572,6 +1545,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      endif
   ENDIF
 #endif
+
   IF(first_order)THEN
 
      !=====================================================================================
@@ -1602,12 +1576,12 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         M = nba*nvirt        !rows of Output Matrix
         N = noccEOS          !columns of Output Matrix
         K = nocc             !summation dimension
-!$acc enter data create(Calpha2)
+!$acc enter data create(Calpha2,Calpha3)
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccEOST,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
         !(alphaAux,nvirtAOS,noccEOS) = (alphaAux;nvirt,noccEOS)*UvirtT(nvirt,nvirtAOS)
-!$acc enter data create(Calpha3)
         call RIMP2_TransAlpha2(noccEOS,nvirt,nvirt,nba,UvirtT,Calpha2,Calpha3)
+!$acc exit data delete(Calpha2)
         CALL LSTIMER('START ',TS2,TE2,LUPRI)
         intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
         intspec(2) = 'R' !Regular AO basis function on center 3
@@ -1623,8 +1597,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(.NOT.use_bg_buf)call tensor_ainit(djik,dimvirt,4)
 !$acc enter data create(djik%elm1) copyin(CalphaOcc)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirt,noccEOS,CalphaOcc,noccEOS,nocctot,djik%elm1)
-!$acc exit data delete(Calpha3,CalphaOcc)
-!$acc exit data copyout(djik%elm1) async(async_id(6))
+!$acc exit data delete(Calpha3,CalphaOcc) copyout(djik%elm1) 
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
            IF(DECinfo%MemDebugPrint)print*,'BG: dealloc CalphaOcc(',size(CalphaOcc),')'
@@ -1670,15 +1643,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha2(',nsize,')'
            call mem_alloc(Calpha2,nsize)
         ENDIF
-        !(alphaAux;nvirt,noccAOS) = (alphaAux;nvirt,nocc)*U(nocc,noccAOS)
-        M = nba*nvirt        !rows of Output Matrix
-        N = nocc             !columns of Output Matrix
-        K = nocc             !summation dimension
-!$acc enter data create(Calpha2)
-        call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
-             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id(1),cublas_handle)
-!$acc exit data delete(UoccT) 
-        
         !(alphaAux,nvirtEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*Uvirt(nvirt,nvirtEOS)
         nsize = nba*nvirtEOS*nocc
         IF(use_bg_buf)THEN
@@ -1690,9 +1654,15 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha3(',nsize,')'
            call mem_alloc(Calpha3,nsize)
         ENDIF
-!$acc enter data create(Calpha3)
+!$acc enter data create(Calpha2,Calpha3)
+        !(alphaAux;nvirt,noccAOS) = (alphaAux;nvirt,nocc)*U(nocc,noccAOS)
+        M = nba*nvirt        !rows of Output Matrix
+        N = nocc             !columns of Output Matrix
+        K = nocc             !summation dimension
+        call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,Calpha,M,UoccT,K,0.0E0_realk,Calpha2,M,&
+             & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
         call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)   
-
+!$acc exit data delete(Calpha2,Calpha)
         CALL LSTIMER('START ',TS2,TE2,LUPRI)
         intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
         intspec(2) = 'R' !Regular AO basis function on center 3
@@ -1707,8 +1677,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(.NOT.use_bg_buf)call tensor_ainit(blad,dimvirt,4)
 !$acc enter data create(blad%elm1) copyin(CalphaVV)
         call RIMP2_calc_gen4DimFO(NBA,Calpha3,nvirtEOS,nocc,CalphaVV,nvirtEOS,nvirt,blad%elm1)
-!$acc exit data delete(Calpha3,CalphaVV)
-!$acc exit data copyout(blad%elm1) async(async_id(7))
+!$acc exit data delete(Calpha3,CalphaVV) copyout(blad%elm1) 
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
            IF(DECinfo%MemDebugPrint)print*,'BG: dealloc CalphaVV(',size(CalphaVV),')'
@@ -1747,9 +1716,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !  first_order reduction: djik and blad 
      !=====================================================================================
 
-! here: wait for async copyouts on async handles 6 and 7
-!$acc wait(async_id(6),async_id(7))
-
 #ifdef VAR_MPI
      IF(CollaborateWithSlaves) then
         call time_start_phase( PHASE_IDLE )
@@ -1766,8 +1732,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         endif
      ENDIF
 #endif
-
   ENDIF
+
+  !$acc exit data delete(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT) if(.not. fc)
+  !$acc exit data delete(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT,UoccallT) if(fc)
+  !$acc exit data delete(TauOcc,TauVirt,LaplaceW) if(DECinfo%RIMP2_Laplace)
 
   IF(use_bg_buf)THEN
      IF(DECinfo%MemDebugPrint)call printBGinfo()
@@ -1835,9 +1804,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   stat = cublasDestroy_v2(cublas_handle)
 
 #endif
-
-  ! release async handles array
-  call mem_dealloc(async_id)
 
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
@@ -1918,6 +1884,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   write(LUPRI,*) 'FLOPS/s for RIMP2_integrals_and_amplitudes = ', papiflops/WTIME
 #endif
 #endif
+  IF(DECinfo%RIMP2_Laplace) call mem_dealloc(LaplaceW)
 
 end subroutine RIMP2_integrals_and_amplitudes
 
@@ -2227,6 +2194,54 @@ subroutine RIMP2_calc_toccB(nvirt,noccEOS,tocc,UvirtT,toccEOS)
 #endif
 end subroutine RIMP2_calc_toccB
 
+!tocc(occLOC,occLOC,virtDIAG,virtLOC)=(I,J,A,B) !Transform A
+subroutine RIMP2_calc_toccB2(nvirt,noccEOS,tocc,UvirtT,toccEOS)
+  implicit none
+  integer,intent(in) :: nvirt,noccEOS
+  real(realk),intent(in) :: tocc(noccEOS,noccEOS,nvirt,nvirt),UvirtT(nvirt,nvirt)
+  real(realk),intent(inout) :: toccEOS(noccEOS,nvirt,noccEOS,nvirt)
+  !local variables
+  integer :: BLOC,JLOC,ILOC,ALOC,ADIAG
+  real(realk) :: TMP,gpuflops
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(4) &
+  !$ACC PRIVATE(BLOC,JLOC,ILOC,ALOC,ADIAG,TMP) &
+  !$acc firstprivate(nvirt,noccEOS) &
+  !$acc present(tocc,UvirtT,toccEOS)
+  !dir$ noblocking
+#else
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+  !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ADIAG,TMP) &
+  !$OMP SHARED(nvirt,noccEOS,tocc,UvirtT,toccEOS)
+#endif
+  do bLOC=1,nvirt
+     do jLOC=1,noccEOS
+        do aLOC=1,nvirt
+#ifdef VAR_OPENACC
+           !dir$ noblocking
+#endif
+           do iLOC=1,noccEOS
+              TMP = 0.0E0_realk
+#ifdef VAR_OPENACC
+              !$ACC loop seq
+#endif 
+              do ADIAG=1,nvirt
+                 TMP = TMP + tocc(ILOC,JLOC,ADIAG,BLOC)*UvirtT(ADIAG,aLOC)
+              enddo
+              toccEOS(ILOC,ALOC,JLOC,BLOC) = TMP              
+           enddo
+        enddo
+     enddo
+  enddo
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+!  gpuflops = noccEOS*noccEOS*nvirt*nvirt*nvirt
+!  call AddFLOP_FLOPonGPUaccouting(gpuflops)
+#else
+  !$OMP END PARALLEL DO
+#endif
+end subroutine RIMP2_calc_toccB2
+
 subroutine RIMP2_calc_tvirtB(nvirtEOS,nocc,tvirt,UoccT,tvirtEOS)
   implicit none
   integer,intent(in) :: nvirtEOS,nocc
@@ -2493,16 +2508,32 @@ subroutine BuildCtmpVLaplace2(Ctmp,NBA,nvirtEOS,nocc,TauOcc,nLaplace,Ctmp2,UoccT
   !local variables
   integer :: l,ILOC,IDIAG,A,ALPHA
   real(realk) :: TMP
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
+  !$ACC PRIVATE(l,ILOC,IDIAG,A,ALPHA,TMP) &
+  !$acc firstprivate(NBA,nvirtEOS,nocc,nLaplace) &
+  !$acc present(Ctmp2,Ctmp,UoccT,TauOcc)
+#else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(l,TMP,ILOC,IDIAG,A,&
   !$OMP ALPHA) SHARED(Ctmp,NBA,nvirtEOS,nocc,TauOcc,nLaplace,Ctmp2,UoccT)
+#endif
   DO l = 1,nLaplace
      DO ILOC=1,nocc
         DO A=1,nvirtEOS
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO ALPHA=1,NBA
               Ctmp2(ALPHA,A,ILOC,l) = 0.0E0_realk
            ENDDO
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO IDIAG=1,nocc
               TMP = UoccT(IDIAG,ILOC)*TauOcc(IDIAG,l)
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
               DO ALPHA=1,NBA
                  Ctmp2(ALPHA,A,ILOC,l) = Ctmp2(ALPHA,A,ILOC,l) + Ctmp(ALPHA,A,IDIAG,l)*TMP
               ENDDO
@@ -2510,7 +2541,11 @@ subroutine BuildCtmpVLaplace2(Ctmp,NBA,nvirtEOS,nocc,TauOcc,nLaplace,Ctmp2,UoccT
         ENDDO
      ENDDO
   ENDDO
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
   !$OMP END PARALLEL DO
+#endif
 end subroutine BuildCtmpVLaplace2
 
 !Ctmp(alpha,a,I,l) = TauVirt(A,l)*C(alpha,A,I)*U(A,a)
@@ -2524,16 +2559,32 @@ subroutine BuildCtmpVLaplace(Calpha,NBA,nvirt,nocc,nvirtEOS,TauVirt,nLaplace,Ctm
   !local variables
   integer :: l,ALOC,ADIAG,I,ALPHA
   real(realk) :: TMP
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
+  !$ACC PRIVATE(l,ALOC,I,ADIAG,ALPHA,TMP) &
+  !$acc firstprivate(nvirtEOS,nocc,nvirt,nLaplace,NBA) &
+  !$acc present(Ctmp,Calpha,UvirtEOST,TauVirt)
+#else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(l,ALOC,ADIAG,I,TMP,&
   !$OMP ALPHA) SHARED(Calpha,NBA,nvirt,nocc,nvirtEOS,TauVirt,nLaplace,Ctmp,UvirtEOST)
+#endif
   DO l = 1,nLaplace
      DO I=1,nocc
         DO ALOC=1,nvirtEOS
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO ALPHA=1,NBA
               Ctmp(ALPHA,ALOC,I,l) = 0.0E0_realk
            ENDDO
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO ADIAG=1,nvirt
               TMP = UvirtEOST(ADIAG,ALOC)*TauVirt(ADIAG,l)
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
               DO ALPHA=1,NBA
                  Ctmp(ALPHA,ALOC,I,l) = Ctmp(ALPHA,ALOC,I,l) + Calpha(ALPHA,ADIAG,I)*TMP
               ENDDO
@@ -2541,7 +2592,11 @@ subroutine BuildCtmpVLaplace(Calpha,NBA,nvirt,nocc,nvirtEOS,TauVirt,nLaplace,Ctm
         ENDDO
      ENDDO
   ENDDO
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
   !$OMP END PARALLEL DO
+#endif
 end subroutine BuildCtmpVLaplace
 
 !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
@@ -2555,16 +2610,32 @@ subroutine BuildCtmpLaplace(Calpha,NBA,nvirt,nocc,noccEOS,TauOcc,nLaplace,Ctmp,U
   !local variables
   integer :: l,ILOC,IDIAG,A,ALPHA
   real(realk) :: TMP
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
+  !$ACC PRIVATE(l,ILOC,A,IDIAG,ALPHA,TMP) &
+  !$acc firstprivate(nvirt,noccEOS,nocc,nLaplace,NBA) &
+  !$acc present(Ctmp,Calpha,UoccEOST,TauOcc)
+#else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(l,TMP,ILOC,IDIAG,A,&
   !$OMP ALPHA) SHARED(Calpha,NBA,nvirt,nocc,noccEOS,TauOcc,nLaplace,Ctmp,UoccEOST)
+#endif
   DO l = 1,nLaplace
      DO ILOC=1,noccEOS
         DO A=1,nvirt
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO ALPHA=1,NBA
               Ctmp(ALPHA,A,ILOC,l) = 0.0E0_realk
            ENDDO
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO IDIAG=1,nocc
               TMP = UoccEOST(IDIAG,ILOC)*TauOcc(IDIAG,l)
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
               DO ALPHA=1,NBA
                  Ctmp(ALPHA,A,ILOC,l) = Ctmp(ALPHA,A,ILOC,l) + Calpha(ALPHA,A,IDIAG)*TMP
               ENDDO
@@ -2572,7 +2643,11 @@ subroutine BuildCtmpLaplace(Calpha,NBA,nvirt,nocc,noccEOS,TauOcc,nLaplace,Ctmp,U
         ENDDO
      ENDDO
   ENDDO
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
   !$OMP END PARALLEL DO
+#endif
   !Could try to do a UoccTauOcc(IDIAG,ILOC,l) = UoccEOST(IDIAG,ILOC)*TauOcc(IDIAG,l)
   ! and then call a DGEMM
 end subroutine BuildCtmpLaplace
@@ -2588,16 +2663,32 @@ subroutine BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirtEOS,nocc,TauVirt,nLaplace,Ctmp2
   !local variables
   integer :: l,ILOC,ADIAG,ALOC,ALPHA
   real(realk) :: TMP
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(3) &
+  !$ACC PRIVATE(l,ILOC,ADIAG,ALOC,ALPHA,TMP) &
+  !$acc firstprivate(NBA,nvirt,nvirtEOS,nocc,nLaplace) &
+  !$acc present(Ctmp2,Ctmp,UvirtEOST,TauVirt)
+#else
   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(l,TMP,ILOC,ADIAG,ALOC,&
   !$OMP ALPHA) SHARED(Ctmp,NBA,nvirt,nvirtEOS,nocc,TauVirt,nLaplace,Ctmp2,UvirtEOST)
+#endif
   DO l = 1,nLaplace
      DO ALOC=1,nvirtEOS
         DO ILOC=1,nocc
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO ALPHA=1,NBA
               Ctmp2(ALPHA,ALOC,ILOC,l) = 0.0E0_realk
            ENDDO
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO ADIAG=1,nvirt
               TMP = UvirtEOST(ADIAG,ALOC)*TauVirt(ADIAG,l)
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
               DO ALPHA=1,NBA
                  Ctmp2(ALPHA,ALOC,ILOC,l) = Ctmp2(ALPHA,ALOC,ILOC,l) + Ctmp(ALPHA,ADIAG,ILOC,l)*TMP
               ENDDO
@@ -2605,7 +2696,11 @@ subroutine BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirtEOS,nocc,TauVirt,nLaplace,Ctmp2
         ENDDO
      ENDDO
   ENDDO
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
   !$OMP END PARALLEL DO
+#endif
 end subroutine BuildCtmp2Laplace
 
 !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
@@ -2618,21 +2713,42 @@ subroutine BuildTampLaplace(Ctmp2,NBA,nvirt,noccEOS,toccEOS,nLaplace,LaplaceW)
   !local variables
   integer :: AI,BJ,ALPHA,L
   real(realk) :: TMP
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP PRIVATE(AI,BJ,ALPHA,L,TMP) &
+  !$acc firstprivate(NBA,nvirt,noccEOS,nLaplace) &
+  !$acc present(Ctmp2,toccEOS,LaplaceW)
+#else
   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(TMP,AI,BJ,ALPHA,&
   !$OMP L) SHARED(Ctmp2,NBA,nvirt,noccEOS,toccEOS,nLaplace,LaplaceW)
+#endif
   DO BJ=1,nvirt*noccEOS
      !L=1
      !Travel sequential through Ctmp2 LHS for each BJ while repeating RHS Ctmp2(1:ALPHA) nvirt*noccEOS times for each BJ
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
      DO AI=1,nvirt*noccEOS
         TMP = 0.0E0_realk
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
         DO ALPHA=1,NBA 
            TMP = TMP + Ctmp2(ALPHA,AI,1)*Ctmp2(ALPHA,BJ,1)*LaplaceW(1)
         ENDDO
         toccEOS(AI,BJ) = - TMP
      ENDDO
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
      DO L=2,nLaplace
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
         DO AI=1,nvirt*noccEOS
            TMP = 0.0E0_realk
+#ifdef VAR_OPENACC
+              !$acc loop seq
+#endif
            DO ALPHA=1,NBA 
               TMP = TMP + Ctmp2(ALPHA,AI,L)*Ctmp2(ALPHA,BJ,L)*LaplaceW(L)
            ENDDO
@@ -2640,12 +2756,793 @@ subroutine BuildTampLaplace(Ctmp2,NBA,nvirt,noccEOS,toccEOS,nLaplace,LaplaceW)
         ENDDO
      ENDDO
   ENDDO
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
   !$OMP END PARALLEL DO
-  
+#endif  
 end subroutine BuildTampLaplace
 
-end module rimp2_module
+!> \brief Calculate the RI-MP2-F12 Ccoupling F12 energy contribution
+!> \author Thomas Kjaergaard
+!> \date August 2015
+subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
+  implicit none
+  !> Atomic fragment (or pair fragment)
+  type(decfrag), intent(inout) :: MyFragment
+  !> The RI-MP2-F12 Ccoupling F12 energy contribution
+  real(realk) :: EnergyF12Ccoupling
+  !local variables
+  type(mp2_batch_construction) :: bat
+  type(array2) :: CDIAGocc, CDIAGvirt, Uocc, Uvirt
+  type(array2) :: LoccEOS,LvirtEOS, tmparray2, LoccTALL,CDIAGoccTALL,UoccALL
+  real(realk), pointer :: EVocc(:), EVvirt(:)
+  integer :: nbasis,nocc,nvirt, noccEOS, nvirtEOS,nocctot,ncore,nCoccTmp
+  integer :: alpha,gamma,beta,delta,info,mynum,numnodes,nb
+  integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2,natomsAux
+  integer :: ILOC,JLOC,ALOC,BLOC,M,N,K,nAtoms,nbasis2,nbasisAux
+  logical :: fc,ForcePrint,master,wakeslave
+  logical :: CollaborateWithSlaves
+  real(realk),pointer :: Galpha(:),Galpha2(:),CFtmp(:,:),GalphaTMP(:)
+  real(realk),pointer :: UoccEOS(:,:),UvirtEOS(:,:),TCiajbEOS(:),CiajbEOS(:)
+  real(realk),pointer :: UoccEOST(:,:),UvirtT(:,:),tocc3(:),TCijAB(:)
+  real(realk),pointer :: toccTMP(:,:),tocc2(:),Fca_local(:,:),Fca_diag(:,:)
+  real(realk),pointer :: GalphaEOS(:),Galpha2EOS(:),CiajbEOS2(:)
+  real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
+  real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
+  real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
+  real(realk) :: Evirt,Evirt2,dummy(2),MemInGBCollected,gpuflops
+  real(realk) :: maxsize
+  Integer :: iAtomA,nBastLocA,startRegA,endRegA,nAuxA,startAuxA,endAuxA,lupri
+  integer :: MynAtomsMPI,startA2,StartA,B,I,startB2,iAtomB,StartB,node,myOriginalRank
+  Integer :: OriginalRanknbasisAuxMPI,NBA,dimocc(4),dimvirt(4),NBA2
+  real(realk) :: time_i,time_c,time_w
+  real(realk),pointer :: OccContribsFull(:),VirtContribsFull(:),Calpha_debug(:,:,:)
+  real(realk),pointer :: occ_tmp(:),virt_tmp(:),ABdecomp(:,:),CDIAGoccALL(:,:)
+  real(realk),pointer :: CvirtAOS(:,:),CvirtEOS(:,:),CoccTmp(:,:),CDIAGoccALLcf(:,:)
+  real(realk),pointer :: TauOcc(:,:),TauVirt(:,:)
+  logical :: ABdecompCreate
+  integer,pointer :: IPVT(:)
+  integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+  TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+  real(realk), pointer   :: work1(:),Etmp2222(:)
+  real(realk)            :: RCOND
+  integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
+  real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPUTIME,WALLTIMESTART,WALLTIMEEND,WTIME
+  real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
+  real(realk) :: MemStep1,MemStep2,MemStep3,TS4,TE4
+  integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
+  integer :: MaxVirtSize,nTiles,offsetV,offset,MinAuxBatch
+  integer :: ncabsAO,ncabsMO
+  logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,PerformTiling
+  logical :: use_bg_buf
+  integer(kind=ls_mpik)  :: request5,request6
+  real(realk) :: phase_cntrs(nphases),bytes_to_alloc,MinMem
+  integer(kind=long) :: nSize,nsize1,nsize2,nsize3,nbasisAux8
+  integer(kind=long) :: nocc8,nvirt8,noccEOS8,nbasis8,nvirtEOS8,nocctot8
+  character :: intspec(5)
+  TYPE(MoleculeInfo),pointer :: molecule1,molecule2,molecule3,molecule4
+  !Laplace values
+  integer,parameter :: nLaplace=10
+  real(realk),parameter,dimension(10) :: LaplaceAmp = (/ -0.003431, &
+       & -0.023534, -0.088984, -0.275603, -0.757121, -1.906218, -4.485611, &
+       & -10.008000, -21.491075, -45.877205 /)
+! OpenACC cannot for some reason copyin a parameter
+!  real(realk),parameter,dimension(10) :: LaplaceW = (/ 0.009348, &
+!       & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
+!       & 7.810243, 16.172017, 35.929402 /)
+  real(realk),pointer :: LaplaceW(:)   
+  ! cublas stuff
+  type(c_ptr) :: cublas_handle
+  integer*4 :: stat
+  !> async handle
+#ifdef VAR_OPENACC
+  integer(kind=acc_handle_kind) :: async_id
+#ifdef VAR_PGF90
+  integer*4, external :: acc_set_cuda_stream
+#endif
+  integer(c_size_t) :: total_gpu,free_gpu ! total and free gpu mem in bytes
+#else
+  integer :: async_id
+#endif
+#ifdef VAR_PAPI
+  integer(8) :: papiflops
+  integer :: eventset2
+#endif
+#ifdef VAR_MPI
+  INTEGER(kind=ls_mpik) :: HSTATUS
+  CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
+  TAG = 1319
+#endif  
 
+#ifdef VAR_PAPI
+  CALL LS_GETTIM(CPUTIME,WALLTIMESTART)
+  call myPAPI_start(eventset2)
+#endif
+
+!#ifdef VAR_OPENACC
+!  async_id = acc_async_sync
+!#else
+!  async_id = 0
+!#endif
+
+!#ifdef VAR_CUBLAS
+!  ! initialize the CUBLAS context
+!  stat = cublasCreate_v2(cublas_handle)
+!  print*,'cublasCreate_v2 gives stat=',stat
+!  stat = cudaSetDevice(int(0,kind=4))
+!  print*,'cudaSetDevice(0) gives stat=',stat
+!#endif
+
+!  IF(DECinfo%RIMP2_Laplace)THEN
+!     call mem_alloc(LaplaceW,nLaplace)
+!     LaplaceW = (/ 0.009348, &
+!          & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
+!          & 7.810243, 16.172017, 35.929402 /)
+!  ENDIF
+
+#ifdef VAR_TIME
+  ForcePrint = .TRUE.
+#else
+  IF(LSTIME_PRINT)THEN
+     ForcePrint = .TRUE.
+  ELSE
+     ForcePrint = .FALSE.
+  ENDIF
+#endif
+
+  call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
+  LUPRI = DECinfo%output
+  CALL LSTIMER('START ',TS2,TE2,LUPRI)
+  ChangedDefault = .FALSE.
+  !The 3 Options 
+!  call time_start_phase(PHASE_WORK)   
+!  call time_start_phase( PHASE_COMM )
+!  call time_start_phase( PHASE_IDLE )
+  call time_start_phase(PHASE_WORK)   
+#ifdef VAR_TIME
+  call time_phases_get_current(current_wt=phase_cntrs)
+#endif
+
+  myload = 0
+  ! If MPI is not used, consider the single node to be "master"
+  master=.true.
+#ifdef VAR_MPI
+  master= (infpar%lg_mynum == infpar%master)
+  IF(.NOT.master) LUPRI = 6 !standard Output
+#endif
+  call LSTIMER('START',tcmpi1,twmpi1,DECinfo%output)
+  if(.not. master) then  ! flop counting for slaves
+     call start_flop_counter()
+  end if
+  ! Initialize stuff
+
+  natoms = MyFragment%natoms
+  nbasis = MyFragment%nbasis
+  nocc = MyFragment%noccAOS        ! occupied AOS (only valence for frozen core)
+  nvirt = MyFragment%nvirtAOS     ! virtual AOS
+  noccEOS = MyFragment%noccEOS     ! occupied EOS
+  nvirtEOS = MyFragment%nvirtEOS  ! virtual EOS
+  nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
+  ncore = MyFragment%ncore         ! number of core orbitals
+
+  
+  ncabsAO = size(MyFragment%Ccabs,1)
+  ncabsMO = size(MyFragment%Ccabs,2)    
+
+  call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%SETTING,MinAuxBatch,'D')
+  offset = 0 
+  nocc8 = nocc
+  nvirt8 = nvirt
+  noccEOS8 = noccEOS
+  nbasis8 = nbasis
+  nvirtEOS8 = nvirtEOS
+  nocctot8 = nocctot
+
+!  IF(DECinfo%RIMP2_Laplace)THEN
+!     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RI-MP2-F12 C coupling Energy contribution using Laplace Transform'
+!  ELSE
+     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RI-MP2-F12 C coupling Energy contribution'
+!  ENDIF
+
+  !==================================================================
+  ! Background memory buffering 
+  !==================================================================
+
+  use_bg_buf = .FALSE.
+#ifdef VAR_MPI
+  IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
+#endif
+ 
+   nBasisaux = 0
+   natomsaux = 0
+   nbasis2 = 0
+
+   call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtomsAux,nBasis2,nBasisAux)
+   if(natoms.NE.natomsAux)call lsquit('Error in RIMP2F12 natoms dim mismatch',-1)
+
+   nbasisAux8 = nbasisAux
+   IF(nBasisAux.EQ.0)THEN
+      WRITE(DECinfo%output,'(1X,A)')'RIMP2F12MEM: Warning no Aux basis have been chosen for RIMP2, Using Regular'
+      ChangedDefault = .TRUE.
+      call get_default_AOs(oldAORegular,oldAOdfAux) !the current values for Regular and Aux Basis 
+      call set_default_AOs(oldAORegular,oldAORegular) !change to use Regular for Aux 
+      call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+   ENDIF
+   if(DECinfo%PL>0)THEN
+      if(master) then
+         WRITE(*,'(A,2I3,4I6,1I5)')'RIMP2F12: DIM(nocc,noccEOS,nvirt,nvirtEOS,nbasis,nBasisAux,natoms)=',&
+              & nocc,noccEOS,nvirt,nvirtEOS,nbasis,nBasisAux,natoms
+      endif
+   endif
+
+   IF(DECinfo%MemDebugPrint)THEN
+      nsize = nocc+nvirt+nocc*noccEOS+nvirt*nvirt+nvirt*nvirtEOS+nocc*nocc
+      nsize = nsize + nbasisAux8*nbasisAux8
+   ENDIF
+   IF(use_bg_buf)THEN
+      !        IF(DECinfo%RIMP2_Laplace)THEN
+      !           call mem_pseudo_alloc(TauVirt,nvirt8,nLaplace*i8)
+      !           call mem_pseudo_alloc(TauOcc,nocc8,nLaplace*i8)
+      !        ENDIF
+      call mem_pseudo_alloc(EVocc,nocc8)
+      call mem_pseudo_alloc(EVvirt,nvirt8)
+      call mem_pseudo_alloc(UoccEOST,nocc8,noccEOS8) 
+      call mem_pseudo_alloc(UvirtT,nvirt8,nvirt8) 
+      call mem_pseudo_alloc(ABdecomp,nbasisAux8,nbasisAux8)
+   ELSE     
+      !        IF(DECinfo%RIMP2_Laplace)THEN
+      !           call mem_alloc(TauVirt,nvirt,nLaplace)
+      !           call mem_alloc(TauOcc,nocc,nLaplace)
+      !        ENDIF
+      call mem_alloc(EVocc,nocc)
+      call mem_alloc(EVvirt,nvirt)
+      call mem_alloc(UoccEOST,nocc,noccEOS) 
+      call mem_alloc(UvirtT,nvirt,nvirt) 
+      call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
+   ENDIF
+
+  CALL LSTIMER('DECRIMP2: INIT ',TS2,TE2,LUPRI,FORCEPRINT)
+
+  ! *************************************
+  ! Get arrays for transforming integrals: Cocc,Cvirt,UoccEOST,UvirtT,UvirtEOST,UoccT
+  ! *************************************
+  ! CDIAGocc, CDIAGvirt:  MO coefficients for basis where Fock matrix is diagonal
+  ! Uocc, Uvirt: Transform from diagonal basis to local basis (and vice versa)
+  ! Note: Uocc and Uvirt have indices (local,diagonal)
+
+  call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc,CDIAGvirt,Uocc,Uvirt,EVocc,EVvirt)
+
+  !  IF(DECinfo%RIMP2_Laplace)THEN
+  !     !  tau(a,l) = exp(epsilon_A*amp_l)   !l is the laplace points
+  !     call BuildTauVirt(TauVirt,nvirt,nLaplace,EVvirt,LaplaceAmp)
+  !     !  tau(i,l) = exp(-epsilon_I*amp_l)   !l is the laplace points
+  !     call BuildTauOcc(TauOcc,nocc,nLaplace,EVOcc,LaplaceAmp)
+  !  ENDIF
+
+  IF(use_bg_buf)THEN
+     call mem_pseudo_alloc(CFtmp,ncabsAO*i8,nvirt*i8)
+     call mem_pseudo_alloc(Fca_diag,ncabsMO*i8,nvirt*i8)
+     call mem_pseudo_alloc(Fca_local,ncabsMO*i8,nvirt*i8)
+  ELSE
+     call mem_alloc(CFtmp,ncabsAO,nvirt)
+     call mem_alloc(Fca_diag,ncabsMO,nvirt)
+     call mem_alloc(Fca_local,ncabsMO,nvirt)
+  ENDIF
+  Fca_local(:,1:nvirt) = Myfragment%Fcp(:,nocc+1:nbasis)
+  !Transform Local Virtual index to Diagonal/canonical index 
+  !F(C,A)_diag = F(C,B)_local * Uvirt(B,A)
+  M = ncabsMO    !rows of Output Matrix
+  N = nvirt        !columns of Output Matrix
+  K = nvirt      !summation dimension
+  call DGEMM('N','N',M,N,K,1.0E0_realk,Fca_local,M,Uvirt%val,K,0.0E0_realk,Fca_diag,M)
+  !Build CFtmp(ncabsAO,nvirt) = Ccabs(ncabsAO,ncabsMO)*Fca_diag(ncabsMO,nvirt)  
+  M = ncabsAO    !rows of Output Matrix
+  N = nvirt        !columns of Output Matrix
+  K = ncabsMO      !summation dimension
+  call DGEMM('N','N',M,N,K,1.0E0_realk,MyFragment%Ccabs,M,Fca_diag,K,0.0E0_realk,CFtmp,M)
+  IF(use_bg_buf)THEN
+     call mem_pseudo_dealloc(Fca_local)
+     call mem_pseudo_dealloc(Fca_diag)
+  ELSE
+     call mem_dealloc(Fca_local)
+     call mem_dealloc(Fca_diag)
+  ENDIF
+
+  ! Extract occupied EOS indices from rows of Uocc
+  call array2_extract_EOS(Uocc,MyFragment,'O','R',tmparray2)
+  !make UoccEOS(noccEOS,nocc)
+  M = noccEOS   !row of Input Matrix
+  N = nocc      !columns of Input Matrix
+  call mat_transpose(M,N,1.0E0_realk,tmparray2%val,0.0E0_realk,UoccEOST)
+!  DO I=1,nocc
+!     DO J=1,nocc
+!        UoccEOST(I,J) = 0.0E0_realk
+!     ENDDO
+!  ENDDO
+!  DO I=1,nocc
+!     UoccEOST(I,I) = 1.0E0_realk
+!  ENDDO
+
+  call array2_free(tmparray2)
+  
+  !UvirtT(nvirt,nvirtLocal)
+  M = nvirt      !row of Input Matrix
+  N = nvirt      !columns of Input Matrix
+  call mat_transpose(M,N,1.0E0_realk,Uvirt%val,0.0E0_realk,UvirtT)
+!  DO I=1,nvirt
+!     DO J=1,nvirt
+!        UvirtT(I,J) = 0.0E0_realk
+!     ENDDO
+!  ENDDO
+!  DO I=1,nvirt
+!     UvirtT(I,I) = 1.0E0_realk
+!  ENDDO
+
+  call array2_free(Uocc)
+  call array2_free(Uvirt)
+  CALL LSTIMER('DECRIMP2: TransMats ',TS2,TE2,LUPRI,FORCEPRINT)
+
+!!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT)
+!!$acc enter data copyin(TauOcc,TauVirt,LaplaceW) if(DECinfo%RIMP2_Laplace)
+
+  ! *************************************************************
+  ! *                    Start up MPI slaves                    *
+  ! *************************************************************
+
+#ifdef VAR_MPI
+
+  ! Only use slave helper if there is at least one local slave available.
+  if(infpar%lg_nodtot.GT.1) then
+     wakeslave=.true.
+     CollaborateWithSlaves=.true.
+  else
+     wakeslave=.false.
+     CollaborateWithSlaves=.false.
+  end if
+
+  ! Master starts up slave
+  StartUpSlaves: if(wakeslave .and. master) then
+
+     bat%MaxAllowedDimAlpha = 0
+     bat%MaxAllowedDimGamma = 0
+     bat%virtbatch = 0
+     bat%size1=0
+     bat%size2=0
+     bat%size3=0
+
+     ! Sanity check
+     if(.not. MyFragment%BasisInfoIsSet) then
+        call lsquit('MP2_RI_EnergyContributions: &
+             & Basis info for master is not set!',-1)
+     end if
+
+     call time_start_phase( PHASE_COMM )
+     ! Wake up slaves to do the job: slaves awoken up with (RIMP2INAMP)
+     ! and call MP2_RI_EnergyContribution_slave which calls
+     ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
+     call ls_mpibcast(RIMP2F12Ccoup,infpar%master,infpar%lg_comm)
+     ! Communicate fragment information to slaves
+     first_order=.FALSE.
+     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
+     call time_start_phase( PHASE_WORK )
+  endif StartUpSlaves
+  CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
+  mynum = infpar%lg_mynum
+  numnodes = infpar%lg_nodtot
+  HSTATUS = 80
+  CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
+#else
+  mynum = 0
+  numnodes = 1
+  wakeslave = .false.
+  CollaborateWithSlaves = .false.
+#endif
+
+  !Build Galpha2(nAux,nocc,nvirt) = GalphaCabs(nAUx,nocc,ncabsMO)*Fca(ncabsMO,nvirt)
+  !in the diagonal basis 
+  CALL LSTIMER('START ',TS2,TE2,LUPRI)
+  ABdecompCreate = .TRUE.
+  intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+  intspec(2) = 'R' !Regular AO basis function on center 3
+  intspec(3) = 'C' !Cabs AO basis function on center 4
+  intspec(4) = 'G' !Coulomb Operator
+  intspec(5) = 'G' !Coulomb Operator     
+  call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nCabsAO,nbasisAux,LUPRI,&
+       & FORCEPRINT,CollaborateWithSlaves,CDIAGocc%val,nocc,CFtmp,nvirt,&
+!       & FORCEPRINT,CollaborateWithSlaves,CDIAGocc%val,nocc,MyFragment%Ccabs,nCabsMO,&
+       & mynum,numnodes,Galpha2,NBA2,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
+  ABdecompCreate = .FALSE.
+
+  !Build Galpha(nAUx,nocc,nvirt) in the diagonal basis 
+
+  CALL LSTIMER('START ',TS2,TE2,LUPRI)
+  intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+  intspec(2) = 'R' !Regular AO basis function on center 3
+  intspec(3) = 'R' !Cabs AO basis function on center 4
+  intspec(4) = 'G' !Coulomb Operator
+  intspec(5) = 'G' !Coulomb Operator     
+  call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
+       & FORCEPRINT,CollaborateWithSlaves,CDIAGocc%val,nocc,CDIAGvirt%val,nvirt,&
+       & mynum,numnodes,Galpha,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
+
+  IF(use_bg_buf)THEN
+     call mem_pseudo_dealloc(CFtmp)
+  ELSE
+     call mem_dealloc(CFtmp)
+  ENDIF
+  call array2_free(CDIAGvirt)
+  call array2_free(CDIAGocc)
+
+  IF(NBA.NE.NBA2)call lsquit('DEC-RI-MP2-F12 Ccoupling NBA .NE. NBA2',-1)
+
+  !=====================================================================================
+  !  Major Step : Build Coupling amplitude TCaibj(noccEOS,noccEOS,nvirt,nvirt)
+  !=====================================================================================
+
+  IF(NBA.GT.0)THEN
+     !  IF(DECinfo%RIMP2_Laplace)THEN
+     
+     !ELSE
+     !NON LAPLACE VERSION
+     nsize = nvirt*(nvirt*i8)*noccEOS*(i8*noccEOS)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_alloc(TCiajbEOS,nsize)
+        call mem_pseudo_alloc(tocc3,nsize)
+        call mem_pseudo_alloc(TCijAB,nsize)
+     ENDIF
+     IF(.NOT.use_bg_buf)call mem_alloc(TCijAB,nsize)
+     call RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,TCijAB)
+     !Transform first Virtual index (ILOC,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BLOC)
+     M = nocceos*nocceos*nvirt  !rows of Output Matrix
+     N = nvirt                  !columns of Output Matrix
+     K = nvirt                  !summation dimension
+     IF(.NOT.use_bg_buf)call mem_alloc(tocc3,nsize)
+     call DGEMM('N','N',M,N,K,1.0E0_realk,TCijAB,M,UvirtT,K,0.0E0_realk,tocc3,M)
+     !Final virtual transformation 
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(TCijAB)
+     ELSE
+        call mem_dealloc(TCijAB)
+     ENDIF
+     !Transform last Virtual index (ILOC,JLOC,ADIAG,BLOC) => (ILOC,ALOC,BLOC,JLOC)
+     IF(.NOT.use_bg_buf)call mem_alloc(TCiajbEOS,nsize)
+     call RIMP2_calc_toccB2(nvirt,noccEOS,tocc3,UvirtT,TCiajbEOS)
+     IF(use_bg_buf)Then
+        call mem_pseudo_dealloc(tocc3)
+     ELSE
+        call mem_dealloc(tocc3)
+     ENDIF
+  ELSE
+     nsize = nvirt*(nvirt*i8)*noccEOS*(i8*noccEOS)
+     IF(use_bg_buf)Then
+        call mem_pseudo_alloc(TCiajbEOS,nsize)
+     ELSE
+        call mem_alloc(TCiajbEOS,nsize)
+     ENDIF
+     call ls_dzero8(TCiajbEOS,nSize)
+  ENDIF
+
+  !=====================================================================================
+  !  Major Step : Build Caibj(noccEOS,nvirt,noccEOS,nvirt)
+  !=====================================================================================
+
+  IF(NBA.GT.0)THEN
+     nsize2 = nvirt*noccEOS*nvirt*noccEOS
+     nsize = nba*nvirt*noccEOS
+     IF(use_bg_buf)THEN
+        call mem_pseudo_alloc(CiajbEOS,nsize2)
+        call mem_pseudo_alloc(GalphaTMP,nsize)
+        call mem_pseudo_alloc(GalphaEOS,nsize)
+        call mem_pseudo_alloc(Galpha2EOS,nsize)
+     ENDIF
+     ! Transform Galpha(ALPHA,i,A) = Galpha(ALPHA,I,A)*UoccEOST(nocc,noccEOS)
+     IF(.NOT.use_bg_buf)call mem_alloc(GalphaTMP,nsize)
+     call RIMP2F12_Ccoup_TransOcc(Galpha,NBA,nocc,nvirt,UoccEOST,noccEOS,GalphaTMP)
+     ! Transform Galpha(ALPHA,i,a) = Galpha(ALPHA,i,A)*Uvirt(nvirt,nvirt)
+     M = nba*nocc  !rows of Output Matrix
+     N = nvirt     !columns of Output Matrix
+     K = nvirt     !summation dimension
+     IF(.NOT.use_bg_buf)call mem_alloc(GalphaEOS,nsize)
+     call DGEMM('N','N',M,N,K,1.0E0_realk,GalphaTMP,M,UvirtT,K,0.0E0_realk,GalphaEOS,M)
+
+     ! Transform Galpha2(ALPHA,i,A) = Galpha2(ALPHA,I,A)*UoccEOST(nocc,noccEOS)
+     call RIMP2F12_Ccoup_TransOcc(Galpha2,NBA,nocc,nvirt,UoccEOST,noccEOS,GalphaTMP)
+     ! Transform Galpha2(ALPHA,i,a) = Galpha2(ALPHA,i,A)*Uvirt(nvirt,nvirt)
+     M = nba*nocc  !rows of Output Matrix
+     N = nvirt     !columns of Output Matrix
+     K = nvirt     !summation dimension        
+     IF(.NOT.use_bg_buf)call mem_alloc(Galpha2EOS,nsize)
+     call DGEMM('N','N',M,N,K,1.0E0_realk,GalphaTMP,M,UvirtT,K,0.0E0_realk,Galpha2EOS,M)
+     IF(.NOT.use_bg_buf)call mem_dealloc(GalphaTMP)
+
+     IF(.NOT.use_bg_buf)call mem_alloc(CiajbEOS,nsize2)
+     call RIMP2F12_Ccoup_CiajbEOS(GalphaEOS,NBA,noccEOS,nvirt,Galpha2EOS,CiajbEOS)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(Galpha2EOS)
+        call mem_pseudo_dealloc(GalphaEOS)
+        call mem_pseudo_dealloc(GalphaTMP)
+     ELSE
+        call mem_dealloc(Galpha2EOS)
+        call mem_dealloc(GalphaEOS)
+     ENDIF
+  ELSE
+     nsize = nvirt*(nvirt*i8)*noccEOS*(i8*noccEOS)
+     IF(use_bg_buf)Then
+        call mem_pseudo_alloc(CiajbEOS,nsize)
+     ELSE
+        call mem_alloc(CiajbEOS,nsize)
+     ENDIF
+     call ls_dzero8(CiajbEOS,nSize)
+  ENDIF
+
+#ifdef VAR_MPI
+  IF(CollaborateWithSlaves) then
+     call time_start_phase( PHASE_IDLE )
+     call lsmpi_barrier(infpar%lg_comm)
+     call time_start_phase( PHASE_COMM )
+     nSize = nvirt*noccEOS*nvirt*noccEOS
+     call lsmpi_reduction(TCiajbEOS,nsize,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(CiajbEOS,nsize,infpar%master,infpar%lg_comm)
+  ENDIF
+#endif
+  
+  Call RIMP2F12_EnergyCont(TCiajbEOS,CiajbEOS,noccEOS,nvirt,EnergyF12Ccoupling,mynum,numnodes)
+
+  IF(use_bg_buf)THEN
+     call mem_pseudo_dealloc(CiajbEOS)
+     call mem_pseudo_dealloc(TCiajbEOS)
+     call mem_pseudo_dealloc(ABdecomp) 
+     call mem_pseudo_dealloc(UvirtT) 
+     call mem_pseudo_dealloc(UoccEOST) 
+     call mem_pseudo_dealloc(EVvirt)
+     call mem_pseudo_dealloc(EVocc)
+!     IF(DECinfo%RIMP2_Laplace)THEN
+!        call mem_pseudo_dealloc(TauOcc)
+!        call mem_pseudo_dealloc(TauVirt)
+!     ENDIF
+  ELSE
+     call mem_dealloc(CiajbEOS)
+     call mem_dealloc(TCiajbEOS)
+     call mem_dealloc(ABdecomp) 
+!     IF(DECinfo%RIMP2_Laplace)THEN
+!        call mem_dealloc(TauVirt)
+!        call mem_dealloc(TauOcc)
+!     ENDIF
+     call mem_dealloc(EVocc)
+     call mem_dealloc(EVvirt)
+     call mem_dealloc(UoccEOST) 
+     call mem_dealloc(UvirtT) 
+  ENDIF
+
+#ifdef VAR_CUBLAS
+
+  ! Destroy the CUBLAS context
+!  stat = cublasDestroy_v2(cublas_handle)
+
+#endif
+
+#ifdef VAR_MPI
+  ! If slaves were not invoked
+  ! then we of course skip the reduction.
+  MPIcollect: if(wakeslave) then
+     call time_start_phase( PHASE_IDLE )
+     call lsmpi_barrier(infpar%lg_comm)
+     call time_start_phase( PHASE_COMM )
+     ! FLOP counting
+     if(master) then
+        flops=0.0E0_realk  ! we want to count only flops from slaves (these were set above)
+        gpuflops = 0.0E0_realk ! we want to count only gpu flops from slaves (these were set above)
+        ! Total time for all slaves (not local master itself)
+        MyFragment%slavetime_work(MODEL_RIMP2)=0.0E0_realk
+     end if
+     call lsmpi_reduction(flops,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(gpuflops,infpar%master,infpar%lg_comm)
+     if(master)MyFragment%flops_slaves=flops !save flops for local slaves (not local master)
+     if(master)MyFragment%gpu_flops_slaves=gpuflops !save flops for local slaves (not local master)
+     ! Total time for all slaves (not local master itself)
+     if(master) MyFragment%slavetime_work(MODEL_RIMP2)=0.0E0_realk
+     call lsmpi_reduction(MyFragment%slavetime_work(MODEL_RIMP2),infpar%master,infpar%lg_comm)
+     call time_start_phase( PHASE_WORK )
+     if(.not. master) then ! SLAVE: Done with arrays and fragment
+        call atomic_fragment_free(MyFragment)
+     end if
+     call lsmpi_reduction(EnergyF12Ccoupling,infpar%master,infpar%lg_comm)
+  end if MPIcollect
+
+  ! Number of MPI tasks (Could change to nAuxBasis)
+  MyFragment%ntasks = nAtomsAux
+#endif
+
+  if(master) then
+     write(DECinfo%output,'(1X,a,g25.16)') "DEC-RI-MP2-F12 C coupling(E21_CC):  ",EnergyF12Ccoupling
+     write(*,'(1X,a,g25.16)') "DEC-RI-MP2-F12 C coupling(E21_CC):  ",EnergyF12Ccoupling
+  endif
+  CALL LSTIMER('DECRIMP2F12Ccoup: Finalize',TS2,TE2,LUPRI,FORCEPRINT)
+  call LSTIMER('DECRIMP2F12Ccoup',TS,TE,DECinfo%output,ForcePrint)
+  IF(ChangedDefault)THEN
+     call set_default_AOs(oldAORegular,oldAOdfAux) !revert Changes
+  ENDIF
+#ifdef VAR_TIME
+  call time_phases_get_diff(current_wt=phase_cntrs)
+  time_w = phase_cntrs( PHASE_WORK_IDX )
+  time_c = phase_cntrs( PHASE_COMM_IDX )
+  time_i = phase_cntrs( PHASE_IDLE_IDX )  
+  write(*,'(A,g10.3,A)')"DECRIMP2F12Ccoup time WORK",time_w," seconds"
+  write(*,'(A,g10.3,A)')"DECRIMP2F12Ccoup time COMM",time_c," seconds"
+  write(*,'(A,g10.3,A)')"DECRIMP2F12Ccoup time IDLE",time_i," seconds"
+#ifdef VAR_PAPI
+  CALL LS_GETTIM(CPUTIME,WALLTIMEEND)
+  WTIME = WALLTIMEEND-WALLTIMESTART  
+  CALL ls_TIMTXT('>>>  WALL Time used in RIMP2F12Ccoup is ',WTIME,LUPRI)
+  papiflops=0 ! zero flops (this is probably redundant)
+  call myPAPI_stop(eventset2,papiflops)
+  write(LUPRI,*) 'FLOPS for RIMP2F12Ccoup   = ', papiflops
+  write(LUPRI,*) 'FLOPS/s for RIMP2F12Ccoup = ', papiflops/WTIME
+#endif
+#endif
+!  IF(DECinfo%RIMP2_Laplace) call mem_dealloc(LaplaceW)
+
+end subroutine RIMP2F12_Ccoupling_energy
+
+subroutine RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,CijAB)
+  implicit none
+  integer,intent(in) :: nvirt,nocc,noccEOS,NBA
+  real(realk),intent(in) :: Galpha(NBA,nocc,nvirt),Galpha2(NBA,nocc,nvirt)
+  real(realk),intent(in) :: EVocc(nocc),EVvirt(nvirt),UoccEOST(nocc,noccEOS)
+  real(realk),intent(inout) :: CijAB(noccEOS,noccEOS,nvirt,nvirt)
+  !
+  integer :: IDIAG,JDIAG,ADIAG,BDIAG,ILOC,JLOC,ALPHAAUX
+  real(realk) :: toccTMP(nocc),toccTMP2(nocc,noccEOS)
+  real(realk) :: gmocont,deltaEPS,TMP
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(IDIAG,&
+  !$OMP JDIAG,ADIAG,BDIAG,ILOC,JLOC,ALPHAAUX,toccTMP,toccTMP2,&
+  !$OMP gmocont,deltaEPS,TMP) SHARED(Galpha,NBA,nocc,nvirt,&
+  !$OMP &Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,CijAB)
+  do BDIAG=1,nvirt
+     do ADIAG=1,nvirt
+        do IDIAG=1,nocc
+           do JDIAG=1,nocc
+              gmocont = 0.0E0_realk  
+              do ALPHAAUX=1,nba  
+                 gmocont = gmocont + Galpha(ALPHAAUX,IDIAG,ADIAG)*Galpha2(ALPHAAUX,JDIAG,BDIAG)
+              enddo
+              deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
+              toccTMP(JDIAG)=gmocont/deltaEPS                
+           enddo
+           do jLOC=1,noccEOS
+              TMP = 0.0E0_realk
+              do JDIAG=1,nocc
+                 TMP = TMP + toccTMP(JDIAG)*UoccEOST(jDIAG,jLOC)
+              enddo
+              toccTMP2(IDIAG,JLOC) = TMP
+           enddo
+        enddo
+        do jLOC=1,noccEOS
+           do iLOC=1,noccEOS
+              TMP = 0.0E0_realk
+              do IDIAG=1,nocc
+                 TMP = TMP + toccTMP2(IDIAG,JLOC)*UoccEOST(iDIAG,iLOC)
+              enddo
+              CijAB(iLOC,jLOC,ADIAG,BDIAG) = TMP
+           enddo
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+END subroutine RIMP2F12Ccoup_CijAB
+
+subroutine GetTamp(CiajbEOS2,nocc,nvirt,EVocc,EVvirt,CiajbEOS)
+  implicit none
+  integer,intent(in) :: nocc,nvirt
+  real(realk),intent(in) :: CiajbEOS2(nocc,nvirt,nocc,nvirt)
+  real(realk),intent(in) :: EVocc(nocc),EVvirt(nvirt)
+  real(realk),intent(inout) :: CiajbEOS(nocc,nvirt,nocc,nvirt)
+  !
+  integer :: I,A,J,B
+  real(realk) :: deltaEPS
+  DO B=1,nvirt
+     DO J=1,nocc
+        DO A=1,nvirt
+           DO I=1,nocc
+              deltaEPS = EVocc(I)+EVocc(J)-EVvirt(B)-EVvirt(A)
+              CiajbEOS(I,A,J,B) = CiajbEOS2(I,A,J,B)/deltaEPS
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+end subroutine GetTamp
+
+
+! Transform Galpha(ALPHA,i,A) = Galpha(ALPHA,I,A)*UoccEOST(nocc,noccEOS)
+subroutine RIMP2F12_Ccoup_TransOcc(Galpha,NBA,nocc,nvirt,UoccEOST,noccEOS,GalphaTMP)
+  implicit none
+  integer,intent(in) :: NBA,nocc,nvirt,noccEOS
+  real(realk),intent(in) ::  Galpha(NBA,nocc,nvirt)
+  real(realk),intent(in) ::  UoccEOST(nocc,noccEOS)
+  real(realk),intent(inout) ::  GalphaTMP(NBA,noccEOS,nvirt)
+  !
+  integer :: ADIAG,ILOC,ALPHA,IDIAG
+  real(realk) :: TMP
+  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(ADIAG,&
+  !$OMP ILOC,ALPHA,IDIAG,TMP) SHARED(Galpha,NBA,&
+  !$OMP nocc,nvirt,UoccEOST,noccEOS,GalphaTMP)
+  DO ADIAG=1,nvirt
+     DO ILOC=1,noccEOS
+        DO ALPHA=1,NBA
+           GalphaTMP(ALPHA,ILOC,ADIAG)=0.0E0_realk
+        ENDDO
+     ENDDO
+     DO IDIAG=1,nocc
+        do ILOC=1,noccEOS
+           TMP = UoccEOST(IDIAG,ILOC)
+           DO ALPHA=1,NBA
+              GalphaTMP(ALPHA,ILOC,ADIAG)=GalphaTMP(ALPHA,ILOC,ADIAG)+Galpha(ALPHA,IDIAG,ADIAG)*TMP
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+end subroutine RIMP2F12_Ccoup_TransOcc
+
+subroutine RIMP2F12_Ccoup_CiajbEOS(GalphaEOS,NBA,noccEOS,nvirt,Galpha2EOS,CiajbEOS)
+implicit none
+integer,intent(in) :: NBA,noccEOS,nvirt
+real(realk),intent(in) :: GalphaEOS(NBA,noccEOS,nvirt)
+real(realk),intent(in) :: Galpha2EOS(NBA,noccEOS,nvirt)
+real(realk),intent(inout) :: CiajbEOS(noccEOS,nvirt,noccEOS,nvirt)
+!local variables
+integer :: A,I,B,J,ALPHA
+real(realk) :: TMP
+!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(A,I,B,J,ALPHA,&
+!$OMP TMP) SHARED(GalphaEOS,NBA,noccEOS,nvirt,Galpha2EOS,CiajbEOS)
+DO B=1,nvirt
+   DO J=1,noccEOS
+      DO A=1,nvirt
+         DO I=1,noccEOS
+            TMP = 0.0E0_realk
+            DO ALPHA=1,NBA
+               TMP = TMP + GalphaEOS(ALPHA,I,A)*Galpha2EOS(ALPHA,J,B)
+            ENDDO
+            CiajbEOS(I,A,J,B) = TMP
+         ENDDO
+      ENDDO
+   ENDDO
+ENDDO
+!$OMP END PARALLEL DO
+end subroutine RIMP2F12_Ccoup_CiajbEOS
+
+subroutine RIMP2F12_EnergyCont(Tiajb,Ciajb,noccEOS,nvirt,EnergyF12Ccoupling,mynum,numnodes)
+implicit none
+integer,intent(in) :: noccEOS,nvirt,mynum,numnodes
+real(realk),intent(in) :: Tiajb(noccEOS,nvirt,noccEOS,nvirt)
+real(realk),intent(in) :: Ciajb(noccEOS,nvirt,noccEOS,nvirt)
+real(realk),intent(inout) :: EnergyF12Ccoupling
+!local variables
+integer :: I,A,J,B
+real(realk) :: TMP,C1,C2,T
+TMP=0.0E0_realk
+!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(A,I,B,J,C1,C2,&
+!$OMP T) SHARED(Tiajb,Ciajb,noccEOS,nvirt,EnergyF12Ccoupling,mynum,&
+!$OMP numnodes) REDUCTION(+:TMP)
+DO B=1+MYNUM,nvirt,numnodes
+   DO J=1,noccEOS
+      DO A=1,nvirt
+         DO I=1,noccEOS
+            T = Tiajb(I,A,J,B) + Tiajb(J,B,I,A)
+            C1 = Ciajb(I,A,J,B) + Ciajb(J,B,I,A)
+            C2 = Ciajb(J,A,I,B) + Ciajb(I,B,J,A)
+            TMP = TMP + (7.0E0_realk*T*C1 + 1.0E0_realk*T*C2)
+         ENDDO
+      ENDDO
+   ENDDO
+ENDDO
+!$OMP END PARALLEL DO
+EnergyF12Ccoupling = TMP/32.0E0_realk
+print*,'EnergyF12Ccoupling',EnergyF12Ccoupling
+end subroutine RIMP2F12_EnergyCont
+
+end module rimp2_module
 
 #ifdef VAR_MPI
 !> \brief MPI Slave routine for RIMP2_integrals_and_amplitudes_energy.

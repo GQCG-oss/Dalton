@@ -356,7 +356,7 @@ contains
     type(mp2grad) :: grad
     logical :: morejobs, continuedivide, split,only_update
     real(realk) :: fragenergy(ndecenergies),tottime
-    real(realk) :: t1cpu, t2cpu, t1wall, t2wall
+    real(realk) :: t1cpu, t2cpu, t1wall, t2wall, tw0, tot_comm_wt
     real(realk) :: tot_work_time, tot_comm_time, tot_idle_time
     real(realk) :: test_work_time, test_comm_time, test_idle_time, test_master, testtime
     real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc, mwork, midle, mcomm
@@ -401,7 +401,7 @@ contains
 
        ! Send finished job to master
        ! ***************************
-       call time_start_phase(PHASE_COMM)
+       call time_start_phase(PHASE_COMM,twall=tw0)
        ! (If job=0 it is an empty job not containing any real information)
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,infpar%mynum,master)
 
@@ -439,7 +439,9 @@ contains
        ! Receive new job task
        ! ********************
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,master,infpar%mynum)
-       call time_start_phase(PHASE_WORK)
+       call time_start_phase(PHASE_WORK,twall=tot_comm_wt)
+       singlejob%comm_gl_master_time(1) = tot_comm_wt - tw0
+       
 
        ! Carry out fragment optimization (job>0), or finish if all jobs are done (job=-1)
        ! ********************************************************************************
@@ -539,6 +541,7 @@ contains
              else
                 PairFragment%mylsitem%setting%comm = infpar%lg_comm
              end if
+
           end if
 
 

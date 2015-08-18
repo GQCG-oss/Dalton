@@ -1301,7 +1301,7 @@ C
 #include "ccsdinp.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 C#include "cclr.h"
 C
       INTEGER ISYMX,ISYMY,ISYMZ,ISYMZ1,LWORK,LU3SRTR,LUCKJDR 

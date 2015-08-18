@@ -3,7 +3,7 @@
       if (present(mode))then
         if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
           print *,"mode",mode,"arr%mode",arr%mode      
-          call lsquit("wrong use of tensor_set_tdim",lspdm_errout)
+          call tensor_status_quit("wrong use of tensor_set_tdim",77373)
         else
           arr%mode=mode
         endif

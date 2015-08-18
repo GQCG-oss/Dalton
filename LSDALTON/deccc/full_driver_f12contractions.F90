@@ -106,6 +106,7 @@ contains
           Vijij(i,j) = Fijkl(i,i,j,j)
        enddo
     enddo
+
   end subroutine mp2f12_Vijij_term1
 
   subroutine mp2f12_Vijij_term2(Vijij,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)

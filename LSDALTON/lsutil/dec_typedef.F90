@@ -9,7 +9,7 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
-  use tensor_type_def_module, only: tensor
+  use tensor_interface_module, only: tensor
   !Could someone please rename ri to something less generic. TK!!
   !  private
   !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
@@ -53,7 +53,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 26
+  integer, parameter :: ndecenergies = 27
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -352,12 +352,20 @@ module dec_typedef_module
      logical :: F12fragopt
      !> Do C coupling in F12 scheme
      logical :: F12Ccoupling
+     !> Do CABS singles
+     logical :: F12singles
+     !> Maximum number of iterations in F12 singles solver
+     integer :: F12singlesMaxIter
+     !> Threshold for F12 singles solver
+     real(realk) :: F12singlesThr
+     !> Maximum subspace dimension in F12 singles solver
+     integer :: F12singlesMaxDIIS
 
      !> F12 debug settings
      !> ******************
      !> Use F12 correction
      logical :: F12DEBUG
-
+   
      logical :: SOS
 
      !> Debug keyword to specify pure hydrogen atoms
@@ -849,6 +857,9 @@ module dec_typedef_module
      real(realk) :: Edisp
      real(realk) :: Ect
      real(realk) :: Esub
+
+     ! F12 singles correction energy 
+     real(realk) :: EF12singles
 
   end type fullmolecule
 
@@ -1360,6 +1371,7 @@ module dec_typedef_module
      real(realk),pointer :: commt(:)
      real(realk),pointer :: workt(:)
      real(realk),pointer :: idlet(:)
+     real(realk),pointer :: comm_gl_master_time(:)
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.

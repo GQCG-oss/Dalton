@@ -297,20 +297,19 @@ add_custom_command(
 unset(reorder_definitions)
 
 add_library(
-    lsutillib_common
+    lsutil_tensor_lib
     ${MANUAL_REORDERING_SOURCES}
+    ${LSUTIL_TENSOR_SOURCES}
+    )
+
+
+add_library(
+    lsutillib_common
     ${LSUTIL_COMMON_C_SOURCES}
     ${LSUTIL_COMMON_SOURCES}
     )
 
-target_link_libraries(lsutillib_common matrixmlib)
-
-add_library(
-    lsutil_tensor_lib
-    ${LSUTIL_TENSOR_SOURCES}
-    )
-
-target_link_libraries(lsutil_tensor_lib lsutillib_common)
+target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib)
 
 add_library(
     matrixolib
@@ -318,7 +317,9 @@ add_library(
     ${LSUTIL_MATRIXO_C_SOURCES}
     )
 
-target_link_libraries(matrixolib lsutil_tensor_lib)
+target_link_libraries(matrixolib lsutillib_common lsutil_tensor_lib)
+
+
 
 add_library(
     matrixulib
@@ -434,13 +435,6 @@ if(ENABLE_INTEREST)
     target_link_libraries(fmmlib interestlib)
 endif()
 
-if(ENABLE_ICHOR)
-add_library(
-    ichorintlib
-    ${ICHORINT_SOURCES}
-    )
-endif()
-
 add_library(
     dftfunclib
     ${DFTFUNC_SOURCES}
@@ -459,9 +453,8 @@ add_dependencies(lsintlib xcfun_interface)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
-if(ENABLE_ICHOR)
-     add_dependencies(lsintlib ichorintlib)
-endif()
+
+include(IchorIntegralLibrary)
 
 add_library(
     pbclib
@@ -525,13 +518,15 @@ if(ENABLE_REAL_SP)
    set(CCSDPT_SINGLE_PREC_SOURCE
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90
+       ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90
        )
 endif()
 
 if(ENABLE_REAL_SP)
    get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
    if(${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90 OR
-     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90)
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90 OR
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90)
      add_custom_command(
      OUTPUT
      ${CCSDPT_SINGLE_PREC_SOURCE}
@@ -540,6 +535,7 @@ if(ENABLE_REAL_SP)
      DEPENDS
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_sp.sh
      )
    endif()
@@ -665,18 +661,10 @@ if(ENABLE_INTEREST)
         interestlib
         )
 else()
-  if(ENABLE_ICHOR)
-    MERGE_STATIC_LIBS(
-        lsint
-	ichorintlib
-        lsintlib
-        )
-  else()
     MERGE_STATIC_LIBS(
         lsint
         lsintlib
         )
-  endif()
 endif()
 
 set(LIBS_TO_MERGE

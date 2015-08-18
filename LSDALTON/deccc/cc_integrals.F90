@@ -24,7 +24,6 @@ module ccintegrals
   use buildaobatch
   use memory_handling
   use daltoninfo
-  use lspdm_tensor_operations_module
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module
@@ -2161,7 +2160,7 @@ contains
        ! accumulate tile
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_accumulate_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_acc_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,w1,1,pack_gmo%ti(tile)%t(:),1)
@@ -2190,7 +2189,7 @@ contains
        ! accumulate tile
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_accumulate_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_acc_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,w1,1,pack_gmo%ti(tile)%t(:),1)
@@ -3059,10 +3058,10 @@ contains
                          call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm2(fg,startD),nb,0.0E0_realk,work(bpos),m)
                          !accumulate TODO, meeds to be optimized
 #ifdef VAR_HAVE_MPI3
-                         call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_acc_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.true.,req=req(bidx))
 #else
-                         call tensor_accumulate_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_acc_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.false.)
 #endif
                          buf_sent = buf_sent + 1
@@ -3511,7 +3510,7 @@ contains
 
 
     if(DECinfo%PL>2)then
-       call print_norm(integral," NORM of the integral :",print_on_rank=0)
+       call print_norm(integral," NORM of the integral :",print_=(me==0))
     endif
 
     if(.not.local)then

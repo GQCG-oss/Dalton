@@ -1,0 +1,64 @@
+This is a list of all LSDalton related branches.
+
+We need to have a clear picture at which branches should be:
+
+1. deleted
+2. saved in LSDalton repo
+3. saved in Dalton Repo.
+
+therefore please update this list when you make a new branch with the intention of modifying LSDalton code.
+
+The Status can be :
+
+Stale          Will be deleted once everybody agrees that the branch is stale
+Working        Will be saved in the LSDalton repo
+DoNotDelete    Will be saved in the LSDalton repo (maybe as read only)
+
+List of branches that people have taken responsibility for.
+
+LstensorRemovalBranch           Author: Thomas, Simen           Status: DoNotDelete
+NOorbitals                      Author: Ida-Marie Høyvik        Status: DoNotDelete
+NonOrthogonalOrbitals           Author: Ida-Marie Høyvik        Status: DoNotDelete
+chandan_nmr                     Author: Thomas,Chandan          Status: Working
+dec-cholesky                    Author: Pablo                   Status: DoNotDelete
+ichor-improvements              Author: Thomas                  Status: Working (soon to be stale)
+linsca-develop                  Author: Thomas                  Status: DoNotDelete (Old LSDalton Master branch)
+linsca-develop-OpenRSP          Author: Thomas                  Status: Stale
+linsca-develop-xcfun            Author: Ulf                     Status: DoNotDelete
+linsca-mpi                      Author: Thomas                  Status: Stale
+linsca-ng                       Author: Thomas,Sonia,..         Status: DoNotDelete (Only place Residues are implemented,..)
+linsca-optimize-2011            Author: Thomas,Simen            Status: Stale
+linsca-release                  Author: Thomas,Simen            Status: DoNotDelete (2011 release of lsdalton)
+pe/lsdalton                     Author: Magnus,Nanna,Simen      Status: DoNotDelete
+dec-quad                        Author: Johannes                Status: DoNotDelete
+dmp2opt                         Author: Johannes                Status: Working
+Hackathon                       Author: Patrick E.              Status: DoNotDelete
+titan_branch                    Author: Patrick E., Janus       Status: Working
+qcmatrix                        Author: Bin Gao, Magnus, ..     Status: Working (new OpenRSP interface with QcMatrix library)
+pcm_lsdalton                    Author: Roberto Di Remigio      Status: stale
+PE_titan_branch                 Author: Patrick E., Janus       Status: stale
+DECCCO                          Author: Kasper                  Status: Stale
+DECenergy                       Author: Kasper                  Status: Stale
+PMinteraction                   Author: Kasper                  Status: Stale
+PnKs_lovenest                   Author: Kasper                  Status: Stale
+radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
+cuda_api_lsdalton               Author: Janus, Radovan          Status: Stale
+
+List of branches that I (Thomas) suspect or know is lsdalton related branches
+
+ONMR-development
+dec-karl
+dec-patrick
+dec-rpa
+dec-sostest
+linsca
+linsca-develop-HigherDerivatives
+linsca-ng-build
+linsca-ng-vxcfit
+linsca-numerical
+linsca-vcd-aat
+localize_wannier
+lresc-linear
+master_with_CUDA_fh
+origin/pari-k
+pari-k

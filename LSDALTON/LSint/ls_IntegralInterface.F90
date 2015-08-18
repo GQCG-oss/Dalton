@@ -3842,14 +3842,14 @@ IF (.not.emptyAO) THEN
       IF(AddBasis2)THEN
          Call determinenAObatches(nAObatches,LUPRI,SCHEME,&
               & SCHEME%AOPRINT,molecule,AObasis,uncont,intnrm)
-         print*,'batchindex',batchindex,'nAObatches',nAObatches
+         !print*,'batchindex',batchindex,'nAObatches',nAObatches
          IF(batchindex.LE.nAObatches)THEN
             CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
                  & SCHEME%AOPRINT,molecule,AObasis,AObatch,&
                  & uncont,intnrm,batchindex,AObatchdim,batchsize)
          ELSE
             batchindex2=batchindex-nAObatches
-            print*,'batchindex2',batchindex2,'nAObatches',nAObatches
+            !print*,'batchindex2',batchindex2,'nAObatches',nAObatches
             CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
                  & SCHEME%AOPRINT,molecule,AObasis2,AObatch,&
                  & uncont,intnrm,batchindex2,AObatchdim,batchsize)

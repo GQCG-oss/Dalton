@@ -36,8 +36,6 @@ C
 #include "mxcent.h"
 #include "aovec.h"
 #include "iratdef.h"
-#include "eribuf.h"
-
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
@@ -59,6 +57,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
+#include "eritap.h"
 #include "soppinf.h"
 
 #ifdef VAR_MPI
@@ -359,7 +358,8 @@ C***********************************************************
          goto 888  ! Skips over the do loop that would normally assemble the Fock/density matrix sequentially
 
       endif parallelsoppa
-#endif !!endif VAR_MPI
+#endif
+!!endif VAR_MPI
 
             DO 220 ILLL = 1,NTOT
 C------------------------------------------------
@@ -838,7 +838,8 @@ C
 #endif
 ! Parameter-only include files
 #include "implicit.h"
-#include "mpif.h" !use mpi fails with some profilers...
+!use mpi fails with some profilers...
+#include "mpif.h"
 #include "priunit.h" 
 #include "maxorb.h" 
 #include "maxash.h"
@@ -854,6 +855,7 @@ C
 
 ! These include files depend on previous include files
 #include "infpar.h" 
+#include "eritap.h" 
 #include "eribuf.h" 
 
 ! The rest...
@@ -1668,7 +1670,8 @@ C F.Beyer Oct. 2014.
 
 #include"implicit.h"
 #include"mpif.h"
-#include"parsoppa.h" !fetches ntot
+!parsoppa.h fetches ntot
+#include"parsoppa.h"
 
       ! Dummy parameters
       real, dimension(ntot), intent(inout) :: timings
@@ -1789,7 +1792,8 @@ C     F.Beyer Oct. 2014.
 #include "implicit.h"
 #include "priunit.h"
 #include "mpif.h"
-#include "parsoppa.h" ! to get the value for NTOT and KINDXB
+! parsoppa.h to get the value for NTOT and KINDXB
+#include "parsoppa.h"
 
 C     Dummy parameters
       integer, intent(in) :: lwork
@@ -1949,7 +1953,8 @@ C    But since this is a cc block, someone may change that to MXCORB_CC
       end subroutine stupid_isao_bcast_routine
 
 
-#endif !VAR_MPI at the beginning of PAR_SO_ERES
+#endif
+!VAR_MPI at the beginning of PAR_SO_ERES
 
 !#ifdef NOTDEFINED
       subroutine stupid_checksum( nameofdata , checkdata, ldata )
