@@ -5702,6 +5702,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         case(2)
            locally_stored_tiles = locally_stored_tiles * 3
            locally_stored_v2o2  = 0
+        case(1)
+           locally_stored_tiles = locally_stored_tiles * 3
+           locally_stored_v2o2  = 0
         case(0)
            print *,"WARNING(ccsd_residual_integral_driven): this is a hack to use scheme 0"
            locally_stored_tiles = locally_stored_tiles * 3
