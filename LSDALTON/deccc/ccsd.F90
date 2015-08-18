@@ -810,7 +810,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 #endif
 !`DIL: temporary:
-!#undef DIL_ACTIVE
+#undef DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
