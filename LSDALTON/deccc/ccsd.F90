@@ -2478,11 +2478,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Finish the MPI part of the Residual calculation
      call time_start_phase(PHASE_IDLE, at = time_intloop_work )
 
+#ifdef DIL_ACTIVE
+     scheme=sch_sym !`DIL: remove
+#endif
      if(alloc_in_dummy.and.(scheme==2.or.(scheme==1.and.DIL_LOCK_OUTSIDE)))then
         call tensor_unlock_wins(tpl, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
         call tensor_unlock_wins(tmi, all_nodes = alloc_in_dummy, check =.not.alloc_in_dummy)
         if(scheme==1.and.DIL_LOCK_OUTSIDE) call tensor_unlock_wins(o2ilej,all_nodes=.true.)
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL: remove
+#endif
 
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      call lsmpi_barrier(infpar%lg_comm)
