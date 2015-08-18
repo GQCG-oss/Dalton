@@ -3629,7 +3629,8 @@ contains
            if(s==0) maxsize = maxsize + (i8*n1*n2)*n3*n4
            if(s==2) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
-           if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or.  maxsize > nbu)then
+           if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or. &
+              & (nbu < maxsize.and.use_bg_buf) ) then
 
               if(s==3)then
                  nba = max(i-inc,MinAObatch)
