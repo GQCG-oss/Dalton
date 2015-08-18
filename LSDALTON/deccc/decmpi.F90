@@ -19,7 +19,7 @@ module decmpi_module
   use dec_fragment_utils
   use array4_simple_operations
   use array2_simple_operations
-
+  use CABS_operations
 contains
  
 #ifdef VAR_MPI
@@ -679,14 +679,10 @@ contains
        call mem_alloc(MyMolecule%bas_start,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%bas_end,MyMolecule%nbasis)
        IF(DECINFO%F12)THEN
+          call init_cabs()
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
        ENDIF
-       !IF(DECinfo%F12)THEN
-       !   call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
-       !   call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-       !ENDIF
-
        if(.not.MyMolecule%mem_distributed)then
           call tensor_init(MyMolecule%Co,[MyMolecule%nbasis,MyMolecule%nocc],2)
           call tensor_init(MyMolecule%Cv,[MyMolecule%nbasis,MyMolecule%nvirt],2)
@@ -739,11 +735,6 @@ contains
 
     ! Real pointers
     ! -------------
-    !IF(DECinfo%F12)THEN
-    !   call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
-    !   call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-    !ENDIF
-
     if(MyMolecule%mem_distributed)then
 
        !master get adresses

@@ -573,7 +573,7 @@ contains
          & mynum,numnodes,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,nocc,noccfull,ncabsMO,nbasis,&
+    call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,NBA,nocc,noccfull,ncabsMO,nbasis,&
          & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
 
     mp2f12_energy = mp2f12_energy + EV3 + EV4
