@@ -465,7 +465,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                factor = 1.0E0_realk
             ENDIF
             call BuildnAuxMPIUsedRIinfo(nAux,numnodes,inode-1,AuxMPIstartMPI,iAuxMPIextraMPI)
-            call mem_alloc(UmatTmp,NBA,NBA2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(UmatTmp,NBA*i8,NBA2*i8)
+            ELSE
+               call mem_alloc(UmatTmp,NBA,NBA2)
+            ENDIF
             Call BuilDUmatTmpRIF12(Umat,nAux,UmatTmp,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,&
                  & AuxMPIstartMPI,iAuxMPIextraMPI)
             IF(mynum.EQ.inode-1)THEN
@@ -479,15 +483,27 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
             ELSE
                node = inode-1
                !recieve
-               call mem_alloc(CalphaMPI,nsize)
+               IF(use_bg_buf)THEN
+                  call mem_pseudo_alloc(CalphaMPI,nsize)
+               ELSE
+                  call mem_alloc(CalphaMPI,nsize)
+               ENDIF
                call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
                M = NBA          !rows of Output Matrix
                N = nocc*nocc    !columns of Output Matrix
                K = NBA2          !summation dimension
                call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaMPI,K,factor,CalphaD,M)
-               call mem_dealloc(CalphaMPI)
+               IF(use_bg_buf)THEN
+                  call mem_pseudo_dealloc(CalphaMPI)
+               ELSE
+                  call mem_dealloc(CalphaMPI)
+               ENDIF
             ENDIF
-            call mem_dealloc(UmatTmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(UmatTmp)
+            ELSE
+               call mem_dealloc(UmatTmp)
+            ENDIF
          ENDDO
       ELSE
          M = NBA          !rows of Output Matrix
@@ -633,12 +649,20 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRI_pf(nBA,nocc,nocv,CalphaR,CalphaMPI,NBA2,EV2tmp)
             call ContractTwo4CenterF12IntegralsRIX_ncMPI(nBA,nocc,nocv,CalphaMPI,NBA2,CalphaG,&
                  & CalphaT,EX2tmp)
-            call mem_dealloc(CalphaMPI)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
          ENDIF
          EV2 = EV2 + EV2tmp
          EX2 = EX2 + EX2tmp
@@ -756,14 +780,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
             ELSE
                node = inode-1
                !recieve
-               call mem_alloc(CalphaMPI,nsize)
-               call mem_alloc(CalphaMPI2,nsize2)
+               IF(use_bg_buf)THEN
+                  call mem_pseudo_alloc(CalphaMPI,nsize)
+                  call mem_pseudo_alloc(CalphaMPI2,nsize2)
+               ELSE
+                  call mem_alloc(CalphaMPI,nsize)
+                  call mem_alloc(CalphaMPI2,nsize2)
+               ENDIF
                call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
                call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
                call FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nbasis,CalphaMPI,&
                     & CalphaMPI2,NBA2,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt)
-               call mem_dealloc(CalphaMPI)
-               call mem_dealloc(CalphaMPI2)
+               IF(use_bg_buf)THEN
+                  call mem_pseudo_dealloc(CalphaMPI2)
+                  call mem_pseudo_dealloc(CalphaMPI)
+               ELSE
+                  call mem_dealloc(CalphaMPI)
+                  call mem_dealloc(CalphaMPI2)
+               ENDIF
             ENDIF
             E_21C = E_21C + E_21Ctmp
          ENDDO
@@ -802,14 +836,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
-            call mem_alloc(CalphaMPI2,nsize2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize)
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,NBA2,nocc,noccfull,ncabsMO,nocv,&
                  & CalphaMPI,CalphaGcabsMO,CalphaMPI2,CalphaG,EV3tmp,EV4tmp)
-            call mem_dealloc(CalphaMPI)
-            call mem_dealloc(CalphaMPI2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
          ENDIF
          EV3 = EV3 + EV3tmp
          EV4 = EV4 + EV4tmp         
@@ -901,11 +945,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,&
                  & CalphaCvirt,CalphaD,CalphaMPI,NBA2,EV5tmp)
-            call mem_dealloc(CalphaMPI)            
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
          ENDIF
          EV5 = EV5 + EV5tmp
       ENDDO
@@ -999,15 +1051,25 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
-            call mem_alloc(CalphaMPI2,nsize2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIX3X4_ncMPI(NBA,nocc,noccfull,ncabsMO,&
                  & CalphaMPI,CalphaMPI2,NBA2,&
                  & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp)
-            call mem_dealloc(CalphaMPI)
-            call mem_dealloc(CalphaMPI2)            
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
          ENDIF
          EX3 = EX3 + EX3tmp
          EX4 = EX4 + EX4tmp         
@@ -1077,11 +1139,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIB4MPI(nBA,nocc,ncabsAO,CalphaMPI,NBA2,&
                  & CalphaGcabsAO,CalphaD,EB4tmp)   
-            call mem_dealloc(CalphaMPI)            
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
          ENDIF
          EB4 = EB4 + EB4tmp         
       ENDDO
@@ -1149,15 +1219,25 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
-            call mem_alloc(CalphaMPI2,nsize2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIB5MPI(nBA,nocc,ncabsAO,noccfull,nbasis,&
                  & CalphaMPI,CalphaMPI2,NBA2,&
                  & CalphaGcabsAO,CalphaG,CalphaD,EB5tmp)   
-            call mem_dealloc(CalphaMPI)
-            call mem_dealloc(CalphaMPI2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
          ENDIF
          EB5 = EB5 + EB5tmp
       ENDDO
@@ -1233,11 +1313,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIB6MPI(nBA,nocc,nvirt,nocv,noccfull,&
                  & CalphaMPI,NBA2,CalphaG,CalphaD,EB6tmp)
-            call mem_dealloc(CalphaMPI)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
          ENDIF
          EB6 = EB6 + EB6tmp         
       ENDDO
@@ -1299,14 +1387,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
-            call mem_alloc(CalphaMPI2,nsize2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIB7MPI(nBA,nocc,noccfull,ncabsMO,&
                  & CalphaMPI,CalphaMPI2,NBA2,CalphaGcabsMO,CalphaCoccT,CalphaD,EB7tmp)
-            call mem_dealloc(CalphaMPI)
-            call mem_dealloc(CalphaMPI2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
          ENDIF
          EB7 = EB7 + EB7tmp
       ENDDO
@@ -1373,14 +1471,24 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
-            call mem_alloc(CalphaMPI2,nsize2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIB8MPI(nBA,nocc,ncabsMO,nocv,noccfull,&
                  & CalphaMPI,CalphaMPI2,NBA2,CalphaGcabsMO,CalphaG,CalphaD,EB8tmp)
-            call mem_dealloc(CalphaMPI)
-            call mem_dealloc(CalphaMPI2)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
          ENDIF
          EB8 = EB8 + EB8tmp
       ENDDO
@@ -1439,11 +1547,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ELSE
             node = inode-1
             !recieve
-            call mem_alloc(CalphaMPI,nsize)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize) 
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+            ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIB9MPI(nBA,noccfull,nocc,nvirt,nocv,&
                  & CalphaMPI,NBA2,CalphaG,CalphaD,EB9tmp)
-            call mem_dealloc(CalphaMPI)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+            ENDIF
          ENDIF
          EB9 = EB9 + EB9tmp         
       ENDDO
