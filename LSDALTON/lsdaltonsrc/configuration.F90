@@ -3956,6 +3956,10 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       if (matrix_type == mtype_unres_dense) then
          call lsquit('Compressed Sparse Row (CSR) not implemented for unrestricted!',config%lupri)
       else
+#ifndef VAR_CSR
+         call lsquit('.CSR requires -DVAR_CSR precompiler flag (--csr on setup) ',config%lupri)
+#endif
+
 #ifdef VAR_MKL
          CALL mat_select_type(mtype_csr,lupri)         
          call mat_inquire_cutoff(cutoff)
