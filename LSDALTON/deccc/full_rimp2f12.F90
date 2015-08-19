@@ -417,6 +417,14 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
    ABdecompCreateR = .FALSE.
 
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      nbuf1=numnodes
+      call mem_alloc(nAuxMPI,nbuf1)
+      call BuildnAuxMPIUsedRI(nAux,numnodes,nAuxMPI)      
+   ENDIF
+#endif
+
    IF(DECinfo%NaturalLinearScalingF12TermsB1)THEN
       !This energy contribution have already been calculated so we extract the information 
       EB1 = MyMolecule%EF12NLSB1
@@ -450,9 +458,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !CalphaD(NBA,nocc,nocc) = -0.5*CalphaD(NBA,nocc,nocc) + Loop_NBA2 Umat(NBA,NBA2)*CalphaR(NBA2,nocc,nocc)
       !Where NBA is the Auxiliary assigned to this node, while NBA2 can be assigned to another node
       IF(wakeslaves)THEN
-         nbuf1=numnodes
-         call mem_alloc(nAuxMPI,nbuf1)
-         call BuildnAuxMPIUsedRI(nAux,numnodes,nAuxMPI)      
          call BuildnAuxMPIUsedRIinfo(nAux,numnodes,mynum,AuxMPIstartMy,iAuxMPIextraMy)
          DO inode = 1,numnodes
             nbuf1 = nAuxMPI(inode)
