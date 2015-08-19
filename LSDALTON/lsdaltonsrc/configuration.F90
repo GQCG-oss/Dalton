@@ -1841,6 +1841,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         config%diag%INFO_RH_MU            = .true.
      CASE('.INFO_RSP')
         config%response%rspsolverinput%INFO_RSP = .true.
+     CASE('.INFO_RSP_SPARSITY')
+        config%response%rspsolverinput%INFO_RSP_SPARSITY = .true.
      CASE('.INFO_RSP_REDSPACE')
         config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
         !CASE('.INFO_TIME_MAT_OPERATIONS')

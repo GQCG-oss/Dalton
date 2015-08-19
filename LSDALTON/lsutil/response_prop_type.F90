@@ -213,6 +213,8 @@ module response_wrapper_type_module
      LOGICAL     :: info_rsp
      !> print info about the soulution of the response calc reduced space
      LOGICAL     :: info_rsp_redspace
+     !> print info about the sparsity of the trial vectors
+     LOGICAL     :: info_rsp_sparsity
      !>
      LOGICAL     :: rsp_damp_2start
      !> Degenerate yes if degenerate states are possible
@@ -459,6 +461,7 @@ Contains
     rspsolverinput%cfg_unres = .false.
     rspsolverinput%info_rsp = .false.
     rspsolverinput%info_rsp_redspace = .false.
+    rspsolverinput%info_rsp_sparsity = .false.
     rspsolverinput%rsp_damp_2start = .false.
     rspsolverinput%degeneratestates = .FALSE.
     rspsolverinput%degenerateTHR = 1.d-5
