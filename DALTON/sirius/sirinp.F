@@ -664,7 +664,7 @@ C
       THROVL = 1.0D-6
       CMAXMO = 1.0D3
       FCVORB   = .FALSE.
-      DEFLVL = 0.0D0
+      DEFLVL = 1.0D0 ! code value to tell not set by user
 C
 C********** Default values section CIVINP *****
 C

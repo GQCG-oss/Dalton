@@ -512,17 +512,23 @@ C        DV(1) = D0
       THDIIS = THRRHF
       IF (THDIIS .LE. D0) THDIIS = THDDEF
 C
-C     Level shift ("restricted step" type step reduction)
-C     - initial value: zero
+C     Level shift SHFTLVL ("restricted step" type step reduction)
+C     - initial value: see next code block
 C     - used to modify FD matrix: FDAO(shifted) = FDAO + SHFTLVL*DCAO
-C       - this corresponds to increasing occ-unocc orb.en. gap by
-C         SHFTLVL and approximately to add -SHFTLVL to the
-C         approximate Hessian diagonal implicit in the Roothaan diag.
+C       - this corresponds to increasing occ-unocc orb.en. gap by SHFTLVL
+C         and approximately to add abs(SHFTLVL) to the approximate
+C         Hessian diagonal implicit in the Roothaan diagonalization.
 C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
-      SHFTLVL = DEFLVL
+      IF (DEFLVL .gt. 0.9D0) THEN ! .SHIFT not set in input
+         SHFTLVL = -0.35D0
+         DEFLVL  =  0.0D0 ! no default level shift in e.g. next geometry
+      ELSE ! .SHIFT has ben set in input
+         SHFTLVL = DEFLVL
+      END IF
       SHFTFAC = 0.7D0
+
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
 C     SCRFAC = 100*NBAST
@@ -1422,15 +1428,15 @@ C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
 !  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT
-          IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
-              EMCDIF_test = 0.0D0
-          ELSE
-              EMCDIF_test = EMCDIF
-          END IF
+         IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
+             EMCDIF_test = 0.0D0
+         ELSE
+             EMCDIF_test = EMCDIF
+         END IF
 C        Do not try that with open-shell - it does not work./pawsa
-!         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
-     &        GRDNRM .LE. 10.0D0 .AND.
+!        IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+         IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
+     &       GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
      &         EMCDIF_test*(GRDNRM-GRDNRM_OLD) .LT. -1.0D-10 )
@@ -1486,7 +1492,7 @@ c            the formula is empirical EMCDIF is positive here.
              SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4.0D0,ABS(EMCDIF)*10.D0))
 c            and slow down  the level shifting annealing...
              SHFTFAC = MIN(SHFTFAC + (1.D0-SHFTFAC)*0.25,0.85D0)
-         ELSE
+         ELSE IF (ITDIIS .GT. 1) THEN
              SHFTLVL =  SHFTLVL*SHFTFAC
 c            make sure we get right HOMO-LUMO gap in the end.
          END IF

@@ -52,7 +52,7 @@ f.add(from_string = 'Magnetic transition dipole moments',
 
 f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       num_lines = 27,
-      rel_tolerance = 1.0e-3)
+      abs_tolerance = 1.0e-2)
 
 
 test.run(['prop_ecd.dal'], ['C2H4_intgrl_sym.mol'], f={'out': f})
