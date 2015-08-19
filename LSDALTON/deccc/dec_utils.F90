@@ -13,6 +13,7 @@ module dec_fragment_utils
   use DALTONINFO!, only: ls_free
   use dec_typedef_module
   use dec_workarounds_module
+  use background_buffer_module
   use memory_handling!, only: mem_alloc, mem_dealloc, mem_allocated_global,&
   !       & stats_mem, get_avaiLable_memory
   use matrix_module!, only:matrix
@@ -3377,6 +3378,7 @@ end function max_batch_dimension
     write(funit) jobs%workt
     write(funit) jobs%commt
     write(funit) jobs%idlet
+    write(funit) jobs%comm_gl_master_time
     write(funit) jobs%gpu_flops
 
   end subroutine write_fragment_joblist_to_file
@@ -3424,6 +3426,7 @@ end function max_batch_dimension
     read(funit) jobs%workt
     read(funit) jobs%commt
     read(funit) jobs%idlet
+    read(funit) jobs%comm_gl_master_time
     read(funit) jobs%gpu_flops
 
     write(DECinfo%output,*)
@@ -3478,17 +3481,19 @@ end function max_batch_dimension
        call mem_alloc(jobs%workt,njobs)
        call mem_alloc(jobs%idlet,njobs)
        call mem_alloc(jobs%gpu_flops,njobs)
+       call mem_alloc(jobs%comm_gl_master_time,njobs)
        jobs%nslaves = 0
        jobs%nocc    = 0
-       jobs%nvirt  = 0
+       jobs%nvirt   = 0
        jobs%nbasis  = 0
        jobs%ntasks  = 0
-       jobs%flops   = 0.0E0_realk
-       jobs%LMtime  = 0.0E0_realk
-       jobs%commt   = 0.0E0_realk
-       jobs%workt   = 0.0E0_realk
-       jobs%idlet   = 0.0E0_realk
-       jobs%gpu_flops= 0.0E0_realk
+       jobs%flops     = 0.0E0_realk
+       jobs%LMtime    = 0.0E0_realk
+       jobs%commt     = 0.0E0_realk
+       jobs%workt     = 0.0E0_realk
+       jobs%idlet     = 0.0E0_realk
+       jobs%gpu_flops = 0.0E0_realk
+       jobs%comm_gl_master_time = 0.0E0_realk
     end if
 
   end subroutine init_joblist
@@ -3589,6 +3594,10 @@ end function max_batch_dimension
        call mem_dealloc(jobs%idlet)
        nullify(jobs%idlet)
     end if
+    if(associated(jobs%comm_gl_master_time)) then
+       call mem_dealloc(jobs%comm_gl_master_time)
+       nullify(jobs%comm_gl_master_time)
+    end if
     end if
 
   end subroutine free_joblist
@@ -3627,7 +3636,7 @@ end function max_batch_dimension
     jobs%esti(position)      = singlejob%esti(1)
     jobs%nslaves(position)   = singlejob%nslaves(1)
     jobs%nocc(position)      = singlejob%nocc(1)
-    jobs%nvirt(position)    = singlejob%nvirt(1)
+    jobs%nvirt(position)     = singlejob%nvirt(1)
     jobs%nbasis(position)    = singlejob%nbasis(1)
     jobs%ntasks(position)    = singlejob%ntasks(1)
     jobs%flops(position)     = singlejob%flops(1)
@@ -3636,6 +3645,7 @@ end function max_batch_dimension
     jobs%commt(position)     = singlejob%commt(1)
     jobs%idlet(position)     = singlejob%idlet(1)
     jobs%gpu_flops(position) = singlejob%gpu_flops(1)
+    jobs%comm_gl_master_time(position) = singlejob%comm_gl_master_time(1)
 
   end subroutine put_job_into_joblist
 
@@ -4132,22 +4142,26 @@ end function max_batch_dimension
   end subroutine orthogonalize_MOs
 
   !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_total_energy_summary(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,doSOS)
+  subroutine print_total_energy_summary(EHF,Edft,Ecorr,EF12sing,dE_est1,dE_est2,dE_est3,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
+    !> F12 singles correction
+    real(realk),intent(in) :: EF12sing
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: dE_est1,dE_est2,dE_est3
     logical,intent(in),optional :: doSOS
     integer :: lupri
 
     lupri=6
-    call print_total_energy_summary_lupri(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,lupri,doSOS=doSOS)
+    call print_total_energy_summary_lupri(EHF,Edft,Ecorr,EF12sing,dE_est1,dE_est2,&
+         & dE_est3,lupri,doSOS=doSOS)
 
     lupri=DECinfo%output
-    call print_total_energy_summary_lupri(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,lupri,doSOS=doSOS)
+    call print_total_energy_summary_lupri(EHF,Edft,Ecorr,EF12sing,dE_est1,dE_est2,&
+         & dE_est3,lupri,doSOS=doSOS)
 
 
   end subroutine print_total_energy_summary
@@ -4156,12 +4170,15 @@ end function max_batch_dimension
   !> (Necessary to place here because it is used both for DEC and for full calculation).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine print_total_energy_summary_lupri(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3,lupri,doSOS)
+  subroutine print_total_energy_summary_lupri(EHF,Edft,Ecorr,EF12sing,&
+       & dE_est1,dE_est2,dE_est3,lupri,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF,Edft
     !> Correlation energy
     real(realk),intent(in) :: Ecorr
+    !> F12 singles correction
+    real(realk),intent(in) :: EF12sing
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: dE_est1,dE_est2,dE_est3
     !> Logical unit number to print to
@@ -4169,6 +4186,13 @@ end function max_batch_dimension
     !> SOS cont
     logical,intent(in),optional :: doSOS
     logical :: SOS
+    real(realk) :: EF12singles
+
+    if(DECinfo%F12singles) then
+       EF12singles=EF12sing
+    else
+       EF12singles=0.0_realk
+    end if
 
     SOS = .false.
     if(present(doSOS)) SOS = doSOS
@@ -4197,29 +4221,30 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)') 'G: DFT energy               :', Edft
        ENDIF
        write(lupri,'(15X,a,f20.10)')    'G: Correlation energy       :', Ecorr
-       ! skip error print for full calculation (0 by definition)
-       if(.not.DECinfo%full_molecular_cc)then  
-          if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
-             write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 1      :', dE_est1
-          endif
-          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 2      :', dE_est2
-          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 3      :', dE_est3
+
+       if(DECinfo%F12 .and. DECinfo%F12singles) then
+          write(lupri,'(15X,a,f20.10)') 'G: F12 singles              :', EF12singles
        end if
+
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2-F12 energy     :', Ehf+Ecorr+EF12singles
           else          
              write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2-F12 energy   :', Ehf+Ecorr+EF12singles
+          else
+             write(lupri,'(15X,a,f20.10)') 'G: Total RIMP2 energy       :', Ehf+Ecorr
+          endif   
        elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy     :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'G: Total CCSD-F12 energy     :', Ehf+Ecorr+EF12singles
           else    
              write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy         :', Ehf+Ecorr
           endif
@@ -4248,6 +4273,16 @@ end function max_batch_dimension
        else
           write(lupri,'(15X,A,I4,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
        end if
+
+       ! skip error print for full calculation (0 by definition)
+       if(.not.DECinfo%full_molecular_cc)then  
+          if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
+             write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 1 :', dE_est1
+          endif
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 2 :', dE_est2
+          write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC err 3 :', dE_est3
+       end if
+
     else
        IF(.NOT.DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
@@ -4262,17 +4297,13 @@ end function max_batch_dimension
          write(lupri,'(15X,a,f20.10)')     'E: Correlation energy  :', Ecorr
        endif
 
-       ! skip error print for full calculation (0 by definition)
-       if(.not.DECinfo%full_molecular_cc)then  
-          if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
-             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC err 1      :', dE_est1
-          endif
-          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2      :', dE_est2
-          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3      :', dE_est3
+       if(DECinfo%F12 .and. DECinfo%F12singles) then
+          write(lupri,'(15X,a,f20.10)')    'E: F12 singles         :', EF12singles
        end if
+
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr+EF12singles
           else          
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2 energy         :', Ehf+Ecorr      
           endif
@@ -4281,12 +4312,12 @@ end function max_batch_dimension
        elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr+EF12singles
        elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
           if (DECinfo%F12) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Tot CCSD-F12 energy :', Ehf+Ecorr+EF12singles
           else          
              write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
           endif
@@ -4313,8 +4344,18 @@ end function max_batch_dimension
            endif
           endif
        else
-          write(lupri,'(15X,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
+          write(lupri,'(15X,A,I4)') 'E: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
        end if
+
+       ! skip error print for full calculation (0 by definition)
+       if(.not.DECinfo%full_molecular_cc)then  
+          if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
+             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC err 1 :', dE_est1
+          endif
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 2 :', dE_est2
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC err 3 :', dE_est3
+       end if
+
     end if
     write(lupri,*)
     write(lupri,*)
@@ -4713,6 +4754,30 @@ end function max_batch_dimension
                &'RI-MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', energies(FRAGMODEL_LAGRIMP2)
        end if
        write(DECinfo%output,*)
+
+#ifdef MOD_UNRELEASED
+    if(DECInfo%F12) then
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+          & 'RIMP2F12 occupied single energies','AF_MP2f12_OCC')
+       
+       if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+          & DistanceTable, 'RIMP2f12 occupied pair energies','PF_MP2F12f12_OCC')
+       
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a)') '*                  DEC ENERGY SUMMARY                    *'
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+
+       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2 CORRECTION TO ENERGY:          ', energies(FRAGMODEL_OCCRIMP2)  
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_RIMP2f12)
+       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2-F12 CORRELATION ENERGY:        ', &
+          & energies(FRAGMODEL_OCCRIMP2) + energies(FRAGMODEL_RIMP2f12)
+       write(DECinfo%output,*)       
+
+
+    endif
+#endif
+
     case(MODEL_LSTHCRIMP2)
        if(.not.DECinfo%onlyvirtpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
@@ -4771,7 +4836,7 @@ end function max_batch_dimension
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
                & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
             if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
+               & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2F12f12_OCC')
        
        case(MODEL_CCSD)
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
@@ -4800,24 +4865,6 @@ end function max_batch_dimension
                & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_CCSDf12)
        end select
 
-!!$       if(DECinfo%F12debug) then
-!!$          write(*,'(1X,a)') '**********************************************************'
-!!$          write(*,'(1X,a)') '*                   DEC-F12 ENERGY SUMMARY               *'
-!!$          write(*,'(1X,a)') '**********************************************************'
-!!$        
-!!$          select case(DECinfo%ccmodel)
-!!$          case(MODEL_MP2)
-!!$             write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:         ', energies(FRAGMODEL_OCCMP2)  
-!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2  ENERGY:    ', energies(FRAGMODEL_MP2f12)
-!!$          case(MODEL_CCSD)
-!!$             write(*,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY:        ', energies(FRAGMODEL_OCCCCSD)
-!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD  ENERGY:   ', energies(FRAGMODEL_MP2f12)
-!!$
-!!$             write(*,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:      ', &
-!!$                  & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
-!!$          end select
-!!$       endif
-       
     endif
 #endif
 
@@ -5779,8 +5826,8 @@ end function max_batch_dimension
      case( TT_TILED_DIST )
 
 
-        call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
-           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset, bg=bg )
+        call tensor_init(u, t2%dims, int(t2%mode), tensor_type = t2%itype,&
+           &pdm = t2%access_type, tdims = int(t2%tdim), fo = int(t2%offset), bg=bg )
 
         if(DECinfo%use_singles)then
 

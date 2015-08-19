@@ -59,7 +59,7 @@ c-----------------------------------------------------------------------
 #include "ccsdinp.h"
 #include "cbieri.h"
 #include "distcl.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "r12int.h"
 #include "ccr12int.h"
 #include "second.h"

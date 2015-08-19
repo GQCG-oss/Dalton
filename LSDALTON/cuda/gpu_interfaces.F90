@@ -353,6 +353,82 @@ contains
   end subroutine ls_ddot_acc
 
 
+  subroutine ls_sdot_acc(n,a,inca,b,incb,res,acc_handle,cublas_handle)
+
+       use precision
+       use iso_c_binding
+#ifdef VAR_OPENACC
+       use openacc
+#endif
+
+       implicit none
+
+       integer(kind=8), intent(in) :: n
+       integer, intent(in) :: inca,incb
+       real(4), dimension(n), intent(in), target :: a,b
+       real(4), intent(inout), target :: res(1)
+#ifdef VAR_OPENACC
+       integer(kind=acc_handle_kind), intent(in) :: acc_handle
+#else
+       integer, intent(in) :: acc_handle
+#endif
+       integer*4 :: stat
+       type(c_ptr), intent(in) :: cublas_handle ! NOTE: To use cublas, make sure you've called cublasCreate_v2 beforehand!!!
+       logical :: async
+       !> ddot
+       real(realk), external :: sdot
+#if defined(VAR_OPENACC) && defined(VAR_CRAY)
+       real(realk), external :: sdot_acc
+#endif
+
+#ifdef VAR_OPENACC
+
+       async = .false.
+       if (acc_handle .ne. acc_async_sync) async = .true.
+
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+
+       if (async) then
+
+!$acc host_data use_device(a,b,res)
+!          call sdot_acc_openacc_async(acc_handle,n,a,1,b,1,res)
+          call sgemm_acc_openacc_async(acc_handle,'n','n',1,1,n,real(1.0E0_realk,kind=4),&
+                             & a,1,b,n,real(0.0E0_realk,kind=4),res,1)
+!$acc end host_data
+
+       else
+
+!$acc host_data use_device(a,b,res)
+!          res = sdot_acc(n,a,1,b,1)
+          call sgemm_acc('n','n',1,1,n,real(1.0E0_realk,kind=4),a,1,b,n,real(0.0E0_realk,kind=4),res,1)
+!$acc end host_data
+
+       endif
+
+#elif defined(VAR_CUBLAS)
+
+!$acc host_data use_device(a,b,res)
+!       stat = cublasSdot_v2(cublas_handle,int(n,kind=4),a,int(1,kind=4),b,int(1,kind=4),res)
+       stat = cublasSgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(n,kind=4),&
+                             & real(1.0E0_realk,kind=4),c_loc(a),int(1,kind=4),c_loc(b),int(n,kind=4),&
+                             & real(0.0E0_realk,kind=4),c_loc(res),int(1,kind=4))
+!$acc end host_data
+
+#endif
+
+       ! calculate the gpu flop count
+       call addDOT_FLOPonGPUaccouting(n)
+
+#else
+
+       ! call ordinary cpu ddot
+       res = sdot(n,a,1,b,1)
+
+#endif
+
+  end subroutine ls_sdot_acc
+
+
   subroutine AddFLOP_FLOPonGPUaccouting(inputFLOPonGPU)
 
     implicit none

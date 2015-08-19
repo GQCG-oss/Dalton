@@ -24,7 +24,6 @@ module ccintegrals
   use buildaobatch
   use memory_handling
   use daltoninfo
-  use lspdm_tensor_operations_module
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module
@@ -48,7 +47,7 @@ module ccintegrals
   end interface
 
   private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
-       & gao_to_gmo, get_MO_batches_info, pack_and_add_gmo
+       & init_gmo_arrays, gao_to_gmo, get_MO_batches_info, pack_and_add_gmo
 
 contains
 
@@ -1481,7 +1480,7 @@ contains
     integer :: MinAOBatch, MinMOBatch, na, ng, nnod, magic,iAO
 
     MinMOBatch = min(15,ntot)
-    factor = 0.9E0_realk
+    factor = 0.8E0_realk
     dimMO = MinMOBatch
     local = .false.
     nnod  = 1
@@ -1518,7 +1517,7 @@ contains
        else
           ! try first for scheme with highest requirements --> fastest
           local = .true.
-          call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+          MemNeed = get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO)
 
           ! if not enough mem then switch to full PDM scheme:
           if (MeMNeed>factor*MemFree) then
@@ -1527,11 +1526,11 @@ contains
        end if
     end if
 
-    call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+    MemNeed = get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO)
 
     do while ((MemNeed<factor*MemFree).and.(dimMO<=ntot))
        dimMO = dimMO + 1
-       call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO)
+       MemNeed = get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO)
     end do
 
     if (dimMO>=ntot) then
@@ -1563,7 +1562,7 @@ contains
        end do
     end if
     ! sanity check:
-    call get_mem_MO_CCSD_residual(local,MemNeed,ntot,nb,no,nv,dimMO) 
+    MemNeed = get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO)
     if ((MemFree-MemNeed)<=0.0E0_realk) then
        mo_ccsd = .false.
        write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
@@ -1576,6 +1575,25 @@ contains
        end if
        return
     end if
+
+    ! Check that there is enough mem in bg buffer:
+    if(mem_is_background_buf_init())then
+       MemNeed = get_mem_MO_CCSD_residual(local,nb,no,nv,dimMO,2)
+       MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
+       if ((MemFree-MemNeed)<=0.0E0_realk) then
+          mo_ccsd = .false.
+          write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
+          write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+          if (DECinfo%force_scheme) then
+             call lsquit('Insufficient memory in background buffer for MO-based CCSD &
+                & (remove force scheme)',DECinfo%output)
+          else
+             write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                  & back to standard algorithm.'
+          end if
+          return
+       end if
+    endif
     Nbatch = (ntot-1)/dimMO + 1
 
     !===========================================================
@@ -1592,15 +1610,13 @@ contains
        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
     ENDIF
 
-    call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-         & MinAObatch,MinAObatch,MinAObatch)
+    MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MinAObatch,MinAObatch)
 
     MaxGamma = MinAObatch
     MaxAlpha = MinAObatch
     do while ((MemNeed<factor*MemFree).and.(MaxGamma<=nb)) 
        MaxGamma = MaxGamma + 1
-       call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-            & MaxAlpha,MaxGamma,MinAObatch)  
+       MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma)
     end do
     if (MaxGamma>=nb) then
        MaxGamma = nb
@@ -1611,8 +1627,7 @@ contains
     end if
     do while ((MemNeed<factor*MemFree).and.(MaxAlpha<=nb)) 
        MaxAlpha = MaxAlpha + 1
-       call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-            & MaxAlpha,MaxGamma,MinAObatch)  
+       MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma)
     end do
     if (MaxAlpha>=nb) then
        MaxAlpha = nb
@@ -1651,16 +1666,38 @@ contains
     end if
 
     ! sanity check:
-    call get_mem_t1_free_gmo(local,MemNeed,ntot,nb,no,nv,dimMO,Nbatch, &
-         & MaxAlpha,MaxGamma,MinAObatch)  
+    MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma)
     if ((MemFree-MemNeed)<=0.0E0_realk) then
        mo_ccsd = .false.
-       write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
-            & back to standard algorithm.'
        write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
        write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+       if (DECinfo%force_scheme) then
+          call lsquit('Insufficient memory in MO-based CCSD (2) (remove force scheme)',DECinfo%output)
+       else
+          write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+               & back to standard algorithm. (2)'
+       end if
        return
     end if
+
+    ! Check that there is enough mem in bg buffer:
+    if(mem_is_background_buf_init())then
+       MemNeed = get_mem_t1_free_gmo(local,nb,no,nv,dimMO,MaxAlpha,MaxGamma,2)
+       MemFree = (dble(mem_get_bg_buf_n())*8.0E0_realk)/(1024.0**3)
+       if ((MemFree-MemNeed)<=0.0E0_realk) then
+          mo_ccsd = .false.
+          write(DECinfo%output,'(a,F12.5,a)') '   Available memory:',MemFree,' GB'
+          write(DECinfo%output,'(a,F12.5,a)') '   Required memory :',MemNeed,' GB'
+          if (DECinfo%force_scheme) then
+             call lsquit('Insufficient memory in background buffer for MO-based CCSD (2) &
+                & (remove force scheme)',DECinfo%output)
+          else
+             write(DECinfo%output,*) 'WARNING: Insufficient memory in MO-based CCSD, &
+                  & back to standard algorithm. (2)'
+          end if
+          return
+       end if
+    endif
 
   end subroutine get_MO_and_AO_batches_size
 
@@ -1671,56 +1708,78 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
-  subroutine get_mem_t1_free_gmo(local,MemOut,M,N,O,V,X,nMOB,AlphaDim,GammaDim,MinDimAO)
+  function get_mem_t1_free_gmo(local,N,O,V,X,adim,gdim,which_mem) result(mem_out)
 
     implicit none 
 
-    ! M: tot number of MO
     ! N: tot number of AO
     ! O: number of occ. orbs.
     ! V: number of virt. orbs.
     ! X: dimension of MO batch.
-    ! nMOB: number of MO batches.
-    integer,  intent(in) :: M, N, O, V, X, nMOB
+    integer,  intent(in) :: N, O, V, X
     !> use local scheme?
     logical :: local
     !> AO stuff:
-    integer, intent(in) :: AlphaDim, GammaDim, MinDimAO
+    integer, intent(in) :: adim, gdim
     !> memory needed:
-    real(realk), intent(inout) :: MemOut
-    ! intermediate memory:
-    integer :: nnod
-    integer(kind=long) :: MemNeed, nTileMax
+    real(realk) :: mem_out
+    !> define memory output:
+    !  which_mem = 1 (default) returns total memory
+    !  which_mem = 2 returns bg memory only
+    !  which_mem = 3 returns non bg memory only
+    integer, intent(in), optional :: which_mem
+    !> intermediate memory:
+    integer :: nnod, nMOB, M, wm
+    integer(kind=long) :: mem0, mem1, mem2
+    integer(kind=long) :: ntile_max, mem_bg, mem_not_bg
+
+    wm = 1
+    if (present(which_mem)) wm = which_mem
 
     nnod = 1
+    M = O+V
+    nMOB = (M-1)/X + 1
+    mem_out = 0.0_realk
+    mem_bg = 0.0_realk
+    mem_not_bg = 0.0_realk
+
 #ifdef VAR_MPI
     nnod = infpar%lg_nodtot
 #endif
     if (local) nnod = 1
 
     ! Transfo. matrices:
-    MemNeed = N*M + AlphaDim*X + GammaDim*X
+    mem_bg = mem_bg + N*M + adim*X + gdim*X
 
     ! AO stuff:
-    MemNeed = MemNeed + 4*N + N*N*AlphaDim*GammaDim 
+    mem_not_bg = mem_not_bg + 4*N + N*N*adim*gdim 
 
     ! Packed gmo diag blocks:
-    nTileMax = (nMOB-1)/nnod + 3
-    MemNeed = MEmNeed + nTileMax*X*(X+1)*M*(M+1)/4
+    ntile_max = (nMOB-1)/nnod + 3
+    mem_bg = mem_bg + ntile_max*X*(X+1)*M*(M+1)/4
     ! Packed gmo upper blocks:
-    nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
-    MemNeed = MEmNeed + nTileMax*X*X*M*(M+1)/2
+    ntile_max = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+    mem_bg = mem_bg + ntile_max*X*X*M*(M+1)/2
 
     ! MO stuff:
-    MemNeed = MemNeed + 5*nMOB*nMOB + 1
+    mem_not_bg = mem_not_bg + 5*nMOB*nMOB + 1
 
     ! Working arrays:
-    MemNeed = MemNeed + max(M*N*AlphaDim*GammaDim, M*M*GammaDim*X)
-    MemNeed = MemNeed + max(M*M*AlphaDim*GammaDim, M*M*X*X)
+    mem_bg = mem_bg + max(M*N*adim*gdim, M*M*gdim*X)
+    mem_bg = mem_bg + max(M*M*adim*gdim, M*M*X*X)
 
-    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
+    select case(wm)
+    case(1)
+      mem_out = (mem_bg + mem_not_bg)*8.0E0_realk/(1.024E3_realk**3) 
+    case(2)
+      mem_out = (mem_bg)*8.0E0_realk/(1.024E3_realk**3) 
+    case(3)
+      mem_out = (mem_not_bg)*8.0E0_realk/(1.024E3_realk**3) 
+    case default
+       call lsquit("ERROR(get_mem_t1_free_gmo): input not valid",DECinfo%output)
+    end select
 
-  end subroutine get_mem_t1_free_gmo
+  end function get_mem_t1_free_gmo
 
 
   !> Purpose: Get memory required in get_ccsd_residual_mo_ccsd 
@@ -1731,27 +1790,38 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    December 2013
-  subroutine get_mem_MO_CCSD_residual(local,MemOut,M,N,O,V,X)
+  function get_mem_MO_CCSD_residual(local,N,O,V,X,which_mem) result(mem_out)
 
     implicit none 
 
-    ! M: tot number of MO
     ! N: tot number of AO
     ! O: number of occ. orbs.
     ! V: number of virt. orbs.
     ! X: dimension of MO batch.
-    integer,  intent(in) :: M, N, O, V, X
+    integer,  intent(in) :: N, O, V, X
     !> use local scheme?
-    logical :: local
+    logical, intent(in) :: local
     !> memory needed:
-    real(realk), intent(out) :: MemOut
+    real(realk) :: mem_out
+    !> define memory output:
+    !  which_mem = 1 (default) returns total memory
+    !  which_mem = 2 returns bg memory only
+    !  which_mem = 3 returns non bg memory only
+    integer, intent(in), optional :: which_mem
     !> intermediate memory:
-    integer :: nnod, nMOB
+    integer :: nnod, nMOB, M, wm
     integer(kind=long) :: mem0, mem1, mem2
-    integer(kind=long) :: nTileMax, MemNeed
+    integer(kind=long) :: ntile_max, mem_bg, mem_not_bg
 
+    wm = 1
+    if (present(which_mem)) wm = which_mem
+
+    M = O+V
     nMOB = (M-1)/X + 1
     nnod = 1
+    mem_out = 0.0_realk
+    mem_bg = 0.0_realk
+    mem_not_bg = 0.0_realk
 #ifdef VAR_MPI
     nnod = infpar%lg_nodtot
 #endif
@@ -1759,38 +1829,44 @@ contains
 
     ! Tiled array are kept as dense during the residual calc:
     ! (govov amplitudes and residual)
-    MemNeed = 3*O*O*V*V
+    mem_bg = mem_bg + 3*O*O*V*V
 
     ! Packed gmo diag blocks:
-    nTileMax = (nMOB-1)/nnod + 3
-    MemNeed = MemNeed + nTileMax*X*(X+1)*M*(M+1)/4
+    ntile_max = (nMOB-1)/nnod + 3
+    mem_bg = mem_bg + ntile_max*X*(X+1)*M*(M+1)/4
 
     ! Packed gmo upper blocks:
-    nTileMax = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
-    MemNeed = MemNeed + nTileMax*X*X*M*(M+1)/2
+    ntile_max = (nMOB*(nMOB-1)/2 - 1)/nnod + 3
+    mem_bg = mem_bg + ntile_max*X*X*M*(M+1)/2
 
     ! Working arrays (~ 3*v2o2):
     call get_mem_mo_ccsd_warrays(o,v,x, mem0, mem1, mem2)
-    MemNeed = MemNeed + mem0 + mem1 + mem2
+    mem_bg = mem_bg + mem0 + mem1 + mem2
 
     ! T1-Transfo. matrices:
-    MemNeed = MemNeed + V*M + O*M
+    mem_bg = mem_bg + V*M + O*M
 
     ! Batch of MO int:
-    MemNeed = MemNeed + X*X*M*M
+    mem_bg = mem_bg + X*X*M*M
 
     ! Intermediates (B2prep, u2, G_Pi, H_aQ):
-    MemNeed = MemNeed + O**4 + O*O*V*V + M*O + V*M
+    mem_bg = mem_bg + O**4 + O*O*V*V + M*O + V*M
 
     ! T1-transformed integrals:
-    MemNeed = MemNeed + 2*O*O*V*V 
+    mem_bg = mem_bg + 2*O*O*V*V 
 
-    ! Fock Matrix:
-    MemNeed = MemNeed + O*O + V*V + 2*O*V
+    select case(wm)
+    case(1)
+      mem_out = (mem_bg + mem_not_bg)*8.0E0_realk/(1.024E3_realk**3) 
+    case(2)
+      mem_out = (mem_bg)*8.0E0_realk/(1.024E3_realk**3) 
+    case(3)
+      mem_out = (mem_not_bg)*8.0E0_realk/(1.024E3_realk**3) 
+    case default
+       call lsquit("ERROR(get_mem_MO_CCSD_residual): input not valid",DECinfo%output)
+    end select
 
-    MemOut = MemNeed*8.0E0_realk/(1.024E3_realk**3) 
-
-  end subroutine get_mem_MO_CCSD_residual
+  end function get_mem_MO_CCSD_residual
 
 
   !> Purpose: Get maximum used memory for working array in the MO-based 
@@ -1819,19 +1895,18 @@ contains
     ! a one to one  mapping between the code and this routine (and the notes).
 
     ! Max memory used for tmp0:
-    mem0 = max(x*m*x*m, x*m*vbar*v, v*vbar*o*o, v*v*obar*o, x*x*o*v, &
-       & x*vbar*o*m, v*vbar*o*o, v*v*o*o)
+    mem0 = max(x*m*x*m, v*vbar*o*o, v*v*obar*o, o*o*v*x, x*vbar*o*m, &
+       & v*vbar*o*o, v*v*o*o)
     mem0 = int(i8*mem0, kind=long)
 
     ! Max memory used for tmp1:
     mem1 = max(x*x*m*o, m*o*v*o, m*obar*o*x, obar*o*o*o, vbar*v*o*o/2, &
        & obar*o*o*o/2, m*o*o*x/2, v*v*o*o/2, x*v*vbar*o, v*obar*o*x, &
-       & o*o*v*x, x*vbar*o*o, v*v*o*o)
+       & x*o*v*x, x*vbar*o*o, v*v*o*o)
     mem1 = int(i8*mem1, kind=long)
 
     ! Max memory used for tmp2:
-    mem2 = max(x*m*o*v, o*v*o*v, x*m*obar*o, m*obar*o*o, x*m*x*m, &
-       & x*m*o*o/2, v*o*o*x/2, x*vbar*o*v, v*v*o*o)
+    mem2 = max(x*m*o*v, o*v*o*v, m*obar*o*o, x*m*o*o/2, v*o*o*x/2, v*v*o*o)
     mem2 = int(i8*mem2, kind=long)
 
   end subroutine get_mem_mo_ccsd_warrays
@@ -1857,8 +1932,11 @@ contains
     !> gmo arrays:
     type(tensor), intent(inout) :: pgmo_diag, pgmo_up
 
+    logical :: use_bg_buf
     character(4) :: at
     integer :: pgmo_dims
+
+    use_bg_buf = mem_is_background_buf_init()
 
     ! define type of array:
     if (local_moccsd) then
@@ -1869,14 +1947,15 @@ contains
 
     ! Declare one array for the diagonal batches:
     pgmo_dims = ntot*(ntot+1)*dimMO*(dimMO+1)/4
-    call tensor_minit(pgmo_diag,[pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
+    call tensor_minit(pgmo_diag,[pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1], &
+       & bg=use_bg_buf)
     call tensor_zero(pgmo_diag)
 
     ! Declare one array for the upper diagonal batches if necesarry
     if (Nbat>1) then
       pgmo_dims = ntot*(ntot+1)*dimMO*dimMO/2
       call tensor_minit(pgmo_up,[pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
-                & tdims=[pgmo_dims,1])
+         & tdims=[pgmo_dims,1], bg=use_bg_buf)
       call tensor_zero(pgmo_up)
     end if
 
@@ -2081,7 +2160,7 @@ contains
        ! accumulate tile
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_accumulate_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_acc_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,w1,1,pack_gmo%ti(tile)%t(:),1)
@@ -2110,7 +2189,7 @@ contains
        ! accumulate tile
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_accumulate_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_acc_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,w1,1,pack_gmo%ti(tile)%t(:),1)
@@ -2162,7 +2241,7 @@ contains
 
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,int(tile,kind=4),tmp,ncopy)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
@@ -2200,7 +2279,7 @@ contains
 
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
+          call tensor_get_tile(pack_gmo,int(tile,kind=4),tmp,ncopy)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
@@ -2979,10 +3058,10 @@ contains
                          call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm2(fg,startD),nb,0.0E0_realk,work(bpos),m)
                          !accumulate TODO, meeds to be optimized
 #ifdef VAR_HAVE_MPI3
-                         call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_acc_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.true.,req=req(bidx))
 #else
-                         call tensor_accumulate_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_acc_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.false.)
 #endif
                          buf_sent = buf_sent + 1
@@ -3431,7 +3510,7 @@ contains
 
 
     if(DECinfo%PL>2)then
-       call print_norm(integral," NORM of the integral :",print_on_rank=0)
+       call print_norm(integral," NORM of the integral :",print_=(me==0))
     endif
 
     if(.not.local)then

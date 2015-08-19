@@ -59,12 +59,13 @@ contains
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
     DECinfo%JacobianThr = 1.0e-7
-    DECinfo%JacobianMaxSubspace = 1000
+    DECinfo%JacobianMaxSubspace = 10000
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
     DECinfo%HaldApprox = .false.
     DECinfo%LW1 = .false.
+    DECinfo%P_EOM_MBPT2 = .false.
 
 
     DECinfo%doDEC                  = .false.
@@ -235,10 +236,23 @@ contains
     DECinfo%ccMaxIter                = 100
     DECinfo%ccMaxDIIS                = 3
     DECinfo%ccModel                  = MODEL_MP2 ! see parameter-list in dec_typedef.f90
-    DECinfo%F12                      = .false.
-    DECinfo%F12fragopt               = .false.
-    DECinfo%F12debug                 = .false.
-    DECinfo%F12Ccoupling             = .false.
+    
+    ! F12 options
+
+    DECinfo%F12                            = .false.
+    DECinfo%F12fragopt                     = .false.
+    DECinfo%F12debug                       = .false.
+    DECinfo%F12Ccoupling                   = .false.
+    DECinfo%F12singles                     = .true.
+    DECinfo%F12singlesMaxIter              = 200
+    DECinfo%F12singlesThr                  = 1.0e-7
+    DECinfo%F12singlesMaxDIIS              = 3
+    DECinfo%NaturalLinearScalingF12Terms   = .false.
+    DECinfo%NaturalLinearScalingF12TermsV1 = .false.
+    DECinfo%NaturalLinearScalingF12TermsB1 = .false.
+    DECinfo%NaturalLinearScalingF12TermsX1 = .false.
+
+
     DECinfo%SOS                      = .false.
     DECinfo%PureHydrogenDebug        = .false.
     DECinfo%StressTest               = .false.
@@ -255,6 +269,7 @@ contains
     DECinfo%RIMP2_tiling             = .false.
     DECinfo%RIMP2_lowdin             = .true.
     DECinfo%RIMP2_Laplace            = .false.
+    DECinfo%RIMP2_deactivateopenmp   = .false.
 
     DECinfo%DFTreference             = .false.
     DECinfo%ccConvergenceThreshold   = 1e-9_realk
@@ -275,6 +290,7 @@ contains
     DECinfo%ijk_nbuffs        = 1000000
     DECinfo%abc_nbuffs        = 1000000
     DECinfo%acc_sync          = .false.
+    DECinfo%pt_single_prec    = .false.
     DECinfo%pt_hack           = .false.
     DECinfo%pt_hack2          = .false.
 
@@ -488,6 +504,9 @@ contains
        case('.LW1')
           DECinfo%LW1 = .true.
 
+       case('.P_EOM_MBPT2')
+          DECinfo%P_EOM_MBPT2 = .true.
+
 
        ! GENERAL INFO
        ! ============
@@ -566,6 +585,7 @@ contains
        case('.NBUFFS_IJK'); read(input,*) DECinfo%ijk_nbuffs
        case('.NBUFFS_ABC'); read(input,*) DECinfo%abc_nbuffs
        case('.ACC_SYNC'); DECinfo%acc_sync = .true.
+       case('.PT_SINGLE_PREC'); DECinfo%pt_single_prec = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
        case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
 
@@ -828,6 +848,8 @@ contains
           DECinfo%RIMP2_lowdin        = .false.
        case('.RIMP2_LAPLACE')
           DECinfo%RIMP2_Laplace       = .true.
+       case('.RIMP2_NOOMP')
+          DECinfo%RIMP2_deactivateopenmp = .true.
 
        !KEYWORDS FOR INTEGRAL INFO
        !**************************
@@ -925,9 +947,32 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
+       case('.SKIPF12SINGLES')
+          DECinfo%F12SINGLES=.false.
        case('.F12CCOUPLING')     
           DECinfo%F12Ccoupling=.true.
-
+       case('.F12SINGLESMAXITER')
+          read(input,*) DECinfo%F12singlesMaxIter
+       case('.F12SINGLESTHR')
+          read(input,*) DECinfo%F12singlesThr
+       case('.F12SINGLESMAXDIIS')
+          read(input,*) DECinfo%F12singlesMaxDIIS
+       case('.F12LSALL')     
+          !Use Natural linear scaling algorithm to treat 
+          !these terms (do not treat with DEC nor RI)
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsB1 = .true.
+          DECinfo%NaturalLinearScalingF12TermsX1 = .true.
+          DECinfo%NaturalLinearScalingF12TermsV1 = .true.
+       case('.F12LSB1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsB1 = .true.
+       case('.F12LSX1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsX1 = .true.
+       case('.F12LSV1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsV1 = .true.
 #endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
@@ -1215,6 +1260,10 @@ contains
           write(DECinfo%output,*) 'WARNING! We enforce canonical orbitals for CC response!'
           DECinfo%use_canonical = .true.
        end if
+       ! P_EOM_MBPT2 only for right transformation
+       if(DECinfo%P_EOM_MBPT2 .and. DECinfo%JacobianLHTR) then
+          call lsquit('P_EOM_MBPT2 only for Jacobian right transformation!',-1)
+       end if
     end if CCresponse
 
 
@@ -1356,7 +1405,8 @@ contains
     if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
          & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
 
-       write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'Memory not defined or ambiguously defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
        write(DECinfo%output,*) 'The recommended way is using .MEMORY and specifying the memory in GB'
 #ifdef VAR_MPI
@@ -1371,22 +1421,6 @@ contains
             & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
-    if(DECinfo%use_bg_buffer.AND.DECinfo%bg_memory.LT.0.0E0_realk) then
-       write(DECinfo%output,*) 'Background Memory buffer size not set!'
-       write(DECinfo%output,*) 'Please specify .BG_MEMORY keyword (in gigabytes)'
-#ifdef VAR_MPI
-       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
-       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
-#else
-       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
-       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
-#endif
-       write(DECinfo%output,*) '.BG_MEMORY'
-       write(DECinfo%output,*) '8.0'
-       write(DECinfo%output,*) ''
-       call lsquit('.BACKGROUND_BUFFER requires specification of .BG_MEMORY keyword!',-1)
-    end if
-
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
@@ -1398,6 +1432,28 @@ contains
     end if
 
     if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)
+
+    if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
+       DECinfo%bg_memory = 0.8_realk*DECinfo%memory
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'WARNING: User did not specify the amount of memory to be used'
+       write(DECinfo%output,*) '         in connection with the background buffer.'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'
+       write(DECinfo%output,'(A,F6.3,A)') ' Total memory             = ', DECinfo%memory,   ' GB'
+       write(DECinfo%output,'(A,F6.3,A)') ' Background buffer memory = ', DECinfo%bg_memory,' GB'
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'You can specify the amount of BG buffer memory yourself:'
+#ifdef VAR_MPI
+       write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#else
+       write(DECinfo%output,*) 'E.g. if there are 16 GB of memory available, '
+       write(DECinfo%output,*) 'and 8 GB should be used for the background buffer, then use'
+#endif
+       write(DECinfo%output,*) '.BG_MEMORY'
+       write(DECinfo%output,*) '8.0'
+    end if
 
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
@@ -1536,6 +1592,7 @@ contains
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
     write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
     write(lupri,*) 'LW1 ', DECinfo%LW1
+    write(lupri,*) 'P_EOM_MBPT2 ', DECinfo%P_EOM_MBPT2
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP
@@ -1586,6 +1643,7 @@ contains
     write(lupri,*) 'use_crop ', DECitem%use_crop
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
+    write(lupri,*) 'F12singles ', DECinfo%F12singles
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
     write(lupri,*) 'F12CCOUPLING',DECinfo%F12Ccoupling
     write(lupri,*) 'mpisplit ', DECitem%mpisplit

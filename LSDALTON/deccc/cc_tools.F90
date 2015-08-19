@@ -13,6 +13,7 @@ module cc_tools_module
 #endif
 
    use precision
+   use memory_handling
 #ifdef VAR_MPI
    use lsmpi_type
 #endif
@@ -492,9 +493,7 @@ module cc_tools_module
       call mem_dealloc(buf1)
       call mem_dealloc(buf2)
 
-      !stop 0
       call lsmpi_barrier(infpar%lg_comm)
-      !stop 0
 #endif
    end subroutine lspdm_get_tpl_and_tmi
 
@@ -3289,11 +3288,9 @@ module cc_tools_module
      ord2 = [1,2]
      call tensor_contract(-1.0E0_realk,Co,t1,[2],[2],1,1.0E0_realk,xv,ord2)
 
-
      call tensor_cp_data(Co,yo)
      call tensor_cp_data(Co,xo)
      call tensor_contract(1.0E0_realk,Cv,t1,[2],[1],1,1.0E0_realk,yo,ord2)
-
 
      !ONLY USE T1 PART OF THE DENSITY MATRIX AND THE FOCK 
      call mem_alloc(w1,nb**2)

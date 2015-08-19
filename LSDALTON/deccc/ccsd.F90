@@ -139,7 +139,8 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc,bg) result(prec)
       !make sure all data is in the correct for this routine, that is omega2 is
       !TT_TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      call tensor_minit(prec,dims,4,atype="TDAR",tdims=omega2%tdim,fo=omega2%offset,bg=bg)
+      call tensor_minit(prec,dims,4,atype="TDAR",tdims=int(omega2%tdim,kind=tensor_int)&
+         &,fo=int(omega2%offset,kind=tensor_int),bg=bg)
       call tensor_change_atype_to_rep(ppfock,loc)
       call tensor_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -649,7 +650,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     type(tensor)              :: qqfock
     type(tensor)              :: pqfock
     type(tensor)              :: qpfock
-    logical :: parent
     integer :: lg_me,lg_nnod
     type(tensor) :: tloc,oloc,gloc
     integer   :: tdi(4), odi(4)
@@ -870,8 +870,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
 
      ! Variables for mpi
-     logical :: master,lg_master,parent
-     integer :: fintel,nintel,fe,ne
+     logical :: master,lg_master
+     integer :: fe,ne
      integer(kind=ls_mpik) :: nnod
      real(realk) :: startt, stopp
      integer(kind=ls_mpik) :: ierr
@@ -1089,7 +1089,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ********************
      master                   = .true.
      lg_master                = .true.
-     parent                   = .true.
      lg_me                    = int(0,kind=ls_mpik)
      lg_nnod                  = 1
 #ifdef VAR_MPI
@@ -1098,13 +1097,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      lock_outside             = DECinfo%CCSD_NO_DEBUG_COMM
      mode                     = MPI_MODE_NOCHECK
 
-     parent                   = (infpar%parent_comm==MPI_COMM_NULL)
-
      lg_master                = (lg_me == 0)
-     master                   = lg_master.and.parent
+     master                   = lg_master
 
-     call get_int_dist_info(o2v2,fintel,nintel)
-    
      StartUpSlaves: if(master .and. lg_nnod>1) then
         call time_start_phase(PHASE_COMM)
         call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
@@ -1496,7 +1491,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      scheme=2 !``DIL: remove
 #endif
 
-     if(print_debug) call print_norm(u2," NORM(u2)    :",print_on_rank=0)
+     if(print_debug) call print_norm(u2," NORM(u2)    :",print_=(lg_me==0))
 
      call mem_alloc(Had,nv*nb)
      call mem_alloc(Gbi,nb*no)
@@ -1586,8 +1581,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call get_tpl_and_tmi(t2,tpl,tmi)
 
      if(print_debug)then
-        call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
-        call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
+        call print_norm(tpl," NORM(tpl)   :",print_=(lg_me==0))
+        call print_norm(tmi," NORM(tmi)   :",print_=(lg_me==0))
      endif
 
 #ifdef VAR_MPI
@@ -3134,8 +3129,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: nors, nvrs, order4(4), order2(2)
 
      ! Variables for mpi
-     logical :: master,lg_master,parent
-     integer :: fintel,nintel,fe,ne
+     logical :: master,lg_master
+     integer :: fe,ne
      real(realk) :: startt, stopp
      integer(kind=ls_mpik) :: ierr
 
@@ -3434,10 +3429,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      MemFree = MemFreeMin * nnod
 
      if(print_debug)then
-        call print_norm(xo," NORM(xo)    :",print_on_rank = 0)
-        call print_norm(xv," NORM(xv)    :",print_on_rank = 0)
-        call print_norm(yo," NORM(yo)    :",print_on_rank = 0)
-        call print_norm(yv," NORM(yv)    :",print_on_rank = 0)
+        call print_norm(xo," NORM(xo)    :",print_ = (me==0))
+        call print_norm(xv," NORM(xv)    :",print_ = (me==0))
+        call print_norm(yo," NORM(yo)    :",print_ = (me==0))
+        call print_norm(yv," NORM(yv)    :",print_ = (me==0))
      endif
 
      if(master) then
@@ -3506,8 +3501,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call tensor_zero(tmi)
 
      if(print_debug)then
-        call print_norm(tpl," NORM(tpl)   :",print_on_rank=0)
-        call print_norm(tmi," NORM(tmi)   :",print_on_rank=0)
+        call print_norm(tpl," NORM(tpl)   :",print_=(me==0))
+        call print_norm(tmi," NORM(tmi)   :",print_=(me==0))
      endif
 
      call tensor_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
@@ -3519,7 +3514,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      if( print_debug )then
-        call print_norm(u2," NORM(u2)    :",print_on_rank=0)
+        call print_norm(u2," NORM(u2)    :",print_=(me==0))
      endif
 
      print *,"alloc 1"
@@ -4629,10 +4624,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_LSDEBUG
      if(print_debug)then
-        call print_norm(Gbi,    " NORM(Gbi)       :",print_on_rank=0)
-        call print_norm(Had,    " NORM(Had)       :",print_on_rank=0)
-        call print_norm(omega2, " NORM(omega2 s-o):",print_on_rank=0)
-        call print_norm(govov,  " NORM(govov s-o) :",print_on_rank=0)
+        call print_norm(Gbi,    " NORM(Gbi)       :",print_=(me==0))
+        call print_norm(Had,    " NORM(Had)       :",print_=(me==0))
+        call print_norm(omega2, " NORM(omega2 s-o):",print_=(me==0))
+        call print_norm(govov,  " NORM(govov s-o) :",print_=(me==0))
      endif
 #endif
 
@@ -4733,7 +4728,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      order4 = [1,2,3,4]
      call tensor_contract(-1.0E0_realk,t2,int2,[4],[1],1,1.0E0_realk,omega2,order4,force_sync=.true.)
 
-     call tensor_minit(int3,omega2%dims,4,tdims=omega2%tdim,atype="TDAR",local=local)
+     call tensor_minit(int3,omega2%dims,4,tdims=int(omega2%tdim,kind=tensor_int),atype="TDAR",local=local)
 
      call tensor_free(int1)
      call tensor_free(int2)
@@ -4902,7 +4897,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ord = [1,2,3,4]
         call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord, force_sync=.true.)
 
-        call tensor_ainit(Pijab_om2,omega2%dims,4,tdims=omega2%tdim,atype="TDAR")
+        call tensor_ainit(Pijab_om2,omega2%dims,4,tdims=int(omega2%tdim,kind=tensor_int),atype="TDAR")
 
         call tensor_lock_local_wins(Pijab_om2,'e',mode)
         call tensor_unlock_local_wins(omega2)
@@ -5001,7 +4996,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=int(sdim1,kind=tensor_int),&
+        &atype=atype,local=local,fo = int(omega2%offset,kind=tensor_int))
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      !now allow for access to the completed tiles
@@ -5052,7 +5048,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
-     call tensor_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,local=local,fo = omega2%offset)
+     call tensor_ainit(O_pre,fdim1,4,tdims=int(sdim1,kind=tensor_int),&
+        &atype=atype,local=local,fo = int(omega2%offset,kind=tensor_int))
      call tensor_lock_local_wins(O_pre,'e',mode)
 
      call tensor_unlock_local_wins(Dvoov)
@@ -5238,7 +5235,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
            enddo
-           !print *,infpar%lg_mynum,"DGEMM2 -- out",norm2(w1),norm2(w3)
         endif
 
 
@@ -5370,7 +5366,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: dimMO, nMObatch, ntot,os,vs
     integer(kind=8) :: dummy, nbg_buf
     logical :: mo_ccsd, local_moccsd, mpi_split, bg
-    integer :: bs
+    integer :: bs, nnod
+    nnod=1
+#ifdef VAR_MPI
+    nnod = infpar%lg_nodtot
+#endif
 
     ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
     ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
@@ -5416,7 +5416,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     if (.not.mo_ccsd) then 
       iter=1
-      call get_symm_tensor_segmenting_simple(nocc,nvir,os,vs)
+      call get_symm_tensor_segmenting_simple(nnod,nocc,nvir,os,vs,DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,MyFragment%nbasis,bs,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
@@ -6780,7 +6780,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
-     logical, intent(in) :: local
+    logical, intent(in) :: local
 
     !> Batches info:
     type(MObatchInfo), intent(in) :: MOinfo
@@ -6856,6 +6856,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Allocate working memory:
     call get_mem_mo_ccsd_warrays(nocc,nvir,dimMO,tmp_size0,tmp_size1,tmp_size2)
 
+#ifdef VAR_MPI
+    ! Change array type to be dense:
+    if (.not.local.and.master) then
+      call tensor_cp_tiled2dense(t2,.false.,bg=use_bg_buf)
+      call tensor_cp_tiled2dense(govov,.false.,bg=use_bg_buf)
+      call tensor_allocate_dense(omega2,bg=use_bg_buf,change=.true.)
+    end if 
+#endif
+
     call tensor_init(u2,    [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
     call tensor_init(gvoov, [nvir,nocc,nocc,nvir],4, bg=use_bg_buf)
     call tensor_init(gvvoo, [nvir,nvir,nocc,nocc],4, bg=use_bg_buf)
@@ -6889,14 +6898,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! start timings:
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-
-#ifdef VAR_MPI
-    ! Change array type to be dense:
-    if (.not.local.and.master) then
-      call tensor_cp_tiled2dense(t2,.false.)
-      call tensor_cp_tiled2dense(govov,.false.)
-    end if 
-#endif
 
     !===========================================================================
     ! Calculate transformation matrix:
@@ -6981,8 +6982,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
    t2%access_type     = AT_ALL_ACCESS
    omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
-     call tensor_allocate_dense(omega2)
-     omega2%itype = TT_DENSE
      govov%itype  = TT_DENSE
    end if
 #endif
@@ -7045,8 +7044,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ, &
        & gvoov%elm1,gvvoo%elm1)
-    !call mpi_reduction_after_main_loop(ccmodel,ntot,nvir,nocc,iter,G_Pi,H_aQ,goooo, &
-    !            & govoo,gvooo,gvoov%elm1,gvvoo%elm1)
 
     if (use_bg_buf) then
        call mem_pseudo_dealloc(tmp2)
@@ -7216,10 +7213,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       govov%access_type  = AT_MASTER_ACCESS
       t2%access_type     = AT_MASTER_ACCESS
       omega2%access_type = AT_MASTER_ACCESS
-      call tensor_deallocate_dense(govov)
-      govov%itype      = TT_TILED_DIST
       call tensor_mv_dense2tiled(omega2,.true.)
-      call tensor_mv_dense2tiled(t2,.true.)
+      call tensor_deallocate_dense(govov)
+      govov%itype = TT_TILED_DIST
+      call tensor_deallocate_dense(t2)
     endif
 #endif 
 
@@ -7313,7 +7310,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> transformation matrices:
     real(realk), intent(in) :: xvir(nvir*ntot), yocc(nocc*ntot)
     !> doubles amplitudes:
-    real(realk), intent(in) :: t2(nvir,nvir,nocc,nocc)
+    real(realk), intent(in) :: t2(nvir*nvir*nocc*nocc)
     !> Intermediates used to calculate the B2 term.
     !  B2prep = g_kilj + sigma_kilj
     real(realk), intent(inout) :: B2prep(nocc*nocc*nocc*nocc)
@@ -7426,15 +7423,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! else calculate sigma and A2.2 and B2.2 contribution:
 
     ! Extract t2[Cd, i<=j] from t2[cd, ij]:
-    call dcopy(nvir*nvir*nocc*nocc,t2,1,tmp2,1)
-    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,nvir,C_sta,dimC,tmp1,tmp2)&
+    !$OMP PARALLEL DO DEFAULT(NONE) SHARED(nocc,nvir,C_sta,dimC,tmp1,t2)&
     !$OMP PRIVATE(i,j,d,pos1,pos2)
     do j = 1,nocc
       do i = 1,j
         do d = 1, nvir
           pos2 = C_sta + (d-1)*nvir + (i-1)*nvir*nvir + (j-1)*nvir*nvir*nocc
           pos1 = 1 + (d-1)*dimC + (j*(j-1)/2 + i-1)*dimC*nvir
-          call dcopy(dimC,tmp2(pos2),1,tmp1(pos1),1)
+          call dcopy(dimC,t2(pos2),1,tmp1(pos1),1)
         end do
       end do
     end do
@@ -8096,6 +8092,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      type(mpi_realk) :: w1
      type(tensor) :: omega2,govov,gvvooa,gvoova
      character(tensor_MSG_LEN) :: msg
+     integer(kind=long) :: me
+
+     me = 0
+#ifdef VAR_MPI
+     me = infpar%lg_mynum
+#endif
 
 #ifdef VAR_LSDEBUG
      select case(print_nr)
@@ -8111,7 +8113,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-           call print_norm(omega2," NORM(omega2):",print_on_rank = 0)
+           call print_norm(omega2," NORM(omega2):",print_ = (me==0))
 
            !DEBUG PRINT NORM GOVOV
 #ifdef VAR_MPI
@@ -8123,7 +8125,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-            call print_norm(govov," NORM(govov):",print_on_rank = 0)
+            call print_norm(govov," NORM(govov):",print_ = (me==0))
 
            if (ccmodel>MODEL_CC2) then
               !DEBUG PRINT NORM GVVOO
@@ -8136,7 +8138,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  endif
               endif
 #endif
-              call print_norm(gvvooa," NORM(gvvoo):",print_on_rank = 0)
+              call print_norm(gvvooa," NORM(gvvoo):",print_ = (me==0))
                
               !DEBUG PRINT NORM GVOOV
 #ifdef VAR_MPI
@@ -8148,7 +8150,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  endif
               endif
 #endif
-              call print_norm(gvoova," NORM(gvoov):",print_on_rank = 0)
+              call print_norm(gvoova," NORM(gvoov):",print_ = (me==0))
            endif
         endif
      case(2)
@@ -8162,7 +8164,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-           call print_norm(omega2," NORM(omega2 after B2.2):",print_on_rank = 0)
+           call print_norm(omega2," NORM(omega2 after B2.2):",print_ = (me==0))
         endif
      case(3)
         if(print_debug.and.ccmodel>MODEL_CC2)then
@@ -8175,7 +8177,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               endif
            endif
 #endif
-           call print_norm(omega2," NORM(omega2 after CND):",print_on_rank=0)
+           call print_norm(omega2," NORM(omega2 after CND):",print_=(me==0))
         endif
      case default
         print *,"WARNING(ccsd_debug_print):unknown debug print selected"
@@ -8277,15 +8279,15 @@ subroutine ccsd_data_preparation()
   use lstiming
   use lsparameters, only: CCSDDATA
   use dec_typedef_module
-  use typedeftype,only:lsitem,tensor
+  use typedeftype,only:lsitem
   use infpar_module
   use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,MPI_COMM_NULL,&
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free
-  use memory_handling, only: mem_alloc, mem_dealloc,mem_is_background_buf_init,mem_pseudo_alloc,&
-     & mem_pseudo_dealloc
-  use tensor_interface_module, only: tensor_ainit,tensor_free,&
+  use background_buffer_module, only: mem_is_background_buf_init
+  use memory_handling, only: mem_alloc, mem_dealloc,mem_pseudo_alloc,mem_pseudo_dealloc
+  use tensor_interface_module, only: tensor, tensor_ainit,tensor_free,&
       &tensor_allocate_dense,tensor_deallocate_dense,&
       &get_tensor_from_parr,TT_DENSE,AT_ALL_ACCESS,AT_MASTER_ACCESS
   ! DEC DEPENDENCIES (within deccc directory) 
@@ -8314,10 +8316,7 @@ subroutine ccsd_data_preparation()
   integer(kind=ls_mpik) :: xow,xvw,yow,yvw,&
                          & dfw,fw,ppfw,qqfw,pqfw,qpfw,om1w,t2w,&
                          & t2dw,xodw,xvdw,yodw,yvdw
-  logical :: parent, bg
-  integer :: addr01(infpar%pc_nodtot)
-  integer :: addr02(infpar%pc_nodtot)
-  integer :: addr03(infpar%pc_nodtot)
+  logical :: bg
   integer(kind=ls_mpik) :: lg_me,lg_nnod
   integer(kind=8) :: ne
 
@@ -8325,7 +8324,6 @@ subroutine ccsd_data_preparation()
 
   lg_me   = infpar%lg_mynum
   lg_nnod = infpar%lg_nodtot
-  parent  = (infpar%parent_comm == MPI_COMM_NULL)
 
   call time_start_phase(PHASE_COMM)
   !note that for the slave all allocatable arguments are just dummy indices
@@ -8458,11 +8456,12 @@ subroutine calculate_E2_and_permute_slave()
   use precision
   use lstiming
   use dec_typedef_module
-  use typedeftype,only:lsitem,tensor
+  use tensor_type_def_module
   use infpar_module
   use lsmpi_type, only:ls_mpibcast
   use daltoninfo, only:ls_free
-  use memory_handling, only: mem_alloc, mem_dealloc,mem_pseudo_alloc,mem_pseudo_dealloc,mem_is_background_buf_init
+  use background_buffer_module, only: mem_is_background_buf_init
+  use memory_handling, only: mem_alloc, mem_dealloc,mem_pseudo_alloc,mem_pseudo_dealloc
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use decmpi_module, only: share_E2_with_slaves
@@ -8537,15 +8536,16 @@ end subroutine calculate_E2_and_permute_slave
 !> Date:    January 2014
 subroutine moccsd_data_slave()
 
+  use background_buffer_module, only: mem_is_background_buf_init
   use daltoninfo
   use dec_typedef_module
   use ccsd_module
-  use tensor_type_def_module
   use infpar_module
   use lsmpi_type
   use tensor_interface_module
   use typedeftype, only: lsitem
   use decmpi_module, only: mpi_communicate_moccsd_data
+  use memory_handling
 
   implicit none
 
@@ -8584,7 +8584,9 @@ subroutine moccsd_data_slave()
   
   integer :: k
   integer(kind=long) :: nelms
-  logical :: local
+  logical :: local, bg
+
+  bg = mem_is_background_buf_init()
 
   call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
          & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
@@ -8592,13 +8594,14 @@ subroutine moccsd_data_slave()
   !==============================================================================
   ! Initialize arrays:
   if (local) then 
-    call tensor_ainit(t1    , [nvir,nocc],           2, local=local, atype='LDAR' )
-    call tensor_ainit(t2    , [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
-    call tensor_ainit(omega2, [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
-    call tensor_ainit(govov , [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
+    call tensor_ainit(t1    , [nvir,nocc],           2, local=local, atype='LDAR', bg=bg)
+    call tensor_ainit(t2    , [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR', bg=bg)
+    call tensor_ainit(govov , [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR', bg=bg)
+    call tensor_ainit(omega2, [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR', bg=bg)
   else
-    call tensor_allocate_dense(t2)
-    call tensor_allocate_dense(govov)
+    call tensor_allocate_dense(t2, bg=bg)
+    call tensor_allocate_dense(govov, bg=bg)
+    call tensor_allocate_dense(omega2, bg=bg, change=.true.)
   end if
 
   !split messages in 2GB parts, compare to counterpart in
@@ -8624,14 +8627,14 @@ subroutine moccsd_data_slave()
   call mem_dealloc(MOinfo%tileInd)
 
   if (local) then 
-    call tensor_free(t1)
-    call tensor_free(t2)
     call tensor_free(omega2)
     call tensor_free(govov)
+    call tensor_free(t2)
+    call tensor_free(t1)
   else
     call tensor_deallocate_dense(omega2)
-    call tensor_deallocate_dense(t2)
     call tensor_deallocate_dense(govov)
+    call tensor_deallocate_dense(t2)
   end if
 end subroutine moccsd_data_slave
 #endif

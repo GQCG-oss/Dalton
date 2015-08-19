@@ -22,8 +22,12 @@ SUBROUTINE LSDALTON
   ! setup the calculation 
   call lsinit_all(OnMaster,lupri,luerr,t1,t2)
 
-  ! execute the acutal calculation
-  if(OnMaster) call LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
+  if(OnMaster)then
+     ! execute the acutal calculation
+     call LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
+  else
+     call LSDALTON_DRIVER_SLAVE()
+  endif
 
   ! free everything take time and close the files
   call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
@@ -100,7 +104,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
        & II_get_Fock_mat
   use II_XC_interfaceModule, only: II_get_AbsoluteValue_overlap, &
        & II_get_AbsoluteValue_overlapSame
-  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test,&
+       & ii_unittest_ichor2center
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
 #ifdef HAS_PCMSOLVER
@@ -161,9 +166,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption,config%integral%debugIchorLink)
+     IF(config%integral%debugIchorOption.LT.13)THEN
+        call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,&
+             & config%integral%debugIchorOption,config%integral%debugIchorLink)
+     ELSE
+        call II_unittest_Ichor2Center(LUPRI,LUERR,LS%SETTING)       
+     ENDIF
      !the return statement leads to memory leaks but I do not care about this
-     !for now atleast
+     !for now atleast     
      RETURN
   ENDIF
   IF(config%papitest)THEN
@@ -685,7 +695,13 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            ! read orbitals
            lun = -1
            call mat_init(CMO,nbast,nbast)
-           CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
+           if (config%davidOrbLoc%orbloc_restart) then
+               WRITE(ls%lupri,'(a)') ' %LOC% Reading from "localized_orbitals.restart"'
+               CALL LSOPEN(lun,'localized_orbitals.restart','unknown','UNFORMATTED')
+           else
+               WRITE(ls%lupri,'(a)') ' %LOC% Reading from "orbitals_in.u"'
+               CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
+           endif
            call mat_read_from_disk(LUN,cmo,OnMaster)
            call LSclose(LUN,'KEEP')
            if (config%decomp%cfg_mlo) then
@@ -772,17 +788,30 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
 END SUBROUTINE LSDALTON_DRIVER
 
+SUBROUTINE LSDALTON_DRIVER_SLAVE()
+#ifndef VAR_MPI
+   implicit none
+   call lsquit("ERROR(LSDALTON_DRIVER_SLAVE): this should never be called without MPI",-1)
+#else
+   use lsmpi_type, only: MPI_COMM_LSDALTON
+   implicit none
+   call lsmpi_slave(MPI_COMM_LSDALTON)
+#endif
+END SUBROUTINE LSDALTON_DRIVER_SLAVE
+
 
 SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use precision
   use matrix_operations, only: set_matrix_default
   use init_lsdalton_mod, only: open_lsdalton_files
+#ifdef VAR_MPI
+  use lsmpi_type, only: PDMA4SLV
+#endif
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
   use dft_memory_handling
   use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
-  use lspdm_tensor_operations_module,only:init_persistent_array
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:init_IIDF_matrix
 #ifdef VAR_PAPI
@@ -797,6 +826,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   logical, intent(inout)     :: OnMaster
   integer, intent(inout)     :: lupri, luerr
   real(realk), intent(inout) :: t1,t2
+  integer :: signal
   
   !INITIALIZING TIMERS SHOULD ALWAYS BE THE FIRST CALL
   call init_timers
@@ -819,7 +849,6 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call InitIchorSaveGabModule()
 #endif
   call init_AO2GCAO_GCAO2AO()
-  call init_persistent_array
   ! MPI initialization
   call lsmpi_init(OnMaster)
 
@@ -838,7 +867,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
   use lstensorMem, only: lstmem_free
-  use lspdm_tensor_operations_module,only:free_persistent_array
+  use tensor_interface_module ,only: tensor_finalize_interface, tensor_free_bg_buf
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
   use dec_settings_mod, only:free_decinfo
@@ -854,7 +883,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use matrix_operations_scalapack
 #endif
   use matrix_operations_pdmm
-implicit none
+  implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
@@ -879,19 +908,18 @@ implicit none
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
-  call free_persistent_array
+  call tensor_free_bg_buf()
+  call tensor_finalize_interface()
   call free_decinfo()
 
 
   if(OnMaster) call stats_mem(lupri)
 
 #ifdef VAR_MPI
-  if( infpar%parent_comm==MPI_COMM_NULL ) then
 
-    call ls_mpibcast(meminfo,infpar%master,MPI_COMM_LSDALTON)
-    if(meminfo)call lsmpi_print_mem_info(lupri,.false.)
+  call ls_mpibcast(meminfo,infpar%master,MPI_COMM_LSDALTON)
+  if(meminfo)call lsmpi_print_mem_info(lupri,.false.)
 
-  endif
 
 #ifdef VAR_SCALAPACK
   IF(scalapack_mpi_set)THEN

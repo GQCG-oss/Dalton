@@ -84,7 +84,7 @@ contains
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+    if(DECinfo%F12) then 
 #ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
@@ -207,6 +207,7 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    molecule%EF12singles = 0.0_realk
     molecule%Edisp = 0.0_realk
     molecule%Ect = 0.0_realk
     molecule%Esub = 0.0_realk
@@ -899,6 +900,9 @@ contains
     if(associated(molecule%ov_abs_overlap)) then
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
+
+    call free_cabs()
+
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices
@@ -1159,17 +1163,17 @@ contains
      nocvfull = nocc + nvirt
 
      if(DECinfo%F12debug) then
-        print *, "--------------------------"
-        print *, "Molecule_mo_f12"
-        print *, "--------------------------"
-        print *, "nbasis:   ", nbasis
-        print *, "nocc:     ", nocc
-        print *, "nvirt:    ", nvirt
-        print *, "--------------------------"
-        print *, "ncabsAO:  ", ncabsAO
-        print *, "ncabsMO:  ", ncabsMO
-        print *, "nocvfull: ", nocc+nvirt
-        print *, "--------------------------"
+       ! print *, "--------------------------"
+       ! print *, "Molecule_mo_f12"
+       ! print *, "--------------------------"
+       ! print *, "nbasis:   ", nbasis
+       ! print *, "nocc:     ", nocc
+       ! print *, "nvirt:    ", nvirt
+       ! print *, "--------------------------"
+       ! print *, "ncabsAO:  ", ncabsAO
+       ! print *, "ncabsMO:  ", ncabsMO
+       ! print *, "nocvfull: ", nocc+nvirt
+       ! print *, "--------------------------"
      end if
 
      ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
@@ -1186,21 +1190,6 @@ contains
      call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
         & nocc,noccfull,nvirt,MyMolecule%hJir,MyMolecule%Krs,MyMolecule%Frs,&
         & MyMolecule%Fac,MyMolecule%Fij,MyMolecule%Frm,MyMolecule%Fcp)
-
-     if(DECinfo%F12debug) then  
-        print *,'-------------------------------------------'
-        print *,'molecule_mo_f12: Get all F12 Fock integrals'
-        print *,'-------------------------------------------'
-        print *, "norm2D(hJir)", norm2D(MyMolecule%hJir)
-        print *, "norm2D(Krs)",  norm2D(MyMolecule%Krs)
-        print *, "norm2D(Frs)",  norm2D(MyMolecule%Frs)
-        print *, "norm2D(Fac)",  norm2D(MyMolecule%Fac)
-        print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
-        print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
-        print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
-        ! print *, "norm2D(Fcd)",  norm2D(MyMolecule%Fcd)
-        print *,'-------------------------------------------' 
-     end if
 
 #endif
   end subroutine molecule_mo_f12

@@ -224,7 +224,7 @@ C
 C **     the inactive one-index transformed dm:
 C        DXC_I(i,p) = 2 Bo(i,p) -> DXCAO_I(iota,pi)
 
-         IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
+         IF (NORBJ .NE. 0) THEN
             CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,2.D0,  ! 2
      &                 CMO(ICMOJ+1),NBASJ,              ! (pi,p)
      &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0, ! (i,p)T
@@ -262,7 +262,7 @@ C        UBO not transposed for D-II (see eq. 25)
 C
 C        DXC_II(p,i) = 2*Bo(p,i) -> DXCAO_II(pi,iota)
 
-         IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
+         IF (NORBJ .NE. 0) THEN
             CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,2.D0,    ! 2
      &                 CMO(ICMOJ+1),NBASJ,                ! (pi,p)
      &                 UBO(IORBJ+1,IORBI+1),NORBT,0.D0,   ! (p,i)
