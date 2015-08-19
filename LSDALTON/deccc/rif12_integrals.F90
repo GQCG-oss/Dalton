@@ -1000,8 +1000,6 @@ contains
     !    Free Memory
     ! ***********************************************************
     call mem_dealloc(dopair_occ)
-
-
     call mem_dealloc(CalphaCocc)
 
     call mem_dealloc(CalphaG)
