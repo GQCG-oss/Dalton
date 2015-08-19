@@ -9,6 +9,7 @@
 Common
 ------
 
+- Fixed error in an exponent for Boron in Ahlrichs-TZV basis
 
 DALTON
 ------
