@@ -529,7 +529,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_dealloc(Umat)
       !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
       !perform this suborutine on the GPU (Async)
-      call ContractOne4CenterF12IntegralsRobustRI(NBA,nocc,nocv,CalphaD,CalphaR,EB1)
+      call ContractOne4CenterF12IntegralsRobustRI(NBA,offset,nocc,nocv,CalphaD,CalphaR,EB1)
 #ifdef VAR_MPI 
       lsmpibufferRIMP2(1)=EB1       !we need to perform a MPI reduction at the end 
 #else

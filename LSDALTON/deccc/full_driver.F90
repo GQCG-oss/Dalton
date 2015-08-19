@@ -85,7 +85,7 @@ contains
        ! run cc program
        if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED
-          !When the code is a production code it should be released! TK
+!When the code is a production code it should be released! TK
           if(DECinfo%ccModel==MODEL_MP2) then
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
@@ -99,10 +99,10 @@ contains
              write(*,'(/,a)') ' ================================================ '
              write(*,'(a)')   '                 Energy Summary                   '
              write(*,'(a,/)') ' ================================================ '
-             write(*,'(1X,a,f25.10)') 'TOYCODE: RI-MP2 CORRECTION TO ENERGY =       ', Ecorr_rimp2
-             write(DECinfo%output,*)  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =       ', Ecorr_rimp2
-             write(*,'(1X,a,f25.10)') 'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =    ', Ecorr_rimp2f12
-             write(DECinfo%output,*)  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =    ', Ecorr_rimp2f12
+             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
+             write(DECinfo%output,*)  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
+             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
+             write(DECinfo%output,*)  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
