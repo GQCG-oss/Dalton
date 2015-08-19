@@ -375,7 +375,8 @@ C     -------------------------------------------------
       write(lupri,*)'q1norm AxRe: ', q1norm, ' exci en:', excien
       else
          write(lupri,*)'LANCZOS: USE CSIA SEEDS'
-         ITRAN = 2
+         !ITRAN = 2
+         ITRAN = 1
          IVEC = IXETRAN(3,ITRAN)
          CALL CC_RDRSP('O1 ',IVEC,ISYHOP,IOPTRW,MODEL,
      &                WORK(KQnew1),WORK(KQnew2))
@@ -390,13 +391,24 @@ C     -------------------------------------------------
 
       q1norm = dsqrt(abs(ddot(length,WORK(KQnew1),1,WORK(KQnew1),1)))
       write(lupri,*)'q1norm csinorm: ', q1norm
+      !write(lupri,*)'SONIA: TRDRV Analyze before prj'
+      !CALL CC_PRAM0(WORK(KQNew1),PT1,ISYHOP,.FALSE.)
+      !write(lupri,*)'SONIA: Alternative Analyze before prj'
+      !CALL CCSD_TCMEPK_skod(WORK(KQnew2),1.0d0,ISYHOP,1)
 !
       IF (LCVSLCZ) THEN
          write(lupri,*)'SONIA: TRDRV Project out ai, i=/icore'
          !CALL CC_FREEZE_VAL(WORK(KQnew1),ISYHOP,.false.)
+         !CALL CCSD_FREEZE_EXCI2(WORK(KQnew1),ISYHOP,
+         !write(lupri,*) MAXCORE,MAXION
+         !write(lupri,*) NRHFCORE
+         !write(lupri,*) IRHFCORE
+         !write(lupri,*) NVIRION
+         !write(lupri,*) IVIRION
          CALL CC_FREEZE_EXCI(WORK(KQnew1),ISYHOP,
      &        MAXCORE,MAXION,
-     &        NRHFCORE,IRHFCORE,NVIRION,IVIRION,LBOTHLCZ)
+     &        NRHFCORE,IRHFCORE,
+     &        NVIRION,IVIRION,LBOTHLCZ)
       END IF
 
       csinorm = q1norm
@@ -483,9 +495,11 @@ C     -------------------------------------------------
       IF (LCVSLCZ) THEN
          write(lupri,*)'SONIA: P1 Project out ai, i=/icore'
          !CALL CC_FREEZE_VAL(WORK(KPnew1),ISYHOP,.false.)
+         !CALL CCSD_FREEZE_EXCI2(WORK(KPnew1),ISYHOP,
          CALL CC_FREEZE_EXCI(WORK(KPnew1),ISYHOP,
      &        MAXCORE,MAXION,
-     &        NRHFCORE,IRHFCORE,NVIRION,IVIRION,LBOTHLCZ)
+     &        NRHFCORE,IRHFCORE,
+     &        NVIRION,IVIRION,LBOTHLCZ)
       END IF
 
       q1norm = ddot(length,WORK(KPnew1),1,WORK(KQnew1),1)
