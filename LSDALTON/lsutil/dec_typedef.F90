@@ -9,7 +9,7 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
-  use tensor_type_def_module, only: tensor
+  use tensor_interface_module, only: tensor
   !Could someone please rename ri to something less generic. TK!!
   !  private
   !  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,decorbital,ri,&
@@ -352,12 +352,28 @@ module dec_typedef_module
      logical :: F12fragopt
      !> Do C coupling in F12 scheme
      logical :: F12Ccoupling
+     !> Do CABS singles
+     logical :: F12singles
+     !> Maximum number of iterations in F12 singles solver
+     integer :: F12singlesMaxIter
+     !> Threshold for F12 singles solver
+     real(realk) :: F12singlesThr
+     !> Maximum subspace dimension in F12 singles solver
+     integer :: F12singlesMaxDIIS
+     !> Do Natural linear scaling terms seperate from DEC
+     logical :: NaturalLinearScalingF12Terms
+     !> Do Natural linear scaling term V1 seperate from DEC
+     logical :: NaturalLinearScalingF12TermsV1
+     !> Do Natural linear scaling term B1 seperate from DEC
+     logical :: NaturalLinearScalingF12TermsB1
+     !> Do Natural linear scaling term X1 seperate from DEC
+     logical :: NaturalLinearScalingF12TermsX1
 
      !> F12 debug settings
      !> ******************
      !> Use F12 correction
      logical :: F12DEBUG
-
+   
      logical :: SOS
 
      !> Debug keyword to specify pure hydrogen atoms
@@ -849,6 +865,11 @@ module dec_typedef_module
      real(realk) :: Ect
      real(realk) :: Esub
 
+     ! F12 singles correction energy 
+     real(realk) :: EF12singles
+     real(realk) :: EF12NLSV1
+     real(realk) :: EF12NLSB1
+     real(realk) :: EF12NLSX1
   end type fullmolecule
 
 

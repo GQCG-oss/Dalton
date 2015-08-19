@@ -1,14 +1,16 @@
 module tensor_parameters_and_counters
 
-   !Define atomic types used in the tensor module
+   !Define atomic data types used in the tensor module
    integer, parameter :: tensor_dp           = 8
    integer, parameter :: tensor_sp           = 4
 #ifdef VAR_INT64
    integer, parameter :: tensor_int          = 8
    integer, parameter :: tensor_log          = 8
+   integer, parameter :: tensor_max_int      = 9223372036854775800
 #else
    integer, parameter :: tensor_int          = 4
    integer, parameter :: tensor_log          = 4
+   integer, parameter :: tensor_max_int      = 2147483640
 #endif
    integer, parameter :: tensor_standard_int = 4
    integer, parameter :: tensor_standard_log = 4
@@ -35,7 +37,10 @@ module tensor_parameters_and_counters
 
    !MPI SIGNAL, GET SLAVES, MAKE SURE THE APPLICATION HAS NO OVERLAPPING SIGNAL
    integer,parameter :: TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD =  -121
-   integer :: TENSOR_SLAVES_TO_SLAVE_ROUTINE = TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
+   integer ::           TENSOR_SLAVES_TO_SLAVE_ROUTINE     = TENSOR_SLAVES_TO_SLAVE_ROUTINE_STD
+   !MPI COMM TO USE IN TENSOR OPERATIONS, THIS IS UPDATED AT RUNTIME
+   integer(kind=tensor_mpi_kind), parameter :: tensor_comm_null = -124
+   integer(kind=tensor_mpi_kind), pointer   :: tensor_work_comm => null()
 
    !parameters to define the data distribution in the tensor type
    integer(kind=tensor_standard_int), parameter :: TT_DENSE        = 1
@@ -51,7 +56,7 @@ module tensor_parameters_and_counters
    
    !other parameters
    integer,parameter :: TENSOR_MSG_LEN = 30
-   integer,parameter :: DEFAULT_TDIM   = 10
+   integer,parameter :: DEFAULT_TDIM   = 40
    
    integer,parameter :: lspdm_stdout  = 6
    integer,parameter :: lspdm_errout  = 0
@@ -103,6 +108,8 @@ module tensor_parameters_and_counters
 
    integer(kind=tensor_long_int), pointer :: tensor_counter_ext_mem => null()
 
+   integer(kind=tensor_standard_int), parameter :: tensor_max_int_standard = 2147483640
+   integer(kind=tensor_long_int), parameter     :: long1                   = 1_tensor_long_int
    
    
 end module tensor_parameters_and_counters

@@ -6999,6 +6999,10 @@ contains
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
     type(decfrag),intent(inout) :: MyFragment
     type(tensor) :: t2oEOS, t2vEOS
+    integer :: noEOS, nvEOS
+
+    noEOS = MyFragment%noccEOS
+    nvEOS = MyFragment%nvirtEOS
 
     ! Delete existing correlation density matrix (if present)
     if(MyFragment%CDset) then
@@ -7016,7 +7020,7 @@ contains
     CorrDensDefinition: select case(DECinfo%CorrDensScheme)
     case(1)
        ! Construct density matrix based only on EOS amplitudes
-       call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2oEOS,tensor_virtEOS=t2vEOS)
+       call tensor_extract_eos_indices(t2,noEOS,nvEOS,MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2oEOS,tensor_virtEOS=t2vEOS)
        call calculate_MP2corrdens_EOS(MyFragment,t2oEOS=t2oEOS%elm4,t2vEOS=t2vEOS%elm4)
 
        call tensor_free(t2oEOS)

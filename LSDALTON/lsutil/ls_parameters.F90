@@ -95,7 +95,7 @@ MODULE lsparameters
   integer,parameter :: QUITMOREJOBS                 = 27
   integer,parameter :: QUITNOMOREJOBS               = 28
   integer,parameter :: LSMPITEST                    = 29
-  integer,parameter :: ARRAYTEST                    = 30
+
   integer,parameter :: PDMA4SLV                     = 31
   integer,parameter :: LSMPI_IIDFTKSME              = 32
   integer,parameter :: CCSDPTSLAVE_INFO             = 33
@@ -133,6 +133,8 @@ MODULE lsparameters
   integer,parameter :: CCSDPTSLAVE_WORK             = 65
   integer,parameter :: SET_TENSOR_SEG_LENGTH        = 66
   integer,parameter :: DECRIMP2GRAD                 = 67
+  integer,parameter :: RIMP2F12Ccoup                = 68
+  integer,parameter :: RIMP2F12FULL                 = 69
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

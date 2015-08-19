@@ -91,7 +91,7 @@ module tensor_basic_module
        if (present(mode))then
           if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
              print *,"mode",mode,"arr%mode",arr%mode      
-             call lsquit("wrong use of tensor_set_ntpm",lspdm_errout)
+             call tensor_status_quit("wrong use of tensor_set_ntpm",lspdm_errout)
           else
              arr%mode=mode
           endif
@@ -156,10 +156,9 @@ module tensor_basic_module
       integer(kind=8) :: ne
       logical :: loc,parent
 
-      call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
       !call memory_deallocate_array(arr)
       if(associated(arr%elm1)) then
-        call lsquit("ERROR(memory_allocate_array):array already initialized, please free first",lspdm_errout)
+        call tensor_status_quit("ERROR(memory_allocate_array):array already initialized, please free first",lspdm_errout)
       endif
       vector_size = int((arr%nelms)*tensor_dp,kind=tensor_long_int)
 
@@ -178,7 +177,6 @@ module tensor_basic_module
       
       call assoc_ptr_arr(arr)
 
-      call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
     end subroutine memory_allocate_tensor_dense
 
@@ -193,7 +191,6 @@ module tensor_basic_module
       real(tensor_dp) :: tcpu1,twall1,tcpu2,twall2
       logical :: bg
 
-      call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
       if(associated(arr%elm1)) then
 
@@ -211,7 +208,6 @@ module tensor_basic_module
 !$OMP END CRITICAL
       end if
 
-      call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
 
     end subroutine memory_deallocate_tensor_dense
@@ -232,7 +228,6 @@ module tensor_basic_module
       integer :: i
       logical :: bg
 
-      call LSTIMER('START',tcpu1,twall1,lspdm_stdout)
 
       do i=arr%nlti,1,-1
         if(associated(arr%ti(i)%t)) then
@@ -270,7 +265,6 @@ module tensor_basic_module
 
       call tensor_free_mem(arr%ti)
 
-      call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
 
     end subroutine memory_deallocate_tile

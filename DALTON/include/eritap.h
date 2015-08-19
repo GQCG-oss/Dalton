@@ -2,11 +2,11 @@
       INTEGER         LUAORC,           NBUFX
       INTEGER         ERITAPLAST
 
-      COMMON /ERITAP/ LUAORC(0:MXCOOR), NBUFX(0:MXCOOR)
+      COMMON /ERITAP/ LUAORC(0:MXCOOR), NBUFX(0:MXCOOR),
+     &                ERITAPLAST
 
-      COMMON /ERITAP/ ERITAPLAST 
       !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
+      !   Always keep ERITAPLAST variable as the last variable in the common block. 
       !   If you add more variables to the block add them before <name>last.
       !   This variable is used to synchronize slaves for parallel
       !   calculations. Other than acting as a target to calculate the size of a common

@@ -1,4 +1,8 @@
 subroutine lsmpi_init(OnMaster)
+   use tensor_interface_module,only: tensor_initialize_interface, tensor_comm_null
+   use memory_handling, only: mem_allocated_global
+   use background_buffer_module, only: max_n_pointers, buf_realk
+
 #ifdef VAR_MPI
    use lsmpi_type
    use infpar_module
@@ -9,7 +13,7 @@ subroutine lsmpi_init(OnMaster)
 #endif
    implicit none
    logical, intent(inout) :: OnMaster
-   integer(kind=ls_mpik)  :: ierr
+   integer(kind=ls_mpik)  :: ierr, comm
 #ifdef VAR_CHEMSHELL
    integer(kind=ls_mpik)  :: lsdalton_chemsh_comm
    external lsdalton_chemsh_comm
@@ -20,6 +24,7 @@ subroutine lsmpi_init(OnMaster)
    nInteger4 = 0
    nInteger8 = 0
    nCha      = 0
+   comm      = 0
 
    if (call_mpi_init) then
 #ifdef VAR_CHEMSHELL
@@ -72,11 +77,17 @@ subroutine lsmpi_init(OnMaster)
    ! Assume that there will be local jobs
    infpar%lg_morejobs=.true.
 
+   !tensor initialization
+   call tensor_initialize_interface(infpar%lg_comm, mem_ctr=mem_allocated_global, pdm_slaves_signal = PDMA4SLV )
+
 #else
    logical, intent(inout) :: OnMaster
    !IF NOT COMPILED WITH MPI SET MASTER = TRUE
    OnMaster = .true.
+   call tensor_initialize_interface(tensor_comm_null, mem_ctr=mem_allocated_global )
 #endif
+
+
 end subroutine lsmpi_init 
 
 subroutine lsmpi_slave(comm)
@@ -106,7 +117,6 @@ subroutine lsmpi_slave(comm)
       call time_start_phase(PHASE_IDLE)
       call ls_mpibcast(job,infpar%master,comm)
       call time_start_phase(PHASE_WORK)
-
 
       select case(job)
       case(MATRIXTY);
@@ -158,6 +168,8 @@ subroutine lsmpi_slave(comm)
          call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(RIMP2F12FULL);         
+         call full_canonical_rimp2f12_slave
       case(LSTHCRIMP2FULL);
 !         call full_canonical_ls_thc_rimp2_slave
       case(CANONMP2FULL);
@@ -186,8 +198,6 @@ subroutine lsmpi_slave(comm)
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
-      case(ARRAYTEST);
-         call get_slaves_to_tensor_test
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop
@@ -218,7 +228,7 @@ subroutine lsmpi_slave(comm)
       case(PDMMGRIDEXIT);
          call PDMM_GRIDEXIT_SLAVE
       case(PDMA4SLV);
-         call PDM_tensor_SLAVE(comm)
+         call pdm_tensor_slave
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);

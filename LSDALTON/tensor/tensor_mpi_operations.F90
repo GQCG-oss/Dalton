@@ -4,9 +4,11 @@ module tensor_mpi_operations_module
    use tensor_parameters_and_counters
    use tensor_mpi_binding_module
    use tensor_mpi_interface_module
-   use tensor_allocator
+   use tensor_allocator, only: tensor_alloc_mem, tensor_free_mem
 
    public :: tensor_buffer
+   public :: tensor_get_rank
+   public :: tensor_get_size
    private
 
 #ifdef VAR_MPI
@@ -43,13 +45,43 @@ module tensor_mpi_operations_module
                      & tensor_buffer_standard_int, &
                      & tensor_buffer_log_l, &
                      & tensor_buffer_log_s, &
-                     & tensor_buffer_log
+                     & tensor_buffer_log, &
+                     & tensor_buffer_char_l, &
+                     & tensor_buffer_char_s, &
+                     & tensor_buffer_char
 #else
       module procedure tensor_buffer_dummy
 #endif
    end interface tensor_buffer
 
    contains
+
+   subroutine tensor_get_rank(rank)
+      implicit none
+      integer(kind=tensor_mpi_kind) :: rank
+#ifdef VAR_MPI
+      if( tensor_work_comm /= tensor_comm_null)then
+         call tensor_get_rank_for_comm(tensor_work_comm,rank)
+      else
+         rank=0
+      endif
+#else
+      rank=0
+#endif
+   end subroutine tensor_get_rank
+   subroutine tensor_get_size(size_)
+      implicit none
+      integer(kind=tensor_mpi_kind) :: size_
+#ifdef VAR_MPI
+      if( tensor_work_comm /= tensor_comm_null)then
+         call tensor_get_size_for_comm(tensor_work_comm,size_)
+      else
+         size_=1
+      endif
+#else
+      size_=1
+#endif
+   end subroutine tensor_get_size
 
 
    subroutine tensor_buffer_dummy()
@@ -118,7 +150,10 @@ module tensor_mpi_operations_module
       class(tensor_mpi_buffer_type), intent(inout) :: this
       integer(kind=tensor_long_int), intent(in)    :: inc
       integer(kind=tensor_long_int) :: oldbytes
-      print *,"WARNING(tensor_mpi_buffer_increase_buffer): increasing MPI buffer"
+#ifdef VAR_LSDEBUG
+      print *,"WARNING(tensor_mpi_buffer_increase_buffer): increasing MPI buffer from:",&
+         &this%nbytes," to ",this%nbytes + max(this%std_size,inc)
+#endif
 
       oldbytes     = this%nbytes
 
@@ -327,6 +362,54 @@ module tensor_mpi_operations_module
       logical :: buffer(n1)
       include "tensor_buffer_body.inc"
    end subroutine tensor_buffer_log_s
+   subroutine tensor_buffer_char(buffer,init_size,root,comm,finalize)
+      implicit none
+      integer(kind=tensor_long_int), parameter :: datatype = tensor_char_size
+      character*(*) :: buffer
+      character :: buf(len(buffer))
+      integer, intent(in), optional :: init_size
+      logical, optional :: finalize
+
+#ifdef USE_MPI_MOD_F08
+      type(MPI_Comm),intent(in),optional :: comm
+      integer(kind=tensor_mpi_kind),intent(in), optional :: root
+#else
+      integer(kind=tensor_mpi_kind),intent(in), optional :: comm
+      integer(kind=tensor_mpi_kind),intent(in), optional :: root
+#endif
+
+      integer(kind=tensor_long_int) :: n
+      integer(kind=tensor_mpi_kind) :: i, c
+
+      if(present(comm))then
+         c=comm
+      else if(tensor_mpi_buffer%is_initialized)then
+         c=tensor_mpi_buffer%comm
+      else
+         call tensor_status_quit("ERROR(tensor_buffer_log): buffer needs to be initialized or comm given at first call",22)
+      endif
+
+      call tensor_get_rank_for_comm(c,i)
+
+      n   = len(buffer,kind=tensor_long_int)
+      buf = transfer(buffer,buf)
+      call tensor_buffer_char_l(buf,n,init_size=init_size,root=root,comm=comm,finalize=finalize)
+      if(i/= tensor_mpi_buffer%root) buffer = transfer(buf,buffer)
+   end subroutine tensor_buffer_char
+   subroutine tensor_buffer_char_l(buffer,n1,init_size,root,comm,finalize)
+      implicit none
+      integer(kind=tensor_long_int), intent(in) :: n1
+      integer(kind=tensor_long_int), parameter :: datatype = tensor_char_size
+      character :: buffer(n1)
+      include "tensor_buffer_body.inc"
+   end subroutine tensor_buffer_char_l
+   subroutine tensor_buffer_char_s(buffer,n1,init_size,root,comm,finalize)
+      implicit none
+      integer(kind=tensor_standard_int), intent(in) :: n1
+      integer(kind=tensor_long_int), parameter :: datatype = tensor_char_size
+      character :: buffer(n1)
+      include "tensor_buffer_body.inc"
+   end subroutine tensor_buffer_char_s
 
 !ENDIF VAR_MPI
 #endif

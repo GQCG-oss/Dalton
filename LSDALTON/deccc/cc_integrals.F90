@@ -24,7 +24,6 @@ module ccintegrals
   use buildaobatch
   use memory_handling
   use daltoninfo
-  use lspdm_tensor_operations_module
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module
@@ -3511,7 +3510,7 @@ contains
 
 
     if(DECinfo%PL>2)then
-       call print_norm(integral," NORM of the integral :",print_on_rank=0)
+       call print_norm(integral," NORM of the integral :",print_=(me==0))
     endif
 
     if(.not.local)then

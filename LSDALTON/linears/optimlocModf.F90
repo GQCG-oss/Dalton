@@ -71,16 +71,19 @@ CONTAINS
     write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',ncore,' CORE ORBITALS ******'
     write(ls%lupri,'(a)') '  %LOC%  '
     CFG%PFM_input%m=m(1)
-    call localization(CMO,m(1),ncore,nbas,0,ls,CFG,.true.)
+    CFG%offset = 1
+    call localization(CMO,m(1),ncore,nbas,ls,CFG,.true.)
     write(ls%lupri,'(a)') '  %LOC%  '
     write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nval,' VALENCE ORBITALS ******'
     write(ls%lupri,'(a)') '  %LOC%  '
-    call localization(CMO,m(1),nval,nbas,ncore,ls,CFG,.false.)
+    CFG%offset = ncore+1
+    call localization(CMO,m(1),nval,nbas,ls,CFG,.false.)
     write(ls%lupri,'(a)') '  %LOC%  '
     write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nvirt,' VIRTUAL ORBITALS ******'
     write(ls%lupri,'(a)') '  %LOC%  '
     CFG%PFM_input%m=m(2)
-    call localization(CMO,m(2),nvirt,nbas,nocc,ls,CFG,.false.)
+    CFG%offset=nocc+1
+    call localization(CMO,m(2),nvirt,nbas,ls,CFG,.false.)
 
     if (CFG%orbspread) call orbspread_propint_free(CFG%orbspread_inp)
     if (CFG%PFM)  call kurt_freeAO(CFG%PFM_input)
@@ -113,18 +116,16 @@ CONTAINS
 !>  calls localization with appropriate dimension and check for problems
 !> \author Ida-Marie Hoeyvik
 !> \date 2014
-  subroutine localization(MO,m,norb,nbas,offset,ls,CFG,core) 
+  subroutine localization(CMO,m,norb,nbas,ls,CFG,core) 
     implicit none
     !> Matrix containg all MO coefficents
-    type(matrix),intent(inout) :: MO 
+    type(matrix),intent(inout) :: CMO 
     !> exponent for localization. 0 if no loc.
     integer, intent(in) :: m
     !> number of orbitals to be localized
     integer, intent(in) :: norb
     !> number of basis functions
     integer, intent(in) :: nbas 
-    !> points to where in MO matrix we start (offset = 0, ncore, or nval)
-    integer, intent(in) :: offset
     !>temp block for MOs
     real(realk), pointer :: tmp(:)
     !> block of MOs to be localized
@@ -144,49 +145,49 @@ CONTAINS
        return
     endif
 
-    call mem_alloc(tmp,nbas*norb)
-    call mat_init(MOblock,nbas,norb)
+    !call mem_alloc(tmp,nbas*norb)
+    !call mat_init(MOblock,nbas,norb)
     ! extract matrix from CMO(1,offset+1)
-    call mat_retrieve_block(MO,tmp,nbas,norb,1,offset+1)
+    !call mat_retrieve_block(MO,tmp,nbas,norb,1,offset+1)
 
-    call mat_set_from_full(tmp,1.0_realk,MOblock)
-    call mem_dealloc(tmp)
+    !call mat_set_from_full(tmp,1.0_realk,MOblock)
+    !call mem_dealloc(tmp)
 
 
     ! if core, make sure m = 1 for orbspread and fourthmoment
     if (core .and. (CFG%orbspread.or.CFG%PFM)) then
-       call localize_davidson(MOblock,1,ls,CFG)
+       call localize_davidson(CMO,1,ls,CFG,norb)
     else
-       call localize_davidson(MOblock,m,ls,CFG)
+       call localize_davidson(CMO,m,ls,CFG,norb)
     endif
 
 
-    call mem_alloc(tmp,nbas*norb)
-    call mat_to_full(MOblock,1.0_realk,tmp)
-    call mat_free(MOblock)
+    !call mem_alloc(tmp,nbas*norb)
+    !call mat_to_full(MOblock,1.0_realk,tmp)
+    !call mat_free(MOblock)
     ! set localized coefficients into MO matrix
-    call mat_create_block(MO,tmp,nbas,norb,1,offset+1)
-    call mem_dealloc(tmp)
+    !call mat_create_block(MO,tmp,nbas,norb,1,offset+1)
+    !call mem_dealloc(tmp)
 
   end subroutine localization
 
-  subroutine localize_davidson(CMO,m,ls,CFG)
+  subroutine localize_davidson(CMO,m,ls,CFG,norb)
     implicit none
     type(RedSpaceItem) :: CFG
     type(lsitem) :: ls
     type(matrix) :: CMO
-    integer :: m
+    integer :: m,norb
 
     call davidson_reset(CFG)
 
     if (CFG%orbspread) then
-       call orbspread_localize_davidson(CFG,CMO,m,ls)
+       call orbspread_localize_davidson(CFG,CMO,m,ls,norb)
        return
     elseif (CFG%PFM) then
-       call PFM_localize_davidson(CFG,CMO,m,ls)
+       call PFM_localize_davidson(CFG,CMO,m,ls,norb)
        return
     else
-       call charge_localize_davidson(CFG,CMO,m,ls)
+       call charge_localize_davidson(CFG,CMO,m,ls,norb)
     end if
 
 

@@ -31,7 +31,7 @@ CONTAINS
 SUBROUTINE getMolecularDimensions(MOLECULE,nAtoms,nBast,nBastAux)
 implicit none
 TYPE(MOLECULEINFO),intent(in) :: MOLECULE
-Integer,intent(out)           :: nAtoms,nBast,nBastAux
+Integer,intent(inout)         :: nAtoms,nBast,nBastAux
 !AORdefault   !AODFdefault
 nAtoms   = MOLECULE%nAtoms
 IF(AORdefault.EQ.AOregular)THEN
@@ -49,6 +49,7 @@ ELSEIF(AORdefault.EQ.AOdfJK)THEN
 ELSEIF(AORdefault.EQ.AOadmm)THEN
    nbast = MOLECULE%nBastADMM
 ELSE   
+   nbast = 0
    CALL LSQUIT('ERROR IN NBASIS DETERMINATION in getMolecularDimensions',-1)
 ENDIF
 
@@ -67,6 +68,7 @@ ELSEIF(AODFdefault.EQ.AOdfJK)THEN
 ELSEIF(AODFdefault.EQ.AOadmm)THEN
    nBastAux = MOLECULE%nBastADMM
 ELSE
+   nBastAux = 0
    CALL LSQUIT('ERROR IN NAUX DETERMINATION in getMolecularDimensions',-1)
 ENDIF
 !

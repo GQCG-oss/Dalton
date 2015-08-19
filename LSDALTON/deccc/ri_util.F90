@@ -277,15 +277,8 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   ENDIF
 
   IF(CollaborateWithSlaves.OR.DECinfo%RIMP2ForcePDMCalpha)then 
+     call BuildnAuxMPIUsedRI(nbasisAux,numnodes,nbasisAuxMPI2)
      ndimMax1 = nbasisAux/numnodes
-     do I=1,numnodes
-        nbasisAuxMPI2(I) = ndimMax1
-     enddo
-     J=2 !not add to master
-     do I=1,MOD(nbasisAux,numnodes)
-        nbasisAuxMPI2(J) = nbasisAuxMPI2(J) + 1
-        J=J+1
-     enddo
      MynbasisAuxMPI2 = nbasisAuxMPI2(mynum+1)
      IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
      IF(DECinfo%MemDebugPrint)print*,'STD: alloc TMPAlphaBetaDecomp(',MynbasisAuxMPI2*nbasisAux,')'
@@ -802,6 +795,36 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
 
 end subroutine Build_CalphaMO2
 
+subroutine BuildnAuxMPIUsedRI(nbasisAux,numnodes,nbasisAuxMPI2)
+  implicit none
+  integer,intent(in) :: nbasisAux,numnodes
+  integer,intent(inout) :: nbasisAuxMPI2(numnodes)
+  !local variables
+  integer :: ndimMax1,I,J
+  ndimMax1 = nbasisAux/numnodes
+  do I=1,numnodes
+     nbasisAuxMPI2(I) = ndimMax1
+  enddo
+  J=2 !not add to master
+  do I=1,MOD(nbasisAux,numnodes)
+     nbasisAuxMPI2(J) = nbasisAuxMPI2(J) + 1
+     J=J+1
+  enddo
+end subroutine BuildnAuxMPIUsedRI
+
+subroutine BuildnAuxMPIUsedRIinfo(nbasisAux,numnodes,mynum,AuxMPIstartMy,iAuxMPIextraMy)
+  implicit none
+  integer,intent(in) :: nbasisAux,numnodes,mynum
+  integer,intent(inout) :: AuxMPIstartMy
+  integer,intent(inout) :: iAuxMPIextraMy
+  !local variables 
+  integer :: ndimMax1
+  ndimMax1 = nbasisAux/numnodes
+  AuxMPIstartMy = mynum*ndimMax1
+  iAuxMPIextraMy = numnodes*ndimMax1 + mynum -1 +1
+  IF(iAuxMPIextraMy.GT.nbasisAux)iAuxMPIextraMy=0
+end subroutine BuildnAuxMPIUsedRIinfo
+
 subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,&
      & nocc,nvirt,MinAuxBatch,numnodes,nAuxMPI,mynum,MaxNaux,nthreads)
   implicit none       
@@ -1006,7 +1029,7 @@ subroutine Build_RobustERImatU(myLSitem,master,nbasis1,nbasis2,nbasisAux,&
   integer :: M,N,K,MetricOper
   integer :: J,offset
   CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
-  print*,'Build_RobustERImatU intspec=',intspec
+!  print*,'Build_RobustERImatU intspec=',intspec
   call GetOperatorFromCharacter(MetricOper,intspec,mylsitem%Setting)
 
   !=====================================================================================
@@ -1136,7 +1159,7 @@ real(realk),intent(inout) :: TMPAlphaBetaDecomp(MynbasisAuxMPI2,nbasisAux)
 !local variables
 integer :: offset,offset2,I,J
 offset = mynum*ndimMax1
-offset2 = numnodes*ndimMax1 + mynum -1 +1
+offset2 = numnodes*ndimMax1 + mynum 
 IF(MynbasisAuxMPI2.GT.ndimMax1)THEN
    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J) SHARED(nbasisAux,ndimMax1,&
    !$OMP TMPAlphaBetaDecomp,AlphaBetaDecomp,offset,offset2)

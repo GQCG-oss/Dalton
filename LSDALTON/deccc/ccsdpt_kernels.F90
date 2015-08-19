@@ -16,7 +16,6 @@ module ccsdpt_kernels_module
   use lstiming!, only: lstimer
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
-  use lspdm_tensor_operations_module
   use reorder_frontend_module
 #ifdef VAR_OPENACC
   use openacc

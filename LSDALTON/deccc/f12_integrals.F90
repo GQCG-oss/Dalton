@@ -2741,7 +2741,7 @@ contains
     if(DECinfo%frozencore) then
        offset = MyFragment%ncore
     else
-       offset=0
+       offset = 0
     end if
     
     ncabsAO = size(MyFragment%Ccabs,1)    
@@ -2848,6 +2848,7 @@ contains
     E_21 = Venergy(1) + Venergy(2) + Venergy(3) + Venergy(4) + Venergy(5)
 
     ! MP2F12 CCoupling
+    E_21C = 0.0E0_realk
     if(DECinfo%F12Ccoupling) then
         call MP2F12_Ccoupling_energy(MyFragment,bat,E_21C)
         E_21 = E_21 + E_21C 

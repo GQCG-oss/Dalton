@@ -541,6 +541,7 @@ contains
              else
                 PairFragment%mylsitem%setting%comm = infpar%lg_comm
              end if
+
           end if
 
 

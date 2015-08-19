@@ -59,8 +59,6 @@ subroutine dec_lsmpi_slave(comm)
          call II_bcast_screen(comm)
       case(IISCREENFREE);
          call II_screenfree(comm)
-      case(ARRAYTEST);
-         call get_slaves_to_tensor_test
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
@@ -71,6 +69,8 @@ subroutine dec_lsmpi_slave(comm)
          call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(RIMP2F12FULL);
+         call full_canonical_rimp2f12_slave
       case(LSTHCRIMP2FULL);
 !         call full_canonical_ls_thc_rimp2_slave
       case(DECRIMP2GRAD);
@@ -111,7 +111,7 @@ subroutine dec_lsmpi_slave(comm)
       case(DEFAULTGROUPS);
          call lsmpi_default_mpi_group
       case(PDMA4SLV);
-         call PDM_TENSOR_SLAVE(comm)
+         call pdm_tensor_slave
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
