@@ -123,6 +123,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    E_21C = 0.0E0_realk
    MP2_energy = mp2f12_energy
    mp2f12_energy = 0.0E0_realk
+   use_bg_buf = .FALSE.
 
    lupri = DECinfo%output
 #ifdef VAR_TIME
@@ -333,7 +334,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mem_alloc(ABdecompF,nAux,nAux)
       ABdecompCreateF = .TRUE.
       ! Calculate the Fitting Coefficients (alpha|F|ij)
-      use_bg_buf = .FALSE.
       intspec(4) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
       intspec(5) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,FORCEPRINT, &
