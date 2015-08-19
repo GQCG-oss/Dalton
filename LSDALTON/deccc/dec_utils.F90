@@ -4308,11 +4308,11 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2 energy         :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==MODEL_RIMP2) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total RIMP2 energy       :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)') 'E: Total RIMP2 energy  :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr+EF12singles
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy     :', Ehf+Ecorr+EF12singles
        elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
