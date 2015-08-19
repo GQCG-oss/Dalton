@@ -236,14 +236,21 @@ contains
     DECinfo%ccMaxIter                = 100
     DECinfo%ccMaxDIIS                = 3
     DECinfo%ccModel                  = MODEL_MP2 ! see parameter-list in dec_typedef.f90
-    DECinfo%F12                      = .false.
-    DECinfo%F12fragopt               = .false.
-    DECinfo%F12debug                 = .false.
-    DECinfo%F12Ccoupling             = .false.
-    DECinfo%F12singles               = .true.
-    DECinfo%F12singlesMaxIter = 200
-    DECinfo%F12singlesThr = 1.0e-7
-    DECinfo%F12singlesMaxDIIS = 3
+    
+    ! F12 options
+
+    DECinfo%F12                            = .false.
+    DECinfo%F12fragopt                     = .false.
+    DECinfo%F12debug                       = .false.
+    DECinfo%F12Ccoupling                   = .false.
+    DECinfo%F12singles                     = .true.
+    DECinfo%F12singlesMaxIter              = 200
+    DECinfo%F12singlesThr                  = 1.0e-7
+    DECinfo%F12singlesMaxDIIS              = 3
+    DECinfo%NaturalLinearScalingF12Terms   = .false.
+    DECinfo%NaturalLinearScalingF12TermsV1 = .false.
+    DECinfo%NaturalLinearScalingF12TermsB1 = .false.
+    DECinfo%NaturalLinearScalingF12TermsX1 = .false.
 
 
     DECinfo%SOS                      = .false.
@@ -950,7 +957,22 @@ contains
           read(input,*) DECinfo%F12singlesThr
        case('.F12SINGLESMAXDIIS')
           read(input,*) DECinfo%F12singlesMaxDIIS
-
+       case('.F12LSALL')     
+          !Use Natural linear scaling algorithm to treat 
+          !these terms (do not treat with DEC nor RI)
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsB1 = .true.
+          DECinfo%NaturalLinearScalingF12TermsX1 = .true.
+          DECinfo%NaturalLinearScalingF12TermsV1 = .true.
+       case('.F12LSB1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsB1 = .true.
+       case('.F12LSX1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsX1 = .true.
+       case('.F12LSV1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsV1 = .true.
 #endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST

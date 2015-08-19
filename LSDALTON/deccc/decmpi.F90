@@ -670,6 +670,9 @@ contains
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12singles,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSV1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSX1,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if global slave
     if(.not. gm) then
@@ -2471,6 +2474,7 @@ contains
     call ls_mpi_buffer(DECitem%ccsolverskip,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
+
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
@@ -2479,6 +2483,10 @@ contains
     call ls_mpi_buffer(DECitem%F12singlesMaxIter,Master)
     call ls_mpi_buffer(DECitem%F12singlesThr,Master)
     call ls_mpi_buffer(DECitem%F12singlesMaxDIIS,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12Terms,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsB1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsV1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsX1,Master)
 
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)

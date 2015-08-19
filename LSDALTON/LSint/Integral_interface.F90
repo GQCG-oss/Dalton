@@ -96,7 +96,8 @@ MODULE IntegralInterfaceMOD
        & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI,&
        & II_get_2int_ScreenRealMat,transformed_f2_to_f3,transform_D3_to_D2,&
        & ii_get_2int_batchscreenmat, II_get_nst_spec_expval,&
-       & II_get_magderivKcont, II_get_2center_erifull
+       & II_get_magderivKcont, II_get_2center_erifull,&
+       & II_get_exchangeEcontF12,II_get_CoulombEcontF12
   private
 
 INTERFACE II_get_coulomb_mat
@@ -5515,6 +5516,67 @@ setting%scheme%daLinK = DaLink
 setting%scheme%Dascreen_thrlog = Dascreen_thrlog
 END SUBROUTINE II_get_exchangeEcont
 
+!> \brief 
+!> \author T. Kjaergaard
+!> \date 2015
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param D the density matrix
+!> \param ndmat the number of density matrices
+!> \param F the exchange matrix
+SUBROUTINE II_get_exchangeEcontF12(LUPRI,LUERR,SETTING,DLHS,DRHS,Econt,ndmat,InOperator)
+IMPLICIT NONE
+Integer               :: ndmat
+TYPE(MATRIX),target   :: DLHS(ndmat)
+TYPE(MATRIX),target   :: DRHS(ndmat)
+real(realk)           :: Econt(ndmat)
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR
+INTEGER               :: InOperator
+!
+Integer             :: idmat,incdmat,nrow,ncol
+Real(realk),pointer :: DfullLHS(:,:,:)
+Real(realk),pointer :: DfullRHS(:,:,:)
+Real(realk)         :: TS,TE,fac
+integer    :: Oper,dascreen_thrlog
+integer :: nCalcInt,nCalcIntZero,nCalcIntZeroContrib
+Logical :: DaLink
+
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC in II_get_exchangeEcont use .NOGCBASIS',-1)
+ENDIF
+DaLink = setting%scheme%daLinK
+Dascreen_thrlog = setting%scheme%Dascreen_thrlog
+CALL LSTIMER('START ',TS,TE,LUPRI)
+!attach matrices
+CALL ls_attachDmatToSetting(DRHS,ndmat,setting,'RHS',1,3,.FALSE.,lupri)
+CALL ls_attachDmatToSetting(DLHS,ndmat,setting,'LHS',2,4,.FALSE.,lupri)
+
+setting%scheme%daLinK=setting%scheme%LSdaLinK
+IF(.NOT.setting%scheme%LSDASCREEN)setting%scheme%daLinK=.FALSE.
+setting%scheme%dascreen_thrlog = setting%scheme%lsdascreen_thrlog
+IF (SETTING%SCHEME%CAM) THEN
+   Oper = CAMOperator       !Coulomb attenuated method
+ELSEIF (SETTING%SCHEME%SR_EXCHANGE) THEN
+   Oper = ErfcOperator      !Short-Range Coulomb screened exchange
+ELSE
+   Oper = CoulombOperator   !Regular Coulomb metric 
+ENDIF
+Oper = InOperator   
+call InitGGemOp(setting,Oper)
+!Calculates the HF-exchange contribution
+call initIntegralOutputDims(setting%Output,1,1,1,1,ndmat)
+call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
+     &                  Oper,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,Econt,setting%IntegralTransformGC)
+
+CALL ls_freeDmatFromSetting(setting)
+CALL LSTIMER('st-KEcont',TS,TE,LUPRI)
+setting%scheme%daLinK = DaLink
+setting%scheme%Dascreen_thrlog = Dascreen_thrlog
+END SUBROUTINE II_get_exchangeEcontF12
+
 !> \brief Calculates the coulomb matrix using the jengine method (default)
 !> \author S. Reine
 !> \date 2010
@@ -5654,6 +5716,82 @@ setting%scheme%DaCoulomb = DaCoulomb
 setting%scheme%dascreen_thrlog = Dascreen_thrlog
 
 END SUBROUTINE II_get_CoulombEcont
+
+!> \brief Calculates the coulomb matrix using the jengine method (default)
+!> \author S. Reine
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param D the array of density matrix
+!> \param E the coulomb energies 
+!> \param ndmat the number of density matrix
+SUBROUTINE II_get_CoulombEcontF12(LUPRI,LUERR,SETTING,DLHS,DRHS,Econt,ndmat,InOperator)
+IMPLICIT NONE
+Integer             :: ndmat
+TYPE(MATRIX),target   :: DLHS(ndmat),DRHS(ndmat)
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR,nbasis
+real(realk)           :: Econt(ndmat)
+INTEGER               :: InOperator
+!
+Real(realk)         :: TS,TE
+logical :: DaJengine,DaCoulomb,FMM
+integer :: naux,Dascreen_thrlog
+integer :: oper,natoms
+
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC in II_get_CoulombEcont use .NOGCBASIS',-1)
+ENDIF
+CALL LSTIMER('START ',TS,TE,LUPRI)
+FMM = SETTING%SCHEME%FMM
+SETTING%SCHEME%FMM = .FALSE.
+DaJengine = setting%scheme%DaJengine
+DaCoulomb = setting%scheme%DaCoulomb
+Dascreen_thrlog = setting%scheme%dascreen_thrlog
+setting%scheme%dascreen_thrlog = setting%scheme%lsdascreen_thrlog
+
+IF (SETTING%SCHEME%DENSFIT) THEN
+   CALL LSQUIT('Econt II_get_CoulombEcontF12 DF not tested',-1)
+ELSE
+   Oper = InOperator
+   call InitGGemOp(setting,Oper)
+   CALL ls_attachDmatToSetting(DLHS,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+   CALL ls_attachDmatToSetting(DRHS,ndmat,setting,'RHS',3,4,.TRUE.,lupri)
+   call initIntegralOutputDims(setting%Output,1,1,1,1,ndmat)
+   IF(SETTING%SCHEME%LSDAJENGINE)THEN
+      setting%scheme%DaJengine=setting%scheme%LSDaJengine
+      IF(.NOT.setting%scheme%LSDASCREEN)setting%scheme%DaJengine=.FALSE.
+      call ls_jengine(AORdefault,AORdefault,AORdefault,AORdefault,&
+           & Oper,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+   ELSEIF(SETTING%SCHEME%LSDACoulomb)THEN
+
+      call lsquit('II_get_CoulombEcontF12 requires Jengine not DaCoulomb',-1)
+
+!      setting%scheme%DaCoulomb=setting%scheme%LSDaCoulomb
+!      IF(.NOT.setting%scheme%LSDASCREEN)setting%scheme%DaCoulomb=.FALSE.
+!      call ls_get_coulomb_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
+!           & Oper,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+   ELSE
+      call lsquit('II_get_CoulombEcontF12 requires Jengine ',-1)
+   ENDIF
+   CALL retrieve_Output(lupri,setting,Econt,setting%IntegralTransformGC)
+   IF(SETTING%SCHEME%FMM) THEN
+      call lsquit('II_get_CoulombEcontF12 FMM not tested',-1)
+   ENDIF
+   CALL ls_freeDmatFromSetting(setting)
+   IF(SETTING%SCHEME%JENGINE)THEN
+      CALL LSTIMER('JengineEcontF12',TS,TE,LUPRI)
+   ELSE
+      CALL LSTIMER('CoulombEcontF12',TS,TE,LUPRI)
+   ENDIF
+ENDIF
+SETTING%SCHEME%FMM = FMM
+setting%scheme%DaJengine = DaJengine 
+setting%scheme%DaCoulomb = DaCoulomb
+setting%scheme%dascreen_thrlog = Dascreen_thrlog
+
+END SUBROUTINE II_get_CoulombEcontF12
 
 !> \brief Calculates the (ab|cd) with fixed a and b batchindexes so that the output would be a 4dim tensor with dim (dimAbatch,dimBbatch,fulldimC,fulldimD)
 !> \author T. Kjaergaard

@@ -360,6 +360,14 @@ module dec_typedef_module
      real(realk) :: F12singlesThr
      !> Maximum subspace dimension in F12 singles solver
      integer :: F12singlesMaxDIIS
+     !> Do Natural linear scaling terms seperate from DEC
+     logical :: NaturalLinearScalingF12Terms
+     !> Do Natural linear scaling term V1 seperate from DEC
+     logical :: NaturalLinearScalingF12TermsV1
+     !> Do Natural linear scaling term B1 seperate from DEC
+     logical :: NaturalLinearScalingF12TermsB1
+     !> Do Natural linear scaling term X1 seperate from DEC
+     logical :: NaturalLinearScalingF12TermsX1
 
      !> F12 debug settings
      !> ******************
@@ -859,7 +867,9 @@ module dec_typedef_module
 
      ! F12 singles correction energy 
      real(realk) :: EF12singles
-
+     real(realk) :: EF12NLSV1
+     real(realk) :: EF12NLSB1
+     real(realk) :: EF12NLSX1
   end type fullmolecule
 
 
