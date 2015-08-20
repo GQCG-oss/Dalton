@@ -308,6 +308,8 @@ add_library(
    lsutil_tensor_lib
    ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90
    ${LSUTIL_TENSOR_SOURCES}
+   ${TENSOR_BASIC_SOURCES}
+   ${MANUAL_REORDERING_SOURCES}
    )
 
 target_link_libraries(lsutil_tensor_lib lsutil_tensor_basic)

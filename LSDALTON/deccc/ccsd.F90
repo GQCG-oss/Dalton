@@ -973,6 +973,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !!!!!!!!!!!!!!!!!!!!!!!!!!
      logical:: DIL_LOCK_OUTSIDE
      character(256):: tcs
+#ifdef DIL_ACTIVE
      type(dil_tens_contr_t):: tch0,tch1,tch2,tch3,tch4,tch5 !tensor contraction handles for Scheme 1 (DIL)
      integer(INTL):: dil_mem,ll0,ll1,ll2,ll3
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
@@ -980,7 +981,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      integer:: comp_range
      real(realk):: r0,r1
-#ifdef DIL_ACTIVE
      integer:: sch1=1,sch2=1,sch3=1,sch4=1,sch5=1,sch_sym=1
 #else
      integer:: sch1=2,sch2=2,sch3=2,sch4=2,sch5=2,sch_sym=2
