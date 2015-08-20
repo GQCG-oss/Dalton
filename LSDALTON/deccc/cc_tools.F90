@@ -909,6 +909,7 @@ module cc_tools_module
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
 !{`DIL:
+#ifdef DIL_ACTIVE
      integer:: nors,nvrs,scheme
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -918,6 +919,7 @@ module cc_tools_module
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
      integer(INTD):: sch_sym=1
+#endif
 !}
 
       call time_start_phase(PHASE_WORK)
@@ -971,6 +973,7 @@ module cc_tools_module
       endif
 
       select case(s)
+#ifdef DIL_ACTIVE
       case(1) !`DIL: Scheme 1 only
          !!SYMMETRIC COMBINATION:
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
@@ -1053,6 +1056,7 @@ module cc_tools_module
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Tens contr failed!',-1)
+#endif
       case default
          call lsquit("ERROR(get_a22_and_prepb22_terms_exd): wrong scheme on input",-1)
       end select
@@ -2150,12 +2154,14 @@ module cc_tools_module
       logical :: traf,np
       integer :: o(4)
 !{`DIL:
+#ifdef DIL_ACTIVE
      character(256):: tcs
      type(dil_tens_contr_t):: tch
      integer(INTL):: dil_mem,l0
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+#endif
      real(realk):: r0
 !}
 

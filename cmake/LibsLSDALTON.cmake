@@ -67,8 +67,6 @@ include_directories(${CMAKE_SOURCE_DIR}/LSDALTON/tensor/include)
 
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
-   ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
-
    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_reord.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord.F90
@@ -167,6 +165,8 @@ set(MANUAL_REORDERING_SOURCES
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_utils_t2f.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_utils_t2f.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_utils_t2f.F90
+
+
    )
 if(ENABLE_GPU)
    set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
@@ -277,6 +277,8 @@ if(ENABLE_REAL_SP)
    endif()
 endif()
 
+set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90 )
+set(GENERATED_FILES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90)
 
 if(ENABLE_GPU)
    set(reorder_definitions " --acc ${reorder_definitions}")
@@ -287,7 +289,7 @@ endif()
 
 add_custom_command(
     OUTPUT
-    ${MANUAL_REORDERING_SOURCES}
+    ${GENERATED_FILES}
     COMMAND
     python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py --CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${reorder_definitions}
     DEPENDS
@@ -297,19 +299,18 @@ add_custom_command(
 unset(reorder_definitions)
 
 add_library(
-    lsutil_tensor_basic
-    ${TENSOR_BASIC_SOURCES}
-    ${MANUAL_REORDERING_SOURCES}
-    )
+   lsutil_tensor_basic
+   ${TENSOR_BASIC_SOURCES}
+   ${MANUAL_REORDERING_SOURCES}
+   )
 
 add_library(
-    lsutil_tensor_lib
-    ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90
-    ${LSUTIL_TENSOR_SOURCES}
-    )
+   lsutil_tensor_lib
+   ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90
+   ${LSUTIL_TENSOR_SOURCES}
+   )
 
-target_link_libraries(lsutil_tensor_lib lsutil_tensor_basic)
-
+add_dependencies(lsutil_tensor_lib lsutil_tensor_basic)
 
 add_library(
     lsutillib_common
@@ -317,7 +318,7 @@ add_library(
     ${LSUTIL_COMMON_SOURCES}
     )
 
-target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib)
+target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib lsutil_tensor_basic)
 
 add_library(
     matrixolib
@@ -325,7 +326,7 @@ add_library(
     ${LSUTIL_MATRIXO_C_SOURCES}
     )
 
-target_link_libraries(matrixolib lsutillib_common lsutil_tensor_lib)
+target_link_libraries(matrixolib lsutillib_common lsutil_tensor_lib lsutil_tensor_basic)
 
 
 
