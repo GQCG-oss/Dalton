@@ -48,17 +48,18 @@ linsca-develop-HigherDerivatives Author:Simen                   Status: Deleted
 linsca-ng-build                 Author: Pawel, Lea, Poul        Status: Pretty stale (from 2005)
 linsca-numerical                Author: Simen                   Status: Deleted
 linsca-ng-vxcfit                Author: Pawel                   Status: Pretty stale (from 2008)
+linsca                          Author: Simen,TK,Stinne,..      Status: Deleted
+dec-patrick                     Author: Patrick E.              Status: ??????????????????????
+cuda_api_lsdalton               Author: Janus, Radovan          Status: ??????????????????????
+dec-rpa                         Author: Johannes                Status: Deleted
+dec-sostest                     Author: Johannes                Status: Deleted
+dec-karl                        Author: Karl                    Status: ??????????????????????
+localize_wannier                Author: Karl                    Status: ??????????????????????
+linsca-vcd-aat                  Author: Radovan                 Status: ??????????????????????
+lresc-linear                    Author: Juan                    Status: ??????????????????????
+master_with_CUDA_fh             Author: Frank Heiden haydn@bbsyd.dk  Status: ??????????????????????
 
-List of branches that I (Thomas) suspect or know is lsdalton related branches
 
-ONMR-development
-cuda_api_lsdalton
-dec-karl
-dec-patrick
-dec-rpa
-dec-sostest
-linsca
-linsca-vcd-aat
-localize_wannier
-lresc-linear
-master_with_CUDA_fh
+
+
+
