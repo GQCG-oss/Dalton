@@ -39,9 +39,11 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
-use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
-     & check_cc_input, check_dec_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
+#ifdef VAR_DEC
+use DEC_settings_mod, only: config_dec_input,check_cc_input, check_dec_input
+#endif
+use dec_typedef_module,only: dec_set_default_config, DECinfo,MODEL_MP2,&
+     & MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -635,21 +637,29 @@ DO
 
    ! Input for DEC calculation
    DECInput: IF (WORD(1:5) == '**DEC') THEN
+#ifdef VAR_DEC
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
       config%integral%PreCalcDFscreening =  config%doRIMP2
       config%integral%PreCalcF12screening =  config%doF12
+#else
+      call lsquit('**DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
    END IF DECInput
 
    ! Input for full molecular CC calculation
    ! (uses same setup as DEC calculation)
    CCinput: IF (WORD(1:4) == '**CC') THEN
+#ifdef VAR_DEC
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
       config%integral%PreCalcDFscreening =  config%doRIMP2
       config%integral%PreCalcF12screening =  config%doF12
+#else
+      call lsquit('**CC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
    END IF CCinput
 
 
@@ -1131,9 +1141,10 @@ subroutine DEC_meaningful_input(config)
 #endif
      end if OrbLocCheck
 
-     ! Check DEC input internally
+#ifdef VAR_DEC
+     ! Check DEC input internally     
      call check_dec_input()
-
+#endif
   end if DECcalculation
 
 
@@ -4131,7 +4142,9 @@ endif
    if(config%doDEC) then
       nocc = config%decomp%nocc
       nvirt = (nbast-nocc)
+#ifdef VAR_DEC
       call check_cc_input(ls,nocc,nvirt,nbast)
+#endif
    endif
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'

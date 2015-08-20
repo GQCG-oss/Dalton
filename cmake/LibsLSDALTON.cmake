@@ -539,24 +539,26 @@ if(ENABLE_REAL_SP)
    unset(LIST_OF_DEFINITIONS)
 endif()
 
-if(ENABLE_REAL_SP)
-   add_library(
-       declib
-       ${CCSDPT_SINGLE_PREC_SOURCE}
-       ${DEC_SOURCES}
-       )
-else()
-   add_library(
-       declib
-       ${DEC_SOURCES}
-       )
+if(ENABLE_DEC)
+  if(ENABLE_REAL_SP)
+    add_library(
+      declib
+      ${CCSDPT_SINGLE_PREC_SOURCE}
+      ${DEC_SOURCES}
+      )
+  else()
+    add_library(
+      declib
+      ${DEC_SOURCES}
+      )
+  endif()
+
+  target_link_libraries(declib lsutiltypelib_common)
+  target_link_libraries(declib lsutillib_common)
+  target_link_libraries(declib lsintlib)
+  target_link_libraries(declib linearslib)
 endif()
-
-target_link_libraries(declib lsutiltypelib_common)
-target_link_libraries(declib lsutillib_common)
-target_link_libraries(declib lsintlib)
-target_link_libraries(declib linearslib)
-
+  
 add_library(
     rsp_propertieslib
     ${RSP_PROPERTIES_SOURCES}
@@ -579,7 +581,9 @@ add_library(
 target_link_libraries(lsdaltonmain pbclib)
 target_link_libraries(lsdaltonmain geooptlib)
 target_link_libraries(lsdaltonmain linearslib)
-target_link_libraries(lsdaltonmain declib)
+if(ENABLE_DEC)
+  target_link_libraries(lsdaltonmain declib)
+endif()
 target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
@@ -680,7 +684,13 @@ set(LIBS_TO_MERGE
     lsint
     pbclib
     ddynamlib
-    declib
+)
+
+if(ENABLE_DEC)
+  set(LIBS_TO_MERGE ${LIBS_TO_MERGE} declib)
+endif()
+
+set(LIBS_TO_MERGE ${LIBS_TO_MERGE} 
     solverutillib
     rspsolverlib
     linearslib
