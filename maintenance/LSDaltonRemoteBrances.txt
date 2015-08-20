@@ -54,6 +54,7 @@ linsca-numerical                Author: Simen                   Status: Deleted
 dec-rpa                         Author: Johannes                Status: Deleted
 dec-sostest                     Author: Johannes                Status: Deleted
 linsca                          Author: all                     Status: Deleted (transition branch from linsca-ng to linsca-develop)
+lresc-linear                    Author: Juan                    Status: Deleted
 
 dec-patrick                     Author: Patrick E.              Status: ??????????????????????
 cuda_api_lsdalton               Author: Janus, Radovan          Status: ??????????????????????
