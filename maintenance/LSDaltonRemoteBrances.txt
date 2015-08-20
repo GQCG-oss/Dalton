@@ -48,14 +48,14 @@ linsca-develop-HigherDerivatives Author:Simen                   Status: Deleted
 linsca-ng-build                 Author: Pawel, Lea, Poul        Status: Pretty stale (from 2005)
 linsca-numerical                Author: Simen                   Status: Deleted
 linsca-ng-vxcfit                Author: Pawel                   Status: Pretty stale (from 2008)
+dec-rpa                         Author: Johannes                Status: Deleted
+dec-sostest                     Author: Johannes                Status: Deleted
 
 List of branches that I (Thomas) suspect or know is lsdalton related branches
 
 ONMR-development
 dec-karl
 dec-patrick
-dec-rpa
-dec-sostest
 linsca
 linsca-vcd-aat
 localize_wannier
