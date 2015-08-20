@@ -3012,7 +3012,6 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,Calp
    real(realk),intent(in)    :: CalphaR(nBA,n,nbasis)
    real(realk),intent(inout) :: EJK
    !local variables
-   real(realk), pointer :: CalphaCocc(:,:,:)
 
    integer :: I,ALPHA,J
    real(realk) :: TMP_IJIJ,TMP_JIIJ,TMP,TMPD
@@ -3035,8 +3034,8 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,Calp
       IF(dopair_occ(J,J)) THEN
          TMP_IJIJ = 0.0E0_realk
          DO ALPHA = 1,NBA
-            TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,J,ncore+J)*Rtilde(ALPHA,J,J) &
-               & + Rtilde(ALPHA,J,J)*CalphaR(ALPHA,J,ncore+J)
+            TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,J,ncore+J)*Rtilde(ALPHA,J,J+ncore) &
+               & + Rtilde(ALPHA,J,J+ncore)*CalphaR(ALPHA,J,ncore+J)
          ENDDO
          TMPD = TMPD + TMP_IJIJ
       ENDIF
@@ -3046,10 +3045,10 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,Calp
             TMP_IJIJ = 0.0E0_realk
             TMP_JIIJ = 0.0E0_realk
             DO ALPHA = 1,NBA
-               TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,ncore+I)*Rtilde(ALPHA,J,J) &
-                  & + Rtilde(ALPHA,I,I)*CalphaR(ALPHA,J,ncore+J)
-               TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,ncore+J)*Rtilde(ALPHA,J,I) & 
-                  & + Rtilde(ALPHA,I,J)*CalphaR(ALPHA,J,ncore+I)
+               TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,ncore+I)*Rtilde(ALPHA,J,J+ncore) &
+                  & + Rtilde(ALPHA,I,I+ncore)*CalphaR(ALPHA,J,ncore+J)
+               TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,ncore+J)*Rtilde(ALPHA,J,I+ncore) & 
+                  & + Rtilde(ALPHA,I,J+ncore)*CalphaR(ALPHA,J,ncore+I)
             ENDDO
             TMP = TMP + 7.0E0_realk * TMP_IJIJ + TMP_JIIJ
          ENDIF
