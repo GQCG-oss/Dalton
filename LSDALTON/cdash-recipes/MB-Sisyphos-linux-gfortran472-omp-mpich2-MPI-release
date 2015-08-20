@@ -19,7 +19,7 @@ echo "this should not be openmpi version"
 export PATH=/usr/lib64/mpich/bin:$PATH
 export LD_LIBRARY_PATH=/usr/lib64/mpich/lib:$LD_LIBRARY_PATH
 
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-mpich2-MPI-release" build
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -DENABLE_DEC=ON -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-mpich2-MPI-release" build
 
 cd build
 ctest -D Nightly -L linsca
