@@ -21,11 +21,12 @@ use ccintegrals
 !WARNING FOR TESTING
 !use full_f12contractions
 
-!#ifdef MOD_UNRELEASED
 use f12_routines_module
 use IntegralInterfaceMOD
-use rimp2_module
-!#endif 
+use ri_util_module
+#ifdef VAR_MPI
+use infpar_module
+#endif
 
 public :: full_canonical_rimp2_f12, lsmpi_matrix_bufcopy,&
      & NaturalLinearScalingF12Terms
