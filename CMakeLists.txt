@@ -75,6 +75,7 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
+option(ENABLE_DEC            "Enable Divide-Expand-Consolidate module"          OFF)
 
 # Gen1Int interface, OpenRSP and TDRSP needs QcMatrix library
 # Gao: please leave this comment here, and I am going to fix it after repo split
