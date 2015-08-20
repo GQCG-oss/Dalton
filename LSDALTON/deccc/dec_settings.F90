@@ -53,6 +53,7 @@ contains
     DECinfo%SNOOPort       = .false.
     DECinfo%SNOOPsamespace =.true.
     DECinfo%SNOOPlocalize  = .false.
+    DECinfo%SNOOPrestart  = .false.
 
     ! CC response
     DECinfo%CCexci = .false.
@@ -473,6 +474,12 @@ contains
 
        case('.SNOOPLOCALIZE')
           DECinfo%SNOOPlocalize=.true.
+
+       case('.SNOOPRESTART')
+          DECinfo%SNOOPrestart=.true.
+          ! Also restart HF for full molecule by default when using SNOOP restart
+          DECinfo%HFrestart=.true.
+
 
           ! CC RESPONSE
           ! ===========
@@ -1208,11 +1215,6 @@ contains
                & use same orbital spaces as full system!',-1)
        end if
        
-       ! SNOOP restart not implemented
-       if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
-          call lsquit('SNOOP restart is not implemented!',-1)
-       end if
-
        ! Only for dense matrices for now
        if(matrix_type/=mtype_dense) then
           call lsquit('SNOOP is only implemented for dense matrices!',-1)
@@ -1582,6 +1584,7 @@ contains
     write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
+    write(lupri,*) 'SNOOPrestart ', DECinfo%SNOOPrestart
     write(lupri,*) 'CCexci ', DECinfo%CCexci
     write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
     write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
