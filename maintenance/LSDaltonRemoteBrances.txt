@@ -50,6 +50,7 @@ linsca-numerical                Author: Simen                   Status: Deleted
 linsca-ng-vxcfit                Author: Pawel                   Status: Pretty stale (from 2008)
 dec-rpa                         Author: Johannes                Status: Deleted
 dec-sostest                     Author: Johannes                Status: Deleted
+linsca                          Author: all                     Status: Deleted (transition branch from linsca-ng to linsca-develop)
 
 List of branches that I (Thomas) suspect or know is lsdalton related branches
 
@@ -57,7 +58,6 @@ ONMR-development
 cuda_api_lsdalton
 dec-karl
 dec-patrick
-linsca
 linsca-vcd-aat
 localize_wannier
 lresc-linear
