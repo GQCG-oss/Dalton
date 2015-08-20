@@ -4,7 +4,7 @@
 
 !> The module contains structures used in DEC (and printing routines)
 module dec_typedef_module
-
+  use lsmpi_param
   use precision
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
