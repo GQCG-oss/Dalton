@@ -478,7 +478,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX34_dec(nBA,n1,n2,n3,&
    !!$OMP tmpG13,tmpG23,tmp) SHARED(CalphaC,CalphaP,CalphaG,CalphaGcabs,n3,n2,n1,dopair_occ) &
    !!$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4)
    DO c=1,n3 !ncabsMO
-      DO m=1,n2 !noccAOS
+      DO m=1,n2 !noccAOStot
          DO j=1,n1 !noccEOS
             DO i=1,n1
                IF(dopair_occ(I,J)) THEN
@@ -486,7 +486,6 @@ subroutine ContractTwo4CenterF12IntegralsRIX34_dec(nBA,n1,n2,n3,&
                   !tmpR4 = 0.0E0_realk
                   DO alpha = 1,NBA
                      tmpR3 = tmpR3 + CalphaC(alpha,m,i)*CalphaGcabs(alpha,j,c)
-                     !tmpR4 = tmpR4 + CalphaC(alpha,m,j)*CalphaGcabs(alpha,i,c)
                   ENDDO
                   tmpG31 = 0.0E0_realk
                   tmpG32 = 0.0E0_realk
@@ -701,20 +700,16 @@ subroutine ContractTwo4CenterF12IntegralsRIB7_dec(nBA,n1,n2,n3,CalphaR,CalphaG,C
             DO i=1,n1
                IF(dopair_occ(I,J)) THEN
                   tmpRJ1 = 0.0E0_realk
-                  DO alpha1 = 1, nBA
-                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,c)*CalphaD(alpha1,j,n) 
-                  ENDDO
                   tmpRJ2 = 0.0E0_realk
-                  DO alpha2 = 1, nBA
-                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,c)*CalphaD(alpha2,i,n)
+                  DO alpha = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaR(alpha,i,c)*CalphaD(alpha,j,n) 
+                     tmpRJ2 = tmpRJ2 + CalphaR(alpha,j,c)*CalphaD(alpha,i,n)
                   ENDDO
                   tmpGJ1 = 0.0E0_realk
-                  DO beta1 = 1, nBA
-                     tmpGJ1 = tmpGJ1 + CalphaR(beta1,i,c)*CalphaG(beta1,j,n)
-                  ENDDO
                   tmpGJ2 = 0.0E0_realk
-                  DO beta2 = 1, nBA
-                     tmpGJ2 = tmpGJ2 + CalphaR(beta2,j,c)*CalphaG(beta2,i,n)
+                  DO beta = 1, nBA
+                     tmpGJ1 = tmpGJ1 + CalphaR(beta,i,c)*CalphaG(beta,j,n)
+                     tmpGJ2 = tmpGJ2 + CalphaR(beta,j,c)*CalphaG(beta,i,n)
                   ENDDO
                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
@@ -723,7 +718,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB7_dec(nBA,n1,n2,n3,CalphaR,CalphaG,C
          ENDDO
       ENDDO
    ENDDO   
-   EJK = 7.0/32.0*EJ + 1.0/32.0
+   EJK = 7.0/32.0*EJ + 1.0/32.0*EK
 
 end subroutine ContractTwo4CenterF12IntegralsRIB7_dec
 

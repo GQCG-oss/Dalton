@@ -4757,29 +4757,6 @@ end function max_batch_dimension
        end if
        write(DECinfo%output,*)
 
-#ifdef MOD_UNRELEASED
-    if(DECInfo%F12) then
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
-          & 'RIMP2F12 occupied single energies','AF_MP2f12_OCC')
-       
-       if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
-          & DistanceTable, 'RIMP2f12 occupied pair energies','PF_MP2F12f12_OCC')
-       
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a)') '**********************************************************'
-       write(DECinfo%output,'(1X,a)') '*                  DEC ENERGY SUMMARY                    *'
-       write(DECinfo%output,'(1X,a)') '**********************************************************'
-
-       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2 CORRECTION TO ENERGY:          ', energies(FRAGMODEL_OCCRIMP2)  
-       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_RIMP2f12)
-       write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2-F12 CORRELATION ENERGY:        ', &
-          & energies(FRAGMODEL_OCCRIMP2) + energies(FRAGMODEL_RIMP2f12)
-       write(DECinfo%output,*)       
-
-
-    endif
-#endif
-
     case(MODEL_LSTHCRIMP2)
        if(.not.DECinfo%onlyvirtpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCLSTHCRIMP2),dofrag,&
@@ -4834,40 +4811,50 @@ end function max_batch_dimension
     if(DECInfo%F12) then
 
        select case(DECinfo%ccmodel)
+
+       case(MODEL_RIMP2)
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+             & 'RIMP2F12 occupied single energies','AF_MP2f12_OCC')
+
+          if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_RIMP2f12),dofrag,&
+             & DistanceTable, 'RIMP2f12 occupied pair energies','PF_MP2F12f12_OCC')
+          
+          write(DECinfo%output,*)   
+          write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2 CORRECTION TO ENERGY:    ', energies(FRAGMODEL_OCCRIMP2)  
+          write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_RIMP2f12)
+          write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2-F12 CORRELATION ENERGY:  ', &
+             & energies(FRAGMODEL_OCCRIMP2) + energies(FRAGMODEL_RIMP2f12)
+          write(DECinfo%output,*)       
+
+
        case(MODEL_MP2)
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-               & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
-            if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-               & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2F12f12_OCC')
-       
-       case(MODEL_CCSD)
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
-               & 'CCSDF12 occupied single energies','AF_CCSDf12_OCC')
-          if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
-               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
-       end select
-
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a)') '**********************************************************'
-       write(DECinfo%output,'(1X,a)') '*                  DEC ENERGY SUMMARY                    *'
-       write(DECinfo%output,'(1X,a)') '**********************************************************'
-
-       select case(DECinfo%ccmodel)
-       case(MODEL_MP2)
+             & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+          if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+             & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2F12f12_OCC')
+         
+          write(DECinfo%output,*)   
           write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:      ', energies(FRAGMODEL_OCCMP2)  
           write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_MP2f12)
           write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY:    ', &
-               & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
+             & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
           write(DECinfo%output,*)       
 
        case(MODEL_CCSD)
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
+             & 'CCSDF12 occupied single energies','AF_CCSDf12_OCC')
+          if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
+             & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
+
+          write(DECinfo%output,*)   
           write(DECinfo%output,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY:     ', energies(FRAGMODEL_OCCCCSD)
           write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD ENERGY: ', energies(FRAGMODEL_CCSDf12)
           write(DECinfo%output,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:   ', &
-               & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_CCSDf12)
+             & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_CCSDf12)
+
        end select
 
-    endif
+       endif
 #endif
 
     write(DECinfo%output,*)
