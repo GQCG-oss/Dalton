@@ -127,9 +127,9 @@ subroutine ContractOne4CenterF12IntegralsRIX1_dec(nBA,n,Calpha,CalphaT,EKJ,dopai
 
 end subroutine ContractOne4CenterF12IntegralsRIX1_dec
 
-subroutine ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,n,nocvAOS,Rtilde,CalphaR,EJK,dopair_occ_in)
+subroutine ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,ncore,n,nocvAOS,Rtilde,CalphaR,EJK,dopair_occ_in)
    implicit none
-   integer,intent(in)        :: nBA,n,nocvAOS
+   integer,intent(in)        :: nBA,n,nocvAOS,ncore
    real(realk),intent(in)    :: Rtilde(nBA,n,n)
    real(realk),intent(in)    :: CalphaR(nBA,n,nocvAOS)
    real(realk),intent(inout) :: EJK
@@ -157,7 +157,7 @@ subroutine ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,n,nocvAOS,Rtilde,Cal
    TMP = 0.0E0_realk
    EJK = 0.0E0_realk
    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,J,ALPHA,TMP_IJIJ,TMP_JIIJ) SHARED(CalphaR,Rtilde,n,&
-   !$OMP nba,dopair_occ) REDUCTION(+:TMP)
+   !$OMP nba,dopair_occ,ncore) REDUCTION(+:TMP)
    !Diagonal
    DO J=1,n !noccEOS
       DO I=1,n !noccEOS
@@ -165,15 +165,11 @@ subroutine ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,n,nocvAOS,Rtilde,Cal
             TMP_IJIJ = 0.0E0_realk
             TMP_JIIJ = 0.0E0_realk
             DO ALPHA = 1,NBA
-               TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,I)*Rtilde(ALPHA,J,J) + Rtilde(ALPHA,I,I)*CalphaR(ALPHA,J,J)
-               TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,J)*Rtilde(ALPHA,J,I) + Rtilde(ALPHA,I,J)*CalphaR(ALPHA,J,I)
+               TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,I+ncore)*Rtilde(ALPHA,J,J) + Rtilde(ALPHA,I,I)*CalphaR(ALPHA,J,J+ncore)
+               TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,J+ncore)*Rtilde(ALPHA,J,I) + Rtilde(ALPHA,I,J)*CalphaR(ALPHA,J,I+ncore)
             ENDDO
             TMP = TMP + 7.0E0_realk * TMP_IJIJ + TMP_JIIJ
-            !        EJK1 = EJK1 + 7.0E0_realk * TMP_IJIJ
-            !        EJK2 = EJK2 + TMP_JIIJ
          ENDIF
-   
-         !print *, "I J TMPIJIJ TMPJIIJ value:",I,J,TMP_IJIJ,TMP_JIIJ
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
@@ -322,18 +318,14 @@ subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,n1,n2,CalphaC,CalphaG,EJK,
                      tmpR1 = tmpR1 + CalphaC(ALPHA,p,i)*CalphaC(ALPHA,q,j)
                   ENDDO
                   tmpG1 = 0.0E0_realk
-                  DO beta = 1, nBA
-                     tmpG1 = tmpG1 + CalphaC(BETA,p,i)*CalphaG(BETA,q,j)
-                  ENDDO
                   tmpG2 = 0.0E0_realk
-                  DO beta = 1, nBA
-                     tmpG2 = tmpG2 + CalphaG(BETA,p,i)*CalphaC(BETA,q,j)
-                  ENDDO
                   tmpG3 = 0.0E0_realk
                   tmpG4 = 0.0E0_realk
-                  DO gamma = 1, nBA
-                     tmpG3 = tmpG3 + CalphaG(GAMMA,p,j)*CalphaC(GAMMA,q,i)
-                     tmpG4 = tmpG4 + CalphaC(GAMMA,p,j)*CalphaG(GAMMA,q,i)
+                  DO beta = 1, nBA
+                     tmpG1 = tmpG1 + CalphaC(BETA,p,i)*CalphaG(BETA,q,j)
+                     tmpG2 = tmpG2 + CalphaG(BETA,p,i)*CalphaC(BETA,q,j)
+                     tmpG3 = tmpG3 + CalphaG(BETA,p,j)*CalphaC(BETA,q,i)
+                     tmpG4 = tmpG4 + CalphaC(BETA,p,j)*CalphaG(BETA,q,i)
                   ENDDO
                   EJ = EJ + tmpR1*(tmpG1 + tmpG2)
                   EK = EK + tmpR1*(tmpG3 + tmpG4)

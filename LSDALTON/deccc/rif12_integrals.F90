@@ -147,6 +147,7 @@ contains
     !========================================================
     real(realk),pointer :: CoEOS(:,:)
     real(realk),pointer :: CoAOS(:,:)
+    real(realk),pointer :: CoAOStot(:,:)
     real(realk),pointer :: CvAOS(:,:)
     !> MO coefficient matrix for the OCC + VIRT
     real(realk), pointer :: Cfull(:,:)
@@ -232,7 +233,7 @@ contains
 
     nvirtAOS  = MyFragment%nvirtAOS
     noccEOS   = MyFragment%noccEOS
-    noccAOS   = MyFragment%nocctot
+    noccAOS   = MyFragment%noccAOS
     
     !noccfull  = noccEOS
     ! For frozen core: noccAOS in only valence. But
@@ -256,7 +257,7 @@ contains
     naux = 0
     E_21C = 0.0E0_realk
 
-    IF(DECinfo%frozencore)call lsquit('DEC RI-/MP2-F12 frozen core not implemented',-1)
+    !IF(DECinfo%frozencore)call lsquit('DEC RI-/MP2-F12 frozen core not implemented',-1)
 
     !========================================================
     !  Special treatment of Aux
@@ -325,14 +326,19 @@ contains
     end do
 
     ! Creating a CoccAOS matrix (always core+valence, also for frozen core)
-    call mem_alloc(CoAOS, MyFragment%nbasis, noccAOStot)
+    call mem_alloc(CoAOS, MyFragment%nbasis, noccAOS)
     ! Only for frozen core: Include core MOs explicitly
     ! (without frozen core: core MOs are included in MyFragment%Co already)
+    do i=1, MyFragment%noccAOS
+       CoAOS(:,i) = MyFragment%Co(:,i)
+    end do
+
+    call mem_alloc(CoAOStot, MyFragment%nbasis, noccAOStot)
     do i=1,offset
-       CoAOS(:,i) = MyFragment%CoreMO(:,i)
+       CoAOStot(:,i) = MyFragment%CoreMO(:,i)
     end do
     do i=1, MyFragment%noccAOS
-       CoAOS(:,i+offset) = MyFragment%Co(:,i)
+       CoAOStot(:,i+offset) = MyFragment%Co(:,i)
     end do
 
     ! Creating a CvirtAOS matrix 
@@ -354,6 +360,8 @@ contains
     ! Creating the F matrix 
     ! ***********************************************************
     ! Creating a Fkj MO matrix occ EOS
+
+    print *, "Creating the F matrix"
     call mem_alloc(Fkj, noccAOS, noccEOS)
     Fkj = 0E0_realk
     do j=1, noccEOS
@@ -365,6 +373,7 @@ contains
     !========================================================
     !  Creating Coeff-matrices 
     !========================================================
+    print *,"Creating Coeff-matrices"
     call mem_alloc(CMO_Cabs, ncabsAO, ncabsMO)
     do i=1, ncabsMO
        CMO_Cabs(:,i) = MyFragment%Ccabs(:,i)
@@ -378,12 +387,11 @@ contains
     ! Creating a CocvAOStot matrix 
     call mem_alloc(Cfull, MyFragment%nbasis, nocvAOS)
     do i=1,noccAOStot                                                                                                        
-       Cfull(:,i) = CoAOS(:,i)                                                                                     
+       Cfull(:,i) = CoAOStot(:,i)                                                                                     
     end do                                                                                                                   
     do i=1,nvirtAOS
        Cfull(:,i+noccAOStot) = MyFragment%Cv(:,i)                                                                       
     end do   
-    
     
     !call mem_alloc(Cfull,nbasis,nocvAOS)
     !do J=1,noccAOStot
@@ -405,18 +413,40 @@ contains
     enddo
 
     !Slow implementation can be done with 2dgemms in B6
-    call mem_alloc(Fpp, nocvAOS, nocvAOS)
+    call mem_alloc(Fpp,nvirtAOS+noccAOStot,nvirtAOS+noccAOStot)
     Fpp = 0.0E0_realk
-    do p=1, noccAOStot
-       do q=1, noccAOStot
-          Fpp(p,q) = MyFragment%ppfock(p,q)
+
+    do p=1, offset
+       do q=1, offset
+          Fpp(p,q) = MyFragment%ccfock(p,q)
        enddo
     enddo
-    do p=noccAOStot+1, nocvAOS
-       do q=noccAOStot+1, nocvAOS
+
+    do p=1+offset, noccAOStot
+       do q=1+offset, noccAOStot
+          Fpp(p,q) = MyFragment%ppfock(p-offset,q-offset)
+       enddo
+    enddo
+
+    do p=noccAOStot+1, nvirtAOS+noccAOStot
+       do q=noccAOStot+1, nvirtAOS+noccAOStot
           Fpp(p,q) = MyFragment%qqfock(p-noccAOStot,q-noccAOStot)
        enddo
     enddo
+
+  !   Fpp = 0.0E0_realk
+
+  !    do p=1, noccAOStot
+  !      do q=1, noccAOStot
+  !         Fpp(p,q) = MyFragment%ppfock(p,q)
+  !     enddo
+  !  enddo
+  !  do p=noccAOStot+1, nvirtAOS+noccAOStot
+  !     do q=noccAOStot+1, nvirtAOS+noccAOStot
+  !        Fpp(p,q) = MyFragment%qqfock(p-noccAOStot,q-noccAOStot)
+  !     enddo
+  !  enddo
+
     !=================================================================
     != Step 0: Creating of dopair_occ                                =
     !=================================================================
@@ -491,8 +521,6 @@ contains
     ABdecompCreateX = .FALSE.
 
     !perform this suborutine on the GPU (async)  - you do not need to wait for the results
-    !call ContractOne4CenterF12IntegralsRIX1_dec(NBA,noccEOS,CalphaX,MyFragment%ppfock,CoulombF12X1,ExchangeF12X1,dopair_occ)
-
     nsize = NBA*noccEOS*noccEOS
     call mem_alloc(CalphaT,nsize)     ! G_ij = C_ik F_kj 
     M = NBA*noccEOS         !rows of Output Matrix
@@ -526,17 +554,17 @@ contains
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CoEOS,noccEOS,&
          & mynum,numnodes,ABdecompR,'D',Umat)
     !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
-    M = NBA          !rows of Output Matrix
-    N = noccEOS*noccEOS    !columns of Output Matrix
-    K = NBA          !summation dimension
+    M = NBA                 !rows of Output Matrix
+    K = NBA                 !summation dimension
+    N = noccEOS*noccEOS     !columns of Output Matrix
     !perform this suborutine on the GPU (Async)
     !note CalphaR is actual of dimensions (NBA,noccEOS,nbasis) but here we only access
     !the first part (NBA,noccEOS,noccEOS) 
-    call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR,K,-0.5E0_realk,CalphaD,M)
+    call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR(1+offset*nBA*noccEOS),K,-0.5E0_realk,CalphaD,M)
     call mem_dealloc(Umat)
     !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 20
     !perform this suborutine on the GPU (Async)
-    call ContractOne4CenterF12IntegralsRobustRIB1_dec(nAux,noccEOS,nocvAOS,CalphaD,CalphaR,EB1,dopair_occ)
+    call ContractOne4CenterF12IntegralsRobustRIB1_dec(nAux,offset,noccEOS,nocvAOS,CalphaD,CalphaR,EB1,dopair_occ)
 
     !The minus is due to the Valeev factor
     EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12V1-ExchangeF12V1*0.25E0_realk)
@@ -638,11 +666,11 @@ contains
     !=                                                        =
     !==========================================================
 
-    !NB Can be optimized!!!
+    !NB No we need this term since its 
     call mem_alloc(ABdecompX2,nAux,nAux)
     ABdecompCreateX2 = .TRUE.
     call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI, &
-       & FORCEPRINT,wakeslaves,Cfull,nocvAOS,CoAOS,noccAOStot, &
+       & FORCEPRINT,wakeslaves,Cfull,nocvAOS,CoAOS,noccAOS, &
        & mynum,numnodes,CalphaX2,NBA,ABdecompX2,ABdecompCreateX2,intspec,use_bg_buf)
     call mem_dealloc(ABdecompX2)
 
@@ -650,7 +678,7 @@ contains
     nsize = NBA*nocvAOS*noccEOS
     call mem_alloc(CalphaT,nsize)               ! G_qj = C_qk F_kj 
     M = nocvAOS*NBA         !rows of Output Matrix
-    K = noccAOStot          !summation dimension
+    K = noccAOS            !summation dimension
     N = noccEOS             !columns of Output Matrix
     call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX2,M,Fkj,K,0.0E0_realk,CalphaT,M)
     call mem_dealloc(CalphaX2)
@@ -693,7 +721,7 @@ contains
          & mynum,numnodes,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,noccEOS,noccAOS,ncabsMO,nocvAOS,&
+    call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
          & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
 
     mp2f12_energy = mp2f12_energy + EV3 + EV4
@@ -773,7 +801,7 @@ contains
      
      call mem_alloc(ABdecompC,nAux,nAux)
      call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,CoAOS,noccAOStot,CoAOS,noccAOStot,mynum,numnodes,CalphaCocc,&
+        & FORCEPRINT,wakeslaves,CoAOS,noccAOS,CoAOS,noccAOS,mynum,numnodes,CalphaCocc,&
         & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
      call mem_dealloc(ABdecompC)
 
@@ -804,7 +832,7 @@ contains
      N = noccEOS          
      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCcabsT,M,Fkj,K,0.0E0_realk,CalphaP,M)
      !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-     call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOS,ncabsMO,&
+     call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
         & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4,dopair_occ)
 
      call mem_dealloc(CalphaCcabsT)
@@ -1008,6 +1036,7 @@ contains
     
     call mem_dealloc(CoEOS)
     call mem_dealloc(CoAOS)
+    call mem_dealloc(CoAOStot)
     call mem_dealloc(CvAOS)
 
     call mem_dealloc(Fac)

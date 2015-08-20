@@ -14,13 +14,10 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.1e-6)
 
-f.add(string = 'Total RIMP2 energy',
+f.add(string = 'F12 singles',
       rel_tolerance = 1.1e-6)
 
-f.add(string = 'RIMP2F12 Energy contribution:',
-      rel_tolerance = 1.1e-6)
-
-f.add(string = 'RIMP2F12 Energy contribution', 
+f.add(string = 'Total RI-MP2F12 energy',
       rel_tolerance = 1.1e-6)
 
 f.add(string = 'RI-MP2 CORRECTION TO ENERGY',
