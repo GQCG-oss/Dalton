@@ -118,7 +118,8 @@ module dec_typedef_module
      logical :: SNOOPsamespace
      !> Localize SNOOP subsystem orbitals (cannot be used in connection with SNOOPsamespace)
      logical :: SNOOPlocalize
-
+     !> SNOOP restart
+     logical :: SNOOPrestart
 
      ! CC response (no DEC so far)
      ! ===========================

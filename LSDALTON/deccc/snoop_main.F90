@@ -99,8 +99,8 @@ contains
     real(realk),pointer :: EHFsnoop(:),Ecorrsnoop(:),EHFiso(:) 
     real(realk) :: EHFfull,Ecorrfull,Eerr
     integer :: nsub,nbasis,nvirtfull,noccfull,i,this,noccsnoop,nvirtsnoop,nbasissnoop,nelsnoop
-    type(matrix),pointer :: Cocciso(:),Cvirtiso(:),Coccsnoop(:),Cvirtsnoop(:)
-    type(matrix) :: FAOsnoop, FAOiso
+    type(matrix),pointer :: Cocciso(:),Cvirtiso(:)
+    type(matrix) :: FAOsnoop, FAOiso,Coccsnoop,Cvirtsnoop
     type(matrix) :: C
     type(lsitem) :: lssnoop,lsiso
     integer :: nocciso,nvirtiso,nbasisiso,neliso,nMO
@@ -108,6 +108,7 @@ contains
     real(realk) :: dummy(3,MyMoleculeFULL%natoms)  ! gradient input, just a dummy for now
     real(realk),pointer :: FragEnergiesOcc(:,:)
     type(decfrag),pointer :: AFfull(:)
+    logical :: file_exist
 
     ! Determine DEC orbital structures
     call mem_alloc(OccOrbitals,MyMoleculeFULL%nocc)
@@ -121,17 +122,40 @@ contains
     nsub = lsfull%input%molecule%nSubSystems
 
     ! HF energy and correlation energy for full molecular system
-    if(DECinfo%full_molecular_cc) then
-       ! Full calculation
-       write(DECinfo%output,*) 'SNOOP: Starting full system calculation using full driver'
-       call full_driver(MyMoleculeFULL,lsfull,D,EHFfull,Ecorrfull)
+    ! **********************************************************
+
+    ! Restart file exists?
+    this=0
+    if(DECinfo%SNOOPrestart) then
+       call snoop_read_restart_file(this,EHFfull,Ecorrfull,file_exist)
     else
-       ! DEC calculation
-       write(DECinfo%output,*) 'SNOOP: Starting full system calculation using DEC driver'
-       call main_fragment_driver(MyMoleculeFULL,lsfull,D,&
-            & OccOrbitals,VirtOrbitals,MyMoleculeFULL%natoms,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
-            & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc,AFfull,.false.)
+       file_exist=.false.
     end if
+
+    RestartFull: if(file_exist) then
+       write(DECinfo%output,*) 'SNOOP: Read full molecular energies from file!'
+    else
+       ! Restart file did not exist, we calculate full HF and corr energies from scratch
+
+       ! Perform full calculations
+       if(DECinfo%full_molecular_cc) then
+          ! Full calculation
+          write(DECinfo%output,*) 'SNOOP: Starting full system calculation using full driver'
+          call full_driver(MyMoleculeFULL,lsfull,D,EHFfull,Ecorrfull)
+       else
+          ! DEC calculation
+          write(DECinfo%output,*) 'SNOOP: Starting full system calculation using DEC driver'
+          call main_fragment_driver(MyMoleculeFULL,lsfull,D,&
+               & OccOrbitals,VirtOrbitals,MyMoleculeFULL%natoms,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
+               & EHFfull,Ecorrfull,dummy,Eerr,FragEnergiesOcc,AFfull,.false.)
+       end if
+
+    end if RestartFull
+
+    ! Make restart file for full molecular energies
+    this=0
+    call snoop_write_restart_file(this,EHFfull,Ecorrfull)
+
 
     ! Notation
     ! --------
@@ -157,8 +181,6 @@ contains
     ! **************************************************************************************
     ! Starting orbitals : HF calculations on isolated monomers OR localized full orbitals *
     ! **************************************************************************************
-    call mem_alloc(Coccsnoop,nsub)
-    call mem_alloc(Cvirtsnoop,nsub)
     call mem_alloc(Cocciso,nsub)
     call mem_alloc(Cvirtiso,nsub)
 
@@ -218,6 +240,23 @@ contains
     SNOOPLOOP: do i=1,nsub
 
        this = i
+
+       ! Restart file exists?
+       if(DECinfo%SNOOPrestart) then
+          call snoop_read_restart_file(this,EHFsnoop(this),Ecorrsnoop(this),file_exist)
+       else
+          file_exist=.false.
+       end if
+
+       ! If file exist, the HF and corr energies for this subsystem were read from file
+       ! and we proceed to the next subsystem
+       if(file_exist) then
+          write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: SUBSYSTEM ', this, &
+               & ' restart info read from file '
+          cycle SNOOPLOOP
+       end if
+
+
        IdenticalSubsystems: if(config%samesubsystems .and. this>1) then
           ! Same subsystems, we can skip calculation for all but subsystem 1 and 
           ! just copy HF and correlation energies.
@@ -256,22 +295,22 @@ contains
           !       initialized inside subroutine because we
           !       do not yet know the dimensions!
 
-          call mat_init(Coccsnoop(this),nbasis,noccsnoop)
+          call mat_init(Coccsnoop,nbasis,noccsnoop)
 
           call get_orthogonal_basis_for_subsystem(this,nsub,&
-               & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsnoop(this),Cvirtsnoop(this),S)
+               & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsnoop,Cvirtsnoop,S)
 
           ! Sanity check for initial orbitals
-          call subsystem_orbitals_sanity_check(Coccsnoop(this),&
-               & Cvirtsnoop(this),MyMoleculeFULL,S)
+          call subsystem_orbitals_sanity_check(Coccsnoop,&
+               & Cvirtsnoop,MyMoleculeFULL,S)
 
           ! SCF optimization for subsystem "this"
-          call solve_subsystem_scf_rh(lssnoop,Coccsnoop(this),&
-               & Cvirtsnoop(this),FAOsnoop,EHFsnoop(this))
+          call solve_subsystem_scf_rh(lssnoop,Coccsnoop,&
+               & Cvirtsnoop,FAOsnoop,EHFsnoop(this))
 
           ! Sanity check for optimized orbitals
-          call subsystem_orbitals_sanity_check(Coccsnoop(this),&
-               & Cvirtsnoop(this),MyMoleculeFULL,S)
+          call subsystem_orbitals_sanity_check(Coccsnoop,&
+               & Cvirtsnoop,MyMoleculeFULL,S)
 
           ! Determine orbitals for correlated SNOOP monomer calculations
 
@@ -280,29 +319,34 @@ contains
              if(DECinfo%SNOOPlocalize) then
                 ! Localize orbitals
                 ! -----------------
-                nMO = Coccsnoop(this)%ncol + Cvirtsnoop(this)%ncol
+                nMO = Coccsnoop%ncol + Cvirtsnoop%ncol
                 call mat_init(C,nbasis,nMO)
-                call collect_MO_coeff_in_one_matrix(Coccsnoop(this),Cvirtsnoop(this),C) 
+                call collect_MO_coeff_in_one_matrix(Coccsnoop,Cvirtsnoop,C) 
                 call optimloc(C,noccsnoop,config%decomp%cfg_mlo_m,lssnoop,&
                      & config%davidOrbLoc)
-                call partition_MO_coeff_into_two_matrices(C,Coccsnoop(this),Cvirtsnoop(this))
+                call partition_MO_coeff_into_two_matrices(C,Coccsnoop,Cvirtsnoop)
                 call mat_free(C)
              else
                 ! Rotate subsystem orbitals using natural connection such that they are as
                 ! close as possible to the full orbitals in a least-squares sense.
                 call rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,this,&
-                     & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop(this), Cvirtsnoop(this),S)
+                     & OccOrbitals,VirtOrbitals,lssnoop,Coccsnoop, Cvirtsnoop,S)
              end if
           end if DECcalc
 
           ! Correlation energy for subsystem
           if(.not. DECinfo%SNOOPjustHF) then
              call subsystem_correlation_energy(this,MyMoleculeFULL,OccOrbitals,VirtOrbitals,AFfull,&
-                  & Coccsnoop(this),Cvirtsnoop(this),FAOsnoop,lssnoop,Ecorrsnoop(this))
+                  & Coccsnoop,Cvirtsnoop,FAOsnoop,lssnoop,Ecorrsnoop(this))
           end if
+
+          ! Make restart file
+          call snoop_write_restart_file(this,EHFsnoop(this),Ecorrsnoop(this))
 
           ! Free stuff for subsystem
           call ls_free(lssnoop)
+          call mat_free(Coccsnoop)
+          call mat_free(Cvirtsnoop)
 
 
        end if IdenticalSubsystems
@@ -327,17 +371,11 @@ contains
     call mem_dealloc(EHFiso)
     call mem_dealloc(Ecorrsnoop)
     do i=1,nsub
-       if(i==1 .or. (.not. config%samesubsystems) ) then
-          call mat_free(Coccsnoop(i))
-          call mat_free(Cvirtsnoop(i))
-       end if
        call mat_free(Cocciso(i))
        call mat_free(Cvirtiso(i))
     end do
     call mem_dealloc(Cocciso)
     call mem_dealloc(Cvirtiso)
-    call mem_dealloc(Coccsnoop)
-    call mem_dealloc(Cvirtsnoop)
 
     do i=1,MyMoleculeFULL%nocc
        call orbital_free(OccOrbitals(i))
