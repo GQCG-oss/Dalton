@@ -51,6 +51,7 @@ linsca-ng-vxcfit                Author: Pawel                   Status: Pretty s
 dec-rpa                         Author: Johannes                Status: Deleted
 dec-sostest                     Author: Johannes                Status: Deleted
 linsca                          Author: all                     Status: Deleted (transition branch from linsca-ng to linsca-develop)
+lresc-linear                    Author: Juan                    Status: Deleted
 
 List of branches that I (Thomas) suspect or know is lsdalton related branches
 
@@ -60,5 +61,4 @@ dec-karl
 dec-patrick
 linsca-vcd-aat
 localize_wannier
-lresc-linear
 master_with_CUDA_fh
