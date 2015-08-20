@@ -976,10 +976,7 @@ contains
    k =  noccAOStot
    n =  noccAOStot
 
-   print *,"norm2(Fnm)", norm2(Fnm)
-
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fnm,k,0.0E0_realk,CalphaD,m)
-   
    !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fpp,k,0.0E0_realk,CalphaD,m)
    !May be optimized !!!
    call ContractTwo4CenterF12IntegralsRIB7_dec(nBA,noccEOS,noccAOStot,ncabsMO,CalphaGcabsMO, &
