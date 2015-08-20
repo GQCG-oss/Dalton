@@ -558,6 +558,7 @@ set(LSUTIL_COMMON_C_SOURCES
     )
 
 set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/fundamental.F90
     LSDALTON/lsutil/gpu_devices.F90
     LSDALTON/lsutil/crayio_util.F90
     LSDALTON/lsutil/rsp-typedef.F90
@@ -633,7 +634,6 @@ set(LSUTIL_TYPE_SOURCES
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90
     LSDALTON/lsutil/AtomicSparse.F90
-    LSDALTON/lsutil/fundamental.F90
     LSDALTON/lsutil/ks-settings.F90
     LSDALTON/lsutil/lsmpi-operations.F90
     LSDALTON/lsutil/lsutilities.F90

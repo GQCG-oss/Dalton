@@ -12,6 +12,9 @@ module LS_optimizer_mod
   use WRITEMOLEFILE!, only: write_molecule_output
   use Energy_and_deriv!, only: get_energy, get_gradient, get_num_grad
   use Fundamental  
+#ifdef VAR_DEC
+  use DEC_settings_mod
+#endif
   use dec_typedef_module
   use lsdalton_rsp_mod,only: LS_RSP_EQ_SOL_EMPTY
 !===========================================================!
@@ -23,8 +26,6 @@ module LS_optimizer_mod
   public :: LS_RUNOPT
 CONTAINS
   SUBROUTINE LS_RUNOPT(E,config,H1,F,D,S,CMO,ls)
-    use DEC_settings_mod
-    use dec_typedef_module
     Implicit none
     !  All these general entities needed to get energy and gradient
     Type(lsitem)                    :: ls   ! General information,used only to get E and gradient
@@ -1061,8 +1062,6 @@ Endif ! Optimization
   SUBROUTINE Find_Geometry(E,CSTEP,EGRAD,COONEW,COOOLD, &
        &     IREJ,GEINFO,NEWSTP,NEWBMT,NAtoms,lupri,luerr, &
        config,ls,H1,F,D,S,C,optinfo)
- use DEC_settings_mod
- use dec_typedef_module,only: DECinfo
     !
     !     If the step is acceptable, the geometry is updated
     !     and written to file.
@@ -1166,8 +1165,11 @@ Endif ! Optimization
        ! Do the force modification of energy if asked
        If (optinfo%FMPES) call FM_energy(E(1),optinfo)
        !
+#ifdef VAR_DEC
        IF (DECinfo%dodec) call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,config%optinfo)
-
+#else
+       call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
        optinfo%energy = E(1)
        GEINFO(optinfo%ItrNmr+1,1) = E(1)
        IF (IREJ .EQ. 0) THEN
