@@ -111,8 +111,6 @@ module dec_typedef_module
      integer :: SNOOPmaxdiis
      !> Debug prints for SNOOP RH/DIIS
      logical :: SNOOPdebug
-     !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
-     logical :: SNOOPort
      !> Use "same" orbital spaces for monomer calculation as for full calculation,
      !> as defined by natural connection
      logical :: SNOOPsamespace
@@ -120,6 +118,13 @@ module dec_typedef_module
      logical :: SNOOPlocalize
      !> SNOOP restart
      logical :: SNOOPrestart
+     !> SNOOP - just calculate one subsystem 
+     ! SNOOPonesub=-1       --> Calculate all subsystems
+     ! SNOOPonesub= 0       --> Calculate only full system
+     ! SNOOPonesub= i (i>0) --> Calculate only subsystem i
+     integer :: SNOOPonesub
+     
+
 
      ! CC response (no DEC so far)
      ! ===========================

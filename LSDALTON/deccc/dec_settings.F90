@@ -50,10 +50,10 @@ contains
     DECinfo%SNOOPMaxIter   = 100
     DECinfo%SNOOPthr       = 1e-7_realk
     DECinfo%SNOOPdebug     = .false.
-    DECinfo%SNOOPort       = .false.
     DECinfo%SNOOPsamespace =.true.
     DECinfo%SNOOPlocalize  = .false.
     DECinfo%SNOOPrestart  = .false.
+    DECinfo%SNOOPonesub  = -1
 
     ! CC response
     DECinfo%CCexci = .false.
@@ -463,9 +463,6 @@ contains
        case('.SNOOP_DEBUG')
           ! Debug prints for SNOOP
           DECinfo%SNOOPdebug=.true.
-       case('.SNOOPORT')
-          ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
-          DECinfo%SNOOPort=.true.
 
        case('.SNOOPNOTSAMESPACE')
           !> Do not use full orbital spaces for monomer calculation as defined by natural connection,
@@ -480,6 +477,11 @@ contains
           ! Also restart HF for full molecule by default when using SNOOP restart
           DECinfo%HFrestart=.true.
 
+       case('.SNOOPONESUB')
+          read(input,*) DECinfo%SNOOPonesub
+          if(DECinfo%SNOOPonesub<0) then
+             call lsquit('Error in SNOOPONESUB input!',-1)
+          end if
 
           ! CC RESPONSE
           ! ===========
@@ -1581,10 +1583,10 @@ contains
     write(lupri,*) 'SNOOPMaxIter ', DECinfo%SNOOPMaxIter
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
-    write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'SNOOPrestart ', DECinfo%SNOOPrestart
+    write(lupri,*) 'SNOOPonesub ', DECinfo%SNOOPonesub
     write(lupri,*) 'CCexci ', DECinfo%CCexci
     write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
     write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
