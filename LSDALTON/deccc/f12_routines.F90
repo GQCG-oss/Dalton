@@ -3012,6 +3012,8 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,Calp
    real(realk),intent(in)    :: CalphaR(nBA,n,nbasis)
    real(realk),intent(inout) :: EJK
    !local variables
+   real(realk), pointer :: CalphaCocc(:,:,:)
+
    integer :: I,ALPHA,J
    real(realk) :: TMP_IJIJ,TMP_JIIJ,TMP,TMPD
    !Dopair                                                                          
@@ -3024,6 +3026,7 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,Calp
    endif   
    TMPD = 0.0E0_realk
    TMP = 0.0E0_realk
+
    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,ALPHA,J,TMP_IJIJ,&
    !$OMP TMP_JIIJ) SHARED(nBA,n,ncore,nbasis,Rtilde,CalphaR,&
    !$OMP dopair_occ) REDUCTION(+:TMP,TMPD)
@@ -3053,6 +3056,7 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,Calp
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
+
    EJK = 0.25E0_realk*tmpD + 0.0625E0_realk*TMP
 end subroutine ContractOne4CenterF12IntegralsRobustRI
 

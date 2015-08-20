@@ -100,9 +100,9 @@ contains
              write(*,'(a)')   '                 Energy Summary                   '
              write(*,'(a,/)') ' ================================================ '
              write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
-             write(DECinfo%output,*)  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
+             write(DECinfo%output,'(1X,a,f20.10)')  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
              write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
-             write(DECinfo%output,*)  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
+             write(DECinfo%output,'(1X,a,f20.10)')  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
@@ -613,7 +613,7 @@ contains
        write(*,'(1X,a,g25.16)') ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
        write(*,'(1X,a,g25.16)') ' E21_Vsum:    ', E21_debug
-       write(*,'(1X,a,g25.16)') ' E21_debug:   ', E21
+       !write(*,'(1X,a,g25.16)') ' E21_debug:   ', E21
     endif
 
     call mem_dealloc(Vijij)
@@ -767,7 +767,7 @@ contains
                & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
                & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
           write(*,'(1X,a,g25.16)') ' E22_Xsum:    ', E22_debug  
-          write(*,'(1X,a,g25.16)') ' E22_debug:   ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
+          !write(*,'(1X,a,g25.16)') ' E22_debug:   ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
           print *, ' E_23 B term                           '
           print *, '----------------------------------------'
@@ -787,7 +787,7 @@ contains
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
           print *, ' E23_Bsum:       ', E23_debug
-          print *, ' E23_Bsum_debug: ', mp2f12_E23(Bijij,Bjiij,nocc)
+          !print *, ' E23_Bsum_debug: ', mp2f12_E23(Bijij,Bjiij,nocc)
        endif
        
     else !> Non - canoical

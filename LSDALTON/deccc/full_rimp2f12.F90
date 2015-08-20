@@ -189,6 +189,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Cocc
    if(DECinfo%frozencore) then
       call mem_alloc(Co,nbasis,nocc)
+      Co = 0.0E0_realk
       do j=1,nocc
          do i=1,nbasis
             Co(i,j) = MyMolecule%Co%elm2(i,MyMolecule%ncore+j)
@@ -202,6 +203,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Fkj
    if(DECinfo%frozencore) then
       call mem_alloc(Fkj,nocc,nocc)
+      Fkj = 0.0E0_realk
       do j=1,nocc
          do i=1,nocc
             Fkj(i,j) = MyMolecule%oofock%elm2(MyMolecule%ncore+i,MyMolecule%ncore+j)
@@ -214,6 +216,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    ! Cfull
    call mem_alloc(Cfull,nbasis,nocv)
+   Cfull = 0.0E0_realk
    do J=1,noccfull
       do I=1,nbasis
          Cfull(I,J) = MyMolecule%Co%elm2(I,J)
@@ -239,6 +242,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       print *, "noccfull  ", noccfull
       print *, "ncabsAO   ", ncabsAO
       print *, "ncabsMO   ", ncabsMO
+      print *, "-------------------------------------------------"
+      print *, "offest:   ", offset
+      print *, "ncore:    ", ncore
    end if
 
    IF(naux.EQ.0)call lsquit('Error no Aux functions in full_canonical_rimp2_f12',-1)
@@ -513,9 +519,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          ENDDO
       ELSE
          M = NBA          !rows of Output Matrix
-         N = nocc*nocc    !columns of Output Matrix
          K = NBA          !summation dimension
-         call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR,K,-0.5E0_realk,CalphaD,M)
+         N = nocc*nocc    !columns of Output Matrix
+         call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR(1+ncore*NBA*nocc),K,-0.5E0_realk,CalphaD,M)
       ENDIF
 #else
       !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
@@ -523,11 +529,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !note CalphaR is actual of dimensions (NBA,nocc,nbasis) but here we only access
       !the first part (NBA,nocc,nocc) 
       M = NBA          !rows of Output Matrix
-      N = nocc*nocc    !columns of Output Matrix
       K = NBA          !summation dimension
-      call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR,K,-0.5E0_realk,CalphaD,M)
+      N = nocc*nocc    !columns of Output Matrix
+      call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR(1+ncore*NBA*nocc),K,-0.5E0_realk,CalphaD,M)
 #endif
       call mem_dealloc(Umat)
+
       !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
       !perform this suborutine on the GPU (Async)
       call ContractOne4CenterF12IntegralsRobustRI(NBA,offset,nocc,nocv,CalphaD,CalphaR,EB1)
@@ -1708,7 +1715,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
        write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term4:  ", EV4
        write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term5:  ", EV5
        write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
-       write(DECinfo%output,'(1X,a,f15.16)') " E21_Vsum:     ", E_21       
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_Vsum:     ", E_21       
     endif
     E_22 = 0.0E0_realk
     E_22 = EX1 + EX2 + EX3 + EX4 
