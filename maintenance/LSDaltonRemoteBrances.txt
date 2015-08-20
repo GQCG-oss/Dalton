@@ -45,6 +45,7 @@ radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDel
 origin/pari-k                   Author: Elisa                   Status: Deleted
 pari-k                          Author: Elisa                   Status: Deleted
 linsca-develop-HigherDerivatives Author:Simen                   Status: Deleted
+linsca-ng-build                 Author: Pawel, Lea, Poul        Status: Pretty stale (from 2005)
 
 List of branches that I (Thomas) suspect or know is lsdalton related branches
 
@@ -55,7 +56,6 @@ dec-patrick
 dec-rpa
 dec-sostest
 linsca
-linsca-ng-build
 linsca-ng-vxcfit
 linsca-numerical
 linsca-vcd-aat
