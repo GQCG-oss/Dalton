@@ -21,11 +21,12 @@ use ccintegrals
 !WARNING FOR TESTING
 !use full_f12contractions
 
-!#ifdef MOD_UNRELEASED
 use f12_routines_module
 use IntegralInterfaceMOD
-use rimp2_module
-!#endif 
+use ri_util_module
+#ifdef VAR_MPI
+use infpar_module
+#endif
 
 public :: full_canonical_rimp2_f12, lsmpi_matrix_bufcopy,&
      & NaturalLinearScalingF12Terms
@@ -423,12 +424,20 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
         & mynum,numnodes,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
    ABdecompCreateR = .FALSE.
 
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      nbuf1=numnodes
+      call mem_alloc(nAuxMPI,nbuf1)
+      call BuildnAuxMPIUsedRI(nAux,numnodes,nAuxMPI)      
+   ENDIF
+#endif
+
    IF(DECinfo%NaturalLinearScalingF12TermsB1)THEN
       !This energy contribution have already been calculated so we extract the information 
       EB1 = MyMolecule%EF12NLSB1
 #ifdef VAR_MPI 
       IF(master)THEN
-         lsmpibufferRIMP2(4)=EB1
+         lsmpibufferRIMP2(1)=EB1
       ENDIF
 #else
       mp2f12_energy = mp2f12_energy  + EB1
@@ -456,9 +465,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !CalphaD(NBA,nocc,nocc) = -0.5*CalphaD(NBA,nocc,nocc) + Loop_NBA2 Umat(NBA,NBA2)*CalphaR(NBA2,nocc,nocc)
       !Where NBA is the Auxiliary assigned to this node, while NBA2 can be assigned to another node
       IF(wakeslaves)THEN
-         nbuf1=numnodes
-         call mem_alloc(nAuxMPI,nbuf1)
-         call BuildnAuxMPIUsedRI(nAux,numnodes,nAuxMPI)      
          call BuildnAuxMPIUsedRIinfo(nAux,numnodes,mynum,AuxMPIstartMy,iAuxMPIextraMy)
          DO inode = 1,numnodes
             nbuf1 = nAuxMPI(inode)
@@ -1622,9 +1628,21 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ENDDO
 
    IF(master)THEN
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      IF(DECinfo%NaturalLinearScalingF12TermsV1)THEN
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ', EV1
+      ELSE
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+      ENDIF
+      IF(DECinfo%NaturalLinearScalingF12TermsX1)THEN
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,LS) = ', EX1
+      ELSE
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+      ENDIF
+      IF(DECinfo%NaturalLinearScalingF12TermsB1)THEN
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,LS) = ', EB1
+      ELSE
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      ENDIF
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2

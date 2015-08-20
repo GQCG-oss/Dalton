@@ -3028,7 +3028,7 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,Calp
    TMP = 0.0E0_realk
 
    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,ALPHA,J,TMP_IJIJ,&
-   !$OMP TMP_JIIJ) SHARED(nBA,n,nbasis,Rtilde,CalphaR,&
+   !$OMP TMP_JIIJ) SHARED(nBA,n,ncore,nbasis,Rtilde,CalphaR,&
    !$OMP dopair_occ) REDUCTION(+:TMP,TMPD)
    DO J=1,n
       !Diagonal
