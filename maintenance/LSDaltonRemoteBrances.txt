@@ -42,7 +42,9 @@ DECenergy                       Author: Kasper                  Status: Stale
 PMinteraction                   Author: Kasper                  Status: Stale
 PnKs_lovenest                   Author: Kasper                  Status: Stale
 radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
-cuda_api_lsdalton               Author: Janus, Radovan          Status: Stale
+origin/pari-k                   Author: Elisa                   Status: Deleted
+pari-k                          Author: Elisa                   Status: Deleted
+linsca-develop-HigherDerivatives Author:Simen                   Status: Deleted
 
 List of branches that I (Thomas) suspect or know is lsdalton related branches
 
@@ -52,7 +54,6 @@ dec-patrick
 dec-rpa
 dec-sostest
 linsca
-linsca-develop-HigherDerivatives
 linsca-ng-build
 linsca-ng-vxcfit
 linsca-numerical
@@ -60,5 +61,3 @@ linsca-vcd-aat
 localize_wannier
 lresc-linear
 master_with_CUDA_fh
-origin/pari-k
-pari-k
