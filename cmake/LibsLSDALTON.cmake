@@ -308,11 +308,9 @@ add_library(
    lsutil_tensor_lib
    ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90
    ${LSUTIL_TENSOR_SOURCES}
-   ${TENSOR_BASIC_SOURCES}
-   ${MANUAL_REORDERING_SOURCES}
    )
 
-target_link_libraries(lsutil_tensor_lib lsutil_tensor_basic)
+add_dependencies(lsutil_tensor_lib lsutil_tensor_basic)
 
 
 add_library(
@@ -321,7 +319,7 @@ add_library(
     ${LSUTIL_COMMON_SOURCES}
     )
 
-target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib)
+target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib lsutil_tensor_basic)
 
 add_library(
     matrixolib
@@ -329,7 +327,7 @@ add_library(
     ${LSUTIL_MATRIXO_C_SOURCES}
     )
 
-target_link_libraries(matrixolib lsutillib_common lsutil_tensor_lib)
+target_link_libraries(matrixolib lsutillib_common lsutil_tensor_lib lsutil_tensor_basic)
 
 
 
