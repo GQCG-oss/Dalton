@@ -536,9 +536,9 @@ set(LSUTIL_COMMON_C_SOURCES
     )
 
  set(TENSOR_BASIC_SOURCES
+    LSDALTON/tensor/get_idx.F90
     LSDALTON/tensor/tensor_parameters.F90
     LSDALTON/tensor/tensor_mpi_binding.F90
-    LSDALTON/tensor/get_idx.F90
     LSDALTON/tensor/tensor_error_handler.F90
     LSDALTON/tensor/tensor_bg_buf.F90
     LSDALTON/tensor/tensor_allocator.F90
