@@ -414,8 +414,6 @@ contains
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
          & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
-    print *,"norm2(Fmm)",norm2(Fmm%elms)
-
     ! Get all AO integrals
     ! ********************
     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
