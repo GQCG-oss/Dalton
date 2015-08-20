@@ -11,14 +11,14 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-debug" build
+./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage -DENABLE_DEC=ON -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-debug" build
 cd build
 make release
 #this creates a tar file named DALTON-Source.tar.gz
 if [[ -e  DALTON-Source.tar.gz ]]; then
  tar -zxvf DALTON-Source.tar.gz
  cd DALTON-Source
- ./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage --blas=builtin --lapack=builtin -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-debug-rapid" build
+ ./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage --blas=builtin --lapack=builtin -DENABLE_DEC=ON -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-debug-rapid" build
  cd build
  ctest -D Nightly --track NightlyMakeRelease -L rapid
 fi
