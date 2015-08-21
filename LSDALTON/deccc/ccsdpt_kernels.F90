@@ -44,6 +44,8 @@ module ccsdpt_kernels_module
   public :: abc_loop_ser
 #endif
 
+  private
+
 contains
 
 #ifdef MOD_UNRELEASED
