@@ -200,28 +200,28 @@ C
                              !write(lupri,*)'Get in here'
                              do ii = 1, nrhfcore(isymi)
                               if (i==IRHFCORE(II,ISYMI)) then
-                              write(lupri,*)'loop ii',ii, 'I keep'
+                              !write(lupri,*)'loop ii',ii, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do aa = 1, nvirion(isyma)
                               if (a==IVIRION(aa,ISYMA)) then
-                              write(lupri,*)'loop aa',aa, 'I keep'
+                              !write(lupri,*)'loop aa',aa, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do jj = 1, nrhfcore(isymj)
                               if (j==IRHFCORE(JJ,ISYMJ)) then
-                              write(lupri,*)'loop jj',jj, 'I keep'
+                              !write(lupri,*)'loop jj',jj, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
                              end do
                              do bb = 1, nvirion(isymb)
                               if (b==IVIRION(bb,ISYMB)) then
-                              write(lupri,*)'loop bb',bb, 'I keep'
+                              !write(lupri,*)'loop bb',bb, 'I keep'
                                  ikeep = .true.
                                  go to 444
                               end if
@@ -230,11 +230,11 @@ C
 !========================================
   444                      continue
                            if (.not.ikeep) CAM(KAIBJ) = zero
-                           if (abs(CAM(KAIBJ)).gt.thr2) then
-                              WRITE(LUPRI,9991) ISYMA,ISYMB,ISYMI,ISYMJ,
-     *                                      A,B,I,J,NAI,NBJ,NAIBJ,
-     *                                      CAM(KAIBJ)
-                           end if
+!                           if (abs(CAM(KAIBJ)).gt.thr2) then
+!                              WRITE(LUPRI,9991) ISYMA,ISYMB,ISYMI,ISYMJ,
+!     *                                      A,B,I,J,NAI,NBJ,NAIBJ,
+!     *                                      CAM(KAIBJ)
+                           !end if
   260                   CONTINUE
   250                CONTINUE
   240             CONTINUE
@@ -281,7 +281,7 @@ Cholesky
 #include "ccdeco.h"
 C
       LOGICAL CCSEFF, LOCDBG
-      parameter (locdbg=.true.)
+      parameter (locdbg=.false.)
 Cholesky
 C
 C
