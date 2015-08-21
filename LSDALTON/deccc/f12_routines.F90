@@ -13,6 +13,7 @@ module f12_routines_module
   use matrix_module
   use matrix_util
   use matrix_operations
+  use matrix_operations_aux, only: mat_hdiv
   use memory_handling
   use IchorErimoduleHost
 
@@ -25,6 +26,7 @@ module f12_routines_module
   use ccintegrals  
   use crop_tools_module
  
+  private
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
@@ -46,7 +48,6 @@ module f12_routines_module
        & contracttwo4centerf12integralsrib4mpi, contracttwo4centerf12integralsrib5mpi, &
        & contracttwo4centerf12integralsrib6mpi, contracttwo4centerf12integralsrib7mpi,&
        & contracttwo4centerf12integralsrib8mpi, contracttwo4centerf12integralsrib9mpi
-  private
 
   !> Coefficient Type
   TYPE ctype

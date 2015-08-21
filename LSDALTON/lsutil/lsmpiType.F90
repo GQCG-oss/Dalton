@@ -1,7 +1,8 @@
 module lsmpi_type
   use lsmpi_param
   use precision
-  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr,c_loc
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,&
+       & c_null_ptr,c_loc
   use LSparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
