@@ -64,6 +64,7 @@ add_library(
 target_link_libraries(matrixmlib cuda_gpu_interfaces)
 
 include_directories(${CMAKE_SOURCE_DIR}/LSDALTON/tensor/include)
+
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
 
@@ -277,8 +278,9 @@ if(ENABLE_REAL_SP)
    endif()
 endif()
 
-set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90 )
-set(GENERATED_FILES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90)
+set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90)
+set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90)
+set(GENERATED_FILES ${MANUAL_REORDERING_SOURCES})
 
 if(ENABLE_GPU)
    set(reorder_definitions "--acc ${reorder_definitions}")
