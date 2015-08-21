@@ -18,7 +18,8 @@ use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 use typedeftype, only: lsitem,integralconfig
 #endif
 use opttype, only: opt_set_default_config
-use response_wrapper_type_module, only: free_mcdinputitem, &
+use response_wrapper_type_module
+use response_wrapper_op_module, only: free_mcdinputitem, &
      & alphainputitem_set_default_config, betainputitem_set_default_config, &
      & gammainputitem_set_default_config, tpainputitem_set_default_config, &
      & dtpainputitem_set_default_config, esginputitem_set_default_config, &
