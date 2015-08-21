@@ -19,7 +19,7 @@ List of branches that people have taken responsibility for.
 chandan_nmr                     Author: Thomas,Chandan          Status: Working
 ichor-improvements              Author: Thomas                  Status: Working (soon to be stale)
 dmp2opt                         Author: Johannes                Status: Working
-titan_branch                    Author: Patrick E.              Status: Working
+titan_branch                    Author: Patrick E., Janus       Status: Working
 qcmatrix                        Author: Bin Gao, Magnus, ..     Status: Working (new OpenRSP interface with QcMatrix library)
 
 LstensorRemovalBranch           Author: Thomas, Simen           Status: DoNotDelete
@@ -39,11 +39,12 @@ linsca-develop-OpenRSP          Author: Thomas                  Status: Stale
 linsca-mpi                      Author: Thomas                  Status: Stale
 linsca-optimize-2011            Author: Thomas,Simen            Status: Stale
 pcm_lsdalton                    Author: Roberto Di Remigio      Status: stale
-PE_titan_branch                 Author: Patrick E.              Status: stale
+PE_titan_branch                 Author: Patrick E., Janus       Status: stale
 DECCCO                          Author: Kasper                  Status: Stale
 DECenergy                       Author: Kasper                  Status: Stale
 PMinteraction                   Author: Kasper                  Status: Stale
 PnKs_lovenest                   Author: Kasper                  Status: Stale
+cuda_api_lsdalton               Author: Janus, Radovan          Status: Stale
 linsca-ng-build                 Author: Pawel, Lea, Poul        Status: Pretty stale (from 2005)
 linsca-ng-vxcfit                Author: Pawel                   Status: Pretty stale (from 2008)
 
@@ -57,10 +58,8 @@ linsca                          Author: all                     Status: Deleted 
 lresc-linear                    Author: Juan                    Status: Deleted
 
 dec-patrick                     Author: Patrick E.              Status: ??????????????????????
-cuda_api_lsdalton               Author: Janus, Radovan          Status: ??????????????????????
 dec-karl                        Author: Karl                    Status: ??????????????????????
 localize_wannier                Author: Karl                    Status: ??????????????????????
 linsca-vcd-aat                  Author: Radovan                 Status: ??????????????????????
 master_with_CUDA_fh             Author: Frank Heiden haydn@bbsyd.dk  Status: ??????????????????????
-
 

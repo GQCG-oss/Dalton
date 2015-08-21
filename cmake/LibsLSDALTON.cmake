@@ -64,10 +64,9 @@ add_library(
 target_link_libraries(matrixmlib cuda_gpu_interfaces)
 
 include_directories(${CMAKE_SOURCE_DIR}/LSDALTON/tensor/include)
+
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
-   ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90
 
    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_reord.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
@@ -167,6 +166,8 @@ set(MANUAL_REORDERING_SOURCES
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_utils_t2f.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_utils_t2f.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_utils_t2f.F90
+
+
    )
 if(ENABLE_GPU)
    set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
@@ -277,19 +278,22 @@ if(ENABLE_REAL_SP)
    endif()
 endif()
 
+set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90)
+set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90)
+set(GENERATED_FILES ${MANUAL_REORDERING_SOURCES})
 
 if(ENABLE_GPU)
-   set(reorder_definitions "acc ${reorder_definitions}")
+   set(reorder_definitions "--acc ${reorder_definitions}")
 endif()
 if(ENABLE_REAL_SP)
-   set(reorder_definitions "real_sp ${reorder_definitions}")
+   set(reorder_definitions "--real_sp ${reorder_definitions}")
 endif()
 
 add_custom_command(
     OUTPUT
-    ${MANUAL_REORDERING_SOURCES}
+    ${GENERATED_FILES}
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${reorder_definitions}
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py --CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${reorder_definitions}
     DEPENDS
     ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
     )
@@ -573,13 +577,15 @@ if(ENABLE_REAL_SP)
    set(CCSDPT_SINGLE_PREC_SOURCE
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90
+       ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90
        )
 endif()
 
 if(ENABLE_REAL_SP)
    get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
    if(${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90 OR
-     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90)
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90 OR
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90)
      add_custom_command(
      OUTPUT
      ${CCSDPT_SINGLE_PREC_SOURCE}
@@ -588,6 +594,7 @@ if(ENABLE_REAL_SP)
      DEPENDS
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_sp.sh
      )
    endif()

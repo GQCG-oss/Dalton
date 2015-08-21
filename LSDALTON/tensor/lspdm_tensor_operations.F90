@@ -15,6 +15,7 @@ module lspdm_tensor_operations_module
   use LSTIMING
 #endif
 
+  use get_idx_mod
   use tensor_parameters_and_counters
   use tensor_mpi_binding_module
   use tensor_bg_buf_module

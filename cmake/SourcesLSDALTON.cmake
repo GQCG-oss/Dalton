@@ -86,7 +86,6 @@ set(LSUTIL_COMMON_SOURCES4
     )
 
 set(LSUTIL_COMMON_SOURCES5
-    LSDALTON/lsutil/common_utilities.F90
     LSDALTON/lsutil/pbc_lattice_type.F90
     LSDALTON/lsutil/TYPE-DEF.F90
     )
@@ -102,6 +101,7 @@ set(LSUTIL_COMMON_SOURCES7
 
 set(LSUTIL_COMMON_SOURCES8
     LSDALTON/lsutil/lsmpiType.F90
+    LSDALTON/lsutil/common_utilities.F90
     )
 
 set(LSUTIL_MATRIXO_SOURCES
