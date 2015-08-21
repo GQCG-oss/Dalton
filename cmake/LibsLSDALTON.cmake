@@ -299,27 +299,69 @@ add_custom_command(
 unset(reorder_definitions)
 
 add_library(
-   lsutil_tensor_basic
-   ${TENSOR_BASIC_SOURCES}
-   ${MANUAL_REORDERING_SOURCES}
-   )
+  lsutil_tensor_lib
+  ${MANUAL_REORDERING_SOURCES}
+  ${LSUTIL_TENSOR_SOURCES}
+  )
+
+target_link_libraries(lsutil_tensor_lib matrixmlib )
 
 add_library(
-   lsutil_tensor_lib
-   ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90
-   ${LSUTIL_TENSOR_SOURCES}
-   )
-
-add_dependencies(lsutil_tensor_lib lsutil_tensor_basic)
-
-
-add_library(
-    lsutillib_common
+    lsutillib_common1
     ${LSUTIL_COMMON_C_SOURCES}
-    ${LSUTIL_COMMON_SOURCES}
+    ${LSUTIL_TYPE_SOURCES}
     )
 
-target_link_libraries(lsutillib_common matrixmlib lsutil_tensor_lib lsutil_tensor_basic)
+target_link_libraries(lsutillib_common1 lsutil_tensor_lib)
+
+add_library(
+    lsutillib_common2
+    ${LSUTIL_COMMON_SOURCES2}
+    )
+
+target_link_libraries(lsutillib_common2 lsutillib_common1)
+
+add_library(
+    lsutillib_common3
+    ${LSUTIL_COMMON_SOURCES3}
+    )
+
+target_link_libraries(lsutillib_common3 lsutillib_common2)
+
+add_library(
+    lsutillib_common4
+    ${LSUTIL_COMMON_SOURCES4}
+    )
+
+target_link_libraries(lsutillib_common4 lsutillib_common3)
+
+add_library(
+    lsutillib_common5
+    ${LSUTIL_COMMON_SOURCES5}
+    )
+
+target_link_libraries(lsutillib_common5 lsutillib_common4)
+
+add_library(
+    lsutillib_common6
+    ${LSUTIL_COMMON_SOURCES6}
+    )
+
+target_link_libraries(lsutillib_common6 lsutillib_common5)
+
+add_library(
+    lsutillib_common7
+    ${LSUTIL_COMMON_SOURCES7}
+    )
+
+target_link_libraries(lsutillib_common7 lsutillib_common6)
+
+add_library(
+    lsutillib_common8
+    ${LSUTIL_COMMON_SOURCES8}
+    )
+
+target_link_libraries(lsutillib_common8 lsutillib_common7)
 
 add_library(
     matrixolib
@@ -327,9 +369,7 @@ add_library(
     ${LSUTIL_MATRIXO_C_SOURCES}
     )
 
-target_link_libraries(matrixolib lsutillib_common lsutil_tensor_lib lsutil_tensor_basic)
-
-
+target_link_libraries(matrixolib lsutillib_common8)
 
 add_library(
     matrixulib
@@ -374,9 +414,9 @@ target_link_libraries(matrixulib pdpacklib)
 
 add_library(
     lsutiltypelib_common
-    ${LSUTIL_TYPE_SOURCES}
+    ${LSUTIL_TYPEOP_SOURCES}
     )
-add_dependencies(lsutiltypelib_common lsutillib_common)
+add_dependencies(lsutiltypelib_common lsutillib_common8)
 add_dependencies(lsutiltypelib_common matrixulib)
 
 target_link_libraries(lsutiltypelib_common pdpacklib)
@@ -438,7 +478,14 @@ add_library(
 
 
 add_dependencies(fmmlib lsutillib_precision)
-add_dependencies(fmmlib lsutillib_common)
+add_dependencies(fmmlib lsutillib_common1)
+add_dependencies(fmmlib lsutillib_common2)
+add_dependencies(fmmlib lsutillib_common3)
+add_dependencies(fmmlib lsutillib_common4)
+add_dependencies(fmmlib lsutillib_common5)
+add_dependencies(fmmlib lsutillib_common6)
+add_dependencies(fmmlib lsutillib_common7)
+add_dependencies(fmmlib lsutillib_common8)
 add_dependencies(fmmlib lsutiltypelib_common)
 
 if(ENABLE_INTEREST)
@@ -552,24 +599,33 @@ if(ENABLE_REAL_SP)
    unset(LIST_OF_DEFINITIONS)
 endif()
 
-if(ENABLE_REAL_SP)
-   add_library(
-       declib
-       ${CCSDPT_SINGLE_PREC_SOURCE}
-       ${DEC_SOURCES}
-       )
-else()
-   add_library(
-       declib
-       ${DEC_SOURCES}
-       )
+if(ENABLE_DEC)
+  if(ENABLE_REAL_SP)
+    add_library(
+      declib
+      ${CCSDPT_SINGLE_PREC_SOURCE}
+      ${DEC_SOURCES}
+      )
+  else()
+    add_library(
+      declib
+      ${DEC_SOURCES}
+      )
+  endif()
+
+  target_link_libraries(declib lsutiltypelib_common)
+  target_link_libraries(declib lsutillib_common1)
+  target_link_libraries(declib lsutillib_common2)
+  target_link_libraries(declib lsutillib_common3)
+  target_link_libraries(declib lsutillib_common4)
+  target_link_libraries(declib lsutillib_common5)
+  target_link_libraries(declib lsutillib_common6)
+  target_link_libraries(declib lsutillib_common7)
+  target_link_libraries(declib lsutillib_common8)
+  target_link_libraries(declib lsintlib)
+  target_link_libraries(declib linearslib)
 endif()
-
-target_link_libraries(declib lsutiltypelib_common)
-target_link_libraries(declib lsutillib_common)
-target_link_libraries(declib lsintlib)
-target_link_libraries(declib linearslib)
-
+  
 add_library(
     rsp_propertieslib
     ${RSP_PROPERTIES_SOURCES}
@@ -592,7 +648,9 @@ add_library(
 target_link_libraries(lsdaltonmain pbclib)
 target_link_libraries(lsdaltonmain geooptlib)
 target_link_libraries(lsdaltonmain linearslib)
-target_link_libraries(lsdaltonmain declib)
+if(ENABLE_DEC)
+  target_link_libraries(lsdaltonmain declib)
+endif()
 target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
@@ -681,8 +739,15 @@ set(LIBS_TO_MERGE
     lsutillib_precision
     cuda_gpu_interfaces
     matrixmlib
-    lsutillib_common
     lsutil_tensor_lib
+    lsutillib_common1
+    lsutillib_common2
+    lsutillib_common3
+    lsutillib_common4
+    lsutillib_common5
+    lsutillib_common6
+    lsutillib_common7
+    lsutillib_common8
     matrixolib
     matrixulib
     pdpacklib
@@ -693,7 +758,13 @@ set(LIBS_TO_MERGE
     lsint
     pbclib
     ddynamlib
-    declib
+)
+
+if(ENABLE_DEC)
+  set(LIBS_TO_MERGE ${LIBS_TO_MERGE} declib)
+endif()
+
+set(LIBS_TO_MERGE ${LIBS_TO_MERGE} 
     solverutillib
     rspsolverlib
     linearslib

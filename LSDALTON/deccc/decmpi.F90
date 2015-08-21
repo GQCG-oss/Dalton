@@ -19,7 +19,7 @@ module decmpi_module
   use dec_fragment_utils
   use array4_simple_operations
   use array2_simple_operations
-
+  use CABS_operations
 contains
  
 #ifdef VAR_MPI
@@ -670,6 +670,9 @@ contains
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12singles,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSV1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSX1,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if global slave
     if(.not. gm) then
@@ -679,14 +682,10 @@ contains
        call mem_alloc(MyMolecule%bas_start,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%bas_end,MyMolecule%nbasis)
        IF(DECINFO%F12)THEN
+          call init_cabs()
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
        ENDIF
-       !IF(DECinfo%F12)THEN
-       !   call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
-       !   call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-       !ENDIF
-
        if(.not.MyMolecule%mem_distributed)then
           call tensor_init(MyMolecule%Co,[MyMolecule%nbasis,MyMolecule%nocc],2)
           call tensor_init(MyMolecule%Cv,[MyMolecule%nbasis,MyMolecule%nvirt],2)
@@ -739,11 +738,6 @@ contains
 
     ! Real pointers
     ! -------------
-    !IF(DECinfo%F12)THEN
-    !   call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
-    !   call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-    !ENDIF
-
     if(MyMolecule%mem_distributed)then
 
        !master get adresses
@@ -2386,9 +2380,10 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPthr,Master)
     call ls_mpi_buffer(DECitem%SNOOPmaxdiis,Master)
     call ls_mpi_buffer(DECitem%SNOOPdebug,Master)
-    call ls_mpi_buffer(DECitem%SNOOPort,Master)
     call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
+    call ls_mpi_buffer(DECitem%SNOOPrestart,Master)
+    call ls_mpi_buffer(DECitem%SNOOPonesub,Master)
     call ls_mpi_buffer(DECitem%CCexci,Master)
     call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
     call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
@@ -2480,6 +2475,7 @@ contains
     call ls_mpi_buffer(DECitem%ccsolverskip,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
+
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
@@ -2488,6 +2484,10 @@ contains
     call ls_mpi_buffer(DECitem%F12singlesMaxIter,Master)
     call ls_mpi_buffer(DECitem%F12singlesThr,Master)
     call ls_mpi_buffer(DECitem%F12singlesMaxDIIS,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12Terms,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsB1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsV1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsX1,Master)
 
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)

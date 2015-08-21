@@ -576,218 +576,216 @@ integer :: CA,DB
 Real(realk),pointer :: lAC(:),lBC(:),lAD(:),lBD(:),rBD(:),rAD(:),rBC(:),rAC(:)
 Real(realk),pointer :: lCA(:),lCB(:),lDA(:),lDB(:),rDB(:),rDA(:),rCB(:),rCA(:)
 Real(realk) :: tmpKcont(ndmat)
-#ifdef VAR_MPI
-!We assume sym dmat
+IF(.NOT.INPUT%LHSSameAsRHSDmat)THEN
+   !We assume sym dmat
 
-P => PQ%P%p
-Q => PQ%Q%p
-nAngmomP   = P%nAngmom
-SamePQ     = PQ%samePQ
-SameLHSaos = INPUT%SameLHSaos
-SameRHSaos = INPUT%SameRHSaos
-SameODs    = INPUT%SameODs
-nPasses = P%nPasses*Q%nPasses
-iPass = 0
-tmpKcont = 0E0_realk
-nA     = P%orbital1%totOrbitals
-nB     = P%orbital2%totOrbitals
-nC     = Q%orbital1%totOrbitals
-nD     = Q%orbital2%totOrbitals
-DO iPassP=1,P%nPasses
-  atomA  = P%orb1atom(iPassP)
-  batchA = P%orb1batch(iPassP)
-  atomB  = P%orb2atom(iPassP)
-  batchB = P%orb2batch(iPassP)
-
-  permuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
-  DO iPassQ=1,Q%nPasses
-    iPass = iPass + 1
-
-    atomC  = Q%orb1atom(iPassQ)
-    batchC = Q%orb1batch(iPassQ)
-    atomD  = Q%orb2atom(iPassQ)
-    batchD = Q%orb2batch(iPassQ)
-    permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
-    permuteOD = SameODs.AND.( ((batchA.NE.batchC).OR.(atomA.NE.atomC)).OR.&
-   &                          ((batchB.NE.batchD).OR.(atomB.NE.atomD)) )
-    permuteOD = SameODs.AND..NOT.((batchA.EQ.batchC).AND.(atomA.EQ.atomC).AND.&
-   &                          (batchB.EQ.batchD).AND.(atomB.EQ.atomD) )
-
-
-    AC = Dlhs%index(atomA,atomC,1,1)
-    lAC => Dlhs%lsao(AC)%elms       
-    n1 = Dlhs%lsao(AC)%nLocal(1) 
-    n3 = Dlhs%lsao(AC)%nLocal(2) 
-    maxAng = Dlhs%lsao(AC)%maxAng
-    maxBat = Dlhs%lsao(AC)%maxBat
-    s1 = Dlhs%lsao(AC)%startLocalOrb(1+(batchA-1)*maxAng)-1
-    s3 = Dlhs%lsao(AC)%startLocalOrb(1+(batchC-1)*maxAng+maxAng*maxBat)-1
-
-    BD = Drhs%index(atomB,atomD,1,1)
-    rBD => Drhs%lsao(BD)%elms
-       
-    n2 = Drhs%lsao(BD)%nLocal(1) 
-    n4 = Drhs%lsao(BD)%nLocal(2) 
-    maxAng = Drhs%lsao(BD)%maxAng
-    maxBat = Drhs%lsao(BD)%maxBat
-    s2 = Drhs%lsao(BD)%startLocalOrb(1+(batchB-1)*maxAng)-1
-    s4 = Drhs%lsao(BD)%startLocalOrb(1+(batchD-1)*maxAng+maxAng*maxBat)-1
-
-    IF (permuteCD) THEN
-       AD = Dlhs%index(atomA,atomD,1,1)
-       lAD => Dlhs%lsao(AD)%elms       
-       BC = Drhs%index(atomB,atomC,1,1)
-       rBC => Drhs%lsao(BC)%elms
-    ENDIF
-    IF (permuteAB) THEN
-       BD = Dlhs%index(atomB,atomD,1,1)
-       lBD => Dlhs%lsao(BD)%elms       
-       AC = Drhs%index(atomA,atomC,1,1)
-       rAC => Drhs%lsao(AC)%elms
-
-       AD = Drhs%index(atomA,atomD,1,1)
-       rAD => Drhs%lsao(AD)%elms       
-       BC = Dlhs%index(atomB,atomC,1,1)
-       lBC => Dlhs%lsao(BC)%elms
-    ENDIF
-    IF (permuteAB.AND.permuteCD) THEN
-       call fullEcont2(tmpKcont,lAC,lBC,lAD,lBD,rBD,rAD,rBC,rAC,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
-    ELSE IF (permuteAB) THEN
-       call fullEcont3(tmpKcont,lAC,lBC,rBD,rAD,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
-    ELSE IF (permuteCD) THEN       
-       call fullEcont4(tmpKcont,lAC,lAD,rBD,rBC,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
-    ELSE
-       call fullEcont5(tmpKcont,lAC,rBD,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
-    ENDIF
-  ENDDO !iPassQ
-ENDDO !iPassP
-
-!reduction afterwards
-!!$OMP CRITICAL (distributeKgradBlock)
-DO idmat=1,ndmat
-   Kcont(idmat) = Kcont(idmat) - tmpKcont(idmat)
-ENDDO
-!!$OMP END CRITICAL (distributeKgradBlock)
-
-#else
-!Special for same lhs and rhs !!!!
-!assumes same LHS and same RHS and symmetric matrices
-!THIS DOES NOT HOLD FOR MPI....
-
-P => PQ%P%p
-Q => PQ%Q%p
-nAngmomP   = P%nAngmom
-SamePQ     = PQ%samePQ
-SameLHSaos = INPUT%SameLHSaos
-SameRHSaos = INPUT%SameRHSaos
-SameODs    = INPUT%SameODs
-nPasses = P%nPasses*Q%nPasses
-iPass = 0
-tmpKcont = 0E0_realk
-DO iPassP=1,P%nPasses
-  atomA  = P%orb1atom(iPassP)
-  batchA = P%orb1batch(iPassP)
-  nA     = P%orbital1%totOrbitals
-  atomB  = P%orb2atom(iPassP)
-  batchB = P%orb2batch(iPassP)
-  nB     = P%orbital2%totOrbitals
-
-  permuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
-  DO iPassQ=1,Q%nPasses
-    iPass = iPass + 1
-
-    atomC  = Q%orb1atom(iPassQ)
-    batchC = Q%orb1batch(iPassQ)
-    nC     = Q%orbital1%totOrbitals
-    atomD  = Q%orb2atom(iPassQ)
-    batchD = Q%orb2batch(iPassQ)
-    nD     = Q%orbital2%totOrbitals
-    permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
-    permuteOD = SameODs.AND.( ((batchA.NE.batchC).OR.(atomA.NE.atomC)).OR.&
-   &                          ((batchB.NE.batchD).OR.(atomB.NE.atomD)) )
-    permuteOD = SameODs.AND..NOT.((batchA.EQ.batchC).AND.(atomA.EQ.atomC).AND.&
-   &                          (batchB.EQ.batchD).AND.(atomB.EQ.atomD) )
-
-    CA = Dlhs%index(atomC,atomA,1,1)
-    lCA => Dlhs%lsao(CA)%elms
-    DB = Dlhs%index(atomD,atomB,1,1)
-    lDB => Dlhs%lsao(DB)%elms       
-    n3 = Dlhs%lsao(CA)%nLocal(1) 
-    n1 = Dlhs%lsao(CA)%nLocal(2) 
-    n4 = Dlhs%lsao(DB)%nLocal(1) 
-    n2 = Dlhs%lsao(DB)%nLocal(2) 
-    maxBat = Dlhs%lsao(CA)%maxBat
-    maxAng = Dlhs%lsao(CA)%maxAng
-    s3 = Dlhs%lsao(CA)%startLocalOrb(1+(batchC-1)*maxAng)-1
-    s1 = Dlhs%lsao(CA)%startLocalOrb(1+(batchA-1)*maxAng+maxAng*maxBat)-1
-    maxBat = Dlhs%lsao(DB)%maxBat
-    maxAng = Dlhs%lsao(DB)%maxAng
-    s4 = Dlhs%lsao(DB)%startLocalOrb(1+(batchD-1)*maxAng)-1
-    s2 = Dlhs%lsao(DB)%startLocalOrb(1+(batchB-1)*maxAng+maxAng*maxBat)-1
-    IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
-       DA = Dlhs%index(atomD,atomA,1,1)
-       lDA => Dlhs%lsao(DA)%elms
-       CB = Dlhs%index(atomC,atomB,1,1)
-       lCB => Dlhs%lsao(CB)%elms
-       call full1(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4, &
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
-    ELSE IF (permuteOD.AND.permuteCD) THEN
-       DA = Dlhs%index(atomD,atomA,1,1)
-       lDA => Dlhs%lsao(DA)%elms
-       CB = Dlhs%index(atomC,atomB,1,1)
-       lCB => Dlhs%lsao(CB)%elms
-       call full2(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
-     ELSE IF (permuteOD.AND.permuteAB) THEN
-       DA = Dlhs%index(atomD,atomA,1,1)
-       lDA => Dlhs%lsao(DA)%elms
-       CB = Dlhs%index(atomC,atomB,1,1)
-       lCB => Dlhs%lsao(CB)%elms
-       call full2(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
-     ELSE IF (permuteAB.AND.permuteCD) THEN
-       DA = Dlhs%index(atomD,atomA,1,1)
-       lDA => Dlhs%lsao(DA)%elms
-       CB = Dlhs%index(atomC,atomB,1,1)
-       lCB => Dlhs%lsao(CB)%elms
-       call full2(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
-      ELSE IF (permuteAB) THEN
-       DA = Dlhs%index(atomD,atomA,1,1)
-       lDA => Dlhs%lsao(DA)%elms
-       CB = Dlhs%index(atomC,atomB,1,1)
-       lCB => Dlhs%lsao(CB)%elms
-       call full3(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
-      ELSE IF (permuteCD) THEN
-       DA = Dlhs%index(atomD,atomA,1,1)
-       lDA => Dlhs%lsao(DA)%elms
-       CB = Dlhs%index(atomC,atomB,1,1)
-       lCB => Dlhs%lsao(CB)%elms
-       call full3(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
-     ELSE IF (permuteOD) THEN
-       call full4(tmpKcont,lCA,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+   P => PQ%P%p
+   Q => PQ%Q%p
+   nAngmomP   = P%nAngmom
+   SamePQ     = PQ%samePQ
+   SameLHSaos = INPUT%SameLHSaos
+   SameRHSaos = INPUT%SameRHSaos
+   SameODs    = INPUT%SameODs
+   nPasses = P%nPasses*Q%nPasses
+   iPass = 0
+   tmpKcont = 0E0_realk
+   nA     = P%orbital1%totOrbitals
+   nB     = P%orbital2%totOrbitals
+   nC     = Q%orbital1%totOrbitals
+   nD     = Q%orbital2%totOrbitals
+   DO iPassP=1,P%nPasses
+    atomA  = P%orb1atom(iPassP)
+    batchA = P%orb1batch(iPassP)
+    atomB  = P%orb2atom(iPassP)
+    batchB = P%orb2batch(iPassP)
+    
+    permuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
+    DO iPassQ=1,Q%nPasses
+     iPass = iPass + 1
+         
+     atomC  = Q%orb1atom(iPassQ)
+     batchC = Q%orb1batch(iPassQ)
+     atomD  = Q%orb2atom(iPassQ)
+     batchD = Q%orb2batch(iPassQ)
+     permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
+     permuteOD = SameODs.AND.( ((batchA.NE.batchC).OR.(atomA.NE.atomC)).OR.&
+          &                          ((batchB.NE.batchD).OR.(atomB.NE.atomD)) )
+     permuteOD = SameODs.AND..NOT.((batchA.EQ.batchC).AND.(atomA.EQ.atomC).AND.&
+          &                          (batchB.EQ.batchD).AND.(atomB.EQ.atomD) )
+     
+     
+     AC = Dlhs%index(atomA,atomC,1,1)
+     lAC => Dlhs%lsao(AC)%elms       
+     n1 = Dlhs%lsao(AC)%nLocal(1) 
+     n3 = Dlhs%lsao(AC)%nLocal(2) 
+     maxAng = Dlhs%lsao(AC)%maxAng
+     maxBat = Dlhs%lsao(AC)%maxBat
+     s1 = Dlhs%lsao(AC)%startLocalOrb(1+(batchA-1)*maxAng)-1
+     s3 = Dlhs%lsao(AC)%startLocalOrb(1+(batchC-1)*maxAng+maxAng*maxBat)-1
+     
+     BD = Drhs%index(atomB,atomD,1,1)
+     rBD => Drhs%lsao(BD)%elms
+     
+     n2 = Drhs%lsao(BD)%nLocal(1) 
+     n4 = Drhs%lsao(BD)%nLocal(2) 
+     maxAng = Drhs%lsao(BD)%maxAng
+     maxBat = Drhs%lsao(BD)%maxBat
+     s2 = Drhs%lsao(BD)%startLocalOrb(1+(batchB-1)*maxAng)-1
+     s4 = Drhs%lsao(BD)%startLocalOrb(1+(batchD-1)*maxAng+maxAng*maxBat)-1
+     
+     IF (permuteCD) THEN
+        AD = Dlhs%index(atomA,atomD,1,1)
+        lAD => Dlhs%lsao(AD)%elms       
+        BC = Drhs%index(atomB,atomC,1,1)
+        rBC => Drhs%lsao(BC)%elms
+     ENDIF
+     IF (permuteAB) THEN
+        BD = Dlhs%index(atomB,atomD,1,1)
+        lBD => Dlhs%lsao(BD)%elms       
+        AC = Drhs%index(atomA,atomC,1,1)
+        rAC => Drhs%lsao(AC)%elms
+        
+        AD = Drhs%index(atomA,atomD,1,1)
+        rAD => Drhs%lsao(AD)%elms       
+        BC = Dlhs%index(atomB,atomC,1,1)
+        lBC => Dlhs%lsao(BC)%elms
+     ENDIF
+     IF (permuteAB.AND.permuteCD) THEN
+        call fullEcont2(tmpKcont,lAC,lBC,lAD,lBD,rBD,rAD,rBC,rAC,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
+     ELSE IF (permuteAB) THEN
+        call fullEcont3(tmpKcont,lAC,lBC,rBD,rAD,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
+     ELSE IF (permuteCD) THEN       
+        call fullEcont4(tmpKcont,lAC,lAD,rBD,rBC,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
      ELSE
-       call full5(tmpKcont,lCA,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
-            & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
-      ENDIF
-  ENDDO !iPassQ
-ENDDO !iPassP
-!not necessary ! 
-!reduction afterwards
-!!$OMP CRITICAL (distributeKgradBlock)
-DO idmat=1,ndmat
-   Kcont(idmat) = Kcont(idmat) - tmpKcont(idmat)
-ENDDO
-!!$OMP END CRITICAL (distributeKgradBlock)
-#endif
+        call fullEcont5(tmpKcont,lAC,rBD,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,permuteOD,lupri)
+     ENDIF
+    ENDDO !iPassQ
+   ENDDO !iPassP
 
+   !reduction afterwards
+!!$OMP CRITICAL (distributeKgradBlock)
+   DO idmat=1,ndmat
+      Kcont(idmat) = Kcont(idmat) - tmpKcont(idmat)
+   ENDDO
+!!$OMP END CRITICAL (distributeKgradBlock)
+ELSE
+
+   !Special for same lhs and rhs !!!!
+   !assumes symmetric matrices
+   
+   P => PQ%P%p
+   Q => PQ%Q%p
+   nAngmomP   = P%nAngmom
+   SamePQ     = PQ%samePQ
+   SameLHSaos = INPUT%SameLHSaos
+   SameRHSaos = INPUT%SameRHSaos
+   SameODs    = INPUT%SameODs
+   nPasses = P%nPasses*Q%nPasses
+   iPass = 0
+   tmpKcont = 0E0_realk
+   DO iPassP=1,P%nPasses
+    atomA  = P%orb1atom(iPassP)
+    batchA = P%orb1batch(iPassP)
+    nA     = P%orbital1%totOrbitals
+    atomB  = P%orb2atom(iPassP)
+    batchB = P%orb2batch(iPassP)
+    nB     = P%orbital2%totOrbitals    
+    permuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
+    DO iPassQ=1,Q%nPasses
+     iPass = iPass + 1
+
+     atomC  = Q%orb1atom(iPassQ)
+     batchC = Q%orb1batch(iPassQ)
+     nC     = Q%orbital1%totOrbitals
+     atomD  = Q%orb2atom(iPassQ)
+     batchD = Q%orb2batch(iPassQ)
+     nD     = Q%orbital2%totOrbitals
+     permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
+     permuteOD = SameODs.AND.( ((batchA.NE.batchC).OR.(atomA.NE.atomC)).OR.&
+          &                          ((batchB.NE.batchD).OR.(atomB.NE.atomD)) )
+     permuteOD = SameODs.AND..NOT.((batchA.EQ.batchC).AND.(atomA.EQ.atomC).AND.&
+          &                          (batchB.EQ.batchD).AND.(atomB.EQ.atomD) )
+     
+     CA = Dlhs%index(atomC,atomA,1,1)
+     lCA => Dlhs%lsao(CA)%elms
+     DB = Dlhs%index(atomD,atomB,1,1)
+     lDB => Dlhs%lsao(DB)%elms       
+     n3 = Dlhs%lsao(CA)%nLocal(1) 
+     n1 = Dlhs%lsao(CA)%nLocal(2) 
+     n4 = Dlhs%lsao(DB)%nLocal(1) 
+     n2 = Dlhs%lsao(DB)%nLocal(2) 
+     maxBat = Dlhs%lsao(CA)%maxBat
+     maxAng = Dlhs%lsao(CA)%maxAng
+     s3 = Dlhs%lsao(CA)%startLocalOrb(1+(batchC-1)*maxAng)-1
+     s1 = Dlhs%lsao(CA)%startLocalOrb(1+(batchA-1)*maxAng+maxAng*maxBat)-1
+     maxBat = Dlhs%lsao(DB)%maxBat
+     maxAng = Dlhs%lsao(DB)%maxAng
+     s4 = Dlhs%lsao(DB)%startLocalOrb(1+(batchD-1)*maxAng)-1
+     s2 = Dlhs%lsao(DB)%startLocalOrb(1+(batchB-1)*maxAng+maxAng*maxBat)-1
+     IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
+        DA = Dlhs%index(atomD,atomA,1,1)
+        lDA => Dlhs%lsao(DA)%elms
+        CB = Dlhs%index(atomC,atomB,1,1)
+        lCB => Dlhs%lsao(CB)%elms
+        call full1(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4, &
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ELSE IF (permuteOD.AND.permuteCD) THEN
+        DA = Dlhs%index(atomD,atomA,1,1)
+        lDA => Dlhs%lsao(DA)%elms
+        CB = Dlhs%index(atomC,atomB,1,1)
+        lCB => Dlhs%lsao(CB)%elms
+        call full2(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ELSE IF (permuteOD.AND.permuteAB) THEN
+        DA = Dlhs%index(atomD,atomA,1,1)
+        lDA => Dlhs%lsao(DA)%elms
+        CB = Dlhs%index(atomC,atomB,1,1)
+        lCB => Dlhs%lsao(CB)%elms
+        call full2(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ELSE IF (permuteAB.AND.permuteCD) THEN
+        DA = Dlhs%index(atomD,atomA,1,1)
+        lDA => Dlhs%lsao(DA)%elms
+        CB = Dlhs%index(atomC,atomB,1,1)
+        lCB => Dlhs%lsao(CB)%elms
+        call full2(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ELSE IF (permuteAB) THEN
+        DA = Dlhs%index(atomD,atomA,1,1)
+        lDA => Dlhs%lsao(DA)%elms
+        CB = Dlhs%index(atomC,atomB,1,1)
+        lCB => Dlhs%lsao(CB)%elms
+        call full3(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ELSE IF (permuteCD) THEN
+        DA = Dlhs%index(atomD,atomA,1,1)
+        lDA => Dlhs%lsao(DA)%elms
+        CB = Dlhs%index(atomC,atomB,1,1)
+        lCB => Dlhs%lsao(CB)%elms
+        call full3(tmpKcont,lCA,lDA,lCB,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ELSE IF (permuteOD) THEN
+        call full4(tmpKcont,lCA,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ELSE
+        call full5(tmpKcont,lCA,lDB,n1,n2,n3,n4,s1,s2,s3,s4,&
+             & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)
+     ENDIF
+    ENDDO !iPassQ
+   ENDDO !iPassP
+   !not necessary ! 
+   !reduction afterwards
+!!$OMP CRITICAL (distributeKgradBlock)
+   DO idmat=1,ndmat
+      Kcont(idmat) = Kcont(idmat) - tmpKcont(idmat)
+   ENDDO
+!!$OMP END CRITICAL (distributeKgradBlock)
+ENDIF
+   
 CONTAINS
 subroutine full1(Kcont,DCA,DDA,DCB,DDB,n1,n2,n3,n4,s1,s2,s3,s4,&
      & CDAB,nA,nB,nC,nD,iPass,nPasses,ndmat,lupri)

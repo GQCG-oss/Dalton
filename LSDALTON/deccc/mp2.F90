@@ -3082,8 +3082,6 @@ subroutine MP2F12_Ccoupling_energy(MyFragment,bat,E21)
        CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
        WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
 
-       !print *, "norm2(tmp3)", norm2(tmp3%p(1:dim3))
-
        ! Transition from step 1 to step 2 in integral loop
        ! =================================================
 
