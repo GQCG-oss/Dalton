@@ -12,6 +12,7 @@ module rimp2_gradient_module
   use tensor_type_def_module
   use dec_typedef_module
   use lsparameters
+  use background_buffer_module
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module
