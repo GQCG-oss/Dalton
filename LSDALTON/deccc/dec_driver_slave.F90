@@ -20,7 +20,7 @@ module dec_driver_slave_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
-  use dec_settings_mod!, only: dec_set_default_config
+  use dec_settings_mod
   use full_molecule!, only: molecule_finalize
   use decmpi_module
   use atomic_fragment_operations

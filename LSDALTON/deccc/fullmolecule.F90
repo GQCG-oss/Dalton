@@ -84,7 +84,7 @@ contains
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+    if(DECinfo%F12) then 
 #ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
@@ -900,6 +900,9 @@ contains
     if(associated(molecule%ov_abs_overlap)) then
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
+
+    call free_cabs()
+
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices

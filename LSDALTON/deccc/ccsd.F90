@@ -8369,7 +8369,7 @@ subroutine ccsd_data_preparation()
   use dec_typedef_module
   use typedeftype,only:lsitem
   use infpar_module
-  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,MPI_COMM_NULL,&
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,&
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free

@@ -134,6 +134,7 @@ MODULE lsparameters
   integer,parameter :: SET_TENSOR_SEG_LENGTH        = 66
   integer,parameter :: DECRIMP2GRAD                 = 67
   integer,parameter :: RIMP2F12Ccoup                = 68
+  integer,parameter :: RIMP2F12FULL                 = 69
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
