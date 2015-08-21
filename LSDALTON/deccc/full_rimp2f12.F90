@@ -13,18 +13,49 @@ use matrix_module
 use matrix_operations
 use memory_handling
 use LSTIMING
-
-use dec_fragment_utils
+!use dec_fragment_utils
 use CABS_operations
-use ccintegrals
+use ccintegrals,only:get_ao_fock
 
 !WARNING FOR TESTING
 !use full_f12contractions
 
 !#ifdef MOD_UNRELEASED
-use f12_routines_module
+use f12_routines_module,only: &
+     & ContractOne4CenterF12IntegralsRI,&
+     & ContractOne4CenterF12IntegralsRI2_nc,&
+     & ContractOne4CenterF12IntegralsRobustRI,&
+     & ContractOne4CenterF12IntegralsRIB23,&
+     & ContractTwo4CenterF12IntegralsRI_pf,&
+     & ContractTwo4CenterF12IntegralsRIX_nc,&
+     & ContractTwo4CenterF12IntegralsRIX_ncMPI,&
+     & ContractTwo4CenterF12IntegralsRI2V3V4,&
+     & ContractTwo4CenterF12IntegralsRIC_pf,&
+     & ContractTwo4CenterF12IntegralsRIX3X4_nc,&
+     & ContractTwo4CenterF12IntegralsRIX3X4_ncMPI,&
+     & ContractTwo4CenterF12IntegralsRIB4,&
+     & ContractTwo4CenterF12IntegralsRIB4MPI,&
+     & ContractTwo4CenterF12IntegralsRIB5,&
+     & ContractTwo4CenterF12IntegralsRIB5MPI,&
+     & ContractTwo4CenterF12IntegralsRIB6,&
+     & ContractTwo4CenterF12IntegralsRIB6MPI,&
+     & ContractTwo4CenterF12IntegralsRIB7,&
+     & ContractTwo4CenterF12IntegralsRIB7MPI,&
+     & ContractTwo4CenterF12IntegralsRIB8,&
+     & ContractTwo4CenterF12IntegralsRIB8MPI,&
+     & ContractTwo4CenterF12IntegralsRIB9,&
+     & ContractTwo4CenterF12IntegralsRIB9MPI,&
+     & get_F12_mixed_MO_Matrices, free_f12_mixed_mo_matrices,&
+     & MO_transform_AOMatrix
+
 use IntegralInterfaceMOD
-use rimp2_module
+use ri_util_module
+#ifdef VAR_MPI
+use lsmpi_op,only: mpicopy_lsitem
+use decmpi_module,only: mpi_bcast_fullmolecule
+use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
+     & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+#endif
 !#endif 
 
 public :: full_canonical_rimp2_f12, lsmpi_matrix_bufcopy,&

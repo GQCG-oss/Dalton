@@ -37,6 +37,9 @@ module ri_util_module
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
   use dec_fragment_utils
+  private
+  public :: Build_CalphaMO2,BuildnAuxMPIUsedRI,BuildnAuxMPIUsedRIinfo,&
+       & Build_RobustERImatU, Build_RIMP2grad
 
 contains
 !This should be call my master and slaves
