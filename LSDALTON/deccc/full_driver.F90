@@ -38,6 +38,7 @@ module full
   use fullrimp2 !,only: full_canonical_rimp2
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
+  use full_mp3_module
   use full_ls_thc_rimp2Mod
 
   public  :: full_driver
@@ -114,6 +115,8 @@ contains
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
        elseif(DECinfo%ccModel==MODEL_LSTHCRIMP2)then
           call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
+       elseif(DECinfo%ccmodel==MODEL_MP3) then
+          call full_canonical_mp3(MyMolecule,MyLsitem,Ecorr)
        else
           if(DECinfo%ccModel==MODEL_MP2) then
              if(DECinfo%use_canonical .and. (.not. DECinfo%CCexci) ) then

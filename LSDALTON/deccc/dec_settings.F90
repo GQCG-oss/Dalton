@@ -233,6 +233,10 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
+       case('.MP3') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
 
        ! CC SOLVER INFO
        ! ==============
@@ -1183,6 +1187,20 @@ contains
        end if
     end if
 
+    
+    ! MP3 testing
+    if(DECinfo%ccmodel==MODEL_MP3) then
+       if(.not.DECinfo%full_molecular_cc) then
+          call lsquit('MP3 only implemented for full molecular CC!',-1)
+       end if
+       if(DECinfo%first_order) then
+          call lsquit('No first-order properties for MP3!',-1)
+       end if
+       if(.not. DECinfo%use_canonical) then
+          call lsquit('MP3 only implemented for canonical orbitals, insert .CANONICAL!',-1)
+       end if
+    end if
+
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
@@ -1431,6 +1449,7 @@ contains
     case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
     case('.LSTHCRIMP2'); modelnumber = MODEL_LSTHCRIMP2
+    case('.MP3');     modelnumber = MODEL_MP3
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1444,6 +1463,7 @@ contains
        write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
        write(DECinfo%output,*)'.LS-THC-RIMP2'       
+       write(DECinfo%output,*)'.MP3'       
        call lsquit('Requested model not found!',-1)
     end SELECT
 
