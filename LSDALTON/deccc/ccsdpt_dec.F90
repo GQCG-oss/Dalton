@@ -27,6 +27,8 @@ module ccsdpt_dec_module
   public :: ccsdpt_driver_abc_case3
 #endif
 
+  private
+
 contains
 
 #ifdef MOD_UNRELEASED

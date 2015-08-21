@@ -50,8 +50,9 @@ module ccsdpt_module
   public :: ccsdpt_driver,ccsdpt_info,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
        & ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
-  private
 #endif
+
+  private
 
 contains
 
