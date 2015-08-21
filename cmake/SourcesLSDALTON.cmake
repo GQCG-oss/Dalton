@@ -3,6 +3,164 @@
 # LSDALTON_FREE_FORTRAN_SOURCES  
 # at the end of the file
 
+#####################################################
+#WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
+# lsutil is split into several bunches
+# The LSUTIL_PRECISION_SOURCES is the first to be compiled
+# and contains only lsutil/ls_precision.F90
+# the next be compiled is LSUTIL_MATRIXM_SOURCES
+# which contains the matrix type definition. 
+# then LSUTIL_TENSOR_SOURCES and then LSUTIL_COMMON_C_SOURCES and
+# LSUTIL_TYPE_SOURCES which should only contain 
+# type definitions and files which only depend on 
+# lsutil/ls_precision.F90 and lsutil/matrix_module.F90
+# then LSUTIL_COMMON_SOURCES2, LSUTIL_COMMON_SOURCES3, 
+# LSUTIL_COMMON_SOURCES4, and LSUTIL_COMMON_SOURCES5 and so on
+# Then at the end some Utillities are gathered in
+# LSUTILLIB_SOURCES
+############################################################
+set(LSUTIL_PRECISION_SOURCES
+    LSDALTON/lsutil/ls_precision.F90
+    LSDALTON/lsutil/lsmpi_mod.F90
+    LSDALTON/lsutil/lsmpiParam.F90
+    )
+set(LSUTIL_MATRIXM_SOURCES
+    LSDALTON/lsutil/matrix_module.F90
+    )
+set(LSUTIL_TENSOR_SOURCES
+    LSDALTON/tensor/tensor_parameters.F90
+    LSDALTON/tensor/tensor_mpi_binding.F90
+    LSDALTON/tensor/get_idx.F90
+    LSDALTON/tensor/tensor_error_handler.F90
+    LSDALTON/tensor/tensor_bg_buf.F90
+    LSDALTON/tensor/tensor_allocator.F90
+    LSDALTON/tensor/tensor_mpi_interface.F90
+    LSDALTON/tensor/tensor_type_def.F90
+    LSDALTON/tensor/tensor_mpi_operations.F90
+    LSDALTON/tensor/tensor_basic.F90
+    LSDALTON/tensor/lspdm_basic.F90
+    LSDALTON/tensor/lspdm_tensor_operations.F90
+    LSDALTON/tensor/tensor_algebra_dil.F90
+    LSDALTON/tensor/tensor_interface.F90
+    LSDALTON/tensor/tensor_tester.F90
+    LSDALTON/tensor/lspdm_slave.F90
+    )
+#These files are only allowed to use precision or Matrix_module  
+#Usually these only contain type definitians
+set(LSUTIL_COMMON_C_SOURCES
+    LSDALTON/lsutil/myPAPI_set_inherit.c
+    LSDALTON/lsutil/crayio.c
+    )
+set(LSUTIL_TYPE_SOURCES
+    LSDALTON/lsutil/file-operations.F90
+    LSDALTON/lsutil/ls_parameters.F90
+    LSDALTON/lsutil/LSmatrixType.F90
+    LSDALTON/lsutil/fundamental.F90
+    LSDALTON/lsutil/lstensorType.F90
+    LSDALTON/lsutil/dftType.F90
+    LSDALTON/lsutil/gpu_devices.F90
+    LSDALTON/lsutil/rsp-typedef.F90
+    LSDALTON/lsutil/response_prop_type.F90
+    LSDALTON/lsutil/ls_IOType.F90
+    LSDALTON/lsutil/f12.F90
+    LSDALTON/lsutil/background_buffer.F90
+    LSDALTON/lsutil/ls_math.F90
+    LSDALTON/lsutil/Time.F90
+    )
+#These are allowed to depend on the above files
+set(LSUTIL_COMMON_SOURCES2
+    LSDALTON/lsutil/IntegralOutputType.F90 
+    LSDALTON/lsutil/AOType.F90
+    )
+
+set(LSUTIL_COMMON_SOURCES3
+    LSDALTON/lsutil/IntegralType.F90
+    LSDALTON/lsutil/ODType.F90
+    LSDALTON/lsutil/BasisinfoType.F90
+    LSDALTON/lsutil/OverlapDistributionType.F90
+    )
+
+set(LSUTIL_COMMON_SOURCES4
+    LSDALTON/lsutil/MoleculeType.F90
+    LSDALTON/lsutil/par_mod.F90
+    )
+
+set(LSUTIL_COMMON_SOURCES5
+    LSDALTON/lsutil/common_utilities.F90
+    LSDALTON/lsutil/pbc_lattice_type.F90
+    LSDALTON/lsutil/TYPE-DEF.F90
+    )
+
+set(LSUTIL_COMMON_SOURCES6
+    LSDALTON/lsutil/dec_typedef.F90
+    )
+
+set(LSUTIL_COMMON_SOURCES7
+    LSDALTON/lsutil/crayio_util.F90
+    LSDALTON/lsutil/memory.F90
+    )
+
+set(LSUTIL_COMMON_SOURCES8
+    LSDALTON/lsutil/lsmpiType.F90
+    )
+
+set(LSUTIL_MATRIXO_SOURCES
+    LSDALTON/lsutil/matop_csr.F90
+    LSDALTON/lsutil/matop_dense.F90
+    LSDALTON/lsutil/matop_dense_unrest.F90
+    LSDALTON/lsutil/matop_scalapack.F90
+    LSDALTON/lsutil/matop_pdm.F90
+    )
+set(LSUTIL_MATRIXO_C_SOURCES
+    LSDALTON/lsutil/matop_csr_aux.c
+    LSDALTON/lsutil/myPAPI_set_inherit.c
+    )
+set(LSUTIL_MATRIXU_SOURCES
+    LSDALTON/lsutil/mat-operations-aux.F90
+    LSDALTON/lsutil/mat-operations-essential.F90
+    LSDALTON/lsutil/matrix_utilities.F90
+    )
+set(LSUTIL_TYPEOP_SOURCES
+    LSDALTON/lsutil/SphCartMatrices.F90
+    LSDALTON/lsutil/MemoryLeakTool.F90
+    LSDALTON/lsutil/gridgeneration_memory.F90
+    LSDALTON/lsutil/lapack_interface.F90
+    LSDALTON/lsutil/TestMPI.F90
+    LSDALTON/lsutil/lsmatop_dense.F90
+    LSDALTON/lsutil/grid_utilities.F90
+    LSDALTON/lsutil/mat3dim.F90
+    LSDALTON/lsutil/papi.F90
+    LSDALTON/lsutil/dec_workarounds.F90
+    LSDALTON/lsutil/response_prop_op.F90
+    LSDALTON/lsutil/AO_operations.F90
+    LSDALTON/lsutil/Molecule_operations.F90
+    LSDALTON/lsutil/OD_operations.F90
+    LSDALTON/lsutil/lstensor_Mem.F90
+    LSDALTON/lsutil/lstensor_operations.F90
+    LSDALTON/lsutil/Integral_input.F90
+    LSDALTON/lsutil/ls_IO.F90
+    LSDALTON/lsutil/ls_screen.F90
+    LSDALTON/lsutil/dft_operations.F90
+    LSDALTON/lsutil/dftMem.F90
+    LSDALTON/lsutil/Basisinfo_operations.F90
+    LSDALTON/lsutil/IntegralOutput_operations.F90 
+    LSDALTON/lsutil/TYPE-OP.F90
+    LSDALTON/lsutil/GCtrans.F90
+    LSDALTON/lsutil/Build_AOBATCH.F90
+    )
+set(LSUTILLIB_SOURCES
+    LSDALTON/lsutil/lowdin.F90
+    LSDALTON/lsutil/AtomicSparse.F90
+    LSDALTON/lsutil/ks-settings.F90
+    LSDALTON/lsutil/lsmpi-operations.F90
+    LSDALTON/lsutil/lsutilities.F90
+    LSDALTON/lsutil/pseudoinverse.F90
+    LSDALTON/lsutil/LSoptType.F90
+    LSDALTON/lsutil/ddynType.F90
+    LSDALTON/lsutil/ProfileType.F90
+    LSDALTON/lsutil/pbc_lattice_vectors.F90
+    )
+
 set(CUDA_GPU_INTERFACE_SOURCES
     LSDALTON/cuda/gpu_interfaces.F90
     )
@@ -507,141 +665,6 @@ set(LSINT_SOURCES
     LSDALTON/LSint/HODItest.F90
     LSDALTON/LSint/II_dft_dftd.F90
     )
-#####################################################
-#WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
-# lsutil is split into several bunches
-# The LSUTIL_PRECISION_SOURCES is the first to be compiled
-# and contains only lsutil/ls_precision.F90
-# the next be compiled is LSUTIL_MATRIXM_SOURCES
-# which contains the matrix type definition. 
-# then LSUTIL_COMMON_SOURCES which should only contain 
-# type definitions and files which only depend on 
-# lsutil/ls_precision.F90 and lsutil/matrix_module.F90
-# then LSUTIL_MATRIXO_SOURCES and LSUTIL_MATRIXO_C_SOURCES and
-# LSUTIL_MATRIXU_SOURCES is compiled. Then
-# LSUTIL_TYPE_SOURCES which despite the name
-# contains alot of files which deals wiht Operations of 
-# types. Then at the end some Utillities are gathered in
-# LSUTILLIB_SOURCES
-############################################################
-set(LSUTIL_PRECISION_SOURCES
-    LSDALTON/lsutil/ls_precision.F90
-    LSDALTON/lsutil/lsmpi_mod.F90
-    LSDALTON/lsutil/lsmpiParam.F90
-    )
-set(LSUTIL_MATRIXM_SOURCES
-    LSDALTON/lsutil/matrix_module.F90
-    )
-set(LSUTIL_COMMON_C_SOURCES
-    LSDALTON/lsutil/myPAPI_set_inherit.c
-    LSDALTON/lsutil/crayio.c
-    )
-
-set(LSUTIL_TENSOR_SOURCES
-    LSDALTON/tensor/tensor_parameters.F90
-    LSDALTON/tensor/tensor_mpi_binding.F90
-    LSDALTON/tensor/get_idx.F90
-    LSDALTON/tensor/tensor_error_handler.F90
-    LSDALTON/tensor/tensor_bg_buf.F90
-    LSDALTON/tensor/tensor_allocator.F90
-    LSDALTON/tensor/tensor_mpi_interface.F90
-    LSDALTON/tensor/tensor_type_def.F90
-    LSDALTON/tensor/tensor_mpi_operations.F90
-    LSDALTON/tensor/tensor_basic.F90
-    LSDALTON/tensor/lspdm_basic.F90
-    LSDALTON/tensor/lspdm_tensor_operations.F90
-    LSDALTON/tensor/tensor_algebra_dil.F90
-    LSDALTON/tensor/tensor_interface.F90
-    LSDALTON/tensor/tensor_tester.F90
-    LSDALTON/tensor/lspdm_slave.F90
-    )
-
-set(LSUTIL_COMMON_SOURCES
-    LSDALTON/lsutil/fundamental.F90
-    LSDALTON/lsutil/gpu_devices.F90
-    LSDALTON/lsutil/crayio_util.F90
-    LSDALTON/lsutil/rsp-typedef.F90
-    LSDALTON/lsutil/response_prop_type.F90
-    LSDALTON/lsutil/ls_IOType.F90
-    LSDALTON/lsutil/AOType.F90
-    LSDALTON/lsutil/dec_typedef.F90
-    LSDALTON/lsutil/MoleculeType.F90
-    LSDALTON/lsutil/ODType.F90
-    LSDALTON/lsutil/lstensorType.F90
-    LSDALTON/lsutil/dftType.F90
-    LSDALTON/lsutil/BasisinfoType.F90
-    LSDALTON/lsutil/IntegralOutputType.F90 
-    LSDALTON/lsutil/f12.F90
-    LSDALTON/lsutil/IntegralType.F90
-    LSDALTON/lsutil/TYPE-DEF.F90
-    LSDALTON/lsutil/background_buffer.F90
-    LSDALTON/lsutil/memory.F90
-    LSDALTON/lsutil/MemoryLeakTool.F90
-    LSDALTON/lsutil/gridgeneration_memory.F90
-    LSDALTON/lsutil/Time.F90
-    LSDALTON/lsutil/common_utilities.F90
-    LSDALTON/lsutil/lapack_interface.F90
-    LSDALTON/lsutil/ls_parameters.F90
-    LSDALTON/lsutil/par_mod.F90
-    LSDALTON/lsutil/lsmpiType.F90
-    LSDALTON/lsutil/TestMPI.F90
-    LSDALTON/lsutil/LSmatrixType.F90
-    LSDALTON/lsutil/lsmatop_dense.F90
-    LSDALTON/lsutil/file-operations.F90
-    LSDALTON/lsutil/grid_utilities.F90
-    LSDALTON/lsutil/mat3dim.F90
-    LSDALTON/lsutil/papi.F90
-    LSDALTON/lsutil/ls_math.F90
-    LSDALTON/lsutil/SphCartMatrices.F90
-    LSDALTON/lsutil/OverlapDistributionType.F90
-    LSDALTON/lsutil/pbc_lattice_type.F90
-    LSDALTON/lsutil/dec_workarounds.F90
-    )
-set(LSUTIL_MATRIXO_SOURCES
-    LSDALTON/lsutil/matop_csr.F90
-    LSDALTON/lsutil/matop_dense.F90
-    LSDALTON/lsutil/matop_dense_unrest.F90
-    LSDALTON/lsutil/matop_scalapack.F90
-    LSDALTON/lsutil/matop_pdm.F90
-    )
-set(LSUTIL_MATRIXO_C_SOURCES
-    LSDALTON/lsutil/matop_csr_aux.c
-    LSDALTON/lsutil/myPAPI_set_inherit.c
-    )
-set(LSUTIL_MATRIXU_SOURCES
-    LSDALTON/lsutil/mat-operations-aux.F90
-    LSDALTON/lsutil/mat-operations-essential.F90
-    LSDALTON/lsutil/matrix_utilities.F90
-    )
-set(LSUTIL_TYPE_SOURCES
-    LSDALTON/lsutil/AO_operations.F90
-    LSDALTON/lsutil/Molecule_operations.F90
-    LSDALTON/lsutil/OD_operations.F90
-    LSDALTON/lsutil/lstensor_Mem.F90
-    LSDALTON/lsutil/lstensor_operations.F90
-    LSDALTON/lsutil/Integral_input.F90
-    LSDALTON/lsutil/ls_IO.F90
-    LSDALTON/lsutil/ls_screen.F90
-    LSDALTON/lsutil/dft_operations.F90
-    LSDALTON/lsutil/dftMem.F90
-    LSDALTON/lsutil/Basisinfo_operations.F90
-    LSDALTON/lsutil/IntegralOutput_operations.F90 
-    LSDALTON/lsutil/TYPE-OP.F90
-    LSDALTON/lsutil/GCtrans.F90
-    LSDALTON/lsutil/Build_AOBATCH.F90
-    )
-set(LSUTILLIB_SOURCES
-    LSDALTON/lsutil/lowdin.F90
-    LSDALTON/lsutil/AtomicSparse.F90
-    LSDALTON/lsutil/ks-settings.F90
-    LSDALTON/lsutil/lsmpi-operations.F90
-    LSDALTON/lsutil/lsutilities.F90
-    LSDALTON/lsutil/pseudoinverse.F90
-    LSDALTON/lsutil/LSoptType.F90
-    LSDALTON/lsutil/ddynType.F90
-    LSDALTON/lsutil/ProfileType.F90
-    LSDALTON/lsutil/pbc_lattice_vectors.F90
-    )
 set(LSLIB_SOURCES
     LSDALTON/lsdaltonsrc/LSlib.F90
     LSDALTON/lsdaltonsrc/LSlibState.F90
@@ -687,7 +710,14 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${ICHORINT_SOURCES}
     ${LSUTIL_PRECISION_SOURCES}
     ${LSUTIL_MATRIXM_SOURCES}
-    ${LSUTIL_COMMON_SOURCES}
+    ${LSUTIL_TYPE_SOURCES}
+    ${LSUTIL_COMMON_SOURCES2}
+    ${LSUTIL_COMMON_SOURCES3}
+    ${LSUTIL_COMMON_SOURCES4}
+    ${LSUTIL_COMMON_SOURCES5}
+    ${LSUTIL_COMMON_SOURCES6}
+    ${LSUTIL_COMMON_SOURCES7}
+    ${LSUTIL_COMMON_SOURCES8}
     ${LSUTIL_MATRIXO_SOURCES}
     ${LSUTIL_MATRIXO_C_SOURCES}
     ${LSUTIL_MATRIXU_SOURCES}
