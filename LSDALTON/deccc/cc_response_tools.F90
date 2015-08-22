@@ -7,9 +7,13 @@ module cc_response_tools_module
   use dec_typedef_module
   use IntegralInterfaceMOD
   use tensor_interface_module
+  use screen_mod
+  use IntegralInterfaceDEC
+  use IchorErimoduleHost
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
+  use array2_simple_operations
   use array4_simple_operations
   use cc_tools_module
   use ccintegrals
