@@ -30,6 +30,27 @@ module ccsdpt_tools_module
 
   private
 
+  private
+#ifdef MOD_UNRELEASED
+  
+
+  public :: ptr_init_ijk_pt,ptr_init_abc_pt,sp_ptr_init_ijk_pt,&
+       & sp_ptr_init_abc_pt,ptr_final_ijk_pt,ptr_final_abc_pt,&
+       & sp_ptr_final_ijk_pt,sp_ptr_final_abc_pt,ptr_init_ijk_par,&
+       & ptr_init_ijk_ser,ptr_init_abc_par,ptr_init_abc_ser,&
+       & ptr_final_ijk_par,ptr_final_ijk_ser,ptr_final_abc_par,ptr_final_abc_ser,&
+       & sp_ptr_init_ijk_par,sp_ptr_init_ijk_ser,sp_ptr_init_abc_par,&
+       & sp_ptr_init_abc_ser,sp_ptr_final_ijk_par,sp_ptr_final_ijk_ser,&
+       & sp_ptr_final_abc_par,sp_ptr_final_abc_ser,ptr_aliasing_ijk_par,&
+       & ptr_aliasing_ijk_ser,ptr_aliasing_abc_par,ptr_aliasing_abc_ser,&
+       & sp_ptr_aliasing_ijk_par,sp_ptr_aliasing_ijk_ser,sp_ptr_aliasing_abc_par,&
+       & sp_ptr_aliasing_abc_ser,preload_tiles_in_bg_buf,create_comp_array_ccsdpt,&
+       & job_distrib_ccsdpt
+#else
+  public :: dummy_ccsdpt_tools_routine
+#endif
+
+
 contains
 
 #ifdef MOD_UNRELEASED
