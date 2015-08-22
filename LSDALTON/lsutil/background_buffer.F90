@@ -6,13 +6,10 @@ module background_buffer_module
   use,intrinsic :: iso_c_binding,only:c_ptr,c_null_ptr
   use precision
 
-
-  public max_n_pointers
-  public buf_realk
-  public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
-
-
   private
+
+  public :: max_n_pointers,buf_realk,&
+       & mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 
   ! maximum number of pointer to be associated ot bg buf, -> allocated on stack,
   ! may be changed if necessary
