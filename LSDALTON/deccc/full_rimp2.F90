@@ -19,6 +19,8 @@ module fullrimp2
   use matrix_operations
   use memory_handling
   use MemoryLeakToolMod
+  use BUILDAOBATCH
+
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_fragment_utils

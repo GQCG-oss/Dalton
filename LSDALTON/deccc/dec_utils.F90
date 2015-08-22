@@ -65,6 +65,70 @@ module dec_fragment_utils
      module procedure remove_core_orbitals_from_last_index_newarr
   end interface remove_core_orbitals_from_last_index
 
+private
+
+public :: dec_time_evaluate_efficiency_frag, &
+     & dec_fragment_time_init, dec_fragment_time_get, &
+     & remove_repeted_entries, ExpandBufferKraken, &
+     & TempExpBuffer, RejectAtoms, &
+     & StepwiseInclusionOfAtoms, &
+     & AtomsToIncludeStepwise, &
+     & ListOcc, CountNonZeroElements, &
+     & ExpandTarget, count_atoms, &
+     & sort_track, sort_track_vector, &
+     & adjust_basis_matrix, adjust_basis_matrix2, &
+     & adjust_square_matrix, adjust_square_matrix2, &
+     & adjust_square_matrix_mo, GetSubSystemIndex, &
+     & GetDistances, solve_linear_equations, &
+     & invert_matrix, get_power_of_symmetric_matrix, &
+     & ExcludeIfNoOrbs, FindMaxDistance, &
+     & ReduceBuffer, absorb_logical_vector, &
+     & get_logical_pair_vector, InitialFragment, &
+     & dec_read_mat_from_file, dec_simple_dgemm, &
+     & dec_simple_dgemm_update, calculate_fragment_memory, &
+     & mypointer_init, start_flop_counter, &
+     & end_flop_counter, fragment_print, &
+     & atomic_fragment_free, atomic_fragment_free_simple, &
+     & atomic_fragment_free_basis_info, fragmentAOS_type_free, &
+     & atomic_fragment_free_f12, free_fragment_t1, orbital_free, &
+     & get_memory_for_dec_calculation, get_currently_available_memory, &
+     & dec_regression, dec_regression_get_powers, &
+     & simple_ascii_plot, init_SPgridbox, &
+     & free_SPgridbox, get_density_from_occ_orbitals, &
+     & read_64bit_to_32bit,read_32bit_to_64bit, &
+     & read_64bit_to_int,&
+     & save_fragment_t1_AOSAOSamplitudes, &
+     & which_pairs, which_pairs_occ, which_pairs_virt, &
+     & which_pairs_occ_virt, write_fragment_joblist_to_file, &
+     & read_fragment_joblist_from_file, init_joblist, &
+     & free_joblist, put_job_into_joblist, &
+     & estimate_memory_for_mp2_energy, &
+     & dec_simple_basis_transform1, &
+     & dec_simple_basis_transform2, &
+     & dec_diff_basis_transform1, &
+     & dec_diff_basis_transform2, &
+     & add_dec_energies, estimate_energy_of_skipped_pairs, &
+     & project_onto_MO_space, project_out_MO_space, &
+     & orthogonalize_MOs, print_total_energy_summary, &
+     & print_total_energy_summary_lupri, print_all_fragment_energies, &
+     & print_fragment_energies_full, print_atomic_fragment_energies, &
+     & print_pair_fragment_energies, print_spec_pair_fragment_energies, &
+     & get_occfragenergies, get_virtfragenergies, &
+     & get_estimated_energy_error, fragment_basis_point_to_FOs, &
+     & fragment_basis_point_to_LOs, fragment_init_dimension_pointers, &
+     & get_combined_SingleDouble_amplitudes, &
+     & remove_core_orbitals_from_last_index, &
+     & secondary_assigning, general_distance_table, &
+     & GetOrbAtomDistances, basic_write_jobs_and_fragment_energies_for_restart,&
+     & basic_read_jobs_and_fragment_energies_for_restart, &
+     & restart_sanity_check, unique_entries, get_distance_between_two_points,&
+     & get_matrix_position, count_number_of_nonhydrogen_atoms,&
+     & get_distance_between_fragments, get_minimum_distance_between_groups_of_atoms,&
+     & get_HF_energy, get_HF_energy_fullmolecule, get_dft_energy_fullmolecule,&
+     & fragment_restart_file_exist, get_total_number_of_fragments,&
+     & get_fragenergy_restart_filename, get_fragenergy_restart_filename_backup,&
+     & get_num_of_pair_fragments, SD_dotproduct, max_batch_dimension
+
 contains
 !> \brief Get maximum batch dimension encountered in integral program.
 !> \author Kasper Kristensen

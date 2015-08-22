@@ -17,7 +17,7 @@ module orbital_operations
   use dec_typedef_module
   use lsparameters
   use IntegralInterfaceMOD
-
+  use tensor_interface_module
 
   ! DEC DEPENDENCIES (within deccc directory)    
   ! *****************************************
