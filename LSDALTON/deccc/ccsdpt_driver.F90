@@ -26,6 +26,7 @@ module ccsdpt_module
   use tensor_interface_module
   use tensor_basic_module
   use background_buffer_module
+  use reorder_frontend_module
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -45,7 +46,7 @@ module ccsdpt_module
   use cc_tools_module
   use dec_fragment_utils
   use array2_simple_operations
-  use array3_simple_operations
+!  use array3_simple_operations
   use array4_simple_operations
   
 #ifdef MOD_UNRELEASED

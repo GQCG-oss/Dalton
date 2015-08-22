@@ -21,6 +21,8 @@ module f12_routines_module
   use screen_mod
   use BUILDAOBATCH
   use lstiming
+  use reorder_frontend_module
+
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use CABS_operations

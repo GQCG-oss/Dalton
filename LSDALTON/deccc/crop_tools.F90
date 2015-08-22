@@ -9,6 +9,7 @@ module crop_tools_module
    use precision
    use tensor_interface_module
    use background_buffer_module
+   use reorder_frontend_module
    
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
