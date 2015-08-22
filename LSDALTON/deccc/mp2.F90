@@ -25,6 +25,8 @@ module mp2_module
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
   use IntegralInterfaceModuleDF
   use IchorErimoduleHost
+  use background_buffer_module
+  use tensor_interface_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use cc_tools_module
@@ -33,7 +35,7 @@ module mp2_module
 #if defined(VAR_CUDA) || defined(VAR_OPENACC)
   use gpu_interfaces
 #endif
-
+  
   use dec_fragment_utils!,only: calculate_fragment_memory, &
 !       & dec_simple_dgemm_update,start_flop_counter,&
 !       & end_flop_counter, dec_simple_dgemm, mypointer_init, &
