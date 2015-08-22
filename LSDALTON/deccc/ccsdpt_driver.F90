@@ -24,9 +24,10 @@ module ccsdpt_module
   use IchorErimoduleHost
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
-  use tensor_basic_module
-  use background_buffer_module
+  use tensor_basic_module,only: assoc_ptr_arr, deassoc_ptr_arr
+  use background_buffer_module,only: mem_is_background_buf_init,mem_get_bg_buf_free
   use reorder_frontend_module
+  use lspdm_basic_module,only: get_residence_of_tile
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -47,7 +48,8 @@ module ccsdpt_module
   use dec_fragment_utils
   use array2_simple_operations
 !  use array3_simple_operations
-  use array4_simple_operations
+  use array4_simple_operations,only: array4_init,array4_init_standard, array4_free,&
+       & array4_reorder, array4_contract1
   
 #ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_info,ccsdpt_energy_e5_frag,&
