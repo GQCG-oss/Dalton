@@ -43,6 +43,11 @@ module rimp2_module
 #endif
   use gpu_interfaces
 
+  private
+
+  public :: decnp_RIMP2_integrals_and_amplitudes,&
+       & RIMP2_integrals_and_amplitudes, RIMP2F12_Ccoupling_energy
+
 contains
 !> Purpose: Wrapper routine to get RI-MP2 amplitudes and integrals
 !           in comnnection with DECNP
