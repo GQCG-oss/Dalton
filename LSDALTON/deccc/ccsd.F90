@@ -31,6 +31,7 @@ module ccsd_module
 
   use lsparameters!, only: AORdefault
   use tensor_interface_module
+  use reorder_frontend_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************

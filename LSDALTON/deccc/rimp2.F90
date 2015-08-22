@@ -26,6 +26,7 @@ module rimp2_module
   use IchorErimoduleHost
   use background_buffer_module
   use tensor_interface_module
+  use reorder_frontend_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use cc_tools_module

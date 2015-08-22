@@ -11,6 +11,8 @@ module cc_response_tools_module
   use IntegralInterfaceDEC
   use IchorErimoduleHost
   use BUILDAOBATCH
+  use reorder_frontend_module
+
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array2_simple_operations

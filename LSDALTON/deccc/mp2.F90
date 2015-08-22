@@ -26,6 +26,7 @@ module mp2_module
   use IntegralInterfaceModuleDF
   use IchorErimoduleHost
   use background_buffer_module
+  use reorder_frontend_module
   use tensor_interface_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
