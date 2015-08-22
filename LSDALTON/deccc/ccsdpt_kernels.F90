@@ -36,12 +36,12 @@ module ccsdpt_kernels_module
   use crop_tools_module
   use cc_tools_module
   use dec_fragment_utils
-  
+
+  private
+
 #ifdef MOD_UNRELEASED
-  public :: ijk_loop_par
-  public :: ijk_loop_ser
-  public :: abc_loop_par
-  public :: abc_loop_ser
+  public :: ijk_loop_par,ijk_loop_ser,&
+       & abc_loop_par,abc_loop_ser
 #endif
 
   private
