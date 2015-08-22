@@ -29,7 +29,16 @@ module crop_tools_module
    integer,parameter :: SOLVE_AMPLITUDES      = 1
    integer,parameter :: SOLVE_AMPLITUDES_PNO  = 2
    integer,parameter :: SOLVE_MULTIPLIERS     = 3
+
+   private
    
+   public :: SolveLinearEquations, CalculateDIIScoefficients,&
+        & CalculateDIIScoefficientsII, PrintMatrix,&
+        & print_ccjob_header, print_ccjob_iterinfo,&
+        & print_ccjob_summary, can_local_trans, local_can_trans,&
+        & successive_wxyz_trafo, successive_xyxy_trafo,&
+        & SOLVE_AMPLITUDES, SOLVE_AMPLITUDES_PNO,&
+        & SOLVE_MULTIPLIERS, get_mp2_energy, get_cc_energy
    
    contains
    
