@@ -22,6 +22,34 @@ module decmpi_module
   use array4_simple_operations
   use array2_simple_operations
   use CABS_operations
+
+  private
+#ifdef VAR_MPI
+  public :: mpi_send_recv_fragmentenergy, mpi_send_recv_mp2grad,&
+       & mpi_send_recv_single_fragment, mpi_send_recv_many_fragments,&
+       & mpi_bcast_many_fragments, mpi_communicate_mp2_int_and_amp,&
+       & mpi_communicate_MyFragment, decmpi_bcast_f12_info,&
+       & mpi_dec_fullinfo_master_to_slaves, &
+       & mpi_bcast_fullmolecule, mpicopy_fragment,&
+       & mpicopy_fragmentAOStype,&
+       & buffercopy_PNOSpaceInfo_struct,&
+       & share_E2_with_slaves, mpi_communicate_ccsd_calcdata,&
+       & mpi_communicate_ccsdpt_calcdata, get_mo_ccsd_joblist,&
+       & distribute_mpi_jobs, bcast_dec_fragment_joblist,&
+       & mpicopy_fragment_joblist, dec_half_local_group,&
+       & mpicopy_fragmentdensity, mpicopy_fragmentgradient,&
+       & print_MPI_fragment_statistics,&
+       & mpibcast_dec_settings, mpi_communicate_get_gmo_data,&
+       & mpi_communicate_moccsd_data,&
+       & mpicopy_dec_settings, rpa_residual_communicate_data,&
+       & rpa_fock_communicate_data, &
+       & mpi_dec_fullinfo_master_to_slaves_precursor,&
+       & wake_slaves_for_simple_mo,&
+       & get_slaves_to_simple_par_mp2_res,&
+       & check_job
+#endif
+
+
 contains
  
 #ifdef VAR_MPI

@@ -17,6 +17,7 @@ module ccsdpt_kernels_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use reorder_frontend_module
+  use background_buffer_module
 #ifdef VAR_OPENACC
   use openacc
 #endif
