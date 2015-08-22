@@ -13,6 +13,8 @@ MODULE DEC_settings_mod
   use dec_typedef_module
   use dec_fragment_utils
   use ls_util
+  use matrix_module
+  use matrix_operations
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type, only: LSMPIASYNCP

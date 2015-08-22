@@ -10,7 +10,7 @@ module cc_response_tools_module
   use screen_mod
   use IntegralInterfaceDEC
   use IchorErimoduleHost
-
+  use BUILDAOBATCH
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array2_simple_operations

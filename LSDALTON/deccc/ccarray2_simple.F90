@@ -12,7 +12,8 @@ module array2_simple_operations
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
-  use dec_fragment_utils! ,only: solve_eigenvalue_problem
+  use dec_fragment_utils
+  use dec_tools_module
 
   integer :: CreatedArrays2=0
   integer :: DestroyedArrays2=0

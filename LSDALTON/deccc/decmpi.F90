@@ -13,8 +13,10 @@ module decmpi_module
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
   use Matrix_module!,only: matrix
+  use background_buffer_module
   use tensor_basic_module
   use tensor_interface_module
+!
   use DEC_settings_mod
   use dec_fragment_utils
   use array4_simple_operations
