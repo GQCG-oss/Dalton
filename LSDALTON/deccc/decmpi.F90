@@ -47,6 +47,8 @@ module decmpi_module
        & wake_slaves_for_simple_mo,&
        & get_slaves_to_simple_par_mp2_res,&
        & check_job
+#else
+public :: check_job
 #endif
 
 
