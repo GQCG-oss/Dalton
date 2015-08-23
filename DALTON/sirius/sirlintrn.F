@@ -88,6 +88,7 @@ C                               starting at WRK(1+NCSIM*NVAR)
 C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_lin
 #include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
@@ -478,13 +479,11 @@ C
      &              WRK(K3A),L3A)
          CALL FLSHFO(LUPRI)
          CALL GETTIM(T5,W5)
-      ELSE IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-         CALL PE_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO, INDXCI,
-     &               DV, WRK(KDTV), WRK(KSCVEC), WRK(KSOVEC), ORBLIN,
-     &               WRK(K3A), L3A)
+      ELSE IF (USE_PELIB()) THEN
+         CALL PELIB_IFC_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO,
+     &                      INDXCI, DV, WRK(KDTV), WRK(KSCVEC),
+     &                      WRK(KSOVEC), ORBLIN, WRK(K3A), L3A)
          CALL GETTIM(T5,W5)
-#endif
       ELSE
          T5 = T4
          W5 = W4

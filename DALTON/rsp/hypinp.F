@@ -25,6 +25,7 @@ C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -39,7 +40,7 @@ C
 #include "inftap.h"
 #include "infrank.h"
 #include "inforb.h"
-! gnrinf.h: QM3, PEQM, THR_REDFAC
+! gnrinf.h: QM3, THR_REDFAC
 #include "gnrinf.h"
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
@@ -583,6 +584,14 @@ C
      *      ' Test of contributions from A2 terms.'
          IF (X2TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from X2 terms.'
+         IF (USE_PELIB()) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         END IF
+         IF (QMNPMM) THEN
+            WRITE(LUPRI,'(/A)') ' Heterogeneous environment is '// 
+     &                          ' modeled using the QM/NP/MM scheme'
+         END IF
       END IF
 C
 C *** END OF HYPINP
@@ -594,6 +603,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -1165,6 +1175,10 @@ C
      *      ,MAXITO
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
+         IF (USE_PELIB()) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         END IF
       END IF
 C
 C *** END OF SMOINP

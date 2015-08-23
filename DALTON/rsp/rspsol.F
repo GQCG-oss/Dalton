@@ -117,6 +117,7 @@ C
       use pcm_linear_response
 #endif 
       use qmcmm_response, only: qmcmm_lr
+      use pelib_interface, only: use_pelib, pelib_ifc_lr
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -323,7 +324,7 @@ C
 #endif
       ENDIF
       IF (PCM .AND. (.NOT. MMPCM)) THEN
-         LADDMM = .TRUE. 
+         LADDMM = .TRUE.
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
          CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
@@ -336,7 +337,7 @@ C
          IF (NOSIM .GT. MXEPCM) THEN
            WRITE(LUPRI,*) 'Error Increase MXEPCM to at least: ',NOSIM 
            CALL QUIT('Increase MXEPCM')
-         ENDIF 
+         ENDIF
          LADDMM = .FALSE.
          DMMSAVE = 0.0D0
          FIRST1 = .TRUE.
@@ -344,10 +345,10 @@ C
             CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &                 WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &                 EVECS(NCSIM*KZYVAR+1),
-     &                 WRK(KFREE),LFREE)           
+     &                 WRK(KFREE),LFREE)
             IF (FIRST1) THEN
                CALL PCM_INIT_QVFLAGS('EL1')
-               CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
+               CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY,
      &                          DUMMY, NOSIM, IDUMMY, WRK(KFREE), LFREE)
                CALL PCM_COMP_CHG(NOSIM, NEQRSP, WRK(KFREE), LFREE)
             END IF
@@ -366,13 +367,11 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-        CALL PE_RSPLIN(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
-     &                 INDXCI, UDV, WRK(KDV), WRK(KUDVTR), WRK(KDVTR),
-     &                 WRK(KDVT), WRK(KDVTTR), EVECS,
-     &                 EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
-#endif
+      IF (USE_PELIB()) THEN
+        CALL PELIB_IFC_LR(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
+     &                    INDXCI, UDV, WRK(KDV), WRK(KUDVTR),
+     &                    WRK(KDVTR), WRK(KDVT), WRK(KDVTTR), EVECS,
+     &                    EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
       END IF
 #if defined (HAS_PCMSOLVER)
       if (pcmmod_is_pcm_calculation) then

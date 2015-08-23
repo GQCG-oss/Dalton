@@ -5,9 +5,9 @@
 !
 !
 !     EMBEDDING : QM part is embedded in environment (solvent or e.g. protein)
-!                 May 2011/hjaaj: EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .or. PEQM
+!                 May 2011/hjaaj: EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
 !                 (For now, EMBEDDING is defined in sirius/sirinp.F because this is
-!                 the first instance where all of FLAG(16), PCM, QM3, QMMM, PEQM are set)
+!                 the first instance where all of FLAG(16), PCM, QM3, QMMM are set)
 !
       LOGICAL TESTIN, OPTWLK, RNHERM, RNSIRI, RNABAC, GEOCNV,           &
      &        HRINPC, SRINPC, RDINPC, RDMLIN, PARCAL, DIRCAL,           &

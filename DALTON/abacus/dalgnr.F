@@ -632,6 +632,8 @@ C  /* Deck dalton_exedrv */
 #ifdef BUILD_OPENRSP
           use openrsp_input, only: read_openrsp_input
 #endif
+          use pelib_interface, only: use_pelib, pelib_ifc_finalize,
+     &                               pelib_ifc_deactivate
 
 C
 C     Top driver for execution of Dalton.
@@ -1219,10 +1221,11 @@ C
       CALL PLTORB(WORK(KKIND),LMWORK)
 
 C
-!     release memory used in PElib
-#if defined (BUILD_PELIB)
-      IF (PEQM) CALL PE_IFC_FINALIZE()
-#endif
+!     release memory used in PElib and deactivate it
+      IF (USE_PELIB()) THEN
+        CALL PELIB_IFC_FINALIZE()
+        CALL PELIB_IFC_DEACTIVATE()
+      END IF
 
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
@@ -1260,6 +1263,8 @@ C
       use pcm_write
 #endif
       use qmcmm_input, only: qmnpinp
+      use pelib_interface, only: use_pelib, pelib_ifc_activate,
+     &                           pelib_ifc_input_reader
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1384,7 +1389,6 @@ C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
-      PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       QFIT   = .FALSE.
@@ -1646,12 +1650,7 @@ C        '.DOUGLA'
          GOTO 100
 !        '.PEQM  '
  133     CONTINUE
-#if defined (BUILD_PELIB)
-            PEQM = .TRUE.
-#else
-            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
-            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
-#endif
+            CALL PELIB_IFC_ACTIVATE()
          GOTO 100
 !        '.QFIT  '
  134     CONTINUE
@@ -1786,7 +1785,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)')
      &  'Information for WESTA will be calculated and written to files.'
-      IF (PEQM) WRITE(LUPRI,'(4X,A)')
+      IF (USE_PELIB()) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
       IF(QFIT) WRITE(LUPRI,'(4X,A)')
@@ -1891,12 +1890,8 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 CONTINUE
-#if defined (BUILD_PELIB)
-        CALL PE_IFC_INPUT_READER(WORD)
-#else
-        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
-#endif
-      GOTO 200
+        CALL PELIB_IFC_INPUT_READER(WORD)
+      GO TO 200
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
    11 CONTINUE

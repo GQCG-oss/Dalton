@@ -295,7 +295,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
+      use qmcmm, only: getdim_relmat, comp_relmat, write_relmat,
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_integrate_rks_scf,
@@ -303,11 +303,12 @@ C
      &                                  xcint_is_active
 #endif
       use qmcmm_fock, only: qmnpmm_fock
-
 #if defined (HAS_PCMSOLVER)
       use pcm_scf
       use pcmmod_cfg
 #endif
+      use pelib_interface, only: use_pelib, pelib_ifc_fock,
+     &                           pelib_ifc_energy
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
@@ -394,6 +395,9 @@ C
       DIMENSION NISH_save(8), NCAN(8)
       CHARACTER*8 CMOLBL
 
+      REAL(8) :: PE_ENERGY
+      REAL(8), DIMENSION(:), ALLOCATABLE :: PE_DENMAT, PE_FCKMAT
+
       real(8), allocatable :: relay_matrix(:, :, :)
       real(8), allocatable :: mm_relay_matrix(:)
       real(8), allocatable :: qmcmm_sol(:)
@@ -467,7 +471,7 @@ C     this also includes the case of MMPCM
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
-      ELSE IF (PEQM) THEN
+      ELSE IF (USE_PELIB()) THEN
         WRITE(LUW4,'(/A)')
      &      ' Iter      Total energy     Embedding energy      '//
      &      'Error norm     Delta(E)'
@@ -1070,26 +1074,20 @@ C            Now the PCM part ...
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,1,KFCSOL,KFREE,LFREE)
          END IF
 C
-         IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+         IF (USE_PELIB()) THEN
            IF (FLAG(16) .OR. PCM .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
-             CALL QUIT(
-     &             'PEQM is not compatible with other embedding models')
+            CALL QUIT('.PEQM incompatible with other embedding models')
            END IF
-           CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
-           CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
+           ALLOCATE(PE_DENMAT(NNBASX), PE_FCKMAT(NNBASX))
            IF (NASHT == 0 .OR. HSROHF) THEN
-             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
+             PE_DENMAT = DAOSAV(:,1)
            ELSE
-             CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                        WRK(KEPE))
+             PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
            END IF
-           ESOLT = WRK(KEPE)
-           FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
-     &                          + WRK(KFPE:KFPE+NNBASX-1)
-           CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, 1, KFPE,
-     &                 KFREE, LFREE)
-#endif
+           CALL PELIB_IFC_FOCK(PE_DENMAT, PE_FCKMAT, PE_ENERGY)
+           ESOLT = PE_ENERGY
+           FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1) + PE_FCKMAT
+           DEALLOCATE(PE_DENMAT, PE_FCKMAT)
          END IF
 C
 #if defined (HAS_PCMSOLVER)
@@ -1756,7 +1754,7 @@ C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-         IF (PEQM) WRITE(LUW4,'(A)')
+         IF (USE_PELIB()) WRITE(LUW4,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
@@ -1764,7 +1762,7 @@ C-------------------
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-            IF (PEQM) WRITE(LUPRI,'(A)')
+            IF (USE_PELIB()) WRITE(LUPRI,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
@@ -1778,14 +1776,15 @@ C
          END IF
 C
       END IF
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+      IF (USE_PELIB()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
         IF (NASHT == 0 .OR. HSROHF) THEN
-            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
+            PE_DENMAT = DAOSAV(:,1)
         ELSE
-            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
         END IF
-#endif
+        CALL PELIB_IFC_ENERGY(PE_DENMAT)
+        DEALLOCATE(PE_DENMAT)
       END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC

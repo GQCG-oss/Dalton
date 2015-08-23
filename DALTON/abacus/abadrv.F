@@ -679,6 +679,7 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (one of **START, **EACH , or **PROPE)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -1921,7 +1922,10 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
-      IF (PEQM .AND. POLAR) THEN
+      IF (USE_PELIB()) THEN
+        WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
+     &                 ' the polarizable embedding scheme (PE library).'
+        IF (POLAR) THEN
          WRITE (LUPRI,'(4A)') 'ERROR: .POLARI and .PEQM are not',
      &                       'compatible. Please use either .ALPHA',
      &                       'or the RESPONSE module and set frequency',

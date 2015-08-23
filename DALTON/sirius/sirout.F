@@ -62,6 +62,7 @@ C
       use pcmmod_cfg
 #endif
       use qmcmm_fock, only: scf_qmnpmm_out
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -378,7 +379,7 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE IF (QMNPMM) THEN
          CALL SCF_QMNPMM_OUT()
-      ELSE IF (PEQM) THEN
+      ELSE IF (USE_PELIB()) THEN
          CONTINUE
       ELSE
         ESOLT = D0
@@ -407,7 +408,7 @@ C        MCSCF calculation
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
          IF (FLAG(16) .OR. PCM) WRITE (LUPRI,5025) ESOLT
-         IF (PEQM) WRITE(LUPRI,5026) ESOLT
+         IF (USE_PELIB()) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       ELSE IF (DORHF) THEN
          IF (DOHFSRDFT) THEN
@@ -430,7 +431,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
-         IF (PEQM) WRITE(LUPRI,5026) ESOLT
+         IF (USE_PELIB()) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       END IF
 

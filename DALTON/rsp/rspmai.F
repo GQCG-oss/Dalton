@@ -1302,6 +1302,7 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1729,6 +1730,15 @@ C
      &      ,EPSOL
          END IF
 
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
+            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
+         ENDIF
+
+         IF (USE_PELIB()) THEN
+           WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+         END IF
+
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(/A,L1/A,F8.4)')
      &      ' Equilibrium PCM solvent model requested        : PCM    ='
@@ -1858,6 +1868,7 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2308,11 +2319,9 @@ C
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation'
          END IF
 
-         IF (PEQM) THEN
-            WRITE(LUPRI,'(A/A)')
-     &         ' Polarizable embedding response calculation',
-     &         ' Environment is modeled using'//
-     &         ' the polarizable embedding scheme (PE library)'
+         IF (USE_PELIB()) THEN
+            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
          END IF
 
          IF (CHANNEL_CALC) THEN
@@ -4104,6 +4113,7 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4399,7 +4409,7 @@ C
          ENDDO
       END IF
 C
-      IF (PEQM .AND. .NOT. TDHF) THEN
+      IF (USE_PELIB() .AND. .NOT. TDHF) THEN
          CALL MOLLAB('PEFMAT  ', LUSIFC, LUPRI)
          CALL READT (LUSIFC, NNORBX, WRK)
          FC(1:NNORBX) = FC(1:NNORBX) - WRK(1:NNORBX)
@@ -4794,6 +4804,7 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4942,9 +4953,7 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-         IF (PEQM) THEN
-            WRITE(LUPRI,'(A)')
-     &                     ' Polarizable embedding response calculation'
+         IF (USE_PELIB()) THEN
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF
