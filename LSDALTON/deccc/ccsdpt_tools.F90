@@ -6,6 +6,7 @@
 module ccsdpt_tools_module
 
   use precision
+  use memory_handling
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
