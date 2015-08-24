@@ -22,6 +22,7 @@ module ccsd_module
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
 !       & ii_get_fock_mat_full
   use II_XC_interfaceModule
+  use background_buffer_module
   use IchorErimoduleHost
 #ifdef VAR_MPI
   use infpar_module
@@ -30,6 +31,7 @@ module ccsd_module
 
   use lsparameters!, only: AORdefault
   use tensor_interface_module
+  use reorder_frontend_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -8372,7 +8374,7 @@ subroutine ccsd_data_preparation()
   use dec_typedef_module
   use typedeftype,only:lsitem
   use infpar_module
-  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,MPI_COMM_NULL,&
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,&
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free

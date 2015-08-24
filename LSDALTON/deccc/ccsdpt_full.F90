@@ -35,6 +35,8 @@ module ccsdpt_full_module
   public :: ccsdpt_energy_full_abc_case3
 #endif
 
+  private
+
 contains
 
 #ifdef MOD_UNRELEASED

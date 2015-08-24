@@ -6,12 +6,31 @@
 module ccsdpt_tools_module
 
   use precision
+  use memory_handling
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
   use tensor_interface_module
   use cc_tools_module
+
+#ifdef MOD_UNRELEASED
+  public :: ptr_init_ijk_pt,ptr_init_abc_pt,ptr_final_ijk_pt,ptr_final_abc_pt,&
+          & ptr_init_ijk_par,ptr_init_ijk_ser,ptr_init_abc_par,ptr_init_abc_ser,&
+          & ptr_final_ijk_par,ptr_final_ijk_ser,ptr_final_abc_par,ptr_final_abc_ser,&
+          & ptr_aliasing_ijk_par,ptr_aliasing_ijk_ser,ptr_aliasing_abc_par,ptr_aliasing_abc_ser
+#ifdef VAR_REAL_SP
+  public :: sp_ptr_init_ijk_pt,sp_ptr_init_abc_pt,sp_ptr_final_ijk_pt,sp_ptr_final_abc_pt,&
+          & sp_ptr_init_ijk_par,sp_ptr_init_ijk_ser,sp_ptr_init_abc_par,sp_ptr_init_abc_ser,&
+          & sp_ptr_final_ijk_par,sp_ptr_final_ijk_ser,sp_ptr_final_abc_par,sp_ptr_final_abc_ser,&
+          & sp_ptr_aliasing_ijk_par,sp_ptr_aliasing_ijk_ser,sp_ptr_aliasing_abc_par,sp_ptr_aliasing_abc_ser
+#endif
+  public :: preload_tiles_in_bg_buf,create_comp_array_ccsdpt,job_distrib_ccsdpt  
+#else
+  public :: dummy_ccsdpt_tools_routine
+#endif
+
+  private
 
 contains
 

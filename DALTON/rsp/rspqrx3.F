@@ -243,6 +243,7 @@ C  /* Deck e3init */
      *                  FV,MJWOP)
 
       use qmcmm_response, only: qmcmm_qr
+      use pelib_interface, only: use_pelib, pelib_ifc_qro
 C
 C
 C
@@ -388,8 +389,7 @@ C
          END IF
       END IF
 
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+      IF (USE_PELIB()) THEN
          IF (.NOT. TDHF) THEN
             CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
      &                ' implemented using the PE library.')
@@ -400,10 +400,10 @@ C
             CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response using the PE library.')
          ENDIF
-         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
-     &                  UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
-     &                  ISYMA, ISYMB, ISYMC, CMO, MJWOP)
-#endif
+         CALL PELIB_IFC_QRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB),
+     &                      WRK(KZYMC), UDV, WRK(KFREE), LFREE,
+     &                      KZYVA, KZYVB, KZYVC, ISYMA, ISYMB,
+     &                      ISYMC, CMO, MJWOP)
       END IF
 
       IF (QM3) THEN
