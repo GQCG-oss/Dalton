@@ -1015,7 +1015,7 @@ CHARACTER(len=10)   :: atname(74)
 atname = (/'HYDROGEN  ','HELIUM    ','LITHIUM   ',&
      & 'BERYLLIUM ','BORON     ','CARBON    ','NITROGEN  ',&
      & 'OXYGEN    ','FLUORINE  ','NEON      ','SODIUM    ',&
-     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHORUS',&
+     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHOROU',&
      & 'SULFUR    ','CHLORINE  ','ARGON     ','POTASSIUM ',&
      & 'CALCIUM   ','SCANDIUM  ','TITANIUM  ','VANADIUM  ',&
      & 'CHROMIUM  ','MANGANESE ','IRON      ','COBALT    ',&
@@ -1101,7 +1101,7 @@ CHARACTER(len=10)   :: atname(74)
 atname = (/'HYDROGEN  ','HELIUM    ','LITHIUM   ',&
      & 'BERYLLIUM ','BORON     ','CARBON    ','NITROGEN  ',&
      & 'OXYGEN    ','FLUORINE  ','NEON      ','SODIUM    ',&
-     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHORUS',&
+     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHOROU',&
      & 'SULFUR    ','CHLORINE  ','ARGON     ','POTASSIUM ',&
      & 'CALCIUM   ','SCANDIUM  ','TITANIUM  ','VANADIUM  ',&
      & 'CHROMIUM  ','MANGANESE ','IRON      ','COBALT    ',&
