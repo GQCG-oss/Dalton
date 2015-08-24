@@ -13,6 +13,7 @@ module ccsdpt_tools_module
   use tensor_interface_module
   use cc_tools_module
 
+#ifdef MOD_UNRELEASED
   public :: ptr_init_ijk_pt,ptr_init_abc_pt,ptr_final_ijk_pt,ptr_final_abc_pt,&
           & ptr_init_ijk_par,ptr_init_ijk_ser,ptr_init_abc_par,ptr_init_abc_ser,&
           & ptr_final_ijk_par,ptr_final_ijk_ser,ptr_final_abc_par,ptr_final_abc_ser,&
@@ -23,7 +24,10 @@ module ccsdpt_tools_module
           & sp_ptr_final_ijk_par,sp_ptr_final_ijk_ser,sp_ptr_final_abc_par,sp_ptr_final_abc_ser,&
           & sp_ptr_aliasing_ijk_par,sp_ptr_aliasing_ijk_ser,sp_ptr_aliasing_abc_par,sp_ptr_aliasing_abc_ser
 #endif
-  public :: preload_tiles_in_bg_buf,create_comp_array_ccsdpt,job_distrib_ccsdpt
+  public :: preload_tiles_in_bg_buf,create_comp_array_ccsdpt,job_distrib_ccsdpt  
+#else
+  public :: dummy_ccsdpt_tools_routine
+#endif
 
   private
 

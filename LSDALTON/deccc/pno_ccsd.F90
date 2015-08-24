@@ -12,15 +12,18 @@ module pno_ccsd_module
   use screen_mod
   use tensor_interface_module
   use IntegralInterfaceDEC
-  
+  use lstiming
+  use BUILDAOBATCH
   
   use cc_tools_module
   use dec_fragment_utils
+  use array4_simple_operations
   
   public :: get_ccsd_residual_pno_style, &
      & get_pno_trafo_matrices,      & 
      & get_pno_overlap_matrices,    &
-     & successive_4ao_mo_trafo, free_PNOSpaceInfo
+     & successive_4ao_mo_trafo, free_PNOSpaceInfo,&
+     & get_common_idx_summation_for_current_aibj
   
   private
   

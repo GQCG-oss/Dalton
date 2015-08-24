@@ -30,6 +30,7 @@ module rif12_integrals_module
   use memory_handling
   use screen_mod!,only: free_decscreen, DECSCREENITEM
   use lsparameters
+  use molecule_module
   use IntegralInterfaceMod!, only: II_getBatchOrbitalInfo
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
 
@@ -57,7 +58,7 @@ module rif12_integrals_module
   use decf12_routines_module
   use f12_routines_module
 
-  use rimp2_module
+  use ri_util_module
   !#endif 
 
 
