@@ -40,6 +40,7 @@ module full
   use fullmp2 
   use full_mp3_module
   use full_ls_thc_rimp2Mod
+  use full_f12contractions
 
   public  :: full_driver
   private :: mp2f12_E22X
