@@ -294,7 +294,7 @@ contains
     call assign_in_subblocks(trip_ampl,'=',trip_tmp,(i8*nv)*(i8*nv**2))
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(handle)
-    trip_ampl(1:,1:,1:) = trip_tmp(1:,1:,1:)
+    trip_ampl = trip_tmp
 !$acc end kernels
 #endif
 
