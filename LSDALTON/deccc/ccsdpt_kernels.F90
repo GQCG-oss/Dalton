@@ -41,8 +41,10 @@ module ccsdpt_kernels_module
   private
 
 #ifdef MOD_UNRELEASED
-  public :: ijk_loop_par,ijk_loop_ser,&
-       & abc_loop_par,abc_loop_ser
+  public :: ijk_loop_par
+  public :: ijk_loop_ser
+  public :: abc_loop_par
+  public :: abc_loop_ser
 #endif
 
   private
