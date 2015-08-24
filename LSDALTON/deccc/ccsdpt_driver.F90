@@ -1527,6 +1527,8 @@ contains
 
 #ifdef VAR_MPI
 
+    mode   = MPI_MODE_NOCHECK
+
     nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     lg_me  = infpar%lg_mynum
@@ -1543,7 +1545,6 @@ contains
     if (DECinfo%pt_hack2) then
 
 #ifdef VAR_MPI
-       mode   = MPI_MODE_NOCHECK
 
        if (nodtotal .gt. 1) then
 
@@ -1632,10 +1633,7 @@ contains
     dims = [nvirt,nvirt,nvirt,nocc]
     local = .true.
 #ifdef VAR_MPI
-    if (infpar%lg_nodtot .gt. 1) then
-       mode   = MPI_MODE_NOCHECK
-       local = .false.
-    endif
+    if (infpar%lg_nodtot .gt. 1) local = .false.
 #endif
 
     call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)
@@ -2234,6 +2232,8 @@ contains
 
 #ifdef VAR_MPI
 
+    mode   = MPI_MODE_NOCHECK
+
     nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -2248,7 +2248,6 @@ contains
     if (DECinfo%pt_hack2) then
 
 #ifdef VAR_MPI
-       mode   = MPI_MODE_NOCHECK
 
        if (nodtotal .gt. 1) then
 
@@ -2343,10 +2342,7 @@ contains
     local = .true.
 
 #ifdef VAR_MPI
-    if (infpar%lg_nodtot .gt. 1) then
-       mode   = MPI_MODE_NOCHECK
-       local  = .false.
-    endif
+    if (infpar%lg_nodtot .gt. 1) local  = .false.
 #endif
 
     call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)
