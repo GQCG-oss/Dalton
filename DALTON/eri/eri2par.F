@@ -1006,7 +1006,7 @@ C
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
-      use pelib_interface, only: pe_ifc_slave
+      use pelib_interface, only: pelib_ifc_slave
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1162,7 +1162,7 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
-            CALL PE_IFC_SLAVE(IPRINT)
+            CALL PELIB_IFC_SLAVE(IPRINT)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
