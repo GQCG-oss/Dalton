@@ -42,7 +42,7 @@ module ccsdpt_kernels_module
   public :: ijk_loop_par
   public :: ijk_loop_ser
   public :: abc_loop_par
-  public :: abc_loop_se
+  public :: abc_loop_ser
 #endif
 
   private
