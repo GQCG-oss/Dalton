@@ -13,9 +13,15 @@ module f12_routines_module
   use matrix_module
   use matrix_util
   use matrix_operations
-  use matrix_operations_aux, only: mat_hdiv
+  use matrix_operations_aux
   use memory_handling
   use IchorErimoduleHost
+  use IntegralInterfaceMOD
+  use IntegralInterfaceDEC
+  use screen_mod
+  use BUILDAOBATCH
+  use lstiming
+  use reorder_frontend_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
@@ -24,8 +30,10 @@ module f12_routines_module
   use dec_fragment_utils
   use full_f12contractions
   use ccintegrals  
-  use crop_tools_module
- 
+  use crop_tools_module 
+  use tensor_interface_module
+  use array4_simple_operations
+
   private
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &

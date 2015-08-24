@@ -161,6 +161,7 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_cro
 #include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -246,9 +247,8 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
 #ifdef MOD_UNRELEASED
-#if defined (BUILD_PELIB)
          IF (.NOT. TDHF) THEN
              CALL QUIT('ERROR: MCSCF cubic response not'//
      &                 ' implemented with PE library.')
@@ -259,11 +259,11 @@ C
              CALL QUIT('ERROR: triplets not implemented for cubic'//
      &                 ' response with PE library.')
          ENDIF
-         CALL PE_RSPCRO(VECB, VECC, VECD, ETRS, XINDX, WRK(KZYMB),
-     &                  WRK(KZYMC), WRK(KZYMD), UDV, WRK(KFREE), LFREE,
-     &                  KZYVA, KZYVB, KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
-     &                  ISYMD, CMO, MJWOP)
-#endif
+         CALL PELIB_IFC_CRO(VECB, VECC, VECD, ETRS, XINDX,
+     &                      WRK(KZYMB), WRK(KZYMC), WRK(KZYMD),
+     &                      UDV, WRK(KFREE), LFREE, KZYVA, KZYVB,
+     &                      KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
+     &                      ISYMD, CMO, MJWOP)
 #else
          CALL QUIT('ERROR: cubic response not implemented'//
      &             ' using the PE library (.PEQM).')

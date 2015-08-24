@@ -39,6 +39,21 @@ module cc_tools_module
          real(realk) :: c
       end function ab_eq_c
    end interface
+
+  
+   private
+   public :: mo_work_dist,get_tpl_and_tmi,lspdm_get_tpl_and_tmi,&
+        & get_a22_and_prepb22_terms_ex,&
+        & get_a22_and_prepb22_terms_exd, combine_and_transform_sigma,&
+        & get_I_cged, get_I_plusminus_le, add_int_to_sio4, get_B22_contrib_mo,&
+        & print_tensor_unfolding_with_labels, &
+        & squareup_block_triangular_squarematrix,&
+        & calc_i_leq_j, calc_i_geq_j, simulate_intloop_and_get_worksize, &
+        & successive_4ao_mo_trafo, solver_energy_full, solver_decnp_full,&
+        & ccsdpt_energy_e4_full, ccsdpt_energy_e5_full, ccsdpt_decnp_e4_full,&
+        & ccsdpt_decnp_e5_full, get_t1_matrices, get_nbuffs_scheme_0, &
+        & get_split_scheme_0, get_tpl_and_tmi_fort
+
    
    contains
 

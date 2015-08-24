@@ -33,6 +33,7 @@ module full_molecule
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
+  use dec_tools_module
   use array2_simple_operations
 
   integer, save :: mol_block_size = -14938343

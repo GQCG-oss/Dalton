@@ -9,48 +9,45 @@ module rimp2_module
   use lsmpi_type
 #endif
   use precision
-  use lstiming!, only: lstimer
+  use lstiming
   use lowdin_module
-  use screen_mod!, only: DECscreenITEM
+  use screen_mod
   use dec_typedef_module
-  use typedeftype!, only: Lsitem,lssetting
-  use BUILDAOBATCH!,only:build_batchesofaos,determine_maxbatchorbitalsize,&
- !      & determine_MaxOrbitals
-  use typedef!, only: typedef_free_setting,copy_setting
+  use typedeftype
+  use BUILDAOBATCH
+  use typedef
+  use molecule_module
   use memory_handling
-  use screen_mod!,only: free_decscreen, DECSCREENITEM
+  use screen_mod
   use lsparameters
-  use IntegralInterfaceMod!, only: II_getBatchOrbitalInfo
-  use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
-!       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
+  use IntegralInterfaceMod
+  use IntegralInterfaceDEC
   use IntegralInterfaceModuleDF
   use IchorErimoduleHost
+  use background_buffer_module
+  use tensor_interface_module
+  use reorder_frontend_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use cc_tools_module
 #ifdef VAR_MPI
-      use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
+  use decmpi_module 
 #endif
   use dec_workarounds_module
-
-  use dec_fragment_utils!,only: calculate_fragment_memory, &
-!       & dec_simple_dgemm_update,start_flop_counter,&
-!       & end_flop_counter, dec_simple_dgemm, mypointer_init, &
-!       & get_currently_available_memory, atomic_fragment_free
-  use array2_simple_operations!, only: array2_free, array2_extract_EOS, &
-!       & get_mp2_integral_transformation_matrices, get_mp2_integral_transformation_matrices_fc, &
- !      & extract_occupied_eos_mo_indices, extract_virtual_EOS_MO_indices,array2_init,array2_print
-  use array4_simple_operations!, only: array4_delete_file, array4_init_file, &
-!       & array4_init_standard, array4_free, array4_reorder, array4_init, &
-!       & array4_contract1, array4_open_file, array4_write_file_type2, &
-!       & array4_close_file, array4_write_file_type1, mat_transpose, &
- !     & array4_read_file_type2
+  use dec_fragment_utils
+  use array2_simple_operations
+  use array4_simple_operations
   use ri_util_module
   use iso_c_binding
 #ifdef VAR_OPENACC
   use openacc
 #endif
   use gpu_interfaces
+
+  private
+
+  public :: decnp_RIMP2_integrals_and_amplitudes,&
+       & RIMP2_integrals_and_amplitudes, RIMP2F12_Ccoupling_energy
 
 contains
 !> Purpose: Wrapper routine to get RI-MP2 amplitudes and integrals

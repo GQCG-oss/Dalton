@@ -20,7 +20,7 @@ module full_ls_thc_rimp2Mod
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_fragment_utils
-  use rimp2_module
+  use ri_util_module
   use full_molecule
   use THC_util
   use files

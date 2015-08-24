@@ -19,6 +19,8 @@ module fullmp2
   use matrix_operations
   use memory_handling
   use MemoryLeakToolMod
+  use reorder_frontend_module
+
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_tools_module
