@@ -2095,7 +2095,7 @@ module cc_tools_module
 
       else if(s==1)then
 
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
          if(DIL_DEBUG) then !`DIL: Tensor contraction 12
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 12:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum

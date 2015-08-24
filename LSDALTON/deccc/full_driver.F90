@@ -39,6 +39,7 @@ module full
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
   use full_ls_thc_rimp2Mod
+  use full_f12contractions
 
   public  :: full_driver
   private :: mp2f12_E22X

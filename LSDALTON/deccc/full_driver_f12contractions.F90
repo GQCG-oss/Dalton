@@ -5,7 +5,6 @@ contains
   !> Full molecular CC program
   !> \author Thomas Kjaergaard
 
-#ifdef MOD_UNRELEASED
   !> ***********************************************************************
   !> ****************************  MP2-F12  ********************************
   !> ***********************************************************************
@@ -2562,14 +2561,6 @@ contains
     enddo
 
   end subroutine ccsdf12_Vijij_coupling
-
-#else
-
-  subroutine full_f12contractions_dummy_sub12()
-    implicit none
-  end subroutine full_f12contractions_dummy_sub12
-
-#endif
 
 end module full_f12contractions
 

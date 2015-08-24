@@ -34,6 +34,7 @@ pe/lsdalton                     Author: Magnus,Nanna,Simen      Status: DoNotDel
 dec-quad                        Author: Johannes                Status: DoNotDelete
 Hackathon                       Author: Patrick E.              Status: DoNotDelete
 radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
+radovan/linsca-vcd-aat          Author: Radovan                 Status: DoNotDelete (might be used to reproduce reference numbers of VCD AAT implementation)
 
 linsca-develop-OpenRSP          Author: Thomas                  Status: Stale
 linsca-mpi                      Author: Thomas                  Status: Stale
@@ -60,6 +61,5 @@ lresc-linear                    Author: Juan                    Status: Deleted
 dec-patrick                     Author: Patrick E.              Status: ??????????????????????
 dec-karl                        Author: Karl                    Status: ??????????????????????
 localize_wannier                Author: Karl                    Status: ??????????????????????
-linsca-vcd-aat                  Author: Radovan                 Status: ??????????????????????
 master_with_CUDA_fh             Author: Frank Heiden haydn@bbsyd.dk  Status: ??????????????????????
 
