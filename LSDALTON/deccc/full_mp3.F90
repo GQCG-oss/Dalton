@@ -50,7 +50,7 @@ contains
     ! Third order-correction to energy
     call third_order_energy_correction(MyMolecule,MyLsitem,dE3)
 
-    ! Total third-order energy
+    ! Total third-order correlation energy
     E3 = E2 + dE3
 
   end subroutine full_canonical_mp3
@@ -71,7 +71,7 @@ contains
     real(realk),intent(inout) :: dE3
     type(array4) :: govov,gvvoo,gvvvv,goooo
     integer :: i,j,k,l,a,b,c,d
-    real(realk) :: tbar,ttilde,eps,X
+    real(realk) :: tbar,ttilde,eps,X,Lbjkc
     real(realk),pointer :: t(:,:,:,:)
     integer :: nocc,nvirt,nbasis
 
@@ -112,10 +112,10 @@ contains
     ! Energy using Eq. 14.4.61 in purple book
     ! ***************************************
     dE3=0.0_realk
-    do i=1,nocc
        do j=1,nocc
-          do a=1,nvirt
-             do b=1,nvirt
+          do b=1,nvirt
+             do i=1,nocc
+                do a=1,nvirt
 
 
                 ! Construct tTILDE_{ij}^{ab} 
@@ -131,16 +131,50 @@ contains
                    ttilde = tbar
                 end if
 
+
                 ! Construct X_{ij}^{ab}
                 ! *********************
                 X=0.0_realk
 
-                ! 1: 1/2 sum_{cd} t_ij^cd g_acbd
-                do c=1,nvirt
-                   do d=1,nvirt
+                ! 1: X_{ij}^{ab} = sum_{cd} t_ij^cd g_acbd
+                do d=1,nvirt
+                   do c=1,nvirt
+                      X = X + t(c,i,d,j) * gvvvv%val(a,c,b,d)
                    end do
                 end do
 
+                ! 2: X_{ij}^{ab} += sum_{kl} t_kl^ab g_kilj
+                do l=1,nocc
+                   do k=1,nocc
+                      X = X + t(a,k,b,l) * goooo%val(k,i,l,j)
+                   end do
+                end do
+
+                ! 3. X_{ij}^{ab} = 1/2 * X_{ij}^{ab} 
+                X = 0.5_realk*X
+
+                ! 4. X_{ij}^{ab} +=  sum_{ck} t_ik^ac L_bjkc - t_kj^ac g_bcki - t_ki^ac g_bjkc
+                do c=1,nvirt
+                   do k=1,nocc
+
+                      ! Use integral symmetry for real orbitals:
+                      ! Lbjkc = 2*g_bjkc - g_bckj = 2*g_jbkc - g_bckj 
+                      Lbjkc = 2.0_realk*govov%val(j,b,k,c) - gvvoo%val(b,c,k,j)
+
+                      ! Add: t_ik^ac L_bjkc
+                      X = X + t(a,i,c,k)*Lbjkc
+
+                      ! Add: - t_kj^ac g_bcki
+                      X = X - t(a,k,c,j) * gvvoo%val(b,c,k,i)
+
+                      ! Add: - t_ki^ac g_bjkc = - t_ki^ac g_jbkc
+                      X = X - t(a,k,c,i) * govov%val(j,b,k,c)
+                      
+                   end do
+                end do
+
+                ! Energy contribution: dE3 += ttilde_ij^ab * X_ij^ab
+                dE3 = dE3 + ttilde*X
 
              end do
           end do
