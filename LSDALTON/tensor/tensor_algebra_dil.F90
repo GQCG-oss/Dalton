@@ -6023,7 +6023,11 @@
          m=0; l=l+1 !next local tile
         enddo tloop
         if(ierr.eq.0) then; call proc_clean(0_INTD); else; call proc_clean(11_INTD); return; endif
+#ifdef VAR_HAVE_MPI3
         call MPI_WIN_SYNC(dtens%wi(1),errc) !`This will only work with a single MPI window per tensor (alloc_in_dummy=.true.)
+#else
+        call tensor_status_quit("ERROR(dil_distr_tens_insert_sym2): no MPI3",383)
+#endif
 !        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2): Exited process ",i7)') impir !debug
         return
 
@@ -6180,7 +6184,11 @@
          endif
         enddo tloop !next (a,b) pair from the sorted list
         if(ierr.eq.0) then; call proc_clean(0_INTD); else; call proc_clean(9_INTD); return; endif
+#ifdef VAR_HAVE_MPI3
         call MPI_WIN_SYNC(dtens%wi(1),errc) !`This will only work with a single MPI window per tensor (alloc_in_dummy=.true.)
+#else
+        call tensor_status_quit("ERROR(dil_update_abij_with_abc): no MPI3",383)
+#endif
 !        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_update_abij_with_abc): Exited process ",i7)') impir !debug
         return
 

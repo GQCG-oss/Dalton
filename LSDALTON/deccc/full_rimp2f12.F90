@@ -460,7 +460,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       EB1 = MyMolecule%EF12NLSB1
 #ifdef VAR_MPI 
       IF(master)THEN
-         lsmpibufferRIMP2(4)=EB1
+         lsmpibufferRIMP2(1)=EB1
       ENDIF
 #else
       mp2f12_energy = mp2f12_energy  + EB1

@@ -71,12 +71,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(4)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! iik,iki
@@ -169,12 +172,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(4)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! aac,aca
@@ -267,12 +273,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(4)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! ijj.jji
@@ -364,12 +373,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(4)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! abb.bba
@@ -464,12 +476,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(4)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! ijk.jki
@@ -580,12 +595,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(4)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! abc.bca
@@ -945,6 +963,7 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
     !> temp energy
     real(real_pt) :: e4_tmp(1),e5_tmp(1)
@@ -952,7 +971,9 @@ contains
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
 !$acc enter data create(e4_tmp,e5_tmp) async(handle)
@@ -1041,6 +1062,7 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
     !> temp energy
     real(real_pt) :: e4_tmp(1),e5_tmp(1)
@@ -1048,7 +1070,9 @@ contains
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
 !$acc enter data create(e4_tmp,e5_tmp) async(handle)
@@ -1137,6 +1161,7 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
     !> temp energy
     real(real_pt) :: e4_tmp(1),e5_tmp(1)
@@ -1144,7 +1169,9 @@ contains
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
 !$acc enter data create(e4_tmp,e5_tmp) async(handle)
@@ -1233,6 +1260,7 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
     !> temp energy
     real(real_pt) :: e4_tmp(1),e5_tmp(1)
@@ -1240,7 +1268,9 @@ contains
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
 !$acc enter data create(e4_tmp,e5_tmp) async(handle)
@@ -1330,6 +1360,7 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
     !> temp energy
     real(real_pt) :: e4_tmp(1),e5_tmp(1)
@@ -1337,7 +1368,9 @@ contains
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
 !$acc enter data create(e4_tmp,e5_tmp) async(handle)
@@ -1485,6 +1518,7 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
     !> temp energy
     real(real_pt) :: e4_tmp(1),e5_tmp(1)
@@ -1492,7 +1526,9 @@ contains
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
 !$acc enter data create(e4_tmp,e5_tmp) async(handle)
