@@ -109,7 +109,7 @@ Level 5
 pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals, rif12_integrals, cc_response_tools
 
 Level 4
-mp3
+full_mp3
 
 Level 3
 full_mp2
