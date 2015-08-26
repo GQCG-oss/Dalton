@@ -582,6 +582,8 @@ contains
     lsmpibufferRIMP2(2)=EV1
 #else
     mp2f12_energy = mp2f12_energy  + EV1
+    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
 #endif         
 
     !Calculate the Fitting Coefficients (alpha|g^2|ij) 
@@ -608,6 +610,8 @@ contains
     lsmpibufferRIMP2(3)=EX1
 #else
     mp2f12_energy = mp2f12_energy  + EX1
+    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
 #endif         
 
     !Calculate the Fitting Coefficients (alpha|[[T,g],g]|ij) 
@@ -722,6 +726,8 @@ contains
     lsmpibufferRIMP2(1)=EB1
 #else
     mp2f12_energy = mp2f12_energy  + EB1
+    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
 #endif         
 
     !The minus is due to the Valeev factor
@@ -765,11 +771,11 @@ print *, "EB3, mynum", EB3, mynum
 #else
    !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
    mp2f12_energy = mp2f12_energy  + EB2
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
    mp2f12_energy = mp2f12_energy  + EB3
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
-   WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
+   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
 #endif
 
     call mem_dealloc(CalphaXcabsAO)
@@ -836,10 +842,10 @@ print *, "EB3, mynum", EB3, mynum
 #ifdef VAR_MPI
     !X2 
     nsize = NBA*nocvAOS*noccEOS
-    call mem_alloc(CalphaT,nsize)               ! G_qj = C_qk F_kj 
-    M = nocvAOS*NBA         !rows of Output Matrix
-    K = noccAOS            !summation dimension
-    N = noccEOS             !columns of Output Matrix
+    call mem_alloc(CalphaT,nsize)  !G_qj = C_qk F_kj 
+    M = nocvAOS*NBA                !rows of Output Matrix
+    K = noccAOS                    !summation dimension
+    N = noccEOS                    !columns of Output Matrix
     call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX2,M,Fkj,K,0.0E0_realk,CalphaT,M)
 
     IF(wakeslaves)THEN
@@ -891,8 +897,17 @@ print *, "EB3, mynum", EB3, mynum
 
     call ContractTwo4CenterF12IntegralsRIV2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaR,CalphaG,EV2,dopair_occ)
     mp2f12_energy = mp2f12_energy + EV2
-    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
-    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
+    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
+    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
+
+
+    !X2 
+    nsize = NBA*nocvAOS*noccEOS
+    call mem_alloc(CalphaT,nsize)  !G_qj = C_qk F_kj 
+    M = nocvAOS*NBA                !rows of Output Matrix
+    K = noccAOS                    !summation dimension
+    N = noccEOS                    !columns of Output Matrix
+    call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX2,M,Fkj,K,0.0E0_realk,CalphaT,M)
 
     call mem_dealloc(CalphaX2)
     call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaG,CalphaG,CalphaT,EX2,dopair_occ)
@@ -1452,14 +1467,14 @@ subroutine get_rif12_fragment_energy_slave()
    !> Logical variable to check if this is a pair fragment
    logical :: dopair
 
-
-   print *, "I am slave nr: ", infpar%lg_mynum 
-
+   !print *, "I am slave nr: ", infpar%lg_mynum 
+#ifdef VAR_MPI
    call mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
    if(dopair) then
       call get_rif12_fragment_energy(MyFragment, Taibj, Tai, fragcase, Fragment1, Fragment2) 
    else
       call get_rif12_fragment_energy(MyFragment, Taibj, Tai, fragcase)
    endif
+#endif
 
 end subroutine get_rif12_fragment_energy_slave
