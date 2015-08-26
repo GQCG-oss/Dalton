@@ -1826,42 +1826,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
   end subroutine full_canonical_rimp2_f12
 
-  subroutine BuilDUmatTmpRIF12(Umat,nAux,UmatTmp,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,&
-       & AuxMPIstartMPI,iAuxMPIextraMPI)
-    implicit none
-    integer,intent(in) :: nAux,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,AuxMPIstartMPI,iAuxMPIextraMPI
-    real(realk),intent(in) :: Umat(nAux,nAux)
-    real(realk),intent(inout) :: UmatTmp(NBA,NBA2)
-    !local variables
-    integer :: J,I
-    
-    IF(iAuxMPIextraMy.EQ.0)THEN
-       do J=1,NBA2
-          do I=1,NBA
-             UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)
-          enddo
-       enddo
-    ELSE
-       do J=1,NBA2
-          do I=1,NBA
-             UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)
-          enddo
-          UmatTmp(NBA,J) = Umat(iAuxMPIextraMy,AuxMPIstartMPI+J)
-       enddo
-    ENDIF
-    IF(iAuxMPIextraMPI.NE.0)THEN
-       IF(iAuxMPIextraMy.EQ.0)THEN
-          do I=1,NBA
-             UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)
-          enddo
-       ELSE
-          do I=1,NBA
-             UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)
-          enddo
-          UmatTmp(NBA,NBA2) = Umat(iAuxMPIextraMy,iAuxMPIextraMPI)
-       ENDIF
-    ENDIF
-  end subroutine BuilDUmatTmpRIF12
   
   subroutine FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,Galpha,&
        & Galpha2,E,EpsOcc,EpsVirt)

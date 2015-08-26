@@ -970,8 +970,10 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
-     !> Number of CABS basis functions
+     !> Number of CABS basis functions AO
      integer :: ncabsAO=0
+     !> Number of CABS basis functions MO
+     integer :: ncabsMO=0
      !> Atomic indices
      integer, pointer :: atoms_idx(:) => null()
      !> Corresponding basis function indices

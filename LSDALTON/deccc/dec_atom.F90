@@ -563,28 +563,28 @@ contains
     !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
     !to the CABS-MO and RI-MO basis which happens in this routine 
 
-    ncabsAO   = fragment%nbasis + fragment%ncabsAO !size(fragment%Ccabs,1)
+    ncabsAO   = fragment%ncabsAO !size(fragment%Ccabs,1)
     ncabsMO   = size(fragment%Ccabs,2)
-    
+
+    if(DECinfo%F12debug) then
+       print *, "---------------------------------------"
+       print *, " atomic_fragment_init_f12 dec_atom.F90 "
+       print *, "---------------------------------------"
+       print *, "nbasis: ", nbasis
+       print *, "noccEOS: ", noccEOS
+       print *, "nvirtEOS: ", nvirtEOS
+       print *, "---------------------------------------"
+       print *, "nocvAOStot", nocvAOStot
+       print *, "noccAOS", noccAOS
+       print *, "nvirtAOS", nvirtAOS
+       print *, "ncabsAO", ncabsAO
+       print *, "ncabsMO", ncabsMO
+       print *, "---------------------------------------"
+    end if 
+
     IF(ncabsAO.NE.size(fragment%Ccabs,1))THEN      
        call lsquit('Dimension mismatch in atomic_fragment_init_f12',-1)
     ENDIF
-
-    if(DECinfo%F12debug) then
-      ! print *, "---------------------------------------"
-      ! print *, " atomic_fragment_init_f12 dec_atom.F90 "
-      ! print *, "---------------------------------------"
-      ! print *, "nbasis: ", nbasis
-      ! print *, "noccEOS: ", noccEOS
-      ! print *, "nvirtEOS: ", nvirtEOS
-      ! print *, "---------------------------------------"
-      ! print *, "nocvAOStot", nocvAOStot
-      ! print *, "noccAOS", noccAOS
-      ! print *, "nvirtAOS", nvirtAOS
-      ! print *, "ncabsAO", ncabsAO
-      ! print *, "ncabsMO", ncabsMO
-      ! print *, "---------------------------------------"
-    end if 
 
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
@@ -595,7 +595,7 @@ contains
           fragment%hJir(i,j) = MyMolecule%hJir(ix,iy)
        enddo
     enddo
-    do j=1, fragment%ncabsAO   
+    do j=1, fragment%ncabsAO - fragment%nbasis
        iy = fragment%nbasis+fragment%cabsbasis_idx(j)
        do i=1, fragment%noccEOS
           ix = fragment%occEOSidx(i)
@@ -604,7 +604,7 @@ contains
     enddo
 
     call F12_RI_transform_realMat(fragment%hJir,noccEOS,ncabsAO,fragment%Cri,ncabsAO)
-
+    
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
     call BuildFragmentKrs(fragment%Krs,fragment,ncabsAO,MyMolecule,MyMolecule%Krs,MyMolecule%nCabsAO)
@@ -630,7 +630,7 @@ contains
           ix = fragment%basis_idx(i)
           fragment%Frm(i,j) = MyMolecule%Frm(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO - fragment%nbasis
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           fragment%Frm(fragment%nbasis+i,j) = MyMolecule%Frm(ix,iy)
        enddo
@@ -643,7 +643,7 @@ contains
           ! Add offset to valence orbital index for frozen fore
           fragment%Frm(i,j+offset) = MyMolecule%Frm(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO - fragment%nbasis
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           ! Add offset to valence orbital index for frozen fore
           fragment%Frm(fragment%nbasis+i,j+offset) = MyMolecule%Frm(ix,iy)
@@ -661,7 +661,7 @@ contains
           ix = fragment%basis_idx(i)
           Fcp(i,j) = MyMolecule%Fcp(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO - fragment%nbasis
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Fcp(fragment%nbasis+i,j) = MyMolecule%Fcp(ix,iy)
        enddo
@@ -672,7 +672,7 @@ contains
           ix = fragment%basis_idx(i)
           Fcp(i,j+offset) = MyMolecule%Fcp(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO - fragment%nbasis
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Fcp(fragment%nbasis+i,j+offset) = MyMolecule%Fcp(ix,iy)
        enddo
@@ -683,11 +683,11 @@ contains
           ix = fragment%basis_idx(i)         
           Fcp(i,j+noccAOStot) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO - fragment%nbasis
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)                
           Fcp(fragment%nbasis+i,j+noccAOStot) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
        enddo
-    enddo
+    enddo 
 
     call mem_alloc(fragment%Fcp, ncabsMO, nocvAOStot)
     call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOStot,fragment%Ccabs,ncabsAO,ncabsMO)
@@ -711,18 +711,18 @@ contains
           ix = fragment%basis_idx(i)
           Krs(i,j) = MKrs(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO - fragment%nbasis 
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Krs(fragment%nbasis+i,j) = MKrs(ix,iy)
        enddo
     enddo   
-    do j=1, fragment%ncabsAO
+    do j=1, fragment%ncabsAO - fragment%nbasis
        iy = fragment%nbasis+fragment%cabsbasis_idx(j)
        do i=1, fragment%nbasis
           ix = fragment%basis_idx(i)
           Krs(i,fragment%nbasis+j) = MKrs(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAO - fragment%nbasis 
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Krs(fragment%nbasis+i,fragment%nbasis+j) = MKrs(ix,iy)
        enddo
@@ -2197,7 +2197,12 @@ contains
     if(DECinfo%F12) then 
        call dec_get_CABS_orbitals_fragment(fragment, fragment%mylsitem)
        call dec_get_RI_orbitals_fragment(fragment, fragment%mylsitem)
+
+       Fragment%ncabsAO = size(Fragment%Ccabs,1)
+       Fragment%ncabsMO = size(Fragment%Ccabs,2)
+
     endif
+
   end subroutine create_f12_cabs_and_ri_fragment_info
   
   
@@ -2218,6 +2223,8 @@ contains
     call init_cabs()
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call free_cabs()
+
+     print *,"dec_get_CABS_orbitals_fragment ncabsAO ncabs", ncabsAO, ncabs
 
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(fragment%Ccabs,ncabsAO,nCabs)
