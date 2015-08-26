@@ -135,6 +135,7 @@ MODULE lsparameters
   integer,parameter :: DECRIMP2GRAD                 = 67
   integer,parameter :: RIMP2F12Ccoup                = 68
   integer,parameter :: RIMP2F12FULL                 = 69
+  integer,parameter :: DECRIMP2F12                  = 70
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
