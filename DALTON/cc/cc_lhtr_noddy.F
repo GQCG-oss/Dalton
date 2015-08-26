@@ -60,7 +60,7 @@ C
 #include "ccsdsym.h"
 #include "ccsdio.h"
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccfield.h"
 #include "ccnoddy.h"
 C
@@ -1120,7 +1120,7 @@ CCN #include "infind.h" not compatible with R12!
 COMMENT COMMENT
 COMMENT COMMENT
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 COMMENT COMMENT
 COMMENT COMMENT
 C

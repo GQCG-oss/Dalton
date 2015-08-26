@@ -19,18 +19,17 @@ module fullrimp2
   use matrix_operations
   use memory_handling
   use MemoryLeakToolMod
+  use BUILDAOBATCH
+
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_fragment_utils
   use array4_simple_operations
   use array3_simple_operations
   use array2_simple_operations
-  use rimp2_module
+  use ri_util_module
   !  use orbital_operations
   use full_molecule
-!  use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
-!  use ccdriver!,only: ccsolver_justenergy, ccsolver
-  !  use fragment_energy_module,only : Full_DECMP2_calculation
 
   public :: full_canonical_rimp2
 
@@ -120,7 +119,7 @@ contains
     integer(kind=long) :: maxsize
     real(realk) :: tcpuTOT,twallTOT,tcpu_start,twall_start, tcpu_end,twall_end
     real(realk),pointer :: AlphaCD(:,:,:),AlphaCD5(:,:,:),AlphaCD6(:,:,:)
-    real(realk),pointer :: Calpha(:,:,:),Calpha2(:,:,:),Calpha3(:,:,:)
+    real(realk),pointer :: Calpha(:),Calpha2(:,:,:),Calpha3(:,:,:)
     real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_minus_sqrt(:,:),TMPAlphaBeta_minus_sqrt(:,:)
     real(realk),pointer :: EpsOcc(:),EpsVirt(:),ABdecomp(:,:)
     logical :: ABdecompCreate
@@ -139,6 +138,13 @@ contains
     logical(kind=ls_mpik) :: TransferCompleted
     logical :: NotMatSet,file_exists
     real(realk),pointer :: Amat(:,:),Bmat(:,:)
+    character :: intspec(5)
+
+    if(MyMolecule%mem_distributed)then
+       call lsquit("ERROR(full_canonical_rimp2): does not work with distributed&
+       & molecular structure",-1)
+    endif
+
     MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
 #ifdef VAR_TIME    
     FORCEPRINT = .TRUE.
@@ -162,7 +168,7 @@ contains
     ! Init stuff
     ! **********
     nbasis = MyMolecule%nbasis
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     naux   = MyMolecule%nauxbasis
     !MyMolecule%Co is allocated (nbasis,MyMolecule%nocc)
     !with MyMolecule%nocc = Core + Valence 
@@ -224,19 +230,27 @@ contains
     CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
     call mem_alloc(ABdecomp,nAux,nAux)
     ABdecompCreate = .TRUE.
-    call Build_CalphaMO(mylsitem,master,nbasis,nAux,LUPRI,FORCEPRINT,&
-         & wakeslaves,MyMolecule%Co(:,offset+1:offset+nocc),&
-         & nocc,MyMolecule%Cv,nvirt,mynum,numnodes,nAtoms,Calpha,NBA,&
-         & ABdecomp,ABdecompCreate)
+    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+    intspec(2) = 'R' !Regular AO basis function on center 3
+    intspec(3) = 'R' !Regular AO basis function on center 4
+    intspec(4) = 'C' !Coulomb Operator
+    intspec(5) = 'C' !Coulomb Operator
+    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+         & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,&
+         & MyMolecule%Co%elm2(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
+         & Calpha,NBA,ABdecomp,ABdecompCreate,intspec,.FALSE.)
+    !    PRINT*,'Build_CalphaMO2  nbasis,nAux,nvirt,nocc,NBA',NBA
+    !    WRITE(6,*)'Final Calph2(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
+    !    WRITE(6,*)'Print Subset Final Calph2(NBA=',NBA,',1:4)  MYNUM',MYNUM
+    !    call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
     call mem_dealloc(ABdecomp)
-    CALL LSTIMER('RIMP2: CalphaMO ',TS2,TE2,LUPRI,FORCEPRINT)
 
     call mem_alloc(EpsOcc,nocc)
     call mem_leaktool_alloc(EpsOcc,LT_Eps)
     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
     !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
     do I=1,nocc
-       EpsOcc(I) = MyMolecule%ppfock(I+offset,I+offset)
+       EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset)
     enddo
     !$OMP END PARALLEL DO
     call mem_alloc(EpsVirt,nvirt)
@@ -244,7 +258,7 @@ contains
     !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
     !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
     do A=1,nvirt
-       EpsVirt(A) = MyMolecule%qqfock(A,A)
+       EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
     enddo
     !$OMP END PARALLEL DO
 
@@ -349,7 +363,7 @@ contains
     call mem_dealloc(EpsVirt)
     IF(MASTER)THEN
        write(lupri,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
-       write(*,'(1X,a,f20.10)') 'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+       print*,'RIMP2 CORRELATION ENERGY = ', rimp2_energy
     ENDIF
     write(lupri,*)  'LEAK TOOL STATISTICS IN full_canonical_rimp2'
     call LeakTools_stat_mem(lupri)
@@ -671,7 +685,7 @@ subroutine full_canonical_rimp2_slave
   call full_canonical_rimp2(MyMolecule,MyLsitem,rimp2_energy)
 
   call ls_free(MyLsitem)
-  call molecule_finalize(MyMolecule)
+  call molecule_finalize(MyMolecule,.false.)
   
 end subroutine full_canonical_rimp2_slave
 #endif

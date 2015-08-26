@@ -61,7 +61,6 @@ INTEGER FUNCTION getNbasis(AOtype,intType,MOLECULE,LUPRI)
 implicit none
 integer           :: AOtype,intType
 Integer           :: LUPRI
-!Type(DaltonInput) :: DALTON
 TYPE(MOLECULEINFO):: MOLECULE
 !
 integer :: np,nc
@@ -75,6 +74,9 @@ ELSEIF (AOtype.EQ.AOdfAux) THEN
   nc = MOLECULE%nbastAUX
   np = MOLECULE%nprimbastAUX
 ELSEIF (AOtype.EQ.AOdfCABS) THEN
+  nc = MOLECULE%nbastCABS + MOLECULE%nbastREG
+  np = MOLECULE%nprimbastCABS + MOLECULE%nprimbastREG
+ELSEIF (AOtype.EQ.AOdfCABO) THEN
   nc = MOLECULE%nbastCABS
   np = MOLECULE%nprimbastCABS
 ELSEIF (AOtype.EQ.AOdfJK) THEN
@@ -290,6 +292,10 @@ CALL DFT_set_default_config(DALTON%DFT)
 ! DEC TEST PARAMETERS
 DALTON%run_dec_gradient_test=.false.
 DALTON%ForceRIMP2memReduced = .FALSE.
+DALTON%SolveNMRResponseSimultan = .FALSE.
+DALTON%ResponseMatNormConvTest = .FALSE.
+DALTON%PreCalcDFscreening = .FALSE.
+DALTON%PreCalcF12screening = .FALSE.
 
 dalton%LU_LUINTM=0
 dalton%LU_LUINTR=0
@@ -1005,6 +1011,10 @@ call WRITE_FORMATTET_DFT_param(LUPRI,DALTON%DFT)
 !EXCHANGE FACTOR
 WRITE(LUPRI,'(2X,A35,F16.8)') 'exchangeFactor',DALTON%exchangeFactor
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ForceRIMP2memReduced ',DALTON%ForceRIMP2memReduced
+WRITE(LUPRI,'(2X,A35,7X,L1)')'SolveNMRResponseSimultan ',DALTON%SolveNMRResponseSimultan
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ResponseMatNormConvTest ',DALTON%ResponseMatNormConvTest
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcDFscreening   ',DALTON%PreCalcDFscreening
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcF12screening  ',DALTON%PreCalcF12screening
 
 END SUBROUTINE PRINT_DALTONITEM
 
@@ -2819,6 +2829,8 @@ scheme%CAMbeta               = dalton_inp%CAMbeta
 scheme%CAMmu                 = dalton_inp%CAMmu
 scheme%exchangeFactor        = dalton_inp%exchangeFactor
 scheme%ForceRIMP2memReduced  = dalton_inp%ForceRIMP2memReduced
+scheme%PreCalcDFscreening    = dalton_inp%PreCalcDFscreening
+scheme%PreCalcF12screening    = dalton_inp%PreCalcF12screening
 
 !DFT parameters 
 call dft_setIntegralSchemeFromInput(scheme%DFT,dalton_inp%DFT)
@@ -2826,7 +2838,7 @@ call dft_setIntegralSchemeFromInput(scheme%DFT,dalton_inp%DFT)
 scheme%INCREMENTAL  = .FALSE.
 scheme%DO_PROP      = .FALSE.
 scheme%PropOper     = -1
-
+scheme%AONuclearSpecID =0
 END SUBROUTINE typedef_setIntegralSchemeFromInput
 
 !> \brief print the lsint scheme
@@ -2952,6 +2964,9 @@ WRITE(IUNIT,'(3X,A22,L7)')'INCREMENTAL           ', scheme%INCREMENTAL
 WRITE(IUNIT,'(3X,A22,L7)')'DO_PROP               ', scheme%DO_PROP
 WRITE(IUNIT,'(3X,A22,I7)')'PropOper              ', scheme%PropOper
 WRITE(IUNIT,'(3X,A22,I7)')'ForceRIMP2memReduced  ', scheme%ForceRIMP2memReduced
+WRITE(IUNIT,'(3X,A22,I7)')'AONuclearSpecID       ', scheme%AONuclearSpecID
+WRITE(IUNIT,'(3X,A22,I7)')'PreCalcDFscreening    ', scheme%PreCalcDFscreening
+WRITE(IUNIT,'(3X,A22,I7)')'PreCalcF12screening   ', scheme%PreCalcF12screening
 
 END SUBROUTINE typedef_printScheme
 
@@ -3389,8 +3404,8 @@ integer :: ncore, i, icharge,nAtoms
     icharge = INT(ls%setting%MOLECULE(1)%p%ATOM(i)%charge)
   
     if (icharge.gt. 2)  ncore = ncore + 1
-    if (icharge.gt. 10) ncore = ncore + 4
-    if (icharge.gt. 18) ncore = ncore + 4
+    if (icharge.gt. 12) ncore = ncore + 4
+    if (icharge.gt. 20) ncore = ncore + 4
     if (icharge.gt. 30) ncore = ncore + 6
 
   enddo

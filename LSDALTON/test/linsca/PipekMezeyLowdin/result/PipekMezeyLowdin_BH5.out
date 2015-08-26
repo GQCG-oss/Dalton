@@ -5,7 +5,7 @@
      ******************************************************************    
   
   
-      This is output from LSDALTON 2015.alpha
+      This is output from LSDALTON 2016.alpha
   
   
       IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
@@ -94,30 +94,32 @@
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.8.3 20140911 (Red Hat 4.8.3-7)
- BLAS                     | -Wl,--start-group;/opt/intel/composer_xe_2013_sp1.
-                          | 3.174/mkl/lib/intel64/libmkl_gf_lp64.so;/opt/intel
-                          | /composer_xe_2013_sp1.3.174/mkl/lib/intel64/libmkl
-                          | _gnu_thread.so;/opt/intel/composer_xe_2013_sp1.3.1
-                          | 74/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpt
-                          | hread.so;/usr/lib64/libm.so;-fopenmp;-Wl,--end-gro
-                          | up
- LAPACK                   | -Wl,--start-group;/opt/intel/composer_xe_2013_sp1.
-                          | 3.174/mkl/lib/intel64/libmkl_lapack95_lp64.a;/opt/
-                          | intel/composer_xe_2013_sp1.3.174/mkl/lib/intel64/l
-                          | ibmkl_gf_lp64.so;-fopenmp;-Wl,--end-group
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
  Static linking           | OFF
- Last Git revision        | fc990cbff9c21fc949034ebbf11204a4883ba7a9
+ Last Git revision        | 254532f4527c079ddb86bc0b920ed54f5a309c39
  Git branch               | master
- Configuration time       | 2015-01-30 10:02:02.757328
+ Configuration time       | 2015-03-28 16:44:40.809712
 
 Start simulation
-     Date and time (Linux)  : Fri Jan 30 10:02:38 2015
+     Date and time (Linux)  : Sat Mar 28 16:50:56 2015
      Host name              : localhost.localdomain                   
                       
  -----------------------------------------
@@ -220,7 +222,8 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/home/tkjaer/DaltonDevelopment2015/RapidCoverage/build-gfortran-debug-coverage/basis/STO-3G
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch/build-debug/basis/STO-3G
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -283,24 +286,24 @@ total         30                               90       30
                       
  Configuration:
  ==============
-    This is an OpenMP calculation using   4 threads.
+    This is a Single core calculation. (no OpenMP)
     This is a serial calculation (no MPI)
-
+ 
    You have requested Augmented Roothaan-Hall optimization
    => explicit averaging is turned off!
-
+ 
 Expand trust radius if ratio is larger than:            0.75
 Contract trust radius if ratio is smaller than:         0.25
 On expansion, trust radius is expanded by a factor      1.20
 On contraction, trust radius is contracted by a factor  0.70
-
+ 
  Maximum size of subspace in ARH linear equations:           2
-
+ 
 Density subspace min. method    : None                    
 Density optimization : Augmented RH optimization          
-
+ 
  Maximum size of Fock/density queue in averaging:          10
-
+ 
 Convergence threshold for gradient:   0.10E-03
  
 We perform the calculation in the Grand Canonical basis
@@ -320,9 +323,9 @@ Canonical basis by using the keyword
     The Screening threshold used for Exchange              :  1.0000E-08
     The Screening threshold used for One-electron operators:  1.0000E-15
  The SCF Convergence Criteria is applied to the gradnorm in OAO basis
-
+ 
  End of configuration!
-
+ 
  
 Matrix type: mtype_dense
  
@@ -336,25 +339,25 @@ Matrix type: mtype_dense
  under the **GENERAL section. This is NOT recommended if you do TRILEVEL 
  or orbital localization.
  
-
+ 
  Level 1 atomic calculation on STO-3G Charge   5
  ================================================
- The Coulomb energy contribution    12.639797284164036     
- The Exchange energy contribution    3.7272329069295447     
- The Fock energy contribution   -8.9125643772344940     
+ The Coulomb energy contribution    12.6397972841640     
+ The Exchange energy contribution    3.72723290692954     
+ The Fock energy contribution   -8.91256437723449     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
-  1    -23.9308579816    0.00000000000    0.00      0.00000    0.00    2.51E-15  ###
+  1    -23.9308579816    0.00000000000    0.00      0.00000    0.00    0.00E+00  ###
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
-
+ 
  Level 1 atomic calculation on STO-3G Charge   1
  ================================================
- The Coulomb energy contribution   0.38730296535677067     
- The Exchange energy contribution   0.19365148267838533     
- The Fock energy contribution  -0.19365148267838533     
+ The Coulomb energy contribution   0.387302965356771     
+ The Exchange energy contribution   0.193651482678385     
+ The Fock energy contribution  -0.193651482678385     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -364,9 +367,9 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  
 Matrix type: mtype_dense
-
+ 
  First density: Trilevel procedure 
-
+ 
  Level 2 molecular calculation
 =============================
  
@@ -393,19 +396,19 @@ Matrix type: mtype_dense
 total         30                               30
 ---------------------------------------------------------------------
                       
- The Coulomb energy contribution    116.36736244696296     
- The Exchange energy contribution    20.896326112020070     
- The Fock energy contribution   -95.471036334942880     
-  Iteration 0 energy:  -122.70799556052540     
+ The Coulomb energy contribution    116.367362446963     
+ The Exchange energy contribution    20.8963261120200     
+ The Fock energy contribution   -95.4710363349429     
+  Iteration 0 energy:  -122.707995560525     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       388 sparsity:     43.111 %
 Matrix AO D  has nnz=       890 sparsity:     98.889 %
-  Relative convergence threshold for solver:   1.0000000000000000E-002
-  SCF Convergence criteria for gradient norm:   9.9999997473787516E-004
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  9.999999747378752E-004
 ** Get Fock matrix number   1
- The Coulomb energy contribution    115.24477104361964     
- The Exchange energy contribution    21.711367968144039     
- The Fock energy contribution   -93.533403075475576     
+ The Coulomb energy contribution    115.244771043620     
+ The Exchange energy contribution    21.7113679681440     
+ The Fock energy contribution   -93.5334030754755     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -419,114 +422,114 @@ Matrix AO F  has nnz=       890 sparsity:     98.889 %
 Matrix OAO D has nnz=       890 sparsity:     98.889 %
 Matrix OAO F has nnz=       890 sparsity:     98.889 %
 ** Get new density 
- OAO gradnorm  0.14353658601349947     
+ OAO gradnorm  0.143536586013489     
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
-
+ 
     E(LUMO):                      0.182832 au
    -E(HOMO):                     -0.248253 au
    -------------------------------------
     HOMO-LUMO Gap (by diag.):     0.431085 au
-
- First mu:   0.0000000000000000     
+ 
+ First mu:  0.000000000000000E+000
   Error of red space iteration  1:        0.0261228887 (mu =       0.00, xmax =   0.253440E-01, xnorm =   0.123465E+00, THR =   0.143537E-02)
   Error of red space iteration  2:        0.0065911770 (mu =       0.00, xmax =   0.243898E-01, xnorm =   0.122810E+00, THR =   0.143537E-02)
   Error of red space iteration  3:        0.0011613306 (mu =       0.00, xmax =   0.240800E-01, xnorm =   0.124398E+00, THR =   0.143537E-02)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    43
- >>>  CPU Time used in SCF iteration is   1.38 seconds
- >>> wall Time used in SCF iteration is   0.38 seconds
+ >>>  CPU Time used in SCF iteration is   1.75 seconds
+ >>> wall Time used in SCF iteration is   1.75 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    115.36226397487100     
- The Exchange energy contribution    21.727504016415764     
- The Fock energy contribution   -93.634759958455234     
- 0.60000 (xnorm)    0.02408    0.12440   -0.00        1.2178    0.0000         0          1    %%%
+ The Coulomb energy contribution    115.362263974871     
+ The Exchange energy contribution    21.7275040164157     
+ The Fock energy contribution   -93.6347599584552     
+ 0.60000 (xnorm)    0.02408    0.12440    0.00        1.2178    0.0000         0          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
- Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  2   -123.5981308816   -0.02047609367    0.00      0.00000   -0.00    3.31E-02  ###
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  2   -123.5981308816   -0.02047609367    0.00      0.00000    0.00    3.31E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       890 sparsity:     98.889 %
 Matrix AO F  has nnz=       890 sparsity:     98.889 %
 Matrix OAO D has nnz=       890 sparsity:     98.889 %
 Matrix OAO F has nnz=       890 sparsity:     98.889 %
 ** Get new density 
- OAO gradnorm   3.3094171858128227E-002
+ OAO gradnorm  3.309417185813226E-002
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
-
+ 
     E(LUMO):                      0.188357 au
    -E(HOMO):                     -0.245174 au
    -------------------------------------
     HOMO-LUMO Gap (by diag.):     0.433531 au
-
- First mu:   0.0000000000000000     
+ 
+ First mu:  0.000000000000000E+000
   Error of red space iteration  1:        0.0059297057 (mu =       0.00, xmax =   0.731593E-02, xnorm =   0.369784E-01, THR =   0.330942E-03)
   Error of red space iteration  2:        0.0019534857 (mu =       0.00, xmax =   0.721169E-02, xnorm =   0.385387E-01, THR =   0.330942E-03)
   Error of red space iteration  3:        0.0007258413 (mu =       0.00, xmax =   0.738912E-02, xnorm =   0.401498E-01, THR =   0.330942E-03)
   Error of red space iteration  4:        0.0000485999 (mu =       0.00, xmax =   0.746895E-02, xnorm =   0.411653E-01, THR =   0.330942E-03)
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    63
- >>>  CPU Time used in SCF iteration is   1.39 seconds
- >>> wall Time used in SCF iteration is   0.39 seconds
+ >>>  CPU Time used in SCF iteration is   1.75 seconds
+ >>> wall Time used in SCF iteration is   1.75 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    115.37927803946080     
- The Exchange energy contribution    21.735183692645329     
- The Fock energy contribution   -93.644094346815464     
- 0.60000 (xnorm)    0.00747    0.04117   -0.00        1.0467    0.9441         1          2    %%%
+ The Coulomb energy contribution    115.379278039461     
+ The Exchange energy contribution    21.7351836926453     
+ The Fock energy contribution   -93.6440943468155     
+ 0.60000 (xnorm)    0.00747    0.04117    0.00        1.0467    0.9441         1          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
- Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  3   -123.5994311017   -0.00130022016    0.00      0.00000   -0.00    2.90E-03  ###
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  3   -123.5994311017   -0.00130022016    0.00      0.00000    0.00    2.90E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       890 sparsity:     98.889 %
 Matrix AO F  has nnz=       890 sparsity:     98.889 %
 Matrix OAO D has nnz=       890 sparsity:     98.889 %
 Matrix OAO F has nnz=       890 sparsity:     98.889 %
 ** Get new density 
- OAO gradnorm   2.8985503972451298E-003
+ OAO gradnorm  2.898550397247675E-003
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
-
+ 
     E(LUMO):                      0.189412 au
    -E(HOMO):                     -0.244567 au
    -------------------------------------
     HOMO-LUMO Gap (by diag.):     0.433979 au
-
- First mu:   0.0000000000000000     
+ 
+ First mu:  0.000000000000000E+000
   Error of red space iteration  1:        0.0010122950 (mu =       0.00, xmax =   0.104575E-02, xnorm =   0.432254E-02, THR =   0.289855E-04)
   Error of red space iteration  2:        0.0004674559 (mu =       0.00, xmax =   0.130401E-02, xnorm =   0.522606E-02, THR =   0.289855E-04)
   Error of red space iteration  3:        0.0001043661 (mu =       0.00, xmax =   0.154689E-02, xnorm =   0.617833E-02, THR =   0.289855E-04)
   Error of red space iteration  4:        0.0000204016 (mu =       0.00, xmax =   0.158590E-02, xnorm =   0.636140E-02, THR =   0.289855E-04)
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    62
- >>>  CPU Time used in SCF iteration is   1.40 seconds
- >>> wall Time used in SCF iteration is   0.39 seconds
+ >>>  CPU Time used in SCF iteration is   1.74 seconds
+ >>> wall Time used in SCF iteration is   1.74 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    115.37788849303580     
- The Exchange energy contribution    21.736134536878065     
- The Fock energy contribution   -93.641753956157743     
- 0.60000 (xnorm)    0.00159    0.00636   -0.00        1.2465    0.8656         2          3    %%%
+ The Coulomb energy contribution    115.377888493036     
+ The Exchange energy contribution    21.7361345368781     
+ The Fock energy contribution   -93.6417539561578     
+ 0.60000 (xnorm)    0.00159    0.00636    0.00        1.2465    0.8656         2          3    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
- Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  4   -123.5994516059   -0.00002050411    0.00      0.00000   -0.00    1.12E-03  ###
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  4   -123.5994516059   -0.00002050411    0.00      0.00000    0.00    1.12E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       890 sparsity:     98.889 %
 Matrix AO F  has nnz=       890 sparsity:     98.889 %
 Matrix OAO D has nnz=       890 sparsity:     98.889 %
 Matrix OAO F has nnz=       890 sparsity:     98.889 %
 ** Get new density 
- OAO gradnorm   1.1188154808292169E-003
+ OAO gradnorm  1.118815480831477E-003
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
-
+ 
     E(LUMO):                      0.189430 au
    -E(HOMO):                     -0.244685 au
    -------------------------------------
     HOMO-LUMO Gap (by diag.):     0.434115 au
-
- First mu:   0.0000000000000000     
+ 
+ First mu:  0.000000000000000E+000
   Error of red space iteration  1:        0.0006038062 (mu =       0.00, xmax =   0.653355E-03, xnorm =   0.197198E-02, THR =   0.111882E-04)
   Error of red space iteration  2:        0.0003696709 (mu =       0.00, xmax =   0.100695E-02, xnorm =   0.302758E-02, THR =   0.111882E-04)
   Error of red space iteration  3:        0.0000671808 (mu =       0.00, xmax =   0.154009E-02, xnorm =   0.465773E-02, THR =   0.111882E-04)
@@ -535,102 +538,102 @@ Error went down by   95.88%
   Error of red space iteration  5:        0.0000042777 (mu =       0.00, xmax =   0.160054E-02, xnorm =   0.484607E-02, THR =   0.111882E-04)
 Newton equations converged in  5 iterations!
 No. of matmuls in get_density:    72
- >>>  CPU Time used in SCF iteration is   1.39 seconds
- >>> wall Time used in SCF iteration is   0.39 seconds
+ >>>  CPU Time used in SCF iteration is   1.74 seconds
+ >>> wall Time used in SCF iteration is   1.75 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    115.37954000438698     
- The Exchange energy contribution    21.736068841643341     
- The Fock energy contribution   -93.643471162743623     
- 0.60000 (xnorm)    0.00160    0.00485   -0.00        1.1122    0.9711         3          4    %%%
+ The Coulomb energy contribution    115.379540004387     
+ The Exchange energy contribution    21.7360688416433     
+ The Fock energy contribution   -93.6434711627436     
+ 0.60000 (xnorm)    0.00160    0.00485    0.00        1.1122    0.9711         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
- Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  5   -123.5994571983   -0.00000559242    0.00      0.00000   -0.00    2.78E-04  ###
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  5   -123.5994571983   -0.00000559242    0.00      0.00000    0.00    2.78E-04  ###
 SCF converged in      5 iterations
- >>>  CPU Time used in **ITER is   6.94 seconds
- >>> wall Time used in **ITER is   1.93 seconds
-
+ >>>  CPU Time used in **ITER is   8.85 seconds
+ >>> wall Time used in **ITER is   8.88 seconds
+ 
 Total no. of matmuls in SCF optimization:        333
-
+ 
  Number of occupied orbitals:          15
  Number of virtual orbitals:          15
-
+ 
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
-
-
+ 
+ 
 Calculation of HOMO-LUMO gap
 ============================
-
+ 
 Calculation of occupied orbital energies converged in     9 iterations!
-
+ 
 Calculation of virtual orbital energies converged in    10 iterations!
-
+ 
     E(LUMO):                         0.189506 au
    -E(HOMO):                        -0.244658 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.434164 au
-
-
+ 
+ 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.02047609367    0.0000   -0.0000    0.0000000
-  3   -0.00130022016    0.0000   -0.0000    0.0000000
-  4   -0.00002050411    0.0000   -0.0000    0.0000000
-  5   -0.00000559242    0.0000   -0.0000    0.0000000
-
+  2   -0.02047609367    0.0000    0.0000    0.0000000
+  3   -0.00130022016    0.0000    0.0000    0.0000000
+  4   -0.00002050411    0.0000    0.0000    0.0000000
+  5   -0.00000559242    0.0000    0.0000    0.0000000
+ 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1          -123.57765478791080226983      0.143536586013499D+00
-    2          -123.59813088157946481260      0.330941718581282D-01
-    3          -123.59943110174285152425      0.289855039724513D-02
-    4          -123.59945160585144208198      0.111881548082922D-02
-    5          -123.59945719826998811186      0.278157611805147D-03
-
+    1          -123.57765478791085911325      0.143536586013489D+00
+    2          -123.59813088157946481260      0.330941718581323D-01
+    3          -123.59943110174285152425      0.289855039724767D-02
+    4          -123.59945160585132839515      0.111881548083148D-02
+    5          -123.59945719827004495528      0.278157611803458D-03
+ 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
-
-
+ 
+ 
       Final HF energy:                      -123.599457198270
       Nuclear repulsion:                      52.634539783204
       Electronic energy:                    -176.233996981474
-
+ 
  Level 2 minimization done! Starting Level 3 minimization...
  Level 3 is the final level of the TRILEVEL algorithm 
  and is the standard calculation using the TRILEVEL starting guess
  obtained from Level 2.
-
-
+ 
+ 
  Number of electrons  in molecule =           30
  Number of occ. orb.  in molecule =           15
  Number of virt. orb. in molecule =           15
-
-
- OCCUPIED: (Orbital index, MOS) =           13   1.9876523681366827     
- VIRTUAL : (Orbital index, MOS) =           22   1.8776631754398370     
-
-
-
+ 
+ 
+ OCCUPIED: (Orbital index, MOS) =           13   1.98765236813655     
+ VIRTUAL : (Orbital index, MOS) =           21   1.87766317543981     
+ 
+ 
+ 
 Max no. of matrices allocated in Level 2 / get_initial_dens:         38
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       388 sparsity:     43.111 %
 Matrix AO D  has nnz=       890 sparsity:     98.889 %
-  Relative convergence threshold for solver:   1.0000000000000000E-002
-  SCF Convergence criteria for gradient norm:   9.9999997473787516E-005
- The Coulomb energy contribution    116.36736244696296     
- The Exchange energy contribution   -20.896326112020077     
- The Fock energy contribution   -95.471036334942880     
-  Iteration 0 energy:  -122.70799556052552     
- The Coulomb energy contribution    115.24477104420217     
- The Coulomb energy contribution    115.37954000432167     
- The Exchange energy contribution   -21.711367970417964     
- The Exchange energy contribution   -21.736068841759007     
- The Fock energy contribution   -93.533403073784186     
- The Fock energy contribution   -93.643471162562648     
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  9.999999747378752E-005
+ The Coulomb energy contribution    116.367362446963     
+ The Exchange energy contribution   -20.8963261120201     
+ The Fock energy contribution   -95.4710363349428     
+  Iteration 0 energy:  -122.707995560525     
+ The Coulomb energy contribution    115.244771044202     
+ The Coulomb energy contribution    115.379540004322     
+ The Exchange energy contribution   -21.7113679704180     
+ The Exchange energy contribution   -21.7360688417590     
+ The Fock energy contribution   -93.5334030737843     
+ The Fock energy contribution   -93.6434711625626     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -653,16 +656,16 @@ Matrix AO D  has nnz=       890 sparsity:     98.889 %
 Matrix AO F  has nnz=       890 sparsity:     98.889 %
 Matrix OAO D has nnz=       538 sparsity:     59.778 %
 Matrix OAO F has nnz=       392 sparsity:     43.556 %
- OAO gradnorm   2.7815370675412279E-004
+ OAO gradnorm  2.781537067526399E-004
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
-
+ 
     E(LUMO):                      0.189506 au
    -E(HOMO):                     -0.244658 au
    -------------------------------------
     HOMO-LUMO Gap (by diag.):     0.434164 au
-
- First mu:   0.0000000000000000     
+ 
+ First mu:  0.000000000000000E+000
   Error of red space iteration  1:        0.0000260475 (mu =       0.00, xmax =   0.998030E-04, xnorm =   0.354237E-03, THR =   0.278154E-06)
   Error of red space iteration  2:        0.0000078272 (mu =       0.00, xmax =   0.105623E-03, xnorm =   0.378477E-03, THR =   0.278154E-06)
   Error of red space iteration  3:        0.0000016166 (mu =       0.00, xmax =   0.108441E-03, xnorm =   0.388657E-03, THR =   0.278154E-06)
@@ -672,30 +675,30 @@ Error went down by   92.91%
 Newton equations converged in  5 iterations!
 No. of matmuls in get_density:    71
 ** Get Fock matrix number   2
- The Coulomb energy contribution    115.37956710376541     
- The Exchange energy contribution   -21.736060552181677     
- The Fock energy contribution   -93.643506551583712     
- 0.60000 (xnorm)    0.00011    0.00039   -0.00        1.4326    0.1726         1          1    %%%
+ The Coulomb energy contribution    115.379567103765     
+ The Exchange energy contribution   -21.7360605521817     
+ The Fock energy contribution   -93.6435065515838     
+ 0.60000 (xnorm)    0.00011    0.00039    0.00        1.4326    0.1726         1          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
- Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  2   -123.5994573398   -0.00000014131    0.00      0.00000   -0.00    1.17E-04  ###
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  2   -123.5994573398   -0.00000014131    0.00      0.00000    0.00    1.17E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       890 sparsity:     98.889 %
 Matrix AO F  has nnz=       890 sparsity:     98.889 %
 Matrix OAO D has nnz=       351 sparsity:     39.000 %
 Matrix OAO F has nnz=       808 sparsity:     89.778 %
 ** Get new density 
- OAO gradnorm   1.1703539778961754E-004
+ OAO gradnorm  1.170353977911872E-004
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
-
+ 
     E(LUMO):                      0.189506 au
    -E(HOMO):                     -0.244650 au
    -------------------------------------
     HOMO-LUMO Gap (by diag.):     0.434156 au
-
- First mu:   0.0000000000000000     
+ 
+ First mu:  0.000000000000000E+000
   Error of red space iteration  1:        0.0000466528 (mu =       0.00, xmax =   0.809173E-04, xnorm =   0.224477E-03, THR =   0.117035E-06)
   Error of red space iteration  2:        0.0000121174 (mu =       0.00, xmax =   0.121767E-03, xnorm =   0.351689E-03, THR =   0.117035E-06)
   Error of red space iteration  3:        0.0000012494 (mu =       0.00, xmax =   0.135363E-03, xnorm =   0.392310E-03, THR =   0.117035E-06)
@@ -704,590 +707,79 @@ Error went down by   97.85%
   Error of red space iteration  5:        0.0000000504 (mu =       0.00, xmax =   0.135553E-03, xnorm =   0.393839E-03, THR =   0.117035E-06)
 Newton equations converged in  5 iterations!
 No. of matmuls in get_density:    71
- >>>  CPU Time used in SCF iteration is   0.66 seconds
- >>> wall Time used in SCF iteration is   0.19 seconds
+ >>>  CPU Time used in SCF iteration is   0.79 seconds
+ >>> wall Time used in SCF iteration is   0.79 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    115.37961896895142     
- The Exchange energy contribution   -21.736049133814653     
- The Fock energy contribution   -93.643569835136759     
- 0.60000 (xnorm)    0.00014    0.00039   -0.00        1.2192    0.9306         2          2    %%%
+ The Coulomb energy contribution    115.379618968951     
+ The Exchange energy contribution   -21.7360491338147     
+ The Fock energy contribution   -93.6435698351368     
+ 0.60000 (xnorm)    0.00014    0.00039    0.00        1.2192    0.9306         2          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
- Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
-  3   -123.5994573937   -0.00000005393    0.00      0.00000   -0.00    4.36E-05  ###
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  3   -123.5994573937   -0.00000005393    0.00      0.00000    0.00    4.36E-05  ###
 SCF converged in      3 iterations
- >>>  CPU Time used in **ITER is   2.46 seconds
- >>> wall Time used in **ITER is   0.71 seconds
-
+ >>>  CPU Time used in **ITER is   2.85 seconds
+ >>> wall Time used in **ITER is   2.86 seconds
+ 
 Total no. of matmuls in SCF optimization:        598
-
+ 
  Number of occupied orbitals:          15
  Number of virtual orbitals:          15
-
+ 
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
-
-
+ 
+ 
 Calculation of HOMO-LUMO gap
 ============================
-
+ 
 Calculation of occupied orbital energies converged in     9 iterations!
-
+ 
 Calculation of virtual orbital energies converged in    11 iterations!
-
+ 
     E(LUMO):                         0.189508 au
    -E(HOMO):                        -0.244645 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.434153 au
-
-
+ 
+ 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.00000014131    0.0000   -0.0000    0.0000000
-  3   -0.00000005393    0.0000   -0.0000    0.0000000
-
+  2   -0.00000014131    0.0000    0.0000    0.0000000
+  3   -0.00000005393    0.0000    0.0000    0.0000000
+ 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-  Atoms        -123.57765479059466429135      0.143536576691280D+00
-    1          -123.59945719845106282264      0.278153706754123D-03
-    2          -123.59945733976033466206      0.117035397789618D-03
-    3          -123.59945739369348416403      0.435704259751067D-04
-
+  Atoms        -123.57765479059460744793      0.143536576691277D+00
+    1          -123.59945719845103440093      0.278153706752640D-03
+    2          -123.59945733976027781864      0.117035397791187D-03
+    3          -123.59945739369342732061      0.435704259771976D-04
+ 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
-
-
+ 
+ 
       Final HF energy:                      -123.599457393693
       Nuclear repulsion:                      52.634539783204
       Electronic energy:                    -176.233997176897
-
-    This is an OpenMP Gridgeneration calculation using  4 threads.
+ 
 Total Number of grid points:      242650
-
-  Max allocated memory, Grid                   14.542 MB
-
-  Max allocated memory, XC                    566.344 kB
- absolute Overlap in MO basis
-
-               Column   1     Column   2     Column   3     Column   4
-       1       0.99999966     0.00053085     0.00076458     0.01271503
-       2       0.00053085     0.99999966     0.99999963     0.06156486
-       3       0.00076458     0.99999963     0.99999966     0.06152617
-       4       0.01271503     0.06156486     0.06152617     0.99999966
-       5       0.02485552     0.06152438     0.06148856     0.99992503
-       6       0.14921889     0.06671244     0.06673397     0.13235451
-       7       0.00578280     0.14946019     0.14945509     0.15075992
-       8       0.11121773     0.16978738     0.16980582     0.04937378
-       9       0.00598366     0.15154463     0.15153965     0.14834112
-      10       0.09576065     0.10624253     0.10625344     0.15597247
-      11       0.22717693     0.00747772     0.00751558     0.10385481
-      12       0.00385574     0.20744075     0.20743560     0.14955501
-      13       0.05673698     0.21995263     0.21995879     0.11705734
-      14       0.00816832     0.15294203     0.15293489     0.20990931
-      15       0.09505592     0.13190068     0.13191005     0.20479855
-      16       0.14272378     0.10559680     0.10561412     0.16374208
-      17       0.10026125     0.15447326     0.15448475     0.16468189
-      18       0.21369726     0.11780458     0.11784168     0.02945787
-      19       0.09560122     0.22510653     0.22512184     0.02755566
-      20       0.00799252     0.24421758     0.24421891     0.01597349
-      21       0.11281832     0.21752403     0.21754226     0.02578277
-      22       0.01012639     0.01715730     0.01714860     0.24409685
-      23       0.01131139     0.01601623     0.01600786     0.24411607
-      24       0.07797345     0.16285766     0.16286433     0.18927962
-      25       0.13889844     0.11816363     0.11817912     0.18932464
-      26       0.26366819     0.02258888     0.02263773     0.05526448
-      27       0.00503147     0.22906853     0.22906336     0.15478197
-      28       0.04485166     0.24590265     0.24590695     0.11611147
-      29       0.00663886     0.15708535     0.15707707     0.23037997
-      30       0.04675571     0.12420063     0.12419949     0.24484474
-
-               Column   5     Column   6     Column   7     Column   8
-       1       0.02485552     0.14921889     0.00578280     0.11121773
-       2       0.06152438     0.06671244     0.14946019     0.16978738
-       3       0.06148856     0.06673397     0.14945509     0.16980582
-       4       0.99992503     0.13235451     0.15075992     0.04937378
-       5       0.99999966     0.13367491     0.15076499     0.05036593
-       6       0.13367491     1.00000006     0.67856279     0.75927315
-       7       0.15076499     0.67856279     1.00000006     0.73228107
-       8       0.05036593     0.75927315     0.73228107     1.00000006
-       9       0.14834800     0.66868984     0.99289580     0.73878953
-      10       0.15679829     0.93364809     0.87306546     0.80518321
-      11       0.10597402     0.51727467     0.20396693     0.31111116
-      12       0.14954822     0.34905243     0.54121676     0.42553077
-      13       0.11755940     0.39034227     0.51291375     0.48983861
-      14       0.20992421     0.37846243     0.51717295     0.34424656
-      15       0.20564347     0.47340905     0.47570936     0.39093504
-      16       0.16486542     0.62575649     0.50834136     0.48841484
-      17       0.16555284     0.56512433     0.57420462     0.52781503
-      18       0.03138699     0.51715223     0.26920039     0.53193423
-      19       0.02831726     0.38170238     0.44702849     0.58979616
-      20       0.01603419     0.22029227     0.45138917     0.51240263
-      21       0.02668337     0.42330998     0.45375414     0.60147511
-      22       0.24411863     0.41256506     0.45453807     0.16477329
-      23       0.24415709     0.41483930     0.45205433     0.16511062
-      24       0.18995768     0.52982826     0.58703525     0.49418706
-      25       0.19040164     0.59435127     0.51093286     0.47755914
-      26       0.05781462     0.71100207     0.18412337     0.52908423
-      27       0.15478001     0.51032909     0.81904852     0.67313298
-      28       0.11651014     0.53755987     0.77238419     0.75994653
-      29       0.23037606     0.59092013     0.82358601     0.53391192
-      30       0.24523332     0.67634310     0.78649558     0.52529489
-
-               Column   9     Column  10     Column  11     Column  12
-       1       0.00598366     0.09576065     0.22717693     0.00385574
-       2       0.15154463     0.10624253     0.00747772     0.20744075
-       3       0.15153965     0.10625344     0.00751558     0.20743560
-       4       0.14834112     0.15597247     0.10385481     0.14955501
-       5       0.14834800     0.15679829     0.10597402     0.14954822
-       6       0.66868984     0.93364809     0.51727467     0.34905243
-       7       0.99289580     0.87306546     0.20396693     0.54121676
-       8       0.73878953     0.80518321     0.31111116     0.42553077
-       9       1.00000006     0.87407668     0.19783204     0.51600695
-      10       0.87407668     1.00000007     0.38589948     0.43531018
-      11       0.19783204     0.38589948     1.00000000     0.26370907
-      12       0.51600695     0.43531018     0.26370907     1.00000000
-      13       0.48852940     0.44088968     0.39614790     0.96603905
-      14       0.49461318     0.44797800     0.36955706     0.93952732
-      15       0.45485027     0.48192105     0.66230762     0.85932539
-      16       0.48038233     0.56586797     0.56093854     0.50223298
-      17       0.54197636     0.57044647     0.44849126     0.60544999
-      18       0.25640591     0.40912378     0.56985612     0.31345095
-      19       0.43715907     0.40103742     0.27472423     0.54531130
-      20       0.44160764     0.31708717     0.04521906     0.56278691
-      21       0.43562575     0.42126477     0.31170397     0.51798906
-      22       0.43791944     0.46158574     0.29968684     0.41259645
-      23       0.43552813     0.46275446     0.30976637     0.41074648
-      24       0.56406928     0.56643561     0.40028855     0.62980333
-      25       0.49112522     0.56813773     0.53593515     0.53279416
-      26       0.18237365     0.53303371     0.62676011     0.12845254
-      27       0.82236833     0.68950975     0.17869328     0.64734237
-      28       0.77867269     0.68460168     0.21948436     0.62610163
-      29       0.81991137     0.74890245     0.25735544     0.60517771
-      30       0.78032085     0.78922936     0.35255151     0.56286158
-
-               Column  13     Column  14     Column  15     Column  16
-       1       0.05673698     0.00816832     0.09505592     0.14272378
-       2       0.21995263     0.15294203     0.13190068     0.10559680
-       3       0.21995879     0.15293489     0.13191005     0.10561412
-       4       0.11705734     0.20990931     0.20479855     0.16374208
-       5       0.11755940     0.20992421     0.20564347     0.16486542
-       6       0.39034227     0.37846243     0.47340905     0.62575649
-       7       0.51291375     0.51717295     0.47570936     0.50834136
-       8       0.48983861     0.34424656     0.39093504     0.48841484
-       9       0.48852940     0.49461318     0.45485027     0.48038233
-      10       0.44088968     0.44797800     0.48192105     0.56586797
-      11       0.39614790     0.36955706     0.66230762     0.56093854
-      12       0.96603905     0.93952732     0.85932539     0.50223298
-      13       0.99999999     0.86299721     0.85649579     0.53961720
-      14       0.86299721     0.99999999     0.93495300     0.55015178
-      15       0.85649579     0.93495300     0.99999999     0.64278422
-      16       0.53961720     0.55015178     0.64278422     1.00000003
-      17       0.62625222     0.61601011     0.66190822     0.87448878
-      18       0.44243396     0.26719342     0.43513083     0.58477067
-      19       0.62344932     0.42230323     0.45355947     0.55388556
-      20       0.59979935     0.41772990     0.36783559     0.29517182
-      21       0.60690850     0.40248644     0.44996881     0.60479626
-      22       0.32838513     0.56775708     0.55706602     0.46010199
-      23       0.32872771     0.56633726     0.55961945     0.45353195
-      24       0.62866604     0.65279712     0.67313281     0.85135107
-      25       0.55806419     0.58841401     0.67020290     0.96984434
-      26       0.24300179     0.15278170     0.35060746     0.43141534
-      27       0.62852609     0.59260515     0.53815398     0.42542055
-      28       0.64183625     0.54333808     0.51896568     0.42881733
-      29       0.55276225     0.63062294     0.58649117     0.46844833
-      30       0.51992018     0.61555468     0.60650987     0.50447349
-
-               Column  17     Column  18     Column  19     Column  20
-       1       0.10026125     0.21369726     0.09560122     0.00799252
-       2       0.15447326     0.11780458     0.22510653     0.24421758
-       3       0.15448475     0.11784168     0.22512184     0.24421891
-       4       0.16468189     0.02945787     0.02755566     0.01597349
-       5       0.16555284     0.03138699     0.02831726     0.01603419
-       6       0.56512433     0.51715223     0.38170238     0.22029227
-       7       0.57420462     0.26920039     0.44702849     0.45138917
-       8       0.52781503     0.53193423     0.58979616     0.51240263
-       9       0.54197636     0.25640591     0.43715907     0.44160764
-      10       0.57044647     0.40912378     0.40103742     0.31708717
-      11       0.44849126     0.56985612     0.27472423     0.04521906
-      12       0.60544999     0.31345095     0.54531130     0.56278691
-      13       0.62625222     0.44243396     0.62344932     0.59979935
-      14       0.61601011     0.26719342     0.42230323     0.41772990
-      15       0.66190822     0.43513083     0.45355947     0.36783559
-      16       0.87448878     0.58477067     0.55388556     0.29517182
-      17       1.00000004     0.69803142     0.56393469     0.42330973
-      18       0.69803142     1.00000005     0.53650950     0.33580637
-      19       0.56393469     0.53650950     1.00000005     0.81507098
-      20       0.42330973     0.33580637     0.81507098     1.00000005
-      21       0.59123253     0.60675765     0.71260044     0.72857077
-      22       0.45032555     0.09696419     0.09929588     0.05651233
-      23       0.44819688     0.09874373     0.09319969     0.05517571
-      24       0.96636273     0.59960955     0.53330888     0.42341514
-      25       0.88023460     0.55873226     0.54324196     0.30956870
-      26       0.33492569     0.52282499     0.26946146     0.06795503
-      27       0.51249367     0.27291869     0.47550399     0.49144523
-      28       0.51276953     0.35403420     0.53244071     0.52868804
-      29       0.51900186     0.21544448     0.34472177     0.34244458
-      30       0.52932698     0.25700323     0.31192694     0.27584114
-
-               Column  21     Column  22     Column  23     Column  24
-       1       0.11281832     0.01012639     0.01131139     0.07797345
-       2       0.21752403     0.01715730     0.01601623     0.16285766
-       3       0.21754226     0.01714860     0.01600786     0.16286433
-       4       0.02578277     0.24409685     0.24411607     0.18927962
-       5       0.02668337     0.24411863     0.24415709     0.18995768
-       6       0.42330998     0.41256506     0.41483930     0.52982826
-       7       0.45375414     0.45453807     0.45205433     0.58703525
-       8       0.60147511     0.16477329     0.16511062     0.49418706
-       9       0.43562575     0.43791944     0.43552813     0.56406928
-      10       0.42126477     0.46158574     0.46275446     0.56643561
-      11       0.31170397     0.29968684     0.30976637     0.40028855
-      12       0.51798906     0.41259645     0.41074648     0.62980333
-      13       0.60690850     0.32838513     0.32872771     0.62866604
-      14       0.40248644     0.56775708     0.56633726     0.65279712
-      15       0.44996881     0.55706602     0.55961945     0.67313281
-      16       0.60479626     0.46010199     0.45353195     0.85135107
-      17       0.59123253     0.45032555     0.44819688     0.96636273
-      18       0.60675765     0.09696419     0.09874373     0.59960955
-      19       0.71260044     0.09929588     0.09319969     0.53330888
-      20       0.72857077     0.05651233     0.05517571     0.42341514
-      21       1.00000002     0.08921778     0.08383027     0.55520850
-      22       0.08921778     1.00000005     0.99956085     0.49095206
-      23       0.08383027     0.99956085     1.00000005     0.48917070
-      24       0.55520850     0.49095206     0.48917070     1.00000004
-      25       0.58090038     0.49285339     0.48660597     0.89569772
-      26       0.30847773     0.13599859     0.14436847     0.28372020
-      27       0.46492535     0.33851670     0.33625713     0.53455433
-      28       0.52499150     0.25933393     0.25839022     0.52188543
-      29       0.34394365     0.49498287     0.49344215     0.55253771
-      30       0.31929842     0.52637484     0.52661915     0.55641023
-
-               Column  25     Column  26     Column  27     Column  28
-       1       0.13889844     0.26366819     0.00503147     0.04485166
-       2       0.11816363     0.02258888     0.22906853     0.24590265
-       3       0.11817912     0.02263773     0.22906336     0.24590695
-       4       0.18932464     0.05526448     0.15478197     0.11611147
-       5       0.19040164     0.05781462     0.15478001     0.11651014
-       6       0.59435127     0.71100207     0.51032909     0.53755987
-       7       0.51093286     0.18412337     0.81904852     0.77238419
-       8       0.47755914     0.52908423     0.67313298     0.75994653
-       9       0.49112522     0.18237365     0.82236833     0.77867269
-      10       0.56813773     0.53303371     0.68950975     0.68460168
-      11       0.53593515     0.62676011     0.17869328     0.21948436
-      12       0.53279416     0.12845254     0.64734237     0.62610163
-      13       0.55806419     0.24300179     0.62852609     0.64183625
-      14       0.58841401     0.15278170     0.59260515     0.54333808
-      15       0.67020290     0.35060746     0.53815398     0.51896568
-      16       0.96984434     0.43141534     0.42542055     0.42881733
-      17       0.88023460     0.33492569     0.51249367     0.51276953
-      18       0.55873226     0.52282499     0.27291869     0.35403420
-      19       0.54324196     0.26946146     0.47550399     0.53244071
-      20       0.30956870     0.06795503     0.49144523     0.52868804
-      21       0.58090038     0.30847773     0.46492535     0.52499150
-      22       0.49285339     0.13599859     0.33851670     0.25933393
-      23       0.48660597     0.14436847     0.33625713     0.25839022
-      24       0.89569772     0.28372020     0.53455433     0.52188543
-      25       1.00000003     0.40639237     0.44910028     0.44785346
-      26       0.40639237     1.00000002     0.18600616     0.30724046
-      27       0.44910028     0.18600616     1.00000002     0.97536826
-      28       0.44785346     0.30724046     0.97536826     1.00000002
-      29       0.49563496     0.22381277     0.91944030     0.83532953
-      30       0.52852343     0.36852657     0.84843742     0.77058611
-
-               Column  29     Column  30
-       1       0.00663886     0.04675571
-       2       0.15708535     0.12420063
-       3       0.15707707     0.12419949
-       4       0.23037997     0.24484474
-       5       0.23037606     0.24523332
-       6       0.59092013     0.67634310
-       7       0.82358601     0.78649558
-       8       0.53391192     0.52529489
-       9       0.81991137     0.78032085
-      10       0.74890245     0.78922936
-      11       0.25735544     0.35255151
-      12       0.60517771     0.56286158
-      13       0.55276225     0.51992018
-      14       0.63062294     0.61555468
-      15       0.58649117     0.60650987
-      16       0.46844833     0.50447349
-      17       0.51900186     0.52932698
-      18       0.21544448     0.25700323
-      19       0.34472177     0.31192694
-      20       0.34244458     0.27584114
-      21       0.34394365     0.31929842
-      22       0.49498287     0.52637484
-      23       0.49344215     0.52661915
-      24       0.55253771     0.55641023
-      25       0.49563496     0.52852343
-      26       0.22381277     0.36852657
-      27       0.91944030     0.84843742
-      28       0.83532953     0.77058611
-      29       1.00000003     0.97940332
-      30       0.97940332     1.00000003
- Trace of Absolute nummerical overlap:   29.999999079617119     
-  Max allocated memory, XC                    598.504 kB
- absolute Overlap in MO basis(test2)  
-
-               Column   1     Column   2     Column   3     Column   4
-       1       0.99999966     0.00053085     0.00076458     0.01271503
-       2       0.00053085     0.99999966     0.99999963     0.06156486
-       3       0.00076458     0.99999963     0.99999966     0.06152617
-       4       0.01271503     0.06156486     0.06152617     0.99999966
-       5       0.02485552     0.06152438     0.06148856     0.99992503
-       6       0.14921889     0.06671244     0.06673397     0.13235451
-       7       0.00578280     0.14946019     0.14945509     0.15075992
-       8       0.11121773     0.16978738     0.16980582     0.04937378
-       9       0.00598366     0.15154463     0.15153965     0.14834112
-      10       0.09576065     0.10624253     0.10625344     0.15597247
-      11       0.22717693     0.00747772     0.00751558     0.10385481
-      12       0.00385574     0.20744075     0.20743560     0.14955501
-      13       0.05673698     0.21995263     0.21995879     0.11705734
-      14       0.00816832     0.15294203     0.15293489     0.20990931
-      15       0.09505592     0.13190068     0.13191005     0.20479855
-      16       0.14272378     0.10559680     0.10561412     0.16374208
-      17       0.10026125     0.15447326     0.15448475     0.16468189
-      18       0.21369726     0.11780458     0.11784168     0.02945787
-      19       0.09560122     0.22510653     0.22512184     0.02755566
-      20       0.00799252     0.24421758     0.24421891     0.01597349
-      21       0.11281832     0.21752403     0.21754226     0.02578277
-      22       0.01012639     0.01715730     0.01714860     0.24409685
-      23       0.01131139     0.01601623     0.01600786     0.24411607
-      24       0.07797345     0.16285766     0.16286433     0.18927962
-      25       0.13889844     0.11816363     0.11817912     0.18932464
-      26       0.26366819     0.02258888     0.02263773     0.05526448
-      27       0.00503147     0.22906853     0.22906336     0.15478197
-      28       0.04485166     0.24590265     0.24590695     0.11611147
-      29       0.00663886     0.15708535     0.15707707     0.23037997
-      30       0.04675571     0.12420063     0.12419949     0.24484474
-
-               Column   5     Column   6     Column   7     Column   8
-       1       0.02485552     0.14921889     0.00578280     0.11121773
-       2       0.06152438     0.06671244     0.14946019     0.16978738
-       3       0.06148856     0.06673397     0.14945509     0.16980582
-       4       0.99992503     0.13235451     0.15075992     0.04937378
-       5       0.99999966     0.13367491     0.15076499     0.05036593
-       6       0.13367491     1.00000006     0.67856279     0.75927315
-       7       0.15076499     0.67856279     1.00000006     0.73228107
-       8       0.05036593     0.75927315     0.73228107     1.00000006
-       9       0.14834800     0.66868984     0.99289580     0.73878953
-      10       0.15679829     0.93364809     0.87306546     0.80518321
-      11       0.10597402     0.51727467     0.20396693     0.31111116
-      12       0.14954822     0.34905243     0.54121676     0.42553077
-      13       0.11755940     0.39034227     0.51291375     0.48983861
-      14       0.20992421     0.37846243     0.51717295     0.34424656
-      15       0.20564347     0.47340905     0.47570936     0.39093504
-      16       0.16486542     0.62575649     0.50834136     0.48841484
-      17       0.16555284     0.56512433     0.57420462     0.52781503
-      18       0.03138699     0.51715223     0.26920039     0.53193423
-      19       0.02831726     0.38170238     0.44702849     0.58979616
-      20       0.01603419     0.22029227     0.45138917     0.51240263
-      21       0.02668337     0.42330998     0.45375414     0.60147511
-      22       0.24411863     0.41256506     0.45453807     0.16477329
-      23       0.24415709     0.41483930     0.45205433     0.16511062
-      24       0.18995768     0.52982826     0.58703525     0.49418706
-      25       0.19040164     0.59435127     0.51093286     0.47755914
-      26       0.05781462     0.71100207     0.18412337     0.52908423
-      27       0.15478001     0.51032909     0.81904852     0.67313298
-      28       0.11651014     0.53755987     0.77238419     0.75994653
-      29       0.23037606     0.59092013     0.82358601     0.53391192
-      30       0.24523332     0.67634310     0.78649558     0.52529489
-
-               Column   9     Column  10     Column  11     Column  12
-       1       0.00598366     0.09576065     0.22717693     0.00385574
-       2       0.15154463     0.10624253     0.00747772     0.20744075
-       3       0.15153965     0.10625344     0.00751558     0.20743560
-       4       0.14834112     0.15597247     0.10385481     0.14955501
-       5       0.14834800     0.15679829     0.10597402     0.14954822
-       6       0.66868984     0.93364809     0.51727467     0.34905243
-       7       0.99289580     0.87306546     0.20396693     0.54121676
-       8       0.73878953     0.80518321     0.31111116     0.42553077
-       9       1.00000006     0.87407668     0.19783204     0.51600695
-      10       0.87407668     1.00000007     0.38589948     0.43531018
-      11       0.19783204     0.38589948     1.00000000     0.26370907
-      12       0.51600695     0.43531018     0.26370907     1.00000000
-      13       0.48852940     0.44088968     0.39614790     0.96603905
-      14       0.49461318     0.44797800     0.36955706     0.93952732
-      15       0.45485027     0.48192105     0.66230762     0.85932539
-      16       0.48038233     0.56586797     0.56093854     0.50223298
-      17       0.54197636     0.57044647     0.44849126     0.60544999
-      18       0.25640591     0.40912378     0.56985612     0.31345095
-      19       0.43715907     0.40103742     0.27472423     0.54531130
-      20       0.44160764     0.31708717     0.04521906     0.56278691
-      21       0.43562575     0.42126477     0.31170397     0.51798906
-      22       0.43791944     0.46158574     0.29968684     0.41259645
-      23       0.43552813     0.46275446     0.30976637     0.41074648
-      24       0.56406928     0.56643561     0.40028855     0.62980333
-      25       0.49112522     0.56813773     0.53593515     0.53279416
-      26       0.18237365     0.53303371     0.62676011     0.12845254
-      27       0.82236833     0.68950975     0.17869328     0.64734237
-      28       0.77867269     0.68460168     0.21948436     0.62610163
-      29       0.81991137     0.74890245     0.25735544     0.60517771
-      30       0.78032085     0.78922936     0.35255151     0.56286158
-
-               Column  13     Column  14     Column  15     Column  16
-       1       0.05673698     0.00816832     0.09505592     0.14272378
-       2       0.21995263     0.15294203     0.13190068     0.10559680
-       3       0.21995879     0.15293489     0.13191005     0.10561412
-       4       0.11705734     0.20990931     0.20479855     0.16374208
-       5       0.11755940     0.20992421     0.20564347     0.16486542
-       6       0.39034227     0.37846243     0.47340905     0.62575649
-       7       0.51291375     0.51717295     0.47570936     0.50834136
-       8       0.48983861     0.34424656     0.39093504     0.48841484
-       9       0.48852940     0.49461318     0.45485027     0.48038233
-      10       0.44088968     0.44797800     0.48192105     0.56586797
-      11       0.39614790     0.36955706     0.66230762     0.56093854
-      12       0.96603905     0.93952732     0.85932539     0.50223298
-      13       0.99999999     0.86299721     0.85649579     0.53961720
-      14       0.86299721     0.99999999     0.93495300     0.55015178
-      15       0.85649579     0.93495300     0.99999999     0.64278422
-      16       0.53961720     0.55015178     0.64278422     1.00000003
-      17       0.62625222     0.61601011     0.66190822     0.87448878
-      18       0.44243396     0.26719342     0.43513083     0.58477067
-      19       0.62344932     0.42230323     0.45355947     0.55388556
-      20       0.59979935     0.41772990     0.36783559     0.29517182
-      21       0.60690850     0.40248644     0.44996881     0.60479626
-      22       0.32838513     0.56775708     0.55706602     0.46010199
-      23       0.32872771     0.56633726     0.55961945     0.45353195
-      24       0.62866604     0.65279712     0.67313281     0.85135107
-      25       0.55806419     0.58841401     0.67020290     0.96984434
-      26       0.24300179     0.15278170     0.35060746     0.43141534
-      27       0.62852609     0.59260515     0.53815398     0.42542055
-      28       0.64183625     0.54333808     0.51896568     0.42881733
-      29       0.55276225     0.63062294     0.58649117     0.46844833
-      30       0.51992018     0.61555468     0.60650987     0.50447349
-
-               Column  17     Column  18     Column  19     Column  20
-       1       0.10026125     0.21369726     0.09560122     0.00799252
-       2       0.15447326     0.11780458     0.22510653     0.24421758
-       3       0.15448475     0.11784168     0.22512184     0.24421891
-       4       0.16468189     0.02945787     0.02755566     0.01597349
-       5       0.16555284     0.03138699     0.02831726     0.01603419
-       6       0.56512433     0.51715223     0.38170238     0.22029227
-       7       0.57420462     0.26920039     0.44702849     0.45138917
-       8       0.52781503     0.53193423     0.58979616     0.51240263
-       9       0.54197636     0.25640591     0.43715907     0.44160764
-      10       0.57044647     0.40912378     0.40103742     0.31708717
-      11       0.44849126     0.56985612     0.27472423     0.04521906
-      12       0.60544999     0.31345095     0.54531130     0.56278691
-      13       0.62625222     0.44243396     0.62344932     0.59979935
-      14       0.61601011     0.26719342     0.42230323     0.41772990
-      15       0.66190822     0.43513083     0.45355947     0.36783559
-      16       0.87448878     0.58477067     0.55388556     0.29517182
-      17       1.00000004     0.69803142     0.56393469     0.42330973
-      18       0.69803142     1.00000005     0.53650950     0.33580637
-      19       0.56393469     0.53650950     1.00000005     0.81507098
-      20       0.42330973     0.33580637     0.81507098     1.00000005
-      21       0.59123253     0.60675765     0.71260044     0.72857077
-      22       0.45032555     0.09696419     0.09929588     0.05651233
-      23       0.44819688     0.09874373     0.09319969     0.05517571
-      24       0.96636273     0.59960955     0.53330888     0.42341514
-      25       0.88023460     0.55873226     0.54324196     0.30956870
-      26       0.33492569     0.52282499     0.26946146     0.06795503
-      27       0.51249367     0.27291869     0.47550399     0.49144523
-      28       0.51276953     0.35403420     0.53244071     0.52868804
-      29       0.51900186     0.21544448     0.34472177     0.34244458
-      30       0.52932698     0.25700323     0.31192694     0.27584114
-
-               Column  21     Column  22     Column  23     Column  24
-       1       0.11281832     0.01012639     0.01131139     0.07797345
-       2       0.21752403     0.01715730     0.01601623     0.16285766
-       3       0.21754226     0.01714860     0.01600786     0.16286433
-       4       0.02578277     0.24409685     0.24411607     0.18927962
-       5       0.02668337     0.24411863     0.24415709     0.18995768
-       6       0.42330998     0.41256506     0.41483930     0.52982826
-       7       0.45375414     0.45453807     0.45205433     0.58703525
-       8       0.60147511     0.16477329     0.16511062     0.49418706
-       9       0.43562575     0.43791944     0.43552813     0.56406928
-      10       0.42126477     0.46158574     0.46275446     0.56643561
-      11       0.31170397     0.29968684     0.30976637     0.40028855
-      12       0.51798906     0.41259645     0.41074648     0.62980333
-      13       0.60690850     0.32838513     0.32872771     0.62866604
-      14       0.40248644     0.56775708     0.56633726     0.65279712
-      15       0.44996881     0.55706602     0.55961945     0.67313281
-      16       0.60479626     0.46010199     0.45353195     0.85135107
-      17       0.59123253     0.45032555     0.44819688     0.96636273
-      18       0.60675765     0.09696419     0.09874373     0.59960955
-      19       0.71260044     0.09929588     0.09319969     0.53330888
-      20       0.72857077     0.05651233     0.05517571     0.42341514
-      21       1.00000002     0.08921778     0.08383027     0.55520850
-      22       0.08921778     1.00000005     0.99956085     0.49095206
-      23       0.08383027     0.99956085     1.00000005     0.48917070
-      24       0.55520850     0.49095206     0.48917070     1.00000004
-      25       0.58090038     0.49285339     0.48660597     0.89569772
-      26       0.30847773     0.13599859     0.14436847     0.28372020
-      27       0.46492535     0.33851670     0.33625713     0.53455433
-      28       0.52499150     0.25933393     0.25839022     0.52188543
-      29       0.34394365     0.49498287     0.49344215     0.55253771
-      30       0.31929842     0.52637484     0.52661915     0.55641023
-
-               Column  25     Column  26     Column  27     Column  28
-       1       0.13889844     0.26366819     0.00503147     0.04485166
-       2       0.11816363     0.02258888     0.22906853     0.24590265
-       3       0.11817912     0.02263773     0.22906336     0.24590695
-       4       0.18932464     0.05526448     0.15478197     0.11611147
-       5       0.19040164     0.05781462     0.15478001     0.11651014
-       6       0.59435127     0.71100207     0.51032909     0.53755987
-       7       0.51093286     0.18412337     0.81904852     0.77238419
-       8       0.47755914     0.52908423     0.67313298     0.75994653
-       9       0.49112522     0.18237365     0.82236833     0.77867269
-      10       0.56813773     0.53303371     0.68950975     0.68460168
-      11       0.53593515     0.62676011     0.17869328     0.21948436
-      12       0.53279416     0.12845254     0.64734237     0.62610163
-      13       0.55806419     0.24300179     0.62852609     0.64183625
-      14       0.58841401     0.15278170     0.59260515     0.54333808
-      15       0.67020290     0.35060746     0.53815398     0.51896568
-      16       0.96984434     0.43141534     0.42542055     0.42881733
-      17       0.88023460     0.33492569     0.51249367     0.51276953
-      18       0.55873226     0.52282499     0.27291869     0.35403420
-      19       0.54324196     0.26946146     0.47550399     0.53244071
-      20       0.30956870     0.06795503     0.49144523     0.52868804
-      21       0.58090038     0.30847773     0.46492535     0.52499150
-      22       0.49285339     0.13599859     0.33851670     0.25933393
-      23       0.48660597     0.14436847     0.33625713     0.25839022
-      24       0.89569772     0.28372020     0.53455433     0.52188543
-      25       1.00000003     0.40639237     0.44910028     0.44785346
-      26       0.40639237     1.00000002     0.18600616     0.30724046
-      27       0.44910028     0.18600616     1.00000002     0.97536826
-      28       0.44785346     0.30724046     0.97536826     1.00000002
-      29       0.49563496     0.22381277     0.91944030     0.83532953
-      30       0.52852343     0.36852657     0.84843742     0.77058611
-
-               Column  29     Column  30
-       1       0.00663886     0.04675571
-       2       0.15708535     0.12420063
-       3       0.15707707     0.12419949
-       4       0.23037997     0.24484474
-       5       0.23037606     0.24523332
-       6       0.59092013     0.67634310
-       7       0.82358601     0.78649558
-       8       0.53391192     0.52529489
-       9       0.81991137     0.78032085
-      10       0.74890245     0.78922936
-      11       0.25735544     0.35255151
-      12       0.60517771     0.56286158
-      13       0.55276225     0.51992018
-      14       0.63062294     0.61555468
-      15       0.58649117     0.60650987
-      16       0.46844833     0.50447349
-      17       0.51900186     0.52932698
-      18       0.21544448     0.25700323
-      19       0.34472177     0.31192694
-      20       0.34244458     0.27584114
-      21       0.34394365     0.31929842
-      22       0.49498287     0.52637484
-      23       0.49344215     0.52661915
-      24       0.55253771     0.55641023
-      25       0.49563496     0.52852343
-      26       0.22381277     0.36852657
-      27       0.91944030     0.84843742
-      28       0.83532953     0.77058611
-      29       1.00000003     0.97940332
-      30       0.97940332     1.00000003
- Trace of Absolute nummerical overlap(test2):   29.999999079617115     
+ 
+  Max allocated memory, Grid                   11.332 MB
+ 
+  Max allocated memory, XC                    147.208 kB
+Trace of Absolute nummerical overlap:     29.99999908
+Trace of Absolute nummerical overlap with CMO:      1.87517064
+Trace of Absolute nummerical overlap with S:     26.80702639
+  Max allocated memory, XC                    160.648 kB
+Trace of Absolute nummerical overlap(test2):     29.99999908
+Trace of Absolute nummerical overlap(test2) with CMO:      1.87517064
+Trace of Absolute nummerical overlap(test2) with S:     26.80702639
  inside leastchange_lcm
   %LOC%   
   %LOC%   ********************************************
@@ -1392,35 +884,35 @@ Total Number of grid points:      242650
   %LOC% Step not accepted. Go back
   %LOC%  26 max_loc = -8.3E-01 mu = -3.2E-01 grd =  1.7E-04 it =  5 trust-region = 0.00 step = 0.00
   %LOC%  27 max_loc = -8.3E-01 mu = -1.2E+01 grd =  2.4E-05 it =  5 trust-region = 0.00 step = 0.00
-
+ 
   %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
-  %LOC%   Max. sigma_2 and orb.number:    0.38    3
-  %LOC%   Max. sigma_4 and orb.number:    0.51    5
+  %LOC%   Max. sigma_2 and orb.number:    0.38    4
+  %LOC%   Max. sigma_4 and orb.number:    0.51    3
   %LOC%   Min. sigma_2 and orb.number:    0.38    2
-  %LOC%   Min. sigma_4 and orb.number:    0.51    2
-
-
+  %LOC%   Min. sigma_4 and orb.number:    0.51    1
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    1.72   10
   %LOC%   Max. sigma_4 and orb.number:    2.25   10
   %LOC%   Min. sigma_2 and orb.number:    1.52   12
-  %LOC%   Min. sigma_4 and orb.number:    1.88   12
-
-
+  %LOC%   Min. sigma_4 and orb.number:    1.88   11
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
-  %LOC%   Max. sigma_2 and orb.number:    1.88   22
-  %LOC%   Max. sigma_4 and orb.number:    2.37   22
-  %LOC%   Min. sigma_2 and orb.number:    1.75   30
-  %LOC%   Min. sigma_4 and orb.number:    2.11   30
-
- >>>  CPU Time used in Orbital Localization is   2.47 seconds
- >>> wall Time used in Orbital Localization is   0.69 seconds
+  %LOC%   Max. sigma_2 and orb.number:    1.88   21
+  %LOC%   Max. sigma_4 and orb.number:    2.37   21
+  %LOC%   Min. sigma_2 and orb.number:    1.75   26
+  %LOC%   Min. sigma_4 and orb.number:    2.11   26
+ 
+ >>>  CPU Time used in Orbital Localization is   2.95 seconds
+ >>> wall Time used in Orbital Localization is   2.96 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
- >>>  CPU Time used in *SCF is   8.60 seconds
- >>> wall Time used in *SCF is   2.75 seconds
-
+ >>>  CPU Time used in *SCF is   9.70 seconds
+ >>> wall Time used in *SCF is   9.73 seconds
+ 
 Total no. of matmuls used:                     15368
 Total no. of Fock/KS matrix evaluations:          10
 Max no. of matrices allocated in Level 3:         74
@@ -1471,13 +963,13 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         77.073 MB
+  Max allocated memory, TOTAL                         11.434 MB
   Max allocated memory, type(matrix)                 352.800 kB
-  Max allocated memory, real(realk)                   17.795 MB
+  Max allocated memory, real(realk)                    8.095 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                        1.819 MB
-  Max allocated memory, logical                        1.171 MB
+  Max allocated memory, integer                        1.775 MB
+  Max allocated memory, logical                      973.240 kB
   Max allocated memory, character                      3.376 kB
   Max allocated memory, AOBATCH                       21.168 kB
   Max allocated memory, DECORBITAL                     0.000 Byte
@@ -1488,37 +980,143 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.400 MB
+  Max allocated memory, ARRAY                        844.000 kB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
   Max allocated memory, ODBATCH                       16.368 kB
-  Max allocated memory, LSAOTENSOR                    60.800 kB
-  Max allocated memory, SLSAOTENSOR                   52.624 kB
+  Max allocated memory, LSAOTENSOR                    84.800 kB
+  Max allocated memory, SLSAOTENSOR                   73.216 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 229.584 kB
+  Max allocated memory, ATOMTYPEITEM                 337.584 kB
   Max allocated memory, ATOMITEM                       5.984 kB
-  Max allocated memory, LSMATRIX                       1.120 kB
-  Max allocated memory, OverlapT                     381.696 kB
+  Max allocated memory, LSMATRIX                       1.600 kB
+  Max allocated memory, OverlapT                     363.776 kB
   Max allocated memory, linkshell                      4.716 kB
-  Max allocated memory, integrand                      2.322 MB
-  Max allocated memory, integralitem                  17.640 MB
-  Max allocated memory, IntWork                      535.104 kB
-  Max allocated memory, Overlap                        6.205 MB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   4.410 MB
+  Max allocated memory, IntWork                      133.776 kB
+  Max allocated memory, Overlap                        1.551 MB
   Max allocated memory, ODitem                        11.904 kB
   Max allocated memory, LStensor                      89.344 kB
   Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                           598.504 kB
+  Max allocated memory, XC                           160.648 kB
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
+ 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  16.98 seconds
- >>> wall Time used in LSDALTON is   5.24 seconds
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 1 The Atomic Calculation                     
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L1 mat_trans                6            0.0000            0.0000
+   L1 mat_assign               2            0.0000            0.0000
+   L1 mat_mul                  6            0.0000            0.0000
+   L1 mat_add                  8            0.0000            0.0000
+   L1 mat_daxpy                8            0.0000            0.0000
+   L1 mat_dotproduct          10            0.0000            0.0000
+   L1 mat_sqnorm2             10            0.0000            0.0000
+   L1 mat_zero                 8            0.0000            0.0000
+      ==============================================================
+   L1 TOTAL MAT                             0.0000            0.0000
+      ==============================================================
+   L1     II_get_overlap       2            0.0010            0.0010
+   L1     II_get_kinetic       2            0.0000            0.0010
+   L1   II_get_nucel_mat       2            0.0040            0.0040
+   L1 II_GET_EXCHANGE_MA       2            0.0070            0.0070
+   L1 II_get_coulomb_mat       2            0.0040            0.0040
+      ==============================================================
+   L1 TOTAL INTEGRAL                        0.0160            0.0170
+      ==============================================================
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 2 The Valence Calculation                    
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L2 mat_set_from_full        2            0.0000            0.0000
+   L2 mat_to_full              7            0.0000            0.0000
+   L2 mat_trans              136            0.0050            0.0060
+   L2 mat_assign             193            0.0010            0.0000
+   L2 mat_mul                330            0.0010            0.0050
+   L2 mat_add                327            0.0000            0.0010
+   L2 mat_daxpy              339            0.0010            0.0000
+   L2 mat_dotproduct         275            0.0000            0.0010
+   L2 mat_sqnorm2            115            0.0000            0.0000
+   L2 mat_diag_f               2            0.0010            0.0020
+   L2 mat_scal               138            0.0000            0.0000
+   L2 mat_zero                33            0.0000            0.0000
+   L2 mat_density_from_o       1            0.0000            0.0000
+   L2 mat_scal_dia_vec         2            0.0000            0.0000
+   L2 mat_dsyev                1            0.0000            0.0000
+   L2 mat_dsyevx               8            0.0030            0.0010
+   L2 mat_identity             6            0.0000            0.0000
+   L2 mat_write_to_disk        4            0.0000            0.0000
+      ==============================================================
+   L2 TOTAL MAT                             0.0090            0.0150
+      ==============================================================
+   L2     II_get_overlap       1            0.0050            0.0050
+   L2     II_get_kinetic       1            0.0060            0.0060
+   L2   II_get_nucel_mat       1            0.0390            0.0390
+   L2 II_precalc_ScreenM       1            0.2000            0.2010
+   L2 II_GET_EXCHANGE_MA       6            5.3400            5.3600
+   L2 II_get_coulomb_mat       6            3.9680            3.9780
+   L2           homolumo       1            0.7360            0.7380
+      ==============================================================
+   L2 TOTAL INTEGRAL                       10.2970           10.3280
+      ==============================================================
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full    10990            0.0130            0.0180
+   L3 mat_to_full             14            0.0000            0.0000
+   L3 mat_trans              511            0.0070            0.0090
+   L3 mat_assign            1142            0.0000            0.0030
+   L3 mat_copy               279            0.0000            0.0000
+   L3 mat_tr                   2            0.0000            0.0000
+   L3 mat_trAB                 4            0.0000            0.0000
+   L3 mat_mul              15030            0.0310            0.0280
+   L3 mat_add                195            0.0020            0.0000
+   L3 mat_daxpy            10367            0.0150            0.0110
+   L3 mat_dotproduct        2534            0.0020            0.0030
+   L3 mat_sqnorm2           2754            0.0010            0.0030
+   L3 mat_diag_f               2            0.0000            0.0010
+   L3 mat_create_block        57            0.0000            0.0000
+   L3 mat_retrieve_block   15576            0.0250            0.0380
+   L3 mat_scal              1103            0.0020            0.0020
+   L3 mat_zero              2611            0.0110            0.0060
+   L3 mat_density_from_o       1            0.0000            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
+   L3 mat_scal_dia            53            0.0000            0.0010
+   L3 mat_dmul             10390            0.0240            0.0280
+   L3 mat_hmul               530            0.0070            0.0020
+   L3 mat_dger              1060            0.0030            0.0020
+   L3 mat_dsyev                1            0.0000            0.0000
+   L3 mat_dsyevx               4            0.0000            0.0000
+   L3 mat_identity           135            0.0010            0.0010
+   L3 mat_write_to_disk        7            0.0000            0.0000
+      ==============================================================
+   L3 TOTAL MAT                             0.1090            0.1220
+      ==============================================================
+   L3     II_get_overlap       3            0.0150            0.0140
+   L3     II_get_kinetic       1            0.0060            0.0060
+   L3   II_get_nucel_mat       1            0.0360            0.0360
+   L3 II_precalc_ScreenM       2            0.4260            0.4270
+   L3      II_get_nucpot       1            0.0000            0.0000
+   L3 II_GET_EXCHANGE_MA       4            1.7680            1.7740
+   L3 II_get_coulomb_mat       4            1.0670            1.0720
+   L3           homolumo       1            0.6410            0.6420
+      ==============================================================
+   L3 TOTAL INTEGRAL                        3.9950            4.0050
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is  20.54 seconds
+ >>> wall Time used in LSDALTON is  20.61 seconds
 
 End simulation
-     Date and time (Linux)  : Fri Jan 30 10:02:44 2015
+     Date and time (Linux)  : Sat Mar 28 16:51:17 2015
      Host name              : localhost.localdomain                   

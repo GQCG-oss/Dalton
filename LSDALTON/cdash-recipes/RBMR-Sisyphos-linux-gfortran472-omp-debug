@@ -3,7 +3,7 @@ SCRATCH_DIR=/tmp/sisyphos/DaltonGfortranDebugRBMR
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 git checkout Dalton2015
 export OMP_NUM_THREADS=6
@@ -12,8 +12,8 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-#./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage --blas=builtin --lapack=builtin -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-debug" build
-./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --blas=builtin --lapack=builtin -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-debug" build
+#./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage --blas=builtin --lapack=builtin -DENABLE_DEC=ON -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-debug" build
+./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --blas=builtin --lapack=builtin -DENABLE_DEC=ON -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-debug" build
 
 cd build
 make release
@@ -21,7 +21,7 @@ make release
 if [[ -e  DALTON-Source.tar.gz ]]; then
  tar -zxvf DALTON-Source.tar.gz
  cd DALTON-Source
-./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --blas=builtin --lapack=builtin -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-debug" build
+./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --blas=builtin --lapack=builtin -DENABLE_DEC=ON -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-debug" build
 cd build
 ctest --track ReleaseBranch2015MakeRelease -D Nightly -L linsca
 fi

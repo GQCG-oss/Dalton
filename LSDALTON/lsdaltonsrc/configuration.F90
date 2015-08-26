@@ -10,14 +10,16 @@ use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
 use tensor_interface_module, only: tensor_set_dil_backend_true, &
-   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer
+   &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer, &
+   tensor_set_global_segment_length, tensor_set_mpi_msg_len
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
 use typedeftype, only: lsitem,integralconfig
 #endif
 use opttype, only: opt_set_default_config
-use response_wrapper_type_module, only: free_mcdinputitem, &
+use response_wrapper_type_module
+use response_wrapper_op_module, only: free_mcdinputitem, &
      & alphainputitem_set_default_config, betainputitem_set_default_config, &
      & gammainputitem_set_default_config, tpainputitem_set_default_config, &
      & dtpainputitem_set_default_config, esginputitem_set_default_config, &
@@ -38,9 +40,11 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
-use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
-     & check_cc_input, check_dec_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
+#ifdef VAR_DEC
+use DEC_settings_mod, only: config_dec_input,check_cc_input, check_dec_input
+#endif
+use dec_typedef_module,only: dec_set_default_config, DECinfo,MODEL_MP2,&
+     & MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -153,6 +157,7 @@ implicit none
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
   config%InteractionEnergy = .false.
+  config%access_stream = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -165,16 +170,19 @@ implicit none
 #endif
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
-  config%doplt=.false.
+  config%doplt         = .false.
   !F12 calc?
-  config%doF12=.false.
-  config%doRIMP2=.false.
+  config%doF12         = .false.
+  config%doRIMP2       = .false.
   config%doTestMPIcopy = .false.
-  config%skipscfloop = .false.
+  config%doTestHodi    = .false.
+  config%skipscfloop   = .false.
+  config%papitest      = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
   print*,'config_set_default_config:',infpar%inputBLOCKSIZE
 #endif
+  config%mat_mem_monitor = .FALSE.
 end subroutine config_set_default_config
 
 !> \brief Wrapper to routines for read input files LSDALTON.INP and MOLECULE.INP.
@@ -204,7 +212,7 @@ implicit none
    !read the MOLECULE.INP and set input
    call read_molfile_and_build_molecule(lupri,config%molecule,config%LIB,&
         & .FALSE.,0,config%integral%DoSpherical,config%integral%basis,&
-        & config%latt_config)
+        & config%latt_config,config%integral%atombasis)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
    !read the LSDALTON.INP and set input
@@ -242,10 +250,6 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
-#if defined(ENABLE_QMATRIX)
-use ls_qmatrix, only: ls_qmatrix_init, &
-                      ls_qmatrix_input
-#endif
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -634,17 +638,29 @@ DO
 
    ! Input for DEC calculation
    DECInput: IF (WORD(1:5) == '**DEC') THEN
+#ifdef VAR_DEC
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
+#else
+      call lsquit('**DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
    END IF DECInput
 
    ! Input for full molecular CC calculation
    ! (uses same setup as DEC calculation)
    CCinput: IF (WORD(1:4) == '**CC') THEN
+#ifdef VAR_DEC
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
+      config%integral%PreCalcDFscreening =  config%doRIMP2
+      config%integral%PreCalcF12screening =  config%doF12
+#else
+      call lsquit('**CC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
    END IF CCinput
 
 
@@ -814,18 +830,6 @@ DO
   ENDDO
 
    ENDIF
-#endif
-
-#if defined(ENABLE_QMATRIX)
-   ! QMatrix library
-   if (WORD=='**QMATRIX') then
-       config%do_qmatrix = .true.
-       ! initializes the QMatrix interface
-       call ls_qmatrix_init(config%ls_qmat)
-       ! processes input
-       READWORD = .true.
-       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
-   end if
 #endif
 
    IF (WORD == '*END OF INPUT') THEN
@@ -1031,7 +1035,7 @@ subroutine DEC_meaningful_input(config)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-
+  logical :: NotAcceptedModel
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
@@ -1076,10 +1080,10 @@ subroutine DEC_meaningful_input(config)
         ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
 
-        ! Modify DECinfo to calculate first order properties (gradient) for MP2
+        ! Modify DECinfo to calculate first order properties (gradient) for RI-MP2 and MP2
         DECinfo%gradient=.true.
         DECinfo%first_order=.true.
-        if (DECinfo%ccmodel /= MODEL_MP2) then
+        if (DECinfo%ccmodel /= MODEL_MP2 .and. DECinfo%ccmodel /= MODEL_RIMP2) then
            write(DECinfo%output,*) "WARNING: DEC Geometry optimization only available for MP2"
            write(DECinfo%output,*) "WARNING: We are switching to DEC-MP2  !!!"
            DECinfo%ccmodel = MODEL_MP2
@@ -1129,17 +1133,19 @@ subroutine DEC_meaningful_input(config)
         endif
         ! For the release we only include DEC-MP2
 #ifndef MOD_UNRELEASED
-        if(DECinfo%ccmodel/=MODEL_MP2 .and. (.not. DECinfo%full_molecular_cc) ) then
+        NotAcceptedModel = DECinfo%ccmodel/=MODEL_MP2 .AND. DECinfo%ccmodel/=MODEL_RIMP2
+        if(NotAcceptedModel .and. (.not. DECinfo%full_molecular_cc) ) then
            print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
            print *, 'using the **CC section rather than the **DEC section.'
-           call lsquit('DEC is currently only available for the MP2 model!',-1)
+           call lsquit('DEC is currently only available for the MP2 and RI-MP2 model!',-1)
         end if
 #endif
      end if OrbLocCheck
 
-     ! Check DEC input internally
+#ifdef VAR_DEC
+     ! Check DEC input internally     
      call check_dec_input()
-
+#endif
   end if DECcalculation
 
 
@@ -1247,6 +1253,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            !Calculated the Interaction energy 
            !using Counter Poise Correction
            config%InteractionEnergy = .true.
+        CASE('.PAPITEST')
+           config%papitest=.true.
+        CASE('.ACCESS_STREAM')
+           ! Use stream access on all files open with lsopen
+           config%access_stream = .true.
+           access_stream = .true.
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')
@@ -1282,10 +1294,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
         CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.MATMEM');                config%mat_mem_monitor = .TRUE.
         CASE('.GCBASIS');               config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
+        CASE('.TESTHODI');              config%doTestHodi            = .true.
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
            READ(LUCMD,*) config%GPUMAXMEM
@@ -1303,6 +1317,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            READ(LUCMD,*) SPLIT_MPI_MSG 
            call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
            call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+           call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
         CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
            READ(LUCMD,*) MAX_SIZE_ONE_SIDED
            call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
@@ -1318,24 +1333,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
      if (WORD(1:7) == '*TENSOR') then
         READWORD=.TRUE.
-        do
-           read(LUCMD,'(A40)') word
-           if(word(1:1) == '!' .or. word(1:1) == '#') cycle
-           if(word(1:1) == '*') then ! New property or *END OF INPUT
-              backspace(LUCMD)
-              exit
-           end if
-           select case(word)
-           case('.DIL_BACKEND')
-              call tensor_set_dil_backend_true(.true.)
-           case('.DEBUG')
-              call tensor_set_debug_mode_true(.true.)
-           case default
-              print *,"UNRECOGNIZED KEYWORD: ",word
-              call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
-
-           end select
-        enddo
+        call TENSOR_INPUT(word,LUCMD)
      endif
 
      IF (WORD(1:2) == '**') THEN
@@ -1349,6 +1347,35 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
   ENDDO
 END subroutine GENERAL_INPUT
+
+subroutine TENSOR_INPUT(word,lucmd)
+   implicit none
+   character(len=80),intent(inout)  :: word
+   integer,intent(in) :: lucmd 
+   integer(kind=8)    :: seg_len
+   integer            :: dummy
+   do
+      read(LUCMD,'(A40)') word
+      if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+      if(word(1:1) == '*') then ! New property or *END OF INPUT
+         backspace(LUCMD)
+         exit
+      end if
+      select case(word)
+      case('.DIL_BACKEND')
+         call tensor_set_dil_backend_true(.true.)
+      case('.DEBUG')
+         call tensor_set_debug_mode_true(.true.)
+      case('.SEGMENT_LENGTH')
+         read(LUCMD,*) seg_len
+         call tensor_set_global_segment_length(seg_len)
+      case default
+         print *,"UNRECOGNIZED KEYWORD: ",word
+         call lsquit("ERROR(GENERAL_INPUT): unrecognized keyword in *TENSOR section",-1)
+
+      end select
+   enddo
+end subroutine TENSOR_INPUT
 
 subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   implicit none
@@ -2463,6 +2490,27 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                     !cfg_rsp_run_mag = .true.
                     !!Sonia: Make separate set of options: use_eq_79 etc..
                     !!cfg_rsp_run_hes = .true.
+       !CHANDAN_IANS       
+       CASE('*INASHIELD')
+          config%response%tasks%doNMRshield_selected=.true.
+          config%response%tasks%doResponse=.true.
+          do
+             READ(LUCMD,'(A40)') word
+             if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+             if(word(1:1) == '*')THEN
+                READWORD=.FALSE.
+                exit
+             endif
+             SELECT CASE(word)
+             CASE('.SOLVERESPONSESIMULTANT')
+                !Solve the response equations at the same time. 
+                config%integral%SolveNMRResponseSimultan = .TRUE.
+             CASE DEFAULT
+                WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
+                     & '" not recognized in RESPONSE *INASHIELD input.'
+                CALL lsQUIT('Illegal keyword in config_rsp_input.',config%lupri)
+             END SELECT
+          enddo
        !THOMAS_NEW
        CASE('*SHIELD')
           config%response%tasks%doNMRshield=.true.
@@ -3131,7 +3179,7 @@ implicit none
 !
    integer                         :: i
 !   integer                         :: omp_get_num_threads
-   logical                         :: file_exists,CABS_BASIS_PRESENT
+   logical                         :: file_exists,CABS_BASIS_PRESENT,Phantom
    real(realk)                     :: conv_factor, potnuc, cutoff,inverse_std_conv_factor
    CHARACTER*24, PARAMETER :: AVG_NAMES(5) = &
         &  (/ 'None                    ', &
@@ -3189,7 +3237,7 @@ if(mod(SPLIT_MPI_MSG,8)/=0)call lsquit("INPUT ERROR: MAX_MPI_MSG_SIZE_NEL has to
 IF(nthreads.EQ.1)THEN
  IF(infpar%nodtot.GT.1)THEN
   WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
-                          & ' processors, but you are only using 1 OpenMP thread'
+                          & ' processes, but you are only using 1 OpenMP thread'
   WRITE(lupri,'(4X,A)')     'WARNING: This is NOT recommended! LSDALTON is designed as a MPI/OpenMP hybrid code'
   WRITE(lupri,'(4X,A)')     'WARNING: It is therefore HIGHLY recommended to use the command'
   WRITE(lupri,'(4X,A)')     'WARNING: export OMP_NUM_THREADS=X'
@@ -3200,18 +3248,17 @@ IF(nthreads.EQ.1)THEN
  ENDIF
 ENDIF
 #ifdef VAR_INT64
+WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processes'
 #ifdef VAR_MPI_32BIT_INT
 !int64,mpi & mpi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
 WRITE(lupri,'(4X,A)')'linked to a 32 bit integer MPI library.'
 #else
 !int64,mpi nompi32
-WRITE(lupri,'(4X,A,I3,A)')'This is an 64 bit integer MPI calculation using ',infpar%nodtot,' processors'
 WRITE(lupri,'(4X,A)')'linked to a 64 bit integer MPI library.'
 #endif
 #else
 !int32 mpi
-WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors'
+WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes'
 #endif
 #else
 !no MPI
@@ -3662,7 +3709,19 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 
 ! Check Counter Poise Input :
    IF(config%InteractionEnergy.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
-      call lsquit('.INTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
+      Phantom = .FALSE.
+      IF(ls%input%molecule%nSubSystems.EQ.3)THEN
+         DO I=1,ls%input%molecule%nAtoms
+            IF(ls%input%molecule%Atom(I)%SubSystemIndex.EQ.-2)Phantom = .TRUE.
+         ENDDO
+      ENDIF
+      IF(Phantom)THEN
+         WRITE(config%lupri,*)'Molecule contains Phantom atoms (basis functions without nuclei)'
+         WRITE(config%lupri,*)'Since not all Phantom atoms have been assigned a SubSystemLabel'
+         WRITE(config%lupri,*)'it is assumed that both Subsystems needs these Phantom atoms'          
+      ELSE
+         call lsquit('.INTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
+      ENDIF
    ENDIF
 
 ! Check integral input:
@@ -3679,12 +3738,19 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
 
-   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam) .OR. config%integral%basis(CAPBasParam)
+   CABS_BASIS_PRESENT = config%integral%basis(CABBasParam)
 
-   if(config%doF12 .AND. (.NOT. CABS_BASIS_PRESENT))then
-      WRITE(config%LUPRI,'(/A)') &
-           &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
-      CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+   if(config%doF12)THEN
+      if(.NOT. CABS_BASIS_PRESENT)then         
+         WRITE(config%LUPRI,'(/A)') &
+              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+         CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
+      endif
+      WRITE(config%LUPRI,'(A,F7.1)')'The F12 Geminal exponent for the Regular Basis = ',&
+           & ls%setting%basis(1)%p%BINFO(REGBASPARAM)%GeminalScalingFactor
+      IF(config%integral%ATOMBASIS)THEN
+         WRITE(config%LUPRI,'(A)') 'WARNING BASIS (NOT ATOMBASIS) is required to auto detect the Geminal exponent'
+      ENDIF
    endif
 !ADMM basis input
    if(config%integral%ADMM_EXCHANGE) THEN
@@ -3902,6 +3968,10 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       if (matrix_type == mtype_unres_dense) then
          call lsquit('Compressed Sparse Row (CSR) not implemented for unrestricted!',config%lupri)
       else
+#ifndef VAR_CSR
+         call lsquit('.CSR requires -DVAR_CSR precompiler flag (--csr on setup) ',config%lupri)
+#endif
+
 #ifdef VAR_MKL
          CALL mat_select_type(mtype_csr,lupri)         
          call mat_inquire_cutoff(cutoff)
@@ -3952,7 +4022,7 @@ if (config%opt%cfg_prefer_PDMM) then
       call lsquit('PDMM not implemented for unrestricted!',config%lupri)
    else
 #ifdef VAR_MPI
-      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+      WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes combined'
       WRITE(lupri,'(4X,A)')'with PDMM for memory distribution and parallelization.'
       CALL mat_select_type(mtype_pdmm,lupri,nbast)      
 #else
@@ -3975,7 +4045,7 @@ endif
       else
 #ifdef VAR_SCALAPACK
 #ifdef VAR_MPI
-         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
+         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes combined'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
 
@@ -3996,7 +4066,7 @@ endif
 #else
          !no VAR_SCALAPACK
 #ifdef VAR_MPI
-         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
+         WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processes.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
          !no VAR_SCALAPACK and no MPI         
@@ -4021,6 +4091,13 @@ endif
       call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
 #endif
    end if
+
+   !NMR sanity check
+   IF(config%decomp%cfg_gcbasis.AND.config%response%tasks%doNMRshield_selected)THEN
+      write(config%lupri,*)'*INASHIELD requies .NOGCBASIS under **GENERAL'
+      print*,'*INASHIELD requies .NOGCBASIS under **GENERAL'
+      call lsquit('*INASHIELD requies .NOGCBASIS under **GENERAL',-1)
+   ENDIF
 
 !Local Excited state geometry optimization check:
 !================================================
@@ -4066,7 +4143,9 @@ endif
    if(config%doDEC) then
       nocc = config%decomp%nocc
       nvirt = (nbast-nocc)
+#ifdef VAR_DEC
       call check_cc_input(ls,nocc,nvirt,nbast)
+#endif
    endif
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'

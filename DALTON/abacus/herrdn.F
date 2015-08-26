@@ -681,10 +681,6 @@ C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
 
-#ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: dalton_xcint_interface_init
-#endif
-
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -925,10 +921,6 @@ C...  initializes Gen1Int interface
      &                       ALPHA(:,:,1), CPRIMU(:,:,:,1))
 #endif
 
-#ifdef ENABLE_XCINT
-      call dalton_xcint_interface_init()
-#endif
-
 C
 C     ***********************************
 C     ***** Process PCM speres data *****
@@ -1152,10 +1144,11 @@ C
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
+      if (ipread .gt. 10 .OR. NSETS .gt. KSETS) 
+     &   write(lupri,*) 'setting NSETS =',NSETS
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
       END IF
-      if (ipread .gt. 10) write(lupri,*) 'setting NSETS =',NSETS
 C
 C     Run over atomic centers
 C     =======================
@@ -2365,6 +2358,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use pelib_interface, only: use_pelib, pelib_ifc_init
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2605,10 +2599,8 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-         IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-            CALL PE_IFC_INIT()
-#endif
+         IF (USE_PELIB()) THEN
+            CALL PELIB_IFC_INIT()
          END IF
       END IF
 C
@@ -4681,6 +4673,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use pelib_interface, only: use_pelib
 #if defined (HAS_PCMSOLVER)
       use pcm_scf, only: pcm_scf_initialize
       use pcmmod_cfg
@@ -4720,7 +4713,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF (QMMM .OR. PEQM) IPTEST = 0
+      IF (QMMM .OR. USE_PELIB()) IPTEST = 0
       IF ( IPREAD .GT. IPTEST )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
@@ -6814,12 +6807,12 @@ C
 C     Read in the fourth input line using the new input scheme
 C
 
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
-! gnrinf.h : PEQM
 #include "gnrinf.h"
 ! molinp.h : len_MLINE
 #include "mxcent.h"
@@ -7010,7 +7003,7 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
         IF (ADDSYM) THEN
             ADDSYM = .FALSE.
         ELSE IF (NSYMOP > 0) THEN

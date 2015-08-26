@@ -4,7 +4,6 @@
 
 module f12_routines_module
 
-#ifdef MOD_UNRELEASED
 
   use fundamental
   use precision
@@ -12,24 +11,51 @@ module f12_routines_module
   use typedef
   use dec_typedef_module
   use matrix_module
+  use matrix_util
   use matrix_operations
+  use matrix_operations_aux
   use memory_handling
   use IchorErimoduleHost
+  use IntegralInterfaceMOD
+  use IntegralInterfaceDEC
+  use screen_mod
+  use BUILDAOBATCH
+  use lstiming
+  use reorder_frontend_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use CABS_operations
-
+  use dec_tools_module
+  use dec_fragment_utils
   use full_f12contractions
   use ccintegrals  
- 
+  use crop_tools_module 
+  use tensor_interface_module
+  use array4_simple_operations
+
+  private
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
        & get_4Center_MO_integrals, get_4Center_F12_integrals, free_4Center_F12_integrals, &
-       & get_ES2,get_ES2_from_dec_main,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM
-
-  private
+       & mp2f12_Xijij_term3, mp2f12_Xjiij_term3, mp2f12_Xijij_term4, mp2f12_Xjiij_term4, &
+       & F12singles_driver,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM, &
+       & mp2f12_Bijij_term2, mp2f12_Bijij_term3, mp2f12_Bijij_term4, mp2f12_Bijij_term5, mp2f12_Bijij_term6, mp2f12_Bijij_term7, &
+       & mp2f12_Bijij_term8, mp2f12_Bijij_term9, Contractocccalpha, &
+       & ContractOne4CenterF12IntegralsRI, ContractOne4CenterF12IntegralsRI2, Contractone4centerf12integralsrib23, & 
+       & Contractone4centerf12integralsrobustri, Contracttwo4centerf12integralsri2v3v4, Contracttwo4centerf12integralsriX3X4, &
+       & Contracttwo4centerf12integralsri, Contracttwo4centerf12integralsrib4,Contracttwo4centerf12integralsrib5, &
+       & Contracttwo4centerf12integralsrib6,Contracttwo4centerf12integralsrib7, Contracttwo4centerf12integralsrib8, &
+       & Contracttwo4centerf12integralsrib9, Contracttwo4centerf12integralsRIC, Contracttwo4centerf12integralsriX, &
+       & ContractOne4CenterF12IntegralsRI2_nc, ContractTwo4CenterF12IntegralsRIC_pf, ContractOne4CenterF12IntegralsRI2_p, &
+       & Contracttwo4centerf12integralsri2v3v4_p, Contracttwo4centerf12integralsriX3X4_nc, &
+       & ContractTwo4CenterF12IntegralsRIX_nc, Contracttwo4centerf12integralsriX3X4_nc2, &
+       & ContractTwo4CenterF12IntegralsRI_pf, ContractTwo4CenterF12IntegralsRIB6_pf,&
+       & contracttwo4centerf12integralsrix_ncmpi, contracttwo4centerf12integralsrix3x4_ncmpi, &
+       & contracttwo4centerf12integralsrib4mpi, contracttwo4centerf12integralsrib5mpi, &
+       & contracttwo4centerf12integralsrib6mpi, contracttwo4centerf12integralsrib7mpi,&
+       & contracttwo4centerf12integralsrib8mpi, contracttwo4centerf12integralsrib9mpi
 
   !> Coefficient Type
   TYPE ctype
@@ -37,23 +63,22 @@ module f12_routines_module
      integer :: n1
      integer :: n2
   END TYPE ctype
-#endif
   
-contains
-#ifdef MOD_UNRELEASED
-  function norm1D(A)
-    implicit none
-    real(realk), intent(in) :: A(:)
-    integer :: m,i
-    real(realk) :: norm1D   
-    
-    norm1D = 0.0E0_realk
-    
-    m = size(A,1)
-    do i=1,m
-       norm1D = norm1D + A(i)
-    enddo
-  end function norm1D
+   contains
+
+   function norm1D(A)
+      implicit none
+      real(realk), intent(in) :: A(:)
+      integer :: m,i
+      real(realk) :: norm1D   
+
+      norm1D = 0.0E0_realk
+
+      m = size(A,1)
+      do i=1,m
+         norm1D = norm1D + A(i)
+      enddo
+   end function norm1D
 
 
   !> Takes the norm of a matrix 
@@ -148,6 +173,11 @@ contains
     type(matrix) :: Fcc
     type(matrix) :: Frc  
     type(matrix) :: Fcr  
+
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(get_F12_mixed_MO_Matrices_real): this routine does not work&
+       & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
    
     !> Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
     !> hJir
@@ -155,7 +185,7 @@ contains
     call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
     call mat_init(HJir,nocc,ncabsAO)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'i',HJrc,HJir,1)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'i',HJrc,HJir,1)
     call mat_free(HJrc)
     call mat_to_full(HJir,1.0E0_realk,HJir_real)
     call mat_free(HJir)
@@ -180,7 +210,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fac,nvirt,ncabsAO)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'a',Frc,Fac,1)    
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'a',Frc,Fac,1)    
     call mat_free(Frc)
     call mat_to_full(Fac,1.0E0_realk,Fac_real)
     call mat_free(Fac)
@@ -191,7 +221,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frr,Dmat,MyLsitem,'RRRRC')
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Frr,Fii)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Frr,Fii)
     call mat_free(Frr)
     call mat_to_full(Fii,1.0E0_realk,Fii_real)
     call mat_free(Fii)
@@ -202,13 +232,13 @@ contains
 
     call mat_init(Frm,ncabsAO,noccfull)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'m',Fcr,Frm,2)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'m',Fcr,Frm,2)
     call mat_to_full(Frm,1.0E0_realk,Frm_real)
     call mat_free(Frm)
     
     call mat_init(Fcp,ncabsAO,nbasis)
     call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'p',Fcr,Fcp,2)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'p',Fcr,Fcp,2)
     call mat_to_full(Fcp,1.0E0_realk,Fcp_real)
     call mat_free(Fcp)
     call mat_free(Fcr) 
@@ -223,11 +253,6 @@ contains
 !!$    call mat_free(Fcd)
 !!$    call mat_free(Fcc)
       
-!!$    print *, '****************************************'
-!!$    print *, '(Norm of HJir_real):', norm2(HJir_real)       
-!!$    print *, '(Norm of HJir):', sqrt(mat_sqnorm2(HJir))
-!!$    print *, '****************************************'
-        
   end subroutine get_F12_mixed_MO_Matrices_real
 
   !> Need documentation...
@@ -261,13 +286,18 @@ contains
     type(matrix) :: Kcc
     type(matrix) :: Fcc
 
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(get_F12_mixed_MO_Matrices): this routine does not work&
+       & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
+
     ! Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
     !hJir
     call mat_init(HJrc,nbasis,ncabsAO)
     call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
     call mat_init(HJir,nocc,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ir',HJrc,HJir)    
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ir',HJrc,HJir)    
     call mat_free(HJrc)
 
     ! Mixed CABS/CABS exchange matrix
@@ -276,7 +306,7 @@ contains
     call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Krr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Kcc,Krr)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Kcc,Krr)
     call mat_free(Kcc)
 
     ! Mixed CABS/CABS Fock matrix
@@ -285,7 +315,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Frr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rr',Fcc,Frr)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Fcc,Frr)
     call mat_free(Fcc)
 
     !Fcd
@@ -293,7 +323,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcd,ncabs,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
     call mat_free(Fcc)
   
     ! Mixed AO/CABS Fock matrix
@@ -302,7 +332,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ac',Frc,Fac)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
     call mat_free(Frc)
        
     !Fic
@@ -310,7 +340,7 @@ contains
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
     call mat_free(Frc)
     
     ! Mixed AO/AO full MO Fock matrix 
@@ -319,15 +349,15 @@ contains
     !Fpp
     call mat_init(Fpp,nbasis,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'pp',Fcc,Fpp)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'pp',Fcc,Fpp)
     !Fii
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fii)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Fcc,Fii)
     !Fmm
     call mat_init(Fmm,noccfull,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'mm',Fcc,Fmm)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'mm',Fcc,Fmm)
     call mat_free(Fcc)
 
     ! Mixed CABS/AO MO Fock matrix
@@ -336,11 +366,11 @@ contains
     !Frm
     call mat_init(Frm,ncabsAO,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'rm',Fcc,Frm)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rm',Fcc,Frm)
     !Fcc
     call mat_init(Fcp,ncabs,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cp',Fcc,Fcp)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cp',Fcc,Fcp)
     call mat_free(Fcc)
     
   end subroutine get_F12_mixed_MO_Matrices
@@ -348,18 +378,17 @@ contains
   subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     implicit none
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Frc
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
-    type(matrix) :: Fii
-    type(matrix) :: Fac
-    type(matrix) :: Fic
-    type(matrix) :: Fcd
+    type(matrix),intent(inout) :: HJir
+    type(matrix),intent(inout) :: Krr
+    type(matrix),intent(inout) :: Frr
+    type(matrix),intent(inout) :: Fac
+    type(matrix),intent(inout) :: Frm
+    type(matrix),intent(inout) :: Fcp
+    type(matrix),intent(inout) :: Fpp
+    type(matrix),intent(inout) :: Fmm
+    type(matrix),intent(inout) :: Fii
+    type(matrix),intent(inout) :: Fic
+    type(matrix),intent(inout) :: Fcd
 
     call mat_free(HJir)
     call mat_free(Krr)
@@ -407,14 +436,19 @@ contains
     type(matrix) :: matAO,matMO
     real(realk),pointer :: elms(:)
     type(matrix) :: CMO(2)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri,tmp
     character(len=2) :: inputstring
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
     character :: string(2)
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1)=inputstring(1:1) 
     string(2)=inputstring(2:2) 
     lupri=6
@@ -461,7 +495,7 @@ contains
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -604,7 +638,7 @@ contains
   !> Brief: Get <1,2|INTSPEC|3,4> MO integrals wrapper.
   !> Author: Yang M. Wang
   !> Data: Nov 2013
-  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
+  subroutine get_mp2f12_MO(MyFragment,MySetting,CoccEOS,CoccAOStot,CocvAOStot,Ccabs,Cri,CvirtAOS,INTTYPE,INTSPEC,transformed_mo)
     implicit none
 
     !> Atomic fragment to be determined  (NOT pair fragment)
@@ -615,12 +649,12 @@ contains
     integer :: nbasis
     !> Number of occupied orbitals MO in EOS space
     integer :: noccEOS
-    !> Number of occupied orbitals MO in AOS space
-    integer :: noccAOS
-    !> Number of unoccupied (virtual) orbitals MO in EOS space
-    integer :: nunoccEOS
-    !> Number of occupied + virtual MO in AOS space 
-    integer :: nocvAOS
+    !> Number of occupied orbitals MO in AOS space (includes core, also for frozen core)
+    integer :: noccAOStot
+    !> Number of virtupied (virtual) orbitals MO in EOS space
+    integer :: nvirtEOS
+    !> Number of occupied + virtual MO in AOS space (includes core, also for frozen core)
+    integer :: nocvAOStot
     !> Number of CABS AO orbitals
     integer :: ncabsAO
     !> Number of CABS MO orbitals
@@ -646,42 +680,54 @@ contains
     !> MO coefficient matrix for the occupied EOS
     real(realk), target, intent(in) :: CoccEOS(:,:) !CoccEOS(nbasis,noccEOS)
     !> MO coefficient matrix for the occupied AOS
-    real(realk), target, intent(in) :: CoccAOS(:,:) !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CoccAOStot(:,:) !CoccEOS(nbasis,noccAOStot)
     !> MO coefficient matrix for the occupied + virtual EOS
-    real(realk), target, intent(in) :: CocvAOS(:,:) !CocvAOS(nbasis, nocvAOS)
+    real(realk), target, intent(in) :: CocvAOStot(:,:) !CocvAOStot(nbasis, nocvAOS)
     !> MO coefficient matrix for the CABS 
     real(realk), target, intent(in) :: Ccabs(:,:) !Ccabs(ncabsAO, ncabsMO)
     !> MO coefficient matrix for the RI 
     real(realk), target, intent(in) :: Cri(:,:) !Cri(ncabsAO,ncabsAO)
     !> MO coefficient matrix for the Virtual AOS
     real(realk), target, intent(in) :: CvirtAOS(:,:) !CvritAOS(nbasis,nvirtAOS)
+    integer :: offset
 
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
-    noccAOS  =  MyFragment%noccAOS
-    nunoccEOS = MyFragment%nunoccEOS
-    nvirtAOS = MyFragment%nunoccAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
+    noccAOStot  =  MyFragment%nocctot
+    nvirtEOS = MyFragment%nvirtEOS
+    nvirtAOS = MyFragment%nvirtAOS
+    nocvAOStot =   noccAOStot + nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
+    if(DECinfo%frozencore) then
+       offset = MyFragment%ncore
+    else
+       offset = 0
+    end if
 
     do i=1,4
        if(intType(i).EQ.'i') then ! occupied EOS
           C(i)%cmat => CoccEOS
           C(i)%n1 = nbasis
           C(i)%n2 = noccEOS               
-       elseif(intType(i).EQ.'m') then ! occupied AOS
-          C(i)%cmat => CoccAOS
+       elseif(intType(i).EQ.'m') then ! all occupied (core+valence)
+          C(i)%cmat => CoccAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = noccAOS 
+          C(i)%n2 = noccAOStot 
+       elseif(intType(i).EQ.'v') then 
+          ! Frozen core: Only valence
+          ! Not frozen core: All occupied orbitals (same as 'm')
+          C(i)%cmat => CoccAOStot(1:nbasis,offset+1:noccAOStot)
+          C(i)%n1 = nbasis
+          C(i)%n2 = noccAOStot-offset 
        elseif(intType(i).EQ.'a') then ! virtual AOS
           C(i)%cmat => CvirtAOS
           C(i)%n1 = nbasis
           C(i)%n2 = nvirtAOS
        elseif(intType(i).EQ.'p') then !all occupied + virtual AOS
-          C(i)%cmat => CocvAOS
+          C(i)%cmat => CocvAOStot
           C(i)%n1 = nbasis
-          C(i)%n2 = nocvAOS 
+          C(i)%n2 = nocvAOStot 
        elseif(intType(i).EQ.'c') then !cabs
           C(i)%cmat => Ccabs
           C(i)%n1 = ncabsAO
@@ -803,9 +849,12 @@ contains
           BatchType(i) = 'C'          
        elseif(intType(i).EQ.'r') then !ri - MOs
           BatchType(i) = 'C'
+       elseif(intType(i).EQ.'v') then !only valence
+          BatchType(i) = 'R'
+       else
+          call lsquit('unknown option in get_mp2f12_AO_transform_MO',-1)
        endif
     enddo  
-    
     !Determine MinGamma and MinAlpha    
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinGammaBatchSize,BatchType(3))
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAlphaBatchSize,BatchType(1))
@@ -856,22 +905,22 @@ contains
     !MinAlphaBatchSize = AlphaBatchSize
     !MinGammaBatchSize = GammaBatchSize
 
-    if(DECinfo%F12DEBUG) then
-       print *, "call get_max_batchsize..."
-    endif
+    !if(DECinfo%F12DEBUG) then
+    !   print *, "call get_max_batchsize..."
+    !endif
     
     call get_max_batchsize(MaxdimAlpha,MaxdimGamma,MinAlphaBatchSize,MinGammaBatchSize,n11,n12,n21,n22,n31,n32,n41,n42)
 
-    if(DECinfo%F12DEBUG) then
-       print *, "exit get_max_batchsize..."
-       print *, "----------------------------"
-       print *, "MaxdimAlpha: ", MaxdimAlpha
-       print *, "MaxdimGamma: ", MaxdimGamma
-       print *, "----------------------------"
-       print *, "MindimAlpha: ", AlphaBatchSize
-       print *, "MindimGamma: ", GammaBatchSize
-       print *, "----------------------------"
-    endif
+    !if(DECinfo%F12DEBUG) then
+   !    print *, "exit get_max_batchsize..."
+   !    print *, "----------------------------"
+   !    print *, "MaxdimAlpha: ", MaxdimAlpha
+   !    print *, "MaxdimGamma: ", MaxdimGamma
+   !    print *, "----------------------------"
+   !    print *, "MindimAlpha: ", AlphaBatchSize
+   !    print *, "MindimGamma: ", GammaBatchSize
+   !    print *, "----------------------------"
+   ! endif
         
     GammaBatchSize = MaxdimGamma
     AlphaBatchSize = MaxdimAlpha
@@ -1030,7 +1079,6 @@ contains
           ELSE
              IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
              IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
-
              call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                   & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                   & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), n21, n41, dimAlpha, dimGamma, FullRHS,&
@@ -1159,8 +1207,8 @@ contains
     integer :: noccEOS
     !> Number of occupied orbitals MO in AOS space
     integer :: noccAOS
-    !> Number of unoccupied (virtual) orbitals MO in EOS space
-    integer :: nunoccEOS
+    !> Number of virtupied (virtual) orbitals MO in EOS space
+    integer :: nvirtEOS
     !> Number of occupied + virtual MO in AOS space 
     integer :: nocvAOS
     !> Number of CABS AO orbitals
@@ -1201,9 +1249,9 @@ contains
     nbasis   =  MyFragment%nbasis
     noccEOS  =  MyFragment%noccEOS
     noccAOS  =  MyFragment%noccAOS
-    nunoccEOS = MyFragment%nunoccEOS
-    nvirtAOS = MyFragment%nunoccAOS
-    nocvAOS =   MyFragment%noccAOS + MyFragment%nunoccAOS
+    nvirtEOS = MyFragment%nvirtEOS
+    nvirtAOS = MyFragment%nvirtAOS
+    nocvAOS =   MyFragment%noccAOS + MyFragment%nvirtAOS
     ncabsAO = size(MyFragment%Ccabs,1)    
     ncabsMO = size(MyFragment%Ccabs,2)
 
@@ -1735,44 +1783,49 @@ contains
     !
     real(realk),pointer :: gao(:,:,:,:)
 
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(get_4Center_F12_integrals): this routine does not work&
+       & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
+
     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
 
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Ripjq)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Ripjq)
 
     !Calculate the various Gaussian geminal integrals with four regular AO indeces
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Gipjq)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipip',gAO,Gipjq)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRF')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Fijkl)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Fijkl)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRD')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                        MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Dijkl)
+         &                        MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Dijkl)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRR2')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Tijkl)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiii',gAO,Tijkl)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ipia',gAO,Gipja)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ipia',gAO,Gipja)
 
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'piai',gAO,Gpiaj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'piai',gAO,Gpiaj)
 
 
     call mem_dealloc(gao)
@@ -1783,19 +1836,19 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiir',gAO,Tijkr)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iiir',gAO,Tijkr)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Rimjc)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Rimjc)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
 
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Gimjc)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'imic',gAO,Gimjc)
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iaic',gAO,Giajc)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'iaic',gAO,Giajc)
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
 
@@ -1805,17 +1858,17 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRR2')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'irii',gAO,Tirjk)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'irii',gAO,Tirjk)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'irim',gAO,Girjm)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'irim',gAO,Girjm)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'icim',gAO,Gicjm)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'icim',gAO,Gicjm)
 
     call mem_dealloc(gao)
     !Calculate the various Gaussian geminal integrals with RCRC
@@ -1825,7 +1878,7 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRCG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'irir',gAO,Girjs)
+         &                          MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'irir',gAO,Girjs)
 
     call mem_dealloc(gao)
     !Calculate the various Gaussian geminal integrals with CRRR
@@ -1834,17 +1887,17 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'rimi',gAO,Grimj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rimi',gAO,Grimj)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'cimi',gAO,Gcimj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cimi',gAO,Gcimj)
 
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ciai',gAO,Gciaj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ciai',gAO,Gciaj)
 
     call mem_dealloc(gao)
     !Calculate the various Gaussian geminal integrals with CRCR
@@ -1852,7 +1905,7 @@ contains
     gao = 0.0E0_realk
     call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRCRG')
     call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ciri',gAO,Gcirj)
+         &  MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ciri',gAO,Gcirj)
     call mem_dealloc(gao)
 
   end subroutine get_4Center_F12_integrals
@@ -1912,7 +1965,7 @@ contains
     real(realk),pointer :: gAO(:,:,:,:)
     real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
     type(matrix) :: CMO(4)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
+    real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     type(matrix) :: CMO_cabs,CMO_ri
@@ -1920,7 +1973,12 @@ contains
     real(realk),pointer :: tmp2(:,:,:,:)
     character :: string(4)
     logical :: doCABS,doRI
-    integer :: i,lupri
+    integer :: i,lupri,offset
+
+    ! Offset:   Frozen core    : ncore
+    !           Not frozen core: 0
+    offset = noccfull - nocc
+
     string(1) = inputstring(1:1)
     string(2) = inputstring(2:2)
     string(3) = inputstring(3:3)
@@ -1968,7 +2026,7 @@ contains
        endif
        call mat_init(CMO(i),ndim1(i),ndim2(i))
        if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),Cocc(1:nbasis,offset+1:noccfull),1,CMO(i)%elms,1)
        elseif(string(i).EQ.'m')then !all occupied
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
@@ -1979,7 +2037,7 @@ contains
        elseif(string(i).EQ.'c')then !cabs
           call dcopy(ndim2(i)*ndim1(i),CMO_cabs%elms,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'r')then !ri - MOs
-          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)
+          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)          
        endif
     enddo
     IF(doCABS)THEN
@@ -1989,8 +2047,8 @@ contains
        call mat_free(CMO_ri)
     ENDIF
     call mem_alloc(tmp,ndim2(1),ndim1(2),ndim1(3),ndim1(4))
-    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4))
-    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)
+    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4)) !replace with a dgemm !!
+    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)             !replace with a dgemm !!
 
     call mem_alloc(tmp2,ndim2(1),ndim2(2),ndim1(3),ndim1(4))
     call ls_dzero(tmp2,ndim2(1)*ndim2(2)*ndim1(3)*ndim1(4))
@@ -2138,14 +2196,14 @@ contains
     call get_currently_available_memory(MemAvailable)
     MemAvailable = MemAvailable*1.0E9_realk !In bytes
   
-    call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
+ !   call get_maxstepmem(MAXstepmem,dimAlpha,dimGamma,n11,n12,n21,n22,n31,n32,n41,n42,UNIT)
  
     if(DECinfo%F12DEBUG) then
-          print *, "----------------------------------"
-          print *, " Inside get_max_batchsize summary "
-          print *, "----------------------------------"
-          print *, "MemAvailable: ", MemAvailable*UNIT
-          print *, "MAXstepmem: ", MAXstepmem*UNIT
+!!$       print *, "----------------------------------"
+!!$       print *, " Inside get_max_batchsize summary "
+!!$       print *, "----------------------------------"
+!!$       print *, "MemAvailable: ", MemAvailable*UNIT
+!!$       print *, "MAXstepmem: ", MAXstepmem*UNIT
 !!$       print *, "n11: ", n11
 !!$       print *, "n21: ", n21
 !!$       print *, "n31: ", n31
@@ -2163,10 +2221,6 @@ contains
 !!$       print *, "dimAlpha: ", dimAlpha
 !!$       print *, "dimGamma: ", dimGamma
 !!$    endif
-
-    if(DECinfo%F12DEBUG) then
-       print *, "minAlpha: ", minAlpha
-    endif
     
     dimAlpha = minAlpha
     
@@ -2194,6 +2248,10 @@ contains
 !!$             print *, "dimAlpha:", dimAlpha
 !!$          endif
           exit alpha   
+       endif
+       
+       if(k==n11) then
+          dimAlpha = n11
        endif
 
     enddo alpha
@@ -2234,381 +2292,554 @@ contains
 !!$    endif
 
   end subroutine get_maxstepmem
- 
-!!$  subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
-!!$    implicit none
-!!$
-!!$    type(fullmolecule),intent(inout) :: MyMolecule
-!!$    type(lsitem), intent(inout) :: Mylsitem
-!!$    real(realk), intent(inout) :: ES2
-!!$    type(matrix), intent(in) :: Dmat
-!!$
-!!$    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-!!$
-!!$    !> Singles contribution
-!!$    type(matrix) :: Fic
-!!$    type(matrix) :: Fpp
-!!$    type(matrix) :: Fij
-!!$
-!!$    type(matrix) :: Fcc
-!!$    type(matrix) :: Frc
-!!$
-!!$    !Need to build Cabs
-!!$    ! Init stuff
-!!$    ! **********
-!!$    nbasis = MyMolecule%nbasis
-!!$    nocc   = MyMolecule%nocc
-!!$    nvirt  = MyMolecule%nunocc
-!!$    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-!!$    noccfull = nocc
-!!$
-!!$    !Fcd
-!!$    call mat_init(Fcc,ncabsAO,ncabsAO)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-!!$
-!!$    !call mat_init(Fcd,ncabs,ncabs)
-!!$    !  call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$    !     & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
-!!$    !call mat_free(Fcc)
-!!$
-!!$    !Fic
-!!$    call mat_init(Frc,nbasis,ncabsAO)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
-!!$
-!!$    call mat_init(Fic,nocc,ncabsAO)
-!!$
-!!$    !  call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$    !       & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
-!!$
-!!$    call MO_halftransform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$         & MyMolecule%Co, MyMolecule%Cv,'i',Frc,Fic,1)
-!!$
-!!$    call mat_free(Frc)
-!!$
-!!$    !Fii
-!!$    call mat_init(Fpp,nbasis,nbasis)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fpp,Dmat,MyLsitem,'RRRRC')
-!!$    call mat_init(Fij,nocc,nocc)
-!!$    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$         & MyMolecule%Co, MyMolecule%Cv,'ii',Fpp,Fij)
-!!$    call mat_free(Fpp)
-!!$
-!!$    call get_ES2_AO(ES2,Fic,Fij,Fcc,nocc,ncabsAO)
-!!$
-!!$    call mat_free(Fic)
-!!$    call mat_free(Fij)
-!!$    call mat_free(Fcc)
-!!$
-!!$  end subroutine get_ES2_from_dec_main
 
-  subroutine get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
+
+  !> \brief Driver for solving F12 singles equations using ES2 model and calculate 
+  !> F12 singles energy correction.
+  !>
+  !> Index convention: 
+  !> i,j: Occ
+  !> a,b: Virt
+  !> c,d: CABS
+  !>
+  !> Coupled equations to solve:
+  !> sum_b Xib Fba + sum_d Xid Fda - sum_j Fij Xja = 0          ("ia" index)
+  !> sum_b Xib Fbc + sum_d Xid Fdc - sum_j Fij Xjc = - Fic      ("ic" index)
+  !> 
+  !> Energy stored in MyMolecule%EF12singles
+  !> Esingles = 2 sum_{ic} Fic Xic 
+  subroutine F12singles_driver(MyMolecule,MyLsitem,Dmat)
     implicit none
-    
+
+    !> FUll molecule info
     type(fullmolecule),intent(inout) :: MyMolecule
+    !> LSitem
     type(lsitem), intent(inout) :: Mylsitem
-    real(realk), intent(inout) :: ES2
+    !> HF density matrix
     type(matrix), intent(in) :: Dmat
-    
     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-    
-    !> Singles contribution
     type(matrix) :: Fic
     type(matrix) :: Fcd
-    type(matrix) :: Fij
-    
+    type(matrix) :: Fac
     type(matrix) :: Fcc
-    type(matrix) :: Frc
+    type(matrix) :: Frc,Id,Ucd,tmp,Uij,Uab
+    type(matrix) :: Fij,Fab
+    real(realk), pointer :: eival(:)
+    real(realk) :: tcpu,twall
 
-    !Need to build Cabs
-    ! Init stuff
-    ! **********
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    ! Sanity check
+    if( MyMolecule%mem_distributed )then
+       call lsquit("ERROR(F12singles_driver): this routine does not work&
+            & with distributed arrays in the fullmolecule type, yet",-1)
+    endif
+
+
+    ! Dimensions
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
-    nvirt  = MyMolecule%nunocc
+    nvirt  = MyMolecule%nvirt
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     noccfull = nocc
-    
+
+    ! Fock matrices
+    ! *************
+
     !Fcd
     call mat_init(Fcc,ncabsAO,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcd,ncabs,ncabs)
-      call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
-    call mat_free(Fcc)
+    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
+    call mat_free(Fcc)    
 
     !Fic
     call mat_init(Frc,nbasis,ncabsAO)
     call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ic',Frc,Fic)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
     call mat_free(Frc)
 
-    !Fii
-    call mat_init(Fcc,nbasis,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
-    call mat_init(Fij,nocc,nocc)
+    ! Fac
+    call mat_init(Frc,nbasis,ncabsAO)
+    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co, MyMolecule%Cv,'ii',Fcc,Fij)
-    call mat_free(Fcc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
+    call mat_free(Frc)
 
-    call get_ES2(ES2,Fic,Fij,Fcd,nocc,ncabs)
-    
+    ! Fij and Fab
+    call mat_init(Fij,nocc,nocc)
+    call mat_init(Fab,nvirt,nvirt)
+    call mat_set_from_full(MyMolecule%oofock%elm2,1.0_realk,Fij)
+    call mat_set_from_full(MyMolecule%vvfock%elm2,1.0_realk,Fab)
+
+
+
+    ! Always use basis where Fij,Fab, and Fcd are diagonal
+    ! ****************************************************
+    ! Transform all Fock matrix accordingly here.
+
+    ! Unitary matrix for CABS space
+    call mat_init(Id,ncabs,ncabs)  ! identity
+    call mat_identity(Id)
+    call mem_alloc(eival,ncabs)
+    call mat_init(Ucd,ncabs,ncabs)
+    call mat_diag_f(Fcd,Id,eival,Ucd)  ! Diagonalize Fcd
+    call mem_dealloc(eival)
+
+    ! Transform Fcd --> U^T Fcd U
+    call mat_init(tmp,ncabs,ncabs)
+    call mat_assign(tmp,Fcd)
+    call util_AO_to_MO_2(Id,Ucd,tmp,Fcd,.true.)
+    call mat_free(tmp)
+    call mat_free(Id)
+
+    ! Unitary matrix for occ space
+    call mat_init(Id,nocc,nocc)  ! identity
+    call mat_identity(Id)
+    call mem_alloc(eival,nocc)
+    call mat_init(Uij,nocc,nocc)
+    call mat_diag_f(Fij,Id,eival,Uij)  ! Diagonalize Fcd
+    call mem_dealloc(eival)
+
+    ! Transform Fij --> Uij^T Fij Uij
+    call mat_init(tmp,nocc,nocc)
+    call mat_assign(tmp,Fij)
+    call util_AO_to_MO_2(Id,Uij,tmp,Fij,.true.)
+    call mat_free(tmp)
+    call mat_free(Id)
+
+    ! Unitary matrix for virt space
+    call mat_init(Id,nvirt,nvirt)  ! identity
+    call mat_identity(Id)
+    call mem_alloc(eival,nvirt)
+    call mat_init(Uab,nvirt,nvirt)
+    call mat_diag_f(Fab,Id,eival,Uab)  ! Diagonalize Fcd
+    call mem_dealloc(eival)
+
+    ! Transform Fab --> Uab^T Fab Uab
+    call mat_init(tmp,nvirt,nvirt)
+    call mat_assign(tmp,Fab)
+    call util_AO_to_MO_2(Id,Uab,tmp,Fab,.true.)
+    call mat_free(tmp)
+    call mat_free(Id)
+
+    ! Transform Fic --> Uij^T Fic Ucd
+    call mat_init(tmp,nocc,ncabs)
+    call mat_assign(tmp,Fic)
+    call util_AO_to_MO_different_trans(Uij,tmp,Ucd,Fic)
+    call mat_free(tmp)
+
+    ! Transform Fac --> Uab^T Fac Ucd
+    call mat_init(tmp,nvirt,ncabs)
+    call mat_assign(tmp,Fac)
+    call util_AO_to_MO_different_trans(Uab,tmp,Ucd,Fac)
+    call mat_free(tmp)
+    call mat_free(Ucd)
+    call mat_free(Uij)
+    call mat_free(Uab)
+
+    call LSTIMER('F12 SINGLES PREPARATION',tcpu,twall,DECinfo%output)
+
+
+    ! Call F12 singles solver using Fock matrices in diagonal bases
+    ! *************************************************************
+    call F12_singles_solver(Fij,Fab,Fic,Fac,Fcd,MyMolecule%EF12singles)
+
+    call mat_free(Fij)
+    call mat_free(Fab)
+    call mat_free(Fac)
     call mat_free(Fic)
     call mat_free(Fcd)
-    call mat_free(Fij)
-   
-  end subroutine get_ES2_from_dec_main
-  
-  
-  subroutine get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
-    type(matrix) :: Fic
-    type(matrix) :: Fii
-    type(matrix) :: Fcd
-
-    real(realk), pointer :: Fic_real(:,:)
-    real(realk), pointer :: Fcd_real(:,:)
-    real(realk), pointer :: Fij_real(:,:)
-
-    real(realk), pointer :: Fia(:,:)
-    
-    real(realk), pointer :: eps_c(:)
-    real(realk), pointer :: eps_i(:)
-
-    real(realk), pointer :: C_cd(:,:)
-    real(realk), pointer :: C_ij(:,:)
-    
-    real(realk), intent(inout) :: ES2
-    real(realk) :: tmp
-
-    integer, intent(inout) :: nocc,ncabs
-    integer :: i,j,a,c
-
-    call mem_alloc(Fcd_real,ncabs,ncabs)
-    call mem_alloc(C_cd,ncabs,ncabs)
-    call mem_alloc(eps_c,ncabs)
-
-    ! \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-    ! subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
-
-    !Fcd
-    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-    call solve_eigenvalue_problem_unitoverlap(ncabs,Fcd_real,eps_c,C_cd)    
-
-    !print *, "norm2(Fcd_real):",  norm2(Fcd_real)  
-    !print *, "norm2(C_cd):",  norm2(C_cd)
-    !print *, "norm2(eps_c):", norm2(eps_c)    
-
-    !Fij
-    call mem_alloc(Fij_real,nocc,nocc)
-    call mem_alloc(C_ij,nocc,nocc)
-    call mem_alloc(eps_i,nocc)
-
-    call mat_to_full(Fii,1.0E0_realk,Fij_real)
-    call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
-
-    !print *, "norm2(Fij_real):",  norm2(Fij_real)  
-    !print *, "norm2(C_ij):",      norm2(C_ij)
-    !print *, "norm2(eps_i):",     norm2(eps_i)   
-
-    !Fic
-    call mem_alloc(Fic_real,nocc,ncabs)
-    call mat_to_full(Fic,1.0E0_realk,Fic_real)
-
-    !print *, "norm2(Fic):",  norm2(Fic_real)  
-
-!!$    !F12DEBUG
-!!$    if(DECinfo%F12debug) then
-!!$       print *, "------------ Fic(AO) ----------- "
-!!$       print *, "-------------------------------- "
-!!$       
-!!$       do i=1,nocc
-!!$          do c=1, ncabs
-!!$             if(abs(Fic_real(i,c)) > 1E-010) then
-!!$                print *, "i c Fic_real(i,c):  " , i, c, Fic_real(i,c)
-!!$             endif
-!!$          enddo
-!!$       enddo
-!!$    endif
-        
-    ! Transform to ortoghonal basis Fia'
-    call mem_alloc(Fia,nocc,ncabs)
-    do i=1,nocc
-       do a=1, ncabs
-          tmp = 0.0E0_realk
-          do j=1,nocc
-             do c=1, ncabs
-                tmp = tmp + C_ij(j,i)*Fic_real(j,c)*C_cd(c,a)
-             enddo
-          enddo
-          Fia(i,a) = tmp
-       enddo
-    enddo
-
-    !print *, "norm2D(Fia) 1:", norm2D(Fia)
-
-    !> matB = C1^T matA C2
-    !dec_diff_basis_transform1(nA,nB1,nB2,C1,C2,matA,matB)
-    !call dec_diff_basis_transform1(nocc*ncabs,nocc,ncabs,C_ij,C_cd,Fic_real,Fia)
-    !print *, "norm2D(Fia) 2:", norm2D(Fia)
 
 
-    !PRINT *, "norm2(Fic):",  norm2(Fic_real)  
-!!$    F12DEBUG
-!!$    if(DECinfo%F12debug) then
-!!$       print *, "------------ Fia(MO) ----------- "
-!!$       print *, "-------------------------------- "
-!!$       
-!!$       do i=1,nocc
-!!$          do a=1, ncabs
-!!$             if(abs(Fia(i,a)) > 1E-010) then
-!!$                print *, "i a Fia(i,a):  " , i, a, Fia(i,a)
-!!$             endif
-!!$          enddo
-!!$       enddo
-!!$    endif
+  end subroutine F12singles_driver
 
-!!$  Print of orbital energies of eps_c
-!!$    print *, "------------ print epc ----------- "
-!!$    do a=1,ncabs
-!!$       print *, "eps_c:",a,eps_c(a)   
-!!$    enddo
-!!$    
-!!$    print *, "------------ print eps_i ----------- "
-!!$    !Print of orbital energies of eps_c
-!!$    do a=1,nocc
-!!$       print *, "eps_i:",a,eps_i(a)   
-!!$    enddo
-    
-    !Singles energy correction
-    ES2 = 0.0E0_realk
-    do i=1,nocc
-       do a=1,ncabs
-          ES2 = ES2 + (Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
-       enddo
-    enddo
 
-    !print *, "Singles Contribution: ", ES2
-    
-    call mem_dealloc(Fcd_real)
-    call mem_dealloc(eps_c)
-    call mem_dealloc(C_cd)
 
-    call mem_dealloc(Fij_real)
-    call mem_dealloc(eps_i)
-    call mem_dealloc(C_ij)
+  !> \brief Solve F12 singles equations using ES2 model and calculate 
+  !> F12 singles energy correction.
+  !>
+  !> Index convention: 
+  !> i,j: Occ
+  !> a,b: Virt
+  !> c,d: CABS
+  !>
+  !> Coupled equations to solve:
+  !> sum_b Xib Fba + sum_d Xid Fda - sum_j Fij Xja = 0          ("ia" index)
+  !> sum_b Xib Fbc + sum_d Xid Fdc - sum_j Fij Xjc = - Fic      ("ic" index)
+  !> 
+  !> Energy:
+  !> Esingles = 2 sum_{ic} Fic Xic
+  !>
+  !> \author Kasper Kristensen
+  subroutine F12_singles_solver(Fij,Fab,Fic,Fac,Fcd,Esingles)
 
-    call mem_dealloc(Fia)
-    call mem_dealloc(Fic_real)
+    implicit none
+    !> Occ-occ Fock matrix
+    type(matrix), intent(in) :: Fij
+    !> Virt-virt Fock matrix
+    type(matrix), intent(in) :: Fab
+    !> Occ-CABS Fock matrix
+    type(matrix), intent(in) :: Fic
+    !> Virt-CABS Fock matrix
+    type(matrix), intent(in) :: Fac
+    !> CABS-CABS Fock matrix
+    type(matrix), intent(in) :: Fcd
+    !> F12 singles energy correction
+    real(realk),intent(inout) :: Esingles
+    integer :: nocc, nvirt,ncabs
+    type(matrix), pointer :: Ria(:),Ric(:),Xia(:),Xic(:)
+    type(matrix) :: XOPTia, XOPTic, ROPTia, ROPTic,Pia,Pic,RPia,RPic
+    reaL(realk) :: tcpu,twall
+    real(realk), pointer :: B(:,:),c(:)
+    logical :: converged,debugprint
+    real(realk) :: prev_norm, resnorm, convthr
+    integer :: iter, last_iter, i,j
 
-  end subroutine get_ES2
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
 
- subroutine get_ES2_AO(ES2,Fic,Fii,Fcd,nocc,ncabsAO)
-    type(matrix) :: Fic
-    type(matrix) :: Fii
-    type(matrix) :: Fcd
+    debugprint=.false.
+    if(DECinfo%PL>2) debugprint=.true.
 
-    real(realk), pointer :: Fic_real(:,:)
-    real(realk), pointer :: Fcd_real(:,:)
-    real(realk), pointer :: Fij_real(:,:)
+    ! Dimensions
+    nocc   = Fij%nrow
+    nvirt = Fab%nrow
+    ncabs = Fcd%nrow
 
-    real(realk), pointer :: Fia(:,:)
-    
-    real(realk), pointer :: eps_c(:)
-    real(realk), pointer :: eps_i(:)
+    ! DIIS matrices
+    call mem_alloc(B,DECinfo%F12singlesMaxIter,DECinfo%F12singlesMaxIter)
+    call mem_alloc(c,DECinfo%F12singlesMaxIter)
 
-    real(realk), pointer :: C_cd(:,:)
-    real(realk), pointer :: C_ij(:,:)
-    
-    real(realk), intent(inout) :: ES2
-    real(realk) :: tmp
+    ! Solution matrices X and residuals R for each iteration
+    call mem_alloc(Xia,DECinfo%F12singlesMaxIter)
+    call mem_alloc(Xic,DECinfo%F12singlesMaxIter)
+    call mem_alloc(Ria,DECinfo%F12singlesMaxIter)
+    call mem_alloc(Ric,DECinfo%F12singlesMaxIter)
 
-    integer, intent(inout) :: nocc,ncabsAO
-    integer :: i,j,a,c
- 
-    call mem_alloc(Fcd_real,ncabsAO,ncabsAO)
-    call mem_alloc(C_cd,ncabsAO,ncabsAO)
-    call mem_alloc(eps_c,ncabsAO)
+    ! Optimal solution matrices and residuals
+    call mat_init(XOPTia,nocc,nvirt)
+    call mat_init(XOPTic,nocc,ncabs)
+    call mat_init(ROPTia,nocc,nvirt)
+    call mat_init(ROPTic,nocc,ncabs)
 
-    ! \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-    ! subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
+    ! Preconditioner
+    call mat_init(Pia,nocc,nvirt)
+    call mat_init(Pic,nocc,ncabs)
+    call get_F12_singles_preconditioner(Fij,Fab,Fcd,Pia,Pic)
+    call mat_init(RPia,nocc,nvirt)
+    call mat_init(RPic,nocc,ncabs)
 
-    !Fcd
-    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-    call solve_eigenvalue_problem_unitoverlap(ncabsAO,Fcd_real,eps_c,C_cd)    
 
-    !print *, "norm2D(Fcd_real):",  norm2D(Fcd_real)  
-    !print *, "norm2D(C_cd):",  norm2D(C_cd)
-    !print *, "norm2D(eps_c):", norm2D(eps_c)    
+    ! Solver information
+    convthr = DECinfo%F12singlesTHR      ! The convergence threshold
+    converged=.false.
+    prev_norm = huge(1.0_realk)
 
-    !Fij
-    call mem_alloc(Fij_real,nocc,nocc)
-    call mem_alloc(C_ij,nocc,nocc)
-    call mem_alloc(eps_i,nocc)
-    
-    call mat_to_full(Fii,1.0E0_realk,Fij_real)
-  
-    call solve_eigenvalue_problem_unitoverlap(nocc,Fij_real,eps_i,C_ij)     
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'Starting F12 singles correction solver'
+    write(DECinfo%output,*) '--------------------------------------'
+    write(DECinfo%output,'(1X,a)')  '###  Iteration     Residual norm         F12 Singles energy'
+    write(6,'(1X,a)')  '###  Iteration     Residual norm         F12 Singles energy'
 
-    !print *, "norm2D(Fij_real):",  norm2D(Fij_real)  
-    !print *, "norm2D(C_ij):",      norm2D(C_ij)
-    !print *, "norm2D(eps_i):",     norm2D(eps_i)   
 
-    !Fic
-    call mem_alloc(Fic_real,nocc,ncabsAO)
-    call mat_to_full(Fic,1.0E0_realk,Fic_real)
-       
-    ! Transform to ortoghonal basis Fia'
-    call mem_alloc(Fia,nocc,ncabsAO)
-    do i=1,nocc
-       do a=1, ncabsAO
-          tmp = 0.0E0_realk
-          do j=1,nocc
-             do c=1, ncabsAO
-                tmp = tmp + C_ij(j,i)*Fic_real(j,c)*C_cd(c,a)
-             enddo
-          enddo
-          Fia(i,a) = tmp
-       enddo
-    enddo
+    ! Start solver
+    ! ************
+    Iterations : do iter=1,DECinfo%F12singlesMaxIter
 
-!!$    !Print of orbital energies of eps_c
-!!$    print *, "------------ print epc ----------- "
-!!$    do a=1,ncabsAO
-!!$       print *, "eps_c:",a,eps_c(a)   
-!!$    enddo
-!!$    
-!!$    print *, "------------ print eps_i ----------- "
-!!$    !Print of orbital energies of eps_c
-!!$    do a=1,nocc
-!!$       print *, "eps_i:",a,eps_i(a)   
-!!$    enddo
-    
-    !Singles energy correction
-    ES2 = 0.0E0_realk
-    do i=1,nocc
-       do a=1,ncabsAO
-          ES2 = ES2 + (Fia(i,a)*Fia(i,a))/(eps_i(i)-eps_c(a))           
-       enddo
-    enddo
+       ! remove old vectors
+       RemoveOldVectors : if(iter > DECinfo%F12singlesMaxDIIS) then
+          call mat_free(Xia(iter-DECinfo%F12singlesMaxDIIS))
+          call mat_free(Ria(iter-DECinfo%F12singlesMaxDIIS))
+          call mat_free(Xic(iter-DECinfo%F12singlesMaxDIIS))
+          call mat_free(Ric(iter-DECinfo%F12singlesMaxDIIS))
+       end if RemoveOldVectors
 
-    print *, "Singles Contribution: ", ES2
-    
-    call mem_dealloc(Fcd_real)
-    call mem_dealloc(eps_c)
-    call mem_dealloc(C_cd)
+       ! Start vectors are zero
+       GetGuessVectors : if(iter == 1) then
+          call mat_init(Xia(iter),nocc,nvirt)
+          call mat_init(Xic(iter),nocc,ncabs)
+          call mat_zero(Xia(iter))
+          call mat_zero(Xic(iter))
+       end if GetGuessVectors
 
-    call mem_dealloc(Fij_real)
-    call mem_dealloc(eps_i)
-    call mem_dealloc(C_ij)
+       ! Get current residual
+       call mat_init(Ria(iter),nocc,nvirt)
+       call mat_init(Ric(iter),nocc,ncabs)
+       call F12_singles_residual(Fij,Fab,Fic,Fac,Fcd,Xia(iter),Xic(iter),Ria(iter),Ric(iter))
 
-    call mem_dealloc(Fia)
-    call mem_dealloc(Fic_real)
+       ! calculate crop/diis matrix
+       B=0.0E0_realk; c=0.0E0_realk
+       do i=iter,max(iter-DECinfo%F12singlesMaxDIIS+1,1),-1
+          do j=iter,i,-1
+             call F12_singles_precondition(Ria(j),Ric(j),Pia,Pic,RPia,RPic)
+             B(i,j) = mat_dotproduct(Ria(i),RPia)
+             B(i,j) = B(i,j) + mat_dotproduct(Ric(i),RPic)
+             B(j,i) = B(i,j)
+          end do
+       end do
 
-  end subroutine get_ES2_AO
-  
-  
-  subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
+       ! solve crop/diis equation
+       call CalculateDIIScoefficients(DECinfo%F12singlesMaxDIIS,DECinfo%F12singlesMaxIter,iter,B,c, &
+            debugprint)
+
+       ! mixing to get optimal
+       call mat_zero(XOPTia)
+       call mat_zero(XOPTic)
+       call mat_zero(ROPTia)
+       call mat_zero(ROPTic)
+       do i=iter,max(iter-DECinfo%F12singlesMaxDIIS+1,1),-1
+          call mat_daxpy(c(i),Xia(i),XOPTia)
+          call mat_daxpy(c(i),Xic(i),XOPTic)
+          call mat_daxpy(c(i),Ria(i),ROPTia)
+          call mat_daxpy(c(i),Ric(i),ROPTic)
+       end do
+
+       call mat_assign(Xia(iter),XOPTia)
+       call mat_assign(Xic(iter),XOPTic)
+       call mat_assign(Ria(iter),ROPTia)
+       call mat_assign(Ric(iter),ROPTic)
+
+       ! Singles energy
+       Esingles = get_F12_singles_energy(XOPTic,Fic)
+
+       ! Check for convergence
+       ! *********************
+       ! Residual norm (for both equations)
+       resnorm = mat_sqnorm2(Ria(iter))            ! norm squared for "ia" equation
+       resnorm = resnorm + mat_sqnorm2(Ric(iter))  ! norm squared for "ia" and "ic" equations
+       resnorm = sqrt(resnorm)                     ! norm for both equations
+
+       write(DECinfo%output,'(1X,a,2X,i4,5X,g20.10,3X,g22.12)')  '### ',iter, resnorm,Esingles
+       write(*,'(1X,a,2X,i4,5X,g20.10,3X,g22.12)')  '### ',iter, resnorm,Esingles
+
+       ! Sanity warning
+       if(resnorm > prev_norm) then
+          write(DECinfo%output,'(a)') ' warning :: norm was smaller in previous iteration !!! '
+       end if
+       prev_norm=resnorm
+
+       ! check if this is the last iteration
+       if(resnorm < convthr) converged=.true.
+       if( (iter == DECinfo%F12singlesMaxIter) .or. converged ) then
+          call mat_assign(XOPTia,Xia(iter))
+          call mat_assign(XOPTic,Xic(iter))
+          last_iter = iter
+          exit Iterations
+       else
+
+          ! Generate trial vector for next iteration
+          ! ----------------------------------------
+          call F12_singles_precondition(ROPTia,ROPTic,Pia,Pic,RPia,RPic)
+          ! New trial vector (Eq. 5.50 in Marcin's thesis)
+          call mat_init(Xia(iter+1),nocc,nvirt)
+          call mat_init(Xic(iter+1),nocc,ncabs)
+          call mat_add(1E0_realk,XOPTia,1E0_realk,RPia,Xia(iter+1))
+          call mat_add(1E0_realk,XOPTic,1E0_realk,RPic,Xic(iter+1))
+       end if
+
+    end do Iterations
+
+    if(converged) then
+       write(DECinfo%output,'(A,I5,A)') &
+            & 'F12 Singles equations solved in', last_iter, ' iterations!'
+       write(DECinfo%output,'(A,g22.12)') &
+            & 'F12 Singles energy correction: ', Esingles
+    else
+       call lsquit('F12_singles_solver: Equations not solved!',-1)
+    endif
+
+    ! deallocate stuff
+    call mem_dealloc(B)
+    call mem_dealloc(c)
+    do i=last_iter,max(last_iter-DECinfo%F12singlesMaxDIIS+1,1),-1
+       call mat_free(Xia(i))
+       call mat_free(Xic(i))
+       call mat_free(Ria(i))
+       call mat_free(Ric(i))
+    end do
+    call mem_dealloc(Xia)
+    call mem_dealloc(Xic)
+    call mem_dealloc(Ria)
+    call mem_dealloc(Ric)
+    call mat_free(XOPTia)
+    call mat_free(XOPTic)
+    call mat_free(ROPTia)
+    call mat_free(ROPTic)
+    call mat_free(Pia)
+    call mat_free(Pic)
+    call mat_free(RPia)
+    call mat_free(RPic)
+
+
+    call LSTIMER('F12 SINGLES SOLVER',tcpu,twall,DECinfo%output)
+
+  end subroutine F12_singles_solver
+
+
+  !> \brief Calculate F12 singles energy correction:
+  !> Esingles = 2 sum_{ic} Fic Xic
+  !> \author Kasper Kristensen
+  !> \date August 2015
+  function get_F12_singles_energy(Xic,Fic) result(Esingles)
+    implicit none
+    !> Current solution vector to singles equations (occ,CABS indices)
+    type(matrix),intent(in) :: Xic
+    !> Occ-CABS Fock-matrix
+    type(matrix),intent(in) :: Fic
+    real(realk) :: Esingles
+
+    Esingles = mat_dotproduct(Xic,Fic)
+    Esingles = 2.0_realk*Esingles
+
+  end function get_F12_singles_energy
+
+
+  !> \brief Calculate preconditioner for F12 singles solver
+  !> For occ-virt block: P(i,a) = Fock(a,a) - Fock(i,i)
+  !> For occ-cabs block: P(i,c) = Fock(c,c) - Fock(i,i)
+  !> (see F12_singles_solver for index convention)
+  !> \author Kasper Kristensen
+  !> \date August 2015
+  subroutine get_F12_singles_preconditioner(Fij,Fab,Fcd,Pia,Pic)
+
+    implicit none
+    !> Occ-occ Fock matrix
+    type(matrix), intent(in) :: Fij
+    !> Virt-virt Fock matrix
+    type(matrix), intent(in) :: Fab
+    !> CABS-CABS Fock matrix
+    type(matrix), intent(in) :: Fcd
+    !> Occ-virt preconditioner
+    type(matrix),intent(in) :: Pia
+    !> Occ-CABS preconditioner
+    type(matrix),intent(in) :: Pic
+    real(realk),pointer :: Pia2(:,:),Pic2(:,:),Fij2(:,:),Fab2(:,:),Fcd2(:,:)
+    integer :: nocc,nvirt,ncabs,i,a,c
+
+    nocc   = Fij%nrow
+    nvirt = Fab%nrow
+    ncabs = Fcd%nrow
+
+    call mem_alloc(Fij2,nocc,nocc)
+    call mem_alloc(Fab2,nvirt,nvirt)
+    call mem_alloc(Fcd2,ncabs,ncabs)
+    call mat_to_full(Fij,1.0E0_realk,Fij2)
+    call mat_to_full(Fab,1.0E0_realk,Fab2)
+    call mat_to_full(Fcd,1.0E0_realk,Fcd2)
+
+    call mem_alloc(Pia2,nocc,nvirt)
+    call mem_alloc(Pic2,nocc,ncabs)
+
+    do a=1,nvirt
+       do i=1,nocc
+          Pia2(i,a) = Fab2(a,a) - Fij2(i,i)
+       end do
+    end do
+
+    do c=1,ncabs
+       do i=1,nocc
+          Pic2(i,c) = Fcd2(c,c) - Fij2(i,i)
+       end do
+    end do
+
+    call mat_set_from_full(Pia2, 1E0_realk,Pia)
+    call mat_set_from_full(Pic2, 1E0_realk,Pic)
+
+    call mem_dealloc(Fij2)
+    call mem_dealloc(Fab2)
+    call mem_dealloc(Fcd2)
+    call mem_dealloc(Pia2)
+    call mem_dealloc(Pic2)
+
+  end subroutine get_F12_singles_preconditioner
+
+
+  !> \brief Calculate F12 singles residual components Ria and Ric.
+  !> 
+  !> Index convention: 
+  !> i,j: Occ
+  !> a,b: Virt
+  !> c,d: CABS
+  !>
+  !> Ria = sum_b Xib Fba + sum_d Xid Fda - sum_j Fij Xja        
+  !> Ric = sum_b Xib Fbc + sum_d Xid Fdc - sum_j Fij Xjc + Fic  
+  !> 
+  !> \author Kasper Kristensen
+  !> \date August 2015
+  subroutine F12_singles_residual(Fij,Fab,Fic,Fac,Fcd,Xia,Xic,Ria,Ric)
+    implicit none
+    !> Occ-occ Fock matrix
+    type(matrix), intent(in) :: Fij
+    !> Virt-virt Fock matrix
+    type(matrix), intent(in) :: Fab
+    !> Occ-CABS Fock matrix
+    type(matrix), intent(in) :: Fic
+    !> Virt-CABS Fock matrix
+    type(matrix), intent(in) :: Fac
+    !> CABS-CABS Fock matrix
+    type(matrix), intent(in) :: Fcd
+    !> Occ-virt solution matrix
+    type(matrix),intent(in) :: Xia
+    !> Occ-CABS solution matrix
+    type(matrix),intent(in) :: Xic
+    !> Occ-virt residual
+    type(matrix),intent(inout) :: Ria
+    !> Occ-CABS residual
+    type(matrix),intent(inout) :: Ric
+
+    ! Note that Fij, Fab, and Fcd are symmetric, while Fac and Fic are of course not.
+
+    ! Ria = sum_b Xib Fba + sum_d Xid Fda - sum_j Fij Xja        
+    call mat_mul(Xia, Fab, 'N', 'N', 1.0_realk, 0.0_realk, Ria)
+    call mat_mul(Xic, Fac, 'N', 'T', 1.0_realk, 1.0_realk, Ria)
+    call mat_mul(Fij, Xia, 'N', 'N', -1.0_realk, 1.0_realk, Ria)
+
+    !> Ric = sum_b Xib Fbc + sum_d Xid Fdc - sum_j Fij Xjc + Fic  
+    call mat_assign(Ric,Fic)
+    call mat_mul(Xia, Fac, 'N', 'N', 1.0_realk, 1.0_realk, Ric)
+    call mat_mul(Xic, Fcd, 'N', 'N', 1.0_realk, 1.0_realk, Ric)
+    call mat_mul(Fij, Xic, 'N', 'N', -1.0_realk, 1.0_realk, Ric)
+
+  end subroutine F12_singles_residual
+
+
+
+  !> \brief Precondition F12 singles equation:
+  !> RP(i,a) = R(i,a) / [Fock(a,a) - Fock(i,i)] 
+  !> RP(i,c) = R(i,c) / [Fock(c,c) - Fock(i,i)] 
+  !> (see F12_singles_solver for index convention)
+  !> \author Kasper Kristensen
+  !> \date November 2010
+  subroutine F12_singles_precondition(Ria,Ric,Pia,Pic,RPia,RPic)
+
+    implicit none
+    !> Original residual 
+    type(matrix), intent(in) :: Ria,Ric
+    !> Preconditioner
+    type(matrix),intent(in) :: Pia,Pic
+    !> Preconditioned residual
+    type(matrix), intent(inout) :: RPia,RPic
+    real(realk) :: mu
+
+    mu=0.0_realk
+    ! Copy residual into output vector
+    call mat_assign(RPia,Ria)
+    call mat_assign(RPic,Ric)
+
+    ! "Divide" by preconditioning matrix
+    call mat_hdiv(RPia,Pia,mu)
+    call mat_hdiv(RPic,Pic,mu)
+
+  end subroutine F12_singles_precondition
+
+
+
+
+ subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
     implicit none
 
     !> Full molecule structure to be initialized
@@ -2618,7 +2849,7 @@ contains
 
     type(matrix) :: CMO_cabs
     integer :: ncabsAO,ncabs
-    
+
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     molecule%nCabsAO = ncabsAO
     molecule%nCabsMO = ncabs
@@ -2626,14 +2857,9 @@ contains
 
     call init_cabs(DECinfo%full_molecular_cc)
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
-
-    ! NB! Memory leak need to be freed somewhere
-    !    call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
-    !    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
     call mat_free(CMO_cabs)
 
-  end subroutine dec_get_CABS_orbitals
+ end subroutine dec_get_CABS_orbitals
 
   subroutine  dec_get_RI_orbitals(molecule,mylsitem)
     implicit none
@@ -2650,27 +2876,2213 @@ contains
     molecule%nCabsAO = ncabsAO
     molecule%nCabsMO = ncabs
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
-
     call init_ri(DECinfo%full_molecular_cc)
     call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
-
-    ! NB! Memory leak need to be freed somewhere
-    !    call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
-    !    call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
     call mat_free(CMO_RI)
-
   end subroutine dec_get_RI_orbitals
 
-#else
+!==========================================================
+!===           Subroutines for DEC-RIMP2-F12            ===
+!==========================================================
 
-  subroutine dummy_f12_routines()
-    implicit none
+!Perform on GPU 
+subroutine ContractOne4CenterF12IntegralsRI(nBA,n,Calpha,EJ,EK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n
+   real(realk),intent(in)    :: Calpha(nBA,n,n)
+   real(realk),intent(inout) :: EJ,EK
+   !local variables
+   integer :: I,ALPHA,J
+   real(realk) :: TMP,TMPV(n),TMPI
+   !Dopair
+   logical,intent(in),optional :: dopair_occ_in(n,n)
+   logical :: dopair_occ(n,n)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif 
+   
+   !Exchange Fiijj
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
 
-  end subroutine dummy_f12_routines
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(I,J,&
+   !$OMP ALPHA) SHARED(Calpha,n,nba,dopair_occ) REDUCTION(+:EK,EJ)
+   DO I=1,n
+      DO J=1,n
+         if(dopair_occ(I,J)) then
+            DO ALPHA = 1, NBA
+               EJ = EJ + Calpha(ALPHA,I,I)*Calpha(ALPHA,J,J)
+               EK = EK + Calpha(ALPHA,I,J)*Calpha(ALPHA,J,I)
+            ENDDO
+         endif
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
 
-#endif 
+   !EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+!   print *,"COULOMBX2:  ",  -1.0E0_realk*(5.0E0_realk*0.25E0_realk)*EJ
+!   print *,"EXCHANGEX2: ",   1.0E0_realk*(0.250_realk*EK) 
+!   print *,"COULOMBX2+EXCHANGEX2:", -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*EJ-EK*0.25E0_realk)   
+
+end subroutine ContractOne4CenterF12IntegralsRI
+
+!Perform on GPU 
+subroutine ContractOne4CenterF12IntegralsRI2(nBA,n,Calpha,Fii,EJ,EK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n
+   real(realk),intent(in)    :: Calpha(nBA,n,n)
+   real(realk),intent(inout) :: EJ,EK
+   real(realk),intent(IN) :: Fii(n,n)
+   !local variables
+   integer :: i,alpha,j
+   real(realk) :: tmp1,tmp2,TMPV(n),TMPI
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n,n)                            
+   logical :: dopair_occ(n,n)                                                     
+   if(present(dopair_occ_in)) then                                                  
+      dopair_occ = dopair_occ_in                                                
+   else                                                                        
+      dopair_occ = .TRUE.                                                     
+   endif                 
+   !Exchange Fiijj
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   DO i=1,n
+      DO j=1,n
+         if(dopair_occ(i,j)) then
+            tmp1 = 0.0E0_realk
+            tmp2 = 0.0E0_realk
+            DO alpha = 1, nBA
+               tmp1 = tmp1 + Calpha(ALPHA,i,i)*Calpha(ALPHA,j,j)
+               tmp2 = tmp2 + Calpha(ALPHA,i,j)*Calpha(ALPHA,j,i)
+            ENDDO
+            EJ = EJ + tmp1*(Fii(i,i)+Fii(j,j))
+            EK = EK + tmp2*(Fii(i,i)+Fii(j,j))
+         endif
+      ENDDO
+   ENDDO
+
+end subroutine ContractOne4CenterF12IntegralsRI2
+
+!Perform on GPU 
+subroutine ContractOne4CenterF12IntegralsRI2_nc(nBA,n,Calpha,CalphaT,EJ,EK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n
+   real(realk),intent(in)    :: Calpha(nBA,n,n)
+   real(realk),intent(in)    :: CalphaT(nBA,n,n)
+   real(realk),intent(inout) :: EJ,EK
+   !local variables
+   integer :: i,alpha,beta,j
+   real(realk) :: tmpR1,tmpR2,tmpG1,tmpG2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n,n)                            
+   logical :: dopair_occ(n,n)                                                     
+ 
+   if(present(dopair_occ_in)) then                                                  
+      dopair_occ = dopair_occ_in                                                
+   else                                                                        
+      dopair_occ = .TRUE.                                                     
+   endif                 
+
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,alpha,beta,j,tmpR1,&
+   !$OMP tmpR2,tmpG1,tmpG2) SHARED(nBA,n,Calpha,CalphaT,dopair_occ) REDUCTION(+:EK,EJ)
+   DO i=1,n
+      DO j=1,n
+         if(dopair_occ(i,j)) then
+            tmpR1 = 0.0E0_realk
+            tmpR2 = 0.0E0_realk
+            DO alpha = 1, nBA
+               tmpR1 = tmpR1 + Calpha(ALPHA,i,i)*CalphaT(ALPHA,j,j)
+               tmpR2 = tmpR2 + Calpha(ALPHA,j,j)*CalphaT(ALPHA,i,i)
+            ENDDO
+            tmpG1 = 0.0E0_realk
+            tmpG2 = 0.0E0_realk
+            DO beta = 1, nBA
+               tmpG1 = tmpG1 + Calpha(BETA,j,i)*CalphaT(BETA,i,j)
+               tmpG2 = tmpG2 + Calpha(BETA,i,j)*CalphaT(BETA,j,i)
+            ENDDO
+            EJ = EJ + tmpR1+tmpR2
+            EK = EK + tmpG1+tmpG2
+         endif
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+
+end subroutine ContractOne4CenterF12IntegralsRI2_nc
+
+subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,CalphaR,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n,nbasis,ncore
+   real(realk),intent(in)    :: Rtilde(nBA,n,n)
+   real(realk),intent(in)    :: CalphaR(nBA,n,nbasis)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   real(realk), pointer :: CalphaCocc(:,:,:)
+
+   integer :: I,ALPHA,J
+   real(realk) :: TMP_IJIJ,TMP_JIIJ,TMP,TMPD
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n,n)
+   logical :: dopair_occ(n,n)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   TMPD = 0.0E0_realk
+   TMP = 0.0E0_realk
+
+   !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,ALPHA,J,TMP_IJIJ,&
+   !$OMP TMP_JIIJ) SHARED(nBA,n,ncore,nbasis,Rtilde,CalphaR,&
+   !$OMP dopair_occ) REDUCTION(+:TMP,TMPD)
+   DO J=1,n
+      !Diagonal
+      IF(dopair_occ(J,J)) THEN
+         TMP_IJIJ = 0.0E0_realk
+         DO ALPHA = 1,NBA
+            TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,J,ncore+J)*Rtilde(ALPHA,J,J) &
+               & + Rtilde(ALPHA,J,J)*CalphaR(ALPHA,J,ncore+J)
+         ENDDO
+         TMPD = TMPD + TMP_IJIJ
+      ENDIF
+      !Non Diagonal
+      DO I=j+1,n
+         IF(dopair_occ(I,J)) THEN
+            TMP_IJIJ = 0.0E0_realk
+            TMP_JIIJ = 0.0E0_realk
+            DO ALPHA = 1,NBA
+               TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,ncore+I)*Rtilde(ALPHA,J,J) &
+                  & + Rtilde(ALPHA,I,I)*CalphaR(ALPHA,J,ncore+J)
+               TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,ncore+J)*Rtilde(ALPHA,J,I) & 
+                  & + Rtilde(ALPHA,I,J)*CalphaR(ALPHA,J,ncore+I)
+            ENDDO
+            TMP = TMP + 7.0E0_realk * TMP_IJIJ + TMP_JIIJ
+         ENDIF
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+
+   EJK = 0.25E0_realk*tmpD + 0.0625E0_realk*TMP
+end subroutine ContractOne4CenterF12IntegralsRobustRI
+
+!Perform on GPU 
+subroutine ContractOne4CenterF12IntegralsRIB23(nBA,n1,n2,CalphaR,CalphaG,HJir,Coeff,EJK2,EJK3,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n1)
+   real(realk),intent(inout) :: EJK2,EJK3
+   real(realk),intent(in)    :: Coeff
+   real(realk)               :: ED2,EJ2,EJ3,EK2,EK3
+   real(realk),intent(IN)    :: HJir(n1,n2)
+   !local variables
+   integer :: c,i,j,alpha
+   real(realk) :: tmpR2,tmpR21,tmpR22,tmpR31,tmpR32
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   ED2 = 0.0E0_realk
+   EJ2 = 0.0E0_realk
+   EK2 = 0.0E0_realk
+   EJ3 = 0.0E0_realk
+   EK3 = 0.0E0_realk 
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(c,i,j,alpha,tmpR2,tmpR21,tmpR22,&
+   !$OMP tmpR31,tmpR32) SHARED(nBA,n1,n2,CalphaR,CalphaG,HJir,Coeff,EJK2,EJK3,&
+   !$OMP dopair_occ) REDUCTION(+:ED2,EJ2,EJ3,EK2,EK3)
+   DO c=1,n2
+      DO j=1,n1
+         IF(dopair_occ(J,J)) THEN
+            !Diagonal
+            tmpR2 = 0.0E0_realk
+            DO alpha = 1,nBA
+               tmpR2 = tmpR2 + CalphaR(alpha,J,c)*CalphaG(alpha,J,J)
+            ENDDO
+            ED2 = ED2 + tmpR2*hJir(J,c)
+         ENDIF
+         !Non Diagonal
+         DO i=j+1,n1
+            IF(dopair_occ(I,J)) THEN
+               tmpR21 = 0.0E0_realk
+               tmpR22 = 0.0E0_realk
+               tmpR31 = 0.0E0_realk
+               tmpR32 = 0.0E0_realk
+               DO alpha = 1,nBA
+                  tmpR21 = tmpR21 + CalphaR(alpha,i,c)*CalphaG(alpha,j,j)
+                  tmpR22 = tmpR22 + CalphaR(alpha,j,c)*CalphaG(alpha,i,j)
+                  tmpR31 = tmpR31 + CalphaR(alpha,j,c)*CalphaG(alpha,i,i)
+                  tmpR32 = tmpR32 + CalphaR(alpha,i,c)*CalphaG(alpha,i,j)
+               ENDDO
+               EJ2 = EJ2 + tmpR21*hJir(i,c)
+               EK2 = EK2 + tmpR22*hJir(i,c)
+               EJ3 = EJ3 + tmpR31*hJir(j,c)
+               EK3 = EK3 + tmpR32*hJir(j,c)
+            ENDIF
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK2 = ED2*1.0E0_realk/4.0E0_realk + (EJ2*(7.0E0_realk/16.0E0_realk) + EK2*(1.0E0_realk/16.0E0_realk))
+   EJK3 = ED2*1.0E0_realk/4.0E0_realk + (EJ3*(7.0E0_realk/16.0E0_realk) + EK3*(1.0E0_realk/16.0E0_realk)) 
+
+end subroutine ContractOne4CenterF12IntegralsRIB23
+
+subroutine ContractTwo4CenterF12IntegralsRI_p(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,alpha,beta
+   real(realk) :: tmpR,tmpG1,tmpG2,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif  
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
+   !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
+   !$OMP nba,dopair_occ) REDUCTION(+:EJ,EK,ED)
+   DO q=1,n2 !nocv
+      DO p=1,n2 !nocv
+         DO j=1,n1 !nocc
+            DO i=1,n1 !nocc
+               IF(dopair_occ(I,J)) THEN
+                  tmpR = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR = tmpR + CalphaR(alpha,i,p)*CalphaR(alpha,j,q)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG1 = tmpG1 + CalphaG(beta,i,p)*CalphaG(beta,j,q)
+                     tmpG2 = tmpG2 + CalphaG(beta,j,p)*CalphaG(beta,i,q)
+                  ENDDO
+                  EJ = EJ + tmpR*tmpG1 
+                  EK = EK + tmpR*tmpG2
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = 1.25E0_realk*EJ - 0.25E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRI_p
+
+subroutine ContractTwo4CenterF12IntegralsRI(nBA,n1,n2,CalphaR,CalphaG,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n2,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,alpha,beta
+   real(realk) :: tmpR,tmpG1,tmpG2,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif  
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,p,q,tmpR,&
+   !$OMP tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
+   !$OMP nba,dopair_occ) REDUCTION(+:EJ,EK,ED)
+   DO q=1,n2 !nocv
+      DO p=1,n2 !nocv
+         DO j=1,n1 !nocc
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk
+               DO alpha = 1,NBA
+                  tmpR = tmpR + CalphaR(alpha,j,p)*CalphaR(alpha,j,q)
+               ENDDO
+               tmpG1 = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG1 = tmpG1 + CalphaG(beta,p,j)*CalphaG(beta,q,j)
+               ENDDO
+               ED = ED + tmpR*tmpG1
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR = tmpR + CalphaR(alpha,i,p)*CalphaR(alpha,j,q)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG1 = tmpG1 + CalphaG(beta,p,i)*CalphaG(beta,q,j)
+                     tmpG2 = tmpG2 + CalphaG(beta,p,j)*CalphaG(beta,q,i)
+                  ENDDO
+                  EJ = EJ + tmpR*tmpG1 
+                  EK = EK + tmpR*tmpG2
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = ED + 2.5E0_realk*EJ - 0.50_realk*EK 
+   !print *,"COULOMBX2:  ", 7.0/32.0*EJ
+   !print *,"EXCHANGEX2: ", 1.0/32.0*EK
+   !print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ + 1.0/32.0*EK      
+end subroutine ContractTwo4CenterF12IntegralsRI
+
+subroutine ContractTwo4CenterF12IntegralsRI_pf(nBA,n1,n2,CalphaR,CalphaG,NBA2,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,NBA2
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaG(nBA2,n2,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,alpha,beta
+   real(realk) :: tmpR,tmpG1,tmpG2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif  
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(q,p,i,j,alpha,beta,&
+   !$OMP tmpR,tmpG1,tmpG2) SHARED(CalphaR,CalphaG,n2,n1,&
+   !$OMP nba,dopair_occ,nba2) REDUCTION(+:EJ,EK)
+   DO q=1,n2 !nocv
+      DO p=1,n2 !nocv
+         DO j=1,n1 !nocc
+            DO i=1,n1 !nocc
+               IF(dopair_occ(I,J)) THEN
+                  tmpR = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR = tmpR + CalphaR(alpha,i,p)*CalphaR(alpha,j,q)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1,NBA2
+                     tmpG1 = tmpG1 + CalphaG(beta,p,i)*CalphaG(beta,q,j)
+                     tmpG2 = tmpG2 + CalphaG(beta,p,j)*CalphaG(beta,q,i)
+                  ENDDO
+                  EJ = EJ + tmpR*tmpG1 
+                  EK = EK + tmpR*tmpG2
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = 5.0E0_realk/4.0E0_realk*EJ - 1.0E0_realk/4.0E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRI_pf
+
+subroutine ContractTwo4CenterF12IntegralsRIC(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK,dopair_occ_in)
+   implicit none 
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED,EJ,EK
+   real(realk),pointer       :: Caibj(:,:,:,:)
+   real(realk),intent(in)    :: Taibj(:,:,:,:)
+   !local variables
+   integer :: a,b,i,j,alpha,beta
+   real(realk) :: tmp,tmpR,tmpG
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO b=1,n2
+      DO a=1,n2
+         DO j=1,n1
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmp = 0.0E0_realk
+               DO alpha = 1,NBA
+                  tmp = tmp + CalphaV(alpha,j,a)*CalphaD(alpha,j,b) + CalphaV(alpha,j,b)*CalphaD(alpha,j,a)
+               ENDDO
+               ED = ED + tmp*Taibj(a,j,b,j)
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR = tmpR + CalphaV(alpha,i,a)*CalphaD(alpha,j,b) + CalphaV(alpha,j,b)*CalphaD(alpha,i,a)
+                  ENDDO
+                  tmpG = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG = tmpG + CalphaV(beta,j,a)*CalphaD(beta,i,b) + CalphaV(beta,i,b)*CalphaD(beta,j,a)
+                  ENDDO
+                  EJ = EJ + tmpR*Taibj(a,i,b,j)
+                  EK = EK + tmpG*Taibj(a,i,b,j)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK = - ED - 2.5E0_realk*EJ + 0.5E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIC
+
+subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,CalphaV,CalphaD,&
+     & CalphaT,NBA2,EJK,dopair_occ_in)
+   implicit none 
+   type(fullmolecule),intent(in) :: MyMolecule
+   integer,intent(in)        :: nBA,n1,n2,offset,NBA2
+   real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaT(nBA2,n2,n1)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   integer :: a,b,i,j,alpha,beta,gamma
+   real(realk) :: tmpR,tmpG,tmpT,eps
+   real(realk) :: EJ,EK
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(a,b,i,j,alpha,beta,&
+   !$OMP gamma,tmpR,tmpG,tmpT,eps) SHARED(MyMolecule,offset,nBA,n1,n2,&
+   !$OMP CalphaV,CalphaD,CalphaT,NBA2,EJK,dopair_occ) REDUCTION(+:EJ,EK)
+   DO j=1,n1 !nocc
+      DO b=1,n2 !nvirt
+         DO i=1,n1 !nocc
+            DO a=1,n2 !nvirt 
+               IF(dopair_occ(I,J)) THEN
+                  tmpR = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR = tmpR + CalphaV(alpha,i,a)*CalphaD(alpha,j,b) + CalphaV(alpha,j,b)*CalphaD(alpha,i,a)
+                  ENDDO
+                  tmpG = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG = tmpG + CalphaV(beta,j,a)*CalphaD(beta,i,b) + CalphaV(beta,i,b)*CalphaD(beta,j,a)
+                  ENDDO
+                  tmpT = 0.0E0_realk
+                  DO gamma = 1,NBA2
+                     tmpT = tmpT + CalphaT(gamma,a,i)*CalphaT(gamma,b,j) 
+                  ENDDO
+                  eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
+                     & + MyMolecule%oofock%elm2(J+offset,J+offset) &
+                     & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+                  eps = tmpT/eps
+                  EJ = EJ + tmpR*eps
+                  EK = EK + tmpG*eps
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = -5.0E0_realk/4.0E0_realk*EJ + 1.0E0_realk/4.0E0_realk*EK    
+!   print *,"COULOMBE V5:  ", 5.0/4.0*EJ
+!   print *,"EXCHANGE V5: ",  1.0/4.0*EK
+!   print *,"COULOMBE V5 + EXCHANGE: V5", EJK      
+end subroutine ContractTwo4CenterF12IntegralsRIC_pf
+
+subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaG,Fii,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   real(realk),intent(IN)    :: Fii(n1,n1)
+   !local variables
+   integer :: q,p,i,j,alpha,beta
+   real(realk) :: tmpG1,tmpG2,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO q=1,n2
+      DO p=1,n2
+         DO j=1,n1
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpG1 = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG1 = tmpG1 + CalphaG(beta,j,p)*CalphaG(beta,j,q)
+                  !We have a factor 2 but it's integrated into the reduction
+               ENDDO
+               ED = ED + tmpG1*tmpG1*Fii(j,j)
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG1 = tmpG1 + CalphaG(beta,i,p)*CalphaG(beta,j,q)
+                     tmpG2 = tmpG2 + CalphaG(beta,j,p)*CalphaG(beta,i,q)
+                  ENDDO
+                  EJ = EJ + tmpG1*tmpG1*(Fii(i,i) + Fii(j,j)) 
+                  EK = EK + tmpG1*tmpG2*(Fii(i,i) + Fii(j,j))
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+!   EJK = (ED*(0.5E0_realk) + (7.0/16.0*EJ + 1.0/16.0*EK)) 
+end subroutine ContractTwo4CenterF12IntegralsRIX
+
+subroutine ContractTwo4CenterF12IntegralsRIX_nc(nBA,n1,n2,CalphaC,CalphaG,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(in)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   integer :: q,p,i,j,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1
+   real(realk) :: EJ,EK
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,p,i,j,alpha,beta,&
+   !$OMP gamma,tmpG1,tmpG2,tmpG3,tmpG4,tmpR1) SHARED(nBA,n1,n2,CalphaC,&
+   !$OMP CalphaG,EJK,dopair_occ) REDUCTION(+:EJ,EK)
+   DO q=1,n2
+      DO p=1,n2
+         DO i=1,n1
+            DO j=1,n1
+               if(dopair_occ(i,j)) then
+                  tmpR1 = 0.0E0_realk
+                  DO alpha = 1, nBA
+                     tmpR1 = tmpR1 + CalphaC(ALPHA,p,i)*CalphaC(ALPHA,q,j)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     tmpG1 = tmpG1 + CalphaC(BETA,p,i)*CalphaG(BETA,q,j)
+                  ENDDO
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     tmpG2 = tmpG2 + CalphaG(BETA,p,i)*CalphaC(BETA,q,j)
+                  ENDDO
+                  tmpG3 = 0.0E0_realk
+                  tmpG4 = 0.0E0_realk
+                  DO gamma = 1, nBA
+                     tmpG3 = tmpG3 + CalphaG(GAMMA,p,j)*CalphaC(GAMMA,q,i)
+                     tmpG4 = tmpG4 + CalphaC(GAMMA,p,j)*CalphaG(GAMMA,q,i)
+                  ENDDO
+                  EJ = EJ + tmpR1*(tmpG1 + tmpG2)
+                  EK = EK + tmpR1*(tmpG3 + tmpG4)
+               endif
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIX_nc
+
+subroutine ContractTwo4CenterF12IntegralsRIX_ncMPI(nBA,n1,n2,CalphaCMPI,NBA2,&
+     & CalphaC,CalphaG,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,NBA2
+   real(realk),intent(in)    :: CalphaCMPI(nBA2,n2,n1)
+   real(realk),intent(in)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(in)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   integer :: q,p,i,j,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1
+   real(realk)               :: EJ,EK
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,p,i,j,alpha,beta,&
+   !$OMP gamma,tmpG1,tmpG2,tmpG3,tmpG4,tmpR1) SHARED(nBA,n1,n2,CalphaCMPI,&
+   !$OMP NBA2,CalphaC,CalphaG,EJK,dopair_occ) REDUCTION(+:EJ,EK)
+   DO q=1,n2
+      DO p=1,n2
+         DO i=1,n1
+            DO j=1,n1
+               if(dopair_occ(i,j)) then
+                  tmpR1 = 0.0E0_realk
+                  DO alpha = 1, nBA2
+                     tmpR1 = tmpR1 + CalphaCMPI(ALPHA,p,i)*CalphaCMPI(ALPHA,q,j)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     tmpG1 = tmpG1 + CalphaC(BETA,p,i)*CalphaG(BETA,q,j)
+                  ENDDO
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     tmpG2 = tmpG2 + CalphaG(BETA,p,i)*CalphaC(BETA,q,j)
+                  ENDDO
+                  tmpG3 = 0.0E0_realk
+                  tmpG4 = 0.0E0_realk
+                  DO gamma = 1, nBA
+                     tmpG3 = tmpG3 + CalphaG(GAMMA,p,j)*CalphaC(GAMMA,q,i)
+                     tmpG4 = tmpG4 + CalphaC(GAMMA,p,j)*CalphaG(GAMMA,q,i)
+                  ENDDO
+                  EJ = EJ + tmpR1*(tmpG1 + tmpG2)
+                  EK = EK + tmpR1*(tmpG3 + tmpG4)
+               endif
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIX_ncMPI
+
+subroutine ContractTwo4CenterF12IntegralsRIX_nc2(nBA,n1,n2,CalphaC,CalphaG,Fii,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaC(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: Fii(n1,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   Real(realk)               :: Xijkl(n1,n1,n1,n1)
+   !local variables
+   integer :: q,p,i,j,k,l,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO i=1,n1
+      DO j=1,n1
+         DO k=1,n1
+            DO l=1,n1
+
+               tmp = 0.0E0_realk
+               DO q=1,n2
+                  DO p=1,n2
+                     tmpR1 = 0.0E0_realk
+                     DO alpha = 1, nBA
+                        tmpR1 = tmpR1 + CalphaC(ALPHA,i,p)*CalphaC(ALPHA,j,q)
+                     ENDDO
+                     tmpG1 = 0.0E0_realk
+                     DO beta = 1, nBA
+                        tmpG1 = tmpG1 + CalphaC(BETA,k,p)*CalphaC(BETA,l,q)
+                     ENDDO
+                     tmp = tmp + tmpR1*tmpG1
+                  ENDDO
+               ENDDO
+               Xijkl(i,j,k,l) = tmp
+
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+
+   DO l=1,n1
+       DO k=1,n1
+          DO j=1,n1
+             DO i=1,n1
+                if(abs(Xijkl(i,j,k,l)) > 1E-10) then
+                   print *, "i j k l Xijkl: ", i, j, k, l, Xijkl(i,j,k,l)
+                endif
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDDO
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIX_nc2
+
+subroutine ContractTwo4CenterF12IntegralsRIX_nc3(nBA,n1,n2,CalphaC,Fii,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaC(nBA,n1,n2)
+   real(realk),intent(in)    :: Fii(n1,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,k,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO q=1,n2
+      DO p=1,n2
+         DO i=1,n1
+            DO j=1,n1
+               DO k=1,n1
+                  tmpR1 = 0.0E0_realk
+                  DO alpha = 1, nBA
+                     tmpR1 = tmpR1 + CalphaC(ALPHA,i,p)*CalphaC(ALPHA,j,q)
+                  ENDDO
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     !tmpG1 = tmpG1 + CalphaC(BETA,i,p)*CalphaC(BETA,k,q)*Fii(k,j)
+                     !tmpG2 = tmpG2 + CalphaC(BETA,k,p)*CalphaC(BETA,j,q)*Fii(k,i)
+                     tmpG1 = tmpG1 + CalphaC(BETA,i,p)*CalphaC(BETA,k,q)*Fii(k,j)
+                     tmpG2 = tmpG2 + CalphaC(BETA,k,p)*CalphaC(BETA,j,q)*Fii(k,i)
+                  ENDDO
+                  tmpG3 = 0.0E0_realk
+                  tmpG4 = 0.0E0_realk
+                  DO gamma = 1, nBA
+                     !tmpG3 = tmpG3 + CalphaC(GAMMA,k,p)*CalphaC(GAMMA,i,q)*Fii(k,j)
+                     !tmpG4 = tmpG4 + CalphaC(GAMMA,j,p)*CalphaC(GAMMA,k,q)*Fii(k,i)
+                     tmpG3 = tmpG3 + CalphaC(GAMMA,k,p)*CalphaC(GAMMA,i,q)*Fii(k,j)
+                     tmpG4 = tmpG4 + CalphaC(GAMMA,j,p)*CalphaC(GAMMA,k,q)*Fii(k,i)
+                  ENDDO
+                  EJ = EJ + tmpR1*(tmpG1 + tmpG2)
+                  EK = EK + tmpR1*(tmpG3 + tmpG4)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIX_nc3
+
+subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,NBA2,n1,n2,n3,nocv,&
+      & CalphaRcabs,CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,nocv,NBA2
+   real(realk),intent(in)    :: CalphaRcabs(nBA2,n1,n3)
+   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaR(nBA2,n1,nocv)
+   real(realk),intent(in)    :: CalphaG(nBA,nocv,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   !local variables
+   integer     :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG13,tmpG23
+   real(realk) :: tmpR4
+   real(realk) :: EJ3, EJ4, EK3, EK4, ED
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(m,c,i,j,alpha,beta,&
+   !$OMP tmpR3,tmpG13,tmpG23,tmpR4) SHARED(nBA,n1,n2,n3,nocv,CalphaRcabs,NBA2,&
+   !$OMP CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   DO c=1,n3
+      DO m=1,n2 !noccfull
+         DO j=1,n1
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR3 = 0.0E0_realk
+               DO alpha = 1,NBA2
+                  tmpR3 = tmpR3 + CalphaR(alpha,j,m)*CalphaRcabs(alpha,j,c)
+               ENDDO
+               tmpG13 = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG13 = tmpG13 + CalphaG(beta,m,j)*CalphaGcabs(beta,j,c)
+               ENDDO
+               ED = ED + tmpR3*tmpG13
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR3 = 0.0E0_realk
+                  tmpR4 = 0.0E0_realk
+                  DO alpha = 1,NBA2
+                     tmpR3 = tmpR3 + CalphaR(alpha,i,m)*CalphaRcabs(alpha,j,c)
+                     tmpR4 = tmpR4 + CalphaR(alpha,j,m)*CalphaRcabs(alpha,i,c)
+                  ENDDO              
+                  tmpG13 = 0.0E0_realk
+                  tmpG23 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG13 = tmpG13 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
+                     tmpG23 = tmpG23 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*tmpG13 
+                  EK3 = EK3 + tmpR3*tmpG23
+                  EJ4 = EJ4 + tmpR4*tmpG23
+                  EK4 = EK4 + tmpR4*tmpG13
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK3 = ED + 2.5E0_realk*EJ3-0.5E0_realk*EK3
+   EJK4 = ED + 2.5E0_realk*EJ4-0.5E0_realk*EK4
+end subroutine ContractTwo4CenterF12IntegralsRI2V3V4
+
+subroutine ContractTwo4CenterF12IntegralsRI2V3V4_p(nBA,n1,n3,n2,nbasis,&
+      & CalphaRcabs,CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,nbasis
+   real(realk),intent(in)    :: CalphaRcabs(nBA,n1,n2),CalphaGcabs(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaR(nBA,n1,nbasis),CalphaG(nBA,n1,nbasis)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG13,tmpG23
+   real(realk) :: tmpR4,tmpG14,tmpG24
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJK3 = 0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   EJK4 = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+   !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaRcabs,CalphaR,CalphaGcabs,CalphaG,&
+   !$OMP n3,n2,n1,nba,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   DO m=1,n3
+      DO c=1,n2
+         DO j=1,n1
+            DO i=1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR3 = 0.0E0_realk
+                  tmpR4 = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR3 = tmpR3 + CalphaR(alpha,i,m)*CalphaRcabs(alpha,j,c)
+                     tmpR4 = tmpR4 + CalphaR(alpha,j,m)*CalphaRcabs(alpha,i,c)
+                  ENDDO              
+                  tmpG13 = 0.0E0_realk
+                  tmpG23 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG13 = tmpG13 + CalphaG(beta,i,m)*CalphaGcabs(beta,j,c)
+                     tmpG23 = tmpG23 + CalphaG(beta,j,m)*CalphaGcabs(beta,i,c)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*tmpG13 
+                  EK3 = EK3 + tmpR3*tmpG23
+                  EJ4 = EJ4 + tmpR4*tmpG23
+                  EK4 = EK4 + tmpR4*tmpG13
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK3 = 1.25E0_realk*EJ3-0.25E0_realk*EK3
+   EJK4 = 1.25E0_realk*EJ4-0.25E0_realk*EK4
+
+end subroutine ContractTwo4CenterF12IntegralsRI2V3V4_p
+
+subroutine ContractTwo4CenterF12IntegralsRI2(nBA,n1,n3,n2,CalphaR,CalphaG,&
+      & CalphaRocc,CalphaGocc,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2),CalphaG(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaRocc(nBA,n1,n3),CalphaGocc(nBA,n1,n3)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG13,tmpG23
+   real(realk) :: tmpR4,tmpG14,tmpG24
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJK3 = 0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   EJK4 = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+   !$OMP tmpG13,tmpG23,tmpG14,tmpG24) SHARED(CalphaR,CalphaRocc,CalphaG,CalphaGocc,n3,n2,n1,&
+   !$OMP nba,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   DO m=1,n3
+      DO c=1,n2
+         DO j=1,n1
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR3 = 0.0E0_realk
+               DO alpha = 1,NBA
+                  tmpR3 = tmpR3 + CalphaRocc(alpha,j,m)*CalphaR(alpha,j,c)
+               ENDDO
+               tmpG13 = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG13 = tmpG13 + CalphaGocc(beta,j,m)*CalphaG(beta,j,c)
+               ENDDO
+               ED = ED + tmpR3*tmpG13
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR3 = 0.0E0_realk
+                  tmpR4 = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR3 = tmpR3 + CalphaRocc(alpha,i,m)*CalphaR(alpha,j,c)
+                     tmpR4 = tmpR4 + CalphaRocc(alpha,j,m)*CalphaR(alpha,i,c)
+                  ENDDO              
+                  tmpG13 = 0.0E0_realk
+                  tmpG23 = 0.0E0_realk
+                  tmpG14 = 0.0E0_realk
+                  tmpG24 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG13 = tmpG13 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                     tmpG23 = tmpG23 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+
+                     ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+                     ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*tmpG13 
+                  EK3 = EK3 + tmpR3*tmpG23
+                  EJ4 = EJ4 + tmpR4*tmpG23
+                  EK4 = EK4 + tmpR4*tmpG13
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK3 = ED + 2.5E0_realk*EJ3-0.5E0_realk*EK3
+   EJK4 = ED + 2.5E0_realk*EJ4-0.5E0_realk*EK4
+
+end subroutine ContractTwo4CenterF12IntegralsRI2
+
+subroutine ContractTwo4CenterF12IntegralsRIB4(nBA,n1,n2,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaD(nBa,n1,n2)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   real(realk)               :: EJ, EK, ED
+   integer :: p,q,r,i,j,beta,alpha1,alpha2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   ED = 0.0E0_realk
+   EJ = 0.0E0_realk
+   EK = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,q,r,i,j,beta,alpha1,&
+   !$OMP alpha2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,&
+   !$OMP CalphaG,CalphaD,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO q=1,n2 !ncabsAO
+      DO r=1,n2 !ncabsAO
+         DO j=1,n1 !nocc
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk
+               tmpG = 0.0E0_realk
+               DO beta = 1,nBA
+                  tmpR = tmpR + CalphaG(beta,j,r)*CalphaD(beta,j,q)
+                  tmpG = tmpG + CalphaG(beta,j,r)*CalphaG(beta,j,q)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF 
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  tmpGJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaG(alpha1,i,r)*CalphaD(alpha1,j,q) 
+                     tmpGJ1 = tmpGJ1 + CalphaG(alpha1,i,r)*CalphaG(alpha1,j,q)
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  tmpGJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     tmpRJ2 = tmpRJ2 + CalphaG(alpha2,j,r)*CalphaD(alpha2,i,q)
+                     tmpGJ2 = tmpGJ2 + CalphaG(alpha2,j,r)*CalphaG(alpha2,i,q)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO   
+   !$OMP END PARALLEL DO
+   EJK = ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIB4                
+
+subroutine ContractTwo4CenterF12IntegralsRIB4MPI(nBA,n1,n2,CalphaGMPI,NBA2,CalphaG,CalphaD,EJK,dopair_occ_in)
+  implicit none
+  integer,intent(in)        :: nBA,n1,n2,NBA2
+  real(realk),intent(in)    :: CalphaGMPI(nBA2,n1,n2)
+  real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+  real(realk),intent(in)    :: CalphaD(nBa,n1,n2)
+  real(realk),intent(inout) :: EJK
+  !local variables
+  real(realk)               :: EJ, EK, ED
+  integer :: p,q,r,i,j,beta,alpha1,alpha2
+  real(realk) :: tmpR,tmpRJ1,tmpRJ2
+  real(realk) :: tmpG,tmpGJ1,tmpGJ2
+  !Dopair                                                                          
+  logical,intent(in),optional :: dopair_occ_in(n1,n1)
+  logical :: dopair_occ(n1,n1)
+  if(present(dopair_occ_in)) then
+     dopair_occ = dopair_occ_in
+  else
+     dopair_occ = .TRUE.
+  endif
+  ED = 0.0E0_realk
+  EJ = 0.0E0_realk
+  EK = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,q,r,i,j,beta,alpha1,&
+  !$OMP alpha2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,CalphaGMPI,&
+  !$OMP NBA2,CalphaG,CalphaD,dopair_occ) REDUCTION(+:ED,EJ,EK)
+  DO q=1,n2 !ncabsAO
+     DO r=1,n2 !ncabsAO
+        DO j=1,n1 !nocc
+           !Diagonal
+           IF(dopair_occ(J,J)) THEN
+              tmpR = 0.0E0_realk
+              tmpG = 0.0E0_realk
+              DO beta = 1,nBA
+                 tmpR = tmpR + CalphaG(beta,j,r)*CalphaD(beta,j,q)
+              ENDDO
+              DO beta = 1,nBA2
+                 tmpG = tmpG + CalphaGMPI(beta,j,r)*CalphaGMPI(beta,j,q)
+              ENDDO
+              ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+           ENDIF
+           !Non Diagonal
+           DO i=j+1,n1
+              IF(dopair_occ(I,J)) THEN
+                 tmpRJ1 = 0.0E0_realk
+                 DO alpha1 = 1, nBA
+                    tmpRJ1 = tmpRJ1 + CalphaG(alpha1,i,r)*CalphaD(alpha1,j,q) 
+                 ENDDO
+                 tmpGJ1 = 0.0E0_realk
+                 DO alpha1 = 1, nBA2
+                    tmpGJ1 = tmpGJ1 + CalphaGMPI(alpha1,i,r)*CalphaGMPI(alpha1,j,q)
+                 ENDDO
+                 tmpRJ2 = 0.0E0_realk
+                 DO alpha2 = 1, nBA
+                    tmpRJ2 = tmpRJ2 + CalphaG(alpha2,j,r)*CalphaD(alpha2,i,q)
+                 ENDDO
+                 tmpGJ2 = 0.0E0_realk
+                 DO alpha2 = 1, nBA2
+                    tmpGJ2 = tmpGJ2 + CalphaGMPI(alpha2,j,r)*CalphaGMPI(alpha2,i,q)
+                 ENDDO
+                 EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                 EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+              ENDIF
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END PARALLEL DO
+  EJK = ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIB4MPI
+
+subroutine ContractTwo4CenterF12IntegralsRIB5(nBA,n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,nbasis
+   real(realk),intent(in)    :: CalphaG(nBA,nbasis,n1)
+   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   real(realk)               :: EJ, EK, ED
+   integer :: q,m,i,j,alpha,beta,alpha1,alpha2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   ED = 0.0E0_realk
+   EJ = 0.0E0_realk
+   EK = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,m,i,j,alpha,beta,&
+   !$OMP alpha1,alpha2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
+   !$OMP n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,&
+   !$OMP dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO q=1,n2 !ncabsAO
+      DO m=1,n3 !noccAOS
+         DO j=1,n1 !nocc
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk
+               tmpG = 0.0E0_realk
+               DO alpha = 1,nBA
+                  tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,m,j)
+               ENDDO
+               DO beta = 1,nBA
+                  tmpG = tmpG + CalphaGcabs(beta,j,q)*CalphaG(beta,m,j)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF 
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  tmpGJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,m,j) 
+                     tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha1,i,q)*CalphaG(alpha1,m,j)
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  tmpGJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,m,i)
+                     tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha2,j,q)*CalphaG(alpha2,m,i)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = -1.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK) 
+end subroutine ContractTwo4CenterF12IntegralsRIB5                
+
+subroutine ContractTwo4CenterF12IntegralsRIB5MPI(nBA,n1,n2,n3,nbasis,CalphaGMPI,&
+     & CalphaDMPI,NBA2,CalphaGcabs,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,nbasis,NBA2
+   real(realk),intent(in)    :: CalphaGMPI(nBA2,nbasis,n1)
+   real(realk),intent(in)    :: CalphaDMPI(nBA2,n1,n2)
+   real(realk),intent(in)    :: CalphaG(nBA,nbasis,n1)
+   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: EJ, EK, ED
+   !local variables
+   integer :: p,q,m,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   ED = 0.0E0_realk
+   EJ = 0.0E0_realk
+   EK = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,m,i,j,alpha,beta,&
+   !$OMP alpha1,alpha2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
+   !$OMP n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,CalphaGMPI,CalphaDMPI,&
+   !$OMP NBA2,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO q=1,n2 !ncabsAO
+      DO m=1,n3 !noccAOS
+         DO j=1,n1 !nocc
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk
+               tmpG = 0.0E0_realk
+               DO alpha = 1,nBA2
+                  tmpR = tmpR + CalphaDMPI(alpha,j,q)*CalphaGMPI(alpha,m,j)
+               ENDDO
+               DO beta = 1,nBA
+                  tmpG = tmpG + CalphaGcabs(beta,j,q)*CalphaG(beta,m,j)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF 
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  tmpGJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA2
+                     tmpRJ1 = tmpRJ1 + CalphaDMPI(alpha1,i,q)*CalphaGMPI(alpha1,m,j) 
+                  ENDDO
+                  DO alpha1 = 1, nBA
+                     tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha1,i,q)*CalphaG(alpha1,m,j)
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  tmpGJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA2
+                     tmpRJ2 = tmpRJ2 + CalphaDMPI(alpha2,j,q)*CalphaGMPI(alpha2,m,i)
+                  ENDDO
+                  DO alpha2 = 1, nBA
+                     tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha2,j,q)*CalphaG(alpha2,m,i)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = -1.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK) 
+end subroutine ContractTwo4CenterF12IntegralsRIB5MPI
+
+subroutine ContractTwo4CenterF12IntegralsRIB6(nBA,n1,n2,n3,noccfull,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,noccfull
+   real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   real(realk)               :: ED, EJ, EK
+   integer :: q,a,i,j,alpha,alpha1,alpha2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,a,i,j,alpha,alpha1,&
+   !$OMP alpha2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,n3,&
+   !$OMP noccfull,CalphaG,CalphaD,EJK,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO q=1,n3 !nocv 
+      DO a=noccfull+1,n3 !nvirt
+         DO j=1,n1 !nocc       
+            !Diagonal          
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk   
+               tmpG = 0.0E0_realk   
+               DO alpha = 1,nBA     
+                  tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
+                  tmpG = tmpG + CalphaG(alpha,q,j)*CalphaG(alpha,a,j)
+               ENDDO                                                 
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated
+            ENDIF                                                         
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk 
+                  tmpGJ1 = 0.0E0_realk 
+                  DO alpha1 = 1, nBA   
+                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,a,j)
+                     tmpGJ1 = tmpGJ1 + CalphaG(alpha1,q,i)*CalphaG(alpha1,a,j)
+                  ENDDO                                                   
+                  tmpRJ2 = 0.0E0_realk                                    
+                  tmpGJ2 = 0.0E0_realk                                    
+                  DO alpha2 = 1, nBA                                      
+                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,a,i)
+                     tmpGJ2 = tmpGJ2 + CalphaG(alpha2,q,j)*CalphaG(alpha2,a,i)
+                  ENDDO                                                       
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
+               ENDIF                                                          
+            ENDDO                                                             
+         ENDDO                                                                
+      ENDDO                                                                   
+   ENDDO                                                                      
+   !$OMP END PARALLEL DO
+   EJK = -1.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK) 
+
+end subroutine ContractTwo4CenterF12IntegralsRIB6
+
+subroutine ContractTwo4CenterF12IntegralsRIB6MPI(nBA,n1,n2,n3,noccfull,CalphaGMPI,NBA2,&
+     & CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,noccfull,NBA2
+   real(realk),intent(in)    :: CalphaGMPI(nBA2,n3,n1)
+   real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   real(realk)               :: EJ, EK, ED
+   integer :: q,a,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,a,i,j,alpha,alpha1,&
+   !$OMP alpha2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,n3,&
+   !$OMP CalphaGMPI,NBA2,noccfull,CalphaG,CalphaD,EJK,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO q=1,n3 !nocv 
+      DO a=noccfull+1,n3 !nvirt
+         DO j=1,n1 !nocc       
+            !Diagonal          
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk   
+               tmpG = 0.0E0_realk   
+               DO alpha = 1,nBA     
+                  tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
+               ENDDO                                                 
+               DO alpha = 1,nBA2
+                  tmpG = tmpG + CalphaGMPI(alpha,q,j)*CalphaGMPI(alpha,a,j)
+               ENDDO                                                 
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated
+            ENDIF                                                         
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk 
+                  DO alpha1 = 1, nBA   
+                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,a,j)
+                  ENDDO
+                  tmpGJ1 = 0.0E0_realk 
+                  DO alpha1 = 1,nBA2
+                     tmpGJ1 = tmpGJ1 + CalphaGMPI(alpha1,q,i)*CalphaGMPI(alpha1,a,j)
+                  ENDDO                                                   
+                  tmpRJ2 = 0.0E0_realk                                    
+                  DO alpha2 = 1, nBA                                      
+                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,a,i)
+                  ENDDO
+                  tmpGJ2 = 0.0E0_realk                                    
+                  DO alpha2 = 1,nBA2
+                     tmpGJ2 = tmpGJ2 + CalphaGMPI(alpha2,q,j)*CalphaGMPI(alpha2,a,i)
+                  ENDDO                                                       
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
+               ENDIF                                                          
+            ENDDO                                                             
+         ENDDO                                                                
+      ENDDO                                                                   
+   ENDDO                                                                      
+   !$OMP END PARALLEL DO
+   EJK = -1.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK) 
+
+end subroutine ContractTwo4CenterF12IntegralsRIB6MPI
+
+subroutine ContractTwo4CenterF12IntegralsRIB6_pf(nBA,n1,n2,n3,noccfull,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,noccfull
+   real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: EJ, EK
+   !local variables
+   integer :: q,a,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   DO q=1,n3 !nocv
+      DO a=1+noccfull,n3 !nvirt
+         DO j=1,n1 !nocc
+            DO i=1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  tmpGJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     !tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaC(alpha1,j,a) 
+                     !tmpGJ1 = tmpGJ1 + CalphaG(alpha1,q,i)*CalphaC(alpha1,j,a)
+                     
+                     tmpRJ1 = tmpRJ1 + CalphaD(alpha1,i,q)*CalphaG(alpha1,a,j) 
+                     tmpGJ1 = tmpGJ1 + CalphaG(alpha1,q,i)*CalphaG(alpha1,a,j)
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  tmpGJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     !tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaC(alpha2,i,a)
+                     !tmpGJ2 = tmpGJ2 + CalphaG(alpha2,q,j)*CalphaC(alpha2,i,a)
+                     
+                     tmpRJ2 = tmpRJ2 + CalphaD(alpha2,j,q)*CalphaG(alpha2,a,i)
+                     tmpGJ2 = tmpGJ2 + CalphaG(alpha2,q,j)*CalphaG(alpha2,a,i)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)           
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO   
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK
+   !print *,"COULOMBB6:  ", 7.0/32.0*EJ
+   !print *,"EXCHANGEB6: ", 1.0/32.0*EK
+   !print *,"COULOMBB6+EXCHANGEB6:", 7.0/32.0*EJ + 1.0/32.0*EK     
+end subroutine ContractTwo4CenterF12IntegralsRIB6_pf
+
+!warning I am very unclear about the Frozen core implementation of this 
+subroutine ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii,CalphaD,dopair_occ_in)
+   implicit none
+   integer,intent(in) :: NBA,nocc,noccfull,nbasis
+   real(realk),intent(in) :: CalphaG(NBA,nbasis,nocc),Fii(noccfull,noccfull)
+   real(realk),intent(inout) :: CalphaD(NBA,nocc,noccfull)
+   integer :: i,j,alpha,m
+   real(realk) :: TMP
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(nocc,nocc)
+   logical :: dopair_occ(nocc,nocc)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+!   !$OMP PARALLEL DEFAULT(NONE) PRIVATE(i,j,alpha,m,&
+!   !$OMP TMP) SHARED(NBA,nocc,noccfull,CalphaG,CalphaD,Fii)
+!   !$OMP DO COLLAPSE(3)
+   DO m=1,noccfull
+      DO I=1,nocc
+         IF(dopair_occ(I,I)) THEN
+            DO ALPHA=1,NBA
+               CalphaD(ALPHA,I,m) = CalphaG(ALPHA,I,1)*Fii(1,M)
+            ENDDO
+         ENDIF
+      ENDDO
+   ENDDO
+!   !$OMP END DO
+!   !$OMP DO COLLAPSE(2) 
+   DO m=1,noccfull
+      DO I=1,nocc
+         DO J=2,noccfull
+            IF(dopair_occ(I,J)) THEN
+               TMP = Fii(J,M)
+               DO ALPHA=1,NBA
+                  CalphaD(ALPHA,I,m) = CalphaD(ALPHA,I,m) + CalphaG(ALPHA,I,J)*TMP
+               ENDDO
+            ENDIF
+         ENDDO
+      ENDDO
+   ENDDO
+!   !$OMP END DO
+!   !$OMP END PARALLEL
+end subroutine ContractOccCalpha
+
+subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,n3,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   real(realk)               :: EJ, EK, ED
+   integer :: c,n,i,j,alpha,beta,alpha1,alpha2,beta1,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif  
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(c,n,i,j,alpha,beta,alpha1,alpha2,&
+   !$OMP beta1,beta2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,n3,CalphaR,&
+   !$OMP CalphaG,CalphaD,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO c=1,n3 !ncabsMO
+      DO n=1,n2 !noccfull
+         DO j=1,n1 !noccEOS
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk
+               tmpG = 0.0E0_realk
+               DO alpha = 1,nBA
+                  tmpR = tmpR + CalphaR(alpha,j,c)*CalphaD(alpha,j,n)
+               ENDDO
+               DO beta = 1,nBA
+                  tmpG = tmpG + CalphaR(beta,j,c)*CalphaG(beta,j,n)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,c)*CalphaD(alpha1,j,n) 
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,c)*CalphaD(alpha2,i,n)
+                  ENDDO
+                  tmpGJ1 = 0.0E0_realk
+                  DO beta1 = 1, nBA
+                     tmpGJ1 = tmpGJ1 + CalphaR(beta1,i,c)*CalphaG(beta1,j,n)
+                  ENDDO
+                  tmpGJ2 = 0.0E0_realk
+                  DO beta2 = 1, nBA
+                     tmpGJ2 = tmpGJ2 + CalphaR(beta2,j,c)*CalphaG(beta2,i,n)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO   
+   !$OMP END PARALLEL DO
+   EJK = 1.0E0_realk*(ED*0.5E0_realk + 7.0E0_realk/16.0E0_realk*EJ + 1.0E0_realk/16.0E0_realk*EK) 
+
+end subroutine ContractTwo4CenterF12IntegralsRIB7
+
+subroutine ContractTwo4CenterF12IntegralsRIB7MPI(nBA,n1,n2,n3,&
+     & CalphaRMPI,CalphaGMPI,NBA2,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,NBA2
+   real(realk),intent(in)    :: CalphaGMPI(nBA2,n1,n2)
+   real(realk),intent(in)    :: CalphaRMPI(nBA2,n1,n3)
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n3)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
+   real(realk),intent(inout) :: EJK
+   !local variables
+   real(realk)               :: EJ, EK, ED
+   integer :: c,n,i,j,alpha,beta,alpha1,alpha2,beta1
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif  
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(c,n,i,j,alpha,beta,alpha1,alpha2,&
+   !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2,beta1) SHARED(nBA,n1,n2,n3,CalphaR,CalphaG,&
+   !$OMP CalphaD,dopair_occ,CalphaRMPI,CalphaGMPI,NBA2) REDUCTION(+:ED,EJ,EK)
+   DO c=1,n3 !ncabsMO
+      DO n=1,n2 !noccfull
+         DO j=1,n1 !noccEOS
+            !Diagonal
+            IF(dopair_occ(J,J)) THEN
+               tmpR = 0.0E0_realk
+               tmpG = 0.0E0_realk
+               DO alpha = 1,nBA
+                  tmpR = tmpR + CalphaR(alpha,j,c)*CalphaD(alpha,j,n)
+               ENDDO
+               DO beta = 1,nBA2
+                  tmpG = tmpG + CalphaRMPI(beta,j,c)*CalphaGMPI(beta,j,n)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,c)*CalphaD(alpha1,j,n) 
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,c)*CalphaD(alpha2,i,n)
+                  ENDDO
+                  tmpGJ1 = 0.0E0_realk
+                  tmpGJ2 = 0.0E0_realk
+                  DO beta1 = 1, nBA2
+                     tmpGJ1 = tmpGJ1 + CalphaRMPI(beta1,i,c)*CalphaGMPI(beta1,j,n)
+                     tmpGJ2 = tmpGJ2 + CalphaRMPI(beta1,j,c)*CalphaGMPI(beta1,i,n)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO   
+   !$OMP END PARALLEL DO
+   EJK = 1.0E0_realk*(ED*0.5E0_realk + 7.0E0_realk/16.0E0_realk*EJ + 1.0E0_realk/16.0E0_realk*EK) 
+
+end subroutine ContractTwo4CenterF12IntegralsRIB7MPI
+
+subroutine ContractTwo4CenterF12IntegralsRIB8(nBA,n1,n2,nocv,noccfull,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,nocv,noccfull
+   real(realk),intent(in)    :: CalphaG(nBA,nocv,n1)
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2) !CalphaGcabsMO
+   real(realk),intent(in)    :: CalphaD(nBA,n1,noccfull)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: EJ, EK, ED
+   !local variables
+   integer :: p,m,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,m,i,j,alpha,beta,alpha1,&
+   !$OMP beta1,alpha2,beta2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,&
+   !$OMP nocv,noccfull,CalphaR,CalphaG,CalphaD,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO p=1,n2 !ncabs
+      DO m=1,noccfull !noccfull
+         DO j=1,n1 !nocc
+            IF(dopair_occ(J,J)) THEN
+               !Diagonal
+               tmpR = 0.0E0_realk
+               tmpG = 0.0E0_realk
+               DO alpha = 1,nBA
+                  tmpR = tmpR + CalphaR(alpha,j,p)*CalphaG(alpha,m,j)
+               ENDDO
+               DO beta = 1,nBA
+                  tmpG = tmpG + CalphaR(beta,j,p)*CalphaD(beta,j,m)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,p)*CalphaG(alpha1,m,j) 
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,p)*CalphaG(alpha2,m,i)
+                  ENDDO
+                  tmpGJ1 = 0.0E0_realk
+                  DO beta1 = 1, nBA
+                     tmpGJ1 = tmpGJ1 + CalphaR(beta1,i,p)*CalphaD(beta1,j,m)
+                  ENDDO
+                  tmpGJ2 = 0.0E0_realk
+                  DO beta2 = 1, nBA
+                     tmpGJ2 = tmpGJ2 + CalphaR(beta2,j,p)*CalphaD(beta2,i,m)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
+end subroutine ContractTwo4CenterF12IntegralsRIB8
+
+subroutine ContractTwo4CenterF12IntegralsRIB8MPI(nBA,n1,n2,nocv,noccfull,&
+     & CalphaRMPI,CalphaDMPI,NBA2,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,nocv,noccfull,NBA2
+   real(realk),intent(in)    :: CalphaRMPI(nBA2,n1,n2) 
+   real(realk),intent(in)    :: CalphaDMPI(nBA2,n1,noccfull)
+   real(realk),intent(in)    :: CalphaG(nBA,nocv,n1)
+   real(realk),intent(in)    :: CalphaR(nBA,n1,n2) !CalphaGcabsMO
+   real(realk),intent(in)    :: CalphaD(nBA,n1,noccfull)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: EJ, EK, ED
+   !local variables
+   integer :: p,m,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,m,i,j,alpha,beta,alpha1,&
+   !$OMP beta1,alpha2,beta2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,&
+   !$OMP nocv,noccfull,CalphaR,CalphaG,CalphaD,dopair_occ,CalphaRMPI,CalphaDMPI,&
+   !$OMP NBA2) REDUCTION(+:ED,EJ,EK)
+   DO p=1,n2 !ncabs
+      DO m=1,noccfull !noccfull
+         DO j=1,n1 !nocc
+            IF(dopair_occ(J,J)) THEN
+               !Diagonal
+               tmpR = 0.0E0_realk
+               tmpG = 0.0E0_realk
+               DO alpha = 1,nBA
+                  tmpR = tmpR + CalphaR(alpha,j,p)*CalphaG(alpha,m,j)
+               ENDDO
+               DO beta = 1,nBA2
+                  tmpG = tmpG + CalphaRMPI(beta,j,p)*CalphaDMPI(beta,j,m)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaR(alpha1,i,p)*CalphaG(alpha1,m,j) 
+                  ENDDO
+                  tmpRJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     tmpRJ2 = tmpRJ2 + CalphaR(alpha2,j,p)*CalphaG(alpha2,m,i)
+                  ENDDO
+                  tmpGJ1 = 0.0E0_realk
+                  DO beta1 = 1, nBA2
+                     tmpGJ1 = tmpGJ1 + CalphaRMPI(beta1,i,p)*CalphaDMPI(beta1,j,m)
+                  ENDDO
+                  tmpGJ2 = 0.0E0_realk
+                  DO beta2 = 1, nBA2
+                     tmpGJ2 = tmpGJ2 + CalphaRMPI(beta2,j,p)*CalphaDMPI(beta2,i,m)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
+ end subroutine ContractTwo4CenterF12IntegralsRIB8MPI
+
+subroutine ContractTwo4CenterF12IntegralsRIB9(nBA,noccfull,n1,n2,n3,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,noccfull
+   real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: EJ, EK, ED
+   !local variables
+   integer :: p,a,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,a,i,j,alpha,beta,alpha1,&
+   !$OMP beta1,alpha2,beta2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
+   !$OMP noccfull,n1,n2,n3,CalphaG,CalphaD,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO p=1,n3 !ncabs
+      DO a=noccfull+1,n3 !nvirt
+         DO j=1,n1 !nocc
+            IF(dopair_occ(J,J)) THEN
+               !Diagonal
+               tmpR = 0.0E0_realk
+               DO alpha = 1,nBA
+                  tmpR = tmpR + CalphaG(alpha,p,j)*CalphaG(alpha,a,j)
+               ENDDO
+               tmpG = 0.0E0_realk
+               DO beta = 1,nBA
+                  tmpG = tmpG + CalphaD(beta,j,p)*CalphaG(beta,a,j)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA
+                     tmpRJ1 = tmpRJ1 + CalphaG(alpha1,p,i)*CalphaG(alpha1,a,j) 
+                  ENDDO      
+                  tmpRJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA
+                     tmpRJ2 = tmpRJ2 + CalphaG(alpha2,p,j)*CalphaG(alpha2,a,i)
+                  ENDDO
+                  tmpGJ1 = 0.0E0_realk
+                  DO beta1 = 1, nBA
+                     tmpGJ1 = tmpGJ1 + CalphaD(beta1,i,p)*CalphaG(beta1,a,j)
+                  ENDDO
+                  tmpGJ2 = 0.0E0_realk
+                  DO beta2 = 1, nBA
+                     tmpGJ2 = tmpGJ2 + CalphaD(beta2,j,p)*CalphaG(beta2,a,i)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
+end subroutine ContractTwo4CenterF12IntegralsRIB9
+
+subroutine ContractTwo4CenterF12IntegralsRIB9MPI(nBA,noccfull,n1,n2,n3,&
+     & CalphaGMPI,NBA2,CalphaG,CalphaD,EJK,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,noccfull,NBA2
+   real(realk),intent(in)    :: CalphaGMPI(nBA2,n3,n1)
+   real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
+   real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: EJ, EK, ED
+   !local variables
+   integer :: p,a,i,j,alpha,beta,alpha1,beta1,alpha2,beta2
+   real(realk) :: tmpR,tmpRJ1,tmpRJ2
+   real(realk) :: tmpG,tmpGJ1,tmpGJ2
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   ED = 0.0E0_realk
+   EK = 0.0E0_realk
+   EJ = 0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(p,a,i,j,alpha,beta,alpha1,&
+   !$OMP beta1,alpha2,beta2,tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
+   !$OMP noccfull,n1,n2,n3,CalphaGMPI,NBA2,CalphaG,CalphaD,dopair_occ) REDUCTION(+:ED,EJ,EK)
+   DO p=1,n3 !ncabs
+      DO a=noccfull+1,n3 !nvirt
+         DO j=1,n1 !nocc
+            IF(dopair_occ(J,J)) THEN
+               !Diagonal
+               tmpR = 0.0E0_realk
+               DO alpha = 1,nBA2
+                  tmpR = tmpR + CalphaGMPI(alpha,p,j)*CalphaGMPI(alpha,a,j)
+               ENDDO
+               tmpG = 0.0E0_realk
+               DO beta = 1,nBA
+                  tmpG = tmpG + CalphaD(beta,j,p)*CalphaG(beta,a,j)
+               ENDDO
+               ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
+            ENDIF
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpRJ1 = 0.0E0_realk
+                  DO alpha1 = 1, nBA2
+                     tmpRJ1 = tmpRJ1 + CalphaGMPI(alpha1,p,i)*CalphaGMPI(alpha1,a,j) 
+                  ENDDO      
+                  tmpRJ2 = 0.0E0_realk
+                  DO alpha2 = 1, nBA2
+                     tmpRJ2 = tmpRJ2 + CalphaGMPI(alpha2,p,j)*CalphaGMPI(alpha2,a,i)
+                  ENDDO
+                  tmpGJ1 = 0.0E0_realk
+                  DO beta1 = 1, nBA
+                     tmpGJ1 = tmpGJ1 + CalphaD(beta1,i,p)*CalphaG(beta1,a,j)
+                  ENDDO
+                  tmpGJ2 = 0.0E0_realk
+                  DO beta2 = 1, nBA
+                     tmpGJ2 = tmpGJ2 + CalphaD(beta2,j,p)*CalphaG(beta2,a,i)
+                  ENDDO
+                  EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                  EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
+end subroutine ContractTwo4CenterF12IntegralsRIB9MPI
+
+subroutine ContractTwo4CenterF12IntegralsRIX3X4(nBA,n1,n3,n2,&
+      & CalphaGcabs,CalphaG,Fii,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaG(nBA,n1,n3)
+   real(realk),intent(IN)    :: Fii(n1,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EJ4, EK3, EK4, ED
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG13,tmpG23
+   real(realk) :: tmpR4,tmpG14,tmpG24,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   ED =  0.0E0_realk
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   EJK3 = 0.0E0_realk
+   EJ4 =  0.0E0_realk
+   EK4 =  0.0E0_realk
+   EJK4 = 0.0E0_realk
+   !!$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3,tmpR4, &
+   !!$OMP tmpG13,tmpG23,tmp) SHARED(CalphaG,CalphaGcabs,n3,n2,n1,dopair_occ) &
+   !!$OMP nba, Fii) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)
+   DO m=1,n3
+      DO c=1,n2
+         DO j=1,n1
+            if(dopair_occ(J,J)) then
+               !Diagonal
+               tmpG13 = 0.0E0_realk
+               DO beta = 1,NBA
+                  tmpG13 = tmpG13 + CalphaG(beta,j,m)*CalphaGcabs(beta,j,c)
+               ENDDO
+               ED = ED + tmpG13*tmpG13*Fii(j,j)
+            endif
+            !Non Diagonal
+            DO i=j+1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpG13 = 0.0E0_realk
+                  tmpG23 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG13 = tmpG13 + CalphaG(beta,i,m)*CalphaGcabs(beta,j,c)
+                     tmpG23 = tmpG23 + CalphaG(beta,j,m)*CalphaGcabs(beta,i,c)
+                     ! tmpG14 = tmpG14 + CalphaGocc(beta,j,m)*CalphaG(beta,i,c)
+                     ! tmpG24 = tmpG24 + CalphaGocc(beta,i,m)*CalphaG(beta,j,c)
+                  ENDDO
+                  tmp = (Fii(i,i) + Fii(j,j)) 
+                  EJ3 = EJ3 + tmpG13*tmpG13*tmp
+                  EK3 = EK3 + tmpG13*tmpG23*tmp
+                  EJ4 = EJ4 + tmpG23*tmpG23*tmp
+                  EK4 = EK4 + tmpG23*tmpG13*tmp
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !!$OMP END PARALLEL DO
+
+   EJK3 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ3+1.0_realk/16.0_realk*EK3)
+   EJK4 = ED*0.5E0_realk + (7.0_realk/16.0_realk*EJ4+1.0_realk/16.0_realk*EK4)
+end subroutine ContractTwo4CenterF12IntegralsRIX3X4
+
+subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc(nBA,n1,n2,n3,&
+      & CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3
+   real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
+   real(realk),intent(IN)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3,EK3
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG31,tmpG32,tmpG33,tmpG34
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(m,c,i,j,alpha,&
+   !$OMP beta,tmpR3,tmpG31,tmpG32,tmpG33,tmpG34) SHARED(nBA,n1,n2,n3,&
+   !$OMP CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,&
+   !$OMP dopair_occ) REDUCTION(+:EJ3,EK3)
+   DO c=1,n3
+      DO m=1,n2
+         DO j=1,n1
+            DO i=1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR3 = 0.0E0_realk
+                  DO alpha = 1,NBA
+                     tmpR3 = tmpR3 + CalphaC(alpha,m,i)*CalphaGcabs(alpha,j,c)
+                  ENDDO
+                  tmpG31 = 0.0E0_realk
+                  tmpG32 = 0.0E0_realk
+                  tmpG33 = 0.0E0_realk
+                  tmpG34 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,c,j)
+                     tmpG32 = tmpG32 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
+                     tmpG33 = tmpG33 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
+                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,c,i)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*(tmpG31 + tmpG32)
+                  EK3 = EK3 + tmpR3*(tmpG33 + tmpG34)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK3 = 7.0/32.0_realk*EJ3+1.0_realk/32.0*EK3
+   EJK4 = EJK3
+end subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc
+
+subroutine ContractTwo4CenterF12IntegralsRIX3X4_ncMPI(nBA,n1,n2,n3,&
+      & CalphaGcabsMPI,CalphaCMPI,NBA2,&
+      & CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,NBA2
+   real(realk),intent(IN)    :: CalphaGcabsMPI(nBA2,n1,n3)
+   real(realk),intent(IN)    :: CalphaCMPI(nBA2,n2,n1)
+   real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
+   real(realk),intent(IN)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EK3
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG31,tmpG32,tmpG33,tmpG34
+   !Dopair
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   EJ3 =  0.0E0_realk
+   EK3 =  0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(m,c,i,j,alpha,&
+   !$OMP beta,tmpR3,tmpG31,tmpG32,tmpG33,tmpG34) SHARED(nBA,n1,n2,n3,&
+   !$OMP CalphaGcabsMPI,CalphaCMPI,NBA2,CalphaGcabs,CalphaC,CalphaG,&
+   !$OMP CalphaP,EJK3,EJK4,dopair_occ) REDUCTION(+:EJ3,EK3)
+   DO c=1,n3
+      DO m=1,n2
+         DO j=1,n1
+            DO i=1,n1
+               IF(dopair_occ(I,J)) THEN
+                  tmpR3 = 0.0E0_realk                  
+                  DO alpha = 1,NBA2
+                     tmpR3 = tmpR3 + CalphaCMPI(alpha,m,i)*CalphaGcabsMPI(alpha,j,c)
+                  ENDDO
+                  tmpG31 = 0.0E0_realk
+                  tmpG32 = 0.0E0_realk
+                  tmpG33 = 0.0E0_realk
+                  tmpG34 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,c,j)
+                     tmpG32 = tmpG32 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
+                     tmpG33 = tmpG33 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
+                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,c,i)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*(tmpG31 + tmpG32)
+                  EK3 = EK3 + tmpR3*(tmpG33 + tmpG34)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK3 = 7.0/32.0_realk*EJ3+1.0_realk/32.0*EK3
+   EJK4 = EJK3
+end subroutine ContractTwo4CenterF12IntegralsRIX3X4_ncMPI
 
 end module f12_routines_module
-
-

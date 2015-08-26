@@ -287,15 +287,7 @@ C
 C
          LBFINP = LBUF
 C
-         IF (NIBUF .EQ. 1) THEN
-            IBIT1 = 2**8  - 1
-            IBIT2 = 2**16 - 1
-         ELSE IF (NIBUF .EQ. 2) THEN
-            IBIT1 = 2**16 - 1
-            IBIT2 = 0    ! not used when NIBUF .eq. 2
-         ELSE
-            CALL QUIT('ERROR: NIBUF not equal 1 or 2')
-         END IF
+         CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
 #if defined (SYS_NEC)
          LRECL = LBFINP   + NIBUF*LBFINP/2 + 1   ! in integer*8 units
 #else
@@ -340,7 +332,7 @@ C
          LONDON2  = .FALSE.
          CALL CCRDAOD1(XINT,WORK(KIBUF),WORK(KRBUF),UNIAO2,LONDON2,
      &                 KCORSY,IGAM,IDEL,NUMG,NUMD,ITYPE,
-     &                 WORK(KAOAB),NDIMAB,WORK(KDIST),IBIT1,
+     &                 WORK(KAOAB),NDIMAB,WORK(KDIST),
      &                 IRECNR(1,KSCOOR),NRECS(KSCOOR))
 
          CALL GPCLOSE(UNIAO2,'KEEP')
@@ -361,7 +353,7 @@ C
  
            CALL CCRDAOD1(XINT,WORK(KIBUF),WORK(KRBUF),UNIAO2,LONDON2,
      &                   KCORSY,IGAM,IDEL,NUMG,NUMD,ITYPE,
-     &                   WORK(KAOAB),NDIMAB,WORK(KDIST),IBIT1,
+     &                   WORK(KAOAB),NDIMAB,WORK(KDIST),
      &                   IRECNR(1,KSCOOR),NRECS(KSCOOR))
 
            CALL GPCLOSE(UNIAO2,'KEEP')
@@ -380,7 +372,7 @@ C
 C  /* Deck ccrdaod1 */
       SUBROUTINE CCRDAOD1(XINT,IBUF,RBUF,UNIAO2,LONDON2,
      *                    ICORSY,IGAM,IDEL,NUMG,NUMD,ITYPE,
-     *                    IADRPQ,NDIMPQ,IOFFRD,IBIT1,IRECNR,NRECORDS)
+     *                    IADRPQ,NDIMPQ,IOFFRD,IRECNR,NRECORDS)
 *----------------------------------------------------------------------*
 C
 C     Purpose: Read (**|GD) distribution of (derivative) AO integrals
@@ -416,7 +408,7 @@ C
       DIMENSION XINT(*), RBUF(LBUF)
       INTEGER*4 IBUF4(LBUF*NIBUF), LENGTH4
       LOGICAL   LONDON2
-      INTEGER UNIAO2,ICORSY,NUMG,NUMD,ITYPE,IBIT1
+      INTEGER UNIAO2,ICORSY,NUMG,NUMD,ITYPE
       INTEGER IGAM(NUMG),IDEL(NUMD),IRECNR(*), NRECORDS
       INTEGER IADRPQ(NBAST,NBAST), IOFFRD(NBAST,NUMD)
       INTEGER NDIMPQ(NSYM)
@@ -461,7 +453,7 @@ C
       
 C
 C       loop over all records and read all those with relevant
-C       delta indeces
+C       delta indices
 C
         DO NREC = 1, NRECORDS
 
@@ -536,7 +528,7 @@ c          END IF
 
 C
 C       loop over all records and read all those with relevant
-C       delta indeces, exchange P and Q
+C       delta indices, exchange P and Q
 C
         DO NREC = 1, NRECORDS
 
@@ -638,7 +630,7 @@ C     I/O error handling:
 C  /* Deck RDERILBS */
       SUBROUTINE RDERILBS(IRECNR,NRECS,MXBUF,NFILES)
 *----------------------------------------------------------------------*
-C  read orbital (delta) indeces for all records on all files
+C  read orbital (delta) indices for all records on all files
 C  into array IRECNR
 *----------------------------------------------------------------------*
       IMPLICIT NONE
@@ -647,7 +639,7 @@ C  into array IRECNR
 #include "mxcent.h"
 #include "dummy.h"
 #include "inftap.h"
-#include "eribuf.h"
+#include "eritap.h"
 
       LOGICAL LOCDBG
       PARAMETER (LOCDBG = .FALSE.)

@@ -80,9 +80,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in RHSINP.'
+     *            '" not recognized under *GETSGY.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in RHSINP.')
+               CALL QUIT('Illegal keyword under *GETSGY.')
     1          CONTINUE
                   SKIP = .TRUE.
                GO TO 100
@@ -102,8 +102,9 @@ C
                GO TO 100
     4             RUNINT = .FALSE.
                GO TO 100
+! .INTPRInt
     5             READ (LUCMD, *) IPRINT, IPRNTA, IPRNTB,
-     *                                      IPRNTC, IPRNTD
+     &                                    IPRNTC, IPRNTD
                   IPRSUM = IPRNTA + IPRNTB + IPRNTC + IPRNTD
                   IF (IPRINT .EQ. IPRDEF .AND. IPRSUM .EQ. 0) THEN
                      ICHANG = ICHANG - 1
@@ -143,6 +144,7 @@ C
                GO TO 100
    20             RUNGDY = .FALSE.
                GO TO 100
+! .GDYPRInt
    21             READ (LUCMD,*) IPRGDY
                   IF (IPRGDY .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
@@ -189,15 +191,16 @@ C
                GO TO 100
    41             READ (LUCMD,*) IPRSOR
                GO TO 100
-   42             RUNPTR = .FALSE.          ! .PTRSKIp
+! .PTRSKIp
+   42             RUNPTR = .FALSE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in RHSINP.'
+     *            '" not recognized under *GETSGY.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in RHSINP.')
+               CALL QUIT('Illegal prompt under *GETSGY.')
             END IF
       END IF
   300 CONTINUE
@@ -300,12 +303,11 @@ C
             WRITE (LUPRI,'(A)') ' DERTRA skipped in this run.'
          END IF
 C
-C        GETGDY
+C        RHSIDE (was GETGDY)
 C
          IF (RUNGDY) THEN
-            IF (IPRGDY .NE. IPRDEF) THEN
-               WRITE (LUPRI,'(A,I5)') ' Print level in GETGDY:',IPRGDY
-            END IF
+            IF (IPRGDY .NE. IPRDEF) WRITE (LUPRI,'(A,I5)')
+     &         ' Print level in MAKEGD and GETY:',IPRGDY
             IF (TESTFS) WRITE (LUPRI,'(A)')
      *         ' Testing on one-index transformation of Fock matrices'
             IF (NOFD) WRITE (LUPRI,'(A)')
@@ -315,7 +317,7 @@ C
             IF (NOSSF) WRITE (LUPRI,'(A)')
      *         ' SSF not included in calculation of Y matrices'
          ELSE
-            WRITE (LUPRI,'(A)') ' GETGDY skipped in this run.'
+            WRITE (LUPRI,'(A)') ' RHSIDE skipped in this run.'
          END IF
          IF (CUT) THEN
             WRITE (LUPRI,'(/,A)') ' Program is stopped after RHSIDE.'
@@ -360,6 +362,7 @@ C
       IPRINT = IPRDEF
       IPRPTR = IPRDEF
       IPRSOR = IPRDEF
+      IPRMAX = IPRDEF
       IPRNTA = 0
       IPRNTB = 0
       IPRNTC = 0
@@ -473,8 +476,8 @@ C
       CALL QENTER('RHSIDE')
 C
       KFRSAV = 1
-      I2TYP = 0
-      DOTD = .TRUE.
+      I2TYP  = 0
+      DOTD  = .TRUE.
 C
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRMAX .GT. 0) WRITE (LUPRI,'(A/)')
@@ -493,7 +496,7 @@ C     If GDHAM write LUINTD with derived Hamiltonian and Fock matrices
 C     for post-ABACUS programs (e.g. response calculation of non-adia-
 C     batic coupling elements). Leading records are written here,
 C     matrices for each coordinate are written by WRINTD called from
-C     GETGDY. (860401-hjaaj)
+C     RHSIDE. (860401-hjaaj)
 C
       IF (GDHAM) THEN
          LUGDH = -1
@@ -544,12 +547,12 @@ C
                NCOMP  = 0
                CALL GET1IN(DUMMY,'SQHDOR ',NCOMP,WORK(KLAST),LWRK,
      &              LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,
-     &              .TRUE.,NPATOM,.FALSE.,DUMMY,.FALSE.,DUMMY,IPRGDY)
+     &              .TRUE.,NPATOM,.FALSE.,DUMMY,.FALSE.,DUMMY,IPRINT)
                IF (NFIELD .GT. 0) THEN
                   NCOMP = 0
                   CALL GET1IN(DUMMY,'DPLGRA ',NCOMP,WORK(KLAST),LWRK,
      &                    LABINT,WORK(KINTRP),WORK(KINTAD),IDUMMY,.TRUE.
-     &                    ,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRGDY)
+     &                    ,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
                END IF
             END IF
             DERIV(1) = DOREAL .AND. DCORGD(IATOM,1,1)
@@ -590,7 +593,8 @@ C
             IF (IPRMAX .GT. 0) THEN
                WRITE(LUPRI,'(//)')
                IF (IATOM .EQ. 0) THEN
-                  CALL HEADER('Differentiation with respect to field',1)
+                  CALL HEADER(
+     &            'Differentiation with respect to magnetic field',1)
                ELSE
                   WRITE(LUPRI,'(A,I3)')' Differentiation for nucleus',
      &                                   IATOM
@@ -705,7 +709,7 @@ CTROND
                LWRK   = LWORK - KLAST + 1
                CALL PAOVEC(WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &                     WORK(KIORBS),WORK(KJORBS),WORK(KKORBS),
-     &                     IATOM,NOBLK,IPRALL)
+     &                     IATOM,NOBLK,IPRINT)
                KLAST = KJORBS
                LWRK = LWORK - KLAST + 1
 C
@@ -762,7 +766,7 @@ C
      &                              .FALSE.)
                         CALL PSORG(WORK,WORK(KLAST),LWUSE,WORK(KNCONT),
      &                             IPRSOR,ANTI,PANTI)
-                        IF (IPRPTR .GE. 3)
+                        IF (IPRPTR .GE. 3 .OR. IPRSOR .GE. 3)
      &                  CALL TIMER('PSORT ',TIMSTR,TIMEND)
                         ANTI = .TRUE.
 C
@@ -780,7 +784,7 @@ C
      &                              .FALSE.)
                         CALL PSORG(WORK,WORK(KLAST),LWUSE,WORK(KNCONT),
      &                             IPRSOR,ANTI,PANTI)
-                        IF (IPRPTR .GE. 3)
+                        IF (IPRPTR .GE. 3 .OR. IPRSOR .GE. 3)
      &                  CALL TIMER('PSORT ',TIMSTR,TIMEND)
                   END IF
 C
@@ -805,7 +809,7 @@ C
                   NDMAT = 2
                   IF (NODV) NDMAT = 1
                   NFMAT  = 3*NDMAT*NUCDEG(IATOM)
-                  LFMAT = NFMAT*N2BASX
+                  LFMAT  = NFMAT*N2BASX
                   KFMAT  = KLAST
                   KDMAT  = KFMAT + LFMAT
                   KLAST  = KDMAT + N2BASX*NDMAT
@@ -1097,7 +1101,7 @@ C
       RETURN
       END
 C  /* Deck makegd */
-       SUBROUTINE MAKEGD(DOSFD,EMYD,CMO,DV,FDC,FDV,TD,
+      SUBROUTINE MAKEGD(DOSFD,EMYD,CMO,DV,FDC,FDV,TD,
      &                   FOCK,PV,WMAT,SYMAT,DFTFD,WORK,LWORK,IATOM,
      &                   DERIV,MAXSIM,NOORBI,NOH1,NOH2,NODC,NODV,NOPV,
      &                   NOORTH,LONDON,RUNTRA,TRATST,FCKTST,RUNGDY,
@@ -1549,20 +1553,28 @@ CKeinSPASmehr
 C
 C                 ***** Print right-hand side *****
 C
-                  IF (IPRMAX .GE. 05) THEN
+                  IF (IPRMAX .GE. 04) THEN
                      WRITE (LUPRI,'(//A,I3,A,I2,A,I2,A)')
      &                 ' Differentiated Gradient for Atom',IATOM,
      &                 ', Coordinate',ICOOR,', and symmetry',ISYM,':'
-                     IF (IPRMAX .GT. 20) THEN
-                        WRITE(LUPRI,'(/,A,/)')' CSF part of gradient'
-                        WRITE(LUPRI,'(6F12.6)')
+                     IF (NCONST .GT. 0) THEN
+                        WRITE(LUPRI,'(/A/)')' CSF part of gradient'
+                        IF (IIPRMAX .GT. 20) THEN
+                           WRITE(LUPRI,'(6F12.6)')
      &                            (WORK(KGD+J-1), J = 1, NCONST)
+                        ELSE
+                           J = IDAMAX(NCONST,WORK(KGD),1)
+                           WRITE(LUPRI,'(A,I10,F20.6)')
+     &                        ' Largest element:',J,WORK(KGD+J-1)
+                        END IF
                      END IF
-                     WRITE(LUPRI,'(//,A)')' Orbital part of gradient'
+                     WRITE(LUPRI,'(//A)')' Orbital part of gradient'
                      IF (IPRMAX .GE. 20) THEN
                         PRFAC = 0.0D0
-                     ELSE
+                     ELSE IF (IPRMAX .GT. 04) THEN
                         PRFAC = 0.1D0
+                     ELSE
+                        PRFAC = 0.5D0
                      END IF
                      CALL PRKAP(NWOPPT,WORK(KGD+NCONST),PRFAC,LUPRI)
                   END IF
@@ -1595,8 +1607,7 @@ C                 Geometrical distortion
 C                 ======================
 C
                   ELSE
-                     CALL WRITDX (LUGDR,ISCOOR,IRAT*NVARPT,
-     &                            WORK(KGD))
+                     CALL WRITDX (LUGDR,ISCOOR,IRAT*NVARPT,WORK(KGD))
 #if defined (VAR_OLDGDHAMCODE)
 C
 C     This has not been corrected. Wrong dimensions on FDC and FDV
@@ -1743,8 +1754,8 @@ C
          IF (MULD2H(ISYM1,ISYM2) .EQ. ISYM) THEN
             IOFF2 = IORB(ISYM2)
             NORB2 = NORB(ISYM2)
-            DO 300 I = IOFF1 + 1, IOFF1 + NORB1
             DO 300 J = IOFF2 + 1, IOFF2 + NORB2
+            DO 300 I = IOFF1 + 1, IOFF1 + NORB1
                SQMAT(I,J) = TRMAT(I,J)
   300       CONTINUE
          END IF
@@ -2875,69 +2886,62 @@ C  /* Deck ofabhg */
       SUBROUTINE OFABHG(HWORK,UMOG,WORK,LWORK)
 #include "implicit.h"
 #include "iratdef.h"
-      PARAMETER (LBUF = 600)
 #include "inforb.h"
-      DIMENSION WORK(LWORK)
-      KIBUF = 1
-      KWONE = KIBUF + 4*LBUF
-      KTOP  = KWONE + NNBAST
-      KLEFT = LWORK - KTOP + 1
-      IF (KTOP .GT. LWORK) CALL STOPIT('OFABHG',' ',LWORK,KTOP)
-      CALL OFABH1(HWORK,UMOG,WORK(KIBUF),WORK(KWONE),
-     &            WORK(KTOP),KLEFT)
-      RETURN
-      END
-C  /* Deck ofabh1 */
-      SUBROUTINE OFABH1(HWORK,UMOG,IBUF,HWRK,WRK,LWORK)
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "iratdef.h"
-#include "inforb.h"
-      PARAMETER (LBUF=600)
-      INTEGER A, B, C, D
-      DIMENSION HWORK(NBAST,NBAST), UMOG(NBAST,NBAST,NBAST,NBAST),
-     &          HWRK(NNBAST), IBUF(4,LBUF), MBAS(8), WRK(LWORK)
-
-C
-      KFREE = 1
-      LFREE = LWORK
+      REAL*8    HWORK(NBAST,NBAST), UMOG(*), WORK(LWORK)
+      INTEGER   MBAS(8)
 C
 C     One-electron part
 C
-      CALL DZERO(HWRK,NNBAST)
-      CALL RDONEL('ONEHAMIL',.TRUE.,HWRK,NNBAST)
-      CALL DSPTSI(NBAST,HWRK,HWORK)
+      IF (NNBAST .GT. LWORK) CALL STOPIT('OFABHG',' ',LWORK,NNBAST)
+      CALL DZERO(WORK,NNBAST)
+      CALL RDONEL('ONEHAMIL',.TRUE.,WORK,NNBAST)
+      CALL DSPTSI(NBAST,WORK,HWORK)
 C
 C     Two-electron part
 C
+      CALL DZERO(UMOG,N2BASX*N2BASX)
+
       LUINTA = -1
       CALL GPOPEN(LUINTA,'AOTWOINT','OLD',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) MSYM, MBAS, KBUF, NIBUF, NBITS, LENINT4
-      IF (KBUF .NE. LBUF) CALL QUIT('OFABH1: KBUF .ne. LBUF')
-C
+      READ (LUINTA) MSYM, MBAS, LBUF, NIBUF, NBITS, LENINT4
+
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('INT4',KINT ,LENINT4,WRK,KFREE,LFREE)
-      KIINT = KINT + LBUF
+      CALL MEMGET2('INTE','IBUF',KIBUF,4*LBUF,WORK,KFREE,LFREE)
+      CALL MEMGET2('INT4','AOBUF',KAOBUF,LENINT4,WORK,KFREE,LFREE)
+      CALL OFABH1(UMOG,WORK(KIBUF),WORK(KAOBUF),
+     &            LUINTA,LBUF,NIBUF,NBITS,LENINT4)
+      CALL MEMREL('OFABHG',WORK,1,1,KFREE,LFREE)
+      RETURN
+      END
+C  /* Deck ofabh1 */
+      SUBROUTINE OFABH1(UMOG,IINDX4,AOBUF,
+     &                  LUINTA,LBUF,NIBUF,NBITS,LENINT4)
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "iratdef.h"
+#include "inforb.h"
+      INTEGER   IINDX4(4,LBUF)
+      REAL*8    UMOG(NBAST,NBAST,NBAST,NBAST), AOBUF(LENINT4)
+      INTEGER   A, B, C, D
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-      CALL DZERO(UMOG,N2BASX*N2BASX)
   200 CONTINUE
-         CALL READI4(LUINTA,LENINT4,WRK(KINT))
-         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,NINT)
-         IF (NINT .EQ. 0) GO TO 200
-         IF (NINT .LT. 0) GO TO 400
-         IF (NINT .GT. 0) THEN
-            DO 300 I = 1, NINT
-               GINT  = WRK(KINT + I - 1)
-               A = IBUF(1,I)
-               B = IBUF(2,I)
-               C = IBUF(3,I)
-               D = IBUF(4,I)
+         CALL READI4(LUINTA,LENINT4,AOBUF)
+         CALL AOLAB4(AOBUF(LBUF+1),LBUF,NIBUF,NBITS,IINDX4,NINTS)
+         IF (NINTS .EQ. 0) GO TO 200
+         IF (NINTS .LT. 0) GO TO 400
+         IF (NINTS .GT. 0) THEN
+            DO 300 I = 1, NINTS
+               GINT  = AOBUF(I)
+               A = IINDX4(1,I)
+               B = IINDX4(2,I)
+               C = IINDX4(3,I)
+               D = IINDX4(4,I)
                UMOG(A,B,C,D) = GINT
                UMOG(A,B,D,C) = GINT
                UMOG(B,A,C,D) = GINT
@@ -2962,24 +2966,27 @@ C  /* Deck rumoga */
       LOGICAL NOH2, NOLOND
       DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), WORK(LWORK)
 C
-      KIBUF  = 1
-      KLAST = KIBUF + (600 + 1)/IRAT - 1
+      KIINDX4 = 1
+      KLAST   = KIINDX4 + 4*600/IRAT - 1
       IF (KLAST .GT. LWORK) CALL STOPIT('RUMOGA',' ',KLAST,LWORK)
-      CALL RUMOG1(UMOGA,NORBT,NOH2,NOLOND,WORK(KIBUF),X,WORK(KLAST))
+      CALL RUMOG1(UMOGA,NORBT,NOH2,NOLOND,WORK(KIINDX4),X,WORK(KLAST))
       RETURN
       END
 C  /* Deck rumog1 */
-      SUBROUTINE RUMOG1(UMOGA,NORBT,NOH2,NOLOND,IBUF,X,WORK)
+      SUBROUTINE RUMOG1(UMOGA,NORBT,NOH2,NOLOND,IINDX4,X,WORK)
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
-      PARAMETER (LBUF = 600)
       LOGICAL NOH2, NOLOND
       INTEGER P,Q,R,S,X
-      DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IBUF(600), WORK(*)
+      DIMENSION UMOGA(NORBT,NORBT,NORBT,NORBT), IINDX4(4,600), WORK(*)
+#include "mxcent.h"
+#include "nuclei.h"
 #include "inftap.h"      
-
+#include "eribuf.h"
 C
+      CALL ERIBUF_INI
+      LBUF = 600
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT  = 1
       KIINT = KINT + LBUF
@@ -2991,18 +2998,17 @@ C
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
  150  CONTINUE
          CALL READI4(LU2DER,LENINT4,WORK(KINT))
-         CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
-               LABEL = IBUF(I)
                VALUE = WORK(KINT + I - 1)
-               S = IAND(LABEL,255)
+               S = IINDX4(4,I)
                IF (S .EQ. 0) THEN
-                  ICOMP = IAND(ISHFT(LABEL,-8),255)
+                  ICOMP = IINDX4(3,I)
                ELSE IF (ICOMP .EQ. X) THEN
-                  P = IAND(ISHFT(LABEL,-24),255)
-                  Q = IAND(ISHFT(LABEL,-16),255)
-                  R = IAND(ISHFT(LABEL, -8),255)
+                  P = IINDX4(1,I)
+                  Q = IINDX4(2,I)
+                  R = IINDX4(3,I)
                   UMOGA(P,Q,R,S) = VALUE
                   UMOGA(R,S,P,Q) = VALUE
                   UMOGA(Q,P,S,R) = -VALUE
@@ -3395,7 +3401,7 @@ C
       CALL PSORH1(NODV,WMAT,WORK(KINTAD),LABINT,
      &            WORK(KBINTR),WORK(KCMO),WORK(KUDV),WORK(KPVX),
      &            WORK(KINDX),WORK(KLAST),LWRK,NODDY,IPRALL,
-     &            (SHIELD .OR. SPINRO),RALLCO,IPRALL)
+     &            (SHIELD .OR. SPINRO),RALLCO,IPRGDY)
 C
       IF ((SHIELD .OR. SPINRO) .AND. IPRALL .GE. 4) THEN
          CALL HEADER('Reorthonormalization part of shielding',-1)
@@ -3562,7 +3568,7 @@ C
 C     Construct right-hand sides and solve response equations and
 C     calculate if nescessary relaxation contributions. One symmetry
 C     at a time.
-C
+
       DO 100 ISYM = 1, NSYM
          CALL ABAVAR(ISYM,.FALSE.,IPRINT,WORK,LWORK)
          IREFSY = LSYMRF
@@ -3592,18 +3598,28 @@ C
 C              Scaled by -2 in accordance with ABARHS
 C
                CALL DSCAL(KZVAR,DM2,WORK,1)
-               IF (IPRALL .GE. 05) THEN
-                  WRITE (LUPRI,'(//A,I3)')
-     &              ' Dif. Gradient for symmetry coordinate',ISCOOR
-                  IF (IPRALL .GT. 20) THEN
-                     WRITE(LUPRI,'(/,A,/)')' CSF part of gradient'
-                     WRITE(LUPRI,'(6F12.6)') (WORK(J), J = 1, NCONST)
-                  END IF
-                  WRITE(LUPRI,'(//,A)')' Orbital part of gradient'
+               IF (IPRALL .GE. 04) THEN
+                  WRITE (LUPRI,'(//A,I3,2A)')
+     &              ' PSO gradient for symmetry coordinate',ISCOOR,
+     &              ', label: ',LABINT(ISCOOR)
+                  IF (NCONST .GT. 0) THEN
+                     WRITE(LUPRI,'(/A/)')' CSF part of gradient'
+                     IF (IIPRMAX .GT. 20) THEN
+                        WRITE(LUPRI,'(6F12.6)')
+     &                   (WORK(KGD+J-1), J = 1, NCONST)
+                     ELSE
+                        J = IDAMAX(NCONST,WORK(KGD),1)
+                        WRITE(LUPRI,'(A,I10,F20.6)')
+     &                     ' Largest element:',J,WORK(KGD+J-1)
+                     END IF
+                     END IF
+                  WRITE(LUPRI,'(//A)')' Orbital part of gradient'
                   IF (IPRALL .GE. 20) THEN
                      PRFAC = 0.0D0
-                  ELSE
+                  ELSE IF (IPRMAX .GT. 04) THEN
                      PRFAC = 0.1D0
+                  ELSE
+                     PRFAC = 0.5D0
                   END IF
                   CALL PRKAP(NWOPPT,WORK(1+NCONST),PRFAC,LUPRI)
                END IF

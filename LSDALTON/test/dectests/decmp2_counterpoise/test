@@ -13,11 +13,11 @@ f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-4)
 
 f.add(from_string = 'Summary For Counter Poise Correction',
       to_string   = 'Interaction Energy',
-      rel_tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-4)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

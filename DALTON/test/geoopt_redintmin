@@ -121,20 +121,20 @@ CTRL[4]=1
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "C .* 0*\.00982" $log | wc -l`
-CRIT2=`$GREP "C .* 0*\.00000004" $log | wc -l`
-CRIT3=`$GREP "H .* \-0*\.005166" $log | wc -l`
-CRIT4=`$GREP "H .* 0*\.010137" $log | wc -l`
-CRIT5=`$GREP "H .* \-0*\.010333" $log | wc -l`
-CRIT6=`$GREP "H .* \-0*\.01013[78]" $log | wc -l`
-CRIT7=`$GREP "H .* 0*\.017559" $log | wc -l`
+CRIT1=`$GREP "C .*   0*\.00982" $log | wc -l`
+CRIT2=`$GREP -l "C .*   0*\.00000" $log | wc -l`
+CRIT3=`$GREP "H .* \-0*\.00516" $log | wc -l`
+CRIT4=`$GREP "H .*   0*\.01013" $log | wc -l`
+CRIT5=`$GREP "H .* \-0*\.01033" $log | wc -l`
+CRIT6=`$GREP "H .* \-0*\.01013" $log | wc -l`
+CRIT7=`$GREP "H .*   0*\.01755" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[5]=7
 ERROR[5]="INITIAL GRADIENT NOT CORRECT"
 
 # Initial step
-TEST[6]=`$GREP "Norm of step .* 0\.16539(4|5)" $log | wc -l`
+TEST[6]=`$GREP "Norm of step .* 0\.165(39|40)" $log | wc -l`
 CTRL[6]=1
 ERROR[6]="INITIAL STEP NOT CORRECT"
 

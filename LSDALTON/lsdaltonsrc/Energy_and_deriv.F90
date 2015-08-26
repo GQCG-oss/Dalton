@@ -25,7 +25,9 @@ use integralinterfaceMod, only: II_get_molecular_gradient,&
      & II_get_nucpot,II_get_overlap,II_get_h1,II_precalc_ScreenMat,&
      & II_get_fock_mat
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
+#ifdef VAR_DEC
 use dec_main_mod
+#endif
 use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 use optimlocMOD, only: optimloc
@@ -189,8 +191,12 @@ contains
       & call optimloc(C,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
 
        If (config%doDEC.AND.(.NOT.config%noDecEnergy)) then
+#ifdef VAR_DEC
           ! Get dec energy
-          call get_total_CCenergy_from_inputs(ls,F(1),D(1),S,C,E(1),Eerr)
+          call get_total_CCenergy_from_inputs(ls,F(1),D(1),C,E(1),Eerr)
+#else
+          call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
        elseif(config%doESGopt)then
           call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
                & config%decomp%cfg_rsp_nexcit)       
@@ -233,7 +239,12 @@ contains
       ! Check whether it is a dec calculation
       If (DECinfo%doDEC) then
          ! Gradient from DEC (currently only MP2)
-         Call get_mp2gradient_and_energy_from_inputs(ls,F,D,S,C,Natoms,gradient,E,Eerr)
+#ifdef VAR_DEC
+         Call get_mp2gradient_and_energy_from_inputs(ls,F,D,C,Natoms,gradient,E,Eerr)
+#else
+          call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
+
       elseif(config%doESGopt)then
          call GET_EXCITED_STATE_GRADIENT(ls,config,F,D,S,Gradient,Natoms)
       else

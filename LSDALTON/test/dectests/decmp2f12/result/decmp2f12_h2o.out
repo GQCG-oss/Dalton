@@ -44,29 +44,30 @@
                                                 
       LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
       ----------------------------------------------------------------------------
-      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
-      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
       Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
-      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
       Robert Izsak,            University of Oslo,        Norway    (ADMM)
-      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
-      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
-      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
-      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
       Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
-      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
       Patrick Merlot,          University of Oslo,        Norway    (ADMM)
       Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
-      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
-      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
-      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
       Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
       Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
-      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
-      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
       Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
       Mark Watson,             University of Oslo,        Norway    (FMM)
       Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
@@ -87,27 +88,28 @@
      for further information.
   
   
- Who compiled             | pablo
- Host                     | pablo-AU
- System                   | Linux-3.13.0-37-generic
+ Who compiled             | kk
+ Host                     | kaspers-mbp-2.st.client.au.dk
+ System                   | Darwin-13.4.0
  CMake generator          | Unix Makefiles
- Processor                | x86_64
+ Processor                | i386
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ Fortran compiler         | /usr/local/bin/gfortran-4.8
+ Fortran compiler version | unknown
+ C compiler               | /usr/local/bin/gcc-4.8
+ C compiler version       | unknown
+ C++ compiler             | /usr/local/bin/g++-4.8
+ C++ compiler version     | unknown
+ Explicit libs            | -framework vecLib
  Static linking           | OFF
- Last Git revision        | 6bec1043f6d46eaeeb5efc488132381797df3000
+ Last Git revision        | 8b3cfa9734943025bfe19caab3a2fec973c76e97
  Git branch               | master
- Configuration time       | 2015-02-27 16:09:37.857542
+ Configuration time       | 2015-08-17 14:13:52.419704
 
 Start simulation
-     Date and time (Linux)  : Fri Feb 27 16:25:23 2015
-     Host name              : pablo-AU                                
+     Date and time (Linux)  : Mon Aug 17 14:14:18 2015
+     Host name              : kaspers-mbp-2.st.client.au.dk           
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -195,15 +197,15 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/home/pablo/Work/dalton/build_serial/basis/6-31G
+ OPENING FILE/Users/kk/dalton3/build_debug/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/home/pablo/Work/dalton/build_serial/basis/cc-pVDZ
+ OPENING FILE/Users/kk/dalton3/build_debug/basis/cc-pVDZ
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/home/pablo/Work/dalton/build_serial/basis/aug-cc-pVDZ
+ OPENING FILE/Users/kk/dalton3/build_debug/basis/aug-cc-pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -296,6 +298,7 @@ Density optimization : Augmented RH optimization
  Maximum size of Fock/density queue in averaging:          10
 
 Convergence threshold for gradient:   0.10E-04
+The F12 Geminal exponent for the Regular Basis =     1.0
 We perform the calculation in the standard input basis
  
     The Overall Screening threshold is set to              :  1.0000E-08
@@ -311,20 +314,18 @@ We perform the calculation in the standard input basis
  First density: Atoms in molecule guess
 
  The Coulomb energy contribution    55.212241003110435     
- The Exchange energy contribution    9.7160687747450680     
- The Fock energy contribution   -45.496172228365381     
-  Iteration 0 energy:  -75.241300214854078     
-
-Max no. of matrices allocated in Level 2 / get_initial_dens:          9
+ The Exchange energy contribution    9.7160687747450716     
+ The Fock energy contribution   -45.496172228365367     
+  Iteration 0 energy:  -75.241300214854093     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        93 sparsity:     55.030 %
 Matrix AO D  has nnz=       105 sparsity:     62.130 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   1.0000000000000001E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    41.377198187658017     
- The Exchange energy contribution    8.3303115953208877     
- The Fock energy contribution   -33.046886592337167     
+ The Coulomb energy contribution    41.377198187657939     
+ The Exchange energy contribution    8.3303115953208646     
+ The Fock energy contribution   -33.046886592337074     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -338,7 +339,7 @@ Matrix AO F  has nnz=       105 sparsity:     62.130 %
 Matrix OAO D has nnz=       105 sparsity:     62.130 %
 Matrix OAO F has nnz=       105 sparsity:     62.130 %
 ** Get new density 
- OAO gradnorm   1.1245869603586718     
+ OAO gradnorm   1.1245869603586653     
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -357,12 +358,12 @@ Error went down by   93.52%
   Error of red space iteration  6:        0.0044582335 (mu =       0.00, xmax =   0.279688E+00, xnorm =   0.820102E+00, THR =   0.112459E-01)
 Newton equations converged in  6 iterations!
 No. of matmuls in get_density:    67
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.06 seconds
+ >>> wall Time used in SCF iteration is   0.06 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    51.187725617593976     
- The Exchange energy contribution    9.4839790667164312     
- The Fock energy contribution   -41.703746550877518     
+ The Coulomb energy contribution    51.187725617594026     
+ The Exchange energy contribution    9.4839790667164383     
+ The Fock energy contribution   -41.703746550877575     
  0.60000 (xnorm)    0.27969    0.82010   -0.00        0.2365    0.0000         0          1    %%%
  Trust radius based on max norm!
  % Reduce trust-radius, h(old), h(new):  0.59999999999999998       0.41999999999999998     
@@ -373,7 +374,7 @@ Matrix AO F  has nnz=       105 sparsity:     62.130 %
 Matrix OAO D has nnz=       105 sparsity:     62.130 %
 Matrix OAO F has nnz=       105 sparsity:     62.130 %
 ** Get new density 
- OAO gradnorm  0.87956895126690215     
+ OAO gradnorm  0.87956895126692003     
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -393,11 +394,11 @@ Error went down by   83.13%
 Newton equations converged in  6 iterations!
 No. of matmuls in get_density:    87
  >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.06 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    46.393870786751997     
- The Exchange energy contribution    8.9061887907428918     
- The Fock energy contribution   -37.487681996009115     
+ The Coulomb energy contribution    46.393870786752018     
+ The Exchange energy contribution    8.9061887907428847     
+ The Fock energy contribution   -37.487681996009137     
  0.42000 (xnorm)    0.12231    0.38032   -0.00        0.9493    0.9802         1          2    %%%
  Trust radius based on max norm!
  % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.41999999999999998       0.50400000000000000     
@@ -408,7 +409,7 @@ Matrix AO F  has nnz=       105 sparsity:     62.130 %
 Matrix OAO D has nnz=       105 sparsity:     62.130 %
 Matrix OAO F has nnz=       105 sparsity:     62.130 %
 ** Get new density 
- OAO gradnorm   7.4972882234145569E-002
+ OAO gradnorm   7.4972882234134841E-002
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -429,9 +430,9 @@ No. of matmuls in get_density:    74
  >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    46.636564558270202     
- The Exchange energy contribution    8.9388603951536805     
- The Fock energy contribution   -37.697704163116477     
+ The Coulomb energy contribution    46.636564558270194     
+ The Exchange energy contribution    8.9388603951536876     
+ The Fock energy contribution   -37.697704163116505     
  0.50400 (xnorm)    0.01442    0.05872   -0.00        1.2575    0.6609         2          3    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -443,7 +444,7 @@ Matrix AO F  has nnz=       105 sparsity:     62.130 %
 Matrix OAO D has nnz=       105 sparsity:     62.130 %
 Matrix OAO F has nnz=       105 sparsity:     62.130 %
 ** Get new density 
- OAO gradnorm   2.1414094316983694E-002
+ OAO gradnorm   2.1414094316982935E-002
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -465,9 +466,9 @@ No. of matmuls in get_density:    83
  >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    46.746906728495951     
+ The Coulomb energy contribution    46.746906728495958     
  The Exchange energy contribution    8.9523612482582919     
- The Fock energy contribution   -37.794545480237652     
+ The Fock energy contribution   -37.794545480237673     
  0.60000 (xnorm)    0.00660    0.02424   -0.00        1.0489    0.9706         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -479,7 +480,7 @@ Matrix AO F  has nnz=       105 sparsity:     62.130 %
 Matrix OAO D has nnz=       105 sparsity:     62.130 %
 Matrix OAO F has nnz=       105 sparsity:     62.130 %
 ** Get new density 
- OAO gradnorm   2.5622053496222492E-003
+ OAO gradnorm   2.5622053496247451E-003
  Number of densities in queue:           4
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -501,9 +502,9 @@ No. of matmuls in get_density:    82
  >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    46.750162474222883     
- The Exchange energy contribution    8.9524999780553962     
- The Fock energy contribution   -37.797662496167504     
+ The Coulomb energy contribution    46.750162474222968     
+ The Exchange energy contribution    8.9524999780554069     
+ The Fock energy contribution   -37.797662496167568     
  0.60000 (xnorm)    0.00102    0.00406   -0.00        1.0507    0.9813         4          5    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -515,7 +516,7 @@ Matrix AO F  has nnz=       105 sparsity:     62.130 %
 Matrix OAO D has nnz=       105 sparsity:     62.130 %
 Matrix OAO F has nnz=       105 sparsity:     62.130 %
 ** Get new density 
- OAO gradnorm   4.4478400237115562E-004
+ OAO gradnorm   4.4478400237276240E-004
  Number of densities in queue:           5
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -536,11 +537,11 @@ Error went down by   81.50%
 Newton equations converged in  7 iterations!
 No. of matmuls in get_density:    91
  >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.06 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    46.748638813170444     
- The Exchange energy contribution    8.9523309734091470     
- The Fock energy contribution   -37.796307839761269     
+ The Coulomb energy contribution    46.748638813170430     
+ The Exchange energy contribution    8.9523309734091274     
+ The Fock energy contribution   -37.796307839761297     
  0.60000 (xnorm)    0.00013    0.00036   -0.00        1.0121    0.9423         5          6    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -552,7 +553,7 @@ Matrix AO F  has nnz=       105 sparsity:     62.130 %
 Matrix OAO D has nnz=       105 sparsity:     62.130 %
 Matrix OAO F has nnz=       105 sparsity:     62.130 %
 ** Get new density 
- OAO gradnorm   7.0630292015758504E-005
+ OAO gradnorm   7.0630292032846303E-005
  Number of densities in queue:           6
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -574,20 +575,20 @@ Error went down by   90.63%
   Error of red space iteration  8:        0.0000000363 (mu =       0.00, xmax =   0.203516E-04, xnorm =   0.409813E-04, THR =   0.706303E-07)
 Newton equations converged in  8 iterations!
 No. of matmuls in get_density:   100
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.06 seconds
+ >>> wall Time used in SCF iteration is   0.06 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    46.748952325100781     
- The Exchange energy contribution    8.9523699568839010     
- The Fock energy contribution   -37.796582368216932     
+ The Coulomb energy contribution    46.748952325100902     
+ The Exchange energy contribution    8.9523699568839046     
+ The Fock energy contribution   -37.796582368216995     
  0.60000 (xnorm)    0.00002    0.00004   -0.00        0.9961    0.9463         6          7    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   8    -75.9839744726   -0.00000000260    0.00      0.00000   -0.00    7.38E-06  ###
 SCF converged in      8 iterations
- >>>  CPU Time used in **ITER is   0.39 seconds
- >>> wall Time used in **ITER is   0.39 seconds
+ >>>  CPU Time used in **ITER is   0.44 seconds
+ >>> wall Time used in **ITER is   0.44 seconds
 
 Total no. of matmuls in SCF optimization:        713
 
@@ -628,13 +629,13 @@ Calculation of virtual orbital energies converged in     4 iterations!
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
     1           -75.50754166197349093181      0.112458696035867D+01
-    2           -75.70080388314148933659      0.879568951266902D+00
-    3           -75.97878846746318970418      0.749728822341456D-01
-    4           -75.98351584075659559403      0.214140943169837D-01
-    5           -75.98396476251870979013      0.256220534962225D-02
-    6           -75.98397432500782144871      0.444784002371156D-03
-    7           -75.98397447002348314982      0.706302920157585D-04
-    8           -75.98397447262324533312      0.737611146160858D-05
+    2           -75.70080388314151775830      0.879568951266920D+00
+    3           -75.97878846746307601734      0.749728822341348D-01
+    4           -75.98351584075656717232      0.214140943169829D-01
+    5           -75.98396476251853925987      0.256220534962475D-02
+    6           -75.98397432500782144871      0.444784002372762D-03
+    7           -75.98397447002336946298      0.706302920328463D-04
+    8           -75.98397447262313164629      0.737611148077752D-05
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -741,8 +742,8 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    1.57   10
   %LOC%   Min. sigma_4 and orb.number:    1.98   10
 
- >>>  CPU Time used in Orbital Localization is   0.25 seconds
- >>> wall Time used in Orbital Localization is   0.25 seconds
+ >>>  CPU Time used in Orbital Localization is   0.79 seconds
+ >>> wall Time used in Orbital Localization is   0.79 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -760,6 +761,8 @@ FULL: Number of core orbitals    :      1
 FULL: Number of valence orbitals :      4
 FULL: Number of occ. orbitals    :      5
 FULL: Number of virt. orbitals   :      8
+FULL: Local memory use type full :  0.32E-05
+FULL: Distribute matrices        : F
 
  Calculating carmom matrix for DEC calculation...
  Memory set in input to be:    2.000     GB
@@ -769,11 +772,24 @@ FULL: Number of virt. orbitals   :      8
              -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
 =============================================================================
 
- ----------------------------------------------------------------
-                    F12-SINGLES CORRECTION                       
- ----------------------------------------------------------------
- WANGY TOYCODE F12 SINGLES CORRECTION =        -0.0224031244
- ----------------------------------------------------------------
+
+ Starting F12 singles correction solver
+ --------------------------------------
+ ###  Iteration     Residual norm         F12 Singles energy
+ ###      1          1.266749175            0.00000000000    
+ ###      2         0.3566852868E-01      -0.544798090501E-01
+ ###      3         0.1908858106E-01      -0.560256631282E-01
+ ###      4         0.1589429298E-02      -0.563698687505E-01
+ ###      5         0.5715837510E-03      -0.563783189769E-01
+ ###      6         0.1211897572E-03      -0.563792324957E-01
+ ###      7         0.4596576187E-04      -0.563793064410E-01
+ ###      8         0.1014136758E-04      -0.563793136099E-01
+ ###      9         0.3112638716E-05      -0.563793143723E-01
+ ###     10         0.5859059604E-06      -0.563793144100E-01
+ ###     11         0.2099529370E-06      -0.563793144128E-01
+ ###     12         0.1841909363E-07      -0.563793144130E-01
+F12 Singles equations solved in   12 iterations!
+F12 Singles energy correction:    -0.563793144130E-01
 
 DEC calculation is carried out...
 
@@ -843,9 +859,9 @@ Use F12 correction           =            TRUE
  **********************************************************************
 
  Maximum occ orbital extent (#AOs) =     13   -- Orbital index     1
- Maximum unocc orbital extent (#AOs) =     13   -- Orbital index     1
+ Maximum virt orbital extent (#AOs) =     13   -- Orbital index     1
  Average occ orbital extent (#AOs)  =      13.0000
- Average unocc orbital extent (#AOs) =      13.0000
+ Average virt orbital extent (#AOs) =      13.0000
 
 
  >>>  CPU Time used in DEC INIT is   0.00 seconds
@@ -873,8 +889,9 @@ Use F12 correction           =            TRUE
  FOP ===============================================
  FOP
  FOP Fragment includes all orbitals and fragment optimization is skipped
- >>>  CPU Time used in DEC Atomic Fragment Calculation is   0.02 seconds
- >>> wall Time used in DEC Atomic Fragment Calculation is   0.02 seconds
+ CABS basis test is successful
+ >>>  CPU Time used in DEC Atomic Fragment Calculation is   0.04 seconds
+ >>> wall Time used in DEC Atomic Fragment Calculation is   0.04 seconds
  Preparing job list...
 
 
@@ -886,7 +903,7 @@ Use F12 correction           =            TRUE
       1      5      8     13     0.00    / 0.958       0.00    /  1.51              FRAG_SIZE
 
  FRAGANALYSIS: Max/Ave/Min occ         :        5       /     5.0000    /       5
- FRAGANALYSIS: Max/Ave/Min unocc       :        8       /     8.0000    /       8
+ FRAGANALYSIS: Max/Ave/Min virt        :        8       /     8.0000    /       8
  FRAGANALYSIS: Max/Ave/Min basis       :       13       /     13.000    /      13
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      0.0000    /     0.0000    /     0.0000    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :     0.95778    /    0.95778    /    0.95778    
@@ -912,6 +929,7 @@ Use F12 correction           =            TRUE
 
  *** Calculating single and pair interaction energies ***
 
+ CABS basis test is successful
 #SINGLEDIMS# basis,occ,virt       13       5       8
 
 
@@ -919,30 +937,30 @@ Use F12 correction           =            TRUE
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  1.64    
+ 85% of available memory (GB)            =  1.70    
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       5       5
  Number of virtual  orbitals AOS/EOS     =       8       8
- Maximum alpha batch dimension           =       3
+ Maximum alpha batch dimension           =      13
  Maximum gamma batch dimension           =      13
  Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.855E-04
- Memory required for tmp array 1 (GB)    = 0.527E-04
- Memory required for tmp array 2 (GB)    = 0.125E-04
- Memory required for tmp array 3 (GB)    = 0.203E-04
+ Tot memory required for tmp arrays (GB) = 0.370E-03
+ Memory required for tmp array 1 (GB)    = 0.228E-03
+ Memory required for tmp array 2 (GB)    = 0.541E-04
+ Memory required for tmp array 3 (GB)    = 0.879E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.432E-04
+ Tot memory required for tmp arrays (GB) = 0.592E-04
  Memory required for tmp array 1 (GB)    = 0.128E-04
  Memory required for tmp array 2 (GB)    = 0.128E-04
  Memory required for tmp array 3 (GB)    = 0.128E-04
- Memory required for tmp array 4 (GB)    = 0.480E-05
+ Memory required for tmp array 4 (GB)    = 0.208E-04
 
  STEP 3 in integral loop
  -----------------------
@@ -952,116 +970,129 @@ Use F12 correction           =            TRUE
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.855E-04
- Big Array Memory required       (GB)    = 0.102E-03
+ Memory required                 (GB)    = 0.370E-03
+ Big Array Memory required       (GB)    = 0.387E-03
 
  BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
+ BATCH: Number of Alpha batches   =            1
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.03 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.03 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
- Memory statistics before allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.292 MB
-  Max allocated memory, TOTAL                         67.672 MB
- Memory statistics after allocation of CoccEOS:
-  Allocated memory,     TOTAL                  67.292 MB
-  Max allocated memory, TOTAL                         67.672 MB
- Memory statistics after allocation of CoccAOS:
-  Allocated memory,     TOTAL                  67.293 MB
-  Max allocated memory, TOTAL                         67.672 MB
- Memory statistics after allocation of CvirtAOS:
-  Allocated memory,     TOTAL                  67.293 MB
-  Max allocated memory, TOTAL                         67.672 MB
- Memory statistics after allocation of CocvAOS:
-  Allocated memory,     TOTAL                  67.295 MB
-  Max allocated memory, TOTAL                         67.672 MB
- Memory statistics after allocation of Ccabs:
-  Allocated memory,     TOTAL                  67.304 MB
-  Max allocated memory, TOTAL                         67.672 MB
- Memory statistics after allocation of Cri:
-  Allocated memory,     TOTAL                  67.317 MB
-  Max allocated memory, TOTAL                         67.672 MB
  Memory statistics after allocation of Venergy:
-  Allocated memory,     TOTAL                  67.317 MB
-  Max allocated memory, TOTAL                         67.672 MB
+  Allocated memory,     TOTAL                 862.956 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EV1:
-  Allocated memory,     TOTAL                  67.317 MB
-  Max allocated memory, TOTAL                         67.672 MB
+  Allocated memory,     TOTAL                 862.956 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EV2:
-  Allocated memory,     TOTAL                  67.317 MB
-  Max allocated memory, TOTAL                         67.737 MB
+  Allocated memory,     TOTAL                 862.956 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EV3:
-  Allocated memory,     TOTAL                  67.317 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 862.956 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EV4:
-  Allocated memory,     TOTAL                  67.317 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 862.956 kB
+  Max allocated memory, TOTAL                          9.517 MB
+ ----------------------------------------
+  E21 V term                             
+ ----------------------------------------
+  E21_CC_term:      0.000000000000000    
+  E21_V_term1:     -11.57080456681533    
+  E21_V_term2:      10.54666021559729    
+  E21_V_term3:     0.7513770378647752E-01
+  E21_V_term4:     0.1955281506183961    
+  E21_V_term5:     0.4641422504012121E-02
+ ----------------------------------------
+  E21_Vsum:     ***************
  Memory statistics after allocation of Fkj:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.116 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after allocation of Fmn:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.316 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after allocation of Fab:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.828 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after allocation of Xenergy:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.860 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EX1:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.860 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EX2:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.860 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EX3:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.860 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EX4:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.860 kB
+  Max allocated memory, TOTAL                          9.517 MB
+ ----------------------------------------
+  E_22 X term                            
+ ----------------------------------------
+  E22_X_term1:     11.00533073231530    
+  E22_X_term2:    -10.71134160511900    
+  E22_X_term3:   -0.2030704711445446E-01
+  E22_X_term4:   -0.7064789706457027E-01
+ ----------------------------------------
+  E22_Xsum:    0.2030341830172766    
  Memory statistics after allocation of Benergy:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB1:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB2:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB3:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.098 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB4:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.951 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB5:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.951 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB6:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.951 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB7:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.951 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB8:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.951 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
  Memory statistics after subroutine get_EB9:
-  Allocated memory,     TOTAL                  67.318 MB
-  Max allocated memory, TOTAL                         68.951 MB
+  Allocated memory,     TOTAL                 863.900 kB
+  Max allocated memory, TOTAL                          9.517 MB
+ ----------------------------------------
+  E_22 B term                            
+ ----------------------------------------
+  E23_B_term1:    0.5983387192385766    
+  E23_B_term2:    -2.066703874692576    
+  E23_B_term3:    -5.612279188299906    
+  E23_B_term4:    -3.183117204104295    
+  E23_B_term5:     9.476454647531630    
+  E23_B_term6:    0.9283634470445591    
+  E23_B_term7:   -0.6917875476858293E-01
+  E23_B_term8:    0.1385376838673779    
+  E23_B_term9:   -0.1602887226453139E-02
+ ----------------------------------------
+  E23_B_sum:      0.2088125885903329    
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
   WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.8432844660
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.2584128376
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.2617154931
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.5201283307
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.3231561353
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.3231561353
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.7488370743
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.2030341830
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.2088125886
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.4118467716
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.3369903027
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.3369903027
 
 
  **********************************************************************
@@ -1074,10 +1105,10 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  67.292 MB
-  Max allocated memory, TOTAL                         68.951 MB
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  12.02 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  12.02 seconds
+  Allocated memory,     TOTAL                 818.652 kB
+  Max allocated memory, TOTAL                          9.517 MB
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  16.41 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  16.52 seconds
 
 
               ===============================================
@@ -1120,14 +1151,14 @@ Use F12 correction           =            TRUE
  =================================================================
 
  Fragment       Energy
-     1      -0.3231561353        AF_MP2f12_OCC
+     1      -0.3369903027        AF_MP2f12_OCC
 
  **********************************************************
  *                  DEC ENERGY SUMMARY                    *
  **********************************************************
  MP2 CORRECTION TO ENERGY:             -0.1288509657
- F12 CORRECTION TO MP2 ENERGY:         -0.3231561353
- MP2-F12 CORRELATION ENERGY:           -0.4520071009
+ F12 CORRECTION TO MP2 ENERGY:         -0.3369903027
+ MP2-F12 CORRELATION ENERGY:           -0.4658412684
 
 
 
@@ -1141,15 +1172,16 @@ Use F12 correction           =            TRUE
              **********************************************************
 
                E: Hartree-Fock energy :      -75.9839744726
-               E: Correlation energy  :       -0.4520071009
+               E: Correlation energy  :       -0.4658412684
+               E: F12 singles         :       -0.0563793144
+               E: Total MP2-F12 energy:      -76.5061950554
                E: Estimated DEC err 1 :        0.0000000000
                E: Estimated DEC err 2 :        0.0006000000
                E: Estimated DEC err 3 :        0.0000000000
-               E: Total MP2-F12 energy:      -76.4359815735
 
 
- >>>  CPU Time used in DEC FINAL is   0.01 seconds
- >>> wall Time used in DEC FINAL is   0.01 seconds
+ >>>  CPU Time used in DEC FINAL is   0.02 seconds
+ >>> wall Time used in DEC FINAL is   0.02 seconds
 
  CC Memory summary
  -----------------
@@ -1164,13 +1196,13 @@ Use F12 correction           =            TRUE
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         12.7959     s
-Total Wall time used in DEC          :         12.7870     s
+Total CPU  time used in DEC          :         18.2915     s
+Total Wall time used in DEC          :         18.4180     s
 ------------------------------------------------------
 
 
-Hostname       : pablo-AU                                          
-Job finished   : Date: 27/02/2015   Time: 16:25:38
+Hostname       : kaspers-mbp-2.st.client.au.dk                     
+Job finished   : Date: 17/08/2015   Time: 14:14:41
 
 
 
@@ -1180,12 +1212,11 @@ Job finished   : Date: 27/02/2015   Time: 16:25:38
 
 
 
- >>>  CPU Time used in *SCF is  14.99 seconds
- >>> wall Time used in *SCF is  14.98 seconds
+ >>>  CPU Time used in *SCF is  22.81 seconds
+ >>> wall Time used in *SCF is  22.95 seconds
 
-Total no. of matmuls used:                      1481
+Total no. of matmuls used:                      1707
 Total no. of Fock/KS matrix evaluations:           9
-Max no. of matrices allocated in Level 3:         74
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1224,52 +1255,52 @@ Max no. of matrices allocated in Level 3:         74
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Additional Memory information          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         68.951 MB
-  Max allocated memory, type(matrix)                  83.568 kB
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                          9.517 MB
+  Max allocated memory, type(matrix)                 354.304 kB
   Max allocated memory, real(realk)                    9.433 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       83.881 kB
-  Max allocated memory, logical                      201.444 kB
-  Max allocated memory, character                      5.216 kB
-  Max allocated memory, AOBATCH                       41.328 kB
+  Max allocated memory, logical                        1.560 kB
+  Max allocated memory, character                      7.616 kB
+  Max allocated memory, AOBATCH                       55.808 kB
   Max allocated memory, DECORBITAL                     1.664 kB
-  Max allocated memory, DECFRAG                       46.560 kB
-  Max allocated memory, BATCHTOORB                     0.504 kB
+  Max allocated memory, DECFRAG                       48.216 kB
+  Max allocated memory, BATCHTOORB                     0.168 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.576 kB
+  Max allocated memory, MYPOINTER                      0.288 kB
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.400 MB
+  Max allocated memory, ARRAY                          0.000 Byte
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                       15.048 kB
-  Max allocated memory, LSAOTENSOR                     5.472 kB
-  Max allocated memory, SLSAOTENSOR                   12.144 kB
+  Max allocated memory, ODBATCH                       29.304 kB
+  Max allocated memory, LSAOTENSOR                    13.680 kB
+  Max allocated memory, SLSAOTENSOR                   33.672 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                 459.168 kB
-  Max allocated memory, ATOMITEM                       3.264 kB
-  Max allocated memory, LSMATRIX                       5.992 kB
-  Max allocated memory, OverlapT                     322.624 kB
-  Max allocated memory, linkshell                      2.772 kB
+  Max allocated memory, ATOMITEM                       3.072 kB
+  Max allocated memory, LSMATRIX                       8.344 kB
+  Max allocated memory, OverlapT                     627.072 kB
+  Max allocated memory, linkshell                      4.068 kB
   Max allocated memory, integrand                    580.608 kB
   Max allocated memory, integralitem                   4.410 MB
   Max allocated memory, IntWork                      122.184 kB
   Max allocated memory, Overlap                        7.554 MB
-  Max allocated memory, ODitem                        10.944 kB
-  Max allocated memory, LStensor                      32.113 kB
+  Max allocated memory, ODitem                        21.312 kB
+  Max allocated memory, LStensor                      67.633 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
@@ -1278,9 +1309,9 @@ Max no. of matrices allocated in Level 3:         74
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  15.03 seconds
- >>> wall Time used in LSDALTON is  15.02 seconds
+ >>>  CPU Time used in LSDALTON is  22.96 seconds
+ >>> wall Time used in LSDALTON is  23.14 seconds
 
 End simulation
-     Date and time (Linux)  : Fri Feb 27 16:25:38 2015
-     Host name              : pablo-AU                                
+     Date and time (Linux)  : Mon Aug 17 14:14:41 2015
+     Host name              : kaspers-mbp-2.st.client.au.dk           

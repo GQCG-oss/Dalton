@@ -8,7 +8,8 @@ module crop_tools_module
 
    use precision
    use tensor_interface_module
-   
+   use background_buffer_module
+   use reorder_frontend_module
    
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
@@ -29,7 +30,16 @@ module crop_tools_module
    integer,parameter :: SOLVE_AMPLITUDES      = 1
    integer,parameter :: SOLVE_AMPLITUDES_PNO  = 2
    integer,parameter :: SOLVE_MULTIPLIERS     = 3
+
+   private
    
+   public :: SolveLinearEquations, CalculateDIIScoefficients,&
+        & CalculateDIIScoefficientsII, PrintMatrix,&
+        & print_ccjob_header, print_ccjob_iterinfo,&
+        & print_ccjob_summary, can_local_trans, local_can_trans,&
+        & successive_wxyz_trafo, successive_xyxy_trafo,&
+        & SOLVE_AMPLITUDES, SOLVE_AMPLITUDES_PNO,&
+        & SOLVE_MULTIPLIERS, get_mp2_energy, get_cc_energy
    
    contains
    
@@ -629,6 +639,7 @@ module crop_tools_module
       !> temp array2 and array4 structures
       real(realk),pointer :: tmp(:)
       integer(kind=8) :: wrksize
+      logical :: bg
 
       wrksize = 0
       if(present(vovo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
@@ -641,7 +652,13 @@ module crop_tools_module
       if(present(oo))   wrksize = max(wrksize,(i8*no) * no)
       if(present(vv))   wrksize = max(wrksize,(i8*nv) * nv)
 
-      call mem_alloc(tmp,wrksize)
+      bg = (mem_is_background_buf_init().and.mem_get_bg_buf_free()>=wrksize)
+
+      if(bg)then
+         call mem_pseudo_alloc(tmp,i8*wrksize)
+      else
+         call mem_alloc(tmp,wrksize)
+      endif
 
       !successive transformation of vovo:
       if(present(vovo)) call successive_wxyz_trafo(nv,no,nv,no,vovo,Uvirt,Uocc,Uvirt,Uocc,tmp)
@@ -691,7 +708,12 @@ module crop_tools_module
          call dgemm('n','t',no,no,no,1.0E0_realk,tmp,no,Uocc,no,0.0E0_realk,oo,no)
       endif
 
-      call mem_dealloc(tmp)
+      if(bg)then
+         call mem_pseudo_dealloc(tmp)
+      else
+         call mem_dealloc(tmp)
+      endif
+
    end subroutine can_local_trans
 
    subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv,oo,vv)
@@ -711,6 +733,8 @@ module crop_tools_module
       !> temp array2 and array4 structures
       real(realk),pointer :: tmp(:)
       integer :: wrksize
+      logical :: bg
+
 
       call mat_transpose(no,no,1.0E0_realk,Uocc,0.0E0_realk,UoccT)
       call mat_transpose(nv,nv,1.0E0_realk,Uvirt,0.0E0_realk,UvirtT)
@@ -726,7 +750,13 @@ module crop_tools_module
       if(present(oo))   wrksize = max(wrksize,(i8*no) * no)
       if(present(vv))   wrksize = max(wrksize,(i8*nv) * nv)
 
-      call mem_alloc(tmp,wrksize)
+      bg = (mem_is_background_buf_init().and.mem_get_bg_buf_free()>=wrksize)
+
+      if(bg)then
+         call mem_pseudo_alloc(tmp,i8*wrksize)
+      else
+         call mem_alloc(tmp,wrksize)
+      endif
 
       !successive transformation of vovo:
       if(present(vovo))call successive_wxyz_trafo(nv,no,nv,no,vovo,UvirtT,UoccT,UvirtT,UoccT,tmp)
@@ -775,7 +805,11 @@ module crop_tools_module
          call dgemm('n','n',no,no,no,1.0E0_realk,tmp,no,Uocc,no,0.0E0_realk,oo,no)
       endif
 
-      call mem_dealloc(tmp)
+      if(bg)then
+         call mem_pseudo_dealloc(tmp)
+      else
+         call mem_dealloc(tmp)
+      endif
    end subroutine local_can_trans
 
    subroutine successive_wxyz_trafo(w,x,y,z,WXYZ,WW,XX,YY,ZZ,WRKWXYZ)

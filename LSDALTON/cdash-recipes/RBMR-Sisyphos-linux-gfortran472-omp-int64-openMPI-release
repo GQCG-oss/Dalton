@@ -3,7 +3,7 @@ SCRATCH_DIR=/tmp/sisyphos/DaltonGfortranReleaseOPENMPI64RBMR
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 git checkout Dalton2015
 export OMP_NUM_THREADS=2
@@ -19,7 +19,7 @@ export PATH=/usr/lib64/openmpi/bin:$PATH
 export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib:$LD_LIBRARY_PATH
 
 
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing --int64 -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-int64-openMPI-release" build
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing --int64 -DENABLE_DEC=ON -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-int64-openMPI-release" build
 
 cd build
 make release
@@ -28,7 +28,7 @@ if [[ -e  DALTON-Source.tar.gz ]]; then
  tar -zxvf DALTON-Source.tar.gz
  cd DALTON-Source
 
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing --int64 -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-int64-openMPI-release" build
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing --int64 -DENABLE_DEC=ON -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-int64-openMPI-release" build
 
  cd build
  ctest --track ReleaseBranch2015MakeRelease -D Nightly -L linsca

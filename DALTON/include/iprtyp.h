@@ -48,6 +48,9 @@
 #define GEN1INT_GET_CUBE 82
 #define CGTO_DIFF_ERI_INIT 83
 #define XCINT_MPI_WAKEUP_SIGNAL 84
+#define PARA_RP_ERES 85
+#define SLAVESLEEP 86
+#define PARA_SO_ERES 87
 #define QMCMM_WORK 90
 #define efs_add_atomtype_work     128
 #define efs_init_work             129

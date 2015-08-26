@@ -31,7 +31,7 @@ CONTAINS
 SUBROUTINE getMolecularDimensions(MOLECULE,nAtoms,nBast,nBastAux)
 implicit none
 TYPE(MOLECULEINFO),intent(in) :: MOLECULE
-Integer,intent(out)           :: nAtoms,nBast,nBastAux
+Integer,intent(inout)         :: nAtoms,nBast,nBastAux
 !AORdefault   !AODFdefault
 nAtoms   = MOLECULE%nAtoms
 IF(AORdefault.EQ.AOregular)THEN
@@ -41,12 +41,15 @@ ELSEIF(AORdefault.EQ.AOVAL)THEN
 ELSEIF(AORdefault.EQ.AOdfAux)THEN
    nbast = MOLECULE%nBastAUX
 ELSEIF(AORdefault.EQ.AOdfCABS)THEN
+   nbast = MOLECULE%nBastCABS + MOLECULE%nbastREG
+ELSEIF(AORdefault.EQ.AOdfCABO)THEN !CABS only
    nbast = MOLECULE%nBastCABS
 ELSEIF(AORdefault.EQ.AOdfJK)THEN
    nbast = MOLECULE%nBastJK
 ELSEIF(AORdefault.EQ.AOadmm)THEN
    nbast = MOLECULE%nBastADMM
 ELSE   
+   nbast = 0
    CALL LSQUIT('ERROR IN NBASIS DETERMINATION in getMolecularDimensions',-1)
 ENDIF
 
@@ -57,12 +60,15 @@ ELSEIF(AODFdefault.EQ.AOVAL)THEN
 ELSEIF(AODFdefault.EQ.AOdfAux)THEN
    nBastAux = MOLECULE%nBastAUX
 ELSEIF(AODFdefault.EQ.AOdfCABS)THEN
+   nBastAux = MOLECULE%nBastCABS + MOLECULE%nbastREG
+ELSEIF(AODFdefault.EQ.AOdfCABO)THEN !CABS only
    nBastAux = MOLECULE%nBastCABS
 ELSEIF(AODFdefault.EQ.AOdfJK)THEN
    nBastAux = MOLECULE%nBastJK
 ELSEIF(AODFdefault.EQ.AOadmm)THEN
    nBastAux = MOLECULE%nBastADMM
 ELSE
+   nBastAux = 0
    CALL LSQUIT('ERROR IN NAUX DETERMINATION in getMolecularDimensions',-1)
 ENDIF
 !
@@ -96,6 +102,8 @@ DO iAtom=1,orbitalInfo%nAtoms
    ELSEIF(AORdefault.EQ.AOdfAux)THEN
       nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbAUX
    ELSEIF(AORdefault.EQ.AOdfCABS)THEN
+      nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbCABS+MOLECULE%ATOM(iAtom)%nContOrbREG
+   ELSEIF(AORdefault.EQ.AOdfCABO)THEN !CABS only
       nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbCABS
    ELSEIF(AORdefault.EQ.AOADMM)THEN
       nOrbReg = MOLECULE%ATOM(iAtom)%nContOrbADMM
@@ -109,6 +117,8 @@ DO iAtom=1,orbitalInfo%nAtoms
    ELSEIF(AODFdefault.EQ.AOdfAux)THEN
       nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbAUX
    ELSEIF(AODFdefault.EQ.AOdfCABS)THEN
+      nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbCABS+MOLECULE%ATOM(iAtom)%nContOrbREG
+   ELSEIF(AODFdefault.EQ.AOdfCABO)THEN !CABS only
       nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbCABS
    ELSEIF(AODFdefault.EQ.AOADMM)THEN
       nOrbAux = MOLECULE%ATOM(iAtom)%nContOrbADMM

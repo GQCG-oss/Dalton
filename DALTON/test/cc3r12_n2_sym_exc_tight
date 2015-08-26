@@ -1,0 +1,214 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > cc3r12_n2_sym_exc_tight.info <<'%EOF%'
+   cc3r12_n2_sym_exc_tight
+   -------------
+   Molecule:         N2
+   Wave Function:    CC3(R12) / cc-pVDZ
+   Test Purpose:     - CC3(R12) excitation energies exploiting symmetry
+                     - test .R12ORB
+                     - non-direct mode
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > cc3r12_n2_sym_exc_tight.mol <<'%EOF%'
+BASIS
+cc-pVDZ aug-cc-pVTZ
+N2
+
+    2  0 3  X  Y  Z  0.10D-14
+ 1      7.    1
+N        0.0000000000000     0.0000000000000     1.0371572000000       *
+ 2      7.    1
+N        0.0000000000000     0.0000000000000     1.0371572000000       *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > cc3r12_n2_sym_exc_tight.dal <<'%EOF%'
+**DALTON INPUT
+.RUN WAVE FUNCTION
+*MOLBAS
+.R12AUX
+**INTEGRALS
+.R12
+**WAVE FUNCTIONS
+.CC
+*SCF INPUT
+.THRESHOLD
+ 1D-10
+*ORBITALS
+.MOSTART
+ H1DIAG
+.R12ORB
+ 0 0 0 0 0 1 1 0
+*CC INPUT
+.CC3
+.PRINT
+ 3
+.FREEZE
+ 2 0
+.THRENR
+ 1.0D-12
+.MAX IT
+ 100
+*CCEXCI
+.THREXC
+ 1.0D-10
+.NCCEXC
+ 2 2 2 2 2 2 2 2
+*R12 INP
+.NO HYB
+.CC2
+ 1B
+**END OF DALTON INPUT
+%EOF%
+
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >cc3r12_n2_sym_exc_tight.check
+cat >>cc3r12_n2_sym_exc_tight.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+#
+#           Total SCF   energy:                  -108.9541307667
+#           Total MP2-R12/B energy:              -109.2968962535
+#           Total CC3(R12)/B energy:             -109.3022109362
+#
+#
+#+=============================================================================+
+#|  sym. | Exci.  |        CC3(R12)/B Excitation energies            | ||T1||  |
+#|(spin, |        +------------------------------------------------------------+
+#| spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+#+=============================================================================+
+#| ^1Ag  |    1   |     0.6847468  |      18.63291  |    150284.542  |   0.72  |
+#| ^1Ag  |    2   |     0.7458743  |      20.29627  |    163700.482  |   1.40  |
+#+-----------------------------------------------------------------------------+
+#| ^1B3u |    1   |     0.5062210  |      13.77497  |    111102.675  |  77.85  |
+#| ^1B3u |    2   |     0.7409111  |      20.16122  |    162611.196  |  13.44  |
+#+-----------------------------------------------------------------------------+
+#| ^1B2u |    1   |     0.5062210  |      13.77497  |    111102.675  |  77.85  |
+#| ^1B2u |    2   |     0.7409111  |      20.16122  |    162611.196  |  13.44  |
+#+-----------------------------------------------------------------------------+
+#| ^1B1g |    1   |     0.7194997  |      19.57858  |    157911.939  |   0.19  |
+#| ^1B1g |    2   |     0.8297521  |      22.57870  |    182109.531  |   0.01  |
+#+-----------------------------------------------------------------------------+
+#| ^1B1u |    1   |     0.3906375  |      10.62979  |     85735.026  |  96.57  |
+#| ^1B1u |    2   |     0.5936597  |      16.15430  |    130293.238  |  96.95  |
+#+-----------------------------------------------------------------------------+
+#| ^1B2g |    1   |     0.3522533  |       9.58530  |     77310.674  |  93.19  |
+#| ^1B2g |    2   |     0.8455106  |      23.00751  |    185568.125  |  50.26  |
+#+-----------------------------------------------------------------------------+
+#| ^1B3g |    1   |     0.3522533  |       9.58530  |     77310.674  |  93.19  |
+#| ^1B3g |    2   |     0.8455106  |      23.00751  |    185568.125  |  50.26  |
+#+-----------------------------------------------------------------------------+
+#| ^1Au  |    1   |     0.3772310  |      10.26498  |     82792.641  |  98.03  |
+#| ^1Au  |    2   |     0.3906376  |      10.62979  |     85735.041  |  96.57  |
+#+=============================================================================+
+#
+
+CRIT1=`$GREP "Total MP2-R12/B energy: *-109\.296896253" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
+CTRL[1]=2
+ERROR[1]="MP2-R12/B ENERGY NOT CORRECT"
+CRIT2=`$GREP "Total CC3\(R12\)/B energy: *-109\.302210936" $log | wc -l`
+TEST[2]=`expr   $CRIT2`
+CTRL[2]=2
+ERROR[2]="CC3(R12)/B ENERGY NOT CORRECT"
+#
+CRIT3=`$GREP " 9.58530  \|" $log | wc -l`
+TEST[3]=`expr   $CRIT3`
+CTRL[3]=2
+CRIT4=`$GREP " 10.26498  \|" $log | wc -l`
+TEST[4]=`expr   $CRIT4`
+CTRL[4]=1
+CRIT5=`$GREP " 10.62979  \|" $log | wc -l`
+TEST[5]=`expr   $CRIT5`
+CTRL[5]=2
+CRIT6=`$GREP " 13.77497  \|" $log | wc -l`
+TEST[6]=`expr   $CRIT6`
+CTRL[6]=2
+CRIT7=`$GREP " 16.15430  \|" $log | wc -l`
+TEST[7]=`expr   $CRIT7`
+CTRL[7]=1
+CRIT8=`$GREP " 18.63291  \|" $log | wc -l`
+TEST[8]=`expr   $CRIT8`
+CTRL[8]=1
+CRIT9=`$GREP " 20.16122  \|" $log | wc -l`
+TEST[9]=`expr   $CRIT9`
+CTRL[9]=2
+CRIT10=`$GREP " 22.57870  \|" $log | wc -l`
+TEST[10]=`expr   $CRIT10`
+CTRL[10]=1
+CRIT11=`$GREP " 23.00751  \|" $log | wc -l`
+TEST[11]=`expr   $CRIT11`
+CTRL[11]=2
+CRIT12=`$GREP " 20.29627  \|" $log | wc -l`
+TEST[12]=`expr   $CRIT12`
+CTRL[12]=1
+CRIT13=`$GREP " 19.57858  \|" $log | wc -l`
+TEST[13]=`expr   $CRIT13`
+CTRL[13]=1
+TEST[13]=`expr $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7 + $CRIT8 + $CRIT9 \
+         + $CRIT10 + $CRIT11 + $CRIT12 + $CRIT13`
+CTRL[13]=16
+ERROR[13]="CCSD(R12)/B EXCITATION ENERGIES NOT CORRECT"
+
+PASSED=1
+for i in 1 2 12
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################

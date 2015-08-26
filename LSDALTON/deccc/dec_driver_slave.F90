@@ -20,7 +20,7 @@ module dec_driver_slave_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
-  use dec_settings_mod!, only: dec_set_default_config
+  use dec_settings_mod
   use full_molecule!, only: molecule_finalize
   use decmpi_module
   use atomic_fragment_operations
@@ -46,11 +46,11 @@ contains
     implicit none
     integer :: job,i
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
-    integer :: nunocc,nocc,siz,nfrags
+    integer :: nvirt,nocc,siz,nfrags
     type(lsitem) :: MyLsitem
     type(decfrag),pointer :: AtomicFragments(:),EstAtomicFragments(:)
     type(fullmolecule) :: MyMolecule
-    type(decorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
+    type(decorbital),pointer :: OccOrbitals(:), virtOrbitals(:)
     logical,pointer :: dofrag(:)
     type(joblist) :: jobs
     integer :: groups,signal,step
@@ -58,7 +58,6 @@ contains
     logical :: dens_save,FO_save,grad_save, localslave, in_master_group,esti
     integer(kind=ls_mpik) :: master
     master=0
-
 
     ! DEC settings
     ! ************
@@ -70,30 +69,32 @@ contains
     ! Set output unit number to 0 for slaves
     DECinfo%output=0
 
+    ! Allocate BackGround Buffer
+    call BackGroundBufferAllocate()
 
     ! GET FULL MOLECULAR INFO FROM MASTER
     ! ***********************************
 
     ! Get very basic dimension information from main master
-    call mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nunocc,master)
+    call mpi_dec_fullinfo_master_to_slaves_precursor(esti,nocc,nvirt,master)
 
     ! Allocate arrays needed for fragment calculations
     call mem_alloc(OccOrbitals,nocc)
-    call mem_alloc(UnoccOrbitals,nunocc)
+    call mem_alloc(virtOrbitals,nvirt)
 
     ! Get remaining full molecular information needed for all fragment calculations
-    call mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
-         & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
+    call mpi_dec_fullinfo_master_to_slaves(nocc,nvirt,&
+         & OccOrbitals, virtOrbitals, MyMolecule, MyLsitem)
     nfrags=MyMolecule%nfrags
 
     ! Get list of which atoms have orbitals assigned
     call mem_alloc(dofrag,nfrags)
-    call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,&
-         & nfrags,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
+    call which_fragments_to_consider(MyMolecule%ncore,nocc,nvirt,&
+         & nfrags,OccOrbitals,virtOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     IF(DECinfo%StressTest)THEN
-     call StressTest_mod_dofrag(MyMolecule%nfrags,nocc,nunocc,MyMolecule%ncore,&
-          & MyMolecule%DistanceTable,OccOrbitals,UnoccOrbitals,dofrag,mylsitem)
+     call StressTest_mod_dofrag(MyMolecule%nfrags,nocc,nvirt,MyMolecule%ncore,&
+          & MyMolecule%DistanceTable,OccOrbitals,virtOrbitals,dofrag,mylsitem)
     ENDIF
 
     ! Internal control of first order property keywords
@@ -153,7 +154,6 @@ contains
           call mpi_bcast_many_fragments(nfrags,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
 
        end if Step2
-
 
        ! Initialize local MPI groups
        ! ***************************
@@ -215,13 +215,14 @@ contains
        ! ======================================================
        if(step==1 .and. esti) then
           ! Calculate estimated pair fragment energies
-          call fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
-               & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,&
+          call fragments_slave(nfrags,nocc,nvirt,OccOrbitals,&
+               & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,&
                & EstAtomicFragments=EstAtomicFragments)
        else
-          call fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
-               & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
+          call fragments_slave(nfrags,nocc,nvirt,OccOrbitals,&
+               & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
        end if
+
 
        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
        job=QUITNOMOREJOBS
@@ -234,6 +235,8 @@ contains
 
        ! Free existing group communicators
        call MPI_COMM_FREE(infpar%lg_comm, IERR)
+       infpar%lg_comm  = MPI_COMM_LSDALTON
+       infpar%lg_mynum = infpar%mynum
 
        ! Clean up estimated fragments used in step 1 and receive CC models to use for all pairs
        CleanupAndUpdateCCmodel: if(step==1 .and. esti) then
@@ -250,6 +253,7 @@ contains
 
        end if CleanupAndUpdateCCmodel
 
+
     end do StepLoop
 
 
@@ -264,25 +268,63 @@ contains
     do i=1,nOcc
        call orbital_free(OccOrbitals(i))
     end do
-    do i=1,nUnocc
-       call orbital_free(UnoccOrbitals(i))
+    do i=1,nvirt
+       call orbital_free(virtOrbitals(i))
     end do
     call mem_dealloc(OccOrbitals)
-    call mem_dealloc(UnoccOrbitals)
+    call mem_dealloc(virtOrbitals)
     call mem_dealloc(dofrag)
     call ls_free(MyLsitem)
-    call molecule_finalize(MyMolecule)
+
+    call molecule_finalize(MyMolecule,.false.)
+    ! Deallocate BackGround Buffer
+    call BackGroundBufferDeallocate()
 
   end subroutine main_fragment_driver_slave
 
+!> \brief allocate the background buffer framework
+!> \author Thomas Kjaergaard
+!> \date April 2015
+  subroutine BackGroundBufferAllocate()
+    implicit none
+    logical :: use_bg_buf
+    integer(kind=8) :: bytes_to_alloc
+    use_bg_buf = .FALSE.
+#ifdef VAR_MPI
+    IF(DECinfo%use_bg_buffer)use_bg_buf = .TRUE.
+#endif
+    IF(use_bg_buf)THEN
+       !DECinfo%memory is in GB we need it in bytes 
+       IF(DECinfo%PL.GT.0)THEN
+          print*,'Background buffer initilizes with ',DECinfo%bg_memory,' GB'
+          !WRITE(DECinfo%output,'(A,F10.2,A)')'Background buffer initilizes with ',DECinfo%bg_memory,' GB'
+          IF(DECinfo%bg_memory.LT.0.OR.DECinfo%bg_memory.GT.DECinfo%memory)THEN
+             print*,'DECinfo%bg_memory=',DECinfo%bg_memory
+             print*,'DECinfo%memory   =',DECinfo%memory
+             call lsquit('.BGMEMORY not set correctly',-1)
+          ENDIF
+       ENDIF
+       bytes_to_alloc = int(DECinfo%bg_memory*1.0E+9_realk,kind=8)
+       call mem_init_background_alloc(bytes_to_alloc)     
+    ENDIF
+  end subroutine BackGroundBufferAllocate
 
+!> \brief deallocate the background buffer framework
+!> \author Thomas Kjaergaard
+!> \date April 2015
+  subroutine BackGroundBufferDeallocate()
+    implicit none    
+    IF(mem_is_background_buf_init())THEN
+       call mem_free_background_alloc()
+    ENDIF
+  end subroutine BackGroundBufferDeallocate
 
 !> \brief For each local master: Carry out  fragment calculations (both single and pair)
 !> for those  fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-  subroutine fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
-       & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,EstAtomicFragments)
+  subroutine fragments_slave(nfrags,nocc,nvirt,OccOrbitals,&
+       & virtOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,EstAtomicFragments)
 
     implicit none
 
@@ -290,12 +332,12 @@ contains
     integer,intent(in) :: nfrags
     !> Number of occupied orbitals in the molecule
     integer,intent(in) :: nocc
-    !> Number of unoccupied orbitals in the molecule
-    integer,intent(in) :: nunocc
+    !> Number of virtupied orbitals in the molecule
+    integer,intent(in) :: nvirt
     !> Occupied orbitals, DEC format
     type(decorbital),intent(in) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals, DEC format
-    type(decorbital),intent(in) :: UnoccOrbitals(nunocc)
+    !> virtupied orbitals, DEC format
+    type(decorbital),intent(in) :: virtOrbitals(nvirt)
     !> Full molecular info (not changed at output)
     type(fullmolecule),intent(inout) :: MyMolecule
     !> LS item structure
@@ -314,7 +356,7 @@ contains
     type(mp2grad) :: grad
     logical :: morejobs, continuedivide, split,only_update
     real(realk) :: fragenergy(ndecenergies),tottime
-    real(realk) :: t1cpu, t2cpu, t1wall, t2wall
+    real(realk) :: t1cpu, t2cpu, t1wall, t2wall, tw0, tot_comm_wt
     real(realk) :: tot_work_time, tot_comm_time, tot_idle_time
     real(realk) :: test_work_time, test_comm_time, test_idle_time, test_master, testtime
     real(realk) :: t1cpuacc, t2cpuacc, t1wallacc, t2wallacc, mwork, midle, mcomm
@@ -359,7 +401,7 @@ contains
 
        ! Send finished job to master
        ! ***************************
-       call time_start_phase(PHASE_COMM)
+       call time_start_phase(PHASE_COMM,twall=tw0)
        ! (If job=0 it is an empty job not containing any real information)
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,infpar%mynum,master)
 
@@ -397,13 +439,15 @@ contains
        ! Receive new job task
        ! ********************
        call ls_mpisendrecv(job,MPI_COMM_LSDALTON,master,infpar%mynum)
-       call time_start_phase(PHASE_WORK)
+       call time_start_phase(PHASE_WORK,twall=tot_comm_wt)
+       singlejob%comm_gl_master_time(1) = tot_comm_wt - tw0
+       
 
        ! Carry out fragment optimization (job>0), or finish if all jobs are done (job=-1)
        ! ********************************************************************************
        DoJob: IF(job==-1) then
           call LSTIMER('START',t2cpuacc,t2wallacc,DECinfo%output)
-          if(t2wallacc-t1wallacc > 5.0E0_realk.or.DECinfo%PL>1)then
+          if(t2wallacc-t1wallacc > 5.0E0_realk.or.DECinfo%PL>2)then
              print '(X,a,i5,a,g14.6)', 'Slave ', infpar%mynum, ' exits  fragments. Time: ',&
                & t2wallacc-t1wallacc
           endif
@@ -422,12 +466,12 @@ contains
           if(atomA==atomB) then ! single fragment
              FragoptCheck2: if(.not. jobs%dofragopt(job)) then
                 ! Init basis for fragment
-                call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                     & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
+                call atomic_fragment_init_basis_part(nvirt, nocc, OccOrbitals,&
+                     & virtOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
                 call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
                 no = AtomicFragments(atomA)%noccAOS
-                nv = AtomicFragments(atomA)%nunoccAOS
+                nv = AtomicFragments(atomA)%nvirtAOS
                 mymodel = AtomicFragments(atomA)%ccmodel
   
              else
@@ -442,16 +486,16 @@ contains
              if(jobs%esti(job)) then
                 ! Estimated pair fragment
                 call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                     & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
+                     & nvirt, nocc, nfrags,OccOrbitals,virtOrbitals, &
                      & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
              else
                 call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                     & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
+                     & nvirt, nocc, nfrags,OccOrbitals,virtOrbitals, &
                      & MyMolecule,mylsitem,.true.,PairFragment)
              end if
              call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
              no = PairFragment%noccAOS
-             nv = PairFragment%nunoccAOS
+             nv = PairFragment%nvirtAOS
              mymodel = PairFragment%ccmodel
 
           end if
@@ -497,6 +541,7 @@ contains
              else
                 PairFragment%mylsitem%setting%comm = infpar%lg_comm
              end if
+
           end if
 
 
@@ -517,7 +562,7 @@ contains
 
              ! Fragment optimization
              call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nfrags, &
-                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, MyMolecule,mylsitem,.true.)
+                & OccOrbitals,nOcc,virtOrbitals,nvirt, MyMolecule,mylsitem,.true.)
 
 
              flops_slaves = MyFragment%flops_slaves
@@ -535,10 +580,10 @@ contains
              SingleOrPair: if( atomA == atomB ) then ! single  fragment
                 write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Slave ',infpar%mynum,'will do job: ', &
                    &job, ' of size ', jobs%jobsize(job),&
-                   &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
+                   &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nvirtAOS,&
                    &' #b',AtomicFragments(atomA)%nbasis,' single fragment: ', atomA
 
-                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+                call atomic_driver(MyMolecule,mylsitem,OccOrbitals,virtOrbitals,&
                    & AtomicFragments(atomA),grad=grad)
 
                 flops_slaves = AtomicFragments(atomA)%flops_slaves
@@ -560,7 +605,7 @@ contains
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
-                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nvirtAOS,&
                       &' #b',PairFragment%nbasis,' pair   estimate: ', atomA,atomB
                 else
                    ! Pair fragment according to FOT precision
@@ -569,7 +614,7 @@ contains
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
-                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
+                      &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nvirtAOS,&
                       &' #b',PairFragment%nbasis,' pair   fragment: ', atomA,atomB
 
                 end if
@@ -649,7 +694,6 @@ contains
 
        end if DoJob
    
-
 
     end do AskForJob
 
@@ -751,6 +795,8 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.,.false.,memoryneeded)
   elseif(MyFragment%ccmodel==MODEL_RIMP2) then ! RIMP2
      !do nothing ntasks is not used anyway
+  elseif(MyFragment%ccmodel==MODEL_LSTHCRIMP2) then ! LS-THC-RIMP2
+     !do nothing
   else  ! CC2 or CCSD
      mpi_split = .true.
      call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)

@@ -1,0 +1,10 @@
+BASIS
+6-31G Aux=cc-pV5Z-RI CABS=aug-cc-pVDZ
+%6-31G Aux=cc-pVDZ-RI CABSP=cc-pVDZ-F12_OPTRI
+
+Atomtypes=2 Charge=0 Nosymmetry
+Charge=8.0 Atoms=1
+O    0.0000     0.0000  0.221664858
+Charge=1.0 Atoms=2
+H    0.0000    1.430900519  -0.886659434
+H    0.0000   -1.430900519  -0.886659434

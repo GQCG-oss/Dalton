@@ -3,7 +3,7 @@ SCRATCH_DIR=/tmp/sisyphos/DaltonGfortranDebuge
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=6
 MATH_ROOT=/lib64/atlas
@@ -11,7 +11,7 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-debug-rapid" build
+./setup --fc=gfortran --cc=gcc --cxx=g++ --omp --check --type=debug --coverage -DENABLE_DEC=ON -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-debug-rapid" build
 
 cd build
 ctest -D Nightly -L rapid

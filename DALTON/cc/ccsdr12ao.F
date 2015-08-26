@@ -49,7 +49,7 @@
 #include "ccsdinp.h"
 #include "cbieri.h"
 #include "distcl.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "r12int.h"
 #include "ccsdio.h"
 #include "second.h"

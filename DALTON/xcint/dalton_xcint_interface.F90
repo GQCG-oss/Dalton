@@ -2,30 +2,38 @@
 module dalton_xcint_interface
 
    use, intrinsic :: iso_c_binding
-   use xcint_fortran_interface
 
    implicit none
 
-   public dalton_xcint_interface_init
-   public dalton_xcint_interface_finalize
-   public set_functional
-   public use_xcint_integrator
-   public select_xcint_integrator
-   public unselect_xcint_integrator
+   public xcint_init
+   public xcint_finalize
+
+   public xcint_set_functional
+   public xcint_set_grid
+   public xcint_activate
+
+#ifdef VAR_MPI
+   public xcint_integrate_worker
+#endif
+   public xcint_integrate_rks_scf
+   public xcint_integrate_rks_lr
+
+   public xcint_is_active
+   public xcint_uses_own_grid
 
    private
 
-   logical :: use_xcint = .false.
-   real(8) :: xcint_radint = 1.0d-12
-   integer :: xcint_angmin = 86
-   integer :: xcint_angint = 302
-   logical :: xcint_use_own_grid = .false.
-   logical :: interface_is_initialized = .false.
+   logical :: is_active = .false.
+   real(8) :: radint = 1.0d-12
+   integer :: angmin = 86
+   integer :: angint = 302
+   logical :: uses_own_grid = .false.
+   logical :: is_initialized = .false.
 
 contains
 
    subroutine check_if_initialized()
-      if (.not. interface_is_initialized) then
+      if (.not. is_initialized) then
          print *, 'ERROR: you try to access dalton_xcint_interface'
          print *, '       but this interface is not initialized'
          stop 1
@@ -33,23 +41,109 @@ contains
    end subroutine
 
 
-   subroutine dalton_xcint_interface_finalize()
-      interface_is_initialized = .false.
+   subroutine xcint_finalize()
+      is_initialized = .false.
    end subroutine
 
 
-   logical function use_xcint_integrator()
-      use_xcint_integrator = use_xcint
+   logical function xcint_is_active()
+      xcint_is_active = is_active
    end function
 
 
-   subroutine select_xcint_integrator()
-      use_xcint = .true.
+   logical function xcint_uses_own_grid()
+      xcint_uses_own_grid = uses_own_grid
+   end function
+
+
+   subroutine xcint_activate()
+      is_active = .true.
    end subroutine
 
 
-   subroutine unselect_xcint_integrator()
-      use_xcint = .false.
+#ifdef VAR_MPI
+   subroutine xcint_integrate_worker(comm)
+      use xcint_fortran_api, only: integrate_worker => xcint_integrate_worker
+      integer, intent(in) :: comm
+      call xcint_set_mpi_comm(comm)
+      call integrate_worker()
+   end subroutine
+#endif
+
+   subroutine xcint_integrate_rks_scf(dmat,          &
+                                      xc_energy,     &
+                                      xc_mat,        &
+                                      num_electrons) bind(c)
+
+      use xcint_fortran_api, only: XCINT_MODE_RKS, &
+                                   xcint_integrate
+
+      real(c_double), intent(in)  :: dmat(*)
+      real(c_double), intent(out) :: xc_energy(*)
+      real(c_double), intent(out) :: xc_mat(*)
+      real(c_double), intent(out) :: num_electrons
+
+      call xcint_wakeup_workers()
+      call xcint_integrate(XCINT_MODE_RKS, &
+                           0,              &
+                           (/0/),          &
+                           (/0/),          &
+                           1,              &
+                           (/0/),          &
+                           (/1/),          &
+                           dmat,           &
+                           0,              &
+                           xc_energy,      &
+                           1,              &
+                           xc_mat,         &
+                           num_electrons)
+
+   end subroutine
+
+   subroutine xcint_integrate_rks_lr(dmat,          &
+                                     xc_mat) bind(c)
+
+      use xcint_fortran_api, only: XCINT_MODE_RKS, &
+                                   XCINT_PERT_EL,  &
+                                   xcint_integrate
+
+      real(c_double), intent(in)  :: dmat(*)
+      real(c_double), intent(out) :: xc_mat(*)
+
+      real(c_double) :: xc_energy(1)
+      real(c_double) :: num_electrons
+
+      call xcint_wakeup_workers()
+      call xcint_integrate(XCINT_MODE_RKS,    &
+                           1,                 &
+                           (/XCINT_PERT_EL/), &
+                           (/1, 1/),          &
+                           2,                 &
+                           (/0, 1/),          &
+                           (/1, 1/),          &
+                           dmat,              &
+                           0,                 &
+                           xc_energy,         &
+                           1,                 &
+                           xc_mat,            &
+                           num_electrons)
+
+   end subroutine
+
+
+   subroutine xcint_set_grid(in_radint, &
+                             in_angmin, &
+                             in_angint)
+
+      real(8), intent(in) :: in_radint
+      integer, intent(in) :: in_angint
+      integer, intent(in) :: in_angmin
+
+      radint = in_radint
+      angmin = in_angmin
+      angint = in_angint
+      uses_own_grid = .true.
+
    end subroutine
 
 
@@ -96,7 +190,12 @@ contains
    end function
 
 
-   subroutine dalton_xcint_interface_init()
+   subroutine xcint_init()
+
+      use xcint_fortran_api, only: XCINT_BASIS_SPHERICAL, &
+                                   XCINT_BASIS_CARTESIAN, &
+                                   xcint_generate_grid,   &
+                                   xcint_set_basis
 
    ! local
       real(c_double), allocatable :: primitive_exp(:)
@@ -130,7 +229,7 @@ contains
 #include "mpif.h"
 #endif
 
-      if (interface_is_initialized) return
+      if (is_initialized) return
 
       num_shells  = kmax
       num_centers = nucind
@@ -206,11 +305,11 @@ contains
                            primitive_exp,        &
                            contraction_coef)
 
-      if (xcint_use_own_grid) then
+      if (uses_own_grid) then
          ! this generates XCint's internal grid
-         ierr = xcint_generate_grid(xcint_radint,         &
-                                    xcint_angmin,         &
-                                    xcint_angint,         &
+         ierr = xcint_generate_grid(radint,               &
+                                    angmin,               &
+                                    angint,               &
                                     num_centers,          &
                                     center_xyz,           &
                                     center_element,       &
@@ -233,12 +332,17 @@ contains
       deallocate(shell_center)
       deallocate(center_element)
 
-      interface_is_initialized = .true.
+      is_initialized = .true.
 
    end subroutine
 
 
-   subroutine set_functional(line, hfx, mu, beta)
+   subroutine xcint_set_functional(line, hfx, mu, beta)
+
+      use xcint_fortran_api, only: set_functional => xcint_set_functional, &
+                                   xcint_set_stdout_function,              &
+                                   xcint_set_stderr_function,              &
+                                   xcint_print_splash
 
       ! input
       character(*), intent(in) :: line
@@ -258,9 +362,9 @@ contains
 
       call xcint_print_splash()
 
-      ierr = xcint_set_functional(line//C_NULL_CHAR, hfx, mu, beta)
+      ierr = set_functional(line//C_NULL_CHAR, hfx, mu, beta)
       if (ierr /= 0) then
-         print *, 'ERROR: problem in xcint_set_functional'
+         print *, 'ERROR: problem in xcint_xcint_set_functional'
          stop 1
       end if
 
@@ -270,8 +374,8 @@ end module
 
 
 logical function is_dalton_ks_calculation()
-   use dalton_xcint_interface, only: use_xcint_integrator
-   is_dalton_ks_calculation = use_xcint_integrator()
+   use dalton_xcint_interface, only: xcint_is_active
+   is_dalton_ks_calculation = xcint_is_active()
 end function
 
 

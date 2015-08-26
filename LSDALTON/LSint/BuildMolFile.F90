@@ -112,9 +112,7 @@ DO IATOMTYPE=1,BASIS%BINFO(REGBASPARAM)%natomtypes
    ELSE
       WRITE(lupri,*)'Error in WRITE_MOLECULE_OUTPUT 100.000 atoms or more of a single type.'
    ENDIF
-   IF(charge.LT. 10)THEN
-      WRITE(chargestring,'(F4.2,A)') charge,'  '
-   ELSEIF(charge.LT. 100)THEN
+   IF(charge.LT. 100)THEN
       WRITE(chargestring,'(F5.2,A)') charge,' '
    ELSEIF(charge.LT. 1000)THEN
       WRITE(chargestring,'(F6.2)') charge

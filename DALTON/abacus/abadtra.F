@@ -22,6 +22,11 @@
 !
 !
 C
+C  FILE: abacus/abadtra.F
+C  PRINCIPAL AUTHOR: Hans Joergen Aa. Jensen 1992, 1995
+C  PURPOSE: MO transformation of derivative two-electron integrals
+C           for H2DAC(u,v,x,y) and FQD(p,u)
+C
 #ifdef UNDEF
 ========================================================================
 /* Comdeck log */
@@ -69,7 +74,6 @@ C
 #include "mxcent.h"
       DIMENSION CMO(*),PV(*),FQD(*),H2DAC(*),WORK(KWORK)
       LOGICAL OPNSTA
-#include "iratdef.h"
 C
 #include "priunit.h"
 #include "nodint.h"
@@ -213,9 +217,9 @@ C
       LFRSAV = LWRK
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-      CALL MEMGET('INTE',KINDAO,N2BASX,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDAC,N2ASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDRS,64,    WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAO',KINDAO,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDAC',KINDAC,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDRS',KINDRS,64,    WRK,KFREE,LFREE)
 C
 C NECyuji
       CALL IZERO(WRK(KINDRS),64)
@@ -227,7 +231,7 @@ C NECyuji
 C
 C     Pack PV
 C
-      CALL MEMGET('REAL',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PVFPK',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
       if (iprint .gt. 25) then
          write (lupri,*) 'Packing PV matrix'
       end if
@@ -261,19 +265,18 @@ C
          CALL FLSHFO(LUPRI)
       end if
 C
-      CALL MEMGET('REAL',KFQAOA,NBAST*NASHT,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDDI,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FQAQA',KFQAOA,NBAST*NASHT,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDI', KINDDI,N2BASX,WRK,KFREE,LFREE)
 C     need LW1 in TRDDRV:
       LBINT = 600
-C     record: BUF(LBINT),IBUF(LBINT),LENGTH
-C      LBUF = LBINT*(IRAT+1) + 1
-      LBUF = LBINT*(5*IRAT+1) + 1
-      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*2*MXNDAC,LBUF)
-      LW1  = (LW1-1)/IRAT + 1
+C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
+      LENBUF = LBINT*(IRAT + 2 + 4) + 1 ! NIBUF .le. 2
+      LENBUF = LENBUF/IRAT + 1
+      LW1  = MAX(NBAST*NASHT,MXNDAC+NBAST,LENBUF)
 C
-      MXDIS = (LFREE-LW1-10) / MXNDAO
+      MXDIS = (LFREE-LW1-100) / MXNDAO
       MXDIS = MIN(MXDIS,NNBASX)
-      CALL MEMGET('REAL',KH2DBU,MXDIS*MXNDAO,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2DBU',KH2DBU,MXDIS*MXNDAO,WRK,KFREE,LFREE)
       CALL DZERO(WRK(KFQAOA),NBAST*NASHT)
       CALL TRDDRV(JCOOR,JCORSY,H2DAC,WRK(KFQAOA),CMO,PV,
      *            MXDIS,WRK(KH2DBU),
@@ -320,11 +323,12 @@ C
             write (lupri,*) 'Antisymmetric component of H2DAC matrix'
 #if defined (VAR_H2DPACK)
             nnashy = (nnashx*(nnashx+1))/2
-            CALL MEMGET('REAL',KH2DAP,NNASHY,WRK,KFREE,LFREE)
+            CALL MEMGET2('REAL','H2DAP',KH2DAP,NNASHY,WRK,KFREE,LFREE)
             call dgetap(NNASHX,H2DAC,WRK(KH2DAP))
             call outpak(WRK(KH2DAP),NNASHX,1,LUPRI)
 #else
-            CALL MEMGET('REAL',KH2DAP,N2ASHX*N2ASHX,WRK,KFREE,LFREE)
+            CALL MEMGET2('REAL','H2DAP',KH2DAP,N2ASHX*N2ASHX,
+     &         WRK,KFREE,LFREE)
             call dgetap(N2ASHX,H2DAC,WRK(KH2DAP))
             call outpak(WRK(KH2DAP),N2ASHX,1,LUPRI)
 #endif
@@ -335,7 +339,7 @@ C
 C
 C     Unpack PV again
 C
-      CALL MEMGET('REAL',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','PVFPK',KPVFPK,N2ASHX,WRK,KFREE,LFREE)
       DO 880 KY = 1,NASHT
          KYSYM = NSM(KY)
          DO 860 KX = 1,KY
@@ -374,6 +378,10 @@ C 2.Oct.1992 hjaaj
 C
 #include "implicit.h"
 #include "iratdef.h"
+#include "priunit.h"
+      DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
+      DIMENSION H2DBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
+      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C
 C Used from common blocks:
 C   INFORB : NCMOT,NBAST,NASHT,...
@@ -382,15 +390,13 @@ C   INFTRL : MXNDAO
 C
 #include "maxash.h"
 #include "maxorb.h"
-#include "priunit.h"
 #include "inforb.h"
 #include "inftap.h"
 #include "infind.h"
 #include "inftrl.h"
+! eribuf: NIBUF
+#include "eribuf.h"
 C
-      DIMENSION H2DAC(*),FQAOAC(NBAST,NASHT),CMO(NCMOT),PVF(*)
-      DIMENSION H2DBUF(MXNDAO,*),INDDIS(NBAST,NBAST),WRK(*)
-      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C-B-HJTEMP-MAERKE
       PARAMETER (LBINT = 600)
 C-E-HJTEMP-MAERKE
@@ -398,17 +404,18 @@ C
       KFREE = KFRSAV
       LFREE = LFRSAV
 C
-C     record: BUF(LBINT),IBUF(LBINT),LENGTH
-      LBUF = LBINT*(5*IRAT+1) + 1
+C     record: BUF(LBINT),IBUF(LBINT,NIBUF),LENGTH + IINDX4(4,LBINT)
+      LENBUF = LBINT*(IRAT + NIBUF) + 1
 C     LW1  = maxdim(H2DWRK,H2UVRY and PVXR,intbuffer)
 C            H2DWRK: NBAST*NASHT  if IABSYM .ne. 1
 C                    MXNDAC+NBAST if IABSYM .eq. 1
 C            H2UVRY,PVXR: MXNDAC
-      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*(MXNDAC+NBAST),LBUF)
+      LW1  = MAX(IRAT*NBAST*NASHT,IRAT*(MXNDAC+NBAST),LENBUF+4*LBINT)
       LW1  = (LW1-1)/IRAT + 1
-      CALL MEMGET('REAL',KW1,LW1,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','W1',KW1,LW1,WRK,KFREE,LFREE)
+      LENBUF = LENBUF/IRAT + 1
       KBUFW1 = KW1
-      KIBUF  = KBUFW1 + LBINT*(IRAT + 1) + 1
+      KIINDX4= KBUFW1 + LENBUF
       KUVRY  = KW1
       KPVXR  = KW1
 C
@@ -460,7 +467,7 @@ C        ... finished when ICASE .lt. 0 !
          end if
 C
          CALL DZERO(H2DBUF,NDIS*MXNDAO)
-         CALL TRDRAO(LU2DER,JCOOR,JCORSY,WRK(KIBUF),H2DBUF,
+         CALL TRDRAO(LU2DER,JCOOR,JCORSY,WRK(KIINDX4),H2DBUF,
      *               INDAO,INDDIS,WRK(KBUFW1))
          if (iprint .gt. 20) then
             write (lupri,*) 'TRDDRV: finished TRDRAO in pass no. ',NPASS
@@ -602,6 +609,7 @@ C IH1XX(IBSYM,IABSYM) is off-set for block (IASYM,IBSYM) in H1XX
 C                     of symmetry IABSYM (IASYM = MULD2H(IBSYM,IABSYM))
 C
 #include "implicit.h"
+      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C
 C Used from common blocks
 C   INFORB: NSYM, NASH(8), NBAS(8), MULD2H(8,8)
@@ -611,7 +619,6 @@ C
 #include "inforb.h"
 #include "inftrl.h"
 C
-      DIMENSION INDAO(NBAST,NBAST), INDAC(NASHT,NASHT), INDRS(8,8)
 C
       PARAMETER (IMEMERR = -999999999)
 C
@@ -728,6 +735,9 @@ C Output: H2DBUF(uv,indrs) = (uv / rs)
 C
 #include "implicit.h"
 C
+      DIMENSION H2DBUF(MXNDAO,*), CMO(NCMOT)
+      DIMENSION INDDIS(NBAST,NBAST), H2DWRK(*)
+C
 C Used from common blocks:
 C   INFORB : NBAST, NCMOT
 C   INFIND : ISAO(*)
@@ -739,9 +749,6 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftrl.h"
-C
-      DIMENSION H2DBUF(MXNDAO,*), CMO(NCMOT)
-      DIMENSION INDDIS(NBAST,NBAST), H2DWRK(*)
 C
       DO 800 KR = 1,NBAST
          KRSYM = ISAO(KR)
@@ -794,6 +801,7 @@ C Output: H2CDAC(u.v) = (u v | c d) =
 C         sum(b) [ sum(a) [ CMO(a,u) H2CDAO(a.b) ] CMO(b,v) ]
 C
 #include "implicit.h"
+      DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
 C
 C Used from common blocks:
 C  INFORB : NSYM, MULD2H, NASH(*), NBAS(*), NISH(*), ICMO(*)
@@ -802,7 +810,6 @@ C
 #include "inforb.h"
 #include "inftrl.h"
 C
-      DIMENSION CMO(NCMOT), H2CDAO(*), H2CDAC(*), WRK(*)
 C
 C     Allocation for IABSYM .eq. 1
       KAC = 1
@@ -847,7 +854,8 @@ C
       RETURN
       END
 C  /* Deck trdrao */
-      SUBROUTINE TRDRAO(LUDERA,JCOOR,JCORSY,IBUF,H2DAO,INDAO,INDDIS,WRK)
+      SUBROUTINE TRDRAO(LUDERA,JCOOR,JCORSY,IINDX4,H2DAO,INDAO,
+     &                  INDDIS,WRK)
 C
 C 25-Sep-1992 hjaaj / revised 6-Oct-1992
 C
@@ -855,68 +863,61 @@ C Reads two-electron derivative integrals from file to H2DAO buffer.
 C LUDERA: File to read
 C JCOOR : =1,2,3 for d/dx,d/dy,d/dz respectively.
 C BUF   : Points to start element in integral buffer.
-C IBUF  : Points to start element in label buffer.
+C IINDX4(1:4,i): The four indices of the integral no. i
 C H2DAO : H2DAO(rs,pq), pq=(mpqoff+1:mpqoff+npq); dim (mxndao,npq)
 C
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "mxcent.h"
+      DIMENSION H2DAO(MXNDAO,*), IINDX4(4,600), WRK(*)
+      DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
 C   INFIND : IROW(*),ISAO(*)
 C   INFTRL : MXNDAO
+C   ERIBUF : LBUF,NIBUF
 C
-#include "nuclei.h"
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
 #include "inftrl.h"
-C
-      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(*)
-      DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
+#include "eribuf.h"
 C
 C     Local variables:
 C
       CHARACTER*8 KEY
       LOGICAL DOCOOR
 C
-#include "ibtdef.h"
 C
       CALL REWSPL(LUDERA)
 C     KEY = 'AO2DRINT'
 C     CALL MOLLAB(KEY,LUDERA,LUPRI)
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
+      CALL ERIBUF_INI
       LBUF = 600
 C
-      LENINT4 = 2*LBUF + LBUF + 1 ! length in integer*4 units
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT  = 1
       KIINT = KINT + LBUF
 C
       DOCOOR = .FALSE.
  150  CONTINUE
          CALL READI4(LUDERA,LENINT4,WRK(KINT))
-         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
-               JS    = IBUF(4,I)
+               JS    = IINDX4(4,I)
                IF (JS .EQ. 0) THEN
-                  ICOOR  = IBUF(3,I)
-                  ICORSY = IBUF(2,I) + 1
-                  JP = IBUF(1,I)
+                  ICOOR  = IINDX4(3,I)
+                  ICORSY = IINDX4(2,I) + 1
+                  JP = IINDX4(1,I)
                   DOCOOR = ICOOR.EQ.JCOOR .AND. JCORSY.EQ.ICORSY
                ELSE IF (DOCOOR) THEN
-                  JR = IBUF(3,I)
-                  JP = IBUF(1,I)
-                  JQ = IBUF(2,I)
+                  JR = IINDX4(3,I)
+                  JP = IINDX4(1,I)
+                  JQ = IINDX4(2,I)
 C                 BUF(I) =  (P Q | R S)
                   JRS = ABS( INDDIS(JR,JS) )
                   IF (JRS .GT. 0) THEN
@@ -1057,15 +1058,6 @@ C 'AH2' for Add to H2DAC
 C Add (uv / rs) contribution to (uv / xy) (x .ge. y)
 C
 #include "implicit.h"
-C
-C Used from common blocks:
-C   INFORB : ??
-C   INFTRL : NDAC(8),MXNDAO,NXNDAC
-C
-#include "priunit.h"
-#include "inforb.h"
-#include "inftrl.h"
-C
       DIMENSION CMOR(NBASR,NASHR), CMOS(NBASS,NASHS)
       DIMENSION INDDIS(NBAST,NBAST)
 #if defined (VAR_H2DPACK)
@@ -1075,6 +1067,15 @@ C
 #endif
       DIMENSION H2UVRY(MXNDAC)
       PARAMETER ( DP5 = 0.5D0, D0 = 0.0D0 )
+C
+C Used from common blocks:
+C   INFORB : ??
+C   INFTRL : NDAC(8),MXNDAO,NXNDAC
+C
+#include "priunit.h"
+#include "inforb.h"
+#include "inftrl.h"
+C
 C
 #if defined (VAR_H2DPACK)
       IROW(I) = (I*(I-1))/2
@@ -1144,6 +1145,12 @@ C
 C 6-Oct-1992 hjaaj
 C
 #include "implicit.h"
+#if defined (VAR_H2DPACK)
+      DIMENSION H2DAC(NNASHX,NNASHX)
+#else
+      DIMENSION H2DAC(N2ASHX,NASHT,NASHT)
+#endif
+      DIMENSION INDAC(NASHT,NASHT), WRK(*)
 C
 C Used from common blocks:
 C  INFORB : NASHT,NASH(),IASH()
@@ -1155,13 +1162,6 @@ C
 #include "inforb.h"
 #include "infind.h"
 #include "inftrl.h"
-C
-#if defined (VAR_H2DPACK)
-      DIMENSION H2DAC(NNASHX,NNASHX)
-#else
-      DIMENSION H2DAC(N2ASHX,NASHT,NASHT)
-#endif
-      DIMENSION INDAC(NASHT,NASHT), WRK(*)
 C
       PARAMETER (IWAY = -1, D2 = 2.0D0)
 C     ... IWAY=-1 to unpack
@@ -1248,13 +1248,12 @@ C
 C FQD(a,x) = sum(r) FQAOAC(r,x) * CMO(r,a)
 C
 #include "implicit.h"
+      DIMENSION FQD(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
 C
 C Used from common blocks:
 C  INFORB : NORBT,NASHT,NBAST,NCMOT,NSYM
 C
 #include "inforb.h"
-C
-      DIMENSION FQD(NORBT,NASHT), FQAOAC(NBAST,NASHT), CMO(NCMOT)
 C
       DO 800 KSYM = 1,NSYM
          NASHK  = NASH(KSYM)
@@ -1285,13 +1284,12 @@ C IWAY .ge. 0 : Pack H1SP in H1PK
 C      else   : Unpack H1PK in H1SP
 C
 #include "implicit.h"
+      DIMENSION H1SP(*), H1PK(*), NBLK(8), IBLK(8)
 C
 C Used from common blocks:
 C   INFORB : NSYM,MULD2H
 C
 #include "inforb.h"
-C
-      DIMENSION H1SP(*), H1PK(*), NBLK(8), IBLK(8)
 C
       IF (IH1SYM .EQ. 1) THEN
          CALL PKSYM1(H1SP,H1PK,NBLK,NSYM,IWAY)
@@ -1324,3 +1322,4 @@ C
 C
  9999 RETURN
       END
+C -- end of abacus/abadtra.F --

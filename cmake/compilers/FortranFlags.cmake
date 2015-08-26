@@ -1,3 +1,4 @@
+set(reorder_definitions "")
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store -fcray-pointer")
@@ -86,6 +87,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
+    set(reorder_definitions "nocollapse ${reorder_definitions}")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -168,9 +170,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
 
     set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
     # Patrick: For cray we want to use the system allocator since it is faster and has less memory requirements than the cray allocator
-    if(ENABLE_TITANBUILD)
-       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -hsystem_alloc")
-    endif()
+    #if(ENABLE_TITANBUILD)
+    #   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -hsystem_alloc")
+    #endif()
 
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE " ")

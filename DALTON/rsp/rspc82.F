@@ -571,6 +571,7 @@ C
 #if defined (HAS_PCMSOLVER)
       use pcmmod_cfg
 #endif
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -671,9 +672,9 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. .OR. QMNPMM
+C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
 C
-      IF (EMBEDDING .or. is_pcmsolver) THEN
+      IF (EMBEDDING .OR. USE_PELIB() .or. is_pcmsolver) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
@@ -2168,7 +2169,7 @@ C
  2350       JTURN = JTURN + 1
             OVLPI = D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
             IF (IPRRSP .GE. 22) THEN
-               X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+               X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *         ' RSPORT, norm and <ZY/YZ> overlap before S-1/2',X1,OVLPI
             END IF
@@ -2194,7 +2195,7 @@ C           ...930712-hjaaj: an output with LBZY only = 480 showed
 C              that OVLPI ca. 1.0D-14 after first S-1/2;
 C              but ca. 1.0D-16 after second S-1/2
                IF (IPRRSP .GE. 22) THEN
-                  X1 = DNORM2(LBZY,BVECS(IBVEC),1)
+                  X1 = DNRM2(LBZY,BVECS(IBVEC),1)
                   OVLPI= D2*DDOT(LBZ,BVECS(IBVEC),1,BVECS(JBVEC),1)
                   WRITE (LUPRI,'(A,1P,D14.6,D19.10)')
      *            ' RSPORT, norm and <ZY/YZ> overlap after  S-1/2',

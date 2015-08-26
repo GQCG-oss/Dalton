@@ -63,8 +63,10 @@ contains
 
     ! Number of atoms for subsystem and list of these atoms
     call get_natoms_for_subsystem(this,MyMoleculeFULL,natomssub)
+
     call mem_alloc(subatoms,natomssub)
     call list_of_atoms_for_subsystem(this,MyMoleculeFULL,natomssub,subatoms)
+
 
     ! Build lssub with atoms for subsystem
     call build_AtomSpecfragmentlsitem(lsfull,lssub,subatoms,natomssub,DECinfo%output,DECinfo%output)
@@ -90,7 +92,7 @@ contains
     ! ***********************************
     natomssub=0
     do i=1,MyMoleculeFULL%natoms
-       if(MyMoleculeFULL%SubSystemIndex(i)==this) then
+       if(MyMoleculeFULL%SubSystemIndex(i)==this .and. (.not. MyMoleculeFUll%PhantomAtom(i))) then
           natomssub = natomssub + 1
        end if
     end do
@@ -117,7 +119,7 @@ contains
 
     idx=0
     do i=1,MyMoleculeFULL%natoms
-       if(MyMoleculeFULL%SubSystemIndex(i)==this) then
+       if(MyMoleculeFULL%SubSystemIndex(i)==this .and. (.not. MyMoleculeFUll%PhantomAtom(i)) ) then
           idx=idx+1
           subatoms(idx) = i
        end if
@@ -361,7 +363,7 @@ contains
   !>    MOs for this subsystem fixed (they are already orthogonal).                  
   !> \author Kasper Kristensen
   subroutine get_orthogonal_basis_for_subsystem(this,nsub,&
-       & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsub,Cvirtsub)
+       & MyMoleculeFULL,Cocciso,Cvirtiso,Coccsub,Cvirtsub,S)
     implicit none
     !> Subsystem under consideration
     integer,intent(in) :: this
@@ -384,7 +386,9 @@ contains
     !              in the virtual MOs for other subsystems,
     !              this is investigated inside this subroutine).
     type(matrix),intent(inout) :: Cvirtsub
-    integer :: nocciso,nvirtiso,nbasisiso,nvirtmax,i,nbasisfull,j
+    !> AO Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
+    integer :: nocciso,nvirtiso,nbasisiso,nvirtmax,i,nbasisfull,j,atom
     integer :: idx,nbasissub,sub,nbasisother,nvirtother,norb,nvirtsub
     integer,pointer :: basisidx(:),basisidx_other(:)
     real(realk),pointer :: C(:,:), Cother(:,:)
@@ -398,11 +402,17 @@ contains
     nvirtiso = Cvirtiso(this)%ncol     ! nvirt for isolated monomer
     nbasisiso = Cocciso(this)%nrow     ! nbasis for isolated monomer
     ! Maximum number of virtual orbitals (if there are no redundancies)
-    ! - sum of virtual orbitals for all subsystems
+    ! - sum of virtual orbitals for all subsystems + possibly ghost atoms
     nvirtmax=0
     do i=1,nsub
        nvirtmax = nvirtmax + Cvirtiso(i)%ncol
     end do
+    do atom=1,MyMoleculeFULL%natoms  ! loop over atoms
+       if(MyMoleculeFULL%PhantomAtom(atom)) then
+          nvirtmax = nvirtmax +MyMoleculeFULL%atom_size(atom)
+       end if
+    end do
+
 
     ! Indices for basis functions in subsystem "this"
     call mem_alloc(basisidx,nbasisiso)
@@ -413,7 +423,7 @@ contains
     ! this threshold
     thr = 1.0e-5_realk
 
-    
+
 
 
     ! *************************************************************
@@ -496,7 +506,7 @@ contains
              ! Project out components from the norb orbitals already
              ! included in C array
              call project_out_MOs(nbasisfull,norb,C(:,1:norb),&
-                  & MyMoleculeFULL%overlap,Cother,Cother_norm)
+                  & S,Cother,Cother_norm)
 
              ! Include orbital "i" only if its norm after
              ! projection is above threshold
@@ -509,7 +519,7 @@ contains
                 end do
                 if(DECinfo%SNOOPdebug) then
                    call dec_simple_basis_transform1(nbasisfull,1,&
-                        & C(:,norb),MyMoleculeFULL%overlap,testnorm)
+                        & C(:,norb),S,testnorm)
                    write(DECinfo%output,*) 'sub,norb,norm1,norm2',sub,&
                         & norb,Cother_norm,testnorm(1,1)
                 end if
@@ -522,6 +532,61 @@ contains
        end if DifferentSub
 
     end do SubsystemLoop
+
+
+
+    ! Include possible ghost atoms (phantoms)
+    AtomLoop: do atom=1,MyMoleculeFULL%natoms  ! loop over atoms
+
+       Phantom: if(MyMoleculeFULL%PhantomAtom(atom)) then
+
+          ! Number of basis functions for phantom
+          nbasisother = MyMoleculeFULL%atom_size(atom)
+
+          ! Basis indices for phantom
+          call mem_alloc(basisidx_other,nbasisother)
+          call basis_idx_phantom(atom,MyMoleculeFULL,nbasisother,basisidx_other)
+
+          ! Loop over AO basis functions on phantom and include them
+          ! ********************************************************
+          idx=0
+          PhantomVirt: do i=1,nbasisother
+
+             ! Make MO coefficient vector which is just phantom AO number "i"
+             ! --------------------------------------------------------------
+             Cother=0.0_realk
+             Cother(basisidx_other(i),1) = 1.0_realk
+
+             ! Project out components from phantom AO already included in C array
+             call project_out_MOs(nbasisfull,norb,C(:,1:norb),&
+                  & S,Cother,Cother_norm)
+
+             ! Include orbital "i" only if its norm after
+             ! projection is above threshold
+             if(Cother_norm > thr) then
+                norb = norb + 1
+
+                ! Normalize before putting Cother into array
+                do j=1,nbasisfull
+                   C(j,norb) = (1.0_realk/Cother_norm)*Cother(j,1)
+                end do
+                if(DECinfo%SNOOPdebug) then
+                   call dec_simple_basis_transform1(nbasisfull,1,&
+                        & C(:,norb),S,testnorm)
+                   write(DECinfo%output,*) 'PHANTOM,norb,norm1,norm2',atom,&
+                        & norb,Cother_norm,testnorm(1,1)
+                end if
+
+             end if
+
+          end do PhantomVirt
+          call mem_dealloc(basisidx_other)
+
+       end if Phantom
+
+    end do AtomLoop
+
+
     call mem_dealloc(Cother)
 
     ! ***********************************************************
@@ -541,7 +606,7 @@ contains
     ! Virtual MOs (see comments in declaration above)
     call mat_init(Cvirtsub,nbasisfull,nvirtsub)
     call mat_set_from_full(C(:,nocciso+1:norb),1E0_realk, Cvirtsub)
-    
+
 
     call mem_dealloc(C)
     call mem_dealloc(basisidx)
@@ -554,7 +619,7 @@ contains
   !> against the occupied orbitals on subsystem assuming that all MOs
   !> use all are expanded in terms of all basis functions.
   !> \author Kasper Kristensen
-  subroutine get_orthogonal_basis_for_subsystem_allvirt(MyMoleculeFULL,Cocc,Cvirt)
+  subroutine get_orthogonal_basis_for_subsystem_allvirt(MyMoleculeFULL,Cocc,Cvirt,S)
     implicit none
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMoleculeFULL
@@ -562,6 +627,8 @@ contains
     type(matrix),intent(in) :: Cocc
     !> Virtual MO coefficients (orthogonalized against Cocc -and possibly remove redundancies)
     type(matrix),intent(inout) :: Cvirt
+    !> AO Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     integer :: nocc,nbasis,i,j,nvirtmax,nvirtsub,idx,norb
     real(realk),pointer :: C(:,:), Ctmp(:,:)
     real(realk) :: Ctmp_norm,thr,testnorm(1,1)
@@ -622,7 +689,7 @@ contains
 
        ! Project out components already included in C array
        call project_out_MOs(nbasis,norb,C(:,1:norb),&
-            & MyMoleculeFULL%overlap,Ctmp,Ctmp_norm)
+            & S,Ctmp,Ctmp_norm)
 
        ! Include orbital "i" only if its norm after
        ! projection is above threshold
@@ -635,7 +702,7 @@ contains
           end do
           if(DECinfo%SNOOPdebug) then
              call dec_simple_basis_transform1(nbasis,1,&
-                  & C(:,norb),MyMoleculeFULL%overlap,testnorm)
+                  & C(:,norb),S,testnorm)
              write(DECinfo%output,*) 'i,norb,norm1,norm2',i,&
                   & norb,Ctmp_norm,testnorm(1,1)
           end if
@@ -700,7 +767,7 @@ contains
           ! Subsystem to which atom "i" belongs
           atomsub = MyMoleculeFULL%SubSystemIndex(i)
 
-          if(atomsub == this) then 
+          if(atomsub == this .and. (.not. MyMoleculeFULL%PhantomAtom(i)) ) then 
              ! Atom "i" is in subsystem 
              ! --> include basis function indices for atom "i"
              do j=1,MyMoleculeFULL%atom_size(i)
@@ -721,6 +788,36 @@ contains
 
 
   end subroutine basis_idx_subsystem
+
+
+
+  !> Get basis indices for the basis function associated with a phantom atom
+  subroutine basis_idx_phantom(this,MyMoleculeFULL,nbasisphantom,basisidx)
+    implicit none
+    !> Phantom atom index
+    integer,intent(in) :: this
+    !> Full molecule info
+    type(fullmolecule),intent(in) :: MyMoleculeFULL
+    !> Number of basis functions for subsystem
+    integer,intent(in) :: nbasisphantom
+    !> Basis function indices for subsystem basis functions
+    integer,intent(inout) :: basisidx(nbasisphantom)
+    integer :: j,idx
+
+    basisidx=0
+    idx=0
+    do j=1,MyMoleculeFULL%atom_size(this)
+       idx=idx+1
+       basisidx(idx) = MyMoleculeFULL%atom_start(this) + j-1
+    end do
+
+    ! Sanity check
+    if(idx/=nbasisphantom) then
+       print *, 'idx, nbasisphantom',idx, nbasisphantom
+       call lsquit('basis_idx_phantom: Index mismatch',-1)
+    end if
+
+  end subroutine basis_idx_phantom
 
 
 
@@ -796,10 +893,14 @@ contains
     integer :: i,this,j,noccsub,nvirtsub,atom,idx
     type(decorbital),pointer :: OccOrbitals(:), VirtOrbitals(:)
 
+    if(MyMoleculeFULL%mem_distributed)then
+       call lsquit("ERROR(initial_subsystem_MOs_from_full) not implemented for pdm",-1)
+    endif
+
     ! Determine DEC orbital structures for local orbital analysis below
     call mem_alloc(OccOrbitals,MyMoleculeFULL%nocc)
-    call mem_alloc(VirtOrbitals,MyMoleculeFULL%nunocc)
-    call GenerateOrbitals_driver(MyMoleculeFULL,mylsitem,MyMoleculeFULL%nocc,MyMoleculeFULL%nunocc,&
+    call mem_alloc(VirtOrbitals,MyMoleculeFULL%nvirt)
+    call GenerateOrbitals_driver(MyMoleculeFULL,mylsitem,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
          & MyMoleculeFULL%natoms, OccOrbitals, VirtOrbitals)
 
     ! Allocate temporary arrays to be to big to make sure we have enough space
@@ -820,7 +921,7 @@ contains
           ! Does atom to which orbital "j" is assigned belong to subsystem "this"
           if(MyMoleculeFULL%SubSystemIndex(atom)==this) then  
              idx = idx + 1
-             Cocc(:,idx) = MyMoleculeFULL%Co(:,j)
+             Cocc(:,idx) = MyMoleculeFULL%Co%elm2(:,j)
           end if
        end do
        noccsub=idx
@@ -835,7 +936,7 @@ contains
     ! Virtual orbitals
     ! ================
     ! Simply copy from molecule structure
-    call mat_set_from_full(MyMoleculeFULL%Cv,1E0_realk, Cvirtall)
+    call mat_set_from_full(MyMoleculeFULL%Cv%elm2,1E0_realk, Cvirtall)
 
   
     call mem_dealloc(Cocc)
@@ -843,7 +944,7 @@ contains
     do i=1,MyMoleculeFULL%nocc
        call orbital_free(OccOrbitals(i))
     end do
-    do i=1,MyMoleculeFULL%nunocc
+    do i=1,MyMoleculeFULL%nvirt
        call orbital_free(VirtOrbitals(i))
     end do
     call mem_dealloc(OccOrbitals)
@@ -878,9 +979,9 @@ contains
     !> Full molecule structure (Only Edist, Ect, and Esub will be modified here)
     type(fullmolecule), intent(inout) :: MyMoleculeFULL
     integer :: i,j,k,a,b,c,subi,subj,suba,subb,atomi,atomj,atoma,atomb,offset
-    integer :: nocc, nunocc
+    integer :: nocc, nvirt
     real(realk) :: Etot,E1_11,E1_12,E1_22,E2_11,E2_12,E2_22,tmp,Epair,Edisp,Esame,Ecross
-    type(decorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
+    type(decorbital),pointer :: OccOrbitals(:), virtOrbitals(:)
     real(realk),pointer :: myt1(:,:)
 
     if(mylsitem%input%molecule%nSubSystems/=2) then
@@ -891,9 +992,9 @@ contains
 
     ! Determine DEC orbital structures for local orbital analysis below
     call mem_alloc(OccOrbitals,MyMoleculeFULL%nocc)
-    call mem_alloc(Unoccorbitals,MyMoleculeFULL%nunocc)
-    call GenerateOrbitals_driver(MyMoleculeFULL,mylsitem,MyMoleculeFULL%nocc,MyMoleculeFULL%nunocc,&
-         & MyMoleculeFULL%natoms, OccOrbitals, Unoccorbitals)
+    call mem_alloc(virtorbitals,MyMoleculeFULL%nvirt)
+    call GenerateOrbitals_driver(MyMoleculeFULL,mylsitem,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
+         & MyMoleculeFULL%natoms, OccOrbitals, virtorbitals)
 
     ! Init stuff
     MyMoleculeFULL%Edisp = 0.0_realk
@@ -906,12 +1007,12 @@ contains
        offset = 0
        nocc = MyMoleculeFULL%nocc
     end if
-    nunocc = MyMoleculeFULL%nunocc
+    nvirt = MyMoleculeFULL%nvirt
 
     ! Uniform handling of singles amplitudes which are zero for e.g. MP2
-    call mem_alloc(myt1,nunocc,nocc)
+    call mem_alloc(myt1,nvirt,nocc)
     if(DECinfo%use_singles) then
-       do a=1,nunocc
+       do a=1,nvirt
           do i=1,nocc
              myt1(a,i) = t1%elm2(a,i)
           end do
@@ -926,14 +1027,14 @@ contains
     jloop: do j=1,nocc
        atomj = OccOrbitals(j+offset)%centralatom
        subj = MyMoleculeFULL%SubSystemIndex(atomj)
-       bloop: do b=1,nunocc
-          atomb = UnoccOrbitals(b)%centralatom
+       bloop: do b=1,nvirt
+          atomb = virtOrbitals(b)%centralatom
           subb = MyMoleculeFULL%SubSystemIndex(atomb)
           iloop: do i=1,nocc
              atomi = OccOrbitals(i+offset)%centralatom
              subi = MyMoleculeFULL%SubSystemIndex(atomi)
-             aloop: do a=1,nunocc
-                atoma = UnoccOrbitals(a)%centralatom
+             aloop: do a=1,nvirt
+                atoma = virtOrbitals(a)%centralatom
                 suba = MyMoleculeFULL%SubSystemIndex(atoma)
 
                 tmp = (t2%elm4(a,i,b,j) + myt1(a,i)*myt1(b,j))&
@@ -965,11 +1066,11 @@ contains
     do i=1,MyMoleculeFULL%nocc
        call orbital_free(OccOrbitals(i))
     end do
-    do i=1,MyMoleculeFULL%nunocc
-       call orbital_free(UnoccOrbitals(i))
+    do i=1,MyMoleculeFULL%nvirt
+       call orbital_free(virtOrbitals(i))
     end do
     call mem_dealloc(OccOrbitals)
-    call mem_dealloc(Unoccorbitals)
+    call mem_dealloc(virtorbitals)
 
   end subroutine SNOOP_partition_energy
 
@@ -978,26 +1079,31 @@ contains
   !> such that they mimic the FULL occupied and virtual orbitals as much as possible
   !> in a least squares sense (defined by the natural connection).
   subroutine rotate_subsystem_orbitals_to_mimic_FULL_orbitals(MyMoleculeFULL,sub,&
-       & OccOrbitals,VirtOrbitals,lssub,CoccSUBmat,CvirtSUBmat)
+       & OccOrbitals,VirtOrbitals,lssub,CoccSUBmat,CvirtSUBmat,S)
     implicit none
     !> Full molecule info for FULL
     type(fullmolecule),intent(in) :: MyMoleculeFULL
     !> Which subsystem
     integer,intent(in) :: sub
     !> Occupied and virtual orbitals in DEC format
-    type(decorbital),intent(in) :: OccOrbitals(MyMoleculeFULL%nunocc), &
-         & VirtOrbitals(MyMoleculeFULL%nunocc)
+    type(decorbital),intent(in) :: OccOrbitals(MyMoleculeFULL%nvirt), &
+         & VirtOrbitals(MyMoleculeFULL%nvirt)
     !> LSitem for subsystem 
     type(lsitem), intent(inout) :: lssub
     !> Occupied and virtual orbitals for subsystem to be rotated
     type(matrix),intent(inout) :: CoccSUBmat, CvirtSUBmat
+    !> AO Overlap matrix
+    real(realk),intent(in) :: S(MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis)
     real(realk),pointer :: CcoreSUB(:,:),CvalSUB(:,:),CvirtSUB(:,:),CoccSUB(:,:)
     real(realk),pointer :: CcoreFULL(:,:),CvalFULL(:,:),CvirtFULL(:,:)
     integer :: noccSUB,nbasis,nvirt,ncoreFULL,ncoreSUB,nvalSUB,nvalFULL,noccFULL
     integer :: i
 
+    if(MyMoleculeFULL%mem_distributed)then
+       call lsquit("ERROR(rotate_subsystem_orbitals_to_mimic_FULL_orbitals) not implemented for pdm",-1)
+    endif
 
-    nvirt = MyMoleculeFULL%nunocc  ! #virt orbitals same for SNOOP subsystem and FULL
+    nvirt = MyMoleculeFULL%nvirt  ! #virt orbitals same for SNOOP subsystem and FULL
     nbasis = MyMoleculeFULL%nbasis
     noccFULL = MyMoleculeFULL%nocc    ! Occupied full molecule
     ncoreFULL = MyMoleculeFULL%ncore
@@ -1039,19 +1145,19 @@ contains
     ! Simply copy ALL virtual FULL orbitals because virtual dimensions are
     ! the same for subsystem and FULL
     call mem_alloc(CvirtFULL,nbasis,nvirt)
-    CvirtFULL = MyMoleculeFULL%Cv
+    CvirtFULL = MyMoleculeFULL%Cv%elm2
 
     
     ! Rotate core subsystem orbitals to mimic FULL orbitals
-    call get_natural_connection_subsystem_matrix(nbasis,ncoreSUB,MyMoleculeFULL%overlap,&
+    call get_natural_connection_subsystem_matrix(nbasis,ncoreSUB,S,&
          & CcoreFULL,CcoreSUB)
 
     ! Rotate valence subsystem orbitals to mimic FULL orbitals
-    call get_natural_connection_subsystem_matrix(nbasis,nvalSUB,MyMoleculeFULL%overlap,&
+    call get_natural_connection_subsystem_matrix(nbasis,nvalSUB,S,&
          & CvalFULL,CvalSUB)
 
     ! Rotate virtual subsystem orbitals to mimic FULL orbitals
-    call get_natural_connection_subsystem_matrix(nbasis,nvirt,MyMoleculeFULL%overlap,&
+    call get_natural_connection_subsystem_matrix(nbasis,nvirt,S,&
          & CvirtFULL,CvirtSUB)
 
     ! Collect occupied orbitals in one matrix with core before valence
@@ -1087,7 +1193,7 @@ contains
     !> Full molecule info for FULL
     type(fullmolecule),intent(in) :: MyMoleculeFULL
     !> Occupied  orbitals in DEC format
-    type(decorbital),intent(in) :: OccOrbitals(MyMoleculeFULL%nunocc)
+    type(decorbital),intent(in) :: OccOrbitals(MyMoleculeFULL%nvirt)
     !> Which subsystem
     integer,intent(in) :: sub
     !> Number of core and valence orbitals for subsystem
@@ -1099,6 +1205,9 @@ contains
     integer :: j,idx,atom
 
 
+    if(MyMoleculeFULL%mem_distributed)then
+       call lsquit("ERROR(extract_subsystem_occorbitals_from_FULL) not implemented for pdm",-1)
+    endif
 
     ! Extract core orbitals
     ! *********************
@@ -1113,7 +1222,7 @@ contains
              call lsquit('extract_subsystem_occorbitals_from_FULL: &
                   & Core idx is too large',-1)
           end if
-          Ccore(:,idx) = MyMoleculeFULL%Co(:,j)
+          Ccore(:,idx) = MyMoleculeFULL%Co%elm2(:,j)
        end if
     end do
 
@@ -1133,11 +1242,11 @@ contains
        if(MyMoleculeFULL%SubSystemIndex(atom)==sub) then  
           idx = idx + 1
           if(idx>nvalSUB) then
-             print *, 'Valecne error: idx,nvalSUB',idx,nvalSUB
+             print *, 'Valence error: idx,nvalSUB',idx,nvalSUB
              call lsquit('extract_subsystem_occorbitals_from_FULL: &
                   & Valence idx is too large',-1)
           end if
-          Cval(:,idx) = MyMoleculeFULL%Co(:,j)
+          Cval(:,idx) = MyMoleculeFULL%Co%elm2(:,j)
        end if
     end do
 
@@ -1306,7 +1415,7 @@ contains
     !> LSitem for subsystem 
     type(lsitem), intent(inout) :: lssub
     !> Occ and virt orbitals for subsystem in DEC format
-    type(decorbital),intent(in) :: OccOrbitalsSUB(MySubsystem%nocc), VirtOrbitalsSUB(MySubsystem%nunocc)
+    type(decorbital),intent(in) :: OccOrbitalsSUB(MySubsystem%nocc), VirtOrbitalsSUB(MySubsystem%nvirt)
     !> Which atoms to consider for FULL
     logical,intent(in) :: dofragFULL(MyMoleculeFULL%natoms)
     !> Which atoms to consider for subsystem
@@ -1372,9 +1481,9 @@ contains
           !  in occupied AOS).
           DoBasis=.false.
           pairfrag=.false.
-          call atomic_fragment_init_integer_list(i,MySubsystem%nunocc, MySubsystem%nocc, &
-               & AFfull(i)%nunoccAOS,noccAOSsub,&
-               & AFfull(i)%unoccAOSidx,occAOS(1:noccAOSsub),OccOrbitalsSUB,VirtOrbitalsSUB,&
+          call atomic_fragment_init_integer_list(i,MySubsystem%nvirt, MySubsystem%nocc, &
+               & AFfull(i)%nvirtAOS,noccAOSsub,&
+               & AFfull(i)%virtAOSidx,occAOS(1:noccAOSsub),OccOrbitalsSUB,VirtOrbitalsSUB,&
                & MySubsystem,lssub,AFsub(i),DoBasis,pairfrag)
           call mem_dealloc(occAOS)
 
@@ -1434,15 +1543,15 @@ contains
     !> Occupied orbitals for full system in DEC format
     type(decorbital),intent(in) :: OccOrbitalsFULL(MyMoleculeFULL%nocc)
     !> Virtual orbitals for full system in DEC format
-    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nunocc)
+    type(decorbital),intent(in) :: VirtOrbitalsFULL(MyMoleculeFULL%nvirt)
     !> Occ and virt orbitals for subsystem in DEC format
-    type(decorbital),intent(inout) :: OccOrbitalsSUB(MySubsystem%nocc), VirtOrbitalsSUB(MySubsystem%nunocc)
+    type(decorbital),intent(inout) :: OccOrbitalsSUB(MySubsystem%nocc), VirtOrbitalsSUB(MySubsystem%nvirt)
     integer :: fulltosub(MyMoleculeFULL%nocc)
     integer :: i,subidx,subatom,fullatom
     logical :: dofragSUB1(MySubsystem%nfrags), dofragSUB2(MySubsystem%nfrags)
 
     !  List of which fragments to consider for subsystem (for extra check)
-    call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+    call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nvirt,&
          & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,&
          & dofragSUB1,MySubsystem%PhantomAtom)
 
@@ -1472,7 +1581,7 @@ contains
     ! Same for virtual - except now we do not need a "fulltosub" list because
     ! there is a one-to-one correspondence between the orbitals.
     ! (The number of virtual orbitals is the same for full system and subsystem).
-    do i=1,MyMoleculeFULL%nunocc
+    do i=1,MyMoleculeFULL%nvirt
 
        ! Atom to which orbital "i" is assigned for full system and subsystem
        fullatom = VirtOrbitalsFULL(i)%centralatom
@@ -1486,7 +1595,7 @@ contains
 
 
     !  List of which fragments to consider for subsystem after reassigning
-    call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nunocc,&
+    call which_fragments_to_consider(MySubsystem%ncore,MySubsystem%nocc,MySubsystem%nvirt,&
          & MySubsystem%nfrags,OccOrbitalsSUB,VirtOrbitalsSUB,&
          & dofragSUB2,MySubsystem%PhantomAtom)
     
@@ -1534,12 +1643,12 @@ contains
           end if
 
           ! Virtual EOS
-          if(AFfull(atom)%nunoccEOS /= AFsub(atom)%nunoccEOS) then
+          if(AFfull(atom)%nvirtEOS /= AFsub(atom)%nvirtEOS) then
              something_wrong=.true.
           end if
 
           ! Virtual AOS
-          if(AFfull(atom)%nunoccAOS /= AFsub(atom)%nunoccAOS) then
+          if(AFfull(atom)%nvirtAOS /= AFsub(atom)%nvirtAOS) then
              something_wrong=.true.
           end if
 
@@ -1547,8 +1656,8 @@ contains
              print *, 'Subsystem: ',sub
              print *, 'Atom: ', atom
              print *, 'Occ  EOS: Full/sub', AFfull(atom)%noccEOS,AFsub(atom)%noccEOS
-             print *, 'Virt EOS: Full/sub', AFfull(atom)%nunoccEOS,AFsub(atom)%nunoccEOS
-             print *, 'Virt AOS: Full/sub', AFfull(atom)%nunoccAOS,AFsub(atom)%nunoccAOS
+             print *, 'Virt EOS: Full/sub', AFfull(atom)%nvirtEOS,AFsub(atom)%nvirtEOS
+             print *, 'Virt AOS: Full/sub', AFfull(atom)%nvirtAOS,AFsub(atom)%nvirtAOS
              call lsquit('SUBatomic_fragments_sanity_check: Orbital mismatch!',-1)
           end if
 
@@ -1556,6 +1665,87 @@ contains
     end do
 
   end subroutine SUBatomic_fragments_sanity_check
+
+
+  !> \brief Write SNOOP restart file for full system (sub=0) or
+  !> one of the subsystems
+  !> \author Kasper Kristensen
+  !> \date August 2015
+  subroutine snoop_write_restart_file(sub,EHF,Ecorr)
+    implicit none
+    !> Which subsystem? (If sub=0, then we consider the full system)
+    integer,intent(in) :: sub 
+    !> HF and correlation energy 
+    real(realk),intent(in) :: EHF,Ecorr
+    integer :: funit
+    character(len=17) :: FileName    
+
+    ! Get file name
+    call SNOOP_get_filename(sub,FileName)
+
+    ! Open file (always delete existing file if it exists)
+    funit = -1
+    call lsopen(funit,FileName,'REPLACE','UNFORMATTED')
+
+    ! Write energies to file and close file
+    write(funit) EHF
+    write(funit) Ecorr
+    call lsclose(funit,'KEEP')
+
+  end subroutine snoop_write_restart_file
+
+
+  !> \brief Read SNOOP restart file for full system (sub=0) or
+  !> one of the subsystems
+  !> \author Kasper Kristensen
+  !> \date August 2015
+  subroutine snoop_read_restart_file(sub,EHF,Ecorr,file_exist)
+    implicit none
+    !> Which subsystem? (If sub=0, then we consider the full system)
+    integer,intent(in) :: sub 
+    !> HF and correlation energy 
+    real(realk),intent(inout) :: EHF,Ecorr
+    !> Did restart file exist? (If not, EHF and Ecorr are not modified)
+    logical,intent(inout) :: file_exist
+    integer :: funit
+    character(len=17) :: FileName    
+
+    ! Set file name
+    call SNOOP_get_filename(sub,FileName)
+    
+    ! Does restart file exist?
+    inquire(file=FileName,exist=file_exist)
+
+    if(.not. file_exist) return
+
+    ! Open file (always delete existing file if it exists)
+    funit = -1
+    call lsopen(funit,FileName,'OLD','UNFORMATTED')
+
+    ! Read energies from file and close file
+    read(funit) EHF
+    read(funit) Ecorr
+    call lsclose(funit,'KEEP')
+
+  end subroutine snoop_read_restart_file
+
+
+  !> Get filename for snoop restart file
+  !> \author Kasper Kristensen
+  !> \date August 2015  
+  subroutine SNOOP_get_filename(sub,FileName)
+    implicit none
+    !> Which subsystem? (If sub=0, then we consider the full system)
+    integer,intent(in) :: sub 
+    !> File name for restart file
+    character(len=17),intent(inout) :: FileName    
+
+    ! Set file name
+    FileName(1:5)='SNOOP'
+    write(FileName(6:9),'(i4.4)') sub
+    FileName(10:17)='.restart'
+
+  end subroutine SNOOP_get_filename
 
 
 end module snoop_tools_module

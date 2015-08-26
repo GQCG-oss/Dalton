@@ -6,6 +6,8 @@
 !> \author T. Kjaergaard and S. Reine
 !> \date 2008 
 MODULE integraldriver
+  use LSTENSOR_TYPETYPE
+  use LSTENSOR_OPERATIONSMOD
   use TYPEDEF
   use READMOLEFILE
   use BuildBasisSet
@@ -148,13 +150,15 @@ Integer,pointer       :: ODTypeIndex(:)
 logical               :: dopasses,screen 
 integer               :: maxpasses,TOTmaxpasses,nPassTypes,iPassType 
 integer               :: nLHSODTypes,numpasses,nPrimPL,currentODtype
-Integer,pointer :: Maxpassfortype(:)
+integer               :: numnodes
+Integer,pointer :: Maxpassfortype(:),Myjobs(:)
 integer :: iODType,IP,irhstmp,ILHSCOUNT,IODLHS,nthreads,tid
 type(integerpointer),pointer :: TypeOverlapIndex(:),PassTypeOverlapIndex(:) 
 integer,pointer :: OverlapList(:),ILHSCOUNTINDEX(:)
-real(realk) :: maxint
+real(realk) :: maxint,TS,TE
 integer(kind=long) :: WORKLENGTH,WORKLENGTH2,WORKLENGTH3,WORK1EST
 real(realk)           :: ReductionECONT(input%NDMAT_RHS)
+
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -218,8 +222,11 @@ IF(.NOT.INPUT%noOMP)call mem_TurnONThread_Memory()
 !$OMP DEFAULT(none) PRIVATE(maxint,tid,nthreads,integral,ILHSCOUNT,currentODtype,&
 !$OMP iODtype,P,PQ,ILHS,IRHS,iPassType,numpasses,Start_RHS,End_RHS,PassQ,screen,&
 !$OMP maxPassesFortypes,TOTmaxpasses,WORKLENGTH,WORK1EST,WORKLENGTH2,WORKLENGTH3,&
-!$OMP OverlapList,maxpasses,doPasses,&
+!$OMP OverlapList,maxpasses,doPasses,TS,TE,Myjobs,&
 !$OMP IRHSTMP) SHARED(sharedTUV,Allocations,Input,OD_LHS,OD_RHS,nOverlapOfPassType,PassTypeOverlapIndex,&
+#ifdef VAR_MPI
+!$OMP infpar,&
+#endif
 !$OMP Q,ODpassesIndex,OUTPUT,typeoverlapindex,nPassTypes,nLHSODtypes,IPRINT,LUPRI,ILHSCOUNTINDEX,&
 !$OMP ODTypeIndex,ReductionECONT)
 IF(.NOT.INPUT%noOMP)call init_threadmemvar()
@@ -230,6 +237,7 @@ tid = omp_get_thread_num()
 nthreads=1
 tid=0
 #endif
+IF(output%FullAlphaCD) call wrapInitThermiteIntThreadID(tid)
 call INIT_BUFCOUNTERS(1)
 DO iODType=1,nLHSODTypes
    call MEM_INIT_OVERLAP(Allocations,iODtype,Input,1,IPRINT,LUPRI)
@@ -306,10 +314,21 @@ CALL determineMaxPassesForType(Allocations,currentODtype,nPassTypes,&
 iODtype = currentODtype
 
 call mem_alloc(overlaplist,TOTmaxpasses)
-
+#ifdef VAR_MPI
+IF(output%FullAlphaCD)THEN
+   call mem_alloc(Myjobs,OD_LHS%nbatches)
+   call BuildMyjobsList(infpar%lg_nodtot,Myjobs,OD_LHS,Output,infpar%lg_mynum,&
+        & OD_LHS%nbatches)
+ENDIF
+#endif
 !$OMP DO SCHEDULE(DYNAMIC,1)
 DO ILHSCOUNT=1,OD_LHS%nbatches
    ILHS = ILHSCOUNTINDEX(ILHSCOUNT)
+#ifdef VAR_MPI
+   IF(output%FullAlphaCD)THEN
+      IF(Myjobs(ILHS).NE.infpar%lg_mynum)CYCLE
+   ENDIF
+#endif
    iODType=ODTypeIndex(ILHS)
    IF(iODType.NE.currentODtype)THEN
       !dealloc
@@ -348,6 +367,7 @@ DO ILHSCOUNT=1,OD_LHS%nbatches
    ENDIF
    !maybe set Ecoeff LHS at this stage - while we set the RHS Ecoeff according to input? (mod Worklength) 
    CALL SET_Overlap(P,Input,SharedTUV,Integral,OD_LHS%BATCH(ILHS),1,LUPRI,IPRINT,.FALSE.)
+   IF(output%FullAlphaCD) call AOtoMO3CenterDEC(P,output)
    CALL Determine_RHS_loop(INPUT,OD_RHS,ILHS,Start_RHS,End_RHS)
    DO iPassType=1,nPassTypes
       numPasses = 0
@@ -397,6 +417,9 @@ DO ILHSCOUNT=1,OD_LHS%nbatches
 ENDDO !ILHSCOUNT
 !$OMP END DO NOWAIT
 
+#ifdef VAR_MPI
+IF(output%FullAlphaCD) call mem_dealloc(Myjobs)
+#endif
 CALL FREE_OVERLAP(P)
 call DEALLOC_ODLHS_BUFFERS
 IF(INPUT%fullcontraction)THEN
@@ -448,6 +471,7 @@ ENDDO
 call mem_dealloc(Q)
 call mem_dealloc(ODpassesIndex)
 CALL freeTUVitem(sharedTUV,Input)
+
 END SUBROUTINE McMurchieDavidson
 
 !> \brief driver routine to calculate the explicit integral for a given P and Q overlap
@@ -1674,10 +1698,10 @@ integer,pointer     :: atomC(:),atomD(:),batchC(:),batchD(:),atomIndexC(:),atomI
 real(realk),pointer :: X3(:),Y3(:),Z3(:),X4(:),Y4(:),Z4(:)
 real(realk) :: TMP,factor,CS_THRESHOLD
 integer :: IRHSI(1),nLHSbatches,nA,node,numnodes
-integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS,IOMPLHSCOUNT
+integer :: nthreads,tid,nDMAT_RHS,nDMAT_LHS,IOMPLHSCOUNT,nEcont
 integer,pointer :: Belms(:)
 integer,pointer :: IODelms(:)
-real(realk)           :: ReductionECONT(input%NDMAT_RHS)
+real(realk)           :: ReductionECONT(MAX(input%NDMAT_RHS,input%NDMAT_LHS*3))
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -1857,8 +1881,8 @@ IF(PerformCALC)THEN
     call mem_alloc(RED_DMAT_RHS,dim2,dim4)
     call Build_full_shortint2dim_from_lstensor(input%LST_DRHS,RED_DMAT_RHS,dim2,dim4,lupri)
     IF (input%sameODs) call symmetrize_SDMAT(RED_DMAT_RHS,dim2,dim4)
-    !WRITE(lupri,*)'The Dmat output'
-    !call shortint_output(RED_DMAT_RHS,dim1,dim3,lupri)
+!    WRITE(lupri,*)'The Dmat output'
+!    call shortint_output(RED_DMAT_RHS,dim2,dim4,lupri)
  ELSE
     !no screening so we set the screening Dmat quantity to 1000
     call mem_alloc(RED_DMAT_RHS,dim2,dim4)
@@ -1868,14 +1892,14 @@ IF(PerformCALC)THEN
        ENDDO
     ENDDO
  ENDIF
-
  IF(DALINK)THEN
     IF(SameODs)THEN
        RED_DMAT_LHS => RED_DMAT_RHS 
     ELSE
        call mem_alloc(RED_DMAT_LHS,dim1,dim3)
        IF(INPUT%CS_SCREEN)THEN
-          call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,RED_DMAT_LHS,dim1,dim3,lupri)
+          call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,&
+               & RED_DMAT_LHS,dim1,dim3,lupri)
        ELSE
           DO D=1,dim3
              DO C=1,dim1
@@ -1883,6 +1907,8 @@ IF(PerformCALC)THEN
              ENDDO
           ENDDO
        ENDIF
+!       print*,'DALINK RED_DMAT_LHS'
+!       call shortint_output(RED_DMAT_LHS,dim1,dim3,6)
     ENDIF
     call mem_alloc(batchindex1,nRHSoverlaps)
     call mem_alloc(batchindex2,nRHSoverlaps)
@@ -1960,7 +1986,7 @@ IF(PerformCALC)THEN
 !$OMP cs_thrlog,lsoutput,drhs_sym,dalink,dalink_thrlog,&
 !$OMP batchindex1,batchindex2,red_gab_lhs,red_gab_rhs,inputdo_passes,&
 !$OMP nRHSoverlaps,ndmat_rhs,factor,nograd,ILHSCOUNTINDEX,&
-!$OMP ODtypeIndex,nLHSbatches,ReductionECONT)
+!$OMP ODtypeIndex,nLHSbatches,ReductionECONT,nEcont)
  IF(.NOT.INPUT%noOMP) call init_threadmemvar()
 #ifdef VAR_MPI
  node = input%node
@@ -2020,7 +2046,7 @@ IF(PerformCALC)THEN
  ENDDO
 
  call mem_alloc(numpasses,nPassTypes)
- numpasses = 0
+ numpasses(1:nPassTypes) = 0
  call mem_alloc(LIST,dim3*dim4+nPassTypes)
  call mem_alloc(DoINT,dim3*dim4)
  NULLIFY(SIZEOFDOINT)
@@ -2040,8 +2066,12 @@ IF(PerformCALC)THEN
  CALL INIT_OVERLAP(P,Allocations,iODtype,Input,1,IPRINT,LUPRI)
  CALL allocIntegralsWRAP(PQ,Integral,Input,Allocations,iODtype,nPassTypes,&
       &maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
- call mem_alloc(Integral%Econt,input%NDMAT_RHS)
- IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk   
+ nEcont = input%NDMAT_RHS
+ IF(INPUT%magderivorder.EQ.1)THEN
+    nEcont = input%NDMAT_LHS*3
+ ENDIF
+ call mem_alloc(Integral%Econt,nEcont) 
+ IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk
  TOTmaxpasses = 0
  call INIT_BUFCOUNTERS(3)
  DO iPassType=1,nPassTypes
@@ -2181,6 +2211,7 @@ IF(PerformCALC)THEN
             C=Belms(nC)
             IRHS = IODelms(nC)
             !SINCE THINGS ARE NOW IN BATCHES WITH THE SAME VALUES THIS COULD MAYBE BE MODIFIED
+            !K(A,C) = Integral(A,B,C,D)*DRHS(B,D)
             IF(TMP_short+RED_GAB_TMP(nC) .LE. CS_THRLOG )EXIT LOOPD
             NOELEMENTSADDED = .FALSE.
             IF(MBIE_SCREEN)THEN
@@ -2211,7 +2242,9 @@ IF(PerformCALC)THEN
             LOOPD2: DO nC=1,ketshell(D)%DIM
                C=Belms(nC)
                IRHS = IODelms(nC)
-               IF(TMP_short+RED_GAB_TMP(nC) .LE. CS_THRLOG ) EXIT LOOPD2
+               !Same LHS aos:  Permute A,B
+               !K(B,C) = Integral(B,A,C,D)*DRHS(A,D)
+               IF(TMP_short+RED_GAB_TMP(nC) .LE. CS_THRLOG )EXIT LOOPD2
                NOELEMENTSADDED = .FALSE.
                IF(MBIE_SCREEN)THEN
                   screen = .FALSE.
@@ -2252,15 +2285,29 @@ IF(PerformCALC)THEN
          !EXTRA DENSITY ACCELERATED SCREENING
          C=batchindex1(IRHS)
          D=batchindex2(IRHS)
-         DMATELM1=RED_DMAT_RHS(B,D)+RED_DMAT_LHS(A,C)
+         !K(A,C) = Integral(A,B,C,D)*DRHS(B,D)
+         !Same LHS aos:  Permute A,B
+         !K(B,C) = Integral(B,A,C,D)*DRHS(A,D)
+         !Same RHS aos:  Permute C,D
+         !K(A,D) = Integral(A,B,D,C)*DRHS(B,C)
+
+         !Energy = DLHS(A,C)*Integral(A,B,C,D)*DRHS(B,D)
+         ! or if sameLHSaos
+         !Energy = DLHS(B,C)*Integral(B,A,C,D)*DRHS(A,D)
+         ! or if sameRHSaos
+         !Energy = DLHS(A,D)*Integral(A,B,D,C)*DRHS(B,C)
+         DMATELM1=RED_DMAT_LHS(A,C)+RED_DMAT_RHS(B,D)
          IF(INPUT%sameLHSaos)then
-            DMATELM2=RED_DMAT_RHS(A,D)+RED_DMAT_LHS(B,C)
+            DMATELM2=RED_DMAT_LHS(B,C)+RED_DMAT_RHS(A,D)
+            MAXDMAT=MAX(DMATELM1,DMATELM2)
+         ELSEIF(INPUT%sameRHSaos)then
+            DMATELM2=RED_DMAT_LHS(A,D)+RED_DMAT_RHS(B,C)
             MAXDMAT=MAX(DMATELM1,DMATELM2)
          ELSE
             MAXDMAT=DMATELM1
          ENDIF
          IF(MAXDMAT.LT.shortzero)MAXDMAT=shortzero
-         IF(MAXDMAT+REDGABLHS+RED_GAB_RHS(IRHS) .LT. DALINK_THRLOG ) CYCLE LOOPRHS
+         IF(MAXDMAT+REDGABLHS+RED_GAB_RHS(IRHS).LT.DALINK_THRLOG) CYCLE LOOPRHS
       ENDIF
       IF(doPasses(iPassType)) THEN
          numPasses(iPassType) = numPasses(iPassType) + 1
@@ -2296,6 +2343,7 @@ IF(PerformCALC)THEN
       ENDIF
    ENDDO LOOPRHS
    DO iPassType=1,nPassTypes
+      IF(.NOT.doPasses(iPassType))numPasses(iPassType)=0
       IF(numPasses(iPassType).GT. 0) THEN
          call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
          CALL modifyOverlapCenter(PassQ(iPassType),PassQ(iPassType)%nPrimitives,&
@@ -2330,7 +2378,7 @@ IF(PerformCALC)THEN
 
  IF(INPUT%fullcontraction)THEN
  !$OMP CRITICAL
-  do i=1,input%NDMAT_RHS
+  do i=1,nEcont
    ReductionECONT(i) = ReductionECONT(i) + Integral%Econt(i)
   enddo
  !$OMP END CRITICAL
@@ -2370,7 +2418,7 @@ IF(PerformCALC)THEN
  IF(.NOT.INPUT%noOMP)call mem_TurnOffThread_Memory()
 
  IF(INPUT%fullcontraction)THEN
-  do ILHS=1,input%NDMAT_RHS
+  do ILHS=1,nEcont
    LsOutput%ResultTensor%LSAO(1)%elms(ILHS) = ReductionECONT(ILHS)
   enddo
  ENDIF
@@ -2849,7 +2897,6 @@ IF(Input%do_prop)THEN
            &dimA,dimB,integral%nOperatorComp,PQ,INPUT,OUTPUT,LUPRI,IPRINT)
    ENDIF
 ELSE
-
    lhsDer = integral%lhsGeoOrder
    rhsDer = integral%rhsGeoOrder
    dimP=PQ%P%p%totOrbitals(lhsDer+1)
@@ -2894,9 +2941,16 @@ ELSE
          call distributeKgrad(OUTPUT%resultTensor,integral%integralsABCD,input%LST_DLHS,&
               & input%LST_DRHS,input%NDMAT_RHS,PQ,Input,output,LUPRI,IPRINT)
         ELSEIF(INPUT%fullcontraction)THEN
-           call distributeKcont(&
-                & integral%integralsABCD,input%LST_DLHS,input%LST_DRHS,&
-                & input%NDMAT_RHS,PQ,Input,output,Integral%Econt,LUPRI,IPRINT)
+           IF(INPUT%magderivorder.EQ.1)THEN
+              IF(input%NDMAT_RHS.NE.1)call lsquit('distributemagKcont assumes 1 RHS Dmat',-1)
+              call distributemagKcont(integral%integralsABCD,input%LST_DLHS,&
+                   & input%LST_DRHS,input%NDMAT_LHS,PQ,Input,output,&
+                   & Integral%Econt,LUPRI,IPRINT)
+           ELSE
+              call distributeKcont(integral%integralsABCD,input%LST_DLHS,&
+                   & input%LST_DRHS,input%NDMAT_RHS,PQ,Input,output,&
+                   & Integral%Econt,LUPRI,IPRINT)
+           ENDIF
         ELSE
            call distributeExchange(OUTPUT%resultTensor,integral%integralsABCD,input%LST_DRHS,&
                 & input%NDMAT_RHS,INPUT%exchangeFactor,PQ,Input,output,LUPRI,IPRINT)
@@ -2933,6 +2987,12 @@ ELSE
             CALL Explicit4centerDECK(OUTPUT%resultMat,output%ndim(1),&
                  & output%ndim(2),output%ndim(3),output%ndim(4),PQ,&
                  & Integral%integralsABCD,dimQ,dimP,Input,output,LUPRI,IPRINT)
+         ELSEIF(output%FullAlphaCD)THEN
+            call Explicit3CenterDEC(OUTPUT%resultMat,OUTPUT%result3D,&
+                 & output%ndim(1),output%ndim(3),output%ndim(4),&
+                 & output%ndim3D(1),output%ndim3D(2),output%ndim3D(3),&
+                 & PQ,Integral%integralsABCD,dimQ,dimP,&
+                 & Input,output,LUPRI,IPRINT)
          ELSE
             !default simple distribute without contraction
             CALL GeneraldistributePQ(OUTPUT%resultTensor,PQ,&
@@ -3001,7 +3061,8 @@ integer :: i
 !Dimensions according to nPrimitives
 coulomb = ((PQ%Operator.EQ.CoulombOperator).OR.(PQ%Operator.EQ.ErfOperator)).OR.&
      & ((PQ%Operator.EQ.GGemOperator).OR.(PQ%Operator.EQ.CAMOperator)).OR.&
-     & (PQ%Operator.EQ.ErfcOperator).OR.(PQ%Operator.EQ.GGemCouOperator).OR.(PQ%Operator.EQ.GGemGrdOperator)
+     & (PQ%Operator.EQ.ErfcOperator).OR.(PQ%Operator.EQ.GGemCouOperator).OR.&
+     & (PQ%Operator.EQ.GGemGrdOperator).OR.(PQ%Operator.EQ.GGemQuaOperator)
 nucpotLHS = (PQ%Operator.EQ.NucpotOperator).AND.PQ%P%p%TYPE_Nucleus
 nucpotRHS = (PQ%Operator.EQ.NucpotOperator).AND.PQ%Q%p%TYPE_Nucleus
 !CALL SetIntegrand(PQ%iprimP,PQ%iprimQ,PQ%distance,PQ%squaredDistance,&
@@ -3634,7 +3695,7 @@ CONTAINS
   DO i5P = 1,n5P
   DO iQ  = 1,nQ
   DO iAng = 1,nAng
-    write(lupri,'(5X,4I5,10F15.9/25X,10F15.9)') i5Q,i5P,iQ,iAng,(AddPQ(iCont,iQ,i5Q,i5P,iAng),iCont=1,nCont)
+    write(lupri,'(5X,4I5,10F15.9/(25X,10F15.9))') i5Q,i5P,iQ,iAng,(AddPQ(iCont,iQ,i5Q,i5P,iAng),iCont=1,nCont)
   ENDDO
   ENDDO
   ENDDO
@@ -6327,7 +6388,7 @@ implicit none
 Integer :: lupri
 TYPE(Integrand)    :: PQ
 TYPE(Integralitem) :: Integral
-Integer :: maxTUVdim,maxPrim,maxOrb
+Integer,intent(in) :: maxTUVdim,maxPrim,maxOrb
 logical :: orderAngPrim
 integer (kind=long) :: nsize1,nsize2
 
@@ -6667,6 +6728,9 @@ CASE (ErfOperator)
 CASE (NucpotOperator)
    CALL buildNuclearRJ000(Integral%IN,PQ,nPrim,JMAX,LUPRI,IPRINT,integral,INPUT%HIGH_RJ000_ACCURACY)
 CASE (GGemOperator)
+   CALL buildGJ000(Integral%IN,nPrim,JMAX,PQ%integralPrefactor,PQ%reducedExponents,PQ%squaredDistance,&
+     &             INPUT%GGem%coeff,INPUT%GGem%exponent,input%GGem%n)
+CASE (GGemQuaOperator)
    CALL buildGJ000(Integral%IN,nPrim,JMAX,PQ%integralPrefactor,PQ%reducedExponents,PQ%squaredDistance,&
      &             INPUT%GGem%coeff,INPUT%GGem%exponent,input%GGem%n)
 CASE (GGemCouOperator)

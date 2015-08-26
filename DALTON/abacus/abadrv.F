@@ -679,6 +679,7 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (one of **START, **EACH , or **PROPE)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -690,6 +691,7 @@ C
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       LOGICAL   GRDINP, NO_ABACUS_INPUT
+      LOGICAL   PAR_SOPPA_INPUT_ERRORS
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(10)*6, WORD1*7, WRDSRC*7,
      *          WORDL*12
@@ -1441,7 +1443,31 @@ cs
       END IF
       IF (ABASOP) THEN
 CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
-         IF (PARCAL) CALL PARQUIT('ABASOP')
+         IF (PARCAL) THEN
+CRF Only quit if the stuff that is asked for is not yet parallelized.
+            par_soppa_input_errors = .false.
+            IF (.NOT.DOEXCI.OR.
+C All the properties which parallel soppa currently cannot do. I.e all.
+     &      ANY( (/  SHIELD, MAGSUS, SPINRO, MOLGFA, SPNSPN, 
+     &           POLAR, CTOCD /) ) 
+     &         ) THEN
+               WRITE(LUPRI,'(3A)')'@ ', WRDSRC, 'SOPPA can only be ' //
+     &               'run in parallel for excitation energies'
+               par_soppa_input_errors = .true.
+            ENDIF
+C            
+C Parallel soppa should be run using mp2 from the cc module
+C 
+            IF (DOMP2) THEN
+               WRITE(LUPRI,'(3A/A)')'@ ', WRDSRC, 'Parallel SOPPA can'//
+     &               ' currently only run using the MP2 applitudes ',
+     &               'from the CC module'
+               par_soppa_input_errors = .true. 
+            ENDIF
+            IF (par_soppa_input_errors) 
+     &         CALL PARQUIT('ABASOP')
+
+         ENDIF
 CKeinSPASmehr
          IF (CCPPA) THEN
             WRITE(LUPRI,'(A/A/A)')
@@ -1893,7 +1919,7 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
         WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
      &                 ' the polarizable embedding scheme (PE library).'
         IF (POLAR) THEN

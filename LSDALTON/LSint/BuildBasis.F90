@@ -93,6 +93,7 @@ ALLOCATE(STRING(NBASDIR))
 
 BASINFO%GCbasis = .FALSE.
 BASINFO%SPHERICAL = DOSPHERICAL
+BASINFO%GeminalScalingFactor = 1.0E0_realk
 IF(present(BASISSETNAME))THEN
  BASINFO%Labelindex = 0
 ! call mem_alloc(BINDEXES,1)
@@ -108,9 +109,27 @@ IF(present(BASISSETNAME))THEN
 ! J=1
 ! BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
 ! IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
+
+ !Setting the F12 geminal scaling factor 
+ !see J. Chem. Phys 128, 084102
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pVDZ')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.1E0_realk
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pVTZ')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.2E0_realk
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pVQZ')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.4E0_realk
+ IPOS = INDEX(BASISSETNAME,'aug-cc-pV5Z')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.4E0_realk
+ IPOS = INDEX(BASISSETNAME,'cc-pVDZ-F12')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 0.9E0_realk
+ IPOS = INDEX(BASISSETNAME,'cc-pVTZ-F12')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.0E0_realk
+ IPOS = INDEX(BASISSETNAME,'cc-pVQZ-F12')
+ IF (IPOS .NE. 0) BASINFO%GeminalScalingFactor = 1.1E0_realk
 ELSE
 ! call mem_alloc(BINDEXES,BASISSETLIBRARY(iBas)%nbasissets)
  BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
+ BASINFO%GeminalScalingFactor = BASISSETLIBRARY(iBas)%GeminalScalingFactor
  SELECT CASE(BASISLABEL)
  CASE('REGULAR  ') !identical to BasParamLABEL(RegBasParam)
     BASINFO%Labelindex = RegBasParam
@@ -128,8 +147,6 @@ ELSE
  CASE('GCTRANS  ')!identical to BasParamLABEL(GCTBasParam)
     !build as a transformation basis in trilevel algorithm
     call LSQUIT('GCTRANS no legal keyword in Build_Basis.',lupri)  
- CASE('CABSP    ') !identical to BasParamLABEL(CAPBasParam)
-    BASINFO%Labelindex = CAPBasParam
  CASE DEFAULT
     WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
     WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'
@@ -998,7 +1015,7 @@ CHARACTER(len=10)   :: atname(74)
 atname = (/'HYDROGEN  ','HELIUM    ','LITHIUM   ',&
      & 'BERYLLIUM ','BORON     ','CARBON    ','NITROGEN  ',&
      & 'OXYGEN    ','FLUORINE  ','NEON      ','SODIUM    ',&
-     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHORUS',&
+     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHOROU',&
      & 'SULFUR    ','CHLORINE  ','ARGON     ','POTASSIUM ',&
      & 'CALCIUM   ','SCANDIUM  ','TITANIUM  ','VANADIUM  ',&
      & 'CHROMIUM  ','MANGANESE ','IRON      ','COBALT    ',&
@@ -1084,7 +1101,7 @@ CHARACTER(len=10)   :: atname(74)
 atname = (/'HYDROGEN  ','HELIUM    ','LITHIUM   ',&
      & 'BERYLLIUM ','BORON     ','CARBON    ','NITROGEN  ',&
      & 'OXYGEN    ','FLUORINE  ','NEON      ','SODIUM    ',&
-     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHORUS',&
+     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHOROU',&
      & 'SULFUR    ','CHLORINE  ','ARGON     ','POTASSIUM ',&
      & 'CALCIUM   ','SCANDIUM  ','TITANIUM  ','VANADIUM  ',&
      & 'CHROMIUM  ','MANGANESE ','IRON      ','COBALT    ',&
@@ -1204,7 +1221,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   LOGICAL               :: POLFUN,CONTRACTED,segmentedFormat,BLANK,FOUNDnewContractionCoeffLine
   INTEGER               :: atype,nang,nprim,nOrbital,IAUG,NUMNUMOLD
   INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers,LIST(2,20)
-  CHARACTER(len=280)    :: STRING
+  CHARACTER(len=500)    :: STRING
   CHARACTER(len=1)      :: SIGN
   real(realk)           :: exmin2,exmin1,PI,Exp,PIPPI
   CHARACTER(len=1)      :: SPDFGH(10)=(/'S','P','D','F','G','H','I','J','K','L'/) 
@@ -1215,11 +1232,11 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   J = 0
   DO WHILE( J .LT. nprim) 
      ! Reading the primitive and contracted coeffecients
-     READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
+     READ(LUBAS, '(A500)', IOSTAT = IOS) STRING
      IF(ios /= 0)THEN
         WRITE (LUPRI,'(A)') ' Error in basisset file'
         WRITE(lupri,'(A)')'This could mean that the line containing exponents'
-        WRITE(lupri,'(A)')'and contraction coefficients fill more than 280 characters'
+        WRITE(lupri,'(A)')'and contraction coefficients fill more than 500 characters'
         WRITE(lupri,'(A)')'Which means you need to manually split the line'
         CALL LSQUIT('Error in basisset file',lupri)
      ELSE
@@ -1263,7 +1280,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     !WRITE(LUPRI,*) 'INSIDE UNCONTRACTED'
                     !uncontracted basis set are forced uncontracted with .UNCONT
                     IF(NUMBER_OF_LINES.EQ.1)THEN
-                       READ (STRING, '(F16.9)') Exp
+                       READ (STRING, *) Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%Exponents(1) = Exp
                        BASINFO%ATOMTYPE(atype)%SHELL(nang)%segment(J)%elms(1)= &
                             &(4*Exp)**(0.5E0_realk*nang+0.25E0_realk)*PIPPI 
@@ -1289,6 +1306,13 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                        !         READ (STRING,'(F16.9,6F12.9)')&
                        !              &(Contractionmatrix%elms(J+(M-1)*(nprim+IAUG)),&
                        !              & M = 6 + (I-2)*7 +1, KNTORB)
+                       IF(J+(nNUMBERS+KNTORB-1)*(nprim+IAUG).GT.SIZE(ContractionMatrix%elms))THEN
+                          WRITE (LUPRI,'(A)') ' Error in basisset file'
+                          WRITE(lupri,'(A)')'This most likely means that the line containing exponents'
+                          WRITE(lupri,'(A)')'and contraction coefficients fill more than 500 characters'
+                          WRITE(lupri,'(A)')'Which means you need to manually split the line'
+                          CALL LSQUIT('Error in basisset file',lupri)
+                       ENDIF
                        DO I = 1, nNUMBERS
                           READ (STRING(LIST(1,I):LIST(2,I)),*) ContractionMatrix%elms(J+(I+KNTORB-1)*(nprim+IAUG))
                        ENDDO
@@ -1299,7 +1323,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     IF (segmentedFormat) exit
                     FOUNDnewContractionCoeffLine = .FALSE.
                     DO WHILE(.NOT.FOUNDnewContractionCoeffLine)
-                       READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
+                       READ(LUBAS, '(A500)', IOSTAT = IOS) STRING
                        IF(ios /= 0)THEN
                           WRITE (LUPRI,'(2A)') ' Error in basisset file'
                           CALL LSQUIT('Error in basisset file',lupri)
@@ -1407,7 +1431,7 @@ END SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS
 
 subroutine determine_nNumbers_in_string(STRING,nNUMBERS,LIST)
   implicit none
-  CHARACTER(len=280)    :: STRING
+  CHARACTER(len=500)    :: STRING
   integer :: nNUMBERS,LIST(2,20)
   !
   logical :: INSIDENUMBER,SCIENTIFIC

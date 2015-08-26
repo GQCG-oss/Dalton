@@ -9,7 +9,8 @@ integer,pointer :: BATCH(:)
 end type intbatch
 
 TYPE INTEGRALOUTPUT
-REAL(REALK),pointer    :: ResultMat(:,:,:,:,:) !Only for tco, otherwise obsolete
+REAL(REALK),pointer    :: ResultMat(:,:,:,:,:) 
+REAL(REALK),pointer    :: Result3D(:,:,:) 
 type(lstensor),pointer :: screenTensor
 type(lstensor),pointer :: resultTensor
 type(lstensor)         :: RHScont
@@ -17,6 +18,7 @@ Integer,pointer        :: postprocess(:) !see parameters in ls_parameters.f90
 LOGICAL                :: memdistResultTensor
 LOGICAL                :: doGRAD
 Integer                :: ndim(5)
+Integer                :: ndim3D(4)
 ! buffer 
 LOGICAL                :: USEBUFMM    ! flag for using/not using a buffer 
                                       !to write multipole moments to file
@@ -34,6 +36,7 @@ INTEGER                :: LUITNM, LUITNMR ! logical units for the integer and th
 logical                :: decpacked
 logical                :: decpacked2
 logical                :: decpackedK
+logical                :: FullAlphaCD
 logical                :: RealGabMatrix
 real(realk)            :: exchangeFactor
 END TYPE INTEGRALOUTPUT

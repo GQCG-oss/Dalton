@@ -1,0 +1,45 @@
+#!/usr/bin/env python 
+
+
+import sys
+import os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import runtest_dalton
+
+output_filter = runtest_dalton.Filter()
+output_test = runtest_dalton.TestRun(__file__, sys.argv)
+
+# Parallel quits
+
+# Basis
+output_filter.add(string="1s1p", abs_tolerance=0)
+output_filter.add(string="total:", abs_tolerance=0)
+
+# Geometry
+output_filter.add(from_string="Total number of coordinates:", to_re="^$", abs_tolerance=1e-8)
+
+# Symmetry
+output_filter.add(string="in each symmetry")
+
+# Energy
+output_filter.add(string="Final MCSCF energy", rel_tolerance=1e-8)
+
+# Gradient vector
+output_filter.add(from_string="Z operator", to_string="@", rel_tolerance=1e-8)
+
+# Transition moment
+output_filter.add(re="TRANSITION MOMENT:", abs_tolerance=1e-6)
+
+# Excitation energy
+output_filter.add(re="Excitation.*au", abs_tolerance=1e-6)
+
+# Spin-orbit coupling constants
+output_filter.add(re="Z2SPNORB.*cm-1", abs_tolerance=1e-4)
+
+
+#
+output_test.run(
+    ['singci.dal'], ['h.mol'], f={'out': output_filter},
+    accepted_errors=['not implemented for parallel calculations'],
+    )

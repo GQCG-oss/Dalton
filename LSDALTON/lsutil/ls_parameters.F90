@@ -14,6 +14,7 @@ MODULE lsparameters
   integer,parameter :: AOelField = 9
   integer,parameter :: AOadmm = 10  !ADMM basis
   integer,parameter :: AONuclearSpec = 11 !single Nuclei
+  integer,parameter :: AOdfCABO = 12
 ! THESE ARE STRING SPECIFIERS FOR THE Operator
   integer,parameter :: CoulombOperator = 1
   integer,parameter :: OverlapOperator = 2
@@ -45,6 +46,7 @@ MODULE lsparameters
   integer,parameter :: LONMOMOperator = 28
   integer,parameter :: DCM1Operator = 29
   integer,parameter :: DCM2Operator = 30
+  integer,parameter :: GGemQuaOperator = 31
 ! THESE ARE STRING SPECIFIERS FOR THE integralType
   integer,parameter :: ContractedInttype = 1
   integer,parameter :: PrimitiveInttype = 2
@@ -61,6 +63,7 @@ MODULE lsparameters
   integer,parameter :: GeoDerivCoulombSpec = 10
   integer,parameter :: GeoDerivLHSSpec     = 11
   integer,parameter :: GeoDerivRHSSpec     = 12
+  integer,parameter :: magderivEcontribSpec= 13
 
 ! THESE ARE MPI JOB SPECIFIERS 
   integer,parameter :: MATRIXTY                     =  1
@@ -92,50 +95,53 @@ MODULE lsparameters
   integer,parameter :: QUITMOREJOBS                 = 27
   integer,parameter :: QUITNOMOREJOBS               = 28
   integer,parameter :: LSMPITEST                    = 29
-  integer,parameter :: ARRAYTEST                    = 30
+
   integer,parameter :: PDMA4SLV                     = 31
   integer,parameter :: LSMPI_IIDFTKSME              = 32
-#ifdef MOD_UNRELEASED
-  integer,parameter :: CCSDPTSLAVE                  = 33
-#endif
+  integer,parameter :: CCSDPTSLAVE_INFO             = 33
   integer,parameter :: CCSDSLV4E2                   = 34
   integer,parameter :: DFTADDFU                     = 35
   integer,parameter :: LSMPI_IIDFTABSVALOVERLAP     = 36
-  integer,parameter :: GIVE_BIRTH                   = 37
-  integer,parameter :: LSPDM_GIVE_BIRTH             = 38
-  integer,parameter :: SLAVES_SHUT_DOWN_CHILD       = 39
-  integer,parameter :: LSPDM_SLAVES_SHUT_DOWN_CHILD = 40
-  integer,parameter :: CHILD_SHUT_DOWN              = 41
-  integer,parameter :: JOB_LSPDM_INIT_GLOBAL_BUFFER = 42
-  integer,parameter :: JOB_LSPDM_FREE_GLOBAL_BUFFER = 43
-  integer,parameter :: CCGETGMO                     = 44
-  integer,parameter :: RPAGETRESIDUAL               = 45
-  integer,parameter :: MOCCSDDATA                   = 46
-  integer,parameter :: MO_INTEGRAL_SIMPLE           = 47
-  integer,parameter :: DEC_SETTING_TO_SLAVES        = 48
-  integer,parameter :: INITSLAVETIME                = 49
-  integer,parameter :: GETSLAVETIME                 = 50
-  integer,parameter :: RIMP2INAMP                   = 51
-  integer,parameter :: SIMPLE_MP2_PAR               = 52
-  integer,parameter :: RPAGETFOCK                   = 53
-  integer,parameter :: SET_SPLIT_MPI_MSG            = 54
-  integer,parameter :: SET_MAX_SIZE_ONE_SIDED       = 55
-  integer,parameter :: RIMP2FULL                    = 56
-  integer,parameter :: SET_GPUMAXMEM                = 57
-  integer,parameter :: SET_TENSOR_BACKEND_TRUE      = 58
-  integer,parameter :: SET_TENSOR_DEBUG_TRUE        = 59
-  integer,parameter :: F12_INTEGRAL_CALCULATION     = 60
-  integer,parameter :: CANONMP2FULL                 = 61
-  integer,parameter :: PDMMGRIDINIT                 = 62
-  integer,parameter :: PDMMGRIDEXIT                 = 63
-  integer,parameter :: PDMMSLAVE                    = 64
-  integer,parameter :: MATRIXTY2                    = 65
-  integer,parameter :: SET_TENSOR_ALWAYS_SYNC_TRUE  = 66
+  integer,parameter :: CCGETGMO                     = 37
+  integer,parameter :: RPAGETRESIDUAL               = 38
+  integer,parameter :: MOCCSDDATA                   = 39
+  integer,parameter :: MO_INTEGRAL_SIMPLE           = 40
+  integer,parameter :: DEC_SETTING_TO_SLAVES        = 41
+  integer,parameter :: INITSLAVETIME                = 42
+  integer,parameter :: GETSLAVETIME                 = 43
+  integer,parameter :: RIMP2INAMP                   = 44
+  integer,parameter :: SIMPLE_MP2_PAR               = 45
+  integer,parameter :: RPAGETFOCK                   = 46
+  integer,parameter :: SET_SPLIT_MPI_MSG            = 47
+  integer,parameter :: SET_MAX_SIZE_ONE_SIDED       = 48
+  integer,parameter :: RIMP2FULL                    = 49
+  integer,parameter :: SET_GPUMAXMEM                = 50
+  integer,parameter :: SET_TENSOR_BACKEND_TRUE      = 51
+  integer,parameter :: SET_TENSOR_DEBUG_TRUE        = 52
+  integer,parameter :: F12_INTEGRAL_CALCULATION     = 53
+  integer,parameter :: CANONMP2FULL                 = 54
+  integer,parameter :: PDMMGRIDINIT                 = 55
+  integer,parameter :: PDMMGRIDEXIT                 = 56
+  integer,parameter :: PDMMSLAVE                    = 57
+  integer,parameter :: MATRIXTY2                    = 58
+  integer,parameter :: SET_TENSOR_ALWAYS_SYNC_TRUE  = 59
+  integer,parameter :: INIT_BG_BUF                  = 60
+  integer,parameter :: FREE_BG_BUF                  = 61
+  integer,parameter :: CHANGE_BG_BUF                = 62
+  integer,parameter :: LSTHCRIMP2INAMP              = 63
+  integer,parameter :: LSTHCRIMP2FULL               = 64
+  integer,parameter :: CCSDPTSLAVE_WORK             = 65
+  integer,parameter :: SET_TENSOR_SEG_LENGTH        = 66
+  integer,parameter :: DECRIMP2GRAD                 = 67
+  integer,parameter :: RIMP2F12Ccoup                = 68
+  integer,parameter :: RIMP2F12FULL                 = 69
+  integer,parameter :: DECRIMP2F12                  = 70
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
   integer,parameter :: AntiSymmetricPostprocess=3
+
 
   real(realk) :: GPUMAXMEM
 save
@@ -216,6 +222,8 @@ subroutine param_oper_paramfromString(Oper,Operparam)
      operparam = GGemCouOperator
   CASE('GGemGrd') 
      operparam = GGemGrdOperator
+  CASE('GGemQua') 
+     operparam = GGemQuaOperator
   CASE('MAGMOM ') 
      operparam = MAGMOMOperator
   CASE('NST    ') 
@@ -287,6 +295,8 @@ subroutine param_oper_Stringfromparam(Oper,Operparam)
      oper = 'GGemCou'
   CASE(GGemGrdOperator) 
      oper = 'GGemGrd'
+  CASE(GGemQuaOperator) 
+     oper = 'GGemQua'
   CASE(MAGMOMOperator) 
      oper = 'MAGMOM '
   CASE(NSTOperator) 
@@ -321,6 +331,8 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
      AO1 = 'pCharge '
   CASE(AOdfCABS) 
      AO1 = 'CABS    '
+  CASE(AOdfCABO) 
+     AO1 = 'CABSonly'
   CASE(AOdfJK) 
      AO1 = 'JKAUX   '
   CASE(AOVAL) 

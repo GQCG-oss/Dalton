@@ -445,7 +445,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/dft/dft_mos.F
     DALTON/dft/dft_rho.F
     DALTON/dft/dso_cb.F
-    DALTON/embedding/pe_dalton_interfaces.F
     DALTON/eri/eri2aob.F
     DALTON/eri/eri2ave.F
     DALTON/eri/eri2car1.F
@@ -765,7 +764,8 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
-    )
+    DALTON/pelib/pelib_interface.F90
+   )
 if(ENABLE_PCMSOLVER)
    set(DAL_PCM_SOURCES
     DALTON/pcm/pcm_scf.F90
@@ -776,11 +776,6 @@ if(ENABLE_PCMSOLVER)
     DALTON/pcm/pcm_utils.F90
    )
    set(DALTON_FREE_FORTRAN_SOURCES "${DALTON_FREE_FORTRAN_SOURCES} ${DAL_PCM_SOURCES}")
-endif()
-# interface of QMatrix library
-if(ENABLE_QMATRIX)
-    set(DAL_QMATRIX_SOURCES
-        DALTON/qmatrix/dalton_qmatrix.F90)
 endif()
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F

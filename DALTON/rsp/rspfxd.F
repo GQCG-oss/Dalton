@@ -181,7 +181,7 @@ C
          IF (IKLVL.EQ.0) THEN
             IPDA = IPDENS(IGRSPI,0)
             IPDB = IPDENS(0,IGRSPI)
-            CALL EXTRAC(H2,WRK(KH2XAC))
+            CALL GETAC1(H2,WRK(KH2XAC))
             CALL FQDIS1(INTSYM,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                  WRK(KFI),FA,QA,QB,H2,WRK(KH2XAC),H2AX,
      *                  DEN1,DEN2(IPDA),DEN2(IPDB),ISYMDN,PVDEN,
@@ -206,7 +206,7 @@ C
             END IF
                IPDA = IPDENS(MULSP(IGRSPI,ISPIN1),ISPIN2)
                IPDB = IPDENS(ISPIN1,MULSP(IGRSPI,ISPIN2))
-               CALL EXTRAC(H2X,WRK(KH2XAC))
+               CALL GETAC1(H2X,WRK(KH2XAC))
                CALL FQDIS1(INTSY1,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                     FI,FA,QA,QB,H2X,WRK(KH2XAC),H2AX,
      *                     DEN1,DEN2(IPDA),DEN2(IPDB),ISYMDN,PVDEN,
@@ -254,7 +254,7 @@ C
                   IF (ISP12.NE.IGRSPI) CALL QUIT('RSPFXD:SPIN ERROR')
                   IPDA = IPDENS(MULSP(IGRSPI,ISP12),0)
                   IPDB = IPDENS(ISP12,IGRSPI)
-                  CALL EXTRAC(H2,WRK(KH2XAC))
+                  CALL GETAC1(H2,WRK(KH2XAC))
                   CALL FQDIS1(INTSY2,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                        FI,FA,QA,QB,H2,WRK(KH2XAC),H2AX,
      *                        DEN1,DEN2(IPDA),DEN2(IPDB),ISYMDN,PVDEN,
@@ -266,7 +266,7 @@ C Transform right (~|~)
 C
                IPDA = IPDENS(MULSP(IGRSPI,ISPIN1),ISPIN2)
                IPDB = IPDENS(ISPIN1,MULSP(IGRSPI,ISPIN2))
-               CALL EXTRAC(H2X,WRK(KH2XAC))
+               CALL GETAC1(H2X,WRK(KH2XAC))
                CALL FQDIS2(INTSY1,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                     FI,FA,QA,QB,H2X,WRK(KH2XAC),H2AX(1,2),
      *                     ZYMAT2,ISYM2,
@@ -340,7 +340,7 @@ C
                IF (ISP123.NE.IGRSPI) CALL QUIT('RSPFXD:SPIN ERROR')
                IPDA = IPDENS(MULSP(IGRSPI,ISP123),0)
                IPDB = IPDENS(ISP123,IGRSPI)
-               CALL EXTRAC(WRK(KH2),WRK(KH2XAC))
+               CALL GETAC1(WRK(KH2),WRK(KH2XAC))
                CALL FQDIS1(INTSY3,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                     FI,FA,QA,QB,WRK(KH2),WRK(KH2XAC),H2AX,
      *                     DEN1,DEN2(IPDA),DEN2(IPDB),ISYMDN,PVDEN,
@@ -353,7 +353,7 @@ C
             ISP12=MULSP(ISPIN1,ISPIN2)
             IPDA = IPDENS(MULSP(IGRSPI,ISP12),ISPIN3)
             IPDB = IPDENS(ISP12,MULSP(IGRSPI,ISPIN3))
-            CALL EXTRAC(H2X,WRK(KH2XAC))
+            CALL GETAC1(H2X,WRK(KH2XAC))
             CALL FQDIS2(INTSY2,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                  FI,FA,QA,QB,H2X,WRK(KH2XAC),H2AX(1,2),
      *                  ZYMAT3,ISYM3,
@@ -405,7 +405,7 @@ C
             ISP13=MULSP(ISPIN1,ISPIN3)
             IPDA = IPDENS(MULSP(IGRSPI,ISP13),ISPIN2)
             IPDB = IPDENS(ISP13,MULSP(IGRSPI,ISPIN2))
-            CALL EXTRAC(H2X,WRK(KH2XAC))
+            CALL GETAC1(H2X,WRK(KH2XAC))
             CALL FQDIS2(INTSY2,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                  FI,FA,QA,QB,H2X,WRK(KH2XAC),H2AX(1,3),
      *                  ZYMAT2,ISYM2,
@@ -457,7 +457,7 @@ C
             ISP23=MULSP(ISPIN2,ISPIN3)
             IPDA = IPDENS(MULSP(IGRSPI,ISP23),ISPIN1)
             IPDB = IPDENS(ISP23,MULSP(IGRSPI,ISPIN1))
-            CALL EXTRAC(H2X,WRK(KH2XAC))
+            CALL GETAC1(H2X,WRK(KH2XAC))
             CALL FQDIS2(INTSY2,IC,ID,ICDTYP,ICDSYM,ICSYM,IDSYM,
      *                  FI,FA,QA,QB,H2X,WRK(KH2XAC),H2AX(1,4),
      *                  ZYMAT1,ISYM1,
@@ -2216,26 +2216,6 @@ C
          END IF
       END IF
       CALL QEXIT('QXAD2')
-      RETURN
-      END
-C  /* Deck extrac */
-      SUBROUTINE EXTRAC(H,HAC)
-C
-C Extract the active part of H into HAC
-C
-#include "implicit.h"
-#include "maxorb.h"
-#include "maxash.h"
-#include "inforb.h"
-#include "infind.h"
-      DIMENSION H(NORBT,NORBT), HAC(NASHT,NASHT)
-      DO 110 JW = 1, NASHT
-         JX = ISX(NISHT + JW)
-         DO 111 IW = 1, NASHT
-            IX = ISX(NISHT + IW)
-            HAC(IW,JW) = H(IX,JX)
-111      CONTINUE
-110   CONTINUE
       RETURN
       END
 C  /* Deck disac1 */

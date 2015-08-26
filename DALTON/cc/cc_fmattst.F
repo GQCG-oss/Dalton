@@ -59,7 +59,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccroper.h"
 #include "ccinftap.h"
 #include "r12int.h"

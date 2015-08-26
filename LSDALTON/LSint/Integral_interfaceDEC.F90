@@ -18,7 +18,8 @@ MODULE IntegralInterfaceDEC
   use ao_typetype, only: aoitem, BATCHORBITALINFO
   use ao_type, only: free_aoitem, freebatchorbitalinfo, initbatchorbitalinfo, &
        & setbatchorbitalinfo
-  use BUILDAOBATCH, only: BUILD_SHELLBATCH_AO,determinebatchindexandsize
+  use BUILDAOBATCH, only: BUILD_SHELLBATCH_AO,determinebatchindexandsize,&
+       & determinenaobatches
   use lstiming
   use memory_handling,only: mem_alloc, mem_dealloc
   use basis_typetype, only: BASISSETINFO,RegBasParam,CABBasParam
@@ -54,7 +55,7 @@ logical,pointer     :: OLDsameBAS(:,:)
 real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 dummy=1
 IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
    !set geminal
@@ -62,7 +63,8 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       nGaussian = 6
       nG2 = nGaussian*(nGaussian+1)/2
       GGem = 0E0_realk
-      call stgfit(1E0_realk,nGaussian,exponent,coeff)
+      slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+      call stgfit(slater,nGaussian,exponent,coeff)
       IJ=0
       DO I=1,nGaussian
          DO J=1,I
@@ -96,7 +98,7 @@ IF(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)THEN
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
    ELSE IF (intSpec(5).EQ.'2') THEN
       ! The Gaussian geminal operator squared g^2
-      oper = GGemOperator
+      oper = GGemQuaOperator
       call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
    ELSE
       call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -219,24 +221,29 @@ Integer,intent(IN)               :: batchindex1(nBatches1),batchindex2(nBatches2
 Integer,intent(in)               :: AO(4)
 !
 TYPE(AOITEM)            :: AObatch1,AObatch2
-integer :: dim1,dim2,jBatch,iBatch,I,AObatchdim1,AObatchdim2
-integer :: AOT1batch2,AOT1batch1,jBatch1,iBatch1,jbat,ibat
+integer :: dim1,dim2,jBatch,iBatch,I,AObatchdim1,AObatchdim2,jbat2,ibat2
+integer :: AOT1batch2,AOT1batch1,jBatch1,iBatch1,jbat,ibat,nAObatches
 character(len=9) :: Jlabel,Ilabel
-logical :: FoundInMem,FoundOnDisk,uncont,intnrm
+logical :: FoundInMem,FoundOnDisk,uncont,intnrm,AddBasis1,AddBasis2
 type(lstensor),pointer :: MasterGAB
 type(lstensor),pointer :: GAB
-TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
+TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2,AObasis3,AObasis4
 IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
    MasterGAB => DECSCREEN%masterGabRHS
    uncont = .FALSE.
    intnrm = .FALSE.
    IF(.NOT.ASSOCIATED(DECSCREEN%batchGab))CALL LSQUIT('DECSCREEN%batchGab not associated',-1)
    AOT1batch2 = 0
+   AddBasis1 = .FALSE.
 
    SELECT CASE(AO(3))
    CASE (AORegular)
       AObasis1 => setting%basis(3)%p%BINFO(RegBasParam)
    CASE (AOdfCABS)
+      AObasis1 => setting%basis(3)%p%BINFO(RegBasParam)
+      AObasis2 => setting%basis(3)%p%BINFO(CABBasParam)
+      AddBasis1 = .TRUE.
+   CASE (AOdfCABO) !CABS only 
       AObasis1 => setting%basis(3)%p%BINFO(CABBasParam)
    CASE DEFAULT
       print*,'case: ',AO(3)
@@ -244,11 +251,16 @@ IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
       CALL LSQuit('Programming error: Not a case in II_getBatchOrbitalScreen2A!',lupri)
    END SELECT
    
+   AddBasis2 = .FALSE.
    SELECT CASE(AO(4))
    CASE (AORegular)
-      AObasis2 => setting%basis(4)%p%BINFO(RegBasParam)
+      AObasis3 => setting%basis(4)%p%BINFO(RegBasParam)
    CASE (AOdfCABS)
-      AObasis2 => setting%basis(4)%p%BINFO(CABBasParam)
+      AObasis3 => setting%basis(4)%p%BINFO(RegBasParam)
+      AObasis4 => setting%basis(4)%p%BINFO(CABBasParam)
+      AddBasis2 = .TRUE.
+   CASE (AOdfCABO) !CABS only
+      AObasis3 => setting%basis(4)%p%BINFO(CABBasParam)
    CASE DEFAULT
       print*,'case: ',AO(4)
       WRITE(luerr,*) 'case: ',AO(4)
@@ -258,10 +270,25 @@ IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
    DO jBatch1=1,nBatches2
       dim2 = batchdim2(jBatch1)
       jbat = batchindex2(jBatch1)
-
-      call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
-           & Setting%molecule(4)%p,aobasis2,AObatch2,&
-           & uncont,intnrm,jBat,AObatchdim2,batchsize2(jBatch1))
+      
+      IF(AddBasis2)THEN
+         Call determinenAObatches(nAObatches,LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+              & Setting%molecule(4)%p,aobasis3,uncont,intnrm)
+         IF(jbat.LE.nAObatches)THEN         
+            call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+                 & Setting%molecule(4)%p,aobasis3,AObatch2,&
+                 & uncont,intnrm,jBat,AObatchdim2,batchsize2(jBatch1))
+         ELSE
+            jBat2=jbat-nAObatches
+            call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+                 & Setting%molecule(4)%p,aobasis4,AObatch2,&
+                 & uncont,intnrm,jBat2,AObatchdim2,batchsize2(jBatch1))
+         ENDIF
+      ELSE
+         call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+              & Setting%molecule(4)%p,aobasis3,AObatch2,&
+              & uncont,intnrm,jBat,AObatchdim2,batchsize2(jBatch1))
+      ENDIF
       IF(AObatchdim2.NE.dim2)CALL LSQUIT(' typedef_getBatchOrbitalScreen2 mismatch A',-1)
       IF(batchsize2(jBatch1).NE.AObatch2%nbatches)CALL LSQUIT(' typedef_getBatchOrbitalScreen2 mismatch B',-1)
 
@@ -271,9 +298,24 @@ IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
          dim1 = batchdim1(iBatch1)      
          ibat = batchindex1(iBatch1)
 
-         call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
-              & Setting%molecule(3)%p,aobasis1,AObatch1,&
-              & uncont,intnrm,iBat,AObatchdim1,batchsize1(iBatch1))
+         IF(AddBasis1)THEN
+            Call determinenAObatches(nAObatches,LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+                 & Setting%molecule(4)%p,aobasis1,uncont,intnrm)
+            IF(ibat.LE.nAObatches)THEN         
+               call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+                    & Setting%molecule(4)%p,aobasis1,AObatch1,&
+                    & uncont,intnrm,iBat,AObatchdim1,batchsize1(iBatch1))
+            ELSE
+               iBat2=iBat-nAObatches
+               call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+                    & Setting%molecule(3)%p,aobasis2,AObatch1,&
+                    & uncont,intnrm,iBat2,AObatchdim1,batchsize1(iBatch1))
+            ENDIF
+         ELSE
+            call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
+                 & Setting%molecule(4)%p,aobasis1,AObatch1,&
+                 & uncont,intnrm,iBat,AObatchdim1,batchsize1(iBatch1))
+         ENDIF
          IF(AObatchdim1.NE.dim1)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch A2',-1)
          IF(batchsize1(iBatch1).NE.AObatch1%nbatches)CALL LSQUIT(' typedef_getBatchOrbitalScreen mismatch B2',-1)
          
@@ -361,10 +403,10 @@ TYPE(AOITEM)            :: AObatch1
 integer :: dim1,jBatch,iBatch,I,AObatchdim1
 integer :: AOT1batch1,jBatch1,iBatch1,jbat,ibat
 character(len=9) :: Jlabel,Ilabel
-logical :: FoundInMem,FoundOnDisk,uncont,intnrm
+logical :: FoundInMem,FoundOnDisk,uncont,intnrm,AddBasis
 type(lstensor),pointer :: MasterGAB
 type(lstensor),pointer :: GAB
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis,AObasis2
 IF(ASSOCIATED(DECSCREEN%masterGabLHS))THEN
    MasterGAB => DECSCREEN%masterGabLHS
 ELSE
@@ -378,11 +420,16 @@ intnrm = .FALSE.
 !LHS   
 IF(.NOT.ASSOCIATED(DECSCREEN%batchGabKLHS))CALL LSQUIT('DECSCREEN%batchGabKLHS not assocd',-1)
 AOT1batch1 = 0
+AddBasis = .FALSE.
 
 SELECT CASE(AOspec)
 CASE (AORegular)
    AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 CASE (AOdfCABS)
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   AddBasis = .TRUE.
+CASE (AOdfCABO) !CABS only
    AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 CASE DEFAULT
    print*,'case: ',AOspec
@@ -396,6 +443,9 @@ DO iBatch1=1,nBatches1
    call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
         & Setting%molecule(1)%p,aobasis,AObatch1,&
         & uncont,intnrm,iBat,AObatchdim1,batchsize1(iBatch1))
+   IF(AddBasis)THEN
+      call lsquit('BUILD_SHELLBATCH_AO not implemented with extend, contact TK',-1)
+   ENDIF
    nullify(DECSCREEN%batchGabKLHS(iBatch1)%p)         
    allocate(DECSCREEN%batchGabKLHS(iBatch1)%p)         
    call build_BatchGabK(AOfull1,AObatch1,iBatch1,AOT1batch1,dim1,&
@@ -421,10 +471,10 @@ TYPE(AOITEM)            :: AObatch2
 integer :: dim2,jBatch,iBatch,I,AObatchdim2
 integer :: AOT1batch2,jBatch1,jbat
 character(len=9) :: Jlabel,Ilabel
-logical :: FoundInMem,FoundOnDisk,uncont,intnrm
+logical :: FoundInMem,FoundOnDisk,uncont,intnrm,AddBasis
 type(lstensor),pointer :: MasterGAB
 type(lstensor),pointer :: GAB
-TYPE(BASISSETINFO),pointer :: AObasis
+TYPE(BASISSETINFO),pointer :: AObasis,AObasis2
 IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
    MasterGAB => DECSCREEN%masterGabRHS
 ELSE
@@ -432,11 +482,15 @@ ELSE
       call lsquit('error in typedef_getBatchOrbitalScreenKRHS ',lupri)
    ENDIF
 ENDIF
-
+AddBasis = .False.
 SELECT CASE(AOspec)
 CASE (AORegular)
    AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 CASE (AOdfCABS)
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
+   AObasis2 => setting%basis(1)%p%BINFO(CABBasParam)
+   AddBasis = .TRUE.
+CASE (AOdfCABO) !CABS only
    AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 CASE DEFAULT
    print*,'case: ',AOspec
@@ -455,6 +509,9 @@ DO jBatch1=1,nBatches2
    call BUILD_SHELLBATCH_AO(LUPRI,SETTING%SCHEME,SETTING%SCHEME%AOPRINT,&
         & Setting%molecule(1)%p,aobasis,AObatch2,&
         & uncont,intnrm,jBat,AObatchdim2,batchsize2(jBatch1))
+   IF(AddBasis)THEN
+      call lsquit('BUILD_SHELLBATCH_AO not implemented with extend, contact TK',-1)
+   ENDIF
    nullify(DECSCREEN%batchGabKRHS(jBatch1)%p)         
    allocate(DECSCREEN%batchGabKRHS(jBatch1)%p)         
    call build_BatchGabK(AOfull2,AObatch2,jBatch1,AOT1batch2,dim2,&
@@ -505,14 +562,15 @@ real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,k,l,IJ
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 type(lstensor),pointer :: tmpP
 !call time_II_operations1()
 IF (intSpec(5).NE.'C') THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -546,7 +604,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -691,14 +749,15 @@ real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,k,l,IJ
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 type(lstensor),pointer :: tmpP
 call time_II_operations1()
 IF (intSpec(5).NE.'C') THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -732,7 +791,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -886,14 +945,15 @@ real(realk)         :: coeff(6),exponent(6),tmp
 real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 integer             :: iunit,k,l,IJ
 integer             :: nGaussian,nG2
-real(realk)         :: GGem
+real(realk)         :: GGem,slater
 type(lstensor),pointer :: tmpP
 call time_II_operations1()
 IF (intSpec(5).NE.'C') THEN
    nGaussian = 6
    nG2 = nGaussian*(nGaussian+1)/2
    GGem = 0E0_realk
-   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+   call stgfit(slater,nGaussian,exponent,coeff)
    IJ=0
    DO I=1,nGaussian
       DO J=1,I
@@ -927,7 +987,7 @@ ELSE IF (intSpec(5).EQ.'D') THEN
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE IF (intSpec(5).EQ.'2') THEN
    ! The Gaussian geminal operator squared g^2
-   oper = GGemOperator
+   oper = GGemQuaOperator
    call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 ELSE
    call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -1082,7 +1142,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
   real(realk)         :: coeff(6),exponent(6),tmp
   real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
   integer             :: nGaussian,nG2
-  real(realk)         :: GGem
+  real(realk)         :: GGem,slater
   call time_II_operations1()
   IF(FULLRHS)THEN
      !test
@@ -1099,7 +1159,8 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
         nGaussian = 6
         nG2 = nGaussian*(nGaussian+1)/2
         GGem = 0E0_realk
-        call stgfit(1E0_realk,nGaussian,exponent,coeff)
+        slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+        call stgfit(slater,nGaussian,exponent,coeff)
         IJ=0
         DO I=1,nGaussian
            DO J=1,I
@@ -1133,7 +1194,7 @@ SUBROUTINE II_GET_DECPACKED4CENTER_K_ERI(LUPRI,LUERR,SETTING,&
         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
      ELSE IF (intSpec(5).EQ.'2') THEN
         ! The Gaussian geminal operator squared g^2
-        oper = GGemOperator
+        oper = GGemQuaOperator
         call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
      ELSE
         call lsquit('Error in specification of operator in InitGaussianGeminal',-1)
@@ -1357,12 +1418,13 @@ END SUBROUTINE II_GET_ERI_INTEGRALBLOCK
 !!$  real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
 !!$  integer             :: iunit,k,l,IJ
 !!$  integer             :: nGaussian,nG2
-!!$  real(realk)         :: GGem
+!!$  real(realk)         :: GGem,slater
 !!$     IF (intSpec(5).NE.'C') THEN
 !!$        nGaussian = 6
 !!$        nG2 = nGaussian*(nGaussian+1)/2
 !!$        GGem = 0E0_realk
-!!$        call stgfit(1E0_realk,nGaussian,exponent,coeff)
+!!$        slater = setting%basis(1)%p%BINFO(RegBasParam)%GeminalScalingFactor
+!!$        call stgfit(slater,nGaussian,exponent,coeff)
 !!$        IJ=0
 !!$        DO I=1,nGaussian
 !!$           DO J=1,I
@@ -1393,7 +1455,7 @@ END SUBROUTINE II_GET_ERI_INTEGRALBLOCK
 !!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 !!$     ELSE IF (intSpec(5).EQ.'2') THEN
 !!$        ! The Gaussian geminal operator squared g^2
-!!$        oper = GGemOperator
+!!$        oper = GGemQuaOperator
 !!$        call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
 !!$     ELSE
 !!$        call lsquit('Error in specification of operator in InitGaussianGeminal',-1)

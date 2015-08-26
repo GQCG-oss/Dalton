@@ -99,6 +99,7 @@ INTEGER :: I
 
 write(lun)BASISSET%natomtypes
 write(lun)BASISSET%DunningsBasis
+write(lun)BASISSET%GeminalScalingFactor
 write(lun)BASISSET%GCbasis
 write(lun)BASISSET%Spherical
 write(lun)BASISSET%GCont
@@ -266,6 +267,7 @@ call nullifybasisset(BASISSET)
 read(lun)BASISSET%natomtypes
 IF(BASISSET%natomtypes.GT. 0)THEN
    read(lun)BASISSET%DunningsBasis
+   read(lun)BASISSET%GeminalScalingFactor
    read(lun)BASISSET%GCbasis
    read(lun)BASISSET%Spherical
    read(lun)BASISSET%GCont
@@ -415,6 +417,7 @@ SUBROUTINE alloc_and_take_subbasissetinfo(OLDBAS,itype,NEWBAS)
   nprimbast = 0
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
+  NEWBAS%GeminalScalingFactor = OLDBAS%GeminalScalingFactor
   NEWBAS%GCbasis = OLDBAS%GCbasis
   NEWBAS%Spherical = OLDBAS%Spherical
   NEWBAS%labelindex = OLDBAS%labelindex
@@ -474,6 +477,7 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
   NEWBAS%natomtypes = OLDBAS%natomtypes
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
+  NEWBAS%GeminalScalingFactor = OLDBAS%GeminalScalingFactor
   NEWBAS%Gcbasis = OLDBAS%GCbasis
   NEWBAS%Spherical = OLDBAS%Spherical
   NEWBAS%labelindex = OLDBAS%labelindex
@@ -535,135 +539,6 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
   ENDIF
  
 END SUBROUTINE copy_basissetinfo
-
-!> \brief add two basissetinfos together to generat a third basissetinfo  
-!> \author T. Kjaergaard
-!> \date  2010-02-24
-!> \param lupri output logical unit number. 
-!> \param iprint print level integer
-!> \param bas1 is the original BASISSETINFO1
-!> \param bas2 is the original BASISSETINFO2
-!> \param newbas is the new output BASISSETINFO
-!> \param Newlabelindex  labelindex of new basis
-SUBROUTINE add_basissetinfo(lupri,iprint,BAS1,BAS2,NEWBAS,NewLabelindex)
-  implicit none
-  integer,intent(in)               :: lupri,iprint,NewLabelindex
-  TYPE(BASISSETINFO),intent(in)    :: BAS1,BAS2
-  TYPE(BASISSETINFO),intent(inout) :: NEWBAS
-!
-  INTEGER            :: I,J,K,nrow,ncol,nK,MAXANGMOM
-
-  call nullifyBasisset(NEWBAS)
-  IF(BAS1%natomtypes.NE.BAS2%natomtypes)THEN
-     call lsquit('natomtypes mismatch in add_basissetinfo',-1)
-  ENDIF
-  NEWBAS%natomtypes = BAS1%natomtypes
-  NEWBAS%Gcont = BAS1%Gcont .OR. BAS2%Gcont
-  NEWBAS%DunningsBasis = BAS1%DunningsBasis .OR. BAS2%DunningsBasis
-  NEWBAS%Gcbasis = BAS1%GCbasis
-  NEWBAS%Spherical = BAS1%Spherical
-  IF(BAS1%labelindex.EQ.0.AND.BAS2%labelindex.EQ.0)THEN
-     NEWBAS%labelindex = 0
-     NEWBAS%nChargeindex = BAS1%nChargeindex
-  ELSEIF(BAS1%labelindex.EQ.0.AND.BAS2%labelindex.NE.0)THEN
-     call lsquit('labelindex mismatch in add_basissetinfo',-1)
-  ELSE
-     NEWBAS%labelindex = NewLabelindex
-     NEWBAS%nChargeindex = 0
-  ENDIF
-  NEWBAS%nbast = BAS1%nbast + BAS2%nbast
-  NEWBAS%nprimbast = BAS1%nprimbast + BAS2%nprimbast
-  NEWBAS%label = BasParamLABEL(NewLabelindex)
-  NULLIFY(NEWBAS%ATOMTYPE)
-  IF(NEWBAS%natomtypes.GT. 0)THEN
-   CALL MEM_ALLOC(NEWBAS%ATOMTYPE,NEWBAS%natomtypes)
-   DO I = 1,NEWBAS%natomtypes
-!    IF(BAS1%ATOMTYPE(I)%nAngmom .NE.BAS2%ATOMTYPE(I)%nAngmom)THEN
-!       call lsquit('nAngmom mismatch in add_basissetinfo, not implemented contact TK',-1)
-!    ENDIF
-    MAXANGMOM=MAX(BAS1%ATOMTYPE(I)%nAngmom,BAS2%ATOMTYPE(I)%nAngmom)
-    NEWBAS%ATOMTYPE(I)%nAngmom = MAXANGMOM
-    NEWBAS%ATOMTYPE(I)%family = BAS1%ATOMTYPE(I)%family 
-    NEWBAS%ATOMTYPE(I)%ToTnorb = BAS1%ATOMTYPE(I)%ToTnorb + BAS2%ATOMTYPE(I)%ToTnorb
-    NEWBAS%ATOMTYPE(I)%ToTnprim = BAS1%ATOMTYPE(I)%ToTnprim + BAS2%ATOMTYPE(I)%ToTnprim
-    NEWBAS%ATOMTYPE(I)%Charge = BAS1%ATOMTYPE(I)%Charge
-    NEWBAS%ATOMTYPE(I)%NAME  = TRIM(BAS1%ATOMTYPE(I)%NAME)//'+'//TRIM(BAS2%ATOMTYPE(I)%NAME)
-    DO J=1,MAXANGMOM
-     NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = 0
-     NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = 0
-     NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments =0
-     IF(BAS1%ATOMTYPE(I)%nAngmom.GE.J)THEN
-        NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = BAS1%ATOMTYPE(I)%SHELL(J)%nprim 
-        NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = BAS1%ATOMTYPE(I)%SHELL(J)%norb 
-        NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments = BAS1%ATOMTYPE(I)%SHELL(J)%nsegments
-     ENDIF
-     IF(BAS2%ATOMTYPE(I)%nAngmom.GE.J)THEN
-        NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  = NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim  + BAS2%ATOMTYPE(I)%SHELL(J)%nprim
-        NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = NEWBAS%ATOMTYPE(I)%SHELL(J)%norb + BAS2%ATOMTYPE(I)%SHELL(J)%norb
-        NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments =NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments + BAS2%ATOMTYPE(I)%SHELL(J)%nsegments
-     ENDIF
-     IF(BAS1%ATOMTYPE(I)%nAngmom.GE.J)THEN
-      DO K=1,BAS1%ATOMTYPE(I)%SHELL(J)%nsegments
-       nrow = BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow
-       ncol = BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = nrow
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = ncol
-       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms,nrow*ncol)
-       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms,nrow*ncol)
-       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents,nrow)
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms(1:nrow*ncol) = &
-            &BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%elms(1:nrow*ncol)
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol) = &
-            &BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol)
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow) = &
-            &BAS1%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow)
-      ENDDO
-      nK = BAS1%ATOMTYPE(I)%SHELL(J)%nsegments
-     ELSE
-      nK = 0
-     ENDIF
-     IF(BAS2%ATOMTYPE(I)%nAngmom.GE.J)THEN
-      DO K=1,BAS2%ATOMTYPE(I)%SHELL(J)%nsegments
-       nrow = BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow
-       ncol = BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%nrow  = nrow
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%ncol  = ncol
-       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%elms,nrow*ncol)
-       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%UCCelms,nrow*ncol)
-       CALL MEM_ALLOC(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%Exponents,nrow)
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%elms(1:nrow*ncol) = &
-            &BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%elms(1:nrow*ncol)
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%UCCelms(1:nrow*ncol) = &
-            &BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms(1:nrow*ncol)
-       NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(nK+K)%Exponents(1:nrow) = &
-            &BAS2%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow)
-      ENDDO
-     ENDIF
-    ENDDO !nangmom
-    DO J=NEWBAS%ATOMTYPE(I)%nAngmom+1,maxAOangmom
-     NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim = -1
-     NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = -1
-     NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments  = -1
-     DO K=1,maxBASISsegment
-      NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = -1
-      NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = -1
-      NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms)
-      NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms)
-      NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents)
-     ENDDO
-    ENDDO
-   ENDDO
-  ENDIF
-  IF(NEWBAS%nChargeindex .NE. 0)THEN
-     CALL MEM_ALLOC(NEWBAS%Chargeindex,NEWBAS%nChargeindex,.TRUE.)
-     DO I = 0,NEWBAS%nChargeindex
-        NEWBAS%Chargeindex(I) = BAS1%Chargeindex(I)  
-     ENDDO
-  ELSE
-     NULLIFY(NEWBAS%Chargeindex)
-  ENDIF
- 
-END SUBROUTINE add_basissetinfo
 
 !> \brief call mem_dealloc BASISSETINFO
 !> \author T. Kjaergaard
@@ -874,6 +749,7 @@ subroutine buildbasisfrombrakebasinf(BB,NATOMS,nBB,oldBAS,newBAS,labelindex)
   NEWBAS%natomtypes = nBB
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
+  NEWBAS%GeminalScalingFactor = OLDBAS%GeminalScalingFactor
   NEWBAS%Gcbasis = OLDBAS%GCbasis
   NEWBAS%Spherical = OLDBAS%Spherical
   !The labelindex cannot be 0 and nChargeindex must be zero

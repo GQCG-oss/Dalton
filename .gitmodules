@@ -16,12 +16,12 @@
 [submodule "external/efs"]
 	path = external/efs
 	url = git@repo.ctcc.no:efs.git
-[submodule "external/qmatrix"]
-	path = external/qmatrix
-	url = git://repo.ctcc.no/qmatrix.git
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git
 [submodule "external/xcint"]
 	path = external/xcint
-	url = https://github.com/rbast/xcint.git
+	url = https://github.com/bast/xcint.git
+[submodule "external/IchorIntegralLibrary"]
+	path = external/IchorIntegralLibrary
+	url = git@gitlab.com:dalton/IchorIntegralLibrary.git

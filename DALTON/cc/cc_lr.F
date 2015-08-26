@@ -3589,7 +3589,7 @@ C
      *              WORK(KEND21),LEND21,ISYMC,1,1)
 C
 C----------------------------------------------
-C     Calculate 2Cai Hartree-Fock contribution.
+C     Calculate 2Cia (stored ia) Hartree-Fock contribution.
 C----------------------------------------------
 C
       CALL DZERO(ETAC,NT1AM(ISYRES))
@@ -5826,6 +5826,13 @@ C     ----------------------------
      &     ' +=============================================='
      &    //'===============================+'
 
+         IF (SUMRULES) then
+         !initialize to zero to start with
+            CALL DZERO(DSSUML,36)
+            CALL DZERO(DLSUML,36)
+            CALL DZERO(DISUML,36)
+         END IF
+
          DO ISYM  = 1, NSYM
             DO IEX   = 1, NCCEXCI(ISYM,1)
                ISTATE = ISYOFE(ISYM) + IEX
@@ -5843,28 +5850,31 @@ C     ----------------------------
                CALL CC_OSCPRI(WORK(KTRSI),WORK(KOSCSI),EIGV,
      &                        IEX,ISYM,WORK(KEND2),LEND2,MODELP,LCALC,
      &                        LDIP,LUOSC)
+!
 ! SONIA/SPASAUER ---
 !          Sum rules and mean exc energy
 !          components already summed up inside oscpri
 !          2/3*eigv prefactor is also already included
 !          therefore I reduce the exponent in the S(n) series
-!          Removed a factor 3 so TOTAL is just sum of individual comps! 
-           if (sumrules) then
-             write(lupri,*)'DSSUMLI=', DSSUMLI
+!          Removed a factor 3 so TOTAL is just sum of individual 
+!          components
+!
+           IF (SUMRULES) then
+
              DO K = -6,2
              DO ICOM = 1,3
                 DSSUML(K,ICOM) = DSSUML(K,ICOM)
-     &                              + EIGV**(K)
-     &                              * WORK(KOSCSI+3*(icom-1)+icom-1)
+     &                           + EIGV**(K)
+     &                           * WORK(KOSCSI+3*(icom-1)+icom-1)
                 DLSUML(K,ICOM) = DLSUML(K,ICOM)
-     &                              + EIGV**(K)
-     &                              * DLOG(EIGV)
-     &                              * WORK(KOSCSI+3*(icom-1)+icom-1)
+     &                           + EIGV**(K)
+     &                           * DLOG(EIGV)
+     &                           * WORK(KOSCSI+3*(icom-1)+icom-1)
                 if (DSSUML(K,ICOM).EQ.ZERO) then
                     DISUML(K,ICOM) = ZERO
                 else
                     DISUML(K,ICOM) = DEXP(DLSUML(K,ICOM)/DSSUML(K,ICOM))
-     *                           *XTEV
+     &                           *XTEV
                 end if
              ENDDO
              DSSUML(K,4) = DSSUML(K,1)+DSSUML(K,2)+DSSUML(K,3)
@@ -5873,9 +5883,9 @@ C     ----------------------------
                     DISUML(K,4) = ZERO
              else
                     DISUML(K,4) = DEXP(DLSUML(K,4)/DSSUML(K,4))
-     *                           *XTEV
+     &                           *XTEV
              end if
-             ENDDO
+             ENDDO   
            end if
 ! end of mean exc energy/sum rules. Sonia
 

@@ -42,7 +42,6 @@ REAL(REALK),intent(inout) :: ABSVALOVERLAP(NMO1,NMO2)
 TYPE(LSSETTING) :: SETTING
 LOGICAL         :: USE_MPI !use MPI ?
 LOGICAL,intent(in) :: SameCmat !Cmat1 and Cmat2, same?
-#ifdef MOD_UNRELEASED
 TYPE(BASINF)  :: BAS
 integer :: igrid,GRIDDONE
 REAL(REALK),parameter :: D0=0E0_realk
@@ -59,10 +58,8 @@ CALL II_ABSVALINT1(LUPRI,IPRINT,CMAT1,CMAT2,NBAST,NMO1,nMO2,BAS,&
 CALL FREE_BASINF(BAS)
 dft_maxNactbast(igrid) = maxNactbast
 dft_GRIDITERATIONS(igrid) = GRIDITERATIONS
-#endif
 END SUBROUTINE II_ABSVALINT
 
-#ifdef MOD_UNRELEASED
 SUBROUTINE SET_ABSVAL_MXBLLEN(NBAST)
 implicit none
 integer :: NBAST
@@ -138,7 +135,7 @@ call SET_ABSVAL_MXBLLEN(128)
 !GridObject%NBUFLEN=NBAST
 BoxMemRequirement = 5*NBAST*NBAST
 CALL LSTIMER('START',TS,TE,LUPRI)
-CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,GridObject%HRDNES,iprune,BAS%natoms,& 
+CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angint,GridObject%HRDNES,iprune,BAS%natoms,& 
      & BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,GridObject%nbuflen,&
      & GridObject%RADIALGRID,GridObject%ZdependenMaxAng,GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
@@ -972,5 +969,4 @@ ENDDO
    STARTINDEX=STARTINDEX+Nrow*Ncol
 ENDDO
 END SUBROUTINE BUILD_PRECALCULATED_SPHMAT_ABSVAL
-#endif
 END MODULE IIABSVALINT

@@ -631,16 +631,9 @@ C  /* Deck dalton_exedrv */
 #ifdef BUILD_OPENRSP
           use openrsp_input, only: read_openrsp_input
 #endif
+          use pelib_interface, only: use_pelib, pelib_ifc_finalize,
+     &                               pelib_ifc_deactivate
 
-#if defined(ENABLE_QMATRIX)
-!         added by Bin Gao, September 11, 2014
-          use matrix_operations, only: SET_MATRIX_DEFAULT
-          use dalton_qmatrix, only: DalQMat,
-     &                              dalton_qmatrix_init,
-     &                              dalton_qmatrix_input,
-     &                              dalton_qmatrix_test,
-     &                              dalton_qmatrix_finalize
-#endif
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
@@ -704,14 +697,8 @@ C
       real(8), allocatable :: work(:)
       logical :: openrsp_input_found
 
-#if defined(ENABLE_QMATRIX)
-      type(DalQMat) dal_qmat
-      logical qmatrix_input_found
-#endif
-
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
-
 
 #ifdef BUILD_OPENRSP
       ! radovan: we need to read the **OPENRSP input before we run anything
@@ -730,31 +717,6 @@ C
       end do
 2     rewind(lucmd)
       call gpclose(lucmd, 'KEEP')
-#endif
-
-
-#ifdef ENABLE_QMATRIX
-!     We should first read input in subroutine DALTON_EXEDRV() before any calculation,
-!     and some variables will indicate if required keyword (for instance, **QMATRIX)
-!     read. If yes, we will do the calculations after geometry optimization finished
-!     (indicated by GEOCNV) or after SCF procedure for a single point energy calculation.
-      call GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &            IDUMMY, .false.)
-!     initializes global matrix counters of LSDalton matrix module
-      call SET_MATRIX_DEFAULT()
-!     searches **QMATRIX in input
-      qmatrix_input_found = .false.
-      do
-         read(LUCMD, '(A)', end=1) WORD
-         if (WORD=='**QMATR') then
-            call dalton_qmatrix_init(dal_qmat)
-            call dalton_qmatrix_input(dal_qmat, LUCMD, LUPRI)
-            qmatrix_input_found = .true.
-            exit
-         end if
-      end do
-1     rewind(LUCMD)
-      call GPCLOSE(LUCMD, 'KEEP')
 #endif
 
 C
@@ -1115,13 +1077,6 @@ C
             END IF
  134        CONTINUE
 
-#if defined(ENABLE_QMATRIX)
-!           performs tests of QMatrix interface and library
-            if (qmatrix_input_found) then
-                call dalton_qmatrix_test(dal_qmat)
-            end if
-#endif
-
 #ifdef BUILD_OPENRSP
 C added by Bin Gao, April 2, 2009
 C for response theory in atomic orbital basis
@@ -1203,13 +1158,6 @@ C
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
 
-#if defined(ENABLE_QMATRIX)
-!        performs tests of QMatrix interface and library
-         if (qmatrix_input_found) then
-             call dalton_qmatrix_test(dal_qmat)
-         end if
-#endif
-
 #ifdef BUILD_OPENRSP
 C added by Bin Gao, April 2, 2009
 C for response theory in atomic orbital basis
@@ -1269,18 +1217,12 @@ C
       CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
       CALL PLTORB(WORK(KKIND),LMWORK)
 
-#if defined(ENABLE_QMATRIX)
-!     cleans up the QMatrix interface
-      if (qmatrix_input_found) then
-          call dalton_qmatrix_finalize(dal_qmat)
-      end if
-#endif
-
 C
-!     release memory used in PElib
-#if defined (BUILD_PELIB)
-      IF (PEQM) CALL PE_IFC_FINALIZE()
-#endif
+!     release memory used in PElib and deactivate it
+      IF (USE_PELIB()) THEN
+        CALL PELIB_IFC_FINALIZE()
+        CALL PELIB_IFC_DEACTIVATE()
+      END IF
 
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
@@ -1318,6 +1260,8 @@ C
       use pcm_write
 #endif
       use qmcmm_input, only: qmnpinp
+      use pelib_interface, only: use_pelib, pelib_ifc_activate,
+     &                           pelib_ifc_input_reader
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1428,8 +1372,11 @@ C
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
-C     NEWTRA is in /INFTRA/ for practical reasons
-      NEWTRA = .FALSE.
+
+C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
+      NEWTRA = .FALSE.        ! if true, use "new" transformation for Mulliken integrals
+      NEWTRA_USEDRC = .FALSE.  ! if NEWTRA and NEWTRA_USEDRC both true, also use "new" transformation for Dirac integrals
+
       OPTNEW = .FALSE.
       NEWSYM = .FALSE.
       NEWBAS = .TRUE.
@@ -1439,7 +1386,6 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
-      PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       QFIT   = .FALSE.
@@ -1609,7 +1555,7 @@ C
             PARCAL = .TRUE.
             DIRCAL = .TRUE.
             GO TO 100
-  109    CONTINUE
+  109    CONTINUE  ! .DIRECT
             DIRCAL = .TRUE.
          GO TO 100
 C        ".WALK  "
@@ -1701,12 +1647,7 @@ C        '.DOUGLA'
          GOTO 100
 !        '.PEQM  '
  133     CONTINUE
-#if defined (BUILD_PELIB)
-            PEQM = .TRUE.
-#else
-            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
-            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
-#endif
+            CALL PELIB_IFC_ACTIVATE()
          GOTO 100
 !        '.QFIT  '
  134     CONTINUE
@@ -1841,7 +1782,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)')
      &  'Information for WESTA will be calculated and written to files.'
-      IF (PEQM) WRITE(LUPRI,'(4X,A)')
+      IF (USE_PELIB()) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
       IF(QFIT) WRITE(LUPRI,'(4X,A)')
@@ -1942,12 +1883,8 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 CONTINUE
-#if defined (BUILD_PELIB)
-        CALL PE_IFC_INPUT_READER(WORD)
-#else
-        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
-#endif
-      GOTO 200
+        CALL PELIB_IFC_INPUT_READER(WORD)
+      GO TO 200
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
    11 CONTINUE
