@@ -23,10 +23,12 @@ use ccintegrals,only:get_ao_fock
 !#ifdef MOD_UNRELEASED
 use f12_routines_module,only: &
      & ContractOne4CenterF12IntegralsRI,&
+     & ContractOne4CenterF12IntegralsRI2,&
      & ContractOne4CenterF12IntegralsRI2_nc,&
      & ContractOne4CenterF12IntegralsRobustRI,&
      & ContractOne4CenterF12IntegralsRIB23,&
      & ContractTwo4CenterF12IntegralsRI_pf,&
+     & ContractTwo4CenterF12IntegralsRIX,&
      & ContractTwo4CenterF12IntegralsRIX_nc,&
      & ContractTwo4CenterF12IntegralsRIX_ncMPI,&
      & ContractTwo4CenterF12IntegralsRI2V3V4,&
@@ -220,7 +222,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Cocc
    if(DECinfo%frozencore) then
       call mem_alloc(Co,nbasis,nocc)
-      Co = 0.0E0_realk
       do j=1,nocc
          do i=1,nbasis
             Co(i,j) = MyMolecule%Co%elm2(i,MyMolecule%ncore+j)
@@ -234,7 +235,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Fkj
    if(DECinfo%frozencore) then
       call mem_alloc(Fkj,nocc,nocc)
-      Fkj = 0.0E0_realk
       do j=1,nocc
          do i=1,nocc
             Fkj(i,j) = MyMolecule%oofock%elm2(MyMolecule%ncore+i,MyMolecule%ncore+j)
@@ -247,7 +247,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    ! Cfull
    call mem_alloc(Cfull,nbasis,nocv)
-   Cfull = 0.0E0_realk
    do J=1,noccfull
       do I=1,nbasis
          Cfull(I,J) = MyMolecule%Co%elm2(I,J)
@@ -419,17 +418,19 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       ABdecompCreateX = .FALSE.
 
       !perform this suborutine on the GPU (async)  - you do not need to wait for the results
-      !call ContractOne4CenterF12IntegralsRI2(NBA,nocc,CalphaX,Fii%elms,CoulombF12X1,ExchangeF12X1)
-  
-      nsize = NBA*nocc*nocc
-      call mem_alloc(CalphaT,nsize)     ! G_ij = C_ik F_kj 
-      M = NBA*nocc         !rows of Output Matrix
-      K = nocc             !summation dimension
-      N = nocc             !columns of Output Matrix
-      !call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fmm%elms,K,0.0E0_realk,CalphaT,M)
-      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fkj,K,0.0E0_realk,CalphaT,M)
-      call ContractOne4CenterF12IntegralsRI2_nc(NBA,nocc,CalphaX,CalphaT,CoulombF12X1,ExchangeF12X1)
-      call mem_dealloc(CalphaT)
+      IF(DECinfo%use_canonical)THEN
+         call ContractOne4CenterF12IntegralsRI2(NBA,nocc,CalphaX,Fii%elms,CoulombF12X1,ExchangeF12X1)
+      ELSE
+         nsize = NBA*nocc*nocc
+         call mem_alloc(CalphaT,nsize)     ! G_ij = C_ik F_kj 
+         M = NBA*nocc         !rows of Output Matrix
+         K = nocc             !summation dimension
+         N = nocc             !columns of Output Matrix
+         !call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fmm%elms,K,0.0E0_realk,CalphaT,M)
+         call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fkj,K,0.0E0_realk,CalphaT,M)
+         call ContractOne4CenterF12IntegralsRI2_nc(NBA,nocc,CalphaX,CalphaT,CoulombF12X1,ExchangeF12X1)
+         call mem_dealloc(CalphaT)
+      ENDIF
       !minus is due to the overall minus from equation (41) and (42) due to
       !contribution from the \bar{B}_{ij}^{ij}
       EX1 = -1.0E0_realk*(0.21875E0_realk*CoulombF12X1 + 0.03125E0_realk*ExchangeF12X1)
@@ -738,8 +739,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    M = nocv*NBA         !rows of Output Matrix
    K = nocc             !summation dimension
    N = nocc             !columns of Output Matrix
-   call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
-   call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
+!   IF(DECinfo%USE_CANONICAL)THEN
+!      call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nocv,CalphaG,Fii%elms,EX2)
+!   ELSE
+      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
+      call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
+!   ENDIF
    call mem_dealloc(CalphaT)
    mp2f12_energy = mp2f12_energy  + EX2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
@@ -939,12 +944,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    
    call mem_alloc(ABdecompC,nAux,nAux)
    ABdecompCreateC = .TRUE.
+
+   !FIXME Replace this with CalphaGcabsMO 
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 4 
    intspec(3) = 'C' !Cabs AO basis function on center 3
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
-   
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
         & mynum,numnodesstd,CalphaCcabs,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
