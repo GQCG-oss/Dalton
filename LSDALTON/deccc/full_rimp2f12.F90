@@ -23,10 +23,12 @@ use ccintegrals,only:get_ao_fock
 !#ifdef MOD_UNRELEASED
 use f12_routines_module,only: &
      & ContractOne4CenterF12IntegralsRI,&
+     & ContractOne4CenterF12IntegralsRI2,&
      & ContractOne4CenterF12IntegralsRI2_nc,&
      & ContractOne4CenterF12IntegralsRobustRI,&
      & ContractOne4CenterF12IntegralsRIB23,&
      & ContractTwo4CenterF12IntegralsRI_pf,&
+     & ContractTwo4CenterF12IntegralsRIX,&
      & ContractTwo4CenterF12IntegralsRIX_nc,&
      & ContractTwo4CenterF12IntegralsRIX_ncMPI,&
      & ContractTwo4CenterF12IntegralsRI2V3V4,&
@@ -220,7 +222,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Cocc
    if(DECinfo%frozencore) then
       call mem_alloc(Co,nbasis,nocc)
-      Co = 0.0E0_realk
       do j=1,nocc
          do i=1,nbasis
             Co(i,j) = MyMolecule%Co%elm2(i,MyMolecule%ncore+j)
@@ -234,7 +235,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! Fkj
    if(DECinfo%frozencore) then
       call mem_alloc(Fkj,nocc,nocc)
-      Fkj = 0.0E0_realk
       do j=1,nocc
          do i=1,nocc
             Fkj(i,j) = MyMolecule%oofock%elm2(MyMolecule%ncore+i,MyMolecule%ncore+j)
@@ -247,7 +247,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    ! Cfull
    call mem_alloc(Cfull,nbasis,nocv)
-   Cfull = 0.0E0_realk
    do J=1,noccfull
       do I=1,nbasis
          Cfull(I,J) = MyMolecule%Co%elm2(I,J)
@@ -374,6 +373,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       ! Calculate the Fitting Coefficients (alpha|F|ij)
       intspec(4) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
       intspec(5) = 'F' !The Gaussian geminal divided by the Coulomb operator g/r12 (GGemCouOperator)
+      !Unique: CalphaF(NBA,nocc,nocc)
       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,FORCEPRINT, &
            & wakeslaves,Co,nocc,Co,nocc,mynum,numnodesstd,CalphaF,NBA,ABdecompF,&
            & ABdecompCreateF,intspec,use_bg_buf)
@@ -413,23 +413,26 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !Calculate the Fitting Coefficients (alpha|g^2|ij) 
       intspec(4) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
       intspec(5) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
+      !Unique: CalphaX(NBA,nocc,nocc)
       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
            & FORCEPRINT,wakeslaves,Co,nocc,Co,nocc,&
            & mynum,numnodesstd,CalphaX,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
       ABdecompCreateX = .FALSE.
 
       !perform this suborutine on the GPU (async)  - you do not need to wait for the results
-      !call ContractOne4CenterF12IntegralsRI2(NBA,nocc,CalphaX,Fii%elms,CoulombF12X1,ExchangeF12X1)
-  
-      nsize = NBA*nocc*nocc
-      call mem_alloc(CalphaT,nsize)     ! G_ij = C_ik F_kj 
-      M = NBA*nocc         !rows of Output Matrix
-      K = nocc             !summation dimension
-      N = nocc             !columns of Output Matrix
-      !call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fmm%elms,K,0.0E0_realk,CalphaT,M)
-      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fkj,K,0.0E0_realk,CalphaT,M)
-      call ContractOne4CenterF12IntegralsRI2_nc(NBA,nocc,CalphaX,CalphaT,CoulombF12X1,ExchangeF12X1)
-      call mem_dealloc(CalphaT)
+      IF(DECinfo%use_canonical)THEN
+         call ContractOne4CenterF12IntegralsRI2(NBA,nocc,CalphaX,Fii%elms,CoulombF12X1,ExchangeF12X1)
+      ELSE
+         nsize = NBA*nocc*nocc
+         call mem_alloc(CalphaT,nsize)     ! G_ij = C_ik F_kj 
+         M = NBA*nocc         !rows of Output Matrix
+         K = nocc             !summation dimension
+         N = nocc             !columns of Output Matrix
+         !call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fmm%elms,K,0.0E0_realk,CalphaT,M)
+         call dgemm('N','N',M,N,K,1.0E0_realk,CalphaX,M,Fkj,K,0.0E0_realk,CalphaT,M)
+         call ContractOne4CenterF12IntegralsRI2_nc(NBA,nocc,CalphaX,CalphaT,CoulombF12X1,ExchangeF12X1)
+         call mem_dealloc(CalphaT)
+      ENDIF
       !minus is due to the overall minus from equation (41) and (42) due to
       !contribution from the \bar{B}_{ij}^{ij}
       EX1 = -1.0E0_realk*(0.21875E0_realk*CoulombF12X1 + 0.03125E0_realk*ExchangeF12X1)
@@ -450,6 +453,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(4) = 'C' !Regular Coulomb operator 1/r12
    intspec(5) = 'C' !The metric operator = Regular Coulomb operator 1/r12
    !Build the G coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
+   !Unique: CalphaR(NBA,nocc,nocv)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,Cfull,nocv,&
         & mynum,numnodesstd,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
@@ -472,6 +476,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       intspec(4) = 'D' !The double commutator [[T,g],g] 
       intspec(5) = 'C' !The metric operator = Regular Coulomb operator 1/r12
       !Build the R coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
+      !Unique: CalphaD(NBA,nocc,nocc)
       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
            & FORCEPRINT,wakeslaves,Co,nocc,Co,nocc,&
            & mynum,numnodesstd,CalphaD,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
@@ -587,6 +592,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       !Calculate the Fitting Coefficients (alpha|g^2|ij) 
       intspec(4) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
       intspec(5) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
+      !Unique: CalphaX(NBA,nocc,nocc) IF(NaturalLinearScalingF12TermsX1)
       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
            & FORCEPRINT,wakeslaves,Co,nocc,Co,nocc,&
            & mynum,numnodesstd,CalphaX,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
@@ -598,6 +604,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(3) = 'C' !CABS AO basis function on center 4
    intspec(4) = '2' !The f12 Operator
    intspec(5) = '2' !The f12 Operator
+   !Unique: CalphaXcabsAO(NBA,nocc,ncabsAO) 
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_RI%elms,ncabsAO,&
         & mynum,numnodesstd,CalphaXcabsAO,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)   
@@ -652,7 +659,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(3) = 'R' !Regular AO basis function on center 4
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
-
+   !Unique: CalphaG(NBA,nocv,nocc)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Cfull,nocv,Co,nocc,&
         & mynum,numnodesstd,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
@@ -738,8 +745,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    M = nocv*NBA         !rows of Output Matrix
    K = nocc             !summation dimension
    N = nocc             !columns of Output Matrix
-   call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
-   call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
+!   IF(DECinfo%USE_CANONICAL)THEN
+!      call ContractTwo4CenterF12IntegralsRIX(nBA,nocc,nocv,CalphaG,Fii%elms,EX2)
+!   ELSE
+      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
+      call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
+!   ENDIF
    call mem_dealloc(CalphaT)
    mp2f12_energy = mp2f12_energy  + EX2
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ',EX2       
@@ -756,22 +767,22 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !=                                                        =
    !==========================================================
    
-!   We need CalphaRocc(NBA,nocc,nocc) but this is a subset of CalphaR(NBA,nocc,nbasis)
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'C' !CABS AO basis function on center 4
    intspec(4) = 'C' !The Coulomb Operator
    intspec(5) = 'C' !The Coulomb Operator
+   !Unique: CalphaRcabsMO(NBA,nocc,ncabsMO)
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
         & mynum,numnodesstd,CalphaRcabsMO,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
 
-!   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'C' !CABS AO basis function on center 4
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
+   !Unique: CalphaGcabsMO(NBA,nocc,ncabsMO)
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
         & mynum,numnodesstd,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
@@ -925,12 +936,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !========================================================== 
    ABdecompCreateTvirt = .TRUE. 
    call mem_alloc(ABdecompTvirt,naux,naux)
-   !   We need CalphaRocc(NBA,nocc,nocc) but this is a subset of CalphaR(NBA,nocc,nbasis)
+   !FIXME Replace this with subset of CalphaR(NBA,nocc,nbasis)
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'R' !CABS AO basis function on center 4
    intspec(4) = 'C' !The Coulomb Operator
    intspec(5) = 'C' !The Coulomb Operator
+   !FIXME Replace this with subset of CalphaR(NBA,nocc,nocv)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,Co,nocc,&
         & mynum,numnodesstd,CalphaTvirt,NBA,ABdecompTvirt,ABdecompCreateTvirt,intspec,use_bg_buf)
@@ -939,12 +951,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    
    call mem_alloc(ABdecompC,nAux,nAux)
    ABdecompCreateC = .TRUE.
+
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 4 
    intspec(3) = 'C' !Cabs AO basis function on center 3
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
-   
+   !FIXME Replace this with CalphaGcabsMO(nocc,ncabsMO)
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
         & mynum,numnodesstd,CalphaCcabs,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
@@ -963,6 +976,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(3) = 'R' !Regular AO basis function on center 4
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
+   !FIXME Replace this with subset of CalphaG(NBA,nocv,nocc)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,MyMolecule%Cv%elm2,nvirt,&
         & mynum,numnodesstd,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
@@ -1029,7 +1043,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != Dim: (nocc,noccfull,nocc,ncabsMO)  need 4 Calphas      =
    !=                                                        =
    !==========================================================
-   !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'R' !Regular AO basis function on center 4
@@ -1037,6 +1050,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(5) = 'G' !The Gaussian geminal operator g
      
    call mem_alloc(ABdecompC,nAux,nAux)
+   !FIXME CalphaGocc(NBA,nocc,nocc) is a subset of CalphaG(NBA,nocv,nocc)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,MyMolecule%Co%elm2,noccfull,Co,nocc,mynum,numnodesstd,CalphaCocc,&
         & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
@@ -1057,6 +1071,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(5) = 'G' !The Gaussian geminal operator g
      
    call mem_alloc(ABdecompC,nAux,nAux)
+   !FIXME CalphaCcabsT(NBA,ncabsMO,nocc) is (reordered) CalphaGcabsMO(NBA,nocc,ncabsMO)
    call Build_CalphaMO2(mylsitem,master,ncabsAO,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,CMO_CABS%elms,ncabsMO,Co,nocc,&
         & mynum,numnodesstd,CalphaCcabsT,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
@@ -1149,7 +1164,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(2) = 'R' !Regular AO basis function on center 3
    intspec(3) = 'C' !Regular AO basis function on center 4
    intspec(4) = 'G' !The f12 Operator
-   intspec(5) = 'G' !The f12 Operator
+   intspec(5) = 'G' !The f12 Operator   
+   !Unique CalphaGcabsAO(NBA,nocc,ncabsAO) 
    call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,Co,nocc,CMO_RI%elms,ncabsAO,&
         & mynum,numnodesstd,CalphaGcabsAO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
@@ -1319,7 +1335,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(5) = 'G' !The Gaussian geminal operator g
 
    nsize = NBA*nocc*nocv  
-  ! call mem_alloc(ABdecompG,nAux,nAux)
+   ! call mem_alloc(ABdecompG,nAux,nAux)
+   !FIXME: CalphaP(NBA,nocc,nocv) subst of CalphaG(NBA,nocv,nocc)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
       & FORCEPRINT,wakeslaves,Co,nocc,Cfull,nocv,&
       & mynum,numnodesstd,CalphaP,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
@@ -1391,6 +1408,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(5) = 'G' !The Gaussian geminal operator g
 
    call mem_alloc(ABdecompC,nAux,nAux)
+   !FIXME: CalphaCoccT(NBA,nocc,noccfull) subst of CalphaG(NBA,nocv,nocc)
    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
       & FORCEPRINT,wakeslaves,Co,nocc,MyMolecule%Co%elm2,noccfull,mynum,numnodesstd,CalphaCoccT,&
       & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)

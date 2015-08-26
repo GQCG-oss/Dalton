@@ -2496,10 +2496,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+#endif
+
      call tensor_free(tmi)
      call tensor_free(tpl)
-
-#endif
 
      ! free working matrices and adapt to new requirements
      if( use_bg_buf )then
