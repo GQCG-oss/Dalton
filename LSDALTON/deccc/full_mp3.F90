@@ -53,6 +53,10 @@ contains
     ! Total third-order correlation energy
     E3 = E2 + dE3
 
+    write(DECinfo%output,'(1X,a,g20.10)') 'MP3: Second-order correlation energy (MP2)      =', E2
+    write(DECinfo%output,'(1X,a,g20.10)') 'MP3: Third-order energy correction (MP3-MP2)    =', dE3
+    write(DECinfo%output,'(1X,a,g20.10)') 'MP3: Total third-order correlation energy (MP3) =', E3
+
   end subroutine full_canonical_mp3
 
 
@@ -124,12 +128,9 @@ contains
                 ! Multiplier (Eq. 14.4.42 combined with 14.4.41 + symmetry of integrals)
                 tbar = 4.0_realk*t(a,i,b,j) - 2.0_realk*t(b,i,a,j)
 
-                ! Multiplier using unrestricted summation (Eq. 14.4.59)
-                if(a==b .and. i==j) then
-                   ttilde = 2.0_realk*tbar
-                else
-                   ttilde = tbar
-                end if
+                ! Error in the book for unrestricted summation,
+                ! the ttilde in Eq. 14.4.59 should actually just be equal to tbar...
+                ttilde = tbar
 
 
                 ! Construct X_{ij}^{ab}
