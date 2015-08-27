@@ -1,4 +1,8 @@
 subroutine lsmpi_init(OnMaster)
+   use tensor_interface_module,only: tensor_initialize_interface, tensor_comm_null
+   use memory_handling, only: mem_allocated_global
+   use background_buffer_module, only: max_n_pointers, buf_realk
+
 #ifdef VAR_MPI
    use lsmpi_type
    use infpar_module
@@ -9,7 +13,7 @@ subroutine lsmpi_init(OnMaster)
 #endif
    implicit none
    logical, intent(inout) :: OnMaster
-   integer(kind=ls_mpik)  :: ierr
+   integer(kind=ls_mpik)  :: ierr, comm
 #ifdef VAR_CHEMSHELL
    integer(kind=ls_mpik)  :: lsdalton_chemsh_comm
    external lsdalton_chemsh_comm
@@ -20,6 +24,7 @@ subroutine lsmpi_init(OnMaster)
    nInteger4 = 0
    nInteger8 = 0
    nCha      = 0
+   comm      = 0
 
    if (call_mpi_init) then
 #ifdef VAR_CHEMSHELL
@@ -49,7 +54,6 @@ subroutine lsmpi_init(OnMaster)
    call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
 
 
-   call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
    call get_size_for_comm( MPI_COMM_LSDALTON, infpar%nodtot )
    !default number of nodes to be used with scalapack - can be changed
@@ -64,47 +68,39 @@ subroutine lsmpi_init(OnMaster)
 
    !CHECK IF WE ARE ON THE MAIN MAIN MAIN MASTER PROCESS (NOT IN LOCAL GROUP,
    !NOT A SPAWNED PROCESS)
-   OnMaster = (infpar%mynum==infpar%master .and. infpar%parent_comm == MPI_COMM_NULL) 
+   OnMaster = infpar%mynum==infpar%master 
 
    ! Set rank, sizes and communcators for local groups
    ! to be identical to those for world group by default.
    call lsmpi_default_mpi_group
 
-   !if i am a child process, set the intracommunicator to the parent proc
-   if( infpar%parent_comm /= MPI_COMM_NULL )  call get_parent_child_relation
-
    ! Assume that there will be local jobs
    infpar%lg_morejobs=.true.
 
+   !tensor initialization
+   call tensor_initialize_interface(infpar%lg_comm, mem_ctr=mem_allocated_global, pdm_slaves_signal = PDMA4SLV )
 
-
-   if (infpar%mynum.ne.infpar%master) then
-
-      !if normal slave, listen on MPI_COMM_LSDALTON
-      call lsmpi_slave(MPI_COMM_LSDALTON)
-
-      elseif( infpar%parent_comm /= MPI_COMM_NULL )then
-
-      !if spawned process, listen on the parent-child-intracomm
-      call lsmpi_slave(infpar%pc_comm)
-
-   endif
 #else
    logical, intent(inout) :: OnMaster
    !IF NOT COMPILED WITH MPI SET MASTER = TRUE
    OnMaster = .true.
+   call tensor_initialize_interface(tensor_comm_null, mem_ctr=mem_allocated_global )
 #endif
+
+
 end subroutine lsmpi_init 
-#ifdef VAR_MPI
 
 subroutine lsmpi_slave(comm)
+#ifdef VAR_MPI
    use lsparameters
    use lstiming
    use infpar_module
    use lsmpi_type
    use lsmpi_test
    use integralinterfaceMod
+#ifdef VAR_DEC
    use dec_driver_slave_module
+#endif
    use tensor_interface_module
 #ifdef VAR_SCALAPACK  
    use matrix_operations_scalapack
@@ -123,7 +119,6 @@ subroutine lsmpi_slave(comm)
       call time_start_phase(PHASE_IDLE)
       call ls_mpibcast(job,infpar%master,comm)
       call time_start_phase(PHASE_WORK)
-
 
       select case(job)
       case(MATRIXTY);
@@ -167,6 +162,7 @@ subroutine lsmpi_slave(comm)
       case(IISCREENFREE);
          call II_screenfree(comm)
          ! DEC MP2 integrals and amplitudes
+#ifdef VAR_DEC
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
       case(RIMP2INAMP);
@@ -175,6 +171,8 @@ subroutine lsmpi_slave(comm)
          call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(RIMP2F12FULL);         
+         call full_canonical_rimp2f12_slave
       case(LSTHCRIMP2FULL);
 !         call full_canonical_ls_thc_rimp2_slave
       case(CANONMP2FULL);
@@ -203,13 +201,14 @@ subroutine lsmpi_slave(comm)
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
-      case(ARRAYTEST);
-         call get_slaves_to_tensor_test
+#endif
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop
+#ifdef VAR_DEC
       case(DECDRIVER);
          call main_fragment_driver_slave
+#endif
       case(DEFAULTGROUPS);
          call lsmpi_default_mpi_group
 #ifdef VAR_SCALAPACK
@@ -235,55 +234,22 @@ subroutine lsmpi_slave(comm)
       case(PDMMGRIDEXIT);
          call PDMM_GRIDEXIT_SLAVE
       case(PDMA4SLV);
-         call PDM_tensor_SLAVE(comm)
+         call pdm_tensor_slave
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
          call get_slave_timers_slave(comm)
-      case(GIVE_BIRTH);
-         call give_birth_to_child_process
-
-      case(LSPDM_GIVE_BIRTH);
-         call lspdm_start_up_comm_procs
       case(LSMPITEST);
          call test_mpi(comm)
-
-
       case(LSMPIPRINTINFO);
          call lsmpi_print_mem_info(6,.TRUE.)
-
-      case(SLAVES_SHUT_DOWN_CHILD)
-         if(infpar%parent_comm/=MPI_COMM_NULL)then
-            call lsquit("ERROR(SLAVES_SHUT_DOWN_CHILD):I am not a parent",-1)
-         endif
-         call shut_down_child_process
-
-      case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
-         if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
-         call lspdm_shut_down_comm_procs
-
-      case(JOB_LSPDM_INIT_GLOBAL_BUFFER);
-         call lspdm_init_global_buffer(.false.)
-      case(JOB_LSPDM_FREE_GLOBAL_BUFFER);
-         call lspdm_free_global_buffer(.false.)
-
       case(SET_GPUMAXMEM);
          call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
-
       case(SET_SPLIT_MPI_MSG);
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+         call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
-
-      case(SET_TENSOR_BACKEND_TRUE);
-         call tensor_set_dil_backend_true(.false.)
-
-      case(SET_TENSOR_DEBUG_TRUE);
-         call tensor_set_debug_mode_true(.false.)
-
-      case(SET_TENSOR_ALWAYS_SYNC_TRUE);
-         call tensor_set_always_sync_true(.false.)
-
       case(INIT_BG_BUF);
          call mem_init_background_alloc_slave(comm)
       case(FREE_BG_BUF);
@@ -292,13 +258,6 @@ subroutine lsmpi_slave(comm)
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
          !##########################################
-
-      case(CHILD_SHUT_DOWN);
-         if(infpar%parent_comm==MPI_COMM_NULL)then
-            call lsquit("ERROR(SHUT_DOWN_CHILD):I am not a child to be shut down",-1)
-         endif
-         call shut_down_child_process
-         stay_in_slaveroutine = .false.
 
          ! Quit but there are more local jobs - used for local group handling
       case(QUITMOREJOBS); 
@@ -311,12 +270,15 @@ subroutine lsmpi_slave(comm)
       case(LSMPIQUIT);  
          stay_in_slaveroutine = .false.
       case default
-         call free_persistent_array()
+         !call free_persistent_array()
          call lsmpi_finalize(6,.FALSE.)
          stay_in_slaveroutine = .false.
       end select
 
    end do
+#else
+   call lsquit("ERROR(lsmpi_slave): This is a non-mpi build, this routine should not be called",-1)
+#endif
 
 end subroutine lsmpi_slave
 
@@ -354,5 +316,4 @@ end subroutine lsmpi_slave
 !!$    end subroutine lsmpi_local_slave
 
 
-#endif
 

@@ -12,6 +12,8 @@ module rimp2_gradient_module
   use tensor_type_def_module
   use dec_typedef_module
   use lsparameters
+  use background_buffer_module
+  use molecule_module
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module
@@ -43,11 +45,12 @@ contains
     !> Do the Pair of occupied indexes 
     logical :: dopair_occ(noccEOS,noccEOS)
     !
-    logical :: wakeslave,CollaborateWithSlaves,master,FORCEPRINT
+    logical :: wakeslave,CollaborateWithSlaves,master,FORCEPRINT,use_bg_buf
     integer :: LUPRI,mynum,numnodes,nAtomsAux,nBasis2
     integer :: nBasisAux,J,I,Jeos
     integer(kind=long) :: nsize
     LUPRI = DECinfo%output
+    use_bg_buf = mem_is_background_buf_init()
     FORCEPRINT = .FALSE.
 #ifdef VAR_MPI
     master= (infpar%lg_mynum == infpar%master)
@@ -82,7 +85,7 @@ contains
 
     call Build_RIMP2grad(MyFragment%myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
          & CollaborateWithSlaves,CvirtAOS,nvirtAOS,CoccEOS,noccEOS,mynum,numnodes,nAtomsAux,&
-         & natoms,ThetaOcc,RIMP2grad,dopair_occ)
+         & natoms,ThetaOcc,RIMP2grad,dopair_occ,use_bg_buf)
 
   end subroutine RIMP2_gradient_driver
 
@@ -140,6 +143,7 @@ subroutine RIMP2_gradient_slave()
   call mem_dealloc(dopair_occ)
   call array2_free(CvirtAOS)
   call array2_free(CoccEOS) 
+  call atomic_fragment_free(MyFragment)
 
 end subroutine RIMP2_gradient_slave
 #endif

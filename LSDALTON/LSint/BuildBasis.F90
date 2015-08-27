@@ -1015,7 +1015,7 @@ CHARACTER(len=10)   :: atname(74)
 atname = (/'HYDROGEN  ','HELIUM    ','LITHIUM   ',&
      & 'BERYLLIUM ','BORON     ','CARBON    ','NITROGEN  ',&
      & 'OXYGEN    ','FLUORINE  ','NEON      ','SODIUM    ',&
-     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHORUS',&
+     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHOROU',&
      & 'SULFUR    ','CHLORINE  ','ARGON     ','POTASSIUM ',&
      & 'CALCIUM   ','SCANDIUM  ','TITANIUM  ','VANADIUM  ',&
      & 'CHROMIUM  ','MANGANESE ','IRON      ','COBALT    ',&
@@ -1101,7 +1101,7 @@ CHARACTER(len=10)   :: atname(74)
 atname = (/'HYDROGEN  ','HELIUM    ','LITHIUM   ',&
      & 'BERYLLIUM ','BORON     ','CARBON    ','NITROGEN  ',&
      & 'OXYGEN    ','FLUORINE  ','NEON      ','SODIUM    ',&
-     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHORUS',&
+     & 'MAGNESIUM ','ALUMINUM  ','SILICON   ','PHOSPHOROU',&
      & 'SULFUR    ','CHLORINE  ','ARGON     ','POTASSIUM ',&
      & 'CALCIUM   ','SCANDIUM  ','TITANIUM  ','VANADIUM  ',&
      & 'CHROMIUM  ','MANGANESE ','IRON      ','COBALT    ',&
@@ -1221,7 +1221,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   LOGICAL               :: POLFUN,CONTRACTED,segmentedFormat,BLANK,FOUNDnewContractionCoeffLine
   INTEGER               :: atype,nang,nprim,nOrbital,IAUG,NUMNUMOLD
   INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers,LIST(2,20)
-  CHARACTER(len=280)    :: STRING
+  CHARACTER(len=500)    :: STRING
   CHARACTER(len=1)      :: SIGN
   real(realk)           :: exmin2,exmin1,PI,Exp,PIPPI
   CHARACTER(len=1)      :: SPDFGH(10)=(/'S','P','D','F','G','H','I','J','K','L'/) 
@@ -1232,11 +1232,11 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   J = 0
   DO WHILE( J .LT. nprim) 
      ! Reading the primitive and contracted coeffecients
-     READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
+     READ(LUBAS, '(A500)', IOSTAT = IOS) STRING
      IF(ios /= 0)THEN
         WRITE (LUPRI,'(A)') ' Error in basisset file'
         WRITE(lupri,'(A)')'This could mean that the line containing exponents'
-        WRITE(lupri,'(A)')'and contraction coefficients fill more than 280 characters'
+        WRITE(lupri,'(A)')'and contraction coefficients fill more than 500 characters'
         WRITE(lupri,'(A)')'Which means you need to manually split the line'
         CALL LSQUIT('Error in basisset file',lupri)
      ELSE
@@ -1306,6 +1306,13 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                        !         READ (STRING,'(F16.9,6F12.9)')&
                        !              &(Contractionmatrix%elms(J+(M-1)*(nprim+IAUG)),&
                        !              & M = 6 + (I-2)*7 +1, KNTORB)
+                       IF(J+(nNUMBERS+KNTORB-1)*(nprim+IAUG).GT.SIZE(ContractionMatrix%elms))THEN
+                          WRITE (LUPRI,'(A)') ' Error in basisset file'
+                          WRITE(lupri,'(A)')'This most likely means that the line containing exponents'
+                          WRITE(lupri,'(A)')'and contraction coefficients fill more than 500 characters'
+                          WRITE(lupri,'(A)')'Which means you need to manually split the line'
+                          CALL LSQUIT('Error in basisset file',lupri)
+                       ENDIF
                        DO I = 1, nNUMBERS
                           READ (STRING(LIST(1,I):LIST(2,I)),*) ContractionMatrix%elms(J+(I+KNTORB-1)*(nprim+IAUG))
                        ENDDO
@@ -1316,7 +1323,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     IF (segmentedFormat) exit
                     FOUNDnewContractionCoeffLine = .FALSE.
                     DO WHILE(.NOT.FOUNDnewContractionCoeffLine)
-                       READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
+                       READ(LUBAS, '(A500)', IOSTAT = IOS) STRING
                        IF(ios /= 0)THEN
                           WRITE (LUPRI,'(2A)') ' Error in basisset file'
                           CALL LSQUIT('Error in basisset file',lupri)
@@ -1424,7 +1431,7 @@ END SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS
 
 subroutine determine_nNumbers_in_string(STRING,nNUMBERS,LIST)
   implicit none
-  CHARACTER(len=280)    :: STRING
+  CHARACTER(len=500)    :: STRING
   integer :: nNUMBERS,LIST(2,20)
   !
   logical :: INSIDENUMBER,SCIENTIFIC

@@ -22,18 +22,6 @@ type infpar_struct
   integer(kind=ls_mpik) :: lg_nodtot
   !> Communicator for local group where one of the "slaves" is a local master
   integer(kind=ls_mpik) :: lg_comm
-  !> Communicator structure to distinguish spawned thread from original thread,
-  !for the parent this has the value MPI_COMM_NULL
-  integer(kind=ls_mpik) :: parent_comm
-  integer(kind=ls_mpik) :: child_comm
-  !> intracommunicator of child and parent thread, the intercommunicator is
-  !deleted
-  integer(kind=ls_mpik) :: pc_comm
-  !> rank in the parent child communicator
-  integer(kind=ls_mpik) :: pc_mynum
-  !> number of nodes in the parent child communicator
-  integer(kind=ls_mpik) :: pc_nodtot
-
   !> number of nodes used in scalapack
   integer(kind=ls_mpik) :: ScalapackGroupSize
   !> Use scalapack workaround

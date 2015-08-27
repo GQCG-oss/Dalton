@@ -61,6 +61,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
+#include "eritap.h"
 #include "eribuf.h"
 #include "ccnoddy.h"
 #include "cbirea.h"
@@ -5728,7 +5729,7 @@ C
       RETURN
       END
 C  /* Deck ccrda1 */
-      SUBROUTINE CCRDA1(XINT,IBUF,RBUF,IDELTA,IDEL2,KADR1,KADR2,
+      SUBROUTINE CCRDA1(XINT,IBUF4,RBUF,IDELTA,IDEL2,KADR1,KADR2,
      *                  IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993
@@ -5753,6 +5754,7 @@ C
 #include "ccinftap.h"
 #include "nuclei.h"
 #include "inftap.h"
+#include "eritap.h"
 #include "chrnos.h"
 #include "r12int.h"
 C

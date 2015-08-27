@@ -8,8 +8,9 @@ C
       LOGICAL SKIP,   TSTINP,
      &        HAMILT, SUPMAT, SPNORB, DAR2EL, ORBORB,
      &        ONEPRP, PROPRI, ALLATM, TRIANG, NOTWO,  NO2SO,  SOTEST,
-     &        DIRAC_HER
-C     Selection of specific (property) integrals:
+     &        DIRAC_HER,      TEST_GEN1INT,   TWOBYTEPACKING
+
+C     Selection of specific one-electron (property) integrals:
       LOGICAL KINENE, KINADI, NUCPOT,
      &        DIPLEN, DIPVEL, QUADRU, THETA,  SECMOM, THRMOM,
      &        CARMOM, SPHMOM,
@@ -27,15 +28,15 @@ C     Selection of specific (property) integrals:
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
      &        DERAM,  DIPANH, RMAOTWO,
-     &        S2MBRA, S2MKET, S2MMIX, TEST_GEN1INT, DOLRINTS
+     &        S2MBRA, S2MKET, S2MMIX, DOLRINTS
 C
-      COMMON /CBIHER/ EXPKR(3), THRESH,
-     &        IPRDEF, IORCAR, IORSPH, NPQUAD, NPATOM, IPATOM(MXCENT),
-     &        SKIP,   TSTINP,
+      COMMON /CBIHER/ EXPKR(3), THRESH,                                         ! real*8
+     &        IPRDEF, IORCAR, IORSPH, NPQUAD, NPATOM, IPATOM(MXCENT),           ! integer
+     &        SKIP,   TSTINP,                                                   ! logical control variables
      &        HAMILT, SUPMAT, SPNORB, DAR2EL, ORBORB,
      &        ONEPRP, PROPRI, ALLATM, TRIANG, NOTWO,  NO2SO,  SOTEST,
-     &        DIRAC_HER,
-     &        KINENE, KINADI, NUCPOT,
+     &        DIRAC_HER,      TEST_GEN1INT,   TWOBYTEPACKING,
+     &        KINENE, KINADI, NUCPOT,                                           ! logicals for specific one-electron integrals
      &        DIPLEN, DIPVEL, QUADRU, THETA,  SECMOM, THRMOM,
      &        CARMOM, SPHMOM,
      &        FERMI,  PSO, SPIDIP, DSO, NMRISS, SDFC, HDO,
@@ -52,5 +53,5 @@ C
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
      &        DERAM,  DIPANH, RMAOTWO,
-     &        S2MBRA, S2MKET, S2MMIX, TEST_GEN1INT, DOLRINTS
+     &        S2MBRA, S2MKET, S2MMIX, DOLRINTS
 C --- end of cbiher.h ---

@@ -15,10 +15,10 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Min. sigma_2',rel_tolerance = 1.0e-4)
-f.add(string = 'Min. sigma_4',rel_tolerance = 1.0e-4)
-f.add(string = 'Max. sigma_2',rel_tolerance = 1.0e-4)
-f.add(string = 'Max. sigma_4',rel_tolerance = 1.0e-4)
+f.add(string = 'Min. sigma_2',rel_tolerance = 1.0e-4, mask = [1])
+f.add(string = 'Min. sigma_4',rel_tolerance = 1.0e-4, mask = [1])
+f.add(string = 'Max. sigma_2',rel_tolerance = 1.0e-4, mask = [1])
+f.add(string = 'Max. sigma_4',rel_tolerance = 1.0e-4, mask = [1])
 
 f.add(string = 'Estimated pair correlation energy',
       rel_tolerance = 1.0e-2)

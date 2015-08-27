@@ -307,13 +307,13 @@ C
       IF (SIGMAD0S) THEN
          CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
          CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
-         IF(NORBT.NE.NBAST) Then 
-            PING = .TRUE.
-            write(lupri,*)' WARNING : @ANGPSO (NORBT.NE.NBAST) :',
-     &      ' AngPso not computed due to basis set dependencies'
-         ELSE
-            CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
-         ENDIF
+cx         IF(NORBT.NE.NBAST) Then 
+cx            PING = .TRUE.
+cx            write(lupri,*)' WARNING : @ANGPSO (NORBT.NE.NBAST) :',
+cx     &      ' AngPso not computed due to basis set dependencies'
+cx         ELSE
+         CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
+cx         ENDIF
       END IF
 
 C 

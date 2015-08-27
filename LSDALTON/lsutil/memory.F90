@@ -13,7 +13,7 @@ use LSTENSOR_TYPETYPE
 use basis_typetype
 use dec_typedef_module
 use OverlapType
-use tensor_type_def_module
+use tensor_interface_module, only: tensor,tensor_initialize_bg_buf_from_lsdalton_bg_buf, tensor_free_bg_buf
 #ifdef MOD_UNRELEASED
 use lattice_type
 #endif
@@ -25,7 +25,7 @@ public DetectHeapMemoryInit,DetectHeapMemory
 public Set_PrintSCFmemory,MemInGB,stats_globalmem
 public Set_MemModParamPrintMemory, Print_Memory_info
 public MemModParamPrintMemorylupri,MemModParamPrintMemory
-public Set_PrintMemoryLowerLimit
+public Set_PrintMemoryLowerLimit,printBGinfo
 public get_available_memory
 public init_globalmemvar
 public init_threadmemvar
@@ -42,7 +42,6 @@ public mem_pseudo_dealloc
 public mem_init_background_alloc
 public mem_change_background_alloc
 public mem_free_background_alloc
-public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -319,7 +318,7 @@ INTERFACE mem_alloc
       &             real_allocate_1dim_sp, real_allocate_2dim, &
       &             real_allocate_2dim_sp, real_allocate_2dim_zero, real_allocate_3dim, &
       &             real_allocate_3dim_sp, real_allocate_3dim_zero, real_allocate_4dim, &
-      &             real_allocate_5dim, real_allocate_5dim_zero, &
+      &             real_allocate_4dim_sp, real_allocate_5dim, real_allocate_5dim_zero, &
       &             real_allocate_7dim_zero, &
       &             complex_allocate_1dim, complex_allocate_2dim, &
       &             intS_allocate_1dim,intS_allocate_1dim_wrapper4, &
@@ -359,7 +358,7 @@ INTERFACE mem_alloc
    !
    INTERFACE mem_dealloc
       MODULE PROCEDURE real_deallocate_1dim, real_deallocate_2dim,  &
-         &             real_deallocate_1dim_sp, real_deallocate_2dim_sp, real_deallocate_3dim_sp,&
+         &             real_deallocate_1dim_sp, real_deallocate_2dim_sp, real_deallocate_3dim_sp, real_deallocate_4dim_sp,&
          &             real_deallocate_3dim, real_deallocate_4dim, &
          &             real_deallocate_5dim, real_deallocate_7dim, &
          &             complex_deallocate_1dim, complex_deallocate_2dim, &
@@ -395,10 +394,12 @@ INTERFACE mem_alloc
            & Mem1dimInGB,Mem1dimInGBint8
    END INTERFACE MemInGB
    interface mem_pseudo_alloc
-      module procedure mem_pseudo_alloc_realk,mem_pseudo_alloc_realk2,mem_pseudo_alloc_realk3,mem_pseudo_alloc_mpirealk
+      module procedure mem_pseudo_alloc_realk,mem_pseudo_alloc_realk2,mem_pseudo_alloc_realk3,&
+           & mem_pseudo_alloc_realk4,mem_pseudo_alloc_realk5,mem_pseudo_alloc_mpirealk
    end interface mem_pseudo_alloc
    interface mem_pseudo_dealloc
-      module procedure mem_pseudo_dealloc_realk,mem_pseudo_dealloc_realk2,mem_pseudo_dealloc_realk3,mem_pseudo_dealloc_mpirealk
+      module procedure mem_pseudo_dealloc_realk,mem_pseudo_dealloc_realk2,mem_pseudo_dealloc_realk3,&
+           & mem_pseudo_dealloc_realk4,mem_pseudo_dealloc_realk5,mem_pseudo_dealloc_mpirealk
    end interface mem_pseudo_dealloc
 
 
@@ -2003,7 +2004,33 @@ subroutine mem_init_background_alloc(bytes)
 
    buf_realk%n      = 1
 
+   buf_realk%c_addr = c_null_ptr
+   buf_realk%c_mdel = c_null_ptr
+   buf_realk%f_mdel = c_null_ptr
+   buf_realk%e_mdel = 0
+   buf_realk%n_mdel = 0
+   buf_realk%l_mdel = .false.
+   buf_realk%max_usage = 0 
+
+   call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
+      &buf_realk%init,&
+      &buf_realk%offset,&
+      &buf_realk%nmax,&
+      &buf_realk%max_usage,&
+      &buf_realk%p,&
+      &buf_realk%c,&
+      &buf_realk%n,&
+      &buf_realk%f_addr,&
+      &buf_realk%c_addr,&
+      &buf_realk%c_mdel,&
+      &buf_realk%e_mdel,&
+      &buf_realk%n_mdel,&
+      &buf_realk%n_prev,&
+      &buf_realk%l_mdel,&
+      &buf_realk%f_mdel)
+
 end subroutine mem_init_background_alloc
+
 subroutine mem_change_background_alloc(bytes,not_lazy)
    implicit none
    integer(kind=8), intent(in) :: bytes
@@ -2048,7 +2075,31 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
       buf_realk%nmax   = nelms
 
       buf_realk%n      = 1
+      buf_realk%c_addr = c_null_ptr
+      buf_realk%c_mdel = c_null_ptr
+      buf_realk%f_mdel = c_null_ptr
+      buf_realk%e_mdel = 0
+      buf_realk%n_mdel = 0
+      buf_realk%l_mdel = .false.
+      call tensor_free_bg_buf()
    endif
+
+   call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
+      &buf_realk%init,&
+      &buf_realk%offset,&
+      &buf_realk%nmax,&
+      &buf_realk%max_usage,&
+      &buf_realk%p,&
+      &buf_realk%c,&
+      &buf_realk%n,&
+      &buf_realk%f_addr,&
+      &buf_realk%c_addr,&
+      &buf_realk%c_mdel,&
+      &buf_realk%e_mdel,&
+      &buf_realk%n_mdel,&
+      &buf_realk%n_prev,&
+      &buf_realk%l_mdel,&
+      &buf_realk%f_mdel)
 
 end subroutine mem_change_background_alloc
 subroutine mem_free_background_alloc()
@@ -2077,8 +2128,42 @@ subroutine mem_free_background_alloc()
    buf_realk%nmax   = 0
 
    buf_realk%n      = 1
+   buf_realk%c_addr = c_null_ptr
+   buf_realk%c_mdel = c_null_ptr
+   buf_realk%f_mdel = c_null_ptr
+   buf_realk%e_mdel = 0
+   buf_realk%n_mdel = 0
+   buf_realk%l_mdel = .false.
+   buf_realk%max_usage = 0 
 
+   call tensor_free_bg_buf()
 end subroutine mem_free_background_alloc
+
+
+subroutine mem_clear_mdel_bg_buf()
+   implicit none
+   integer :: i
+   if (buf_realk%l_mdel) then
+      do i=1,buf_realk%n_mdel
+
+         if(.not.c_associated(buf_realk%c_mdel(i),c_loc(buf_realk%p(buf_realk%f_addr(buf_realk%n-1)))))then
+            call lsquit("ERROR(mem_clear_mdel_bg_buf): wrong sequence of&
+               & deallocating, make sure you dealloc in the opposite seqence as&
+               & allocating, also when using mark_deleted",-1)
+         endif
+
+         buf_realk%n = buf_realk%n - 1
+         buf_realk%offset = buf_realk%offset - buf_realk%e_mdel(i)
+
+      enddo
+      
+      buf_realk%c_mdel = c_null_ptr
+      buf_realk%f_mdel = c_null_ptr
+      buf_realk%e_mdel = 0
+      buf_realk%n_mdel = 0
+      buf_realk%l_mdel = .false.
+   endif
+end subroutine mem_clear_mdel_bg_buf
 
 !ATTENTION, WHEN USING THIS STRUCTURE YOU NEED TO MAKE SURE THAT YOU DEALLOCATE
 !IN THE OPPOSITE SEQUENCE OF ALLOCATING, OTHERWISE YOUR DATA WILL BE CORRUPTED
@@ -2094,9 +2179,12 @@ subroutine mem_pseudo_alloc_realk(p,n)
 
    p => buf_realk%p(buf_realk%offset+1:buf_realk%offset+n)
 
-   buf_realk%offset = buf_realk%offset+n
-
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
    buf_realk%c_addr(buf_realk%n) = c_loc(p(1))
+
+   buf_realk%offset = buf_realk%offset+n
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+
 
    buf_realk%n = buf_realk%n + 1
 
@@ -2126,10 +2214,11 @@ subroutine mem_pseudo_alloc_realk2(p,n1,n2)
    call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1))
 
    buf_realk%offset = buf_realk%offset+nelms
-
-   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1))
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
 
    buf_realk%n = buf_realk%n + 1
 
@@ -2160,31 +2249,132 @@ subroutine mem_pseudo_alloc_realk3(p,n1,n2,n3)
 #endif
 
 
-   buf_realk%offset = buf_realk%offset+nelms
-
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
    buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1))
 
+   buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
    buf_realk%n = buf_realk%n + 1
 
    if(buf_realk%n > max_n_pointers)then
-      call lsquit("ERROR(mem_pseudo_alloc_realk2): more pointers associated then currently supported, &
+      call lsquit("ERROR(mem_pseudo_alloc_realk3): more pointers associated then currently supported, &
          &please change max_n_pointers in background_buffer.F90",-1)
    endif
 
 end subroutine mem_pseudo_alloc_realk3
-subroutine mem_pseudo_dealloc_realk(p)
+
+subroutine mem_pseudo_alloc_realk4(p,n1,n2,n3,n4)
+   implicit none
+   real(realk), pointer :: p(:,:,:,:)
+   integer(kind=8), intent(in) :: n1,n2,n3,n4
+   integer(kind=8) :: nelms
+   nelms = n1*n2*n3*n4
+
+   if (buf_realk%offset+nelms > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
+      call lsquit("ERROR(mem_pseudo_alloc_realk4): more requested than available",-1)
+   endif
+
+#ifdef VAR_PTR_RESHAPE
+   p(1:n1,1:n2,1:n3,1:n4) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2,n3,n4])
+#else
+   call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
+
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1,1))
+
+   buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk4): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk4
+
+subroutine mem_pseudo_alloc_realk5(p,n1,n2,n3,n4,n5)
+   implicit none
+   real(realk), pointer :: p(:,:,:,:,:)
+   integer(kind=8), intent(in) :: n1,n2,n3,n4,n5
+   integer(kind=8) :: nelms
+   nelms = n1*n2*n3*n4*n5
+
+   if (buf_realk%offset+nelms > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
+      call lsquit("ERROR(mem_pseudo_alloc_realk5): more requested than available",-1)
+   endif
+
+#ifdef VAR_PTR_RESHAPE
+   p(1:n1,1:n2,1:n3,1:n4,1:n5) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2,n3,n4,n5])
+#else
+   call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
+
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1,1,1))
+
+   buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk5): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk5
+subroutine mem_pseudo_dealloc_realk(p, mark_deleted)
    implicit none
    real(realk), pointer :: p(:)
+   ! if a pointer is to be freed it may be marked as deleted, as long as there
+   ! are pointers marked as deleted, no new pointers can be associated to the bg
+   ! buffer
+   logical, optional, intent(in) :: mark_deleted
    integer(kind=8) :: n
+   logical :: md, last_assoc, del_assoc
+   integer :: i
+   type(c_ptr) :: loc1,loc2
 
-   buf_realk%n = buf_realk%n - 1
+   md=.false.
+   if(present(mark_deleted))md=mark_deleted
+
+   !no need to mark_deleted if it is the correct last element in the buffer
+   last_assoc = c_associated(buf_realk%c_addr(buf_realk%n-1),c_loc(p(1)))
+   del_assoc  = c_associated(buf_realk%f_mdel,               c_loc(p(1)))
+   if(last_assoc) md = .false.
+
+   if(md)then
+      if(.not.buf_realk%l_mdel)then
+         FindPos:do i=1,buf_realk%n
+            loc1 = c_loc(p(1))
+            loc2 = c_loc(buf_realk%p(buf_realk%f_addr(i)))
+            if( c_associated(loc1,loc2))then
+               buf_realk%f_mdel = c_loc(buf_realk%p(buf_realk%f_addr(i+1)))
+               exit FindPos 
+            endif
+         enddo FindPos
+      endif
+      buf_realk%l_mdel = .true.
+      buf_realk%n_mdel = buf_realk%n_mdel + 1
+   else
+      buf_realk%n = buf_realk%n - 1
+   endif
 
    if(buf_realk%n < 0)then
       call lsquit("ERROR(mem_pseudo_dealloc_realk): programming error, more&
       & pointers freed than associated",-1)
    endif
 
-   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1))))then
+   if(.not.md.and..not.last_assoc)then
       call lsquit("ERROR(mem_pseudo_dealloc_realk): wrong sequence of &
       &deallocating, make sure you dealloc in the opposite seqence as allocating, &
       &otherwise you will corrupt your data",-1)
@@ -2196,11 +2386,25 @@ subroutine mem_pseudo_dealloc_realk(p)
       call lsquit("ERROR(mem_pseudo_dealloc_realk): more freed than allocated",-1)
    endif
 
+
+   if(md)then
+      buf_realk%e_mdel(buf_realk%n_mdel) = n
+      buf_realk%c_mdel(buf_realk%n_mdel) = c_loc(p(1))
+   else
+      buf_realk%offset = buf_realk%offset-n
+   end if
+
    p => null()
-
-   buf_realk%offset = buf_realk%offset-n
-
    buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+   !Right now, always clear the mark_deleted buffer at the next real
+   !deallocation, otherwise bookeeping becomes more cumbersome
+   !NOTE: the deassociation from the buffer happens after the real deallocation
+   !and it has to be performed in the correct sequence to ensure the correctness
+   !of the data in the buffer (without too much bookkeeping)
+   if(del_assoc)then
+      call mem_clear_mdel_bg_buf()
+   endif
 
 end subroutine mem_pseudo_dealloc_realk
 subroutine mem_pseudo_dealloc_realk2(p)
@@ -2266,23 +2470,74 @@ subroutine mem_pseudo_dealloc_realk3(p)
 
 end subroutine mem_pseudo_dealloc_realk3
 
-function mem_is_background_buf_init() result(init)
+subroutine mem_pseudo_dealloc_realk4(p)
    implicit none
-   logical :: init
-   init = buf_realk%init
-end function mem_is_background_buf_init
-
-function mem_get_bg_buf_n() result(n)
-   implicit none
+   real(realk), pointer :: p(:,:,:,:)
    integer(kind=8) :: n
-   n = buf_realk%nmax
-end function mem_get_bg_buf_n
 
-function mem_get_bg_buf_free() result(n)
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk4): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1,1,1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk4): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk4): more freed than allocated",-1)
+   endif
+
+   p => null()
+
+   buf_realk%offset = buf_realk%offset-n
+
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+end subroutine mem_pseudo_dealloc_realk4
+
+subroutine mem_pseudo_dealloc_realk5(p)
    implicit none
+   real(realk), pointer :: p(:,:,:,:,:)
    integer(kind=8) :: n
-   n = buf_realk%nmax-buf_realk%offset
-end function mem_get_bg_buf_free
+
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk5): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1,1,1,1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk5): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk5): more freed than allocated",-1)
+   endif
+
+   p => null()
+
+   buf_realk%offset = buf_realk%offset-n
+
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+end subroutine mem_pseudo_dealloc_realk5
+
+subroutine printBGinfo()
+implicit none
+print *,"BG: Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Peak:",buf_realk%max_usage
+end subroutine printBGinfo
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
    implicit none
@@ -2383,7 +2638,7 @@ END SUBROUTINE real_allocate_1dim
 
 SUBROUTINE real_allocate_1dim_sp(A,n)  ! single precision
    implicit none
-   integer,intent(in)  :: n
+   integer(kind=8),intent(in)  :: n
    REAL(4),pointer :: A(:)
    integer :: IERR
    integer (kind=long) :: nsize
@@ -2576,6 +2831,22 @@ SUBROUTINE real_allocate_4dim(A,n1,n2,n3,n4)
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_4dim
+
+SUBROUTINE real_allocate_4dim_sp(A,n1,n2,n3,n4)
+   implicit none
+   integer,intent(in)  :: n1,n2,n3,n4
+   REAL(4),pointer :: A(:,:,:,:)
+   integer :: IERR
+   integer (kind=long) :: nsize
+   nullify(A)
+   ALLOCATE(A(n1,n2,n3,n4),STAT = IERR)
+   nsize = size(A,KIND=long)*4
+   IF (IERR.NE. 0) THEN
+      write(*,*) 'Error in real_allocate_4dim_sp',IERR,n1,n2,n3,n4
+      CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim_sp',nsize)
+   ENDIF
+   call mem_allocated_mem_real(nsize)
+END SUBROUTINE real_allocate_4dim_sp
 
 SUBROUTINE real_allocate_5dim(A,n1,n2,n3,n4,n5)
    implicit none
@@ -2793,6 +3064,25 @@ SUBROUTINE real_deallocate_4dim(A)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_4dim
+
+SUBROUTINE real_deallocate_4dim_sp(A)
+   implicit none
+   REAL(4),pointer :: A(:,:,:,:)
+   integer :: IERR
+   integer (kind=long) :: nsize
+   nsize = size(A,KIND=long)*4
+   call mem_deallocated_mem_real(nsize)
+   if (.not.ASSOCIATED(A)) then
+      print *,'Memory previously released!!'
+      call memory_error_quit('Error in real_deallocate_4dim_sp - memory previously released',nsize)
+   endif
+   DEALLOCATE(A,STAT = IERR)
+   IF (IERR.NE. 0) THEN
+      write(*,*) 'Error in real_deallocate_4dim_sp',IERR
+      CALL MEMORY_ERROR_QUIT('Error in real_deallocate_4dim_sp',nsize)
+   ENDIF
+   nullify(A)
+END SUBROUTINE real_deallocate_4dim_sp
 
 SUBROUTINE real_deallocate_5dim(A)
    implicit none
@@ -3057,7 +3347,6 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
 #ifdef VAR_HAVE_MPI3
       if(loc) then
          bytes = int(0,kind=MPI_ADDRESS_KIND)
-         if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * lsmpi_len_realk
 
          if(bytes<0)then
             print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk

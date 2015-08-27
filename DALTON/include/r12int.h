@@ -9,6 +9,7 @@ C
       PARAMETER (MAXGAM = 50)
 
       REAL*8  GAMAC,  GAMAD,  GAMAB,  GAMAX
+C
       LOGICAL R12INT, R12TRA, U12INT, U21INT, R12SQR,
      *        R12CAL, R12NOA, R12NOP, R12NOB, R12OLD, NORXR,
      *        R12HYB, COMBSS, R12EIN, R12EOR, R12ECO, R12XXL,
@@ -18,8 +19,11 @@ C
      *        NOTONE, NOTTWO, CCSDR12INT,     R12CBS, NOBP,
      *        SLATER, MIAU12, AENONB, NOTTRE, CCR12SM
       LOGICAL R12DIA, R12SVD, R12RST, R12PRP, NATVIR, USEVABKL
+C
       INTEGER NTOGAM, NRXR12(8), IANCC2, IAPCC2, LOCFRO(8)
-      INTEGER INTGAC, INTGAD, IADV12, IADR12, IADU12, IADU21, NOPP12
+      INTEGER INTGAC, INTGAD, IADV12, IADR12, IADU12, IADU21, NOPP12,
+     &        COMR12LAST
+C
       COMMON /COMR12/ GAMAC,  GAMAD, GAMAB(MAXGAM), GAMAX(MAXGAM),
      &        R12INT, R12TRA, U12INT,
      *        U21INT, R12SQR, R12CAL, R12NOA, R12NOP, R12NOB,
@@ -34,16 +38,60 @@ C
      *        XMIADR, MIAU12, AENONB, NRXR12, NOTTRE, IANCC2, IAPCC2,
      *        NTOGAM, SLATER, LOCFRO, CCR12SM,
      *        R12DIA, R12SVD, R12RST, R12PRP, NATVIR, USEVABKL
+C
+      COMMON /COMR12/ COMR12LAST
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+C
+C
+C
+C
+C
+C
+C
       CHARACTER*10    FNVAJKL
       COMMON /R12FNS/ FNVAJKL
+C
+C
+C
+C
+C
       REAL*8          VCLTHR, SVDTHR, R12LEV
       COMMON /COMVCL/ VCLTHR, SVDTHR, R12LEV
+C
+C
+C
+C
+C
       INTEGER MBAS1(8), MBAS2(8), MBAS1T, MBAS2T, LU21INT, IOFFU21,
-     &        NORB1(8), NORB2(8), MBSMAX, NPLSH_R12
+     &        NORB1(8), NORB2(8), MBSMAX, NPLSH_R12, CMMMULLAST
       LOGICAL LAUXBS, NOAUXB
       COMMON /CMMMUL/ MBAS1, MBAS2, NORB1, NORB2, MBAS1T, MBAS2T,
      &        MBSMAX, NPLSH_R12,
      &        LAUXBS, NOAUXB
+      COMMON /CMMMUL/ CMMMULLAST 
+      !   Very important !!!
+      !   Always keep this variable as the last variable in the common block. 
+      !   If you add more variables to the block add them before <name>last.
+      !   This variable is used to synchronize slaves for parallel
+      !   calculations. Other than acting as a target to calculate the size of a common
+      !   block, they have no use.
+      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
+      !   to get the number of bytes needed to transfer the common block.
+      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+C
+C
+C
+C
+C
+C
       CHARACTER*8 LABEL
       COMMON /CMMOLL/ LABEL
       REAL*8  BRASCL,KETSCL

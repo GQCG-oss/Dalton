@@ -209,6 +209,7 @@ contains
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
+    dE_est3 = 0.0E0_realk
     master=0
     ForcePrintTime = .TRUE.
 
@@ -586,10 +587,23 @@ contains
     endif
     call mem_dealloc(energies)
 
+    if(DECinfo%NaturalLinearScalingF12Terms) then
+       print*,'NaturalLinearScalingTerms:'
+       print*,'add NaturalLinearScalingTerms: Ecorr               =',Ecorr
+       print*,'add NaturalLinearScalingTerms: MyMolecule%EF12NLSV1=',MyMolecule%EF12NLSV1
+       print*,'add NaturalLinearScalingTerms: MyMolecule%EF12NLSB1=',MyMolecule%EF12NLSB1
+       print*,'add NaturalLinearScalingTerms: MyMolecule%EF12NLSX1=',MyMolecule%EF12NLSX1
+       Ecorr = Ecorr + MyMolecule%EF12NLSB1 + MyMolecule%EF12NLSV1 + MyMolecule%EF12NLSX1
+       print*,'========================================================================='
+       print*,'add NaturalLinearScalingTerms: New Ecorr         =',Ecorr
+    endif
+
     ! Print short summary
-    call print_total_energy_summary(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3)
+    call print_total_energy_summary(EHF,Edft,Ecorr,MyMolecule%EF12singles,&
+         & dE_est1,dE_est2,dE_est3)
     if(DECinfo%ccmodel==MODEL_RPA)then
-       call print_total_energy_summary(EHF,Edft,Esos,Eerrs,dE_est2,dE_est3,doSOS=.true.)
+       call print_total_energy_summary(EHF,Edft,Esos,MyMolecule%EF12singles,&
+            &  Eerrs,dE_est2,dE_est3,doSOS=.true.)
     endif
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
@@ -618,9 +632,9 @@ contains
 #ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
           IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_VIRTMP2)
+             Ecorr = energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
           ELSE
-             Ecorr = energies(FRAGMODEL_MP2f12) + energies(FRAGMODEL_OCCMP2)
+             Ecorr = energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
           ENDIF
        endif
 #endif 
@@ -1577,6 +1591,7 @@ subroutine print_dec_info()
         endif
 
 
+        deltaE_p =  0.0E0_realk
         select case(maxis)
         case(1)
            deltaE_p =  dE_occ

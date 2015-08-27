@@ -3,7 +3,7 @@
 !> \author Kasper Kristensen
 !> \date March 2012
 module decmpi_module
-
+   
   use precision
   use typedeftype!, only: lsitem
   use memory_handling!,only: mem_alloc,mem_dealloc
@@ -13,15 +13,48 @@ module decmpi_module
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
   use Matrix_module!,only: matrix
+  use background_buffer_module
   use tensor_basic_module
   use tensor_interface_module
+!
   use DEC_settings_mod
   use dec_fragment_utils
   use array4_simple_operations
   use array2_simple_operations
+  use CABS_operations
+
+  private
+#ifdef VAR_MPI
+  public :: mpi_send_recv_fragmentenergy, mpi_send_recv_mp2grad,&
+       & mpi_send_recv_single_fragment, mpi_send_recv_many_fragments,&
+       & mpi_bcast_many_fragments, mpi_communicate_mp2_int_and_amp,&
+       & mpi_communicate_MyFragment, decmpi_bcast_f12_info,&
+       & mpi_dec_fullinfo_master_to_slaves, &
+       & mpi_bcast_fullmolecule, mpicopy_fragment,&
+       & mpicopy_fragmentAOStype,&
+       & buffercopy_PNOSpaceInfo_struct,&
+       & share_E2_with_slaves, mpi_communicate_ccsd_calcdata,&
+       & mpi_communicate_ccsdpt_calcdata, get_mo_ccsd_joblist,&
+       & distribute_mpi_jobs, bcast_dec_fragment_joblist,&
+       & mpicopy_fragment_joblist, dec_half_local_group,&
+       & mpicopy_fragmentdensity, mpicopy_fragmentgradient,&
+       & print_MPI_fragment_statistics,&
+       & mpibcast_dec_settings, mpi_communicate_get_gmo_data,&
+       & mpi_communicate_moccsd_data,&
+       & mpicopy_dec_settings, rpa_residual_communicate_data,&
+       & rpa_fock_communicate_data, &
+       & mpi_dec_fullinfo_master_to_slaves_precursor,&
+       & wake_slaves_for_simple_mo,&
+       & get_slaves_to_simple_par_mp2_res,&
+       & check_job, &
+       & mpi_communicate_MyFragment_f12
+#else
+public :: check_job
+#endif
+
 
 contains
-
+ 
 #ifdef VAR_MPI
 
   !> \brief Send three fragment energies (for occupied, virtual, and Lagrangian schemes)
@@ -74,44 +107,44 @@ contains
   !> \date June 2012
   subroutine mpi_send_recv_mp2grad(comm,MySender,MyReceiver,grad,fragenergy,job,only_update)
 
-    implicit none
+     implicit none
 
-    !> Communicator
-    integer(kind=ls_mpik),intent(in) :: comm
-    !> Rank of sender WITHIN comm group
-    integer(kind=ls_mpik),intent(in) :: MySender
-    !> Rank of receiver WITHIN comm group
-    integer(kind=ls_mpik),intent(in) :: MyReceiver
-    !> Fragment energies, see "energy" in decfrag type def
-    real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
-    !> MP2 fragment gradient matrix information
-    type(mp2grad),intent(inout) :: grad
-    !> Fragment job info (job list containing a single job)
-    type(joblist),intent(inout) :: job
-    !> Only MPI copy information needed for update_full_mp2gradient
-    !> (this will minimize MPI communication for global master)
-    logical,intent(in) :: only_update
-    integer(kind=ls_mpik) :: mynum,master
-    master=0
+     !> Communicator
+     integer(kind=ls_mpik),intent(in) :: comm
+     !> Rank of sender WITHIN comm group
+     integer(kind=ls_mpik),intent(in) :: MySender
+     !> Rank of receiver WITHIN comm group
+     integer(kind=ls_mpik),intent(in) :: MyReceiver
+     !> Fragment energies, see "energy" in decfrag type def
+     real(realk),dimension(ndecenergies),intent(inout) :: fragenergy
+     !> MP2 fragment gradient matrix information
+     type(mp2grad),intent(inout) :: grad
+     !> Fragment job info (job list containing a single job)
+     type(joblist),intent(inout) :: job
+     !> Only MPI copy information needed for update_full_mp2gradient
+     !> (this will minimize MPI communication for global master)
+     logical,intent(in) :: only_update
+     integer(kind=ls_mpik) :: mynum,master
+     master=0
 
-    ! Sanity check 1: Meaningful rank
-    call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
-    if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
-       print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
-       call lsquit('mpi_send_recv_mp2grad: Rank number is neither sender nor receiver!',-1)
-    end if
+     ! Sanity check 1: Meaningful rank
+     call get_rank_for_comm(comm,mynum)  ! rank number for given communicator
+     if( (mynum/=MySender) .and. (mynum/=MyReceiver) ) then
+        print '(a,3i6)', 'Rank,sender,receiver',mynum,MySender,MyReceiver
+        call lsquit('mpi_send_recv_mp2grad: Rank number is neither sender nor receiver!',-1)
+     end if
 
-    ! Init buffer
-    call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
+     ! Init buffer
+     call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
-    ! Sender: Copy fragment info into buffer
-    ! Receiver: Read fragment info from buffer
-    call mpicopy_fragmentgradient(grad,only_update)
-    call ls_mpi_buffer(fragenergy,ndecenergies,master)
-    call mpicopy_fragment_joblist(job)
+     ! Sender: Copy fragment info into buffer
+     ! Receiver: Read fragment info from buffer
+     call mpicopy_fragmentgradient(grad,only_update)
+     call ls_mpi_buffer(fragenergy,ndecenergies,master)
+     call mpicopy_fragment_joblist(job)
 
-    ! Finalize buffer
-    call ls_mpiFinalizeBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
+     ! Finalize buffer
+     call ls_mpiFinalizeBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
   end subroutine mpi_send_recv_mp2grad
 
@@ -414,6 +447,58 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_MyFragment 
 
+  subroutine mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+    implicit none
+    !> Fragment under consideration
+    type(decfrag),intent(inout) :: MyFragment
+    !> Case MODEL
+    integer :: fragcase
+    !> dopair_occ array
+    logical,intent(inout) :: dopair
+
+    !local variables
+    integer(kind=ls_mpik) :: master
+    integer :: nrow,ncol
+    logical :: DoBasis
+    DoBasis = .TRUE.
+    call time_start_phase( PHASE_COMM )
+    master = 0
+    ! Init MPI buffer which eventually will contain all fragment info
+    ! ***************************************************************
+    ! MASTER: Prepare for writing to buffer
+    ! SLAVE: Receive buffer
+    call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    ! Buffer handling
+    ! ***************
+    ! MASTER: Put information info buffer
+    ! SLAVE: Put buffer information into decfrag structure
+    ! Fragment information
+    call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
+ 
+    if(infpar%lg_mynum .ne. master) then
+       call mem_alloc(MyFragment%Ccabs,MyFragment%ncabsAO,MyFragment%ncabsMO)
+       call mem_alloc(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO)
+       call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)
+       call mem_alloc(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO)
+    endif
+     
+    call ls_mpi_buffer(MyFragment%Ccabs,MyFragment%ncabsAO,MyFragment%ncabsMO,master)
+    call ls_mpi_buffer(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO,master)
+    call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master) 
+    call ls_mpi_buffer(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO,master) 
+    call ls_mpi_buffer(fragcase,master) 
+    call ls_mpi_buffer(dopair,master) 
+
+    ! Finalize MPI buffer
+    ! *******************
+    ! MASTER: Send stuff to slaves and deallocate temp. buffers
+    ! SLAVE: Deallocate buffer etc.
+   call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+    call time_start_phase( PHASE_WORK )
+  end subroutine mpi_communicate_MyFragment_f12 
+
+
   !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
   !> In addition, other information required for calculating F12 integrals
@@ -669,6 +754,10 @@ contains
     call ls_mpibcast(MyMolecule%Edisp,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12singles,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSV1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSX1,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if global slave
     if(.not. gm) then
@@ -678,14 +767,10 @@ contains
        call mem_alloc(MyMolecule%bas_start,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%bas_end,MyMolecule%nbasis)
        IF(DECINFO%F12)THEN
+          call init_cabs()
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
        ENDIF
-       !IF(DECinfo%F12)THEN
-       !   call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
-       !   call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-       !ENDIF
-
        if(.not.MyMolecule%mem_distributed)then
           call tensor_init(MyMolecule%Co,[MyMolecule%nbasis,MyMolecule%nocc],2)
           call tensor_init(MyMolecule%Cv,[MyMolecule%nbasis,MyMolecule%nvirt],2)
@@ -738,11 +823,6 @@ contains
 
     ! Real pointers
     ! -------------
-    !IF(DECinfo%F12)THEN
-    !   call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
-    !   call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-    !ENDIF
-
     if(MyMolecule%mem_distributed)then
 
        !master get adresses
@@ -864,6 +944,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsMO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nvirtLOC,master)
@@ -1364,7 +1445,7 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc,ccsd_t1)
 
     implicit none
 
@@ -1373,6 +1454,7 @@ contains
     type(lsitem)                        :: mylsitem
     logical                             :: print_frags,abc
     integer,dimension(infpar%lg_nodtot) :: vovo_addr,t2_addr
+    type(tensor), intent(inout), optional :: ccsd_t1
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1399,6 +1481,12 @@ contains
     ccsd_t2%access_type = AT_ALL_ACCESS
     vovo%access_type = AT_ALL_ACCESS
 
+    if ((infpar%lg_mynum .eq. infpar%master) .and. (.not. print_frags) .and. present(ccsd_t1)) then
+
+       call ls_mpibcast(ccsd_t1%elm1,nvirt*nocc,infpar%master,infpar%lg_comm)
+
+    endif
+
   end subroutine mpi_communicate_ccsdpt_calcdata
 
 #ifdef MOD_UNRELEASED
@@ -1417,7 +1505,7 @@ contains
 
     integer, pointer :: workloads(:), easytrace(:,:), work_in_node(:)
     integer :: swapar(3)
-    integer :: nnod, njob, swap, i, j, next_nod, ijob
+    integer :: nnod, njob, swap, i, j, next_nod, ijob, dpos, didx, dwidx
 
     nnod = infpar%lg_nodtot
     njob = MOinfo%Nbatch
@@ -1460,10 +1548,10 @@ contains
     do ijob=1,min(nnod,njob)
       if (easytrace(ijob,2)==0) then 
         ! tile in pgmo_diag array
-        call get_residence_of_tile(next_nod,easytrace(ijob,1),pgmo_diag)
+        call get_residence_of_tile(pgmo_diag,easytrace(ijob,1),next_nod,dpos,didx,dwidx)
       else 
         ! tile in pgmo_up array
-        call get_residence_of_tile(next_nod,easytrace(ijob,1),pgmo_up)
+        call get_residence_of_tile(pgmo_up,easytrace(ijob,1),next_nod,dpos,didx,dwidx)
       end if
       next_nod = next_nod + 1
       ! Update joblist and workload
@@ -1804,6 +1892,7 @@ contains
        call mem_alloc(jobs%workt,jobs%njobs)
        call mem_alloc(jobs%commt,jobs%njobs)
        call mem_alloc(jobs%idlet,jobs%njobs)
+       call mem_alloc(jobs%comm_gl_master_time,jobs%njobs)
     end if
 
     ! Buffer handling for pointers
@@ -1824,6 +1913,7 @@ contains
     call ls_mpi_buffer(jobs%workt,jobs%njobs,master)
     call ls_mpi_buffer(jobs%commt,jobs%njobs,master)
     call ls_mpi_buffer(jobs%idlet,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%comm_gl_master_time,jobs%njobs,master)
 
   end subroutine mpicopy_fragment_joblist
 
@@ -2052,13 +2142,15 @@ contains
     write(DECinfo%output,*) '-------------------'
     write(DECinfo%output,*) 'Job    : Fragment job number'
     write(DECinfo%output,*) '#occ   : Number of occupied AOS orbitals in fragment'
-    write(DECinfo%output,*) '#virt  : Number of virtual AOS orbitals in fragment'
-    write(DECinfo%output,*) '#basis : Number of basis functions in fragment'
-    write(DECinfo%output,*) 'slotsiz: Number of slaves used for fragment incl. local master (slot size)'
+    write(DECinfo%output,*) '#vir   : Number of virtual AOS orbitals in fragment'
+    write(DECinfo%output,*) '#bas   : Number of basis functions in fragment'
+    write(DECinfo%output,*) 'GrpSiz : Number of slaves used for fragment incl. local master (Groupe Size)'
     write(DECinfo%output,*) '#tasks : Number of integral tasks for fragment (nalpha*ngamma)'
     write(DECinfo%output,*) 'GFLOPS : Accumulated GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'GGFLOPS: Accumulated GPU GFLOPS for fragment (local master AND local slaves)'
     write(DECinfo%output,*) 'Time(s): Time (in seconds) used by local master (NOT local slaves)'
+    write(DECinfo%output,*) 'CommT  : Time (in seconds) used by local master to communicate data to the'
+    write(DECinfo%output,*) '         global master (correspond to job n+1)'
     write(DECinfo%output,*) 'Load   : Load distribution measure (ideally 1.0, smaller in practice)'
     write(DECinfo%output,*) '      Load1 = (Sum of working and communication times for ALL MPI processes in slot)'
     write(DECinfo%output,*) '           / (slotsize * [Local master time] )'
@@ -2069,8 +2161,8 @@ contains
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,4X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
-         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'GGFLOPS', 'Time(s)', 'Load1', 'Load2'
+    write(DECinfo%output,'(4X,a,X,a,X,a,X,a,X,a,X,a,3X,a,4X,a,4X,a,6X,a,4X,a,2X,a)') 'Job', '#occ', &
+         & '#vir', '#bas', 'GrpSiz', '#tasks', 'GFLOPS', 'GGFLOPS', 'Time(s)', 'CommT', 'Load1', 'Load2'
 
     avflop         = 0.0E0_realk
     totflops       = 0.0E0_realk
@@ -2105,8 +2197,10 @@ contains
        slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
        if(.not. jobs%dofragopt(i)) then
-          write(DECinfo%output,'(6i8,3X,5g11.3,a)') i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
+          write(DECinfo%output,'(i7,3i5,2i7,4g11.3,2F7.3,2X,a)')  & 
+               &i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
                & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
+               & jobs%comm_gl_master_time(i), &
                &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
                &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
        end if
@@ -2372,9 +2466,21 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPthr,Master)
     call ls_mpi_buffer(DECitem%SNOOPmaxdiis,Master)
     call ls_mpi_buffer(DECitem%SNOOPdebug,Master)
-    call ls_mpi_buffer(DECitem%SNOOPort,Master)
     call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
+    call ls_mpi_buffer(DECitem%SNOOPrestart,Master)
+    call ls_mpi_buffer(DECitem%SNOOPonesub,Master)
+    call ls_mpi_buffer(DECitem%CCexci,Master)
+    call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
+    call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
+    call ls_mpi_buffer(DECitem%JacobianThr,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianInitialSubspace,Master)
+    call ls_mpi_buffer(DECitem%JacobianMaxIter,Master)
+    call ls_mpi_buffer(DECitem%JacobianPrecond,Master)
+    call ls_mpi_buffer(DECitem%HaldApprox,Master)
+    call ls_mpi_buffer(DECitem%LW1,Master)
+    call ls_mpi_buffer(DECitem%P_EOM_MBPT2,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%DECNP,Master)
@@ -2416,7 +2522,9 @@ contains
     call ls_mpi_buffer(DECitem%ijk_nbuffs,Master)
     call ls_mpi_buffer(DECitem%abc_nbuffs,Master)
     call ls_mpi_buffer(DECitem%acc_sync,Master)
+    call ls_mpi_buffer(DECitem%pt_single_prec,Master)
     call ls_mpi_buffer(DECitem%pt_hack,Master)
+    call ls_mpi_buffer(DECitem%pt_hack2,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
@@ -2450,12 +2558,23 @@ contains
     call ls_mpi_buffer(DECitem%ccConvergenceThreshold,Master)
     call ls_mpi_buffer(DECitem%CCthrSpecified,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
+    call ls_mpi_buffer(DECitem%ccsolverskip,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
+
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%F12Ccoupling,Master)
+    call ls_mpi_buffer(DECitem%F12singles,Master)
+    call ls_mpi_buffer(DECitem%F12singlesMaxIter,Master)
+    call ls_mpi_buffer(DECitem%F12singlesThr,Master)
+    call ls_mpi_buffer(DECitem%F12singlesMaxDIIS,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12Terms,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsB1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsV1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsX1,Master)
+
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%AtomicExtent,Master)
@@ -2469,6 +2588,8 @@ contains
     call ls_mpi_buffer(DECinfo%RIMP2ForcePDMCalpha,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_tiling,Master)
     call ls_mpi_buffer(DECinfo%RIMP2_lowdin,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_Laplace,Master)
+    call ls_mpi_buffer(DECinfo%RIMP2_deactivateopenmp,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%rimpisplit,Master)
@@ -2492,9 +2613,11 @@ contains
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
+    call ls_mpi_buffer(DECitem%MemDebugPrint,Master)
     call ls_mpi_buffer(DECitem%print_small_calc,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%distribute_fullmolecule,Master)
+    call ls_mpi_buffer(DECitem%force_distribution,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)

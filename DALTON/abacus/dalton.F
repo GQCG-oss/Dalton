@@ -37,7 +37,7 @@ C=========================================================================
 C
       use parallel_models_mpi
 #ifdef ENABLE_XCINT
-      use dalton_xcint_interface, only: xcint_finalize
+      use dalton_xcint_interface, only: xcint_is_active, xcint_finalize
 #endif
 C
 #include "implicit.h"
@@ -717,7 +717,9 @@ C
 
 
 #ifdef ENABLE_XCINT
-      call xcint_finalize()
+      if (xcint_is_active()) then
+        call xcint_finalize()
+      end if
 #endif
 
 
@@ -887,7 +889,7 @@ C                    because unit 0 is stderr on many systems.
 C                    The number -9xxx is used for easier debugging.
 C
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "priunit.h"
 #include "inftap.h"
 #include "ccinftap.h"

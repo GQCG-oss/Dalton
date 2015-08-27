@@ -700,13 +700,15 @@ c      DIMENSION XINDX(*),MJWOP(2,MAXWOP,8)
       DIMENSION XINDX(*),MJWOP(*)
       DIMENSION RESLRF(2,ABS_NFREQ_INTERVAL,3,3,3),WRK(LWRK)
 C     local
-      REAL*8  DUMMY
+      REAL*8  DUMMY, thd
       INTEGER IDUMMY
-      PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
+      PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 , thd=1.0D-6  )
+      logical negf
 C
 C
       IF (IPRABSLRS.GT.0) CALL TIMER('START ',TIMSTR,TIMEND)
-C
+C 
+      negf=.false.
       DO ISYM=1,NSYM
          IF (ABS_NOPER(ISYM).GT.0) THEN
 C
@@ -716,10 +718,11 @@ C
             CALL ABSINTER(ISYM,UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
      &                    KZVAR,WRK(KFREE),LFREE)
 C
-            KGD   = 1
-            KXSOL = KGD + 2*KZVAR
-            KFREE = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
-            LFREE = LWRK - KFREE 
+            KGD    = 1
+            kfreqs = KGD + 2*KZVAR
+            KXSOL  = kfreqs + abs_nfreq_interval
+            KFREE  = KXSOL + 4*ABS_NFREQ_INTERVAL*KZVAR
+            LFREE  = LWRK - KFREE 
 C
             ABS_KLRED(1)=0
             ABS_KLRED(2)=0
@@ -775,8 +778,17 @@ C
                    ENDDO
                  WRITE(LUPRI,*) 'Vectors equal to zero'
                ELSE
+                 nfreqs=abs_nfreq_interval
+                 do i=1,abs_nfreq_interval
+                   if (abs_freq_alpha(i) .lt. 0.d0) negf=.true.
+                   wrk(kfreqs-1+i)=abs(abs_freq_alpha(i))
+                 enddo
+                 if (negf) then
+                   call gpdsrt(nfreqs,wrk(kfreqs),thd)
+                 endif
+                 
                  CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                        ABS_FREQ_ALPHA,ABS_NFREQ_INTERVAL,
+     &                        wrk(kfreqs),nfreqs,
      &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
      &                        WRK(KFREE),LFREE)
                ENDIF
@@ -916,7 +928,7 @@ C
       SUBROUTINE ABS_LINE2(KZVAR,XTMP,ZYMB,ISYMDM,ISYMB,NNMAX,
      &                     CMO,FC,FCAC,FV,UDV,XINDX,MJWOP,WRK,LWRK)
 C
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_is_active,
      &                                  xcint_integrate_rks_lr
 #endif
@@ -961,7 +973,7 @@ C     local
       INTEGER IDUMMY
       PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
 C
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
       real(8), allocatable :: dmat_ao(:)
       real(8), allocatable :: xc_mat(:)
       real(8), allocatable :: fmat_mo(:)
@@ -1151,7 +1163,7 @@ C         Proceed normal way otherwise
      &                            ZYMB(1,1,NKD-NASIM+1),.FALSE.,
      &                            ISYMB,WRK(KFREE),LFREE,IPRDFT)
           ELSE
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              if (xcint_is_active()) then
 
 c             if (nasim > 1) then
@@ -1196,13 +1208,13 @@ c             end if
              deallocate(xc_mat)
              deallocate(fmat_mo)
          else
-#endif /* ENABLE_XCINT_RESPONSE */
+#endif /* ENABLE_XCINT */
 c         call dft_lin_respf(NNMAX,WRK(KFMMO(1)),CMO,ZYMB,
 c     &                 .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
             call dft_lin_respf(NASIM,WRK(KFMMO(NKD-NASIM+1)),CMO,
      &                         ZYMB(1,1,NKD-NASIM+1),
      &                        .FALSE.,ISYMB,WRK(KFREE),LFREE,IPRDFT)
-#ifdef ENABLE_XCINT_RESPONSE
+#ifdef ENABLE_XCINT
              endif
 #endif
           END IF
@@ -1233,6 +1245,7 @@ C
 C
 C PURPOSE:
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"
@@ -1341,8 +1354,8 @@ c
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
       ENDDO
 C
-C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM .OR. PEQM) THEN
-      IF (EMBEDDING) THEN
+C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM) THEN
+      IF (EMBEDDING .OR. USE_PELIB()) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF
@@ -1525,7 +1538,7 @@ C     DXVAO finished, now DXCAO, if nisht.gt.0:
           ICMO1  = ICMO(ISYM1)
           ICMO2  = ICMO(ISYM2)
 C
-          IF (NBAS1*NBAS2*NORB2 .NE. 0) THEN
+          IF (NORB2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NISH1,NORB2,1.D0,CMO(ICMO2+1),
      &                 NBAS2,ZYM(IORB1+1,IORB2+1),NORBT,0.D0,
      &                 WRK(KDXAO1),NBAS2)
@@ -1549,7 +1562,7 @@ c
           NORB2  = NORB(ISYM2)
           ICMO1  = ICMO(ISYM1)
           ICMO2  = ICMO(ISYM2)
-          IF (NBAS1*NBAS2*NORB2 .NE. 0) THEN
+          IF (NORB2 .NE. 0) THEN
             CALL DGEMM('N','N',NBAS2,NISH1,NORB2,1.D0,CMO(ICMO2+1),
      &                 NBAS2,ZYM(IORB2+1,IORB1+1),NORBT,0.D0,
      &                 WRK(KDXAO1),NBAS2)
@@ -2317,6 +2330,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*),FV(*),XINDX(*),
      &     WRK(LWRK),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2),
      &     FREQ_ABS(NMXFREQ)
+      parameter (d0=-1.D0-16)
 C
       KFREE = 1
       LFREE = LWRK
@@ -2346,11 +2360,16 @@ C
             DO IFREQ=1,ABS_NFREQ_INTERVAL
                  CALL READ_XVEC(LU,2*KZYVAR,WRK(KVEC),
      &              LABEL,ABS_GRADSYM,
-     &              ABS(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
+c     &              ABS(FREQ_ABS(IFREQ),ABS_THCLR,FOUND,CONV)
+     &              abs(FREQ_ABS(IFREQ)),ABS_THCLR,FOUND,CONV)
+               if (freq_abs(ifreq) .lt. d0) then
+                 call abs_vec_swap(2*kzyvar,wrk(kvec))
+               endif
                RESLRF(1,IFREQ,INXGD,INDEX,ITYPE) =
      &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC),1)
                RESLRF(2,IFREQ,INXGD,INDEX,ITYPE) =
-     &              DDOT(KZYVAR,WRK(KGD),1,WRK(KVEC+KZYVAR),1)
+     &              DDOT(KZYVAR,WRK(KGD),
+     &              1,WRK(KVEC+KZYVAR),1)
             END DO
          END IF
       END DO
@@ -2698,6 +2717,22 @@ C
          CALL QUIT('Too many quadratic response functions specified.')
       END IF
 C
+      RETURN
+      END
+      SUBROUTINE ABS_VEC_SWAP(NDIM,XVEC)
+C
+      DIMENSION XVEC(NDIM,4)
+      REAL YVEC(NDIM,4)
+      parameter (dm1=-1.0d0)
+
+      call dzero(yvec,4*ndim)
+      call dcopy(ndim,xvec(1,1),1,yvec(1,2),1)      
+      call dcopy(ndim,xvec(1,2),1,yvec(1,1),1)
+      call dscal(2*ndim,dm1,yvec(1,1),1)
+      call dcopy(ndim,xvec(1,3),1,yvec(1,4),1)      
+      call dcopy(ndim,xvec(1,4),1,yvec(1,3),1)
+      call dcopy(4*ndim,yvec,1,xvec,1)      
+
       RETURN
       END
 

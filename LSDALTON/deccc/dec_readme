@@ -84,29 +84,35 @@ Anyone not obeying these simple rules will get executed by the Jonas Kramer warr
 Dependency list:
 ****************
 
-Level 10
+Level 12
 dec_main
 
-Level 9
+Level 11
 snoop_main, snoop_tools
 
-Level 8
-full_driver, dec_driver,decmpiSlave
+Level 10
+full_driver, dec_driver, decmpiSlave, full_rimp2f12
 
-Level 7
+Level 9
 dec_driver_slave
 
-Level 6
+Level 8
 fragment_energy
 
-Level 5
+Level 7
 cc_driver, cc_debug_routines
 
-Level 4
+Level 6
 rpa
 
+Level 5
+pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals, rif12_integrals, cc_response_tools
+
+Level 4
+full_mp3
+
 Level 3
-pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals, cc_response_tools
+full_mp2
 
 Level 2 
 fullmolecule, mp2, cc_integrals, crop_tools, rimp2, ri_util

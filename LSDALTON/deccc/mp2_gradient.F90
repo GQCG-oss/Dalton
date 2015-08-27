@@ -23,7 +23,7 @@ module mp2_gradient_module
   use dec_typedef_module
   use IntegralInterfaceMOD!,only: ii_get_twoelectron_gradient, ii_get_reorthonormalization, &
 !       & ii_get_oneelectron_gradient, ii_get_nn_gradient
-
+  use tensor_interface_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
@@ -620,6 +620,7 @@ contains
        call RIMP2_gradient_driver(MyFragment,ThetaOCC%val,Grad%Ltheta,natoms,&
             & nbasis,MyFragment%noccEOS,nvirtAOS,CoccEOS%val,CvirtAOS%val,&
             & dopair_occ)
+
        call mem_dealloc(dopair_occ)
        call array2_free(CvirtAOS)
        call array2_free(CoccEOS)
