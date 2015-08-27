@@ -176,6 +176,7 @@ implicit none
   config%doRIMP2       = .false.
   config%doTestMPIcopy = .false.
   config%doTestHodi    = .false.
+  config%testHodiOrder = 4
   config%skipscfloop   = .false.
   config%papitest      = .false.
 #ifdef VAR_MPI
@@ -1300,6 +1301,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
         CASE('.TESTHODI');              config%doTestHodi            = .true.
+        CASE('.TESTHODI-ORDER');        READ(LUCMD,*) config%testHodiOrder
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
            READ(LUCMD,*) config%GPUMAXMEM

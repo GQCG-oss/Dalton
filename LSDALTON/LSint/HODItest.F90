@@ -14,9 +14,9 @@ MODULE HODItest_module
   private
 CONTAINS
 
-SUBROUTINE debugTestHODI(lupri,luerr,setting,D,nbast,nAtoms)
+SUBROUTINE debugTestHODI(lupri,luerr,setting,D,nbast,nAtoms,order)
 implicit none
-Integer,intent(IN)            :: lupri,luerr,nbast,nAtoms
+Integer,intent(IN)            :: lupri,luerr,nbast,nAtoms,order
 TYPE(LSSETTING),intent(INOUT) :: setting
 TYPE(Matrix),intent(IN)       :: D
 !
@@ -40,6 +40,7 @@ IF (doMPI_save) THEN
 ENDIF
 
 !******** First order *********
+IF (order.GE.1) THEN
 !Coulomb-type matrix - first-order geometrical derivative
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,1,.FALSE.,D2,&
      &'first-order geometrical-derivative Coulomb matrix')
@@ -47,8 +48,10 @@ call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast
 !Exchange-type matrix - first-order geometrical derivative
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,1,.FALSE.,D1,&
      &'first-order geometrical-derivative exchange matrix')
+ENDIF
 
 !******** Second order *********
+IF (order.GE.2) THEN
 !Coulomb-type matrix - seconde-order geometrical derivative
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,2,.FALSE.,D2,&
      &'second-order geometrical-derivative Coulomb matrix')
@@ -56,8 +59,10 @@ call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast
 !!!Exchange-type matrix - seconde-order geometrical derivative
 !!call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,2,.FALSE.,D1,&
 !!     &'second-order geometrical-derivative exchange matrix')
+ENDIF
 
 !******** Third order *********
+IF (order.GE.3) THEN
 !Coulomb-type matrix - third-order geometrical derivative, single contraction
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,3,.FALSE.,D2,&
      &'third-order geometrical-derivative Coulomb matrix')
@@ -97,8 +102,10 @@ call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'nucel',ContractMat1,ncontract
 !kinetic-integral type expectation - third-order geometrical derivative
 call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'kinetic',ContractMat1,ncontract,nbast,nAtoms,3,.FALSE.,D1,&
      &'third-order kinetic-integral derivative expectation')
+ENDIF
 
 !******** Fourth order *********
+IF (order.GE.4) THEN
 !Coulomb-type matrix - fourth-order geometrical derivative, single contraction
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,4,.FALSE.,D2,&
      &'fourth-order geometrical-derivative Coulomb matrix')
@@ -138,15 +145,7 @@ call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'nucel',ContractMat1,ncontract
 !kinetic-integral type expectation - fourth-order geometrical derivative
 call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'kinetic',ContractMat1,ncontract,nbast,nAtoms,4,.FALSE.,D1,&
      &'fourth-order kinetic-integral derivative expectation')
-
-!******** fourth order *********
-!!!Coulomb-type matrix - fourth-order geometrical derivative
-!!call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,4,.FALSE.,D2,&
-!!     &'fourth-order geometrical-derivative Coulomb matrix')
-
-!!!Exchange-type matrix - fourth-order geometrical derivative
-!!call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,4,.FALSE.,D1,&
-!!     &'fourth-order geometrical-derivative exchange matrix')
+ENDIF
 
 
 DO i=1,ncontract

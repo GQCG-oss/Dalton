@@ -749,7 +749,7 @@ ELSEIF (input%geoDerivOrder.EQ. 4)THEN
    i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
    i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
    i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
-   i4 = 3*(iAtom3-1)+derivInfo%dirComp(4,iDeriv)
+   i4 = 3*(iAtom4-1)+derivInfo%dirComp(4,iDeriv)
    same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
    same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
    same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
@@ -795,20 +795,19 @@ Real(realk)           :: derFac3
 !
 Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk, D3 = 3.0E0_realk
 Real(realk)           :: fac12,fac13,fac23
-logical               :: permute12,permute13,permute23
+logical               :: allSame
 
-permute12 = (i1.EQ.i2).AND..NOT.same12
-permute13 = (i1.EQ.i3).AND..NOT.same13
-permute23 = (i2.EQ.i3).AND..NOT.same23
-derFac3 = D1
-IF (permute12.AND.permute13.AND.permute23) THEN !All different
-  derFac3 = D2*D3
-ELSEIF (permute12.AND.permute13) THEN
-  derFac3 = D3
-ELSEIF (permute12.AND.permute23) THEN
-  derFac3 = D3
-ELSEIF (permute13.AND.permute23) THEN
-  derFac3 = D3
+allSame = (i1.EQ.i2).AND.(i1.EQ.i3) !.AND. i2.EQ.i3
+!First four cases are when i1=i2=i3
+IF (allSame) THEN
+  IF (same12.AND.same13) THEN
+    derFac3 = D1
+  ELSEIF (same12.OR.same13.OR.same23) THEN
+    derFac3 = D3
+  ELSE
+    derFac3 = D2*D3
+  ENDIF
+!One or more i1,i2,i3 are different
 ELSE
   fac12 = derFac2(i1,i2,same12,.FALSE.)
   fac13 = derFac2(i1,i3,same13,.FALSE.)
@@ -825,24 +824,29 @@ LOGICAL,INTENT(IN)    :: same12,same13,same23,same14,same24,same34,minus
 Real(realk)           :: derFac4
 !
 Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk, D3 = 3.0E0_realk, D4 = 4.0E0_realk
-Real(realk)           :: fac123,fac124,fac134,fac234
-logical               :: permute12,permute13,permute23,permute14,permute24,permute34
+Real(realk)           :: fac123,fac124,fac134,fac234,fac1234,fac1324,fac1423
+logical               :: allSame, pairWise
 
-permute12 = (i1.EQ.i2).AND..NOT.same12
-permute13 = (i1.EQ.i3).AND..NOT.same13
-permute23 = (i2.EQ.i3).AND..NOT.same23
-permute14 = (i1.EQ.i4).AND..NOT.same14
-permute24 = (i2.EQ.i4).AND..NOT.same24
-permute34 = (i3.EQ.i4).AND..NOT.same34
-derFac4 = D1
-IF (permute12.AND.permute13.AND.permute23.AND.permute14.AND.permute24.AND.permute34) THEN !All different
-  derFac4 = D2*D3*D4
-ELSEIF (permute12.AND.permute13) THEN
-  derFac4 = D3*D4
-ELSEIF (permute12.AND.permute23) THEN
-  derFac4 = D3*D4
-ELSEIF (permute13.AND.permute23) THEN
-  derFac4 = D3*D4
+allSame = (i1.EQ.i2).AND.(i1.EQ.i3).AND.(i1.EQ.i4)
+pairWise = ((i1.EQ.i2).AND.(i3.EQ.i4)).OR.((i1.EQ.i3).AND.(i2.EQ.i4)).OR.((i1.EQ.i4).AND.(i2.EQ.i3))
+!First four cases are when i1=i2=i3=i4
+IF (allSame) THEN
+  IF (same12.AND.same13.AND.same14) THEN !All AO indeces are equal
+    derFac4 = D1
+  ELSEIF ((same12.AND.same13).OR.(same12.AND.same14).OR.(same23.AND.same24)) THEN !Three AO indeces are equal
+    derFac4 = D4
+  ELSEIF ((same12.AND.same34).OR.(same13.AND.same24).OR.(same14.AND.same23)) THEN !Two AO indeces are pair-wise equal
+    derfac4 = D2*D3
+  ELSEIF  (same12.OR.same13.OR.same14.OR.same23.OR.same24.OR.same34) THEN !Two AO indeces are equal
+    derfac4 = D4*D3
+  ELSE !All different
+    derfac4 = D4*D3*D2
+  ENDIF
+ELSE IF (pairWise) THEN
+  fac1234 = derFac2(i1,i2,same12,.FALSE.)*derFac2(i3,i4,same34,.FALSE.)
+  fac1324 = derFac2(i1,i3,same13,.FALSE.)*derFac2(i2,i4,same24,.FALSE.)
+  fac1423 = derFac2(i1,i4,same14,.FALSE.)*derFac2(i2,i3,same23,.FALSE.)
+  derFac4 = max(fac1234,fac1324,fac1423)
 ELSE
   fac123 = derFac3(i1,i2,i3,same12,same13,same23,.FALSE.)
   fac124 = derFac3(i1,i2,i4,same12,same14,same24,.FALSE.)
