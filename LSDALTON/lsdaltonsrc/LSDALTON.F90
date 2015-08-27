@@ -321,7 +321,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         ENDIF
 
         IF (config%doTestHodi) THEN
-          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms,config%testHodiOrder)
           CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
         ENDIF
 
