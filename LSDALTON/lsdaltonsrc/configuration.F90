@@ -514,6 +514,7 @@ DO
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
             CASE('.RH');         config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN
+            CASE('.OrbFree');    config%diag%CFG_OrbFree = .true.
             CASE('.SAFE');       config%av%CFG_safe = .true.
 ! obsolete keyword - noone knows what it does. Not in manual. Not in testcases
 !            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
@@ -847,6 +848,7 @@ CALL lsCLOSE(LUCMD,'KEEP')
 if (config%solver%do_dft) then
    hfweight = 0.0E0_realk
    CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight,lupri)
+!  IF (config%diag%cfg_OrbFree) call II_DFTaddFunc('TScorrection',factor,lupri)
    !it is assumed that hfweight is set to zero and only  
    !changed if the functional require a HF weight  
    !different from zero. 
