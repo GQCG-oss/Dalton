@@ -1224,7 +1224,11 @@ contains
     ! *********************************************
 
     ! MO coefficients, Fock
-    molmem = 2E0_realk*A*A
+    if (DEcinfo%noaofock) then
+       molmem = 1E0_realk*A*A
+    else
+       molmem = 2E0_realk*A*A
+    end if
 
     ! ppfock and qqfock
     tmp = O*O + V*V
