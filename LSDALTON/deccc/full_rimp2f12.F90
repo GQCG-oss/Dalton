@@ -19,7 +19,7 @@ use ccintegrals,only:get_ao_fock
 use f12ri_util_module,only: GeneralTwo4CenterF12RICoef1112, &
        & GeneralTwo4CenterF12RICoef1223,F12RIB9,F12RIB9MPI, &
        & F12RIB8,F12RIB8MPI,F12RIB7,F12RIB7MPI,F12RIB6,F12RIB6MPI,&
-       & F12RIB5,F12RIB5MPI
+       & F12RIB5,F12RIB5MPI,F12RIB4,F12RIB4MPI
 
 !#ifdef MOD_UNRELEASED
 use f12_routines_module,only: &
@@ -36,10 +36,10 @@ use f12_routines_module,only: &
      & ContractTwo4CenterF12IntegralsRIC_pf,&
      & ContractTwo4CenterF12IntegralsRIX3X4_nc,&
      & ContractTwo4CenterF12IntegralsRIX3X4_ncMPI,&
-     & ContractTwo4CenterF12IntegralsRIB4,&
-     & ContractTwo4CenterF12IntegralsRIB4MPI,&
-     & ContractTwo4CenterF12IntegralsRIB5,&
-     & ContractTwo4CenterF12IntegralsRIB5MPI,&
+!     & ContractTwo4CenterF12IntegralsRIB4,&
+!     & ContractTwo4CenterF12IntegralsRIB4MPI,&
+!     & ContractTwo4CenterF12IntegralsRIB5,&
+!     & ContractTwo4CenterF12IntegralsRIB5MPI,&
 !     & ContractTwo4CenterF12IntegralsRIB6,&
 !     & ContractTwo4CenterF12IntegralsRIB6MPI,&
 !     & ContractTwo4CenterF12IntegralsRIB7,&
@@ -1183,48 +1183,15 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mem_alloc(CalphaD, nsize)
    m =  nBA*nocc                    ! C_mn = A_mk B_kn
    k =  ncabsAO
-   n =  ncabsAO
-   
+   n =  ncabsAO   
+   !Do on GPU (Async)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Krr%elms,k,0.0E0_realk,CalphaD,m)
-
+   !Do on GPU (Async)
+   call GeneralTwo4CenterF12RICoef1112(nBA,CalphaGcabsAO,nocc,ncabsAO,CalphaD,nocc,ncabsAO,&
+        & EB4,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB4,F12RIB4MPI)
 #ifdef VAR_MPI 
-   IF(wakeslaves)THEN
-      EB4 = 0.0E0_realk
-      DO inode = 1,numnodes
-         nbuf1 = nAuxMPI(inode)
-         NBA2 = nAuxMPI(inode)
-         nsize = nbuf1*nocc*ncabsAO     !CalphaGcabsAO(NBA,nocc,ncabsAO) 
-         IF(mynum.EQ.inode-1)THEN
-            !I Bcast My Own CalphaG
-            node = mynum            
-            IF(size(CalphaGcabsAO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 F1',-1)
-            call ls_mpibcast(CalphaGcabsAO,nsize,node,infpar%lg_comm)
-            call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4tmp)   
-         ELSE
-            node = inode-1
-            !recieve
-            IF(use_bg_buf)THEN
-               call mem_pseudo_alloc(CalphaMPI,nsize) 
-            ELSE
-               call mem_alloc(CalphaMPI,nsize)
-            ENDIF
-            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
-            call ContractTwo4CenterF12IntegralsRIB4MPI(nBA,nocc,ncabsAO,CalphaMPI,NBA2,&
-                 & CalphaGcabsAO,CalphaD,EB4tmp)   
-            IF(use_bg_buf)THEN
-               call mem_pseudo_dealloc(CalphaMPI)
-            ELSE
-               call mem_dealloc(CalphaMPI)
-            ENDIF
-         ENDIF
-         EB4 = EB4 + EB4tmp         
-      ENDDO
-   ELSE
-      call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4)   
-   ENDIF
    lsmpibufferRIMP2(13)=EB4      !we need to perform a MPI reduction at the end 
 #else
-   call ContractTwo4CenterF12IntegralsRIB4(nBA,nocc,ncabsAO,CalphaGcabsAO,CalphaD,EB4)   
    mp2f12_energy = mp2f12_energy  + EB4
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
@@ -1233,7 +1200,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==============================================================
    !=  B5: (ir|f12|jm)Fsr(si|f12|mj)        (r,s=CabsAO)         =
    !==============================================================   
-   !We need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocc,nbasis)
+   !We need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocv,nocc)
    nsize = nBA*nocc*ncabsAO
    IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
    m =  nBA*nocc                    ! D_jq = C_jp F_qp
@@ -1243,7 +1210,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaD,m)
    !Do on GPU (Async)
    call GeneralTwo4CenterF12RICoef1223(nBA,&
-        & CalphaD,nocc,ncabsAO,CalphaG,nbasis,nocc,&
+        & CalphaD,nocc,ncabsAO,CalphaG,nocv,nocc,&
         & CalphaGcabsAO,nocc,ncabsAO,EB5,noccfull,wakeslaves,use_bg_buf,&
         & numnodesstd,nAuxMPI,mynum,F12RIB5,F12RIB5MPI)      
 #ifdef VAR_MPI 

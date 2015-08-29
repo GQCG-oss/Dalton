@@ -547,7 +547,6 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
      !  print*,'MY RIMP2 INTEGRAL AlphaCD2(1:nA,1:4) NEW VERSION MYNUM',MYNUM
      !  call ls_output(AlphaCD3,1,size(AlphaCD3,1),1,4,size(AlphaCD3,1),nvirt*nocc,1,6)
-     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
   ELSE
      !=====================================================================================
      ! MPI scheme:  Bcast Routine
