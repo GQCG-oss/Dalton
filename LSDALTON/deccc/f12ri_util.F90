@@ -512,62 +512,49 @@ contains
   !============================================================================
   !CalphaD(alpha1,i,q)*CalphaG(alpha1,m,j) * CalphaG(alpha1,m,j)*CalphaGcabs(alpha1,i,q)
   subroutine F12RIB5(nBA,CalphaD,n1,n2,CalphaG,nbasis,nG1,&
-       & CalphaGcabs,nGcabs1,nGcabs2,EJK,n3,dopair_occ_in)
+       & CalphaGcabs,nGcabs1,nGcabs2,EJK,n3)
     implicit none
     integer,intent(in)        :: nBA,n1,n2,nbasis,nGcabs1,nGcabs2,nG1,n3
     real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
     real(realk),intent(in)    :: CalphaG(nBA,nbasis,n1)
     real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n2)
     real(realk),intent(inout) :: EJK
-    !Dopair                                                                          
-    logical,intent(in),optional :: dopair_occ_in(n1,n1)
     !local variables
     real(realk)               :: EJ, EK, ED
     integer :: q,m,i,j,alpha
     real(realk) :: tmpR,tmpRJ1,tmpRJ2
     real(realk) :: tmpG,tmpGJ1,tmpGJ2
-    logical :: dopair_occ(n1,n1)
-    if(present(dopair_occ_in)) then
-       dopair_occ = dopair_occ_in
-    else
-       dopair_occ = .TRUE.
-    endif
     ED = 0.0E0_realk
     EJ = 0.0E0_realk
     EK = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,m,i,j,alpha,&
     !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
-    !$OMP n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,&
-    !$OMP dopair_occ) REDUCTION(+:ED,EJ,EK)
+    !$OMP n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD) REDUCTION(+:ED,EJ,EK)
     DO q=1,n2 !ncabsAO
        DO m=1,n3 !noccAOS
           DO j=1,n1 !nocc
              !Diagonal
-             IF(dopair_occ(J,J)) THEN
-                tmpR = 0.0E0_realk
-                tmpG = 0.0E0_realk
-                DO alpha = 1,nBA
-                   tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,m,j)
-                   tmpG = tmpG + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,j)
-                ENDDO
-                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
-             ENDIF
+             tmpR = 0.0E0_realk
+             tmpG = 0.0E0_realk
+             DO alpha = 1,nBA
+                tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,m,j)
+                tmpG = tmpG + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,j)
+             ENDDO
+             ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
              !Non Diagonal
              DO i=j+1,n1
-                IF(dopair_occ(I,J)) THEN
-                   tmpRJ1 = 0.0E0_realk
-                   tmpGJ1 = 0.0E0_realk
-                   tmpRJ2 = 0.0E0_realk
-                   tmpGJ2 = 0.0E0_realk
-                   DO alpha = 1, nBA
-                      tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,m,j) 
-                      tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,m,i)
-                      tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha,i,q)*CalphaG(alpha,m,j)
-                      tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,i)
-                   ENDDO
-                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
-                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
-                ENDIF
+                tmpRJ1 = 0.0E0_realk
+                tmpGJ1 = 0.0E0_realk
+                tmpRJ2 = 0.0E0_realk
+                tmpGJ2 = 0.0E0_realk
+                DO alpha = 1, nBA
+                   tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,m,j) 
+                   tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,m,i)
+                   tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha,i,q)*CalphaG(alpha,m,j)
+                   tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,i)
+                ENDDO
+                EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
              ENDDO
           ENDDO
        ENDDO
@@ -578,7 +565,7 @@ contains
 
   !CalphaD(alpha1,i,q)*CalphaG(alpha1,m,j) * CalphaG(alpha1,m,j)*CalphaGcabs(alpha1,i,q)
   subroutine F12RIB5MPI(nBA,CalphaD,n1,n2,CalphaG,nbasis,nG1,&
-       & CalphaGcabs,nGcabs1,nGcabs2,EJK,n3,NBA2,CalphaDMPI,CalphaGMPI,dopair_occ_in)
+       & CalphaGcabs,nGcabs1,nGcabs2,EJK,n3,NBA2,CalphaDMPI,CalphaGMPI)
     implicit none
     integer,intent(in)        :: nBA,n1,n2,n3,nbasis,NBA2,nG1,nGcabs1,nGcabs2
     real(realk),intent(in)    :: CalphaD(nBA,n1,n2)
@@ -587,59 +574,47 @@ contains
     real(realk),intent(in)    :: CalphaDMPI(nBA2,n1,n2)
     real(realk),intent(in)    :: CalphaGMPI(nBA2,nbasis,n1)
     real(realk),intent(inout) :: EJK
-    !Dopair                                                                          
-    logical,intent(in),optional :: dopair_occ_in(n1,n1)
     !local variables
     real(realk)               :: EJ, EK, ED
     integer :: p,q,m,i,j,alpha
     real(realk) :: tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2
     real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
-    logical :: dopair_occ(n1,n1)
-    if(present(dopair_occ_in)) then
-       dopair_occ = dopair_occ_in
-    else
-       dopair_occ = .TRUE.
-    endif
     ED = 0.0E0_realk
     EJ = 0.0E0_realk
     EK = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,m,i,j,alpha,&
     !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
     !$OMP n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,CalphaGMPI,CalphaDMPI,&
-    !$OMP NBA2,dopair_occ) REDUCTION(+:ED,EJ,EK)
+    !$OMP NBA2) REDUCTION(+:ED,EJ,EK)
     DO q=1,n2 !ncabsAO
        DO m=1,n3 !noccAOS
           DO j=1,n1 !nocc
              !Diagonal
-             IF(dopair_occ(J,J)) THEN
-                tmpR = 0.0E0_realk
-                tmpG = 0.0E0_realk
-                DO alpha = 1,nBA2
-                   tmpR = tmpR + CalphaDMPI(alpha,j,q)*CalphaGMPI(alpha,m,j)
-                ENDDO
-                DO alpha = 1,nBA
-                   tmpG = tmpG + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,j)
-                ENDDO
-                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
-             ENDIF
+             tmpR = 0.0E0_realk
+             tmpG = 0.0E0_realk
+             DO alpha = 1,nBA2
+                tmpR = tmpR + CalphaDMPI(alpha,j,q)*CalphaGMPI(alpha,m,j)
+             ENDDO
+             DO alpha = 1,nBA
+                tmpG = tmpG + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,j)
+             ENDDO
+             ED = ED + tmpR*tmpG !We have a factor 2 which is integrated 
              !Non Diagonal
              DO i=j+1,n1
-                IF(dopair_occ(I,J)) THEN
-                   tmpRJ1 = 0.0E0_realk
-                   tmpRJ2 = 0.0E0_realk
-                   tmpGJ1 = 0.0E0_realk
-                   tmpGJ2 = 0.0E0_realk
-                   DO alpha = 1, nBA2
-                      tmpRJ1 = tmpRJ1 + CalphaDMPI(alpha,i,q)*CalphaGMPI(alpha,m,j) 
-                      tmpRJ2 = tmpRJ2 + CalphaDMPI(alpha,j,q)*CalphaGMPI(alpha,m,i)
-                   ENDDO
-                   DO alpha = 1, nBA
-                      tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha,i,q)*CalphaG(alpha,m,j)
-                      tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,i)
-                   ENDDO
-                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
-                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
-                ENDIF
+                tmpRJ1 = 0.0E0_realk
+                tmpRJ2 = 0.0E0_realk
+                tmpGJ1 = 0.0E0_realk
+                tmpGJ2 = 0.0E0_realk
+                DO alpha = 1, nBA2
+                   tmpRJ1 = tmpRJ1 + CalphaDMPI(alpha,i,q)*CalphaGMPI(alpha,m,j) 
+                   tmpRJ2 = tmpRJ2 + CalphaDMPI(alpha,j,q)*CalphaGMPI(alpha,m,i)
+                ENDDO
+                DO alpha = 1, nBA
+                   tmpGJ1 = tmpGJ1 + CalphaGcabs(alpha,i,q)*CalphaG(alpha,m,j)
+                   tmpGJ2 = tmpGJ2 + CalphaGcabs(alpha,j,q)*CalphaG(alpha,m,i)
+                ENDDO
+                EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+                EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
              ENDDO
           ENDDO
        ENDDO
