@@ -18,7 +18,7 @@ use CABS_operations
 use ccintegrals,only:get_ao_fock
 use f12ri_util_module,only: GeneralTwo4CenterF12RICoef1112, &
        & GeneralTwo4CenterF12RICoef1223,F12RIB9,F12RIB9MPI, &
-       & F12RIB8,F12RIB8MPI
+       & F12RIB8,F12RIB8MPI,F12RIB7,F12RIB7MPI
 
 !#ifdef MOD_UNRELEASED
 use f12_routines_module,only: &
@@ -41,12 +41,12 @@ use f12_routines_module,only: &
      & ContractTwo4CenterF12IntegralsRIB5MPI,&
      & ContractTwo4CenterF12IntegralsRIB6,&
      & ContractTwo4CenterF12IntegralsRIB6MPI,&
-     & ContractTwo4CenterF12IntegralsRIB7,&
-     & ContractTwo4CenterF12IntegralsRIB7MPI,&
-     & ContractTwo4CenterF12IntegralsRIB8,&
-     & ContractTwo4CenterF12IntegralsRIB8MPI,&
-     & ContractTwo4CenterF12IntegralsRIB9,&
-     & ContractTwo4CenterF12IntegralsRIB9MPI,&
+!     & ContractTwo4CenterF12IntegralsRIB7,&
+!     & ContractTwo4CenterF12IntegralsRIB7MPI,&
+!     & ContractTwo4CenterF12IntegralsRIB8,&
+!     & ContractTwo4CenterF12IntegralsRIB8MPI,&
+!     & ContractTwo4CenterF12IntegralsRIB9,&
+!     & ContractTwo4CenterF12IntegralsRIB9MPI,&
      & get_F12_mixed_MO_Matrices, free_f12_mixed_mo_matrices,&
      & MO_transform_AOMatrix
 
@@ -1430,57 +1430,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    n =  noccfull
 
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fmm%elms,k,0.0E0_realk,CalphaD,m)
-   !Commented out just for current scheme, may be changed later TK
-   !call ContractOccCalpha(NBA,nocc,noccfull,nbasis,CalphaG,Fii%elms,CalphaD)
+   call GeneralTwo4CenterF12RICoef1223(nBA,&
+        & CalphaD,nocc,noccfull,CalphaGcabsMO,nocc,ncabsMO,&
+        & CalphaCoccT,nocc,noccfull,EB7,noccfull,wakeslaves,use_bg_buf,&
+        & numnodesstd,nAuxMPI,mynum,F12RIB7,F12RIB7MPI)   
 #ifdef VAR_MPI 
-   IF(wakeslaves)THEN
-      EB7 = 0.0E0_realk
-      DO inode = 1,numnodes
-         nbuf1 = nAuxMPI(inode)
-         NBA2 = nAuxMPI(inode)
-         nsize = nbuf1*nocc*ncabsMO   !CalphaGcabsMO(NBA,nocc,ncabsMO)
-         nsize2 = nbuf1*nocc*noccfull !CalphaCoccT(NBA,nocc,noccfull)
-         IF(mynum.EQ.inode-1)THEN
-            !I Bcast My Own CalphaG
-            node = mynum            
-            IF(size(CalphaGcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 H1',-1)
-            call ls_mpibcast(CalphaGcabsMO,nsize,node,infpar%lg_comm)
-            IF(size(CalphaCoccT).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 H2',-1)
-            call ls_mpibcast(CalphaCoccT,nsize2,node,infpar%lg_comm)
-            call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,&
-                 & CalphaCoccT,CalphaD,EB7tmp)
-         ELSE
-            node = inode-1
-            !recieve
-            IF(use_bg_buf)THEN
-               call mem_pseudo_alloc(CalphaMPI,nsize) 
-               call mem_pseudo_alloc(CalphaMPI2,nsize2)
-            ELSE
-               call mem_alloc(CalphaMPI,nsize)
-               call mem_alloc(CalphaMPI2,nsize2)
-            ENDIF
-            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
-            call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
-            call ContractTwo4CenterF12IntegralsRIB7MPI(nBA,nocc,noccfull,ncabsMO,&
-                 & CalphaMPI,CalphaMPI2,NBA2,CalphaGcabsMO,CalphaCoccT,CalphaD,EB7tmp)
-            IF(use_bg_buf)THEN
-               call mem_pseudo_dealloc(CalphaMPI2)
-               call mem_pseudo_dealloc(CalphaMPI)
-            ELSE
-               call mem_dealloc(CalphaMPI)
-               call mem_dealloc(CalphaMPI2)
-            ENDIF
-         ENDIF
-         EB7 = EB7 + EB7tmp
-      ENDDO
-   ELSE
-      call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,&
-           & CalphaCoccT,CalphaD,EB7)
-   ENDIF
    lsmpibufferRIMP2(17)=EB7      !we need to perform a MPI reduction at the end 
 #else
-   call ContractTwo4CenterF12IntegralsRIB7(nBA,nocc,noccfull,ncabsMO,CalphaGcabsMO,&
-        & CalphaCoccT,CalphaD,EB7)
    mp2f12_energy = mp2f12_energy  + EB7
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
