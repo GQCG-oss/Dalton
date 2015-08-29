@@ -292,8 +292,7 @@ contains
   end subroutine F12RIB4MPI
 
   !(CalphaG(alpha,q,i)*CalphaG(alpha,a,j)) *(CalphaD(alpha,i,q)*CalphaG(alpha,a,j))
-  subroutine F12RIB6(nBA,CalphaG,n3,n1,CalphaD,nD1,nD2,EJK,noccfull,&
-       & dopair_occ_in)
+  subroutine F12RIB6(nBA,CalphaG,n3,n1,CalphaD,nD1,nD2,EJK,noccfull)
     implicit none
     integer,intent(in)        :: nBA,n1,n3,noccfull,nD1,nD2
     real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
@@ -304,60 +303,47 @@ contains
     integer :: q,a,i,j,alpha
     real(realk) :: tmpR,tmpRJ1,tmpRJ2
     real(realk) :: tmpG,tmpGJ1,tmpGJ2
-    !Dopair                                                                          
-    logical,intent(in),optional :: dopair_occ_in(n1,n1)
-    logical :: dopair_occ(n1,n1)
-    if(present(dopair_occ_in)) then
-       dopair_occ = dopair_occ_in
-    else
-       dopair_occ = .TRUE.
-    endif
     ED = 0.0E0_realk
     EK = 0.0E0_realk
     EJ = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,a,i,j,alpha,&
     !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n3,&
-    !$OMP noccfull,CalphaG,CalphaD,EJK,dopair_occ) REDUCTION(+:ED,EJ,EK)
+    !$OMP noccfull,CalphaG,CalphaD,EJK) REDUCTION(+:ED,EJ,EK)
     DO q=1,n3 !nocv 
        DO a=noccfull+1,n3 !nvirt
           DO j=1,n1 !nocc       
              !Diagonal          
-             IF(dopair_occ(J,J)) THEN
-                tmpR = 0.0E0_realk   
-                tmpG = 0.0E0_realk   
-                DO alpha = 1,nBA     
-                   tmpG = tmpG + CalphaG(alpha,q,j)*CalphaG(alpha,a,j)
-                   tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
-                ENDDO
-                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated
-             ENDIF
+             tmpR = 0.0E0_realk   
+             tmpG = 0.0E0_realk   
+             DO alpha = 1,nBA     
+                tmpG = tmpG + CalphaG(alpha,q,j)*CalphaG(alpha,a,j)
+                tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
+             ENDDO
+             ED = ED + tmpR*tmpG !We have a factor 2 which is integrated
              !Non Diagonal
              DO i=j+1,n1
-                IF(dopair_occ(I,J)) THEN
-                   tmpRJ1 = 0.0E0_realk 
-                   tmpGJ1 = 0.0E0_realk 
-                   tmpRJ2 = 0.0E0_realk                                    
-                   tmpGJ2 = 0.0E0_realk                                    
-                   DO alpha = 1, nBA   
-                      tmpGJ1 = tmpGJ1 + CalphaG(alpha,q,i)*CalphaG(alpha,a,j)
-                      tmpGJ2 = tmpGJ2 + CalphaG(alpha,q,j)*CalphaG(alpha,a,i)
-                      tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,a,j)
-                      tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,a,i)
-                   ENDDO
-                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
-                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
-                ENDIF
+                tmpRJ1 = 0.0E0_realk 
+                tmpGJ1 = 0.0E0_realk 
+                tmpRJ2 = 0.0E0_realk                                    
+                tmpGJ2 = 0.0E0_realk                                    
+                DO alpha = 1, nBA   
+                   tmpGJ1 = tmpGJ1 + CalphaG(alpha,q,i)*CalphaG(alpha,a,j)
+                   tmpGJ2 = tmpGJ2 + CalphaG(alpha,q,j)*CalphaG(alpha,a,i)
+                   tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,a,j)
+                   tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,a,i)
+                ENDDO
+                EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
+                EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
              ENDDO
           ENDDO
        ENDDO
     ENDDO
     !$OMP END PARALLEL DO
     EJK = -1.0E0_realk*(ED*0.5E0_realk + 7.0E0_realk/16.0E0_realk*EJ + 1.0E0_realk/16.0E0_realk*EK) 
-
   end subroutine F12RIB6
 
   subroutine F12RIB6MPI(nBA,CalphaG,n3,n1,CalphaD,nD1,nD3,EJK,noccfull,&
-       & NBA2,CalphaGMPI,dopair_occ_in)
+       & NBA2,CalphaGMPI)
     implicit none
     integer,intent(in)        :: nBA,n1,n3,noccfull,NBA2,nD1,nD3
     real(realk),intent(in)    :: CalphaGMPI(nBA2,n3,n1)
@@ -369,59 +355,47 @@ contains
     integer :: q,a,i,j,alpha
     real(realk) :: tmpR,tmpRJ1,tmpRJ2,tmpRK1,tmpRK2
     real(realk) :: tmpG,tmpGJ1,tmpGJ2,tmpGK1,tmpGK2
-    !Dopair                                                                          
-    logical,intent(in),optional :: dopair_occ_in(n1,n1)
-    logical :: dopair_occ(n1,n1)
-    if(present(dopair_occ_in)) then
-       dopair_occ = dopair_occ_in
-    else
-       dopair_occ = .TRUE.
-    endif
     ED = 0.0E0_realk
     EK = 0.0E0_realk
     EJ = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,a,i,j,alpha,&
     !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n3,&
-    !$OMP CalphaGMPI,NBA2,noccfull,CalphaG,CalphaD,EJK,dopair_occ) REDUCTION(+:ED,EJ,EK)
+    !$OMP CalphaGMPI,NBA2,noccfull,CalphaG,CalphaD,EJK) REDUCTION(+:ED,EJ,EK)
     DO q=1,n3 !nocv 
        DO a=noccfull+1,n3 !nvirt
           DO j=1,n1 !nocc       
              !Diagonal          
-             IF(dopair_occ(J,J)) THEN
-                tmpG = 0.0E0_realk   
-                DO alpha = 1,nBA2
-                   tmpG = tmpG + CalphaGMPI(alpha,q,j)*CalphaGMPI(alpha,a,j)
-                ENDDO
-                tmpR = 0.0E0_realk   
-                DO alpha = 1,nBA     
-                   tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
-                ENDDO
-                ED = ED + tmpR*tmpG !We have a factor 2 which is integrated
-             ENDIF
+             tmpG = 0.0E0_realk   
+             DO alpha = 1,nBA2
+                tmpG = tmpG + CalphaGMPI(alpha,q,j)*CalphaGMPI(alpha,a,j)
+             ENDDO
+             tmpR = 0.0E0_realk   
+             DO alpha = 1,nBA     
+                tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
+             ENDDO
+             ED = ED + tmpR*tmpG !We have a factor 2 which is integrated          
              !Non Diagonal
              DO i=j+1,n1
-                IF(dopair_occ(I,J)) THEN
-                   tmpGJ1 = 0.0E0_realk 
-                   tmpGJ2 = 0.0E0_realk                                    
-                   DO alpha = 1,nBA2
-                      tmpGJ1 = tmpGJ1 + CalphaGMPI(alpha,q,i)*CalphaGMPI(alpha,a,j)
-                      tmpGJ2 = tmpGJ2 + CalphaGMPI(alpha,q,j)*CalphaGMPI(alpha,a,i)
-                   ENDDO
-                   tmpRJ1 = 0.0E0_realk 
-                   tmpRJ2 = 0.0E0_realk                                    
-                   DO alpha = 1, nBA   
-                      tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,a,j)
-                      tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,a,i)
-                   ENDDO
-                   EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
-                   EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
-                ENDIF
+                tmpGJ1 = 0.0E0_realk 
+                tmpGJ2 = 0.0E0_realk                                    
+                DO alpha = 1,nBA2
+                   tmpGJ1 = tmpGJ1 + CalphaGMPI(alpha,q,i)*CalphaGMPI(alpha,a,j)
+                   tmpGJ2 = tmpGJ2 + CalphaGMPI(alpha,q,j)*CalphaGMPI(alpha,a,i)
+                ENDDO
+                tmpRJ1 = 0.0E0_realk 
+                tmpRJ2 = 0.0E0_realk                                    
+                DO alpha = 1, nBA   
+                   tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,a,j)
+                   tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,a,i)
+                ENDDO
+                EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
+                EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
              ENDDO
           ENDDO
        ENDDO
     ENDDO
     !$OMP END PARALLEL DO
-    EJK = -1.0E0_realk*(ED*0.5E0_realk + 7.0E0_realk/16.0E0_realk*EJ + 1.0E0_realk/16.0E0_realk*EK) 
+    EJK = -1.0E0_realk*(ED*0.5E0_realk + 7.0E0_realk/16.0E0_realk*EJ + 1.0E0_realk/16.0E0_realk*EK)
 
   end subroutine F12RIB6MPI
 
