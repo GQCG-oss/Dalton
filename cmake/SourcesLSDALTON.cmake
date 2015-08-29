@@ -248,6 +248,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/ccsd.F90
     LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90
+    LSDALTON/deccc/f12ri_util.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/rif12_integrals.F90
     LSDALTON/deccc/dec_f12routines.F90
