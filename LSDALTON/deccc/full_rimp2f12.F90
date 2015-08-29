@@ -262,19 +262,22 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !   Printing Input variables 
    ! ***********************************************************
    if(DECinfo%F12debug) then
-      print *, "-------------------------------------------------"
-      print *, "     F12-integrals.F90                           "
-      print *, "-------------------------------------------------"
-      print *, "nbasis:   ", nbasis
-      print *, "nocc:     ", nocc
-      print *, "nvirt:    ", nvirt
-      print *, "-------------------------------------------------"
-      print *, "noccfull  ", noccfull
-      print *, "ncabsAO   ", ncabsAO
-      print *, "ncabsMO   ", ncabsMO
-      print *, "-------------------------------------------------"
-      print *, "offest:   ", offset
-      print *, "ncore:    ", ncore
+      IF(master)THEN
+         !ncabsAO, ncabsMO not set on slave
+         print *, "-------------------------------------------------"
+         print *, "     full_rimp2f12.F90                           "
+         print *, "-------------------------------------------------"
+         print *, "nbasis:   ", nbasis
+         print *, "nocc:     ", nocc
+         print *, "nvirt:    ", nvirt
+         print *, "-------------------------------------------------"
+         print *, "noccfull  ", noccfull
+         print *, "ncabsAO   ", ncabsAO
+         print *, "ncabsMO   ", ncabsMO
+         print *, "-------------------------------------------------"
+         print *, "offest:   ", offset
+         print *, "ncore:    ", ncore
+      ENDIF
    end if
 
    IF(naux.EQ.0)call lsquit('Error no Aux functions in full_canonical_rimp2_f12',-1)
@@ -466,6 +469,11 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       IF(master)THEN
          lsmpibufferRIMP2(1)=EB1
       ENDIF
+      IF(wakeslaves)THEN
+         nbuf1=numnodes
+         call mem_alloc(nAuxMPI,nbuf1)
+         call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)      
+      ENDIF
 #else
       mp2f12_energy = mp2f12_energy  + EB1
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,LS) = ',EB1
@@ -500,7 +508,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          DO inode = 1,numnodes
             nbuf1 = nAuxMPI(inode)
             NBA2 = nAuxMPI(inode)
-            nsize = nbuf1*nocc*nocc
+            nsize = nbuf1*nocc*nocv
             nbuf1 = NBA2
             IF(inode.EQ.1)THEN
                factor = -0.5E0_realk
@@ -522,7 +530,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                M = NBA          !rows of Output Matrix
                N = nocc*nocc    !columns of Output Matrix
                K = NBA          !summation dimension
-               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaR,K,factor,CalphaD,M)
+               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaR(1+offset*NBA*nocc),K,factor,CalphaD,M)
             ELSE
                node = inode-1
                !recieve
@@ -535,7 +543,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                M = NBA          !rows of Output Matrix
                N = nocc*nocc    !columns of Output Matrix
                K = NBA2          !summation dimension
-               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaMPI,K,factor,CalphaD,M)
+               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaMPI(1+offset*NBA2*nocc),K,factor,CalphaD,M)
                IF(use_bg_buf)THEN
                   call mem_pseudo_dealloc(CalphaMPI)
                ELSE
