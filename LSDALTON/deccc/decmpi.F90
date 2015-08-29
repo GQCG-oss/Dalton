@@ -46,7 +46,8 @@ module decmpi_module
        & mpi_dec_fullinfo_master_to_slaves_precursor,&
        & wake_slaves_for_simple_mo,&
        & get_slaves_to_simple_par_mp2_res,&
-       & check_job
+       & check_job, &
+       & mpi_communicate_MyFragment_f12
 #else
 public :: check_job
 #endif
@@ -445,6 +446,58 @@ contains
 
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_MyFragment 
+
+  subroutine mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+    implicit none
+    !> Fragment under consideration
+    type(decfrag),intent(inout) :: MyFragment
+    !> Case MODEL
+    integer :: fragcase
+    !> dopair_occ array
+    logical,intent(inout) :: dopair
+
+    !local variables
+    integer(kind=ls_mpik) :: master
+    integer :: nrow,ncol
+    logical :: DoBasis
+    DoBasis = .TRUE.
+    call time_start_phase( PHASE_COMM )
+    master = 0
+    ! Init MPI buffer which eventually will contain all fragment info
+    ! ***************************************************************
+    ! MASTER: Prepare for writing to buffer
+    ! SLAVE: Receive buffer
+    call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    ! Buffer handling
+    ! ***************
+    ! MASTER: Put information info buffer
+    ! SLAVE: Put buffer information into decfrag structure
+    ! Fragment information
+    call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
+ 
+    if(infpar%lg_mynum .ne. master) then
+       call mem_alloc(MyFragment%Ccabs,MyFragment%ncabsAO,MyFragment%ncabsMO)
+       call mem_alloc(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO)
+       call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)
+       call mem_alloc(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO)
+    endif
+     
+    call ls_mpi_buffer(MyFragment%Ccabs,MyFragment%ncabsAO,MyFragment%ncabsMO,master)
+    call ls_mpi_buffer(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO,master)
+    call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master) 
+    call ls_mpi_buffer(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO,master) 
+    call ls_mpi_buffer(fragcase,master) 
+    call ls_mpi_buffer(dopair,master) 
+
+    ! Finalize MPI buffer
+    ! *******************
+    ! MASTER: Send stuff to slaves and deallocate temp. buffers
+    ! SLAVE: Deallocate buffer etc.
+   call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+    call time_start_phase( PHASE_WORK )
+  end subroutine mpi_communicate_MyFragment_f12 
+
 
   !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
@@ -891,6 +944,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsMO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nvirtLOC,master)

@@ -29,7 +29,7 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 8
+  integer,parameter :: ndecmodels   = 9
   !> Number of different fragment energies
   integer,parameter :: MODEL_NONE       = 0
   integer,parameter :: MODEL_MP2        = 1
@@ -40,6 +40,7 @@ module dec_typedef_module
   integer,parameter :: MODEL_RIMP2      = 6
   integer,parameter :: MODEL_SOSEX      = 7
   integer,parameter :: MODEL_LSTHCRIMP2 = 8
+  integer,parameter :: MODEL_MP3        = 9   
 
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
@@ -969,8 +970,10 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
-     !> Number of CABS basis functions
+     !> Number of CABS basis functions AO
      integer :: ncabsAO=0
+     !> Number of CABS basis functions MO
+     integer :: ncabsMO=0
      !> Atomic indices
      integer, pointer :: atoms_idx(:) => null()
      !> Corresponding basis function indices
@@ -1831,6 +1834,7 @@ CONTAINS
     DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
     DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
     DECitem%cc_models(MODEL_LSTHCRIMP2) ='THCRIMP2'
+    DECitem%cc_models(MODEL_MP3)   ='MP3'
   end subroutine dec_set_model_names
 
 end module dec_typedef_module
