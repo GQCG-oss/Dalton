@@ -226,7 +226,7 @@ contains
     ED = 0.0E0_realk
     EJ = 0.0E0_realk
     EK = 0.0E0_realk
-    !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,r,i,j,beta,&
+    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(q,r,i,j,beta,&
     !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,CalphaGMPI,&
     !$OMP NBA2,CalphaG,CalphaD) REDUCTION(+:ED,EJ,EK)
     DO q=1,n2 !ncabsAO
