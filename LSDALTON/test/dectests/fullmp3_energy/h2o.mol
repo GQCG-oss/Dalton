@@ -1,0 +1,10 @@
+BASIS
+cc-pVDZ
+%Equilibrium water geometry used in MEST (e.g. chapter 5)
+
+Atomtypes=2 Charge=0
+Charge=8.0 Atoms=1
+O        1.84345        0.00000        0.00000
+Charge=1.0 Atoms=2
+H        0.00000        0.00000        0.00000
+H        2.49100        1.72597        0.00000

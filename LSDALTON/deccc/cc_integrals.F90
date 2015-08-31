@@ -18,7 +18,7 @@ module ccintegrals
   use integralinterfaceMOD
   use II_XC_interfaceModule
   use IchorErimoduleHost
-
+  use background_buffer_module
   ! MO-CCSD module:
   use tensor_interface_module
   use buildaobatch
@@ -46,8 +46,19 @@ module ccintegrals
      module procedure getL_diff
   end interface
 
-  private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
-       & init_gmo_arrays, gao_to_gmo, get_MO_batches_info, pack_and_add_gmo
+!  private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
+!       & init_gmo_arrays, gao_to_gmo, get_MO_batches_info, pack_and_add_gmo
+
+  private
+  
+  public :: get_full_eri, dec_fock_transformation_fortran_array,&
+       & dec_fock_transformation, get_full_AO_integrals,& 
+       & get_AO_Fock, get_AO_hJ, get_AO_K, get_MO_and_AO_batches_size,&
+       & get_mem_mo_ccsd_warrays, unpack_gmo, get_mo_integral_par,&
+       & get_max_batch_and_scheme_ccintegral, copy_stripe_from_full_matrix,&
+       & getL, getL_simple_from_gmo_memory,get_t1_free_gmo,&
+       & getL_simple_from_gmo_file, get_gmo_simple,&
+       & get_oopq, get_exchange_as_oopq, get_work_array_size
 
 contains
 
@@ -3629,7 +3640,8 @@ contains
            if(s==0) maxsize = maxsize + (i8*n1*n2)*n3*n4
            if(s==2) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
-           if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or.  maxsize > nbu)then
+           if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or. &
+              & (nbu < maxsize.and.use_bg_buf) ) then
 
               if(s==3)then
                  nba = max(i-inc,MinAObatch)
@@ -3777,6 +3789,7 @@ end module ccintegrals
 !> Date:    December 2013
 subroutine cc_gmo_data_slave()
 
+  use memory_handling
   use dec_typedef_module
   use ccintegrals
   use daltoninfo

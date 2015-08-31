@@ -13,8 +13,15 @@ module f12_routines_module
   use matrix_module
   use matrix_util
   use matrix_operations
+  use matrix_operations_aux
   use memory_handling
   use IchorErimoduleHost
+  use IntegralInterfaceMOD
+  use IntegralInterfaceDEC
+  use screen_mod
+  use BUILDAOBATCH
+  use lstiming
+  use reorder_frontend_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
@@ -23,8 +30,11 @@ module f12_routines_module
   use dec_fragment_utils
   use full_f12contractions
   use ccintegrals  
-  use crop_tools_module
- 
+  use crop_tools_module 
+  use tensor_interface_module
+  use array4_simple_operations
+
+  private
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D, &
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
@@ -46,7 +56,6 @@ module f12_routines_module
        & contracttwo4centerf12integralsrib4mpi, contracttwo4centerf12integralsrib5mpi, &
        & contracttwo4centerf12integralsrib6mpi, contracttwo4centerf12integralsrib7mpi,&
        & contracttwo4centerf12integralsrib8mpi, contracttwo4centerf12integralsrib9mpi
-  private
 
   !> Coefficient Type
   TYPE ctype
@@ -3005,13 +3014,15 @@ subroutine ContractOne4CenterF12IntegralsRI2_nc(nBA,n,Calpha,CalphaT,EJ,EK,dopai
 
 end subroutine ContractOne4CenterF12IntegralsRI2_nc
 
-subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,n,nbasis,Rtilde,CalphaR,EJK,dopair_occ_in)
+subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,ncore,n,nbasis,Rtilde,CalphaR,EJK,dopair_occ_in)
    implicit none
-   integer,intent(in)        :: nBA,n,nbasis
+   integer,intent(in)        :: nBA,n,nbasis,ncore
    real(realk),intent(in)    :: Rtilde(nBA,n,n)
    real(realk),intent(in)    :: CalphaR(nBA,n,nbasis)
    real(realk),intent(inout) :: EJK
    !local variables
+   real(realk), pointer :: CalphaCocc(:,:,:)
+
    integer :: I,ALPHA,J
    real(realk) :: TMP_IJIJ,TMP_JIIJ,TMP,TMPD
    !Dopair                                                                          
@@ -3024,15 +3035,17 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,n,nbasis,Rtilde,CalphaR,EJ
    endif   
    TMPD = 0.0E0_realk
    TMP = 0.0E0_realk
+
    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I,ALPHA,J,TMP_IJIJ,&
-   !$OMP TMP_JIIJ) SHARED(nBA,n,nbasis,Rtilde,CalphaR,&
+   !$OMP TMP_JIIJ) SHARED(nBA,n,ncore,nbasis,Rtilde,CalphaR,&
    !$OMP dopair_occ) REDUCTION(+:TMP,TMPD)
    DO J=1,n
       !Diagonal
       IF(dopair_occ(J,J)) THEN
          TMP_IJIJ = 0.0E0_realk
          DO ALPHA = 1,NBA
-            TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,J,J)*Rtilde(ALPHA,J,J) + Rtilde(ALPHA,J,J)*CalphaR(ALPHA,J,J)
+            TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,J,ncore+J)*Rtilde(ALPHA,J,J) &
+               & + Rtilde(ALPHA,J,J)*CalphaR(ALPHA,J,ncore+J)
          ENDDO
          TMPD = TMPD + TMP_IJIJ
       ENDIF
@@ -3042,14 +3055,17 @@ subroutine ContractOne4CenterF12IntegralsRobustRI(nBA,n,nbasis,Rtilde,CalphaR,EJ
             TMP_IJIJ = 0.0E0_realk
             TMP_JIIJ = 0.0E0_realk
             DO ALPHA = 1,NBA
-               TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,I)*Rtilde(ALPHA,J,J) + Rtilde(ALPHA,I,I)*CalphaR(ALPHA,J,J)
-               TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,J)*Rtilde(ALPHA,J,I) + Rtilde(ALPHA,I,J)*CalphaR(ALPHA,J,I)
+               TMP_IJIJ = TMP_IJIJ + CalphaR(ALPHA,I,ncore+I)*Rtilde(ALPHA,J,J) &
+                  & + Rtilde(ALPHA,I,I)*CalphaR(ALPHA,J,ncore+J)
+               TMP_JIIJ = TMP_JIIJ + CalphaR(ALPHA,I,ncore+J)*Rtilde(ALPHA,J,I) & 
+                  & + Rtilde(ALPHA,I,J)*CalphaR(ALPHA,J,ncore+I)
             ENDDO
             TMP = TMP + 7.0E0_realk * TMP_IJIJ + TMP_JIIJ
          ENDIF
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
+
    EJK = 0.25E0_realk*tmpD + 0.0625E0_realk*TMP
 end subroutine ContractOne4CenterF12IntegralsRobustRI
 
@@ -3113,8 +3129,8 @@ subroutine ContractOne4CenterF12IntegralsRIB23(nBA,n1,n2,CalphaR,CalphaG,HJir,Co
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK2 = ED2*1.0/4.0 + (EJ2*(7.0/16.0) + EK2*(1.0/16.0))
-   EJK3 = ED2*1.0/4.0 + (EJ3*(7.0/16.0) + EK3*(1.0/16.0)) 
+   EJK2 = ED2*1.0E0_realk/4.0E0_realk + (EJ2*(7.0E0_realk/16.0E0_realk) + EK2*(1.0E0_realk/16.0E0_realk))
+   EJK3 = ED2*1.0E0_realk/4.0E0_realk + (EJ3*(7.0E0_realk/16.0E0_realk) + EK3*(1.0E0_realk/16.0E0_realk)) 
 
 end subroutine ContractOne4CenterF12IntegralsRIB23
 
@@ -3287,7 +3303,7 @@ subroutine ContractTwo4CenterF12IntegralsRI_pf(nBA,n1,n2,CalphaR,CalphaG,NBA2,EJ
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK = 5.0/4.0*EJ - 1.0/4.0*EK 
+   EJK = 5.0E0_realk/4.0E0_realk*EJ - 1.0E0_realk/4.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRI_pf
 
 subroutine ContractTwo4CenterF12IntegralsRIC(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK,dopair_occ_in)
@@ -3402,7 +3418,7 @@ subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,Calp
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK = -5.0/4.0*EJ + 1.0/4.0*EK    
+   EJK = -5.0E0_realk/4.0E0_realk*EJ + 1.0E0_realk/4.0E0_realk*EK    
 !   print *,"COULOMBE V5:  ", 5.0/4.0*EJ
 !   print *,"EXCHANGE V5: ",  1.0/4.0*EK
 !   print *,"COULOMBE V5 + EXCHANGE: V5", EJK      
@@ -3460,7 +3476,8 @@ subroutine ContractTwo4CenterF12IntegralsRIX(nBA,n1,n2,CalphaG,Fii,EJK,dopair_oc
          ENDDO
       ENDDO
    ENDDO
-   EJK = (ED*(0.5E0_realk) + (7.0/16.0*EJ + 1.0/16.0*EK)) 
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+!   EJK = (ED*(0.5E0_realk) + (7.0/16.0*EJ + 1.0/16.0*EK)) 
 end subroutine ContractTwo4CenterF12IntegralsRIX
 
 subroutine ContractTwo4CenterF12IntegralsRIX_nc(nBA,n1,n2,CalphaC,CalphaG,EJK,dopair_occ_in)
@@ -3518,7 +3535,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX_nc(nBA,n1,n2,CalphaC,CalphaG,EJK,do
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIX_nc
 
 subroutine ContractTwo4CenterF12IntegralsRIX_ncMPI(nBA,n1,n2,CalphaCMPI,NBA2,&
@@ -3578,7 +3595,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX_ncMPI(nBA,n1,n2,CalphaCMPI,NBA2,&
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIX_ncMPI
 
 subroutine ContractTwo4CenterF12IntegralsRIX_nc2(nBA,n1,n2,CalphaC,CalphaG,Fii,EJK,dopair_occ_in)
@@ -3644,7 +3661,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX_nc2(nBA,n1,n2,CalphaC,CalphaG,Fii,E
           ENDDO
        ENDDO
     ENDDO
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIX_nc2
 
 subroutine ContractTwo4CenterF12IntegralsRIX_nc3(nBA,n1,n2,CalphaC,Fii,EJK,dopair_occ_in)
@@ -3703,7 +3720,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX_nc3(nBA,n1,n2,CalphaC,Fii,EJK,dopai
          ENDDO
       ENDDO
    ENDDO
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIX_nc3
 
 subroutine ContractTwo4CenterF12IntegralsRI2V3V4(nBA,NBA2,n1,n2,n3,nocv,&
@@ -4392,7 +4409,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB6_pf(nBA,n1,n2,n3,noccfull,CalphaG,C
          ENDDO
       ENDDO
    ENDDO   
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK
    !print *,"COULOMBB6:  ", 7.0/32.0*EJ
    !print *,"EXCHANGEB6: ", 1.0/32.0*EK
    !print *,"COULOMBB6+EXCHANGEB6:", 7.0/32.0*EJ + 1.0/32.0*EK     
@@ -4512,7 +4529,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB7(nBA,n1,n2,n3,CalphaR,CalphaG,Calph
       ENDDO
    ENDDO   
    !$OMP END PARALLEL DO
-   EJK = 1.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK) 
+   EJK = 1.0E0_realk*(ED*0.5E0_realk + 7.0E0_realk/16.0E0_realk*EJ + 1.0E0_realk/16.0E0_realk*EK) 
 
 end subroutine ContractTwo4CenterF12IntegralsRIB7
 
@@ -4585,7 +4602,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB7MPI(nBA,n1,n2,n3,&
       ENDDO
    ENDDO   
    !$OMP END PARALLEL DO
-   EJK = 1.0E0_realk*(ED*0.5E0_realk + 7.0/16.0*EJ + 1.0/16.0*EK) 
+   EJK = 1.0E0_realk*(ED*0.5E0_realk + 7.0E0_realk/16.0E0_realk*EJ + 1.0E0_realk/16.0E0_realk*EK) 
 
 end subroutine ContractTwo4CenterF12IntegralsRIB7MPI
 

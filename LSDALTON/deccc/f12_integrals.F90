@@ -406,8 +406,8 @@ contains
     call mem_alloc(X1ijkn, noccEOS, noccEOS, noccEOS, noccAOS)
     call mem_alloc(X1ijnk, noccEOS, noccEOS, noccAOS, noccEOS)
 
-    ! For frozen core: index 4 (v) is only virtual
-    ! Without frozen core: index 4 is core+virtual (effectively v=m)
+    ! For frozen core: index 4 (v) is only valence
+    ! Without frozen core: index 4 is core+valence (effectively v=m)
 
     call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOStot,&
          & CocvAOStot,Ccabs,Cri,CvirtAOS,'iiiv','RRRR2',X1ijkn)

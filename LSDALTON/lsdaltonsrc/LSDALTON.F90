@@ -106,7 +106,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
        & II_get_AbsoluteValue_overlapSame
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test,&
        & ii_unittest_ichor2center
+#ifdef VAR_DEC
   use dec_main_mod!, only: dec_main_prog
+#endif
   use optimlocMOD, only: optimloc
 #ifdef HAS_PCMSOLVER
   use ls_pcm_utils, only: init_molecule
@@ -528,7 +530,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
            ! Single point DEC calculation using current HF files
            DECcalculation: IF(DECinfo%doDEC) then
+#ifdef VAR_DEC
               call dec_main_prog_input(ls,config,F(1),D(1),CMO,E(1))
+#else
+              call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
            endif DECcalculation
            ! free Cmo
            IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
@@ -731,7 +737,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Single point DEC calculation using HF restart files
   DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%HFrestart) ) then
      CALL Print_Memory_info(lupri,'before dec_main_prog_file')
+#ifdef VAR_DEC
      call dec_main_prog_file(ls,config)
+#else
+     call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
      CALL Print_Memory_info(lupri,'after dec_main_prog_file')
   endif DECcalculationHFrestart
 
@@ -870,7 +880,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use tensor_interface_module ,only: tensor_finalize_interface, tensor_free_bg_buf
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
+#ifdef VAR_DEC
   use dec_settings_mod, only:free_decinfo
+#endif
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -910,8 +922,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
 
   call tensor_free_bg_buf()
   call tensor_finalize_interface()
+#ifdef VAR_DEC
   call free_decinfo()
-
+#endif
 
   if(OnMaster) call stats_mem(lupri)
 

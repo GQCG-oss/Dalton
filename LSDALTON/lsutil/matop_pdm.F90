@@ -35,7 +35,6 @@ module matrix_operations_pdmm
   use memory_handling
   use matrix_module
   use LSmatrix_type
-  use lsmatrix_operations_dense
   use precision
 #ifdef VAR_MPI
   use infpar_module
@@ -463,8 +462,8 @@ contains
           call daxpy(n,alpha*a(i),bfull(n*(i-1)+1),1,cfull(i),m)
        enddo       
     else
-       print*,'unknown format in mat_dense_dmul'
-       CALL LSQUIT( 'unknown format in mat_dense_dmul',-1)
+       print*,'unknown format in mat_pdmm_dmul'
+       CALL LSQUIT( 'unknown format in mat_pdmm_dmul',-1)
     endif
     call mem_dealloc(Bfull)
     call mat_pdmm_set_from_full(Cfull,1.0E0_realk,C)    
@@ -696,7 +695,7 @@ contains
        &  IFAIL, INFO )
     eival = eivalTmp(1)
     if(info.ne. 0) then
-       print*,'mat_dense_dsyevx_aux: dsyevx failed, info=',info
+       print*,'mat_pdmm_dsyevx_aux: dsyevx failed, info=',info
        print*,'abstol',abstol
        print*,'lwork',lwork
        call mem_alloc(B,ndim,ndim)
@@ -720,7 +719,7 @@ contains
           print*,'dsyevx was succesfull for a symmetriced version'
        else
           print*,'dsyevx also fails for a symmetriced version'
-          call lsquit('mat_dense_dsyevx_aux: diagonalization failed.',-1)
+          call lsquit('mat_pdmm_dsyevx_aux: diagonalization failed.',-1)
        endif
     end if
     call mem_dealloc(elms)

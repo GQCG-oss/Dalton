@@ -37,6 +37,9 @@ module ri_util_module
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
   use dec_fragment_utils
+  private
+  public :: Build_CalphaMO2,BuildnAuxMPIUsedRI,BuildnAuxMPIUsedRIinfo,&
+       & Build_RobustERImatU, Build_RIMP2grad, BuilDUmatTmpRIF12
 
 contains
 !This should be call my master and slaves
@@ -544,7 +547,6 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      ENDIF
      !  print*,'MY RIMP2 INTEGRAL AlphaCD2(1:nA,1:4) NEW VERSION MYNUM',MYNUM
      !  call ls_output(AlphaCD3,1,size(AlphaCD3,1),1,4,size(AlphaCD3,1),nvirt*nocc,1,6)
-     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
   ELSE
      !=====================================================================================
      ! MPI scheme:  Bcast Routine
@@ -2327,6 +2329,46 @@ ENDDO
 !$OMP END PARALLEL
 
 end subroutine get_PQ_RIMP2_grad
+
+
+  subroutine BuilDUmatTmpRIF12(Umat,nAux,UmatTmp,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,&                                               
+       & AuxMPIstartMPI,iAuxMPIextraMPI)                                                                                               
+    implicit none
+    integer,intent(in) :: nAux,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,AuxMPIstartMPI,iAuxMPIextraMPI                                    
+    real(realk),intent(in) :: Umat(nAux,nAux)
+    real(realk),intent(inout) :: UmatTmp(NBA,NBA2)                                                                                     
+    !local variables                                                                                                                   
+    integer :: J,I                                                                                                                     
+    
+    IF(iAuxMPIextraMy.EQ.0)THEN                                                                                                        
+       do J=1,NBA2
+          do I=1,NBA
+             UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)                                                                     
+          enddo                                                                                                                        
+       enddo                                                                                                                           
+    ELSE
+       do J=1,NBA2
+          do I=1,NBA
+             UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)                                                                     
+          enddo
+          UmatTmp(NBA,J) = Umat(iAuxMPIextraMy,AuxMPIstartMPI+J)                                                                       
+       enddo                                                                                                                           
+    ENDIF
+    IF(iAuxMPIextraMPI.NE.0)THEN
+       IF(iAuxMPIextraMy.EQ.0)THEN                                                                                                     
+          do I=1,NBA
+             UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)                                                                   
+          enddo                                                                                                                        
+       ELSE
+          do I=1,NBA
+             UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)                                                                   
+          enddo
+          UmatTmp(NBA,NBA2) = Umat(iAuxMPIextraMy,iAuxMPIextraMPI)                                                                     
+       ENDIF                                                                                                                           
+    ENDIF
+  end subroutine BuilDUmatTmpRIF12 
+
+
 
 end module ri_util_module
 

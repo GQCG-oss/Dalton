@@ -33,6 +33,7 @@ module full_molecule
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
+  use dec_tools_module
   use array2_simple_operations
 
   integer, save :: mol_block_size = -14938343
@@ -1223,7 +1224,11 @@ contains
     ! *********************************************
 
     ! MO coefficients, Fock
-    molmem = 2E0_realk*A*A
+    if (DEcinfo%noaofock) then
+       molmem = 1E0_realk*A*A
+    else
+       molmem = 2E0_realk*A*A
+    end if
 
     ! ppfock and qqfock
     tmp = O*O + V*V

@@ -25,6 +25,9 @@ module mp2_module
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
   use IntegralInterfaceModuleDF
   use IchorErimoduleHost
+  use background_buffer_module
+  use reorder_frontend_module
+  use tensor_interface_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use cc_tools_module
@@ -33,7 +36,7 @@ module mp2_module
 #if defined(VAR_CUDA) || defined(VAR_OPENACC)
   use gpu_interfaces
 #endif
-
+  
   use dec_fragment_utils!,only: calculate_fragment_memory, &
 !       & dec_simple_dgemm_update,start_flop_counter,&
 !       & end_flop_counter, dec_simple_dgemm, mypointer_init, &
@@ -3081,8 +3084,6 @@ subroutine MP2F12_Ccoupling_energy(MyFragment,bat,E21)
        CALL LS_GETTIM(CPU2,WALL2)
        CPU_AOTOMO = CPU_AOTOMO + (CPU2-CPU1)
        WALL_AOTOMO = WALL_AOTOMO + (WALL2-WALL1)
-
-       !print *, "norm2(tmp3)", norm2(tmp3%p(1:dim3))
 
        ! Transition from step 1 to step 2 in integral loop
        ! =================================================

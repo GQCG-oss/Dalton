@@ -36,18 +36,18 @@ def main():
   lsdalton="/LSDALTON"
   tensor=lsdalton+"/tensor"
 
-
-  for i in range(len(sys.argv)):
-    if "debug_version" in sys.argv[i]:
-      args[1] = True
-    if "nocollapse" in sys.argv[i]:
-      args[2] = True
-    if "CMAKE_BUILD=" in sys.argv[i]:
+  for i in range(1,len(sys.argv)):
+    if "--CMAKE_BUILD=" in sys.argv[i]:
       args[3] = sys.argv[i][sys.argv[i].find("=")+1:]
-    if "acc" in sys.argv[i]:
+      continue
+    if "--debug_version" in sys.argv[i]:
+      args[1] = True
+    if "--nocollapse" in sys.argv[i]:
+      args[2] = True
+    if "--acc" in sys.argv[i]:
       args[4] = True
       acc_write = True
-    if "real_sp" in sys.argv[i]:
+    if "--real_sp" in sys.argv[i]:
       args[5] = True
       real_sp_write = True
 

@@ -201,6 +201,7 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1662,11 +1663,11 @@ C
       IF (QMMM .AND. DOCI) THEN
          CALL QUIT('QMMM is currently not compatible with .CI')
       END IF
-      IF (PEQM .AND. DOCI) THEN
-         CALL QUIT('PEQM is currently not compatible with .CI')
+      IF (USE_PELIB() .AND. DOCI) THEN
+         CALL QUIT('.PEQM is currently not compatible with .CI')
       END IF
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
-     &            QMNPMM
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. QMNPMM
+     &            .OR. USE_PELIB()
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -5224,6 +5225,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5616,7 +5618,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
+       IF (USE_PELIB()) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications
@@ -5634,7 +5636,7 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the APSG: see later.'
       END IF
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
          WRITE(IWUNIT,'(/5X,A/5X,A/)')
      &   'Wave function environment is modeled using the',
      &   'polarizable embedding model (PE library).'

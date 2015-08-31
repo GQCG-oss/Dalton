@@ -16,6 +16,9 @@ logical  :: CMO_RI_save_created
 TYPE(Matrix) :: CMO_RI_save
 logical  :: Save_activated_cabs
 logical  :: Save_activated_ri
+private
+public :: determine_CABS_nbast, init_cabs, free_cabs, &
+     & build_CABS_MO, build_RI_MO, init_ri
 CONTAINS
   subroutine determine_CABS_nbast(nbast_cabs,nnull,SETTING,lupri)
     implicit none

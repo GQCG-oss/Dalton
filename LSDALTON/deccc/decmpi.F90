@@ -13,13 +13,46 @@ module decmpi_module
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
   use Matrix_module!,only: matrix
+  use background_buffer_module
   use tensor_basic_module
   use tensor_interface_module
+!
   use DEC_settings_mod
   use dec_fragment_utils
   use array4_simple_operations
   use array2_simple_operations
   use CABS_operations
+
+  private
+#ifdef VAR_MPI
+  public :: mpi_send_recv_fragmentenergy, mpi_send_recv_mp2grad,&
+       & mpi_send_recv_single_fragment, mpi_send_recv_many_fragments,&
+       & mpi_bcast_many_fragments, mpi_communicate_mp2_int_and_amp,&
+       & mpi_communicate_MyFragment, decmpi_bcast_f12_info,&
+       & mpi_dec_fullinfo_master_to_slaves, &
+       & mpi_bcast_fullmolecule, mpicopy_fragment,&
+       & mpicopy_fragmentAOStype,&
+       & buffercopy_PNOSpaceInfo_struct,&
+       & share_E2_with_slaves, mpi_communicate_ccsd_calcdata,&
+       & mpi_communicate_ccsdpt_calcdata, get_mo_ccsd_joblist,&
+       & distribute_mpi_jobs, bcast_dec_fragment_joblist,&
+       & mpicopy_fragment_joblist, dec_half_local_group,&
+       & mpicopy_fragmentdensity, mpicopy_fragmentgradient,&
+       & print_MPI_fragment_statistics,&
+       & mpibcast_dec_settings, mpi_communicate_get_gmo_data,&
+       & mpi_communicate_moccsd_data,&
+       & mpicopy_dec_settings, rpa_residual_communicate_data,&
+       & rpa_fock_communicate_data, &
+       & mpi_dec_fullinfo_master_to_slaves_precursor,&
+       & wake_slaves_for_simple_mo,&
+       & get_slaves_to_simple_par_mp2_res,&
+       & check_job, &
+       & mpi_communicate_MyFragment_f12
+#else
+public :: check_job
+#endif
+
+
 contains
  
 #ifdef VAR_MPI
@@ -413,6 +446,68 @@ contains
 
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_MyFragment 
+
+  subroutine mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+    implicit none
+    !> Fragment under consideration
+    type(decfrag),intent(inout) :: MyFragment
+    !> Case MODEL
+    integer :: fragcase
+    !> dopair_occ array
+    logical,intent(inout) :: dopair
+
+    !local variables
+    integer(kind=ls_mpik) :: master
+    integer :: nrow,ncol
+    logical :: DoBasis
+    DoBasis = .TRUE.
+    call time_start_phase( PHASE_COMM )
+    master = 0
+    ! Init MPI buffer which eventually will contain all fragment info
+    ! ***************************************************************
+    ! MASTER: Prepare for writing to buffer
+    ! SLAVE: Receive buffer
+    call ls_mpiInitBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+
+    ! Buffer handling
+    ! ***************
+    ! MASTER: Put information info buffer
+    ! SLAVE: Put buffer information into decfrag structure
+    ! Fragment information
+    call mpicopy_fragment(MyFragment,infpar%lg_comm,DoBasis)
+ 
+    if(infpar%lg_mynum .ne. master) then
+       call mem_alloc(MyFragment%Ccabs,MyFragment%ncabsAO,MyFragment%ncabsMO)
+       call mem_alloc(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO)
+       call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)
+       call mem_alloc(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO)
+       call mem_alloc(MyFragment%Krs,MyFragment%ncabsAO,MyFragment%ncabsAO)                                                    
+       call mem_alloc(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO)                                                    
+       call mem_alloc(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot)
+       call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)   
+
+    endif
+
+    call ls_mpi_buffer(MyFragment%Ccabs,MyFragment%ncabsAO,MyFragment%ncabsMO,master)
+    call ls_mpi_buffer(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO,master)
+    call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master) 
+    call ls_mpi_buffer(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO,master) 
+    call ls_mpi_buffer(MyFragment%Krs,MyFragment%ncabsAO,MyFragment%ncabsAO,master)                                             
+    call ls_mpi_buffer(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO,master)                                             
+    call ls_mpi_buffer(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot,master)
+    call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master)     
+
+    call ls_mpi_buffer(fragcase,master) 
+    call ls_mpi_buffer(dopair,master)
+
+    ! Finalize MPI buffer
+    ! *******************
+    ! MASTER: Send stuff to slaves and deallocate temp. buffers
+    ! SLAVE: Deallocate buffer etc.
+    call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+    call time_start_phase( PHASE_WORK )
+ end subroutine mpi_communicate_MyFragment_f12 
+
 
   !> \brief MPI communcation where the information in the decfrag type
   !> is send (for local master) or received (for local slaves).
@@ -859,6 +954,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsMO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nvirtLOC,master)
@@ -2380,9 +2476,10 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPthr,Master)
     call ls_mpi_buffer(DECitem%SNOOPmaxdiis,Master)
     call ls_mpi_buffer(DECitem%SNOOPdebug,Master)
-    call ls_mpi_buffer(DECitem%SNOOPort,Master)
     call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
+    call ls_mpi_buffer(DECitem%SNOOPrestart,Master)
+    call ls_mpi_buffer(DECitem%SNOOPonesub,Master)
     call ls_mpi_buffer(DECitem%CCexci,Master)
     call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
     call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
@@ -2391,7 +2488,7 @@ contains
     call ls_mpi_buffer(DECitem%JacobianInitialSubspace,Master)
     call ls_mpi_buffer(DECitem%JacobianMaxIter,Master)
     call ls_mpi_buffer(DECitem%JacobianPrecond,Master)
-    call ls_mpi_buffer(DECitem%HaldApprox,Master)
+    call ls_mpi_buffer(DECitem%SinglesEW1,Master)
     call ls_mpi_buffer(DECitem%LW1,Master)
     call ls_mpi_buffer(DECitem%P_EOM_MBPT2,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)

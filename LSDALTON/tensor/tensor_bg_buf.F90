@@ -42,10 +42,10 @@ module tensor_bg_buf_module
      procedure :: clear_md => tensor_clear_mdel_bg_buf
   end type tensor_bg_buf_dp_type
 
-  save
-
   type(tensor_bg_buf_dp_type) :: buf_tensor_dp
-  integer, pointer            :: tensor_max_bg_pointers
+  integer                     :: tensor_max_bg_pointers
+
+  save
 
   contains
 
@@ -67,7 +67,7 @@ module tensor_bg_buf_module
      integer, target     :: n_prev
      logical, target     :: l_mdel
      type(c_ptr), target :: f_mdel
-     tensor_max_bg_pointers   =>   max_pointers
+     tensor_max_bg_pointers   =    max_pointers
      buf_tensor_dp%init       =>   init         
      buf_tensor_dp%offset     =>   offset
      buf_tensor_dp%nmax       =>   nmax
@@ -86,7 +86,7 @@ module tensor_bg_buf_module
   end subroutine tensor_initialize_bg_buf_from_lsdalton_bg_buf
   subroutine tensor_free_bg_buf()
      implicit none
-     tensor_max_bg_pointers   =>  null()
+     tensor_max_bg_pointers   =   0
      buf_tensor_dp%init       =>  null() 
      buf_tensor_dp%offset     =>  null() 
      buf_tensor_dp%nmax       =>  null() 

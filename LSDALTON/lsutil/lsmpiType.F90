@@ -1,6 +1,8 @@
 module lsmpi_type
+  use lsmpi_param
   use precision
-  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr,c_loc
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,&
+       & c_null_ptr,c_loc
   use LSparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
@@ -193,43 +195,6 @@ module lsmpi_type
     module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
   end interface lsmpi_get_acc
   !save
-
-  
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!
-!Constants for MPIBUFFER!
-!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  integer,parameter     :: LSMPIBROADCAST       = 1
-  integer,parameter     :: LSMPIREDUCTION       = 2
-  integer,parameter     :: LSMPIREDUCTIONmaster = 3
-  integer,parameter     :: LSMPISENDRECV        = 4
-
-#ifdef VAR_MPI
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!General MPI vars, aka junkbox!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  integer(kind=ls_mpik) :: MPI_COMM_LSDALTON = 0
-  logical               :: LSMPIASYNCP                !contains environment value of async progress
-  logical               :: lsmpi_enabled_comm_procs 
-
-  !split mpi messages in case of 32bit mpi library to subparts, which are
-  !describable by a 32bit integer and dividable by 8
-  integer     :: SPLIT_MPI_MSG
-  !split mpi one sided communication into 100MB chunks
-  integer     :: MAX_SIZE_ONE_SIDED 
-
-  !mpistatus
-  integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE) 
-
-  type mpigroup
-     integer(kind=ls_mpik)         :: groupsize
-     integer(kind=ls_mpik),pointer :: ranks(:)
-  end type mpigroup
-
-#endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 !integer conversion factor!

@@ -34,11 +34,11 @@ module tensor_interface_module
   public DIL_ALLOC_PINNED  !cudaMallocHost() will be used for buffer allocation in <tensor_algebra_dil>
   public DIL_ALLOC_MPI     !MPI_ALLOC_MEM() will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
   public DIL_ALLOC_EXT     !external buffer will be used in <tensor_algebra_dil>
-  public DIL_CONS_OUT      !output for DIL messages
+  public DIL_CONS_OUT      !output file handle for DIL messages
   public DIL_DEBUG         !DIL debugging switch
-  public dil_tens_contr_t             !tensor contraction specification
-  public subtens_t                    !subtensor (tensor slice) specification for Janus
-  public dil_subtensor_set            !subtensor (tensor slice) setting method for Janus
+  public dil_tens_contr_t       !tensor contraction specification
+  public subtens_t              !subtensor (tensor slice) specification
+  public dil_subtensor_set            !subtensor (tensor slice) initialization
   public dil_set_alloc_type           !set default memory allocation flags (BASIC,MPI_ALLOC,PINNED,etc.)
   public dil_clean_tens_contr         !clean the tensor contraction handle
   public dil_set_tens_contr_args      !set up an argument for a tensor contraction
@@ -47,20 +47,30 @@ module tensor_interface_module
   public dil_prepare_buffer           !prepare a work buffer for a tensor contraction
   public dil_tensor_contract          !contract tensors (pipelined)
   public dil_tensor_contract_finalize !finalize a non-blocking tensor contraction
-  public dil_debug_to_file_start      !start redirecting debugging information to a file
-  public dil_debug_to_file_finish     !finish redirecting debugging information to a file
-  public thread_wtime                 !OMP thread wall time
-  public process_wtime                !MPI process wall time
+  public dil_debug_to_file_start      !start redirecting debugging information into a file
+  public dil_debug_to_file_finish     !finish redirecting debugging information into a file
   public dil_array_print              !print a whole (local) array or its part
+  public dil_tensor_print             !print a distributed tensor
   public dil_array_init               !initialize a local array
   public dil_tensor_init              !initialize a distributed tensor
   public dil_array_norm1              !compute the 1-norm of a local array
+  public dil_array_sym_norm1          !compute the 1-norm of a part of a local array with index symmetries
+  public dil_array_sym_hash           !compute a hash of a part of a local array with index symmetries
   public dil_tensor_norm1             !compute the 1-norm of a distributed tensor (blocking)
-  public dil_tens_fetch_start         !tensor slice fetching for Janus (start)
-  public dil_tens_fetch_finish_prep   !tensor slice fetching for Janus (finish)
-  public dil_tens_prep_upload_start   !tensor slice uploading for Janus (start)
-  public dil_tens_upload_finish       !tensor slice uploading for Janus  (finish)
-  public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued
+  public dil_tensor_sym_norm1         !compute the 1-norm of a part of a distributed tensor with index symmetries
+  public dil_tensor_sym_hash          !compute a hash of a part of a distributed tensor with index symmetries
+  public dil_tens_fetch_start         !non-blocking tensor slice fetching (start)
+  public dil_tens_fetch_finish_prep   !non-blocking tensor slice fetching (finish)
+  public dil_tens_prep_upload_start   !non-blocking tensor slice uploading (start)
+  public dil_tens_upload_finish       !non-blocking tensor slice uploading (finish)
+  public dil_tens_fetch               !blocking tensor slice fetching (low memory overhead)
+  public dil_tens_upload              !blocking tensor slice uploading (low memory overhead)
+  public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued at this time
+  public dil_tens_pack_sym2           !packs two symmetric dimensions of a local tensor into a single composite dimension
+  public dil_distr_tens_insert_sym2   !D(p,q,...,r,s)+=S(p,q,...,r<=s), where r, s, and [r<=s] can have arbitrary positions
+  public dil_update_abij_with_abc     !omega2+=o2ilej with symmetric indices i<=j
+  public thread_wtime                 !OMP thread wall time
+  public process_wtime                !MPI process wall time
   public int2str                      !converts integers to strings
 #endif
 
