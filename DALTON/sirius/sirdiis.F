@@ -1237,14 +1237,18 @@ C           this also includes the case of MMPCM
          END IF
          IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.FALSE.)
 
-         IF (GRDNRM .LE. THDIIS .and. SHFTLVL .EQ. D0) THEN  ! converged
-         ! do not accept as converged if non-zero level shift
-         ! because then the orbital energies are not correct /hjaaj
-            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+         IF (GRDNRM .LE. THDIIS) THEN  ! converged
+
             ICONV = 1
+
+C           No level shift at convergence, otherwise orbital energies
+C           for e.g. CC will not be correct
+            SHFTLVL = 0.0D0
+
+            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+
             WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
-C
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
               !  Cholesky
@@ -1502,10 +1506,6 @@ C          (open shell problems reported by users ...) / hjaaj 22-Jun-2005
 !        IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
 !        enabled again 6-Nov-2014 after testing a problematic open-shell DFT
 !        calculation which converged with level shift, but not without. /hjaaj
-
-C        No level shift at convergence, otherwise orbital energies
-C        for e.g. CC will not be correct
-         IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
 
 C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
