@@ -779,8 +779,10 @@ module dec_typedef_module
      integer :: nval
      !> Number of virtual (virtupied) orbitals
      integer :: nvirt
-     !> Number of cabs AO orbitals
+     !> Number of cabs AO orbitals (Regular + cabs only)
      integer :: nCabsAO
+     !> Number of cabs only AO orbitals
+     integer :: nCabsAOOnly
      !> Number of cabs MO orbitals
      integer :: nCabsMO
      !> Number of possible fragments
@@ -970,8 +972,10 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
-     !> Number of CABS basis functions AO
+     !> Number of CABS basis functions AO (Regular+Cabs only)
      integer :: ncabsAO=0
+     !> Number of CABS only basis functions AO
+     integer :: ncabsAOOnly=0
      !> Number of CABS basis functions MO
      integer :: ncabsMO=0
      !> Atomic indices
