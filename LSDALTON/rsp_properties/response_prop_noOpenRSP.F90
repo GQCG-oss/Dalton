@@ -372,7 +372,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   real(realk)                  :: TS,TE
   type(Matrix)                 :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1)
 !  type(Matrix),pointer :: ChandanMat(:)
-  integer              :: ntrial,nrhs,nsol,nomega,nstart
+  integer              :: ntrial,nrhs,nsol,nomega,nstart,NNZ
   character(len=1)        :: CHRXYZ(-3:3)
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
   Factor=53.2513539566280 !1e6*alpha^2 
@@ -540,6 +540,11 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
         nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
         !ntrial and nstart seem to be obsolete 
         call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+        
+        if (molcfg%solver%info_rsp_sparsity) then
+           call mat_report_sparsity(RHS(icoor),'NMRshield RHS',nnz,lupri)
+           Write(lupri,'(A,I3,A,I9)')'RHS(',icoor,') NNZ=',NNZ
+        endif
         call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHS(icoor:icoor),EIVAL,Xx)
      else
         write(lupri,*) 'WARNING: RHS norm is less than threshold'

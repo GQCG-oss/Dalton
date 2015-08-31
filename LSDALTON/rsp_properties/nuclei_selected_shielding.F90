@@ -293,10 +293,12 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      nstart = 3*nAtomsSelected !Number of start vectors. Only relevant for eigenvalue problem
      !ntrial and nstart seem to be obsolete 
      call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
-     do jcoor=1,3*nAtomsSelected
-        call mat_report_sparsity(RHSk(jcoor),'NMRshield IANS RHS',nnz,lupri)
-        Write(lupri,'(A,I3,A,I9)')'RHSk(',jcoor,') NNZ=',NNZ
-     enddo
+     if (molcfg%solver%info_rsp_sparsity) then
+        do jcoor=1,3*nAtomsSelected
+           call mat_report_sparsity(RHSk(jcoor),'NMRshield IANS RHS',nnz,lupri)
+           Write(lupri,'(A,I3,A,I9)')'RHSk(',jcoor,') NNZ=',NNZ
+        enddo
+     endif
      call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk,EIVALKF,Xk)
      do jcoor=1,3*nAtomsSelected
         do icoor = 1,3 
@@ -389,8 +391,10 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
               !ntrial and nstart seem to be obsolete 
               call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
               call mat_init(Xk(nNonZero),nbast,nbast)
-              call mat_report_sparsity(RHSk(1),'NMRshield IANS RHS(1)',nnz,lupri)
-              Write(lupri,*)'RHSk(',Xcoor+(jcoor-1)*3,') NNZ=',NNZ
+              if (molcfg%solver%info_rsp_sparsity) then
+                 call mat_report_sparsity(RHSk(1),'NMRshield IANS RHS(1)',nnz,lupri)
+                 Write(lupri,*)'RHSk(',Xcoor+(jcoor-1)*3,') NNZ=',NNZ
+              endif
               call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHSk(1:1),EIVALKF,Xk(nNonZero:nNonZero))
               do icoor = 1,3 
                  Prodtotal(icoor,Xcoor+(jcoor-1)*3)=-4E0_realk*factor*mat_trAB(Xk(nNonZero),ProdA(icoor))
