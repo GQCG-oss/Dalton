@@ -1185,6 +1185,15 @@ contains
        end if
     end if
 
+    ! The fock matrix is required in the ccsolver
+    if (DECinfo%noaofock) then
+       select case(DECinfo%ccmodel)
+       case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX)
+          call lsquit("The CC solver require the fock matrix to be stored. Remove &
+             & .NOAOFOCK keyword from input.",DECinfo%output)
+       end select
+    end if
+
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
