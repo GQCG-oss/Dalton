@@ -59,7 +59,7 @@ type DiagItem
    !> Force level 2 re-calculation on calculations restarted from old density
    logical :: CFG_redo_l2 
    !> Specifies orbital-free DFT
-   logical :: CFG_OrbFree 
+   logical :: CFG_bosonicOccupation 
    !> What kind of level shift should be used with diagonalization?
    integer :: CFG_lshift
    !> A minimum level shift can be set
@@ -124,7 +124,7 @@ implicit none
    diag%cfg_restart          = .false.
    diag%cfg_purifyrestart    = .false.
    diag%cfg_redo_l2          = .false.
-   diag%cfg_OrbFree          = .false.
+   diag%CFG_bosonicOccupation          = .false.
 
    diag%CFG_lshift = Diag_lshift_none !Default = no level shift
    diag%cfg_min_lshift        = 0.0E0_realk
@@ -321,7 +321,7 @@ end subroutine diag_set_default_config
 
      call mat_diag_f(F,S,eival,Cmo)
 
-     call mat_density_from_orbs(Cmo,Dnew,diag%nocc,diag%nocca,diag%noccb,diag%cfg_OrbFree) 
+     call mat_density_from_orbs(Cmo,Dnew,diag%nocc,diag%nocca,diag%noccb,diag%CFG_bosonicOccupation) 
 
 !     if (diag%cfg_lshift == diag_lshift_MOchange .or. diag%DEBUG_RH_MU_E) then
 !       call util_min_MO_overlap(diag%nocc,S,Co,Cmo,1,minoverlap(1))
