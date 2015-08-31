@@ -177,8 +177,8 @@ contains
        case('.JACOBIANNOTPRECOND')
           DECinfo%JacobianPrecond = .false.
 
-       case('.HALDAPPROX')
-          DECinfo%HaldApprox = .true.
+       case('.SINGLESEW1')
+          DECinfo%SinglesEW1 = .true.
 
        case('.LW1')
           DECinfo%LW1 = .true.
@@ -1283,7 +1283,7 @@ contains
     write(lupri,*) 'JacobianInitialSubspace ', DECinfo%JacobianInitialSubspace
     write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
-    write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
+    write(lupri,*) 'SinglesEW1 ', DECinfo%SinglesEW1
     write(lupri,*) 'LW1 ', DECinfo%LW1
     write(lupri,*) 'P_EOM_MBPT2 ', DECinfo%P_EOM_MBPT2
     write(lupri,*) 'doDEC ', DECitem%doDEC
