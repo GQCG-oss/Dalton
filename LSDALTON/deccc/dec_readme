@@ -121,7 +121,7 @@ Level 1
 ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple,  decmpi, dec_utils
 
 Level 0 
-dec_settings, full_driver_f12contractions, CABS, cc_tools
+dec_settings, full_driver_f12contractions, CABS, cc_tools, f12ri_util
 
 array3_memory, array4_memory, f12_routines, dec_workarounds, dec_tools
 

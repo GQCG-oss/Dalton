@@ -12,19 +12,19 @@ f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.1e-6)
+      rel_tolerance = 1.2e-6)
 
 f.add(string = 'E: F12 singles',
-      rel_tolerance = 1.1e-6)
+      rel_tolerance = 1.2e-6)
 
 f.add(string = 'Total RI-MP2F12 energy', 
-      rel_tolerance = 1.1e-6)
+      rel_tolerance = 1.2e-6)
 
 f.add(string = 'RI-MP2 CORRECTION TO ENERGY',
-      rel_tolerance = 1.1e-6)
+      rel_tolerance = 1.2e-6)
 
 f.add(string = 'RI-MP2F12 CORRECTION TO ENERGY',
-      rel_tolerance = 1.1e-6)
+      rel_tolerance = 1.2e-6)
 
 f.add(string = 'Allocated memory (TOTAL)')
 
