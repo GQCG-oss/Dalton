@@ -245,15 +245,17 @@ END SUBROUTINE II_get_mixed_overlap_full
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
 !> \param h the one electron fock matrix contribution
-SUBROUTINE II_get_h1(LUPRI,LUERR,SETTING,h)
+!> \param kineticScaling scaling factor for the kinetic operator term
+SUBROUTINE II_get_h1(LUPRI,LUERR,SETTING,h,kineticScaling)
 IMPLICIT NONE
 TYPE(MATRIX),target   :: h
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
+Real(realk),optional  :: kineticScaling
 !
 Integer             :: nbast
 TYPE(MATRIX),target :: tmp
-Real(realk)         :: OLDTHRESH
+Real(realk)         :: factor
 
 CALL II_get_nucel_mat(LUPRI,LUERR,SETTING,h)
 IF (setting%scheme%intprint.GE.2) THEN
@@ -269,7 +271,10 @@ CALL mat_init(tmp,nbast,nbast)
 CALL II_get_kinetic(LUPRI,LUERR,SETTING,tmp)
 IF (setting%scheme%intprint.GE.2) write(lupri,'(A46,F18.8)') 'Kinetic-energy-matrix dot product:',mat_dotproduct(tmp,tmp)
 
-call mat_daxpy(1E0_realk,tmp,h)
+factor = 1E0_realk 
+IF (present(kineticScaling)) factor = kineticScaling !Included to make scaling for orbital free DFT
+call mat_daxpy(factor,tmp,h)
+
 CALL mat_free(tmp)
 
 END SUBROUTINE II_get_h1

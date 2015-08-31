@@ -147,11 +147,11 @@ module dec_typedef_module
      integer :: JacobianMaxIter
      !> Use preconditioning for Jacobian eigenvalue problem
      logical :: JacobianPrecond
-     !> For MP2 model (or, more correctly EW1 model), invoke Hald approximation
-     !> where we only keep enough terms to ensure that singles and doubles dominated 
-     !> excitations are correct to second and first order, respectively.
+     !> For MP2 model (or, more correctly EW1 model), invoke approximation
+     !> where we only keep enough terms to ensure that singles dominated 
+     !> excitations are correct to second order.
      !> (See JCP 115, 671 (2001))
-     logical :: HaldApprox
+     logical :: SinglesEW1
      !> Apply first-order linear wave function approximation (not size-extensive)
      !> when calculation Jacobian eigenvalues. (Only meaningful in
      !> combination with MP2 wave function model).
@@ -1553,7 +1553,7 @@ CONTAINS
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
-    DECinfo%HaldApprox = .false.
+    DECinfo%SinglesEW1 = .false.
     DECinfo%LW1 = .false.
     DECinfo%P_EOM_MBPT2 = .false.
 
