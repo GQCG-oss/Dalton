@@ -52,7 +52,10 @@ module rif12_integrals_module
   ! Yangs F12 routines
   use decf12_routines_module
   use f12_routines_module
-
+  use f12ri_util_module,only: GeneralTwo4CenterDECF12RICoef1112,&
+       & GeneralTwo4CenterDECF12RICoef1223,&
+       & DECF12RIB4,DECF12RIB4MPI
+  
   use ri_util_module
   !#endif 
 
@@ -149,6 +152,9 @@ contains
     real(realk),pointer :: Fab(:,:)
     real(realk),pointer :: Fnm(:,:)
 
+    !Handling of doapir 
+    integer :: noccpair
+    integer,pointer :: Kval(:,:)
     !========================================================
     !  RI variables
     !========================================================
@@ -205,6 +211,7 @@ contains
     real(realk),pointer :: UmatTmp(:,:)
     real(realk) :: factor, EV2tmp, EX2tmp
     real(realk),pointer :: CalphaMPI(:),CalphaMPI2(:)
+
 #ifdef VAR_MPI
     real(realk) :: lsmpibufferRIMP2(20)
     lsmpibufferRIMP2=0.0E0_realk
@@ -815,7 +822,7 @@ print *, "EB3, mynum", EB3, mynum
     intspec(3) = 'R' !Regular AO basis function on center 4
     intspec(4) = 'G' !The Gaussian geminal operator g
     intspec(5) = 'G' !The Gaussian geminal operator g
-
+    !Unique: CalphaG(NBA,nocvAOS,noccEOS)
     call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,nbasis,nAux,LUPRI, &
        & FORCEPRINT,wakeslaves,Cfull,nocvAOS,CoEOS,noccEOS, &
        & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
@@ -1100,7 +1107,10 @@ print *, "EB3, mynum", EB3, mynum
     n =  ncabsAO
 
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Krs,k,0.0E0_realk,CalphaD,m)
-    call ContractTwo4CenterF12IntegralsRIB4_dec(nBA,noccEOS,ncabsAO,CalphaGcabsAO,CalphaD,EB4,dopair_occ)
+    call BuildKval(dopair_occ,noccEOS,Kval,noccpair,dopair)
+    call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaGcabsAO,noccEOS,ncabsAO,CalphaD,noccEOS,ncabsAO,EB4,&
+         & noccEOS,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB4,DECF12RIB4MPI)
+    call mem_dealloc(KVAL)
 
     mp2f12_energy = mp2f12_energy + EB4
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
@@ -1248,7 +1258,14 @@ print *, "EB3, mynum", EB3, mynum
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,MyFragment%Fcp,k,0.0E0_realk,CalphaD,m)
     
     call mem_dealloc(CalphaGcabsMO)
-    call ContractTwo4CenterF12IntegralsRIB9_dec(nBA,noccEOS,nvirtAOS,nocvAOS,noccAOStot,CalphaG,CalphaD,EB9,dopair_occ)
+    
+    call ContractTwo4CenterF12IntegralsRIB9_dec(nBA,noccEOS,nvirtAOS,nocvAOS,noccAOStot,CalphaG,&
+         & CalphaD,EB9,dopair_occ)
+!    call BuildKval(dopair_occ,noccEOS,Kval,noccpair,dopair)
+!    call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaG,nocvAOS,noccEOS,CalphaD,noccEOS,nocvAOS,EB9,&
+!         & noccfull,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB9,DECF12RIB9MPI)
+!    call mem_dealloc(KVAL)
+
     mp2f12_energy = mp2f12_energy  + EB9
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
@@ -1432,6 +1449,43 @@ print *, "EB3, mynum", EB3, mynum
 
   end subroutine get_rif12_fragment_energy
 
+  subroutine BuildKval(dopair_occ,noccEOS,Kval,noccpair,dopair)
+    implicit none
+    integer,intent(in) :: noccEOS
+    logical,intent(in) :: dopair_occ(noccEOS,noccEOS),dopair
+    integer,pointer    :: KVAL(:,:)
+    integer,intent(inout) :: noccpair
+    !local variables
+    integer :: nK,J,I
+    IF(dopair)THEN
+       noccpair=COUNT(dopair_occ)/2
+       print*,'PAIR: noccpair=COUNT(dopair_occ)/2=',COUNT(dopair_occ)/2
+    ELSE
+       nK=NINT(SQRT(real(COUNT(dopair_occ))))
+       noccpair=(nK*(nK+1))/2
+       print*,'ATOMIC: noccpair=',noccpair
+    ENDIF
+    call mem_alloc(KVAL,3,noccpair)
+    nK=0
+    DO j=1,noccEOS 
+       IF(dopair_occ(J,J)) THEN
+          nK=nK+1
+          KVAL(1,nK)=J
+          KVAL(2,nK)=J
+          KVAL(3,nK)=1.0E0_realk
+       ENDIF
+       DO i=j+1,noccEOS 
+          IF(dopair_occ(I,J)) THEN
+             nK=nK+1
+             KVAL(1,nK)=I
+             KVAL(2,nK)=J
+             KVAL(3,nK)=2.0E0_realk
+          ENDIF
+       ENDDO
+    ENDDO
+    IF(nK.NE.noccpair)call lsquit('BuildKval: nK.NE.noccpair',-1)
+  end subroutine BuildKval
+  
 end module rif12_integrals_module
 
 subroutine get_rif12_fragment_energy_slave()

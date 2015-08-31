@@ -745,6 +745,7 @@ contains
     call ls_mpibcast(MyMolecule%nval,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nCabsAOOnly,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 
     !simple logicals
@@ -944,6 +945,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsAOOnly,master)
     CALL ls_mpi_buffer(MyFragment%nCabsMO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
@@ -989,7 +991,6 @@ contains
     call ls_mpi_buffer(MyFragment%RsdvAE,master)
     call ls_mpi_buffer(MyFragment%RsdvAOS,master)
 
-
     ! Integer pointers
     ! ----------------
     ! Nullify and allocate stuff for receiver (global addtobuffer is false)
@@ -1024,7 +1025,7 @@ contains
        call mem_alloc(MyFragment%basis_idx,MyFragment%nbasis)
        nullify(MyFragment%cabsbasis_idx)
        IF(decinfo%F12)THEN
-          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAO)
+          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAOOnly)
        ENDIF
     end if
 
@@ -1043,7 +1044,7 @@ contains
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%natoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%nbasis,master)
     IF(decinfo%F12)THEN
-       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAO,master)
+       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAOOnly,master)
     ENDIF
     if(MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1_occidx,MyFragment%t1dims(2),master)

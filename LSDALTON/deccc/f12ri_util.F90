@@ -13,8 +13,11 @@ module f12ri_util_module
   private
   public :: GeneralTwo4CenterF12RICoef1112,&
        & GeneralTwo4CenterF12RICoef1223,&
+       & GeneralTwo4CenterDECF12RICoef1112,&
+       & GeneralTwo4CenterDECF12RICoef1223,&
        & F12RIB4,F12RIB4MPI,F12RIB6,F12RIB6MPI,F12RIB9,F12RIB9MPI,&
-       & F12RIB5,F12RIB5MPI,F12RIB7,F12RIB7MPI,F12RIB8,F12RIB8MPI
+       & F12RIB5,F12RIB5MPI,F12RIB7,F12RIB7MPI,F12RIB8,F12RIB8MPI,&
+       & DECF12RIB4,DECF12RIB4MPI
 
 contains
 
@@ -153,6 +156,146 @@ contains
             & Calpha3,ndim32,ndim33,Energy,offset)
     ENDIF
   end subroutine GeneralTwo4CenterF12RICoef1223
+
+  ! (Calpha1*Calpha1)*(Calpha1*Calpha2)
+  ! Bcast Calpha1
+  subroutine GeneralTwo4CenterDECF12RICoef1112(nBA,&
+       & Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
+       & Energy,offset,SlavesAwake,use_bg_buf,&
+       & numnodes,nAuxMPI,mynum,KVAL,noccpair,InputSubroutine,InputSubroutineMPI)
+    implicit none
+    integer :: ndim12,ndim13,ndim22,ndim23,NBA
+    integer :: numnodes,mynum,offset,noccpair
+    integer :: KVAL(3,noccpair)
+    real(realk) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk) :: Energy
+    logical :: SlavesAwake,use_bg_buf
+    integer :: nAuxMPI(numnodes)    
+    EXTERNAL InputSubroutine !NAME OF SUBROUTINE TO CALL
+    EXTERNAL InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
+    !local variables
+#ifdef VAR_MPI
+    integer :: inode,nbuf1,NBA2
+    integer(kind=ls_mpik) :: node
+    integer(kind=long) :: nsize1
+    real(realk) :: EnergyTmp
+    real(realk),pointer :: CalphaMPI1(:)
+#endif
+    IF(SlavesAwake)THEN
+#ifdef VAR_MPI
+       Energy  = 0.0E0_realk
+       DO inode = 1,numnodes
+          nbuf1 = nAuxMPI(inode)
+          NBA2 = nAuxMPI(inode)           !dimension of chunk we are working on 
+          nsize1 = nbuf1*ndim12*ndim13    !Calpha1(NBA,ndim12,ndim13)
+          IF(mynum.EQ.inode-1)THEN
+             !I Bcast My Own Calpha1
+             node = mynum            
+             call ls_mpibcast(Calpha1,nsize1,node,infpar%lg_comm)
+             call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,&
+                  & offset,Kval,noccpair)
+          ELSE
+             node = inode-1
+             !recieve Calpha1 from a different node
+             IF(use_bg_buf)THEN
+                call mem_pseudo_alloc(CalphaMPI1,nsize1) 
+             ELSE
+                call mem_alloc(CalphaMPI1,nsize1)
+             ENDIF
+             call ls_mpibcast(CalphaMPI1,nsize1,node,infpar%lg_comm)
+             call InputSubroutineMPI(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
+                  & EnergyTmp,offset,NBA2,CalphaMPI1,Kval,noccpair)
+             IF(use_bg_buf)THEN
+                call mem_pseudo_dealloc(CalphaMPI1)
+             ELSE
+                call mem_dealloc(CalphaMPI1)
+             ENDIF
+          ENDIF
+          Energy = Energy + EnergyTmp
+       ENDDO
+#else
+       call lsquit('GeneralTwo4CenterF12RICoef1112 SlavesAwake=.TRUE. require MPI',-1)
+#endif
+    ELSE
+       call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,Energy,&
+            & offset,Kval,noccpair)
+    ENDIF
+  end subroutine GeneralTwo4CenterDECF12RICoef1112
+
+  ! (Calpha1*Calpha2)*(Calpha2*Calpha3)
+  ! Bcast Calpha1,Calpha2
+  subroutine GeneralTwo4CenterDECF12RICoef1223(nBA,&
+       & Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
+       & Calpha3,ndim32,ndim33,Energy,offset,SlavesAwake,use_bg_buf,&
+       & numnodes,nAuxMPI,mynum,Kval,noccpair,InputSubroutine,InputSubroutineMPI)
+    implicit none
+    integer :: ndim12,ndim13,ndim22,ndim23,ndim32,ndim33,NBA,noccpair
+    integer :: KVAL(3,noccpair)
+    real(realk) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk) :: Calpha3(NBA*ndim32*ndim33)
+    real(realk) :: Energy
+    logical :: SlavesAwake,use_bg_buf
+    integer :: numnodes,mynum,offset    
+    integer :: nAuxMPI(numnodes)
+    EXTERNAL InputSubroutine !NAME OF SUBROUTINE TO CALL
+    EXTERNAL InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
+    !local variables
+#ifdef VAR_MPI
+    integer :: nbuf1,NBA2,inode
+    integer(kind=ls_mpik) :: node
+    integer(kind=long) :: nsize1,nsize2
+    real(realk) :: EnergyTmp
+    real(realk),pointer :: CalphaMPI1(:),CalphaMPI2(:)
+#endif
+    IF(SlavesAwake)THEN
+#ifdef VAR_MPI
+       Energy  = 0.0E0_realk
+       DO inode = 1,numnodes
+          nbuf1 = nAuxMPI(inode)
+          NBA2 = nAuxMPI(inode)           !dimension of chunk we are working on 
+          nsize1 = nbuf1*ndim12*ndim13    !Calpha1(NBA,ndim12,ndim13)
+          nsize2 = nbuf1*ndim22*ndim23    !Calpha2(NBA,ndim22,ndim23)          
+          IF(mynum.EQ.inode-1)THEN
+             !I Bcast My Own Calpha1,Calpha2
+             node = mynum            
+             call ls_mpibcast(Calpha1,nsize1,node,infpar%lg_comm)
+             call ls_mpibcast(Calpha2,nsize2,node,infpar%lg_comm)
+             call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
+                  & Calpha3,ndim32,ndim33,EnergyTmp,offset,Kval,noccpair)
+          ELSE
+             node = inode-1
+             !recieve Calpha1 and Calpha2 from a different node
+             IF(use_bg_buf)THEN
+                call mem_pseudo_alloc(CalphaMPI1,nsize1) 
+                call mem_pseudo_alloc(CalphaMPI2,nsize2)
+             ELSE
+                call mem_alloc(CalphaMPI1,nsize1)
+                call mem_alloc(CalphaMPI2,nsize2)
+             ENDIF
+             call ls_mpibcast(CalphaMPI1,nsize1,node,infpar%lg_comm)
+             call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+             call InputSubroutineMPI(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,Calpha3,&
+                  & ndim32,ndim33,EnergyTmp,offset,NBA2,CalphaMPI1,CalphaMPI2,Kval,noccpair)
+             IF(use_bg_buf)THEN
+                call mem_pseudo_dealloc(CalphaMPI2)
+                call mem_pseudo_dealloc(CalphaMPI1)
+             ELSE
+                call mem_dealloc(CalphaMPI1)
+                call mem_dealloc(CalphaMPI2)
+             ENDIF
+          ENDIF
+          Energy = Energy + EnergyTmp
+       ENDDO
+#else
+       call lsquit('GeneralTwo4CenterF12RICoef1112 SlavesAwake=.TRUE. require MPI',-1)
+#endif
+    ELSE
+       call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
+            & Calpha3,ndim32,ndim33,Energy,offset,Kval,noccpair)
+    ENDIF
+  end subroutine GeneralTwo4CenterDECF12RICoef1223
 
   !============================================================================
   !   Subroutines that can be given as input to GeneralTwo4CenterF12RI3Coef1112
@@ -822,5 +965,97 @@ contains
     !$OMP END PARALLEL DO
     EJK = -2.0E0_realk*(ED*0.5E0_realk + 7.0_realk/16.0_realk*EJ + 1.0_realk/16.0_realk*EK)
   end subroutine F12RIB8MPI
-  
+
+  !============================================================================
+  !   Subroutines that can be given as input to GeneralTwo4CenterDECF12RI3Coef1112
+  !============================================================================
+
+  !( CalphaG(beta,i,r)*CalphaG(beta,j,q) ) * ( CalphaG(beta,j,r)*CalphaD(beta,i,q))
+  subroutine DECF12RIB4(nBA,CalphaG,n1,n2,CalphaD,nD1,nD2,EJK,offset,Kval,noccpair)
+    implicit none
+    integer,intent(in)        :: nBA,n1,n2,offset,nD1,nD2
+    integer,intent(in)        :: noccpair
+    integer,intent(in)        :: KVAL(3,noccpair)
+    real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+    real(realk),intent(in)    :: CalphaD(nBa,n1,n2)
+    real(realk),intent(inout) :: EJK
+    !local variables
+    real(realk)               :: EJ, EK
+    integer :: q,r,i,j,k,alpha
+    real(realk) :: tmpRJ1,tmpRJ2
+    real(realk) :: tmpGJ1,tmpGJ2
+    EJ = 0.0E0_realk
+    EK = 0.0E0_realk
+    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(q,r,i,j,k,alpha,tmpRJ1,tmpRJ2,&
+    !$OMP tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,KVAL,noccpair,CalphaG,CalphaD) REDUCTION(+:EJ,EK)
+    DO q=1,n2 !ncabsAO
+       DO r=1,n2 !ncabsAO
+          DO k=1,noccpair
+             I=KVAL(1,K)
+             J=KVAL(2,K)
+             tmpRJ1 = 0.0E0_realk
+             tmpGJ1 = 0.0E0_realk
+             tmpRJ2 = 0.0E0_realk
+             tmpGJ2 = 0.0E0_realk
+             DO alpha = 1, nBA
+                tmpGJ1 = tmpGJ1 + CalphaG(alpha,i,r)*CalphaG(alpha,j,q)
+                tmpGJ2 = tmpGJ2 + CalphaG(alpha,j,r)*CalphaG(alpha,i,q)
+                tmpRJ1 = tmpRJ1 + CalphaG(alpha,i,r)*CalphaD(alpha,j,q) 
+                tmpRJ2 = tmpRJ2 + CalphaG(alpha,j,r)*CalphaD(alpha,i,q)
+             ENDDO
+             EJ = EJ + KVAL(3,K)*(tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+             EK = EK + KVAL(3,K)*(tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+          ENDDO
+       ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+    EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+  end subroutine DECF12RIB4
+
+  subroutine DECF12RIB4MPI(nBA,CalphaG,n1,n2,CalphaD,nD1,nD2,EJK,offset,NBA2,&
+       & CalphaGMPI,Kval,noccpair)
+    implicit none
+    integer,intent(in)        :: nBA,n1,n2,offset,nD1,nD2,NBA2
+    integer,intent(in)        :: noccpair
+    integer,intent(in)        :: KVAL(3,noccpair)
+    real(realk),intent(in)    :: CalphaGMPI(nBA2,n1,n2)
+    real(realk),intent(in)    :: CalphaG(nBA,n1,n2)
+    real(realk),intent(in)    :: CalphaD(nBa,n1,n2)
+    real(realk),intent(inout) :: EJK
+    !local variables
+    real(realk)               :: EJ, EK
+    integer :: q,r,i,j,k,alpha
+    real(realk) :: tmpRJ1,tmpRJ2
+    real(realk) :: tmpGJ1,tmpGJ2
+    EJ = 0.0E0_realk
+    EK = 0.0E0_realk
+    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(q,r,i,j,k,alpha,tmpRJ1,tmpRJ2,&
+    !$OMP tmpGJ1,tmpGJ2) SHARED(nBA,n1,n2,KVAL,noccpair,CalphaG,CalphaD,CalphaGMPI,&
+    !$OMP NBA2) REDUCTION(+:EJ,EK)
+    DO q=1,n2 !ncabsAO
+       DO r=1,n2 !ncabsAO
+          DO k=1,noccpair
+             I=KVAL(1,K)
+             J=KVAL(2,K)
+             tmpGJ1 = 0.0E0_realk
+             tmpGJ2 = 0.0E0_realk
+             DO alpha = 1, nBA2
+                tmpGJ1 = tmpGJ1 + CalphaGMPI(alpha,i,r)*CalphaGMPI(alpha,j,q)
+                tmpGJ2 = tmpGJ2 + CalphaGMPI(alpha,j,r)*CalphaGMPI(alpha,i,q)
+             ENDDO
+             tmpRJ1 = 0.0E0_realk
+             tmpRJ2 = 0.0E0_realk
+             DO alpha = 1, nBA
+                tmpRJ1 = tmpRJ1 + CalphaG(alpha,i,r)*CalphaD(alpha,j,q) 
+                tmpRJ2 = tmpRJ2 + CalphaG(alpha,j,r)*CalphaD(alpha,i,q)
+             ENDDO
+             EJ = EJ + KVAL(3,K)*(tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)
+             EK = EK + KVAL(3,K)*(tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)
+          ENDDO
+       ENDDO
+    ENDDO
+    !$OMP END PARALLEL DO
+    EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+  end subroutine DECF12RIB4MPI
+
 end module f12ri_util_module
