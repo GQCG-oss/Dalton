@@ -1,0 +1,10 @@
+BASIS
+6-31G*
+
+
+Atomtypes=1 Angstrom Nosymmetry
+Charge=1.0 Atoms=2
+H         0.00000	0.00000		0.00000
+H         0.7375	0.00000		0.00000
+
+
