@@ -2989,7 +2989,7 @@ contains
             ! Normalize b(M)
             bnorm = SD_dotproduct(b1(M),b2(M))
             bnorm = sqrt(bnorm)
-            if(bnorm < 1.0e-15_realk) then
+            if(bnorm < 1.0e-12_realk) then
                ! Retreat! We do not want to include the current b vector anyways.
                ! The components spanned by the current b vector were 
                ! probably included by the b vector of one of the other excitation energies.
