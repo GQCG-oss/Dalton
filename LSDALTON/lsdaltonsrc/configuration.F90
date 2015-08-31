@@ -250,7 +250,7 @@ end subroutine config_free
 !> \date March 2010
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
-use IIDFTINT, only: II_DFTsetFunc
+use IIDFTINT, only: II_DFTsetFunc,II_DFTaddFunc
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -515,7 +515,6 @@ DO
             CASE('.REDO L2');    config%diag%cfg_redo_l2 = .true.
             CASE('.TRANSFORMRESTART');    config%decomp%CFG_transformrestart =  .TRUE. 
             CASE('.RH');         config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN
-            CASE('.OrbFree');    config%diag%CFG_OrbFree = .true.
             CASE('.SAFE');       config%av%CFG_safe = .true.
 ! obsolete keyword - noone knows what it does. Not in manual. Not in testcases
 !            CASE('.SCALVIR');    config%opt%cfg_scale_virt = .true.
@@ -849,7 +848,15 @@ CALL lsCLOSE(LUCMD,'KEEP')
 if (config%solver%do_dft) then
    hfweight = 0.0E0_realk
    CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight,lupri)
-!  IF (config%diag%cfg_OrbFree) call II_DFTaddFunc('TScorrection',factor,lupri)
+
+!AB adding kinetic energy correction for orbital-free DFT
+   IF (config%integral%dft%doOrbFree) THEN
+     config%diag%CFG_bosonicOccupation = .true.
+     DO i=1,config%integral%dft%OrbFree%numberTSfunc
+       call II_DFTaddFunc(config%integral%dft%OrbFree%TSfunc(i),config%integral%dft%OrbFree%TScoeff(i),lupri)
+     ENDDO
+   ENDIF
+
    !it is assumed that hfweight is set to zero and only  
    !changed if the functional require a HF weight  
    !different from zero. 
@@ -2934,6 +2941,12 @@ DO
          ENDDO
          deallocate(GRIDspec)
       CASE ('.NOPRUN'); DALTON%DFT%NOPRUN = .TRUE.
+      CASE('.OrbFree'); dalton%dft%doOrbFree = .true.
+                        READ(LUCMD,*) dalton%dft%orbFree%numberTSfunc
+			DO i=1,dalton%dft%orbFree%numberTSfunc
+                          READ(LUCMD,*) dalton%dft%orbFree%TScoeff(i), dalton%dft%orbFree%TSfunc(i)
+			ENDDO
+      CASE('.KineticScaling'); READ(LUCMD,*) dalton%dft%orbFree%kineticFac
       CASE ('.RADINT'); READ(LUCMD,*) DALTON%DFT%RADINT
 !===================================================================
       CASE ('.ULTRAC'); DALTON%DFT%RADINT = 2.15447E-7_realk; DALTON%DFT%ANGINT = 23; 
