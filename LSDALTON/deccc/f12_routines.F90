@@ -4971,7 +4971,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc(nBA,n1,n2,n3,&
    real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
    real(realk),intent(IN)    :: CalphaC(nBA,nocv,n1)
    real(realk),intent(IN)    :: CalphaG(nBA,nocv,n1)
-   real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
+   real(realk),intent(IN)    :: CalphaP(nBA,n1,n3)
    real(realk),intent(inout) :: EJK3,EJK4
    real(realk)               :: EJ3,EK3
    !local variables
@@ -5006,10 +5006,10 @@ subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc(nBA,n1,n2,n3,&
                   tmpG33 = 0.0E0_realk
                   tmpG34 = 0.0E0_realk
                   DO beta = 1,NBA
-                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,c,j)
+                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,j,c)
                      tmpG32 = tmpG32 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
                      tmpG33 = tmpG33 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
-                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,c,i)
+                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,i,c)
                   ENDDO
                   EJ3 = EJ3 + tmpR3*(tmpG31 + tmpG32)
                   EK3 = EK3 + tmpR3*(tmpG33 + tmpG34)
@@ -5033,7 +5033,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX3X4_ncMPI(nBA,n1,n2,n3,&
    real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
    real(realk),intent(IN)    :: CalphaC(nBA,nocv,n1)
    real(realk),intent(IN)    :: CalphaG(nBA,nocv,n1)
-   real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
+   real(realk),intent(IN)    :: CalphaP(nBA,n1,n3)
    real(realk),intent(inout) :: EJK3,EJK4
    real(realk)               :: EJ3, EK3
    !local variables
@@ -5068,10 +5068,10 @@ subroutine ContractTwo4CenterF12IntegralsRIX3X4_ncMPI(nBA,n1,n2,n3,&
                   tmpG33 = 0.0E0_realk
                   tmpG34 = 0.0E0_realk
                   DO beta = 1,NBA
-                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,c,j)
+                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,j,c)
                      tmpG32 = tmpG32 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
                      tmpG33 = tmpG33 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
-                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,c,i)
+                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,i,c)
                   ENDDO
                   EJ3 = EJ3 + tmpR3*(tmpG31 + tmpG32)
                   EK3 = EK3 + tmpR3*(tmpG33 + tmpG34)
