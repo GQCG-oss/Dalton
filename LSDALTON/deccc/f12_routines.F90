@@ -3368,7 +3368,7 @@ subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,Calp
    implicit none 
    type(fullmolecule),intent(in) :: MyMolecule
    integer,intent(in)        :: nBA,n1,n2,offset,NBA2,nocv,noccfull
-   real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
+   real(realk),intent(in)    :: CalphaV(nBA,nocv,n1),CalphaD(nBA,n1,n2)
    real(realk),intent(in)    :: CalphaT(nBA2,n1,nocv)
    real(realk),intent(inout) :: EJK
    !local variables
@@ -3396,11 +3396,11 @@ subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,Calp
                IF(dopair_occ(I,J)) THEN
                   tmpR = 0.0E0_realk
                   DO alpha = 1,NBA
-                     tmpR = tmpR + CalphaV(alpha,i,a)*CalphaD(alpha,j,b) + CalphaV(alpha,j,b)*CalphaD(alpha,i,a)
+                     tmpR = tmpR + CalphaV(alpha,noccfull+a,i)*CalphaD(alpha,j,b) + CalphaV(alpha,noccfull+b,j)*CalphaD(alpha,i,a)
                   ENDDO
                   tmpG = 0.0E0_realk
                   DO beta = 1,NBA
-                     tmpG = tmpG + CalphaV(beta,j,a)*CalphaD(beta,i,b) + CalphaV(beta,i,b)*CalphaD(beta,j,a)
+                     tmpG = tmpG + CalphaV(beta,noccfull+a,j)*CalphaD(beta,i,b) + CalphaV(beta,noccfull+b,i)*CalphaD(beta,j,a)
                   ENDDO
                   tmpT = 0.0E0_realk
                   DO gamma = 1,NBA2
