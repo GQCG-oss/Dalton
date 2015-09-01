@@ -4965,12 +4965,12 @@ subroutine ContractTwo4CenterF12IntegralsRIX3X4(nBA,n1,n3,n2,&
 end subroutine ContractTwo4CenterF12IntegralsRIX3X4
 
 subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc(nBA,n1,n2,n3,&
-      & CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,dopair_occ_in)
+      & CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,nocv,dopair_occ_in)
    implicit none
-   integer,intent(in)        :: nBA,n1,n2,n3
+   integer,intent(in)        :: nBA,n1,n2,n3,nocv
    real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
-   real(realk),intent(IN)    :: CalphaC(nBA,n2,n1)
-   real(realk),intent(IN)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaC(nBA,nocv,n1)
+   real(realk),intent(IN)    :: CalphaG(nBA,nocv,n1)
    real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
    real(realk),intent(inout) :: EJK3,EJK4
    real(realk)               :: EJ3,EK3
@@ -5025,14 +5025,14 @@ end subroutine ContractTwo4CenterF12IntegralsRIX3X4_nc
 
 subroutine ContractTwo4CenterF12IntegralsRIX3X4_ncMPI(nBA,n1,n2,n3,&
       & CalphaGcabsMPI,CalphaCMPI,NBA2,&
-      & CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,dopair_occ_in)
+      & CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,nocv,dopair_occ_in)
    implicit none
-   integer,intent(in)        :: nBA,n1,n2,n3,NBA2
+   integer,intent(in)        :: nBA,n1,n2,n3,NBA2,nocv
    real(realk),intent(IN)    :: CalphaGcabsMPI(nBA2,n1,n3)
-   real(realk),intent(IN)    :: CalphaCMPI(nBA2,n2,n1)
+   real(realk),intent(IN)    :: CalphaCMPI(nBA2,nocv,n1)
    real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
-   real(realk),intent(IN)    :: CalphaC(nBA,n2,n1)
-   real(realk),intent(IN)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaC(nBA,nocv,n1)
+   real(realk),intent(IN)    :: CalphaG(nBA,nocv,n1)
    real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
    real(realk),intent(inout) :: EJK3,EJK4
    real(realk)               :: EJ3, EK3
