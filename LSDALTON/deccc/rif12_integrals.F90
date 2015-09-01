@@ -54,7 +54,9 @@ module rif12_integrals_module
   use f12_routines_module
   use f12ri_util_module,only: GeneralTwo4CenterDECF12RICoef1112,&
        & GeneralTwo4CenterDECF12RICoef1223,&
-       & DECF12RIB4,DECF12RIB4MPI
+       & DECF12RIB4,DECF12RIB4MPI,DECF12RIB5,DECF12RIB5MPI,&
+       & DECF12RIB6,DECF12RIB6MPI,DECF12RIB7,DECF12RIB7MPI,&
+       & DECF12RIB8,DECF12RIB8MPI,DECF12RIB9,DECF12RIB9MPI
   
   use ri_util_module
   !#endif 
@@ -1110,11 +1112,13 @@ print *, "EB3, mynum", EB3, mynum
     call BuildKval(dopair_occ,noccEOS,Kval,noccpair,dopair)
     call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaGcabsAO,noccEOS,ncabsAO,CalphaD,noccEOS,ncabsAO,EB4,&
          & noccEOS,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB4,DECF12RIB4MPI)
-    call mem_dealloc(KVAL)
-
+#ifdef VAR_MPI
+    lsmpibufferRIMP2(13)=EB4      !we need to perform a MPI reduction at the end 
+#else
     mp2f12_energy = mp2f12_energy + EB4
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
+#endif
 
     !==============================================================
     !=  B5: (ir|f12|jm)Frs(si|f12|mj)        (r,s=CabsAO)         =
@@ -1145,12 +1149,16 @@ print *, "EB3, mynum", EB3, mynum
    !Do on GPU (Async)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Frs,k,0.0E0_realk,CalphaD,m)                                    
    !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRIB5_dec(nBA,noccEOS,ncabsAO,noccAOStot,nocvAOS,CalphaGcabsAO,CalphaCocc, &
-                                              & CalphaD,EB5,dopair_occ)         
-               
+   call GeneralTwo4CenterDECF12RICoef1223(nBA,CalphaD,noccEOS,ncabsAO,CalphaCocc,noccAOStot,noccEOS,&
+        & CalphaGcabsAO,noccEOS,ncabsAO,EB5,noccEOS,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,&
+        & Kval,noccpair,DECF12RIB5,DECF12RIB5MPI)
+#ifdef VAR_MPI
+    lsmpibufferRIMP2(14)=EB5      !we need to perform a MPI reduction at the end 
+#else
    mp2f12_energy = mp2f12_energy  + EB5
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ',EB5                                       
-   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ', EB5                                                   
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ',EB5 
+   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
+#endif
    call mem_dealloc(CalphaD)              
 
     !==============================================================
@@ -1179,13 +1187,16 @@ print *, "EB3, mynum", EB3, mynum
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaP,m,Fpp,k,0.0E0_realk,CalphaD,m)
     call mem_dealloc(CalphaP)
     !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIB6_dec(nBA,noccEOS,nvirtAOS,nocvAOS,noccAOStot,&
-                                              & CalphaG,CalphaD,EB6,dopair_occ)
-    call mem_dealloc(CalphaD)
-
+    call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaG,nocvAOS,noccEOS,CalphaD,noccEOS,nocvAOS,EB6,&
+         & noccAOStot,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB6,DECF12RIB6MPI)
+#ifdef VAR_MPI
+    lsmpibufferRIMP2(15)=EB6      !we need to perform a MPI reduction at the end 
+#else
     mp2f12_energy = mp2f12_energy  + EB6
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
+#endif
+    call mem_dealloc(CalphaD)
 
 
     !==============================================================
@@ -1214,15 +1225,19 @@ print *, "EB3, mynum", EB3, mynum
    n =  noccAOStot
 
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fnm,k,0.0E0_realk,CalphaD,m)
-   !call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fpp,k,0.0E0_realk,CalphaD,m)
-   !May be optimized !!!
-   call ContractTwo4CenterF12IntegralsRIB7_dec(nBA,noccEOS,noccAOStot,ncabsMO,CalphaGcabsMO, &
-                                                & CalphaCoccT,CalphaD,EB7,dopair_occ)
+   !Do on GPU (Async)
+   call GeneralTwo4CenterDECF12RICoef1223(nBA,CalphaD,noccEOS,noccAOStot,&
+        & CalphaGcabsMO,noccEOS,ncabsMO,CalphaCoccT,noccEOS,noccAOStot,EB7,noccEOS,wakeslaves,&
+        & use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB7,DECF12RIB7MPI)
    call mem_dealloc(CalphaCoccT)
    call mem_dealloc(CalphaD)
+#ifdef VAR_MPI 
+   lsmpibufferRIMP2(17)=EB7      !we need to perform a MPI reduction at the end 
+#else
    mp2f12_energy = mp2f12_energy  + EB7
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
+#endif
 
     !==============================================================
     !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
@@ -1236,12 +1251,16 @@ print *, "EB3, mynum", EB3, mynum
     n =  noccAOStot
     
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Frm,k,0.0E0_realk,CalphaD,m)
-    call ContractTwo4CenterF12IntegralsRIB8_dec(nBA,noccEOS,ncabsMO,nocvAOS,noccAOStot,CalphaGcabsMO,CalphaG,CalphaD,EB8,dopair_occ)
-
+    call GeneralTwo4CenterDECF12RICoef1223(nBA,CalphaG,nocvAOS,noccEOS,&
+         & CalphaGcabsMO,noccEOS,ncabsMO,CalphaD,noccEOS,noccAOStot,EB8,noccEOS,wakeslaves,&
+         & use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB8,DECF12RIB8MPI)
+#ifdef VAR_MPI 
+    lsmpibufferRIMP2(18)=EB8      !we need to perform a MPI reduction at the end 
+#else
     mp2f12_energy = mp2f12_energy  + EB8
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
-
+#endif
     call mem_dealloc(CalphaGcabsAO)
     call mem_dealloc(CalphaD)
 
@@ -1258,17 +1277,16 @@ print *, "EB3, mynum", EB3, mynum
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,MyFragment%Fcp,k,0.0E0_realk,CalphaD,m)
     
     call mem_dealloc(CalphaGcabsMO)
-    
-    call ContractTwo4CenterF12IntegralsRIB9_dec(nBA,noccEOS,nvirtAOS,nocvAOS,noccAOStot,CalphaG,&
-         & CalphaD,EB9,dopair_occ)
-!    call BuildKval(dopair_occ,noccEOS,Kval,noccpair,dopair)
-!    call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaG,nocvAOS,noccEOS,CalphaD,noccEOS,nocvAOS,EB9,&
-!         & noccfull,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB9,DECF12RIB9MPI)
-!    call mem_dealloc(KVAL)
-
+    call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaG,nocvAOS,noccEOS,CalphaD,noccEOS,nocvAOS,EB9,&
+         & noccAOStot,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB9,DECF12RIB9MPI)
+    call mem_dealloc(KVAL)
+#ifdef VAR_MPI 
+   lsmpibufferRIMP2(19)=EB9      !we need to perform a MPI reduction at the end 
+#else
     mp2f12_energy = mp2f12_energy  + EB9
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+#endif
 
     ! ***********************************************************
     !    Free Memory
@@ -1310,11 +1328,24 @@ print *, "EB3, mynum", EB3, mynum
       EB1=lsmpibufferRIMP2(1)
       EB2=lsmpibufferRIMP2(4)
       EB3=lsmpibufferRIMP2(5)
+      EB4=lsmpibufferRIMP2(13)
+      EB5=lsmpibufferRIMP2(14)
+      EB6=lsmpibufferRIMP2(15)
+      !for some reason missing 16
+      EB7=lsmpibufferRIMP2(17)
+      EB8=lsmpibufferRIMP2(18)
+      EB9=lsmpibufferRIMP2(19)
       print *,"After Reduction EV1:", EV1
       print *,"After Reduction EX1:", EX1
       print *,"After Reduction EB1:", EB1
       print *,"After Reduction EB2:", EB2
       print *,"After Reduction EB3:", EB3
+      print *,"After Reduction EB4:", EB4
+      print *,"After Reduction EB5:", EB5
+      print *,"After Reduction EB6:", EB6
+      print *,"After Reduction EB7:", EB7
+      print *,"After Reduction EB8:", EB8
+      print *,"After Reduction EB9:", EB9
    endif
 #endif
 
