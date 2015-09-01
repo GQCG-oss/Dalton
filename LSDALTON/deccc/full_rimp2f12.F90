@@ -1041,25 +1041,17 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    N = nocc             !columns of Output Matrix
    call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
    
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'C' !Regular AO basis function on center 4 
-   intspec(3) = 'R' !Cabs AO basis function on center 3
-   intspec(4) = 'G' !The Gaussian geminal operator g
-   intspec(5) = 'G' !The Gaussian geminal operator g
-     
-   call mem_alloc(ABdecompC,nAux,nAux)
-   !FIXME CalphaCcabsT(NBA,ncabsMO,nocc) is (reordered) CalphaGcabsMO(NBA,nocc,ncabsMO)
-   call Build_CalphaMO2(mylsitem,master,ncabsAO,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,CMO_CABS%elms,ncabsMO,Co,nocc,&
-        & mynum,numnodesstd,CalphaCcabsT,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-   call mem_dealloc(ABdecompC)
-   
    nsize = NBA*nocc*ncabsMO
    call mem_alloc(CalphaP,nsize)
-   M = NBA*ncabsMO         !rows of Output Matrix
-   K = nocc                !summation dimension
-   N = nocc                !columns of Output Matrix
-   call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCcabsT,M,Fkj,K,0.0E0_realk,CalphaP,M)
+   M = NBA       !rows of Output Matrix
+   K = nocc      !summation dimension
+   N = nocc      !columns of Output Matrix
+   !CalphaP(NBA,nocc,cabsMO) = CalphaGcabsMO(NBA,nocc,ncabsMO)*Fkj(nocc,nocc)
+   DO i=1,ncabsMO
+      j=1+(i-1)*NBA*nocc
+      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaGcabsMO(j),M,Fkj,K,0.0E0_realk,CalphaP(j),M)
+   ENDDO
+
 #ifdef VAR_MPI 
    IF(wakeslaves)THEN
       EX3 = 0.0E0_realk
@@ -1122,7 +1114,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
 #endif
 
-   call mem_dealloc(CalphaCcabsT)
    call mem_dealloc(CalphaT)
    call mem_dealloc(CalphaP)
 
