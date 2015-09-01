@@ -3364,12 +3364,12 @@ subroutine ContractTwo4CenterF12IntegralsRIC(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK
 end subroutine ContractTwo4CenterF12IntegralsRIC
 
 subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,CalphaV,CalphaD,&
-     & CalphaT,NBA2,EJK,dopair_occ_in)
+     & CalphaT,nocv,noccfull,NBA2,EJK,dopair_occ_in)
    implicit none 
    type(fullmolecule),intent(in) :: MyMolecule
-   integer,intent(in)        :: nBA,n1,n2,offset,NBA2
+   integer,intent(in)        :: nBA,n1,n2,offset,NBA2,nocv,noccfull
    real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
-   real(realk),intent(in)    :: CalphaT(nBA2,n2,n1)
+   real(realk),intent(in)    :: CalphaT(nBA2,n1,nocv)
    real(realk),intent(inout) :: EJK
    !local variables
    integer :: a,b,i,j,alpha,beta,gamma
@@ -3387,8 +3387,8 @@ subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,Calp
    EJ =  0.0E0_realk
    EK =  0.0E0_realk
    !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(a,b,i,j,alpha,beta,&
-   !$OMP gamma,tmpR,tmpG,tmpT,eps) SHARED(MyMolecule,offset,nBA,n1,n2,&
-   !$OMP CalphaV,CalphaD,CalphaT,NBA2,EJK,dopair_occ) REDUCTION(+:EJ,EK)
+   !$OMP gamma,tmpR,tmpG,tmpT,eps) SHARED(MyMolecule,offset,nBA,n1,n2,NBA2,&
+   !$OMP CalphaV,CalphaD,CalphaT,EJK,dopair_occ,noccfull) REDUCTION(+:EJ,EK)
    DO j=1,n1 !nocc
       DO b=1,n2 !nvirt
          DO i=1,n1 !nocc
@@ -3404,7 +3404,7 @@ subroutine ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,n1,n2,Calp
                   ENDDO
                   tmpT = 0.0E0_realk
                   DO gamma = 1,NBA2
-                     tmpT = tmpT + CalphaT(gamma,a,i)*CalphaT(gamma,b,j) 
+                     tmpT = tmpT + CalphaT(gamma,i,noccfull+a)*CalphaT(gamma,j,noccfull+b) 
                   ENDDO
                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
                      & + MyMolecule%oofock%elm2(J+offset,J+offset) &
