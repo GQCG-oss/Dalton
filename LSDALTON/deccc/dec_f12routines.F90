@@ -21,14 +21,22 @@ module decf12_routines_module
   use full_f12contractions
   use ccintegrals  
  
-  public :: ContractOne4CenterF12IntegralsRIV1_dec, ContractOne4CenterF12IntegralsRIX1_dec, &
+  public :: ContractOne4CenterF12IntegralsRIV1_dec, &
+       & ContractOne4CenterF12IntegralsRIX1_dec,  &
        & ContractOne4CenterF12IntegralsRobustRIB1_dec, & 
-       & ContractOne4CenterF12IntegralsRIB23_dec, ContractTwo4CenterF12IntegralsRIV2_dec, &
-       & ContractTwo4CenterF12IntegralsRIX2_dec, ContractTwo4CenterF12IntegralsRIV34_dec, &
-       & ContractTwo4CenterF12IntegralsRIV5_dec, ContractTwo4CenterF12IntegralsRIX34_dec, &
-       & ContractTwo4CenterF12IntegralsRIB4_dec, ContractTwo4CenterF12IntegralsRIB5_dec, &
-       & ContractTwo4CenterF12IntegralsRIB6_dec, ContractTwo4CenterF12IntegralsRIB7_dec, &
-       & ContractTwo4CenterF12IntegralsRIB8_dec, ContractTwo4CenterF12IntegralsRIB9_dec
+       & ContractOne4CenterF12IntegralsRIB23_dec, &
+       & ContractTwo4CenterF12IntegralsRIV2_dec,  &
+       & ContractTwo4CenterF12IntegralsRIX2_dec,  & 
+       & ContractTwo4CenterF12IntegralsRIV34_dec, &
+       & ContractTwo4CenterF12IntegralsRIV5_dec,  &
+       & ContractTwo4CenterF12IntegralsRIX34_dec, &
+       & ContractTwo4CenterF12IntegralsRIX34MPI_dec, &
+       & ContractTwo4CenterF12IntegralsRIB4_dec,  & 
+       & ContractTwo4CenterF12IntegralsRIB5_dec,  &
+       & ContractTwo4CenterF12IntegralsRIB6_dec,  &
+       & ContractTwo4CenterF12IntegralsRIB7_dec,  &
+       & ContractTwo4CenterF12IntegralsRIB8_dec,  &
+       & ContractTwo4CenterF12IntegralsRIB9_dec
   private
 
 contains
@@ -512,6 +520,69 @@ subroutine ContractTwo4CenterF12IntegralsRIX34_dec(nBA,n1,n2,n3,&
   !print *,"EXCHANGEX2: ", 1.0/32.0*EK3
   !print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ3 + 1.0/32.0*EK3      
 end subroutine ContractTwo4CenterF12IntegralsRIX34_dec
+
+subroutine ContractTwo4CenterF12IntegralsRIX34MPI_dec(nBA,n1,n2,n3,&
+      & CalphaGcabsMPI,CalphaCMPI,NBA2,CalphaGcabs,CalphaC,CalphaG,CalphaP,EJK3,EJK4,dopair_occ_in)
+   implicit none
+   integer,intent(in)        :: nBA,n1,n2,n3,NBA2
+   real(realk),intent(IN)    :: CalphaGcabsMPI(nBA2,n1,n3)
+   real(realk),intent(IN)    :: CalphaCMPI(nBA2,n2,n1)
+   real(realk),intent(IN)    :: CalphaGcabs(nBA,n1,n3)
+   real(realk),intent(IN)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(IN)    :: CalphaP(nBA,n3,n1)
+   real(realk),intent(inout) :: EJK3,EJK4
+   real(realk)               :: EJ3, EK3
+   !local variables
+   integer :: m,c,i,j,alpha,beta
+   real(realk) :: tmpR3,tmpG31,tmpG32,tmpG33,tmpG34
+   !Dopair
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then                                                                                  
+      dopair_occ = dopair_occ_in                                                                                    
+   else
+      dopair_occ = .TRUE.                                                                                           
+   endif
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)                                                                      
+   EJ3 =  0.0E0_realk                                                                                               
+   EK3 =  0.0E0_realk
+   !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(m,c,i,j,alpha,&                                              
+   !$OMP beta,tmpR3,tmpG31,tmpG32,tmpG33,tmpG34) SHARED(nBA,n1,n2,n3,&                                              
+   !$OMP CalphaGcabsMPI,CalphaCMPI,NBA2,CalphaGcabs,CalphaC,CalphaG,&                                               
+   !$OMP CalphaP,EJK3,EJK4,dopair_occ) REDUCTION(+:EJ3,EK3)                                                         
+   DO c=1,n3
+      DO m=1,n2
+         DO j=1,n1
+            DO i=1,n1
+               IF(dopair_occ(I,J)) THEN                                                                             
+                  tmpR3 = 0.0E0_realk                                                                               
+                  DO alpha = 1,NBA2
+                     tmpR3 = tmpR3 + CalphaCMPI(alpha,m,i)*CalphaGcabsMPI(alpha,j,c)
+                  ENDDO
+                  tmpG31 = 0.0E0_realk
+                  tmpG32 = 0.0E0_realk
+                  tmpG33 = 0.0E0_realk
+                  tmpG34 = 0.0E0_realk
+                  DO beta = 1,NBA
+                     tmpG31 = tmpG31 + CalphaC(beta,m,i)*CalphaP(beta,c,j)
+                     tmpG32 = tmpG32 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)
+                     tmpG33 = tmpG33 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)
+                     tmpG34 = tmpG34 + CalphaC(beta,m,j)*CalphaP(beta,c,i)
+                  ENDDO
+                  EJ3 = EJ3 + tmpR3*(tmpG31 + tmpG32)
+                  EK3 = EK3 + tmpR3*(tmpG33 + tmpG34)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+   EJK3 = 7.0E0_realk/32.0_realk*EJ3+1.0E0_realk/32.0E0_realk*EK3
+   EJK4 = EJK3
+end subroutine ContractTwo4CenterF12IntegralsRIX34MPI_dec
+
+
 
 subroutine ContractTwo4CenterF12IntegralsRIB4_dec(nBA,n1,n2,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
