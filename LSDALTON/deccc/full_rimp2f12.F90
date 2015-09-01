@@ -1183,28 +1183,20 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
    !==============================================================
    !> Dgemm 
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'R' !Regular AO basis function on center 1 
-   intspec(3) = 'R' !Regular AO basis function on center 2 
-   intspec(4) = 'G' !The Gaussian geminal operator g
-   intspec(5) = 'G' !The Gaussian geminal operator g
-
-   nsize = NBA*nocc*nocv  
-   !FIXME: CalphaP(NBA,nocc,nocv) subst of CalphaG(NBA,nocv,nocc)
-   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-      & FORCEPRINT,wakeslaves,Co,nocc,Cfull,nocv,&
-      & mynum,numnodesstd,CalphaP,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
+   !Replaced CalphaP(NBA,nocc,nocv) with CalphaG(NBA,nocv,nocc)
 
    nsize = nBA*nocc*nocv
    call mem_alloc(CalphaD,nsize)
-
-   m =  nBA*nocc               ! D_jq =P_jp F_pq
+   m =  nBA
    k =  nocv
    n =  nocv
    !Do on GPU (Async)
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaP,m,Fpp%elms,k,0.0E0_realk,CalphaD,m)   
-   call mem_dealloc(CalphaP) 
-   call GeneralTwo4CenterF12RICoef1112(nBA,CalphaG,nocv,nocc,CalphaD,nocc,nocv,&
+   do i=1,nocc
+      j=1+(i-1)*NBA*nocv
+      call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG(j),m,Fpp%elms,k,0.0E0_realk,CalphaD(j),m)
+   enddo
+
+   call GeneralTwo4CenterF12RICoef1112(nBA,CalphaG,nocv,nocc,CalphaD,nocv,nocc,&
         & EB6,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB6,F12RIB6MPI)
 #ifdef VAR_MPI 
    lsmpibufferRIMP2(15)=EB6      !we need to perform a MPI reduction at the end 
