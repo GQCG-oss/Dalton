@@ -416,7 +416,7 @@ contains
     implicit none
     integer,intent(in)        :: nBA,n1,n3,noccfull,nD1,nD2
     real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
-    real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+    real(realk),intent(in)    :: CalphaD(nBA,n3,n1)
     real(realk),intent(inout) :: EJK
     !local variables
     real(realk)               :: ED, EJ, EK
@@ -437,7 +437,7 @@ contains
              tmpG = 0.0E0_realk   
              DO alpha = 1,nBA     
                 tmpG = tmpG + CalphaG(alpha,q,j)*CalphaG(alpha,a,j)
-                tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
+                tmpR = tmpR + CalphaD(alpha,q,j)*CalphaG(alpha,a,j)
              ENDDO
              ED = ED + tmpR*tmpG !We have a factor 2 which is integrated
              !Non Diagonal
@@ -449,8 +449,8 @@ contains
                 DO alpha = 1, nBA   
                    tmpGJ1 = tmpGJ1 + CalphaG(alpha,q,i)*CalphaG(alpha,a,j)
                    tmpGJ2 = tmpGJ2 + CalphaG(alpha,q,j)*CalphaG(alpha,a,i)
-                   tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,a,j)
-                   tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,a,i)
+                   tmpRJ1 = tmpRJ1 + CalphaD(alpha,q,i)*CalphaG(alpha,a,j)
+                   tmpRJ2 = tmpRJ2 + CalphaD(alpha,q,j)*CalphaG(alpha,a,i)
                 ENDDO
                 EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
                 EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
@@ -468,7 +468,7 @@ contains
     integer,intent(in)        :: nBA,n1,n3,noccfull,NBA2,nD1,nD3
     real(realk),intent(in)    :: CalphaGMPI(nBA2,n3,n1)
     real(realk),intent(in)    :: CalphaG(nBA,n3,n1)
-    real(realk),intent(in)    :: CalphaD(nBA,n1,n3)
+    real(realk),intent(in)    :: CalphaD(nBA,n3,n1)
     real(realk),intent(inout) :: EJK
     !local variables
     real(realk)               :: EJ, EK, ED
@@ -491,7 +491,7 @@ contains
              ENDDO
              tmpR = 0.0E0_realk   
              DO alpha = 1,nBA     
-                tmpR = tmpR + CalphaD(alpha,j,q)*CalphaG(alpha,a,j)
+                tmpR = tmpR + CalphaD(alpha,q,j)*CalphaG(alpha,a,j)
              ENDDO
              ED = ED + tmpR*tmpG !We have a factor 2 which is integrated          
              !Non Diagonal
@@ -505,8 +505,8 @@ contains
                 tmpRJ1 = 0.0E0_realk 
                 tmpRJ2 = 0.0E0_realk                                    
                 DO alpha = 1, nBA   
-                   tmpRJ1 = tmpRJ1 + CalphaD(alpha,i,q)*CalphaG(alpha,a,j)
-                   tmpRJ2 = tmpRJ2 + CalphaD(alpha,j,q)*CalphaG(alpha,a,i)
+                   tmpRJ1 = tmpRJ1 + CalphaD(alpha,q,i)*CalphaG(alpha,a,j)
+                   tmpRJ2 = tmpRJ2 + CalphaD(alpha,q,j)*CalphaG(alpha,a,i)
                 ENDDO
                 EJ = EJ + (tmpRJ1*tmpGJ1 + tmpRJ2*tmpGJ2)                   
                 EK = EK + (tmpRJ2*tmpGJ1 + tmpRJ1*tmpGJ2)                   
