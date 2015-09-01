@@ -1263,7 +1263,7 @@ contains
     EK = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,m,i,j,k,alpha,&
     !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
-    !$OMP n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,KVAL,noccpair) REDUCTION(+:EJ,EK)
+    !$OMP n1,n2,n3,CalphaGcabs,CalphaG,CalphaD,KVAL,noccpair) REDUCTION(+:EJ,EK)
     DO q=1,n2 !ncabsAO
        DO m=1,n3 !noccAOStot
           DO k=1,noccpair
@@ -1310,7 +1310,7 @@ contains
     EK = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(q,m,i,j,k,alpha,&
     !$OMP tmpR,tmpRJ1,tmpRJ2,tmpG,tmpGJ1,tmpGJ2) SHARED(nBA,&
-    !$OMP n1,n2,n3,nbasis,CalphaGcabs,CalphaG,CalphaD,CalphaGMPI,CalphaDMPI,&
+    !$OMP n1,n2,n3,CalphaGcabs,CalphaG,CalphaD,CalphaGMPI,CalphaDMPI,&
     !$OMP NBA2,KVAL,noccpair) REDUCTION(+:EJ,EK)
     DO q=1,n2 !ncabsAO
        DO m=1,n3 !noccAOS
