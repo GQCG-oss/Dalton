@@ -338,61 +338,63 @@ subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,n1,n2,CalphaC,CalphaC
    EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIX2_dec
 
-!NB!NB!
-!EJK3 and EJK4 gives the same energy in the non-diagonal form of the subroutine, same for X3 and X4
-subroutine ContractTwo4CenterF12IntegralsRIV34_dec(nBA,n1,n2,n3,nocv,&
-      & CalphaRcabs,CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ_in)
-   implicit none
-   integer,intent(in)        :: nBA,n1,n2,n3,nocv
-   real(realk),intent(in)    :: CalphaRcabs(nBA,n1,n3)
-   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n3)
-   real(realk),intent(in)    :: CalphaR(nBA,n1,nocv)
-   real(realk),intent(in)    :: CalphaG(nBA,nocv,n1)
-   real(realk),intent(inout) :: EJK3,EJK4
-   real(realk)               :: EJ3, EK3
-   !local variables
-   integer :: m,c,i,j,alpha,beta
-   real(realk) :: tmpR3,tmpG13,tmpG23
-   !Dopair                                                                          
-   logical,intent(in),optional :: dopair_occ_in(n1,n1)
-   logical :: dopair_occ(n1,n1)
-   if(present(dopair_occ_in)) then
-      dopair_occ = dopair_occ_in
-   else
-      dopair_occ = .TRUE.
-   endif
-   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-   EJ3 =  0.0E0_realk
-   EK3 =  0.0E0_realk
-   EJK3 = 0.0E0_realk
-   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(i,j,m,c,tmpR3, &                                                
-   !$OMP tmpG13,tmpG23) SHARED(CalphaRcabs,CalphaR,CalphaGcabs,CalphaG,&                                       
-   !$OMP n3,n2,n1,nba,dopair_occ) REDUCTION(+:EJ3,EK3)                                                            
-   DO c=1,n3                                                                                                                 
-      DO m=1,n2 !noccAOStot                                                                                                   
-         DO j=1,n1                                                                                                           
-            DO i=1,n1                                                                                                      
-               IF(dopair_occ(I,J)) THEN                                                                                      
-                  tmpR3 = 0.0E0_realk                                                                                        
-                  DO alpha = 1,NBA                                                                                           
-                     tmpR3 = tmpR3 + CalphaR(alpha,i,m)*CalphaRcabs(alpha,j,c)                                               
-                  ENDDO                                                                                                      
-                  tmpG13 = 0.0E0_realk                                                                                       
-                  tmpG23 = 0.0E0_realk                                                                                       
-                  DO beta = 1,NBA                                                                                            
-                     tmpG13 = tmpG13 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)                                               
-                     tmpG23 = tmpG23 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)                                               
-                  ENDDO                                                                                                      
-                  EJ3 = EJ3 + tmpR3*tmpG13                                                                                   
-                  EK3 = EK3 + tmpR3*tmpG23                                                                                   
+subroutine ContractTwo4CenterF12IntegralsRIV34_dec(nBA,NBA2,n1,n2,n3,nocv,&                                         
+      & CalphaRcabs,CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ_in)                                            
+   implicit none                                                                                                    
+   integer,intent(in)        :: nBA,n1,n2,n3,nocv,NBA2                                                              
+   real(realk),intent(in)    :: CalphaRcabs(nBA2,n1,n3)                                                             
+   real(realk),intent(in)    :: CalphaGcabs(nBA,n1,n3)                                                              
+   real(realk),intent(in)    :: CalphaR(nBA2,n1,nocv)                                                               
+   real(realk),intent(in)    :: CalphaG(nBA,nocv,n1)                                                                
+   real(realk),intent(inout) :: EJK3,EJK4                                                                           
+   !local variables                                                                                                 
+   integer     :: m,c,i,j,alpha,beta                                                                                
+   real(realk) :: tmpR3,tmpG13,tmpG23                                                                               
+   real(realk) :: tmpR4                                                                                             
+   real(realk) :: EJ3, EJ4, EK3, EK4, ED                                                                            
+   !Dopair                                                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)                                                              
+   logical :: dopair_occ(n1,n1)                                                                                     
+   if(present(dopair_occ_in)) then                                                                                  
+      dopair_occ = dopair_occ_in                                                                                    
+   else                                                                                                             
+      dopair_occ = .TRUE.                                                                                           
+   endif                                                                                                            
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)                                                                      
+   ED =  0.0E0_realk                                                                                                
+   EJ3 =  0.0E0_realk                                                                                               
+   EK3 =  0.0E0_realk                                                                                               
+   EJ4 =  0.0E0_realk                                                                                               
+   EK4 =  0.0E0_realk                                                                                               
+   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(m,c,i,j,alpha,beta,&                                         
+   !$OMP tmpR3,tmpG13,tmpG23,tmpR4) SHARED(nBA,n1,n2,n3,nocv,CalphaRcabs,NBA2,&                                     
+   !$OMP CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)                          
+   DO c=1,n3                                                                                                        
+      DO m=1,n2 !noccfull                                                                                           
+         DO j=1,n1                                                                                                  
+            DO i=1,n1                                                                                               
+               IF(dopair_occ(I,J)) THEN                                                                             
+                  tmpR3 = 0.0E0_realk                                                                               
+                  tmpR4 = 0.0E0_realk                                                                               
+                  DO alpha = 1,NBA2                                                                                 
+                     tmpR3 = tmpR3 + CalphaR(alpha,i,m)*CalphaRcabs(alpha,j,c)                                      
+                  ENDDO                                                                                             
+                  tmpG13 = 0.0E0_realk                                                                              
+                  tmpG23 = 0.0E0_realk                                                                              
+                  DO beta = 1,NBA                                                                                   
+                     tmpG13 = tmpG13 + CalphaG(beta,m,i)*CalphaGcabs(beta,j,c)                                      
+                     tmpG23 = tmpG23 + CalphaG(beta,m,j)*CalphaGcabs(beta,i,c)                                      
+                  ENDDO                                                                                             
+                  EJ3 = EJ3 + tmpR3*tmpG13                                                                          
+                  EK3 = EK3 + tmpR3*tmpG23                                                                          
                ENDIF
-            ENDDO                                                                                                            
-         ENDDO                                                                                                               
-      ENDDO                                                                                                                  
-   ENDDO                                                                                                                     
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
    !$OMP END PARALLEL DO
-   EJK3 = 1.25*EJ3-0.25E0_realk*EK3
-   EJK4 = EJK3
+   EJK3 = 1.25E0_realk*EJ3-0.25E0_realk*EK3
+   EJK4 = EJK3!ED + 2.5E0_realk*EJ4-0.5E0_realk*EK4
 end subroutine ContractTwo4CenterF12IntegralsRIV34_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIV5_dec(nBA,n1,n2,CalphaV,CalphaD,Taibj,EJK,dopair_occ_in)
@@ -400,11 +402,11 @@ subroutine ContractTwo4CenterF12IntegralsRIV5_dec(nBA,n1,n2,CalphaV,CalphaD,Taib
    integer,intent(in)        :: nBA,n1,n2
    real(realk),intent(in)    :: CalphaV(nBA,n1,n2),CalphaD(nBA,n1,n2)
    real(realk),intent(inout) :: EJK
-   real(realk)               :: ED,EJ,EK,eps
+   real(realk)               :: EJ,EK,eps
    real(realk),intent(in)    :: Taibj(:,:,:,:)
    !local variables
    integer :: a,b,i,j,alpha,beta,gamma
-   real(realk) :: tmp,tmpR,tmpG,tmpT
+   real(realk) :: tmpR,tmpG,tmpT
    !Dopair                                                                          
    logical,intent(in),optional :: dopair_occ_in(n1,n1)
    logical :: dopair_occ(n1,n1)
@@ -414,8 +416,6 @@ subroutine ContractTwo4CenterF12IntegralsRIV5_dec(nBA,n1,n2,CalphaV,CalphaD,Taib
       dopair_occ = .TRUE.
    endif   
    !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
-   tmp = 0.0E0_realk
-   ED =  0.0E0_realk
    EJ =  0.0E0_realk
    EK =  0.0E0_realk
    EJK = 0.0E0_realk
@@ -440,9 +440,6 @@ subroutine ContractTwo4CenterF12IntegralsRIV5_dec(nBA,n1,n2,CalphaV,CalphaD,Taib
       ENDDO
    ENDDO
    EJK = -5.0/4.0*EJ + 1.0/4.0*EK 
-   !print *,"COULOMBE V5:  ", 5.0/4.0*EJ
-   !print *,"EXCHANGE V5: ",  1.0/4.0*EK
-   !print *,"COULOMBE V5 + EXCHANGE: V5", EJK      
 end subroutine ContractTwo4CenterF12IntegralsRIV5_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIX34_dec(nBA,n1,n2,n3,&

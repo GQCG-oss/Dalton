@@ -447,7 +447,7 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_MyFragment 
 
-  subroutine mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+  subroutine mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
     implicit none
     !> Fragment under consideration
     type(decfrag),intent(inout) :: MyFragment
@@ -455,6 +455,8 @@ contains
     integer :: fragcase
     !> dopair_occ array
     logical,intent(inout) :: dopair
+
+    real(realk),pointer,intent(in) :: Taibj(:,:,:,:)
 
     !local variables
     integer(kind=ls_mpik) :: master
@@ -485,6 +487,7 @@ contains
        call mem_alloc(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO)                                                    
        call mem_alloc(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot)
        call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)   
+       call mem_alloc(Taibj,MyFragment%nvirtAOS,MyFragment%noccEOS,MyFragment%nvirtAOS,MyFragment%noccEOS)
 
     endif
 
@@ -496,6 +499,8 @@ contains
     call ls_mpi_buffer(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO,master)                                             
     call ls_mpi_buffer(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot,master)
     call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master)     
+    call ls_mpi_buffer(Taibj,MyFragment%nvirtAOS,MyFragment%noccEOS,MyFragment%nvirtAOS,MyFragment%noccEOS,master)
+
 
     call ls_mpi_buffer(fragcase,master) 
     call ls_mpi_buffer(dopair,master)

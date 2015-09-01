@@ -209,7 +209,7 @@ contains
     integer :: AuxMPIstartMy,iAuxMPIextraMy,AuxMPIstartMPI,iAuxMPIextraMPI
     integer :: numnodesstd
     real(realk),pointer :: UmatTmp(:,:)
-    real(realk) :: factor, EV2tmp, EX2tmp
+    real(realk) :: factor, EV2tmp, EX2tmp, EV3tmp, EV4tmp
     real(realk),pointer :: CalphaMPI(:),CalphaMPI2(:)
 
 #ifdef VAR_MPI
@@ -517,7 +517,7 @@ contains
      print *, "We wake up the slaves"
      call ls_mpibcast(DECRIMP2F12,infpar%master,infpar%lg_comm)
 
-     call mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+     call mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
 
      call mem_alloc(dopair_occ,noccEOS,noccEOS)
      dopair_occ = .FALSE.
@@ -956,19 +956,74 @@ print *, "EB3, mynum", EB3, mynum
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CMO_CABS,ncabsMO,&
          & mynum,numnodes,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
-    !Do on GPU (Async)
-    call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
-         & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
+#ifdef VAR_MPI 
+   IF(wakeslaves)THEN
+      EV3 = 0.0E0_realk
+      EV4 = 0.0E0_realk
+      DO inode = 1,numnodes
+         nbuf1 = nAuxMPI(inode)
+         NBA2 = nAuxMPI(inode)
+         nsize = nbuf1*noccEOS*ncabsMO  !CalphaRcabsMO(NBA,nocc,ncabsMO)
+         nsize2 = nbuf1*noccEOS*nocvAOS    !CalphaR(NBA,nocc,nocv)
+         IF(mynum.EQ.inode-1)THEN
+            !I Bcast My Own CalphaG
+            node = mynum
+            IF(size(CalphaRcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 C1',-1)
+            call ls_mpibcast(CalphaRcabsMO,nsize,node,infpar%lg_comm)
+            IF(size(CalphaR).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 C2',-1)
+            call ls_mpibcast(CalphaR,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOS,ncabsMO,nocvAOS,&
+                 & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3tmp,EV4tmp)
+         ELSE
+            node = inode-1
+            !recieve
+            IF(use_bg_buf)THEN
+               call mem_pseudo_alloc(CalphaMPI,nsize)
+               call mem_pseudo_alloc(CalphaMPI2,nsize2)
+            ELSE
+               call mem_alloc(CalphaMPI,nsize)
+               call mem_alloc(CalphaMPI2,nsize2)
+            ENDIF
+            call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+            call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+            call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA2,noccEOS,noccAOS,ncabsMO,nocvAOS,&
+                 & CalphaMPI,CalphaGcabsMO,CalphaMPI2,CalphaG,EV3tmp,EV4tmp)
+            IF(use_bg_buf)THEN
+               call mem_pseudo_dealloc(CalphaMPI2)
+               call mem_pseudo_dealloc(CalphaMPI)
+            ELSE
+               call mem_dealloc(CalphaMPI)
+               call mem_dealloc(CalphaMPI2)
+            ENDIF
+         ENDIF
+         EV3 = EV3 + EV3tmp
+         EV4 = EV4 + EV4tmp
+      ENDDO
+   ELSE
+      call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOS,ncabsMO,nocvAOS,&
+           & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
+   ENDIF
 
-    mp2f12_energy = mp2f12_energy + EV3 + EV4
-    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
-    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
-    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3       
-    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ',EV4       
+    print *, "EV3, mynum", EV3, mynum
+    print *, "EV4, mynum", EV4, mynum
 
-    call mem_dealloc(ABdecompR)
-    call mem_dealloc(CalphaR)
-    call mem_dealloc(CalphaRcabsMO)
+   lsmpibufferRIMP2(8)=EV3      !we need to perform a MPI reduction at the end 
+   lsmpibufferRIMP2(9)=EV4      !we need to perform a MPI reduction at the end 
+#else
+   !Do on GPU (Async)
+   call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOS,ncabsMO,nocvAOS,&
+        & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
+   mp2f12_energy = mp2f12_energy  + EV3 + EV4
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ',EV4
+   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3
+   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ',EV4
+#endif
+   call mem_dealloc(ABdecompR)
+   call mem_dealloc(CalphaR)
+   call mem_dealloc(CalphaRcabsMO)
+
+
 
     !==========================================================
     != V5: Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj              =
@@ -994,11 +1049,6 @@ print *, "EB3, mynum", EB3, mynum
     call mem_alloc(CalphaD, nsize)
     call dgemm('N','T',m,n,k,1.0E0_realk,CalphaCcabs,m,Fac,n,0.0E0_realk,CalphaD,m)
 
-    !m = nvirt      
-    !k = ncabsMO         ! C_mn = A_mk B_kn
-    !n = noccEOS*NBA  
-    !call dgemm('N','T',m,n,k,1.0E0_realk,Fac%elms,m,CalphaCcabs,k,0.0E0_realk,CalphaD,n)
-
     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
     intspec(2) = 'R' !Regular AO basis function on center 3
     intspec(3) = 'R' !Regular AO basis function on center 4
@@ -1007,6 +1057,8 @@ print *, "EB3, mynum", EB3, mynum
     call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,nbasis,nAux,LUPRI,&
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CvAOS,nvirtAOS,&
          & mynum,numnodes,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+
+
 
     call ContractTwo4CenterF12IntegralsRIV5_dec(nBA,noccEOS,nvirtAOS,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
     mp2f12_energy = mp2f12_energy + EV5
@@ -1523,7 +1575,7 @@ subroutine get_rif12_fragment_energy_slave()
 
    !print *, "I am slave nr: ", infpar%lg_mynum 
 #ifdef VAR_MPI
-   call mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+   call mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
    if(dopair) then
       call get_rif12_fragment_energy(MyFragment, Taibj, Tai, fragcase, Fragment1, Fragment2) 
    else
