@@ -1023,8 +1023,6 @@ print *, "EB3, mynum", EB3, mynum
    call mem_dealloc(CalphaR)
    call mem_dealloc(CalphaRcabsMO)
 
-
-
     !==========================================================
     != V5: Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj              =
     !========================================================== 
@@ -1058,12 +1056,18 @@ print *, "EB3, mynum", EB3, mynum
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CvAOS,nvirtAOS,&
          & mynum,numnodes,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
 
-
-
     call ContractTwo4CenterF12IntegralsRIV5_dec(nBA,noccEOS,nvirtAOS,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
-    mp2f12_energy = mp2f12_energy + EV5
+
+
+#ifdef VAR_MPI 
+    print *, "EV5, mynum", EV5, mynum
+    lsmpibufferRIMP2(10)=EV5
+#else
+    mp2f12_energy = mp2f12_energy  + EV5
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+#endif  
+
 
     ABdecompCreateG = .FALSE.
     call mem_dealloc(CalphaD)
