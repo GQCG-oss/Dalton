@@ -359,8 +359,8 @@ subroutine ContractTwo4CenterF12IntegralsRIV34_dec(nBA,NBA2,n1,n2,n3,nocv,&
    integer     :: m,c,i,j,alpha,beta                                                                                
    real(realk) :: tmpR3,tmpG13,tmpG23                                                                               
    real(realk) :: tmpR4                                                                                             
-   real(realk) :: EJ3, EJ4, EK3, EK4, ED                                                                            
-   !Dopair                                                                                                          
+   real(realk) :: EJ3, EK3                                                                           
+   !Dopair                               
    logical,intent(in),optional :: dopair_occ_in(n1,n1)                                                              
    logical :: dopair_occ(n1,n1)                                                                                     
    if(present(dopair_occ_in)) then                                                                                  
@@ -369,21 +369,17 @@ subroutine ContractTwo4CenterF12IntegralsRIV34_dec(nBA,NBA2,n1,n2,n3,nocv,&
       dopair_occ = .TRUE.                                                                                           
    endif                                                                                                            
    !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)                                                                      
-   ED =  0.0E0_realk                                                                                                
    EJ3 =  0.0E0_realk                                                                                               
    EK3 =  0.0E0_realk                                                                                               
-   EJ4 =  0.0E0_realk                                                                                               
-   EK4 =  0.0E0_realk                                                                                               
    !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) PRIVATE(m,c,i,j,alpha,beta,&                                         
-   !$OMP tmpR3,tmpG13,tmpG23,tmpR4) SHARED(nBA,n1,n2,n3,nocv,CalphaRcabs,NBA2,&                                     
-   !$OMP CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ) REDUCTION(+:EJ3,EK3,EJ4,EK4,ED)                          
-   DO c=1,n3                                                                                                        
-      DO m=1,n2 !noccfull                                                                                           
+   !$OMP tmpR3,tmpG13,tmpG23) SHARED(nBA,n1,n2,n3,CalphaRcabs,NBA2,&                                     
+   !$OMP CalphaGcabs,CalphaR,CalphaG,EJK3,dopair_occ) REDUCTION(+:EJ3,EK3)
+   DO c=1,n3    !nocvAOS 
+      DO m=1,n2 !noccAOStot
          DO j=1,n1                                                                                                  
             DO i=1,n1                                                                                               
                IF(dopair_occ(I,J)) THEN                                                                             
                   tmpR3 = 0.0E0_realk                                                                               
-                  tmpR4 = 0.0E0_realk                                                                               
                   DO alpha = 1,NBA2                                                                                 
                      tmpR3 = tmpR3 + CalphaR(alpha,i,m)*CalphaRcabs(alpha,j,c)                                      
                   ENDDO                                                                                             

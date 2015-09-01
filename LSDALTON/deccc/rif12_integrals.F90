@@ -972,8 +972,8 @@ print *, "EB3, mynum", EB3, mynum
             call ls_mpibcast(CalphaRcabsMO,nsize,node,infpar%lg_comm)
             IF(size(CalphaR).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 C2',-1)
             call ls_mpibcast(CalphaR,nsize2,node,infpar%lg_comm)
-            call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOS,ncabsMO,nocvAOS,&
-                 & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3tmp,EV4tmp)
+            call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
+               & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3tmp,EV4tmp,dopair_occ)
          ELSE
             node = inode-1
             !recieve
@@ -986,8 +986,8 @@ print *, "EB3, mynum", EB3, mynum
             ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
-            call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA2,noccEOS,noccAOS,ncabsMO,nocvAOS,&
-                 & CalphaMPI,CalphaGcabsMO,CalphaMPI2,CalphaG,EV3tmp,EV4tmp)
+            call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA2,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
+               & CalphaMPI,CalphaGcabsMO,CalphaMPI2,CalphaG,EV3tmp,EV4tmp,dopair_occ)
             IF(use_bg_buf)THEN
                call mem_pseudo_dealloc(CalphaMPI2)
                call mem_pseudo_dealloc(CalphaMPI)
@@ -1000,8 +1000,8 @@ print *, "EB3, mynum", EB3, mynum
          EV4 = EV4 + EV4tmp
       ENDDO
    ELSE
-      call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOS,ncabsMO,nocvAOS,&
-           & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
+      call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
+         & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
    ENDIF
 
     print *, "EV3, mynum", EV3, mynum
@@ -1011,8 +1011,8 @@ print *, "EB3, mynum", EB3, mynum
    lsmpibufferRIMP2(9)=EV4      !we need to perform a MPI reduction at the end 
 #else
    !Do on GPU (Async)
-   call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOS,ncabsMO,nocvAOS,&
-        & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)
+   call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
+      & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
    mp2f12_energy = mp2f12_energy  + EV3 + EV4
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ',EV4
@@ -1417,25 +1417,80 @@ print *, "EB3, mynum", EB3, mynum
 #ifdef VAR_MPI
    nbuf1 = 20
    CALL lsmpi_reduction(lsmpibufferRIMP2,nbuf1,infpar%master,infpar%lg_comm)
-  
-   if(master) then
-      EV1=lsmpibufferRIMP2(2)
-      EX1=lsmpibufferRIMP2(3)
-      EB1=lsmpibufferRIMP2(1)
-      EB2=lsmpibufferRIMP2(4)
-      EB3=lsmpibufferRIMP2(5)
-      print *,"After Reduction EV1:", EV1
-      print *,"After Reduction EX1:", EX1
-      print *,"After Reduction EB1:", EB1
-      print *,"After Reduction EB2:", EB2
-      print *,"After Reduction EB3:", EB3
-   endif
+   EB1=lsmpibufferRIMP2(1)
+   EV1=lsmpibufferRIMP2(2)
+   EX1=lsmpibufferRIMP2(3)
+   EB2=lsmpibufferRIMP2(4)
+   EB3=lsmpibufferRIMP2(5)
+   EV2=lsmpibufferRIMP2(6)
+   EX2=lsmpibufferRIMP2(7)
+   EV3=lsmpibufferRIMP2(8)
+   EV4=lsmpibufferRIMP2(9)
+   EV5=lsmpibufferRIMP2(10)
+   EX3=lsmpibufferRIMP2(11)
+   EX4=lsmpibufferRIMP2(12)
+   E_21C=lsmpibufferRIMP2(20)
+
+   DO I=1,size(lsmpibufferRIMP2)
+      mp2f12_energy = mp2f12_energy  + lsmpibufferRIMP2(I)
+   ENDDO
+
+   IF(master)THEN
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
+      IF(DECinfo%F12Ccoupling)THEN
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C
+      ENDIF
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ', EX3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ', EX4
+
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
+
+      IF(DECinfo%F12Ccoupling)THEN
+         WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C
+      ENDIF
+
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ', EX3
+      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ', EX4
+
+
+      !print *,"After Reduction EV1:", EV1
+      !print *,"After Reduction EX1:", EX1
+      !print *,"After Reduction EB1:", EB1
+      !print *,"After Reduction EB2:", EB2
+      !print *,"After Reduction EB3:", EB3
+      !print *,"After Reduction EV2:", EV2
+      !print *,"After Reduction EV3:", EV3
+      !print *,"After Reduction EX2:", EX2
+      !print *,"After Reduction EV3:", EV3
+      !print *,"After Reduction EV4:", EV4
+      !print *,"After Reduction EV5:", EV5
+      !print *,"After Reduction EX3:", EX3
+      !print *,"After Reduction EX4:", EX4
+   ENDIF
 #endif
 
     E_21 = 0.0E0_realk
     E_21 = EV1 + EV2 + EV3 + EV4 +EV5 
 
-    if(DECinfo%F12debug) then
+    if(DECinfo%F12debug .AND. master) then
        print *, '----------------------------------------'
        print *, ' E21 V term                             '
        print *, '----------------------------------------'
@@ -1458,13 +1513,13 @@ print *, "EB3, mynum", EB3, mynum
        write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term4:  ", EV4
        write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term5:  ", EV5
        write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
-       write(DECinfo%output,'(1X,a,f15.16)') " E21_Vsum:     ", E_21
+       write(DECinfo%output,'(1X,a,g25.16)') " E21_Vsum:     ", E_21
     end if
 
     E_22 = 0.0E0_realk
     E_22 = EX1 + EX2 + EX3 + EX4 
 
-    if(DECinfo%F12debug) then
+    if(DECinfo%F12debug .AND. master) then
        print *, '----------------------------------------'
        print *, ' E_22 X term                            '
        print *, '----------------------------------------'
@@ -1493,7 +1548,7 @@ print *, "EB3, mynum", EB3, mynum
     E_23 = 0.0E0_realk
     E_23 = EB1 + EB2 + EB3 + EB4 + EB5 + EB6 + EB7 + EB8 + EB9
 
-    if(DECinfo%F12debug) then
+    if(DECinfo%F12debug .AND. master) then
        print *, '----------------------------------------'
        print *, ' E_22 B term                            '
        print *, '----------------------------------------'
@@ -1532,7 +1587,7 @@ print *, "EB3, mynum", EB3, mynum
     MP2_energy = Myfragment%energies(FRAGMODEL_OCCMP2)
     print *, "MP2_energy: ", MP2_energy
 
-    if(DECinfo%F12debug) then
+    if(DECinfo%F12debug .AND. master) then
        print *,   '----------------------------------------------------------------'
        print *,   '                   DEC-MP2-F12 CALCULATION                      '
        print *,   '----------------------------------------------------------------'
@@ -1546,16 +1601,18 @@ print *, "EB3, mynum", EB3, mynum
        write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: TOTAL CORRELATION ENERGY (For CC) =', MP2_energy+E_F12
     end if
 
-    write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,f20.10)') '                  WANGY DEC-MP2-F12 CALCULATION                 '
-    write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E_21
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E_22
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =     ', E_23
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 CORRECTION TO ENERGY =         ', E_F12
-    write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
+    if(master)then
+       write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
+       write(DECinfo%output,'(1X,a,f20.10)') '                  WANGY DEC-MP2-F12 CALCULATION                 '
+       write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E_21
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E_22
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =     ', E_23
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 CORRECTION TO ENERGY =         ', E_F12
+       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
+    endif
 
     !> Setting the MP2-F12 correction
     Myfragment%energies(FRAGMODEL_RIMP2f12) = E_F12
