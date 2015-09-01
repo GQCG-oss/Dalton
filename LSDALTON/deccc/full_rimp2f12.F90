@@ -123,7 +123,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ! RI variables
    !========================================================
    integer :: nAux,NBA,N,K,ncore,NBA2
-   real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:), CalphaT(:)
+   real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaT(:)
    real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaP(:)
    real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:), CalphACcabsT(:), CalphaCocc(:), CalphaCoccT(:)
    real(realk),pointer :: UmatTmp(:,:)
@@ -969,10 +969,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(3) = 'R' !Regular AO basis function on center 4
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
-   !FIXME Replace this with subset of CalphaG(NBA,nocv,nocc)
-   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,Co,nocc,MyMolecule%Cv%elm2,nvirt,&
-        & mynum,numnodesstd,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+   !Replaced CalphaCvirt(NBA,nocc,nvirt) with subset of CalphaG(NBA,nocv,nocc)
 
 #ifdef VAR_MPI 
    IF(wakeslaves)THEN
@@ -987,7 +984,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
             IF(size(CalphaR).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 D',-1)
             call ls_mpibcast(CalphaR,nsize,node,infpar%lg_comm)        
             call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,&
-                 & CalphaCvirt,CalphaD,CalphaR,nocv,noccfull,NBA,EV5tmp)
+                 & CalphaG,CalphaD,CalphaR,nocv,noccfull,NBA,EV5tmp)
          ELSE
             node = inode-1
             !recieve
@@ -998,7 +995,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
             ENDIF
             call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,&
-                 & CalphaCvirt,CalphaD,CalphaMPI,nocv,noccfull,NBA2,EV5tmp)
+                 & CalphaG,CalphaD,CalphaMPI,nocv,noccfull,NBA2,EV5tmp)
             IF(use_bg_buf)THEN
                call mem_pseudo_dealloc(CalphaMPI)
             ELSE
@@ -1008,12 +1005,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          EV5 = EV5 + EV5tmp
       ENDDO
    ELSE
-      call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaCvirt,&
+      call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaG,&
            & CalphaD,CalphaR,nocv,noccfull,NBA,EV5)
    ENDIF
    lsmpibufferRIMP2(10)=EV5      !we need to perform a MPI reduction at the end 
 #else
-   call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaCvirt,&
+   call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaG,&
         & CalphaD,CalphaR,nocv,noccfull,NBA,EV5)
    mp2f12_energy = mp2f12_energy + EV5
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
@@ -1024,7 +1021,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !ABdecompCreateG = .FALSE.
    call mem_dealloc(CalphaD)
    call mem_dealloc(ABdecompC)
-   call mem_dealloc(CalphaCvirt)
    
    !==========================================================
    !=                                                        =
