@@ -124,7 +124,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !========================================================
    integer :: nAux,NBA,N,K,ncore,NBA2
    real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:), CalphaT(:)
-   real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:), CalphaP(:)
+   real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaP(:)
    real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:), CalphACcabsT(:), CalphaCocc(:), CalphaCoccT(:)
    real(realk),pointer :: UmatTmp(:,:)
    real(realk),pointer :: CalphaTmp(:),EpsOcc(:),EpsVirt(:)
@@ -943,7 +943,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    != V5:     Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj          =
    !=                                                        = 
    !========================================================== 
-   !FIXME Replace CalphaTvirt(nvirt,nocc) with subset of CalphaR(NBA,nocc,nocv)
+   !Replaced CalphaTvirt(nvirt,nocc) with subset of CalphaR(NBA,nocc,nocv)
    
    call mem_alloc(ABdecompC,nAux,nAux)
    ABdecompCreateC = .TRUE.
@@ -953,10 +953,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(3) = 'C' !Cabs AO basis function on center 3
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
-   !FIXME Replace this with CalphaGcabsMO(nocc,ncabsMO)
-   call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
-        & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
-        & mynum,numnodesstd,CalphaCcabs,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+   !Replaced CalphaCcabs(nocc,ncabsMO) with CalphaGcabsMO(nocc,ncabsMO)
    
    m = NBA*nocc       
    k = ncabsMO         ! D_ia = A_ic F_ca
@@ -965,7 +962,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !C(alpha*i,ncabsMO)*F(cabsMO,nvirt)
    nsize = nBA*nocc*ncabsMO
    call mem_alloc(CalphaD, nsize)
-   call dgemm('N','T',m,n,k,1.0E0_realk,CalphaCcabs,m,Fac%elms,n,0.0E0_realk,CalphaD,m)
+   call dgemm('N','T',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fac%elms,n,0.0E0_realk,CalphaD,m)
    
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
@@ -1027,7 +1024,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !ABdecompCreateG = .FALSE.
    call mem_dealloc(CalphaD)
    call mem_dealloc(ABdecompC)
-   call mem_dealloc(CalphaCcabs)
    call mem_dealloc(CalphaCvirt)
    
    !==========================================================
