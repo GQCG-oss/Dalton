@@ -209,7 +209,7 @@ contains
     integer :: AuxMPIstartMy,iAuxMPIextraMy,AuxMPIstartMPI,iAuxMPIextraMPI
     integer :: numnodesstd
     real(realk),pointer :: UmatTmp(:,:)
-    real(realk) :: factor, EV2tmp, EX2tmp, EV3tmp, EV4tmp
+    real(realk) :: factor, EV2tmp, EX2tmp, EV3tmp, EV4tmp, EX3tmp, EX4tmp
     real(realk),pointer :: CalphaMPI(:),CalphaMPI2(:)
 
 #ifdef VAR_MPI
@@ -1058,7 +1058,6 @@ print *, "EB3, mynum", EB3, mynum
 
     call ContractTwo4CenterF12IntegralsRIV5_dec(nBA,noccEOS,nvirtAOS,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
 
-
 #ifdef VAR_MPI 
     print *, "EV5, mynum", EV5, mynum
     lsmpibufferRIMP2(10)=EV5
@@ -1067,7 +1066,6 @@ print *, "EB3, mynum", EB3, mynum
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
 #endif  
-
 
     ABdecompCreateG = .FALSE.
     call mem_dealloc(CalphaD)
@@ -1123,26 +1121,86 @@ print *, "EB3, mynum", EB3, mynum
      K = noccAOS               !P_cj = C_ck F_kj   
      N = noccEOS          
      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCcabsT,M,Fkj,K,0.0E0_realk,CalphaP,M)
-     !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
-     call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
-        & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4,dopair_occ)
 
-     call mem_dealloc(CalphaCcabsT)
-     call mem_dealloc(CalphaCocc)
-     call mem_dealloc(CalphaT)
-     call mem_dealloc(CalphaP)
+#ifdef VAR_MPI 
+     IF(wakeslaves)THEN
+        EX3 = 0.0E0_realk
+        EX4 = 0.0E0_realk
+        DO inode = 1,numnodes
+           nbuf1 = nAuxMPI(inode)
+           NBA2 = nAuxMPI(inode)
+           nsize = nbuf1*noccEOS*ncabsMO     !CalphaGcabsMO(NBA,nocc,ncabsMO) 
+           nsize2 = nbuf1*noccAOStot*noccEOS  !CalphaCocc(NBA,noccfull,nocc) 
+           IF(mynum.EQ.inode-1)THEN
+              !I Bcast My Own CalphaG
+              node = mynum
+              IF(size(CalphaGcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 E1',-1)
+              call ls_mpibcast(CalphaGcabsMO,nsize,node,infpar%lg_comm)
+              IF(size(CalphaCocc).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 E2',-1)
+              call ls_mpibcast(CalphaCocc,nsize2,node,infpar%lg_comm)
+              call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
+                 & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp)
+           ELSE
+              node = inode-1
+              !recieve
+              IF(use_bg_buf)THEN
+                 call mem_pseudo_alloc(CalphaMPI,nsize)
+                 call mem_pseudo_alloc(CalphaMPI2,nsize2)
+              ELSE
+                 call mem_alloc(CalphaMPI,nsize)
+                 call mem_alloc(CalphaMPI2,nsize2)
+              ENDIF
+              call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
+              call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
+              call ContractTwo4CenterF12IntegralsRIX34MPI_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
+                 & CalphaMPI,CalphaMPI2,NBA2,&
+                 & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp)
+              IF(use_bg_buf)THEN
+                 call mem_pseudo_dealloc(CalphaMPI2)
+                 call mem_pseudo_dealloc(CalphaMPI)
+              ELSE
+                 call mem_dealloc(CalphaMPI)
+                 call mem_dealloc(CalphaMPI2)
+              ENDIF
+           ENDIF
+           EX3 = EX3 + EX3tmp
+           EX4 = EX4 + EX4tmp
+        ENDDO
+     ELSE
+        call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
+           & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
+     ENDIF
 
-     mp2f12_energy = mp2f12_energy  + EX3 + EX4
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
-     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
-     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
-     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
+    print *, "EX3, mynum", EX3, mynum
+    print *, "EX4, mynum", EX4, mynum
+
+   lsmpibufferRIMP2(11)=EX3      !we need to perform a MPI reduction at the end 
+   lsmpibufferRIMP2(12)=EX4      !we need to perform a MPI reduction at the end 
+
+#else
+   !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+
+   call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
+      & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4,dopair_occ)
+
+   mp2f12_energy = mp2f12_energy  + EX3 + EX4
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
+   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
+   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X3,RI) = ',EX3
+   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
+
+#endif
+
+   call mem_dealloc(CalphaCcabsT)
+   call mem_dealloc(CalphaCocc)
+   call mem_dealloc(CalphaT)
+   call mem_dealloc(CalphaP)
 
    call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
 
-    !=================================================================
-    != Step 3: The remaining B terms                                 =
-    !=================================================================
+   !=================================================================
+   != Step 3: The remaining B terms                                 =
+   !=================================================================
 
     !==============================================================
     !=  B4: (ir|f12|jt)Kst(ir|f12|js)      (r,s,t=CabsAO)         =
