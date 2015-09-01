@@ -240,7 +240,6 @@ contains
              ! calculate only MP2 energy integrals and MP2 amplitudes
              ! ******************************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
-             print *,"3. Myfragment%energies(FRAGMODEL_OCCMP2) (fragment energy)",  Myfragment%energies(FRAGMODEL_OCCMP2)
           end if
 #ifdef MOD_UNRELEASED
           ! MP2-F12 Code

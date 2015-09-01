@@ -1667,4 +1667,85 @@ contains
   end subroutine SUBatomic_fragments_sanity_check
 
 
+  !> \brief Write SNOOP restart file for full system (sub=0) or
+  !> one of the subsystems
+  !> \author Kasper Kristensen
+  !> \date August 2015
+  subroutine snoop_write_restart_file(sub,EHF,Ecorr)
+    implicit none
+    !> Which subsystem? (If sub=0, then we consider the full system)
+    integer,intent(in) :: sub 
+    !> HF and correlation energy 
+    real(realk),intent(in) :: EHF,Ecorr
+    integer :: funit
+    character(len=17) :: FileName    
+
+    ! Get file name
+    call SNOOP_get_filename(sub,FileName)
+
+    ! Open file (always delete existing file if it exists)
+    funit = -1
+    call lsopen(funit,FileName,'REPLACE','UNFORMATTED')
+
+    ! Write energies to file and close file
+    write(funit) EHF
+    write(funit) Ecorr
+    call lsclose(funit,'KEEP')
+
+  end subroutine snoop_write_restart_file
+
+
+  !> \brief Read SNOOP restart file for full system (sub=0) or
+  !> one of the subsystems
+  !> \author Kasper Kristensen
+  !> \date August 2015
+  subroutine snoop_read_restart_file(sub,EHF,Ecorr,file_exist)
+    implicit none
+    !> Which subsystem? (If sub=0, then we consider the full system)
+    integer,intent(in) :: sub 
+    !> HF and correlation energy 
+    real(realk),intent(inout) :: EHF,Ecorr
+    !> Did restart file exist? (If not, EHF and Ecorr are not modified)
+    logical,intent(inout) :: file_exist
+    integer :: funit
+    character(len=17) :: FileName    
+
+    ! Set file name
+    call SNOOP_get_filename(sub,FileName)
+    
+    ! Does restart file exist?
+    inquire(file=FileName,exist=file_exist)
+
+    if(.not. file_exist) return
+
+    ! Open file (always delete existing file if it exists)
+    funit = -1
+    call lsopen(funit,FileName,'OLD','UNFORMATTED')
+
+    ! Read energies from file and close file
+    read(funit) EHF
+    read(funit) Ecorr
+    call lsclose(funit,'KEEP')
+
+  end subroutine snoop_read_restart_file
+
+
+  !> Get filename for snoop restart file
+  !> \author Kasper Kristensen
+  !> \date August 2015  
+  subroutine SNOOP_get_filename(sub,FileName)
+    implicit none
+    !> Which subsystem? (If sub=0, then we consider the full system)
+    integer,intent(in) :: sub 
+    !> File name for restart file
+    character(len=17),intent(inout) :: FileName    
+
+    ! Set file name
+    FileName(1:5)='SNOOP'
+    write(FileName(6:9),'(i4.4)') sub
+    FileName(10:17)='.restart'
+
+  end subroutine SNOOP_get_filename
+
+
 end module snoop_tools_module

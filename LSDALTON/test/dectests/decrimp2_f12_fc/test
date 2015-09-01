@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from runtest_lsdalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Correlation energy',
+      rel_tolerance = 1.1e-6)
+
+f.add(string = 'E: F12 singles',
+      rel_tolerance = 1.1e-6)
+
+f.add(string = 'Total RI-MP2F12 energy', 
+      rel_tolerance = 1.1e-6)
+
+f.add(string = 'RIMP2 CORRECTION TO ENERGY',
+      rel_tolerance = 1.1e-6)
+
+f.add(string = 'F12 CORRECTION TO ENERGY',
+            rel_tolerance = 1.1e-6)
+
+f.add(string = 'RIMP2-F12 CORRELATION ENERGY',
+      rel_tolerance = 1.1e-6)
+
+f.add(string = 'Allocated memory (TOTAL)')
+
+f.add(string = 'Memory in use for array4',
+      rel_tolerance = 1.0e-9)
+
+test.run(['decrimp2_f12_fc.dal'], ['H2O.mol'], {'out': f})
+
+sys.exit(test.return_code)

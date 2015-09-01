@@ -39,6 +39,21 @@ module cc_tools_module
          real(realk) :: c
       end function ab_eq_c
    end interface
+
+  
+   private
+   public :: mo_work_dist,get_tpl_and_tmi,lspdm_get_tpl_and_tmi,&
+        & get_a22_and_prepb22_terms_ex,&
+        & get_a22_and_prepb22_terms_exd, combine_and_transform_sigma,&
+        & get_I_cged, get_I_plusminus_le, add_int_to_sio4, get_B22_contrib_mo,&
+        & print_tensor_unfolding_with_labels, &
+        & squareup_block_triangular_squarematrix,&
+        & calc_i_leq_j, calc_i_geq_j, simulate_intloop_and_get_worksize, &
+        & successive_4ao_mo_trafo, solver_energy_full, solver_decnp_full,&
+        & ccsdpt_energy_e4_full, ccsdpt_energy_e5_full, ccsdpt_decnp_e4_full,&
+        & ccsdpt_decnp_e5_full, get_t1_matrices, get_nbuffs_scheme_0, &
+        & get_split_scheme_0, get_tpl_and_tmi_fort
+
    
    contains
 
@@ -783,6 +798,7 @@ module cc_tools_module
       integer :: goffs,aoffs,tlen,tred,nor,nvr
       integer(kind=8) :: s0, s2, s3
 !{`DIL:
+#ifdef DIL_ACTIVE
      integer:: nors,nvrs,scheme
      character(256):: tcs
      type(dil_tens_contr_t):: tch
@@ -792,6 +808,7 @@ module cc_tools_module
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      real(realk):: r0
      integer(INTD):: sch_sym=1
+#endif
 !}
 
       call time_start_phase(PHASE_WORK)
@@ -845,6 +862,7 @@ module cc_tools_module
       endif
 
       select case(s)
+#ifdef DIL_ACTIVE
       case(1) !`DIL: Scheme 1 only
          !!SYMMETRIC COMBINATION:
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
@@ -927,6 +945,7 @@ module cc_tools_module
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Tens contr failed!',-1)
+#endif
       case default
          call lsquit("ERROR(get_a22_and_prepb22_terms_exd): wrong scheme on input",-1)
       end select
@@ -1999,12 +2018,14 @@ module cc_tools_module
       logical :: traf,np
       integer :: o(4)
 !{`DIL:
+#ifdef DIL_ACTIVE
      character(256):: tcs
      type(dil_tens_contr_t):: tch
      integer(INTL):: dil_mem,l0
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
      integer(INTD):: ddims(MAX_TENSOR_RANK),ldims(MAX_TENSOR_RANK),rdims(MAX_TENSOR_RANK)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
+#endif
      real(realk):: r0
 !}
 
@@ -2074,7 +2095,7 @@ module cc_tools_module
 
       else if(s==1)then
 
-#ifdef VAR_MPI
+#ifdef DIL_ACTIVE
          if(DIL_DEBUG) then !`DIL: Tensor contraction 12
           write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] starting tensor contraction 12:",3(1x,i7))')&
           &infpar%lg_mynum,infpar%mynum

@@ -1245,6 +1245,7 @@ C
 C
 C PURPOSE:
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"
@@ -1353,8 +1354,8 @@ c
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
       ENDDO
 C
-C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM .OR. PEQM) THEN
-      IF (EMBEDDING) THEN
+C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM) THEN
+      IF (EMBEDDING .OR. USE_PELIB()) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF

@@ -22,6 +22,7 @@ module ccsd_module
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
 !       & ii_get_fock_mat_full
   use II_XC_interfaceModule
+  use background_buffer_module
   use IchorErimoduleHost
 #ifdef VAR_MPI
   use infpar_module
@@ -30,6 +31,7 @@ module ccsd_module
 
   use lsparameters!, only: AORdefault
   use tensor_interface_module
+  use reorder_frontend_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -973,6 +975,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !!!!!!!!!!!!!!!!!!!!!!!!!!
      logical:: DIL_LOCK_OUTSIDE
      character(256):: tcs
+#ifdef DIL_ACTIVE
      type(dil_tens_contr_t):: tch0,tch1,tch2,tch3,tch4,tch5 !tensor contraction handles for Scheme 1 (DIL)
      integer(INTL):: dil_mem,ll0,ll1,ll2,ll3
      integer(INTD):: i0,i1,i2,i3,errc,tens_rank,tens_dims(MAX_TENSOR_RANK),tens_bases(MAX_TENSOR_RANK)
@@ -980,7 +983,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(INTD):: dbase(MAX_TENSOR_RANK),lbase(MAX_TENSOR_RANK),rbase(MAX_TENSOR_RANK)
      integer:: comp_range
      real(realk):: r0,r1
-#ifdef DIL_ACTIVE
      integer:: sch1=1,sch2=1,sch3=1,sch4=1,sch5=1,sch_sym=1
 #else
      integer:: sch1=2,sch2=2,sch3=2,sch4=2,sch5=2,sch_sym=2
@@ -5723,6 +5725,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         case(2)
            locally_stored_tiles = locally_stored_tiles * 3
            locally_stored_v2o2  = 0
+        case(1)
+           locally_stored_tiles = locally_stored_tiles * 3
+           locally_stored_v2o2  = 0
         case(0)
            print *,"WARNING(ccsd_residual_integral_driven): this is a hack to use scheme 0"
            locally_stored_tiles = locally_stored_tiles * 3
@@ -8384,7 +8389,7 @@ subroutine ccsd_data_preparation()
   use dec_typedef_module
   use typedeftype,only:lsitem
   use infpar_module
-  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,MPI_COMM_NULL,&
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,&
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free

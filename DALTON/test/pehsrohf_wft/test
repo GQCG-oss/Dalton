@@ -12,11 +12,11 @@ f = Filter()
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
       num_lines = 32,
-      abs_tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-6)
 
 f.add(from_string = 'Dipole moment components',
       num_lines = 9,
-      mask = [3],
+      mask = [1],
       abs_tolerance = 1.0e-5)
 
 test.run(['pehsrohf_wft.dal'], ['pehsrohf_wft.mol'], ['pehsrohf_wft.pot'], f={'out': f})

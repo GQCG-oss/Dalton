@@ -38,9 +38,11 @@ module dec_main_mod
   use f12_routines_module
   use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
-
-public :: dec_main_prog_input, dec_main_prog_file, &
-     & get_mp2gradient_and_energy_from_inputs, get_total_CCenergy_from_inputs
+#ifdef MOD_UNRELEASED 
+  use fullrimp2f12,only: NaturalLinearScalingF12Terms
+#endif
+  public :: dec_main_prog_input, dec_main_prog_file, &
+       & get_mp2gradient_and_energy_from_inputs, get_total_CCenergy_from_inputs
 private
 
 contains
@@ -241,10 +243,15 @@ contains
     end if
     
     
-    if(DECinfo%F12singles) then
+    if(DECinfo%F12 .and. DECinfo%F12singles ) then
        call F12singles_driver(Molecule,MyLsitem,D)
     endif
 
+#ifdef MOD_UNRELEASED 
+    if(DECinfo%F12 .and. DECinfo%NaturalLinearScalingF12Terms ) then
+       call NaturalLinearScalingF12Terms(Molecule,MyLsitem,D)
+    endif
+#endif
     
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC
