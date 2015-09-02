@@ -2974,14 +2974,14 @@ contains
             call tensor_minit(b2(M),[nvirt,nocc,nvirt,nocc],4)
             call tensor_zero(b1(M))
             call tensor_zero(b2(M))
-            ! b(M+p) = zeta
+            ! b(M) = zeta
             call tensor_add(b1(M),1.0_realk,zeta1)
             call tensor_add(b2(M),1.0_realk,zeta2)
 
             do i=1,M-1
                ! b(i)^T zeta  (just a number when b(i) and zeta are considered as vectors)
                bTzeta = - ( tensor_ddot(b1(i),zeta1) + tensor_ddot(b2(i),zeta2) )
-               ! b(M+p) += - b(i) { b(i)^T zeta }
+               ! b(M) += - b(i) { b(i)^T zeta }
                call tensor_add(b1(M),bTzeta,b1(i))
                call tensor_add(b2(M),bTzeta,b2(i))
             end do
@@ -2989,9 +2989,10 @@ contains
             ! Normalize b(M)
             bnorm = SD_dotproduct(b1(M),b2(M))
             bnorm = sqrt(bnorm)
-            if(bnorm < 1.0e-12_realk) then
-               ! Retreat! We do not want to include the current b vector anyways.
-               ! The components spanned by the current b vector were 
+            if(bnorm < 0.1_realk*DECinfo%JacobianThr) then
+               ! Retreat! The norm of the new b vector is an order of magnitude smaller
+               ! than the desired convergence threshold, and we choose not to include the new b vector.
+               ! The components spanned by the new b vector were 
                ! probably included by the b vector of one of the other excitation energies.
                ! Reset M and deallocate b1 and b2 again.
                call tensor_free(b1(M))

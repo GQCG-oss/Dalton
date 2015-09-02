@@ -1548,7 +1548,7 @@ CONTAINS
     DECinfo%CCexci = .false.
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
-    DECinfo%JacobianThr = 1.0e-7
+    DECinfo%JacobianThr = 1.0e-5
     DECinfo%JacobianMaxSubspace = 10000
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
