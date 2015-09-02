@@ -1187,24 +1187,7 @@ contains
        if(DECinfo%full_molecular_cc) then
           call lsquit('NOAOFOCK keyword does not work for full molecular calculation!',-1)
        end if
-    end if
-
-    
-    ! MP3 testing
-    if(DECinfo%ccmodel==MODEL_MP3) then
-       if(.not.DECinfo%full_molecular_cc) then
-          call lsquit('MP3 only implemented for full molecular CC!',-1)
-       end if
-       if(DECinfo%first_order) then
-          call lsquit('No first-order properties for MP3!',-1)
-       end if
-       if(.not. DECinfo%use_canonical) then
-          call lsquit('MP3 only implemented for canonical orbitals, insert .CANONICAL!',-1)
-       end if
-    end if
-
-    ! The fock matrix is required in the ccsolver
-    if (DECinfo%noaofock) then
+       ! The fock matrix is required in the ccsolver
        select case(DECinfo%ccmodel)
        case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX)
           call lsquit("The CC solver require the fock matrix to be stored. Remove &
@@ -1212,7 +1195,7 @@ contains
        end select
     end if
 
-    if (DECinfo%ccmodel==MODEL_RIMP2) then
+    if ((.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel==MODEL_RIMP2) then
        write(DECinfo%output,*) ''
        write(DECinfo%output,*) 'WARNING: User chose RI-MP2 as the final model,'
        write(DECinfo%output,*) '         we therefore enforce RI-MP2 to be used'
