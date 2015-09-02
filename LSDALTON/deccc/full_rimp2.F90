@@ -268,7 +268,9 @@ contains
           CALL LS_GETTIM(CPU2,WALL2)
           CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
           WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-          call ls_mpibcast(noccJstart,infpar%master,infpar%lg_comm)
+          IF(DECinfo%DECrestart)THEN
+             call ls_mpibcast(noccJstart,infpar%master,infpar%lg_comm)
+          ENDIF
        endif StartUpSlaves
 #endif
        CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
