@@ -2226,8 +2226,6 @@ contains
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call free_cabs()
 
-     print *,"dec_get_CABS_orbitals_fragment ncabsAO ncabs", ncabsAO, ncabs
-
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(fragment%Ccabs,ncabsAO,nCabs)
     call mat_to_full(CMO_cabs,1.0E0_realk,fragment%Ccabs)

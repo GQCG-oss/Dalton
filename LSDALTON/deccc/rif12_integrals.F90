@@ -338,16 +338,12 @@ contains
        print *, "-------------------------------------------------"
     end if
 
-     print*,'F12debug Mynum', mynum
-
-     ! Creating a CoccEOS matrix 
+    ! Creating a CoccEOS matrix 
     call mem_alloc(CoEOS, MyFragment%nbasis, noccEOS)
     do i=1, MyFragment%noccEOS
        ix = MyFragment%idxo(i)
        CoEOS(:,i) = MyFragment%Co(:,ix)
     end do
-
-     print*,'CoEOS Mynum', mynum
 
     ! Creating a CoccAOS matrix (always core+valence, also for frozen core)
     call mem_alloc(CoAOS, MyFragment%nbasis, noccAOS)
@@ -358,9 +354,8 @@ contains
     end do
 
     !call sleep(mynum*2)  
-     print*,'CoAOS Mynum', mynum
-   ! call ls_output(CoAOS,1,nbasis,1,noccAOS,nbasis,noccAOS,1,6)
-
+    !print*,'CoAOS Mynum', mynum
+    !call ls_output(CoAOS,1,nbasis,1,noccAOS,nbasis,noccAOS,1,6)
 
     call mem_alloc(CoAOStot, MyFragment%nbasis, noccAOStot)
     do i=1,offset
@@ -370,15 +365,11 @@ contains
        CoAOStot(:,i+offset) = MyFragment%Co(:,i)
     end do
 
-     print*,'CvAOS Mynum', mynum
-
     ! Creating a CvirtAOS matrix 
     call mem_alloc(CvAOS, MyFragment%nbasis, nvirtAOS)
     do i=1, nvirtAOS
        CvAOS(:,i) = MyFragment%Cv(:,i)
     end do
-
-     print*,'CvAOS Mynum', mynum
 
     ! Creating a CovAOS matrix 
     !call mem_alloc(CovAOS, MyFragment%nbasis, nocvAOS)
@@ -393,33 +384,25 @@ contains
     ! Creating the F matrix 
     ! ***********************************************************
     ! Creating a Fkj MO matrix occ EOS
-
-    print *, "Creating the F matrix"
     call mem_alloc(Fkj, noccAOS, noccEOS)
     Fkj = 0E0_realk
     do j=1, noccEOS
        iy = MyFragment%idxo(j)
        Fkj(:,j) = MyFragment%ppfock(:,iy)
     end do
-
-     print*,'Fkj Mynum', mynum
-
     ! Note that Fkj contains only valence orbitals since F(core,valence)=0.
-
     !========================================================
     !  Creating Coeff-matrices 
     !========================================================
-    print *,"Creating Coeff-matrices"
     call mem_alloc(CMO_Cabs, ncabsAO, ncabsMO)
     do i=1, ncabsMO
        CMO_Cabs(:,i) = MyFragment%Ccabs(:,i)
     end do
 
     !call sleep(mynum*2)  
-     print*,'CMO_Cabs Mynum', mynum
+    !print*,'CMO_Cabs Mynum', mynum
     !call ls_output(CoAOS,1,nbasis,1,noccAOS,nbasis,noccAOS,1,6)
     
-
     call mem_alloc(CMO_RI, ncabsAO, ncabsAO)
     do i=1, ncabsAO
        CMO_RI(:,i) = MyFragment%Cri(:,i)
@@ -427,9 +410,8 @@ contains
 
 
     !call sleep(mynum*2)  
-     print*,'CMO_RI Mynum', mynum
+    ! print*,'CMO_RI Mynum', mynum
     !call ls_output(CMO_RI,1,ncabsAO,1,ncabsAO,ncabsAO,ncabsAO,1,6)
-
 
     ! Creating a CocvAOStot matrix 
     call mem_alloc(Cfull, MyFragment%nbasis, nocvAOS)
@@ -440,16 +422,12 @@ contains
        Cfull(:,i+noccAOStot) = MyFragment%Cv(:,i)                                                                       
     end do   
    
-     print*,'Cfull Mynum', mynum
- 
     call mem_alloc(Fac, nvirtAOS, ncabsMO)
     do a=1, nvirtAOS
        do c=1, ncabsMO
           Fac(a,c) = Myfragment%Fcp(c,a+noccAOStot)
        enddo
     enddo
-
-     print*,'Fac Mynum', mynum
 
     !Slow implementation can be done with 2dgemms in B6
     call mem_alloc(Fpp,nvirtAOS+noccAOStot,nvirtAOS+noccAOStot)
@@ -472,8 +450,6 @@ contains
        enddo
      enddo
 
-     print*,'Fpp Mynum', mynum
-
     call mem_alloc(Fnm,noccAOStot,noccAOStot)
     Fnm = 0.0E0_realk
     do n=1,offset
@@ -488,67 +464,43 @@ contains
     enddo
 
     !call sleep(mynum*2)  
-    print*,'Fnm Mynum', mynum
     !call ls_output(Fnm,1,noccAOStot,1,noccAOStot,noccAOStot,noccAOStot,1,6)
 
 
-  !   Fpp = 0.0E0_realk
-
-  !    do p=1, noccAOStot
-  !      do q=1, noccAOStot
-  !         Fpp(p,q) = MyFragment%ppfock(p,q)
-  !     enddo
-  !  enddo
-  !  do p=noccAOStot+1, nvirtAOS+noccAOStot
-  !     do q=noccAOStot+1, nvirtAOS+noccAOStot
-  !        Fpp(p,q) = MyFragment%qqfock(p-noccAOStot,q-noccAOStot)
-  !     enddo
-  !  enddo
 
   !=================================================================
   != Step 0: Creating of dopair_occ                                =
   !=================================================================
 #ifdef VAR_MPI
 
-   print *, "Before waking up the slaves: ", mynum
-
   !=================================================================
   != Step 1: Wake up the slaves                                    =
   !=================================================================
-  if(wakeslaves .and. master) then
-     print *, "We wake up the slaves"
-     call ls_mpibcast(DECRIMP2F12,infpar%master,infpar%lg_comm)
 
-     call mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
+  call mem_alloc(dopair_occ,noccEOS,noccEOS)
 
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     dopair_occ = .FALSE.
-
-     print *,"master dopair", dopair
-     if(dopair) then 
+  if(master) then
+     if(dopair) then
         call which_pairs_occ(Fragment1,Fragment2,MyFragment,dopair_occ)
-        call ls_mpibcast(dopair_occ,noccEOS,noccEOS,infpar%master,infpar%lg_comm)
      else
         dopair_occ = .TRUE.
      endif
+  endif
 
-  else
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     dopair_occ = .FALSE.
-      print *,"slave dopair", dopair
-     if(dopair) then 
-        call ls_mpibcast(dopair_occ,noccEOS,noccEOS,infpar%master,infpar%lg_comm)
-        !call which_pairs_occ(Fragment1,Fragment2,MyFragment,dopair_occ)
-     else
-        dopair_occ = .TRUE.
-     endif 
+  if(wakeslaves .and. master) then
+     call ls_mpibcast(DECRIMP2F12,infpar%master,infpar%lg_comm)
+     call mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
+  endif
+
+  if(wakeslaves) then
+     call ls_mpibcast(dopair_occ,noccEOS,noccEOS,infpar%master,infpar%lg_comm)
   endif
 
 #else
 
   call mem_alloc(dopair_occ,noccEOS,noccEOS)
   dopair_occ = .FALSE.
-  if(dopair) then 
+  if(dopair) then
      call which_pairs_occ(Fragment1,Fragment2,MyFragment,dopair_occ)
   else
      dopair_occ = .TRUE.
@@ -587,7 +539,6 @@ contains
     EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12V1-ExchangeF12V1*0.25E0_realk)
 
 #ifdef VAR_MPI 
-    print *, "EV1, mynum", EV1, mynum
     lsmpibufferRIMP2(2)=EV1
 #else
     mp2f12_energy = mp2f12_energy  + EV1
@@ -615,7 +566,6 @@ contains
     call mem_dealloc(CalphaT)
 
 #ifdef VAR_MPI 
-    print *, "EX1, mynum", EX1, mynum
     lsmpibufferRIMP2(3)=EX1
 #else
     mp2f12_energy = mp2f12_energy  + EX1
@@ -731,7 +681,6 @@ contains
     call ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,offset,noccEOS,nocvAOS,CalphaD,CalphaR,EB1,dopair_occ)
 
 #ifdef VAR_MPI 
-    print *, "EB1, mynum", EB1, mynum
     lsmpibufferRIMP2(1)=EB1
 #else
     mp2f12_energy = mp2f12_energy  + EB1
@@ -773,8 +722,8 @@ contains
          & MyFragment%hJir,1.0E0_realk,EB2,EB3,dopair_occ)
 
 #ifdef VAR_MPI 
-print *, "EB2, mynum", EB2, mynum
-print *, "EB3, mynum", EB3, mynum
+!print *, "EB2, mynum", EB2, mynum
+!print *, "EB3, mynum", EB3, mynum
    lsmpibufferRIMP2(4)=EB2       !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(5)=EB3       !we need to perform a MPI reduction at the end 
 #else
@@ -867,7 +816,7 @@ print *, "EB3, mynum", EB3, mynum
           IF(mynum.EQ.inode-1)THEN
              !I Bcast My Own CalphaG
              node = mynum
-             IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 A',-1)
+             IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in DEC RIMP2F12 A',-1)
              call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)
              call ContractTwo4CenterF12IntegralsRIV2_dec(nBA,nBA2,noccEOS,nocvAOS,CalphaR,CalphaG,EV2tmp,dopair_occ)
              call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,noccEOS,nocvAOS,CalphaG,CalphaG,CalphaT,EX2tmp,dopair_occ)  
@@ -896,8 +845,8 @@ print *, "EB3, mynum", EB3, mynum
        call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaG,CalphaG,CalphaT,EX2,dopair_occ)
     ENDIF
     
-    print *, "EV2, mynum", EV2, mynum
-    print *, "EX2, mynum", EX2, mynum
+    !print *, "EV2, mynum", EV2, mynum
+    !print *, "EX2, mynum", EX2, mynum
     lsmpibufferRIMP2(6)=EV2      !we need to perform a MPI reduction at the end 
     lsmpibufferRIMP2(7)=EX2      !we need to perform a MPI reduction at the end 
     call mem_dealloc(CalphaT)
@@ -970,9 +919,9 @@ print *, "EB3, mynum", EB3, mynum
          IF(mynum.EQ.inode-1)THEN
             !I Bcast My Own CalphaG
             node = mynum
-            IF(size(CalphaRcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 C1',-1)
+            IF(size(CalphaRcabsMO).NE.nsize)call lsquit('MPI Bcast error in DEC RIMP2F12 C1',-1)
             call ls_mpibcast(CalphaRcabsMO,nsize,node,infpar%lg_comm)
-            IF(size(CalphaR).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 C2',-1)
+            IF(size(CalphaR).NE.nsize2)call lsquit('MPI Bcast error in DEC RIMP2F12 C2',-1)
             call ls_mpibcast(CalphaR,nsize2,node,infpar%lg_comm)
             call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
                & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3tmp,EV4tmp,dopair_occ)
@@ -1006,8 +955,8 @@ print *, "EB3, mynum", EB3, mynum
          & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
    ENDIF
 
-    print *, "EV3, mynum", EV3, mynum
-    print *, "EV4, mynum", EV4, mynum
+    !print *, "EV3, mynum", EV3, mynum
+    !print *, "EV4, mynum", EV4, mynum
 
    lsmpibufferRIMP2(8)=EV3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(9)=EV4      !we need to perform a MPI reduction at the end 
@@ -1061,7 +1010,7 @@ print *, "EB3, mynum", EB3, mynum
     call ContractTwo4CenterF12IntegralsRIV5_dec(nBA,noccEOS,nvirtAOS,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
 
 #ifdef VAR_MPI 
-    print *, "EV5, mynum", EV5, mynum
+    !print *, "EV5, mynum", EV5, mynum
     lsmpibufferRIMP2(10)=EV5
 #else
     mp2f12_energy = mp2f12_energy  + EV5
@@ -1132,16 +1081,16 @@ print *, "EB3, mynum", EB3, mynum
            nbuf1 = nAuxMPI(inode)
            NBA2 = nAuxMPI(inode)
            nsize = nbuf1*noccEOS*ncabsMO     !CalphaGcabsMO(NBA,nocc,ncabsMO) 
-           nsize2 = nbuf1*noccAOStot*noccEOS  !CalphaCocc(NBA,noccfull,nocc) 
+           nsize2 = nbuf1*noccAOStot*noccAOS  !CalphaCocc(NBA,noccfull,noccAOS) 
            IF(mynum.EQ.inode-1)THEN
               !I Bcast My Own CalphaG
               node = mynum
-              IF(size(CalphaGcabsMO).NE.nsize)call lsquit('MPI Bcast error in Full RIMP2F12 E1',-1)
+              IF(size(CalphaGcabsMO).NE.nsize)call lsquit('MPI Bcast error in DEC RIMP2F12 E1',-1)
               call ls_mpibcast(CalphaGcabsMO,nsize,node,infpar%lg_comm)
-              IF(size(CalphaCocc).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 E2',-1)
+              IF(size(CalphaCocc).NE.nsize2)call lsquit('MPI Bcast error in DEC RIMP2F12 E2',-1)
               call ls_mpibcast(CalphaCocc,nsize2,node,infpar%lg_comm)
               call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
-                 & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp)
+                 & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp,dopair_occ)
            ELSE
               node = inode-1
               !recieve
@@ -1155,8 +1104,7 @@ print *, "EB3, mynum", EB3, mynum
               call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
               call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
               call ContractTwo4CenterF12IntegralsRIX34MPI_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
-                 & CalphaMPI,CalphaMPI2,NBA2,&
-                 & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp)
+                 & CalphaMPI,CalphaMPI2,NBA2,CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3tmp,EX4tmp,dopair_occ)
               IF(use_bg_buf)THEN
                  call mem_pseudo_dealloc(CalphaMPI2)
                  call mem_pseudo_dealloc(CalphaMPI)
@@ -1170,11 +1118,11 @@ print *, "EB3, mynum", EB3, mynum
         ENDDO
      ELSE
         call ContractTwo4CenterF12IntegralsRIX34_dec(NBA,noccEOS,noccAOStot,ncabsMO,&
-           & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4)
+           & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4,dopair_occ)
      ENDIF
 
-    print *, "EX3, mynum", EX3, mynum
-    print *, "EX4, mynum", EX4, mynum
+    !print *, "EX3, mynum", EX3, mynum
+    !print *, "EX4, mynum", EX4, mynum
 
    lsmpibufferRIMP2(11)=EX3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(12)=EX4      !we need to perform a MPI reduction at the end 
@@ -1204,15 +1152,15 @@ print *, "EB3, mynum", EB3, mynum
    != Step 3: The remaining B terms                                 =
    !=================================================================
 
-    !==============================================================
-    !=  B4: (ir|f12|jt)Kst(ir|f12|js)      (r,s,t=CabsAO)         =
-    !==============================================================
-    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-    intspec(2) = 'R' !Regular AO basis function on center 3
-    intspec(3) = 'C' !Regular AO basis function on center 4
-    intspec(4) = 'G' !The f12 Operator
-    intspec(5) = 'G' !The f12 Operator
-    call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
+   !==============================================================
+   !=  B4: (ir|f12|jt)Kst(ir|f12|js)      (r,s,t=CabsAO)         =
+   !==============================================================
+   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+   intspec(2) = 'R' !Regular AO basis function on center 3
+   intspec(3) = 'C' !Regular AO basis function on center 4
+   intspec(4) = 'G' !The f12 Operator
+   intspec(5) = 'G' !The f12 Operator
+   call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CMO_RI,ncabsAO,&
          & mynum,numnodes,CalphaGcabsAO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
@@ -1464,48 +1412,27 @@ print *, "EB3, mynum", EB3, mynum
    ENDDO
 
    IF(master)THEN
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
       IF(DECinfo%F12Ccoupling)THEN 
-         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C 
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C 
       ENDIF
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ', EX3
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ', EX4
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
-      IF(DECinfo%F12Ccoupling)THEN 
-         WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C 
-      ENDIF
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X3,RI) = ', EX3
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ', EX4
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
-      WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X3,RI) = ', EX3
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X4,RI) = ', EX4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
+      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    ENDIF
 
    IF(wakeslaves)THEN
@@ -1518,18 +1445,6 @@ print *, "EB3, mynum", EB3, mynum
     E_21 = EV1 + EV2 + EV3 + EV4 +EV5 
 
     if(DECinfo%F12debug .AND. master) then
-       print *, '----------------------------------------'
-       print *, ' E21 V term                             '
-       print *, '----------------------------------------'
-       write(*,'(1X,a,g25.16)') " E21_CC_term:  ", E_21C
-       write(*,'(1X,a,g25.16)') " E21_V_term1:  ", EV1
-       write(*,'(1X,a,g25.16)') " E21_V_term2:  ", EV2
-       write(*,'(1X,a,g25.16)') " E21_V_term3:  ", EV3
-       write(*,'(1X,a,g25.16)') " E21_V_term4:  ", EV4
-       write(*,'(1X,a,g25.16)') " E21_V_term5:  ", EV5
-       print *, '----------------------------------------'
-       write(*,'(1X,a,g25.16)') " E21_Vsum:     ", E_21
-
        write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
        write(DECinfo%output,'(1X,a,g25.16)') ' E21 V term                             '
        write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
@@ -1547,16 +1462,6 @@ print *, "EB3, mynum", EB3, mynum
     E_22 = EX1 + EX2 + EX3 + EX4 
 
     if(DECinfo%F12debug .AND. master) then
-       print *, '----------------------------------------'
-       print *, ' E_22 X term                            '
-       print *, '----------------------------------------'
-       write(*,'(1X,a,g25.16)') " E22_X_term1: ", EX1
-       write(*,'(1X,a,g25.16)') " E22_X_term2: ", EX2
-       write(*,'(1X,a,g25.16)') " E22_X_term3: ", EX3
-       write(*,'(1X,a,g25.16)') " E22_X_term4: ", EX4
-       print *, '----------------------------------------'
-       write(*,'(1X,a,g25.16)') " E22_Xsum:    ", E_22
-
        write(DECinfo%output,*) '----------------------------------------'
        write(DECinfo%output,*) ' E_22 X term                            '
        write(DECinfo%output,*) '----------------------------------------'
@@ -1576,21 +1481,6 @@ print *, "EB3, mynum", EB3, mynum
     E_23 = EB1 + EB2 + EB3 + EB4 + EB5 + EB6 + EB7 + EB8 + EB9
 
     if(DECinfo%F12debug .AND. master) then
-       print *, '----------------------------------------'
-       print *, ' E_22 B term                            '
-       print *, '----------------------------------------'
-       write(*,'(1X,a,g25.16)') " E23_B_term1: ", EB1
-       write(*,'(1X,a,g25.16)') " E23_B_term2: ", EB2 
-       write(*,'(1X,a,g25.16)') " E23_B_term3: ", EB3   
-       write(*,'(1X,a,g25.16)') " E23_B_term4: ", EB4   
-       write(*,'(1X,a,g25.16)') " E23_B_term5: ", EB5   
-       write(*,'(1X,a,g25.16)') " E23_B_term6: ", EB6  
-       write(*,'(1X,a,g25.16)') " E23_B_term7: ", EB7   
-       write(*,'(1X,a,g25.16)') " E23_B_term8: ", EB8   
-       write(*,'(1X,a,g25.16)') " E23_B_term9: ", EB9  
-       print *, '----------------------------------------'
-       write(*,'(1X,a,g25.16)') " E23_B_sum:   ", E_23
-
        write(DECinfo%output,*) '----------------------------------------'
        write(DECinfo%output,*) ' E_22 B term                            '
        write(DECinfo%output,*) '----------------------------------------'
@@ -1612,23 +1502,9 @@ print *, "EB3, mynum", EB3, mynum
 
     !> MP2-energy from an MP2-calculation
     MP2_energy = Myfragment%energies(FRAGMODEL_OCCMP2)
-    print *, "MP2_energy: ", MP2_energy
+    !print *, "MP2_energy: ", MP2_energy
 
     if(DECinfo%F12debug .AND. master) then
-       print *,   '----------------------------------------------------------------'
-       print *,   '                   DEC-MP2-F12 CALCULATION                      '
-       print *,   '----------------------------------------------------------------'
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E_21
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E_22
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =     ', E_23
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 CORRECTION TO ENERGY =         ', E_F12
-       print *, '-------------------------------------------------------'
-       write(*,'(1X,a,f20.10)') ' WANGY TOYCODE: TOTAL CORRELATION ENERGY (For CC) =', MP2_energy+E_F12
-    end if
-
-    if(master)then
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
        write(DECinfo%output,'(1X,a,f20.10)') '                  WANGY DEC-MP2-F12 CALCULATION                 '
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
@@ -1657,11 +1533,10 @@ print *, "EB3, mynum", EB3, mynum
     integer :: nK,J,I
     IF(dopair)THEN
        noccpair=COUNT(dopair_occ)/2
-       print*,'PAIR: noccpair=COUNT(dopair_occ)/2=',COUNT(dopair_occ)/2
+       !print*,'PAIR: noccpair=COUNT(dopair_occ)/2=',COUNT(dopair_occ)/2
     ELSE
        nK=NINT(SQRT(real(COUNT(dopair_occ))))
        noccpair=(nK*(nK+1))/2
-       print*,'ATOMIC: noccpair=',noccpair
     ENDIF
     call mem_alloc(KVAL,3,noccpair)
     nK=0
@@ -1707,9 +1582,9 @@ subroutine get_rif12_fragment_energy_slave()
   !> Atomic fragment to be determined (Single or Pair fragment)
    type(decfrag) :: MyFragment
    !> t2EOS amplitudes stored in the order T(a,i,b,j)
-   real(realk), pointer :: Taibj(:,:,:,:) 
+   real(realk), pointer :: Taibj(:,:,:,:)
    !> t1EOS amplitudes stored in the order T(a,i)
-   real(realk), pointer :: Tai(:,:) 
+   real(realk), pointer :: Tai(:,:)
    !> Case MODEL
    integer :: fragcase
    !> Fragment 1 in the pair fragment
@@ -1718,8 +1593,6 @@ subroutine get_rif12_fragment_energy_slave()
    type(decfrag) :: Fragment2
    !> Logical variable to check if this is a pair fragment
    logical :: dopair
-
-   !print *, "I am slave nr: ", infpar%lg_mynum 
 #ifdef VAR_MPI
    call mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
    if(dopair) then
