@@ -19,7 +19,7 @@ f.add(string = 'Final DFT energy',
       rel_tolerance = 1.0e-8)
 
 f.add(string = '@ Excitation energy :',
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(string = '@ Overlap diagnostic LAMBDA =',
       abs_tolerance = 1.0e-4)

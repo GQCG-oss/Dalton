@@ -525,12 +525,12 @@ C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
       IF (DEFLVL .gt. 0.9D0) THEN ! .SHIFT not set in input
-         SHFTLVL = -0.35D0
+         SHFTLVL = -0.20D0
          DEFLVL  =  0.0D0 ! no default level shift in e.g. next geometry
       ELSE ! .SHIFT has ben set in input
          SHFTLVL = DEFLVL
       END IF
-      SHFTFAC = 0.7D0
+      SHFTFAC = 0.5D0
 
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
@@ -1184,6 +1184,7 @@ C Project out .FREEZE'ed orbitals from the gradient matrix
 C
          IF (LNOROT) CALL PHPT(WRK(KPFROZ),WRK(KTMP1),NBAST)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
+         GRD_CHANGE = GRDNRM_old / GRDNRM
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .GT. 1) THEN
             WRITE (LUPRI,'(/A/A,I4,1P,G22.12,D15.5,D12.2,I5,L5)')
@@ -1234,14 +1235,18 @@ C           this also includes the case of MMPCM
          END IF
          IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.FALSE.)
 
-         IF (GRDNRM .LE. THDIIS .and. SHFTLVL .EQ. D0) THEN  ! converged
-         ! do not accept as converged if non-zero level shift
-         ! because then the orbital energies are not correct /hjaaj
-            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+         IF (GRDNRM .LE. THDIIS) THEN  ! converged
+
             ICONV = 1
+
+C           No level shift at convergence, otherwise orbital energies
+C           for e.g. CC will not be correct
+            SHFTLVL = 0.0D0
+
+            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+
             WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
-C
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
               !  Cholesky
@@ -1488,8 +1493,11 @@ c            the formula is empirical EMCDIF is positive here.
 c            and slow down  the level shifting annealing...
              SHFTFAC = MIN(SHFTFAC + (1.D0-SHFTFAC)*0.25,0.85D0)
          ELSE IF (ITDIIS .GT. 1) THEN
-             SHFTLVL =  SHFTLVL*SHFTFAC
-c            make sure we get right HOMO-LUMO gap in the end.
+             IF (GRD_CHANGE .GE. 2.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            reduce level shift if convergence is good
+             IF (GRD_CHANGE .GE. 4.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            double reduce level shift if convergence is excellent
+             IF (SHFTLVL .GE. -1.D-2) SHFTLVL = 0.0D0
          END IF
   300    CONTINUE
 #endif    /* USE_OPT-SOLVER */
@@ -1499,10 +1507,6 @@ C          (open shell problems reported by users ...) / hjaaj 22-Jun-2005
 !        IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
 !        enabled again 6-Nov-2014 after testing a problematic open-shell DFT
 !        calculation which converged with level shift, but not without. /hjaaj
-
-C        No level shift at convergence, otherwise orbital energies
-C        for e.g. CC will not be correct
-         IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
 
 C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
