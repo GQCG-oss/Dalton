@@ -86,7 +86,6 @@ subroutine ContractOne4CenterF12IntegralsRIV1_dec(nBA,n,Calpha,EJ,EK,dopair_occ_
    !print *,"COULOMBX2:  ",  -1.0E0_realk*(5.0E0_realk*0.25E0_realk)*EJ
    !print *,"EXCHANGEX2: ",   1.0E0_realk*(0.250_realk*EK) 
    !print *,"COULOMBX2+EXCHANGEX2:", -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*EJ-EK*0.25E0_realk)   
-
 end subroutine ContractOne4CenterF12IntegralsRIV1_dec
 
 subroutine ContractOne4CenterF12IntegralsRIX1_dec(nBA,n,Calpha,CalphaT,EKJ,dopair_occ_in)
@@ -131,8 +130,7 @@ subroutine ContractOne4CenterF12IntegralsRIX1_dec(nBA,n,Calpha,CalphaT,EKJ,dopai
          endif                                                                                                               
       ENDDO                                                                                                                  
    ENDDO        
-   EKJ = -1.0*(7.0/32.0*EJ + 1.0/32.0*EK)
-
+   EKJ = -1.0E0_realk*(7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK)
 end subroutine ContractOne4CenterF12IntegralsRIX1_dec
 
 subroutine ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,ncore,n,nocvAOS,Rtilde,CalphaR,EJK,dopair_occ_in)
@@ -181,7 +179,7 @@ subroutine ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,ncore,n,nocvAOS,Rtil
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK = 1.0/32.0*TMP
+   EJK = 1.0E0_realk/32.0E0_realk*TMP
 end subroutine ContractOne4CenterF12IntegralsRobustRIB1_dec
 
 subroutine ContractOne4CenterF12IntegralsRIB23_dec(nBA,n1,n2,CalphaR,CalphaG,hJir, &
@@ -232,9 +230,8 @@ subroutine ContractOne4CenterF12IntegralsRIB23_dec(nBA,n1,n2,CalphaR,CalphaG,hJi
       ENDDO
    ENDDO
 
-   EJK2 = 7.0/32.0*EJ2 + 1.0/32.0*EK2
-   EJK3 = 7.0/32.0*EJ3 + 1.0/32.0*EK3 
-
+   EJK2 = 7.0E0_realk/32.0E0_realk*EJ2 + 1.0E0_realk/32.0E0_realk*EK2
+   EJK3 = 7.0E0_realk/32.0E0_realk*EJ3 + 1.0E0_realk/32.0E0_realk*EK3 
 end subroutine ContractOne4CenterF12IntegralsRIB23_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIV2_dec(nBA,nBA2,n1,n2,CalphaR,CalphaG,EJK,dopair_occ_in)
@@ -289,7 +286,7 @@ subroutine ContractTwo4CenterF12IntegralsRIV2_dec(nBA,nBA2,n1,n2,CalphaR,CalphaG
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK = 5.0/4.0*EJ - 1.0/4.0*EK 
+   EJK = 5.0E0_realk/4.0E0_realk*EJ - 1.0E0_realk/4.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIV2_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,n1,n2,CalphaC,CalphaCMPI,CalphaG,EJK,dopair_occ_in)
@@ -343,7 +340,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,n1,n2,CalphaC,CalphaC
          ENDDO
       ENDDO
    ENDDO
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIX2_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIV34_dec(nBA,NBA2,n1,n2,n3,nocv,&                                         
@@ -443,7 +440,7 @@ subroutine ContractTwo4CenterF12IntegralsRIV5_dec(nBA,n1,n2,CalphaV,CalphaD,Taib
          ENDDO
       ENDDO
    ENDDO
-   EJK = -5.0/4.0*EJ + 1.0/4.0*EK 
+   EJK = -5.0E0_realk/4.0E0_realk*EJ + 1.0E0_realk/4.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIV5_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIX34_dec(nBA,n1,n2,n3,&
@@ -509,12 +506,8 @@ subroutine ContractTwo4CenterF12IntegralsRIX34_dec(nBA,n1,n2,n3,&
       ENDDO
    ENDDO
    !!$OMP END PARALLEL DO
-   EJK3 = 7.0/32.0_realk*EJ3+1.0_realk/32.0*EK3
-   !EJK4 = 7.0/32.0_realk*EJ4+1.0_realk/32.0*EK4
+   EJK3 = 7.0E0_realk/32.0E0_realk*EJ3+1.0E0_realk/32.0E0_realk*EK3
    EJK4 = EJK3
-  !print *,"COULOMBX2:  ", 7.0/32.0*EJ3
-  !print *,"EXCHANGEX2: ", 1.0/32.0*EK3
-  !print *,"COULOMBX2+EXCHANGEX2:", 7.0/32.0*EJ3 + 1.0/32.0*EK3      
 end subroutine ContractTwo4CenterF12IntegralsRIX34_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIX34MPI_dec(nBA,n1,n2,n3,&
@@ -574,11 +567,9 @@ subroutine ContractTwo4CenterF12IntegralsRIX34MPI_dec(nBA,n1,n2,n3,&
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK3 = 7.0E0_realk/32.0_realk*EJ3+1.0E0_realk/32.0E0_realk*EK3
+   EJK3 = 7.0E0_realk/32.0E0_realk*EJ3+1.0E0_realk/32.0E0_realk*EK3
    EJK4 = EJK3
 end subroutine ContractTwo4CenterF12IntegralsRIX34MPI_dec
-
-
 
 subroutine ContractTwo4CenterF12IntegralsRIB4_dec(nBA,n1,n2,CalphaG,CalphaD,EJK,dopair_occ_in)
    implicit none
@@ -626,7 +617,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB4_dec(nBA,n1,n2,CalphaG,CalphaD,EJK,
          ENDDO
       ENDDO
    ENDDO   
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK 
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIB4_dec                
 
 subroutine ContractTwo4CenterF12IntegralsRIB5_dec(nBA,n1,n2,n3,nocv,CalphaGcabs,CalphaG,CalphaD,EJK,dopair_occ_in)
@@ -677,7 +668,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB5_dec(nBA,n1,n2,n3,nocv,CalphaGcabs,
       ENDDO
    ENDDO
 
-   EJK = -1.0E0_realk*(7.0/32.0*EJ + 1.0/32.0*EK) 
+   EJK = -1.0E0_realk*(7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK) 
 end subroutine ContractTwo4CenterF12IntegralsRIB5_dec                
 
 subroutine ContractTwo4CenterF12IntegralsRIB6_dec(nBA,n1,n2,n3,noccAOS,CalphaG,CalphaD,EJK,dopair_occ_in)
@@ -731,10 +722,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB6_dec(nBA,n1,n2,n3,noccAOS,CalphaG,C
          ENDDO
       ENDDO
    ENDDO   
-   EJK = -1.0E0_realk*(7.0/32.0*EJ + 1.0/32.0*EK)
-   !print *,"COULOMBB6:  ", 7.0/32.0*EJ
-   !print *,"EXCHANGEB6: ", 1.0/32.0*EK
-   !print *,"COULOMBB6+EXCHANGEB6:", 7.0/32.0*EJ + 1.0/32.0*EK     
+   EJK = -1.0E0_realk*(7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK)
 end subroutine ContractTwo4CenterF12IntegralsRIB6_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIB7_dec(nBA,n1,n2,n3,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
@@ -783,8 +771,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB7_dec(nBA,n1,n2,n3,CalphaR,CalphaG,C
          ENDDO
       ENDDO
    ENDDO   
-   EJK = 7.0/32.0*EJ + 1.0/32.0*EK
-
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK
 end subroutine ContractTwo4CenterF12IntegralsRIB7_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIB8_dec(nBA,n1,n2,nocv,noccAOStot,CalphaR,CalphaG,CalphaD,EJK,dopair_occ_in)
@@ -841,7 +828,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB8_dec(nBA,n1,n2,nocv,noccAOStot,Calp
       ENDDO
    ENDDO
    !$OMP END PARALLEL DO
-   EJK = -2.0E0_realk*(7.0_realk/32.0_realk*EJ + 1.0_realk/32.0_realk*EK)
+   EJK = -2.0E0_realk*(7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK)
 end subroutine ContractTwo4CenterF12IntegralsRIB8_dec
 
 subroutine ContractTwo4CenterF12IntegralsRIB9_dec(nBA,n1,n2,n3,noccAOS,CalphaG,CalphaD,EJK,dopair_occ_in)
@@ -893,7 +880,7 @@ subroutine ContractTwo4CenterF12IntegralsRIB9_dec(nBA,n1,n2,n3,noccAOS,CalphaG,C
          ENDDO
       ENDDO
    ENDDO
-   EJK = -2.0E0_realk*(7.0_realk/32.0_realk*EJ + 1.0_realk/32.0_realk*EK)
+   EJK = -2.0E0_realk*(7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK)
 end subroutine ContractTwo4CenterF12IntegralsRIB9_dec
 
 end module decf12_routines_module
