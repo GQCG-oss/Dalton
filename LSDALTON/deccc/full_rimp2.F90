@@ -146,15 +146,18 @@ contains
     endif
 
     MemoryReduced = MyLsitem%setting%scheme%ForceRIMP2memReduced
-#ifdef VAR_TIME    
     FORCEPRINT = .TRUE.
-#endif
+    CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
+#ifdef VAR_TIME
+    FORCEPRINT = .TRUE.
+#else
+    FORCEPRINT = .FALSE.
+#endif    
     CPU_MPICOMM = 0.0E0_realk
     WALL_MPICOMM = 0.0E0_realk
     CPU_MPIWAIT = 0.0E0_realk
     WALL_MPIWAIT = 0.0E0_realk
     !use Memory leak tool
-    CALL LSTIMER('START ',TS,TE,DECINFO%OUTPUT)
     MaxMemAllocated = 0
     MemAllocated = 0
     call set_LeakTool_memvar(MaxMemAllocated,MemAllocated)
@@ -368,7 +371,8 @@ contains
     write(lupri,*)  'LEAK TOOL STATISTICS IN full_canonical_rimp2'
     call LeakTools_stat_mem(lupri)
     CALL LSTIMER('RIMP2: Finalize ',TS2,TE2,LUPRI,FORCEPRINT)
-    CALL LSTIMER('FULL RIMP2 ',TS,TE,DECINFO%OUTPUT)
+    FORCEPRINT = .TRUE.
+    CALL LSTIMER('FULL RIMP2 ',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
 #ifdef VAR_MPI
     write(lupri,*)'Overall Time spent in MPI Communication and MPI Wait for rank=',infpar%mynum
     CALL ls_TIMTXT('>>>  WALL Time used MPI Communication inc. some Wait',WALL_MPICOMM,lupri)

@@ -289,27 +289,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ENDIF
 
    call LSTIMER('FULLRIMP2:Init',TS2,TE2,DECinfo%output,ForcePrint)
-   !==================================================================
-   != Step 1:  Fijkl,Xijkl,Dijkl                                     =
-   !=          corresponding to V1,X1,B1                             =
-   != These are special since                                        =
-   != 1. the have a very simple structure(B1 does require robust DF) =
-   != 2. They could all be done in a Linear scaling way outside DEC  =
-   !=    without density fitting.                                    =
-   != 3. The intermediates are only used once                        =
-   != 4. Due to noccEOS,noccEOS,noccEOS,noccEOS very small mem req   =
-   != Note                                                           =
-   != Fijkl:                                                         =
-   != The Gaussian geminal divided by the Coulomb operator g/r12     =
-   != Xijkl                                                          =
-   != The Gaussian geminal squared g^2                               =
-   != Dijkl                                                          =
-   != The double commutator [[T,g],g] with g = Gaussian geminal      =
-   != Since the integral (alpha|[[T,g],g]|beta) is not positive      =
-   != definite this term is done using robust density fitting        =
-   != Done according to Eq. 87 of                                    =
-   != J Comput Chem 32: 2492–2513, 2011                              =
-   !==================================================================
    IF(master)THEN
       write(DECinfo%output,'(/,a)') ' ================================================ '
       write(DECinfo%output,'(a)')   '            FULL-RI-MP2F12 ENERGY TERMS            '
@@ -354,6 +333,28 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call lsmpi_matrix_bufcopy(CMO_RI,master)
    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 #endif
+
+   !==================================================================
+   != Step 1:  Fijkl,Xijkl,Dijkl                                     =
+   !=          corresponding to V1,X1,B1                             =
+   != These are special since                                        =
+   != 1. the have a very simple structure(B1 does require robust DF) =
+   != 2. They could all be done in a Linear scaling way outside DEC  =
+   !=    without density fitting.                                    =
+   != 3. The intermediates are only used once                        =
+   != 4. Due to noccEOS,noccEOS,noccEOS,noccEOS very small mem req   =
+   != Note                                                           =
+   != Fijkl:                                                         =
+   != The Gaussian geminal divided by the Coulomb operator g/r12     =
+   != Xijkl                                                          =
+   != The Gaussian geminal squared g^2                               =
+   != Dijkl                                                          =
+   != The double commutator [[T,g],g] with g = Gaussian geminal      =
+   != Since the integral (alpha|[[T,g],g]|beta) is not positive      =
+   != definite this term is done using robust density fitting        =
+   != Done according to Eq. 87 of                                    =
+   != J Comput Chem 32: 2492–2513, 2011                              =
+   !==================================================================
 
    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
    intspec(2) = 'R' !Regular AO basis function on center 3
@@ -1306,7 +1307,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mat_free(CMO_RI)
    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
    call LSTIMER('FULLRIMP2:Step3',TS2,TE2,DECinfo%output,ForcePrint)
-   call LSTIMER('FULLRIMP2F12',TS,TE,DECinfo%output,ForcePrint)
 
 #ifdef VAR_MPI
    nbuf1 = 20
@@ -1505,6 +1505,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
        write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 CORRECTION TO ENERGY =         ', E_F12
        write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
     endif
+    FORCEPRINT = .TRUE.
+    CALL LSTIMER('FULL RIMP2F12 ',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
 
   end subroutine full_canonical_rimp2_f12
 
