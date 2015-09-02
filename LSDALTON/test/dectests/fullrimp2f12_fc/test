@@ -20,6 +20,9 @@ f.add(string = 'E: F12 singles',
 f.add(string = 'Total RI-MP2F12 energy', 
       rel_tolerance = 1.2e-6)
 
+f.add(string = 'RIMP2F12 Energy contribution',
+      rel_tolerance = 1.1e-6)
+
 f.add(string = 'RI-MP2 CORRECTION TO ENERGY',
       rel_tolerance = 1.2e-6)
 
