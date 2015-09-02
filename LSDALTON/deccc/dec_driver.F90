@@ -629,15 +629,9 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCMP2)
        ENDIF
-#ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
-          IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
-          ELSE
-             Ecorr = energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
-          ENDIF
+          Ecorr = Ecorr + energies(FRAGMODEL_MP2f12)
        endif
-#endif 
     case(MODEL_RIMP2)
        ! RI-MP2, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
@@ -645,6 +639,9 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCRIMP2)
        ENDIF
+       if(DECinfo%F12) then
+          Ecorr = Ecorr + energies(FRAGMODEL_RIMP2f12)
+       endif
     case(MODEL_LSTHCRIMP2)
        ! LS-THC-RI-MP2, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
@@ -687,15 +684,9 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCCCSD)
        ENDIF
-#ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
-          IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_VIRTCCSD)
-          ELSE
-             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_OCCCCSD)
-          ENDIF
+          Ecorr = Ecorr + energies(FRAGMODEL_CCSDf12)
        endif
-#endif 
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
        IF(DECinfo%onlyVirtPart)THEN

@@ -105,12 +105,12 @@
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 6b67865499286eda4ccdcb56db3ecb2c1dfc6473
+ Last Git revision        | f482cb03fbe5060dd1e160eb8472e0e897a045eb
  Git branch               | master
- Configuration time       | 2015-08-20 17:06:34.583039
+ Configuration time       | 2015-09-01 14:13:34.306034
 
 Start simulation
-     Date and time (Linux)  : Thu Aug 20 17:08:39 2015
+     Date and time (Linux)  : Tue Sep  1 14:24:26 2015
      Host name              : YANGs-MBP.st.client.au.dk               
                       
  -----------------------------------------
@@ -199,15 +199,15 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug3/gfortran_debug/basis/6-31G
+ OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug3/gfortran_debug/basis/cc-pV5Z-RI
+ OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/cc-pV5Z-RI
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug3/gfortran_debug/basis/aug-cc-pVDZ
+ OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/aug-cc-pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -325,8 +325,8 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   2
  The Coulomb energy contribution    50.128959265563843     
  The Exchange energy contribution    9.3554581332383648     
@@ -335,8 +335,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   3
  The Coulomb energy contribution    46.818165348279592     
  The Exchange energy contribution    8.9596453836114858     
@@ -355,8 +355,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   5
  The Coulomb energy contribution    46.748576888690870     
  The Exchange energy contribution    8.9523898827344706     
@@ -365,8 +365,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   6
  The Coulomb energy contribution    46.748339975495711     
  The Exchange energy contribution    8.9522970044014034     
@@ -375,8 +375,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   7
  The Coulomb energy contribution    46.748967608116310     
  The Exchange energy contribution    8.9523689027873168     
@@ -385,8 +385,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   8
  The Coulomb energy contribution    46.748933188405537     
  The Exchange energy contribution    8.9523680030528965     
@@ -395,8 +395,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   9
  The Coulomb energy contribution    46.748924991769044     
  The Exchange energy contribution    8.9523670995775806     
@@ -415,8 +415,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number  11
  The Coulomb energy contribution    46.748924836729380     
  The Exchange energy contribution    8.9523670625131331     
@@ -433,8 +433,8 @@ No. of matmuls in get_density:     1
  The Fock energy contribution   -37.796557779723940     
  12    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   0.55 seconds
- >>> wall Time used in **ITER is   0.55 seconds
+ >>>  CPU Time used in **ITER is   0.52 seconds
+ >>> wall Time used in **ITER is   0.52 seconds
 
 Total no. of matmuls in SCF optimization:         52
 
@@ -875,7 +875,7 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 844.668 kB
+  Allocated memory,     TOTAL                 855.708 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
 #PAIRDIMS# basis,occ,virt       13       4       8
@@ -924,8 +924,8 @@ Use F12 correction           =            TRUE
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.09 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.09 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
 
@@ -940,7 +940,7 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 844.668 kB
+  Allocated memory,     TOTAL                 855.708 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
 #PAIRDIMS# basis,occ,virt       13       4       8
@@ -989,8 +989,8 @@ Use F12 correction           =            TRUE
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            5
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.09 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.09 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
 
@@ -1005,7 +1005,7 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 833.972 kB
+  Allocated memory,     TOTAL                 845.012 kB
   Max allocated memory, TOTAL                          9.517 MB
 
 
@@ -1046,8 +1046,8 @@ Use F12 correction           =            TRUE
 
 
   ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.53 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   0.53 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.52 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   0.52 seconds
  Preparing job list...
 
 
@@ -1097,7 +1097,7 @@ Use F12 correction           =            TRUE
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.1000806514694
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0652940664317
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0266471215905
-     DEC RIMP2F12 Energy contribution: E(B3,RI) =      0.0266471215905
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0266471215905
      DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.8129545381013
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0882158674009
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0189982696391
@@ -1137,14 +1137,14 @@ Use F12 correction           =            TRUE
   E23_B_term1:    0.6529406643170957E-01
   E23_B_term2:    0.2664712159052011E-01
   E23_B_term3:    0.2664712159052011E-01
-  E23_B_term4:   -0.1319778632955765    
+  E23_B_term4:   -0.1319778632955756    
   E23_B_term5:    0.4775435473845580E-01
   E23_B_term6:    0.3837483421929285E-02
   E23_B_term7:   -0.3204779780277984E-02
   E23_B_term8:    0.6179161732876098E-02
   E23_B_term9:   -0.4954784036004996E-03
  ----------------------------------------
-  E23_B_sum:      0.4068118802655595E-01
+  E23_B_sum:      0.4068118802655689E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1167,14 +1167,14 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 807.382 kB
+  Allocated memory,     TOTAL                 812.902 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.7495729711345
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0861250407006
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0456169115013
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0091422972976
-     DEC RIMP2F12 Energy contribution: E(B3,RI) =      0.0091422972976
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0091422972976
      DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.6594902335583
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0763896568987
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0165956851649
@@ -1214,14 +1214,14 @@ Use F12 correction           =            TRUE
   E23_B_term1:    0.4561691150130780E-01
   E23_B_term2:    0.9142297297644198E-02
   E23_B_term3:    0.9142297297644195E-02
-  E23_B_term4:   -0.9147927919047431E-01
+  E23_B_term4:   -0.9147927919047427E-01
   E23_B_term5:    0.4382444850583969E-01
   E23_B_term6:    0.4035567157900614E-02
   E23_B_term7:   -0.2922011977229293E-02
   E23_B_term8:    0.6036991522910386E-02
   E23_B_term9:   -0.2562436697150554E-03
  ----------------------------------------
-  E23_B_sum:      0.2314097844582822E-01
+  E23_B_sum:      0.2314097844582826E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1244,14 +1244,14 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 819.742 kB
+  Allocated memory,     TOTAL                 825.262 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9265662031131
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0708120606304
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0553670025396
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0297095490961
-     DEC RIMP2F12 Energy contribution: E(B3,RI) =      0.0297095490961
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0297095490961
      DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.7950617483949
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0605056547068
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0223559807075
@@ -1291,14 +1291,14 @@ Use F12 correction           =            TRUE
   E23_B_term1:    0.5536700253958141E-01
   E23_B_term2:    0.2970954909610421E-01
   E23_B_term3:    0.2970954909610421E-01
-  E23_B_term4:   -0.1123352480997054    
+  E23_B_term4:   -0.1123352480997051    
   E23_B_term5:    0.2691011764616492E-01
   E23_B_term6:    0.2333814481423907E-02
   E23_B_term7:   -0.4587227256364067E-02
   E23_B_term8:    0.9006422841026056E-02
   E23_B_term9:   -0.7058781973450852E-03
  ----------------------------------------
-  E23_B_sum:      0.3540810214699015E-01
+  E23_B_sum:      0.3540810214699044E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1321,14 +1321,14 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 819.742 kB
+  Allocated memory,     TOTAL                 825.262 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2830353217469
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0488905249273
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0215978359643
      DEC RIMP2F12 Energy contribution: E(B2,RI) =     -0.0001321129247
-     DEC RIMP2F12 Energy contribution: E(B3,RI) =     -0.0001321129247
+         RIMP2F12 Energy contribution: E(B3,RI) =     -0.0001321129247
      DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2415724920661
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0431777848027
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0069376904928
@@ -1398,14 +1398,14 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 800.806 kB
+  Allocated memory,     TOTAL                 806.326 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.4447995549708
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0444266803951
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0267790520943
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0088801256769
-     DEC RIMP2F12 Energy contribution: E(B3,RI) =      0.0088801256769
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0088801256769
      DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.3831327927863
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0381702273778
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0123036760127
@@ -1445,14 +1445,14 @@ Use F12 correction           =            TRUE
   E23_B_term1:    0.2677905209425810E-01
   E23_B_term2:    0.8880125676927449E-02
   E23_B_term3:    0.8880125676927449E-02
-  E23_B_term4:   -0.5408570556703302E-01
+  E23_B_term4:   -0.5408570556703262E-01
   E23_B_term5:    0.2045373401812182E-01
   E23_B_term6:    0.1945589033845050E-02
   E23_B_term7:   -0.2369874513344352E-02
   E23_B_term8:    0.4860781060854637E-02
   E23_B_term9:   -0.2124839032463817E-03
  ----------------------------------------
-  E23_B_sum:      0.1513134357731076E-01
+  E23_B_sum:      0.1513134357731116E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1475,14 +1475,14 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 809.046 kB
+  Allocated memory,     TOTAL                 814.566 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2698086959288
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0200799947405
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0201349885282
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0129314417353
-     DEC RIMP2F12 Energy contribution: E(B3,RI) =      0.0129314417353
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0129314417353
      DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2213242908848
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0169409114466
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0054399694789
@@ -1552,10 +1552,10 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 800.806 kB
+  Allocated memory,     TOTAL                 806.326 kB
   Max allocated memory, TOTAL                          9.517 MB
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  37.81 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  36.38 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  37.19 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  35.76 seconds
 
 
               ===============================================
@@ -1664,9 +1664,9 @@ Use F12 correction           =            TRUE
              **********************************************************
 
                E: Hartree-Fock energy :      -75.9839744737
-               E: Correlation energy  :       -0.1278136592
+               E: Correlation energy  :       -0.2932789734
                E: F12 singles         :       -0.0563792728
-               E: Total RI-MP2F12 energy:      -76.1681674058
+               E: Total RI-MP2F12 energy:      -76.3336327200
                E: Estimated DEC err 1 :        0.0000000000
                E: Estimated DEC err 2 :        0.0006000000
                E: Estimated DEC err 3 :        0.0000000000
@@ -1688,13 +1688,13 @@ Use F12 correction           =            TRUE
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         39.9080     s
-Total Wall time used in DEC          :         38.4800     s
+Total CPU  time used in DEC          :         39.2265     s
+Total Wall time used in DEC          :         37.8060     s
 ------------------------------------------------------
 
 
 Hostname       : YANGs-MBP.st.client.au.dk                         
-Job finished   : Date: 20/08/2015   Time: 17:09:22
+Job finished   : Date: 01/09/2015   Time: 14:25:08
 
 
 
@@ -1704,8 +1704,8 @@ Job finished   : Date: 20/08/2015   Time: 17:09:22
 
 
 
- >>>  CPU Time used in *SCF is  43.92 seconds
- >>> wall Time used in *SCF is  42.50 seconds
+ >>>  CPU Time used in *SCF is  43.09 seconds
+ >>> wall Time used in *SCF is  41.68 seconds
 
 Total no. of matmuls used:                      1068
 Total no. of Fock/KS matrix evaluations:          13
@@ -1766,7 +1766,7 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, character                      7.616 kB
   Max allocated memory, AOBATCH                       99.840 kB
   Max allocated memory, DECORBITAL                     6.208 kB
-  Max allocated memory, DECFRAG                       96.432 kB
+  Max allocated memory, DECFRAG                      107.472 kB
   Max allocated memory, BATCHTOORB                     0.336 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.576 kB
@@ -1801,9 +1801,9 @@ Total no. of Fock/KS matrix evaluations:          13
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  44.04 seconds
- >>> wall Time used in LSDALTON is  42.62 seconds
+ >>>  CPU Time used in LSDALTON is  43.21 seconds
+ >>> wall Time used in LSDALTON is  41.79 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Aug 20 17:09:22 2015
+     Date and time (Linux)  : Tue Sep  1 14:25:08 2015
      Host name              : YANGs-MBP.st.client.au.dk               

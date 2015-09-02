@@ -199,7 +199,6 @@ subroutine pelib_ifc_slave(runtype)
     use polarizable_embedding, only: pe_slave
     integer, intent(in) :: runtype
     call qenter('pelib_ifc_slave')
-    if (.not. use_pelib()) call quit('PElib not active')
     if (runtype == 1) then
         call pe_slave('full_fock')
     else if (runtype == 2) then

@@ -17,14 +17,18 @@ f.add(string = 'Correlation energy',
 f.add(string = 'E: F12 singles',
       rel_tolerance = 1.1e-6)
 
+f.add(string = 'RI-MP2 occupied',rel_tolerance = 1.1e-6)
+f.add(string = 'RI-MP2 virtual',rel_tolerance = 1.1e-6)
+f.add(string = 'RI-MP2 Lagrangian',rel_tolerance = 1.1e-6)
+
 f.add(string = 'Total RI-MP2F12 energy', 
       rel_tolerance = 1.1e-6)
 
 f.add(string = 'RIMP2 CORRECTION TO ENERGY',
       rel_tolerance = 1.1e-6)
 
-f.add(string = 'F12 CORRECTION TO ENERGY',
-            rel_tolerance = 1.1e-6)
+f.add(string = 'F12 CORRECTION TO MP2 ENERGY',
+      rel_tolerance = 1.1e-6)
 
 f.add(string = 'RIMP2-F12 CORRELATION ENERGY',
       rel_tolerance = 1.1e-6)
