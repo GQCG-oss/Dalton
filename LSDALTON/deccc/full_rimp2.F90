@@ -235,7 +235,9 @@ contains
        noccJstart=1
        rimp2_energy = 0.0E0_realk
 #ifdef VAR_MPI
-       call ls_mpibcast(noccJstart,infpar%master,infpar%lg_comm)
+       IF(DECinfo%DECrestart)THEN
+          call ls_mpibcast(noccJstart,infpar%master,infpar%lg_comm)
+       ENDIF
 #endif
     ENDIF
 
