@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 f.add(re = '[XYZ]DIPLEN  \; [XYZ]DIPLEN',
-      abs_tolerance = 2.0e-5)
+      abs_tolerance = 5.0e-5)
 
 test.run(['pehf_alpha.dal'], ['pehf_alpha.mol'], ['pehf_alpha.pot'], f={'out': f})
 
