@@ -1007,18 +1007,16 @@ subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,n
 END subroutine DetermineMaxNauxRI
 
 !This should be call my master and slaves
-subroutine Build_RobustERImatU(myLSitem,master,nbasis1,nbasis2,nbasisAux,&
+subroutine Build_RobustERImatU(myLSitem,master,nbasisAux,&
      & LUPRI,FORCEPRINT,&
-     & CollaborateWithSlaves,Cvirt,nvirt,Cocc,nocc,mynum,numnodes,&
+     & CollaborateWithSlaves,mynum,numnodes,&
      & AlphaBetaDecomp,intspec,Umat)
   implicit none
   type(lsitem), intent(inout) :: mylsitem
-  integer,intent(in) :: nocc,nvirt
-  integer,intent(in) :: nbasisAux,LUPRI,nbasis1,nbasis2,mynum,numnodes
+  integer,intent(in) :: nbasisAux,LUPRI,mynum,numnodes
   logical,intent(in) :: master,FORCEPRINT,CollaborateWithSlaves
   real(realk),intent(in) :: AlphaBetaDecomp(nbasisAux,nbasisAux)
   real(realk),intent(inout) :: Umat(nbasisAux,nbasisAux)
-  real(realk),intent(in) :: Cvirt(nbasis1,nvirt),Cocc(nbasis2,nocc)
   character,intent(in) :: intspec
   !
   real(realk),pointer :: AlphaBeta(:,:),TMP(:,:)
