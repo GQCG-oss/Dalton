@@ -3223,7 +3223,7 @@ contains
          do a=1,nvirt
 
             ! Zero-order excitation energy (orbital difference)
-            ex = fvv(a,a) - foo(i,i) + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i)
+            ex = fvv(a,a) - foo(i,i) ! + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i)
 
             ! Is excitation energy lower than current maximum eigenvalue?
             if(ex < maxeival) then
@@ -3256,9 +3256,9 @@ contains
                   if(a==b .and. i>j) cycle bloop  
 
 
-                  ex = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j) &
-                       & + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i) &
-                       & + 2.0_realk*gvoov%val(b,j,j,a) - gvvoo%val(b,b,j,j) 
+                  ex = fvv(a,a) + fvv(b,b) - foo(i,i) - foo(j,j) ! &
+                      ! & + 2.0_realk*gvoov%val(a,i,i,a) - gvvoo%val(a,a,i,i) &
+                      ! & + 2.0_realk*gvoov%val(b,j,j,a) - gvvoo%val(b,b,j,j) 
 
                   if(ex < maxeival) then
                      eivalD( maxidx(1) ) = ex
