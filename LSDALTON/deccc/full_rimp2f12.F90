@@ -99,7 +99,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk) :: EV1tmp,EV2tmp,EV3tmp,EV4tmp,EV5tmp,EX1tmp,EX2tmp,EX3tmp,EX4tmp
    real(realk) :: EB1tmp,EB2tmp,EB3tmp,EB4tmp,EB5tmp,EB6tmp,EB7tmp,EB8tmp,EB9tmp
    real(realk) :: TS,TE,TS2,TE2
-   integer :: i,j,a,b,p,q,c,m,mynum,nAtoms,lupri,nbuf1,inode,numnodesstd
+   integer :: l,i,j,a,b,p,q,c,m,mynum,nAtoms,lupri,nbuf1,inode,numnodesstd
    integer(kind=long) :: nsize,nsize2
    integer(kind=ls_mpik) :: node,numnodes
    !    type(matrix) :: HJrc
@@ -1159,7 +1159,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !==============================================================   
    !We need CalphaG(NBA,nocc,noccfull) but this is a subset of CalphaG(NBA,nocv,nocc)
    nsize = nBA*nocc*ncabsAO
-   IF(size(CalphaD).NE.nsize)call lsquit('dim mismatch CalphaD',-1)
+   IF(nsize.GT.size(CalphaD))THEN
+      call mem_dealloc(CalphaD)
+      call mem_alloc(CalphaD,nsize)
+   ENDIF
    m =  nBA*nocc                    ! D_jq = C_jp F_qp
    k =  ncabsAO
    n =  ncabsAO
@@ -1177,7 +1180,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ',EB5
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
 #endif
-   call mem_dealloc(CalphaD)
    
    !==============================================================
    !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
@@ -1186,7 +1188,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    !Replaced CalphaP(NBA,nocc,nocv) with CalphaG(NBA,nocv,nocc)
 
    nsize = nBA*nocc*nocv
-   call mem_alloc(CalphaD,nsize)
+   IF(nsize.GT.size(CalphaD))THEN
+      call mem_dealloc(CalphaD)
+      call mem_alloc(CalphaD,nsize)
+   ENDIF
    m =  nBA
    k =  nocv
    n =  nocv
@@ -1205,36 +1210,29 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
 #endif
-   call mem_dealloc(CalphaD)
    
    !==============================================================
    !=  B7: (ic|f12|jm)Fnm(ci|F12|nj)                             =
    !==============================================================
-   !   We need CalphaGocc(NBA,nocc,nocc) but this is a subset of CalphaG(NBA,nocc,nbasis)
-   intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-   intspec(2) = 'R' !Regular AO basis function on center 3
-   intspec(3) = 'R' !Regular AO basis function on center 4
-   intspec(4) = 'G' !The Gaussian geminal operator g
-   intspec(5) = 'G' !The Gaussian geminal operator g
+   nsize = nBA*noccfull*nocc
+   IF(nsize.GT.size(CalphaD))THEN
+      call mem_dealloc(CalphaD)
+      call mem_alloc(CalphaD,nsize)
+   ENDIF
 
-   call mem_alloc(ABdecompC,nAux,nAux)
-   !FIXME: CalphaCoccT(NBA,nocc,noccfull) subst of CalphaG(NBA,nocv,nocc)
-   call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-      & FORCEPRINT,wakeslaves,Co,nocc,MyMolecule%Co%elm2,noccfull,mynum,numnodesstd,CalphaCoccT,&
-      & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-   call mem_dealloc(ABdecompC)
-
-   !> Dgemm 
-   nsize = nBA*nocc*noccfull
-   call mem_alloc(CalphaD, nsize)
-   m =  nBA*nocc                       ! D_jm = Cocc_jn F_nm
+   m =  nBA
    k =  noccfull
    n =  noccfull
+   do i=1,nocc
+      j=1+(i-1)*NBA*nocv
+      l=1+(i-1)*NBA*noccfull
+      !CalphaD(nBA,noccfull,i)=CalphaG(NBA,1:noccfull,i)*Fmm(noccfull,noccfull)
+      call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG(j),m,Fmm%elms,k,0.0E0_realk,CalphaD(l),m)
+   enddo
 
-   call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fmm%elms,k,0.0E0_realk,CalphaD,m)
    call GeneralTwo4CenterF12RICoef1223(nBA,&
-        & CalphaD,nocc,noccfull,CalphaGcabsMO,nocc,ncabsMO,&
-        & CalphaCoccT,nocc,noccfull,EB7,noccfull,wakeslaves,use_bg_buf,&
+        & CalphaD,noccfull,nocc,CalphaGcabsMO,nocc,ncabsMO,&
+        & CalphaG,nocv,nocc,EB7,offset,wakeslaves,use_bg_buf,&
         & numnodesstd,nAuxMPI,mynum,F12RIB7,F12RIB7MPI)   
 #ifdef VAR_MPI 
    lsmpibufferRIMP2(17)=EB7      !we need to perform a MPI reduction at the end 
@@ -1243,20 +1241,22 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
 #endif
-   call mem_dealloc(CalphaCoccT)
-   call mem_dealloc(CalphaD)
 
    !==============================================================
    !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
    !==============================================================
    !> Dgemm 
    nsize = nBA*nocc*noccfull
-   call mem_alloc(CalphaD, nsize)
+   IF(nsize.GT.size(CalphaD))THEN
+      call mem_dealloc(CalphaD)
+      call mem_alloc(CalphaD,nsize)
+   ENDIF
    m =  nBA*nocc                    ! D_jm = C_jr F_rm
    k =  ncabsAO
    n =  noccfull
    !NB! Changed T to N, dont think it will matter but...
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frm%elms,k,0.0E0_realk,CalphaD,m)
+   call mem_dealloc(CalphaGcabsAO)
    call GeneralTwo4CenterF12RICoef1223(nBA,CalphaG,nocv,nocc,CalphaGcabsMO,nocc,ncabsMO,&
         & CalphaD,nocc,noccfull,EB8,noccfull,wakeslaves,use_bg_buf,numnodesstd,&
         & nAuxMPI,mynum,F12RIB8,F12RIB8MPI)
@@ -1268,8 +1268,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
 #endif
-   call mem_dealloc(CalphaGcabsAO)
-   call mem_dealloc(CalphaD)
 
    !==============================================================
    !=  B9: (ip|f12|ja)Fcp(ci|f12|aj)                             =
@@ -1277,7 +1275,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    
    !> Dgemm 
    nsize = nBA*nocc*nocv
-   call mem_alloc(CalphaD, nsize)
+   IF(nsize.GT.size(CalphaD))THEN
+      call mem_dealloc(CalphaD)
+      call mem_alloc(CalphaD,nsize)
+   ENDIF
    m =  nBA*nocc                    ! D_jp = C_jc F_cp
    k =  ncabsMO   
    n =  nocv
@@ -1294,8 +1295,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 #endif
 
    call mem_dealloc(CalphaG)
-   call mem_dealloc(ABdecompG)
    call mem_dealloc(CalphaD)
+   call mem_dealloc(ABdecompG)
    
    call mem_dealloc(Co)
    call mem_dealloc(Fkj)
