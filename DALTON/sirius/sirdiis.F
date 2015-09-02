@@ -526,12 +526,12 @@ C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
       IF (DEFLVL .gt. 0.9D0) THEN ! .SHIFT not set in input
-         SHFTLVL = -0.35D0
+         SHFTLVL = -0.20D0
          DEFLVL  =  0.0D0 ! no default level shift in e.g. next geometry
       ELSE ! .SHIFT has ben set in input
          SHFTLVL = DEFLVL
       END IF
-      SHFTFAC = 0.7D0
+      SHFTFAC = 0.5D0
 
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
@@ -1187,6 +1187,7 @@ C Project out .FREEZE'ed orbitals from the gradient matrix
 C
          IF (LNOROT) CALL PHPT(WRK(KPFROZ),WRK(KTMP1),NBAST)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
+         GRD_CHANGE = GRDNRM_old / GRDNRM
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .GT. 1) THEN
             WRITE (LUPRI,'(/A/A,I4,1P,G22.12,D15.5,D12.2,I5,L5)')
@@ -1495,8 +1496,11 @@ c            the formula is empirical EMCDIF is positive here.
 c            and slow down  the level shifting annealing...
              SHFTFAC = MIN(SHFTFAC + (1.D0-SHFTFAC)*0.25,0.85D0)
          ELSE IF (ITDIIS .GT. 1) THEN
-             SHFTLVL =  SHFTLVL*SHFTFAC
-c            make sure we get right HOMO-LUMO gap in the end.
+             IF (GRD_CHANGE .GE. 2.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            reduce level shift if convergence is good
+             IF (GRD_CHANGE .GE. 4.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            double reduce level shift if convergence is excellent
+             IF (SHFTLVL .GE. -1.D-2) SHFTLVL = 0.0D0
          END IF
   300    CONTINUE
 #endif    /* USE_OPT-SOLVER */
