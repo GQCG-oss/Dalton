@@ -477,7 +477,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    nullify(ABdecompR)
    nullify(CalphaR)
 
-   IF(COUNT(ComputeTerm(4:15)).NE.0)THEN
+   IF(COUNT(ComputeTerm(4:15)).NE.0.OR.ComputeTerm(1))THEN
       !We need CalphaR both for B1 but also other terms
       call mem_alloc(ABdecompR,nAux,nAux)
       ABdecompCreateR = .TRUE.

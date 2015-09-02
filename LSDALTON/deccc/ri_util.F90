@@ -823,8 +823,13 @@ subroutine BuildnAuxMPIUsedRIinfo(nbasisAux,numnodes,mynum,AuxMPIstartMy,iAuxMPI
   integer :: ndimMax1
   ndimMax1 = nbasisAux/numnodes
   AuxMPIstartMy = mynum*ndimMax1
-  iAuxMPIextraMy = numnodes*ndimMax1 + mynum -1 +1
-  IF(iAuxMPIextraMy.GT.nbasisAux)iAuxMPIextraMy=0
+  iAuxMPIextraMy = 0
+  IF(MOD(nbasisAux,numnodes).GT.0)THEN
+     IF(mynum.GT.0)THEN
+        iAuxMPIextraMy = numnodes*ndimMax1 + mynum
+     ENDIF
+     IF(iAuxMPIextraMy.GT.nbasisAux)iAuxMPIextraMy=0
+  ENDIF
 end subroutine BuildnAuxMPIUsedRIinfo
 
 subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,nbasis2,&
@@ -2328,45 +2333,41 @@ ENDDO
 
 end subroutine get_PQ_RIMP2_grad
 
-
-  subroutine BuilDUmatTmpRIF12(Umat,nAux,UmatTmp,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,&                                               
-       & AuxMPIstartMPI,iAuxMPIextraMPI)                                                                                               
-    implicit none
-    integer,intent(in) :: nAux,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,AuxMPIstartMPI,iAuxMPIextraMPI                                    
-    real(realk),intent(in) :: Umat(nAux,nAux)
-    real(realk),intent(inout) :: UmatTmp(NBA,NBA2)                                                                                     
-    !local variables                                                                                                                   
-    integer :: J,I                                                                                                                     
-    
-    IF(iAuxMPIextraMy.EQ.0)THEN                                                                                                        
-       do J=1,NBA2
-          do I=1,NBA
-             UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)                                                                     
-          enddo                                                                                                                        
-       enddo                                                                                                                           
-    ELSE
-       do J=1,NBA2
-          do I=1,NBA
-             UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)                                                                     
-          enddo
-          UmatTmp(NBA,J) = Umat(iAuxMPIextraMy,AuxMPIstartMPI+J)                                                                       
-       enddo                                                                                                                           
-    ENDIF
-    IF(iAuxMPIextraMPI.NE.0)THEN
-       IF(iAuxMPIextraMy.EQ.0)THEN                                                                                                     
-          do I=1,NBA
-             UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)                                                                   
-          enddo                                                                                                                        
-       ELSE
-          do I=1,NBA
-             UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)                                                                   
-          enddo
-          UmatTmp(NBA,NBA2) = Umat(iAuxMPIextraMy,iAuxMPIextraMPI)                                                                     
-       ENDIF                                                                                                                           
-    ENDIF
-  end subroutine BuilDUmatTmpRIF12 
-
-
+subroutine BuilDUmatTmpRIF12(Umat,nAux,UmatTmp,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,&
+     & AuxMPIstartMPI,iAuxMPIextraMPI)
+  implicit none
+  integer,intent(in) :: nAux,NBA,NBA2,AuxMPIstartMy,iAuxMPIextraMy,AuxMPIstartMPI,iAuxMPIextraMPI
+  real(realk),intent(in) :: Umat(nAux,nAux)
+  real(realk),intent(inout) :: UmatTmp(NBA,NBA2)
+  !local variables                              
+  integer :: J,I                                
+  IF(iAuxMPIextraMy.EQ.0)THEN                                                                                                        
+     do J=1,NBA2
+        do I=1,NBA
+           UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)
+        enddo
+     enddo
+  ELSE
+     do J=1,NBA2
+        do I=1,NBA
+           UmatTmp(I,J) = Umat(AuxMPIstartMy+I,AuxMPIstartMPI+J)                                                                     
+        enddo
+        UmatTmp(NBA,J) = Umat(iAuxMPIextraMy,AuxMPIstartMPI+J)                                                                       
+     enddo
+  ENDIF
+  IF(iAuxMPIextraMPI.NE.0)THEN
+     IF(iAuxMPIextraMy.EQ.0)THEN                                                                                                     
+        do I=1,NBA
+           UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)
+        enddo
+     ELSE
+        do I=1,NBA
+           UmatTmp(I,NBA2) = Umat(AuxMPIstartMy+I,iAuxMPIextraMPI)                
+        enddo
+        UmatTmp(NBA,NBA2) = Umat(iAuxMPIextraMy,iAuxMPIextraMPI)                                                                     
+     ENDIF
+  ENDIF
+end subroutine BuilDUmatTmpRIF12
 
 end module ri_util_module
 
