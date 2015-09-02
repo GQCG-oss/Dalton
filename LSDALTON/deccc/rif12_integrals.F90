@@ -592,9 +592,8 @@ contains
     !Build the U matrix in Eq. 88 of J Comput Chem 32: 2492–2513, 2011
     call mem_alloc(Umat,nAux,nAux)
     !perform this suborutine on the GPU (Async)
-    call Build_RobustERImatU(MyFragment%MyLsitem,master,nbasis,nbasis,nAux,LUPRI,&
-         & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CoEOS,noccEOS,&
-         & mynum,numnodes,ABdecompR,'D',Umat)
+    call Build_RobustERImatU(MyFragment%MyLsitem,master,nAux,LUPRI,&
+         & FORCEPRINT,wakeslaves,mynum,numnodes,ABdecompR,'D',Umat)
   
 #ifdef VAR_MPI
       !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011

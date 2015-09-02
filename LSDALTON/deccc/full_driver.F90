@@ -101,10 +101,10 @@ contains
              write(*,'(/,a)') ' ================================================ '
              write(*,'(a)')   '                 Energy Summary                   '
              write(*,'(a,/)') ' ================================================ '
-             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
-             write(DECinfo%output,'(1X,a,f20.10)')  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
-             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
-             write(DECinfo%output,'(1X,a,f20.10)')  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
+             write(*,'(1X,a,f20.10)') 'RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
+             write(DECinfo%output,'(1X,a,f20.10)')  'RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
+             write(*,'(1X,a,f20.10)') 'RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
+             write(DECinfo%output,'(1X,a,f20.10)')  'RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
