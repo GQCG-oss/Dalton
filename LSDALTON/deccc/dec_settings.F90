@@ -1194,6 +1194,18 @@ contains
        end select
     end if
 
+    if (DECinfo%ccmodel==MODEL_RIMP2) then
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'WARNING: User chose RI-MP2 as the final model,'
+       write(DECinfo%output,*) '         we therefore enforce RI-MP2 to be used'
+       write(DECinfo%output,*) '         also in the Fragment optimization and'
+       write(DECinfo%output,*) '         Pair estimates calculations.'
+       write(DECinfo%output,*) ''
+       DECinfo%PairEstimateModel = MODEL_RIMP2
+       DECinfo%fragopt_exp_model = MODEL_RIMP2
+       DECinfo%fragopt_red_model = MODEL_RIMP2
+    end if
+
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
