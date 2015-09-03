@@ -543,7 +543,6 @@ if(DEFINED ENV{DALTON_NUM_MPI_PROCS})
   #          DALTON_NUM_MPI_PROCS is often not set before runtime/testtime
   if($ENV{DALTON_NUM_MPI_PROCS} GREATER 1)
     add_dalton_test(energy_parallel               "dalton;parallel")
-    add_dalton_test(geoopt_parallel               "dalton;parallel")
     add_dalton_test(rsp_parallel                  "dalton;parallel")
   endif()
 endif()
