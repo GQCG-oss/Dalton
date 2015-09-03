@@ -127,7 +127,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   integer             :: matmultot, lun
   REAL(REALK)         :: mx
   ! Energy
-  REAL(REALK)         :: E(1),ExcitE
+  REAL(REALK)         :: E(1),ExcitE,fac
   logical             :: do_decomp
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
@@ -333,7 +333,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         ENDIF
 
         IF (config%doTestHodi) THEN
-          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms,config%testHodiOrder)
           CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
         ENDIF
 
@@ -342,7 +342,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         CALL mat_init(H1,nbast,nbast)
 
         ! write(lupri,*) 'QQQ New  S:',mat_trab(S,S)
-        CALL II_get_h1(lupri,luerr,ls%setting,H1)
+        fac=1.E0_realk
+        IF (config%integral%dft%doOrbFree) fac=config%integral%dft%OrbFree%KineticFac !Special scaling of kinetic energy operator for orbital free DFT
+        CALL II_get_h1(lupri,luerr,ls%setting,H1,fac)
         CALL LSTIMER('*H1   ',TIMSTR,TIMEND,lupri)
         ! write(lupri,*) 'QQQ New  H1:',mat_trab(H1,H1)
         !data to pass down to fck_get_fock subroutine

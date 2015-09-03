@@ -27,6 +27,7 @@ module rimp2_module
   use background_buffer_module
   use tensor_interface_module
   use reorder_frontend_module
+  use papi_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use cc_tools_module

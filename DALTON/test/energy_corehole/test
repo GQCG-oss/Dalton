@@ -17,65 +17,65 @@ test = TestRun(__file__, sys.argv)
 
 f1 = Filter()
 f1.add(from_string = 'Atoms and basis sets',
-      num_lines = 15,
-      rel_tolerance = 1.0e-2)
+       num_lines = 15,
+       rel_tolerance = 1.0e-2)
 f1.add(from_string = 'Cartesian Coordinates',
-      num_lines = 10,
-      rel_tolerance = 1.0e-8)
+       num_lines = 10,
+       rel_tolerance = 1.0e-8)
 f1.add(string = 'Number of coordinates in each symmetry',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f1.add(string = 'Number of orbitals in each symmetry',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f1.add(string = 'Final HF energy:',
-      rel_tolerance = 1.0e-9)
+       rel_tolerance = 1.0e-9)
 test.run(['energy_corehole__1.dal'], ['energy_corehole.mol'], f={'out': f1}, args = '-get SIRIUS.RST')
 shutil.move('energy_corehole__1_energy_corehole.SIRIUS.RST', 'SIRIUS.RST')
 
 f2 = Filter()
 f2.add(string = 'Number of active orbitals in RAS1, RAS2, and RAS3 : ',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f2.add(string = 'Minimum number of electrons in RAS1 : ',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f2.add(string = 'Maximum number of electrons in RAS1 : ',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f2.add(from_string = 'Number of orbitals frozen with ".FREEZE" ',
-        num_lines = 5,
-        rel_tolerance = 1.0e-2)
+       num_lines = 5,
+       rel_tolerance = 1.0e-2)
 f2.add(from_string = '>>> SIRCI.CIST1: plus combination of all degenerate',
-        num_lines = 2,
-        rel_tolerance = 1.0e-2)
+       num_lines = 2,
+       rel_tolerance = 1.0e-2)
 f2.add(string = 'Final MCSCF energy:',
-      rel_tolerance = 1.0e-9)
+       rel_tolerance = 1.0e-9)
 f2.add(from_string = 'Symmetry  1',
        num_lines = 4,
-       rel_tolerance = 3.0e-5)
+       abs_tolerance = 3.0e-5)
 f2.add(from_string = 'Symmetry  2',
-        num_lines = 3,
-        rel_tolerance = 3.0e-5)
+       num_lines = 3,
+       abs_tolerance = 3.0e-5)
 f2.add(from_string = 'Symmetry  3',
-        num_lines = 3,
-        rel_tolerance = 3.0e-5)
+       num_lines = 3,
+       abs_tolerance = 3.0e-5)
 test.run(['energy_corehole__2.dal'], ['energy_corehole.mol'], f={'out': f2}, args = '-put SIRIUS.RST -get SIRIUS.RST')
 shutil.move('energy_corehole__2_energy_corehole.SIRIUS.RST', 'SIRIUS.RST')
 
 f3 = Filter()
 f3.add(string = 'Number of active orbitals in RAS1, RAS2, and RAS3 : ',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f3.add(string = 'Minimum number of electrons in RAS1 : ',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f3.add(string = 'Maximum number of electrons in RAS1 : ',
-      rel_tolerance = 1.0e-2)
+       rel_tolerance = 1.0e-2)
 f3.add(string = 'Final MCSCF energy:',
-      rel_tolerance = 1.0e-9)
+       rel_tolerance = 1.0e-9)
 f3.add(from_string = 'Symmetry  1',
        num_lines = 4,
-       rel_tolerance = 3.0e-5)
+       abs_tolerance = 3.0e-5)
 f3.add(from_string = 'Symmetry  2',
-        num_lines = 3,
-        rel_tolerance = 3.0e-5)
+       num_lines = 3,
+       abs_tolerance = 3.0e-5)
 f3.add(from_string = 'Symmetry  3',
-        num_lines = 3,
-        rel_tolerance = 3.0e-5)
+       num_lines = 3,
+       abs_tolerance = 3.0e-5)
 test.run(['energy_corehole__3.dal'], ['energy_corehole.mol'], f={'out': f3}, args = '-put SIRIUS.RST')
 
 os.remove('SIRIUS.RST')

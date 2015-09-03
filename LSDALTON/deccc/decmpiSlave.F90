@@ -65,6 +65,8 @@ subroutine dec_lsmpi_slave(comm)
          ! DEC MP2 RI energy
       case(RIMP2INAMP);
          call RIMP2_integrals_and_amplitudes_slave
+      case(DECRIMP2F12);
+         call get_rif12_fragment_energy_slave
       case(LSTHCRIMP2INAMP);
          call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
