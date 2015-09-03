@@ -57,8 +57,6 @@ C
       integer :: maxnumjobs, nloopidx
       integer :: AssignedIndices(maxnumjobs)
 #endif
-C   
-      integer, save :: inew=0
 C
 #include "ccorb.h"
 #include "infind.h"
@@ -99,7 +97,6 @@ C     of the trial vector ISYMTR, and the opperator symmtry ISYMOP.
 C------------------------------------------------------------------
 C
       ISYRES  = MULD2H(ISYMOP,ISYMTR)
-      write(lupri,*) Model
 C
 C---------------------------------
 C     Work space allocation no. 1.
@@ -275,14 +272,14 @@ C
          CALL DZERO(WORK(KSIGDA2),LSIGDA2)
 C
          CALL DZERO(WORK(KFOCK),LFOCK)
-#ifdef VAR_MPI
-         IF ( MYNUM .EQ. 0 ) THEN
-#endif
 C
 C--------------------------
 C        Read trial vector.
 C--------------------------
 C
+#ifdef VAR_MPI
+         IF ( MYNUM .EQ. 0 ) THEN
+#endif
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
             CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)

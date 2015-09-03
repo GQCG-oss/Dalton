@@ -43,7 +43,6 @@ C
       
       INTEGER   NIT, NOLDTR, NNEWTR
 #ifdef VAR_MPI
-      INTEGER(MPI_INTEGER_KIND) :: IERR
       INTEGER   CP_ISYMTR
 C     This array is only there to ensure that the four above variables
 C     are allocated consecutively, so that it can be send together. Only
@@ -52,6 +51,7 @@ C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
       EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+      INTEGER(MPI_INTEGER_KIND) :: IERR
 #endif
 C
 C------------------
@@ -90,7 +90,7 @@ C
 C
       KPOINT = 1
       KEND1  = KPOINT + LPOINT
-      LWORK1  = LWORK  - KEND1
+      LWORK1 = LWORK  - KEND1
 C
       CALL SO_MEMMAX ('SO_LRSOLV.1',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_LRSOLV.1',' ',KEND1,LWORK)

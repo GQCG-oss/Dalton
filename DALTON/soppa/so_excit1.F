@@ -28,14 +28,19 @@ C
 #include "ccsdsym.h"
 #include "infdim.h"
 #include "inforb.h"
+C for irat 
 #include "iratdef.h"
 #include "maxaqn.h"
+C for mxshel, mxprim
 #include "maxorb.h"
+C for mxcont
+#include "aovec.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "soppinf.h"
 #include "symmet.h"
 #include "wrkrsp.h"
+ 
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
@@ -59,9 +64,12 @@ C
 !
 ! This variable ensures that common blocks are only sent to the slaves
 ! once. 
-      LOGICAL update_common_blocks
+      LOGICAL update_common_blocks, get_mxcall
 
       update_common_blocks = .true.
+C     In pure aorpa calculations, eridi has no been initialized      
+      get_mxcall = (.not.aosop).and.(.not.aosoc).and.(.not.DCRPA).and.
+     &         (.not.AOHRP)
 #endif
 C
 C------------------
@@ -290,6 +298,41 @@ C
      &            ,NEXCI,'as this is the full dimension of the '//
      &            'excitation space'
                END IF
+#ifdef VAR_MPI
+C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+C In AORPA we cannot be sure that the number of integral distributions
+C is known in advance. This is needed in order to allocate memory for
+C load-distribution later on
+               print *,get_mxcall 
+               if (get_mxcall) then
+                  kccfbt  = kend2
+                  kindxbt = kccfbt + mxprim*mxcont
+                  kend3   = kindxbt + 8*mxshel*mxcont/irat
+                  lwork3 = lwork - kend3
+                  print *, kend2, kccfbt, kindxbt, kend3
+                  call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
+     &                        krdbc1, krdbc2, kodpp1, kodpp2,
+     &                        krdpp1, krdpp2, kfree,  lfree,
+     &                        kend3, work(kccfbt), work(kindxbt),
+     &                        work(kend3), lwork3, iprint)
+C                 Add check of kend3
+C                 Setup a lot of stuff, that is apparently needed..? 
+C                  call setaob( work(kccfbt), work(indxbt), work(kend3),
+C     &                         lwork3, 0)
+C                 Setup at lot of stuff, including the one we where
+C                 interested in.
+C                  call getdst( 0, 0, 2)                  
+C                  get_mxcall = .false.                     
+               endif
+C Note that for rpa, the second and third argument should be ignored
+               call soppa_initialize_slaves ( update_common_blocks,
+     &                                        WORK(KEND2), 1, model)
+               update_common_blocks = .false.
+#endif
 C
 C------------------------------------------------------------------
 C              Determine RPA excitation energies and excitation
@@ -327,6 +370,12 @@ C              Determine charge radius of excited states.
 C--------------------------------------------------------
 C
                CALL RP_CHARGE(ISYMTR,NEXCI,SECMAT,WORK(KEND2),LWORK2)
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+               call soppa_release_slaves()
+#endif
 C
             END IF
 C

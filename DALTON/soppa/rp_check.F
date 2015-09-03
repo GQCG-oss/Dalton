@@ -101,7 +101,7 @@ C        resultvectors.
 C--------------------------------------------------------------
 C
          DTIME      = SECOND()
-         CALL RP_ERES(0,1,FOCKD,LFOCKD,ISYMTR,
+         CALL RP_ERES(0,1,FOCKD,LFOCKD,NIT,ISYMTR,
      &                WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(35) = SOTIME(35) + DTIME

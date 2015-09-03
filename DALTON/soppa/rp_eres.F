@@ -1,6 +1,10 @@
 C
 C  /* Deck rp_eres */
-      SUBROUTINE RP_ERES(NOLDTR, NNEWTR, FOCKD, LFOCKD, ISYMTR, 
+      SUBROUTINE RP_ERES(NOLDTR, NNEWTR, FOCKD, LFOCKD,
+     &                   NIT,   ISYMTR,
+#ifdef VAR_MPI
+     &                   AssignedIndices, maxnumjobs,     
+#endif
      &                   WORK,   LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -30,6 +34,9 @@ C LFOCKD: Number of entries in the Fock Matrix
 C ISYMTR:
 C WORK: temporary work-vector 
 C LWORK: Total needed length of the work-vector.
+
+      use so_parutils, only: soppa_comm_active 
+
 #include "implicit.h"
 #ifdef VAR_MPI
          !use mpi
@@ -47,6 +54,10 @@ C
       DIMENSION INDEXA(MXCORB)
       DIMENSION FOCKD(LFOCKD)
       DIMENSION WORK(LWORK)
+#ifdef VAR_MPI
+      integer :: maxnumjobs, nloopidx
+      integer :: AssignedIndices(maxnumjobs)
+#endif
 C
 #include "ccorb.h"
 #include "infind.h"
@@ -61,11 +72,11 @@ C
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
-#include "parsoppa.h"
-      integer :: numprocs
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr) 
-      copyisymtr = isymtr
-      forceupdate = .true. !Implicitly saved. Do NOT move the initialization to the main block of code.
+C#include "parsoppa.h"
+C      integer, save :: numprocs
+       integer :: numprocs
+       numprocs = nodtot + 1
+C      forceupdate = .true.
 #endif
 
 C
@@ -73,7 +84,13 @@ C------------------
 C     Add to trace.
 C------------------
 C
+#ifdef VAR_MPI
+      if (mynum .eq. 0 ) then
+#endif      
       CALL QENTER('RP_ERES')
+#ifdef VAR_MPI
+      endif
+#endif
 C
 C------------------------------------------------------------------
 C     Determine the symmetry of the result vector from the symmetry
@@ -99,10 +116,26 @@ C-------------------------------------------------------
 C     Get the matrix which contains the MO coefficients.
 C-------------------------------------------------------
 C
-      DTIME      = SECOND()
-      CALL SO_GETMO(WORK(KCMO),LCMO,WORK(KEND1),LWORK1)
-      DTIME      = SECOND()   - DTIME
-      SOTIME(1)  = SOTIME(1) + DTIME
+#ifdef VAR_MPI
+C Only master reads...
+      IF (MYNUM .EQ. 0) THEN
+#endif
+         DTIME      = SECOND()
+         CALL SO_GETMO(WORK(KCMO),LCMO,WORK(KEND1),LWORK1)
+         DTIME      = SECOND()   - DTIME
+         SOTIME(1)  = SOTIME(1) + DTIME
+#ifdef VAR_MPI
+      ENDIF
+C Should probably use non-blocking collectives, where implemented
+!      IF (MPI_VERSION.GE.3) THEN
+!         MPI_IBCAST(WORK(KCMO),LCMO, my_MPI_INTEGER, 0,
+!     &              MPI_COMM_WORLD, IERR)
+!      ELSE
+      CALL MPI_BCAST(WORK(KCMO), LCMO, MPI_REAL8, 0,
+     &               MPI_COMM_WORLD, IERR)
+
+!      ENDIF
+#endif
 C
 C---------------------------------
 C     Work space allocation no. 2.
@@ -134,6 +167,10 @@ C
 C
       CALL SO_MEMMAX ('RP_ERES.2',LWORK2)
       IF (LWORK2 .LT. 0) CALL STOPIT('RP_ERES.2',' ',KEND2,LWORK)
+#ifdef VAR_MPI
+C MPI -- ONLY MASTER DOES THE READING
+      IF ( MYNUM .EQ. 0 ) THEN
+#endif
 C
 C----------------------------------------------
 C     Open files with trial and result vectors.
@@ -144,6 +181,9 @@ C
       CALL SO_OPEN(LURS1E,FNRS1E,LRES1E)
       CALL SO_OPEN(LURS1D,FNRS1D,LRES1D)
 C
+#ifdef VAR_MPI
+      ENDIF
+#endif      
 C
       IF ( IPRSOP. GE. 7 ) THEN !This in merely printing related.
 C------------------------------------------
@@ -188,8 +228,24 @@ C--------------------------
 C        Read trial vector.
 C--------------------------
 C
+#ifdef VAR_MPI
+         IF ( MYNUM .EQ. 0 ) THEN
+#endif
          CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
          CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
+#ifdef VAR_MPI
+         ENDIF
+C Rememember that the trial-vectors are contigous in memory         
+         LTRTOT = LTR1E + LTR1D 
+         CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8, 
+     &                  0, MPI_COMM_WORLD, IERR)
+C Note for future adjustment: 
+C It may be worthwile using non-blocking communication here
+C since the next two calls only use the singles vectors.
+C
+C Also, depending on the communication overhead, it may be better
+C to transform on host only and then send it to the slaves..?
+#endif         
 C
 C---------------------------------------------------
 C        Calculate RPA-density matrices in AO basis.
@@ -219,14 +275,14 @@ C=======================================================
 C
          IF (DIRECT) THEN
             NTOSYM = 1
-            DTIME     = SECOND()
+            DTIME  = SECOND()
             IF (HERDIR) THEN
                CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
             ELSE
                KCCFB1 = KEND2
                KINDXB = KCCFB1 + MXPRIM*MXCONT
                KEND2  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
-               LWORK2  = LWORK  - KEND2
+               LWORK2 = LWORK  - KEND2
 
                CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
      &                     KODPP1,KODPP2,KRDPP1,KRDPP2,KFREE,LFREE,
@@ -246,15 +302,47 @@ C
          LWORKSV = LWORK2
 C
          ICDEL1 = 0
+C
+#ifdef VAR_MPI
+C-----------------------------------------------------------------
+C        In MPI calculations, we need to distribute the indices.
+C        On first pass, we set this using the pre-sorted approach.
+C-----------------------------------------------------------------
+C         IF ( (nit .ne. 1 .or. inewtr .ne. 1) 
+         IF ( .not. (nit .eq. 1 .and. inewtr .eq. 1) 
+     &                        .or.  numprocs .eq. 1 ) THEN
+C After first pass, load-balancing has been done
+            CONTINUE
+         ELSEIF( mynum .eq. 0 )THEN
+C Master does the balancing
+            write(lupri,*) 'Entering load-balancing'
+            call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
+     &                     work(kindxb), work(kendsv), lworksv)
+!            write (luerr,'(10i5)') mynum, AssignedIndices
+         ELSE 
+C Slaves receives the scatter, send arguments should be ignored
+            call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
+     &                        AssignedIndices, maxnumjobs, mpi_integer,
+     &                        0, soppa_comm_active, ierr )
+!            write (luerr,'(10i5)') mynum, AssignedIndices
+         ENDIF 
+#endif
          DO 210 ISYMD1 = 1,NTOSYM
 C
-            IF (DIRECT) THEN  
+            IF (DIRECT) THEN
                NTOT = MXCALL
             ELSE
                NTOT = NBAS(ISYMD1)
             ENDIF
-C
 #ifdef VAR_MPI
+            IF(numprocs .gt. 1) THEN
+               NLOOPIDX = maxnumjobs
+            ELSE
+               NLOOPIDX = NTOT
+            ENDIF
+#endif
+C
+#ifdef NOT_DEF
       ! Start a parallel calculation of the fock matrix in case more than 1 process is available.
       ! The result is kept in the master process' work array at work(kfock)
       if (numprocs.gt.1) then
@@ -264,8 +352,26 @@ C
           goto 888
       endif
 #endif
-            DO 220 ILLL = 1,NTOT
 C
+C-------------------------------------------------
+C           Main loop over integral-distributions.
+C-------------------------------------------------   
+
+#ifdef VAR_MPI
+C------------------------------------------------------------------
+C           For_parallel calculations, we have som stuff to set up.
+C------------------------------------------------------------------
+            DO 220 ILLLDUMMY = 1, nloopidx
+               if ( numprocs .gt. 1 ) then 
+                  ILLL = assignedIndices(illldummy)
+C                 A zero indicates that we have no more work, exit loop
+                  IF (ILLL .eq. 0) exit
+               else
+                  ILLL = ILLLDUMMY
+               endif
+#else
+            DO 220 ILLL = 1,NTOT
+#endif
 C------------------------------------------------
 C              If direct calculate the integrals.
 C------------------------------------------------
@@ -277,7 +383,7 @@ C
                   KEND2  = KENDSV
                   LWORK2 = LWORKSV
 C
-                  DTIME     = SECOND()
+                  DTIME  = SECOND()
                   IF (HERDIR) THEN
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
@@ -406,13 +512,55 @@ C
   220       CONTINUE ! End of ILLL loop.
   210    CONTINUE
 
-  888    continue !Continuation point in case the calculation is done in parallel.
+C  888    continue !Continuation point in case the calculation is done in parallel.
 
 C
 C====================================================
 C        End of loop over distributions of integrals.
 C====================================================
 C
+#ifdef VAR_MPI
+C-------------------------------------------------
+C        Communicate the result vectors to master.
+C-------------------------------------------------
+C  Note for further development: 
+C  In the following, non-blocking reductions could be used,
+C  since the one-particle result-vector is first needed in the
+C  second call.
+C
+C  Use the fact that memory are together
+         lrestot = lres1e + lres1d ! + lres2e + lres2d
+!         write(*,*) lrestot, lsigtot, latot
+C  Master use inplace operations       
+         if (mynum .eq. 0 ) then
+C
+C           Fock-matrix
+            call mpi_reduce( mpi_in_place, work(kfock), lfock, 
+     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       soppa_comm_active, ierr)
+C
+C           Result-vectors
+            call mpi_reduce( mpi_in_place, work(kres1e), lrestot,
+     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       soppa_comm_active, ierr)
+C
+         else
+C  Slaves pass the same buffer as the recieve-buffer...
+C
+C           Fock-matrix
+            call mpi_reduce( work(kfock), work(kfock), lfock, 
+     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       soppa_comm_active, ierr)
+C
+C           Result-vectors            
+            call mpi_reduce( work(kres1e), work(kres1e), lrestot,
+     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       soppa_comm_active, ierr)
+C
+C  After the reductions, the slaves are done; cycle loop
+            goto 100
+         endif
+#endif
 C---------------------------------------------
 C        Transform AO Fock matrix to MO basis.
 C---------------------------------------------
@@ -459,8 +607,11 @@ C==================================
 C     End of loop over excitations.
 C==================================
 C
+#ifdef VAR_MPI
+C Slaves are done
+      IF (MYNUM .NE. 0) RETURN
+#endif
       IF ( IPRSOP. GE. 7 ) THEN
-C
 C------------------------------------------
 C        Write new resultvectors to output.
 C------------------------------------------

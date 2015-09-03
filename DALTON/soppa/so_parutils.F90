@@ -32,8 +32,9 @@ module so_parutils
 !
    integer, parameter :: real8 = kind(1.0D0)
 !  Flags to be send to slaves to tell them, what work to do
-   integer, parameter :: parsoppa_release_slave = 0,                    &
-     &                   parsoppa_do_eres  = 1
+   integer, parameter :: parsoppa_release_slave = 0,   &! Leave 
+     &                   parsoppa_do_eres  = 1  ! Call eres routine
+
    integer(mpi_integer_kind) :: soppa_comm_active
 !
 ! Make the defines in infpar, a fortran parameter (nicer IMO).
@@ -44,7 +45,7 @@ module so_parutils
    integer(mpi_integer_kind), parameter :: one_mpi = 1, zero_mpi = 0
 #undef my_MPI_INTEGER
 
-!   private soppa_update_common
+   private soppa_update_common!, stupid_isao_bcast_routine
 contains
 
 
@@ -255,22 +256,20 @@ contains
  
 
    subroutine soppa_nodedriver (work, lwork, iprint)
-
+!
 ! This is an internal nodedriver routine for parallel AO-based
 ! SOPPA calculations. The slaves go here from dalton_nodriver, when
 ! they are activated for SOPPA work.
 ! Upon entry they are updated with at lot of stuff, which is needed
 ! across SOPPA routines. 
-! The slaves then wait to be activated for a certain kind of SOPPA
-! work. (Currently only PAR_SO_ERES)
+! The slaves then wait to be told to call a particular SOPPA routine.
+! (Currently only SO_ERES)
 ! 
 ! Once the SOPPA part of the calculation is over they can be released
 ! back to dalton_nodedriver 
 !
 ! Rasmus Faber 13/7 - 2015
 !
-!      use so_parutils
-!#include "implicit.h"
 !#include "parsoppa.h"
 ! Need MXCALL
 #include "distcl.h"
@@ -282,20 +281,19 @@ contains
 ! Use proper integerkind for mpi-arguments, irrespective of 
 ! what flags are use for compilation of MPI and Dalton
 ! Not that it will change things right away, but perhaps one day
-      integer(mpi_integer_kind) :: ierr, numprocs
+      integer(mpi_integer_kind) :: ierr, numprocs, mycolor
 ! Lengths of arrays
       integer :: lt2am, lfockd, ldensij, ldensab, ldensai
 ! Pointers to arrays
       integer :: kt2am, kfockd, kdensij, kdensab, kdensai
 ! Other integers
-      integer(mpi_integer_kind) :: mycolor
       character(len=5) :: model
 ! Some info, that we need in each pass
       integer :: nnewtr, noldtr, isymtr, nit
 ! Need to ensure that the four above variables are stored
 ! consecutively, so we can recieve them with a single bcast.
 ! This is the only purpose of info_array, only address it as
-! part of a communication!
+! part of communication!
       integer :: info_array(4)
       equivalence (info_array(1), isymtr), (info_array(2), nit), &
                   (info_array(3), nnewtr), (info_array(4), noldtr)
@@ -304,7 +302,7 @@ contains
       !
       call mpi_bcast( model, 5, mpi_character, 0, mpi_comm_world, &
                       ierr )
-
+      print *, model
       ! Do we need to do an allreduce to check that all 
       ! Processes agree not to update the common-blocks?
       ! For now just let master tell the slaves
@@ -358,7 +356,7 @@ contains
       kfockd = kend
       kend   = kfockd + lfockd
       
-      ! following only if not rpa...      
+      ! following only if not RPA...      
       if ( model .ne. 'AORPA' ) then
          lt2am   = nt2amx             ! from ccsdsym.h 
          ldensij = nijden(1)          ! from soppinf.h
@@ -373,6 +371,13 @@ contains
          ! 
          ! Zero densai (To mirror initialization in so_excit1)
          call dzero( work(kdensai), ldensai )
+      else 
+         ! For RPA initialize the addresses as negative, to ensure a crash
+         ! if they are fo some reason accessed anyway
+         kt2am   = -1
+         kdensij = -1
+         kdendab = -1
+         kdensai = -1
       endif
 
 !
@@ -388,10 +393,14 @@ contains
       if ( kend .gt. lwork ) call stopit('SOPPA_NODEDRIVER', '2',   &
      &                                    kend, lwork )
 
-      ! Recieve the stuff, which is already known. This is atleast 
-      ! the MP2 amplitudes
-      call mpi_bcast( work(kt2am), lt2am, mpi_real8, 0,        & 
+      ! Recieve the stuff, which is already known.  
+      if ( model .ne. 'AORPA' ) then
+         ! The MP2 amplitudes
+         call mpi_bcast( work(kt2am), lt2am, mpi_real8, 0,        & 
      &                   mpi_comm_world, ierr )
+         ! Densab and Densij could be added here, but is currently 
+         ! not used by the slaves...
+      endif
          
 !
 ! Go to an infinite loop... While we are here, the master 
@@ -431,9 +440,11 @@ contains
             call mpi_bcast( info_array(1), 4, my_mpi_integer, 0,     &
                             mpi_comm_world, ierr)  
             !
-            ! Test --- common block problems?
-!            call soppa_update_common()
-!
+            ! For now decide which routine to call based on
+            ! method argument
+            !
+            if ( model .ne. 'AORPA' ) then
+
             call so_eres( model, noldtr, nnewtr,          &! General info
                   work(kdensij), ldensij,                 &! Densij
                   work(kdensab), ldensab,                 &! Densab
@@ -444,6 +455,15 @@ contains
                   work(kassignedindices),maxnumjobs,      &! Load-balancing space           
      &            work(kend), lworkf )                     ! Work-array 
 
+            else
+               call rp_eres ( noldtr, nnewtr,             &! Trialvector info
+                     work(kfockd), lfockd,                &! Fock diagonal
+                     nit, isymtr,                         &! Info
+                     work(kassignedindices),maxnumjobs,   &! Load-balancing space 
+                     work(kend), lworkf )                  ! Work-array 
+                     
+
+            endif
          case default
             call quit('Slave recieved invalid job-description'//     &
                             ' in AOSOPPA nodedriver.' )
@@ -457,12 +477,11 @@ contains
 
    subroutine soppa_initialize_slaves( update_common_blocks,         &
      &             t2mp, lt2mp, model )
-         ! This subroutine tells the slaves that hang in
-         ! dalton_nodedriver to enter the soppa node-driver and sends
-         ! information, with doesn't change between soppa iterations.
-!      use so_parutils
-!#include "implicit.h"
-!#include "infpar.h"
+!    -----------------------------------------------------------
+!     This subroutine tells the slaves that hang in
+!     dalton_nodedriver to enter the soppa node-driver and sends
+!     information, with doesn't change between soppa iterations.
+!    -----------------------------------------------------------
 #include "iprtyp.h"
 #include "distcl.h"
 !
@@ -490,7 +509,9 @@ contains
          ! Send the various common blocks if needed
       call mpi_bcast( update_common_blocks, 1, mpi_logical,      &
      &                   0, mpi_comm_world, ierr )
+!
       if ( update_common_blocks ) then
+   
          call soppa_update_common()
       endif
       !
@@ -503,13 +524,15 @@ contains
          call mpi_comm_split( mpi_comm_world, zero_mpi, zero_mpi,  &
                               soppa_comm_active, ierr)
       endif
-         !
-         ! Send various stuff, such as the mp2-amplitudes
-         !
-         ! Slaves should know their size now
-!      call mpi_bcast(lt2mp, 1, my_mpi_interger, 0, mpi_comm_world,ierr)
+      !
+      ! Send allready known stuff such as the 
+      !
+      if ( model .ne. 'AORPA' ) then
+         ! The MP2 (or CC T2) amplitudes
+         call mpi_bcast(t2mp, lt2mp, mpi_real8, 0,mpi_comm_world,ierr)
+         ! Densab and Densai could be added here...
+      endif
 
-      call mpi_bcast(t2mp, lt2mp, mpi_real8, 0,mpi_comm_world,ierr)
 
          
       return

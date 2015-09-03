@@ -14,7 +14,18 @@ C
 C     PURPOSE: Solve the RPA linear response equations 
 C              using an AO-driven algorithm. 
 C
+#ifdef VAR_MPI
+      use so_parutils, only: parsoppa_do_eres, my_mpi_integer
+#endif
 #include "implicit.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+C  We need MXCALL and IRAT in order to assign space for load-balancing
+C  
+#include "maxorb.h"
+#include "distcl.h"
+#include "iratdef.h"
+#endif
 #include "priunit.h"
 C
 #include "soppinf.h"
@@ -27,6 +38,18 @@ C
       DIMENSION EXVAL(LEXVAL),  RESINM(LRESINM)
       DIMENSION FOCKD(LFOCKD),  WORK(LWORK)
       DIMENSION REDE(LMXRED),   REDS(LMXRED)
+      INTEGER   NIT, NOLDTR, NNEWTR
+#ifdef VAR_MPI
+      INTEGER   CP_ISYMTR
+C     This array is only there to ensure that the four above variables
+C     are allocated consecutively, so that it can be send together. Only
+C     use it for this purpose.
+C     The definition must match that in soppa_nodedriver
+      INTEGER   INFO_ARRAY(4)
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+      INTEGER(MPI_INTEGER_KIND) :: IERR
+#endif
 C
 C------------------
 C     Add to trace.
@@ -90,6 +113,25 @@ C
 C
       NONEWT = .FALSE.
 C
+#ifdef VAR_MPI
+C------------------------------------------------------------------
+C     For MPI, we need som space in which to store the indices each
+C     process is to work with in so_eres.
+C------------------------------------------------------------------
+C
+      call mpi_comm_size( mpi_comm_world, numprocs, ierr)
+      maxnumjobs = mxcall - min(mxcall, numprocs) + 1
+      if ( numprocs .eq. 1 ) then
+C Not a real parallel job, don't bother
+         lAssignedIndices = 1
+         kAssignedIndices = 0
+      else  
+         lAssignedIndices = (maxnumjobs + 1) /IRAT
+         kAssignedIndices = KEND1
+         KEND1 = kAssignedIndices + lAssignedIndices
+         LWORK1 = LWORK - KEND1
+      endif
+#endif 
 C------------------
 C     Write banner.
 C------------------
@@ -129,8 +171,22 @@ C        Make E[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
+#ifdef VAR_MPI
+C In parallel, send slaves to so_eres
+C
+         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+     &                   mpi_comm_world, ierr )
+C ISYMTR is a non-local parameter, we need to copy it to the info-array
+         CP_ISYMTR = ISYMTR
+         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+     &                   MPI_COMM_WORLD, IERR)
+#endif
          DTIME      = SECOND()
-         CALL RP_ERES(NOLDTR,NNEWTR,FOCKD,LFOCKD,ISYMTR,
+         CALL RP_ERES(NOLDTR,NNEWTR,FOCKD,LFOCKD,
+     &                NIT,ISYMTR,
+#ifdef VAR_MPI
+     &                WORK(kAssignedIndices),maxnumjobs,
+#endif
      &                WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(35) = SOTIME(35) + DTIME
