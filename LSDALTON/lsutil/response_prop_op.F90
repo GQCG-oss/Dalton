@@ -240,6 +240,7 @@ Contains
     rspsolverinput%cfg_unres = .false.
     rspsolverinput%info_rsp = .false.
     rspsolverinput%info_rsp_redspace = .false.
+    rspsolverinput%info_rsp_sparsity = .false.
     rspsolverinput%rsp_damp_2start = .false.
     rspsolverinput%degeneratestates = .FALSE.
     rspsolverinput%degenerateTHR = 1.d-5
