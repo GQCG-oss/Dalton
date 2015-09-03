@@ -156,7 +156,8 @@ contains
 
     full_no_frags = .false.
     use_bg_buf    = mem_is_background_buf_init()
-    dynamic_load  = DECinfo%dyn_load
+!    dynamic_load  = DECinfo%dyn_load
+    dynamic_load  = .false. ! *** tmp hack
     plus_one      = 1
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.
@@ -275,6 +276,16 @@ contains
     dim_ts = int(nocc / tile_size)
     if (mod(nocc,tile_size) .gt. 0) dim_ts = dim_ts + 1 
 
+    if ((DECinfo%PL .gt. 2) .and. (infpar%lg_mynum .eq. infpar%master)) then
+       print *,'nocc = ',nocc
+       print *,'nvirt = ',nvirt
+       print *,'total_num_tiles_1 = ',total_num_tiles_1
+       print *,'total_num_tiles_2 = ',total_num_tiles_2
+       print *,'tile_size = ',tile_size
+       print *,'mod(nocc,tile_size) = ',mod(nocc,tile_size)
+       print *,'dim_ts = ',dim_ts
+    endif
+
     i_count = 0
     j_count = 0
     k_count = 0
@@ -289,6 +300,12 @@ contains
     ! always an even number [ n(n+1) is always an even number ]
     njobs = int((dim_ts**2 + dim_ts)/2)
     b_size = int(njobs/nodtotal)
+
+    if ((DECinfo%PL .gt. 2) .and. (infpar%lg_mynum .eq. infpar%master)) then
+       print *,'nodtotal = ',nodtotal
+       print *,'njobs = ',njobs
+       print *,'b_size = ',b_size
+    endif
 
     ! ij_array stores all jobs for composite ab indices in descending order
     call mem_alloc(ij_array,njobs)
@@ -356,9 +373,6 @@ contains
              if (ij_comp .lt. 0) exit ijrun_par
           endif
 
-          if(DECinfo%PL>2.and.ij_comp>0) write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5,")")') &
-             &infpar%lg_mynum,ij_comp,njobs
-
           ! calculate i and j from composite ij value
           call calc_i_leq_j(ij_comp,dim_ts,i_tile,j_tile)
 
@@ -369,6 +383,10 @@ contains
           tile_size_tmp_i = int(nelms/nvirt**3)
           call get_tile_dim(nelms,vvvo,j_tile)
           tile_size_tmp_j = int(nelms/nvirt**3)
+
+          if((DECinfo%PL .gt. 2) .and. (ij_comp .gt. 0)) &
+             & write(*,'("Rank ",I3," does PT ij job in ijk loop: (",I5"/",I5"/",I5"/",I5"/",I5"/",I5"/",I5"/",I5,")")') &
+             &infpar%lg_mynum,ij_comp,njobs,i_tile,j_tile,tile_size_tmp_i,tile_size_tmp_j,i_pos,j_pos
 
           !FIND i and j in buffer
           call assoc_ptr_to_buf(i_tile,vvvo,3*nbuffs,tiles_in_buf_vvvo,needed_vvvo,&
@@ -519,7 +537,7 @@ contains
                                      & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
                                      & ovoo,async_id,num_ids,2)
 
-!$acc enter data copyin(ccsdpt_doubles(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!$acc enter data copyin(ccsdpt_doubles(:,:,:,j)) async(async_id(3)) if((.not. full_no_frags) .and. (i .gt. j))
 
                    j_count = j_count+1
 
@@ -1220,7 +1238,7 @@ contains
                                 & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
                                 & ccsd_doubles,vvvo,vvoo,ovoo,async_id,num_ids,2)
 
-!$acc enter data copyin(ccsdpt_doubles(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!$acc enter data copyin(ccsdpt_doubles(:,:,:,j)) async(async_id(3)) if((.not. full_no_frags) .and. (i .gt. j))
 
        krun_ser: do k=1,j
 
