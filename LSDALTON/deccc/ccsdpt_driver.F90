@@ -350,6 +350,13 @@ contains
 
     endif
 
+    if (DECinfo%PL .gt. 2) then
+       call print_norm(ccsd_doubles," NORM(ccsd)   :",print_=(infpar%lg_mynum==0))
+       call print_norm(vovo," NORM(vovo)   :",print_=(infpar%lg_mynum==0))
+       call print_norm(ovoo," NORM(ovoo)   :",print_=(infpar%lg_mynum==0))
+       call print_norm(vvvo," NORM(vvvo)   :",print_=(infpar%lg_mynum==0))
+    endif
+
     write(DECinfo%output,*) ''
     write(DECinfo%output,*) ''
     write(DECinfo%output,*) '=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*='
