@@ -1231,8 +1231,9 @@ C=====================================================================*
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
-     *            '.ANALYS','.CVSEPA','.IONISA','.XXXXXX','.RMCORE',
+     *            '.ANALYS','.CVSEPA','.IONISA','.CVSPER','.RMCORE',
      *            '.CHEXDI','.DV4DIS','.XXXXXX','.XXXXXX'/
+>>>>>>> a904a10... Added input option to remove core orbitals in exc state calculations
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1291,13 +1292,10 @@ C
       CALL IZERO(IRHFCORE,8*MAXCORE)
       CALL IZERO(NVIRION,8)
       CALL IZERO(IVIRION,8*MAXION)
-      !for the time being I am assuming to compute the correction for
-      !all requested excitations
-      !LCVSPTEXCI = .FALSE.
+      !for the time being I am assuming to compute the correction for all
+      !requested excitations
+      LCVSPTEXCI = .FALSE.
       LRMCORE    = .FALSE.
-
-
-C
 *---------------------------------------------------------------------*
 * read input:
 *---------------------------------------------------------------------*
@@ -1651,7 +1649,6 @@ C
 26          CONTINUE
                CHEXDI = .TRUE.
                MINSCR = .TRUE.
-
             GO TO 100
 C
 C----------------------------------------------------------------
