@@ -16,7 +16,7 @@
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
-     &        USE_LSLIB
+     &        USE_LSLIB, USE_OPENRSP
 
       DIMENSION ERFEXP(0:2)
       REAL*8  GRADML, PANAS,  CHIVAL, VLAMBDA, THR_REDFAC
@@ -37,7 +37,7 @@
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
-     &        USE_LSLIB
+     &        USE_LSLIB, USE_OPENRSP
 !
       COMMON /GNRINF/ GNRINFLAST
       !   Very important !!!

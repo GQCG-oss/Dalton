@@ -710,11 +710,13 @@ C
 !     search **OPENRSP in input
       rewind (lucmd)
       openrsp_input_found = .false.
+      use_openrsp = .false.
       do
          read (lucmd, '(a)', end=2) word
          if (word == '**OPENR') then
             call read_openrsp_input('DALTON.INP', lucmd)
             openrsp_input_found = .true.
+            use_openrsp = .true.
             exit
          end if
       end do
