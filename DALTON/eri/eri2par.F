@@ -1047,10 +1047,11 @@ C
          N_TASKS = N_TASKS + 1
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
-         IF (IPRINT .GT. 15)
-     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
+         IF (IPRINT .GT. 1)
+     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5/A)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
-     &      ' Print level is',IPRINT
+     &      ' Print level is',IPRINT,
+     &      '(See DALTON/include/iprtyp.h for IPRTYP codes)'
 
 !        allocate memory here if we do not call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
@@ -1067,10 +1068,10 @@ C
            if(i /= 0)then
              write (luerr,*) mynum,
      &           ': ALLOCATE command failed to allocate'//
-     &           ' the requested memory. Error code:',i
+     &           ' the requested memory on slave. Error code:',i
              write (luerr,*)
      &           'Reduce the memory demands and be welcome back'
-             call quit('Failed to allocate memory')
+             call quit('Failed to allocate memory on slave')
            end if
          end if
 
