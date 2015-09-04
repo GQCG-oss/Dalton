@@ -404,6 +404,10 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_lanczos_drv.F
     DALTON/cc/cc_lanczos_lrextras.F
     DALTON/cc/cc_freeze_exci.F
+#    DALTON/cc/cc_freeze_val.F
+    DALTON/cc/cc_freeze_exci.F
+    DALTON/cc/cc_freeze_core.F
+    DALTON/cc/cc_molden.F
     DALTON/cc/rpa_grad.F
     DALTON/cc/cc_active.F
     DALTON/choles/cc_caa.F
