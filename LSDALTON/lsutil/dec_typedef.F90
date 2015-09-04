@@ -29,7 +29,7 @@ module dec_typedef_module
   ! Overall CC model: MODIFY FOR NEW MODEL!
   ! ---------------------------------------
   !> how many real models in total are there, disregard MODEL_NONE
-  integer,parameter :: ndecmodels   = 8
+  integer,parameter :: ndecmodels   = 9
   !> Number of different fragment energies
   integer,parameter :: MODEL_NONE       = 0
   integer,parameter :: MODEL_MP2        = 1
@@ -40,6 +40,7 @@ module dec_typedef_module
   integer,parameter :: MODEL_RIMP2      = 6
   integer,parameter :: MODEL_SOSEX      = 7
   integer,parameter :: MODEL_LSTHCRIMP2 = 8
+  integer,parameter :: MODEL_MP3        = 9   
 
   ! Number of possible FOTs to consider in geometry optimization
   integer,parameter :: nFOTs=8
@@ -146,11 +147,11 @@ module dec_typedef_module
      integer :: JacobianMaxIter
      !> Use preconditioning for Jacobian eigenvalue problem
      logical :: JacobianPrecond
-     !> For MP2 model (or, more correctly EW1 model), invoke Hald approximation
-     !> where we only keep enough terms to ensure that singles and doubles dominated 
-     !> excitations are correct to second and first order, respectively.
+     !> For MP2 model (or, more correctly EW1 model), invoke approximation
+     !> where we only keep enough terms to ensure that singles dominated 
+     !> excitations are correct to second order.
      !> (See JCP 115, 671 (2001))
-     logical :: HaldApprox
+     logical :: SinglesEW1
      !> Apply first-order linear wave function approximation (not size-extensive)
      !> when calculation Jacobian eigenvalues. (Only meaningful in
      !> combination with MP2 wave function model).
@@ -778,8 +779,10 @@ module dec_typedef_module
      integer :: nval
      !> Number of virtual (virtupied) orbitals
      integer :: nvirt
-     !> Number of cabs AO orbitals
+     !> Number of cabs AO orbitals (Regular + cabs only)
      integer :: nCabsAO
+     !> Number of cabs only AO orbitals
+     integer :: nCabsAOOnly
      !> Number of cabs MO orbitals
      integer :: nCabsMO
      !> Number of possible fragments
@@ -969,8 +972,10 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
-     !> Number of CABS basis functions AO
+     !> Number of CABS basis functions AO (Regular+Cabs only)
      integer :: ncabsAO=0
+     !> Number of CABS only basis functions AO
+     integer :: ncabsAOOnly=0
      !> Number of CABS basis functions MO
      integer :: ncabsMO=0
      !> Atomic indices
@@ -1543,12 +1548,12 @@ CONTAINS
     DECinfo%CCexci = .false.
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
-    DECinfo%JacobianThr = 1.0e-7
+    DECinfo%JacobianThr = 1.0e-5
     DECinfo%JacobianMaxSubspace = 10000
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
     DECinfo%JacobianPrecond = .true.
-    DECinfo%HaldApprox = .false.
+    DECinfo%SinglesEW1 = .false.
     DECinfo%LW1 = .false.
     DECinfo%P_EOM_MBPT2 = .false.
 
@@ -1833,6 +1838,7 @@ CONTAINS
     DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
     DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
     DECitem%cc_models(MODEL_LSTHCRIMP2) ='THCRIMP2'
+    DECitem%cc_models(MODEL_MP3)   ='MP3'
   end subroutine dec_set_model_names
 
 end module dec_typedef_module

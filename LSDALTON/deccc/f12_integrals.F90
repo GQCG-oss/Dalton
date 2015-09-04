@@ -81,7 +81,7 @@ contains
   subroutine get_EV1(Venergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
 
-    real(realk), intent(inout) :: Venergy(:)
+    real(realk), intent(inout) :: Venergy(5)
     real(realk) :: V1energy
 
     type(decfrag),intent(inout) :: MyFragment
@@ -127,7 +127,7 @@ contains
   subroutine get_EV2(Venergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
 
-    real(realk), intent(inout) :: Venergy(:)
+    real(realk), intent(inout) :: Venergy(5)
     real(realk) :: V2energy
 
     type(decfrag),intent(inout) :: MyFragment
@@ -193,7 +193,7 @@ contains
   subroutine get_EV3(Venergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
 
-    real(realk), intent(inout) :: Venergy(:)
+    real(realk), intent(inout) :: Venergy(5)
     real(realk) :: V3energy
     real(realk) :: V4energy
 
@@ -274,7 +274,7 @@ contains
   subroutine get_EV4(Venergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri,Taibj)
     implicit none
 
-    real(realk), intent(inout) :: Venergy(:) 
+    real(realk), intent(inout) :: Venergy(5) 
     real(realk) :: V5energy
 
     type(decfrag),intent(inout) :: MyFragment
@@ -373,7 +373,7 @@ contains
   subroutine get_EX1(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
 
-    real(realk), intent(inout) :: Xenergy(:)
+    real(realk), intent(inout) :: Xenergy(4)
     real(realk) :: X1energy, tmp1, tmp2
     ! k index: occupied AOS, for frozen core: only valence!
     real(realk), target, intent(in) :: Fkj(:,:)
@@ -450,7 +450,7 @@ contains
   subroutine get_EX2(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
 
-    real(realk), intent(inout) :: Xenergy(:)
+    real(realk), intent(inout) :: Xenergy(4)
     real(realk) :: X2energy, tmp1, tmp2 
 
     real(realk), target, intent(in) :: Fkj(:,:)
@@ -557,7 +557,7 @@ contains
   subroutine get_EX3(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
 
-    real(realk), intent(inout) :: Xenergy(:)
+    real(realk), intent(inout) :: Xenergy(4)
     real(realk) :: X3energy, tmp1, tmp2
 
     real(realk), target, intent(in) :: Fkj(:,:)
@@ -672,7 +672,7 @@ contains
   subroutine get_EX4(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
 
-    real(realk), intent(inout) :: Xenergy(:)
+    real(realk), intent(inout) :: Xenergy(4)
     real(realk) :: X4energy, tmp1, tmp2
 
     real(realk), target, intent(in) :: Fkj(:,:)
@@ -774,7 +774,7 @@ contains
   subroutine get_EB1(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B1energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
@@ -824,7 +824,7 @@ contains
   subroutine get_EB2(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B2energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
@@ -893,7 +893,7 @@ contains
   subroutine get_EB3(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B3energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
@@ -962,7 +962,7 @@ contains
   subroutine get_EB4(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B4energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
@@ -1037,7 +1037,7 @@ contains
   subroutine get_EB5(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B5energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
@@ -1115,7 +1115,7 @@ contains
   subroutine get_EB6(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B6energy, tmp1, tmp2
 
     real(realk), target, intent(in) :: Fmn(:,:)
@@ -1247,7 +1247,7 @@ contains
   subroutine get_EB7(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B7energy, tmp1, tmp2
     
     real(realk), target, intent(in) :: Fmn(:,:)
@@ -1348,7 +1348,7 @@ contains
   subroutine get_EB8(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B8energy, tmp1, tmp2
 
     real(realk), target, intent(in) :: Fmn(:,:)
@@ -1447,7 +1447,7 @@ contains
   subroutine get_EB9(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOStot,CvirtAOS,CocvAOStot,Ccabs,Cri)
     implicit none
     
-    real(realk), intent(inout) :: Benergy(:)
+    real(realk), intent(inout) :: Benergy(9)
     real(realk) :: B9energy, tmp1, tmp2
 
     type(decfrag),intent(inout) :: MyFragment
@@ -2812,7 +2812,7 @@ contains
     end do
 
     call mem_alloc(Venergy,5)
-
+    Venergy = 0.0E0_realk
     WRITE(DECinfo%output,*) "Memory statistics after allocation of Venergy:"  
     call stats_globalmem(DECinfo%output)
 
@@ -2919,6 +2919,7 @@ contains
     Fab = MyFragment%qqfock
     
     call mem_alloc(Xenergy,4)
+    Xenergy = 0.0E0_realk
 
     WRITE(DECinfo%output,*) "Memory statistics after allocation of Xenergy:"  
     call stats_globalmem(DECinfo%output)
@@ -2983,6 +2984,7 @@ contains
     ! ***********************************************************
 
     call mem_alloc(Benergy,9)
+    Benergy = 0.0E0_realk
     
     WRITE(DECinfo%output,*) "Memory statistics after allocation of Benergy:"  
     call stats_globalmem(DECinfo%output)

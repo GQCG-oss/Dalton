@@ -125,12 +125,12 @@ CTRL[4]=8
 ERROR[4]="SOPPA(CCSD) SETUP IN RESPONSE NOT CORRECT"
 
 # Transition moments
-CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.607972.[0-9] * \*ENERGY\(eV\)\: * 10\.45913[0-9]" $log | wc -l`
-CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.534613.[0-9] * \*ENERGY\(eV\)\: * 17\.46383[0-9]" $log | wc -l`
-CRIT3=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.496989.[0-9] * \*ENERGY\(eV\)\: * 12\.51509[0-9]" $log | wc -l`
-CRIT4=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.908245.[0-9] * \*ENERGY\(eV\)\: * 14\.44749[0-9]" $log | wc -l`
-CRIT5=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.361325.[0-9] * \*ENERGY\(eV\)\: *  7\.80268[23]" $log | wc -l`
-CRIT6=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.345139.[0-9] * \*ENERGY\(eV\)\: * 23\.07682[0-9]" $log | wc -l`
+CRIT1=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.60797... * \*ENERGY\(eV\)\: * 10\.45913" $log | wc -l`
+CRIT2=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.53461... * \*ENERGY\(eV\)\: * 17\.46383" $log | wc -l`
+CRIT3=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.49698... * \*ENERGY\(eV\)\: * 12\.51509" $log | wc -l`
+CRIT4=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.90824... * \*ENERGY\(eV\)\: * 14\.44749" $log | wc -l`
+CRIT5=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.36132... * \*ENERGY\(eV\)\: *  7\.80268" $log | wc -l`
+CRIT6=`$GREP "\@ *STATE NO\: * 2 \*TRANSITION MOMENT\: (\-0| \-| 0|  )\.34513... * \*ENERGY\(eV\)\: * 23\.07682" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[5]=6
 ERROR[5]="TRANSITION MOMENTS NOT CORRECT"

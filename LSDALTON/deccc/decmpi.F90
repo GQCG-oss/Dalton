@@ -447,7 +447,7 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_MyFragment 
 
-  subroutine mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+  subroutine mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
     implicit none
     !> Fragment under consideration
     type(decfrag),intent(inout) :: MyFragment
@@ -455,6 +455,8 @@ contains
     integer :: fragcase
     !> dopair_occ array
     logical,intent(inout) :: dopair
+
+    real(realk),pointer,intent(in) :: Taibj(:,:,:,:)
 
     !local variables
     integer(kind=ls_mpik) :: master
@@ -481,22 +483,35 @@ contains
        call mem_alloc(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO)
        call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)
        call mem_alloc(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO)
+       call mem_alloc(MyFragment%Krs,MyFragment%ncabsAO,MyFragment%ncabsAO)                                                    
+       call mem_alloc(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO)                                                    
+       call mem_alloc(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot)
+       call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)   
+       call mem_alloc(Taibj,MyFragment%nvirtAOS,MyFragment%noccEOS,MyFragment%nvirtAOS,MyFragment%noccEOS)
+
     endif
-     
+
     call ls_mpi_buffer(MyFragment%Ccabs,MyFragment%ncabsAO,MyFragment%ncabsMO,master)
     call ls_mpi_buffer(MyFragment%Cri,MyFragment%ncabsAO,MyFragment%ncabsAO,master)
     call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master) 
     call ls_mpi_buffer(MyFragment%hJir,MyFragment%noccEOS,MyFragment%ncabsAO,master) 
+    call ls_mpi_buffer(MyFragment%Krs,MyFragment%ncabsAO,MyFragment%ncabsAO,master)                                             
+    call ls_mpi_buffer(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO,master)                                             
+    call ls_mpi_buffer(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot,master)
+    call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master)     
+    call ls_mpi_buffer(Taibj,MyFragment%nvirtAOS,MyFragment%noccEOS,MyFragment%nvirtAOS,MyFragment%noccEOS,master)
+
+
     call ls_mpi_buffer(fragcase,master) 
-    call ls_mpi_buffer(dopair,master) 
+    call ls_mpi_buffer(dopair,master)
 
     ! Finalize MPI buffer
     ! *******************
     ! MASTER: Send stuff to slaves and deallocate temp. buffers
     ! SLAVE: Deallocate buffer etc.
-   call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,infpar%lg_comm)
     call time_start_phase( PHASE_WORK )
-  end subroutine mpi_communicate_MyFragment_f12 
+ end subroutine mpi_communicate_MyFragment_f12 
 
 
   !> \brief MPI communcation where the information in the decfrag type
@@ -745,6 +760,7 @@ contains
     call ls_mpibcast(MyMolecule%nval,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nCabsAOOnly,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 
     !simple logicals
@@ -944,6 +960,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsAOOnly,master)
     CALL ls_mpi_buffer(MyFragment%nCabsMO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
@@ -989,7 +1006,6 @@ contains
     call ls_mpi_buffer(MyFragment%RsdvAE,master)
     call ls_mpi_buffer(MyFragment%RsdvAOS,master)
 
-
     ! Integer pointers
     ! ----------------
     ! Nullify and allocate stuff for receiver (global addtobuffer is false)
@@ -1024,7 +1040,7 @@ contains
        call mem_alloc(MyFragment%basis_idx,MyFragment%nbasis)
        nullify(MyFragment%cabsbasis_idx)
        IF(decinfo%F12)THEN
-          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAO)
+          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAOOnly)
        ENDIF
     end if
 
@@ -1043,7 +1059,7 @@ contains
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%natoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%nbasis,master)
     IF(decinfo%F12)THEN
-       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAO,master)
+       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAOOnly,master)
     ENDIF
     if(MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1_occidx,MyFragment%t1dims(2),master)
@@ -2478,7 +2494,7 @@ contains
     call ls_mpi_buffer(DECitem%JacobianInitialSubspace,Master)
     call ls_mpi_buffer(DECitem%JacobianMaxIter,Master)
     call ls_mpi_buffer(DECitem%JacobianPrecond,Master)
-    call ls_mpi_buffer(DECitem%HaldApprox,Master)
+    call ls_mpi_buffer(DECitem%SinglesEW1,Master)
     call ls_mpi_buffer(DECitem%LW1,Master)
     call ls_mpi_buffer(DECitem%P_EOM_MBPT2,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)

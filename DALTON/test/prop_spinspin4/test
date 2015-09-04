@@ -46,7 +46,7 @@ f.add(string = 'Spin-spin couplings printed for atoms',
 
 f.add(from_string = 'Isotropic coupling',
       num_lines = 10,
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 1.01e-4)
 
 test.run(['prop_spinspin4.dal'], ['H2O_intgrl_sym.mol'], f={'out': f},
          accepted_errors=['not implemented for parallel calculations.'])

@@ -176,6 +176,7 @@ implicit none
   config%doRIMP2       = .false.
   config%doTestMPIcopy = .false.
   config%doTestHodi    = .false.
+  config%testHodiOrder = 4
   config%skipscfloop   = .false.
   config%papitest      = .false.
 #ifdef VAR_MPI
@@ -249,7 +250,7 @@ end subroutine config_free
 !> \date March 2010
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
-use IIDFTINT, only: II_DFTsetFunc
+use IIDFTINT, only: II_DFTsetFunc,II_DFTaddFunc
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -847,6 +848,15 @@ CALL lsCLOSE(LUCMD,'KEEP')
 if (config%solver%do_dft) then
    hfweight = 0.0E0_realk
    CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight,lupri)
+
+!AB adding kinetic energy correction for orbital-free DFT
+   IF (config%integral%dft%doOrbFree) THEN
+     config%diag%CFG_bosonicOccupation = .true.
+     DO i=1,config%integral%dft%OrbFree%numberTSfunc
+       call II_DFTaddFunc(config%integral%dft%OrbFree%TSfunc(i),config%integral%dft%OrbFree%TScoeff(i),lupri)
+     ENDDO
+   ENDIF
+
    !it is assumed that hfweight is set to zero and only  
    !changed if the functional require a HF weight  
    !different from zero. 
@@ -1300,6 +1310,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
         CASE('.TESTHODI');              config%doTestHodi            = .true.
+        CASE('.TESTHODI-ORDER');        READ(LUCMD,*) config%testHodiOrder
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
            READ(LUCMD,*) config%GPUMAXMEM
@@ -1853,6 +1864,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         config%diag%INFO_RH_MU            = .true.
      CASE('.INFO_RSP')
         config%response%rspsolverinput%INFO_RSP = .true.
+     CASE('.INFO_RSP_SPARSITY')
+        config%response%rspsolverinput%INFO_RSP_SPARSITY = .true.
      CASE('.INFO_RSP_REDSPACE')
         config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
         !CASE('.INFO_TIME_MAT_OPERATIONS')
@@ -2928,6 +2941,12 @@ DO
          ENDDO
          deallocate(GRIDspec)
       CASE ('.NOPRUN'); DALTON%DFT%NOPRUN = .TRUE.
+      CASE('.OrbFree'); dalton%dft%doOrbFree = .true.
+                        READ(LUCMD,*) dalton%dft%orbFree%numberTSfunc
+			DO i=1,dalton%dft%orbFree%numberTSfunc
+                          READ(LUCMD,*) dalton%dft%orbFree%TScoeff(i), dalton%dft%orbFree%TSfunc(i)
+			ENDDO
+      CASE('.KineticScaling'); READ(LUCMD,*) dalton%dft%orbFree%kineticFac
       CASE ('.RADINT'); READ(LUCMD,*) DALTON%DFT%RADINT
 !===================================================================
       CASE ('.ULTRAC'); DALTON%DFT%RADINT = 2.15447E-7_realk; DALTON%DFT%ANGINT = 23; 

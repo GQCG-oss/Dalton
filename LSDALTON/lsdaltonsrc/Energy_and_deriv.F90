@@ -58,7 +58,7 @@ contains
     Real(realk), allocatable :: eival(:)
 !    Real(realk), pointer :: ExcitE(:)
     Integer :: NAtoms,i,lupri,luerr,nbast
-    Real(realk) :: DUMMY(1,1),ExcitE
+    Real(realk) :: DUMMY(1,1),ExcitE,fac
     Logical :: do_decomp,integraltransformGC
 
 
@@ -128,7 +128,9 @@ contains
        ! New energy
        Write(*,*)'CALLING FOR NEW ENERGY!'
        Call II_get_overlap(lupri,luerr,ls%setting,S)
-       Call II_get_h1(lupri,luerr,ls%setting,H1)
+       fac=1.E0_realk
+       IF (config%integral%dft%doOrbFree) fac=config%integral%dft%OrbFree%KineticFac !Special scaling of kinetic energy operator for orbital free DFT
+       Call II_get_h1(lupri,luerr,ls%setting,H1,fac)
        lsint_fock_data%ls => ls
        lsint_fock_data%H1 => H1
        lsint_fock_data%lupri = lupri
@@ -237,7 +239,7 @@ contains
     IF (.NOT.config%response%tasks%doNumGrad) THEN !Analytical gradient
 #endif
       ! Check whether it is a dec calculation
-      If (DECinfo%doDEC) then
+      If (config%doDEC) then
          ! Gradient from DEC (currently only MP2)
 #ifdef VAR_DEC
          Call get_mp2gradient_and_energy_from_inputs(ls,F,D,C,Natoms,gradient,E,Eerr)

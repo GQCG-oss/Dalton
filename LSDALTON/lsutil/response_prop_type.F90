@@ -212,6 +212,8 @@ module response_wrapper_type_module
      LOGICAL     :: info_rsp
      !> print info about the soulution of the response calc reduced space
      LOGICAL     :: info_rsp_redspace
+     !> print info about the sparsity of the trial vectors
+     LOGICAL     :: info_rsp_sparsity
      !>
      LOGICAL     :: rsp_damp_2start
      !> Degenerate yes if degenerate states are possible

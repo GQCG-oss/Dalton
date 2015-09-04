@@ -6802,6 +6802,7 @@ ELSEIF(Oper .EQ. THETAOperator)THEN
    INPUT%PropMaxM = 2
    INPUT%PropDerivEcoeff = .FALSE.
    INPUT%PropMomentEcoeff =.TRUE.   
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ELSEIF(Oper .EQ. PSOOperator)THEN
    INPUT%operator = NucpotOperator
    INPUT%PROPTYPE = 10
@@ -6811,6 +6812,7 @@ ELSEIF(Oper .EQ. PSOOperator)THEN
    INPUT%addtoIntegral = .FALSE.
    INPUT%PropDerivEcoeff = .TRUE.
    INPUT%PropMomentEcoeff =.TRUE.
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ELSEIF(Oper .EQ. ANGLONOperator)THEN
    INPUT%PROPTYPE = 17
    INPUT%PropAnti = .FALSE.
@@ -6831,6 +6833,7 @@ ELSEIF(Oper .EQ. NSTNOLOperator)THEN
    INPUT%addtoIntegral = .FALSE.
    INPUT%PropDerivEcoeff = .FALSE.
    INPUT%PropMomentEcoeff =.TRUE.
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ELSEIF(Oper .EQ. NSTLONOperator)THEN
    INPUT%operator = NucpotOperator
    INPUT%PROPTYPE = 27
@@ -6841,6 +6844,7 @@ ELSEIF(Oper .EQ. NSTLONOperator)THEN
    INPUT%addtoIntegral = .FALSE.
    INPUT%PropDerivEcoeff = .TRUE.!false?
    INPUT%PropMomentEcoeff =.TRUE.
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ELSEIF(Oper .EQ. DCM1Operator)THEN
    INPUT%PROPTYPE = 42
    INPUT%PropAnti = .TRUE.
@@ -6849,6 +6853,7 @@ ELSEIF(Oper .EQ. DCM1Operator)THEN
    INPUT%addtoIntegral = .FALSE.
    INPUT%PropDerivEcoeff = .TRUE. !false
    INPUT%PropMomentEcoeff =.TRUE.
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ELSEIF(Oper .EQ. DCM2Operator)THEN
    INPUT%PROPTYPE = 43
    INPUT%PropAnti = .FALSE.
@@ -6857,6 +6862,7 @@ ELSEIF(Oper .EQ. DCM2Operator)THEN
    INPUT%addtoIntegral = .FALSE.
    INPUT%PropDerivEcoeff = .TRUE.!false
    INPUT%PropMomentEcoeff =.TRUE.
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ELSEIF(Oper .EQ. ROTSTROperator)THEN
    INPUT%PROPTYPE = 55
    INPUT%PropAnti = .TRUE.
@@ -6864,13 +6870,14 @@ ELSEIF(Oper .EQ. ROTSTROperator)THEN
    INPUT%PropMaxM = 1
    INPUT%PropDerivEcoeff = .TRUE.
    INPUT%PropMomentEcoeff =.TRUE.   
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ELSEIF(Oper .EQ. LONMOM2Operator)THEN
    INPUT%operator = NucpotOperator
    INPUT%PROPTYPE = 190
    INPUT%PropAnti = .FALSE.
    INPUT%PropMaxD = 2
    INPUT%PropRequireBoys = 2
-   INPUT%addtoIntegral = .TRUE.
+   INPUT%addtoIntegral = .TRUE. 
 ELSEIF(Oper .EQ. ELPOTOperator)THEN
    INPUT%operator = NucpotOperator
    INPUT%PROPTYPE = 64
@@ -6880,6 +6887,7 @@ ELSEIF(Oper .EQ. ELPOTOperator)THEN
    INPUT%PropMomentEcoeff =.FALSE.
    INPUT%PropRequireBoys = 0
    INPUT%addtoIntegral = .TRUE.
+   INPUT%do_passes = .FALSE. !FIXME: Test that this is needed
 ENDIF
 
 END SUBROUTINE SET_PROPINFO1

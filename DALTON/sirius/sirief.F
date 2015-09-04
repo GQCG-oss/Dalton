@@ -665,7 +665,7 @@ C Authors: Luca Frediani and Kenneth Ruud
 C
 C Date: 2001 November 11th
 C
-C Purpose: MARICES MANIPULATION IN THE IEF CALCULATION
+C Purpose: MATRICES MANIPULATION IN THE IEF CALCULATION
 C 
 C     The input of this routine is one block of the packed
 C     block-diagonal matrix of the PCM calculation (in case we have a
@@ -1060,6 +1060,7 @@ C
 
 
       LOGICAL NEQ
+      REAL*8  WRK(LWRK)
 
       QTOT = 0.0D0
       IF (QSEFLG.EQ.-1.AND.VSEFLG.EQ.1) THEN
@@ -1110,7 +1111,7 @@ C
 
       
       INTEGER DO_FLAG
-      DIMENSION POTEN(*), CHG(*), WRK(LWRK)
+      REAL*8  POTEN(*), CHG(*), WRK(LWRK)
       LOGICAL NEQ
 
       IF ((DO_FLAG .NE. -1) .AND. (DO_FLAG .NE. 1) 
