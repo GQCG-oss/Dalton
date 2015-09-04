@@ -2707,7 +2707,7 @@ C
          call set_eri_contractions_xfac(hfxfac)
 
          ! sanity check
-         if (.not. xcint_is_active()) then
+         if (use_openrsp .and. .not. xcint_is_active()) then
             print *, 'You run OpenRSP DFT without .XCINT'
             print *, 'Either add .XCINT or deactivate'
             print *, 'this warning'
