@@ -166,9 +166,11 @@ C
          WRITE(LUPRI,*) 'CCEQ_SOL: NCCVAR  =    ',NCCVAR
          WRITE(LUPRI,*) 'CCEQ_SOL: CVSEPARA=    ',LCVSEXCI
          WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
+         WRITE(LUPRI,*) 'CCEQ_SOL: REMOVE_CORE = ',LRMCORE
       ENDIF
       WRITE(LUPRI,*) 'CCEQ_SOL: CVSEPARA=    ',LCVSEXCI
       WRITE(LUPRI,*) 'CCEQ_SOL: LIONISAT=    ',LIONIZEXCI
+      WRITE(LUPRI,*) 'CCEQ_SOL: REMOVE_CORE = ',LRMCORE
 C
       CALL GETTIM(CSTR,WSTR)
 C
@@ -509,10 +511,12 @@ C
           WRITE(LUPRI,*) 'CCEQ_STR: NCCVAR   =',NCCVAR
           WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARA =',LCVSEXCI
           WRITE(LUPRI,*) 'CCEQ_STR: LIONISAT =',LIONIZEXCI
+          WRITE(LUPRI,*) 'CCEQ_STR: REMOVE_CORE = ',LRMCORE
           CALL FLSHFO(LUPRI)
       ENDIF
       WRITE(LUPRI,*) 'CCEQ_STR: CVSEPARATION = ',LCVSEXCI
       WRITE(LUPRI,*) 'CCEQ_STR: IONIZATION = ',LIONIZEXCI
+      WRITE(LUPRI,*) 'CCEQ_STR: REMOVE_CORE = ',LRMCORE
       CALL FLSHFO(LUPRI)
 C
       MODEL = 'CCSD      '
@@ -730,14 +734,22 @@ C
 C
 C-------------------------------------------------------------
 C        if requested, project out valence excitation elements
+C        or core excitation elements or virtuals
 C -------------------------------------------------------------  
 C     
          IF (LCVSEXCI.or.LIONIZEXCI) THEN
-           write(lupri,*)'CCEQ_STR: CVS or IONISATION freeze'
+           write(lupri,*)'CCEQ_STR: freeze VALENCE OR VIRT'
            CALL CC_FREEZE_EXCI(WORK(KV),ISYMTR,
      &          MAXCORE,MAXION,
      &          NRHFCORE,IRHFCORE,
      &          NVIRION,IVIRION,LBOTHEXCI)
+         END IF
+         IF (LRMCORE) THEN
+           write(lupri,*)'CCEQ_STR: freeze CORE '
+           CALL CC_FREEZE_CORE(WORK(KV),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,.false.)
          END IF
 CCN
 C
@@ -1007,6 +1019,13 @@ C        -----------------------------------------------
      &          NRHFCORE,IRHFCORE,
      &          NVIRION,IVIRION,LBOTHEXCI)
             END IF
+            IF (LRMCORE) THEN
+               !write(lupri,*)'CCNEX: freeze the core'
+               CALL CC_FREEZE_CORE(WRK(KWRK1),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,.false.)
+            END IF
             DO JR = 1,NBX
                JROOTJ = ISIMC - 1 + JR
                EVAL1  = SOLEQ(K,JROOTJ)
@@ -1049,6 +1068,16 @@ C        -------------------------------------------------------
      &          MAXCORE,MAXION,
      &          NRHFCORE,IRHFCORE,
      &          NVIRION,IVIRION,LBOTHEXCI)
+            END DO
+         END IF
+         IF (LRMCORE) THEN
+            DO JR = 1,NBX
+            !WRITE(LUPRI,*)'freeze core in resid'
+               KOFF = KRES+(JR-1)*NCCVAR
+               CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,.FALSE.)
             END DO
          END IF
 C        ------------------------------------------
@@ -1158,6 +1187,16 @@ C        -----------------------------------------------------------
      &          MAXCORE,MAXION,
      &          NRHFCORE,IRHFCORE,
      &          NVIRION,IVIRION,LBOTHEXCI)
+            end do
+         END IF
+         IF (LRMCORE) THEN
+            DO JR = 1,NFIN
+            !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
+               koff = KRES+(JR-1)*NCCVAR
+               CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,.false.)
             end do
          END IF
 CCN
@@ -1370,6 +1409,7 @@ C
          WRITE(LUPRI,*)' LWRK   ',LWRK
          WRITE(LUPRI,*)' CVSEPARA', LCVSEXCI
          WRITE(LUPRI,*)' IONISATI', LIONIZEXCI
+         WRITE(LUPRI,*)' REMOVE_CORE', LRMCORE
       END IF
 C
       IF (NUPVEC.GT.0) THEN 
@@ -1397,13 +1437,23 @@ C
                CALL CC_GETVEC(LUFR1,FRHO1,LUFR2,FRHO2,LUFR12,FRHO12,
      *                        TRIPLET,IVENU,WRK(LSVEC))
 !sonia
+               !freeze valence or virtual
                IF (LCVSEXCI.or.LIONIZEXCI) THEN
                  write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
-     &           'project out core or virtual'
+     &           'project out valence occupied or virtual'
                  CALL CC_FREEZE_EXCI(WRK(LSVEC),ISYMTR,
      &          MAXCORE,MAXION,
      &          NRHFCORE,IRHFCORE,
      &          NVIRION,IVIRION,LBOTHEXCI)
+               END IF
+               !freeze core
+               IF (LRMCORE) THEN
+                 write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
+     &           'project out core or virtual'
+                 CALL CC_FREEZE_CORE(WRK(LSVEC),ISYMTR,
+     &          MAXCORE,MAXION,
+     &          NRHFCORE,IRHFCORE,
+     &          NVIRION,IVIRION,.false.)
                END IF
 !sonia
                LSVEC = LSVEC + NCCVAR
@@ -1440,7 +1490,7 @@ C
               END IF
             END IF
 C
-C           read in b vectors and extend colomns of the Jacobian 
+C           read in b vectors and extend columns of the Jacobian 
 C           (and the metric) in the reduced space
 C
             DO I = 1,NREDH
@@ -1521,6 +1571,13 @@ C
      &                   MAXCORE,MAXION,
      &                   NRHFCORE,IRHFCORE,
      &                   NVIRION,IVIRION,LBOTHEXCI)
+                  END IF
+                  IF (LRMCORE) THEN
+                    !write(lupri,*)'CCRED remove core orbitals',J
+                    CALL CC_FREEZE_CORE(WRK(KSVEC),ISYMTR,
+     &                   MAXCORE,MAXION,
+     &                   NRHFCORE,IRHFCORE,
+     &                   NVIRION,IVIRION,.false.)
                   END IF
 
                   IF (LREDS) THEN
