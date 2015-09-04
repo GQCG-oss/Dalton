@@ -20,6 +20,7 @@ DALTON
 - Improved performance of .NEWTRA "new" integral transformation for response calculations.
 - Do not include floating orbitals in calculation of smallest atom-atom distance
 - Some minor corrections to the Dalton manual.
+- Enable Tamm-Dancoff approximation (.TDA) for embedding models, e.g. PE, PCM etc.
 
 
 LSDALTON
