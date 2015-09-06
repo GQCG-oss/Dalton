@@ -162,11 +162,11 @@ contains
     !========================================================
     real(realk),pointer :: CalphaR(:),CalphaG(:),CalphaF(:),CalphaD(:),CalphaCvirt(:),CalphaCocc(:)
     real(realk),pointer :: CalphaP(:), CalphaCoccT(:)
-    real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabs(:), CalphaCcabsT(:), CalphaT(:)
+    real(realk),pointer :: CalphaRcabsMO(:),CalphaGcabsAO(:),CalphaX(:),CalphaCcabsT(:), CalphaT(:)
     real(realk),pointer :: CalphaGcabsMO(:),CalphaXcabsAO(:)
-    real(realk),pointer :: ABdecompR(:,:),ABdecompG(:,:),ABdecompC(:,:)
+    real(realk),pointer :: ABdecompR(:,:),ABdecompG(:,:)
     real(realk),pointer :: ABdecompF(:,:),Umat(:,:),Rtilde(:,:),ABdecompX(:,:),ABdecompX2(:,:)
-    logical :: ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateC,ABdecompCreateX2
+    logical :: ABdecompCreateR,ABdecompCreateG,ABdecompCreateF,ABdecompCreateX2
     logical :: FORCEPRINT,use_bg_buf,LS,ABdecompCreateX
 
     character :: intspec(5)
@@ -959,29 +959,18 @@ contains
    call mem_dealloc(CalphaR)
    call mem_dealloc(CalphaRcabsMO)
 
-    !==========================================================
-    != V5: Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj              =
-    !========================================================== 
-    call mem_alloc(ABdecompC,nAux,nAux)
-    ABdecompCreateC = .TRUE.
-    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-    intspec(2) = 'R' !Regular AO basis function on center 4 
-    intspec(3) = 'C' !Cabs AO basis function on center 3
-    intspec(4) = 'G' !The Gaussian geminal operator g
-    intspec(5) = 'G' !The Gaussian geminal operator g
-
-    call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
-         & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CMO_CABS,ncabsMO,&
-         & mynum,numnodes,CalphaCcabs,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-
-    m = NBA*noccEOS       
-    k = ncabsMO         ! C_mn = A_mk B_kn
-    n = nvirtAOS
+   !==========================================================
+   != V5: Caibj = (Gcibj*Fac + Gcjai*Fcb)*Taibj              =
+   !========================================================== 
+   !CalphaCcabs(NBA,noccEOS,ncabsMO) replaced by CalphaGcabsMO(NBA,noccEOS,ncabsMO)
 
     !C(alpha*i,ncabsMO)*F(cabsMO,nvirt)
-    nsize = nBA*noccEOS*ncabsMO
-    call mem_alloc(CalphaD, nsize)
-    call dgemm('N','T',m,n,k,1.0E0_realk,CalphaCcabs,m,Fac,n,0.0E0_realk,CalphaD,m)
+    nsize = nBA*noccEOS*nvirtAOS
+    call mem_alloc(CalphaD,nsize)
+    m = NBA*noccEOS       
+    n = nvirtAOS
+    k = ncabsMO         
+    call dgemm('N','T',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fac,n,0.0E0_realk,CalphaD,m)
 
     intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
     intspec(2) = 'R' !Regular AO basis function on center 3
@@ -990,7 +979,7 @@ contains
     intspec(5) = 'G' !The Gaussian geminal operator g
     call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,nbasis,nAux,LUPRI,&
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CvAOS,nvirtAOS,&
-         & mynum,numnodes,CalphaCvirt,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
+         & mynum,numnodes,CalphaCvirt,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
     call ContractTwo4CenterF12IntegralsRIV5_dec(nBA,noccEOS,nvirtAOS,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
 
@@ -1003,10 +992,7 @@ contains
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
 #endif  
 
-    ABdecompCreateG = .FALSE.
     call mem_dealloc(CalphaD)
-    call mem_dealloc(ABdecompC)
-    call mem_dealloc(CalphaCcabs)
     call mem_dealloc(CalphaCvirt)
 
     !==========================================================
@@ -1025,11 +1011,9 @@ contains
      intspec(4) = 'G' !The Gaussian geminal operator g
      intspec(5) = 'G' !The Gaussian geminal operator g
      
-     call mem_alloc(ABdecompC,nAux,nAux)
      call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,CoAOStot,noccAOStot,CoAOS,noccAOS,mynum,numnodes,CalphaCocc,&
-        & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-     call mem_dealloc(ABdecompC)
+        & NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
      !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
      nsize = NBA*noccAOStot*noccEOS
@@ -1045,11 +1029,9 @@ contains
      intspec(4) = 'G' !The Gaussian geminal operator g
      intspec(5) = 'G' !The Gaussian geminal operator g
      
-     call mem_alloc(ABdecompC,nAux,nAux)
      call Build_CalphaMO2(MyFragment%MyLsitem,master,ncabsAO,nbasis,nAux,LUPRI, &
         & FORCEPRINT,wakeslaves,CMO_CABS,ncabsMO,CoAOS,noccAOS, &
-        & mynum,numnodes,CalphaCcabsT,NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-     call mem_dealloc(ABdecompC)
+        & mynum,numnodes,CalphaCcabsT,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
      
      nsize = NBA*noccEOS*ncabsMO
      call mem_alloc(CalphaP,nsize)
@@ -1178,11 +1160,9 @@ contains
      intspec(5) = 'G' !The Gaussian geminal operator g
     
      !NB! Can be optimized! 
-     call mem_alloc(ABdecompC,nAux,nAux)
      call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,nbasis,nAux,LUPRI,&
         & FORCEPRINT,wakeslaves,CoAOStot,noccAOStot,CoEOS,noccEOS,mynum,numnodes,CalphaCocc,&
-        & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-     call mem_dealloc(ABdecompC)
+        & NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
    !We need CalphaG(NBA,nocc,noccAOS) but this is a subset of                                                               
    !CalphaG(NBA,nocc,nbasis) which we already have                                                                           
@@ -1257,12 +1237,9 @@ contains
    intspec(4) = 'G' !The Gaussian geminal operator g
    intspec(5) = 'G' !The Gaussian geminal operator g
 
-   call mem_alloc(ABdecompC,nAux,nAux)
-   ABdecompCreateC = .TRUE.
    call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,nbasis,nAux,LUPRI,&
       & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CoAOStot,noccAOStot,mynum,numnodes,CalphaCoccT,&
-      & NBA,ABdecompC,ABdecompCreateC,intspec,use_bg_buf)
-   call mem_dealloc(ABdecompC)
+      & NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
    !> Dgemm 
    nsize = nBA*noccEOS*noccAOStot
