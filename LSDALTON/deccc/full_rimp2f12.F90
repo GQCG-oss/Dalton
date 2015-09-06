@@ -736,6 +736,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 #ifdef VAR_MPI 
       nsize = NBA*nocv*nocc
       call mem_alloc(CalphaT,nsize)               ! G_qj = C_qk B_kj 
+      !CalphaT(NBA,nocv,nocc) = CalphaG(NBA,nocv,nocc)*F(nocc,nocc)
       M = nocv*NBA         !rows of Output Matrix
       K = nocc             !summation dimension
       N = nocc             !columns of Output Matrix
