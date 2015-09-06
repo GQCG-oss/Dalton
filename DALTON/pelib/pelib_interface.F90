@@ -210,22 +210,6 @@ subroutine pelib_ifc_slave(runtype)
     end if
     call qexit('pelib_ifc_slave')
 end subroutine pelib_ifc_slave
-
-subroutine pelib_ifc_start_slaves(runtyp)
-    integer :: runtyp
-#include "iprtyp.h"
-#include "maxorb.h"
-#include "infpar.h"
-    integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
-    call qenter('pelib_ifc_start_slaves')
-    if (.not. use_pelib()) call quit('PElib not active')
-    if (master /= 0) call quit('ERROR: PElib assumes master id 0')
-    if (nodtot >= 1) then
-        call mpixbcast(iprtyp, 1, 'INTEGER', master)
-        call mpixbcast(runtyp, 1, 'INTEGER', master)
-    end if
-    call qexit('pelib_ifc_start_slaves')
-end subroutine pelib_ifc_start_slaves
 #endif
 
 subroutine pelib_ifc_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
@@ -1323,6 +1307,24 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
 end subroutine pelib_ifc_cro
 #endif
 
+#if defined(VAR_MPI)
+subroutine pelib_ifc_start_slaves(runtyp)
+    integer :: runtyp
+#include "iprtyp.h"
+#include "maxorb.h"
+#include "infpar.h"
+    integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
+    call qenter('pelib_ifc_start_slaves')
+    if (.not. use_pelib()) call quit('PElib not active')
+    if (master /= 0) call quit('ERROR: PElib assumes master id 0')
+    if (nodtot >= 1) then
+        call mpixbcast(iprtyp, 1, 'INTEGER', master)
+        call mpixbcast(runtyp, 1, 'INTEGER', master)
+    end if
+    call qexit('pelib_ifc_start_slaves')
+end subroutine pelib_ifc_start_slaves
+#endif
+
 end module pelib_interface
 
 #else
@@ -1426,13 +1428,6 @@ subroutine pelib_ifc_slave(runtype)
     call quit('using dummy PElib interface routines')
     call qexit('pelib_ifc_slave')
 end subroutine pelib_ifc_slave
-
-subroutine pelib_ifc_start_slaves(runtyp)
-    integer :: runtyp
-    call qenter('pelib_ifc_start_slaves')
-    call quit('using dummy PElib interface routines')
-    call qexit('pelib_ifc_start_slaves')
-end subroutine pelib_ifc_start_slaves
 #endif
 
 subroutine pelib_ifc_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
@@ -1515,4 +1510,12 @@ end subroutine pelib_ifc_cro
 #endif
 
 end module pelib_interface
+
+subroutine pelib_ifc_start_slaves(runtyp)
+    integer :: runtyp
+    call qenter('pelib_ifc_start_slaves')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_start_slaves')
+end subroutine pelib_ifc_start_slaves
+
 #endif
