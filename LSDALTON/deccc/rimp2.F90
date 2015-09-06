@@ -216,7 +216,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
 #endif
   IF(DECinfo%RIMP2_Laplace)THEN
-     call mem_alloc(LaplaceW,nLaplace)
+     call mem_alloc(LaplaceW,nLaplace,'RIMP2:LaplaceW')
      LaplaceW = (/ 0.009348, &
           & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
           & 7.810243, 16.172017, 35.929402 /)
@@ -398,28 +398,28 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_pseudo_alloc(ABdecomp,nbasisAux8,nbasisAux8)
      ELSE     
         IF(DECinfo%RIMP2_Laplace)THEN
-           call mem_alloc(TauVirt,nvirt,nLaplace)
-           call mem_alloc(TauOcc,nocc,nLaplace)
+           call mem_alloc(TauVirt,nvirt,nLaplace,'RIMP2:TauVirt')
+           call mem_alloc(TauOcc,nocc,nLaplace,'RIMP2:TauOcc')
         ENDIF
-        call mem_alloc(EVocc,nocc)
-        call mem_alloc(EVvirt,nvirt)
-        call mem_alloc(UoccEOST,nocc,noccEOS) 
-        call mem_alloc(UvirtT,nvirt,nvirt) 
-        call mem_alloc(UvirtEOST,nvirt,nvirtEOS)
-        call mem_alloc(UoccT,nocc,nocc) 
+        call mem_alloc(EVocc,nocc,'RIMP2:EVocc')
+        call mem_alloc(EVvirt,nvirt,'RIMP2:EVvirt')
+        call mem_alloc(UoccEOST,nocc,noccEOS,'RIMP2:UoccEOST') 
+        call mem_alloc(UvirtT,nvirt,nvirt,'RIMP2:UvirtT') 
+        call mem_alloc(UvirtEOST,nvirt,nvirtEOS,'RIMP2:UvirtEOST') 
+        call mem_alloc(UoccT,nocc,nocc,'RIMP2:UoccT') 
         IF(first_order)THEN
-           call mem_alloc(CvirtAOS,nbasis,nvirt)
-           call mem_alloc(CvirtEOS,nbasis,nvirtEOS)
-           call mem_alloc(CoccEOS,nbasis,noccEOS)
+           call mem_alloc(CvirtAOS,nbasis,nvirt,'RIMP2:CvirtAOS') 
+           call mem_alloc(CvirtEOS,nbasis,nvirtEOS,'RIMP2:CvirtEOS')
+           call mem_alloc(CoccEOS,nbasis,noccEOS,'RIMP2:CoccEOS')
         ENDIF
         if(fc) then
-           call mem_alloc(UoccallT,nocctot,nocctot) 
-           call mem_alloc(CDIAGoccALL,nbasis,nocctot) 
+           call mem_alloc(UoccallT,nocctot,nocctot,'RIMP2:UoccallT') 
+           call mem_alloc(CDIAGoccALL,nbasis,nocctot,'RIMP2:CDIAGoccALL') 
         endif
         IF(first_order)THEN
-           call mem_alloc(CoccTmp,nbasis,nocctot) 
+           call mem_alloc(CoccTmp,nbasis,nocctot,'RIMP2:CoccTmp') 
         ENDIF
-        call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
+        call mem_alloc(ABdecomp,nbasisAux,nbasisAux,'RIMP2:ABdecomp')
      ENDIF
 !     IF(DECinfo%MemDebugPrint)THEN
 !        print*,'SLAVE After Allocation of EVocc etc. nsize=',nsize
@@ -502,28 +502,28 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call mem_pseudo_alloc(ABdecomp,nbasisAux8,nbasisAux8)
      ELSE     
         IF(DECinfo%RIMP2_Laplace)THEN
-           call mem_alloc(TauVirt,nvirt,nLaplace)
-           call mem_alloc(TauOcc,nocc,nLaplace)
+           call mem_alloc(TauVirt,nvirt,nLaplace,'RIMP2:TauVirt')
+           call mem_alloc(TauOcc,nocc,nLaplace,'RIMP2:TauOcc')
         ENDIF
-        call mem_alloc(EVocc,nocc)
-        call mem_alloc(EVvirt,nvirt)
-        call mem_alloc(UoccEOST,nocc,noccEOS) 
-        call mem_alloc(UvirtT,nvirt,nvirt) 
-        call mem_alloc(UvirtEOST,nvirt,nvirtEOS)
-        call mem_alloc(UoccT,nocc,nocc) 
+        call mem_alloc(EVocc,nocc,'RIMP2:EVocc')
+        call mem_alloc(EVvirt,nvirt,'RIMP2:EVvirt')
+        call mem_alloc(UoccEOST,nocc,noccEOS,'RIMP2:UoccEOST') 
+        call mem_alloc(UvirtT,nvirt,nvirt,'RIMP2:UvirtT') 
+        call mem_alloc(UvirtEOST,nvirt,nvirtEOS,'RIMP2:UvirtEOST') 
+        call mem_alloc(UoccT,nocc,nocc,'RIMP2:UoccT') 
         IF(first_order)THEN
-           call mem_alloc(CvirtAOS,nbasis,nvirt)
-           call mem_alloc(CvirtEOS,nbasis,nvirtEOS)
-           call mem_alloc(CoccEOS,nbasis,noccEOS)
+           call mem_alloc(CvirtAOS,nbasis,nvirt,'RIMP2:CvirtAOS') 
+           call mem_alloc(CvirtEOS,nbasis,nvirtEOS,'RIMP2:CvirtEOS')
+           call mem_alloc(CoccEOS,nbasis,noccEOS,'RIMP2:CoccEOS')
         ENDIF
         if(fc) then
-           call mem_alloc(UoccallT,nocctot,nocctot) 
-           call mem_alloc(CDIAGoccALL,nbasis,nocctot) 
+           call mem_alloc(UoccallT,nocctot,nocctot,'RIMP2:UoccallT') 
+           call mem_alloc(CDIAGoccALL,nbasis,nocctot,'RIMP2:CDIAGoccALL') 
         endif
         IF(first_order)THEN
-           call mem_alloc(CoccTmp,nbasis,nocctot) 
+           call mem_alloc(CoccTmp,nbasis,nocctot,'RIMP2:CoccTmp') 
         ENDIF
-        call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
+        call mem_alloc(ABdecomp,nbasisAux,nbasisAux,'RIMP2:ABdecomp')
      ENDIF
 !     IF(DECinfo%MemDebugPrint)THEN
 !        print*,'MASTER After Allocation of EVocc etc. nsize=',nsize
@@ -624,7 +624,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(use_bg_buf)THEN
            call mem_pseudo_alloc(CDIAGoccALLcf,nocctot8,nbasis8)
         ELSE
-           call mem_alloc(CDIAGoccALLcf,nocctot,nbasis)
+           call mem_alloc(CDIAGoccALLcf,nocctot,nbasis,'RIMP2:CDIAGoccALLcf')
         ENDIF
         call PlaceCoreOrbFirst2(CDIAGoccALL,nbasis,nocctot,ncore,nocc,CDIAGoccALLcf)     
         M = nbasis           !rows of Output Matrix
@@ -763,10 +763,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ELSE
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Ctmp2(',nsize1,')'
-           call mem_alloc(Ctmp2,nsize1)
+           call mem_alloc(Ctmp2,nsize1,'RIMP2:Ctmp2')
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Ctmp(',nsize2,')'
-           call mem_alloc(Ctmp,nsize2)
+           call mem_alloc(Ctmp,nsize2,'RIMP2:Ctmp')
         ENDIF
         !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
         !$acc enter data create(Ctmp,Ctmp2) copyin(Calpha)
@@ -932,13 +932,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            ELSE
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tocc2(',nsize1,')'
-              call mem_alloc(tocc2,nsize1)
+              call mem_alloc(tocc2,nsize1,'RIMP2:tocc2')
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tocc(',nsize2,')'
-              call mem_alloc(tocc,nsize2)
+              call mem_alloc(tocc,nsize2,'RIMP2:tocc')
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tocc2TMP(',nsize3,')'
-              call mem_alloc(tocc2TMP,nsize3)
+              call mem_alloc(tocc2TMP,nsize3,'RIMP2:tocc2TMP')
            ENDIF
            !$acc enter data create(tocc,tocc2,tocc2TMP) copyin(Calpha) 
            DO I=1,nTiles
@@ -1019,10 +1019,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            ELSE
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tocc2(',nsize1,')'
-              call mem_alloc(tocc2,nsize1)
+              call mem_alloc(tocc2,nsize1,'RIMP2:tocc2B')
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tocc(',nsize2,')'
-              call mem_alloc(tocc,nsize2)
+              call mem_alloc(tocc,nsize2,'RIMP2:toccB')
            ENDIF
            !$acc enter data create(tocc,tocc2) copyin(Calpha)
            IF(DECinfo%DECNP)THEN
@@ -1064,7 +1064,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ELSE
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc tocc3(',nsize,')'
-           call mem_alloc(tocc3,nsize)
+           call mem_alloc(tocc3,nsize,'RIMP2:tocc3B')
         ENDIF
         !$acc enter data create(tocc3)
         call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tocc2,M,UvirtT,K,0.0E0_realk,tocc3,M,&
@@ -1133,10 +1133,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            ELSE
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc Ctmp2(',nsize1,')'
-              call mem_alloc(Ctmp2,nsize1)
+              call mem_alloc(Ctmp2,nsize1,'RIMP2:Ctmp2C')
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc Ctmp(',nsize2,')'
-              call mem_alloc(Ctmp,nsize2)
+              call mem_alloc(Ctmp,nsize2,'RIMP2:CtmpC')
            ENDIF
            !Ctmp(alpha,a,I,l) = TauVirt(A,l)*C(alpha,A,I)*U(A,a)
            !$acc enter data create(Ctmp,Ctmp2)
@@ -1194,10 +1194,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            ELSE
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt2(',nsize2,')'
-              call mem_alloc(tvirt2,nsize2)
+              call mem_alloc(tvirt2,nsize2,'RIMP2:tvirt2b')
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt(',nsize1,')'
-              call mem_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG
+              call mem_alloc(tvirt,nsize1,'RIMP2:tvirtb') !IDIAG,JDIAG,ALOC,BDIAG
            ENDIF
            !$acc enter data create(tvirt,tvirt2)
            IF(DECinfo%DECNP)THEN
@@ -1232,7 +1232,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               call mem_dealloc(tvirt)
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt3(',nsize,')'
-              call mem_alloc(tvirt3,nsize)
+              call mem_alloc(tvirt3,nsize,'RIMP2:tvirt3b')
            ENDIF
            !Transform first occupied index (IDIAG,JDIAG,ALOC,BLOC) => (ILOC,JDIAG,ALOC,BLOC)
            M = nocc                    !rows of Output Matrix
@@ -1303,10 +1303,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      ELSE
         IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
         IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha2(',nsize,')'
-        call mem_alloc(Calpha2,nsize)
+        call mem_alloc(Calpha2,nsize,'RIMP2:Calha2')
         IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
         IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha3(',nsize,')'
-        call mem_alloc(Calpha3,nsize)
+        call mem_alloc(Calpha3,nsize,'RIMP2:Calha3')
      ENDIF
      ! Transform Calpha(ALPHA,a,i) to local occupied index and local Virt
      ! Transform index delta to local occupied index 
@@ -1384,10 +1384,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            ELSE
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha2(',nsize2,')'
-              call mem_alloc(Calpha2,nsize2)
+              call mem_alloc(Calpha2,nsize2,'RIMP2:Calha2B')
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha3(',nsize3,')'
-              call mem_alloc(Calpha3,nsize3)
+              call mem_alloc(Calpha3,nsize3,'RIMP2:Calha3B')
            ENDIF
            !Look at the MP2 code for discussion on frozen core and first_order_integrals
            !and the order of core and valence in nocctot
@@ -1420,7 +1420,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            ELSE
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha2(',nsize,')'
-              call mem_alloc(Calpha2,nsize)
+              call mem_alloc(Calpha2,nsize,'RIMP2:Calha2C')
            ENDIF
            ! Transform index delta to local occupied index 
            !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
@@ -1439,7 +1439,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ELSE
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha3(',nsize,')'
-           call mem_alloc(Calpha3,nsize)
+           call mem_alloc(Calpha3,nsize,'RIMP2:Calha3C')
         ENDIF
 !$acc enter data create(Calpha3)
         IF(DECinfo%DECNP)THEN
@@ -1563,10 +1563,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ELSE
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha2(',nsize2,')'
-           call mem_alloc(Calpha2,nsize2)
+           call mem_alloc(Calpha2,nsize2,'RIMP2:Calha2D')
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha3(',nsize3,')'
-           call mem_alloc(Calpha3,nsize3)
+           call mem_alloc(Calpha3,nsize3,'RIMP2:Calha3D')
         ENDIF
 
         CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -1639,7 +1639,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ELSE
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha2(',nsize,')'
-           call mem_alloc(Calpha2,nsize)
+           call mem_alloc(Calpha2,nsize,'RIMP2:Calha2E')
         ENDIF
         !(alphaAux,nvirtEOS,noccAOS) = (alphaAux;nvirt,noccAOS)*Uvirt(nvirt,nvirtEOS)
         nsize = nba*nvirtEOS*nocc
@@ -1650,7 +1650,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ELSE
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc Calpha3(',nsize,')'
-           call mem_alloc(Calpha3,nsize)
+           call mem_alloc(Calpha3,nsize,'RIMP2:Calha3E')
         ENDIF
 !$acc enter data create(Calpha2,Calpha3)
         !(alphaAux;nvirt,noccAOS) = (alphaAux;nvirt,nocc)*U(nocc,noccAOS)
@@ -2873,7 +2873,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
 !#endif
 
 !  IF(DECinfo%RIMP2_Laplace)THEN
-!     call mem_alloc(LaplaceW,nLaplace)
+!     call mem_alloc(LaplaceW,nLaplace,'RIMP2Cc:LaplaceW')
 !     LaplaceW = (/ 0.009348, &
 !          & 0.035196, 0.107559, 0.293035, 0.729094, 1.690608, 3.709278, &
 !          & 7.810243, 16.172017, 35.929402 /)
@@ -2990,14 +2990,14 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
       call mem_pseudo_alloc(ABdecomp,nbasisAux8,nbasisAux8)
    ELSE     
       !        IF(DECinfo%RIMP2_Laplace)THEN
-      !           call mem_alloc(TauVirt,nvirt,nLaplace)
-      !           call mem_alloc(TauOcc,nocc,nLaplace)
+      !           call mem_alloc(TauVirt,nvirt,nLaplace,'RIMP2Cc:TauVirt')
+      !           call mem_alloc(TauOcc,nocc,nLaplace,'RIMP2Cc:TauOcc')
       !        ENDIF
-      call mem_alloc(EVocc,nocc)
-      call mem_alloc(EVvirt,nvirt)
-      call mem_alloc(UoccEOST,nocc,noccEOS) 
-      call mem_alloc(UvirtT,nvirt,nvirt) 
-      call mem_alloc(ABdecomp,nbasisAux,nbasisAux)
+      call mem_alloc(EVocc,nocc,'RIMP2Cc:EVocc')
+      call mem_alloc(EVvirt,nvirt,'RIMP2Cc:EVvirt')
+      call mem_alloc(UoccEOST,nocc,noccEOS,'RIMP2Cc:UoccEOST') 
+      call mem_alloc(UvirtT,nvirt,nvirt,'RIMP2Cc:UvirtT') 
+      call mem_alloc(ABdecomp,nbasisAux,nbasisAux,'RIMP2Cc:ABdecomp')
    ENDIF
 
   CALL LSTIMER('DECRIMP2: INIT ',TS2,TE2,LUPRI,FORCEPRINT)
@@ -3023,9 +3023,9 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      call mem_pseudo_alloc(Fca_diag,ncabsMO*i8,nvirt*i8)
      call mem_pseudo_alloc(Fca_local,ncabsMO*i8,nvirt*i8)
   ELSE
-     call mem_alloc(CFtmp,ncabsAO,nvirt)
-     call mem_alloc(Fca_diag,ncabsMO,nvirt)
-     call mem_alloc(Fca_local,ncabsMO,nvirt)
+     call mem_alloc(CFtmp,ncabsAO,nvirt,'RIMP2Cc:CFtmp')
+     call mem_alloc(Fca_diag,ncabsMO,nvirt,'RIMP2Cc:Fca_diag')
+     call mem_alloc(Fca_local,ncabsMO,nvirt,'RIMP2Cc:Fca_local')
   ENDIF
   Fca_local(:,1:nvirt) = Myfragment%Fcp(:,nocc+1:nbasis)
   !Transform Local Virtual index to Diagonal/canonical index 
@@ -3189,13 +3189,13 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
         call mem_pseudo_alloc(tocc3,nsize)
         call mem_pseudo_alloc(TCijAB,nsize)
      ENDIF
-     IF(.NOT.use_bg_buf)call mem_alloc(TCijAB,nsize)
+     IF(.NOT.use_bg_buf)call mem_alloc(TCijAB,nsize,'RIMP2Cc:TCijAB')
      call RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,TCijAB)
      !Transform first Virtual index (ILOC,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BLOC)
      M = nocceos*nocceos*nvirt  !rows of Output Matrix
      N = nvirt                  !columns of Output Matrix
      K = nvirt                  !summation dimension
-     IF(.NOT.use_bg_buf)call mem_alloc(tocc3,nsize)
+     IF(.NOT.use_bg_buf)call mem_alloc(tocc3,nsize,'RIMP2Cc:tocc3')
      call DGEMM('N','N',M,N,K,1.0E0_realk,TCijAB,M,UvirtT,K,0.0E0_realk,tocc3,M)
      !Final virtual transformation 
      IF(use_bg_buf)THEN
@@ -3204,7 +3204,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
         call mem_dealloc(TCijAB)
      ENDIF
      !Transform last Virtual index (ILOC,JLOC,ADIAG,BLOC) => (ILOC,ALOC,BLOC,JLOC)
-     IF(.NOT.use_bg_buf)call mem_alloc(TCiajbEOS,nsize)
+     IF(.NOT.use_bg_buf)call mem_alloc(TCiajbEOS,nsize,'RIMP2Cc:TCiajbEOS')
      call RIMP2_calc_toccB2(nvirt,noccEOS,tocc3,UvirtT,TCiajbEOS)
      IF(use_bg_buf)Then
         call mem_pseudo_dealloc(tocc3)
@@ -3216,7 +3216,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      IF(use_bg_buf)Then
         call mem_pseudo_alloc(TCiajbEOS,nsize)
      ELSE
-        call mem_alloc(TCiajbEOS,nsize)
+        call mem_alloc(TCiajbEOS,nsize,'RIMP2Cc:TCiajbEOSb')
      ENDIF
      call ls_dzero8(TCiajbEOS,nSize)
   ENDIF
@@ -3235,13 +3235,13 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
         call mem_pseudo_alloc(Galpha2EOS,nsize)
      ENDIF
      ! Transform Galpha(ALPHA,i,A) = Galpha(ALPHA,I,A)*UoccEOST(nocc,noccEOS)
-     IF(.NOT.use_bg_buf)call mem_alloc(GalphaTMP,nsize)
+     IF(.NOT.use_bg_buf)call mem_alloc(GalphaTMP,nsize,'RIMP2Cc:GalphaTMP')
      call RIMP2F12_Ccoup_TransOcc(Galpha,NBA,nocc,nvirt,UoccEOST,noccEOS,GalphaTMP)
      ! Transform Galpha(ALPHA,i,a) = Galpha(ALPHA,i,A)*Uvirt(nvirt,nvirt)
      M = nba*nocc  !rows of Output Matrix
      N = nvirt     !columns of Output Matrix
      K = nvirt     !summation dimension
-     IF(.NOT.use_bg_buf)call mem_alloc(GalphaEOS,nsize)
+     IF(.NOT.use_bg_buf)call mem_alloc(GalphaEOS,nsize,'RIMP2Cc:GalphaEOS')
      call DGEMM('N','N',M,N,K,1.0E0_realk,GalphaTMP,M,UvirtT,K,0.0E0_realk,GalphaEOS,M)
 
      ! Transform Galpha2(ALPHA,i,A) = Galpha2(ALPHA,I,A)*UoccEOST(nocc,noccEOS)
@@ -3250,11 +3250,11 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      M = nba*nocc  !rows of Output Matrix
      N = nvirt     !columns of Output Matrix
      K = nvirt     !summation dimension        
-     IF(.NOT.use_bg_buf)call mem_alloc(Galpha2EOS,nsize)
+     IF(.NOT.use_bg_buf)call mem_alloc(Galpha2EOS,nsize,'RIMP2Cc:Galpha2EOS')
      call DGEMM('N','N',M,N,K,1.0E0_realk,GalphaTMP,M,UvirtT,K,0.0E0_realk,Galpha2EOS,M)
      IF(.NOT.use_bg_buf)call mem_dealloc(GalphaTMP)
 
-     IF(.NOT.use_bg_buf)call mem_alloc(CiajbEOS,nsize2)
+     IF(.NOT.use_bg_buf)call mem_alloc(CiajbEOS,nsize2,'RIMP2Cc:CiajbEOS')
      call RIMP2F12_Ccoup_CiajbEOS(GalphaEOS,NBA,noccEOS,nvirt,Galpha2EOS,CiajbEOS)
      IF(use_bg_buf)THEN
         call mem_pseudo_dealloc(Galpha2EOS)
@@ -3269,7 +3269,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      IF(use_bg_buf)Then
         call mem_pseudo_alloc(CiajbEOS,nsize)
      ELSE
-        call mem_alloc(CiajbEOS,nsize)
+        call mem_alloc(CiajbEOS,nsize,'RIMP2Cc:CiajbEOSf')
      ENDIF
      call ls_dzero8(CiajbEOS,nSize)
   ENDIF
