@@ -27,6 +27,7 @@ module decf12_routines_module
        & ContractOne4CenterF12IntegralsRIB23_dec, &
        & ContractTwo4CenterF12IntegralsRIV2_dec,  &
        & ContractTwo4CenterF12IntegralsRIX2_dec,  & 
+       & ContractTwo4CenterF12IntegralsRIX2_decMPI,  & 
        & ContractTwo4CenterF12IntegralsRIV34_dec, &
        & ContractTwo4CenterF12IntegralsRIV5_dec,  &
        & ContractTwo4CenterF12IntegralsRIX34_dec, &
@@ -289,7 +290,58 @@ subroutine ContractTwo4CenterF12IntegralsRIV2_dec(nBA,nBA2,n1,n2,CalphaR,CalphaG
    EJK = 5.0E0_realk/4.0E0_realk*EJ - 1.0E0_realk/4.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIV2_dec
 
-subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,n1,n2,CalphaC,CalphaCMPI,CalphaG,EJK,dopair_occ_in)
+subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,n1,n2,CalphaC,CalphaG,EJK,dopair_occ_in)
+ implicit none
+   integer,intent(in)        :: nBA,nBA2,n1,n2
+   real(realk),intent(in)    :: CalphaC(nBA,n2,n1)
+   real(realk),intent(in)    :: CalphaG(nBA,n2,n1)
+   real(realk),intent(inout) :: EJK
+   real(realk)               :: ED, EJ,EK
+   !local variables
+   integer :: q,p,i,j,alpha,beta,gamma
+   real(realk) :: tmpG1,tmpG2,tmpG3,tmpG4,tmpR1,tmp
+   !Dopair                                                                          
+   logical,intent(in),optional :: dopair_occ_in(n1,n1)
+   logical :: dopair_occ(n1,n1)
+   if(present(dopair_occ_in)) then
+      dopair_occ = dopair_occ_in
+   else
+      dopair_occ = .TRUE.
+   endif   
+   !Exchange Ripjq*Gjpiq Scaling(N*N*O*O*Naux)
+   tmp = 0.0E0_realk
+   ED =  0.0E0_realk
+   EJ =  0.0E0_realk
+   EK =  0.0E0_realk
+   EJK = 0.0E0_realk
+   DO q=1,n2 !nocvAOS
+      DO p=1,n2 !nocvAOS
+         DO i=1,n1 !noccEOS
+            DO j=1,n1 !noccEOS
+               if(dopair_occ(i,j)) then
+                  tmpR1 = 0.0E0_realk
+                  tmpG1 = 0.0E0_realk
+                  tmpG2 = 0.0E0_realk
+                  tmpG3 = 0.0E0_realk
+                  tmpG4 = 0.0E0_realk
+                  DO beta = 1, nBA
+                     tmpR1 = tmpR1 + CalphaC(BETA,p,i)*CalphaC(BETA,q,j)
+                     tmpG1 = tmpG1 + CalphaC(BETA,p,i)*CalphaG(BETA,q,j)
+                     tmpG2 = tmpG2 + CalphaG(BETA,p,i)*CalphaC(BETA,q,j)
+                     tmpG3 = tmpG3 + CalphaG(BETA,p,j)*CalphaC(BETA,q,i)
+                     tmpG4 = tmpG4 + CalphaC(BETA,p,j)*CalphaG(BETA,q,i)
+                  ENDDO
+                  EJ = EJ + tmpR1*(tmpG1 + tmpG2)
+                  EK = EK + tmpR1*(tmpG3 + tmpG4)
+               endif
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
+end subroutine ContractTwo4CenterF12IntegralsRIX2_dec
+
+subroutine ContractTwo4CenterF12IntegralsRIX2_decMPI(nBA,nBA2,n1,n2,CalphaC,CalphaCMPI,CalphaG,EJK,dopair_occ_in)
  implicit none
    integer,intent(in)        :: nBA,nBA2,n1,n2
    real(realk),intent(in)    :: CalphaC(nBA,n2,n1)
@@ -341,7 +393,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,n1,n2,CalphaC,CalphaC
       ENDDO
    ENDDO
    EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
-end subroutine ContractTwo4CenterF12IntegralsRIX2_dec
+end subroutine ContractTwo4CenterF12IntegralsRIX2_decMPI
 
 subroutine ContractTwo4CenterF12IntegralsRIV34_dec(nBA,NBA2,n1,n2,n3,nocv,&                                         
       & CalphaRcabs,CalphaGcabs,CalphaR,CalphaG,EJK3,EJK4,dopair_occ_in)                                            
