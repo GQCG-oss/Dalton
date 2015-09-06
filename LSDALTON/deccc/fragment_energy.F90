@@ -880,7 +880,7 @@ end subroutine AddF12CcouplingCorrection
     call init_threadmemvar()
 
     ! Contributions from each individual virtual orbital
-    call mem_alloc(virt_tmp,nvirtAOS)
+    call mem_alloc(virt_tmp,nvirtAOS,'AFE:virt_tmp')
     virt_tmp = 0.0E0_realk       
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -968,7 +968,7 @@ end subroutine AddF12CcouplingCorrection
     call init_threadmemvar()
 
     ! Contributions from each individual occupied orbital
-    call mem_alloc(occ_tmp,noccAOS)
+    call mem_alloc(occ_tmp,noccAOS,'AFE:occ_tmp')
     occ_tmp = 0.0E0_realk
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1184,7 +1184,7 @@ end subroutine AddF12CcouplingCorrection
     call init_threadmemvar()
 
     ! Contributions from each individual virtual orbital
-    call mem_alloc(virt_tmp,nvirtAOS)
+    call mem_alloc(virt_tmp,nvirtAOS,'SFEP4:virt_tmp')
     virt_tmp = 0.0E0_realk       
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1238,7 +1238,7 @@ end subroutine AddF12CcouplingCorrection
     call init_threadmemvar()
 
     ! Contributions from each individual occupied orbital
-    call mem_alloc(occ_tmp,noccAOS)
+    call mem_alloc(occ_tmp,noccAOS,'SFEP4:occ_tmp')
     occ_tmp = 0.0E0_realk
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1414,7 +1414,7 @@ end subroutine AddF12CcouplingCorrection
      !$OMP REDUCTION(+:Eocc)
      call init_threadmemvar()
      ! Contributions from each individual virtual orbital
-     call mem_alloc(virt_tmp,nvirtAOS)
+     call mem_alloc(virt_tmp,nvirtAOS,'DECNPFE:virt_tmp')
      virt_tmp = 0.0E0_realk       
       
      ! Calculate Eocc
@@ -1470,7 +1470,7 @@ end subroutine AddF12CcouplingCorrection
      !$OMP REDUCTION(+:Evirt)
      call init_threadmemvar()
      ! Contributions from each individual occupied orbital
-     call mem_alloc(occ_tmp,noccAOS)
+     call mem_alloc(occ_tmp,noccAOS,'DECNPFE:occ_tmp')
      occ_tmp = 0.0E0_realk
 
      ! Calculate Evirt
@@ -1743,8 +1743,8 @@ end subroutine AddF12CcouplingCorrection
      endif
 
      ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
+     call mem_alloc(dopair_occ,noccEOS,noccEOS,'GPFE:dopair_occ')
+     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS,'GPFE:dopair_virt')
      call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
      call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
@@ -2011,8 +2011,8 @@ end subroutine AddF12CcouplingCorrection
      prefac_k = 1._realk
 
      ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
+     call mem_alloc(dopair_occ,noccEOS,noccEOS,'GPFEP4:dopair_occ')
+     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS,'GPFEP4:dopair_virt')
      call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
      call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
@@ -2204,7 +2204,7 @@ end subroutine AddF12CcouplingCorrection
 
 
     ! Get distance table and pair cut off in Angstrom
-    call mem_alloc(DistAng,natoms,natoms)
+    call mem_alloc(DistAng,natoms,natoms,'PLOTPAIR:DistAng')
     DistAng = bohr_to_angstrom*MyMolecule%DistanceTable
     cutAng = bohr_to_angstrom*paircut
 
@@ -2256,7 +2256,7 @@ end subroutine AddF12CcouplingCorrection
     end if
 
     ! x points to plot (distances in Angstrom)
-    call mem_alloc(xpoints,npoints) 
+    call mem_alloc(xpoints,npoints,'PLOTPAIR:xpoints') 
     ! xpoints(k) is set to be the beginning point of interval k
     ! (they will be reset to the middle of the interval before plotting)
     do k=1,npoints
@@ -2265,11 +2265,11 @@ end subroutine AddF12CcouplingCorrection
     end do
 
     ! y points to plot (absolute pair interaction energies in a.u.)
-    call mem_alloc(ypoints,npoints) 
+    call mem_alloc(ypoints,npoints,'PLOTPAIR:ypoints')
     ypoints = 0.0E0_realk
 
     ! Keep track of whether there are in fact data points in each interval
-    call mem_alloc(anypoints,npoints) 
+    call mem_alloc(anypoints,npoints,'PLOTPAIR:anypoints') 
     anypoints=.false.
 
 
@@ -2323,8 +2323,8 @@ end subroutine AddF12CcouplingCorrection
        return
     end if
 
-    call mem_alloc(xpoints2,npoints2) 
-    call mem_alloc(ypoints2,npoints2)
+    call mem_alloc(xpoints2,npoints2,'PLOTPAIR:xpoints2') 
+    call mem_alloc(ypoints2,npoints2,'PLOTPAIR:ypoints2')
     idx=0
     do i=1,npoints  ! loop over number of intervals (including empty ones)
        if(anypoints(i)) then ! Put values into new x and y vectors of reduced size
@@ -2504,8 +2504,8 @@ end subroutine AddF12CcouplingCorrection
 
 
      ! Get information on how the expansion should be performed:
-     call mem_alloc(exp_list_occ,no)
-     call mem_alloc(exp_list_vir,nv)
+     call mem_alloc(exp_list_occ,no,'OAF:exp_list_occ')
+     call mem_alloc(exp_list_vir,nv,'OAF:exp_list_vir')
 
 
      !Define the EOS spaces in the fragment to be able to calculate priority lists
@@ -2527,8 +2527,8 @@ end subroutine AddF12CcouplingCorrection
 
      AtomicFragment%noccEOS   = idx
      AtomicFragment%nvirtEOS = nvir_per_atom(MyAtom)
-     call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS)
-     call mem_alloc(AtomicFragment%virtEOSidx,AtomicFragment%nvirtEOS)
+     call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS,'OAF:occEOSidx')
+     call mem_alloc(AtomicFragment%virtEOSidx,AtomicFragment%nvirtEOS,'OAF:virEOSidx')
 
      idx = 1
      do i=nc+1,MyMolecule%nocc
@@ -2565,8 +2565,8 @@ end subroutine AddF12CcouplingCorrection
      !
      ! Get Initial fragment for Myatom, we include the EOS space plus Frag_Init_Size 
      ! occ/vir orbitals from the priority lists:
-     call mem_alloc(Occ_AOS,no)
-     call mem_alloc(Vir_AOS,nv)
+     call mem_alloc(Occ_AOS,no,'OAF:Occ_AOS')
+     call mem_alloc(Vir_AOS,nv,'OAF:Vir_AOS')
 
      ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
      call expand_fragment(no,nv,exp_list_occ,exp_list_vir,ninit_occ,ninit_vir,MyAtom, &
@@ -2611,8 +2611,8 @@ end subroutine AddF12CcouplingCorrection
      ! Deallocate exp list and allocate red ones:
      call mem_dealloc(exp_list_occ)
      call mem_dealloc(exp_list_vir)
-     call mem_alloc(red_list_occ,no)
-     call mem_alloc(red_list_vir,nv)
+     call mem_alloc(red_list_occ,no,'OAF:red_list_occ')
+     call mem_alloc(red_list_vir,nv,'OAF:red_list_vir')
 
      ! Overwrite ccmodel for myatom with the reduction required ccmodel
      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
