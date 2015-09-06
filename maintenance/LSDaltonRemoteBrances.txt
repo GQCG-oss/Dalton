@@ -37,28 +37,6 @@ Hackathon                       Author: Patrick E.              Status: DoNotDel
 radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
 radovan/linsca-vcd-aat          Author: Radovan                 Status: DoNotDelete (might be used to reproduce reference numbers of VCD AAT implementation)
 
-linsca-develop-OpenRSP          Author: Thomas                  Status: Stale
-linsca-mpi                      Author: Thomas                  Status: Stale
-linsca-optimize-2011            Author: Thomas,Simen            Status: Stale
-pcm_lsdalton                    Author: Roberto Di Remigio      Status: stale
-PE_titan_branch                 Author: Patrick E., Janus       Status: stale
-DECCCO                          Author: Kasper                  Status: Stale
-DECenergy                       Author: Kasper                  Status: Stale
-PMinteraction                   Author: Kasper                  Status: Stale
-PnKs_lovenest                   Author: Kasper                  Status: Stale
-cuda_api_lsdalton               Author: Janus, Radovan          Status: Stale
-linsca-ng-build                 Author: Pawel, Lea, Poul        Status: Pretty stale (from 2005)
-linsca-ng-vxcfit                Author: Pawel                   Status: Pretty stale (from 2008)
-
-origin/pari-k                   Author: Elisa                   Status: Deleted
-pari-k                          Author: Elisa                   Status: Deleted
-linsca-develop-HigherDerivatives Author:Simen                   Status: Deleted
-linsca-numerical                Author: Simen                   Status: Deleted
-dec-rpa                         Author: Johannes                Status: Deleted
-dec-sostest                     Author: Johannes                Status: Deleted
-linsca                          Author: all                     Status: Deleted (transition branch from linsca-ng to linsca-develop)
-lresc-linear                    Author: Juan                    Status: Deleted
-
 dec-patrick                     Author: Patrick E.              Status: ??????????????????????
 dec-karl                        Author: Karl                    Status: stale
 localize_wannier                Author: Karl                    Status: stale
