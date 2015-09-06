@@ -23,10 +23,8 @@ module full
   !  *****************************************
   use dec_fragment_utils
   use CABS_operations
-#ifdef MOD_UNRELEASED
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
-#endif
   use array4_simple_operations
   use array3_simple_operations
   use array2_simple_operations
@@ -86,9 +84,8 @@ contains
 
        ! run cc program
        if(DECinfo%F12) then ! F12 correction
-#ifdef MOD_UNRELEASED
-!When the code is a production code it should be released! TK
           if(DECinfo%ccModel==MODEL_MP2) then
+             !This is not a production code - it is too slow.
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
              call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr_rimp2)       
@@ -108,9 +105,6 @@ contains
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
-#else
-          call lsquit('f12 not released',-1)
-#endif
        elseif(DECinfo%ccModel==MODEL_RIMP2)then
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
@@ -232,7 +226,6 @@ contains
 
   end subroutine full_cc_dispatch
 
-#ifdef MOD_UNRELEASED
   !> \brief Calculate canonical MP2 energy for full molecular system
   !> keeping full AO integrals in memory. Only for testing.
   !> \author Kasper Kristensen
@@ -972,9 +965,7 @@ contains
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
-#endif
 
-#ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
     implicit none
     Real(realk)               :: mp2f12_EBX
@@ -1219,13 +1210,10 @@ contains
     energy = energy + 0.0625E0_realk*tmp !1/16
   end function mp2f12_E23
 
-#endif
-
   !> ***********************************************************************
   !> ****************************  CCSD F12 ********************************
   !> ***********************************************************************
 
-#ifdef MOD_UNRELEASED
   !> \brief Get CCSD-F12 energy, testing code.
   !> \date May 2012
   subroutine full_get_ccsd_f12_energy(MyMolecule,MyLsitem,Dmat,ECCSD_F12)
@@ -1943,7 +1931,6 @@ contains
     call free_cabs()
 
   end subroutine full_get_ccsd_f12_energy
-#endif
 
   !> \brief Get CCSD singles and doubles amplitude for full molecule,
   !> only to be used for debugging purposes.

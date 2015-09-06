@@ -12,8 +12,6 @@
 
 module f12_integrals_module 
 
-#ifdef MOD_UNRELEASED 
-
 #ifdef VAR_MPI   
   use infpar_module
   use lsmpi_type
@@ -70,10 +68,8 @@ module f12_integrals_module
   public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21, get_f12_fragment_energy_slave
 
   private
-#endif
 
 contains
-#ifdef MOD_UNRELEASED 
 
   !> Brief: Gives the single and pair fragment energy for V1 term in MP2F12
   !> Author: Yang M. Wang
@@ -3634,14 +3630,6 @@ contains
     call mem_dealloc(dopair_occ)
 
   end subroutine get_mp2f12_pf_E23
-
-#else
-
-  subroutine wangy_dummy_sub12()
-    implicit none
-  end subroutine wangy_dummy_sub12
-
-#endif
 
 end module f12_integrals_module
 

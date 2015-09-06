@@ -36,9 +36,7 @@ module atomic_fragment_operations
   ! F12 DEPENDENCIES 
   ! *****************************************
   use CABS_operations
-#ifdef MOD_UNRELEASED
   use f12_routines_module
-#endif
 contains
 
 
@@ -532,7 +530,6 @@ contains
   subroutine atomic_fragment_init_f12(fragment, MyMolecule)
     type(fullmolecule), intent(in) :: MyMolecule
     type(decfrag), intent(inout) :: fragment
-#ifdef MOD_UNRELEASED
 
     !> F12 Specific Variables
     integer :: nbasis, noccEOS, nvirtEOS, noccfull, nocvAOStot, nvirtAOS
@@ -694,8 +691,6 @@ contains
     call mem_alloc(fragment%Fcp, ncabsMO, nocvAOStot)
     call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOStot,fragment%Ccabs,ncabsAO,ncabsMO)
     call mem_dealloc(Fcp)
-
-#endif
 
   end subroutine atomic_fragment_init_f12
 

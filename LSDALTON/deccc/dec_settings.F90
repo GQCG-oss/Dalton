@@ -616,7 +616,7 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
-
+#endif
 
        ! KEYWORDS RELATED TO F12
        ! ***********************
@@ -656,7 +656,6 @@ contains
        case('.F12LSV1')     
           DECinfo%NaturalLinearScalingF12Terms   = .true.
           DECinfo%NaturalLinearScalingF12TermsV1 = .true.
-#endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
