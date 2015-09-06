@@ -31,9 +31,9 @@ module fragment_energy_module
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
          & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
-#ifdef MOD_UNRELEASED
   use f12_integrals_module
   use rif12_integrals_module
+#ifdef MOD_UNRELEASED
   use ccsd_gradient_module
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e5_frag,&
          & ccsdpt_energy_e5_pair, ccsdpt_decnp_e5_frag
@@ -241,7 +241,6 @@ contains
              ! ******************************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
           end if
-#ifdef MOD_UNRELEASED
           ! MP2-F12 Code
           MP2F12: if(DECinfo%F12) then    
              if(pair) then
@@ -258,7 +257,6 @@ contains
              !> Free cabs after each calculation
              call free_cabs()
           end if MP2F12
-#endif
 
     case(MODEL_RIMP2) ! RIMP2 calculation
 
@@ -286,7 +284,6 @@ contains
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        endif
 
-#ifdef MOD_UNRELEASED
        ! MP2-F12 Code
        RIMP2F12: if(DECinfo%F12) then
           IF(DECinfo%F12Ccoupling.AND.(MyFragment%isopt.or.DECinfo%F12fragopt))THEN
@@ -307,7 +304,6 @@ contains
           !> Free cabs after each calculation
           call free_cabs()
        end if RIMP2F12
-#endif
 
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
 
