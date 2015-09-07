@@ -2,7 +2,7 @@
       INTEGER         LUAORC,           NBUFX
       INTEGER         ERITAPLAST
 
-      COMMON /ERITAP/ LUAORC(0:MXCOOR), NBUFX(0:MXCOOR),
+      COMMON /ERITAP/ LUAORC(0:MXCOOR), NBUFX(0:MXCOOR),                &
      &                ERITAPLAST
 
       !   Very important !!!

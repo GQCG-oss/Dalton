@@ -70,6 +70,7 @@ contains
 ! These include files depend on previous include files
 !#include "infpar.h" 
 #include "eribuf.h" 
+#include "eritap.h"
 
 ! The rest...
 #include "inftap.h"
@@ -373,7 +374,7 @@ contains
          call dzero( work(kdensai), ldensai )
       else 
          ! For RPA initialize the addresses as negative, to ensure a crash
-         ! if they are fo some reason accessed anyway
+         ! if they are for some reason accessed anyway
          kt2am   = -1
          kdensij = -1
          kdendab = -1
@@ -401,6 +402,10 @@ contains
          ! Densab and Densij could be added here, but is currently 
          ! not used by the slaves...
       endif
+!
+!     Bugfix: need to call er2ini here, so that it does not overwrite
+!             configured values later
+      call er2ini
          
 !
 ! Go to an infinite loop... While we are here, the master 
