@@ -32,8 +32,8 @@ contains
     implicit none
     integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,NBA
     integer,intent(in) :: numnodes,mynum,offset
-    real(realk),intent(in) :: Calpha1(NBA*ndim12*ndim13)
-    real(realk),intent(in) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(in)    :: Calpha2(NBA*ndim22*ndim23)
     real(realk),intent(inout) :: Energy
     logical,intent(in) :: SlavesAwake,use_bg_buf
     integer,intent(in) :: nAuxMPI(numnodes)    
@@ -94,8 +94,8 @@ contains
        & numnodes,nAuxMPI,mynum,InputSubroutine,InputSubroutineMPI)
     implicit none
     integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,ndim32,ndim33,NBA
-    real(realk),intent(in) :: Calpha1(NBA*ndim12*ndim13)
-    real(realk),intent(in) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(inout) :: Calpha2(NBA*ndim22*ndim23)
     real(realk),intent(in) :: Calpha3(NBA*ndim32*ndim33)
     real(realk),intent(inout) :: Energy
     logical,intent(in) :: SlavesAwake,use_bg_buf
@@ -169,7 +169,7 @@ contains
     integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,NBA
     integer,intent(in) :: numnodes,mynum,offset,noccpair
     integer,intent(in) :: KVAL(3,noccpair)
-    real(realk),intent(in) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
     real(realk),intent(in) :: Calpha2(NBA*ndim22*ndim23)
     real(realk),intent(inout) :: Energy
     logical,intent(in) :: SlavesAwake,use_bg_buf
@@ -234,8 +234,8 @@ contains
     implicit none
     integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,ndim32,ndim33,NBA,noccpair
     integer,intent(in) :: KVAL(3,noccpair)
-    real(realk),intent(in) :: Calpha1(NBA*ndim12*ndim13)
-    real(realk),intent(in) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(inout) :: Calpha2(NBA*ndim22*ndim23)
     real(realk),intent(in) :: Calpha3(NBA*ndim32*ndim33)
     real(realk),intent(inout) :: Energy
     logical,intent(in) :: SlavesAwake,use_bg_buf

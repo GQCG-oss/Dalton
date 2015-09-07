@@ -505,7 +505,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    IF(wakeslaves)THEN
       nbuf1=numnodes
       call mem_alloc(nAuxMPI,nbuf1)
-      call BuildnAuxMPIUsedRI(nAux,numnodes,nAuxMPI)      
+      call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)      
    ENDIF
 #endif
 
