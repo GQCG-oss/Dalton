@@ -641,7 +641,7 @@ C     Miscellaneous
 
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world, ierr)
-
+      call er2ini
 C**********************************************************
 C     Update all necessary common blocks
 C     This large sequence of bcasts will only execute
