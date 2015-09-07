@@ -1307,8 +1307,10 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
 end subroutine pelib_ifc_cro
 #endif
 
-#if defined(VAR_MPI)
+end module pelib_interface
+
 subroutine pelib_ifc_start_slaves(runtyp)
+    use pelib_interface, only: use_pelib
     integer :: runtyp
 #include "iprtyp.h"
 #include "maxorb.h"
@@ -1316,16 +1318,12 @@ subroutine pelib_ifc_start_slaves(runtyp)
     integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
     call qenter('pelib_ifc_start_slaves')
     if (.not. use_pelib()) call quit('PElib not active')
-    if (master /= 0) call quit('ERROR: PElib assumes master id 0')
     if (nodtot >= 1) then
         call mpixbcast(iprtyp, 1, 'INTEGER', master)
         call mpixbcast(runtyp, 1, 'INTEGER', master)
     end if
     call qexit('pelib_ifc_start_slaves')
 end subroutine pelib_ifc_start_slaves
-#endif
-
-end module pelib_interface
 
 #else
 
