@@ -41,8 +41,6 @@ C
 #include "mxcent.h"
 #include "aovec.h"
 #include "iratdef.h"
-#include "eribuf.h"
-
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
@@ -66,6 +64,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
+#include "eritap.h"
 #include "soppinf.h"
 
 #ifdef VAR_MPI
@@ -445,7 +444,8 @@ C***********************************************************
          goto 888  ! Skips over the do loop that would normally assemble the Fock/density matrix sequentially
 
       endif parallelsoppa
-#endif !!endif VAR_MPI
+#endif
+!!endif VAR_MPI
 
 C-------------------------------------------------
 C           Main loop over integral-distributions.
@@ -1034,7 +1034,8 @@ C
 #endif
 ! Parameter-only include files
 #include "implicit.h"
-#include "mpif.h" !use mpi fails with some profilers...
+!use mpi fails with some profilers...
+#include "mpif.h"
 #include "priunit.h" 
 #include "maxorb.h" 
 #include "maxash.h"
@@ -1050,6 +1051,7 @@ C
 
 ! These include files depend on previous include files
 #include "infpar.h" 
+#include "eritap.h" 
 #include "eribuf.h" 
 
 ! The rest...
@@ -1168,6 +1170,10 @@ C     The array with MP2 amplitudes is passed to SO_ERES as a dummy parameter so
          if (allocstatus.ne.0)  then
             call quit('Allocation error in par_so_eres (t2mp)')
          endif
+
+         ! This call is ONLY need to set an internally saved variable
+         ! so the matching call in ERIDI2 does not cause trouble
+         call er2ini
 
          ! Get the contents of the array
          ! NOTE: The master cannot enter PAR_SO_ERES before this bcast
@@ -2126,7 +2132,8 @@ C     F.Beyer Oct. 2014
 
 
 
-#endif !VAR_MPI at the beginning of PAR_SO_ERES
+#endif
+!VAR_MPI at the beginning of PAR_SO_ERES
 
 !#ifdef NOTDEFINED
       subroutine stupid_checksum( nameofdata , checkdata, ldata )

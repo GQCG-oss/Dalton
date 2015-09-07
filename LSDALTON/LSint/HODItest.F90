@@ -14,9 +14,9 @@ MODULE HODItest_module
   private
 CONTAINS
 
-SUBROUTINE debugTestHODI(lupri,luerr,setting,D,nbast,nAtoms)
+SUBROUTINE debugTestHODI(lupri,luerr,setting,D,nbast,nAtoms,order)
 implicit none
-Integer,intent(IN)            :: lupri,luerr,nbast,nAtoms
+Integer,intent(IN)            :: lupri,luerr,nbast,nAtoms,order
 TYPE(LSSETTING),intent(INOUT) :: setting
 TYPE(Matrix),intent(IN)       :: D
 !
@@ -40,6 +40,7 @@ IF (doMPI_save) THEN
 ENDIF
 
 !******** First order *********
+IF (order.GE.1) THEN
 !Coulomb-type matrix - first-order geometrical derivative
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,1,.FALSE.,D2,&
      &'first-order geometrical-derivative Coulomb matrix')
@@ -47,8 +48,10 @@ call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast
 !Exchange-type matrix - first-order geometrical derivative
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,1,.FALSE.,D1,&
      &'first-order geometrical-derivative exchange matrix')
+ENDIF
 
 !******** Second order *********
+IF (order.GE.2) THEN
 !Coulomb-type matrix - seconde-order geometrical derivative
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,2,.FALSE.,D2,&
      &'second-order geometrical-derivative Coulomb matrix')
@@ -56,13 +59,15 @@ call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast
 !!!Exchange-type matrix - seconde-order geometrical derivative
 !!call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,2,.FALSE.,D1,&
 !!     &'second-order geometrical-derivative exchange matrix')
+ENDIF
 
 !******** Third order *********
+IF (order.GE.3) THEN
 !Coulomb-type matrix - third-order geometrical derivative, single contraction
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,3,.FALSE.,D2,&
      &'third-order geometrical-derivative Coulomb matrix')
 
-!Exchange-type matrix - third-order geometrical derivative
+!Exchange-type matrix - third-order geometrical derivative, single contraction
 call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,3,.FALSE.,D1,&
      &'third-order geometrical-derivative exchange matrix')
 
@@ -97,15 +102,50 @@ call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'nucel',ContractMat1,ncontract
 !kinetic-integral type expectation - third-order geometrical derivative
 call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'kinetic',ContractMat1,ncontract,nbast,nAtoms,3,.FALSE.,D1,&
      &'third-order kinetic-integral derivative expectation')
+ENDIF
 
 !******** Fourth order *********
-!!!Coulomb-type matrix - forth-order geometrical derivative
-!!call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,4,.FALSE.,D2,&
-!!     &'fourth-order geometrical-derivative Coulomb matrix')
+IF (order.GE.4) THEN
+!Coulomb-type matrix - fourth-order geometrical derivative, single contraction
+call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,3,4,nbast,nAtoms,4,.FALSE.,D2,&
+     &'fourth-order geometrical-derivative Coulomb matrix')
 
-!!!Exchange-type matrix - third-order geometrical derivative
-!!call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,4,.FALSE.,D1,&
-!!     &'fourth-order geometrical-derivative exchange matrix')
+!Exchange-type matrix - fourth-order geometrical derivative, single contraction
+call debugTestHodiContract1(LUPRI,LUERR,SETTING,ContractMat1,ncontract,2,4,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order geometrical-derivative exchange matrix')
+
+!Coulomb-type expectation - fourth-order geometrical derivative, double contraction
+call debugTestHodiContract2(LUPRI,LUERR,SETTING,ContractMat1,ContractMat1,ncontract,1,2,3,4,nbast,nAtoms,4,.FALSE.,D2,&
+     &'fourth-order geometrical-derivative Coulomb expectation')
+
+!Exchange-type expectation - fourth-order geometrical derivative, double contraction
+call debugTestHodiContract2(LUPRI,LUERR,SETTING,ContractMat1,ContractMat1,ncontract,1,3,2,4,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order geometrical-derivative exchange expectation')
+
+!Overlap-type matrix - fourth-order geometrical derivative
+call debugTestHodiOne(LUPRI,LUERR,SETTING,'overlap',ContractMat1,ncontract,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order overlap derivative matrix')
+
+!Nuclear-electron repulsion-type matrix - fourth-order geometrical derivative
+call debugTestHodiOne(LUPRI,LUERR,SETTING,'nucel',ContractMat1,ncontract,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order nuclear-electron repulsion derivative matrix')
+
+!kinetic-integral type matrix - fourth-order geometrical derivative
+call debugTestHodiOne(LUPRI,LUERR,SETTING,'kinetic',ContractMat1,ncontract,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order kinetic-integral derivative matrix')
+
+!Overlap-type matrix type expectation - fourth-order geometrical derivative
+call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'overlap',ContractMat1,ncontract,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order overlap derivative expectation')
+
+!Nuclear-electron repulsion type expectation - fourth-order geometrical derivative
+call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'nucel',ContractMat1,ncontract,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order nuclear-electron repulsion derivative expectation')
+
+!kinetic-integral type expectation - fourth-order geometrical derivative
+call debugTestHODIoneContract(LUPRI,LUERR,SETTING,'kinetic',ContractMat1,ncontract,nbast,nAtoms,4,.FALSE.,D1,&
+     &'fourth-order kinetic-integral derivative expectation')
+ENDIF
 
 
 DO i=1,ncontract
@@ -131,15 +171,7 @@ Integer                  :: nGeoderivComp,nc,i,j,k
 real(realk),pointer      :: expectation(:)
 real(realk),pointer      :: RMS(:)
 
-IF (geoderiv.EQ.1) THEN
-  nGeoderivComp = 3*nAtoms
-ELSE IF (geoderiv.EQ.2) THEN
-  nGeoderivComp = 9*nAtoms*nAtoms
-ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
-ELSE
-  write(lupri,'(X,A,I3)') 'Error in debugTestHODIcontract1 - unknown case geoderiv=',geoderiv
-ENDIF
+nGeoderivComp = debugTestHODI_nGeoderivPack(geoderiv,3*nAtoms)
 
 nc=ncontract
 IF (add) nc=1
@@ -193,15 +225,7 @@ Integer                  :: nGeoderivComp,nc,i,j,k
 real(realk),pointer      :: expectation(:)
 real(realk),pointer      :: RMS(:)
 
-IF (geoderiv.EQ.1) THEN
-  nGeoderivComp = 3*nAtoms
-ELSE IF (geoderiv.EQ.2) THEN
-  nGeoderivComp = 9*nAtoms*nAtoms
-ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
-ELSE
-  write(lupri,'(X,A,I3)') 'Error in debugTestHODIcontract2 - unknown case geoderiv=',geoderiv
-ENDIF
+nGeoderivComp = debugTestHODI_nGeoderivPack(geoderiv,3*nAtoms)
 
 nc=ncontract
 IF (add) nc=1
@@ -245,16 +269,7 @@ TYPE(Matrix),pointer :: oneElMat(:)
 real(realk),pointer  :: expectation(:),RMS(:)
 Integer :: n,m,mn,nGeoderivComp,nc
 
-
-IF (geoderiv.EQ.1) THEN
-  nGeoderivComp = 3*nAtoms
-ELSE IF (geoderiv.EQ.2) THEN
-  nGeoderivComp = 9*nAtoms*nAtoms
-ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
-ELSE
-  write(lupri,'(X,A,I3)') 'Error in debugTestHODIone - unknown case geoderiv=',geoderiv
-ENDIF
+nGeoderivComp = debugTestHODI_nGeoderivPack(geoderiv,3*nAtoms)
 
 nc=ncontract
 IF (add) nc=1
@@ -313,15 +328,7 @@ Character*(*)                 :: txt,oneElType
 real(realk),pointer  :: expectation(:),RMS(:)
 Integer :: n,m,mn,nGeoderivComp,nc
 
-IF (geoderiv.EQ.1) THEN
-  nGeoderivComp = 3*nAtoms
-ELSE IF (geoderiv.EQ.2) THEN
-  nGeoderivComp = 9*nAtoms*nAtoms
-ELSE IF (geoderiv.EQ.3) THEN
-  nGeoderivComp = (3*nAtoms)*(3*nAtoms+1)*(3*nAtoms+2)/6
-ELSE
-  write(lupri,'(X,A,I3)') 'Error in debugTestHODIone - unknown case geoderiv=',geoderiv
-ENDIF
+nGeoderivComp = debugTestHODI_nGeoderivPack(geoderiv,3*nAtoms)
 
 nc=ncontract
 IF (add) nc=1
@@ -347,8 +354,24 @@ ENDDO
 call mem_dealloc(expectation)
 call mem_dealloc(RMS)
 
-
-
 END SUBROUTINE debugTestHODIoneContract
+
+! Number of triangularly packed geometrical components
+! n(n+1)(n+2)...(n+g-1)/g!
+FUNCTION debugTestHODI_nGeoderivPack(g,n)
+implicit none
+integer,intent(in) :: g,n
+integer :: debugTestHODI_nGeoderivPack
+!
+integer :: c,i,m
+c = 1
+m = n
+DO i=1,g
+  c = c * m / i
+  m = m + 1
+ENDDO
+!if (g.EQ.2) c=n*n
+debugTestHODI_nGeoderivPack = c
+END FUNCTION debugTestHODI_nGeoderivPack
 
 END MODULE HODItest_module

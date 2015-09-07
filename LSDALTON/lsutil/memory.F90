@@ -13,7 +13,7 @@ use LSTENSOR_TYPETYPE
 use basis_typetype
 use dec_typedef_module
 use OverlapType
-use tensor_type_def_module
+use tensor_interface_module, only: tensor,tensor_initialize_bg_buf_from_lsdalton_bg_buf, tensor_free_bg_buf
 #ifdef MOD_UNRELEASED
 use lattice_type
 #endif
@@ -42,7 +42,6 @@ public mem_pseudo_dealloc
 public mem_init_background_alloc
 public mem_change_background_alloc
 public mem_free_background_alloc
-public mem_is_background_buf_init,mem_get_bg_buf_n,mem_get_bg_buf_free
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -1898,11 +1897,12 @@ subroutine debug_mem_stats(lupri)
   !> It prints a memory statistics summary and quits LSDALTON.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine memory_error_quit(mylabel,error_size)
+  subroutine memory_error_quit(mylabel,error_size,StringID)
      implicit none
      !> Label for routine where memory allocation failed
      integer(kind=8),intent(in) :: error_size
      character(*),intent(in) :: mylabel
+     character(*), INTENT(IN), OPTIONAL :: StringID
      !> Unit number for lsquit output 
      integer :: myoutput
      character(8) :: ERR,GLOB
@@ -1961,6 +1961,11 @@ subroutine debug_mem_stats(lupri)
 
      write(myoutput,*) 
      write(myoutput,*) 'LSDALTON is quitting because there is too little memory available!'
+     IF(present(StringID))THEN
+        write(myoutput,*) 'The String ID: ',StringID
+     ELSE
+        write(myoutput,*) 'No String ID specified'
+     ENDIF
      write(myoutput,*) 'The program was trying to allocate ',ERR,&
         &' in addition to the ',GLOB,' already allocated.'
      write(myoutput,*) 'Increase available memory if possible (eg. through your submit script or you),'
@@ -2012,6 +2017,24 @@ subroutine mem_init_background_alloc(bytes)
    buf_realk%n_mdel = 0
    buf_realk%l_mdel = .false.
    buf_realk%max_usage = 0 
+
+   call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
+      &buf_realk%init,&
+      &buf_realk%offset,&
+      &buf_realk%nmax,&
+      &buf_realk%max_usage,&
+      &buf_realk%p,&
+      &buf_realk%c,&
+      &buf_realk%n,&
+      &buf_realk%f_addr,&
+      &buf_realk%c_addr,&
+      &buf_realk%c_mdel,&
+      &buf_realk%e_mdel,&
+      &buf_realk%n_mdel,&
+      &buf_realk%n_prev,&
+      &buf_realk%l_mdel,&
+      &buf_realk%f_mdel)
+
 end subroutine mem_init_background_alloc
 
 subroutine mem_change_background_alloc(bytes,not_lazy)
@@ -2064,7 +2087,25 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
       buf_realk%e_mdel = 0
       buf_realk%n_mdel = 0
       buf_realk%l_mdel = .false.
+      call tensor_free_bg_buf()
    endif
+
+   call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
+      &buf_realk%init,&
+      &buf_realk%offset,&
+      &buf_realk%nmax,&
+      &buf_realk%max_usage,&
+      &buf_realk%p,&
+      &buf_realk%c,&
+      &buf_realk%n,&
+      &buf_realk%f_addr,&
+      &buf_realk%c_addr,&
+      &buf_realk%c_mdel,&
+      &buf_realk%e_mdel,&
+      &buf_realk%n_mdel,&
+      &buf_realk%n_prev,&
+      &buf_realk%l_mdel,&
+      &buf_realk%f_mdel)
 
 end subroutine mem_change_background_alloc
 subroutine mem_free_background_alloc()
@@ -2101,6 +2142,7 @@ subroutine mem_free_background_alloc()
    buf_realk%l_mdel = .false.
    buf_realk%max_usage = 0 
 
+   call tensor_free_bg_buf()
 end subroutine mem_free_background_alloc
 
 
@@ -2498,24 +2540,6 @@ subroutine mem_pseudo_dealloc_realk5(p)
 
 end subroutine mem_pseudo_dealloc_realk5
 
-function mem_is_background_buf_init() result(init)
-   implicit none
-   logical :: init
-   init = buf_realk%init
-end function mem_is_background_buf_init
-
-function mem_get_bg_buf_n() result(n)
-   implicit none
-   integer(kind=8) :: n
-   n = buf_realk%nmax
-end function mem_get_bg_buf_n
-
-function mem_get_bg_buf_free() result(n)
-   implicit none
-   integer(kind=8) :: n
-   n = buf_realk%nmax-buf_realk%offset
-end function mem_get_bg_buf_free
-
 subroutine printBGinfo()
 implicit none
 print *,"BG: Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Peak:",buf_realk%max_usage
@@ -2600,10 +2624,11 @@ end subroutine mem_pseudo_dealloc_mpirealk
 
 !----- ALLOCATE REAL POINTERS -----!
 
-SUBROUTINE real_allocate_1dim(A,n)
+SUBROUTINE real_allocate_1dim(A,n,StringID)
    implicit none
    integer(kind=4),intent(in)  :: n
    REAL(REALK),pointer :: A(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    !$OMP CRITICAL
@@ -2613,15 +2638,20 @@ SUBROUTINE real_allocate_1dim(A,n)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_1dim',IERR,n
-      CALL memory_error_quit('Error in real_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         CALL memory_error_quit('Error in real_allocate_1dim',nsize,StringID)
+      ELSE
+         CALL memory_error_quit('Error in real_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_1dim
 
-SUBROUTINE real_allocate_1dim_sp(A,n)  ! single precision
+SUBROUTINE real_allocate_1dim_sp(A,n,StringID)  ! single precision
    implicit none
    integer(kind=8),intent(in)  :: n
    REAL(4),pointer :: A(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2629,16 +2659,21 @@ SUBROUTINE real_allocate_1dim_sp(A,n)  ! single precision
    nsize = size(A,KIND=long)*4
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_1dim_sp',IERR,n
-      CALL memory_error_quit('Error in real_allocate_1dim_sp',nsize)
+      IF(present(StringID))THEN
+         CALL memory_error_quit('Error in real_allocate_1dim_sp',nsize,StringID)
+      ELSE
+         CALL memory_error_quit('Error in real_allocate_1dim_sp',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_1dim_sp
 
 
-SUBROUTINE real_allocate_1dim_int64(A,n)
+SUBROUTINE real_allocate_1dim_int64(A,n,StringID)
    implicit none
    integer(kind=long),intent(in)  :: n
    REAL(REALK),pointer :: A(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    real(realk) :: MemAvail
@@ -2657,17 +2692,22 @@ SUBROUTINE real_allocate_1dim_int64(A,n)
       write(*,'("ERROR(real_allocate_1dim_int64),&
          & status=",I6," n=",I15," GBallocd=",f19.10," Sys free:",f19.10)')&
          & IERR,n,1.0E-9_realk*mem_allocated_global,MemAvail
-      CALL memory_error_quit('Error in real_allocate_1dim_int64',nsize)
+      IF(present(StringID))THEN
+         CALL memory_error_quit('Error in real_allocate_1dim_int64',nsize,StringID)
+      ELSE
+         CALL memory_error_quit('Error in real_allocate_1dim_int64',nsize)         
+      ENDIF
    ENDIF
 
    call mem_allocated_mem_real(nsize)
 
 END SUBROUTINE real_allocate_1dim_int64
 
-SUBROUTINE real_allocate_2dim(A,n1,n2)
+SUBROUTINE real_allocate_2dim(A,n1,n2,StringID)
    implicit none
    integer,intent(in)  :: n1, n2
    REAL(REALK),pointer :: A(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2675,15 +2715,20 @@ SUBROUTINE real_allocate_2dim(A,n1,n2)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_2dim',IERR,n1,n2
-      call memory_error_quit('Error in real_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in real_allocate_2dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in real_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_2dim
 
-SUBROUTINE real_allocate_2dim_sp(A,n1,n2)  ! single precision
+SUBROUTINE real_allocate_2dim_sp(A,n1,n2,StringID)  ! single precision
    implicit none
    integer,intent(in)  :: n1, n2
    REAL(4),pointer :: A(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2691,18 +2736,23 @@ SUBROUTINE real_allocate_2dim_sp(A,n1,n2)  ! single precision
    nsize = size(A,KIND=long)*4
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_2dim_sp',IERR,n1,n2
-      call memory_error_quit('Error in real_allocate_2dim_sp',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in real_allocate_2dim_sp',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in real_allocate_2dim_sp',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_2dim_sp
 
 
-SUBROUTINE real_allocate_2dim_zero(A,n1,n2,First,Second)
+SUBROUTINE real_allocate_2dim_zero(A,n1,n2,First,Second,StringID)
    ! Allocates 2d arrays starting from zero index
    ! for first,second or both dimensions
    implicit none
    integer,intent(in)  :: n1, n2
    REAL(REALK),pointer :: A(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    Logical :: First, Second
@@ -2713,7 +2763,11 @@ SUBROUTINE real_allocate_2dim_zero(A,n1,n2,First,Second)
       ALLOCATE(A(0:n1,0:n2),STAT = IERR)
       IF (IERR.NE. 0) THEN
          write(*,*) 'Error1 in real_allocate_2dim_zero',IERR,n1,n2
-         CALL MEMORY_ERROR_QUIT('Error1 in real_allocate_2dim_zero',nsize)
+         IF(present(StringID))THEN
+            CALL MEMORY_ERROR_QUIT('Error1 in real_allocate_2dim_zero',nsize,StringID)
+         ELSE
+            CALL MEMORY_ERROR_QUIT('Error1 in real_allocate_2dim_zero',nsize)
+         ENDIF
       ENDIF
    Else
       ! Only one
@@ -2721,19 +2775,31 @@ SUBROUTINE real_allocate_2dim_zero(A,n1,n2,First,Second)
          ALLOCATE(A(0:n1,n2),STAT = IERR)
          IF (IERR.NE. 0) THEN
             write(*,*) 'Error2 in real_allocate_2dim_zero',IERR,n1,n2
-            CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
+            IF(present(StringID))THEN
+               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize,StringID)
+            ELSE
+               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
+            ENDIF
          ENDIF
       Else
          If (Second) then
             ALLOCATE(A(n1,0:n2),STAT = IERR)
             IF (IERR.NE. 0) THEN
                write(*,*) 'Error2 in real_allocate_2dim_zero',IERR,n1,n2
-               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
+               IF(present(StringID))THEN
+                  CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize,StringID)
+               ELSE
+                  CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
+               ENDIF
             ENDIF
          Else
             ! None :: an error, should be at least one.
             write(*,*) 'Error2 in real_allocate_2dim_zero'
-            CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
+            IF(present(StringID))THEN
+               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize,StringID)
+            ELSE
+               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero',nsize)
+            ENDIF
          Endif
       Endif
    Endif
@@ -2741,10 +2807,11 @@ SUBROUTINE real_allocate_2dim_zero(A,n1,n2,First,Second)
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_2dim_zero
 
-SUBROUTINE real_allocate_3dim(A,n1,n2,n3)
+SUBROUTINE real_allocate_3dim(A,n1,n2,n3,StringID)
    implicit none
    integer,intent(in)  :: n1, n2, n3
    REAL(REALK),pointer :: A(:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2752,15 +2819,20 @@ SUBROUTINE real_allocate_3dim(A,n1,n2,n3)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_3dim
 
-SUBROUTINE real_allocate_3dim_sp(A,n1,n2,n3)
+SUBROUTINE real_allocate_3dim_sp(A,n1,n2,n3,StringID)
    implicit none
    integer,intent(in)  :: n1, n2, n3
    REAL(4),pointer :: A(:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2768,17 +2840,22 @@ SUBROUTINE real_allocate_3dim_sp(A,n1,n2,n3)
    nsize = size(A,KIND=long)*4
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_3dim_sp',IERR,n1,n2,n3
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim_sp',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim_sp',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim_sp',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_3dim_sp
 
 
-SUBROUTINE real_allocate_3dim_zero(A,n1,n2,n3,z1,z2,z3)
+SUBROUTINE real_allocate_3dim_zero(A,n1,n2,n3,z1,z2,z3,StringID)
    implicit none
    integer,intent(in)  :: n1, n2, n3
    logical,intent(in)  :: z1,z2,z3
    REAL(REALK),pointer :: A(:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    integer             :: i1,i2,i3
@@ -2793,15 +2870,20 @@ SUBROUTINE real_allocate_3dim_zero(A,n1,n2,n3,z1,z2,z3)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_3dim_zero
 
-SUBROUTINE real_allocate_4dim(A,n1,n2,n3,n4)
+SUBROUTINE real_allocate_4dim(A,n1,n2,n3,n4,StringID)
    implicit none
    integer,intent(in)  :: n1,n2,n3,n4
    REAL(REALK),pointer :: A(:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2809,15 +2891,20 @@ SUBROUTINE real_allocate_4dim(A,n1,n2,n3,n4)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_4dim',IERR,n1,n2,n3,n4
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_4dim
 
-SUBROUTINE real_allocate_4dim_sp(A,n1,n2,n3,n4)
+SUBROUTINE real_allocate_4dim_sp(A,n1,n2,n3,n4,StringID)
    implicit none
    integer,intent(in)  :: n1,n2,n3,n4
    REAL(4),pointer :: A(:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2825,15 +2912,20 @@ SUBROUTINE real_allocate_4dim_sp(A,n1,n2,n3,n4)
    nsize = size(A,KIND=long)*4
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_4dim_sp',IERR,n1,n2,n3,n4
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim_sp',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim_sp',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim_sp',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_4dim_sp
 
-SUBROUTINE real_allocate_5dim(A,n1,n2,n3,n4,n5)
+SUBROUTINE real_allocate_5dim(A,n1,n2,n3,n4,n5,StringID)
    implicit none
    integer,intent(in)  :: n1,n2,n3,n4,n5
    REAL(REALK),pointer :: A(:,:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -2841,18 +2933,23 @@ SUBROUTINE real_allocate_5dim(A,n1,n2,n3,n4,n5)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_5dim',IERR,n1,n2,n3,n4,n5
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_5dim
 
-SUBROUTINE real_allocate_5dim_zero(A,n1,n2,n3,n4,n5,z1,z2,z3,z4,z5)
+SUBROUTINE real_allocate_5dim_zero(A,n1,n2,n3,n4,n5,z1,z2,z3,z4,z5,StringID)
    ! Allocates 5d arrays starting from zero index
    ! for some or all dimensions
    implicit none
    integer,intent(in)  :: n1,n2,n3,n4,n5
    logical,intent(in)  :: z1,z2,z3,z4,z5
    REAL(REALK),pointer :: A(:,:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    integer             :: i1,i2,i3,i4,i5
@@ -2871,18 +2968,23 @@ SUBROUTINE real_allocate_5dim_zero(A,n1,n2,n3,n4,n5,z1,z2,z3,z4,z5)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_5dim_zero',IERR,n1,n2,n3,n4,n5
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim_zero',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim_zero',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim_zero',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_5dim_zero
 
-SUBROUTINE real_allocate_7dim_zero(A,n1,n2,n3,n4,n5,n6,n7,z1,z2,z3,z4,z5,z6,z7)
+SUBROUTINE real_allocate_7dim_zero(A,n1,n2,n3,n4,n5,n6,n7,z1,z2,z3,z4,z5,z6,z7,StringID)
    ! Allocates 5d arrays starting from zero index
    ! for some or all dimensions
    implicit none
    integer,intent(in)  :: n1,n2,n3,n4,n5,n6,n7
    logical,intent(in)  :: z1,z2,z3,z4,z5,z6,z7
    REAL(REALK),pointer :: A(:,:,:,:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    integer             :: i1,i2,i3,i4,i5,i6,i7
@@ -2905,7 +3007,11 @@ SUBROUTINE real_allocate_7dim_zero(A,n1,n2,n3,n4,n5,n6,n7,z1,z2,z3,z4,z5,z6,z7)
    nsize = size(A,KIND=long)*mem_realsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in real_allocate_7dim_zero',IERR,n1,n2,n3,n4,n5,n6,n7
-      CALL MEMORY_ERROR_QUIT('Error in real_allocate_7dim_zero',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_7dim_zero',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in real_allocate_7dim_zero',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_7dim_zero
@@ -3103,6 +3209,7 @@ SUBROUTINE real_deallocate_7dim(A)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_7dim
+
 SUBROUTINE lsmpi_allocate_dV8(A,cip,n) 
    implicit none
    integer(kind=8),intent(in)  :: n
@@ -3329,7 +3436,6 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
 #ifdef VAR_HAVE_MPI3
       if(loc) then
          bytes = int(0,kind=MPI_ADDRESS_KIND)
-         if( infpar%pc_mynum == infpar%pc_nodtot - 1 ) bytes = n1 * lsmpi_len_realk
 
          if(bytes<0)then
             print *,"calling MPI_WIN_ALLOCATE with",bytes,n1,lsmpi_len_realk
@@ -3904,10 +4010,11 @@ END SUBROUTINE lsmpi_local_deallocate_I4V
 
 
 !ALlocate complex
-SUBROUTINE complex_allocate_1dim(A,n)
+SUBROUTINE complex_allocate_1dim(A,n,StringID)
    implicit none
    integer,intent(in)  :: n
    complex(COMPLEXK),pointer :: A(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -3915,15 +4022,20 @@ SUBROUTINE complex_allocate_1dim(A,n)
    nsize = size(A,KIND=long)*mem_complexsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in complex_allocate_1dim',IERR,n
-      CALL memory_error_quit('Error in complex_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         CALL memory_error_quit('Error in complex_allocate_1dim',nsize,StringID)
+      ELSE
+         CALL memory_error_quit('Error in complex_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_complex(nsize)
 END SUBROUTINE complex_allocate_1dim
 
-SUBROUTINE complex_allocate_2dim(A,n1,n2)
+SUBROUTINE complex_allocate_2dim(A,n1,n2,StringID)
    implicit none
    integer,intent(in)  :: n1, n2
    COMPLEX(COMPLEXK),pointer :: A(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(A)
@@ -3931,7 +4043,11 @@ SUBROUTINE complex_allocate_2dim(A,n1,n2)
    nsize = size(A,KIND=long)*mem_complexsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in complex_allocate_2dim',IERR,n1,n2
-      CALL MEMORY_ERROR_QUIT('Error in complex_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in complex_allocate_2dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in complex_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_complex(nsize)
 END SUBROUTINE complex_allocate_2dim
@@ -3977,18 +4093,24 @@ SUBROUTINE complex_deallocate_2dim(A)
 END SUBROUTINE complex_deallocate_2dim
 
 !----- ALLOCATE INTEGER POINTERS -----!
-SUBROUTINE int8_allocate_1dim_wrapper4(I,n)
+SUBROUTINE int8_allocate_1dim_wrapper4(I,n,StringID)
    implicit none
    integer(kind=4),intent(in)  :: n
    INTEGER(kind=8),pointer     :: I(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)             :: n8
    n8=n
-   call int8_allocate_1dim(I,n8)
+   IF(present(StringID))THEN
+      call int8_allocate_1dim(I,n8,StringID)
+   ELSE
+      call int8_allocate_1dim(I,n8)
+   ENDIF
 END SUBROUTINE int8_allocate_1dim_wrapper4
-SUBROUTINE int8_allocate_1dim(I,n)
+SUBROUTINE int8_allocate_1dim(I,n,StringID)
    implicit none
    integer(kind=8),intent(in)  :: n
    INTEGER(kind=8),pointer     :: I(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -3996,23 +4118,33 @@ SUBROUTINE int8_allocate_1dim(I,n)
    nsize = size(I,KIND=long)*mem_int8size
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_allocate_1dim',IERR,n
-      call memory_error_quit('Error in int8_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int8_allocate_1dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int8_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int8_allocate_1dim
 
-SUBROUTINE int4_allocate_1dim_wrapper4(I,n)
+SUBROUTINE int4_allocate_1dim_wrapper4(I,n,StringID)
    implicit none
    integer(kind=4),intent(in)  :: n
    INTEGER(kind=4),pointer     :: I(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)             :: n8
    n8=n
-   call int4_allocate_1dim(I,n8)
+   IF(present(StringID))THEN
+      call int4_allocate_1dim(I,n8,StringID)
+   ELSE
+      call int4_allocate_1dim(I,n8)
+   ENDIF
 END SUBROUTINE int4_allocate_1dim_wrapper4
-SUBROUTINE int4_allocate_1dim(I,n)
+SUBROUTINE int4_allocate_1dim(I,n,StringID)
    implicit none
    integer(kind=8),intent(in)  :: n
    INTEGER(kind=4),pointer     :: I(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4020,25 +4152,35 @@ SUBROUTINE int4_allocate_1dim(I,n)
    nsize = size(I,KIND=long)*mem_int4size
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_allocate_1dim',IERR,n
-      call memory_error_quit('Error in int4_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int4_allocate_1dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int4_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int4_allocate_1dim
 
 
 
-SUBROUTINE intS_allocate_1dim_wrapper4(I,n)
+SUBROUTINE intS_allocate_1dim_wrapper4(I,n,StringID)
    implicit none
    integer(kind=4),intent(in)  :: n
    INTEGER(kind=short),pointer :: I(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)             :: n8
    n8=n
-   call intS_allocate_1dim(I,N8)
+   IF(present(StringID))THEN
+      call intS_allocate_1dim(I,N8,StringID)
+   ELSE
+      call intS_allocate_1dim(I,N8)
+   ENDIF
 END SUBROUTINE intS_allocate_1dim_wrapper4
-SUBROUTINE intS_allocate_1dim(I,n)
+SUBROUTINE intS_allocate_1dim(I,n,StringID)
    implicit none
    integer(kind=8),intent(in)  :: n
    INTEGER(kind=short),pointer     :: I(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4046,27 +4188,37 @@ SUBROUTINE intS_allocate_1dim(I,n)
    nsize = size(I,KIND=long)*mem_shortintsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int32_allocateS_1dim',IERR,n
-      call memory_error_quit('Error in int32_allocateS_1dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int32_allocateS_1dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int32_allocateS_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE intS_allocate_1dim
 
 
 
-SUBROUTINE int4_allocate_2dim_wrapper4(I,n1,n2)
+SUBROUTINE int4_allocate_2dim_wrapper4(I,n1,n2,StringID)
    implicit none
    integer(kind=4),intent(in) :: n1,n2
    INTEGER(kind=4),pointer    :: I(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    integer(kind=8) :: n18, n28
    n18=n1;n28=n2
-   call int4_allocate_2dim(I,n18,n28)
+   IF(present(StringID))THEN
+      call int4_allocate_2dim(I,n18,n28,StringID)
+   ELSE
+      call int4_allocate_2dim(I,n18,n28)
+   ENDIF
 END SUBROUTINE int4_allocate_2dim_wrapper4
-SUBROUTINE int4_allocate_2dim(I,n1,n2)
+SUBROUTINE int4_allocate_2dim(I,n1,n2,StringID)
    implicit none
    integer(kind=8),intent(in) :: n1,n2
    INTEGER(kind=4),pointer    :: I(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4074,25 +4226,35 @@ SUBROUTINE int4_allocate_2dim(I,n1,n2)
    nsize = size(I,KIND=long)*mem_int4size
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_allocate_2dim',IERR,n1,n2
-      call memory_error_quit('Error in int4_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int4_allocate_2dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int4_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int4_allocate_2dim
 
-SUBROUTINE int8_allocate_2dim_wrapper4(I,n1,n2)
+SUBROUTINE int8_allocate_2dim_wrapper4(I,n1,n2,StringID)
    implicit none
    integer(kind=4),intent(in) :: n1,n2
    INTEGER(kind=8),pointer    :: I(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    integer(kind=8) :: n18, n28
    n18=n1;n28=n2
-   call int8_allocate_2dim(I,n18,n28)
+   IF(present(StringID))THEN
+      call int8_allocate_2dim(I,n18,n28,StringID)
+   ELSE
+      call int8_allocate_2dim(I,n18,n28)
+   ENDIF
 END SUBROUTINE int8_allocate_2dim_wrapper4
-SUBROUTINE int8_allocate_2dim(I,n1,n2)
+SUBROUTINE int8_allocate_2dim(I,n1,n2,StringID)
    implicit none
    integer(kind=8),intent(in) :: n1,n2
    INTEGER(kind=8),pointer    :: I(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4100,15 +4262,20 @@ SUBROUTINE int8_allocate_2dim(I,n1,n2)
    nsize = size(I,KIND=long)*mem_int8size
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_allocate_2dim',IERR,n1,n2
-      call memory_error_quit('Error in int8_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int8_allocate_2dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int8_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int8_allocate_2dim
 
-SUBROUTINE shortint_allocate_2dim(I,n1,n2)
+SUBROUTINE shortint_allocate_2dim(I,n1,n2,StringID)
    implicit none
    integer,intent(in) :: n1,n2
    INTEGER(kind=short),pointer    :: I(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4116,15 +4283,20 @@ SUBROUTINE shortint_allocate_2dim(I,n1,n2)
    nsize = size(I,KIND=long)*mem_shortintsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in shortint_allocate_2dim',IERR,n1,n2
-      call memory_error_quit('Error in shortint_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in shortint_allocate_2dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in shortint_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE shortint_allocate_2dim
 
-SUBROUTINE int_allocate_3dim(I,n1,n2,n3)
+SUBROUTINE int_allocate_3dim(I,n1,n2,n3,StringID)
    implicit none
    integer,intent(in) :: n1,n2,n3
    INTEGER,pointer    :: I(:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4132,28 +4304,39 @@ SUBROUTINE int_allocate_3dim(I,n1,n2,n3)
    nsize = size(I,KIND=long)*mem_intsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-      call memory_error_quit('Error in int_allocate_3dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int_allocate_3dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int_allocate_3dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int_allocate_3dim
 
 
 
-SUBROUTINE int8_allocate_4dim_wrapper4(I,n1,n2,n3,n4)
+SUBROUTINE int8_allocate_4dim_wrapper4(I,n1,n2,n3,n4,StringID)
    implicit none
    integer(kind=4),intent(in) :: n1,n2,n3,n4
    INTEGER(kind=8),pointer    :: I(:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)            :: n18,n28,n38,n48
    n18=int(n1,kind=8)
    n28=int(n2,kind=8)
    n38=int(n3,kind=8)
    n48=int(n4,kind=8)
-   call int8_allocate_4dim(I,n18,n28,n38,n48)
+   IF(present(StringID))THEN
+      call int8_allocate_4dim(I,n18,n28,n38,n48,StringID)
+   ELSE
+      call int8_allocate_4dim(I,n18,n28,n38,n48)
+   ENDIF
 END SUBROUTINE int8_allocate_4dim_wrapper4
-SUBROUTINE int8_allocate_4dim(I,n1,n2,n3,n4)
+
+SUBROUTINE int8_allocate_4dim(I,n1,n2,n3,n4,StringID)
    implicit none
    integer(kind=8),intent(in) :: n1,n2,n3,n4
    INTEGER(kind=8),pointer    :: I(:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4161,23 +4344,33 @@ SUBROUTINE int8_allocate_4dim(I,n1,n2,n3,n4)
    nsize = size(I,KIND=long)*mem_int8size
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_allocate_4dim',IERR,n1,n2,n3,n4
-      call memory_error_quit('Error in int8_allocate_4dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int8_allocate_4dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int8_allocate_4dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int8_allocate_4dim
 
-SUBROUTINE int4_allocate_4dim_wrapper4(I,n1,n2,n3,n4)
+SUBROUTINE int4_allocate_4dim_wrapper4(I,n1,n2,n3,n4,StringID)
    implicit none
    integer(kind=4),intent(in) :: n1,n2,n3,n4
    INTEGER(kind=4),pointer    :: I(:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)            :: n18,n28,n38,n48
    n18=n1;n28=n2;n38=n3;n48=n4
-   call int4_allocate_4dim(I,n18,n28,n38,n48)
+   IF(present(StringID))THEN
+      call int4_allocate_4dim(I,n18,n28,n38,n48,StringID)
+   ELSE
+      call int4_allocate_4dim(I,n18,n28,n38,n48)
+   ENDIF
 END SUBROUTINE int4_allocate_4dim_wrapper4
-SUBROUTINE int4_allocate_4dim(I,n1,n2,n3,n4)
+SUBROUTINE int4_allocate_4dim(I,n1,n2,n3,n4,StringID)
    implicit none
    integer(kind=8),intent(in) :: n1,n2,n3,n4
    INTEGER(kind=4),pointer    :: I(:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(I)
@@ -4185,17 +4378,22 @@ SUBROUTINE int4_allocate_4dim(I,n1,n2,n3,n4)
    nsize = size(I,KIND=long)*mem_int4size
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_allocate_4dim',IERR,n1,n2,n3,n4
-      call memory_error_quit('Error in int4_allocate_4dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int4_allocate_4dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int4_allocate_4dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int4_allocate_4dim
 
 
 
-SUBROUTINE int_allocate_1dim_zero(I,n,z1)
+SUBROUTINE int_allocate_1dim_zero(I,n,z1,StringID)
    implicit none
    integer,intent(in)  :: n
    INTEGER,pointer     :: I(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    logical,intent(in) :: z1
    integer :: IERR,i1
    integer (kind=long) :: nsize
@@ -4206,15 +4404,20 @@ SUBROUTINE int_allocate_1dim_zero(I,n,z1)
    nsize = size(I,KIND=long)*mem_intsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int_allocate_1dim',IERR,n
-      call memory_error_quit('Error in int_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int_allocate_1dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int_allocate_1dim_zero
 
-SUBROUTINE int_allocate_2dim_zero(I,n1,n2,z1,z2)
+SUBROUTINE int_allocate_2dim_zero(I,n1,n2,z1,z2,StringID)
    implicit none
    integer,intent(in) :: n1,n2
    INTEGER,pointer    :: I(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    logical,intent(in) :: z1,z2
    integer :: IERR,i1,i2
    integer (kind=long) :: nsize
@@ -4227,16 +4430,21 @@ SUBROUTINE int_allocate_2dim_zero(I,n1,n2,z1,z2)
    nsize = size(I,KIND=long)*mem_intsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int_allocate_2dim',IERR,n1,n2
-      call memory_error_quit('Error in int_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int_allocate_2dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int_allocate_2dim_zero
 
-SUBROUTINE int_allocate_3dim_zero(I,n1,n2,n3,z1,z2,z3)
+SUBROUTINE int_allocate_3dim_zero(I,n1,n2,n3,z1,z2,z3,StringID)
    implicit none
    integer,intent(in) :: n1,n2,n3
    logical,intent(in) :: z1,z2,z3
    INTEGER,pointer    :: I(:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR,i1,i2,i3
    integer (kind=long) :: nsize
    i1=1
@@ -4250,16 +4458,21 @@ SUBROUTINE int_allocate_3dim_zero(I,n1,n2,n3,z1,z2,z3)
    nsize = size(I,KIND=long)*mem_intsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-      call memory_error_quit('Error in int_allocate_3dim',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int_allocate_3dim',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int_allocate_3dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int_allocate_3dim_zero
 
-SUBROUTINE int_allocate_4dim_zero(I,n1,n2,n3,n4,z1,z2,z3,z4)
+SUBROUTINE int_allocate_4dim_zero(I,n1,n2,n3,n4,z1,z2,z3,z4,StringID)
    implicit none
    integer,intent(in) :: n1,n2,n3,n4
    logical,intent(in) :: z1,z2,z3,z4
    INTEGER,pointer    :: I(:,:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR,i1,i2,i3,i4
    integer (kind=long) :: nsize
    i1=1
@@ -4275,7 +4488,11 @@ SUBROUTINE int_allocate_4dim_zero(I,n1,n2,n3,n4,z1,z2,z3,z4)
    nsize = size(I,KIND=long)*mem_intsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int_allocate_4dim_zero',IERR,n1,n2,n3,n4
-      call memory_error_quit('Error in int_allocate_4dim_zero',nsize)
+      IF(present(StringID))THEN
+         call memory_error_quit('Error in int_allocate_4dim_zero',nsize,StringID)
+      ELSE
+         call memory_error_quit('Error in int_allocate_4dim_zero',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_integer(nsize)
 END SUBROUTINE int_allocate_4dim_zero
@@ -4471,18 +4688,24 @@ END SUBROUTINE int8_deallocate_4dim
 
 !----- ALLOCATE CHARACTER POINTERS -----!
 
-SUBROUTINE char_allocate_1dim_wrapper4(C,n)
+SUBROUTINE char_allocate_1dim_wrapper4(C,n,StringID)
    implicit none
    integer(kind=4),intent(in):: n
    CHARACTER(LEN=*),pointer  :: C(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)::n8
    n8=n
-   call char_allocate_1dim(C,n8)
+   IF(present(StringID))THEN
+      call char_allocate_1dim(C,n8,StringID)
+   ELSE
+      call char_allocate_1dim(C,n8)
+   ENDIF
 END SUBROUTINE char_allocate_1dim_wrapper4
-SUBROUTINE char_allocate_1dim(C,n)
+SUBROUTINE char_allocate_1dim(C,n,StringID)
    implicit none
    integer(kind=8),intent(in)         :: n
    CHARACTER(LEN=*),pointer :: C(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(C)
@@ -4490,7 +4713,11 @@ SUBROUTINE char_allocate_1dim(C,n)
    nsize = mem_complexsize*size(C,KIND=long)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in char_allocate_1dim_n8',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in char_allocate_1dim_n8',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in char_allocate_1dim_n8',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in char_allocate_1dim_n8',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_character(nsize)
 END SUBROUTINE char_allocate_1dim
@@ -4516,28 +4743,39 @@ SUBROUTINE char_deallocate_1dim(C)
 END SUBROUTINE char_deallocate_1dim
 !----- ALLOCATE LOGICAL POINTERS -----!
 
-SUBROUTINE logic4_allocate_1dim_wrapper4(L,n)
+SUBROUTINE logic4_allocate_1dim_wrapper4(L,n,StringID)
    implicit none
    integer(kind=4),intent(in) :: n
    LOGICAL(kind=4),pointer            :: L(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)            :: n8
    n8=n
-   call logic4_allocate_1dim(L,n8)
+   IF(present(StringID))THEN
+      call logic4_allocate_1dim(L,n8,StringID)
+   ELSE
+      call logic4_allocate_1dim(L,n8)
+   ENDIF
 END SUBROUTINE logic4_allocate_1dim_wrapper4
 
-SUBROUTINE logic8_allocate_1dim_wrapper4(L,n)
+SUBROUTINE logic8_allocate_1dim_wrapper4(L,n,StringID)
    implicit none
    integer(kind=4),intent(in) :: n
    LOGICAL(kind=8),pointer            :: L(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer(kind=8)            :: n8
    n8=n
-   call logic8_allocate_1dim(L,n8)
+   IF(present(StringID))THEN
+      call logic8_allocate_1dim(L,n8,StringID)
+   ELSE
+      call logic8_allocate_1dim(L,n8)
+   ENDIF
 END SUBROUTINE logic8_allocate_1dim_wrapper4
 
-SUBROUTINE logic4_allocate_1dim(L,n)
+SUBROUTINE logic4_allocate_1dim(L,n,StringID)
    implicit none
    integer(kind=8),intent(in) :: n
    LOGICAL(kind=4),pointer    :: L(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(L)
@@ -4545,15 +4783,20 @@ SUBROUTINE logic4_allocate_1dim(L,n)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_1dim',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic4_allocate_1dim
 
-SUBROUTINE logic8_allocate_1dim(L,n)
+SUBROUTINE logic8_allocate_1dim(L,n,StringID)
    implicit none
    integer(kind=8),intent(in) :: n
    LOGICAL(kind=8),pointer    :: L(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(L)
@@ -4561,16 +4804,21 @@ SUBROUTINE logic8_allocate_1dim(L,n)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_1dim',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic8_allocate_1dim
 
-SUBROUTINE logic4_allocate_1dim_zero(L,n,z1)
+SUBROUTINE logic4_allocate_1dim_zero(L,n,z1,StringID)
    implicit none
    integer,intent(in) :: n
    logical(kind=4),intent(in) :: z1
    LOGICAL(kind=4),pointer    :: L(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR,i1
    integer (kind=long) :: nsize
    nullify(L)
@@ -4580,16 +4828,21 @@ SUBROUTINE logic4_allocate_1dim_zero(L,n,z1)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_1dim',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic4_allocate_1dim_zero
 
-SUBROUTINE logic8_allocate_1dim_zero(L,n,z1)
+SUBROUTINE logic8_allocate_1dim_zero(L,n,z1,StringID)
    implicit none
    integer,intent(in) :: n
    logical(kind=8),intent(in) :: z1
    LOGICAL(kind=8),pointer    :: L(:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR,i1
    integer (kind=long) :: nsize
    nullify(L)
@@ -4599,15 +4852,20 @@ SUBROUTINE logic8_allocate_1dim_zero(L,n,z1)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_1dim',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic8_allocate_1dim_zero
 
-SUBROUTINE logic4_allocate_2dim(L,n1,n2)
+SUBROUTINE logic4_allocate_2dim(L,n1,n2,StringID)
    implicit none
    integer,intent(in) :: n1,n2
    LOGICAL(kind=4),pointer    :: L(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(L)
@@ -4615,14 +4873,19 @@ SUBROUTINE logic4_allocate_2dim(L,n1,n2)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic4_allocate_2dim
-SUBROUTINE logic8_allocate_2dim(L,n1,n2)
+SUBROUTINE logic8_allocate_2dim(L,n1,n2,StringID)
    implicit none
    integer,intent(in) :: n1,n2
    LOGICAL(kind=8),pointer    :: L(:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(L)
@@ -4630,15 +4893,20 @@ SUBROUTINE logic8_allocate_2dim(L,n1,n2)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic8_allocate_2dim
 
-SUBROUTINE logic4_allocate_3dim(L,n1,n2,n3)
+SUBROUTINE logic4_allocate_3dim(L,n1,n2,n3,StringID)
    implicit none
    integer,intent(in) :: n1,n2,n3
    LOGICAL(kind=4),pointer    :: L(:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(L)
@@ -4646,14 +4914,19 @@ SUBROUTINE logic4_allocate_3dim(L,n1,n2,n3)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_3dim',IERR,n1,n2,n3
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize)         
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic4_allocate_3dim
-SUBROUTINE logic8_allocate_3dim(L,n1,n2,n3)
+SUBROUTINE logic8_allocate_3dim(L,n1,n2,n3,StringID)
    implicit none
    integer,intent(in) :: n1,n2,n3
    LOGICAL(kind=8),pointer    :: L(:,:,:)
+   character(*), INTENT(IN), OPTIONAL :: StringID
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(L)
@@ -4661,7 +4934,11 @@ SUBROUTINE logic8_allocate_3dim(L,n1,n2,n3)
    nsize = size(L,KIND=long)*mem_logicalsize
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_allocate_3dim',IERR,n1,n2,n3
-      CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize)
+      IF(present(StringID))THEN
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize,StringID)
+      ELSE
+         CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim',nsize)
+      ENDIF
    ENDIF
    call mem_allocated_mem_logical(nsize)
 END SUBROUTINE logic8_allocate_3dim

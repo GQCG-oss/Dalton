@@ -5251,7 +5251,7 @@ C
 #include "ccsdsym.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 C
       CHARACTER*(*) FNN1
       INTEGER       LUN1

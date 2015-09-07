@@ -691,6 +691,7 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
       DIMENSION CREF(*), CMO(*), DV(*), PV(*), FC(*), FV(*)
       DIMENSION G(*), EVAL(*), EVEC(NREDL,*), IBNDX(*), WRK(*)
@@ -760,7 +761,8 @@ C     ... symmetrize CI vector
 #else
       DOPHP  = (MAXPHP .GT. 0)
 C CBN+JK 03.01.06
-      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM) DOPHP = .FALSE.
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM) DOPHP = .FALSE.
+      IF (USE_PELIB()) DOPHP = .FALSE.
       IF (BETA .NE. D1) DOPHP = .FALSE.
 C     ... only use PHP for beta = 1
 C     PHPMAERKE: implement for beta .ne. 1

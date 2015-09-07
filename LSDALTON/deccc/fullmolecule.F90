@@ -26,13 +26,12 @@ module full_molecule
 
   ! CABS
   use CABS_operations
-#ifdef MOD_UNRELEASED
   ! F12 MO-matrices
   use f12_routines_module!,only: get_F12_mixed_MO_Matrices, MO_transform_AOMatrix
-#endif
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
+  use dec_tools_module
   use array2_simple_operations
 
   integer, save :: mol_block_size = -14938343
@@ -84,8 +83,7 @@ contains
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-#ifdef MOD_UNRELEASED
+    if(DECinfo%F12) then 
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
@@ -97,7 +95,6 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
-#endif
     end if
 
     
@@ -167,7 +164,6 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-#ifdef MOD_UNRELEASED
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
           call dec_get_RI_orbitals(molecule,mylsitem)
@@ -175,7 +171,6 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
-#endif
     end if
 
     ! Do not store AO Fock matrix if requested
@@ -207,6 +202,7 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    molecule%EF12singles = 0.0_realk
     molecule%Edisp = 0.0_realk
     molecule%Ect = 0.0_realk
     molecule%Esub = 0.0_realk
@@ -899,6 +895,9 @@ contains
     if(associated(molecule%ov_abs_overlap)) then
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
+
+    call free_cabs()
+
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices
@@ -1135,7 +1134,6 @@ contains
      type(fullmolecule), intent(inout) :: MyMolecule
      type(lsitem), intent(inout) :: MyLsitem
      type(matrix), intent(in) :: D
-#ifdef MOD_UNRELEASED
 
      integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
 
@@ -1159,17 +1157,17 @@ contains
      nocvfull = nocc + nvirt
 
      if(DECinfo%F12debug) then
-        print *, "--------------------------"
-        print *, "Molecule_mo_f12"
-        print *, "--------------------------"
-        print *, "nbasis:   ", nbasis
-        print *, "nocc:     ", nocc
-        print *, "nvirt:    ", nvirt
-        print *, "--------------------------"
-        print *, "ncabsAO:  ", ncabsAO
-        print *, "ncabsMO:  ", ncabsMO
-        print *, "nocvfull: ", nocc+nvirt
-        print *, "--------------------------"
+       ! print *, "--------------------------"
+       ! print *, "Molecule_mo_f12"
+       ! print *, "--------------------------"
+       ! print *, "nbasis:   ", nbasis
+       ! print *, "nocc:     ", nocc
+       ! print *, "nvirt:    ", nvirt
+       ! print *, "--------------------------"
+       ! print *, "ncabsAO:  ", ncabsAO
+       ! print *, "ncabsMO:  ", ncabsMO
+       ! print *, "nocvfull: ", nocc+nvirt
+       ! print *, "--------------------------"
      end if
 
      ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
@@ -1187,22 +1185,6 @@ contains
         & nocc,noccfull,nvirt,MyMolecule%hJir,MyMolecule%Krs,MyMolecule%Frs,&
         & MyMolecule%Fac,MyMolecule%Fij,MyMolecule%Frm,MyMolecule%Fcp)
 
-     if(DECinfo%F12debug) then  
-        print *,'-------------------------------------------'
-        print *,'molecule_mo_f12: Get all F12 Fock integrals'
-        print *,'-------------------------------------------'
-        print *, "norm2D(hJir)", norm2D(MyMolecule%hJir)
-        print *, "norm2D(Krs)",  norm2D(MyMolecule%Krs)
-        print *, "norm2D(Frs)",  norm2D(MyMolecule%Frs)
-        print *, "norm2D(Fac)",  norm2D(MyMolecule%Fac)
-        print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
-        print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
-        print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
-        ! print *, "norm2D(Fcd)",  norm2D(MyMolecule%Fcd)
-        print *,'-------------------------------------------' 
-     end if
-
-#endif
   end subroutine molecule_mo_f12
 
 
@@ -1234,7 +1216,11 @@ contains
     ! *********************************************
 
     ! MO coefficients, Fock
-    molmem = 2E0_realk*A*A
+    if (DEcinfo%noaofock) then
+       molmem = 1E0_realk*A*A
+    else
+       molmem = 2E0_realk*A*A
+    end if
 
     ! ppfock and qqfock
     tmp = O*O + V*V

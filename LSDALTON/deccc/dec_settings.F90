@@ -13,329 +13,14 @@ MODULE DEC_settings_mod
   use dec_typedef_module
   use dec_fragment_utils
   use ls_util
+  use matrix_module
+  use matrix_operations
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type, only: LSMPIASYNCP
 #endif
 
 contains
-
-  !> \brief Set default DEC settings.
-  !> See explanation of parameters in type DEC_settings.
-  !> \author Kasper Kristensen
-  !> \date June 2010
-  subroutine dec_set_default_config(output)
-
-    implicit none
-    !> Unit number for DALTON.OUT
-    integer, intent(in) :: output
-
-    ! DEC output control:
-    !PL (suggestion by PE):
-    ! 0: standard output, only most necessary information
-    ! 1: somewhat more info, e.g. additional measures and timing data
-    ! 2: even more -- junkbox level, also set print_small_calc always to .true.
-    ! 3: first debug level  -- information that is not interesting for the general user
-    ! 4: second debug level
-    ! 5: extra verbose -- will overflow every reasonable machine in no time
-    ! a reduction of the print level is obtained by setting print_small_calc to .false. for > 100 nodes
-    DECinfo%PL                     = 0
-    DECinfo%MemDebugPrint          =.false.
-    DECinfo%print_small_calc       = .true.
-
-    ! SNOOP
-    DECinfo%SNOOP          = .false.
-    DECinfo%SNOOPjustHF    = .false.
-    DECinfo%SNOOPMaxDIIS   = 5
-    DECinfo%SNOOPMaxIter   = 100
-    DECinfo%SNOOPthr       = 1e-7_realk
-    DECinfo%SNOOPdebug     = .false.
-    DECinfo%SNOOPort       = .false.
-    DECinfo%SNOOPsamespace =.true.
-    DECinfo%SNOOPlocalize  = .false.
-
-    ! CC response
-    DECinfo%CCexci = .false.
-    DECinfo%JacobianNumEival = 1
-    DECinfo%JacobianLHTR = .false.
-    DECinfo%JacobianThr = 1.0e-7
-    DECinfo%JacobianMaxSubspace = 10000
-    DECinfo%JacobianMaxIter = 200
-    DECinfo%JacobianInitialSubspace = 0
-    DECinfo%JacobianPrecond = .true.
-    DECinfo%HaldApprox = .false.
-    DECinfo%LW1 = .false.
-
-
-    DECinfo%doDEC                  = .false.
-
-    ! Orbital-based DEC scheme 
-    DECinfo%DECCO = .false.
-
-    ! Alternative DEC with no pairs
-    DECinfo%DECNP = .false.
-
-    ! Max memory measured in GB. By default set to 2 GB
-    DECinfo%memory                 = 2.0E0_realk
-    DECinfo%memory_defined         = .false.
-    DECinfo%use_system_memory_info = .false.
-    DECinfo%bg_memory              = -2.0E0_realk
-
-    ! -- Type of calculation
-    DECinfo%full_molecular_cc  = .false. ! full molecular cc
-    DECinfo%print_frags        = .false.
-    DECinfo%simulate_full      = .false.
-    DECinfo%simulate_natoms    = 1
-    DECinfo%SkipReadIn         = .false.
-    DECinfo%SinglesPolari      = .false.
-    DECinfo%SinglesThr         = 0.2E0_realk   ! this is completely random, currently under investigation
-    DECinfo%convert64to32      = .false.
-    DECinfo%convert32to64      = .false.
-    DECinfo%HFrestart          = .false.
-    DECinfo%DECrestart         = .false.
-    DECinfo%EnforceRestart     = .false.
-    DECinfo%TimeBackup         = 300.0E0_realk   ! backup every 5th minute
-    DECinfo%read_dec_orbitals  = .false.
-    DECinfo%CheckPairs         = .false.
-    DECinfo%frozencore         = .false.
-    DECinfo%ncalc              = 0
-    DECinfo%only_generate_DECorbs = .false.
-    call dec_set_model_names(DECinfo)
-
-
-    ! -- Debug modes
-    DECinfo%test_fully_distributed_integrals = .false.
-    DECinfo%distribute_fullmolecule = .false.
-    DECinfo%force_distribution      = .false.
-    DECinfo%CRASHCALC               = .false.
-    DECinfo%CRASHESTI               = .false.
-    DECinfo%cc_driver_debug         = .false.
-    DECinfo%use_bg_buffer           = .false.
-    DECinfo%manual_batchsizes       = .false.
-    DECinfo%ccsdAbatch              = 0
-    DECinfo%ccsdGbatch              = 0
-    DECinfo%manual_occbatchsizes    = .false.
-    DECinfo%batchOccI               = 0
-    DECinfo%batchOccJ               = 0 
-    DECinfo%hack                    = .false.
-    DECinfo%hack2                   = .false.
-    DECinfo%mpisplit                = 10
-    DECinfo%RIMPIsplit              = 8000
-#ifdef VAR_MPI
-    DECinfo%dyn_load                = LSMPIASYNCP
-#else
-    DECinfo%dyn_load                = .false.
-#endif
-    DECinfo%force_scheme            = .false.
-    DECinfo%en_mem                  = 0
-    DECinfo%tensor_test              = .false.
-    DECinfo%reorder_test            = .false.
-    DECinfo%CCSDno_restart          = .false.
-    DECinfo%CCSDnosaferun           = .false.
-    DECinfo%solver_par              = .false.
-    DECinfo%CCSDpreventcanonical    = .false.
-    DECinfo%CCSD_NO_DEBUG_COMM      = .true.
-    DECinfo%spawn_comm_proc         = .false.
-    DECinfo%CCSDmultipliers         = .false.
-    DECinfo%simple_multipler_residual = .true.
-    DECinfo%use_pnos             = .false.
-    DECinfo%pno_S_on_the_fly     = .false.
-    DECinfo%noPNOtrafo           = .false.
-    DECinfo%noPNOtrunc           = .false.
-    DECinfo%simplePNOthr         = 1.0E-7_realk
-    DECinfo%EOSPNOthr            = 1.0E-5_realk
-    DECinfo%noFAtrunc            = .false.
-    DECinfo%noFAtrafo            = .false.
-    DECinfo%noPNOoverlaptrunc    = .false.
-    DECinfo%PNOoverlapthr        = 1.0E-5_realk
-    DECinfo%PNOtriangular        = .true.
-    DECinfo%CCDhack              = .false.
-    DECinfo%NO_MO_CCSD           = .false.
-    DECinfo%cc_solver_tile_mem   = 1.0E0_realk
-
-    ! -- Output options 
-    DECinfo%output               = output
-
-
-    ! -- Orbital
-    DECinfo%check_lcm_orbitals           = .false.
-    DECinfo%check_Occ_SubSystemLocality  = .false.
-    DECinfo%force_Occ_SubSystemLocality  = .false.
-    DECinfo%use_canonical                = .false.
-    DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
-    DECinfo%mulliken                     = .false.
-    DECinfo%Distance                     = .false.
-    DECinfo%FitOrbitals                  = .true.
-    DECinfo%simple_orbital_threshold     = 0.05E0_realk
-
-    !Integral
-    DECinfo%IntegralThreshold            = 1.0E-10_realk
-    DECinfo%UseIchor = .false.  !Use Ichor Integral Code
-
-    ! -- Fragment
-    DECinfo%MaxIter                = 20
-    DECinfo%FOTlevel               = 1
-    DECinfo%FOT                    = 1.0E-4_realk
-    DECinfo%InclFullMolecule       = .false.
-    DECinfo%PurifyMOs              = .false.
-    DECinfo%precondition_with_full = .false.
-    DECinfo%Frag_Exp_Scheme        = 1
-    DECinfo%Frag_RedOcc_Scheme        = 1
-    DECinfo%Frag_RedVir_Scheme        = 1
-    DECinfo%Frag_Init_Size         = 4
-    DECinfo%Frag_Exp_Size          = 5
-    DECinfo%frag_red1_thr          = 0.9  ! times FOT
-    DECinfo%frag_red2_thr          = 1.0  ! times FOT
-    DECinfo%frag_red_occ           = .false.
-    DECinfo%frag_red_virt          = .false.
-    DECinfo%fragadapt              = .false.
-    DECinfo%no_pairs               = .false.
-    DECinfo%only_n_frag_jobs       =  0
-    DECinfo%frag_job_nr            => null()
-    DECinfo%only_pair_frag_jobs    =  .false.
-    ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
-    DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
-    DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%OnlyOccPart            = .false.
-    DECinfo%OnlyVirtPart           = .false.
-    ! Repeat atomic fragment calcs after fragment optimization
-    DECinfo%RepeatAF               = .true.
-    ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
-    DECinfo%CorrDensScheme         = 1
-    ! Number of reduced fragments to consider
-    DECinfo%nFRAGSred              = 0
-    ! Factor to scale FOT by for reduced fragments
-    DECinfo%FOTscaling             = 10.0_realk
-    ! Fraction of biggest extent of fragment to reduce to  in the fragment reduction in %
-    DECinfo%FracOfOrbSpace_red     = 5.0E0_realk
-    ! If this is set larger than 0. atomic fragments are initialized with this,
-    DECinfo%all_init_radius        = -1.0E0_realk/bohr_to_angstrom 
-    DECinfo%occ_init_radius        = -1.0E0_realk/bohr_to_angstrom 
-    DECinfo%vir_init_radius        = -1.0E0_realk/bohr_to_angstrom 
-    !> use numerical integration info
-    DECinfo%use_abs_overlap        = .false.
-
-    ! -- Pair fragments
-    DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
-    DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
-    DECinfo%pairFOthr               =  0.0_realk
-    DECinfo%PairEstimate            = .true.
-    DECinfo%PairEstimateIgnore      = .false.
-    DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
-    DECinfo%EstimateInitAtom        = 1
-    DECinfo%PairEstimateModel       = MODEL_MP2
-
-    ! Memory use for full molecule structure
-    DECinfo%fullmolecule_memory     = 0E0_realk
-
-
-    ! -- CC solver options
-
-    DECinfo%ccsd_expl                = .false.
-    DECinfo%ccMaxIter                = 100
-    DECinfo%ccMaxDIIS                = 3
-    DECinfo%ccModel                  = MODEL_MP2 ! see parameter-list in dec_typedef.f90
-    DECinfo%F12                      = .false.
-    DECinfo%F12fragopt               = .false.
-    DECinfo%F12debug                 = .false.
-    DECinfo%F12Ccoupling             = .false.
-    DECinfo%SOS                      = .false.
-    DECinfo%PureHydrogenDebug        = .false.
-    DECinfo%StressTest               = .false.
-    DECinfo%AtomicExtent             = .false.
-    DECinfo%MPMP2                    = .false.
-
-    !  RIMP2 settings defauls
-    DECinfo%AuxAtomicExtent          = .false.
-    DECinfo%NAF                      = .false.
-    DECinfo%NAFthreshold             = 1e-6_realk !modified according to FOT
-    DECinfo%RIMPSubGroupSize         = 0
-    DECinfo%RIMP2PDMTENSOR           = .false.
-    DECinfo%RIMP2ForcePDMCalpha      = .false.
-    DECinfo%RIMP2_tiling             = .false.
-    DECinfo%RIMP2_lowdin             = .true.
-    DECinfo%RIMP2_Laplace            = .false.
-    DECinfo%RIMP2_deactivateopenmp   = .false.
-
-    DECinfo%DFTreference             = .false.
-    DECinfo%ccConvergenceThreshold   = 1e-9_realk
-    DECinfo%CCthrSpecified           = .false.
-    DECinfo%use_singles              = .false.
-    DECinfo%use_preconditioner       = .true.
-    DECinfo%ccsolverskip             = .false.
-    DECinfo%use_preconditioner_in_b  = .true.
-    DECinfo%use_crop                 = .true.
-    DECinfo%array4OnFile             = .false.
-    DECinfo%array4OnFile_specified   = .false.
-    DECinfo%tensor_segmenting_scheme = 0
-
-    ! ccsd(t) settings
-    DECinfo%abc               = .false.
-    DECinfo%ijk_tile_size     = 1000000
-    DECinfo%abc_tile_size     = 1000000
-    DECinfo%ijk_nbuffs        = 1000000
-    DECinfo%abc_nbuffs        = 1000000
-    DECinfo%acc_sync          = .false.
-    DECinfo%pt_single_prec    = .false.
-    DECinfo%pt_hack           = .false.
-    DECinfo%pt_hack2          = .false.
-
-    ! First order properties
-    DECinfo%first_order = .false.
-
-    !> MP2 density matrix   
-    DECinfo%density = .false.
-    DECinfo%unrelaxed = .false.
-    DECinfo%SkipFull = .false.
-
-    !-- MP2 gradient
-    DECinfo%gradient=.false.
-    DECinfo%kappa_use_preconditioner=.true.
-    DECinfo%kappa_use_preconditioner_in_b=.true.
-    DECinfo%kappa_driver_debug=.false.
-    DECinfo%kappaMaxDIIS=3
-    DECinfo%kappaMaxIter=100
-    DECinfo%kappaTHR=1e-4_realk
-    DECinfo%EerrFactor = 0.1_realk
-    DECinfo%EerrOLD = 0.0_realk
-
-    ! -- Timings
-
-    !> MPI (undefined by default)
-    DECinfo%MPIgroupsize=0
-
-    ! Stripped down keywords
-    DECinfo%noaofock=.false.
-
-    DECinfo%THCNOPRUN = .FALSE.
-    DECinfo%THCDUMP = .FALSE.
-    DECinfo%THCradint = 1E-6_realk
-    DECinfo%THC_MIN_RAD_PT = 8
-    DECinfo%THCangint = 5
-    DECinfo%THCHRDNES = 3
-    DECinfo%THCTURBO = 1
-    DECinfo%THCRADIALGRID = 3
-    DECinfo%THCZdependenMaxAng = .TRUE.
-    DECinfo%THCPARTITIONING = 1 !(1=SSF, 2=Becke, 3=Becke-original)
-
-  end subroutine dec_set_default_config
-
-  !> \brief Set names for models in DEC
-  subroutine dec_set_model_names(DECitem)
-    implicit none
-    !> The DEC item
-    type(decsettings),intent(inout) :: DECitem
-    ! MODIFY FOR NEW MODEL
-    DECitem%cc_models(MODEL_MP2)   ='MP2     '
-    DECitem%cc_models(MODEL_CC2)   ='CC2     '
-    DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
-    DECitem%cc_models(MODEL_CCSDpT)='CCSD(T) '
-    DECitem%cc_models(MODEL_RPA)   ='RPA     '
-    DECitem%cc_models(MODEL_SOSEX) ='SOSEX   '
-    DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
-    DECitem%cc_models(MODEL_LSTHCRIMP2) ='THCRIMP2'
-  end subroutine dec_set_model_names
-
 
   !> \brief Read the **DEC or **CC input section in LSDALTON.INP and set 
   !> configuration structure accordingly.
@@ -448,9 +133,6 @@ contains
        case('.SNOOP_DEBUG')
           ! Debug prints for SNOOP
           DECinfo%SNOOPdebug=.true.
-       case('.SNOOPORT')
-          ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
-          DECinfo%SNOOPort=.true.
 
        case('.SNOOPNOTSAMESPACE')
           !> Do not use full orbital spaces for monomer calculation as defined by natural connection,
@@ -459,6 +141,17 @@ contains
 
        case('.SNOOPLOCALIZE')
           DECinfo%SNOOPlocalize=.true.
+
+       case('.SNOOPRESTART')
+          DECinfo%SNOOPrestart=.true.
+          ! Also restart HF for full molecule by default when using SNOOP restart
+          DECinfo%HFrestart=.true.
+
+       case('.SNOOPONESUB')
+          read(input,*) DECinfo%SNOOPonesub
+          if(DECinfo%SNOOPonesub<0) then
+             call lsquit('Error in SNOOPONESUB input!',-1)
+          end if
 
           ! CC RESPONSE
           ! ===========
@@ -484,11 +177,14 @@ contains
        case('.JACOBIANNOTPRECOND')
           DECinfo%JacobianPrecond = .false.
 
-       case('.HALDAPPROX')
-          DECinfo%HaldApprox = .true.
+       case('.SINGLESEW1')
+          DECinfo%SinglesEW1 = .true.
 
        case('.LW1')
           DECinfo%LW1 = .true.
+
+       case('.P_EOM_MBPT2')
+          DECinfo%P_EOM_MBPT2 = .true.
 
 
        ! GENERAL INFO
@@ -539,6 +235,10 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
+       case('.MP3') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
 
        ! CC SOLVER INFO
        ! ==============
@@ -916,7 +616,7 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
-
+#endif
 
        ! KEYWORDS RELATED TO F12
        ! ***********************
@@ -930,10 +630,32 @@ contains
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
+       case('.SKIPF12SINGLES')
+          DECinfo%F12SINGLES=.false.
        case('.F12CCOUPLING')     
           DECinfo%F12Ccoupling=.true.
-
-#endif
+       case('.F12SINGLESMAXITER')
+          read(input,*) DECinfo%F12singlesMaxIter
+       case('.F12SINGLESTHR')
+          read(input,*) DECinfo%F12singlesThr
+       case('.F12SINGLESMAXDIIS')
+          read(input,*) DECinfo%F12singlesMaxDIIS
+       case('.F12LSALL')     
+          !Use Natural linear scaling algorithm to treat 
+          !these terms (do not treat with DEC nor RI)
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsB1 = .true.
+          DECinfo%NaturalLinearScalingF12TermsX1 = .true.
+          DECinfo%NaturalLinearScalingF12TermsV1 = .true.
+       case('.F12LSB1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsB1 = .true.
+       case('.F12LSX1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsX1 = .true.
+       case('.F12LSV1')     
+          DECinfo%NaturalLinearScalingF12Terms   = .true.
+          DECinfo%NaturalLinearScalingF12TermsV1 = .true.
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
@@ -1168,11 +890,6 @@ contains
                & use same orbital spaces as full system!',-1)
        end if
        
-       ! SNOOP restart not implemented
-       if(DECinfo%HFrestart .or. DECinfo%DECrestart) then
-          call lsquit('SNOOP restart is not implemented!',-1)
-       end if
-
        ! Only for dense matrices for now
        if(matrix_type/=mtype_dense) then
           call lsquit('SNOOP is only implemented for dense matrices!',-1)
@@ -1219,6 +936,10 @@ contains
        if(.not. DECinfo%use_canonical) then
           write(DECinfo%output,*) 'WARNING! We enforce canonical orbitals for CC response!'
           DECinfo%use_canonical = .true.
+       end if
+       ! P_EOM_MBPT2 only for right transformation
+       if(DECinfo%P_EOM_MBPT2 .and. DECinfo%JacobianLHTR) then
+          call lsquit('P_EOM_MBPT2 only for Jacobian right transformation!',-1)
        end if
     end if CCresponse
 
@@ -1392,7 +1113,7 @@ contains
     if(DECinfo%use_bg_buffer.AND.(DECinfo%bg_memory<0.0E0_realk)) then
        DECinfo%bg_memory = 0.8_realk*DECinfo%memory
        write(DECinfo%output,*) ''
-       write(DECinfo%output,*) 'WARNING: User dit not specify the amount of memory to be used'
+       write(DECinfo%output,*) 'WARNING: User did not specify the amount of memory to be used'
        write(DECinfo%output,*) '         in connection with the background buffer.'
        write(DECinfo%output,*) ''
        write(DECinfo%output,*) 'By default, 80% of the total memory will be used:'
@@ -1467,6 +1188,20 @@ contains
        end if
     end if
 
+    
+    ! MP3 testing
+    if(DECinfo%ccmodel==MODEL_MP3) then
+       if(.not.DECinfo%full_molecular_cc) then
+          call lsquit('MP3 only implemented for full molecular CC!',-1)
+       end if
+       if(DECinfo%first_order) then
+          call lsquit('No first-order properties for MP3!',-1)
+       end if
+       if(.not. DECinfo%use_canonical) then
+          call lsquit('MP3 only implemented for canonical orbitals, insert .CANONICAL!',-1)
+       end if
+    end if
+
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
@@ -1535,9 +1270,10 @@ contains
     write(lupri,*) 'SNOOPMaxIter ', DECinfo%SNOOPMaxIter
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
-    write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'SNOOPsamespace ', DECinfo%SNOOPsamespace
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
+    write(lupri,*) 'SNOOPrestart ', DECinfo%SNOOPrestart
+    write(lupri,*) 'SNOOPonesub ', DECinfo%SNOOPonesub
     write(lupri,*) 'CCexci ', DECinfo%CCexci
     write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
     write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
@@ -1546,8 +1282,9 @@ contains
     write(lupri,*) 'JacobianInitialSubspace ', DECinfo%JacobianInitialSubspace
     write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
-    write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
+    write(lupri,*) 'SinglesEW1 ', DECinfo%SinglesEW1
     write(lupri,*) 'LW1 ', DECinfo%LW1
+    write(lupri,*) 'P_EOM_MBPT2 ', DECinfo%P_EOM_MBPT2
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'DECCO ', DECitem%DECCO
     write(lupri,*) 'DECNP ', DECitem%DECNP
@@ -1598,6 +1335,7 @@ contains
     write(lupri,*) 'use_crop ', DECitem%use_crop
     write(lupri,*) 'F12 ', DECitem%F12
     write(lupri,*) 'F12DEBUG ', DECitem%F12DEBUG
+    write(lupri,*) 'F12singles ', DECinfo%F12singles
     write(lupri,*) 'F12fragopt ', DECitem%F12fragopt
     write(lupri,*) 'F12CCOUPLING',DECinfo%F12Ccoupling
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
@@ -1712,6 +1450,7 @@ contains
     case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
     case('.LSTHCRIMP2'); modelnumber = MODEL_LSTHCRIMP2
+    case('.MP3');     modelnumber = MODEL_MP3
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1725,6 +1464,7 @@ contains
        write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
        write(DECinfo%output,*)'.LS-THC-RIMP2'       
+       write(DECinfo%output,*)'.MP3'       
        call lsquit('Requested model not found!',-1)
     end SELECT
 

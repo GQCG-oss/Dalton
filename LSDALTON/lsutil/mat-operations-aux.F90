@@ -75,7 +75,35 @@ END SUBROUTINE MAT_CONDITION_NUMBER
 !> \date 2012
 !> \param a The first type(matrix) factor
 !> \param c The output type(matrix)
-SUBROUTINE mat_density_from_orbs(a, c,nocc,nocca,noccb)
+SUBROUTINE mat_density_from_orbs(a, c,nocc,nocca,noccb,orbfree)
+  !c = a(n,m)*a^T(m,n)
+  implicit none
+  TYPE(Matrix), intent(IN) :: a
+  TYPE(Matrix), intent(inout):: c
+  integer,intent(in) :: nocc
+  integer,optional :: nocca,noccb
+  logical,optional :: orbfree
+  logical :: doOrbFree
+
+  doOrbFree = .false.
+  IF (present(orbfree)) doOrbFree = orbFree
+
+  IF (doOrbFree) THEN
+!   Special case for orbital free DFT. Only the lowest occopied orbital is included, with occupation number N
+    call mat_density_from_orbs_nocc(a, c,1,1,1)
+    call mat_scal(1.e0_realk*nocc,c)
+  ELSE
+!   Regular case
+    call mat_density_from_orbs_nocc(a, c,nocc,nocca,noccb)
+  ENDIF
+END SUBROUTINE mat_density_from_orbs
+
+!> \brief Make c = a(1:ndim,1:nocc)*a^T(1:nocc,1:ndim) where a and c are type(matrix) 
+!> \author T. Kjærgaard
+!> \date 2012
+!> \param a The first type(matrix) factor
+!> \param c The output type(matrix)
+SUBROUTINE mat_density_from_orbs_nocc(a, c,nocc,nocca,noccb)
   !c = a(n,m)*a^T(m,n)
   implicit none
   TYPE(Matrix), intent(IN) :: a
@@ -114,7 +142,7 @@ SUBROUTINE mat_density_from_orbs(a, c,nocc,nocca,noccb)
   end select
   call time_mat_operations2(JOB_mat_density_from_orbs)
   
-END SUBROUTINE mat_density_from_orbs
+END SUBROUTINE mat_density_from_orbs_nocc
 
 !> \brief Compute maximum and minimum eigenvalue of matrix A
 !> \author B. Jansik

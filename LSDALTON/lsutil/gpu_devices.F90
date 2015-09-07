@@ -61,13 +61,13 @@ CONTAINS
     lsdalton_max_acc_device_num = acc_get_num_devices(lsdalton_acc_device_type)
     print*,'There are ',lsdalton_max_acc_device_num,'devices'
     print*,'The Program only support 1 device at present'
-    lsdalton_acc_device_num = 0
-    IF(lsdalton_max_acc_device_num.GT.1)THEN
-       print*,'You can change the number of devices by'
-       print*,'export ACC_DEVICE_NUM=XXX'
-       print*,'Setting the selected device number to ',lsdalton_acc_device_num
-       call acc_set_device_num(lsdalton_acc_device_num,lsdalton_acc_device_type)     
-    ENDIF
+!    lsdalton_acc_device_num = 0
+!    IF(lsdalton_max_acc_device_num.GT.1)THEN
+!       print*,'You can change the number of devices by'
+!       print*,'export ACC_DEVICE_NUM=XXX'
+!       print*,'Setting the selected device number to ',lsdalton_acc_device_num
+!       call acc_set_device_num(lsdalton_acc_device_num,lsdalton_acc_device_type)     
+!    ENDIF
     call acc_init(lsdalton_acc_device_type)
 #endif
   end subroutine Init_GPU_devices
@@ -75,7 +75,13 @@ CONTAINS
   subroutine Shutdown_GPU_devices()
     implicit none
 #ifdef VAR_OPENACC
-    call acc_shutdown(lsdalton_acc_device_type)
+!    call acc_shutdown(lsdalton_acc_device_type)
+! For some reason this gives the error 
+!
+! Shutdown_GPU_devices
+! call to cuCtxDestroy returned error 201: Invalid context
+! Failing in Thread:1
+!
 #endif
   end subroutine Shutdown_GPU_devices
 
@@ -83,12 +89,14 @@ CONTAINS
     implicit none
     integer,intent(in) :: ngpus
 #ifdef VAR_OPENACC
+    call acc_shutdown(lsdalton_acc_device_type)
     lsdalton_acc_device_num = ngpus
     IF(lsdalton_acc_device_num.LT.lsdalton_max_acc_device_num)THEN
        call acc_set_device_num(lsdalton_acc_device_num,lsdalton_acc_device_type)     
     ELSE
        call lsquit('Set_GPU_devices error',-1)
     ENDIF
+    call acc_init(lsdalton_acc_device_type)
 #endif
   end subroutine Set_GPU_devices
 

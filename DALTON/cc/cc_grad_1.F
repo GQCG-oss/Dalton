@@ -82,7 +82,7 @@ C
 #include "inftap.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "cclr.h"
 #include "ccfro.h"
 C

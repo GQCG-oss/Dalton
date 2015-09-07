@@ -996,9 +996,6 @@ C included in the new communicator will receive the broadcast IPRTYP.
 C This is because the nodedriver uses the MPIXBCAST subroutine to 
 C communicate and as of Nov 2014 this is hardcoded to MPI_COMM_WORLD.
 C 
-C todo beyer
-      !use polarizable_embedding, only: pe_mpi
-C todo ... beyer
 #ifdef VAR_IFORT
 !     subroutine sleep is in IFPORT module
       use IFPORT, ONLY: SLEEPQQ
@@ -1010,6 +1007,7 @@ C todo ... beyer
       use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
       use so_parutils, only: soppa_nodedriver
+      use pelib_interface, only: pelib_ifc_slave
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1163,10 +1161,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
-#if defined (BUILD_PELIB)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
-            CALL PE_IFC_SLAVE(IPRINT)
-#endif
+            CALL PELIB_IFC_SLAVE(IPRINT)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN

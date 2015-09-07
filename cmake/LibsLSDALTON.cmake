@@ -63,10 +63,10 @@ add_library(
 
 target_link_libraries(matrixmlib cuda_gpu_interfaces)
 
+include_directories(${CMAKE_SOURCE_DIR}/LSDALTON/tensor/include)
+
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
-   ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90
 
    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_reord.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
@@ -166,6 +166,8 @@ set(MANUAL_REORDERING_SOURCES
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_utils_t2f.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_utils_t2f.F90
    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_utils_t2f.F90
+
+
    )
 if(ENABLE_GPU)
    set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
@@ -276,44 +278,92 @@ if(ENABLE_REAL_SP)
    endif()
 endif()
 
-get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90)
+set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90)
+set(GENERATED_FILES ${MANUAL_REORDERING_SOURCES})
 
 if(ENABLE_GPU)
-   set(LIST_OF_DEFINITIONS "acc ${LIST_OF_DEFINITIONS}")
-endif()
-if(NOT ENABLE_COLLAPSE)
-   set(LIST_OF_DEFINITIONS "nocollapse ${LIST_OF_DEFINITIONS}")
+   set(reorder_definitions "--acc ${reorder_definitions}")
 endif()
 if(ENABLE_REAL_SP)
-   set(LIST_OF_DEFINITIONS "real_sp ${LIST_OF_DEFINITIONS}")
+   set(reorder_definitions "--real_sp ${reorder_definitions}")
 endif()
 
 add_custom_command(
     OUTPUT
-    ${MANUAL_REORDERING_SOURCES}
+    ${GENERATED_FILES}
     COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py --CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${reorder_definitions}
     DEPENDS
     ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
     )
 
-unset(LIST_OF_DEFINITIONS)
+unset(reorder_definitions)
 
 add_library(
-    lsutillib_common
-    ${MANUAL_REORDERING_SOURCES}
+  lsutil_tensor_lib
+  ${MANUAL_REORDERING_SOURCES}
+  ${LSUTIL_TENSOR_SOURCES}
+  )
+
+target_link_libraries(lsutil_tensor_lib matrixmlib )
+
+add_library(
+    lsutillib_common1
     ${LSUTIL_COMMON_C_SOURCES}
-    ${LSUTIL_COMMON_SOURCES}
+    ${LSUTIL_TYPE_SOURCES}
     )
 
-target_link_libraries(lsutillib_common matrixmlib)
+target_link_libraries(lsutillib_common1 lsutil_tensor_lib)
 
 add_library(
-    lsutil_tensor_lib
-    ${LSUTIL_TENSOR_SOURCES}
+    lsutillib_common2
+    ${LSUTIL_COMMON_SOURCES2}
     )
 
-target_link_libraries(lsutil_tensor_lib lsutillib_common)
+target_link_libraries(lsutillib_common2 lsutillib_common1)
+
+add_library(
+    lsutillib_common3
+    ${LSUTIL_COMMON_SOURCES3}
+    )
+
+target_link_libraries(lsutillib_common3 lsutillib_common2)
+
+add_library(
+    lsutillib_common4
+    ${LSUTIL_COMMON_SOURCES4}
+    )
+
+target_link_libraries(lsutillib_common4 lsutillib_common3)
+
+add_library(
+    lsutillib_common5
+    ${LSUTIL_COMMON_SOURCES5}
+    )
+
+target_link_libraries(lsutillib_common5 lsutillib_common4)
+
+add_library(
+    lsutillib_common6
+    ${LSUTIL_COMMON_SOURCES6}
+    )
+
+target_link_libraries(lsutillib_common6 lsutillib_common5)
+
+add_library(
+    lsutillib_common7
+    ${LSUTIL_COMMON_SOURCES7}
+    )
+
+target_link_libraries(lsutillib_common7 lsutillib_common6)
+
+add_library(
+    lsutillib_common8
+    ${LSUTIL_COMMON_SOURCES8}
+    )
+
+target_link_libraries(lsutillib_common8 lsutillib_common7)
 
 add_library(
     matrixolib
@@ -321,7 +371,7 @@ add_library(
     ${LSUTIL_MATRIXO_C_SOURCES}
     )
 
-target_link_libraries(matrixolib lsutil_tensor_lib)
+target_link_libraries(matrixolib lsutillib_common8)
 
 add_library(
     matrixulib
@@ -366,9 +416,9 @@ target_link_libraries(matrixulib pdpacklib)
 
 add_library(
     lsutiltypelib_common
-    ${LSUTIL_TYPE_SOURCES}
+    ${LSUTIL_TYPEOP_SOURCES}
     )
-add_dependencies(lsutiltypelib_common lsutillib_common)
+add_dependencies(lsutiltypelib_common lsutillib_common8)
 add_dependencies(lsutiltypelib_common matrixulib)
 
 target_link_libraries(lsutiltypelib_common pdpacklib)
@@ -430,18 +480,18 @@ add_library(
 
 
 add_dependencies(fmmlib lsutillib_precision)
-add_dependencies(fmmlib lsutillib_common)
+add_dependencies(fmmlib lsutillib_common1)
+add_dependencies(fmmlib lsutillib_common2)
+add_dependencies(fmmlib lsutillib_common3)
+add_dependencies(fmmlib lsutillib_common4)
+add_dependencies(fmmlib lsutillib_common5)
+add_dependencies(fmmlib lsutillib_common6)
+add_dependencies(fmmlib lsutillib_common7)
+add_dependencies(fmmlib lsutillib_common8)
 add_dependencies(fmmlib lsutiltypelib_common)
 
 if(ENABLE_INTEREST)
     target_link_libraries(fmmlib interestlib)
-endif()
-
-if(ENABLE_ICHOR)
-add_library(
-    ichorintlib
-    ${ICHORINT_SOURCES}
-    )
 endif()
 
 add_library(
@@ -462,9 +512,8 @@ add_dependencies(lsintlib xcfun_interface)
 add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
-if(ENABLE_ICHOR)
-     add_dependencies(lsintlib ichorintlib)
-endif()
+
+include(IchorIntegralLibrary)
 
 add_library(
     pbclib
@@ -528,13 +577,15 @@ if(ENABLE_REAL_SP)
    set(CCSDPT_SINGLE_PREC_SOURCE
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90
        ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90
+       ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90
        )
 endif()
 
 if(ENABLE_REAL_SP)
    get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
    if(${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels_sp.F90 OR
-     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90)
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full_sp.F90 OR
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90 IS_NEWER_THAN ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec_sp.F90)
      add_custom_command(
      OUTPUT
      ${CCSDPT_SINGLE_PREC_SOURCE}
@@ -543,30 +594,40 @@ if(ENABLE_REAL_SP)
      DEPENDS
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_kernels.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_full.F90
+     ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_dec.F90
      ${CMAKE_SOURCE_DIR}/LSDALTON/deccc/ccsdpt_sp.sh
      )
    endif()
    unset(LIST_OF_DEFINITIONS)
 endif()
 
-if(ENABLE_REAL_SP)
-   add_library(
-       declib
-       ${CCSDPT_SINGLE_PREC_SOURCE}
-       ${DEC_SOURCES}
-       )
-else()
-   add_library(
-       declib
-       ${DEC_SOURCES}
-       )
+if(ENABLE_DEC)
+  if(ENABLE_REAL_SP)
+    add_library(
+      declib
+      ${CCSDPT_SINGLE_PREC_SOURCE}
+      ${DEC_SOURCES}
+      )
+  else()
+    add_library(
+      declib
+      ${DEC_SOURCES}
+      )
+  endif()
+
+  target_link_libraries(declib lsutiltypelib_common)
+  target_link_libraries(declib lsutillib_common1)
+  target_link_libraries(declib lsutillib_common2)
+  target_link_libraries(declib lsutillib_common3)
+  target_link_libraries(declib lsutillib_common4)
+  target_link_libraries(declib lsutillib_common5)
+  target_link_libraries(declib lsutillib_common6)
+  target_link_libraries(declib lsutillib_common7)
+  target_link_libraries(declib lsutillib_common8)
+  target_link_libraries(declib lsintlib)
+  target_link_libraries(declib linearslib)
 endif()
-
-target_link_libraries(declib lsutiltypelib_common)
-target_link_libraries(declib lsutillib_common)
-target_link_libraries(declib lsintlib)
-target_link_libraries(declib linearslib)
-
+  
 add_library(
     rsp_propertieslib
     ${RSP_PROPERTIES_SOURCES}
@@ -589,7 +650,9 @@ add_library(
 target_link_libraries(lsdaltonmain pbclib)
 target_link_libraries(lsdaltonmain geooptlib)
 target_link_libraries(lsdaltonmain linearslib)
-target_link_libraries(lsdaltonmain declib)
+if(ENABLE_DEC)
+  target_link_libraries(lsdaltonmain declib)
+endif()
 target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
@@ -668,26 +731,25 @@ if(ENABLE_INTEREST)
         interestlib
         )
 else()
-  if(ENABLE_ICHOR)
-    MERGE_STATIC_LIBS(
-        lsint
-	ichorintlib
-        lsintlib
-        )
-  else()
     MERGE_STATIC_LIBS(
         lsint
         lsintlib
         )
-  endif()
 endif()
 
 set(LIBS_TO_MERGE
     lsutillib_precision
     cuda_gpu_interfaces
     matrixmlib
-    lsutillib_common
     lsutil_tensor_lib
+    lsutillib_common1
+    lsutillib_common2
+    lsutillib_common3
+    lsutillib_common4
+    lsutillib_common5
+    lsutillib_common6
+    lsutillib_common7
+    lsutillib_common8
     matrixolib
     matrixulib
     pdpacklib
@@ -698,7 +760,13 @@ set(LIBS_TO_MERGE
     lsint
     pbclib
     ddynamlib
-    declib
+)
+
+if(ENABLE_DEC)
+  set(LIBS_TO_MERGE ${LIBS_TO_MERGE} declib)
+endif()
+
+set(LIBS_TO_MERGE ${LIBS_TO_MERGE} 
     solverutillib
     rspsolverlib
     linearslib

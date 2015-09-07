@@ -21,6 +21,7 @@ use lsparameters
 use infpar_module
 #endif
 use tensor_interface_module
+use tensor_basic_module
 
 
 ! DEC DEPENDENCIES (within deccc directory)   
@@ -51,7 +52,7 @@ use rpa_module
 
 public :: ccsolver, fragment_ccsolver, ccsolver_justenergy,&
    & mp2_solver, SOLVE_AMPLITUDES,SOLVE_AMPLITUDES_PNO, SOLVE_MULTIPLIERS,&
-   & ccsolver_energy_multipliers
+   & ccsolver_energy_multipliers, save_current_guess
 private
 
 interface mp2_solver
@@ -276,15 +277,19 @@ contains
       type(tensor), intent(inout), optional :: m1f,m2f
       type(decfrag), intent(inout), optional :: frag
       logical :: fj
-      integer :: os,vs, solver_job, solver_ccmodel
+      integer :: os,vs, solver_job, solver_ccmodel,nnod
       type(tensor) :: mp2_amp
       type(array4) :: t2a4,VOVOa4, m2a4, mp2a4
       type(array2) :: t1a2, m1a2
+      nnod = 1
+#ifdef VAR_MPI
+      nnod = infpar%lg_nodtot
+#endif
 
       solver_ccmodel = ccmodel
       if(ccmodel == MODEL_CCSDpT) solver_ccmodel = MODEL_CCSD
       fj = present(frag)
-      call get_symm_tensor_segmenting_simple(no,nv,os,vs)
+      call get_symm_tensor_segmenting_simple(nnod,no,nv,os,vs,DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
 
 
       if(DECinfo%use_pnos)then
@@ -2333,7 +2338,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          endif
          call tensor_zero(omega2(iter_idx))
 
-
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
 
          ! Get special t1 matrices, else just the normal fock and trafo matrices
@@ -2808,7 +2812,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 #endif
 
    !get tensor segments
-   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
+   call get_symm_tensor_segmenting_simple(int(nnod),no,nv,os,vs,DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
 
    ! allocate the buffer in the background
    use_bg = DECinfo%use_bg_buffer.and..not.saferun

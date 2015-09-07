@@ -47,7 +47,7 @@ C LWORK: Total needed length of the work-vector.
 #include "mxcent.h"
 #include "aovec.h"
 #include "iratdef.h"
-#include "eribuf.h"
+#include "eritap.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
@@ -719,6 +719,7 @@ C MYID intent(in)    Process ID in MPI_COMM_WORLD.
 
 ! These include files depend on previous include files
 #include "infpar.h" 
+#include "eritap.h" 
 #include "eribuf.h" 
 
 #include "inftap.h"
@@ -791,7 +792,7 @@ C     Miscellaneous
 
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world, ierr)
-
+      call er2ini
 C**********************************************************
 C     Update all necessary common blocks
 C     This large sequence of bcasts will only execute
@@ -1227,7 +1228,8 @@ C     Assemble the Fock Matrix in the master's work array
       RETURN
       END SUBROUTINE
 
-#endif !!! end of VAR_MPI 
+#endif
+!!! end of VAR_MPI 
 
 
 
@@ -1566,4 +1568,5 @@ C      endif
 
 
 
-#endif !!! End of VAR_MPI preprocessing flag from subroutine getbytespan
+#endif
+!!! End of VAR_MPI preprocessing flag from subroutine getbytespan

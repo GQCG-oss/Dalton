@@ -445,7 +445,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/dft/dft_mos.F
     DALTON/dft/dft_rho.F
     DALTON/dft/dso_cb.F
-    DALTON/embedding/pe_dalton_interfaces.F
     DALTON/eri/eri2aob.F
     DALTON/eri/eri2ave.F
     DALTON/eri/eri2car1.F
@@ -766,7 +765,8 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
-    )
+    DALTON/pelib/pelib_interface.F90
+   )
 if(ENABLE_PCMSOLVER)
    set(DAL_PCM_SOURCES
     DALTON/pcm/pcm_scf.F90

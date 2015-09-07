@@ -34,6 +34,8 @@ F90_OBJS = dec_settings.o \
 	rpa.o \
 	f12_integrals.o \
 	f12_routines.o \
+	rif12_integrals.o \
+	dec_f12routines.o
 	ls_thc_rimp2.o\
 	wangy_playground.o \
 	cc_driver.o \

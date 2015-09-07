@@ -140,6 +140,8 @@ type ConfigItem
    logical              :: doTestMPIcopy
    !> do testing of the high-order derivative integrals (HODI)
    logical              :: doTestHodi
+   !> maximum order of the high-order derivative integrals (HODI)
+   integer              :: testHodiOrder
    !> skip SCF calculations
    logical              :: skipscfloop
    !> test papi

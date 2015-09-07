@@ -8,6 +8,15 @@ module dec_tools_module
   use files
   use BUILDAOBATCH  
 
+  private
+  
+  public :: print_4_dimensional_array,solve_eigenvalue_problem,&
+       & solve_eigenvalue_problem_unitoverlap,&
+       & solve_nonsymmetric_eigenvalue_problem_unitoverlap,&
+       & init_batch_info,free_batch_info,int_sort,&
+       & real_inv_sort_with_tracking,&
+       & integer_inv_sort_with_tracking,GetSortedList
+
   contains
 
   !> \brief Print all elements of four-dimensional array to LSDALTON.OUT.

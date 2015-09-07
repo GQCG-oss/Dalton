@@ -31,8 +31,9 @@ module fragment_energy_module
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
          & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
-#ifdef MOD_UNRELEASED
   use f12_integrals_module
+  use rif12_integrals_module
+#ifdef MOD_UNRELEASED
   use ccsd_gradient_module
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e5_frag,&
          & ccsdpt_energy_e5_pair, ccsdpt_decnp_e5_frag
@@ -166,12 +167,13 @@ contains
     type(tensor) :: ccsdpt_t2, ccsdpt_t2occ, ccsdpt_t2virt
     type(tensor) :: m2,m2occ,m2virt
 
-    real(realk) :: tcpu, twall,debugenergy
+    real(realk) :: tcpu, twall,debugenergy,EnergyF12Ccoupling
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc,pair,get_mp2, use_bg
     integer :: a,b,i,j,k,l, ccmodel, nvA,noA,nvE,noE
 
+    EnergyF12Ccoupling = 0.0E0_realk
     get_mp2 = .false.
     if (present(add_mp2_opt)) get_mp2 = add_mp2_opt
     use_bg  = mem_is_background_buf_init()
@@ -214,29 +216,31 @@ contains
              ! calculate also MP2 density integrals
              ! ************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt,VOOO,VOVV)
+             print *,"1. Myfragment%energies(FRAGMODEL_OCCMP2) (fragment energy)",  Myfragment%energies(FRAGMODEL_OCCMP2)
 
           else if (DECinfo%DECNP) then
              ! Get MP2 amplitudes and integrals using ccsolver
              ! ***********************************************
              call mp2_solver(MyFragment,VOVO,t2,.false.)
-           
+             print *,"2. Myfragment%energies(FRAGMODEL_OCCMP2) (fragment energy)",  Myfragment%energies(FRAGMODEL_OCCMP2)
+
              ! Extract EOS indices for amplitudes and integrals
              ! ************************************************
              ! Note: EOS space is different for DECNP !!
-             call tensor_extract_decnp_indices(t2,MyFragment,t2occ,t2virt)
-             call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
+             call tensor_extract_decnp_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+                &MyFragment%idxo,MyFragment%idxu,t2occ,t2virt)
+             call tensor_extract_decnp_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+                &MyFragment%idxo,MyFragment%idxu,VOVOocc,VOVOvirt)
            
              ! free stuff
              ! **********
              call tensor_free(VOVO)
              call tensor_free(t2)
-          else
+          else 
              ! calculate only MP2 energy integrals and MP2 amplitudes
              ! ******************************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
           end if
-
-#ifdef MOD_UNRELEASED
           ! MP2-F12 Code
           MP2F12: if(DECinfo%F12) then    
              if(pair) then
@@ -253,7 +257,6 @@ contains
              !> Free cabs after each calculation
              call free_cabs()
           end if MP2F12
-#endif
 
     case(MODEL_RIMP2) ! RIMP2 calculation
 
@@ -267,8 +270,10 @@ contains
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
           ! Note: EOS space is different for DECNP !!
-          call tensor_extract_decnp_indices(t2,MyFragment,t2occ,t2virt)
-          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
+          call tensor_extract_decnp_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,t2occ,t2virt)
+          call tensor_extract_decnp_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,VOVOocc,VOVOvirt)
           
           ! free stuff
           ! **********
@@ -278,6 +283,28 @@ contains
           ! calculate also RIMP2 integrals
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        endif
+
+       ! MP2-F12 Code
+       RIMP2F12: if(DECinfo%F12) then
+          IF(DECinfo%F12Ccoupling.AND.(MyFragment%isopt.or.DECinfo%F12fragopt))THEN
+             !Only calculate F12 C (C*C) coupling if requested and for optimized fragment 
+             call RIMP2F12_Ccoupling_Energy(MyFragment,EnergyF12Ccoupling)
+          ENDIF
+          if(pair) then
+             if(MyFragment%isopt) then
+                call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
+                     &  Fragment1, Fragment2)
+             end if
+          else
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
+             end if
+          end if
+          !> Free cabs after each calculation
+          call free_cabs()
+       end if RIMP2F12
+
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
 
        if(DECinfo%first_order)call lsquit('no first order LSTHCRIMP2',-1)       
@@ -296,8 +323,10 @@ contains
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
           !extract the indices here for later use in CCSD first order properties
           !note: the t2occp and t2virtp are the t2 without further addmixture of t1!
-          call tensor_extract_eos_indices(m2,MyFragment,tensor_occEOS=m2occ,tensor_virtEOS=m2virt)
-          call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2occp,tensor_virtEOS=t2virtp)
+          call tensor_extract_eos_indices(m2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=m2occ,tensor_virtEOS=m2virt)
+          call tensor_extract_eos_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2occp,tensor_virtEOS=t2virtp)
        else
 #endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
@@ -334,7 +363,8 @@ contains
        ! CCSD-F12 Code
        CCSDF12: if(DECinfo%F12) then
 
-          call tensor_extract_eos_indices(t2,MyFragment,tensor_occEOS=t2_occEOS)
+          call tensor_extract_eos_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2_occEOS)
           if(pair) then
              if(MyFragment%isopt) then
                 call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)  
@@ -363,20 +393,25 @@ contains
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
           ! Note: EOS space is different for DECNP !!
-          call tensor_extract_decnp_indices(u,MyFragment,t2occ,t2virt)
-          call tensor_extract_decnp_indices(VOVO,MyFragment,VOVOocc,VOVOvirt)
+          call tensor_extract_decnp_indices(u,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,t2occ,t2virt)
+          call tensor_extract_decnp_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,VOVOocc,VOVOvirt)
 
        else
           ! Extract EOS indices for amplitudes and integrals
           ! ************************************************
           ! Note, t2occ and t2virt also contain singles contributions
-          call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
-          call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc, &
+          call tensor_extract_eos_indices(u,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
+          call tensor_extract_eos_indices(VOVO,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+             &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=VOVOocc, &
              & tensor_virtEOS=VOVOvirt)
 
           ! Extract also EOS indices from MP2 amplitudes:
           if (get_mp2) then
-             call tensor_extract_eos_indices(t2MP2,MyFragment,tensor_occEOS=t2MP2o,tensor_virtEOS=t2MP2v)
+             call tensor_extract_eos_indices(t2MP2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
+                &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2MP2o,tensor_virtEOS=t2MP2v)
              call tensor_free(t2MP2)
           end if
            
@@ -490,6 +525,10 @@ contains
      
     end if
 
+    IF(DECinfo%F12Ccoupling)THEN
+       Call AddF12CcouplingCorrection(MyFragment,EnergyF12Ccoupling)
+    ENDIF
+
     !> Memory Stats
     if(DECinfo%F12debug) then
        WRITE(DECinfo%output,*) "Memstats before F12 fragment_energy calculation"  
@@ -581,6 +620,18 @@ contains
 
   end subroutine fragment_energy_and_prop
 
+subroutine AddF12CcouplingCorrection(MyFragment,EnergyF12Ccoupling)
+  implicit none
+  !> Atomic or pair fragment
+  type(decfrag), intent(inout) :: myfragment
+  !> Energy 
+  real(realk),intent(in) :: EnergyF12Ccoupling  
+  if(MyFragment%ccmodel==MODEL_RIMP2) then
+   MyFragment%energies(FRAGMODEL_OCCRIMP2)=MyFragment%energies(FRAGMODEL_OCCRIMP2)+EnergyF12Ccoupling
+   MyFragment%energies(FRAGMODEL_VIRTRIMP2)=MyFragment%energies(FRAGMODEL_VIRTRIMP2)+EnergyF12Ccoupling
+   MyFragment%energies(FRAGMODEL_LAGRIMP2)=MyFragment%energies(FRAGMODEL_LAGRIMP2)+EnergyF12Ccoupling 
+  end if
+end subroutine AddF12CcouplingCorrection
 
   !> Purpose: Wrapper to ccsdpt driver and fragment energy routines
   !> Author:  Pablo Baudin
@@ -639,8 +690,8 @@ contains
      ! ********************************************
      if (DECinfo%DECNP) then
         ! Extract EOS indices, Note: EOS space is different for DECNP !!
-        call tensor_extract_decnp_indices(t2,frag,t2occ,t2virt)
-        call tensor_extract_decnp_indices(ccsdpt_t2,frag, &
+        call tensor_extract_decnp_indices(t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,t2occ,t2virt)
+        call tensor_extract_decnp_indices(ccsdpt_t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu, &
            & ccsdpt_t2occ,ccsdpt_t2virt)
         ! release ccsd(t) doubles amplitudes
         call tensor_free(ccsdpt_t2)
@@ -649,9 +700,9 @@ contains
         call ccsdpt_decnp_e5_frag(frag,t1,ccsdpt_t1)
      else if(pair) then
         ! extract EOS indices from doubles (CCSD and (T)):
-        call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
+        call tensor_extract_eos_indices(ccsdpt_t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=ccsdpt_t2occ, &
            & tensor_virtEOS=ccsdpt_t2virt)
-        call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
+        call tensor_extract_eos_indices(t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=t2occ, &
            & tensor_virtEOS=t2virt)
         ! release ccsd(t) doubles amplitudes
         call tensor_free(ccsdpt_t2)
@@ -661,9 +712,9 @@ contains
         call ccsdpt_energy_e5_pair(frag,t1,ccsdpt_t1)
      else
         ! extract EOS indices from doubles (CCSD and (T)):
-        call tensor_extract_eos_indices(ccsdpt_t2,frag,tensor_occEOS=ccsdpt_t2occ, &
+        call tensor_extract_eos_indices(ccsdpt_t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=ccsdpt_t2occ, &
            & tensor_virtEOS=ccsdpt_t2virt)
-        call tensor_extract_eos_indices(t2,frag,tensor_occEOS=t2occ, &
+        call tensor_extract_eos_indices(t2,frag%noccEOS,frag%nvirtEOS,frag%idxo,frag%idxu,tensor_occEOS=t2occ, &
            & tensor_virtEOS=t2virt)
         ! release ccsd(t) doubles amplitudes
         call tensor_free(ccsdpt_t2)
@@ -825,7 +876,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual virtual orbital
-    call mem_alloc(virt_tmp,nvirtAOS)
+    call mem_alloc(virt_tmp,nvirtAOS,'AFE:virt_tmp')
     virt_tmp = 0.0E0_realk       
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -913,7 +964,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual occupied orbital
-    call mem_alloc(occ_tmp,noccAOS)
+    call mem_alloc(occ_tmp,noccAOS,'AFE:occ_tmp')
     occ_tmp = 0.0E0_realk
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1129,7 +1180,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual virtual orbital
-    call mem_alloc(virt_tmp,nvirtAOS)
+    call mem_alloc(virt_tmp,nvirtAOS,'SFEP4:virt_tmp')
     virt_tmp = 0.0E0_realk       
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1183,7 +1234,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual occupied orbital
-    call mem_alloc(occ_tmp,noccAOS)
+    call mem_alloc(occ_tmp,noccAOS,'SFEP4:occ_tmp')
     occ_tmp = 0.0E0_realk
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1359,7 +1410,7 @@ contains
      !$OMP REDUCTION(+:Eocc)
      call init_threadmemvar()
      ! Contributions from each individual virtual orbital
-     call mem_alloc(virt_tmp,nvirtAOS)
+     call mem_alloc(virt_tmp,nvirtAOS,'DECNPFE:virt_tmp')
      virt_tmp = 0.0E0_realk       
       
      ! Calculate Eocc
@@ -1415,7 +1466,7 @@ contains
      !$OMP REDUCTION(+:Evirt)
      call init_threadmemvar()
      ! Contributions from each individual occupied orbital
-     call mem_alloc(occ_tmp,noccAOS)
+     call mem_alloc(occ_tmp,noccAOS,'DECNPFE:occ_tmp')
      occ_tmp = 0.0E0_realk
 
      ! Calculate Evirt
@@ -1688,8 +1739,8 @@ contains
      endif
 
      ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
+     call mem_alloc(dopair_occ,noccEOS,noccEOS,'GPFE:dopair_occ')
+     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS,'GPFE:dopair_virt')
      call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
      call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
@@ -1956,8 +2007,8 @@ contains
      prefac_k = 1._realk
 
      ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
+     call mem_alloc(dopair_occ,noccEOS,noccEOS,'GPFEP4:dopair_occ')
+     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS,'GPFEP4:dopair_virt')
      call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
      call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
@@ -2149,7 +2200,7 @@ contains
 
 
     ! Get distance table and pair cut off in Angstrom
-    call mem_alloc(DistAng,natoms,natoms)
+    call mem_alloc(DistAng,natoms,natoms,'PLOTPAIR:DistAng')
     DistAng = bohr_to_angstrom*MyMolecule%DistanceTable
     cutAng = bohr_to_angstrom*paircut
 
@@ -2201,7 +2252,7 @@ contains
     end if
 
     ! x points to plot (distances in Angstrom)
-    call mem_alloc(xpoints,npoints) 
+    call mem_alloc(xpoints,npoints,'PLOTPAIR:xpoints') 
     ! xpoints(k) is set to be the beginning point of interval k
     ! (they will be reset to the middle of the interval before plotting)
     do k=1,npoints
@@ -2210,11 +2261,11 @@ contains
     end do
 
     ! y points to plot (absolute pair interaction energies in a.u.)
-    call mem_alloc(ypoints,npoints) 
+    call mem_alloc(ypoints,npoints,'PLOTPAIR:ypoints')
     ypoints = 0.0E0_realk
 
     ! Keep track of whether there are in fact data points in each interval
-    call mem_alloc(anypoints,npoints) 
+    call mem_alloc(anypoints,npoints,'PLOTPAIR:anypoints') 
     anypoints=.false.
 
 
@@ -2268,8 +2319,8 @@ contains
        return
     end if
 
-    call mem_alloc(xpoints2,npoints2) 
-    call mem_alloc(ypoints2,npoints2)
+    call mem_alloc(xpoints2,npoints2,'PLOTPAIR:xpoints2') 
+    call mem_alloc(ypoints2,npoints2,'PLOTPAIR:ypoints2')
     idx=0
     do i=1,npoints  ! loop over number of intervals (including empty ones)
        if(anypoints(i)) then ! Put values into new x and y vectors of reduced size
@@ -2449,8 +2500,8 @@ contains
 
 
      ! Get information on how the expansion should be performed:
-     call mem_alloc(exp_list_occ,no)
-     call mem_alloc(exp_list_vir,nv)
+     call mem_alloc(exp_list_occ,no,'OAF:exp_list_occ')
+     call mem_alloc(exp_list_vir,nv,'OAF:exp_list_vir')
 
 
      !Define the EOS spaces in the fragment to be able to calculate priority lists
@@ -2472,8 +2523,8 @@ contains
 
      AtomicFragment%noccEOS   = idx
      AtomicFragment%nvirtEOS = nvir_per_atom(MyAtom)
-     call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS)
-     call mem_alloc(AtomicFragment%virtEOSidx,AtomicFragment%nvirtEOS)
+     call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS,'OAF:occEOSidx')
+     call mem_alloc(AtomicFragment%virtEOSidx,AtomicFragment%nvirtEOS,'OAF:virEOSidx')
 
      idx = 1
      do i=nc+1,MyMolecule%nocc
@@ -2510,8 +2561,8 @@ contains
      !
      ! Get Initial fragment for Myatom, we include the EOS space plus Frag_Init_Size 
      ! occ/vir orbitals from the priority lists:
-     call mem_alloc(Occ_AOS,no)
-     call mem_alloc(Vir_AOS,nv)
+     call mem_alloc(Occ_AOS,no,'OAF:Occ_AOS')
+     call mem_alloc(Vir_AOS,nv,'OAF:Vir_AOS')
 
      ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
      call expand_fragment(no,nv,exp_list_occ,exp_list_vir,ninit_occ,ninit_vir,MyAtom, &
@@ -2556,8 +2607,8 @@ contains
      ! Deallocate exp list and allocate red ones:
      call mem_dealloc(exp_list_occ)
      call mem_dealloc(exp_list_vir)
-     call mem_alloc(red_list_occ,no)
-     call mem_alloc(red_list_vir,nv)
+     call mem_alloc(red_list_occ,no,'OAF:red_list_occ')
+     call mem_alloc(red_list_vir,nv,'OAF:red_list_vir')
 
      ! Overwrite ccmodel for myatom with the reduction required ccmodel
      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
@@ -3289,7 +3340,11 @@ contains
     real(realk) :: FOT
     type(array4)  :: t2
     character(4) :: stens_atype
-    integer :: os,vs
+    integer :: os,vs,nnod
+    nnod=1
+#ifdef VAR_MPI
+    nnod=infpar%lg_nodtot
+#endif
 
     ! Init stuff
     ! **********
@@ -3337,7 +3392,8 @@ contains
           call calculate_corrdens_AOS_occocc(t2,AtomicFragment)
 
           !FIXME: dirty hack-restore input tensor with the new dimensions and data
-          call get_symm_tensor_segmenting_simple(t2%dims(2),t2%dims(1),os,vs)
+          call get_symm_tensor_segmenting_simple(nnod,t2%dims(2),t2%dims(1),os,vs,&
+             &DECinfo%cc_solver_tile_mem,DECinfo%tensor_segmenting_scheme)
           call tensor_minit(t2tens,t2%dims,4, atype = stens_atype, tdims=[vs,os,vs,os])
           call tensor_convert(t2%val,t2tens)
           call array4_free(t2)

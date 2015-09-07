@@ -24,7 +24,10 @@ module ccsdpt_module
   use IchorErimoduleHost
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
-  use lspdm_tensor_operations_module
+  use tensor_basic_module,only: assoc_ptr_arr, deassoc_ptr_arr
+  use background_buffer_module,only: mem_is_background_buf_init,mem_get_bg_buf_free
+  use reorder_frontend_module
+  use lspdm_basic_module,only: get_residence_of_tile
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -44,15 +47,17 @@ module ccsdpt_module
   use cc_tools_module
   use dec_fragment_utils
   use array2_simple_operations
-  use array3_simple_operations
-  use array4_simple_operations
+!  use array3_simple_operations
+  use array4_simple_operations,only: array4_init,array4_init_standard, &
+       & array4_free,array4_reorder, array4_contract1
   
 #ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_info,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
        & ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
-  private
 #endif
+
+  private
 
 contains
 
@@ -121,9 +126,8 @@ contains
     ! some quit statements
     if (nocc .gt. nvirt) call lsquit('CCSD(T) with nocc .gt. nvirt has not been implemented...',DECinfo%output)
     if (print_frags .and. DECinfo%pt_hack) call lsquit('print_frags .and. .PT_HACK is not allowed...',DECinfo%output) 
-#ifdef VAR_REAL_SP
-    if (print_frags) call lsquit('print_frags is currently not implemented for single prec. builds...',DECinfo%output)
-#endif
+    if (print_frags .and. DECinfo%pt_single_prec) &
+                     & call lsquit('print_frags .and. .PT_SINGLE_PREC is not allowed...',DECinfo%output)
 #ifndef VAR_REAL_SP
     if (DECinfo%pt_single_prec) call lsquit('.PT_SINGLE_PREC only works for single prec. builds! re-compile...',DECinfo%output)
 #endif
@@ -344,6 +348,20 @@ contains
 
        call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%elm2,C_can_virt%elm2,ovoo,vvvo,ijk_tile_size)
 
+    endif
+
+    if (DECinfo%PL .gt. 2) then
+#ifdef VAR_MPI
+       call print_norm(ccsd_doubles," NORM(ccsd)   :",print_=(infpar%lg_mynum==0))
+       call print_norm(vovo," NORM(vovo)   :",print_=(infpar%lg_mynum==0))
+       call print_norm(ovoo," NORM(ovoo)   :",print_=(infpar%lg_mynum==0))
+       call print_norm(vvvo," NORM(vvvo)   :",print_=(infpar%lg_mynum==0))
+#else
+       call print_norm(ccsd_doubles," NORM(ccsd)   :")
+       call print_norm(vovo," NORM(vovo)   :")
+       call print_norm(ovoo," NORM(ovoo)   :")
+       call print_norm(vvvo," NORM(vvvo)   :")
+#endif
     endif
 
     write(DECinfo%output,*) ''
@@ -1512,11 +1530,11 @@ contains
     integer(kind=ls_mpik) :: distributionw
     Character            :: intSpec(5)
     integer :: myload,first_el_i_block,nelms,tile_size_tmp,total_num_tiles,tile,ats1,ats2
-    logical :: master
+    logical :: master, local
     integer(kind=long) :: o3v,v3
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, lg_me, nodtotal
-    integer :: p,pos, batch, old_gammaB
+    integer :: p,pos, batch, old_gammaB, dpos
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf, first_round, dynamic_load
     call time_start_phase(PHASE_WORK)
@@ -1527,6 +1545,8 @@ contains
     dynamic_load = DECinfo%dyn_load
 
 #ifdef VAR_MPI
+
+    mode   = MPI_MODE_NOCHECK
 
     nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
@@ -1544,7 +1564,6 @@ contains
     if (DECinfo%pt_hack2) then
 
 #ifdef VAR_MPI
-       mode   = MPI_MODE_NOCHECK
 
        if (nodtotal .gt. 1) then
 
@@ -1631,28 +1650,13 @@ contains
 
     ! Integrals (AB|IC) in the order (C,B,A,I)
     dims = [nvirt,nvirt,nvirt,nocc]
+    local = .true.
 #ifdef VAR_MPI
-
-    if (infpar%lg_nodtot .gt. 1) then
-
-       mode   = MPI_MODE_NOCHECK
-   
-       call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
-       call tensor_zero_tiled_dist(vvvo)
-
-    else
-
-       call tensor_init(vvvo, dims,4,bg=use_bg_buf)
-       call tensor_zero(vvvo)
-
-    endif
-
-#else
-
-    call tensor_init(vvvo, dims,4)
-    call tensor_zero(vvvo)
-
+    if (infpar%lg_nodtot .gt. 1) local = .false.
 #endif
+
+    call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)
+    call tensor_zero(vvvo)
 
     ! For efficiency when calling dgemm, save transposed matrices
     if(use_bg_buf)then
@@ -2026,15 +2030,9 @@ contains
              call tensor_lock_win(vvvo,tile,'s')
 #endif
 
-             call get_residence_of_tile(dest,tile,vvvo,idx_on_node = pos)
+             call get_residence_of_tile(vvvo,tile,dest, dpos, pos, wi_idx)
 
-             if( alloc_in_dummy )then
-                wi_idx = 1
-                p      = pos - 1
-             else
-                wi_idx = tile 
-                p      = 0
-             endif
+             p = pos - 1
 
              do first_el_i_block=1,v3*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
@@ -2237,11 +2235,11 @@ contains
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
     integer :: myload,first_el_c_block,nelms,tile_size_tmp,total_num_tiles
-    logical :: master
+    logical :: master,local
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
     integer(kind=ls_mpik) :: mode,dest,nel2t, wi_idx, nodtotal
-    integer :: p,pos
+    integer :: p,pos,dpos
     !> use background buffering to avoid memory fragmentation problems?
     logical :: use_bg_buf
     call time_start_phase(PHASE_WORK)
@@ -2252,6 +2250,8 @@ contains
     use_bg_buf = mem_is_background_buf_init()
 
 #ifdef VAR_MPI
+
+    mode   = MPI_MODE_NOCHECK
 
     nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
@@ -2267,7 +2267,6 @@ contains
     if (DECinfo%pt_hack2) then
 
 #ifdef VAR_MPI
-       mode   = MPI_MODE_NOCHECK
 
        if (nodtotal .gt. 1) then
 
@@ -2358,30 +2357,15 @@ contains
     call tensor_zero(ooov)
 
     ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
-    dims = [nvirt,nocc,nvirt,nvirt]
+    dims  = [nvirt,nocc,nvirt,nvirt]
+    local = .true.
 
 #ifdef VAR_MPI
-
-    if (infpar%lg_nodtot .gt. 1) then
-
-       mode   = MPI_MODE_NOCHECK
-   
-       call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",bg=use_bg_buf)
-       call tensor_zero_tiled_dist(vovv)
-
-    else
-
-       call tensor_init(vovv,dims,4,bg=use_bg_buf)
-       call tensor_zero(vovv)
-
-    endif
-
-#else
-
-    call tensor_init(vovv,dims,4)
-    call tensor_zero(vovv)
-
+    if (infpar%lg_nodtot .gt. 1) local  = .false.
 #endif
+
+    call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)
+    call tensor_zero(vovv)
 
     ! For efficiency when calling dgemm, save transposed matrices
     if(use_bg_buf)then
@@ -2707,15 +2691,9 @@ contains
 #ifdef VAR_HAVE_MPI3
                 call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
-                call get_residence_of_tile(dest,tile,vovv, idx_on_node = pos)
-   
-                if( alloc_in_dummy )then
-                   wi_idx = 1
-                   p      = pos - 1
-                else
-                   wi_idx = tile
-                   p      = 0
-                endif
+                call get_residence_of_tile(vovv,tile,dest, dpos, pos, wi_idx)
+
+                p      = pos - 1
    
                 do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3

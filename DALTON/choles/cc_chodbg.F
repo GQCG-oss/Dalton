@@ -148,7 +148,7 @@ C
 #include "distcl.h"
 #include "cbieri.h"
 #include "mxcent.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccdeco.h"
 #include "chodbg.h"
 #include "priunit.h"

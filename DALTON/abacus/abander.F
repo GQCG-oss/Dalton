@@ -302,6 +302,7 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -340,7 +341,7 @@ C
      &    (DOROSCF .AND. NSYM.gt.1 .AND. .NOT.DIRCAL) .OR.  ! high spin HF or DFT, with symmetry
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
      &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
-     &    PEQM) THEN
+     &    USE_PELIB()) THEN
          NAORDR = 0
       ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. CCPT .OR.
      &        DOROSCF .OR.  ! high spin HF or DFT, no symmetry
