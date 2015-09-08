@@ -58,7 +58,9 @@ if(ENABLE_MPI AND ENABLE_SCALAPACK AND NOT USE_32BIT_MPI_INTERFACE)
 endif()
 
 if(ENABLE_MPI)
-  add_lsdalton_runtest(SCALAPACK/linsca_energy_PDMM                     "linsca;pdmm")
+   if(ENABLE_TENSORS)
+      add_lsdalton_runtest(SCALAPACK/linsca_energy_PDMM                     "linsca;pdmm")
+   endif()
 endif()
 
 if(ENABLE_RSP)
