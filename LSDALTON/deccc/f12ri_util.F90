@@ -30,15 +30,15 @@ contains
        & Energy,offset,SlavesAwake,use_bg_buf,&
        & numnodes,nAuxMPI,mynum,InputSubroutine,InputSubroutineMPI)
     implicit none
-    integer :: ndim12,ndim13,ndim22,ndim23,NBA
-    integer :: numnodes,mynum,offset
-    real(realk) :: Calpha1(NBA*ndim12*ndim13)
-    real(realk) :: Calpha2(NBA*ndim22*ndim23)
-    real(realk) :: Energy
-    logical :: SlavesAwake,use_bg_buf
-    integer :: nAuxMPI(numnodes)    
-    EXTERNAL InputSubroutine !NAME OF SUBROUTINE TO CALL
-    EXTERNAL InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
+    integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,NBA
+    integer,intent(in) :: numnodes,mynum,offset
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(in)    :: Calpha2(NBA*ndim22*ndim23)
+    real(realk),intent(inout) :: Energy
+    logical,intent(in) :: SlavesAwake,use_bg_buf
+    integer,intent(in) :: nAuxMPI(numnodes)    
+    EXTERNAL :: InputSubroutine !NAME OF SUBROUTINE TO CALL
+    EXTERNAL :: InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
     !local variables
 #ifdef VAR_MPI
     integer :: inode,nbuf1,NBA2
@@ -93,16 +93,16 @@ contains
        & Calpha3,ndim32,ndim33,Energy,offset,SlavesAwake,use_bg_buf,&
        & numnodes,nAuxMPI,mynum,InputSubroutine,InputSubroutineMPI)
     implicit none
-    integer :: ndim12,ndim13,ndim22,ndim23,ndim32,ndim33,NBA
-    real(realk) :: Calpha1(NBA*ndim12*ndim13)
-    real(realk) :: Calpha2(NBA*ndim22*ndim23)
-    real(realk) :: Calpha3(NBA*ndim32*ndim33)
-    real(realk) :: Energy
-    logical :: SlavesAwake,use_bg_buf
-    integer :: numnodes,mynum,offset    
-    integer :: nAuxMPI(numnodes)
-    EXTERNAL InputSubroutine !NAME OF SUBROUTINE TO CALL
-    EXTERNAL InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
+    integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,ndim32,ndim33,NBA
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(inout) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk),intent(in) :: Calpha3(NBA*ndim32*ndim33)
+    real(realk),intent(inout) :: Energy
+    logical,intent(in) :: SlavesAwake,use_bg_buf
+    integer,intent(in) :: numnodes,mynum,offset    
+    integer,intent(in) :: nAuxMPI(numnodes)
+    EXTERNAL :: InputSubroutine !NAME OF SUBROUTINE TO CALL
+    EXTERNAL :: InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
     !local variables
 #ifdef VAR_MPI
     integer :: nbuf1,NBA2,inode
@@ -166,16 +166,16 @@ contains
        & Energy,offset,SlavesAwake,use_bg_buf,&
        & numnodes,nAuxMPI,mynum,KVAL,noccpair,InputSubroutine,InputSubroutineMPI)
     implicit none
-    integer :: ndim12,ndim13,ndim22,ndim23,NBA
-    integer :: numnodes,mynum,offset,noccpair
-    integer :: KVAL(3,noccpair)
-    real(realk) :: Calpha1(NBA*ndim12*ndim13)
-    real(realk) :: Calpha2(NBA*ndim22*ndim23)
-    real(realk) :: Energy
-    logical :: SlavesAwake,use_bg_buf
-    integer :: nAuxMPI(numnodes)    
-    EXTERNAL InputSubroutine !NAME OF SUBROUTINE TO CALL
-    EXTERNAL InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
+    integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,NBA
+    integer,intent(in) :: numnodes,mynum,offset,noccpair
+    integer,intent(in) :: KVAL(3,noccpair)
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(in) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk),intent(inout) :: Energy
+    logical,intent(in) :: SlavesAwake,use_bg_buf
+    integer,intent(in) :: nAuxMPI(numnodes)    
+    EXTERNAL :: InputSubroutine !NAME OF SUBROUTINE TO CALL
+    EXTERNAL :: InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
     !local variables
 #ifdef VAR_MPI
     integer :: inode,nbuf1,NBA2
@@ -232,17 +232,17 @@ contains
        & Calpha3,ndim32,ndim33,Energy,offset,SlavesAwake,use_bg_buf,&
        & numnodes,nAuxMPI,mynum,Kval,noccpair,InputSubroutine,InputSubroutineMPI)
     implicit none
-    integer :: ndim12,ndim13,ndim22,ndim23,ndim32,ndim33,NBA,noccpair
-    integer :: KVAL(3,noccpair)
-    real(realk) :: Calpha1(NBA*ndim12*ndim13)
-    real(realk) :: Calpha2(NBA*ndim22*ndim23)
-    real(realk) :: Calpha3(NBA*ndim32*ndim33)
-    real(realk) :: Energy
-    logical :: SlavesAwake,use_bg_buf
-    integer :: numnodes,mynum,offset    
-    integer :: nAuxMPI(numnodes)
-    EXTERNAL InputSubroutine !NAME OF SUBROUTINE TO CALL
-    EXTERNAL InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
+    integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,ndim32,ndim33,NBA,noccpair
+    integer,intent(in) :: KVAL(3,noccpair)
+    real(realk),intent(inout) :: Calpha1(NBA*ndim12*ndim13)
+    real(realk),intent(inout) :: Calpha2(NBA*ndim22*ndim23)
+    real(realk),intent(in) :: Calpha3(NBA*ndim32*ndim33)
+    real(realk),intent(inout) :: Energy
+    logical,intent(in) :: SlavesAwake,use_bg_buf
+    integer,intent(in) :: numnodes,mynum,offset    
+    integer,intent(in) :: nAuxMPI(numnodes)
+    EXTERNAL :: InputSubroutine !NAME OF SUBROUTINE TO CALL
+    EXTERNAL :: InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
     !local variables
 #ifdef VAR_MPI
     integer :: nbuf1,NBA2,inode
