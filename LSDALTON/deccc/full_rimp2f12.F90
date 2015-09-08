@@ -91,6 +91,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk) :: EB1,EB2,EB3,EB4,EB5,EB6,EB7,EB8,EB9
    real(realk) :: EV1tmp,EV2tmp,EV3tmp,EV4tmp,EV5tmp,EX1tmp,EX2tmp,EX3tmp,EX4tmp
    real(realk) :: EB1tmp,EB2tmp,EB3tmp,EB4tmp,EB5tmp,EB6tmp,EB7tmp,EB8tmp,EB9tmp
+   integer     :: F12RIB4, F12RIB6, F12RIB9
    real(realk) :: TS,TE,TS2,TE2
    integer :: l,i,j,a,b,p,q,c,m,mynum,nAtoms,lupri,nbuf1,inode,numnodesstd
    integer(kind=long) :: nsize,nsize2
@@ -213,6 +214,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call mat_init(CMO_RI,nCabsAO,nCabsAO)
       call build_RI_MO(CMO_RI,nCabsAO,mylsitem%SETTING,lupri)
    ENDIF
+
+   ! ***********************************************************
+   !   Setting up InputSubroutineIntegers 
+   ! ***********************************************************   
+   F12RIB4 = 4
+   F12RIB6 = 6
+   F12RIB9 = 9
 
    ! ***********************************************************
    !   Constructing Coefficient matrices 
@@ -492,14 +500,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
            & mynum,numnodesstd,CalphaR,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
       ABdecompCreateR = .FALSE.
    ENDIF
-
-#ifdef VAR_MPI 
-   IF(wakeslaves)THEN
-      nbuf1=numnodes
-      call mem_alloc(nAuxMPI,nbuf1)
-      call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)      
-   ENDIF
-#endif
 
 #ifdef VAR_MPI 
    IF(wakeslaves)THEN
@@ -1256,7 +1256,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Krr%elms,k,0.0E0_realk,CalphaT,m)
       !Do on GPU (Async)
       call GeneralTwo4CenterF12RICoef1112(nBA,CalphaGcabsAO,nocc,ncabsAO,CalphaT,nocc,ncabsAO,&
-           & EB4,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB4,F12RIB4MPI)
+           & EB4,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB4)
       RestartBuffer(13) = EB4
       ComputeTerm(13) = .FALSE.
       call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
@@ -1333,7 +1333,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG(j),m,Fpp%elms,k,0.0E0_realk,CalphaT(j),m)
       enddo      
       call GeneralTwo4CenterF12RICoef1112(nBA,CalphaG,nocv,nocc,CalphaT,nocv,nocc,&
-           & EB6,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB6,F12RIB6MPI)
+           & EB6,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB6)
       RestartBuffer(15) = EB6
       ComputeTerm(15) = .FALSE.
       call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
@@ -1446,7 +1446,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fcp%elms,k,0.0E0_realk,CalphaT,m)
       call mem_dealloc(CalphaGcabsMO)
       call GeneralTwo4CenterF12RICoef1112(nBA,CalphaG,nocv,nocc,CalphaT,nocc,nocv,&
-           & EB9,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB9,F12RIB9MPI)
+           & EB9,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB9)
       RestartBuffer(19) = EB9
       ComputeTerm(19) = .FALSE.
       call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)

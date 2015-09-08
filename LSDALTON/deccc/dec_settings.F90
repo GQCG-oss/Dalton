@@ -1186,6 +1186,24 @@ contains
        if(DECinfo%full_molecular_cc) then
           call lsquit('NOAOFOCK keyword does not work for full molecular calculation!',-1)
        end if
+       ! The fock matrix is required in the ccsolver
+       select case(DECinfo%ccmodel)
+       case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX)
+          call lsquit("The CC solver require the fock matrix to be stored. Remove &
+             & .NOAOFOCK keyword from input.",DECinfo%output)
+       end select
+    end if
+
+    if ((.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel==MODEL_RIMP2) then
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'WARNING: User chose RI-MP2 as the final model,'
+       write(DECinfo%output,*) '         we therefore enforce RI-MP2 to be used'
+       write(DECinfo%output,*) '         also in the Fragment optimization and'
+       write(DECinfo%output,*) '         Pair estimates calculations.'
+       write(DECinfo%output,*) ''
+       DECinfo%PairEstimateModel = MODEL_RIMP2
+       DECinfo%fragopt_exp_model = MODEL_RIMP2
+       DECinfo%fragopt_red_model = MODEL_RIMP2
     end if
 
     

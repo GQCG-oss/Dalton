@@ -8,8 +8,13 @@ if(ENABLE_GEN1INT)
 #   add_definitions(-DBUILD_GEN1INT_LSDALTON)
 endif()
 
+
 if(ENABLE_DEC)
   add_definitions(-DVAR_DEC)
+endif()
+
+if(ENABLE_TENSORS)
+   add_definitions(-DVAR_ENABLE_TENSORS)
 endif()
 
 if(ENABLE_CHEMSHELL)

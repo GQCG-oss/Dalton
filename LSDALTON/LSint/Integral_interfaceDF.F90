@@ -3258,6 +3258,8 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
            IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_alloc(TmpAlphaCD,n8)
         ELSE
+           IF(MemDebugPrint)print*,'STD: Before TmpAlphaCD n8=',n8
+           IF(MemDebugPrint)call stats_globalmem(6)
            call mem_alloc(TmpAlphaCD,n8,'IIDF3C:TmpAlphaCD')
         ENDIF
         call dgemm('N','N',M,N,K,1.0E0_realk,FullAlphaCD,M,C2,K,0.0E0_realk,TmpAlphaCD,M)
@@ -3268,7 +3270,10 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         IF(use_bg_buf)THEN
            !do nothing
         ELSE
+           IF(MemDebugPrint)print*,'STD: Dealloc FullAlphaCD size(FullAlphaCD)=',size(FullAlphaCD)
            call mem_dealloc(FullAlphaCD)
+           IF(MemDebugPrint)print*,'STD: Before FullAlphaCD w1size=',w1size
+           IF(MemDebugPrint)call stats_globalmem(6)
            call mem_alloc(FullAlphaCD,w1size,'IIDF3C:FullAlphaCD4')
         ENDIF
 
@@ -3288,6 +3293,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
            IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_alloc(FullAlphaCD, w1size)
         ELSE
+           IF(MemDebugPrint)print*,'STD: Dealloc TmpAlphaCD=',size(TmpAlphaCD)
            call mem_dealloc(TmpAlphaCD)
         ENDIF
      ENDIF

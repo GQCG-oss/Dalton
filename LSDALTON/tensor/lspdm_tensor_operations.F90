@@ -180,8 +180,8 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-  procedure(tensor_acct88),pointer :: acc_tlong1
-  procedure(tensor_putt88),pointer :: put_tlong1 
+  procedure(put_acc_tile),pointer :: acc_tlong1
+  procedure(put_acc_tile),pointer :: put_tlong1 
 #endif
 #endif
 
@@ -2939,7 +2939,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(inout) :: C
      type(tensor),intent(in) :: A,B
      !> scaling factor for array C
-     real(tensor_dp),intent(in) :: beta
+     real(tensor_dp)            :: beta
      !> scaling factor for array A and B
      real(tensor_dp),intent(in) :: alpha
      integer :: i,lt
