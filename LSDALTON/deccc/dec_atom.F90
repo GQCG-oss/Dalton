@@ -16,6 +16,7 @@ module atomic_fragment_operations
   use memory_handling!, only: mem_alloc,mem_dealloc
   use IntegralInterfaceMod!, only: ii_get_mixed_overlap_full
   use lsparameters!, only: AORdefault
+  use molecule_typetype
 #ifdef VAR_MPI
   use infpar_module
 #endif
@@ -3379,11 +3380,12 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     type(fullmolecule), intent(in) :: MyMolecule
-    real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:),Sfull(:,:),CtS(:,:)
-    integer :: i,j,idx,atom_k,nocc,nvirt,nbasis,natoms,k,bas_offset,offset, &
-         & full_orb_idx,bas_k,fullcomm,fullnode,fullnumnodes
+    real(realk), pointer :: MyCtS(:), approximated_orbital(:),Sfullfrag(:,:),CtS(:,:)
+    integer :: i,j,idx,atom_k,nocc,nvirt,nbasis,natoms,k,offset, &
+         & full_orb_idx,fullcomm,fullnode,fullnumnodes,nbasisf
     logical,pointer :: which_atoms(:)
     real(realk), pointer :: Co(:,:),Cv(:,:),fock(:,:),oofock(:,:),vvfock(:,:)
+    TYPE(MoleculeInfo),pointer      :: molecule2
 
     ! allocate C^o(nbasis,occ) C^v(nbasis,virt)
     call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC   )
@@ -3395,19 +3397,20 @@ contains
     call mem_alloc(fragment%CoreMO, fragment%nbasis, fragment%ncore)
     fragment%CoreMO=0.0E0_realk
 
-    ! truncate basis to this set of atoms
+    ! Dimensions
     nocc = MyMolecule%nocc
     nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
     natoms = MyMolecule%natoms
+    nbasisf = fragment%nbasis
 
     ! Overlap matrix for fragment
-    call mem_alloc(fragment%S,fragment%nbasis,fragment%nbasis)
+    call mem_alloc(fragment%S,nbasisf,nbasisf)
     call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,fragment%MyLsitem%SETTING,&
-         & fragment%S,fragment%nbasis,fragment%nbasis,AORdefault,AORdefault)
+         & fragment%S,nbasisf,nbasisf,AORdefault,AORdefault)
 
-    ! Overlap matrix for full molecule
-    ! ********************************
+    ! Overlap matrix with (full,frag) dimensions
+    ! ******************************************
     ! Caution: MyLsitem needs to refer to full molecule, however, 
     ! the MPI communication stuff needs to be done only within local slot.
     ! Save full LSITEM MPI info
@@ -3418,13 +3421,21 @@ contains
     MyLsitem%setting%comm = fragment%MyLsitem%setting%comm
     MyLsitem%setting%node = fragment%MyLsitem%setting%node
     MyLsitem%setting%numnodes = fragment%MyLsitem%setting%numnodes
-    call mem_alloc(Sfull,MyMolecule%nbasis,MyMolecule%nbasis)
+    ! Second index of overlap matrix corresponds to fragment
+    ! ------------------------------------------------------
+    ! Store current pointer
+    molecule2 => Mylsitem%SETTING%MOLECULE(2)%p  
+    ! point second index to fragment
+    Mylsitem%SETTING%MOLECULE(2)%p => fragment%mylsitem%setting%molecule(1)%p 
+    call mem_alloc(Sfullfrag,nbasis,nbasisf)
     call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
-         & Sfull,nbasis,nbasis,AORdefault,AORdefault)
+         & Sfullfrag,nbasis,nbasisf,AORdefault,AORdefault)
     ! Reset full LSITEM MPI info
     MyLsitem%setting%comm = fullcomm
     MyLsitem%setting%node = fullnode
     MyLsitem%setting%numnodes = fullnumnodes
+    ! Reset molecule pointer to full molecule
+    Mylsitem%SETTING%MOLECULE(2)%p => molecule2  
 
        
     if( MyMolecule%mem_distributed )then
@@ -3443,13 +3454,13 @@ contains
 
        ! fit orbitals
        call mem_alloc(CtS,nocc,nbasis)
-       call mem_alloc(correct_vector_moS,fragment%nbasis)
-       call mem_alloc(approximated_orbital,fragment%nbasis)
+       call mem_alloc(MyCtS,nbasisf)
+       call mem_alloc(approximated_orbital,nbasisf)
 
        ! Occupied
        ! ********
-       ! half transformed overlap: S = Co^T Sfull  (full dims)
-       call dec_simple_dgemm(nocc,nbasis,nbasis,Co,Sfull,CtS,'T','N')
+       ! half transformed overlap: CtS = Co^T Sfullfrag  (nocc,nbasisf)
+       call dec_simple_dgemm(nocc,nbasis,nbasisf,Co,Sfullfrag,CtS,'T','N')
 
        ! Occ orbitals (only valence if frozen core approx is used)
        do i=1,fragment%noccLOC
@@ -3457,17 +3468,14 @@ contains
           full_orb_idx = fragment%occAOSidx(i)
 
           ! for each orbital truncate half transformed overlap orbital
-          correct_vector_moS = 0.0E0_realk
-          bas_offset = 1
-          do k=1,Fragment%nbasis
-             bas_k = fragment%basis_idx(k)
-             correct_vector_moS(k) = CtS(full_orb_idx,bas_k)
+          do k=1,nbasisf
+             MyCtS(k) = CtS(full_orb_idx,k)
           end do
 
           ! fit orbital
           approximated_orbital = 0.0E0_realk
           call solve_linear_equations(fragment%S,approximated_orbital, &
-               correct_vector_moS,fragment%nbasis)
+               MyCtS,nbasisf)
           fragment%CoLOC(:,i) = approximated_orbital
 
        end do
@@ -3479,17 +3487,14 @@ contains
           full_orb_idx = fragment%coreidx(i)
 
           ! for each orbital truncate half transformed overlap orbital
-          correct_vector_moS = 0.0E0_realk
-          bas_offset = 1
-          do k=1,Fragment%nbasis
-             bas_k = fragment%basis_idx(k)
-             correct_vector_moS(k) = CtS(full_orb_idx,bas_k)
+          do k=1,nbasisf
+             MyCtS(k) = CtS(full_orb_idx,k)
           end do
 
           ! fit orbital
           approximated_orbital = 0.0E0_realk
           call solve_linear_equations(fragment%S,approximated_orbital, &
-               correct_vector_moS,fragment%nbasis)
+               MyCtS,nbasisf)
           fragment%coreMO(:,i) = approximated_orbital
 
        end do
@@ -3500,29 +3505,25 @@ contains
 
           ! Virtual
           ! *******
-          ! half transformed overlap: S = Co^T Sfull  (full dims)
-          call dec_simple_dgemm(nvirt,nbasis,nbasis,Cv,Sfull,CtS,'T','N')
+          ! half transformed overlap: S = Co^T Sfullfrag  (full dims)
+          call dec_simple_dgemm(nvirt,nbasis,nbasis,Cv,Sfullfrag,CtS,'T','N')
 
           do i=1,fragment%nvirtLOC
 
              full_orb_idx = fragment%virtAOSidx(i)
-
-             correct_vector_moS = 0.0E0_realk
-             bas_offset = 1
-             do k=1,Fragment%nbasis
-                bas_k = fragment%basis_idx(k)
-                correct_vector_moS(k) = CtS(full_orb_idx,bas_k)
+             do k=1,nbasisf
+                MyCtS(k) = CtS(full_orb_idx,k)
              end do
 
              ! fit orbital
              approximated_orbital = 0.0E0_realk
              call solve_linear_equations(fragment%S,approximated_orbital, &
-                  correct_vector_moS,fragment%nbasis)
+                  MyCtS,nbasisf)
              fragment%CvLOC(:,i) = approximated_orbital
           end do
 
        ! remove stuff
-       call mem_dealloc(correct_vector_moS)
+       call mem_dealloc(MyCtS)
        call mem_dealloc(approximated_orbital)
        call mem_dealloc(CtS)
 
@@ -3535,15 +3536,15 @@ contains
 
        ! Fragment Co
        call adjust_basis_matrix2(Co,fragment%CoLOC,fragment%occAOSidx, &
-            nbasis,nocc,fragment%nbasis,fragment%noccLOC,Fragment%basis_idx)
+            nbasis,nocc,nbasisf,fragment%noccLOC,Fragment%basis_idx)
 
        ! Fragment Cv
        call adjust_basis_matrix2(Cv,fragment%CvLOC,fragment%virtAOSidx, &
-            nbasis,nvirt,fragment%nbasis,fragment%nvirtLOC,Fragment%basis_idx)
+            nbasis,nvirt,nbasisf,fragment%nvirtLOC,Fragment%basis_idx)
 
     end if FitOrbitalsForFragment
 
-    call mem_dealloc(Sfull)
+    call mem_dealloc(Sfullfrag)
 
     if( MyMolecule%mem_distributed )then
 
@@ -3562,22 +3563,13 @@ contains
 
     endif
 
-    ! KK: Purification can be problematic for local orbitals in the context of fragment optimization,
-    ! so currently it is only used in combination with fragment-adapted orbitals.
-!!$    ! Purify fragment MO coefficients
-!!$    ! (not for fragment-adapted orbitals since these are automatically orthogonal
-!!$    !  by virtue of the purification of the local orbitals).
-!!$    if(DECinfo%PurifyMOs) then
-!!$       call fragment_purify(fragment)
-!!$    end if
-
 
     ! adjust fock matrix in ao basis
     if(.not. DECinfo%noaofock) then
-       call mem_alloc(fragment%fock,fragment%nbasis,fragment%nbasis)
+       call mem_alloc(fragment%fock,nbasisf,nbasisf)
        fragment%fock=0.0E0_realk
        call adjust_square_matrix2(fock,fragment%fock,fragment%basis_idx,&
-            & MyMolecule%nbasis,fragment%nbasis)
+            & MyMolecule%nbasis,nbasisf)
     end if
 
     if( MyMolecule%mem_distributed )then
