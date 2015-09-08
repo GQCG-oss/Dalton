@@ -118,7 +118,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk),pointer :: tocc(:),UoccEOST(:,:),UvirtT(:,:),tocc3(:)
   real(realk),pointer :: toccTMP(:,:),TMPAlphaBeta_minus_sqrt(:,:),tocc2(:)
   real(realk),pointer :: tvirtTMP(:,:),tvirt(:),UoccT(:,:),UvirtEOST(:,:)
-  real(realk),pointer :: tvirt2(:),tvirt3(:),CoccEOS(:,:)
+  real(realk),pointer :: tvirt2(:),tvirt3(:),CoccEOS(:,:),tvirt2TMP(:)
   real(realk),pointer :: UoccallT(:,:),CalphaOcc(:),tocc2TMP(:)
   real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
@@ -128,7 +128,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   Integer :: iAtomA,nBastLocA,startRegA,endRegA,nAuxA,startAuxA,endAuxA,lupri
   integer :: MynAtomsMPI,startA2,StartA,B,I,startB2,iAtomB,StartB,node,myOriginalRank
   Integer :: OriginalRanknbasisAuxMPI,NBA,dimocc(4),dimvirt(4)
-  real(realk) :: time_i,time_c,time_w
+  real(realk) :: time_i,time_c,time_w,MemoryEstimateGB
   real(realk),pointer :: OccContribsFull(:),VirtContribsFull(:),Calpha_debug(:,:,:)
   real(realk),pointer :: occ_tmp(:),virt_tmp(:),ABdecomp(:,:),CDIAGoccALL(:,:)
   real(realk),pointer :: CvirtAOS(:,:),CvirtEOS(:,:),CoccTmp(:,:),CDIAGoccALLcf(:,:)
@@ -142,16 +142,17 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
   real(realk) :: TS,TE,TS2,TE2,TS3,TE3,CPUTIME,WALLTIMESTART,WALLTIMEEND,WTIME
   real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
-  real(realk) :: MemStep1,MemStep2,MemStep3,TS4,TE4
+  real(realk) :: MemStep1,MemStep2,MemStep3,TS4,TE4,MaxMemoryUsageGB
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
   integer :: MaxVirtSize,nTiles,offsetV,offset,MinAuxBatch
-  integer :: noccOut,nvirtOut
+  integer :: noccOut,nvirtOut,MaxOccSize,offsetO
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,PerformTiling
   logical :: use_bg_buf
   integer(kind=ls_mpik)  :: request5,request6
   real(realk) :: phase_cntrs(nphases),bytes_to_alloc,MinMem
   integer(kind=long) :: nSize,nsize1,nsize2,nsize3,nbasisAux8
   integer(kind=long) :: nocc8,nvirt8,noccEOS8,nbasis8,nvirtEOS8,nocctot8
+  integer(kind=long) :: SaveMaxMemoryUsage
   character :: intspec(5)
   TYPE(MoleculeInfo),pointer :: molecule1,molecule2,molecule3,molecule4
   !Laplace values
@@ -215,6 +216,27 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !  stat = acc_set_cuda_stream(acc_async_sync,cublas_handle)
 
 #endif
+  
+  !==================================================================
+  ! Background memory buffering 
+  !==================================================================
+  use_bg_buf = .FALSE.
+#ifdef VAR_MPI
+  IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
+#endif
+  
+  IF(DECinfo%MemDebugPrint)THEN
+     WRITE(DECinfo%output,*)'RIMP2meminfo: Memory Before RIMP2 '
+     IF(use_bg_buf)THEN
+        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory in Background Buffer=',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
+        call printBGinfo()     
+     ELSE
+        MemInGBCollected = 0.0E0_realk
+        call get_currently_available_memory(MemInGBCollected)  
+        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory available=',MemInGBCollected,' GB'
+     ENDIF
+  ENDIF
+
   IF(DECinfo%RIMP2_Laplace)THEN
      call mem_alloc(LaplaceW,nLaplace,'RIMP2:LaplaceW')
      LaplaceW = (/ 0.009348, &
@@ -312,14 +334,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
    ENDIF
   end if
 
-  !==================================================================
-  ! Background memory buffering 
-  !==================================================================
-  use_bg_buf = .FALSE.
-#ifdef VAR_MPI
-  IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
-#endif
- 
    nBasisaux = 0
    natomsaux = 0
    nbasis2 = 0
@@ -801,7 +815,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         ENDIF
      ELSE
         !NON LAPLACE VERSION
-        !Perform Tiling if tocc(nocc,noccOut,nvirt,nvirt) does not fit in memory
         IF(use_bg_buf)THEN
            MemInGBCollected = mem_get_bg_buf_free()*8.0E-9_realk
            IF(DECinfo%MemDebugPrint)THEN
@@ -814,6 +827,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            call get_currently_available_memory(MemInGBCollected)
            MemInGBCollected = MemInGBCollected*0.80E0_realk !80%
         ENDIF
+        !Perform Virtual Tiling if tocc(nocc,noccOut,nvirt,nvirt) does not fit in memory
         IF(use_bg_buf)THEN
            MemStep1 = (nocc*noccOut*nvirt*nvirt+noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk !tocc,tocc2
            MemStep2 = (2*noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk                        !tocc2,tocc3
@@ -826,13 +840,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         PerformTiling = MaxSize.GT.MemInGBCollected
         IF(PerformTiling)THEN 
            IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Performing Tiling MaxSize=',&
+              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Performing Virtual Tiling MaxSize=',&
                    &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
            endif
            IF(MemInGBCollected.LT.(2*noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk)THEN
-              call lsquit('RIMP2: Not enough memory for tiling in rimp2',-1)
+              call lsquit('RIMP2: Not enough memory for Virtual tiling in rimp2',-1)
            ENDIF
-           !When Performing tiling we need 3 intermediates of
+           !When Performing Virtual tiling we need 3 intermediates of
            !nsize1 = noccOut*noccOut*nvirt*nvirt        (tocc2)
            !nsize2 = nocc*noccOut*nvirt*MaxVirtSize     
            !nsize3 = noccOut*noccOut*nvirt*MaxVirtSize
@@ -841,7 +855,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            !MaxVirtSize = (Memreq-noccOut*noccOut*nvirt*nvirt)/((nocc+noccOut)*noccOut*nvirt)
            MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-(noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk) &
                 & /((nocc+noccOut)*noccOut*nvirt*8.0E-9_realk)))
-           IF(MaxVirtSize.LT.1)call lsquit('Not enough memory for tiling in rimp2',-1)
+           IF(MaxVirtSize.LT.1)call lsquit('Not enough memory for Virtual tiling in rimp2',-1)
            IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then        
               WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxVirtSize =',MaxVirtSize 
            endif
@@ -849,7 +863,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            IF(nTiles.EQ.0)PerformTiling = .FALSE.
         ELSE
            IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: No Tiling MaxSize=',&
+              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: No Virtual Tiling MaxSize=',&
                    &MaxSize,' GB < memory available = ',MemInGBCollected,' GB'
            ENDIF
         ENDIF
@@ -859,7 +873,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(PerformTiling)THEN 
            !check that tilesize determine accoriding to CPU memory is valid for gpu
            IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then        
-              WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The CPU requires tiling in step 5  MaxVirtSize=',MaxVirtSize        
+              WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The CPU requires Virtual tiling in step 5  MaxVirtSize=',MaxVirtSize        
            ENDIF
            MaxSize = (noccOut*noccOut*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccOut)*8.0E0_realk+&
                 & MaxVirtSize*((nocc+noccOut)*noccOut*nvirt)*8.0E0_realk
@@ -868,13 +882,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(noccOut*noccOut*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccOut)*&
                    & 8.0E0_realk)/(((nocc+noccOut)*noccOut*nvirt)*8.0E0_realk))) 
               IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-                 WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The GPU requires a smaller tiling in step 5 New MaxVirtSize=',MaxVirtSize        
+                 WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The GPU requires a smaller Virtual tiling in step 5 New MaxVirtSize=',MaxVirtSize        
               ENDIF
               nTiles =  nvirt/MaxVirtSize
               IF(nTiles.EQ.0)PerformTiling = .FALSE.
            ENDIF
         ELSE
-           !determine if GPU requires tiling even if CPU does not
+           !determine if GPU requires Virtual tiling even if CPU does not
            MaxSize = (nocc*noccOut*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccOut)*8.0E0_realk  !in BYTES
            PerformTiling = MaxSize.GT.free_gpu*0.80E0_realk
         ENDIF
@@ -904,20 +918,44 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 5)     ',free_gpu*1.0E0_realk,' Bytes'
            IF(PerformTiling)THEN 
               WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: MaxVirtSize',MaxVirtSize
-              WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 using tiling  ',&
+              WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 using Virtual tiling  ',&
                    & (noccOut*noccOut*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccOut)*8.0E0_realk+MaxVirtSize*((nocc+noccOut)*noccOut*nvirt)*8.0E0_realk,' Bytes'
            ELSE
-              WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 without tiling',&
+              WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory required in Step 5 without Virtual tiling',&
                    & (noccOut*noccOut*nvirt*nvirt+NBA*nvirt*nocc+nocc*noccOut)*8.0E0_realk+nocc*noccOut*nvirt*nvirt*8.0E0_realk,' Bytes'
            ENDIF
         endif
 #endif
         if (DECinfo%RIMP2_tiling)THEN
            PerformTiling = .TRUE. ! enforce tiling
-           MaxVirtSize = 1
+           MaxVirtSize = 2
+           IF(nvirt.LT.3)MaxVirtSize = 1
            nTiles =  nvirt/MaxVirtSize
         ENDIF
+
         IF(PerformTiling)THEN
+           IF(DECinfo%MemDebugPrint)THEN
+              MemoryEstimateGB = (noccOut*noccOut*nvirt*nvirt + &
+                   & (nocc+noccOut)*noccOut*nvirt*MaxVirtSize)*8.0E-9_realk 
+              IF(use_bg_buf)THEN
+                 MemoryEstimateGB = MemoryEstimateGB + buf_realk%offset*8.0E-9_realk 
+                 SaveMaxMemoryUsage = buf_realk%max_usage
+                 buf_realk%max_usage = buf_realk%offset
+              ELSE
+                 MemoryEstimateGB = MemoryEstimateGB + mem_allocated_global*1.0E-9_realk
+                 SaveMaxMemoryUsage = max_mem_used_global
+                 max_mem_used_global = mem_allocated_global
+              ENDIF
+              WRITE(DECinfo%output,*)'RIMP2info: tocc2=',noccOut*noccOut*nvirt*nvirt*8.0E-9_realk 
+              WRITE(DECinfo%output,*)'RIMP2info: tocc=',nocc*noccOut*nvirt*MaxVirtSize*8.0E-9_realk 
+              WRITE(DECinfo%output,*)'RIMP2info: tocc=',noccOut*noccOut*nvirt*MaxVirtSize*8.0E-9_realk 
+              IF(use_bg_buf)THEN
+                 WRITE(DECinfo%output,*)'RIMP2info: Alloced=',buf_realk%offset*8.0E-9_realk 
+              ELSE
+                 WRITE(DECinfo%output,*)'RIMP2info: Alloced=',mem_allocated_global*1.0E-9_realk
+              ENDIF
+              WRITE(DECinfo%output,*)'RIMP2info: Virtual Tiling MemoryEstimateGB=',MemoryEstimateGB
+           ENDIF
            nsize1 = noccOut*(noccOut*i8)*nvirt*(nvirt*i8)
            nsize2 = nocc*(noccOut*i8)*nvirt*(MaxVirtSize*i8)
            nsize3 = noccOut*noccOut*(nvirt*MaxVirtSize*i8)
@@ -945,6 +983,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            !$acc enter data create(tocc,tocc2,tocc2TMP) copyin(Calpha) 
            DO I=1,nTiles
               offsetV = (I-1)*MaxVirtSize
+              !Build tocc(nocc,noccOut,nvirt,MaxVirtSize)
               if (DECinfo%DECNP) then
                  call RIMP2_calc_toccA(nvirt,nocc,noccOut,NBA,Calpha,EVocc,EVvirt,tocc,UoccT,&
                       & MaxVirtSize,offsetV)
@@ -953,9 +992,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                       & MaxVirtSize,offsetV)
               endif
               !Transform second occupied index (IDIAG,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BDIAG)
-              M = noccOut              !rows of Output Matrix
-              N = noccOut*nvirt*MaxVirtSize  !columns of Output Matrix
-              K = nocc                 !summation dimension
+              M = noccOut                   !rows of Output Matrix
+              N = noccOut*nvirt*MaxVirtSize !columns of Output Matrix
+              K = nocc                      !summation dimension
+              !Build tocc2TMP(noccOut,noccOut,nvirt,MaxVirtSize)
               IF(DECinfo%DECNP)THEN
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccT,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
                       & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
@@ -963,6 +1003,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                  call ls_dgemm_acc('T','N',M,N,K,1.0E0_realk,UoccEOST,K,tocc,K,0.0E0_realk,tocc2TMP,M,&
                       & int((i8*K)*M,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
               ENDIF
+              !plug tocc2TMP(noccOut,noccOut,nvirt,MaxVirtSize) into tocc2(noccOut,noccOut,nvirt,nvirt)
               call PlugInTotocc2(tocc2,noccOut,nvirt,tocc2TMP,MaxVirtSize,offsetV)
            ENDDO
            IF(MOD(nvirt,MaxVirtSize).NE.0)THEN !Remainder
@@ -1004,6 +1045,23 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               IF(DECinfo%MemDebugPrint)print*,'STD: dealloc tocc(',size(tocc),')'
               call mem_dealloc(tocc)
            ENDIF
+           IF(DECinfo%MemDebugPrint)THEN
+              IF(use_bg_buf)THEN
+                 !-2 to avoid roundoff errors 
+                 MaxMemoryUsageGB = (buf_realk%max_usage-2)*8.0E-9_realk
+                 buf_realk%max_usage = MAX(SaveMaxMemoryUsage,buf_realk%max_usage)
+              ELSE
+                 MaxMemoryUsageGB = (max_mem_used_global-2)*1.0E-9_realk
+                 max_mem_used_global = MAX(max_mem_used_global,SaveMaxMemoryUsage)
+              ENDIF
+              WRITE(DECinfo%output,*)'RIMP2info: Virtual Tiling MaxMemoryUsage=',MaxMemoryUsageGB
+              WRITE(DECinfo%output,*)'RIMP2info: Virtual Tiling MemoryEstimateGB=',MemoryEstimateGB
+              IF(MaxMemoryUsageGB.GT.MemoryEstimateGB)THEN
+                 print*,'RIMP2info: Virtual Tiling MaxMemoryUsage=',MaxMemoryUsageGB
+                 print*,'RIMP2info: Virtual Tiling MemoryEstimateGB=',MemoryEstimateGB
+                 call lsquit('RIMP2info: MaxMemoryUsage.GT.MemoryEstimateGB',-1)
+              ENDIF
+           ENDIF           
         ELSE
            !No Tiling
            !Calculate and partial transform to local basis:
@@ -1114,6 +1172,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ! For DECNP, the amplitudes are return in the full AOS space
   ! this mean that virtual and occupied partitioning are equivalent
   ! at this stage. Therefore we return only the occupied amplitudes
+
   not_DECNP_1: if (.not.DECinfo%DECNP) then
      IF(NBA.GT.0)THEN
         CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
@@ -1166,72 +1225,285 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               call mem_dealloc(Ctmp2)
            ENDIF
         ELSE
-
+           IF(use_bg_buf)THEN
+              MemInGBCollected = mem_get_bg_buf_free()*8.0E-9_realk
+              IF(DECinfo%MemDebugPrint)THEN
+                 print*,'mem_get_bg_buf_free=',mem_get_bg_buf_free()
+                 print*,'MemInGBCollected',MemInGBCollected,' GB'
+                 call printBGinfo()
+              ENDIF
+           ELSE
+              MemInGBCollected = 0.0E0_realk
+              call get_currently_available_memory(MemInGBCollected)
+              MemInGBCollected = MemInGBCollected*0.80E0_realk !80%
+           ENDIF
+           !Perform Occupied Tiling if tvirt(nocc,nocc,nvirtOut,nvirt) does not fit in memory
+           MemStep1 = (nocc*nocc*nvirtOut*nvirt+nvirtOut*nvirtOut*nvirt*nvirt)*8.0E-9_realk 
+           MemStep2 = (2*nvirtOut*nvirtOut*nocc*nocc)*8.0E-9_realk                        
+           Maxsize = MAX(MemStep1,MemStep2)
+           PerformTiling = MaxSize.GT.MemInGBCollected
+           IF(PerformTiling)THEN 
+              IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
+                 WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Performing Occupied Tiling MaxSize=',&
+                      &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
+              endif
+              IF(MemInGBCollected.LT.(2*nocc*nocc*nvirtOut*nvirtOut)*8.0E-9_realk)THEN
+                 call lsquit('RIMP2: Not enough memory for Occupied tiling in rimp2',-1)
+              ENDIF
+              !When Performing Occupied tiling we need 3 intermediates of
+              !nsize1 = nocc*nocc*nvirtOut*nvirtOut 
+              !nsize2 = nocc*nvirt*nvirtOut*MaxOccSize     
+              !nsize3 = nocc*nvirtOut*nvirtOut*MaxVirtSize
+              !resulting in Memreq = nocc*nocc*nvirtOut*nvirtOut+(nvirt+nvirtOut)*nvirtOut*nocc*MaxOccSize
+              !MaxOccSize = (Memreq-nocc*nocc*nvirtOut*nvirtOut)/((nvirt+nvirtOut)*nvirtOut*nocc)
+              MaxOccSize = MIN(nvirt,FLOOR((MemInGBCollected-(nocc*nocc*nvirtOut*nvirtOut)*8.0E-9_realk) &
+                   & /((nvirt+nvirtOut)*nvirtOut*nocc*8.0E-9_realk)))
+              IF(MaxOccSize.LT.1)call lsquit('Not enough memory for Occupied tiling in rimp2',-1)
+              IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then        
+                 WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxVirtSize =',MaxVirtSize 
+              endif
+              nTiles =  nocc/MaxOccSize 
+              IF(nTiles.EQ.0)PerformTiling = .FALSE.
+           ELSE
+              IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
+                 WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: No Occupied Tiling MaxSize=',&
+                      &MaxSize,' GB < memory available = ',MemInGBCollected,' GB'
+              ENDIF
+           ENDIF
 #if defined(VAR_OPENACC) && defined(VAR_CUDA)
            !In case of GPU usage tvirt must also fit on device memory
            call get_dev_mem(total_gpu,free_gpu) !free_gpu is amount of free memory in BYTES     
-           IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-              WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Memory available on device (step 6)     ',free_gpu*1.0E0_realk,' Bytes'
-              WRITE(DECinfo%output,'(A,F18.2,A)')'DECRIMP2: Additional memory requirement in Step 6 ',&
-                   & (nvirtEOS*nvirt*nocc*nocc+nocc*nocc*nvirtEOS*nvirtEOS)*8.0E0_realk,' Bytes'     
-           endif
-           IF((nvirtEOS*nvirt*nocc*nocc+nocc*nocc*nvirtEOS*nvirtEOS)*8.0E0_realk.GT.free_gpu*1.0E0_realk)THEN
-              print*,'DECRIMP2: Memory available on device (step 6)     ',free_gpu*1.0E0_realk,' Bytes'
-              print*,'DECRIMP2: Additional memory requirement in Step 6 ',&
-                   & (nvirtEOS*nvirt*nocc*nocc+nocc*nocc*nvirtEOS*nvirtEOS)*8.0E0_realk,' Bytes'     
-              call lsquit('DECRIMP2: Not enough memory on the device for step 6')
+           IF(PerformTiling)THEN 
+              !check that tilesize determine accoriding to CPU memory is valid for gpu
+              IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then        
+                 WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The CPU requires Occupied tiling in step 5  MaxOccSize=',MaxOccSize        
+              ENDIF
+              MaxSize = (nocc*nocc*nvirtOut*nvirtOut+NBA*nvirt*nocc+nvirt*nvirtOut)*8.0E0_realk+&
+                   & MaxOccSize*((nvirt+nvirtOut)*nvirtOut*nocc)*8.0E0_realk
+              IF(Maxsize .GT. free_gpu)THEN
+                 !reduce MaxVirtSize
+                 MaxOccSize = MIN(nocc,FLOOR( (free_gpu*0.80E0_realk-(nvirtOut*nvirtOut*nocc*nocc+NBA*nocc*nvirt+nvirt*nvirtOut)*&
+                      & 8.0E0_realk)/(((nvirt+nvirtOut)*nvirtOut*nocc)*8.0E0_realk))) 
+                 IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
+                    WRITE(DECinfo%output,'(A,I12)')'DECRIMP2: The GPU requires a smaller Occupied tiling in step 5 New MaxOccSize=',MaxOccSize        
+                 ENDIF
+                 nTiles =  nvirt/MaxOccSize
+                 IF(nTiles.EQ.0)PerformTiling = .FALSE.
+              ENDIF
+           ELSE
+              !determine if GPU requires Virtual tiling even if CPU does not
+              MaxSize = (nvirt*nvirtOut*nocc*nocc+NBA*nocc*nvirt+nvirt*nvirtOut)*8.0E0_realk  !in BYTES
+              PerformTiling = MaxSize.GT.free_gpu*0.80E0_realk
+           ENDIF
+           IF(PerformTiling)THEN 
+              maxsize = (nvirtOut*nvirtOut*nocc*nocc+NBA*nocc*nvirt+nvirtOut*nvirt+nvirt*nvirtOut*nocc+nvirtOut*nvirtOut*nocc)*8.0E0_realk
+              IF(Maxsize .GT. free_gpu)THEN
+                 print*,'Calpha requires',NBA*nvirt*nocc*8,'Bytes'
+                 print*,'U requires',nvirtOut*nvirt*8,'Bytes'
+                 print*,'tvirt2 requires',nvirtOut*nvirtOut*nocc*nocc*8,'Bytes'
+                 print*,'tvirt which requires at least ',nvirt*nvirtOut*nocc*8,'Bytes'
+                 print*,'tvirt2TMP which requires at least',nvirtOut*nvirtOut*nocc*8,'Bytes'
+                 print*,'In total',MaxSize,'Bytes'
+                 print*,'Free on the GPU: ',free_gpu,'Bytes'
+                 call lsquit('GPU memory cannot hold required objects')
+              ENDIF
+              MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(nvirtOut*nvirtOut*nocc*nocc+NBA*nvirt*nocc+nvirt*nvirtOut)*&
+                   & 8.0E0_realk)/(((nvirt+nvirtOut)*nvirtOut*nocc)*8.0E0_realk))) 
+              nTiles =  nocc/MaxOccSize
+              IF(nTiles.EQ.0)PerformTiling = .FALSE.
            ENDIF
 #endif
-
-           !Calculate and partial transform to local basis - transform occupied indices
-           nsize1 = nocc*nocc*(nvirtOut*i8)*nvirt
-           nsize2 = nocc*nocc*(nvirtOut*i8)*nvirtOut
-           IF(use_bg_buf)THEN
-              IF(DECinfo%MemDebugPrint)call printBGinfo()
-              IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt2(',nsize2,')'
-              call mem_pseudo_alloc(tvirt2,nsize2)
-              IF(DECinfo%MemDebugPrint)call printBGinfo()
-              IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt(',nsize1,')'
-              call mem_pseudo_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG        
-           ELSE
-              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
-              IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt2(',nsize2,')'
-              call mem_alloc(tvirt2,nsize2,'RIMP2:tvirt2b')
-              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
-              IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt(',nsize1,')'
-              call mem_alloc(tvirt,nsize1,'RIMP2:tvirtb') !IDIAG,JDIAG,ALOC,BDIAG
-           ENDIF
-           !$acc enter data create(tvirt,tvirt2)
-           IF(DECinfo%DECNP)THEN
-              call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtT)
-           ELSE
-              call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
-           ENDIF
            
-           !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
-           M = nocc*nocc*nvirtOut     !rows of Output Matrix
-           N = nvirtOut               !columns of Output Matrix
-           K = nvirt                  !summation dimension
-           IF(DECinfo%DECNP)THEN
-              call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M,&
-                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
-           ELSE
-              call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M,&
-                   & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+           if (DECinfo%RIMP2_tiling)THEN
+              PerformTiling = .TRUE. ! enforce Occupied tiling
+              MaxOccSize = 2
+              IF(nocc.LT.3)MaxOccSize = 1
+              nTiles =  nocc/MaxOccSize 
            ENDIF
-           !$acc exit data delete(tvirt)
+           IF(PerformTiling)THEN
+              IF(DECinfo%MemDebugPrint)THEN
+                 MemoryEstimateGB = (nocc*nocc*nvirtOut*nvirtOut + &
+                      & (nvirt+nvirtOut)*nvirtOut*nocc*MaxOccSize)*8.0E-9_realk 
+                 IF(use_bg_buf)THEN
+                    MemoryEstimateGB = MemoryEstimateGB + buf_realk%offset*8.0E-9_realk 
+                    SaveMaxMemoryUsage = buf_realk%max_usage
+                    buf_realk%max_usage = buf_realk%offset
+                 ELSE
+                    MemoryEstimateGB = MemoryEstimateGB + mem_allocated_global*1.0E-9_realk
+                    SaveMaxMemoryUsage = max_mem_used_global
+                    max_mem_used_global = mem_allocated_global
+                 ENDIF
+                 WRITE(DECinfo%output,*)'RIMP2info: MaxOccSize=',MaxOccSize
+                 WRITE(DECinfo%output,*)'RIMP2info: tvirt2=',nocc*nocc*nvirtOut*nvirtOut*8.0E-9_realk 
+                 WRITE(DECinfo%output,*)'RIMP2info: tvirt=',nocc*nvirt*nvirtOut*MaxOccSize*8.0E-9_realk 
+                 WRITE(DECinfo%output,*)'RIMP2info: tvirt2TMP=',nocc*nvirtOut*nvirtOut*MaxOccSize*8.0E-9_realk 
+                 IF(use_bg_buf)THEN
+                    WRITE(DECinfo%output,*)'RIMP2info: Memory Used=',buf_realk%offset*8.0E-9_realk 
+                 ELSE
+                    WRITE(DECinfo%output,*)'RIMP2info: Memory Used=',mem_allocated_global*1.0E-9_realk
+                 ENDIF
+                 WRITE(DECinfo%output,*)'RIMP2info: Occupied Tiling MemoryEstimateGB=',MemoryEstimateGB
+              ENDIF
+              nsize1 = nocc*(nocc*i8)*nvirtOut*(nvirtOut*i8)       !tvirt2
+              nsize2 = nocc*(nvirt*i8)*nvirtOut*(MaxOccSize*i8)    !tvirt
+              nsize3 = nocc*(nvirtOut*i8)*nvirtOut*(MaxOccSize*i8) !tvirt2TMP
+              IF(use_bg_buf)THEN
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt2(',nsize1,')'
+                 call mem_pseudo_alloc(tvirt2,nsize1)
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt(',nsize2,')'
+                 call mem_pseudo_alloc(tvirt,nsize2)
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt2TMP(',nsize3,')'
+                 call mem_pseudo_alloc(tvirt2TMP,nsize3)
+              ELSE
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt2(',nsize1,')'
+                 call mem_alloc(tvirt2,nsize1,'RIMP2:tocc2')
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt(',nsize2,')'
+                 call mem_alloc(tvirt,nsize2,'RIMP2:tocc')
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt2TMP(',nsize3,')'
+                 call mem_alloc(tvirt2TMP,nsize3,'RIMP2:tocc2TMP')
+              ENDIF
+              !$acc enter data create(tvirt,tvirt2,tvirt2TMP) copyin(Calpha) 
+              DO I=1,nTiles
+                 offsetO = (I-1)*MaxOccSize
+                 !Build tvirt(nocc,MaxOccSize,nvirtOut,nvirt)
+                 if (DECinfo%DECNP) then
+                    call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtT,&
+                         & MaxOccSize,offsetO)
+                 else
+                    call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST,&
+                         & MaxOccSize,offsetO)
+                 endif
+                 !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
+                 M = nocc*MaxOccSize*nvirtOut !rows of Output Matrix
+                 N = nvirtOut                 !columns of Output Matrix
+                 K = nvirt                    !summation dimension
+                 !tvirt2TMP(nocc,MaxOccSize,nvirtOut,nvirtOut)
+                 IF(DECinfo%DECNP)THEN
+                    call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2TMP,M,&
+                         & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+                 ELSE
+                    call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2TMP,M,&
+                         & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+                 ENDIF
+                 call PlugInTotvirt2(tvirt2,nocc,nvirtOut,tvirt2TMP,MaxOccSize,offsetO)
+              ENDDO
+              IF(MOD(nocc,MaxOccSize).NE.0)THEN !Remainder
+                 offsetO = nTiles*MaxOccSize
+                 MaxOccSize = MOD(nocc,MaxOccSize)
+                 !Build tvirt(nocc,MaxOccSize,nvirtOut,nvirt)
+                 if (DECinfo%DECNP) then
+                    call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtT,&
+                         & MaxOccSize,offsetO)
+                 else
+                    call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST,&
+                         & MaxOccSize,offsetO)
+                 endif
+                 !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
+                 M = nocc*MaxOccSize*nvirtOut !rows of Output Matrix
+                 N = nvirtOut                 !columns of Output Matrix
+                 K = nvirt                    !summation dimension
+                 !tvirt2TMP(nocc,MaxOccSize,nvirtOut,nvirtOut)
+                 IF(DECinfo%DECNP)THEN
+                    call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2TMP,M,&
+                         & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+                 ELSE
+                    call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2TMP,M,&
+                         & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+                 ENDIF
+                 call PlugInTotvirt2(tvirt2,nocc,nvirtOut,tvirt2TMP,MaxOccSize,offsetO)
+              ENDIF
+              !$acc exit data delete(tvirt,tvirt2TMP)
+              IF(use_bg_buf)THEN
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: dealloc tvirt2TMP(',size(tvirt2TMP),')'
+                 call mem_pseudo_dealloc(tvirt2TMP)
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: dealloc tvirt(',size(tvirt),')'
+                 call mem_pseudo_dealloc(tvirt)
+              ELSE
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: dealloc tvirt2TMP(',size(tvirt2TMP),')'
+                 call mem_dealloc(tvirt2TMP)
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: dealloc tvirt(',size(tvirt),')'
+                 call mem_dealloc(tvirt)
+              ENDIF
+              IF(DECinfo%MemDebugPrint)THEN
+                 IF(use_bg_buf)THEN
+                    MaxMemoryUsageGB = (buf_realk%max_usage-2)*8.0E-9_realk
+                    buf_realk%max_usage = MAX(SaveMaxMemoryUsage,buf_realk%max_usage)
+                 ELSE
+                    MaxMemoryUsageGB = (max_mem_used_global-2)*1.0E-9_realk
+                    max_mem_used_global = MAX(SaveMaxMemoryUsage,max_mem_used_global)
+                 ENDIF
+                 WRITE(DECinfo%output,*)'RIMP2info: Occupied Tiling MaxMemoryUsage=',MaxMemoryUsageGB
+                 WRITE(DECinfo%output,*)'RIMP2info: Occupied Tiling MemoryEstimateGB=',MemoryEstimateGB
+                 IF(MaxMemoryUsageGB.GT.MemoryEstimateGB)THEN
+                    print*,'RIMP2info: Occupied Tiling MaxMemoryUsage=',MaxMemoryUsageGB
+                    print*,'RIMP2info: Occupied Tiling MemoryEstimateGB=',MemoryEstimateGB
+                    call lsquit('RIMP2info: MaxMemoryUsage.GT.MemoryEstimateGB',-1)
+                 ENDIF
+              ENDIF
+           ELSE
+              !Calculate and partial transform to local basis - transform occupied indices
+              nsize1 = nocc*nocc*(nvirtOut*i8)*nvirt
+              nsize2 = nocc*nocc*(nvirtOut*i8)*nvirtOut
+              IF(use_bg_buf)THEN
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt2(',nsize2,')'
+                 call mem_pseudo_alloc(tvirt2,nsize2)
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt(',nsize1,')'
+                 call mem_pseudo_alloc(tvirt,nsize1) !IDIAG,JDIAG,ALOC,BDIAG        
+              ELSE
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt2(',nsize2,')'
+                 call mem_alloc(tvirt2,nsize2,'RIMP2:tvirt2b')
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt(',nsize1,')'
+                 call mem_alloc(tvirt,nsize1,'RIMP2:tvirtb') !IDIAG,JDIAG,ALOC,BDIAG
+              ENDIF
+              !$acc enter data create(tvirt,tvirt2)
+              offsetO=0           
+              IF(DECinfo%DECNP)THEN
+                 call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtT,nocc,offsetO)
+              ELSE
+                 call RIMP2_calc_tvirtA(nvirt,nocc,nvirtOut,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST,nocc,offsetO)
+              ENDIF              
+              !Transform first Virtual index (IDIAG,JDIAG,ALOC,BDIAG) => (IDIAG,JDIAG,ALOC,BLOC)
+              M = nocc*nocc*nvirtOut     !rows of Output Matrix
+              N = nvirtOut               !columns of Output Matrix
+              K = nvirt                  !summation dimension
+              IF(DECinfo%DECNP)THEN
+                 call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtT,K,0.0E0_realk,tvirt2,M,&
+                      & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+              ELSE
+                 call ls_dgemm_acc('N','N',M,N,K,1.0E0_realk,tvirt,M,UvirtEOST,K,0.0E0_realk,tvirt2,M,&
+                      & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
+              ENDIF
+              !$acc exit data delete(tvirt)
+              IF(use_bg_buf)THEN
+                 IF(DECinfo%MemDebugPrint)call printBGinfo()
+                 IF(DECinfo%MemDebugPrint)print*,'BG: dealloc tvirt(',size(tvirt),')'
+                 call mem_pseudo_dealloc(tvirt)
+              ELSE
+                 IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
+                 IF(DECinfo%MemDebugPrint)print*,'STD: dealloc tvirt(',size(tvirt),')'
+                 call mem_dealloc(tvirt)
+              ENDIF
+           ENDIF
            nsize = nocc*nocc*(nvirtOut*i8)*nvirtOut
            IF(use_bg_buf)THEN
-              IF(DECinfo%MemDebugPrint)call printBGinfo()
-              IF(DECinfo%MemDebugPrint)print*,'BG: dealloc tvirt(',size(tvirt),')'
-              call mem_pseudo_dealloc(tvirt)
               IF(DECinfo%MemDebugPrint)call printBGinfo()
               IF(DECinfo%MemDebugPrint)print*,'BG: alloc tvirt3(',nsize,')'
               call mem_pseudo_alloc(tvirt3,nsize)
            ELSE
-              IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
-              IF(DECinfo%MemDebugPrint)print*,'STD: dealloc tvirt(',size(tvirt),')'
-              call mem_dealloc(tvirt)
               IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
               IF(DECinfo%MemDebugPrint)print*,'STD: alloc tvirt3(',nsize,')'
               call mem_alloc(tvirt3,nsize,'RIMP2:tvirt3b')
@@ -1886,6 +2158,17 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
   IF(DECinfo%RIMP2_Laplace) call mem_dealloc(LaplaceW)
 
+  IF(DECinfo%MemDebugPrint)THEN
+     WRITE(DECinfo%output,*)'RIMP2meminfo: Memory After RIMP2 '
+     IF(use_bg_buf)THEN
+        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory in Background Buffer=',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
+        call printBGinfo()
+     ELSE
+        MemInGBCollected = 0.0E0_realk
+        call get_currently_available_memory(MemInGBCollected)  
+        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory available=',MemInGBCollected,' GB'
+     ENDIF
+  ENDIF
 end subroutine RIMP2_integrals_and_amplitudes
 
 subroutine BuildTauVirt(Tvirt,nvirt,nLaplace,EpsVirt,LaplaceAmp)
@@ -1990,6 +2273,37 @@ subroutine PlaceCoreOrbFirst2(CC,nbasis,nocctot,ncore,nocc,CC3)
   !$OMP END PARALLEL
 end subroutine PlaceCoreOrbFirst2
 
+subroutine PlugInTotvirt2(tvirt2,nocc,nvirtOut,tvirt2TMP,MaxOccSize,offsetO)
+  implicit none
+  integer,intent(in) :: nocc,nvirtOut,MaxOccSize,offsetO
+  real(realk),intent(inout) :: tvirt2(nocc,nocc,nvirtOut*nvirtOut)
+  real(realk),intent(in) :: tvirt2TMP(nocc,MaxOccSize,nvirtOut*nvirtOut)
+  !local variables
+  integer :: I,J,B
+#ifdef VAR_OPENACC
+  !$ACC PARALLEL LOOP COLLAPSE(2) &
+  !$ACC PRIVATE(I,J,B) &
+  !$acc firstprivate(nvirtOut,nocc,MaxOccSize,offsetO) &
+  !$ACC present(tvirt2,tvirt2TMP)
+#else
+  !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
+  !$OMP PRIVATE(I,J,B) &
+  !$OMP SHARED(nvirtOut,nocc,MaxOccSize,offsetO,tvirt2,tvirt2TMP)
+#endif
+  DO B=1,nvirtOut*nvirtOut
+     DO J=1,MaxOccSize
+        DO I=1,nocc
+           tvirt2(I,J+offsetO,B) = tvirt2TMP(I,J,B)
+        ENDDO
+     ENDDO
+  ENDDO
+#ifdef VAR_OPENACC
+  !$ACC END PARALLEL LOOP
+#else
+  !$OMP END PARALLEL DO
+#endif
+end subroutine PlugInTotvirt2
+
 subroutine PlugInTotocc2(tocc2,noccEOS,nvirt,tocc2TMP,MaxVirtSize,offsetV)
   implicit none
   integer,intent(in) :: noccEOS,nvirt,MaxVirtSize,offsetV
@@ -2084,12 +2398,12 @@ subroutine RIMP2_calc_toccA(nvirt,nocc,noccEOS,NBA,Calpha,EVocc,EVvirt,tocc,Uocc
 #endif
 END subroutine RIMP2_calc_toccA
 
-subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
+subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST,nocc2,offset2)
   implicit none
-  integer,intent(in) :: nvirt,nocc,nvirtEOS,NBA
+  integer,intent(in) :: nvirt,nocc,nvirtEOS,NBA,nocc2,offset2
   real(realk),intent(in) :: Calpha(NBA,nvirt,nocc)
   real(realk),intent(in) :: EVocc(nocc),EVvirt(nvirt),UvirtEOST(nvirt,nvirtEOS)
-  real(realk),intent(inout) :: tvirt(nocc,nocc,nvirtEOS,nvirt)
+  real(realk),intent(inout) :: tvirt(nocc,nocc2,nvirtEOS,nvirt)
   !
   integer :: BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ALOC,BLOC
   real(realk) :: gmocont,deltaEPS,TMP,tvirtTMP(nvirt),gpuflops
@@ -2097,14 +2411,14 @@ subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,U
   !$ACC PARALLEL LOOP COLLAPSE(3) &
   !$ACC& PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
   !$ACC&         ALPHAAUX,ALOC,BLOC,gmocont,deltaEPS,tvirtTMP,TMP)&
-  !$acc& firstprivate(nvirt,nocc,nvirtEOS,NBA)&
+  !$acc& firstprivate(nvirt,nocc,nvirtEOS,NBA,offset2,nocc2)&
   !$ACC& present(tvirt,Calpha,UvirtEOST,EVocc,EVvirt)
 #else
   !$OMP PARALLEL DO COLLAPSE(2) DEFAULT(none) &
   !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ALOC,BLOC,gmocont,deltaEPS,TMP,tvirtTMP) &
-  !$OMP SHARED(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST)
+  !$OMP SHARED(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,UvirtEOST,offset2,nocc2)
 #endif
-  do JDIAG=1,nocc
+  do JDIAG=1,nocc2
      do IDIAG=1,nocc
         do BDIAG=1,nvirt
 #ifdef VAR_OPENACC
@@ -2116,9 +2430,9 @@ subroutine RIMP2_calc_tvirtA(nvirt,nocc,nvirtEOS,NBA,Calpha,EVocc,EVvirt,tvirt,U
               !$ACC loop seq
 #endif 
               do ALPHAAUX=1,nba  
-                 gmocont = gmocont + Calpha(ALPHAAUX,ADIAG,IDIAG)*Calpha(ALPHAAUX,BDIAG,JDIAG)
+                 gmocont = gmocont + Calpha(ALPHAAUX,ADIAG,IDIAG)*Calpha(ALPHAAUX,BDIAG,offset2+JDIAG)
               enddo
-              deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
+              deltaEPS = EVocc(IDIAG)+EVocc(offset2+JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
               tvirtTMP(ADIAG)=gmocont/deltaEPS                
            enddo
 #ifdef VAR_OPENACC
@@ -3539,7 +3853,6 @@ DO B=1+MYNUM,nvirt,numnodes
 ENDDO
 !$OMP END PARALLEL DO
 EnergyF12Ccoupling = TMP/32.0E0_realk
-print*,'EnergyF12Ccoupling',EnergyF12Ccoupling
 end subroutine RIMP2F12_EnergyCont
 
 end module rimp2_module
