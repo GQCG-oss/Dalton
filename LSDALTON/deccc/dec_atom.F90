@@ -3379,11 +3379,9 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     type(fullmolecule), intent(in) :: MyMolecule
-    type(array2) :: S,tmp1
-    real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:),Sfull(:,:)
+    real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:),Sfull(:,:),CtS(:,:)
     integer :: i,j,idx,atom_k,nocc,nvirt,nbasis,natoms,k,bas_offset,offset, &
          & full_orb_idx,bas_k,fullcomm,fullnode,fullnumnodes
-    integer, dimension(2) :: dims, dimsAO, dimsMO
     logical,pointer :: which_atoms(:)
     real(realk), pointer :: Co(:,:),Cv(:,:),fock(:,:),oofock(:,:),vvfock(:,:)
 
@@ -3402,8 +3400,6 @@ contains
     nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
     natoms = MyMolecule%natoms
-    dimsAO(1)=nbasis
-    dimsAO(2)=nbasis
 
     ! Overlap matrix for fragment
     call mem_alloc(fragment%S,fragment%nbasis,fragment%nbasis)
@@ -3446,18 +3442,14 @@ contains
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
 
        ! fit orbitals
-       dimsMO(1) = nbasis
-       dimsMO(2) = nocc
-       dims(1) = nocc
-       dims(2) = nbasis
-       S = array2_init(dims)
+       call mem_alloc(CtS,nocc,nbasis)
        call mem_alloc(correct_vector_moS,fragment%nbasis)
        call mem_alloc(approximated_orbital,fragment%nbasis)
 
        ! Occupied
        ! ********
        ! half transformed overlap: S = Co^T Sfull  (full dims)
-       call dec_simple_dgemm(nocc,nbasis,nbasis,Co,Sfull,S%val,'T','N')
+       call dec_simple_dgemm(nocc,nbasis,nbasis,Co,Sfull,CtS,'T','N')
 
        ! Occ orbitals (only valence if frozen core approx is used)
        do i=1,fragment%noccLOC
@@ -3469,7 +3461,7 @@ contains
           bas_offset = 1
           do k=1,Fragment%nbasis
              bas_k = fragment%basis_idx(k)
-             correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
+             correct_vector_moS(k) = CtS(full_orb_idx,bas_k)
           end do
 
           ! fit orbital
@@ -3491,7 +3483,7 @@ contains
           bas_offset = 1
           do k=1,Fragment%nbasis
              bas_k = fragment%basis_idx(k)
-             correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
+             correct_vector_moS(k) = CtS(full_orb_idx,bas_k)
           end do
 
           ! fit orbital
@@ -3503,17 +3495,13 @@ contains
        end do
 
 
-          call array2_free(S)
-          dimsMO(1) = nbasis
-          dimsMO(2) = nvirt
-          dims(1) = nvirt
-          dims(2) = nbasis
-          S = array2_init(dims)
+       call mem_dealloc(CtS)
+       call mem_alloc(CtS,nvirt,nbasis)
 
           ! Virtual
           ! *******
           ! half transformed overlap: S = Co^T Sfull  (full dims)
-          call dec_simple_dgemm(nvirt,nbasis,nbasis,Cv,Sfull,S%val,'T','N')
+          call dec_simple_dgemm(nvirt,nbasis,nbasis,Cv,Sfull,CtS,'T','N')
 
           do i=1,fragment%nvirtLOC
 
@@ -3523,7 +3511,7 @@ contains
              bas_offset = 1
              do k=1,Fragment%nbasis
                 bas_k = fragment%basis_idx(k)
-                correct_vector_moS(k) = S%val(full_orb_idx,bas_k)
+                correct_vector_moS(k) = CtS(full_orb_idx,bas_k)
              end do
 
              ! fit orbital
@@ -3536,14 +3524,13 @@ contains
        ! remove stuff
        call mem_dealloc(correct_vector_moS)
        call mem_dealloc(approximated_orbital)
-       call array2_free(S)
-
+       call mem_dealloc(CtS)
 
 
     else ! Simply extract the exact MO coefficients for atoms in fragment without fitting
 
        if(DECinfo%frozencore) then
-          call lsquit('atomic_fragment_basis: Needs implementation!',-1)
+          call lsquit('atomic_fragment_basis: Frozen core needs implementation!',-1)
        end if
 
        ! Fragment Co
