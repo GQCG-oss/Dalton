@@ -18,7 +18,7 @@ export OMP_NUM_THREADS=3
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ --omp -DENABLE_DEC=ON -D BUILDNAME="MB-Grendel-linux-PGI-release" -D ENABLE_EFS=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF 
+./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ --omp -DENABLE_DEC=ON -D BUILDNAME="MB-Grendel-linux-PGI-release" -D ENABLE_EFS=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF -D ENABLE_RSP=OFF
 #./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp -DENABLE_DEC=ON -D BUILDNAME="MB-Grendel-linux-PGI-release" -D ENABLE_EFS=OFF THIS GAVE eh_personality.cc:(.text._Z21base_of_encoded_valuehP15_Unwind_Context+0x6f): undefined reference to `_Unwind_GetTextRelBase' stuff 
 #--explicit-libs="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs"
 #--scratch=$SCRATCH_DIR 
