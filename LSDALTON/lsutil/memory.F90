@@ -13,7 +13,9 @@ use LSTENSOR_TYPETYPE
 use basis_typetype
 use dec_typedef_module
 use OverlapType
+#ifdef VAR_ENABLE_TENSORS
 use tensor_interface_module, only: tensor,tensor_initialize_bg_buf_from_lsdalton_bg_buf, tensor_free_bg_buf
+#endif
 #ifdef MOD_UNRELEASED
 use lattice_type
 #endif
@@ -346,10 +348,13 @@ INTERFACE mem_alloc
       &             fragmentAOS_allocate_1dim, &
       &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
       &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,PNOSPACEINFO_allocate_1dim, &
-      &             OVERLAPT_allocate_1dim,tensor_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
+      &             OVERLAPT_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
       &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
       &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
       &             lsmpi_allocate_d,DECAOBATCHINFO_allocate_1dim,&
+#ifdef VAR_ENABLE_TENSORS
+      &             tensor_allocate_1dim, &
+#endif
 #ifdef MOD_UNRELEASED
       &             lvec_data_allocate_1dim, lattice_cell_allocate_1dim, &
 #endif
@@ -379,9 +384,12 @@ INTERFACE mem_alloc
          &             fragmentAOS_deallocate_1dim, &
          &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
          &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
-         &             OVERLAPT_deallocate_1dim,tensor_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
+         &             OVERLAPT_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
          &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
          &             lsmpi_deallocate_d,DECAOBATCHINFO_deallocate_1dim,&
+#ifdef VAR_ENABLE_TENSORS
+         &             tensor_deallocate_1dim, &
+#endif
 #ifdef MOD_UNRELEASED
          &             lvec_data_deallocate_1dim,lattice_cell_deallocate_1dim, &
 #endif
@@ -485,7 +493,9 @@ INTERFACE mem_alloc
       TYPE(fragmentAOS) :: fragmentAOSitem
       TYPE(ARRAY2) :: ARRAY2item
       TYPE(ARRAY4) :: ARRAY4item
+#ifdef VAR_ENABLE_TENSORS
       type(tensor) :: ARRAYitem
+#endif
       TYPE(PNOSpaceInfo) :: PNOSpaceitem
       TYPE(MP2DENS) :: MP2DENSitem
       TYPE(TRACEBACK) :: TRACEBACKitem
@@ -549,7 +559,9 @@ INTERFACE mem_alloc
       mem_fragmentAOSsize=sizeof(fragmentAOSitem)
       mem_ARRAY2size=sizeof(ARRAY2item)
       mem_ARRAY4size=sizeof(ARRAY4item)
+#ifdef VAR_ENABLE_TENSORS
       mem_ARRAYsize=sizeof(ARRAYitem)
+#endif
       mem_PNOSpaceInfosize=sizeof(PNOSpaceitem)
       mem_MP2DENSsize=sizeof(MP2DENSitem)
       mem_TRACEBACKsize=sizeof(TRACEBACKitem)
@@ -2018,6 +2030,7 @@ subroutine mem_init_background_alloc(bytes)
    buf_realk%l_mdel = .false.
    buf_realk%max_usage = 0 
 
+#ifdef VAR_ENABLE_TENSORS
    call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
       &buf_realk%init,&
       &buf_realk%offset,&
@@ -2034,6 +2047,7 @@ subroutine mem_init_background_alloc(bytes)
       &buf_realk%n_prev,&
       &buf_realk%l_mdel,&
       &buf_realk%f_mdel)
+#endif
 
 end subroutine mem_init_background_alloc
 
@@ -2087,9 +2101,12 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
       buf_realk%e_mdel = 0
       buf_realk%n_mdel = 0
       buf_realk%l_mdel = .false.
+#ifdef VAR_ENABLE_TENSORS
       call tensor_free_bg_buf()
+#endif
    endif
 
+#ifdef VAR_ENABLE_TENSORS
    call tensor_initialize_bg_buf_from_lsdalton_bg_buf(max_n_pointers,&
       &buf_realk%init,&
       &buf_realk%offset,&
@@ -2106,6 +2123,7 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
       &buf_realk%n_prev,&
       &buf_realk%l_mdel,&
       &buf_realk%f_mdel)
+#endif
 
 end subroutine mem_change_background_alloc
 subroutine mem_free_background_alloc()
@@ -2142,7 +2160,9 @@ subroutine mem_free_background_alloc()
    buf_realk%l_mdel = .false.
    buf_realk%max_usage = 0 
 
+#ifdef VAR_ENABLE_TENSORS
    call tensor_free_bg_buf()
+#endif
 end subroutine mem_free_background_alloc
 
 
@@ -5491,6 +5511,7 @@ END SUBROUTINE ARRAY4_deallocate_1dim
 
 !----- ALLOCATE ARRAY POINTERS -----!
 
+#ifdef VAR_ENABLE_TENSORS
 SUBROUTINE tensor_allocate_1dim(ARRAYITEM,n)
    implicit none
    integer,intent(in) :: n
@@ -5525,6 +5546,7 @@ SUBROUTINE tensor_deallocate_1dim(ARRAYITEM)
    ENDIF
    NULLIFY(ARRAYITEM)
 END SUBROUTINE tensor_deallocate_1dim
+#endif
 
 !----- ALLOCATE MP2DENS POINTERS -----!
 
