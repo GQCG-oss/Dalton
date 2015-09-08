@@ -501,14 +501,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ENDIF
 #endif
 
-#ifdef VAR_MPI 
-   IF(wakeslaves)THEN
-      nbuf1=numnodes
-      call mem_alloc(nAuxMPI,nbuf1)
-      call BuildnAuxMPIUsedRI(nAux,numnodes,nAuxMPI)      
-   ENDIF
-#endif
-
    IF(DECinfo%NaturalLinearScalingF12TermsB1)THEN
       !This energy contribution have already been calculated so we extract the information 
       EB1 = MyMolecule%EF12NLSB1
