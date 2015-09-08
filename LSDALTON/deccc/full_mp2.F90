@@ -501,8 +501,10 @@ contains
                 GammaStart = batch2orbGamma(gammaB)%orbindex(1)      ! First index in gamma batch
                 GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma) ! Last index in gamma batch
              ENDIF
-             IF(dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI)&
-                  & call lsquit('dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI',-1)
+             IF(dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI)THEN
+!                call lsquit('dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI',-1)
+                print*,'Warning dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI'
+             ENDIF
              dimAOoffsetG = dimAOoffsetG + dimGamma
              AOstartGamma(nBlocks,jnode) = GammaStart
              AOendGamma(nBlocks,jnode) = GammaEnd
