@@ -20,7 +20,9 @@ module init_lsdalton_mod
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
   use memory_handling, only: Print_Memory_info
+#ifdef VAR_ENABLE_TENSORS
   use tensor_interface_module, only:lspdm_free_global_buffer
+#endif
   private
   public :: open_lsdalton_files,init_lsdalton_and_get_lsitem, &
        & get_lsitem_from_input,finalize_lsdalton_driver_and_free
@@ -122,10 +124,12 @@ SUBROUTINE finalize_lsdalton_driver_and_free(lupri,luerr,ls,config,meminfo_slave
    logical, intent(inout) :: meminfo_slaves
    call ls_free(ls)
 
+#ifdef VAR_ENABLE_TENSORS
    if(config%opt%cfg_prefer_PDMM)then
       ! Free the background buffer used with PDMM
       call lspdm_free_global_buffer(.true.)
    endif
+#endif
 
    meminfo_slaves = config%mpi_mem_monitor
    call Print_Memory_info(lupri,'End of LSDALTON_DRIVER')
