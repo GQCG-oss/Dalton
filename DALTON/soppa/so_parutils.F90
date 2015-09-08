@@ -34,8 +34,10 @@ module so_parutils
 !  Flags to be send to slaves to tell them, what work to do
    integer, parameter :: parsoppa_release_slave = 0,   &! Leave 
      &                   parsoppa_do_eres  = 1  ! Call eres routine
-
-   integer(mpi_integer_kind) :: soppa_comm_active
+!
+! SOPPA communicator (needed if not all nodes participate in soppa)  
+   integer(mpi_integer_kind) :: soppa_comm_active    ! communicator
+   integer                   :: soppa_num_active     ! number of nodes
 !
 ! Make the defines in infpar, a fortran parameter (nicer IMO).
 ! also, maybe change the name?
@@ -303,7 +305,6 @@ contains
       !
       call mpi_bcast( model, 5, mpi_character, 0, mpi_comm_world, &
                       ierr )
-      print *, model
       ! Do we need to do an allreduce to check that all 
       ! Processes agree not to update the common-blocks?
       ! For now just let master tell the slaves
@@ -320,19 +321,23 @@ contains
       iprsop = iprint
       !
       ! Setup communicator for soppa. Work will later be separated into
-      ! integral distributions, if there are processes than integral
-      ! distributions, we peel off the excess.
+      ! integral distributions, which will be distributed among the nodes
+      ! If there are more processes than integral
+      ! distributions, we don't include the rest in the soppa communicator
       !
       numprocs = nodtot + 1 ! nodtot from infpar.h
       if ( numprocs .le. mxcall ) then ! mxcall from distcl.h
          !
-         ! Usual case, 
+         ! Usual case:
+         ! Just keep mpi_comm_world
+         soppa_num_active  = numprocs 
          soppa_comm_active = mpi_comm_world
       else 
          ! This should happen so rarely, that we don't really need 
          ! to worry about it. Should be done in some intelligent 
          ! manner though
-         if ( mynum .gt. nodtot ) then 
+         soppa_num_active  = mxcall 
+         if ( mynum .ge. soppa_num_active ) then 
             mycolor = MPI_UNDEFINED
          else 
             mycolor = 0
@@ -422,7 +427,13 @@ contains
             !
             ! Slave no longer needed in parallel soppa
             !
-         case (parsoppa_release_slave) 
+         case (parsoppa_release_slave)
+
+            ! Free any SOPPA communicators
+            if ( (soppa_comm_active .ne.  mpi_comm_world).and.         &
+                 (mynum .lt. soppa_num_active)                ) then
+               call mpi_comm_free( soppa_comm_active, ierr )
+            endif
             
             return
             !
@@ -430,17 +441,9 @@ contains
             !
          case (parsoppa_do_eres)
             !
-            ! For now, just get location information from master
-            ! However, eventually as much as posible of this common
-            ! block should be phased out.
-            ! Perhaps it could be replaced with a non-global derived type
-            ! containing only the critical information
-!            call getbytespan( ntot, parsoppaLAST, bytesize)
-!            call mpi_bcast( ntot, bytesize, mpi_byte, 0,         &
-!     &                      mpi_comm_world, ierr)
-            !
             ! We need to communicate NOLDTR, NNEWTR, ISYMTR and NIT.
-            ! MODEL should allready have been communicated
+            ! These are joined together in the info_array.
+            ! MODEL has allready have been communicated
             !
             call mpi_bcast( info_array(1), 4, my_mpi_integer, 0,     &
                             mpi_comm_world, ierr)  
@@ -524,8 +527,10 @@ contains
       ! 
       numprocs = nodtot + 1 ! from infpar.h
       if ( numprocs .le. mxcall ) then ! mxcall from distcl.h
+         soppa_num_active  = numprocs
          soppa_comm_active = mpi_comm_world
       else
+         soppa_num_active  = mxcall
          call mpi_comm_split( mpi_comm_world, zero_mpi, zero_mpi,  &
                               soppa_comm_active, ierr)
       endif

@@ -146,7 +146,7 @@ C In parallel, send slaves to so_eres
 C
          call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
      &                   mpi_comm_world, ierr )
-C ISYMTR is a non-local parameter, we need to copy it to the info-array
+C Pack INFO_ARRAY variables and send them off 
          CP_ISYMTR = ISYMTR
          NOLDTR    = 0
          NNEWTR    = 1

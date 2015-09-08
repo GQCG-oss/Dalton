@@ -27,7 +27,7 @@ C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
 
-      use so_parutils, only: soppa_comm_active 
+      use so_parutils, only: soppa_comm_active, soppa_num_active 
 
 #include "implicit.h"
 
@@ -73,8 +73,15 @@ C
 C#include "parsoppa.h"
 C      integer, save :: numprocs
        integer :: numprocs
+       logical :: loadbal_dyn
+       double precision ::  timeini, timefin
        numprocs = nodtot + 1
-C      forceupdate = .true.
+C
+C  When to do dynamic load_balancing..?
+C  The sooner the better, but is the first iteration close to the
+C  average?
+       loadbal_dyn = .false.
+       if (nit .eq. 1) loadbal_dyn = .true.
 #endif
 C
 C------------------
@@ -186,6 +193,14 @@ C
       KAIJ    = KSIGDA2 + LSIGDA2
       KAAB    = KAIJ    + LAIJ
       KEND2   = KAAB    + LAAB
+#ifdef VAR_MPI
+C     MPI -- Allocate timings array
+      if ( loadbal_dyn ) then
+        KTIMING = KEND2
+        KEND2   = KTIMING + MXCALL
+        CALL DZERO(WORK(KTIMING),MXCALL)
+      endif 
+#endif
       LWORK2  = LWORK   - KEND2
 C
       CALL SO_MEMMAX ('SO_ERES.2',LWORK2)
@@ -365,7 +380,7 @@ C After first pass, load-balancing has been done
             CONTINUE
          ELSEIF( mynum .eq. 0 )THEN
 C Master does the balancing
-            write(lupri,*) 'Entering load-balancing'
+C            write(lupri,*) 'Entering load-balancing'
             call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
      &                     work(kindxb), work(kendsv), lworksv)
 !            write (luerr,'(10i5)') mynum, AssignedIndices
@@ -375,7 +390,7 @@ C Slaves receives the scatter, send arguments should be ignored
      &                        AssignedIndices, maxnumjobs, mpi_integer,
      &                        0, soppa_comm_active, ierr )
 !            write (luerr,'(10i5)') mynum, AssignedIndices
-         ENDIF 
+         ENDIF
 #endif
          DO 210 ISYMD1 = 1,NTOSYM
 C
@@ -389,63 +404,10 @@ C
                NLOOPIDX = maxnumjobs
             ELSE
                NLOOPIDX = NTOT
+               loadbal_dyn = .false.
             ENDIF
 #endif
 C
-#ifdef NOT_DEF
-C***********************************************************
-C     If more than 1 process is available, calculate 
-C     in parallel with par_so_eres.
-C
-C     Note, there is a strong coherence between the order of 
-C     these bcasts and the initialization of the slaves in 
-C     the beginning of par_so_eres. 
-C***********************************************************
-      thisinewtr = inewtr
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
-      parallelsoppa: if (numprocs.gt.1) then
-
-         ! make every slave join the parallel calculation
-         ! Signal for PARA_SO_ERES=87 in iprtyp.h, maybe insert macro
-         ! directly 
-         call mpixbcast(87, 1, 'INTEGE', 0)
-         ! Second broadcast -> printlevel for the slaves
-         call mpixbcast( 0, 1, 'INTEGE', 0)
-
-         ! Ready slaves for massive amount of updates.
-         call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world,ierr)
-
-         ! These are input parameters to so_eres. To copy them to par_so_eres I rename then temporarily and store then in parsoppa.h
-         ! Once inside par_so_eres the parameters are copied back from the common block to the master process.
-         copymodel   = model
-         copyldensai = ldensai
-         copynit     = nit
-         copyisymtr  = isymtr
-         copyinewtr  = inewtr
-
-         ! Copy the common block to all slaves
-         call getbytespan(ntot, parsoppaLAST, bytesize)
-         call mpi_bcast(ntot, bytesize, mpi_byte, 0,mpi_comm_world,ierr)
-
-         ! Transfer mp2 amplitudes to all slaves
-         call mpi_bcast(lt2mp,1, mpi_integer, 0,mpi_comm_world, ierr)
-         call mpi_bcast(t2mp, lt2mp, mpi_real8, 0,mpi_comm_world,ierr)
-         
-         ! join the parallel calculation along w. slaves
-         call par_so_eres(WORK, LWORK, 0)
-
-         ! receive the newly assembled densai array from process 1 before continuing
-         if ( getdensai )  then
-            call mpi_recv(densai, ldensai, mpi_real8, 1, 0, 
-     &      mpi_comm_world, mpistatus, ierr)
-            getdensai = .false.
-         endif
-
-         goto 888  ! Skips over the do loop that would normally assemble the Fock/density matrix sequentially
-
-      endif parallelsoppa
-#endif
-!!endif VAR_MPI
 
 C-------------------------------------------------
 C           Main loop over integral-distributions.
@@ -460,6 +422,7 @@ C------------------------------------------------------------------
                   ILLL = assignedIndices(illldummy)
 C                 A zero indicates that we have no more work, exit loop
                   IF (ILLL .eq. 0) exit
+                  if ( loadbal_dyn ) timeini = mpi_wtime()
                else
                   ILLL = ILLLDUMMY
                endif
@@ -723,6 +686,14 @@ C
 C
   230          CONTINUE  ! End of IDEL2 loop
 C
+#ifdef VAR_MPI
+               IF (loadbal_dyn) then
+                   timefin = mpi_wtime()
+                   itimeilll = ktiming + illl - 1
+                   work(itimeilll) = work(itimeilll) + timefin - timeini
+               ENDIF
+#endif              
+C
   220       CONTINUE !End of ILLL loop
 C
   210    CONTINUE !end of ISYMD1 loop
@@ -770,7 +741,7 @@ C           Sigai / Sigda
 C
 C           Aij / Aab -- only calculated in first pass  
             if ( inewtr .eq. 1 ) then
-               write(lupri,*) 'Aij'            
+C               write(lupri,*) 'Aij'            
                call mpi_reduce ( mpi_in_place, work(kaij), latot,
      &                           MPI_REAL8, MPI_SUM, 0,
      &                           soppa_comm_active, ierr)
@@ -941,7 +912,39 @@ C-----------------------------------------------------------
      &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, IERR)
          ENDIF
       ENDIF
-
+C--------------------------------------
+C     Communicate the timings if needed
+C--------------------------------------
+      if ( loadbal_dyn ) then
+         if (mynum .eq.0) then
+C Recieve the timings            
+            call mpi_reduce( mpi_in_place, work(ktiming), mxcall,
+     &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
+     &                       IERR)
+C Redo the loadbalancing based on the timings and distribute them
+            ksorted = kendsv
+            ktmp = (soppa_num_active*maxnumjobs)
+            knasjob = ksorted + (ktmp+1)/irat
+            kswork  = knasjob + (soppa_num_active+1)/irat
+            kendf   = kswork + soppa_num_active
+C
+            call dynloadbal_parsoppa( AssignedIndices, maxnumjobs,
+     &                                work(ktiming), mxcall,
+     &                                work(ksorted),work(knasjob),
+     &                                work(kswork) )  
+            !                    add empty work-space...
+            !                    currently it can start at kend2
+         else
+C  Send the timings            
+            call mpi_reduce( work(ktiming), work(ktiming), mxcall,
+     &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
+     &                       IERR)
+C  Recieve the new indices
+            call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
+     &                        AssignedIndices, maxnumjobs, mpi_integer,
+     &                        0, soppa_comm_active, ierr)
+         endif
+      endif
 C Slaves are done
       IF (MYNUM .NE. 0) RETURN
 #endif
@@ -1860,7 +1863,10 @@ C
 #ifdef VAR_MPI
 C
 C
-      subroutine dynloadbal_parsoppa(timings, allocsize, temparray)
+      subroutine dynloadbal_parsoppa( localIndices, maxnumjobs,
+     &                                timings, ltimings,
+     &                                sortedindices, numassignjobs,
+     &                                sumofwork)
 C    Dynamic Load Balancing for the parallel SOPPA calculations (and parallel RPA). 
 C    The routine assumed that the MPI processes that does the load balancing is the master. If any other routine enters, there will be issues with the updated ILLL indices in the AssignedIndices array.  Right now, any slave that enters is immediately evicted from the routine.
 C
@@ -1870,7 +1876,7 @@ C The improvement over the presorted balancing scheme is expected to be very sma
 C 
 C F.Beyer Oct. 2014.
 
-      use so_parutils, only : soppa_comm_active
+      use so_parutils, only : soppa_comm_active, soppa_num_active
 
 #include "implicit.h"
 #include "mpif.h"
@@ -1879,14 +1885,14 @@ C F.Beyer Oct. 2014.
 #include "distcl.h"
 
       ! Dummy parameters
-      real, dimension(mxcall), intent(inout) :: timings
-      integer, intent(out) :: allocsize
-      integer, dimension(mxcall), intent(out) :: temparray
+      double precision, dimension(ltimings), intent(inout) :: timings
+      integer, intent(inout) :: localIndices(maxnumjobs)
+      integer  :: sortedindices(maxnumjobs,soppa_num_active)
+      integer  :: numassignjobs(soppa_num_active)
+      dimension :: sumofwork(soppa_num_active)
+      integer  :: ltimings, maxnumjobs
 
       ! Bookkeeping
-      integer, dimension(:,:), allocatable :: sortedindices
-      integer, dimension(:), allocatable   :: numassignjobs
-      real, dimension(:), allocatable   :: sumofwork
       integer :: maxrows, maxcols, numprocs, numrecipients
       integer :: getnumjobs, targetID, myid
       integer :: colindex, rowindex, assignILLL, col
@@ -1894,20 +1900,16 @@ C F.Beyer Oct. 2014.
       ntot = mxcall
 
       ! Evict slaves from the routine
-      call mpi_comm_rank(mpi_comm_world, myid, ierr)
-      if (myid.ne.0) return
+C      call mpi_comm_rank(mpi_comm_world, myid, ierr)
+C      if (myid.ne.0) return
 
       ! In case the amount of work is smaller than
       ! the number of MPI processes...
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
-      maxcols = min(numprocs, ntot)
+      maxcols = soppa_num_active
 
       ! Explicitly set the maximum number of jobs a single MPI process can be allocated.
-      maxrows = ntot-maxcols+1
+      maxrows = maxnumjobs
 
-      allocate(sortedindices(maxrows, maxcols) )
-      allocate(numassignjobs( maxcols) )
-      allocate(sumofwork( maxcols) )
       sortedindices(:,:) = 0
       numassignjobs(:) = 0
       sumofwork(:) = 0
@@ -1915,7 +1917,7 @@ C F.Beyer Oct. 2014.
 
       DO i=1, ntot
               ! Find the largest chunk of available work
-              assignILLL = maxloc(timings,dim=1, mask=timings.gt.0)
+              assignILLL = maxloc(timings,dim=1, mask=timings.ge.0.0D0)
 
               ! Find the laziest slave
               colindex = minloc(sumofwork, dim=1)
@@ -1929,49 +1931,18 @@ C F.Beyer Oct. 2014.
               ! remove the work from the timings array
               sumofwork(colindex) = sumofwork(colindex) 
      &                             +timings(assignILLL)
-              timings(assignILLL) = 0.0
+              timings(assignILLL) = -1.0D0
 
-       ENDDO
+      ENDDO
 
-
-
-
-      ! Tell the slaves how much space to allocate.
-      ! Let the slave calculate this themself 
-      ! (if the slaves doesn't even agree with master on this, we're in
-      ! deep shit)
-      allocsize = maxrows
-C      numrecipients = min(numprocs, ntot)
-C      do targetID=1, (numrecipients-1)
-C         call mpi_isend(allocsize, 1, mpi_integer, targetID, 
-C     &                  targetID, mpi_comm_world, getnumjobs, ierr) 
-C      enddo
-         
        
       ! Send the info to every slave that does computation (some slaves might be stalled in the polling barrier in case there are too many MPI processes compared to the number of tasks).
-C      ! Use scatter instead?
-C      numcols = min(numprocs, ntot)
-C      DO col=2, numcols
-C         TargetID = col-1 
-C         ! Note this isend makes use of column major storage in FORTAN.
-C         call mpi_isend(sortedindices(1,col),allocsize,mpi_integer, 
-C     &   TargetID, TargetID, mpi_comm_world, getindices,  ierr) 
-C      ENDDO
-
-      call mpi_scatter( sortedindices, allocsize, mpi_integer, 
-     &                  temparray, allocsize, mpi_integer,
+      call mpi_scatter( sortedindices, maxnumjobs, mpi_integer, 
+     &                  localIndices, maxnumjobs, mpi_integer,
      &                  0, soppa_comm_active, ierr) 
 
       ! Update the master's own array of ILLL indices
-      temparray(1:allocsize) = sortedindices(:,1)
-
-      ! Are we in anyway guaranteed that the above sends finish
-      ! before deallocation, or do we need to store all getindices
-      ! call mpi_waitall( numcols-1, getindices, mpi_statuses_ignore)
-      ! 
-      deallocate(sortedindices)
-      deallocate(numassignjobs)
-      deallocate(sumofwork)
+      ! should be done by the scatter
 
       return
       end subroutine
@@ -2007,7 +1978,6 @@ C Use MXCALL from distcl.h instead
 #include "iratdef.h"
 C     Dummy parameters
       integer, intent(in) :: lwork, maxnumjobs
-C      integer, intent(out) :: allocsize
       double precision :: work(lwork) !intent in
       integer :: indexb(*)
       integer, dimension(maxnumjobs), intent(out) :: localIndices
@@ -2018,15 +1988,10 @@ C      integer :: presortarray, finalsorted
       integer :: col, ntot
       integer :: kpresortarray, kend, kfinalsorted, ktmp
       ntot = mxcall
-
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr) 
+      
+      ! numprocs = soppa_num_active !! not consistent with other use 
+      call mpi_comm_size(soppa_comm_active, numprocs, ierr)  
       call mpi_comm_rank(mpi_comm_world, myid, ierr) 
-C      call izero(temparray, ntot)
-
-C      allocate( presortarray(2, ntot), stat=allocstatus )
-C      if(.not.(allocstatus.eq.0) ) then
-C         call quit('Allocation error in presortarray')
-C      endif
       
 C     FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
       kpresortarray = 1
@@ -2034,20 +1999,7 @@ C     FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
       call presortaodist(ntot, indexb, work(kpresortarray) )
 
 
-C      maxnumjobs = ntot-min(numprocs,ntot)+1 
-      !call getallocsize(ntot, presortarray, maxnumjobs) 
-
-C     The master tells the slaves how much space to allocate ...
-C      numrecipients = min(numprocs, ntot)
-C      do targetID=1, (numrecipients-1)
-C         call mpi_isend(maxnumjobs, 1, mpi_integer, targetID, 
-C     &                  targetID, mpi_comm_world, getnumjobs, ierr) 
-C      enddo
-         
-
 C     CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
-C      allocate(finalsorted(maxnumjobs, numprocs)
-C     &               ,stat=allocstatus )
       kfinalsorted = kend 
       ktmp = kfinalsorted + (maxnumjobs * numprocs + 1) /irat
       kend = ktmp + 2*numprocs / irat
@@ -2060,22 +2012,10 @@ C     &               ,stat=allocstatus )
 
 
 C     TRANSFER AO INDICES TO SLAVES
-C      numcols = min(numprocs, ntot)
-C      DO col=2, numcols
-C         TargetID = col-1 
-C         call mpi_isend(finalsorted(1,col),maxnumjobs,mpi_integer, 
-C     &   TargetID, TargetID, mpi_comm_world, getindices,  ierr) 
-C      ENDDO
-C     Use scatter instead
+C     Use scatter 
       call mpi_scatter( work(kfinalsorted), maxnumjobs, mpi_integer,
      &                  localIndices, maxnumjobs, mpi_integer,
      &                  0, soppa_comm_active, ierr )
-
-C     Keep own work in a vector and don't leak memory...
-C      allocsize = maxnumjobs
-!     temparray(1:maxnumjobs) = finalsorted(:,1)  
-C      deallocate(finalsorted)
-C      deallocate(presortarray)
 
       return
       end subroutine 

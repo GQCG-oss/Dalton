@@ -31,11 +31,11 @@ C NOLDTR: Number of Old trial vectors
 C NNEWTR: Numver of new trial vectors
 C FOCKD: The Fock Matrix
 C LFOCKD: Number of entries in the Fock Matrix
-C ISYMTR:
+C ISYMTR: Symmetry of trial-vector
 C WORK: temporary work-vector 
 C LWORK: Total needed length of the work-vector.
 
-      use so_parutils, only: soppa_comm_active 
+      use so_parutils, only: soppa_comm_active, soppa_num_active 
 
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -73,10 +73,15 @@ C
 #include "iprtyp.h"
 #include "infpar.h"
 C#include "parsoppa.h"
-C      integer, save :: numprocs
-       integer :: numprocs
-       numprocs = nodtot + 1
-C      forceupdate = .true.
+C Variables for dynamic load-balancing       
+      logical :: loadbal_dyn
+      double precision :: timeini, timefin
+
+      integer :: numprocs
+      numprocs = nodtot + 1
+
+      loadbal_dyn = .false.
+      if (nit.eq.1) loadbal_dyn = .true.
 #endif
 
 C
@@ -164,6 +169,14 @@ C
       KBTJ1D  = KBTJ1E  + LBTJ1E
       KEND2   = KBTJ1D  + LBTJ1D
       LWORK2  = LWORK   - KEND2
+#ifdef VAR_MPI
+C     MPI -- Allocate timings array
+      if ( loadbal_dyn ) then
+        KTIMING = KEND2
+        KEND2   = KTIMING + MXCALL
+        CALL DZERO(WORK(KTIMING),MXCALL)
+      endif 
+#endif
 C
       CALL SO_MEMMAX ('RP_ERES.2',LWORK2)
       IF (LWORK2 .LT. 0) CALL STOPIT('RP_ERES.2',' ',KEND2,LWORK)
@@ -339,18 +352,8 @@ C
                NLOOPIDX = maxnumjobs
             ELSE
                NLOOPIDX = NTOT
+               loadbal_dyn = .false.
             ENDIF
-#endif
-C
-#ifdef NOT_DEF
-      ! Start a parallel calculation of the fock matrix in case more than 1 process is available.
-      ! The result is kept in the master process' work array at work(kfock)
-      if (numprocs.gt.1) then
-          call mpixbcast(85, 1, 'INTEGE', 0)
-          call mpixbcast(0, 1, 'INTEGE', 0)
-          CALL PAR_RP_ERES(WORK, LWORK, 0)
-          goto 888
-      endif
 #endif
 C
 C-------------------------------------------------
@@ -366,6 +369,7 @@ C------------------------------------------------------------------
                   ILLL = assignedIndices(illldummy)
 C                 A zero indicates that we have no more work, exit loop
                   IF (ILLL .eq. 0) exit
+                  if (loadbal_dyn) timeini = mpi_wtime()
                else
                   ILLL = ILLLDUMMY
                endif
@@ -509,6 +513,13 @@ C and could potentially cause a lot of havoc if the calculation didn't fail ever
                   SOTIME(11) = SOTIME(11) + DTIME
 C
   230          CONTINUE ! End of IDEL2 loop.
+#ifdef VAR_MPI
+               IF (loadbal_dyn) then
+                   timefin = mpi_wtime()
+                   itimeilll = ktiming + illl - 1
+                   work(itimeilll) = work(itimeilll) + timefin - timeini
+               ENDIF
+#endif
   220       CONTINUE ! End of ILLL loop.
   210    CONTINUE
 
@@ -608,6 +619,36 @@ C     End of loop over excitations.
 C==================================
 C
 #ifdef VAR_MPI
+C--------------------------------------
+C     Communicate the timings if needed
+C--------------------------------------
+      if ( loadbal_dyn ) then
+         if (mynum .eq.0) then
+            call mpi_reduce( mpi_in_place, work(ktiming), mxcall,
+     &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
+     &                       IERR)
+            ksorted = kendsv
+            ktmp = (soppa_num_active*maxnumjobs)
+            knasjob = ksorted + (ktmp+1)/irat
+            kswork  = knasjob + (soppa_num_active+1)/irat
+            kendf   = kswork + soppa_num_active
+
+            call dynloadbal_parsoppa( AssignedIndices, maxnumjobs,
+     &                                work(ktiming), mxcall,
+     &                                work(ksorted),work(knasjob),
+     &                                work(kswork) ) 
+         else
+C  Send the timings            
+            call mpi_reduce( work(ktiming), work(ktiming), mxcall,
+     &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
+     &                       IERR)
+C  Recieve the new indices
+            call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
+     &                        AssignedIndices, maxnumjobs, mpi_integer,
+     &                        0, soppa_comm_active, ierr)
+         endif
+      endif
+
 C Slaves are done
       IF (MYNUM .NE. 0) RETURN
 #endif
