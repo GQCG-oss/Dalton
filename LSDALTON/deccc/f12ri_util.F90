@@ -4,6 +4,7 @@
 module f12ri_util_module
   use precision
   use memory_handling
+  use dec_typedef_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type,only: ls_mpibcast
@@ -28,7 +29,7 @@ contains
   subroutine GeneralTwo4CenterF12RICoef1112(nBA,&
        & Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
        & Energy,offset,SlavesAwake,use_bg_buf,&
-       & numnodes,nAuxMPI,mynum,InputSubroutine,InputSubroutineMPI)
+       & numnodes,nAuxMPI,mynum,InputSubroutineNumber)
     implicit none
     integer,intent(in) :: ndim12,ndim13,ndim22,ndim23,NBA
     integer,intent(in) :: numnodes,mynum,offset
@@ -37,8 +38,7 @@ contains
     real(realk),intent(inout) :: Energy
     logical,intent(in) :: SlavesAwake,use_bg_buf
     integer,intent(in) :: nAuxMPI(numnodes)    
-    EXTERNAL :: InputSubroutine !NAME OF SUBROUTINE TO CALL
-    EXTERNAL :: InputSubroutineMPI !NAME OF SUBROUTINE TO CALL
+    integer,intent(in) :: InputSubroutineNumber !Integer Number OF SUBROUTINE TO CALL
     !local variables
 #ifdef VAR_MPI
     integer :: inode,nbuf1,NBA2
@@ -58,7 +58,16 @@ contains
              !I Bcast My Own Calpha1
              node = mynum            
              call ls_mpibcast(Calpha1,nsize1,node,infpar%lg_comm)
-             call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,offset)
+             select case(InputSubroutineNumber)
+             case(4)
+                call F12RIB4(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,offset)
+             case(6)
+                call F12RIB6(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,offset)
+             case(9)
+                call F12RIB9(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,offset)
+             case default
+                write(DECinfo%output,*) 'WARNING: no case model was selected for the case:', InputSubroutineNumber
+             end select
           ELSE
              node = inode-1
              !recieve Calpha1 from a different node
@@ -68,8 +77,16 @@ contains
                 call mem_alloc(CalphaMPI1,nsize1)
              ENDIF
              call ls_mpibcast(CalphaMPI1,nsize1,node,infpar%lg_comm)
-             call InputSubroutineMPI(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
-                  & EnergyTmp,offset,NBA2,CalphaMPI1)
+             select case(InputSubroutineNumber)
+             case(4)
+                call F12RIB4MPI(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,offset,NBA2,CalphaMPI1)
+             case(6)
+                call F12RIB6MPI(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,offset,NBA2,CalphaMPI1)
+             case(9)
+                call F12RIB9MPI(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,EnergyTmp,offset,NBA2,CalphaMPI1)
+             case default
+                write(DECinfo%output,*) 'WARNING: no case model was selected for the case MPI:', InputSubroutineNumber
+             end select
              IF(use_bg_buf)THEN
                 call mem_pseudo_dealloc(CalphaMPI1)
              ELSE
@@ -82,7 +99,17 @@ contains
        call lsquit('GeneralTwo4CenterF12RICoef1112 SlavesAwake=.TRUE. require MPI',-1)
 #endif
     ELSE
-       call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,Energy,offset)       
+       !call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,Energy,offset)       
+             select case(InputSubroutineNumber)
+             case(4)
+                call F12RIB4(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,Energy,offset)
+             case(6)
+                call F12RIB6(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,Energy,offset)
+             case(9)
+                call F12RIB9(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,Energy,offset)
+             case default
+                write(DECinfo%output,*) 'WARNING: no case model was selected for the case MPI:', InputSubroutineNumber
+             end select
     ENDIF
   end subroutine GeneralTwo4CenterF12RICoef1112
 
@@ -291,9 +318,10 @@ contains
           Energy = Energy + EnergyTmp
        ENDDO
 #else
-       call lsquit('GeneralTwo4CenterF12RICoef1112 SlavesAwake=.TRUE. require MPI',-1)
+       call lsquit('GeneralTwo4CenterDECF12RICoef1223 SlavesAwake=.TRUE. require MPI',-1)
 #endif
     ELSE
+
        call InputSubroutine(nBA,Calpha1,ndim12,ndim13,Calpha2,ndim22,ndim23,&
             & Calpha3,ndim32,ndim33,Energy,offset,Kval,noccpair)
     ENDIF
