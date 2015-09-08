@@ -180,8 +180,8 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-  procedure(tensor_acct88),pointer :: acc_tlong1
-  procedure(tensor_putt88),pointer :: put_tlong1 
+  procedure(put_acc_tile),pointer :: acc_tlong1
+  procedure(put_acc_tile),pointer :: put_tlong1 
 #endif
 #endif
 

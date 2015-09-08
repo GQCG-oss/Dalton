@@ -155,6 +155,7 @@ contains
     full_no_frags = .false.
     use_bg_buf    = mem_is_background_buf_init()
     dynamic_load  = DECinfo%dyn_load
+    dynamic_load  = .false.
     plus_one      = 1
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.
