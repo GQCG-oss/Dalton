@@ -441,6 +441,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !     ENDIF
   ENDIF
 
+  noccOut = noccEOS
+  if (DECinfo%DECNP) noccOut = nocc
+  dimocc = [nvirt,noccOut,nvirt,noccOut]   ! Output order
+
   IF(use_bg_buf)THEN
      !Due to the push pull mechanisme we must deallocate in the 
      !reverse order we allocate - which means I need to allocate these
@@ -457,16 +461,17 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor djik(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
         call tensor_ainit(djik,dimvirt,4,bg=.TRUE.)
      endif
-     !deallocated in fragment_energy.F90 line 677 (April 2015)
-     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]    
-     IF(DECinfo%MemDebugPrint)call printBGinfo()
-     IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor tvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
-     call tensor_ainit(tvirtEOS,dimvirt,4,bg=.TRUE.)
-     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot] 
-     IF(DECinfo%MemDebugPrint)call printBGinfo()
-     IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor gvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
-     call tensor_ainit(gvirtEOS,dimvirt,4,bg=.TRUE.)
-     dimocc = [nvirt,noccEOS,nvirt,noccEOS]     
+     if (.not.DECinfo%DECNP) then
+        !deallocated in fragment_energy.F90 line 677 (April 2015)
+        dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]    
+        IF(DECinfo%MemDebugPrint)call printBGinfo()
+        IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor tvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
+        call tensor_ainit(tvirtEOS,dimvirt,4,bg=.TRUE.)
+        dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot] 
+        IF(DECinfo%MemDebugPrint)call printBGinfo()
+        IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor gvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
+        call tensor_ainit(gvirtEOS,dimvirt,4,bg=.TRUE.)
+     end if
      IF(DECinfo%MemDebugPrint)call printBGinfo()
      IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor toccEOS(',dimocc(1)*dimocc(2)*dimocc(3)*dimocc(4),')'
      call tensor_ainit(toccEOS,dimocc,4,bg=.TRUE.)
@@ -753,9 +758,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   !  Major Step 5: Generate toccEOS(nvirt,noccEOS,nvirt,noccEOS)
   !=====================================================================================
-  noccOut = noccEOS
-  if (DECinfo%DECNP) noccOut = nocc
-  dimocc = [nvirt,noccOut,nvirt,noccOut]   ! Output order
 
   IF(NBA.GT.0)THEN
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)     

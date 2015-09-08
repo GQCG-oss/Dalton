@@ -9,7 +9,9 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
+#ifdef VAR_ENABLE_TENSORS
   use tensor_interface_module, only: tensor
+#endif
   use fundamental
   !Could someone please rename ri to something less generic. TK!!
   !  private
@@ -807,6 +809,7 @@ module dec_typedef_module
      !> logical that saves whether the tensors are in PDM or dense
      logical :: mem_distributed
 
+#ifdef VAR_ENABLE_TENSORS
      !> Occupied MO coefficients (mu,i)
      type(tensor) :: Co
      !> Virtual MO coefficients (mu,a)
@@ -822,6 +825,7 @@ module dec_typedef_module
      type(tensor) :: oofock
      !> Virt-virt block of Fock matrix in MO basis
      type(tensor) :: vvfock
+#endif
 
      !> Abs overlap information
      real(realk), pointer :: ov_abs_overlap(:,:) => null()

@@ -27,7 +27,9 @@ MODULE matrix_operations_aux
 !   Use matrix_operations_symm_dense
    use matrix_operations_dense
    use matrix_operations_scalapack
+#ifdef VAR_ENABLE_TENSORS
    use matrix_operations_pdmm
+#endif
    use matrix_operations_csr
 !   Use matrix_operations_unres_symm_dense
    use matrix_op_unres_dense
@@ -1312,8 +1314,10 @@ subroutine mat_read_from_disk2(iunit,A)
             call mat_dense_dmul(a,b,transb,alpha,beta,c)
          case(mtype_scalapack)
             call mat_scalapack_dmul(a,b,transb,alpha,beta,c)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_dmul(a,b,transb,alpha,beta,c)
+#endif
          case default
               call lsquit("mat_dmul not implemented for this type of matrix",-1)
          end select
@@ -1345,8 +1349,10 @@ subroutine mat_read_from_disk2(iunit,A)
        !$OMP END PARALLEL DO
     case (mtype_scalapack)
       call mat_scalapack_hmul(alpha,A,B,beta,C)
+#ifdef VAR_ENABLE_TENSORS
     case (mtype_pdmm)
       call mat_pdmm_hmul(alpha,A,B,beta,C)
+#endif
     case default
        call lsquit("mat_hmul not implemented for this type of matrix",-1)
     end select
@@ -1410,8 +1416,10 @@ subroutine mat_read_from_disk2(iunit,A)
        call dger(A%nrow,A%ncol,alpha,x,1,y,1,A%elms,A%nrow)       
 !    case(mtype_scalapack)
 !       call mat_scalapack_dger(alpha,x,y,A)
+#ifdef VAR_ENABLE_TENSORS
     case(mtype_pdmm)
        call mat_pdmm_dger(alpha,x,y,A)
+#endif
     case default
        !FALLBACK 
        call mem_alloc(Afull,A%nrow,A%ncol)

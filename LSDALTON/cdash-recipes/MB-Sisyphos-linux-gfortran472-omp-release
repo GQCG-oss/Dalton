@@ -11,7 +11,7 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=gfortran --cc=gcc --cxx=g++ --omp -DENABLE_DEC=ON -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-release" build
+./setup --fc=gfortran --cc=gcc --cxx=g++ --omp -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="MB-Sisyphos-linux-gfortran472-omp-release" build
 
 cd build
 ctest -D Nightly -L linsca
