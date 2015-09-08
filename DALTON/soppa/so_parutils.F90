@@ -446,8 +446,11 @@ contains
             ! MODEL has allready have been communicated
             !
             call mpi_bcast( info_array(1), 4, my_mpi_integer, 0,     &
-                            mpi_comm_world, ierr)  
-            !
+                            mpi_comm_world, ierr) 
+                         
+            ! Inactive processes do nothing            
+            if ( soppa_comm_active .eq. MPI_COMM_NULL ) cycle
+!
             ! For now decide which routine to call based on
             ! method argument
             !

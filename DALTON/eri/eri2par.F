@@ -1174,8 +1174,6 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
-         ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
-            CALL PAR_RP_ERES(work(1), mwork, mytid )
          ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
             CALL SOPPA_NODEDRIVER(work(1), mwork, iprint )
 #ifdef MOD_CGTO_DIFF_ERI

@@ -257,7 +257,8 @@ C
             DTIME = SECOND()
             IF (HERDIR) THEN
                CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
-            ELSE
+            ELSEIF(INEWTR.EQ.1)THEN
+C Only first cycle, else we leak memory
                KCCFB1 = KEND2
                KINDXB = KCCFB1 + MXPRIM*MXCONT
                KEND2  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
@@ -277,9 +278,6 @@ C
             NTOSYM = NSYM
          ENDIF
 C
-         KENDSV  = KEND2
-         LWORKSV = LWORK2
-C
          ICDEL1 = 0
 C
          DO 210 ISYMD1 = 1,NTOSYM
@@ -297,9 +295,6 @@ C              If direct calculate the integrals.
 C------------------------------------------------
 C
                IF (DIRECT) THEN
-C
-                  KEND2  = KENDSV
-                  LWORK2 = LWORKSV
 C
                   DTIME     = SECOND()
                   IF (HERDIR) THEN
@@ -323,15 +318,16 @@ C
                   LRECNR = ( (NBUFX(0) -1) / IRAT ) + 1
 C
                   KRECNR  = KEND2
-                  KEND2   = KRECNR + LRECNR
-                  LWORK2  = LWORK  - KEND2
+                  KEND2B   = KRECNR + LRECNR
+                  LWORK2B  = LWORK  - KEND2B
 C
-                  CALL SO_MEMMAX ('DC_ERES.2B',LWORK2)
+                  CALL SO_MEMMAX ('DC_ERES.2B',LWORK2B)
                   IF (LWORK2 .LT. 0) 
-     &                CALL STOPIT('DC_ERES.2B',' ',KEND2,LWORK)
+     &                CALL STOPIT('DC_ERES.2B',' ',KEND2B,LWORK)
 C
                ELSE
                   NUMDIS = 1
+                  KEND2B = KEND2
                ENDIF
 C
 C-------------------------------------------------------------------------------------------------
@@ -365,7 +361,7 @@ C---------------------------------------------
 C
                   LXINT  = NDISAO(ISYDIS)
 C
-                  KXINT   = KEND2
+                  KXINT   = KEND2B
                   KEND3   = KXINT + LXINT
                   LWORK3  = LWORK - KEND3
 C

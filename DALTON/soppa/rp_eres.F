@@ -137,7 +137,7 @@ C Should probably use non-blocking collectives, where implemented
 !     &              MPI_COMM_WORLD, IERR)
 !      ELSE
       CALL MPI_BCAST(WORK(KCMO), LCMO, MPI_REAL8, 0,
-     &               MPI_COMM_WORLD, IERR)
+     &               SOPPA_COMM_ACTIVE, IERR)
 
 !      ENDIF
 #endif
@@ -251,7 +251,7 @@ C
 C Rememember that the trial-vectors are contigous in memory         
          LTRTOT = LTR1E + LTR1D 
          CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8, 
-     &                  0, MPI_COMM_WORLD, IERR)
+     &                  0, SOPPA_COMM_ACTIVE, IERR)
 C Note for future adjustment: 
 C It may be worthwile using non-blocking communication here
 C since the next two calls only use the singles vectors.
@@ -291,7 +291,8 @@ C
             DTIME  = SECOND()
             IF (HERDIR) THEN
                CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
-            ELSE
+            ELSEIF(INEWTR.EQ.1)THEN
+C Only first cycle, was leaking memory               
                KCCFB1 = KEND2
                KINDXB = KCCFB1 + MXPRIM*MXCONT
                KEND2  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
@@ -311,9 +312,6 @@ C
             NTOSYM = NSYM
          ENDIF
 C
-         KENDSV  = KEND2
-         LWORKSV = LWORK2
-C
          ICDEL1 = 0
 C
 #ifdef VAR_MPI
@@ -330,7 +328,7 @@ C After first pass, load-balancing has been done
 C Master does the balancing
             write(lupri,*) 'Entering load-balancing'
             call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
-     &                     work(kindxb), work(kendsv), lworksv)
+     &                     work(kindxb), work(kend2), lwork2)
 !            write (luerr,'(10i5)') mynum, AssignedIndices
          ELSE 
 C Slaves receives the scatter, send arguments should be ignored
@@ -384,9 +382,6 @@ C
 C
                IF (DIRECT) THEN
 C
-                  KEND2  = KENDSV
-                  LWORK2 = LWORKSV
-C
                   DTIME  = SECOND()
                   IF (HERDIR) THEN
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
@@ -410,15 +405,16 @@ C
                   LRECNR = ((NBUFX(0) - 1)/IRAT) +1
 C
                   KRECNR  = KEND2
-                  KEND2   = KRECNR + LRECNR
-                  LWORK2  = LWORK  - KEND2
+                  KEND2B   = KRECNR + LRECNR
+                  LWORK2B  = LWORK  - KEND2B
 C
-                  CALL SO_MEMMAX ('RP_ERES.2B',LWORK2)
+                  CALL SO_MEMMAX ('RP_ERES.2B',LWORK2B)
                   IF (LWORK2 .LT. 0) 
-     &               CALL STOPIT('RP_ERES.2B',' ',KEND2,LWORK)
+     &               CALL STOPIT('RP_ERES.2B',' ',KEND2B,LWORK)
 C
                ELSE
                   NUMDIS = 1
+                  KEND2B = KEND2
                ENDIF
 C
 C------------------------------------------------------------------------
@@ -452,7 +448,7 @@ C---------------------------------------------
 C
                   LXINT  = NDISAO(ISYDIS)
 C
-                  KXINT   = KEND2
+                  KXINT   = KEND2B
                   KEND3   = KXINT  + LXINT
                   LWORK3  = LWORK  - KEND3
 C
@@ -627,7 +623,7 @@ C--------------------------------------
             call mpi_reduce( mpi_in_place, work(ktiming), mxcall,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       IERR)
-            ksorted = kendsv
+            ksorted = kend2
             ktmp = (soppa_num_active*maxnumjobs)
             knasjob = ksorted + (ktmp+1)/irat
             kswork  = knasjob + (soppa_num_active+1)/irat
@@ -698,583 +694,6 @@ C
 C
       RETURN
       END SUBROUTINE
-
-
-
-
-
-
-
-
-
-
-#ifdef VAR_MPI
-C  /* Deck PAR_RP_ERES */
-      SUBROUTINE PAR_RP_ERES(WORK, LWORK, MYID)
-C PAR_RP_ERES is a Parallel subroutine for RP_ERES.F
-C It calculates the AO-FOCK matrix in parallel by distributing the 
-C two-electron integrals over several processes and assembling the 
-C partial Fock matrices from every process before returning.
-C
-C WORK is the array where master and every slave assembles the fock matrix 
-C incrementally. This is the 'output' of this subroutine.
-C
-C The load balancing is done by examining the number of distributions associated 
-C with every AO index in the two-electron integrals, before the integrals are 
-C performed. The total load is calculated and the work is spread as evenly as 
-C possible among the master and all slaves. The AO indices with the biggest 
-C associated load of distributions is assigned first; then the smaller indices 
-C are assigned.
-C
-C A large number of common blocks need to be transferred from the master to 
-C the slaves by using the subroutine getbytespan and mpi_bcast. 
-C
-C                       DATA DICTIONARY:
-C WORK intent(inout) temporary storage for several calculations. The master
-C                    returns from par_rp_eres with the correct result stored
-C                    in the work vector and processes the result in rp_eres.
-C LWORK intent(in)   Length of work vector.
-C MYID intent(in)    Process ID in MPI_COMM_WORLD.
-
-         !use mpi
-      use dyn_iadrpk
-      use so_parutils, only: stupid_isao_bcast_routine
-#ifdef VAR_IFORT
-      use IFPORT, ONLY: SLEEPQQ
-#endif
-! Parameter-only include files
-#include "implicit.h"
-
-#include "mpif.h"
-
-#include "priunit.h" 
-#include "maxorb.h" 
-#include "maxash.h"
-#include "mxcent.h"
-#include "iratdef.h"
-#include "iprtyp.h" 
-#include "maxaqn.h" 
-#include "chrnos.h" 
-#include "ibtpar.h"
-!#include "ibtfun.h"
-
-! These include files depend on previous include files
-#include "infpar.h" 
-#include "eritap.h" 
-#include "eribuf.h" 
-
-#include "inftap.h"
-#include "ccorb.h"
-#include "infind.h" 
-#include "blocks.h"
-#include "ccsdinp.h"
-#include "ccsdsym.h"
-#include "ccsdio.h"
-#include "distcl.h"
-#include "cbieri.h" 
-#include "soppinf.h"
-#include "parsoppa.h"
-#include "aobtch.h"
-#include "odclss.h"
-#include "ccom.h" 
-#include "ericom.h" 
-#include "eridst.h" 
-#include "erithr.h"   
-#include "erimem.h"  
-#include "odbtch.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "r12int.h" 
-#include "hertop.h"
-
-C Common blocks from  PICKAO
-#include "cbirea.h"
-#include "erisel.h"
-#include "symsq.h"
-#include "gnrinf.h"
-#include "ccpack.h"
-#include "ccinftap.h"
-
-C     Intent of Dummy arguments
-      integer, intent(in) :: myid, lwork
-      dimension work(lwork)  !intent(inout)
-
-C     Variables for updating the slaves' /common/ blocks.
-      integer  :: bytesize, allocstatus, deallocstatus
-      integer  :: isymtr
-
-C     Pre-sorting load balancing variables
-      logical, save :: forceloadbalance        =.true.
-      logical, save :: forcedynamicloadbalance =.false.
-      logical, save :: slavesupdatetasks       =.false.
-      integer, save :: maxnumjobs
-      logical       :: assignnow, workreceived
-      integer       :: getnumjobs, getindices
-      integer, allocatable, dimension(:), save :: AssignedIndices
-
-C     Timing variables used for load monitoring
-      integer :: color
-      integer :: counti, countf, count_rate
-      real    :: timespent
-      real, dimension(:), allocatable, save :: timings
-
-C     MPI related and load balancing variables
-      integer :: numprocs, request, allocsize
-      integer, dimension(ntot)            :: temparray
-      integer, dimension(MPI_STATUS_SIZE) :: mpistatus
-
-      integer, allocatable, dimension(:,:) :: presortarray !only used by master
-      integer, allocatable, dimension(:,:) :: finalsorted !only used by master
-      real*8,  allocatable, dimension(:)   :: tempfock
-      integer :: workindex
-      
-C     Miscellaneous
-      DIMENSION INDEXA(MXCORB)
-
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
-      call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world, ierr)
-      call er2ini
-C**********************************************************
-C     Update all necessary common blocks
-C     This large sequence of bcasts will only execute
-C     once per call to RP_ERES
-C
-C     The <name> of the common block can be read from the <name>LAST
-C     variable in the getbytespan call.
-C**********************************************************
-      commonblocktransfers: if (forceupdate) then
-
-      call getbytespan(lbuf, eribufLAST, bytesize)
-      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(luaorc, eritapLAST, bytesize)
-      call mpi_bcast(luaorc, bytesize, mpi_byte,0, mpi_comm_world, ierr)
-
-      call getbytespan(nsym, ccorbLAST, bytesize)
-      call mpi_bcast(nsym, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(irow, infindLAST, bytesize)
-      call mpi_bcast(irow, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(centsh, blocksLAST, bytesize)
-      call mpi_bcast(centsh, bytesize, mpi_byte,0, mpi_comm_world, ierr)
-
-      call getbytespan(skip, ccsdgninpLAST, bytesize)
-      call mpi_bcast(skip, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(ccs, ccmodelsLAST, bytesize)
-      call mpi_bcast(ccs, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(etmp, etmpLAST, bytesize)
-      call mpi_bcast(etmp, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(nckijmax, ccsdmaxLAST, bytesize)
-      call mpi_bcast(nckijmax, bytesize, mpi_byte,0,mpi_comm_world,ierr)
-
-      call getbytespan(nt1amx, ccsdsymLAST, bytesize)
-      call mpi_bcast(nt1amx, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(it2del, ccsdioLAST, bytesize)
-      call mpi_bcast(it2del, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(mxcall, distclLAST, bytesize)
-      call mpi_bcast(mxcall, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(runeri, cbieriLAST, bytesize)
-      call mpi_bcast(runeri, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(sotime, soppinfLAST, bytesize)
-      call mpi_bcast(sotime, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(nexci2, soppexcLAST, bytesize)
-      call mpi_bcast(nexci2, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(soorwc, rwinfLAST, bytesize)
-      call mpi_bcast(soorwc, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(ntot, parsoppaLAST, bytesize)
-      call mpi_bcast(ntot, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(expbt, aobtchLAST, bytesize)
-      call mpi_bcast(expbt, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(nitcl, odclssLAST, bytesize)
-      call mpi_bcast(nitcl, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(thrs, ccomLAST, bytesize)
-      call mpi_bcast(thrs, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(gtotyp, ccomcLAST, bytesize)
-      call mpi_bcast(gtotyp, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(scrmab, ericomLAST, bytesize)
-      call mpi_bcast(scrmab, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(ndistr, eridstLAST, bytesize)
-      call mpi_bcast(ndistr, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(thrsh, erithrLAST, bytesize)
-      call mpi_bcast(thrsh, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(memadd, erimemLAST, bytesize)
-      call mpi_bcast(memadd, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(nodbch, odbtchLAST, bytesize)
-      call mpi_bcast(nodbch, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(charge, nucleiLAST, bytesize)
-      call mpi_bcast(charge, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(namn, nuclecLAST, bytesize)
-      call mpi_bcast(namn, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(maxrep, symmtiLAST, bytesize)
-      call mpi_bcast(maxrep, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(fmult, symmtrLAST, bytesize)
-      call mpi_bcast(fmult, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(gamac, comr12LAST, bytesize)
-      call mpi_bcast(gamac, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(mbas1, cmmmulLAST, bytesize)
-      call mpi_bcast(mbas1, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(jtop, hertopLAST, bytesize)
-      call mpi_bcast(jtop, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
-
-      call getbytespan(zcmval, cbireaLAST, bytesize)
-      call mpi_bcast(zcmval, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(mulnam, cbirea_cLAST, bytesize)
-      call mpi_bcast(mulnam, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(nmulbs, cmmbasLAST, bytesize)
-      call mpi_bcast(nmulbs, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(i2bst, symsqLAST, bytesize)
-      call mpi_bcast(i2bst, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call getbytespan(thrpckint, ccpackLAST, bytesize)
-      call mpi_bcast(thrpckint,bytesize,mpi_byte,0,mpi_comm_world, ierr)
-
-      call getbytespan(luiajb, cc_tapLAST, bytesize)
-      call mpi_bcast(luiajb,bytesize,mpi_byte,0,mpi_comm_world, ierr)
-
-      call getbytespan(gradml, gnrinfLAST, bytesize) 
-      call mpi_bcast(gradml, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
-
-      call stupid_isao_bcast_routine()
-
-      ! Common blocks with explicitly set sizes, no need to calculate bytespan
-      call mpi_bcast(basdir,612, mpi_character, 0, mpi_comm_world, ierr)
-      call mpi_bcast(fnvajkl, 10, mpi_character, 0, mpi_comm_world,ierr)
-      call mpi_bcast(vclthr, 24, mpi_byte, 0, mpi_comm_world, ierr)
-
-      ! The slaves need to crate the iadrpk array by 
-      ! calling the module functions rather than with a bcast
-      call mpi_bcast(iadrpk_dim, 1, mpi_integer, 0,mpi_comm_world,ierr) 
-      if (.not. allocated(iadrpk) ) then
-         call get_iadrpk(lupri,nsym,muld2h,nbas,
-     &                   nbast,i2bst,iaodis,iaodpk)
-      endif
-
-      call mpi_bcast(work, kendsv, mpi_real8, 0, mpi_comm_world, ierr)
-
-      forceupdate = .false. ! This avoids redundant updating of common blocks. RP_ERES sets this to true when necessary.
-
-      endif commonblocktransfers
-
-
-C     This data needs to be updated every time PAR_RP_ERES is called 
-      call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)
-      call mpi_bcast(isympar, 1, mpi_integer, 0, mpi_comm_world, ierr)
-      isymtr = copyisymtr 
-      call dzero(work(kfock), lfock)
-      
-
-C**************************************************    
-C     Start load balancing
-C**************************************************    
-
-C   In case there are too many processes compared
-C   to the number of ILLL indices, the surplus processes are
-C   redirected. They will return from the polling barrier when
-C   the master sends a non-blocking logical equal to .true.
-      if (myid.ge.ntot) color = 1
-      if (myid.lt.ntot) color = 0 !these are the ones performing timings, other processes stall in the polling barrier.
-      call mpi_comm_split(mpi_comm_world, color, myid, 
-     &                    soppa_comm_active,ierr)
-      if (myid.ge.ntot) then
-         call pollingbarrier(1)
-         goto  800 !skip to assembly of matrices. 
-      endif
-
-
-C     Start the dynamic load balancing
-      if(forcedynamicloadbalance) then
-
-          forcedynamicloadbalance = .false. ! This is the last time work is redistributed in an AOSOPPA computation.
-          slavesupdatetasks       = .true.  ! Tels the slaves they have to receive work from the master.
-          if (myid.eq.0) then
-             call dynloadbal_parsoppa(timings, allocsize, temparray)
-             AssignedIndices = temparray(1:allocsize)
-          endif
-      endif
-
-C     Start the presorting load balancing.
-      if (forceloadbalance) then
-
-         forceloadbalance        = .false. ! Don't use the pre-sorting load balancing more than once, next time use dynamic instead.
-         forcedynamicloadbalance = .true.  ! Monitor the tasks and re-balance once the actual walltimes are known.
-         slavesupdatetasks       = .true.
-
-         !performs balancing and sends tasks to slaves.
-         if (myid.eq.0) then 
-            call presortloadbal_parsoppa(work,lwork,allocsize,temparray)
-            maxnumjobs = allocsize
-            if (.not. allocated(AssignedIndices) ) then
-               allocate(AssignedIndices(maxnumjobs), stat=allocstatus)
-            endif
-            AssignedIndices = temparray(1:allocsize)
-         endif 
-
-         if (.not. allocated(timings) ) then
-            allocate(timings(ntot) )
-            timings = 0.0
-         endif
-
-      endif !forceloadbalance.
-
-
-C************************************************** 
-C   Slaves receive the indices they have to work with
-C**************************************************
-         if (slavesupdatetasks) then
-         slavesupdatetasks = .false.
-         IF (myid.ne.0) then
-
-C           Get the number of tasks and allocate memory for the indices
-C            call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
-C     &                  mpi_comm_world, getnumjobs, ierr)
-C001         continue
-C            call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
-C            if (assignnow)  then
-            maxnumjobs = ntot - min(nodtot+1,ntot) + 1
-               if (.not. allocated(AssignedIndices) ) then
-                  allocate(AssignedIndices(maxnumjobs),stat=allocstatus)
-                  if(.not.(allocstatus.eq.0) ) then
-                     call quit('Allocation error; AssignedIndices ')
-                  endif
-               endif
-C            else 
-C               goto 001
-C            endif
-
-C           Get the pre-sorted ILLL indices.
-            call mpi_scatter(AssignedIndices, maxnumjobs, mpi_integer, 
-     &                       AssignedIndices, maxnumjobs, mpi_integer,
-     &                       0, soppa_comm_active, ierr)
-C002         continue 
-C            call mpi_test(getindices, workreceived, mpistatus, ierr)
-C            if (workreceived)  then
-C               continue 
-C            else 
-C               goto 002
-C            endif
-
-         ENDIF 
-         endif
-
-
-C *******************************************
-C            Primary parallel loop. 
-C *******************************************
-      doilll: DO 300 workindex=1, maxnumjobs
-         ILLL = AssignedIndices(workindex) 
-         if (ILLL.eq.0) exit
-
-         if (forcedynamicloadbalance) then
-            call system_clock(counti, count_rate)
-         endif
-
-                  if (.not.direct) then
-                     call quit('RPA in parallel must use .DIRECT. ',
-     &                         'integral transformations')
-                  endif
-
-                  KEND2  = KENDSV
-                  LWORK2 = LWORKSV
-                  IF (HERDIR) THEN 
-                    CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
-     &                          IPRINT)
-                  ELSE
-
-
-                     CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
-     &                           WORK(KODCL1),WORK(KODCL2),
-     &                           WORK(KODBC1),WORK(KODBC2),
-     &                           WORK(KRDBC1),WORK(KRDBC2),
-     &                           WORK(KODPP1),WORK(KODPP2),
-     &                           WORK(KRDPP1),WORK(KRDPP2),
-     &                           WORK(KCCFB1),WORK(KINDXB), 
-     &                           WORK(KEND2),LWORK2,IPRINT)
-                  ENDIF
-                  LRECNR = ((NBUFX(0) - 1)/IRAT) + 1 
-                  KRECNR  = KEND2
-                  KEND2   = KRECNR + LRECNR
-                  LWORK2  = LWORK  - KEND2
-
-                  CALL SO_MEMMAX ('RP_ERES.2B',LWORK2)
-                  IF (LWORK2 .LT. 0) 
-     &               CALL STOPIT('RP_ERES.2B',' ',KEND2,LWORK)
-
-C------------------------------------------------------------------------
-C              Loop over number of distributions in disk.
-C------------------------------------------------------------------------
-               idel2loop: DO 310 IDEL2 = 1,NUMDIS
-
-                  IDEL  = INDEXA(IDEL2)
-                  ISYMD = ISAO(IDEL)
-                  ISYDIS = MULD2H(ISYMD,ISYMOP)
-                  IT2DEL(IDEL) = ICDEL1
-                  ICDEL1       = ICDEL1 + NT2BCD(ISYDIS)
-
-C---------------------------------------------
-C                 Work space allocation no. 3.
-C---------------------------------------------
-                  LXINT  = NDISAO(ISYDIS)
-                  KXINT   = KEND2
-                  KEND3   = KXINT  + LXINT
-                  LWORK3  = LWORK  - KEND3
-
-                  CALL SO_MEMMAX ('RP_ERES.3',LWORK3)
-                  IF (LWORK3 .LT. 0) 
-     &               CALL STOPIT('RP_ERES.3',' ',KEND3,LWORK)
-
-C--------------------------------------------
-C                 Read in batch of integrals.
-C--------------------------------------------
-                  CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND3),LWORK3,
-     &                        WORK(KRECNR),DIRECT)
-C---------------------------------------------
-C                 Work space allocation no. 4.
-C---------------------------------------------
-                  LDSRHF = NDSRHF(ISYMD)
-                  KDSRHF  = KEND3
-                  KEND4   = KDSRHF + LDSRHF
-                  LWORK4  = LWORK  - KEND4
-
-                  CALL SO_MEMMAX ('RP_ERES.4',LWORK4)
-                  IF (LWORK4 .LT. 0) 
-     &               CALL STOPIT('RP_ERES.4',' ',KEND4,LWORK)
-C----------------------------------------------
-C                 Calculate the AO-Fock matrix.
-C----------------------------------------------
-                  IF (TRIPLET) THEN
-                     CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
-     &                               WORK(KFOCK),WORK(KEND4),
-     &                               LWORK4,IDEL,ISYMD,ISYMTR)
-                  ELSE
-                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
-     &                              WORK(KFOCK),WORK(KEND4),
-     &                              LWORK4,IDEL,ISYMD,.FALSE.,
-     &                              'Dummy',ISYMTR)
-
-                  END IF
-  310    enddo idel2loop
-
-         if (forcedynamicloadbalance) then
-            call system_clock(countf)
-            timespent =   ( countf-counti )/REAL(count_rate)
-            timings(ILLL) = timespent
-         endif
-
-
-  300 enddo doilll
-
-
-      if (forcedynamicloadbalance ) then
-              !assemble the array with timings 
-              if (myid.eq.0) then
-                 call mpi_reduce(mpi_in_place, timings, ntot, MPI_REAL,
-     &                           MPI_SUM, 0, soppa_comm_active, ierr)
-              else
-                 call mpi_reduce(timings, temparray, ntot, MPI_REAL,
-     &                           MPI_SUM, 0, soppa_comm_active, ierr)
-              endif
-      endif
-
-
-C**************************************************
-C    End of parallel calculation
-C**************************************************
-
-
-C     The master sends a release signal to all 
-C     processes participating in the spinning barrier.
-      if (numprocs.gt.ntot) then
-         if (myid.eq.0) then
-            do i=ntot, (numprocs-1)
-               call mpi_isend(.true., 1, MPI_LOGICAL, i,
-     &         i, mpi_comm_world, request, ierr)
-            enddo
-         endif
-      endif
-800   continue  ! redirection point for slaves from the spinning barrier 
-
-
-C     Assemble the Fock Matrix in the master's work array
-
-      allocate(tempfock(lfock))
-      tempfock = 0.00000
-
-      if  (myid.eq.0) then
-         call mpi_reduce(MPI_IN_PLACE, work(kfock), lfock, MPI_REAL8,
-     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-      else
-         call mpi_reduce(work(kfock), tempfock, lfock, MPI_REAL8,
-     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-      endif
-
-      call mpi_barrier(mpi_comm_world, ierr)
-
-
-      deallocate(tempfock)
-
-      !if (allocated(AssignedIndices)) then
-      !deallocate( AssignedIndices, stat=deallocstatus)
-      !if(.not.(allocstatus.eq.0) ) then
-         !call quit('Deallocation error in PAR_RP_ERES')
-      !endif
-      !endif
-
-
-
-      if (allocated(presortarray)) then
-      deallocate(presortarray, stat=deallocstatus)
-      if(.not.(deallocstatus.eq.0) ) then
-         call quit('Presortarray was not deallocated in PAR_RP_ERES')
-      endif
-      endif
-
-
-      if (allocated(finalsorted)) then
-      deallocate(finalsorted, stat=deallocstatus)
-      if(.not.(deallocstatus.eq.0) ) then
-         call quit('Finalsorted was not deallocated in PAR_RP_ERES')
-      endif
-      endif
-         
-      RETURN
-      END SUBROUTINE
-
-#endif
-!!! end of VAR_MPI 
-
-
-
-
 
 #ifdef VAR_MPI
 C /* deck getbytespan */
@@ -1566,12 +985,7 @@ C
       integer :: numprocs, availloc, targetrow
       integer :: allocstatus, deallocstatus
 
-C      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       numprocs = cols
-C      allocate (sumofwork(2, numprocs) , stat=allocstatus)
-C      if(.not.(allocstatus.eq.0) ) then
-C         call quit('Allocation error in partitionAOindices')
-C      endif
  
       call izero(sorted, (rows*cols) )
       call izero(sumofwork, (2*numprocs) )
@@ -1598,16 +1012,9 @@ C        ADD AO-INDEX TO FIRST AVAILABLE ROW IN THE LAZY SLAVE'S COLUMN
          sorted( targetrow,lazyloc ) = aoindex
       ENDDO
       
-C      deallocate(sumofwork, stat=deallocstatus)
-C      if(.not.(deallocstatus.eq.0) ) then
-C         call quit('Deallocation error in partitionAOindices')
-C      endif
-
       return
 
       END SUBROUTINE
-
-
 
 #endif
 !!! End of VAR_MPI preprocessing flag from subroutine getbytespan
