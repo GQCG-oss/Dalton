@@ -31,9 +31,10 @@ if(MPI_FOUND)
         ${_source}
         MPI_COMPATIBLE
         )
-  # if(NOT MPI_COMPATIBLE)
+   if(NOT MPI_COMPATIBLE)
+      message(" -- WARNING: Your compiler did not pass the compatibility test with the following flags: ${CMAKE_Fortran_FLAGS}")
   #     message(FATAL_ERROR "Your compiler is not MPI compatible")
-  # endif()
+   endif()
 
     add_definitions(-DVAR_MPI)
 
@@ -47,6 +48,7 @@ if(MPI_FOUND)
         message("-- mpi.mod matches current compiler, setting -DUSE_MPI_MOD_F90")
         add_definitions(-DUSE_MPI_MOD_F90)
     else()
+        message("-- WARNING: Your compiler did not pass the MPI match test with the following flags: ${CMAKE_Fortran_FLAGS}")
         message("-- WARNING: mpi.mod compiled with different compiler, will use mpif.h instead")
     endif()
 
@@ -57,6 +59,7 @@ if(MPI_FOUND)
         MPI_ITYPE_MATCHES
         )
     if(NOT MPI_ITYPE_MATCHES)
+        message("-- WARNING: Your compiler did not pass the MPI integer test with the following flags: ${CMAKE_Fortran_FLAGS}")
         if(ENABLE_64BIT_INTEGERS)
             message("-- No 64-bit integer MPI interface found, will use 32-bit integer MPI interface")
             add_definitions(-DVAR_MPI_32BIT_INT)

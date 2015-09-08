@@ -25,6 +25,10 @@ module cc_tools_module
    use dec_typedef_module
    use reorder_frontend_module
    use tensor_interface_module
+   use gpu_interfaces
+!#ifdef VAR_OPENACC
+!   use openacc, only: acc_is_present
+!#endif
 
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
@@ -142,7 +146,6 @@ module cc_tools_module
    end subroutine get_tpl_and_tmi_tensors
 
    subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
-      use, intrinsic:: ISO_C_BINDING
       implicit none
       type(tensor),intent(inout) :: t2 !intent(in)
       type(tensor),intent(inout) :: tpl, tmi !tpl[nor,nvr],tmi[nor,nvr]
@@ -610,9 +613,52 @@ module cc_tools_module
       character(80) :: msg
       real(realk), pointer :: buf(:)
       integer(kind=8) :: nbuf
-      integer :: faleg,laleg,laleg_req
+      integer :: faleg,laleg,laleg_req,i,nerrors
+      integer, parameter :: nids = 15
+#ifdef VAR_OPENACC
+      integer(kind=acc_handle_kind) :: acc_h(nids),transp
+      integer,parameter             :: lsacc_sync    = acc_async_sync
+      integer,parameter             :: lsacc_handlek = acc_handle_kind
+#else
+      integer                       :: acc_h(nids),transp
+      integer,parameter             :: lsacc_sync    = -4
+      integer,parameter             :: lsacc_handlek = 4
+#endif
+      type(c_ptr)                   :: cub_h(nids),dummy47
+      real(realk) :: p10, nul
+      integer(4)  :: stat,curr_id
+      logical :: one
+
+      acc_h = 0
+      cub_h = c_null_ptr
+
+      p10 = 1.0E0_realk
+      nul = 0.0E0_realk
+
+      stat = 0
 
       call time_start_phase(PHASE_WORK)
+
+      if (DECinfo%acc_sync) then
+         acc_h  = lsacc_sync
+         transp = lsacc_sync
+      else
+         do curr_id = 1,nids
+            acc_h(curr_id) = int(curr_id-1,kind=lsacc_handlek)
+         enddo
+         transp = nids
+      endif
+
+#ifdef VAR_CUBLAS
+      do curr_id = 1,nids
+         ! initialize the CUBLAS context
+         stat = cublasCreate_v2(cub_h(curr_id))
+         if(stat/=0)print*,"warning: cublas create failed 1",stat
+         dummy47 = acc_get_cuda_stream(acc_h(curr_id))
+         stat = cublasSetStream_v2(cub_h(curr_id), dummy47)
+         if(stat/=0)print*,"warning: cublas set stream failed 1",stat
+      enddo
+#endif
 
       s0 = wszes(1)
       s2 = wszes(3)
@@ -662,47 +708,127 @@ module cc_tools_module
          tred=la*lg
       endif
 
-      !laleg_req = tred/2+1
-      !laleg_req = 1
-      laleg_req = tred
+      if(DECinfo%hack2)then
+         laleg_req = min(DECinfo%test_len,tred)
+         print *,"Selected requested length of",laleg_req
+      else
+         laleg_req = tred
+      endif
+
 
       select case(s)
       case(4,3)
+
+
+         !$acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr)) create(w0(1:nb*laleg_req*nv)) async(transp)
+
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         curr_id = 0
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
+            
+
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
+
+            curr_id = mod(curr_id,nids)+1
+
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
-            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
+
+            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
+            !$acc& wait(transp) async(acc_h(curr_id)) 
+
+            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
+            call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
+            &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
+
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            call dgemm('t','n',laleg*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*laleg)
+            !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
+            call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
+            &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
+
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
-            call get_I_cged(w0,w2,laleg,nv)
+            call get_I_cged(w0,w2,laleg,nv,acc_h=acc_h(curr_id))
+
+#ifdef VAR_OPENACC
+            !(w3.1):sigma+ [i>= j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
+            call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w3(1+(faleg-1)*nor),nor,&
+            &i8*laleg*nvr,i8*nor*nvr,i8*laleg*nor,acc_h(curr_id),cub_h(curr_id))
+#else
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
-            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,0.0E0_realk,w3(faleg),tred)
+            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
+#endif
+            !$acc end data 
          enddo
+
+         !$acc wait async(transp)
+         !$acc exit data delete(tpl%elm1(1:nor*nvr)) async(transp)
+         !$acc enter data copyin(tmi%elm1(1:nor*nvr)) async(transp)
+
+#ifdef VAR_OPENACC
+         call array_reorder_2d(p10,w3,nor,tred,[2,1],nul,w2)
+         call array_reorder_2d(p10,w2,tred,nor,[1,2],nul,w3)
+#endif
 
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         curr_id = 0
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
+
+            curr_id = mod(curr_id,nids)+1
+
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
-            !(w2):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
+
+            !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
-            !(w0):I- [delta alpha<=gamma c] = (w2):I- [beta delta alpha<=gamma] * Lambda^h[beta c]
-            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
-            !(w2):I- [alpha<=gamma c d] = (w0):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            call dgemm('t','n',laleg*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*laleg)
-            !(w0):I- [alpha<=gamma c<=d] <= (w2):I- [alpha<=gamma c d]
-            call get_I_cged(w0,w2,laleg,nv)
-            !(w3.2):sigma- [alpha<=gamma i<=j] = (w0):I- [alpha<=gamma c>=d] * t- [c>=d i>=j]
-            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+faleg),tred)
+            !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
+
+#ifdef VAR_OPENACC
+            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))&
+            !$acc& wait(transp) async(acc_h(curr_id))
+#endif
+            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
+            call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
+            &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
+
+            !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+            !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
+            call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
+            &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
+
+            !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
+            call get_I_cged(w0,w2,laleg,nv,acc_h=acc_h(curr_id))
+
+            !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
+#ifdef VAR_OPENACC
+            call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tmi%elm1,nvr,w0,laleg,nul,w3(tred*nor+1+(faleg-1)*nor),nor,&
+            &i8*laleg*nvr,i8*nor*nvr,i8*laleg*nor,acc_h(curr_id),cub_h(curr_id))
+#else
+            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+faleg),tred)
+#endif
+            !$acc end data 
+
          enddo
+         !$acc wait
+         !$acc exit data delete(yv(1:nb*nv),tmi%elm1(1:nor*nvr),w0(1:nb*laleg_req*nv))
+
+#ifdef VAR_OPENACC
+         call array_reorder_2d(p10,w3(tred*nor+1:tred*nor+tred*nor),nor,tred,[2,1],nul,w2)
+         call array_reorder_2d(p10,w2,tred,nor,[1,2],nul,w3(tred*nor+1:tred*nor+tred*nor))
+#endif
+
+#ifdef VAR_CUBLAS
+         ! Destroy the CUBLAS context
+         do curr_id = 1,nids
+            stat = cublasDestroy_v2(cub_h(curr_id))
+            if(stat/=0)print*,"warning: cublas destroy failed 1",stat
+         enddo
+#endif
 
       case(2)
 
@@ -1730,47 +1856,72 @@ module cc_tools_module
    !> indices
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_I_cged(Int_out,Int_in,m,nv)
+   subroutine get_I_cged(Int_out,Int_in,m,nv,acc_h)
       implicit none
-      !> integral output with indices reduced to c>=d
-      real(realk),intent(inout)::Int_out(:)
-      !>full integral input m*c*d
-      real(realk),intent(in) :: Int_in(:)
       !> leading dimension m and virtual dimension
       integer,intent(in)::m,nv
-      integer ::d,pos,pos2,a,b,c,cged
+      !> integral output with indices reduced to c>=d
+      real(realk),intent(inout)::Int_out(m*(nv*(nv+1))/2)
+      !>full integral input m*c*d
+      real(realk),intent(in) :: Int_in(m*nv*nv)
+      integer ::d,pos,pos2,a,b,c,cged,dc
       logical :: doit
-#ifdef VAR_OMP
-      integer :: tid,nthr
-      integer, external :: omp_get_thread_num,omp_get_max_threads
-      !    nthr = omp_get_max_threads()
-      !    nthr = min(nthr,nv)
-      !    call omp_set_num_threads(nthr)
+#ifdef VAR_OPENACC
+      integer(kind=acc_handle_kind),intent(in),optional :: acc_h
+      integer(kind=acc_handle_kind) :: ac_
+#ifdef VAR_PGF90
+      logical :: stuff_here
+      stuff_here = acc_is_present(Int_out,m*(nv*(nv+1))/2*8) .and. acc_is_present(Int_in,m*nv*nv*8)
+#else
+      logical, parameter :: stuff_here = .true.
 #endif
-      !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-      !OMP PRIVATE(pos,pos2,d,tid,doit)
-#ifdef VAR_OMP
-      !    tid = omp_get_thread_num()
-#else 
-      !    doit = .true.
+#else
+      integer,intent(in),optional :: acc_h
+      integer :: ac_
+      logical, parameter :: stuff_here = .false.
 #endif
-      !    doit = .true.
-      pos =1
-      do d=1,nv
-#ifdef VAR_OMP
-         !      doit = (mod(d,nthr) == tid)
+      ac_ = 0
+#ifdef VAR_OPENACC
+      ac_ = acc_async_sync
 #endif
-         !      if(doit) then
-         pos2=1+(d-1)*m+(d-1)*nv*m
-         !        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
-         Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
-         !      endif
-         pos=pos+m*(nv-d+1)
-      enddo
-      !OMP END PARALLEL
-#ifdef VAR_OMP
-      !call omp_set_num_threads(omp_get_max_threads())
-#endif
+      if(present(acc_h)) ac_ = acc_h
+
+      if(stuff_here)then
+         !$acc parallel loop present(Int_out,Int_in) default(none) copyin(nv,m) private(pos,pos2,d,dc) async(ac_)
+         do d=1,nv
+
+            !calculate target position in array Int_out
+            pos =1
+            do dc=1,d-1
+               pos=pos+m*(nv-dc+1)
+            enddo
+
+            !calculate origin position in array Int_in
+            pos2=1+(d-1)*m+(d-1)*nv*m
+
+            !do the copy
+            Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+
+         enddo
+         !$acc end parallel loop
+      else
+         do d=1,nv
+
+            !calculate target position in array Int_out
+            pos =1
+            do dc=1,d-1
+               pos=pos+m*(nv-dc+1)
+            enddo
+
+            !calculate origin position in array Int_in
+            pos2=1+(d-1)*m+(d-1)*nv*m
+
+            !do the copy
+            Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+
+         enddo
+      endif
+
    end subroutine get_I_cged
 
    !Even though the following two functions are only needed inside

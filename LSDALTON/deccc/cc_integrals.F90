@@ -2452,7 +2452,7 @@ contains
 
     if( integral%dims(1) /= n1 .or. integral%dims(2) /= n2 .or. &
          & integral%dims(3) /= n3 .or. integral%dims(4) /= n4)then
-       call lsquit("EEROR(get_mo_integral_par)wrong dimensions of the integrals&
+       call lsquit("ERROR(get_mo_integral_par)wrong dimensions of the integrals&
             & or the transformation matrices",-1)
     endif
     bs = get_split_scheme_0(nb)

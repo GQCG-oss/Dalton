@@ -267,6 +267,7 @@ contains
        case('.PT_SINGLE_PREC'); DECinfo%pt_single_prec = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
        case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
+       case('.TEST_LEN'); read(input,*) DECinfo%test_len 
 
        ! DEC CALCULATION 
        ! ===============
