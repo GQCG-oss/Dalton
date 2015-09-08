@@ -505,8 +505,16 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    IF(wakeslaves)THEN
       nbuf1=numnodes
       call mem_alloc(nAuxMPI,nbuf1)
-      call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)      
+      call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)  
+   ELSE
+      nbuf1 = 1
+      call mem_alloc(nAuxMPI,nbuf1)
+      nAuxMPI(1) = nAux
    ENDIF
+#else
+   nbuf1 = 1
+   call mem_alloc(nAuxMPI,nbuf1)
+   nAuxMPI(1) = nAux
 #endif
 
    IF(DECinfo%NaturalLinearScalingF12TermsB1)THEN
@@ -1552,9 +1560,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    ENDIF
 
-   IF(wakeslaves)THEN
-      call mem_dealloc(nAuxMPI)
-   ENDIF
 #endif
 
     E_21 = 0.0E0_realk
@@ -1679,6 +1684,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     endif
     FORCEPRINT = .TRUE.
     CALL LSTIMER('FULL RIMP2F12 ',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
+
+    !> Deallocate
+    call mem_dealloc(nAuxMPI)
 
   end subroutine full_canonical_rimp2_f12
 
