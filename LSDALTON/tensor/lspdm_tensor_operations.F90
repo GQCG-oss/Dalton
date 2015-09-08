@@ -2939,7 +2939,7 @@ module lspdm_tensor_operations_module
      type(tensor),intent(inout) :: C
      type(tensor),intent(in) :: A,B
      !> scaling factor for array C
-     real(tensor_dp),intent(in) :: beta
+     real(tensor_dp)            :: beta
      !> scaling factor for array A and B
      real(tensor_dp),intent(in) :: alpha
      integer :: i,lt
