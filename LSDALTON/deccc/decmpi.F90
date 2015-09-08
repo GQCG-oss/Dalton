@@ -13,12 +13,44 @@ module decmpi_module
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
   use Matrix_module!,only: matrix
+  use background_buffer_module
   use tensor_basic_module
   use tensor_interface_module
+!
   use DEC_settings_mod
   use dec_fragment_utils
   use array4_simple_operations
   use array2_simple_operations
+  use CABS_operations
+
+  private
+#ifdef VAR_MPI
+  public :: mpi_send_recv_fragmentenergy, mpi_send_recv_mp2grad,&
+       & mpi_send_recv_single_fragment, mpi_send_recv_many_fragments,&
+       & mpi_bcast_many_fragments, mpi_communicate_mp2_int_and_amp,&
+       & mpi_communicate_MyFragment, decmpi_bcast_f12_info,&
+       & mpi_dec_fullinfo_master_to_slaves, &
+       & mpi_bcast_fullmolecule, mpicopy_fragment,&
+       & mpicopy_fragmentAOStype,&
+       & buffercopy_PNOSpaceInfo_struct,&
+       & share_E2_with_slaves, mpi_communicate_ccsd_calcdata,&
+       & mpi_communicate_ccsdpt_calcdata, get_mo_ccsd_joblist,&
+       & distribute_mpi_jobs, bcast_dec_fragment_joblist,&
+       & mpicopy_fragment_joblist, dec_half_local_group,&
+       & mpicopy_fragmentdensity, mpicopy_fragmentgradient,&
+       & print_MPI_fragment_statistics,&
+       & mpibcast_dec_settings, mpi_communicate_get_gmo_data,&
+       & mpi_communicate_moccsd_data,&
+       & mpicopy_dec_settings, rpa_residual_communicate_data,&
+       & rpa_fock_communicate_data, &
+       & mpi_dec_fullinfo_master_to_slaves_precursor,&
+       & wake_slaves_for_simple_mo,&
+       & get_slaves_to_simple_par_mp2_res,&
+       & check_job
+#else
+public :: check_job
+#endif
+
 
 contains
  
@@ -670,6 +702,9 @@ contains
     call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12singles,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSV1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%EF12NLSX1,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if global slave
     if(.not. gm) then
@@ -679,14 +714,10 @@ contains
        call mem_alloc(MyMolecule%bas_start,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%bas_end,MyMolecule%nbasis)
        IF(DECINFO%F12)THEN
+          call init_cabs()
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
        ENDIF
-       !IF(DECinfo%F12)THEN
-       !   call mem_alloc(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO)
-       !   call mem_alloc(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
-       !ENDIF
-
        if(.not.MyMolecule%mem_distributed)then
           call tensor_init(MyMolecule%Co,[MyMolecule%nbasis,MyMolecule%nocc],2)
           call tensor_init(MyMolecule%Cv,[MyMolecule%nbasis,MyMolecule%nvirt],2)
@@ -739,11 +770,6 @@ contains
 
     ! Real pointers
     ! -------------
-    !IF(DECinfo%F12)THEN
-    !   call ls_mpibcast(MyMolecule%Ccabs,MyMolecule%nCabsAO,MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
-    !   call ls_mpibcast(MyMolecule%Cri,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
-    !ENDIF
-
     if(MyMolecule%mem_distributed)then
 
        !master get adresses
@@ -2048,6 +2074,7 @@ contains
     real(realk) :: gpuGflops,totgpuflops
     real(realk) :: globalloss, tottime_ideal, slavetime, localuse
     integer :: i, minidx, maxidx,N
+    logical :: Fragoptjobs
 
 
     write(DECinfo%output,*)
@@ -2095,6 +2122,7 @@ contains
     minidx         = 0
     maxidx         = 0
     N              = 0
+    Fragoptjobs    = any(jobs%dofragopt)
 
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
@@ -2116,14 +2144,18 @@ contains
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
-       if(.not. jobs%dofragopt(i)) then
+       if (Fragoptjobs .and. .not. jobs%dofragopt(i)) then
+           write(DECinfo%output,&
+              &'("------------------------------------- Fragment optimization done -------------------------------------")')
+           Fragoptjobs = .false.
+       endif
+
           write(DECinfo%output,'(i7,3i5,2i7,4g11.3,2F7.3,2X,a)')  & 
                &i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
                & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
                & jobs%comm_gl_master_time(i), &
                &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
                &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
-       end if
 
        ! Accumulated Gflops per sec
        tmp = Gflops/jobs%LMtime(i)
@@ -2386,9 +2418,10 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPthr,Master)
     call ls_mpi_buffer(DECitem%SNOOPmaxdiis,Master)
     call ls_mpi_buffer(DECitem%SNOOPdebug,Master)
-    call ls_mpi_buffer(DECitem%SNOOPort,Master)
     call ls_mpi_buffer(DECitem%SNOOPsamespace,Master)
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
+    call ls_mpi_buffer(DECitem%SNOOPrestart,Master)
+    call ls_mpi_buffer(DECitem%SNOOPonesub,Master)
     call ls_mpi_buffer(DECitem%CCexci,Master)
     call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
     call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
@@ -2480,6 +2513,7 @@ contains
     call ls_mpi_buffer(DECitem%ccsolverskip,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
+
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12fragopt,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
@@ -2488,6 +2522,10 @@ contains
     call ls_mpi_buffer(DECitem%F12singlesMaxIter,Master)
     call ls_mpi_buffer(DECitem%F12singlesThr,Master)
     call ls_mpi_buffer(DECitem%F12singlesMaxDIIS,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12Terms,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsB1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsV1,Master)
+    call ls_mpi_buffer(DECitem%NaturalLinearScalingF12TermsX1,Master)
 
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)

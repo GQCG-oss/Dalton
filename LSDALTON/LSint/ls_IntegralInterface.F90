@@ -6784,7 +6784,7 @@ INPUT%PropMaxD = 1
 INPUT%PropMaxM = 1
 INPUT%sphericalEcoeff = .FALSE.
 INPUT%operator = Oper
-INPUT%do_passes = .FALSE. !? THIS SHOULD BE TRUE
+INPUT%do_passes = .TRUE.
 
 IF(Oper .EQ. OVERLAPOperator)THEN
    INPUT%PROPTYPE = 1

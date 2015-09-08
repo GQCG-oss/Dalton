@@ -49,7 +49,7 @@ option(ENABLE_OMP            "Enable OpenMP parallelization"                    
 option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
-option(ENABLE_PELIB          "Enable PE library"                                ON)
+option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        ON)
 option(ENABLE_QFITLIB        "Enable charge fitting library (QFITLIB)"          ON)
 option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                         OFF)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
@@ -75,6 +75,7 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
+option(ENABLE_DEC            "Enable Divide-Expand-Consolidate module"          OFF)
 
 # Gen1Int interface, OpenRSP and TDRSP needs QcMatrix library
 # Gao: please leave this comment here, and I am going to fix it after repo split

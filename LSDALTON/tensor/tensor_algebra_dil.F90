@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/08/16 (started 2014/09/01).
+!REVISION: 2015/08/31 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -1392,27 +1392,40 @@
           endif
  !Pinned malloc:
          case(DIL_ALLOC_PINNED)
-          val=0E0_tensor_dp; csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
-          !`Write (call C wrapper for cudaMallocHost)
-          call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
- !MPI malloc:
-         case(DIL_ALLOC_MPI)
-          caddr=C_NULL_PTR
-          val=0E0_tensor_dp; mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND)
-          call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,mpi_err)
-          if(mpi_err.eq.0) then
+          val=0E0_tensor_dp
+          if(nelems*sizeof(val).le.huge(csize)) then
+           csize=int(nelems*sizeof(val),C_SIZE_T); caddr=C_NULL_PTR
+           !`Write (call C wrapper for cudaMallocHost)
            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
           else
-           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): MPI memory allocation failed: ",i11)')&
-           &mpi_err
-           ierr=3
+           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): Wrong CUDA memory '//&
+            &'allocation interface: Integer size mismatch: ",i2,1x,i2)') C_SIZE_T,INTL
+           ierr=2
+          endif
+ !MPI malloc:
+         case(DIL_ALLOC_MPI)
+          val=0E0_tensor_dp
+          if(nelems*sizeof(val).le.huge(mpi_size)) then
+           mpi_size=int(nelems*sizeof(val),MPI_ADDRESS_KIND); caddr=C_NULL_PTR
+           call MPI_ALLOC_MEM(mpi_size,MPI_INFO_NULL,caddr,mpi_err)
+           if(mpi_err.eq.0) then
+            call c_f_pointer(caddr,fptr,[nelems]); arr(bs:)=>fptr; nullify(fptr)
+           else
+            if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): MPI memory allocation failed: ",i11)')&
+            &mpi_err
+            ierr=3
+           endif
+          else
+           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): Wrong MPI memory '//&
+            &'allocation interface: Integer size mismatch: ",i2,1x,i2)') MPI_ADDRESS_KIND,INTL
+           ierr=4
           endif
          case default
           if(VERBOSE) write(CONS_OUT,'("#ERROR(tensor_algebra_dil::cpu_ptr_alloc_r): invalid allocation attributes: ",i11)') flags
-          ierr=4
+          ierr=5
          end select
         else
-         ierr=5
+         ierr=6
         endif
         return
         end subroutine cpu_ptr_alloc_r
@@ -1677,7 +1690,7 @@
         return
         end subroutine merge_sort_real8
 !---------------------------------------------------
-	subroutine multord_i(n,nl,mov,ip1,iv,v,ierr) !SERIAL
+        subroutine multord_i(n,nl,mov,ip1,iv,v,ierr) !SERIAL
 !My linear-scaling ascending-order sort for key-value pairs where
 !the key is an integer multi-index and the value is an integer.
 !Array <ip1(1:n)> contains key index priorities for sorting and
@@ -3366,10 +3379,12 @@
          tcvol=1_INTL
          do i=1,nl !contracted + left dims
           tcvol=tcvol*tcontr%contr_spec%ldims(i)
+          if(tcvol.lt.0) then; ierr=5; return; endif !integer overflow
          enddo
          do i=1,nr !right dims
           if(tcontr%contr_spec%rprmn(i).gt.tcontr%contr_spec%ndims_contr) then
            tcvol=tcvol*tcontr%contr_spec%rdims(i)
+           if(tcvol.lt.0) then; ierr=6; return; endif !integer overflow
           endif
          enddo
 !Collect unique tensor contraction dimensions:
@@ -3383,16 +3398,16 @@
             if(associated(tcontr%left_arg%tens_distr_p)) then
              tct(j)=tcontr%left_arg%tens_distr_p%tdim(i); tiled=.true.
             else
-             ierr=5; return
+             ierr=7; return
             endif
            endif
            if(tcontr%right_arg%store_type.eq.'d'.or.tcontr%right_arg%store_type.eq.'D') then
             if(associated(tcontr%right_arg%tens_distr_p)) then
              k=tcontr%right_arg%tens_distr_p%tdim(rn2o(j))
-             if(tiled.and.k.ne.tct(j)) then; ierr=6; return; endif !trap: corresponding dimensions have different tiling
+             if(tiled.and.k.ne.tct(j)) then; ierr=8; return; endif !trap: corresponding dimensions have different tiling
              tct(j)=k; tiled=.true.
             else
-             ierr=7; return
+             ierr=9; return
             endif
            endif
           else !left position
@@ -3400,16 +3415,16 @@
             if(associated(tcontr%left_arg%tens_distr_p)) then
              tct(j)=tcontr%left_arg%tens_distr_p%tdim(i); tiled=.true.
             else
-             ierr=8; return
+             ierr=10; return
             endif
            endif
            if(tcontr%dest_arg%store_type.eq.'d'.or.tcontr%dest_arg%store_type.eq.'D') then
             if(associated(tcontr%dest_arg%tens_distr_p)) then
              k=tcontr%dest_arg%tens_distr_p%tdim(dn2o(j-tcontr%contr_spec%ndims_contr))
-             if(tiled.and.k.ne.tct(j)) then; ierr=9; return; endif !trap: corresponding dimensions have different tiling
+             if(tiled.and.k.ne.tct(j)) then; ierr=11; return; endif !trap: corresponding dimensions have different tiling
              tct(j)=k; tiled=.true.
             else
-             ierr=10; return
+             ierr=12; return
             endif
            endif
           endif
@@ -3425,16 +3440,16 @@
             if(associated(tcontr%right_arg%tens_distr_p)) then
              tct(nl+j)=tcontr%right_arg%tens_distr_p%tdim(i); tiled=.true.
             else
-             ierr=11; return
+             ierr=13; return
             endif
            endif
            if(tcontr%dest_arg%store_type.eq.'d'.or.tcontr%dest_arg%store_type.eq.'D') then
             if(associated(tcontr%dest_arg%tens_distr_p)) then
              k=tcontr%dest_arg%tens_distr_p%tdim(dn2o(tcontr%contr_spec%ndims_left+j))
-             if(tiled.and.k.ne.tct(nl+j)) then; ierr=12; return; endif !trap: corresponding dimensions have different tiling
+             if(tiled.and.k.ne.tct(nl+j)) then; ierr=14; return; endif !trap: corresponding dimensions have different tiling
              tct(nl+j)=k; tiled=.true.
             else
-             ierr=13; return
+             ierr=15; return
             endif
            endif
           endif
@@ -3462,7 +3477,7 @@
           n=impis !all processes are active for now
          endif
          if(impir.lt.n) then !this MPI process will have work to do
-          call dil_divide_space_int(3_INTD,mdim,sbvol,mseg,i); if(i.ne.0) then; ierr=14; return; endif
+          call dil_divide_space_int(3_INTD,mdim,sbvol,mseg,i); if(i.ne.0) then; ierr=16; return; endif
           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))')&
           &impir,mseg(1:3)
 !Divide the space encapsulated in each matricized dimension:
@@ -3470,19 +3485,19 @@
           k=tcontr%contr_spec%ndims_contr
           if(k.gt.0) then
            call dil_divide_space_int(k,tcc(1:k),mseg(1),tcs(1:k),i,tct(1:k))
-           if(i.ne.0) then; ierr=15; return; endif
+           if(i.ne.0) then; ierr=17; return; endif
           endif
  !Left:
           j=tcontr%contr_spec%ndims_left
           if(j.gt.0) then
            call dil_divide_space_int(j,tcc(k+1:k+j),mseg(2),tcs(k+1:k+j),i,tct(k+1:k+j))
-           if(i.ne.0) then; ierr=16; return; endif
+           if(i.ne.0) then; ierr=18; return; endif
           endif
  !Right:
           j=tcontr%contr_spec%ndims_right
           if(j.gt.0) then
            call dil_divide_space_int(j,tcc(nl+1:nl+j),mseg(3),tcs(nl+1:nl+j),i,tct(nl+1:nl+j))
-           if(i.ne.0) then; ierr=17; return; endif
+           if(i.ne.0) then; ierr=19; return; endif
           endif
           sbvol=1_INTL; do i=1,ni; sbvol=sbvol*tcs(i); enddo !subblock volume
           npieces=1_INTL; do i=1,ni; npieces=npieces*((tcc(i)-1_INTD)/tcs(i)+1_INTD); enddo !number of work pieces
@@ -3528,7 +3543,7 @@
            if(l.gt.5) then !trap
             if(VERBOSE)&
             &write(CONS_OUT,'("#ERROR(dil_tens_contr_distribute)[",i5,"]: Unable to properly increase the subblock size!")') impir
-            ierr=18; return
+            ierr=20; return
            endif
            trn(0:ni)=(/+1_INTD,(i,i=1_INTD,ni)/)
            do i=1,ni; key(i)=(tcs(i)-1_INTD)/tct(i)+1_INTD; enddo !number of tiling segments per work segment
@@ -3555,8 +3570,8 @@
           &impir,sbvol
           if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: adjusted work pieces = ",i12)')&
           &impir,npieces
-          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: work starving ratio (>=1) = ",F10.4)')&
-          &impir,dble(n)/dble(npieces)
+          if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: work starving = ",F10.4)')&
+          &impir,(dble(n)/dble(npieces)-1d0)
 !Distribute the work subspaces among MPI processes:
  !Compute the starting point in the tensor contraction space for each MPI process:
           do i=1,ni; trn(i)=(tcc(i)-1_INTD)/tcs(i)+1_INTD; enddo !number of work segments per dimension
@@ -3600,12 +3615,14 @@
             k=impir/trn(ni) !part number assigned to this MPI process
             if(k.le.1) then !2-part splitting at most
              m=2 !force 2-part splitting
-             tiled=.false.
+             tiled=.false. !used as a flag now (has nothing to do with tiling)
    !Try to split a right dimension into two parts:
              do i=1,tcontr%contr_spec%ndims_right
               j=rn2o(tcontr%contr_spec%ndims_contr+i)
-              if(tcontr%contr_spec%rdims(j).ge.tct(nl+i)*2) then
-               l=tcontr%contr_spec%rdims(j)/2_INTD; l=l-mod(l,tct(nl+i))
+!             if(tcontr%contr_spec%rdims(j).ge.tct(nl+i)*2) then !`remove
+!              l=tcontr%contr_spec%rdims(j)/2_INTD; l=l-mod(l,tct(nl+i)) !`remove
+              if(tcontr%contr_spec%rdims(j).gt.tct(nl+i)) then
+               l=max(tcontr%contr_spec%rdims(j)/2_INTD,tct(nl+i)); l=l-mod(l,tct(nl+i))
                if(k.eq.0) then
                 tcontr%contr_spec%rdims(j)=l
                elseif(k.eq.1) then
@@ -3622,8 +3639,10 @@
              if(.not.tiled) then
               do i=1,nl
                j=ln2o(i)
-               if(tcontr%contr_spec%ldims(j).ge.tct(i)*2) then
-                l=tcontr%contr_spec%ldims(j)/2_INTD; l=l-mod(l,tct(i))
+!              if(tcontr%contr_spec%ldims(j).ge.tct(i)*2) then !`remove
+!               l=tcontr%contr_spec%ldims(j)/2_INTD; l=l-mod(l,tct(i)) !`remove
+               if(tcontr%contr_spec%ldims(j).gt.tct(i)) then
+                l=max(tcontr%contr_spec%ldims(j)/2_INTD,tct(i)); l=l-mod(l,tct(i))
                 if(k.eq.0) then
                  tcontr%contr_spec%ldims(j)=l
                 elseif(k.eq.1) then
@@ -3642,6 +3661,14 @@
                 tiled=.true.; exit
                endif
               enddo
+              if(.not.tiled) then
+               if(k.eq.1) then !second pretending MPI process got nothing because the work piece cannot be split
+                tcontr%contr_spec%ddims(1:nd)=0; tcontr%contr_spec%ldims(1:nl)=0; tcontr%contr_spec%rdims(1:nr)=0
+                ierr=DIL_NO_WORK !flag: NO WORK for this MPI process (#impir)
+                if(DIL_DEBUG) write(CONS_OUT,'(1x,"#DEBUG(dil_tens_contr_distribute) [",i5,"]: 3d subblock dims:",3(1x,i7))')&
+                &impir,0,0,0
+               endif
+              endif
              endif
             else
              tcontr%contr_spec%ddims(1:nd)=0; tcontr%contr_spec%ldims(1:nl)=0; tcontr%contr_spec%rdims(1:nr)=0
@@ -3653,7 +3680,7 @@
           else
            if(VERBOSE) write(CONS_OUT,'(1x,"#ERROR(dil_tens_contr_distribute) [",i5,"]: Work pieces number mismatch:",3(1x,i12))')&
            &impir,n,trn(ni),npieces
-           ierr=19; return
+           ierr=21; return
           endif
          else !this MPI process will have no work
           tcontr%contr_spec%ddims(1:nd)=0; tcontr%contr_spec%ldims(1:nl)=0; tcontr%contr_spec%rdims(1:nr)=0
@@ -3662,7 +3689,7 @@
           &impir,0,0,0
          endif
         else
-         ierr=20
+         ierr=22
         endif
         tm=thread_wtime(tmb)
         if(DIL_DEBUG) write(CONS_OUT,'("#DEBUG(dil_tens_contr_distribute) [",i5,"]: Exited with status ",i9," ( ",F10.4," s)")')&
@@ -4059,7 +4086,7 @@
 !-----------------------------------------------------
         logical, parameter:: NO_CHECK=.false.         !argument check
         logical, parameter:: PREP_AND_COMM=.false.    !communication/tensor_preparation overlap
-        logical, parameter:: ARGS_REUSE=.false.       !argument reuse in tensor contractions
+        logical, parameter:: ARGS_REUSE=.true.        !argument reuse in tensor contractions
         logical, parameter:: TASK_RESHUFFLE=.false.   !task reshuffling (to reduce the number of MPI collisions)
         real(8), parameter:: SCALE_FMA=2d0            !multiplication + addition are considered as two Flops w/ or w/o FMA
 !-----------------------------------------
@@ -5541,19 +5568,21 @@
         if(present(ierr)) ierr=errc
         return
         end subroutine dil_array_print
-!---------------------------------------------------
-        subroutine dil_tensor_print(tens,tname,ierr) !MPI
-!This subroutine prints all tiles of a distributed tensor.
+!-----------------------------------------------------------
+        subroutine dil_tensor_print(tens,tname,ierr,min_val) !MPI
+!This subroutine prints a distributed tensor.
         implicit none
         type(tensor), intent(in):: tens               !in: distributed tensor
         character(*), intent(in):: tname              !in: tensor name
         integer(INTD), intent(inout), optional:: ierr !out: error code (0:success)
+        real(8), intent(in), optional:: min_val       !in: lower bound for the absolute value to be printed
         integer(INTD):: i,j,k,l,fh,errc
         integer:: mlndx(1:MAX_TENSOR_RANK),signa(1:MAX_TENSOR_RANK)
         integer(INTL):: vol,l0,l1,base(1:MAX_TENSOR_RANK)
         character(128):: fname
+        real(8):: mval
 
-        errc=0
+        errc=0; if(present(min_val)) then; mval=min_val; else; mval=0d0; endif
         call tensor_mpi_barrier(tensor_work_comm) !complete all outstanding communications
         fh=DIL_TMP_FILE2
         if(tens%mode.gt.0) then
@@ -5566,8 +5595,10 @@
            do j=1,tens%mode; call int2str(signa(j),fname(l+1:),k); l=l+k+1; fname(l:l)='.'; enddo
            open(fh,file=fname(1:l)//'dat',form='FORMATTED',status='unknown')
            do l0=1,vol
-            l1=l0-1; do k=tens%mode,1,-1; mlndx(k)=l1/base(k)+IND_NUM_START; l1=mod(l1,base(k)); enddo
-            write(fh,'(D22.13,3x,16(1x,i4))') tens%ti(i)%t(l0),mlndx(1:tens%mode)
+            if(abs(tens%ti(i)%t(l0)).ge.mval) then
+             l1=l0-1; do k=tens%mode,1,-1; mlndx(k)=l1/base(k)+IND_NUM_START; l1=mod(l1,base(k)); enddo
+             write(fh,'(D22.13,3x,16(1x,i4))') tens%ti(i)%t(l0),mlndx(1:tens%mode)
+            endif
            enddo
            close(fh)
           else
@@ -6023,7 +6054,11 @@
          m=0; l=l+1 !next local tile
         enddo tloop
         if(ierr.eq.0) then; call proc_clean(0_INTD); else; call proc_clean(11_INTD); return; endif
+#ifdef VAR_HAVE_MPI3
         call MPI_WIN_SYNC(dtens%wi(1),errc) !`This will only work with a single MPI window per tensor (alloc_in_dummy=.true.)
+#else
+        call tensor_status_quit("ERROR(dil_distr_tens_insert_sym2): no MPI3",383)
+#endif
 !        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_distr_tens_insert_sym2): Exited process ",i7)') impir !debug
         return
 
@@ -6180,7 +6215,11 @@
          endif
         enddo tloop !next (a,b) pair from the sorted list
         if(ierr.eq.0) then; call proc_clean(0_INTD); else; call proc_clean(9_INTD); return; endif
+#ifdef VAR_HAVE_MPI3
         call MPI_WIN_SYNC(dtens%wi(1),errc) !`This will only work with a single MPI window per tensor (alloc_in_dummy=.true.)
+#else
+        call tensor_status_quit("ERROR(dil_update_abij_with_abc): no MPI3",383)
+#endif
 !        if(DIL_DEBUG) write(*,'("#DEBUG(DIL::dil_update_abij_with_abc): Exited process ",i7)') impir !debug
         return
 

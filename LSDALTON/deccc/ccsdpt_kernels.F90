@@ -17,6 +17,7 @@ module ccsdpt_kernels_module
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use reorder_frontend_module
+  use background_buffer_module
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -36,13 +37,15 @@ module ccsdpt_kernels_module
   use crop_tools_module
   use cc_tools_module
   use dec_fragment_utils
-  
+
 #ifdef MOD_UNRELEASED
   public :: ijk_loop_par
   public :: ijk_loop_ser
   public :: abc_loop_par
   public :: abc_loop_ser
 #endif
+
+  private
 
 contains
 
@@ -152,6 +155,7 @@ contains
     full_no_frags = .false.
     use_bg_buf    = mem_is_background_buf_init()
     dynamic_load  = DECinfo%dyn_load
+    dynamic_load  = .false.
     plus_one      = 1
 
     if (present(e4) .and. present(e5)) full_no_frags = .true.

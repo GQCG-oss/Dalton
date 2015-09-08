@@ -27,6 +27,8 @@ module ccsdpt_dec_module
   public :: ccsdpt_driver_abc_case3
 #endif
 
+  private
+
 contains
 
 #ifdef MOD_UNRELEASED
@@ -68,12 +70,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
@@ -222,12 +227,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
@@ -378,12 +386,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
@@ -535,12 +546,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
@@ -698,12 +712,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
@@ -983,12 +1000,15 @@ contains
 #else
     integer :: async_idx(num_idxs), handle
 #endif
+    type(c_ptr), target :: handle_cptr
     type(c_ptr) :: cublas_handle
 
     handle = async_idx(5)
 
 #ifdef VAR_CUBLAS
-    stat = acc_set_cuda_stream(handle,cublas_handle)
+!    stat = acc_set_cuda_stream(handle,cublas_handle)
+    handle_cptr = acc_get_cuda_stream(handle)
+    stat = cublasSetStream_v2 ( cublas_handle, handle_cptr )
 #endif
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,

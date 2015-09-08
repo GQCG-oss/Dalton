@@ -23,7 +23,7 @@ module mp2_gradient_module
   use dec_typedef_module
   use IntegralInterfaceMOD!,only: ii_get_twoelectron_gradient, ii_get_reorthonormalization, &
 !       & ii_get_oneelectron_gradient, ii_get_nn_gradient
-
+  use tensor_interface_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************

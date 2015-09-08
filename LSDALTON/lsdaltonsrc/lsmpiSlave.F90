@@ -98,7 +98,9 @@ subroutine lsmpi_slave(comm)
    use lsmpi_type
    use lsmpi_test
    use integralinterfaceMod
+#ifdef VAR_DEC
    use dec_driver_slave_module
+#endif
    use tensor_interface_module
 #ifdef VAR_SCALAPACK  
    use matrix_operations_scalapack
@@ -117,7 +119,6 @@ subroutine lsmpi_slave(comm)
       call time_start_phase(PHASE_IDLE)
       call ls_mpibcast(job,infpar%master,comm)
       call time_start_phase(PHASE_WORK)
-
 
       select case(job)
       case(MATRIXTY);
@@ -161,6 +162,7 @@ subroutine lsmpi_slave(comm)
       case(IISCREENFREE);
          call II_screenfree(comm)
          ! DEC MP2 integrals and amplitudes
+#ifdef VAR_DEC
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
       case(RIMP2INAMP);
@@ -169,6 +171,8 @@ subroutine lsmpi_slave(comm)
          call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
+      case(RIMP2F12FULL);         
+         call full_canonical_rimp2f12_slave
       case(LSTHCRIMP2FULL);
 !         call full_canonical_ls_thc_rimp2_slave
       case(CANONMP2FULL);
@@ -197,11 +201,14 @@ subroutine lsmpi_slave(comm)
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
+#endif
       case(GROUPINIT);
          call init_mpi_groups_slave
          ! DEC driver - main loop
+#ifdef VAR_DEC
       case(DECDRIVER);
          call main_fragment_driver_slave
+#endif
       case(DEFAULTGROUPS);
          call lsmpi_default_mpi_group
 #ifdef VAR_SCALAPACK

@@ -16,6 +16,9 @@ logical  :: CMO_RI_save_created
 TYPE(Matrix) :: CMO_RI_save
 logical  :: Save_activated_cabs
 logical  :: Save_activated_ri
+private
+public :: determine_CABS_nbast, init_cabs, free_cabs, &
+     & build_CABS_MO, build_RI_MO, init_ri
 CONTAINS
   subroutine determine_CABS_nbast(nbast_cabs,nnull,SETTING,lupri)
     implicit none
@@ -85,8 +88,10 @@ CONTAINS
 #endif
     IERR=0
     IF(CMO_CABS_save_created)THEN
+       print*,'Assign CMO_cabs from saved matrix'
        call mat_assign(CMO_cabs,CMO_CABS_save)
     ELSE
+       print*,'Calculate CMO_cabs. Hopefully this is only done once'
        ODSCREEN = SETTING%SCHEME%OD_SCREEN
        SETTING%SCHEME%OD_SCREEN = .FALSE.
        luerr = 6
@@ -317,8 +322,10 @@ CONTAINS
     integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I
     logical     :: doMPI
     IF(CMO_RI_save_created)THEN
+       print*,'Assign CMO_RI from saved matrix'
        call mat_assign(CMO_RI,CMO_RI_save)
     ELSE
+       print*,'Calculate CMO_RI. Hopefully this is only done once'
        luerr = 6
        CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
        CALL mat_init(S_cabs,nbast_cabs,nbast_cabs)

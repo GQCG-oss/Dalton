@@ -56,26 +56,26 @@ f.add(from_string = 'Magnetizabilities',
 
 f.add(from_string = 'Total magnetizability tensor',
       num_lines = 9,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 2.0e-5)
 
 f.add(from_string = 'Diamagnetic magnetizability tensor',
       num_lines = 9,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 2.0e-5)
 
 f.add(from_string = 'Paramagnetic magnetizability tensor',
       num_lines = 9,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 2.0e-5)
 
 f.add(from_string = 'Shielding tensors in symmetry coordinates',
       num_lines = 24,
-      abs_tolerance = 1.0e-3)
+      rel_tolerance = 2.0e-5)
 
 f.add(from_string = 'Chemical shielding for ',
       num_lines = 16,
-      abs_tolerance = 1.0e-3)
+      rel_tolerance = 2.0e-5)
 f.add(from_string = 'Total shielding tensor',
       num_lines = 11,
-      abs_tolerance = 1.0e-3)
+      rel_tolerance = 2.0e-5)
 
 
 f.add(string = 'Diamagnetic contribution:',

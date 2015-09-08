@@ -22,6 +22,7 @@ module ccsd_module
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
 !       & ii_get_fock_mat_full
   use II_XC_interfaceModule
+  use background_buffer_module
   use IchorErimoduleHost
 #ifdef VAR_MPI
   use infpar_module
@@ -30,6 +31,7 @@ module ccsd_module
 
   use lsparameters!, only: AORdefault
   use tensor_interface_module
+  use reorder_frontend_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -1057,6 +1059,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call dil_debug_to_file_start()
         write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)')&
          &infpar%lg_mynum,infpar%mynum,MemFree
+        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",4(1x,i9))')&
+         &infpar%lg_mynum,infpar%mynum,os,vs,nors,nvrs
      endif
 #endif
 #endif
@@ -1423,16 +1427,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !`DIL: w0 size must be reduced in Scheme 1
 
      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !`DIL: w1 size must be reduced in Scheme 1
 
      w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !`DIL: w2 size must be reduced in Scheme 1
 
      w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
+
+
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+     if(DIL_DEBUG) then !`DIL: remove
+        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"]: W_sizes:",4(1x,i11),2(1x,i4))') infpar%lg_mynum,infpar%mynum,&
+        &w0size,w1size,w2size,w3size,MaxActualDimAlpha,MaxActualDimGamma
+     endif
+#endif
+#endif
 
      !If the buffer needs to be changed, it is here, since there is not pointer
      !associated at the bg buffer at this point
@@ -1457,7 +1471,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         case(1)
            locally_stored_tiles = locally_stored_tiles * 3
            locally_stored_v2o2  = 0
-           !``DIL: I can also use some small BG buffer
+           !``DIL: I can also use some small BG buffer for tensor contractions (~1GB)
         case default
            call lsquit("ERROR(ccsd_residual_integral_driven): bg buffering only imlemented for schemes 4-1",-1)
         end select
@@ -1518,7 +1532,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
 
-        if(scheme==1)then
+        if(scheme==1)then !`DIL: segment the last dimension of o2ilej as well
            call tensor_ainit(o2ilej, [nv,nv,nor], 3, local=local, atype='TDAR', tdims=[vs,vs,nor], bg=use_bg_buf)
            call tensor_zero(o2ilej)
         endif
@@ -2173,12 +2187,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !and the difference between first element of alpha batch and last element
               !of gamma batch
 #ifdef DIL_ACTIVE
-              scheme=1 !`DIL: remove
+              scheme=sch_sym !`DIL: remove
 #endif
               if(scheme /= 1) then
                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
                     &xo,yo,xv,yv,omega2,sio4,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
-                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
+                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk)
               else
 #ifdef DIL_ACTIVE
                  call get_a22_and_prepb22_terms_exd(w0%d,w1%d,w2%d,w3%d,tpl,tmi,no,nv,nb,fa,fg,la,lg,& !`DIL: w0,w1,w2,w3 in use
@@ -2396,10 +2410,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
-     write(*,'("#DEBUG(DIL)[",i6,"]: Alpha-Gamma loop is done.")') infpar%mynum !`DIL: remove
+!    write(*,'("#DEBUG(DIL)[",i6,"]: Alpha-Gamma loop is done.")') infpar%mynum !`DIL: remove
      if(DIL_DEBUG) then
       write(DIL_CONS_OUT,'("#DEBUG(DIL)[",i6,"]: Alpha-Gamma loop is done.")') infpar%mynum !`DIL: remove
      endif
+     flush(DIL_CONS_OUT)
 #endif
 #endif
 
@@ -2493,6 +2508,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      call lsmpi_barrier(infpar%lg_comm)
      !!!!!!!!!!!!!!!!!!!!!!!!!DO NOT TOUCH THIS BARRIER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
      call tensor_free(tmi)
      call tensor_free(tpl)
@@ -2929,7 +2945,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! Reallocate 1 temporary array
      maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
      if( use_bg_buf )then
-        call mem_pseudo_alloc(w1,maxsize64) !``DIL: Large array!!!
+        call mem_pseudo_alloc(w1,maxsize64) !``DIL: Large array, not used in Scheme 1!!!
      else
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
@@ -3139,6 +3155,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
+     flush(DIL_CONS_OUT)
      if(DIL_DEBUG) call dil_debug_to_file_finish() !`DIL
 #endif
 #endif
@@ -5706,6 +5723,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            locally_stored_tiles = locally_stored_tiles * 2
            locally_stored_v2o2  = locally_stored_v2o2  * 1
         case(2)
+           locally_stored_tiles = locally_stored_tiles * 3
+           locally_stored_v2o2  = 0
+        case(1)
            locally_stored_tiles = locally_stored_tiles * 3
            locally_stored_v2o2  = 0
         case(0)
@@ -8369,7 +8389,7 @@ subroutine ccsd_data_preparation()
   use dec_typedef_module
   use typedeftype,only:lsitem
   use infpar_module
-  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,MPI_COMM_NULL,&
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast,LSMPIBROADCAST,&
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free

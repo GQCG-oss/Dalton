@@ -9,48 +9,46 @@ module rimp2_module
   use lsmpi_type
 #endif
   use precision
-  use lstiming!, only: lstimer
+  use lstiming
   use lowdin_module
-  use screen_mod!, only: DECscreenITEM
+  use screen_mod
   use dec_typedef_module
-  use typedeftype!, only: Lsitem,lssetting
-  use BUILDAOBATCH!,only:build_batchesofaos,determine_maxbatchorbitalsize,&
- !      & determine_MaxOrbitals
-  use typedef!, only: typedef_free_setting,copy_setting
+  use typedeftype
+  use BUILDAOBATCH
+  use typedef
+  use molecule_module
   use memory_handling
-  use screen_mod!,only: free_decscreen, DECSCREENITEM
+  use screen_mod
   use lsparameters
-  use IntegralInterfaceMod!, only: II_getBatchOrbitalInfo
-  use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
-!       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
+  use IntegralInterfaceMod
+  use IntegralInterfaceDEC
   use IntegralInterfaceModuleDF
   use IchorErimoduleHost
+  use background_buffer_module
+  use tensor_interface_module
+  use reorder_frontend_module
+  use papi_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use cc_tools_module
 #ifdef VAR_MPI
-      use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
+  use decmpi_module 
 #endif
   use dec_workarounds_module
-
-  use dec_fragment_utils!,only: calculate_fragment_memory, &
-!       & dec_simple_dgemm_update,start_flop_counter,&
-!       & end_flop_counter, dec_simple_dgemm, mypointer_init, &
-!       & get_currently_available_memory, atomic_fragment_free
-  use array2_simple_operations!, only: array2_free, array2_extract_EOS, &
-!       & get_mp2_integral_transformation_matrices, get_mp2_integral_transformation_matrices_fc, &
- !      & extract_occupied_eos_mo_indices, extract_virtual_EOS_MO_indices,array2_init,array2_print
-  use array4_simple_operations!, only: array4_delete_file, array4_init_file, &
-!       & array4_init_standard, array4_free, array4_reorder, array4_init, &
-!       & array4_contract1, array4_open_file, array4_write_file_type2, &
-!       & array4_close_file, array4_write_file_type1, mat_transpose, &
- !     & array4_read_file_type2
+  use dec_fragment_utils
+  use array2_simple_operations
+  use array4_simple_operations
   use ri_util_module
   use iso_c_binding
 #ifdef VAR_OPENACC
   use openacc
 #endif
   use gpu_interfaces
+
+  private
+
+  public :: decnp_RIMP2_integrals_and_amplitudes,&
+       & RIMP2_integrals_and_amplitudes, RIMP2F12_Ccoupling_energy
 
 contains
 !> Purpose: Wrapper routine to get RI-MP2 amplitudes and integrals
@@ -429,6 +427,10 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 !     ENDIF
   ENDIF
 
+  noccOut = noccEOS
+  if (DECinfo%DECNP) noccOut = nocc
+  dimocc = [nvirt,noccOut,nvirt,noccOut]   ! Output order
+
   IF(use_bg_buf)THEN
      !Due to the push pull mechanisme we must deallocate in the 
      !reverse order we allocate - which means I need to allocate these
@@ -445,16 +447,17 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor djik(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
         call tensor_ainit(djik,dimvirt,4,bg=.TRUE.)
      endif
-     !deallocated in fragment_energy.F90 line 677 (April 2015)
-     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]    
-     IF(DECinfo%MemDebugPrint)call printBGinfo()
-     IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor tvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
-     call tensor_ainit(tvirtEOS,dimvirt,4,bg=.TRUE.)
-     dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot] 
-     IF(DECinfo%MemDebugPrint)call printBGinfo()
-     IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor gvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
-     call tensor_ainit(gvirtEOS,dimvirt,4,bg=.TRUE.)
-     dimocc = [nvirt,noccEOS,nvirt,noccEOS]     
+     if (.not.DECinfo%DECNP) then
+        !deallocated in fragment_energy.F90 line 677 (April 2015)
+        dimvirt = [nvirtEOS,nocc,nvirtEOS,nocc]    
+        IF(DECinfo%MemDebugPrint)call printBGinfo()
+        IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor tvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
+        call tensor_ainit(tvirtEOS,dimvirt,4,bg=.TRUE.)
+        dimvirt = [nvirtEOS,nocc,nvirtEOS,nocctot] 
+        IF(DECinfo%MemDebugPrint)call printBGinfo()
+        IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor gvirtEOS(',dimvirt(1)*dimvirt(2)*dimvirt(3)*dimvirt(4),')'
+        call tensor_ainit(gvirtEOS,dimvirt,4,bg=.TRUE.)
+     end if
      IF(DECinfo%MemDebugPrint)call printBGinfo()
      IF(DECinfo%MemDebugPrint)print*,'BG: alloc tensor toccEOS(',dimocc(1)*dimocc(2)*dimocc(3)*dimocc(4),')'
      call tensor_ainit(toccEOS,dimocc,4,bg=.TRUE.)
@@ -741,9 +744,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   !  Major Step 5: Generate toccEOS(nvirt,noccEOS,nvirt,noccEOS)
   !=====================================================================================
-  noccOut = noccEOS
-  if (DECinfo%DECNP) noccOut = nocc
-  dimocc = [nvirt,noccOut,nvirt,noccOut]   ! Output order
 
   IF(NBA.GT.0)THEN
      CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)     

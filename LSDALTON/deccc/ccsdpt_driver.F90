@@ -24,6 +24,10 @@ module ccsdpt_module
   use IchorErimoduleHost
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
+  use tensor_basic_module,only: assoc_ptr_arr, deassoc_ptr_arr
+  use background_buffer_module,only: mem_is_background_buf_init,mem_get_bg_buf_free
+  use reorder_frontend_module
+  use lspdm_basic_module,only: get_residence_of_tile
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -43,15 +47,17 @@ module ccsdpt_module
   use cc_tools_module
   use dec_fragment_utils
   use array2_simple_operations
-  use array3_simple_operations
-  use array4_simple_operations
+!  use array3_simple_operations
+  use array4_simple_operations,only: array4_init,array4_init_standard, &
+       & array4_free,array4_reorder, array4_contract1
   
 #ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_info,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
        & ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
-  private
 #endif
+
+  private
 
 contains
 
@@ -1526,6 +1532,8 @@ contains
 
 #ifdef VAR_MPI
 
+    mode   = MPI_MODE_NOCHECK
+
     nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     lg_me  = infpar%lg_mynum
@@ -1542,7 +1550,6 @@ contains
     if (DECinfo%pt_hack2) then
 
 #ifdef VAR_MPI
-       mode   = MPI_MODE_NOCHECK
 
        if (nodtotal .gt. 1) then
 
@@ -1631,10 +1638,7 @@ contains
     dims = [nvirt,nvirt,nvirt,nocc]
     local = .true.
 #ifdef VAR_MPI
-    if (infpar%lg_nodtot .gt. 1) then
-       mode   = MPI_MODE_NOCHECK
-       local = .false.
-    endif
+    if (infpar%lg_nodtot .gt. 1) local = .false.
 #endif
 
     call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)
@@ -2233,6 +2237,8 @@ contains
 
 #ifdef VAR_MPI
 
+    mode   = MPI_MODE_NOCHECK
+
     nodtotal = infpar%lg_nodtot
     master = (infpar%lg_mynum .eq. infpar%master)
     if (master) call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -2247,7 +2253,6 @@ contains
     if (DECinfo%pt_hack2) then
 
 #ifdef VAR_MPI
-       mode   = MPI_MODE_NOCHECK
 
        if (nodtotal .gt. 1) then
 
@@ -2342,10 +2347,7 @@ contains
     local = .true.
 
 #ifdef VAR_MPI
-    if (infpar%lg_nodtot .gt. 1) then
-       mode   = MPI_MODE_NOCHECK
-       local  = .false.
-    endif
+    if (infpar%lg_nodtot .gt. 1) local  = .false.
 #endif
 
     call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR",local=local,bg=use_bg_buf)

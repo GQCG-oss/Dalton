@@ -8,6 +8,10 @@ if(ENABLE_GEN1INT)
 #   add_definitions(-DBUILD_GEN1INT_LSDALTON)
 endif()
 
+if(ENABLE_DEC)
+  add_definitions(-DVAR_DEC)
+endif()
+
 if(ENABLE_CHEMSHELL)
     add_definitions(-DVAR_CHEMSHELL)
 endif()
