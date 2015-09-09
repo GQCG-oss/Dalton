@@ -840,11 +840,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         PerformTiling = MaxSize.GT.MemInGBCollected
         IF(PerformTiling)THEN 
            IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Performing Virtual Tiling MaxSize=',&
+              WRITE(DECinfo%output,'(A,F10.4,A,F10.4,A)')'DECRIMP2: Performing Virtual Tiling MaxSize=',&
                    &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
            endif
            IF(MemInGBCollected.LT.(2*noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk)THEN
-              call lsquit('RIMP2: Not enough memory for Virtual tiling in rimp2',-1)
+              call lsquit('RIMP2: Not enough memory for Virtual tiling in rimp2 A',-1)
            ENDIF
            !When Performing Virtual tiling we need 3 intermediates of
            !nsize1 = noccOut*noccOut*nvirt*nvirt        (tocc2)
@@ -855,7 +855,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            !MaxVirtSize = (Memreq-noccOut*noccOut*nvirt*nvirt)/((nocc+noccOut)*noccOut*nvirt)
            MaxVirtSize = MIN(nvirt,FLOOR((MemInGBCollected-(noccOut*noccOut*nvirt*nvirt)*8.0E-9_realk) &
                 & /((nocc+noccOut)*noccOut*nvirt*8.0E-9_realk)))
-           IF(MaxVirtSize.LT.1)call lsquit('Not enough memory for Virtual tiling in rimp2',-1)
+           IF(MaxVirtSize.LT.1)call lsquit('Not enough memory for Virtual tiling in rimp2 B',-1)
            IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then        
               WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxVirtSize =',MaxVirtSize 
            endif
@@ -863,7 +863,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            IF(nTiles.EQ.0)PerformTiling = .FALSE.
         ELSE
            IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-              WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: No Virtual Tiling MaxSize=',&
+              WRITE(DECinfo%output,'(A,F10.4,A,F10.4,A)')'DECRIMP2: No Virtual Tiling MaxSize=',&
                    &MaxSize,' GB < memory available = ',MemInGBCollected,' GB'
            ENDIF
         ENDIF
@@ -955,6 +955,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                  WRITE(DECinfo%output,*)'RIMP2info: Alloced=',mem_allocated_global*1.0E-9_realk
               ENDIF
               WRITE(DECinfo%output,*)'RIMP2info: Virtual Tiling MemoryEstimateGB=',MemoryEstimateGB
+              IF(use_bg_buf)THEN
+                 WRITE(DECinfo%output,*)'RIMP2info: buffer size                     ',mem_get_bg_buf_n()*8.0E-9_realk
+              ENDIF
            ENDIF
            nsize1 = noccOut*(noccOut*i8)*nvirt*(nvirt*i8)
            nsize2 = nocc*(noccOut*i8)*nvirt*(MaxVirtSize*i8)
@@ -1244,29 +1247,29 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            PerformTiling = MaxSize.GT.MemInGBCollected
            IF(PerformTiling)THEN 
               IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-                 WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: Performing Occupied Tiling MaxSize=',&
+                 WRITE(DECinfo%output,'(A,F10.4,A,F10.4,A)')'DECRIMP2: Performing Occupied Tiling MaxSize=',&
                       &MaxSize,' GB > memory available = ',MemInGBCollected,' GB'
               endif
               IF(MemInGBCollected.LT.(2*nocc*nocc*nvirtOut*nvirtOut)*8.0E-9_realk)THEN
-                 call lsquit('RIMP2: Not enough memory for Occupied tiling in rimp2',-1)
+                 call lsquit('RIMP2: Not enough memory for Occupied tiling in rimp2 A',-1)
               ENDIF
               !When Performing Occupied tiling we need 3 intermediates of
               !nsize1 = nocc*nocc*nvirtOut*nvirtOut 
               !nsize2 = nocc*nvirt*nvirtOut*MaxOccSize     
-              !nsize3 = nocc*nvirtOut*nvirtOut*MaxVirtSize
+              !nsize3 = nocc*nvirtOut*nvirtOut*MaxOccSize
               !resulting in Memreq = nocc*nocc*nvirtOut*nvirtOut+(nvirt+nvirtOut)*nvirtOut*nocc*MaxOccSize
               !MaxOccSize = (Memreq-nocc*nocc*nvirtOut*nvirtOut)/((nvirt+nvirtOut)*nvirtOut*nocc)
               MaxOccSize = MIN(nvirt,FLOOR((MemInGBCollected-(nocc*nocc*nvirtOut*nvirtOut)*8.0E-9_realk) &
                    & /((nvirt+nvirtOut)*nvirtOut*nocc*8.0E-9_realk)))
-              IF(MaxOccSize.LT.1)call lsquit('Not enough memory for Occupied tiling in rimp2',-1)
+              IF(MaxOccSize.LT.1)call lsquit('Not enough memory for Occupied tiling in rimp2 B',-1)
               IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then        
-                 WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxVirtSize =',MaxVirtSize 
+                 WRITE(DECinfo%output,'(A,I10)')'DECRIMP2: MaxOccSize =',MaxOccSize 
               endif
               nTiles =  nocc/MaxOccSize 
               IF(nTiles.EQ.0)PerformTiling = .FALSE.
            ELSE
               IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
-                 WRITE(DECinfo%output,'(A,F10.2,A,F10.2,A)')'DECRIMP2: No Occupied Tiling MaxSize=',&
+                 WRITE(DECinfo%output,'(A,F10.4,A,F10.4,A)')'DECRIMP2: No Occupied Tiling MaxSize=',&
                       &MaxSize,' GB < memory available = ',MemInGBCollected,' GB'
               ENDIF
            ENDIF
@@ -1281,7 +1284,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               MaxSize = (nocc*nocc*nvirtOut*nvirtOut+NBA*nvirt*nocc+nvirt*nvirtOut)*8.0E0_realk+&
                    & MaxOccSize*((nvirt+nvirtOut)*nvirtOut*nocc)*8.0E0_realk
               IF(Maxsize .GT. free_gpu)THEN
-                 !reduce MaxVirtSize
+                 !reduce MaxOccSize
                  MaxOccSize = MIN(nocc,FLOOR( (free_gpu*0.80E0_realk-(nvirtOut*nvirtOut*nocc*nocc+NBA*nocc*nvirt+nvirt*nvirtOut)*&
                       & 8.0E0_realk)/(((nvirt+nvirtOut)*nvirtOut*nocc)*8.0E0_realk))) 
                  IF(DECinfo%MemDebugPrint.OR.DECinfo%PL>2)then
@@ -1307,7 +1310,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                  print*,'Free on the GPU: ',free_gpu,'Bytes'
                  call lsquit('GPU memory cannot hold required objects')
               ENDIF
-              MaxVirtSize = MIN(nvirt,FLOOR( (free_gpu*0.80E0_realk-(nvirtOut*nvirtOut*nocc*nocc+NBA*nvirt*nocc+nvirt*nvirtOut)*&
+              MaxOccSize = MIN(nocc,FLOOR( (free_gpu*0.80E0_realk-(nvirtOut*nvirtOut*nocc*nocc+NBA*nvirt*nocc+nvirt*nvirtOut)*&
                    & 8.0E0_realk)/(((nvirt+nvirtOut)*nvirtOut*nocc)*8.0E0_realk))) 
               nTiles =  nocc/MaxOccSize
               IF(nTiles.EQ.0)PerformTiling = .FALSE.
@@ -1343,6 +1346,9 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
                     WRITE(DECinfo%output,*)'RIMP2info: Memory Used=',mem_allocated_global*1.0E-9_realk
                  ENDIF
                  WRITE(DECinfo%output,*)'RIMP2info: Occupied Tiling MemoryEstimateGB=',MemoryEstimateGB
+                 IF(use_bg_buf)THEN
+                    WRITE(DECinfo%output,*)'RIMP2info: buffer size                      ',mem_get_bg_buf_n()*8.0E-9_realk
+                 ENDIF
               ENDIF
               nsize1 = nocc*(nocc*i8)*nvirtOut*(nvirtOut*i8)       !tvirt2
               nsize2 = nocc*(nvirt*i8)*nvirtOut*(MaxOccSize*i8)    !tvirt
