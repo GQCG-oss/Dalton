@@ -36,9 +36,7 @@ module atomic_fragment_operations
   ! F12 DEPENDENCIES 
   ! *****************************************
   use CABS_operations
-#ifdef MOD_UNRELEASED
   use f12_routines_module
-#endif
 contains
 
 
@@ -532,10 +530,10 @@ contains
   subroutine atomic_fragment_init_f12(fragment, MyMolecule)
     type(fullmolecule), intent(in) :: MyMolecule
     type(decfrag), intent(inout) :: fragment
-#ifdef MOD_UNRELEASED
 
     !> F12 Specific Variables
-    integer :: nbasis, noccEOS, nvirtEOS, noccfull, nocvAOStot, nvirtAOS, ncabsAO, ncabsMO
+    integer :: nbasis, noccEOS, nvirtEOS, noccfull, nocvAOStot, nvirtAOS
+    integer :: ncabsAO, ncabsMO,ncabsAOOnly
     integer :: noccAOS,noccAOStot
     integer :: ix, iy,offset
     real(realk),pointer :: Fcp(:,:) 
@@ -563,28 +561,29 @@ contains
     !CURRENTLY THE full matrices are in the CABS AO BASIS and needs to be transformed 
     !to the CABS-MO and RI-MO basis which happens in this routine 
 
-    ncabsAO   = fragment%nbasis + fragment%ncabsAO !size(fragment%Ccabs,1)
+    ncabsAO   = fragment%ncabsAO !size(fragment%Ccabs,1)
+    nCabsAOOnly = fragment%nCabsAOOnly
     ncabsMO   = size(fragment%Ccabs,2)
-    
+    if(DECinfo%F12debug) then
+       print *, "---------------------------------------"
+       print *, " atomic_fragment_init_f12 dec_atom.F90 "
+       print *, "---------------------------------------"
+       print *, "nbasis: ", nbasis
+       print *, "noccEOS: ", noccEOS
+       print *, "nvirtEOS: ", nvirtEOS
+       print *, "---------------------------------------"
+       print *, "nocvAOStot", nocvAOStot
+       print *, "noccAOS", noccAOS
+       print *, "nvirtAOS", nvirtAOS
+       print *, "ncabsAO", ncabsAO
+       print *, "ncabsAOOnly", ncabsAOOnly
+       print *, "ncabsMO", ncabsMO
+       print *, "---------------------------------------"
+    end if 
+
     IF(ncabsAO.NE.size(fragment%Ccabs,1))THEN      
        call lsquit('Dimension mismatch in atomic_fragment_init_f12',-1)
     ENDIF
-
-    if(DECinfo%F12debug) then
-      ! print *, "---------------------------------------"
-      ! print *, " atomic_fragment_init_f12 dec_atom.F90 "
-      ! print *, "---------------------------------------"
-      ! print *, "nbasis: ", nbasis
-      ! print *, "noccEOS: ", noccEOS
-      ! print *, "nvirtEOS: ", nvirtEOS
-      ! print *, "---------------------------------------"
-      ! print *, "nocvAOStot", nocvAOStot
-      ! print *, "noccAOS", noccAOS
-      ! print *, "nvirtAOS", nvirtAOS
-      ! print *, "ncabsAO", ncabsAO
-      ! print *, "ncabsMO", ncabsMO
-      ! print *, "---------------------------------------"
-    end if 
 
     ! hJir
     call mem_alloc(fragment%hJir, noccEOS, ncabsAO)
@@ -595,8 +594,8 @@ contains
           fragment%hJir(i,j) = MyMolecule%hJir(ix,iy)
        enddo
     enddo
-    do j=1, fragment%ncabsAO   
-       iy = fragment%nbasis+fragment%cabsbasis_idx(j)
+    do j=1, nCabsAOOnly
+       iy = fragment%nbasis+fragment%cabsbasis_idx(j)       
        do i=1, fragment%noccEOS
           ix = fragment%occEOSidx(i)
           fragment%hJir(i,fragment%nbasis+j) = MyMolecule%hJir(ix,iy)          
@@ -604,7 +603,7 @@ contains
     enddo
 
     call F12_RI_transform_realMat(fragment%hJir,noccEOS,ncabsAO,fragment%Cri,ncabsAO)
-
+    
     ! Krs
     call mem_alloc(fragment%Krs, ncabsAO, ncabsAO)
     call BuildFragmentKrs(fragment%Krs,fragment,ncabsAO,MyMolecule,MyMolecule%Krs,MyMolecule%nCabsAO)
@@ -630,7 +629,7 @@ contains
           ix = fragment%basis_idx(i)
           fragment%Frm(i,j) = MyMolecule%Frm(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1,nCabsAOOnly
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           fragment%Frm(fragment%nbasis+i,j) = MyMolecule%Frm(ix,iy)
        enddo
@@ -643,7 +642,7 @@ contains
           ! Add offset to valence orbital index for frozen fore
           fragment%Frm(i,j+offset) = MyMolecule%Frm(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1,nCabsAOOnly
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           ! Add offset to valence orbital index for frozen fore
           fragment%Frm(fragment%nbasis+i,j+offset) = MyMolecule%Frm(ix,iy)
@@ -661,7 +660,7 @@ contains
           ix = fragment%basis_idx(i)
           Fcp(i,j) = MyMolecule%Fcp(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, nCabsAOOnly
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Fcp(fragment%nbasis+i,j) = MyMolecule%Fcp(ix,iy)
        enddo
@@ -672,7 +671,7 @@ contains
           ix = fragment%basis_idx(i)
           Fcp(i,j+offset) = MyMolecule%Fcp(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, nCabsAOOnly
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Fcp(fragment%nbasis+i,j+offset) = MyMolecule%Fcp(ix,iy)
        enddo
@@ -683,17 +682,15 @@ contains
           ix = fragment%basis_idx(i)         
           Fcp(i,j+noccAOStot) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, nCabsAOOnly
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)                
           Fcp(fragment%nbasis+i,j+noccAOStot) = MyMolecule%Fcp(ix,iy+MyMolecule%nocc)
        enddo
-    enddo
+    enddo 
 
     call mem_alloc(fragment%Fcp, ncabsMO, nocvAOStot)
     call F12_CABS_transform_realMat(fragment%Fcp,Fcp,ncabsAO,nocvAOStot,fragment%Ccabs,ncabsAO,ncabsMO)
     call mem_dealloc(Fcp)
-
-#endif
 
   end subroutine atomic_fragment_init_f12
 
@@ -711,18 +708,18 @@ contains
           ix = fragment%basis_idx(i)
           Krs(i,j) = MKrs(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAOOnly
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Krs(fragment%nbasis+i,j) = MKrs(ix,iy)
        enddo
     enddo   
-    do j=1, fragment%ncabsAO
+    do j=1, fragment%ncabsAOOnly
        iy = fragment%nbasis+fragment%cabsbasis_idx(j)
        do i=1, fragment%nbasis
           ix = fragment%basis_idx(i)
           Krs(i,fragment%nbasis+j) = MKrs(ix,iy)
        enddo
-       do i=1, fragment%ncabsAO
+       do i=1, fragment%ncabsAOOnly
           ix = fragment%nbasis+fragment%cabsbasis_idx(i)
           Krs(fragment%nbasis+i,fragment%nbasis+j) = MKrs(ix,iy)
        enddo
@@ -1085,12 +1082,12 @@ contains
      end if
 
      ! Get ninit_occ and ninit_vir:
-     ninit_occ = DECinfo%Frag_Init_Size*ceiling((no_full-ncore)*1.0E0_realk/natoms)
-     ninit_vir = DECinfo%Frag_Init_Size*ceiling(nv_full*1.0E0_realk/natoms)
+     ninit_occ = ceiling(DECinfo%Frag_Init_Size*(no_full-ncore)*1.0E0_realk/natoms)
+     ninit_vir = ceiling(DECinfo%Frag_Init_Size*nv_full*1.0E0_realk/natoms)
 
      ! Get nexp_occ and nexp_vir:
-     nexp_occ = DECinfo%Frag_Exp_Size*ceiling((no_full-ncore)*1.0E0_realk/natoms)
-     nexp_vir = DECinfo%Frag_Exp_Size*ceiling(nv_full*1.0E0_realk/natoms)
+     nexp_occ = ceiling(DECinfo%Frag_Exp_Size*(no_full-ncore)*1.0E0_realk/natoms)
+     nexp_vir = ceiling(DECinfo%Frag_Exp_Size*nv_full*1.0E0_realk/natoms)
 
      ! SCHEME 1:
      if (DECinfo%Frag_Exp_Scheme == 1) then
@@ -1223,6 +1220,11 @@ contains
      nred_occ = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%noccAOS/100), 1)
      nred_vir = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%nvirtAOS/100), 1)
 
+     ! mostly for debugging:
+     if (DECinfo%FracOfOrbSpace_red==0.0E0_realk) then
+        nred_occ = 0
+        nred_vir = 0
+     end if
 
      ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
      ! ======================================
@@ -1468,8 +1470,10 @@ contains
         call SanityCheckOrbAOS(Myfragment,Nfull,'V',Orb_AOS)
      end if
 
+
      ! Put Nnew Orbitals in the AOS base on priority list:
      ncount = count(Orb_AOS)
+     if (ncount >= Nnew) return
      do i=1,Nfull
         ii = priority_list(i)
         ! Skip orbital if it is a core or if it is allready included:
@@ -2197,7 +2201,12 @@ contains
     if(DECinfo%F12) then 
        call dec_get_CABS_orbitals_fragment(fragment, fragment%mylsitem)
        call dec_get_RI_orbitals_fragment(fragment, fragment%mylsitem)
+
+       Fragment%ncabsAO = size(Fragment%Ccabs,1)
+       Fragment%ncabsAOOnly = Fragment%ncabsAO-Fragment%nbasis
+       Fragment%ncabsMO = size(Fragment%Ccabs,2)
     endif
+
   end subroutine create_f12_cabs_and_ri_fragment_info
   
   
@@ -2248,7 +2257,6 @@ contains
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(fragment%Cri,ncabsAO,ncabsAO) 
     call mat_to_full(CMO_RI,1.0E0_realk,fragment%Cri)
-
     call mat_free(CMO_RI)
 
   end subroutine dec_get_RI_orbitals_fragment

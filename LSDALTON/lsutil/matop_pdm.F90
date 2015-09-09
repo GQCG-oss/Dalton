@@ -31,6 +31,7 @@
 !> 5.  
 !>  
 module matrix_operations_pdmm
+#ifdef VAR_ENABLE_TENSORS
   use lsparameters
   use memory_handling
   use matrix_module
@@ -880,9 +881,15 @@ contains
     call mat_pdmm_set_from_full(Afull,1.0E0_realk,A)
     call mem_dealloc(Afull)
   end subroutine mat_pdmm_create_block
+#else
+  contains
+    subroutine dummy_no_use
+    end subroutine dummy_no_use
+#endif
 
 end module matrix_operations_pdmm
 
+#ifdef VAR_ENABLE_TENSORS
 SUBROUTINE PDMM_GRIDINIT(NBAST)
   use matrix_operations_pdmm
   use matrix_module
@@ -922,4 +929,5 @@ SUBROUTINE PDMM_GRIDEXIT()
    ENTRY PDMM_GRIDEXIT_SLAVE
    call FreeMatrixModulePDM
  END SUBROUTINE PDMM_GRIDEXIT
+#endif
 

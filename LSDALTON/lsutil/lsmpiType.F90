@@ -101,6 +101,7 @@ module lsmpi_type
           &           ls_mpi_buffer_realk, &
           &           ls_mpi_buffer_realkV4,ls_mpi_buffer_realkV8, ls_mpi_buffer_realkM, &
           &           ls_mpi_buffer_realkT,&
+          &           ls_mpi_buffer_realkT4dim, &
           &           ls_mpi_buffer_logical, ls_mpi_buffer_logicalV,&
           &           ls_mpi_buffer_logicalM,ls_mpi_buffer_shortinteger, &
           &           ls_mpi_buffer_charac, ls_mpi_buffer_characV, &
@@ -2326,6 +2327,42 @@ contains
          iDP = iDP + n1*n2*n3
       ENDIF
     end subroutine ls_mpi_buffer_realkT
+
+    subroutine ls_mpi_buffer_realkT4dim(buffer,n1,n2,n3,n4,master)
+       implicit none
+       integer(kind=ls_mpik) :: master
+       integer :: n1,n2,n3,n4
+       real(realk) :: buffer(:,:,:,:)
+       integer :: ierr,cnt,datatype,I,J,K,L,offset
+       IERR=0
+       IF(AddToBuffer)THEN
+          IF(iDP + n1*n2*n3*n4.GT. nDP)call increaselsmpibufferDP((((i8*n1)*n2)*n3)*n4)
+          DO L=1,n4
+             DO K=1,n3
+                DO J=1,n2
+                   offset = iDP+(J-1)*n1+(K-1)*n1*n2+(L-1)*n1*n2*n3
+                   DO I=1,n1
+                      lsmpibufferDP(offset+I) = buffer(I,J,K,L)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDDO
+          iDP = iDP + n1*n2*n3*n4
+       ELSE
+          IF(iDP+n1*n2*n3*n4 .GT. nDP)call lsquit('ls_mpi_buffer_realkT4dim: error using buffer',-1)
+          DO L=1,n4
+             DO K=1,n3
+                DO J=1,n2
+                   offset = iDP+(J-1)*n1+(K-1)*n1*n2+(L-1)*n1*n2*n3
+                   DO I=1,n1
+                      buffer(I,J,K,L) = lsmpibufferDP(offset+I)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDDO
+          iDP = iDP + n1*n2*n3*n4
+       ENDIF
+    end subroutine ls_mpi_buffer_realkT4dim
 
     subroutine ls_mpi_buffer_logical(buffer,master)
       implicit none

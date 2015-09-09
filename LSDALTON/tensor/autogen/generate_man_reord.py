@@ -852,6 +852,14 @@ module reorder_tester_module\n\
     #  header += "    test"+str(i)+"d_tiled=.false.\n"
 
   header += "    rigorous=.true.\n"
+  header += "    begc1 = 0.0E0_tensor_dp\n"
+  header += "    begw1 = 0.0E0_tensor_dp\n"
+  header += "    endc1 = 0.0E0_tensor_dp\n"
+  header += "    endw1 = 0.0E0_tensor_dp\n"
+  header += "    begc2 = 0.0E0_tensor_dp\n"
+  header += "    begw2 = 0.0E0_tensor_dp\n"
+  header += "    endc2 = 0.0E0_tensor_dp\n"
+  header += "    endw2 = 0.0E0_tensor_dp\n"
  
   f.write(header)
 

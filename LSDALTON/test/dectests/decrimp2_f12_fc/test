@@ -23,9 +23,6 @@ f.add(string = 'Total RI-MP2F12 energy',
 f.add(string = 'RIMP2 CORRECTION TO ENERGY',
       rel_tolerance = 1.1e-6)
 
-f.add(string = 'F12 CORRECTION TO ENERGY',
-            rel_tolerance = 1.1e-6)
-
 f.add(string = 'RIMP2-F12 CORRELATION ENERGY',
       rel_tolerance = 1.1e-6)
 

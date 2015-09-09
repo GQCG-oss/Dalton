@@ -6,6 +6,9 @@
 module ccsdpt_tools_module
 
   use precision
+#ifdef VAR_OPENACC
+  use openacc
+#endif
   use memory_handling
 #ifdef VAR_MPI
   use infpar_module

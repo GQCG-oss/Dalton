@@ -4379,6 +4379,8 @@ end function max_batch_dimension
           endif
        elseif(DECinfo%ccmodel==MODEL_LSTHCRIMP2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total LS-THC-RIMP2 energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_MP3) then
+          write(lupri,'(15X,a,f20.10)')    'E: Total MP3 energy    :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy         :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
@@ -4870,7 +4872,6 @@ end function max_batch_dimension
             & for model: ', DECinfo%ccmodel
     end select
 
-#ifdef MOD_UNRELEASED
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12) then
 
@@ -4919,7 +4920,6 @@ end function max_batch_dimension
        end select
 
        endif
-#endif
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)

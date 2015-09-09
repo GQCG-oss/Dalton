@@ -63,250 +63,253 @@ add_library(
 
 target_link_libraries(matrixmlib cuda_gpu_interfaces)
 
-include_directories(${CMAKE_SOURCE_DIR}/LSDALTON/tensor/include)
+if(ENABLE_TENSORS)
 
-# automatially generate the manual_reorderdings.F90
-set(MANUAL_REORDERING_SOURCES
+   include_directories(${CMAKE_SOURCE_DIR}/LSDALTON/tensor/include)
 
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_reord.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_reord.F90
+   # automatially generate the manual_reorderdings.F90
+   set(MANUAL_REORDERING_SOURCES
 
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_utils_f2t.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_reord.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_reord.F90
 
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_utils_t2f.F90
-   ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_utils_f2t.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_utils_f2t.F90
+
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_utils_t2f.F90
+      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_utils_t2f.F90
 
 
-   )
-if(ENABLE_GPU)
-   set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_acc_reord.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_acc_reord.F90
-      )
-endif()
-if(ENABLE_REAL_SP)
-   set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_reord_sp.F90
-      ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_reord_sp.F90
       )
    if(ENABLE_GPU)
       set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_acc_reord_sp.F90
-         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_acc_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_acc_reord.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_acc_reord.F90
          )
    endif()
+   if(ENABLE_REAL_SP)
+      set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_reord_sp.F90
+         ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_reord_sp.F90
+         )
+      if(ENABLE_GPU)
+         set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES}
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_4_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_5_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_6_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_5_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_6_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_7_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_8_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_9_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_10_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_11_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_12_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_13_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_14_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_15_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_16_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_17_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_18_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_19_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_20_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_21_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_22_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_23_acc_reord_sp.F90
+            ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_24_acc_reord_sp.F90
+            )
+      endif()
+   endif()
+
+   set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90)
+   set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90)
+   set(GENERATED_FILES ${MANUAL_REORDERING_SOURCES})
+
+   if(ENABLE_GPU)
+      set(reorder_definitions "--acc ${reorder_definitions}")
+   endif()
+   if(ENABLE_REAL_SP)
+      set(reorder_definitions "--real_sp ${reorder_definitions}")
+   endif()
+
+   add_custom_command(
+      OUTPUT
+      ${GENERATED_FILES}
+      COMMAND
+      python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py --CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${reorder_definitions}
+      DEPENDS
+      ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
+      )
+
+   unset(reorder_definitions)
+
+   add_library(
+      lsutil_tensor_lib
+      ${MANUAL_REORDERING_SOURCES}
+      ${LSUTIL_TENSOR_SOURCES}
+      )
+
+   target_link_libraries(lsutil_tensor_lib matrixmlib )
 endif()
-
-set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90)
-set(MANUAL_REORDERING_SOURCES ${MANUAL_REORDERING_SOURCES} ${CMAKE_BINARY_DIR}/manual_reordering/reorder_tester.F90)
-set(GENERATED_FILES ${MANUAL_REORDERING_SOURCES})
-
-if(ENABLE_GPU)
-   set(reorder_definitions "--acc ${reorder_definitions}")
-endif()
-if(ENABLE_REAL_SP)
-   set(reorder_definitions "--real_sp ${reorder_definitions}")
-endif()
-
-add_custom_command(
-    OUTPUT
-    ${GENERATED_FILES}
-    COMMAND
-    python ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py --CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${reorder_definitions}
-    DEPENDS
-    ${CMAKE_SOURCE_DIR}/LSDALTON/tensor/autogen/generate_man_reord.py
-    )
-
-unset(reorder_definitions)
-
-add_library(
-  lsutil_tensor_lib
-  ${MANUAL_REORDERING_SOURCES}
-  ${LSUTIL_TENSOR_SOURCES}
-  )
-
-target_link_libraries(lsutil_tensor_lib matrixmlib )
 
 add_library(
     lsutillib_common1
@@ -314,7 +317,11 @@ add_library(
     ${LSUTIL_TYPE_SOURCES}
     )
 
-target_link_libraries(lsutillib_common1 lsutil_tensor_lib)
+if(ENABLE_TENSORS)
+   target_link_libraries(lsutillib_common1 lsutil_tensor_lib)
+else()
+   target_link_libraries(lsutillib_common1 matrixmlib)
+endif()
 
 add_library(
     lsutillib_common2
@@ -741,7 +748,6 @@ set(LIBS_TO_MERGE
     lsutillib_precision
     cuda_gpu_interfaces
     matrixmlib
-    lsutil_tensor_lib
     lsutillib_common1
     lsutillib_common2
     lsutillib_common3
@@ -762,6 +768,9 @@ set(LIBS_TO_MERGE
     ddynamlib
 )
 
+if(ENABLE_TENSORS)
+  set(LIBS_TO_MERGE ${LIBS_TO_MERGE} lsutil_tensor_lib)
+endif()
 if(ENABLE_DEC)
   set(LIBS_TO_MERGE ${LIBS_TO_MERGE} declib)
 endif()

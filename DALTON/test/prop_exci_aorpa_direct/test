@@ -55,12 +55,12 @@ f.add(from_string = 'Singlet electronic excitation energies',
 f.add(from_string = 'Electric transition dipole moments',
       num_lines = 36,
       ignore_sign = True,
-      abs_tolerance = 1.0e-3)
+      abs_tolerance = 1.01e-3)
 
 f.add(from_string = 'Magnetic transition dipole moments',
       num_lines = 33,
       ignore_sign = True,
-      abs_tolerance = 1.0e-3)
+      abs_tolerance = 1.01e-3)
 
 f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
       num_lines = 32,
@@ -69,11 +69,11 @@ f.add(from_string = 'Oscillator and Scalar Rotational Strengths',
 
 f.add(from_string = 'Extent of molecular orbitals',
       num_lines = 39,
-      abs_tolerance = 1.0e-3)
+      abs_tolerance = 1.01e-3)
 
 f.add(from_string = 'Change in <R**2> from ground to excited state (au)',
       num_lines = 25,
-      abs_tolerance = 1.0e-3)
+      abs_tolerance = 1.01e-3)
 
 
 test.run(['prop_exci_aorpa_direct.dal'], ['water.mol'], f={'out': f})

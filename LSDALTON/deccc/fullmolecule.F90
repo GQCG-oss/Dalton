@@ -26,10 +26,8 @@ module full_molecule
 
   ! CABS
   use CABS_operations
-#ifdef MOD_UNRELEASED
   ! F12 MO-matrices
   use f12_routines_module!,only: get_F12_mixed_MO_Matrices, MO_transform_AOMatrix
-#endif
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
@@ -86,7 +84,6 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then 
-#ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
@@ -98,7 +95,6 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
-#endif
     end if
 
     
@@ -168,7 +164,6 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-#ifdef MOD_UNRELEASED
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
           call dec_get_RI_orbitals(molecule,mylsitem)
@@ -176,7 +171,6 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
-#endif
     end if
 
     ! Do not store AO Fock matrix if requested
@@ -1140,7 +1134,6 @@ contains
      type(fullmolecule), intent(inout) :: MyMolecule
      type(lsitem), intent(inout) :: MyLsitem
      type(matrix), intent(in) :: D
-#ifdef MOD_UNRELEASED
 
      integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
 
@@ -1192,7 +1185,6 @@ contains
         & nocc,noccfull,nvirt,MyMolecule%hJir,MyMolecule%Krs,MyMolecule%Frs,&
         & MyMolecule%Fac,MyMolecule%Fij,MyMolecule%Frm,MyMolecule%Fcp)
 
-#endif
   end subroutine molecule_mo_f12
 
 
@@ -1224,7 +1216,11 @@ contains
     ! *********************************************
 
     ! MO coefficients, Fock
-    molmem = 2E0_realk*A*A
+    if (DEcinfo%noaofock) then
+       molmem = 1E0_realk*A*A
+    else
+       molmem = 2E0_realk*A*A
+    end if
 
     ! ppfock and qqfock
     tmp = O*O + V*V

@@ -1165,11 +1165,13 @@ Endif ! Optimization
        ! Do the force modification of energy if asked
        If (optinfo%FMPES) call FM_energy(E(1),optinfo)
        !
+       IF (config%dodec) THEN
 #ifdef VAR_DEC
-       IF (DECinfo%dodec) call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,config%optinfo)
+         call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,config%optinfo)
 #else
-       call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+         call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
 #endif
+       ENDIF
        optinfo%energy = E(1)
        GEINFO(optinfo%ItrNmr+1,1) = E(1)
        IF (IREJ .EQ. 0) THEN

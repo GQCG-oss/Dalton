@@ -177,8 +177,8 @@ contains
        case('.JACOBIANNOTPRECOND')
           DECinfo%JacobianPrecond = .false.
 
-       case('.HALDAPPROX')
-          DECinfo%HaldApprox = .true.
+       case('.SINGLESEW1')
+          DECinfo%SinglesEW1 = .true.
 
        case('.LW1')
           DECinfo%LW1 = .true.
@@ -235,6 +235,10 @@ contains
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.false.
           DECinfo%solver_par=.true.
+       case('.MP3') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
 
        ! CC SOLVER INFO
        ! ==============
@@ -613,7 +617,7 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
-
+#endif
 
        ! KEYWORDS RELATED TO F12
        ! ***********************
@@ -653,7 +657,6 @@ contains
        case('.F12LSV1')     
           DECinfo%NaturalLinearScalingF12Terms   = .true.
           DECinfo%NaturalLinearScalingF12TermsV1 = .true.
-#endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
@@ -1204,6 +1207,20 @@ contains
        DECinfo%fragopt_red_model = MODEL_RIMP2
     end if
 
+    
+    ! MP3 testing
+    if(DECinfo%ccmodel==MODEL_MP3) then
+       if(.not.DECinfo%full_molecular_cc) then
+          call lsquit('MP3 only implemented for full molecular CC!',-1)
+       end if
+       if(DECinfo%first_order) then
+          call lsquit('No first-order properties for MP3!',-1)
+       end if
+       if(.not. DECinfo%use_canonical) then
+          call lsquit('MP3 only implemented for canonical orbitals, insert .CANONICAL!',-1)
+       end if
+    end if
+
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
@@ -1284,7 +1301,7 @@ contains
     write(lupri,*) 'JacobianInitialSubspace ', DECinfo%JacobianInitialSubspace
     write(lupri,*) 'JacobianMaxIter ', DECinfo%JacobianMaxIter
     write(lupri,*) 'JacobianPrecond ', DECinfo%JacobianPrecond
-    write(lupri,*) 'HaldApprox ', DECinfo%HaldApprox
+    write(lupri,*) 'SinglesEW1 ', DECinfo%SinglesEW1
     write(lupri,*) 'LW1 ', DECinfo%LW1
     write(lupri,*) 'P_EOM_MBPT2 ', DECinfo%P_EOM_MBPT2
     write(lupri,*) 'doDEC ', DECitem%doDEC
@@ -1452,6 +1469,7 @@ contains
     case('.SOSEX');   modelnumber = MODEL_SOSEX
     case('.RIMP2');   modelnumber = MODEL_RIMP2
     case('.LSTHCRIMP2'); modelnumber = MODEL_LSTHCRIMP2
+    case('.MP3');     modelnumber = MODEL_MP3
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1465,6 +1483,7 @@ contains
        write(DECinfo%output,*)'.SOSEX'
        write(DECinfo%output,*)'.RIMP2'
        write(DECinfo%output,*)'.LS-THC-RIMP2'       
+       write(DECinfo%output,*)'.MP3'       
        call lsquit('Requested model not found!',-1)
     end SELECT
 
