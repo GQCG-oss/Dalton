@@ -463,11 +463,6 @@ contains
        enddo
     enddo
 
-    !call sleep(mynum*2)  
-    !call ls_output(Fnm,1,noccAOStot,1,noccAOStot,noccAOStot,noccAOStot,1,6)
-
-
-
   !=================================================================
   != Step 0: Creating of dopair_occ                                =
   !=================================================================
@@ -536,9 +531,7 @@ contains
          & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
     ABdecompCreateF = .FALSE.
     !perform this suborutine on the GPU (async)  - you do not need to wait for the results
-    call ContractOne4CenterF12IntegralsRIV1_dec(NBA,noccEOS,CalphaF,CoulombF12V1,ExchangeF12V1,dopair_occ)
-    EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12V1-ExchangeF12V1*0.25E0_realk)
-
+    call ContractOne4CenterF12IntegralsRIV1_dec(NBA,noccEOS,CalphaF,EV1,dopair_occ)
 #ifdef VAR_MPI 
     lsmpibufferRIMP2(2)=EV1
 #else
@@ -740,11 +733,9 @@ contains
          & mynum,numnodes,CalphaXcabsAO,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
 
     call ContractOne4CenterF12IntegralsRIB23_dec(NBA,noccEOS,ncabsAO,CalphaXcabsAO,CalphaX,&
-         & MyFragment%hJir,1.0E0_realk,EB2,EB3,dopair_occ)
+         & MyFragment%hJir,EB2,EB3,dopair_occ)
 
 #ifdef VAR_MPI 
-!print *, "EB2, mynum", EB2, mynum
-!print *, "EB3, mynum", EB3, mynum
    lsmpibufferRIMP2(4)=EB2       !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(5)=EB3       !we need to perform a MPI reduction at the end 
 #else
