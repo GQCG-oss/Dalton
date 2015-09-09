@@ -3480,9 +3480,6 @@ contains
        ! Occ orbitals (only valence if frozen core approx is used)
        do i=1,noccf
 
-!          do k=1,nbasisf
-!             MyStC(k) = StC(i,k)
-!          end do
           MyStC = StC(:,i)
 
           ! fit orbital
