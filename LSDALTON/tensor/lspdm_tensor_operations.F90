@@ -775,24 +775,26 @@ module lspdm_tensor_operations_module
   !> \date December 2012, modified several times afterwards
   !> \brief calculate aos cc energy in parallel (PDM)
   function get_cc_energy_parallel(t2,gmo,t1) result(Ec)
-    implicit none
-    !> two electron integrals in the mo-basis
-    type(tensor), intent(inout) :: gmo
-    !> doubles amplitudes
-    type(tensor), intent(in) :: t2
-    !> singles amplitudes, optional so that an MP2 contribution can be calculated
-    type(tensor), intent(inout),optional :: t1
-    !> on return Ec contains the correlation energy
-    real(tensor_dp) :: E1,E2,Ec
-    real(tensor_dp),pointer :: gmo_tile(:)
-    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj,gmo_ts
-    integer :: order_c(gmo%mode), gmo_ctidx(gmo%mode), gmo_ctdim(gmo%mode), cbuf, gmo_ccidx
-    real(tensor_dp), pointer :: gmo_ctile_buf(:,:)
-    integer :: order_e(gmo%mode), gmo_etidx(gmo%mode), gmo_etdim(gmo%mode), ebuf, gmo_ecidx
+     implicit none
+     !> two electron integrals in the mo-basis
+     type(tensor), intent(inout) :: gmo
+     !> doubles amplitudes
+     type(tensor), intent(in) :: t2
+     !> singles amplitudes, optional so that an MP2 contribution can be calculated
+     type(tensor), intent(inout),optional :: t1
+     !> on return Ec contains the correlation energy
+     real(tensor_dp) :: E1,E2,Ec
+     real(tensor_dp),pointer :: gmo_tile(:)
+     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj,gmo_ts
+     integer :: order_c(gmo%mode), gmo_ctidx(gmo%mode), gmo_ctdim(gmo%mode), cbuf, gmo_ccidx
+     real(tensor_dp), pointer :: gmo_ctile_buf(:,:)
+     integer :: order_e(gmo%mode), gmo_etidx(gmo%mode), gmo_etdim(gmo%mode), ebuf, gmo_ecidx
 #ifdef VAR_PTR_RESHAPE
-    real(tensor_dp), contiguous, pointer :: h1(:),h2(:), gmo_ctile(:,:,:,:), gmo_etile(:,:,:,:), t2tile(:,:,:,:)
+     real(tensor_dp), contiguous, pointer :: h1(:),h2(:), gmo_ctile(:,:,:,:), gmo_etile(:,:,:,:), t2tile(:,:,:,:)
+     real(tensor_dp), contiguous, pointer :: gmo_tile_buf(:,:)
 #else
-    real(tensor_dp), pointer :: h1(:),h2(:), gmo_ctile(:,:,:,:), gmo_etile(:,:,:,:), t2tile(:,:,:,:)
+     real(tensor_dp), pointer :: h1(:),h2(:), gmo_ctile(:,:,:,:), gmo_etile(:,:,:,:), t2tile(:,:,:,:)
+     real(tensor_dp), pointer :: gmo_tile_buf(:,:)
 #endif
      integer :: nt,nbuffs,nbuffs_c, nbuffs_e
      integer(kind=tensor_mpi_kind) :: mode
@@ -1057,90 +1059,90 @@ module lspdm_tensor_operations_module
            ebuf = cbuf
         endif
 
-       da = t2%ti(lt)%d(1)
-       db = t2%ti(lt)%d(2)
-       di = t2%ti(lt)%d(3)
-       dj = t2%ti(lt)%d(4)
+        da = t2%ti(lt)%d(1)
+        db = t2%ti(lt)%d(2)
+        di = t2%ti(lt)%d(3)
+        dj = t2%ti(lt)%d(4)
 
 #if defined(VAR_PTR_RESHAPE) 
-       h1 => gmo_tile_buf(:,cbuf)
-       gmo_ctile(1:di,1:da,1:dj,1:db) => h1
-       h2 => gmo_tile_buf(:,ebuf)
-       gmo_etile(1:di,1:db,1:dj,1:da) => h2
-       t2tile(1:da,1:db,1:di,1:dj)    => t2%ti(lt)%t
+        h1 => gmo_tile_buf(:,cbuf)
+        gmo_ctile(1:di,1:da,1:dj,1:db) => h1
+        h2 => gmo_tile_buf(:,ebuf)
+        gmo_etile(1:di,1:db,1:dj,1:da) => h2
+        t2tile(1:da,1:db,1:di,1:dj)    => t2%ti(lt)%t
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
-       call c_f_pointer(c_loc(gmo_tile_buf(1,cbuf)),gmo_ctile,gmo_ctdim)
-       call c_f_pointer(c_loc(gmo_tile_buf(1,ebuf)),gmo_etile,gmo_etdim)
-       call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t2tile,t2%ti(lt)%d)
+        call c_f_pointer(c_loc(gmo_tile_buf(1,cbuf)),gmo_ctile,gmo_ctdim)
+        call c_f_pointer(c_loc(gmo_tile_buf(1,ebuf)),gmo_etile,gmo_etdim)
+        call c_f_pointer(c_loc(t2%ti(lt)%t(1)),t2tile,t2%ti(lt)%d)
 #else
-     call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+        call tensor_status_quit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
 #endif
 
-     !count over local indices
-     !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t2tile,gmo_ctile,gmo_etile,&
-     !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
-     do j=1,dj
-        do i=1,di
-           do b=1,db
-              do a=1,da
-
-                 E2 = E2 + t2tile(a,b,i,j)*&
-                       & (2.0E0_tensor_dp*  gmo_ctile(i,a,j,b) - gmo_etile(i,b,j,a))
-              enddo 
-           enddo
-        enddo
-     enddo
-     !$OMP END PARALLEL DO
-     if(present(t1))then
-        !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t1,gmo_ctile,gmo_etile,&
+        !count over local indices
+        !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t2tile,gmo_ctile,gmo_etile,&
         !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
         do j=1,dj
            do i=1,di
               do b=1,db
                  do a=1,da
 
-                    E1 = E1 + ( t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4)) ) * &
-                          (2.0E0_tensor_dp*gmo_ctile(i,a,j,b)-gmo_etile(i,b,j,a))
-
+                    E2 = E2 + t2tile(a,b,i,j)*&
+                       & (2.0E0_tensor_dp*  gmo_ctile(i,a,j,b) - gmo_etile(i,b,j,a))
                  enddo 
               enddo
            enddo
         enddo
         !$OMP END PARALLEL DO
+        if(present(t1))then
+           !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t1,gmo_ctile,gmo_etile,&
+           !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+           do j=1,dj
+              do i=1,di
+                 do b=1,db
+                    do a=1,da
+
+                       E1 = E1 + ( t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4)) ) * &
+                          (2.0E0_tensor_dp*gmo_ctile(i,a,j,b)-gmo_etile(i,b,j,a))
+
+                    enddo 
+                 enddo
+              enddo
+           enddo
+           !$OMP END PARALLEL DO
+        endif
+        t2tile    => null()
+        gmo_ctile => null()
+        gmo_etile => null()
+        h1        => null()
+        h2        => null()
+     enddo
+
+     if( alloc_in_dummy )then
+        call tensor_unlock_wins(gmo,all_nodes = .true.)
+        call mem_dealloc(reqC)
+        call mem_dealloc(reqE)
      endif
-     t2tile    => null()
-     gmo_ctile => null()
-     gmo_etile => null()
-     h1        => null()
-     h2        => null()
-  enddo
-
-  if( alloc_in_dummy )then
-     call tensor_unlock_wins(gmo,all_nodes = .true.)
-     call mem_dealloc(reqC)
-     call mem_dealloc(reqE)
-  endif
 
 #ifdef TENSORS_IN_LSDALTON
-  call time_start_phase( PHASE_COMM )
+     call time_start_phase( PHASE_COMM )
 #endif
-  if(present(t1))call tensor_mpi_reduce(E1,root,tensor_work_comm)
-  call tensor_mpi_reduce(E2,root,tensor_work_comm)
+     if(present(t1))call tensor_mpi_reduce(E1,root,tensor_work_comm)
+     call tensor_mpi_reduce(E2,root,tensor_work_comm)
 #ifdef TENSORS_IN_LSDALTON
-  call time_start_phase( PHASE_WORK )
+     call time_start_phase( PHASE_WORK )
 #endif
 
-  if(present(t1))then
-     Ec=E1+E2
-  else
-     Ec=E2
-  endif
+     if(present(t1))then
+        Ec=E1+E2
+     else
+        Ec=E2
+     endif
 
-  call mem_dealloc(gmo_tile_buf)
+     call mem_dealloc(gmo_tile_buf)
 
-  if( tensor_always_sync ) call tensor_mpi_barrier(tensor_work_comm)
+     if( tensor_always_sync ) call tensor_mpi_barrier(tensor_work_comm)
 #else
-  Ec = 0.0E0_tensor_dp
+     Ec = 0.0E0_tensor_dp
 #endif
   end function get_cc_energy_parallel
 
