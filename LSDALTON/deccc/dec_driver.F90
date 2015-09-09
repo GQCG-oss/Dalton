@@ -195,7 +195,7 @@ contains
     logical :: redo
     type(mp2grad) :: grad
     type(fullmp2grad) :: fullgrad
-    integer :: jobdone,newjob, nworkers, siz, jobidx
+    integer :: jobdone,newjob, nworkers, jobidx
     integer(kind=ls_mpik) :: groupsize
     integer :: MPIdatatype,MyAtom,nfrags
     type(joblist) :: jobs
@@ -290,7 +290,6 @@ contains
 
 #else
     nworkers=0   ! master node does all jobs
-    siz=1
 #endif
 
 
