@@ -1404,21 +1404,6 @@ contains
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    ENDIF
 
-
-      !print *,"After Reduction EV1:", EV1
-      !print *,"After Reduction EX1:", EX1
-      !print *,"After Reduction EB1:", EB1
-      !print *,"After Reduction EB2:", EB2
-      !print *,"After Reduction EB3:", EB3
-      !print *,"After Reduction EV2:", EV2
-      !print *,"After Reduction EV3:", EV3
-      !print *,"After Reduction EX2:", EX2
-      !print *,"After Reduction EV3:", EV3
-      !print *,"After Reduction EV4:", EV4
-      !print *,"After Reduction EV5:", EV5
-      !print *,"After Reduction EX3:", EX3
-      !print *,"After Reduction EX4:", EX4
-   ENDIF
 #endif
 
     E_21 = 0.0E0_realk
