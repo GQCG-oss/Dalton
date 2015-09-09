@@ -73,11 +73,6 @@ type ConfigItem
    logical              :: PrintMemory
    !> Perform interaction energy calculation using Counter Poise Correction
    logical              :: InteractionEnergy
-   ! Use stream access on all files open with lsopen
-   logical              :: access_stream
-   ! make lsdalton crash when lsquit is called
-   ! It can be use to get a stack on some systems
-   logical              :: force_crash
    !> Same SubSystems in Interaction energies
    logical              :: SameSubSystems
    !> Construct SubSystems Density matrix in Interaction energies
