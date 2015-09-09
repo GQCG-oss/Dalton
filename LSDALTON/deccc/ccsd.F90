@@ -6093,7 +6093,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !endif
 
 
-     case(2,1)
+     case(2)
 
         !THROUGHOUT THE ALGORITHM
         !************************
@@ -6160,8 +6160,67 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      case(1)
 
-        print *,"Dmitry, please implement your memory requirements here, such&
-           & that a memory estimation can be made and the batch sizes adapted -- PE"
+        !THROUGHOUT THE ALGORITHM
+        !************************
+        memrq = 0.0E0_realk
+        ! H + G  not in bg buf
+        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+           memrq = memrq + 1.0E0_realk*( i8*nb*nv+i8*nb*no )
+        endif
+
+
+        !INSIDE OF MAIN LOOP
+        !*******************
+        ! not in bg buf
+        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+           ! tpl tmi sio4
+           memin = memin + 1.0E0_realk*nloctilessio4*tszesio4
+        endif
+        !in bg buf
+        if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           ! tpl tmi
+           memin = memin + nloctilestpm*tszetpm*2.0E0_realk 
+           ! uigcj 
+           memin = memin +1.0E0_realk*(i8*no*no)*nv*nbg
+        endif
+
+
+        !OUTSIDE OF MAIN LOOP
+        !********************
+        ! buffer space for three tiles, allocated with and without bg
+        memout = 3.0E0_realk*tsze*nloctiles
+        !bg buf
+        if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           !before the main loop
+           !--------------------
+           ! omega2 + t2 are already allocated at the beginning, the space
+           ! necessary for the t2 full will be taken care of by the requirement
+           ! for w1 after the main loop and it is not necessary to take it into
+           ! account here
+           ! u2 
+           memrq = memrq + 1.0E0_realk*tsze*nloctiles
+           ! gvoov + gvvoo
+           memrq = memrq + 2.0E0_realk*tsze*nloctiles
+
+        endif
+
+
+        !after the main loop
+        !-------------------
+
+        !in bg buf
+        if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           ! w1/Fock
+           memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
+           ! space for intermediates in cnd and E2
+           memout = memout + 1.0E0_realk*max( 2_long*tsze*nloctiles,  no*no + tszeoo*nloctilesoo  +  nv*nv + tszevv*nloctilesvv )
+        endif
+
+        ! not in bg buf
+        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+           ! space for one remaining intermediate
+           memout = memout + 1.0E0_realk*tsze*nloctiles
+        endif
 
      case(0)
 
