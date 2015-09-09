@@ -463,11 +463,6 @@ contains
        enddo
     enddo
 
-    !call sleep(mynum*2)  
-    !call ls_output(Fnm,1,noccAOStot,1,noccAOStot,noccAOStot,noccAOStot,1,6)
-
-
-
   !=================================================================
   != Step 0: Creating of dopair_occ                                =
   !=================================================================
@@ -536,9 +531,7 @@ contains
          & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
     ABdecompCreateF = .FALSE.
     !perform this suborutine on the GPU (async)  - you do not need to wait for the results
-    call ContractOne4CenterF12IntegralsRIV1_dec(NBA,noccEOS,CalphaF,CoulombF12V1,ExchangeF12V1,dopair_occ)
-    EV1 = -1.0E0_realk*((5.0E0_realk*0.25E0_realk)*CoulombF12V1-ExchangeF12V1*0.25E0_realk)
-
+    call ContractOne4CenterF12IntegralsRIV1_dec(NBA,noccEOS,CalphaF,EV1,dopair_occ)
 #ifdef VAR_MPI 
     lsmpibufferRIMP2(2)=EV1
 #else
@@ -599,15 +592,32 @@ contains
          & FORCEPRINT,wakeslaves,mynum,numnodes,ABdecompR,'D',Umat)
     !Build the G coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
   
+#ifdef VAR_MPI 
+    IF(wakeslaves)THEN
+       nbuf1=numnodes
+       call mem_alloc(nAuxMPI,nbuf1)
+       call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)
+    ELSE
+       nbuf1 = 1
+       call mem_alloc(nAuxMPI,nbuf1)
+       nAuxMPI(1) = nAux
+    ENDIF
+#else
+    nbuf1 = 1
+    call mem_alloc(nAuxMPI,nbuf1)
+    nAuxMPI(1) = nAux
+#endif
+
+
 #ifdef VAR_MPI
       !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
       !We need to do:
       !CalphaD(NBA,nocc,nocc) = -0.5*CalphaD(NBA,nocc,nocc) + Loop_NBA2 Umat(NBA,NBA2)*CalphaR(NBA2,nocc,nocc)
       !Where NBA is the Auxiliary assigned to this node, while NBA2 can be assigned to another node
       IF(wakeslaves)THEN
-         nbuf1=numnodes
-         call mem_alloc(nAuxMPI,nbuf1)
-         call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI) !3 50     
+         !nbuf1=numnodes
+         !call mem_alloc(nAuxMPI,nbuf1)
+         !call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI) !3 50     
          call BuildnAuxMPIUsedRIinfo(nAux,numnodesstd,mynum,AuxMPIstartMy,iAuxMPIextraMy)
          DO inode = 1,numnodes
             nbuf1 = nAuxMPI(inode)
@@ -723,11 +733,9 @@ contains
          & mynum,numnodes,CalphaXcabsAO,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
 
     call ContractOne4CenterF12IntegralsRIB23_dec(NBA,noccEOS,ncabsAO,CalphaXcabsAO,CalphaX,&
-         & MyFragment%hJir,1.0E0_realk,EB2,EB3,dopair_occ)
+         & MyFragment%hJir,EB2,EB3,dopair_occ)
 
 #ifdef VAR_MPI 
-!print *, "EB2, mynum", EB2, mynum
-!print *, "EB3, mynum", EB3, mynum
    lsmpibufferRIMP2(4)=EB2       !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(5)=EB3       !we need to perform a MPI reduction at the end 
 #else
@@ -1397,10 +1405,6 @@ contains
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    ENDIF
 
-   IF(wakeslaves)THEN
-      call mem_dealloc(nAuxMPI)
-   ENDIF
-
 #endif
 
     E_21 = 0.0E0_realk
@@ -1481,6 +1485,9 @@ contains
 
     !> Setting the MP2-F12 correction
     Myfragment%energies(FRAGMODEL_RIMP2f12) = E_F12
+
+    !> Deallocate
+    call mem_dealloc(nAuxMPI)
 
 
   end subroutine get_rif12_fragment_energy
