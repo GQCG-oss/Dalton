@@ -4119,7 +4119,11 @@ endif
 #ifdef VAR_RSP
       !everything is fine
 #else
-      call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
+      IF(config%response%noOpenRSP)THEN
+         !everything is fine
+      ELSE
+         call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
+      ENDIF
 #endif
    end if
 
