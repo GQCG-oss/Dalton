@@ -44,29 +44,30 @@
                                                 
       LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
       ----------------------------------------------------------------------------
-      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
-      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
       Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
-      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
       Robert Izsak,            University of Oslo,        Norway    (ADMM)
-      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
-      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
-      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
-      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
       Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
-      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
       Patrick Merlot,          University of Oslo,        Norway    (ADMM)
       Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
-      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
-      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
-      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
       Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
       Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
-      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
-      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
       Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
       Mark Watson,             University of Oslo,        Norway    (FMM)
       Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
@@ -101,12 +102,12 @@
  C++ compiler             | /usr/bin/g++
  C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
  Static linking           | OFF
- Last Git revision        | c1f9f3b1f492040644c892dac7b6c6c74b9be940
- Git branch               | gordonbell
- Configuration time       | 2015-04-07 14:23:43.170846
+ Last Git revision        | ca7377199bc4b98ce8643dc4f0030c9dc3b4f58b
+ Git branch               | master
+ Configuration time       | 2015-09-09 09:41:27.808667
 
 Start simulation
-     Date and time (Linux)  : Tue Apr  7 14:46:33 2015
+     Date and time (Linux)  : Wed Sep  9 10:15:14 2015
      Host name              : pablo-AU                                
                       
  -----------------------------------------
@@ -344,7 +345,7 @@ FULL: Number of core orbitals    :      3
 FULL: Number of valence orbitals :      6
 FULL: Number of occ. orbitals    :      9
 FULL: Number of virt. orbitals   :      9
-FULL: Local memory use type full :  0.65E-05
+FULL: Local memory use type full :  0.60E-05
 FULL: Distribute matrices        : F
 
  Reading Fock matrix from file fock.restart...
@@ -451,7 +452,6 @@ Use F12 correction           =           FALSE
 
 
  Restarting atomic fragment optimizations....
- Pair cutoff read from file:       1889.7261    
 
  JOB LIST RESTART
  -- total number of jobs :          3
@@ -484,7 +484,7 @@ DEC restart: Reading        3 fragments
       3      3      3      6     0.00    /  1.45       0.00    /  1.45              FRAG_SIZE
 
  FRAGANALYSIS: Max/Ave/Min occ         :        3       /     3.0000    /       3
- FRAGANALYSIS: Max/Ave/Min virt       :        3       /     3.0000    /       3
+ FRAGANALYSIS: Max/Ave/Min virt        :        3       /     3.0000    /       3
  FRAGANALYSIS: Max/Ave/Min basis       :        6       /     6.0000    /       6
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      0.0000    /     0.0000    /     0.0000    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      1.4500    /     1.4500    /     1.4500    
@@ -510,7 +510,6 @@ DEC restart: Reading        3 fragments
 
 
  Restarting pair fragment estimate calculations...
- Pair cutoff read from file:       1889.7261    
 
  JOB LIST RESTART
  -- total number of jobs :          3
@@ -647,7 +646,7 @@ DEC restart: Reading        3 fragments
 
  Total number of fragments:                                               6
 
- Estimated contribution beyond the fragment energy contribution:     0.6326939072E-04
+ Estimated contribution beyond the fragment energy contribution:     0.1168218665E-03
 
 
 
@@ -687,11 +686,11 @@ DEC restart: Reading        3 fragments
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
       2      5      5     17     3.33    /  3.33       6.00    /  6.17              FRAG_SIZE
-      1      5      5     12     3.33    /  3.33       3.33    /  3.63              FRAG_SIZE
-      3      5      5     12     3.33    /  3.33       3.33    /  3.33              FRAG_SIZE
+      1      4      4     12     3.33    /  3.33       3.33    /  3.63              FRAG_SIZE
+      3      4      4     12     3.33    /  3.33       3.33    /  3.33              FRAG_SIZE
 
- FRAGANALYSIS: Max/Ave/Min occ         :        5       /     5.0000    /       5
- FRAGANALYSIS: Max/Ave/Min virt       :        5       /     5.0000    /       5
+ FRAGANALYSIS: Max/Ave/Min occ         :        5       /     4.3333    /       4
+ FRAGANALYSIS: Max/Ave/Min virt        :        5       /     4.3333    /       4
  FRAGANALYSIS: Max/Ave/Min basis       :       17       /     13.667    /      12
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      3.3320    /     3.3320    /     3.3320    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      3.3320    /     3.3320    /     3.3320    
@@ -706,8 +705,8 @@ DEC restart: Reading        3 fragments
  Number of jobs =            2
 
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
-        1                882              1       2        7        7       18
-        2                833              2       3        7        7       17
+        1                952              2       3        7        8       17
+        2                756              1       2        7        6       18
 
 
  DEC JOB SUMMARY: Number of single jobs =          3
@@ -721,68 +720,7 @@ DEC restart: Reading        3 fragments
  Restarting pair fragments - energy...
  WARNING: Restart file: fragenergies.info                       
  does not exist! I therefore calculate it from scratch...
-#PAIRDIMS# basis,occ,virt       18       7       7
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.70    
-
- Number of atomic basis functions        =      18
- Number of occupied orbitals AOS/EOS     =       7       6
- Number of virtual  orbitals AOS/EOS     =       7       6
- Maximum alpha batch dimension           =       4
- Maximum gamma batch dimension           =      18
- Maximum virtual batch dimension         =       7
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.287E-03
- Memory required for tmp array 1 (GB)    = 0.187E-03
- Memory required for tmp array 2 (GB)    = 0.282E-04
- Memory required for tmp array 3 (GB)    = 0.726E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.659E-04
- Memory required for tmp array 1 (GB)    = 0.192E-04
- Memory required for tmp array 2 (GB)    = 0.165E-04
- Memory required for tmp array 3 (GB)    = 0.192E-04
- Memory required for tmp array 4 (GB)    = 0.110E-04
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.282E-04
- Memory required for tmp array 1 (GB)    = 0.141E-04
- Memory required for tmp array 2 (GB)    = 0.141E-04
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.287E-03
- Big Array Memory required       (GB)    = 0.304E-03
-
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            7
- BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.38 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.39 seconds
- >>>  WALL Time used in AO to MO transformation   0.01 seconds
- >>>  CPU Time used in AO to MO transformation   0.00 seconds
-
-
- *****************************************************************************
- Energy summary for pair fragment:       1      2
- *****************************************************************************
- Distance(Ang), pair occ energy  =       3.3320       -0.3587691536E-03
- Distance(Ang), pair virt energy =       3.3320       -0.3975581008E-03
- Distance(Ang), pair lagr. occ term  =       3.3320        0.1709822514E-03
- Distance(Ang), pair lagr. virt term =       3.3320        0.2229110253E-03
-
-
-#PAIRDIMS# basis,occ,virt       17       7       7
+#PAIRDIMS# basis,occ,virt       17       7       8
 
 
  =======================================================================
@@ -793,37 +731,37 @@ DEC restart: Reading        3 fragments
 
  Number of atomic basis functions        =      17
  Number of occupied orbitals AOS/EOS     =       7       6
- Number of virtual  orbitals AOS/EOS     =       7       6
+ Number of virtual  orbitals AOS/EOS     =       8       6
  Maximum alpha batch dimension           =       4
  Maximum gamma batch dimension           =      17
- Maximum virtual batch dimension         =       7
+ Maximum virtual batch dimension         =       8
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.249E-03
+ Tot memory required for tmp arrays (GB) = 0.252E-03
  Memory required for tmp array 1 (GB)    = 0.157E-03
- Memory required for tmp array 2 (GB)    = 0.267E-04
+ Memory required for tmp array 2 (GB)    = 0.305E-04
  Memory required for tmp array 3 (GB)    = 0.647E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.659E-04
- Memory required for tmp array 1 (GB)    = 0.192E-04
- Memory required for tmp array 2 (GB)    = 0.165E-04
- Memory required for tmp array 3 (GB)    = 0.192E-04
- Memory required for tmp array 4 (GB)    = 0.110E-04
+ Tot memory required for tmp arrays (GB) = 0.842E-04
+ Memory required for tmp array 1 (GB)    = 0.251E-04
+ Memory required for tmp array 2 (GB)    = 0.215E-04
+ Memory required for tmp array 3 (GB)    = 0.251E-04
+ Memory required for tmp array 4 (GB)    = 0.125E-04
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.282E-04
- Memory required for tmp array 1 (GB)    = 0.141E-04
- Memory required for tmp array 2 (GB)    = 0.141E-04
+ Tot memory required for tmp arrays (GB) = 0.369E-04
+ Memory required for tmp array 1 (GB)    = 0.184E-04
+ Memory required for tmp array 2 (GB)    = 0.184E-04
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.249E-03
- Big Array Memory required       (GB)    = 0.265E-03
+ Memory required                 (GB)    = 0.252E-03
+ Big Array Memory required       (GB)    = 0.269E-03
 
  BATCH: Number of Gamma batches   =            1
  BATCH: Number of Alpha batches   =            7
@@ -837,10 +775,71 @@ DEC restart: Reading        3 fragments
  *****************************************************************************
  Energy summary for pair fragment:       2      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =       3.3320       -0.3856172025E-03
- Distance(Ang), pair virt energy =       3.3320       -0.3929434354E-03
- Distance(Ang), pair lagr. occ term  =       3.3320        0.2039949692E-03
- Distance(Ang), pair lagr. virt term =       3.3320        0.1976176530E-03
+ Distance(Ang), pair occ energy  =       3.3320       -0.3874816829E-03
+ Distance(Ang), pair virt energy =       3.3320       -0.3928978447E-03
+ Distance(Ang), pair lagr. occ term  =       3.3320        0.2047312942E-03
+ Distance(Ang), pair lagr. virt term =       3.3320        0.1975959356E-03
+
+
+#PAIRDIMS# basis,occ,virt       18       7       6
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.70    
+
+ Number of atomic basis functions        =      18
+ Number of occupied orbitals AOS/EOS     =       7       6
+ Number of virtual  orbitals AOS/EOS     =       6       6
+ Maximum alpha batch dimension           =       4
+ Maximum gamma batch dimension           =      18
+ Maximum virtual batch dimension         =       6
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.283E-03
+ Memory required for tmp array 1 (GB)    = 0.187E-03
+ Memory required for tmp array 2 (GB)    = 0.242E-04
+ Memory required for tmp array 3 (GB)    = 0.726E-04
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.517E-04
+ Memory required for tmp array 1 (GB)    = 0.141E-04
+ Memory required for tmp array 2 (GB)    = 0.141E-04
+ Memory required for tmp array 3 (GB)    = 0.141E-04
+ Memory required for tmp array 4 (GB)    = 0.941E-05
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.282E-04
+ Memory required for tmp array 1 (GB)    = 0.141E-04
+ Memory required for tmp array 2 (GB)    = 0.141E-04
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.283E-03
+ Big Array Memory required       (GB)    = 0.300E-03
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            7
+ BATCH: Number of virtual batches =           1
+ >>>  WALL Time used in MP2 Integral Calculation   0.38 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.39 seconds
+ >>>  WALL Time used in AO to MO transformation   0.02 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       1      2
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       3.3320       -0.3566347397E-03
+ Distance(Ang), pair virt energy =       3.3320       -0.3974042760E-03
+ Distance(Ang), pair lagr. occ term  =       3.3320        0.1703299291E-03
+ Distance(Ang), pair lagr. virt term =       3.3320        0.2226987492E-03
 
 
  WARNING: No pair points to plot!
@@ -859,9 +858,9 @@ DEC restart: Reading        3 fragments
  =================================================================
 
  Fragment       Energy
-     1      -0.3479523181E-01    AF_MP2_OCC
-     2      -0.3480559618E-01    AF_MP2_OCC
-     3      -0.3483481274E-01    AF_MP2_OCC
+     1      -0.3475894266E-01    AF_MP2_OCC
+     2      -0.3480729963E-01    AF_MP2_OCC
+     3      -0.3481584596E-01    AF_MP2_OCC
 
 
  =================================================================
@@ -869,9 +868,9 @@ DEC restart: Reading        3 fragments
  =================================================================
 
  Fragment       Energy
-     1      -0.3476824062E-01    AF_MP2_VIR
-     2      -0.3483057400E-01    AF_MP2_VIR
-     3      -0.3483571744E-01    AF_MP2_VIR
+     1      -0.3475117680E-01    AF_MP2_VIR
+     2      -0.3482703523E-01    AF_MP2_VIR
+     3      -0.3482473782E-01    AF_MP2_VIR
 
 
  =================================================================
@@ -879,9 +878,9 @@ DEC restart: Reading        3 fragments
  =================================================================
 
  Fragment       Energy
-     1      -0.3478815955E-01    AF_MP2_LAG
-     2      -0.3482887636E-01    AF_MP2_LAG
-     3      -0.3484182836E-01    AF_MP2_LAG
+     1      -0.3475791529E-01    AF_MP2_LAG
+     2      -0.3482645792E-01    AF_MP2_LAG
+     3      -0.3482320774E-01    AF_MP2_LAG
 
 
  =================================================================
@@ -889,8 +888,8 @@ DEC restart: Reading        3 fragments
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      3.3320         -0.3587691536E-03    PF_MP2_OCC
-     2       3      3.3320         -0.3856172025E-03    PF_MP2_OCC
+     1       2      3.3320         -0.3566347397E-03    PF_MP2_OCC
+     2       3      3.3320         -0.3874816829E-03    PF_MP2_OCC
 
 
  =================================================================
@@ -898,8 +897,8 @@ DEC restart: Reading        3 fragments
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      3.3320         -0.3975581008E-03    PF_MP2_VIR
-     2       3      3.3320         -0.3929434354E-03    PF_MP2_VIR
+     1       2      3.3320         -0.3974042760E-03    PF_MP2_VIR
+     2       3      3.3320         -0.3928978447E-03    PF_MP2_VIR
 
 
  =================================================================
@@ -907,12 +906,12 @@ DEC restart: Reading        3 fragments
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2      3.3320         -0.3624339777E-03    PF_MP2_LAG
-     2       3      3.3320         -0.3769480157E-03    PF_MP2_LAG
+     1       2      3.3320         -0.3610103374E-03    PF_MP2_LAG
+     2       3      3.3320         -0.3780522978E-03    PF_MP2_LAG
 
- MP2 occupied   correlation energy :    -0.1051800271    
- MP2 virtual    correlation energy :    -0.1052250336    
- MP2 Lagrangian correlation energy :    -0.1051982463    
+ MP2 occupied   correlation energy :    -0.1051262047    
+ MP2 virtual    correlation energy :    -0.1051932520    
+ MP2 Lagrangian correlation energy :    -0.1051466436    
 
 
 
@@ -926,11 +925,11 @@ DEC restart: Reading        3 fragments
              **********************************************************
 
                E: Hartree-Fock energy :      -74.1900454241
-               E: Correlation energy  :       -0.1051800271
-               E: Estimated DEC err 1 :        0.0000450065
+               E: Correlation energy  :       -0.1051262047
+               E: Total MP2 energy    :      -74.2951716287
+               E: Estimated DEC err 1 :        0.0000670473
                E: Estimated DEC err 2 :        0.0012000000
-               E: Estimated DEC err 3 :        0.0000544180
-               G: Total MP2 energy    :      -74.2952254511
+               E: Estimated DEC err 3 :        0.0001079704
 
 
  >>>  CPU Time used in DEC FINAL is   0.04 seconds
@@ -938,9 +937,9 @@ DEC restart: Reading        3 fragments
 
  CC Memory summary
  -----------------
- Allocated memory for array4   :  0.1958E-03 GB
+ Allocated memory for array4   :  0.1970E-03 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.5645E-04 GB
+ Max memory in use for array4  :  0.6509E-04 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
@@ -949,13 +948,13 @@ DEC restart: Reading        3 fragments
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         1.19800     s
-Total Wall time used in DEC          :         1.19800     s
+Total CPU  time used in DEC          :         1.18862     s
+Total Wall time used in DEC          :         1.18900     s
 ------------------------------------------------------
 
 
 Hostname       : pablo-AU                                          
-Job finished   : Date: 07/04/2015   Time: 14:46:34
+Job finished   : Date: 09/09/2015   Time: 10:15:16
 
 
 
@@ -967,7 +966,6 @@ Job finished   : Date: 07/04/2015   Time: 14:46:34
 
 Total no. of matmuls used:                        18
 Total no. of Fock/KS matrix evaluations:           0
-Max no. of matrices allocated in Level 3:          9
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1006,33 +1004,33 @@ Max no. of matrices allocated in Level 3:          9
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Additional Memory information          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                          1.803 MB
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                          1.289 MB
   Max allocated memory, type(matrix)                  15.552 kB
   Max allocated memory, real(realk)                    1.261 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       26.118 kB
-  Max allocated memory, logical                        4.032 kB
+  Max allocated memory, integer                       25.918 kB
+  Max allocated memory, logical                        2.032 kB
   Max allocated memory, character                      3.920 kB
-  Max allocated memory, AOBATCH                       24.696 kB
-  Max allocated memory, DECORBITAL                     4.992 kB
-  Max allocated memory, DECFRAG                      188.160 kB
+  Max allocated memory, AOBATCH                       25.088 kB
+  Max allocated memory, DECORBITAL                     4.736 kB
+  Max allocated memory, DECFRAG                      214.944 kB
   Max allocated memory, BATCHTOORB                     0.448 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.720 kB
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                        668.000 kB
+  Max allocated memory, ARRAY                          0.000 Byte
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
@@ -1042,7 +1040,7 @@ Max no. of matrices allocated in Level 3:          9
   Max allocated memory, SLSAOTENSOR                   23.184 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                 306.112 kB
-  Max allocated memory, ATOMITEM                       6.528 kB
+  Max allocated memory, ATOMITEM                       6.144 kB
   Max allocated memory, LSMATRIX                       2.016 kB
   Max allocated memory, OverlapT                     102.240 kB
   Max allocated memory, linkshell                      0.000 Byte
@@ -1060,9 +1058,9 @@ Max no. of matrices allocated in Level 3:          9
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   1.22 seconds
+ >>>  CPU Time used in LSDALTON is   1.21 seconds
  >>> wall Time used in LSDALTON is   1.21 seconds
 
 End simulation
-     Date and time (Linux)  : Tue Apr  7 14:46:34 2015
+     Date and time (Linux)  : Wed Sep  9 10:15:16 2015
      Host name              : pablo-AU                                
