@@ -76,6 +76,7 @@ option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
 option(ENABLE_DEC            "Enable Divide-Expand-Consolidate module"          OFF)
+option(ENABLE_TENSORS        "Enable parallel distributed tensors"              OFF)
 
 option(ENABLE_SRDFT          "Enable srdft module"                              ON)
 
