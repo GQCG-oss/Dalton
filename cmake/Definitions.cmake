@@ -11,6 +11,7 @@ endif()
 
 if(ENABLE_DEC)
   add_definitions(-DVAR_DEC)
+  set(ENABLE_TENSORS ON)
 endif()
 
 if(ENABLE_TENSORS)
