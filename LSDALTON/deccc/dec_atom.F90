@@ -1084,12 +1084,12 @@ contains
      end if
 
      ! Get ninit_occ and ninit_vir:
-     ninit_occ = DECinfo%Frag_Init_Size*ceiling((no_full-ncore)*1.0E0_realk/natoms)
-     ninit_vir = DECinfo%Frag_Init_Size*ceiling(nv_full*1.0E0_realk/natoms)
+     ninit_occ = ceiling(DECinfo%Frag_Init_Size*(no_full-ncore)*1.0E0_realk/natoms)
+     ninit_vir = ceiling(DECinfo%Frag_Init_Size*nv_full*1.0E0_realk/natoms)
 
      ! Get nexp_occ and nexp_vir:
-     nexp_occ = DECinfo%Frag_Exp_Size*ceiling((no_full-ncore)*1.0E0_realk/natoms)
-     nexp_vir = DECinfo%Frag_Exp_Size*ceiling(nv_full*1.0E0_realk/natoms)
+     nexp_occ = ceiling(DECinfo%Frag_Exp_Size*(no_full-ncore)*1.0E0_realk/natoms)
+     nexp_vir = ceiling(DECinfo%Frag_Exp_Size*nv_full*1.0E0_realk/natoms)
 
      ! SCHEME 1:
      if (DECinfo%Frag_Exp_Scheme == 1) then
@@ -1222,6 +1222,11 @@ contains
      nred_occ = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%noccAOS/100), 1)
      nred_vir = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%nvirtAOS/100), 1)
 
+     ! mostly for debugging:
+     if (DECinfo%FracOfOrbSpace_red==0.0E0_realk) then
+        nred_occ = 0
+        nred_vir = 0
+     end if
 
      ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
      ! ======================================
@@ -1467,8 +1472,10 @@ contains
         call SanityCheckOrbAOS(Myfragment,Nfull,'V',Orb_AOS)
      end if
 
+
      ! Put Nnew Orbitals in the AOS base on priority list:
      ncount = count(Orb_AOS)
+     if (ncount >= Nnew) return
      do i=1,Nfull
         ii = priority_list(i)
         ! Skip orbital if it is a core or if it is allready included:
