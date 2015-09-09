@@ -1,6 +1,6 @@
 !Simple tools common for cc routines
 module cc_tools_module
-   use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
+   use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc, c_size_t
 
 !`DIL backend (depends on Fortran-2003/2008, MPI-3):
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -619,6 +619,7 @@ module cc_tools_module
       integer(kind=acc_handle_kind) :: acc_h(nids),transp
       integer,parameter             :: lsacc_sync    = acc_async_sync
       integer,parameter             :: lsacc_handlek = acc_handle_kind
+      integer(c_size_t)             :: total_gpu,free_gpu
 #else
       integer                       :: acc_h(nids),transp
       integer,parameter             :: lsacc_sync    = -4
@@ -708,13 +709,40 @@ module cc_tools_module
          tred=la*lg
       endif
 
+      !Request a fraction of tred resulting in intermediates that can be stored
+      !in GPU memory if a GPU is available, if not just use the full tred
 #ifdef VAR_OPENACC
-      if(DECinfo%hack2)then
-         laleg_req = min(DECinfo%test_len,tred)
-         print *,"Selected requested length of",laleg_req
-      else
+      total_gpu = 0
+      free_gpu  = 0
+      call get_dev_mem(total_gpu,free_gpu)
+      select case(s)
+      case(4,3)
+
+         !subtract the memory required to store yv and tpl/tmi
+         free_gpu = free_gpu - 8 * (nb*nv + nor*nvr)
+
+         !decrease the number of async ids with minimal batch size until all fits into GPU memory
+         laleg_req = 1
+         do nids_use = nids, 0
+            !              #of async ids       w0 size          w2 size            w3 size
+            if((free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) > 0) exit
+         enddo
+
+         if(nids_use <= 0)call lsquit("ERROR(get_a22_and_prepb22_terms_ex): not enough memory on the GPU available",-1)
+
+         !increase the batch size until the intermediates to not fit into the GPU memory anymore
+         do laleg_req = 2, tred + 1
+            !            #of async ids      w0 size          w2 size            w3 size
+            if((free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) < 0 ) exit
+         enddo
+
+      !reduce the found requested size by one which was the last size that fulfilled the memory requirements
+         laleg_req = laleg_req - 1
+
+      case default
+         !default use the full batch
          laleg_req = tred
-      endif
+      end select
 #else
       laleg_req = tred
 #endif
@@ -736,21 +764,19 @@ module cc_tools_module
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
 
-            curr_id = mod(curr_id,nids)+1
+            curr_id = mod(curr_id,nids_use)+1
 
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
-            !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
             !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
             !$acc& wait(transp) async(acc_h(curr_id)) 
 
-            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
+            !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
             &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
 
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
             call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
             &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
 
@@ -783,25 +809,22 @@ module cc_tools_module
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
 
-            curr_id = mod(curr_id,nids)+1
+            curr_id = mod(curr_id,nids_use)+1
 
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
 
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
-            !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
 
-#ifdef VAR_OPENACC
             !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))&
             !$acc& wait(transp) async(acc_h(curr_id))
-#endif
-            !call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0(nb*laleg*nv+1),nb*laleg)
+
+            !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
             call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
             &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
 
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            !call dgemm('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg)
             call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
             &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
 
@@ -824,7 +847,6 @@ module cc_tools_module
 #ifdef VAR_OPENACC
          call array_reorder_2d(p10,w3(tred*nor+1:tred*nor+tred*nor),nor,tred,[2,1],nul,w2)
          call array_reorder_2d(p10,w2,tred,nor,[1,2],nul,w3(tred*nor+1:tred*nor+tred*nor))
-#endif
 
 #ifdef VAR_CUBLAS
          ! Destroy the CUBLAS context
@@ -832,6 +854,7 @@ module cc_tools_module
             stat = cublasDestroy_v2(cub_h(curr_id))
             if(stat/=0)print*,"warning: cublas destroy failed 1",stat
          enddo
+#endif
 #endif
 
       case(2)
