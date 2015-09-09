@@ -1002,7 +1002,8 @@ subroutine DetermineMaxNauxRI(use_bg_buf,noOMP,dim1,AuxDimUsedInAOcode,nbasis1,n
   IF(DECinfo%MemDebugPrint)THEN
      WRITE(DECinfo%output,*)'RIUTILinfo: External AO to MO requires',ExternalAOtoMO,' GB' 
      IF(use_bg_buf)THEN
-        WRITE(DECinfo%output,*)'RIUTILinfo: external AotoMO MemoryEstimateGB=',(buf_realk%offset+ExternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'
+        WRITE(DECinfo%output,*)'RIUTILinfo: external AotoMO MemoryEstimateGB=',&
+             & (buf_realk%offset+ExternalAOtoMO/8.0E-9_realk)*8.0E-9_realk,' GB'
         WRITE(DECinfo%output,*)'RIUTILinfo: buffer size                      ',mem_get_bg_buf_n()*8.0E-9_realk
         WRITE(DECinfo%output,*)'RIUTILinfo: 90% buffer size                  ',mem_get_bg_buf_n()*8.0E-9_realk*0.9E0_realk
      ENDIF
