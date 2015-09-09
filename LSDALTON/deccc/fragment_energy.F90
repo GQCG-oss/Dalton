@@ -3096,22 +3096,29 @@ end subroutine AddF12CcouplingCorrection
            nv_new = nv_old
            ! The new condition is set by removing half of the occ 
            ! orbital between max and min:
-           no_new = no_max - (no_max - no_min)/2
+           no_new = no_max - ceiling((no_max - no_min)/2.0_realk)
         else if (redvir.and.(.not.redocc)) then
            ! keep old occupied space and change virtual one
            no_new = no_old
            ! The new condition is set by removing half of the vir
            ! orbital between max and min:
-           nv_new = nv_max - (nv_max - nv_min)/2
+           nv_new = nv_max - ceiling((nv_max - nv_min)/2.0_realk)
         else if (redocc.and.redvir) then
            ! The new condition is set by removing half of the occ
            ! and vir orbital between max and min:
-           no_new = no_max - (no_max - no_min)/2
-           nv_new = nv_max - (nv_max - nv_min)/2
+           no_new = no_max - ceiling((no_max - no_min)/2.0_realk)
+           nv_new = nv_max - ceiling((nv_max - nv_min)/2.0_realk)
         else
            call lsquit("ERROR(fragment_reduction_procedure): space to reduce not defined", &
               & DECinfo%output)
         end if
+
+        ! Check for rare case (mostly debug):
+        if ((no_new==no_old).and.(nv_new==nv_old)) then
+           reduction_converged = .true.
+           exit REDUCTION_LOOP
+        end if
+
 
         call reduce_fragment(AtomicFragment,MyMolecule,no,no_new,Occ_AOS, &
            & occ_priority_list,.true.)
@@ -3150,6 +3157,8 @@ end subroutine AddF12CcouplingCorrection
 
            call get_fragopt_energy_error(AtomicFragment,MODEL_MP2,Eexp)
 
+           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter,add_mp2_opt)
+
            if (redocc.and.(.not.redvir)) then
               call fragopt_check_convergence(MODEL_MP2,AtomicFragment,dE_occ,MP2_accepted)
            else if (redvir.and.(.not.redocc)) then
@@ -3157,8 +3166,6 @@ end subroutine AddF12CcouplingCorrection
            else if (redocc.and.redvir) then
               call fragopt_check_convergence(MODEL_MP2,AtomicFragment,FOT,MP2_accepted)
            end if
-
-           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter,add_mp2_opt)
 
            ! require both MP2 and CC energy to be converged
            if (.not.MP2_accepted) then
@@ -3192,7 +3199,7 @@ end subroutine AddF12CcouplingCorrection
         ! If everything has converged then we keep the last valid
         ! information and quit the loop:
         FullConvergence: if (reduction_converged) then
-           if (DECinfo%PL > 1 .and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: REDUCTION CONVERGED'
+           if (DECinfo%PL > 1 .and. DECinfo%print_small_calc) write(DECinfo%output,*) 'FOP: REDUCTION CONVERGED'
 
            if (.not.step_accepted) then
               ! The last binary search step did not succeed so  
@@ -3213,7 +3220,7 @@ end subroutine AddF12CcouplingCorrection
         no_old = no_new
         nv_old = nv_new
         if (step_accepted) then
-           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step accepted'
+           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'FOP: Step accepted'
            ! The current number of occ and virt is good or too high:
            ! Setting new maximum:
            if (redocc.and.(.not.redvir)) then
@@ -3225,7 +3232,7 @@ end subroutine AddF12CcouplingCorrection
               nv_max = nv_new
            end if
         else
-           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step NOT accepted'
+           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'FOP: Step NOT accepted'
            ! The current number of occ and virt is NOT good enough:
            ! Setting new minimum:
            if (redocc.and.(.not.redvir)) then
@@ -3676,10 +3683,10 @@ end subroutine AddF12CcouplingCorrection
         if( DECinfo%print_small_calc )then
            if (reduce_occ) then
               write(DECinfo%output,*) &
-                 & 'BIN SEARCH: OCCUPIED REDUCTION CONVERGED', gap
+                 & 'FOP: OCCUPIED REDUCTION CONVERGED', gap
            else
               write(DECinfo%output,*) &
-                 & 'BIN SEARCH: VIRTUAL REDUCTION CONVERGED', gap
+                 & 'FOP: VIRTUAL REDUCTION CONVERGED', gap
            end if
         endif
 
