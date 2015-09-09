@@ -3381,13 +3381,13 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
     type(fullmolecule), intent(in) :: MyMolecule
-    real(realk), pointer :: MyStC(:), approximated_orbital(:),Sfullfrag(:,:),StC(:,:)
+    real(realk), pointer :: MySC(:), approximated_orbital(:),Sfragfull(:,:),SC(:,:)
     integer :: i,j,idx,atom_k,nocc,nvirt,nbasis,natoms,k,offset
     integer :: full_orb_idx,fullcomm,fullnode,fullnumnodes,nbasisf,noccf,nvirtf,ncoref
     logical,pointer :: which_atoms(:)
     real(realk), pointer :: Co(:,:),Cv(:,:),fock(:,:),oofock(:,:),vvfock(:,:),Cfrag(:,:)
-    TYPE(MoleculeInfo),pointer      :: molecule2
-    TYPE(BASISINFO),pointer         :: basis2
+    TYPE(MoleculeInfo),pointer      :: molecule1
+    TYPE(BASISINFO),pointer         :: basis1
 
     ! allocate C^o(nbasis,occ) C^v(nbasis,virt)
     call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC   )
@@ -3429,21 +3429,21 @@ contains
     ! Second index of overlap matrix corresponds to fragment
     ! ------------------------------------------------------
     ! Store current pointers
-    molecule2 => Mylsitem%SETTING%MOLECULE(2)%p  
-    basis2 => Mylsitem%SETTING%BASIS(2)%p
+    molecule1 => Mylsitem%SETTING%MOLECULE(1)%p  
+    basis1 => Mylsitem%SETTING%BASIS(1)%p
     ! point second index to fragment
-    Mylsitem%SETTING%MOLECULE(2)%p => fragment%mylsitem%setting%molecule(1)%p 
-    Mylsitem%SETTING%BASIS(2)%p => fragment%mylsitem%setting%basis(1)%p 
-    call mem_alloc(Sfullfrag,nbasis,nbasisf)
+    Mylsitem%SETTING%MOLECULE(1)%p => fragment%mylsitem%setting%molecule(1)%p 
+    Mylsitem%SETTING%BASIS(1)%p => fragment%mylsitem%setting%basis(1)%p 
+    call mem_alloc(Sfragfull,nbasisf,nbasis)
     call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
-         & Sfullfrag,nbasis,nbasisf,AORdefault,AORdefault)
+         & Sfragfull,nbasisf,nbasis,AORdefault,AORdefault)
     ! Reset full LSITEM MPI info
     MyLsitem%setting%comm = fullcomm
     MyLsitem%setting%node = fullnode
     MyLsitem%setting%numnodes = fullnumnodes
     ! Reset molecule pointer to full molecule
-    Mylsitem%SETTING%MOLECULE(2)%p => molecule2  
-    Mylsitem%SETTING%BASIS(2)%p => basis2
+    Mylsitem%SETTING%MOLECULE(1)%p => molecule1  
+    Mylsitem%SETTING%BASIS(1)%p => basis1
 
        
     if( MyMolecule%mem_distributed )then
@@ -3461,7 +3461,7 @@ contains
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
 
        call mem_alloc(approximated_orbital,nbasisf)
-       call mem_alloc(MyStC,nbasisf)
+       call mem_alloc(MySC,nbasisf)
 
        ! Occupied
        ! ********
@@ -3472,25 +3472,25 @@ contains
           full_orb_idx = fragment%occAOSidx(i)
           Cfrag(:,i) = Co(:,full_orb_idx)
        end do
-       call mem_alloc(StC,nbasisf,noccf)
+       call mem_alloc(SC,nbasisf,noccf)
 
-       ! half transformed overlap: StC = Sfullfrag^T Cofrag,  dimension:  (nbasisf,noccf)
-       call dec_simple_dgemm(nbasisf,nbasis,noccf,Sfullfrag,Cfrag,StC,'T','N')
+       ! half transformed overlap: SC = Sfragfull Cofrag,  dimension:  (nbasisf,noccf)
+       call dec_simple_dgemm(nbasisf,nbasis,noccf,Sfragfull,Cfrag,SC,'N','N')
 
        ! Occ orbitals (only valence if frozen core approx is used)
        do i=1,noccf
 
-          MyStC = StC(:,i)
+          MySC = SC(:,i)
 
           ! fit orbital
           approximated_orbital = 0.0E0_realk
           call solve_linear_equations(fragment%S,approximated_orbital, &
-               MyStC,nbasisf)
+               MySC,nbasisf)
           fragment%CoLOC(:,i) = approximated_orbital
 
        end do
        call mem_dealloc(Cfrag)
-       call mem_dealloc(StC)
+       call mem_dealloc(SC)
 
 
        ! Core orbitals (same procedure)
@@ -3501,22 +3501,22 @@ contains
           full_orb_idx = fragment%coreidx(i)
           Cfrag(:,i) = Co(:,full_orb_idx)
        end do
-       call mem_alloc(StC,nbasisf,ncoref)
-       call dec_simple_dgemm(nbasisf,nbasis,ncoref,Sfullfrag,Cfrag,StC,'T','N')
+       call mem_alloc(SC,nbasisf,ncoref)
+       call dec_simple_dgemm(nbasisf,nbasis,ncoref,Sfragfull,Cfrag,SC,'N','N')
 
        do i=1,ncoref
 
-          MyStC = StC(:,i)
+          MySC = SC(:,i)
 
           ! fit orbital
           approximated_orbital = 0.0E0_realk
           call solve_linear_equations(fragment%S,approximated_orbital, &
-               MyStC,nbasisf)
+               MySC,nbasisf)
           fragment%coreMO(:,i) = approximated_orbital
 
        end do
        call mem_dealloc(Cfrag)
-       call mem_dealloc(StC)
+       call mem_dealloc(SC)
 
 
        ! Virtual orbitals (same procedure)
@@ -3527,25 +3527,25 @@ contains
           full_orb_idx = fragment%virtAOSidx(i)
           Cfrag(:,i) = Cv(:,full_orb_idx)
        end do
-       call mem_alloc(StC,nbasisf,nvirtf)
-       call dec_simple_dgemm(nbasisf,nbasis,nvirtf,Sfullfrag,Cfrag,StC,'T','N')
+       call mem_alloc(SC,nbasisf,nvirtf)
+       call dec_simple_dgemm(nbasisf,nbasis,nvirtf,Sfragfull,Cfrag,SC,'N','N')
 
        do i=1,nvirtf
 
-          MyStC = StC(:,i)
+          MySC = SC(:,i)
 
           ! fit orbital
           approximated_orbital = 0.0E0_realk
           call solve_linear_equations(fragment%S,approximated_orbital, &
-               MyStC,nbasisf)
+               MySC,nbasisf)
           fragment%CvLOC(:,i) = approximated_orbital
 
        end do
        call mem_dealloc(Cfrag)
-       call mem_dealloc(StC)
+       call mem_dealloc(SC)
        
        ! Remove temp stuff
-       call mem_dealloc(MyStC)
+       call mem_dealloc(MySC)
        call mem_dealloc(approximated_orbital)
 
 
@@ -3565,7 +3565,7 @@ contains
 
     end if FitOrbitalsForFragment
 
-    call mem_dealloc(Sfullfrag)
+    call mem_dealloc(Sfragfull)
 
     if( MyMolecule%mem_distributed )then
 
