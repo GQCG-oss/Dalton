@@ -615,6 +615,7 @@ module cc_tools_module
       integer(kind=8) :: nbuf
       integer :: faleg,laleg,laleg_req,i,nerrors
       integer, parameter :: nids = 15
+      integer :: nids_use
 #ifdef VAR_OPENACC
       integer(kind=acc_handle_kind) :: acc_h(nids),transp
       integer,parameter             :: lsacc_sync    = acc_async_sync
@@ -744,6 +745,7 @@ module cc_tools_module
          laleg_req = tred
       end select
 #else
+      nids_use  = 1
       laleg_req = tred
 #endif
 
