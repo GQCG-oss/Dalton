@@ -1119,8 +1119,8 @@ module lspdm_tensor_operations_module
 
      if( alloc_in_dummy )then
         call tensor_unlock_wins(gmo,all_nodes = .true.)
-        call mem_dealloc(reqC)
-        call mem_dealloc(reqE)
+        call tensor_free_mem(reqC)
+        call tensor_free_mem(reqE)
      endif
 
 #ifdef TENSORS_IN_LSDALTON
@@ -1138,7 +1138,7 @@ module lspdm_tensor_operations_module
         Ec=E2
      endif
 
-     call mem_dealloc(gmo_tile_buf)
+     call tensor_free_mem(gmo_tile_buf)
 
      if( tensor_always_sync ) call tensor_mpi_barrier(tensor_work_comm)
 #else
