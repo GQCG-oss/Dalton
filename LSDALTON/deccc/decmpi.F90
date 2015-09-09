@@ -2146,6 +2146,11 @@ contains
     integer :: i, minidx, maxidx,N
     logical :: Fragoptjobs
 
+    if(jobs%njobs<1) then
+       write(DECinfo%output,*) 'MPI fragment statistics: No jobs to print!'
+       return
+    end if
+
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
