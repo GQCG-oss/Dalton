@@ -744,8 +744,6 @@ subroutine print_dec_info()
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))
-   write(LU,'(a,A5)')    'Fit Molecular Orbitals                              =           ',&
-        & LogicString(Log2It(DECinfo%FitOrbitals))
    write(LU,'(a,ES12.4)')'The Integral Screening threshold                    =           ',&
         & DECinfo%IntegralThreshold
 
