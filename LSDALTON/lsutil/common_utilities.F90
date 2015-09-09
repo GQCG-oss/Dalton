@@ -626,6 +626,8 @@ end subroutine ls_dcopy
       integer             :: luprin
       real(realk) :: CTOT,WTOT
       integer :: user_exit_code,qqstatus
+      real(realk), allocatable :: dummy(:)
+      integer(8) :: ndum
 !
 !     Stamp date and time and hostname to output
 !
@@ -676,6 +678,15 @@ end subroutine ls_dcopy
 !#ifdef VAR_MPI
 !      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
 !#endif
+       ! force crashing to produce stack on cray env. with ATP_ENABLED=1
+       if (force_crash) then
+          print *, "FORCE CRASHING !!!"
+          ndum = 1000000
+          allocate(dummy(ndum*ndum))
+          dummy(1)      = 0.0e0_realk
+          dummy(ndum/2) = 0.0e0_realk
+          dummy(ndum)   = 0.0e0_realk
+      end if
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 #if defined (SYS_LINUX)
       CALL EXIT(100)
