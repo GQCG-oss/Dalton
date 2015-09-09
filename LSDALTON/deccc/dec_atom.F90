@@ -3414,7 +3414,7 @@ contains
     noccf = fragment%noccLOC
     nvirtf = fragment%nvirtLOC
     ncoref = fragment%ncore
-    
+
 
 
     ! Overlap matrix with (frag,full) dimensions
@@ -3457,7 +3457,7 @@ contains
        end do
     end do
 
-       
+
     if( MyMolecule%mem_distributed )then
        !FIXME: in the long run, avoid this, also the statements further down
        print *,"WARNING(atomic_fragment_basis) converting to full dense, this should be avoided"
@@ -3470,85 +3470,67 @@ contains
        Cv => MyMolecule%Cv%elm2
     endif
 
-    FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
+
+    ! Occupied
+    ! ********
+
+    ! Occupied orbitals for fragment  before fitting (i.e. using ALL basis functions in molecule)
+    call mem_alloc(Cfrag,nbasis,noccf)
+    do i=1,noccf
+       full_orb_idx = fragment%occAOSidx(i)
+       Cfrag(:,i) = Co(:,full_orb_idx)
+    end do
+    call mem_alloc(SC,nbasisf,noccf)
+
+    ! half transformed overlap: SC = Sfragfull Cofrag,  dimension:  (nbasisf,noccf)
+    call dec_simple_dgemm(nbasisf,nbasis,noccf,Sfragfull,Cfrag,SC,'N','N')
+
+    ! Fit occ orbitals (only valence if frozen core approx is used)
+    do i=1,noccf
+       call solve_linear_equations(fragment%S,fragment%CoLOC(:,i), &
+            & SC(:,i),nbasisf)
+    end do
+    call mem_dealloc(Cfrag)
+    call mem_dealloc(SC)
 
 
-       ! Occupied
-       ! ********
+    ! Core orbitals (same procedure)
+    ! ******************************
 
-       ! Occupied orbitals for fragment  before fitting (i.e. using ALL basis functions in molecule)
-       call mem_alloc(Cfrag,nbasis,noccf)
-       do i=1,noccf
-          full_orb_idx = fragment%occAOSidx(i)
-          Cfrag(:,i) = Co(:,full_orb_idx)
-       end do
-       call mem_alloc(SC,nbasisf,noccf)
+    call mem_alloc(Cfrag,nbasis,ncoref)
+    do i=1,ncoref
+       full_orb_idx = fragment%coreidx(i)
+       Cfrag(:,i) = Co(:,full_orb_idx)
+    end do
+    call mem_alloc(SC,nbasisf,ncoref)
+    call dec_simple_dgemm(nbasisf,nbasis,ncoref,Sfragfull,Cfrag,SC,'N','N')
 
-       ! half transformed overlap: SC = Sfragfull Cofrag,  dimension:  (nbasisf,noccf)
-       call dec_simple_dgemm(nbasisf,nbasis,noccf,Sfragfull,Cfrag,SC,'N','N')
-
-       ! Fit occ orbitals (only valence if frozen core approx is used)
-       do i=1,noccf
-          call solve_linear_equations(fragment%S,fragment%CoLOC(:,i), &
-               & SC(:,i),nbasisf)
-       end do
-       call mem_dealloc(Cfrag)
-       call mem_dealloc(SC)
+    do i=1,ncoref
+       call solve_linear_equations(fragment%S,fragment%coreMO(:,i), &
+            & SC(:,i),nbasisf)
+    end do
+    call mem_dealloc(Cfrag)
+    call mem_dealloc(SC)
 
 
-       ! Core orbitals (same procedure)
-       ! ******************************
+    ! Virtual orbitals (same procedure)
+    ! *********************************
 
-       call mem_alloc(Cfrag,nbasis,ncoref)
-       do i=1,ncoref
-          full_orb_idx = fragment%coreidx(i)
-          Cfrag(:,i) = Co(:,full_orb_idx)
-       end do
-       call mem_alloc(SC,nbasisf,ncoref)
-       call dec_simple_dgemm(nbasisf,nbasis,ncoref,Sfragfull,Cfrag,SC,'N','N')
+    call mem_alloc(Cfrag,nbasis,nvirtf)
+    do i=1,nvirtf
+       full_orb_idx = fragment%virtAOSidx(i)
+       Cfrag(:,i) = Cv(:,full_orb_idx)
+    end do
+    call mem_alloc(SC,nbasisf,nvirtf)
+    call dec_simple_dgemm(nbasisf,nbasis,nvirtf,Sfragfull,Cfrag,SC,'N','N')
 
-       do i=1,ncoref
-          call solve_linear_equations(fragment%S,fragment%coreMO(:,i), &
-               & SC(:,i),nbasisf)
-       end do
-       call mem_dealloc(Cfrag)
-       call mem_dealloc(SC)
+    do i=1,nvirtf
+       call solve_linear_equations(fragment%S,fragment%CvLOC(:,i), &
+            & SC(:,i),nbasisf)
+    end do
+    call mem_dealloc(Cfrag)
+    call mem_dealloc(SC)
 
-
-       ! Virtual orbitals (same procedure)
-       ! *********************************
-
-       call mem_alloc(Cfrag,nbasis,nvirtf)
-       do i=1,nvirtf
-          full_orb_idx = fragment%virtAOSidx(i)
-          Cfrag(:,i) = Cv(:,full_orb_idx)
-       end do
-       call mem_alloc(SC,nbasisf,nvirtf)
-       call dec_simple_dgemm(nbasisf,nbasis,nvirtf,Sfragfull,Cfrag,SC,'N','N')
-
-       do i=1,nvirtf
-          call solve_linear_equations(fragment%S,fragment%CvLOC(:,i), &
-               & SC(:,i),nbasisf)
-       end do
-       call mem_dealloc(Cfrag)
-       call mem_dealloc(SC)
-       
-
-    else ! Simply extract the exact MO coefficients for atoms in fragment without fitting
-
-       if(DECinfo%frozencore) then
-          call lsquit('atomic_fragment_basis: Frozen core needs implementation!',-1)
-       end if
-
-       ! Fragment Co
-       call adjust_basis_matrix2(Co,fragment%CoLOC,fragment%occAOSidx, &
-            nbasis,nocc,nbasisf,fragment%noccLOC,Fragment%basis_idx)
-
-       ! Fragment Cv
-       call adjust_basis_matrix2(Cv,fragment%CvLOC,fragment%virtAOSidx, &
-            nbasis,nvirt,nbasisf,fragment%nvirtLOC,Fragment%basis_idx)
-
-    end if FitOrbitalsForFragment
 
     call mem_dealloc(Sfragfull)
 
@@ -3630,7 +3612,7 @@ contains
     if(fragment%fragmentadapted .and. fragment%FAset) then
 
        if(.not.associated(fragment%ppfock).or..not.associated(fragment%qqfock))then
-         call get_fragment_FA_fock(fragment)
+          call get_fragment_FA_fock(fragment)
        endif
        ! Fragment-adapted
        call fragment_basis_point_to_FOs(Fragment)
