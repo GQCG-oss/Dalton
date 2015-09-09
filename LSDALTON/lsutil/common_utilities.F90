@@ -678,6 +678,7 @@ end subroutine ls_dcopy
 !#ifdef VAR_MPI
 !      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
 !#endif
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
        ! force crashing to produce stack on cray env. with ATP_ENABLED=1
        if (force_crash) then
           print *, "FORCE CRASHING !!!"
@@ -687,6 +688,7 @@ end subroutine ls_dcopy
           dummy(ndum/2) = 0.0e0_realk
           dummy(ndum)   = 0.0e0_realk
       end if
+#endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 #if defined (SYS_LINUX)
       CALL EXIT(100)
