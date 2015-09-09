@@ -1405,10 +1405,6 @@ contains
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    ENDIF
 
-   IF(wakeslaves)THEN
-      call mem_dealloc(nAuxMPI)
-   ENDIF
-
 #endif
 
     E_21 = 0.0E0_realk
