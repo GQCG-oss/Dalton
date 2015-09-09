@@ -18,11 +18,15 @@ module tensor_parameters_and_counters
    integer, parameter :: tensor_long_log     = 8
    integer, parameter :: tensor_char_size    = 1
    integer, parameter :: tensor_char_4       = 4
-!#ifdef VAR_MPI_32BIT_INT
+#ifdef VAR_INT64
+#ifdef VAR_MPI_32BIT_INT
    integer, parameter :: tensor_mpi_kind     = 4
-!#else
-!   integer, parameter :: tensor_mpi_kind     = 8
-!#endif
+#else
+   integer, parameter :: tensor_mpi_kind     = 8
+#endif
+#else
+   integer, parameter :: tensor_mpi_kind     = 4
+#endif
    !
    !L2_CACHE_SIZE = 256000 ! lower estimate of cache size in bytes:
    !BS_2D = floor(sqrt(L2_CACHE_SIZE/(2*8.0E0_realk)))
