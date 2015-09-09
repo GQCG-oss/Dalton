@@ -1278,7 +1278,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
         CASE('.PDMM')
-#ifdef VAR_ENABLE_TENSORS && defined(VAR_MPI)
+#if defined(VAR_ENABLE_TENSORS) && defined(VAR_MPI)
            config%opt%cfg_prefer_PDMM = .true.
            !Set tensor synchronization to always, TODO: see if this can be optimized
            call tensor_set_always_sync_true(.true.)
