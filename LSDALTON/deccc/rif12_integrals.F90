@@ -599,15 +599,32 @@ contains
          & FORCEPRINT,wakeslaves,mynum,numnodes,ABdecompR,'D',Umat)
     !Build the G coefficient of Eq. 90 of J Comput Chem 32: 2492–2513, 2011
   
+#ifdef VAR_MPI 
+    IF(wakeslaves)THEN
+       nbuf1=numnodes
+       call mem_alloc(nAuxMPI,nbuf1)
+       call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)
+    ELSE
+       nbuf1 = 1
+       call mem_alloc(nAuxMPI,nbuf1)
+       nAuxMPI(1) = nAux
+    ENDIF
+#else
+    nbuf1 = 1
+    call mem_alloc(nAuxMPI,nbuf1)
+    nAuxMPI(1) = nAux
+#endif
+
+
 #ifdef VAR_MPI
       !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
       !We need to do:
       !CalphaD(NBA,nocc,nocc) = -0.5*CalphaD(NBA,nocc,nocc) + Loop_NBA2 Umat(NBA,NBA2)*CalphaR(NBA2,nocc,nocc)
       !Where NBA is the Auxiliary assigned to this node, while NBA2 can be assigned to another node
       IF(wakeslaves)THEN
-         nbuf1=numnodes
-         call mem_alloc(nAuxMPI,nbuf1)
-         call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI) !3 50     
+         !nbuf1=numnodes
+         !call mem_alloc(nAuxMPI,nbuf1)
+         !call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI) !3 50     
          call BuildnAuxMPIUsedRIinfo(nAux,numnodesstd,mynum,AuxMPIstartMy,iAuxMPIextraMy)
          DO inode = 1,numnodes
             nbuf1 = nAuxMPI(inode)
@@ -1482,6 +1499,9 @@ contains
 
     !> Setting the MP2-F12 correction
     Myfragment%energies(FRAGMODEL_RIMP2f12) = E_F12
+
+    !> Deallocate
+    call mem_dealloc(nAuxMPI)
 
 
   end subroutine get_rif12_fragment_energy
