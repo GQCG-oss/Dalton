@@ -708,12 +708,16 @@ module cc_tools_module
          tred=la*lg
       endif
 
+#ifdef VAR_OPENACC
       if(DECinfo%hack2)then
          laleg_req = min(DECinfo%test_len,tred)
          print *,"Selected requested length of",laleg_req
       else
          laleg_req = tred
       endif
+#else
+      laleg_req = tred
+#endif
 
 
       select case(s)
