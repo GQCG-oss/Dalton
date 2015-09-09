@@ -317,9 +317,11 @@ add_library(
     ${LSUTIL_TYPE_SOURCES}
     )
 
- if(ENABLE_TENSORS)
-    target_link_libraries(lsutillib_common1 lsutil_tensor_lib)
- endif()
+if(ENABLE_TENSORS)
+   target_link_libraries(lsutillib_common1 lsutil_tensor_lib)
+else()
+   target_link_libraries(lsutillib_common1 matrixmlib)
+endif()
 
 add_library(
     lsutillib_common2

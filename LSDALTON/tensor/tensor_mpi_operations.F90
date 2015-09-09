@@ -190,19 +190,25 @@ module tensor_mpi_operations_module
       integer(kind=tensor_mpi_kind) :: i, j, c
 
       if(present(comm))then
-         c=comm
+         c = comm
+         if( present(root))then
+            j = root
+         else
+            call tensor_status_quit("ERROR(tensor_buffer_dp): comm and root need to be given at first call",22)
+         endif
       else if(tensor_mpi_buffer%is_initialized)then
-         c=tensor_mpi_buffer%comm
+         c = tensor_mpi_buffer%comm
+         j = tensor_mpi_buffer%root
       else
          call tensor_status_quit("ERROR(tensor_buffer_dp): buffer needs to be initialized or comm given at first call",22)
       endif
 
       call tensor_get_rank_for_comm(c,i)
-      j = tensor_mpi_buffer%root
 
       n=1
       buf(1) = buffer
       call tensor_buffer_dp_l(buf,n,init_size=init_size,root=root,comm=comm,finalize=finalize)
+
       if(i /= j) buffer = buf(1)
    end subroutine tensor_buffer_dp
    subroutine tensor_buffer_dp_l(buffer,n1,init_size,root,comm,finalize)
@@ -239,15 +245,20 @@ module tensor_mpi_operations_module
       integer(kind=tensor_mpi_kind) :: i, j, c
 
       if(present(comm))then
-         c=comm
+         c = comm
+         if( present(root))then
+            j = root
+         else
+            call tensor_status_quit("ERROR(tensor_buffer_long_int): comm and root need to be given at first call",22)
+         endif
       else if(tensor_mpi_buffer%is_initialized)then
-         c=tensor_mpi_buffer%comm
+         c = tensor_mpi_buffer%comm
+         j = tensor_mpi_buffer%root
       else
          call tensor_status_quit("ERROR(tensor_buffer_long_int): buffer needs to be initialized or comm given at first call",22)
       endif
 
       call tensor_get_rank_for_comm(c,i)
-      j = tensor_mpi_buffer%root
 
       n=1
       buf(1) = buffer
@@ -288,20 +299,25 @@ module tensor_mpi_operations_module
       integer(kind=tensor_mpi_kind) :: i, j, c
 
       if(present(comm))then
-         c=comm
+         c = comm
+         if( present(root))then
+            j = root
+         else
+            call tensor_status_quit("ERROR(tensor_buffer_standard_int): comm and root need to be given at first call",22)
+         endif
       else if(tensor_mpi_buffer%is_initialized)then
-         c=tensor_mpi_buffer%comm
+         c = tensor_mpi_buffer%comm
+         j = tensor_mpi_buffer%root
       else
          call tensor_status_quit("ERROR(tensor_buffer_standard_int): buffer needs to be initialized or comm given at first call",22)
       endif
 
       call tensor_get_rank_for_comm(c,i)
-      j = tensor_mpi_buffer%root
 
       n=1
       buf(1) = buffer
       call tensor_buffer_standard_int_l(buf,n,init_size=init_size,root=root,comm=comm,finalize=finalize)
-      if(i/= j) buffer = buf(1)
+      if(i /= j) buffer = buf(1)
    end subroutine tensor_buffer_standard_int
    subroutine tensor_buffer_standard_int_l(buffer,n1,init_size,root,comm,finalize)
       implicit none
@@ -337,20 +353,25 @@ module tensor_mpi_operations_module
       integer(kind=tensor_mpi_kind) :: i, j, c
 
       if(present(comm))then
-         c=comm
+         c = comm
+         if( present(root))then
+            j = root
+         else
+            call tensor_status_quit("ERROR(tensor_buffer_log): comm and root need to be given at first call",22)
+         endif
       else if(tensor_mpi_buffer%is_initialized)then
-         c=tensor_mpi_buffer%comm
+         c = tensor_mpi_buffer%comm
+         j = tensor_mpi_buffer%root
       else
          call tensor_status_quit("ERROR(tensor_buffer_log): buffer needs to be initialized or comm given at first call",22)
       endif
 
       call tensor_get_rank_for_comm(c,i)
-      j = tensor_mpi_buffer%root
 
       n=1
       buf(1) = buffer
       call tensor_buffer_log_l(buf,n,init_size=init_size,root=root,comm=comm,finalize=finalize)
-      if(i/= j) buffer = buf(1)
+      if(i /= j) buffer = buf(1)
    end subroutine tensor_buffer_log
    subroutine tensor_buffer_log_l(buffer,n1,init_size,root,comm,finalize)
       implicit none
@@ -387,19 +408,24 @@ module tensor_mpi_operations_module
 
       if(present(comm))then
          c=comm
+         if( present(root))then
+            j = root
+         else
+            call tensor_status_quit("ERROR(tensor_buffer_char): comm and root need to be given at first call",22)
+         endif
       else if(tensor_mpi_buffer%is_initialized)then
-         c=tensor_mpi_buffer%comm
+         c = tensor_mpi_buffer%comm
+         j = tensor_mpi_buffer%root
       else
          call tensor_status_quit("ERROR(tensor_buffer_log): buffer needs to be initialized or comm given at first call",22)
       endif
 
       call tensor_get_rank_for_comm(c,i)
-      j = tensor_mpi_buffer%root
 
       n   = len(buffer,kind=tensor_long_int)
       buf = transfer(buffer,buf)
       call tensor_buffer_char_l(buf,n,init_size=init_size,root=root,comm=comm,finalize=finalize)
-      if(i/= j) buffer = transfer(buf,buffer)
+      if(i /= j) buffer = transfer(buf,buffer)
    end subroutine tensor_buffer_char
    subroutine tensor_buffer_char_l(buffer,n1,init_size,root,comm,finalize)
       implicit none
