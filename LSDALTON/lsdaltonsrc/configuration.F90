@@ -160,6 +160,7 @@ implicit none
   config%doDEC = .false.
   config%InteractionEnergy = .false.
   config%access_stream = .false.
+  config%force_crash = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -1271,6 +1272,15 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            ! Use stream access on all files open with lsopen
            config%access_stream = .true.
            access_stream = .true.
+        CASE('.FORCE_CRASH')
+           ! Force program to crash when lsquit is called
+           ! It can be use to get a stack on some systems
+           config%force_crash = .true.
+           force_crash = .true.
+#ifdef VAR_MPI 
+           call ls_mpibcast(SET_FORCE_CRASH,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(force_crash,infpar%master,MPI_COMM_LSDALTON)
+#endif
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')
