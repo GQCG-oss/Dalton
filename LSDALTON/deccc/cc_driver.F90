@@ -734,7 +734,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                            do b = 1, nvirt
                               if( virt_orbitals(b)%centralatom == atom )then
                                  do a = 1, nvirt
-                                    if( virt_orbitals(a)%centralatom == atom .and.  abs(max_amp) < abs(VOVO_local%elm4(a,b,i,j)))then
+                                    if( virt_orbitals(a)%centralatom == atom .and. &
+                                       & abs(max_amp) < abs(VOVO_local%elm4(a,b,i,j)))then
                                        max_amp = VOVO_local%elm4(a,b,i,j) 
                                     endif
                                  enddo
