@@ -144,8 +144,8 @@ C
                NTOTC  = MAX(NVIR(ISYMC),1)
 C
                KOFF5  = KSCR1 + IAODIS(ISBETA,ISGAM)
-	       KOFF6  = ILMRHF(ISBETA) + 1
-	       KOFF7  = IMATAV(ISGAM,ISYMC) + 1
+               KOFF6  = ILMRHF(ISBETA) + 1
+               KOFF7  = IMATAV(ISGAM,ISYMC) + 1
 C
 C----------------------------------------------------------------
 C                               ~

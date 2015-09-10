@@ -523,11 +523,15 @@ C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
-         KTRLVL = 10
+         IF(.NOT.DIRFCK) THEN
+            KTRLVL = 10
+         ELSE
+            KTRLVL = 0
+         ENDIF
          ITRLVL = KTRLVL
-         FLAG(14) = .TRUE.
+         FLAG(14) = .TRUE. 
          FLAG(34) = .FALSE.
-         CALL SIR_INTOPEN
+         IF (.NOT.DIRFCK) CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally
 C        not exist, but open to define name 'MOTWOINT' instead

@@ -53,10 +53,10 @@ C
 C
          KSCR    = 1
          KEND    = KSCR  + LSCR
-         LWORK   = LWORK - KEND
+         LWORK1  = LWORK - KEND
 C
          CALL SO_MEMMAX ('SO_AODENS',LWORK1)
-         IF (LWORK .LT. 0) CALL STOPIT('SO_AODENS',' ',KEND,LWORK)
+         IF (LWORK1 .LT. 0) CALL STOPIT('SO_AODENS',' ',KEND,LWORK1)
 C
 C-----------------------------------------
 C        Calculate density matrix DI1. See

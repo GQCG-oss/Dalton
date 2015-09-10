@@ -307,26 +307,17 @@ C
 C In AORPA we cannot be sure that the number of integral distributions
 C is known in advance. This is needed in order to allocate memory for
 C load-distribution later on
-               print *,get_mxcall 
                if (get_mxcall) then
                   kccfbt  = kend2
                   kindxbt = kccfbt + mxprim*mxcont
                   kend3   = kindxbt + 8*mxshel*mxcont/irat
                   lwork3 = lwork - kend3
-                  print *, kend2, kccfbt, kindxbt, kend3
                   call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
      &                        krdbc1, krdbc2, kodpp1, kodpp2,
      &                        krdpp1, krdpp2, kfree,  lfree,
      &                        kend3, work(kccfbt), work(kindxbt),
      &                        work(kend3), lwork3, iprint)
-C                 Add check of kend3
-C                 Setup a lot of stuff, that is apparently needed..? 
-C                  call setaob( work(kccfbt), work(indxbt), work(kend3),
-C     &                         lwork3, 0)
-C                 Setup at lot of stuff, including the one we where
-C                 interested in.
-C                  call getdst( 0, 0, 2)                  
-C                  get_mxcall = .false.                     
+                  get_mxcall = .false.
                endif
 C Note that for rpa, the second and third argument should be ignored
                call soppa_initialize_slaves ( update_common_blocks,
