@@ -1,6 +1,6 @@
 #!/bin/bash
-TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/MBGrendelintel15SCALAPACKOMP64release
-SCRATCH_DIR=/tmp/tkjaer/MBGrendelintel15SCALAPACKOMP64release
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/MBGrendelintel12SCALAPACKOMP64release
+SCRATCH_DIR=/tmp/tkjaer/MBGrendelintel12SCALAPACKOMP64release
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 mv $TMP_DIR /home/tkjaer/NightlyTestingCdash/tmp/tmp3
@@ -10,7 +10,7 @@ export PATH=/usr/local/torque/bin:/com/bin:/usr/local/bin:/bin:/usr/bin
 
 git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
-source /com/OpenMPI/1.8.4/intel/load.sh
+source /com/OpenMPI/1.4.5/intel/load.sh
 export MATH_ROOT=$MKLROOT #/home/com/intel/composer_xe_2011_sp1.8.273/mkl
 cd $TMP_DIR
 export DALTON_TMPDIR=$SCRATCH_DIR
