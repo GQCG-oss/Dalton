@@ -1,6 +1,8 @@
 module lsmpi_type
+  use lsmpi_param
   use precision
-  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr,c_loc
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,&
+       & c_null_ptr,c_loc
   use LSparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
@@ -99,6 +101,7 @@ module lsmpi_type
           &           ls_mpi_buffer_realk, &
           &           ls_mpi_buffer_realkV4,ls_mpi_buffer_realkV8, ls_mpi_buffer_realkM, &
           &           ls_mpi_buffer_realkT,&
+          &           ls_mpi_buffer_realkT4dim, &
           &           ls_mpi_buffer_logical, ls_mpi_buffer_logicalV,&
           &           ls_mpi_buffer_logicalM,ls_mpi_buffer_shortinteger, &
           &           ls_mpi_buffer_charac, ls_mpi_buffer_characV, &
@@ -193,43 +196,6 @@ module lsmpi_type
     module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
   end interface lsmpi_get_acc
   !save
-
-  
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!
-!Constants for MPIBUFFER!
-!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  integer,parameter     :: LSMPIBROADCAST       = 1
-  integer,parameter     :: LSMPIREDUCTION       = 2
-  integer,parameter     :: LSMPIREDUCTIONmaster = 3
-  integer,parameter     :: LSMPISENDRECV        = 4
-
-#ifdef VAR_MPI
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!General MPI vars, aka junkbox!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  integer(kind=ls_mpik) :: MPI_COMM_LSDALTON = 0
-  logical               :: LSMPIASYNCP                !contains environment value of async progress
-  logical               :: lsmpi_enabled_comm_procs 
-
-  !split mpi messages in case of 32bit mpi library to subparts, which are
-  !describable by a 32bit integer and dividable by 8
-  integer     :: SPLIT_MPI_MSG
-  !split mpi one sided communication into 100MB chunks
-  integer     :: MAX_SIZE_ONE_SIDED 
-
-  !mpistatus
-  integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE) 
-
-  type mpigroup
-     integer(kind=ls_mpik)         :: groupsize
-     integer(kind=ls_mpik),pointer :: ranks(:)
-  end type mpigroup
-
-#endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 !integer conversion factor!
@@ -2361,6 +2327,42 @@ contains
          iDP = iDP + n1*n2*n3
       ENDIF
     end subroutine ls_mpi_buffer_realkT
+
+    subroutine ls_mpi_buffer_realkT4dim(buffer,n1,n2,n3,n4,master)
+       implicit none
+       integer(kind=ls_mpik) :: master
+       integer :: n1,n2,n3,n4
+       real(realk) :: buffer(:,:,:,:)
+       integer :: ierr,cnt,datatype,I,J,K,L,offset
+       IERR=0
+       IF(AddToBuffer)THEN
+          IF(iDP + n1*n2*n3*n4.GT. nDP)call increaselsmpibufferDP((((i8*n1)*n2)*n3)*n4)
+          DO L=1,n4
+             DO K=1,n3
+                DO J=1,n2
+                   offset = iDP+(J-1)*n1+(K-1)*n1*n2+(L-1)*n1*n2*n3
+                   DO I=1,n1
+                      lsmpibufferDP(offset+I) = buffer(I,J,K,L)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDDO
+          iDP = iDP + n1*n2*n3*n4
+       ELSE
+          IF(iDP+n1*n2*n3*n4 .GT. nDP)call lsquit('ls_mpi_buffer_realkT4dim: error using buffer',-1)
+          DO L=1,n4
+             DO K=1,n3
+                DO J=1,n2
+                   offset = iDP+(J-1)*n1+(K-1)*n1*n2+(L-1)*n1*n2*n3
+                   DO I=1,n1
+                      buffer(I,J,K,L) = lsmpibufferDP(offset+I)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDDO
+          iDP = iDP + n1*n2*n3*n4
+       ENDIF
+    end subroutine ls_mpi_buffer_realkT4dim
 
     subroutine ls_mpi_buffer_logical(buffer,master)
       implicit none
@@ -4909,125 +4911,6 @@ contains
     end subroutine lsmpi_default_mpi_group
 
 
-    !> \brief calling this routine from the master process will start up
-    !communication processes on all the slaves
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine local_group_start_comm_processes
-      implicit none
-#ifdef VAR_MPI
-      print *,"STARTING UP THE COMMUNICATION PROCESSES"
-      !impregnate the slaves
-      call ls_mpibcast(GIVE_BIRTH,infpar%master,infpar%lg_comm)
-      !just to find, that the master is also fertile
-      call give_birth_to_child_process
-#else
-      call lsquit("ERROR(local_group_start_comm_processes): not available without mpi",-1)
-#endif
-    end subroutine local_group_start_comm_processes
-
-    !> \brief calling this routine from the master process will kill all
-    !communication processes on all the slaves
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine local_group_kill_comm_processes
-      implicit none
-#ifdef VAR_MPI
-      print *,"SHUTTING DOWN THE COMMUNICATION PROCESSES"
-      !kill the babies of the slaves
-      call ls_mpibcast(SLAVES_SHUT_DOWN_CHILD,infpar%master,infpar%lg_comm)
-      !kill own baby
-      call shut_down_child_process
-#else
-      call lsquit("ERROR(local_group_kill_comm_processes): not available without mpi",-1)
-#endif
-    end subroutine local_group_kill_comm_processes
-
-    !> \brief make a new communicator for the child and parent process(es)
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine get_parent_child_relation
-      implicit none
-#ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr
-      logical(kind=ls_mpik) :: last
-
-      if( infpar%parent_comm == MPI_COMM_NULL ) then
-        ! if i am a parent 
-        last = .false.
-        call MPI_INTERCOMM_MERGE( infpar%child_comm, last, infpar%pc_comm, ierr )
-      else
-        ! if i am a child
-        last = .true.
-        call MPI_INTERCOMM_MERGE( infpar%parent_comm, last, infpar%pc_comm, ierr )
-      endif
-
-      call get_rank_for_comm( infpar%pc_comm, infpar%pc_mynum  )
-      call get_size_for_comm( infpar%pc_comm, infpar%pc_nodtot )
-
-      lsmpi_enabled_comm_procs = .true.
-
-      if( infpar%parent_comm == MPI_COMM_NULL .and.  infpar%pc_mynum/=infpar%master )&
-      & call lsquit("ERROR(get_parent_child_relation)&
-      & parent needs to have rank 0 in the pc_comm",-1)
-
-      if( infpar%parent_comm /= MPI_COMM_NULL .and.  infpar%pc_mynum==infpar%master )&
-      & call lsquit("ERROR(get_parent_child_relation)&
-      & child cannot have rank 0 in the pc_comm",-1)
-#endif
-    end subroutine get_parent_child_relation
-
-
-    subroutine give_birth_to_child_process
-      implicit none
-#ifdef VAR_MPI
-      integer(kind=ls_mpik) :: procs_to_spawn,root,errorcode(1),ierr
-      logical               :: localdalton
-
-          procs_to_spawn = int(1,kind=ls_mpik)
-          root           = int(0,kind=ls_mpik)
-
-          !check if the program is in the workdir, if not, spawning is not
-          !possible
-          inquire(file='lsdalton.x', exist=localdalton)
-
-          !if lsdalton.x is in workdir, spawn another process
-          if(localdalton)then
-            call MPI_COMM_SPAWN('./lsdalton.x',MPI_ARGV_NULL,procs_to_spawn,MPI_INFO_NULL,&
-             &root,MPI_COMM_SELF,infpar%child_comm,errorcode,ierr)
-            call get_parent_child_relation
-          else
-            call lsquit("ERROR(give_birth_to_child_process):lsdalton.x was not&
-             &found in the working directory, move it there and restart",-1)
-          endif
-
-#endif
-    end subroutine give_birth_to_child_process
-
-
-    !> \brief free everything related to child processes
-    !> \author Patrick Ettenhuber
-    !> \date 2013
-    subroutine shut_down_child_process
-      implicit none
-#ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr
-      logical(kind=ls_mpik) :: have_priority
-
-      if( infpar%parent_comm == MPI_COMM_NULL ) then
-        call MPI_COMM_FREE(infpar%pc_comm,ierr)
-        call MPI_COMM_FREE(infpar%child_comm,ierr)
-      else
-        ! if i am a child
-        call MPI_COMM_FREE(infpar%pc_comm,ierr)
-        call MPI_COMM_FREE(infpar%parent_comm,ierr)
-      endif
-
-      lsmpi_enabled_comm_procs = .false.
-
-#endif
-    end subroutine shut_down_child_process
-
     subroutine lsmpi_print_mem_info(lupri,mastercall)
       implicit none
       integer,intent(in) :: lupri
@@ -5138,7 +5021,7 @@ contains
       integer(kind=ls_mpik) :: ierr
       ierr = 0
 
-      if ((infpar%mynum.eq.infpar%master).and.mastercall.and.(infpar%parent_comm==MPI_COMM_NULL))&
+      if ((infpar%mynum.eq.infpar%master).and.mastercall)&
        &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

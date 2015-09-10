@@ -2358,6 +2358,8 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use pelib_interface, only: use_pelib, pelib_ifc_init,
+     &                           pelib_ifc_domep
 #if defined(BUILD_PELIB)
       use pe_variables, only: pe_savden
 #endif
@@ -2601,11 +2603,11 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-         IF (PEQM .OR. PEMEP) THEN
+         IF (USE_PELIB() .OR. PELIB_IFC_DOMEP()) THEN
+            CALL PELIB_IFC_INIT()
 #if defined(BUILD_PELIB)
-            CALL PE_IFC_INIT()
-	 ELSE IF (pe_savden) THEN
-            CALL PE_IFC_INIT()
+         ELSE IF (pe_savden) THEN
+            CALL PELIB_IFC_INIT()
 #endif
          END IF
       END IF
@@ -4679,6 +4681,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use pelib_interface, only: use_pelib
 #if defined (HAS_PCMSOLVER)
       use pcm_scf, only: pcm_scf_initialize
       use pcmmod_cfg
@@ -4718,7 +4721,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF (QMMM .OR. PEQM) IPTEST = 0
+      IF (QMMM .OR. USE_PELIB()) IPTEST = 0
       IF ( IPREAD .GT. IPTEST )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
@@ -6812,12 +6815,12 @@ C
 C     Read in the fourth input line using the new input scheme
 C
 
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
-! gnrinf.h : PEQM
 #include "gnrinf.h"
 ! molinp.h : len_MLINE
 #include "mxcent.h"
@@ -7008,7 +7011,7 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
         IF (ADDSYM) THEN
             ADDSYM = .FALSE.
         ELSE IF (NSYMOP > 0) THEN

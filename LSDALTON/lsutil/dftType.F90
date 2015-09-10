@@ -26,6 +26,9 @@ INTEGER,save      :: dft_maxNactBAST(3)
 Integer,parameter :: dftfunc_Default = 1
 Integer,parameter :: dftfunc_ADMML2 = 2
 
+!Integer to specify a maximum number of kinetic functionals included in the TS correction
+Integer,parameter :: maxTSfunc = 10
+
 ! Structure for different dft grid 
 TYPE GridItem
 INTEGER           :: RADIALGRID   !(1 = GC2, 2 = LMG, 3 = TURBO)
@@ -46,6 +49,15 @@ integer           :: NBAST
 integer           :: Numnodes
 END TYPE GridItem
 
+! Structure for orbital-free DFT
+TYPE OrbitalFree
+  Integer           :: numberTSfunc
+  Character(len=80) :: TSfunc(maxTSfunc)  !List of kinetic density functionals
+  Real(realk)       :: TScoeff(maxTSfunc) !Coefficients for the above kinetic functionals
+  Real(realk)       :: KineticFac !Scaling factor for the (true) kinetic ennergy operator
+END TYPE OrbitalFree
+
+
 !> Keywords and input to gridgeneration and exchange-correlation calculation
 TYPE DFTparam
 INTEGER            :: iGrid !which gridObject to use
@@ -57,6 +69,10 @@ INTEGER           :: RADIALGRID !(1 = GC2, 2 = LMG, 3 = TURBO)
 INTEGER           :: PARTITIONING !integer in following list
 !(1=SSF, 2=Becke, 3=Becke-original, 4=block, 5=blockssf, 6=cartesian)
 LOGICAL           :: ZdependenMaxAng !(default 0)
+
+!Orbital-free DFT settings
+Logical           :: doOrbFree
+TYPE(OrbitalFree) :: OrbFree
 
 INTEGER           :: GRIDDONE !IF GRID HAS BEEN CREATED 
 REAL(REALK)       :: RADINT

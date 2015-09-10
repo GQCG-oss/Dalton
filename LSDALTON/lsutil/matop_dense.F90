@@ -10,7 +10,9 @@
 module matrix_operations_dense
   use memory_handling
   use matrix_module
+#ifdef VAR_ENABLE_TENSORS
   use reorder_frontend_module
+#endif
   use precision
   contains
 !> \brief See mat_init in mat-operations.f90
@@ -147,13 +149,15 @@ module matrix_operations_dense
 !!     call mkl_domatcopy('R', 'T', A%nrow, A%ncol, 1.0E0_realk, A%elms, 1, B%elms,1)
 !!#else
 !     call ls_transpose(A%elms,B%elms,A%nrow)
+#ifdef VAR_ENABLE_TENSORS
      call mat_transpose(a%nrow,a%ncol,1.0E0_realk,a%elms,0.0E0_realk,b%elms)
-     !do j = 1,a%ncol
-     !  do i = 1,a%nrow
-     !    b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
-     !  enddo
-     !enddo
-!!#endif
+#else
+     do j = 1,a%ncol
+       do i = 1,a%nrow
+         b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
+       enddo
+     enddo
+#endif
   end subroutine mat_dense_trans
 
 !> \brief See mat_assign in mat-operations.f90

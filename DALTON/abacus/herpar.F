@@ -301,7 +301,8 @@ CTROND
 CTROND
 #ifdef VAR_MPI
       integer, parameter             :: dummy_buff = 2
-      integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
+      integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer(kind=MPI_OFFSET_KIND)  :: displacement
       character(len=16)              :: shared_dmat_file
       integer                        :: istat(mpi_status_size)
 #endif
@@ -1262,7 +1263,8 @@ C
 #include "mpif.h"
 #endif
       integer, parameter             :: dummy_buff = 2
-      integer(kind=MPI_ADDRESS_KIND) :: nelement, displacement
+      integer(kind=MPI_ADDRESS_KIND) :: nelement
+      integer(kind=MPI_OFFSET_KIND)  :: displacement
       integer(kind=MPI_ADDRESS_KIND) :: nelement_d, nelement_f
       integer(kind=MPI_ADDRESS_KIND) :: dmat_p, fmat_p
       real(8)                        :: dmat_buff(dummy_buff)
@@ -1960,6 +1962,7 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
 !     module dependencies
       use parallel_communication_models_mpi
+      use pelib_interface, only: use_pelib
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -2448,7 +2451,7 @@ C
                CALL ADDGRD(GSOLNN)
             END IF
             IF (PCM) CALL ADDGRD(GSOLCV)
-            IF (PEQM) CALL ADDGRD(PEGRAD)
+            IF (USE_PELIB()) CALL ADDGRD(PEGRAD)
             CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP

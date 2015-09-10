@@ -20,7 +20,7 @@ module dec_driver_slave_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
-  use dec_settings_mod!, only: dec_set_default_config
+  use dec_settings_mod
   use full_molecule!, only: molecule_finalize
   use decmpi_module
   use atomic_fragment_operations
@@ -541,6 +541,7 @@ contains
              else
                 PairFragment%mylsitem%setting%comm = infpar%lg_comm
              end if
+
           end if
 
 
@@ -679,10 +680,11 @@ contains
           !FLOPS
           call end_flop_counter(flops,gpu_flops) ! flops for local master
           singlejob%flops(1)     = flops + flops_slaves  ! FLOPS for local master + local slaves
-          singlejob%gpu_flops(1)     = gpu_flops + gpu_flops_slaves  ! GPU FLOPS for local master + local slaves
+          singlejob%gpu_flops(1) = gpu_flops + gpu_flops_slaves  ! GPU FLOPS for local master + local slaves
           singlejob%jobsdone(1)  = .true.
           singlejob%esti(1)      = jobs%esti(job)
           singlejob%dofragopt(1) = jobs%dofragopt(job)
+          singlejob%ntasks(1)    = ntasks
 
           print '(X,a,i5,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)

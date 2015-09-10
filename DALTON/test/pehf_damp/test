@@ -12,7 +12,7 @@ f = Filter()
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
       num_lines = 34,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 test.run(['damp_ind_iter.dal', 'damp_ind_direct.dal', 'damp_mul.dal', 'damp_core.dal'], ['acrolein.mol'], ['water.pot'], f={'out': f})
 

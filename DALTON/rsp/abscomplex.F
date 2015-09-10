@@ -1245,6 +1245,7 @@ C
 C
 C PURPOSE:
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"
@@ -1353,8 +1354,8 @@ c
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
       ENDDO
 C
-C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM .OR. PEQM) THEN
-      IF (EMBEDDING) THEN
+C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM) THEN
+      IF (EMBEDDING .OR. USE_PELIB()) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF
@@ -1537,7 +1538,7 @@ C     DXVAO finished, now DXCAO, if nisht.gt.0:
           ICMO1  = ICMO(ISYM1)
           ICMO2  = ICMO(ISYM2)
 C
-          IF (NBAS1*NBAS2*NORB2 .NE. 0) THEN
+          IF (NORB2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NISH1,NORB2,1.D0,CMO(ICMO2+1),
      &                 NBAS2,ZYM(IORB1+1,IORB2+1),NORBT,0.D0,
      &                 WRK(KDXAO1),NBAS2)
@@ -1561,7 +1562,7 @@ c
           NORB2  = NORB(ISYM2)
           ICMO1  = ICMO(ISYM1)
           ICMO2  = ICMO(ISYM2)
-          IF (NBAS1*NBAS2*NORB2 .NE. 0) THEN
+          IF (NORB2 .NE. 0) THEN
             CALL DGEMM('N','N',NBAS2,NISH1,NORB2,1.D0,CMO(ICMO2+1),
      &                 NBAS2,ZYM(IORB2+1,IORB1+1),NORBT,0.D0,
      &                 WRK(KDXAO1),NBAS2)

@@ -16,7 +16,7 @@ export MATH_ROOT=/opt/intel/mkl
 #mpich2 32 bit integer MPI compiled using ifort 
 export PATH=/home/sisyphos/mpich2-ifortbuild-exec/bin:$PATH
 export LD_LIBRARY_PATH=/home/sisyphos/mpich2-ifortbuild-exec/lib:$LD_LIBRARY_PATH
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --csr --scalapack --static --timings --mpi --omp --lapack=none --blas=none --explicit-libs="-Wl,--start-group /opt/intel/mkl/lib/intel64/libmkl_scalapack_lp64.a /opt/intel/mkl/lib/intel64/libmkl_blacs_intelmpi_lp64.a /opt/intel/mkl/lib/intel64/libmkl_intel_lp64.a /opt/intel/mkl/lib/intel64/libmkl_intel_thread.a /opt/intel/mkl/lib/intel64/libmkl_core.a -Wl,--end-group /opt/intel/composer_xe_2013.5.192/compiler/lib/intel64/libiomp5.a -openmp -lpthread -lm" -D BUILDNAME="MB-Sisyphos-ifort2013.5.192-mpich2-MPI-omp-MKL-release" build
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --csr --scalapack --static --timings --mpi --omp --lapack=none --blas=none --explicit-libs="-Wl,--start-group /opt/intel/mkl/lib/intel64/libmkl_scalapack_lp64.a /opt/intel/mkl/lib/intel64/libmkl_blacs_intelmpi_lp64.a /opt/intel/mkl/lib/intel64/libmkl_intel_lp64.a /opt/intel/mkl/lib/intel64/libmkl_intel_thread.a /opt/intel/mkl/lib/intel64/libmkl_core.a -Wl,--end-group /opt/intel/composer_xe_2013.5.192/compiler/lib/intel64/libiomp5.a -openmp -lpthread -lm" -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="MB-Sisyphos-ifort2013.5.192-mpich2-MPI-omp-MKL-release" build
 
 cd build
 ctest -D Nightly -L linsca

@@ -25,7 +25,13 @@ Integer :: derivComp
 Integer, pointer :: dirComp(:,:) 
 !For each ngeoDerivcomp this returns the AO the contribution is added to (1-4 mean A,B,C,D, 1,4 means AD, etc.)
 Integer, pointer :: AO(:,:)
-Integer :: translate      !0 if no translational symmetry, n to translate other contibutions to n
+Integer          :: translate      !0 if no translational symmetry, n to translate other contibutions to n
+Integer          :: nDerviComp       !number of derivative components in each direction
+Integer          :: HODIorder        !order of derivative for hodi
+Integer, pointer :: pack2(:,:)       !triangular packing index for second derivatives
+Integer, pointer :: pack3(:,:,:)     !triangular packing index for third derivatives
+Integer, pointer :: pack4(:,:,:,:)   !triangular packing index for fourth derivatives
+!Integer, pointer :: pack5(:,:,:,:,:) !triangular packing index for fifth derivatives
 END TYPE derivativeInfo
 
 CONTAINS
@@ -42,9 +48,9 @@ Type(IntegralInput),intent(in)      :: Input
 Type(derivativeInfo), intent(INOUT) :: derivInfo
 !
 Logical :: emptyA,emptyB,emptyC,emptyD,singleP,singleQ,emptyP,emptyQ
-Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv,startDer,endDer
+Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv,startDer,endDer,nAtom
 
-Logical :: dohodi
+Logical :: dohodi,natom_set
 
 dohodi = (input%geoderOrderP.GT.0) .AND. (input%geoderOrderQ .GT.0)
 !
@@ -108,6 +114,269 @@ DO iDer=endDer,startDer,-1
     ENDDO
   ENDIF
 ENDDO
+
+derivInfo%HODIorder = 0
+IF (dohodi) THEN
+  !Set nAtoms and test for consistency
+!Simen: This needs to be changed for MPI. I think the easiest is to pass down some local to 
+!Simen: global information
+  natom_set = .FALSE.
+  DO n=1,4
+    IF (.NOT.Input%AO(n)%p%Empty) THEN
+      IF (natom_set) THEN
+        IF (Input%AO(n)%p%natoms.NE.nAtom) CALL LSQUIT('Programming error: initDerivativeOverlapInfo natoms different',-1)
+      ELSE
+        nAtom=Input%AO(n)%p%natoms
+        natom_set = .TRUE.
+      ENDIF
+    ENDIF
+  ENDDO
+  N=3*nAtom
+  IF (derP.NE.derQ) CALL LSQUIT('Programming error: initDerivativeOverlapInfo derP.NE.derQ',-1)
+  derivInfo%HODIorder = derP
+! Sets up indices for quadratic to triangular packing packing i.e. from N*N to N*(N+1)/2,
+! N*N*N to N*(N+1)*N+2)/6, etc
+  IF (derP.EQ.2) THEN
+    call mem_alloc(derivInfo%pack2,N,N)
+    call get_packIndex2(derivInfo%pack2,N)
+  ELSE IF (derP.EQ.3) THEN
+    call mem_alloc(derivInfo%pack3,N,N,N)
+    call get_packIndex3(derivInfo%pack3,N)
+  ELSE IF (derP.EQ.4) THEN
+    call mem_alloc(derivInfo%pack4,N,N,N,N)
+    call get_packIndex4(derivInfo%pack4,N)
+! ELSE IF (derP.EQ.5) THEN
+!   call mem_alloc(derivInfo%pack5,derP,derP,derP,derP,derP)
+!   call get_packIndex5(derivInfo%pack5,derP)
+  ELSE IF (derP.GE.5) THEN
+    CALL LSQUIT('Programming error: initDerivativeOverlapInfo derP>4',-1)
+  ENDIF
+ENDIF
+contains 
+SUBROUTINE get_packIndex2(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N)
+!
+Integer :: i,j,iPack
+
+iPack = 0
+DO j=1,N
+  DO i=j,N
+    iPack=iPack+1
+    packindex(i,j) = iPack
+    packindex(j,i) = iPack
+  ENDDO
+ENDDO
+END SUBROUTINE get_packIndex2
+
+SUBROUTINE get_packIndex3(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N,N)
+!
+Integer :: i,j,k,iPack
+
+iPack = 0
+DO k=1,N
+ DO j=k,N
+  DO i=j,N
+    iPack=iPack+1
+    packindex(i,j,k) = iPack
+    packindex(j,i,k) = iPack
+    packindex(i,k,j) = iPack
+    packindex(j,k,i) = iPack
+    packindex(k,i,j) = iPack
+    packindex(k,j,i) = iPack
+  ENDDO
+ ENDDO
+ENDDO
+END SUBROUTINE get_packIndex3
+
+SUBROUTINE get_packIndex4(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N,N,N)
+!
+Integer :: i,j,k,l,iPack
+
+iPack = 0
+DO l=1,N
+ DO k=l,N
+  DO j=k,N
+   DO i=j,N
+    iPack=iPack+1
+    packindex(i,j,k,l) = iPack
+    packindex(j,i,k,l) = iPack
+    packindex(i,k,j,l) = iPack
+    packindex(j,k,i,l) = iPack
+    packindex(k,i,j,l) = iPack
+    packindex(k,j,i,l) = iPack
+    packindex(i,j,l,k) = iPack
+    packindex(j,i,l,k) = iPack
+    packindex(i,k,l,j) = iPack
+    packindex(j,k,l,i) = iPack
+    packindex(k,i,l,j) = iPack
+    packindex(k,j,l,i) = iPack
+    packindex(i,l,j,k) = iPack
+    packindex(j,l,i,k) = iPack
+    packindex(i,l,k,j) = iPack
+    packindex(j,l,k,i) = iPack
+    packindex(k,l,i,j) = iPack
+    packindex(k,l,j,i) = iPack
+    packindex(l,i,j,k) = iPack
+    packindex(l,j,i,k) = iPack
+    packindex(l,i,k,j) = iPack
+    packindex(l,j,k,i) = iPack
+    packindex(l,k,i,j) = iPack
+    packindex(l,k,j,i) = iPack
+   ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+END SUBROUTINE get_packIndex4
+
+SUBROUTINE get_packIndex5(packindex,N)
+implicit none
+INTEGER,intent(IN)  :: N
+INTEGER,intent(OUT) :: packindex(N,N,N,N,N)
+!
+Integer :: i,j,k,l,m,iPack
+
+iPack = 0
+DO m=1,N
+DO l=m,N
+ DO k=l,N
+  DO j=k,N
+   DO i=j,N
+    iPack=iPack+1
+    packindex(i,j,k,l,m) = iPack
+    packindex(j,i,k,l,m) = iPack
+    packindex(i,k,j,l,m) = iPack
+    packindex(j,k,i,l,m) = iPack
+    packindex(k,i,j,l,m) = iPack
+    packindex(k,j,i,l,m) = iPack
+    packindex(i,j,l,k,m) = iPack
+    packindex(j,i,l,k,m) = iPack
+    packindex(i,k,l,j,m) = iPack
+    packindex(j,k,l,i,m) = iPack
+    packindex(k,i,l,j,m) = iPack
+    packindex(k,j,l,i,m) = iPack
+    packindex(i,l,j,k,m) = iPack
+    packindex(j,l,i,k,m) = iPack
+    packindex(i,l,k,j,m) = iPack
+    packindex(j,l,k,i,m) = iPack
+    packindex(k,l,i,j,m) = iPack
+    packindex(k,l,j,i,m) = iPack
+    packindex(l,i,j,k,m) = iPack
+    packindex(l,j,i,k,m) = iPack
+    packindex(l,i,k,j,m) = iPack
+    packindex(l,j,k,i,m) = iPack
+    packindex(l,k,i,j,m) = iPack
+    packindex(l,k,j,i,m) = iPack
+    packindex(i,j,k,m,l) = iPack
+    packindex(j,i,k,m,l) = iPack
+    packindex(i,k,j,m,l) = iPack
+    packindex(j,k,i,m,l) = iPack
+    packindex(k,i,j,m,l) = iPack
+    packindex(k,j,i,m,l) = iPack
+    packindex(i,j,l,m,k) = iPack
+    packindex(j,i,l,m,k) = iPack
+    packindex(i,k,l,m,j) = iPack
+    packindex(j,k,l,m,i) = iPack
+    packindex(k,i,l,m,j) = iPack
+    packindex(k,j,l,m,i) = iPack
+    packindex(i,l,j,m,k) = iPack
+    packindex(j,l,i,m,k) = iPack
+    packindex(i,l,k,m,j) = iPack
+    packindex(j,l,k,m,i) = iPack
+    packindex(k,l,i,m,j) = iPack
+    packindex(k,l,j,m,i) = iPack
+    packindex(l,i,j,m,k) = iPack
+    packindex(l,j,i,m,k) = iPack
+    packindex(l,i,k,m,j) = iPack
+    packindex(l,j,k,m,i) = iPack
+    packindex(l,k,i,m,j) = iPack
+    packindex(l,k,j,m,i) = iPack
+    packindex(i,j,m,k,l) = iPack
+    packindex(j,i,m,k,l) = iPack
+    packindex(i,k,m,j,l) = iPack
+    packindex(j,k,m,i,l) = iPack
+    packindex(k,i,m,j,l) = iPack
+    packindex(k,j,m,i,l) = iPack
+    packindex(i,j,m,l,k) = iPack
+    packindex(j,i,m,l,k) = iPack
+    packindex(i,k,m,l,j) = iPack
+    packindex(j,k,m,l,i) = iPack
+    packindex(k,i,m,l,j) = iPack
+    packindex(k,j,m,l,i) = iPack
+    packindex(i,l,m,j,k) = iPack
+    packindex(j,l,m,i,k) = iPack
+    packindex(i,l,m,k,j) = iPack
+    packindex(j,l,m,k,i) = iPack
+    packindex(k,l,m,i,j) = iPack
+    packindex(k,l,m,j,i) = iPack
+    packindex(l,i,m,j,k) = iPack
+    packindex(l,j,m,i,k) = iPack
+    packindex(l,i,m,k,j) = iPack
+    packindex(l,j,m,k,i) = iPack
+    packindex(l,k,m,i,j) = iPack
+    packindex(l,k,m,j,i) = iPack
+    packindex(i,m,j,k,l) = iPack
+    packindex(j,m,i,k,l) = iPack
+    packindex(i,m,k,j,l) = iPack
+    packindex(j,m,k,i,l) = iPack
+    packindex(k,m,i,j,l) = iPack
+    packindex(k,m,j,i,l) = iPack
+    packindex(i,m,j,l,k) = iPack
+    packindex(j,m,i,l,k) = iPack
+    packindex(i,m,k,l,j) = iPack
+    packindex(j,m,k,l,i) = iPack
+    packindex(k,m,i,l,j) = iPack
+    packindex(k,m,j,l,i) = iPack
+    packindex(i,m,l,j,k) = iPack
+    packindex(j,m,l,i,k) = iPack
+    packindex(i,m,l,k,j) = iPack
+    packindex(j,m,l,k,i) = iPack
+    packindex(k,m,l,i,j) = iPack
+    packindex(k,m,l,j,i) = iPack
+    packindex(l,m,i,j,k) = iPack
+    packindex(l,m,j,i,k) = iPack
+    packindex(l,m,i,k,j) = iPack
+    packindex(l,m,j,k,i) = iPack
+    packindex(l,m,k,i,j) = iPack
+    packindex(l,m,k,j,i) = iPack
+    packindex(m,i,j,k,l) = iPack
+    packindex(m,j,i,k,l) = iPack
+    packindex(m,i,k,j,l) = iPack
+    packindex(m,j,k,i,l) = iPack
+    packindex(m,k,i,j,l) = iPack
+    packindex(m,k,j,i,l) = iPack
+    packindex(m,i,j,l,k) = iPack
+    packindex(m,j,i,l,k) = iPack
+    packindex(m,i,k,l,j) = iPack
+    packindex(m,j,k,l,i) = iPack
+    packindex(m,k,i,l,j) = iPack
+    packindex(m,k,j,l,i) = iPack
+    packindex(m,i,l,j,k) = iPack
+    packindex(m,j,l,i,k) = iPack
+    packindex(m,i,l,k,j) = iPack
+    packindex(m,j,l,k,i) = iPack
+    packindex(m,k,l,i,j) = iPack
+    packindex(m,k,l,j,i) = iPack
+    packindex(m,l,i,j,k) = iPack
+    packindex(m,l,j,i,k) = iPack
+    packindex(m,l,i,k,j) = iPack
+    packindex(m,l,j,k,i) = iPack
+    packindex(m,l,k,i,j) = iPack
+    packindex(m,l,k,j,i) = iPack
+   ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+ENDDO
+END SUBROUTINE get_packIndex5
+
 END SUBROUTINE initDerivativeOverlapInfo
 
 !> \brief Print the derivative info
@@ -350,13 +619,251 @@ derivInfo%ngeoderivcomp = 0
 derivInfo%derivComp = 0
 call mem_dealloc(derivInfo%dirComp)
 call mem_dealloc(derivInfo%AO)
+IF (derivInfo%HODIorder.EQ.2) call mem_dealloc(derivInfo%pack2)
+IF (derivInfo%HODIorder.EQ.3) call mem_dealloc(derivInfo%pack3)
+IF (derivInfo%HODIorder.EQ.4) call mem_dealloc(derivInfo%pack4)
+!IF (derivInfo%HODIorder.EQ.5) call mem_dealloc(derivInfo%pack5)
 END SUBROUTINE freeDerivativeOverlapInfo
+
+
+SUBROUTINE getDerivativeIndeces(derivInfo,npermute,maxPermute,Dim5,fac5,input,nAtoms,translate,iDeriv)
+implicit none
+TYPE(derivativeInfo), intent(INOUT) :: derivInfo
+INTEGER, INTENT(INOUT)         :: Dim5(maxPermute)
+Real(realk), INTENT(INOUT)     :: fac5(maxPermute)
+INTEGER, INTENT(INOUT)         :: npermute
+TYPE(integralInput),INTENT(IN) :: input
+LOGICAL, INTENT(IN)            :: translate
+INTEGER, INTENT(IN)            :: nAtoms,iDeriv,maxPermute
+!
+INTEGER :: iTrans,iDer,iAtom,i1,i2,i3,i4,it1,it2,it3,it4,iAtom1,iAtom2,iAtom3,iAtom4
+LOGICAL :: same12,same13,same23,same14,same24,same34
+real(realk),parameter :: D1=1.0E0_realk, D2=2.0E0_realk, D3=3.0E0_realk, D6=6.0E0_realk
+real(realk), pointer :: Dreal(:)
+
+
+call mem_alloc(Dreal,input%geoDerivOrder)
+DO iDer=1,input%geoDerivOrder
+  Dreal(iDer) = D1*iDer
+ENDDO
+
+IF (translate) iTrans = derivInfo%Atom(derivInfo%translate)
+
+fac5(:) = D1
+IF (input%geoDerivOrder.EQ. 1)THEN
+   iDer = derivInfo%dirComp(1,iDeriv)
+   iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   Dim5(1) = 3*(iAtom-1)+ider
+   fac5(1) = D1
+   IF (translate) THEN
+     nPermute = nPermute + 1
+     Dim5(2) = 3*(iTrans-1)+ider
+     fac5(nPermute) = -D1
+   ENDIF
+ELSEIF (input%geoDerivOrder.EQ. 2)THEN
+   iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+   i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
+   i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
+   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+
+   Dim5(1) = derivInfo%pack2(i1,i2)
+   fac5(1) = derFac2(i1,i2,same12,.FALSE.)
+   nPermute=1
+
+   IF (translate) THEN
+     it1 = 3*(iTrans-1)+derivInfo%dirComp(1,iDeriv)
+     it2 = 3*(iTrans-1)+derivInfo%dirComp(2,iDeriv)
+!    same1t = iAtom1.EQ.iTrans
+!    same2t = iAtom2.EQ.iTrans
+!    
+!    nPermute=nPermute+1
+!    Dim5(1) = derivInfo%pack2(i1,it2)
+!    fac5(nPermute) = derFac2(i1,it2,.TRUE.,.TRUE.)
+!    
+!    
+!    xxxx 
+     IF (iAtom1.EQ.iAtom2) THEN
+       IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
+         nPermute = nPermute - 1
+       ENDIF
+       it1 = 3*(iTrans-1)+derivInfo%dirComp(1,iDeriv)
+       it2 = 3*(iTrans-1)+derivInfo%dirComp(2,iDeriv)
+       Dim5(nPermute+1) = derivInfo%pack2(i1,it2)
+       Dim5(nPermute+2) = derivInfo%pack2(it1,i2)
+       Dim5(nPermute+3) = derivInfo%pack2(it1,it2)
+       Dim5(nPermute+4) = derivInfo%pack2(it2,it1)
+       fac5(nPermute+1) = -Dreal(1)
+       fac5(nPermute+2) = -Dreal(1)
+       nPermute = nPermute + 4
+       IF (same12.OR.(iAtom1.EQ.iTrans)) nPermute = nPermute-1
+     ELSE
+       Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
+       Dim5(nPermute+2) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
+       fac5(nPermute+1) = -Dreal(1)
+       fac5(nPermute+2) = -Dreal(1)
+       IF (iAtom1.EQ.iTrans.AND.i1.EQ.i2) THEN
+         nPermute = nPermute - 1
+       ELSE
+         Dim5(nPermute+3) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
+         fac5(nPermute+3) = -Dreal(1)
+       ENDIF
+       IF (iAtom2.EQ.iTrans.AND.i1.EQ.i2) THEN
+         nPermute = nPermute - 1
+       ELSE
+         Dim5(nPermute+4) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
+         fac5(nPermute+4) = -Dreal(1)
+       ENDIF
+       Dim5(nPermute+5) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
+       IF (i1.EQ.i2.AND.((iAtom1.EQ.iTrans).OR.(iAtom2.EQ.iTrans))) THEN
+         nPermute = nPermute - 1
+       ELSE
+         Dim5(nPermute+6) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
+       ENDIF
+       nPermute = nPermute + 6
+     ENDIF
+   ENDIF
+ELSEIF (input%geoDerivOrder.EQ. 3)THEN
+   iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+   iAtom3 = derivInfo%Atom(derivInfo%AO(3,iDeriv))
+   i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
+   i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
+   i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
+   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+   same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+   same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+
+   Dim5(1) = derivInfo%pack3(i1,i2,i3)
+   fac5(1) = derFac3(i1,i2,i3,same12,same13,same23,.FALSE.)
+   nPermute=1
+
+   IF (translate) THEN
+     call lsquit('Error in getDerivativeIndeces - geoDerivORder 3 and translate not implemented',-1)
+   ENDIF
+ELSEIF (input%geoDerivOrder.EQ. 4)THEN
+   iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+   iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+   iAtom3 = derivInfo%Atom(derivInfo%AO(3,iDeriv))
+   iAtom4 = derivInfo%Atom(derivInfo%AO(4,iDeriv))
+   i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
+   i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
+   i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
+   i4 = 3*(iAtom4-1)+derivInfo%dirComp(4,iDeriv)
+   same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+   same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+   same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+   same14 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(4,iDeriv))
+   same24 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(4,iDeriv))
+   same34 = (derivInfo%AO(3,iDeriv).EQ.derivInfo%AO(4,iDeriv))
+
+   Dim5(1) = derivInfo%pack4(i1,i2,i3,i4)
+   fac5(1) = derFac4(i1,i2,i3,i4,same12,same13,same23,same14,same24,same34,.FALSE.)
+   nPermute=1
+
+   IF (translate) THEN
+     call lsquit('Error in getDerivativeIndeces - geoDerivORder 4 and translate not implemented',-1)
+   ENDIF
+ELSE IF (input%geoDerivOrder.GE. 5)THEN
+  call lsquit('Error in getDerivativeIndeces - geoDerivORder > 4 not implemented',-1)
+ENDIF
+call mem_dealloc(Dreal)
+END SUBROUTINE getDerivativeIndeces
+
+FUNCTION derFac2(i1,i2,same12,minus)
+implicit none
+INTEGER,INTENT(IN)    :: i1,i2
+LOGICAL,INTENT(IN)    :: same12,minus
+Real(realk)           :: derFac2
+!
+Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk
+logical :: permute12
+
+permute12 = (i1.EQ.i2).AND..NOT.same12
+
+derFac2 = D1
+IF (permute12) derFac2 = D2
+IF (minus) derFac2 = -derFac2
+
+END FUNCTION derFac2
+
+FUNCTION derFac3(i1,i2,i3,same12,same13,same23,minus)
+implicit none
+INTEGER,INTENT(IN)    :: i1,i2,i3
+LOGICAL,INTENT(IN)    :: same12,same13,same23,minus
+Real(realk)           :: derFac3
+!
+Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk, D3 = 3.0E0_realk
+Real(realk)           :: fac12,fac13,fac23
+logical               :: allSame
+
+allSame = (i1.EQ.i2).AND.(i1.EQ.i3) !.AND. i2.EQ.i3
+!First four cases are when i1=i2=i3
+IF (allSame) THEN
+  IF (same12.AND.same13) THEN
+    derFac3 = D1
+  ELSEIF (same12.OR.same13.OR.same23) THEN
+    derFac3 = D3
+  ELSE
+    derFac3 = D2*D3
+  ENDIF
+!One or more i1,i2,i3 are different
+ELSE
+  fac12 = derFac2(i1,i2,same12,.FALSE.)
+  fac13 = derFac2(i1,i3,same13,.FALSE.)
+  fac23 = derFac2(i2,i3,same23,.FALSE.)
+  derFac3 = max(fac12,fac13,fac23)
+ENDIF
+IF (minus) derFac3 = -derFac3
+END FUNCTION derFac3
+
+FUNCTION derFac4(i1,i2,i3,i4,same12,same13,same23,same14,same24,same34,minus)
+implicit none
+INTEGER,INTENT(IN)    :: i1,i2,i3,i4
+LOGICAL,INTENT(IN)    :: same12,same13,same23,same14,same24,same34,minus
+Real(realk)           :: derFac4
+!
+Real(realk),parameter :: D1 = 1.0E0_realk, D2 = 2.0E0_realk, D3 = 3.0E0_realk, D4 = 4.0E0_realk
+Real(realk)           :: fac123,fac124,fac134,fac234,fac1234,fac1324,fac1423
+logical               :: allSame, pairWise
+
+allSame = (i1.EQ.i2).AND.(i1.EQ.i3).AND.(i1.EQ.i4)
+pairWise = ((i1.EQ.i2).AND.(i3.EQ.i4)).OR.((i1.EQ.i3).AND.(i2.EQ.i4)).OR.((i1.EQ.i4).AND.(i2.EQ.i3))
+!First four cases are when i1=i2=i3=i4
+IF (allSame) THEN
+  IF (same12.AND.same13.AND.same14) THEN !All AO indeces are equal
+    derFac4 = D1
+  ELSEIF ((same12.AND.same13).OR.(same12.AND.same14).OR.(same23.AND.same24)) THEN !Three AO indeces are equal
+    derFac4 = D4
+  ELSEIF ((same12.AND.same34).OR.(same13.AND.same24).OR.(same14.AND.same23)) THEN !Two AO indeces are pair-wise equal
+    derfac4 = D2*D3
+  ELSEIF  (same12.OR.same13.OR.same14.OR.same23.OR.same24.OR.same34) THEN !Two AO indeces are equal
+    derfac4 = D4*D3
+  ELSE !All different
+    derfac4 = D4*D3*D2
+  ENDIF
+ELSE IF (pairWise) THEN
+  fac1234 = derFac2(i1,i2,same12,.FALSE.)*derFac2(i3,i4,same34,.FALSE.)
+  fac1324 = derFac2(i1,i3,same13,.FALSE.)*derFac2(i2,i4,same24,.FALSE.)
+  fac1423 = derFac2(i1,i4,same14,.FALSE.)*derFac2(i2,i3,same23,.FALSE.)
+  derFac4 = max(fac1234,fac1324,fac1423)
+ELSE
+  fac123 = derFac3(i1,i2,i3,same12,same13,same23,.FALSE.)
+  fac124 = derFac3(i1,i2,i4,same12,same14,same24,.FALSE.)
+  fac134 = derFac3(i1,i3,i4,same13,same14,same34,.FALSE.)
+  fac234 = derFac3(i2,i3,i4,same23,same24,same34,.FALSE.)
+  derFac4 = max(fac123,fac124,fac134,fac234)
+ENDIF
+IF (minus) derFac4 = -derFac4
+END FUNCTION derFac4
+
+
 
 !> \brief new distributePQ to lstensor
 !> \author \latexonly T. Kj{\ae}rgaard  \endlatexonly
 !> \date 2009-02-05
 !> \param RES contains the result lstensor
-!> \param PQ contain info about the overlap distributions
+!i \param PQ contain info about the overlap distributions
 !> \param QPmat matrix containing calculated integrals
 !> \param dimQ dimension 1 of QPmat
 !> \param dimP dimension 2 of QPmat
@@ -378,7 +885,7 @@ Integer,intent(in)              :: dimQ,dimP
 REAL(REALK),target,intent(in)   :: QPMAT2(:)
 TYPE(lstensor),intent(inout)    :: RES
 !
-REAL(REALK),pointer             :: QPMAT3(:),QPMAT4(:),QPMAT5(:),QPMAT6(:)
+REAL(REALK),pointer             :: QPMAT3(:),QPMAT4(:)
 type(overlap),pointer :: P,Q
 logical :: SamePQ,SameLHSaos,SameRHSaos,SameODs,nucleiP,nucleiQ,add
 Logical :: permuteAB,permuteCD,permuteOD,noContraction,RHScontraction
@@ -388,15 +895,14 @@ integer :: nA,nB,nC,nD,batchA,batchB,batchC,batchD,atomA,atomB,atomC,atomD
 integer :: indABCD,indABDC,indBACD,indBADC,indCDAB,indCDBA,indDCAB,indDCBA
 integer :: ndimMag
 Real(realk),pointer :: ABCD(:),ABDC(:),BACD(:),BADC(:),CDAB(:),CDBA(:),DCAB(:),DCBA(:)
-Real(realk)  :: factor,center(3,1)
+Real(realk)  :: fac,center(3,1)
 logical :: antiAB,antiCD,AntipermuteAB,AntipermuteCD,translate,same12,same13,same23
 Type(derivativeInfo) :: derivInfo
 integer :: n1,n2,n3,n4,sA,sB,sC,sD,CMimat,maxBat,maxAng,itrans,nDerivQ
 integer :: iAtom1,iAtom2,iAtom3,i1,i2,i3,iPermute,nPermute,nAtoms,iPack
 integer,pointer :: dim5(:)
-logical,pointer :: negative(:)
+real(realk),pointer :: fac5(:)
 integer :: nDimGeo,nTranslate
-integer,pointer :: packIndex(:,:,:)
 
 antiAB=.FALSE.
 antiCD=.FALSE.
@@ -483,23 +989,10 @@ if(input%geoDerivOrder.GE.1)then
      nDimGeo = 2
    ELSE IF (input%geoDerivOrder.EQ.3) THEN
      nDimGeo = 6
-     call mem_alloc(packIndex,3*nAtoms,3*nAtoms,3*nAtoms)
-     iPack=0
-     DO i1=1,3*nAtoms
-       DO i2=i1,3*nAtoms
-         DO i3=i2,3*nAtoms
-           iPack=iPack+1
-           packIndex(i1,i2,i3) = iPack
-           packIndex(i1,i3,i2) = iPack
-           packIndex(i2,i1,i3) = iPack
-           packIndex(i2,i3,i1) = iPack
-           packIndex(i3,i1,i2) = iPack
-           packIndex(i3,i2,i1) = iPack
-         ENDDO
-       ENDDO
-     ENDDO
+   ELSE IF (input%geoDerivOrder.EQ.4) THEN
+     nDimGeo = 24
    ELSE 
-     call lsquit('nDimGeo not yet implemented for geoDerivOrder > 3 !',-1)
+     call lsquit('nDimGeo not yet implemented for geoDerivOrder > 4 !',-1)
    ENDIF
    IF (translate) THEN
      IF (input%geoDerivOrder.EQ.1) THEN
@@ -507,14 +1000,16 @@ if(input%geoDerivOrder.GE.1)then
      ELSE IF (input%geoDerivOrder.EQ.2) THEN
        nTranslate = 6
      ELSE IF (input%geoDerivOrder.EQ.3) THEN
-       nTranslate = 7
+       nTranslate = 0
+     ELSE IF (input%geoDerivOrder.EQ.4) THEN
+       nTranslate = 0
      ELSE
-       call lsquit('Translational invariance not yet implemented for geoDerivOrder > 3 !',-1)
+       call lsquit('Translational invariance not yet implemented for geoDerivOrder > 4 !',-1)
      ENDIF
    ENDIF
 endif
 call mem_alloc(Dim5,nDimGeo+nTranslate)
-call mem_alloc(negative,nDimGeo+nTranslate)
+call mem_alloc(fac5,nDimGeo+nTranslate)
 
 if(Input%LinComCarmomType.GT.0)then 
    !magnetic derivative overlaps and other integrals are a 
@@ -606,12 +1101,6 @@ DO iPassP=1,P%nPasses
      sC = res%LSAO(indABCD)%startLocalOrb(1+(batchC-1)*maxAng+2*maxAng*maxBat)-1 
      sD = res%LSAO(indABCD)%startLocalOrb(1+(batchD-1)*maxAng+3*maxAng*maxBat)-1 
 
-     IF (translate) THEN
-       call mem_workpointer_alloc(QPmat5,nA*nB*nC*nD*ndim5*nPasses)
-       QPmat5 = 0.0E0_realk
-       call daxpy(nA*nB*nC*nD*ndim5*nPasses,-1.0E0_realk,QPmat3,1,QPmat5,1)
-     ENDIF
-
      IF (permuteOD) THEN
         indCDAB = res%index(atomC,atomD,atomA,atomB)
         CDAB => res%LSAO(indCDAB)%elms
@@ -649,205 +1138,102 @@ DO iPassP=1,P%nPasses
        ENDIF
        Dim5(1) = iDim5
        nPermute = 1
-       IF (translate) iTrans = derivInfo%Atom(derivInfo%translate)
-       negative(:) = .FALSE.
-       IF (input%geoDerivOrder.EQ. 1)THEN
-          iDer = derivInfo%dirComp(1,iDeriv)
-          iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-          Dim5(1) = 3*(iAtom-1)+ider
-          IF (translate) THEN
-            nPermute = nPermute + 1
-            Dim5(2) = 3*(iTrans-1)+ider
-            negative(2) = .TRUE.
-          ENDIF
-       ELSEIF (input%geoDerivOrder.EQ. 2)THEN
-          iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-          iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
-          i1 = derivInfo%dirComp(1,iDeriv)
-          i2 = derivInfo%dirComp(2,iDeriv)
-          Dim5(1) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
-          Dim5(2) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
-          nPermute=2
-          same12 = (Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
-          IF (same12) nPermute=1
-          IF (translate) THEN
-            IF (iAtom1.EQ.iAtom2) THEN
-              IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
-                nPermute = nPermute - 1
-              ENDIF
-              Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
-              Dim5(nPermute+2) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
-              Dim5(nPermute+3) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
-              Dim5(nPermute+4) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
-              negative(nPermute+1) = .TRUE.
-              negative(nPermute+2) = .TRUE.
-              nPermute = nPermute + 4
-              IF (same12.OR.(iAtom1.EQ.iTrans)) nPermute = nPermute-1
-            ELSE
-              Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
-              Dim5(nPermute+2) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
-              negative(nPermute+1) = .TRUE.
-              negative(nPermute+2) = .TRUE.
-              IF (iAtom1.EQ.iTrans.AND.i1.EQ.i2) THEN
-                nPermute = nPermute - 1
-              ELSE
-                Dim5(nPermute+3) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
-                negative(nPermute+3) = .TRUE.
-              ENDIF
-              IF (iAtom2.EQ.iTrans.AND.i1.EQ.i2) THEN
-                nPermute = nPermute - 1
-              ELSE
-                Dim5(nPermute+4) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
-                negative(nPermute+4) = .TRUE.
-              ENDIF
-              Dim5(nPermute+5) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
-              IF (i1.EQ.i2.AND.((iAtom1.EQ.iTrans).OR.(iAtom2.EQ.iTrans))) THEN
-                nPermute = nPermute - 1
-              ELSE
-                Dim5(nPermute+6) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
-              ENDIF
-              nPermute = nPermute + 6
-            ENDIF
-          ENDIF
-       ELSEIF (input%geoDerivOrder.EQ. 3)THEN
-          iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-          iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
-          iAtom3 = derivInfo%Atom(derivInfo%AO(3,iDeriv))
-          i1 = 3*(iAtom1-1)+derivInfo%dirComp(1,iDeriv)
-          i2 = 3*(iAtom2-1)+derivInfo%dirComp(2,iDeriv)
-          i3 = 3*(iAtom3-1)+derivInfo%dirComp(3,iDeriv)
- 
-          nPermute = 1
-          Dim5(1)  = packIndex(i1,i2,i3)
-          Dim5(2)  = packIndex(i1,i2,i3)
-          Dim5(3)  = packIndex(i1,i2,i3)
-          Dim5(4)  = packIndex(i1,i2,i3)
-          Dim5(5)  = packIndex(i1,i2,i3)
-          Dim5(6)  = packIndex(i1,i2,i3)
-          same12 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
-          same13 = (derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-          same23 = (derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
-          IF ((i1.EQ.i2).AND.(i1.EQ.i3)) THEN
-             IF (same12.AND.same13) THEN !All the same AO index
-               nPermute=1
-             ELSE IF (same12.OR.same13.OR.same23) THEN !Two are the same AO index
-               nPermute=3
-             ELSE !All different AO indeces
-               nPermute=6
-             ENDIF
-          ELSE IF (i1.EQ.i2) THEN
-             nPermute=2
-             IF (same12) nPermute=1
-          ELSE IF (i1.EQ.i3) THEN
-             nPermute=2
-             IF (same13) nPermute=1
-          ELSE IF (i2.EQ.i3) THEN
-             nPermute=2
-             IF (same23) nPermute=1
-          ENDIF
-          IF (translate) THEN
-            call lsquit('Error in generalDistributePQ - geoDerivORder 3 and translate not implemented',-1)
-          ENDIF
-       ELSE IF (input%geoDerivOrder.GE. 4)THEN
-         call lsquit('Error in generalDistributePQ - geoDerivORder > 3 not implemented',-1)
-       ENDIF
+       ! Takes care of all permutations d^2/dAxdBy = d^2/dBydAx and 
+       ! translations d/dDx = - d/dAx - d/dBx -d/dCx
+       call getDerivativeIndeces(derivInfo,npermute,nDimGeo+nTranslate,Dim5,fac5,input,nAtoms,translate,iDeriv)
        DO iPermute=1,nPermute
         iDim5 = Dim5(iPermute)
-        IF (negative(iPermute)) THEN
-          QPmat6 => QPmat5
-        ELSE
-          QPmat6 => QPmat3
-        ENDIF
+        fac   = fac5(iPermute)
         IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (permuteOD.AND.permuteCD) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (permuteOD.AND.permuteAB) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (antipermuteAB.AND.permuteCD) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (permuteAB.AND.antipermuteCD) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (permuteAB.AND.permuteCD) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (antipermuteAB) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (permuteAB) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (antipermuteCD) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (permuteCD) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE IF (permuteOD) THEN
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
            CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ELSE
            CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+                & QPmat3,fac,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
         ENDIF
        ENDDO !Permute
 #ifdef VAR_LSDEBUGINT
@@ -909,21 +1295,17 @@ DO iPassP=1,P%nPasses
 !     ENDDO !iDerivQ
 !    ENDDO !iDerivP
      ENDDO !iDeriv
-     IF (translate) THEN
-       call mem_workpointer_dealloc(QPmat5)
-     ENDIF
     ENDIF 
   ENDDO !iPassQ
 ENDDO !iPassP
 IF (nderiv.GT. 1) CALL freeDerivativeOverlapInfo(derivInfo)
-call mem_dealloc(negative)
+call mem_dealloc(fac5)
 call mem_dealloc(Dim5)
 IF(Input%LinComCarmomType.GT.0)THEN
    call mem_workpointer_dealloc(QPmat3)
 ELSEIF(PQ%reverseOrder)THEN
    call mem_workpointer_dealloc(QPmat4)
 ENDIF
-IF (input%geoDerivOrder.EQ.3) call mem_dealloc(packIndex)
 
 end SUBROUTINE GeneraldistributePQ
 
@@ -947,11 +1329,12 @@ SUBROUTINE GDPQ_printInt(ABCD,text,n1,n2,n3,n4,n5,lupri)
   ENDDO
 END SUBROUTINE GDPQ_printInt
 
-SUBROUTINE GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,&
+    &                   ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: ABCD(n1,n2,n3,n4,ndim5output) !nP,nQ,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -961,7 +1344,7 @@ SUBROUTINE GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
         DO iC=1,nC
            DO iB=1,nB
               DO iA=1,nA
-                 ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)                   
+                 ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)                   
               ENDDO
            ENDDO
         ENDDO
@@ -973,7 +1356,7 @@ SUBROUTINE GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
            DO iB=1,nB
               DO iA=1,nA
                  ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output)=ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output)+&
-                      & CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -982,11 +1365,12 @@ SUBROUTINE GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intABCD
 
-SUBROUTINE GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,&
+    &                   ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: ABDC(n1,n2,n4,n3,ndim5output) !(nP,nD,nC,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -996,7 +1380,7 @@ SUBROUTINE GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
         DO iD=1,nD
            DO iB=1,nB
               DO iA=1,nA
-                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1008,7 +1392,7 @@ SUBROUTINE GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
            DO iB=1,nB
               DO iA=1,nA
                  ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = &
-                      & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) +CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) +fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1017,12 +1401,12 @@ SUBROUTINE GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intABDC
 
-SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,ndim5output,&
      & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: ABDC(n1,n2,n4,n3,ndim5output)!(nP,nD,nC,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1032,7 +1416,7 @@ SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
         DO iD=1,nD
            DO iB=1,nB
               DO iA=1,nA
-                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1044,7 +1428,7 @@ SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
            DO iB=1,nB
               DO iA=1,nA
                  ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = &
-                      & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) + fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1053,11 +1437,12 @@ SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
   ENDIF
 END SUBROUTINE GDPQ_AntiIntABDC
 
-SUBROUTINE GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,&
+    &                   ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: DCAB(n4,n3,n1,n2,ndim5output)!(nD,nC,nP,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1067,7 +1452,7 @@ SUBROUTINE GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
         DO iD=1,nD
            DO iB=1,nB
               DO iA=1,nA
-                 DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1079,7 +1464,7 @@ SUBROUTINE GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
            DO iB=1,nB
               DO iA=1,nA
                  DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) &
-                      & = DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & = DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) + fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1088,11 +1473,12 @@ SUBROUTINE GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intDCAB
 
-SUBROUTINE GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,&
+    &                   ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: BACD(n2,n1,n3,n4,ndim5output) !(nB,nA,nQ,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1102,7 +1488,7 @@ SUBROUTINE GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
         DO iA=1,nA
            DO iD=1,nD
               DO iC=1,nC
-                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1114,7 +1500,7 @@ SUBROUTINE GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
            DO iD=1,nD
               DO iC=1,nC
                  BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) &
-                      &=BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output)+CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      &=BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output)+fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1123,12 +1509,12 @@ SUBROUTINE GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intBACD
 
-SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,ndim5output,&
      & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: BACD(n2,n1,n3,n4,ndim5output)!(nB,nA,nQ,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1138,7 +1524,7 @@ SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
         DO iA=1,nA
            DO iD=1,nD
               DO iC=1,nC
-                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1150,7 +1536,7 @@ SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
            DO iD=1,nD
               DO iC=1,nC
                  BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) &
-                      & = BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) - CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & = BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) - fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1159,12 +1545,12 @@ SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
   ENDIF
 END SUBROUTINE GDPQ_AntiIntBACD
 
-SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,ndim5output,&
      & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: BADC(n2,n1,n4,n3,ndim5output)!(nB,nA,nD,nC,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1174,7 +1560,7 @@ SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
         DO iC=1,nC
            DO iA=1,nA
               DO iB=1,nB
-                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1186,7 +1572,7 @@ SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
            DO iA=1,nA
               DO iB=1,nB
                  BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) &
-                      & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) + fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1195,12 +1581,12 @@ SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intBADC
 
-SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,ndim5output,&
      & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: BADC(n2,n1,n4,n3,ndim5output)!(nB,nA,nD,nC,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1210,7 +1596,7 @@ SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
         DO iC=1,nC
            DO iA=1,nA
               DO iB=1,nB
-                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1222,7 +1608,7 @@ SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
            DO iA=1,nA
               DO iB=1,nB
                  BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) &
-                      & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) - CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) - fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1231,12 +1617,12 @@ SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
   ENDIF
 END SUBROUTINE GDPQ_AntiIntBADC
 
-SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,ndim5output,&
      & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: DCBA(n4,n3,n2,n1,ndim5output)!(nD,nC,nB,nA,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1246,7 +1632,7 @@ SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
         DO iA=1,nA
            DO iD=1,nD
               DO iC=1,nC
-                 DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1258,7 +1644,7 @@ SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
            DO iD=1,nD
               DO iC=1,nC
                  DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) &
-                      & = DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & = DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) + fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1267,12 +1653,12 @@ SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intDCBA
 
-SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,fac,add,nA,nB,nC,nD,ndim5output,&
      & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: CDBA(n3,n4,n2,n1,ndim5output)!(nQ,nB,nA,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1282,7 +1668,7 @@ SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
         DO iA=1,nA
            DO iD=1,nD
               DO iC=1,nC
-                 CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                 CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) = fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1294,7 +1680,7 @@ SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
            DO iD=1,nD
               DO iC=1,nC
                  CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) &
-                      & = CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+                      & = CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) + fac*CDAB(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1303,12 +1689,12 @@ SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intCDBA
 
-SUBROUTINE GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,add,nA,nB,nC,nD,ndim5output,&
+SUBROUTINE GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,fac,add,nA,nB,nC,nD,ndim5output,&
      & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-  Real(realk),intent(IN)  :: CDABin(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(IN)  :: CDABin(nC,nD,nA,nB,ndim5,nPasses),fac
   Real(realk),intent(INOUT) :: CDAB(n3,n4,n1,n2,ndim5output) !(nPQ,ndim5output)
   Logical,intent(IN)      :: add
   !
@@ -1320,7 +1706,7 @@ SUBROUTINE GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,add,nA,nB,nC,nD,ndim
         DO iB=1,nB
            DO iD=1,nD
               DO iC=1,nC
-                 CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) = CDABin(iC,iD,iA,iB,iDeriv,iPass)
+                 CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) = fac*CDABin(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO
@@ -1332,7 +1718,7 @@ SUBROUTINE GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,add,nA,nB,nC,nD,ndim
            DO iD=1,nD
               DO iC=1,nC
                  CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) &
-                      & = CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) + CDABin(iC,iD,iA,iB,iDeriv,iPass)
+                      & = CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) + fac*CDABin(iC,iD,iA,iB,iDeriv,iPass)
               ENDDO
            ENDDO
         ENDDO

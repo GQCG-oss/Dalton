@@ -1,0 +1,958 @@
+ THIS IS A DEBUG BUILD
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+      This is output from LSDALTON 2016.alpha
+  
+  
+      IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+      THE FOLLOWING PAPER SHOULD BE CITED:
+      
+      K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+      L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+      P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+      J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+      L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+      A. Halkier, C. Haettig, H. Heiberg,
+      T. Helgaker, A. C. Hennum, H. Hettema,
+      E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+      M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+      D. Jonsson, P. Joergensen, J. Kauczor,
+      S. Kirpekar, T. Kjaergaard, W. Klopper,
+      S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+      A. Krapp, K. Kristensen, A. Ligabue,
+      O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+      C. Neiss, C. B. Nielsen, P. Norman,
+      J. Olsen, J. M. H. Olsen, A. Osted,
+      M. J. Packer, F. Pawlowski, T. B. Pedersen,
+      P. F. Provasi, S. Reine, Z. Rinkevicius,
+      T. A. Ruden, K. Ruud, V. Rybkin,
+      P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+      T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+      K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+      P. R. Taylor, A. M. Teale, E. I. Tellgren,
+      D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+      O. Vahtras, M. A. Watson, D. J. D. Wilson,
+      M. Ziolkowski, and H. AAgren,
+      "The Dalton quantum chemistry program system",
+      WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                                
+      LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
+      ----------------------------------------------------------------------------
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
+      Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
+      Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
+      Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
+      Robert Izsak,            University of Oslo,        Norway    (ADMM)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
+      Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
+      Patrick Merlot,          University of Oslo,        Norway    (ADMM)
+      Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
+      Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
+      Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
+      Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
+      Mark Watson,             University of Oslo,        Norway    (FMM)
+      Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+ Who compiled             | kk
+ Host                     | kaspers-mbp-2.st.client.au.dk
+ System                   | Darwin-13.4.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran-4.8
+ Fortran compiler version | unknown
+ C compiler               | /usr/local/bin/gcc-4.8
+ C compiler version       | unknown
+ C++ compiler             | /usr/local/bin/g++-4.8
+ C++ compiler version     | unknown
+ Explicit libs            | -framework vecLib
+ Static linking           | OFF
+ Last Git revision        | 5afce0abce2ad367b7392fe55435d54c58361e08
+ Git branch               | master
+ Configuration time       | 2015-08-26 17:40:19.518194
+
+Start simulation
+     Date and time (Linux)  : Wed Aug 26 17:41:30 2015
+     Host name              : kaspers-mbp-2.st.client.au.dk           
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  cc-pVDZ                                 
+  %Equilibrium water geometry used in MEST
+                                          
+  Atomtypes=2 Charge=0                                        
+  Charge=8.0 Atoms=1                                          
+  O        1.84345        0.00000        0.00000              
+  Charge=1.0 Atoms=2                                          
+  H        0.00000        0.00000        0.00000              
+  H        2.49100        1.72597        0.00000              
+                      
+ -----------------------------------------
+          PRINTING THE LSDALTON.INP FILE 
+ -----------------------------------------
+                      
+  **WAVE FUNCTIONS                                                                                    
+  .HF                                                                                                 
+  *DENSOPT                                                                                            
+  .ARH                                                                                                
+  .START                                                                                              
+  ATOMS                                                                                               
+  .CONVTHR                                                                                            
+  1.0d-8                                                                                              
+  **GENERAL                                                                                           
+  .NOGCBASIS                                                                                          
+  **CC                                                                                                
+  .MP3                                                                                                
+  .CANONICAL                                                                                          
+  .MEMORY                                                                                             
+  2                                                                                                   
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  9
+   Written in atomic units    
+ 
+   1   O        x      1.8434500000
+   2            y      0.0000000000
+   3            z      0.0000000000
+ 
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+ 
+   7   H        x      2.4910000000
+   8            y      1.7259700000
+   9            z      0.0000000000
+ 
+ 
+ BASISSETLIBRARY  : REGULAR  
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  cc-pVDZ                                           
+  CHARGES:    8.0000    1.0000
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
+   
+ OPENING FILE/Users/kk/dalton/build_debug/basis/cc-pVDZ
+ PRINT MOLECULE AND BASIS IN FULL INPUT
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :       24
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       40
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   8.000  cc-pVDZ         F             26          14
+     2   1.000  cc-pVDZ         F              7           5
+     3   1.000  cc-pVDZ         F              7           5
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  O           1        1.84345000        0.00000000        0.00000000
+     2  H           1        0.00000000        0.00000000        0.00000000
+     3  H           1        2.49100000        1.72597000        0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      3
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 O      8.000 cc-pVDZ                   26       14 [9s4p1d|3s2p1d]                              
+      2 H      1.000 cc-pVDZ                    7        5 [4s1p|2s1p]                                  
+      3 H      1.000 cc-pVDZ                    7        5 [4s1p|2s1p]                                  
+---------------------------------------------------------------------
+total         10                               40       24
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+
+ Maximum size of subspace in ARH linear equations:           2
+
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+
+ Maximum size of Fock/density queue in averaging:          10
+
+Convergence threshold for gradient:   0.10E-07
+We perform the calculation in the standard input basis
+ 
+    The Overall Screening threshold is set to              :  1.0000E-08
+    The Screening threshold used for Coulomb               :  1.0000E-10
+    The Screening threshold used for Exchange              :  1.0000E-08
+    The Screening threshold used for One-electron operators:  1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in OAO basis
+
+ End of configuration!
+
+
+ First density: Atoms in molecule guess
+
+ The Coulomb energy contribution    45.240617217216681     
+ The Exchange energy contribution    8.6352321105890848     
+ The Fock energy contribution   -36.605385106627594     
+  Iteration 0 energy:  -75.883424515208290     
+ Preparing to do S^1/2 decomposition...
+Matrix S     has nnz=       216 sparsity:     37.500 %
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+  Relative convergence threshold for solver:   1.0000000000000000E-002
+  SCF Convergence criteria for gradient norm:   1.0000000000000000E-008
+** Get Fock matrix number   1
+ The Coulomb energy contribution    47.837320845659065     
+ The Exchange energy contribution    9.0679397175303347     
+ The Fock energy contribution   -38.769381128128721     
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1    -75.9900374222    0.00000000000    0.00      0.00000    0.00    2.89E-01  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm  0.28945271142589468     
+ Number of densities in queue:           0
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.184903 au
+   -E(HOMO):                     -0.409382 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.594285 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.1446246347 (mu =       0.00, xmax =   0.524212E-01, xnorm =   0.187806E+00, THR =   0.289453E-02)
+  Error of red space iteration  2:        0.0430914863 (mu =       0.00, xmax =   0.552127E-01, xnorm =   0.180223E+00, THR =   0.289453E-02)
+  Error of red space iteration  3:        0.0161780319 (mu =       0.00, xmax =   0.525455E-01, xnorm =   0.172938E+00, THR =   0.289453E-02)
+  Error of red space iteration  4:        0.0046725438 (mu =       0.00, xmax =   0.518624E-01, xnorm =   0.170271E+00, THR =   0.289453E-02)
+Error went down by   89.16%
+  Error of red space iteration  5:        0.0016809615 (mu =       0.00, xmax =   0.516212E-01, xnorm =   0.169445E+00, THR =   0.289453E-02)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    58
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
+** Get Fock matrix number   2
+ The Coulomb energy contribution    46.070503007488767     
+ The Exchange energy contribution    8.8716571607925072     
+ The Fock energy contribution   -37.198845846696258     
+ 0.60000 (xnorm)    0.05162    0.16945   -0.00        0.5746    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.59999999999999998     
+  2    -76.0158956075   -0.02585818524    0.00      0.00000   -0.00    1.52E-01  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm  0.15238422352494146     
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.174905 au
+   -E(HOMO):                     -0.531544 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.706449 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0850788439 (mu =       0.00, xmax =   0.132025E-01, xnorm =   0.568872E-01, THR =   0.152384E-02)
+  Error of red space iteration  2:        0.0208212788 (mu =       0.00, xmax =   0.222273E-01, xnorm =   0.638946E-01, THR =   0.152384E-02)
+  Error of red space iteration  3:        0.0051157737 (mu =       0.00, xmax =   0.224154E-01, xnorm =   0.615430E-01, THR =   0.152384E-02)
+  Error of red space iteration  4:        0.0015699944 (mu =       0.00, xmax =   0.225901E-01, xnorm =   0.612681E-01, THR =   0.152384E-02)
+Error went down by   92.46%
+  Error of red space iteration  5:        0.0006698861 (mu =       0.00, xmax =   0.226192E-01, xnorm =   0.611898E-01, THR =   0.152384E-02)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    74
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
+** Get Fock matrix number   3
+ The Coulomb energy contribution    46.845915816335150     
+ The Exchange energy contribution    8.9646936421809755     
+ The Fock energy contribution   -37.881222174154182     
+ 0.60000 (xnorm)    0.02262    0.06119   -0.00        0.9012    0.8282         1          2    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.59999999999999998       0.71999999999999997     
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  3    -76.0237725965   -0.00787698905    0.00      0.00000   -0.00    2.20E-02  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   2.2017869041767467E-002
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183812 au
+   -E(HOMO):                     -0.482587 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.666399 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0170231925 (mu =       0.00, xmax =   0.336444E-02, xnorm =   0.125504E-01, THR =   0.220179E-03)
+  Error of red space iteration  2:        0.0033287526 (mu =       0.00, xmax =   0.443171E-02, xnorm =   0.131180E-01, THR =   0.220179E-03)
+  Error of red space iteration  3:        0.0010890696 (mu =       0.00, xmax =   0.424212E-02, xnorm =   0.126060E-01, THR =   0.220179E-03)
+  Error of red space iteration  4:        0.0003744669 (mu =       0.00, xmax =   0.417340E-02, xnorm =   0.123614E-01, THR =   0.220179E-03)
+Error went down by   88.75%
+  Error of red space iteration  5:        0.0001248120 (mu =       0.00, xmax =   0.416196E-02, xnorm =   0.122885E-01, THR =   0.220179E-03)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    72
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
+** Get Fock matrix number   4
+ The Coulomb energy contribution    46.762214467431889     
+ The Exchange energy contribution    8.9568656089643710     
+ The Fock energy contribution   -37.805348858467525     
+ 0.60000 (xnorm)    0.00416    0.01229   -0.00        1.0840    0.8188         2          3    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  4    -76.0240309178   -0.00025832130    0.00      0.00000   -0.00    3.22E-03  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   3.2198342590644691E-003
+ Number of densities in queue:           3
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183125 au
+   -E(HOMO):                     -0.489197 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.672322 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0033935149 (mu =       0.00, xmax =   0.783039E-03, xnorm =   0.247303E-02, THR =   0.321983E-04)
+  Error of red space iteration  2:        0.0004609894 (mu =       0.00, xmax =   0.816214E-03, xnorm =   0.243998E-02, THR =   0.321983E-04)
+  Error of red space iteration  3:        0.0001462929 (mu =       0.00, xmax =   0.811056E-03, xnorm =   0.245556E-02, THR =   0.321983E-04)
+  Error of red space iteration  4:        0.0000481105 (mu =       0.00, xmax =   0.821743E-03, xnorm =   0.247057E-02, THR =   0.321983E-04)
+Error went down by   89.56%
+  Error of red space iteration  5:        0.0000206704 (mu =       0.00, xmax =   0.825275E-03, xnorm =   0.248154E-02, THR =   0.321983E-04)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    71
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
+** Get Fock matrix number   5
+ The Coulomb energy contribution    46.764924989367984     
+ The Exchange energy contribution    8.9575779150873629     
+ The Fock energy contribution   -37.807347074280614     
+ 0.60000 (xnorm)    0.00083    0.00248   -0.00        1.0737    0.8900         3          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  5    -76.0240384558   -0.00000753799    0.00      0.00000   -0.00    5.06E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   5.0579000652376557E-004
+ Number of densities in queue:           4
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183230 au
+   -E(HOMO):                     -0.489350 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.672580 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0003336555 (mu =       0.00, xmax =   0.135274E-03, xnorm =   0.449034E-03, THR =   0.505790E-06)
+  Error of red space iteration  2:        0.0000861467 (mu =       0.00, xmax =   0.127156E-03, xnorm =   0.449193E-03, THR =   0.505790E-06)
+  Error of red space iteration  3:        0.0000396897 (mu =       0.00, xmax =   0.130519E-03, xnorm =   0.455546E-03, THR =   0.505790E-06)
+  Error of red space iteration  4:        0.0000210157 (mu =       0.00, xmax =   0.133065E-03, xnorm =   0.465647E-03, THR =   0.505790E-06)
+Error went down by   75.60%
+  Error of red space iteration  5:        0.0000067499 (mu =       0.00, xmax =   0.137043E-03, xnorm =   0.478503E-03, THR =   0.505790E-06)
+  Error of red space iteration  6:        0.0000025150 (mu =       0.00, xmax =   0.138058E-03, xnorm =   0.482026E-03, THR =   0.505790E-06)
+  Error of red space iteration  7:        0.0000007568 (mu =       0.00, xmax =   0.138332E-03, xnorm =   0.483235E-03, THR =   0.505790E-06)
+Error went down by   88.79%
+  Error of red space iteration  8:        0.0000002716 (mu =       0.00, xmax =   0.138364E-03, xnorm =   0.483411E-03, THR =   0.505790E-06)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   101
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
+** Get Fock matrix number   6
+ The Coulomb energy contribution    46.763744332978163     
+ The Exchange energy contribution    8.9574429732619585     
+ The Fock energy contribution   -37.806301359716201     
+ 0.60000 (xnorm)    0.00014    0.00048   -0.00        1.0544    0.9312         4          5    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  6    -76.0240386864   -0.00000023061    0.00      0.00000   -0.00    6.72E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   6.7170922687771262E-005
+ Number of densities in queue:           5
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183200 au
+   -E(HOMO):                     -0.489496 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.672696 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0000371993 (mu =       0.00, xmax =   0.151962E-04, xnorm =   0.553688E-04, THR =   0.671709E-07)
+  Error of red space iteration  2:        0.0000110034 (mu =       0.00, xmax =   0.145097E-04, xnorm =   0.536118E-04, THR =   0.671709E-07)
+  Error of red space iteration  3:        0.0000045889 (mu =       0.00, xmax =   0.150483E-04, xnorm =   0.529889E-04, THR =   0.671709E-07)
+  Error of red space iteration  4:        0.0000024252 (mu =       0.00, xmax =   0.153805E-04, xnorm =   0.532696E-04, THR =   0.671709E-07)
+Error went down by   77.96%
+  Error of red space iteration  5:        0.0000010642 (mu =       0.00, xmax =   0.157636E-04, xnorm =   0.538197E-04, THR =   0.671709E-07)
+  Error of red space iteration  6:        0.0000003189 (mu =       0.00, xmax =   0.159625E-04, xnorm =   0.542544E-04, THR =   0.671709E-07)
+  Error of red space iteration  7:        0.0000001082 (mu =       0.00, xmax =   0.160073E-04, xnorm =   0.544316E-04, THR =   0.671709E-07)
+Error went down by   89.83%
+  Error of red space iteration  8:        0.0000000399 (mu =       0.00, xmax =   0.160230E-04, xnorm =   0.544983E-04, THR =   0.671709E-07)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   100
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
+** Get Fock matrix number   7
+ The Coulomb energy contribution    46.763662275345013     
+ The Exchange energy contribution    8.9574322320917226     
+ The Fock energy contribution   -37.806230043253294     
+ 0.60000 (xnorm)    0.00002    0.00005   -0.00        1.0354    0.9577         5          6    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  7    -76.0240386897   -0.00000000334    0.00      0.00000   -0.00    5.39E-06  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   5.3900236606698996E-006
+ Number of densities in queue:           6
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183200 au
+   -E(HOMO):                     -0.489508 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.672708 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0000067105 (mu =       0.00, xmax =   0.115653E-05, xnorm =   0.427049E-05, THR =   0.539002E-08)
+  Error of red space iteration  2:        0.0000010925 (mu =       0.00, xmax =   0.120720E-05, xnorm =   0.414228E-05, THR =   0.539002E-08)
+  Error of red space iteration  3:        0.0000004451 (mu =       0.00, xmax =   0.118593E-05, xnorm =   0.420406E-05, THR =   0.539002E-08)
+  Error of red space iteration  4:        0.0000002356 (mu =       0.00, xmax =   0.120908E-05, xnorm =   0.429597E-05, THR =   0.539002E-08)
+Error went down by   78.44%
+  Error of red space iteration  5:        0.0000001016 (mu =       0.00, xmax =   0.123493E-05, xnorm =   0.440984E-05, THR =   0.539002E-08)
+  Error of red space iteration  6:        0.0000000326 (mu =       0.00, xmax =   0.125414E-05, xnorm =   0.448434E-05, THR =   0.539002E-08)
+  Error of red space iteration  7:        0.0000000115 (mu =       0.00, xmax =   0.126027E-05, xnorm =   0.449956E-05, THR =   0.539002E-08)
+Error went down by   88.66%
+  Error of red space iteration  8:        0.0000000051 (mu =       0.00, xmax =   0.126168E-05, xnorm =   0.450144E-05, THR =   0.539002E-08)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   100
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
+** Get Fock matrix number   8
+ The Coulomb energy contribution    46.763666265808752     
+ The Exchange energy contribution    8.9574327812828258     
+ The Fock energy contribution   -37.806233484525919     
+ 0.60000 (xnorm)    0.00000    0.00000   -0.00        1.1265    0.8303         6          7    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  8    -76.0240386898   -0.00000000002    0.00      0.00000   -0.00    9.42E-07  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   9.4227407366919291E-007
+ Number of densities in queue:           7
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183200 au
+   -E(HOMO):                     -0.489509 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.672708 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0000007092 (mu =       0.00, xmax =   0.250995E-06, xnorm =   0.934929E-06, THR =   0.942274E-09)
+  Error of red space iteration  2:        0.0000002164 (mu =       0.00, xmax =   0.279609E-06, xnorm =   0.101562E-05, THR =   0.942274E-09)
+  Error of red space iteration  3:        0.0000001476 (mu =       0.00, xmax =   0.310517E-06, xnorm =   0.110158E-05, THR =   0.942274E-09)
+  Error of red space iteration  4:        0.0000000682 (mu =       0.00, xmax =   0.355080E-06, xnorm =   0.124858E-05, THR =   0.942274E-09)
+Error went down by   68.47%
+  Error of red space iteration  5:        0.0000000177 (mu =       0.00, xmax =   0.379452E-06, xnorm =   0.133699E-05, THR =   0.942274E-09)
+  Error of red space iteration  6:        0.0000000071 (mu =       0.00, xmax =   0.381468E-06, xnorm =   0.134866E-05, THR =   0.942274E-09)
+  Error of red space iteration  7:        0.0000000036 (mu =       0.00, xmax =   0.381214E-06, xnorm =   0.134935E-05, THR =   0.942274E-09)
+Error went down by   79.65%
+  Error of red space iteration  8:        0.0000000016 (mu =       0.00, xmax =   0.380902E-06, xnorm =   0.134899E-05, THR =   0.942274E-09)
+  Error of red space iteration  9:        0.0000000006 (mu =       0.00, xmax =   0.380743E-06, xnorm =   0.134862E-05, THR =   0.942274E-09)
+Newton equations converged in  9 iterations!
+No. of matmuls in get_density:   110
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
+** Get Fock matrix number   9
+ The Coulomb energy contribution    46.763665589226264     
+ The Exchange energy contribution    8.9574327717283850     
+ The Fock energy contribution   -37.806232817497886     
+ 0.60000 (xnorm)    0.00000    0.00000   -0.00        1.1077    0.8956         7          8    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+  9    -76.0240386898   -0.00000000000    0.00      0.00000   -0.00    2.34E-07  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   2.3379784899004805E-007
+ Number of densities in queue:           8
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183200 au
+   -E(HOMO):                     -0.489509 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.672708 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0000001115 (mu =       0.00, xmax =   0.599628E-07, xnorm =   0.217717E-06, THR =   0.233798E-09)
+  Error of red space iteration  2:        0.0000000500 (mu =       0.00, xmax =   0.653385E-07, xnorm =   0.231340E-06, THR =   0.233798E-09)
+  Error of red space iteration  3:        0.0000000342 (mu =       0.00, xmax =   0.707781E-07, xnorm =   0.250875E-06, THR =   0.233798E-09)
+  Error of red space iteration  4:        0.0000000208 (mu =       0.00, xmax =   0.778218E-07, xnorm =   0.279880E-06, THR =   0.233798E-09)
+Error went down by   58.48%
+  Error of red space iteration  5:        0.0000000087 (mu =       0.00, xmax =   0.844755E-07, xnorm =   0.305375E-06, THR =   0.233798E-09)
+  Error of red space iteration  6:        0.0000000024 (mu =       0.00, xmax =   0.868005E-07, xnorm =   0.315284E-06, THR =   0.233798E-09)
+  Error of red space iteration  7:        0.0000000008 (mu =       0.00, xmax =   0.872650E-07, xnorm =   0.316732E-06, THR =   0.233798E-09)
+Newton equations converged in  7 iterations!
+No. of matmuls in get_density:    90
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.17 seconds
+** Get Fock matrix number  10
+ The Coulomb energy contribution    46.763665410314587     
+ The Exchange energy contribution    8.9574327487174425     
+ The Fock energy contribution   -37.806232661597143     
+ 0.60000 (xnorm)    0.00000    0.00000   -0.00        0.4542    0.9765         8          9    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.59999999999999998     
+ 10    -76.0240386898   -0.00000000000    0.00      0.00000   -0.00    2.84E-08  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       360 sparsity:     62.500 %
+Matrix AO F  has nnz=       360 sparsity:     62.500 %
+Matrix OAO D has nnz=       360 sparsity:     62.500 %
+Matrix OAO F has nnz=       360 sparsity:     62.500 %
+** Get new density 
+ OAO gradnorm   2.8413544752325233E-008
+ Number of densities in queue:           9
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.183200 au
+   -E(HOMO):                     -0.489509 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.672708 au
+
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:        0.0000000416 (mu =       0.00, xmax =   0.493943E-08, xnorm =   0.207184E-07, THR =   0.284135E-10)
+  Error of red space iteration  2:        0.0000000056 (mu =       0.00, xmax =   0.441728E-08, xnorm =   0.205365E-07, THR =   0.284135E-10)
+  Error of red space iteration  3:        0.0000000020 (mu =       0.00, xmax =   0.451774E-08, xnorm =   0.205928E-07, THR =   0.284135E-10)
+  Error of red space iteration  4:        0.0000000012 (mu =       0.00, xmax =   0.464407E-08, xnorm =   0.207868E-07, THR =   0.284135E-10)
+Error went down by   78.25%
+  Error of red space iteration  5:        0.0000000008 (mu =       0.00, xmax =   0.483666E-08, xnorm =   0.211799E-07, THR =   0.284135E-10)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    70
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
+** Get Fock matrix number  11
+ The Coulomb energy contribution    46.763665387299405     
+ The Exchange energy contribution    8.9574327457980782     
+ The Fock energy contribution   -37.806232641501325     
+ 0.60000 (xnorm)    0.00000    0.00000   -0.00       82.2292    0.8849         9         10    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ 11    -76.0240386898   -0.00000000000    0.00      0.00000   -0.00    4.23E-09  ###
+SCF converged in     11 iterations
+ >>>  CPU Time used in **ITER is   1.81 seconds
+ >>> wall Time used in **ITER is   1.81 seconds
+
+Total no. of matmuls in SCF optimization:       1023
+
+ Number of occupied orbitals:           5
+ Number of virtual orbitals:          19
+
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+
+
+Calculation of HOMO-LUMO gap
+============================
+
+Calculation of occupied orbital energies converged in     3 iterations!
+
+Calculation of virtual orbital energies converged in     9 iterations!
+
+    E(LUMO):                         0.183200 au
+   -E(HOMO):                        -0.550962 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.734162 au
+
+
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.02585818524    0.0000   -0.0000    0.0000000
+  3   -0.00787698905    0.0000   -0.0000    0.0000000
+  4   -0.00025832130    0.0000   -0.0000    0.0000000
+  5   -0.00000753799    0.0000   -0.0000    0.0000000
+  6   -0.00000023061    0.0000   -0.0000    0.0000000
+  7   -0.00000000334    0.0000   -0.0000    0.0000000
+  8   -0.00000000002    0.0000   -0.0000    0.0000000
+  9   -0.00000000000    0.0000   -0.0000    0.0000000
+ 10   -0.00000000000    0.0000   -0.0000    0.0000000
+ 11   -0.00000000000    0.0000   -0.0000    0.0000000
+
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+    1           -75.99003742221898960452      0.289452711425895D+00
+    2           -76.01589560745969720301      0.152384223524941D+00
+    3           -76.02377259650941709879      0.220178690417675D-01
+    4           -76.02403091780755062246      0.321983425906447D-02
+    5           -76.02403845579524954701      0.505790006523766D-03
+    6           -76.02403868640220707675      0.671709226877713D-04
+    7           -76.02403868974485590115      0.539002366066990D-05
+    8           -76.02403868976767853383      0.942274073669193D-06
+    9           -76.02403868976892908904      0.233797848990048D-06
+   10           -76.02403868976895751075      0.284135447523252D-07
+   11           -76.02403868976900014331      0.422549273937721D-08
+
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+
+
+      Final HF energy:                       -76.024038689769
+      Nuclear repulsion:                       9.009363910090
+      Electronic energy:                     -85.033402599859
+
+
+
+-- Full molecular info --
+
+FULL: Overall charge of molecule :      0
+
+FULL: Number of electrons        :     10
+FULL: Number of atoms            :      3
+FULL: Number of basis func.      :     24
+FULL: Number of aux. basis func. :      0
+FULL: Number of core orbitals    :      1
+FULL: Number of valence orbitals :      4
+FULL: Number of occ. orbitals    :      5
+FULL: Number of virt. orbitals   :     19
+FULL: Local memory use type full :  0.11E-04
+FULL: Distribute matrices        : F
+
+ Orbital energies:
+           1  -20.549977053474290     
+           2  -1.3229750098196826     
+           3 -0.70016209501258708     
+           4 -0.55096209025480170     
+           5 -0.48950873061750128     
+           6  0.18319973200477585     
+           7  0.25296975928096321     
+           8  0.79831933251791443     
+           9  0.80977890211997450     
+          10   1.1625820011372869     
+          11   1.2017700352105110     
+          12   1.2479383565489131     
+          13   1.4539098638738097     
+          14   1.4980607813576454     
+          15   1.7021651498962589     
+          16   1.8825756707835077     
+          17   1.8852196348031389     
+          18   2.4297782379037236     
+          19   2.4366733031326224     
+          20   3.2381189866113540     
+          21   3.3438151614856202     
+          22   3.4429272189616467     
+          23   3.9046164943653752     
+          24   4.0895261725139953     
+ Calculating carmom matrix for DEC calculation...
+ Memory set in input to be:    2.000     GB
+ Using canonical orbitals as requested in input!
+
+
+
+Full molecular calculation is carried out...
+
+
+ ================================================ 
+              Full molecular driver               
+ ================================================ 
+
+ Test Full N**4 possible
+ CANONMP2MEM: Final Occupied batches chosen:           5           5
+ CANONMP2MEM: Final AO batches chosen:          24          24
+ CANONMP2MEM: mem estimate means full N**4 dim are used
+ Estimated Memory is    3.2090880000000001E-003  GB
+ nbasis          24
+ nocc             5
+ nvirt           19
+ nOccBatchDimImax             5
+ nOccBatchDimJmax             5
+ MinAObatch                   6
+ MaxAllowedDimAlpha          24
+ MaxAllowedDimGamma          24
+ Permutational Symmetry exploited
+ nOccBatchesI           1
+ nOccBatchesJ           1
+ Occ Contribution iB=           1 , jB=           1
+ E2(           1 ,           1 )=  -1.4088340824718683E-004
+ E2(           1 ,           1 )=  -2.2847673287905020E-004
+ E2(           1 ,           1 )=  -2.7789331100455911E-004
+ E2(           1 ,           1 )=  -2.9454624541402636E-004
+ E2(           1 ,           1 )=  -9.1358877882587348E-003
+ E2(           1 ,           1 )=  -7.6457365764768742E-003
+ E2(           1 ,           1 )=  -7.5120986702485720E-003
+ E2(           1 ,           1 )=  -1.5930555575743584E-002
+ E2(           1 ,           1 )=  -1.4376493930495393E-002
+ E2(           1 ,           1 )=  -1.4970480078606407E-002
+ PermutationalSymmetryIJ E(Triangular) -0.14102610463474879     
+ E3(           1 ,           1 )=  -4.1961332984924221E-004
+ E3(           1 ,           1 )=  -8.9732251602428984E-003
+ E3(           1 ,           1 )=  -1.9970198608884659E-002
+ E3(           1 ,           1 )=  -1.7382777003145482E-002
+ E3(           1 ,           1 )=  -1.6918027315268518E-002
+ PermutationalSymmetryIJ E(Triangular+diagonal) -0.20468994605213958     
+ canon MP2 energy contribution = -0.20468994605213958     
+ 
+ MP2 CORRELATION ENERGY =  -0.20468994605213958     
+ 
+ >>>  CPU Time used in FULL CANONICAL MP2 is   0.19 seconds
+ >>> wall Time used in FULL CANONICAL MP2 is   0.19 seconds
+ >>>  WALL Time used in MP2 AO integral evaluation    0.18 seconds
+ >>>  CPU Time used in MP2 AO integral evaluation     0.18 seconds
+ >>>  WALL Time used in MP2 AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in MP2 AO to MO transformation    0.01 seconds
+ >>>  WALL Time used in MP2 Energy evaluation         0.00 seconds
+ >>>  CPU Time used in MP2 Energy evaluation          0.00 seconds
+  
+ MP3: Second-order correlation energy (MP2)      =   -0.2046899461    
+ MP3: Third-order energy correction (MP3-MP2)    =   -0.6692154230E-02
+ MP3: Total third-order correlation energy (MP3) =   -0.2113821003    
+
+
+
+
+             **********************************************************
+             *                   CC ENERGY SUMMARY                    *
+             **********************************************************
+
+               E: Hartree-Fock energy :      -76.0240386898
+               E: Correlation energy  :       -0.2113821003
+               E: Total MP3 energy    :      -76.2354207901
+
+
+
+ CC Memory summary
+ -----------------
+ Allocated memory for array4   :  0.3759E-01 GB
+ Memory in use for array4      :   0.000     GB
+ Max memory in use for array4  :  0.4900E-02 GB
+ ------------------
+ Allocated memory for array3   :   0.000     GB
+ Memory in use for array3      :   0.000     GB
+ Max memory in use for array3  :   0.000     GB
+ ------------------
+
+
+------------------------------------------------------
+Total CPU  time used in CC           :        0.554204     s
+Total Wall time used in CC           :        0.554000     s
+------------------------------------------------------
+
+
+Hostname       : kaspers-mbp-2.st.client.au.dk                     
+Job finished   : Date: 26/08/2015   Time: 17:41:33
+
+
+
+=============================================================================
+                          -- end of CC program --
+=============================================================================
+
+
+
+ >>>  CPU Time used in *SCF is   2.59 seconds
+ >>> wall Time used in *SCF is   2.58 seconds
+
+Total no. of matmuls used:                      1051
+Total no. of Fock/KS matrix evaluations:          12
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                      0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MPI):                       0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (character):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMITEM):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECORBITAL):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECFRAG):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (fragmentAOS):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (PNOSpaceInfo):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lvec_data)):           0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lattice_cell)):        0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                         16.311 MB
+  Max allocated memory, type(matrix)                 207.360 kB
+  Max allocated memory, real(realk)                   16.227 MB
+  Max allocated memory, MPI                            0.000 Byte
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                       83.881 kB
+  Max allocated memory, logical                        0.760 kB
+  Max allocated memory, character                      2.048 kB
+  Max allocated memory, AOBATCH                       20.992 kB
+  Max allocated memory, DECORBITAL                     0.000 Byte
+  Max allocated memory, DECFRAG                        0.000 Byte
+  Max allocated memory, BATCHTOORB                     0.112 kB
+  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
+  Max allocated memory, MYPOINTER                      0.000 Byte
+  Max allocated memory, fragmentAOS                    0.000 Byte
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                          0.000 Byte
+  Max allocated memory, PNOSpaceInfo                   0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                        4.928 kB
+  Max allocated memory, LSAOTENSOR                    24.624 kB
+  Max allocated memory, SLSAOTENSOR                    7.176 kB
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                  76.528 kB
+  Max allocated memory, ATOMITEM                       1.536 kB
+  Max allocated memory, LSMATRIX                       3.136 kB
+  Max allocated memory, OverlapT                      93.152 kB
+  Max allocated memory, linkshell                      1.260 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   1.037 MB
+  Max allocated memory, IntWork                      125.568 kB
+  Max allocated memory, Overlap                       14.272 MB
+  Max allocated memory, ODitem                         3.584 kB
+  Max allocated memory, LStensor                       2.673 MB
+  Max allocated memory, FMM                            0.000 Byte
+  Max allocated memory, XC                             0.000 Byte
+  Max allocated memory, Lvec_data                      0.000 Byte
+  Max allocated memory, Lattice_cell                   0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+ >>>  CPU Time used in LSDALTON is   2.70 seconds
+ >>> wall Time used in LSDALTON is   2.70 seconds
+
+End simulation
+     Date and time (Linux)  : Wed Aug 26 17:41:33 2015
+     Host name              : kaspers-mbp-2.st.client.au.dk           

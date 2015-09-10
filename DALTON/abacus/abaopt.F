@@ -29,6 +29,7 @@ C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -161,7 +162,7 @@ C
       NODIHE = .FALSE.
       NOADDA = .FALSE.
       PRJTRO = .TRUE.  ! Project translation-rotation out of gradient and Hessian
-      IF (PEQM) THEN 
+      IF (USE_PELIB()) THEN 
           PRJTRO = .FALSE.  ! no translation and rotation invariance when PE sites are fixed
           IF (.NOT. CARTCO) CARTCO = .TRUE.
           IF (EVLINI .LE. 0.0D0) EVLINI = 1.0D0
@@ -1534,8 +1535,8 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
-        use pe_variables, only: pe_infld
-        use polarizable_embedding, only: pe_master
+      use pelib_interface, only: use_pelib, pelib_ifc_infld,
+     &                           pelib_ifc_doinfld
 #include "implicit.h"
 #include "dummy.h"
 #include "codata.h"
@@ -1582,14 +1583,11 @@ C
       DIMENSION WORK(LWORK)
 
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
-      logical infld_save
 C
       CALL QENTER('RUNOPT')
 C
 C     Initialization of variables.
 C
-      infld_save = pe_infld
-      pe_infld = .false.
       THRLDP = 1.0D-4
       THRIND = 5.0D-4
       TOLST  = 1.0D-5
@@ -2248,16 +2246,12 @@ C
      &          '@ single point energy was calculated: ',ENERGY,' a.u.'
          END IF
          WRITE(LUPRI,*)
-         if (peqm) then
-            if (infld_save) then
-                pe_infld = .true.
-            else
-                pe_infld = .false.
-            end if
-!            CALL PE_IFC_INFLD
-            call pe_master('infld')
-            pe_infld = infld_save
-         end if
+
+         IF (USE_PELIB()) THEN
+            IF (PELIB_IFC_DOINFLD()) THEN
+                CALL PELIB_IFC_INFLD()
+            END IF
+         END IF
 C
          WORK(1) = WRKDLM
          WRINDX = .TRUE.
@@ -2821,6 +2815,8 @@ C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_activate,
+     &                           pelib_ifc_deactivate
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2834,7 +2830,7 @@ C
 #include "cbiwlk.h"
 #include "pvibav.h"
       LOGICAL EXHER, EXSIR, EXABA
-      LOGICAL SAVE_PEQM
+      LOGICAL SAVE_PELIB
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
@@ -2859,15 +2855,17 @@ C         NAORDR = 1; Analytical gradients available
 C         NAORDR = 2; Analytical gradients and hessians available.
 C
 
-      SAVE_PEQM = .FALSE.
-      IF (PEQM .AND. INITHS) THEN
-         SAVE_PEQM = PEQM
-         PEQM = .FALSE.
+      SAVE_PELIB = .FALSE.
+      IF (USE_PELIB() .AND. INITHS) THEN
+         SAVE_PELIB = .TRUE.
+         CALL PELIB_IFC_DEACTIVATE()
       END IF
 
       CALL FNDANA(NAORDR)
 
-      IF (SAVE_PEQM .AND. INITHS) PEQM = .TRUE.
+      IF (SAVE_PELIB .AND. INITHS) THEN
+         CALL PELIB_IFC_ACTIVATE()
+      END IF
 
       IF (NAORDR .LT. 2) THEN
          CALL QUIT('2nd order optimization aborted because'//
@@ -6590,6 +6588,7 @@ C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -6834,7 +6833,7 @@ C
      &           ') reached.'
             WRITE(LUPRI,'(A)') 'No acceptable step found.'
             WRITE(LUPRI,'(/A)')'***** NOTE! *****'
-            IF (PEQM) THEN
+            IF (USE_PELIB()) THEN
                WRITE(LUPRI,'(A)')'As a last resort, ' //
      &           'the Hessian is reinitialized using iniths!'
                INITHS = .TRUE.

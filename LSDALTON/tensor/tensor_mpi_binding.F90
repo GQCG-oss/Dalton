@@ -1,6 +1,9 @@
 
 module tensor_mpi_binding_module
 
+#ifdef TENSORS_IN_LSDALTON
+   use lsmpi_module
+#else
 #ifdef VAR_MPI
 
 #ifdef USE_MPI_MOD_F08
@@ -10,7 +13,9 @@ module tensor_mpi_binding_module
 #else
   include 'mpif.h'
 #endif
-
+!ENDIF VAR_MPI
+#endif
+!ENDIF TENSORS_IN_LSDALTON
 #endif
 
   contains

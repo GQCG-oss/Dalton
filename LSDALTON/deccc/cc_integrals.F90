@@ -18,13 +18,12 @@ module ccintegrals
   use integralinterfaceMOD
   use II_XC_interfaceModule
   use IchorErimoduleHost
-
+  use background_buffer_module
   ! MO-CCSD module:
   use tensor_interface_module
   use buildaobatch
   use memory_handling
   use daltoninfo
-  use lspdm_tensor_operations_module
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module
@@ -47,8 +46,19 @@ module ccintegrals
      module procedure getL_diff
   end interface
 
-  private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
-       & init_gmo_arrays, gao_to_gmo, get_MO_batches_info, pack_and_add_gmo
+!  private :: get_mem_t1_free_gmo, get_mem_MO_CCSD_residual, &
+!       & init_gmo_arrays, gao_to_gmo, get_MO_batches_info, pack_and_add_gmo
+
+  private
+  
+  public :: get_full_eri, dec_fock_transformation_fortran_array,&
+       & dec_fock_transformation, get_full_AO_integrals,& 
+       & get_AO_Fock, get_AO_hJ, get_AO_K, get_MO_and_AO_batches_size,&
+       & get_mem_mo_ccsd_warrays, unpack_gmo, get_mo_integral_par,&
+       & get_max_batch_and_scheme_ccintegral, copy_stripe_from_full_matrix,&
+       & getL, getL_simple_from_gmo_memory,get_t1_free_gmo,&
+       & getL_simple_from_gmo_file, get_gmo_simple,&
+       & get_oopq, get_exchange_as_oopq, get_work_array_size
 
 contains
 
@@ -2161,7 +2171,7 @@ contains
        ! accumulate tile
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_accumulate_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_acc_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,w1,1,pack_gmo%ti(tile)%t(:),1)
@@ -2190,7 +2200,7 @@ contains
        ! accumulate tile
        if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
-          call tensor_accumulate_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
+          call tensor_acc_tile(pack_gmo,tile,w1(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
        else if (nnod>1.and.pack_gmo%itype==TT_TILED_REPL) then
           call daxpy(ncopy,1.0E0_realk,w1,1,pack_gmo%ti(tile)%t(:),1)
@@ -3059,10 +3069,10 @@ contains
                          call dgemm('t','n',m,n,k,1.0E0_realk,thr,k,trafo4%elm2(fg,startD),nb,0.0E0_realk,work(bpos),m)
                          !accumulate TODO, meeds to be optimized
 #ifdef VAR_HAVE_MPI3
-                         call tensor_accumulate_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_acc_tile(integral,[t1,t2,t3,t4],work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.true.,req=req(bidx))
 #else
-                         call tensor_accumulate_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
+                         call tensor_acc_tile(integral,tilenr,work(bpos:bpos+m*n-1),m*n,&
                             &lock_set=.false.)
 #endif
                          buf_sent = buf_sent + 1
@@ -3511,7 +3521,7 @@ contains
 
 
     if(DECinfo%PL>2)then
-       call print_norm(integral," NORM of the integral :",print_on_rank=0)
+       call print_norm(integral," NORM of the integral :",print_=(me==0))
     endif
 
     if(.not.local)then
@@ -3630,7 +3640,8 @@ contains
            if(s==0) maxsize = maxsize + (i8*n1*n2)*n3*n4
            if(s==2) maxsize = maxsize + (nbuffs*i8*n1s*n2s)*n3s*n4s
 
-           if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or.  maxsize > nbu)then
+           if(dble(maxsize*8.0E0_realk)/(1024.0E0_realk**3) > MemToUse .or. &
+              & (nbu < maxsize.and.use_bg_buf) ) then
 
               if(s==3)then
                  nba = max(i-inc,MinAObatch)
@@ -3778,6 +3789,7 @@ end module ccintegrals
 !> Date:    December 2013
 subroutine cc_gmo_data_slave()
 
+  use memory_handling
   use dec_typedef_module
   use ccintegrals
   use daltoninfo

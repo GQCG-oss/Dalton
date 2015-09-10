@@ -27,7 +27,9 @@ MODULE matrix_operations_aux
 !   Use matrix_operations_symm_dense
    use matrix_operations_dense
    use matrix_operations_scalapack
+#ifdef VAR_ENABLE_TENSORS
    use matrix_operations_pdmm
+#endif
    use matrix_operations_csr
 !   Use matrix_operations_unres_symm_dense
    use matrix_op_unres_dense
@@ -75,7 +77,35 @@ END SUBROUTINE MAT_CONDITION_NUMBER
 !> \date 2012
 !> \param a The first type(matrix) factor
 !> \param c The output type(matrix)
-SUBROUTINE mat_density_from_orbs(a, c,nocc,nocca,noccb)
+SUBROUTINE mat_density_from_orbs(a, c,nocc,nocca,noccb,orbfree)
+  !c = a(n,m)*a^T(m,n)
+  implicit none
+  TYPE(Matrix), intent(IN) :: a
+  TYPE(Matrix), intent(inout):: c
+  integer,intent(in) :: nocc
+  integer,optional :: nocca,noccb
+  logical,optional :: orbfree
+  logical :: doOrbFree
+
+  doOrbFree = .false.
+  IF (present(orbfree)) doOrbFree = orbFree
+
+  IF (doOrbFree) THEN
+!   Special case for orbital free DFT. Only the lowest occopied orbital is included, with occupation number N
+    call mat_density_from_orbs_nocc(a, c,1,1,1)
+    call mat_scal(1.e0_realk*nocc,c)
+  ELSE
+!   Regular case
+    call mat_density_from_orbs_nocc(a, c,nocc,nocca,noccb)
+  ENDIF
+END SUBROUTINE mat_density_from_orbs
+
+!> \brief Make c = a(1:ndim,1:nocc)*a^T(1:nocc,1:ndim) where a and c are type(matrix) 
+!> \author T. Kjærgaard
+!> \date 2012
+!> \param a The first type(matrix) factor
+!> \param c The output type(matrix)
+SUBROUTINE mat_density_from_orbs_nocc(a, c,nocc,nocca,noccb)
   !c = a(n,m)*a^T(m,n)
   implicit none
   TYPE(Matrix), intent(IN) :: a
@@ -114,7 +144,7 @@ SUBROUTINE mat_density_from_orbs(a, c,nocc,nocca,noccb)
   end select
   call time_mat_operations2(JOB_mat_density_from_orbs)
   
-END SUBROUTINE mat_density_from_orbs
+END SUBROUTINE mat_density_from_orbs_nocc
 
 !> \brief Compute maximum and minimum eigenvalue of matrix A
 !> \author B. Jansik
@@ -1284,8 +1314,10 @@ subroutine mat_read_from_disk2(iunit,A)
             call mat_dense_dmul(a,b,transb,alpha,beta,c)
          case(mtype_scalapack)
             call mat_scalapack_dmul(a,b,transb,alpha,beta,c)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_dmul(a,b,transb,alpha,beta,c)
+#endif
          case default
               call lsquit("mat_dmul not implemented for this type of matrix",-1)
          end select
@@ -1317,8 +1349,10 @@ subroutine mat_read_from_disk2(iunit,A)
        !$OMP END PARALLEL DO
     case (mtype_scalapack)
       call mat_scalapack_hmul(alpha,A,B,beta,C)
+#ifdef VAR_ENABLE_TENSORS
     case (mtype_pdmm)
       call mat_pdmm_hmul(alpha,A,B,beta,C)
+#endif
     case default
        call lsquit("mat_hmul not implemented for this type of matrix",-1)
     end select
@@ -1382,8 +1416,10 @@ subroutine mat_read_from_disk2(iunit,A)
        call dger(A%nrow,A%ncol,alpha,x,1,y,1,A%elms,A%nrow)       
 !    case(mtype_scalapack)
 !       call mat_scalapack_dger(alpha,x,y,A)
+#ifdef VAR_ENABLE_TENSORS
     case(mtype_pdmm)
        call mat_pdmm_dger(alpha,x,y,A)
+#endif
     case default
        !FALLBACK 
        call mem_alloc(Afull,A%nrow,A%ncol)

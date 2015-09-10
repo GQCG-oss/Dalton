@@ -19,14 +19,14 @@ export LD_LIBRARY_PATH=/usr/lib64/openmpi/lib:$LD_LIBRARY_PATH
 #mkl will not be found since it is not sourced (source mklvars.sh) 
 export MATH_ROOT=/lib64/atlas
 
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-openMPI-release" build
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="RB-Sisyphos-linux-gfortran472-omp-openMPI-release" build
 cd build
 make release
 #this creates a tar file named DALTON-Source.tar.gz
 if [[ -e  DALTON-Source.tar.gz ]]; then
  tar -zxvf DALTON-Source.tar.gz
  cd DALTON-Source
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-openMPI-release" build
+./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="RBMR-Sisyphos-linux-gfortran472-omp-openMPI-release" build
  cd build
  ctest --track ReleaseBranch2015MakeRelease -D Nightly -L linsca
 fi

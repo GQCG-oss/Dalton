@@ -6710,6 +6710,8 @@ C
 !#ifdef BUILD_QFITLIB
 !      use qfit
 !#endif
+      use pelib_interface, only: use_pelib, pelib_ifc_docube,
+     &                           pelib_ifc_cube
 #ifdef BUILD_PELIB
       use pe_variables, only: pe_savden, pe_fd
       use pe_trdens_tools, only: save_tr_density, tr_density_coupling
@@ -6724,7 +6726,6 @@ C
       LOGICAL LOCDEB, ANTSYM
       real*8, dimension(:), allocatable :: dens, fold_dens
       DIMENSION TRDIP(3)
-      INTEGER :: pe_ifc_docube
 C
 #include "gnrinf.h"
 #include "mxcent.h"
@@ -6825,16 +6826,15 @@ C     Memory allocation
           CALL HEADER("Excited state couplings",-1)
           call tr_density_coupling( dens, lupri )
       endif
-      if (PEQM) then
-         if (pe_ifc_docube() == 1) then
-            allocate(fold_dens(nnbasx))
-            call dgefsp(nbast, dens, fold_dens)
-            call pe_ifc_cube( fold_dens, idx )
-            deallocate(fold_dens)
-!            call pe_ifc_cube( wrk(kdens:kdens+nnbasx), idx )
-         end if
-      end if
 #endif
+      IF (USE_PELIB()) THEN
+         IF (PELIB_IFC_DOCUBE()) THEN
+            ALLOCATE(FOLD_DENS(NNBASX))
+            CALL DGEFSP(NBAST, DENS, FOLD_DENS)
+            CALL PELIB_IFC_CUBE(FOLD_DENS, IDX)
+            DEALLOCATE(FOLD_DENS)
+         END IF
+      END IF
 
 #ifdef BUILD_QFITLIB
       if (QFIT) then

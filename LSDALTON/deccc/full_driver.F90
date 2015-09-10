@@ -23,10 +23,8 @@ module full
   !  *****************************************
   use dec_fragment_utils
   use CABS_operations
-#ifdef MOD_UNRELEASED
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
-#endif
   use array4_simple_operations
   use array3_simple_operations
   use array2_simple_operations
@@ -38,7 +36,9 @@ module full
   use fullrimp2 !,only: full_canonical_rimp2
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
+  use full_mp3_module
   use full_ls_thc_rimp2Mod
+  use full_f12contractions
 
   public  :: full_driver
   private :: mp2f12_E22X
@@ -84,12 +84,12 @@ contains
 
        ! run cc program
        if(DECinfo%F12) then ! F12 correction
-#ifdef MOD_UNRELEASED
-          !When the code is a production code it should be released! TK
           if(DECinfo%ccModel==MODEL_MP2) then
+             !This is not a production code - it is too slow.
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
              call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr_rimp2)       
+             Ecorr_rimp2f12 = Ecorr_rimp2 !in order to provide full_canonical_rimp2_f12 the MP2 energy
              call full_canonical_rimp2_f12(MyMolecule,MyLsitem,D,Ecorr_rimp2f12)
              Ecorr = Ecorr_rimp2 + Ecorr_rimp2f12
              write(DECinfo%output,'(/,a)') ' ================================================ '
@@ -98,21 +98,20 @@ contains
              write(*,'(/,a)') ' ================================================ '
              write(*,'(a)')   '                 Energy Summary                   '
              write(*,'(a,/)') ' ================================================ '
-             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2 CORRECTION TO ENERGY =  ', Ecorr_rimp2
-             write(DECinfo%output,*)  'TOYCODE: RI-MP2 CORRECTION TO ENERGY =  ', Ecorr_rimp2
-             write(*,'(1X,a,f20.10)') 'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =  ', Ecorr_rimp2f12
-             write(DECinfo%output,*)  'TOYCODE: RI-MP2F12 CORRECTION TO ENERGY =  ', Ecorr_rimp2f12
+             write(*,'(1X,a,f20.10)') 'RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
+             write(DECinfo%output,'(1X,a,f20.10)')  'RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
+             write(*,'(1X,a,f20.10)') 'RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
+             write(DECinfo%output,'(1X,a,f20.10)')  'RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
-#else
-          call lsquit('f12 not released',-1)
-#endif
        elseif(DECinfo%ccModel==MODEL_RIMP2)then
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
        elseif(DECinfo%ccModel==MODEL_LSTHCRIMP2)then
           call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
+       elseif(DECinfo%ccmodel==MODEL_MP3) then
+          call full_canonical_mp3(MyMolecule,MyLsitem,Ecorr)
        else
           if(DECinfo%ccModel==MODEL_MP2) then
              if(DECinfo%use_canonical .and. (.not. DECinfo%CCexci) ) then
@@ -145,7 +144,8 @@ contains
        endif
 
        ! Print summary, set the error estimates to zero
-       call print_total_energy_summary(EHF,Edft,Ecorr,0.0E0_realk,0.0E0_realk,0.0E0_realk)
+       call print_total_energy_summary(EHF,Edft,Ecorr,MyMolecule%EF12singles,&
+            & 0.0E0_realk,0.0E0_realk,0.0E0_realk)
 
     end if DoCorrelatedCalculation
 
@@ -226,7 +226,6 @@ contains
 
   end subroutine full_cc_dispatch
 
-#ifdef MOD_UNRELEASED
   !> \brief Calculate canonical MP2 energy for full molecular system
   !> keeping full AO integrals in memory. Only for testing.
   !> \author Kasper Kristensen
@@ -366,8 +365,15 @@ contains
     type(tensor) :: tensor_Taibj,tensor_gmo
     integer :: vs, os,offset
     logical :: local
+
+    !> Additional
+    real(realk) :: EK
+    real(realk) :: EJ
+    EK = 0E0_realk
+    EJ = 0E0_realk
+
     local = .true.
-    ES2=0.0E0_realk
+
 #ifdef VAR_MPI
     local = (infpar%lg_nodtot==1)
 #endif
@@ -400,9 +406,6 @@ contains
     !           Not frozen core: 0
     offset = noccfull - nocc
 
-    !> Singles correction some issues with MPI and gives different values
-    ! call get_ES2_from_dec_main(MyMolecule,MyLsitem,Dmat,ES2)
-
     ! Get all F12 Fock Matrices
     ! ********************
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
@@ -431,19 +434,10 @@ contains
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)    
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
     
-    ! MP2-F12 Singles correction (Yang M. Wang 03.12.2014)
+    ! MP2-F12 Singles correction 
     ! ***************************    
-    ! Fab
-  !  call mat_init(Fab,nvirt,nvirt)
-  !  do i = 1, nvirt
-  !     do j = 1, nvirt
-  !            Fab(i,j) = MyMolecule%vvfock(i,j)
-  !     enddo
-  !  enddo
-    
-   !ES2 = 0.0E0_realk
-   ! call get_ES2(ES2,Fic%elms,Fii,MyMolecule%vvfock%elm2,Fcd,Fac%elms,nocc,nvirt,ncabs)
-   
+    ES2 = MyMolecule%EF12singles
+
     !call mat_free(Fab)
 
     E21 = 0.0E0_realk
@@ -466,6 +460,7 @@ contains
              enddo
           enddo
        enddo
+
        ! Calculate canonical MP2 energy
        ! ******************************
        mp2_energy = 0.0E0_realk
@@ -566,7 +561,22 @@ contains
        
        call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
        call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
-       
+      
+       EJ = 0.0E0_realk
+       EK = 0.0E0_realk
+
+       DO j=1,nocc
+          DO i=1,nocc
+             EJ = EJ + Vijij_term5(i,j) 
+             EK = EK + Vjiij_term5(i,j)
+          ENDDO
+       ENDDO
+
+       !print *, "EJ_V5: ", -5.0/4.0*EJ
+       !print *, "EK_V5: ", 1.0/4.0*EK
+       !print *, "EK_V5 + EJ_V5: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
+
+ 
        E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
                                         & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
                                         & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
@@ -574,6 +584,20 @@ contains
        IF(DECinfo%F12Ccoupling)THEN
           E21_debug = E21_debug + E21_C
        ENDIF
+
+       ! ***********************************************************
+       !   Printing Input variables 
+       ! ***********************************************************
+       print *, "-------------------------------------------------"
+       print *, "     F12-integrals.F90                           "
+       print *, "-------------------------------------------------"
+       print *, "nbasis:  ", nbasis
+       print *, "nocc:    ", nocc
+       print *, "nvirt:   ", nvirt
+       print *, "-------------------------------------------------"
+       print *, "noccfull ", noccfull
+       print *, "ncabsAO  ", ncabsAO
+       print *, "ncabsMO  ", ncabs
 
        print *, '----------------------------------------'
        print *, ' E21 V terms                            '
@@ -586,7 +610,7 @@ contains
        write(*,'(1X,a,g25.16)') ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
        write(*,'(1X,a,g25.16)') ' E21_Vsum:    ', E21_debug
-       write(*,'(1X,a,g25.16)') ' E21_debug:   ', E21
+       !write(*,'(1X,a,g25.16)') ' E21_debug:   ', E21
     endif
 
     call mem_dealloc(Vijij)
@@ -740,7 +764,7 @@ contains
                & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
                & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
           write(*,'(1X,a,g25.16)') ' E22_Xsum:    ', E22_debug  
-          write(*,'(1X,a,g25.16)') ' E22_debug:   ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
+          !write(*,'(1X,a,g25.16)') ' E22_debug:   ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
           print *, ' E_23 B term                           '
           print *, '----------------------------------------'
@@ -760,7 +784,7 @@ contains
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
           print *, ' E23_Bsum:       ', E23_debug
-          print *, ' E23_Bsum_debug: ', mp2f12_E23(Bijij,Bjiij,nocc)
+          !print *, ' E23_Bsum_debug: ', mp2f12_E23(Bijij,Bjiij,nocc)
        endif
        
     else !> Non - canoical
@@ -941,9 +965,7 @@ contains
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
-#endif
 
-#ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
     implicit none
     Real(realk)               :: mp2f12_EBX
@@ -1079,10 +1101,10 @@ contains
     implicit none
     Integer,intent(IN)     :: nocc
     Real(realk),intent(IN) :: Vijij(nocc,nocc),Vjiij(nocc,nocc)
-    Real(realk) :: energy
+    Real(realk) :: energy,EK,EJ 
     !
     Integer     :: i,j
-    Real(realk) :: tmp
+    real(realk) :: tmp
 
     tmp = 0E0_realk
     DO i=1,nocc
@@ -1097,7 +1119,22 @@ contains
           tmp = tmp + 5E0_realk * Vijij(i,j) - Vjiij(i,j)
        ENDDO
     ENDDO
+
     energy = energy - 0.25E0_realk*tmp
+    EK = 0.0E0_realk
+    EJ = 0.0E0_realk
+
+    DO j=1,nocc
+       DO i=1,nocc
+          EJ = EJ + Vijij(i,j)
+          EK = EK + Vjiij(i,j)
+       ENDDO
+    ENDDO
+
+    !print *, "EJ: ", 5.0/4.0*EJ
+    !print *, "EK: ", 1.0/4.0*EK
+    !print *, "EJ + EK: ", 5.0/4.0*EJ + 1.0/4.0*EK 
+
   end function mp2f12_E21
 
   !> Function for finding the E22 energy (canonical)
@@ -1173,13 +1210,10 @@ contains
     energy = energy + 0.0625E0_realk*tmp !1/16
   end function mp2f12_E23
 
-#endif
-
   !> ***********************************************************************
   !> ****************************  CCSD F12 ********************************
   !> ***********************************************************************
 
-#ifdef MOD_UNRELEASED
   !> \brief Get CCSD-F12 energy, testing code.
   !> \date May 2012
   subroutine full_get_ccsd_f12_energy(MyMolecule,MyLsitem,Dmat,ECCSD_F12)
@@ -1730,7 +1764,7 @@ contains
 
     !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
-    !ES2=0.0E0_realk
+    ES2=MyMolecule%EF12singles
 
     ! F12 Specific
     call mem_dealloc(Vijij)
@@ -1819,9 +1853,6 @@ contains
        call submp2f12_EBXfull(E22,Bijij,Bjiij,Xijkl,Fii%elms,nocc)
     endif
 
-    ES2=0.0E0_realk
-    ! CCSD-F12 Singles Correction Energy
-    !call get_ES2(ES2,Fic,Fii,Fcd,nocc,ncabs)
 
 
     call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
@@ -1900,7 +1931,6 @@ contains
     call free_cabs()
 
   end subroutine full_get_ccsd_f12_energy
-#endif
 
   !> \brief Get CCSD singles and doubles amplitude for full molecule,
   !> only to be used for debugging purposes.

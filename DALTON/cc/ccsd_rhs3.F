@@ -59,7 +59,7 @@ C  /* Deck ccrhsn3 */
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "second.h"
 #include "r12int.h"
 !

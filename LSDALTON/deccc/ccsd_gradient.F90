@@ -10,14 +10,20 @@ module ccsd_gradient_module
   use fundamental
   use precision
   use dec_typedef_module
+  use lsparameters
   use tensor_interface_module
+  use matrix_operations
+
   use dec_typedef_module
   use array2_simple_operations
+  use array4_simple_operations
+  use integralinterfaceMod
   use ccintegrals
   use mp2_gradient_module
   use ccsd_module
-
-
+#ifdef VAR_MPI
+  use infpar_module
+#endif
   ! ========================= Implementation ========================
 contains
 

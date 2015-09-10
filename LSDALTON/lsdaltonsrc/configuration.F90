@@ -9,16 +9,19 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
+#ifdef VAR_ENABLE_TENSORS
 use tensor_interface_module, only: tensor_set_dil_backend_true, &
    &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer, &
-   tensor_set_global_segment_length
+   tensor_set_global_segment_length, tensor_set_mpi_msg_len
+#endif
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
 use typedeftype, only: lsitem,integralconfig
 #endif
 use opttype, only: opt_set_default_config
-use response_wrapper_type_module, only: free_mcdinputitem, &
+use response_wrapper_type_module
+use response_wrapper_op_module, only: free_mcdinputitem, &
      & alphainputitem_set_default_config, betainputitem_set_default_config, &
      & gammainputitem_set_default_config, tpainputitem_set_default_config, &
      & dtpainputitem_set_default_config, esginputitem_set_default_config, &
@@ -39,9 +42,11 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
-use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
-     & check_cc_input, check_dec_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
+#ifdef VAR_DEC
+use DEC_settings_mod, only: config_dec_input,check_cc_input, check_dec_input
+#endif
+use dec_typedef_module,only: dec_set_default_config, DECinfo,MODEL_MP2,&
+     & MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -173,6 +178,7 @@ implicit none
   config%doRIMP2       = .false.
   config%doTestMPIcopy = .false.
   config%doTestHodi    = .false.
+  config%testHodiOrder = 4
   config%skipscfloop   = .false.
   config%papitest      = .false.
 #ifdef VAR_MPI
@@ -246,7 +252,7 @@ end subroutine config_free
 !> \date March 2010
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
-use IIDFTINT, only: II_DFTsetFunc
+use IIDFTINT, only: II_DFTsetFunc,II_DFTaddFunc
 
 implicit none
 !> Logical unit number for LSDALTON.OUT
@@ -635,21 +641,29 @@ DO
 
    ! Input for DEC calculation
    DECInput: IF (WORD(1:5) == '**DEC') THEN
+#ifdef VAR_DEC
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.false.,config%doF12,config%doRIMP2)
       config%integral%PreCalcDFscreening =  config%doRIMP2
       config%integral%PreCalcF12screening =  config%doF12
+#else
+      call lsquit('**DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
    END IF DECInput
 
    ! Input for full molecular CC calculation
    ! (uses same setup as DEC calculation)
    CCinput: IF (WORD(1:4) == '**CC') THEN
+#ifdef VAR_DEC
       READWORD=.TRUE.
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.,config%doF12,config%doRIMP2)
       config%integral%PreCalcDFscreening =  config%doRIMP2
       config%integral%PreCalcF12screening =  config%doF12
+#else
+      call lsquit('**CC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
    END IF CCinput
 
 
@@ -836,6 +850,15 @@ CALL lsCLOSE(LUCMD,'KEEP')
 if (config%solver%do_dft) then
    hfweight = 0.0E0_realk
    CALL II_DFTsetFunc(config%integral%dft%dftfunc,hfweight,lupri)
+
+!AB adding kinetic energy correction for orbital-free DFT
+   IF (config%integral%dft%doOrbFree) THEN
+     config%diag%CFG_bosonicOccupation = .true.
+     DO i=1,config%integral%dft%OrbFree%numberTSfunc
+       call II_DFTaddFunc(config%integral%dft%OrbFree%TSfunc(i),config%integral%dft%OrbFree%TScoeff(i),lupri)
+     ENDDO
+   ENDIF
+
    !it is assumed that hfweight is set to zero and only  
    !changed if the functional require a HF weight  
    !different from zero. 
@@ -1069,10 +1092,10 @@ subroutine DEC_meaningful_input(config)
         ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
 
-        ! Modify DECinfo to calculate first order properties (gradient) for MP2
+        ! Modify DECinfo to calculate first order properties (gradient) for RI-MP2 and MP2
         DECinfo%gradient=.true.
         DECinfo%first_order=.true.
-        if (DECinfo%ccmodel /= MODEL_MP2) then
+        if (DECinfo%ccmodel /= MODEL_MP2 .and. DECinfo%ccmodel /= MODEL_RIMP2) then
            write(DECinfo%output,*) "WARNING: DEC Geometry optimization only available for MP2"
            write(DECinfo%output,*) "WARNING: We are switching to DEC-MP2  !!!"
            DECinfo%ccmodel = MODEL_MP2
@@ -1131,9 +1154,10 @@ subroutine DEC_meaningful_input(config)
 #endif
      end if OrbLocCheck
 
-     ! Check DEC input internally
+#ifdef VAR_DEC
+     ! Check DEC input internally     
      call check_dec_input()
-
+#endif
   end if DECcalculation
 
 
@@ -1254,12 +1278,14 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
         CASE('.PDMM')
-#ifdef VAR_MPI
+#ifdef VAR_ENABLE_TENSORS && defined(VAR_MPI)
            config%opt%cfg_prefer_PDMM = .true.
            !Set tensor synchronization to always, TODO: see if this can be optimized
            call tensor_set_always_sync_true(.true.)
            !Set the background buffer on, this will use additional memory
            call lspdm_init_global_buffer(.true.)
+#else
+           call lsquit("ERROR(reading input): pdmm is not possible with this build",lupri)
 #endif
         CASE('.PDMMBLOCKSIZE');  
 #ifdef VAR_MPI
@@ -1288,6 +1314,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
         CASE('.TESTHODI');              config%doTestHodi            = .true.
+        CASE('.TESTHODI-ORDER');        READ(LUCMD,*) config%testHodiOrder
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
            READ(LUCMD,*) config%GPUMAXMEM
@@ -1300,11 +1327,14 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            call ls_mpibcast(SET_GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
            call ls_mpibcast(config%GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
 #endif
-#ifdef VAR_MPI
+#ifdef VAR_MPI 
         CASE('.MAX_MPI_MSG_SIZE_NEL');
            READ(LUCMD,*) SPLIT_MPI_MSG 
            call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
            call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+#ifdef VAR_ENABLE_TENSORS
+           call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
+#endif
         CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
            READ(LUCMD,*) MAX_SIZE_ONE_SIDED
            call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
@@ -1320,7 +1350,11 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
      if (WORD(1:7) == '*TENSOR') then
         READWORD=.TRUE.
+#ifdef VAR_ENABLE_TENSORS
         call TENSOR_INPUT(word,LUCMD)
+#else
+        call lsquit("ERROR(reading input): the tensor option is not available with the current build",lupri)
+#endif
      endif
 
      IF (WORD(1:2) == '**') THEN
@@ -1335,11 +1369,13 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
   ENDDO
 END subroutine GENERAL_INPUT
 
+#ifdef VAR_ENABLE_TENSORS
 subroutine TENSOR_INPUT(word,lucmd)
    implicit none
    character(len=80),intent(inout)  :: word
    integer,intent(in) :: lucmd 
    integer(kind=8)    :: seg_len
+   integer            :: dummy
    do
       read(LUCMD,'(A40)') word
       if(word(1:1) == '!' .or. word(1:1) == '#') cycle
@@ -1362,6 +1398,7 @@ subroutine TENSOR_INPUT(word,lucmd)
       end select
    enddo
 end subroutine TENSOR_INPUT
+#endif
 
 subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   implicit none
@@ -1839,6 +1876,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         config%diag%INFO_RH_MU            = .true.
      CASE('.INFO_RSP')
         config%response%rspsolverinput%INFO_RSP = .true.
+     CASE('.INFO_RSP_SPARSITY')
+        config%response%rspsolverinput%INFO_RSP_SPARSITY = .true.
      CASE('.INFO_RSP_REDSPACE')
         config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
         !CASE('.INFO_TIME_MAT_OPERATIONS')
@@ -2914,6 +2953,12 @@ DO
          ENDDO
          deallocate(GRIDspec)
       CASE ('.NOPRUN'); DALTON%DFT%NOPRUN = .TRUE.
+      CASE('.OrbFree'); dalton%dft%doOrbFree = .true.
+                        READ(LUCMD,*) dalton%dft%orbFree%numberTSfunc
+			DO i=1,dalton%dft%orbFree%numberTSfunc
+                          READ(LUCMD,*) dalton%dft%orbFree%TScoeff(i), dalton%dft%orbFree%TSfunc(i)
+			ENDDO
+      CASE('.KineticScaling'); READ(LUCMD,*) dalton%dft%orbFree%kineticFac
       CASE ('.RADINT'); READ(LUCMD,*) DALTON%DFT%RADINT
 !===================================================================
       CASE ('.ULTRAC'); DALTON%DFT%RADINT = 2.15447E-7_realk; DALTON%DFT%ANGINT = 23; 
@@ -3954,6 +3999,10 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       if (matrix_type == mtype_unres_dense) then
          call lsquit('Compressed Sparse Row (CSR) not implemented for unrestricted!',config%lupri)
       else
+#ifndef VAR_CSR
+         call lsquit('.CSR requires -DVAR_CSR precompiler flag (--csr on setup) ',config%lupri)
+#endif
+
 #ifdef VAR_MKL
          CALL mat_select_type(mtype_csr,lupri)         
          call mat_inquire_cutoff(cutoff)
@@ -4125,7 +4174,9 @@ endif
    if(config%doDEC) then
       nocc = config%decomp%nocc
       nvirt = (nbast-nocc)
+#ifdef VAR_DEC
       call check_cc_input(ls,nocc,nvirt,nbast)
+#endif
    endif
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'

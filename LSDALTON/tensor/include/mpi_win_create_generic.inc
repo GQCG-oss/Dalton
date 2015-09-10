@@ -1,4 +1,6 @@
 
+       n=n1
+
        info = MPI_INFO_NULL
        call MPI_TYPE_GET_EXTENT(datatype,lb,mpi_size,ierr)
 

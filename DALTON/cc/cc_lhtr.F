@@ -78,7 +78,7 @@ C
 #include "distcl.h"
 #include "cbieri.h"
 #include "cclr.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccslvinf.h"
 #include "qm3.h"
 !#include "qmmm.h"

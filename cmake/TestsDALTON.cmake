@@ -546,20 +546,6 @@ add_dalton_test(dpt_h2s_ff                       "dalton;dpt;short")
 
 add_dalton_test(dcpt2                            "dalton;short;essential")
 
-if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
-if(ENABLE_MPI)
-if(DEFINED ENV{DALTON_NUM_MPI_PROCS})
-  # radovan: note that this file is read at configure time but
-  #          DALTON_NUM_MPI_PROCS is often not set before runtime/testtime
-  if($ENV{DALTON_NUM_MPI_PROCS} GREATER 1)
-    add_dalton_test(energy_parallel               "dalton;parallel")
-    add_dalton_test(geoopt_parallel               "dalton;parallel")
-    add_dalton_test(rsp_parallel                  "dalton;parallel")
-  endif()
-endif()
-endif()
-endif()
-
 add_dalton_runtest(pcm_bterm_sym                 "dalton;runtest;pcm;long")
 add_dalton_runtest(pcm_dipole                    "dalton;runtest;pcm;short")
 add_dalton_runtest(pcm_polar                     "dalton;runtest;pcm;short")

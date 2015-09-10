@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2015.alpha
+    This is output from DALTON 2016.alpha
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release Dalton2016.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
+     Date and time (Linux)  : Fri Oct  9 14:41:25 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pdehf
-   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build_pe_develop/test/pdehf
+   2) /home/magnus/Projects/dalton_devel/dalton/build_pe_develop/basis
 
 
 Compilation information
@@ -151,23 +151,23 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.3-201.fc21.x86_64
+ System                   | Linux-4.1.6-201.fc22.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
  Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.9.2 20141101 (Red Hat 4.9.2-1)
- BLAS                     | /lib64/libopenblas.so
+ Fortran compiler version | GNU Fortran (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
+ C compiler               | /usr/lib64/ccache/gcc
+ C compiler version       | gcc (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
+ C++ compiler             | /usr/lib64/ccache/g++
+ C++ compiler version     | g++ (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
+ BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | bef16b7f7b41ad5d88f242388f57080fa27ee10d
- Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-11 22:06:47.185885
+ Last Git revision        | f865ef04857e1a1ba3300ad3e58afcdaef4bffbe
+ Git branch               | pe/develop
+ Configuration time       | 2015-10-09 14:31:38.236544
 
 
    Content of the .dal input file
@@ -177,12 +177,17 @@ Compilation information
 .RUN WAVE FUN                                     
 .PEQM                                             
 *PEQM                                             
+.ITERATIVE                                        
+1.0d-12                                           
 .FD                                               
 1                                                 
 .REPULS                                           
 !.NOFDES                                          
 **WAVE FUN                                        
 .HF                                               
+*SCF INPUT                                        
+.THRESH                                           
+1.0d-8                                            
 **END OF                                          
 
 
@@ -237,7 +242,7 @@ H   -0.784000   -0.554000    0.000000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pe_develop/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -245,7 +250,7 @@ H   -0.784000   -0.554000    0.000000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_pe_develop/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -362,7 +367,7 @@ H   -0.784000   -0.554000    0.000000
       Dipole-dipole polarizabilities.
 
       Iterative solver for induced moments will be used
-      with convergence threshold: 1.0E-08
+      with convergence threshold: 1.0E-12
 
       Number of fragment densities:    1
 
@@ -437,7 +442,7 @@ H   -0.784000   -0.554000    0.000000
  **********************************************************************
 
  
-     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
+     Date and time (Linux)  : Fri Oct  9 14:41:25 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -491,7 +496,7 @@ H   -0.784000   -0.554000    0.000000
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00D-05
+     Threshold for SCF convergence     1.00D-08
 
 
  ***********************************************
@@ -504,30 +509,49 @@ H   -0.784000   -0.554000    0.000000
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -74.7830509742      0.131249464444        7.81203D-01   -7.48D+01
+@  1  -74.7830510248      0.131249413881        7.81203D-01   -7.48D+01
       Virial theorem: -V/T =      2.002603
 @      MULPOP O      -0.46; H       0.23; H       0.23; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
-@  2  -74.8390206961      0.119813000115        1.93952D-01   -5.60D-02
-      Virial theorem: -V/T =      2.005042
+@  2  -74.8357583323      0.121800628955        2.51371D-01   -5.27D-02
+      Virial theorem: -V/T =      2.004763
+@      MULPOP O      -0.35; H       0.18; H       0.18; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
+ -----------------------------------------------------------------------------
+@  3  -74.8428629683      0.116480861348        4.97324D-02   -7.10D-03
+      Virial theorem: -V/T =      2.004018
+@      MULPOP O      -0.33; H       0.16; H       0.16; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
+ -----------------------------------------------------------------------------
+@  4  -74.8432207595      0.114843821418        1.10240D-02   -3.58D-04
+      Virial theorem: -V/T =      2.003744
 @      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-@  3  -74.8430915411      0.115701679318        3.05745D-02   -4.07D-03
-      Virial theorem: -V/T =      2.003929
-@      MULPOP O      -0.32; H       0.16; H       0.16; 
- -----------------------------------------------------------------------------
-@  4  -74.8432341506      0.114690264208        7.87927D-03   -1.43D-04
-      Virial theorem: -V/T =      2.003732
-@      MULPOP O      -0.32; H       0.16; H       0.16; 
- -----------------------------------------------------------------------------
-@  5  -74.8432476610      0.114374117369        3.00510D-04   -1.35D-05
+@  5  -74.8432477365      0.114371802270        2.20856D-04   -2.70D-05
       Virial theorem: -V/T =      2.003687
 @      MULPOP O      -0.32; H       0.16; H       0.16; 
  -----------------------------------------------------------------------------
-@  6  -74.8432476765      0.114361648708        2.09453D-06   -1.55D-08
+@  6  -74.8432477443      0.114361850702        1.18921D-05   -7.73D-09
+      Virial theorem: -V/T =      2.003689
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+@  7  -74.8432477443      0.114361664848        2.34957D-07   -1.75D-11
+      Virial theorem: -V/T =      2.003689
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+@  8  -74.8432477443      0.114361658266        4.47648D-08   -5.68D-14
+      Virial theorem: -V/T =      2.003689
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+@  9  -74.8432477443      0.114361659846        1.07003D-08    0.00D+00
+      Virial theorem: -V/T =      2.003689
+@      MULPOP O      -0.32; H       0.16; H       0.16; 
+ -----------------------------------------------------------------------------
+@ 10  -74.8432477443      0.114361659575        1.67060D-09    5.68D-14
 
-@ *** DIIS converged in   6 iterations !
-@     Converged SCF energy, gradient:    -74.843247676493    2.09D-06
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -74.843247744270    1.67D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -539,13 +563,13 @@ H   -0.784000   -0.554000    0.000000
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.21424733    -1.21820661    -0.59518851    -0.35619867    -0.34868191
-          0.62616472     0.77835159
+1 A     -20.21424677    -1.21820636    -0.59518832    -0.35619832    -0.34868172
+          0.62616480     0.77835182
 
-    E(LUMO) :     0.62616472 au (symmetry 1)
-  - E(HOMO) :    -0.34868191 au (symmetry 1)
+    E(LUMO) :     0.62616480 au (symmetry 1)
+  - E(HOMO) :    -0.34868172 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.97484663 au
+    gap     :     0.97484652 au
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -555,22 +579,22 @@ H   -0.784000   -0.554000    0.000000
        ---------------------------------------------
 
        Polarization contributions:
-            Electronic                -0.087278820615
-            Nuclear                    0.084453542292
-            Total                     -0.002825278323
+            Electronic                -0.087279032961
+            Nuclear                    0.084453741286
+            Total                     -0.002825291675
 
        Fragment density contributions:
-            Electronic                 0.586746907127
-            Nuclear                   -0.651827447475
+            Electronic                 0.586748120799
+            Nuclear                   -0.651828642451
             Polarization              -0.000000000000
-            Repulsion                  0.182267467380
-            Total                      0.117186927031
+            Repulsion                  0.182267472902
+            Total                      0.117186951250
 
-       Total PE energy:             0.114361648708
+       Total PE energy:             0.114361659575
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.012       0.012
+ >>>> CPU and wall time for SCF :       0.017       0.017
 
 
                        .-----------------------------------.
@@ -582,18 +606,18 @@ H   -0.784000   -0.554000    0.000000
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:             -74.843247676493                 
+@    Final HF energy:             -74.843247744270                 
 @    Nuclear repulsion:             9.157239627730
-@    Electronic energy:           -84.114848952931
-@    Embedding energy:              0.114361648708
+@    Electronic energy:           -84.114849031575
+@    Embedding energy:              0.114361659575
 
-@    Final gradient norm:           0.000002094525
+@    Final gradient norm:           0.000000001671
 
  
-     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
+     Date and time (Linux)  : Fri Oct  9 14:41:25 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  11Feb15   FOCKDIIS
+File label for MO orbitals:   9Oct15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -601,21 +625,21 @@ File label for MO orbitals:  11Feb15   FOCKDIIS
  ------------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 O   :1s    -0.9942   0.2300   0.0000  -0.0000  -0.1147   0.1272   0.0000
-   2 O   :1s    -0.0263  -0.8213  -0.0000   0.0001   0.5933  -0.8579  -0.0000
-   3 O   :2px    0.0000   0.0000  -0.5949   0.0000  -0.0000  -0.0000  -1.0059
+   1 O   :1s    -0.9942   0.2300  -0.0000  -0.0000  -0.1147   0.1272   0.0000
+   2 O   :1s    -0.0263  -0.8213   0.0000   0.0001   0.5933  -0.8579  -0.0000
+   3 O   :2px    0.0000   0.0000  -0.5949   0.0000   0.0000   0.0000  -1.0059
    4 O   :2py    0.0044   0.1615   0.0000   0.0001   0.7532   0.7473  -0.0000
-   5 O   :2pz   -0.0000   0.0000   0.0000  -1.0000   0.0001   0.0000  -0.0000
+   5 O   :2pz    0.0000   0.0000  -0.0000  -1.0000   0.0001   0.0000   0.0000
    6 H   :1s     0.0060  -0.1635  -0.4463  -0.0000  -0.3023   0.7887   0.8312
    7 H   :1s     0.0060  -0.1635   0.4463  -0.0000  -0.3023   0.7887  -0.8312
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.01 seconds
- >>>> Total wall time used in SIRIUS :      0.01 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.02 seconds
+ >>>> Total wall time used in SIRIUS :      0.02 seconds
 
  
-     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
+     Date and time (Linux)  : Fri Oct  9 14:41:25 2015
      Host name              : foeroyar                                
 
 
@@ -623,9 +647,9 @@ File label for MO orbitals:  11Feb15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.02 seconds
- >>>> Total wall time used in DALTON:   0.02 seconds
+ >>>> Total CPU  time used in DALTON:   0.03 seconds
+ >>>> Total wall time used in DALTON:   0.03 seconds
 
  
-     Date and time (Linux)  : Wed Feb 11 22:09:41 2015
+     Date and time (Linux)  : Fri Oct  9 14:41:25 2015
      Host name              : foeroyar                                

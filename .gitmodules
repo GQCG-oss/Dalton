@@ -22,3 +22,6 @@
 [submodule "external/xcint"]
 	path = external/xcint
 	url = https://github.com/bast/xcint.git
+[submodule "external/IchorIntegralLibrary"]
+	path = external/IchorIntegralLibrary
+	url = git@gitlab.com:dalton/IchorIntegralLibrary.git

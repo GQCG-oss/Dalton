@@ -317,6 +317,7 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_molgrad
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -887,8 +888,8 @@ C     ****************************************
 C     ***** PE contribution to gradient ******
 C     ****************************************
 C     NHL 03/13
-      IF (PROPTY .AND. PEQM) THEN
-         CALL PE_IFC_GRAD(DENMAT)
+      IF (PROPTY .AND. USE_PELIB()) THEN
+         CALL PELIB_IFC_MOLGRAD(DENMAT, PEGRAD(1:3*NATOMS))
       END IF
 
 C     *************************
@@ -935,7 +936,7 @@ C
                CALL HEADER('Cavity solvent part of the gradient',-1)
                CALL PRIGRD(GSOLCV,WORK(KCSTRA),WORK(KSCTRA))
             END IF
-            IF (PEQM) THEN
+            IF (USE_PELIB()) THEN
                CALL HEADER('Polarizable Embedding part of gradient',-1)
                CALL PRIGRD(PEGRAD,WORK(KCSTRA),WORK(KSCTRA))
             END IF

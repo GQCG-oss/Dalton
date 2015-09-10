@@ -12,7 +12,7 @@ f = Filter()
 
 f.add(from_string = 'Polarizable embedding energy contributions:',
       num_lines = 16,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 test.run(['isopol.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
 

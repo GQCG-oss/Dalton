@@ -1813,6 +1813,7 @@ integer,pointer :: load(:)
 logical :: uncont,intnrm,extend
 type(AOITEM) :: AO
 TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
+
 uncont=.FALSE.
 intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN      !    The regular AO-basis
@@ -1844,9 +1845,9 @@ load = 0
 nAuxMPI = 0 
 do I=1,AO%nbatches
    idx = MINLOC(load)
+   load(idx(1)) = load(idx(1)) + (2*AO%BATCH(I)%maxAngmom+1)
    DO A=1,AO%BATCH(I)%nAngmom
       nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + AO%BATCH(I)%norbitals(A)
-      load(idx(1)) = load(idx(1)) + AO%BATCH(I)%norbitals(A)
    ENDDO
 enddo
 MaxnAuxMPI = MAXVAL(nAuxMPI)
@@ -1862,7 +1863,7 @@ do I=1,AO%nbatches
       DO J=1,AO%BATCH(I)%nOrbitals(A)
          nA = NA + 1 !global index 
          nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + 1
-         GIndexToLocal(NA) = nAuxMPI(idx(1))
+         GIndexToLocal(NA) = nAuxMPI(idx(1))         
          IndexToGlobal(nAuxMPI(idx(1)),idx(1)) = AO%BATCH(I)%startOrbital(A)+K
          K=K+1
       ENDDO

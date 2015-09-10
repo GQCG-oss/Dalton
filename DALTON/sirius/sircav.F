@@ -2994,3 +2994,123 @@ C
       END IF
       RETURN
       END
+C/* Deck dalton_cavity*/
+      subroutine dalton_cavity(all_centers, all_charges, ncents,
+     &                         wrk, nwrk)
+
+#include "implicit.h"
+#include "dummy.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "pcmdef.h"
+#include "pcm.h"
+#include "pcmlog.h"
+#include "nuclei.h"
+
+          integer :: ncents, nwrk
+          real*8, dimension(ncents) :: all_charges
+          real*8, dimension(3,ncents) :: all_centers
+          real*8, dimension(nwrk) :: wrk
+
+          integer :: i
+          integer :: ntess, lusurf, lucav
+          integer :: bck_nucind, bck_nucdep, bck_natoms
+          integer, dimension(:), allocatable :: isphere
+          real*8, dimension(:), allocatable :: areas, rvdw
+          real*8, dimension(:,:), allocatable :: tess_coords
+
+          call qenter('dalton_cavity')
+
+!   van der Waals radii taken from "The Elements", 2nd edition,
+!   John Emsley, Clarendon Press, Oxford, 1991.  Unknown values
+!   are simply set to D0, rather than trying to guess them.
+!
+!   A.Bondi, J.Phys.Chem. 68: 441-451(1964) gives alternate
+!   values, and a few transition metals.
+          allocate(rvdw(99))
+          rvdw = (/ 1.20d0, 1.22d0, 0.00d0, 0.00d0, 2.08d0, 1.85d0,
+     &              1.54d0, 1.40d0, 1.35d0, 1.60d0, 2.31d0, 0.00d0,
+     &              2.05d0, 2.00d0, 1.90d0, 1.85d0, 1.81d0, 1.91d0,
+     &              2.31d0, 13*0.0d0, 2.00d0, 2.00d0, 1.95d0, 1.98d0,
+     &              2.44d0, 13*0.0d0, 2.20d0, 2.20d0, 2.15d0, 0.00d0,
+     &              2.62d0, 27*0.0d0, 2.40d0, 16*0.0d0 /)
+!   override the above table with U. Pisa's experience
+!   as to what works best for singly bonded C,N,O
+          rvdw(6) = 1.70d0
+          rvdw(7) = 1.60d0
+          rvdw(8) = 1.50d0
+
+          if (ncents > mxsp) then
+              stop 'ERROR: ncents > mxsp'
+          end if
+
+          nesfp = ncents
+          nesf = nesfp
+
+          do i = 1, nesfp
+              xe(i) = all_centers(1,i)
+              ye(i) = all_centers(2,i)
+              ze(i) = all_centers(3,i)
+              if (nint(all_charges(i)) > 99) then
+                  stop 'ERROR: charge is too big'
+              end if
+              rin(i) = rvdw(nint(all_charges(i)))
+              if (rin(i) == 0.0d0) then
+                  stop 'ERROR: no vdw radius defined'
+              end if
+          end do
+
+          bck_nucind = nucind
+          bck_nucdep = nucdep
+          bck_natoms = natoms
+
+          nucind = ncents
+          nucdep = ncents
+          natoms = ncents
+
+          omega = 40.0d0
+          fro = 0.7d0
+          ret = 0.2d0
+          nrwcav = 2
+          areats = 0.3d0
+          oldcen = .false.
+          iprpcm = 0
+          dr = 1.0d-4
+          alpha = 1.2d0
+          rsolv = 1.385d0
+
+          call pedram(wrk, nwrk)
+
+          nucind = bck_nucind
+          nucdep = bck_nucdep
+          natoms = bck_natoms
+
+          lucav = -999
+          call gpopen(lucav, 'CAVDATA', 'OLD', 'SEQUENTIAL',
+     &                'UNFORMATTED', idummy, .FALSE.)
+          read(lucav) ntess
+          allocate(isphere(ntess))
+          allocate(tess_coords(3,ntess))
+          allocate(areas(ntess))
+          read(lucav) isphere
+          read(lucav) tess_coords(1,:)
+          read(lucav) tess_coords(2,:)
+          read(lucav) tess_coords(3,:)
+          read(lucav) areas
+          call gpclose(lucav, 'KEEP')
+
+          lusurf = -999
+          call gpopen(lusurf, 'SURFACE.INP', 'NEW', 'SEQUENTIAL',
+     &                'FORMATTED', idummy, .FALSE.)
+
+          write(lusurf,'(i6)') ntess
+          write(lusurf,'(a)') 'AA'
+          do i = 1, ntess
+              write(lusurf,'(4f12.6)') tess_coords(:,i), areas(i)
+          end do
+
+          call gpclose(lusurf,'KEEP')
+
+          call qexit('dalton_cavity')
+
+      end

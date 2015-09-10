@@ -20,7 +20,7 @@ f.add(string = 'Final DFT energy',
 
 f.add(from_string = 'Orbital-exponent gradient for all atoms',
       num_lines = 21,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 test.run(['prop_expgrad.dal'], ['N2_intgrl.mol'], f={'out': f})
 
