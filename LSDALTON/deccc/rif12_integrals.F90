@@ -353,10 +353,6 @@ contains
        CoAOS(:,i) = MyFragment%Co(:,i)
     end do
 
-    !call sleep(mynum*2)  
-    !print*,'CoAOS Mynum', mynum
-    !call ls_output(CoAOS,1,nbasis,1,noccAOS,nbasis,noccAOS,1,6)
-
     call mem_alloc(CoAOStot, MyFragment%nbasis, noccAOStot)
     do i=1,offset
        CoAOStot(:,i) = MyFragment%CoreMO(:,i)
@@ -370,15 +366,6 @@ contains
     do i=1, nvirtAOS
        CvAOS(:,i) = MyFragment%Cv(:,i)
     end do
-
-    ! Creating a CovAOS matrix 
-    !call mem_alloc(CovAOS, MyFragment%nbasis, nocvAOS)
-    !do i=1,noccAOS
-    !   CovAOS(:,i) = CoAOS(:,i)
-    !end do
-    !do i=1,nvirtAOS
-    !   CovAOS(:,i+noccAOS) = MyFragment%Cv(:,i)
-    !end do
 
     ! ***********************************************************
     ! Creating the F matrix 
@@ -398,20 +385,11 @@ contains
     do i=1, ncabsMO
        CMO_Cabs(:,i) = MyFragment%Ccabs(:,i)
     end do
-
-    !call sleep(mynum*2)  
-    !print*,'CMO_Cabs Mynum', mynum
-    !call ls_output(CoAOS,1,nbasis,1,noccAOS,nbasis,noccAOS,1,6)
     
     call mem_alloc(CMO_RI, ncabsAO, ncabsAO)
     do i=1, ncabsAO
        CMO_RI(:,i) = MyFragment%Cri(:,i)
     end do
-
-
-    !call sleep(mynum*2)  
-    ! print*,'CMO_RI Mynum', mynum
-    !call ls_output(CMO_RI,1,ncabsAO,1,ncabsAO,ncabsAO,ncabsAO,1,6)
 
     ! Creating a CocvAOStot matrix 
     call mem_alloc(Cfull, MyFragment%nbasis, nocvAOS)
