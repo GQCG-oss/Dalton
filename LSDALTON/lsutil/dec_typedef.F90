@@ -497,8 +497,6 @@ module dec_typedef_module
      logical :: only_generate_DECorbs
      !> Absorb H atoms into heavy atoms during orbital assignment
      logical :: AbsorbHatoms
-     !> Fit orbital coefficients in fragment (default: true)
-     logical :: FitOrbitals
      !> Threshold for simple Lowdin procedure for determining atomic extent
      real(realk) :: simple_orbital_threshold
      !> Purify fitted MO coefficients (projection + orthogonalization)
@@ -1661,7 +1659,6 @@ CONTAINS
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
     DECinfo%Distance                     = .false.
-    DECinfo%FitOrbitals                  = .true.
     DECinfo%simple_orbital_threshold     = 0.05E0_realk
 
     !Integral

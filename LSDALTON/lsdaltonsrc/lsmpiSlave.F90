@@ -209,6 +209,8 @@ subroutine lsmpi_slave(comm)
          call ccsdpt_slave_info
       case(CCSDPTSLAVE_WORK);
          call ccsdpt_slave_work
+      case(SET_FORCE_CRASH);
+         call ls_mpibcast(force_crash,infpar%master,comm)
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave

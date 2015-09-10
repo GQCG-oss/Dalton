@@ -2788,10 +2788,10 @@ C
                   WRITE(LUPRI,'(/1X,A)')'.ENCODE keyword is not in use.'
 #endif
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE   ! .DEBUG
                   INFPAR_DEBUG = .TRUE.
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE   ! .RMA-MD
                   rma_model = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN

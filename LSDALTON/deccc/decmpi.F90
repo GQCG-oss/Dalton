@@ -2146,6 +2146,11 @@ contains
     integer :: i, minidx, maxidx,N
     logical :: Fragoptjobs
 
+    if(jobs%njobs<1) then
+       write(DECinfo%output,*) 'MPI fragment statistics: No jobs to print!'
+       return
+    end if
+
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -2643,7 +2648,6 @@ contains
     call ls_mpi_buffer(DECitem%force_distribution,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
-    call ls_mpi_buffer(DECitem%FitOrbitals,Master)
     call ls_mpi_buffer(DECitem%simple_orbital_threshold,Master)
     call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%fragadapt,Master)
