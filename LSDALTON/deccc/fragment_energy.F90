@@ -167,11 +167,13 @@ contains
     type(tensor) :: ccsdpt_t2, ccsdpt_t2occ, ccsdpt_t2virt
     type(tensor) :: m2,m2occ,m2virt
 
-    real(realk) :: tcpu, twall,debugenergy,EnergyF12Ccoupling
+    real(realk) :: tcpu, twall,debugenergy,EnergyF12Ccoupling,TS2,TE2
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc,pair,get_mp2, use_bg
     integer :: a,b,i,j,k,l, ccmodel, nvA,noA,nvE,noE
+!    FORCEPRINT = .TRUE.
+    CALL LSTIMER('START',TS2,TE2,DECinfo%output)!FORCEPRINT)
 
     EnergyF12Ccoupling = 0.0E0_realk
     get_mp2 = .false.
@@ -617,6 +619,7 @@ contains
     !print *,"s8",ccsdpt_t1%initialized,associated(ccsdpt_t1%elm1)
     !print *,"s9",ccsdpt_t2%initialized,associated(ccsdpt_t2%elm1)
     !print *,"s10",u%initialized,associated(u%elm1)
+    CALL LSTIMER('Fragment Energy',TS2,TE2,DECinfo%output)!,FORCEPRINT
 
   end subroutine fragment_energy_and_prop
 
