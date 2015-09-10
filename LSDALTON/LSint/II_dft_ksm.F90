@@ -726,8 +726,8 @@ IF(DOGGA) THEN
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,DOLONDON,&
       !             & II_DFT_magderiv_kohnshamGGAUNRES,DFTDATA)
    ELSE
-      DFTDATA%nWorkNactBastNblen = 0
-      DFTDATA%nWorkNactBast = 0
+      DFTDATA%nWorkNactBastNblen = 20
+      DFTDATA%nWorkNactBast = 1
       DFTDATA%nWorkNactBastNactBast = 0
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,DOLONDON,&
            & II_DFT_magderiv_kohnshamGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
