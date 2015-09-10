@@ -3395,10 +3395,13 @@ contains
     real(realk), pointer :: Co(:,:),Cv(:,:),fock(:,:),oofock(:,:),vvfock(:,:),Cfrag(:,:)
     TYPE(MoleculeInfo),pointer      :: molecule1
     TYPE(BASISINFO),pointer         :: basis1
+    logical :: use_bg_buf
+
+    use_bg_buf  = mem_is_background_buf_init()
 
     ! allocate C^o(nbasis,occ) C^v(nbasis,virt)
-    call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC   )
-    call mem_alloc(fragment%CvLOC, fragment%nbasis,  fragment%nvirtLOC )
+    call mem_alloc(fragment%CoLOC, fragment%nbasis,  fragment%noccLOC)
+    call mem_alloc(fragment%CvLOC, fragment%nbasis,  fragment%nvirtLOC)
     call mem_alloc(fragment%CoreMO, fragment%nbasis, fragment%ncore)
     fragment%CoLOC=0.0E0_realk
     fragment%CvLOC=0.0E0_realk
@@ -3437,7 +3440,11 @@ contains
     ! point second index to fragment
     Mylsitem%SETTING%MOLECULE(1)%p => fragment%mylsitem%setting%molecule(1)%p 
     Mylsitem%SETTING%BASIS(1)%p => fragment%mylsitem%setting%basis(1)%p 
-    call mem_alloc(Sfragfull,nbasisf,nbasis)
+    if (use_bg_buf) then
+       call mem_pseudo_alloc(Sfragfull,i8*nbasisf,i8*nbasis)
+    else 
+       call mem_alloc(Sfragfull,nbasisf,nbasis)
+    end if
     call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,MyLsitem%SETTING,&
          & Sfragfull,nbasisf,nbasis,AORdefault,AORdefault)
     ! Reset full LSITEM MPI info
@@ -3461,8 +3468,13 @@ contains
     if( MyMolecule%mem_distributed )then
        !FIXME: in the long run, avoid this, also the statements further down
        print *,"WARNING(atomic_fragment_basis) converting to full dense, this should be avoided"
-       call mem_alloc( Co, nbasis, nocc  )
-       call mem_alloc( Cv, nbasis, nvirt )
+       if (use_bg_buf) then
+          call mem_pseudo_alloc( Co, i8*nbasis, i8*nocc  )
+          call mem_pseudo_alloc( Cv, i8*nbasis, i8*nvirt )
+       else
+          call mem_alloc( Co, nbasis, nocc  )
+          call mem_alloc( Cv, nbasis, nvirt )
+       end if
        call tensor_gather(1.0E0_realk,MyMolecule%Co,0.0E0_realk,Co,i8*nbasis*nocc)
        call tensor_gather(1.0E0_realk,MyMolecule%Cv,0.0E0_realk,Cv,i8*nbasis*nvirt)
     else
@@ -3475,12 +3487,17 @@ contains
     ! ********
 
     ! Occupied orbitals for fragment  before fitting (i.e. using ALL basis functions in molecule)
-    call mem_alloc(Cfrag,nbasis,noccf)
+    if (use_bg_buf) then
+       call mem_pseudo_alloc(Cfrag,i8*nbasis,i8*noccf)
+       call mem_pseudo_alloc(SC,i8*nbasisf,i8*noccf)
+    else
+       call mem_alloc(Cfrag,nbasis,noccf)
+       call mem_alloc(SC,nbasisf,noccf)
+    end if
     do i=1,noccf
        full_orb_idx = fragment%occAOSidx(i)
        Cfrag(:,i) = Co(:,full_orb_idx)
     end do
-    call mem_alloc(SC,nbasisf,noccf)
 
     ! half transformed overlap: SC = Sfragfull Cofrag,  dimension:  (nbasisf,noccf)
     call dec_simple_dgemm(nbasisf,nbasis,noccf,Sfragfull,Cfrag,SC,'N','N')
@@ -3490,60 +3507,94 @@ contains
        call solve_linear_equations(fragment%S,fragment%CoLOC(:,i), &
             & SC(:,i),nbasisf)
     end do
-    call mem_dealloc(Cfrag)
-    call mem_dealloc(SC)
+    if (use_bg_buf) then
+       call mem_pseudo_dealloc(SC)
+       call mem_pseudo_dealloc(Cfrag)
+    else
+       call mem_dealloc(SC)
+       call mem_dealloc(Cfrag)
+    end if
 
 
     ! Core orbitals (same procedure)
     ! ******************************
 
-    call mem_alloc(Cfrag,nbasis,ncoref)
+    if (use_bg_buf) then
+       call mem_pseudo_alloc(Cfrag,i8*nbasis,i8*ncoref)
+       call mem_pseudo_alloc(SC,i8*nbasisf,i8*ncoref)
+    else
+       call mem_alloc(Cfrag,nbasis,ncoref)
+       call mem_alloc(SC,nbasisf,ncoref)
+    end if
     do i=1,ncoref
        full_orb_idx = fragment%coreidx(i)
        Cfrag(:,i) = Co(:,full_orb_idx)
     end do
-    call mem_alloc(SC,nbasisf,ncoref)
     call dec_simple_dgemm(nbasisf,nbasis,ncoref,Sfragfull,Cfrag,SC,'N','N')
 
     do i=1,ncoref
        call solve_linear_equations(fragment%S,fragment%coreMO(:,i), &
             & SC(:,i),nbasisf)
     end do
-    call mem_dealloc(Cfrag)
-    call mem_dealloc(SC)
-
+    if (use_bg_buf) then
+       call mem_pseudo_dealloc(SC)
+       call mem_pseudo_dealloc(Cfrag)
+    else
+       call mem_dealloc(SC)
+       call mem_dealloc(Cfrag)
+    end if
 
     ! Virtual orbitals (same procedure)
     ! *********************************
 
-    call mem_alloc(Cfrag,nbasis,nvirtf)
+    if (use_bg_buf) then
+       call mem_pseudo_alloc(Cfrag,i8*nbasis,i8*nvirtf)
+       call mem_pseudo_alloc(SC,i8*nbasisf,i8*nvirtf)
+    else
+       call mem_alloc(Cfrag,nbasis,nvirtf)
+       call mem_alloc(SC,nbasisf,nvirtf)
+    end if
     do i=1,nvirtf
        full_orb_idx = fragment%virtAOSidx(i)
        Cfrag(:,i) = Cv(:,full_orb_idx)
     end do
-    call mem_alloc(SC,nbasisf,nvirtf)
     call dec_simple_dgemm(nbasisf,nbasis,nvirtf,Sfragfull,Cfrag,SC,'N','N')
 
     do i=1,nvirtf
        call solve_linear_equations(fragment%S,fragment%CvLOC(:,i), &
             & SC(:,i),nbasisf)
     end do
-    call mem_dealloc(Cfrag)
-    call mem_dealloc(SC)
+    if (use_bg_buf) then
+       call mem_pseudo_dealloc(SC)
+       call mem_pseudo_dealloc(Cfrag)
+    else
+       call mem_dealloc(SC)
+       call mem_dealloc(Cfrag)
+    end if
 
-
-    call mem_dealloc(Sfragfull)
 
     if( MyMolecule%mem_distributed )then
 
-       call mem_dealloc(Co)
-       call mem_dealloc(Cv)
-
-       call mem_alloc( fock, nbasis, nbasis )
+       if (use_bg_buf) then
+          call mem_pseudo_dealloc(Cv)
+          call mem_pseudo_dealloc(Co)
+          call mem_pseudo_dealloc(Sfragfull)
+          call mem_pseudo_alloc( fock, i8*nbasis, i8*nbasis )
+       else
+          call mem_dealloc(Cv)
+          call mem_dealloc(Co)
+          call mem_dealloc(Sfragfull)
+          call mem_alloc( fock, nbasis, nbasis )
+       end if
 
        call tensor_gather(1.0E0_realk,MyMolecule%fock,0.0E0_realk,fock,i8*nbasis*nbasis)
     else
 
+       if (use_bg_buf) then
+          call mem_pseudo_dealloc(Sfragfull)
+       else
+          call mem_dealloc(Sfragfull)
+       end if
        Co => null()
        Cv => null()
 
@@ -3562,10 +3613,15 @@ contains
 
     if( MyMolecule%mem_distributed )then
 
-       call mem_dealloc(fock)
-
-       call mem_alloc(oofock,nocc,nocc)
-       call mem_alloc(vvfock,nvirt,nvirt)
+       if (use_bg_buf) then
+          call mem_pseudo_dealloc(fock)
+          call mem_pseudo_alloc(oofock,i8*nocc,i8*nocc)
+          call mem_pseudo_alloc(vvfock,i8*nvirt,i8*nvirt)
+       else
+          call mem_dealloc(fock)
+          call mem_alloc(oofock,nocc,nocc)
+          call mem_alloc(vvfock,nvirt,nvirt)
+       end if
 
        call tensor_gather(1.0E0_realk,MyMolecule%oofock,0.0E0_realk,oofock,i8*nocc*nocc   )
        call tensor_gather(1.0E0_realk,MyMolecule%vvfock,0.0E0_realk,vvfock,i8*nvirt*nvirt )
@@ -3600,8 +3656,13 @@ contains
     end if
 
     if( MyMolecule%mem_distributed )then
-       call mem_dealloc(oofock)
-       call mem_dealloc(vvfock)
+       if (use_bg_buf) then
+          call mem_pseudo_dealloc(vvfock)
+          call mem_pseudo_dealloc(oofock)
+       else
+          call mem_dealloc(vvfock)
+          call mem_dealloc(oofock)
+       end if
     else
        oofock => null()
        vvfock => null()
