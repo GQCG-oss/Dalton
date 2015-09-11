@@ -5542,14 +5542,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: iter
      integer, intent(inout) :: nba,nbg,minbsize
      real(realk),intent(in) :: MemIn
-     real(realk)            :: mem_used,mem_used4,mem_used3,mem_used2,frac_of_total_mem,m,MemFree
+     real(realk)            :: mem_used,mem_used4,mem_used3,mem_used2,mem_used1,frac_of_total_mem,m,MemFree
      logical,intent(in)     :: manual,first
      type(lssetting),intent(inout) :: se
      Character,intent(in) :: is(5)
      integer(kind=8), intent(inout) :: e2a
      logical, intent(in)    :: local, mpi_split
      integer, intent(out),optional :: nbuf
-     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize,chksze,chksze4,chksze3,chksze2
+     integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size,bg_buf_size,allsize,chksze,chksze4,chksze3,chksze2,chksze1
      integer :: nnod,magic,nbuffs,choice
      logical :: checkbg
      integer(kind=8) :: locally_stored_v2o2, locally_stored_tiles
@@ -5583,46 +5583,68 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         MemFree = MemIn*frac_of_total_mem
      endif
 
+     !Test whether there is enough memory for scheme 4
      mem_used4 = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-     chksze4  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-     mem_used = mem_used4
-     chksze   = chksze4
+     chksze4   = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
+     mem_used  = mem_used4
+     chksze    = chksze4
+
      if (mem_used>MemFree.or.chksze>bg_buf_size)then
+
 #ifdef VAR_MPI
-        !test for scheme with medium requirements
-        scheme=3
-        mem_used3=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-        chksze3  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
+        !Test whether there is enough memory for scheme 3
+        scheme    = 3
+        mem_used3 = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+        chksze3   = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
            &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-        mem_used = mem_used3
-        chksze   = chksze3
+        mem_used  = mem_used3
+        chksze    = chksze3
+
         if (mem_used>MemFree.or.chksze>bg_buf_size)then
-           !test for scheme with low requirements
-           scheme=2
-           mem_used2=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-           chksze2  = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
+
+           !Test whether there is enough memory for scheme 2
+           scheme    = 2
+           mem_used2 = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+           chksze2   = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
               &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
-           mem_used = mem_used2
-           chksze   = chksze2
+           mem_used  = mem_used2
+           chksze    = chksze2
+
            if (mem_used>MemFree.or.chksze>bg_buf_size)then
+
+              !Test whether there is enough memory for scheme 1
+              scheme    = 1
+              mem_used1 = get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
+              chksze1   = int((get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,8,&
+                 &scheme,.false.,se,is)*1.024E3_realk**3)/8.0,kind=8)
+              mem_used  = mem_used1
+              chksze    = chksze1
+
+              !There is also scheme 0 but it is not fast enough
               !scheme=0
               !print *,"MASTER check 0"
               !mem_used=get_min_mem_req(no,os,nv,vs,nb,bs,nba,nbg,nbuffs,choice,scheme,.false.,se,is)
-              if (mem_used>MemFree)then
+              if (mem_used>MemFree.or.chksze>bg_buf_size)then
+#endif
                  write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
                  if( checkbg )then
-                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB, free buffer: ",I10)')MemFree,bg_buf_size
+                    write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB, free buffer: ",I10)')MemFree,&
+                       &bg_buf_size
                     write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB, buff: ",I10)')mem_used4,chksze4
                     write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB, buff: ",I10)')mem_used3,chksze3
                     write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB, buff: ",I10)')mem_used2,chksze2
+                    write(DECinfo%output,'(" Memory required in scheme 1    : ",f8.3," GB, buff: ",I10)')mem_used1,chksze1
                  else
                     write(DECinfo%output,'(" Fraction of free mem to be used: ",f8.3," GB")')MemFree
                     write(DECinfo%output,'(" Memory required in scheme 4    : ",f8.3," GB")')mem_used4
                     write(DECinfo%output,'(" Memory required in scheme 3    : ",f8.3," GB")')mem_used3
                     write(DECinfo%output,'(" Memory required in scheme 2    : ",f8.3," GB")')mem_used2
+                    write(DECinfo%output,'(" Memory required in scheme 1    : ",f8.3," GB")')mem_used1
                  endif
-                 call lsquit("ERROR(CCSD): there is just not enough memory&
-                    & available",DECinfo%output)
+
+                 call lsquit("ERROR(CCSD): there is just not enough memory available",DECinfo%output)
+
+#ifdef VAR_MPI
               endif
            endif
         endif
