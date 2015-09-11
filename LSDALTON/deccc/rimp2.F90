@@ -3526,10 +3526,6 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
         call mem_pseudo_alloc(tocc3,nsize)
         call mem_pseudo_alloc(TCijAB,nsize)
      ENDIF
-       
-     print *, "nocc", nocc
-     print *, "nvirt", nvirt
-     print *, "noccEOS", noccEOS
 
      IF(.NOT.use_bg_buf)call mem_alloc(TCijAB,nsize,'RIMP2Cc:TCijAB')
      call RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,TCijAB)
@@ -3764,7 +3760,6 @@ subroutine RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEO
               enddo
               deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
 
-               !print *, "I J A B delta EPS", IDIAG, JDIAG, BDIAG, ADIAG, deltaEPS
               toccTMP(JDIAG)=gmocont/deltaEPS                
            enddo
            do jLOC=1,noccEOS
@@ -3862,7 +3857,6 @@ DO B=1,nvirt
                TMP = TMP + GalphaEOS(ALPHA,I,A)*Galpha2EOS(ALPHA,J,B)
             ENDDO
             CiajbEOS(I,A,J,B) = TMP
-            !print *, "I J A B tmp", I, J, A, B, tmp
          ENDDO
       ENDDO
    ENDDO
