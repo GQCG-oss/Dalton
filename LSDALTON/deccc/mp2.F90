@@ -43,12 +43,12 @@ module mp2_module
 !       & get_currently_available_memory, atomic_fragment_free
   use array2_simple_operations!, only: array2_free, array2_extract_EOS, &
 !       & get_mp2_integral_transformation_matrices, get_mp2_integral_transformation_matrices_fc, &
- !      & extract_occupied_eos_mo_indices, extract_virtual_EOS_MO_indices,array2_init,array2_print
+!       & extract_occupied_eos_mo_indices, extract_virtual_EOS_MO_indices,array2_init,array2_print
   use array4_simple_operations!, only: array4_delete_file, array4_init_file, &
 !       & array4_init_standard, array4_free, array4_reorder, array4_init, &
 !       & array4_contract1, array4_open_file, array4_write_file_type2, &
 !       & array4_close_file, array4_write_file_type1, mat_transpose, &
- !     & array4_read_file_type2
+!       & array4_read_file_type2
 
 
   !> Calculate integrals and amplitudes for MP2 energy (and possibly first order properties)

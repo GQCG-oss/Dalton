@@ -3246,6 +3246,11 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
 
+  !print *, "nbasis", nbasis
+  !print *, "noccAOS", nocc
+  !print *, "noccEOS", noccEOS
+  !print *, "nvirtAOS", nvirt
+  !print *, "noccAOS+noccAOS", nocc + nvirt
   
   ncabsAO = size(MyFragment%Ccabs,1)
   ncabsMO = size(MyFragment%Ccabs,2)    
@@ -3333,6 +3338,8 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
 
   call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc,CDIAGvirt,Uocc,Uvirt,EVocc,EVvirt)
 
+  !CDiagoccALL
+
   !  IF(DECinfo%RIMP2_Laplace)THEN
   !     !  tau(a,l) = exp(epsilon_A*amp_l)   !l is the laplace points
   !     call BuildTauVirt(TauVirt,nvirt,nLaplace,EVvirt,LaplaceAmp)
@@ -3349,7 +3356,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      call mem_alloc(Fca_diag,ncabsMO,nvirt,'RIMP2Cc:Fca_diag')
      call mem_alloc(Fca_local,ncabsMO,nvirt,'RIMP2Cc:Fca_local')
   ENDIF
-  Fca_local(:,1:nvirt) = Myfragment%Fcp(:,nocc+1:nbasis)
+  Fca_local(:,1:nvirt) = Myfragment%Fcp(:,nocc+1:(nocc+nvirt))
   !Transform Local Virtual index to Diagonal/canonical index 
   !F(C,A)_diag = F(C,B)_local * Uvirt(B,A)
   M = ncabsMO    !rows of Output Matrix
@@ -3514,7 +3521,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      IF(.NOT.use_bg_buf)call mem_alloc(TCijAB,nsize,'RIMP2Cc:TCijAB')
      call RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,TCijAB)
      !Transform first Virtual index (ILOC,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BLOC)
-     M = nocceos*nocceos*nvirt  !rows of Output Matrix
+     M = noccEOS*noccEOS*nvirt  !rows of Output Matrix
      N = nvirt                  !columns of Output Matrix
      K = nvirt                  !summation dimension
      IF(.NOT.use_bg_buf)call mem_alloc(tocc3,nsize,'RIMP2Cc:tocc3')

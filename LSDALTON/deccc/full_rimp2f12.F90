@@ -896,7 +896,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                   call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)   !CalphaTmp(NBA,nocv,nocc)
                   IF(size(CalphaTmp).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 B2',-1)
                   call ls_mpibcast(CalphaTmp,nsize2,node,infpar%lg_comm) !CalphaTmp(NBA,nocc,nvirt)
-                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt) 
+                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,ncore) 
                ELSE
                   node = inode-1
                   !recieve
@@ -922,10 +922,15 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                E_21C = E_21C + E_21Ctmp
             ENDDO
          ELSE
-            Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+            Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
          ENDIF
 #else
-         Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+         Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt,offset) 
+
+         print *, "offset",offset
+         print *, "nval", nocc
+         print *, "nocre",ncore
+
 #endif      
          call mem_dealloc(CalphaTmp) 
          call mem_dealloc(EpsVirt) 
@@ -1791,10 +1796,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
   end subroutine WriteFULLRIMP2F12RestartInfo
   
   subroutine FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,Galpha,&
-       & Galpha2,E,EpsOcc,EpsVirt)
+       & Galpha2,E,EpsOcc,EpsVirt,offset)
     implicit none
     real(realk),intent(inout) :: E
-    integer,intent(in) :: NBA,nocc,nvirt,nbasis
+    integer,intent(in) :: NBA,nocc,nvirt,nbasis,offset
     real(realk),intent(in) :: Galpha(NBA,nbasis,nocc),Galpha2(NBA,nocc,nvirt)
     real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
     !local variables
@@ -1811,15 +1816,18 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
           eps = EpsOcc(I) + EpsOcc(J) - EpsVirt(A) - EpsVirt(B)
           T = 0.0E0_realk
           DO ALPHA=1,NBA
-             T = T  + (Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B) + Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A))/eps
+             T = T  + (Galpha(ALPHA,offset+nocc+A,I)*Galpha2(ALPHA,J,B) & 
+                & + Galpha(ALPHA,offset+nocc+B,J)*Galpha2(ALPHA,I,A))/eps
           ENDDO
           CtmpIAJB = 0.0E0_realk
           DO ALPHA=1,NBA
-             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B)+ Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A)
+             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,offset+nocc+A,I)*Galpha2(ALPHA,J,B) &
+                & + Galpha(ALPHA,offset+nocc+B,J)*Galpha2(ALPHA,I,A)
           ENDDO
           CtmpIBJA = 0.0E0_realk
           DO ALPHA=1,NBA
-             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,nocc+A,J)*Galpha2(ALPHA,I,B) + Galpha(ALPHA,nocc+B,I)*Galpha2(ALPHA,J,A)
+             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,offset+nocc+A,J)*Galpha2(ALPHA,I,B) & 
+                & + Galpha(ALPHA,offset+nocc+B,I)*Galpha2(ALPHA,J,A)
           ENDDO
           TMP=TMP+(7.0E0_realk*T*CtmpIAJB + 1.0E0_realk*T*CtmpIBJA)
        ENDDO
