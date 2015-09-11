@@ -719,6 +719,8 @@ C
       end do
 2     rewind(lucmd)
       call gpclose(lucmd, 'KEEP')
+#else
+      use_openrsp = .false.
 #endif
 
 C
