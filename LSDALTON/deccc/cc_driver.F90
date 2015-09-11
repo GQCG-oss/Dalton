@@ -16,6 +16,7 @@ use files!,only:lsopen,lsclose
 use memory_handling
 use dec_typedef_module
 use integralinterfaceMod
+use IIABSVALINT
 use lsparameters
 #ifdef VAR_MPI
 use infpar_module
@@ -377,7 +378,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    integer :: atom, j,a,b,job, job_n, atom_a, atom_b,imax,jmax,amax,bmax, dist
    real(realk) :: max_amp, dist_a1, dist_a2, dist_b1, dist_b2, dist_i1, the_dist, dist_j1, maxdist
-   real(realk), pointer :: abs_overlap(:,:)
+   real(realk), pointer :: abs_overlap_oo(:,:)
+   real(realk), pointer :: abs_overlap_vv(:,:)
+   real(realk), pointer :: abs_overlap_ov(:,:)
    real(realk),pointer :: DistanceTableOrbAtomOcc(:,:),DistanceTableOrbAtomVirt(:,:)
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
@@ -576,19 +579,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
             & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
 
-         maxdist = 0.0E0_realk
-         do atom = 1,MyMolecule%natoms
-            do i = 1, nocc
-               maxdist=max(DistanceTableOrbAtomOcc(i,atom),maxdist)
-            enddo
-            do a = 1, nvirt
-               maxdist=max(DistanceTableOrbAtomVirt(a,atom),maxdist)
-            enddo
-         enddo
+         maxdist = max(maxval(DistanceTableOrbAtomVirt),maxval(DistanceTableOrbAtomOcc))
 
-         !call mem_alloc(abs_overlap,nocc,nvirt)
-
-         !call II_absvalint(DECinfo%output,0,MyMolecule%setting,Co,Cv,nbasis,nocc,nvirt,abs_overlap,.true.,0.0E0_realk,.false.)
+         call mem_alloc(abs_overlap_vv,nvirt,nvirt)
+         call II_absvalint(DECinfo%output,0,mylsitem%setting,Cv,Cv,nbasis,nvirt,nvirt,abs_overlap_vv,.true.,0.0E0_realk,.false.)
+         call mem_alloc(abs_overlap_oo,nocc,nocc)
+         call II_absvalint(DECinfo%output,0,mylsitem%setting,Co,Co,nbasis,nocc,nocc,abs_overlap_oo,.true.,0.0E0_realk,.false.)
+         call mem_alloc(abs_overlap_ov,nocc,nvirt)
+         call II_absvalint(DECinfo%output,0,mylsitem%setting,Co,Cv,nbasis,nocc,nvirt,abs_overlap_ov,.true.,0.0E0_realk,.false.)
 
          print *,"NOW THE PRINT SHOULD APPEAR"
          
@@ -773,22 +771,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                   enddo
                   print*,"end"
 
-                  !print*,""
-                  !print*,"AbsOverlap:"
-                  !do a=1,nvirt
-                  !   dist_j1  = DistanceTableOrbAtomVirt(a,atom)
-                  !   max_amp = 0.0E0_realk
-                  !   do i=1,nocc
-                  !      if( occ_orbitals(ncore+i)%centralatom == atom )then
-                  !         if(abs(max_amp) < abs(oof(i,j)))then
-                  !            max_amp = abs_overlap(i,a)
-                  !            imax = i
-                  !         endif
-                  !      endif
-                  !   enddo
-                  !   print *,dist_j1,max_amp, i_max
-                  !enddo
-                  !print*,"end"
 
                   print*,""
                   print*,"OOFock:"
@@ -822,11 +804,62 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                   end do 
                   print*,"end"
 
+                  print*,""
+                  print*,"AbsOverlapVV:"
+                  do a=1,nvirt
+                     dist_j1  = DistanceTableOrbAtomVirt(a,atom)
+                     max_amp = 0.0E0_realk
+                     do b=1,nvirt
+                        if( virt_orbitals(b)%centralatom == atom )then
+                           if(abs(max_amp) < abs(abs_overlap_vv(b,a)))then
+                              max_amp = abs_overlap_vv(b,a)
+                              imax = i
+                           endif
+                        endif
+                     enddo
+                     print *,dist_j1,max_amp
+                  enddo
+                  print*,"end"
+
+                  print*,""
+                  print*,"AbsOverlapOO:"
+                  do j=1,nocc
+                     dist_j1  = DistanceTableOrbAtomOcc(ncore+j,atom)
+                     max_amp = 0.0E0_realk
+                     do i=1,nocc
+                        if( occ_orbitals(ncore+i)%centralatom == atom )then
+                           if(abs(max_amp) < abs(abs_overlap_oo(i,j)))then
+                              max_amp = abs_overlap_oo(i,j)
+                              imax = i
+                           endif
+                        endif
+                     enddo
+                     print *,dist_j1,max_amp
+                  enddo
+                  print*,"end"
+
+                  print*,""
+                  print*,"AbsOverlap:"
+                  do a=1,nvirt
+                     dist_j1  = DistanceTableOrbAtomVirt(a,atom)
+                     max_amp = 0.0E0_realk
+                     do i=1,nocc
+                        if( occ_orbitals(ncore+i)%centralatom == atom )then
+                           if(abs(max_amp) < abs(abs_overlap_ov(i,a)))then
+                              max_amp = abs_overlap_ov(i,a)
+                              imax = i
+                           endif
+                        endif
+                     enddo
+                     print *,dist_j1,max_amp
+                  enddo
+                  print*,"end"
                endif
             enddo
          enddo
-
-         !call mem_dealloc(abs_overlap)
+         call mem_dealloc(abs_overlap_vv)
+         call mem_dealloc(abs_overlap_oo)
+         call mem_dealloc(abs_overlap_ov)
 
       endif
       !--------------------------------------------------------------------------------------
@@ -2143,7 +2176,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !Set defaults
    restart          = .false.
-   saferun          = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+   saferun          = .not.DECinfo%CCSDnosaferun
    prec             = .true.
    prec_not1        = .false.
 
@@ -3131,6 +3164,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    use_bg = DECinfo%use_bg_buffer.and..not.saferun
    bg_was_init = mem_is_background_buf_init()
 
+   print *,"use_bg",DECinfo%use_bg_buffer,"safe",saferun,"was init",bg_was_init," thus use_bg",use_bg
    if(use_bg)then
 
       !if( .not. bg_was_init )then
@@ -3336,6 +3370,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 #endif
          endif
       else
+         print *,"we need to alloc it !!!!"
          if( local )then
             call mem_init_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
@@ -3347,6 +3382,8 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
       endif
 
    endif
+
+   print *,"bg is initiallized after",mem_is_background_buf_init()
 
 end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
 subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)
