@@ -36,9 +36,7 @@ module pelib_interface
 #endif
     ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
-#ifdef MOD_UNRELEASED
     public :: pelib_ifc_cro
-#endif
 
 contains
 
@@ -1067,7 +1065,6 @@ subroutine pelib_ifc_qro(vecb, vecc, etrs, xindx, zymb, zymc, udv, wrk, nwrk,&
 
 end subroutine pelib_ifc_qro
 
-#ifdef MOD_UNRELEASED
 subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
                     & wrk, nwrk, kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb,&
                     & isymc, isymd, cmo,mjwop)
@@ -1305,7 +1302,6 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
     call qexit('pelib_ifc_cro')
 
 end subroutine pelib_ifc_cro
-#endif
 
 end module pelib_interface
 
@@ -1342,14 +1338,12 @@ module pelib_interface
 #endif
     ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
-#ifdef MOD_UNRELEASED
     public :: pelib_ifc_cro
-#endif
 
 contains
 
 logical function use_pelib()
-    call quit('using dummy PElib interface routines')
+    use_pelib = .false.
 end function use_pelib
 
 logical function pelib_ifc_gspol()
@@ -1484,7 +1478,6 @@ subroutine pelib_ifc_qro(vecb, vecc, etrs, xindx, zymb, zymc, udv, wrk, nwrk,&
     call qexit('pelib_ifc_qro')
 end subroutine pelib_ifc_qro
 
-#ifdef MOD_UNRELEASED
 subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
                     & wrk, nwrk, kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb,&
                     & isymc, isymd, cmo,mjwop)
@@ -1505,7 +1498,6 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
     call quit('using dummy PElib interface routines')
     call qexit('pelib_ifc_cro')
 end subroutine pelib_ifc_cro
-#endif
 
 end module pelib_interface
 

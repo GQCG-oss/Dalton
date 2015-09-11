@@ -80,7 +80,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   integer, external :: OMP_GET_MAX_THREADS
 #endif
   CALL LSTIMER('START ',TS,TE,LUPRI,ForcePrint)
-  CALL LSTIMER('START ',TS3,TE3,LUPRI,ForcePrint)
+!  CALL LSTIMER('START ',TS3,TE3,LUPRI,ForcePrint)
   noOMP = mylsitem%setting%scheme%noOMP  
   nbasisAux8 = nbasisAux   
   epsilon = DECinfo%NAFthreshold 
@@ -205,7 +205,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   call ls_mpibcast(PerformReduction,infpar%master,infpar%lg_comm)  
   call time_start_phase( PHASE_WORK )
 #endif
-  CALL LSTIMER('DF_Calpha:Init ',TS3,TE3,LUPRI,ForcePrint)
+!  CALL LSTIMER('DF_Calpha:Init ',TS3,TE3,LUPRI,ForcePrint)
   !=====================================================================================
   ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
   !=====================================================================================
@@ -233,7 +233,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
            mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
         ENDIF
-        CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
+!        CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%RIMP2_lowdin)THEN
            call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
                 & AlphaBeta,mylsitem%setting,nbasisAux,MetricOper)
@@ -241,7 +241,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
                 & AlphaBetaDecomp,mylsitem%setting,nbasisAux,MetricOper)
         ENDIF
-        CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
+!        CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
         IF(DECinfo%AuxAtomicExtent)THEN
            mylsitem%SETTING%MOLECULE(1)%p => molecule1
            mylsitem%SETTING%MOLECULE(2)%p => molecule2
@@ -265,7 +265,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         ELSE
            call Get_InverseCholeskyFactor(nbasisAux,AlphaBetaDecomp,lupri)
         ENDIF
-        CALL LSTIMER('DF_Calpha:AlphaBetaDecomp',TS4,TE4,LUPRI,ForcePrint)
+!        CALL LSTIMER('DF_Calpha:AlphaBetaDecomp',TS4,TE4,LUPRI,ForcePrint)
      ENDIF
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
@@ -275,7 +275,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      call time_start_phase(PHASE_WORK)   
 #endif
   ENDIF
-  CALL LSTIMER('DF_Calpha:AlphaBeta',TS3,TE3,LUPRI,ForcePrint)
+!  CALL LSTIMER('DF_Calpha:AlphaBeta',TS3,TE3,LUPRI,ForcePrint)
   call GetOperatorFromCharacter(Oper,intspec(4),mylsitem%Setting)
 
   !==================================================================
@@ -502,7 +502,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
   IF(noOMP)THEN
      mylsitem%setting%scheme%noOMP = noOMPsave  !restore default values
   ENDIF
-  CALL LSTIMER('DF_Calpha:3CenterInt',TS3,TE3,LUPRI,ForcePrint)
+!  CALL LSTIMER('DF_Calpha:3CenterInt',TS3,TE3,LUPRI,ForcePrint)
 
 !  call sleep(mynum*10)
 !  print*,'XXX AlphaCD3 dim1=',dim1,'mynum',mynum
@@ -522,6 +522,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
      n8 = nbasisAux*nvirt*nocc
      call lsmpi_allreduce(alphaCD3,n8,infpar%lg_comm)
      call time_start_phase( PHASE_WORK )
+!     CALL LSTIMER('DF_Calpha:ALReduce',TS3,TE3,LUPRI,ForcePrint)
   ENDIF
 #endif
   IF(PerformReduction.NE.0)THEN
@@ -768,7 +769,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
         IF(DECinfo%MemDebugPrint)print*,'STD: dealloc alphaCD3(',size(alphaCD3),')'
         call mem_dealloc(AlphaCD3)
      ENDIF
-     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
+!     CALL LSTIMER('DF_Calpha:Calpha',TS3,TE3,LUPRI,ForcePrint)
      IF(DECinfo%NAF)THEN
 #ifdef VAR_MPI
         call time_start_phase( PHASE_IDLE )
@@ -908,7 +909,7 @@ subroutine Build_CalphaMO2(myLSitem,master,nbasis1,nbasis2,nbasisAux,LUPRI,FORCE
            call mem_dealloc(Calpha)
            Calpha => CalphaNAF           
         ENDIF
-        CALL LSTIMER('DF_Calpha:NAF',TS3,TE3,LUPRI,ForcePrint)
+!        CALL LSTIMER('DF_Calpha:NAF',TS3,TE3,LUPRI,ForcePrint)
      ENDIF
      !allocated inside II_get_RI_AlphaCD_3CenterIntFullOnAllNNdim
      IF(CollaborateWithSlaves.OR.DECinfo%RIMP2ForcePDMCalpha)THEN
@@ -1178,10 +1179,10 @@ subroutine Build_RobustERImatU(myLSitem,master,nbasisAux,&
         mylsitem%SETTING%MOLECULE(3)%p => mylsitem%INPUT%AUXMOLECULE
         mylsitem%SETTING%MOLECULE(4)%p => mylsitem%INPUT%AUXMOLECULE
      ENDIF
-     CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
+!     CALL LSTIMER('START ',TS4,TE4,LUPRI,ForcePrint)
      call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
           & Umat,mylsitem%setting,nbasisAux,MetricOper)
-     CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
+!     CALL LSTIMER('DF_Calpha:AlphaBeta',TS4,TE4,LUPRI,ForcePrint)
      IF(DECinfo%AuxAtomicExtent)THEN
         mylsitem%SETTING%MOLECULE(1)%p => molecule1
         mylsitem%SETTING%MOLECULE(2)%p => molecule2
@@ -1717,7 +1718,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
   !===========================================================
   !   Determine Scheme to Use (AllReduce, Bcast Method)
   !===========================================================
-  CALL LSTIMER('START ',TS3,TE3,LUPRI)
+!  CALL LSTIMER('START ',TS3,TE3,LUPRI)
 
   IF(master)THEN
      IF(DECinfo%RIMP2ForcePDMCalpha)THEN
@@ -1766,7 +1767,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      ENDIF
   ENDIF
 
-  CALL LSTIMER('Calpha1',TS3,TE3,LUPRI)
+!  CALL LSTIMER('Calpha1',TS3,TE3,LUPRI)
 
   !===========================================================
   !   Determine Sizes1: used to calc 3 center integrals
@@ -1799,7 +1800,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      rimp2_nodtot = numnodes
   ENDIF
 
-  CALL LSTIMER('Calpha2',TS3,TE3,LUPRI)
+!  CALL LSTIMER('Calpha2',TS3,TE3,LUPRI)
   
   !=====================================================================================
   ! Master Obtains (alpha|beta) ERI in Auxiliary Basis 
@@ -1808,7 +1809,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
 
      IF(master)THEN
         call mem_alloc(AlphaBeta,nbasisAux,nbasisAux,'RIUTIL1:AlphaBeta')
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
         IF(DECinfo%AuxAtomicExtent)THEN
            molecule1 => mylsitem%SETTING%MOLECULE(1)%p
            molecule2 => mylsitem%SETTING%MOLECULE(2)%p
@@ -1833,7 +1834,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
            mylsitem%SETTING%MOLECULE(4)%p => molecule4
         ENDIF
         
-        CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('AlphaBeta ',TS3,TE3,LUPRI,FORCEPRINT)
         IF(SymDecomp)THEN
            ! Create the inverse square root AlphaBeta = (alpha|beta)^(-1/2)
            ! Warning the inverse is not unique so in order to make sure all slaves have the same
@@ -1843,7 +1844,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
            call lowdin_diag_S_minus1(nbasisAux, AlphaBeta,AlphaBetaDecomp, lupri)
         ENDIF
         call mem_dealloc(AlphaBeta)
-        CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('AlphaBetamSq ',TS3,TE3,LUPRI,FORCEPRINT)
      ENDIF
 #ifdef VAR_MPI
      call time_start_phase( PHASE_IDLE )
@@ -1854,7 +1855,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
 #endif
   ENDIF
 
-  CALL LSTIMER('Calpha3',TS3,TE3,LUPRI)
+!  CALL LSTIMER('Calpha3',TS3,TE3,LUPRI)
 
   IF(CollaborateWithSlaves)then 
      call mem_alloc(TMPAlphaBetaDecomp,MynbasisAuxMPI,nbasisAux,'RIUTIL1:TMPAlphaBetaDecomp')
@@ -1874,7 +1875,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      NBA = nbasisAux
   ENDIF
 
-  CALL LSTIMER('Calpha4',TS3,TE3,LUPRI)
+!  CALL LSTIMER('Calpha4',TS3,TE3,LUPRI)
 
   !=====================================================================================
   ! Obtain 3 center RI integrals (alpha,a,i) 
@@ -1914,7 +1915,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      ENDIF
   ENDIF
 
-  CALL LSTIMER('Calpha5',TS3,TE3,LUPRI)
+!  CALL LSTIMER('Calpha5',TS3,TE3,LUPRI)
 
   !=====================================================================================
   ! MPI scheme:  PerformReduction  or   a Bcast Routine
@@ -2011,7 +2012,7 @@ subroutine Build_CalphaMO(myLSitem,master,nbasis,nbasisAux,LUPRI,FORCEPRINT,&
      ENDDO
      call mem_dealloc(TMPAlphaBetaDecomp)
   ENDIF
-  CALL LSTIMER('Calpha6',TS3,TE3,LUPRI)
+!  CALL LSTIMER('Calpha6',TS3,TE3,LUPRI)
   IF(CollaborateWithSlaves)then 
      call mem_dealloc(nbasisAuxMPI)
      call mem_dealloc(startAuxMPI)
