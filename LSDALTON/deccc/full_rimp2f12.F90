@@ -896,7 +896,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                   call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)   !CalphaTmp(NBA,nocv,nocc)
                   IF(size(CalphaTmp).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 B2',-1)
                   call ls_mpibcast(CalphaTmp,nsize2,node,infpar%lg_comm) !CalphaTmp(NBA,nocc,nvirt)
-                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,ncore) 
+                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,offset) 
                ELSE
                   node = inode-1
                   !recieve
@@ -922,14 +922,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                E_21C = E_21C + E_21Ctmp
             ENDDO
          ELSE
-            Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+            Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt,offset) 
          ENDIF
 #else
          Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt,offset) 
-
-         print *, "offset",offset
-         print *, "nval", nocc
-         print *, "nocre",ncore
 
 #endif      
          call mem_dealloc(CalphaTmp) 
@@ -1807,7 +1803,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     real(realk) :: TMP,CtmpIAJB,CtmpIBJA,eps,T
     TMP = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(A,B,J,I,&
-    !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,nvirt,Galpha,Galpha2,&
+    !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,offset,nvirt,Galpha,Galpha2,&
     !$OMP EpsOcc,EpsVirt) REDUCTION(+:TMP)
     DO B=1,nvirt
      DO J=1,nocc

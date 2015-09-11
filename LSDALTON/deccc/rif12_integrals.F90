@@ -816,8 +816,6 @@ contains
        call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaG,CalphaT,EX2,dopair_occ)
     ENDIF
     
-    !print *, "EV2, mynum", EV2, mynum
-    !print *, "EX2, mynum", EX2, mynum
     lsmpibufferRIMP2(6)=EV2      !we need to perform a MPI reduction at the end 
     lsmpibufferRIMP2(7)=EX2      !we need to perform a MPI reduction at the end 
     call mem_dealloc(CalphaT)
@@ -925,9 +923,6 @@ contains
       call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
          & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
    ENDIF
-
-    !print *, "EV3, mynum", EV3, mynum
-    !print *, "EV4, mynum", EV4, mynum
 
    lsmpibufferRIMP2(8)=EV3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(9)=EV4      !we need to perform a MPI reduction at the end 
@@ -1074,8 +1069,6 @@ contains
            & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4,dopair_occ)
      ENDIF
 
-    !print *, "EX3, mynum", EX3, mynum
-    !print *, "EX4, mynum", EX4, mynum
 
    lsmpibufferRIMP2(11)=EX3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(12)=EX4      !we need to perform a MPI reduction at the end 
@@ -1446,7 +1439,6 @@ contains
 
     !> MP2-energy from an MP2-calculation
     MP2_energy = Myfragment%energies(FRAGMODEL_OCCMP2)
-    !print *, "MP2_energy: ", MP2_energy
 
     if(DECinfo%F12debug .AND. master) then
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
@@ -1480,7 +1472,6 @@ contains
     integer :: nK,J,I
     IF(dopair)THEN
        noccpair=COUNT(dopair_occ)/2
-       !print*,'PAIR: noccpair=COUNT(dopair_occ)/2=',COUNT(dopair_occ)/2
     ELSE
        nK=NINT(SQRT(real(COUNT(dopair_occ))))
        noccpair=(nK*(nK+1))/2

@@ -469,11 +469,6 @@ contains
              do I=1,nocc
                 do A=1,nvirt
 
-                   ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-!                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
-!                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
-!                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
-
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
                    mp2_energy = mp2_energy + Taibj(a,i,b,j)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))
 
@@ -492,6 +487,7 @@ contains
                       ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
                       eps = MyMolecule%oofock%elm2(I+offset,I+offset) + MyMolecule%oofock%elm2(J+offset,J+offset) &
                            & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+
                       tmp = tmp + (7.0E0_realk*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 1.0E0_realk*Ciajb(I,A,J,B)*Ciajb(J,A,I,B))/eps
                    enddo
                 enddo
@@ -572,11 +568,6 @@ contains
           ENDDO
        ENDDO
 
-       !print *, "EJ_V5: ", -5.0/4.0*EJ
-       !print *, "EK_V5: ", 1.0/4.0*EK
-       !print *, "EK_V5 + EJ_V5: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
-
- 
        E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
                                         & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
                                         & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
@@ -610,7 +601,6 @@ contains
        write(*,'(1X,a,g25.16)') ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
        write(*,'(1X,a,g25.16)') ' E21_Vsum:    ', E21_debug
-       !write(*,'(1X,a,g25.16)') ' E21_debug:   ', E21
     endif
 
     call mem_dealloc(Vijij)

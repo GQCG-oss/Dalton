@@ -3266,6 +3266,12 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   nvirtEOS8 = nvirtEOS
   nocctot8 = nocctot
 
+  if(DECinfo%frozencore) then
+     offset = ncore
+  else
+     offset = 0
+  end if
+
 !  IF(DECinfo%RIMP2_Laplace)THEN
 !     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RI-MP2-F12 C coupling Energy contribution using Laplace Transform'
 !  ELSE
@@ -3358,7 +3364,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      call mem_alloc(Fca_diag,ncabsMO,nvirt,'RIMP2Cc:Fca_diag')
      call mem_alloc(Fca_local,ncabsMO,nvirt,'RIMP2Cc:Fca_local')
   ENDIF
-  Fca_local(:,1:nvirt) = Myfragment%Fcp(:,nocc+1:(nocc+nvirt))
+  Fca_local(:,1:nvirt) = Myfragment%Fcp(:,offset+nocc+1:(nocc+offset+nvirt))
   !Transform Local Virtual index to Diagonal/canonical index 
   !F(C,A)_diag = F(C,B)_local * Uvirt(B,A)
   M = ncabsMO    !rows of Output Matrix
@@ -3520,6 +3526,11 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
         call mem_pseudo_alloc(tocc3,nsize)
         call mem_pseudo_alloc(TCijAB,nsize)
      ENDIF
+       
+     print *, "nocc", nocc
+     print *, "nvirt", nvirt
+     print *, "noccEOS", noccEOS
+
      IF(.NOT.use_bg_buf)call mem_alloc(TCijAB,nsize,'RIMP2Cc:TCijAB')
      call RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,TCijAB)
      !Transform first Virtual index (ILOC,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BLOC)
@@ -3752,6 +3763,8 @@ subroutine RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEO
                  gmocont = gmocont + Galpha(ALPHAAUX,IDIAG,ADIAG)*Galpha2(ALPHAAUX,JDIAG,BDIAG)
               enddo
               deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
+
+               !print *, "I J A B delta EPS", IDIAG, JDIAG, BDIAG, ADIAG, deltaEPS
               toccTMP(JDIAG)=gmocont/deltaEPS                
            enddo
            do jLOC=1,noccEOS
@@ -3849,6 +3862,7 @@ DO B=1,nvirt
                TMP = TMP + GalphaEOS(ALPHA,I,A)*Galpha2EOS(ALPHA,J,B)
             ENDDO
             CiajbEOS(I,A,J,B) = TMP
+            !print *, "I J A B tmp", I, J, A, B, tmp
          ENDDO
       ENDDO
    ENDDO
