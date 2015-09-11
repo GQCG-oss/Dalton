@@ -728,7 +728,6 @@ contains
        case('.ONLY_GENERATE_DECORBS'); DECinfo%only_generate_DECorbs=.true.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
-       case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
@@ -1375,7 +1374,6 @@ contains
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output
     write(lupri,*) 'AbsorbHatoms ', DECitem%AbsorbHatoms
-    write(lupri,*) 'FitOrbitals ', DECitem%FitOrbitals
     write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
     write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs
     write(lupri,*) 'FragAdapt ', DECitem%FragAdapt

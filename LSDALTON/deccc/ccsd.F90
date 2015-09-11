@@ -6160,8 +6160,67 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      case(1)
 
-        print *,"Dmitry, please implement your memory requirements here, such&
-           & that a memory estimation can be made and the batch sizes adapted -- PE"
+        !THROUGHOUT THE ALGORITHM
+        !************************
+        memrq = 0.0E0_realk
+        ! H + G  not in bg buf
+        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+           memrq = memrq + 1.0E0_realk*( i8*nb*nv+i8*nb*no )
+        endif
+
+
+        !INSIDE OF MAIN LOOP
+        !*******************
+        ! not in bg buf
+        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+           ! tpl tmi sio4
+           memin = memin + 1.0E0_realk*nloctilessio4*tszesio4
+        endif
+        !in bg buf
+        if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           ! tpl tmi
+           memin = memin + nloctilestpm*tszetpm*2.0E0_realk 
+           ! uigcj 
+           memin = memin +1.0E0_realk*(i8*no*no)*nv*nbg
+        endif
+
+
+        !OUTSIDE OF MAIN LOOP
+        !********************
+        ! buffer space for three tiles, allocated with and without bg
+        memout = 3.0E0_realk*tsze*nloctiles
+        !bg buf
+        if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           !before the main loop
+           !--------------------
+           ! omega2 + t2 are already allocated at the beginning, the space
+           ! necessary for the t2 full will be taken care of by the requirement
+           ! for w1 after the main loop and it is not necessary to take it into
+           ! account here
+           ! u2 
+           memrq = memrq + 1.0E0_realk*tsze*nloctiles
+           ! gvoov + gvvoo
+           memrq = memrq + 2.0E0_realk*tsze*nloctiles
+
+        endif
+
+
+        !after the main loop
+        !-------------------
+
+        !in bg buf
+        if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
+           ! w1/Fock
+           memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
+           ! space for intermediates in cnd and E2
+           memout = memout + 1.0E0_realk*max( 2_long*tsze*nloctiles,  no*no + tszeoo*nloctilesoo  +  nv*nv + tszevv*nloctilesvv )
+        endif
+
+        ! not in bg buf
+        if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
+           ! space for one remaining intermediate
+           memout = memout + 1.0E0_realk*tsze*nloctiles
+        endif
 
      case(0)
 
@@ -8309,38 +8368,74 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      maxsize64 = 0
      select case(wnr)
      case(0)
+
         maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
-        if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
-        if(s==0)then
+        select case(s)
+        case(2,1)
+
+           maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
+
+        case(0)
 
            maxsize64 = max(max(nbg*nv,nba*no),max(nbg*no,nba*nv))
            maxsize64 = max(maxsize64,nbuffs*max(max(i8*bs,i8*vs),i8*os)**4)
 
-        endif
+        end select
+
      case(1)
+
         maxsize64 = max(int((i8*nb*nb)*nba*nbg,kind=8),int((i8*nv*nv*no)*nba,kind=8))
         maxsize64 = max(maxsize64,int((i8*no*no*nv)*nbg,kind=8))
-        if(s==4.or.s==3) maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
-        if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
-        if(s==0)then
+
+        select case(s)
+        case (4,3) 
+
+           maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
+
+        case(2,1) 
+           
+           maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
+
+        case(0)
+
            maxsize64 = nbuffs * int(max(max(os,vs),bs),kind=8)**4
            maxsize64 = max(maxsize64,nbuffs*int((i8*vs**2)*os**2,kind=8))
            MAX_INTEGRAL_BUF = 0
            call simulate_intloop_and_get_worksize(MAX_INTEGRAL_BUF,nb,nbg,nba,bs,intspec,setting)
            maxsize64 = max(maxsize64,MAX_INTEGRAL_BUF)
-        endif
+
+        end select
+
      case(2)
-        maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
-        maxsize64 = max(maxsize64,int(nor*no*no,kind=8))
-        if(s==2)then
+
+        maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),int(nor*no*no,kind=8))
+
+        select case(s)
+        case(4,3)
+
+           maxsize64 = max(maxsize64,(i8*no*no)*nv*nv)
+
+        case(2)
+
            maxsize64 = max(maxsize64,int((no*no*no)*no,kind=8))
            maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
            maxsize64 = max(maxsize64,int((nba*nbg)*nvr,kind=8))
-        endif
-        if(s==0)then
+           maxsize64 = max(maxsize64,(i8*no*no)*nv*nv)
+
+        case(1)
+
+           maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
+           maxsize64 = max(maxsize64,int((nba*nbg)*nvr,kind=8))
+           maxsize64 = max(maxsize64,8*(i8*os*os)*vs*vs)
+
+        case(0)
+
            maxsize64 = 0
-        endif
+
+        end select
+
      case(3)
+
         maxsize64 = max(int((i8*nv)*no*nba*nbg,kind=8),int((i8*no*no)*nba*nbg,kind=8))
         maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
         maxsize64 = max(maxsize64,int((2_long*nor)*nba*nbg,kind=8)) 
@@ -8348,13 +8443,23 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         maxsize64 = max(maxsize64,int((i8*nor)*nv*nbg,kind=8)) 
         maxsize64 = max(maxsize64,int((i8*no)*nor*nba,kind=8)) 
         maxsize64 = max(maxsize64,int((i8*no)*nor*nbg,kind=8)) 
-        if(s==2)then
-            maxsize64 = max(maxsize64,int((2_long*vs*vs*os)*os,kind=8))
-            maxsize64 = max(maxsize64,int((i8*no*no)*no*no,kind=8))
-        endif
-        if(s==0)then
+
+        select case(s)
+        case(2)
+
+           maxsize64 = max(maxsize64,int((2_long*vs*vs*os)*os,kind=8))
+           maxsize64 = max(maxsize64,int((i8*no*no)*no*no,kind=8))
+
+        case(1)
+
+           maxsize64 = max(maxsize64,int((8_long*vs*vs*os)*os,kind=8))
+
+        case(0)
+
            maxsize64 = 0
-        endif
+
+        end select
+
      case default
         call lsquit("ERROR(get_wsize_for_ccsd_int_direct):unknown identifier",-1)
      end select

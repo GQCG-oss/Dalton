@@ -5332,8 +5332,9 @@
         else
          errc=1
         endif
-        if(errc.eq.0) call MPI_ALLREDUCE(nrm1,dil_tensor_norm1,1_INTD,mpi_dtyp,MPI_SUM,tensor_work_comm,errc)
+        if(errc.eq.0) call tensor_mpi_allreduce(nrm1,tensor_work_comm)
         if(present(ierr)) ierr=errc
+        dil_tensor_norm1 = nrm1
         return
         end function dil_tensor_norm1
 !-----------------------------------------------------------------
@@ -5381,8 +5382,9 @@
           else
            errc=3
           endif
-          call MPI_ALLREDUCE(nrm,nrm1,1_INTD,mpi_dtyp,MPI_SUM,tensor_work_comm,errc)
+          call tensor_mpi_allreduce(nrm,tensor_work_comm)
           if(errc.ne.0) errc=4
+          nrm1 = nrm
          endif
         else
          errc=5
@@ -5438,8 +5440,9 @@
           else
            errc=3
           endif
-          call MPI_ALLREDUCE(hs,hsh,1_INTD,mpi_dtyp,MPI_SUM,tensor_work_comm,errc)
+          call tensor_mpi_allreduce(hs,tensor_work_comm)
           if(errc.ne.0) errc=4
+          hsh = hs
          endif
         else
          errc=5

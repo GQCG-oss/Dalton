@@ -153,6 +153,7 @@ C
 #include "iratdef.h"
 #include "inftap.h"
 C
+      CALL QENTER('ERIDI2')
       IPRINT = IPRERI
 C
       GDER   = NGDER .GT. 0 
@@ -259,6 +260,7 @@ C
          CALL GPCLOSE(LUAORC(ISCOOR),'KEEP')
       END DO
 C
+      CALL QEXIT('ERIDI2')
       RETURN
       END
 C  /* Deck eridid */

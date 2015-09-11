@@ -43,6 +43,9 @@ C  /* Deck eriout */
 #include "symmet.h"
 #include "hertop.h"
 #include "inftap.h"
+
+      CALL QENTER('ERIOUT')
+
 C
 C     Allocation for ERIOUT
 C
@@ -132,6 +135,8 @@ C
      &               IREPE,IPRINT)
       END IF
 C
+      CALL QEXIT('ERIOUT')
+
       RETURN
       END
 C  /* Deck eriou1 */
@@ -336,10 +341,9 @@ C     ========================
 C
       IF (FIRST) THEN
          IF (DODIST) THEN
-           IF (LUINTR .LT. 0) THEN
-               CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',' ',
-     *                     IDUMMY,.FALSE.)
-            ENDIF
+           IF (LUINTR .LT. 0)
+     &         CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
+     &                     ' ',IDUMMY,.FALSE.)
             REWIND LUINTR
          ELSE IF (GDER .OR. BDER) THEN
             DO I = 1, NPERTS 
@@ -352,8 +356,11 @@ C
                CALL NEWLAB(FAODER,LUINTD(I),LUPRI)
             END DO
          ELSE
+            IF (LUINTA .LT. 0)
+     &         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',
+     &                     'UNFORMATTED',IDUMMY,.FALSE.)
             LUINTX = LUINTA
-            CALL REWSPL(LUINTX)
+            CALL REWSPL(LUINTA)
             CALL NEWLAB('BASINFO ',LUINTA,LUPRI)
             LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! in integer*4 units
             WRITE (LUINTA) MAXREP+1,NAOS,LBUF,NIBUF,NBITS,LENINT4
