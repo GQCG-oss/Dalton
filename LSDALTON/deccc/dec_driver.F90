@@ -195,7 +195,7 @@ contains
     logical :: redo
     type(mp2grad) :: grad
     type(fullmp2grad) :: fullgrad
-    integer :: jobdone,newjob, nworkers, siz, jobidx
+    integer :: jobdone,newjob, nworkers, jobidx
     integer(kind=ls_mpik) :: groupsize
     integer :: MPIdatatype,MyAtom,nfrags
     type(joblist) :: jobs
@@ -290,7 +290,6 @@ contains
 
 #else
     nworkers=0   ! master node does all jobs
-    siz=1
 #endif
 
 
@@ -587,10 +586,23 @@ contains
     endif
     call mem_dealloc(energies)
 
+    if(DECinfo%NaturalLinearScalingF12Terms) then
+       print*,'NaturalLinearScalingTerms:'
+       print*,'add NaturalLinearScalingTerms: Ecorr               =',Ecorr
+       print*,'add NaturalLinearScalingTerms: MyMolecule%EF12NLSV1=',MyMolecule%EF12NLSV1
+       print*,'add NaturalLinearScalingTerms: MyMolecule%EF12NLSB1=',MyMolecule%EF12NLSB1
+       print*,'add NaturalLinearScalingTerms: MyMolecule%EF12NLSX1=',MyMolecule%EF12NLSX1
+       Ecorr = Ecorr + MyMolecule%EF12NLSB1 + MyMolecule%EF12NLSV1 + MyMolecule%EF12NLSX1
+       print*,'========================================================================='
+       print*,'add NaturalLinearScalingTerms: New Ecorr         =',Ecorr
+    endif
+
     ! Print short summary
-    call print_total_energy_summary(EHF,Edft,Ecorr,dE_est1,dE_est2,dE_est3)
+    call print_total_energy_summary(EHF,Edft,Ecorr,MyMolecule%EF12singles,&
+         & dE_est1,dE_est2,dE_est3)
     if(DECinfo%ccmodel==MODEL_RPA)then
-       call print_total_energy_summary(EHF,Edft,Esos,Eerrs,dE_est2,dE_est3,doSOS=.true.)
+       call print_total_energy_summary(EHF,Edft,Esos,MyMolecule%EF12singles,&
+            &  Eerrs,dE_est2,dE_est3,doSOS=.true.)
     endif
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
@@ -616,15 +628,9 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCMP2)
        ENDIF
-#ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
-          IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
-          ELSE
-             Ecorr = energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
-          ENDIF
+          Ecorr = Ecorr + energies(FRAGMODEL_MP2f12)
        endif
-#endif 
     case(MODEL_RIMP2)
        ! RI-MP2, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
@@ -632,6 +638,9 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCRIMP2)
        ENDIF
+       if(DECinfo%F12) then
+          Ecorr = Ecorr + energies(FRAGMODEL_RIMP2f12)
+       endif
     case(MODEL_LSTHCRIMP2)
        ! LS-THC-RI-MP2, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
@@ -674,15 +683,9 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCCCSD)
        ENDIF
-#ifdef MOD_UNRELEASED
        if(DECinfo%F12) then
-          IF(DECinfo%onlyVirtPart)THEN
-             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_VIRTCCSD)
-          ELSE
-             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_OCCCCSD)
-          ENDIF
+          Ecorr = Ecorr + energies(FRAGMODEL_CCSDf12)
        endif
-#endif 
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
        IF(DECinfo%onlyVirtPart)THEN
@@ -741,8 +744,6 @@ subroutine print_dec_info()
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))
-   write(LU,'(a,A5)')    'Fit Molecular Orbitals                              =           ',&
-        & LogicString(Log2It(DECinfo%FitOrbitals))
    write(LU,'(a,ES12.4)')'The Integral Screening threshold                    =           ',&
         & DECinfo%IntegralThreshold
 

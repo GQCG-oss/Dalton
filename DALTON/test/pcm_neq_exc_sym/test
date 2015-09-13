@@ -13,7 +13,7 @@ f = Filter()
 
 # tramom
 f.add(string = ' STATE NO: ',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 5.0e-5)
 
 # enedft
 f.add(string = 'Final DFT energy',
@@ -37,13 +37,13 @@ f.add(string = 'Center-of-mass',
 
 # neqrsp
 f.add(string = 'NEQRSP =T',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 2.0e-5)
 
 f.add(string = '@ Excitation energy :',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 2.0e-5)
 
 f.add(string = '@ Oscillator strength (LENGTH)',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 5.0e-5)
 
 test.run(['neq_exc_sym.dal'], ['CH2O_STO-3G_sym.mol'], f={'out': f})
 

@@ -19,6 +19,8 @@ module fullmp2
   use matrix_operations
   use memory_handling
   use MemoryLeakToolMod
+  use reorder_frontend_module
+
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_tools_module
@@ -499,8 +501,10 @@ contains
                 GammaStart = batch2orbGamma(gammaB)%orbindex(1)      ! First index in gamma batch
                 GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma) ! Last index in gamma batch
              ENDIF
-             IF(dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI)&
-                  & call lsquit('dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI',-1)
+             IF(dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI)THEN
+!                call lsquit('dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI',-1)
+                print*,'Warning dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI'
+             ENDIF
              dimAOoffsetG = dimAOoffsetG + dimGamma
              AOstartGamma(nBlocks,jnode) = GammaStart
              AOendGamma(nBlocks,jnode) = GammaEnd
@@ -543,6 +547,13 @@ contains
        JobAlpha(alphaB) = idx(1)
        nBlocksAlpha(idx(1)) = nBlocksAlpha(idx(1)) + 1
     enddo
+    DO gB=1,nrownodes
+       IF(DimAOAlpha(gB).GT.MaxAllowedDimAlphaMPI)THEN
+          print*,'Warning: DimAOAlpha.GT.MaxAllowedDimAlphaMPI'
+          print*,'Warning: DimAOAlpha=',DimAOAlpha(gB)
+          print*,'Warning: MaxAllowedDimAlphaMPI=',MaxAllowedDimAlphaMPI
+       ENDIF
+    ENDDO
     call mem_dealloc(DimAOAlpha)
     call mem_dealloc(dimAlphaArray)
     call mem_dealloc(AlphaIndexArray)
@@ -577,8 +588,10 @@ contains
                 AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)            ! First index in alpha batch
                 AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)       ! Last index in alpha batch
              ENDIF
-             IF(dimAOoffsetA + dimAlpha.GT.MaxAllowedDimAlphaMPI)&
-                  & call lsquit('dimAOoffsetA + dimAlpha.GT.MaxAllowedDimAlphaMPI',-1)
+             IF(dimAOoffsetA + dimAlpha.GT.MaxAllowedDimAlphaMPI)THEN
+!                call lsquit('dimAOoffsetA + dimAlpha.GT.MaxAllowedDimAlphaMPI',-1)
+                print*,'Warning: dimAOoffsetA + dimAlpha.GT.MaxAllowedDimAlphaMPI'
+             ENDIF
              dimAOoffsetA = dimAOoffsetA + dimAlpha
              AOstartAlpha(nBlocks,inode) = AlphaStart
              AOendAlpha(nBlocks,inode) = AlphaEnd
@@ -1279,8 +1292,8 @@ contains
     call canonical_mpmp2_memreq_test(nbasis,nodtot,Success)
 
     call get_currently_available_memory(MemoryAvailable)
-    ! Note: We multiply by 90 % to be on the safe side!
-    MemoryAvailable = 0.90E0_realk*MemoryAvailable
+    ! Note: We multiply by 85 % to be on the safe side!
+    MemoryAvailable = 0.85E0_realk*MemoryAvailable
     GB = 8.000E-9_realk 
 
     !assume you have 

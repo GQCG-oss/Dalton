@@ -19,7 +19,7 @@ f.add(string = 'Final HF energy:',
       rel_tolerance = 1.0e-8)
 
 f.add(re = '[XYZ]DIPLEN   [XYZ]DIPLEN',
-      rel_tolerance = 1.0e-4, ignore_below = 1.0e-3)
+      rel_tolerance = 3.0e-4, ignore_below = 1.0e-3)
 
 test.run(['rsp_abslrs.dal'], ['CH4_cc-pVDZ.mol'], f={'out': f})
 

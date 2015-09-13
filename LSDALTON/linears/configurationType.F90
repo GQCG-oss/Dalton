@@ -73,8 +73,6 @@ type ConfigItem
    logical              :: PrintMemory
    !> Perform interaction energy calculation using Counter Poise Correction
    logical              :: InteractionEnergy
-   ! Use stream access on all files open with lsopen
-   logical              :: access_stream
    !> Same SubSystems in Interaction energies
    logical              :: SameSubSystems
    !> Construct SubSystems Density matrix in Interaction energies
@@ -140,6 +138,8 @@ type ConfigItem
    logical              :: doTestMPIcopy
    !> do testing of the high-order derivative integrals (HODI)
    logical              :: doTestHodi
+   !> maximum order of the high-order derivative integrals (HODI)
+   integer              :: testHodiOrder
    !> skip SCF calculations
    logical              :: skipscfloop
    !> test papi

@@ -995,8 +995,8 @@ module lspdm_basic_module
 
   subroutine tensor_set_comm(comm)
      implicit none
-     integer(kind=tensor_mpi_kind), intent(in) :: comm
-     tensor_work_comm = comm
+     integer(kind=tensor_mpi_kind), target, intent(in) :: comm
+     tensor_work_comm => comm
   end subroutine tensor_set_comm
 
 end module lspdm_basic_module

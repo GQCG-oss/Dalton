@@ -5,7 +5,6 @@ contains
   !> Full molecular CC program
   !> \author Thomas Kjaergaard
 
-#ifdef MOD_UNRELEASED
   !> ***********************************************************************
   !> ****************************  MP2-F12  ********************************
   !> ***********************************************************************
@@ -106,6 +105,7 @@ contains
           Vijij(i,j) = Fijkl(i,i,j,j)
        enddo
     enddo
+
   end subroutine mp2f12_Vijij_term1
 
   subroutine mp2f12_Vijij_term2(Vijij,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
@@ -2561,14 +2561,6 @@ contains
     enddo
 
   end subroutine ccsdf12_Vijij_coupling
-
-#else
-
-  subroutine full_f12contractions_dummy_sub12()
-    implicit none
-  end subroutine full_f12contractions_dummy_sub12
-
-#endif
 
 end module full_f12contractions
 

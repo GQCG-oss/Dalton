@@ -20,7 +20,7 @@ module dec_driver_slave_module
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
-  use dec_settings_mod!, only: dec_set_default_config
+  use dec_settings_mod
   use full_molecule!, only: molecule_finalize
   use decmpi_module
   use atomic_fragment_operations
@@ -170,7 +170,6 @@ contains
 
        ! Initialize new MPI groups
        call init_mpi_groups(groupsize,DECinfo%output)
-       call tensor_set_comm(infpar%lg_comm)
 
        ! Local master if rank=0 WITHIN the local group (might be different in steps 1 and 2)
        if(infpar%lg_mynum/=master) then ! local slave
@@ -206,9 +205,6 @@ contains
           ! (redefine globals infpar%lg_mynum, infpar%lg_nodtot, and infpar%lg_comm)
           call dec_half_local_group( print_ = DECinfo%print_small_calc )
 
-          !Set the communicator fot tensor operations after splitting
-          call tensor_set_comm(infpar%lg_comm)
-
           ! Check if the current rank has become a local master (rank=master within local group)
           if(infpar%lg_mynum==master) localslave=.false.
 
@@ -241,7 +237,6 @@ contains
        call MPI_COMM_FREE(infpar%lg_comm, IERR)
        infpar%lg_comm  = MPI_COMM_LSDALTON
        infpar%lg_mynum = infpar%mynum
-       call tensor_set_comm(MPI_COMM_LSDALTON)
 
        ! Clean up estimated fragments used in step 1 and receive CC models to use for all pairs
        CleanupAndUpdateCCmodel: if(step==1 .and. esti) then
@@ -685,10 +680,11 @@ contains
           !FLOPS
           call end_flop_counter(flops,gpu_flops) ! flops for local master
           singlejob%flops(1)     = flops + flops_slaves  ! FLOPS for local master + local slaves
-          singlejob%gpu_flops(1)     = gpu_flops + gpu_flops_slaves  ! GPU FLOPS for local master + local slaves
+          singlejob%gpu_flops(1) = gpu_flops + gpu_flops_slaves  ! GPU FLOPS for local master + local slaves
           singlejob%jobsdone(1)  = .true.
           singlejob%esti(1)      = jobs%esti(job)
           singlejob%dofragopt(1) = jobs%dofragopt(job)
+          singlejob%ntasks(1)    = ntasks
 
           print '(X,a,i5,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)

@@ -8,6 +8,16 @@ if(ENABLE_GEN1INT)
 #   add_definitions(-DBUILD_GEN1INT_LSDALTON)
 endif()
 
+
+if(ENABLE_DEC)
+  add_definitions(-DVAR_DEC)
+  set(ENABLE_TENSORS ON)
+endif()
+
+if(ENABLE_TENSORS)
+   add_definitions(-DVAR_ENABLE_TENSORS)
+endif()
+
 if(ENABLE_CHEMSHELL)
     add_definitions(-DVAR_CHEMSHELL)
 endif()
@@ -23,7 +33,7 @@ endif()
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
-add_definitions(-DTENSORS_IN_LSDALTON)
+#add_definitions(-DTENSORS_IN_LSDALTON)
 
 if(ENABLE_TITANBUILD)
    add_definitions(-DVAR_HAVE_MPI3)
@@ -40,7 +50,7 @@ if(cmake_build_type_tolower STREQUAL "debug")
   add_definitions(-DVAR_LSDEBUGINT)
   add_definitions(-DVAR_LSDEBUG)
   add_definitions(-DVAR_DEBUGICHOR)
-  set(reorder_definitions "debug_version ${reorder_definitions}")
+  set(reorder_definitions "--debug_version ${reorder_definitions}")
 endif()
 
 add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
@@ -96,6 +106,10 @@ endif()
 
 if(ENABLE_RSP)
     add_definitions(-DVAR_RSP)
+endif()
+
+if(ENABLE_ICHOR)
+    add_definitions(-DVAR_ICHOR)
 endif()
 
 if(ENABLE_QCMATRIX)

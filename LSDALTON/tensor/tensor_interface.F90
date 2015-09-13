@@ -34,11 +34,11 @@ module tensor_interface_module
   public DIL_ALLOC_PINNED  !cudaMallocHost() will be used for buffer allocation in <tensor_algebra_dil>
   public DIL_ALLOC_MPI     !MPI_ALLOC_MEM() will be used for buffer allocation in <tensor_algebra_dil> (default for MPI)
   public DIL_ALLOC_EXT     !external buffer will be used in <tensor_algebra_dil>
-  public DIL_CONS_OUT      !output for DIL messages
+  public DIL_CONS_OUT      !output file handle for DIL messages
   public DIL_DEBUG         !DIL debugging switch
-  public dil_tens_contr_t             !tensor contraction specification
-  public subtens_t                    !subtensor (tensor slice) specification for Janus
-  public dil_subtensor_set            !subtensor (tensor slice) setting method for Janus
+  public dil_tens_contr_t       !tensor contraction specification
+  public subtens_t              !subtensor (tensor slice) specification
+  public dil_subtensor_set            !subtensor (tensor slice) initialization
   public dil_set_alloc_type           !set default memory allocation flags (BASIC,MPI_ALLOC,PINNED,etc.)
   public dil_clean_tens_contr         !clean the tensor contraction handle
   public dil_set_tens_contr_args      !set up an argument for a tensor contraction
@@ -47,30 +47,40 @@ module tensor_interface_module
   public dil_prepare_buffer           !prepare a work buffer for a tensor contraction
   public dil_tensor_contract          !contract tensors (pipelined)
   public dil_tensor_contract_finalize !finalize a non-blocking tensor contraction
-  public dil_debug_to_file_start      !start redirecting debugging information to a file
-  public dil_debug_to_file_finish     !finish redirecting debugging information to a file
-  public thread_wtime                 !OMP thread wall time
-  public process_wtime                !MPI process wall time
+  public dil_debug_to_file_start      !start redirecting debugging information into a file
+  public dil_debug_to_file_finish     !finish redirecting debugging information into a file
   public dil_array_print              !print a whole (local) array or its part
+  public dil_tensor_print             !print a distributed tensor
   public dil_array_init               !initialize a local array
   public dil_tensor_init              !initialize a distributed tensor
   public dil_array_norm1              !compute the 1-norm of a local array
+  public dil_array_sym_norm1          !compute the 1-norm of a part of a local array with index symmetries
+  public dil_array_sym_hash           !compute a hash of a part of a local array with index symmetries
   public dil_tensor_norm1             !compute the 1-norm of a distributed tensor (blocking)
-  public dil_tens_fetch_start         !tensor slice fetching for Janus (start)
-  public dil_tens_fetch_finish_prep   !tensor slice fetching for Janus (finish)
-  public dil_tens_prep_upload_start   !tensor slice uploading for Janus (start)
-  public dil_tens_upload_finish       !tensor slice uploading for Janus  (finish)
-  public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued
+  public dil_tensor_sym_norm1         !compute the 1-norm of a part of a distributed tensor with index symmetries
+  public dil_tensor_sym_hash          !compute a hash of a part of a distributed tensor with index symmetries
+  public dil_tens_fetch_start         !non-blocking tensor slice fetching (start)
+  public dil_tens_fetch_finish_prep   !non-blocking tensor slice fetching (finish)
+  public dil_tens_prep_upload_start   !non-blocking tensor slice uploading (start)
+  public dil_tens_upload_finish       !non-blocking tensor slice uploading (finish)
+  public dil_tens_fetch               !blocking tensor slice fetching (low memory overhead)
+  public dil_tens_upload              !blocking tensor slice uploading (low memory overhead)
+  public dil_will_malloc_succeed      !tells whether a given malloc() request can succeed if issued at this time
+  public dil_tens_pack_sym2           !packs two symmetric dimensions of a local tensor into a single composite dimension
+  public dil_distr_tens_insert_sym2   !D(p,q,...,r,s)+=S(p,q,...,r<=s), where r, s, and [r<=s] can have arbitrary positions
+  public dil_update_abij_with_abc     !omega2+=o2ilej with symmetric indices i<=j
+  public thread_wtime                 !OMP thread wall time
+  public process_wtime                !MPI process wall time
   public int2str                      !converts integers to strings
 #endif
 
   !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
   public tensor_initialize_interface, tensor_finalize_interface
   public tensor_set_comm, tensor_comm_null
-#ifdef TENSORS_IN_LSDALTON
+!#ifdef TENSORS_IN_LSDALTON
   public tensor_initialize_bg_buf_from_lsdalton_bg_buf
   public tensor_free_bg_buf
-#endif
+!#endif
 
   ! MODIFY THE BEHAVIOUR OF THE TENSOR LIB
   public tensor_set_mpi_msg_len              ! set the maximum message length of a call to MPI
@@ -102,11 +112,18 @@ module tensor_interface_module
   public tensor_reorder, tensor_cp_data, tensor_zero, tensor_scale, tensor_random
   public tensor_allocate_dense, tensor_deallocate_dense, tensor_hmul
   public tensor_print_norm_nrm
+  public tensor_barrier
+
+  ! Atomic datatypes used
+  public tensor_standard_int
+  public tensor_long_int
+  public tensor_dp
+  public tensor_mpi_kind
 
 
   ! PDM interface to the tensor structure
   public pdm_tensor_sync, new_group_reset_persistent_array
-  public tensor_get_tile, tensor_put_tile, tensor_accumulate_tile
+  public tensor_get_tile, tensor_put_tile, tensor_acc_tile
   public tensor_scatter, tensor_gather
   public tensor_lock_win, tensor_lock_wins, tensor_lock_local_wins
   public tensor_unlock_win, tensor_unlock_wins, tensor_unlock_local_wins
@@ -1817,13 +1834,13 @@ contains
 
         arr%dims=new_dims
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
+!#else
         !$OMP WORKSHARE
         arr%elm1 = new_data
         !$OMP END WORKSHARE
-#endif
+!#endif
 
         call tensor_free_mem(new_data,bg=bg)
 
@@ -1945,8 +1962,8 @@ contains
 
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_minit )
-#endif
     tensor_time_init = tensor_time_init + time_minit
+#endif
 
   end subroutine tensor_minit
 
@@ -2033,7 +2050,7 @@ contains
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, twall = time_ainit )
 #endif
-    dims = dims_in
+    dims   = dims_in
     nmodes = nmodes_in
  
     bg_int = .false.
@@ -2082,10 +2099,9 @@ contains
         call tensor_init_standard(arr,dims,nmodes,AT_ALL_ACCESS,bg_int)
         arr%atype        = 'LDAR'
       case('TDAR')
-        !INITIALIZE a Tiled Distributed ARray
+        !INITIALIZE a Tiled Distributed Array
         it               = TT_TILED_DIST
-        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,&
-           &tdims=int(tdims,kind=tensor_int),force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
@@ -2096,8 +2112,7 @@ contains
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         it               = TT_TILED_DIST ! for tensor_init_tiled routine
-        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,&
-           &tdims=int(tdims,kind=tensor_int),ps_d=.true.,force_offset=fo)
+        call tensor_init_tiled(arr,dims,nmodes,at,it,AT_ALL_ACCESS,bg_int,tdims=tdims,ps_d=.true.,force_offset=fo)
         arr%itype        = TT_DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
@@ -2118,8 +2133,8 @@ contains
 
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_ainit )
-#endif
     tensor_time_init = tensor_time_init + time_ainit
+#endif
   end subroutine tensor_ainit_central
 
   !> \author Patrick Ettenhuber
@@ -2194,8 +2209,8 @@ contains
 
 #ifdef TENSORS_IN_LSDALTON
     call time_start_phase(PHASE_WORK, ttot = time_init )
-#endif
     tensor_time_init = tensor_time_init + time_init
+#endif
   end subroutine tensor_init
 
 
@@ -2592,11 +2607,11 @@ contains
     select case(arr%itype)
     case(TT_DENSE,TT_REPLICATED)
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+!#else
           call dcopy(int(nelms),fortarr,1,arr%elm1,1)
-#endif
+!#endif
        else
           select case(arr%mode)
           case(2)
@@ -2698,11 +2713,11 @@ contains
     case(TT_DENSE,TT_REPLICATED)
 
        if(simpleord)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
-#else
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+!#else
           call dcopy(int(nelms),arr%elm1,1,fort,1)
-#endif
+!#endif
        else
 
           select case(arr%mode)

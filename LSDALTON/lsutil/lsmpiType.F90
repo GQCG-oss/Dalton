@@ -1,6 +1,8 @@
 module lsmpi_type
+  use lsmpi_param
   use precision
-  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr,c_loc
+  use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,&
+       & c_null_ptr,c_loc
   use LSparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
@@ -99,6 +101,7 @@ module lsmpi_type
           &           ls_mpi_buffer_realk, &
           &           ls_mpi_buffer_realkV4,ls_mpi_buffer_realkV8, ls_mpi_buffer_realkM, &
           &           ls_mpi_buffer_realkT,&
+          &           ls_mpi_buffer_realkT4dim, &
           &           ls_mpi_buffer_logical, ls_mpi_buffer_logicalV,&
           &           ls_mpi_buffer_logicalM,ls_mpi_buffer_shortinteger, &
           &           ls_mpi_buffer_charac, ls_mpi_buffer_characV, &
@@ -193,43 +196,6 @@ module lsmpi_type
     module procedure lsmpi_get_acc_int444,lsmpi_get_acc_int888
   end interface lsmpi_get_acc
   !save
-
-  
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!
-!Constants for MPIBUFFER!
-!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  integer,parameter     :: LSMPIBROADCAST       = 1
-  integer,parameter     :: LSMPIREDUCTION       = 2
-  integer,parameter     :: LSMPIREDUCTIONmaster = 3
-  integer,parameter     :: LSMPISENDRECV        = 4
-
-#ifdef VAR_MPI
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!General MPI vars, aka junkbox!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  integer(kind=ls_mpik) :: MPI_COMM_LSDALTON = 0
-  logical               :: LSMPIASYNCP                !contains environment value of async progress
-  logical               :: lsmpi_enabled_comm_procs 
-
-  !split mpi messages in case of 32bit mpi library to subparts, which are
-  !describable by a 32bit integer and dividable by 8
-  integer     :: SPLIT_MPI_MSG
-  !split mpi one sided communication into 100MB chunks
-  integer     :: MAX_SIZE_ONE_SIDED 
-
-  !mpistatus
-  integer(kind=ls_mpik) :: lsmpi_status(MPI_STATUS_SIZE) 
-
-  type mpigroup
-     integer(kind=ls_mpik)         :: groupsize
-     integer(kind=ls_mpik),pointer :: ranks(:)
-  end type mpigroup
-
-#endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 !integer conversion factor!
@@ -2361,6 +2327,42 @@ contains
          iDP = iDP + n1*n2*n3
       ENDIF
     end subroutine ls_mpi_buffer_realkT
+
+    subroutine ls_mpi_buffer_realkT4dim(buffer,n1,n2,n3,n4,master)
+       implicit none
+       integer(kind=ls_mpik) :: master
+       integer :: n1,n2,n3,n4
+       real(realk) :: buffer(:,:,:,:)
+       integer :: ierr,cnt,datatype,I,J,K,L,offset
+       IERR=0
+       IF(AddToBuffer)THEN
+          IF(iDP + n1*n2*n3*n4.GT. nDP)call increaselsmpibufferDP((((i8*n1)*n2)*n3)*n4)
+          DO L=1,n4
+             DO K=1,n3
+                DO J=1,n2
+                   offset = iDP+(J-1)*n1+(K-1)*n1*n2+(L-1)*n1*n2*n3
+                   DO I=1,n1
+                      lsmpibufferDP(offset+I) = buffer(I,J,K,L)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDDO
+          iDP = iDP + n1*n2*n3*n4
+       ELSE
+          IF(iDP+n1*n2*n3*n4 .GT. nDP)call lsquit('ls_mpi_buffer_realkT4dim: error using buffer',-1)
+          DO L=1,n4
+             DO K=1,n3
+                DO J=1,n2
+                   offset = iDP+(J-1)*n1+(K-1)*n1*n2+(L-1)*n1*n2*n3
+                   DO I=1,n1
+                      buffer(I,J,K,L) = lsmpibufferDP(offset+I)
+                   ENDDO
+                ENDDO
+             ENDDO
+          ENDDO
+          iDP = iDP + n1*n2*n3*n4
+       ENDIF
+    end subroutine ls_mpi_buffer_realkT4dim
 
     subroutine ls_mpi_buffer_logical(buffer,master)
       implicit none

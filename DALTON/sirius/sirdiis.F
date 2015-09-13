@@ -295,7 +295,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use qmcmm, only: getdim_relmat, comp_relmat, write_relmat, 
+      use qmcmm, only: getdim_relmat, comp_relmat, write_relmat,
      &                 getdim_mmmat, comp_mmrelmat
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_integrate_rks_scf,
@@ -303,11 +303,12 @@ C
      &                                  xcint_is_active
 #endif
       use qmcmm_fock, only: qmnpmm_fock
-
 #if defined (HAS_PCMSOLVER)
       use pcm_scf
       use pcmmod_cfg
 #endif
+      use pelib_interface, only: use_pelib, pelib_ifc_fock,
+     &                           pelib_ifc_energy
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
@@ -393,6 +394,9 @@ C
       DIMENSION NISH_save(8), NCAN(8)
       CHARACTER*8 CMOLBL
 
+      REAL(8) :: PE_ENERGY
+      REAL(8), DIMENSION(:), ALLOCATABLE :: PE_DENMAT, PE_FCKMAT
+
       real(8), allocatable :: relay_matrix(:, :, :)
       real(8), allocatable :: mm_relay_matrix(:)
       real(8), allocatable :: qmcmm_sol(:)
@@ -466,7 +470,7 @@ C     this also includes the case of MMPCM
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
-      ELSE IF (PEQM) THEN
+      ELSE IF (USE_PELIB()) THEN
         WRITE(LUW4,'(/A)')
      &      ' Iter      Total energy     Embedding energy      '//
      &      'Error norm     Delta(E)'
@@ -511,17 +515,23 @@ C        DV(1) = D0
       THDIIS = THRRHF
       IF (THDIIS .LE. D0) THDIIS = THDDEF
 C
-C     Level shift ("restricted step" type step reduction)
-C     - initial value: zero
+C     Level shift SHFTLVL ("restricted step" type step reduction)
+C     - initial value: see next code block
 C     - used to modify FD matrix: FDAO(shifted) = FDAO + SHFTLVL*DCAO
-C       - this corresponds to increasing occ-unocc orb.en. gap by
-C         SHFTLVL and approximately to add -SHFTLVL to the
-C         approximate Hessian diagonal implicit in the Roothaan diag.
+C       - this corresponds to increasing occ-unocc orb.en. gap by SHFTLVL
+C         and approximately to add abs(SHFTLVL) to the approximate
+C         Hessian diagonal implicit in the Roothaan diagonalization.
 C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
-      SHFTLVL = DEFLVL
-      SHFTFAC = 0.7D0
+      IF (DEFLVL .gt. 0.9D0) THEN ! .SHIFT not set in input
+         SHFTLVL = -0.20D0
+         DEFLVL  =  0.0D0 ! no default level shift in e.g. next geometry
+      ELSE ! .SHIFT has ben set in input
+         SHFTLVL = DEFLVL
+      END IF
+      SHFTFAC = 0.5D0
+
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
 C     SCRFAC = 100*NBAST
@@ -1061,26 +1071,20 @@ C            Now the PCM part ...
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,1,KFCSOL,KFREE,LFREE)
          END IF
 C
-         IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+         IF (USE_PELIB()) THEN
            IF (FLAG(16) .OR. PCM .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
-             CALL QUIT(
-     &             'PEQM is not compatible with other embedding models')
+            CALL QUIT('.PEQM incompatible with other embedding models')
            END IF
-           CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
-           CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
+           ALLOCATE(PE_DENMAT(NNBASX), PE_FCKMAT(NNBASX))
            IF (NASHT == 0 .OR. HSROHF) THEN
-             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
+             PE_DENMAT = DAOSAV(:,1)
            ELSE
-             CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                        WRK(KEPE))
+             PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
            END IF
-           ESOLT = WRK(KEPE)
-           FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
-     &                          + WRK(KFPE:KFPE+NNBASX-1)
-           CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, 1, KFPE,
-     &                 KFREE, LFREE)
-#endif
+           CALL PELIB_IFC_FOCK(PE_DENMAT, PE_FCKMAT, PE_ENERGY)
+           ESOLT = PE_ENERGY
+           FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1) + PE_FCKMAT
+           DEALLOCATE(PE_DENMAT, PE_FCKMAT)
          END IF
 C
 #if defined (HAS_PCMSOLVER)
@@ -1180,6 +1184,7 @@ C Project out .FREEZE'ed orbitals from the gradient matrix
 C
          IF (LNOROT) CALL PHPT(WRK(KPFROZ),WRK(KTMP1),NBAST)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
+         GRD_CHANGE = GRDNRM_old / GRDNRM
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .GT. 1) THEN
             WRITE (LUPRI,'(/A/A,I4,1P,G22.12,D15.5,D12.2,I5,L5)')
@@ -1230,14 +1235,18 @@ C           this also includes the case of MMPCM
          END IF
          IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.FALSE.)
 
-         IF (GRDNRM .LE. THDIIS .and. SHFTLVL .EQ. D0) THEN  ! converged
-         ! do not accept as converged if non-zero level shift
-         ! because then the orbital energies are not correct /hjaaj
-            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+         IF (GRDNRM .LE. THDIIS) THEN  ! converged
+
             ICONV = 1
+
+C           No level shift at convergence, otherwise orbital energies
+C           for e.g. CC will not be correct
+            SHFTLVL = 0.0D0
+
+            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+
             WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
-C
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
               !  Cholesky
@@ -1419,15 +1428,15 @@ C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
 !  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT
-          IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
-              EMCDIF_test = 0.0D0
-          ELSE
-              EMCDIF_test = EMCDIF
-          END IF
+         IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
+             EMCDIF_test = 0.0D0
+         ELSE
+             EMCDIF_test = EMCDIF
+         END IF
 C        Do not try that with open-shell - it does not work./pawsa
-!         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
-     &        GRDNRM .LE. 10.0D0 .AND.
+!        IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+         IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
+     &       GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
      &         EMCDIF_test*(GRDNRM-GRDNRM_OLD) .LT. -1.0D-10 )
@@ -1483,9 +1492,12 @@ c            the formula is empirical EMCDIF is positive here.
              SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4.0D0,ABS(EMCDIF)*10.D0))
 c            and slow down  the level shifting annealing...
              SHFTFAC = MIN(SHFTFAC + (1.D0-SHFTFAC)*0.25,0.85D0)
-         ELSE
-             SHFTLVL =  SHFTLVL*SHFTFAC
-c            make sure we get right HOMO-LUMO gap in the end.
+         ELSE IF (ITDIIS .GT. 1) THEN
+             IF (GRD_CHANGE .GE. 2.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            reduce level shift if convergence is good
+             IF (GRD_CHANGE .GE. 4.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            double reduce level shift if convergence is excellent
+             IF (SHFTLVL .GE. -1.D-2) SHFTLVL = 0.0D0
          END IF
   300    CONTINUE
 #endif    /* USE_OPT-SOLVER */
@@ -1495,10 +1507,6 @@ C          (open shell problems reported by users ...) / hjaaj 22-Jun-2005
 !        IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
 !        enabled again 6-Nov-2014 after testing a problematic open-shell DFT
 !        calculation which converged with level shift, but not without. /hjaaj
-
-C        No level shift at convergence, otherwise orbital energies
-C        for e.g. CC will not be correct
-         IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
 
 C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
@@ -1746,7 +1754,7 @@ C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-         IF (PEQM) WRITE(LUW4,'(A)')
+         IF (USE_PELIB()) WRITE(LUW4,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
@@ -1754,7 +1762,7 @@ C-------------------
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-            IF (PEQM) WRITE(LUPRI,'(A)')
+            IF (USE_PELIB()) WRITE(LUPRI,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
@@ -1768,14 +1776,15 @@ C
          END IF
 C
       END IF
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+      IF (USE_PELIB()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
         IF (NASHT == 0 .OR. HSROHF) THEN
-            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
+            PE_DENMAT = DAOSAV(:,1)
         ELSE
-            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
         END IF
-#endif
+        CALL PELIB_IFC_ENERGY(PE_DENMAT)
+        DEALLOCATE(PE_DENMAT)
       END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC

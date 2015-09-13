@@ -104,8 +104,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
        & II_get_Fock_mat
   use II_XC_interfaceModule, only: II_get_AbsoluteValue_overlap, &
        & II_get_AbsoluteValue_overlapSame
-  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test,&
+       & ii_unittest_ichor2center
+#ifdef VAR_DEC
   use dec_main_mod!, only: dec_main_prog
+#endif
   use optimlocMOD, only: optimloc
 #ifdef HAS_PCMSOLVER
   use ls_pcm_utils, only: init_molecule
@@ -124,7 +127,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   integer             :: matmultot, lun
   REAL(REALK)         :: mx
   ! Energy
-  REAL(REALK)         :: E(1),ExcitE
+  REAL(REALK)         :: E(1),ExcitE,fac
   logical             :: do_decomp
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
@@ -165,9 +168,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption,config%integral%debugIchorLink)
+     IF(config%integral%debugIchorOption.LT.13)THEN
+        call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,&
+             & config%integral%debugIchorOption,config%integral%debugIchorLink)
+     ELSE
+        call II_unittest_Ichor2Center(LUPRI,LUERR,LS%SETTING)       
+     ENDIF
      !the return statement leads to memory leaks but I do not care about this
-     !for now atleast
+     !for now atleast     
      RETURN
   ENDIF
   IF(config%papitest)THEN
@@ -325,7 +333,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         ENDIF
 
         IF (config%doTestHodi) THEN
-          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms,config%testHodiOrder)
           CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
         ENDIF
 
@@ -334,7 +342,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         CALL mat_init(H1,nbast,nbast)
 
         ! write(lupri,*) 'QQQ New  S:',mat_trab(S,S)
-        CALL II_get_h1(lupri,luerr,ls%setting,H1)
+        fac=1.E0_realk
+        IF (config%integral%dft%doOrbFree) fac=config%integral%dft%OrbFree%KineticFac !Special scaling of kinetic energy operator for orbital free DFT
+        CALL II_get_h1(lupri,luerr,ls%setting,H1,fac)
         CALL LSTIMER('*H1   ',TIMSTR,TIMEND,lupri)
         ! write(lupri,*) 'QQQ New  H1:',mat_trab(H1,H1)
         !data to pass down to fck_get_fock subroutine
@@ -522,7 +532,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         If (.not. (config%optinfo%optimize .OR. config%dynamics%do_dynamics)) then
            ! Single point DEC calculation using current HF files
            DECcalculation: IF(DECinfo%doDEC) then
+#ifdef VAR_DEC
               call dec_main_prog_input(ls,config,F(1),D(1),CMO,E(1))
+#else
+              call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
            endif DECcalculation
            ! free Cmo
            IF(config%decomp%cfg_lcm .or. config%decomp%cfg_mlo.or.DECinfo%doDEC) then
@@ -725,7 +739,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Single point DEC calculation using HF restart files
   DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%HFrestart) ) then
      CALL Print_Memory_info(lupri,'before dec_main_prog_file')
+#ifdef VAR_DEC
      call dec_main_prog_file(ls,config)
+#else
+     call lsquit('DEC requires -DVAR_DEC (-DENABLE_DEC=ON) ',-1)
+#endif
      CALL Print_Memory_info(lupri,'after dec_main_prog_file')
   endif DECcalculationHFrestart
 
@@ -861,10 +879,14 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
   use lstensorMem, only: lstmem_free
+#ifdef VAR_ENABLE_TENSORS
   use tensor_interface_module ,only: tensor_finalize_interface, tensor_free_bg_buf
+#endif
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
+#ifdef VAR_DEC
   use dec_settings_mod, only:free_decinfo
+#endif
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -902,10 +924,14 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
+#ifdef VAR_ENABLE_TENSORS
   call tensor_free_bg_buf()
   call tensor_finalize_interface()
-  call free_decinfo()
+#endif
 
+#ifdef VAR_DEC
+  call free_decinfo()
+#endif
 
   if(OnMaster) call stats_mem(lupri)
 
@@ -921,10 +947,13 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
      call LSMPI_COMM_FREE(scalapack_comm)
   ENDIF
 #endif
+
+#ifdef VAR_ENABLE_TENSORS
   IF(pdmm_mpi_set)THEN
      !free communicator 
      call LSMPI_COMM_FREE(pdmm_comm)
   ENDIF
+#endif
 
   call lsmpi_finalize(lupri,.false.)
 #else

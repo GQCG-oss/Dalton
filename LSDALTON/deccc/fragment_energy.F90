@@ -31,9 +31,9 @@ module fragment_energy_module
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
          & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
-#ifdef MOD_UNRELEASED
   use f12_integrals_module
   use rif12_integrals_module
+#ifdef MOD_UNRELEASED
   use ccsd_gradient_module
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e5_frag,&
          & ccsdpt_energy_e5_pair, ccsdpt_decnp_e5_frag
@@ -167,12 +167,15 @@ contains
     type(tensor) :: ccsdpt_t2, ccsdpt_t2occ, ccsdpt_t2virt
     type(tensor) :: m2,m2occ,m2virt
 
-    real(realk) :: tcpu, twall,debugenergy
+    real(realk) :: tcpu, twall,debugenergy,EnergyF12Ccoupling,TS2,TE2
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc,pair,get_mp2, use_bg
     integer :: a,b,i,j,k,l, ccmodel, nvA,noA,nvE,noE
+!    FORCEPRINT = .TRUE.
+    CALL LSTIMER('START',TS2,TE2,DECinfo%output)!FORCEPRINT)
 
+    EnergyF12Ccoupling = 0.0E0_realk
     get_mp2 = .false.
     if (present(add_mp2_opt)) get_mp2 = add_mp2_opt
     use_bg  = mem_is_background_buf_init()
@@ -239,9 +242,7 @@ contains
              ! calculate only MP2 energy integrals and MP2 amplitudes
              ! ******************************************************
              call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
-             print *,"3. Myfragment%energies(FRAGMODEL_OCCMP2) (fragment energy)",  Myfragment%energies(FRAGMODEL_OCCMP2)
           end if
-#ifdef MOD_UNRELEASED
           ! MP2-F12 Code
           MP2F12: if(DECinfo%F12) then    
              if(pair) then
@@ -258,7 +259,6 @@ contains
              !> Free cabs after each calculation
              call free_cabs()
           end if MP2F12
-#endif
 
     case(MODEL_RIMP2) ! RIMP2 calculation
 
@@ -286,27 +286,26 @@ contains
           call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        endif
 
-#ifdef MOD_UNRELEASED
-          ! MP2-F12 Code
-          RIMP2F12: if(DECinfo%F12) then    
-             if(pair) then
-                if(MyFragment%isopt) then
-                   call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
-                      &  Fragment1, Fragment2)
-                end if
-             else
-                ! Calculate F12 only for optimized fragment or if it has been requested by input
-                if(MyFragment%isopt .or. DECinfo%F12fragopt) then
-                   call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
-                end if
+       ! MP2-F12 Code
+       RIMP2F12: if(DECinfo%F12) then
+          IF(DECinfo%F12Ccoupling.AND.(MyFragment%isopt.or.DECinfo%F12fragopt))THEN
+             !Only calculate F12 C (C*C) coupling if requested and for optimized fragment 
+             call RIMP2F12_Ccoupling_Energy(MyFragment,EnergyF12Ccoupling)
+          ENDIF
+          if(pair) then
+             if(MyFragment%isopt) then
+                call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
+                     &  Fragment1, Fragment2)
              end if
-             !> Free cabs after each calculation
-             call free_cabs()
-          end if RIMP2F12
-#endif
-
-
-
+          else
+             ! Calculate F12 only for optimized fragment or if it has been requested by input
+             if(MyFragment%isopt .or. DECinfo%F12fragopt) then
+                call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
+             end if
+          end if
+          !> Free cabs after each calculation
+          call free_cabs()
+       end if RIMP2F12
 
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
 
@@ -528,6 +527,10 @@ contains
      
     end if
 
+    IF(DECinfo%F12Ccoupling)THEN
+       Call AddF12CcouplingCorrection(MyFragment,EnergyF12Ccoupling)
+    ENDIF
+
     !> Memory Stats
     if(DECinfo%F12debug) then
        WRITE(DECinfo%output,*) "Memstats before F12 fragment_energy calculation"  
@@ -616,9 +619,22 @@ contains
     !print *,"s8",ccsdpt_t1%initialized,associated(ccsdpt_t1%elm1)
     !print *,"s9",ccsdpt_t2%initialized,associated(ccsdpt_t2%elm1)
     !print *,"s10",u%initialized,associated(u%elm1)
+    CALL LSTIMER('Fragment Energy',TS2,TE2,DECinfo%output)!,FORCEPRINT
 
   end subroutine fragment_energy_and_prop
 
+subroutine AddF12CcouplingCorrection(MyFragment,EnergyF12Ccoupling)
+  implicit none
+  !> Atomic or pair fragment
+  type(decfrag), intent(inout) :: myfragment
+  !> Energy 
+  real(realk),intent(in) :: EnergyF12Ccoupling  
+  if(MyFragment%ccmodel==MODEL_RIMP2) then
+   MyFragment%energies(FRAGMODEL_OCCRIMP2)=MyFragment%energies(FRAGMODEL_OCCRIMP2)+EnergyF12Ccoupling
+   MyFragment%energies(FRAGMODEL_VIRTRIMP2)=MyFragment%energies(FRAGMODEL_VIRTRIMP2)+EnergyF12Ccoupling
+   MyFragment%energies(FRAGMODEL_LAGRIMP2)=MyFragment%energies(FRAGMODEL_LAGRIMP2)+EnergyF12Ccoupling 
+  end if
+end subroutine AddF12CcouplingCorrection
 
   !> Purpose: Wrapper to ccsdpt driver and fragment energy routines
   !> Author:  Pablo Baudin
@@ -863,7 +879,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual virtual orbital
-    call mem_alloc(virt_tmp,nvirtAOS)
+    call mem_alloc(virt_tmp,nvirtAOS,'AFE:virt_tmp')
     virt_tmp = 0.0E0_realk       
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -951,7 +967,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual occupied orbital
-    call mem_alloc(occ_tmp,noccAOS)
+    call mem_alloc(occ_tmp,noccAOS,'AFE:occ_tmp')
     occ_tmp = 0.0E0_realk
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1167,7 +1183,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual virtual orbital
-    call mem_alloc(virt_tmp,nvirtAOS)
+    call mem_alloc(virt_tmp,nvirtAOS,'SFEP4:virt_tmp')
     virt_tmp = 0.0E0_realk       
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1221,7 +1237,7 @@ contains
     call init_threadmemvar()
 
     ! Contributions from each individual occupied orbital
-    call mem_alloc(occ_tmp,noccAOS)
+    call mem_alloc(occ_tmp,noccAOS,'SFEP4:occ_tmp')
     occ_tmp = 0.0E0_realk
 
     !$OMP DO SCHEDULE(dynamic,1) COLLAPSE(3)
@@ -1397,7 +1413,7 @@ contains
      !$OMP REDUCTION(+:Eocc)
      call init_threadmemvar()
      ! Contributions from each individual virtual orbital
-     call mem_alloc(virt_tmp,nvirtAOS)
+     call mem_alloc(virt_tmp,nvirtAOS,'DECNPFE:virt_tmp')
      virt_tmp = 0.0E0_realk       
       
      ! Calculate Eocc
@@ -1453,7 +1469,7 @@ contains
      !$OMP REDUCTION(+:Evirt)
      call init_threadmemvar()
      ! Contributions from each individual occupied orbital
-     call mem_alloc(occ_tmp,noccAOS)
+     call mem_alloc(occ_tmp,noccAOS,'DECNPFE:occ_tmp')
      occ_tmp = 0.0E0_realk
 
      ! Calculate Evirt
@@ -1726,8 +1742,8 @@ contains
      endif
 
      ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
+     call mem_alloc(dopair_occ,noccEOS,noccEOS,'GPFE:dopair_occ')
+     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS,'GPFE:dopair_virt')
      call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
      call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
@@ -1994,8 +2010,8 @@ contains
      prefac_k = 1._realk
 
      ! Which "interaction pairs" to include for occ and virt space (avoid double counting)
-     call mem_alloc(dopair_occ,noccEOS,noccEOS)
-     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
+     call mem_alloc(dopair_occ,noccEOS,noccEOS,'GPFEP4:dopair_occ')
+     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS,'GPFEP4:dopair_virt')
      call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
      call which_pairs_virt(Fragment1,Fragment2,PairFragment,dopair_virt)
 
@@ -2187,7 +2203,7 @@ contains
 
 
     ! Get distance table and pair cut off in Angstrom
-    call mem_alloc(DistAng,natoms,natoms)
+    call mem_alloc(DistAng,natoms,natoms,'PLOTPAIR:DistAng')
     DistAng = bohr_to_angstrom*MyMolecule%DistanceTable
     cutAng = bohr_to_angstrom*paircut
 
@@ -2239,7 +2255,7 @@ contains
     end if
 
     ! x points to plot (distances in Angstrom)
-    call mem_alloc(xpoints,npoints) 
+    call mem_alloc(xpoints,npoints,'PLOTPAIR:xpoints') 
     ! xpoints(k) is set to be the beginning point of interval k
     ! (they will be reset to the middle of the interval before plotting)
     do k=1,npoints
@@ -2248,11 +2264,11 @@ contains
     end do
 
     ! y points to plot (absolute pair interaction energies in a.u.)
-    call mem_alloc(ypoints,npoints) 
+    call mem_alloc(ypoints,npoints,'PLOTPAIR:ypoints')
     ypoints = 0.0E0_realk
 
     ! Keep track of whether there are in fact data points in each interval
-    call mem_alloc(anypoints,npoints) 
+    call mem_alloc(anypoints,npoints,'PLOTPAIR:anypoints') 
     anypoints=.false.
 
 
@@ -2306,8 +2322,8 @@ contains
        return
     end if
 
-    call mem_alloc(xpoints2,npoints2) 
-    call mem_alloc(ypoints2,npoints2)
+    call mem_alloc(xpoints2,npoints2,'PLOTPAIR:xpoints2') 
+    call mem_alloc(ypoints2,npoints2,'PLOTPAIR:ypoints2')
     idx=0
     do i=1,npoints  ! loop over number of intervals (including empty ones)
        if(anypoints(i)) then ! Put values into new x and y vectors of reduced size
@@ -2487,8 +2503,8 @@ contains
 
 
      ! Get information on how the expansion should be performed:
-     call mem_alloc(exp_list_occ,no)
-     call mem_alloc(exp_list_vir,nv)
+     call mem_alloc(exp_list_occ,no,'OAF:exp_list_occ')
+     call mem_alloc(exp_list_vir,nv,'OAF:exp_list_vir')
 
 
      !Define the EOS spaces in the fragment to be able to calculate priority lists
@@ -2510,8 +2526,8 @@ contains
 
      AtomicFragment%noccEOS   = idx
      AtomicFragment%nvirtEOS = nvir_per_atom(MyAtom)
-     call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS)
-     call mem_alloc(AtomicFragment%virtEOSidx,AtomicFragment%nvirtEOS)
+     call mem_alloc(AtomicFragment%occEOSidx,AtomicFragment%noccEOS,'OAF:occEOSidx')
+     call mem_alloc(AtomicFragment%virtEOSidx,AtomicFragment%nvirtEOS,'OAF:virEOSidx')
 
      idx = 1
      do i=nc+1,MyMolecule%nocc
@@ -2548,8 +2564,8 @@ contains
      !
      ! Get Initial fragment for Myatom, we include the EOS space plus Frag_Init_Size 
      ! occ/vir orbitals from the priority lists:
-     call mem_alloc(Occ_AOS,no)
-     call mem_alloc(Vir_AOS,nv)
+     call mem_alloc(Occ_AOS,no,'OAF:Occ_AOS')
+     call mem_alloc(Vir_AOS,nv,'OAF:Vir_AOS')
 
      ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
      call expand_fragment(no,nv,exp_list_occ,exp_list_vir,ninit_occ,ninit_vir,MyAtom, &
@@ -2594,8 +2610,8 @@ contains
      ! Deallocate exp list and allocate red ones:
      call mem_dealloc(exp_list_occ)
      call mem_dealloc(exp_list_vir)
-     call mem_alloc(red_list_occ,no)
-     call mem_alloc(red_list_vir,nv)
+     call mem_alloc(red_list_occ,no,'OAF:red_list_occ')
+     call mem_alloc(red_list_vir,nv,'OAF:red_list_vir')
 
      ! Overwrite ccmodel for myatom with the reduction required ccmodel
      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
@@ -3083,22 +3099,29 @@ contains
            nv_new = nv_old
            ! The new condition is set by removing half of the occ 
            ! orbital between max and min:
-           no_new = no_max - (no_max - no_min)/2
+           no_new = no_max - ceiling((no_max - no_min)/2.0_realk)
         else if (redvir.and.(.not.redocc)) then
            ! keep old occupied space and change virtual one
            no_new = no_old
            ! The new condition is set by removing half of the vir
            ! orbital between max and min:
-           nv_new = nv_max - (nv_max - nv_min)/2
+           nv_new = nv_max - ceiling((nv_max - nv_min)/2.0_realk)
         else if (redocc.and.redvir) then
            ! The new condition is set by removing half of the occ
            ! and vir orbital between max and min:
-           no_new = no_max - (no_max - no_min)/2
-           nv_new = nv_max - (nv_max - nv_min)/2
+           no_new = no_max - ceiling((no_max - no_min)/2.0_realk)
+           nv_new = nv_max - ceiling((nv_max - nv_min)/2.0_realk)
         else
            call lsquit("ERROR(fragment_reduction_procedure): space to reduce not defined", &
               & DECinfo%output)
         end if
+
+        ! Check for rare case (mostly debug):
+        if ((no_new==no_old).and.(nv_new==nv_old)) then
+           reduction_converged = .true.
+           exit REDUCTION_LOOP
+        end if
+
 
         call reduce_fragment(AtomicFragment,MyMolecule,no,no_new,Occ_AOS, &
            & occ_priority_list,.true.)
@@ -3137,6 +3160,8 @@ contains
 
            call get_fragopt_energy_error(AtomicFragment,MODEL_MP2,Eexp)
 
+           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter,add_mp2_opt)
+
            if (redocc.and.(.not.redvir)) then
               call fragopt_check_convergence(MODEL_MP2,AtomicFragment,dE_occ,MP2_accepted)
            else if (redvir.and.(.not.redocc)) then
@@ -3144,8 +3169,6 @@ contains
            else if (redocc.and.redvir) then
               call fragopt_check_convergence(MODEL_MP2,AtomicFragment,FOT,MP2_accepted)
            end if
-
-           call fragopt_print_info(AtomicFragment,MODEL_MP2,iter,add_mp2_opt)
 
            ! require both MP2 and CC energy to be converged
            if (.not.MP2_accepted) then
@@ -3179,7 +3202,7 @@ contains
         ! If everything has converged then we keep the last valid
         ! information and quit the loop:
         FullConvergence: if (reduction_converged) then
-           if (DECinfo%PL > 1 .and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: REDUCTION CONVERGED'
+           if (DECinfo%PL > 1 .and. DECinfo%print_small_calc) write(DECinfo%output,*) 'FOP: REDUCTION CONVERGED'
 
            if (.not.step_accepted) then
               ! The last binary search step did not succeed so  
@@ -3200,7 +3223,7 @@ contains
         no_old = no_new
         nv_old = nv_new
         if (step_accepted) then
-           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step accepted'
+           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'FOP: Step accepted'
            ! The current number of occ and virt is good or too high:
            ! Setting new maximum:
            if (redocc.and.(.not.redvir)) then
@@ -3212,7 +3235,7 @@ contains
               nv_max = nv_new
            end if
         else
-           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'BIN SEARCH: Step NOT accepted'
+           if (DECinfo%PL > 1.and. DECinfo%print_small_calc) write(DECinfo%output,*) 'FOP: Step NOT accepted'
            ! The current number of occ and virt is NOT good enough:
            ! Setting new minimum:
            if (redocc.and.(.not.redvir)) then
@@ -3663,10 +3686,10 @@ contains
         if( DECinfo%print_small_calc )then
            if (reduce_occ) then
               write(DECinfo%output,*) &
-                 & 'BIN SEARCH: OCCUPIED REDUCTION CONVERGED', gap
+                 & 'FOP: OCCUPIED REDUCTION CONVERGED', gap
            else
               write(DECinfo%output,*) &
-                 & 'BIN SEARCH: VIRTUAL REDUCTION CONVERGED', gap
+                 & 'FOP: VIRTUAL REDUCTION CONVERGED', gap
            end if
         endif
 

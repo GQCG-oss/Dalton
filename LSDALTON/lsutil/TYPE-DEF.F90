@@ -14,7 +14,6 @@ MODULE TYPEDEFTYPE
  use matrix_module
  use LSparameters
  use integralOutput_typetype
- use tensor_type_def_module,only:tensor
 #ifdef VAR_MPI
  use infpar_module
 #endif
@@ -535,17 +534,6 @@ END TYPE REDUCEDSCREENINGINFO
 !*****************************************
 !> \brief Contrains the settings for the ls-integral routines
 TYPE LSSETTING
-! ************************************************************************************************************
-! *  
-! *                      READ THIS BEFORE ADDING A NEW VARIABLE TO LSSETTING
-! *  
-! *        A LSSETTINGXXX comment should be added to the end of the line for each new
-! *        variable, where XXX should be a unique number. This is to make the mpicopy_setting
-! *        copy_setting and similar routines easier to debug!
-! *  
-! *        ToDo Find a better solution
-! *  
-! ************************************************************************************************************
 INTEGER(kind=ls_mpik)      :: comm !MPI communicator
 LOGICAL                    :: IntegralTransformGC                                                  
 LOGICAL                    :: DO_DFT                                                               

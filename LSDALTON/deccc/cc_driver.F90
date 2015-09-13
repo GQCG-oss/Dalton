@@ -21,6 +21,7 @@ use lsparameters
 use infpar_module
 #endif
 use tensor_interface_module
+use tensor_basic_module
 
 
 ! DEC DEPENDENCIES (within deccc directory)   
@@ -51,7 +52,7 @@ use rpa_module
 
 public :: ccsolver, fragment_ccsolver, ccsolver_justenergy,&
    & mp2_solver, SOLVE_AMPLITUDES,SOLVE_AMPLITUDES_PNO, SOLVE_MULTIPLIERS,&
-   & ccsolver_energy_multipliers
+   & ccsolver_energy_multipliers, save_current_guess
 private
 
 interface mp2_solver
@@ -2336,7 +2337,6 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                & atype='TDAR', tdims=[vs,vs,os,os] )
          endif
          call tensor_zero(omega2(iter_idx))
-
 
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
 

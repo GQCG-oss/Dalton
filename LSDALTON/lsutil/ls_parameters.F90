@@ -133,6 +133,10 @@ MODULE lsparameters
   integer,parameter :: CCSDPTSLAVE_WORK             = 65
   integer,parameter :: SET_TENSOR_SEG_LENGTH        = 66
   integer,parameter :: DECRIMP2GRAD                 = 67
+  integer,parameter :: RIMP2F12Ccoup                = 68
+  integer,parameter :: RIMP2F12FULL                 = 69
+  integer,parameter :: DECRIMP2F12                  = 70
+  integer,parameter :: SET_FORCE_CRASH              = 71
 
 ! s
   integer,parameter :: SymFromTriangularPostprocess=1

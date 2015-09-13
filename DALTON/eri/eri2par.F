@@ -996,9 +996,6 @@ C included in the new communicator will receive the broadcast IPRTYP.
 C This is because the nodedriver uses the MPIXBCAST subroutine to 
 C communicate and as of Nov 2014 this is hardcoded to MPI_COMM_WORLD.
 C 
-C todo beyer
-      !use polarizable_embedding, only: pe_mpi
-C todo ... beyer
 #ifdef VAR_IFORT
 !     subroutine sleep is in IFPORT module
       use IFPORT, ONLY: SLEEPQQ
@@ -1009,6 +1006,7 @@ C todo ... beyer
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_integrate_worker
 #endif
+      use pelib_interface, only: pelib_ifc_slave
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1049,10 +1047,11 @@ C
          N_TASKS = N_TASKS + 1
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
-         IF (IPRINT .GT. 15)
-     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
+         IF (IPRINT .GT. 1)
+     &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5/A)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
-     &      ' Print level is',IPRINT
+     &      ' Print level is',IPRINT,
+     &      '(See DALTON/include/iprtyp.h for IPRTYP codes)'
 
 !        allocate memory here if we do not call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
@@ -1069,10 +1068,10 @@ C
            if(i /= 0)then
              write (luerr,*) mynum,
      &           ': ALLOCATE command failed to allocate'//
-     &           ' the requested memory. Error code:',i
+     &           ' the requested memory on slave. Error code:',i
              write (luerr,*)
      &           'Reduce the memory demands and be welcome back'
-             call quit('Failed to allocate memory')
+             call quit('Failed to allocate memory on slave')
            end if
          end if
 
@@ -1162,10 +1161,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
-#if defined (BUILD_PELIB)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
-            CALL PE_IFC_SLAVE(IPRINT)
-#endif
+            CALL PELIB_IFC_SLAVE(IPRINT)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN

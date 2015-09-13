@@ -6,17 +6,181 @@
 module ccsdpt_tools_module
 
   use precision
+#ifdef VAR_OPENACC
+  use openacc
+#endif
+  use memory_handling
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
   use tensor_interface_module
-  use lspdm_tensor_operations_module
   use cc_tools_module
+#ifdef VAR_OPENACC
+  use openacc
+#endif
+
+#ifdef MOD_UNRELEASED
+  public :: ptr_init_ijk_pt,ptr_init_abc_pt,ptr_final_ijk_pt,ptr_final_abc_pt,&
+          & ptr_init_ijk_par,ptr_init_ijk_ser,ptr_init_abc_par,ptr_init_abc_ser,&
+          & ptr_final_ijk_par,ptr_final_ijk_ser,ptr_final_abc_par,ptr_final_abc_ser,&
+          & ptr_aliasing_ijk_par,ptr_aliasing_ijk_ser,ptr_aliasing_abc_par,ptr_aliasing_abc_ser
+#ifdef VAR_REAL_SP
+  public :: sp_ptr_init_ijk_pt,sp_ptr_init_abc_pt,sp_ptr_final_ijk_pt,sp_ptr_final_abc_pt,&
+          & sp_ptr_init_ijk_par,sp_ptr_init_ijk_ser,sp_ptr_init_abc_par,sp_ptr_init_abc_ser,&
+          & sp_ptr_final_ijk_par,sp_ptr_final_ijk_ser,sp_ptr_final_abc_par,sp_ptr_final_abc_ser,&
+          & sp_ptr_aliasing_ijk_par,sp_ptr_aliasing_ijk_ser,sp_ptr_aliasing_abc_par,sp_ptr_aliasing_abc_ser
+#endif
+  public :: preload_tiles_in_bg_buf,create_comp_array_ccsdpt,job_distrib_ccsdpt  
+#else
+  public :: dummy_ccsdpt_tools_routine
+#endif
+
+  private
 
 contains
 
 #ifdef MOD_UNRELEASED
+
+  subroutine ptr_init_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc), target :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc), target :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    pt_1 => ccsdpt_singles
+    pt_2 => ccsdpt_doubles
+
+  end subroutine ptr_init_ijk_pt
+
+  subroutine ptr_init_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt), target :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt), target :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    pt_1 => ccsdpt_singles
+    pt_2 => ccsdpt_doubles
+
+  end subroutine ptr_init_abc_pt
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_init_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_alloc(pt_1,nvirt,nocc)
+    call mem_alloc(pt_2,nvirt,nvirt,nocc,nocc)
+    pt_1 = real(ccsdpt_singles,kind=4)
+    pt_2 = real(ccsdpt_doubles,kind=4)
+
+  end subroutine sp_ptr_init_ijk_pt
+#endif
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_init_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_alloc(pt_1,nocc,nvirt)
+    call mem_alloc(pt_2,nocc,nocc,nvirt,nvirt)
+    pt_1 = real(ccsdpt_singles,kind=4)
+    pt_2 = real(ccsdpt_doubles,kind=4)
+
+  end subroutine sp_ptr_init_abc_pt
+#endif
+
+  subroutine ptr_final_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    ! empty dummy routine
+
+  end subroutine ptr_final_ijk_pt
+
+  subroutine ptr_final_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsdpt_doubles
+    real(realk), pointer, dimension(:,:) :: pt_1
+    real(realk), pointer, dimension(:,:,:,:) :: pt_2
+
+    ! empty dummy routine
+
+  end subroutine ptr_final_abc_pt
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_final_ijk_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nvirt,nocc) :: ccsdpt_singles
+    real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_dealloc(pt_1)
+    call mem_dealloc(pt_2)
+
+  end subroutine sp_ptr_final_ijk_pt
+#endif
+
+#ifdef VAR_REAL_SP
+  subroutine sp_ptr_final_abc_pt(nvirt,nocc,ccsdpt_singles,ccsdpt_doubles,pt_1,pt_2)
+
+    implicit none
+
+    !> pointers
+    integer :: nvirt,nocc
+    real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
+    real(realk), dimension(nocc,nocc,nvirt,nvirt) :: ccsdpt_doubles
+    real(real_sp), pointer, dimension(:,:) :: pt_1
+    real(real_sp), pointer, dimension(:,:,:,:) :: pt_2
+
+    call mem_dealloc(pt_1)
+    call mem_dealloc(pt_2)
+
+  end subroutine sp_ptr_final_abc_pt
+#endif
+
+! #########################
 
   subroutine ptr_init_ijk_par(nvirt,nocc,ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
@@ -423,7 +587,7 @@ contains
                    & ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
                    & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                    & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
-                   & ovoo,case_num)
+                   & ovoo,async_id,num_ids,case_num)
 
     implicit none
 
@@ -437,6 +601,12 @@ contains
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k
     real(realk), pointer, dimension(:) :: vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj
     real(realk), dimension(nocc,nvirt,nocc,nocc), target :: ovoo
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer :: case_num
     integer(kind=long) :: start_ccsd_i,start_ccsd_j,start_ccsd_k,end_ccsd_i,end_ccsd_j,end_ccsd_k
     integer(kind=long) :: start_vvvo_i,start_vvvo_j,start_vvvo_k,end_vvvo_i,end_vvvo_j,end_vvvo_k
@@ -455,7 +625,7 @@ contains
        ccsd_i => ccsd_pdm_i(start_ccsd_i+1:end_ccsd_i)
        vvvo_i => vvvo_pdm_i(start_vvvo_i+1:end_vvvo_i)
 
-!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+!$acc enter data copyin(ccsd_i,vvvo_i) async(async_id(1))
 
     case(2)
 
@@ -473,18 +643,18 @@ contains
           ovoo_ij => ovoo(:,:,i,j)
           vvoo_ij => vvoo_pdm_ij(start_ij+1:end_ij)
 
-!$acc enter data pcopyin(ovoo_ij) async(1)
-!$acc enter data pcopyin(vvoo_ij) async(3)
+!$acc enter data copyin(ovoo_ij) async(async_id(1))
+!$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else
+       else if (j .lt. i) then
 
           ccsd_j => ccsd_pdm_j(start_ccsd_j+1:end_ccsd_j)
           vvvo_j => vvvo_pdm_j(start_vvvo_j+1:end_vvvo_j)
           ovoo_ij => ovoo(:,:,i,j); ovoo_ji => ovoo(:,:,j,i)
           vvoo_ij => vvoo_pdm_ij(start_ij+1:end_ij); vvoo_ji => vvoo_pdm_ji(start_ji+1:end_ji)
 
-!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
-!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
+!$acc enter data copyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(async_id(1))
+!$acc enter data copyin(vvoo_ij,vvoo_ji) async(async_id(3))
 
        endif
 
@@ -510,18 +680,18 @@ contains
           ovoo_ik => ovoo(:,:,i,k); ovoo_ki => ovoo(:,:,k,i)
           vvoo_ik => vvoo_pdm_ik(start_ik+1:end_ik); vvoo_ki => vvoo_pdm_ki(start_ki+1:end_ki)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki) async(async_id(3))
 
        else if ((i .gt. j) .and. (j .eq. k)) then
 
           ovoo_jk => ovoo(:,:,j,k)
           vvoo_jk => vvoo_pdm_jk(start_jk+1:end_jk)
 
-!$acc enter data pcopyin(ovoo_jk) async(1)
-!$acc enter data pcopyin(vvoo_jk) async(3)
+!$acc enter data copyin(ovoo_jk) async(async_id(1))
+!$acc enter data copyin(vvoo_jk) async(async_id(3))
 
-       else
+       else if ((i .gt. j) .and. (j .gt. k)) then
 
           ccsd_k => ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k)
           vvvo_k => vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k)
@@ -530,8 +700,8 @@ contains
           vvoo_ik => vvoo_pdm_ik(start_ik+1:end_ik); vvoo_ki => vvoo_pdm_ki(start_ki+1:end_ki)
           vvoo_jk => vvoo_pdm_jk(start_jk+1:end_jk); vvoo_kj => vvoo_pdm_kj(start_kj+1:end_kj)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(async_id(3))
 
        end if
 
@@ -543,7 +713,7 @@ contains
                    & ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                    & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
-                   & ccsd_doubles,vvvo,vvoo,ovoo,case_num)
+                   & ccsd_doubles,vvvo,vvoo,ovoo,async_id,num_ids,case_num)
 
     implicit none
 
@@ -557,6 +727,12 @@ contains
     real(realk), dimension(nvirt,nvirt,nvirt,nocc), target :: vvvo
     real(realk), dimension(nvirt,nvirt,nocc,nocc), target :: vvoo
     real(realk), dimension(nocc,nvirt,nocc,nocc), target :: ovoo
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer :: case_num
 
     select case(case_num)
@@ -566,7 +742,7 @@ contains
        ccsd_i => ccsd_doubles(:,:,:,i)
        vvvo_i => vvvo(:,:,:,i)
 
-!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+!$acc enter data copyin(ccsd_i,vvvo_i) async(async_id(1))
 
     case(2)
 
@@ -575,18 +751,18 @@ contains
           ovoo_ij => ovoo(:,:,i,j)
           vvoo_ij => vvoo(:,:,i,j)
 
-!$acc enter data pcopyin(ovoo_ij) async(1)
-!$acc enter data pcopyin(vvoo_ij) async(3)
+!$acc enter data copyin(ovoo_ij) async(async_id(1))
+!$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else ! i .gt. j
+       else if (j .lt. i) then
 
           ccsd_j => ccsd_doubles(:,:,:,j)
           vvvo_j => vvvo(:,:,:,j)
           ovoo_ij => ovoo(:,:,i,j); ovoo_ji => ovoo(:,:,j,i)
           vvoo_ij => vvoo(:,:,i,j); vvoo_ji => vvoo(:,:,j,i)
 
-!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
-!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
+!$acc enter data copyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(async_id(1))
+!$acc enter data copyin(vvoo_ij,vvoo_ji) async(async_id(3))
 
        end if
 
@@ -599,18 +775,18 @@ contains
           ovoo_ik => ovoo(:,:,i,k); ovoo_ki => ovoo(:,:,k,i)
           vvoo_ik => vvoo(:,:,i,k); vvoo_ki => vvoo(:,:,k,i)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki) async(async_id(3))
 
        else if ((i .gt. j) .and. (j .eq. k)) then
 
           ovoo_jk => ovoo(:,:,j,k)
           vvoo_jk => vvoo(:,:,j,k)
 
-!$acc enter data pcopyin(ovoo_jk) async(1)
-!$acc enter data pcopyin(vvoo_jk) async(3)
+!$acc enter data copyin(ovoo_jk) async(async_id(1))
+!$acc enter data copyin(vvoo_jk) async(async_id(3))
 
-       else
+       else if ((i .gt. j) .and. (j .gt. k)) then
 
           ccsd_k => ccsd_doubles(:,:,:,k)
           vvvo_k => vvvo(:,:,:,k)
@@ -619,8 +795,8 @@ contains
           vvoo_ik => vvoo(:,:,i,k); vvoo_ki => vvoo(:,:,k,i)
           vvoo_jk => vvoo(:,:,j,k); vvoo_kj => vvoo(:,:,k,j)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(async_id(3))
 
        end if
 
@@ -634,7 +810,7 @@ contains
                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                      & ccsd_pdm_a,ccsd_pdm_b,ccsd_pdm_c,ooov,&
                      & vovv_pdm_a,vovv_pdm_b,vovv_pdm_c,&
-                     & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,case_num)
+                     & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,async_id,num_ids,case_num)
 
     implicit none
 
@@ -647,6 +823,12 @@ contains
     real(realk), dimension(nocc,nocc,nocc,nvirt), target :: ooov
     real(realk), pointer, dimension(:) :: vovv_pdm_a,vovv_pdm_b,vovv_pdm_c
     real(realk), pointer, dimension(:) :: oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer(kind=long) :: start_ccsd_a,start_ccsd_b,start_ccsd_c,end_ccsd_a,end_ccsd_b,end_ccsd_c
     integer(kind=long) :: start_vovv_ab,start_vovv_ba,start_vovv_ac,start_vovv_ca,start_vovv_bc,start_vovv_cb
     integer(kind=long) :: start_oovv_ab,start_oovv_ba,start_oovv_ac,start_oovv_ca,start_oovv_bc,start_oovv_cb
@@ -663,7 +845,7 @@ contains
        ccsd_a => ccsd_pdm_a(start_ccsd_a+1:end_ccsd_a)
        ooov_a => ooov(:,:,:,a)
 
-!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+!$acc enter data copyin(ccsd_a,ooov_a) async(async_id(1))
 
     case(2)
 
@@ -683,10 +865,10 @@ contains
           vovv_ab => vovv_pdm_b(start_vovv_ab+1:end_vovv_ab)
           oovv_ab => oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab)
 
-!$acc enter data pcopyin(vovv_ab) async(1)
-!$acc enter data pcopyin(oovv_ab) async(3)
+!$acc enter data copyin(vovv_ab) async(async_id(1))
+!$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else
+       else if (b .lt. a) then
 
           ccsd_b => ccsd_pdm_b(start_ccsd_b+1:end_ccsd_b)
           ooov_b => ooov(:,:,:,b)
@@ -695,8 +877,8 @@ contains
           oovv_ab => oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab)
           oovv_ba => oovv_pdm_ba(start_oovv_ba+1:end_oovv_ba)
 
-!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
-!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
+!$acc enter data copyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(async_id(1))
+!$acc enter data copyin(oovv_ab,oovv_ba) async(async_id(3))
 
        endif
 
@@ -730,18 +912,18 @@ contains
           oovv_ac => oovv_pdm_ac(start_oovv_ac+1:end_oovv_ac)
           oovv_ca => oovv_pdm_ca(start_oovv_ca+1:end_oovv_ca)
 
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca) async(async_id(3))
  
        else if ((a .gt. b) .and. (b .eq. c)) then
  
           vovv_bc => vovv_pdm_c(start_vovv_bc+1:end_vovv_bc)
           oovv_bc => oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc)
  
-!$acc enter data pcopyin(vovv_bc) async(1)
-!$acc enter data pcopyin(oovv_bc) async(3)
+!$acc enter data copyin(vovv_bc) async(async_id(1))
+!$acc enter data copyin(oovv_bc) async(async_id(3))
 
-       else
+       else if ((a .gt. b) .and. (b .gt. c)) then
    
           ccsd_c => ccsd_pdm_c(start_ccsd_c+1:end_ccsd_c)
           ooov_c => ooov(:,:,:,c)
@@ -754,8 +936,8 @@ contains
           oovv_bc => oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc)
           oovv_cb => oovv_pdm_cb(start_oovv_cb+1:end_oovv_cb)
 
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(async_id(3))
    
        end if
 
@@ -768,7 +950,7 @@ contains
                      & ooov_a,ooov_b,ooov_c,&
                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,&
                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                     & ccsd_doubles,ooov,vovv,oovv,case_num)
+                     & ccsd_doubles,ooov,vovv,oovv,async_id,num_ids,case_num)
 
     implicit none
 
@@ -781,6 +963,12 @@ contains
     real(realk), dimension(nocc,nocc,nocc,nvirt), target, intent(inout) :: ooov
     real(realk), dimension(nvirt,nocc,nvirt,nvirt), target, intent(inout) :: vovv
     real(realk), dimension(nocc,nocc,nvirt,nvirt), target, intent(inout) :: oovv
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer :: case_num
 
     select case(case_num)
@@ -790,7 +978,7 @@ contains
        ccsd_a => ccsd_doubles(:,:,:,a)
        ooov_a => ooov(:,:,:,a)
 
-!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+!$acc enter data copyin(ccsd_a,ooov_a) async(async_id(1))
 
     case(2)
 
@@ -799,18 +987,18 @@ contains
           vovv_ab => vovv(:,:,a,b)
           oovv_ab => oovv(:,:,a,b)
   
-!$acc enter data pcopyin(vovv_ab) async(1)
-!$acc enter data pcopyin(oovv_ab) async(3)
+!$acc enter data copyin(vovv_ab) async(async_id(1))
+!$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else ! a .gt. b
+       else if (b .lt. a) then
   
           ccsd_b => ccsd_doubles(:,:,:,b)
           ooov_b => ooov(:,:,:,b)
           vovv_ab => vovv(:,:,a,b); vovv_ba => vovv(:,:,b,a)
           oovv_ab => oovv(:,:,a,b); oovv_ba => oovv(:,:,b,a)
   
-!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
-!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
+!$acc enter data copyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(async_id(1))
+!$acc enter data copyin(oovv_ab,oovv_ba) async(async_id(3))
 
        endif
 
@@ -823,18 +1011,18 @@ contains
           vovv_ac => vovv(:,:,a,c); vovv_ca => vovv(:,:,c,a)
           oovv_ac => oovv(:,:,a,c); oovv_ca => oovv(:,:,c,a)
  
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca) async(async_id(3))
 
        else if ((a .gt. b) .and. (b .eq. c)) then
  
           vovv_bc => vovv(:,:,b,c)
           oovv_bc => oovv(:,:,b,c)
  
-!$acc enter data pcopyin(vovv_bc) async(1)
-!$acc enter data pcopyin(oovv_bc) async(3)
+!$acc enter data copyin(vovv_bc) async(async_id(1))
+!$acc enter data copyin(oovv_bc) async(async_id(3))
 
-       else
+       else if ((a .gt. b) .and. (b .gt. c)) then
  
           ccsd_c => ccsd_doubles(:,:,:,c)
           ooov_c => ooov(:,:,:,c)
@@ -843,8 +1031,8 @@ contains
           oovv_ac => oovv(:,:,a,c); oovv_ca => oovv(:,:,c,a)
           oovv_bc => oovv(:,:,b,c); oovv_cb => oovv(:,:,c,b)
  
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(async_id(3))
 
        end if
 
@@ -860,7 +1048,7 @@ contains
                    & ccsd_pdm_i,ccsd_pdm_j,ccsd_pdm_k,&
                    & vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k,&
                    & vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj,&
-                   & ovoo,case_num)
+                   & ovoo,async_id,num_ids,case_num)
 
     implicit none
 
@@ -874,6 +1062,12 @@ contains
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k
     real(realk), pointer, dimension(:) :: vvoo_pdm_ij,vvoo_pdm_ik,vvoo_pdm_ji,vvoo_pdm_jk,vvoo_pdm_ki,vvoo_pdm_kj
     real(realk), dimension(nocc,nvirt,nocc,nocc), target :: ovoo
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer :: case_num
     integer(kind=long) :: start_ccsd_i,start_ccsd_j,start_ccsd_k,end_ccsd_i,end_ccsd_j,end_ccsd_k
     integer(kind=long) :: start_vvvo_i,start_vvvo_j,start_vvvo_k,end_vvvo_i,end_vvvo_j,end_vvvo_k
@@ -892,7 +1086,7 @@ contains
        ccsd_i = real(ccsd_pdm_i(start_ccsd_i+1:end_ccsd_i),kind=4)
        vvvo_i = real(vvvo_pdm_i(start_vvvo_i+1:end_vvvo_i),kind=4)
 
-!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+!$acc enter data copyin(ccsd_i,vvvo_i) async(async_id(1))
 
     case(2)
 
@@ -910,18 +1104,18 @@ contains
           ovoo_ij = real(ovoo(:,:,i,j),kind=4)
           vvoo_ij = real(vvoo_pdm_ij(start_ij+1:end_ij),kind=4)
 
-!$acc enter data pcopyin(ovoo_ij) async(1)
-!$acc enter data pcopyin(vvoo_ij) async(3)
+!$acc enter data copyin(ovoo_ij) async(async_id(1))
+!$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else
+       else if (j .lt. i) then
 
           ccsd_j = real(ccsd_pdm_j(start_ccsd_j+1:end_ccsd_j),kind=4)
           vvvo_j = real(vvvo_pdm_j(start_vvvo_j+1:end_vvvo_j),kind=4)
           ovoo_ij = real(ovoo(:,:,i,j),kind=4); ovoo_ji = real(ovoo(:,:,j,i),kind=4)
           vvoo_ij = real(vvoo_pdm_ij(start_ij+1:end_ij),kind=4); vvoo_ji = real(vvoo_pdm_ji(start_ji+1:end_ji),kind=4)
 
-!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
-!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
+!$acc enter data copyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(async_id(1))
+!$acc enter data copyin(vvoo_ij,vvoo_ji) async(async_id(3))
 
        endif
 
@@ -947,18 +1141,18 @@ contains
           ovoo_ik = real(ovoo(:,:,i,k),kind=4); ovoo_ki = real(ovoo(:,:,k,i),kind=4)
           vvoo_ik=real(vvoo_pdm_ik(start_ik+1:end_ik),kind=4); vvoo_ki=real(vvoo_pdm_ki(start_ki+1:end_ki),kind=4)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki) async(async_id(3))
 
        else if ((i .gt. j) .and. (j .eq. k)) then
 
           ovoo_jk = real(ovoo(:,:,j,k),kind=4)
           vvoo_jk = real(vvoo_pdm_jk(start_jk+1:end_jk),kind=4)
 
-!$acc enter data pcopyin(ovoo_jk) async(1)
-!$acc enter data pcopyin(vvoo_jk) async(3)
+!$acc enter data copyin(ovoo_jk) async(async_id(1))
+!$acc enter data copyin(vvoo_jk) async(async_id(3))
 
-       else
+       else if ((i .gt. j) .and. (j .gt. k)) then
 
           ccsd_k = real(ccsd_pdm_k(start_ccsd_k+1:end_ccsd_k),kind=4)
           vvvo_k = real(vvvo_pdm_k(start_vvvo_k+1:end_vvvo_k),kind=4)
@@ -967,8 +1161,8 @@ contains
           vvoo_ik=real(vvoo_pdm_ik(start_ik+1:end_ik),kind=4); vvoo_ki=real(vvoo_pdm_ki(start_ki+1:end_ki),kind=4)
           vvoo_jk=real(vvoo_pdm_jk(start_jk+1:end_jk),kind=4); vvoo_kj=real(vvoo_pdm_kj(start_kj+1:end_kj),kind=4)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(async_id(3))
 
        end if
 
@@ -982,7 +1176,7 @@ contains
                    & ccsd_i,ccsd_j,ccsd_k,vvvo_i,vvvo_j,vvvo_k,&
                    & vvoo_ij,vvoo_ik,vvoo_ji,vvoo_jk,vvoo_ki,vvoo_kj,&
                    & ovoo_ij,ovoo_ik,ovoo_ji,ovoo_jk,ovoo_ki,ovoo_kj,&
-                   & ccsd_doubles,vvvo,vvoo,ovoo,case_num)
+                   & ccsd_doubles,vvvo,vvoo,ovoo,async_id,num_ids,case_num)
 
     implicit none
 
@@ -996,6 +1190,12 @@ contains
     real(realk), dimension(nvirt,nvirt,nvirt,nocc), target :: vvvo
     real(realk), dimension(nvirt,nvirt,nocc,nocc), target :: vvoo
     real(realk), dimension(nocc,nvirt,nocc,nocc), target :: ovoo
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer :: case_num
 
     select case(case_num)
@@ -1005,7 +1205,7 @@ contains
        ccsd_i = real(ccsd_doubles(:,:,:,i),kind=4)
        vvvo_i = real(vvvo(:,:,:,i),kind=4)
 
-!$acc enter data pcopyin(ccsd_i,vvvo_i) async(1)
+!$acc enter data copyin(ccsd_i,vvvo_i) async(async_id(1))
 
     case(2)
 
@@ -1014,18 +1214,18 @@ contains
           ovoo_ij = real(ovoo(:,:,i,j),kind=4)
           vvoo_ij = real(vvoo(:,:,i,j),kind=4)
 
-!$acc enter data pcopyin(ovoo_ij) async(1)
-!$acc enter data pcopyin(vvoo_ij) async(3)
+!$acc enter data copyin(ovoo_ij) async(async_id(1))
+!$acc enter data copyin(vvoo_ij) async(async_id(3))
 
-       else ! i .gt. j
+       else if (j .lt. i) then
 
           ccsd_j = real(ccsd_doubles(:,:,:,j),kind=4)
           vvvo_j = real(vvvo(:,:,:,j),kind=4)
           ovoo_ij = real(ovoo(:,:,i,j),kind=4); ovoo_ji = real(ovoo(:,:,j,i),kind=4)
           vvoo_ij = real(vvoo(:,:,i,j),kind=4); vvoo_ji = real(vvoo(:,:,j,i),kind=4)
 
-!$acc enter data pcopyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(1)
-!$acc enter data pcopyin(vvoo_ij,vvoo_ji) async(3)
+!$acc enter data copyin(ccsd_j,vvvo_j,ovoo_ij,ovoo_ji) async(async_id(1))
+!$acc enter data copyin(vvoo_ij,vvoo_ji) async(async_id(3))
 
        end if
 
@@ -1038,18 +1238,18 @@ contains
           ovoo_ik = real(ovoo(:,:,i,k),kind=4); ovoo_ki = real(ovoo(:,:,k,i),kind=4)
           vvoo_ik = real(vvoo(:,:,i,k),kind=4); vvoo_ki = real(vvoo(:,:,k,i),kind=4)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki) async(async_id(3))
 
        else if ((i .gt. j) .and. (j .eq. k)) then
 
           ovoo_jk = real(ovoo(:,:,j,k),kind=4)
           vvoo_jk = real(vvoo(:,:,j,k),kind=4)
 
-!$acc enter data pcopyin(ovoo_jk) async(1)
-!$acc enter data pcopyin(vvoo_jk) async(3)
+!$acc enter data copyin(ovoo_jk) async(async_id(1))
+!$acc enter data copyin(vvoo_jk) async(async_id(3))
 
-       else
+       else if ((i .gt. j) .and. (j .gt. k)) then
 
           ccsd_k = real(ccsd_doubles(:,:,:,k),kind=4)
           vvvo_k = real(vvvo(:,:,:,k),kind=4)
@@ -1058,8 +1258,8 @@ contains
           vvoo_ik = real(vvoo(:,:,i,k),kind=4); vvoo_ki = real(vvoo(:,:,k,i),kind=4)
           vvoo_jk = real(vvoo(:,:,j,k),kind=4); vvoo_kj = real(vvoo(:,:,k,j),kind=4)
 
-!$acc enter data pcopyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(1)
-!$acc enter data pcopyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(3)
+!$acc enter data copyin(ccsd_k,vvvo_k,ovoo_ik,ovoo_ki,ovoo_jk,ovoo_kj) async(async_id(1))
+!$acc enter data copyin(vvoo_ik,vvoo_ki,vvoo_jk,vvoo_kj) async(async_id(3))
 
        end if
 
@@ -1075,7 +1275,7 @@ contains
                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
                      & ccsd_pdm_a,ccsd_pdm_b,ccsd_pdm_c,ooov,&
                      & vovv_pdm_a,vovv_pdm_b,vovv_pdm_c,&
-                     & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,case_num)
+                     & oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb,async_id,num_ids,case_num)
 
     implicit none
 
@@ -1088,6 +1288,12 @@ contains
     real(realk), dimension(nocc,nocc,nocc,nvirt), target :: ooov
     real(realk), pointer, dimension(:) :: vovv_pdm_a,vovv_pdm_b,vovv_pdm_c
     real(realk), pointer, dimension(:) :: oovv_pdm_ab,oovv_pdm_ba,oovv_pdm_ac,oovv_pdm_ca,oovv_pdm_bc,oovv_pdm_cb
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer(kind=long) :: start_ccsd_a,start_ccsd_b,start_ccsd_c,end_ccsd_a,end_ccsd_b,end_ccsd_c
     integer(kind=long) :: start_vovv_ab,start_vovv_ba,start_vovv_ac,start_vovv_ca,start_vovv_bc,start_vovv_cb
     integer(kind=long) :: start_oovv_ab,start_oovv_ba,start_oovv_ac,start_oovv_ca,start_oovv_bc,start_oovv_cb
@@ -1104,7 +1310,7 @@ contains
        ccsd_a = real(ccsd_pdm_a(start_ccsd_a+1:end_ccsd_a),kind=4)
        ooov_a = real(ooov(:,:,:,a),kind=4)
 
-!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+!$acc enter data copyin(ccsd_a,ooov_a) async(async_id(1))
 
     case(2)
 
@@ -1124,10 +1330,10 @@ contains
           vovv_ab = real(vovv_pdm_b(start_vovv_ab+1:end_vovv_ab),kind=4)
           oovv_ab = real(oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab),kind=4)
 
-!$acc enter data pcopyin(vovv_ab) async(1)
-!$acc enter data pcopyin(oovv_ab) async(3)
+!$acc enter data copyin(vovv_ab) async(async_id(1))
+!$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else
+       else if (b .lt. a) then
 
           ccsd_b = real(ccsd_pdm_b(start_ccsd_b+1:end_ccsd_b),kind=4)
           ooov_b = real(ooov(:,:,:,b),kind=4)
@@ -1136,8 +1342,8 @@ contains
           oovv_ab = real(oovv_pdm_ab(start_oovv_ab+1:end_oovv_ab),kind=4)
           oovv_ba = real(oovv_pdm_ba(start_oovv_ba+1:end_oovv_ba),kind=4)
 
-!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
-!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
+!$acc enter data copyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(async_id(1))
+!$acc enter data copyin(oovv_ab,oovv_ba) async(async_id(3))
 
        endif
 
@@ -1171,19 +1377,19 @@ contains
           oovv_ac = real(oovv_pdm_ac(start_oovv_ac+1:end_oovv_ac),kind=4)
           oovv_ca = real(oovv_pdm_ca(start_oovv_ca+1:end_oovv_ca),kind=4)
  
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca) async(async_id(3))
 
        else if ((a .gt. b) .and. (b .eq. c)) then
  
           vovv_bc = real(vovv_pdm_c(start_vovv_bc+1:end_vovv_bc),kind=4)
           oovv_bc = real(oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc),kind=4)
  
-!$acc enter data pcopyin(vovv_bc) async(1)
-!$acc enter data pcopyin(oovv_bc) async(3)
+!$acc enter data copyin(vovv_bc) async(async_id(1))
+!$acc enter data copyin(oovv_bc) async(async_id(3))
 
-       else
-   
+       else if ((a .gt. b) .and. (b .gt. c)) then  
+ 
           ccsd_c = real(ccsd_pdm_c(start_ccsd_c+1:end_ccsd_c),kind=4)
           ooov_c = real(ooov(:,:,:,c),kind=4)
           vovv_ac = real(vovv_pdm_c(start_vovv_ac+1:end_vovv_ac),kind=4)
@@ -1195,8 +1401,8 @@ contains
           oovv_bc = real(oovv_pdm_bc(start_oovv_bc+1:end_oovv_bc),kind=4)
           oovv_cb = real(oovv_pdm_cb(start_oovv_cb+1:end_oovv_cb),kind=4)
    
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(async_id(3))
 
        end if
 
@@ -1211,7 +1417,7 @@ contains
                      & ooov_a,ooov_b,ooov_c,&
                      & vovv_ab,vovv_ac,vovv_ba,vovv_bc,vovv_ca,vovv_cb,&
                      & oovv_ab,oovv_ac,oovv_ba,oovv_bc,oovv_ca,oovv_cb,&
-                     & ccsd_doubles,ooov,vovv,oovv,case_num)
+                     & ccsd_doubles,ooov,vovv,oovv,async_id,num_ids,case_num)
 
     implicit none
 
@@ -1224,6 +1430,12 @@ contains
     real(realk), dimension(nocc,nocc,nocc,nvirt), target, intent(inout) :: ooov
     real(realk), dimension(nvirt,nocc,nvirt,nvirt), target, intent(inout) :: vovv
     real(realk), dimension(nocc,nocc,nvirt,nvirt), target, intent(inout) :: oovv
+    integer :: num_ids
+#ifdef VAR_OPENACC
+    integer(kind=acc_handle_kind) :: async_id(num_ids)
+#else
+    integer :: async_id(num_ids)
+#endif
     integer :: case_num
 
     select case(case_num)
@@ -1233,7 +1445,7 @@ contains
         ccsd_a = real(ccsd_doubles(:,:,:,a),kind=4)
         ooov_a = real(ooov(:,:,:,a),kind=4)
 
-!$acc enter data pcopyin(ccsd_a,ooov_a) async(1)
+!$acc enter data copyin(ccsd_a,ooov_a) async(async_id(1))
 
     case(2)
 
@@ -1242,18 +1454,18 @@ contains
           vovv_ab = real(vovv(:,:,a,b),kind=4)
           oovv_ab = real(oovv(:,:,a,b),kind=4)
 
-!$acc enter data pcopyin(vovv_ab) async(1)
-!$acc enter data pcopyin(oovv_ab) async(3)
+!$acc enter data copyin(vovv_ab) async(async_id(1))
+!$acc enter data copyin(oovv_ab) async(async_id(3))
 
-       else ! a .gt. b
+       else if (b .lt. a) then
 
           ccsd_b = real(ccsd_doubles(:,:,:,b),kind=4)
           ooov_b = real(ooov(:,:,:,b),kind=4)
           vovv_ab = real(vovv(:,:,a,b),kind=4); vovv_ba = real(vovv(:,:,b,a),kind=4)
           oovv_ab = real(oovv(:,:,a,b),kind=4); oovv_ba = real(oovv(:,:,b,a),kind=4)
 
-!$acc enter data pcopyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(1)
-!$acc enter data pcopyin(oovv_ab,oovv_ba) async(3)
+!$acc enter data copyin(ccsd_b,ooov_b,vovv_ab,vovv_ba) async(async_id(1))
+!$acc enter data copyin(oovv_ab,oovv_ba) async(async_id(3))
 
        endif
 
@@ -1266,18 +1478,18 @@ contains
           vovv_ac = real(vovv(:,:,a,c),kind=4); vovv_ca = real(vovv(:,:,c,a),kind=4)
           oovv_ac = real(oovv(:,:,a,c),kind=4); oovv_ca = real(oovv(:,:,c,a),kind=4)
 
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca) async(async_id(3))
 
        else if ((a .gt. b) .and. (b .eq. c)) then
 
           vovv_bc = real(vovv(:,:,b,c),kind=4)
           oovv_bc = real(oovv(:,:,b,c),kind=4)
 
-!$acc enter data pcopyin(vovv_bc) async(1)
-!$acc enter data pcopyin(oovv_bc) async(3)
+!$acc enter data copyin(vovv_bc) async(async_id(1))
+!$acc enter data copyin(oovv_bc) async(async_id(3))
 
-       else
+       else if ((a .gt. b) .and. (b .gt. c)) then
 
           ccsd_c = real(ccsd_doubles(:,:,:,c),kind=4)
           ooov_c = real(ooov(:,:,:,c),kind=4)
@@ -1286,8 +1498,8 @@ contains
           oovv_ac = real(oovv(:,:,a,c),kind=4); oovv_ca = real(oovv(:,:,c,a),kind=4)
           oovv_bc = real(oovv(:,:,b,c),kind=4); oovv_cb = real(oovv(:,:,c,b),kind=4)
 
-!$acc enter data pcopyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(1)
-!$acc enter data pcopyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(3)
+!$acc enter data copyin(ccsd_c,ooov_c,vovv_ac,vovv_ca,vovv_bc,vovv_cb) async(async_id(1))
+!$acc enter data copyin(oovv_ac,oovv_ca,oovv_bc,oovv_cb) async(async_id(3))
 
        end if
 
@@ -1389,7 +1601,7 @@ contains
 
                  tuple_type = 1
 
-              elseif ((i_test .gt. j_test) .and. (j_test .eq. k_test)) then
+              else if ((i_test .gt. j_test) .and. (j_test .eq. k_test)) then
 
                  jk_test = (k_test-1)*t1dim+j_test
                  !Load the next jk tile
@@ -1397,7 +1609,7 @@ contains
 
                  tuple_type = 2
 
-              elseif ((i_test .gt. j_test) .and. (j_test .gt. k_test)) then
+              else if ((i_test .gt. j_test) .and. (j_test .gt. k_test)) then
 
                  ik_test = (k_test-1)*t1dim+i_test; ki_test = (i_test-1)*t1dim+k_test
                  jk_test = (k_test-1)*t1dim+j_test; kj_test = (j_test-1)*t1dim+k_test
@@ -1460,7 +1672,7 @@ contains
                        found_ki = .false.
                     endif
 
-                 elseif (tuple_type .eq. 2) then
+                 else if (tuple_type .eq. 2) then
 
                     !find pos in buff
                     if (new_jk_needed) then
@@ -1473,7 +1685,7 @@ contains
                        found_jk = .false.
                     endif
 
-                 elseif (tuple_type .eq. 3) then
+                 else if (tuple_type .eq. 3) then
 
                     !find pos in buff
                     if (new_ik_needed) then
@@ -1547,7 +1759,7 @@ contains
                              &lock_set=.true.,flush_it=.true.)
                        endif
 
-                    elseif (tuple_type .eq. 2) then
+                    else if (tuple_type .eq. 2) then
 
                        if (.not. alloc_in_dummy) call tensor_lock_win(array,jk_test,'s',assert=mode)
 
@@ -1559,7 +1771,7 @@ contains
                              &lock_set=.true.,flush_it=.true.)
                        endif
 
-                    elseif (tuple_type .eq. 3) then
+                    else if (tuple_type .eq. 3) then
 
                        if (.not. alloc_in_dummy) then
                           if (found_ik) call tensor_lock_win(array,ik_test,'s',assert=mode)

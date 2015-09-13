@@ -109,8 +109,10 @@ MODULE matrix_operations
           String = 'csr        '
        case(mtype_scalapack)
           String = 'scalapack  '
+#ifdef VAR_ENABLE_TENSORS
        case(mtype_pdmm)
           String = 'pdmm       '
+#endif
        case default
           call lsquit("Unknown type of matrix",-1)
        end select
@@ -164,8 +166,10 @@ MODULE matrix_operations
                WRITE(lupri,'(A)') 'Matrix type: mtype_csr'
             case(mtype_scalapack)
                WRITE(lupri,'(A)') 'Matrix type: mtype_scalapack'
+#ifdef VAR_ENABLE_TENSORS
             case(mtype_pdmm)
                WRITE(lupri,'(A)') 'Matrix type: mtype_pdmm'
+#endif
             case default
                call lsquit("Unknown type of matrix",-1)
             end select
@@ -267,6 +271,7 @@ MODULE matrix_operations
                 WRITE(lupri,'(A,I5)')'Scalapack Grid initiation Block Size = ',BLOCK_SIZE
                 WRITE(lupri,'(A,I5)')'Scalapack Grid initiation nprow      = ',nrow
                 WRITE(lupri,'(A,I5)')'Scalapack Grid initiation npcol      = ',ncol
+#ifdef VAR_ENABLE_TENSORS
              elseif(matrix_type.EQ.mtype_pdmm)then
                 IF(.NOT.present(nbast))then
                    call lsquit('pdmm error in mat_select_type',-1)
@@ -292,6 +297,7 @@ MODULE matrix_operations
                 ENDIF
                 CALL PDMM_GRIDINIT(nbast)
                 WRITE(lupri,'(A,I5)')'PDMM initiation Block Size = ',BLOCK_SIZE_PDM
+#endif
              endif
           ELSE
              !slave
@@ -317,6 +323,7 @@ MODULE matrix_operations
                    scalapack_comm = MPI_COMM_LSDALTON
                    scalapack_member = .TRUE.
                 ENDIF
+#ifdef VAR_ENABLE_TENSORS
              elseif(matrix_type.EQ.mtype_pdmm)then
                 call ls_mpibcast(infpar%PDMMGroupSize,infpar%master,&
                      & MPI_COMM_LSDALTON)
@@ -336,6 +343,7 @@ MODULE matrix_operations
                    pdmm_comm = MPI_COMM_LSDALTON
                    pdmm_member = .TRUE.
                 ENDIF
+#endif
              endif
           ENDIF
 #endif
@@ -425,9 +433,12 @@ MODULE matrix_operations
        if(matrix_type.EQ.mtype_scalapack)then
           CALL PDM_GRIDEXIT
        endif
+#ifdef VAR_ENABLE_TENSORS
        if(matrix_type.EQ.mtype_pdmm)then
           CALL PDMM_GRIDEXIT
        endif
+#endif
+
 #endif
      END SUBROUTINE mat_finalize
 
@@ -518,8 +529,10 @@ MODULE matrix_operations
              call mat_csr_init(a,nrow,ncol)            
          case(mtype_scalapack)
              call mat_scalapack_init(a,nrow,ncol)            
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_init(a,nrow,ncol)            
+#endif
          case default
               call lsquit("mat_init not implemented for this type of matrix",-1)
          end select
@@ -568,8 +581,10 @@ MODULE matrix_operations
              call mat_csr_free(a)
          case(mtype_scalapack)
              call mat_scalapack_free(a)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_free(a)
+#endif
          case default
             call lsquit("mat_free not implemented for this type of matrix",-1)
          end select
@@ -662,8 +677,10 @@ MODULE matrix_operations
              call mat_csr_set_from_full(afull,alpha,a)
          case(mtype_scalapack)
             call mat_scalapack_set_from_full(afull,alpha,a)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_set_from_full(afull,alpha,a)
+#endif
          case(mtype_unres_dense)
             if(PRESENT(unres3))then
                if(unres3)then
@@ -727,8 +744,10 @@ MODULE matrix_operations
              call mat_csr_to_full(a, alpha, afull)
          case(mtype_scalapack)
             call mat_scalapack_to_full(a, alpha, afull)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_to_full(a, alpha, afull)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_to_full(a, alpha, afull)
          case default
@@ -836,8 +855,10 @@ MODULE matrix_operations
          select case(matrix_type)
          case(mtype_dense)
              call mat_dense_print(a, i_row1, i_rown, j_col1, j_coln, lu)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_print(a, i_row1, i_rown, j_col1, j_coln, lu)
+#endif
          case(mtype_scalapack)
 #ifdef VAR_SCALAPACK
             print*,'FALLBACK scalapack print'
@@ -886,8 +907,10 @@ MODULE matrix_operations
              call mat_csr_trans(a,b)
          case(mtype_scalapack)
              call mat_scalapack_trans(a,b)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_trans(a,b)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_trans(a,b)
          case default
@@ -984,8 +1007,10 @@ MODULE matrix_operations
            call mem_dealloc(U_full) 
            call mem_dealloc(work1)
            call mem_dealloc(IPVT)
+#ifdef VAR_ENABLE_TENSORS
         case(mtype_pdmm)
            call mat_pdmm_chol(a, b) 
+#endif
         case default
            call lsquit('error mat_chol not implemented',-1)
 !!$           call mem_alloc(U_full,fulldim,fulldim) 
@@ -1025,8 +1050,10 @@ MODULE matrix_operations
            IF(INFO.NE.0)CALL LSQUIT('DPOTRF ERROR',-1)
         case(mtype_scalapack)
            call mat_scalapack_dpotrf(a)
+#ifdef VAR_ENABLE_TENSORS
         case(mtype_pdmm)
            call mat_pdmm_dpotrf(a)
+#endif
         case(mtype_unres_dense)
            INFO = 0
            CALL DPOTRF('U',A%nrow,A%elms,A%nrow,INFO)
@@ -1058,8 +1085,10 @@ MODULE matrix_operations
            CALL DPOTRS('U',A%nrow,B%ncol,A%elms,A%nrow,B%elms,B%nrow,INFO)
         case(mtype_scalapack)
            call mat_scalapack_dpotrs(a,b)
+#ifdef VAR_ENABLE_TENSORS
         case(mtype_pdmm)
            call mat_pdmm_dpotrs(a,b)
+#endif
         case(mtype_unres_dense)
            CALL DPOTRS('U',A%nrow,B%ncol,A%elms,A%nrow,B%elms,B%nrow,INFO)
            CALL DPOTRS('U',A%nrow,B%ncol,A%elmsb,A%nrow,B%elmsb,B%nrow,INFO)
@@ -1089,8 +1118,10 @@ MODULE matrix_operations
            !note that depending how you use this you will need to copy the  
 !        case(mtype_scalapack)
            !           call mat_scalapack_chol(a,b)
+#ifdef VAR_ENABLE_TENSORS
         case(mtype_pdmm)
            call mat_pdmm_dpotri(a)
+#endif
         case(mtype_unres_dense)
            CALL DPOTRI('U',A%nrow,A%elms,A%nrow,INFO)           
            IF(INFO.NE.0)CALL LSQUIT('DPOTRI ERROR',-1)
@@ -1134,8 +1165,10 @@ MODULE matrix_operations
          select case(matrix_type)
          case(mtype_dense)
              call mat_dense_inv(a,a_inv)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_inv(a,a_inv)
+#endif
          case(mtype_scalapack)
 !             call mat_scalapack_inv(a,b)
             call mem_alloc(A_inv_full,fulldim,fulldim) 
@@ -1241,8 +1274,10 @@ MODULE matrix_operations
              call mat_csr_assign(a,b)
           case(mtype_scalapack)
              call mat_scalapack_assign(a,b)
+#ifdef VAR_ENABLE_TENSORS
           case(mtype_pdmm)
              call mat_pdmm_assign(a,b)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_assign(a,b)
          case default
@@ -1271,8 +1306,10 @@ MODULE matrix_operations
              call mat_dense_mpicopy(a,slave, master)
          case(mtype_scalapack)
             call lsquit('mat_mpicopy scalapack error',-1)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call lsquit('mat_mpicopy pdmm error',-1)
+#endif
           case(mtype_csr)
              call mat_mpicopy_fallback(a,slave, master)
          case(mtype_unres_dense)
@@ -1330,8 +1367,10 @@ MODULE matrix_operations
              call mat_csr_copy(alpha,a,b)
          case(mtype_scalapack)
              call mat_scalapack_copy(alpha,a,b)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_copy(alpha,a,b)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_copy(alpha,a,b)
          case default
@@ -1400,8 +1439,10 @@ MODULE matrix_operations
              mat_TrAB = mat_csr_TrAB(a,b)
          case(mtype_scalapack)
              mat_TrAB = mat_scalapack_TrAB(a,b)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              mat_TrAB = mat_pdmm_TrAB(a,b)
+#endif
          case(mtype_unres_dense)
              mat_TrAB = mat_unres_dense_TrAB(a,b)
          case default
@@ -1466,8 +1507,10 @@ MODULE matrix_operations
             call mat_csr_mul(a,b,transa, transb,alpha,beta,c)
          case(mtype_scalapack)
             call mat_scalapack_mul(a,b,transa, transb,alpha,beta,c)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_mul(a, b, transa, transb, alpha, beta, c)
+#endif
          case default
             call lsquit("mat_mul not implemented for this type of matrix",-1)
          end select
@@ -1506,8 +1549,10 @@ MODULE matrix_operations
              call mat_csr_add(alpha,a,beta,b,c)
          case(mtype_scalapack)
              call mat_scalapack_add(alpha,a,beta,b,c)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_add(alpha,a,beta,b,c)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_add(alpha,a,beta,b,c)
          case default
@@ -1544,8 +1589,10 @@ MODULE matrix_operations
              call mat_csr_daxpy(alpha,x,y)
          case(mtype_scalapack)
              call mat_scalapack_daxpy(alpha,x,y)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_daxpy(alpha,x,y)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_daxpy(alpha,x,y)
          case default
@@ -1603,8 +1650,10 @@ MODULE matrix_operations
             mat_dotproduct = mat_csr_dotproduct(a,b)
          case(mtype_scalapack)
             mat_dotproduct = mat_scalapack_dotproduct(a,b)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             mat_dotproduct = mat_pdmm_dotproduct(a,b)
+#endif
          case(mtype_unres_dense)
              mat_dotproduct = mat_unres_dense_dotproduct(a,b)
          case default
@@ -1635,8 +1684,10 @@ MODULE matrix_operations
             mat_sqnorm2 = mat_csr_sqnorm2(a)
          case(mtype_scalapack)
             mat_sqnorm2 = mat_scalapack_sqnorm2(a)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             mat_sqnorm2 = mat_pdmm_sqnorm2(a)
+#endif
          case(mtype_unres_dense)
              mat_sqnorm2 = mat_unres_dense_sqnorm2(a)
          case default
@@ -1697,8 +1748,10 @@ MODULE matrix_operations
              call mat_csr_max_elm(a,val)
           case(mtype_scalapack)
              call mat_scalapack_max_elm(a,val,tmp)
+#ifdef VAR_ENABLE_TENSORS
           case(mtype_pdmm)
              call mat_pdmm_max_elm(a,val,tmp)
+#endif
          case(mtype_unres_dense)
              if (present(pos)) call lsquit('mat_max_elm(): position parameter not implemented!',-1)
              call mat_unres_dense_max_elm(a,val)
@@ -1727,8 +1780,10 @@ MODULE matrix_operations
              call mat_dense_min_elm(a,val,tmp)
           case(mtype_scalapack)
              call mat_scalapack_min_elm(a,val,tmp)
+#ifdef VAR_ENABLE_TENSORS
           case(mtype_pdmm)
              call mat_pdmm_min_elm(a,val,tmp)
+#endif
          case default
               call lsquit("mat_min_elm not implemented for this type of matrix",-1)
          end select
@@ -1820,10 +1875,12 @@ MODULE matrix_operations
             call time_mat_operations1
             call mat_dense_diag_f(F,S,eival,Cmo)
             call time_mat_operations2(JOB_mat_diag_f)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call time_mat_operations1
             call mat_pdmm_diag_f(F,S,eival,Cmo)
             call time_mat_operations2(JOB_mat_diag_f)
+#endif
          case(mtype_scalapack)
             call mat_init(A,F%nrow,F%ncol)
             call mat_init(B,S%nrow,S%ncol)
@@ -1879,10 +1936,12 @@ MODULE matrix_operations
             call time_mat_operations2(JOB_mat_dsyev)
             call mat_assign(S,B)
             call mat_free(B)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call time_mat_operations1
             call mat_pdmm_dsyev(S,eival,ndim)
             call time_mat_operations2(JOB_mat_dsyev)
+#endif
          case(mtype_csr)
             call mem_alloc(S_full,ndim,ndim)
             call mat_csr_to_full(S,1.0E0_realk,S_full)
@@ -1959,10 +2018,12 @@ MODULE matrix_operations
        call time_mat_operations1           
        CALL mat_scalapack_dsyevx(S,eival,ieig)
        call time_mat_operations2(JOB_mat_dsyevx)
+#ifdef VAR_ENABLE_TENSORS
     case(mtype_pdmm)
        call time_mat_operations1           
        CALL mat_pdmm_dsyevx(S,eival,ieig)
        call time_mat_operations2(JOB_mat_dsyevx)
+#endif
     case(mtype_unres_dense)
        call lsquit('mat_dsyevx mtype_unres_dense not implemented',-1)
        call time_mat_operations1           
@@ -2129,10 +2190,12 @@ end subroutine mat_insert_section
              call time_mat_operations1
              call mat_scalapack_add_identity(1E0_realk,0E0_realk,TMP,I)
              call time_mat_operations2(JOB_mat_identity)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call time_mat_operations1
              call mat_pdmm_identity(I)
              call time_mat_operations2(JOB_mat_identity)
+#endif
          case(mtype_unres_dense)
              call time_mat_operations1
              call mat_unres_dense_identity(I)
@@ -2181,8 +2244,10 @@ end subroutine mat_insert_section
             call mat_csr_add_identity(alpha, beta, B, C)
          case(mtype_scalapack)
             call mat_scalapack_add_identity(alpha, beta, B, C)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_add_identity(alpha, beta, B, C)
+#endif
          case(mtype_unres_dense)
             call mat_init(I, b%nrow, b%ncol)
             call mat_unres_dense_identity(I)
@@ -2226,8 +2291,10 @@ end subroutine mat_insert_section
              call mat_unres_dense_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
               call mat_scalapack_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
               call mat_pdmm_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+#endif
          case default
               call lsquit("mat_create_block not implemented for this type of matrix",-1)
          end select
@@ -2309,8 +2376,10 @@ end subroutine mat_insert_section
              call mat_csr_retrieve_block_full(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
             call mat_scalapack_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
             call mat_pdmm_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
@@ -2342,8 +2411,10 @@ end subroutine mat_insert_section
              call mat_csr_scal(alpha, A)
          case(mtype_scalapack)
              call mat_scalapack_scal(alpha, A)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_scal(alpha, A)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_scal(alpha,A)
          case default
@@ -2448,8 +2519,10 @@ end subroutine mat_insert_section
              call mat_dense_zero(A)
          case(mtype_scalapack)
              call mat_scalapack_zero(A)
+#ifdef VAR_ENABLE_TENSORS
          case(mtype_pdmm)
              call mat_pdmm_zero(A)
+#endif
          case(mtype_unres_dense)
              call mat_unres_dense_zero(A)
          case(mtype_csr)
@@ -2678,8 +2751,10 @@ end subroutine set_lowertriangular_zero
            call mat_dense_extract_diagonal(diag,A)
       case(mtype_scalapack)
            call mat_scalapack_extract_diagonal(diag,A)
+#ifdef VAR_ENABLE_TENSORS
       case(mtype_pdmm)
            call mat_pdmm_extract_diagonal(diag,A)
+#endif
       case default
             call lsquit("mat_extract_diagonal not implemented for this type of matrix",-1)
       end select

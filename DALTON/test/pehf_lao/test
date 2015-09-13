@@ -12,23 +12,23 @@ f = Filter()
 
 f.add(from_string = 'Total shielding tensor (ppm)',
       num_lines = 10,
-      abs_tolerance = 2.0e-4)
+      abs_tolerance = 2.0e-2)
 
 f.add(from_string = 'Diamagnetic and paramagnetic contributions (ppm)',
       num_lines = 10,
-      abs_tolerance = 2.0e-4)
+      abs_tolerance = 2.0e-2)
 
 f.add(from_string = 'Antisymmetric and traceless symmetric parts (ppm)',
       num_lines = 10,
-      abs_tolerance = 2.0e-4)
+      abs_tolerance = 2.0e-2)
 
 f.add(from_string = 'Principal values and axes',
       num_lines = 8,
-      abs_tolerance = 2.0e-4)
+      abs_tolerance = 2.01e-2)
 
 f.add(from_string = 'Summary of chemical shieldings',
       num_lines = 18,
-      abs_tolerance = 2.0e-4)
+      abs_tolerance = 2.0e-2)
 
 test.run(['pehf_lao.dal', 'pehf_lao_redist.dal'], ['acrolein.mol'], ['2h2o.pot'], f={'out': f})
 

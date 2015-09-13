@@ -3141,7 +3141,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      ELSE
         IF(MemDebugPrint)print*,'STD: Before a FullAlphaCD of size=',w1size
         IF(MemDebugPrint)call stats_globalmem(6)
-        call mem_alloc(FullAlphaCD,w1size)
+        call mem_alloc(FullAlphaCD,w1size,'IIDF3C:FullAlphaCD')
      ENDIF
 
      call InitThermiteIntTransform(n1,nMO1,n2,nMO2,C1,C2,dim1,MaxN,nthreads) !full
@@ -3161,7 +3161,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      ELSE
         IF(MemDebugPrint)print*,'STD: Before a ResultMat of size=',MaxN*n1*n2*nthreads
         IF(MemDebugPrint)call stats_globalmem(6)
-        call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads)
+        call mem_alloc(setting%output%ResultMat,MaxN,1,n1,n2,nthreads,'IIDF3C:ResultMat')
      ENDIF
      n8 = MaxN*n1*n2*nthreads
      call ls_dzero8(setting%output%ResultMat,n8) !due to screening 
@@ -3186,7 +3186,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
      !directly in setting%output%Result3D (AO to MO happens outside Integral code)
      DoThermiteIntTransform = .FALSE.
      call initIntegralOutputDims(setting%Output,1,1,1,1,1)
-     call mem_alloc(setting%output%ResultMat,1,1,1,1,1)
+     call mem_alloc(setting%output%ResultMat,1,1,1,1,1,'IIDF3C:ResultMat2')
      n8 = dim1*n1*n2
      IF(DECPRINTLEVEL.GT.2.OR.MemDebugPrint)WRITE(LUPRI,'(A,F13.5,A)')&
           & '3 center RI: Allocating AO (alpha|CD)',dim1*n1*n2*8E-9_realk,' GB'
@@ -3200,7 +3200,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         IF(MemDebugPrint)print*,'w1size=',dim1,'*',n1,'*',n2,'=',dim1*n1*n2
         IF(MemDebugPrint)print*,'STD: Before b FullAlphaCD of size=',w1size
         IF(MemDebugPrint)call stats_globalmem(6)
-        call mem_alloc(FullAlphaCD,w1size)
+        call mem_alloc(FullAlphaCD,w1size,'IIDF3C:FullAlphaCD2')
      ENDIF
      call ls_dzero8(FullAlphaCD,w1size)
      cpointer = c_loc(FullAlphaCD(1))
@@ -3258,7 +3258,9 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
            IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_alloc(TmpAlphaCD,n8)
         ELSE
-           call mem_alloc(TmpAlphaCD,n8)
+           IF(MemDebugPrint)print*,'STD: Before TmpAlphaCD n8=',n8
+           IF(MemDebugPrint)call stats_globalmem(6)
+           call mem_alloc(TmpAlphaCD,n8,'IIDF3C:TmpAlphaCD')
         ENDIF
         call dgemm('N','N',M,N,K,1.0E0_realk,FullAlphaCD,M,C2,K,0.0E0_realk,TmpAlphaCD,M)
 
@@ -3268,8 +3270,11 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         IF(use_bg_buf)THEN
            !do nothing
         ELSE
+           IF(MemDebugPrint)print*,'STD: Dealloc FullAlphaCD size(FullAlphaCD)=',size(FullAlphaCD)
            call mem_dealloc(FullAlphaCD)
-           call mem_alloc(FullAlphaCD,w1size)
+           IF(MemDebugPrint)print*,'STD: Before FullAlphaCD w1size=',w1size
+           IF(MemDebugPrint)call stats_globalmem(6)
+           call mem_alloc(FullAlphaCD,w1size,'IIDF3C:FullAlphaCD4')
         ENDIF
 
         call DF3centerTrans4(nMO1,nMO2,n1,dim1,C1,TmpAlphaCD,FullAlphaCD(1:w1size))
@@ -3288,6 +3293,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
            IF(MemDebugPrint)call printBGinfo()
            call mem_pseudo_alloc(FullAlphaCD, w1size)
         ELSE
+           IF(MemDebugPrint)print*,'STD: Dealloc TmpAlphaCD=',size(TmpAlphaCD)
            call mem_dealloc(TmpAlphaCD)
         ENDIF
      ENDIF
@@ -3630,7 +3636,7 @@ SUBROUTINE II_get_RI_AlphaBeta_geoderiv2CenterInt(LUPRI,LUERR,AlphaBetaDeriv,&
   call initIntegralOutputDims(setting%output,nbastaux,1,nbastaux,1,3*natoms)
   call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,&
        & CoulombOperator,GeoDerivRHSSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-  call mem_alloc(AlphaBetaDeriv2,nbasisAux,nbasisAux,3*natoms)
+  call mem_alloc(AlphaBetaDeriv2,nbasisAux,nbasisAux,3*natoms,'IIDF3G:AlphaBetaDeriv2')
   call retrieve_Output(lupri,setting,AlphaBetaDeriv2,.FALSE.)
   call dcopy(nbastaux*nbastaux*3*natoms,AlphaBetaDeriv2,1,AlphaBetaDeriv,1)
   call mem_dealloc(AlphaBetaDeriv2)
@@ -3733,11 +3739,11 @@ SUBROUTINE II_get_RIMP2_grad(LUPRI,LUERR,Gradient,SETTING,nbasisAux,&
   CALL pari_set_atomic_fragments(molecule1,ATOMS,nAtomsAux,lupri)
   
   ! Split only on of the atomic loops over nodes
-  call mem_alloc(nbasisAuxMPI,numnodes)
-  call mem_alloc(nAtomsMPI,numnodes)    
-  call mem_alloc(startAuxMPI,nAtomsAux,numnodes)
-  call mem_alloc(AtomsMPI,nAtomsAux,numnodes)
-  call mem_alloc(nAuxMPI,nAtomsAux,numnodes)
+  call mem_alloc(nbasisAuxMPI,numnodes,'IIDFGG:AlphaBetaDeriv2')
+  call mem_alloc(nAtomsMPI,numnodes,'IIDFGG:nAtomsMPI')    
+  call mem_alloc(startAuxMPI,nAtomsAux,numnodes,'IIDFGG:startAuxMPI')
+  call mem_alloc(AtomsMPI,nAtomsAux,numnodes,'IIDFGG:AtomsMPI')
+  call mem_alloc(nAuxMPI,nAtomsAux,numnodes,'IIDFGG:nAuxMPI')
   call getRIbasisMPI(molecule1,nAtomsAux,numnodes,nbasisAuxMPI,startAuxMPI,&
        & AtomsMPI,nAtomsMPI,nAuxMPI)
   call mem_dealloc(startAuxMPI)
@@ -3802,14 +3808,14 @@ SUBROUTINE II_get_RIMP2_grad(LUPRI,LUERR,Gradient,SETTING,nbasisAux,&
                call mem_pseudo_dealloc(AlphaCDmo)
                call mem_pseudo_dealloc(AlphaCDmo1)
             ELSE
-               call mem_alloc(alphaCD,nAuxShellA,1,nbast,nbast,3)
+               call mem_alloc(alphaCD,nAuxShellA,1,nbast,nbast,3,'IIDFGG:alphaCD')
                alphaCD = 0.0E0_realk !obsolete?
                CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
-               call mem_alloc(alphaCDmo1,nAuxShellA,nbast,nocc,3)
+               call mem_alloc(alphaCDmo1,nAuxShellA,nbast,nocc,3,'IIDFGG:alphaCDmo1')
                !AO to MO (P^x|beta nu) -> (P^x|beta j)  
                call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxShellA,nbast,Cocc,nocc,3)
                call mem_dealloc(AlphaCD)
-               call mem_alloc(alphaCDmo,nAuxShellA,nvirt,nocc,3)
+               call mem_alloc(alphaCDmo,nAuxShellA,nvirt,nocc,3,'IIDFGG:alphaCDmo')
                !AO to MO (P^x|beta j) -> (P^x|b j)  
                call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxShellA,nbast,nocc,Cvirt,nvirt,3)
                call mem_dealloc(AlphaCDmo1)
@@ -3852,15 +3858,15 @@ SUBROUTINE II_get_RIMP2_grad(LUPRI,LUERR,Gradient,SETTING,nbasisAux,&
                call mem_pseudo_dealloc(AlphaCDmo)
                call mem_pseudo_dealloc(AlphaCDmo1)
             ELSE
-               call mem_alloc(alphaCD,nAuxShellA,1,nbast,nbast,3*natoms)
+               call mem_alloc(alphaCD,nAuxShellA,1,nbast,nbast,3*natoms,'IIDFGG:alphaCDb')
                alphaCD = 0.0E0_realk !obsolete?
                CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
                
-               call mem_alloc(alphaCDmo1,nAuxShellA,nbast,nocc,3*natoms)
+               call mem_alloc(alphaCDmo1,nAuxShellA,nbast,nocc,3*natoms,'IIDFGG:alphaCDmo1b')
                !AO to MO (P|(beta nu)^x) -> (P^x|(beta j)^x)  
                call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxShellA,nbast,Cocc,nocc,3*natoms)
                call mem_dealloc(AlphaCD)
-               call mem_alloc(alphaCDmo,nAuxShellA,nvirt,nocc,3*natoms)
+               call mem_alloc(alphaCDmo,nAuxShellA,nvirt,nocc,3*natoms,'IIDFGG:alphaCDmob')
                !AO to MO (P|(beta j)^x) -> (P|(b j)^x)  
                call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxShellA,nbast,nocc,Cvirt,nvirt,3*natoms)
                call mem_dealloc(AlphaCDmo1)
@@ -3900,14 +3906,14 @@ SUBROUTINE II_get_RIMP2_grad(LUPRI,LUERR,Gradient,SETTING,nbasisAux,&
             call mem_pseudo_dealloc(AlphaCDmo)
             call mem_pseudo_dealloc(AlphaCDmo1)
          ELSE
-            call mem_alloc(alphaCD,nAuxA,1,nbast,nbast,3)
+            call mem_alloc(alphaCD,nAuxA,1,nbast,nbast,3,'IIDFGG:alphaCD')
             alphaCD = 0.0E0_realk !obsolete?
             CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
-            call mem_alloc(alphaCDmo1,nAuxA,nbast,nocc,3)
+            call mem_alloc(alphaCDmo1,nAuxA,nbast,nocc,3,'IIDFGG:alphaCDmo1c')
             !AO to MO (P^x|beta nu) -> (P^x|beta j)  
             call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxA,nbast,Cocc,nocc,3)
             call mem_dealloc(AlphaCD)
-            call mem_alloc(alphaCDmo,nAuxA,nvirt,nocc,3)
+            call mem_alloc(alphaCDmo,nAuxA,nvirt,nocc,3,'IIDFGG:alphaCDmoc')
             !AO to MO (P^x|beta j) -> (P^x|b j)  
             call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxA,nbast,nocc,Cvirt,nvirt,3)
             call mem_dealloc(AlphaCDmo1)
@@ -3945,14 +3951,14 @@ SUBROUTINE II_get_RIMP2_grad(LUPRI,LUERR,Gradient,SETTING,nbasisAux,&
             call mem_pseudo_dealloc(AlphaCDmo)
             call mem_pseudo_dealloc(AlphaCDmo1)
          ELSE
-            call mem_alloc(alphaCD,nAuxA,1,nbast,nbast,3*natoms)
+            call mem_alloc(alphaCD,nAuxA,1,nbast,nbast,3*natoms,'IIDFGG:alphaCDe')
             alphaCD = 0.0E0_realk !obsolete?
             CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)               
-            call mem_alloc(alphaCDmo1,nAuxA,nbast,nocc,3*natoms)
+            call mem_alloc(alphaCDmo1,nAuxA,nbast,nocc,3*natoms,'IIDFGG:alphaCDmo1e')
             !AO to MO (P|(beta nu)^x) -> (P^x|(beta j)^x)  
             call AOtoMO_Pgrad4cent(alphaCD,alphaCDmo1,nAuxA,nbast,Cocc,nocc,3*natoms)
             call mem_dealloc(AlphaCD)
-            call mem_alloc(alphaCDmo,nAuxA,nvirt,nocc,3*natoms)
+            call mem_alloc(alphaCDmo,nAuxA,nvirt,nocc,3*natoms,'IIDFGG:alphaCDmoe')
             !AO to MO (P|(beta j)^x) -> (P|(b j)^x)  
             call AOtoMO_Pgrad3cent(alphaCDmo1,alphaCDmo,nAuxA,nbast,nocc,Cvirt,nvirt,3*natoms)
             call mem_dealloc(AlphaCDmo1)
