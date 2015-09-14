@@ -730,7 +730,7 @@ contains
     !> Full molecule structure (MO coeffecients, Fock matrix etc.)
     !> Intent(in) for main master, intent(out) for local masters
     type(fullmolecule),intent(inout) :: MyMolecule
-    logical :: gm
+    logical :: gm,assohjccAO
     integer(kind=ls_mpik) :: master
     integer :: natoms2
     integer :: Co_addr(infpar%nodtot)
@@ -775,6 +775,9 @@ contains
     call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12NLSX1,master,MPI_COMM_LSDALTON)
 
+    if(gm) assohjccAO = associated(MyMolecule%hJccAO)
+    call ls_mpibcast(assohjccAO,master,MPI_COMM_LSDALTON)
+
     ! Allocate pointers if global slave
     if(.not. gm) then
        call mem_alloc(MyMolecule%atom_size,MyMolecule%natoms)
@@ -803,6 +806,13 @@ contains
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
        IF(DECinfo%F12)THEN          
           IF(.NOT.DECinfo%full_molecular_cc)THEN
+             IF(assohjccAO)THEN
+                call mem_alloc(MyMolecule%hJccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+                call mem_alloc(MyMolecule%KccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             ELSE
+                nullify(MyMolecule%hJccAO)
+                nullify(MyMolecule%KccAO)
+             ENDIF
              call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
              call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
              call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
@@ -890,6 +900,10 @@ contains
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
        IF(.NOT.DECinfo%full_molecular_cc)THEN
+          IF(assohjccAO)THEN
+             call ls_mpibcast(MyMolecule%hJccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+             call ls_mpibcast(MyMolecule%KccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          ENDIF
           call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
           call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
           call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)

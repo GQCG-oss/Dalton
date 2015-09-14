@@ -193,7 +193,15 @@ module f12_routines_module
     !> Mixed CABS/CABS exchange matrix 
     !> Krr
     call mat_init(Kcc,ncabsAO,ncabsAO)
-    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
+    IF(associated(MyMolecule%hJccAO))THEN
+       !       call mat_set_from_full(MyMolecule%hJccAO,1.0E0_realk,HJccAO)
+       call mem_dealloc(MyMolecule%hJccAO)
+
+       call mat_set_from_full(MyMolecule%KccAO,1.0E0_realk,Kcc)
+       call mem_dealloc(MyMolecule%KccAO)
+    ELSE
+       call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
+    ENDIF
     call mat_to_full(Kcc,1.0E0_realk,Krr_real)
     call mat_free(Kcc)
     
@@ -279,9 +287,17 @@ module f12_routines_module
     endif
 
     call mat_init(HJccAO,ncabsAO,ncabsAO)
-    call get_AO_hJ(nbasis,ncabsAO,HJccAO,Dmat,MyLsitem,'CCRRC')
     call mat_init(KccAO,ncabsAO,ncabsAO)
-    call get_AO_K(nbasis,ncabsAO,KccAO,Dmat,MyLsitem,'CCRRC')
+    IF(DECinfo%F12singles)THEN
+       IF(.NOT.associated(MyMolecule%hJccAO))call lsquit('F12singles but no hJccAO',-1)
+       call mat_set_from_full(MyMolecule%hJccAO,1.0E0_realk,HJccAO)
+       call mat_set_from_full(MyMolecule%KccAO,1.0E0_realk,KccAO)
+       call mem_dealloc(MyMolecule%hJccAO)
+       call mem_dealloc(MyMolecule%KccAO)
+    ELSE
+       call get_AO_hJ(nbasis,ncabsAO,HJccAO,Dmat,MyLsitem,'CCRRC')
+       call get_AO_K(nbasis,ncabsAO,KccAO,Dmat,MyLsitem,'CCRRC')
+    ENDIF
     call mat_init(FccAO,ncabsAO,ncabsAO)
     call mat_assign(FccAO,HJccAO)
     call mat_daxpy(1E0_realk,KccAO,FccAO) 
@@ -2320,12 +2336,8 @@ module f12_routines_module
     !> HF density matrix
     type(matrix), intent(in) :: Dmat
     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-    type(matrix) :: Fic
-    type(matrix) :: Fcd
-    type(matrix) :: Fac
-    type(matrix) :: Fcc
-    type(matrix) :: Frc,Id,Ucd,tmp,Uij,Uab
-    type(matrix) :: Fij,Fab
+    type(matrix) :: Fic,Fcd,Fac,Fcc,Frc,Id,Ucd,tmp,Uij,Uab
+    type(matrix) :: Fij,Fab,HJcc,Kcc
     real(realk), pointer :: eival(:),Frcfull(:,:)
     real(realk) :: tcpu,twall
 
@@ -2348,8 +2360,23 @@ module f12_routines_module
     ! Fock matrices
     ! *************
 
+!    call mat_init(Fcc,ncabsAO,ncabsAO)
+!    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+
+    call mat_init(HJcc,ncabsAO,ncabsAO)
+    call get_AO_hJ(nbasis,ncabsAO,HJcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Kcc,ncabsAO,ncabsAO)
+    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call mat_assign(Fcc,HJcc)
+    call mat_daxpy(1E0_realk,Kcc,Fcc) 
+    !Save the AO Fock in MyMolecule to be used later!
+    call mem_alloc(MyMolecule%hJccAO,ncabsAO,ncabsAO)
+    call mat_to_full(HJcc,1.0E0_realk,MyMolecule%hJccAO)
+    call mat_free(HJcc)
+    call mem_alloc(MyMolecule%KccAO,ncabsAO,ncabsAO)
+    call mat_to_full(Kcc,1.0E0_realk,MyMolecule%KccAO)
+    call mat_free(Kcc)
 
     !Fcd
     call mat_init(Fcd,ncabs,ncabs)
