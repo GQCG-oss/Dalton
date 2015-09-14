@@ -2244,10 +2244,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !Get OVOV integrals from non-T1 transformed VOVO integrals or generate
    !----------------------------------------------------------------------
-   print *,"call tensor minit",local,os,vs,bg
    call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs], bg=bg )
-   print *,"master", iajb%mode
-   print *,"master", iajb%ntpm,shape(iajb%ntpm),associated(iajb%ntpm)
 
    if(.not.vovo_avail)then
       call tensor_zero(iajb)
