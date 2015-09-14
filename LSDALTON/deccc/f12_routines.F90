@@ -298,7 +298,7 @@ module f12_routines_module
     call mat_init(HJir,nocc,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ir',HJrc,HJir)    
-    call mat_free(HJrc)
+    !call mat_free(HJrc)
 
     ! Mixed CABS/CABS exchange matrix
     !Krr
@@ -307,20 +307,24 @@ module f12_routines_module
     call mat_init(Krr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Kcc,Krr)
-    call mat_free(Kcc)
+    !call mat_free(Kcc)
 
     ! Mixed CABS/CABS Fock matrix
     !Frr 
     call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call get_AO_hJ(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call mat_daxpy(1E0_realk,Kcc,Fcc) 
+    call mat_free(Kcc)
+
+    !call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Frr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Fcc,Frr)
-    call mat_free(Fcc)
-
+    !call mat_free(Fcc)
+    ! Fixed ineffciency TEST
     !Fcd
-    call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    !call mat_init(Fcc,ncabsAO,ncabsAO)
+    !call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcd,ncabs,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
@@ -329,19 +333,22 @@ module f12_routines_module
     ! Mixed AO/CABS Fock matrix
     !Fac
     call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call get_AO_K(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_daxpy(1E0_realk,HJrc,Frc)
+    call mat_free(HJrc)
+
     call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
-    call mat_free(Frc)
-       
+    !call mat_free(Frc)
+    ! Fixed ineffciency !!!!! TEST  
     !Fic
-    call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    !call mat_init(Frc,nbasis,ncabsAO)
+    !call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
-    call mat_free(Frc)
+    !call mat_free(Frc)
     
     ! Mixed AO/AO full MO Fock matrix 
     call mat_init(Fcc,nbasis,nbasis)
@@ -362,7 +369,9 @@ module f12_routines_module
 
     ! Mixed CABS/AO MO Fock matrix
     call mat_init(Fcc,ncabsAO,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
+    call mat_trans(Frc,Fcc)
+    call mat_free(Frc) 
+    !call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
     !Frm
     call mat_init(Frm,ncabsAO,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
@@ -2360,11 +2369,11 @@ module f12_routines_module
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
-    call mat_free(Frc)
+    !call mat_free(Frc)
 
     ! Fac
-    call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    !call mat_init(Frc,nbasis,ncabsAO)
+    !call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
