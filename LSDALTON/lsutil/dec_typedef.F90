@@ -462,10 +462,6 @@ module dec_typedef_module
      logical :: hack2
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
-     !> test the array structure
-     logical :: tensor_test
-     !> test the array reorderings
-     logical :: reorder_test
      !> Check that LCM orbitals are correct
      logical :: check_lcm_orbitals
      !> Check the the Occupied Subsystem locality
@@ -1621,8 +1617,6 @@ CONTAINS
 #endif
     DECinfo%force_scheme            = .false.
     DECinfo%en_mem                  = 0
-    DECinfo%tensor_test              = .false.
-    DECinfo%reorder_test            = .false.
     DECinfo%CCSDno_restart          = .false.
     DECinfo%CCSDnosaferun           = .false.
     DECinfo%solver_par              = .false.
