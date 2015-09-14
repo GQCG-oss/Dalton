@@ -900,7 +900,7 @@ C Bin Gao, December 24, 2009, copied from that of linsca
 C
 C                             Total Fock matrix
 C
-                           IF (IFCTYP(1) .EQ. 3) THEN
+                            IF (IFCTYP(1) .EQ. 3) THEN
                               DFAC = DFAC*2.0
                               EFAC = EFAC*2.0
                               DAB  = DFAC*DTAB
@@ -917,8 +917,8 @@ C
                               DBD  = EFAC*DTBD
                               DDB  = EFAC*DTDB
 C
-                           IF (.NOT.SUSCEP) THEN
-                           DO N = 1, 3
+                             IF (.NOT.SUSCEP) THEN
+                             DO N = 1, 3
                               ABCD = PINT(INT,N)
                               ABDC = QINT(INT,N)
 C Coulomb
@@ -941,9 +941,9 @@ C                              ABDC = ABDC*HFXFAC
                               FT(B,C,N) = FT(B,C,N) + ABCD*DAD
                               FT(D,B,N) = FT(D,B,N) - ABDC*DCA
                               FT(B,D,N) = FT(B,D,N) + ABDC*DAC
-                           END DO
-                           ELSE
-                           DO N = 1, 6
+                             END DO
+                             ELSE
+                             DO N = 1, 6
                               ABCD = PINT(INT,N)
                               ABDC = QINT(INT,N)
                               FT(A,B,N) = FT(A,B,N)
@@ -964,9 +964,9 @@ C                              ABDC = ABDC*HFXFAC
                               FT(C,A,N) = FT(C,A,N) - ABDC*DDB
                               FT(B,D,N) = FT(B,D,N) - ABDC*DAC
                               FT(D,B,N) = FT(D,B,N) - ABDC*DCA
-                           ENDDO
-                           END IF
-                           ELSE
+                             ENDDO
+                             END IF
+                            ELSE
                               DAB  = DFAC*DTAB
                               DCD  = DFAC*DTCD
                               DAC  = EFAC*DTAC
@@ -1006,7 +1006,7 @@ C
                                     FV(D,B,N) = FV(D,B,N) - ABDC*DAC
                                  END DO
                               END IF
-                           END IF
+                            END IF
                            END IF
                           ELSE ! .NOT. USE_OPENRSP
 #endif
