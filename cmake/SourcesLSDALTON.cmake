@@ -10,7 +10,7 @@
 # and contains only lsutil/ls_precision.F90
 # the next be compiled is LSUTIL_MATRIXM_SOURCES
 # which contains the matrix type definition. 
-# then LSUTIL_TENSOR_SOURCES and then LSUTIL_COMMON_C_SOURCES and
+# then LSUTIL_COMMON_C_SOURCES and
 # LSUTIL_TYPE_SOURCES which should only contain 
 # type definitions and files which only depend on 
 # lsutil/ls_precision.F90 and lsutil/matrix_module.F90
@@ -26,24 +26,6 @@ set(LSUTIL_PRECISION_SOURCES
     )
 set(LSUTIL_MATRIXM_SOURCES
     LSDALTON/lsutil/matrix_module.F90
-    )
-set(LSUTIL_TENSOR_SOURCES
-    LSDALTON/tensor/tensor_parameters.F90
-    LSDALTON/tensor/tensor_mpi_binding.F90
-    LSDALTON/tensor/get_idx.F90
-    LSDALTON/tensor/tensor_error_handler.F90
-    LSDALTON/tensor/tensor_bg_buf.F90
-    LSDALTON/tensor/tensor_allocator.F90
-    LSDALTON/tensor/tensor_mpi_interface.F90
-    LSDALTON/tensor/tensor_type_def.F90
-    LSDALTON/tensor/tensor_mpi_operations.F90
-    LSDALTON/tensor/tensor_basic.F90
-    LSDALTON/tensor/lspdm_basic.F90
-    LSDALTON/tensor/lspdm_tensor_operations.F90
-    LSDALTON/tensor/tensor_algebra_dil.F90
-    LSDALTON/tensor/tensor_interface.F90
-    LSDALTON/tensor/tensor_tester.F90
-    LSDALTON/tensor/lspdm_slave.F90
     )
 #These files are only allowed to use precision or Matrix_module  
 #Usually these only contain type definitians
