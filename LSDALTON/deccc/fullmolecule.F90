@@ -799,6 +799,13 @@ contains
 !    end if
 
     ! Delete F12-Fock and K and hJir info
+    if(associated(molecule%hJccAO)) then
+       call mem_dealloc(molecule%hJccAO)
+    end if
+    if(associated(molecule%KccAO)) then
+       call mem_dealloc(molecule%KccAO)
+    end if
+
     if(associated(molecule%Fij)) then
        call mem_dealloc(molecule%Fij)
     end if

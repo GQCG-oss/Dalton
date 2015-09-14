@@ -837,6 +837,11 @@ module dec_typedef_module
      !> Occ-Occ Fock matrix in MO basis (change)
      real(realk), pointer :: Fij(:,:) => null()
 
+     !> AO hJccAO(ncabsAO,ncabsAO)
+     real(realk), pointer :: hJccAO(:,:) => null() 
+     !> AO KccAO(ncabsAO,ncabsAO)
+     real(realk), pointer :: KccAO(:,:) => null() 
+
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
      real(realk), pointer :: hJir(:,:) => null() 
      !> Cabs ri-Cabs ri exchange matrix in MO basis
