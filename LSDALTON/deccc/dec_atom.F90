@@ -1066,15 +1066,15 @@ contains
      real(realk), pointer :: DistOccOcc(:,:), DistVirOcc(:,:)      
      real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
      integer :: ncore, i
-     real(realk),pointer :: DistanceTableOrbAtomOcc(:,:),DistanceTableOrbAtomVirt(:,:)
+     real(realk),pointer :: DistOccAtom(:,:),DistVirAtom(:,:)
 
      ! Orbital-atom distances
-     call mem_alloc(DistanceTableOrbAtomOcc,mymolecule%nocc,mymolecule%natoms)
-     call mem_alloc(DistanceTableOrbAtomVirt,mymolecule%nvirt,mymolecule%natoms)
+     call mem_alloc(DistOccAtom,mymolecule%nocc,mymolecule%natoms)
+     call mem_alloc(DistVirAtom,mymolecule%nvirt,mymolecule%natoms)
      call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
-          & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
+          & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistOccAtom)
      call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
-          & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
+          & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistVirAtom)
 
      ! Set # core orbitals to zero if the frozen core approximation is not used:
      if (DECinfo%frozencore) then
@@ -1122,13 +1122,13 @@ contains
            ! Get occupied priority list:
            call mem_alloc(occ_priority_list,no_full)
            call GetSortedList(occ_priority_list,track_occ_priority_list,&
-                DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
+                DistOccAtom,no_full,natoms,MyAtom)
            call mem_dealloc(occ_priority_list)
             
            ! Get virtual priority list:
            call mem_alloc(vir_priority_list,nv_full)
            call GetSortedList(vir_priority_list,track_vir_priority_list,&
-                & DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
+                & DistVirAtom,nv_full,natoms,MyAtom)
            call mem_dealloc(vir_priority_list)
         end if
 
@@ -1155,8 +1155,8 @@ contains
         call lsquit('ERROR FOP: Expansion Scheme not defined',DECinfo%output)
      end if
 
-     call mem_dealloc(DistanceTableOrbAtomOcc)
-     call mem_dealloc(DistanceTableOrbAtomVirt)
+     call mem_dealloc(DistOccAtom)
+     call mem_dealloc(DistVirAtom)
 
   end subroutine define_frag_expansion
 
@@ -1173,15 +1173,19 @@ contains
   !          contribution to the fragment energy, we choose them based on their 
   !          contribution to the Fock matrix.
   !
-  !          Scheme 3: Same as scheme 1 and 2 but the orbitals are prioriterized based
+  !          Scheme 3: The orbitals are prioriterized based
   !          on their distance to the central atom of the fragment.
+  !
+  !          Scheme 4: Same as scheme 3 but only one list is returned including both 
+  !          occupied and virtual orbitals
   !
   !          Be sure to exclude core orbitals from the priority list if frozen core is used.
   !
   ! Author:  Pablo Baudin
   ! Date:    July 2014
   subroutine define_frag_reduction(no_full,nv_full,natoms,MyAtom,MyMolecule,MyFragment, &
-           & track_occ_priority_list,track_vir_priority_list,nred_occ,nred_vir)
+           & track_occ_priority_list,track_vir_priority_list,track_priority_list, &
+           & nred_occ,nred_vir)
 
      implicit none
   
@@ -1200,23 +1204,15 @@ contains
      !> Return priority list of occ/vir orbitals
      integer, intent(out) :: track_occ_priority_list(no_full)
      integer, intent(out) :: track_vir_priority_list(nv_full)
+     integer, intent(out) :: track_priority_list(no_full+nv_full)
      !> minimum gap in number of orbital allowed between the 
      !  last two steps of the binary search.
      integer, intent(out) :: nred_occ, nred_vir
 
      real(realk), pointer :: DistOccOcc(:,:), DistVirOcc(:,:)      
-     real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
-     real(realk),pointer :: DistanceTableOrbAtomOcc(:,:),DistanceTableOrbAtomVirt(:,:)
+     real(realk), pointer :: DistOccAtom(:,:), DistVirAtom(:,:), DistOrbAtom(:,:)
+     real(realk), pointer :: occ_priority_list(:), vir_priority_list(:), priority_list(:)
      integer :: i
-
-     ! Orbital-atom distances
-     call mem_alloc(DistanceTableOrbAtomOcc,mymolecule%nocc,mymolecule%natoms)
-     call mem_alloc(DistanceTableOrbAtomVirt,mymolecule%nvirt,mymolecule%natoms)
-     call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
-          & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
-     call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
-          & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
-
 
      ! Get nred_occ and nred_vir (5% of the expanded spaces)
      nred_occ = max( ceiling(DECinfo%FracOfOrbSpace_red*MyFragment%noccAOS/100), 1)
@@ -1265,12 +1261,22 @@ contains
            call mem_dealloc(occ_priority_list)
         else
            ! Get occupied priority list:
+           call mem_alloc(DistOccAtom,no_full,natoms)
            call mem_alloc(occ_priority_list,no_full)
+
+           call GetOrbAtomDistances(no_full,natoms,MyMolecule%Carmomocc,&
+              & MyMolecule%AtomCenters,DistOccAtom)
            call GetSortedList(occ_priority_list,track_occ_priority_list,&
-                & DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
+                & DistOccAtom,no_full,natoms,MyAtom)
+
            call mem_dealloc(occ_priority_list)
+           call mem_dealloc(DistOccAtom)
         end if
-     else 
+     ! SCHEME 4:
+     else if (DECinfo%Frag_RedOcc_Scheme == 4) then
+        ! The priority list for scheme 4 is based on a common distance list 
+        ! for occupied and virtual orbitals, it is set in the virtual part:
+     else
         call lsquit('ERROR FOP: Occupied Reduction scheme not defined',DECinfo%output)
      end if
 
@@ -1308,17 +1314,40 @@ contains
            call mem_dealloc(vir_priority_list)
         else
            ! Get virtual priority list:
+           call mem_alloc(DistVirAtom,nv_full,natoms)
            call mem_alloc(vir_priority_list,nv_full)
+
+           call GetOrbAtomDistances(nv_full,natoms,MyMolecule%Carmomvirt,&
+              & MyMolecule%AtomCenters,DistVirAtom)
            call GetSortedList(vir_priority_list,track_vir_priority_list,&
-                & DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
+                & DistVirAtom,nv_full,natoms,MyAtom)
+
            call mem_dealloc(vir_priority_list)
+           call mem_dealloc(DistVirAtom)
+        end if
+     ! SCHEME 4:
+     else if (DECinfo%Frag_RedOcc_Scheme == 4) then
+        ! The priority list for scheme 4 is based on a common distance list 
+        ! for occupied and virtual orbitals, it is set here:
+        if (DECinfo%decco) then 
+           call lsquit('ERROR FOP: combined list not implemented for DECCO',DECinfo%output)
+        else
+           call mem_alloc(DistOrbAtom,no_full+nv_full,natoms)
+           call mem_alloc(priority_list,no_full+nv_full)
+
+           call GetOrbAtomDistances(no_full,natoms,MyMolecule%Carmomocc,&
+              & MyMolecule%AtomCenters,DistOrbAtom(1:no_full,:))
+           call GetOrbAtomDistances(nv_full,natoms,MyMolecule%Carmomvirt,&
+              & MyMolecule%AtomCenters,DistOrbAtom((1+no_full):(no_full+nv_full),:))
+           call GetSortedList(priority_list,track_priority_list,&
+                & DistOrbAtom,no_full+nv_full,natoms,MyAtom)
+
+           call mem_dealloc(priority_list)
+           call mem_dealloc(DistOrbAtom)
         end if
      else 
         call lsquit('ERROR FOP: Virtual Reduction scheme not defined',DECinfo%output)
      end if
-
-     call mem_dealloc(DistanceTableOrbAtomOcc)
-     call mem_dealloc(DistanceTableOrbAtomVirt)
 
   end subroutine define_frag_reduction
 
@@ -1488,6 +1517,80 @@ contains
      end do
 
   end subroutine reduce_fragment
+
+ 
+  ! Purpose: Set occ and vir logical list of orbitals that needs to be include
+  !          in the AOS of the fragment. This routine is used for reduction
+  !          of the fragment. We take care of including the EOS and to remove 
+  !          all core orbitals in case of frozen core approximation
+  !
+  ! Author:  Pablo Baudin
+  ! Date:    July 2014
+  subroutine reduce_fragment_comb_list(MyFragment,MyMolecule,no,nv,Nnew, &
+           & Occ_AOS,Vir_AOS,priority_list)
+
+     implicit none
+
+     !> Fragment information
+     type(decfrag), intent(in) :: MyFragment
+     !> Full molecule info
+     type(fullmolecule), intent(in) :: MyMolecule
+     !> total number of occ/vir orbs in the molecule:
+     integer, intent(in) :: no, nv
+     !> New number of orbital to include in fragment:
+     integer, intent(in) :: Nnew
+     !> Which orbital to include in fragment EOS:
+     logical, intent(inout) :: Occ_AOS(no), Vir_AOS(nv) 
+     !> list of all orbitals based on some priorities:
+     integer, intent(in) :: priority_list(no+nv)
+
+     integer :: i, ii, ncount, ncore
+
+     ! Set # core orbitals to zero if the frozen core approximation is not used:
+     if (DECinfo%frozencore) then
+        ncore = MyMolecule%ncore
+     else
+        ncore = 0
+     end if
+
+     ! Set all orbitals to be excluded before included Nnew most important orbitals:
+     Occ_AOS = .false.
+     Vir_AOS = .false.
+
+     ! Include EOS space:
+     call SanityCheckOrbAOS(Myfragment,no,'O',Occ_AOS)
+     call SanityCheckOrbAOS(Myfragment,nv,'V',Vir_AOS)
+
+
+     ! Put Nnew Orbitals in the AOS base on priority list:
+     ncount = count(Occ_AOS) + count(Vir_AOS)
+     if (ncount >= Nnew) return
+     do i=1,no+nv
+        ii = priority_list(i)
+
+        if (ii<=ncore) then
+           ! Skip core orbital:
+           cycle
+        else if (ii<=no) then
+           ! treat valence orb:
+           ! Skip orbital if it is is allready included (EOS)
+           if (Occ_AOS(ii)) cycle
+           ! or include it
+           Occ_AOS(ii) = .true.
+        else
+           ! treat virtual orb:
+           ! Skip orbital if it is is allready included (EOS)
+           if (Vir_AOS(ii-no)) cycle
+           ! or include it
+           Vir_AOS(ii-no) = .true.
+        end if
+
+        ! Exit loop when we have included the correct number of orbital
+        ncount = ncount + 1
+        if (ncount >= Nnew) exit
+     end do
+
+  end subroutine reduce_fragment_comb_list
 
 
   !> Purpose: Get sorted list of orbital contributions to the fragment energy
@@ -2387,15 +2490,15 @@ contains
     logical, dimension(nvirt) :: virt_list
     logical, dimension(nocc) :: Occ_list
     integer :: orb_idx
-    real(realk),pointer :: DistanceTableOrbAtomOcc(:,:),DistanceTableOrbAtomVirt(:,:)
+    real(realk),pointer :: DistOccAtom(:,:),DistVirAtom(:,:)
 
     ! Orbital-atom distances
-    call mem_alloc(DistanceTableOrbAtomOcc,mymolecule%nocc,mymolecule%natoms)
-    call mem_alloc(DistanceTableOrbAtomVirt,mymolecule%nvirt,mymolecule%natoms)
+    call mem_alloc(DistOccAtom,mymolecule%nocc,mymolecule%natoms)
+    call mem_alloc(DistVirAtom,mymolecule%nvirt,mymolecule%natoms)
     call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
-         & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
+         & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistOccAtom)
     call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
-         & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
+         & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistVirAtom)
 
 
     ! All orbitals included in fragment
@@ -2412,12 +2515,12 @@ contains
 
        !loop over all valence orbitals and include them if within radius
        do orb_idx=1, MyMolecule%nocc
-          occ_list(orb_idx) = (DistanceTableOrbAtomOcc(orb_idx,MyAtom)<=DECinfo%occ_init_radius)
+          occ_list(orb_idx) = (DistOccAtom(orb_idx,MyAtom)<=DECinfo%occ_init_radius)
        enddo
        !loop over all virtual orbitals and include them if within radius
        do orb_idx=1, MyMolecule%nvirt
-          virt_list(orb_idx) = (DistanceTableOrbAtomVirt(orb_idx,MyAtom)<=DECinfo%vir_init_radius)
-          !virt_list(orb_idx) = (DistanceTableOrbAtomVirt(orb_idx,MyAtom)>=10.0/bohr_to_angstrom)
+          virt_list(orb_idx) = (DistVirAtom(orb_idx,MyAtom)<=DECinfo%vir_init_radius)
+          !virt_list(orb_idx) = (DistVirAtom(orb_idx,MyAtom)>=10.0/bohr_to_angstrom)
        enddo
 
        !Make sure all the EOS orbtials are included
@@ -2433,8 +2536,8 @@ contains
        enddo
 
     endif
-    call mem_dealloc(DistanceTableOrbAtomOcc)
-    call mem_dealloc(DistanceTableOrbAtomVirt)
+    call mem_dealloc(DistOccAtom)
+    call mem_dealloc(DistVirAtom)
 
 
     if(DECinfo%frozencore) then  ! never include core orbitals for frozen core
