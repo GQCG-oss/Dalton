@@ -2421,7 +2421,7 @@ end subroutine AddF12CcouplingCorrection
      !> Logical vector telling which orbital is include in the fragment
      logical, pointer :: Occ_AOS(:), Vir_AOS(:)
      !> Expansion priority lists:
-     integer, pointer :: exp_list_occ(:), exp_list_vir(:)
+     integer, pointer :: exp_list_occ(:), exp_list_vir(:), exp_comb_list(:)
      !> # occ/vir orbitals added in each step of the expansion:
      integer :: nexp_occ, nexp_vir
      !> # occ/vir orbitals added to EOS space to define the initial fragment:
@@ -2441,7 +2441,7 @@ end subroutine AddF12CcouplingCorrection
      integer :: nc
      integer :: idx,i,a,expit,redit
      real(realk), dimension(ndecenergies) :: Eexp
-     logical :: add_MP2_opt
+     logical :: add_MP2_opt, comb_list
 
 
      !==================================================================================!
@@ -2506,6 +2506,7 @@ end subroutine AddF12CcouplingCorrection
      ! Get information on how the expansion should be performed:
      call mem_alloc(exp_list_occ,no,'OAF:exp_list_occ')
      call mem_alloc(exp_list_vir,nv,'OAF:exp_list_vir')
+     call mem_alloc(exp_comb_list,no+nv,'OAF:exp_comb_list')
 
 
      !Define the EOS spaces in the fragment to be able to calculate priority lists
@@ -2554,7 +2555,7 @@ end subroutine AddF12CcouplingCorrection
 
 
      call define_frag_expansion(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
-        & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
+        & exp_list_occ,exp_list_vir,exp_comb_list,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
 
      call mem_dealloc(AtomicFragment%occEOSidx)
      call mem_dealloc(AtomicFragment%virtEOSidx)
@@ -2569,8 +2570,10 @@ end subroutine AddF12CcouplingCorrection
      call mem_alloc(Vir_AOS,nv,'OAF:Vir_AOS')
 
      ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
-     call expand_fragment(no,nv,exp_list_occ,exp_list_vir,ninit_occ,ninit_vir,MyAtom, &
-        & MyMolecule,OccOrbitals,VirOrbitals,Occ_AOS,Vir_AOS,full_mol,frag_init=.true.)
+     comb_list = (DECinfo%frag_exp_scheme==4)
+     call expand_fragment(no,nv,exp_list_occ,exp_list_vir,exp_comb_list, &
+        & ninit_occ,ninit_vir,MyAtom,MyMolecule,OccOrbitals,VirOrbitals, &
+        & Occ_AOS,Vir_AOS,full_mol,frag_init=.true.,cbl=comb_list)
      ! Initialize fragment base on the two orbital lists Occ_AOS/Vir_AOS:
      call atomic_fragment_init_orbital_specific(MyAtom,nv,no,Vir_AOS,Occ_AOS,OccOrbitals, &
         & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.) 
@@ -2590,7 +2593,7 @@ end subroutine AddF12CcouplingCorrection
      ! Do expansion only if the initial fragment does not include the full molecule:
      if (.not.full_mol) then
         call fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
-           & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
+           & exp_list_occ,exp_list_vir,exp_comb_list,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
            & OccOrbitals,VirOrbitals,expit,add_MP2_opt,mylsitem)
      end if
 
@@ -2611,6 +2614,7 @@ end subroutine AddF12CcouplingCorrection
      ! Deallocate exp list and allocate red ones:
      call mem_dealloc(exp_list_occ)
      call mem_dealloc(exp_list_vir)
+     call mem_dealloc(exp_comb_list)
      call mem_alloc(red_list_occ,no,'OAF:red_list_occ')
      call mem_alloc(red_list_vir,nv,'OAF:red_list_vir')
      call mem_alloc(red_comb_list,no+nv,'OAF:red_comb_list')
@@ -2702,8 +2706,8 @@ end subroutine AddF12CcouplingCorrection
   !> Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
   !> Date:    July 2014
   subroutine fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
-           & occ_priority_list,vir_priority_list,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
-           & OccOrbitals,VirOrbitals,iter,add_MP2_opt,mylsitem)
+           & occ_priority_list,vir_priority_list,priority_list,nexp_occ,nexp_vir, &
+           & MyAtom,MyMolecule,OccOrbitals,VirOrbitals,iter,add_MP2_opt,mylsitem)
 
      implicit none
 
@@ -2716,6 +2720,7 @@ end subroutine AddF12CcouplingCorrection
      !> Priority list of orbitals:
      integer, intent(in) :: occ_priority_list(no)
      integer, intent(in) :: vir_priority_list(nv)
+     integer, intent(in) :: priority_list(no+nv)
      !> Number of orbital to add in each expansion step
      integer, intent(in) :: nexp_occ, nexp_vir
      !> Central Atom of the current fragment
@@ -2735,8 +2740,12 @@ end subroutine AddF12CcouplingCorrection
      !> Integral information
      type(lsitem), intent(inout)       :: mylsitem
      
-     logical :: full_mol, expansion_converged, MP2_converged
+     logical :: full_mol, expansion_converged, MP2_converged, comb_list
      real(realk), dimension(ndecenergies) :: Eold
+
+     comb_list = (DECinfo%frag_exp_scheme==4)
+     if (comb_list) print *, "WARNING: Using combined list for occupied and virtual&
+           & spaces in fragment expansion"
 
 
 
@@ -2746,8 +2755,9 @@ end subroutine AddF12CcouplingCorrection
         Eold = AtomicFragment%energies
 
         ! Expand fragment:
-        call expand_fragment(no,nv,occ_priority_list,vir_priority_list,nexp_occ,nexp_vir, &
-           & MyAtom,MyMolecule,OccOrbitals,VirOrbitals,Occ_AOS,Vir_AOS,full_mol)
+        call expand_fragment(no,nv,occ_priority_list,vir_priority_list,priority_list, &
+           & nexp_occ,nexp_vir,MyAtom,MyMolecule,OccOrbitals,VirOrbitals, &
+           & Occ_AOS,Vir_AOS,full_mol,cbl=comb_list)
 
         ! Free old fragment and initialize the expanded fragment:
         call atomic_fragment_free(AtomicFragment)

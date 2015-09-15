@@ -757,7 +757,7 @@ contains
     type(decfrag), intent(inout), dimension(MyMolecule%nfrags) :: AtomicFragments
 
     !> Orbital priority lists:
-    integer, pointer :: esti_list_occ(:), esti_list_vir(:)
+    integer, pointer :: esti_list_occ(:), esti_list_vir(:), D0(:)
     !> Logical vector telling which orbital is include in the fragment
     logical, pointer :: Occ_AOS(:), Vir_AOS(:)
     integer :: nesti_occ, nesti_vir
@@ -781,8 +781,8 @@ contains
           end if
         
           ! Get ninit_occ and ninit_vir:
-          nesti_occ = DECinfo%EstimateInitAtom*ceiling((nocc-ncore)*1.0E0_realk/nfrags)
-          nesti_vir = DECinfo%estimateInitAtom*ceiling(nvirt*1.0E0_realk/nfrags)
+          nesti_occ = ceiling(DECinfo%EstimateInitAtom*(nocc-ncore)*1.0E0_realk/nfrags)
+          nesti_vir = ceiling(DECinfo%estimateInitAtom*nvirt*1.0E0_realk/nfrags)
         
           call mem_alloc(esti_list_occ,nocc)
           call mem_alloc(esti_list_vir,nvirt)
@@ -791,10 +791,10 @@ contains
         
           ! Get orbital priority list and number of orbital for esti frags
           call define_frag_expansion(nocc,nvirt,nfrags,MyAtom,MyMolecule, &
-               & AtomicFragments(MyAtom),esti_list_occ,esti_list_vir,D1,D2,D3,D4)
+               & AtomicFragments(MyAtom),esti_list_occ,esti_list_vir,D0,D1,D2,D3,D4)
         
           ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
-          call expand_fragment(nocc,nvirt,esti_list_occ,esti_list_vir,nesti_occ, &
+          call expand_fragment(nocc,nvirt,esti_list_occ,esti_list_vir,D0,nesti_occ, &
                & nesti_vir,MyAtom,MyMolecule,OccOrbitals,virtOrbitals,Occ_AOS,Vir_AOS, &
                & full_mol,.true.)
           ! Initialize fragment base on orbital lists Occ_AOS/Vir_AOS:
@@ -1037,10 +1037,17 @@ contains
   !          Scheme 2: Same as scheme 1 but instead of taking the closest orbitals, we
   !          choose them based on their contribution to the Fock matrix.
   !
+  !          Scheme 3: The orbital priority lists are created based on max absolute overlap
+  !          between a given orbital and the ones in the EOS of the current fragment
+  !
+  !          Scheme 4: Same as scheme 1 but only one list is returned including both 
+  !          occupied and virtual orbitals
+  !
   ! Author:  Pablo Baudin
   ! Date:    July 2014
   subroutine define_frag_expansion(no_full,nv_full,natoms,MyAtom,MyMolecule,MyFragment, &
-           & track_occ_priority_list,track_vir_priority_list,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
+           & track_occ_priority_list,track_vir_priority_list,track_priority_list, &
+           & nexp_occ,nexp_vir,ninit_occ,ninit_vir)
 
      implicit none
   
@@ -1059,22 +1066,15 @@ contains
      !> Return priority list of occ/vir orbitals
      integer, intent(out) :: track_occ_priority_list(no_full)
      integer, intent(out) :: track_vir_priority_list(nv_full)
+     integer, intent(out) :: track_priority_list(no_full+nv_full)
      !> Return number of occ/vir/ orbitals to be include in each expansion step:
      integer, intent(out) :: nexp_occ, nexp_vir
      !> Return # occ/vir orbital1s added to EOS space to define the initial fragment:
      integer, intent(out) :: ninit_occ, ninit_vir
      real(realk), pointer :: DistOccOcc(:,:), DistVirOcc(:,:)      
-     real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
+     real(realk), pointer :: DistOccAtom(:,:), DistVirAtom(:,:), DistOrbAtom(:,:)
+     real(realk), pointer :: occ_priority_list(:), vir_priority_list(:), priority_list(:)
      integer :: ncore, i
-     real(realk),pointer :: DistOccAtom(:,:),DistVirAtom(:,:)
-
-     ! Orbital-atom distances
-     call mem_alloc(DistOccAtom,mymolecule%nocc,mymolecule%natoms)
-     call mem_alloc(DistVirAtom,mymolecule%nvirt,mymolecule%natoms)
-     call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
-          & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistOccAtom)
-     call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
-          & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistVirAtom)
 
      ! Set # core orbitals to zero if the frozen core approximation is not used:
      if (DECinfo%frozencore) then
@@ -1120,15 +1120,27 @@ contains
            call mem_dealloc(occ_priority_list)
         else
            ! Get occupied priority list:
+           call mem_alloc(DistOccAtom,no_full,natoms)
            call mem_alloc(occ_priority_list,no_full)
+
+           call GetOrbAtomDistances(no_full,natoms,MyMolecule%Carmomocc,&
+              & MyMolecule%AtomCenters,DistOccAtom)
            call GetSortedList(occ_priority_list,track_occ_priority_list,&
                 DistOccAtom,no_full,natoms,MyAtom)
+
+           call mem_dealloc(DistOccAtom)
            call mem_dealloc(occ_priority_list)
             
            ! Get virtual priority list:
+           call mem_alloc(DistVirAtom,nv_full,natoms)
            call mem_alloc(vir_priority_list,nv_full)
+
+           call GetOrbAtomDistances(nv_full,natoms,MyMolecule%Carmomvirt,&
+              & MyMolecule%AtomCenters,DistVirAtom)
            call GetSortedList(vir_priority_list,track_vir_priority_list,&
                 & DistVirAtom,nv_full,natoms,MyAtom)
+
+           call mem_dealloc(DistVirAtom)
            call mem_dealloc(vir_priority_list)
         end if
 
@@ -1151,12 +1163,29 @@ contains
      else if (DECinfo%Frag_Exp_Scheme == 3) then
         call get_abs_overlap_priority_list(MyMolecule,MyFragment,&
            &track_occ_priority_list,track_vir_priority_list)
+     ! SCHEME 4:
+     else if (DECinfo%Frag_Exp_Scheme == 4) then
+        ! The priority list for scheme 4 is based on a common distance list 
+        ! for occupied and virtual orbitals, it is set here:
+        if (DECinfo%decco) then 
+           call lsquit('ERROR FOP: combined list not implemented for DECCO',DECinfo%output)
+        else
+           call mem_alloc(DistOrbAtom,no_full+nv_full,natoms)
+           call mem_alloc(priority_list,no_full+nv_full)
+
+           call GetOrbAtomDistances(no_full,natoms,MyMolecule%Carmomocc,&
+              & MyMolecule%AtomCenters,DistOrbAtom(1:no_full,:))
+           call GetOrbAtomDistances(nv_full,natoms,MyMolecule%Carmomvirt,&
+              & MyMolecule%AtomCenters,DistOrbAtom((1+no_full):(no_full+nv_full),:))
+           call GetSortedList(priority_list,track_priority_list,&
+                & DistOrbAtom,no_full+nv_full,natoms,MyAtom)
+
+           call mem_dealloc(priority_list)
+           call mem_dealloc(DistOrbAtom)
+        end if
      else
         call lsquit('ERROR FOP: Expansion Scheme not defined',DECinfo%output)
      end if
-
-     call mem_dealloc(DistOccAtom)
-     call mem_dealloc(DistVirAtom)
 
   end subroutine define_frag_expansion
 
@@ -1360,8 +1389,8 @@ contains
   ! Author:  Pablo Baudin
   ! Date:    July 2014
   subroutine expand_fragment(no_full,nv_full,occ_priority_list,vir_priority_list, &
-           & nexp_occ,nexp_vir,MyAtom,MyMolecule,OccOrbitals,VirOrbitals, &
-           & Occ_AOS,Vir_AOS,full_mol,frag_init)
+           & priority_list,nexp_occ,nexp_vir,MyAtom,MyMolecule,OccOrbitals,VirOrbitals, &
+           & Occ_AOS,Vir_AOS,full_mol,frag_init,cbl)
 
      implicit none
 
@@ -1372,6 +1401,7 @@ contains
      !> Priority list of orbitals:
      integer, intent(in) :: occ_priority_list(no_full)
      integer, intent(in) :: vir_priority_list(nv_full)
+     integer, intent(in) :: priority_list(no_full+nv_full)
      !> Number of orbital to add to the atomic fragment
      integer, intent(in) :: nexp_occ, nexp_vir
      !> Central Atom of the current fragment
@@ -1388,12 +1418,16 @@ contains
      logical, intent(out) :: full_mol
      !> Is this a fragment initialization or a simple expansion:
      logical, optional, intent(in) :: frag_init
+     !> Using combined list for occupied and virtual spaces:
+     logical, optional, intent(in) :: cbl
 
      integer :: ncore, ncount, i, ii
-     logical :: fragment_initialization
+     logical :: fragment_initialization, comb_list
 
      fragment_initialization = .false.
      if (present(frag_init)) fragment_initialization = frag_init
+     comb_list = .false.
+     if (present(cbl)) comb_list = cbl
 
      ! Set # core orbitals to zero if the frozen core approximation is not used:
      if (DECinfo%frozencore) then
@@ -1423,31 +1457,59 @@ contains
      end if
 
      ! Set Initial AOS space for fragment MyAtom by including nexp more orbitals:
-     ! 1) For Occupied orbitals:
-     ncount = 0
-     do i=1,no_full
-        ii = occ_priority_list(i)
-        ! If the orbital to be include is a core or is allready in, then skip it
-        if ((ii <= ncore).or.Occ_AOS(ii)) cycle
-        Occ_AOS(ii) = .true.
+     if (comb_list) then
+        ncount = 0
+        do i=1,no_full+nv_full
+           ii = priority_list(i)
 
-        ! Exit loop when we have included the correct number of orbital
-        ncount = ncount + 1
-        if (ncount >= nexp_occ) exit
-     end do
+           if (ii<=ncore) then
+              ! Skip core orbital:
+              cycle
+           else if (ii<=no_full) then
+              ! treat valence orb:
+              ! Skip orbital if it is is allready included (EOS)
+              if (Occ_AOS(ii)) cycle
+              ! or include it
+              Occ_AOS(ii) = .true.
+           else
+              ! treat virtual orb:
+              ! Skip orbital if it is is allready included (EOS)
+              if (Vir_AOS(ii-no_full)) cycle
+              ! or include it
+              Vir_AOS(ii-no_full) = .true.
+           end if
 
-     ! 2) For Virtual orbitals:
-     ncount = 0
-     do i=1,nv_full
-        ii = vir_priority_list(i)
-        ! If the orbital to be include is allready in, then skip it
-        if (Vir_AOS(ii)) cycle
-        Vir_AOS(ii) = .true.
+           ! Exit loop when we have included the correct number of orbital
+           ncount = ncount + 1
+           if (ncount >= (nexp_occ+nexp_vir)) exit
+        end do
+     else
+        ! 1) For Occupied orbitals:
+        ncount = 0
+        do i=1,no_full
+           ii = occ_priority_list(i)
+           ! If the orbital to be include is a core or is allready in, then skip it
+           if ((ii <= ncore).or.Occ_AOS(ii)) cycle
+           Occ_AOS(ii) = .true.
 
-        ! Exit loop when we have included the correct number of orbital
-        ncount = ncount + 1
-        if (ncount >= nexp_vir) exit
-     end do
+           ! Exit loop when we have included the correct number of orbital
+           ncount = ncount + 1
+           if (ncount >= nexp_occ) exit
+        end do
+
+        ! 2) For Virtual orbitals:
+        ncount = 0
+        do i=1,nv_full
+           ii = vir_priority_list(i)
+           ! If the orbital to be include is allready in, then skip it
+           if (Vir_AOS(ii)) cycle
+           Vir_AOS(ii) = .true.
+
+           ! Exit loop when we have included the correct number of orbital
+           ncount = ncount + 1
+           if (ncount >= nexp_vir) exit
+        end do
+     end if
 
      ! Check if the expanded fragment include the full molecule:
      full_mol = (count(Occ_AOS)==(no_full-ncore)) .and. (count(Vir_AOS)==nv_full)
