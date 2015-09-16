@@ -365,8 +365,6 @@ contains
        !**************************************
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.TESTARRAY'); DECinfo%tensor_test=.true.
-       case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
        case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
@@ -616,7 +614,7 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
-
+#endif
 
        ! KEYWORDS RELATED TO F12
        ! ***********************
@@ -656,7 +654,6 @@ contains
        case('.F12LSV1')     
           DECinfo%NaturalLinearScalingF12Terms   = .true.
           DECinfo%NaturalLinearScalingF12TermsV1 = .true.
-#endif
 
        ! KEYWORDS RELATED TO PAIR FRAGMENTS AND JOB LIST
        ! ***********************************************
@@ -728,7 +725,6 @@ contains
        case('.ONLY_GENERATE_DECORBS'); DECinfo%only_generate_DECorbs=.true.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
        case('.DISTANCE'); DECinfo%distance=.true.
-       case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
        case('.PURIFICATION'); DECinfo%PurifyMOs=.true.
@@ -1187,6 +1183,24 @@ contains
        if(DECinfo%full_molecular_cc) then
           call lsquit('NOAOFOCK keyword does not work for full molecular calculation!',-1)
        end if
+       ! The fock matrix is required in the ccsolver
+       select case(DECinfo%ccmodel)
+       case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX)
+          call lsquit("The CC solver require the fock matrix to be stored. Remove &
+             & .NOAOFOCK keyword from input.",DECinfo%output)
+       end select
+    end if
+
+    if ((.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel==MODEL_RIMP2) then
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) 'WARNING: User chose RI-MP2 as the final model,'
+       write(DECinfo%output,*) '         we therefore enforce RI-MP2 to be used'
+       write(DECinfo%output,*) '         also in the Fragment optimization and'
+       write(DECinfo%output,*) '         Pair estimates calculations.'
+       write(DECinfo%output,*) ''
+       DECinfo%PairEstimateModel = MODEL_RIMP2
+       DECinfo%fragopt_exp_model = MODEL_RIMP2
+       DECinfo%fragopt_red_model = MODEL_RIMP2
     end if
 
     
@@ -1347,8 +1361,6 @@ contains
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
-    write(lupri,*) 'tensor_test ', DECitem%tensor_test
-    write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
     write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality
@@ -1357,7 +1369,6 @@ contains
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output
     write(lupri,*) 'AbsorbHatoms ', DECitem%AbsorbHatoms
-    write(lupri,*) 'FitOrbitals ', DECitem%FitOrbitals
     write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
     write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs
     write(lupri,*) 'FragAdapt ', DECitem%FragAdapt

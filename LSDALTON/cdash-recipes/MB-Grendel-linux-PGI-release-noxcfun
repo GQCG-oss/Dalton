@@ -18,10 +18,10 @@ export OMP_NUM_THREADS=3
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ --omp -DENABLE_DEC=ON -D BUILDNAME="MB-Grendel-linux-PGI-release-noxcfun" -D ENABLE_EFS=OFF -D ENABLE_XCFUN=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF 
+./setup --fc=pgf90 --cc=pgcc --cxx=pgc++ --omp -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="MB-Grendel-linux-PGI-release-noxcfun" -D ENABLE_EFS=OFF -D ENABLE_XCFUN=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF -D ENABLE_RSP=OFF
 #--explicit-libs="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs"
 #--scratch=$SCRATCH_DIR 
-#./setup --fc=pgf90 --cc=pgcc --internal-math --omp --scratch=$SCRATCH_DIR -DENABLE_DEC=ON -D BUILDNAME="Grendel-linux-PGI-release"
+#./setup --fc=pgf90 --cc=pgcc --internal-math --omp --scratch=$SCRATCH_DIR -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="Grendel-linux-PGI-release"
 cd $TMP_DIR/build
 #make depend
 #make VERBOSE=1

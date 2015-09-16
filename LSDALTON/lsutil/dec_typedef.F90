@@ -9,7 +9,9 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
+#ifdef VAR_ENABLE_TENSORS
   use tensor_interface_module, only: tensor
+#endif
   use fundamental
   !Could someone please rename ri to something less generic. TK!!
   !  private
@@ -460,10 +462,6 @@ module dec_typedef_module
      logical :: hack2
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
-     !> test the array structure
-     logical :: tensor_test
-     !> test the array reorderings
-     logical :: reorder_test
      !> Check that LCM orbitals are correct
      logical :: check_lcm_orbitals
      !> Check the the Occupied Subsystem locality
@@ -494,8 +492,6 @@ module dec_typedef_module
      logical :: only_generate_DECorbs
      !> Absorb H atoms into heavy atoms during orbital assignment
      logical :: AbsorbHatoms
-     !> Fit orbital coefficients in fragment (default: true)
-     logical :: FitOrbitals
      !> Threshold for simple Lowdin procedure for determining atomic extent
      real(realk) :: simple_orbital_threshold
      !> Purify fitted MO coefficients (projection + orthogonalization)
@@ -779,8 +775,10 @@ module dec_typedef_module
      integer :: nval
      !> Number of virtual (virtupied) orbitals
      integer :: nvirt
-     !> Number of cabs AO orbitals
+     !> Number of cabs AO orbitals (Regular + cabs only)
      integer :: nCabsAO
+     !> Number of cabs only AO orbitals
+     integer :: nCabsAOOnly
      !> Number of cabs MO orbitals
      integer :: nCabsMO
      !> Number of possible fragments
@@ -805,6 +803,7 @@ module dec_typedef_module
      !> logical that saves whether the tensors are in PDM or dense
      logical :: mem_distributed
 
+#ifdef VAR_ENABLE_TENSORS
      !> Occupied MO coefficients (mu,i)
      type(tensor) :: Co
      !> Virtual MO coefficients (mu,a)
@@ -820,6 +819,7 @@ module dec_typedef_module
      type(tensor) :: oofock
      !> Virt-virt block of Fock matrix in MO basis
      type(tensor) :: vvfock
+#endif
 
      !> Abs overlap information
      real(realk), pointer :: ov_abs_overlap(:,:) => null()
@@ -836,6 +836,11 @@ module dec_typedef_module
 
      !> Occ-Occ Fock matrix in MO basis (change)
      real(realk), pointer :: Fij(:,:) => null()
+
+     !> AO hJccAO(ncabsAO,ncabsAO)
+     real(realk), pointer :: hJccAO(:,:) => null() 
+     !> AO KccAO(ncabsAO,ncabsAO)
+     real(realk), pointer :: KccAO(:,:) => null() 
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
      real(realk), pointer :: hJir(:,:) => null() 
@@ -970,8 +975,10 @@ module dec_typedef_module
      integer :: natoms=0
      !> Number of basis functions
      integer :: nbasis=0
-     !> Number of CABS basis functions AO
+     !> Number of CABS basis functions AO (Regular+Cabs only)
      integer :: ncabsAO=0
+     !> Number of CABS only basis functions AO
+     integer :: ncabsAOOnly=0
      !> Number of CABS basis functions MO
      integer :: ncabsMO=0
      !> Atomic indices
@@ -1544,7 +1551,7 @@ CONTAINS
     DECinfo%CCexci = .false.
     DECinfo%JacobianNumEival = 1
     DECinfo%JacobianLHTR = .false.
-    DECinfo%JacobianThr = 1.0e-7
+    DECinfo%JacobianThr = 1.0e-5
     DECinfo%JacobianMaxSubspace = 10000
     DECinfo%JacobianMaxIter = 200
     DECinfo%JacobianInitialSubspace = 0
@@ -1615,8 +1622,6 @@ CONTAINS
 #endif
     DECinfo%force_scheme            = .false.
     DECinfo%en_mem                  = 0
-    DECinfo%tensor_test              = .false.
-    DECinfo%reorder_test            = .false.
     DECinfo%CCSDno_restart          = .false.
     DECinfo%CCSDnosaferun           = .false.
     DECinfo%solver_par              = .false.
@@ -1652,7 +1657,6 @@ CONTAINS
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
     DECinfo%Distance                     = .false.
-    DECinfo%FitOrbitals                  = .true.
     DECinfo%simple_orbital_threshold     = 0.05E0_realk
 
     !Integral

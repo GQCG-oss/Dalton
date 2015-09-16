@@ -36,9 +36,7 @@ module pelib_interface
 #endif
     ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
-#ifdef MOD_UNRELEASED
     public :: pelib_ifc_cro
-#endif
 
 contains
 
@@ -210,22 +208,6 @@ subroutine pelib_ifc_slave(runtype)
     end if
     call qexit('pelib_ifc_slave')
 end subroutine pelib_ifc_slave
-
-subroutine pelib_ifc_start_slaves(runtyp)
-    integer :: runtyp
-#include "iprtyp.h"
-#include "maxorb.h"
-#include "infpar.h"
-    integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
-    call qenter('pelib_ifc_start_slaves')
-    if (.not. use_pelib()) call quit('PElib not active')
-    if (master /= 0) call quit('ERROR: PElib assumes master id 0')
-    if (nodtot >= 1) then
-        call mpixbcast(iprtyp, 1, 'INTEGER', master)
-        call mpixbcast(runtyp, 1, 'INTEGER', master)
-    end if
-    call qexit('pelib_ifc_start_slaves')
-end subroutine pelib_ifc_start_slaves
 #endif
 
 subroutine pelib_ifc_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
@@ -1083,7 +1065,6 @@ subroutine pelib_ifc_qro(vecb, vecc, etrs, xindx, zymb, zymc, udv, wrk, nwrk,&
 
 end subroutine pelib_ifc_qro
 
-#ifdef MOD_UNRELEASED
 subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
                     & wrk, nwrk, kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb,&
                     & isymc, isymd, cmo,mjwop)
@@ -1321,9 +1302,24 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
     call qexit('pelib_ifc_cro')
 
 end subroutine pelib_ifc_cro
-#endif
 
 end module pelib_interface
+
+subroutine pelib_ifc_start_slaves(runtyp)
+    use pelib_interface, only: use_pelib
+    integer :: runtyp
+#include "iprtyp.h"
+#include "maxorb.h"
+#include "infpar.h"
+    integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
+    call qenter('pelib_ifc_start_slaves')
+    if (.not. use_pelib()) call quit('PElib not active')
+    if (nodtot >= 1) then
+        call mpixbcast(iprtyp, 1, 'INTEGER', master)
+        call mpixbcast(runtyp, 1, 'INTEGER', master)
+    end if
+    call qexit('pelib_ifc_start_slaves')
+end subroutine pelib_ifc_start_slaves
 
 #else
 
@@ -1342,14 +1338,12 @@ module pelib_interface
 #endif
     ! TODO: update the following interface routines
     public :: pelib_ifc_grad, pelib_ifc_lin, pelib_ifc_lr, pelib_ifc_qro
-#ifdef MOD_UNRELEASED
     public :: pelib_ifc_cro
-#endif
 
 contains
 
 logical function use_pelib()
-    call quit('using dummy PElib interface routines')
+    use_pelib = .false.
 end function use_pelib
 
 logical function pelib_ifc_gspol()
@@ -1426,13 +1420,6 @@ subroutine pelib_ifc_slave(runtype)
     call quit('using dummy PElib interface routines')
     call qexit('pelib_ifc_slave')
 end subroutine pelib_ifc_slave
-
-subroutine pelib_ifc_start_slaves(runtyp)
-    integer :: runtyp
-    call qenter('pelib_ifc_start_slaves')
-    call quit('using dummy PElib interface routines')
-    call qexit('pelib_ifc_start_slaves')
-end subroutine pelib_ifc_start_slaves
 #endif
 
 subroutine pelib_ifc_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
@@ -1491,7 +1478,6 @@ subroutine pelib_ifc_qro(vecb, vecc, etrs, xindx, zymb, zymc, udv, wrk, nwrk,&
     call qexit('pelib_ifc_qro')
 end subroutine pelib_ifc_qro
 
-#ifdef MOD_UNRELEASED
 subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
                     & wrk, nwrk, kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb,&
                     & isymc, isymd, cmo,mjwop)
@@ -1512,7 +1498,14 @@ subroutine pelib_ifc_cro(vecb, vecc, vecd, etrs, xindx, zymb, zymc, zymd, udv,&
     call quit('using dummy PElib interface routines')
     call qexit('pelib_ifc_cro')
 end subroutine pelib_ifc_cro
-#endif
 
 end module pelib_interface
+
+subroutine pelib_ifc_start_slaves(runtyp)
+    integer :: runtyp
+    call qenter('pelib_ifc_start_slaves')
+    call quit('using dummy PElib interface routines')
+    call qexit('pelib_ifc_start_slaves')
+end subroutine pelib_ifc_start_slaves
+
 #endif

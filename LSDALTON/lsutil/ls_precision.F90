@@ -53,6 +53,7 @@ MODULE precision
 #else
   INTEGER, PARAMETER :: INTLAPACKK = SELECTED_INT_KIND(9) ! = 4
 #endif
+  logical, save :: force_crash = .false.
   
 
 INTERFACE Test_if_64bit_integer_required

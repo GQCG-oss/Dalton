@@ -447,7 +447,7 @@ contains
     call time_start_phase( PHASE_WORK )
   end subroutine mpi_communicate_MyFragment 
 
-  subroutine mpi_communicate_MyFragment_f12(MyFragment,fragcase,dopair)
+  subroutine mpi_communicate_MyFragment_f12(MyFragment,Taibj,fragcase,dopair)
     implicit none
     !> Fragment under consideration
     type(decfrag),intent(inout) :: MyFragment
@@ -455,6 +455,8 @@ contains
     integer :: fragcase
     !> dopair_occ array
     logical,intent(inout) :: dopair
+
+    real(realk),pointer,intent(in) :: Taibj(:,:,:,:)
 
     !local variables
     integer(kind=ls_mpik) :: master
@@ -485,6 +487,7 @@ contains
        call mem_alloc(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO)                                                    
        call mem_alloc(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot)
        call mem_alloc(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot)   
+       call mem_alloc(Taibj,MyFragment%nvirtAOS,MyFragment%noccEOS,MyFragment%nvirtAOS,MyFragment%noccEOS)
 
     endif
 
@@ -496,6 +499,8 @@ contains
     call ls_mpi_buffer(MyFragment%Frs,MyFragment%ncabsAO,MyFragment%ncabsAO,master)                                             
     call ls_mpi_buffer(MyFragment%Frm,MyFragment%ncabsAO,MyFragment%nocctot,master)
     call ls_mpi_buffer(MyFragment%Fcp,MyFragment%ncabsMO,MyFragment%nvirtAOS+MyFragment%nocctot,master)     
+    call ls_mpi_buffer(Taibj,MyFragment%nvirtAOS,MyFragment%noccEOS,MyFragment%nvirtAOS,MyFragment%noccEOS,master)
+
 
     call ls_mpi_buffer(fragcase,master) 
     call ls_mpi_buffer(dopair,master)
@@ -725,7 +730,7 @@ contains
     !> Full molecule structure (MO coeffecients, Fock matrix etc.)
     !> Intent(in) for main master, intent(out) for local masters
     type(fullmolecule),intent(inout) :: MyMolecule
-    logical :: gm
+    logical :: gm,assohjccAO
     integer(kind=ls_mpik) :: master
     integer :: natoms2
     integer :: Co_addr(infpar%nodtot)
@@ -755,6 +760,7 @@ contains
     call ls_mpibcast(MyMolecule%nval,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nvirt,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nCabsAOOnly,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nCabsMO,master,MPI_COMM_LSDALTON)
 
     !simple logicals
@@ -768,6 +774,9 @@ contains
     call ls_mpibcast(MyMolecule%EF12NLSV1,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12NLSX1,master,MPI_COMM_LSDALTON)
+
+    if(gm) assohjccAO = associated(MyMolecule%hJccAO)
+    call ls_mpibcast(assohjccAO,master,MPI_COMM_LSDALTON)
 
     ! Allocate pointers if global slave
     if(.not. gm) then
@@ -797,6 +806,13 @@ contains
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
        IF(DECinfo%F12)THEN          
           IF(.NOT.DECinfo%full_molecular_cc)THEN
+             IF(assohjccAO)THEN
+                call mem_alloc(MyMolecule%hJccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+                call mem_alloc(MyMolecule%KccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
+             ELSE
+                nullify(MyMolecule%hJccAO)
+                nullify(MyMolecule%KccAO)
+             ENDIF
              call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
              call mem_alloc(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO)
              call mem_alloc(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO)
@@ -884,6 +900,10 @@ contains
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
        IF(.NOT.DECinfo%full_molecular_cc)THEN
+          IF(assohjccAO)THEN
+             call ls_mpibcast(MyMolecule%hJccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+             call ls_mpibcast(MyMolecule%KccAO,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
+          ENDIF
           call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
           call ls_mpibcast(MyMolecule%hJir,MyMolecule%nocc,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
           call ls_mpibcast(MyMolecule%Krs,MyMolecule%nCabsAO,MyMolecule%nCabsAO,master,MPI_COMM_LSDALTON)
@@ -954,6 +974,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%natoms,master)
     CALL ls_mpi_buffer(MyFragment%nbasis,master)
     CALL ls_mpi_buffer(MyFragment%nCabsAO,master)
+    CALL ls_mpi_buffer(MyFragment%nCabsAOOnly,master)
     CALL ls_mpi_buffer(MyFragment%nCabsMO,master)
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
@@ -999,7 +1020,6 @@ contains
     call ls_mpi_buffer(MyFragment%RsdvAE,master)
     call ls_mpi_buffer(MyFragment%RsdvAOS,master)
 
-
     ! Integer pointers
     ! ----------------
     ! Nullify and allocate stuff for receiver (global addtobuffer is false)
@@ -1034,7 +1054,7 @@ contains
        call mem_alloc(MyFragment%basis_idx,MyFragment%nbasis)
        nullify(MyFragment%cabsbasis_idx)
        IF(decinfo%F12)THEN
-          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAO)
+          call mem_alloc(MyFragment%cabsbasis_idx,MyFragment%nCabsAOOnly)
        ENDIF
     end if
 
@@ -1053,7 +1073,7 @@ contains
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%natoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%nbasis,master)
     IF(decinfo%F12)THEN
-       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAO,master)
+       call ls_mpi_buffer(MyFragment%cabsbasis_idx,MyFragment%nCabsAOOnly,master)
     ENDIF
     if(MyFragment%t1_stored) then ! only used for CC singles effects
        call ls_mpi_buffer(MyFragment%t1_occidx,MyFragment%t1dims(2),master)
@@ -2138,6 +2158,12 @@ contains
     real(realk) :: gpuGflops,totgpuflops
     real(realk) :: globalloss, tottime_ideal, slavetime, localuse
     integer :: i, minidx, maxidx,N
+    logical :: Fragoptjobs
+
+    if(jobs%njobs<1) then
+       write(DECinfo%output,*) 'MPI fragment statistics: No jobs to print!'
+       return
+    end if
 
 
     write(DECinfo%output,*)
@@ -2185,6 +2211,7 @@ contains
     minidx         = 0
     maxidx         = 0
     N              = 0
+    Fragoptjobs    = any(jobs%dofragopt)
 
     do i=1,jobs%njobs
        ! If nocc is zero, the job was not done and we do not print it
@@ -2206,14 +2233,18 @@ contains
        ! Effective slave time (WITHOUT dead time by slaves)
        slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
-       if(.not. jobs%dofragopt(i)) then
+       if (Fragoptjobs .and. .not. jobs%dofragopt(i)) then
+           write(DECinfo%output,&
+              &'("------------------------------------- Fragment optimization done -------------------------------------")')
+           Fragoptjobs = .false.
+       endif
+
           write(DECinfo%output,'(i7,3i5,2i7,4g11.3,2F7.3,2X,a)')  & 
                &i, jobs%nocc(i), jobs%nvirt(i), jobs%nbasis(i),&
                & jobs%nslaves(i), jobs%ntasks(i), Gflops, gpuGflops, jobs%LMtime(i), &
                & jobs%comm_gl_master_time(i), &
                &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
                &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
-       end if
 
        ! Accumulated Gflops per sec
        tmp = Gflops/jobs%LMtime(i)
@@ -2616,9 +2647,7 @@ contains
     call ls_mpi_buffer(DECitem%hack2,Master)
     call ls_mpi_buffer(DECitem%test_fully_distributed_integrals,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
-    call ls_mpi_buffer(DECitem%tensor_test,Master)
     call ls_mpi_buffer(DECitem%tensor_segmenting_scheme,Master)
-    call ls_mpi_buffer(DECitem%reorder_test,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
     call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
@@ -2630,7 +2659,6 @@ contains
     call ls_mpi_buffer(DECitem%force_distribution,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
-    call ls_mpi_buffer(DECitem%FitOrbitals,Master)
     call ls_mpi_buffer(DECitem%simple_orbital_threshold,Master)
     call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%fragadapt,Master)

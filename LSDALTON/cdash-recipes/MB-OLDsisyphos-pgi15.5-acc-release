@@ -15,10 +15,10 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 
-./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -DENABLE_DEC=ON -D BUILDNAME="MB-Sisyphos-pgi15.5-acc-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF build
+./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --gpu --cublas --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="MB-Sisyphos-pgi15.5-acc-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF build
 
 # POSSIBLE MPI STUFF
-#./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -DENABLE_DEC=ON -D BUILDNAME="MB-Sisyphos-pgi15.5-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF build
+#./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="MB-Sisyphos-pgi15.5-release" -D ENABLE_EFS=OFF -D ENABLE_VPOTDAMP=OFF -D ENABLE_GEN1INT=OFF -D ENABLE_PELIB=OFF build
 
 cd build
 ctest -D Nightly -L linsca

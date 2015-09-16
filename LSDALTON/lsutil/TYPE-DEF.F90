@@ -216,9 +216,6 @@ INTEGER     :: molcharge
 ! TESTING FUNCTIONALITIES FOR DEC
 LOGICAL     :: run_dec_gradient_test
 LOGICAL     :: ForceRIMP2memReduced
-!NMR shielding 
-logical     :: SolveNMRResponseSimultan
-logical     :: ResponseMatNormConvTest
 LOGICAL     :: PreCalcDFscreening
 LOGICAL     :: PreCalcF12screening
 END TYPE integralconfig

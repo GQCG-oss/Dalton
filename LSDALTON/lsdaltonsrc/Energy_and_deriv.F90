@@ -239,7 +239,7 @@ contains
     IF (.NOT.config%response%tasks%doNumGrad) THEN !Analytical gradient
 #endif
       ! Check whether it is a dec calculation
-      If (DECinfo%doDEC) then
+      If (config%doDEC) then
          ! Gradient from DEC (currently only MP2)
 #ifdef VAR_DEC
          Call get_mp2gradient_and_energy_from_inputs(ls,F,D,C,Natoms,gradient,E,Eerr)

@@ -16,7 +16,7 @@ f.add(string = 'Nuclear repulsion',
 
 f.add(from_string = 'CCSD occupied single energies',
       to_string   = 'DEC ENERGY SUMMARY',
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-4)

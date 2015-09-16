@@ -6,6 +6,9 @@
 module ccsdpt_tools_module
 
   use precision
+#ifdef VAR_OPENACC
+  use openacc
+#endif
   use memory_handling
 #ifdef VAR_MPI
   use infpar_module
@@ -13,6 +16,9 @@ module ccsdpt_tools_module
 #endif
   use tensor_interface_module
   use cc_tools_module
+#ifdef VAR_OPENACC
+  use openacc
+#endif
 
 #ifdef MOD_UNRELEASED
   public :: ptr_init_ijk_pt,ptr_init_abc_pt,ptr_final_ijk_pt,ptr_final_abc_pt,&

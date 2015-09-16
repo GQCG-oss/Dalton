@@ -248,7 +248,6 @@ C
       END IF
 C
       IF (USE_PELIB()) THEN
-#ifdef MOD_UNRELEASED
          IF (.NOT. TDHF) THEN
              CALL QUIT('ERROR: MCSCF cubic response not'//
      &                 ' implemented with PE library.')
@@ -264,10 +263,6 @@ C
      &                      UDV, WRK(KFREE), LFREE, KZYVA, KZYVB,
      &                      KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
      &                      ISYMD, CMO, MJWOP)
-#else
-         CALL QUIT('ERROR: cubic response not implemented'//
-     &             ' using the PE library (.PEQM).')
-#endif
       END IF
 C
       IF (QMMM) THEN

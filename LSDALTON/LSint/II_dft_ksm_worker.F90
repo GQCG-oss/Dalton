@@ -2173,6 +2173,7 @@ END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMLDA
 SUBROUTINE II_DFT_magderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
      & DFTDATA,sharedDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+implicit none
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
 !> the number of gridpoints
@@ -2229,7 +2230,7 @@ Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D0
 Real(realk), parameter :: D4 = 4.0E0_realk
 REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(4,1),XCFUNOUTPUT(5,1)
 REAL(REALK),pointer :: VXC(:,:)
-INTEGER     :: I,J
+INTEGER     :: I,J,W1,W2,W3,W4,W5,W6,IDMAT,IPNT
 IDMAT = 1
 IF(NDMAT.GT.1)CALL LSQUIT('II_DFT_MAGDERIV_KOHNSHAMGGA ndmat',-1)
 call mem_dft_alloc(VXC,4,NBLEN)
@@ -2292,10 +2293,17 @@ DO IPNT = 1, NBLEN
       VXC(:,IPNT) = 0E0_realk
    END IF
 END DO
-CALL II_DFT_distmagderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     &VXC,GAO,SHAREDDFTDATA%FKSM,COORD,DFTHRI,NTYPSO)
-call mem_dft_dealloc(VXC)
 
+
+W1 = 1
+W2 = NBLEN*Nactbast*NTYPSO        !W1 - 1 + NBLEN*Nactbast*3 -> GAORED 
+W3 = W2+1
+W4 = W3 - 1 + NBLEN*Nactbast*3    !W3 - 1 + NBLEN*Nactbast*3 -> TMP
+W5 = W4+1                         
+W6 = W5 - 1 + Nactbast            !W5 - 1 + Nactbast -> GAOGMX
+CALL II_DFT_distmagderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+     &VXC,GAO,SHAREDDFTDATA%FKSM,COORD,DFTHRI,NTYPSO,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6))
+call mem_dft_dealloc(VXC)
 END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMGGA
 
 !> \brief magnetic derivative Kohn-sham matrix LDA closed shell worker routine
@@ -4624,7 +4632,7 @@ END SUBROUTINE II_DFT_DISTMAGDERIV_LDA
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_DFT_DISTMAGDERIV_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     &Nactbast,NBAST,COEF,GAOS,EXCMAT,COORD,DFTHRI,NTYPSO)
+     &Nactbast,NBAST,COEF,GAOS,EXCMAT,COORD,DFTHRI,NTYPSO,GAORED,TMP,GAOGMX)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -4652,20 +4660,19 @@ REAL(REALK),intent(in) :: COORD(3,NBLEN)
 REAL(REALK),intent(in) :: DFTHRI
 !> number of gaos
 INTEGER,intent(in) :: NTYPSO
+!> TMP 
+REAL(REALK),intent(inout) :: GAORED(NBLEN,NACTBAST,NTYPSO)
+REAL(REALK),intent(inout) :: TMP(NBLEN,NACTBAST,3)
+REAL(REALK),intent(inout) :: GAOGMX(NACTBAST)
 !
 INTEGER     :: ISTART,IBL,I,ILEN,JBL,J,K,JSTART,JLEN,NRED
 INTEGER     :: beta1,gamma1,beta2X,beta2Y,beta2Z,gamma2X,gamma2Y,gamma2Z
-REAL(REALK),pointer :: GAORED(:,:,:)
 INTEGER     :: IRED,JRED,alpha,beta,gamma,N,COORDINATE
 integer,parameter     :: betalist(3)=(/2,3,1/),gammalist(3)=(/3,1,2/)
 REAL(REALK) :: Rbeta,Rgamma,GAOMAX
 real(realk),parameter :: D2=2E0_realk,D05=0.5E0_realk
-INTEGER,pointer :: INXRED(:)
-REAL(REALK),pointer :: EXCRED(:,:,:),GAOGMX(:),TMP(:,:,:)
-call mem_dft_alloc(INXRED,NACTBAST)
-call mem_dft_alloc(GAOGMX,NACTBAST)
-call mem_dft_alloc(TMP,NBLEN,NACTBAST,3)
-call mem_dft_alloc(GAORED,NBLEN,NACTBAST,NTYPSO)
+INTEGER :: INXRED(NACTBAST)
+REAL(REALK),pointer :: EXCRED(:,:,:)
 NRED = 0 
 GAOMAX = 0.0E0_realk
 !        Set up maximum Gaussian AO elements
@@ -4767,10 +4774,6 @@ IF (NRED.GT. 0) THEN
  ENDDO
  call mem_dft_dealloc(EXCRED)
 ENDIF
-call mem_dft_dealloc(GAORED)
-call mem_dft_dealloc(INXRED)
-call mem_dft_dealloc(GAOGMX)
-call mem_dft_dealloc(TMP)
 
 END SUBROUTINE II_DFT_DISTMAGDERIV_GGA
 

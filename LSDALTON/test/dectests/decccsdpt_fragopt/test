@@ -15,15 +15,7 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Correlation energy',
       rel_tolerance = 3.0e-3) # taking accumulation into account
 
-f.add(from_string = 'VALENCE LOCALITY',
-      to_string   = 'Min. sigma_4 and orb.number',
-      abs_tolerance = 1.0e-4)
-
-f.add(from_string = 'VIRTUAL LOCALITY',
-      to_string   = 'Min. sigma_4 and orb.number',
-      abs_tolerance = 1.0e-4)
-
-f.add(from_string = 'Print single and pair fragment energies',
+f.add(from_string = 'CCSD occupied correlation energy',
       to_string   = 'Total CCSD(T) occupied correlation energy',
       abs_tolerance = 1.0e-3)
 
