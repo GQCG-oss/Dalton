@@ -16,7 +16,7 @@ f.add(string = 'Nuclear repulsion',
 
 f.add(from_string = 'Total shielding tensor',
       to_string   = 'Done with shielding tensor calculation',
-      rel_tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-4)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

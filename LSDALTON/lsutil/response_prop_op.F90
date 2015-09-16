@@ -81,7 +81,7 @@ Contains
     type(NMRinputItem),intent(inout)       :: NMRinput
     NMRinput%SolveNMRResponseSimultan = .FALSE.
     NMRinput%CalcDFJcont = .TRUE.
-    NMRinput%PrintAll = .TRUE.
+    NMRinput%PrintAll = .FALSE.
   end subroutine NMRinputitem_set_default_config
 
   !> \brief Sets default parameters for polarizability calculation.
