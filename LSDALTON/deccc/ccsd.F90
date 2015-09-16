@@ -812,7 +812,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 #endif
 !`DIL: temporary:
-#undef DIL_ACTIVE
+!#undef DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -1053,26 +1053,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! ***********
      call get_currently_available_memory(MemFree)
 
-#ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-     if(DIL_DEBUG) then !`DIL
-        call dil_debug_to_file_start()
-        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4)')&
-         &infpar%lg_mynum,infpar%mynum,MemFree
-        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",4(1x,i9))')&
-         &infpar%lg_mynum,infpar%mynum,os,vs,nors,nvrs
-     endif
-#endif
-#endif
-
      ! Set integral info
      ! *****************
-     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
-     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
-     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
-     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
+     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center
+     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center
+     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center
+     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center
      INTSPEC(5)               = 'C' !C = Coulomb operator
-     IF(DECinfo%useIchor)THEN
+     if(DECinfo%useIchor)then
         iprint = 0           !print level for Ichor Integral code
         MoTrans = .FALSE.    !Do not transform to MO basis! 
         NoSymmetry = .FALSE. !Use Permutational Symmetry! 
@@ -1081,13 +1069,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched 
         iAO = 1
         call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
-     ELSE
+     else
         doscreen = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
-     ENDIF
+     endif
 
      use_bg_buf = mem_is_background_buf_init()
      if(use_bg_buf)then
-        nbuffer    = mem_get_bg_buf_free()
+        nbuffer = mem_get_bg_buf_free()
      else
         nbuffer=0
      endif
@@ -1106,6 +1094,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      lg_master                = (lg_me == 0)
      master                   = lg_master
+
+
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+     if(DIL_DEBUG) then !`DIL
+        call dil_debug_to_file_start()
+        write(DECinfo%output,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4,1x,i13,1x,i13)')&
+         &infpar%lg_mynum,infpar%mynum,MemFree,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+        write(DECinfo%output,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",2(1x,i9,"/",i9))')&
+         &infpar%lg_mynum,infpar%mynum,os,vs,nors,nvrs
+        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4,1x,i13,1x,i13)')&
+         &infpar%lg_mynum,infpar%mynum,MemFree,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",2(1x,i9,"/",i9))')&
+         &infpar%lg_mynum,infpar%mynum,os,vs,nors,nvrs
+     endif
+#endif
+#endif
+
 
      StartUpSlaves: if(master .and. lg_nnod>1) then
         call time_start_phase(PHASE_COMM)
@@ -1275,169 +1281,172 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
-        ! ************************************************
-        ! * Determine batch information for Gamma batch  *
-        ! ************************************************
-        IF(DECinfo%useIchor)THEN
-           iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
-           !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
-           !size of the AO batches. iAO is the center that the batching should occur on. 
-           !'R'  !Specifies that it is the Regular AO basis that should be batched 
-           call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-              & nbatchesGamma,DECinfo%output)
-           call mem_alloc(AOGammabatchinfo,nbatchesGamma)
-           !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
-           !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
-           !to determine_Ichor_nbatchesofAOS
-           !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
-           !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
-           call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
-              & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
-        ELSE
-           ! Orbital to batch information
-           ! ----------------------------
-           call mem_alloc(orb2batchGamma,nb)
-           call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
-              & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
+     ! ************************************************
+     ! * Determine batch information for Gamma batch  *
+     ! ************************************************
+     if(DECinfo%useIchor)then
+        iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+                !Determine how many batches of AOS based on the MaxAllowedDimGamma, the requested
+                !size of the AO batches. iAO is the center that the batching should occur on. 
+                !'R'  !Specifies that it is the Regular AO basis that should be batched 
+        call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+              &nbatchesGamma,DECinfo%output)
+        call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+        !Construct the batches of AOS based on the MaxAllowedDimGamma, the requested
+        !size of the AO batches - MaxAllowedDimGamma must be unchanged since the call 
+        !to determine_Ichor_nbatchesofAOS
+        !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+        !So MaxActualDimGamma must be less og equal to MaxAllowedDimGamma
+        call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimGamma,&
+              &nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+     else
+        ! Orbital to batch information
+        ! ----------------------------
+        call mem_alloc(orb2batchGamma,nb)
+        call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
+              &nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
               &nbatchesGamma,orb2BatchGamma,'R')
-        ENDIF
-        if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
-           & 'with maximum size',MaxActualDimGamma
+     endif
+     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
+         &'with maximum size',MaxActualDimGamma
 
-        IF(.NOT.DECinfo%useIchor)THEN
-           ! Translate batchindex to orbital index
-           ! -------------------------------------
-           call mem_alloc(batch2orbGamma,nbatchesGamma)
-           do idx=1,nbatchesGamma
-              call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
-              batch2orbGamma(idx)%orbindex = 0
-              batch2orbGamma(idx)%norbindex = 0
-           end do
-           do iorb=1,nb
-              idx = orb2batchGamma(iorb)
-              batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
-              K = batch2orbGamma(idx)%norbindex
-              batch2orbGamma(idx)%orbindex(K) = iorb
-           end do
-        ENDIF
-        ! ************************************************
-        ! * Determine batch information for Alpha batch  *
-        ! ************************************************
+     if(.not.DECinfo%useIchor)then
+        ! Translate batchindex to orbital index
+        ! -------------------------------------
+        call mem_alloc(batch2orbGamma,nbatchesGamma)
+        do idx=1,nbatchesGamma
+           call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx))
+           batch2orbGamma(idx)%orbindex = 0
+           batch2orbGamma(idx)%norbindex = 0
+        enddo
+        do iorb=1,nb
+           idx = orb2batchGamma(iorb)
+           batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+           K = batch2orbGamma(idx)%norbindex
+           batch2orbGamma(idx)%orbindex(K) = iorb
+        enddo
+     endif
+     ! ************************************************
+     ! * Determine batch information for Alpha batch  *
+     ! ************************************************
 
-        IF(DECinfo%useIchor)THEN
-           iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
-           !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
-           !size of the AO batches. iAO is the center that the batching should occur on. 
-           !'R'  !Specifies that it is the Regular AO basis that should be batched 
-           call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-              & nbatchesAlpha,DECinfo%output)
-           call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
-           !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
-           !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
-           !to determine_Ichor_nbatchesofAOS
-           !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
-           !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
-           call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
-              & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
-        ELSE
-           ! Orbital to batch information
-           ! ----------------------------
-           call mem_alloc(orb2batchAlpha,nb)
-           call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-              & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-        ENDIF
+     if(DECinfo%useIchor)then
+        iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+                !Determine how many batches of AOS based on the MaxAllowedDimAlpha, the requested
+                !size of the AO batches. iAO is the center that the batching should occur on. 
+                !'R' Specifies that it is the Regular AO basis that should be batched 
+        call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+              &nbatchesAlpha,DECinfo%output)
+        call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+        !Construct the batches of AOS based on the MaxAllowedDimAlpha, the requested
+        !size of the AO batches - MaxAllowedDimAlpha must be unchanged since the call 
+        !to determine_Ichor_nbatchesofAOS
+        !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+        !So MaxActualDimAlpha must be less og equal to MaxAllowedDimAlpha
+        call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',MaxAllowedDimAlpha,&
+              &nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+     else
+        ! Orbital to batch information
+        ! ----------------------------
+        call mem_alloc(orb2batchAlpha,nb)
+        call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
+              &nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
+     endif
 
-        if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
-           &, 'with maximum size',MaxActualDimAlpha
+     if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
+         &,'with maximum size',MaxActualDimAlpha
 
-        IF(.NOT.DECinfo%useIchor)THEN
-           ! Translate batchindex to orbital index
-           ! -------------------------------------
-           call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-           do idx=1,nbatchesAlpha
-              call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
-              batch2orbAlpha(idx)%orbindex = 0
-              batch2orbAlpha(idx)%norbindex = 0
-           end do
-           do iorb=1,nb
-              idx = orb2batchAlpha(iorb)
-              batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
-              K = batch2orbAlpha(idx)%norbindex
-              batch2orbAlpha(idx)%orbindex(K) = iorb
-           end do
-        ENDIF
+     if(.NOT.DECinfo%useIchor)then
+        ! Translate batchindex to orbital index
+        ! -------------------------------------
+        call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+        do idx=1,nbatchesAlpha
+           call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx))
+           batch2orbAlpha(idx)%orbindex = 0
+           batch2orbAlpha(idx)%norbindex = 0
+        enddo
+        do iorb=1,nb
+           idx = orb2batchAlpha(iorb)
+           batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+           K = batch2orbAlpha(idx)%norbindex
+           batch2orbAlpha(idx)%orbindex(K) = iorb
+        enddo
+     endif
 
-        ! ************************************************
-        ! *  Allocate matrices used in the batched loop  *
-        ! ************************************************
+     ! ************************************************
+     ! *  Allocate matrices used in the batched loop  *
+     ! ************************************************
 
 
-        ! PRINT some information about the calculation
-        ! --------------------------------------------
-        if(master)then
+     ! PRINT some information about the calculation
+     ! --------------------------------------------
+     if(master)then
 
-           if(scheme==4) then
-              write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
-           elseif(scheme==3) then
-              write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
-           elseif(scheme==2) then
-              write(DECinfo%output,'("Using memory intensive scheme with only 1x V^2*O^2")')
-           elseif(scheme==1) then
-              write(DECinfo%output,'("Using memory intensive scheme with no V^2*O^2")')
-           else
-              call lsquit('ERROR(ccsd_residual_integral_driven): unknown scheme!',-1)
-           endif
-           if(DECinfo%PL>1)then
-              if(use_bg_buf)then
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,6,scheme,.false.,mylsitem%setting,intspec)
-                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,9,scheme,.false.,mylsitem%setting,intspec)
-                 write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part B on master")')&
-                    &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,7,scheme,.false.,mylsitem%setting,intspec)
-                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,10,scheme,.false.,mylsitem%setting,intspec)
-                 write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part C on master")')&
-                    &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,5,scheme,.true.,mylsitem%setting,intspec)
-              else
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
-                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
-                 write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
-                 ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
-                    &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
-              endif
-
-           endif
-
-#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
-           FLUSH(DECinfo%output)
-#endif
-
+        if(scheme==4) then
+           write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
+        elseif(scheme==3) then
+           write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
+        elseif(scheme==2) then
+           write(DECinfo%output,'("Using memory intensive scheme with only 1x V^2*O^2")')
+        elseif(scheme==1) then
+           write(DECinfo%output,'("Using memory intensive scheme with no V^2*O^2")')
+        else
+           call lsquit('ERROR(ccsd_residual_integral_driven): unknown scheme!',-1)
         endif
 
+        if(DECinfo%PL>1)then
+           if(use_bg_buf)then
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,6,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,9,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part B on master")')&
+               &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,7,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,10,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of bg   Memory in part C on master")')&
+               &ActuallyUsed/(mem_get_bg_buf_n()*8.0/(1024.0**3))*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,5,scheme,.true.,mylsitem%setting,intspec)
+           else
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,3,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part B on master")')ActuallyUsed/MemFree*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,2,scheme,.false.,mylsitem%setting,intspec)
+              write(DECinfo%output,'("Using",1f8.4,"% of heap Memory in part C on master")')ActuallyUsed/MemFree*100
+              ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
+               &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
+           endif
 
+        endif
+#ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
+        flush(DECinfo%output)
+#endif
+     endif
+
+#ifdef DIL_ACTIVE
+     scheme=1 !`remove
+#endif
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !`DIL: w0 size must be reduced in Scheme 1
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
 
      w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !`DIL: w1 size must be reduced in Scheme 1
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
 
      w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,0,&
-        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec) !`DIL: w2 size must be reduced in Scheme 1
+        &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
 
      w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,0,&
         &MaxActualDimAlpha,MaxActualDimGamma,0,scheme,mylsitem%setting,intspec)
-
+#ifdef DIL_ACTIVE
+     scheme=2 !`remove
+#endif
 
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
@@ -1469,16 +1478,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            locally_stored_tiles = locally_stored_tiles * 3
            locally_stored_v2o2  = 0
         case(1)
-           locally_stored_tiles = locally_stored_tiles * 3
-           locally_stored_v2o2  = 0
-           !``DIL: I can also use some small BG buffer for tensor contractions (~1GB)
+           locally_stored_tiles = locally_stored_tiles * 3 !``DIL: Why 3? o2ilej?
+           locally_stored_v2o2  = dil_buf_size !`DIL: This is not O2V2 (just a const size buffer)
         case default
            call lsquit("ERROR(ccsd_residual_integral_driven): bg buffering only imlemented for schemes 4-1",-1)
         end select
-        local_nel_in_bg = w0size+w1size+w2size+w3size+locally_stored_tiles+locally_stored_v2o2
+        local_nel_in_bg = w0size + w1size + w2size + w3size + locally_stored_tiles + locally_stored_v2o2
         min_size_bg     = local_nel_in_bg * 8_long
-        reduce_bg_size  = ( min_size_bg < mem_get_bg_buf_free()*8/10)
-        !if(iter==1)call mem_change_background_alloc(min_size_bg,reduce_bg_size)
+        reduce_bg_size  = ( min_size_bg < mem_get_bg_buf_free()*8/10) !``DIL: Why /10?
+        !if(iter==1)call mem_change_background_alloc(min_size_bg,reduce_bg_size) !``DIL: Why is this commented?
      endif
 
      !get u2 in pdm or local
@@ -1486,7 +1494,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      scheme=1 !`DIL: remove
 #endif
      if(scheme==2.or.scheme==1)then
-
 #ifdef VAR_MPI
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
@@ -1500,12 +1507,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_WORK, at = time_init_comm )
 #endif
-
      else
         call tensor_ainit(u2, [nv,nv,no,no], 4, local=local, atype='LDAR', bg=use_bg_buf  )
         !calculate u matrix: t[c d i j] -> t[d c i j], 2t[d c i j] - t[d c j i] = u [d c i j]
         call array_reorder_4d(  2.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
         call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
+     endif
+
+     if(scheme==1) then
+        if(use_bg_buf) then
+           call mem_pseudo_alloc(dil_buffer,dil_buf_size) !`DIL: the buffer size needs to be calculated
+        else
+           call mem_alloc(dil_buffer,dil_buf_size) !`DIL: the buffer size needs to be calculated
+        endif
      endif
 #ifdef DIL_ACTIVE
      scheme=2 !`DIL: remove
@@ -1584,6 +1598,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !get the t+ and t- for the Kobayshi-like B2 term
 #ifdef DIL_ACTIVE
      scheme=1 !`DIL: remove
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 1: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+#endif
 #endif
      if(scheme==1.or.scheme==2) then
         write(def_atype,'(A4)')'TDAR'
@@ -1608,24 +1625,31 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 #ifdef DIL_ACTIVE
-     scheme=2 !`DIL: remove
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 2: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
 #endif
-
+#endif
 
      if(use_bg_buf)then
         !if the needed space is smaller than the allocated space, reduce the buffer size
         reduce_bg_size = ((w0size+w1size+w2size+w3size)*8 < mem_get_bg_buf_free()*8/10)
-        !if(iter==1)call mem_change_background_alloc(i8*(w0size+w1size+w2size+w3size)*8,reduce_bg_size)
-        call mem_pseudo_alloc(w0, w0size, simple = .false. )
-        call mem_pseudo_alloc(w1, w1size, simple = .false. )
-        call mem_pseudo_alloc(w2, w2size, simple = .false. )
-        call mem_pseudo_alloc(w3, w3size, simple = .false. )
+        !if(iter==1)call mem_change_background_alloc(i8*(w0size+w1size+w2size+w3size)*8,reduce_bg_size) !``DIL: Why commented?
+        call mem_pseudo_alloc(w0, w0size, simple = .false.)
+        call mem_pseudo_alloc(w1, w1size, simple = .false.)
+        call mem_pseudo_alloc(w2, w2size, simple = .false.)
+        call mem_pseudo_alloc(w3, w3size, simple = .false.)
      else
-        call mem_alloc(w0, w0size, simple = .false. )
-        call mem_alloc(w1, w1size, simple = .false. )
-        call mem_alloc(w2, w2size, simple = .false. )
-        call mem_alloc(w3, w3size, simple = .false. )
+        call mem_alloc(w0, w0size, simple = .false.)
+        call mem_alloc(w1, w1size, simple = .false.)
+        call mem_alloc(w2, w2size, simple = .false.)
+        call mem_alloc(w3, w3size, simple = .false.)
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL: remove
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 3: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+#endif
+#endif
 
      !call get_currently_available_memory(MemFree3)
 
@@ -1651,21 +1675,25 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !print *,"allocing help things:",o2v*MaxActualDimGamma*2,&
      !      &(8.0E0_realk*o2v*MaxActualDimGamma*2)/(1024.0E0_realk*1024.0E0_realk*1024.0E0_realk)
      if( use_bg_buf )then
-        call mem_pseudo_alloc( uigcj, int((i8*o2v)*MaxActualDimGamma,kind=8))
+        call mem_pseudo_alloc(uigcj,int((i8*o2v)*MaxActualDimGamma,kind=8))
      else
-        call mem_alloc( uigcj, int((i8*o2v)*MaxActualDimGamma,kind=8))
+        call mem_alloc(uigcj,int((i8*o2v)*MaxActualDimGamma,kind=8))
      endif
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 4: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+#endif
+#endif
 
-
-     IF(DECinfo%useIchor)THEN
+     if(DECinfo%useIchor)then
         !Calculate Screening integrals 
         SameMOL = .TRUE. !Specifies same molecule on all centers 
         call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
-     ELSE
+     else
         ! This subroutine builds the full screening matrix.
         call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
              & nbatchesAlpha,nbatchesGamma,INTSPEC,DECinfo%IntegralThreshold)
-        IF(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)THEN
+        if(mylsitem%setting%scheme%cs_screen .OR. mylsitem%setting%scheme%ps_screen)then
            call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
                 & nb,nbatchesAlpha,nbatchesGamma,&
                 & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
@@ -1674,13 +1702,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                 & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
                 & batchindexAlpha,batchindexGamma,&
                 & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-        ENDIF
+        endif
         !setup LHS screening - the full AO basis is used so we can use the
         !                      full matrices:        FilenameCS and FilenamePS
         !Note that it is faster to calculate the integrals in the form
         !(dimAlpha,dimGamma,nbasis,nbasis) so the full AO basis is used on the RHS
         !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-     ENDIF
+     endif
 
 #ifdef VAR_OMP
      nthreads=OMP_GET_MAX_THREADS()
@@ -1696,7 +1724,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
      if(.not.dynamic_load)then
 
-        ! Calculate the batches for a good load balance
+        !Calculate the batches for a good load balance
         lenI2 = nbatchesAlpha*nbatchesGamma
         !call mem_alloc( tasks, tasksc, lenI2 )
         call mem_alloc( tasks, lenI2 )
@@ -1871,6 +1899,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               dil_mem=dil_get_min_buf_size(tch0,errc)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: BS: ',infpar%lg_mynum,errc,dil_mem
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Buf size set failed!',-1)
+              dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Buf alloc failed!',-1)
               call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC1: TC: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC1: Tens contr failed!',-1)
@@ -2061,6 +2091,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               dil_mem=dil_get_min_buf_size(tch1,errc)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: BS: ',infpar%lg_mynum,errc,dil_mem
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Buf size set failed!',-1)
+              dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch1,dil_mem,errc,dil_buffer)
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Buf alloc failed!',-1)
               call dil_tensor_contract(tch1,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC2: TC: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC2: Tens contr failed!',-1)
@@ -2131,6 +2163,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               dil_mem=dil_get_min_buf_size(tch2,errc)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: BS: ',infpar%lg_mynum,errc,dil_mem
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Buf size set failed!',-1)
+              dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch2,dil_mem,errc,dil_buffer)
+              if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Buf alloc failed!',-1)
               call dil_tensor_contract(tch2,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
               if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC3: TC: ',infpar%lg_mynum,errc
               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC3: Tens contr failed!',-1)
@@ -2283,6 +2317,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                dil_mem=dil_get_min_buf_size(tch3,errc)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: BS: ',infpar%lg_mynum,errc,dil_mem
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Buf size set failed!',-1)
+               dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch3,dil_mem,errc,dil_buffer)
+               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Buf alloc failed!',-1)
                call dil_tensor_contract(tch3,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: TC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Tens contr failed!',-1)
@@ -2317,6 +2353,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                dil_mem=dil_get_min_buf_size(tch3,errc)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: BS: ',infpar%lg_mynum,errc,dil_mem
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Buf size set failed!',-1)
+               dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch3,dil_mem,errc,dil_buffer)
+               if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Buf alloc failed!',-1)
                call dil_tensor_contract(tch3,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
                if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC4: TC: ',infpar%lg_mynum,errc
                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC4: Tens contr failed!',-1)
@@ -2382,6 +2420,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            dil_mem=dil_get_min_buf_size(tch4,errc)
            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: BS: ',infpar%lg_mynum,errc,dil_mem
            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Buf size set failed!',-1)
+           dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch4,dil_mem,errc,dil_buffer)
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Buf alloc failed!',-1)
            call dil_tensor_contract(tch4,DIL_TC_EACH,dil_mem,errc,locked=DIL_LOCK_OUTSIDE)
            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC5: TC: ',infpar%lg_mynum,errc
            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC5: Tens contr failed!',-1)
@@ -2430,11 +2470,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! Free integral stuff
      ! *******************
-     IF(DECinfo%useIchor)THEN
+     if(DECinfo%useIchor)then
         call FREE_SCREEN_ICHORERI()
         call mem_dealloc(AOGammabatchinfo)
         call mem_dealloc(AOAlphabatchinfo)
-     ELSE
+     else
         nullify(Mylsitem%setting%LST_GAB_LHS)
         nullify(Mylsitem%setting%LST_GAB_RHS)
         call free_decscreen(DECSCREEN)
@@ -2460,7 +2500,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            batch2orbAlpha(idx)%orbindex => null()
         end do
         call mem_dealloc(batch2orbAlpha)
-     ENDIF
+     endif
      ! free arrays only needed in the batched loops
 #ifdef VAR_MPI
      call time_start_phase(PHASE_COMM, at = time_intloop_work )
@@ -2511,10 +2551,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #endif
 
-     call tensor_free(tmi)
-     call tensor_free(tpl)
-
-     ! free working matrices and adapt to new requirements
+     !free working matrices and adapt to new requirements
      if( use_bg_buf )then
         call mem_pseudo_dealloc(w3)
         call mem_pseudo_dealloc(w2)
@@ -2526,16 +2563,27 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(w1)
         call mem_dealloc(w0)
      endif
+     call tensor_free(tmi)
+     call tensor_free(tpl)
 
-     ! Reallocate 1 temporary array
-     maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
-     maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
+#ifdef DIL_ACTIVE
+     scheme=1 !`DIL: remove
+#endif
+     !Reallocate 1 temporary array
+     if(scheme == 1) then
+        maxsize64 = nb !`DIL: w1 is not used in Scheme 1, and perhaps 2 as well
+     else
+        maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
+        maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
+     endif
      if( use_bg_buf )then
-        call mem_pseudo_alloc(w1,maxsize64) !``DIL: Large array: It is not used in Scheme 1 or 2!!!
+        call mem_pseudo_alloc(w1,maxsize64) !``DIL: w1 size must be decreased for Scheme 1
      else
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
-
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL: remove
+#endif
 
 #ifdef VAR_MPI
      maxts=0
@@ -2731,8 +2779,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
      endif
 
-
-     call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
+#ifdef DIL_ACTIVE
+     scheme=1 !`DIL: remove
+#endif
+     if(scheme /= 1) then !``DIL: What is this for? w1 is large
+      call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
+     endif
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL: remove
+#endif
 
 
      if(Ccmodel>MODEL_CC2)then
@@ -2744,7 +2799,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
         !get B2.2 contributions
         !**********************
-        if(scheme/=1) then
+        if(scheme/=1) then !``DIL: w1,w2 are not used in Schemes 2 and 1
          call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm)
         else
          call get_B22_contrib_mo(sio4,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,time_Bcnd_work,time_Bcnd_comm,&
@@ -2752,12 +2807,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
         call tensor_free(sio4)
-        if(scheme==1) call tensor_free(o2ilej)
+
+        if(scheme /= 1) then !``DIL: w1 is large
+         call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
+        endif
 #ifdef DIL_ACTIVE
         scheme=2 !`DIL:remove
 #endif
-
-        call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
 
 #ifdef VAR_MPI
         call time_start_phase(PHASE_COMM, at = time_Bcnd_work )
@@ -2805,13 +2861,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==4.or.scheme==3)then
            call get_cnd_terms_mo_3n4(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
               &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
-        else if(scheme==2.or.scheme==1)then
+        else if(scheme==2.or.scheme==1)then !``DIL: w1,w2,w3 are not used in Schemes 2 and 1
            call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
               &scheme,lock_outside,local)
         endif
 
-        call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
-           &omega2,govov,gvvooa,gvoova)
+#ifdef DIL_ACTIVE
+        scheme=1 !`DIL:remove
+#endif
+        if(scheme /= 1) then !``DIL: w1 is large
+         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
+        endif
+#ifdef DIL_ACTIVE
+        scheme=2 !`DIL:remove
+#endif
 
         if(scheme==3)then
            gvvooa%elm1 => null()
@@ -2824,6 +2887,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call mem_dealloc(gvvoo)
            endif
         endif
+
      endif
 
      !free local part
@@ -2838,8 +2902,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(w1)
      endif
 
+#ifdef DIL_ACTIVE
+     scheme=1 !`DIL:remove
+#endif
      if(Ccmodel>MODEL_CC2)then
         !DEALLOCATE STUFF
+        if(scheme==1) call tensor_free(o2ilej)
         call tensor_free(gvoova)
         call tensor_free(gvvooa)
 #ifdef VAR_MPI
@@ -2875,6 +2943,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL:remove
+#endif
 
 
      !IN CASE OF MPI (AND CORRECT SCHEME) REDUCE TO MASTER
@@ -2907,10 +2978,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !print *,infpar%lg_mynum,"slaves return",MemFree2,MemFree3
      !call lsmpi_barrier(infpar%lg_comm)
 
-     ! slaves should exit the subroutine after the main work is done
-     if(.not. master) then
-        call mem_dealloc(Had)
+     !slaves should exit the subroutine after the main work is done
+     if(.not.master) then
+
         call mem_dealloc(Gbi)
+        call mem_dealloc(Had)
+
+#ifdef DIL_ACTIVE
+        scheme=1 !`DIL: remove
+#endif
+        if(scheme == 1) then
+           if(use_bg_buf)then
+              call mem_pseudo_dealloc(dil_buffer)
+           else
+              call mem_dealloc(dil_buffer)
+           endif
+        endif
+#ifdef DIL_ACTIVE
+        scheme=2 !`DIL: remove
+#endif
+
         if(scheme==4.or.scheme==3)then
 
            call tensor_free(u2)
@@ -2923,9 +3010,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            endif
         endif
 
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+        flush(DIL_CONS_OUT)
+        if(DIL_DEBUG) call dil_debug_to_file_finish() !`DIL
+#endif
+#endif
+
         return
 
      endif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!`DIL: NO SLAVES AFTER THIS POINT!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #ifdef VAR_LSDEBUG
      if(print_debug)then
@@ -2941,13 +3038,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_WORK, ttot = time_get_ao_fock, twall = time_get_mo_fock)
 
-     ! Reallocate 1 temporary array
-     maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
+#ifdef DIL_ACTIVE
+     scheme=1 !`DIL: remove
+#endif
+     !Reallocate 1 temporary array
+     if(scheme==1) then
+        maxsize64 = max(int((i8*no)*nb,kind=8),int((i8*nv)*nb,kind=8))
+        maxsize64 = max(maxsize64,int(nb2,kind=8))
+     else
+        maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
+     endif
      if( use_bg_buf )then
-        call mem_pseudo_alloc(w1,maxsize64) !``DIL: Large array, not used in Scheme 1!!!
+        call mem_pseudo_alloc(w1,maxsize64)
      else
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL: remove
+#endif
 
      !if(DECinfo%hack2)then
      !   OPEN(unit=337,file='full_t1fock_test.restart')
@@ -2958,7 +3066,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !   endif
      !   CLOSE(337)
      !endif
-
 
      !Transform inactive Fock matrix into the different mo subspaces
      if (Ccmodel>MODEL_CC2) then
@@ -2988,7 +3095,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
 
-
      if(print_debug)then
         call print_norm(ppfock,int((i8*no)*no,kind=8)," NORM(ppfock)   :")
         call print_norm(pqfock,int((i8*no)*nv,kind=8)," NORM(pqfock)   :")
@@ -3010,7 +3116,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      !CCD can be achieved by not using singles residual updates here
-     if(.not. DECinfo%CCDhack)then
+     if(.not.DECinfo%CCDhack)then
 
 #ifdef DIL_ACTIVE
         scheme=1 !`DIL: remove
@@ -3079,6 +3185,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            dil_mem=dil_get_min_buf_size(tch5,errc)
            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: BS: ',infpar%lg_mynum,errc,dil_mem
            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Buf size set failed!',-1)
+           dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch5,dil_mem,errc,dil_buffer)
+           if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Buf alloc failed!',-1)
            call dil_tensor_contract(tch5,DIL_TC_EACH,dil_mem,errc)
            if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC13: TC: ',infpar%lg_mynum,errc
            if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC13: Tens contr failed!',-1)
@@ -3102,14 +3210,29 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
 
-
      !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
      !***********************************************************
      call calculate_E2_and_permute(ccmodel,ppfock,qqfock,w1%d,t2,xo,yv,Gbi,Had,no,nv,nb,&
         &omega2,o2v2,scheme,print_debug,lock_outside,time_Esing_work,time_Esing_comm)
 
-     call mem_dealloc(Had)
-     call mem_dealloc(Gbi)
+#ifdef DIL_ACTIVE
+     scheme=1 !`DIL: remove
+#endif
+     if(use_bg_buf)then
+        call mem_pseudo_dealloc(w1)
+        call mem_dealloc(Gbi)
+        call mem_dealloc(Had)
+        if(scheme==1) call mem_pseudo_dealloc(dil_buffer)
+     else
+        call mem_dealloc(w1)
+        call mem_dealloc(Gbi)
+        call mem_dealloc(Had)
+        if(scheme==1) call mem_dealloc(dil_buffer)
+     endif
+     call tensor_free(u2)
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL: remove
+#endif
 
      call time_start_phase(PHASE_WORK, ttot = time_Esing)
 
@@ -3122,19 +3245,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
      endif
 
-     if( use_bg_buf )then
-        call mem_pseudo_dealloc(w1)
-     else
-        call mem_dealloc(w1)
-     endif
-     call tensor_free(u2)
-
 #ifdef VAR_MPI
      if((.not.local).and.(scheme==4.or.scheme==3))then
-
         call tensor_mv_dense2tiled(omega2,.true.)
-        call tensor_deallocate_dense( t2 )
-
+        call tensor_deallocate_dense(t2)
      endif
      if(master.and.DECinfo%PL>2)then
         write(*,'("CCSD time in lsmpi_win_unlock phase C",g10.3)') time_lsmpi_win_unlock - unlock_time
@@ -4881,7 +4995,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=8),intent(in)::o2v2
      real(realk),intent(inout)::ppf(:)
      real(realk),intent(inout)::qqf(:)
-     real(realk) :: w1(o2v2)
+     real(realk), contiguous:: w1(:) !``DIL: Used to be o2v2, but it is not used in Schemes 2 and 1
      type(tensor),intent(inout) :: t2
      real(realk),pointer:: xo(:)
      real(realk),pointer:: yv(:)

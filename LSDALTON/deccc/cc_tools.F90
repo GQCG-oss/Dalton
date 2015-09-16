@@ -1056,6 +1056,8 @@ module cc_tools_module
          dil_mem=dil_get_min_buf_size(tch,errc)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: BS: ',infpar%lg_mynum,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Buf size set failed!',-1)
+         dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch,dil_mem,errc,dil_buffer)
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC6: Buf alloc failed!',-1)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Tens contr failed!',-1)
@@ -1097,6 +1099,8 @@ module cc_tools_module
          dil_mem=dil_get_min_buf_size(tch,errc)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: BS: ',infpar%lg_mynum,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Buf size set failed!',-1)
+         dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch,dil_mem,errc,dil_buffer)
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC7: Buf alloc failed!',-1)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Tens contr failed!',-1)
@@ -1533,6 +1537,8 @@ module cc_tools_module
           dil_mem=dil_get_min_buf_size(tch0,errc)
           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: BS: ',infpar%lg_mynum,errc,dil_mem
           if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Buf size set failed!',-1)
+          dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC8: Buf alloc failed!',-1)
           call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: TC: ',infpar%lg_mynum,errc
           if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Tens contr failed!',-1)
@@ -1638,6 +1644,8 @@ module cc_tools_module
              dil_mem=dil_get_min_buf_size(tch0,errc)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: BS: ',infpar%lg_mynum,errc,dil_mem
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Buf size set failed!',-1)
+             dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+             if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC9: Buf alloc failed!',-1)
              call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: TC: ',infpar%lg_mynum,errc
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Tens contr failed!',-1)
@@ -1739,6 +1747,8 @@ module cc_tools_module
              dil_mem=dil_get_min_buf_size(tch0,errc)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: BS: ',infpar%lg_mynum,errc,dil_mem
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Buf size set failed!',-1)
+             dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+             if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC10: Buf alloc failed!',-1)
              call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: TC: ',infpar%lg_mynum,errc
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Tens contr failed!',-1)
@@ -1833,6 +1843,8 @@ module cc_tools_module
                 dil_mem=dil_get_min_buf_size(tch0,errc)
                 if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC11: BS: ',infpar%lg_mynum,errc,dil_mem
                 if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC11: Buf size set failed!',-1)
+                dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC11: Buf alloc failed!',-1)
                 call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
                 if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC11: TC: ',infpar%lg_mynum,errc
                 if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC11: Tens contr failed!',-1)
@@ -2297,6 +2309,8 @@ module cc_tools_module
          dil_mem=dil_get_min_buf_size(tch,errc)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: BS: ',infpar%lg_mynum,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Buf size set failed!',-1)
+         dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch,dil_mem,errc,dil_buffer)
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC12: Buf alloc failed!',-1)
          call dil_tensor_contract(tch,DIL_TC_ALL,dil_mem,errc,locked=.false.)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Tens contr failed!',-1)

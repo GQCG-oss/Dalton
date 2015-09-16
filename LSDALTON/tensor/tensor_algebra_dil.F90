@@ -1,7 +1,7 @@
 !This module provides an infrastructure for distributed tensor algebra
 !that avoids loading full tensors into RAM of a single node.
 !AUTHOR: Dmitry I. Lyakh: quant4me@gmail.com, liakhdi@ornl.gov
-!REVISION: 2015/08/31 (started 2014/09/01).
+!REVISION: 2015/09/14 (started 2014/09/01).
 !DISCLAIMER:
 ! This code was developed in support of the INCITE project CHP100
 ! at the National Center for Computational Sciences at
@@ -251,6 +251,9 @@
          type(arg_buf_t), private:: arg_buf(1:BUFS_PER_DEV) !buffers belonging to device
         end type dev_buf_t
 !DATA:
+ !Global data:
+        integer(INTL), public:: dil_buf_size=268435456               !default tensor contraction buffer volume
+        real(tensor_dp), pointer, contiguous, public:: dil_buffer(:) !tensor contraction buffer
 
 !INTERFACES:
  !CPU pointer memory allocation:
@@ -2764,7 +2767,8 @@
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
            &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,int(tile_num,tensor_standard_int),buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
+          call tensor_get_tile(tens_arr,int(tile_num,tensor_standard_int),buf%buf_ptr(buf_end+1_INTL:),tile_vol,&
+                              &lock_set=.true.,flush_it=.false.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -2842,7 +2846,7 @@
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_acc_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.)
+          call tensor_acc_tile(tens_arr,tile_num,buf%buf_ptr(buf_end+1_INTL:),tile_vol,lock_set=.true.,flush_it=.false.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -3010,8 +3014,8 @@
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,int(tile_num,tensor_standard_int),&
-           &bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
+          call tensor_get_tile(tens_arr,int(tile_num,tensor_standard_int),bufi(buf_end+1_INTL:buf_end+tile_vol),tile_vol,&
+                              &lock_set=.true.,flush_it=.false.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -3106,7 +3110,7 @@
 !          if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Accumulate on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
 !           &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if((.not.win_lck).and.new_rw) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_acc_tile(tens_arr,tile_num,bufo(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.)
+          call tensor_acc_tile(tens_arr,tile_num,bufo(buf_end+1_INTL:buf_end+tile_vol),tile_vol,lock_set=.true.,flush_it=.false.)
 !          if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:tens_arr%mode)
           buf_end=buf_end+tile_vol
          elseif(k.gt.0) then
@@ -3189,7 +3193,7 @@
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Lock+Get on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
            &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)
           if(.not.win_lck) call tensor_mpi_win_lock(int(tile_host,tensor_mpi_kind),tens_arr%wi(tile_win),'s')
-          call tensor_get_tile(tens_arr,int(tile_num,tensor_standard_int),bufi,tile_vol,lock_set=.true.)
+          call tensor_get_tile(tens_arr,int(tile_num,tensor_standard_int),bufi,tile_vol,lock_set=.true.,flush_it=.false.)
           if(DIL_DEBUG) write(CONS_OUT,'(" [Ok]:",16(1x,i6))') signa(1:n)
           if(DIL_DEBUG) write(CONS_OUT,'(3x,"#DEBUG(DIL): Unlock(Get) on ",i9,"(",l1,"): ",i7,"/",i11)',ADVANCE='NO')&
            &tile_num,new_rw,tile_host,tens_arr%wi(tile_win)

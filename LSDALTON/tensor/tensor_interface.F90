@@ -72,6 +72,8 @@ module tensor_interface_module
   public thread_wtime                 !OMP thread wall time
   public process_wtime                !MPI process wall time
   public int2str                      !converts integers to strings
+  public dil_buf_size                 !tensor contraction buffer volume
+  public dil_buffer                   !tensor contraction buffer
 #endif
 
   !CALL THESE FUNCTION PRIOR TO ANY OTHER AND AS THE VERY LAST FUNCTIONS
