@@ -602,8 +602,8 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *             WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
      *             WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kj / mole'
                IF (SOPPA) THEN
-                  TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
-                  TYNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)
+                  TXNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
+                  TYNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)
      &                           *KZYVAR+KZVAR),1)
                   T2P2HN = D100*(TXNRM*TXNRM + TYNRM*TYNRM)
                   TPHNRM = D100 - T2P2HN

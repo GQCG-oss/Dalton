@@ -415,6 +415,7 @@ C
       DOMC      = .FALSE.
       DONEVPT   = .FALSE.
       DOLUCITA  = .FALSE.
+      DOAPSG    = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -1264,11 +1265,11 @@ C           are they for same basisset and same no. of symmetries ?
          END IF
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,'(/A/5X,A,I3,5X,8I5)')
-     &         'Input ERROR in connection with ".MOSTART"',
-     &         'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
+            WRITE (LUPRI,'(/A,I5/5X,A,I3,5X,8I5)')
+     &        'Input ERROR in connection with ".MOSTART" of type',IRDMO,
+     &        'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
             WRITE (LUPRI,'(5X,A,I3,5X,8I5)')
-     &         'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
+     &        'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
          ELSE IF (NDELT .NE. 0) THEN
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/5X,A/I10,A)')
@@ -1512,8 +1513,8 @@ C
       IF (DOMP2 .OR. DOCCSD) THEN
         IF (DOCCSD. and. DOSCF .AND. (IOPRHF .GT. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell MP2/CC'//
-     &      ' not compatible with open shell RHF'
+         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell CC'//
+     &      ' is not compatible with open shell RHF'
         END IF
         IF (DOHFSRDFT) THEN
 C hjaaj May 2008 : THRRHF_MP2 too small for srMP2  NB NOTE BEMAERK TODO OBS
@@ -1926,6 +1927,7 @@ C  *SOLVENT CALCULATION
 C  *PRINT LEVELS
 C  *AUXILIARY INPUT
 C  *LUCITA CALCULATION     ! large-scale CI
+C  *APSG INPUT
 C  *STEX INPUT
 C  *END OF (marks end of keyword input)
 C
@@ -2034,7 +2036,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 26)
+      PARAMETER (NTBMOD = 27)
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
 C needed for lucita: nsym, norb
@@ -2050,7 +2052,7 @@ C
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
      *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
-     *            '*END OF'/
+     *            '*APSG I','*END OF'/
 C
 C
 C  ***************************************************
@@ -2070,7 +2072,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2900,3000,2400,3200,3300,3400,3500,8000), I
+     *                2900,3000,2400,3200,3300,3400,3500,3600,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2162,6 +2164,10 @@ C March 9, 2012
        goto 910
 !      *CHOACT
  3500  CALL CC_ACTINP(WORD,NSYM)
+       GO TO 910
+!      *APSG INPUT
+!3600  CALL APSG_INPUT(WORD,INPERR,ALLOPT)
+ 3600  CALL QUIT('*APSG INPUT not available in this version.')
        GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
@@ -2260,7 +2266,7 @@ C
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
      *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','.STEX  ','xXXXXXX','xXXXXXX'/
+     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','xXXXXXX'/
 C
 
       functional_line_read = .false.
@@ -2556,38 +2562,37 @@ C *** Option 22: .GASCI
         NUMRUN   = NUMRUN + 1
       GO TO 100
 
-
-      ! .XCINT
+      ! Option 23: .XCINT
   123 continue
 #ifdef ENABLE_XCINT
-      call xcint_activate()
+        call xcint_activate()
 #else
-      call quit('.XCINT is not available in this version')
+        call quit('.XCINT is not available in this version')
 #endif
       go to 100
 
-
-      ! .NUMGRID
+      ! Option 24: .NUMGRID
   124 continue
 #ifdef ENABLE_XCINT
-      ! radial precision threshold
-      d_radint = 0
-      read(lucmd, *) d_radint
-      ! minimum number of angular points
-      i_angmin = 0
-      read(lucmd, *) i_angmin
-      ! regular number of angular points
-      i_angint = 0
-      read(lucmd, *) i_angint
-      call xcint_set_grid(d_radint,
-     &                    i_angmin,
-     &                    i_angint)
+      if (xcint_is_active()) then
+        ! radial precision threshold
+        d_radint = 0
+        read(lucmd, *) d_radint
+        ! minimum number of angular points
+        i_angmin = 0
+        read(lucmd, *) i_angmin
+        ! regular number of angular points
+        i_angint = 0
+        read(lucmd, *) i_angint
+        call xcint_set_grid(d_radint,
+     &                      i_angmin,
+     &                      i_angint)
+      end if
 #else
       call quit('.NUMGRID is not available in this version')
 #endif
       go to 100
-
-
+C *** Option 25 not used
   125 CONTINUE
       GO TO 100
 C
@@ -2652,10 +2657,16 @@ C     .COPFAC (for some srDFT testing)
   132 READ (LUCMD,*) COPFAC
       GO TO 100
 C
+C *** Option 32: .STEX
   133 CONTINUE
       DOSTEX = .TRUE.
       GO TO 100
+C *** Option 34: .APSG
   134 CONTINUE
+        DOAPSG = .TRUE.
+        MCTYPE = 11
+        NUMRUN   = NUMRUN + 1
+      GO TO 100
   135 CONTINUE
       GO TO 100
 C
@@ -2666,9 +2677,8 @@ C
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
 #else
-      IF (ADDSRI) CALL QUIT('srDFT not implemented in this version')
+      IF (ADDSRI) CALL QUIT('srDFT is not available in this version')
 #endif
-
 
       ! here we parse the functional
       if (functional_line_read) then
@@ -2710,11 +2720,19 @@ C
 #endif /* BUILD_OPENRSP */
       end if
 
-
+C
+      IF (DOAPSG) THEN
+         IF (DOMC) THEN
+            WRITE(LUPRI,'(/2A)') WORD1,
+     &      ' input error: .MCSCF and .APSG not both allowed.'
+            INPERR = INPERR + 1
+         END IF
+         DOMC = .TRUE.
+         call quit('APSG is not available in this version')
+      END IF
+C
+      RETURN
       END
-
-
-
 
 C  /* Deck haminp */
       SUBROUTINE HAMINP(WORD,INPERR,ALLOPT)
@@ -2874,7 +2892,7 @@ C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
-         MCTYPE = 1
+         IF (MCTYPE .NE. 11) MCTYPE = 1 ! if (not APSG) then CASSCF
          READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
          DO 25 ISYM = 1,NSYM
             NAS1(ISYM) = 0
@@ -5344,6 +5362,7 @@ C
       WFTYPE = ' '
       NUMRUN_LOCAL = NUMRUN
       IF (DOLUCITA) THEN
+         IF (WFTYPE .EQ. ' ') WFTYPE='LUCITA'
          WRITE (IWUNIT,1050) 'Generalized Active Space CI (with LUCITA)'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
          IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
@@ -5364,7 +5383,12 @@ C     formulation of NEVPT.
            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
            IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
          ENDIF
-         IF ( DOMC ) THEN
+         IF (DOAPSG) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='APSG'
+            WRITE (IWUNIT,1050)
+     &      'Antisymmetrized Product of Strongly Orthogonal Geminals'
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+         ELSE IF ( DOMC ) THEN
             IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
             WRITE (IWUNIT,1050) 'MC-SCF optimization.'
             NUMRUN_LOCAL = NUMRUN_LOCAL - 1
@@ -5606,6 +5630,10 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
+      IF (DOAPSG) THEN
+         WRITE(IWUNIT,'(/5X,A/)')
+     &   'For the specification of the APSG: see later.'
+      END IF
       IF (PEQM) THEN
          WRITE(IWUNIT,'(/5X,A/5X,A/)')
      &   'Wave function environment is modeled using the',
@@ -5762,7 +5790,9 @@ C
             NWOPT_print = 0
          END IF
          NVAR_print = NCONF + NWOPT_print
-         IF (FLAG(27)) THEN
+         IF (DOAPSG) THEN
+            WRITE (IWUNIT,5020) NCONF,NWOPT_print,NVAR_print
+         ELSE IF (FLAG(27)) THEN
             WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR_print
          ELSE
             WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR_print
@@ -5777,6 +5807,12 @@ C
  5010 FORMAT (/,5X, 'Optimization information',
      *        /,5X, '========================',
      *        /'@    Number of determinants     ',I15,
+     *        /'@    Number of orbital rotations',I15,
+     *        /,5X, '------------------------------------------',
+     *        /'@    Total number of variables  ',I15)
+ 5020 FORMAT (/,5X, 'Optimization information',
+     *        /,5X, '========================',
+     *        /'@    Number of geminal coeffients',I14,
      *        /'@    Number of orbital rotations',I15,
      *        /,5X, '------------------------------------------',
      *        /'@    Total number of variables  ',I15)

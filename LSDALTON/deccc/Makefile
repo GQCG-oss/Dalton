@@ -2,10 +2,11 @@ all: libdeccc.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../LSint -I../lsutil -I../linears
+INCLUDES := $(INCLUDES) -I../LSint -I../lsutil -I../linears -I../cuda
 
 F90_OBJS = dec_settings.o \
         cc_tools.o \
+        cc_response_tools.o \
 	decmpi.o \
 	decmpiSlave.o \
 	CABS.o \
@@ -20,28 +21,36 @@ F90_OBJS = dec_settings.o \
 	fullmolecule.o \
 	mp2.o \
 	rimp2.o \
-	ccsdpt.o \
+	ri_util.o \
+	ccsdpt_driver.o \
+	ccsdpt_tools.o \
+	ccsdpt_kernels.o \
+	ccsdpt_full.o \
+	ccsdpt_dec.o \
 	ccorbital.o \
 	cc_integrals.o \
-        cc_debug_routines.o\
 	ccsd.o \
 	pno_ccsd.o \
 	rpa.o \
 	f12_integrals.o \
 	f12_routines.o \
+	rif12_integral \
+	ls_thc_rimp2.o\
 	wangy_playground.o \
 	cc_driver.o \
 	dec_atom.o \
+	rimp2_gradient.o \
 	mp2_gradient.o \
         ccsd_gradient.o \
-	ccsd_lhtr.o\
 	fragment_energy.o \
 	dec_driver.o \
 	dec_driver_slave.o \
 	full_driver.o \
 	full_mp2.o \
 	full_rimp2.o \
+	full_rimp2f12.o \
 	full_driver_f12contractions.o\
+	full_ls_thc_rimp2.o\
 	snoop_main.o\
 	snoop_tools.o\
 	dec_main.o
@@ -58,7 +67,7 @@ clean :
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) 
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -- $(F90_OBJS:.o=.F90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -M../cuda -- $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

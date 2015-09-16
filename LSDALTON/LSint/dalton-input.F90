@@ -20,7 +20,7 @@ use basis_type, only: copy_basissetinfo, free_basissetinfo,&
      & print_brakebas, add_basissetinfo
 use basis_typetype,only: nullifyBasisset,nullifyMainBasis,&
      & BasParamLABEL,nBasisBasParam,GCTBasParam,BRAKEBASINFO,&
-     & RegBasParam,CABBasParam,CAPBasParam
+     & RegBasParam,CABBasParam
 use io, only: io_init, io_free
 use molecule_type, only: free_moleculeinfo
 use READMOLEFILE, only: read_molfile_and_build_molecule,Geometry_analysis  
@@ -204,7 +204,7 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ DALTONFILE',TIM1,TIM2,LUPRI)
 #endif  
   CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
        & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%basis,&
-       & latt_config)
+       & latt_config,intinp%dalton%atombasis)
 
 CALL Geometry_analysis(intinp%MOLECULE,LUPRI)  
 
@@ -267,24 +267,6 @@ do i=1,nBasisBasParam
            & intinp%MOLECULE,intinp%BASIS%BINFO(I),LIBRARY,&
            & BasParamLABEL(I),intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
            & doprint,intinp%DALTON%DOSPHERICAL,I)
-      IF(i.EQ.CAPBasParam)THEN
-         !Add the CABSP basis to REGULAR basis and store in CABS basis!
-         IF(intinp%BASIS%WBASIS(CABBasParam))THEN
-            call lsquit('CABS and CABSP basis set supplied, not compatibel',-1)
-         ENDIF
-         CALL Add_basissetinfo(LUPRI,intinp%DALTON%BASPRINT,&
-              & intinp%BASIS%BINFO(RegBasParam),intinp%BASIS%BINFO(CAPBasParam),&
-              & intinp%BASIS%BINFO(CABBasParam),CABBasParam)
-         IF(intinp%BASIS%BINFO(RegBasParam)%labelindex .NE. 0)THEN
-            call copy_Molecule_IDTYPE(intinp%MOLECULE,RegBasParam,CABBasParam)
-         ENDIF
-         CALL DETERMINE_NBAST(intinp%MOLECULE,intinp%BASIS%BINFO(CABBasParam),&
-              & intinp%DALTON%DOSPHERICAL,.FALSE.)
-         intinp%BASIS%WBASIS(CABBasParam) = .TRUE.
-         intinp%dalton%basis(CABBasParam) = .TRUE.
-         IF(intinp%DALTON%BASPRINT .GT. 5) CALL PRINT_BASISSETINFO(LUPRI,&
-              & intinp%BASIS%BINFO(CABBasParam))
-      ENDIF
       IF(i.EQ.RegBasParam)THEN !regular basis
          nbast = getNbasis(AORdefault,Contractedinttype,intinp%MOLECULE,LUPRI)
       ENDIF
@@ -399,14 +381,13 @@ integer            :: lupri
 !
 integer            :: LUINFO,IDUMMY,I,J,IPOS,IPOS2
 logical            :: file_exist,Angstrom,Symmetry,dopbc
-logical            :: ATOMBASIS,BASIS,ATOMDF,AUXBASIS
+logical            :: BASIS,ATOMDF,AUXBASIS
 CHARACTER(len=80)  :: WORD
 integer            :: Atomtypes,natoms,Molecularcharge,ios
 integer,ALLOCATABLE:: BasisSetCharge(:) !Charge of each type 
 real(realk)        :: Q
 logical            :: DoOwn,DoCartesian
 CHARACTER(len=1) :: KASYM(3,3),CRT
-CHARACTER(len=80),ALLOCATABLE  :: ATOMBASISSET(:)
 CHARACTER(len=2) :: SYMTXT,ID3
 
 WRITE(LUPRI,*) '                     '

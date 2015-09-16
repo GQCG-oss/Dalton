@@ -1144,10 +1144,11 @@ C
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
+      if (ipread .gt. 10 .OR. NSETS .gt. KSETS) 
+     &   write(lupri,*) 'setting NSETS =',NSETS
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
       END IF
-      if (ipread .gt. 10) write(lupri,*) 'setting NSETS =',NSETS
 C
 C     Run over atomic centers
 C     =======================

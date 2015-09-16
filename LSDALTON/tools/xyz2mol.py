@@ -126,9 +126,9 @@ for atype in Atomtypes:
 
     for i in range(natoms):
         if (labels[i] == atype):
-            output.write((labels[i]+'  {:10.6f}  {:10.6f}  {:10.6f} \n').format(coord[i,0],coord[i,1],coord[i,2]))
+            output.write((labels[i]+'  {0:10.6f}  {1:10.6f}  {2:10.6f} \n').format(coord[i,0],coord[i,1],coord[i,2]))
             if (verbose):
-                print (labels[i]+'  {:10.6f}  {:10.6f}  {:10.6f}').format(coord[i,0],coord[i,1],coord[i,2])
+                print (labels[i]+'  {0:10.6f}  {1:10.6f}  {2:10.6f}').format(coord[i,0],coord[i,1],coord[i,2])
 
 output.close()
 

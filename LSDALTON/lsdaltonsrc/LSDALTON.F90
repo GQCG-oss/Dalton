@@ -22,8 +22,12 @@ SUBROUTINE LSDALTON
   ! setup the calculation 
   call lsinit_all(OnMaster,lupri,luerr,t1,t2)
 
-  ! execute the acutal calculation
-  if(OnMaster) call LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
+  if(OnMaster)then
+     ! execute the acutal calculation
+     call LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
+  else
+     call LSDALTON_DRIVER_SLAVE()
+  endif
 
   ! free everything take time and close the files
   call lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo_slaves)
@@ -91,6 +95,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
+  use HODItest_module, only: debugTestHODI
 #ifdef VAR_PAPI
   use papi_module
 #endif
@@ -102,10 +107,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
-#if defined(ENABLE_QMATRIX)
-  use ls_qmatrix, only: ls_qmatrix_test, &
-                        ls_qmatrix_finalize
-#endif
 #ifdef HAS_PCMSOLVER
   use ls_pcm_utils, only: init_molecule
   use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
@@ -124,7 +125,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   REAL(REALK)         :: mx
   ! Energy
   REAL(REALK)         :: E(1),ExcitE
-  logical             :: mem_monitor,do_decomp
+  logical             :: do_decomp
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
   integer     :: lusoeo,funit
@@ -147,7 +148,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures, and perform
   ! basic tests
-  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+  call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config)
 
 #ifdef HAS_PCMSOLVER
         !
@@ -169,7 +170,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      !for now atleast
      RETURN
   ENDIF
-
+  IF(config%papitest)THEN
+#ifdef VAR_PAPI
+     call papi_example(LUPRI)
+#endif
+  ENDIF
   IF (config%integral%debugUncontAObatch) THEN 
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
      CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
@@ -319,6 +324,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_dealloc(GGem) 
         ENDIF
 
+        IF (config%doTestHodi) THEN
+          call debugTestHODI(lupri,luerr,ls%setting,S,nbast,ls%INPUT%MOLECULE%nAtoms)
+          CALL LSTIMER('D-HODI',TIMSTR,TIMEND,lupri)
+        ENDIF
+
         CALL mat_init(D(1),nbast,nbast)
         CALL mat_init(F(1),nbast,nbast)
         CALL mat_init(H1,nbast,nbast)
@@ -345,7 +355,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call II_ichor_LinK_test(lupri,luerr,ls%setting,D)
         ENDIF
 
-        if (mem_monitor) then
+        if (config%mat_mem_monitor) then
            write(lupri,*)
            WRITE(LUPRI,'("Max no. of matrices allocated in Level 2 / get_initial_dens: ",I10)') max_no_of_matrices
            max_no_of_matrices = no_of_matrices
@@ -617,18 +627,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
-#if defined(ENABLE_QMATRIX)
-        if (config%do_qmatrix) then
-            ! performs the Fortran test of the QMatrix library
-            call ls_qmatrix_test(config%ls_qmat)
-            !- performs Delta-SCF using the QMatrix library (NB! this is not linear-scaling)
-            !-call ls_qmatrix_scf()
-            ! finalizes the QMatrix interface
-            call ls_qmatrix_finalize(config%ls_qmat)
-            config%do_qmatrix = .false.
-        end if
-#endif
-
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives
         if(config%response%tasks%doNumHess .or. &
@@ -757,7 +755,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   call mat_no_of_matmuls(no_of_matmuls)
   WRITE(LUPRI,'("Total no. of matmuls used:                ",I10)') no_of_matmuls
   WRITE(LUPRI,'("Total no. of Fock/KS matrix evaluations:  ",I10)') ls%input%nfock
-  if (mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
+  if (config%mat_mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
 
   if(.not. HFdone) then  ! ensure there's no memory leak when HF calc was skipped
      call config_shutdown(config)
@@ -778,6 +776,17 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
 END SUBROUTINE LSDALTON_DRIVER
 
+SUBROUTINE LSDALTON_DRIVER_SLAVE()
+#ifndef VAR_MPI
+   implicit none
+   call lsquit("ERROR(LSDALTON_DRIVER_SLAVE): this should never be called without MPI",-1)
+#else
+   use lsmpi_type, only: MPI_COMM_LSDALTON
+   implicit none
+   call lsmpi_slave(MPI_COMM_LSDALTON)
+#endif
+END SUBROUTINE LSDALTON_DRIVER_SLAVE
+
 
 SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use precision
@@ -786,15 +795,18 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
   use dft_memory_handling
-  use memory_handling, only: init_globalmemvar
+  use memory_handling, only: init_globalmemvar,mem_allocated_global
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
-  use lspdm_tensor_operations_module,only:init_persistent_array
+  use tensor_interface_module,only: tensor_initialize_interface
   use GCtransMod, only: init_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:init_IIDF_matrix
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
+  use gpu_device_handling 
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
   logical, intent(inout)     :: OnMaster
@@ -808,6 +820,9 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
 #ifdef VAR_PAPI
   call mypapi_init(eventset)
 #endif
+
+  call Init_GPU_devices   !initialize gpu(s) (acc_init) 
+
   call init_globalmemvar  !initialize the global memory counters
   call NullifyMPIbuffers  !initialize the MPI buffers
   call set_matrix_default !initialize global matrix counters
@@ -815,11 +830,14 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call lstmem_init
   call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
+#ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
+#endif
   call init_AO2GCAO_GCAO2AO()
-  call init_persistent_array
   ! MPI initialization
   call lsmpi_init(OnMaster)
+  !tensor initialization
+  call tensor_initialize_interface(mem_ctr=mem_allocated_global)
 
   !INIT TIMING AND FILES
   if(OnMaster)then
@@ -836,7 +854,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
   use lstensorMem, only: lstmem_free
-  use lspdm_tensor_operations_module,only:free_persistent_array
+  use tensor_interface_module ,only: tensor_finalize_interface
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
   use dec_settings_mod, only:free_decinfo
@@ -844,16 +862,21 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use infpar_module
   use lsmpi_type
 #endif
+  use gpu_device_handling, only: shutdown_GPU_devices 
+#ifdef VAR_ICHOR
   use IchorSaveGabMod
+#endif
 #ifdef VAR_SCALAPACK
   use matrix_operations_scalapack
 #endif
   use matrix_operations_pdmm
-implicit none
+  implicit none
   logical,intent(in)         :: OnMaster
   integer,intent(inout)      :: lupri,luerr
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
+
+  call shutdown_GPU_devices   !shut down the device (acc_shutdown)
   
   IF(OnMaster)THEN
      !these routines free matrices and must be called while the 
@@ -862,7 +885,9 @@ implicit none
      call free_AO2GCAO_GCAO2AO()
   ENDIF
   call lstmem_free
+#ifdef VAR_ICHOR
   if(OnMaster)call FreeIchorSaveGabModule()
+#endif
   
 
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL
@@ -870,7 +895,7 @@ implicit none
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
-  call free_persistent_array
+  call tensor_finalize_interface()
   call free_decinfo()
 
 

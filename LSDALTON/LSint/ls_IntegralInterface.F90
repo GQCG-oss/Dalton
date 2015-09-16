@@ -11,7 +11,7 @@ MODULE ls_Integral_Interface
        & mtype_scalapack, mat_to_full, mat_free, mat_retrieve_block,&
        & mat_init, mat_trans, mat_daxpy, mat_scal_dia, &
        & mat_setlowertriangular_zero, mat_assign, mat_print,&
-       & mat_write_to_disk, mtype_pdmm
+       & mat_write_to_disk, mtype_pdmm, mat_add_to_fullunres
   use matrix_operations_scalapack, only: PDM_MATRIXSYNC,&
        & free_in_darray
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
@@ -37,7 +37,7 @@ MODULE ls_Integral_Interface
        & memdist_lstensor_buildfromscalapack, &
        & Build_lst_from_matarray, build_empty_sublstensor,&
        & alloc_build_empty_sublstensor
-  use integraloutput_type, only: initintegraloutputdims1
+  use integraloutput_type, only: initintegraloutputdims1,nullifyintegraloutput
   use TYPEDEF, only: getNbasis, set_sameallfrag, LS_FREEMMBUF, ls_emptyibuf,&
        & ls_emptyrbuf, ls_emptynucbuf, ls_fillnucbuf, ls_initmmbuf,&
        & retrieve_screen_output, typedef_free_setting,&
@@ -50,7 +50,8 @@ MODULE ls_Integral_Interface
   use MBIEintegraldriver, only: mbie_integral_driver
   use BUILDAOBATCH, only: build_empty_ao, build_empty_nuclear_ao,&
        & build_empty_pcharge_ao, build_ao, build_shellbatch_ao, &
-       & BUILD_EMPTY_ELFIELD_AO, build_empty_single_nuclear_ao
+       & BUILD_EMPTY_ELFIELD_AO, build_empty_single_nuclear_ao,&
+       & determinenaobatches
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
@@ -690,6 +691,7 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 ! Currently turned off when calculating integrals only for a specific batch
 doscreen = ((((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucleiOperator)).OR.((Oper.EQ.NucpotOperator).OR.(Oper.EQ.ErfcOperator)))&
      & .OR.(Oper.EQ.CAMOperator)).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemGrdOperator) &
+     & .OR. (Oper.EQ.GGemQuaOperator) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
@@ -759,7 +761,9 @@ ENDIF
 
 CALL ls_setDensityDimensions(INT_INPUT,SETTING,lupri)
 setting%output%FullAlphaCD = FullAlphaCD
+
 call MAIN_INTEGRAL_DRIVER(LUPRI,SETTING%SCHEME%INTPRINT,INT_INPUT,setting%OUTPUT)
+
 IF(FullAlphaCD)CAll mem_dealloc(setting%output%postprocess)
 
 CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
@@ -1390,6 +1394,9 @@ IF(INT_INPUT%DO_LINK)THEN
    IF(Spec.EQ.EcontribSpec)THEN
       setting%output%postprocess = 0
    ENDIF
+   IF(Spec.EQ.magderivEcontribSpec)THEN
+      setting%output%postprocess = 0
+   ENDIF
 ENDIF
 Int_input%OD_SCREEN = SETTING%SCHEME%OD_SCREEN
 Int_input%CS_SCREEN = SETTING%SCHEME%CS_SCREEN
@@ -1602,6 +1609,18 @@ CASE(MagDerivRSpec)
    ENDIF
 CASE (EcontribSpec)
    INT_INPUT%fullcontraction = .TRUE.
+CASE (magderivEcontribSpec)
+   INT_INPUT%fullcontraction = .TRUE.
+   ! we do the derivative on the LHS 
+   INT_INPUT%magderOrderP  = 1
+   INT_INPUT%magderOrderQ  = 0
+   INT_INPUT%NMAGDERIVCOMPP = 3
+   INT_INPUT%NMAGDERIVCOMPQ = 1
+   INT_INPUT%HermiteEcoeff = .FALSE.
+   INT_INPUT%MAGDERIVORDER = 1
+   INT_INPUT%doMagScreen=.TRUE.
+   INT_INPUT%sameODs  = .FALSE. !false since only derivative on LHS 
+   INT_INPUT%AddToIntegral = .TRUE.
 CASE DEFAULT
    WRITE(LUPRI,'(1X,2A)') 'Error: Wrong case in set_input_from_spec =',Spec
    CALL LSQUIT('Wrong case in set_input_from_spec',lupri)
@@ -1678,7 +1697,7 @@ call set_input_from_spec(INT_INPUT,SPEC,AO1,AO2,AO3,AO4,Oper,lupri,dograd,.FALSE
 
 nullify(setting%output%resultTensor)
 allocate(setting%output%resultTensor)
-IF(Spec.EQ.EcontribSpec)THEN
+IF(Spec.EQ.EcontribSpec.OR.Spec.EQ.magderivEcontribSpec)THEN
    call init_lstensor_1dim(setting%output%resultTensor,ndim2(5),lupri)
 ELSE
    call init_lstensor_5dim(setting%output%resultTensor,Int_Input%AO(1)%p,Int_Input%AO(2)%p,&
@@ -3082,6 +3101,7 @@ IF(attach_to_input)THEN
    saveGABtoMem = SETTING%SCHEME%saveGABtoMem
    recalcGab = SETTING%SCHEME%recalcGab
    IF(.NOT.saveGABtoMem) ReCalcGab=.TRUE. 
+   IF(AO1.EQ.AOpCharge) ReCalcGab = .TRUE.
    IntegralTransformGC = .FALSE.
    iprint = SETTING%SCHEME%intPrint
 
@@ -3373,6 +3393,7 @@ logical :: MBIE_INT
 ndim2 = setting%output%ndim 
 !CALL ls_setDefaultFragments(setting)
 CALL init_integral_input(INT_INPUT,SETTING)
+
 INT_INPUT%operator = Oper
 INT_INPUT%CS_int=.TRUE.
 INT_INPUT%OD_SCREEN = SETTING%SCHEME%OD_SCREEN
@@ -3744,9 +3765,9 @@ Type(MOLECULEINFO),pointer        :: Molecule
 Type(BASISINFO),pointer           :: Basis
 Integer,intent(IN)                :: LUPRI,LUERR
 !
-TYPE(BASISSETINFO),pointer :: AObasis
-Logical :: uncont,intnrm,emptyAO
-integer :: AObatchdim,iATOM
+TYPE(BASISSETINFO),pointer :: AObasis,AObasis2
+Logical :: uncont,intnrm,emptyAO,AddBasis2
+integer :: AObatchdim,iATOM,nAObatches,batchindex2
 Character(len=8)     :: AOstring
 uncont = scheme%uncont
 IF (intType.EQ.Primitiveinttype) THEN
@@ -3758,6 +3779,7 @@ ELSE
   CALL LSQUIT('Error - wrong intType in SetAObatch',lupri)
 ENDIF
 
+AddBasis2 = .FALSE.
 emptyAO = .false.
 SELECT CASE(AO)
 CASE (AORegular)
@@ -3765,7 +3787,11 @@ CASE (AORegular)
 CASE (AOdfAux)
    AObasis => Basis%BINFO(AUXBasParam)  !AUXILIARY Basis
 CASE (AOdfCABS)
-   AObasis => Basis%BINFO(CABBasParam)  !CABS Basis
+   AObasis => Basis%BINFO(RegBasParam)  !Regular Basis
+   AObasis2 => Basis%BINFO(CABBasParam)  !CABS Basis
+   AddBasis2 = .TRUE.
+CASE (AOdfCABO)
+   AObasis => Basis%BINFO(CABBasParam)  !CABS Basis only 
 CASE (AOdfJK)
    AObasis => Basis%BINFO(JKBasParam)   !JK Basis
 CASE (AOVAL)
@@ -3783,7 +3809,7 @@ CASE (AONuclear)
 CASE (AONuclearSpec)
    !specific nuclei 
    emptyAO = .true.
-   IATOM = 1 !FIXME
+   IATOM = scheme%AONuclearSpecID 
    CALL BUILD_EMPTY_SINGLE_NUCLEAR_AO(AObatch,Molecule,LUPRI,IATOM)
    nDim = 1
 CASE (AOpCharge)
@@ -3805,12 +3831,34 @@ IF (.not.emptyAO) THEN
    IF(batchindex.EQ. 0)THEN
       CALL BUILD_AO(LUPRI,SCHEME,SCHEME%AOPRINT,&
            &              Molecule,AObasis,AObatch,&
-           &              uncont,intnrm)
+           &              uncont,intnrm,.FALSE.)
+      IF(AddBasis2)THEN
+         CALL BUILD_AO(LUPRI,SCHEME,SCHEME%AOPRINT,&
+              &              Molecule,AObasis2,AObatch,&
+              &              uncont,intnrm,AddBasis2)
+      ENDIF
       nDim = getNbasis(AO,intType,Molecule,LUPRI)
    ELSE
-      CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
-           & SCHEME%AOPRINT,molecule,AObasis,AObatch,&
-           & uncont,intnrm,batchindex,AObatchdim,batchsize)
+      IF(AddBasis2)THEN
+         Call determinenAObatches(nAObatches,LUPRI,SCHEME,&
+              & SCHEME%AOPRINT,molecule,AObasis,uncont,intnrm)
+         print*,'batchindex',batchindex,'nAObatches',nAObatches
+         IF(batchindex.LE.nAObatches)THEN
+            CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
+                 & SCHEME%AOPRINT,molecule,AObasis,AObatch,&
+                 & uncont,intnrm,batchindex,AObatchdim,batchsize)
+         ELSE
+            batchindex2=batchindex-nAObatches
+            print*,'batchindex2',batchindex2,'nAObatches',nAObatches
+            CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
+                 & SCHEME%AOPRINT,molecule,AObasis2,AObatch,&
+                 & uncont,intnrm,batchindex2,AObatchdim,batchsize)
+         ENDIF
+      ELSE
+         CALL BUILD_SHELLBATCH_AO(LUPRI,SCHEME,&
+              & SCHEME%AOPRINT,molecule,AObasis,AObatch,&
+              & uncont,intnrm,batchindex,AObatchdim,batchsize)
+      ENDIF
       nDim = AObatchdim
    ENDIF
 ENDIF
@@ -3875,6 +3923,8 @@ Integer               :: nrowLHS,ncolLHS,nrowRHS,ncolRHS
 !
 TYPE(INTEGRALOUTPUT)  :: INT_OUTPUT
 !
+!initialize the Integral Output structure.
+call nullifyIntegralOutput(INT_OUTPUT)
 IDUMMY=1
 LHSDENSFIT = .FALSE.
 RHSDENSFIT = .FALSE.
@@ -4298,24 +4348,25 @@ logical :: unres_J
 integer                :: idmat,n1,n2,ndmat2
 real(realk), pointer :: Dfull(:,:,:)
 
-IF(matrix_type .EQ. mtype_unres_dense)THEN
+IF(matrix_type .EQ. mtype_unres_dense)THEN !FIXME BYKOV This should be for all unres types! 
    n1=Dmat(1)%p%nrow
    n2=Dmat(1)%p%ncol
    IF(unres_J)THEN  ! Coulomb type handling: We can add the alpha and beta
       !The alpha and beta part of the coulomb matrix is the same.
       ndmat2 = ndmat
       call mem_alloc(Dfull,n1,n2,ndmat)
+      call ls_dzero(Dfull,n1*n2*ndmat)
       DO Idmat =1,ndmat
-         CALL DCOPY(n1*n2,Dmat(idmat)%p%elms,1,Dfull(:,:,idmat),1)
-         CALL DAXPY(n1*n2,1E0_realk,Dmat(idmat)%p%elmsb,1,Dfull(:,:,idmat),1)
-         CALL DSCAL(n1*n2,0.5E0_realk,Dfull(:,:,idmat),1)
+         call mat_add_to_fullunres(Dmat(idmat)%p,0.5E0_realk,Dfull(:,:,idmat),1) !alpha part
+         call mat_add_to_fullunres(Dmat(idmat)%p,0.5E0_realk,Dfull(:,:,idmat),2) !beta part
       ENDDO
    ELSE ! Exchange type handling: We treat alpha and beta seperate
       ndmat2 = 2*ndmat
       call mem_alloc(Dfull,n1,n2,ndmat2)
+      call ls_dzero(Dfull,n1*n2*ndmat2)
       DO Idmat =1,ndmat
-         CALL DCOPY(n1*n2,Dmat(idmat)%p%elms, 1,Dfull(:,:,2*idmat-1),  1)
-         CALL DCOPY(n1*n2,Dmat(idmat)%p%elmsb,1,Dfull(:,:,2*idmat),1)      
+         call mat_add_to_fullunres(Dmat(idmat)%p,1.0E0_realk,Dfull(:,:,2*idmat-1),1) !alpha part
+         call mat_add_to_fullunres(Dmat(idmat)%p,1.0E0_realk,Dfull(:,:,2*idmat),2)   !beta part
       ENDDO
    ENDIF
    call ls_attachDmatToSetting2full(Dfull,n1,n2,ndmat2,setting,side,AOindex1,AOindex2,lupri)
@@ -4344,24 +4395,25 @@ logical :: unres_J
 TYPE(matrixp)  :: Dmatp(ndmat)
 integer :: idmat,n1,n2,ndmat2
 real(realk), pointer :: Dfull(:,:,:)
-IF(matrix_type .EQ. mtype_unres_dense)THEN
+IF(matrix_type .EQ. mtype_unres_dense)THEN !FIXME BYKOV This should be for all unres types! 
    n1=Dmat(1)%nrow
    n2=Dmat(1)%ncol
    IF(unres_J)THEN  ! Coulomb type handling: We can add the alpha and beta
       !The alpha and beta part of the coulomb matrix is the same.
       ndmat2 = ndmat
       call mem_alloc(Dfull,n1,n2,ndmat)
+      call ls_dzero(Dfull,n1*n2*ndmat)
       DO Idmat =1,ndmat
-         CALL DCOPY(n1*n2,Dmat(idmat)%elms,1,Dfull(:,:,idmat),1)
-         CALL DAXPY(n1*n2,1E0_realk,Dmat(idmat)%elmsb,1,Dfull(:,:,idmat),1)
-         CALL DSCAL(n1*n2,0.5E0_realk,Dfull(:,:,idmat),1)
+         call mat_add_to_fullunres(Dmat(idmat),0.5E0_realk,Dfull(:,:,idmat),1) !alpha part
+         call mat_add_to_fullunres(Dmat(idmat),0.5E0_realk,Dfull(:,:,idmat),2) !beta part
       ENDDO
    ELSE ! Exchange type handling: We treat alpha and beta seperate
       ndmat2 = 2*ndmat
       call mem_alloc(Dfull,n1,n2,ndmat2)
+      call ls_dzero(Dfull,n1*n2*ndmat2)
       DO Idmat =1,ndmat
-         CALL DCOPY(n1*n2,Dmat(idmat)%elms, 1,Dfull(:,:,2*idmat-1),  1)
-         CALL DCOPY(n1*n2,Dmat(idmat)%elmsb,1,Dfull(:,:,2*idmat),1)      
+         call mat_add_to_fullunres(Dmat(idmat),1.0E0_realk,Dfull(:,:,2*idmat-1),1) !alpha part
+         call mat_add_to_fullunres(Dmat(idmat),1.0E0_realk,Dfull(:,:,2*idmat),2)   !beta part
       ENDDO
    ENDIF
    call ls_attachDmatToSetting2full(Dfull,n1,n2,ndmat2,setting,side,AOindex1,AOindex2,lupri)
@@ -4394,21 +4446,22 @@ integer                :: idmat,n1,n2,ndmat2
 TYPE(matrixp)          :: Dmatp(1)
 real(realk) :: thresh
 real(realk), pointer :: Dfull(:,:,:)
-IF(matrix_type .EQ. mtype_unres_dense)THEN
+IF(matrix_type .EQ. mtype_unres_dense)THEN !FIXME BYKOV This should be for all unres types!
    n1=Dmat%p%nrow
    n2=Dmat%p%ncol
    IF(unres_J)THEN  ! Coulomb type handling: We can add the alpha and beta
       !The alpha and beta part of the coulomb matrix is the same.
       ndmat2 = ndmat
       call mem_alloc(Dfull,n1,n2,ndmat)
-      CALL DCOPY(n1*n2,Dmat%p%elms,1,Dfull(:,:,1),1)
-      CALL DAXPY(n1*n2,1E0_realk,Dmat%p%elmsb,1,Dfull(:,:,1),1)
-      CALL DSCAL(n1*n2,0.5E0_realk,Dfull(:,:,1),1)
+      call ls_dzero(Dfull,n1*n2*ndmat)
+      call mat_add_to_fullunres(Dmat%p,0.5E0_realk,Dfull(:,:,1),1) !alpha part
+      call mat_add_to_fullunres(Dmat%p,0.5E0_realk,Dfull(:,:,1),2) !beta part
    ELSE ! Exchange type handling: We treat alpha and beta seperate
       ndmat2 = 2*ndmat
       call mem_alloc(Dfull,n1,n2,ndmat2)
-      CALL DCOPY(n1*n2,Dmat%p%elms, 1,Dfull(:,:,1),  1)
-      CALL DCOPY(n1*n2,Dmat%p%elmsb,1,Dfull(:,:,2),1)      
+      call ls_dzero(Dfull,n1*n2*ndmat2)
+      call mat_add_to_fullunres(Dmat%p,1.0E0_realk,Dfull(:,:,1),1) !alpha part
+      call mat_add_to_fullunres(Dmat%p,1.0E0_realk,Dfull(:,:,2),2)   !beta part
    ENDIF
    call ls_attachDmatToSetting2full(Dfull,n1,n2,ndmat2,setting,side,AOindex1,AOindex2,lupri)
    call mem_dealloc(Dfull)
@@ -4437,21 +4490,22 @@ logical :: unres_J
 TYPE(matrixp)          :: Dmatp(1)
 integer                :: idmat,n1,n2,ndmat2
 real(realk), pointer :: Dfull(:,:,:)
-IF(matrix_type .EQ. mtype_unres_dense)THEN
+IF(matrix_type .EQ. mtype_unres_dense)THEN !FIXME BYKOV This should be for all unres types!
    n1=Dmat%nrow
    n2=Dmat%ncol
    IF(unres_J)THEN  ! Coulomb type handling: We can add the alpha and beta
       !The alpha and beta part of the coulomb matrix is the same.
       ndmat2 = ndmat
       call mem_alloc(Dfull,n1,n2,ndmat)
-      CALL DCOPY(n1*n2,Dmat%elms,1,Dfull(:,:,1),1)
-      CALL DAXPY(n1*n2,1E0_realk,Dmat%elmsb,1,Dfull(:,:,1),1)
-      CALL DSCAL(n1*n2,0.5E0_realk,Dfull(:,:,1),1)
+      call ls_dzero(Dfull,n1*n2*ndmat)
+      call mat_add_to_fullunres(Dmat,0.5E0_realk,Dfull(:,:,1),1) !alpha part
+      call mat_add_to_fullunres(Dmat,0.5E0_realk,Dfull(:,:,1),2) !beta part
    ELSE ! Exchange type handling: We treat alpha and beta seperate
       ndmat2 = 2*ndmat
       call mem_alloc(Dfull,n1,n2,ndmat2)
-      CALL DCOPY(n1*n2,Dmat%elms, 1,Dfull(:,:,1),  1)
-      CALL DCOPY(n1*n2,Dmat%elmsb,1,Dfull(:,:,2),1)      
+      call ls_dzero(Dfull,n1*n2*ndmat2)
+      call mat_add_to_fullunres(Dmat,1.0E0_realk,Dfull(:,:,1),1) !alpha part
+      call mat_add_to_fullunres(Dmat,1.0E0_realk,Dfull(:,:,2),2)   !beta part
    ENDIF
    call ls_attachDmatToSetting2full(Dfull,n1,n2,ndmat2,setting,side,AOindex1,AOindex2,lupri)
    call mem_dealloc(Dfull)
@@ -5408,7 +5462,7 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 doscreen = ((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucpotOperator)) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 doscreen = doscreen.OR.(((Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemGrdOperator).OR.&
-     &(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
+     &(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator).OR.(Oper.EQ.GGemQuaOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
 IF(SETTING%SCHEME%CS_INT.OR.SETTING%SCHEME%PS_INT)doscreen=.FALSE.
@@ -5574,6 +5628,9 @@ CASE(MagDerivRSpec)
    INT_INPUT%sameLHSAOs  = .FALSE.
    INT_INPUT%sameODs  = .FALSE.
 CASE (EcontribSpec)
+   call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
+   PermuteResultTensor = .FALSE.
+CASE (magderivEcontribSpec)
    call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
    PermuteResultTensor = .FALSE.
 CASE DEFAULT
@@ -5813,7 +5870,8 @@ batchOnly = (setting%batchindex(1).NE. 0).OR.(setting%batchindex(2).NE. 0) &
 doscreen = ((Oper.EQ.CoulombOperator).OR.(Oper.EQ.NucpotOperator)) &
      & .AND.(SETTING%SCHEME%CS_SCREEN.OR.SETTING%SCHEME%PS_SCREEN)
 doscreen = doscreen.OR.(((Oper.EQ.GGemCouOperator).OR.(Oper.EQ.GGemOperator).OR.(Oper.EQ.GGemGrdOperator)&
-     &.OR.(Oper.EQ.ErfcOperator).OR.(Oper.EQ.CAMOperator)).AND.SETTING%SCHEME%MBIE_SCREEN)
+     &.OR.(Oper.EQ.ErfcOperator).OR.(Oper.EQ.GGemQuaOperator).OR.(Oper.EQ.CAMOperator))&
+     & .AND.SETTING%SCHEME%MBIE_SCREEN)
 
 IF(INT_INPUT%DO_PROP)doscreen=.FALSE.
 IF(SETTING%SCHEME%CS_INT.OR.SETTING%SCHEME%PS_INT)doscreen=.FALSE.
@@ -5960,6 +6018,9 @@ CASE(MagDerivRSpec)
    INT_INPUT%sameLHSAOs  = .FALSE.
    INT_INPUT%sameODs  = .FALSE.
 CASE (EcontribSpec)
+   call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
+   PermuteResultTensor = .FALSE.
+CASE (magderivEcontribSpec)
    call init_lstensor_1dim(result_tensor,ndim2(5),lupri)
    PermuteResultTensor = .FALSE.
 CASE DEFAULT

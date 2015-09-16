@@ -6,7 +6,7 @@ The Gen1Int interface at Dalton/Dirac is organized as:
           |
   gen1int_shell.F90:     module of AO sub-shell, might be portable with minor changes
           |
-  gen1int_matrix.F90:    module of matrix interface, will be replaced by QMatrix library
+  gen1int_matrix.F90:    module of matrix interface, will be replaced by QcMatrix library
 
 Needless to say, introducing gen1int_matrix.F90 and gen1int_shell.F90 makes the code be
 simpler and more compact. The parallelization is implemented in gen1int_shell.F90 using

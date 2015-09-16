@@ -27,9 +27,6 @@ use arhDensity, only: solveritem
 use ls_pcm_config, only: pcmtype
 #endif
 use precision
-#if defined(ENABLE_QMATRIX)
-use ls_qmatrix, only: LSQMat
-#endif
 
 private
 public :: responseitem,ConfigItem,LowAccuracyStartType,&
@@ -139,14 +136,16 @@ type ConfigItem
    logical              :: doF12
    !> Should we do an RIMP2 calc which requires a AUX basis
    logical              :: doRIMP2
-#if defined(ENABLE_QMATRIX)
-   logical :: do_qmatrix = .false.
-   type(LSQMat) ls_qmat
-#endif
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
+   !> do testing of the high-order derivative integrals (HODI)
+   logical              :: doTestHodi
    !> skip SCF calculations
    logical              :: skipscfloop
+   !> test papi
+   logical              :: papitest
+   !> Memory monitor for Matrices
+   logical            :: mat_mem_monitor
 end type ConfigItem
 
 type LowAccuracyStartType

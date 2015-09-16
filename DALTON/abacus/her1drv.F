@@ -1520,8 +1520,8 @@ C
          GDIFE(I) = GSOLTT(I) - GRADE(I)
          GDIFN(I) = GSOLNN(I) - GRADN(I)
   100 CONTINUE
-      ERRORE = DNORM2(3*NUCDEP,GDIFE,1) .GT. THRSH
-      ERRORN = DNORM2(3*NUCDEP,GDIFN,1) .GT. THRSH
+      ERRORE = DNRM2(3*NUCDEP,GDIFE,1) .GT. THRSH
+      ERRORN = DNRM2(3*NUCDEP,GDIFN,1) .GT. THRSH
       IF (IPRINT .GT. 2 .OR. ERRORE) THEN
          IF (ERRORE) WRITE (LUPRI,'(A)')
      &     ' Error in electronic solvent part of gradient '

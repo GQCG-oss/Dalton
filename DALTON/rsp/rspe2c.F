@@ -1425,8 +1425,8 @@ C
                GO TO 160
             END IF
             IF (KZCONF.GT.0 .AND. .NOT.SOPPA) THEN
-               TXNRM = DNORM2(KZCONF,GD,1)
-               TYNRM = DNORM2(KZCONF,GD(KZVAR+1),1)
+               TXNRM = DNRM2(KZCONF,GD,1)
+               TYNRM = DNRM2(KZCONF,GD(KZVAR+1),1)
                IF (TXNRM .GT. TYNRM) THEN
                   KGDC = 1
                ELSE
@@ -4112,8 +4112,8 @@ C ---------------------------- not non-adiabatic coupling:
      *          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
      *      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
-              TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
-              TYNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
+              TXNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
+              TYNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
               T2P2HN = D100*(TXNRM*TXNRM + TYNRM*TYNRM)
               TPHNRM = D100 - T2P2HN
               WRITE(LUPRI,'(2(/A,F8.2,A))')
@@ -6845,12 +6845,11 @@ C     Memory allocation
       RETURN
       END
 
+#ifdef BUILD_QFITLIB
 C  /* Deck QFIT_TRCHAR */
       SUBROUTINE QFIT_TRCHAR(trdipole, density)
 C
-#ifdef BUILD_QFITLIB
       use qfit
-#endif
 
 #include "inforb.h"
 
@@ -6863,5 +6862,6 @@ C
       
       return
       end
+#endif
 
 ! -- end of rspe2c.F --

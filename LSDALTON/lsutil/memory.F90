@@ -25,7 +25,7 @@ public DetectHeapMemoryInit,DetectHeapMemory
 public Set_PrintSCFmemory,MemInGB,stats_globalmem
 public Set_MemModParamPrintMemory, Print_Memory_info
 public MemModParamPrintMemorylupri,MemModParamPrintMemory
-public Set_PrintMemoryLowerLimit
+public Set_PrintMemoryLowerLimit,printBGinfo
 public get_available_memory
 public init_globalmemvar
 public init_threadmemvar
@@ -42,7 +42,6 @@ public mem_pseudo_dealloc
 public mem_init_background_alloc
 public mem_change_background_alloc
 public mem_free_background_alloc
-public mem_is_background_buf_init,mem_get_bg_buf_n
 public mem_allocated_mem_real, mem_deallocated_mem_real
 public mem_allocated_global,mem_allocated_type_matrix
 !parameters
@@ -319,7 +318,7 @@ INTERFACE mem_alloc
       &             real_allocate_1dim_sp, real_allocate_2dim, &
       &             real_allocate_2dim_sp, real_allocate_2dim_zero, real_allocate_3dim, &
       &             real_allocate_3dim_sp, real_allocate_3dim_zero, real_allocate_4dim, &
-      &             real_allocate_5dim, real_allocate_5dim_zero, &
+      &             real_allocate_4dim_sp, real_allocate_5dim, real_allocate_5dim_zero, &
       &             real_allocate_7dim_zero, &
       &             complex_allocate_1dim, complex_allocate_2dim, &
       &             intS_allocate_1dim,intS_allocate_1dim_wrapper4, &
@@ -359,7 +358,7 @@ INTERFACE mem_alloc
    !
    INTERFACE mem_dealloc
       MODULE PROCEDURE real_deallocate_1dim, real_deallocate_2dim,  &
-         &             real_deallocate_1dim_sp, real_deallocate_2dim_sp, real_deallocate_3dim_sp,&
+         &             real_deallocate_1dim_sp, real_deallocate_2dim_sp, real_deallocate_3dim_sp, real_deallocate_4dim_sp,&
          &             real_deallocate_3dim, real_deallocate_4dim, &
          &             real_deallocate_5dim, real_deallocate_7dim, &
          &             complex_deallocate_1dim, complex_deallocate_2dim, &
@@ -395,10 +394,12 @@ INTERFACE mem_alloc
            & Mem1dimInGB,Mem1dimInGBint8
    END INTERFACE MemInGB
    interface mem_pseudo_alloc
-      module procedure mem_pseudo_alloc_realk,mem_pseudo_alloc_mpirealk
+      module procedure mem_pseudo_alloc_realk,mem_pseudo_alloc_realk2,mem_pseudo_alloc_realk3,&
+           & mem_pseudo_alloc_realk4,mem_pseudo_alloc_realk5,mem_pseudo_alloc_mpirealk
    end interface mem_pseudo_alloc
    interface mem_pseudo_dealloc
-      module procedure mem_pseudo_dealloc_realk,mem_pseudo_dealloc_mpirealk
+      module procedure mem_pseudo_dealloc_realk,mem_pseudo_dealloc_realk2,mem_pseudo_dealloc_realk3,&
+           & mem_pseudo_dealloc_realk4,mem_pseudo_dealloc_realk5,mem_pseudo_dealloc_mpirealk
    end interface mem_pseudo_dealloc
 
 
@@ -1136,23 +1137,23 @@ INTERFACE mem_alloc
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,'("                  Additional Memory information          ")')
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-      WRITE(LUPRI,'("  Allocated memory (linkshell):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (linkshell):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_linkshell
-      WRITE(LUPRI,'("  Allocated memory (integrand):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integrand):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integrand
-      WRITE(LUPRI,'("  Allocated memory (integralitem):    ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integralitem):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integralitem
-      WRITE(LUPRI,'("  Allocated memory (intwork):         ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (intwork):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_intwork
-      WRITE(LUPRI,'("  Allocated memory (overlap):         ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (overlap):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlap
-      WRITE(LUPRI,'("  Allocated memory (ODitem):          ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (ODitem):            ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ODitem
-      WRITE(LUPRI,'("  Allocated memory (lstensor):        ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lstensor):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lstensor
-      WRITE(LUPRI,'("  Allocated memory (FMM   ):          ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (FMM   ):            ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_FMM
-      WRITE(LUPRI,'("  Allocated memory (XC    ):          ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (XC    ):            ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_XCcalc
 
       call print_maxmem(lupri,max_mem_used_global,'TOTAL')
@@ -1265,7 +1266,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_DECAOBATCHINFO
       WRITE(LUPRI,'("  Allocated MPI memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MYPOINTER
-      WRITE(LUPRI,'("  Allocated MPI memory (fragmentAOS):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (fragmentAOS):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_fragmentAOS
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY2):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY2
@@ -1284,26 +1285,26 @@ INTERFACE mem_alloc
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,'("                  Additional Memory information          ")')
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-      WRITE(LUPRI,'("  Allocated MPI memory (linkshell):   ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (linkshell):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_linkshell
-      WRITE(LUPRI,'("  Allocated MPI memory (integrand):   ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (integrand):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integrand
-      WRITE(LUPRI,'("  Allocated MPI memory (integralitem):",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (integralitem):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_integralitem
-      WRITE(LUPRI,'("  Allocated MPI memory (IntWork):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (IntWork):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_IntWork
-      WRITE(LUPRI,'("  Allocated MPI memory (overlap):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (overlap):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlap
-      WRITE(LUPRI,'("  Allocated MPI memory (ODitem):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (ODitem):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ODitem
-      WRITE(LUPRI,'("  Allocated MPI memory (lstensor):    ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (lstensor):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lstensor
-      WRITE(LUPRI,'("  Allocated MPI memory (FMM   ):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (FMM   ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_FMM
-      WRITE(LUPRI,'("  Allocated MPI memory (XC    ):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (XC    ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_XCcalc
 #ifdef MOD_UNRELEASED
-      WRITE(LUPRI,'("  Allocated MPI memory (lvec_data):    ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (lvec_data):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lvec_data
       WRITE(LUPRI,'("  Allocated MPI memory (lattice_cell):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lattice_cell
@@ -1419,7 +1420,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_DECAOBATCHINFO
       WRITE(LUPRI,'("  Allocated memory (MYPOINTER):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MYPOINTER
-      WRITE(LUPRI,'("  Allocated memory (fragmentAOS):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (fragmentAOS):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_fragmentAOS
       WRITE(LUPRI,'("  Allocated memory (ARRAY2):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY2
@@ -1438,26 +1439,26 @@ INTERFACE mem_alloc
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,'("                  Additional Memory information          ")')
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-      WRITE(LUPRI,'("  Allocated memory (linkshell):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (linkshell):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_linkshell
-      WRITE(LUPRI,'("  Allocated memory (integrand):     ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integrand):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_integrand
-      WRITE(LUPRI,'("  Allocated memory (integralitem):  ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (integralitem):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_integralitem
-      WRITE(LUPRI,'("  Allocated memory (IntWork):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (IntWork):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_IntWork
-      WRITE(LUPRI,'("  Allocated memory (overlap):       ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (overlap):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_overlap
-      WRITE(LUPRI,'("  Allocated memory (ODitem):        ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (ODitem):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ODitem
-      WRITE(LUPRI,'("  Allocated memory (lstensor):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lstensor):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lstensor
-      WRITE(LUPRI,'("  Allocated memory (FMM   ):        ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (FMM   ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_FMM
 #ifdef MOD_UNRELEASED
-      WRITE(LUPRI,'("  Allocated memory (lvec_data):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lvec_data):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lvec_data
-      WRITE(LUPRI,'("  Allocated memory (lattice_cell):      ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (lattice_cell):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lattice_cell
 #endif
 
@@ -1933,27 +1934,27 @@ subroutine debug_mem_stats(lupri)
      ENDIF
 #endif
 
-     IF (max_mem_used_global.LT.0) THEN
+     IF (mem_allocated_global.LT.0) THEN
         write(GLOB,'(A8)') ' < zero '
-     ELSEIF (max_mem_used_global.LT.1000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
-     ELSEIF (max_mem_used_global.LT.1000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
-     ELSEIF (max_mem_used_global.LT.1000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
+     ELSEIF (mem_allocated_global.LT.1000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E0_realk," B "
+     ELSEIF (mem_allocated_global.LT.1000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-3_realk," kB"
+     ELSEIF (mem_allocated_global.LT.1000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-6_realk," MB"
 #ifdef VAR_INT64
-     ELSEIF (max_mem_used_global.LT.1000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
-     ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
-     ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
+     ELSEIF (mem_allocated_global.LT.1000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-12_realk," TB"
+     ELSEIF (mem_allocated_global.LT.1000000000000000000) THEN
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-15_realk," PB"
      ELSE
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-18_realk," EB"
      ENDIF
 #else
      ELSE
-        write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
+        write(GLOB,'(F5.1,A3)') mem_allocated_global*1E-9_realk," GB"
      ENDIF
 #endif
 
@@ -1983,15 +1984,19 @@ subroutine debug_mem_stats(lupri)
 !----- Background buffer handling -----!
 subroutine mem_init_background_alloc(bytes)
    implicit none
-   real(realk), intent(in) :: bytes
+   integer(kind=8), intent(in) :: bytes
    integer(kind=8) :: nelms
 
    if(buf_realk%init)then
       call lsquit("ERROR(mem_free_background_alloc): background buffer already initialized",-1)
    endif
 
-   nelms = int(bytes/8.0E0_realk,kind=8)
+   nelms = bytes/8_long
+#ifdef VAR_MPI
    call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+#else
+   call mem_alloc(buf_realk%p,nelms)
+#endif
 
    buf_realk%init   = .true.
    buf_realk%offset = 0
@@ -1999,16 +2004,24 @@ subroutine mem_init_background_alloc(bytes)
 
    buf_realk%n      = 1
 
+   buf_realk%c_addr = c_null_ptr
+   buf_realk%c_mdel = c_null_ptr
+   buf_realk%f_mdel = c_null_ptr
+   buf_realk%e_mdel = 0
+   buf_realk%n_mdel = 0
+   buf_realk%l_mdel = .false.
+   buf_realk%max_usage = 0 
 end subroutine mem_init_background_alloc
+
 subroutine mem_change_background_alloc(bytes,not_lazy)
    implicit none
-   real(realk), intent(in) :: bytes
+   integer(kind=8), intent(in) :: bytes
    logical, intent(in), optional :: not_lazy
    integer :: i
    integer(kind=8) :: nelms
    logical :: change
 
-   nelms = int(bytes/8.0E0_realk,kind=8)
+   nelms = bytes
 
    !per default use lazy memory handling
    change = (nelms>buf_realk%nmax)
@@ -2029,15 +2042,27 @@ subroutine mem_change_background_alloc(bytes,not_lazy)
    if( change )then
       print *,"mem_change_bg_alloc: Allocating ",bytes/(1024.0_realk**3),"GB"
 
+#ifdef VAR_MPI
       call mem_dealloc(buf_realk%p,buf_realk%c)
 
       call mem_alloc(buf_realk%p,buf_realk%c,nelms)
+#else
+      call mem_dealloc(buf_realk%p)
+
+      call mem_alloc(buf_realk%p,nelms)
+#endif
 
       buf_realk%init   = .true.
       buf_realk%offset = 0
       buf_realk%nmax   = nelms
 
       buf_realk%n      = 1
+      buf_realk%c_addr = c_null_ptr
+      buf_realk%c_mdel = c_null_ptr
+      buf_realk%f_mdel = c_null_ptr
+      buf_realk%e_mdel = 0
+      buf_realk%n_mdel = 0
+      buf_realk%l_mdel = .false.
    endif
 
 end subroutine mem_change_background_alloc
@@ -2056,15 +2081,52 @@ subroutine mem_free_background_alloc()
       call lsquit("ERROR(mem_free_background_alloc): background buffer not initialized",-1)
    endif
 
+#ifdef VAR_MPI
    call mem_dealloc(buf_realk%p,buf_realk%c)
+#else
+   call mem_dealloc(buf_realk%p)
+#endif
 
    buf_realk%init   = .false.
    buf_realk%offset = 0
    buf_realk%nmax   = 0
 
    buf_realk%n      = 1
+   buf_realk%c_addr = c_null_ptr
+   buf_realk%c_mdel = c_null_ptr
+   buf_realk%f_mdel = c_null_ptr
+   buf_realk%e_mdel = 0
+   buf_realk%n_mdel = 0
+   buf_realk%l_mdel = .false.
+   buf_realk%max_usage = 0 
 
 end subroutine mem_free_background_alloc
+
+
+subroutine mem_clear_mdel_bg_buf()
+   implicit none
+   integer :: i
+   if (buf_realk%l_mdel) then
+      do i=1,buf_realk%n_mdel
+
+         if(.not.c_associated(buf_realk%c_mdel(i),c_loc(buf_realk%p(buf_realk%f_addr(buf_realk%n-1)))))then
+            call lsquit("ERROR(mem_clear_mdel_bg_buf): wrong sequence of&
+               & deallocating, make sure you dealloc in the opposite seqence as&
+               & allocating, also when using mark_deleted",-1)
+         endif
+
+         buf_realk%n = buf_realk%n - 1
+         buf_realk%offset = buf_realk%offset - buf_realk%e_mdel(i)
+
+      enddo
+      
+      buf_realk%c_mdel = c_null_ptr
+      buf_realk%f_mdel = c_null_ptr
+      buf_realk%e_mdel = 0
+      buf_realk%n_mdel = 0
+      buf_realk%l_mdel = .false.
+   endif
+end subroutine mem_clear_mdel_bg_buf
 
 !ATTENTION, WHEN USING THIS STRUCTURE YOU NEED TO MAKE SURE THAT YOU DEALLOCATE
 !IN THE OPPOSITE SEQUENCE OF ALLOCATING, OTHERWISE YOUR DATA WILL BE CORRUPTED
@@ -2074,14 +2136,18 @@ subroutine mem_pseudo_alloc_realk(p,n)
    integer(kind=8), intent(in) :: n
 
    if (buf_realk%offset+n > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",n
       call lsquit("ERROR(mem_pseudo_alloc_realk): more requested than available",-1)
    endif
 
    p => buf_realk%p(buf_realk%offset+1:buf_realk%offset+n)
 
-   buf_realk%offset = buf_realk%offset+n
-
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
    buf_realk%c_addr(buf_realk%n) = c_loc(p(1))
+
+   buf_realk%offset = buf_realk%offset+n
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+
 
    buf_realk%n = buf_realk%n + 1
 
@@ -2091,19 +2157,187 @@ subroutine mem_pseudo_alloc_realk(p,n)
    endif
 
 end subroutine mem_pseudo_alloc_realk
-subroutine mem_pseudo_dealloc_realk(p)
+subroutine mem_pseudo_alloc_realk2(p,n1,n2)
+   implicit none
+   real(realk), pointer :: p(:,:)
+   integer(kind=8), intent(in) :: n1,n2
+   integer(kind=8) :: nelms
+   nelms = n1*n2
+
+   if (buf_realk%offset+nelms > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
+      call lsquit("ERROR(mem_pseudo_alloc_realk2): more requested than available",-1)
+   endif
+
+#ifdef VAR_PTR_RESHAPE
+   p(1:n1,1:n2) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2])
+#else
+   call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1))
+
+   buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk2): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk2
+subroutine mem_pseudo_alloc_realk3(p,n1,n2,n3)
+   implicit none
+   real(realk), pointer :: p(:,:,:)
+   integer(kind=8), intent(in) :: n1,n2,n3
+   integer(kind=8) :: nelms
+   nelms = n1*n2*n3
+
+   if (buf_realk%offset+nelms > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
+      call lsquit("ERROR(mem_pseudo_alloc_realk3): more requested than available",-1)
+   endif
+
+#ifdef VAR_PTR_RESHAPE
+   p(1:n1,1:n2,1:n3) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2,n3])
+#else
+   call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
+
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1))
+
+   buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk3): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk3
+
+subroutine mem_pseudo_alloc_realk4(p,n1,n2,n3,n4)
+   implicit none
+   real(realk), pointer :: p(:,:,:,:)
+   integer(kind=8), intent(in) :: n1,n2,n3,n4
+   integer(kind=8) :: nelms
+   nelms = n1*n2*n3*n4
+
+   if (buf_realk%offset+nelms > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
+      call lsquit("ERROR(mem_pseudo_alloc_realk4): more requested than available",-1)
+   endif
+
+#ifdef VAR_PTR_RESHAPE
+   p(1:n1,1:n2,1:n3,1:n4) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2,n3,n4])
+#else
+   call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
+
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1,1))
+
+   buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk4): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk4
+
+subroutine mem_pseudo_alloc_realk5(p,n1,n2,n3,n4,n5)
+   implicit none
+   real(realk), pointer :: p(:,:,:,:,:)
+   integer(kind=8), intent(in) :: n1,n2,n3,n4,n5
+   integer(kind=8) :: nelms
+   nelms = n1*n2*n3*n4*n5
+
+   if (buf_realk%offset+nelms > buf_realk%nmax)then
+      print *,"Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Requested:",nelms
+      call lsquit("ERROR(mem_pseudo_alloc_realk5): more requested than available",-1)
+   endif
+
+#ifdef VAR_PTR_RESHAPE
+   p(1:n1,1:n2,1:n3,1:n4,1:n5) => buf_realk%p(buf_realk%offset+1:buf_realk%offset+nelms)
+#elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
+   call c_f_pointer(c_loc(buf_realk%p(buf_realk%offset+1)),p,[n1,n2,n3,n4,n5])
+#else
+   call lsquit("ERROR, YOUR COMPILER IS NOT F2003 COMPATIBLE",-1)
+#endif
+
+
+   buf_realk%f_addr(buf_realk%n) = buf_realk%offset+1
+   buf_realk%c_addr(buf_realk%n) = c_loc(p(1,1,1,1,1))
+
+   buf_realk%offset = buf_realk%offset+nelms
+   buf_realk%max_usage = MAX(buf_realk%max_usage,buf_realk%offset) 
+   buf_realk%n = buf_realk%n + 1
+
+   if(buf_realk%n > max_n_pointers)then
+      call lsquit("ERROR(mem_pseudo_alloc_realk5): more pointers associated then currently supported, &
+         &please change max_n_pointers in background_buffer.F90",-1)
+   endif
+
+end subroutine mem_pseudo_alloc_realk5
+subroutine mem_pseudo_dealloc_realk(p, mark_deleted)
    implicit none
    real(realk), pointer :: p(:)
+   ! if a pointer is to be freed it may be marked as deleted, as long as there
+   ! are pointers marked as deleted, no new pointers can be associated to the bg
+   ! buffer
+   logical, optional, intent(in) :: mark_deleted
    integer(kind=8) :: n
+   logical :: md, last_assoc, del_assoc
+   integer :: i
+   type(c_ptr) :: loc1,loc2
 
-   buf_realk%n = buf_realk%n - 1
+   md=.false.
+   if(present(mark_deleted))md=mark_deleted
+
+   !no need to mark_deleted if it is the correct last element in the buffer
+   last_assoc = c_associated(buf_realk%c_addr(buf_realk%n-1),c_loc(p(1)))
+   del_assoc  = c_associated(buf_realk%f_mdel,               c_loc(p(1)))
+   if(last_assoc) md = .false.
+
+   if(md)then
+      if(.not.buf_realk%l_mdel)then
+         FindPos:do i=1,buf_realk%n
+            loc1 = c_loc(p(1))
+            loc2 = c_loc(buf_realk%p(buf_realk%f_addr(i)))
+            if( c_associated(loc1,loc2))then
+               buf_realk%f_mdel = c_loc(buf_realk%p(buf_realk%f_addr(i+1)))
+               exit FindPos 
+            endif
+         enddo FindPos
+      endif
+      buf_realk%l_mdel = .true.
+      buf_realk%n_mdel = buf_realk%n_mdel + 1
+   else
+      buf_realk%n = buf_realk%n - 1
+   endif
 
    if(buf_realk%n < 0)then
       call lsquit("ERROR(mem_pseudo_dealloc_realk): programming error, more&
       & pointers freed than associated",-1)
    endif
 
-   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1))))then
+   if(.not.md.and..not.last_assoc)then
       call lsquit("ERROR(mem_pseudo_dealloc_realk): wrong sequence of &
       &deallocating, make sure you dealloc in the opposite seqence as allocating, &
       &otherwise you will corrupt your data",-1)
@@ -2115,24 +2349,158 @@ subroutine mem_pseudo_dealloc_realk(p)
       call lsquit("ERROR(mem_pseudo_dealloc_realk): more freed than allocated",-1)
    endif
 
+
+   if(md)then
+      buf_realk%e_mdel(buf_realk%n_mdel) = n
+      buf_realk%c_mdel(buf_realk%n_mdel) = c_loc(p(1))
+   else
+      buf_realk%offset = buf_realk%offset-n
+   end if
+
+   p => null()
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+   !Right now, always clear the mark_deleted buffer at the next real
+   !deallocation, otherwise bookeeping becomes more cumbersome
+   !NOTE: the deassociation from the buffer happens after the real deallocation
+   !and it has to be performed in the correct sequence to ensure the correctness
+   !of the data in the buffer (without too much bookkeeping)
+   if(del_assoc)then
+      call mem_clear_mdel_bg_buf()
+   endif
+
+end subroutine mem_pseudo_dealloc_realk
+subroutine mem_pseudo_dealloc_realk2(p)
+   implicit none
+   real(realk), pointer :: p(:,:)
+   integer(kind=8) :: n
+
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk2): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk2): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk2): more freed than allocated",-1)
+   endif
+
    p => null()
 
    buf_realk%offset = buf_realk%offset-n
 
    buf_realk%c_addr(buf_realk%n) = c_null_ptr
 
-end subroutine mem_pseudo_dealloc_realk
-
-function mem_is_background_buf_init() result(init)
+end subroutine mem_pseudo_dealloc_realk2
+subroutine mem_pseudo_dealloc_realk3(p)
    implicit none
-   logical :: init
-   init = buf_realk%init
-end function mem_is_background_buf_init
-function mem_get_bg_buf_n() result(n)
-   implicit none
+   real(realk), pointer :: p(:,:,:)
    integer(kind=8) :: n
-   n = buf_realk%nmax
-end function mem_get_bg_buf_n
+
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk3): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1,1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk3): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk3): more freed than allocated",-1)
+   endif
+
+   p => null()
+
+   buf_realk%offset = buf_realk%offset-n
+
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+end subroutine mem_pseudo_dealloc_realk3
+
+subroutine mem_pseudo_dealloc_realk4(p)
+   implicit none
+   real(realk), pointer :: p(:,:,:,:)
+   integer(kind=8) :: n
+
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk4): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1,1,1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk4): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk4): more freed than allocated",-1)
+   endif
+
+   p => null()
+
+   buf_realk%offset = buf_realk%offset-n
+
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+end subroutine mem_pseudo_dealloc_realk4
+
+subroutine mem_pseudo_dealloc_realk5(p)
+   implicit none
+   real(realk), pointer :: p(:,:,:,:,:)
+   integer(kind=8) :: n
+
+   buf_realk%n = buf_realk%n - 1
+
+   if(buf_realk%n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk5): programming error, more&
+      & pointers freed than associated",-1)
+   endif
+
+   if( .not. c_associated(buf_realk%c_addr(buf_realk%n),c_loc(p(1,1,1,1,1))))then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk5): wrong sequence of &
+      &deallocating, make sure you dealloc in the opposite seqence as allocating, &
+      &otherwise you will corrupt your data",-1)
+   endif
+
+   n = size(p,kind=8)
+
+   if (buf_realk%offset-n < 0)then
+      call lsquit("ERROR(mem_pseudo_dealloc_realk5): more freed than allocated",-1)
+   endif
+
+   p => null()
+
+   buf_realk%offset = buf_realk%offset-n
+
+   buf_realk%c_addr(buf_realk%n) = c_null_ptr
+
+end subroutine mem_pseudo_dealloc_realk5
+
+subroutine printBGinfo()
+implicit none
+print *,"BG: Buffer Space (#elements):",buf_realk%nmax," Used:",buf_realk%offset," Peak:",buf_realk%max_usage
+end subroutine printBGinfo
 
 subroutine mem_pseudo_alloc_mpirealk(A,n,comm,local,simple) 
    implicit none
@@ -2233,7 +2601,7 @@ END SUBROUTINE real_allocate_1dim
 
 SUBROUTINE real_allocate_1dim_sp(A,n)  ! single precision
    implicit none
-   integer,intent(in)  :: n
+   integer(kind=8),intent(in)  :: n
    REAL(4),pointer :: A(:)
    integer :: IERR
    integer (kind=long) :: nsize
@@ -2426,6 +2794,22 @@ SUBROUTINE real_allocate_4dim(A,n1,n2,n3,n4)
    ENDIF
    call mem_allocated_mem_real(nsize)
 END SUBROUTINE real_allocate_4dim
+
+SUBROUTINE real_allocate_4dim_sp(A,n1,n2,n3,n4)
+   implicit none
+   integer,intent(in)  :: n1,n2,n3,n4
+   REAL(4),pointer :: A(:,:,:,:)
+   integer :: IERR
+   integer (kind=long) :: nsize
+   nullify(A)
+   ALLOCATE(A(n1,n2,n3,n4),STAT = IERR)
+   nsize = size(A,KIND=long)*4
+   IF (IERR.NE. 0) THEN
+      write(*,*) 'Error in real_allocate_4dim_sp',IERR,n1,n2,n3,n4
+      CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim_sp',nsize)
+   ENDIF
+   call mem_allocated_mem_real(nsize)
+END SUBROUTINE real_allocate_4dim_sp
 
 SUBROUTINE real_allocate_5dim(A,n1,n2,n3,n4,n5)
    implicit none
@@ -2643,6 +3027,25 @@ SUBROUTINE real_deallocate_4dim(A)
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_4dim
+
+SUBROUTINE real_deallocate_4dim_sp(A)
+   implicit none
+   REAL(4),pointer :: A(:,:,:,:)
+   integer :: IERR
+   integer (kind=long) :: nsize
+   nsize = size(A,KIND=long)*4
+   call mem_deallocated_mem_real(nsize)
+   if (.not.ASSOCIATED(A)) then
+      print *,'Memory previously released!!'
+      call memory_error_quit('Error in real_deallocate_4dim_sp - memory previously released',nsize)
+   endif
+   DEALLOCATE(A,STAT = IERR)
+   IF (IERR.NE. 0) THEN
+      write(*,*) 'Error in real_deallocate_4dim_sp',IERR
+      CALL MEMORY_ERROR_QUIT('Error in real_deallocate_4dim_sp',nsize)
+   ENDIF
+   nullify(A)
+END SUBROUTINE real_deallocate_4dim_sp
 
 SUBROUTINE real_deallocate_5dim(A)
    implicit none

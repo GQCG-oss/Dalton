@@ -3,7 +3,7 @@
 MODULE ThermiteIntTransform_module
 use precision
 use memory_handling
-!use ls_util
+use ls_util
 !!
 use infpar_module
 private
@@ -11,7 +11,7 @@ logical,save :: DoThermiteIntTransform
 integer,save :: nT1,nTMO1,nT2,nTMO2,nTA,nTMaxN,TITThreadID,nTITthreads
 real(realk),save,pointer :: TCMO1(:,:)
 real(realk),save,pointer :: TCMO2(:,:)
-real(realk),save,pointer :: TmpAlphaCD(:,:,:)
+real(realk),save,pointer :: TmpAlphaCD(:)
 integer,save,pointer :: TOrbToFull(:,:),iLocalTIT(:),iLocalTIT2(:)
 integer,save,pointer :: TITGindexToLocal(:)
 !$OMP THREADPRIVATE(TITThreadID)
@@ -78,9 +78,16 @@ subroutine InitThermiteIntThreadID(threadID)
   TITThreadID = ThreadID+1
 end subroutine InitThermiteIntThreadID
 
-subroutine ThermiteIntTransform_alloc_TmpArray()
+subroutine ThermiteIntTransform_alloc_TmpArray(use_bg_buf)
   implicit none
-  call mem_alloc(TmpAlphaCD,nTMaxN,nT1,nTMO2)
+  logical :: use_bg_buf
+  integer(kind=long) :: n8
+  n8 = nTMaxN*nT1*nTMO2
+  IF(use_bg_buf)THEN
+     call mem_pseudo_alloc(TmpAlphaCD,n8)
+  ELSE
+     call mem_alloc(TmpAlphaCD,n8)
+  ENDIF
 end subroutine ThermiteIntTransform_alloc_TmpArray
 
 !TmpArray is batch of  AO integrals. FullAlphaCD is used to allocate MO integrals
@@ -103,13 +110,24 @@ IF(m3.NE.nT2)call lsquit('dimmismatch5 in ThermiteIntTransform_AOtoMOInternal',-
 M = nTMaxN*nT1   !rows of Output Matrix
 N = nTMO2        !columns of Output Matrix
 K = m3           !summation dimension
-!#ifdef VAR_OMP
-!call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
-!     & K,0.0E0_realk,TmpAlphaCD,M)
-!#else
-call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray(:,:,:,TITThreadID),M,TCMO2,&
+#ifdef VAR_OMP
+IF(nTITthreads.GT.1)THEN
+   IF(TITThreadID.EQ.1)THEN
+      call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray,M,TCMO2,&
+           & K,0.0E0_realk,TmpAlphaCD,M)
+   ELSE
+      call dgemm_TS('N','N',M,N,K,1.0E0_realk,TmpArray(1,1,1,TITThreadID),M,TCMO2,&
+           & K,0.0E0_realk,TmpAlphaCD,M)
+   ENDIF
+ELSE
+   call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray,M,TCMO2,&
+        & K,0.0E0_realk,TmpAlphaCD,M)
+ENDIF
+#else
+call dgemm('N','N',M,N,K,1.0E0_realk,TmpArray(1,1,1,TITThreadID),M,TCMO2,&
      & K,0.0E0_realk,TmpAlphaCD,M)
-!#endif
+#endif
+!TmpAlphaCD(nTMaxN*nT1,nTMO2)
 call DF3centerTrans2(nTMO1,nTMO2,nT1,nTMaxN,nTA,TCMO1,TmpAlphaCD,FullAlphaCD)
 !$OMP END CRITICAL (AOtoMOInternal)
 iLocalTIT(TITThreadID) = 0
@@ -200,10 +218,15 @@ subroutine DF3centerTrans2OMP(nvirt,nocc,nbast,nAuxA,nAFull,Cvirt,AlphaCD2,FullA
   !$OMP END PARALLEL DO
 end subroutine DF3centerTrans2OMP
 
-subroutine FreeThermiteIntTransform()
+subroutine FreeThermiteIntTransform(use_bg_buf)
   implicit none
+  logical :: use_bg_buf
   IF(associated(TmpAlphaCD))THEN
-     call mem_dealloc(TmpAlphaCD)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(TmpAlphaCD)
+     ELSE
+        call mem_dealloc(TmpAlphaCD)
+     ENDIF
      call mem_dealloc(TCMO1)
      call mem_dealloc(TCMO2)
      call mem_dealloc(TOrbToFull)

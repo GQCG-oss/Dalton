@@ -1,23 +1,23 @@
 
 """
-   runtest - Numerically tolerant test library
+    runtest - Numerically tolerant test library
 
-   Author:
-      Radovan Bast (lastname at kth.se)
+    Author:
+        Radovan Bast
 
-   License:
-      GNU Lesser General Public License Version 3
-      https://github.com/rbast/runtest/blob/master/LICENSE
+    License:
+        BSD-3
+        https://github.com/bast/runtest/blob/master/LICENSE
 
-   Documentation:
-      http://runtest.readthedocs.org
+    Documentation:
+        http://runtest.readthedocs.org
 
-   Source:
-      https://github.com/rbast/runtest
+    Source:
+        https://github.com/bast/runtest
+
+    Issue tracking:
+        https://github.com/bast/runtest/issues
 """
-
-# since version 1.0.0 we follow http://semver.org/
-__version__ = '1.2.0-beta'
 
 import re
 import os
@@ -29,53 +29,334 @@ import string
 from optparse import OptionParser
 
 
-#------------------------------------------------------------------------------
+# http://semver.org
+__version__ = '1.3.9'
+
+
 class FilterKeywordError(Exception):
     pass
 
 
-#------------------------------------------------------------------------------
 class TestFailedError(Exception):
     pass
 
 
-#------------------------------------------------------------------------------
 class BadFilterError(Exception):
     pass
 
 
-#------------------------------------------------------------------------------
 class AcceptedError(Exception):
     pass
 
 
-#------------------------------------------------------------------------------
 class SubprocessError(Exception):
     pass
 
+# ------------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------
+
+def is_float(x):
+    return isinstance(x, float)
+
+# ------------------------------------------------------------------------------
+
+
+def is_int(n):
+    return isinstance(n, int)
+
+# ------------------------------------------------------------------------------
+
+
+def tuple_matches(f, tup):
+    """
+    Checks if tuple matches based on f.
+
+    Input:
+        f   -- filter task
+        tup -- tuple
+
+    Returns:
+        (tuple_matches, error_message)
+    """
+
+    x, x_ref = tup
+
+    if f.ignore_sign:
+        # if ignore sign take absolute values
+        x = abs(x)
+        x_ref = abs(x_ref)
+
+    if is_int(x) and is_int(x_ref):
+        if x == x_ref:
+            return (True, None)
+        else:
+            return (False, "expected: %s" % x_ref)
+
+    if abs(x_ref) < f.ignore_below:
+        return (True, None)
+
+    if abs(x_ref) > f.ignore_above:
+        return (True, None)
+
+    error = x - x_ref
+    if f.tolerance_is_relative:
+        error /= x_ref
+        if abs(error) <= f.tolerance:
+            return (True, None)
+        else:
+            if f.ignore_sign:
+                return (False, "expected: %s (rel diff: %6.2e ignoring signs)" % (x_ref, abs(1.0 - abs(x) / abs(x_ref))))
+            else:
+                return (False, "expected: %s (rel diff: %6.2e)" % (x_ref, abs(1.0 - x / x_ref)))
+    else:
+        if abs(error) <= f.tolerance:
+            return (True, None)
+        else:
+            if f.ignore_sign:
+                return (False, "expected: %s (abs diff: %6.2e ignoring signs)" % (x_ref, abs(abs(x) - abs(x_ref))))
+            else:
+                return (False, "expected: %s (abs diff: %6.2e)" % (x_ref, abs(x - x_ref)))
+
+# ------------------------------------------------------------------------------
+
+
+def extract_numbers(f, text):
+    """
+    Input:
+        - f -- filter task
+        - text -- list of lines where we extract numbers from
+
+    Returns:
+        - numbers -- list of numbers
+        - locations -- locations of each number, list of triples
+                      (line, start position, length)
+    """
+
+    numeric_const_pattern = r"""
+    [-+]? # optional sign
+    (?:
+        (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
+        |
+        (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
+    )
+    # followed by optional exponent part if desired
+    (?: [EeDd] [+-]? \d+ ) ?
+    """
+
+    pattern_int = re.compile('^-?[0-9]+$', re.VERBOSE)
+    pattern_float = re.compile(numeric_const_pattern, re.VERBOSE)
+    pattern_d = re.compile(r'[dD]')
+
+    numbers = []
+    locations = []
+
+    for n, line in enumerate(text):
+        i = 0
+        for w in line.split():
+            # do not consider words like TzB1g
+            # otherwise we would extract 1 later
+            if re.match(r'^[0-9\.eEdD\+\-]*$', w):
+                i += 1
+                if (f.use_mask) and (i not in f.mask):
+                    continue
+                is_integer = False
+                if len(pattern_float.findall(w)) > 0:
+                    is_integer = (pattern_float.findall(w) == pattern_int.findall(w))
+                # apply floating point regex
+                for m in pattern_float.findall(w):
+                    index = line.index(m)
+                    # substitute dD by e
+                    m = pattern_d.sub('e', m)
+                    if is_integer:
+                        numbers.append(int(m))
+                    else:
+                        numbers.append(float(m))
+                    locations.append((n, index, len(m)))
+
+    return numbers, locations
+
+# ------------------------------------------------------------------------------
+
+
+def parse_args(input_dir, argv):
+
+    parser = OptionParser(description='runtest %s - Numerically tolerant test library.' % __version__)
+    parser.add_option('--binary-dir',
+                      '-b',
+                      action='store',
+                      default=input_dir,
+                      help='directory containing the binary/launcher [default: %default]')
+    parser.add_option('--work-dir',
+                      '-w',
+                      action='store',
+                      default=input_dir,
+                      help='working directory [default: %default]')
+    parser.add_option('--verbose',
+                      '-v',
+                      action='store_true',
+                      default=False,
+                      help='give more verbose output upon test failure [default: %default]')
+    parser.add_option('--skip-run',
+                      '-s',
+                      action='store_true',
+                      default=False,
+                      help='skip actual calculation(s) [default: %default]')
+    parser.add_option('--debug',
+                      '-d',
+                      action='store_true',
+                      default=False,
+                      help='print verbose debug information [default: %default]')
+    parser.add_option('--log',
+                      '-l',
+                      action='store',
+                      default=None,
+                      help='log file [default: no logging]')
+    (options, args) = parser.parse_args(args=argv[1:])
+
+    if sys.platform == "win32":
+        # on windows we flip possibly wrong slashes
+        options.binary_dir = string.replace(options.binary_dir, '/', '\\')
+        options.work_dir = string.replace(options.work_dir, '/', '\\')
+
+    return options
+
+# ------------------------------------------------------------------------------
+
+
+def copy_path(root_src_dir, root_dst_dir, exclude_files=[]):
+    for src_dir, dirs, files in os.walk(root_src_dir):
+        dst_dir = src_dir.replace(root_src_dir, root_dst_dir)
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        for f in files:
+            if f not in exclude_files:
+                src_file = os.path.join(src_dir, f)
+                dst_file = os.path.join(dst_dir, f)
+                shutil.copy(src_file, dst_file)
+
+# ------------------------------------------------------------------------------
+
+
+def filter_file(f, file_name, output):
+    """
+    Input:
+        - f -- filter task
+        - file_name -- the output file to filter
+
+    Returns:
+        - output_filtered -- the filtered output
+
+    Raises:
+        - BadFilterError
+    """
+    output_filtered = []
+
+    for i in range(len(output)):
+        start_line_matches = False
+        if f.from_is_re:
+            start_line_matches = re.match(r'.*%s' % f.from_string, output[i])
+        else:
+            start_line_matches = (f.from_string in output[i])
+        if start_line_matches:
+            if f.num_lines > 0:
+                for n in range(i, i + f.num_lines):
+                    output_filtered.append(output[n])
+            else:
+                for j in range(i, len(output)):
+                    f.end_line_matches = False
+                    if f.to_is_re:
+                        f.end_line_matches = re.match(r'.*%s' % f.to_string, output[j])
+                    else:
+                        f.end_line_matches = (f.to_string in output[j])
+                    if f.end_line_matches:
+                        for n in range(i, j + 1):
+                            output_filtered.append(output[n])
+                        break
+
+    if output_filtered == []:
+        if f.num_lines > 0:
+            r = '[%i lines from "%s"]' % (f.num_lines, f.from_string)
+        else:
+            r = '["%s" ... "%s"]' % (f.from_string, f.to_string)
+        message = 'ERROR: filter %s did not extract anything from file %s\n' % (r, file_name)
+        raise BadFilterError(message)
+
+    return output_filtered
+
+# ------------------------------------------------------------------------------
+
+
+def check_for_unrecognized_kw(kwargs):
+
+    recognized_keywords = ['from_re',
+                           'to_re',
+                           're',
+                           'from_string',
+                           'to_string',
+                           'string',
+                           'ignore_below',
+                           'ignore_above',
+                           'ignore_sign',
+                           'mask',
+                           'num_lines',
+                           'rel_tolerance',
+                           'abs_tolerance']
+
+    # check for unrecognized keywords
+    for key in kwargs.keys():
+        if key not in recognized_keywords:
+            available_keywords = (', ').join(recognized_keywords)
+            message = 'ERROR: keyword "%s" not recognized\n       ' % key
+            message += 'available keywords: %s\n' % available_keywords
+            raise FilterKeywordError(message)
+
+# ------------------------------------------------------------------------------
+
+
+def check_for_incompatible_kw(kwargs):
+
+    incompatible_pairs = [('from_re', 'from_string'),
+                          ('to_re', 'to_string'),
+                          ('to_string', 'num_lines'),
+                          ('to_re', 'num_lines'),
+                          ('string', 'from_string'),
+                          ('string', 'to_string'),
+                          ('string', 'from_re'),
+                          ('string', 'to_re'),
+                          ('string', 'num_lines'),
+                          ('re', 'from_string'),
+                          ('re', 'to_string'),
+                          ('re', 'from_re'),
+                          ('re', 'to_re'),
+                          ('re', 'num_lines'),
+                          ('rel_tolerance', 'abs_tolerance')]
+
+    for (kw1, kw2) in incompatible_pairs:
+        if kw1 in kwargs.keys() and kw2 in kwargs.keys():
+            raise FilterKeywordError('ERROR: incompatible keywords: "%s" and "%s"\n' % (kw1, kw2))
+
+# ------------------------------------------------------------------------------
+
+
 class TestRun:
 
-    #--------------------------------------------------------------------------
     def __init__(self, _file, argv):
 
         self.input_dir = input_dir = os.path.dirname(os.path.realpath(_file))
 
-        options = self._parse_args(input_dir, argv)
+        options = parse_args(input_dir, argv)
         self.binary_dir = options.binary_dir
-        self.work_dir   = options.work_dir
-        self.verbose    = options.verbose
-        self.skip_run   = options.skip_run
-        self.debug      = options.debug
-        self.log        = options.log
+        self.work_dir = options.work_dir
+        self.verbose = options.verbose
+        self.skip_run = options.skip_run
+        self.debug = options.debug
+        self.log = options.log
 
         if self.work_dir != self.input_dir:
-            self._safe_copy(self.input_dir, self.work_dir)
+            copy_path(self.input_dir, self.work_dir)
 
-        os.chdir(self.work_dir) # FIXME possibly problematic
+        os.chdir(self.work_dir)  # FIXME possibly problematic
 
-    #--------------------------------------------------------------------------
     def execute(self,
                 command,
                 stdout_file_name='',
@@ -118,108 +399,20 @@ class TestRun:
             f.write(stdout)
             f.close()
 
-    #--------------------------------------------------------------------------
-    def _safe_copy(self, root_src_dir, root_dst_dir, exclude_files=[]):
-        for src_dir, dirs, files in os.walk(root_src_dir):
-            dst_dir = src_dir.replace(root_src_dir, root_dst_dir)
-            if not os.path.exists(dst_dir):
-                os.makedirs(dst_dir)
-            for f in files:
-                if f not in exclude_files:
-                    src_file = os.path.join(src_dir, f)
-                    dst_file = os.path.join(dst_dir, f)
-                    shutil.copy(src_file, dst_file)
 
-    #--------------------------------------------------------------------------
-    def _parse_args(self, input_dir, argv):
-        parser = OptionParser(description='runtest %s - Numerically tolerant test library.' % __version__)
-        parser.add_option('--binary-dir',
-                          '-b',
-                          action='store',
-                          default=input_dir,
-                          help='directory containing the binary/launcher [default: %default]')
-        parser.add_option('--work-dir',
-                          '-w',
-                          action='store',
-                          default=input_dir,
-                          help='working directory [default: %default]')
-        parser.add_option('--verbose',
-                          '-v',
-                          action='store_true',
-                          default=False,
-                          help='give more verbose output upon test failure [default: %default]')
-        parser.add_option('--skip-run',
-                          '-s',
-                          action='store_true',
-                          default=False,
-                          help='skip actual calculation(s) [default: %default]')
-        parser.add_option('--debug',
-                          '-d',
-                          action='store_true',
-                          default=False,
-                          help='print verbose debug information [default: %default]')
-        parser.add_option('--log',
-                          '-l',
-                          action='store',
-                          default=None,
-                          help='log file [default: no logging]')
-        (options, args) = parser.parse_args(args=argv[1:])
-
-        if sys.platform == "win32":
-            # on windows we flip possibly wrong slashes
-            options.binary_dir = string.replace(options.binary_dir, '/', '\\')
-            options.work_dir = string.replace(options.work_dir, '/', '\\')
-
-        return options
-
-
-#------------------------------------------------------------------------------
 class _SingleFilter:
 
     def __init__(self, **kwargs):
-        recognized_keywords = ['from_re',
-                               'to_re',
-                               're',
-                               'from_string',
-                               'to_string',
-                               'string',
-                               'ignore_below',
-                               'ignore_sign',
-                               'mask',
-                               'num_lines',
-                               'rel_tolerance',
-                               'abs_tolerance']
 
-        # check for unrecognized keywords
-        for key in kwargs.keys():
-            if key not in recognized_keywords:
-                available_keywords = (', ').join(recognized_keywords)
-                message = 'ERROR: keyword "%s" not recognized\n       ' % key
-                message += 'available keywords: %s\n' % available_keywords
-                raise FilterKeywordError(message)
-
-        # check for incompatible keywords
-        self._check_incompatible_keywords('from_re'      , 'from_string'  , kwargs)
-        self._check_incompatible_keywords('to_re'        , 'to_string'    , kwargs)
-        self._check_incompatible_keywords('to_string'    , 'num_lines'    , kwargs)
-        self._check_incompatible_keywords('to_re'        , 'num_lines'    , kwargs)
-        self._check_incompatible_keywords('string'       , 'from_string'  , kwargs)
-        self._check_incompatible_keywords('string'       , 'to_string'    , kwargs)
-        self._check_incompatible_keywords('string'       , 'from_re'      , kwargs)
-        self._check_incompatible_keywords('string'       , 'to_re'        , kwargs)
-        self._check_incompatible_keywords('string'       , 'num_lines'    , kwargs)
-        self._check_incompatible_keywords('re'           , 'from_string'  , kwargs)
-        self._check_incompatible_keywords('re'           , 'to_string'    , kwargs)
-        self._check_incompatible_keywords('re'           , 'from_re'      , kwargs)
-        self._check_incompatible_keywords('re'           , 'to_re'        , kwargs)
-        self._check_incompatible_keywords('re'           , 'num_lines'    , kwargs)
-        self._check_incompatible_keywords('rel_tolerance', 'abs_tolerance', kwargs)
+        check_for_unrecognized_kw(kwargs)
+        check_for_incompatible_kw(kwargs)
 
         # now continue with keywords
         self.from_string = kwargs.get('from_string', '')
         self.to_string = kwargs.get('to_string', '')
         self.ignore_sign = kwargs.get('ignore_sign', False)
-        self.ignore_below = kwargs.get('ignore_below', 1.0e-40)
+        self.ignore_below = kwargs.get('ignore_below', sys.float_info.min)
+        self.ignore_above = kwargs.get('ignore_above', sys.float_info.max)
         self.num_lines = kwargs.get('num_lines', 0)
 
         if 'rel_tolerance' in kwargs.keys():
@@ -265,19 +458,12 @@ class _SingleFilter:
             self.num_lines = 1
             self.from_is_re = True
 
-    def _check_incompatible_keywords(self, kw1, kw2, kwargs):
-        if kw1 in kwargs.keys() and kw2 in kwargs.keys():
-            raise FilterKeywordError('ERROR: incompatible keywords: "%s" and "%s"\n' % (kw1, kw2))
 
-
-#------------------------------------------------------------------------------
 class Filter:
 
-    #--------------------------------------------------------------------------
     def __init__(self):
         self.filter_list = []
 
-    #--------------------------------------------------------------------------
     def add(self, *args, **kwargs):
         """
         Adds filter task to list of filters.
@@ -287,7 +473,6 @@ class Filter:
         """
         self.filter_list.append(_SingleFilter(*args, **kwargs))
 
-    #--------------------------------------------------------------------------
     def check(self, work_dir, out_name, ref_name, verbose=False):
         """
         Compares output (work_dir/out_name) with reference (work_dir/ref_name)
@@ -311,19 +496,23 @@ class Filter:
             - TestFailedError
         """
 
-        log_out  = open('%s.filtered'  % out_name, 'w')
-        log_ref  = open('%s.reference' % out_name, 'w')
-        log_diff = open('%s.diff'      % out_name, 'w')
+        log_out = open('%s.filtered' % out_name, 'w')
+        log_ref = open('%s.reference' % out_name, 'w')
+        log_diff = open('%s.diff' % out_name, 'w')
 
         for f in self.filter_list:
 
-            out_filtered = self._filter_file(f, out_name)
+            out_filtered = filter_file(f, out_name, open(out_name).readlines())
             log_out.write(''.join(out_filtered))
-            out_numbers, out_location = self._extract_numbers(f, out_filtered)
+            out_numbers, out_locations = extract_numbers(f, out_filtered)
+            if f.use_mask and out_numbers == []:
+                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
-            ref_filtered = self._filter_file(f, ref_name)
+            ref_filtered = filter_file(f, ref_name, open(ref_name).readlines())
             log_ref.write(''.join(ref_filtered))
-            ref_numbers, ref_location = self._extract_numbers(f, ref_filtered)
+            ref_numbers, ref_locations = extract_numbers(f, ref_filtered)
+            if f.use_mask and ref_numbers == []:
+                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
 
             if out_numbers == [] and ref_numbers == []:
                 # no numbers are extracted
@@ -334,18 +523,23 @@ class Filter:
                     log_diff.write('reference gave:\n')
                     log_diff.write(''.join(ref_filtered) + '\n')
 
-            if len(out_numbers) == len(ref_numbers):
-                l = self._compare_numbers(f, out_numbers, ref_numbers)
-                if 0 in l:
+            # we need to check for len(out_numbers) > 0
+            # for pure strings len(out_numbers) is 0
+            # TODO need to consider what to do with pure strings in future versions
+            if len(out_numbers) == len(ref_numbers) and len(out_numbers) > 0:
+                if not f.tolerance_is_set and (any(map(is_float, out_numbers)) or any(map(is_float, ref_numbers))):
+                    raise FilterKeywordError('ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n')
+                l = map(lambda t: tuple_matches(f, t), zip(out_numbers, ref_numbers))
+                matching, errors = zip(*l)  # unzip tuples to two lists
+                if not all(matching):
                     log_diff.write('\n')
                     for k, line in enumerate(out_filtered):
                         log_diff.write('.       %s' % line)
                         for i, num in enumerate(out_numbers):
-                            (line_num, start_char, length) = out_location[i]
+                            (line_num, start_char, length) = out_locations[i]
                             if line_num == k:
-                                if l[i] == 0:
-                                    is_integer = isinstance(num, int)
-                                    log_diff.write('ERROR   %s' % self._underline(f, start_char, length, ref_numbers[i], out_numbers[i], is_integer))
+                                if errors[i]:
+                                    log_diff.write('ERROR   %s%s %s\n' % (' ' * start_char, '#' * length, errors[i]))
 
             if len(out_numbers) != len(ref_numbers):
                 log_diff.write('ERROR: extracted sizes do not match\n')
@@ -368,208 +562,3 @@ class Filter:
             if verbose:
                 message += diff
             raise TestFailedError(message)
-
-    #--------------------------------------------------------------------------
-    def _filter_file(self, f, file_name):
-        """
-        Input:
-            - f -- filter task
-            - file_name -- the output file to filter
-
-        Returns:
-            - output_filtered -- the filtered output
-
-        Raises:
-            - BadFilterError
-        """
-
-        output = open(file_name).readlines()
-
-        output_filtered = []
-
-        for i in range(len(output)):
-            start_line_matches = False
-            if f.from_is_re:
-                start_line_matches = re.match(r'.*%s' % f.from_string, output[i])
-            else:
-                start_line_matches = (f.from_string in output[i])
-            if start_line_matches:
-                if f.num_lines > 0:
-                    for n in range(i, i + f.num_lines):
-                        output_filtered.append(output[n])
-                else:
-                    for j in range(i, len(output)):
-                        f.end_line_matches = False
-                        if f.to_is_re:
-                            f.end_line_matches = re.match(r'.*%s' % f.to_string, output[j])
-                        else:
-                            f.end_line_matches = (f.to_string in output[j])
-                        if f.end_line_matches:
-                            for n in range(i, j + 1):
-                                output_filtered.append(output[n])
-                            break
-
-        if output_filtered == []:
-            if f.num_lines > 0:
-                r = '[%i lines from "%s"]' % (f.num_lines, f.from_string)
-            else:
-                r = '["%s" ... "%s"]' % (f.from_string, f.to_string)
-            message = 'ERROR: filter %s did not extract anything from file %s\n' % (r, file_name)
-            raise BadFilterError(message)
-
-        return output_filtered
-
-    #--------------------------------------------------------------------------
-    def _extract_numbers(self, f, text):
-        """
-        Input:
-            - f -- filter task
-            - text -- list of lines where we extract numbers from
-
-        Returns:
-            - numbers -- list of numbers
-            - location -- location of each number, list of triples
-                          (line, start position, length)
-
-        Raises:
-            - nothing
-        """
-
-        numeric_const_pattern = r"""
-        [-+]? # optional sign
-        (?:
-            (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
-            |
-            (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
-        )
-        # followed by optional exponent part if desired
-        (?: [EeDd] [+-]? \d+ ) ?
-        """
-
-        pattern_int = re.compile('^-?[0-9]+$', re.VERBOSE)
-        pattern_float = re.compile(numeric_const_pattern, re.VERBOSE)
-        pattern_d = re.compile(r'[dD]')
-
-        numbers = []
-        location = []
-
-        for n, line in enumerate(text):
-            i = 0
-            for w in line.split():
-                # do not consider words like TzB1g
-                # otherwise we would extract 1 later
-                if re.match(r'^[0-9\.eEdD\+\-]*$', w):
-                    i += 1
-                    if (f.use_mask) and (i not in f.mask):
-                        continue
-                    is_integer = False
-                    if len(pattern_float.findall(w)) > 0:
-                        is_integer = (pattern_float.findall(w) == pattern_int.findall(w))
-                    # apply floating point regex
-                    for m in pattern_float.findall(w):
-                        index = line.index(m)
-                        # substitute dD by e
-                        m = pattern_d.sub('e', m)
-                        if is_integer:
-                            numbers.append(int(m))
-                        else:
-                            numbers.append(float(m))
-                        location.append((n, index, len(m)))
-        if f.use_mask:
-            if numbers == []:
-                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
-
-        return numbers, location
-
-    #--------------------------------------------------------------------------
-    def _underline(self, f, start_char, length, reference, number, is_integer):
-        """
-        Input:
-            - f -- filter task
-            - start_char -- position of start character
-            - length -- underline length
-            - reference -- reference number
-            - number -- obtained (calculated) number
-            - is_integer -- whether reference number is integer
-
-        Returns:
-            - s -- underline string with info about reference and tolerance
-
-        Raises:
-            - nothing
-        """
-
-        s = ''
-        for i in range(start_char):
-            s += ' '
-        for i in range(length):
-            s += '#'
-        s += ' expected: %s' % reference
-
-        if not is_integer:
-            if f.tolerance_is_set:
-                if f.tolerance_is_relative:
-                    s += ' (rel diff: %6.2e)' % abs(1.0 - number/reference)
-                else:
-                    if f.ignore_sign:
-                        s += ' (abs diff: %6.2e ignoring signs)' % abs(abs(number) - abs(reference))
-                    else:
-                        s += ' (abs diff: %6.2e)' % abs(number - reference)
-
-        return s + '\n'
-
-    #--------------------------------------------------------------------------
-    def _compare_numbers(self, f, l1, l2):
-        """
-        Input:
-            - f -- filter task
-            - l1 -- list of numbers
-            - l2 -- another list of numbers
-
-        Returns:
-            - res -- list that contains ones (pass) or zeros (failures)
-                     l1, l2, and res have same length
-
-        Raises:
-            - FilterKeywordError
-        """
-
-        res = []
-
-        for i in range(len(l1)):
-
-            r_out = l1[i]
-            r_ref = l2[i]
-
-            if f.ignore_sign:
-                # if ignore sign take absolute values
-                r_out = abs(r_out)
-                r_ref = abs(r_ref)
-
-            is_integer_out = isinstance(r_out, int)
-            is_integer_ref = isinstance(r_ref, int)
-
-            if is_integer_out and is_integer_ref:
-                # we compare integers
-                if r_out == r_ref:
-                    res.append(1)
-                else:
-                    res.append(0)
-            else:
-                # we compare floats
-                if not f.tolerance_is_set:
-                    raise FilterKeywordError('ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n')
-                if abs(r_ref) > f.ignore_below:
-                    # calculate relative error only for
-                    # significant ('nonzero') numbers
-                    error = r_out - r_ref
-                    if f.tolerance_is_relative:
-                        error /= r_ref
-                    if abs(error) > f.tolerance:
-                        res.append(0)
-                    else:
-                        res.append(1)
-                else:
-                    res.append(1)
-
-        return res

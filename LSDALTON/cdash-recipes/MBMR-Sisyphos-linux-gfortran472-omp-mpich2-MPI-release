@@ -3,7 +3,7 @@ SCRATCH_DIR=/tmp/sisyphos/DaltonGfortranReleasempich2MPIMBMR
 rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
-git clone git@gitlab.com:dalton/dalton.git $TMP_DIR
+git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
 cd $TMP_DIR
 export OMP_NUM_THREADS=2
 export MATH_ROOT=/lib64/ATLAS

@@ -1000,8 +1000,6 @@ C&&& Nuclear model
             BGWEIN = D1 - D4*BGWEIN
             GOTO 100   
   197    CONTINUE
-            IF (NODTOT .GT. 0) CALL PARQUIT('FINDPT')
-            IF (DIRCAL) CALL QUIT('No direct calculation with FINDPT')
             ONEPRP = .TRUE. 
             DPTPOT = .TRUE.
             FINDPT = .TRUE.
@@ -1288,6 +1286,7 @@ c jim-dbg : setting all integrals for LRESC module
             OZKE   = .TRUE. ! 215.Lkin
             PSOKE  = .TRUE. ! 216.PsoKin
             DNSKE  = .TRUE. ! 217.DiaKin
+            PSOOZ  = .TRUE. ! 221. PSO-OZ for AngPso          
 Cxx  el problema es que el origen de gauge debe estar en el atomo q elegimos, LRATOM. 
 c       1 - Leer INP file y buscar LRATOM 
 c       2 - hacer que GAGORG = CORD(LRATOM)
@@ -1377,10 +1376,15 @@ cLig <>
      &    ' repulsion integrals with perturbation parameter:',DARFAC
       IF (ORBORB) WRITE (LUPRI,'(/A)')
      &     ' Calculate 2-electron orbit-orbit integrals'
-      IF (FINDPT) WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
+      IF (FINDPT) THEN
+         WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
      &    ' A direct relativistic perturbation is added to',
      &    ' Hamiltonian and metric with perturbation parameter:',DPTFAC,
      &    ' (perturbation parameter * c^{-2} = ',DPTFAC*ALPHAC**2,')'
+         IF (NODTOT .GT. 0) CALL PARQUIT('FINDPT')
+         IF (DIRCAL) CALL QUIT(
+     &    'Direct calculation (.DIRECT) is not compatible with .FINDPT')
+      END IF
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A)')
      &      ' The following one-electron property integrals are'

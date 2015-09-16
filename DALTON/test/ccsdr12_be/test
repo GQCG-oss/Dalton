@@ -16,11 +16,11 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = 'Total MP2-R12/B energy',
-      abs_tolerance = 1.0e-10)
+      abs_tolerance = 2.0e-10)
 f.add(string = 'Total CC2-R12/B energy',
-      abs_tolerance = 1.0e-10)
+      abs_tolerance = 2.0e-10)
 f.add(string = 'Total CCSD(R12)/B energy',
-      abs_tolerance = 1.0e-10)
+      abs_tolerance = 2.0e-10)
 f.add(from_string = 'Total energies in Hartree',
       num_lines = 5,
       abs_tolerance = 2.0e-10)

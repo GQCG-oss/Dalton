@@ -516,7 +516,8 @@ contains
    call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
 
 
-   call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset)
+   call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=int(omega2%tdim,kind=tensor_int),&
+      &atype="TDAR",fo=int(omega2%offset,kind=tensor_int))
 
    call tensor_free(E1)
    call tensor_free(E2)
@@ -960,7 +961,8 @@ contains
    call tensor_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord,force_sync=.true.)
 
 
-   call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset)
+   call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=int(omega2%tdim,kind=tensor_int),&
+      &atype="TDAR",fo=int(omega2%offset,kind=tensor_int))
 
    call tensor_free(E1)
    call tensor_free(E2)

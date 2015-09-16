@@ -13,10 +13,10 @@ f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-7)
+      rel_tolerance = 1.0e-4)
 
 f.add(string = 'Total MP2 energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-4)
 
 f.add(from_string = 'MP2 occupied single energies',
       to_string   = 'MP2 Lagrangian correlation energy',

@@ -217,6 +217,9 @@ INTEGER     :: molcharge
 ! TESTING FUNCTIONALITIES FOR DEC
 LOGICAL     :: run_dec_gradient_test
 LOGICAL     :: ForceRIMP2memReduced
+!NMR shielding 
+logical     :: SolveNMRResponseSimultan
+logical     :: ResponseMatNormConvTest
 LOGICAL     :: PreCalcDFscreening
 LOGICAL     :: PreCalcF12screening
 END TYPE integralconfig
@@ -379,6 +382,7 @@ LOGICAL :: INCREMENTAL !Use incremental scheme (density-difference KS-matrix bui
 logical   :: DO_PROP
 integer   :: PropOper
 logical   :: ForceRIMP2memReduced
+integer   :: AONuclearSpecID
 logical   :: PreCalcDFscreening
 logical   :: PreCalcF12screening
 END TYPE LSINTSCHEME
@@ -397,6 +401,7 @@ real(realk)               :: Charges(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: pointcharges(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: phantom(maxBasisSetInLIB,maxNumberOfChargesinLIB)
 logical                   :: DunningsBasis
+real(realk)               :: GeminalScalingFactor
 END TYPE BASISSETLIBRARYITEM
 
 TYPE BLOCK

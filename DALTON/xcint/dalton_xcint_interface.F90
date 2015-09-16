@@ -12,7 +12,9 @@ module dalton_xcint_interface
    public xcint_set_grid
    public xcint_activate
 
+#ifdef VAR_MPI
    public xcint_integrate_worker
+#endif
    public xcint_integrate_rks_scf
    public xcint_integrate_rks_lr
 
@@ -59,12 +61,14 @@ contains
    end subroutine
 
 
+#ifdef VAR_MPI
    subroutine xcint_integrate_worker(comm)
       use xcint_fortran_api, only: integrate_worker => xcint_integrate_worker
       integer, intent(in) :: comm
       call xcint_set_mpi_comm(comm)
       call integrate_worker()
    end subroutine
+#endif
 
    subroutine xcint_integrate_rks_scf(dmat,          &
                                       xc_energy,     &
