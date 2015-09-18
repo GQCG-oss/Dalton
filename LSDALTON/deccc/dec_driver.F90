@@ -195,7 +195,7 @@ contains
     logical :: redo
     type(mp2grad) :: grad
     type(fullmp2grad) :: fullgrad
-    integer :: jobdone,newjob, nworkers, siz, jobidx
+    integer :: jobdone,newjob, nworkers, jobidx
     integer(kind=ls_mpik) :: groupsize
     integer :: MPIdatatype,MyAtom,nfrags
     type(joblist) :: jobs
@@ -290,7 +290,6 @@ contains
 
 #else
     nworkers=0   ! master node does all jobs
-    siz=1
 #endif
 
 
@@ -745,8 +744,6 @@ subroutine print_dec_info()
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))
-   write(LU,'(a,A5)')    'Fit Molecular Orbitals                              =           ',&
-        & LogicString(Log2It(DECinfo%FitOrbitals))
    write(LU,'(a,ES12.4)')'The Integral Screening threshold                    =           ',&
         & DECinfo%IntegralThreshold
 

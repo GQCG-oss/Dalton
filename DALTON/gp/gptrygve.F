@@ -52,7 +52,7 @@ C
       END
       SUBROUTINE HEADER_A(HEAD,IN)
 C
-C     HEADER_A is same as HEADER, except with an '@ in column 1
+C     HEADER_A is same as HEADER, except with an '@' in column 1
 C     April 2014, Hans Joergen Aa. Jensen
 C
       CHARACTER HEAD*(*)

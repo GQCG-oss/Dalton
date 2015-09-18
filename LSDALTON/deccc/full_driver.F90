@@ -23,10 +23,8 @@ module full
   !  *****************************************
   use dec_fragment_utils
   use CABS_operations
-#ifdef MOD_UNRELEASED
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
-#endif
   use array4_simple_operations
   use array3_simple_operations
   use array2_simple_operations
@@ -86,9 +84,8 @@ contains
 
        ! run cc program
        if(DECinfo%F12) then ! F12 correction
-#ifdef MOD_UNRELEASED
-!When the code is a production code it should be released! TK
           if(DECinfo%ccModel==MODEL_MP2) then
+             !This is not a production code - it is too slow.
              call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
           elseif(DECinfo%ccModel==MODEL_RIMP2) then
              call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr_rimp2)       
@@ -108,9 +105,6 @@ contains
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
-#else
-          call lsquit('f12 not released',-1)
-#endif
        elseif(DECinfo%ccModel==MODEL_RIMP2)then
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
@@ -232,7 +226,6 @@ contains
 
   end subroutine full_cc_dispatch
 
-#ifdef MOD_UNRELEASED
   !> \brief Calculate canonical MP2 energy for full molecular system
   !> keeping full AO integrals in memory. Only for testing.
   !> \author Kasper Kristensen
@@ -476,11 +469,6 @@ contains
              do I=1,nocc
                 do A=1,nvirt
 
-                   ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-!                   eps = MyMolecule%oofock%elm2(I+offset,I+offset) &
-!                        & + MyMolecule%oofock%elm2(J+offset,J+offset) &
-!                        & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
-
                    ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
                    mp2_energy = mp2_energy + Taibj(a,i,b,j)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))
 
@@ -499,6 +487,7 @@ contains
                       ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
                       eps = MyMolecule%oofock%elm2(I+offset,I+offset) + MyMolecule%oofock%elm2(J+offset,J+offset) &
                            & - MyMolecule%vvfock%elm2(A,A) - MyMolecule%vvfock%elm2(B,B)
+
                       tmp = tmp + (7.0E0_realk*Ciajb(I,A,J,B)*Ciajb(I,A,J,B) + 1.0E0_realk*Ciajb(I,A,J,B)*Ciajb(J,A,I,B))/eps
                    enddo
                 enddo
@@ -579,11 +568,6 @@ contains
           ENDDO
        ENDDO
 
-       !print *, "EJ_V5: ", -5.0/4.0*EJ
-       !print *, "EK_V5: ", 1.0/4.0*EK
-       !print *, "EK_V5 + EJ_V5: ", -1.0*(5.0/4.0*EJ - 1.0/4.0*EK)
-
- 
        E21_debug = E21_debug + 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
                                         & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
                                         & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
@@ -617,7 +601,6 @@ contains
        write(*,'(1X,a,g25.16)') ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
        write(*,'(1X,a,g25.16)') ' E21_Vsum:    ', E21_debug
-       !write(*,'(1X,a,g25.16)') ' E21_debug:   ', E21
     endif
 
     call mem_dealloc(Vijij)
@@ -972,9 +955,7 @@ contains
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
-#endif
 
-#ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
     implicit none
     Real(realk)               :: mp2f12_EBX
@@ -1219,13 +1200,10 @@ contains
     energy = energy + 0.0625E0_realk*tmp !1/16
   end function mp2f12_E23
 
-#endif
-
   !> ***********************************************************************
   !> ****************************  CCSD F12 ********************************
   !> ***********************************************************************
 
-#ifdef MOD_UNRELEASED
   !> \brief Get CCSD-F12 energy, testing code.
   !> \date May 2012
   subroutine full_get_ccsd_f12_energy(MyMolecule,MyLsitem,Dmat,ECCSD_F12)
@@ -1943,7 +1921,6 @@ contains
     call free_cabs()
 
   end subroutine full_get_ccsd_f12_energy
-#endif
 
   !> \brief Get CCSD singles and doubles amplitude for full molecule,
   !> only to be used for debugging purposes.

@@ -4872,7 +4872,6 @@ end function max_batch_dimension
             & for model: ', DECinfo%ccmodel
     end select
 
-#ifdef MOD_UNRELEASED
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12) then
 
@@ -4921,7 +4920,6 @@ end function max_batch_dimension
        end select
 
        endif
-#endif
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)

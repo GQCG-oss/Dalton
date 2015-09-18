@@ -44,29 +44,30 @@
                                                 
       LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
       ----------------------------------------------------------------------------
-      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
-      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
       Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
-      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
       Robert Izsak,            University of Oslo,        Norway    (ADMM)
-      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
-      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
-      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
-      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
       Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
-      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
       Patrick Merlot,          University of Oslo,        Norway    (ADMM)
       Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
-      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
-      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
-      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
       Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
       Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
-      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
-      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
       Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
       Mark Watson,             University of Oslo,        Norway    (FMM)
       Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
@@ -101,12 +102,12 @@
  C++ compiler             | /usr/bin/g++
  C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
  Static linking           | OFF
- Last Git revision        | e049ae2f91970f95759b6d99f8b7d925b0d909ca
+ Last Git revision        | ca7377199bc4b98ce8643dc4f0030c9dc3b4f58b
  Git branch               | master
- Configuration time       | 2015-05-11 19:03:37.126866
+ Configuration time       | 2015-09-09 09:41:27.808667
 
 Start simulation
-     Date and time (Linux)  : Mon May 11 19:47:47 2015
+     Date and time (Linux)  : Wed Sep  9 10:14:53 2015
      Host name              : pablo-AU                                
                       
  -----------------------------------------
@@ -344,7 +345,7 @@ FULL: Number of core orbitals    :      3
 FULL: Number of valence orbitals :      6
 FULL: Number of occ. orbitals    :      9
 FULL: Number of virt. orbitals   :      9
-FULL: Local memory use type full :  0.65E-05
+FULL: Local memory use type full :  0.60E-05
 FULL: Distribute matrices        : F
 
  Reading Fock matrix from file fock.restart...
@@ -460,7 +461,6 @@ Use F12 correction           =           FALSE
 
 
  Restarting atomic fragment optimizations....
- Pair cutoff read from file:       1889.7261    
 
  JOB LIST RESTART
  -- total number of jobs :          3
@@ -519,7 +519,6 @@ DEC restart: Reading        3 fragments
 
 
  Restarting pair fragment estimate calculations...
- Pair cutoff read from file:       1889.7261    
 
  JOB LIST RESTART
  -- total number of jobs :          3
@@ -534,7 +533,7 @@ DEC restart: Reading        3 fragments
 
  Total number of fragments:                                               6
 
- Estimated contribution beyond the fragment energy contribution:     0.6156593564E-04
+ Estimated contribution beyond the fragment energy contribution:     0.1168218665E-03
 
 
 
@@ -574,11 +573,11 @@ DEC restart: Reading        3 fragments
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
       2      5      5     17     3.33    /  3.33       6.00    /  6.17              FRAG_SIZE
-      1      5      5     12     3.33    /  3.33       3.33    /  3.63              FRAG_SIZE
-      3      5      5     12     3.33    /  3.33       3.33    /  3.33              FRAG_SIZE
+      1      4      4     12     3.33    /  3.33       3.33    /  3.63              FRAG_SIZE
+      3      4      4     12     3.33    /  3.33       3.33    /  3.33              FRAG_SIZE
 
- FRAGANALYSIS: Max/Ave/Min occ         :        5       /     5.0000    /       5
- FRAGANALYSIS: Max/Ave/Min virt        :        5       /     5.0000    /       5
+ FRAGANALYSIS: Max/Ave/Min occ         :        5       /     4.3333    /       4
+ FRAGANALYSIS: Max/Ave/Min virt        :        5       /     4.3333    /       4
  FRAGANALYSIS: Max/Ave/Min basis       :       17       /     13.667    /      12
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      3.3320    /     3.3320    /     3.3320    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      3.3320    /     3.3320    /     3.3320    
@@ -596,8 +595,8 @@ DEC restart: Reading        3 fragments
         1                952              2       3        7        8       17
         2                756              1       2        7        6       18
         3                425              2                5        5       17
-        4                300              1                5        5       12
-        5                300              3                5        5       12
+        4                192              1                4        4       12
+        5                192              3                4        4       12
 
 
  DEC JOB SUMMARY: Number of single jobs =          3
@@ -615,55 +614,55 @@ DEC restart: Reading        3 fragments
  The Coulomb energy contribution    1.9829847159553486E-008
  The Exchange energy contribution    2.0075653868524941E-007
  The Fock energy contribution    1.8092669152569594E-007
- The Coulomb energy contribution    2.3285538752988475E-005
- The Exchange energy contribution    9.6193662652300171E-005
- The Fock energy contribution    7.2908123899311642E-005
+ The Coulomb energy contribution    2.3285538752988461E-005
+ The Exchange energy contribution    9.6193662652300049E-005
+ The Fock energy contribution    7.2908123899311533E-005
  The Coulomb energy contribution    1.3142676752438923E-004
- The Exchange energy contribution    5.6377112167209657E-004
- The Fock energy contribution    4.3234435414770788E-004
- The Coulomb energy contribution    1.4203314972146728E-004
- The Exchange energy contribution    6.2796534212480285E-004
- The Fock energy contribution    4.8593219240333562E-004
- The Coulomb energy contribution    1.4309655324906351E-004
- The Exchange energy contribution    6.3896577460997818E-004
- The Fock energy contribution    4.9586922136091464E-004
- The Coulomb energy contribution    1.4325896135891183E-004
- The Exchange energy contribution    6.4203945380704312E-004
- The Fock energy contribution    4.9878049244813131E-004
- The Coulomb energy contribution    1.4317371042949840E-004
- The Exchange energy contribution    6.4174536394516360E-004
- The Fock energy contribution    4.9857165351566461E-004
- The Coulomb energy contribution    1.4302976481670701E-004
- The Exchange energy contribution    6.4085212843171288E-004
- The Fock energy contribution    4.9782236361500527E-004
- The Coulomb energy contribution    1.4287125774687574E-004
- The Exchange energy contribution    6.3996608709549689E-004
- The Fock energy contribution    4.9709482934862136E-004
- The Coulomb energy contribution    1.4277774852481946E-004
- The Exchange energy contribution    6.3950536253202963E-004
- The Fock energy contribution    4.9672761400721029E-004
- The Coulomb energy contribution    1.4274180512731046E-004
- The Exchange energy contribution    6.3934428286343550E-004
- The Fock energy contribution    4.9660247773612471E-004
- The Coulomb energy contribution    1.4280121508841408E-004
- The Exchange energy contribution    6.3961704974644534E-004
- The Fock energy contribution    4.9681583465803069E-004
- The Coulomb energy contribution    1.4282975936611073E-004
- The Exchange energy contribution    6.3974520686388479E-004
- The Fock energy contribution    4.9691544749777452E-004
- The Coulomb energy contribution    1.4283907851385261E-004
- The Exchange energy contribution    6.3978732179852430E-004
- The Fock energy contribution    4.9694824328467147E-004
- The Coulomb energy contribution    1.4283962484041207E-004
- The Exchange energy contribution    6.3979052334011170E-004
- The Fock energy contribution    4.9695089849970001E-004
- The Coulomb energy contribution    1.4283834295532809E-004
- The Exchange energy contribution    6.3978543217588582E-004
- The Fock energy contribution    4.9694708922055767E-004
- The Coulomb energy contribution    1.4283726332783614E-004
- The Exchange energy contribution    6.3978035978851544E-004
- The Fock energy contribution    4.9694309646067920E-004
- CCSOL: MAIN LOOP      :  4.67    s
+ The Exchange energy contribution    5.6377112167209701E-004
+ The Fock energy contribution    4.3234435414770805E-004
+ The Coulomb energy contribution    1.4203314972146709E-004
+ The Exchange energy contribution    6.2796534212480263E-004
+ The Fock energy contribution    4.8593219240333573E-004
+ The Coulomb energy contribution    1.4309655324906348E-004
+ The Exchange energy contribution    6.3896577460997872E-004
+ The Fock energy contribution    4.9586922136091519E-004
+ The Coulomb energy contribution    1.4325896135891129E-004
+ The Exchange energy contribution    6.4203945380704171E-004
+ The Fock energy contribution    4.9878049244813033E-004
+ The Coulomb energy contribution    1.4317371042949905E-004
+ The Exchange energy contribution    6.4174536394516577E-004
+ The Fock energy contribution    4.9857165351566634E-004
+ The Coulomb energy contribution    1.4302976481670707E-004
+ The Exchange energy contribution    6.4085212843171320E-004
+ The Fock energy contribution    4.9782236361500549E-004
+ The Coulomb energy contribution    1.4287125774687493E-004
+ The Exchange energy contribution    6.3996608709549299E-004
+ The Fock energy contribution    4.9709482934861843E-004
+ The Coulomb energy contribution    1.4277774852481951E-004
+ The Exchange energy contribution    6.3950536253202909E-004
+ The Fock energy contribution    4.9672761400720996E-004
+ The Coulomb energy contribution    1.4274180512731117E-004
+ The Exchange energy contribution    6.3934428286343853E-004
+ The Fock energy contribution    4.9660247773612709E-004
+ The Coulomb energy contribution    1.4280121508841427E-004
+ The Exchange energy contribution    6.3961704974644631E-004
+ The Fock energy contribution    4.9681583465803166E-004
+ The Coulomb energy contribution    1.4282975936611079E-004
+ The Exchange energy contribution    6.3974520686388534E-004
+ The Fock energy contribution    4.9691544749777474E-004
+ The Coulomb energy contribution    1.4283907851385147E-004
+ The Exchange energy contribution    6.3978732179852072E-004
+ The Fock energy contribution    4.9694824328466909E-004
+ The Coulomb energy contribution    1.4283962484041104E-004
+ The Exchange energy contribution    6.3979052334010779E-004
+ The Fock energy contribution    4.9695089849969730E-004
+ The Coulomb energy contribution    1.4283834295532818E-004
+ The Exchange energy contribution    6.3978543217588571E-004
+ The Fock energy contribution    4.9694708922055734E-004
+ The Coulomb energy contribution    1.4283726332783606E-004
+ The Exchange energy contribution    6.3978035978851512E-004
+ The Fock energy contribution    4.9694309646067865E-004
+ CCSOL: MAIN LOOP      :  3.64    s
 
 
  *****************************************************************************
@@ -679,52 +678,52 @@ DEC restart: Reading        3 fragments
  The Coulomb energy contribution    0.0000000000000000     
  The Exchange energy contribution   -0.0000000000000000     
  The Fock energy contribution   -0.0000000000000000     
- The Coulomb energy contribution    2.2631850031244127E-005
- The Exchange energy contribution    9.3381930689461986E-005
- The Fock energy contribution    7.0750080658217978E-005
- The Coulomb energy contribution    1.2329160345378584E-004
- The Exchange energy contribution    5.3003695810344587E-004
- The Fock energy contribution    4.0674535464966063E-004
- The Coulomb energy contribution    1.3814366660634366E-004
- The Exchange energy contribution    6.1369788600041070E-004
- The Fock energy contribution    4.7555421939406671E-004
- The Coulomb energy contribution    1.3941266595639298E-004
+ The Coulomb energy contribution    2.2631850031244090E-005
+ The Exchange energy contribution    9.3381930689461905E-005
+ The Fock energy contribution    7.0750080658217964E-005
+ The Coulomb energy contribution    1.2329160345378589E-004
+ The Exchange energy contribution    5.3003695810344565E-004
+ The Fock energy contribution    4.0674535464966047E-004
+ The Coulomb energy contribution    1.3814366660634287E-004
+ The Exchange energy contribution    6.1369788600040853E-004
+ The Fock energy contribution    4.7555421939406552E-004
+ The Coulomb energy contribution    1.3941266595639265E-004
  The Exchange energy contribution    6.2587847445887178E-004
- The Fock energy contribution    4.8646580850247824E-004
- The Coulomb energy contribution    1.3940897075996202E-004
- The Exchange energy contribution    6.2825472299665340E-004
- The Fock energy contribution    4.8884575223669211E-004
- The Coulomb energy contribution    1.3912940154407180E-004
- The Exchange energy contribution    6.2703774489615885E-004
- The Fock energy contribution    4.8790834335208689E-004
- The Coulomb energy contribution    1.3893578242094335E-004
- The Exchange energy contribution    6.2589996439016036E-004
- The Fock energy contribution    4.8696418196921633E-004
- The Coulomb energy contribution    1.3876022856590162E-004
- The Exchange energy contribution    6.2492495801059805E-004
- The Fock energy contribution    4.8616472944469570E-004
- The Coulomb energy contribution    1.3866127878070522E-004
- The Exchange energy contribution    6.2444747649738818E-004
- The Fock energy contribution    4.8578619771668253E-004
- The Coulomb energy contribution    1.3870005982363924E-004
- The Exchange energy contribution    6.2464405188979535E-004
- The Fock energy contribution    4.8594399206615516E-004
- The Coulomb energy contribution    1.3878309431490969E-004
- The Exchange energy contribution    6.2502315898305214E-004
- The Fock energy contribution    4.8624006466814219E-004
- The Coulomb energy contribution    1.3880147223839853E-004
- The Exchange energy contribution    6.2509855219950166E-004
- The Fock energy contribution    4.8629707996110377E-004
- The Coulomb energy contribution    1.3880227736251069E-004
- The Exchange energy contribution    6.2509778914778154E-004
- The Fock energy contribution    4.8629551178527045E-004
- The Coulomb energy contribution    1.3879641255528914E-004
- The Exchange energy contribution    6.2506862455463034E-004
- The Fock energy contribution    4.8627221199934153E-004
- The Coulomb energy contribution    1.3879401327976132E-004
+ The Fock energy contribution    4.8646580850247856E-004
+ The Coulomb energy contribution    1.3940897075996234E-004
+ The Exchange energy contribution    6.2825472299665502E-004
+ The Fock energy contribution    4.8884575223669330E-004
+ The Coulomb energy contribution    1.3912940154407234E-004
+ The Exchange energy contribution    6.2703774489616005E-004
+ The Fock energy contribution    4.8790834335208765E-004
+ The Coulomb energy contribution    1.3893578242094268E-004
+ The Exchange energy contribution    6.2589996439015808E-004
+ The Fock energy contribution    4.8696418196921465E-004
+ The Coulomb energy contribution    1.3876022856590086E-004
+ The Exchange energy contribution    6.2492495801059545E-004
+ The Fock energy contribution    4.8616472944469370E-004
+ The Coulomb energy contribution    1.3866127878070449E-004
+ The Exchange energy contribution    6.2444747649738677E-004
+ The Fock energy contribution    4.8578619771668204E-004
+ The Coulomb energy contribution    1.3870005982363976E-004
+ The Exchange energy contribution    6.2464405188979904E-004
+ The Fock energy contribution    4.8594399206615814E-004
+ The Coulomb energy contribution    1.3878309431491034E-004
+ The Exchange energy contribution    6.2502315898305409E-004
+ The Fock energy contribution    4.8624006466814381E-004
+ The Coulomb energy contribution    1.3880147223839891E-004
+ The Exchange energy contribution    6.2509855219950242E-004
+ The Fock energy contribution    4.8629707996110405E-004
+ The Coulomb energy contribution    1.3880227736251026E-004
+ The Exchange energy contribution    6.2509778914777970E-004
+ The Fock energy contribution    4.8629551178526893E-004
+ The Coulomb energy contribution    1.3879641255528833E-004
+ The Exchange energy contribution    6.2506862455462644E-004
+ The Fock energy contribution    4.8627221199933860E-004
+ The Coulomb energy contribution    1.3879401327976127E-004
  The Exchange energy contribution    6.2505592487822946E-004
  The Fock energy contribution    4.8626191159846732E-004
- CCSOL: MAIN LOOP      :  9.25    s
+ CCSOL: MAIN LOOP      :  7.28    s
 
 
  *****************************************************************************
@@ -740,149 +739,134 @@ DEC restart: Reading        3 fragments
  The Coulomb energy contribution    1.9835529619693442E-008
  The Exchange energy contribution    1.9936511688025131E-007
  The Fock energy contribution    1.7952958726055785E-007
- The Coulomb energy contribution    1.1380757922000278E-005
- The Exchange energy contribution    4.7589123321956652E-005
- The Fock energy contribution    3.6208365399956355E-005
- The Coulomb energy contribution    6.5925831959515280E-005
- The Exchange energy contribution    2.8632381056984383E-004
- The Fock energy contribution    2.2039797861032865E-004
- The Coulomb energy contribution    6.9795367772717016E-005
- The Exchange energy contribution    3.1232524515977878E-004
- The Fock energy contribution    2.4252987738706164E-004
- The Coulomb energy contribution    7.0269989224203421E-005
- The Exchange energy contribution    3.1745221123845969E-004
- The Fock energy contribution    2.4718222201425624E-004
- The Coulomb energy contribution    7.0425389111393013E-005
- The Exchange energy contribution    3.1935559301545104E-004
- The Fock energy contribution    2.4893020390405777E-004
- The Coulomb energy contribution    7.0456713796033434E-005
- The Exchange energy contribution    3.1953586975477853E-004
- The Fock energy contribution    2.4907915595874508E-004
- The Coulomb energy contribution    7.0400525016211350E-005
- The Exchange energy contribution    3.1915988375576823E-004
- The Fock energy contribution    2.4875935873955698E-004
- The Coulomb energy contribution    7.0318116239401635E-005
- The Exchange energy contribution    3.1869131234621553E-004
- The Fock energy contribution    2.4837319610681403E-004
- The Coulomb energy contribution    7.0266170633290545E-005
- The Exchange energy contribution    3.1843033898529510E-004
- The Fock energy contribution    2.4816416835200442E-004
- The Coulomb energy contribution    7.0271827859974182E-005
- The Exchange energy contribution    3.1845451751993535E-004
- The Fock energy contribution    2.4818268965996174E-004
- The Coulomb energy contribution    7.0309112205235873E-005
- The Exchange energy contribution    3.1862065345942463E-004
- The Fock energy contribution    2.4831154125418863E-004
- The Coulomb energy contribution    7.0317015403359643E-005
- The Exchange energy contribution    3.1865534613407278E-004
- The Fock energy contribution    2.4833833073071329E-004
- The Coulomb energy contribution    7.0318495326048271E-005
- The Exchange energy contribution    3.1866254687832463E-004
- The Fock energy contribution    2.4834405155227634E-004
- The Coulomb energy contribution    7.0317862995040959E-005
- The Exchange energy contribution    3.1866024210009373E-004
- The Fock energy contribution    2.4834237910505256E-004
- CCSOL: MAIN LOOP      :  13.3    s
+ The Coulomb energy contribution    1.1380757922000247E-005
+ The Exchange energy contribution    4.7589123321956577E-005
+ The Fock energy contribution    3.6208365399956315E-005
+ The Coulomb energy contribution    6.5925831959515389E-005
+ The Exchange energy contribution    2.8632381056984416E-004
+ The Fock energy contribution    2.2039797861032881E-004
+ The Coulomb energy contribution    6.9795367772717287E-005
+ The Exchange energy contribution    3.1232524515978030E-004
+ The Fock energy contribution    2.4252987738706291E-004
+ The Coulomb energy contribution    7.0269989224203204E-005
+ The Exchange energy contribution    3.1745221123845915E-004
+ The Fock energy contribution    2.4718222201425597E-004
+ The Coulomb energy contribution    7.0425389111392959E-005
+ The Exchange energy contribution    3.1935559301545077E-004
+ The Fock energy contribution    2.4893020390405750E-004
+ The Coulomb energy contribution    7.0456713796033393E-005
+ The Exchange energy contribution    3.1953586975477858E-004
+ The Fock energy contribution    2.4907915595874514E-004
+ The Coulomb energy contribution    7.0400525016211201E-005
+ The Exchange energy contribution    3.1915988375576785E-004
+ The Fock energy contribution    2.4875935873955670E-004
+ The Coulomb energy contribution    7.0318116239401364E-005
+ The Exchange energy contribution    3.1869131234621542E-004
+ The Fock energy contribution    2.4837319610681419E-004
+ The Coulomb energy contribution    7.0266170633290478E-005
+ The Exchange energy contribution    3.1843033898529467E-004
+ The Fock energy contribution    2.4816416835200404E-004
+ The Coulomb energy contribution    7.0271827859974114E-005
+ The Exchange energy contribution    3.1845451751993492E-004
+ The Fock energy contribution    2.4818268965996130E-004
+ The Coulomb energy contribution    7.0309112205236199E-005
+ The Exchange energy contribution    3.1862065345942560E-004
+ The Fock energy contribution    2.4831154125418923E-004
+ The Coulomb energy contribution    7.0317015403358721E-005
+ The Exchange energy contribution    3.1865534613406959E-004
+ The Fock energy contribution    2.4833833073071096E-004
+ The Coulomb energy contribution    7.0318495326047607E-005
+ The Exchange energy contribution    3.1866254687832257E-004
+ The Fock energy contribution    2.4834405155227493E-004
+ The Coulomb energy contribution    7.0317862995041081E-005
+ The Exchange energy contribution    3.1866024210009482E-004
+ The Fock energy contribution    2.4834237910505348E-004
+ CCSOL: MAIN LOOP      :  10.0    s
  Using MO-CCSD: non-MPI scheme
- The Coulomb energy contribution    8.8012936280496193E-007
- The Exchange energy contribution    2.2942895677597930E-006
- The Fock energy contribution    1.4141602049548291E-006
- The Coulomb energy contribution    1.2872295783493762E-005
- The Exchange energy contribution    5.1093152824809170E-005
- The Fock energy contribution    3.8220857041315422E-005
- The Coulomb energy contribution    6.6539765786936299E-005
- The Exchange energy contribution    2.8505708409545908E-004
- The Fock energy contribution    2.1851731830852266E-004
- The Coulomb energy contribution    7.0851946410697793E-005
- The Exchange energy contribution    3.1464220761183789E-004
- The Fock energy contribution    2.4379026120114006E-004
- The Coulomb energy contribution    7.1336088178304850E-005
- The Exchange energy contribution    3.2048687024756778E-004
- The Fock energy contribution    2.4915078206926293E-004
- The Coulomb energy contribution    7.1446337108997272E-005
- The Exchange energy contribution    3.2218590572714547E-004
- The Fock energy contribution    2.5073956861814810E-004
- The Coulomb energy contribution    7.1411835566452384E-005
- The Exchange energy contribution    3.2160851466265643E-004
- The Fock energy contribution    2.5019667909620391E-004
- The Coulomb energy contribution    7.1334305560238900E-005
- The Exchange energy contribution    3.2100141959127249E-004
- The Fock energy contribution    2.4966711403103361E-004
- The Coulomb energy contribution    7.1248298784797122E-005
- The Exchange energy contribution    3.2046897762025631E-004
- The Fock energy contribution    2.4922067883545939E-004
- The Coulomb energy contribution    7.1193853759518792E-005
- The Exchange energy contribution    3.2018611360720364E-004
- The Fock energy contribution    2.4899225984768500E-004
- The Coulomb energy contribution    7.1227918951866927E-005
- The Exchange energy contribution    3.2034730038828761E-004
- The Fock energy contribution    2.4911938143642076E-004
- The Coulomb energy contribution    7.1287640528927462E-005
- The Exchange energy contribution    3.2061934376302229E-004
- The Fock energy contribution    2.4933170323409491E-004
- The Coulomb energy contribution    7.1288275345233253E-005
- The Exchange energy contribution    3.2061885022292554E-004
- The Fock energy contribution    2.4933057487769219E-004
- The Coulomb energy contribution    7.1281236834587963E-005
- The Exchange energy contribution    3.2058518537722927E-004
- The Fock energy contribution    2.4930394854264133E-004
- The Coulomb energy contribution    7.1274704558589146E-005
- The Exchange energy contribution    3.2055369847374087E-004
- The Fock energy contribution    2.4927899391515197E-004
- The Coulomb energy contribution    7.1273401885001155E-005
- The Exchange energy contribution    3.2054713600398126E-004
- The Fock energy contribution    2.4927373411898007E-004
- CCSOL: MAIN LOOP      :  14.7    s
+ The Coulomb energy contribution    6.7483427677284173E-009
+ The Exchange energy contribution    5.3088070424184162E-008
+ The Fock energy contribution    4.6339727656455721E-008
+ The Coulomb energy contribution    1.0974938187266291E-005
+ The Exchange energy contribution    4.5444973334861881E-005
+ The Fock energy contribution    3.4470035147595575E-005
+ The Coulomb energy contribution    5.9758595548717864E-005
+ The Exchange energy contribution    2.5769719166897354E-004
+ The Fock energy contribution    1.9793859612025571E-004
+ The Coulomb energy contribution    6.7330156738988902E-005
+ The Exchange energy contribution    3.0030132344935340E-004
+ The Fock energy contribution    2.3297116671036470E-004
+ The Coulomb energy contribution    6.7987791251777544E-005
+ The Exchange energy contribution    3.0664592175444884E-004
+ The Fock energy contribution    2.3865813050267135E-004
+ The Coulomb energy contribution    6.7998694519110186E-005
+ The Exchange energy contribution    3.0772055525697119E-004
+ The Fock energy contribution    2.3972186073786120E-004
+ The Coulomb energy contribution    6.7873014196492349E-005
+ The Exchange energy contribution    3.0713750555155382E-004
+ The Fock energy contribution    2.3926449135506158E-004
+ The Coulomb energy contribution    6.7779436852283842E-005
+ The Exchange energy contribution    3.0657667119923532E-004
+ The Fock energy contribution    2.3879723434695158E-004
+ The Coulomb energy contribution    6.7714332923328712E-005
+ The Exchange energy contribution    3.0621756453897380E-004
+ The Fock energy contribution    2.3850323161564492E-004
+ The Coulomb energy contribution    6.7689085282187774E-005
+ The Exchange energy contribution    3.0609920376790359E-004
+ The Fock energy contribution    2.3841011848571561E-004
+ The Coulomb energy contribution    6.7688577021745062E-005
+ The Exchange energy contribution    3.0609863993948832E-004
+ The Fock energy contribution    2.3841006291774327E-004
+ The Coulomb energy contribution    6.7694008945707069E-005
+ The Exchange energy contribution    3.0612376524339561E-004
+ The Fock energy contribution    2.3842975629768866E-004
+ The Coulomb energy contribution    6.7697153563166048E-005
+ The Exchange energy contribution    3.0613786964625404E-004
+ The Fock energy contribution    2.3844071608308814E-004
+ CCSOL: MAIN LOOP      :  11.0    s
  Using MO-CCSD: non-MPI scheme
- The Coulomb energy contribution    6.1863197802402056E-008
- The Exchange energy contribution    2.6822755651967879E-007
- The Fock energy contribution    2.0636435871727688E-007
- The Coulomb energy contribution    1.1296370807992596E-005
- The Exchange energy contribution    4.7431274559911529E-005
- The Fock energy contribution    3.6134903751918940E-005
- The Coulomb energy contribution    6.5329489428613005E-005
- The Exchange energy contribution    2.8362593752892160E-004
- The Fock energy contribution    2.1829644810030874E-004
- The Coulomb energy contribution    6.9997370274333222E-005
- The Exchange energy contribution    3.1299964735911656E-004
- The Fock energy contribution    2.4300227708478318E-004
- The Coulomb energy contribution    7.0528541713072199E-005
- The Exchange energy contribution    3.1882856192012838E-004
- The Fock energy contribution    2.4830002020705626E-004
- The Coulomb energy contribution    7.0530562768166138E-005
- The Exchange energy contribution    3.1956881198987904E-004
- The Fock energy contribution    2.4903824922171297E-004
- The Coulomb energy contribution    7.0422598957066993E-005
- The Exchange energy contribution    3.1878750697016952E-004
- The Fock energy contribution    2.4836490801310247E-004
- The Coulomb energy contribution    7.0329483017525971E-005
- The Exchange energy contribution    3.1818656352285379E-004
- The Fock energy contribution    2.4785708050532765E-004
- The Coulomb energy contribution    7.0247162500703777E-005
- The Exchange energy contribution    3.1773086055523098E-004
- The Fock energy contribution    2.4748369805452711E-004
- The Coulomb energy contribution    7.0188533745567803E-005
- The Exchange energy contribution    3.1746070676995212E-004
- The Fock energy contribution    2.4727217302438452E-004
- The Coulomb energy contribution    7.0190514610456520E-005
- The Exchange energy contribution    3.1747772238578464E-004
- The Fock energy contribution    2.4728720777532836E-004
- The Coulomb energy contribution    7.0217594883816614E-005
- The Exchange energy contribution    3.1760628837760078E-004
- The Fock energy contribution    2.4738869349378423E-004
- The Coulomb energy contribution    7.0223916340567642E-005
- The Exchange energy contribution    3.1763476956225552E-004
- The Fock energy contribution    2.4741085322168806E-004
- The Coulomb energy contribution    7.0221696418443561E-005
- The Exchange energy contribution    3.1762414672338775E-004
- The Fock energy contribution    2.4740245030494413E-004
- The Coulomb energy contribution    7.0219555213763731E-005
- The Exchange energy contribution    3.1761390596876188E-004
- The Fock energy contribution    2.4739435075499819E-004
- CCSOL: MAIN LOOP      :  16.0    s
+ The Coulomb energy contribution    1.6419231794593244E-008
+ The Exchange energy contribution    1.2820972982756880E-007
+ The Fock energy contribution    1.1179049803297555E-007
+ The Coulomb energy contribution    1.1146342777512661E-005
+ The Exchange energy contribution    4.6466985694900273E-005
+ The Fock energy contribution    3.5320642917387602E-005
+ The Coulomb energy contribution    6.1189388270879816E-005
+ The Exchange energy contribution    2.6450563786884108E-004
+ The Fock energy contribution    2.0331624959796124E-004
+ The Coulomb energy contribution    6.9057378646962891E-005
+ The Exchange energy contribution    3.0798425016155165E-004
+ The Fock energy contribution    2.3892687151458872E-004
+ The Coulomb energy contribution    6.9741407344841907E-005
+ The Exchange energy contribution    3.1445443765275072E-004
+ The Fock energy contribution    2.4471303030790866E-004
+ The Coulomb energy contribution    6.9672485001930307E-005
+ The Exchange energy contribution    3.1488282889915613E-004
+ The Fock energy contribution    2.4521034389722585E-004
+ The Coulomb energy contribution    6.9503148011804583E-005
+ The Exchange energy contribution    3.1404737431525557E-004
+ The Fock energy contribution    2.4454422630345094E-004
+ The Coulomb energy contribution    6.9401227758850471E-005
+ The Exchange energy contribution    3.1346994045660081E-004
+ The Fock energy contribution    2.4406871269775019E-004
+ The Coulomb energy contribution    6.9336658853598240E-005
+ The Exchange energy contribution    3.1312809194913242E-004
+ The Fock energy contribution    2.4379143309553419E-004
+ The Coulomb energy contribution    6.9309707442480786E-005
+ The Exchange energy contribution    3.1300370675417977E-004
+ The Fock energy contribution    2.4369399931169900E-004
+ The Coulomb energy contribution    6.9305098556592739E-005
+ The Exchange energy contribution    3.1298429583401271E-004
+ The Fock energy contribution    2.4367919727742016E-004
+ The Coulomb energy contribution    6.9304824151659460E-005
+ The Exchange energy contribution    3.1298399150432734E-004
+ The Fock energy contribution    2.4367916735266797E-004
+ The Coulomb energy contribution    6.9305812145164679E-005
+ The Exchange energy contribution    3.1298867234236618E-004
+ The Fock energy contribution    2.4368286019720145E-004
+ CCSOL: MAIN LOOP      :  12.0    s
  WARNING: No pair points to plot!
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  15.92 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  15.97 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  11.93 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  11.93 seconds
 
 
               ===============================================
@@ -896,9 +880,9 @@ DEC restart: Reading        3 fragments
  =================================================================
 
  Fragment       Energy
-     1      -0.6592470506E-01    AF_CCSD_OCC
+     1      -0.6587055653E-01    AF_CCSD_OCC
      2      -0.6609519426E-01    AF_CCSD_OCC
-     3      -0.6620176250E-01    AF_CCSD_OCC
+     3      -0.6617993450E-01    AF_CCSD_OCC
 
 
  =================================================================
@@ -906,9 +890,9 @@ DEC restart: Reading        3 fragments
  =================================================================
 
  Fragment       Energy
-     1      -0.6588702425E-01    AF_CCSD_VIR
+     1      -0.6585707348E-01    AF_CCSD_VIR
      2      -0.6610387031E-01    AF_CCSD_VIR
-     3      -0.6619909350E-01    AF_CCSD_VIR
+     3      -0.6618345490E-01    AF_CCSD_VIR
 
 
  =================================================================
@@ -928,8 +912,8 @@ DEC restart: Reading        3 fragments
      1       2      3.3320         -0.4715208440E-03    PF_CCSD_VIR
      2       3      3.3320         -0.4461871824E-03    PF_CCSD_VIR
 
- CCSD occupied   correlation energy :    -0.1990542936    
- CCSD virtual    correlation energy :    -0.1991076961    
+ CCSD occupied   correlation energy :    -0.1989783170    
+ CCSD virtual    correlation energy :    -0.1990621067    
 
 
 
@@ -943,11 +927,11 @@ DEC restart: Reading        3 fragments
              **********************************************************
 
                E: Hartree-Fock energy :      -74.1900454241
-               E: Correlation energy  :       -0.1990542936
-               E: Estimated DEC err 1      :        0.0000534025
-               E: Estimated DEC err 2      :        0.0012000000
-               E: Estimated DEC err 3      :        0.0000527145
-               E: Total CCSD energy   :      -74.3890997176
+               E: Correlation energy  :       -0.1989783170
+               E: Total CCSD energy   :      -74.3890237411
+               E: Estimated DEC err 1 :        0.0000837897
+               E: Estimated DEC err 2 :        0.0012000000
+               E: Estimated DEC err 3 :        0.0001079704
 
 
  >>>  CPU Time used in DEC FINAL is   0.04 seconds
@@ -966,13 +950,13 @@ DEC restart: Reading        3 fragments
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         15.9636     s
-Total Wall time used in DEC          :         16.0110     s
+Total CPU  time used in DEC          :         11.9758     s
+Total Wall time used in DEC          :         11.9750     s
 ------------------------------------------------------
 
 
 Hostname       : pablo-AU                                          
-Job finished   : Date: 11/05/2015   Time: 19:48:03
+Job finished   : Date: 09/09/2015   Time: 10:15:05
 
 
 
@@ -984,7 +968,6 @@ Job finished   : Date: 11/05/2015   Time: 19:48:03
 
 Total no. of matmuls used:                        18
 Total no. of Fock/KS matrix evaluations:           0
-Max no. of matrices allocated in Level 3:          9
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1032,34 +1015,34 @@ Max no. of matrices allocated in Level 3:          9
   Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                          4.030 MB
+  Max allocated memory, TOTAL                          3.097 MB
   Max allocated memory, type(matrix)                  15.552 kB
-  Max allocated memory, real(realk)                    2.532 MB
+  Max allocated memory, real(realk)                    2.468 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                       41.160 kB
-  Max allocated memory, logical                        4.032 kB
+  Max allocated memory, integer                       40.456 kB
+  Max allocated memory, logical                        2.032 kB
   Max allocated memory, character                      3.920 kB
-  Max allocated memory, AOBATCH                       27.216 kB
-  Max allocated memory, DECORBITAL                     4.224 kB
-  Max allocated memory, DECFRAG                      192.672 kB
-  Max allocated memory, BATCHTOORB                     0.784 kB
+  Max allocated memory, AOBATCH                       27.648 kB
+  Max allocated memory, DECORBITAL                     3.968 kB
+  Max allocated memory, DECFRAG                      214.944 kB
+  Max allocated memory, BATCHTOORB                     0.112 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                        948.864 kB
+  Max allocated memory, ARRAY                        276.864 kB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
   Max allocated memory, ODBATCH                        7.920 kB
   Max allocated memory, LSAOTENSOR                    21.888 kB
-  Max allocated memory, SLSAOTENSOR                   48.024 kB
+  Max allocated memory, SLSAOTENSOR                   33.120 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                 306.112 kB
-  Max allocated memory, ATOMITEM                       6.528 kB
+  Max allocated memory, ATOMITEM                       6.144 kB
   Max allocated memory, LSMATRIX                       2.016 kB
   Max allocated memory, OverlapT                     145.408 kB
   Max allocated memory, linkshell                      2.052 kB
@@ -1077,9 +1060,9 @@ Max no. of matrices allocated in Level 3:          9
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  15.99 seconds
- >>> wall Time used in LSDALTON is  16.04 seconds
+ >>>  CPU Time used in LSDALTON is  12.00 seconds
+ >>> wall Time used in LSDALTON is  12.00 seconds
 
 End simulation
-     Date and time (Linux)  : Mon May 11 19:48:03 2015
+     Date and time (Linux)  : Wed Sep  9 10:15:05 2015
      Host name              : pablo-AU                                

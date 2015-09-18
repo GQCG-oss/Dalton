@@ -331,8 +331,7 @@ contains
        call linesearch_orbspread(CFG,cmo,X,stepsize,oVal)
        call orbspread_value(oVal,CFG%orbspread_inp)
 
-
-       if (oVal-old_oVal > 0.0_realk) then
+       if (oVal-old_oVal > -1E-8_realk) then
           write(ls%lupri,'(a)') '  %LOC% Step not accepted. Go back'
           call mat_copy(1.0d0,CMOsav,CMO)
           call orbspread_update(CFG%orbspread_inp,CMO)
@@ -362,7 +361,7 @@ contains
           write(CFG%lupri,'(a)') '  %LOC% the user manual under section **LOCALIZE ORBITALS      '
           write(CFG%lupri,'(a)') '  %LOC% and keyword .LOOSE MICRO THRESH                              ' 
           call lsquit('%LOC% Cannot converge micro iterations. ', CFG%lupri)
-       elseif (oval-old_oVal > 0.0_realk) then
+       elseif (oVal-old_oVal > -1E-8) then
           cycle
        endif
        !new gradient

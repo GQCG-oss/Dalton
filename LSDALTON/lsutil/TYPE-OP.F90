@@ -292,8 +292,6 @@ CALL DFT_set_default_config(DALTON%DFT)
 ! DEC TEST PARAMETERS
 DALTON%run_dec_gradient_test=.false.
 DALTON%ForceRIMP2memReduced = .FALSE.
-DALTON%SolveNMRResponseSimultan = .FALSE.
-DALTON%ResponseMatNormConvTest = .FALSE.
 DALTON%PreCalcDFscreening = .FALSE.
 DALTON%PreCalcF12screening = .FALSE.
 
@@ -1011,8 +1009,6 @@ call WRITE_FORMATTET_DFT_param(LUPRI,DALTON%DFT)
 !EXCHANGE FACTOR
 WRITE(LUPRI,'(2X,A35,F16.8)') 'exchangeFactor',DALTON%exchangeFactor
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ForceRIMP2memReduced ',DALTON%ForceRIMP2memReduced
-WRITE(LUPRI,'(2X,A35,7X,L1)')'SolveNMRResponseSimultan ',DALTON%SolveNMRResponseSimultan
-WRITE(LUPRI,'(2X,A35,7X,L1)')'ResponseMatNormConvTest ',DALTON%ResponseMatNormConvTest
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcDFscreening   ',DALTON%PreCalcDFscreening
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PreCalcF12screening  ',DALTON%PreCalcF12screening
 

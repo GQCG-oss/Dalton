@@ -975,6 +975,10 @@ C     The array with MP2 amplitudes is passed to SO_ERES as a dummy parameter so
             call quit('Allocation error in par_so_eres (t2mp)')
          endif
 
+         ! This call is ONLY need to set an internally saved variable
+         ! so the matching call in ERIDI2 does not cause trouble
+         call er2ini
+
          ! Get the contents of the array
          ! NOTE: The master cannot enter PAR_SO_ERES before this bcast
          ! completes.

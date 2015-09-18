@@ -186,6 +186,7 @@ INTEGER               :: LUPRI,LUERR,IPRINT,AO1,AO2
 LOGICAL               :: GCAO1,GCAO2
 !
 Integer             :: i,j,LU,nbast2,nbast1
+logical                    :: sameMolSave(4,4)
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
@@ -198,9 +199,12 @@ call Test_if_64bit_integer_required(nbast1,nbast2)
 IF(nBast1.NE.S%nrow)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap',-1)
 IF(nBast2.NE.S%ncol)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap',-1)
 call initIntegralOutputDims(setting%output,nbast1,nbast2,1,1,1)
+sameMolSave = Setting%sameMol
+Setting%sameMol = .FALSE.
 CALL ls_getIntegrals(AO1,AO2,AOempty,AOempty,&
      &OverlapOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,S,.FALSE.)
+setting%sameMol = sameMolSave
 
 IF (GCAO1) call AO2GCAO_half_transform_matrix(S,SETTING,LUPRI,1)
 IF (GCAO2) call AO2GCAO_half_transform_matrix(S,SETTING,LUPRI,2)
@@ -225,17 +229,21 @@ real(realk)           :: S(nbast1,nbast2)
 TYPE(LSSETTING)       :: SETTING
 !
 INTEGER               :: nbast1TEST,nbast2TEST,IPRINT
+logical                    :: sameMolSave(4,4)
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 IPRINT=SETTING%SCHEME%INTPRINT
 nbast1TEST = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
-nbast2TEST = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
+nbast2TEST = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
 IF(nBast1TEST.NE.nbast1)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap_full',-1)
 IF(nBast2TEST.NE.nbast2)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap_full',-1)
 call initIntegralOutputDims(setting%output,nbast1,nbast2,1,1,1)
+sameMolSave = Setting%sameMol
+Setting%sameMol = .FALSE.
 CALL ls_getIntegrals(AO1,AO2,AOempty,AOempty,&
      &OverlapOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,S,.FALSE.)
+setting%sameMol = sameMolSave
 END SUBROUTINE II_get_mixed_overlap_full
 
 !> \brief Calculates one electron fock matrix contribution

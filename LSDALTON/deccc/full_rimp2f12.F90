@@ -91,6 +91,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    real(realk) :: EB1,EB2,EB3,EB4,EB5,EB6,EB7,EB8,EB9
    real(realk) :: EV1tmp,EV2tmp,EV3tmp,EV4tmp,EV5tmp,EX1tmp,EX2tmp,EX3tmp,EX4tmp
    real(realk) :: EB1tmp,EB2tmp,EB3tmp,EB4tmp,EB5tmp,EB6tmp,EB7tmp,EB8tmp,EB9tmp
+   integer     :: F12RIB4, F12RIB6, F12RIB9
    real(realk) :: TS,TE,TS2,TE2
    integer :: l,i,j,a,b,p,q,c,m,mynum,nAtoms,lupri,nbuf1,inode,numnodesstd
    integer(kind=long) :: nsize,nsize2
@@ -215,6 +216,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ENDIF
 
    ! ***********************************************************
+   !   Setting up InputSubroutineIntegers 
+   ! ***********************************************************   
+   F12RIB4 = 4
+   F12RIB6 = 6
+   F12RIB9 = 9
+
+   ! ***********************************************************
    !   Constructing Coefficient matrices 
    ! ***********************************************************   
    ! Cocc
@@ -285,7 +293,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
            & nocc,noccfull,nvirt,ncabsMO,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
    ENDIF
 
-   call LSTIMER('FULLRIMP2:Init',TS2,TE2,DECinfo%output,ForcePrint)
+   call LSTIMER('FULLRIMP2 F12:Init',TS2,TE2,DECinfo%output,ForcePrint)
    IF(master)THEN
       write(DECinfo%output,'(/,a)') ' ================================================ '
       write(DECinfo%output,'(a)')   '            FULL-RI-MP2F12 ENERGY TERMS            '
@@ -361,6 +369,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    intspec(3) = 'R' !Regular AO basis function on center 4
 
    IF(DECinfo%NaturalLinearScalingF12TermsV1)THEN
+
+      call LSTIMER('LS START EV1',TS2,TE2,DECinfo%output,ForcePrint)
+
       !This energy contribution have already been calculated so we extract the information 
       EV1 = MyMolecule%EF12NLSV1
 #ifdef VAR_MPI 
@@ -374,6 +385,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 #endif         
    ELSE
       IF(ComputeTerm(2))THEN
+
+         call LSTIMER('START FULLRIMP2 F12:EV1',TS2,TE2,DECinfo%output,ForcePrint)
+
          call mem_alloc(ABdecompF,nAux,nAux)
          ABdecompCreateF = .TRUE.
          ! Calculate the Fitting Coefficients (alpha|F|ij)
@@ -395,6 +409,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          RestartBuffer(2) = EV1
          ComputeTerm(2) = .FALSE.
          call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
+
+         call LSTIMER('FULLRIMP2 F12:EV1',TS2,TE2,DECinfo%output,ForcePrint)
+
       ELSE
          if(master)then
             EV1 = RestartBuffer(2) !have already been reduced to master
@@ -428,6 +445,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,LS) = ',EX1
 #endif         
    ELSE
+
+      call LSTIMER('START FULLRIMP2 F12:EX1',TS2,TE2,DECinfo%output,ForcePrint)
+
       IF(ComputeTerm(3))THEN
          !Calculate the Fitting Coefficients (alpha|g^2|ij) 
          intspec(4) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
@@ -465,6 +485,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
             EX1 = 0.0E0_realk
          endif
       ENDIF
+
+      call LSTIMER('FULLRIMP2 F12:EX1',TS2,TE2,DECinfo%output,ForcePrint)
+
 #ifdef VAR_MPI 
       lsmpibufferRIMP2(3)=EX1       !we need to perform a MPI reduction at the end 
 #else
@@ -497,8 +520,16 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    IF(wakeslaves)THEN
       nbuf1=numnodes
       call mem_alloc(nAuxMPI,nbuf1)
-      call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)      
+      call BuildnAuxMPIUsedRI(nAux,numnodesstd,nAuxMPI)  
+   ELSE
+      nbuf1 = 1
+      call mem_alloc(nAuxMPI,nbuf1)
+      nAuxMPI(1) = nAux
    ENDIF
+#else
+   nbuf1 = 1
+   call mem_alloc(nAuxMPI,nbuf1)
+   nAuxMPI(1) = nAux
 #endif
 
    IF(DECinfo%NaturalLinearScalingF12TermsB1)THEN
@@ -529,6 +560,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          !perform this suborutine on the GPU (Async)
          call Build_RobustERImatU(mylsitem,master,nAux,LUPRI,&
               & FORCEPRINT,wakeslaves,mynum,numnodesstd,ABdecompR,'D',Umat)
+
+         call LSTIMER('EB1 START',TS2,TE2,DECinfo%output,ForcePrint)
+
 #ifdef VAR_MPI
          !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
          !We need to do:
@@ -609,6 +643,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          !perform this suborutine on the GPU (Async)
          call ContractOne4CenterF12IntegralsRobustRI(NBA,offset,nocc,nocv,CalphaD,CalphaR,EB1)
          call mem_dealloc(CalphaD)
+    
+         call LSTIMER('FULLRIMP2 F12:B1',TS2,TE2,DECinfo%output,ForcePrint)
+         
          RestartBuffer(1) = EB1
          ComputeTerm(1) = .FALSE.
          call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
@@ -628,7 +665,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 #endif   
    ENDIF
 
-   call LSTIMER('FULLRIMP2:Step1',TS2,TE2,DECinfo%output,ForcePrint)
+   call LSTIMER('FULLRIMP2 F12:Step1',TS2,TE2,DECinfo%output,ForcePrint)
 
    !==============================================================
    !=  B2: sum_c' (ic'|f12^2|jj) hJ_ic' - (jc'|f12^2|ij) hJ_ic'  =
@@ -677,6 +714,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    call mem_dealloc(ABdecompX)
 
+   call LSTIMER('FULLRIMP2 F12:Step1',TS2,TE2,DECinfo%output,ForcePrint)
+
 #ifdef VAR_MPI 
    lsmpibufferRIMP2(4)=EB2       !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(5)=EB3       !we need to perform a MPI reduction at the end 
@@ -691,7 +730,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 #endif
 
    !ABdecompR still exists
-   call LSTIMER('FULLRIMP2:B2B3',TS2,TE2,DECinfo%output,ForcePrint)
+   call LSTIMER('FULLRIMP2 F12:B2B3',TS2,TE2,DECinfo%output,ForcePrint)
 
    !=================================================================
    != Step 2: Ripjq*Gipjq+Rimjc*Gimjc+Rjmic*Gjmic                   =
@@ -733,9 +772,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    IF(computeTerm(6).OR.computeTerm(7))THEN
       !Do on GPU (Async) while the CPU starts calculating the next fitting Coef.
+
+     call LSTIMER('START FULLRIMP2 F12:V2',TS2,TE2,DECinfo%output,ForcePrint)
 #ifdef VAR_MPI 
       nsize = NBA*nocv*nocc
       call mem_alloc(CalphaT,nsize)               ! G_qj = C_qk B_kj 
+      !CalphaT(NBA,nocv,nocc) = CalphaG(NBA,nocv,nocc)*F(nocc,nocc)
       M = nocv*NBA         !rows of Output Matrix
       K = nocc             !summation dimension
       N = nocc             !columns of Output Matrix
@@ -792,6 +834,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call ContractTwo4CenterF12IntegralsRIX_nc(nBA,nocc,nocv,CalphaG,CalphaT,EX2)
       call mem_dealloc(CalphaT)
 #endif
+      call LSTIMER('FULLRIMP2 F12:V2',TS2,TE2,DECinfo%output,ForcePrint)
+
       RestartBuffer(6) = EV2
       RestartBuffer(7) = EX2
       ComputeTerm(6) = .FALSE.
@@ -864,6 +908,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
             EpsVirt(A) = MyMolecule%vvfock%elm2(A,A) 
          enddo
          !$OMP END PARALLEL DO          
+
+      call LSTIMER('START FULLRIMP2 F12:E_21C',TS2,TE2,DECinfo%output,ForcePrint)
 #ifdef VAR_MPI 
          IF(wakeslaves)THEN
             E_21C = 0.0E0_realk
@@ -879,7 +925,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                   call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)   !CalphaTmp(NBA,nocv,nocc)
                   IF(size(CalphaTmp).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 B2',-1)
                   call ls_mpibcast(CalphaTmp,nsize2,node,infpar%lg_comm) !CalphaTmp(NBA,nocc,nvirt)
-                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt) 
+                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,offset) 
                ELSE
                   node = inode-1
                   !recieve
@@ -905,11 +951,14 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                E_21C = E_21C + E_21Ctmp
             ENDDO
          ELSE
-            Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+            Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt,offset) 
          ENDIF
 #else
-         Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt) 
+         Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21C,EpsOcc,EpsVirt,offset) 
+
 #endif      
+         call LSTIMER('FULLRIMP2 F12:E_21C',TS2,TE2,DECinfo%output,ForcePrint)
+
          call mem_dealloc(CalphaTmp) 
          call mem_dealloc(EpsVirt) 
          call mem_dealloc(EpsOcc)      
@@ -945,6 +994,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call Build_CalphaMO2(mylsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
            & FORCEPRINT,wakeslaves,Co,nocc,CMO_CABS%elms,ncabsMO,&
            & mynum,numnodesstd,CalphaRcabsMO,NBA,ABdecompR,ABdecompCreateR,intspec,use_bg_buf)
+
+      call LSTIMER('START FULLRIMP2 F12:EV3V4',TS2,TE2,DECinfo%output,ForcePrint)
 #ifdef VAR_MPI 
       IF(wakeslaves)THEN
          EV3 = 0.0E0_realk
@@ -997,6 +1048,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call ContractTwo4CenterF12IntegralsRI2V3V4(NBA,NBA,nocc,noccfull,ncabsMO,nocv,&
            & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4)   
 #endif
+      call LSTIMER('FULLRIMP2 F12:EV3V4',TS2,TE2,DECinfo%output,ForcePrint)
+
       call mem_dealloc(CalphaRcabsMO)
       RestartBuffer(8) = EV3
       RestartBuffer(9) = EV4
@@ -1012,6 +1065,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          EV4 = 0.0E0_realk
       endif
    ENDIF
+
 #ifdef VAR_MPI
    lsmpibufferRIMP2(8)=EV3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(9)=EV4      !we need to perform a MPI reduction at the end 
@@ -1041,6 +1095,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       nsize = nBA*nocc*ncabsMO
       call mem_alloc(CalphaT, nsize)
       call dgemm('N','T',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fac%elms,n,0.0E0_realk,CalphaT,m)
+
+      call LSTIMER('START FULLRIMP2 F12:EV5',TS2,TE2,DECinfo%output,ForcePrint)
 #ifdef VAR_MPI 
       IF(wakeslaves)THEN
          EV5 = 0.0E0_realk
@@ -1082,6 +1138,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call ContractTwo4CenterF12IntegralsRIC_pf(MyMolecule,offset,nBA,nocc,nvirt,CalphaG,&
            & CalphaT,CalphaR,nocv,noccfull,NBA,EV5)
 #endif
+      call LSTIMER('FULLRIMP2 F12:EV5',TS2,TE2,DECinfo%output,ForcePrint)
+
       call mem_dealloc(CalphaT)
       RestartBuffer(10) = EV5
       ComputeTerm(10) = .FALSE.
@@ -1135,7 +1193,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          j=1+(i-1)*NBA*nocc
          call dgemm('N','N',M,N,K,1.0E0_realk,CalphaGcabsMO(j),M,Fkj,K,0.0E0_realk,CalphaP(j),M)
       ENDDO
-      
+
+      call LSTIMER('START FULLRIMP2 F12:EX3X4',TS2,TE2,DECinfo%output,ForcePrint)
 #ifdef VAR_MPI 
       IF(wakeslaves)THEN
          EX3 = 0.0E0_realk
@@ -1189,6 +1248,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call ContractTwo4CenterF12IntegralsRIX3X4_nc(NBA,nocc,noccfull,ncabsMO,&
            & CalphaGcabsMO,CalphaG,CalphaT,CalphaP,EX3,EX4,nocv)
 #endif
+      call LSTIMER('FULLRIMP2 F12:EX3X4',TS2,TE2,DECinfo%output,ForcePrint)
+
       call mem_dealloc(CalphaT)
       call mem_dealloc(CalphaP)
       RestartBuffer(11) = EX3
@@ -1217,7 +1278,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X4,RI) = ',EX4
 #endif
 
-   call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
+   call LSTIMER('FULLRIMP2 F12:Step2',TS2,TE2,DECinfo%output,ForcePrint)
 
    !=================================================================
    != Step 3: The remaining B terms                                 =
@@ -1247,7 +1308,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Krr%elms,k,0.0E0_realk,CalphaT,m)
       !Do on GPU (Async)
       call GeneralTwo4CenterF12RICoef1112(nBA,CalphaGcabsAO,nocc,ncabsAO,CalphaT,nocc,ncabsAO,&
-           & EB4,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB4,F12RIB4MPI)
+           & EB4,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB4)
       RestartBuffer(13) = EB4
       ComputeTerm(13) = .FALSE.
       call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
@@ -1258,6 +1319,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          EB4 = 0.0E0_realk
       endif
    ENDIF
+
 #ifdef VAR_MPI 
    lsmpibufferRIMP2(13)=EB4      !we need to perform a MPI reduction at the end 
 #else
@@ -1265,7 +1327,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
 #endif
-   
+
+   call LSTIMER('FULLRIMP2 F12:B4',TS2,TE2,DECinfo%output,ForcePrint)
+
    !==============================================================
    !=  B5: (ir|f12|jm)Fsr(si|f12|mj)        (r,s=CabsAO)         =
    !==============================================================   
@@ -1283,9 +1347,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,Frr%elms,k,0.0E0_realk,CalphaT,m)
       !Do on GPU (Async)
       call GeneralTwo4CenterF12RICoef1223(nBA,&
-           & CalphaT,nocc,ncabsAO,CalphaG,nocv,nocc,&
-           & CalphaGcabsAO,nocc,ncabsAO,EB5,noccfull,wakeslaves,use_bg_buf,&
-           & numnodesstd,nAuxMPI,mynum,F12RIB5,F12RIB5MPI)      
+         & CalphaT,nocc,ncabsAO,CalphaG,nocv,nocc,&
+         & CalphaGcabsAO,nocc,ncabsAO,EB5,noccfull,wakeslaves,use_bg_buf,&
+         & numnodesstd,nAuxMPI,mynum,F12RIB5,F12RIB5MPI)      
       RestartBuffer(14) = EB5
       ComputeTerm(14) = .FALSE.
       call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
@@ -1296,6 +1360,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          EB5 = 0.0E0_realk
       endif
    ENDIF
+
 #ifdef VAR_MPI 
    lsmpibufferRIMP2(14)=EB5      !we need to perform a MPI reduction at the end 
 #else
@@ -1304,6 +1369,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
 #endif
    
+   call LSTIMER('FULLRIMP2 F12:B5',TS2,TE2,DECinfo%output,ForcePrint)
+
    !==============================================================
    !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
    !==============================================================
@@ -1324,7 +1391,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          call dgemm('N','N',m,n,k,1.0E0_realk,CalphaG(j),m,Fpp%elms,k,0.0E0_realk,CalphaT(j),m)
       enddo      
       call GeneralTwo4CenterF12RICoef1112(nBA,CalphaG,nocv,nocc,CalphaT,nocv,nocc,&
-           & EB6,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB6,F12RIB6MPI)
+           & EB6,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB6)
       RestartBuffer(15) = EB6
       ComputeTerm(15) = .FALSE.
       call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
@@ -1335,6 +1402,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          EB6 = 0.0E0_realk
       endif
    ENDIF
+
 #ifdef VAR_MPI 
    lsmpibufferRIMP2(15)=EB6      !we need to perform a MPI reduction at the end 
 #else
@@ -1342,6 +1410,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ',EB6
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
 #endif
+   
+   call LSTIMER('FULLRIMP2 F12:B6',TS2,TE2,DECinfo%output,ForcePrint)
    
    !==============================================================
    !=  B7: (ic|f12|jm)Fnm(ci|F12|nj)                             =
@@ -1377,6 +1447,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
          EB7 = 0.0E0_realk
       endif
    ENDIF
+
 #ifdef VAR_MPI 
    lsmpibufferRIMP2(17)=EB7      !we need to perform a MPI reduction at the end 
 #else
@@ -1384,6 +1455,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
 #endif
+   
+   call LSTIMER('FULLRIMP2 F12:B7',TS2,TE2,DECinfo%output,ForcePrint)
 
    !==============================================================
    !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
@@ -1421,6 +1494,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
 #endif
 
+   call LSTIMER('FULLRIMP2 F12:B8',TS2,TE2,DECinfo%output,ForcePrint)
+
    !==============================================================
    !=  B9: (ip|f12|ja)Fcp(ci|f12|aj)                             =
    !==============================================================
@@ -1437,7 +1512,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,Fcp%elms,k,0.0E0_realk,CalphaT,m)
       call mem_dealloc(CalphaGcabsMO)
       call GeneralTwo4CenterF12RICoef1112(nBA,CalphaG,nocv,nocc,CalphaT,nocc,nocv,&
-           & EB9,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB9,F12RIB9MPI)
+           & EB9,noccfull,wakeslaves,use_bg_buf,numnodesstd,nAuxMPI,mynum,F12RIB9)
       RestartBuffer(19) = EB9
       ComputeTerm(19) = .FALSE.
       call WriteFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,nTerms,master)
@@ -1456,6 +1531,8 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
 #endif
 
+   call LSTIMER('FULLRIMP2 F12:B9',TS2,TE2,DECinfo%output,ForcePrint)
+
    call mem_dealloc(CalphaT)
    IF(associated(CalphaG))THEN
       call mem_dealloc(CalphaG)
@@ -1469,7 +1546,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    call mat_free(CMO_CABS)
    call mat_free(CMO_RI)
    call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
-   call LSTIMER('FULLRIMP2:Step3',TS2,TE2,DECinfo%output,ForcePrint)
+   call LSTIMER('FULLRIMP2 F12:Step3',TS2,TE2,DECinfo%output,ForcePrint)
 
 #ifdef VAR_MPI
    nbuf1 = 20
@@ -1499,9 +1576,21 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ENDDO
 
    IF(master)THEN
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
-      WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      IF(DECinfo%NaturalLinearScalingF12TermsV1)THEN
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,LS) = ', EV1
+      ELSE
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
+      ENDIF
+      IF(DECinfo%NaturalLinearScalingF12TermsX1)THEN
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,LS) = ', EX1
+      ELSE
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(X1,RI) = ', EX1
+      ENDIF
+      IF(DECinfo%NaturalLinearScalingF12TermsB1)THEN
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,LS) = ', EB1
+      ELSE
+         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
+      ENDIF
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B2,RI) = ', EB2
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
@@ -1543,9 +1632,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
       WRITE(*,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
    ENDIF
 
-   IF(wakeslaves)THEN
-      call mem_dealloc(nAuxMPI)
-   ENDIF
 #endif
 
     E_21 = 0.0E0_realk
@@ -1669,6 +1755,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
        write(DECinfo%output,'(1X,a,f20.10)') ' MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
     endif
     FORCEPRINT = .TRUE.
+
+    !> Deallocate
+    call mem_dealloc(nAuxMPI)
+
     CALL LSTIMER('FULL RIMP2F12 ',TS,TE,DECINFO%OUTPUT,FORCEPRINT)
 
   end subroutine full_canonical_rimp2_f12
@@ -1762,10 +1852,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
   end subroutine WriteFULLRIMP2F12RestartInfo
   
   subroutine FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,Galpha,&
-       & Galpha2,E,EpsOcc,EpsVirt)
+       & Galpha2,E,EpsOcc,EpsVirt,offset)
     implicit none
     real(realk),intent(inout) :: E
-    integer,intent(in) :: NBA,nocc,nvirt,nbasis
+    integer,intent(in) :: NBA,nocc,nvirt,nbasis,offset
     real(realk),intent(in) :: Galpha(NBA,nbasis,nocc),Galpha2(NBA,nocc,nvirt)
     real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
     !local variables
@@ -1773,7 +1863,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     real(realk) :: TMP,CtmpIAJB,CtmpIBJA,eps,T
     TMP = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(A,B,J,I,&
-    !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,nvirt,Galpha,Galpha2,&
+    !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,offset,nvirt,Galpha,Galpha2,&
     !$OMP EpsOcc,EpsVirt) REDUCTION(+:TMP)
     DO B=1,nvirt
      DO J=1,nocc
@@ -1782,15 +1872,18 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
           eps = EpsOcc(I) + EpsOcc(J) - EpsVirt(A) - EpsVirt(B)
           T = 0.0E0_realk
           DO ALPHA=1,NBA
-             T = T  + (Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B) + Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A))/eps
+             T = T  + (Galpha(ALPHA,offset+nocc+A,I)*Galpha2(ALPHA,J,B) & 
+                & + Galpha(ALPHA,offset+nocc+B,J)*Galpha2(ALPHA,I,A))/eps
           ENDDO
           CtmpIAJB = 0.0E0_realk
           DO ALPHA=1,NBA
-             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B)+ Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A)
+             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,offset+nocc+A,I)*Galpha2(ALPHA,J,B) &
+                & + Galpha(ALPHA,offset+nocc+B,J)*Galpha2(ALPHA,I,A)
           ENDDO
           CtmpIBJA = 0.0E0_realk
           DO ALPHA=1,NBA
-             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,nocc+A,J)*Galpha2(ALPHA,I,B) + Galpha(ALPHA,nocc+B,I)*Galpha2(ALPHA,J,A)
+             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,offset+nocc+A,J)*Galpha2(ALPHA,I,B) & 
+                & + Galpha(ALPHA,offset+nocc+B,I)*Galpha2(ALPHA,J,A)
           ENDDO
           TMP=TMP+(7.0E0_realk*T*CtmpIAJB + 1.0E0_realk*T*CtmpIBJA)
        ENDDO

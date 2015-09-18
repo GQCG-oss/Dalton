@@ -193,7 +193,15 @@ module f12_routines_module
     !> Mixed CABS/CABS exchange matrix 
     !> Krr
     call mat_init(Kcc,ncabsAO,ncabsAO)
-    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
+    IF(associated(MyMolecule%hJccAO))THEN
+       !       call mat_set_from_full(MyMolecule%hJccAO,1.0E0_realk,HJccAO)
+       call mem_dealloc(MyMolecule%hJccAO)
+
+       call mat_set_from_full(MyMolecule%KccAO,1.0E0_realk,Kcc)
+       call mem_dealloc(MyMolecule%KccAO)
+    ELSE
+       call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
+    ENDIF
     call mat_to_full(Kcc,1.0E0_realk,Krr_real)
     call mat_free(Kcc)
     
@@ -264,116 +272,126 @@ module f12_routines_module
     type(fullmolecule), intent(in) :: MyMolecule
     !> Lsitem structure
     type(lsitem), intent(inout) :: Mylsitem
-    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-    type(matrix) :: Dmat,K
-    type(matrix) :: HJir
-    type(matrix) :: Krr
-    type(matrix) :: Frr
-    type(matrix) :: Frc
-    type(matrix) :: Fpp
-    type(matrix) :: Fmm
-    type(matrix) :: Frm
-    type(matrix) :: Fcp
-    type(matrix) :: Fii
-    type(matrix) :: Fac
-
+    integer,intent(in) :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    type(matrix),intent(in) :: Dmat
+    type(matrix),intent(inout) :: HJir,Krr,Frr,Fpp,Fmm,Frm,Fcp,Fii,Fac
     !> Singles contribution
-    type(matrix) :: Fic
-    type(matrix) :: Fcd
-    
-    ! Temp
-    type(matrix) :: HJrc
-    type(matrix) :: Kcc
-    type(matrix) :: Fcc
-
+    type(matrix),intent(inout) :: Fic,Fcd
+    ! local variables
+    type(matrix) :: HJccAO,KccAO,FccAO,FrcAO,FrrAO,FcrAO,HJrcAO
+    real(realk),pointer :: HJrcAOfull(:,:),FrcAOfull(:,:),FrrAOfull(:,:)
+ 
     if( MyMolecule%mem_distributed )then
        call lsquit("ERROR(get_F12_mixed_MO_Matrices): this routine does not work&
        & with distributed arrays in the fullmolecule type, yet",-1)
     endif
 
-    ! Mixed regular/CABS one-electron and Coulomb matrix (h+J) combination in AO basis
+    call mat_init(HJccAO,ncabsAO,ncabsAO)
+    call mat_init(KccAO,ncabsAO,ncabsAO)
+    IF(DECinfo%F12singles)THEN
+       IF(.NOT.associated(MyMolecule%hJccAO))call lsquit('F12singles but no hJccAO',-1)
+       call mat_set_from_full(MyMolecule%hJccAO,1.0E0_realk,HJccAO)
+       call mat_set_from_full(MyMolecule%KccAO,1.0E0_realk,KccAO)
+       call mem_dealloc(MyMolecule%hJccAO)
+       call mem_dealloc(MyMolecule%KccAO)
+    ELSE
+       call get_AO_hJ(nbasis,ncabsAO,HJccAO,Dmat,MyLsitem,'CCRRC')
+       call get_AO_K(nbasis,ncabsAO,KccAO,Dmat,MyLsitem,'CCRRC')
+    ENDIF
+    call mat_init(FccAO,ncabsAO,ncabsAO)
+    call mat_assign(FccAO,HJccAO)
+    call mat_daxpy(1E0_realk,KccAO,FccAO) 
+
+    !Build subblock HJrcAO(nbasis,ncabsAO) = HJccAO(1:nbasis,1:ncabsAO)
+    call mem_alloc(HJrcAOfull,nbasis,ncabsAO)
+    call mat_retrieve_block(HJccAO,HJrcAOfull,nbasis,ncabsAO,1,1)
+    call mat_free(HJccAO)
+    call mat_init(HJrcAO,nbasis,ncabsAO)
+    call mat_set_from_full(HJrcAOfull,1.0E0_realk,HJrcAO)
+    call mem_dealloc(HJrcAOfull)
+
+    !Mixed regular/CABS one-electron and Coulomb matrix (h+J) 
+    !combination in AO basis
     !hJir
-    call mat_init(HJrc,nbasis,ncabsAO)
-    call get_AO_hJ(nbasis,ncabsAO,HJrc,Dmat,MyLsitem,'RCRRC')
     call mat_init(HJir,nocc,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ir',HJrc,HJir)    
-    call mat_free(HJrc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ir',HJrcAO,HJir)    
+    call mat_free(HJrcAO)
 
-    ! Mixed CABS/CABS exchange matrix
-    !Krr
-    call mat_init(Kcc,ncabsAO,ncabsAO)
-    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
+    !Krr(ncabsAO,ncabsAO) Mixed CABS/CABS exchange matrix
     call mat_init(Krr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Kcc,Krr)
-    call mat_free(Kcc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',KccAO,Krr)
+    call mat_free(KccAO)
 
-    ! Mixed CABS/CABS Fock matrix
-    !Frr 
-    call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    !Frr(ncabsAO,ncabsAO) Mixed CABS/CABS Fock matrix
     call mat_init(Frr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',Fcc,Frr)
-    call mat_free(Fcc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',FccAO,Frr)
 
-    !Fcd
-    call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    !Fcd(ncabs,ncabs)
     call mat_init(Fcd,ncabs,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
-    call mat_free(Fcc)
-  
-    ! Mixed AO/CABS Fock matrix
-    !Fac
-    call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',FccAO,Fcd)
+
+    !Build subblock FrcAO(nbasis,ncabsAO) = FccAO(1:nbasis,1:ncabsAO)
+    call mem_alloc(FrcAOfull,nbasis,ncabsAO)
+    call mat_retrieve_block(FccAO,FrcAOfull,nbasis,ncabsAO,1,1)
+    call mat_free(FccAO)
+    call mat_init(FrcAO,nbasis,ncabsAO)
+    call mat_set_from_full(FrcAOfull,1.0E0_realk,FrcAO)
+    call mem_dealloc(FrcAOfull)
+
+    !Fac(nbasis,ncabsAO) Mixed AO/CABS Fock matrix
     call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
-    call mat_free(Frc)
-       
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',FrcAO,Fac)
+
     !Fic
-    call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
-    call mat_free(Frc)
-    
-    ! Mixed AO/AO full MO Fock matrix 
-    call mat_init(Fcc,nbasis,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'RRRRC')
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',FrcAO,Fic)    
+
+    !Build subblock FrrAO(nbasis,nbasis) = FrcAO(1:nbasis,1:nbasis)
+    call mem_alloc(FrrAOfull,nbasis,ncabsAO)
+    call mat_retrieve_block(FrcAO,FrrAOfull,nbasis,nbasis,1,1)
+    call mat_init(FrrAO,nbasis,nbasis)
+    call mat_set_from_full(FrrAOfull,1.0E0_realk,FrrAO)
+    call mem_dealloc(FrrAOfull)
+
     !Fpp
     call mat_init(Fpp,nbasis,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'pp',Fcc,Fpp)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'pp',FrrAO,Fpp)
     !Fii
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Fcc,Fii)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',FrrAO,Fii)
     !Fmm
     call mat_init(Fmm,noccfull,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'mm',Fcc,Fmm)
-    call mat_free(Fcc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'mm',FrrAO,Fmm)
+    call mat_free(FrrAO)
 
     ! Mixed CABS/AO MO Fock matrix
-    call mat_init(Fcc,ncabsAO,nbasis)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CRRRC')
+    call mat_init(FcrAO,ncabsAO,nbasis)
+    call mat_trans(FrcAO,FcrAO)
+    call mat_free(FrcAO) 
+
     !Frm
     call mat_init(Frm,ncabsAO,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rm',Fcc,Frm)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rm',FcrAO,Frm)
     !Fcc
     call mat_init(Fcp,ncabs,nbasis)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cp',Fcc,Fcp)
-    call mat_free(Fcc)
+         & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cp',FcrAO,Fcp)
+    call mat_free(FcrAO)
     
   end subroutine get_F12_mixed_MO_Matrices
+
+!HJccAO,KccAO,FccAO,FrcAO,FrrAO,FcrAO
+
 
   subroutine free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
@@ -2318,13 +2336,9 @@ module f12_routines_module
     !> HF density matrix
     type(matrix), intent(in) :: Dmat
     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
-    type(matrix) :: Fic
-    type(matrix) :: Fcd
-    type(matrix) :: Fac
-    type(matrix) :: Fcc
-    type(matrix) :: Frc,Id,Ucd,tmp,Uij,Uab
-    type(matrix) :: Fij,Fab
-    real(realk), pointer :: eival(:)
+    type(matrix) :: Fic,Fcd,Fac,Fcc,Frc,Id,Ucd,tmp,Uij,Uab
+    type(matrix) :: Fij,Fab,HJcc,Kcc
+    real(realk), pointer :: eival(:),Frcfull(:,:)
     real(realk) :: tcpu,twall
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -2346,25 +2360,39 @@ module f12_routines_module
     ! Fock matrices
     ! *************
 
-    !Fcd
+!    call mat_init(Fcc,ncabsAO,ncabsAO)
+!    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+
+    call mat_init(HJcc,ncabsAO,ncabsAO)
+    call get_AO_hJ(nbasis,ncabsAO,HJcc,Dmat,MyLsitem,'CCRRC')
+    call mat_init(Kcc,ncabsAO,ncabsAO)
+    call get_AO_K(nbasis,ncabsAO,Kcc,Dmat,MyLsitem,'CCRRC')
     call mat_init(Fcc,ncabsAO,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
+    call mat_assign(Fcc,HJcc)
+    call mat_daxpy(1E0_realk,Kcc,Fcc) 
+    !Save the AO Fock in MyMolecule to be used later!
+    call mem_alloc(MyMolecule%hJccAO,ncabsAO,ncabsAO)
+    call mat_to_full(HJcc,1.0E0_realk,MyMolecule%hJccAO)
+    call mat_free(HJcc)
+    call mem_alloc(MyMolecule%KccAO,ncabsAO,ncabsAO)
+    call mat_to_full(Kcc,1.0E0_realk,MyMolecule%KccAO)
+    call mat_free(Kcc)
+
+    !Fcd
     call mat_init(Fcd,ncabs,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
-    call mat_free(Fcc)    
-
     !Fic
+    call mem_alloc(Frcfull,nbasis,ncabsAO)
+    call mat_retrieve_block(Fcc,Frcfull,nbasis,ncabsAO,1,1)
+    call mat_free(Fcc)    
     call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
+    call mat_set_from_full(Frcfull,1.0E0_realk,Frc)
+    call mem_dealloc(Frcfull)
     call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
-    call mat_free(Frc)
-
     ! Fac
-    call mat_init(Frc,nbasis,ncabsAO)
-    call get_AO_Fock(nbasis,ncabsAO,Frc,Dmat,MyLsitem,'RCRRC')
     call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
@@ -2375,7 +2403,6 @@ module f12_routines_module
     call mat_init(Fab,nvirt,nvirt)
     call mat_set_from_full(MyMolecule%oofock%elm2,1.0_realk,Fij)
     call mat_set_from_full(MyMolecule%vvfock%elm2,1.0_realk,Fab)
-
 
 
     ! Always use basis where Fij,Fab, and Fcd are diagonal

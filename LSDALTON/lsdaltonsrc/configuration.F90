@@ -9,9 +9,11 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
+#ifdef VAR_ENABLE_TENSORS
 use tensor_interface_module, only: tensor_set_dil_backend_true, &
    &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer, &
    tensor_set_global_segment_length, tensor_set_mpi_msg_len
+#endif
 #ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
 #else
@@ -24,7 +26,8 @@ use response_wrapper_op_module, only: free_mcdinputitem, &
      & gammainputitem_set_default_config, tpainputitem_set_default_config, &
      & dtpainputitem_set_default_config, esginputitem_set_default_config, &
      & esdinputitem_set_default_config, mcdinputitem_set_default_config, &
-     & rspsolveriputitem_set_default_config
+     & rspsolveriputitem_set_default_config,&
+     & NMRinputitem_set_default_config
 use lsdalton_response_type_mod, only: rsp_tasks_set_default_config
 use soeo_typedef,only: soeoinp_set_default_config
 !use matrix_module!, only: matrix
@@ -132,6 +135,8 @@ implicit none
   call ESDinputitem_set_default_config(config%response%esdinput)
   ! MCD
   call MCDinputitem_set_default_config(config%response%MCDinput)
+  ! NMR
+  call NMRinputitem_set_default_config(config%response%NMRinput)
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
@@ -157,7 +162,6 @@ implicit none
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
   config%InteractionEnergy = .false.
-  config%access_stream = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -1267,8 +1271,15 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            config%papitest=.true.
         CASE('.ACCESS_STREAM')
            ! Use stream access on all files open with lsopen
-           config%access_stream = .true.
            access_stream = .true.
+        CASE('.FORCE_CRASH')
+           ! Force program to crash when lsquit is called
+           ! It can be use to get a stack on some systems
+           force_crash = .true.
+#ifdef VAR_MPI 
+           call ls_mpibcast(SET_FORCE_CRASH,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(force_crash,infpar%master,MPI_COMM_LSDALTON)
+#endif
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')
@@ -1276,12 +1287,14 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
         CASE('.PDMM')
-#ifdef VAR_MPI
+#if defined(VAR_ENABLE_TENSORS) && defined(VAR_MPI)
            config%opt%cfg_prefer_PDMM = .true.
            !Set tensor synchronization to always, TODO: see if this can be optimized
            call tensor_set_always_sync_true(.true.)
            !Set the background buffer on, this will use additional memory
            call lspdm_init_global_buffer(.true.)
+#else
+           call lsquit("ERROR(reading input): pdmm is not possible with this build",lupri)
 #endif
         CASE('.PDMMBLOCKSIZE');  
 #ifdef VAR_MPI
@@ -1323,12 +1336,14 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            call ls_mpibcast(SET_GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
            call ls_mpibcast(config%GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
 #endif
-#ifdef VAR_MPI
+#ifdef VAR_MPI 
         CASE('.MAX_MPI_MSG_SIZE_NEL');
            READ(LUCMD,*) SPLIT_MPI_MSG 
            call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
            call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+#ifdef VAR_ENABLE_TENSORS
            call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
+#endif
         CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
            READ(LUCMD,*) MAX_SIZE_ONE_SIDED
            call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
@@ -1344,7 +1359,11 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
 
      if (WORD(1:7) == '*TENSOR') then
         READWORD=.TRUE.
+#ifdef VAR_ENABLE_TENSORS
         call TENSOR_INPUT(word,LUCMD)
+#else
+        call lsquit("ERROR(reading input): the tensor option is not available with the current build",lupri)
+#endif
      endif
 
      IF (WORD(1:2) == '**') THEN
@@ -1359,6 +1378,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
   ENDDO
 END subroutine GENERAL_INPUT
 
+#ifdef VAR_ENABLE_TENSORS
 subroutine TENSOR_INPUT(word,lucmd)
    implicit none
    character(len=80),intent(inout)  :: word
@@ -1387,6 +1407,7 @@ subroutine TENSOR_INPUT(word,lucmd)
       end select
    enddo
 end subroutine TENSOR_INPUT
+#endif
 
 subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   implicit none
@@ -1864,6 +1885,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         config%diag%INFO_RH_MU            = .true.
      CASE('.INFO_RSP')
         config%response%rspsolverinput%INFO_RSP = .true.
+     CASE('.INFO_RSP_SPARSITY')
+        config%response%rspsolverinput%INFO_RSP_SPARSITY = .true.
      CASE('.INFO_RSP_REDSPACE')
         config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
         !CASE('.INFO_TIME_MAT_OPERATIONS')
@@ -2515,7 +2538,13 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
              SELECT CASE(word)
              CASE('.SOLVERESPONSESIMULTANT')
                 !Solve the response equations at the same time. 
-                config%integral%SolveNMRResponseSimultan = .TRUE.
+                config%response%NMRinput%SolveNMRResponseSimultan = .TRUE.
+             CASE('.NODFJCONT')
+                !Do not calculate the density-fitted magnetic derivate Coulomb 
+                config%response%NMRinput%CalcDFJcont = .FALSE.
+             CASE('.PRINTALL')
+                !Print all contributions
+                config%response%NMRinput%PrintAll = .TRUE.
              CASE DEFAULT
                 WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                      & '" not recognized in RESPONSE *INASHIELD input.'
@@ -2526,6 +2555,29 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*SHIELD')
           config%response%tasks%doNMRshield=.true.
           config%response%tasks%doResponse=.true.
+          do
+             READ(LUCMD,'(A40)') word
+             if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+             if(word(1:1) == '*')THEN
+                READWORD=.FALSE.
+                exit
+             endif
+             SELECT CASE(word)
+             CASE('.SOLVERESPONSESIMULTANT')
+                !Solve the response equations at the same time. 
+                config%response%NMRinput%SolveNMRResponseSimultan = .TRUE.
+             CASE('.NODFJCONT')
+                !Do not calculate the density-fitted magnetic derivate Coulomb 
+                config%response%NMRinput%CalcDFJcont = .FALSE.
+             CASE('.PRINTALL')
+                !Print all contributions
+                config%response%NMRinput%PrintAll = .TRUE.
+             CASE DEFAULT
+                WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
+                     & '" not recognized in RESPONSE *INASHIELD input.'
+                CALL lsQUIT('Illegal keyword in config_rsp_input.',config%lupri)
+             END SELECT
+          enddo
        CASE('*PDBS')
                     WRITE(config%LUPRI,*) 'Pertubation dependent basis set &
                     & calculations are carried out'
@@ -4105,7 +4157,11 @@ endif
 #ifdef VAR_RSP
       !everything is fine
 #else
-      call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
+      IF(config%response%noOpenRSP)THEN
+         !everything is fine
+      ELSE
+         call lsquit('Response Calculations require compilation with -DVAR_RSP',-1)
+      ENDIF
 #endif
    end if
 
