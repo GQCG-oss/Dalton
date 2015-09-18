@@ -1403,7 +1403,6 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 call LS_MPI_BUFFER(dalton%ForceRIMP2memReduced,Master)
-call LS_MPI_BUFFER(dalton%ResponseMatNormConvTest,Master)
 call LS_MPI_BUFFER(dalton%PreCalcDFscreening,Master)
 call LS_MPI_BUFFER(dalton%PreCalcF12screening,Master)
 
