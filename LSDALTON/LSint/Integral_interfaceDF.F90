@@ -2575,8 +2575,8 @@ ELSE
 ENDIF
 do ideriv=1,3
    call mat_init(TmpJx(ideriv),nbast,nbast)
-!   call mat_zero(TmpJx(ideriv))
-!   call mat_zero(Jx(ideriv))
+   call mat_zero(TmpJx(ideriv))
+   call mat_zero(Jx(ideriv))
 enddo
 IF(SETTING%SCHEME%FMM)CALL LSQUIT('FMM and df_magderivJ not working',-1)
 
@@ -2634,6 +2634,7 @@ SETTING%SCHEME%intTHRESHOLD=MagneticThreshold
 call ls_get_coulomb_mat(AORdefault,AORdefault,AODFdefault,AOempty,&
      &CoulombOperator,MagderivRSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,TmpJx,.FALSE.)
+
 do ideriv=1,3
    call mat_daxpy(1E0_realk,TmpJx(ideriv),Jx(ideriv))
 enddo
@@ -2788,11 +2789,11 @@ IF(setting%IntegralTransformGC)THEN
       call AO2GCAO_transform_matrixF(Jx(ideriv),setting,lupri)
    enddo   
 ENDIF
-!do ideriv=1,nderiv
-!   WRITE(lupri,*)'DF: Jx(',ideriv,')'
-!   call mat_scal(0.5E0_realk,Jx(Ideriv))
+do ideriv=1,3
+!   WRITE(lupri,*)'DF: FINAL Jx(',ideriv,')  setting%IntegralTransformGC',setting%IntegralTransformGC
+   call mat_scal(0.5E0_realk,Jx(Ideriv))
 !   call mat_print(Jx(ideriv),1,Jx(ideriv)%nrow,1,Jx(ideriv)%ncol,lupri)
-!enddo
+enddo
 end SUBROUTINE II_get_df_magderivJ
 
 SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&

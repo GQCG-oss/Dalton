@@ -3584,7 +3584,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      endif
 
      ! Transform Galpha(ALPHA,i,a) = Galpha(ALPHA,i,A)*Uvirt(nvirt,nvirt)
-     M = nba*nocc  !rows of Output Matrix
+     M = nba*noccEOS  !rows of Output Matrix
      N = nvirt     !columns of Output Matrix
      K = nvirt     !summation dimension
      IF(.NOT.use_bg_buf)call mem_alloc(GalphaEOS,nsize,'RIMP2Cc:GalphaEOS')
@@ -3600,9 +3600,9 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      endif
 
      ! Transform Galpha2(ALPHA,i,a) = Galpha2(ALPHA,i,A)*Uvirt(nvirt,nvirt)
-     M = nba*nocc  !rows of Output Matrix
-     N = nvirt     !columns of Output Matrix
-     K = nvirt     !summation dimension        
+     M = nba*noccEOS  !rows of Output Matrix
+     N = nvirt        !columns of Output Matrix
+     K = nvirt        !summation dimension        
      IF(.NOT.use_bg_buf)call mem_alloc(Galpha2EOS,nsize,'RIMP2Cc:Galpha2EOS')
      call DGEMM('N','N',M,N,K,1.0E0_realk,GalphaTMP,M,UvirtT,K,0.0E0_realk,Galpha2EOS,M)
      IF(.NOT.use_bg_buf)call mem_dealloc(GalphaTMP)

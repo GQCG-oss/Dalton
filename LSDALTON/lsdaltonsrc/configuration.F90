@@ -26,7 +26,8 @@ use response_wrapper_op_module, only: free_mcdinputitem, &
      & gammainputitem_set_default_config, tpainputitem_set_default_config, &
      & dtpainputitem_set_default_config, esginputitem_set_default_config, &
      & esdinputitem_set_default_config, mcdinputitem_set_default_config, &
-     & rspsolveriputitem_set_default_config
+     & rspsolveriputitem_set_default_config,&
+     & NMRinputitem_set_default_config
 use lsdalton_response_type_mod, only: rsp_tasks_set_default_config
 use soeo_typedef,only: soeoinp_set_default_config
 !use matrix_module!, only: matrix
@@ -134,6 +135,8 @@ implicit none
   call ESDinputitem_set_default_config(config%response%esdinput)
   ! MCD
   call MCDinputitem_set_default_config(config%response%MCDinput)
+  ! NMR
+  call NMRinputitem_set_default_config(config%response%NMRinput)
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
@@ -2535,7 +2538,13 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
              SELECT CASE(word)
              CASE('.SOLVERESPONSESIMULTANT')
                 !Solve the response equations at the same time. 
-                config%integral%SolveNMRResponseSimultan = .TRUE.
+                config%response%NMRinput%SolveNMRResponseSimultan = .TRUE.
+             CASE('.NODFJCONT')
+                !Do not calculate the density-fitted magnetic derivate Coulomb 
+                config%response%NMRinput%CalcDFJcont = .FALSE.
+             CASE('.PRINTALL')
+                !Print all contributions
+                config%response%NMRinput%PrintAll = .TRUE.
              CASE DEFAULT
                 WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                      & '" not recognized in RESPONSE *INASHIELD input.'
@@ -2546,6 +2555,29 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*SHIELD')
           config%response%tasks%doNMRshield=.true.
           config%response%tasks%doResponse=.true.
+          do
+             READ(LUCMD,'(A40)') word
+             if(word(1:1) == '!' .or. word(1:1) == '#') cycle
+             if(word(1:1) == '*')THEN
+                READWORD=.FALSE.
+                exit
+             endif
+             SELECT CASE(word)
+             CASE('.SOLVERESPONSESIMULTANT')
+                !Solve the response equations at the same time. 
+                config%response%NMRinput%SolveNMRResponseSimultan = .TRUE.
+             CASE('.NODFJCONT')
+                !Do not calculate the density-fitted magnetic derivate Coulomb 
+                config%response%NMRinput%CalcDFJcont = .FALSE.
+             CASE('.PRINTALL')
+                !Print all contributions
+                config%response%NMRinput%PrintAll = .TRUE.
+             CASE DEFAULT
+                WRITE (config%LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
+                     & '" not recognized in RESPONSE *INASHIELD input.'
+                CALL lsQUIT('Illegal keyword in config_rsp_input.',config%lupri)
+             END SELECT
+          enddo
        CASE('*PDBS')
                     WRITE(config%LUPRI,*) 'Pertubation dependent basis set &
                     & calculations are carried out'

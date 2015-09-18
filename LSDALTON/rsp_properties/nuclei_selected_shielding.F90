@@ -14,12 +14,12 @@ module nuclei_selected_shielding_mod
   use matrix_operations_aux 
   use matrix_util
   use rspsolver
-  use decompMod, only: decompItem
+!  use decompMod, only: decompItem
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
   use dal_interface
   use rsp_util
-  use response_wrapper_type_module, only: ALPHAinputItem
+  use response_wrapper_type_module, only: NMRinputItem
   use ls_Integral_Interface
 
   !***********************************************************************
@@ -58,12 +58,13 @@ Contains
 !
 !#######################################################
 
-subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
+subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S,NMRinput)
   implicit none
   TYPE(lsitem),target     :: ls
   type(rsp_molcfg), intent(inout) :: molcfg
   type(Matrix),intent(in) :: F(1),D(1),S
-!  logical :: Dsym
+  type(NMRinputItem),intent(in) :: NMRinput
+  logical :: Dsym
   real(realk),pointer          ::expval(:,:)
   real(realk),pointer          ::NucSpecNMSTtotal(:,:),Prodtotal(:,:),eivalkF(:)
   real(realk)                  :: Factor
@@ -176,6 +177,7 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      !Contribution:  SDhb
      call mat_mul(tempm1,TmpA(icoor),'t','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
   enddo
+
   call II_get_magderivJ(LUPRI,LUERR,molcfg%SETTING,nbast,D,TmpA)   !Generate J^b
   !TmpA is now GbK
   do icoor=1,3      
@@ -198,7 +200,20 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
 !     call mat_mul(tempm1,TmpA(icoor),'t','n',-1E0_realk,1E0_realk,ProdA(icoor)) 
 !  enddo
 !==============================================================================
-  call di_GET_GbDs(lupri,luerr,TmpB,TmpA,3,molcfg%setting)  ! G(D0^B)
+
+  ! Generate G(DX):  The 2-e contribution to sigma vector in RSP
+  ! G(DX) = J(DX) + K(DX)
+  IF(molcfg%setting%scheme%densfit.AND.NMRinput%CalcDFJcont)THEN 
+     call di_GET_GbDs(lupri,luerr,TmpB,TmpA,3,molcfg%setting)  ! G(D0^B)
+  ELSE
+     call mat_zero(TmpA(1))
+     call mat_zero(TmpA(2))
+     call mat_zero(TmpA(3))
+     !Only do the K part since the DX is anti Symmetric and J(DX)=0
+     Dsym = .TRUE. !Dsym means SYM or ANTISYM 
+     call II_get_exchange_mat(LUPRI,LUERR,molcfg%SETTING,TmpB,3,Dsym,TmpA)
+  ENDIF
+
   !TmpA is now GbDX = G(D0^B)
   do icoor=1,3      
      !Contribution: G(D0B)D0S
@@ -227,7 +242,7 @@ subroutine NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
      call mat_free(tmpB(icoor))
   enddo 
 
-  IF(ls%input%DALTON%SolveNMRResponseSimultan)THEN
+  IF(NMRinput%SolveNMRResponseSimultan)THEN
      !#############################################################################
      !##                                                                         ## 
      !##   Building D^k (Density matrix derivative w.r.t nuclei magnetic moment) ##
