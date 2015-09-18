@@ -39,9 +39,9 @@ if(MPI_FOUND)
    add_definitions(-DVAR_MPI)
 
    # test whether we can use an mpi module
-   file(READ "${CMAKE_SOURCE_DIR}/cmake/custom/mpi/test-MPI-f90-mod-i4.F90" _source)
+   file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-f90-mod-i4.F90" _source)
    check_fortran_source_compiles(${_source} MPI_F90_I4)
-   file(READ "${CMAKE_SOURCE_DIR}/cmake/custom/mpi/test-MPI-f90-mod-i8.F90" _source)
+   file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-f90-mod-i8.F90" _source)
    check_fortran_source_compiles(${_source} MPI_F90_I8)
 
    if(MPI_F90_I4 OR MPI_F90_I8)
