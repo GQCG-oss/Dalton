@@ -618,6 +618,7 @@ C
       PARAMETER ( NTABLE = 33)                                          !MK
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
+      INTEGER PE_IFC_LF_L
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.APROP ', '.ROOTS ',
      *            '.MAXITP', '.THCLR ', '.MAXITL', '.THCPP ',
@@ -944,15 +945,41 @@ C                 B operators
                GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
-                  LABEL='XDIPLEN'
-                  ASMOP( INDPRP(LABEL)) = .TRUE.
-                  BSMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='YDIPLEN'
-                  ASMOP( INDPRP(LABEL)) = .TRUE.
-                  BSMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='ZDIPLEN'
-                  ASMOP( INDPRP(LABEL)) = .TRUE.
-                  BSMOP( INDPRP(LABEL)) = .TRUE.
+                  IF (PEQM) THEN
+#if defined (BUILD_PELIB)
+                     IF (PE_IFC_LF_L()==1) THEN
+                       LABEL='XLFDIPLN'
+                       ASMOP( INDPRP(LABEL)) = .TRUE.
+                       BSMOP( INDPRP(LABEL)) = .TRUE.
+                       LABEL='YLFDIPLN'
+                       ASMOP( INDPRP(LABEL)) = .TRUE.
+                       BSMOP( INDPRP(LABEL)) = .TRUE.
+                       LABEL='ZLFDIPLN'
+                       ASMOP( INDPRP(LABEL)) = .TRUE.
+                       BSMOP( INDPRP(LABEL)) = .TRUE.
+                     ELSE 
+                        LABEL='XDIPLEN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='YDIPLEN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='ZDIPLEN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                     END IF
+#endif 
+                  ELSE 
+                     LABEL='XDIPLEN'
+                     ASMOP( INDPRP(LABEL)) = .TRUE.
+                     BSMOP( INDPRP(LABEL)) = .TRUE.
+                     LABEL='YDIPLEN'
+                     ASMOP( INDPRP(LABEL)) = .TRUE.
+                     BSMOP( INDPRP(LABEL)) = .TRUE.
+                     LABEL='ZDIPLEN'
+                     ASMOP( INDPRP(LABEL)) = .TRUE.
+                     BSMOP( INDPRP(LABEL)) = .TRUE.
+                  END IF
                GO TO 100
  25            CONTINUE
                   MCDCAL=.TRUE.

@@ -106,13 +106,13 @@ C dipole.h: DIPMN(:)
 
       I = 0
       DO IOP = 1, N1AVTOT
-        IF (LBL1AV(IOP).EQ.'LFDIPLNX') THEN
+        IF (LBL1AV(IOP).EQ.'XLFDIPLN') THEN
           DIP(1) = DIPMN(1) - AVE1VAL(IOP)
           I = I + 1
-        ELSE IF (LBL1AV(IOP).EQ.'LFDIPLNY') THEN
+        ELSE IF (LBL1AV(IOP).EQ.'YLFDIPLN') THEN
           DIP(2) = DIPMN(2) - AVE1VAL(IOP)
           I = I + 1
-        ELSE IF (LBL1AV(IOP).EQ.'LFDIPLNZ') THEN
+        ELSE IF (LBL1AV(IOP).EQ.'ZLFDIPLN') THEN
           DIP(3) = DIPMN(3) - AVE1VAL(IOP)
           I = I + 1
         END IF

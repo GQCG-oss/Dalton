@@ -80,6 +80,28 @@
 
 !-----------------------------------------------------------------------------
 
+      function pe_ifc_lf_l()
+        use pe_variables, only: pe_lf
+        implicit none
+#include "priunit.h"
+        integer :: pe_ifc_lf_l
+        call qenter('pe_ifc_lf_l')
+        write(lupri,*) 'pe_lf', pe_lf
+        if (pe_lf) then
+            write(lupri,*) 'in here with pe_lf T?'
+            pe_ifc_lf_l = 1
+            write(lupri,*) 'in here with pe_lf T pe_ifc_lf2?'
+            write(lupri,*) 'pe_ifc_lf2', pe_ifc_lf_l
+        else
+            write(lupri,*) 'or here with false?'
+            pe_ifc_lf_l = 0
+        end if
+        call qexit('pe_ifc_lf_l')
+            write(lupri,*) 'after qexit', pe_ifc_lf_l
+      end function pe_ifc_lf_l
+ 
+!-----------------------------------------------------------------------------
+
       subroutine pe_ifc_lf()
 
         use pe_variables, only: pe_lf
@@ -121,23 +143,23 @@
         call mollb2('XDIPLEN ',lblinf,luprop,LUPRI)
         call readt(luprop, nnbasx, dip)
         dip(:) = dip(:) + fckmats(1:nnbasx)
-        call WRTPRO(dip,nnbasx,'LFDIPLNX',lblinf,0)
+        call WRTPRO(dip,nnbasx,'XLFDIPLN',lblinf,0)
 
         rewind(luprop)
         call mollb2('YDIPLEN ',lblinf,luprop,LUPRI)
         call readt(luprop, nnbasx, dip)
         dip(:) = dip(:) + fckmats(nnbasx+1:2*nnbasx)
-        call WRTPRO(dip,nnbasx,'LFDIPLNY',lblinf,0)
+        call WRTPRO(dip,nnbasx,'YLFDIPLN',lblinf,0)
 
         rewind(luprop)
         call mollb2('ZDIPLEN ',lblinf,luprop,LUPRI)
         call readt(luprop, nnbasx, dip)
         dip(:) = dip(:) + fckmats(2*nnbasx+1:3*nnbasx)
-        call WRTPRO(dip,nnbasx,'LFDIPLNZ',lblinf,0)
+        call WRTPRO(dip,nnbasx,'ZLFDIPLN',lblinf,0)
 
-        rewind(luprop)
-        call mollb2('LFDIPLNX',lblinf,luprop,LUPRI)
-        call readt(luprop, nnbasx, dip)
+!        rewind(luprop)
+!        call mollb2('LFDIPLNX',lblinf,luprop,LUPRI)
+!        call readt(luprop, nnbasx, dip)
 
         if (lopen) call gpclose(luprop,'KEEP')
         call qexit('pe_ifc_lf')

@@ -2435,9 +2435,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(WORK(KATOM),NATOM,INTTYP)
-         LABINT(1) = 'LFDIPLNX'
-         LABINT(2) = 'LFDIPLNY'
-         LABINT(3) = 'LFDIPLNZ'
+         LABINT(1) = 'XLFDIPLN'
+         LABINT(2) = 'YLFDIPLN'
+         LABINT(3) = 'ZLFDIPLN'
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
          INTREP(3) = ISYMAX(3,1)
