@@ -86,18 +86,12 @@
 #include "priunit.h"
         integer :: pe_ifc_lf_l
         call qenter('pe_ifc_lf_l')
-        write(lupri,*) 'pe_lf', pe_lf
         if (pe_lf) then
-            write(lupri,*) 'in here with pe_lf T?'
             pe_ifc_lf_l = 1
-            write(lupri,*) 'in here with pe_lf T pe_ifc_lf2?'
-            write(lupri,*) 'pe_ifc_lf2', pe_ifc_lf_l
         else
-            write(lupri,*) 'or here with false?'
             pe_ifc_lf_l = 0
         end if
         call qexit('pe_ifc_lf_l')
-            write(lupri,*) 'after qexit', pe_ifc_lf_l
       end function pe_ifc_lf_l
  
 !-----------------------------------------------------------------------------
