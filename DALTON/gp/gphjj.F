@@ -309,13 +309,16 @@ C      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #if defined (SYS_SX)
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
 #endif
-#if defined (SYS_LINUX) && !(defined(GFORTRAN) && GFORTRAN <= 402)
-c     bug in gfortran-4.0.2 causes a segfault here.
+#if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
+#if defined (SYS_DARWIN)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Darwin) : ',FDATE()
+#endif
+
 #if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
  || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC)   \
- || defined (SYS_SUN)
+ || defined (SYS_SUN) || defined (SYS_DARWIN)
 #ifdef VAR_G95
       IRET = HOSTNM(HSTNAM)
 #else

@@ -21,6 +21,8 @@ DALTON
 - Do not include floating orbitals in calculation of smallest atom-atom distance
 - Some minor corrections to the Dalton manual.
 - Enable Tamm-Dancoff approximation (.TDA) for embedding models, e.g. PE, PCM etc.
+- provide date and time stamp also for Darwin (i.e. MacOSX)
+- assume nobody uses gfortran version 4.0.2 any more (removed special test for that)
 
 
 LSDALTON
