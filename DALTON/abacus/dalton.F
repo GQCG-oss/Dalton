@@ -99,7 +99,7 @@ C
          SLAVE = .TRUE.
       END IF
 
-#ifdef SYS_LINUX
+#ifdef SYS_UNIX
       LUERR = 0 ! stderr
 #else
       LUERR = 6 ! stdout (which is not DALTON.OUT !)

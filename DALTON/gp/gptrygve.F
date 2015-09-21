@@ -254,7 +254,7 @@ C
  || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC)  \
  || defined (SYS_DEC)  || defined (SYS_T3D)  || defined (SYS_LINUX)\
  || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)   \
- || defined (SYS_T90)
+ || defined (SYS_T90) || defined (SYS_DARWIN)
 C     Write to stderr
       WRITE (0,'(/A,I6,A/1X,A)') ' Node ',MYNUM,
      &   ':  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
@@ -410,7 +410,7 @@ C
          ENDIF
   600 CONTINUE
 #endif
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL)
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN)
 C
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
 C     Assume same for HP-UX  -- 21-Aug-1991 hjaaj
@@ -458,7 +458,7 @@ C
          OLDDX = .FALSE.
   600  CONTINUE
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90) && !defined (SYS_DARWIN)
  >>>>> insert appropriate OPEN statements in OPENDX.
 #endif
       RETURN
@@ -905,7 +905,7 @@ C
       END IF
 C
 C
-#ifdef SYS_LINUX
+#if defined (SYS_LINUX) || defined (SYS_DARWIN) || defined (SYS_UNIX)
 C     Just return if user has asked explicitly for stderr, stdinp, or stdout
 C     /HJAaJ Sep 2007
       IF (LUNIT .EQ. 0) GO TO 9002
@@ -966,7 +966,7 @@ C
          LUNIT = IUN
       ELSE
 C
-C     The user has requested a specific unit number. We don't 
+C     The user has requested a specific unit number. We do not
 C     quite trust the user, so we check that
 C     1) It is not unit 5 or 6
 C     2) The file either has been closed with status='KEEP' or is
@@ -978,10 +978,7 @@ C
 C     This avoids us writing to unit 7 of HP-systems (which corresponds to
 C     standard error on this machine)
 C
-         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6) .OR. (LUNIT .EQ. 7))
-     &      GOTO 9002
-#else
-         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6)) GOTO 9002
+         IF (LUNIT .EQ. 7) GOTO 9002
 #endif
          IF (IUNTAB(LUNIT) .EQ. 1) GOTO 9003
       END IF
