@@ -1496,6 +1496,7 @@ use matrix_module
 use precision
 use memory_handling
 use matrix_operations
+use Matrix_Operations_aux!, only: mat_density_from_orbs
 use matrix_util
 use lsdalton_fock_module
 use dal_interface
@@ -1640,6 +1641,7 @@ use direct_dens_util
 use daltoninfo
 use matrix_module
 use matrix_operations
+use Matrix_Operations_aux!, only: mat_density_from_orbs
 use matrix_util
 use lsparameters
 use IntegralInterfaceMOD
