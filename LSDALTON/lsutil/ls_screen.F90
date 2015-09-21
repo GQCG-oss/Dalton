@@ -4,6 +4,7 @@ MODULE screen_mod
 use precision
 use LSTENSOR_OPERATIONSMOD
 use io
+use io_type
 use lsmpi_type
 
 TYPE SCREENCHAINITEM
