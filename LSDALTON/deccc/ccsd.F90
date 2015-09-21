@@ -800,7 +800,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !rest = tells the routine wheter the calculation has been restarted from
   !amplitude files
   subroutine get_ccsd_residual_integral_driven(ccmodel,omega2,t2,fock,t1fock,govov,no,nv,&
-        ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,local,rest)
+        ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem,omega1,iter,local,rest)
      implicit none
 !`DIL backend (depends on Fortran-2003/2008, MPI-3):
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -812,7 +812,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 #endif
 !`DIL: temporary:
-!#undef DIL_ACTIVE
+#undef DIL_ACTIVE
 
      !> CC model
      integer,intent(in) :: ccmodel
@@ -1101,13 +1101,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(DIL_DEBUG) then !`DIL
         call dil_debug_to_file_start()
         write(DECinfo%output,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4,1x,i13,1x,i13)')&
-         &infpar%lg_mynum,infpar%mynum,MemFree,mem_get_bg_buf_n(),mem_get_bg_buf_free()
-        write(DECinfo%output,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",2(1x,i9,"/",i9))')&
-         &infpar%lg_mynum,infpar%mynum,os,vs,nors,nvrs
+         &infpar%lg_mynum,infpar%mynum,MemFree,mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+        write(DECinfo%output,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",6(1x,i9))')&
+         &infpar%lg_mynum,infpar%mynum,no,nv,os,vs,nors,nvrs
         write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] is in CCSD with free RAM = ",F15.4,1x,i13,1x,i13)')&
-         &infpar%lg_mynum,infpar%mynum,MemFree,mem_get_bg_buf_n(),mem_get_bg_buf_free()
-        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",2(1x,i9,"/",i9))')&
-         &infpar%lg_mynum,infpar%mynum,os,vs,nors,nvrs
+         &infpar%lg_mynum,infpar%mynum,MemFree,mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+        write(DIL_CONS_OUT,'("#DEBUG(DIL): Process ",i6,"[",i6,"] segments:",6(1x,i9))')&
+         &infpar%lg_mynum,infpar%mynum,no,nv,os,vs,nors,nvrs
      endif
 #endif
 #endif
@@ -1159,8 +1159,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !                  Batch construction             !
         !==================================================
 
-        ! Get free memory and determine maximum batch sizes
-        ! -------------------------------------------------
+        ! Get free memory and determine the Scheme and maximum batch sizes
+        ! ----------------------------------------------------------------
         IF(DECinfo%useIchor)THEN
            !Determine the minimum allowed AObatch size MinAObatch
            !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
@@ -1191,11 +1191,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !           local mem
         ! scheme 1: All full 4-dimensional quantities are stored in PDM
      endif
+#ifdef DIL_ACTIVE
+     scheme=2 !`DIL: remove
+#endif
 
 #ifndef VAR_MPI
      if(scheme==3.or.scheme==2.or.scheme==1) call lsquit('ERROR(ccsd_residual_integral_driven): wrong choice of scheme!',-1)
 #endif
-
 
 #ifdef DIL_ACTIVE
      scheme=1 !`DIL: remove
@@ -1308,7 +1310,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               &nbatchesGamma,orb2BatchGamma,'R')
      endif
      if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
-         &'with maximum size',MaxActualDimGamma
+         &' with maximum size',MaxActualDimGamma
 
      if(.not.DECinfo%useIchor)then
         ! Translate batchindex to orbital index
@@ -1354,7 +1356,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
      if(master.and.DECinfo%PL>1)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
-         &,'with maximum size',MaxActualDimAlpha
+         &,' with maximum size',MaxActualDimAlpha
 
      if(.NOT.DECinfo%useIchor)then
         ! Translate batchindex to orbital index
@@ -1381,7 +1383,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! PRINT some information about the calculation
      ! --------------------------------------------
      if(master)then
-
+#ifdef DIL_ACTIVE
+        scheme=1 !`DIL: remove
+#endif
         if(scheme==4) then
            write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
         elseif(scheme==3) then
@@ -1422,8 +1426,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,bs,MaxActualDimAlpha,&
                &MaxActualDimGamma,0,4,scheme,.true.,mylsitem%setting,intspec)
            endif
-
         endif
+#ifdef DIL_ACTIVE
+        scheme=2 !`DIL: remove
+#endif
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
         flush(DECinfo%output)
 #endif
@@ -1455,6 +1461,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &w0size,w1size,w2size,w3size,MaxActualDimAlpha,MaxActualDimGamma
      endif
 #endif
+#else
+     write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"]: W_sizes:",4(1x,i11),6(1x,i6))') infpar%lg_mynum,infpar%mynum,&
+      &w0size,w1size,w2size,w3size,MaxActualDimAlpha,MaxActualDimGamma,os,vs,nors,nvrs !`DIL: remove
 #endif
 
      !If the buffer needs to be changed, it is here, since there is not pointer
@@ -1492,6 +1501,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !get u2 in pdm or local
 #ifdef DIL_ACTIVE
      scheme=1 !`DIL: remove
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 0: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+#endif
 #endif
      if(scheme==2.or.scheme==1)then
 #ifdef VAR_MPI
@@ -1513,7 +1526,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call array_reorder_4d(  2.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
         call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
      endif
-
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 1: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+#endif
+#endif
      if(scheme==1) then
         if(use_bg_buf) then
            call mem_pseudo_alloc(dil_buffer,dil_buf_size) !`DIL: the buffer size needs to be calculated
@@ -1523,6 +1541,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #ifdef DIL_ACTIVE
      scheme=2 !`DIL: remove
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 2: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+#endif
 #endif
 
      if(print_debug) call print_norm(u2," NORM(u2)    :",print_=(lg_me==0))
@@ -1545,12 +1567,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os], bg=use_bg_buf )
         call tensor_zero(gvvooa)
         call tensor_zero(gvoova)
-
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 3: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+#endif
+#endif
         if(scheme==1)then !`DIL: segment the last dimension of o2ilej as well
            call tensor_ainit(o2ilej, [nv,nv,nor], 3, local=local, atype='TDAR', tdims=[vs,vs,nor], bg=use_bg_buf)
            call tensor_zero(o2ilej)
         endif
-
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 4: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+#endif
+#endif
         select case (scheme)
         case(4,3)
            sio4_mode = 3
@@ -1599,7 +1631,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=1 !`DIL: remove
 #ifdef DIL_DEBUG_ON
-     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 1: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 5: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
 #endif
 #endif
      if(scheme==1.or.scheme==2) then
@@ -1609,7 +1642,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
      call tensor_ainit(tpl,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype, bg=use_bg_buf )
      call tensor_ainit(tmi,[nor,nvr],2,local=local,tdims=[nors,nvrs],atype=def_atype, bg=use_bg_buf )
-
+#ifdef DIL_ACTIVE
+#ifdef DIL_DEBUG_ON
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 6: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
+#endif
+#endif
      call get_tpl_and_tmi(t2,tpl,tmi)
 
      if(print_debug)then
@@ -1622,12 +1660,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call tensor_lock_wins(tpl,'s',all_nodes = alloc_in_dummy)
         call tensor_lock_wins(tmi,'s',all_nodes = alloc_in_dummy)
      endif
-#endif
-
-#ifdef DIL_ACTIVE
-#ifdef DIL_DEBUG_ON
-     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 2: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
-#endif
 #endif
 
      if(use_bg_buf)then
@@ -1647,7 +1679,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef DIL_ACTIVE
      scheme=2 !`DIL: remove
 #ifdef DIL_DEBUG_ON
-     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 3: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 7: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
 #endif
 #endif
 
@@ -1681,7 +1714,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #ifdef DIL_ACTIVE
 #ifdef DIL_DEBUG_ON
-     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 4: BG stat: ',infpar%lg_mynum,mem_get_bg_buf_n(),mem_get_bg_buf_free()
+     write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 8: BG stat: ',infpar%lg_mynum,&
+      &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
 #endif
 #endif
 
@@ -2577,7 +2611,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
      endif
      if( use_bg_buf )then
-        call mem_pseudo_alloc(w1,maxsize64) !``DIL: w1 size must be decreased for Scheme 1
+        call mem_pseudo_alloc(w1,maxsize64)
      else
         call mem_alloc(w1,maxsize64,simple=.true.)
      endif
@@ -5862,7 +5896,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            locally_stored_v2o2  = 0
         case(1)
            locally_stored_tiles = locally_stored_tiles * 3
-           locally_stored_v2o2  = 0
+           locally_stored_v2o2  = dil_buf_size !`DIL: This is not O2V2 (just a const size buffer)
         case(0)
            print *,"WARNING(ccsd_residual_integral_driven): this is a hack to use scheme 0"
            locally_stored_tiles = locally_stored_tiles * 3
@@ -6309,7 +6343,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !*******************
         ! not in bg buf
         if( choice /= 8 .and. choice /= 9 .and. choice /= 10)then
-           ! tpl tmi sio4
+           ! sio4
            memin = memin + 1.0E0_realk*nloctilessio4*tszesio4
         endif
         !in bg buf
@@ -6317,7 +6351,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            ! tpl tmi
            memin = memin + nloctilestpm*tszetpm*2.0E0_realk 
            ! uigcj 
-           memin = memin +1.0E0_realk*(i8*no*no)*nv*nbg
+           memin = memin + 1.0E0_realk*(i8*no*no)*nv*nbg
+           ! dil_buffer
+           memin = memin + 1.0E0_realk*real(dil_buf_size,8) !`DIL: include my tensor contraction buffer in the BG
         endif
 
 
@@ -6347,7 +6383,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !in bg buf
         if( choice /= 5 .and. choice /= 6 .and. choice /= 7)then
            ! w1/Fock
-           memout = memout + 1.0E0_realk*max((i8*nv*nv)*no*no,i8*nb*nb)
+           memout = memout + 1.0E0_realk*real(nb*nb,realk)
            ! space for intermediates in cnd and E2
            memout = memout + 1.0E0_realk*max( 2_long*tsze*nloctiles,  no*no + tszeoo*nloctilesoo  +  nv*nv + tszevv*nloctilesvv )
         endif
@@ -6357,6 +6393,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            ! space for one remaining intermediate
            memout = memout + 1.0E0_realk*tsze*nloctiles
         endif
+
 
      case(0)
 
@@ -8562,7 +8599,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            maxsize64 = max(maxsize64,int((no*no*no)*nbg,kind=8))
            maxsize64 = max(maxsize64,int((nba*nbg)*nvr,kind=8))
-           maxsize64 = max(maxsize64,8*(i8*os*os)*vs*vs)
+!          maxsize64 = max(maxsize64,8*(i8*os*os)*vs*vs) !`DIL: Currently I use a separate buffer <dil_buffer>
 
         case(0)
 
