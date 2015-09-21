@@ -138,6 +138,9 @@ subroutine dec_lsmpi_slave(comm)
       case(QUITNOMOREJOBS); 
          infpar%lg_morejobs   = .false.
          stay_in_slaveroutine = .false.
+      case default
+         print*,'The dec_lsmpi_slave received unknown Job=',job
+         call lsquit('The dec_lsmpi_slave received unknown Job',-1)
       end select
 
    end do
