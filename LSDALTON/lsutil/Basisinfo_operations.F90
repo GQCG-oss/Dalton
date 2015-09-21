@@ -8,6 +8,7 @@ MODULE basis_type
  use precision
  use memory_handling
  use AO_type
+ use AO_typetype
  use basis_typetype
  private
  public :: write_atomtypeitem_to_disk,& 

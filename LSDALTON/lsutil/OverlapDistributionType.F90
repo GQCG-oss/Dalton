@@ -157,6 +157,11 @@ INTEGER                :: dim
 integer,pointer        :: elms(:) 
 END type IntegerPointer
 
+public :: SPHMAT,SPHMATPOINTER,Orbital,Overlappointer,&
+     & Overlap,TUVitem,IntegerPointer 
+
+private
+
 contains
 
 !Added to avoid "has no symbols" linking warning
