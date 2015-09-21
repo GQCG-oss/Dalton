@@ -31,6 +31,7 @@ DFT%NOPRUN = .FALSE.
 DFT%DFTASC = .FALSE.
 DFT%DFTPOT = .FALSE.
 DFT%DODISP = .FALSE.
+DFT%DOORBFREE = .FALSE.
 !AMT New Dispersion Defaults
 DFT%DO_DFTD2        =       .FALSE.
 DFT%L_INP_D2PAR     =       .FALSE.
