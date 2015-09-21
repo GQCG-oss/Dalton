@@ -3788,9 +3788,10 @@ end module ccintegrals
 !> Author:  Pablo Baudin
 !> Date:    December 2013
 subroutine cc_gmo_data_slave()
-
+  use precision
   use memory_handling
   use dec_typedef_module
+  use tensor_interface_module
   use ccintegrals
   use daltoninfo
   use typedeftype, only: lsitem
@@ -3838,6 +3839,7 @@ end subroutine cc_gmo_data_slave
 subroutine get_mo_integral_par_slave()
   use dec_typedef_module
   use daltoninfo
+!  use tensor_interface_module
   use tensor_type_def_module
   use typedeftype, only: lsitem
   use decmpi_module, only: wake_slaves_for_simple_mo
