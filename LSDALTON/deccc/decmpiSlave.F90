@@ -69,6 +69,8 @@ subroutine dec_lsmpi_slave(comm)
          call RIMP2_integrals_and_amplitudes_slave
       case(DECRIMP2F12);
          call get_rif12_fragment_energy_slave
+      case(RIMP2F12Ccoup);
+         call RIMP2F12_Ccoupling_energy_slave
       case(LSTHCRIMP2INAMP);
          call LSTHCRIMP2_integrals_and_amplitudes_slave
       case(RIMP2FULL);
