@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -73,15 +73,7 @@ C
 ! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
 !   added NSYM,NORB,NBAS and CMO to information.
 ! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
-!   if the needed mo integrals already available.
-! SIR_INTOPEN: revised ITRLVL check against LUINTM for levels 2 and 3;
-!   rationalized file openings for different computer types;
-!   write warning if flag(14) and integrals not found.
-!900307-hjaaj
-! TRACTL: empty LUINTM in beginning of transformation to give more disk
-! space for temporary files during the transformation.
-!900305-hjaaj
-! TRACTL: only call drcctl if ITRLVL.gt.0 (not ci) and usedrc
+drcctl if ITRLVL.gt.0 (not ci) and usedrc
 ! MAERKE: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
 !900302-hjaaj
 ! TRACTL: reset /CBGETD/ to tell any H2AC on disk now obsolete.
@@ -1736,7 +1728,7 @@ C
 #include "gnrinf.h"
 C
       DIMENSION MFRO(8)
-      LOGICAL VFIRST, FOPEN, DELDA, FEXIST
+      LOGICAL VFIRST, FOPEN, DELDA, FEXIST, USEDRC_SAVE
       SAVE VFIRST, IPRTRA_SAVE, LDBUF, LRBUF, ITRSAV
       DATA VFIRST /.TRUE./
 C
@@ -1752,14 +1744,15 @@ C        from SIRIUS in all TRACTL calls, if SIRIUS has
 C        not been called before ABACUS is called, then
 C        the value specified in RHSINP for DERTRA is
 C        used. This makes sure that the SIRIUS value is
-C        always used if it has been defined, and the a
-C        value is defined otherwise.
+C        always used if it has been defined.
 C
          IPRTRA_SAVE = IPRTRA
          VFIRST = .FALSE.
       ELSE
          IPRTRA = IPRTRA_SAVE
       END IF
+C
+      USEDRC_SAVE = USEDRC
 C
       IF (IPRTRA .GE. 0) THEN
          CALL GETTIM(TCPU0,TWALL0)
@@ -1769,7 +1762,10 @@ C
          CALL HJJTRA_CTL(KTRLVL,CMO,WORK,KWORK)
       ELSE IF (NEWTRA) THEN
          CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
+         NEWTRA_USEDRC = USEDRC
+         IF ( USEDRC_SAVE ) USEDRC = .TRUE.
       ELSE
+         NEWTRA_USEDRC = .FALSE.
          KFRSAV = 1
          KFREE  = 1
          LFREE  = KWORK
@@ -1787,10 +1783,33 @@ C
          CALL GETTIM(TCPU,TWALL)
          TCPU  = TCPU -TCPU0
          TWALL = TWALL-TWALL0
-         WRITE(LUPRI,2200) TCPU, TWALL
+         WRITE(LUPRI,2100) TCPU, TWALL
       END IF
- 2200 FORMAT(/' 2-el. integral transformation:',
+ 2100 FORMAT(/' 2-el. integral transformation:',
      &       ' Total CPU and WALL times (sec)',2F12.3)
+C
+C     Sort mo integrals to Dirac form, if requested
+C
+      IF (USEDRC .AND. .NOT.NEWTRA_USEDRC .AND. ITRLVL .GT. 0) THEN
+         CALL GETTIM(TCPU0,TWALL0)
+         IF (ITRLVL .GE. 4) THEN
+            LVLDRC = 1
+C           ... all occ-occ distributions
+         ELSE
+            LVLDRC = 0
+C           ... all active-active distributions
+         END IF
+         CALL DRCCTL(LVLDRC,CMO,WORK,KWORK)
+         IF (IPRTRA .GE. 0) THEN
+            CALL GETTIM(TCPU,TWALL)
+            TCPU  = TCPU -TCPU0
+            TWALL = TWALL-TWALL0
+            WRITE(LUPRI,2200) TCPU, TWALL
+         END IF
+         CALL FLSHFO(LUPRI)
+      END IF
+ 2200 FORMAT(/' Sorting integrals to Dirac format:',
+     &        ' Total CPU and WALL times (sec)',2F12.3)
       RETURN
       END
 C  /* Deck tractl_1 */
@@ -1923,17 +1942,26 @@ C     ***** ITRLVL=1:TWO INDICES,ALL ORBITALS                  *****
 C     *****         TWO INDICES,PRIMARY ORBITALS ONLY          *****
 C                   (CAS-NR transformation)
 C
-C           ITRLVL=2:SIRIUS transformation
-C           ITRLVL=3:SIRIUS transformation, neglect (ii/aa) and (ia/ia)
-C           ITRLVL=4:SIRIUS transformation, include (ij/ab) and (ia/jb)
+C           ITRLVL=0: zeroth order transformation (uv|xy)
+C                     (all four indices active orbitals)
+C           ITRLVL=1: first order transformation  (gv|xy)
+C                     (first index all orbitals, other indices active orbitals)
+C           ITRLVL=2: SIRIUS 2. order transformation, include (ii|aa) and (ia|ia)
+C                     (uv|ab), (ua|vb), (ii|aa), and (ia|ia)
+C                     (two indices active orbitals, other indices secondary orbitals)
+C           ITRLVL=3: SIRIUS 2. order transformation, neglect (ii|aa) and (ia|ia)
+C                     (uv|ab) and (ua|vb)
+C           ITRLVL=4: full 2. order transformation (o1 o2|g1 g2) and (o1 g1|o2 g2)
+C                     (two indices occupied orbitals, other indices general orbitals)
 C
-C           ITRLVL=5:Three indices, all orbitals
-C                    One   index,   occupied orbitals
+C           ITRLVL=5: third order transformation (g1 g2|g3 o)
+C                     (Three indices all orbitals, last index occupied orbitals)
 C
-C           ITRLVL=10: Full integral transformation
+C           ITRLVL=10: Full integral transformation (g1 g2|g3 g4)
 C
-      IF (IPRTRA.GT.0) WRITE (LUPRI,1000) ITRLVL
- 1000 FORMAT(/,' TRANSFORMATION SECTION: PARAMETER =',I4)
+      IF (IPRTRA.GT.0) WRITE (LUPRI,'(/A,I4)')
+     &   ' 2-ELECTRON INTEGRAL TRANSFORMATION SECTION; PARAMETER =',
+     &   ITRLVL
       IF (ITRLVL.GT.5 .AND. ITRLVL .NE. 10) THEN
          WRITE (LUPRI,'(//A)')
      1      ' TRACTL_1, parameter outside valid range'
@@ -2447,25 +2475,8 @@ C set JTER to 2 to suppress printing on next call of TRACTL_1/hj-840710
 C
 C
  9999 CALL FLSHFO(LUPRI)
-C
-C Sort mo integrals to Dirac form, if requested
-C 971201-hjaaj: after 9999 so we are sure Dirac form is present
-C    if needed and LUINTM is OK
-C
-      IF (USEDRC .AND. ITRLVL .GT. 0) THEN
-         IF (ITRLVL .GE. 4) THEN
-            LVLDRC = 1
-C           ... all occ-occ distributions
-         ELSE
-            LVLDRC = 0
-C           ... all active-active distributions
-         END IF
-         CALL DRCCTL(LVLDRC,CMO,WORK,LWORK)
-         CALL FLSHFO(LUPRI)
-      END IF
       CALL QEXIT('TRACTL_1')
       RETURN
-C
 C
 C     End of TRACTL_1
 C
@@ -2816,13 +2827,15 @@ C
 #include "inftap.h"
 #include "inftra.h"
 C
-      SAVE KBUF, KIBUF, KNEXT
-      DATA KNEXT /-1/
+      LOGICAL FEXIST
+      INTEGER KBUF, KIBUF, KNEXT
+      SAVE    KBUF, KIBUF, KNEXT
+      DATA    KNEXT /-1/
 C
       IF (HJJTRA_TYPE .gt. 0) THEN
          CALL HJJTRA_NXTH2D(IC,ID,H2CD,NEEDTP,IDIST)
          RETURN
-      ELSE IF (NEWTRA) THEN
+      ELSE IF (NEWTRA .AND. NEWTRA_USEDRC) THEN
          CALL N_NXTH2D(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
          RETURN
       END IF
@@ -2834,6 +2847,13 @@ C        (lvldrc=0: act-act; =1: occ-occ; else orb-orb)
 C     and allocate space for buffers.
 C
       IF (IDIST .EQ. 0) THEN
+         CALL GPINQ('MODRCINT','EXIST',FEXIST)
+         IF (FEXIST) THEN
+            IF (LUINTD .LE. 0) CALL GPOPEN(LUINTD,'MODRCINT',
+     &         'OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
+         ELSE
+            CALL QUIT('NXTH2D called, but MODRCINT does not exist.')
+         END IF
          REWIND LUINTD
          CALL MOLLAB('DRCINFO ',LUINTD,LUPRI)
          READ (LUINTD) LBINTD, LVLDRC

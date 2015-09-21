@@ -30,7 +30,7 @@ C
 #include "mxcent.h"
 #include "aovec.h"
 #include "iratdef.h"
-#include "eribuf.h"
+#include "eritap.h"
 C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C

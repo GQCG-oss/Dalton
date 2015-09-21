@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -52,7 +52,7 @@ C  /* Deck cc3_triplet */
 #include "mxcent.h"
 #include "aovec.h"
 #include "iratdef.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "ccorb.h"
 #include "inftap.h"
 #include "ccisao.h"
@@ -266,7 +266,7 @@ C  /* Deck cc3_triplet */
          NTOSYM = 1
 !        DTIME  = SECOND()
 !!!!        CALL HERDI1(WORK(KEND1),LWRK1,IPRINT)
-         CALL QUIT('Direct not implemented')
+         CALL QUIT('Direct not implemented in CC3_TRIPLET')
 !        DTIME  = SECOND() - DTIME
 !        TIMHER1 = TIMHER1 + DTIME
       ELSE
@@ -1373,8 +1373,6 @@ C  /* Deck cc33_transtemp */
 #include "maxash.h"
 #include "mxcent.h"
 #include "aovec.h"
-#include "iratdef.h"
-#include "eribuf.h"
 #include "ccsdsym.h"
 #include "ccorb.h"
 !

@@ -1,11 +1,11 @@
 c -*-mode:fortran; fortran-continuation-string: "&" -*-
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -61,8 +61,8 @@ C
          KDCAO  = KDVAO  + NNBASX
       END IF
       KDCFO  = KDCAO  + NNBASX
-      KIBUF  = KDCFO  + NNBASX
-      KGETFD = KIBUF  + 4*600/IRAT
+      KIINDX4= KDCFO  + NNBASX
+      KGETFD = KIINDX4+ 4*600/IRAT
       LGETFD = LWORK  - KGETFD + 1
       IF (KGETFD.GT.LWORK) CALL STOPIT('GETFD',' ',KGETFD,LWORK)
 C
@@ -71,7 +71,7 @@ C
      &            WORK(KFCAOX),WORK(KFCAOY),WORK(KFCAOZ),
      &            WORK(KFVAOX),WORK(KFVAOY),WORK(KFVAOZ),
      &            WORK(KDCAO), WORK(KDVAO), WORK(KDCFO),
-     &            WORK(KIBUF),WORK(KGETFD),LGETFD,AOMAT,DOREAL,
+     &            WORK(KIINDX4),WORK(KGETFD),LGETFD,AOMAT,DOREAL,
      &            INTPRI)
       CALL QEXIT('GETFD')
       RETURN
@@ -80,7 +80,7 @@ C  /* Deck getfd1 */
       SUBROUTINE GETFD1(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,
      &                  DERIV,EMYD,CMO,DV,FCD,FVD,FDFTD,FCSOX,FCSOY,
      &                  FCSOZ,FVSOX,FVSOY,FVSOZ,DCSO,DVSO,DCFOLD,
-     &                  IBUF,WORK,LWORK,AOMAT,DOREAL,INTPRI)
+     &                  IINDX4,WORK,LWORK,AOMAT,DOREAL,INTPRI)
 C
 C     This subroutine calculates the AO-differentiated Fock (inactive
 C     and active) in MO basis.
@@ -97,7 +97,7 @@ C
       LOGICAL TWOH1, NOH1, NOH2, NODC, NODV, DERIV(3), DERX, DERY, DERZ,
      *        NOORBI, AOMAT, DOFV, DOREAL
 #include "inforb.h"
-      DIMENSION IBUF(4,600), CMO(*), DV(*),
+      DIMENSION IINDX4(4,600), CMO(*), DV(*),
      *          FCD(N2BASX,3), FVD(N2ORBX,3), FDFTD(N2BASX,3),
      *          FCSOX(NNBASX), FCSOY(NNBASX), FCSOZ(NNBASX),
      *          FVSOX(NNBASX), FVSOY(NNBASX), FVSOZ(NNBASX),
@@ -108,6 +108,7 @@ C
 #include "dftcom.h"
 #include "nuclei.h"
 #include "inftap.h"
+#include "eribuf.h"
 
       DOFV = (NISHT .GT. 0) .AND. (NASHT .GT. 0) .AND. (.NOT.NOORBI)
       DERX = DERIV(1)
@@ -124,13 +125,7 @@ C
          WRITE (LUPRI, '(A,L5)') ' NODV  ', NODV
          WRITE (LUPRI, '(A,L5)') ' AOMAT ', AOMAT
       END IF
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
+      CALL ERIBUF_INI
       LBUF = 600
 C
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
@@ -248,7 +243,7 @@ C
      &              CALL STOPIT('GETFD1',' ',LVLAST,LWORK)
 C
                CALL FCKMG2(FCSOX,FVSOX,DCSO,DVSO,WORK(KFCSQ),
-     &                     WORK(KFVSQ),WORK(KDCSQ),WORK(KDVSQ),IBUF,
+     &                     WORK(KFVSQ),WORK(KDCSQ),WORK(KDVSQ),IINDX4,
      &                     IPRINT,.TRUE.,WORK(LLAST))
             END IF
 C
@@ -281,13 +276,13 @@ C
                KIINT = KINT + LBUF
  150           CONTINUE
                CALL READI4(LU2DER,LENINT4,WORK(KINT))
-               CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+               CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
                IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      &               ' Two-electron integral buffer read, LENGTH =',
      &               LENGTH
                   IF (LENGTH .GT. 0) THEN
-                     CALL FCKTWO(FCSOX,FVSOX,DCSO,DVSO,WORK(KINT),IBUF,
-     &                           LENGTH,IPRINT)
+                     CALL FCKTWO(FCSOX,FVSOX,DCSO,DVSO,WORK(KINT),
+     &                           IINDX4,LENGTH,IPRINT)
                   ELSE IF (LENGTH .LT. 0 ) THEN
                      GO TO 300
                   END IF
@@ -589,7 +584,7 @@ C
       RETURN
       END
 C  /* Deck fcktwo */
-      SUBROUTINE FCKTWO(FC,FV,DC,DV,BUF,IBUF,LENGTH,IPRINT)
+      SUBROUTINE FCKTWO(FC,FV,DC,DV,BUF,IINDX4,LENGTH,IPRINT)
 C
 C     This subroutine adds derivative two-electron integrals to the
 C     active and inactive Fock matrices.
@@ -609,7 +604,7 @@ C
       INTEGER P, Q, R, S
       LOGICAL FIRST, ACTIVE
 #include "inforb.h"
-      DIMENSION BUF(600), IBUF(4,600), ITRI(MXCORB),
+      DIMENSION BUF(600), IINDX4(4,600), ITRI(MXCORB),
      *          FC(3*NNBASX), FV(3*NNBASX),
      *          DC(NNBASX),   DV(NNBASX)
       SAVE FIRST, ITRI, ACTIVE, IOFF
@@ -625,19 +620,19 @@ C
       END IF
 C
       DO 200 I = 1, LENGTH
-         S    = IBUF(4,I)
+         S    = IINDX4(4,I)
          IF (S .EQ. 0) THEN
-            IOFF = (IBUF(3,I) - 1)*NNBASX
+            IOFF = (IINDX4(3,I) - 1)*NNBASX
             IF (IPRINT .GE. 25) THEN
-               ICOOR = IBUF(3,I)
-               IREPE = IBUF(2,I)
+               ICOOR = IINDX4(3,I)
+               IREPE = IINDX4(2,I)
                WRITE (LUPRI,'(A,2I5)') ' ICOOR, IREPE', ICOOR,IREPE
             END IF
          ELSE
             DINT = BUF(I)
-            P = IBUF(1,I)
-            Q = IBUF(2,I)
-            R = IBUF(3,I)
+            P = IINDX4(1,I)
+            Q = IINDX4(2,I)
+            R = IINDX4(3,I)
             IF (IPRINT .GE. 25) WRITE (LUPRI,'(1X,F12.6,5X,4I5)')
      *                                  DINT,P,Q,R,S
             IF (Q .LT. R) THEN
@@ -907,7 +902,7 @@ C
       RETURN
       END
 C  /* Deck fckmg2 */
-      SUBROUTINE FCKMG2(FC,FV,DC,DV,FCSQ,FVSQ,DCSQ,DVSQ,IBUF,
+      SUBROUTINE FCKMG2(FC,FV,DC,DV,FCSQ,FVSQ,DCSQ,DVSQ,IINDX4,
      &                 IPRINT,SYMMET,WORK)
 C
 C     ================================================================
@@ -926,21 +921,16 @@ C
       DIMENSION FC(3*NNBASX), FV(3*NNBASX), DC(NNBASX), DV(NNBASX),
      &          FCSQ(NBAST,NBAST,3), FVSQ(NBAST,NBAST,3),
      &          DCSQ(NBAST,NBAST), DVSQ(NBAST,NBAST),
-     &          IBUF(4,600), WORK(*)
+     &          IINDX4(4,600), WORK(*)
 #include "dftcom.h"
 #include "nuclei.h"
 #include "inftap.h"
+#include "eribuf.h"
 #include "inforb.h"
 
 C
       LBUF = 600
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
+      CALL ERIBUF_INI
 C
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT   = 1
@@ -967,24 +957,24 @@ C
 C
  300  CONTINUE
          CALL READI4(LU2DER,LENINT4,WORK(KINT))
-         CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      *      ' Two-electron integral buffer read, LENGTH =', LENGTH
          IF (LENGTH .GT. 0) THEN
 C
             DO 400 I = 1, LENGTH
-               S     = IBUF(4,I)
+               S     = IINDX4(4,I)
                IF (S .EQ. 0) THEN
-                  X = IBUF(3,I)
+                  X = IINDX4(3,I)
                   IF (IPRINT .GE. 25) THEN
-                     IREPE = IBUF(2,I)
+                     IREPE = IINDX4(2,I)
                      WRITE (LUPRI,'(A,2I5)') ' ICOOR, IREPE', X,IREPE
                   END IF
                ELSE
                   CINT = WORK(KINT + I - 1)
-                  P = IBUF(1,I)
-                  Q = IBUF(2,I)
-                  R = IBUF(3,I)
+                  P = IINDX4(1,I)
+                  Q = IINDX4(2,I)
+                  R = IINDX4(3,I)
 C                 IF (IPRINT .GE. 25) WRITE (LUPRI,'(1X,F12.6,5X,4I5)')
 C    &                                        CINT,P,Q,R,S
 C

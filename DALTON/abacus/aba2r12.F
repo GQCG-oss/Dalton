@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -211,18 +211,19 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
-      PARAMETER (LBUF = 600)
+      PARAMETER (LBUF_alloc = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
      &        GTTHRS
-      DIMENSION SO(NSOINT,*), BUF(LBUF,5), IPNTNO(4,*), IPNTRP(3,*),
-     &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
+      REAL*8  SO(NSOINT,*), BUF(LBUF_alloc,5),
+     &        IPNTNO(4,*), IPNTRP(3,*),
+     &        NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
 #include "nuclei.h"
+#include "eribuf.h"
 #include "twocom.h"
 #include "symmet.h"
       SAVE BUF, XBUF, ICOUNT
 C
-
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine RN2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -242,7 +243,10 @@ C     *******************************************************
 C     ***** Initialization when subroutine first called *****
 C     *******************************************************
 C
-      IF (FIRST) CALL R12WRT(BUF,LBUF,ICOUNT,-1,0,IPRINT)
+      IF (FIRST) THEN
+         LBUF = LBUF_alloc
+         CALL R12WRT(BUF,LBUF,ICOUNT,-1,0,IPRINT)
+      END IF
 C
       ISOFF  = 0
       NBUFCL = 0
@@ -655,6 +659,7 @@ C  /* Deck un2wru */
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "ibtpar.h"
+#include "eritap.h"
 #include "eribuf.h"
       DIMENSION BUF(LBUF), CUF(LBUF)
       INTEGER*4 IBUF4(LBUF*NIBUF), ICOUNT4

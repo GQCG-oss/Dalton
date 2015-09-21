@@ -1,5 +1,0 @@
-   gen1int_fluorobenzene_spher
-   -------------
-   Molecule:         C6H5F
-   Test Purpose:     Check Gen1int module using fluorobenzene molecule,
-                     spherical basis sets, and without symmetry

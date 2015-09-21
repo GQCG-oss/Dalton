@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final geometry',
+      num_lines = 12,
+      abs_tolerance = 5.0e-4)
+f.add(string = 'Energy at final geometry is',
+      abs_tolerance = 1.0e-4)
+
+test.run(['preopt.dal'], ['acrolein.mol'], f={'out': f})
+
+sys.exit(test.return_code)

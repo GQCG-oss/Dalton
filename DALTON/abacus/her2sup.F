@@ -1,11 +1,11 @@
 #define HER2SUP_DEBUG 0
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -33,7 +33,7 @@ c- Removed check for duplicate integrals (reactivate with *DEFINE DUPLCHCK)
 c- move symmetry check in SUPSRT in front of canonical index ordering
 c- passed NOSYM to SUPSRT, skip symmetry check if NOSYM
 c- SUPSRT: use that hermit already has put the 4 indices in canonical
-c  order (when SUPSRT's def. of np,nq,nr,ns was reversed).
+c  order (when SUPSRTs def. of np,nq,nr,ns was reversed).
 c- SUP1,SUP,SUP1D,SUPD: reverse order of np,nq,nr,ns in label
 cnov 90-hjaaj:
 cSUPDRV: LINT = 1706 instead of 540
@@ -99,13 +99,16 @@ C
      &   '    Factor on exchange                            :',HFXFAC,
      &   '    Threshold for discarding integrals            :',THRESH,
      &   '    Include integrals for general density matrices:',NOSYM
-C
-C*** Allocate memory for IT vector in IWORK
-C
+      ELSE
+         WRITE (LUPRI,'(A/A,1P,D10.2,A)')
+     &   '     (Precalculated two-electron integrals'
+     &   //' are transformed to P-supermatrix elements.',
+     &   '      Threshold for discarding integrals :',THRESH,' )'
+      END IF
       NBMAX = 255
-      LWRK2 = (NBMAX*(NBMAX+1))/2
+      LWRK2 = 0
 #if defined (VAR_DUPLCHCK)
-C and allocate memory for IBIT vector in IWORK
+C Allocate memory for IBIT vector in IWORK
       LWRK2 = LWRK2 + LWORK / 32
 #endif
       LWRK2 = LWRK2 / IRAT + 1
@@ -132,9 +135,12 @@ C  /* Deck supdrv */
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
 #include "inftap.h"
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
 
       CALL GETTIM(DST1,WST1)
 C
@@ -205,10 +211,6 @@ C*** START TRANSFERRING INTEGRALS TO SUPERMATRIX FORM.
 C*** BEGIN WITH FIRST BLOCK CONTAINING ALL INDICES BETWEEN
 C*** 1 AND NST-1. ALL INDICES IN FIRST IRREP (i.e. irrep(NP) = 1).
 C
-C     first NBW elements of IWORK contains IT vector
-C     (initialized by SUP_SORT)
-C
-      NBW1 = NBW+1
 C
 C*** FIRST FIND NUMBER OF P-SUPER MATRIX ELEMENTS
 C
@@ -218,8 +220,8 @@ C
       IBEF   = 0
       NPLAST = 0
       NST1   = NST-1
-      IJ     = IWORK(NST1+1)
-      NPMAX  = IWORK(IJ+1)
+      IJ     = IT(NST)
+      NPMAX  = IT(IJ+1)
       LW1    = 1
       LW2    = LRDA22+1
       IJ     = (IJ-1)/IRAT + 1
@@ -229,12 +231,12 @@ C
       IF (NPM.LE.LWORK) THEN
          LW3 = LW2+NPMAX
          CALL SUP1(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
+     &             WORK(LW3),IBEF,IWORK(1))
       ELSE
          CALL GETTIM(DST1D,WST1D)
          LW3 = LW2+LSUP
          CALL SUP1D(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
+     &             WORK(LW3),IBEF,IWORK(1))
          CALL GETTIM(DFIN1D,WFIN1D)
          DTOTD = DTOTD + DFIN1D - DST1D
          WTOTD = WTOTD + WFIN1D - WST1D
@@ -250,8 +252,8 @@ C
          ICHAIN = ICHAIN+1
          NPMX   = NPMAX
          NP     = NST1+I
-         IJ     = IWORK(NP+1)
-         NPMAX  = IWORK(IJ+1)
+         IJ     = IT(NP+1)
+         NPMAX  = IT(IJ+1)
          NPMM   = NPMAX-NPMX
          IJ     = (IJ-1)/IRAT + 1
          NPM    = LRDA22 + NPMM + IJ
@@ -259,12 +261,12 @@ C
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMM
             CALL SUP1(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
+     &                WORK(LW3),IBEF,IWORK(1))
          ELSE
             CALL GETTIM(DST1D,WST1D)
             LW3 = LW2+LSUP
             CALL SUP1D(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
+     &                WORK(LW3),IBEF,IWORK(1))
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
@@ -303,13 +305,13 @@ C
          ISR = ISP-1
          DO 190 I = 1,ISR
             NBI = NBAS(I)+1
- 190        KK = KK+IWORK(NBI)
-         I1 = IWORK(NPR+1)
-         I2 = IWORK(NPR)
+ 190        KK = KK+IT(NBI)
+         I1 = IT(NPR+1)
+         I2 = IT(NPR)
          IJ = KK + I1
          KOMB = I1-I2
-         I1 = IWORK(I1+1)
-         I2 = IWORK(I2+1)
+         I1 = IT(I1+1)
+         I2 = IT(I2+1)
          NPMAX = KK*KOMB+I1-I2
          IJ = (IJ-1)/IRAT + 1
          NPM = LRDA22+NPMAX+IJ
@@ -317,12 +319,12 @@ C
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMAX
             CALL SUP(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &               WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP,IPRINT)
+     &               WORK(LW3),IWORK(1),IBEF,NP,IPRINT)
          ELSE
             CALL GETTIM(DST1D,WST1D)
             LW3 = LW2+LSUP
             CALL SUPD(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP)
+     &                WORK(LW3),IWORK(1),IBEF,NP)
             CALL GETTIM(DFIN1D,WFIN1D)
             DTOTD = DTOTD + DFIN1D - DST1D
             WTOTD = WTOTD + WFIN1D - WST1D
@@ -360,8 +362,8 @@ C  /* Deck suprdi */
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
 #include "inftap.h"
       CHARACTER*8 LAB123(3), NEWLBL
       DATA LAB123 /'********','        ','        '/
@@ -389,7 +391,7 @@ C
       RETURN
       END
 C  /* Deck supsrt */
-      SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,IT,IPRINT)
+      SUBROUTINE SUP_SORT(NOSYM,RINT,INT4,SCR,ISCR,LSORT,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -397,15 +399,18 @@ C  /* Deck supsrt */
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
-      DIMENSION RINT(*),SCR(*),ISCR(*),IT(*)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
+      DIMENSION RINT(*),SCR(*),ISCR(*)
       INTEGER*4 INT4(*)
       LOGICAL NOSYM, OLDDX 
       DIMENSION NSOINT(255), NAOS(8)
 C
 #include "iratdef.h"
 #include "inftap.h"
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
 
 C
       CALL QENTER('SUP_SORT')
@@ -462,17 +467,6 @@ C
      &          /,' THE LIMITATION OF ',I5)
          CALL QUIT('SUP_SORT ERROR: max. # basis funcions exceeded')
       END IF
-C
-C***  COMPUTE VECTOR IT(I)=(I*(I-1))/2
-C
-      NBW = (NBAST*NBAST+NBAST)/2 + 1
-      IF (NBW.GT.NWORK) GO TO 950
-      NWW = NWORK-NBW-1
-      K = 0
-      DO 3 I = 1,NBW
-         IT(I) = K
-         K     = K+I
-   3  CONTINUE
 C
 C***  SYMMETRY LABELS AND NUMBER OF PREVIOUS BASIS FUNCTIONS
 C
@@ -678,16 +672,9 @@ C
       CALL GPCLOSE(LUINTA,'KEEP')
       CALL QEXIT('SUP_SORT')
       RETURN
-C
-C     ERROR MESSAGE
-C
- 950  WRITE(LUPRI,9500) NBW
- 9500 FORMAT(' SUP_SORT: DIMENSION OF IWORK MUST BE INCREASED TO',I10,
-     &      /' PLUS ALLOWANCE FOR BITVECTOR IN SUP AND SUP1')
-      CALL QUIT('SUP_SORT ERROR: insufficient memory')
       END
 C  /* Deck sup1 */
-      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IT,IBIT)
+      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT)
      &                
 #include "implicit.h"
 #include "priunit.h"
@@ -697,13 +684,16 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
 #include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*),IT(*)
+      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -933,19 +923,19 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX)
+      CALL SUPNWR(P,INDP,IBEF,NPMAX)
 C
  900  CONTINUE
       RETURN
 #if defined (VAR_DUPLCHCK)
- 950  NWT = NBW+KBMAX
+ 950  NWT = KBMAX
       WRITE(LUPRI,960) NWT
  960  FORMAT(' SUP1: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck sup */
-      SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
+      SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBIT,
      &               IBEF,NP,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -953,15 +943,18 @@ C  /* Deck sup */
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 #include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IT(*),IBIT(*)
+      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
 C
       COMMON/CSPINT/NBAS(8),IBAS(8),NBAST,NSYM,NBMAX,NWORK,IIBAS(8),
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
 C
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -1251,20 +1244,19 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX)
+      CALL SUPNWR(P,INDP,IBEF,NPMAX)
 C
  900  CONTINUE
       RETURN
 #if defined (VAR_DUPLCHCK)
- 950  KK = NBW+KBMAX
+ 950  KK = KBMAX
       WRITE(LUPRI,960) KK
  960  FORMAT(' SUP: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck sup1d */
-      SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,
-     &                 IT,IBIT)
+      SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IBIT)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1273,13 +1265,16 @@ C***  TRANSFORMATION OF FIRST SYMMETRY
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
 #include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*),IT(*)
+      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -1553,21 +1548,21 @@ C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IT,IOFF,NBB)
+      CALL SUPNWR(P,INDP,IOFF,NBB)
 C
 C
  800  IRED = IRED+NBB
  900  CONTINUE
       RETURN
 #if defined (VAR_DUPLCHCK)
- 950  NWT = NBW+KBMAX
+ 950  NWT = KBMAX
       WRITE(LUPRI,960) NWT
  960  FORMAT(' SUP1D: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck supd */
-      SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
+      SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBIT,
      &               IBEF,NP)
 #include "implicit.h"
 #include "priunit.h"
@@ -1576,13 +1571,16 @@ C  /* Deck supd */
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
 #include "inftap.h"
-      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IT(*),IBIT(*)
+      DIMENSION P(*),INDP(*),IBUF(*),BBUF(*),IBIT(*)
       PARAMETER (ZERO=0.D0, ONE=1.D0, ON2=0.5D0, ON4=0.25D0)
       PARAMETER (ON8=0.125D0, TH4=0.75D0, TH8=0.375D0)
 C
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
 
 C
 #if defined (VAR_DUPLCHCK)
@@ -1919,21 +1917,21 @@ C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IT,IOFF,NBB)
+      CALL SUPNWR(P,INDP,IOFF,NBB)
 C
 C
  800  IRED = IRED+NBB
  900  CONTINUE
       RETURN
 #if defined (VAR_DUPLCHCK)
- 950  KK = NBW+KBMAX
+ 950  KK = KBMAX
       WRITE(LUPRI,960) KK
  960  FORMAT('SUPD: DIMENSION OF IWORK MUST BE INCREASED TO',I10)
       CALL QUIT('Insfspce')
 #endif
       END
 C  /* Deck supnwr */
-      SUBROUTINE SUPNWR(P,INDP,IT,IBEF,NPMAX)
+      SUBROUTINE SUPNWR(P,INDP,IBEF,NPMAX)
 C
 C     Jan 90 Hans Joergen Aa. Jensen
 C     Write to LUSUPM
@@ -1949,7 +1947,7 @@ C     note: IBEF=IT(NPQF),       NPQF = IT(NPF) + NQF
 C           NPQRS=IT(NPQL)-IOFF, NPQL = IT(NPL) + NQL
 C
 #include "implicit.h"
-      DIMENSION P(1), INDP(1), IT(1)
+      DIMENSION P(*), INDP(*)
 C
 #include "iratdef.h"
       PARAMETER ( ITYP1 = 1, ITYP2 = 2)
@@ -1959,8 +1957,12 @@ C
      &      LBUF,NIBUF,NBITS,IBITSHR_1,IBITSHR_2,IBITSHR_3, IBITMASK,
      A      NBAS1,NPLAST,NST,IND(600),NUT,
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
-     C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
-      COMMON/CSPREA/XFAC,THRQ,BUF(600)
+     C      NREC(255),IBATCH(255),IS(255),NWW,LSUP
+      COMMON/CSPREA/XFAC,THRQ,BUF(600),DUM4(4)
+
+!     statement function
+      IT( I ) = (I*(I-1))/2
+
 C
       IOFF  = IBEF
       IF (NPLAST .EQ. 0) THEN

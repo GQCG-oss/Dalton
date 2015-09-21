@@ -1,5 +1,0 @@
-   pemcscf_3
-   -----------
-   Molecule:         CH2O(DFT)/2 H2O(MM)
-   Wave Function:    CASSCF(6,4) / 6-31G
-   Test Purpose:     Test of energy, dipole moment and excitation energy through ABACUS

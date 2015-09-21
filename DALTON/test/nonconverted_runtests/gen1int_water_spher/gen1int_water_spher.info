@@ -1,5 +1,0 @@
-   gen1int_water_spher
-   -------------
-   Molecule:         H2O
-   Test Purpose:     Check Gen1int module using water molecule, spherical
-                     basis sets, and without symmetry

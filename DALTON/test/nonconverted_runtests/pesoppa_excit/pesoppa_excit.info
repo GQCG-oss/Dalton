@@ -1,6 +1,0 @@
-   pesoppa_excit
-   -----------
-   Molecule:         Acrolein and two classical water molecules
-   Wave Function:    PE-SOPPA/RPA / 3-21G
-   Test Purpose:     Test of energies and excitation energies
-                     through RESPONSE using the PE library

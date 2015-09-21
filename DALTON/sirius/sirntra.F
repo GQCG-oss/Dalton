@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -99,6 +99,10 @@ C
       LOGICAL AOEXIST,MOEXIST
 C
       CALL QENTER('N_TRACTL')
+
+      IF (IPRTRA.GT.0) WRITE (LUPRI,'(/A,I4)')
+     & ' "NEW" 2-ELECTRON INTEGRAL TRANSFORMATION SECTION; PARAMETER =',
+     & ITRSIR
 C
 C     (Re)calculate AO integrals, if necessary
 C     /hjaaj 11-jan-2007
@@ -141,7 +145,7 @@ C
       DELORD = (ITRSIR .LT. 0)
       JTRSIR = ABS(ITRSIR)
       IF (JTRSIR .GE. 1 .AND. JTRSIR .LE. 4) USEDRC = .TRUE.
-C     ... USEDRC must be true for second order transformation
+C     ... USEDRC must be true for second order transformation;
 C         can be true by input for higher order (e.g. for RESPONS)
 C
 C     Translate from SIRIUS convention for transformation level
@@ -1280,6 +1284,17 @@ C
       IDISKM = 0
       CALL DAREAD(LUMINT,IADOUT,3*LIADUT,IDISKM)
       IDISKM = IADOUT(1,LIADUT)
+
+      IF (IPRTRA .ge. 5) THEN
+         write(lupri,*) 'MSYM  ',MSYM
+         write(lupri,*) 'MISH  ',MISH(1:MSYM)
+         write(lupri,*) 'MASH  ',MASH(1:MSYM)
+         write(lupri,*) 'MORB  ',MORB(1:MSYM)
+         write(lupri,*) 'MFRO  ',MFRO(1:MSYM)
+         write(lupri,*) 'MBAS  ',MBAS(1:MSYM)
+         write(lupri,*) 'IDISKM',IDISKM
+         write(lupri,*) 'MCOPT ',MCOPT
+      END IF
 C
 C     Loop over quadruples of symmetries (NSP,NSQ,NSR,NSS)
 C     NOTE that the integrals on LUORDA must be sorted in the same
@@ -1290,6 +1305,7 @@ C
       IF (IPRTRA .GE. 2 .AND. IPRTRA .LT. 5) WRITE(LUPRI,2000)
  2000 FORMAT(/' SYMMETRY       BASIS FUNCTION        ORBITALS',3X,
      &       ' MEMLFT     LTUPQ   USER(SEC) WALL(SEC)')
+      CALL FLSHFO(LUPRI)
 C
       ITP    = 0
       LMOP1  = 1
@@ -1305,6 +1321,7 @@ C
        LMOP2 = LMOP  +NBP*MISH(NSP)
        JMOP2 = JMOP1 +MFRO(NSP)+MISH(NSP)
        NOP   = MORB(NSP)
+       IF (NOP .EQ. 0) GO TO 104
        NOCP  = MASH(NSP)
        KEEPP = KEEP(10+NSP)
        ISP   = NSP
@@ -1323,6 +1340,7 @@ C
         JMOQ2 = JMOQ1+MFRO(NSQ)+MISH(NSQ)
         KEEPQ = KEEP(10+NSQ)
         NOQ   = MORB(NSQ)
+        IF (NOQ .EQ. 0) GO TO 103
         NOCQ  = MASH(NSQ)
         ISQ   = NSQ
         NSPQ  = IEOR(NSP-1,NSQ-1)+1
@@ -1341,6 +1359,7 @@ C
          JMOR2 = JMOR1+MFRO(NSR)+MISH(NSR)
          KEEPR = KEEP(10+NSR)
          NOR   = MORB(NSR)
+         IF (NOR .EQ. 0) GO TO 102
          NOCR  = MASH(NSR)
          NSPQR = IEOR(NSPQ-1,NSR-1)+1
          ISR   = NSR
@@ -1360,12 +1379,14 @@ C
           LMOS2 = LMOS+NBS*MISH(NSS)
           JMOS2 = JMOS1+MFRO(NSS)+MISH(NSS)
           NOS   = MORB(NSS)
+          IF (NOS .EQ. 0) GO TO 101
           NOCS  = MASH(NSS)
           KEEPS = KEEP(10+NSS)
           ISS   = NSS
 C
-C
-          IF (NOP*NOQ*NOR*NOS.EQ.0) GO TO 101
+!         IF (NOP*NOQ*NOR*NOS.EQ.0) GO TO 101
+!         hjaaj: gives zero because of integer*4 for e.g. NOP=NOQ=NOR=NOS=256 !!!
+!                (took some time to figure out this cause -- July 2015 hjaaj)
           NOCTOT = MIN(1,NOCP) + MIN(1,NOCQ)
      &           + MIN(1,NOCR) + MIN(1,NOCS)
           IF (NOCTOT .LT. 2) GO TO 101
@@ -1395,7 +1416,7 @@ C
      &         '               NPQ  =',NPQ
             WRITE(LUPRI,2000)
             WRITE(LUPRI,2100) ISP,ISQ,ISR,ISS,NBP,NBQ,NBR,NBS,
-     &                         NOP,NOQ,NOR,NOS
+     &                        NOP,NOQ,NOR,NOS
             CALL QUIT(' TR2CTL error, LADX .le. 0')
           END IF
 C
@@ -1501,6 +1522,7 @@ C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
  2100        FORMAT(1X,4I2,1X,4I5,1X,4I5,2I12,2F9.3)
              TCPU1  = TCPU
              TWALL1 = TWALL
+             CALL FLSHFO(LUPRI)
           END IF
   101    CONTINUE
   102   CONTINUE
@@ -2827,11 +2849,11 @@ C     SET ADDRESS FIELD FOR OUTPUT INTEGRAL FILE
 C     Initialize to -2 which is used as error code
 C                   -1 will mean no integrals
 C
-      DO 1 I=1,LIADUT
-       IADOUT(1,I)=-2
-       IADOUT(2,I)=-2
-       IADOUT(3,I)=-2
-    1 CONTINUE
+      DO I=1,LIADUT
+         IADOUT(1,I)=-2
+         IADOUT(2,I)=-2
+         IADOUT(3,I)=-2
+      END DO
       IDISKM = 0
       CALL DASKIP(LUMINT,3*LIADUT,IDISKM)
       NLIST = 10
@@ -3096,14 +3118,14 @@ C
       RETURN
       END
 C /*deck  rdao2*/
-      SUBROUTINE RDAO2(LUINTA,BUF,IBUF,H2_RSPQ,MPQOFF)
+      SUBROUTINE RDAO2(LUINTA,BUF,IINDX4,H2_RSPQ,MPQOFF)
 C
 C 20-Mar-1990 hjaaj
 C
 C Reads two-electron integrals from file to buffer.
 C LUINTA: File to read
 C BUF   : Points to start element in integral buffer.
-C IBUF  : Points to start element in label buffer.
+C IINDX4: The 4 indices of each integral
 C H2_RSPQ : H2RSPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C MPQOFF: Offset of last element returned to calling routine
 C
@@ -3111,7 +3133,7 @@ C
 #include "iratdef.h"
 #include "priunit.h"
 #include "mxcent.h"
-      DIMENSION H2_RSPQ(*), BUF(*), IBUF(4,600)
+      DIMENSION H2_RSPQ(*), BUF(*), IINDX4(4,600)
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
@@ -3150,19 +3172,19 @@ C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  150  CONTINUE
          CALL READI4(LUINTA,LENINT4,BUF(KINT))
-         CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 200 I = 1, LENGTH
-                  JP  = IBUF(1,I)
+                  JP  = IINDX4(1,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 100
-                  JQ  = IBUF(2,I)
+                  JQ  = IINDX4(2,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 100
-                  JR  = IBUF(3,I)
+                  JR  = IINDX4(3,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 100
-                  JS  = IBUF(4,I)
+                  JS  = IINDX4(4,I)
                   JSS = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 100
 C
@@ -3186,16 +3208,16 @@ C
 
   100       CONTINUE
 
-                  JP  = IBUF(3,I)
+                  JP  = IINDX4(3,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 200
-                  JQ  = IBUF(4,I)
+                  JQ  = IINDX4(4,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 200
-                  JR  = IBUF(1,I)
+                  JR  = IINDX4(1,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 200
-                  JS  = IBUF(2,I)
+                  JS  = IINDX4(2,I)
                   JSS = ISAO(JS)
                IF (JSS .NE. ISS) GO TO 200
 C
@@ -3400,8 +3422,14 @@ C
 C
       CALL QENTER('TRALVL')
       JTRLVL = ABS(ITRSIR)
-      KTRLVL = 1
-      IF (JTRLVL .EQ. 3) THEN
+      KTRLVL = 0
+      IF (JTRLVL .EQ. 0) THEN
+         KTRLVL = 1
+      ELSE IF (JTRLVL .EQ. 1) THEN
+         KTRLVL = 1
+      ELSE IF (JTRLVL .EQ. 2) THEN
+         KTRLVL = 0
+      ELSE IF (JTRLVL .EQ. 3) THEN
          JTRLVL = 2
          KTRLVL = 1
       ELSE IF (JTRLVL .EQ. 4) THEN
@@ -3410,8 +3438,7 @@ C
       ELSE IF (JTRLVL .EQ. 5) THEN
          JTRLVL = 3
          KTRLVL = 0
-      ELSE IF (JTRLVL .GE. 6) THEN
-         IF (JTRLVL .EQ. 10) KTRLVL = 0
+      ELSE IF (JTRLVL .GE. 6) THEN ! KTRLVL is inactive
          JTRLVL = 4
       END IF
       NTRLVL = 100*KTRLVL + JTRLVL

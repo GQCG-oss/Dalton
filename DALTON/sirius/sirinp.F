@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1264,11 +1264,11 @@ C           are they for same basisset and same no. of symmetries ?
          END IF
          IF (NERROR .GT. 0) THEN
             INPERR = INPERR + 1
-            WRITE (LUPRI,'(/A/5X,A,I3,5X,8I5)')
-     &         'Input ERROR in connection with ".MOSTART"',
-     &         'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
+            WRITE (LUPRI,'(/A,I5/5X,A,I3,5X,8I5)')
+     &        'Input ERROR in connection with ".MOSTART" of type',IRDMO,
+     &        'NSYM, NBAS from input       :',NSYM,(NBAS(I),I=1,NSYM)
             WRITE (LUPRI,'(5X,A,I3,5X,8I5)')
-     &         'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
+     &        'NSYM, NBAS from MOSTART file:',MSYM,(MBAS(I),I=1,MSYM)
          ELSE IF (NDELT .NE. 0) THEN
             NINFO = NINFO + 1
             WRITE (LUPRI,'(/5X,A/I10,A)')
@@ -1512,8 +1512,8 @@ C
       IF (DOMP2 .OR. DOCCSD) THEN
         IF (DOCCSD. and. DOSCF .AND. (IOPRHF .GT. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell MP2/CC'//
-     &      ' not compatible with open shell RHF'
+         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell CC'//
+     &      ' is not compatible with open shell RHF'
         END IF
         IF (DOHFSRDFT) THEN
 C hjaaj May 2008 : THRRHF_MP2 too small for srMP2  NB NOTE BEMAERK TODO OBS
@@ -2111,7 +2111,7 @@ C
        GO TO 910
  1800  CALL POPINP(WORD,INPERR,ALLOPT)
        GO TO 910
- 1900  CALL TRAINP(WORD,INPERR,ALLOPT)
+ 1900  CALL TRAINP(WORD,INPERR,ALLOPT)  ! *TRANFORMATION
        GO TO 910
 C2000  CONTINUE
 C      GO TO 1200

@@ -1,6 +1,8 @@
 *testjob-pid*
-*/*.out
+*/*.out*
 */*.stdout
 */*.diff
 */*.filtered
 */*.reference
+*/*.rsp_tensor_human
+*/*.tar.gz*

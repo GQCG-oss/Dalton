@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1698,7 +1698,9 @@ C
 #include "infrsp.h"
 #include "infsmo.h"
 #include "indqr.h"
-      REAL*8, ALLOCATABLE  ::  RESSOM(:,:,:,:), RESFRE(:,:)
+      REAL*8, ALLOCATABLE  ::  RESSOM(:,:,:,:), 
+     &               RESFRE(:,:),RESSOMMAG(:,:,:,:), 
+     &               RESSOMEL(:,:,:,:),RESSOMQUAD(:,:,:,:)
 #include "inforb.h"
 #include "infvar.h"
 #include "qrinf.h"
@@ -1739,9 +1741,18 @@ C temporary storages for the result in order to print out nicely after the
 C calculation.
 C
       IF (TWOPHO) THEN
-         ALLOCATE ( RESSOM(3,3,MXEXQR,8), RESFRE(MXEXQR,8) )
+         ALLOCATE ( RESSOM(3,3,MXEXQR,8), RESFRE(MXEXQR,8))
+         IF (LTPCD) THEN
+           ALLOCATE(  RESSOMEL(3,3,MXEXQR,8),RESSOMMAG(3,3,MXEXQR,8),
+     *                RESSOMQUAD(6,3,MXEXQR,8) )
+         END IF
          CALL DZERO(RESSOM,3*3*MXEXQR*8)
          CALL DZERO(RESFRE,MXEXQR*8)
+        IF(LTPCD) THEN
+         CALL DZERO(RESSOMEL,3*3*MXEXQR*8)
+         CALL DZERO(RESSOMMAG,3*3*MXEXQR*8)
+         CALL DZERO(RESSOMQUAD,6*3*MXEXQR*8)
+        END IF
       END IF
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
@@ -2174,8 +2185,44 @@ C                        WRITE(LUPRI,'(/A,3ES18.7)')
                               IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
                               RESFRE(IC,MSYMC)=
      &                                EXCITA(MSYMC,IC,ISPINC+1)
-                              RESSOM(IA,IB,IC,MSYMC)=SMOM
-                              RESSOM(IB,IA,IC,MSYMC)=SMOM
+                                 RESSOM(IA,IB,IC,MSYMC)=SMOM
+                                 RESSOM(IB,IA,IC,MSYMC)=SMOM
+                                 IF (LTPCD.AND.BSMLB(MSYMB,IBOP)(2:7)
+     &                               .EQ.'DIPVEL') THEN
+                                  IF(ASMLB(MSYMA,IAOP)(2:8).EQ.
+     &                                 'ANGMOM') THEN
+                                   WRITE(LUPRI,*) 'MAGNETIC',IA,IB,IC
+                                   RESSOMMAG(IA,IB,IC,MSYMC)=SMOM
+                                  ELSE IF (ASMLB(MSYMA,IAOP)(2:7).EQ.
+     &                                 'DIPVEL') THEN
+                                    RESSOMEL(IA,IB,IC,MSYMC)=SMOM
+                                    RESSOMEL(IB,IA,IC,MSYMC)=SMOM
+                                    WRITE(LUPRI,*) 'ELECTRIC',IA,IB
+                                  ELSE IF (ASMLB(MSYMA,IAOP)(3:8).EQ.
+     &                                 'ROTSTR') THEN
+                                    IF (ASMLB(MSYMA,IAOP)(1:2).EQ.'XX') 
+     &                                 THEN
+                                       IA = 1
+                                    ELSE IF (ASMLB(MSYMA,IAOP)(1:2)
+     &                                 .EQ.'YY') THEN
+                                       IA = 2
+                                    ELSE IF (ASMLB(MSYMA,IAOP)(1:2)
+     &                                 .EQ.'ZZ') THEN
+                                       IA = 3
+                                    ELSE IF (ASMLB(MSYMA,IAOP)(1:2)
+     &                                 .EQ.'XY') THEN
+                                       IA = 4
+                                    ELSE IF (ASMLB(MSYMA,IAOP)(1:2)
+     &                                 .EQ.'XZ') THEN
+                                       IA = 5
+                                    ELSE IF (ASMLB(MSYMA,IAOP)(1:2)
+     &                                 .EQ.'YZ') THEN
+                                       IA = 6
+                                    END IF
+                                    WRITE(LUPRI,*) 'QUADRUPOLE',IA,IB
+                                    RESSOMQUAD(IA,IB,IC,MSYMC)=SMOM
+                                  END IF
+                                 END IF
                            END IF
                            CALL FLSHFO(LUPRI)
 
@@ -2534,11 +2581,14 @@ C
      &        '+--------------------------------+',
      &        '| Two-photon transition tensor S |',
      &        '+--------------------------------+'
-         WRITE(LUPRI,'(A68)')
-     &'---------------------------------------------------------------'     
-         WRITE(LUPRI,'(A8,A4,A8,6A8,/A68)') 'Sym','No','Energy',
+         WRITE(LUPRI,'(A68,A)')
+     &'---------------------------------------------------------------',
+     &'------------------'     
+         WRITE(LUPRI,'(A8,A4,A8,6A11,/A68,A)') 'Sym','No','Energy',
      &        'Sxx','Syy','Szz','Sxy','Sxz','Syz',
-     &'---------------------------------------------------------------'
+     &'---------------------------------------------------------------',
+     &'------------------'
+
          DO ISYMC=1,NSYM
          DO IC = 1,NSMCNV(ISYMC)
             WRITE(LUPRI,'(A4,2I4,F8.2,6F8.1)') ' ',ISYMC,IC,
@@ -2548,8 +2598,93 @@ C
      &              RESSOM(2,3,IC,ISYMC)
          END DO
          END DO
-         WRITE(LUPRI,'(A68)')
-     &'---------------------------------------------------------------'     
+
+         IF (LTPCD) THEN
+           WRITE(LUPRI,'(/,3(/A60))')
+     &        '+-------------------------------------------------+',
+     &        '| Two-photon transition tensor P (velocity gauge) |',
+     &        '+-------------------------------------------------+'
+
+                    WRITE(LUPRI,'(A68,A)')
+     &'---------------------------------------------------------------',
+     &'------------------'
+           WRITE(LUPRI,'(A8,A4,A8,6A11,/A68,A)') 'Sym','No','Frequ.',
+     &          'Pxx','Pyy','Pzz','Pxy','Pxz','Pyz',
+     &'---------------------------------------------------------------',
+     &'------------------'
+           DO ISYMC=1,NSYM
+           DO IC = 1,NSMCNV(ISYMC)
+                 WRITE(LUPRI,'(A4,2I4,F8.5,6F11.3)') ' ',ISYMC,IC,
+     &                RESFRE(IC,ISYMC)/2.0,
+     &                (RESSOMEL(I,I,IC,ISYMC),I=1,3),
+     &                RESSOMEL(1,2,IC,ISYMC),RESSOMEL(1,3,IC,ISYMC),
+     &                RESSOMEL(2,3,IC,ISYMC)
+           END DO
+           END DO
+
+           WRITE(LUPRI,'(/,3(/A60))')
+     &        '+--------------------------------------------------+',
+     &        '| El. dip.-mag. dip. trans. tensor  M (vel. gauge) |',
+     &        '+--------------------------------------------------+'
+                    WRITE(LUPRI,'(A68,A)')
+     &'---------------------------------------------------------------',
+     &'---------------------------------------------------' 
+           WRITE(LUPRI,'(A8,A4,A8,9A11,/A68,A)') 'Sym','No','Energy',
+     &          'Mxx','Myy','Mzz','Mxy','Mxz','Myx','Myz','Mzx','Mzy',
+     &'---------------------------------------------------------------',
+     &'---------------------------------------------------'
+           DO ISYMC=1,NSYM
+           DO IC = 1,NSMCNV(ISYMC)
+                 WRITE(LUPRI,'(A4,2I4,F8.2,9F11.3)') ' ',ISYMC,IC,
+     &                RESFRE(IC,ISYMC)*XTEV,
+     &                (RESSOMMAG(I,I,IC,ISYMC),I=1,3),
+     &                RESSOMMAG(1,2,IC,ISYMC),RESSOMMAG(1,3,IC,ISYMC),
+     &                RESSOMMAG(2,1,IC,ISYMC),RESSOMMAG(2,3,IC,ISYMC),
+     &                RESSOMMAG(3,1,IC,ISYMC),RESSOMMAG(3,2,IC,ISYMC)
+           END DO
+           END DO
+
+           WRITE(LUPRI,'(/,3(/A60))')
+     &        '+--------------------------------------------------+',
+     &        '| El. dip.-el. quad. trans. tensor  T (vel. gauge) |',
+     &        '+--------------------------------------------------+'
+                    WRITE(LUPRI,'(A68,A,A,A)')
+     &'---------------------------------------------------------------',
+     &'------------------------------------------------------',
+     &'------------------------------------------------------',
+     &'------------------------------------------'
+         WRITE(LUPRI,'(A8,A4,A8,18A11,/A68,A,A,A)') 'Sym','No','Energy',
+     &          'Txxx','Txxy','Txxz','Tyyx','Tyyy','Tyyz','Tzzx',
+     &          'Tzzy','Tzzz','Txyx','Txyy','Txyz','Txzx','Txzy',
+     &          'Txzz','Tyzx','Tyzy','Tyzz',
+     &'---------------------------------------------------------------',
+     &'------------------------------------------------------',
+     &'------------------------------------------------------',
+     &'------------------------------------------'
+
+           DO ISYMC=1,NSYM
+           DO IC = 1,NSMCNV(ISYMC)
+                 WRITE(LUPRI,'(A4,2I4,F8.2,18F11.3)') ' ',ISYMC,IC,
+     &                RESFRE(IC,ISYMC)*XTEV,
+     &                RESSOMQUAD(1,1,IC,ISYMC),RESSOMQUAD(1,2,IC,ISYMC),
+     &                RESSOMQUAD(1,3,IC,ISYMC),RESSOMQUAD(2,1,IC,ISYMC),
+     &                RESSOMQUAD(2,2,IC,ISYMC),RESSOMQUAD(2,3,IC,ISYMC),
+     &                RESSOMQUAD(3,1,IC,ISYMC),RESSOMQUAD(3,2,IC,ISYMC),
+     &                RESSOMQUAD(3,3,IC,ISYMC),RESSOMQUAD(4,1,IC,ISYMC),
+     &                RESSOMQUAD(4,2,IC,ISYMC),RESSOMQUAD(4,3,IC,ISYMC),
+     &                RESSOMQUAD(5,1,IC,ISYMC),RESSOMQUAD(5,2,IC,ISYMC),
+     &                RESSOMQUAD(5,3,IC,ISYMC),RESSOMQUAD(6,1,IC,ISYMC),
+     &                RESSOMQUAD(6,2,IC,ISYMC),RESSOMQUAD(6,3,IC,ISYMC)
+           END DO
+           END DO
+
+
+
+         END IF
+
+         WRITE(LUPRI,'(A68,A)')
+     &'---------------------------------------------------------------',
+     &'---------' 
          WRITE(LUPRI,'(/,6(/A60))') 
      &        ' Transition probabilities (a.u.)         ',
      &        '-----------------------------------------',
@@ -2648,6 +2783,9 @@ C
 C
       IF (TWOPHO) THEN
          DEALLOCATE (RESSOM, RESFRE)
+         IF (LTPCD) THEN
+           DEALLOCATE(RESSOMEL,RESSOMMAG,RESSOMQUAD)
+         END IF
       END IF
 C
       CALL QEXIT('QRSMO')
@@ -4132,6 +4270,7 @@ C
 C
       RETURN
       END
+
 
       SUBROUTINE PRINT_QR_SINGLE_RESIDUE(LU,
      &   ALAB, BLAB, OMEGA_B, IC, OMEGA_C, SMOM

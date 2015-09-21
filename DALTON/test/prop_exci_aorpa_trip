@@ -80,6 +80,11 @@ else
    GREP="egrep"
 fi
 
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
 # Ground state energies
 CRIT1=`$GREP "Final HF energy\: * \-72\.73901238[0-9][0-9][0-9][0-9]" $log | wc -l`
 CRIT2=`$GREP "Nuclear repulsion\: * 9\.18370623[0-9][0-9][0-9][0-9]" $log | wc -l`

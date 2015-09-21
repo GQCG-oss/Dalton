@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -167,8 +167,8 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      LOGICAL PRINT, DIF
-      DIMENSION WORK(LWORK)
+      LOGICAL   PRINT, DIF
+      DIMENSION COORD(*),WORK(LWORK)
 #include "nuclei.h"
 C
       CALL QENTER('GEOANA')
@@ -304,7 +304,9 @@ C
             IF (DIF) THEN
                DISTAN = DISTAN - DIST(IJ)
             ELSE IF (I .LE. N_QMATOMS .AND. I.NE.J) THEN
-               IF (ICHARG(I) .NE. 1 .AND. ICHARG(J) .NE. 1) THEN
+               IF (ICHARG(I) .EQ. 0 .OR. ICHARG(J) .EQ. 0) THEN
+                  ! do nothing - we do not want to include floating orbitals in minimum atom distance
+               ELSE IF (ICHARG(I) .NE. 1 .AND. ICHARG(J) .NE. 1) THEN
                   ADISTYX_MIN = MIN(ADISTYX_MIN,DISTAN)
                   IF (DISTAN .LE. 1.0D0) N_SHORT_YX = N_SHORT_YX + 1 ! R(Y-X) .lt. 1.0 Angstrom is usually an error
                ELSE

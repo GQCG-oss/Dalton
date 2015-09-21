@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -668,6 +668,8 @@ C
 #include "mxcent.h"
 #include "esrhfc.h"
 #include "abslrs.h"
+! JMHO: pcmlog.h included to check if CUBIC and PCM -> quit
+#include "pcmlog.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABLE(NTABLE)*7
 C
@@ -757,6 +759,10 @@ C
       go to 200
 
  5    call cubic(word)
+! JMHO: quit if CUBIC and PCM (until bug is found)
+      if (pcm) then
+        call quit('PCM and cubic response not available')
+      end if
 #ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
       if (dodft) then
          if (.not. fun_is_ready_for_cr()) then
@@ -1209,7 +1215,7 @@ C     Initialization of INFHYP
       DATA IAABB/0/
 C     Initialization of INFSMO
       DATA SOMOM/.FALSE./ , TWOPHO/.FALSE./, MCDCAL/.FALSE./,
-     &     MCDPRJ/.FALSE./
+     &     MCDPRJ/.FALSE./, LTPCD/.FALSE./
       DATA IPRSMO/2/
       DATA NBSMFR/1/ , BSMFR(1)/0.0D0/
 C     Initialization of INFESR

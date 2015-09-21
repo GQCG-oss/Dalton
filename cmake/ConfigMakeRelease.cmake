@@ -26,7 +26,6 @@ add_custom_target(
     COMMAND rm     ${EXPORT_DIR}/export.tar
     COMMAND ${CMAKE_SOURCE_DIR}/maintenance/release/remove_unreleased_code ${EXPORT_DIR}
     COMMAND echo "${GIT_REVISION}" > ${EXPORT_DIR}/cmake/GIT_HASH
-    COMMAND cp ${CMAKE_SOURCE_DIR}/maintenance/update/update.py ${EXPORT_DIR}
     COMMAND make package_source
     COMMENT "Packaging source files"
     VERBATIM

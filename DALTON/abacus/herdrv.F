@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -316,7 +316,7 @@ C
 #include "maxaqn.h"
 C
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 144)
+      PARAMETER (NDIR = 9, NTABLE = 145)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -435,7 +435,9 @@ C     Bin Gao, Oct. 3, 2011
 !                    237        238        239        240
      &             '.NEWTRA', '.KINADI', '.GENINT', '.S2MBRA',
 !                    241        242        243        244
-     &             '.S2MKET', '.S2MMIX', '.LRINTS', '.NORMAO'/
+     &             '.S2MKET', '.S2MMIX', '.LRINTS', '.NORMAO',
+!                    245
+     &             '.TWOBYT'/
 C
 C
       CALL QENTER('HERINP')
@@ -526,7 +528,7 @@ C
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
      &                231,232,233,234,235,236,237,238,239,240,
-     &                241,242,243,244), I
+     &                241,242,243,244,245), I
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -996,8 +998,6 @@ C&&& Nuclear model
             BGWEIN = D1 - D4*BGWEIN
             GOTO 100   
   197    CONTINUE
-            IF (NODTOT .GT. 0) CALL PARQUIT('FINDPT')
-            IF (DIRCAL) CALL QUIT('No direct calculation with FINDPT')
             ONEPRP = .TRUE. 
             DPTPOT = .TRUE.
             FINDPT = .TRUE.
@@ -1316,6 +1316,9 @@ cs            ENDIF
   244    CONTINUE
             RMAOTWO = .FALSE.
             GO TO 100 
+  245    CONTINUE   ! .TWOBYTEPACKING
+            TWOBYTEPACKING = .TRUE.
+            GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
       ELSE
@@ -1362,16 +1365,25 @@ cLig <>
       IF (U21INT) WRITE (LUPRI,'(A)')
      &    ' Calculation of two-electron integrals over [T2,r12].'
       IF (DAR2EL) WRITE (LUPRI,'(/A)')
-     &     ' Calculate 2-electron Darwin integrals'
+     &     ' Calculate two-electron Darwin integrals'
       IF (AD2DAR) WRITE (LUPRI,'(/A/A,F18.14/)')
      &    ' Two-electron Darwin integrals are added to standard',
      &    ' repulsion integrals with perturbation parameter:',DARFAC
+      IF (SPNORB .AND. .NOT.no2so) WRITE (LUPRI,'(/A)')
+     &     ' Calculate two-electron spin-orbit integrals'
       IF (ORBORB) WRITE (LUPRI,'(/A)')
-     &     ' Calculate 2-electron orbit-orbit integrals'
-      IF (FINDPT) WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
+     &     ' Calculate two-electron orbit-orbit integrals'
+      IF (TWOBYTEPACKING .AND. NBASIS .LE. 255) WRITE (LUPRI,'(/A)')
+     &     ' (Two byte packing of indices on files requested.)'
+      IF (FINDPT) THEN
+         WRITE (LUPRI,'(/A/A,F18.14/A,F18.14,A/)')
      &    ' A direct relativistic perturbation is added to',
      &    ' Hamiltonian and metric with perturbation parameter:',DPTFAC,
      &    ' (perturbation parameter * c^{-2} = ',DPTFAC*ALPHAC**2,')'
+         IF (NODTOT .GT. 0) CALL PARQUIT('FINDPT')
+         IF (DIRCAL) CALL QUIT(
+     &    'Direct calculation (.DIRECT) is not compatible with .FINDPT')
+      END IF
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A)')
      &      ' The following one-electron property integrals are'
@@ -4061,6 +4073,7 @@ C
       no2so  = .false.
       SOTEST = .FALSE.
       NOTWO  = DIRCAL
+      TWOBYTEPACKING = NBASIS .GT. 255   ! then we need two bytes to pack indices
       SECMOM = .FALSE.
       CARMOM = .FALSE.
       SPHMOM = .FALSE.

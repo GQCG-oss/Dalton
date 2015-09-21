@@ -1244,7 +1244,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                  !WRITE(LUPRI,*) 'INSIDE UNCONTRACTED'
                  !uncontracted basis set are forced uncontracted with .UNCONT
 
-                 READ (STRING, '(F16.9)') Exp
+                 READ (STRING, *) Exp
                  !skip contiuation lines for contraction coeff.
                  DO I = 2,NUMBER_OF_LINES
                     READ (LUBAS,*)

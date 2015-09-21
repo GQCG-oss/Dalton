@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -309,9 +309,18 @@ C  /* Deck er2ini */
 #include "cbiher.h"
 #include "cbieri.h"
 #include "erisel.h"
-#include "eribuf.h"
 #include "ericom.h"
 #include "gnrinf.h"
+
+      LOGICAL, SAVE :: FIRST_CALL = .TRUE.
+C
+C     set index packing in eribuf
+C     (before FIRST_CALL test, because NIBUF,NBITS may be reset by routines)
+C
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+
+      IF (.NOT. FIRST_CALL) RETURN
+      FIRST_CALL = .FALSE.
 C
 C     Initialize /CBIERI/
 C
@@ -357,6 +366,42 @@ C
 
       RETURN
       END
+C  /* Deck eribuf_ini */
+      SUBROUTINE ERIBUF_INI
+C
+C     July 2015, hjaaj
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+C
+C nuclei.h : NBASIS
+C cbiher.h : TWOBYTEPACKING
+C eribuf.h : NIBUF, NBITS, IBIT1, IBIT2
+C
+#include "nuclei.h"
+#include "cbiher.h"
+#include "eribuf.h"
+C
+C     set index packing in /CBIERI/
+C
+      IF (TWOBYTEPACKING .OR. NBASIS.GT.255) THEN
+         NIBUF = 2
+         NBITS = 16
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
+
+      ELSE
+         NIBUF = 1
+         NBITS = 8
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 2**(2*NBITS) - 1
+
+      END IF
+
+      RETURN
+      END
 C  /* Deck er2int */
       SUBROUTINE ER2INT(CCFBT,INDXBT,WORK,LWORK)
 #include "implicit.h"
@@ -384,7 +429,7 @@ C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
-C     CALL ER2INI
+      CALL ER2INI
 C
 C     Memory
 C
@@ -560,16 +605,13 @@ C
          NPERTS = 1
          NCORS = 1
       END IF
-      IF (NBASE .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
       IF (DGABAB) THEN
          NIBUF = 1
          NBITS = 16
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
+      ELSE
+         CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
       END IF
 C
 C     Dimensions for CSQ

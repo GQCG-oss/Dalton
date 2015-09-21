@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -66,11 +66,13 @@ C
 C
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL(NABAOP)
 C
 C Used from common blocks:
 C ABAINF : DODRCT
 C INFLIN : NCONRF
+C INFINP : DIRFCK,HSORHF,...
+C INFORB : NASHT,...
 C INFTRA : USEDRC
 C
 #include "abainf.h"
@@ -197,10 +199,11 @@ C     PERFORM INTEGRAL TRANSFORMATION
 C
 cSPAS:29.11.2002 debugging newtra for SOPPA
 cSPAS IF (FABRHS) THEN
-!     IF (FABRHS .AND. 
+!     IF (FABRHS .AND.
 !    &    .NOT. (SOPPA .AND. NEWTRA .AND. .NOT. CCPPA)) THEN
 cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
       IF (FABRHS) THEN
+      IF ( (NASHT .GT. 1 .AND. .NOT.HSROHF) .OR. .NOT.DIRFCK ) THEN ! no mo integrals needed for ao-direct HF or DFT
          KCMO   = 1
          KWTRA  = KCMO   + NCMOT
          LWTRA  = LWRK   - KWTRA
@@ -214,27 +217,27 @@ cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          READ (LUSIFC)
          READ (LUSIFC)
          CALL READT (LUSIFC,NCMOT,WRK(KCMO))
-         IF ( .NOT. RSPCI ) THEN
-            USEDRC = .TRUE.
-         ELSE
-            USEDRC = .FALSE.
-         ENDIF
 cs
-         IF (SOPPA .OR. NEXVAL.EQ.0) THEN
+         USEDRC = .TRUE.
+         IF (RSPCI) THEN
+            USEDRC = .FALSE.
+            JTRLVL = 0
+         ELSE IF (SOPPA .OR. NEXVAL.EQ.0) THEN  ! SOPPA or quadratic response
             JTRLVL = -10
          ELSE IF (HJJTRA_TYPE .gt. 0) THEN
             JTRLVL = -4
-         ELSE IF (NEWTRA) THEN
+         ELSE IF (NEWTRA .AND. .NOT.USEDRC) THEN
             JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE
             JTRLVL = -4
          ENDIF
 cs
          FLAGSV = DORSP
-         DORSP = .TRUE.
+         DORSP  = .TRUE.
          CALL SIR_INTOPEN
-         DORSP = FLAGSV
-         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA) 
+         DORSP  = FLAGSV
+         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA)
+      END IF
       END IF
       FABRHS = .FALSE.
 C
@@ -252,15 +255,15 @@ C     WHOLE RESPONSE CALCULATION AND READ IN THE MATRICES
 C
       KFREE  = 1
       LFREE  = LWRK
-      CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','INDX',KINDX,LCINDX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO', KCMO ,NCMOT ,WRK,KFREE,LFREE)
       LUDV   = NACTT*NACTT
       CALL MEMGET('REAL',KUDV ,LUDV  ,WRK,KFREE,LFREE)
       IF (RSPCI) THEN
-         CALL MEMGET('REAL',KPVX ,0     ,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFOCK,0     ,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFC  ,0     ,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFV  ,0     ,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PVX', KPVX ,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FOCK',KFOCK,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FC',  KFC  ,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FV',  KFV  ,0,WRK,KFREE,LFREE)
       ELSE
          IF (TRPFLG) THEN
 C NEED BOTH TRIPLET AND SINGLET TWO ELECTRON DENSITY MATRICES
@@ -269,13 +272,13 @@ C NEED BOTH TRIPLET AND SINGLET TWO ELECTRON DENSITY MATRICES
 C NEED ONLY SINGLET TWO ELECTRON DENSITY MATRIX
             LPVX = LPVMAT
          END IF
-         CALL MEMGET('REAL',KPVX ,LPVX  ,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFOCK,N2ORBT,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFC  ,NNORBT,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFV  ,NNORBT,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PVX', KPVX ,LPVX  ,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FOCK',KFOCK,N2ORBT,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FC',  KFC  ,NNORBT,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FV',  KFV  ,NNORBT,WRK,KFREE,LFREE)
       END IF
-      CALL MEMGET('REAL',KFCAC,NNASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2AC,NNASHX*NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC',KFCAC,NNASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2AC',KH2AC,NNASHX*NNASHX,WRK,KFREE,LFREE)
       KTOT  =  KFREE
       KWRK1  = KFREE
       LWRK1  = LFREE
@@ -361,7 +364,7 @@ C
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
 C
-C     For a single open shell, one can use the TDHF code, because for 
+C     For a single open shell, one can use the TDHF code, because for
 C     the open shell the one electron density matrix is 1 and the two
 C     electron density matrix is 0.
 C
@@ -412,11 +415,11 @@ cs
 cs       SUBROUTINE QRCALC(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
 cs     *                  XINDX,WRK,LWRK)
 cs      praticamente chiama la QRVEC di rspvec.F
-cs      supponiamo che parta a calcolare 
+cs      supponiamo che parta a calcolare
 cs
 cs         CALL QRCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
 cs     *               WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
-cs     *               WRK(KINDX),WRK(KWRK1),LWRK1) 
+cs     *               WRK(KINDX),WRK(KWRK1),LWRK1)
 C      ELSE
         IF (IPRRSP.GE.0) THEN
            WRITE(LUPRI,'(//A,I5)')
@@ -645,7 +648,7 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 C
-      CHARACTER*8 BLANK, LABEL
+      CHARACTER*8 BLANK, LABEL(NABAOP)
       PARAMETER (BLANK = '        ')
       LOGICAL RESFLG(8)
       DIMENSION NABATY(*)
@@ -709,7 +712,7 @@ C
      &               ABS_FREQ_ALPHA,NFREQ_ALPHA,
      &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
      &               WRK(KRES),WRK(KFREE),LFREE)
-        ENDIF   
+        ENDIF
       ELSE
       CALL MEMGET('REAL',KREDE,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS,MAXRM*MAXRM,WRK,KFREE,LFREE)
@@ -724,7 +727,7 @@ C
 C
       IF (ABSORP .OR. ABSLRS) THEN
 C
-C     Nonzero damping parameter corresponds to complex response including 
+C     Nonzero damping parameter corresponds to complex response including
 C     absorption in the system
 C
          IF (.NOT.RESFLG(KSYMOP)) THEN
@@ -768,22 +771,23 @@ C     NUMBER OF SIMULTANEOUS VECTORS
             WRITE(LUPRI,*) ' had:',LFREE,' need more than:',MWRK+MRES
             CALL QUIT('RSPLLE: insufficient memory for RSPRES')
          END IF
-C     
+C
          KWRKE  = KFREE
          KBVECS = KWRKE + KZYVAR
-C     
+C
          KZRED  = 0
          KZYRED = 0
          THCRSP = THCLR
          IPRRSP = IPRLR
          MAXIT  = MAXITL
-C     
+C
          DO IOP = 1,NABAOP
             IF (IPRLR .GE. 0)
-     &           WRITE (LUPRI,'(//A,I3,/A,I3,A,I3/A,(T25,5F10.6))')
+     &           WRITE (LUPRI,'(//A,I3,/A,I3,A,I3,2A/A,(T25,5F10.6))')
      &           ' RSPLLE -- linear response calculation for symmetry',
      &           KSYMOP,
-     &           ' RSPLLE -- operator no.',IOP,' out of',NABAOP,
+     &           ' RSPLLE -- operator no.',IOP,' out of',NABAOP,': ',
+     &           LABEL(IOP),
      &           ' RSPLLE -- frequencies :',(FREQ(I),I=1,NFREQ)
             IF (ABASOP .AND. IPRLR .GE. 0)
      &           WRITE (LUPRI,'(/A/A,I8,/A,I8,/A,I8)')
@@ -791,9 +795,9 @@ C
      &           ,'  p-h variables.            - KZWOPT :',KZWOPT
      &           ,'  2p-2h variables.          - KZCONF :',KZCONF
      &           ,'  Total number of variables - KZVAR  :',KZVAR
-C     
+C
 C     READ IN GD VECTOR FROM LUGDVE
-C     
+C
 C added by Bin Gao, June 4, 2009
 C for general GD vectors
             if ( NABATY(IOP) .le. -2 ) then
@@ -804,7 +808,7 @@ C for general GD vectors
               DFTIMG = .false.
             else
               CALL READT(LUGDVE,KZVAR,WRK(KGD))
-C     
+C
               IF (NABATY(IOP).EQ.-1) THEN
                   DFTIMG = .TRUE.
               ELSE
@@ -817,31 +821,62 @@ C
                  CALL DCOPY(KZVAR,WRK(KGD),1,WRK(KGD+KZVAR),1)
               ELSE
                  WRITE(LUPRI,'(/2A,I5,A,I5)')
-     *                ' NABATY(IOP) NOT AN ALLOWED VALUE'
-     *                ,' IOP=',IOP,'  NABATY(IOP)=',NABATY(IOP)
+     &                ' NABATY(IOP) NOT AN ALLOWED VALUE'
+     &                ,' IOP=',IOP,'  NABATY(IOP)=',NABATY(IOP)
                  CALL QUIT(' RSPLLE: INCORRECT NABATY(IOP)')
               END IF
             end if
 
+            DNORM_GD = DNRM2(KZYVAR,WRK(KGD),1)
+            IF (SOPPA) THEN ! for small test cases you may have that 2p-2h non-zero, but p-h zero
+               KGDO_X = KGD + KZCONF
+               KGDO_Y = KGDO_X + KZVAR
+               DNORM_GDORB = DDOT(KZWOPT,WRK(KGDO_X),1,WRK(KGDO_X),1)
+     &                     + DDOT(KZWOPT,WRK(KGDO_Y),1,WRK(KGDO_Y),1)
+               DNORM_GDORB = SQRT(DNORM_GDORB)
+               IF (DNORM_GDORB .LT. 1.0D-9) THEN
+                  WRITE (LUPRI,'(//A/3A,1P,D10.2/A,D10.2)')
+     &   ' >>> Solving SOPPA linear response skipped because norm of',
+     &   '     p-h property vector '//LABEL//' is only',DNORM_GDORB,
+     &   '     although 2p-2h property vecor has norm ',DNORM_GD
+                  DNORM_GD = 0.0D0
+               END IF
+            END IF
+C
             DO I = 1,NFREQ
                WRK(KEIVAL-1+I) = FREQ(I)
             END DO
             KEXSIM = NFREQ
             KEXCNV = NFREQ
-C     
+C
 C     Call RSPCTL to solve linear set of response equations
-C     
-            CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
-     *           .TRUE.,LABEL,BLANK,WRK(KGD),WRK(KREDGD),
-     *           WRK(KREDE),WRK(KREDS),WRK(KIBTYP),WRK(KEIVAL),
-     *           WRK(KRESID),WRK(KEIVEC),XINDX,WRK(KFREE),LFREE)
+C
+            IF (DNORM_GD .LT. 1.0D-9) THEN
+
+              WRITE (LUPRI,'(//A/3A,1P,D10.2)')
+     &         ' >>> Solving linear response skipped because norm of',
+     &         '     property vector '//LABEL//' is only',DNORM_GD
+
+            ELSE ! else DNORM_GD is .ge. 1.0D-9, and we solve.
+
+              CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+     &             .TRUE.,LABEL,BLANK,WRK(KGD),WRK(KREDGD),
+     &             WRK(KREDE),WRK(KREDS),WRK(KIBTYP),WRK(KEIVAL),
+     &             WRK(KRESID),WRK(KEIVEC),XINDX,WRK(KFREE),LFREE)
+
+            END IF   ! IF (DNORM_GD .LT. 1.0D-9) THEN .. ELSE ..
+
             DFTIMG = .FALSE.
-C     
+C
             DO IFREQ = 1,NFREQ,MXSIM
                NBX = MIN(MXSIM,(NFREQ+1-IFREQ))
                IBOFF = IFREQ - 1
-               CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
-     *              WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
+               IF (DNORM_GD .LT. 1.0D-9) THEN
+                  CALL DZERO(WRK(KBVECS),NBX*KZYVAR)
+               ELSE
+                  CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+     &               WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
+               END IF
                DO IVEC = 1,NBX
                   IBV    = (IVEC-1)*KZYVAR + KBVECS
                   CALL WRITT(LUSOVE,KZYVAR,WRK(IBV))
@@ -850,7 +885,7 @@ C
      &                    IFREQ-1+IVEC
                      CALL RSPPRO(WRK(IBV+KZCONF),KZVAR,UDV,LUPRI)
                      CALL RSPANC(WRK(IBV),KZCONF,KZVAR,
-     *                    MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
+     &                    MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
                   END IF
 C added by Bin Gao, June 5, 2009
 C for general case
@@ -859,15 +894,15 @@ C                  NATSYM = 1.0D0
                   CALL WRTRSP(LURSP,KZYVAR,WRK(IBV),LABEL,
      &                 BLANK,WRK(KEIVAL-1+IVEC),D0,KSYMOP,0,
      &                 WRK(KRESID-1+IVEC),ANTSYM)
-               END DO
+               END DO ! IVEC
                CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      *              WRK(KGD),WRK(KFREE),XINDX,LFREE,UDV,NBX,IBOFF)
                DO IVEC = 1,NBX
                   IBV    = (IVEC-1)*KZYVAR + KFREE
                   CALL DSCAL(KZYVAR,DM1,WRK(IBV),1)
                   CALL WRITT(LUREVE,KZYVAR,WRK(IBV))
-               END DO
-            END DO
+               END DO ! IVEC
+            END DO ! IFREQ
 C
 C     End loop over B operators
 C

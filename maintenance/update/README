@@ -1,4 +1,0 @@
-radovan: Note to developers
-
-This script is exported by "make release"
-into the release tarball and it only makes sense there.

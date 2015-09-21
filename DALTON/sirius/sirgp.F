@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -522,20 +522,20 @@ C
  1010 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
      *  5X,'(only elements abs greater than',1P,D8.1,
      *     ' times max abs value)'//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
  1020 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
  1030 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
      *  5X,'(only elements less than',1P,D10.2,')'//
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1100 FORMAT(I15,I7,I3,F20.10)
- 1210 FORMAT(/1X,I8,' elements with absolute value less than',
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
+ 1100 FORMAT(I15,I7,I5,F20.10)
+ 1210 FORMAT(/I8,' elements with absolute value less than',
      *       1P,D9.2,' not printed.')
- 1220 FORMAT(/1X,I8,' zero elements not printed.')
- 1230 FORMAT(/1X,I8,' elements with value greater than',
+ 1220 FORMAT(/I8,' zero elements not printed.')
+ 1230 FORMAT(/I8,' elements with value greater than',
      *       1P,D9.2,' not printed.')
 C
 C -- end of subroutine PRKAP
@@ -604,13 +604,13 @@ C
  1000 FORMAT(/5X,'Orbital operator symmetry =',I2,/,
      *  5X,'(only elements abs greater than',1P,D8.1,
      *     ' times max abs value)'//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
  1010 FORMAT(/5X,'Orbital operator symmetry =',I2,//,
-     *  5X,' Index(r,s)     r  s      operator value',/,
-     *  5X,' ----------    -- --      --------------')
- 1100 FORMAT(I15,I7,I3,F20.10)
- 1200 FORMAT(/1X,I8,' elements with absolute value less than',
+     *  5X,' Index(r,s)     r    s      operator value',/,
+     *  5X,' ----------    --   --      --------------')
+ 1100 FORMAT(I15,I7,I5,F20.10)
+ 1200 FORMAT(/I8,' elements with absolute value less than',
      *       1P,D9.2,' not printed.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
      *       /5X,'>> NO ELEMENTS <<')
@@ -1148,10 +1148,9 @@ C
 C     Local arrays
       PARAMETER ( LBUF = 600 )
       DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
-      DIMENSION ITMPMO(2*MXCORB)
-      EQUIVALENCE (BUF,DBUF,QBUF,ITMPMO)
-      INTEGER   IJ(NNBASX) ! automatic array, for INOAUX
+      EQUIVALENCE (BUF,DBUF,QBUF)
       LOGICAL   OPEND, FEXIST, ERRSTP
+      INTEGER, allocatable :: IJ(:), ITMPMO(:)
 C
       CALL QENTER('RDONEL')
       ERRSTP = FOUND
@@ -1181,6 +1180,8 @@ C
        END IF
       END IF
 C
+      IF (NOAUXB) allocate( IJ(NNBASX) )
+C
       IF     (KEY.EQ.'OPEN    ') THEN
 C        ... file is opened automatically first time RDONEL is called.
       ELSE IF(KEY.EQ.'CLOSE   ') THEN
@@ -1198,6 +1199,7 @@ C        ... file is opened automatically first time RDONEL is called.
          DO 120 I = NSYM+1,8
             NBAS(I) = 0
   120    CONTINUE
+         allocate( ITMPMO(NBAST*2) )
          CALL MOLLAB('SYMINPUT',LUONEL,LUPRI)
          READ (LUONEL) NBT,(ITMPMO(I),I=1,2*NBT)
 C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
@@ -1209,10 +1211,11 @@ C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
             CALL QUIT('RDONEL ERROR, two different NBAST on AOONEINT')
          END IF
          REWIND LUONEL
-         DO 130 I=1,NBAST
+         DO I = 1,NBAST
             WRITE(CENT(I),'(A4)') ITMPMO(I)
             WRITE(TYPE(I),'(A4)') ITMPMO(NBAST+I)
-  130    CONTINUE
+         END DO
+         deallocate( ITMPMO )
       ELSE IF(KEY.EQ.'OVERLAP ') THEN
 C        Read overlap, in symmetry blocked triangular form
          REWIND LUONEL
@@ -1344,6 +1347,7 @@ C        Read one electron part, in symmetry blocked triangular form
       END IF
       CALL GPCLOSE(LUONEL,'KEEP')
 C
+      if ( allocated(IJ) ) deallocate( IJ )
  9999 CALL QEXIT('RDONEL')
       RETURN
       END

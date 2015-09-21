@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,6 +21,11 @@
 !...      http://daltonprogram.org
 !
 !
+#ifdef VAR_DEBUG
+#define HSODEBUG .TRUE.
+#else
+#define HSODEBUG .FALSE.
+#endif
 C  /* Deck hsoctl */
       SUBROUTINE HSOCTL (WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
 C
@@ -1441,11 +1446,6 @@ C
 #include "infrsp.h"
 #include "dftcom.h"
 #include "symmet.h"
-#ifdef VAR_DEBUG
-#define HSODEBUG .TRUE.
-#else
-#define HSODEBUG .FALSE.
-#endif
       REAL*8 D1
       PARAMETER (D1=1.0D0)
       INTEGER NDMAT,KDMAO,KFMAO,KDMSO,I
@@ -1513,9 +1513,13 @@ C
          CALL MEMREL('HERINT.PAOVEC',WRK,1,KJORBS,KFREE,LFREE)
          CALL TIMER('START ',TIMSTR,TIMEND)
          CALL GETTIM(SO1CPU,SO1WAL)
-         I2TYP = 0
+         I2TYP  = 0
          IRNTYP = -20
-         IPRTWO = 0
+         IF (HSODEBUG) THEN
+            IPRTWO = 3
+         ELSE
+            IPRTWO = 0
+         END IF
          TKTIME = .FALSE.
          CALL DZERO(WRK(KFC),NDMAT*N2BASX)
 C        Always full exchange for spin-orbit integrals:
@@ -2258,12 +2262,13 @@ C
 #include "infhso.h"
 #include "priunit.h"
 #include "iratdef.h"
+#include "eribuf.h"
 C
 C LOCAL
 C
-      PARAMETER (LBUF = 600)
-      REAL*8    BUF(2*LBUF+1)
-      INTEGER   IINDX4(4,LBUF), LENGTH
+      PARAMETER (LBUF_alloc = 600)
+      REAL*8    BUF(2*LBUF_alloc+1)
+      INTEGER   IINDX4(4,LBUF_alloc), LENGTH
       INTEGER   IB, I,J,K,L,ICOOR, LUHSOAO, COMPONENT,ID
       REAL*8    LEFT(2), RIGHT(2)
       REAL*8    GIJKL,XIJKL,DIJ,DKL, DP5, D1P5, D1, D2 
@@ -2292,29 +2297,37 @@ C
      &   )
       CALL REWSPL(LUHSOAO)
 
-      IF (NBAST .GT. 255) THEN
-         NIBUF = 2
-         NBITS = 16
-      ELSE
-         NIBUF = 1
-         NBITS = 8
-      END IF
-      LEN_IBUF4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF), IBUF4(NIBUF,LBUF), LENGTH4 in integer*4 units
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+      LBUF = LBUF_alloc
+
+      LEN_BUF4 = 2*LBUF + NIBUF*LBUF + 1 ! BUF(LBUF), IBUF4(NIBUF,LBUF), LENGTH4 in integer*4 units
 
       CALL MOLLAB('AO2SOINT',LUHSOAO,LUPRI)
       IF (WORD(1:1).EQ.'X') COMPONENT = 1
       IF (WORD(1:1).EQ.'Y') COMPONENT = 2
       IF (WORD(1:1).EQ.'Z') COMPONENT = 3
       
-      IF (IPRHSO .GT. 100) THEN
+      IF (IPRHSO .GT. 100 .OR. HSODEBUG) THEN
          WRITE(LUPRI,*) 'Hello from GET_FSO_AO. WORD: ',WORD,COMPONENT
          WRITE(LUPRI,*) ' TRIPLET? ',TRIPLET(1:ND)
+         WRITE(LUPRI,*) ' LBUF, NIBUF, NBITS, IBIT1, IBIT2, LEN_BUF4',
+     &                    LBUF, NIBUF, NBITS, IBIT1, IBIT2, LEN_BUF4
       END IF
 
+      NRECS = 0
 cF90  READFILE: DO 
  100  CONTINUE
-         CALL READI4(LUHSOAO, LEN_IBUF4, BUF)
+         CALL READI4(LUHSOAO, LEN_BUF4, BUF)
+         NRECS = NRECS + 1
          CALL AOLAB4(BUF(LBUF+1),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
+         IF (HSODEBUG) THEN
+         IF (NRECS .LE. 2) THEN
+            write (lupri,*) 'AO2SOINT record no., length:',NRECS, length
+            do ib = 1,length
+               write(lupri,*) iindx4(1:4,ib), buf(ib)
+            end do
+         END IF
+         END IF
 cF90     IF (LENGTH.LE.0) EXIT
          IF (LENGTH.LE.0) GO TO 300
 cF90     BUFFER: DO IB=1,LENGTH

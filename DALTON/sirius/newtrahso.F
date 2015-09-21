@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -185,14 +185,14 @@ C
       RETURN
       END
 C /*deck  rdhso2*/
-      SUBROUTINE RDHSO2(LUHSO2,BUF,IBUF,HSOPQ,MPQOFF)
+      SUBROUTINE RDHSO2(LUHSO2,BUF,IINDX4,HSOPQ,MPQOFF)
 C
 C 20-Mar-1990 hjaaj
 C
 C Reads two-electron integrals from file to buffer.
 C LUHSO2: File to read
 C BUF   : Points to start element in integral buffer.
-C IBUF  : Points to start element in label buffer.
+C IINDX4: the 4 indices of the spin-orbit integral
 C HSOPQ : HSOPQ(r,s,pq), pq=(mpqoff+1:mpqoff+npq); dim (nbasr,nbass,npq)
 C MPQOFF: Offset of last element returned to calling routine
 C
@@ -200,7 +200,7 @@ C
 #include "iratdef.h"
 #include "priunit.h"
 #include "mxcent.h"
-      DIMENSION HSOPQ(*), BUF(*), IBUF(4,600)
+      DIMENSION HSOPQ(*), BUF(*), IINDX4(4,600)
 C
 C Used from common blocsk:
 C   INFORB : IBAS(8)
@@ -215,6 +215,7 @@ C
 #include "infind.h"
 #include "trhso.h"
 #include "trinfo.h"
+#include "eribuf.h"
 C
 C     Local variables:
 C
@@ -229,13 +230,7 @@ C
       IBASS = IBAS(ISS)
 C
       LBUF = 600
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
 C
       LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! buffer length in integer*4
       KINT = 1
@@ -249,24 +244,24 @@ C
       DOCOOR = .FALSE.
  150  CONTINUE
          CALL READI4(LUHSO2,LENINT4,BUF(KINT))
-         CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IINDX4,LENGTH)
          !write (lupri,*) 'Read next record, length',length
          !write (lupri,*) 'isp,isq,isr,iss',isp,isq,isr,iss
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
-               JS = IBUF(4,I)
+               JS = IINDX4(4,I)
                IF (JS .EQ. 0) THEN
-                  ICOOR = IBUF(3,I)
+                  ICOOR = IINDX4(3,I)
                   DOCOOR = ICOOR.EQ.ILXYZ
                !write (lupri,*) 'new coordinate',icoor,docoor
                ELSE IF (DOCOOR) THEN
-                  JP  = IBUF(1,I)
+                  JP  = IINDX4(1,I)
                   JSP = ISAO(JP)
                IF (JSP .NE. ISP) GO TO 100
-                  JQ  = IBUF(2,I)
+                  JQ  = IINDX4(2,I)
                   JSQ = ISAO(JQ)
                IF (JSQ .NE. ISQ) GO TO 100
-                  JR  = IBUF(3,I)
+                  JR  = IINDX4(3,I)
                   JSR = ISAO(JR)
                IF (JSR .NE. ISR) GO TO 100
                   JSS  = ISAO(JS)

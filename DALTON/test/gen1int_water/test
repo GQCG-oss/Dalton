@@ -1,0 +1,21 @@
+#!/usr/bin/env python
+#   gen1int_water_cart
+#   ------------------
+#   Molecule:         H2O
+#   Test Purpose:     Check Gen1int module using water molecule, Cartesian
+#                     and spherical basis sets, and without symmetry
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'gen1int_host_test', rel_tolerance=1.0e-10)
+
+test.run(['gen1int.dal'], ['water_cart.mol', 'water_spher.mol'], f={'out': f})
+
+sys.exit(test.return_code)

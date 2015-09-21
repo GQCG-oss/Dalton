@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -513,7 +513,7 @@ C   ADD CONTRIBUTIONS  FROM DIRAC INTEGRAL DISTRIBUTIONS
 C
 C   *********************************************************
 C
-      LUINTD = -1
+      LUINTD = -1 ! file MODRCINT will be opened in NXTH2D, if needed
       IF (SOPPA .AND. DIRFCK) GO TO 1095
 C
 C ALLOCATE WORK SPACE FOR DIRAC DISTRIBUTION
@@ -522,9 +522,6 @@ C
       CALL MEMGET2('REAL','PVCD3',KPVCD3,N2ASHX,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','PVDC2',KPVDC2,N2ASHX,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','PVDC3',KPVDC3,N2ASHX,WRK,KFREE,LFREE)
-C
-      IF (.NOT. NEWTRA) CALL GPOPEN(LUINTD,'MODRCINT','OLD',' ',
-     &               'UNFORMATTED',IDUMMY,.FALSE.)
 C
       IDIST  = 0
  1090 CALL NXTH2D(IC,ID,WRK(KH2),NEEDDI,LUINTD,WRK,KFREE,LFREE,IDIST)

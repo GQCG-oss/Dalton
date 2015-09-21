@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1462,7 +1462,7 @@ C     DXVAO finished, now DXCAO, if nisht.gt.0:
           ICMO1  = ICMO(ISYM1)
           ICMO2  = ICMO(ISYM2)
 C
-          IF (NBAS1*NBAS2*NORB2 .NE. 0) THEN
+          IF (NORB2 .NE. 0) THEN
             CALL DGEMM('N','T',NBAS2,NISH1,NORB2,1.D0,CMO(ICMO2+1),
      &                 NBAS2,ZYM(IORB1+1,IORB2+1),NORBT,0.D0,
      &                 WRK(KDXAO1),NBAS2)
@@ -1486,7 +1486,7 @@ c
           NORB2  = NORB(ISYM2)
           ICMO1  = ICMO(ISYM1)
           ICMO2  = ICMO(ISYM2)
-          IF (NBAS1*NBAS2*NORB2 .NE. 0) THEN
+          IF (NORB2 .NE. 0) THEN
             CALL DGEMM('N','N',NBAS2,NISH1,NORB2,1.D0,CMO(ICMO2+1),
      &                 NBAS2,ZYM(IORB2+1,IORB1+1),NORBT,0.D0,
      &                 WRK(KDXAO1),NBAS2)

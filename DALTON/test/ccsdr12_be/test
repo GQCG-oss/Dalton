@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+#  ccsdr12_be
+#  ------------
+#  Molecule:         Be in D2h
+#  Wave Function:    CC2-R12/B/1 CCSD(R12)/B/1 
+#  Test Purpose:     test CC2-R12/CCSD(R12) using .NATVIR option
+
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = 'Total MP2-R12/B energy',
+      abs_tolerance = 1.0e-10)
+f.add(string = 'Total CC2-R12/B energy',
+      abs_tolerance = 1.0e-10)
+f.add(string = 'Total CCSD(R12)/B energy',
+      abs_tolerance = 1.0e-10)
+f.add(from_string = 'Total energies in Hartree',
+      num_lines = 5,
+      abs_tolerance = 2.0e-10)
+
+test.run(['ccsdr12_be.dal'], ['ccsdr12_be.mol'], f={'out': f},
+         accepted_errors=['not implemented for parallel calculations.'])
+
+sys.exit(test.return_code)

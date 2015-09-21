@@ -1524,6 +1524,10 @@ ELSEIF (SHELLANGMOMA .EQ. 4) THEN !f orbitals
                  & -0.612372435695794E0_realk*CINT2(K,4)
          END DO
          call mem_dft_dealloc(CINT2)
+      ELSE
+         DO I = 1, KHKTA
+            CALL LS_DZERO(GAO(1,ISTART+I,1),NVCLEN)
+         END DO
       END IF
    ELSE
       IF (GMAX .GT. DFTHRI) THEN
@@ -1536,6 +1540,10 @@ ELSEIF (SHELLANGMOMA .EQ. 4) THEN !f orbitals
                GAO(K,TEMPI,1) = (PA(1,K)**LVALI)*(PA(2,K)**MVALI)&
                     &                 *(PA(3,K)**NVALI)*GA(K)
             END DO
+         END DO
+      ELSE
+         DO I = 1, KCKTA
+            CALL LS_DZERO(GAO(1,ISTART+I,1),NVCLEN)
          END DO
       END IF
    ENDIF
@@ -1574,6 +1582,10 @@ ELSE !higher than f orbitals
                GAO(K,TEMPI,1) = (PA(1,K)**LVALI)*(PA(2,K)**MVALI)&
                     &                 *(PA(3,K)**NVALI)*GA(K)
             END DO
+         END DO
+      ELSE
+         DO I = 1, KCKTA
+            CALL LS_DZERO(GAO(1,ISTART+I,1),NVCLEN)
          END DO
       END IF
    END IF

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -484,14 +484,14 @@ C
          NP =IAND(ISHFT(ILABEL,-24),IBT08)
          NQ =IAND(ISHFT(ILABEL,-16),IBT08)
          NR =IAND(ISHFT(ILABEL, -8),IBT08)
-         NS =IAND(       ILABEL,    IBT08) 
+         NS =IAND(      ILABEL,     IBT08) 
       ELSE
          ILABEL = IINT(IIND1 + 2*I - 1)
          NP =IAND(ISHFT(ILABEL,-16),IBT16)
-         NQ =IAND(       ILABEL,    IBT16) 
+         NQ =IAND(      ILABEL,     IBT16) 
          ILABEL = IINT(IIND1 + 2*I)
          NR =IAND(ISHFT(ILABEL,-16),IBT16)
-         NS =IAND(       ILABEL,    IBT16) 
+         NS =IAND(      ILABEL,     IBT16) 
       END IF
 #if defined VAR_AOCANORDER
 C     --- indices are assumed to be in canonical order

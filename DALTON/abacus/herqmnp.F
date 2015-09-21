@@ -1,10 +1,10 @@
 !...
-!...   Copyright (c) 2014 by the authors of Dalton (see below).
+!...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2014 (2014), see http://daltonprogram.org"
+!...    Release DALTON2015 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1008,7 +1008,7 @@ C     Set diagonal components
 C        Fix me: MM shift
          DO I=1,TNPATM
             IOFF = ISTART+I
-            FMAT(IOFF,IOFF) = D1/NPFCAP(NPFTYP(I))
+            FMAT(IOFF,IOFF) = -D1/NPFCAP(NPFTYP(I))
          END DO
       END IF
 C     Set off-diagonal components
