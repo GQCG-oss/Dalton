@@ -4,6 +4,8 @@ module files
     logical, save :: access_stream = .false.
     integer, save :: IUNTAB(99)
 
+public :: lsopen,lsclose,access_stream
+private
 contains 
 
 !> \brief Routine for opening files in the DALTON program.

@@ -12,6 +12,8 @@ type LSMatrixpointer
 TYPE(LSMatrix), pointer :: p
 end type LSMatrixpointer
 
+private
+public :: LSMatrixpointer,LSMATRIX
 contains
 
 !Added to avoid "has no symbols" linking warning

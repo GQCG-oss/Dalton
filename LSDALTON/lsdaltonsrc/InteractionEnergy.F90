@@ -1,4 +1,5 @@
 module InteractionEnergyMod
+use files
   use precision
   use matrix_module!, only: matrix
   use TYPEDEFTYPE!, only: lsitem

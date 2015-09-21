@@ -3,6 +3,7 @@
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
 module fullmp2
+use files
 
 #ifdef VAR_MPI
   use infpar_module

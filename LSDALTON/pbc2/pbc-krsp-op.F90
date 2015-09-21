@@ -2,6 +2,7 @@
 #ifdef MOD_UNRELEASED
 
 MODULE PBC_kspce_rspc_operations
+use files
 USE precision
 USE lattice_type
 USE lattice_vectors
