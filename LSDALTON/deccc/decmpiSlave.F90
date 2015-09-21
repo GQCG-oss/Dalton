@@ -4,6 +4,8 @@ subroutine dec_lsmpi_slave(comm)
    use precision
    use lstiming
    use infpar_module
+   use lsparameters
+   use lsmpi_param
    use lsmpi_type
    use integralinterfaceMod!, only: II_screeninit, &
    !           & II_bcast_screen, II_screenfree

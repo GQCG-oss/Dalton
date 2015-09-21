@@ -8,10 +8,12 @@ use files
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param
   use decmpi_module, only: mpi_bcast_fullmolecule
   use lsmpi_op
 #endif
   use fundamental
+  use lsparameters
   use precision
   use typedeftype!,only:lsitem
   use typedef
@@ -658,8 +660,8 @@ end module fullrimp2
 subroutine full_canonical_rimp2_slave
   use fullrimp2,only: full_canonical_rimp2
   use infpar_module !infpar
-  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
-       & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_param,only:LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer
   use lsmpi_op,only: mpicopy_lsitem
   use precision
   use typedeftype,only:lsitem

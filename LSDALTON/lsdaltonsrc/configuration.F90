@@ -66,7 +66,8 @@ use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
-use lsmpi_type, only: DFTSETFU,SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
+use lsmpi_type
+use lsmpi_param, only: SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
 #endif
 #ifdef BUILD_CGTODIFF
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general

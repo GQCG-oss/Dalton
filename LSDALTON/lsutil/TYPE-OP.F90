@@ -25,6 +25,7 @@ MODULE TYPEDEF
  use GCtransMod
 #ifdef VAR_MPI
  use infpar_module
+ use lsmpi_param
 #endif
 INTERFACE retrieve_output
    MODULE PROCEDURE retrieve_output_mat_single, &

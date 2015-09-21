@@ -62,7 +62,7 @@ MODULE ls_Integral_Interface
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
 #if VAR_MPI
-  use lsmpi_type, only:LSGETINT,LSJENGIN,LSLINK, ls_mpibcast, lsmpi_barrier, &
+  use lsmpi_type, only: ls_mpibcast, lsmpi_barrier, &
        & lsmpi_reduction, get_MPI_COMM_SELF
   use lsmpi_op, only: LSTASK, LS_TASK_MANAGER, LSMPI_TASK_LIST,&
   & lsmpi_lstensor_reduction, lsmpi_probe_and_irecv_add_lstmemrealkbuf,&

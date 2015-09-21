@@ -25,7 +25,9 @@ module ccintegrals
   use memory_handling
   use daltoninfo
 #ifdef VAR_MPI
+  use lsmpi_param
   use lsmpi_type
+  use lsmpi_module
   use infpar_module
 #endif
 

@@ -13,6 +13,7 @@ module ccsdpt_tools_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_module
 #endif
   use tensor_interface_module
   use cc_tools_module

@@ -6,6 +6,10 @@ use LSTENSOR_OPERATIONSMOD
 use io
 use io_type
 use lsmpi_type
+#ifdef VAR_MPI
+use lsmpi_param
+#endif
+use lsparameters
 
 TYPE SCREENCHAINITEM
 Character(80) :: filename
