@@ -122,7 +122,12 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
+#include "ccexcicvs.h"
+C
       PARAMETER(NMODEL = 22)
+      !sonia: prevent projection in L0
+      logical lcvsbck,lionbck
+      !
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
@@ -657,7 +662,13 @@ C
                        ENDIF
                     ENDDO
                  ELSE
+                    lcvsbck = LCVSEXCI
+                    lionbck = LIONIZEEXCI
+                    LCVSEXCI = .false.
+                    LIONIZEEXCI = .false.
                     CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
+                    LCVSEXCI = lcvsbck
+                    LIONIZEEXCI = lionbck 
                  ENDIF
              ENDIF
 C
