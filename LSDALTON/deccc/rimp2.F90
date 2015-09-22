@@ -7,6 +7,7 @@ module rimp2_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_module
 #endif
   use precision
   use lstiming
@@ -193,6 +194,18 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   call myPAPI_start(eventset2)
 #endif
 
+#ifdef VAR_TIME
+  ForcePrint = .TRUE.
+#else
+  IF(LSTIME_PRINT)THEN
+     ForcePrint = .TRUE.
+  ELSE
+     ForcePrint = .FALSE.
+  ENDIF
+#endif
+
+  call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
+
 #ifdef VAR_OPENACC
   async_id = acc_async_sync
 #else
@@ -253,17 +266,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      first_order=.FALSE.     
   ENDIF
 
-#ifdef VAR_TIME
-  ForcePrint = .TRUE.
-#else
-  IF(LSTIME_PRINT)THEN
-     ForcePrint = .TRUE.
-  ELSE
-     ForcePrint = .FALSE.
-  ENDIF
-#endif
-
-  call LSTIMER('START ',TS,TE,DECinfo%output,ForcePrint)
   LUPRI = DECinfo%output
   CALL LSTIMER('START ',TS2,TE2,LUPRI)
   ChangedDefault = .FALSE.
@@ -725,7 +727,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   CollaborateWithSlaves = .false.
 #endif
 
-  CALL LSTIMER('START ',TS2,TE2,LUPRI)
   ABdecompCreate = .TRUE.
   IF(fc)THEN
      intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
@@ -760,13 +761,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
 
   IF(NBA.GT.0)THEN
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)     
+!     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)     
      IF(DECinfo%RIMP2_Laplace)THEN
         !toccEOS(a,i,b,j) = sum_l w_l*TauVirt(A,l)*TauVirt(B,l)*TauOcc(I,l)*TauOcc(J,l)*C(alpha,A,I)*C(alpha,B,J)*U(A,a)*U(B,b)*U(I,i)*U(J,j)
         !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
         !Ctmp2(alpha,a,i,l) = TauVirt(A,l)*Ctmp(alpha,A,i,l)*U(A,a)
         !Ctmp(alpha,A,i,l) = TauOcc(I,l)*C(alpha,A,I)*U(I,i)
-        CALL LSTIMER('START ',TS4,TE4,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('START ',TS4,TE4,LUPRI,FORCEPRINT)
         nsize1 = noccOut*(nvirt*i8)*NBA*nLaplace
         nsize2 = noccOut*(nvirt*i8)*NBA*nLaplace
         IF(use_bg_buf)THEN
@@ -791,11 +792,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         else
            call BuildCtmpLaplace(Calpha,NBA,nvirt,nocc,noccOut,TauOcc,nLaplace,Ctmp,UoccEOST)
         endif
-        CALL LSTIMER('RIMP2: Ctmp1o ',TS4,TE4,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('RIMP2: Ctmp1o ',TS4,TE4,LUPRI,FORCEPRINT)
         !Ctmp2(alpha,a,i,l) = TauVirt(A,l)*Ctmp(alpha,A,i,l)*U(A,a)
         call BuildCtmp2Laplace(Ctmp,NBA,nvirt,nvirt,noccOut,TauVirt,nLaplace,Ctmp2,UvirtT)
         !$acc exit data delete(Ctmp) 
-        CALL LSTIMER('RIMP2: Ctmp2v ',TS4,TE4,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('RIMP2: Ctmp2v ',TS4,TE4,LUPRI,FORCEPRINT)
         IF(.NOT.use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call stats_globalmem(6)
            IF(DECinfo%MemDebugPrint)print*,'STD: alloc tensor toccEOS(',dimocc(1)*dimocc(2)*dimocc(3)*dimocc(4),')'
@@ -805,7 +806,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !$acc enter data create(toccEOS%elm1)
         call BuildTampLaplace(Ctmp2,NBA,nvirt,noccOut,toccEOS%elm1,nLaplace,LaplaceW)
         !$acc exit data copyout(toccEOS%elm1) delete(Ctmp2)
-        CALL LSTIMER('RIMP2: TampLaplaceOcc',TS4,TE4,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('RIMP2: TampLaplaceOcc',TS4,TE4,LUPRI,FORCEPRINT)
         IF(use_bg_buf)THEN
            call mem_pseudo_dealloc(Ctmp)
            call mem_pseudo_dealloc(Ctmp2)
@@ -1158,13 +1159,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            call mem_dealloc(tocc3)     
         ENDIF
      ENDIF
-     CALL LSTIMER('RIMP2: toccEOS',TS3,TE3,LUPRI,FORCEPRINT)
+!     CALL LSTIMER('RIMP2: toccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
      IF(.NOT.use_bg_buf)call tensor_ainit(toccEOS,dimocc,4)
      nsize = nvirt*noccOut*nvirt*noccOut
      call ls_dzero8(toccEOS%elm1,nsize)
   ENDIF
-  CALL LSTIMER('DECRIMP2: tocc          ',TS2,TE2,LUPRI,FORCEPRINT)
+!  CALL LSTIMER('DECRIMP2: tocc          ',TS2,TE2,LUPRI,FORCEPRINT)
 
   !=====================================================================================
   !  Major Step 6: Generate tvirtEOS(nvirtEOS,nocc,nvirtEOS,nocc)
@@ -1178,13 +1179,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
   not_DECNP_1: if (.not.DECinfo%DECNP) then
      IF(NBA.GT.0)THEN
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
         IF(DECinfo%RIMP2_Laplace)THEN
            !tvirtEOS(a,i,b,j) = sum_l w_l*TauVirt(A,l)*TauVirt(B,l)*TauOcc(I,l)*TauOcc(J,l)*C(alpha,A,I)*C(alpha,B,J)*U(A,a)*U(B,b)*U(I,i)*U(J,j)
            !tvirtEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
            !Ctmp2(alpha,a,i,l) = TauOcc(I,l)*Ctmp(alpha,a,I,l)*U(I,i)
            !Ctmp(alpha,a,I,l) = TauVirt(A,l)*C(alpha,A,I)*U(A,a)
-           CALL LSTIMER('START ',TS4,TE4,LUPRI,FORCEPRINT)
+!           CALL LSTIMER('START ',TS4,TE4,LUPRI,FORCEPRINT)
            nsize2 = nvirtOut*(nocc*i8)*NBA*nLaplace
            nsize1 = nvirtOut*(nocc*i8)*NBA*nLaplace
            IF(use_bg_buf)THEN
@@ -1209,17 +1210,17 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            else
               call BuildCtmpVLaplace(Calpha,NBA,nvirt,nocc,nvirtOut,TauVirt,nLaplace,Ctmp,UvirtEOST)
            endif
-           CALL LSTIMER('RIMP2: Ctmp1v ',TS4,TE4,LUPRI,FORCEPRINT)
+!           CALL LSTIMER('RIMP2: Ctmp1v ',TS4,TE4,LUPRI,FORCEPRINT)
            !Ctmp2(alpha,a,i,l) = TauOcc(I,l)*Ctmp(alpha,a,I,l)*U(I,i)
            call BuildCtmpVLaplace2(Ctmp,NBA,nvirtOut,nocc,TauOcc,nLaplace,Ctmp2,UoccT)
            !$acc exit data delete(Ctmp)
-           CALL LSTIMER('RIMP2: Ctmp2o ',TS4,TE4,LUPRI,FORCEPRINT)
+!           CALL LSTIMER('RIMP2: Ctmp2o ',TS4,TE4,LUPRI,FORCEPRINT)
            !toccEOS(a,i,b,j) = sum_l w_l*Ctmp2(alpha,a,i,l)*Ctmp2(alpha,b,j,l)
            IF(.NOT.use_bg_buf)call tensor_ainit(tvirtEOS,dimvirt,4)
            !$acc enter data create(tvirtEOS%elm1)
            call BuildTampLaplace(Ctmp2,NBA,nvirtOut,nocc,tvirtEOS%elm1,nLaplace,LaplaceW)
            !$acc exit data copyout(tvirtEOS%elm1) delete(Ctmp2)
-           CALL LSTIMER('RIMP2: TampLaplaceVirt',TS4,TE4,LUPRI,FORCEPRINT)
+!           CALL LSTIMER('RIMP2: TampLaplaceVirt',TS4,TE4,LUPRI,FORCEPRINT)
            IF(use_bg_buf)THEN
               call mem_pseudo_dealloc(Ctmp)
               call mem_pseudo_dealloc(Ctmp2)
@@ -1543,7 +1544,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               call mem_dealloc(tvirt2)
            ENDIF
         ENDIF
-        CALL LSTIMER('RIMP2: tvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('RIMP2: tvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
      ELSE
         IF(.NOT.use_bg_buf)Then
            call tensor_ainit(tvirtEOS,dimvirt,4)
@@ -1571,7 +1572,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
 
   IF(NBA.GT.0)THEN
-     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+!     CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
      nsize = nba*nvirt*noccOut
      IF(use_bg_buf)THEN
         IF(DECinfo%MemDebugPrint)call printBGinfo()
@@ -1623,7 +1624,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         IF(DECinfo%MemDebugPrint)print*,'STD: dealloc Calpha2(',size(Calpha2),')'
         call mem_dealloc(Calpha2)
      ENDIF
-     CALL LSTIMER('RIMP2: goccEOS',TS3,TE3,LUPRI,FORCEPRINT)
+!     CALL LSTIMER('RIMP2: goccEOS',TS3,TE3,LUPRI,FORCEPRINT)
   ELSE
      IF(.NOT.use_bg_buf)call tensor_ainit(goccEOS,dimocc,4)
      nSize = nvirt*noccOut*nvirt*noccOut
@@ -1650,7 +1651,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
    
      dimvirt = [nvirtOut,nocc,nvirtOut,nocctot]   ! Output order
      IF(NBA.GT.0)THEN
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
         IF(fc)THEN
            nsize2 = nba*nvirt*nocctot
            nsize3 = nba*nvirt*nocctot
@@ -1760,7 +1761,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
               call mem_dealloc(Calpha)
            ENDIF
         ENDIF   
-        CALL LSTIMER('RIMP2: gvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('RIMP2: gvirtEOS',TS3,TE3,LUPRI,FORCEPRINT)
      ELSE
         IF(.NOT.use_bg_buf)call tensor_ainit(gvirtEOS,dimvirt,4)
         nSize = nvirtOut*nocc*nvirtOut*nocctot
@@ -1786,6 +1787,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !=====================================================================================
   !  Major Step 9: Collect toccEOS, tvirtEOS, goccEOS, and gvirtEOS
   !=====================================================================================
+  CALL LSTIMER('RIMP2: toccEOS,goccEOS,..',TS2,TE2,LUPRI,FORCEPRINT)
 
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then
@@ -1821,6 +1823,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            call tensor_free(tvirtEOS)
         end if
      endif
+     CALL LSTIMER('RIMP2: Reduction toccEOS,goccEOS,..',TS2,TE2,LUPRI,FORCEPRINT)
   ENDIF
 #endif
 
@@ -1849,7 +1852,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            call mem_alloc(Calpha3,nsize3,'RIMP2:Calha3D')
         ENDIF
 
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
         !(alphaAux;nvirt,JnoccEOS) = (alphaAux;nvirt,J)*UoccEOST(J,JnoccEOS)
         M = nba*nvirt        !rows of Output Matrix
         N = noccEOS          !columns of Output Matrix
@@ -1860,7 +1863,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         !(alphaAux,nvirtAOS,noccEOS) = (alphaAux;nvirt,noccEOS)*UvirtT(nvirt,nvirtAOS)
         call RIMP2_TransAlpha2(noccEOS,nvirt,nvirt,nba,UvirtT,Calpha2,Calpha3)
 !$acc exit data delete(Calpha2)
-        CALL LSTIMER('START ',TS2,TE2,LUPRI)
+ !       CALL LSTIMER('START ',TS2,TE2,LUPRI)
         intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
         intspec(2) = 'R' !Regular AO basis function on center 3
         intspec(3) = 'R' !Regular AO basis function on center 4
@@ -1869,7 +1872,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
              & FORCEPRINT,CollaborateWithSlaves,CoccEOS,noccEOS,CoccTmp,nCoccTmp,&
              & mynum,numnodes,CalphaOcc,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
-        CALL LSTIMER('DECRIMP2: CalphaOO',TS2,TE2,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('DECRIMP2: CalphaOO',TS2,TE2,LUPRI,FORCEPRINT)
         IF(nCoccTmp.NE.nocctot)call lsquit('Error in djik dim4',-1)
         !  djikEOS(nvirtAOS,noccEOS,noccEOS,noccAOS)
         IF(.NOT.use_bg_buf)call tensor_ainit(djik,dimvirt,4)
@@ -1897,7 +1900,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            IF(DECinfo%MemDebugPrint)print*,'STD: dealloc Calpha2(',size(Calpha2),')'
            call mem_dealloc(Calpha2)
         ENDIF
-        CALL LSTIMER('RIMP2: djik',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('RIMP2: djik',TS3,TE3,LUPRI,FORCEPRINT)
      ELSE
         IF(.NOT.use_bg_buf)call tensor_ainit(djik,dimvirt,4)
         nSize = nvirt*noccEOS*noccEOS*nocctot
@@ -1910,7 +1913,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 
      dimvirt = [nvirtEOS,nocc,nvirtEOS,nvirt]   ! Output order
      IF(NBA.GT.0)THEN
-        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('START ',TS3,TE3,LUPRI,FORCEPRINT)
         nsize = nba*nvirt*MAX(nocc,nvirt)
         IF(use_bg_buf)THEN
            IF(DECinfo%MemDebugPrint)call printBGinfo()
@@ -1941,7 +1944,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
              & int((i8*M)*K,kind=8),int(K*(N*i8),kind=8),int(M*(N*i8),kind=8),async_id,cublas_handle)
         call RIMP2_TransAlpha2(nocc,nvirt,nvirtEOS,nba,UvirtEOST,Calpha2,Calpha3)   
 !$acc exit data delete(Calpha2,Calpha)
-        CALL LSTIMER('START ',TS2,TE2,LUPRI)
+!        CALL LSTIMER('START ',TS2,TE2,LUPRI)
         intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
         intspec(2) = 'R' !Regular AO basis function on center 3
         intspec(3) = 'R' !Regular AO basis function on center 4
@@ -1950,7 +1953,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
         call Build_CalphaMO2(MyFragment%mylsitem,master,nbasis,nbasis,nbasisAux,LUPRI,&
              & FORCEPRINT,CollaborateWithSlaves,CvirtEOS,nvirtEOS,CvirtAOS,nvirt,&
              & mynum,numnodes,CalphaVV,NBA,ABdecomp,ABdecompCreate,intspec,use_bg_buf)
-        CALL LSTIMER('DECRIMP2: CalphaVV',TS2,TE2,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('DECRIMP2: CalphaVV',TS2,TE2,LUPRI,FORCEPRINT)
         !generate blad(nvirtEOS,noccAOS,nvirtEOS,nvirtAOS)
         IF(.NOT.use_bg_buf)call tensor_ainit(blad,dimvirt,4)
 !$acc enter data create(blad%elm1) copyin(CalphaVV)
@@ -1983,7 +1986,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
            IF(DECinfo%MemDebugPrint)print*,'STD: dealloc Calpha(',size(Calpha),')'
            call mem_dealloc(Calpha)
         ENDIF
-        CALL LSTIMER('RIMP2: blad',TS3,TE3,LUPRI,FORCEPRINT)
+!        CALL LSTIMER('RIMP2: blad',TS3,TE3,LUPRI,FORCEPRINT)
      ELSE
         IF(.NOT.use_bg_buf)call tensor_ainit(blad,dimvirt,4)
         nSize = nvirtEOS*nocc*nvirtEOS*nvirt
@@ -2139,11 +2142,24 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
 #endif
   endif
 
-  CALL LSTIMER('DECRIMP2: Finalize',TS2,TE2,LUPRI,FORCEPRINT)
-  call LSTIMER('DEC-RIMP2 ',TS,TE,DECinfo%output,ForcePrint)
   IF(ChangedDefault)THEN
      call set_default_AOs(oldAORegular,oldAOdfAux) !revert Changes
   ENDIF
+  IF(DECinfo%RIMP2_Laplace) call mem_dealloc(LaplaceW)
+  IF(DECinfo%MemDebugPrint)THEN
+     WRITE(DECinfo%output,*)'RIMP2meminfo: Memory After RIMP2 '
+     IF(use_bg_buf)THEN
+        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory in Background Buffer=',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
+        call printBGinfo()
+     ELSE
+        MemInGBCollected = 0.0E0_realk
+        call get_currently_available_memory(MemInGBCollected)  
+        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory available=',MemInGBCollected,' GB'
+     ENDIF
+  ENDIF
+
+  CALL LSTIMER('DECRIMP2: Finalize',TS2,TE2,LUPRI,FORCEPRINT)
+  call LSTIMER('DEC-RIMP2 ',TS,TE,DECinfo%output,ForcePrint)
 #ifdef VAR_TIME
   call time_phases_get_diff(current_wt=phase_cntrs)
   time_w = phase_cntrs( PHASE_WORK_IDX )
@@ -2162,19 +2178,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   write(LUPRI,*) 'FLOPS/s for RIMP2_integrals_and_amplitudes = ', papiflops/WTIME
 #endif
 #endif
-  IF(DECinfo%RIMP2_Laplace) call mem_dealloc(LaplaceW)
-
-  IF(DECinfo%MemDebugPrint)THEN
-     WRITE(DECinfo%output,*)'RIMP2meminfo: Memory After RIMP2 '
-     IF(use_bg_buf)THEN
-        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory in Background Buffer=',mem_get_bg_buf_free()*8.0E-9_realk,' GB'
-        call printBGinfo()
-     ELSE
-        MemInGBCollected = 0.0E0_realk
-        call get_currently_available_memory(MemInGBCollected)  
-        WRITE(DECinfo%output,*)'RIMP2meminfo: Memory available=',MemInGBCollected,' GB'
-     ENDIF
-  ENDIF
 end subroutine RIMP2_integrals_and_amplitudes
 
 subroutine BuildTauVirt(Tvirt,nvirt,nLaplace,EpsVirt,LaplaceAmp)
@@ -3133,7 +3136,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   real(realk) :: MemStep1,MemStep2,MemStep3,TS4,TE4
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
   integer :: MaxVirtSize,nTiles,offsetV,offset,MinAuxBatch
-  integer :: ncabsAO,ncabsMO
+  integer :: ncabsAO,ncabsMO,ncabs(2)
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,PerformTiling
   logical :: use_bg_buf
   integer(kind=ls_mpik)  :: request5,request6
@@ -3246,9 +3249,15 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
 
+  !print *, "nbasis", nbasis
+  !print *, "noccAOS", nocc
+  !print *, "noccEOS", noccEOS
+  !print *, "nvirtAOS", nvirt
+  !print *, "noccAOS+noccAOS", nocc + nvirt
   
+  print*,'associated(MyFragment%Ccabs): ',associated(MyFragment%Ccabs)
   ncabsAO = size(MyFragment%Ccabs,1)
-  ncabsMO = size(MyFragment%Ccabs,2)    
+  ncabsMO = size(MyFragment%Ccabs,2)
 
   call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%SETTING,MinAuxBatch,'D')
   offset = 0 
@@ -3258,6 +3267,12 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   nbasis8 = nbasis
   nvirtEOS8 = nvirtEOS
   nocctot8 = nocctot
+
+  if(DECinfo%frozencore) then
+     offset = ncore
+  else
+     offset = 0
+  end if
 
 !  IF(DECinfo%RIMP2_Laplace)THEN
 !     if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating RI-MP2-F12 C coupling Energy contribution using Laplace Transform'
@@ -3333,6 +3348,8 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
 
   call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc,CDIAGvirt,Uocc,Uvirt,EVocc,EVvirt)
 
+  !CDiagoccALL
+
   !  IF(DECinfo%RIMP2_Laplace)THEN
   !     !  tau(a,l) = exp(epsilon_A*amp_l)   !l is the laplace points
   !     call BuildTauVirt(TauVirt,nvirt,nLaplace,EVvirt,LaplaceAmp)
@@ -3349,7 +3366,73 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      call mem_alloc(Fca_diag,ncabsMO,nvirt,'RIMP2Cc:Fca_diag')
      call mem_alloc(Fca_local,ncabsMO,nvirt,'RIMP2Cc:Fca_local')
   ENDIF
-  Fca_local(:,1:nvirt) = Myfragment%Fcp(:,nocc+1:nbasis)
+
+  ! *************************************************************
+  ! *                    Start up MPI slaves                    *
+  ! *************************************************************
+
+#ifdef VAR_MPI
+
+  ! Only use slave helper if there is at least one local slave available.
+  if(infpar%lg_nodtot.GT.1) then
+     wakeslave=.true.
+     CollaborateWithSlaves=.true.
+  else
+     wakeslave=.false.
+     CollaborateWithSlaves=.false.
+  end if
+
+  ! Master starts up slave
+  StartUpSlaves: if(wakeslave .and. master) then
+
+     bat%MaxAllowedDimAlpha = 0
+     bat%MaxAllowedDimGamma = 0
+     bat%virtbatch = 0
+     bat%size1=0
+     bat%size2=0
+     bat%size3=0
+
+     ! Sanity check
+     if(.not. MyFragment%BasisInfoIsSet) then
+        call lsquit('MP2_RI_EnergyContributions: &
+             & Basis info for master is not set!',-1)
+     end if
+
+     call time_start_phase( PHASE_COMM )
+     ! Wake up slaves to do the job: slaves awoken up with (RIMP2INAMP)
+     ! and call MP2_RI_EnergyContribution_slave which calls
+     ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
+     call ls_mpibcast(RIMP2F12Ccoup,infpar%master,infpar%lg_comm)
+     ! Communicate fragment information to slaves
+     first_order=.FALSE.
+     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
+     ncabs(1) = ncabsAO
+     ncabs(2) = ncabsMO
+     call ls_mpibcast(ncabs,2,infpar%master,infpar%lg_comm)
+     call ls_mpibcast(MyFragment%Ccabs,ncabsAO,ncabsMO,infpar%master,infpar%lg_comm)  
+     call time_start_phase( PHASE_WORK )
+  endif StartUpSlaves
+  CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
+  mynum = infpar%lg_mynum
+  numnodes = infpar%lg_nodtot
+  HSTATUS = 80
+  CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
+#else
+  mynum = 0
+  numnodes = 1
+  wakeslave = .false.
+  CollaborateWithSlaves = .false.
+#endif
+
+  IF(master)THEN
+     Fca_local(:,1:nvirt) = Myfragment%Fcp(:,offset+nocc+1:(nocc+offset+nvirt))
+  ENDIF
+#ifdef VAR_MPI
+  if(wakeslave) then
+     call ls_mpibcast(Fca_local,ncabsMO,nvirt,infpar%master,infpar%lg_comm)
+  endif
+#endif
+
   !Transform Local Virtual index to Diagonal/canonical index 
   !F(C,A)_diag = F(C,B)_local * Uvirt(B,A)
   M = ncabsMO    !rows of Output Matrix
@@ -3406,59 +3489,6 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
 !!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT)
 !!$acc enter data copyin(TauOcc,TauVirt,LaplaceW) if(DECinfo%RIMP2_Laplace)
 
-  ! *************************************************************
-  ! *                    Start up MPI slaves                    *
-  ! *************************************************************
-
-#ifdef VAR_MPI
-
-  ! Only use slave helper if there is at least one local slave available.
-  if(infpar%lg_nodtot.GT.1) then
-     wakeslave=.true.
-     CollaborateWithSlaves=.true.
-  else
-     wakeslave=.false.
-     CollaborateWithSlaves=.false.
-  end if
-
-  ! Master starts up slave
-  StartUpSlaves: if(wakeslave .and. master) then
-
-     bat%MaxAllowedDimAlpha = 0
-     bat%MaxAllowedDimGamma = 0
-     bat%virtbatch = 0
-     bat%size1=0
-     bat%size2=0
-     bat%size3=0
-
-     ! Sanity check
-     if(.not. MyFragment%BasisInfoIsSet) then
-        call lsquit('MP2_RI_EnergyContributions: &
-             & Basis info for master is not set!',-1)
-     end if
-
-     call time_start_phase( PHASE_COMM )
-     ! Wake up slaves to do the job: slaves awoken up with (RIMP2INAMP)
-     ! and call MP2_RI_EnergyContribution_slave which calls
-     ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
-     call ls_mpibcast(RIMP2F12Ccoup,infpar%master,infpar%lg_comm)
-     ! Communicate fragment information to slaves
-     first_order=.FALSE.
-     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
-     call time_start_phase( PHASE_WORK )
-  endif StartUpSlaves
-  CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
-  mynum = infpar%lg_mynum
-  numnodes = infpar%lg_nodtot
-  HSTATUS = 80
-  CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
-#else
-  mynum = 0
-  numnodes = 1
-  wakeslave = .false.
-  CollaborateWithSlaves = .false.
-#endif
-
   !Build Galpha2(nAux,nocc,nvirt) = GalphaCabs(nAUx,nocc,ncabsMO)*Fca(ncabsMO,nvirt)
   !in the diagonal basis 
   CALL LSTIMER('START ',TS2,TE2,LUPRI)
@@ -3511,10 +3541,11 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
         call mem_pseudo_alloc(tocc3,nsize)
         call mem_pseudo_alloc(TCijAB,nsize)
      ENDIF
+
      IF(.NOT.use_bg_buf)call mem_alloc(TCijAB,nsize,'RIMP2Cc:TCijAB')
      call RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEOST,noccEOS,TCijAB)
      !Transform first Virtual index (ILOC,JLOC,ADIAG,BDIAG) => (ILOC,JLOC,ADIAG,BLOC)
-     M = nocceos*nocceos*nvirt  !rows of Output Matrix
+     M = noccEOS*noccEOS*nvirt  !rows of Output Matrix
      N = nvirt                  !columns of Output Matrix
      K = nvirt                  !summation dimension
      IF(.NOT.use_bg_buf)call mem_alloc(tocc3,nsize,'RIMP2Cc:tocc3')
@@ -3558,9 +3589,17 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      ENDIF
      ! Transform Galpha(ALPHA,i,A) = Galpha(ALPHA,I,A)*UoccEOST(nocc,noccEOS)
      IF(.NOT.use_bg_buf)call mem_alloc(GalphaTMP,nsize,'RIMP2Cc:GalphaTMP')
+
      call RIMP2F12_Ccoup_TransOcc(Galpha,NBA,nocc,nvirt,UoccEOST,noccEOS,GalphaTMP)
+
+     if(use_bg_buf) then
+        call mem_pseudo_dealloc(Galpha)
+     else
+        call mem_dealloc(Galpha)
+     endif
+
      ! Transform Galpha(ALPHA,i,a) = Galpha(ALPHA,i,A)*Uvirt(nvirt,nvirt)
-     M = nba*nocc  !rows of Output Matrix
+     M = nba*noccEOS  !rows of Output Matrix
      N = nvirt     !columns of Output Matrix
      K = nvirt     !summation dimension
      IF(.NOT.use_bg_buf)call mem_alloc(GalphaEOS,nsize,'RIMP2Cc:GalphaEOS')
@@ -3568,10 +3607,17 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
 
      ! Transform Galpha2(ALPHA,i,A) = Galpha2(ALPHA,I,A)*UoccEOST(nocc,noccEOS)
      call RIMP2F12_Ccoup_TransOcc(Galpha2,NBA,nocc,nvirt,UoccEOST,noccEOS,GalphaTMP)
+ 
+     if(use_bg_buf) then
+        call mem_pseudo_dealloc(Galpha2)
+     else
+        call mem_dealloc(Galpha2)
+     endif
+
      ! Transform Galpha2(ALPHA,i,a) = Galpha2(ALPHA,i,A)*Uvirt(nvirt,nvirt)
-     M = nba*nocc  !rows of Output Matrix
-     N = nvirt     !columns of Output Matrix
-     K = nvirt     !summation dimension        
+     M = nba*noccEOS  !rows of Output Matrix
+     N = nvirt        !columns of Output Matrix
+     K = nvirt        !summation dimension        
      IF(.NOT.use_bg_buf)call mem_alloc(Galpha2EOS,nsize,'RIMP2Cc:Galpha2EOS')
      call DGEMM('N','N',M,N,K,1.0E0_realk,GalphaTMP,M,UvirtT,K,0.0E0_realk,Galpha2EOS,M)
      IF(.NOT.use_bg_buf)call mem_dealloc(GalphaTMP)
@@ -3728,6 +3774,7 @@ subroutine RIMP2F12Ccoup_CijAB(Galpha,NBA,nocc,nvirt,Galpha2,EVocc,EVvirt,UoccEO
                  gmocont = gmocont + Galpha(ALPHAAUX,IDIAG,ADIAG)*Galpha2(ALPHAAUX,JDIAG,BDIAG)
               enddo
               deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
+
               toccTMP(JDIAG)=gmocont/deltaEPS                
            enddo
            do jLOC=1,noccEOS
@@ -3916,4 +3963,38 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   ENDIF
 
 end subroutine RIMP2_integrals_and_amplitudes_slave
+
+subroutine RIMP2F12_Ccoupling_energy_slave()
+  use precision
+  use infpar_module
+  use dec_typedef_module
+  use lstiming
+  ! DEC DEPENDENCIES (within deccc directory)  
+  ! *****************************************
+  use decmpi_module, only: mpi_communicate_mp2_int_and_amp
+  use rimp2_module,only: RIMP2F12_Ccoupling_energy
+  use lsmpi_type
+  implicit none
+  !> Atomic fragment (or pair fragment)
+  type(decfrag) :: MyFragment
+  !> The RI-MP2-F12 Ccoupling F12 energy contribution
+  real(realk) :: EnergyF12Ccoupling
+  !> Batch sizes
+  type(mp2_batch_construction) :: bat
+  !> Calculate intgrals for first order MP2 properties?
+  logical :: first_order
+  integer :: ncabs(2)
+  ! Receive fragment structure and other information from master rank
+  ! *****************************************************************
+  call time_start_phase( PHASE_COMM)
+  call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
+  ncabs(1) = size(MyFragment%Ccabs,1)
+  ncabs(2) = size(MyFragment%Ccabs,2)
+  call ls_mpibcast(ncabs,2,infpar%master,infpar%lg_comm)
+  call mem_alloc(MyFragment%Ccabs,ncabs(1),ncabs(2))
+  call ls_mpibcast(MyFragment%Ccabs,ncabs(1),ncabs(2),infpar%master,infpar%lg_comm)  
+  call time_start_phase( PHASE_WORK)
+  call RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
+!  call mem_dealloc(MyFragment%Ccabs) 
+end subroutine RIMP2F12_Ccoupling_energy_slave
 #endif

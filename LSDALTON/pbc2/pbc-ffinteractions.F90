@@ -1,6 +1,7 @@
 #ifdef MOD_UNRELEASED
 
 MODULE pbc_ff_contrib
+use files
 USE precision
 USE TYPEDEF
 USE lattice_type

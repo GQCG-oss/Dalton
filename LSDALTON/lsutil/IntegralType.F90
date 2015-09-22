@@ -145,6 +145,9 @@ logical       :: LHSsameAsRHSDmat
 logical       :: RealGabMatrix
 END TYPE INTEGRALINPUT
 
+public :: INTEGRALINPUT,print_INTEGRALINPUT
+private 
+
 CONTAINS
 SUBROUTINE print_INTEGRALINPUT(INT_INPUT,iunit)
 implicit none

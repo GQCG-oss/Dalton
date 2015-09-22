@@ -40,7 +40,8 @@ MODULE OD_TypeType
   REAL(REALK)           :: ODcenter(3)
   REAL(REALK)           :: ODextent
  END TYPE ODBATCH
-
+public :: ODBATCH,ODITEM
+private 
 contains
 
 !Added to avoid "has no symbols" linking warning

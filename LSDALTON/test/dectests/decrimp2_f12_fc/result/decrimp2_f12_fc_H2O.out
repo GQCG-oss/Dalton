@@ -88,30 +88,40 @@
      for further information.
   
   
- Who compiled             | yangminwang
- Host                     | YANGs-MBP.st.client.au.dk
- System                   | Darwin-14.4.0
+ Who compiled             | tkjaer
+ Host                     | localhost.localdomain
+ System                   | Linux-3.16.6-200.fc20.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran-4.9
- Fortran compiler version | unknown
- C compiler               | /usr/local/bin/gcc-4.9
- C compiler version       | unknown
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | Apple LLVM version 6.0 (clang-600.0.57) (based on 
-                          | LLVM 3.5svn)
- BLAS                     | /usr/lib/libblas.dylib
- LAPACK                   | /usr/lib/liblapack.dylib
+ Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icc
+ C compiler version       | icc (ICC) 14.0.3 20140422
+ C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ BLAS                     | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_intel_lp64.so;/opt/intel/composer_xe_20
+                          | 13_sp1.3.174/mkl/lib/intel64/libmkl_sequential.so;
+                          | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_core.so;/usr/lib64/libpthread.so;/usr/l
+                          | ib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/inte
+                          | l64/libmkl_lapack95_lp64.a;/opt/intel/composer_xe_
+                          | 2013_sp1.3.174/mkl/lib/intel64/libmkl_intel_lp64.s
+                          | o
  Static linking           | OFF
- Last Git revision        | f482cb03fbe5060dd1e160eb8472e0e897a045eb
+ Last Git revision        | 3dcb8e5761c3ee93f000a18b0423d51a211115fd
  Git branch               | master
- Configuration time       | 2015-09-01 14:13:34.306034
+ Configuration time       | 2015-09-21 11:16:08.448334
 
 Start simulation
-     Date and time (Linux)  : Tue Sep  1 14:24:26 2015
-     Host name              : YANGs-MBP.st.client.au.dk               
+     Date and time (Linux)  : Mon Sep 21 11:33:57 2015
+     Host name              : localhost.localdomain                   
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -149,6 +159,7 @@ Start simulation
   .Includefullmolecule                                                                                
   .RIMP2                                                                                              
   .F12DEBUG                                                                                           
+  .F12CCOUPLING                                                                                       
   .MEMORY                                                                                             
   2                                                                                                   
   *END OF INPUT                                                                                       
@@ -199,15 +210,20 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/6-31G
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch8/build-debug/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/cc-pV5Z-RI
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch8/build-debug/basis/cc-pV5Z
+ -RI
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/aug-cc-pVDZ
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2015/DebugMasterBranch8/build-debug/basis/aug-cc-
+ pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -283,12 +299,12 @@ total         10                               57       41
  ==============
     This is a Single core calculation. (no OpenMP)
     This is a serial calculation (no MPI)
-
+ 
 Density subspace min. method    : DIIS                    
 Density optimization : Diagonalization                    
-
+ 
  Maximum size of Fock/density queue in averaging:          10
-
+ 
 Convergence threshold for gradient:   0.10E-07
 The F12 Geminal exponent for the Regular Basis =     1.0
 We perform the calculation in the standard input basis
@@ -299,25 +315,31 @@ We perform the calculation in the standard input basis
     The Screening threshold used for One-electron operators:  1.0000E-15
  The SCF Convergence Criteria is applied to the gradnorm in AO basis
  Warning **DEC and **CC enforces the use of the .LCM keyword
-
+ 
+ WARNING: User chose RI-MP2 as the final model,
+          we therefore enforce RI-MP2 to be used
+          also in the Fragment optimization and
+          Pair estimates calculations.
+ 
+ 
  End of configuration!
-
-
+ 
+ 
  First density: Atoms in molecule guess
-
- The Coulomb energy contribution    55.212241633038815     
- The Exchange energy contribution    9.7160688854742183     
- The Fock energy contribution   -45.496172747564600     
-  Iteration 0 energy:  -75.241300379484613     
+ 
+ The Coulomb energy contribution    55.2122416330388     
+ The Exchange energy contribution    9.71606888547422     
+ The Fock energy contribution   -45.4961727475646     
+  Iteration 0 energy:  -75.2413003794846     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        93 sparsity:     55.030 %
 Matrix AO D  has nnz=       105 sparsity:     62.130 %
-  Relative convergence threshold for solver:   1.0000000000000000E-002
-  SCF Convergence criteria for gradient norm:   1.0000000000000000E-008
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  1.000000000000000E-008
 ** Get Fock matrix number   1
- The Coulomb energy contribution    41.377199186554655     
- The Exchange energy contribution    8.3303117036832894     
- The Fock energy contribution   -33.046887482871362     
+ The Coulomb energy contribution    41.3771991865547     
+ The Exchange energy contribution    8.33031170368330     
+ The Fock energy contribution   -33.0468874828714     
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -325,139 +347,139 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.21 seconds
+ >>> wall Time used in SCF iteration is   0.24 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    50.128959265563843     
- The Exchange energy contribution    9.3554581332383648     
- The Fock energy contribution   -40.773501132325485     
+ The Coulomb energy contribution    50.1289592655638     
+ The Exchange energy contribution    9.35545813323836     
+ The Fock energy contribution   -40.7735011323254     
   2    -75.8113401573   -0.30379843151    0.00      0.00000    0.00    0.0000000    3.04E+00  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    46.818165348279592     
- The Exchange energy contribution    8.9596453836114858     
- The Fock energy contribution   -37.858519964668112     
+ The Coulomb energy contribution    46.8181653482796     
+ The Exchange energy contribution    8.95964538361149     
+ The Fock energy contribution   -37.8585199646681     
   3    -75.9828627904   -0.17152263307   -1.00      0.00000    0.00    0.0000000    1.58E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    46.738301704610969     
- The Exchange energy contribution    8.9513905956042308     
- The Fock energy contribution   -37.786911109006731     
+ The Coulomb energy contribution    46.7383017046109     
+ The Exchange energy contribution    8.95139059560422     
+ The Fock energy contribution   -37.7869111090067     
   4    -75.9838968382   -0.00103404780   -1.00      0.00000    0.00    0.0000000    3.15E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    46.748576888690870     
- The Exchange energy contribution    8.9523898827344706     
- The Fock energy contribution   -37.796187005956391     
+ The Coulomb energy contribution    46.7485768886909     
+ The Exchange energy contribution    8.95238988273448     
+ The Fock energy contribution   -37.7961870059564     
   5    -75.9839719591   -0.00007512089   -1.00      0.00000    0.00    0.0000000    6.42E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.05 seconds
- >>> wall Time used in SCF iteration is   0.05 seconds
+ >>>  CPU Time used in SCF iteration is   0.18 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    46.748339975495711     
- The Exchange energy contribution    8.9522970044014034     
- The Fock energy contribution   -37.796042971094309     
+ The Coulomb energy contribution    46.7483399754957     
+ The Exchange energy contribution    8.95229700440139     
+ The Fock energy contribution   -37.7960429710943     
   6    -75.9839743939   -0.00000243481   -1.00      0.00000    0.00    0.0000000    1.29E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.18 seconds
+ >>> wall Time used in SCF iteration is   0.18 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    46.748967608116310     
- The Exchange energy contribution    8.9523689027873168     
- The Fock energy contribution   -37.796598705328996     
+ The Coulomb energy contribution    46.7489676081164     
+ The Exchange energy contribution    8.95236890278733     
+ The Fock energy contribution   -37.7965987053291     
   7    -75.9839744728   -0.00000007885   -1.00      0.00000    0.00    0.0000000    1.36E-04  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.21 seconds
+ >>> wall Time used in SCF iteration is   0.21 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    46.748933188405537     
- The Exchange energy contribution    8.9523680030528965     
- The Fock energy contribution   -37.796565185352641     
+ The Coulomb energy contribution    46.7489331884055     
+ The Exchange energy contribution    8.95236800305289     
+ The Fock energy contribution   -37.7965651853526     
   8    -75.9839744737   -0.00000000095   -1.00      0.00000    0.00    0.0000000    1.29E-05  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.16 seconds
+ >>> wall Time used in SCF iteration is   0.16 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    46.748924991769044     
- The Exchange energy contribution    8.9523670995775806     
- The Fock energy contribution   -37.796557892191480     
+ The Coulomb energy contribution    46.7489249917691     
+ The Exchange energy contribution    8.95236709957759     
+ The Fock energy contribution   -37.7965578921915     
   9    -75.9839744737   -0.00000000001   -1.00      0.00000    0.00    0.0000000    8.47E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.15 seconds
+ >>> wall Time used in SCF iteration is   0.15 seconds
 ** Get Fock matrix number  10
- The Coulomb energy contribution    46.748924701338886     
- The Exchange energy contribution    8.9523670460610205     
- The Fock energy contribution   -37.796557655277866     
+ The Coulomb energy contribution    46.7489247013388     
+ The Exchange energy contribution    8.95236704606101     
+ The Fock energy contribution   -37.7965576552778     
  10    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    1.66E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.19 seconds
+ >>> wall Time used in SCF iteration is   0.19 seconds
 ** Get Fock matrix number  11
- The Coulomb energy contribution    46.748924836729380     
- The Exchange energy contribution    8.9523670625131331     
- The Fock energy contribution   -37.796557774216240     
+ The Coulomb energy contribution    46.7489248367294     
+ The Exchange energy contribution    8.95236706251314     
+ The Fock energy contribution   -37.7965577742163     
  11    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    2.41E-08  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.22 seconds
+ >>> wall Time used in SCF iteration is   0.22 seconds
 ** Get Fock matrix number  12
- The Coulomb energy contribution    46.748924842673681     
- The Exchange energy contribution    8.9523670629497438     
- The Fock energy contribution   -37.796557779723940     
- 12    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
+ The Coulomb energy contribution    46.7489248426736     
+ The Exchange energy contribution    8.95236706294974     
+ The Fock energy contribution   -37.7965577797239     
+ 12    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   0.52 seconds
- >>> wall Time used in **ITER is   0.52 seconds
-
+ >>>  CPU Time used in **ITER is   2.10 seconds
+ >>> wall Time used in **ITER is   2.14 seconds
+ 
 Total no. of matmuls in SCF optimization:         52
-
+ 
  Number of occupied orbitals:           5
  Number of virtual orbitals:           8
-
+ 
  Number of occupied orbital energies to be found:           1
  Number of virtual orbital energies to be found:           1
-
-
+ 
+ 
 Calculation of HOMO-LUMO gap
 ============================
-
+ 
 Calculation of occupied orbital energies converged in     3 iterations!
-
+ 
 Calculation of virtual orbital energies converged in     4 iterations!
-
+ 
     E(LUMO):                         0.203641 au
    -E(HOMO):                        -0.560613 au
    ------------------------------
     HOMO-LUMO Gap (iteratively):     0.764253 au
-
-
+ 
+ 
 ********************************************************
  it       dE(HF)          exit   RHshift    RHinfo 
 ********************************************************
@@ -472,33 +494,33 @@ Calculation of virtual orbital energies converged in     4 iterations!
   9   -0.00000000001   -1.0000    0.0000    0.0000000
  10   -0.00000000000   -1.0000    0.0000    0.0000000
  11    0.00000000000   -1.0000    0.0000    0.0000000
- 12   -0.00000000000   -1.0000    0.0000    0.0000000
-
+ 12    0.00000000000   -1.0000    0.0000    0.0000000
+ 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -75.50754172583407353159      0.467394077781431D+01
-    2           -75.81134015734033937406      0.303954501739685D+01
-    3           -75.98286279040831914244      0.158105545278061D+00
-    4           -75.98389683820607842790      0.315128716762763D-01
-    5           -75.98397195909828383265      0.641578434363912D-02
-    6           -75.98397439390805629955      0.129162743689662D-02
-    7           -75.98397447276275329386      0.136041514507976D-03
-    8           -75.98397447371624480184      0.128635572855398D-04
-    9           -75.98397447372278179500      0.846623520017402D-06
-   10           -75.98397447372283863842      0.166127378904967D-06
-   11           -75.98397447372275337329      0.241358232726484D-07
-   12           -75.98397447372286706013      0.920673972512813D-09
-
+    1           -75.50754172583404510988      0.467394077781430D+01
+    2           -75.81134015734033937406      0.303954501739677D+01
+    3           -75.98286279040829072073      0.158105545278055D+00
+    4           -75.98389683820605000619      0.315128716762799D-01
+    5           -75.98397195909831225435      0.641578434363198D-02
+    6           -75.98397439390802787784      0.129162743690490D-02
+    7           -75.98397447276283855899      0.136041514515329D-03
+    8           -75.98397447371624480184      0.128635572656104D-04
+    9           -75.98397447372278179500      0.846623524671442D-06
+   10           -75.98397447372286706013      0.166127404104286D-06
+   11           -75.98397447372283863842      0.241358179899618D-07
+   12           -75.98397447372283863842      0.920683329176370D-09
+ 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
-
-
+ 
+ 
       Final HF energy:                       -75.983974473723
       Nuclear repulsion:                       9.189534423283
       Electronic energy:                     -85.173508897006
-
+ 
  inside leastchange_lcm
   %LOC%   
   %LOC%   ********************************************
@@ -575,33 +597,33 @@ Linesearch done, we choose previous point
   %LOC%  *                                                   *
   %LOC%  *****************************************************
   %LOC% 
-
+ 
   %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    0.23    1
   %LOC%   Max. sigma_4 and orb.number:    0.30    1
   %LOC%   Min. sigma_2 and orb.number:    0.23    1
   %LOC%   Min. sigma_4 and orb.number:    0.30    1
-
-
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
   %LOC%   Max. sigma_2 and orb.number:    1.68    5
   %LOC%   Max. sigma_4 and orb.number:    1.97    5
   %LOC%   Min. sigma_2 and orb.number:    1.23    3
   %LOC%   Min. sigma_4 and orb.number:    1.63    3
-
-
+ 
+ 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
-  %LOC%   Max. sigma_2 and orb.number:    2.37   11
+  %LOC%   Max. sigma_2 and orb.number:    2.37   13
   %LOC%   Max. sigma_4 and orb.number:    2.73   11
   %LOC%   Min. sigma_2 and orb.number:    1.57   10
-  %LOC%   Min. sigma_4 and orb.number:    1.98   10
-
- >>>  CPU Time used in Orbital Localization is   0.69 seconds
- >>> wall Time used in Orbital Localization is   0.69 seconds
+  %LOC%   Min. sigma_4 and orb.number:    1.98   12
+ 
+ >>>  CPU Time used in Orbital Localization is   2.58 seconds
+ >>> wall Time used in Orbital Localization is   2.59 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
-
+ 
 
 -- Full molecular info --
 
@@ -616,17 +638,17 @@ FULL: Number of valence orbitals :      4
 FULL: Number of occ. orbitals    :      5
 FULL: Number of virt. orbitals   :      8
 FULL: Local memory use type full :  0.32E-05
-FULL: Distribute matrices        : F
-
+FULL: Distribute matrices        :  F
+ 
  Calculating carmom matrix for DEC calculation...
  Memory set in input to be:    2.000     GB
-
-
+ 
+ 
 =============================================================================
              -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
 =============================================================================
-
-
+ 
+ 
  Starting F12 singles correction solver
  --------------------------------------
  ###  Iteration     Residual norm         F12 Singles energy
@@ -637,11 +659,11 @@ FULL: Distribute matrices        : F
  ###      5         0.5715770662E-03      -0.563782774358E-01
  ###      6         0.1211880474E-03      -0.563791909325E-01
  ###      7         0.4596505360E-04      -0.563792648756E-01
- ###      8         0.1014121674E-04      -0.563792720442E-01
+ ###      8         0.1014121674E-04      -0.563792720443E-01
  ###      9         0.3112587731E-05      -0.563792728066E-01
- ###     10         0.5858950878E-06      -0.563792728443E-01
- ###     11         0.2099492738E-06      -0.563792728471E-01
- ###     12         0.1841880983E-07      -0.563792728473E-01
+ ###     10         0.5858950882E-06      -0.563792728443E-01
+ ###     11         0.2099492712E-06      -0.563792728471E-01
+ ###     12         0.1841881249E-07      -0.563792728473E-01
 F12 Singles equations solved in   12 iterations!
 F12 Singles energy correction:    -0.563792728473E-01
 
@@ -661,26 +683,19 @@ FOT (Fragment Optimization Threshold)               =        0.10E-03
 Use Pair Estimates to screen pairs                  =            TRUE
 Pair distance cutoff threshold (Angstrom)           =       0.100E+04
 Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
-Pair estimate model                                 =     MP2     
+Pair estimate model                                 =     RIMP2   
 Simple orbital thr.                                 =       0.500E-01
 Expansion step size                                 =               5
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
-Fit Molecular Orbitals                              =            TRUE
 The Integral Screening threshold                    =             1.0000E-10
  
 DEC orbitals will be generated using  simple Lowdin charge analysis
 Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis
  
-The wave function Model used for Atomic Fragment expansion scheme = MP2     
-This wave function model can be changed using the .FRAGEXPMODEL keyword
-.FRAGEXPMODEL
-.RIMP2   
-Wave function Model used for Atomic Fragment reduction scheme = MP2     
-This wave function model can be changed using the .FRAGREDMODEL keyword
-.FRAGREDMODEL
-.RIMP2   
-
+The wave function Model used for Atomic Fragment expansion scheme = RIMP2   
+Wave function Model used for Atomic Fragment reduction scheme = RIMP2   
+ 
 
 --------------------------
   Coupled-cluster input   
@@ -700,53 +715,54 @@ Backup Time Interval(s)      =          300.00
 Use F12 correction           =            TRUE
  
  Generating DEC orbitals using simple Lowdin charge analysis
-
-
+ 
+ 
  Simple Lowdin-based orbital assignment: Summary
  -----------------------------------------------
-
-
+ 
+ 
  ORBITAL DISTRIBUTION INFORMATION
  ********************************
-
+ 
  --- using frozen core approximation, only valence orbitals are printed
-
-    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Secondary
+ 
+    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Sec
+ ondary
      1    O            2                4                2                4
      2    H            1                2                1                2
      3    H            1                2                1                2
  Total:                4                8
-
-
-
+ 
+ 
+ 
  ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
  **********************************************************************
-
+ 
  Maximum occ orbital extent (#AOs) =     13   -- Orbital index     2
  Maximum virt orbital extent (#AOs) =     11   -- Orbital index     1
  Average occ orbital extent (#AOs)  =      10.6000
  Average virt orbital extent (#AOs) =       9.0000
-
-
+ 
+ 
  >>>  CPU Time used in DEC INIT is   0.00 seconds
  >>> wall Time used in DEC INIT is   0.00 seconds
-
-
+ 
+ 
  ******************************************************************
         ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       
  ******************************************************************
-
+ 
  JobNumber  AtomType  AtomIndex  SizeMeasure
       1       O          1         728
       2       H          2          39
       3       H          3          39
-
-
-
-
+ 
+ 
+ 
+ 
  *** Initiating optimization of atomic fragments ***
-
-
+ 
+ 
  FOP Occ Radius for initial fragment:  3.78
  FOP Virt Radius for initial fragment:  3.78
  FOP Occ Radius for initial fragment:  3.78
@@ -754,9 +770,9 @@ Use F12 correction           =            TRUE
  FOP Occ Radius for initial fragment:  3.78
  FOP Virt Radius for initial fragment:  3.78
  Preparing job list...
-
-
-
+ 
+ 
+ 
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
@@ -764,7 +780,7 @@ Use F12 correction           =            TRUE
       1      4      8     13    0.958    / 0.958       1.51    /  1.51              FRAG_SIZE
       2      4      8     13     1.51    /  1.51       1.51    /  1.51              FRAG_SIZE
       3      4      8     13     1.51    /  1.51       1.51    /  1.51              FRAG_SIZE
-
+ 
  FRAGANALYSIS: Max/Ave/Min occ         :        4       /     4.0000    /       4
  FRAGANALYSIS: Max/Ave/Min virt        :        8       /     8.0000    /       8
  FRAGANALYSIS: Max/Ave/Min basis       :       13       /     13.000    /      13
@@ -772,25 +788,25 @@ Use F12 correction           =            TRUE
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      1.5144    /     1.3289    /    0.95778    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      1.5144    /     1.5144    /     1.5144    
  FRAGANALYSIS: Max/Ave/Min Diameter AE :      1.5144    /     1.5144    /     1.5144    
-
-
-
+ 
+ 
+ 
  *****************************************************
  *      DEC ESTIMATED FRAGMENT JOB LIST              *
  *****************************************************
  Number of jobs =            3
-
+ 
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
         1                416              1       2        4        8       13
         2                416              1       3        4        8       13
         3                416              2       3        4        8       13
-
-
+ 
+ 
  DEC JOB SUMMARY: Number of single jobs =          3
  DEC JOB SUMMARY: Number of pair jobs   =          3
  DEC JOB SUMMARY: Total number of jobs  =          3
-
-
+ 
+ 
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   1
@@ -813,245 +829,137 @@ Use F12 correction           =            TRUE
  FOP Fragment includes all orbitals and fragment optimization is skipped
  CABS basis test is successful
  CABS basis test is successful
-#PAIRDIMS# basis,occ,virt       13       4       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.70    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       3
- Number of virtual  orbitals AOS/EOS     =       8       6
- Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      13
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.789E-04
- Memory required for tmp array 1 (GB)    = 0.527E-04
- Memory required for tmp array 2 (GB)    = 0.998E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.614E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.307E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.922E-05
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.461E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.789E-04
- Big Array Memory required       (GB)    = 0.953E-04
-
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
- >>>  WALL Time used in AO to MO transformation   0.00 seconds
- >>>  CPU Time used in AO to MO transformation   0.00 seconds
-
-
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.57 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.57 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.61 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.61 seconds
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       1      2
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.95778       -0.2785368989E-01
- Distance(Ang), pair virt energy =      0.95778       -0.1676536843E-01
- Distance(Ang), pair lagr. occ term  =      0.95778        0.1441864600E-01
- Distance(Ang), pair lagr. virt term =      0.95778        0.7918693919E-02
-
-
+ Distance(Ang), pair occ energy  =      0.95778       -0.2997742169E-01
+ Distance(Ang), pair virt energy =      0.95778       -0.1676533756E-01
+ Distance(Ang), pair lagr. occ term  =      0.95778        0.1798106331E-01
+ Distance(Ang), pair lagr. virt term =      0.95778        0.7918684224E-02
+ 
+ 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 855.708 kB
+  Allocated memory,     TOTAL                   1.139 MB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-#PAIRDIMS# basis,occ,virt       13       4       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.70    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       3
- Number of virtual  orbitals AOS/EOS     =       8       6
- Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      13
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.789E-04
- Memory required for tmp array 1 (GB)    = 0.527E-04
- Memory required for tmp array 2 (GB)    = 0.998E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.614E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.307E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.922E-05
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.461E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.789E-04
- Big Array Memory required       (GB)    = 0.953E-04
-
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
- >>>  WALL Time used in AO to MO transformation   0.00 seconds
- >>>  CPU Time used in AO to MO transformation   0.00 seconds
-
-
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.57 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.57 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.61 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.61 seconds
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       1      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.95778       -0.2912296279E-01
- Distance(Ang), pair virt energy =      0.95778       -0.1676536843E-01
- Distance(Ang), pair lagr. occ term  =      0.95778        0.1884974091E-01
- Distance(Ang), pair lagr. virt term =      0.95778        0.7918693919E-02
-
-
+ Distance(Ang), pair occ energy  =      0.95778       -0.2041391623E-01
+ Distance(Ang), pair virt energy =      0.95778       -0.1676533756E-01
+ Distance(Ang), pair lagr. occ term  =      0.95778        0.1233279445E-01
+ Distance(Ang), pair lagr. virt term =      0.95778        0.7918684224E-02
+ 
+ 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 855.708 kB
+  Allocated memory,     TOTAL                   1.139 MB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-#PAIRDIMS# basis,occ,virt       13       4       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.70    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       8       4
- Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      13
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.789E-04
- Memory required for tmp array 1 (GB)    = 0.527E-04
- Memory required for tmp array 2 (GB)    = 0.998E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.236E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.410E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.307E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.410E-05
- Memory required for tmp array 1 (GB)    = 0.205E-05
- Memory required for tmp array 2 (GB)    = 0.205E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.789E-04
- Big Array Memory required       (GB)    = 0.953E-04
-
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
- >>>  WALL Time used in AO to MO transformation   0.00 seconds
- >>>  CPU Time used in AO to MO transformation   0.00 seconds
-
-
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.59 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.59 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.59 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.59 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.62 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.62 seconds
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       2      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =       1.5144       -0.1392031672E-01
- Distance(Ang), pair virt energy =       1.5144       -0.2082428048E-02
- Distance(Ang), pair lagr. occ term  =       1.5144        0.7963238308E-02
- Distance(Ang), pair lagr. virt term =       1.5144        0.1444578207E-02
-
-
+ Distance(Ang), pair occ energy  =       1.5144       -0.1306629467E-01
+ Distance(Ang), pair virt energy =       1.5144       -0.2082424205E-02
+ Distance(Ang), pair lagr. occ term  =       1.5144        0.8832207140E-02
+ Distance(Ang), pair lagr. virt term =       1.5144        0.1444576148E-02
+ 
+ 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 845.012 kB
+  Allocated memory,     TOTAL                   1.129 MB
   Max allocated memory, TOTAL                          9.517 MB
-
-
+ 
+ 
  ******************************************************************
  *            SUMMARY FOR PAIR ESTIMATE ANALYSIS                  *
  ******************************************************************
-
+ 
  Total number of pairs:                         3
  Number of pairs to calculate:                  3
  Pairs to be skipped from calculation           0
-
+ 
  Pairs to be treated using input FOT            3
-
- Estimated pair correlation energy:            -0.7089696940E-01
+ 
+ Estimated pair correlation energy:            -0.6345763259E-01
  Estimated contribution from skipped pairs:      0.000000000    
-
-
-
+ 
+ 
+ 
  =================================================================
  Last pairs included for each atomic center
  =================================================================
-
+ 
   Atom1  Atom2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2785368989E-01    PF_LASTPAIR
-     3       2      1.5144         -0.1392031672E-01    PF_LASTPAIR
-
-
-
-
+     1       2     0.95778         -0.2997742169E-01    PF_LASTPAIR
+     3       2      1.5144         -0.1306629467E-01    PF_LASTPAIR
+ 
+ 
+ 
+ 
  =================================================================
  Estimated occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2785368989E-01    PF_ESTIMATE
-     1       3     0.95778         -0.2912296279E-01    PF_ESTIMATE
-     2       3      1.5144         -0.1392031672E-01    PF_ESTIMATE
-
-
+     1       2     0.95778         -0.2997742169E-01    PF_ESTIMATE
+     1       3     0.95778         -0.2041391623E-01    PF_ESTIMATE
+     2       3      1.5144         -0.1306629467E-01    PF_ESTIMATE
+ 
+ 
   ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.52 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   0.52 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   2.79 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   2.80 seconds
  Preparing job list...
-
-
-
+ 
+ 
+ 
  *******************************************************************************
               Atomic fragments listed according to total size
  *******************************************************************************
@@ -1059,7 +967,7 @@ Use F12 correction           =            TRUE
       1      4      8     13    0.958    / 0.958       1.51    /  1.51              FRAG_SIZE
       2      4      8     13     1.51    /  1.51       1.51    /  1.51              FRAG_SIZE
       3      4      8     13     1.51    /  1.51       1.51    /  1.51              FRAG_SIZE
-
+ 
  FRAGANALYSIS: Max/Ave/Min occ         :        4       /     4.0000    /       4
  FRAGANALYSIS: Max/Ave/Min virt        :        8       /     8.0000    /       8
  FRAGANALYSIS: Max/Ave/Min basis       :       13       /     13.000    /      13
@@ -1067,14 +975,14 @@ Use F12 correction           =            TRUE
  FRAGANALYSIS: Max/Ave/Min Radius AE   :      1.5144    /     1.3289    /    0.95778    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:      1.5144    /     1.5144    /     1.5144    
  FRAGANALYSIS: Max/Ave/Min Diameter AE :      1.5144    /     1.5144    /     1.5144    
-
-
-
+ 
+ 
+ 
  *****************************************************
  *               DEC FRAGMENT JOB LIST               *
  *****************************************************
  Number of jobs =            6
-
+ 
  JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
         1                416              1                4        8       13
         2                416              1       2        4        8       13
@@ -1082,454 +990,576 @@ Use F12 correction           =            TRUE
         4                416              2                4        8       13
         5                416              2       3        4        8       13
         6                416              3                4        8       13
-
-
+ 
+ 
  DEC JOB SUMMARY: Number of single jobs =          3
  DEC JOB SUMMARY: Number of pair jobs   =          3
  DEC JOB SUMMARY: Total number of jobs  =          6
-
-
-
+ 
+ 
+ 
  *** Calculating single and pair interaction energies ***
-
+ 
  CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9437283651600
-     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.1000806514694
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0652940664317
-     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0266471215905
-         RIMP2F12 Energy contribution: E(B3,RI) =      0.0266471215905
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.8129545381013
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0882158674009
-     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0189982696391
-     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0189982696391
-     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0009103776313
-     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0023929036352
-     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0023929036352
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.1319778632956
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0477543547385
-     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0038374834219
-     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0032047797803
-     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0061791617329
-     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0004954784036
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.57 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.57 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.60 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.60 seconds
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.92 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.93 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.31 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.31 seconds
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2809861855130157E-04
+ >>>  CPU Time used in DECRIMP2F12Ccoup: Finalize is   0.33 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup: Finalize is   0.33 seconds
+ >>>  CPU Time used in DECRIMP2F12Ccoup is   2.25 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup is   2.26 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.74 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.75 seconds
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9177625022132
+ >>>  CPU Time used in Build_CalphaMO2 is   0.65 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.65 seconds
+     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.1212834576924
+ >>>  CPU Time used in Build_CalphaMO2 is   0.65 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.65 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.23 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.23 seconds
+ >>>  CPU Time used in Build_RobustERImatU is   0.28 seconds
+ >>> wall Time used in Build_RobustERImatU is   0.28 seconds
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0643086533035
+ >>>  CPU Time used in FULLRIMP2:Step1 is   2.55 seconds
+ >>> wall Time used in FULLRIMP2:Step1 is   2.56 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.67 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.68 seconds
+     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0075682446920
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0075682446920
+ >>>  CPU Time used in FULLRIMP2:B2B3 is   1.68 seconds
+ >>> wall Time used in FULLRIMP2:B2B3 is   1.68 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.56 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.56 seconds
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.7854684384166
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.1058432540692
+ >>>  CPU Time used in Build_CalphaMO2 is   1.39 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.39 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.32 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.32 seconds
+     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0212887433527
+     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0212887433527
+ >>>  CPU Time used in Build_CalphaMO2 is   0.26 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.26 seconds
+     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0008249298668
+ >>>  CPU Time used in Build_CalphaMO2 is   0.26 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.26 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.69 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.69 seconds
+     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0034317919508
+     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0034317919508
+ >>>  CPU Time used in FULLRIMP2:Step2 is   5.62 seconds
+ >>> wall Time used in FULLRIMP2:Step2 is   5.63 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.33 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.34 seconds
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.1192903792882
+ >>>  CPU Time used in Build_CalphaMO2 is   0.26 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.26 seconds
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0703974983899
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0015312000087
+ >>>  CPU Time used in Build_CalphaMO2 is   0.26 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.26 seconds
+     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0041892157555
+     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0088718957708
+     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0002493248095
+ >>>  CPU Time used in DEC RIMP2:Step3 is   2.62 seconds
+ >>> wall Time used in DEC RIMP2:Step3 is   2.63 seconds
+ >>>  CPU Time used in DEC RIMP2F12 is  12.46 seconds
+ >>> wall Time used in DEC RIMP2F12 is  12.50 seconds
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
   E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.9437283651599565    
-  E21_V_term2:     0.8129545381012833    
-  E21_V_term3:     0.1899826963914557E-01
-  E21_V_term4:     0.1899826963914557E-01
-  E21_V_term5:     0.9103776313322686E-03
+  E21_V_term1:    -0.9177625022132133    
+  E21_V_term2:     0.7854684384166333    
+  E21_V_term3:     0.2128874335266172E-01
+  E21_V_term4:     0.2128874335266172E-01
+  E21_V_term5:     0.8249298667708223E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.8889164722448578E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.1000806514693857    
-  E22_X_term2:   -0.8821586740091644E-01
-  E22_X_term3:   -0.2392903635166613E-02
-  E22_X_term4:   -0.2392903635166613E-02
+  E22_X_term1:    0.1212834576924310    
+  E22_X_term2:   -0.1058432540692473    
+  E22_X_term3:   -0.3431791950799501E-02
+  E22_X_term4:   -0.3431791950799501E-02
  ----------------------------------------
-  E22_Xsum:    0.7078976798136022E-02
+  E22_Xsum:    0.8576619721584695E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.6529406643170957E-01
-  E23_B_term2:    0.2664712159052011E-01
-  E23_B_term3:    0.2664712159052011E-01
-  E23_B_term4:   -0.1319778632955756    
-  E23_B_term5:    0.4775435473845580E-01
-  E23_B_term6:    0.3837483421929285E-02
-  E23_B_term7:   -0.3204779780277984E-02
-  E23_B_term8:    0.6179161732876098E-02
-  E23_B_term9:   -0.4954784036004996E-03
+  E23_B_term1:    0.6430865330347529E-01
+  E23_B_term2:    0.7568244691982137E-02
+  E23_B_term3:    0.7568244691982137E-02
+  E23_B_term4:   -0.1192903792881553    
+  E23_B_term5:    0.7039749838987551E-01
+  E23_B_term6:    0.1531200008706303E-02
+  E23_B_term7:   -0.4189215755455758E-02
+  E23_B_term8:    0.8871895770786077E-02
+  E23_B_term9:   -0.2493248094557599E-03
  ----------------------------------------
-  E23_B_sum:      0.4068118802655689E-01
+  E23_B_sum:      0.3651681700374067E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
   WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0918669101
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0070789768
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0406811880
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0477601648
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0441067453
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0441067453
-
-
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0888916472
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0085766197
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0365168170
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0450934367
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0437982105
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0437982105
+ 
+ 
  **********************************************************************
  Energy summary for fragment:       1
  **********************************************************************
- Single occupied energy =    -0.3689744933E-01
+ Single occupied energy =    -0.4660147532E-01
  Single virtual  energy =    -0.6930511755E-01
- Single Lagrangian occ term  =     0.2141462153E-01
+ Single Lagrangian occ term  =     0.2305577035E-01
  Single Lagrangian virt term =     0.2555256408E-01
-
-
+ 
+ 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 812.902 kB
+  Allocated memory,     TOTAL                   1.089 MB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.7495729711345
-     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0861250407006
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0456169115013
-     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0091422972976
-         RIMP2F12 Energy contribution: E(B3,RI) =      0.0091422972976
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.6594902335583
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0763896568987
-     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0165956851649
-     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0165956851649
-     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0008782549584
-     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0023205648087
-     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0023205648087
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0914792791905
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0438244485058
-     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0040355671579
-     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0029220119772
-     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0060369915229
-     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0002562436697
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.57 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.58 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.57 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.58 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.62 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.62 seconds
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.94 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.95 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.32 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.32 seconds
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.7049511590350643E-04
+ >>>  CPU Time used in DECRIMP2F12Ccoup: Finalize is   0.34 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup: Finalize is   0.34 seconds
+ >>>  CPU Time used in DECRIMP2F12Ccoup is   2.29 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup is   2.29 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.76 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.76 seconds
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.8386080988414
+ >>>  CPU Time used in Build_CalphaMO2 is   0.67 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.67 seconds
+     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0717488184534
+ >>>  CPU Time used in Build_CalphaMO2 is   0.68 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.68 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.25 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.25 seconds
+ >>>  CPU Time used in Build_RobustERImatU is   0.30 seconds
+ >>> wall Time used in Build_RobustERImatU is   0.30 seconds
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0495817522439
+ >>>  CPU Time used in FULLRIMP2:Step1 is   2.65 seconds
+ >>> wall Time used in FULLRIMP2:Step1 is   2.66 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.77 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.78 seconds
+     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0200046105729
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0200046105729
+ >>>  CPU Time used in FULLRIMP2:B2B3 is   1.78 seconds
+ >>> wall Time used in FULLRIMP2:B2B3 is   1.78 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.59 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.59 seconds
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.7205068466673
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0610331617248
+ >>>  CPU Time used in Build_CalphaMO2 is   1.48 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.49 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.39 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.40 seconds
+     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0210962317742
+     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0210962317742
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0010928508951
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.77 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.78 seconds
+     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0026808060998
+     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0026808060998
+ >>>  CPU Time used in FULLRIMP2:Step2 is   5.93 seconds
+ >>> wall Time used in FULLRIMP2:Step2 is   5.95 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.42 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.42 seconds
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0963744654421
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0295624987019
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0026386626639
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0049803336449
+     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0101243246273
+     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0004897427903
+ >>>  CPU Time used in DEC RIMP2:Step3 is   2.60 seconds
+ >>> wall Time used in DEC RIMP2:Step3 is   2.61 seconds
+ >>>  CPU Time used in DEC RIMP2F12 is  12.96 seconds
+ >>> wall Time used in DEC RIMP2F12 is  13.00 seconds
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
   E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.7495729711345279    
-  E21_V_term2:     0.6594902335583396    
-  E21_V_term3:     0.1659568516494760E-01
-  E21_V_term4:     0.1659568516494760E-01
-  E21_V_term5:     0.8782549583517553E-03
+  E21_V_term1:    -0.8386080988414272    
+  E21_V_term2:     0.7205068466672854    
+  E21_V_term3:     0.2109623177421328E-01
+  E21_V_term4:     0.2109623177421328E-01
+  E21_V_term5:     0.1092850895054830E-02
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.7481593773066043E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.8612504070061140E-01
-  E22_X_term2:   -0.7638965689867891E-01
-  E22_X_term3:   -0.2320564808665942E-02
-  E22_X_term4:   -0.2320564808665942E-02
+  E22_X_term1:    0.7174881845337198E-01
+  E22_X_term2:   -0.6103316172477553E-01
+  E22_X_term3:   -0.2680806099779817E-02
+  E22_X_term4:   -0.2680806099779817E-02
  ----------------------------------------
-  E22_Xsum:    0.5094254184600609E-02
+  E22_Xsum:    0.5354044529036817E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.4561691150130780E-01
-  E23_B_term2:    0.9142297297644198E-02
-  E23_B_term3:    0.9142297297644195E-02
-  E23_B_term4:   -0.9147927919047427E-01
-  E23_B_term5:    0.4382444850583969E-01
-  E23_B_term6:    0.4035567157900614E-02
-  E23_B_term7:   -0.2922011977229293E-02
-  E23_B_term8:    0.6036991522910386E-02
-  E23_B_term9:   -0.2562436697150554E-03
+  E23_B_term1:    0.4958175224393655E-01
+  E23_B_term2:    0.2000461057286730E-01
+  E23_B_term3:    0.2000461057286730E-01
+  E23_B_term4:   -0.9637446544205325E-01
+  E23_B_term5:    0.2956249870191928E-01
+  E23_B_term6:    0.2638662663897277E-02
+  E23_B_term7:   -0.4980333644883402E-02
+  E23_B_term8:    0.1012432462729064E-01
+  E23_B_term9:   -0.4897427903096060E-03
  ----------------------------------------
-  E23_B_sum:      0.2314097844582826E-01
+  E23_B_sum:      0.3007191750553210E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
   WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0560131123
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0050942542
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0231409784
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0282352326
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0277778797
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0277778797
-
-
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0748159377
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0053540445
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0300719175
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0354259620
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0393899757
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0393899757
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       1      2
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.95778       -0.2785369151E-01
+ Distance(Ang), pair occ energy  =      0.95778       -0.2997742169E-01
  Distance(Ang), pair virt energy =      0.95778       -0.1676533756E-01
- Distance(Ang), pair lagr. occ term  =      0.95778        0.1441863955E-01
+ Distance(Ang), pair lagr. occ term  =      0.95778        0.1798106331E-01
  Distance(Ang), pair lagr. virt term =      0.95778        0.7918684224E-02
-
-
+ 
+ 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 825.262 kB
+  Allocated memory,     TOTAL                   1.101 MB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9265662031131
-     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0708120606304
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0553670025396
-     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0297095490961
-         RIMP2F12 Energy contribution: E(B3,RI) =      0.0297095490961
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.7950617483949
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0605056547068
-     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0223559807075
-     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0223559807075
-     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0015055821256
-     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0024331803691
-     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0024331803691
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.1123352480997
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0269101176462
-     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0023338144814
-     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0045872272564
-     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0090064228410
-     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0007058781973
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.58 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.58 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.58 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.58 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.62 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.62 seconds
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.93 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.93 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.31 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.31 seconds
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.9058571382108711E-04
+ >>>  CPU Time used in DECRIMP2F12Ccoup: Finalize is   0.34 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup: Finalize is   0.34 seconds
+ >>>  CPU Time used in DECRIMP2F12Ccoup is   2.26 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup is   2.27 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.86 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.86 seconds
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.7034228532363
+ >>>  CPU Time used in Build_CalphaMO2 is   0.84 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.84 seconds
+     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0708124958541
+ >>>  CPU Time used in Build_CalphaMO2 is   0.79 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.79 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in Build_RobustERImatU is   0.38 seconds
+ >>> wall Time used in Build_RobustERImatU is   0.38 seconds
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0413245432030
+ >>>  CPU Time used in FULLRIMP2:Step1 is   3.14 seconds
+ >>> wall Time used in FULLRIMP2:Step1 is   3.15 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.05 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.06 seconds
+     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0154360105667
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0154360105667
+ >>>  CPU Time used in FULLRIMP2:B2B3 is   2.05 seconds
+ >>> wall Time used in FULLRIMP2:B2B3 is   2.06 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.70 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.70 seconds
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.6251042858514
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0635433377956
+ >>>  CPU Time used in Build_CalphaMO2 is   1.77 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.77 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.71 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.72 seconds
+     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0140855611041
+     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0140855611041
+ >>>  CPU Time used in Build_CalphaMO2 is   0.33 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.33 seconds
+     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0006272818448
+ >>>  CPU Time used in Build_CalphaMO2 is   0.31 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.31 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.03 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.04 seconds
+     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0017171362741
+     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0017171362741
+ >>>  CPU Time used in FULLRIMP2:Step2 is   7.03 seconds
+ >>> wall Time used in FULLRIMP2:Step2 is   7.06 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.72 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.73 seconds
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0871271875791
+ >>>  CPU Time used in Build_CalphaMO2 is   0.37 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.37 seconds
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0282821477190
+ >>>  CPU Time used in Build_CalphaMO2 is   0.40 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.40 seconds
+     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0063444591497
+ >>>  CPU Time used in Build_CalphaMO2 is   0.42 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.42 seconds
+     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0022364222490
+     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0043787138020
+     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0002409320460
+ >>>  CPU Time used in DEC RIMP2:Step3 is   3.41 seconds
+ >>> wall Time used in DEC RIMP2:Step3 is   3.42 seconds
+ >>>  CPU Time used in DEC RIMP2F12 is  15.63 seconds
+ >>> wall Time used in DEC RIMP2F12 is  15.69 seconds
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
   E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.9265662031130626    
-  E21_V_term2:     0.7950617483949300    
-  E21_V_term3:     0.2235598070750956E-01
-  E21_V_term4:     0.2235598070750956E-01
-  E21_V_term5:     0.1505582125638176E-02
+  E21_V_term1:    -0.7034228532363116    
+  E21_V_term2:     0.6251042858513662    
+  E21_V_term3:     0.1408556110408669E-01
+  E21_V_term4:     0.1408556110408669E-01
+  E21_V_term5:     0.6272818447520153E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.4952016333201997E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.7081206063040806E-01
-  E22_X_term2:   -0.6050565470675589E-01
-  E22_X_term3:   -0.2433180369061778E-02
-  E22_X_term4:   -0.2433180369061778E-02
+  E22_X_term1:    0.7081249585412575E-01
+  E22_X_term2:   -0.6354333779562016E-01
+  E22_X_term3:   -0.1717136274109204E-02
+  E22_X_term4:   -0.1717136274109204E-02
  ----------------------------------------
-  E22_Xsum:    0.5440045185528611E-02
+  E22_Xsum:    0.3834885510287179E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.5536700253958141E-01
-  E23_B_term2:    0.2970954909610421E-01
-  E23_B_term3:    0.2970954909610421E-01
-  E23_B_term4:   -0.1123352480997051    
-  E23_B_term5:    0.2691011764616492E-01
-  E23_B_term6:    0.2333814481423907E-02
-  E23_B_term7:   -0.4587227256364067E-02
-  E23_B_term8:    0.9006422841026056E-02
-  E23_B_term9:   -0.7058781973450852E-03
+  E23_B_term1:    0.4132454320301483E-01
+  E23_B_term2:    0.1543601056672882E-01
+  E23_B_term3:    0.1543601056672882E-01
+  E23_B_term4:   -0.8712718757905187E-01
+  E23_B_term5:    0.2828214771903076E-01
+  E23_B_term6:    0.6344459149652162E-02
+  E23_B_term7:   -0.2236422248958263E-02
+  E23_B_term8:    0.4378713801972973E-02
+  E23_B_term9:   -0.2409320460473941E-03
  ----------------------------------------
-  E23_B_sum:      0.3540810214699044E-01
+  E23_B_sum:      0.2159734313307083E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
   WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0852869112
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0054400452
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0354081021
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0408481473
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0444387638
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0444387638
-
-
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0495201633
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0038348855
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0215973431
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0254322286
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0240879347
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0240879347
+ 
+ 
  *****************************************************************************
  Energy summary for pair fragment:       1      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.95778       -0.2912326290E-01
+ Distance(Ang), pair occ energy  =      0.95778       -0.2041391623E-01
  Distance(Ang), pair virt energy =      0.95778       -0.1676533756E-01
- Distance(Ang), pair lagr. occ term  =      0.95778        0.1884993929E-01
+ Distance(Ang), pair lagr. occ term  =      0.95778        0.1233279445E-01
  Distance(Ang), pair lagr. virt term =      0.95778        0.7918684224E-02
-
-
+ 
+ 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 825.262 kB
+  Allocated memory,     TOTAL                   1.101 MB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2830353217469
-     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0488905249273
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0215978359643
-     DEC RIMP2F12 Energy contribution: E(B2,RI) =     -0.0001321129247
-         RIMP2F12 Energy contribution: E(B3,RI) =     -0.0001321129247
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2415724920661
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0431777848027
-     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0069376904928
-     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0069376904928
-     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0001992940767
-     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0013173946208
-     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0013173946208
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0429551548009
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0307021923023
-     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0010734828255
-     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0012074825645
-     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0026207764634
-     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0000807823638
- ----------------------------------------
-  E21 V term                             
- ----------------------------------------
-  E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.2830353217468575    
-  E21_V_term2:     0.2415724920661196    
-  E21_V_term3:     0.6937690492797194E-02
-  E21_V_term4:     0.6937690492797194E-02
-  E21_V_term5:     0.1992940767232776E-03
- ----------------------------------------
-  E21_Vsum:     ***************
- ----------------------------------------
-  E_22 X term                            
- ----------------------------------------
-  E22_X_term1:    0.4889052492732508E-01
-  E22_X_term2:   -0.4317778480265651E-01
-  E22_X_term3:   -0.1317394620774907E-02
-  E22_X_term4:   -0.1317394620774907E-02
- ----------------------------------------
-  E22_Xsum:    0.3077950883118761E-02
- ----------------------------------------
-  E_22 B term                            
- ----------------------------------------
-  E23_B_term1:    0.2159783596426897E-01
-  E23_B_term2:   -0.1321129246655884E-03
-  E23_B_term3:   -0.1321129246655884E-03
-  E23_B_term4:   -0.4295515480093397E-01
-  E23_B_term5:    0.3070219230227274E-01
-  E23_B_term6:    0.1073482825548465E-02
-  E23_B_term7:   -0.1207482564483581E-02
-  E23_B_term8:    0.2620776463434718E-02
-  E23_B_term9:   -0.8078236384359696E-04
- ----------------------------------------
-  E23_B_sum:      0.1148664197693257E-01
- ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
- ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0273881546
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0030779509
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0114866420
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0145645929
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0128235618
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0128235618
-
-
- **********************************************************************
- Energy summary for fragment:       2
- **********************************************************************
- Single occupied energy =    -0.1111016560E-01
- Single virtual  energy =    -0.1144772116E-01
- Single Lagrangian occ term  =     0.4955009252E-02
- Single Lagrangian virt term =     0.5599517054E-02
-
-
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 806.326 kB
-  Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.4447995549708
-     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0444266803951
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0267790520943
-     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0088801256769
-         RIMP2F12 Energy contribution: E(B3,RI) =      0.0088801256769
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.3831327927863
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0381702273778
-     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0123036760127
-     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0123036760127
-     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0005396275375
-     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0017115291910
-     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0017115291910
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0540857055670
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0204537340181
-     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0019455890338
-     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0023698745133
-     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0048607810609
-     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0002124839032
- ----------------------------------------
-  E21 V term                             
- ----------------------------------------
-  E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.4447995549708306    
-  E21_V_term2:     0.3831327927862880    
-  E21_V_term3:     0.1230367601265398E-01
-  E21_V_term4:     0.1230367601265398E-01
-  E21_V_term5:     0.5396275374689039E-03
- ----------------------------------------
-  E21_Vsum:     ***************
- ----------------------------------------
-  E_22 X term                            
- ----------------------------------------
-  E22_X_term1:    0.4442668039514085E-01
-  E22_X_term2:   -0.3817022737783097E-01
-  E22_X_term3:   -0.1711529190966176E-02
-  E22_X_term4:   -0.1711529190966176E-02
- ----------------------------------------
-  E22_Xsum:    0.2833394635377533E-02
- ----------------------------------------
-  E_22 B term                            
- ----------------------------------------
-  E23_B_term1:    0.2677905209425810E-01
-  E23_B_term2:    0.8880125676927449E-02
-  E23_B_term3:    0.8880125676927449E-02
-  E23_B_term4:   -0.5408570556703262E-01
-  E23_B_term5:    0.2045373401812182E-01
-  E23_B_term6:    0.1945589033845050E-02
-  E23_B_term7:   -0.2369874513344352E-02
-  E23_B_term8:    0.4860781060854637E-02
-  E23_B_term9:   -0.2124839032463817E-03
- ----------------------------------------
-  E23_B_sum:      0.1513134357731116E-01
- ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
- ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0365197826
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0028333946
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0151313436
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0179647382
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0185550444
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0185550444
-
-
- *****************************************************************************
- Energy summary for pair fragment:       2      3
- *****************************************************************************
- Distance(Ang), pair occ energy  =       1.5144       -0.1392045346E-01
- Distance(Ang), pair virt energy =       1.5144       -0.2082424205E-02
- Distance(Ang), pair lagr. occ term  =       1.5144        0.7963331163E-02
- Distance(Ang), pair lagr. virt term =       1.5144        0.1444576148E-02
-
-
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 814.566 kB
-  Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2698086959288
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.89 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.89 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.89 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.89 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.04 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.93 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.93 seconds
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.54 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.55 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.48 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.48 seconds
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2154242615711446E-04
+ >>>  CPU Time used in DECRIMP2F12Ccoup: Finalize is   0.49 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup: Finalize is   0.50 seconds
+ >>>  CPU Time used in DECRIMP2F12Ccoup is   3.04 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup is   3.05 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.89 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.90 seconds
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2698086959289
+ >>>  CPU Time used in Build_CalphaMO2 is   0.73 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.74 seconds
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0200799947405
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0201349885282
+ >>>  CPU Time used in Build_CalphaMO2 is   0.69 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.69 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.24 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.24 seconds
+ >>>  CPU Time used in Build_RobustERImatU is   0.29 seconds
+ >>> wall Time used in Build_RobustERImatU is   0.30 seconds
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0201349885281
+ >>>  CPU Time used in FULLRIMP2:Step1 is   2.84 seconds
+ >>> wall Time used in FULLRIMP2:Step1 is   2.86 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.76 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.77 seconds
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0129314417353
          RIMP2F12 Energy contribution: E(B3,RI) =      0.0129314417353
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2213242908848
+ >>>  CPU Time used in FULLRIMP2:B2B3 is   1.76 seconds
+ >>> wall Time used in FULLRIMP2:B2B3 is   1.77 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.73 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.73 seconds
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2213242908844
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0169409114466
+ >>>  CPU Time used in Build_CalphaMO2 is   1.50 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.51 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.84 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.85 seconds
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0054399694789
      DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0054399694789
+ >>>  CPU Time used in Build_CalphaMO2 is   0.40 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.40 seconds
      DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0005578167582
+ >>>  CPU Time used in Build_CalphaMO2 is   0.39 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.39 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.42 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.44 seconds
      DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0004798080356
      DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0004798080356
+ >>>  CPU Time used in FULLRIMP2:Step2 is   7.33 seconds
+ >>> wall Time used in FULLRIMP2:Step2 is   7.37 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.99 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.00 seconds
      DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0393927540646
+ >>>  CPU Time used in Build_CalphaMO2 is   0.41 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.42 seconds
      DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0088807513468
+ >>>  CPU Time used in Build_CalphaMO2 is   0.42 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.42 seconds
      DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0001987601347
+ >>>  CPU Time used in Build_CalphaMO2 is   0.36 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.37 seconds
      DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0017347774222
      DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0034090263709
      DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0002550154966
+ >>>  CPU Time used in DEC RIMP2:Step3 is   3.40 seconds
+ >>> wall Time used in DEC RIMP2:Step3 is   3.42 seconds
+ >>>  CPU Time used in DEC RIMP2F12 is  15.34 seconds
+ >>> wall Time used in DEC RIMP2F12 is  15.41 seconds
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
   E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.2698086959288263    
-  E21_V_term2:     0.2213242908847847    
-  E21_V_term3:     0.5439969478933721E-02
-  E21_V_term4:     0.5439969478933721E-02
-  E21_V_term5:     0.5578167581956363E-03
+  E21_V_term1:    -0.2698086959289229    
+  E21_V_term2:     0.2213242908844032    
+  E21_V_term3:     0.5439969478933044E-02
+  E21_V_term4:     0.5439969478933044E-02
+  E21_V_term5:     0.5578167581983422E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.3704664932845533E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.2007999474052780E-01
-  E22_X_term2:   -0.1694091144663922E-01
-  E22_X_term3:   -0.4798080356277656E-03
-  E22_X_term4:   -0.4798080356277656E-03
+  E22_X_term1:    0.2007999474052542E-01
+  E22_X_term2:   -0.1694091144660800E-01
+  E22_X_term3:   -0.4798080356276908E-03
+  E22_X_term4:   -0.4798080356276908E-03
  ----------------------------------------
-  E22_Xsum:    0.2179467222633047E-02
+  E22_Xsum:    0.2179467222662030E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.2013498852818212E-01
-  E23_B_term2:    0.1293144173534291E-01
-  E23_B_term3:    0.1293144173534291E-01
-  E23_B_term4:   -0.3939275406464484E-01
-  E23_B_term5:    0.8880751346800995E-02
-  E23_B_term6:    0.1987601346826180E-03
-  E23_B_term7:   -0.1734777422181240E-02
-  E23_B_term8:    0.3409026370930216E-02
-  E23_B_term9:   -0.2550154965594432E-03
+  E23_B_term1:    0.2013498852811882E-01
+  E23_B_term2:    0.1293144173534205E-01
+  E23_B_term3:    0.1293144173534205E-01
+  E23_B_term4:   -0.3939275406459373E-01
+  E23_B_term5:    0.8880751346790739E-02
+  E23_B_term6:    0.1987601346807635E-03
+  E23_B_term7:   -0.1734777422180986E-02
+  E23_B_term8:    0.3409026370929791E-02
+  E23_B_term9:   -0.2550154965624357E-03
  ----------------------------------------
-  E23_B_sum:      0.1710386286789625E-01
+  E23_B_sum:      0.1710386286786706E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1540,173 +1570,464 @@ Use F12 correction           =            TRUE
   WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0192833301
   WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0177633192
   WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0177633192
-
-
+ 
+ 
  **********************************************************************
- Energy summary for fragment:       3
+ Energy summary for fragment:       2
  **********************************************************************
  Single occupied energy =    -0.8908636391E-02
  Single virtual  energy =    -0.1144772116E-01
  Single Lagrangian occ term  =     0.6178575622E-02
  Single Lagrangian virt term =     0.5599517054E-02
-
-
+ 
+ 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 806.326 kB
+  Allocated memory,     TOTAL                   1.082 MB
   Max allocated memory, TOTAL                          9.517 MB
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  37.19 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  35.76 seconds
-
-
+ CABS basis test is successful
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.81 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.82 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.81 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.82 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.85 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.85 seconds
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.60 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.62 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.38 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.38 seconds
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.7156382166730821E-04
+ >>>  CPU Time used in DECRIMP2F12Ccoup: Finalize is   0.40 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup: Finalize is   0.40 seconds
+ >>>  CPU Time used in DECRIMP2F12Ccoup is   3.00 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup is   3.02 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.11 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.12 seconds
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.5327576592430
+ >>>  CPU Time used in Build_CalphaMO2 is   0.82 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.82 seconds
+     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0434899225722
+ >>>  CPU Time used in Build_CalphaMO2 is   1.01 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.02 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.24 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.24 seconds
+ >>>  CPU Time used in Build_RobustERImatU is   0.31 seconds
+ >>> wall Time used in Build_RobustERImatU is   0.31 seconds
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0325643023896
+ >>>  CPU Time used in FULLRIMP2:Step1 is   3.48 seconds
+ >>> wall Time used in FULLRIMP2:Step1 is   3.50 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.25 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.26 seconds
+     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0185850642002
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0185850642002
+ >>>  CPU Time used in FULLRIMP2:B2B3 is   2.26 seconds
+ >>> wall Time used in FULLRIMP2:B2B3 is   2.26 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.66 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.66 seconds
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.4576876945122
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0376427203597
+ >>>  CPU Time used in Build_CalphaMO2 is   1.72 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.73 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.71 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.71 seconds
+     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0135634249459
+     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0135634249459
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0009523587681
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.33 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.33 seconds
+     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0014639034602
+     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0014639034602
+ >>>  CPU Time used in FULLRIMP2:Step2 is   7.07 seconds
+ >>> wall Time used in FULLRIMP2:Step2 is   7.10 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.87 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.88 seconds
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0700464882246
+ >>>  CPU Time used in Build_CalphaMO2 is   0.29 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.30 seconds
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0178013529625
+ >>>  CPU Time used in Build_CalphaMO2 is   0.35 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.36 seconds
+     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0016407408514
+ >>>  CPU Time used in Build_CalphaMO2 is   0.32 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.32 seconds
+     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0019767681248
+     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0037428792746
+     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0004286193103
+ >>>  CPU Time used in DEC RIMP2:Step3 is   3.08 seconds
+ >>> wall Time used in DEC RIMP2:Step3 is   3.09 seconds
+ >>>  CPU Time used in DEC RIMP2F12 is  15.89 seconds
+ >>> wall Time used in DEC RIMP2F12 is  15.95 seconds
+ ----------------------------------------
+  E21 V term                             
+ ----------------------------------------
+  E21_CC_term:      0.000000000000000    
+  E21_V_term1:    -0.5327576592430325    
+  E21_V_term2:     0.4576876945121778    
+  E21_V_term3:     0.1356342494593703E-01
+  E21_V_term4:     0.1356342494593703E-01
+  E21_V_term5:     0.9523587680586488E-03
+ ----------------------------------------
+  E21_Vsum:       -0.4699075607092199E-01
+ ----------------------------------------
+  E_22 X term                            
+ ----------------------------------------
+  E22_X_term1:    0.4348992257216920E-01
+  E22_X_term2:   -0.3764272035966950E-01
+  E22_X_term3:   -0.1463903460247259E-02
+  E22_X_term4:   -0.1463903460247259E-02
+ ----------------------------------------
+  E22_Xsum:    0.2919395292005184E-02
+ ----------------------------------------
+  E_22 B term                            
+ ----------------------------------------
+  E23_B_term1:    0.3256430238963166E-01
+  E23_B_term2:    0.1858506420016310E-01
+  E23_B_term3:    0.1858506420016310E-01
+  E23_B_term4:   -0.7004648822455899E-01
+  E23_B_term5:    0.1780135296245538E-01
+  E23_B_term6:    0.1640740851358556E-02
+  E23_B_term7:   -0.1976768124822575E-02
+  E23_B_term8:    0.3742879274589829E-02
+  E23_B_term9:   -0.4286193102914258E-03
+ ----------------------------------------
+  E23_B_sum:      0.2046752821868865E-01
+ ----------------------------------------------------------------
+                   WANGY DEC-MP2-F12 CALCULATION                 
+ ----------------------------------------------------------------
+  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0469907561
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0029193953
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0204675282
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0233869235
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0236038326
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0236038326
+ 
+ 
+ *****************************************************************************
+ Energy summary for pair fragment:       2      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =       1.5144       -0.1306629467E-01
+ Distance(Ang), pair virt energy =       1.5144       -0.2082424205E-02
+ Distance(Ang), pair lagr. occ term  =       1.5144        0.8832207140E-02
+ Distance(Ang), pair lagr. virt term =       1.5144        0.1444576148E-02
+ 
+ 
+ Memstats before F12 fragment_energy calculation
+  Allocated memory,     TOTAL                   1.091 MB
+  Max allocated memory, TOTAL                          9.517 MB
+ CABS basis test is successful
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.75 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.75 seconds
+ >>>  CPU Time used in DECRIMP2: CalphaMO is   0.75 seconds
+ >>> wall Time used in DECRIMP2: CalphaMO is   0.75 seconds
+ >>>  CPU Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>> wall Time used in RIMP2: toccEOS,goccEOS,.. is   0.03 seconds
+ >>>  CPU Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>> wall Time used in DECRIMP2: Finalize is   0.00 seconds
+ >>>  CPU Time used in DEC-RIMP2 is   0.78 seconds
+ >>> wall Time used in DEC-RIMP2 is   0.78 seconds
+ >>>  CPU Time used in DECRIMP2: INIT is   0.00 seconds
+ >>> wall Time used in DECRIMP2: INIT is   0.00 seconds
+ >>>  CPU Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>> wall Time used in DECRIMP2: TransMats is   0.00 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.01 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.02 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.33 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.33 seconds
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2593996532983870E-04
+ >>>  CPU Time used in DECRIMP2F12Ccoup: Finalize is   0.34 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup: Finalize is   0.34 seconds
+ >>>  CPU Time used in DECRIMP2F12Ccoup is   2.35 seconds
+ >>> wall Time used in DECRIMP2F12Ccoup is   2.36 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.96 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.96 seconds
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.3551513025927
+ >>>  CPU Time used in Build_CalphaMO2 is   0.75 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.75 seconds
+     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0430002635508
+ >>>  CPU Time used in Build_CalphaMO2 is   0.72 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.72 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.27 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.27 seconds
+ >>>  CPU Time used in Build_RobustERImatU is   0.35 seconds
+ >>> wall Time used in Build_RobustERImatU is   0.35 seconds
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0268756173904
+ >>>  CPU Time used in FULLRIMP2:Step1 is   3.05 seconds
+ >>> wall Time used in FULLRIMP2:Step1 is   3.06 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.25 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.26 seconds
+     DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0126530507048
+         RIMP2F12 Energy contribution: E(B3,RI) =      0.0126530507048
+ >>>  CPU Time used in FULLRIMP2:B2B3 is   2.25 seconds
+ >>> wall Time used in FULLRIMP2:B2B3 is   2.26 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   0.67 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.67 seconds
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.3034445394563
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0383967172372
+ >>>  CPU Time used in Build_CalphaMO2 is   1.72 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.73 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.61 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.62 seconds
+     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0071573408402
+     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0071573408402
+ >>>  CPU Time used in Build_CalphaMO2 is   0.28 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.28 seconds
+     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0005357149549
+ >>>  CPU Time used in Build_CalphaMO2 is   0.40 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.40 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   2.24 seconds
+ >>> wall Time used in Build_CalphaMO2 is   2.25 seconds
+     DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0008819348397
+     DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0008819348397
+ >>>  CPU Time used in FULLRIMP2:Step2 is   6.95 seconds
+ >>> wall Time used in FULLRIMP2:Step2 is   6.98 seconds
+ >>>  CPU Time used in Build_CalphaMO2 is   1.89 seconds
+ >>> wall Time used in Build_CalphaMO2 is   1.90 seconds
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0599947304197
+ >>>  CPU Time used in Build_CalphaMO2 is   0.39 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.39 seconds
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0236013494376
+ >>>  CPU Time used in Build_CalphaMO2 is   0.40 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.40 seconds
+     DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0010708742470
+ >>>  CPU Time used in Build_CalphaMO2 is   0.34 seconds
+ >>> wall Time used in Build_CalphaMO2 is   0.34 seconds
+     DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0009086363176
+     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0015863201465
+     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0003422475817
+ >>>  CPU Time used in DEC RIMP2:Step3 is   3.26 seconds
+ >>> wall Time used in DEC RIMP2:Step3 is   3.28 seconds
+ >>>  CPU Time used in DEC RIMP2F12 is  15.52 seconds
+ >>> wall Time used in DEC RIMP2F12 is  15.58 seconds
+ ----------------------------------------
+  E21 V term                             
+ ----------------------------------------
+  E21_CC_term:      0.000000000000000    
+  E21_V_term1:    -0.3551513025927155    
+  E21_V_term2:     0.3034445394562768    
+  E21_V_term3:     0.7157340840155695E-02
+  E21_V_term4:     0.7157340840155695E-02
+  E21_V_term5:     0.5357149548830422E-03
+ ----------------------------------------
+  E21_Vsum:       -0.3685636650124437E-01
+ ----------------------------------------
+  E_22 X term                            
+ ----------------------------------------
+  E22_X_term1:    0.4300026355077949E-01
+  E22_X_term2:   -0.3839671723724340E-01
+  E22_X_term3:   -0.8819348397011165E-03
+  E22_X_term4:   -0.8819348397011165E-03
+ ----------------------------------------
+  E22_Xsum:    0.2839676634133860E-02
+ ----------------------------------------
+  E_22 B term                            
+ ----------------------------------------
+  E23_B_term1:    0.2687561739044885E-01
+  E23_B_term2:    0.1265305070477854E-01
+  E23_B_term3:    0.1265305070477854E-01
+  E23_B_term4:   -0.5999473041971049E-01
+  E23_B_term5:    0.2360134943764446E-01
+  E23_B_term6:    0.1070874247002239E-02
+  E23_B_term7:   -0.9086363175818431E-03
+  E23_B_term8:    0.1586320146475770E-02
+  E23_B_term9:   -0.3422475816577609E-03
+ ----------------------------------------
+  E23_B_sum:      0.1719464831217831E-01
+ ----------------------------------------------------------------
+                   WANGY DEC-MP2-F12 CALCULATION                 
+ ----------------------------------------------------------------
+  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
+  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0368563665
+  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0028396766
+  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0171946483
+  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0200343249
+  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0168220416
+  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0168220416
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.8845914890E-02
+ Single virtual  energy =    -0.1144772116E-01
+ Single Lagrangian occ term  =     0.5399705539E-02
+ Single Lagrangian virt term =     0.5599517054E-02
+ 
+ 
+ Memstats before F12 fragment_energy calculation
+  Allocated memory,     TOTAL                   1.082 MB
+  Max allocated memory, TOTAL                          9.517 MB
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  1 minute  49 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  1 minute  49 seconds
+ 
+ 
               ===============================================
               |   Print single and pair fragment energies   |
               ===============================================
-
-
-
+ 
+ 
+ 
  =================================================================
  RI-MP2 occupied single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.3689744933E-01    AF_RI_MP2_OCC
-     2      -0.1111016560E-01    AF_RI_MP2_OCC
-     3      -0.8908636391E-02    AF_RI_MP2_OCC
-
-
+     1      -0.4662957394E-01    AF_RI_MP2_OCC
+     2      -0.8930178817E-02    AF_RI_MP2_OCC
+     3      -0.8871854855E-02    AF_RI_MP2_OCC
+ 
+ 
  =================================================================
  RI-MP2 virtual single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.6930511755E-01    AF_RI_MP2_VIR
-     2      -0.1144772116E-01    AF_RI_MP2_VIR
-     3      -0.1144772116E-01    AF_RI_MP2_VIR
-
-
+     1      -0.6933321617E-01    AF_RI_MP2_VIR
+     2      -0.1146926359E-01    AF_RI_MP2_VIR
+     3      -0.1147366113E-01    AF_RI_MP2_VIR
+ 
+ 
  =================================================================
  RI-MP2 Lagrangian single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.5923538127E-01    AF_RI_MP2_LAG
-     2      -0.1200336046E-01    AF_RI_MP2_LAG
-     3      -0.8578264880E-02    AF_RI_MP2_LAG
-
-
+     1      -0.6732635706E-01    AF_RI_MP2_LAG
+     2      -0.8599807306E-02    AF_RI_MP2_LAG
+     3      -0.9320353426E-02    AF_RI_MP2_LAG
+ 
+ 
  =================================================================
  RI-MP2 occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2785369151E-01    PF_RI_MP2_OCC
-     1       3     0.95778         -0.2912326290E-01    PF_RI_MP2_OCC
-     2       3      1.5144         -0.1392045346E-01    PF_RI_MP2_OCC
-
-
+     1       2     0.95778         -0.3004791680E-01    PF_RI_MP2_OCC
+     1       3     0.95778         -0.2050450194E-01    PF_RI_MP2_OCC
+     2       3      1.5144         -0.1313785849E-01    PF_RI_MP2_OCC
+ 
+ 
  =================================================================
  RI-MP2 virtual pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2     0.95778         -0.1676533756E-01    PF_RI_MP2_VIR
-     1       3     0.95778         -0.1676533756E-01    PF_RI_MP2_VIR
-     2       3      1.5144         -0.2082424205E-02    PF_RI_MP2_VIR
-
-
+     1       2     0.95778         -0.1683583267E-01    PF_RI_MP2_VIR
+     1       3     0.95778         -0.1685592327E-01    PF_RI_MP2_VIR
+     2       3      1.5144         -0.2153988027E-02    PF_RI_MP2_VIR
+ 
+ 
  =================================================================
  RI-MP2 Lagrangian pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2228170529E-01    PF_RI_MP2_LAG
-     1       3     0.95778         -0.1911997694E-01    PF_RI_MP2_LAG
-     2       3      1.5144         -0.6594970354E-02    PF_RI_MP2_LAG
-
- RI-MP2 occupied   correlation energy :    -0.1278136592    
- RI-MP2 virtual    correlation energy :    -0.1278136592    
- RI-MP2 Lagrangian correlation energy :    -0.1278136592    
-
-
-
+     1       2     0.95778         -0.2091350682E-01    PF_RI_MP2_LAG
+     1       3     0.95778         -0.1701836083E-01    PF_RI_MP2_LAG
+     2       3      1.5144         -0.4943499410E-02    PF_RI_MP2_LAG
+ 
+ RI-MP2 occupied   correlation energy :    -0.1281218849    
+ RI-MP2 virtual    correlation energy :    -0.1281218849    
+ RI-MP2 Lagrangian correlation energy :    -0.1281218849    
+ 
+ 
+ 
  =================================================================
  RIMP2F12 occupied single energies
  =================================================================
-
+ 
  Fragment       Energy
-     1      -0.4410674532E-01    AF_MP2f12_OCC
-     2      -0.1282356176E-01    AF_MP2f12_OCC
-     3      -0.1776331924E-01    AF_MP2f12_OCC
-
-
+     1      -0.4379821050E-01    AF_MP2f12_OCC
+     2      -0.1776331924E-01    AF_MP2f12_OCC
+     3      -0.1682204155E-01    AF_MP2f12_OCC
+ 
+ 
  =================================================================
  RIMP2f12 occupied pair energies
  =================================================================
-
+ 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2777787966E-01    PF_MP2F12f12_OCC
-     1       3     0.95778         -0.4443876384E-01    PF_MP2F12f12_OCC
-     2       3      1.5144         -0.1855504441E-01    PF_MP2F12f12_OCC
-
- RIMP2 CORRECTION TO ENERGY:           -0.1278136592
+     1       2     0.95778         -0.3938997570E-01    PF_MP2F12f12_OCC
+     1       3     0.95778         -0.2408793469E-01    PF_MP2F12f12_OCC
+     2       3      1.5144         -0.2360383256E-01    PF_MP2F12f12_OCC
+ 
+ RIMP2 CORRECTION TO ENERGY:           -0.1281218849
  F12 CORRECTION TO MP2 ENERGY:         -0.1654653142
- RIMP2-F12 CORRELATION ENERGY:         -0.2932789734
-
-
-
+ RIMP2-F12 CORRELATION ENERGY:         -0.2935871991
+ 
+ 
+ 
  =============================================================================
-
-
-
-
+ 
+ 
+ 
+ 
              **********************************************************
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
-
+ 
                E: Hartree-Fock energy :      -75.9839744737
-               E: Correlation energy  :       -0.2932789734
+               E: Correlation energy  :       -0.2935871991
                E: F12 singles         :       -0.0563792728
-               E: Total RI-MP2F12 energy:      -76.3336327200
+               E: Total RI-MP2F12 energy:      -76.3339409457
                E: Estimated DEC err 1 :        0.0000000000
                E: Estimated DEC err 2 :        0.0006000000
                E: Estimated DEC err 3 :        0.0000000000
-
-
- >>>  CPU Time used in DEC FINAL is   0.01 seconds
- >>> wall Time used in DEC FINAL is   0.01 seconds
-
+ 
+ 
+ >>>  CPU Time used in DEC FINAL is   0.07 seconds
+ >>> wall Time used in DEC FINAL is   0.07 seconds
+ 
  CC Memory summary
  -----------------
- Allocated memory for array4   :  0.4506E-04 GB
+ Allocated memory for array4   :   0.000     GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.1843E-04 GB
+ Max memory in use for array4  :   0.000     GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
  Max memory in use for array3  :   0.000     GB
  ------------------
-
+ 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         39.2265     s
-Total Wall time used in DEC          :         37.8060     s
+Total CPU  time used in DEC          :         114.308     s
+Total Wall time used in DEC          :         114.756     s
 ------------------------------------------------------
 
-
-Hostname       : YANGs-MBP.st.client.au.dk                         
-Job finished   : Date: 01/09/2015   Time: 14:25:08
-
-
+ 
+Job finished   : Date: 21/09/2015   Time: 11:36:07
+ 
+ 
 
 =============================================================================
                           -- end of DEC program --
 =============================================================================
 
-
-
- >>>  CPU Time used in *SCF is  43.09 seconds
- >>> wall Time used in *SCF is  41.68 seconds
-
+ 
+ 
+ >>>  CPU Time used in *SCF is  2 minutes  9 seconds
+ >>> wall Time used in *SCF is  2 minutes 10 seconds
+ 
 Total no. of matmuls used:                      1068
 Total no. of Fock/KS matrix evaluations:          13
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1757,19 +2078,19 @@ Total no. of Fock/KS matrix evaluations:          13
   Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                          9.517 MB
-  Max allocated memory, type(matrix)                 354.304 kB
+  Max allocated memory, type(matrix)                 488.704 kB
   Max allocated memory, real(realk)                    9.433 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       83.881 kB
   Max allocated memory, logical                        1.704 kB
-  Max allocated memory, character                      7.616 kB
+  Max allocated memory, character                     11.664 kB
   Max allocated memory, AOBATCH                       99.840 kB
-  Max allocated memory, DECORBITAL                     6.208 kB
-  Max allocated memory, DECFRAG                      107.472 kB
-  Max allocated memory, BATCHTOORB                     0.336 kB
+  Max allocated memory, DECORBITAL                     8.536 kB
+  Max allocated memory, DECFRAG                      120.240 kB
+  Max allocated memory, BATCHTOORB                     0.000 Byte
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.576 kB
+  Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
@@ -1778,32 +2099,76 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                       28.248 kB
-  Max allocated memory, LSAOTENSOR                    13.680 kB
-  Max allocated memory, SLSAOTENSOR                   34.224 kB
+  Max allocated memory, ODBATCH                       46.640 kB
+  Max allocated memory, LSAOTENSOR                    19.080 kB
+  Max allocated memory, SLSAOTENSOR                   47.616 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                 459.168 kB
+  Max allocated memory, ATOMTYPEITEM                 675.168 kB
   Max allocated memory, ATOMITEM                       3.072 kB
-  Max allocated memory, LSMATRIX                      13.664 kB
-  Max allocated memory, OverlapT                     627.072 kB
+  Max allocated memory, LSMATRIX                      19.520 kB
+  Max allocated memory, OverlapT                     865.536 kB
   Max allocated memory, linkshell                      4.068 kB
   Max allocated memory, integrand                    580.608 kB
   Max allocated memory, integralitem                   4.410 MB
   Max allocated memory, IntWork                      122.184 kB
   Max allocated memory, Overlap                        7.554 MB
-  Max allocated memory, ODitem                        20.544 kB
-  Max allocated memory, LStensor                       1.157 MB
+  Max allocated memory, ODitem                        33.920 kB
+  Max allocated memory, LStensor                       1.152 MB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
+ 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  43.21 seconds
- >>> wall Time used in LSDALTON is  41.79 seconds
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full       17            0.0000            0.0000
+   L3 mat_to_full            105            0.0000            0.0000
+   L3 mat_trans              148            0.0010            0.0030
+   L3 mat_assign             494            0.0000            0.0020
+   L3 mat_copy                33            0.0000            0.0000
+   L3 mat_mul               1056            0.0020            0.0050
+   L3 mat_add                 99            0.0000            0.0000
+   L3 mat_daxpy             1936            0.0020            0.0040
+   L3 mat_dotproduct         669            0.0000            0.0020
+   L3 mat_sqnorm2            599            0.0000            0.0010
+   L3 mat_diag_f              16            0.0020            0.0070
+   L3 mat_create_block        12            0.0000            0.0000
+   L3 mat_retrieve_block      21            0.0030            0.0000
+   L3 mat_scal                89            0.0000            0.0000
+   L3 mat_zero               640            0.0040            0.0040
+   L3 mat_density_from_o      12            0.0000            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
+   L3 mat_scal_dia            10            0.0000            0.0000
+   L3 mat_dmul              1446            0.0040            0.0030
+   L3 mat_hmul                80            0.0000            0.0000
+   L3 mat_hdiv               150            0.0000            0.0000
+   L3 mat_dger                80            0.0000            0.0000
+   L3 mat_dsyev                1            0.0010            0.0000
+   L3 mat_identity            22            0.0000            0.0000
+   L3 mat_write_to_disk       15            0.0000            0.0000
+      ==============================================================
+   L3 TOTAL MAT                             0.0140            0.0280
+      ==============================================================
+   L3     II_get_overlap       2            0.0060            0.0050
+   L3     II_get_kinetic       8            0.0750            0.0780
+   L3   II_get_nucel_mat       8            1.2270            1.2340
+   L3 II_precalc_ScreenM       1            0.3840            0.3850
+   L3      II_get_nucpot       2            0.0000            0.0010
+   L3 II_GET_EXCHANGE_MA      19           10.6540           10.7100
+   L3 II_get_coulomb_mat      19            2.1280            2.1490
+   L3           homolumo       1            0.7580            0.7600
+      ==============================================================
+   L3 TOTAL INTEGRAL                      126.7800          127.3390
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is  2 minutes  9 seconds
+ >>> wall Time used in LSDALTON is  2 minutes 10 seconds
 
 End simulation
-     Date and time (Linux)  : Tue Sep  1 14:25:08 2015
-     Host name              : YANGs-MBP.st.client.au.dk               
+     Date and time (Linux)  : Mon Sep 21 11:36:07 2015
+     Host name              : localhost.localdomain                   

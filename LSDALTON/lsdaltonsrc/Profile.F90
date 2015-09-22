@@ -1,6 +1,7 @@
 !> @file 
 !> Contains main SCF driver, some module wrappers and miscellaneous.
 module profile_int
+use files
 
   use precision
   use memory_handling

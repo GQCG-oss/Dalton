@@ -14,10 +14,6 @@ if(ENABLE_DEC)
   set(ENABLE_TENSORS ON)
 endif()
 
-if(ENABLE_TENSORS)
-   add_definitions(-DVAR_ENABLE_TENSORS)
-endif()
-
 if(ENABLE_CHEMSHELL)
     add_definitions(-DVAR_CHEMSHELL)
 endif()

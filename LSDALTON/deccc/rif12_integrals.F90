@@ -275,7 +275,7 @@ contains
     nbasis2 = 0
     natomsaux = 0
     naux = 0
-    E_21C = 0.0E0_realk
+!    E_21C = 0.0E0_realk
 
     !IF(DECinfo%frozencore)call lsquit('DEC RI-/MP2-F12 frozen core not implemented',-1)
 
@@ -353,10 +353,6 @@ contains
        CoAOS(:,i) = MyFragment%Co(:,i)
     end do
 
-    !call sleep(mynum*2)  
-    !print*,'CoAOS Mynum', mynum
-    !call ls_output(CoAOS,1,nbasis,1,noccAOS,nbasis,noccAOS,1,6)
-
     call mem_alloc(CoAOStot, MyFragment%nbasis, noccAOStot)
     do i=1,offset
        CoAOStot(:,i) = MyFragment%CoreMO(:,i)
@@ -370,15 +366,6 @@ contains
     do i=1, nvirtAOS
        CvAOS(:,i) = MyFragment%Cv(:,i)
     end do
-
-    ! Creating a CovAOS matrix 
-    !call mem_alloc(CovAOS, MyFragment%nbasis, nocvAOS)
-    !do i=1,noccAOS
-    !   CovAOS(:,i) = CoAOS(:,i)
-    !end do
-    !do i=1,nvirtAOS
-    !   CovAOS(:,i+noccAOS) = MyFragment%Cv(:,i)
-    !end do
 
     ! ***********************************************************
     ! Creating the F matrix 
@@ -398,20 +385,11 @@ contains
     do i=1, ncabsMO
        CMO_Cabs(:,i) = MyFragment%Ccabs(:,i)
     end do
-
-    !call sleep(mynum*2)  
-    !print*,'CMO_Cabs Mynum', mynum
-    !call ls_output(CoAOS,1,nbasis,1,noccAOS,nbasis,noccAOS,1,6)
     
     call mem_alloc(CMO_RI, ncabsAO, ncabsAO)
     do i=1, ncabsAO
        CMO_RI(:,i) = MyFragment%Cri(:,i)
     end do
-
-
-    !call sleep(mynum*2)  
-    ! print*,'CMO_RI Mynum', mynum
-    !call ls_output(CMO_RI,1,ncabsAO,1,ncabsAO,ncabsAO,ncabsAO,1,6)
 
     ! Creating a CocvAOStot matrix 
     call mem_alloc(Cfull, MyFragment%nbasis, nocvAOS)
@@ -614,6 +592,7 @@ contains
       !We need to do:
       !CalphaD(NBA,nocc,nocc) = -0.5*CalphaD(NBA,nocc,nocc) + Loop_NBA2 Umat(NBA,NBA2)*CalphaR(NBA2,nocc,nocc)
       !Where NBA is the Auxiliary assigned to this node, while NBA2 can be assigned to another node
+      !Note CalphaR have dimensions: (NBA2,noccEOS,nocvAOS)
       IF(wakeslaves)THEN
          !nbuf1=numnodes
          !call mem_alloc(nAuxMPI,nbuf1)
@@ -622,7 +601,7 @@ contains
          DO inode = 1,numnodes
             nbuf1 = nAuxMPI(inode)
             NBA2 = nAuxMPI(inode)
-            nsize = nbuf1*noccEOS*noccEOS
+            nsize = nbuf1*noccEOS*noccAOStot
             !nbuf1 = NBA2
             IF(inode.EQ.1) THEN
                factor = -0.5E0_realk
@@ -644,7 +623,7 @@ contains
                M = NBA                !rows of Output Matrix
                N = noccEOS*noccEOS    !columns of Output Matrix
                K = NBA                !summation dimension
-               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaR,K,factor,CalphaD,M)
+               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaR(1+offset*nbuf1*noccEOS),K,factor,CalphaD,M)
             ELSE
                node = inode-1
                !recieve
@@ -657,7 +636,7 @@ contains
                M = NBA                !rows of Output Matrix
                N = noccEOS*noccEOS    !columns of Output Matrix
                K = NBA2               !summation dimension
-               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaMPI,K,factor,CalphaD,M)
+               call dgemm('N','N',M,N,K,1.0E0_realk,UmatTmp,M,CalphaMPI(1+offset*nbuf1*noccEOS),K,factor,CalphaD,M)
                IF(use_bg_buf)THEN
                   call mem_pseudo_dealloc(CalphaMPI)
                ELSE
@@ -675,8 +654,9 @@ contains
          M = NBA          !rows of Output Matrix
          K = NBA          !summation dimension
          N = noccEOS*noccEOS    !columns of Output Matrix
+         !CalphaD(NBA,noccEOS,noccEOS) = -0.5*CalphaD(NBA,noccEOS,noccEOS) + Umat(NBA,NBA2)*CalphaR(NBA2,noccEOS,noccEOS)
+         !Note CalphaR have dimensions: (NBA2,noccEOS,nocvAOS)
          call dgemm('N','N',M,N,K,1.0E0_realk,Umat,M,CalphaR(1+offset*NBA*noccEOS),K,-0.5E0_realk,CalphaD,M)
-
       ENDIF
 #else
       !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
@@ -805,11 +785,13 @@ contains
        DO inode = 1,numnodes
           nbuf1 = nAuxMPI(inode)
           NBA2 =  nAuxMPI(inode)
+          !Warning CalphaG have dimension (nbuf1*nocvAOS*noccAOS) but we only need the first
+          !part - we need (nbuf1*nocvAOS*noccEOS)
           nsize = nbuf1*nocvAOS*noccEOS
           IF(mynum.EQ.inode-1)THEN
              !I Bcast My Own CalphaG
              node = mynum
-             IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in DEC RIMP2F12 A',-1)
+!             IF(size(CalphaG).NE.nsize)call lsquit('MPI Bcast error in DEC RIMP2F12 A',-1)
              call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)
              call ContractTwo4CenterF12IntegralsRIV2_dec(nBA,nBA2,noccEOS,nocvAOS,CalphaR,CalphaG,EV2tmp,dopair_occ)
              call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,noccEOS,nocvAOS,CalphaG,CalphaT,EX2tmp,dopair_occ)  
@@ -838,8 +820,6 @@ contains
        call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaG,CalphaT,EX2,dopair_occ)
     ENDIF
     
-    !print *, "EV2, mynum", EV2, mynum
-    !print *, "EX2, mynum", EX2, mynum
     lsmpibufferRIMP2(6)=EV2      !we need to perform a MPI reduction at the end 
     lsmpibufferRIMP2(7)=EX2      !we need to perform a MPI reduction at the end 
     call mem_dealloc(CalphaT)
@@ -857,8 +837,8 @@ contains
     !CalphaT(NBA,nocvAOS,noccEOS)=CalphaG(NBA,nocvAOS,noccAOS)*F(noccAOS, noccEOS)
     call mem_alloc(CalphaT,nsize)  !G_qj = C_qk F_kj 
     M = nocvAOS*NBA                !rows of Output Matrix
-    K = noccAOS                    !summation dimension
     N = noccEOS                    !columns of Output Matrix
+    K = noccAOS                    !summation dimension
     call dgemm('N','N',M,N,K,1.0E0_realk,CalphaG,M,Fkj,K,0.0E0_realk,CalphaT,M)
 
     call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaG,CalphaT,EX2,dopair_occ)
@@ -947,9 +927,6 @@ contains
       call ContractTwo4CenterF12IntegralsRIV34_dec(NBA,NBA,noccEOS,noccAOStot,ncabsMO,nocvAOS,&
          & CalphaRcabsMO,CalphaGcabsMO,CalphaR,CalphaG,EV3,EV4,dopair_occ)
    ENDIF
-
-    !print *, "EV3, mynum", EV3, mynum
-    !print *, "EV4, mynum", EV4, mynum
 
    lsmpibufferRIMP2(8)=EV3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(9)=EV4      !we need to perform a MPI reduction at the end 
@@ -1096,8 +1073,6 @@ contains
            & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4,dopair_occ)
      ENDIF
 
-    !print *, "EX3, mynum", EX3, mynum
-    !print *, "EX4, mynum", EX4, mynum
 
    lsmpibufferRIMP2(11)=EX3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(12)=EX4      !we need to perform a MPI reduction at the end 
@@ -1375,7 +1350,8 @@ contains
    EB8=lsmpibufferRIMP2(18)
    EB9=lsmpibufferRIMP2(19)
    
-   E_21C=lsmpibufferRIMP2(20)
+   !WARNING THE C coupling term E_21C E(CC,RI) is handled outside this routine. 
+!   E_21C=lsmpibufferRIMP2(20)
 
    DO I=1,size(lsmpibufferRIMP2)
       mp2f12_energy = mp2f12_energy  + lsmpibufferRIMP2(I)
@@ -1389,9 +1365,10 @@ contains
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B3,RI) = ', EB3
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ', EV2
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X2,RI) = ', EX2
-      IF(DECinfo%F12Ccoupling)THEN 
-         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C 
-      ENDIF
+!WARNING THE C coupling term E_21C E(CC,RI) is handled outside this routine. 
+!      IF(DECinfo%F12Ccoupling)THEN 
+!         WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(CC,RI) = ', E_21C 
+!      ENDIF
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ', EV3
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ', EV4
       WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
@@ -1414,7 +1391,8 @@ contains
        write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
        write(DECinfo%output,'(1X,a,g25.16)') ' E21 V term                             '
        write(DECinfo%output,'(1X,a,g25.16)') '----------------------------------------'
-       write(DECinfo%output,'(1X,a,g25.16)') " E21_CC_term:  ", E_21C
+!WARNING THE C coupling term E_21C E(CC,RI) is handled outside this routine. 
+!       write(DECinfo%output,'(1X,a,g25.16)') " E21_CC_term:  ", E_21C
        write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term1:  ", EV1
        write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term2:  ", EV2
        write(DECinfo%output,'(1X,a,g25.16)') " E21_V_term3:  ", EV3
@@ -1424,7 +1402,6 @@ contains
        write(DECinfo%output,'(1X,a,g25.16)') " E21_Vsum:     ", E_21
     end if
 
-    E_22 = 0.0E0_realk
     E_22 = EX1 + EX2 + EX3 + EX4 
 
     if(DECinfo%F12debug .AND. master) then
@@ -1443,7 +1420,6 @@ contains
     !   Creating the B matrix 
     ! ***********************************************************
 
-    E_23 = 0.0E0_realk
     E_23 = EB1 + EB2 + EB3 + EB4 + EB5 + EB6 + EB7 + EB8 + EB9
 
     if(DECinfo%F12debug .AND. master) then
@@ -1468,7 +1444,6 @@ contains
 
     !> MP2-energy from an MP2-calculation
     MP2_energy = Myfragment%energies(FRAGMODEL_OCCMP2)
-    !print *, "MP2_energy: ", MP2_energy
 
     if(DECinfo%F12debug .AND. master) then
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
@@ -1502,7 +1477,6 @@ contains
     integer :: nK,J,I
     IF(dopair)THEN
        noccpair=COUNT(dopair_occ)/2
-       !print*,'PAIR: noccpair=COUNT(dopair_occ)/2=',COUNT(dopair_occ)/2
     ELSE
        nK=NINT(SQRT(real(COUNT(dopair_occ))))
        noccpair=(nK*(nK+1))/2

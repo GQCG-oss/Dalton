@@ -20,6 +20,6 @@ f.add(from_string = 'The nuclear magnetic shielding for selected atoms',
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['LSresponse_NMR_IANS_SHIELD_NoOpenRSP.dal'], ['COFClH2.mol'], {'out': f})
+test.run(['LSresponse_NMR_IANS_SHIELD_NoOpenRSP.dal'], ['COFH3.mol'], {'out': f})
 
 sys.exit(test.return_code)

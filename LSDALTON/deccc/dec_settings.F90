@@ -17,7 +17,7 @@ MODULE DEC_settings_mod
   use matrix_operations
 #ifdef VAR_MPI
   use infpar_module
-  use lsmpi_type, only: LSMPIASYNCP
+  use lsmpi_param, only: LSMPIASYNCP
 #endif
 
 contains
@@ -366,8 +366,6 @@ contains
        !**************************************
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.TESTARRAY'); DECinfo%tensor_test=.true.
-       case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
        case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
@@ -1364,8 +1362,6 @@ contains
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
-    write(lupri,*) 'tensor_test ', DECitem%tensor_test
-    write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
     write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality

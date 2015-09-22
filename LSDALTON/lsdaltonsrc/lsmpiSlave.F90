@@ -6,7 +6,10 @@ subroutine lsmpi_init(OnMaster)
    use background_buffer_module, only: max_n_pointers, buf_realk
 
 #ifdef VAR_MPI
+   use lsmpi_param
    use lsmpi_type
+   use lsmpi_op
+   use lsmpi_module
    use infpar_module
    use ls_env
    use matrix_operations_pdmm
@@ -104,6 +107,8 @@ subroutine lsmpi_slave(comm)
    use lsparameters
    use lstiming
    use infpar_module
+   use lsmpi_param
+   use lsmpi_op
    use lsmpi_type
    use lsmpi_test
    use integralinterfaceMod

@@ -1,6 +1,7 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
-	url = git://repo.ctcc.no/gen1int.git
+	url = git@gitlab.com:bingao/gen1int.git
+	branch = master
 [submodule "external/xcfun"]
 	path = external/xcfun
   	url = git://repo.ctcc.no/xcfun.git
@@ -15,7 +16,7 @@
 	url = https://github.com/cstein/qfitlib.git
 [submodule "external/efs"]
 	path = external/efs
-	url = git@repo.ctcc.no:efs.git
+	url = git@gitlab.com:dalton/efs.git
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git
@@ -25,3 +26,6 @@
 [submodule "external/IchorIntegralLibrary"]
 	path = external/IchorIntegralLibrary
 	url = git@gitlab.com:dalton/IchorIntegralLibrary.git
+[submodule "external/tensor_lib"]
+	path = external/tensor_lib
+	url = https://gitlab.com/pett/tensor_lib.git

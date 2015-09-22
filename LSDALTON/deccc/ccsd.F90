@@ -27,6 +27,7 @@ module ccsd_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_module
 #endif
 
   use lsparameters!, only: AORdefault

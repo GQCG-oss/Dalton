@@ -3,6 +3,7 @@
 MODULE OD_Type
  use precision
  use OD_TypeType
+ use AO_typetype
  use AO_type
  use memory_handling
  private

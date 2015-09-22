@@ -8,16 +8,21 @@
 module response_wrapper_op_module
   use precision
   use memory_handling
-  use response_wrapper_type_module
-  public mcdinputitem_set_default_config, mcdinputitem, &
+  use response_wrapper_type_module, only: ALPHAinputitem, &
+       & BETAinputitem, GAMMAinputitem, TPAinputitem, DTPAinputitem, &
+       & ESGinputitem, ESDinputitem, RSPSOLVERinputitem, NMRinputitem,&
+       & mcdinputitem
+
+  public :: mcdinputitem_set_default_config, &
        & free_MCDinputitem, & 
-       & ALPHAinputitem, ALPHAinputitem_set_default_config, &
-       & BETAinputitem, BETAinputitem_set_default_config, &
+       & ALPHAinputitem_set_default_config, &
+       & BETAinputitem_set_default_config, &
        & GAMMAinputitem, GAMMAinputitem_set_default_config, &
        & TPAinputitem, TPAinputitem_set_default_config, &
        & DTPAinputitem, DTPAinputitem_set_default_config, &
        & ESGinputitem, ESGinputitem_set_default_config, &
-       & ESDinputitem, ESDinputitem_set_default_config, &
+       & ESDinputitem_set_default_config, &
+       & NMRinputitem_set_default_config,&
        & RSPSOLVERinputitem, RSPSOLVERiputitem_set_default_config
   private
 
@@ -66,6 +71,18 @@ Contains
     nullify(MCDinput%Xcoor)
     nullify(MCDinput%EXSTATES)
   end subroutine mcdinputitem_set_default_config
+
+  !> \brief Sets default parameters for NMR calculation.
+  !> \author T. Kjaergaard
+  !> \date September 2015
+  !> \param NMRinput the NMRinputItem structure to be set 
+  subroutine NMRinputitem_set_default_config(NMRinput)
+    implicit none
+    type(NMRinputItem),intent(inout)       :: NMRinput
+    NMRinput%SolveNMRResponseSimultan = .FALSE.
+    NMRinput%CalcDFJcont = .TRUE.
+    NMRinput%PrintAll = .FALSE.
+  end subroutine NMRinputitem_set_default_config
 
   !> \brief Sets default parameters for polarizability calculation.
   !> \author K. Kristensen
