@@ -6,8 +6,8 @@ module cc_tools_module
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
 #ifdef VAR_PTR_RESHAPE
 #ifdef VAR_MPI
-#define DIL_ACTIVE
-#define DIL_DEBUG_ON
+!#define DIL_ACTIVE
+!#define DIL_DEBUG_ON
 #endif
 #endif
 #endif
@@ -16,6 +16,7 @@ module cc_tools_module
    use memory_handling
 #ifdef VAR_MPI
    use lsmpi_type
+   use lsmpi_module
 #endif
    use lstiming
    use typedeftype

@@ -6,6 +6,7 @@
 MODULE basis_typetype
  use precision
  use AO_typeType
+ use LSmatrix_type
  INTEGER, PARAMETER      :: maxBASISsegment=25
  INTEGER, PARAMETER      :: maxBasisSetInLIB=10
  INTEGER, PARAMETER      :: maxNumberOfChargesinLIB=10
@@ -129,6 +130,16 @@ INTEGER,pointer     :: Orb(:,:)
 INTEGER,pointer     :: angmom(:)
 END TYPE BRAKEBASINFO
 
+public ::  maxBASISsegment,maxBasisSetInLIB,maxNumberOfChargesinLIB,&
+     & nBasisBasParam,RegBasParam,AUXBasParam,&
+     & CABBasParam,JKBasParam,VALBasParam,&
+     & GCTBasParam,ADMBasParam,BasParamLABEL,&
+     & BRAKEBASINFO,BASINF,BASISINFO,BASIS_PT,&
+     & BASISSETINFO,BASISSET_PT,SHELL,ATOMTYPEITEM,&
+     & segment,nullifyBasisset,nullifyMainBasis,&
+     & nullifyAtomType,nullifyShell,nullifySegment
+
+private
 contains
 subroutine nullifyBasisset(BAS)
   implicit none

@@ -79,6 +79,10 @@ Integer :: nBast
 Integer,pointer :: orbToBatch(:)
 END TYPE BATCHORBITALINFO
 
+public :: BATCHORBITALINFO,AOITEM,AOBATCH,AOITEMPOINTER,&
+     & AOBATCHPOINTER,maxAOangmom,ExpThr
+
+private 
 contains
 
 !Added to avoid "has no symbols" linking warning

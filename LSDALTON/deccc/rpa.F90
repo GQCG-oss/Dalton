@@ -20,7 +20,7 @@ module rpa_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
-  !use lsparameters
+  use lsmpi_module
 #endif
 
     ! DEC DEPENDENCIES (within deccc directory)   

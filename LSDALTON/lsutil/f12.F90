@@ -13,6 +13,8 @@ INTERFACE set_GGem
   MODULE PROCEDURE set_GGem_1, set_GGem_2
 END INTERFACE !set_GGem
 
+private
+public :: set_GGem, GaussianGeminal, init_GGem, free_GGem, stgfit, binominit
 CONTAINS
 
 SUBROUTINE init_GGem(GGem)

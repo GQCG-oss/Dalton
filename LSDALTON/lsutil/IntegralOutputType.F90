@@ -41,6 +41,10 @@ logical                :: RealGabMatrix
 real(realk)            :: exchangeFactor
 END TYPE INTEGRALOUTPUT
 
+public :: intbatch,INTEGRALOUTPUT
+
+private 
+
 contains
 
 !Added to avoid "has no symbols" linking warning

@@ -9,6 +9,7 @@ module ccsdpt_kernels_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_module
 #endif
   use precision
   use dec_typedef_module

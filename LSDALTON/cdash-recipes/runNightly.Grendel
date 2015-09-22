@@ -1,0 +1,56 @@
+#!/bin/bash
+PATH=$PATH:$HOME/bin
+export PATH
+unset USERNAME
+
+cd /home/tkjaer/NightlyTestingCdash/tmp
+rm -rf *
+WRK=/home/tkjaer/NightlyTestingCdash
+cd $WRK
+
+export OMP_NUM_THREADS=3
+
+rm -rf output.*
+rm -rf nightly.log
+rm -rf *Grendel*
+    
+git clone --recursive git@gitlab.com:dalton/dalton.git DownloadNightlyCdashRecipes
+cd $WRK/DownloadNightlyCdashRecipes/LSDALTON/cdash-recipes
+cp *Grendel* $WRK/.
+cd $WRK/DownloadNightlyCdashRecipes/DALTON/cdash-recipes
+cp *Grendel* $WRK/.
+
+cd $WRK
+list=`ls *Grendel*`
+
+chmod +x *Grendel*
+
+rm -rf /home/tkjaer/NightlyTestingCdash/DownloadNightlyCdashRecipes
+
+echo $list > nightly.log
+k=0
+for i in $list
+do
+    distro[k]=$i
+    k=$k+1
+    echo "$i" $i
+done
+echo ${#distro[@]} >> nightly.log
+k=${#distro[@]}
+echo $k >> nightly.log
+
+echo "Starting Loop" >> nightly.log
+for (( COUNTER=0; COUNTER<=$k; COUNTER+=3 )) 
+do
+    echo $COUNTER >> nightly.log
+    echo ${distro[$COUNTER]} >> nightly.log 
+    ./${distro[$COUNTER]} > output.${distro[$COUNTER]} 2> output.${distro[$COUNTER]} &
+    echo ${distro[$COUNTER+1]} >> nightly.log 
+    ./${distro[$COUNTER+1]} > output.${distro[$COUNTER+1]} 2> output.${distro[$COUNTER+1]} &
+    echo ${distro[$COUNTER+2]} >> nightly.log 
+    ./${distro[$COUNTER+2]} > output.${distro[$COUNTER+2]} 2> output.${distro[$COUNTER+2]} 
+    echo "Done with this one " >> nightly.log
+done
+
+exit 0
+

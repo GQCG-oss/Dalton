@@ -84,4 +84,13 @@ end type
 #endif
 
 TYPE(lvec_list_t), save :: pbc_control
+
+public :: pbc_control,MaxPBCOpTypes
+
+private 
+contains
+subroutine lattice_type_dummy()
+implicit none
+end subroutine lattice_type_dummy
+
 END MODULE lattice_type

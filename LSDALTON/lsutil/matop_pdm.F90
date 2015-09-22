@@ -40,6 +40,7 @@ module matrix_operations_pdmm
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param
 #endif
   use tensor_interface_module
 

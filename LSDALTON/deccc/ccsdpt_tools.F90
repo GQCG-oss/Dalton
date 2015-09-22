@@ -13,6 +13,7 @@ module ccsdpt_tools_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_module
 #endif
   use tensor_interface_module
   use cc_tools_module
@@ -1830,13 +1831,15 @@ contains
 
               ij_count_test = ij_count_test + 1
 
-              if(ij_count_test<=b_size)then
+              if(ij_count_test<=b_size+1)then
 
                  !is incremented by one at the end of the loop
                  !therefore we set it to 0 here
                  k_test = 0
 
                  ij_new = jobs(ij_count_test)
+
+                 if (ij_new .lt. 0) return
 
                  call calc_i_leq_j(ij_new,t1dim,i_test,j_test)
 

@@ -73,6 +73,7 @@ contains
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule,mylsitem)
     end if
+    if (molecule%mem_distributed) call tensor_barrier(call_slaves=.true.)
 
     call molecule_get_carmom(molecule,mylsitem)
 
@@ -147,6 +148,7 @@ contains
 
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
+    if (molecule%mem_distributed) call tensor_barrier(call_slaves=.true.)
 
  
     if(DECinfo%use_canonical) then
@@ -799,6 +801,13 @@ contains
 !    end if
 
     ! Delete F12-Fock and K and hJir info
+    if(associated(molecule%hJccAO)) then
+       call mem_dealloc(molecule%hJccAO)
+    end if
+    if(associated(molecule%KccAO)) then
+       call mem_dealloc(molecule%KccAO)
+    end if
+
     if(associated(molecule%Fij)) then
        call mem_dealloc(molecule%Fij)
     end if

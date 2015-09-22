@@ -1,6 +1,7 @@
 !> @file
 !> Write a molecule input/output file
 MODULE WRITEMOLEFILE
+use files
   use precision
   use TYPEDEF
   use molecule_module

@@ -462,10 +462,6 @@ module dec_typedef_module
      logical :: hack2
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
-     !> test the array structure
-     logical :: tensor_test
-     !> test the array reorderings
-     logical :: reorder_test
      !> Check that LCM orbitals are correct
      logical :: check_lcm_orbitals
      !> Check the the Occupied Subsystem locality
@@ -840,6 +836,11 @@ module dec_typedef_module
 
      !> Occ-Occ Fock matrix in MO basis (change)
      real(realk), pointer :: Fij(:,:) => null()
+
+     !> AO hJccAO(ncabsAO,ncabsAO)
+     real(realk), pointer :: hJccAO(:,:) => null() 
+     !> AO KccAO(ncabsAO,ncabsAO)
+     real(realk), pointer :: KccAO(:,:) => null() 
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
      real(realk), pointer :: hJir(:,:) => null() 
@@ -1510,6 +1511,27 @@ module dec_typedef_module
      real(realk) :: FOT
   end type fragmentAOS
 
+public :: fragmentAOS,ndecmodels,MODEL_NONE,MODEL_MP2,&
+     & MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_RIMP2,&
+     & MODEL_SOSEX,MODEL_LSTHCRIMP2,MODEL_MP3,&
+     & nFOTs,MAX_ORB_MOCCSD,ndecenergies,FRAGMODEL_LAGMP2,&
+     & FRAGMODEL_OCCMP2,FRAGMODEL_VIRTMP2,FRAGMODEL_LAGRPA,&
+     & FRAGMODEL_OCCRPA,FRAGMODEL_VIRTRPA,FRAGMODEL_OCCCC2,&
+     & FRAGMODEL_VIRTCC2,FRAGMODEL_OCCCCSD,FRAGMODEL_VIRTCCSD,&
+     & FRAGMODEL_OCCpT,FRAGMODEL_VIRTpT,FRAGMODEL_OCCpT4,&
+     & FRAGMODEL_VIRTpT4,FRAGMODEL_OCCpT5,FRAGMODEL_VIRTpT5,&
+     & FRAGMODEL_MP2f12,FRAGMODEL_CCSDf12,FRAGMODEL_LAGRIMP2,&
+     & FRAGMODEL_OCCRIMP2,FRAGMODEL_VIRTRIMP2,FRAGMODEL_OCCSOS,&
+     & FRAGMODEL_VIRTSOS,FRAGMODEL_LAGLSTHCRIMP2,FRAGMODEL_OCCLSTHCRIMP2,&
+     & FRAGMODEL_VIRTLSTHCRIMP2,FRAGMODEL_RIMP2f12,&
+     & DECsettings,array2,array3,array4,decorbital,&
+     & ri,fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
+     & mp2_batch_construction,mypointer,&
+     & joblist,traceback,int_batch,batchTOorb,MObatchInfo,DecAObatchinfo,&
+     & SPgridbox,DECinfo,PNOSpaceInfo,pno_query_info,&
+     & dec_set_default_config,dec_set_model_names
+private
+
 CONTAINS
   !> \brief Set default DEC settings.
   !> See explanation of parameters in type DEC_settings.
@@ -1621,8 +1643,6 @@ CONTAINS
 #endif
     DECinfo%force_scheme            = .false.
     DECinfo%en_mem                  = 0
-    DECinfo%tensor_test              = .false.
-    DECinfo%reorder_test            = .false.
     DECinfo%CCSDno_restart          = .false.
     DECinfo%CCSDnosaferun           = .false.
     DECinfo%solver_par              = .false.

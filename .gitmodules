@@ -1,9 +1,10 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
-	url = git://repo.ctcc.no/gen1int.git
+	url = git@gitlab.com:bingao/gen1int.git
+	branch = master
 [submodule "external/xcfun"]
 	path = external/xcfun
-  	url = https://github.com/uekstrom/xcfun.git
+  	url = git://repo.ctcc.no/xcfun.git
 [submodule "external/pelib"]
 	path = external/pelib
 	url = https://gitlab.com/pe-software/pelib-public.git

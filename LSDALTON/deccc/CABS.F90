@@ -308,7 +308,6 @@ CONTAINS
     ENDDO VerifyCabsJloop3
   end subroutine verifyCABS3
 
-
   subroutine build_RI_MO(CMO_RI,nbast_cabs,SETTING,lupri)
     implicit none
     integer :: lupri,nbast_cabs

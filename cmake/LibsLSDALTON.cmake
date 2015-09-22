@@ -69,9 +69,7 @@ add_library(
     ${LSUTIL_TYPE_SOURCES}
     )
 
-if(NOT ENABLE_TENSORS)
-   target_link_libraries(lsutillib_common1 matrixmlib)
-endif()
+target_link_libraries(lsutillib_common1 matrixmlib)
 
 add_library(
     lsutillib_common2

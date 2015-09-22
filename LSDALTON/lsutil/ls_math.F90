@@ -1,6 +1,8 @@
 MODULE math_fun
 use precision
 
+public :: ls_vdexp,ls_vdinv,ls_vdsqrt,FACULT,FACUL2,BINOM,NCRT
+private
 contains
 subroutine ls_vdinv(N,A,invA)
 implicit none

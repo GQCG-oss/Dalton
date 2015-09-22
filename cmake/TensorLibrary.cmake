@@ -6,8 +6,16 @@ if(ENABLE_TENSORS)
     include(ExternalProject)
     set(_tensor_lib_args
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DENABLE_MPI=${ENABLE_MPI}
+        -DENABLE_OPENMP=${ENABLE_OMP}
+        -DENABLE_GPU=${ENABLE_GPU}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+        -DENABLE_REAL_SP=${ENABLE_REAL_SP}
+        -DENABLE_CRAY_WRAPPERS=${ENABLE_CRAY_WRAPPERS}
+        -DBUILT_AS_SUBMODULE=ON
         )
 
     ExternalProject_Add(tensor_lib

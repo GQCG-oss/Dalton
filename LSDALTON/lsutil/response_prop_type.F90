@@ -8,6 +8,18 @@
 module response_wrapper_type_module
   use precision
 
+  public :: ALPHAinputitem, &
+       & BETAinputitem, GAMMAinputitem, TPAinputitem, DTPAinputitem, &
+       & ESGinputitem, ESDinputitem, RSPSOLVERinputitem, NMRinputitem,&
+       & mcdinputitem
+  private
+
+  type NMRinputitem
+     logical :: SolveNMRResponseSimultan
+     logical :: CalcDFJcont
+     logical :: PrintAll
+  end type NMRinputitem
+
   type mcdinputitem
      !> Number of excited states for MCD calculation.
      Integer :: nexci
