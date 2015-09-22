@@ -10,9 +10,12 @@ module matrix_operations_scalapack
   use matrix_module
   use LSmatrix_type
   use precision
+  use lsparameters
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param,only: MPI_COMM_LSDALTON
+  use lsmpi_module
 #endif
 
 !  use module_scalapack_aux, if mpi is on 32bits, then blacs is most probably
@@ -3246,6 +3249,7 @@ call lsquit('TKTKTKTKTKTKTKTKTKTK',-1)
 #ifdef VAR_MPI
    use infpar_module
    use lsmpi_type
+   use lsmpi_param
 #endif
    IMPLICIT NONE
    INTEGER :: PR, PC, TMP(4), IERR, I, NBAST
@@ -3311,6 +3315,7 @@ call lsquit('TKTKTKTKTKTKTKTKTKTK',-1)
 #ifdef VAR_MPI
    use infpar_module
    use lsmpi_type
+   use lsmpi_param
 #endif
    IMPLICIT NONE
    TYPE(Matrix) :: A, B, C, AUX
