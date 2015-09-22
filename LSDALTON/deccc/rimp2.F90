@@ -3966,6 +3966,7 @@ end subroutine RIMP2_integrals_and_amplitudes_slave
 
 subroutine RIMP2F12_Ccoupling_energy_slave()
   use precision
+  use memory_handling
   use infpar_module
   use dec_typedef_module
   use lstiming
