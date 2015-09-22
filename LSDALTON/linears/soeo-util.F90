@@ -16,6 +16,7 @@ use soeo_typedef
 use soeo_matop
 use matrix_util
 use dal_interface
+use memory_handling
 
 contains
 !  soeo_Dmo_init

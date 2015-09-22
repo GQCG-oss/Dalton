@@ -20,6 +20,37 @@ use memory_handling
 
 real(realk),parameter  :: matsymthresh = 1.0E-10_realk
 
+public :: verifymatrices
+public :: mcweeney_purify
+public :: robust_mcweeney_purify
+public :: normalize
+public :: oao_density_param
+public :: oao_purify
+public :: get_ao_gradient
+public :: get_oao_gradient
+public :: util_get_symm_part
+public :: util_get_antisymm_part
+public :: util_get_symm_and_antisymm_part_full
+public :: util_mo_to_ao_2
+public :: util_mo_to_ao_different_trans
+public :: util_ao_to_mo_2
+public :: util_ao_to_mo_different_trans
+public :: util_diag
+public :: density_from_orbs
+public :: commutator
+public :: abccommutator
+public :: matrix_exponential
+public :: dumpmats
+public :: save_fock_matrix_to_file
+public :: read_fock_matrix_from_file
+public :: save_overlap_matrix_to_file
+public :: util_Snorm
+public :: mat_get_isym
+public :: matfull_get_isym
+public :: mat_same
+
+private
+
 contains 
   subroutine VerifyMatrices(MAT1,MAT2,STRING,THR,lu)
     implicit none
