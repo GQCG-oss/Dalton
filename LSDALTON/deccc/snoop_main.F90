@@ -163,6 +163,14 @@ contains
 
     end if RestartFull
 
+
+    ! F12 singles contribution
+    if(DECinfo%F12 .and. DECinfo%F12singles) then
+       ! Add F12 singles correction to HF energy
+       EHFfull = EHFfull + MyMoleculeFULL%EF12singles
+    endif
+
+
     ! Make restart file for full molecular energies
     this=0
     call snoop_write_restart_file(this,EHFfull,Ecorrfull)
@@ -355,7 +363,7 @@ contains
           ! Correlation energy for subsystem
           if(.not. DECinfo%SNOOPjustHF) then
              call subsystem_correlation_energy(this,MyMoleculeFULL,OccOrbitals,VirtOrbitals,AFfull,&
-                  & Coccsnoop,Cvirtsnoop,FAOsnoop,lssnoop,Ecorrsnoop(this))
+                  & Coccsnoop,Cvirtsnoop,FAOsnoop,lssnoop,EHFsnoop(this),Ecorrsnoop(this))
           end if
 
           ! Free stuff for subsystem
@@ -380,8 +388,7 @@ contains
 
 
     ! Print interaction energy summary
-    call SNOOP_interaction_energy_print(nsub,EHFsnoop,Ecorrsnoop,EHFfull,Ecorrfull,&
-         & MyMoleculeFULL%Edisp,MyMoleculeFULL%Ect,MyMoleculeFULL%Esub)
+    call SNOOP_interaction_energy_print(nsub,EHFsnoop,Ecorrsnoop,EHFfull,Ecorrfull)
 
     call mat_free(FAOsnoop)
     call mem_dealloc(EHFsnoop)
@@ -773,7 +780,7 @@ contains
 
   !> Print energy summary for SNOOP interaction energy calculation
   subroutine SNOOP_interaction_energy_print(nsub,EHFsub,Ecorrsub,&
-       & EHFfull,Ecorrfull,Edisp,Ect,Esub)
+       & EHFfull,Ecorrfull)
     implicit none
     !> Number of subsystems
     integer,intent(in) :: nsub
@@ -783,11 +790,6 @@ contains
     real(realk),intent(in) :: Ecorrsub(nsub)
     !> HF and correlation energy for total system
     real(realk),intent(in) :: EHFfull,Ecorrfull
-    !> Correlation energy split into dispersion, charge transfer,
-    !> and internal subsystem correlation contributions
-    !> (Ecorrfull should be equal to the sum of these for MP2 and
-    !  CCSD - but not for CCSD(T) or if F12 correction is included)
-    real(realk),intent(in) :: Edisp, Ect, Esub
     real(realk) :: EHFint,Ecorrint
     integer :: i
 
@@ -820,11 +822,6 @@ contains
     write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
     write(DECinfo%output,'(1X,a,g22.12)') 'HF Interaction energy      = ', EHFint
     if(.not. DECinfo%SNOOPjustHF) then
-! KK fixme: These contributions are not calculated correctly and I'm not sure we
-! even want to print them at all. For now we comment it out.
-!       write(DECinfo%output,'(1X,a,g22.12)') 'Corr dispersion            = ', Edisp
-!       write(DECinfo%output,'(1X,a,g22.12)') 'Corr charge transfer       = ', Ect
-!       write(DECinfo%output,'(1X,a,g22.12)') 'Corr internal subsystem    = ', Esub-sum(Ecorrsub)
        write(DECinfo%output,'(1X,a,g22.12)') 'Corr Interaction energy    = ', Ecorrint
        write(DECinfo%output,'(1X,a,g22.12)') 'Total Interaction energy   = ', EHFint+Ecorrint
     end if
@@ -839,11 +836,12 @@ contains
 
 
 
-  !> Calculate correlation energy for subsystem
+  !> Calculate correlation energy for subsystem. F12 singles correction is also added to HF energy
+  !> if requested.
   !> \author Kasper Kristensen
   !> \date October 2014
   subroutine subsystem_correlation_energy(this,MyMoleculeFULL,OccOrbitalsFULL,&
-       & VirtOrbitalsFULL,AFfull,Cocc,Cvirt,F,lssub,Ecorr)
+       & VirtOrbitalsFULL,AFfull,Cocc,Cvirt,F,lssub,EHF,Ecorr)
     implicit none
 
     !> Which subsystem
@@ -862,11 +860,13 @@ contains
     type(matrix),intent(in) :: F
     !> LSitem for subsystem
     type(lsitem), intent(inout) :: lssub
+    !> Subsystem HF energy (F12 singles correction is added if requested)
+    real(realk),intent(inout) :: EHF
     !> Subsystem correlation energy
     real(realk),intent(inout) :: Ecorr
     type(matrix) ::D,C
     type(fullmolecule) :: MySubsystem
-    real(realk) :: EHF,Eerr
+    real(realk) :: dummy,Eerr
     integer :: nMO,nbasis
 
 
@@ -890,6 +890,13 @@ contains
     call molecule_init_from_inputs(MySubsystem,lssub,F,C,D)
     call mat_free(C)
 
+    ! F12 singles contribution
+    if(DECinfo%F12 .and. DECinfo%F12singles ) then
+       call F12singles_driver(MySubsystem,lssub,D)
+       ! Add F12 singles correction to HF energy
+       EHF = EHF + MySubsystem%EF12singles
+    endif
+
 
     ! Correlation energy for subsystem
     ! ********************************
@@ -898,7 +905,7 @@ contains
        ! Full calculation
        write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
             & ' calculation using full driver'
-       call full_driver(MySubsystem,lssub,D,EHF,Ecorr)
+       call full_driver(MySubsystem,lssub,D,dummy,Ecorr)
 
     else
 

@@ -168,39 +168,12 @@ contains
     integer, dimension(8) :: values
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr,ES2
     real(realk) :: molgrad(3,Molecule%natoms)  
-    
+
+
+    call LSTIMER('START',tcpu1,twall1,DECinfo%output)    
+
     ! Set DEC memory
     call get_memory_for_dec_calculation()
-
-    ! Perform SNOOP calculation and skip DEC calculation
-    ! (at some point SNOOP and DEC might be merged)
-    if(DECinfo%SNOOP) then
-       write(DECinfo%output,*) '***********************************************************'
-       write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
-       write(DECinfo%output,*) '***********************************************************'
-       call snoop_driver(mylsitem,config,Molecule,D)
-       return
-    end if
-
-    ! Sanity check: LCM orbitals span the same space as canonical orbitals 
-    if(DECinfo%check_lcm_orbitals) then
-       call check_lcm_against_canonical(molecule,MyLsitem)
-       return
-    end if
-
-    if(DECinfo%force_Occ_SubSystemLocality)then
-       call force_Occupied_SubSystemLocality(molecule,MyLsitem)
-    endif
-
-    if(DECinfo%check_Occ_SubSystemLocality)then
-       call check_Occupied_SubSystemLocality(molecule,MyLsitem)
-    endif
-
-
-    ! Actual DEC calculation
-    ! **********************
-
-    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
     if(.not. DECinfo%full_molecular_cc) then
        write(program_version,'("v:",i2,".",i2.2)') version,subversion
@@ -233,6 +206,32 @@ contains
     if(DECinfo%F12 .and. DECinfo%NaturalLinearScalingF12Terms ) then
        call NaturalLinearScalingF12Terms(Molecule,MyLsitem,D)
     endif
+
+
+    ! Perform SNOOP calculation and skip DEC calculation
+    ! (at some point SNOOP and DEC might be merged)
+    if(DECinfo%SNOOP) then
+       write(DECinfo%output,*) '***********************************************************'
+       write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
+       write(DECinfo%output,*) '***********************************************************'
+       call snoop_driver(mylsitem,config,Molecule,D)
+       return
+    end if
+
+    ! Sanity check: LCM orbitals span the same space as canonical orbitals 
+    if(DECinfo%check_lcm_orbitals) then
+       call check_lcm_against_canonical(molecule,MyLsitem)
+       return
+    end if
+
+    if(DECinfo%force_Occ_SubSystemLocality)then
+       call force_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
+
+    if(DECinfo%check_Occ_SubSystemLocality)then
+       call check_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
+
     
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC

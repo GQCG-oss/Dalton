@@ -766,11 +766,9 @@ contains
 
     !simple logicals
     call ls_mpibcast(MyMolecule%mem_distributed,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%snoopmonomer,master,MPI_COMM_LSDALTON)
 
     ! Simple reals
-    call ls_mpibcast(MyMolecule%Edisp,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12singles,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12NLSV1,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)

@@ -871,12 +871,9 @@ module dec_typedef_module
      !>  n>0: Use AOS information from fragment%REDfrags(n)
      integer,pointer :: PairFOTlevel(:,:) => null()
 
-     !> Partitioning of energy into dispersion, charge transfer,
-     !> and internal subsystem excitations 
-     !> (see SNOOP_partition_energy).
-     real(realk) :: Edisp
-     real(realk) :: Ect
-     real(realk) :: Esub
+
+     ! Is this molecule a SNOOP monomer?
+     logical :: snoopmonomer
 
      ! F12 singles correction energy 
      real(realk) :: EF12singles

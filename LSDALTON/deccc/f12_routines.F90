@@ -280,6 +280,7 @@ module f12_routines_module
     ! local variables
     type(matrix) :: HJccAO,KccAO,FccAO,FrcAO,FrrAO,FcrAO,HJrcAO
     real(realk),pointer :: HJrcAOfull(:,:),FrcAOfull(:,:),FrrAOfull(:,:)
+    integer :: nov
  
     if( MyMolecule%mem_distributed )then
        call lsquit("ERROR(get_F12_mixed_MO_Matrices): this routine does not work&
@@ -360,9 +361,11 @@ module f12_routines_module
     call mem_dealloc(FrrAOfull)
 
     !Fpp
-    call mat_init(Fpp,nbasis,nbasis)
+    nov = noccfull + nvirt
+    call mat_init(Fpp,nov,nov)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'pp',FrrAO,Fpp)
+
     !Fii
     call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
@@ -500,7 +503,7 @@ module f12_routines_module
           ndim2(i) = noccfull
        elseif(string(i).EQ.'p')then !all occupied + virtual
           ndim1(i) = nbasis
-          ndim2(i) = nbasis
+          ndim2(i) = noccfull+nvirt
        elseif(string(i).EQ.'a')then !virtual
           ndim1(i) = nbasis
           ndim2(i) = nvirt
@@ -518,7 +521,7 @@ module f12_routines_module
           call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'p')then !all occupied + virtual
           call dcopy(noccfull*nbasis,Cocc,1,CMO(i)%elms,1)
-          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1:nbasis*nbasis),1)
+          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*ndim1(i)+1:ndim1(i)*ndim2(i)),1)
        elseif(string(i).EQ.'a')then !virtual
           call dcopy(ndim2(i)*ndim1(i),Cvirt,1,CMO(i)%elms,1)
        elseif(string(i).EQ.'c')then !cabs
@@ -536,6 +539,7 @@ module f12_routines_module
     call mat_init(tmp,CMO(1)%ncol,matAO%ncol)
     call mat_mul(CMO(1),matAO,'t','n',1E0_realk,0E0_realk,tmp)
     call mat_mul(tmp,CMO(2),'n','n',1E0_realk,0E0_realk,matMO)
+
     call mat_free(tmp)
     do i=1,2
        call mat_free(CMO(i))
