@@ -1269,11 +1269,10 @@ subroutine print_dec_info()
           ! 1) It is time to back up files base on DECinfo%TimeBacku
           ! 2) All jobs are done
           ! 3) DECinfo%CRASHESTI is true (Debug and testing of estimate restart files)
-          ! 4) The current job is a Fragment optimization (they take a lot of time)
-          ! 5) (DECinfo%only_n_frag_jobs>0) Mainly for debugging 
+          ! 4) (DECinfo%only_n_frag_jobs>0) Mainly for debugging 
           !
-          backup_files =  (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) .or. DECinfo%CRASHESTI &
-                       & .or. jobs%dofragopt(jobdone) .or. (DECinfo%only_n_frag_jobs>0)
+          backup_files =  (dt > DECinfo%TimeBackup) .or. all(jobs%jobsdone) & 
+             & .or. DECinfo%CRASHESTI .or. (DECinfo%only_n_frag_jobs>0)
 
           Backup: if( backup_files )then
              ! Note: If only fragment optimization jobs are requested this is not necessary
