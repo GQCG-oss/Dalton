@@ -288,10 +288,18 @@ contains
 
        ! MP2-F12 Code
        RIMP2F12: if(DECinfo%F12) then
-          IF(DECinfo%F12Ccoupling.AND.(MyFragment%isopt.or.DECinfo%F12fragopt))THEN
-             !Only calculate F12 C (C*C) coupling if requested and for optimized fragment 
-             call RIMP2F12_Ccoupling_Energy(MyFragment,EnergyF12Ccoupling)
-          ENDIF
+          if(pair) then
+             IF(DECinfo%F12Ccoupling.AND.(MyFragment%isopt.or.DECinfo%F12fragopt))THEN
+                !Only calculate F12 C (C*C) coupling if requested and for optimized fragment 
+                call RIMP2F12_Ccoupling_Energy(MyFragment,EnergyF12Ccoupling, Fragment1, Fragment2)
+             end if
+          else
+             IF(DECinfo%F12Ccoupling.AND.(MyFragment%isopt.or.DECinfo%F12fragopt))THEN
+                !Only calculate F12 C (C*C) coupling if requested and for optimized fragment 
+                call RIMP2F12_Ccoupling_Energy(MyFragment,EnergyF12Ccoupling)
+             end if
+          end if
+
           if(pair) then
              if(MyFragment%isopt) then
                 call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel,&
@@ -629,10 +637,8 @@ subroutine AddF12CcouplingCorrection(MyFragment,EnergyF12Ccoupling)
   type(decfrag), intent(inout) :: myfragment
   !> Energy 
   real(realk),intent(in) :: EnergyF12Ccoupling  
-  if(MyFragment%ccmodel==MODEL_RIMP2) then
-   MyFragment%energies(FRAGMODEL_OCCRIMP2)=MyFragment%energies(FRAGMODEL_OCCRIMP2)+EnergyF12Ccoupling
-   MyFragment%energies(FRAGMODEL_VIRTRIMP2)=MyFragment%energies(FRAGMODEL_VIRTRIMP2)+EnergyF12Ccoupling
-   MyFragment%energies(FRAGMODEL_LAGRIMP2)=MyFragment%energies(FRAGMODEL_LAGRIMP2)+EnergyF12Ccoupling 
+  if(MyFragment%ccmodel==MODEL_RIMP2 .OR. MyFragment%ccmodel==MODEL_CCSD) then
+   MyFragment%energies(FRAGMODEL_RIMP2f12)=MyFragment%energies(FRAGMODEL_RIMP2f12)+EnergyF12Ccoupling
   end if
 end subroutine AddF12CcouplingCorrection
 
