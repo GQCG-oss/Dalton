@@ -386,7 +386,7 @@ module f12_routines_module
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rm',FcrAO,Frm)
     !Fcc
-    call mat_init(Fcp,ncabs,nbasis)
+    call mat_init(Fcp,ncabs,nov)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cp',FcrAO,Fcp)
     call mat_free(FcrAO)

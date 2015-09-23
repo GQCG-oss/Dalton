@@ -171,12 +171,9 @@ contains
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        IF(DECinfo%full_molecular_cc)THEN
-!          if(.not. molecule%snoopmonomer) then  
-          if(DECinfo%hack .and. (molecule%snoopmonomer) ) then
-             print *, 'KKHACK NOT INIT CABS and RI'
+          if(.not. molecule%snoopmonomer) then  
              ! do not do this for SNOOP monomer, it has already been done for the dimer, 
              ! and the RI and CABS matrices can be reused
-          else
              call dec_get_CABS_orbitals(molecule,mylsitem)
              call dec_get_RI_orbitals(molecule,mylsitem)
           end if
@@ -918,9 +915,7 @@ contains
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
     
-    if(DECinfo%hack .and. (molecule%snoopmonomer) ) then
-       print *, 'KKHACK not free cabs'
-    else
+    if(.not. molecule%snoopmonomer) then
        call free_cabs()
     end if
 

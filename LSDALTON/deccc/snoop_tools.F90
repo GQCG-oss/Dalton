@@ -1154,7 +1154,7 @@ contains
     !> Subsystem orbitals
     real(realk),intent(inout) :: Csub(nbasis,nMO)
     real(realk),pointer :: W(:,:),T(:,:),tmp(:,:)
-    real(realk) :: funcval1,funcval2   ! KKHACK delete this when properly tested
+    real(realk) :: funcval1,funcval2   ! KKFIXME delete this when properly tested
 
 
     ! Strategy
