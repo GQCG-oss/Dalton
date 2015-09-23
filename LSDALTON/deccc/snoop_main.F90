@@ -64,7 +64,7 @@ contains
          & S,MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis,AORdefault,AORdefault)
 
     ! Simple SNOOP with no orthogonality constraint and no iterative SNOOP HF cycles
-    call snoop_driver_simple(Lsfull,config,MyMoleculeFULL,D,S)
+    call snoop_workhorse(Lsfull,config,MyMoleculeFULL,D,S)
 
     call mem_dealloc(S)
 
@@ -74,7 +74,7 @@ contains
 
   !> Driver for calculation interaction enegy using local orbitals. 
   !> \author Kasper Kristensen
-  subroutine snoop_driver_simple(Lsfull,config,MyMoleculeFULL,D,S)
+  subroutine snoop_workhorse(Lsfull,config,MyMoleculeFULL,D,S)
     implicit none
     !> LSitem for full system
     type(lsitem), intent(inout) :: lsfull
@@ -418,7 +418,7 @@ contains
     call mem_dealloc(AFfull)
 
 
-  end subroutine snoop_driver_simple
+  end subroutine snoop_workhorse
 
 
 
