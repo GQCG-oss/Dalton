@@ -1,11 +1,11 @@
 #!/bin/bash
-TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonIfortReleaseCSR
-SCRATCH_DIR=/tmp/tkjaer/DaltonIfortReleaseCSR
+TMP_DIR=/home/pbaudin/nightly_testing/tmp/MB-Grendel-linux-ifort-mpi-omp-int64-debug
+SCRATCH_DIR=/tmp/pbaudin/MB-Grendel-linux-ifort-mpi-omp-int64-debug
 rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
 
 git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
-git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
+git log --pretty=format:"%an" --since=1.day > /home/pbaudin/nightly_testing/gitlog
 
 cd $TMP_DIR
 
