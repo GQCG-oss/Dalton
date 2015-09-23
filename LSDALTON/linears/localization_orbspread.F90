@@ -1,4 +1,5 @@
 module orbspread_module
+use files
 !##########################################################
 !#              ORBSPREAD MODULE                          #
 !# Routines that are specific for orbspread localization  #

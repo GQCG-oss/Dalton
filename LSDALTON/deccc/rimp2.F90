@@ -7,6 +7,7 @@ module rimp2_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_module
 #endif
   use precision
   use lstiming
@@ -3135,7 +3136,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   real(realk) :: MemStep1,MemStep2,MemStep3,TS4,TE4
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,oldAORegular,oldAOdfAux
   integer :: MaxVirtSize,nTiles,offsetV,offset,MinAuxBatch
-  integer :: ncabsAO,ncabsMO
+  integer :: ncabsAO,ncabsMO,ncabs(2)
   logical :: useAlphaCD5,useAlphaCD6,ChangedDefault,first_order,PerformTiling
   logical :: use_bg_buf
   integer(kind=ls_mpik)  :: request5,request6
@@ -3254,8 +3255,9 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
   !print *, "nvirtAOS", nvirt
   !print *, "noccAOS+noccAOS", nocc + nvirt
   
+  print*,'associated(MyFragment%Ccabs): ',associated(MyFragment%Ccabs)
   ncabsAO = size(MyFragment%Ccabs,1)
-  ncabsMO = size(MyFragment%Ccabs,2)    
+  ncabsMO = size(MyFragment%Ccabs,2)
 
   call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%SETTING,MinAuxBatch,'D')
   offset = 0 
@@ -3364,7 +3366,73 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
      call mem_alloc(Fca_diag,ncabsMO,nvirt,'RIMP2Cc:Fca_diag')
      call mem_alloc(Fca_local,ncabsMO,nvirt,'RIMP2Cc:Fca_local')
   ENDIF
-  Fca_local(:,1:nvirt) = Myfragment%Fcp(:,offset+nocc+1:(nocc+offset+nvirt))
+
+  ! *************************************************************
+  ! *                    Start up MPI slaves                    *
+  ! *************************************************************
+
+#ifdef VAR_MPI
+
+  ! Only use slave helper if there is at least one local slave available.
+  if(infpar%lg_nodtot.GT.1) then
+     wakeslave=.true.
+     CollaborateWithSlaves=.true.
+  else
+     wakeslave=.false.
+     CollaborateWithSlaves=.false.
+  end if
+
+  ! Master starts up slave
+  StartUpSlaves: if(wakeslave .and. master) then
+
+     bat%MaxAllowedDimAlpha = 0
+     bat%MaxAllowedDimGamma = 0
+     bat%virtbatch = 0
+     bat%size1=0
+     bat%size2=0
+     bat%size3=0
+
+     ! Sanity check
+     if(.not. MyFragment%BasisInfoIsSet) then
+        call lsquit('MP2_RI_EnergyContributions: &
+             & Basis info for master is not set!',-1)
+     end if
+
+     call time_start_phase( PHASE_COMM )
+     ! Wake up slaves to do the job: slaves awoken up with (RIMP2INAMP)
+     ! and call MP2_RI_EnergyContribution_slave which calls
+     ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
+     call ls_mpibcast(RIMP2F12Ccoup,infpar%master,infpar%lg_comm)
+     ! Communicate fragment information to slaves
+     first_order=.FALSE.
+     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
+     ncabs(1) = ncabsAO
+     ncabs(2) = ncabsMO
+     call ls_mpibcast(ncabs,2,infpar%master,infpar%lg_comm)
+     call ls_mpibcast(MyFragment%Ccabs,ncabsAO,ncabsMO,infpar%master,infpar%lg_comm)  
+     call time_start_phase( PHASE_WORK )
+  endif StartUpSlaves
+  CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
+  mynum = infpar%lg_mynum
+  numnodes = infpar%lg_nodtot
+  HSTATUS = 80
+  CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
+#else
+  mynum = 0
+  numnodes = 1
+  wakeslave = .false.
+  CollaborateWithSlaves = .false.
+#endif
+
+  IF(master)THEN
+     Fca_local(:,1:nvirt) = Myfragment%Fcp(:,offset+nocc+1:(nocc+offset+nvirt))
+  ENDIF
+#ifdef VAR_MPI
+  if(wakeslave) then
+     call ls_mpibcast(Fca_local,ncabsMO,nvirt,infpar%master,infpar%lg_comm)
+  endif
+#endif
+
   !Transform Local Virtual index to Diagonal/canonical index 
   !F(C,A)_diag = F(C,B)_local * Uvirt(B,A)
   M = ncabsMO    !rows of Output Matrix
@@ -3420,59 +3488,6 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
 
 !!$acc enter data copyin(EVocc,EVvirt,UoccEOST,UvirtEOST,UoccT,UvirtT)
 !!$acc enter data copyin(TauOcc,TauVirt,LaplaceW) if(DECinfo%RIMP2_Laplace)
-
-  ! *************************************************************
-  ! *                    Start up MPI slaves                    *
-  ! *************************************************************
-
-#ifdef VAR_MPI
-
-  ! Only use slave helper if there is at least one local slave available.
-  if(infpar%lg_nodtot.GT.1) then
-     wakeslave=.true.
-     CollaborateWithSlaves=.true.
-  else
-     wakeslave=.false.
-     CollaborateWithSlaves=.false.
-  end if
-
-  ! Master starts up slave
-  StartUpSlaves: if(wakeslave .and. master) then
-
-     bat%MaxAllowedDimAlpha = 0
-     bat%MaxAllowedDimGamma = 0
-     bat%virtbatch = 0
-     bat%size1=0
-     bat%size2=0
-     bat%size3=0
-
-     ! Sanity check
-     if(.not. MyFragment%BasisInfoIsSet) then
-        call lsquit('MP2_RI_EnergyContributions: &
-             & Basis info for master is not set!',-1)
-     end if
-
-     call time_start_phase( PHASE_COMM )
-     ! Wake up slaves to do the job: slaves awoken up with (RIMP2INAMP)
-     ! and call MP2_RI_EnergyContribution_slave which calls
-     ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
-     call ls_mpibcast(RIMP2F12Ccoup,infpar%master,infpar%lg_comm)
-     ! Communicate fragment information to slaves
-     first_order=.FALSE.
-     call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
-     call time_start_phase( PHASE_WORK )
-  endif StartUpSlaves
-  CALL LSTIMER('DECRIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)
-  mynum = infpar%lg_mynum
-  numnodes = infpar%lg_nodtot
-  HSTATUS = 80
-  CALL MPI_GET_PROCESSOR_NAME(HNAME,HSTATUS,IERR)
-#else
-  mynum = 0
-  numnodes = 1
-  wakeslave = .false.
-  CollaborateWithSlaves = .false.
-#endif
 
   !Build Galpha2(nAux,nocc,nvirt) = GalphaCabs(nAUx,nocc,ncabsMO)*Fca(ncabsMO,nvirt)
   !in the diagonal basis 
@@ -3948,4 +3963,40 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   ENDIF
 
 end subroutine RIMP2_integrals_and_amplitudes_slave
+
+subroutine RIMP2F12_Ccoupling_energy_slave()
+  use precision
+  use memory_handling
+  use infpar_module
+  use dec_typedef_module
+  use lstiming
+  ! DEC DEPENDENCIES (within deccc directory)  
+  ! *****************************************
+  use decmpi_module, only: mpi_communicate_mp2_int_and_amp
+  use rimp2_module,only: RIMP2F12_Ccoupling_energy
+  use lsmpi_type
+  use memory_handling
+  implicit none
+  !> Atomic fragment (or pair fragment)
+  type(decfrag) :: MyFragment
+  !> The RI-MP2-F12 Ccoupling F12 energy contribution
+  real(realk) :: EnergyF12Ccoupling
+  !> Batch sizes
+  type(mp2_batch_construction) :: bat
+  !> Calculate intgrals for first order MP2 properties?
+  logical :: first_order
+  integer :: ncabs(2)
+  ! Receive fragment structure and other information from master rank
+  ! *****************************************************************
+  call time_start_phase( PHASE_COMM)
+  call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order,.true.)
+  ncabs(1) = size(MyFragment%Ccabs,1)
+  ncabs(2) = size(MyFragment%Ccabs,2)
+  call ls_mpibcast(ncabs,2,infpar%master,infpar%lg_comm)
+  call mem_alloc(MyFragment%Ccabs,ncabs(1),ncabs(2))
+  call ls_mpibcast(MyFragment%Ccabs,ncabs(1),ncabs(2),infpar%master,infpar%lg_comm)  
+  call time_start_phase( PHASE_WORK)
+  call RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling)
+!  call mem_dealloc(MyFragment%Ccabs) 
+end subroutine RIMP2F12_Ccoupling_energy_slave
 #endif

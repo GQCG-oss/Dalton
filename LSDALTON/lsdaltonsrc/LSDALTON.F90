@@ -805,7 +805,7 @@ SUBROUTINE LSDALTON_DRIVER_SLAVE()
    implicit none
    call lsquit("ERROR(LSDALTON_DRIVER_SLAVE): this should never be called without MPI",-1)
 #else
-   use lsmpi_type, only: MPI_COMM_LSDALTON
+   use lsmpi_param, only: MPI_COMM_LSDALTON
    implicit none
    call lsmpi_slave(MPI_COMM_LSDALTON)
 #endif
@@ -817,7 +817,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use matrix_operations, only: set_matrix_default
   use init_lsdalton_mod, only: open_lsdalton_files
 #ifdef VAR_MPI
-  use lsmpi_type, only: PDMA4SLV
+  use lsparameters, only: PDMA4SLV
 #endif
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util

@@ -17,7 +17,7 @@ MODULE DEC_settings_mod
   use matrix_operations
 #ifdef VAR_MPI
   use infpar_module
-  use lsmpi_type, only: LSMPIASYNCP
+  use lsmpi_param, only: LSMPIASYNCP
 #endif
 
 contains

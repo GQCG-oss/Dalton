@@ -230,6 +230,29 @@ module lsmpi_type
 !$OMP nLog,nDP,nInteger4,nInteger8,nCha,lsmpibufferDP,lsmpibufferInt4,&
 !$OMP lsmpibufferInt8,lsmpibufferLog,lsmpibufferCha,nShort,lsmpibufferSho)
 
+public :: NullifyMPIbuffers,PrintMPIbuffersizes,GET_MPI_COMM_SELF,&
+     & ls_mpibcast_chunks,lsmpi_send,lsmpi_recv,lsmpi_isend,ls_mpibcast,&
+     & lsmpi_reduction,ls_mpisendrecv,ls_mpi_buffer,lsmpi_int_reduction,&
+     & lsmpi_sho_reduction,lsmpi_local_reduction,lsmpi_allreduce,&
+     & lsmpi_reduce_min,lsmpi_reduce_max,lsmpi_local_allgatherv,&
+     & lsmpi_win_create,lsmpi_win_fence,lsmpi_put,lsmpi_rput,lsmpi_get,&
+     & lsmpi_rget,lsmpi_acc,lsmpi_racc,lsmpi_get_acc,MaxIncreaseSize,&
+     & get_rank_for_comm,get_size_for_comm,init_mpi_groups,&
+     & init_mpi_groups_general,init_mpi_subgroup,&
+     & create_mpi_local_group_structure,print_mpi_group_info,&
+     & divide_local_mpi_group,lsmpi_print,lsmpi_default_mpi_group,&
+     & lsmpi_print_mem_info,lsmpi_finalize,lsmpi_barrier,lsmpi_comm_free,&
+     & init_mpi_groups_slave,ls_mpiInitBuffer, ls_MpiFinalizeBuffer,&
+     & LSMPIBROADCAST,ls_mpiinitbufferaddtobuffer,&
+     & ls_mpiModbuffersizes, lsmpi_win_flush,AddToBuffer,&
+     & time_lsmpi_win_unlock,time_lsmpi_wait,time_lsmpi_win_flush,&
+     & lsmpi_win_lock_all, nCha,nDP,nInteger4,nInteger8,nLog,lsmpi_wait,&
+     & lsmpi_win_unlock_all,lsmpi_win_free,lsmpi_reduce_realk_min,&
+     & lsmpi_iprobe,lsmpi_probe,lsmpi_reduce_realk_max,lsmpi_poke,&
+     & lsmpi_max_realk_reduction,lsmpi_win_lock,lsmpi_win_unlock
+
+private
+
 contains
   SUBROUTINE NullifyMPIbuffers()
     implicit none
@@ -4645,7 +4668,6 @@ contains
 
   end subroutine init_mpi_subgroup
 
-
   !> \brief Create simple mpigroup structure for local groups (see init_mpi_groups for details).
   !> \author Kasper Kristensen
   !> \date March 2012
@@ -4703,7 +4725,6 @@ contains
 
 
   end subroutine create_mpi_local_group_structure
-
 
 
   ! \brief Print information about MPI master group and local group.
@@ -4885,7 +4906,6 @@ contains
   end subroutine divide_local_mpi_group
 #endif
 
-
     subroutine lsmpi_print(lupri)
     implicit none
     integer :: lupri    
@@ -5047,7 +5067,6 @@ contains
 #endif 
 #endif 
     end subroutine lsmpi_finalize
-
 
     subroutine lsmpi_barrier(comm)
 #ifdef VAR_MPI

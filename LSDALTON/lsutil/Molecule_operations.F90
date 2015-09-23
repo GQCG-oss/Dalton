@@ -6,6 +6,7 @@ MODULE molecule_type
 use molecule_typetype
 use precision
 use memory_handling
+use basis_typetype
 private
 public ::  DETERMINE_MAXCOOR, PRINT_MOL, &
      & write_atom_to_disk, &

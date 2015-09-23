@@ -5,8 +5,10 @@
 !> \author L. Thogersen. Documented by S. Host.
 !> \date 2003
 MODULE diagonalization
+   use precision
    use av_utilities
    use files
+   USE matrix_module
    USE matrix_operations
    USE matrix_operations_aux, only:mat_column_norm,mat_density_from_orbs
    use matrix_util

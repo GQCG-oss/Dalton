@@ -9,6 +9,7 @@ module decmpi_module
   use memory_handling!,only: mem_alloc,mem_dealloc
   use dec_typedef_module
   use infpar_module
+  use lsmpi_param
   use lsmpi_type
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
@@ -3150,6 +3151,7 @@ end module decmpi_module
 subroutine set_dec_settings_on_slaves()
    use infpar_module
    use lsmpi_type
+   use lsmpi_param
    use lsparameters
    use dec_typedef_module
    use decmpi_module, only:mpibcast_dec_settings

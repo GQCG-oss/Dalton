@@ -1,10 +1,13 @@
 module RSPSYMSOLVER
+  use precision
+  use matrix_module
   use matrix_util
   use decompMod
   use matrix_operations
   use RSPSOLVER
   use rsp_util
   use files
+  use memory_handling
   !use configuration
   private
   public ::  rsp_sym_solver,rsp_sym_init,expand_on_basis3,orthonormalize22,&

@@ -2,6 +2,7 @@
 !> Full molecular calculation of RI-MP2-F12
 
 module fullrimp2f12 
+use files
 use precision
 use typedeftype!,only:lsitem
 use typedef
@@ -53,7 +54,8 @@ use ri_util_module
 use lsmpi_op,only: mpicopy_lsitem
 use decmpi_module,only: mpi_bcast_fullmolecule
 use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
-     & LSMPIBROADCAST,MPI_COMM_LSDALTON , ls_mpibcast
+     & ls_mpibcast
+use lsmpi_param,only: LSMPIBROADCAST,MPI_COMM_LSDALTON
 #endif
 
 public :: full_canonical_rimp2_f12, lsmpi_matrix_bufcopy,&
@@ -2095,8 +2097,8 @@ end module fullrimp2f12
   subroutine full_canonical_rimp2f12_slave
     use fullrimp2f12,only: full_canonical_rimp2_f12, lsmpi_matrix_bufcopy
     use infpar_module !infpar
-    use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
-         & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+    use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer
+    use lsmpi_param,only:LSMPIBROADCAST,MPI_COMM_LSDALTON 
     use lsmpi_op,only: mpicopy_lsitem
     use precision
     use typedeftype,only:lsitem

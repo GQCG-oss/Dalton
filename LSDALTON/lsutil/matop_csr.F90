@@ -17,6 +17,41 @@ module matrix_operations_csr
 !  integer, save :: nnzdiff
 ! this parameter is used in the integral program (lstensor_operations.f90) and 
 ! should always be equal to the tol parameter in mat_csr_cleanup (matop_csr_aux.c)
+  public :: zeroCSR
+  public :: mat_csr_init
+  public :: mat_csr_allocate
+  public :: mat_csr_copy
+  public :: mat_csr_TrAB
+  public :: mat_csr_identity
+  public :: mat_csr_add_identity
+  public :: mat_csr_assign
+  public :: mat_csr_dotproduct
+  public :: mat_csr_sqnorm2
+  public :: mat_csr_outdia_sqnorm2
+  public :: mat_csr_abs_max_elm
+  public :: mat_csr_max_elm
+  public :: mat_csr_trans
+  public :: mat_csr_Tr
+  public :: mat_csr_scal
+  public :: mat_csr_add
+  public :: mat_csr_daxpy
+  public :: mat_csr_mul
+  public :: mat_csr_ao_precond
+  public :: mat_csr_set_from_full
+  public :: mat_csr_to_full
+  public :: mat_csr_to_full3d
+  public :: mat_csr_retrieve_block_full
+  public :: mat_csr_report_sparsity
+  public :: mat_csr_write_to_disk
+  public :: mat_csr_read_from_disk
+  public :: mat_csr_get_elem
+  public :: mat_csr_print
+  public :: mat_csr_free
+  public :: mat_csr_zero
+  public :: mat_csr_inquire_cutoff
+  public :: mat_csr_zero_cutoff
+
+  
 contains
   !> \brief See mat_init in mat-operations.f90
   

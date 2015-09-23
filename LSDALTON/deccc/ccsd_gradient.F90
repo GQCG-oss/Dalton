@@ -12,8 +12,9 @@ module ccsd_gradient_module
   use dec_typedef_module
   use lsparameters
   use tensor_interface_module
+  use matrix_module
   use matrix_operations
-
+  use typedeftype
   use dec_typedef_module
   use array2_simple_operations
   use array4_simple_operations

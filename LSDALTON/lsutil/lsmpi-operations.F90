@@ -29,14 +29,15 @@ module lsmpi_op
        & ls_mpi_buffer, lsmpi_local_reduction, get_rank_for_comm, &
        & get_size_for_comm, ls_mpiInitBuffer, ls_MpiFinalizeBuffer, &
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
-       & LSMPIREDUCTION, LSMPIREDUCTIONmaster, LSMPIBROADCAST,&
        & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
   use infpar_module
   use lsmpi_module
+  use lsmpi_param
 #else
   use lsmpi_type, only: ls_mpi_buffer, get_rank_for_comm, get_size_for_comm, &
-       & ls_mpiInitBuffer, ls_MpiFinalizeBuffer,LSMPIBROADCAST,&
+       & ls_mpiInitBuffer, ls_MpiFinalizeBuffer,&
        & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
+  use lsmpi_param, only: LSMPIBROADCAST
 #endif
   use screen_mod
   !*****************************************

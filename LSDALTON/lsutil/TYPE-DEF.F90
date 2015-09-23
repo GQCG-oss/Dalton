@@ -14,6 +14,7 @@ MODULE TYPEDEFTYPE
  use matrix_module
  use LSparameters
  use integralOutput_typetype
+ use f12_module
 #ifdef VAR_MPI
  use infpar_module
 #endif

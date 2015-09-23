@@ -16,6 +16,7 @@ module cc_tools_module
    use memory_handling
 #ifdef VAR_MPI
    use lsmpi_type
+   use lsmpi_module
 #endif
    use lstiming
    use typedeftype

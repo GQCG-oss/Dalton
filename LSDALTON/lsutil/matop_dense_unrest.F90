@@ -6,6 +6,84 @@ module matrix_op_unres_dense
   use matrix_module
   use memory_handling
   use precision
+public :: mat_unres_dense_init
+public :: mat_unres_dense_free
+public :: mat_unres_dense_set_from_full
+public :: mat_unres_dense_to_full
+public :: mat_unres_dense_to_full3d
+public :: mat_unres_dense_print
+public :: mat_unres_dense_trans
+public :: mat_unres_dense_assign
+public :: mat_unres_dense_mpicopy
+public :: mat_unres_dense_copy
+public :: mat_unres_dense_Tr
+public :: mat_unres_dense_TrAB 
+public :: mat_unres_dense_mul
+public :: mat_unres_dense_dmul
+public :: mat_unres_dense_extract_diagonal
+public :: mat_unres_dense_add
+public :: mat_unres_dense_daxpy
+public :: mat_unres_dense_dotproduct
+public :: mat_unres_dense_sqnorm2
+public :: mat_unres_dense_outdia_sqnorm2
+public :: mat_unres_dense_dsyev
+public :: mat_unres_dense_dsyevx
+public :: mat_unres_dense_dsyevx_aux
+public :: mat_unres_dense_diag_f
+public :: mat_unres_dense_abs_max_elm
+public :: mat_unres_dense_max_elm
+public :: mat_unres_dense_min_elm
+public :: mat_unres_dense_max_diag_elm
+public :: mat_unres_dense_dE_dmu
+public :: mat_unres_dense_column_norm
+public :: mat_unres_dense_section
+public :: mat_unres_dense_insert_sectio
+public :: mat_unres_dense_section2
+public :: mat_unres_dense_precond
+public :: mat_unres_dense_mo_precond
+public :: mat_unres_dense_new_mo_precond
+public :: mat_unres_dense_new_complex_precond
+public :: mat_unres_dense_mo_precond_complex
+public :: mat_unres_dense_ao_precond
+public :: mat_unres_dense_identity
+public :: mat_unres_dense_create_elm
+public :: mat_unres_dense_get_el
+public :: mat_unres_dense_create_block
+public :: mat_unres_dense_add_block
+public :: mat_unres_dense_retrieve_block
+public :: mat_unres_dense_scal
+public :: mat_unres_dense_scal_dia
+public :: mat_unres_dense_scal_dia_vec
+public :: mat_unres_dense_zero
+public :: mat_unres_dense_zerohalf
+public :: mat_unres_dense_write_to_disk
+public :: mat_unres_dense_read_from_disk
+public :: mat_unres_dense_write_to_disk2
+public :: mat_unres_dense_read_from_disk2
+public :: mat_unres_dense_vec_to_mat
+public :: mat_unres_dense_mat_to_vec
+public :: mat_unres_dense_dposv
+public :: mat_unres_dense_inv
+public :: mat_unres_dense_chol
+public :: mat_unres_dense_sum
+public :: mat_unres_dense_report_sparsity
+public :: mat_unres_dense_insert_section
+public :: mat_unres_dense_get_elm
+public :: mat_unres_dense_create_elm_alph
+public :: mat_unres_dense_create_elm_beta
+public :: mat_unres_dense_part_from_full
+public :: mat_unres_dense_create_ab_elms
+public :: mat_unres_dense_mix_homolumo
+public :: mat_unres_dense_ab_daxpy
+public :: mat_unres_dense_trab_ab
+public :: mat_unres_dense_to_full2
+public :: mat_unres_dense_set_from_full2
+public :: mat_unres_dense_add_to_fullunres
+public :: mat_unres_dense_set_from_full3
+public :: unres_dens_stat_deallocated_mem
+public :: unres_dens_stat_allocated_mem
+private
+
   contains
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_unres_dense_init(a,nrow,ncol)

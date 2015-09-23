@@ -80,7 +80,6 @@ integer mat_csr_cleanup_(double *val, integer *col, integer *row, integer *dim, 
   size_t realloc_size;
   double *new_val;
   integer *new_col;
-  integer i;
 
   if (*nnz == 0){
     return 0;

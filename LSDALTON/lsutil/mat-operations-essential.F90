@@ -19,13 +19,15 @@
 MODULE matrix_operations
 !FIXME: order routines alphabetically
 !   use lstiming
+   use lsparameters
    use matrix_module
    use matrix_operations_dense
    use matrix_operations_scalapack
    use matrix_operations_pdmm
    use LSTIMING
 #ifdef VAR_MPI
-   use lsmpi_type, only: MATRIXTY
+   use lsmpi_type
+   use lsmpi_param
 #endif
    use matrix_operations_csr
    use matrix_op_unres_dense
@@ -2764,46 +2766,49 @@ end subroutine set_lowertriangular_zero
 END MODULE Matrix_Operations
 
 #ifdef VAR_MPI
-      !> \brief Pass matrix_type to other MPI nodes
-      !> \author T. Kjaergaard
-      !> \date 2011
-      !> \param a the matrix type
-      subroutine lsmpi_set_matrix_type_master(a)
+!> \brief Pass matrix_type to other MPI nodes
+!> \author T. Kjaergaard
+!> \date 2011
+!> \param a the matrix type
+subroutine lsmpi_set_matrix_type_master(a)
   use infpar_module
   use lsmpi_type
-        implicit none
-        integer,intent(in) :: a
-        call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
-      end subroutine lsmpi_set_matrix_type_master
+  use lsmpi_param
+  implicit none
+  integer,intent(in) :: a
+  call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
+end subroutine lsmpi_set_matrix_type_master
 
-      !> \brief obtains the matrix_type from master MPI nodes
-      !> \author T. Kjaergaard
-      !> \date 2011
-      !> \param the matrix type
-      subroutine lsmpi_set_matrix_type_slave()
+!> \brief obtains the matrix_type from master MPI nodes
+!> \author T. Kjaergaard
+!> \date 2011
+!> \param the matrix type
+subroutine lsmpi_set_matrix_type_slave()
   use matrix_operations
   use infpar_module
   use lsmpi_type
-        implicit none
-        integer :: a
-        call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
+  use lsmpi_param
+  implicit none
+  integer :: a
+  call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
+  
+  call mat_select_type(a,6)
+  
+end subroutine lsmpi_set_matrix_type_slave
 
-        call mat_select_type(a,6)
-
-      end subroutine lsmpi_set_matrix_type_slave
-
-      !> \brief obtains the matrix_type from master MPI nodes
-      !> \author T. Kjaergaard
-      !> \date 2011
-      !> \param the matrix type
-      subroutine lsmpi_set_matrix_tmp_type_slave()
-        use matrix_operations
-        use infpar_module
-        use lsmpi_type
-        implicit none
-        integer :: a
-        call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
-        call mat_select_tmp_type(a,6)
-
-      end subroutine lsmpi_set_matrix_tmp_type_slave
+!> \brief obtains the matrix_type from master MPI nodes
+!> \author T. Kjaergaard
+!> \date 2011
+!> \param the matrix type
+subroutine lsmpi_set_matrix_tmp_type_slave()
+  use matrix_operations
+  use infpar_module
+  use lsmpi_type
+  use lsmpi_param
+  implicit none
+  integer :: a
+  call ls_mpibcast(a,infpar%master,MPI_COMM_LSDALTON)
+  call mat_select_tmp_type(a,6)
+  
+end subroutine lsmpi_set_matrix_tmp_type_slave
 #endif

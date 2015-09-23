@@ -7,6 +7,8 @@ use matrix_operations
 use ls_Integral_Interface
 use LSparameters
 use lstiming
+use io
+use io_type
 CONTAINS
 
 !> \brief  Driver for the density-fitting linear-equation solver, A c = b. Includes the calculation
