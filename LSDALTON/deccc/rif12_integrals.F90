@@ -444,6 +444,7 @@ contains
   !=================================================================
   != Step 0: Creating of dopair_occ                                =
   !=================================================================
+
 #ifdef VAR_MPI
 
   !=================================================================
@@ -1475,15 +1476,15 @@ contains
 
     if(DECinfo%F12debug .AND. master) then
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a,f20.10)') '                  WANGY DEC-MP2-F12 CALCULATION                 '
+       write(DECinfo%output,'(1X,a,f20.10)') '                  DEC-RI-MP2-F12 CALCULATION                    '
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
-       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =     ', E_21
-       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =     ', E_22
-       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =     ', E_23
-       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
-       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: F12 CORRECTION TO ENERGY =         ', E_F12
-       write(DECinfo%output,'(1X,a,f20.10)') ' WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =  ', MP2_energy+E_F12
+       write(DECinfo%output,'(1X,a,f20.10)') ' RI-MP2 CORRELATION ENERGY (For DEC) =  ', MP2_energy
+       write(DECinfo%output,'(1X,a,f20.10)') ' F12 E21 CORRECTION TO ENERGY =     ', E_21
+       write(DECinfo%output,'(1X,a,f20.10)') ' F12 E22 CORRECTION TO ENERGY =     ', E_22
+       write(DECinfo%output,'(1X,a,f20.10)') ' F12 E23 CORRECTION TO ENERGY =     ', E_23
+       write(DECinfo%output,'(1X,a,f20.10)') ' F12 E22+E23 CORRECTION TO ENERGY = ', E_22+E_23
+       write(DECinfo%output,'(1X,a,f20.10)') ' F12 CORRECTION TO ENERGY =         ', E_F12
+       write(DECinfo%output,'(1X,a,f20.10)') ' MP2-F12 CORRELATION ENERGY (DEC) =  ', MP2_energy+E_F12
     endif
 
     !> Setting the MP2-F12 correction
