@@ -3817,7 +3817,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          WRITE(config%LUPRI,'(/A)') &
               &     'We recommend OBS:   cc-pV(X)Z-F12  Aux:aug-cc-pwCV(X)Z-RI CABS:cc-pV(X)Z-F12_OPTRI    X=D,T,Q'
          WRITE(config%LUPRI,'(/A)') &
-              &     'or           OBS: aug-cc-pVDZ-F12  Aux:aug-cc-pwCVTZ-RI   CABS:aug-cc-pV(X)Z_OPTRI   '
+              &     'or           OBS: aug-cc-pV(X)Z-F12  Aux:aug-cc-pwCV(X)Z-RI   CABS:aug-cc-pV(X)Z_OPTRI   '
          CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
       endif
       WRITE(config%LUPRI,'(A,F7.1)')'The F12 Geminal exponent for the Regular Basis = ',&
