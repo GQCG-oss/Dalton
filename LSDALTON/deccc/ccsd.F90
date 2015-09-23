@@ -1463,8 +1463,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 #endif
 #else
+#ifdef VAR_MPI
      write(*,'("#DEBUG(DIL): Process ",i6,"[",i6,"]: W_sizes:",4(1x,i11),6(1x,i6))') infpar%lg_mynum,infpar%mynum,&
       &w0size,w1size,w2size,w3size,MaxActualDimAlpha,MaxActualDimGamma,os,vs,nors,nvrs !`DIL: remove
+#endif
 #endif
 
      !If the buffer needs to be changed, it is here, since there is not pointer
@@ -1489,7 +1491,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            locally_stored_v2o2  = 0
         case(1)
            locally_stored_tiles = locally_stored_tiles * 3 !``DIL: Why 3? o2ilej?
+#ifdef DIL_ACTIVE
            locally_stored_v2o2  = dil_buf_size !`DIL: This is not O2V2 (just a const size buffer)
+#endif
         case default
            call lsquit("ERROR(ccsd_residual_integral_driven): bg buffering only imlemented for schemes 4-1",-1)
         end select
@@ -1532,7 +1536,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 1: BG stat: ',infpar%lg_mynum,&
       &mem_get_bg_buf_n()*8_8,mem_get_bg_buf_free()*8_8
 #endif
-#endif
      if(scheme==1) then
         if(use_bg_buf) then
            call mem_pseudo_alloc(dil_buffer,dil_buf_size) !`DIL: the buffer size needs to be calculated
@@ -1540,7 +1543,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call mem_alloc(dil_buffer,dil_buf_size) !`DIL: the buffer size needs to be calculated
         endif
      endif
-#ifdef DIL_ACTIVE
      scheme=2 !`DIL: remove
 #ifdef DIL_DEBUG_ON
      write(DECinfo%output,*)'#DEBUG(DIL): Alloc Tracepoint 2: BG stat: ',infpar%lg_mynum,&
@@ -3021,7 +3023,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef DIL_ACTIVE
         scheme=1 !`DIL: remove
-#endif
         if(scheme == 1) then
            if(use_bg_buf)then
               call mem_pseudo_dealloc(dil_buffer)
@@ -3029,7 +3030,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call mem_dealloc(dil_buffer)
            endif
         endif
-#ifdef DIL_ACTIVE
         scheme=2 !`DIL: remove
 #endif
 
@@ -3255,15 +3255,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
      if(use_bg_buf)then
         call mem_pseudo_dealloc(w1)
-        call mem_dealloc(Gbi)
-        call mem_dealloc(Had)
+#ifdef DIL_ACTIVE
         if(scheme==1) call mem_pseudo_dealloc(dil_buffer)
+#endif
      else
         call mem_dealloc(w1)
-        call mem_dealloc(Gbi)
-        call mem_dealloc(Had)
+#ifdef DIL_ACTIVE
         if(scheme==1) call mem_dealloc(dil_buffer)
+#endif
      endif
+     call mem_dealloc(Gbi)
+     call mem_dealloc(Had)
      call tensor_free(u2)
 #ifdef DIL_ACTIVE
      scheme=2 !`DIL: remove
@@ -5897,7 +5899,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            locally_stored_v2o2  = 0
         case(1)
            locally_stored_tiles = locally_stored_tiles * 3
+#ifdef DIL_ACTIVE
            locally_stored_v2o2  = dil_buf_size !`DIL: This is not O2V2 (just a const size buffer)
+#endif
         case(0)
            print *,"WARNING(ccsd_residual_integral_driven): this is a hack to use scheme 0"
            locally_stored_tiles = locally_stored_tiles * 3
@@ -6354,7 +6358,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            ! uigcj 
            memin = memin + 1.0E0_realk*(i8*no*no)*nv*nbg
            ! dil_buffer
+#ifdef DIL_ACTIVE
            memin = memin + 1.0E0_realk*real(dil_buf_size,8) !`DIL: include my tensor contraction buffer in the BG
+#endif
         endif
 
 
