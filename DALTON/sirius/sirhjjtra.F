@@ -62,7 +62,7 @@
 
       integer JTRSIR, NTRLVL, MX_NDMAT
       integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I
-      integer ICDTRA(NNORBX), ITRTYP(NORBT) ! automatic arrays
+      integer, allocatable :: ICDTRA(:), ITRTYP(:)
       character*8 TABLE(2),LAB123(3)
       data        TABLE /'MO2INTHJ','END INTM'/
       data        LAB123/'********','********','********'/
@@ -70,6 +70,9 @@
 C --- start of executable code
 
       call QENTER('HJJTRA_CTL')
+
+      allocate(ICDTRA(NNORBX))
+      allocate(ITRTYP(NORBT))
 
       KFREE  = 1
       LFREE  = LWORK
@@ -123,7 +126,7 @@ C --- start of executable code
      &      WORK,KFREE,LFREE)
 
          MX_NDMAT = LFREE/(4*N2BASX) ! use half of free memory for DMAT and FMAT
-         MX_NDMAT = MIN(NNORBX,MX_NDMAT)
+         MX_NDMAT = MIN(NCDTRA,MX_NDMAT)
          write(lupri,*) 'MX_NDMAT, NNORBX =',MX_NDMAT,NNORBX
          call MEMGET2('REAL','DMAT',  KDMAT,MX_NDMAT*N2BASX,
      &      WORK,KFREE,LFREE)
@@ -144,7 +147,10 @@ C --- start of executable code
       WRITE (LUINTM) LAB123,TABLE(2)
       CALL REWSPL(LUINTM)
 
+      deallocate ( ICDTRA )
+      deallocate ( ITRTYP )
       call QEXIT('HJJTRA_CTL')
+      return
       end
 
       subroutine HJJTRA_FCK_DISTRIBUTED(
@@ -180,13 +186,17 @@ C --- start of executable code
 #include "iratdef.h"
 
       integer ICD, IC, ID, NDMAT,  LBUF
-      integer ICD_REC(MX_NDMAT), IFCTYP(MX_NDMAT), ISYMDM(MX_NDMAT) ! automatic arrays
+      integer, allocatable :: ICD_REC(:), IFCTYP(:), ISYMDM(:)
       logical FEXIST, OLDDX, TIMING
       real*8  TCPU0,TCPU1,TCPU2,TWAL0,TWAL1,TWAL2
       real*8  TCPU_FCK,TCPU_WR,TWAL_FCK,TWAL_WR
 
       logical NOSSUP_SAVE
       real*8  HFXFAC_SAVE
+
+      allocate ( ICD_REC(MX_NDMAT) )
+      allocate ( IFCTYP(MX_NDMAT) )
+      allocate ( ISYMDM(MX_NDMAT) )
 
       TIMING = IPRTRA .ge. 0 ! DEBUG
       IF (TIMING) THEN
@@ -325,6 +335,11 @@ C --- start of executable code
 
       HFXFAC = HFXFAC_SAVE
       NOSSUP = NOSSUP_SAVE
+
+      deallocate ( ICD_REC )
+      deallocate ( IFCTYP )
+      deallocate ( ISYMDM )
+
       return
       end
 ! ===================================================================
@@ -572,6 +587,7 @@ C --- start of executable code
          if (IDIST .eq. NCDTRA) then
             ! finished 
             IDIST = -1
+            !deallocate(ICDTRA)
             return
          end if
 

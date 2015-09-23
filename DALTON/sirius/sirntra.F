@@ -3330,10 +3330,10 @@ C
             MFRO(ISYM) = 0
             MISH(ISYM) = 0
          END IF
-         IMOG = IMOL + MFRO(ISYM)
-         IMOA = IMOL + MFRO(ISYM) + MISH(ISYM)
+         IMOG = IMOL + MFRO(ISYM) ! off-set to g indices
+         IMOA = IMOL + MFRO(ISYM) + MISH(ISYM) ! off-set to a indices
          NMOA = MASH(ISYM)
-         IMOL = IMOL + MORB(ISYM)
+         IMOL = IMOL + MORB(ISYM) ! last index to transform in this symmetry
 C        ... if 3. order or full integral transformation
 C            then reset MASH(*) to MORB(*) - MFRO(ISYM)
 C            for symmetry quadruplet tests in TR2CTL
@@ -3344,12 +3344,13 @@ C            and for limits on (c d) summation indices in TRA2
          END IF
 C
          NG = MIN(4,JTRLVL)
-         DO 240 I = IMOG + 1,IMOL
+         DO I = IMOG + 1,IMOL
             ITRTYP(I) = NG
-  240    CONTINUE
-         DO 250 I = IMOA + 1,IMOA + NMOA
+            ! this includes the a indices, but they are overwritten below
+         END DO
+         DO I = IMOA + 1,IMOA + NMOA
             ITRTYP(I) = 4
-  250    CONTINUE
+         END DO
   300 CONTINUE
 C
 C     Define ICDTRA matrix

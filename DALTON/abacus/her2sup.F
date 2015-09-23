@@ -91,9 +91,7 @@ C
 
       IF (IPRINT .GT. 1) THEN
          CALL TITLER('Output from FORMSUP','*',125)
-      END IF
-
-      WRITE (LUPRI,'(A,2(/A,1P,D10.2)/A,L10)')
+         WRITE (LUPRI,'(A,2(/A,1P,D10.2)/A,L10)')
      &   '    Precalculated two-electron integrals'
      &   //' are transformed to P-supermatrix elements.',
      &   '    Factor on exchange                            :',HFXFAC,
