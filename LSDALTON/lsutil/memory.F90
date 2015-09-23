@@ -3334,15 +3334,16 @@ SUBROUTINE lsmpi_local_allocate_I4V4(A,cip,n1,win,comm,n2)
    character(120)                      :: errmsg
    integer(kind=8)                     :: assoc
 #ifdef VAR_MPI
-   integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int4,lb,bytes
+   integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int41, lb,bytes
+   integer(kind=ls_mpik)          :: lsmpi_int42
    nullify(A)
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_INTEGER4,lb,lsmpi_int4,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_INTEGER4,lb,lsmpi_int41,IERR)
    assoc = n1
    if(present(n2))assoc=n2
-   nsize = assoc*lsmpi_int4
-   bytes =n1*lsmpi_int4
+   nsize = assoc*lsmpi_int41
+   bytes =n1*lsmpi_int41
 
    if(IERR/=0)then
       write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
@@ -3350,8 +3351,10 @@ SUBROUTINE lsmpi_local_allocate_I4V4(A,cip,n1,win,comm,n2)
       call memory_error_quit(errmsg,nsize)
    endif
 
+   lsmpi_int42 = lsmpi_int41
+
 #ifdef VAR_HAVE_MPI3
-   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_int4,info,comm,cip,win,IERR)
+   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_int42,info,comm,cip,win,IERR)
 #else
    call lsquit("ERROR(mpi_local_allocate_I4V4): not possible withot mpi3",-1)
 #endif
@@ -3382,16 +3385,17 @@ SUBROUTINE lsmpi_local_allocate_I8V8(A,cip,n1,win,comm,n2)
    character(120)                      :: errmsg
    integer(kind=8)                     :: assoc
 #ifdef VAR_MPI
-   integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int8,lb,bytes
+   integer(kind=MPI_ADDRESS_KIND) :: lsmpi_int81,lb,bytes
+   integer (kind=ls_mpik)         :: lsmpi_int82
    nullify(A)
    info = MPI_INFO_NULL
 
-   call MPI_TYPE_GET_EXTENT(MPI_INTEGER8,lb,lsmpi_int8,IERR)
+   call MPI_TYPE_GET_EXTENT(MPI_INTEGER8,lb,lsmpi_int81,IERR)
 
    assoc = n1
    if(present(n2))assoc=n2
-   nsize = assoc*lsmpi_int8
-   bytes =n1*lsmpi_int8
+   nsize = assoc*lsmpi_int81
+   bytes =n1*lsmpi_int81
 
    if(IERR/=0)then
       write (errmsg,'("ERROR(mpi_local_allocate_dV8):error in&
@@ -3399,8 +3403,10 @@ SUBROUTINE lsmpi_local_allocate_I8V8(A,cip,n1,win,comm,n2)
       call memory_error_quit(errmsg,nsize)
    endif
 
+   lsmpi_int82 = lsmpi_int81
+
 #ifdef VAR_HAVE_MPI3
-   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_int8,info,comm,cip,win,IERR)
+   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_int82,info,comm,cip,win,IERR)
 #else
    call lsquit("ERROR(mpi_local_allocate_I8V8): not possible withot mpi3",-1)
 #endif
@@ -3430,6 +3436,7 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
    logical                             :: loc,simp
 #ifdef VAR_MPI
    integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
+   integer(kind=ls_mpik) :: lsmpi_len
 #endif
 
    simp = .false.
@@ -3453,6 +3460,8 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
          call memory_error_quit(errmsg,nsize)
       endif
 
+      lsmpi_len = lsmpi_len_realk
+
 #ifdef VAR_HAVE_MPI3
       if(loc) then
          bytes = int(0,kind=MPI_ADDRESS_KIND)
@@ -3462,7 +3471,7 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
             call lsquit('ERROR(lsmpi_allocate_d):something wrong in the subroutine, bytes<0',-1)
          endif
 
-         call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
+         call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len,info,comm,A%c,A%w,IERR)
 
       else
          bytes = n1 * lsmpi_len_realk
@@ -3472,7 +3481,7 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
             call lsquit('ERROR(lsmpi_allocate_d):something wrong in the subroutine, bytes<0',-1)
          endif
 
-         call MPI_WIN_ALLOCATE(bytes,lsmpi_len_realk,info,comm,A%c,A%w,IERR)
+         call MPI_WIN_ALLOCATE(bytes,lsmpi_len,info,comm,A%c,A%w,IERR)
       endif
 #else
       call lsquit("ERROR(lsmpi_allocate_d): not possible withot mpi3",-1)
@@ -3531,6 +3540,7 @@ SUBROUTINE lsmpi_local_allocate_dV8(A,cip,n1,win,comm,n2)
    integer(kind=8)                     :: assoc
 #ifdef VAR_MPI
    integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
+   integer (kind=ls_mpik)         :: lsmpi_len
    nullify(A)
    ierr = 0
    info = MPI_INFO_NULL
@@ -3547,8 +3557,10 @@ SUBROUTINE lsmpi_local_allocate_dV8(A,cip,n1,win,comm,n2)
       call memory_error_quit(errmsg,nsize)
    endif
 
+   lsmpi_len = lsmpi_len_realk
+
 #ifdef VAR_HAVE_MPI3
-   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,cip,win,IERR)
+   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len,info,comm,cip,win,IERR)
 #else
    call lsquit("ERROR(mpi_local_allocate_dV8): not possible withot mpi3",-1)
 #endif
@@ -3580,6 +3592,7 @@ SUBROUTINE lsmpi_local_allocate_dV4(A,cip,n1,win,comm,n2)
    character(120) :: errmsg
 #ifdef VAR_MPI
    integer(kind=MPI_ADDRESS_KIND) :: lsmpi_len_realk,lb,bytes
+   integer (kind=ls_mpik)         :: lsmpi_len
    nullify(A)
    info = MPI_INFO_NULL
 
@@ -3595,8 +3608,10 @@ SUBROUTINE lsmpi_local_allocate_dV4(A,cip,n1,win,comm,n2)
       call memory_error_quit(errmsg,nsize)
    endif
 
+   lsmpi_len = lsmpi_len_realk
+
 #ifdef VAR_HAVE_MPI3
-   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len_realk,info,comm,cip,win,IERR)
+   call MPI_WIN_ALLOCATE_SHARED(bytes,lsmpi_len,info,comm,cip,win,IERR)
 #else
    call lsquit("ERROR(mpi_local_allocate_dV4): not possible withot mpi3",-1)
 #endif

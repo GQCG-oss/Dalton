@@ -3966,6 +3966,7 @@ end subroutine RIMP2_integrals_and_amplitudes_slave
 
 subroutine RIMP2F12_Ccoupling_energy_slave()
   use precision
+  use memory_handling
   use infpar_module
   use dec_typedef_module
   use lstiming
@@ -3974,6 +3975,7 @@ subroutine RIMP2F12_Ccoupling_energy_slave()
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
   use rimp2_module,only: RIMP2F12_Ccoupling_energy
   use lsmpi_type
+  use memory_handling
   implicit none
   !> Atomic fragment (or pair fragment)
   type(decfrag) :: MyFragment

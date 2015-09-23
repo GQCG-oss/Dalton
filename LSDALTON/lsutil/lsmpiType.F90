@@ -248,7 +248,8 @@ public :: NullifyMPIbuffers,PrintMPIbuffersizes,GET_MPI_COMM_SELF,&
      & time_lsmpi_win_unlock,time_lsmpi_wait,time_lsmpi_win_flush,&
      & lsmpi_win_lock_all, nCha,nDP,nInteger4,nInteger8,nLog,lsmpi_wait,&
      & lsmpi_win_unlock_all,lsmpi_win_free,lsmpi_reduce_realk_min,&
-     & lsmpi_iprobe,lsmpi_probe,lsmpi_reduce_realk_max,lsmpi_poke
+     & lsmpi_iprobe,lsmpi_probe,lsmpi_reduce_realk_max,lsmpi_poke,&
+     & lsmpi_max_realk_reduction
 
 private
 

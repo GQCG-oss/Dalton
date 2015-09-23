@@ -20,6 +20,7 @@ use lsdalton_fock_module
 use memory_handling
 use dal_interface
 use matrix_operations_aux
+use matrix_operations
 use files
 use matrix_util
 use typedeftype
