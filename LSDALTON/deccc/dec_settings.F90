@@ -388,8 +388,6 @@ contains
 
        !KEYWORDS FOR DEC PARALLELISM
        !****************************
-       case('.TEST_FULLY_DISTRIBUTED_INTEGRALS') 
-          DECinfo%test_fully_distributed_integrals=.true.
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
@@ -594,6 +592,8 @@ contains
 #endif
        case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
                                           read(input,*) DECinfo%en_mem
+       case('.CCINT_SCHEME');             DECinfo%ccintforce         = .true.
+                                          read(input,*) DECinfo%ccintscheme
        case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
           ! Stripped-down keywords

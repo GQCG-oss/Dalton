@@ -446,7 +446,8 @@ module dec_typedef_module
      !> Sizes of alpha and gamma batches defined manually
      integer :: ccsdAbatch,ccsdGbatch
      !> test integral scheme, fully distributed, get_mo_integrals
-     logical :: test_fully_distributed_integrals
+     logical :: ccintforce
+     integer :: ccintscheme
 
      !> MP2 occupied batching
      !> *********************
@@ -1620,7 +1621,6 @@ CONTAINS
 
 
     ! -- Debug modes
-    DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%distribute_fullmolecule = .false.
     DECinfo%force_distribution      = .false.
     DECinfo%CRASHCALC               = .false.
@@ -1644,6 +1644,8 @@ CONTAINS
 #endif
     DECinfo%force_scheme            = .false.
     DECinfo%en_mem                  = 0
+    DECinfo%ccintforce              = .false.
+    DECinfo%ccintscheme             = -1
     DECinfo%CCSDno_restart          = .false.
     DECinfo%CCSDnosaferun           = .false.
     DECinfo%solver_par              = .false.
