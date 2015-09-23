@@ -1030,7 +1030,11 @@ module cc_tools_module
       integer(kind=ls_mpik) :: mode
       integer(kind=long)    :: o2v2
       logical               :: rest_o2_occ, rest_sio4,qu
-      real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
+#ifdef VAR_PTR_RESHAPE
+      real(realk), pointer, contiguous  :: h1(:,:,:,:), t1(:,:,:), h(:)
+#else
+      real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:), h(:)
+#endif
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
 #ifdef DIL_ACTIVE
 !{`DIL:
@@ -1610,7 +1614,9 @@ module cc_tools_module
                call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 #ifdef VAR_PTR_RESHAPE
                t1(1:no2,1:no2,1:nor)     => w2
-               h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+               !this is a workaround for PGI 15.5 and 15.7
+               h => sio4%elm1
+               h1(1:no,1:no,1:no2,1:no2) => h
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
@@ -1703,7 +1709,9 @@ module cc_tools_module
                   call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 #ifdef VAR_PTR_RESHAPE
                   t1(1:no2,1:no2,1:nor)     => w2
-                  h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+                  !this is a workaround for PGI 15.5 and 15.7
+                  h => sio4%elm1
+                  h1(1:no,1:no,1:no2,1:no2) => h
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                   call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                   call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
