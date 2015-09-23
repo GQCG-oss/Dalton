@@ -3813,7 +3813,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    if(config%doF12)THEN
       if(.NOT. CABS_BASIS_PRESENT)then         
          WRITE(config%LUPRI,'(/A)') &
-              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set' 
+         WRITE(config%LUPRI,'(/A)') &
+              &     'We recommend OBS:   cc-pV(X)Z-F12  Aux:aug-cc-pwCV(X)Z-RI CABS:cc-pV(X)Z-F12_OPTRI    X=D,T,Q'
+         WRITE(config%LUPRI,'(/A)') &
+              &     'or           OBS: aug-cc-pV(X)Z-F12  Aux:aug-cc-pwCV(X)Z-RI   CABS:aug-cc-pV(X)Z_OPTRI   '
          CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
       endif
       WRITE(config%LUPRI,'(A,F7.1)')'The F12 Geminal exponent for the Regular Basis = ',&

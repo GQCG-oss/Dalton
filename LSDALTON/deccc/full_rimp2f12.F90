@@ -854,6 +854,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ENDIF
 
 #ifdef VAR_MPI 
+
    lsmpibufferRIMP2(6)=EV2      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(7)=EX2      !we need to perform a MPI reduction at the end    
 #else

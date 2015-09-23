@@ -249,7 +249,7 @@ public :: NullifyMPIbuffers,PrintMPIbuffersizes,GET_MPI_COMM_SELF,&
      & lsmpi_win_lock_all, nCha,nDP,nInteger4,nInteger8,nLog,lsmpi_wait,&
      & lsmpi_win_unlock_all,lsmpi_win_free,lsmpi_reduce_realk_min,&
      & lsmpi_iprobe,lsmpi_probe,lsmpi_reduce_realk_max,lsmpi_poke,&
-     & lsmpi_max_realk_reduction
+     & lsmpi_max_realk_reduction,lsmpi_win_lock,lsmpi_win_unlock
 
 private
 

@@ -509,6 +509,9 @@ contains
          & mynum,numnodes,CalphaF,NBA,ABdecompF,ABdecompCreateF,intspec,use_bg_buf)
     ABdecompCreateF = .FALSE.
     !perform this suborutine on the GPU (async)  - you do not need to wait for the results
+
+    call LSTIMER('DEC RIMP2F12 START:X1',TS2,TE2,DECinfo%output,ForcePrint)
+    
     call ContractOne4CenterF12IntegralsRIV1_dec(NBA,noccEOS,CalphaF,EV1,dopair_occ)
 #ifdef VAR_MPI 
     lsmpibufferRIMP2(2)=EV1
@@ -517,6 +520,8 @@ contains
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V1,RI) = ', EV1
 #endif         
+
+    call LSTIMER('DEC RIMP2F12:X1',TS2,TE2,DECinfo%output,ForcePrint)
 
     !Calculate the Fitting Coefficients (alpha|g^2|ij) 
     intspec(4) = '2' !The Gaussian geminal operator g^2 (GGemCouOperator)
@@ -586,6 +591,7 @@ contains
     nAuxMPI(1) = nAux
 #endif
 
+    call LSTIMER('DEC RIMP2F12 START:B1',TS2,TE2,DECinfo%output,ForcePrint)
 
 #ifdef VAR_MPI
       !Build the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 2011
@@ -672,6 +678,8 @@ contains
     !CalphaD is now the R tilde coefficient of Eq. 89 of J Comput Chem 32: 2492–2513, 20
     !perform this suborutine on the GPU (Async)
     call ContractOne4CenterF12IntegralsRobustRIB1_dec(nBA,offset,noccEOS,nocvAOS,CalphaD,CalphaR,EB1,dopair_occ)
+    
+    call LSTIMER('DEC RIMP2F12:EB1',TS2,TE2,DECinfo%output,ForcePrint)   
 
 #ifdef VAR_MPI 
     lsmpibufferRIMP2(1)=EB1
@@ -696,7 +704,7 @@ contains
     !WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B1,RI) = ', EB1
 
     call mem_dealloc(CalphaD)
-    call LSTIMER('FULLRIMP2:Step1',TS2,TE2,DECinfo%output,ForcePrint)
+    call LSTIMER('DEC RIMP2F12:Step1',TS2,TE2,DECinfo%output,ForcePrint)
 
     !==============================================================
     !=  B2: sum_c' (ic'|f12^2|jj) hJ_ic' - (jc'|f12^2|ij) hJ_ic'  =
@@ -709,24 +717,28 @@ contains
     intspec(5) = '2' !The f12 Operator 
     !Unique: CalphaXcabsAO(NBA,noccEOS,ncabsAO)
     call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
-         & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CMO_RI,ncabsAO,&
-         & mynum,numnodes,CalphaXcabsAO,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
+       & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CMO_RI,ncabsAO,&
+       & mynum,numnodes,CalphaXcabsAO,NBA,ABdecompX,ABdecompCreateX,intspec,use_bg_buf)
+
+    call LSTIMER('DEC RIMP2F12 START:B2B3',TS2,TE2,DECinfo%output,ForcePrint)   
 
     call ContractOne4CenterF12IntegralsRIB23_dec(NBA,noccEOS,ncabsAO,CalphaXcabsAO,CalphaX,&
-         & MyFragment%hJir,EB2,EB3,dopair_occ)
+       & MyFragment%hJir,EB2,EB3,dopair_occ)
 
 #ifdef VAR_MPI 
-   lsmpibufferRIMP2(4)=EB2       !we need to perform a MPI reduction at the end 
-   lsmpibufferRIMP2(5)=EB3       !we need to perform a MPI reduction at the end 
+    lsmpibufferRIMP2(4)=EB2       !we need to perform a MPI reduction at the end 
+    lsmpibufferRIMP2(5)=EB3       !we need to perform a MPI reduction at the end 
 #else
-   !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
-   mp2f12_energy = mp2f12_energy  + EB2
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
-   mp2f12_energy = mp2f12_energy  + EB3
-   WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
-   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
-   WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
+    !1.0E0_realk because that term has an overall pluss in Eqs. 25-26
+    mp2f12_energy = mp2f12_energy  + EB2
+    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+    mp2f12_energy = mp2f12_energy  + EB3
+    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
+    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B2,RI) = ',EB2
+    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B3,RI) = ',EB3
 #endif
+
+    call LSTIMER('DEC RIMP2F12:B2B3',TS2,TE2,DECinfo%output,ForcePrint)   
 
     call mem_dealloc(CalphaXcabsAO)
     call mem_dealloc(CalphaX)
@@ -734,7 +746,6 @@ contains
     call mem_dealloc(ABdecompX)
     call mem_dealloc(ABdecompF)
     !ABdecompR still exists
-    call LSTIMER('FULLRIMP2:B2B3',TS2,TE2,DECinfo%output,ForcePrint)
 
     !=================================================================
     != Step 2: Ripjq*Gipjq+Rimjc*Gimjc+Rjmic*Gjmic                   =
@@ -768,6 +779,9 @@ contains
        & FORCEPRINT,wakeslaves,Cfull,nocvAOS,CoAOS,noccAOS, &
        & mynum,numnodes,CalphaG,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
     ABdecompCreateG = .FALSE.
+
+    call LSTIMER('DEC RIMP2F12 START:V2X2',TS2,TE2,DECinfo%output,ForcePrint)
+
 #ifdef VAR_MPI
     !X2 
     nsize = NBA*nocvAOS*noccEOS
@@ -819,7 +833,7 @@ contains
        call ContractTwo4CenterF12IntegralsRIV2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaR,CalphaG,EV2,dopair_occ)
        call ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA,noccEOS,nocvAOS,CalphaG,CalphaT,EX2,dopair_occ)
     ENDIF
-    
+
     lsmpibufferRIMP2(6)=EV2      !we need to perform a MPI reduction at the end 
     lsmpibufferRIMP2(7)=EX2      !we need to perform a MPI reduction at the end 
     call mem_dealloc(CalphaT)
@@ -830,8 +844,6 @@ contains
     mp2f12_energy = mp2f12_energy + EV2
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V2,RI) = ',EV2
-
-
     !X2 
     nsize = NBA*nocvAOS*noccEOS
     !CalphaT(NBA,nocvAOS,noccEOS)=CalphaG(NBA,nocvAOS,noccAOS)*F(noccAOS, noccEOS)
@@ -849,6 +861,8 @@ contains
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(X2,RI) = ',EX2
 
 #endif
+
+    call LSTIMER('DEC RIMP2F12:V2X2',TS2,TE2,DECinfo%output,ForcePrint)
 
     !==========================================================
     !=                                                        =
@@ -879,6 +893,8 @@ contains
     call Build_CalphaMO2(MyFragment%MyLsitem,master,nbasis,ncabsAO,nAux,LUPRI,&
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CMO_CABS,ncabsMO,&
          & mynum,numnodes,CalphaGcabsMO,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
+
+    call LSTIMER('DEC RIMP2F12 START:V3V4',TS2,TE2,DECinfo%output,ForcePrint)
 
 #ifdef VAR_MPI 
    IF(wakeslaves)THEN
@@ -940,6 +956,9 @@ contains
    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V3,RI) = ',EV3
    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V4,RI) = ',EV4
 #endif
+
+   call LSTIMER('DEC RIMP2F12:V3V4',TS2,TE2,DECinfo%output,ForcePrint)
+
    call mem_dealloc(ABdecompR)
    call mem_dealloc(CalphaR)
    call mem_dealloc(CalphaRcabsMO)
@@ -966,7 +985,8 @@ contains
          & FORCEPRINT,wakeslaves,CoEOS,noccEOS,CvAOS,nvirtAOS,&
          & mynum,numnodes,CalphaCvirt,NBA,ABdecompG,ABdecompCreateG,intspec,use_bg_buf)
 
-    call ContractTwo4CenterF12IntegralsRIV5_dec(nBA,noccEOS,nvirtAOS,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
+      call LSTIMER('DEC RIMP2F12 START:EV5',TS2,TE2,DECinfo%output,ForcePrint)
+      call ContractTwo4CenterF12IntegralsRIV5_dec(nBA,noccEOS,nvirtAOS,CalphaCvirt,CalphaD,Taibj,EV5,dopair_occ)
 
 #ifdef VAR_MPI 
     !print *, "EV5, mynum", EV5, mynum
@@ -977,9 +997,10 @@ contains
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(V5,RI) = ', EV5
 #endif  
 
+    call LSTIMER('DEC RIMP2F12:EV5',TS2,TE2,DECinfo%output,ForcePrint)
+
     call mem_dealloc(CalphaD)
     call mem_dealloc(CalphaCvirt)
-
     !==========================================================
     !=                                                        =
     != X3:         Step 3  Gimjc*Gimjc                        =
@@ -1025,6 +1046,7 @@ contains
      N = noccEOS          
      call dgemm('N','N',M,N,K,1.0E0_realk,CalphaCcabsT,M,Fkj,K,0.0E0_realk,CalphaP,M)
 
+     call LSTIMER('DEC RIMP2F12 START:X3X4',TS2,TE2,DECinfo%output,ForcePrint)   
 #ifdef VAR_MPI 
      IF(wakeslaves)THEN
         EX3 = 0.0E0_realk
@@ -1073,7 +1095,6 @@ contains
            & CalphaGcabsMO,CalphaCocc,CalphaT,CalphaP,EX3,EX4,dopair_occ)
      ENDIF
 
-
    lsmpibufferRIMP2(11)=EX3      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(12)=EX4      !we need to perform a MPI reduction at the end 
 
@@ -1091,12 +1112,12 @@ contains
 
 #endif
 
+   call LSTIMER('DEC RIMP2F12:X3X4',TS2,TE2,DECinfo%output,ForcePrint)   
+
    call mem_dealloc(CalphaCcabsT)
    call mem_dealloc(CalphaCocc)
    call mem_dealloc(CalphaT)
    call mem_dealloc(CalphaP)
-
-   call LSTIMER('FULLRIMP2:Step2',TS2,TE2,DECinfo%output,ForcePrint)
 
    !=================================================================
    != Step 3: The remaining B terms                                 =
@@ -1120,6 +1141,8 @@ contains
     k =  ncabsAO
     n =  ncabsAO
 
+    call LSTIMER('DEC RIMP2F12 START:EB4',TS2,TE2,DECinfo%output,ForcePrint)
+
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Krs,k,0.0E0_realk,CalphaD,m)
     call BuildKval(dopair_occ,noccEOS,Kval,noccpair,dopair)
     call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaGcabsAO,noccEOS,ncabsAO,CalphaD,noccEOS,ncabsAO,EB4,&
@@ -1131,7 +1154,7 @@ contains
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ',EB4
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B4,RI) = ', EB4
 #endif
-
+    call LSTIMER('DEC RIMP2F12:EB4',TS2,TE2,DECinfo%output,ForcePrint)
     !==============================================================
     !=  B5: (ir|f12|jm)Frs(si|f12|mj)        (r,s=CabsAO)         =
     !==============================================================   
@@ -1159,18 +1182,20 @@ contains
    !Do on GPU (Async)
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Frs,k,0.0E0_realk,CalphaD,m)                                    
    !Do on GPU (Async)
+
+   call LSTIMER('DEC RIMP2F12 START:EB5',TS2,TE2,DECinfo%output,ForcePrint)
    call GeneralTwo4CenterDECF12RICoef1223(nBA,CalphaD,noccEOS,ncabsAO,CalphaCocc,noccAOStot,noccEOS,&
-        & CalphaGcabsAO,noccEOS,ncabsAO,EB5,noccEOS,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,&
-        & Kval,noccpair,DECF12RIB5,DECF12RIB5MPI)
+      & CalphaGcabsAO,noccEOS,ncabsAO,EB5,noccEOS,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,&
+      & Kval,noccpair,DECF12RIB5,DECF12RIB5MPI)
 #ifdef VAR_MPI
-    lsmpibufferRIMP2(14)=EB5      !we need to perform a MPI reduction at the end 
+   lsmpibufferRIMP2(14)=EB5      !we need to perform a MPI reduction at the end 
 #else
    mp2f12_energy = mp2f12_energy  + EB5
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ',EB5 
    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B5,RI) = ', EB5
 #endif
    call mem_dealloc(CalphaD)              
-
+   call LSTIMER('DEC RIMP2F12:EB5',TS2,TE2,DECinfo%output,ForcePrint)
     !==============================================================
     !=  B6: (ip|f12|ja)Fqp(qi|f12|aj)                             =
     !==============================================================
@@ -1197,6 +1222,8 @@ contains
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaP,m,Fpp,k,0.0E0_realk,CalphaD,m)
     call mem_dealloc(CalphaP)
     !Do on GPU (Async)
+
+    call LSTIMER('DEC RIMP2F12 START:EB6',TS2,TE2,DECinfo%output,ForcePrint)
     call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaG,nocvAOS,noccEOS,CalphaD,noccEOS,nocvAOS,EB6,&
          & noccAOStot,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB6,DECF12RIB6MPI)
 #ifdef VAR_MPI
@@ -1207,8 +1234,7 @@ contains
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B6,RI) = ', EB6
 #endif
     call mem_dealloc(CalphaD)
-
-
+    call LSTIMER('DEC RIMP2F12:EB6',TS2,TE2,DECinfo%output,ForcePrint)
     !==============================================================
     !=  B7: (ic|f12|jm)Fnm(ci|F12|nj)                             =
     !==============================================================
@@ -1233,6 +1259,7 @@ contains
 
    call dgemm('N','N',m,n,k,1.0E0_realk,CalphaCoccT,m,Fnm,k,0.0E0_realk,CalphaD,m)
    !Do on GPU (Async)
+   call LSTIMER('DEC RIMP2F12 START:EB7',TS2,TE2,DECinfo%output,ForcePrint)
    call GeneralTwo4CenterDECF12RICoef1223(nBA,CalphaD,noccEOS,noccAOStot,&
         & CalphaGcabsMO,noccEOS,ncabsMO,CalphaCoccT,noccEOS,noccAOStot,EB7,noccEOS,wakeslaves,&
         & use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB7,DECF12RIB7MPI)
@@ -1245,12 +1272,12 @@ contains
    WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B7,RI) = ',EB7
    WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B7,RI) = ', EB7
 #endif
+   call LSTIMER('DEC RIMP2F12:EB7',TS2,TE2,DECinfo%output,ForcePrint)
+   !==============================================================
+   !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
+   !==============================================================
 
-    !==============================================================
-    !=  B8: (ic|f12|jm)Frm(ci|f12|rj)                             =
-    !==============================================================
-
-    !> Dgemm 
+   !> Dgemm 
     nsize = nBA*noccEOS*noccAOStot
     call mem_alloc(CalphaD, nsize)
     m =  nBA*noccEOS                    ! D_jm = C_jr F_rm
@@ -1258,6 +1285,7 @@ contains
     n =  noccAOStot
     
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsAO,m,MyFragment%Frm,k,0.0E0_realk,CalphaD,m)
+    call LSTIMER('DEC RIMP2F12 START:EB8',TS2,TE2,DECinfo%output,ForcePrint)
     call GeneralTwo4CenterDECF12RICoef1223(nBA,CalphaG,nocvAOS,noccEOS,&
          & CalphaGcabsMO,noccEOS,ncabsMO,CalphaD,noccEOS,noccAOStot,EB8,noccEOS,wakeslaves,&
          & use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB8,DECF12RIB8MPI)
@@ -1268,6 +1296,7 @@ contains
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B8,RI) = ', EB8
 #endif
+    call LSTIMER('DEC RIMP2F12:EB8',TS2,TE2,DECinfo%output,ForcePrint)
     call mem_dealloc(CalphaGcabsAO)
     call mem_dealloc(CalphaD)
 
@@ -1282,8 +1311,8 @@ contains
     n =  nocvAOS
 
     call dgemm('N','N',m,n,k,1.0E0_realk,CalphaGcabsMO,m,MyFragment%Fcp,k,0.0E0_realk,CalphaD,m)
-    
     call mem_dealloc(CalphaGcabsMO)
+    call LSTIMER('DEC RIMP2F12 START:EB9',TS2,TE2,DECinfo%output,ForcePrint)
     call GeneralTwo4CenterDECF12RICoef1112(nBA,CalphaG,nocvAOS,noccEOS,CalphaD,noccEOS,nocvAOS,EB9,&
          & noccAOStot,wakeslaves,use_bg_buf,numnodes,nAuxMPI,mynum,Kval,noccpair,DECF12RIB9,DECF12RIB9MPI)
     call mem_dealloc(KVAL)
@@ -1294,7 +1323,7 @@ contains
     WRITE(DECINFO%OUTPUT,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
     WRITE(*,'(A50,F20.13)')'DEC RIMP2F12 Energy contribution: E(B9,RI) = ', EB9
 #endif
-
+    call LSTIMER('DEC RIMP2F12:EB9',TS2,TE2,DECinfo%output,ForcePrint)
     ! ***********************************************************
     !    Free Memory
     ! ***********************************************************
@@ -1341,7 +1370,6 @@ contains
    EV5=lsmpibufferRIMP2(10)
    EX3=lsmpibufferRIMP2(11)
    EX4=lsmpibufferRIMP2(12)
-   
    EB4=lsmpibufferRIMP2(13)
    EB5=lsmpibufferRIMP2(14)
    EB6=lsmpibufferRIMP2(15)
