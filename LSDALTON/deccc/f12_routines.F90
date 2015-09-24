@@ -2886,7 +2886,6 @@ module f12_routines_module
     molecule%nCabsMO = ncabs
     call mat_init(CMO_cabs,nCabsAO,nCabs)
 
-    call init_cabs(DECinfo%full_molecular_cc)
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call mat_free(CMO_cabs)
 
@@ -2907,7 +2906,6 @@ module f12_routines_module
     molecule%nCabsAO = ncabsAO
     molecule%nCabsMO = ncabs
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
-    call init_ri(DECinfo%full_molecular_cc)
     call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call mat_free(CMO_RI)
   end subroutine dec_get_RI_orbitals

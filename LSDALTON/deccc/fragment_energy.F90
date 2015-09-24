@@ -256,8 +256,6 @@ contains
                    call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
                 end if
              end if
-             !> Free cabs after each calculation
-             call free_cabs()
           end if MP2F12
 
     case(MODEL_RIMP2) ! RIMP2 calculation
@@ -311,8 +309,6 @@ contains
                 call get_rif12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)
              end if
           end if
-          !> Free cabs after each calculation
-          call free_cabs()
        end if RIMP2F12
 
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
@@ -386,9 +382,7 @@ contains
              end if
           end if
 
-          !> Free cabs after each calculation
           call tensor_free(t2_occEOS)
-          call free_cabs()
 
        endif CCSDF12
 #endif

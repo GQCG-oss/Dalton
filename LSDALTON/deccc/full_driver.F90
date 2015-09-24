@@ -383,7 +383,6 @@ contains
 #endif
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
-    !    call init_cabs(fulldriver)
 
     if(MyMolecule%mem_distributed)then
        call lsquit("ERROR(full_canonical_mp2_f12): does not work with PDM type fullmolecule",-1)
@@ -907,8 +906,6 @@ contains
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
     
-    call free_cabs()
-
     if(DECinfo%F12DEBUG) then
 
        mp2f12_energy = 0.0E0_realk
@@ -1363,7 +1360,6 @@ contains
 
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
-    !    call init_cabs(fulldriver)
 
     real(realk) :: tmp
     real(realk) :: E21_Viajb, E21_Viija, E21_Viajj 
@@ -1922,7 +1918,6 @@ contains
     call free_4Center_F12_integrals(&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
-    call free_cabs()
 
   end subroutine full_get_ccsd_f12_energy
 

@@ -39,7 +39,7 @@ module rif12_integrals_module
   ! Patricks mat_transpose routine 
   use reorder_frontend_module!, only: mat_transpose(rows,column,pref1,A,pref2,AT)
 
-  ! Thomas free_cabs() for aa free MO_CABS_save_created, CMO_RI_save_created
+  ! Thomas 
   use CABS_operations
 
   ! *********************************************
@@ -1349,8 +1349,6 @@ contains
     call mem_dealloc(CMO_CABS)
     call mem_dealloc(CMO_RI)
 
-    !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
-    ! call free_cabs()
 
     call LSTIMER('DEC RIMP2:Step3',TS2,TE2,DECinfo%output,ForcePrint)
     call LSTIMER('DEC RIMP2F12',TS,TE,DECinfo%output,ForcePrint)

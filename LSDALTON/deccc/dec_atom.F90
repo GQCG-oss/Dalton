@@ -2391,9 +2391,8 @@ contains
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     call mat_init(CMO_cabs,nCabsAO,nCabs)
 
-    call init_cabs()
+    ! KKHACK
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(fragment%Ccabs,ncabsAO,nCabs)
@@ -2417,9 +2416,8 @@ contains
 
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
 
-    call init_cabs()
+    ! KKHACK
     call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
     call mem_alloc(fragment%Cri,ncabsAO,ncabsAO) 

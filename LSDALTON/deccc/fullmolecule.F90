@@ -915,10 +915,6 @@ contains
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
     
-    if(.not. molecule%snoopmonomer) then
-       call free_cabs()
-    end if
-
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices
