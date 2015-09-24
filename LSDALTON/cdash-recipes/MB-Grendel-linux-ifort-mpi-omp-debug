@@ -1,11 +1,11 @@
 #!/bin/bash
-TMP_DIR=/home/pbaudin/nightly_testing/tmp/MB-Grendel-linux-ifort-mpi-omp-debug
-SCRATCH_DIR=/tmp/pbaudin/MB-Grendel-linux-ifort-mpi-omp-debug
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonPGIDebug
+SCRATCH_DIR=/tmp/tkjaer/DaltonPGIDebug
 rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
 
 git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
-git log --pretty=format:"%an" --since=1.day > /home/pbaudin/nightly_testing/gitlog
+git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 
 cd $TMP_DIR
 
@@ -21,7 +21,7 @@ export CTEST_PROJECT_NAME=LSDALTON
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --type=debug --check -DENABLE_DEC=ON -DENABLE_TENSORS=ON -D BUILDNAME="MB-Grendel-linux-ifort-mpi-omp-debug"
 
 cd $TMP_DIR/build
-ctest -D Nightly -L dec -j4
+ctest -D Nightly -L linsca -j4
 
 exit 0
 
