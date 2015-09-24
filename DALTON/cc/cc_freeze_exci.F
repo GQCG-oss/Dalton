@@ -108,7 +108,7 @@ C
                  do aa = 1, NVIRION(ISYMA)
                    IF (A==IVIRION(AA,ISYMA)) THEN
                     !write(lupri,*)'IONISATION ONLY'
-                    !ikeep = .true.
+                    ikeep = .true.
                     go to 333
                    END IF
                  end do
@@ -349,7 +349,7 @@ C
       THR2 = MAX(THR2,1.0D-02)
       SUMOFP = 0.0D00
 C
-      IF (DEBUG.or.locdbg) THR1 = 0.0D0
+      IF (DEBUG.or.locdbg) THR1 = 1.0D-2
       IF (DEBUG.or.locdbg) THR2 = 1.0D-2
 C
 C-------------------------------------
