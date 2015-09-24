@@ -2454,7 +2454,7 @@ contains
 
     if( integral%dims(1) /= n1 .or. integral%dims(2) /= n2 .or. &
          & integral%dims(3) /= n3 .or. integral%dims(4) /= n4)then
-       call lsquit("EEROR(get_mo_integral_par)wrong dimensions of the integrals&
+       call lsquit("ERROR(get_mo_integral_par)wrong dimensions of the integrals&
             & or the transformation matrices",-1)
     endif
     bs = get_split_scheme_0(nb)
@@ -3579,8 +3579,7 @@ contains
         &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
      check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-        & (nbu < maxsize.and. use_bg_buf) .or. &
-        & DECinfo%test_fully_distributed_integrals
+        & (nbu < maxsize.and. use_bg_buf)
 
      if(check_next)then
 
@@ -3590,8 +3589,7 @@ contains
            &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
         check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-           & (nbu < maxsize.and.use_bg_buf) .or. &
-           & DECinfo%test_fully_distributed_integrals
+           & (nbu < maxsize.and.use_bg_buf) 
 
         if( check_next )then
 
@@ -3605,18 +3603,23 @@ contains
               &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
            check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-              & (nbu < maxsize.and.use_bg_buf) .or. &
-              & DECinfo%test_fully_distributed_integrals
+              & (nbu < maxsize.and.use_bg_buf)
 
            if(check_next)then
               s      = 3
-              inc    = nb/4
-              nbuffs = get_nbuffs_scheme_0()
            endif
 
         endif
      endif
 
+     if(DECinfo%ccintforce)then
+        s = DECinfo%ccintscheme
+     endif
+
+     if(s == 3)then
+        inc    = nb/4
+        nbuffs = get_nbuffs_scheme_0()
+     endif
 
      !set requested batch sizes to the largest possible and overwrite these
      !values if this is not possible

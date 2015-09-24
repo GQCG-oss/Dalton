@@ -127,7 +127,7 @@ public :: dec_time_evaluate_efficiency_frag, &
      & get_HF_energy, get_HF_energy_fullmolecule, get_dft_energy_fullmolecule,&
      & fragment_restart_file_exist, get_total_number_of_fragments,&
      & get_fragenergy_restart_filename, get_fragenergy_restart_filename_backup,&
-     & get_num_of_pair_fragments, SD_dotproduct, max_batch_dimension
+     & get_num_of_pair_fragments, SD_dotproduct, max_batch_dimension, print_atomic_fragment_energies_mod
 
 contains
 !> \brief Get maximum batch dimension encountered in integral program.
@@ -5272,6 +5272,29 @@ end function max_batch_dimension
     ENDIF
 
   end subroutine print_atomic_fragment_energies
+  subroutine print_atomic_fragment_energies_mod(atom,rad,FragEnergy,dofrag,greplabel)
+
+    implicit none
+    !> Number of atoms in full molecule
+    integer,intent(in) :: atom
+    ! Fragment energies 
+    real(realk),intent(in) :: rad
+    real(realk),intent(in) :: FragEnergy
+    !> Which atoms are associated with a fragment?
+    logical,intent(in) :: dofrag
+    !> Label to print after each energy for easy grepping
+    character(*),intent(in) :: greplabel
+    integer :: i
+    real(realk) :: rad_in_angstrom
+
+    rad_in_angstrom = rad * bohr_to_angstrom
+
+    if(dofrag) then
+       write(DECinfo%output,'(I6,g20.10,3X,g20.10,2a)') atom,rad_in_angstrom,FragEnergy, "    ",greplabel
+       flush(DECinfo%output)
+    endif
+
+  end subroutine print_atomic_fragment_energies_mod
 
 
   !> \brief Print pair fragment energies
