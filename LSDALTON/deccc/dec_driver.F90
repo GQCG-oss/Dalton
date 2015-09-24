@@ -37,6 +37,7 @@ module dec_driver_module
 #ifdef VAR_MPI
   use infpar_module
   use dec_driver_slave_module
+  use lsmpi_module
 #endif
 
 public:: DEC_wrapper,main_fragment_driver
