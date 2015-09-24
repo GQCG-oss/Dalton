@@ -14,7 +14,7 @@ use molecule_typetype, only: moleculeinfo
 use opttype, only: OptItem
 use response_wrapper_type_module, only: MCDinputitem, ALPHAinputitem, BETAinputitem, &
      & GAMMAinputitem, TPAinputitem, DTPAinputitem, ESGinputitem, ESDinputitem, &
-     & RSPSOLVERinputitem
+     & RSPSOLVERinputitem,NMRinputitem
 use lsdalton_response_type_mod, only: rsp_tasksitem
 use optimization_type, only: opt_setting
 use ls_dynamicsType, only: dyntype
@@ -53,6 +53,8 @@ type responseitem
    type(ESDinputitem)  :: ESDinput
    !> Used to store info about solver that is used for calculation.
    type(RSPSOLVERinputitem) :: RSPSOLVERinput
+   !> Used to store info about NMR 
+   type(NMRinputitem)  :: NMRinput
    type(rsp_tasksitem) :: tasks
    logical :: noOpenRSP
 end type responseitem
@@ -73,8 +75,6 @@ type ConfigItem
    logical              :: PrintMemory
    !> Perform interaction energy calculation using Counter Poise Correction
    logical              :: InteractionEnergy
-   ! Use stream access on all files open with lsopen
-   logical              :: access_stream
    !> Same SubSystems in Interaction energies
    logical              :: SameSubSystems
    !> Construct SubSystems Density matrix in Interaction energies

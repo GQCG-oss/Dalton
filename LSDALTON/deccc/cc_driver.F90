@@ -16,6 +16,7 @@ use files!,only:lsopen,lsclose
 use memory_handling
 use dec_typedef_module
 use integralinterfaceMod
+use IIABSVALINT
 use lsparameters
 #ifdef VAR_MPI
 use infpar_module
@@ -375,6 +376,13 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk) :: norm_pt_1,norm_pt_2
    logical :: bg
 
+   integer :: atom, j,a,b,job, job_n, atom_a, atom_b,imax,jmax,amax,bmax, dist
+   real(realk) :: max_amp, dist_a1, dist_a2, dist_b1, dist_b2, dist_i1, the_dist, dist_j1, maxdist
+   real(realk), pointer :: abs_overlap_oo(:,:)
+   real(realk), pointer :: abs_overlap_vv(:,:)
+   real(realk), pointer :: abs_overlap_ov(:,:)
+   real(realk),pointer :: DistanceTableOrbAtomOcc(:,:),DistanceTableOrbAtomVirt(:,:)
+
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
 
@@ -559,13 +567,349 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of pair jobs   = ', npair
       write(DECinfo%output,'(1X,a,i10,//)') 'FULL JOB SUMMARY: Total number of jobs  = ', njobs
    
+      !DO NOT COMMIT THIS -- IF SOMEONE READS THIS, PLEASE MAKE ME (PETT) AWARE OF THIS ERROR
+      !--------------------------------------------------------------------------------------
+      !print *,"FOO THIS"
+      !if( DECinfo%Hack2 )then
+      !   ! Orbital-atom distances
+      !   call mem_alloc(DistanceTableOrbAtomOcc,mymolecule%nocc,mymolecule%natoms)
+      !   call mem_alloc(DistanceTableOrbAtomVirt,mymolecule%nvirt,mymolecule%natoms)
+      !   call GetOrbAtomDistances(MyMolecule%nocc,MyMolecule%natoms,&
+      !      & MyMolecule%Carmomocc,MyMolecule%AtomCenters,DistanceTableOrbAtomOcc)
+      !   call GetOrbAtomDistances(MyMolecule%nvirt,MyMolecule%natoms,&
+      !      & MyMolecule%Carmomvirt,MyMolecule%AtomCenters,DistanceTableOrbAtomVirt)
+
+      !   maxdist = max(maxval(DistanceTableOrbAtomVirt),maxval(DistanceTableOrbAtomOcc))
+
+      !   call mem_alloc(abs_overlap_vv,nvirt,nvirt)
+      !   call II_absvalint(DECinfo%output,0,mylsitem%setting,Cv,Cv,nbasis,nvirt,nvirt,abs_overlap_vv,.true.,0.0E0_realk,.false.)
+      !   call mem_alloc(abs_overlap_oo,nocc,nocc)
+      !   call II_absvalint(DECinfo%output,0,mylsitem%setting,Co,Co,nbasis,nocc,nocc,abs_overlap_oo,.true.,0.0E0_realk,.false.)
+      !   call mem_alloc(abs_overlap_ov,nocc,nvirt)
+      !   call II_absvalint(DECinfo%output,0,mylsitem%setting,Co,Cv,nbasis,nocc,nvirt,abs_overlap_ov,.true.,0.0E0_realk,.false.)
+
+      !   print *,"NOW THE PRINT SHOULD APPEAR"
+      !   
+      !   do job_n = 1, DECinfo%only_n_frag_jobs
+
+      !      job = DECinfo%frag_job_nr(job_n)
+
+      !      do atom=1,MyMolecule%natoms
+
+      !         if(atom == job)then
+
+      !            print*,"AMPLITUDE PRINT FOR ATOM",atom
+
+      !            if( DECinfo%use_singles )then
+      !               print*,""
+      !               print*,"SINGLES:"
+      !               do a = 1, nvirt
+      !                  max_amp = 0.0E0_realk
+      !                  do i = 1, nocc
+      !                     if( occ_orbitals(ncore+i)%centralatom == atom .and.  abs(max_amp) < abs(t1_final%elm2(a,i)))then
+      !                        max_amp = t1_final%elm2(a,i)
+      !                     endif
+      !                  enddo
+      !                  print *,DistanceTableOrbAtomVirt(a,atom),max_amp
+      !               enddo
+
+      !               print*,"end"
+      !               print*,""
+      !               print*,"SINGLES SQUARED:"
+      !               do a = 1, nvirt
+      !                  atom_a  = virt_orbitals(a)%centralatom
+      !                  dist_a1 = DistanceTableOrbAtomVirt(a,atom)
+      !                  dist_a2 = MyMolecule%DistanceTable(atom,atom_a)
+      !                  max_amp = 0.0E0_realk
+      !                  do i = 1, nocc
+      !                     if( occ_orbitals(ncore+i)%centralatom == atom )then
+      !                        do j = 1, nocc
+      !                           if( occ_orbitals(ncore+j)%centralatom == atom )then
+      !                              do b = 1, nvirt
+      !                                 atom_b  = virt_orbitals(b)%centralatom
+      !                                 dist_b1 = DistanceTableOrbAtomVirt(b,atom)
+      !                                 dist_b2 = MyMolecule%DistanceTable(atom,atom_b)
+      !                                 if( dist_b1 <= dist_a1 .and. abs(max_amp) < abs(t1_final%elm2(a,i) * t1_final%elm2(b,j)))then
+      !                                    max_amp = t1_final%elm2(a,i) * t1_final%elm2(b,j)
+      !                                 endif
+      !                              enddo
+      !                           endif
+      !                        enddo
+      !                     endif
+      !                  enddo
+      !                  print *,dist_a1,max_amp
+      !               enddo
+      !               print*,"end"
+      !            endif
+
+      !            print*,""
+      !            print*,"DOUBLES:"
+      !            do a = 1, nvirt
+      !               atom_a = virt_orbitals(a)%centralatom
+      !               dist_a1 = DistanceTableOrbAtomVirt(a,atom)
+      !               dist_a2 = MyMolecule%DistanceTable(atom,atom_a)
+      !               max_amp = 0.0E0_realk
+      !               do i = 1, nocc
+      !                  if( occ_orbitals(ncore+i)%centralatom == atom )then
+      !                     do j = 1, nocc
+      !                        if( occ_orbitals(ncore+j)%centralatom == atom )then
+      !                           do b = 1, nvirt
+      !                              atom_b  = virt_orbitals(b)%centralatom
+      !                              dist_b1 = DistanceTableOrbAtomVirt(b,atom)
+      !                              dist_b2 = MyMolecule%DistanceTable(atom,atom_b)
+      !                              if( dist_b1 <= dist_a1 .and. abs(max_amp) < abs(t2f_local%elm4(a,b,i,j)) )then
+      !                                 max_amp = t2f_local%elm4(a,b,i,j) 
+      !                              endif
+      !                           enddo
+      !                        endif
+      !                     enddo
+      !                  endif
+      !               enddo
+      !               print *,dist_a1, max_amp
+      !            enddo
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"DOUBLES VIRT:"
+      !            do i = 1, nocc
+      !               dist_i1 = DistanceTableOrbAtomOcc(ncore+i,atom)
+      !               max_amp = 0.0E0_realk
+      !               do j = 1, nocc
+      !                  dist_j1 = DistanceTableOrbAtomOcc(ncore+j,atom)
+      !                  if( dist_j1 <= dist_i1 )then
+      !                     do b = 1, nvirt
+      !                        if( virt_orbitals(b)%centralatom == atom )then
+      !                           do a = 1, nvirt
+      !                              if( virt_orbitals(a)%centralatom == atom .and.  abs(max_amp) < abs(t2f_local%elm4(a,b,i,j)))then
+      !                                 max_amp = t2f_local%elm4(a,b,i,j) 
+      !                              endif
+      !                           enddo
+      !                        endif
+      !                     enddo
+      !                  endif
+      !               enddo
+      !               print *,dist_i1,max_amp
+      !            enddo
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"CDmech:",VOVO_local%dims," no:",nocc,"nv:",nvirt
+      !            do a=1,nvirt
+      !               if( virt_orbitals(a)%centralatom /= atom )then
+      !                  dist_a1 = DistanceTableOrbAtomVirt(a,atom)
+      !                  max_amp = 0.0E0_realk
+      !                  do i=1,nocc
+      !                     if( occ_orbitals(ncore+i)%centralatom == atom )then
+      !                        do j=1,nocc
+      !                           if( occ_orbitals(ncore+j)%centralatom == atom )then
+      !                              do b=1,nvirt
+      !                                 if( virt_orbitals(b)%centralatom == atom )then
+      !                                    if(abs(max_amp) < abs(VOVO_local%elm4(a,b,i,j)))then
+      !                                       max_amp  = VOVO_local%elm4(a,b,i,j)
+      !                                       imax = i
+      !                                       jmax = j
+      !                                       bmax = b
+      !                                    endif
+      !                                 endif
+      !                              enddo
+      !                           endif
+      !                        enddo
+      !                     endif
+      !                  enddo
+      !                  print *,dist_a1,max_amp
+      !               endif
+      !            enddo
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"CDmech VIRT:"
+      !            do i = 1, nocc
+      !               dist_i1 = DistanceTableOrbAtomOcc(ncore+i,atom)
+      !               max_amp = 0.0E0_realk
+      !               do j = 1, nocc
+      !                  dist_j1 = DistanceTableOrbAtomOcc(ncore+j,atom)
+      !                  if( dist_j1 <= dist_i1 )then
+      !                     do b = 1, nvirt
+      !                        if( virt_orbitals(b)%centralatom == atom )then
+      !                           do a = 1, nvirt
+      !                              if( virt_orbitals(a)%centralatom == atom .and. &
+      !                                 & abs(max_amp) < abs(VOVO_local%elm4(a,b,i,j)))then
+      !                                 max_amp = VOVO_local%elm4(a,b,i,j) 
+      !                              endif
+      !                           enddo
+      !                        endif
+      !                     enddo
+      !                  endif
+      !               enddo
+      !               print *,dist_i1,max_amp
+      !            enddo
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"LRmech:"
+      !            do j=1,nocc
+      !               if( occ_orbitals(ncore+j)%centralatom /= atom )then
+      !                  dist_j1  = DistanceTableOrbAtomOcc(ncore+j,atom)
+      !                  max_amp = 0.0E0_realk
+      !                  do i=1,nocc
+      !                     if( occ_orbitals(ncore+i)%centralatom == atom )then
+      !                        do a=1,nvirt
+      !                           if( virt_orbitals(a)%centralatom == atom )then
+      !                              do b=1,nvirt
+      !                                 if( virt_orbitals(b)%centralatom == occ_orbitals(ncore+j)%centralatom )then
+      !                                    if(abs(max_amp) < abs(VOVO_local%elm4(a,b,i,j)))then
+      !                                       max_amp  = VOVO_local%elm4(a,b,i,j)
+      !                                    endif
+      !                                 endif
+      !                              enddo
+      !                           endif
+      !                        enddo
+      !                     endif
+      !                  enddo
+      !                  print *,dist_j1,max_amp
+      !               endif
+      !            enddo
+      !            print*,"end"
+
+
+      !            print*,""
+      !            print*,"OOFock:"
+      !            do j=1,nocc
+      !               dist_j1  = DistanceTableOrbAtomOcc(ncore+j,atom)
+      !               max_amp = 0.0E0_realk
+      !               do i=1,nocc
+      !                  if( occ_orbitals(ncore+i)%centralatom == atom )then
+      !                     if(abs(max_amp) < abs(oof(i,j)))then
+      !                        max_amp = oof(i,j)
+      !                     endif
+      !                  endif
+      !               enddo
+      !               print *,dist_j1,max_amp
+      !            enddo
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"VVFock:"
+      !            do a=1,nvirt
+      !               dist_a1  = DistanceTableOrbAtomVirt(a,atom)
+      !               max_amp = 0.0E0_realk
+      !               do b=1,nvirt
+      !                  if( virt_orbitals(b)%centralatom == atom )then
+      !                     if(abs(max_amp) < abs(MyMolecule%vvfock%elm2(a,b)))then
+      !                        max_amp  = MyMolecule%vvfock%elm2(a,b)
+      !                     endif
+      !                  endif
+      !               end do
+      !               print *,dist_a1,max_amp
+      !            end do 
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"AbsOverlapVV:"
+      !            do a=1,nvirt
+      !               dist_j1  = DistanceTableOrbAtomVirt(a,atom)
+      !               max_amp = 0.0E0_realk
+      !               do b=1,nvirt
+      !                  if( virt_orbitals(b)%centralatom == atom )then
+      !                     if(abs(max_amp) < abs(abs_overlap_vv(b,a)))then
+      !                        max_amp = abs_overlap_vv(b,a)
+      !                        imax = i
+      !                     endif
+      !                  endif
+      !               enddo
+      !               print *,dist_j1,max_amp
+      !            enddo
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"AbsOverlapOO:"
+      !            do j=1,nocc
+      !               dist_j1  = DistanceTableOrbAtomOcc(ncore+j,atom)
+      !               max_amp = 0.0E0_realk
+      !               do i=1,nocc
+      !                  if( occ_orbitals(ncore+i)%centralatom == atom )then
+      !                     if(abs(max_amp) < abs(abs_overlap_oo(i,j)))then
+      !                        max_amp = abs_overlap_oo(i,j)
+      !                        imax = i
+      !                     endif
+      !                  endif
+      !               enddo
+      !               print *,dist_j1,max_amp
+      !            enddo
+      !            print*,"end"
+
+      !            print*,""
+      !            print*,"AbsOverlap:"
+      !            do a=1,nvirt
+      !               dist_j1  = DistanceTableOrbAtomVirt(a,atom)
+      !               max_amp = 0.0E0_realk
+      !               do i=1,nocc
+      !                  if( occ_orbitals(ncore+i)%centralatom == atom )then
+      !                     if(abs(max_amp) < abs(abs_overlap_ov(i,a)))then
+      !                        max_amp = abs_overlap_ov(i,a)
+      !                        imax = i
+      !                     endif
+      !                  endif
+      !               enddo
+      !               print *,dist_j1,max_amp
+      !            enddo
+      !            print*,"end"
+      !         endif
+      !      enddo
+      !   enddo
+      !   call mem_dealloc(abs_overlap_vv)
+      !   call mem_dealloc(abs_overlap_oo)
+      !   call mem_dealloc(abs_overlap_ov)
+
+      !endif
+      !--------------------------------------------------------------------------------------
 
       ! Calculate single and pair fragments energies:
       call mem_alloc(FragEnergies,nfrags,nfrags,nenergies)
       call mem_alloc(FragEnergies_tmp,nfrags,nfrags)
+   
+      !if( DECinfo%Hack2 )then
+      !   do job_n = 1, DECinfo%only_n_frag_jobs
+
+      !      job = DECinfo%frag_job_nr(job_n)
+
+      !      do atom=1,MyMolecule%natoms
+
+      !         if(atom == job)then
+      !            print *,"ENERGY PRINT FOR FRAGMENT",atom
+
+      !            do dist=1,ceiling(max(maxval(DistanceTableOrbAtomOcc(:,atom)),maxval(DistanceTableOrbAtomVirt(:,atom))))
+
+      !               FragEnergies     = 0.0E0_realk
+      !               FragEnergies_tmp = 0.0E0_realk
+
+
+      !               call solver_energy_full_mod(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
+      !                  & VOVO_local,occ_orbitals,virt_orbitals,FragEnergies(:,:,cc_sol_o), &
+      !                  & FragEnergies(:,:,cc_sol_v),FragEnergies_tmp,dble(dist),DistanceTableOrbAtomOcc, &
+      !                  & DistanceTableOrbAtomVirt,atom)
+
+
+      !               if (.not.DECinfo%OnlyVirtPart) then
+      !                  call print_atomic_fragment_energies_mod(atom,dble(dist),FragEnergies(atom,atom,1),&
+      !                     &orbitals_assigned(atom), 'AF_HACK_OCC')
+      !               end if
+      !               if (.not.DECinfo%OnlyOccPart) then
+      !                  call print_atomic_fragment_energies_mod(atom,dble(dist),FragEnergies(atom,atom,2),&
+      !                     &orbitals_assigned(atom), 'AF_HACK_VIR')
+      !               end if
+
+      !            enddo
+      !         endif
+      !      enddo
+      !   enddo
+      !   call mem_dealloc(DistanceTableOrbAtomOcc)
+      !   call mem_dealloc(DistanceTableOrbAtomVirt)
+      !endif
+
       FragEnergies     = 0.0E0_realk
       FragEnergies_tmp = 0.0E0_realk
-   
+
       if (DECinfo%DECNP) then
          call solver_decnp_full(nocc,nvirt,nfrags,ncore,t2f_local,t1_final, &
             & VOVO_local,occ_orbitals,virt_orbitals,FragEnergies(:,:,cc_sol_o), &
@@ -576,7 +920,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             & FragEnergies(:,:,cc_sol_v),FragEnergies_tmp)
       end if
 
-   
+
       if(ccmodel == MODEL_CCSDpT)then
          if (DECinfo%DECNP) then
             ! now we calculate fourth-order and fifth-order energies
@@ -597,14 +941,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                & occ_orbitals,virt_orbitals,FragEnergies(:,:,pT_5_o),FragEnergies(:,:,pT_5_v), &
                & ccenergies(pT_5_o))
          end if
-   
+
          ! calculate total (T) contributions:
          ccenergies(pT_full_o) = ccenergies(pT_4_o)+ccenergies(pT_5_o)
          FragEnergies(:,:,pT_full_o:pT_full_v) = FragEnergies(:,:,pT_4_o:pT_4_v) &
             & + FragEnergies(:,:,pT_5_o:pT_5_v)
 
       endif
-   
+
       ! Print all fragment energies
       call print_fragment_energies_full(nfrags,FragEnergies,ccenergies,orbitals_assigned,&
          & mymolecule%DistanceTable)
@@ -651,23 +995,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwidle = 'MASTER IDLE CC solver: ')
          endif
    
-         ! If there are two subsystems, calculate dispersion, charge transfer and subsystem energy contributions 
-         if(mylsitem%input%molecule%nSubSystems==2) then
-            !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
-            !one node is used  FIXME
-            if(VOVO%itype==TT_DENSE .and. t2_final%itype==TT_DENSE) then
-               call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
-            else
-               call tensor_init( VOVO_local, VOVO%dims,    4, bg=bg )
-               call tensor_init( t2f_local, t2_final%dims, 4, bg=bg )
-               call tensor_cp_data( VOVO,     VOVO_local )
-               call tensor_cp_data( t2_final, t2f_local  )
-               call SNOOP_partition_energy(VOVO_local,t1_final,t2f_local,mylsitem,MyMolecule)
-               call tensor_free(t2f_local)
-               call tensor_free(VOVO_local)
-            end if
-         end if
-
       else
 
          if (abc) then
@@ -1830,7 +2157,7 @@ subroutine ccsolver(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !Set defaults
    restart          = .false.
-   saferun          = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+   saferun          = .not.DECinfo%CCSDnosaferun
    prec             = .true.
    prec_not1        = .false.
 
@@ -2817,6 +3144,8 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
    ! allocate the buffer in the background
    use_bg = DECinfo%use_bg_buffer.and..not.saferun
    bg_was_init = mem_is_background_buf_init()
+
+   print *,"use_bg",DECinfo%use_bg_buffer,"safe",saferun,"was init",bg_was_init," thus use_bg",use_bg
    if(use_bg)then
 
       !if( .not. bg_was_init )then
@@ -3022,6 +3351,7 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
 #endif
          endif
       else
+         print *,"we need to alloc it !!!!"
          if( local )then
             call mem_init_background_alloc(bytes_to_alloc)
 #ifdef VAR_MPI
@@ -3033,6 +3363,8 @@ subroutine ccdriver_set_tensor_segments_and_alloc_workspace(MyLsitem,nb,no,nv,os
       endif
 
    endif
+
+   print *,"bg is initiallized after",mem_is_background_buf_init()
 
 end subroutine ccdriver_set_tensor_segments_and_alloc_workspace
 subroutine ccdriver_dealloc_workspace(saferun,local,bg_was_init)

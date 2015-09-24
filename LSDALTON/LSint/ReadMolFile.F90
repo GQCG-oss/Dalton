@@ -1,6 +1,7 @@
 !> @file
 !> Read molecule input
 MODULE READMOLEFILE
+use files
   use BUILDBASISSET
   use ls_util
   use fundamental

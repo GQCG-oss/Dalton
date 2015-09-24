@@ -959,7 +959,7 @@ C
 C     /R12INT/ (WK/UniKA/26-11-2002).
 C
       DO I = 1, 5
-         LUR12(I) = -9100 - MXCOOR - I
+         LUR12(I) = -9100 - I
       ENDDO
 C
 C     /ERITAP/

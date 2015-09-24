@@ -90,7 +90,7 @@
   
  Who compiled             | yangminwang
  Host                     | YANGs-MBP.st.client.au.dk
- System                   | Darwin-14.4.0
+ System                   | Darwin-14.5.0
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
@@ -105,12 +105,12 @@
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | f482cb03fbe5060dd1e160eb8472e0e897a045eb
+ Last Git revision        | cad39393e36641a69a2203e44d60cc04fbb425c6
  Git branch               | master
- Configuration time       | 2015-09-01 14:13:34.306034
+ Configuration time       | 2015-09-23 19:09:19.807495
 
 Start simulation
-     Date and time (Linux)  : Tue Sep  1 14:24:26 2015
+     Date and time (Linux)  : Wed Sep 23 20:59:13 2015
      Host name              : YANGs-MBP.st.client.au.dk               
                       
  -----------------------------------------
@@ -149,8 +149,11 @@ Start simulation
   .Includefullmolecule                                                                                
   .RIMP2                                                                                              
   .F12DEBUG                                                                                           
+  .F12CCOUPLING                                                                                       
   .MEMORY                                                                                             
   2                                                                                                   
+  .MPISPLIT                                                                                           
+  0                                                                                                   
   *END OF INPUT                                                                                       
   
   MOLPRINT IS SET TO       0
@@ -199,15 +202,15 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/6-31G
+ OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/cc-pV5Z-RI
+ OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/cc-pV5Z-RI
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/Users/yangminwang/dalton2/gfortran_debug/basis/aug-cc-pVDZ
+ OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/aug-cc-pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -299,6 +302,12 @@ We perform the calculation in the standard input basis
     The Screening threshold used for One-electron operators:  1.0000E-15
  The SCF Convergence Criteria is applied to the gradnorm in AO basis
  Warning **DEC and **CC enforces the use of the .LCM keyword
+ 
+ WARNING: User chose RI-MP2 as the final model,
+          we therefore enforce RI-MP2 to be used
+          also in the Fragment optimization and
+          Pair estimates calculations.
+ 
 
  End of configuration!
 
@@ -326,7 +335,7 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   2
  The Coulomb energy contribution    50.128959265563843     
  The Exchange energy contribution    9.3554581332383648     
@@ -355,8 +364,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   5
  The Coulomb energy contribution    46.748576888690870     
  The Exchange energy contribution    8.9523898827344706     
@@ -375,8 +384,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   7
  The Coulomb energy contribution    46.748967608116310     
  The Exchange energy contribution    8.9523689027873168     
@@ -395,8 +404,8 @@ No. of matmuls in get_density:     1
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   9
  The Coulomb energy contribution    46.748924991769044     
  The Exchange energy contribution    8.9523670995775806     
@@ -433,8 +442,8 @@ No. of matmuls in get_density:     1
  The Fock energy contribution   -37.796557779723940     
  12    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   0.52 seconds
- >>> wall Time used in **ITER is   0.52 seconds
+ >>>  CPU Time used in **ITER is   0.54 seconds
+ >>> wall Time used in **ITER is   0.54 seconds
 
 Total no. of matmuls in SCF optimization:         52
 
@@ -596,8 +605,8 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    1.57   10
   %LOC%   Min. sigma_4 and orb.number:    1.98   10
 
- >>>  CPU Time used in Orbital Localization is   0.69 seconds
- >>> wall Time used in Orbital Localization is   0.69 seconds
+ >>>  CPU Time used in Orbital Localization is   0.75 seconds
+ >>> wall Time used in Orbital Localization is   0.76 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -637,11 +646,11 @@ FULL: Distribute matrices        : F
  ###      5         0.5715770662E-03      -0.563782774358E-01
  ###      6         0.1211880474E-03      -0.563791909325E-01
  ###      7         0.4596505360E-04      -0.563792648756E-01
- ###      8         0.1014121674E-04      -0.563792720442E-01
- ###      9         0.3112587731E-05      -0.563792728066E-01
- ###     10         0.5858950878E-06      -0.563792728443E-01
- ###     11         0.2099492738E-06      -0.563792728471E-01
- ###     12         0.1841880983E-07      -0.563792728473E-01
+ ###      8         0.1014121674E-04      -0.563792720443E-01
+ ###      9         0.3112587750E-05      -0.563792728066E-01
+ ###     10         0.5858951025E-06      -0.563792728443E-01
+ ###     11         0.2099491975E-06      -0.563792728471E-01
+ ###     12         0.1841877954E-07      -0.563792728473E-01
 F12 Singles equations solved in   12 iterations!
 F12 Singles energy correction:    -0.563792728473E-01
 
@@ -661,25 +670,18 @@ FOT (Fragment Optimization Threshold)               =        0.10E-03
 Use Pair Estimates to screen pairs                  =            TRUE
 Pair distance cutoff threshold (Angstrom)           =       0.100E+04
 Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
-Pair estimate model                                 =     MP2     
+Pair estimate model                                 =     RIMP2   
 Simple orbital thr.                                 =       0.500E-01
 Expansion step size                                 =               5
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
-Fit Molecular Orbitals                              =            TRUE
 The Integral Screening threshold                    =             1.0000E-10
  
 DEC orbitals will be generated using  simple Lowdin charge analysis
 Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis
  
-The wave function Model used for Atomic Fragment expansion scheme = MP2     
-This wave function model can be changed using the .FRAGEXPMODEL keyword
-.FRAGEXPMODEL
-.RIMP2   
-Wave function Model used for Atomic Fragment reduction scheme = MP2     
-This wave function model can be changed using the .FRAGREDMODEL keyword
-.FRAGREDMODEL
-.RIMP2   
+The wave function Model used for Atomic Fragment expansion scheme = RIMP2   
+Wave function Model used for Atomic Fragment reduction scheme = RIMP2   
 
 
 --------------------------
@@ -813,199 +815,49 @@ Use F12 correction           =            TRUE
  FOP Fragment includes all orbitals and fragment optimization is skipped
  CABS basis test is successful
  CABS basis test is successful
-#PAIRDIMS# basis,occ,virt       13       4       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.70    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       3
- Number of virtual  orbitals AOS/EOS     =       8       6
- Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      13
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.789E-04
- Memory required for tmp array 1 (GB)    = 0.527E-04
- Memory required for tmp array 2 (GB)    = 0.998E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.614E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.307E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.922E-05
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.461E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.789E-04
- Big Array Memory required       (GB)    = 0.953E-04
-
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
- >>>  WALL Time used in AO to MO transformation   0.00 seconds
- >>>  CPU Time used in AO to MO transformation   0.00 seconds
 
 
  *****************************************************************************
  Energy summary for pair fragment:       1      2
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.95778       -0.2785368989E-01
- Distance(Ang), pair virt energy =      0.95778       -0.1676536843E-01
- Distance(Ang), pair lagr. occ term  =      0.95778        0.1441864600E-01
- Distance(Ang), pair lagr. virt term =      0.95778        0.7918693919E-02
+ Distance(Ang), pair occ energy  =      0.95778       -0.2785369151E-01
+ Distance(Ang), pair virt energy =      0.95778       -0.1676533756E-01
+ Distance(Ang), pair lagr. occ term  =      0.95778        0.1441863955E-01
+ Distance(Ang), pair lagr. virt term =      0.95778        0.7918684224E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 855.708 kB
+  Allocated memory,     TOTAL                 907.349 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-#PAIRDIMS# basis,occ,virt       13       4       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.70    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       3
- Number of virtual  orbitals AOS/EOS     =       8       6
- Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      13
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.789E-04
- Memory required for tmp array 1 (GB)    = 0.527E-04
- Memory required for tmp array 2 (GB)    = 0.998E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.614E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.307E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.922E-05
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.461E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.789E-04
- Big Array Memory required       (GB)    = 0.953E-04
-
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
- >>>  WALL Time used in AO to MO transformation   0.00 seconds
- >>>  CPU Time used in AO to MO transformation   0.00 seconds
 
 
  *****************************************************************************
  Energy summary for pair fragment:       1      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.95778       -0.2912296279E-01
- Distance(Ang), pair virt energy =      0.95778       -0.1676536843E-01
- Distance(Ang), pair lagr. occ term  =      0.95778        0.1884974091E-01
- Distance(Ang), pair lagr. virt term =      0.95778        0.7918693919E-02
+ Distance(Ang), pair occ energy  =      0.95778       -0.2912326290E-01
+ Distance(Ang), pair virt energy =      0.95778       -0.1676533756E-01
+ Distance(Ang), pair lagr. occ term  =      0.95778        0.1884993929E-01
+ Distance(Ang), pair lagr. virt term =      0.95778        0.7918684224E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 855.708 kB
+  Allocated memory,     TOTAL                 907.349 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-#PAIRDIMS# basis,occ,virt       13       4       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.70    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       8       4
- Maximum alpha batch dimension           =       3
- Maximum gamma batch dimension           =      13
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.789E-04
- Memory required for tmp array 1 (GB)    = 0.527E-04
- Memory required for tmp array 2 (GB)    = 0.998E-05
- Memory required for tmp array 3 (GB)    = 0.162E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.236E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.410E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.307E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.410E-05
- Memory required for tmp array 1 (GB)    = 0.205E-05
- Memory required for tmp array 2 (GB)    = 0.205E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.789E-04
- Big Array Memory required       (GB)    = 0.953E-04
-
- BATCH: Number of Gamma batches   =            1
- BATCH: Number of Alpha batches   =            5
- BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
- >>>  WALL Time used in AO to MO transformation   0.00 seconds
- >>>  CPU Time used in AO to MO transformation   0.00 seconds
 
 
  *****************************************************************************
  Energy summary for pair fragment:       2      3
  *****************************************************************************
- Distance(Ang), pair occ energy  =       1.5144       -0.1392031672E-01
- Distance(Ang), pair virt energy =       1.5144       -0.2082428048E-02
- Distance(Ang), pair lagr. occ term  =       1.5144        0.7963238308E-02
- Distance(Ang), pair lagr. virt term =       1.5144        0.1444578207E-02
+ Distance(Ang), pair occ energy  =       1.5144       -0.1392045346E-01
+ Distance(Ang), pair virt energy =       1.5144       -0.2082424205E-02
+ Distance(Ang), pair lagr. occ term  =       1.5144        0.7963331163E-02
+ Distance(Ang), pair lagr. virt term =       1.5144        0.1444576148E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 845.012 kB
+  Allocated memory,     TOTAL                 896.653 kB
   Max allocated memory, TOTAL                          9.517 MB
 
 
@@ -1019,7 +871,7 @@ Use F12 correction           =            TRUE
 
  Pairs to be treated using input FOT            3
 
- Estimated pair correlation energy:            -0.7089696940E-01
+ Estimated pair correlation energy:            -0.7089740787E-01
  Estimated contribution from skipped pairs:      0.000000000    
 
 
@@ -1029,8 +881,8 @@ Use F12 correction           =            TRUE
  =================================================================
 
   Atom1  Atom2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2785368989E-01    PF_LASTPAIR
-     3       2      1.5144         -0.1392031672E-01    PF_LASTPAIR
+     1       2     0.95778         -0.2785369151E-01    PF_LASTPAIR
+     3       2      1.5144         -0.1392045346E-01    PF_LASTPAIR
 
 
 
@@ -1040,14 +892,14 @@ Use F12 correction           =            TRUE
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2785368989E-01    PF_ESTIMATE
-     1       3     0.95778         -0.2912296279E-01    PF_ESTIMATE
-     2       3      1.5144         -0.1392031672E-01    PF_ESTIMATE
+     1       2     0.95778         -0.2785369151E-01    PF_ESTIMATE
+     1       3     0.95778         -0.2912326290E-01    PF_ESTIMATE
+     2       3      1.5144         -0.1392045346E-01    PF_ESTIMATE
 
 
   ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.52 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   0.52 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   1.08 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   1.03 seconds
  Preparing job list...
 
 
@@ -1093,7 +945,8 @@ Use F12 correction           =            TRUE
  *** Calculating single and pair interaction energies ***
 
  CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9437283651600
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.5522435220387579E-04
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9437283651599
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.1000806514694
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0652940664317
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0266471215905
@@ -1114,37 +967,36 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.9437283651599565    
-  E21_V_term2:     0.8129545381012833    
-  E21_V_term3:     0.1899826963914557E-01
-  E21_V_term4:     0.1899826963914557E-01
-  E21_V_term5:     0.9103776313322686E-03
+  E21_V_term1:    -0.9437283651599190    
+  E21_V_term2:     0.8129545381013312    
+  E21_V_term3:     0.1899826963914591E-01
+  E21_V_term4:     0.1899826963914591E-01
+  E21_V_term5:     0.9103776313317054E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.9186691014896423E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.1000806514693857    
-  E22_X_term2:   -0.8821586740091644E-01
-  E22_X_term3:   -0.2392903635166613E-02
-  E22_X_term4:   -0.2392903635166613E-02
+  E22_X_term1:    0.1000806514693761    
+  E22_X_term2:   -0.8821586740091675E-01
+  E22_X_term3:   -0.2392903635166629E-02
+  E22_X_term4:   -0.2392903635166629E-02
  ----------------------------------------
-  E22_Xsum:    0.7078976798136022E-02
+  E22_Xsum:    0.7078976798126135E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.6529406643170957E-01
-  E23_B_term2:    0.2664712159052011E-01
-  E23_B_term3:    0.2664712159052011E-01
-  E23_B_term4:   -0.1319778632955756    
-  E23_B_term5:    0.4775435473845580E-01
-  E23_B_term6:    0.3837483421929285E-02
-  E23_B_term7:   -0.3204779780277984E-02
-  E23_B_term8:    0.6179161732876098E-02
-  E23_B_term9:   -0.4954784036004996E-03
+  E23_B_term1:    0.6529406643171261E-01
+  E23_B_term2:    0.2664712159051728E-01
+  E23_B_term3:    0.2664712159051728E-01
+  E23_B_term4:   -0.1319778632956085    
+  E23_B_term5:    0.4775435473847126E-01
+  E23_B_term6:    0.3837483421929654E-02
+  E23_B_term7:   -0.3204779780277902E-02
+  E23_B_term8:    0.6179161732875985E-02
+  E23_B_term9:   -0.4954784036005228E-03
  ----------------------------------------
-  E23_B_sum:      0.4068118802655689E-01
+  E23_B_sum:      0.4068118802653717E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1167,9 +1019,10 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 812.902 kB
+  Allocated memory,     TOTAL                 859.534 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2778771512343690E-04
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.7495729711345
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0861250407006
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0456169115013
@@ -1183,7 +1036,7 @@ Use F12 correction           =            TRUE
      DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0023205648087
      DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0023205648087
      DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0914792791905
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0438244485058
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0438244485059
      DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0040355671579
      DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0029220119772
      DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0060369915229
@@ -1191,37 +1044,36 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.7495729711345279    
-  E21_V_term2:     0.6594902335583396    
-  E21_V_term3:     0.1659568516494760E-01
-  E21_V_term4:     0.1659568516494760E-01
-  E21_V_term5:     0.8782549583517553E-03
+  E21_V_term1:    -0.7495729711345365    
+  E21_V_term2:     0.6594902335582695    
+  E21_V_term3:     0.1659568516494579E-01
+  E21_V_term4:     0.1659568516494579E-01
+  E21_V_term5:     0.8782549583528149E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.5601311228802255E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.8612504070061140E-01
-  E22_X_term2:   -0.7638965689867891E-01
-  E22_X_term3:   -0.2320564808665942E-02
-  E22_X_term4:   -0.2320564808665942E-02
+  E22_X_term1:    0.8612504070061551E-01
+  E22_X_term2:   -0.7638965689865368E-01
+  E22_X_term3:   -0.2320564808665471E-02
+  E22_X_term4:   -0.2320564808665471E-02
  ----------------------------------------
-  E22_Xsum:    0.5094254184600609E-02
+  E22_Xsum:    0.5094254184630888E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.4561691150130780E-01
-  E23_B_term2:    0.9142297297644198E-02
-  E23_B_term3:    0.9142297297644195E-02
-  E23_B_term4:   -0.9147927919047427E-01
-  E23_B_term5:    0.4382444850583969E-01
-  E23_B_term6:    0.4035567157900614E-02
-  E23_B_term7:   -0.2922011977229293E-02
-  E23_B_term8:    0.6036991522910386E-02
-  E23_B_term9:   -0.2562436697150554E-03
+  E23_B_term1:    0.4561691150131300E-01
+  E23_B_term2:    0.9142297297647635E-02
+  E23_B_term3:    0.9142297297647635E-02
+  E23_B_term4:   -0.9147927919048117E-01
+  E23_B_term5:    0.4382444850590764E-01
+  E23_B_term6:    0.4035567157900053E-02
+  E23_B_term7:   -0.2922011977228732E-02
+  E23_B_term8:    0.6036991522909048E-02
+  E23_B_term9:   -0.2562436697172591E-03
  ----------------------------------------
-  E23_B_sum:      0.2314097844582826E-01
+  E23_B_sum:      0.2314097844589785E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1244,10 +1096,11 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 825.262 kB
+  Allocated memory,     TOTAL                 871.894 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9265662031131
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.3306280743294474E-04
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9265662031130
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0708120606304
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0553670025396
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0297095490961
@@ -1268,37 +1121,36 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.9265662031130626    
-  E21_V_term2:     0.7950617483949300    
-  E21_V_term3:     0.2235598070750956E-01
-  E21_V_term4:     0.2235598070750956E-01
-  E21_V_term5:     0.1505582125638176E-02
+  E21_V_term1:    -0.9265662031130142    
+  E21_V_term2:     0.7950617483949474    
+  E21_V_term3:     0.2235598070750968E-01
+  E21_V_term4:     0.2235598070750968E-01
+  E21_V_term5:     0.1505582125637884E-02
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.8528691117740957E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.7081206063040806E-01
-  E22_X_term2:   -0.6050565470675589E-01
-  E22_X_term3:   -0.2433180369061778E-02
-  E22_X_term4:   -0.2433180369061778E-02
+  E22_X_term1:    0.7081206063040481E-01
+  E22_X_term2:   -0.6050565470675509E-01
+  E22_X_term3:   -0.2433180369061706E-02
+  E22_X_term4:   -0.2433180369061706E-02
  ----------------------------------------
-  E22_Xsum:    0.5440045185528611E-02
+  E22_Xsum:    0.5440045185526304E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.5536700253958141E-01
-  E23_B_term2:    0.2970954909610421E-01
-  E23_B_term3:    0.2970954909610421E-01
-  E23_B_term4:   -0.1123352480997051    
-  E23_B_term5:    0.2691011764616492E-01
-  E23_B_term6:    0.2333814481423907E-02
-  E23_B_term7:   -0.4587227256364067E-02
-  E23_B_term8:    0.9006422841026056E-02
-  E23_B_term9:   -0.7058781973450852E-03
+  E23_B_term1:    0.5536700253958333E-01
+  E23_B_term2:    0.2970954909610233E-01
+  E23_B_term3:    0.2970954909610233E-01
+  E23_B_term4:   -0.1123352480997223    
+  E23_B_term5:    0.2691011764616900E-01
+  E23_B_term6:    0.2333814481424022E-02
+  E23_B_term7:   -0.4587227256364097E-02
+  E23_B_term8:    0.9006422841025588E-02
+  E23_B_term9:   -0.7058781973447746E-03
  ----------------------------------------
-  E23_B_sum:      0.3540810214699044E-01
+  E23_B_sum:      0.3540810214697542E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1321,16 +1173,17 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 825.262 kB
+  Allocated memory,     TOTAL                 871.894 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2830353217469
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.7573646493601705E-05
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2830353217468
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0488905249273
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0215978359643
      DEC RIMP2F12 Energy contribution: E(B2,RI) =     -0.0001321129247
          RIMP2F12 Energy contribution: E(B3,RI) =     -0.0001321129247
      DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2415724920661
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0431777848027
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0431777848026
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0069376904928
      DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0069376904928
      DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0001992940767
@@ -1345,37 +1198,36 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.2830353217468575    
-  E21_V_term2:     0.2415724920661196    
-  E21_V_term3:     0.6937690492797194E-02
-  E21_V_term4:     0.6937690492797194E-02
-  E21_V_term5:     0.1992940767232776E-03
+  E21_V_term1:    -0.2830353217468499    
+  E21_V_term2:     0.2415724920660778    
+  E21_V_term3:     0.6937690492796954E-02
+  E21_V_term4:     0.6937690492796954E-02
+  E21_V_term5:     0.1992940767244048E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.2738815461845383E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.4889052492732508E-01
-  E22_X_term2:   -0.4317778480265651E-01
-  E22_X_term3:   -0.1317394620774907E-02
-  E22_X_term4:   -0.1317394620774907E-02
+  E22_X_term1:    0.4889052492732777E-01
+  E22_X_term2:   -0.4317778480263604E-01
+  E22_X_term3:   -0.1317394620774787E-02
+  E22_X_term4:   -0.1317394620774787E-02
  ----------------------------------------
-  E22_Xsum:    0.3077950883118761E-02
+  E22_Xsum:    0.3077950883142163E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.2159783596426897E-01
-  E23_B_term2:   -0.1321129246655884E-03
-  E23_B_term3:   -0.1321129246655884E-03
-  E23_B_term4:   -0.4295515480093397E-01
-  E23_B_term5:    0.3070219230227274E-01
-  E23_B_term6:    0.1073482825548465E-02
-  E23_B_term7:   -0.1207482564483581E-02
-  E23_B_term8:    0.2620776463434718E-02
-  E23_B_term9:   -0.8078236384359696E-04
+  E23_B_term1:    0.2159783596427032E-01
+  E23_B_term2:   -0.1321129246622307E-03
+  E23_B_term3:   -0.1321129246622307E-03
+  E23_B_term4:   -0.4295515480092753E-01
+  E23_B_term5:    0.3070219230226745E-01
+  E23_B_term6:    0.1073482825548060E-02
+  E23_B_term7:   -0.1207482564483438E-02
+  E23_B_term8:    0.2620776463434417E-02
+  E23_B_term9:   -0.8078236384527020E-04
  ----------------------------------------
-  E23_B_sum:      0.1148664197693257E-01
+  E23_B_sum:      0.1148664197693954E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1398,9 +1250,10 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 806.326 kB
+  Allocated memory,     TOTAL                 852.958 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.1187269394205036E-04
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.4447995549708
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0444266803951
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0267790520943
@@ -1414,7 +1267,7 @@ Use F12 correction           =            TRUE
      DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0017115291910
      DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0017115291910
      DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0540857055670
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0204537340181
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0204537340182
      DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0019455890338
      DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0023698745133
      DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0048607810609
@@ -1422,37 +1275,36 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_CC_term:      0.000000000000000    
-  E21_V_term1:    -0.4447995549708306    
-  E21_V_term2:     0.3831327927862880    
-  E21_V_term3:     0.1230367601265398E-01
-  E21_V_term4:     0.1230367601265398E-01
-  E21_V_term5:     0.5396275374689039E-03
+  E21_V_term1:    -0.4447995549708419    
+  E21_V_term2:     0.3831327927862639    
+  E21_V_term3:     0.1230367601265279E-01
+  E21_V_term4:     0.1230367601265279E-01
+  E21_V_term5:     0.5396275374695628E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.3651978262180285E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.4442668039514085E-01
-  E22_X_term2:   -0.3817022737783097E-01
-  E22_X_term3:   -0.1711529190966176E-02
-  E22_X_term4:   -0.1711529190966176E-02
+  E22_X_term1:    0.4442668039514465E-01
+  E22_X_term2:   -0.3817022737782198E-01
+  E22_X_term3:   -0.1711529190965924E-02
+  E22_X_term4:   -0.1711529190965924E-02
  ----------------------------------------
-  E22_Xsum:    0.2833394635377533E-02
+  E22_Xsum:    0.2833394635390818E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.2677905209425810E-01
-  E23_B_term2:    0.8880125676927449E-02
-  E23_B_term3:    0.8880125676927449E-02
-  E23_B_term4:   -0.5408570556703262E-01
-  E23_B_term5:    0.2045373401812182E-01
-  E23_B_term6:    0.1945589033845050E-02
-  E23_B_term7:   -0.2369874513344352E-02
-  E23_B_term8:    0.4860781060854637E-02
-  E23_B_term9:   -0.2124839032463817E-03
+  E23_B_term1:    0.2677905209426193E-01
+  E23_B_term2:    0.8880125676929784E-02
+  E23_B_term3:    0.8880125676929784E-02
+  E23_B_term4:   -0.5408570556702908E-01
+  E23_B_term5:    0.2045373401815050E-01
+  E23_B_term6:    0.1945589033844559E-02
+  E23_B_term7:   -0.2369874513344062E-02
+  E23_B_term8:    0.4860781060853897E-02
+  E23_B_term9:   -0.2124839032476089E-03
  ----------------------------------------
-  E23_B_sum:      0.1513134357731116E-01
+  E23_B_sum:      0.1513134357734970E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1475,9 +1327,10 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 814.566 kB
+  Allocated memory,     TOTAL                 861.198 kB
   Max allocated memory, TOTAL                          9.517 MB
  CABS basis test is successful
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2154242615692335E-04
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2698086959288
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0200799947405
      DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0201349885282
@@ -1499,23 +1352,22 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_CC_term:      0.000000000000000    
   E21_V_term1:    -0.2698086959288263    
-  E21_V_term2:     0.2213242908847847    
-  E21_V_term3:     0.5439969478933721E-02
-  E21_V_term4:     0.5439969478933721E-02
-  E21_V_term5:     0.5578167581956363E-03
+  E21_V_term2:     0.2213242908847848    
+  E21_V_term3:     0.5439969478933717E-02
+  E21_V_term4:     0.5439969478933717E-02
+  E21_V_term5:     0.5578167581957070E-03
  ----------------------------------------
-  E21_Vsum:     ***************
+  E21_Vsum:       -0.3704664932797836E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
   E22_X_term1:    0.2007999474052780E-01
   E22_X_term2:   -0.1694091144663922E-01
-  E22_X_term3:   -0.4798080356277656E-03
-  E22_X_term4:   -0.4798080356277656E-03
+  E22_X_term3:   -0.4798080356277636E-03
+  E22_X_term4:   -0.4798080356277636E-03
  ----------------------------------------
-  E22_Xsum:    0.2179467222633047E-02
+  E22_Xsum:    0.2179467222633050E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
@@ -1523,13 +1375,13 @@ Use F12 correction           =            TRUE
   E23_B_term2:    0.1293144173534291E-01
   E23_B_term3:    0.1293144173534291E-01
   E23_B_term4:   -0.3939275406464484E-01
-  E23_B_term5:    0.8880751346800995E-02
-  E23_B_term6:    0.1987601346826180E-03
-  E23_B_term7:   -0.1734777422181240E-02
-  E23_B_term8:    0.3409026370930216E-02
-  E23_B_term9:   -0.2550154965594432E-03
+  E23_B_term5:    0.8880751346801000E-02
+  E23_B_term6:    0.1987601346826170E-03
+  E23_B_term7:   -0.1734777422181244E-02
+  E23_B_term8:    0.3409026370930198E-02
+  E23_B_term9:   -0.2550154965594443E-03
  ----------------------------------------
-  E23_B_sum:      0.1710386286789625E-01
+  E23_B_sum:      0.1710386286789623E-01
  ----------------------------------------------------------------
                    WANGY DEC-MP2-F12 CALCULATION                 
  ----------------------------------------------------------------
@@ -1552,10 +1404,10 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 806.326 kB
+  Allocated memory,     TOTAL                 852.958 kB
   Max allocated memory, TOTAL                          9.517 MB
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  37.19 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  35.76 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  32.11 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  31.25 seconds
 
 
               ===============================================
@@ -1634,9 +1486,9 @@ Use F12 correction           =            TRUE
  =================================================================
 
  Fragment       Energy
-     1      -0.4410674532E-01    AF_MP2f12_OCC
-     2      -0.1282356176E-01    AF_MP2f12_OCC
-     3      -0.1776331924E-01    AF_MP2f12_OCC
+     1      -0.4416196968E-01    AF_MP2f12_OCC
+     2      -0.1283113540E-01    AF_MP2f12_OCC
+     3      -0.1778486166E-01    AF_MP2f12_OCC
 
 
  =================================================================
@@ -1644,13 +1496,13 @@ Use F12 correction           =            TRUE
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     1       2     0.95778         -0.2777787966E-01    PF_MP2F12f12_OCC
-     1       3     0.95778         -0.4443876384E-01    PF_MP2F12f12_OCC
-     2       3      1.5144         -0.1855504441E-01    PF_MP2F12f12_OCC
+     1       2     0.95778         -0.2780566737E-01    PF_MP2F12f12_OCC
+     1       3     0.95778         -0.4447182665E-01    PF_MP2F12f12_OCC
+     2       3      1.5144         -0.1856691710E-01    PF_MP2F12f12_OCC
 
  RIMP2 CORRECTION TO ENERGY:           -0.1278136592
- F12 CORRECTION TO MP2 ENERGY:         -0.1654653142
- RIMP2-F12 CORRELATION ENERGY:         -0.2932789734
+ F12 CORRECTION TO MP2 ENERGY:         -0.1656223779
+ RIMP2-F12 CORRECTION ENERGY:         -0.2934360371
 
 
 
@@ -1664,9 +1516,9 @@ Use F12 correction           =            TRUE
              **********************************************************
 
                E: Hartree-Fock energy :      -75.9839744737
-               E: Correlation energy  :       -0.2932789734
+               E: Correlation energy  :       -0.2934360371
                E: F12 singles         :       -0.0563792728
-               E: Total RI-MP2F12 energy:      -76.3336327200
+               E: Total RI-MP2F12 energy:      -76.3337897836
                E: Estimated DEC err 1 :        0.0000000000
                E: Estimated DEC err 2 :        0.0006000000
                E: Estimated DEC err 3 :        0.0000000000
@@ -1677,9 +1529,9 @@ Use F12 correction           =            TRUE
 
  CC Memory summary
  -----------------
- Allocated memory for array4   :  0.4506E-04 GB
+ Allocated memory for array4   :   0.000     GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.1843E-04 GB
+ Max memory in use for array4  :   0.000     GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
@@ -1688,13 +1540,13 @@ Use F12 correction           =            TRUE
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         39.2265     s
-Total Wall time used in DEC          :         37.8060     s
+Total CPU  time used in DEC          :         34.1350     s
+Total Wall time used in DEC          :         33.2160     s
 ------------------------------------------------------
 
 
 Hostname       : YANGs-MBP.st.client.au.dk                         
-Job finished   : Date: 01/09/2015   Time: 14:25:08
+Job finished   : Date: 23/09/2015   Time: 20:59:51
 
 
 
@@ -1704,8 +1556,8 @@ Job finished   : Date: 01/09/2015   Time: 14:25:08
 
 
 
- >>>  CPU Time used in *SCF is  43.09 seconds
- >>> wall Time used in *SCF is  41.68 seconds
+ >>>  CPU Time used in *SCF is  38.26 seconds
+ >>> wall Time used in *SCF is  37.35 seconds
 
 Total no. of matmuls used:                      1068
 Total no. of Fock/KS matrix evaluations:          13
@@ -1763,13 +1615,13 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                       83.881 kB
   Max allocated memory, logical                        1.704 kB
-  Max allocated memory, character                      7.616 kB
+  Max allocated memory, character                     11.664 kB
   Max allocated memory, AOBATCH                       99.840 kB
   Max allocated memory, DECORBITAL                     6.208 kB
-  Max allocated memory, DECFRAG                      107.472 kB
-  Max allocated memory, BATCHTOORB                     0.336 kB
+  Max allocated memory, DECFRAG                      107.424 kB
+  Max allocated memory, BATCHTOORB                     0.000 Byte
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
-  Max allocated memory, MYPOINTER                      0.576 kB
+  Max allocated memory, MYPOINTER                      0.000 Byte
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
@@ -1778,7 +1630,7 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                       28.248 kB
+  Max allocated memory, ODBATCH                       46.640 kB
   Max allocated memory, LSAOTENSOR                    13.680 kB
   Max allocated memory, SLSAOTENSOR                   34.224 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
@@ -1791,8 +1643,8 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, integralitem                   4.410 MB
   Max allocated memory, IntWork                      122.184 kB
   Max allocated memory, Overlap                        7.554 MB
-  Max allocated memory, ODitem                        20.544 kB
-  Max allocated memory, LStensor                       1.157 MB
+  Max allocated memory, ODitem                        33.920 kB
+  Max allocated memory, LStensor                       1.152 MB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
@@ -1801,9 +1653,9 @@ Total no. of Fock/KS matrix evaluations:          13
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  43.21 seconds
- >>> wall Time used in LSDALTON is  41.79 seconds
+ >>>  CPU Time used in LSDALTON is  38.37 seconds
+ >>> wall Time used in LSDALTON is  37.46 seconds
 
 End simulation
-     Date and time (Linux)  : Tue Sep  1 14:25:08 2015
+     Date and time (Linux)  : Wed Sep 23 20:59:51 2015
      Host name              : YANGs-MBP.st.client.au.dk               

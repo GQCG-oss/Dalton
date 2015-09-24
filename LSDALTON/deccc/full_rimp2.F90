@@ -3,14 +3,17 @@
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
 module fullrimp2
+use files
 
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param
   use decmpi_module, only: mpi_bcast_fullmolecule
   use lsmpi_op
 #endif
   use fundamental
+  use lsparameters
   use precision
   use typedeftype!,only:lsitem
   use typedef
@@ -136,10 +139,10 @@ contains
     real(realk) :: CPU_MPIWAIT,WALL_MPIWAIT,MemInGBCollected,epsIJ
     logical :: MemoryReduced,AlphaCDAlloced,AlphaCD_Deallocate
     logical(kind=ls_mpik) :: TransferCompleted
-    logical :: NotMatSet,file_exists
+    logical :: NotMatSet,file_exists,PerformCalc
     real(realk),pointer :: Amat(:,:),Bmat(:,:)
     character :: intspec(5)
-
+    PerformCalc = .TRUE.
     if(MyMolecule%mem_distributed)then
        call lsquit("ERROR(full_canonical_rimp2): does not work with distributed&
        & molecular structure",-1)
@@ -201,169 +204,180 @@ contains
     numnodes = 1
     wakeslaves = .false.
 #endif
-
-    ! Memory check!
-    ! ********************
-    CALL LSTIMER('START ',TS2,TE2,LUPRI,FORCEPRINT)
-!    call getMaxAtomicnAux(Mylsitem%SETTING%MOLECULE(1)%p,MaxAtomicnAux,nAtoms)
-    call determine_maxBatchOrbitalsize(DECinfo%output,&
-         & Mylsitem%setting,MinAtomicnAux,'D')
-    call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,&
-         & numnodes,MinAtomicnAux,MemoryReduced)
-    call Test_if_64bit_integer_required(nAux,nAux)
-    CALL LSTIMER('RIMP2: MemCheck ',TS2,TE2,LUPRI,FORCEPRINT)
-#ifdef VAR_MPI 
-    ! Master starts up slave
-    StartUpSlaves: if(wakeslaves .and. master) then
-       ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
-       ! and call full_canonical_rimp2_slave which communicate info 
-       ! then calls full_canonical_rimp2.
-       CALL LS_GETTIM(CPU1,WALL1)
-       call ls_mpibcast(RIMP2FULL,infpar%master,comm)
-       ! Communicate fragment information to slaves
-       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
-       call mpicopy_lsitem(MyLsitem,comm)
-       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
-       call mpi_bcast_fullmolecule(MyMolecule)    
-       CALL LS_GETTIM(CPU2,WALL2)
-       CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
-       WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
-    endif StartUpSlaves
-#endif
-    CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
-    call mem_alloc(ABdecomp,nAux,nAux)
-    ABdecompCreate = .TRUE.
-    intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
-    intspec(2) = 'R' !Regular AO basis function on center 3
-    intspec(3) = 'R' !Regular AO basis function on center 4
-    intspec(4) = 'C' !Coulomb Operator
-    intspec(5) = 'C' !Coulomb Operator
-    call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
-         & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,&
-         & MyMolecule%Co%elm2(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
-         & Calpha,NBA,ABdecomp,ABdecompCreate,intspec,.FALSE.)
-    !    PRINT*,'Build_CalphaMO2  nbasis,nAux,nvirt,nocc,NBA',NBA
-    !    WRITE(6,*)'Final Calph2(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
-    !    WRITE(6,*)'Print Subset Final Calph2(NBA=',NBA,',1:4)  MYNUM',MYNUM
-    !    call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
-    call mem_dealloc(ABdecomp)
-
-    call mem_alloc(EpsOcc,nocc)
-    call mem_leaktool_alloc(EpsOcc,LT_Eps)
-    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
-    !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
-    do I=1,nocc
-       EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset)
-    enddo
-    !$OMP END PARALLEL DO
-    call mem_alloc(EpsVirt,nvirt)
-    call mem_leaktool_alloc(EpsVirt,LT_Eps)
-    !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
-    !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
-    do A=1,nvirt
-       EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
-    enddo
-    !$OMP END PARALLEL DO
-
-    IF(DECinfo%DECrestart)THEN
-     !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
-     INQUIRE(FILE='FULLRIMP2.restart',EXIST=file_exists)
-     IF(file_exists)THEN
-      IF(master)THEN
-       WRITE(DECinfo%output,*)'Restart of Full molecular RIMP2 calculation:'
-      ENDIF
-      restart_lun = -1  !initialization
-      call lsopen(restart_lun,'FULLRIMP2.restart','OLD','FORMATTED')
-      rewind restart_lun
-      read(restart_lun,'(I9)') noccJstart
-      IF(noccJstart.EQ.nocc)THEN
-         IF(master)WRITE(DECinfo%output,*)'All energies is on file'
-         noccJstart = nocc+1
-         read(restart_lun,'(F28.16)') rimp2_energy
-      ELSEIF(noccJstart.GT.nocc.OR.noccJstart.LT.1)THEN
-       IF(master)THEN
-        WRITE(DECinfo%output,*)'RIMP2 restart error first integer is wrong. Read:',noccJstart
+    IF(master.AND.DECinfo%DECrestart)THEN
+       !CHECK IF THERE ARE ENERGY CONTRIBUTIONS AVAILABLE
+       INQUIRE(FILE='FULLRIMP2.restart',EXIST=file_exists)
+       IF(file_exists)THEN
+          IF(master)THEN
+             WRITE(DECinfo%output,*)'Restart of Full molecular RIMP2 calculation:'
+          ENDIF
+          restart_lun = -1  !initialization
+          call lsopen(restart_lun,'FULLRIMP2.restart','OLD','FORMATTED')
+          rewind restart_lun
+          read(restart_lun,'(I9)') noccJstart
+          IF(noccJstart.EQ.nocc)THEN
+             IF(master)WRITE(DECinfo%output,*)'All energies is on file'
+             PerformCalc = .FALSE.
+             noccJstart = nocc+1
+             read(restart_lun,'(F28.16)') rimp2_energy
+          ELSEIF(noccJstart.GT.nocc.OR.noccJstart.LT.1)THEN
+             IF(master)THEN
+                WRITE(DECinfo%output,*)'RIMP2 restart error first integer is wrong. Read:',noccJstart
+             ENDIF
+             call lsquit('RIMP2 restart error first integer is wrong')             
+          ELSE
+             noccJstart = noccJstart + 1
+             read(restart_lun,'(F28.16)') rimp2_energy
+          ENDIF
+          call lsclose(restart_lun,'KEEP')
+       ELSE
+          noccJstart=1
+          rimp2_energy = 0.0E0_realk
        ENDIF
-       call lsquit('RIMP2 restart error first integer is wrong')             
-      ELSE
-       noccJstart = noccJstart + 1
-       read(restart_lun,'(F28.16)') rimp2_energy
-      ENDIF
-      call lsclose(restart_lun,'KEEP')
-     ELSE
-      noccJstart=1
-      rimp2_energy = 0.0E0_realk
-     ENDIF
     ELSE
-     noccJstart=1
-     rimp2_energy = 0.0E0_realk
+       noccJstart=1
+       rimp2_energy = 0.0E0_realk
+#ifdef VAR_MPI
+       IF(DECinfo%DECrestart)THEN
+          call ls_mpibcast(noccJstart,infpar%master,infpar%lg_comm)
+       ENDIF
+#endif
     ENDIF
 
-    IF(Wakeslaves)THEN
-#ifdef VAR_MPI
-       NotMatSet = .TRUE.
-       call mem_alloc(Amat,nvirt,nvirt)
-       call mem_alloc(Bmat,nvirt,nvirt)
-       do J=noccJstart,nocc
-          do I=1,nocc
-             epsIJ = EpsOcc(I) + EpsOcc(J)
-             IF(NBA.GT.0)THEN 
-                !A(nvirt,nvirt)
-                CALL CalcAmat(nocc,nvirt,NBA,Calpha,Amat,I,J)
-                CALL CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
-             ELSE
-                IF(NotMatSet)THEN
-                   NotMatSet = .FALSE.
-                   call ls_dzero(Amat,nvirt*nvirt) 
-                   call ls_dzero(Bmat,nvirt*nvirt) 
-                ENDIF
-             ENDIF
-             !The barrier is mostly here to detect the time spent 
-             !waiting vs the time spent in communication. 
-             CALL LS_GETTIM(CPU1,WALL1)
-             call lsmpi_barrier(comm)
-             CALL LS_GETTIM(CPU2,WALL2)
-             CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
-             WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
-             !Reduce A,B
-             call lsmpi_reduction(Amat,nvirt,nvirt,infpar%master,comm)
-             call lsmpi_reduction(Bmat,nvirt,nvirt,infpar%master,comm)
-             CALL LS_GETTIM(CPU1,WALL1)
-             CPU_MPICOMM = CPU_MPICOMM + (CPU1-CPU2)
-             WALL_MPICOMM = WALL_MPICOMM + (WALL1-WALL2)             
-             IF(master)THEN
-                call MP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
-             ENDIF
-          enddo
-          !Write Restart File 
-          restart_lun = -1  !initialization
-          call lsopen(restart_lun,'FULLRIMP2.restart','UNKNOWN','FORMATTED')
-          rewind restart_lun
-          write(restart_lun,'(I9)') J
-          write(restart_lun,'(F28.16)') rimp2_energy
-          call lsclose(restart_lun,'KEEP')
+    IF(PerformCalc)THEN
+       ! Memory check!
+       ! ********************
+       CALL LSTIMER('START ',TS2,TE2,LUPRI,FORCEPRINT)
+       !    call getMaxAtomicnAux(Mylsitem%SETTING%MOLECULE(1)%p,MaxAtomicnAux,nAtoms)
+       call determine_maxBatchOrbitalsize(DECinfo%output,&
+            & Mylsitem%setting,MinAtomicnAux,'D')
+       call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,&
+            & numnodes,MinAtomicnAux,MemoryReduced)
+       call Test_if_64bit_integer_required(nAux,nAux)
+       CALL LSTIMER('RIMP2: MemCheck ',TS2,TE2,LUPRI,FORCEPRINT)
+#ifdef VAR_MPI 
+       ! Master starts up slave
+       StartUpSlaves: if(wakeslaves .and. master) then
+          ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
+          ! and call full_canonical_rimp2_slave which communicate info 
+          ! then calls full_canonical_rimp2.
+          CALL LS_GETTIM(CPU1,WALL1)
+          call ls_mpibcast(RIMP2FULL,infpar%master,comm)
+          ! Communicate fragment information to slaves
+          call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+          call mpicopy_lsitem(MyLsitem,comm)
+          call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+          call mpi_bcast_fullmolecule(MyMolecule)    
+          CALL LS_GETTIM(CPU2,WALL2)
+          CPU_MPICOMM = CPU_MPICOMM + (CPU2-CPU1)
+          WALL_MPICOMM = WALL_MPICOMM + (WALL2-WALL1)
+          IF(DECinfo%DECrestart)THEN
+             call ls_mpibcast(noccJstart,infpar%master,infpar%lg_comm)
+          ENDIF
+       endif StartUpSlaves
+#endif
+       CALL LSTIMER('RIMP2: WakeSlaves ',TS2,TE2,LUPRI,FORCEPRINT)    
+       
+       call mem_alloc(ABdecomp,nAux,nAux)
+       ABdecompCreate = .TRUE.
+       intspec(1) = 'D' !Auxuliary DF AO basis function on center 1 (2 empty)
+       intspec(2) = 'R' !Regular AO basis function on center 3
+       intspec(3) = 'R' !Regular AO basis function on center 4
+       intspec(4) = 'C' !Coulomb Operator
+       intspec(5) = 'C' !Coulomb Operator
+       call Build_CalphaMO2(mylsitem,master,nbasis,nbasis,nAux,LUPRI,&
+            & FORCEPRINT,wakeslaves,MyMolecule%Cv%elm2,nvirt,&
+            & MyMolecule%Co%elm2(:,offset+1:offset+nocc),nocc,mynum,numnodes,&
+            & Calpha,NBA,ABdecomp,ABdecompCreate,intspec,.FALSE.)
+       !    PRINT*,'Build_CalphaMO2  nbasis,nAux,nvirt,nocc,NBA',NBA
+       !    WRITE(6,*)'Final Calph2(NBA=',NBA,',nvirt=',nvirt,',nocc=',nocc,')'
+       !    WRITE(6,*)'Print Subset Final Calph2(NBA=',NBA,',1:4)  MYNUM',MYNUM
+       !    call ls_output(Calpha,1,NBA,1,4,NBA,nvirt*nocc,1,6)
+       call mem_dealloc(ABdecomp)
+       
+       call mem_alloc(EpsOcc,nocc)
+       call mem_leaktool_alloc(EpsOcc,LT_Eps)
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(I) &
+       !$OMP SHARED(nocc,MyMolecule,EpsOcc,offset)
+       do I=1,nocc
+          EpsOcc(I) = MyMolecule%oofock%elm2(I+offset,I+offset)
        enddo
-       call mem_dealloc(Amat)
-       call mem_dealloc(Bmat)
-!       call mem_dealloc(nbasisauxMPI)
-!       call mem_dealloc(startAuxMPI)
-!       call mem_dealloc(nAtomsMPI)
-!       call mem_dealloc(nAuxMPI)
-       IF(NBA.GT.0)THEN 
+       !$OMP END PARALLEL DO
+       call mem_alloc(EpsVirt,nvirt)
+       call mem_leaktool_alloc(EpsVirt,LT_Eps)
+       !$OMP PARALLEL DO DEFAULT(none) PRIVATE(A) &
+       !$OMP SHARED(nvirt,MyMolecule,EpsVirt)
+       do A=1,nvirt
+          EpsVirt(A) = MyMolecule%vvfock%elm2(A,A)
+       enddo
+       !$OMP END PARALLEL DO
+       
+       IF(Wakeslaves)THEN
+#ifdef VAR_MPI
+          NotMatSet = .TRUE.
+          call mem_alloc(Amat,nvirt,nvirt)
+          call mem_alloc(Bmat,nvirt,nvirt)
+          do J=noccJstart,nocc
+             do I=1,nocc
+                epsIJ = EpsOcc(I) + EpsOcc(J)
+                IF(NBA.GT.0)THEN 
+                   !A(nvirt,nvirt)
+                   CALL CalcAmat(nocc,nvirt,NBA,Calpha,Amat,I,J)
+                   CALL CalcBmat(nvirt,EpsIJ,EpsVirt,Amat,Bmat)
+                ELSE
+                   IF(NotMatSet)THEN
+                      NotMatSet = .FALSE.
+                      call ls_dzero(Amat,nvirt*nvirt) 
+                      call ls_dzero(Bmat,nvirt*nvirt) 
+                   ENDIF
+                ENDIF
+                !The barrier is mostly here to detect the time spent 
+                !waiting vs the time spent in communication. 
+                CALL LS_GETTIM(CPU1,WALL1)
+                call lsmpi_barrier(comm)
+                CALL LS_GETTIM(CPU2,WALL2)
+                CPU_MPIWAIT = CPU_MPIWAIT + (CPU2-CPU1)
+                WALL_MPIWAIT = WALL_MPIWAIT + (WALL2-WALL1)
+                !Reduce A,B
+                call lsmpi_reduction(Amat,nvirt,nvirt,infpar%master,comm)
+                call lsmpi_reduction(Bmat,nvirt,nvirt,infpar%master,comm)
+                CALL LS_GETTIM(CPU1,WALL1)
+                CPU_MPICOMM = CPU_MPICOMM + (CPU1-CPU2)
+                WALL_MPICOMM = WALL_MPICOMM + (WALL1-WALL2)             
+                IF(master)THEN
+                   call MP2_EnergyContribution(nvirt,Amat,Bmat,rimp2_energy)
+                ENDIF
+             enddo
+             !Write Restart File 
+             restart_lun = -1  !initialization
+             call lsopen(restart_lun,'FULLRIMP2.restart','UNKNOWN','FORMATTED')
+             rewind restart_lun
+             write(restart_lun,'(I9)') J
+             write(restart_lun,'(F28.16)') rimp2_energy
+             call lsclose(restart_lun,'KEEP')
+          enddo
+          call mem_dealloc(Amat)
+          call mem_dealloc(Bmat)
+          !       call mem_dealloc(nbasisauxMPI)
+          !       call mem_dealloc(startAuxMPI)
+          !       call mem_dealloc(nAtomsMPI)
+          !       call mem_dealloc(nAuxMPI)
+          IF(NBA.GT.0)THEN 
+             call mem_dealloc(Calpha)              
+          ENDIF
+#endif
+       ELSE
+          !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
+          call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+               & NBA,Calpha,rimp2_energy)
           call mem_dealloc(Calpha)              
        ENDIF
-#endif
-    ELSE
-       !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
-       call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
-            & NBA,Calpha,rimp2_energy)
-       call mem_dealloc(Calpha)              
+       CALL LSTIMER('RIMP2: EnergyCont ',TS2,TE2,LUPRI,FORCEPRINT)
+       call mem_leaktool_dealloc(EpsOcc,LT_Eps)
+       call mem_dealloc(EpsOcc)
+       call mem_leaktool_dealloc(EpsVirt,LT_Eps)
+       call mem_dealloc(EpsVirt)
     ENDIF
-    CALL LSTIMER('RIMP2: EnergyCont ',TS2,TE2,LUPRI,FORCEPRINT)
-    call mem_leaktool_dealloc(EpsOcc,LT_Eps)
-    call mem_dealloc(EpsOcc)
-    call mem_leaktool_dealloc(EpsVirt,LT_Eps)
-    call mem_dealloc(EpsVirt)
     IF(MASTER)THEN
        write(lupri,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
        print*,'RIMP2 CORRELATION ENERGY = ', rimp2_energy
@@ -646,8 +660,8 @@ end module fullrimp2
 subroutine full_canonical_rimp2_slave
   use fullrimp2,only: full_canonical_rimp2
   use infpar_module !infpar
-  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
-       & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_param,only:LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer
   use lsmpi_op,only: mpicopy_lsitem
   use precision
   use typedeftype,only:lsitem

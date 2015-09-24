@@ -3,10 +3,12 @@
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
 module fullmp2
+use files
 
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param
   use decmpi_module, only: mpi_bcast_fullmolecule
   use lsmpi_op
 #endif
@@ -501,8 +503,10 @@ contains
                 GammaStart = batch2orbGamma(gammaB)%orbindex(1)      ! First index in gamma batch
                 GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma) ! Last index in gamma batch
              ENDIF
-             IF(dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI)&
-                  & call lsquit('dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI',-1)
+             IF(dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI)THEN
+!                call lsquit('dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI',-1)
+                print*,'Warning dimAOoffsetG + dimGamma.GT.MaxAllowedDimGammaMPI'
+             ENDIF
              dimAOoffsetG = dimAOoffsetG + dimGamma
              AOstartGamma(nBlocks,jnode) = GammaStart
              AOendGamma(nBlocks,jnode) = GammaEnd
@@ -2841,8 +2845,8 @@ end module fullmp2
 subroutine full_canonical_mp2_slave
   use fullmp2,only: full_canonical_mp2,full_canonical_mpmp2
   use infpar_module !infpar
-  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
-       & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer
+  use lsmpi_param,only:LSMPIBROADCAST,MPI_COMM_LSDALTON 
   use lsmpi_op,only: mpicopy_lsitem
   use precision
   use typedeftype,only:lsitem

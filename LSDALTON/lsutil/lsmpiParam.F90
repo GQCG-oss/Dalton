@@ -35,7 +35,17 @@ module lsmpi_param
      integer(kind=ls_mpik),pointer :: ranks(:)
   end type mpigroup
 
+  public :: mpigroup,lsmpi_status,MAX_SIZE_ONE_SIDED,&
+       & SPLIT_MPI_MSG,lsmpi_enabled_comm_procs,LSMPIASYNCP,&
+       & MPI_COMM_LSDALTON,LSMPIBROADCAST,LSMPIREDUCTION,&
+       & LSMPIREDUCTIONmaster,LSMPISENDRECV
+#else
+
+  public :: LSMPIBROADCAST,LSMPIREDUCTION,&
+       & LSMPIREDUCTIONmaster,LSMPISENDRECV
+
 #endif
+  private 
 
   contains
     subroutine lsmpi_param_dummy()

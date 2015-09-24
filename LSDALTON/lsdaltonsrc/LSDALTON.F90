@@ -805,7 +805,7 @@ SUBROUTINE LSDALTON_DRIVER_SLAVE()
    implicit none
    call lsquit("ERROR(LSDALTON_DRIVER_SLAVE): this should never be called without MPI",-1)
 #else
-   use lsmpi_type, only: MPI_COMM_LSDALTON
+   use lsmpi_param, only: MPI_COMM_LSDALTON
    implicit none
    call lsmpi_slave(MPI_COMM_LSDALTON)
 #endif
@@ -817,7 +817,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use matrix_operations, only: set_matrix_default
   use init_lsdalton_mod, only: open_lsdalton_files
 #ifdef VAR_MPI
-  use lsmpi_type, only: PDMA4SLV
+  use lsparameters, only: PDMA4SLV
 #endif
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
@@ -879,7 +879,9 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
   use lstensorMem, only: lstmem_free
+#ifdef VAR_ENABLE_TENSORS
   use tensor_interface_module ,only: tensor_finalize_interface, tensor_free_bg_buf
+#endif
   use GCtransMod, only: free_AO2GCAO_GCAO2AO
   use IntegralInterfaceModuleDF,only:free_IIDF_matrix
 #ifdef VAR_DEC
@@ -922,8 +924,11 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
+#ifdef VAR_ENABLE_TENSORS
   call tensor_free_bg_buf()
   call tensor_finalize_interface()
+#endif
+
 #ifdef VAR_DEC
   call free_decinfo()
 #endif
@@ -942,10 +947,13 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
      call LSMPI_COMM_FREE(scalapack_comm)
   ENDIF
 #endif
+
+#ifdef VAR_ENABLE_TENSORS
   IF(pdmm_mpi_set)THEN
      !free communicator 
      call LSMPI_COMM_FREE(pdmm_comm)
   ENDIF
+#endif
 
   call lsmpi_finalize(lupri,.false.)
 #else

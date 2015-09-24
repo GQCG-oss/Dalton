@@ -140,6 +140,7 @@ C
 #include "eribuf.h"
 #include "r12int.h"
 C
+      CALL QENTER('HERDI2')
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
@@ -223,6 +224,7 @@ C
       CALL GPCLOSE(LUAORC(0),'KEEP')
       IF (U21INT) CALL GPCLOSE(LU21INT,'KEEP')
 C
+      CALL QEXIT('HERDI2')
       RETURN
       END
 C

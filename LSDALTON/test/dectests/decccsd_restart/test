@@ -36,10 +36,8 @@ f.add(from_string = 'Print single and pair fragment energies',
 
 # Build list of files to save for restart
 # =======================================
-HF_restart  = ['cmo_orbitals.u','lcm_orbitals.u','lcv_basis.restart','dens.restart',
-               'fock.restart','overlapmatrix']
-DEC_restart = ['atomicfragmentsdone.info','atomicfragments.info',
-               'estimated_fragenergies.backup','estimated_fragenergies.info']
+HF_restart  = ['cmo_orbitals.u','lcm_orbitals.u','dens.restart','fock.restart','overlapmatrix']
+DEC_restart = ['atomicfragmentsdone.info','atomicfragments.info','estimated_fragenergies.info']
 
 get_restart = ['-get','"'] + HF_restart + DEC_restart + ['"']
 put_restart = ['-put','"'] + HF_restart + DEC_restart + ['"']

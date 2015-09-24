@@ -143,6 +143,7 @@ C  inforb.h : NASHT
 #include "inforb.h"
 #include "rspprp.h"
 #include "esg.h"
+#include "gnrinf.h"
 
 C     statement functions:
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
@@ -225,19 +226,19 @@ C
          END IF
       END IF
       ISYMTS   = IEOR(ISYMT,ISYMS)
-      IF (DDFOCK .AND. LONDON) THEN
-         DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
-         DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
-         DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
-         DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
-         DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
-         DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
 #ifdef BUILD_OPENRSP
 !radovan: this breaks tests on master
 C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
-         IF (.NOT.SUSCEP) THEN
-#endif
-         DO 10 N = 1, 3
+      IF (USE_OPENRSP) THEN
+       IF (DDFOCK .AND. LONDON) THEN
+        DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
+        DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
+        DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
+        DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
+        DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
+        DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+        IF (.NOT.SUSCEP) THEN
+         DO N = 1, 3
             Y   = NEXT(N)
             Z   = NEXT(Y)
             ABY = DIFAB(Y)
@@ -246,16 +247,14 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
             CDZ = DIFCD(Z)
             Y2  = Y + 3
             Z2  = Z + 3
-            DO 20 I = 1, NCCINT
+            DO I = 1, NCCINT
                AOAB = ABY*AOINT(I,Z ) - ABZ*AOINT(I,Y )
                AOCD = CDY*AOINT(I,Z2) - CDZ*AOINT(I,Y2)
                PINT(I,N) = AOAB + AOCD
                QINT(I,N) = AOAB - AOCD
-  20        CONTINUE
-  10     CONTINUE
-#ifdef BUILD_OPENRSP
-!radovan: this breaks tests on master
-         ELSE
+            END DO
+         END DO
+        ELSE
          DO J = 1, 6
             K = (7+2*J)/5; M = J-K*(K-1)/2
             K = NEXT(K); L = NEXT(K)
@@ -285,9 +284,37 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                QINT(I,J) = -(PPQQ - PQPQ)/4
             END DO
          END DO
-         END IF
+        END IF
+       END IF
+      ELSE ! .NOT. USE_OPENRSP
 #endif
+      IF (DDFOCK .AND. LONDON) THEN
+         DIFAB(1) =             CORAX0 - XAND(ISYMR )*CORBX0
+         DIFAB(2) =             CORAY0 - YAND(ISYMR )*CORBY0
+         DIFAB(3) =             CORAZ0 - ZAND(ISYMR )*CORBZ0
+         DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
+         DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
+         DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
+         DO 10 N = 1, 3
+            Y   = NEXT(N)
+            Z   = NEXT(Y)
+            ABY = DIFAB(Y)
+            ABZ = DIFAB(Z)
+            CDY = DIFCD(Y)
+            CDZ = DIFCD(Z)
+            Y2  = Y + 3
+            Z2  = Z + 3
+            DO 20 I = 1, NCCINT
+               AOAB = ABY*AOINT(I,Z ) - ABZ*AOINT(I,Y )
+               AOCD = CDY*AOINT(I,Z2) - CDZ*AOINT(I,Y2)
+               PINT(I,N) = AOAB + AOCD
+               QINT(I,N) = AOAB - AOCD
+  20        CONTINUE
+  10     CONTINUE
       END IF
+#ifdef BUILD_OPENRSP
+      END IF
+#endif
 C
       SFAC = SYMFAC
       IF (.NOT.SHABAB.AND..NOT.(DIA2SO.OR.SPNORB)) SFAC = D2*SFAC
@@ -363,13 +390,17 @@ C
                      DTAB  = DMAT(A,B,1)
 #ifdef BUILD_OPENRSP
 C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                    IF (USE_OPENRSP) THEN
                      DTBA = DMAT(B,A,1)
                      IF (DV .OR. GENCTR) THEN
                         DVAB = DMAT(A,B,2)
                         DVBA = DMAT(B,A,2)
                      ENDIF
-#else
+                    ELSE
+#endif
                      IF (DV) DVAB  = DMAT(A,B,2)
+#ifdef BUILD_OPENRSP
+                    END IF
 #endif
                                                       FAB = D1
                      IF (TCONAB .AND. IORBA.NE.IORBB) FAB = D2
@@ -381,6 +412,7 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
 #ifdef BUILD_OPENRSP
 C
 C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                       IF (USE_OPENRSP) THEN
                         DTAC = DMAT(A,C,1)
                         DTAD = DMAT(A,D,1)
                         DTBC = DMAT(B,C,1)
@@ -403,7 +435,8 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                            DVDB = DMAT(D,B,2)
                            DVDC = DMAT(D,C,2)
                         END IF
-#else
+                       ELSE
+#endif
                         DTAC = DMAT(C,A,1)
                         DTAD = DMAT(D,A,1)
                         DTBC = DMAT(C,B,1)
@@ -416,6 +449,8 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                            DVBD = DMAT(D,B,2)
                            DVCD = DMAT(D,C,2)
                         ENDIF
+#ifdef BUILD_OPENRSP
+                       END IF
 #endif
                                                        FCD = D1
                         IF (TCONCD.AND.IORBC.NE.IORBD) FCD = D2
@@ -446,6 +481,7 @@ C
 #ifdef BUILD_OPENRSP
 !radovan: this breaks tests on master
 C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                             IF (USE_OPENRSP) THEN
                               IF (ESG) THEN
                                  CALL ESG_PVAL(DFTADD,HFXFAC,
      &                                         PVAL,DMAT,A,B,C,D,PFAC)
@@ -467,9 +503,6 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
      &                                 + DTCA*DVBD + DTAC*DVDB))
                                  END IF
                               ELSE IF (HFXMU .NE. D0) THEN
-#else
-                              IF (HFXMU .NE. D0) THEN
-#endif
                                  PVAL = PFAC*( - HFXFAC*DP25*
      &                                  (DTAC*DTBD + DTAD*DTBC))
                               ELSE IF (NODV) THEN
@@ -481,18 +514,38 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                                  PVAL = PFAC*(DTAB*DTCD
      &                                - XFAC*DP25*(DTAC*DTBD + DVAC*DVBD
      &                                      + DTAD*DTBC + DVAD*DVBC))
-#ifndef BUILD_OPENRSP
-!radovan: this breaks tests on master
-                              ELSE IF (ESG) THEN 
-                                 CALL ESG_PVAL(DFTADD,HFXFAC,
-     &                                         PVAL,DMAT,A,B,C,D,PFAC)
-#endif
                               ELSE
                                  PVAL = PFAC*(DTAB*DTCD - DVAB*DVCD
      &                                - DP25*(DTAC*DTBD - DVAC*DVBD
      &                                      + DTAD*DTBC - DVAD*DVBC)
      &                                + PAOVAL)
                               END IF
+                             ELSE
+#endif
+                              IF (HFXMU .NE. D0) THEN
+                                 PVAL = PFAC*( - HFXFAC*DP25*
+     &                                  (DTAC*DTBD + DTAD*DTBC))
+                              ELSE IF (NODV) THEN
+                                 PVAL = PFAC*(DTAB*DTCD
+     &                                - XFAC*DP25*(DTAC*DTBD+DTAD*DTBC)
+     &                                + PAOVAL)
+                              ELSE IF ((HSROHF .AND. NASHT .GT. 1) .OR. 
+     &                                (DFTADD .AND. .NOT. NODV)) THEN
+                                 PVAL = PFAC*(DTAB*DTCD
+     &                                - XFAC*DP25*(DTAC*DTBD + DVAC*DVBD
+     &                                      + DTAD*DTBC + DVAD*DVBC))
+                              ELSE IF (ESG) THEN 
+                                 CALL ESG_PVAL(DFTADD,HFXFAC,
+     &                                         PVAL,DMAT,A,B,C,D,PFAC)
+                              ELSE
+                                 PVAL = PFAC*(DTAB*DTCD - DVAB*DVCD
+     &                                - DP25*(DTAC*DTBD - DVAC*DVBD
+     &                                      + DTAD*DTBC - DVAD*DVBC)
+     &                                + PAOVAL)
+                              END IF
+#ifdef BUILD_OPENRSP
+                             END IF
+#endif
                               IF (ABS(PVAL) .GT. THRSH) THEN
                                  IF (EXPGRA) THEN
                                     NODER = .FALSE.
@@ -535,7 +588,7 @@ C
 #ifdef BUILD_OPENRSP
 C Bin Gao, December 24, 2009, copied from that of linsca
 c     vincent liegeois
-                           IF (IFCTYP(1).Eq.03) THEN
+                           IF (IFCTYP(1).Eq.03 .AND. USE_OPENRSP) THEN
 
                               DFAC = FAB*FCD*FCABCD
                               EFAC = -HFXFAC*DP5*DFAC
@@ -652,10 +705,10 @@ C
                         ELSE IF (LONDON) THEN
                            FACTOR = DP125*FAB*FCD*FCABCD
 #ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+                          IF (USE_OPENRSP) THEN
                            IF (SUSCEP .OR. GENCTR) THEN
-#else
-                           IF (SUSCEP) THEN
-#endif
                               IF (NOPMAT) THEN
                                  PAOVL1 = D0
                                  PAOVL2 = D0
@@ -663,9 +716,6 @@ C
                                  PAOVL1 = PAO(IORBA,IORBB,IORBC,IORBD)
                                  PAOVL2 = PAA(IORBA,IORBB,IORBC,IORBD)
                               ENDIF
-#ifdef BUILD_OPENRSP
-!radovan: this breaks tests on master
-C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                               IF (GENCTR) THEN
                                  IF (.NOT.SUSCEP) THEN
                                     IF (HFXMU .NE. D0) THEN
@@ -732,9 +782,6 @@ Ckr
                                     END IF
                                  END IF
                               ELSE IF (HFXMU .NE. D0) THEN
-#else
-                              IF (HFXMU .NE. D0) THEN
-#endif /* BUILD_OPENRSP */
                                  PVAL1  = FACTOR*(
      &                                  - HFXFAC*DP25*
      &                                    (DTAC*DTBD + DTAD*DTBC)
@@ -762,9 +809,6 @@ Ckr
      &                                     - DTAD*DTBC + DVAD*DVBC)
      &                                  + PAOVL2)
                               END IF
-#ifdef BUILD_OPENRSP
-!radovan: this breaks tests on master
-C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                               IF (.NOT.SUSCEP) THEN
                                  NODER = .FALSE.
                                  DO I = 1, 3
@@ -777,20 +821,58 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                                  IF (ABS(PVAL1) .GT. THRSH) THEN
                                  NODER = .FALSE.
                                  ELSE IF (SUSCEP) THEN
-                                    DO 900 I = 7, 18
+                                    DO I = 7, 18
                                        DERIV(I) = DERIV(I)
      &                                          + PVAL1*AOINT(INT,I)
- 900                                CONTINUE
+                                    END DO
                                  END IF
                                  IF (ABS(PVAL2) .GT. THRSH) THEN
                                     NODER = .FALSE.
-                                    DO 910 I = 19, 27
+                                    DO I = 19, 27
                                        DERIV(I) = DERIV(I)
      &                                          + PVAL2*AOINT(INT,I)
- 910                                CONTINUE
+                                    END DO
                                  END IF
                               END IF
-#else
+                           END IF
+                          ELSE ! .NOT. USE_OPENRSP
+#endif
+                           IF (SUSCEP) THEN
+                              IF (NOPMAT) THEN
+                                 PAOVL1 = D0
+                                 PAOVL2 = D0
+                              ELSE
+                                 PAOVL1 = PAO(IORBA,IORBB,IORBC,IORBD)
+                                 PAOVL2 = PAA(IORBA,IORBB,IORBC,IORBD)
+                              ENDIF
+                              IF (HFXMU .NE. D0) THEN
+                                 PVAL1  = FACTOR*(
+     &                                  - HFXFAC*DP25*
+     &                                    (DTAC*DTBD + DTAD*DTBC)
+     &                                  + PAOVL1)
+                                 PVAL2  = FACTOR*(HFXFAC*DP25*
+     &                                    (DTAC*DTBD - DTAD*DTBC)
+     &                                  + PAOVL2)
+                              ELSE IF (NODV) THEN
+                                 PVAL1  = FACTOR*(DTAB*DTCD
+     &                                  - HFXFAC*DP25*
+     &                                    (DTAC*DTBD + DTAD*DTBC)
+     &                                  + PAOVL1)
+                                 PVAL2  = FACTOR*(HFXFAC*DP25*
+     &                                    (DTAC*DTBD - DTAD*DTBC)
+     &                                  + PAOVL2)
+                              ELSE
+                                 PVAL1  = FACTOR*
+     &                                    (DTAB*DTCD - DVAB*DVCD
+     &                                    - HFXFAC*DP25*(DTAC*DTBD
+     &                                          - DVAC*DVBD + DTAD*DTBC
+     &                                          - DVAD*DVBC)
+     &                                  + PAOVL1)
+                                 PVAL2  = FACTOR*(HFXFAC*DP25*
+     &                                    (DTAC*DTBD - DVAC*DVBD
+     &                                     - DTAD*DTBC + DVAD*DVBC)
+     &                                  + PAOVL2)
+                              END IF
                               IF (ABS(PVAL1) .GT. THRSH) THEN
                                  NODER = .FALSE.
                                  DO 900 I = 7, 18
@@ -803,23 +885,22 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                                     DERIV(I)=DERIV(I)+PVAL2*AOINT(INT,I)
   910                            CONTINUE
                               END IF
-#endif /* BUILD_OPENRSP */
                            END IF
 #ifdef BUILD_OPENRSP
-                           IF (DDFOCK .AND. .NOT.GENCTR) THEN
-#else
-                           IF (DDFOCK) THEN
+                          END IF ! USE_OPENRSP
 #endif
+#ifdef BUILD_OPENRSP
+!radovan: this breaks tests on master
+C Bin Gao, December 24, 2009, copied from that of linsca
+                          IF (USE_OPENRSP) THEN
+                           IF (DDFOCK .AND. .NOT.GENCTR) THEN
                               DFAC = DP125*FAB*FCD*FCABCD
                               EFAC = DP5*HFXFAC*DFAC
                               IF (HFXMU .NE. D0) DFAC = D0 
 C
 C                             Total Fock matrix
 C
-#ifdef BUILD_OPENRSP
-!radovan: this breaks tests on master
-C Bin Gao, December 24, 2009, copied from that of linsca
-                           IF (IFCTYP(1) .EQ. 3) THEN
+                            IF (IFCTYP(1) .EQ. 3) THEN
                               DFAC = DFAC*2.0
                               EFAC = EFAC*2.0
                               DAB  = DFAC*DTAB
@@ -836,8 +917,8 @@ C
                               DBD  = EFAC*DTBD
                               DDB  = EFAC*DTDB
 C
-                           IF (.NOT.SUSCEP) THEN
-                           DO N = 1, 3
+                             IF (.NOT.SUSCEP) THEN
+                             DO N = 1, 3
                               ABCD = PINT(INT,N)
                               ABDC = QINT(INT,N)
 C Coulomb
@@ -860,9 +941,9 @@ C                              ABDC = ABDC*HFXFAC
                               FT(B,C,N) = FT(B,C,N) + ABCD*DAD
                               FT(D,B,N) = FT(D,B,N) - ABDC*DCA
                               FT(B,D,N) = FT(B,D,N) + ABDC*DAC
-                           END DO
-                           ELSE
-                           DO N = 1, 6
+                             END DO
+                             ELSE
+                             DO N = 1, 6
                               ABCD = PINT(INT,N)
                               ABDC = QINT(INT,N)
                               FT(A,B,N) = FT(A,B,N)
@@ -883,10 +964,59 @@ C                              ABDC = ABDC*HFXFAC
                               FT(C,A,N) = FT(C,A,N) - ABDC*DDB
                               FT(B,D,N) = FT(B,D,N) - ABDC*DAC
                               FT(D,B,N) = FT(D,B,N) - ABDC*DCA
-                           ENDDO
+                             ENDDO
+                             END IF
+                            ELSE
+                              DAB  = DFAC*DTAB
+                              DCD  = DFAC*DTCD
+                              DAC  = EFAC*DTAC
+                              DAD  = EFAC*DTAD
+                              DBC  = EFAC*DTBC
+                              DBD  = EFAC*DTBD
+                              DO N = 1, 3
+                                 ABCD = PINT(INT,N)
+                                 ABDC = QINT(INT,N)
+                                 FT(D,C,N) = FT(D,C,N) - (ABCD-ABDC)*DAB
+                                 FT(B,A,N) = FT(B,A,N) - (ABCD+ABDC)*DCD
+                                 FT(C,A,N) = FT(C,A,N) + ABDC*DBD
+                                 FT(D,A,N) = FT(D,A,N) + ABCD*DBC
+                                 FT(C,B,N) = FT(C,B,N) - ABCD*DAD
+                                 FT(D,B,N) = FT(D,B,N) - ABDC*DAC
+                              END DO
+C
+C                             Active Fock matrix
+C
+                              IF (DV) THEN
+                                 DAB  = DFAC*DVAB
+                                 DCD  = DFAC*DVCD
+                                 DAC  = EFAC*DVAC
+                                 DAD  = EFAC*DVAD
+                                 DBC  = EFAC*DVBC
+                                 DBD  = EFAC*DVBD
+                                 DO N = 1, 3
+                                    ABCD = PINT(INT,N)
+                                    ABDC = QINT(INT,N)
+                                    FV(B,A,N) = FV(B,A,N)
+     &                                        - (ABCD+ABDC)*DCD
+                                    FV(D,C,N) = FV(D,C,N)
+     &                                        - (ABCD-ABDC)*DAB
+                                    FV(C,A,N) = FV(C,A,N) + ABDC*DBD
+                                    FV(D,A,N) = FV(D,A,N) + ABCD*DBC
+                                    FV(C,B,N) = FV(C,B,N) - ABCD*DAD
+                                    FV(D,B,N) = FV(D,B,N) - ABDC*DAC
+                                 END DO
+                              END IF
+                            END IF
                            END IF
-                           ELSE
+                          ELSE ! .NOT. USE_OPENRSP
 #endif
+                           IF (DDFOCK) THEN
+                              DFAC = DP125*FAB*FCD*FCABCD
+                              EFAC = DP5*HFXFAC*DFAC
+                              IF (HFXMU .NE. D0) DFAC = D0 
+C
+C                             Total Fock matrix
+C
                               DAB  = DFAC*DTAB
                               DCD  = DFAC*DTCD
                               DAC  = EFAC*DTAC
@@ -926,10 +1056,10 @@ C
                                     FV(D,B,N) = FV(D,B,N) - ABDC*DAC
   930                            CONTINUE
                               END IF
+                           END IF
 #ifdef BUILD_OPENRSP
-                           END IF
+                          END IF
 #endif
-                           END IF
                            IF (IPRINT .GT. 30) THEN
                               WRITE(LUPRI,'(//A,4I5,2D12.4)')
      &                             ' IORBA... PAOVAL',
@@ -1118,6 +1248,7 @@ C    &                           (AOINT(INT,I),I=1,NINTYP)
 !         test before removing this
 !         anyway the ifs are strange
 C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
+        IF (USE_OPENRSP) THEN
          IF (LONDON .AND. GENCTR) THEN
             IF (.NOT.SUSCEP) THEN
                CALL LNDGC1(DERIV,FT,ISYMR,ISYMT,ISYMTS,IPRINT)
@@ -1127,6 +1258,7 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
          ELSE IF (LONDON .AND. SUSCEP .AND. .NOT.DDFOCK) THEN
             CALL LNDOUT(DERIV,ISYMR,ISYMT,ISYMTS,IPRINT)
          END IF
+        END IF
 #endif
 
          IF (SUSCEP) THEN

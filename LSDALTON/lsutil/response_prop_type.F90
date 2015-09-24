@@ -8,6 +8,18 @@
 module response_wrapper_type_module
   use precision
 
+  public :: ALPHAinputitem, &
+       & BETAinputitem, GAMMAinputitem, TPAinputitem, DTPAinputitem, &
+       & ESGinputitem, ESDinputitem, RSPSOLVERinputitem, NMRinputitem,&
+       & mcdinputitem
+  private
+
+  type NMRinputitem
+     logical :: SolveNMRResponseSimultan
+     logical :: CalcDFJcont
+     logical :: PrintAll
+  end type NMRinputitem
+
   type mcdinputitem
      !> Number of excited states for MCD calculation.
      Integer :: nexci
@@ -212,6 +224,8 @@ module response_wrapper_type_module
      LOGICAL     :: info_rsp
      !> print info about the soulution of the response calc reduced space
      LOGICAL     :: info_rsp_redspace
+     !> print info about the sparsity of the trial vectors
+     LOGICAL     :: info_rsp_sparsity
      !>
      LOGICAL     :: rsp_damp_2start
      !> Degenerate yes if degenerate states are possible

@@ -2,6 +2,7 @@
 !> Solver for response equations (linear equations or eigenvalue problem).
 
 module RSPsolver
+use files
   use matrix_util
   use rspPrecond
   use rsp_util, only: util_scriptPx, get_rsp_trials_from_MO, MO_precond
@@ -1148,7 +1149,7 @@ contains
     !> True if the rho part of linear transformation should be calculated
     logical, intent(in) :: make_rhos
     type(Matrix) :: scr
-    integer :: i,ndim,l 
+    integer :: i,ndim,l,nnz
     ndim = S%nrow
 !    if(make_rhos)then
        call mem_alloc(rhos,nnew)
@@ -1160,6 +1161,13 @@ contains
 !    endif
        call mat_init(sigmas(i),Bvecs(1)%nrow,Bvecs(1)%ncol)
     enddo
+    
+    if (molcfg%solver%info_rsp_sparsity) then
+       do i=1,nnew
+          call mat_report_sparsity(Bvecs(i),'TrialVectorSparsity',nnz,molcfg%lupri)
+          Write(molcfg%lupri,'(A,I3,A,I9)')'TrialVector(',i,') NNZ=',NNZ
+       enddo
+    endif
 
     if((nnew .GT. 1).AND. .NOT.molcfg%solver%cfg_unres)then
       call make_lintran_vecsArray(molcfg,D,S,F,Bvecs,sigmas,rhos,make_rhos,nnew)

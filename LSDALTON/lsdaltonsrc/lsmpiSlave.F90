@@ -1,10 +1,15 @@
 subroutine lsmpi_init(OnMaster)
+#ifdef VAR_ENABLE_TENSORS
    use tensor_interface_module,only: tensor_initialize_interface, tensor_comm_null
+#endif
    use memory_handling, only: mem_allocated_global
    use background_buffer_module, only: max_n_pointers, buf_realk
 
 #ifdef VAR_MPI
+   use lsmpi_param
    use lsmpi_type
+   use lsmpi_op
+   use lsmpi_module
    use infpar_module
    use ls_env
    use matrix_operations_pdmm
@@ -59,11 +64,14 @@ subroutine lsmpi_init(OnMaster)
    !default number of nodes to be used with scalapack - can be changed
    infpar%ScalapackGroupSize = infpar%nodtot
    infpar%ScalapackWorkaround = .FALSE.
-   infpar%PDMMGroupSize = infpar%nodtot
 #ifdef VAR_SCALAPACK  
    scalapack_mpi_set = .FALSE.
 #endif   
+
+#ifdef VAR_ENABLE_TENSORS
+   infpar%PDMMGroupSize = infpar%nodtot
    pdmm_mpi_set = .FALSE.
+#endif
    infpar%master = int(0,kind=ls_mpik);
 
    !CHECK IF WE ARE ON THE MAIN MAIN MAIN MASTER PROCESS (NOT IN LOCAL GROUP,
@@ -78,13 +86,17 @@ subroutine lsmpi_init(OnMaster)
    infpar%lg_morejobs=.true.
 
    !tensor initialization
+#ifdef VAR_ENABLE_TENSORS
    call tensor_initialize_interface(infpar%lg_comm, mem_ctr=mem_allocated_global, pdm_slaves_signal = PDMA4SLV )
+#endif
 
 #else
    logical, intent(inout) :: OnMaster
    !IF NOT COMPILED WITH MPI SET MASTER = TRUE
    OnMaster = .true.
+#ifdef VAR_ENABLE_TENSORS
    call tensor_initialize_interface(tensor_comm_null, mem_ctr=mem_allocated_global )
+#endif
 #endif
 
 
@@ -95,13 +107,17 @@ subroutine lsmpi_slave(comm)
    use lsparameters
    use lstiming
    use infpar_module
+   use lsmpi_param
+   use lsmpi_op
    use lsmpi_type
    use lsmpi_test
    use integralinterfaceMod
 #ifdef VAR_DEC
    use dec_driver_slave_module
 #endif
+#ifdef VAR_ENABLE_TENSORS
    use tensor_interface_module
+#endif
 #ifdef VAR_SCALAPACK  
    use matrix_operations_scalapack
 #endif
@@ -198,6 +214,8 @@ subroutine lsmpi_slave(comm)
          call ccsdpt_slave_info
       case(CCSDPTSLAVE_WORK);
          call ccsdpt_slave_work
+      case(SET_FORCE_CRASH);
+         call ls_mpibcast(force_crash,infpar%master,comm)
 #endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
@@ -229,12 +247,14 @@ subroutine lsmpi_slave(comm)
             call PDM_SLAVE()
          ENDIF
 #endif
+#ifdef VAR_ENABLE_TENSORS
       case(PDMMGRIDINIT);
          call PDMM_GRIDINIT_SLAVE
       case(PDMMGRIDEXIT);
          call PDMM_GRIDEXIT_SLAVE
       case(PDMA4SLV);
          call pdm_tensor_slave
+#endif
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
@@ -247,7 +267,9 @@ subroutine lsmpi_slave(comm)
          call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
       case(SET_SPLIT_MPI_MSG);
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+#ifdef VAR_ENABLE_TENSORS
          call tensor_set_mpi_msg_len(int(SPLIT_MPI_MSG,kind=long))
+#endif
       case(SET_MAX_SIZE_ONE_SIDED);
          call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
       case(INIT_BG_BUF);

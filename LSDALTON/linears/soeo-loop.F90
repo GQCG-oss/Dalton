@@ -5,6 +5,7 @@
 !> author C. Nygaard
 !> date 2010
 module soeo_loop
+use files
 
 use precision
 use soeo_typedef

@@ -87,7 +87,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
-    set(reorder_definitions "nocollapse ${reorder_definitions}")
+    set(reorder_definitions " --nocollapse ${reorder_definitions}")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -113,9 +113,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
             )
     endif()
     if(ENABLE_OMP) 
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -mp -Mconcur"
-            )
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mp " )
+        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -Mconcur")
     endif()
 # WARNING you may need to add -Mcuda=5.5 
 # For now use --extra-fc-flags="-Mcuda=5.5"

@@ -121,13 +121,13 @@ CTRL[4]=1
 ERROR[4]="INITIAL ENERGY NOT CORRECT"
 
 # Initial gradient
-CRIT1=`$GREP "C .*   0*\.00982" $log | wc -l`
+CRIT1=`$GREP "C .*   0*\.0098(2|3)" $log | wc -l`
 CRIT2=`$GREP -l "C .*   0*\.00000" $log | wc -l`
 CRIT3=`$GREP "H .* \-0*\.00516" $log | wc -l`
 CRIT4=`$GREP "H .*   0*\.01013" $log | wc -l`
 CRIT5=`$GREP "H .* \-0*\.01033" $log | wc -l`
 CRIT6=`$GREP "H .* \-0*\.01013" $log | wc -l`
-CRIT7=`$GREP "H .*   0*\.01755" $log | wc -l`
+CRIT7=`$GREP "H .*   0*\.0175(5|6)" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7`
 CTRL[5]=7

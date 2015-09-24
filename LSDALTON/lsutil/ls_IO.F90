@@ -13,6 +13,23 @@ use molecule_type
 use molecule_typetype
 use LSTENSOR_OPERATIONSMOD, only: LSTENSOR
 use mat3d_mod, only: write_mat3d_to_disk, mat3d, init_mat3d
+public :: io_init
+public :: io_free,io_file_exist,io_iunit
+public :: copy_ioitem
+public :: io_add_filename
+public :: io_get_csidentifier
+public :: io_get_filename
+public :: io_write_mat
+public :: io_write
+public :: io_read_mat
+public :: io_read
+public :: io_read_mat3d
+public :: io_write_mat3d
+public :: io_read_mat3d_mo
+public :: io_write_mat3d_mo
+public :: ls_write
+public :: ls_read
+private
 CONTAINS
 !> \brief initialise the IOitem
 !> \author S. Reine and T. Kjaergaard
@@ -904,7 +921,7 @@ END MODULE io
 !> \param vector the vectro th write
 !> \param N the size of the vector
 SUBROUTINE ls_write(IUNIT,vector,N)
-use io, only: maxRecord
+use io_type, only: maxRecord
 use precision
 implicit none
 Integer,intent(IN)     :: IUNIT,N
@@ -927,7 +944,7 @@ END SUBROUTINE ls_write
 !> \param vector the vectro th write
 !> \param N the size of the vector
 SUBROUTINE ls_read(IUNIT,vector,N)
-use io, only: maxRecord
+use io_type, only: maxRecord
 use precision
 implicit none
 Integer,intent(IN)      :: IUNIT,N

@@ -10,8 +10,76 @@
 module matrix_operations_dense
   use memory_handling
   use matrix_module
+#ifdef VAR_ENABLE_TENSORS
   use reorder_frontend_module
+#endif
   use precision
+public :: mat_dense_init
+public :: mat_dense_free
+public :: mat_dense_set_from_full
+public :: mat_dense_to_full
+public :: mat_dense_to_full3d
+public :: mat_dense_print
+public :: mat_dense_trans
+public :: mat_dense_assign
+public :: mat_dense_mpicopy
+public :: mat_dense_copy
+public :: mat_dense_Tr
+public :: mat_dense_TrAB 
+public :: mat_dense_mul
+public :: mat_dense_dmul
+public :: mat_dense_extract_diagonal
+public :: mat_dense_add
+public :: mat_dense_daxpy
+public :: mat_dense_dotproduct
+public :: mat_dense_sqnorm2
+public :: mat_dense_outdia_sqnorm2
+public :: mat_dense_dsyev
+public :: mat_dense_dsyevx
+public :: mat_dense_dsyevx_aux
+public :: mat_dense_diag_f
+public :: mat_dense_abs_max_elm
+public :: mat_dense_max_elm
+public :: mat_dense_min_elm
+public :: mat_dense_max_diag_elm
+public :: mat_dense_dE_dmu
+public :: mat_dense_column_norm
+public :: mat_dense_section
+public :: mat_dense_insert_sectio
+public :: mat_dense_section2
+public :: mat_dense_precond
+public :: mat_dense_mo_precond
+public :: mat_dense_new_mo_precond
+public :: mat_dense_new_complex_precond
+public :: mat_dense_mo_precond_complex
+public :: mat_dense_ao_precond
+public :: mat_dense_identity
+public :: mat_dense_create_elm
+public :: mat_dense_get_el
+public :: mat_dense_create_block
+public :: mat_dense_add_block
+public :: mat_dense_retrieve_block
+public :: mat_dense_scal
+public :: mat_dense_scal_dia
+public :: mat_dense_scal_dia_vec
+public :: mat_dense_zero
+public :: mat_dense_zerohalf
+public :: mat_dense_write_to_disk
+public :: mat_dense_read_from_disk
+public :: mat_dense_write_to_disk2
+public :: mat_dense_read_from_disk2
+public :: mat_dense_vec_to_mat
+public :: mat_dense_mat_to_vec
+public :: mat_dense_dposv
+public :: mat_dense_inv
+public :: mat_dense_chol
+public :: mat_dense_sum
+public :: mat_dense_report_sparsity
+public :: mat_dense_insert_section
+public :: mat_dense_get_elm
+
+private
+
   contains
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_dense_init(A,nrow,ncol)
@@ -147,13 +215,15 @@ module matrix_operations_dense
 !!     call mkl_domatcopy('R', 'T', A%nrow, A%ncol, 1.0E0_realk, A%elms, 1, B%elms,1)
 !!#else
 !     call ls_transpose(A%elms,B%elms,A%nrow)
+#ifdef VAR_ENABLE_TENSORS
      call mat_transpose(a%nrow,a%ncol,1.0E0_realk,a%elms,0.0E0_realk,b%elms)
-     !do j = 1,a%ncol
-     !  do i = 1,a%nrow
-     !    b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
-     !  enddo
-     !enddo
-!!#endif
+#else
+     do j = 1,a%ncol
+       do i = 1,a%nrow
+         b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
+       enddo
+     enddo
+#endif
   end subroutine mat_dense_trans
 
 !> \brief See mat_assign in mat-operations.f90

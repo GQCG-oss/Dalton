@@ -90,6 +90,11 @@ INTEGER,POINTER :: startAtomicOrbitalsAux(:)
 INTEGER,POINTER :: endAtomicOrbitalsAux(:)
 END TYPE MOLECULARORBITALINFO
 
+public :: MOLECULARORBITALINFO,MOLECULE_PT,MOLECULEINFO,&
+     & ATOMITEM
+
+private
+
 contains
 
 !Added to avoid "has no symbols" linking warning

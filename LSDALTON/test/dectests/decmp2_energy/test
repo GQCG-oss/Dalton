@@ -20,9 +20,9 @@ f = Filter()
 f.add(string = 'Final HF energy',
               rel_tolerance = 1.0e-8)
 
-f.add(from_string = 'Print single and pair fragment energies',
+f.add(from_string = 'MP2 occupied   correlation energy',
               to_string   = 'MP2 Lagrangian correlation energy',
-                    abs_tolerance = 1.0e-4)
+                    rel_tolerance = 1.0e-3)
 
 f.add(string = 'Correlation energy',
               rel_tolerance = 1.0e-3)
@@ -45,8 +45,8 @@ decinfo.close()
 
 f2 = Filter()
 f2.add(from_string = 'MP2     occupied correlation energy',
-       num_lines = 35,
-       abs_tolerance = 1.0e-3)
+       num_lines = 5,
+       rel_tolerance = 1.0e-3)
 
 test.skip_run = True
 

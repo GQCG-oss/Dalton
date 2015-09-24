@@ -4,9 +4,9 @@ MODULE IntegralInterfaceMOD
   use Matrix_module, only: MATRIX, MATRIXP
   use LSparameters
   use LSTIMING
-  use molecule_typetype, only: MOLECULE_PT, ATOMITEM
+  use molecule_typetype, only: MOLECULE_PT, ATOMITEM,MOLECULEINFO
   use molecule_type, only: build_pointmolecule, DETERMINE_MAXCOOR, &
-       & free_moleculeinfo
+       & free_moleculeinfo,build_atomicmolecule
   use integral_type, only: INTEGRALINPUT
   use integraloutput_typetype, only: INTEGRALOUTPUT
   use integraloutput_type, only: initintegraloutputdims
@@ -14,6 +14,7 @@ MODULE IntegralInterfaceMOD
   use ao_typetype, only: aoitem, BATCHORBITALINFO
   use ao_type, only: free_aoitem, freebatchorbitalinfo, initbatchorbitalinfo, &
        & setbatchorbitalinfo
+  use basis_typetype
   use TYPEDEF, only: getNbasis, retrieve_output, gcao2ao_transform_matrixd2, &
        & retrieve_screen_output, ao2gcao_transform_matrixf, &
        & gcao2ao_transform_fulld, ao2gcao_transform_fullf, &
@@ -33,7 +34,7 @@ MODULE IntegralInterfaceMOD
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
        & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add, mat_trAB,&
-       & mat_sqnorm2,mat_tr,mat_max_elm
+       & mat_sqnorm2,mat_tr,mat_max_elm, mat_to_full, mat_set_from_full,mat_inv
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify, &
                          util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
@@ -186,6 +187,7 @@ INTEGER               :: LUPRI,LUERR,IPRINT,AO1,AO2
 LOGICAL               :: GCAO1,GCAO2
 !
 Integer             :: i,j,LU,nbast2,nbast1
+logical                    :: sameMolSave(4,4)
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
@@ -198,9 +200,12 @@ call Test_if_64bit_integer_required(nbast1,nbast2)
 IF(nBast1.NE.S%nrow)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap',-1)
 IF(nBast2.NE.S%ncol)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap',-1)
 call initIntegralOutputDims(setting%output,nbast1,nbast2,1,1,1)
+sameMolSave = Setting%sameMol
+Setting%sameMol = .FALSE.
 CALL ls_getIntegrals(AO1,AO2,AOempty,AOempty,&
      &OverlapOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,S,.FALSE.)
+setting%sameMol = sameMolSave
 
 IF (GCAO1) call AO2GCAO_half_transform_matrix(S,SETTING,LUPRI,1)
 IF (GCAO2) call AO2GCAO_half_transform_matrix(S,SETTING,LUPRI,2)
@@ -225,17 +230,21 @@ real(realk)           :: S(nbast1,nbast2)
 TYPE(LSSETTING)       :: SETTING
 !
 INTEGER               :: nbast1TEST,nbast2TEST,IPRINT
+logical                    :: sameMolSave(4,4)
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 IPRINT=SETTING%SCHEME%INTPRINT
 nbast1TEST = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
-nbast2TEST = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
+nbast2TEST = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
 IF(nBast1TEST.NE.nbast1)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap_full',-1)
 IF(nBast2TEST.NE.nbast2)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap_full',-1)
 call initIntegralOutputDims(setting%output,nbast1,nbast2,1,1,1)
+sameMolSave = Setting%sameMol
+Setting%sameMol = .FALSE.
 CALL ls_getIntegrals(AO1,AO2,AOempty,AOempty,&
      &OverlapOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,S,.FALSE.)
+setting%sameMol = sameMolSave
 END SUBROUTINE II_get_mixed_overlap_full
 
 !> \brief Calculates one electron fock matrix contribution

@@ -43,8 +43,7 @@ f2.add(string = 'Memory in use for array4',
 
 # Build list of files to save for restart
 # =======================================
-HF_restart  = ['cmo_orbitals.u','lcm_orbitals.u','lcv_basis.restart','dens.restart',
-               'fock.restart','overlapmatrix']
+HF_restart  = ['cmo_orbitals.u','lcm_orbitals.u','dens.restart','fock.restart','overlapmatrix']
 CC_restart = ['t11.restart','t12.restart','t21.restart','t22.restart']
 
 get_restart = ['-get','"'] + HF_restart + CC_restart + ['"']
@@ -57,9 +56,6 @@ arg_restart = " ".join(get_restart)
 # ============================================
 test.run([DAL1+'.dal'], [MOL+'.mol'], {'out': f}, args = arg_restart,
         accepted_errors = ['Crashed Calculation due to .CRASHCALC keyword'])
-
-#test.run(['fullccsd_crashcalc.dal'], ['HF.mol'], {'out': f}, args = arg_restart,
-#        accepted_errors = ['Crashed Calculation due to .CRASHCALC keyword'])
 
 name = "_".join([DAL1,MOL]) 
 

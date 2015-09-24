@@ -55,7 +55,7 @@ END SUBROUTINE LSlib_free
 #ifdef VAR_MPI
 SUBROUTINE LSlib_set_external_comm(external_comm)
 use infpar_module, only : call_mpi_init
-use lsmpi_type,    only : MPI_COMM_LSDALTON
+use lsmpi_param,    only : MPI_COMM_LSDALTON
 use precision,     only : ls_mpik
 implicit none
 integer(kind=ls_mpik),intent(IN) :: external_comm

@@ -51,17 +51,20 @@ end subroutine InitThermiteIntTransform1
 subroutine InitThermiteIntTransform(n1,nMO1,n2,nMO2,C1,C2,nA,MaxN,nthreads)
   implicit none
   integer,intent(in) :: n1,nMO1,n2,nMO2,nA,MaxN,nthreads
-  real(realk)        :: C1(n1,nMO1),C2(n2,nMO2)
+  real(realk),target :: C1(n1,nMO1),C2(n2,nMO2)
+  
   nTA = nA
   nTMaxN = MaxN
   nT1 = n1
   nTMO1 = nMO1
   nT2 = n2
   nTMO2 = nMO2
-  call mem_alloc(TCMO1,nT1,nTMO1)
-  call mem_alloc(TCMO2,nT2,nTMO2)
-  call dcopy(nT1*nTMO1,C1,1,TCMO1,1)
-  call dcopy(nT2*nTMO2,C2,1,TCMO2,1)
+  TCMO1 => C1
+  TCMO2 => C2
+!  call mem_alloc(TCMO1,nT1,nTMO1)
+!  call mem_alloc(TCMO2,nT2,nTMO2)
+!  call dcopy(nT1*nTMO1,C1,1,TCMO1,1)
+!  call dcopy(nT2*nTMO2,C2,1,TCMO2,1)
   call mem_alloc(TOrbToFull,MaxN,nthreads)
   nullify(TmpAlphaCD)
   DoThermiteIntTransform = .TRUE.
@@ -227,8 +230,8 @@ subroutine FreeThermiteIntTransform(use_bg_buf)
      ELSE
         call mem_dealloc(TmpAlphaCD)
      ENDIF
-     call mem_dealloc(TCMO1)
-     call mem_dealloc(TCMO2)
+!     call mem_dealloc(TCMO1)
+!     call mem_dealloc(TCMO2)
      call mem_dealloc(TOrbToFull)
      call mem_dealloc(iLocalTIT)  
      call mem_dealloc(iLocalTIT2)  

@@ -14,7 +14,8 @@
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,                   &
-     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
+     &        USE_OPENRSP
       REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
       INTEGER GNRINFLAST
@@ -31,7 +32,8 @@
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
      &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT,                   &
-     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB
+     &        EMBEDDING, QM3, QMMM,   QMNPMM, QFIT,   USE_LSLIB,        &
+     &        USE_OPENRSP
 !
       COMMON /GNRINF/ GNRINFLAST
       !   Very important !!!

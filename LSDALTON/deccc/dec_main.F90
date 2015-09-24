@@ -17,8 +17,8 @@ module dec_main_mod
   use memory_handling!,only: mem_alloc, mem_dealloc
   use dec_typedef_module
   use files !,only:lsopen,lsclose
-  use reorder_frontend_module 
-  use tensor_tester_module
+  !use reorder_frontend_module 
+  !use tensor_tester_module
   use Matrix_util!, only: get_AO_gradient
   use configurationType
 
@@ -38,9 +38,7 @@ module dec_main_mod
   use f12_routines_module
   use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
-#ifdef MOD_UNRELEASED 
   use fullrimp2f12,only: NaturalLinearScalingF12Terms
-#endif
   public :: dec_main_prog_input, dec_main_prog_file, &
        & get_mp2gradient_and_energy_from_inputs, get_total_CCenergy_from_inputs
 private
@@ -126,21 +124,6 @@ contains
     real(realk) :: E
     E = 0.0E0_realk
     
-    ! Minor tests
-    ! ***********
-    !Array test
-    if (DECinfo%tensor_test)then
-      print *,"TEST ARRAY MODULE"
-      call test_tensor_struct(DECinfo%output)
-      return
-    endif
-    ! Reorder test
-    if (DECinfo%reorder_test)then
-      print *,"TEST REORDERINGS"
-      call test_array_reorderings(DECinfo%output)
-      return
-    endif
-
     print *, 'Hartree-Fock info is read from file...'
 
     ! Get density matrix
@@ -185,39 +168,12 @@ contains
     integer, dimension(8) :: values
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr,ES2
     real(realk) :: molgrad(3,Molecule%natoms)  
-    
+
+
+    call LSTIMER('START',tcpu1,twall1,DECinfo%output)    
+
     ! Set DEC memory
     call get_memory_for_dec_calculation()
-
-    ! Perform SNOOP calculation and skip DEC calculation
-    ! (at some point SNOOP and DEC might be merged)
-    if(DECinfo%SNOOP) then
-       write(DECinfo%output,*) '***********************************************************'
-       write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
-       write(DECinfo%output,*) '***********************************************************'
-       call snoop_driver(mylsitem,config,Molecule,D)
-       return
-    end if
-
-    ! Sanity check: LCM orbitals span the same space as canonical orbitals 
-    if(DECinfo%check_lcm_orbitals) then
-       call check_lcm_against_canonical(molecule,MyLsitem)
-       return
-    end if
-
-    if(DECinfo%force_Occ_SubSystemLocality)then
-       call force_Occupied_SubSystemLocality(molecule,MyLsitem)
-    endif
-
-    if(DECinfo%check_Occ_SubSystemLocality)then
-       call check_Occupied_SubSystemLocality(molecule,MyLsitem)
-    endif
-
-
-    ! Actual DEC calculation
-    ! **********************
-
-    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
     if(.not. DECinfo%full_molecular_cc) then
        write(program_version,'("v:",i2,".",i2.2)') version,subversion
@@ -247,11 +203,35 @@ contains
        call F12singles_driver(Molecule,MyLsitem,D)
     endif
 
-#ifdef MOD_UNRELEASED 
     if(DECinfo%F12 .and. DECinfo%NaturalLinearScalingF12Terms ) then
        call NaturalLinearScalingF12Terms(Molecule,MyLsitem,D)
     endif
-#endif
+
+
+    ! Perform SNOOP calculation and skip DEC calculation
+    ! (at some point SNOOP and DEC might be merged)
+    if(DECinfo%SNOOP) then
+       write(DECinfo%output,*) '***********************************************************'
+       write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
+       write(DECinfo%output,*) '***********************************************************'
+       call snoop_driver(mylsitem,config,Molecule,D)
+       return
+    end if
+
+    ! Sanity check: LCM orbitals span the same space as canonical orbitals 
+    if(DECinfo%check_lcm_orbitals) then
+       call check_lcm_against_canonical(molecule,MyLsitem)
+       return
+    end if
+
+    if(DECinfo%force_Occ_SubSystemLocality)then
+       call force_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
+
+    if(DECinfo%check_Occ_SubSystemLocality)then
+       call check_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
+
     
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC

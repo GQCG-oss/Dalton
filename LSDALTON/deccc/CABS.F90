@@ -88,10 +88,10 @@ CONTAINS
 #endif
     IERR=0
     IF(CMO_CABS_save_created)THEN
-       print*,'Assign CMO_cabs from saved matrix'
+!       print*,'Assign CMO_cabs from saved matrix'
        call mat_assign(CMO_cabs,CMO_CABS_save)
     ELSE
-       print*,'Calculate CMO_cabs. Hopefully this is only done once'
+!       print*,'Calculate CMO_cabs. Hopefully this is only done once'
        ODSCREEN = SETTING%SCHEME%OD_SCREEN
        SETTING%SCHEME%OD_SCREEN = .FALSE.
        luerr = 6
@@ -308,7 +308,6 @@ CONTAINS
     ENDDO VerifyCabsJloop3
   end subroutine verifyCABS3
 
-
   subroutine build_RI_MO(CMO_RI,nbast_cabs,SETTING,lupri)
     implicit none
     integer :: lupri,nbast_cabs
@@ -322,10 +321,10 @@ CONTAINS
     integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I
     logical     :: doMPI
     IF(CMO_RI_save_created)THEN
-       print*,'Assign CMO_RI from saved matrix'
+!       print*,'Assign CMO_RI from saved matrix'
        call mat_assign(CMO_RI,CMO_RI_save)
     ELSE
-       print*,'Calculate CMO_RI. Hopefully this is only done once'
+!       print*,'Calculate CMO_RI. Hopefully this is only done once'
        luerr = 6
        CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
        CALL mat_init(S_cabs,nbast_cabs,nbast_cabs)
