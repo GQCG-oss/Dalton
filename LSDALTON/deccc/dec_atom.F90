@@ -2386,16 +2386,11 @@ contains
     type(lsitem), intent(inout) :: mylsitem
 
     type(matrix) :: CMO_cabs
-    integer :: ncabsAO,ncabs
+    integer :: ncabsAO
 
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    call mat_init(CMO_cabs,nCabsAO,nCabs)
-
-    ! KKHACK
+    call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
     call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
-
-    ! NB! Memory leak need to be freed somewhere
-    call mem_alloc(fragment%Ccabs,ncabsAO,nCabs)
+    call mem_alloc(fragment%Ccabs,CMO_cabs%nrow,CMO_cabs%ncol)
     call mat_to_full(CMO_cabs,1.0E0_realk,fragment%Ccabs)
     call mat_free(CMO_cabs)
 
@@ -2410,16 +2405,10 @@ contains
     type(lsitem), intent(inout) :: mylsitem
 
     type(matrix) :: CMO_RI
-    integer :: ncabsAO,ncabs
+    integer :: ncabsAO
 
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-
-    call mat_init(CMO_RI,ncabsAO,ncabsAO)
-
-    ! KKHACK
+    call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
     call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
-
-    ! NB! Memory leak need to be freed somewhere
     call mem_alloc(fragment%Cri,ncabsAO,ncabsAO) 
     call mat_to_full(CMO_RI,1.0E0_realk,fragment%Cri)
     call mat_free(CMO_RI)

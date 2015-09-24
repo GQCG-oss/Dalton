@@ -89,14 +89,7 @@ contains
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
        end if
-       IF(DECinfo%full_molecular_cc)THEN
-          if(.not. molecule%snoopmonomer) then  
-             ! do not do this for SNOOP monomer, it has already been done for the dimer, 
-             ! and the RI and CABS matrices can be reused
-             call dec_get_CABS_orbitals(molecule,mylsitem)
-             call dec_get_RI_orbitals(molecule,mylsitem)
-          end if
-       ELSE
+       IF(.not. DECinfo%full_molecular_cc)THEN
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
@@ -170,14 +163,7 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       IF(DECinfo%full_molecular_cc)THEN
-          if(.not. molecule%snoopmonomer) then  
-             ! do not do this for SNOOP monomer, it has already been done for the dimer, 
-             ! and the RI and CABS matrices can be reused
-             call dec_get_CABS_orbitals(molecule,mylsitem)
-             call dec_get_RI_orbitals(molecule,mylsitem)
-          end if
-       ELSE
+       IF(.not. DECinfo%full_molecular_cc)THEN
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
@@ -1151,8 +1137,8 @@ contains
      type(fullmolecule), intent(inout) :: MyMolecule
      type(lsitem), intent(inout) :: MyLsitem
      type(matrix), intent(in) :: D
-
-     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
+     type(matrix) :: CMO_cabs
+     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull
 
      nbasis   = MyMolecule%nbasis
      nocc     = MyMolecule%nocc
@@ -1167,9 +1153,7 @@ contains
      !     Fock(nCabsAO,nbasis) and be a 
      !     half transfomed matrix
 
-     call determine_CABS_nbast(ncabsAO,ncabsMO,MyLsitem%setting,DECinfo%output)
-     MyMolecule%nCabsAO = ncabsAO
-     MyMolecule%nCabsMO = ncabsMO
+     call determine_CABS_nbast(ncabsAO,MyLsitem%setting,DECinfo%output)
 
      nocvfull = nocc + nvirt
 
@@ -1196,6 +1180,13 @@ contains
      call mem_alloc(MyMolecule%Fcp,ncabsAO,nbasis)   !HACK not ncabsMO,nbasis - not CABS MOs
      call mem_alloc(MyMolecule%Fij,nocc,nocc)
      !call mem_alloc(MyMolecule%Fcd,ncabsAO,ncabsAO)
+
+     MyMolecule%nCabsAO = ncabsAO
+
+     ! KK - quick and ugly fix to get number of CABS MOs for full molecule
+     call build_CABS_MO(CMO_cabs,ncabsAO,MyLsitem%SETTING,DECinfo%output)
+     MyMolecule%nCabsMO = CMO_cabs%ncol
+     call mat_free(CMO_cabs)
 
      ! Constructing the F12 MO matrices from F12_routines.F90
      call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&

@@ -210,10 +210,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    nocv = nvirt + noccfull
 
    IF(master)THEN
-      call determine_CABS_nbast(ncabsAO,ncabsMO,mylsitem%setting,DECinfo%output)
-      call mat_init(CMO_CABS,nCabsAO,ncabsMO)
+      call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
       call build_CABS_MO(CMO_CABS,nCabsAO,mylsitem%SETTING,lupri)    
-      call mat_init(CMO_RI,nCabsAO,nCabsAO)
+      ncabsMO = CMO_CABS%ncol
       call build_RI_MO(CMO_RI,nCabsAO,mylsitem%SETTING,lupri)
    ENDIF
 
@@ -292,7 +291,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    IF(master)THEN
       call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-           & nocc,noccfull,nvirt,ncabsMO,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+           & nocc,noccfull,nvirt,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
    ENDIF
 
    call LSTIMER('FULLRIMP2 F12:Init',TS2,TE2,DECinfo%output,ForcePrint)
@@ -2023,7 +2022,6 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
           ! Mixed AO/AO full MO Fock matrix 
           call mat_init(Fcc,nbasis,nbasis)
           call get_AO_Fock(nbasis,nbasis,Fcc,Dmat,MyLsitem,'RRRRC')
-          call mat_init(Fii,nocc,nocc)
           call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
                & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Fcc,Fii)
           call mat_free(Fcc)

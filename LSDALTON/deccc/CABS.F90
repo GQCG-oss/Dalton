@@ -9,31 +9,23 @@ MODULE CABS_operations
   use lstiming
   use dec_typedef_module
 
-!logical  :: CMO_CABS_save_created
-!TYPE(Matrix) :: CMO_CABS_save
-!logical  :: CMO_RI_save_created
-!TYPE(Matrix) :: CMO_RI_save
-!logical  :: Save_activated_cabs
-!logical  :: Save_activated_ri
 private
 public :: determine_CABS_nbast, build_CABS_MO, build_RI_MO
 CONTAINS
-  subroutine determine_CABS_nbast(nbast_cabs,nnull,SETTING,lupri)
+  subroutine determine_CABS_nbast(nbast_cabs,SETTING,lupri)
     implicit none
-    integer,intent(inout) :: nbast_cabs,nnull
+    integer,intent(inout) :: nbast_cabs
     integer,intent(in) :: lupri
     TYPE(LSSETTING),intent(inout) :: SETTING
-    integer :: nbast
-    nbast = getNbasis(AORegular,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
     nbast_cabs = getNbasis(AOdfCABS,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
-    nnull = nbast_cabs-MIN(nbast_cabs,nbast)
   end subroutine determine_CABS_nbast
 
   subroutine build_CABS_MO(CMO_cabs,nbast_cabs,SETTING,lupri)
     implicit none
     integer :: lupri,nbast_cabs
     TYPE(LSSETTING) :: SETTING
-    TYPE(MATRIX)    :: CMO_cabs
+    !> CABS MOs - will be initialized inside subroutine
+    TYPE(MATRIX),intent(inout)    :: CMO_cabs
     !
     real(realk)     :: TIMSTR,TIMEND
     type(matrix) :: S,Smix,S_cabs,tmp,S_minus_sqrt,S_minus_sqrt_cabs
@@ -178,6 +170,7 @@ CONTAINS
     call mat_trans(tmp,Vnull)
     call mat_free(tmp)
 
+    call mat_init(CMO_cabs,nbast_cabs,nnull)
     call mat_mul(S_minus_sqrt_cabs,Vnull,'N','N',1.0E0_realk,0.0E0_realk,CMO_cabs)
 
     !test of cabs orthonomality
@@ -261,7 +254,8 @@ CONTAINS
     implicit none
     integer :: lupri,nbast_cabs
     TYPE(LSSETTING) :: SETTING
-    TYPE(MATRIX)    :: CMO_RI
+    !> RI MOs, matrix is initialized here
+    TYPE(MATRIX),intent(inout)    :: CMO_RI
     !
     real(realk)     :: TIMSTR,TIMEND
     type(matrix) :: S,Smix,S_cabs,tmp,S_minus_sqrt,S_minus_sqrt_cabs
@@ -278,6 +272,8 @@ CONTAINS
     SETTING%SCHEME%doMPI=.FALSE.
     call II_get_mixed_overlap(LUPRI,LUERR,SETTING,S_cabs,AOdfCABS,AOdfCABS,.FALSE.,.FALSE.)
     SETTING%SCHEME%doMPI=doMPI
+
+    call mat_init(CMO_RI,nbast_cabs,nbast_cabs)
     call lowdin_diag(nbast_cabs, S_cabs%elms,tmp_cabs%elms, CMO_RI%elms, lupri)
     CALL mat_free(S_cabs)
     call mat_free(tmp_cabs)

@@ -40,7 +40,7 @@ module f12_routines_module
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO, & ! atomic_fragment_free_f12, atomic_fragment_init_f12
        & get_4Center_MO_integrals, get_4Center_F12_integrals, free_4Center_F12_integrals, &
        & mp2f12_Xijij_term3, mp2f12_Xjiij_term3, mp2f12_Xijij_term4, mp2f12_Xjiij_term4, &
-       & F12singles_driver,dec_get_RI_orbitals,dec_get_CABS_orbitals, get_mp2f12_MO_PDM, &
+       & F12singles_driver, get_mp2f12_MO_PDM, &
        & mp2f12_Bijij_term2, mp2f12_Bijij_term3, mp2f12_Bijij_term4, mp2f12_Bijij_term5, mp2f12_Bijij_term6, mp2f12_Bijij_term7, &
        & mp2f12_Bijij_term8, mp2f12_Bijij_term9, Contractocccalpha, &
        & ContractOne4CenterF12IntegralsRI, ContractOne4CenterF12IntegralsRI2, Contractone4centerf12integralsrib23, & 
@@ -227,7 +227,6 @@ module f12_routines_module
     !> Fii 
     call mat_init(Frr,nbasis,nbasis)
     call get_AO_Fock(nbasis,ncabsAO,Frr,Dmat,MyLsitem,'RRRRC')
-    call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',Frr,Fii)
     call mat_free(Frr)
@@ -251,28 +250,19 @@ module f12_routines_module
     call mat_free(Fcp)
     call mat_free(Fcr) 
 
-!!$    !Fcd
-!!$    call mat_init(Fcc,ncabsAO,ncabsAO)
-!!$    call get_AO_Fock(nbasis,ncabsAO,Fcc,Dmat,MyLsitem,'CCRRC')
-!!$    call mat_init(Fcd,ncabsAO,ncabsAO)
-!!$    call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
-!!$         & MyMolecule%Co, MyMolecule%Cv,'cc',Fcc,Fcd)
-!!$    call mat_to_full(Fcd,1.0E0_realk,Fcd_real)
-!!$    call mat_free(Fcd)
-!!$    call mat_free(Fcc)
       
   end subroutine get_F12_mixed_MO_Matrices_real
 
   !> Need documentation...
   subroutine get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-       & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+       & nocc,noccfull,nvirt,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
 
     implicit none
     !> Full molecule info
     type(fullmolecule), intent(in) :: MyMolecule
     !> Lsitem structure
     type(lsitem), intent(inout) :: Mylsitem
-    integer,intent(in) :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabs
+    integer,intent(in) :: nbasis,nocc,nvirt,noccfull,ncabsAO
     type(matrix),intent(in) :: Dmat
     type(matrix),intent(inout) :: HJir,Krr,Frr,Fpp,Fmm,Frm,Fcp,Fii,Fac
     !> Singles contribution
@@ -314,24 +304,20 @@ module f12_routines_module
     !Mixed regular/CABS one-electron and Coulomb matrix (h+J) 
     !combination in AO basis
     !hJir
-    call mat_init(HJir,nocc,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ir',HJrcAO,HJir)    
     call mat_free(HJrcAO)
 
     !Krr(ncabsAO,ncabsAO) Mixed CABS/CABS exchange matrix
-    call mat_init(Krr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',KccAO,Krr)
     call mat_free(KccAO)
 
     !Frr(ncabsAO,ncabsAO) Mixed CABS/CABS Fock matrix
-    call mat_init(Frr,ncabsAO,ncabsAO)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rr',FccAO,Frr)
 
     !Fcd(ncabs,ncabs)
-    call mat_init(Fcd,ncabs,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',FccAO,Fcd)
 
@@ -344,12 +330,10 @@ module f12_routines_module
     call mem_dealloc(FrcAOfull)
 
     !Fac(nbasis,ncabsAO) Mixed AO/CABS Fock matrix
-    call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',FrcAO,Fac)
 
     !Fic
-    call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',FrcAO,Fic)    
 
@@ -362,16 +346,13 @@ module f12_routines_module
 
     !Fpp
     nov = noccfull + nvirt
-    call mat_init(Fpp,nov,nov)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'pp',FrrAO,Fpp)
 
     !Fii
-    call mat_init(Fii,nocc,nocc)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ii',FrrAO,Fii)
     !Fmm
-    call mat_init(Fmm,noccfull,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'mm',FrrAO,Fmm)
     call mat_free(FrrAO)
@@ -382,11 +363,9 @@ module f12_routines_module
     call mat_free(FrcAO) 
 
     !Frm
-    call mat_init(Frm,ncabsAO,noccfull)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'rm',FcrAO,Frm)
     !Fcc
-    call mat_init(Fcp,ncabs,nov)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cp',FcrAO,Fcp)
     call mat_free(FcrAO)
@@ -454,7 +433,9 @@ module f12_routines_module
     integer :: nocc,noccfull,nvirt,nCabsAO,nCabs,nbasis
     type(lsitem), intent(inout) :: mylsitem
     integer :: ndim2(2),ndim1(2)
-    type(matrix) :: matAO,matMO
+    type(matrix) :: matAO
+    !> Transformed matrix, initialized here!
+    type(matrix),intent(inout) :: matMO
     real(realk),pointer :: elms(:)
     type(matrix) :: CMO(2)
     real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
@@ -485,13 +466,12 @@ module f12_routines_module
           doRI = .TRUE.
        endif
     enddo
-    call determine_CABS_nbast(nCabsAO,nCabs,mylsitem%SETTING,lupri)
+    call determine_CABS_nbast(nCabsAO,mylsitem%SETTING,lupri)
     IF(doCABS)THEN
-       call mat_init(CMO_cabs,nCabsAO,nCabs)
        call build_CABS_MO(CMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
+       ncabs = CMO_cabs%ncol
     ENDIF
     IF(doRI)THEN
-       call mat_init(CMO_ri,nCabsAO,nCabsAO)
        call build_RI_MO(CMO_ri,nCabsAO,mylsitem%SETTING,lupri)
     ENDIF
     do i=1,2
@@ -538,6 +518,7 @@ module f12_routines_module
     ENDIF
     call mat_init(tmp,CMO(1)%ncol,matAO%ncol)
     call mat_mul(CMO(1),matAO,'t','n',1E0_realk,0E0_realk,tmp)
+    call mat_init(matMO,tmp%nrow,CMO(2)%ncol)
     call mat_mul(tmp,CMO(2),'n','n',1E0_realk,0E0_realk,matMO)
 
     call mat_free(tmp)
@@ -2017,13 +1998,12 @@ module f12_routines_module
           doRI = .TRUE.
        endif
     enddo
-    call determine_CABS_nbast(nCabsAO,nCabs,mylsitem%SETTING,lupri)
+    call determine_CABS_nbast(nCabsAO,mylsitem%SETTING,lupri)
     IF(doCABS)THEN
-       call mat_init(CMO_cabs,nCabsAO,nCabs)
        call build_CABS_MO(CMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
+       ncabs = CMO_cabs%ncol
     ENDIF
     IF(doRI)THEN
-       call mat_init(CMO_ri,nCabsAO,nCabsAO)
        call build_RI_MO(CMO_ri,nCabsAO,mylsitem%SETTING,lupri)
     ENDIF
     do i=1,4
@@ -2358,7 +2338,7 @@ module f12_routines_module
     nbasis = MyMolecule%nbasis
     nocc   = MyMolecule%nocc
     nvirt  = MyMolecule%nvirt
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
     noccfull = nocc
 
     ! Fock matrices
@@ -2383,9 +2363,10 @@ module f12_routines_module
     call mat_free(Kcc)
 
     !Fcd
-    call mat_init(Fcd,ncabs,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'cc',Fcc,Fcd)
+    ncabs = Fcd%nrow
+
     !Fic
     call mem_alloc(Frcfull,nbasis,ncabsAO)
     call mat_retrieve_block(Fcc,Frcfull,nbasis,ncabsAO,1,1)
@@ -2393,11 +2374,9 @@ module f12_routines_module
     call mat_init(Frc,nbasis,ncabsAO)
     call mat_set_from_full(Frcfull,1.0E0_realk,Frc)
     call mem_dealloc(Frcfull)
-    call mat_init(Fic,nocc,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ic',Frc,Fic)
     ! Fac
-    call mat_init(Fac,nvirt,ncabs)
     call MO_transform_AOMatrix(mylsitem,nbasis,nocc,noccfull,nvirt,&
          & MyMolecule%Co%elm2, MyMolecule%Cv%elm2,'ac',Frc,Fac)
     call mat_free(Frc)
@@ -2869,46 +2848,6 @@ module f12_routines_module
 
 
 
-
- subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
-    implicit none
-
-    !> Full molecule structure to be initialized
-    type(fullmolecule), intent(inout) :: molecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-
-    type(matrix) :: CMO_cabs
-    integer :: ncabsAO,ncabs
-
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    molecule%nCabsAO = ncabsAO
-    molecule%nCabsMO = ncabs
-    call mat_init(CMO_cabs,nCabsAO,nCabs)
-
-    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    call mat_free(CMO_cabs)
-
- end subroutine dec_get_CABS_orbitals
-
-  subroutine  dec_get_RI_orbitals(molecule,mylsitem)
-    implicit none
-
-    !> Full molecule structure to be initialized
-    type(fullmolecule), intent(inout) :: molecule
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-
-    type(matrix) :: CMO_RI
-    integer :: ncabsAO,ncabs
-
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
-    molecule%nCabsAO = ncabsAO
-    molecule%nCabsMO = ncabs
-    call mat_init(CMO_RI,ncabsAO,ncabsAO)
-    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
-    call mat_free(CMO_RI)
-  end subroutine dec_get_RI_orbitals
 
 !==========================================================
 !===           Subroutines for DEC-RIMP2-F12            ===

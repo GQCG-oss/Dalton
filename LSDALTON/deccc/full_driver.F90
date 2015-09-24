@@ -392,7 +392,7 @@ contains
     ! **********
     nbasis = MyMolecule%nbasis
     nvirt  = MyMolecule%nvirt
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
 
     ! Set number of occupied orbitals
     if(DECinfo%frozencore) then
@@ -412,7 +412,8 @@ contains
     ! Get all F12 Fock Matrices
     ! ********************
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+         & nocc,noccfull,nvirt,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+    ncabs = Fic%ncol
 
     ! Get all AO integrals
     ! ********************
@@ -1372,13 +1373,14 @@ contains
     nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
     noccfull = nocc
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
     ! Get full CCSD singles (Tai) and doubles (Taibj) amplitudes
     call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai,Taibj)
 
     ! Get all MO mixed matrices
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+         & nocc,noccfull,nvirt,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+    ncabs = Fic%ncol
 
     ! Get all AO integrals in regular basis
     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
