@@ -335,7 +335,7 @@ subroutine ContractTwo4CenterF12IntegralsRIX2_dec(nBA,nBA2,n1,n2,CalphaC,CalphaG
    EJK = 7.0E0_realk/32.0E0_realk*EJ + 1.0E0_realk/32.0E0_realk*EK 
 end subroutine ContractTwo4CenterF12IntegralsRIX2_dec
 
-subroutine ContractTwo4CenterF12IntegralsRIX2_decMPI(nBA,nBA2,n1,n2,CalphaC,CalphaCMPI,CalphaG,EJK,dopair_occ_in)
+subroutine ContractTwo4CenterF12IntegralsRIX2_decMPI(nBA,nBA2,n1,n2,CalphaCMPI,CalphaC,CalphaG,EJK,dopair_occ_in)
  implicit none
    integer,intent(in)        :: nBA,nBA2,n1,n2
    real(realk),intent(in)    :: CalphaC(nBA,n2,n1)

@@ -90,8 +90,12 @@ contains
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
        end if
        IF(DECinfo%full_molecular_cc)THEN
-          call dec_get_CABS_orbitals(molecule,mylsitem)
-          call dec_get_RI_orbitals(molecule,mylsitem)
+          if(.not. molecule%snoopmonomer) then  
+             ! do not do this for SNOOP monomer, it has already been done for the dimer, 
+             ! and the RI and CABS matrices can be reused
+             call dec_get_CABS_orbitals(molecule,mylsitem)
+             call dec_get_RI_orbitals(molecule,mylsitem)
+          end if
        ELSE
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
@@ -167,8 +171,12 @@ contains
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
        IF(DECinfo%full_molecular_cc)THEN
-          call dec_get_CABS_orbitals(molecule,mylsitem)
-          call dec_get_RI_orbitals(molecule,mylsitem)
+          if(.not. molecule%snoopmonomer) then  
+             ! do not do this for SNOOP monomer, it has already been done for the dimer, 
+             ! and the RI and CABS matrices can be reused
+             call dec_get_CABS_orbitals(molecule,mylsitem)
+             call dec_get_RI_orbitals(molecule,mylsitem)
+          end if
        ELSE
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
@@ -205,9 +213,6 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     molecule%EF12singles = 0.0_realk
-    molecule%Edisp = 0.0_realk
-    molecule%Ect = 0.0_realk
-    molecule%Esub = 0.0_realk
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
@@ -218,6 +223,11 @@ contains
        molecule%nMO=nMO
     else
        molecule%nMO = molecule%nbasis
+    end if
+
+    molecule%snoopmonomer = .false.
+    if(molecule%nMO /= molecule%nbasis) then  ! the molecule is a SNOOP monomer
+       molecule%snoopmonomer = .true.
     end if
 
     molecule%nocc = molecule%nelectrons/2
@@ -904,8 +914,10 @@ contains
     if(associated(molecule%ov_abs_overlap)) then
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
-
-    call free_cabs()
+    
+    if(.not. molecule%snoopmonomer) then
+       call free_cabs()
+    end if
 
   end subroutine molecule_finalize
 

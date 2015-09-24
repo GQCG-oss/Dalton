@@ -4887,7 +4887,7 @@ end function max_batch_dimension
           write(DECinfo%output,*)   
           write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2 CORRECTION TO ENERGY:    ', energies(FRAGMODEL_OCCRIMP2)  
           write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_RIMP2f12)
-          write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2-F12 CORRELATION ENERGY:  ', &
+          write(DECinfo%output,'(1X,a,f20.10)') 'RIMP2-F12 CORRECTION ENERGY:  ', &
              & energies(FRAGMODEL_OCCRIMP2) + energies(FRAGMODEL_RIMP2f12)
           write(DECinfo%output,*)       
 

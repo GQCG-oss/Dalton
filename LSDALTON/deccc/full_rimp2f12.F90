@@ -854,6 +854,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    ENDIF
 
 #ifdef VAR_MPI 
+
    lsmpibufferRIMP2(6)=EV2      !we need to perform a MPI reduction at the end 
    lsmpibufferRIMP2(7)=EX2      !we need to perform a MPI reduction at the end    
 #else
@@ -941,7 +942,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                   call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
                   call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
                   call FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nbasis,CalphaMPI,&
-                       & CalphaMPI2,NBA2,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt)
+                       & CalphaMPI2,NBA2,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,offset)
                   IF(use_bg_buf)THEN
                      call mem_pseudo_dealloc(CalphaMPI2)
                      call mem_pseudo_dealloc(CalphaMPI)
@@ -1733,7 +1734,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
     if(DECinfo%F12debug.AND.master) then
        print *,   '----------------------------------------------------------------'
-       print *,   '                   DEC-MP2-F12 CALCULATION                      '
+       print *,   '                   CC-MP2-F12 CALCULATION                       '
        print *,   '----------------------------------------------------------------'
        write(*,'(1X,a,f20.10)') ' MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
        write(*,'(1X,a,f20.10)') ' F12 E21 CORRECTION TO ENERGY =     ', E_21
@@ -1746,7 +1747,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     end if
     if(master)then
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
-       write(DECinfo%output,'(1X,a,f20.10)') '                  WANGY DEC-MP2-F12 CALCULATION                 '
+       write(DECinfo%output,'(1X,a,f20.10)') '                      CC-MP2-F12 CALCULATION                    '
        write(DECinfo%output,'(1X,a,f20.10)') '----------------------------------------------------------------'
        write(DECinfo%output,'(1X,a,f20.10)') ' MP2 CORRELATION ENERGY (For CC) =  ', MP2_energy
        write(DECinfo%output,'(1X,a,f20.10)') ' F12 E21 CORRECTION TO ENERGY =     ', E_21
@@ -1897,10 +1898,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
   end subroutine FullRIMP2F12_CcouplingEnergyCont
 
   subroutine FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nbasis,GalphaMPI,&
-       & Galpha2MPI,NBA2,Galpha,Galpha2,E,EpsOcc,EpsVirt)
+       & Galpha2MPI,NBA2,Galpha,Galpha2,E,EpsOcc,EpsVirt,offset)
     implicit none
     real(realk),intent(inout) :: E
-    integer,intent(in) :: NBA,nocc,nvirt,nbasis,NBA2
+    integer,intent(in) :: NBA,nocc,nvirt,nbasis,NBA2,offset
     real(realk),intent(in) :: GalphaMPI(NBA2,nbasis,nocc),Galpha2MPI(NBA2,nocc,nvirt)
     real(realk),intent(in) :: Galpha(NBA,nbasis,nocc),Galpha2(NBA,nocc,nvirt)
     real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
@@ -1910,7 +1911,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     TMP = 0.0E0_realk
     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) PRIVATE(A,B,J,I,&
     !$OMP ALPHA,CtmpIAJB,CtmpIBJA,eps,T) SHARED(NBA,nocc,nvirt,Galpha,Galpha2,&
-    !$OMP EpsOcc,EpsVirt,GalphaMPI,Galpha2MPI,NBA2) REDUCTION(+:TMP)
+    !$OMP EpsOcc,EpsVirt,GalphaMPI,Galpha2MPI,NBA2,offset) REDUCTION(+:TMP)
     DO B=1,nvirt
      DO J=1,nocc
       DO A=1,nvirt
@@ -1918,15 +1919,18 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
           eps = EpsOcc(I) + EpsOcc(J) - EpsVirt(A) - EpsVirt(B)
           T = 0.0E0_realk
           DO ALPHA=1,NBA2
-             T = T  + (GalphaMPI(ALPHA,nocc+A,I)*Galpha2MPI(ALPHA,J,B) + GalphaMPI(ALPHA,nocc+B,J)*Galpha2MPI(ALPHA,I,A))/eps
+             T = T  + (GalphaMPI(ALPHA,offset+nocc+A,I)*Galpha2MPI(ALPHA,J,B) & 
+                & + GalphaMPI(ALPHA,offset+nocc+B,J)*Galpha2MPI(ALPHA,I,A))/eps
           ENDDO
           CtmpIAJB = 0.0E0_realk
           DO ALPHA=1,NBA
-             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,nocc+A,I)*Galpha2(ALPHA,J,B)+ Galpha(ALPHA,nocc+B,J)*Galpha2(ALPHA,I,A)
+             CtmpIAJB = CtmpIAJB + Galpha(ALPHA,offset+nocc+A,I)*Galpha2(ALPHA,J,B) &
+                & + Galpha(ALPHA,offset+nocc+B,J)*Galpha2(ALPHA,I,A)
           ENDDO
           CtmpIBJA = 0.0E0_realk
           DO ALPHA=1,NBA
-             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,nocc+A,J)*Galpha2(ALPHA,I,B) + Galpha(ALPHA,nocc+B,I)*Galpha2(ALPHA,J,A)
+             CtmpIBJA = CtmpIBJA + Galpha(ALPHA,offset+nocc+A,J)*Galpha2(ALPHA,I,B) &
+                & + Galpha(ALPHA,offset+nocc+B,I)*Galpha2(ALPHA,J,A)
           ENDDO
           TMP=TMP+(7.0E0_realk*T*CtmpIAJB + 1.0E0_realk*T*CtmpIBJA)
        ENDDO

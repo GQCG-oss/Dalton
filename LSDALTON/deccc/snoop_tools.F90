@@ -953,127 +953,6 @@ contains
   end subroutine initial_subsystem_MOs_from_full
 
 
-  !> Only relevant to be called for full system with two subsystems A and B.
-  !> Partitions total energy,
-  !>
-  !> E = sum_{ijab} (t2_ij^ab + t_i^a t_j^b) * L_aibj
-  !> 
-  !> into the following contributions:
-  !>
-  !> Edisp: i and a belongs to subsystem A, j and b belongs to subsystem B
-  !> Ect:   i and j belong to different subsystems, a and b both belong to subsystem A,
-  !>        or a and b both belong to subsystem B.
-  !> Esub:  Remaining contributions where i and j belong to the same subsystem,
-  !>        and a and b can belong to any subsystem.
-  subroutine SNOOP_partition_energy(g,t1,t2,mylsitem,MyMoleculeFULL)
-
-    implicit none
-    !> Two-electron integrals
-    type(tensor), intent(in) :: g
-    !> Doubles amplitudes
-    type(tensor), intent(in) :: t2
-    !> Singles amplitudes
-    type(tensor), intent(in) :: t1
-    !> LS item info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Full molecule structure (Only Edist, Ect, and Esub will be modified here)
-    type(fullmolecule), intent(inout) :: MyMoleculeFULL
-    integer :: i,j,k,a,b,c,subi,subj,suba,subb,atomi,atomj,atoma,atomb,offset
-    integer :: nocc, nvirt
-    real(realk) :: Etot,E1_11,E1_12,E1_22,E2_11,E2_12,E2_22,tmp,Epair,Edisp,Esame,Ecross
-    type(decorbital),pointer :: OccOrbitals(:), virtOrbitals(:)
-    real(realk),pointer :: myt1(:,:)
-
-    if(mylsitem%input%molecule%nSubSystems/=2) then
-       print *, 'number of subsystems ', mylsitem%input%molecule%nSubSystems
-       call lsquit('SNOOP_partition_energy: Requires 2 subsystems!',-1)
-    end if
-    
-
-    ! Determine DEC orbital structures for local orbital analysis below
-    call mem_alloc(OccOrbitals,MyMoleculeFULL%nocc)
-    call mem_alloc(virtorbitals,MyMoleculeFULL%nvirt)
-    call GenerateOrbitals_driver(MyMoleculeFULL,mylsitem,MyMoleculeFULL%nocc,MyMoleculeFULL%nvirt,&
-         & MyMoleculeFULL%natoms, OccOrbitals, virtorbitals)
-
-    ! Init stuff
-    MyMoleculeFULL%Edisp = 0.0_realk
-    MyMoleculeFULL%Ect = 0.0_realk
-    MyMoleculeFULL%Esub = 0.0_realk
-    if(DECinfo%frozencore) then
-       offset = MyMoleculeFULL%ncore
-       nocc = MyMoleculeFULL%nval
-    else
-       offset = 0
-       nocc = MyMoleculeFULL%nocc
-    end if
-    nvirt = MyMoleculeFULL%nvirt
-
-    ! Uniform handling of singles amplitudes which are zero for e.g. MP2
-    call mem_alloc(myt1,nvirt,nocc)
-    if(DECinfo%use_singles) then
-       do a=1,nvirt
-          do i=1,nocc
-             myt1(a,i) = t1%elm2(a,i)
-          end do
-       end do
-    else
-       ! No singles
-       myt1=0.0_realk
-    end if
-
-
-    ! Calculate energy contributions
-    jloop: do j=1,nocc
-       atomj = OccOrbitals(j+offset)%centralatom
-       subj = MyMoleculeFULL%SubSystemIndex(atomj)
-       bloop: do b=1,nvirt
-          atomb = virtOrbitals(b)%centralatom
-          subb = MyMoleculeFULL%SubSystemIndex(atomb)
-          iloop: do i=1,nocc
-             atomi = OccOrbitals(i+offset)%centralatom
-             subi = MyMoleculeFULL%SubSystemIndex(atomi)
-             aloop: do a=1,nvirt
-                atoma = virtOrbitals(a)%centralatom
-                suba = MyMoleculeFULL%SubSystemIndex(atoma)
-
-                tmp = (t2%elm4(a,i,b,j) + myt1(a,i)*myt1(b,j))&
-                     & *(2.0_realk*g%elm4(a,i,b,j) - g%elm4(b,i,a,j))
-
-                WhichContribution: if(subi/=subj) then  ! Disp or CT
-
-                   DISPorCT: if( (subi==suba .and. subj==subb) &   ! dispersion
-                        & .or. (subi==subb .and. subj==suba)) then ! "exchange dispersion"
-                      MyMoleculeFULL%Edisp = MyMoleculeFULL%Edisp + tmp
-
-                   else ! charge transfer
-                      MyMoleculeFULL%Ect = MyMoleculeFULL%Ect + tmp
-                   end if DISPorCT
-
-                else  ! Internal subsystem correlation (i and j are in same subsystem)
-
-                   MyMoleculeFULL%Esub = MyMoleculeFULL%Esub + tmp
-
-                end if WhichContribution
-
-             end do aloop
-          end do iloop
-       end do bloop
-    end do jloop
-
-
-    call mem_dealloc(myt1)
-    do i=1,MyMoleculeFULL%nocc
-       call orbital_free(OccOrbitals(i))
-    end do
-    do i=1,MyMoleculeFULL%nvirt
-       call orbital_free(virtOrbitals(i))
-    end do
-    call mem_dealloc(OccOrbitals)
-    call mem_dealloc(virtorbitals)
-
-  end subroutine SNOOP_partition_energy
-
 
   !> \brief Carry out unitary rotation of occupied as well as virtual subsystem orbitals
   !> such that they mimic the FULL occupied and virtual orbitals as much as possible
@@ -1275,7 +1154,7 @@ contains
     !> Subsystem orbitals
     real(realk),intent(inout) :: Csub(nbasis,nMO)
     real(realk),pointer :: W(:,:),T(:,:),tmp(:,:)
-    real(realk) :: funcval1,funcval2   ! KKHACK delete this when properly tested
+    real(realk) :: funcval1,funcval2   ! KKFIXME delete this when properly tested
 
 
     ! Strategy
