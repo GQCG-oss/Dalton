@@ -878,6 +878,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use memory_handling, only: stats_mem
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
+  use lsparameters
   use lstensorMem, only: lstmem_free
 #ifdef VAR_ENABLE_TENSORS
   use tensor_interface_module ,only: tensor_finalize_interface, tensor_free_bg_buf
