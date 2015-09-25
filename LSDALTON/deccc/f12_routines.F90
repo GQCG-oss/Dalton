@@ -441,7 +441,7 @@ module f12_routines_module
     real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
-    type(matrix) :: CMO_cabs,CMO_ri,tmp
+    type(matrix) :: CMO_cabs,CMO_ri,tmp, CMO_std
     character(len=2) :: inputstring
     logical :: doCABS,doRI
     integer :: i,lupri,offset
@@ -468,7 +468,9 @@ module f12_routines_module
     enddo
     call determine_CABS_nbast(nCabsAO,mylsitem%SETTING,lupri)
     IF(doCABS)THEN
-       call build_CABS_MO(CMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
+       call collect_MO_coeff_in_one_matrix_from_real(nbasis,noccfull,nvirt,Cocc,Cvirt,CMO_std)
+       call build_CABS_MO(ncabsAO,lupri,mylsitem%setting,CMO_std,CMO_cabs)
+       call mat_free(CMO_std)
        ncabs = CMO_cabs%ncol
     ENDIF
     IF(doRI)THEN
@@ -1971,7 +1973,7 @@ module f12_routines_module
     real(realk),dimension(nbasis,noccfull),intent(in) :: Cocc
     !> Virtual MO coefficients
     real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
-    type(matrix) :: CMO_cabs,CMO_ri
+    type(matrix) :: CMO_cabs,CMO_ri, CMO_std
     real(realk),pointer :: tmp(:,:,:,:)
     real(realk),pointer :: tmp2(:,:,:,:)
     character :: string(4)
@@ -2000,7 +2002,9 @@ module f12_routines_module
     enddo
     call determine_CABS_nbast(nCabsAO,mylsitem%SETTING,lupri)
     IF(doCABS)THEN
-       call build_CABS_MO(CMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
+       call collect_MO_coeff_in_one_matrix_from_real(nbasis,noccfull,nvirt,Cocc,Cvirt,CMO_std)
+       call build_CABS_MO(ncabsAO,lupri,mylsitem%setting,CMO_std,CMO_cabs)
+       call mat_free(CMO_std)
        ncabs = CMO_cabs%ncol
     ENDIF
     IF(doRI)THEN

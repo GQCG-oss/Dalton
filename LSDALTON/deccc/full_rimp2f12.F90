@@ -50,6 +50,7 @@ use f12_routines_module,only: &
 
 use IntegralInterfaceMOD
 use ri_util_module
+use dec_fragment_utils
 #ifdef VAR_MPI
 use lsmpi_op,only: mpicopy_lsitem
 use decmpi_module,only: mpi_bcast_fullmolecule
@@ -146,6 +147,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
    integer,parameter :: nTerms = 20  
    logical :: ComputeTerm(nTerms)
    real(realk) :: RestartBuffer(nTerms)
+   type(matrix) :: CMO_std
 #ifdef VAR_MPI
    real(realk) :: lsmpibufferRIMP2(nTerms)
    lsmpibufferRIMP2=0.0E0_realk
@@ -211,7 +213,10 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
 
    IF(master)THEN
       call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
-      call build_CABS_MO(CMO_CABS,nCabsAO,mylsitem%SETTING,lupri)    
+      call collect_MO_coeff_in_one_matrix_from_real(nbasis,noccfull,nvirt,MyMolecule%Co%elm2,&
+           & MyMolecule%Cv%elm2,CMO_std)
+      call build_CABS_MO(ncabsAO,lupri,mylsitem%setting,CMO_std,CMO_cabs)
+      call mat_free(CMO_std)
       ncabsMO = CMO_CABS%ncol
       call build_RI_MO(CMO_RI,nCabsAO,mylsitem%SETTING,lupri)
    ENDIF

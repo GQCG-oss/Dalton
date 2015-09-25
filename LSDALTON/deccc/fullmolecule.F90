@@ -1137,7 +1137,7 @@ contains
      type(fullmolecule), intent(inout) :: MyMolecule
      type(lsitem), intent(inout) :: MyLsitem
      type(matrix), intent(in) :: D
-     type(matrix) :: CMO_cabs
+     type(matrix) :: CMO_cabs, CMO_std
      integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull
 
      nbasis   = MyMolecule%nbasis
@@ -1184,7 +1184,10 @@ contains
      MyMolecule%nCabsAO = ncabsAO
 
      ! KK - quick and ugly fix to get number of CABS MOs for full molecule
-     call build_CABS_MO(CMO_cabs,ncabsAO,MyLsitem%SETTING,DECinfo%output)
+     call collect_MO_coeff_in_one_matrix_from_real(nbasis,noccfull,nvirt,MyMolecule%Co%elm2,&
+          & MyMolecule%Cv%elm2,CMO_std)
+     call build_CABS_MO(ncabsAO,DECinfo%output,mylsitem%setting,CMO_std,CMO_cabs)
+     call mat_free(CMO_std)
      MyMolecule%nCabsMO = CMO_cabs%ncol
      call mat_free(CMO_cabs)
 

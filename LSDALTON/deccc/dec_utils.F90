@@ -127,7 +127,9 @@ public :: dec_time_evaluate_efficiency_frag, &
      & get_HF_energy, get_HF_energy_fullmolecule, get_dft_energy_fullmolecule,&
      & fragment_restart_file_exist, get_total_number_of_fragments,&
      & get_fragenergy_restart_filename, get_fragenergy_restart_filename_backup,&
-     & get_num_of_pair_fragments, SD_dotproduct, max_batch_dimension, print_atomic_fragment_energies_mod
+     & get_num_of_pair_fragments, SD_dotproduct, max_batch_dimension, &
+     & print_atomic_fragment_energies_mod, collect_MO_coeff_in_one_matrix_from_real, &
+     & collect_MO_coeff_in_one_matrix, partition_MO_coeff_into_two_matrices
 
 contains
 !> \brief Get maximum batch dimension encountered in integral program.
@@ -6243,6 +6245,119 @@ end function max_batch_dimension
     SD_ddot = ddot1+ddot2
 
   end function SD_dotproduct
+
+
+
+  !> Collect occ and virt MO coefficients stored in real Fortran arrays
+  !> in one type(matrix), where the number of
+  !> basis functions is not necessarily equal to nocc+nvirt.
+  !> \author Kasper Kristensen
+  !> \date August 2014
+  subroutine collect_MO_coeff_in_one_matrix_from_real(nbasis,nocc,nvirt,Cocc_real,Cvirt_real,C)
+    implicit none
+    !> Number of basis functions, occupied, and virtual orbitals
+    integer,intent(in) :: nbasis, nocc, nvirt
+    !> Occ and virt MO coeff
+    real(realk), intent(in) :: Cocc_real(nbasis,nocc), Cvirt_real(nbasis,nvirt)
+    type(matrix) :: Cocc,Cvirt
+    !> Occ and virt MO coeff combined, this matrix is also initialized here but not freed!
+    type(matrix),intent(inout) :: C
+    integer :: nov
+
+    ! Convert occ and virt MOs to type matrix
+    call mat_init(Cocc,nbasis,nocc)
+    call mat_set_from_full(Cocc_real,1E0_realk, Cocc)
+    call mat_init(Cvirt,nbasis,nvirt)
+    call mat_set_from_full(Cvirt_real,1E0_realk, Cvirt)
+
+    ! Collect MOs in one matrix
+    nov = nocc + nvirt
+    call mat_init(C,nbasis,nov)
+    call collect_MO_coeff_in_one_matrix(Cocc,Cvirt,C)
+    call mat_free(Cocc)
+    call mat_free(Cvirt)
+
+  end subroutine collect_MO_coeff_in_one_matrix_from_real
+
+
+
+  !> Collect occ and virt MO coefficients in one type(matrix), where the number of
+  !> basis functions is not necessarily equal to nocc+nvirt.
+  !> \author Kasper Kristensen
+  !> \date August 2014
+  subroutine collect_MO_coeff_in_one_matrix(Cocc,Cvirt,C)
+    implicit none
+    !> Occ and virt MO coeff
+    type(matrix),intent(in) :: Cocc,Cvirt
+    !> Occ and virt MO coeff combined
+    type(matrix),intent(inout) :: C
+    integer :: mu,p,idx,offset
+
+    if(matrix_type/=mtype_dense) then
+       call lsquit('collect_MO_coeff_in_one_matrix: Only implemented for dense matrices!',-1)
+    end if
+
+    ! Copy occ orbitals
+    idx=0
+    do mu=1,Cocc%nrow  ! AO loop
+       do p=1,Cocc%ncol   ! occ MO loop
+          idx=idx+1
+          C%elms(idx) = Cocc%elms(idx)
+       end do
+    end do
+    offset = idx   ! Number of elements for occ orbitals
+
+    ! Copy virt orbitals
+    idx=0
+    do mu=1,Cvirt%nrow  ! AO loop
+       do p=1,Cvirt%ncol   ! virt MO loop
+          idx=idx+1
+          C%elms(idx+offset) = Cvirt%elms(idx)
+       end do
+    end do
+
+  end subroutine collect_MO_coeff_in_one_matrix
+
+
+
+  !> Partion MO coefficients collected in one matrix into an occupied and a virtual MO matrix.
+  !> (the reverse of collect_MO_coeff_in_one_matrix).
+  !> \author Kasper Kristensen
+  !> \date August 2014
+  subroutine partition_MO_coeff_into_two_matrices(C,Cocc,Cvirt)
+    implicit none
+    !> Occ and virt MO coeff combined
+    type(matrix),intent(in) :: C
+    !> Occ and virt MO coeff
+    type(matrix),intent(inout) :: Cocc,Cvirt
+    integer :: mu,p,idx,offset
+
+    if(matrix_type/=mtype_dense) then
+       call lsquit('partition_MO_coeff_into_two_matrices: Only implemented for dense matrices!',-1)
+    end if
+
+    ! Copy occ orbitals
+    idx=0
+    do mu=1,Cocc%nrow  ! AO loop
+       do p=1,Cocc%ncol   ! occ MO loop
+          idx=idx+1
+          Cocc%elms(idx) = C%elms(idx) 
+       end do
+    end do
+    offset = idx   ! Number of elements for occ orbitals
+
+    ! Copy virt orbitals
+    idx=0
+    do mu=1,Cvirt%nrow  ! AO loop
+       do p=1,Cvirt%ncol   ! virt MO loop
+          idx=idx+1
+          Cvirt%elms(idx) = C%elms(idx+offset) 
+       end do
+    end do
+
+  end subroutine partition_MO_coeff_into_two_matrices
+
+
 
 
 end module dec_fragment_utils

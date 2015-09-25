@@ -2385,11 +2385,37 @@ contains
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
 
-    type(matrix) :: CMO_cabs
-    integer :: ncabsAO
+    type(matrix) :: CMO_cabs, CMO_std
+    integer :: ncabsAO,i,offset
+    real(realk),pointer :: Cocctot(:,:)
 
     call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
-    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
+
+    ! Construct matrix with ALL MO coefficients (core+valence)
+    ! --------------------------------------------------------
+    ! Frozen core: Copy core MOs (fragment%coreMO), then valence MOs (fragment%Co)
+    ! Not frozen core: Simply copy MOs stored in fragment%Co
+    call mem_alloc(Cocctot,fragment%nbasis,fragment%nocctot)
+    if(DECinfo%frozencore) then
+       offset = fragment%ncore
+       do i=1,offset
+          Cocctot(:,i) = fragment%coreMO(:,i)
+       end do
+    else
+       offset=0
+    end if
+
+    do i=offset+1,fragment%nocctot
+       Cocctot(:,i) = fragment%Co(:,i-offset)
+    end do
+
+    ! Get CABS MOs
+    call collect_MO_coeff_in_one_matrix_from_real(fragment%nbasis,fragment%nocctot, &
+         & fragment%nvirtAOS,Cocctot, fragment%Cv,CMO_std)
+    call mem_dealloc(Cocctot)
+    call build_CABS_MO(ncabsAO,DECinfo%output,mylsitem%setting,CMO_std,CMO_cabs)
+    call mat_free(CMO_std)
+
     call mem_alloc(fragment%Ccabs,CMO_cabs%nrow,CMO_cabs%ncol)
     call mat_to_full(CMO_cabs,1.0E0_realk,fragment%Ccabs)
     call mat_free(CMO_cabs)

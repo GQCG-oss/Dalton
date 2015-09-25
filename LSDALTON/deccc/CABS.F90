@@ -20,16 +20,22 @@ CONTAINS
     nbast_cabs = getNbasis(AOdfCABS,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
   end subroutine determine_CABS_nbast
 
-  subroutine build_CABS_MO(CMO_cabs,nbast_cabs,SETTING,lupri)
+  subroutine build_CABS_MO(nbast_cabs,lupri,setting,CMO_std,CMO_cabs)
     implicit none
-    integer :: lupri,nbast_cabs
+    !> Number of CABS AOs (CABS+)
+    integer,intent(in) :: nbast_cabs
+    !> Output file unit number
+    integer,intent(in) :: lupri
+    !> Integral settings
     TYPE(LSSETTING) :: SETTING
-    !> CABS MOs - will be initialized inside subroutine
+    !> Standard MOs
+    type(matrix),intent(in) :: CMO_std
+    !> CABS MOs - will be initialized inside subroutine!
     TYPE(MATRIX),intent(inout)    :: CMO_cabs
     !
     real(realk)     :: TIMSTR,TIMEND
     type(matrix) :: S,Smix,S_cabs,tmp,S_minus_sqrt,S_minus_sqrt_cabs
-    type(matrix) :: tmp_cabs,Vnull,tmp2
+    type(matrix) :: tmp_cabs,Vnull,tmp2,SVDmat
     real(realk),pointer :: SV(:),optwrk(:),Sfull(:,:),S_cabsfull(:,:)
     integer,pointer :: IWORK(:)
     integer     :: lwork,nbast,nnull,luerr,IERR,INFO,I,nbastCABO
@@ -149,6 +155,11 @@ CONTAINS
           nnull=nnull-1
        ENDIF
     ENDDO
+
+    print *, 'nbast_cabs ', nbast_cabs
+    print *, 'nnull', nnull
+    print * ,'sv ', sv
+
     IF(nnull.NE.nbast_cabs-MIN(Smix%nrow,Smix%ncol))THEN       
        print*,'nnull',nnull
        print*,'nbast_cabs-MIN(Smix%nrow,Smix%ncol)',nbast_cabs-MIN(Smix%nrow,Smix%ncol)
