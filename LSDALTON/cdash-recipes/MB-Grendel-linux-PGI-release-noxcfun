@@ -14,9 +14,10 @@ cd $TMP_DIR
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 
 
+export DALTON_TMPDIR=$SCRATCH_DIR
+
 #copy this block
 export OMP_NUM_THREADS=3
-export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NUM_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 export PATH=/usr/local/torque/bin:/com/pgi/linux86-64/2015/bin:/com/bin:/usr/local/bin:/bin:/usr/bin:$PATH

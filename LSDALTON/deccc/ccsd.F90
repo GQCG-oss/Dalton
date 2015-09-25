@@ -5032,7 +5032,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=8),intent(in)::o2v2
      real(realk),intent(inout)::ppf(:)
      real(realk),intent(inout)::qqf(:)
-     real(realk), contiguous:: w1(:) !``DIL: Used to be o2v2, but it is not used in Schemes 2 and 1
+     real(realk), pointer :: w1(:) !``DIL: Used to be o2v2, but it is not used in Schemes 2 and 1
      type(tensor),intent(inout) :: t2
      real(realk),pointer:: xo(:)
      real(realk),pointer:: yv(:)

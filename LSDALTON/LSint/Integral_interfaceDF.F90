@@ -3156,9 +3156,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         IF(MemDebugPrint)print*,'BG: Before w0 of size=',w0size
         IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_alloc(w0, w0size)
-!        setting%output%ResultMat(1:MaxN,1,1:n1,1:n2,1:nthreads) => w0(1:w0size)
+#ifdef VAR_PTR_RESHAPE
+        setting%output%ResultMat(1:MaxN,1:1,1:n1,1:n2,1:nthreads) => w0!(1:w0size)
+#else
         cpointer = c_loc(w0(1))
         call c_f_pointer(cpointer,setting%output%ResultMat,[MaxN,1,n1,n2,nthreads])
+#endif
      ELSE
         IF(MemDebugPrint)print*,'STD: Before a ResultMat of size=',MaxN*n1*n2*nthreads
         IF(MemDebugPrint)call stats_globalmem(6)
@@ -3171,9 +3174,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
 
      call ThermiteIntTransform_alloc_TmpArray(use_bg_buf) !MaxN,n1,nMO2
      call ls_dzero8(FullAlphaCD,w1size)
-!     setting%output%Result3D => FullAlphaCD
+#ifdef VAR_PTR_RESHAPE
+     setting%output%Result3D(1:dim1,1:nMO1,1:nMO2) => FullAlphaCD!(1:w1size)
+#else
      cpointer = c_loc(FullAlphaCD(1))
      call c_f_pointer(cpointer,setting%output%Result3D,[dim1,nMO1,nMO2])
+#endif
      setting%Output%ndim3D(1) = dim1
      setting%Output%ndim3D(2) = nMO1
      setting%Output%ndim3D(3) = nMO2
