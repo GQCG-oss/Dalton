@@ -23,7 +23,7 @@
 !
 #if (defined (SYS_AIX) && !defined (VAR_INT64)) || (SYS_IRIX) || (SYS_SUN) || (SYS_HPUX)||defined(__apple__)
 #define BIGENDIAN 1
-#elif defined (SYS_LINUX) || (SYS_DEC)
+#elif defined (SYS_LINUX) || (SYS_DARWIN) || (SYS_DEC)
 #define LITTLEENDIAN 1
 #endif
 C
