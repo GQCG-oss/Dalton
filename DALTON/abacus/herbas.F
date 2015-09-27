@@ -341,12 +341,12 @@ C
             ISTART = len_BASNAM + 2
          ELSE IF (BASNAM(1:7) .EQ. 'ANO-RCC') THEN
             ANO = .FALSE. ! ANO-RCC is not written in MOLCAS format
-            BASTMP(1:7) = BASNAM(1:7)
-            ISTART = 9
+            BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
+            ISTART = len_BASNAM + 2
          ELSE IF (BASNAM(1:7) .EQ. 'ANO-DK3') THEN
             ANO = .TRUE.
-            BASTMP(1:7) = BASNAM(1:7)
-            ISTART = 9
+            BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
+            ISTART = len_BASNAM + 2
          ELSE IF (BASNAM(1:3) .EQ. 'raf') THEN
             ANO = .TRUE.
             BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
@@ -429,7 +429,7 @@ C Reading the primitives and contraction coefficients from file in READNU
 C
             IF (ANO .OR. SADLEJ) THEN
                IQCORE = NINT(Q-QEFF)
-               CALL READ_ANO(INTEXP, INTORB, NBLOCK,KAOVEC, CPRIMU,ALPHA,
+               CALL READ_ANO(INTEXP,INTORB, NBLOCK,KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
      +                     UNCONT,LUBAS,IQCORE,IPRINT)
                IF (INTORB .EQ. 0) THEN
