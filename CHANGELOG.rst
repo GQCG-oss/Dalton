@@ -18,14 +18,15 @@ Common
                   (0.7947153600, 0.3149038200, 0.1259615200) for Ac, Z=89, and
                   (0.8411791300, 0.3310795400, 0.1324318200) for Pa, Z=91.
                   We have selected to just replace the 3 Th h-functions with those from the Ac basis set,
-                  because the Ac g-functions are quite close tot he Th g-functions, closer than Ac g-functions,
+                  because the Ac g-functions are quite close to the Th g-functions, closer than Ac g-functions,
                   and therefore differences in results compared to optimized Th h-functions should be minimal.)
                   Thanks to Kirk Peterson for pointing out the Th problem on http://daltonforum.org.
 
 DALTON
 ------
 
-- fixed reading of ANO-RCC and ANO-DK3 in herbas.F
+- bug fix for when more than 30 excitation energies requested (EIGENVALUES NOT PAIRED problem reported by Frank Jensen)
+- fixed reading of ANO-RCC in herbas.F
 - Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
 - Fixed .NEWTRA "new" integral transformation for 32 bit integers and n*256 orbitals and no integer overflow test
   (the first 32 bits of (n*256)**4 are zero !!!).
