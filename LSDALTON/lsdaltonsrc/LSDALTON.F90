@@ -891,6 +891,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param
 #endif
   use gpu_device_handling, only: shutdown_GPU_devices 
 #ifdef VAR_ICHOR
