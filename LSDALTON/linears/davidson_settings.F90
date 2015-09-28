@@ -78,7 +78,8 @@ type(matrix),pointer :: P
 real(realk) :: old_mu
 ! Preconditioner in realk
 real(realk),pointer :: Pmat(:,:)
-
+! Minimum diagonal Hessian value
+real(realk) :: minel_diagonal_hessian
 
 !**********************************
 !* Orbital localization settings  *
@@ -241,6 +242,7 @@ CFG%lines_fit =.true.
 CFG%quit_after_10it = .true.
 CFG%orbital_save_interval = 20
 CFG%orbloc_restart = .false.
+CFG%minel_diagonal_hessian=-1000.0_realk !large negative
 
 
 !General solver related keywords

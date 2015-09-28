@@ -235,16 +235,16 @@ contains
     integer ::  i,imx,idamax,iter_number
     real(realk) :: nrmG, oVal,old_oVal
     real(realk) :: nrm_thresh,stepsize
-    real(realk),pointer :: max_orbspreads(:)  
+    real(realk),pointer :: max_orbspreads(:),old_nrmG(:)  
     real(realk),pointer :: tmp(:)
-    integer :: lun, counter,nbas
+    integer :: lun, counter,nbas,counter2
     logical :: onmaster
 
         !initializations 
     OnMaster=.true.
     nbas=CMOall%nrow
     counter=0
-
+    counter2=0
     ! Extract coefficients to be localized
     call mem_alloc(tmp,nbas*norb)
     call mat_init(CMO,nbas,norb)
@@ -255,6 +255,7 @@ contains
 
 
     call mem_alloc(max_orbspreads,CFG%max_macroit)
+    call mem_alloc(old_nrmG,CFG%max_macroit)
     call mat_init(X,norb,norb)
     call mat_init(G,norb,norb)
     call mat_init(P,norb,norb)
@@ -297,11 +298,11 @@ contains
        CFG%old_mu = CFG%mu
        old_oVal = oVal
        imx  =  idamax(norb,CFG%orbspread_inp%spread2,1)
-       nrmG = sqrt(mat_sqnorm2(G))/real(norb)
+       nrmG = sqrt(mat_sqnorm2(G))/real(norb);old_nrmG(i)=nrmG
        max_orbspreads(i)=sqrt(CFG%orbspread_inp%spread2(imx))
-       write (ls%lupri,'(A,I3,A,f6.2,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
+       write (ls%lupri,'(A,I4,A,f6.2,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
             &'  %LOC%',i,' sigma_2 =',max_orbspreads(i),&
-            &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
+            &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' TR = ',CFG%stepsize,' step =', stepsize
 
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
        FLUSH(ls%lupri)
@@ -316,10 +317,21 @@ contains
           write(ls%lupri,'(a)') '  %LOC%  * function is below the threshold, and we exit      *'
           write(ls%lupri,'(a)') '  %LOC%  * the localization procedure.                       *'
           write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
+          write(ls%lupri,'(a,f6.2)') '  %LOC%  *  Minimal Hessiag diagonal :', CFG%minel_diagonal_hessian
           write(ls%lupri,'(a)') '  %LOC%  *****************************************************'
           write(ls%lupri,'(a)') '  %LOC% '
           exit
        end if
+
+       counter2 = counter2 + 1
+        if (counter2==10) then
+          ! Do checks on gradient norm
+          write(CFG%lupri,*) abs(old_nrmG(i-counter2+1)/nrmG)
+          if ((abs(old_nrmG(i-counter2+1)/nrmG) < 10.0_realk) .and. (CFG%it==CFG%max_it-1)) then
+              CFG%max_it =min(CFG%max_it + 5,50)
+          endif
+          counter2 = 0
+       endif
 
        call davidson_solver(CFG,G,X)
 
@@ -332,14 +344,14 @@ contains
        call linesearch_orbspread(CFG,cmo,X,stepsize,oVal)
        call orbspread_value(oVal,CFG%orbspread_inp)
 
-       if (oVal-old_oVal > -1E-8_realk) then
+       if (oVal-old_oVal > -1E-10_realk) then
           write(ls%lupri,'(a)') '  %LOC% Step not accepted. Go back'
           call mat_copy(1.0d0,CMOsav,CMO)
           call orbspread_update(CFG%orbspread_inp,CMO)
           call orbspread_value(oVal,CFG%orbspread_inp)
           CFG%Stepsize = CFG%Stepsize/2.0_realk
        else
-          CFG%Stepsize = min(CFG%Stepsize*2.5_realk,CFG%max_stepsize) 
+          CFG%Stepsize = min(CFG%Stepsize*1.5_realk,CFG%max_stepsize) 
        endif
 
        if (CFG%stepsize < 0.001_realk) then
@@ -362,7 +374,7 @@ contains
           write(CFG%lupri,'(a)') '  %LOC% the user manual under section **LOCALIZE ORBITALS      '
           write(CFG%lupri,'(a)') '  %LOC% and keyword .LOOSE MICRO THRESH                              ' 
           call lsquit('%LOC% Cannot converge micro iterations. ', CFG%lupri)
-       elseif (oVal-old_oVal > -1E-8) then
+       elseif (oVal-old_oVal > -1E-10) then
           cycle
        endif
        !new gradient
@@ -411,6 +423,7 @@ contains
 
 
     call mem_dealloc(max_orbspreads)
+    call mem_dealloc(old_nrmG)
     call orbspread_free(CFG%orbspread_inp)
     call mat_free(X)
     call mat_free(G)
@@ -506,14 +519,14 @@ contains
     call mat_assign(scr,expX)
 
     !For large systems, increment of factor 2 
-    if (X%ncol > 600) then
-       call mat_assign(X,expX)
-       call mat_mul(X,expX,'n','n',1.0_realk,0.0_realk,scr)
-       call mat_assign(expX,scr)
-    endif
+    !if (X%ncol > 600) then
+    !   call mat_assign(X,expX)
+    !   call mat_mul(X,expX,'n','n',1.0_realk,0.0_realk,scr)
+    !   call mat_assign(expX,scr)
+    !endif
     do i=1,max_iter
        stepsize = dble(i)*normX 
-       if (X%ncol > 600) stepsize = 2.0_realk*stepsize 
+       !if (X%ncol > 600) stepsize = 2.0_realk*stepsize 
        call mat_assign(cmosave,cmo)
        call mat_mul(CMOsave,scr,'n','n',1.0_realk,0.0_realk,cmo)
        call orbspread_update(CFG%orbspread_inp,cmo)  
