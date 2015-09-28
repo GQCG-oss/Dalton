@@ -34,10 +34,7 @@ f.add(string = 'Memory in use for array4',
 # Build list of files to use for restart
 # =======================================
 hf_restart  = ['cmo_orbitals.u','lcm_orbitals.u','dens.restart','fock.restart','overlapmatrix']
-for i,file in enumerate(hf_restart):
-   hf_restart[i] = 'hf_restart/'+file
    
-
 put_restart = ['-put','"'] + hf_restart + ['"']
 arg_restart = " ".join(put_restart)
 
