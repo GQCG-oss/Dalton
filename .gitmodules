@@ -1,7 +1,6 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
 	url = https://gitlab.com/bingao/gen1int.git
-	branch = master
 [submodule "external/xcfun"]
 	path = external/xcfun
   	url = git://repo.ctcc.no/xcfun.git
