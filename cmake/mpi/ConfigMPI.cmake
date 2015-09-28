@@ -92,13 +92,17 @@ if(MPI_FOUND)
    endif()
 
    # test current setup and check mpi 3 features
-   file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-3-features-simple.F90" _source)
-   check_fortran_source_compiles( ${_source} ENABLE_MPI3_FEATURES)
+   if(FORCE_DISABLE_MPI3)
+      message("-- Disabled MPI3 features")
+   else()
+      file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-3-features-simple.F90" _source)
+      check_fortran_source_compiles( ${_source} ENABLE_MPI3_FEATURES)
 
-   if(ENABLE_MPI3_FEATURES)
-      message("-- found an MPI 3 compatible MPI lib, setting -DVAR_HAVE_MPI3")
-      add_definitions(-DVAR_HAVE_MPI3)
-      set(MPI_DEFS "${MPI_DEFS} -DVAR_HAVE_MPI3")
+      if(ENABLE_MPI3_FEATURES)
+         message("-- found an MPI 3 compatible MPI lib, setting -DVAR_HAVE_MPI3")
+         add_definitions(-DVAR_HAVE_MPI3)
+         set(MPI_DEFS "${MPI_DEFS} -DVAR_HAVE_MPI3")
+      endif()
    endif()
 
    if(ENABLE_TITANBUILD)
