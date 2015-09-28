@@ -20,7 +20,8 @@ MODULE IntegralInterfaceModuleDF
   use dec_typedef_module, only: batchTOorb
   use screen_mod
   use BUILDAOBATCH
-  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc,C_PTR
+  use iso_c_binding
+!  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc,C_PTR
   use ThermiteIntTransform_module
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
        & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
