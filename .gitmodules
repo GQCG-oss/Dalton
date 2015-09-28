@@ -15,4 +15,4 @@
 	url = https://github.com/cstein/qfitlib.git
 [submodule "external/efs"]
 	path = external/efs
-	url = git@repo.ctcc.no:efs.git
+	url = git@gitlab.com:dalton/efs.git
