@@ -1,6 +1,6 @@
 MODULE IntegralInterfaceModuleDF
   use precision
-  use TYPEDEFTYPE
+  use TYPEDEFTYPE,only : LSSETTING
   use Typedef  
   use Matrix_module
   use Matrix_Operations

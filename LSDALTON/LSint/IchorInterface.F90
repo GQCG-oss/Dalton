@@ -10,7 +10,9 @@
 !> \date 2013 
 MODULE IchorErimoduleHost
   use precision
-  use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
+  use TYPEDEFTYPE,only: lssetting
+  use basis_typetype,only: BASISSETINFO
+  use molecule_typetype,only: MOLECULEINFO
   use memory_handling, only: mem_alloc,mem_dealloc, mem_add_external_memory,&
        & mem_allocated_global
   use basis_typetype,only: RegBasParam,CABBasParam

@@ -711,6 +711,12 @@ type mpi_realk
    integer              :: t
 end type mpi_realk
 
+private
+public :: INTEGERP,integralconfig,LSINTSCHEME,BASISSETLIBRARYITEM,&
+     & BLOCK,BLOCKINFO,FRAGMENTINFO,FRAGMENTINFO_PT,FRAGMENTITEM,&
+     & FRAGMENT_PT,DALTONINPUT,AOBATCHINFO,AOATOMINFO,&
+     & REDUCEDSCREENINGINFO,LSSETTING,LSITEM,geoHessianConfig,&
+     & pltinfo,mpi_realk
 
 contains
 
