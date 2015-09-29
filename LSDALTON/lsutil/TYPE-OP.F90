@@ -23,6 +23,7 @@ MODULE TYPEDEF
  use LSTENSOR_typetype
  use LSparameters
  use GCtransMod
+ use f12_module
 #ifdef VAR_MPI
  use infpar_module
  use lsmpi_param

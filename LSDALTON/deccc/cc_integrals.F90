@@ -30,7 +30,7 @@ module ccintegrals
   use lsmpi_module
   use infpar_module
 #endif
-
+  use iso_c_binding,only:c_ptr
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
   use array2_simple_operations

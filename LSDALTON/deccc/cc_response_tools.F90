@@ -12,7 +12,7 @@ module cc_response_tools_module
   use IchorErimoduleHost
   use BUILDAOBATCH
   use reorder_frontend_module
-
+  use iso_c_binding,only: c_ptr
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array2_simple_operations

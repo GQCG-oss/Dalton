@@ -11,6 +11,7 @@ module mp2_gradient_module
   use precision
   use lstiming!,only: lstimer
   use typedeftype!,only: lsitem
+  use lsparameters
   use matrix_module!,only:matrix,matrixp
   use files!,only:lsopen,lsclose
   use matrix_util!,only:util_MO_to_AO_different_trans

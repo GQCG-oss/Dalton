@@ -29,6 +29,7 @@ module mp2_module
   use background_buffer_module
   use reorder_frontend_module
   use tensor_interface_module
+  use iso_c_binding, only: c_ptr
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use cc_tools_module

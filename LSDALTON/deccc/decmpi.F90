@@ -10,6 +10,7 @@ module decmpi_module
   use dec_typedef_module
   use infpar_module
   use lsmpi_param
+  use lsparameters
   use lsmpi_type
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
