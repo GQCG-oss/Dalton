@@ -755,7 +755,6 @@ module cc_tools_module
       select case(s)
       case(4,3)
 
-
          !$acc enter data copyin(yv(1:nb*nv)) copyin(tpl%elm1) create(w0(1:nb*laleg_req*nv)) async(transp)
 
          !!SYMMETRIC COMBINATION
