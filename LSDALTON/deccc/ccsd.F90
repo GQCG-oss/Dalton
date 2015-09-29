@@ -57,7 +57,6 @@ module ccsd_module
   use pno_ccsd_module
 
 
-
     public :: getDoublesResidualMP2_simple,&
          & ccsd_residual_wrapper, get_ccsd_residual_integral_driven, &
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
