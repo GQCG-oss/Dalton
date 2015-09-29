@@ -1794,6 +1794,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
       call time_start_phase( PHASE_IDLE )
       call lsmpi_barrier(infpar%lg_comm)
       call time_start_phase( PHASE_COMM )
+      CALL LSTIMER('RIMP2: Load imbalance',TS2,TE2,LUPRI,FORCEPRINT)
       ! occupied part
       nSize = nvirt*noccEOS*nvirt*noccEOS
       call lsmpi_reduction(toccEOS%elm1,nsize,infpar%master,infpar%lg_comm)
