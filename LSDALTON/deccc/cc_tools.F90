@@ -756,7 +756,7 @@ module cc_tools_module
       case(4,3)
 
 
-         !$acc enter data copyin(yv(1:nb*nv),tpl%elm1(1:nor*nvr)) create(w0(1:nb*laleg_req*nv)) async(transp)
+         !$acc enter data copyin(yv(1:nb*nv)) copyin(tpl%elm1) create(w0(1:nb*laleg_req*nv)) async(transp)
 
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
@@ -803,8 +803,8 @@ module cc_tools_module
          enddo
 
          !$acc wait async(transp)
-         !$acc exit data delete(tpl%elm1(1:nor*nvr)) async(transp)
-         !$acc enter data copyin(tmi%elm1(1:nor*nvr)) async(transp)
+         !$acc exit data delete(tpl%elm1) async(transp)
+         !$acc enter data copyin(tmi%elm1) async(transp)
 
 #ifdef VAR_OPENACC
          call array_reorder_2d(p10,w3,nor,tred,[2,1],nul,w2)
@@ -855,7 +855,7 @@ module cc_tools_module
 
          enddo
          !$acc wait
-         !$acc exit data delete(yv(1:nb*nv),tmi%elm1(1:nor*nvr),w0(1:nb*laleg_req*nv))
+         !$acc exit data delete(yv(1:nb*nv),tmi%elm1,w0(1:nb*laleg_req*nv))
 
 #ifdef VAR_OPENACC
          call array_reorder_2d(p10,w3(tred*nor+1:tred*nor+tred*nor),nor,tred,[2,1],nul,w2)
