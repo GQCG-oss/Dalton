@@ -773,7 +773,9 @@ module cc_tools_module
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
 
-            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
+            !acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
+            !acc& wait(transp) async(acc_h(curr_id)) 
+            !$acc enter data copyin(w2(1:nb*laleg*nb)) create(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
             !$acc& wait(transp) async(acc_h(curr_id)) 
 
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
@@ -795,7 +797,9 @@ module cc_tools_module
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
 #endif
-            !$acc end data 
+            !acc end data 
+            !$acc exit data copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) delete(w2(1:nb*laleg*nb)) &
+            !$acc& async(acc_h(curr_id))
          enddo
 
          !$acc wait async(transp)
@@ -821,7 +825,10 @@ module cc_tools_module
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
 
-            !$acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))&
+            !acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))&
+            !acc& wait(transp) async(acc_h(curr_id))
+
+            !$acc enter data copyin(w2(1:nb*laleg*nb)) create(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))&
             !$acc& wait(transp) async(acc_h(curr_id))
 
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
@@ -842,7 +849,9 @@ module cc_tools_module
 #else
             call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+faleg),tred)
 #endif
-            !$acc end data 
+            !acc end data 
+            !$acc exit data copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor)) &
+            !$acc& delete(w2(1:nb*laleg*nb)) async(acc_h(curr_id))
 
          enddo
          !$acc wait
