@@ -728,7 +728,7 @@ module cc_tools_module
          laleg_req = 1
          do nids_use = nids, 0
             !              #of async ids       w0 size          w2 size            w3 size
-            if((free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) > 0) exit
+            if(free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) > 0) exit
          enddo
 
          if(nids_use <= 0)call lsquit("ERROR(get_a22_and_prepb22_terms_ex): not enough memory on the GPU available",-1)
@@ -736,7 +736,7 @@ module cc_tools_module
          !increase the batch size until the intermediates to not fit into the GPU memory anymore
          do laleg_req = 2, tred + 1
             !            #of async ids      w0 size          w2 size            w3 size
-            if((free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) < 0 ) exit
+            if(free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) < 0 ) exit
          enddo
 
       !reduce the found requested size by one which was the last size that fulfilled the memory requirements
