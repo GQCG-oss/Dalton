@@ -5,9 +5,12 @@ rm -rf $TMP_DIR
 rm -rf $SCRATCH_DIR
 
 git clone --recursive git@gitlab.com:dalton/dalton.git $TMP_DIR
+cd $TMP_DIR
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 
-cd $TMP_DIR
+
+export PATH=/com/git/2.3.2/bin:$PATH
+source /com/bin/modules.sh
 
 module load intel/14.0.2.144
 module load openmpi/intel/1.6.5
