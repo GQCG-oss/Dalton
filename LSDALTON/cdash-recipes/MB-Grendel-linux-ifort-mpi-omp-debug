@@ -1,6 +1,6 @@
 #!/bin/bash
-TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonPGIDebug
-SCRATCH_DIR=/tmp/tkjaer/DaltonPGIDebug
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/LSDAltonIfortMPIdebug
+SCRATCH_DIR=/tmp/tkjaer/LSDAltonIfortMPIdebug
 rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
 
