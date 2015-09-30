@@ -556,7 +556,6 @@ contains
        case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
 
 
-#ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
@@ -592,7 +591,6 @@ contains
        case('.DEBUG_MULTIPLIERS_DIRECT'); DECinfo%simple_multipler_residual = .false.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
-#endif
        case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
                                           read(input,*) DECinfo%en_mem
        case('.CCINT_SCHEME');             DECinfo%ccintforce         = .true.

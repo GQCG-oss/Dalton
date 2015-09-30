@@ -3616,7 +3616,6 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
    end if
 
 
-#ifdef MOD_UNRELEASED
    !============================================================================!
    !                          MO-CCSD initialization                            !
    !____________________________________________________________________________!
@@ -3634,7 +3633,6 @@ subroutine ccsolver_get_special(ccmodel,mylsitem,no,nv,nb,use_pnos,mo_ccsd,Co,Cv
          &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
 
    end if
-#endif
 
    nspaces = 0
    set_pno_info:if(use_pnos)then
@@ -3690,7 +3688,6 @@ subroutine ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart,mo_ccsd,pno_cv
    type(decfrag), optional :: frag
    integer :: i,j,cc
    logical :: fragment_job
-#ifdef MOD_UNRELEASED
 
    fragment_job = present(frag)
 
@@ -3754,7 +3751,6 @@ subroutine ccsolver_free_special(pgmo_up,pgmo_diag,MOinfo,restart,mo_ccsd,pno_cv
    if( .not. fragment_job .and. DECinfo%PL>2 )then
       call tensor_print_mem_info(DECinfo%output,.true.,.false.)
    endif
-#endif
 end subroutine ccsolver_free_special
 
 !> \brief should be a general subroutine to get the guess amplitudes when

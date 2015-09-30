@@ -858,7 +858,6 @@ contains
   end subroutine get_AO_K
 
 
-#ifdef MOD_UNRELEASED
   !> Purpose: calculate AO int. in batches and transform them to
   !           full MO basis (non T1-transformed)
   !           The batches are then packed using permutational
@@ -895,12 +894,12 @@ contains
     integer :: alphaB, gammaB, dimAlpha, dimGamma
     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
     integer :: iorb, idx, K
-!ICHOR
+    !> ICHOR
     type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
     type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
     integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
     logical :: MoTrans, NoSymmetry,SameMol
-!THERMITE
+    !> THERMITE
     integer, pointer :: batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchAlpha(:),orb2batchGamma(:)
     integer, pointer :: batchsizeGamma(:), batchindexGamma(:)
@@ -2322,7 +2321,6 @@ contains
     end if
 
   end subroutine unpack_gmo
-#endif
 
   subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,INTSPEC,local,collective)
     implicit none
@@ -3785,7 +3783,6 @@ contains
 end module ccintegrals
 
 #ifdef VAR_MPI
-#ifdef MOD_UNRELEASED
 !> Purpose: Intermediate routine for the slaves, they get data
 !           from the local master and then call the routine to 
 !           calculate MO integrals (non-T1 transformed)
@@ -3839,7 +3836,6 @@ subroutine cc_gmo_data_slave()
   call mem_dealloc(MOinfo%tileInd)
 
 end subroutine cc_gmo_data_slave
-#endif
 
 subroutine get_mo_integral_par_slave()
   use dec_typedef_module
