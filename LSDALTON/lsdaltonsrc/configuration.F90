@@ -1662,7 +1662,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.MIXEDOVERLAP'); INTEGRAL%MIXEDOVERLAP = .TRUE.
         CASE ('.NO MM_FILES'); INTEGRAL%NO_MMFILES = .TRUE.
         CASE ('.DENSFIT'); integral%DENSFIT = .TRUE.                 
-        CASE ('.INTEREST'); integral%INTEREST = .TRUE.                 
         CASE ('.RUNMM');  integral%FMM = .TRUE.
         CASE ('.DECGRA'); integral%run_dec_gradient_test=.true.
         CASE ('.MEMDIST'); integral%MEMDIST = .TRUE.

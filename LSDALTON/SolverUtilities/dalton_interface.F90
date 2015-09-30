@@ -101,11 +101,6 @@ CONTAINS
 !         call di_decbatchpacked(lupri,luerr,ls,nbast,D)
          call di_decpacked(lupri,luerr,ls,nbast,D)
       ENDIF
-      IF(ls%setting%scheme%interest)then
-         print*,'di_debug_4center_eri_interest'
-         call di_debug_4center_eri_interest(lupri,luerr,ls,nbast)
-         print*,'di_debug_4center_eri_interest',ls%setting%scheme%interest
-      endif
       if (ls%input%dalton%DEBUGMAGDERIV) then
          !Test geometric derivative overlap integrals
          call di_debug_magderiv_4center_eri(lupri, luerr,ls,nbast,D)
@@ -3440,7 +3435,6 @@ CONTAINS
       call mem_alloc(integrals2,nbast,nbast,nbast,nbast)
       call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals2,nbast,nbast,nbast,nbast,intspec)
 
-      ls%setting%scheme%interest = .FALSE.
       call mem_alloc(integrals,nbast,nbast,nbast,nbast)
       call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast,intspec)
       do iD=1,nbast

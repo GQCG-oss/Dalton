@@ -395,11 +395,6 @@ set(FMM_SOURCES
     LSDALTON/mm/mm_tree_T_buffer.F90
     LSDALTON/mm/cbifmm.F90
     )
-set(INTERESTLIB_SOURCES
-    LSDALTON/interest/src/module_interest.f90
-    LSDALTON/interest/src/module_interest_hrr.f90
-    LSDALTON/interest/src/module_interest_osr.f90
-    )
 #    LSDALTON/IchorIntegrals/AGC_CPU_BuildRJ000Gen.SP.F90
 #    LSDALTON/IchorIntegrals/AGC_CPU_BuildRJ000Seg1Prim.SP.F90
 #    LSDALTON/IchorIntegrals/AGC_CPU_VerticalRecurrenceQPAGen.SP.F90
@@ -689,7 +684,6 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${RSP_PROPERTIES_SOURCES}	
     ${PBC_FORTRAN_SOURCES}
     ${FMM_SOURCES}
-    ${INTERESTLIB_SOURCES}
     ${LSINT_SOURCES}
     ${ICHORINT_SOURCES}
     ${LSUTIL_PRECISION_SOURCES}

@@ -512,83 +512,14 @@ TYPE(Overlap)        :: P,Q
 TYPE(Integrand)      :: PQ
 REAL(REALK)          :: CPU1,CPU2,WALL1,WALL2
 
-LOGICAL             :: DO_INTEREST,error,P_inter, Q_inter
+LOGICAL             :: error,P_inter, Q_inter
 Integer             :: nPQ,la,lb,lc,ld,iPQ
 Real(realk)         :: A(3),B(3),C(3),D(3),an,bn,cn,dn,ea,eb,ec,ed
 Real(realk),pointer :: inter(:)
 Integer             :: derOrder, startDer, endDer,iDerLHS
-#ifdef MOD_UNRELEASED
-#if VAR_INTEREST
-IF (INPUT%interest) THEN
-  P_inter = (.NOT.(P%TYPE_empty.OR.P%single)).AND.(P%nPrimitives.EQ. 1).AND.(P%nAngmom.EQ. 1)&
-     &      .AND.(P%endGeoOrder.EQ. 0).AND.(P%orbital1%angmom(1).GE.P%orbital2%angmom(1)).AND.&
-     &      (P%nPasses.EQ. 1)
-  Q_inter = (.NOT.(Q%TYPE_empty.OR.Q%single)).AND.(Q%nPrimitives.EQ. 1).AND.(Q%nAngmom.EQ. 1)&
-     &      .AND.(Q%endGeoOrder.EQ. 0).AND.(Q%orbital1%angmom(1).GE.Q%orbital2%angmom(1)).AND.&
-     &      (Q%nPasses.EQ. 1)
-  DO_INTEREST = (INPUT%operator.EQ.CoulombOperator).AND.P_inter.AND.Q_inter
-ELSE
-  DO_INTEREST = .FALSE.
-ENDIF
-#endif
-#endif
 IF(INPUT%DO_PROP)THEN
   call ExplicitPropIntegrals(Integral,PQ,P,Q,INPUT,OUTPUT,ILHS,IRHS,&
      &                       LUPRI,IPRINT)
-#ifdef MOD_UNRELEASED
-#if VAR_INTEREST
-ELSEIF (DO_INTEREST) THEN
-  CALL Build_Integrand(PQ,P,Q,INPUT,ILHS,IRHS,LUPRI,IPRINT)
-  la = P%orbital1%angmom(1) + 1
-  lb = P%orbital2%angmom(1) + 1
-  lc = Q%orbital1%angmom(1) + 1
-  ld = Q%orbital2%angmom(1) + 1
-  ea = P%orbital1%exponents(1) 
-  eb = P%orbital2%exponents(1) 
-  ec = Q%orbital1%exponents(1) 
-  ed = Q%orbital2%exponents(1) 
-  A  = P%orbital1%center
-  B  = P%orbital2%center
-  C  = Q%orbital1%center
-  D  = Q%orbital2%center
-  an = P%orbital1%CC(1)%p%elms(1)
-  bn = P%orbital2%CC(1)%p%elms(1)
-  cn = Q%orbital1%CC(1)%p%elms(1)
-  dn = Q%orbital2%CC(1)%p%elms(1)
-  nPQ = 1
-  call interest_initialize()
-  call interest_eri(INTEGRAL%integralsABCD,nPQ,la,ea,A(1),A(2),A(3),an,lb,eb,B(1),B(2),B(3),bn,&
-     &              lc,ec,C(1),C(2),C(3),cn,ld,ed,D(1),D(2),D(3),dn,.false.)
-!  call mem_alloc(inter,nPQ)
-!  inter = INTEGRAL%integralsABCD(1:nPQ)
-!  CALL Build_Integrand(PQ,P,Q,INPUT,ILHS,IRHS,LUPRI,IPRINT)
-!  !   Hermite 2-electron integral over general operator w
-!  CALL Build_HermiteTUV(INTEGRAL,INPUT,PQ,LUPRI,IPRINT)
-!  CALL Contract_Q(INTEGRAL,PQ,Input,LUPRI,IPRINT)
-!  CALL Contract_P(INTEGRAL,PQ,input,LUPRI,IPRINT)
-!  error = .FALSE.
-!  DO iPQ=1,nPQ
-!     IF (ABS(inter(iPQ) - INTEGRAL%integralsABCD(iPQ)).GT. 1E-9_realk) THEN
-!        print*,'ABS(inter(iPQ) - INTEGRAL%integralsABCD(iPQ))',ABS(inter(iPQ) - INTEGRAL%integralsABCD(iPQ))
-!        error = .TRUE.
-!     ENDIF
-!  ENDDO
-!  IF (error) THEN
-!     write(*,*) 'dbg:nPQ ',nPQ
-!     write(*,*) 'dbg:    ',P%totOrbitals,Q%totOrbitals
-!     write(*,*) 'dbg:a   ',la,ea,A(1),A(2),A(3),an
-!     write(*,*) 'dbg:b   ',lb,eb,b(1),b(2),b(3),bn
-!     write(*,*) 'dbg:c   ',lc,ec,c(1),c(2),c(3),cn
-!     write(*,*) 'dbg:d   ',ld,ed,d(1),d(2),d(3),dn
-!     write(*,*) 'dbg:inter'
-!     write(*,'(6ES15.6)') inter(1:nPQ)
-!     write(*,*) 'dbg:therm'
-!     write(*,'(6ES15.6)') INTEGRAL%integralsABCD(1:nPQ)
-!     call lsquit('error',-1)
-!  ENDIF
-!  call mem_dealloc(inter)
-#endif
-#endif
 ELSE
 !  Settings for derivative loop structure
    call getInputDerivativeInfo(derOrder,startDer,endDer,input,P%TYPE_Empty,Q%TYPE_Empty)

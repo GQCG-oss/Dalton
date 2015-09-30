@@ -41,7 +41,6 @@ LOGICAL       :: DRHS_SYM,DLHS_SYM
 LOGICAL       :: sameLHSaos,sameRHSaos,sameODs
 INTEGER       :: CENTERS,ndim
 LOGICAL       :: DO_PASSES
-LOGICAL       :: INTEREST
 integer       :: maxPasses
 LOGICAL       :: HIGH_RJ000_ACCURACY
 integer       :: MMunique_ID1
@@ -186,7 +185,6 @@ WRITE(IUNIT,'(3X,A,L2)')   'sameODs              = ',INT_INPUT%sameODs
 WRITE(IUNIT,'(3X,A,I5)')   'CENTERS              = ',INT_INPUT%CENTERS
 WRITE(IUNIT,'(3X,A,I5)')   'ndim                 = ',INT_INPUT%ndim
 WRITE(IUNIT,'(3X,A,L2)')   'DO_PASSES            = ',INT_INPUT%DO_PASSES
-WRITE(IUNIT,'(3X,A,L2)')   'INTEREST             = ',INT_INPUT%INTEREST
 WRITE(IUNIT,'(3X,A,L2)')   'ContAng              = ',INT_INPUT%ContAng 
 WRITE(IUNIT,'(3X,A,I5)')   'maxPasses            = ',INT_INPUT%maxPasses
 WRITE(IUNIT,'(3X,A,L2)')   'HIGH_RJ000_ACCURACY  = ',INT_INPUT%HIGH_RJ000_ACCURACY

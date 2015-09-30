@@ -218,14 +218,6 @@ if(ENABLE_XCFUN)
         )
 endif()
 
-if(ENABLE_INTEREST)
-    add_definitions(-DVAR_INTEREST)
-    add_library(
-        interestlib
-        ${INTERESTLIB_SOURCES}
-        )
-    target_link_libraries(interestlib xcfun_interface)
-endif()
 
 add_library(
     fmmlib
@@ -244,10 +236,6 @@ add_dependencies(fmmlib lsutillib_common6)
 add_dependencies(fmmlib lsutillib_common7)
 add_dependencies(fmmlib lsutillib_common8)
 add_dependencies(fmmlib lsutiltypelib_common)
-
-if(ENABLE_INTEREST)
-    target_link_libraries(fmmlib interestlib)
-endif()
 
 add_library(
     dftfunclib
@@ -483,18 +471,10 @@ endif()
 
 
 
-if(ENABLE_INTEREST)
-    MERGE_STATIC_LIBS(
-        lsint
-        lsintlib
-        interestlib
-        )
-else()
-    MERGE_STATIC_LIBS(
-        lsint
-        lsintlib
-        )
-endif()
+MERGE_STATIC_LIBS(
+    lsint
+    lsintlib
+    )
 
 set(LIBS_TO_MERGE
     lsutillib_precision

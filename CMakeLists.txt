@@ -58,7 +58,6 @@ option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
 option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
-option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
