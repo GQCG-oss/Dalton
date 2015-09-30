@@ -153,6 +153,9 @@ contains
              call lsquit('Error in SNOOPONESUB input!',-1)
           end if
 
+       case('.SNOOPDECFRAG')
+          DECinfo%SNOOPdecfrag=.true.
+
           ! CC RESPONSE
           ! ===========
        case('.EXCITATIONENERGIES')
@@ -1290,6 +1293,7 @@ contains
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'SNOOPrestart ', DECinfo%SNOOPrestart
     write(lupri,*) 'SNOOPonesub ', DECinfo%SNOOPonesub
+    write(lupri,*) 'SNOOPdecfrag ', DECinfo%SNOOPdecfrag
     write(lupri,*) 'CCexci ', DECinfo%CCexci
     write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
     write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR

@@ -3274,7 +3274,7 @@ subroutine RIMP2F12_Ccoupling_energy(MyFragment,EnergyF12Ccoupling,Fragment1,Fra
    !print *, "nvirtAOS", nvirt
    !print *, "noccAOS+noccAOS", nocc + nvirt
 
-   print*,'associated(MyFragment%Ccabs): ',associated(MyFragment%Ccabs)
+!   print*,'associated(MyFragment%Ccabs): ',associated(MyFragment%Ccabs)
    ncabsAO = size(MyFragment%Ccabs,1)
    ncabsMO = size(MyFragment%Ccabs,2)
 

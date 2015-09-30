@@ -63,7 +63,6 @@ contains
     call II_get_mixed_overlap_full(DECinfo%output,DECinfo%output,lsfull%SETTING,&
          & S,MyMoleculeFULL%nbasis,MyMoleculeFULL%nbasis,AORdefault,AORdefault)
 
-    ! Simple SNOOP with no orthogonality constraint and no iterative SNOOP HF cycles
     call snoop_workhorse(Lsfull,config,MyMoleculeFULL,D,S)
 
     call mem_dealloc(S)
@@ -866,9 +865,10 @@ contains
     real(realk),intent(inout) :: Ecorr
     type(matrix) ::D,C
     type(fullmolecule) :: MySubsystem
-    real(realk) :: dummy,Eerr
-    integer :: nMO,nbasis
-
+    real(realk) :: dummyE,Eerr,simple_orbital_threshold_save
+    logical :: simulate_full_save,InclFullMolecule_save,full_molecular_cc_save
+    integer :: nMO,nbasis,i
+    real(realk),pointer :: dummyG(:,:)
 
     ! Dimensions
     nbasis = F%nrow
@@ -905,7 +905,38 @@ contains
        ! Full calculation
        write(DECinfo%output,'(1X,a,i7,a)') 'SNOOP: Starting subsystem ', this, &
             & ' calculation using full driver'
-       call full_driver(MySubsystem,lssub,D,dummy,Ecorr)
+
+       if(DECinfo%SNOOPdecfrag) then
+
+          ! Consider SNOOP monomer to be one DEC fragment
+          ! *********************************************
+
+          ! Quick and dirty solution to ensure that we only 
+          ! have one fragment representing the SNOOP monomer.
+          simple_orbital_threshold_save = DECinfo%simple_orbital_threshold
+          simulate_full_save = DECinfo%simulate_full
+          InclFullMolecule_save = DECinfo%InclFullMolecule
+          full_molecular_cc_save = DECinfo%full_molecular_cc
+          DECinfo%simulate_full = .true.
+          DECinfo%simple_orbital_threshold = -0.1_realk
+          DECinfo%InclFullMolecule = .true.
+          DECinfo%full_molecular_cc = .false.
+          call mem_alloc(dummyG,3,MySubsystem%natoms) 
+
+          ! DEC calculation with simulatefull where the one fragment
+          ! is the SNOOP monomer
+          call DEC_wrapper(MySubsystem,lssub,D,dummyE,Ecorr,dummyG,Eerr)
+
+          ! Free and reset
+          call mem_dealloc(dummyG)
+          DECinfo%simulate_full = simulate_full_save
+          DECinfo%simple_orbital_threshold = simple_orbital_threshold_save
+          DECinfo%InclFullMolecule = InclFullMolecule_save 
+          DECinfo%full_molecular_cc = full_molecular_cc_save 
+
+       else
+          call full_driver(MySubsystem,lssub,D,dummyE,Ecorr)
+       end if
 
     else
 

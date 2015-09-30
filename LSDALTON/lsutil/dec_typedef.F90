@@ -127,7 +127,8 @@ module dec_typedef_module
      ! SNOOPonesub= 0       --> Calculate only full system
      ! SNOOPonesub= i (i>0) --> Calculate only subsystem i
      integer :: SNOOPonesub
-     
+     !> Consider SNOOP monomer as a single DEC fragment (mainly for testing)
+     logical :: SNOOPdecfrag
 
 
      ! CC response (no DEC so far)
@@ -1566,6 +1567,7 @@ CONTAINS
     DECinfo%SNOOPlocalize  = .false.
     DECinfo%SNOOPrestart  = .false.
     DECinfo%SNOOPonesub  = -1
+    DECinfo%SNOOPdecfrag = .false.
 
     ! CC response
     DECinfo%CCexci = .false.

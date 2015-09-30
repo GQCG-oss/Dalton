@@ -89,7 +89,7 @@ contains
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
        end if
-       IF(.not. DECinfo%full_molecular_cc)THEN
+       IF( (.not. DECinfo%full_molecular_cc) .or. DECinfo%snoop)THEN
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
@@ -163,7 +163,7 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       IF(.not. DECinfo%full_molecular_cc)THEN
+       IF( (.not. DECinfo%full_molecular_cc) .or. DECinfo%snoop)THEN
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
