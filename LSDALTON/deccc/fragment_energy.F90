@@ -23,7 +23,6 @@ module fragment_energy_module
   use mp2_module !,only: max_batch_dimension,get_vovo_integrals, &
   !       & mp2_integrals_and_amplitudes
   use rimp2_module
-  use dec_ls_thc_rimp2_module
   use atomic_fragment_operations!  ,only: atomic_fragment_init_basis_part, &
   !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
   !       & update_full_t1_from_atomic_frag,which_pairs, &
@@ -313,8 +312,7 @@ contains
 
     case(MODEL_LSTHCRIMP2) ! LSTHCRIMP2 calculation
 
-       if(DECinfo%first_order)call lsquit('no first order LSTHCRIMP2',-1)       
-       call LSTHCRIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
+       call lsquit('LSTHCRIMP2_integrals_and_amplitudes not implemented',-1)
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_SOSEX) ! higher order CC (-like)
 

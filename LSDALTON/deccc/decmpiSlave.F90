@@ -72,13 +72,13 @@ subroutine dec_lsmpi_slave(comm)
       case(RIMP2F12Ccoup);
          call RIMP2F12_Ccoupling_energy_slave
       case(LSTHCRIMP2INAMP);
-         call LSTHCRIMP2_integrals_and_amplitudes_slave
+         call lsquit('No LSTHCRIMP2_integrals_and_amplitudes_slave',-1)
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
       case(RIMP2F12FULL);
          call full_canonical_rimp2f12_slave
       case(LSTHCRIMP2FULL);
-!         call full_canonical_ls_thc_rimp2_slave
+         call lsquit('No full_canonical_ls_thc_rimp2_slave',-1)
       case(DECRIMP2GRAD);
          call RIMP2_gradient_slave
       case(CANONMP2FULL);

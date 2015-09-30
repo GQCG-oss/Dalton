@@ -37,7 +37,6 @@ module full
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
   use full_mp3_module
-  use full_ls_thc_rimp2Mod
   use full_f12contractions
 
   public  :: full_driver,full_cc_dispatch,full_canonical_mp2_f12,&
@@ -115,7 +114,7 @@ contains
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
        elseif(DECinfo%ccModel==MODEL_LSTHCRIMP2)then
-          call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
+          call lsquit('full_canonical_ls_thc_rimp2 not implemented',-1)
        elseif(DECinfo%ccmodel==MODEL_MP3) then
           call full_canonical_mp3(MyMolecule,MyLsitem,Ecorr)
        else

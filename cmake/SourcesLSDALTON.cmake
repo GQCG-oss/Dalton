@@ -218,7 +218,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/mp2.F90
     LSDALTON/deccc/rimp2.F90
     LSDALTON/deccc/ri_util.F90
-    LSDALTON/deccc/ls_thc_rimp2.F90
     LSDALTON/deccc/ccsdpt_driver.F90
     LSDALTON/deccc/ccsdpt_kernels.F90
     LSDALTON/deccc/ccsdpt_tools.F90
@@ -258,7 +257,6 @@ set(DEC_SOURCES
     LSDALTON/deccc/full_rimp2f12.F90
     LSDALTON/deccc/full_mp2.F90
     LSDALTON/deccc/full_mp3.F90
-    LSDALTON/deccc/full_ls_thc_rimp2.F90
     LSDALTON/deccc/snoop_main.F90
     LSDALTON/deccc/snoop_tools.F90
     LSDALTON/deccc/decmpi.F90
