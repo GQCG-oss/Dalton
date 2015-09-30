@@ -28,5 +28,5 @@ fi
 #
 cd $bname
 #
-ctest -D Nightly
+ctest -D Nightly -L linsca
 #
