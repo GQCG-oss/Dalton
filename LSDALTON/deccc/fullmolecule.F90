@@ -36,6 +36,21 @@ module full_molecule
 
   integer, save :: mol_block_size = -14938343
 
+  public :: mol_block_size,molecule_init_from_files,&
+       & molecule_init_from_inputs,molecule_init_basics,&
+       & molecule_copy_FC_matrices,molecule_copyback_FC_matrices,&
+       & getPhantomAtoms,molecule_get_fock,&
+       & dec_get_canonical_orbitals,molecule_get_reference_state,&
+       & molecule_init_abs_overlap,molecule_get_carmom,&
+       & molecule_finalize,molecule_get_atomic_sizes,&
+       & molecule_generate_basis,molecule_mo_fock,&
+       & molecule_mo_f12,calculate_fullmolecule_memory,&
+       & dec_get_density_matrix_from_file, get_num_electrons,&
+       & get_num_atoms,get_num_basis_functions,&
+       & get_num_aux_basis_functions
+
+  private 
+
 contains
 
   !> \brief Initialize informations about full molecule by reading HF info from file.

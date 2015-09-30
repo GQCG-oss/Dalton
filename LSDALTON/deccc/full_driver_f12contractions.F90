@@ -1,5 +1,82 @@
 module full_f12contractions
   use precision
+
+public :: mp2f12_Vijij
+public :: mp2f12_Vijij_term5
+public :: mp2f12_Vijij_term1
+public :: mp2f12_Vijij_term2
+public :: mp2f12_Vijij_term3
+public :: mp2f12_Vijij_term4
+public :: mp2f12_Vjiij
+public :: mp2f12_Vjiij_term5
+public :: mp2f12_Vjiij_term1
+public :: mp2f12_Vjiij_term2
+public :: mp2f12_Vjiij_term3
+public :: mp2f12_Vjiij_term4
+public :: mp2f12_Xijij
+public :: mp2f12_Xijij_term1
+public :: mp2f12_Xijij_term2
+public :: mp2f12_Xijij_term3
+public :: mp2f12_Xijij_term4
+public :: mp2f12_Xijijfull
+public :: mp2f12_Xijijfull_term1
+public :: mp2f12_Xijijfull_term2
+public :: mp2f12_Xijijfull_term3
+public :: mp2f12_Xijijfull_term4
+public :: mp2f12_Xjiij
+public :: mp2f12_Xjiij_term1
+public :: mp2f12_Xjiij_term2
+public :: mp2f12_Xjiij_term3
+public :: mp2f12_Xjiij_term4
+public :: mp2f12_Bijij
+public :: mp2f12_Bijij_term1
+public :: mp2f12_Bijij_term2
+public :: mp2f12_Bijij_term3
+public :: mp2f12_Bijij_term4
+public :: mp2f12_Bijij_term5
+public :: mp2f12_Bijij_term6
+public :: mp2f12_Bijij_term7
+public :: mp2f12_Bijij_term8
+public :: mp2f12_Bijij_term9
+public :: mp2f12_Vijij_coupling
+public :: mp2f12_Vjiij_coupling
+public :: ccsdf12_Viija_full
+public :: ccsdf12_Viija
+public :: ccsdf12_Viija0
+public :: ccsdf12_Viija1
+public :: ccsdf12_Viija2
+public :: ccsdf12_Viija3
+public :: ccsdf12_Viajj
+public :: ccsdf12_Viajj0
+public :: ccsdf12_Viajj1
+public :: ccsdf12_Viajj2
+public :: ccsdf12_Viajj3
+public :: ccsdf12_Viaji
+public :: ccsdf12_Viaji0
+public :: ccsdf12_Viaji1
+public :: ccsdf12_Viaji2
+public :: ccsdf12_Viaji3
+public :: ccsdf12_Vijja
+public :: ccsdf12_Vijja0
+public :: ccsdf12_Vijja1
+public :: ccsdf12_Vijja2
+public :: ccsdf12_Vijja3
+public :: ccsdf12_Viajb
+public :: ccsdf12_Viajb_term1
+public :: ccsdf12_Viajb_term2
+public :: ccsdf12_Viajb_term3
+public :: ccsdf12_Viajb_term4
+public :: ccsdf12_Viajb_coupling
+public :: ccsdf12_Viija_coupling
+public :: ccsdf12_Viajj_coupling
+public :: mp2f12_Cjaib
+public :: mp2f12_Ciajb
+public :: mp2f12_Bjiij
+public :: ccsdf12_Vjiij_coupling
+public :: ccsdf12_Vijij_coupling
+
+  private 
+
 contains
   !> @file
   !> Full molecular CC program

@@ -669,11 +669,11 @@ subroutine full_canonical_rimp2_slave
   use decmpi_module, only: mpi_bcast_fullmolecule
   use DALTONINFO, only: ls_free
 !  use typedef
-!  use dec_typedef_module
+  use dec_typedef_module,only:fullmolecule
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
 !  use dec_fragment_utils
-  use full_molecule, only:fullmolecule, molecule_finalize
+  use full_molecule, only: molecule_finalize
   implicit none
   !> Full molecule info
   type(fullmolecule) :: MyMolecule

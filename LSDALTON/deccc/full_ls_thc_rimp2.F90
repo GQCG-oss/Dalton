@@ -9,6 +9,7 @@ module full_ls_thc_rimp2Mod
   use decmpi_module, only: mpi_bcast_fullmolecule
   use lsmpi_op
 #endif
+  use lstiming
   use fundamental
   use precision
   use typedeftype
@@ -17,6 +18,8 @@ module full_ls_thc_rimp2Mod
   use matrix_module
   use matrix_operations
   use memory_handling
+  use IntegralInterfaceMOD
+
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_fragment_utils
