@@ -22,7 +22,7 @@ cd $wrk/$lib
 #
 if [ ! -d $wrk/$lib/$bname ]
 then
-   ./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --int64 -DENABLE_DEC=ON -DENABLE_TENSORS=ON -DENABLE_RSP=OFF -DENABLE_XCFUN=OFF -DBUILDNAME="$bname" $bname
+   ./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --mpi --omp --int64 --type=debug -DENABLE_DEC=ON -DENABLE_TENSORS=ON -DENABLE_RSP=OFF -DENABLE_XCFUN=OFF -DBUILDNAME="$bname" $bname
 fi
 if [ ! -d $DALTON_TMPDIR ]
 then
