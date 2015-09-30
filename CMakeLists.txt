@@ -77,6 +77,7 @@ option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
 option(ENABLE_DEC            "Enable Divide-Expand-Consolidate module"          OFF)
 option(ENABLE_LARGE_TEST     "Enable Large-scale (long) test cases"             OFF)
+option(ENABLE_DEVELOPER      "Enable Developer test cases and features"         OFF)
 
 # Gen1Int interface, OpenRSP and TDRSP needs QcMatrix library
 # Gao: please leave this comment here, and I am going to fix it after repo split
