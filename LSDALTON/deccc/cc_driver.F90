@@ -63,7 +63,6 @@ end interface mp2_solver
 
 contains
 
-#ifdef MOD_UNRELEASED
    subroutine ccsolver_energy_multipliers(ccmodel,Co,Cv,fock,nb,no,nv, &
         &mylsitem,ccPrintLevel,fragment_job,oof,vvf,ccenergy)
 
@@ -129,7 +128,6 @@ contains
 
 
    end subroutine ccsolver_energy_multipliers
-#endif
 
    subroutine one_el_unrel_dens(nb,no,nv,t1f,t2f,m1f,m2f)
 
@@ -3468,7 +3466,6 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
             & pno_cv,pno_s,nspaces, iter,local,use_pnos,restart,frag=frag)
 
 
-#ifdef MOD_UNRELEASED
       case( SOLVE_MULTIPLIERS )
 
          if (ccmodel == MODEL_CC2)then
@@ -3500,7 +3497,6 @@ subroutine ccsolver_get_residual(ccmodel,JOB,omega2,t2,&
          call tensor_free(o2)
          call tensor_free(tl2)
          call tensor_free(ml4)
-#endif
 
       case default
          call lsquit("ERROR(ccsolver_get_residual): job not implemented for CC2, CCSD or CCSD(T)",-1)
