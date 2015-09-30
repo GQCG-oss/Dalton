@@ -149,7 +149,7 @@ C
       RTENBD = 0.4D0
       RTENGD = 0.8D0
       RTRJMN = 0.1D0
-      RTRJMX = 3.0D0
+      RTRJMX = 10.1D0
       LNSRCH = .FALSE.
       RATFUN = .FALSE.
       TRSTRG = .FALSE.
@@ -2620,14 +2620,14 @@ C     as quadratic as the ground state, and thus we should not walk to far
 C     away. This is necessary for instance to get test15 through....
 C
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
-         WRITE (LUPRI,'(/A)') ' INFO >>>> As this is an excited '//
-     &        'optimization some thresholds have been updated'
+         WRITE (LUPRI,'(/A)') ' INFO  As this is an excited state '
+     &      //'optimization some default thresholds have been updated'
          IF (TRSTRA .EQ. 0.5D0) TRSTRA = 0.25D0
          IF (TRSTIN .EQ. 1.2D0) TRSTIN = 1.10D0
          IF (RTENBD .EQ. 0.4D0) RTENBD = 0.85D0
          IF (RTRJMN .EQ. 0.1D0) RTRJMN = 0.80D0
          IF (RTENGD .EQ. 0.8D0) RTENGD = 0.90D0
-         IF (RTRJMX .EQ. 3.0D0) RTRJMX = 1.20D0
+         IF (RTRJMX .EQ. 10.1D0) RTRJMX = 1.20D0
          WRITE(LUPRI,'(/A/A/,(A,F10.4))')
      &        ' Restricted step control parameters',
      &        ' ----------------------------------',
