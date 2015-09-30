@@ -2114,10 +2114,11 @@ end module fullrimp2f12
     use DALTONINFO, only: ls_free
     use matrix_module
     use matrix_operations
+    use dec_typedef_module,only: fullmolecule
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
     !  use dec_fragment_utils
-    use full_molecule, only:fullmolecule, molecule_finalize
+    use full_molecule, only: molecule_finalize
     implicit none
     !> Full molecule info
     type(fullmolecule) :: MyMolecule

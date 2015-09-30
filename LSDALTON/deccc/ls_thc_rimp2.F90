@@ -9,6 +9,10 @@ module dec_ls_thc_rimp2_module
   use dec_typedef_module
   use tensor_type_def_module
 
+  public :: LSTHCRIMP2_integrals_and_amplitudes
+  
+  private
+
 contains
 !> \brief Calculate EOS integrals and EOS amplitudes for RI-MP2 calculation -
 !> both for occupied and virtual partitioning schemes.

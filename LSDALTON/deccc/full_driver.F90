@@ -40,8 +40,10 @@ module full
   use full_ls_thc_rimp2Mod
   use full_f12contractions
 
-  public  :: full_driver
-  private :: mp2f12_E22X
+  public  :: full_driver,full_cc_dispatch,full_canonical_mp2_f12,&
+       & full_get_ccsd_f12_energy,full_get_ccsd_singles_and_doubles
+
+  private 
 
 contains
 

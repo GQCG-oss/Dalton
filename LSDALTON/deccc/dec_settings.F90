@@ -20,6 +20,13 @@ MODULE DEC_settings_mod
   use lsmpi_param, only: LSMPIASYNCP
 #endif
 
+  public ::  check_dec_input,check_cc_input,FullMemoryError,&
+       & DEC_settings_print,set_geoopt_FOTs,&
+       & find_model_number_from_input, free_decinfo,&
+       & config_dec_input
+
+  private
+
 contains
 
   !> \brief Read the **DEC or **CC input section in LSDALTON.INP and set 
@@ -1441,7 +1448,7 @@ contains
   subroutine free_decinfo()
      implicit none
      if(associated(DECinfo%frag_job_nr))call mem_dealloc(DECinfo%frag_job_nr)
-  end subroutine
+   end subroutine free_decinfo
 
   !> MODIFY FOR NEW MODEL
   !> \brief For a given model input (e.g. .MP2 or .CCSD) find model number associated with input.
