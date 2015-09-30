@@ -1,4 +1,5 @@
-bname=`basename "$0"`
+bname=$(basename "$0")
+bname=${bname/.bash/}
 ##########
 export LM_LICENSE_FILE=/opt/pgi/license.dat
 source /opt/pgi/linux86-64/15.7/pgi.sh
@@ -9,8 +10,8 @@ export OMP_NUM_THREADS=2
 export CTEST_PROJECT_NAME=LSDALTON
 #
 wrk=$1
-lib=lsdalton_${bname/.bash/}
-export DALTON_TMPDIR=$wrk/$lib/$bname
+lib=lsdalton_$bname
+export DALTON_TMPDIR=$wrk/$lib/$bname/tmp
 #
 if [ ! -d $wrk/$lib ]
 then
