@@ -35,8 +35,6 @@ linsca-release                  Author: Thomas,Simen            Status: DoNotDel
 pe/lsdalton                     Author: Magnus,Nanna,Simen      Status: DoNotDelete
 dec-quad                        Author: Johannes                Status: DoNotDelete
 Hackathon                       Author: Patrick E.              Status: DoNotDelete
-radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
-radovan/linsca-vcd-aat          Author: Radovan                 Status: DoNotDelete (might be used to reproduce reference numbers of VCD AAT implementation)
 
 dec-patrick                     Author: Patrick E.              Status: ??????????????????????
 dec-karl                        Author: Karl                    Status: stale
@@ -44,3 +42,8 @@ localize_wannier                Author: Karl                    Status: stale
 master_with_CUDA_fh             Author: Frank Heiden haydn@bbsyd.dk  Status: ??????????????????????
 wannier                         Author: Karl                    Status: Working
 
+
+The following branches will not move. They are basically tags
+to very old code:
+radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
+radovan/linsca-vcd-aat          Author: Radovan                 Status: DoNotDelete (might be used to reproduce reference numbers of VCD AAT implementation)
