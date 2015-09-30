@@ -23,7 +23,7 @@ titan_branch                    Author: Patrick E., Janus       Status: Working
 qcmatrix                        Author: Bin Gao, Magnus, ..     Status: Working (new OpenRSP interface with QcMatrix library)
 idamarie/nonortho               Author: Ida-Marie Høyvik        Status: Working
 unres                           Author: Dmytro Bykov            Status: Working
-
+ThomasK/THC                     Author: Thomas                  Status: Working
 LstensorRemovalBranch           Author: Thomas, Simen           Status: DoNotDelete
 NOorbitals                      Author: Ida-Marie Høyvik        Status: DoNotDelete
 NonOrthogonalOrbitals           Author: Ida-Marie Høyvik        Status: DoNotDelete
