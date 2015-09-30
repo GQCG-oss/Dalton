@@ -6,11 +6,11 @@ source /opt/mpich-3.1.4-gnu-4.8/source.bash
 export DALTON_NUM_MPI_PROCS=3
 export OMP_NUM_THREADS=2
 export CTEST_PROJECT_NAME=LSDALTON
-export DALTON_TMPDIR=$wrk/$lib/$bname
 
 root=$(pwd)
 wrk=$1
-lib=lsdalton_nightly
+lib=lsdalton_${bname/.bash/}
+export DALTON_TMPDIR=$wrk/$lib/$bname
 if [ ! -d $wrk/$lib ]
 then
    cd $wrk

@@ -7,10 +7,10 @@ export LD_LIBRARY_PATH=/opt/pgi/15.7/share_objects/lib64:$LD_LIBRARY_PATH
 export DALTON_NUM_MPI_PROCS=6
 export OMP_NUM_THREADS=2
 export CTEST_PROJECT_NAME=LSDALTON
-export DALTON_TMPDIR=$wrk/$lib/$bname
 #
 wrk=$1
-lib=lsdalton_c_${bname/.bash/}
+lib=lsdalton_${bname/.bash/}
+export DALTON_TMPDIR=$wrk/$lib/$bname
 #
 if [ ! -d $wrk/$lib ]
 then
