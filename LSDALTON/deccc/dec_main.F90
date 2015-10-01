@@ -29,7 +29,6 @@ module dec_main_mod
   ! *****************************************
   use snoop_main_module
   use dec_fragment_utils
-  use array3_memory_manager!,only: print_memory_currents_3d
   use array4_memory_manager!,only: print_memory_currents4
   use full_molecule!,only: molecule_init, molecule_finalize,molecule_init_from_inputs
   use orbital_operations!,only: check_lcm_against_canonical
@@ -257,8 +256,6 @@ contains
     write(DECinfo%output,*) 'CC Memory summary'
     write(DECinfo%output,*) '-----------------'
     call print_memory_currents4(DECinfo%output)
-    write(DECinfo%output,*) '------------------'
-    call print_memory_currents_3d(DECinfo%output)
     write(DECinfo%output,*) '------------------'
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '------------------------------------------------------'
