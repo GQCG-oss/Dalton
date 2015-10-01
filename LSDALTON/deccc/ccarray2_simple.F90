@@ -20,6 +20,7 @@ module array2_simple_operations
 
 
 
+
   !> Overloaded constructor
   interface array2_init
     module procedure array2_init_plain
@@ -41,6 +42,21 @@ module array2_simple_operations
   interface operator(*)
     module procedure array2_dotproduct
   end interface
+
+public :: operator(*), operator(+)
+public :: array2_free, array2_init, array2_add
+public :: array2_transpose, array2_dotproduct
+public :: array2_zero, array2_similarity_transformation
+public :: array2_add_to, array2_init_plain
+public :: array2_copy, array2_add_plain
+public :: array2_matmul, array2_add_scale
+public :: array2_print, array2_init_data
+public :: array2_extract_eos, get_canonical_integral_transformation_matrices
+public :: extract_occupied_eos_mo_indices
+public :: extract_virtual_eos_mo_indices, get_mp2_integral_transformation_matrices_fc
+public :: get_mp2_integral_transformation_matrices
+private
+
 
   contains
 

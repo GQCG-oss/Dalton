@@ -421,9 +421,9 @@ contains
 
     ! Extract occupied and virtual EOS indices from columns of MyFragment%Co
     ! and MyFragment%Cv, i.e. the local EOS molecular orbital coefficients
-    LoccEOS = array2_init_plain([nbasis,noccEOS])
+    LoccEOS = array2_init([nbasis,noccEOS])
     call extract_occupied_EOS_MO_indices(LoccEOS,MyFragment)
-    LvirtEOS = array2_init_plain([nbasis,nvirtEOS])
+    LvirtEOS = array2_init([nbasis,nvirtEOS])
     call extract_virtual_EOS_MO_indices(LvirtEOS,MyFragment)
 
     ! For efficiency when calling dgemm, save transposed matrices
@@ -2387,9 +2387,9 @@ subroutine MP2F12_Ccoupling_energy(MyFragment,bat,E21)
 
     ! Extract occupied and virtual EOS indices from columns of MyFragment%Co
     ! and MyFragment%Cv, i.e. the local EOS molecular orbital coefficients
-    LoccEOS = array2_init_plain([nbasis,noccEOS])
+    LoccEOS = array2_init([nbasis,noccEOS])
     call extract_occupied_EOS_MO_indices(LoccEOS,MyFragment)
-    LvirtEOS = array2_init_plain([nbasis,nvirtEOS])
+    LvirtEOS = array2_init([nbasis,nvirtEOS])
     call extract_virtual_EOS_MO_indices(LvirtEOS,MyFragment)
 
     ! For efficiency when calling dgemm, save transposed matrices

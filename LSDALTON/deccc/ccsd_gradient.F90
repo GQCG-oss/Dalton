@@ -22,6 +22,7 @@ module ccsd_gradient_module
   use ccintegrals
   use mp2_gradient_module
   use ccsd_module
+  use dec_fragment_utils
 #ifdef VAR_MPI
   use infpar_module
 #endif
@@ -33,6 +34,7 @@ module ccsd_gradient_module
   public :: single_calculate_ccsdgradient_driver
   public :: pair_calculate_ccsdgradient_driver
   private
+
 
   contains
 
