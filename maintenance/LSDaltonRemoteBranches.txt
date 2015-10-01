@@ -24,17 +24,10 @@ qcmatrix                        Author: Bin Gao, Magnus, ..     Status: Working 
 idamarie/nonortho               Author: Ida-Marie Høyvik        Status: Working
 unres                           Author: Dmytro Bykov            Status: Working
 ThomasK/THC                     Author: Thomas                  Status: Working
-LstensorRemovalBranch           Author: Thomas, Simen           Status: DoNotDelete
+
 NOorbitals                      Author: Ida-Marie Høyvik        Status: DoNotDelete
 NonOrthogonalOrbitals           Author: Ida-Marie Høyvik        Status: DoNotDelete
-dec-cholesky                    Author: Pablo                   Status: DoNotDelete
-linsca-develop                  Author: Thomas                  Status: DoNotDelete (Old LSDalton Master branch)
-linsca-develop-xcfun            Author: Ulf                     Status: DoNotDelete
-linsca-ng                       Author: Thomas,Sonia,..         Status: DoNotDelete (Only place Residues are implemented,..)
-linsca-release                  Author: Thomas,Simen            Status: DoNotDelete (2011 release of lsdalton)
 pe/lsdalton                     Author: Magnus,Nanna,Simen      Status: DoNotDelete
-dec-quad                        Author: Johannes                Status: DoNotDelete
-Hackathon                       Author: Patrick E.              Status: DoNotDelete
 
 dec-patrick                     Author: Patrick E.              Status: ??????????????????????
 dec-karl                        Author: Karl                    Status: stale
@@ -47,3 +40,11 @@ The following branches will not move. They are basically tags
 to very old code:
 radovan/linsca-openrsp-2010     Maintainer: Radovan             Status: DoNotDelete (might be used to scavenge old OpenRSP test reference results, does not need to move to LSDalton repo)
 radovan/linsca-vcd-aat          Author: Radovan                 Status: DoNotDelete (might be used to reproduce reference numbers of VCD AAT implementation)
+LstensorRemovalBranch           Author: Thomas, Simen           Status: DoNotDelete
+linsca-develop                  Author: Thomas                  Status: DoNotDelete (Old LSDalton Master branch)
+linsca-develop-xcfun            Author: Ulf                     Status: DoNotDelete
+linsca-ng                       Author: Thomas,Sonia,..         Status: DoNotDelete (Only place Residues are implemented,..)
+linsca-release                  Author: Thomas,Simen            Status: DoNotDelete (2011 release of lsdalton)
+dec-cholesky                    Author: Pablo                   Status: DoNotDelete
+dec-quad                        Author: Johannes                Status: DoNotDelete
+Hackathon                       Author: Patrick E.              Status: DoNotDelete
