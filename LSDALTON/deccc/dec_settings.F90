@@ -17,8 +17,15 @@ MODULE DEC_settings_mod
   use matrix_operations
 #ifdef VAR_MPI
   use infpar_module
-  use lsmpi_type, only: LSMPIASYNCP
+  use lsmpi_param, only: LSMPIASYNCP
 #endif
+
+  public ::  check_dec_input,check_cc_input,FullMemoryError,&
+       & DEC_settings_print,set_geoopt_FOTs,&
+       & find_model_number_from_input, free_decinfo,&
+       & config_dec_input
+
+  private
 
 contains
 
@@ -153,6 +160,9 @@ contains
              call lsquit('Error in SNOOPONESUB input!',-1)
           end if
 
+       case('.SNOOPDECFRAG')
+          DECinfo%SNOOPdecfrag=.true.
+
           ! CC RESPONSE
           ! ===========
        case('.EXCITATIONENERGIES')
@@ -271,6 +281,7 @@ contains
        case('.PT_SINGLE_PREC'); DECinfo%pt_single_prec = .true.
        case('.PT_HACK'); DECinfo%pt_hack = .true.
        case('.PT_HACK2'); DECinfo%pt_hack2 = .true.
+       case('.TEST_LEN'); read(input,*) DECinfo%test_len 
 
        ! DEC CALCULATION 
        ! ===============
@@ -387,8 +398,6 @@ contains
 
        !KEYWORDS FOR DEC PARALLELISM
        !****************************
-       case('.TEST_FULLY_DISTRIBUTED_INTEGRALS') 
-          DECinfo%test_fully_distributed_integrals=.true.
        case('.MANUAL_BATCHSIZES') 
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
@@ -554,7 +563,6 @@ contains
        case('.BACKGROUND_BUFFER');    DECinfo%use_bg_buffer           = .true.
 
 
-#ifdef MOD_UNRELEASED
        ! CCSOLVER SPECIFIC KEYWORDS
        ! **************************
        case('.CCDRIVERDEBUG');        DECinfo%cc_driver_debug         = .true.
@@ -590,9 +598,10 @@ contains
        case('.DEBUG_MULTIPLIERS_DIRECT'); DECinfo%simple_multipler_residual = .false.
        case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
-#endif
        case('.CCSDFORCE_SCHEME');         DECinfo%force_scheme         = .true.
                                           read(input,*) DECinfo%en_mem
+       case('.CCINT_SCHEME');             DECinfo%ccintforce         = .true.
+                                          read(input,*) DECinfo%ccintscheme
        case('.CCSD_DEBUG_COMMUNICATION'); DECinfo%CCSD_NO_DEBUG_COMM   = .false.
 
           ! Stripped-down keywords
@@ -1289,6 +1298,7 @@ contains
     write(lupri,*) 'SNOOPlocalize ', DECinfo%SNOOPlocalize
     write(lupri,*) 'SNOOPrestart ', DECinfo%SNOOPrestart
     write(lupri,*) 'SNOOPonesub ', DECinfo%SNOOPonesub
+    write(lupri,*) 'SNOOPdecfrag ', DECinfo%SNOOPdecfrag
     write(lupri,*) 'CCexci ', DECinfo%CCexci
     write(lupri,*) 'JacobianNumEival ', DECinfo%JacobianNumEival
     write(lupri,*) 'JacobianLHTR ', DECinfo%JacobianLHTR
@@ -1438,7 +1448,7 @@ contains
   subroutine free_decinfo()
      implicit none
      if(associated(DECinfo%frag_job_nr))call mem_dealloc(DECinfo%frag_job_nr)
-  end subroutine
+   end subroutine free_decinfo
 
   !> MODIFY FOR NEW MODEL
   !> \brief For a given model input (e.g. .MP2 or .CCSD) find model number associated with input.

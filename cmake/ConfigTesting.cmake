@@ -6,11 +6,19 @@ set(BUILDNAME
     )
 
 # set ctest own timeout
-set(DART_TESTING_TIMEOUT
-    "1200"
-    CACHE STRING
-    "Set timeout in seconds for every single test"
-    )
+if(ENABLE_LARGE_TEST)
+   set(DART_TESTING_TIMEOUT
+      "18000" # 5 hours 
+      CACHE STRING
+      "Set timeout in seconds for every single test"
+      )
+else()
+   set(DART_TESTING_TIMEOUT
+      "1200"  # 20 minutes
+      CACHE STRING
+      "Set timeout in seconds for every single test"
+      )
+endif()
 
 include(TestsDALTON)
 include(TestsLSDALTON)

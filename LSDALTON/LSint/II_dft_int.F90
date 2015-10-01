@@ -4,6 +4,7 @@
 !> \author T. Kjaergaard
 !> \date 2009 
 MODULE IIDFTINT
+use files
 use gridgenerationmodule
 use dft_memory_handling
 use LSparameters

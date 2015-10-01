@@ -36,6 +36,21 @@ module full_molecule
 
   integer, save :: mol_block_size = -14938343
 
+  public :: mol_block_size,molecule_init_from_files,&
+       & molecule_init_from_inputs,molecule_init_basics,&
+       & molecule_copy_FC_matrices,molecule_copyback_FC_matrices,&
+       & getPhantomAtoms,molecule_get_fock,&
+       & dec_get_canonical_orbitals,molecule_get_reference_state,&
+       & molecule_init_abs_overlap,molecule_get_carmom,&
+       & molecule_finalize,molecule_get_atomic_sizes,&
+       & molecule_generate_basis,molecule_mo_fock,&
+       & molecule_mo_f12,calculate_fullmolecule_memory,&
+       & dec_get_density_matrix_from_file, get_num_electrons,&
+       & get_num_atoms,get_num_basis_functions,&
+       & get_num_aux_basis_functions
+
+  private 
+
 contains
 
   !> \brief Initialize informations about full molecule by reading HF info from file.
@@ -89,10 +104,7 @@ contains
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
        end if
-       IF(DECinfo%full_molecular_cc)THEN
-          call dec_get_CABS_orbitals(molecule,mylsitem)
-          call dec_get_RI_orbitals(molecule,mylsitem)
-       ELSE
+       IF( (.not. DECinfo%full_molecular_cc) .or. DECinfo%snoop)THEN
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
@@ -166,10 +178,7 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       IF(DECinfo%full_molecular_cc)THEN
-          call dec_get_CABS_orbitals(molecule,mylsitem)
-          call dec_get_RI_orbitals(molecule,mylsitem)
-       ELSE
+       IF( (.not. DECinfo%full_molecular_cc) .or. DECinfo%snoop)THEN
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
@@ -205,9 +214,6 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     molecule%EF12singles = 0.0_realk
-    molecule%Edisp = 0.0_realk
-    molecule%Ect = 0.0_realk
-    molecule%Esub = 0.0_realk
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
@@ -218,6 +224,11 @@ contains
        molecule%nMO=nMO
     else
        molecule%nMO = molecule%nbasis
+    end if
+
+    molecule%snoopmonomer = .false.
+    if(molecule%nMO /= molecule%nbasis) then  ! the molecule is a SNOOP monomer
+       molecule%snoopmonomer = .true.
     end if
 
     molecule%nocc = molecule%nelectrons/2
@@ -904,9 +915,7 @@ contains
     if(associated(molecule%ov_abs_overlap)) then
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
-
-    call free_cabs()
-
+    
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices
@@ -1143,8 +1152,8 @@ contains
      type(fullmolecule), intent(inout) :: MyMolecule
      type(lsitem), intent(inout) :: MyLsitem
      type(matrix), intent(in) :: D
-
-     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
+     type(matrix) :: CMO_cabs, CMO_std
+     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull
 
      nbasis   = MyMolecule%nbasis
      nocc     = MyMolecule%nocc
@@ -1159,9 +1168,7 @@ contains
      !     Fock(nCabsAO,nbasis) and be a 
      !     half transfomed matrix
 
-     call determine_CABS_nbast(ncabsAO,ncabsMO,MyLsitem%setting,DECinfo%output)
-     MyMolecule%nCabsAO = ncabsAO
-     MyMolecule%nCabsMO = ncabsMO
+     call determine_CABS_nbast(ncabsAO,MyLsitem%setting,DECinfo%output)
 
      nocvfull = nocc + nvirt
 
@@ -1188,6 +1195,16 @@ contains
      call mem_alloc(MyMolecule%Fcp,ncabsAO,nbasis)   !HACK not ncabsMO,nbasis - not CABS MOs
      call mem_alloc(MyMolecule%Fij,nocc,nocc)
      !call mem_alloc(MyMolecule%Fcd,ncabsAO,ncabsAO)
+
+     MyMolecule%nCabsAO = ncabsAO
+
+     ! KK - quick and ugly fix to get number of CABS MOs for full molecule
+     call collect_MO_coeff_in_one_matrix_from_real(nbasis,noccfull,nvirt,MyMolecule%Co%elm2,&
+          & MyMolecule%Cv%elm2,CMO_std)
+     call build_CABS_MO(ncabsAO,DECinfo%output,mylsitem%setting,CMO_std,CMO_cabs)
+     call mat_free(CMO_std)
+     MyMolecule%nCabsMO = CMO_cabs%ncol
+     call mat_free(CMO_cabs)
 
      ! Constructing the F12 MO matrices from F12_routines.F90
      call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&

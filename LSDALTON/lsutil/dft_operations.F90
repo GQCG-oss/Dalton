@@ -31,6 +31,7 @@ DFT%NOPRUN = .FALSE.
 DFT%DFTASC = .FALSE.
 DFT%DFTPOT = .FALSE.
 DFT%DODISP = .FALSE.
+DFT%DOORBFREE = .FALSE.
 !AMT New Dispersion Defaults
 DFT%DO_DFTD2        =       .FALSE.
 DFT%L_INP_D2PAR     =       .FALSE.
@@ -205,12 +206,14 @@ call LS_MPI_BUFFER(DFT%DFTPOT,Master)
 call LS_MPI_BUFFER(DFT%DODISP,Master)
 !SR&AB Orbital-free DFT param
 call LS_MPI_BUFFER(DFT%DOORBFREE,Master)
-call LS_MPI_BUFFER(DFT%ORBFREE%numberTSfunc,Master)
-DO i=1,DFT%ORBFREE%numberTSfunc
-  call LS_MPI_BUFFER(DFT%ORBFREE%TScoeff(i),Master)
-  call LS_MPI_BUFFER(DFT%ORBFREE%TSfunc(i),Master)
-ENDDO
-call LS_MPI_BUFFER(DFT%ORBFREE%kineticFac,Master)
+IF(DFT%DOORBFREE)THEN
+   call LS_MPI_BUFFER(DFT%ORBFREE%numberTSfunc,Master)
+   DO i=1,DFT%ORBFREE%numberTSfunc
+      call LS_MPI_BUFFER(DFT%ORBFREE%TScoeff(i),Master)
+      call LS_MPI_BUFFER(DFT%ORBFREE%TSfunc(i),Master)
+   ENDDO
+   call LS_MPI_BUFFER(DFT%ORBFREE%kineticFac,Master)
+ENDIF
 !AMT New Dispersion values
 call LS_MPI_BUFFER(DFT%DO_DFTD2,Master)
 call LS_MPI_BUFFER(DFT%L_INP_D2PAR,Master)

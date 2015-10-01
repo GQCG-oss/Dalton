@@ -62,7 +62,7 @@ MODULE ls_Integral_Interface
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
 #if VAR_MPI
-  use lsmpi_type, only:LSGETINT,LSJENGIN,LSLINK, ls_mpibcast, lsmpi_barrier, &
+  use lsmpi_type, only: ls_mpibcast, lsmpi_barrier, &
        & lsmpi_reduction, get_MPI_COMM_SELF
   use lsmpi_op, only: LSTASK, LS_TASK_MANAGER, LSMPI_TASK_LIST,&
   & lsmpi_lstensor_reduction, lsmpi_probe_and_irecv_add_lstmemrealkbuf,&
@@ -1311,7 +1311,7 @@ Integer              :: LUPRI,LUERR
 TYPE(INTEGRALINPUT)  :: INT_INPUT
 TYPE(AOITEM),target  :: AObuild(4)
 Integer              :: nAObuilds,idmat,idmat2,lupdmat
-logical              :: dograd
+logical              :: dograd,unrest2
 
 CALL init_integral_input(INT_INPUT,SETTING)
 CALL set_symmetry(INT_INPUT%iPQxyz,setting,lupri)
@@ -1335,8 +1335,10 @@ IF(INT_INPUT%DO_LINK)THEN
       idmat2 = idmat
       IF(matrix_type.EQ.mtype_unres_dense)then
          IF(MOD(idmat,2).EQ.0)THEN !2,4,6
+            unrest2 = .true.
             idmat2=idmat/2
          ELSE !1,3,5
+            unrest2 = .false.
             idmat2=idmat/2+1
          ENDIF
       ENDIF
@@ -1348,7 +1350,12 @@ IF(INT_INPUT%DO_LINK)THEN
          setting%output%postprocess(idmat2) = AntiSymmetricPostprocess
       ELSEIF(setting%DsymRHS(idmat).EQ.4)THEN
          !zero matrix 
-         setting%output%postprocess(idmat2) = 0
+         IF (matrix_type.EQ.mtype_unres_dense) THEN
+           !For the special case for unrestricted with beta component equal to zero, do not override the alpha symmetry
+           IF (.NOT.unrest2) setting%output%postprocess(idmat2) = 0
+         ELSE
+           setting%output%postprocess(idmat2) = 0
+         ENDIF
       ELSE
          print*,'the code can handle nonsym densities but'
          print*,'from a perfomance perspective it is better'

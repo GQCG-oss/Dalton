@@ -29,14 +29,15 @@ module lsmpi_op
        & ls_mpi_buffer, lsmpi_local_reduction, get_rank_for_comm, &
        & get_size_for_comm, ls_mpiInitBuffer, ls_MpiFinalizeBuffer, &
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
-       & LSMPIREDUCTION, LSMPIREDUCTIONmaster, LSMPIBROADCAST,&
        & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
   use infpar_module
   use lsmpi_module
+  use lsmpi_param
 #else
   use lsmpi_type, only: ls_mpi_buffer, get_rank_for_comm, get_size_for_comm, &
-       & ls_mpiInitBuffer, ls_MpiFinalizeBuffer,LSMPIBROADCAST,&
+       & ls_mpiInitBuffer, ls_MpiFinalizeBuffer,&
        & ls_mpiinitbufferaddtobuffer,printmpibuffersizes,ls_mpiModbuffersizes
+  use lsmpi_param, only: LSMPIBROADCAST
 #endif
   use screen_mod
   !*****************************************
@@ -1242,7 +1243,6 @@ call LS_MPI_BUFFER(dalton%TRILEVEL,Master)
 call LS_MPI_BUFFER(dalton%DOPASS,Master)
 call LS_MPI_BUFFER(dalton%DENSFIT,Master)
 call LS_MPI_BUFFER(dalton%DF_K,Master)
-call LS_MPI_BUFFER(dalton%INTEREST,Master)
 call LS_MPI_BUFFER(dalton%LINSCA,Master)
 call LS_MPI_BUFFER(dalton%MATRICESINMEMORY,Master)
 call LS_MPI_BUFFER(dalton%MEMDIST,Master)
@@ -1403,7 +1403,6 @@ call LS_MPI_BUFFER(dalton%molcharge,Master)
 call LS_MPI_BUFFER(dalton%run_dec_gradient_test,Master)
 
 call LS_MPI_BUFFER(dalton%ForceRIMP2memReduced,Master)
-call LS_MPI_BUFFER(dalton%ResponseMatNormConvTest,Master)
 call LS_MPI_BUFFER(dalton%PreCalcDFscreening,Master)
 call LS_MPI_BUFFER(dalton%PreCalcF12screening,Master)
 
@@ -1427,7 +1426,6 @@ call LS_MPI_BUFFER(scheme%CFG_LSDALTON,Master)
 call LS_MPI_BUFFER(scheme%DOPASS,Master)
 call LS_MPI_BUFFER(scheme%DENSFIT,Master)
 call LS_MPI_BUFFER(scheme%DF_K,Master)
-call LS_MPI_BUFFER(scheme%INTEREST,Master)
 call LS_MPI_BUFFER(scheme%MATRICESINMEMORY,Master)
 call LS_MPI_BUFFER(scheme%MEMDIST,Master)
 call LS_MPI_BUFFER(scheme%AOPRINT,Master)

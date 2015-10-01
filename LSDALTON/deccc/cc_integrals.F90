@@ -25,10 +25,12 @@ module ccintegrals
   use memory_handling
   use daltoninfo
 #ifdef VAR_MPI
+  use lsmpi_param
   use lsmpi_type
+  use lsmpi_module
   use infpar_module
 #endif
-
+  use iso_c_binding,only:c_ptr
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
   use array2_simple_operations
@@ -856,7 +858,6 @@ contains
   end subroutine get_AO_K
 
 
-#ifdef MOD_UNRELEASED
   !> Purpose: calculate AO int. in batches and transform them to
   !           full MO basis (non T1-transformed)
   !           The batches are then packed using permutational
@@ -893,12 +894,12 @@ contains
     integer :: alphaB, gammaB, dimAlpha, dimGamma
     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
     integer :: iorb, idx, K
-!ICHOR
+    !> ICHOR
     type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
     type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
     integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
     logical :: MoTrans, NoSymmetry,SameMol
-!THERMITE
+    !> THERMITE
     integer, pointer :: batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchAlpha(:),orb2batchGamma(:)
     integer, pointer :: batchsizeGamma(:), batchindexGamma(:)
@@ -2320,7 +2321,6 @@ contains
     end if
 
   end subroutine unpack_gmo
-#endif
 
   subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,INTSPEC,local,collective)
     implicit none
@@ -2452,7 +2452,7 @@ contains
 
     if( integral%dims(1) /= n1 .or. integral%dims(2) /= n2 .or. &
          & integral%dims(3) /= n3 .or. integral%dims(4) /= n4)then
-       call lsquit("EEROR(get_mo_integral_par)wrong dimensions of the integrals&
+       call lsquit("ERROR(get_mo_integral_par)wrong dimensions of the integrals&
             & or the transformation matrices",-1)
     endif
     bs = get_split_scheme_0(nb)
@@ -3577,8 +3577,7 @@ contains
         &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
      check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-        & (nbu < maxsize.and. use_bg_buf) .or. &
-        & DECinfo%test_fully_distributed_integrals
+        & (nbu < maxsize.and. use_bg_buf)
 
      if(check_next)then
 
@@ -3588,8 +3587,7 @@ contains
            &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
         check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-           & (nbu < maxsize.and.use_bg_buf) .or. &
-           & DECinfo%test_fully_distributed_integrals
+           & (nbu < maxsize.and.use_bg_buf) 
 
         if( check_next )then
 
@@ -3603,18 +3601,23 @@ contains
               &dble(maxsize*8.0E0_realk)/(1024.0**3)
 
            check_next = dble(maxsize*8.0E0_realk)/(1024.0**3) > MemToUse .or.&
-              & (nbu < maxsize.and.use_bg_buf) .or. &
-              & DECinfo%test_fully_distributed_integrals
+              & (nbu < maxsize.and.use_bg_buf)
 
            if(check_next)then
               s      = 3
-              inc    = nb/4
-              nbuffs = get_nbuffs_scheme_0()
            endif
 
         endif
      endif
 
+     if(DECinfo%ccintforce)then
+        s = DECinfo%ccintscheme
+     endif
+
+     if(s == 3)then
+        inc    = nb/4
+        nbuffs = get_nbuffs_scheme_0()
+     endif
 
      !set requested batch sizes to the largest possible and overwrite these
      !values if this is not possible
@@ -3780,7 +3783,6 @@ contains
 end module ccintegrals
 
 #ifdef VAR_MPI
-#ifdef MOD_UNRELEASED
 !> Purpose: Intermediate routine for the slaves, they get data
 !           from the local master and then call the routine to 
 !           calculate MO integrals (non-T1 transformed)
@@ -3788,9 +3790,10 @@ end module ccintegrals
 !> Author:  Pablo Baudin
 !> Date:    December 2013
 subroutine cc_gmo_data_slave()
-
+  use precision
   use memory_handling
   use dec_typedef_module
+  use tensor_interface_module
   use ccintegrals
   use daltoninfo
   use typedeftype, only: lsitem
@@ -3833,11 +3836,11 @@ subroutine cc_gmo_data_slave()
   call mem_dealloc(MOinfo%tileInd)
 
 end subroutine cc_gmo_data_slave
-#endif
 
 subroutine get_mo_integral_par_slave()
   use dec_typedef_module
   use daltoninfo
+!  use tensor_interface_module
   use tensor_type_def_module
   use typedeftype, only: lsitem
   use decmpi_module, only: wake_slaves_for_simple_mo

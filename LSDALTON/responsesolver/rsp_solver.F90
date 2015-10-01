@@ -2,6 +2,7 @@
 !> Solver for response equations (linear equations or eigenvalue problem).
 
 module RSPsolver
+use files
   use matrix_util
   use rspPrecond
   use rsp_util, only: util_scriptPx, get_rsp_trials_from_MO, MO_precond

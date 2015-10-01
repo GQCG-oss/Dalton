@@ -9,8 +9,13 @@ integer,pointer :: BATCH(:)
 end type intbatch
 
 TYPE INTEGRALOUTPUT
+#ifdef VAR_PTR_RESHAPE
+REAL(REALK),contiguous,pointer    :: ResultMat(:,:,:,:,:) 
+REAL(REALK),contiguous,pointer    :: Result3D(:,:,:) 
+#else
 REAL(REALK),pointer    :: ResultMat(:,:,:,:,:) 
 REAL(REALK),pointer    :: Result3D(:,:,:) 
+#endif
 type(lstensor),pointer :: screenTensor
 type(lstensor),pointer :: resultTensor
 type(lstensor)         :: RHScont
@@ -40,6 +45,10 @@ logical                :: FullAlphaCD
 logical                :: RealGabMatrix
 real(realk)            :: exchangeFactor
 END TYPE INTEGRALOUTPUT
+
+public :: intbatch,INTEGRALOUTPUT
+
+private 
 
 contains
 

@@ -9,6 +9,8 @@ module decmpi_module
   use memory_handling!,only: mem_alloc,mem_dealloc
   use dec_typedef_module
   use infpar_module
+  use lsmpi_param
+  use lsparameters
   use lsmpi_type
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
@@ -765,11 +767,9 @@ contains
 
     !simple logicals
     call ls_mpibcast(MyMolecule%mem_distributed,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%snoopmonomer,master,MPI_COMM_LSDALTON)
 
     ! Simple reals
-    call ls_mpibcast(MyMolecule%Edisp,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%Ect,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%Esub,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12singles,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12NLSV1,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%EF12NLSB1,master,MPI_COMM_LSDALTON)
@@ -786,7 +786,6 @@ contains
        call mem_alloc(MyMolecule%bas_start,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%bas_end,MyMolecule%nbasis)
        IF(DECINFO%F12)THEN
-          call init_cabs()
           call mem_alloc(MyMolecule%atom_cabssize,MyMolecule%natoms)
           call mem_alloc(MyMolecule%atom_cabsstart,MyMolecule%natoms)
        ENDIF
@@ -1519,7 +1518,6 @@ contains
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 
-#ifdef MOD_UNRELEASED
   !> Purpose: Get job list to have a good load balance in the
   !           main loop of the MO-CCSD residual calculations
   !
@@ -1625,7 +1623,6 @@ contains
     call mem_dealloc(work_in_node)
 
   end subroutine get_mo_ccsd_joblist
-#endif
 
   !> \brief get a suitable job distribution in mpi calculations
   !> \author Patrick Ettenhuber
@@ -2322,7 +2319,6 @@ contains
 
   end subroutine mpibcast_dec_settings
 
-#ifdef MOD_UNRELEASED
   !> Purpose: Communicate data to the slaves needed to get MO integral.
   !           get_packed_gmo routine.
   !
@@ -2489,7 +2485,6 @@ contains
     endif
 
   end subroutine mpi_communicate_moccsd_data
-#endif
 
   !> \brief Copy DEC setting structure to buffer (master)
   !> or read from buffer (slave)
@@ -2511,6 +2506,7 @@ contains
     call ls_mpi_buffer(DECitem%SNOOPlocalize,Master)
     call ls_mpi_buffer(DECitem%SNOOPrestart,Master)
     call ls_mpi_buffer(DECitem%SNOOPonesub,Master)
+    call ls_mpi_buffer(DECitem%SNOOPdecfrag,Master)
     call ls_mpi_buffer(DECitem%CCexci,Master)
     call ls_mpi_buffer(DECitem%JacobianNumEival,Master)
     call ls_mpi_buffer(DECitem%JacobianLHTR,Master)
@@ -2555,6 +2551,8 @@ contains
     call ls_mpi_buffer(DECitem%CCSDnosaferun,Master)
     call ls_mpi_buffer(DECitem%solver_par,Master)
     call ls_mpi_buffer(DECitem%force_scheme,Master)
+    call ls_mpi_buffer(DECitem%ccintforce,Master)
+    call ls_mpi_buffer(DECitem%ccintscheme,Master)
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%print_frags,Master)
     call ls_mpi_buffer(DECitem%abc,Master)
@@ -2645,7 +2643,7 @@ contains
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
     call ls_mpi_buffer(DECitem%hack2,Master)
-    call ls_mpi_buffer(DECitem%test_fully_distributed_integrals,Master)
+    call ls_mpi_buffer(DECitem%test_len,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
     call ls_mpi_buffer(DECitem%tensor_segmenting_scheme,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
@@ -3149,6 +3147,7 @@ end module decmpi_module
 subroutine set_dec_settings_on_slaves()
    use infpar_module
    use lsmpi_type
+   use lsmpi_param
    use lsparameters
    use dec_typedef_module
    use decmpi_module, only:mpibcast_dec_settings

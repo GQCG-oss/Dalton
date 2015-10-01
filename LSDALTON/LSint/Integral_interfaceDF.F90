@@ -1,6 +1,6 @@
 MODULE IntegralInterfaceModuleDF
   use precision
-  use TYPEDEFTYPE
+  use TYPEDEFTYPE,only : LSSETTING
   use Typedef  
   use Matrix_module
   use Matrix_Operations
@@ -20,7 +20,8 @@ MODULE IntegralInterfaceModuleDF
   use dec_typedef_module, only: batchTOorb
   use screen_mod
   use BUILDAOBATCH
-  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc,C_PTR
+  use iso_c_binding
+!  use,intrinsic :: iso_c_binding,only:c_f_pointer, c_loc,C_PTR
   use ThermiteIntTransform_module
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
        & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
@@ -2838,7 +2839,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
 END SUBROUTINE II_get_RI_AlphaCD_3CenterInt
 
 SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisAux,&
-     & nbasis,nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes,InOper)
+     & nbasis,nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes,use_bg_buf,InOper)
   IMPLICIT NONE
   Integer,intent(in)            :: LUPRI,LUERR,nbasis,nbasisAux
   Integer,intent(in)            :: nocc,nvirt,mynum,numnodes  
@@ -2860,7 +2861,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   TYPE(MOLECULARORBITALINFO) :: orbitalInfo
   Integer :: iAtomA,nAuxA,B
   integer :: J,mynum2,startF,iatomampi,MynbasisAuxMPI,nBastAuxT
-  logical :: doMPI,MasterWakeSlaves
+  logical :: doMPI,MasterWakeSlaves,use_bg_buf
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
   !
   integer :: iShell, nAuxShellA,nbatches
@@ -2913,7 +2914,13 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      call ls_getIntegrals(AODFdefault,AOempty,AORdefault,AORdefault,&
           & Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
      
-     call mem_alloc(AlphaCD,nbastAux,nbast,nbast)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_alloc(FullAlphaCD,nbasisAux*i8,nvirt*i8,nocc*i8)
+        call mem_pseudo_alloc(AlphaCD2,nbastAux*i8,nbast*i8,nocc*i8)
+        call mem_pseudo_alloc(AlphaCD,nbastAux*i8,nbast*i8,nbast*i8)
+     ELSE
+        call mem_alloc(AlphaCD,nbastAux,nbast,nbast)
+     ENDIF
      CALL retrieve_Output(lupri,setting,AlphaCD,.FALSE.)
      
 !     print*,'II_get_RI_AlphaCD_3CenterInt2: FullAlphaCD(1:nA,1:4) AO'
@@ -2924,7 +2931,7 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      M = nbastAux*nbast !rows of Output Matrix
      N = nocc           !columns of Output Matrix
      K = nbast          !summation dimension
-     call mem_alloc(AlphaCD2,nbastAux,nbast,nocc)
+     IF(.NOT.use_bg_buf)call mem_alloc(AlphaCD2,nbastAux,nbast,nocc)
      call Test_if_64bit_integer_required(N,K)
      call Test_if_64bit_integer_required(M,K)
      call Test_if_64bit_integer_required(M,N)
@@ -2934,8 +2941,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
 !     print*,'II_get_RI_AlphaCD_3CenterInt2: FullAlphaCD(1:nA,1:4) HALF'
 !     call ls_output(AlphaCD2,1,nbastAux,1,4,nbastAux,nbast*nocc,1,6)
 
-     call mem_dealloc(AlphaCD)
-     call mem_alloc(FullAlphaCD,nbasisAux,nvirt,nocc)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(AlphaCD)
+     ELSE
+        call mem_dealloc(AlphaCD)
+        call mem_alloc(FullAlphaCD,nbasisAux,nvirt,nocc)
+     ENDIF
      !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
 !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
 !$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,GAMMA,TMP) &
@@ -2952,7 +2963,11 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
         enddo
      enddo
 !$OMP END PARALLEL DO
-     call mem_dealloc(AlphaCD2)
+     IF(use_bg_buf)THEN
+        call mem_pseudo_dealloc(AlphaCD2)
+     ELSE
+        call mem_dealloc(AlphaCD2)
+     ENDIF
 !     print*,'II_get_RI_AlphaCD_3CenterInt2: FullAlphaCD(1:nA,1:4) MO'
 !     call ls_output(FullAlphaCD,1,nbastAux,1,4,nbastAux,nvirt*nocc,1,6)
 
@@ -2985,7 +3000,11 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
      call mem_dealloc(nbasisAuxMPI)
      IF(MynbasisAuxMPI.GT.0)THEN
-        call mem_alloc(FullAlphaCD,MynbasisAuxMPI,nvirt,nocc)
+        IF(use_bg_buf)THEN
+           call mem_pseudo_alloc(FullAlphaCD,MynbasisAuxMPI*i8,nvirt*i8,nocc*i8)
+        ELSE
+           call mem_alloc(FullAlphaCD,MynbasisAuxMPI,nvirt,nocc)
+        ENDIF
         FullalphaCD = 0.0E0_realk
         startF = 0
         DO iAtomAMPI=1,nAtomsMPI(mynum+1)
@@ -3156,9 +3175,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
         IF(MemDebugPrint)print*,'BG: Before w0 of size=',w0size
         IF(MemDebugPrint)call printBGinfo()
         call mem_pseudo_alloc(w0, w0size)
-!        setting%output%ResultMat(1:MaxN,1,1:n1,1:n2,1:nthreads) => w0(1:w0size)
+#ifdef VAR_PTR_RESHAPE
+        setting%output%ResultMat(1:MaxN,1:1,1:n1,1:n2,1:nthreads) => w0!(1:w0size)
+#else
         cpointer = c_loc(w0(1))
         call c_f_pointer(cpointer,setting%output%ResultMat,[MaxN,1,n1,n2,nthreads])
+#endif
      ELSE
         IF(MemDebugPrint)print*,'STD: Before a ResultMat of size=',MaxN*n1*n2*nthreads
         IF(MemDebugPrint)call stats_globalmem(6)
@@ -3171,9 +3193,12 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterIntFullOnAllNN(LUPRI,LUERR,FullAlphaCD,&
 
      call ThermiteIntTransform_alloc_TmpArray(use_bg_buf) !MaxN,n1,nMO2
      call ls_dzero8(FullAlphaCD,w1size)
-!     setting%output%Result3D => FullAlphaCD
+#ifdef VAR_PTR_RESHAPE
+     setting%output%Result3D(1:dim1,1:nMO1,1:nMO2) => FullAlphaCD!(1:w1size)
+#else
      cpointer = c_loc(FullAlphaCD(1))
      call c_f_pointer(cpointer,setting%output%Result3D,[dim1,nMO1,nMO2])
+#endif
      setting%Output%ndim3D(1) = dim1
      setting%Output%ndim3D(2) = nMO1
      setting%Output%ndim3D(3) = nMO2

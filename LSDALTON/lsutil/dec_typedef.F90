@@ -127,7 +127,8 @@ module dec_typedef_module
      ! SNOOPonesub= 0       --> Calculate only full system
      ! SNOOPonesub= i (i>0) --> Calculate only subsystem i
      integer :: SNOOPonesub
-     
+     !> Consider SNOOP monomer as a single DEC fragment (mainly for testing)
+     logical :: SNOOPdecfrag
 
 
      ! CC response (no DEC so far)
@@ -446,7 +447,8 @@ module dec_typedef_module
      !> Sizes of alpha and gamma batches defined manually
      integer :: ccsdAbatch,ccsdGbatch
      !> test integral scheme, fully distributed, get_mo_integrals
-     logical :: test_fully_distributed_integrals
+     logical :: ccintforce
+     integer :: ccintscheme
 
      !> MP2 occupied batching
      !> *********************
@@ -460,6 +462,7 @@ module dec_typedef_module
      !> General HACK parameters, to be used for easy debugging
      logical :: hack
      logical :: hack2
+     integer :: test_len 
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> Check that LCM orbitals are correct
@@ -871,12 +874,9 @@ module dec_typedef_module
      !>  n>0: Use AOS information from fragment%REDfrags(n)
      integer,pointer :: PairFOTlevel(:,:) => null()
 
-     !> Partitioning of energy into dispersion, charge transfer,
-     !> and internal subsystem excitations 
-     !> (see SNOOP_partition_energy).
-     real(realk) :: Edisp
-     real(realk) :: Ect
-     real(realk) :: Esub
+
+     ! Is this molecule a SNOOP monomer?
+     logical :: snoopmonomer
 
      ! F12 singles correction energy 
      real(realk) :: EF12singles
@@ -1511,6 +1511,27 @@ module dec_typedef_module
      real(realk) :: FOT
   end type fragmentAOS
 
+public :: fragmentAOS,ndecmodels,MODEL_NONE,MODEL_MP2,&
+     & MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA,MODEL_RIMP2,&
+     & MODEL_SOSEX,MODEL_LSTHCRIMP2,MODEL_MP3,&
+     & nFOTs,MAX_ORB_MOCCSD,ndecenergies,FRAGMODEL_LAGMP2,&
+     & FRAGMODEL_OCCMP2,FRAGMODEL_VIRTMP2,FRAGMODEL_LAGRPA,&
+     & FRAGMODEL_OCCRPA,FRAGMODEL_VIRTRPA,FRAGMODEL_OCCCC2,&
+     & FRAGMODEL_VIRTCC2,FRAGMODEL_OCCCCSD,FRAGMODEL_VIRTCCSD,&
+     & FRAGMODEL_OCCpT,FRAGMODEL_VIRTpT,FRAGMODEL_OCCpT4,&
+     & FRAGMODEL_VIRTpT4,FRAGMODEL_OCCpT5,FRAGMODEL_VIRTpT5,&
+     & FRAGMODEL_MP2f12,FRAGMODEL_CCSDf12,FRAGMODEL_LAGRIMP2,&
+     & FRAGMODEL_OCCRIMP2,FRAGMODEL_VIRTRIMP2,FRAGMODEL_OCCSOS,&
+     & FRAGMODEL_VIRTSOS,FRAGMODEL_LAGLSTHCRIMP2,FRAGMODEL_OCCLSTHCRIMP2,&
+     & FRAGMODEL_VIRTLSTHCRIMP2,FRAGMODEL_RIMP2f12,&
+     & DECsettings,array2,array3,array4,decorbital,&
+     & ri,fullmolecule,decfrag,FullMP2grad,mp2dens,mp2grad,&
+     & mp2_batch_construction,mypointer,&
+     & joblist,traceback,int_batch,batchTOorb,MObatchInfo,DecAObatchinfo,&
+     & SPgridbox,DECinfo,PNOSpaceInfo,pno_query_info,&
+     & dec_set_default_config,dec_set_model_names
+private
+
 CONTAINS
   !> \brief Set default DEC settings.
   !> See explanation of parameters in type DEC_settings.
@@ -1546,6 +1567,7 @@ CONTAINS
     DECinfo%SNOOPlocalize  = .false.
     DECinfo%SNOOPrestart  = .false.
     DECinfo%SNOOPonesub  = -1
+    DECinfo%SNOOPdecfrag = .false.
 
     ! CC response
     DECinfo%CCexci = .false.
@@ -1598,7 +1620,6 @@ CONTAINS
 
 
     ! -- Debug modes
-    DECinfo%test_fully_distributed_integrals = .false.
     DECinfo%distribute_fullmolecule = .false.
     DECinfo%force_distribution      = .false.
     DECinfo%CRASHCALC               = .false.
@@ -1622,6 +1643,8 @@ CONTAINS
 #endif
     DECinfo%force_scheme            = .false.
     DECinfo%en_mem                  = 0
+    DECinfo%ccintforce              = .false.
+    DECinfo%ccintscheme             = -1
     DECinfo%CCSDno_restart          = .false.
     DECinfo%CCSDnosaferun           = .false.
     DECinfo%solver_par              = .false.

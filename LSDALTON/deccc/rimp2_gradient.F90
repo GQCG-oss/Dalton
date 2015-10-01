@@ -50,9 +50,10 @@ contains
     integer :: nBasisAux,J,I,Jeos
     integer(kind=long) :: nsize
     LUPRI = DECinfo%output
-    use_bg_buf = mem_is_background_buf_init()
+    use_bg_buf = .FALSE.    
     FORCEPRINT = .FALSE.
 #ifdef VAR_MPI
+    IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
     master= (infpar%lg_mynum == infpar%master)
     if(infpar%lg_nodtot.GT.1) then
        wakeslave=.true.
@@ -99,6 +100,7 @@ subroutine RIMP2_gradient_slave()
   use lsparameters
   use lsmpi_type
   use infpar_module
+  use background_buffer_module
   
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************!
@@ -113,6 +115,8 @@ subroutine RIMP2_gradient_slave()
   real(realk),pointer :: ThetaOcc(:),RIMP2grad(:,:)
   logical,pointer :: dopair_occ(:,:)
   integer(kind=long) :: nsize
+  logical :: use_bg_buf
+
   call mpi_communicate_MyFragment(MyFragment)
   noccEOS = MyFragment%noccEOS   ! Number of occupied functions in EOS 
   nvirtAOS = MyFragment%nvirtAOS ! Number of virtual functions in AOS 
@@ -120,11 +124,18 @@ subroutine RIMP2_gradient_slave()
   natoms = MyFragment%natoms     ! Number of atoms in fragment
 
   nsize = nvirtAOS*(noccEOS*i8*noccEOS)*nvirtAOS
-  call mem_alloc(ThetaOcc,nsize)
+  use_bg_buf = .FALSE.
+  IF(DECinfo%use_bg_buffer) use_bg_buf = mem_is_background_buf_init()
+
+  IF(use_bg_buf)THEN
+     call mem_pseudo_alloc(ThetaOcc,nsize*i8)
+  ELSE
+     call mem_alloc(ThetaOcc,nsize)
+  ENDIF
   !communicate ThetaOcc - assume this fits on all nodes 
   call ls_mpibcast(ThetaOcc,nsize,infpar%master,infpar%lg_comm)
-  call mem_alloc(dopair_occ,noccEOS,noccEOS)
   !communicate dopair_occ - assume this fits on all nodes 
+  call mem_alloc(dopair_occ,noccEOS,noccEOS)
   call ls_mpibcast(dopair_occ,noccEOS,noccEOS,infpar%master,infpar%lg_comm)
 
   ! Get virtual MO coefficient matrix in array2 form
@@ -133,14 +144,23 @@ subroutine RIMP2_gradient_slave()
   CoccEOS = array2_init_plain([MyFragment%nbasis,MyFragment%noccEOS])
   call extract_occupied_EOS_MO_indices(CoccEOS,MyFragment)
 
-  call mem_alloc(RIMP2GRAD,3,natoms)
+  IF(use_bg_buf)THEN
+     call mem_pseudo_alloc(RIMP2GRAD,3*i8,natoms*i8)
+  ELSE
+     call mem_alloc(RIMP2GRAD,3,natoms)
+  ENDIF
 
   call RIMP2_gradient_driver(MyFragment,ThetaOCC,RIMP2grad,natoms,&
        nbasis,noccEOS,nvirtAOS,CoccEOS%val,CvirtAOS%val,dopair_occ)
 
-  call mem_dealloc(RIMP2GRAD)
-  call mem_dealloc(ThetaOcc)
-  call mem_dealloc(dopair_occ)
+  IF(use_bg_buf)THEN
+     call mem_pseudo_dealloc(RIMP2GRAD)
+     call mem_pseudo_dealloc(ThetaOcc)
+  ELSE
+     call mem_dealloc(RIMP2GRAD)
+     call mem_dealloc(ThetaOcc)
+  ENDIF
+   call mem_dealloc(dopair_occ)
   call array2_free(CvirtAOS)
   call array2_free(CoccEOS) 
   call atomic_fragment_free(MyFragment)

@@ -1,7 +1,6 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
-	url = git@gitlab.com:bingao/gen1int.git
-	branch = master
+	url = https://gitlab.com/bingao/gen1int.git
 [submodule "external/xcfun"]
 	path = external/xcfun
   	url = git://repo.ctcc.no/xcfun.git
@@ -10,7 +9,7 @@
 	url = https://gitlab.com/pe-software/pelib-public.git
 [submodule "external/ls-matrix-defop"]
 	path = external/ls-matrix-defop
-	url = git://repo.ctcc.no/matrix-defop.git
+	url = https://gitlab.com/ajthorva/matrix-defop.git
 [submodule "external/qfitlib"]
 	path = external/qfitlib
 	url = https://github.com/cstein/qfitlib.git

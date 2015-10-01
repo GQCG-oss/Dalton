@@ -19,19 +19,18 @@ DALTON_LIBS =             \
 -Lpbc2 -lpbc2            \
 -LLSint -lLSint           \
 -L$(FMMDIR) -lmm          \
--Linterest/lib -linterest \
 -Lpdpack -lpdpack         \
 -Lxcfun_host -lxcfun_host  \
 -Lcuda -lcuda\
 -Llsutil -llsutil
 
 # VAR_RSP needs MDO_OBJ ORS_OBJ 
-MODULES = LSU_OBJ CUD_OBJ XFH_OBJ PD_OBJ INT_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 \
+MODULES = LSU_OBJ CUD_OBJ XFH_OBJ PD_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 \
 	DFT_OBJ SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ \
 	PCM_OBJ
 
 # VAR_RSP needs ../external/matrix-defop/src ../external/openrsp/src
-SUBDIRS = lsutil cuda xcfun_host pdpack interest/lib $(FMMDIR) LSint pbc2 dft SolverUtilities \
+SUBDIRS = lsutil cuda xcfun_host pdpack $(FMMDIR) LSint pbc2 dft SolverUtilities \
 	responsesolver rsp_properties deccc geomopt ddynam linears pcm lsdaltonsrc
 PDLIB = pdpack/pdlib.a
 
@@ -133,7 +132,7 @@ clean :
 veryclean : 
 	$(RM) -rf $(SUBDIRS)
 
-LSD_OBJ	: LSU_OBJ CUD_OBJ LSI_OBJ DFT_OBJ GEO_OBJ DYN_OBJ DEC_OBJ INT_OBJ LIN_OBJ PBC_OBJ2 RSP_OBJ RSO_OBJ SOU_OBJ
+LSD_OBJ	: LSU_OBJ CUD_OBJ LSI_OBJ DFT_OBJ GEO_OBJ DYN_OBJ DEC_OBJ LIN_OBJ PBC_OBJ2 RSP_OBJ RSO_OBJ SOU_OBJ
 	cd lsdaltonsrc && $(MAKE) all
 
 PD_OBJ	:
@@ -157,7 +156,7 @@ GEO_OBJ : LSU_OBJ LSI_OBJ
 DYN_OBJ : LSU_OBJ LSI_OBJ GEO_OBJ
 	cd ddynam && $(MAKE) all
 
-LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ DFT_OBJ 
+LSI_OBJ : LSU_OBJ XFH_OBJ DFT_OBJ 
 	cd LSint && $(MAKE) all
 
 DEC_OBJ : LSU_OBJ LSI_OBJ LIN_OBJ CUD_OBJ
@@ -168,9 +167,6 @@ RSP_OBJ : LSU_OBJ LSI_OBJ LIN_OBJ
 
 RSO_OBJ : LSU_OBJ LSI_OBJ SOU_OBJ
 	cd responsesolver && $(MAKE) all
-
-INT_OBJ : 
-	cd interest/lib && $(MAKE) all
 
 SOU_OBJ : LSU_OBJ LSI_OBJ
 	cd SolverUtilities && $(MAKE) all

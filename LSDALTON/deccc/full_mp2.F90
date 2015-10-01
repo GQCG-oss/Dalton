@@ -3,10 +3,12 @@
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
 module fullmp2
+use files
 
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param
   use decmpi_module, only: mpi_bcast_fullmolecule
   use lsmpi_op
 #endif
@@ -2843,8 +2845,8 @@ end module fullmp2
 subroutine full_canonical_mp2_slave
   use fullmp2,only: full_canonical_mp2,full_canonical_mpmp2
   use infpar_module !infpar
-  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
-       & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer
+  use lsmpi_param,only:LSMPIBROADCAST,MPI_COMM_LSDALTON 
   use lsmpi_op,only: mpicopy_lsitem
   use precision
   use typedeftype,only:lsitem
@@ -2852,11 +2854,11 @@ subroutine full_canonical_mp2_slave
   use decmpi_module, only: mpi_bcast_fullmolecule
   use DALTONINFO, only: ls_free
 !  use typedef
-  use dec_typedef_module!,only DECinfo
+  use dec_typedef_module!,only : fullmolecule,DECinfo
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
 !  use dec_fragment_utils
-  use full_molecule, only:fullmolecule, molecule_finalize
+  use full_molecule, only: molecule_finalize
   implicit none
   !> Full molecule info
   type(fullmolecule) :: MyMolecule

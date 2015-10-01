@@ -5,7 +5,7 @@ Module grid_utilities_module
 Use precision
 use TYPEDEFTYPE
 use files
-
+use basis_typetype
 contains 
 
 

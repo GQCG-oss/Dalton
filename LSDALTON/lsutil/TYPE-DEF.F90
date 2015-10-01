@@ -14,6 +14,7 @@ MODULE TYPEDEFTYPE
  use matrix_module
  use LSparameters
  use integralOutput_typetype
+ use f12_module
 #ifdef VAR_MPI
  use infpar_module
 #endif
@@ -47,7 +48,6 @@ LOGICAL  :: TRILEVEL
 LOGICAL  :: DOPASS
 LOGICAL  :: DENSFIT
 LOGICAL  :: DF_K
-LOGICAL  :: INTEREST
 LOGICAL  :: LINSCA
 LOGICAL  :: MATRICESINMEMORY
 LOGICAL  :: MEMDIST
@@ -236,7 +236,6 @@ LOGICAL  :: CFG_LSDALTON
 LOGICAL  :: DOPASS
 LOGICAL  :: DENSFIT
 LOGICAL  :: DF_K
-LOGICAL  :: INTEREST
 LOGICAL  :: MATRICESINMEMORY
 LOGICAL  :: MEMDIST
 INTEGER  :: AOPRINT
@@ -710,6 +709,12 @@ type mpi_realk
    integer              :: t
 end type mpi_realk
 
+private
+public :: INTEGERP,integralconfig,LSINTSCHEME,BASISSETLIBRARYITEM,&
+     & BLOCK,BLOCKINFO,FRAGMENTINFO,FRAGMENTINFO_PT,FRAGMENTITEM,&
+     & FRAGMENT_PT,DALTONINPUT,AOBATCHINFO,AOATOMINFO,&
+     & REDUCEDSCREENINGINFO,LSSETTING,LSITEM,geoHessianConfig,&
+     & pltinfo,mpi_realk
 
 contains
 

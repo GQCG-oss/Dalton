@@ -67,7 +67,6 @@ module pno_ccsd_module
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
      !INTERNAL VARIABLES
-#ifdef MOD_UNRELEASED
      type(tensor),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
      integer :: ns,c,nc,nc2
      integer(kind=8)     :: s1,   s2,   s3,    s4,   s5
@@ -801,7 +800,6 @@ module pno_ccsd_module
         call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
            & 'PNO: finalization                    :' )
      endif
-#endif
   end subroutine get_ccsd_residual_pno_style
 
 
@@ -817,7 +815,6 @@ module pno_ccsd_module
      type(PNOSpaceInfo),intent(in) :: pno_cv(n)
      type(PNOSpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
      logical, intent(in) :: with_svd
-#ifdef MOD_UNRELEASED
      integer :: i, j, c, t1,t2,dg, n1
      integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
      real(realk),pointer:: s1(:,:), s2(:,:), sv(:),U(:,:), VT(:,:),work(:)
@@ -905,7 +902,6 @@ module pno_ccsd_module
 
      endif
 
-#endif
   end subroutine get_pno_overlap_matrices
 
 
@@ -918,7 +914,6 @@ module pno_ccsd_module
      type(PNOSpaceInfo),pointer :: cv(:)
      type(decfrag),intent(in),optional :: f
      !INTERNAL
-#ifdef MOD_UNRELEASED
      real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
      integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
      integer :: find_pos(no,no),maxocc,maxminocc
@@ -1164,7 +1159,6 @@ module pno_ccsd_module
      & getting pno spaces:")
 
      write (*,'("memory requirements for pno space info:",g10.3," GB")')mem_pno_spaces/(1024.0E0_realk**3)
-#endif
   end subroutine get_pno_trafo_matrices
 
 
@@ -1193,7 +1187,6 @@ module pno_ccsd_module
   end subroutine  free_PNOSpaceInfo
 
 
-#ifdef MOD_UNRELEASED
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx,ndidx1,ndidx2)
      implicit none
      integer,intent(in) :: n1,n2
@@ -5438,7 +5431,6 @@ module pno_ccsd_module
      call mem_dealloc(query%size_array)
   end subroutine free_query_info
 
-#endif
 
  !subroutine not_implemented ccsd
      !!DEBUG: A2 term

@@ -37,11 +37,12 @@ module full
   use fullrimp2f12 !,only: full_canonical_rimp2_f12
   use fullmp2 
   use full_mp3_module
-  use full_ls_thc_rimp2Mod
   use full_f12contractions
 
-  public  :: full_driver
-  private :: mp2f12_E22X
+  public  :: full_driver,full_cc_dispatch,full_canonical_mp2_f12,&
+       & full_get_ccsd_f12_energy,full_get_ccsd_singles_and_doubles
+
+  private 
 
 contains
 
@@ -98,10 +99,14 @@ contains
              write(*,'(/,a)') ' ================================================ '
              write(*,'(a)')   '                 Energy Summary                   '
              write(*,'(a,/)') ' ================================================ '
-             write(*,'(1X,a,f20.10)') 'RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
-             write(DECinfo%output,'(1X,a,f20.10)')  'RI-MP2 CORRECTION TO ENERGY =    ', Ecorr_rimp2
-             write(*,'(1X,a,f20.10)') 'RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
-             write(DECinfo%output,'(1X,a,f20.10)')  'RI-MP2F12 CORRECTION TO ENERGY = ', Ecorr_rimp2f12
+             write(*,'(1X,a,f20.10)')               'RIMP2 CORRECTION TO ENERGY =     ', Ecorr_rimp2
+             write(DECinfo%output,'(1X,a,f20.10)')  'RIMP2 CORRECTION TO ENERGY =     ', Ecorr_rimp2
+             write(*,'(1X,a,f20.10)')               'F12 CORRECTION TO ENERGY =       ', Ecorr_rimp2f12
+             write(DECinfo%output,'(1X,a,f20.10)')  'F12 CORRECTION TO ENERGY =       ', Ecorr_rimp2f12
+             write(*,'(1X,a,f20.10)')               'RIMP2-F12 CORRECTION TO ENERGY =  ', Ecorr_rimp2+Ecorr_rimp2f12
+             write(DECinfo%output,'(1X,a,f20.10)')  'RIMP2-F12 CORRECTION TO ENERGY = ', Ecorr_rimp2+Ecorr_rimp2f12
+          
+
           else
              call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
           end if
@@ -109,7 +114,7 @@ contains
           !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
           call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
        elseif(DECinfo%ccModel==MODEL_LSTHCRIMP2)then
-          call full_canonical_ls_thc_rimp2(MyMolecule,MyLsitem,Ecorr) 
+          call lsquit('full_canonical_ls_thc_rimp2 not implemented',-1)
        elseif(DECinfo%ccmodel==MODEL_MP3) then
           call full_canonical_mp3(MyMolecule,MyLsitem,Ecorr)
        else
@@ -379,7 +384,6 @@ contains
 #endif
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
-    !    call init_cabs(fulldriver)
 
     if(MyMolecule%mem_distributed)then
        call lsquit("ERROR(full_canonical_mp2_f12): does not work with PDM type fullmolecule",-1)
@@ -389,7 +393,7 @@ contains
     ! **********
     nbasis = MyMolecule%nbasis
     nvirt  = MyMolecule%nvirt
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
 
     ! Set number of occupied orbitals
     if(DECinfo%frozencore) then
@@ -409,7 +413,8 @@ contains
     ! Get all F12 Fock Matrices
     ! ********************
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+         & nocc,noccfull,nvirt,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+    ncabs = Fic%ncol
 
     ! Get all AO integrals
     ! ********************
@@ -903,8 +908,6 @@ contains
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
     
-    call free_cabs()
-
     if(DECinfo%F12DEBUG) then
 
        mp2f12_energy = 0.0E0_realk
@@ -1359,7 +1362,6 @@ contains
 
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
-    !    call init_cabs(fulldriver)
 
     real(realk) :: tmp
     real(realk) :: E21_Viajb, E21_Viija, E21_Viajj 
@@ -1372,13 +1374,14 @@ contains
     nvirt = MyMolecule%nvirt
     nbasis = MyMolecule%nbasis
     noccfull = nocc
-    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    call determine_CABS_nbast(ncabsAO,mylsitem%setting,DECinfo%output)
     ! Get full CCSD singles (Tai) and doubles (Taibj) amplitudes
     call full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai,Taibj)
 
     ! Get all MO mixed matrices
     call get_F12_mixed_MO_Matrices(MyLsitem,MyMolecule,Dmat,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabs,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+         & nocc,noccfull,nvirt,HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp,Fic,Fcd)
+    ncabs = Fic%ncol
 
     ! Get all AO integrals in regular basis
     call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
@@ -1918,7 +1921,6 @@ contains
     call free_4Center_F12_integrals(&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
-    call free_cabs()
 
   end subroutine full_get_ccsd_f12_energy
 

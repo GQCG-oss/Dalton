@@ -1,6 +1,6 @@
 !Simple tools common for cc routines
 module cc_tools_module
-   use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc
+   use,intrinsic :: iso_c_binding, only:c_f_pointer, c_loc, c_size_t
 
 !`DIL backend (depends on Fortran-2003/2008, MPI-3):
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
@@ -16,6 +16,8 @@ module cc_tools_module
    use memory_handling
 #ifdef VAR_MPI
    use lsmpi_type
+   use lsmpi_module
+   use infpar_module
 #endif
    use lstiming
    use typedeftype
@@ -25,6 +27,10 @@ module cc_tools_module
    use dec_typedef_module
    use reorder_frontend_module
    use tensor_interface_module
+   use gpu_interfaces
+!#ifdef VAR_OPENACC
+!   use openacc, only: acc_is_present
+!#endif
 
    interface get_tpl_and_tmi
       module procedure get_tpl_and_tmi_fort, get_tpl_and_tmi_tensors
@@ -52,7 +58,7 @@ module cc_tools_module
         & successive_4ao_mo_trafo, solver_energy_full, solver_decnp_full,&
         & ccsdpt_energy_e4_full, ccsdpt_energy_e5_full, ccsdpt_decnp_e4_full,&
         & ccsdpt_decnp_e5_full, get_t1_matrices, get_nbuffs_scheme_0, &
-        & get_split_scheme_0, get_tpl_and_tmi_fort
+        & get_split_scheme_0, get_tpl_and_tmi_fort, solver_energy_full_mod
 
    
    contains
@@ -142,7 +148,6 @@ module cc_tools_module
    end subroutine get_tpl_and_tmi_tensors
 
    subroutine lspdm_get_tpl_and_tmi(t2,tpl,tmi)
-      use, intrinsic:: ISO_C_BINDING
       implicit none
       type(tensor),intent(inout) :: t2 !intent(in)
       type(tensor),intent(inout) :: tpl, tmi !tpl[nor,nvr],tmi[nor,nvr]
@@ -610,9 +615,54 @@ module cc_tools_module
       character(80) :: msg
       real(realk), pointer :: buf(:)
       integer(kind=8) :: nbuf
-      integer :: faleg,laleg,laleg_req
+      integer :: faleg,laleg,laleg_req,i,nerrors
+      integer, parameter :: nids = 15
+      integer :: nids_use
+#ifdef VAR_OPENACC
+      integer(kind=acc_handle_kind) :: acc_h(nids),transp
+      integer,parameter             :: lsacc_sync    = acc_async_sync
+      integer,parameter             :: lsacc_handlek = acc_handle_kind
+      integer(c_size_t)             :: total_gpu,free_gpu
+#else
+      integer                       :: acc_h(nids),transp
+      integer,parameter             :: lsacc_sync    = -4
+      integer,parameter             :: lsacc_handlek = 4
+#endif
+      type(c_ptr)                   :: cub_h(nids),dummy47
+      real(realk) :: p10, nul
+      integer(4)  :: stat,curr_id
+      logical :: one
+
+      acc_h = 0
+      cub_h = c_null_ptr
+
+      p10 = 1.0E0_realk
+      nul = 0.0E0_realk
+
+      stat = 0
 
       call time_start_phase(PHASE_WORK)
+
+      if (DECinfo%acc_sync) then
+         acc_h  = lsacc_sync
+         transp = lsacc_sync
+      else
+         do curr_id = 1,nids
+            acc_h(curr_id) = int(curr_id-1,kind=lsacc_handlek)
+         enddo
+         transp = nids
+      endif
+
+#ifdef VAR_CUBLAS
+      do curr_id = 1,nids
+         ! initialize the CUBLAS context
+         stat = cublasCreate_v2(cub_h(curr_id))
+         if(stat/=0)print*,"warning: cublas create failed 1",stat
+         dummy47 = acc_get_cuda_stream(acc_h(curr_id))
+         stat = cublasSetStream_v2(cub_h(curr_id), dummy47)
+         if(stat/=0)print*,"warning: cublas set stream failed 1",stat
+      enddo
+#endif
 
       s0 = wszes(1)
       s2 = wszes(3)
@@ -662,47 +712,162 @@ module cc_tools_module
          tred=la*lg
       endif
 
-      !laleg_req = tred/2+1
-      !laleg_req = 1
+      !Request a fraction of tred resulting in intermediates that can be stored
+      !in GPU memory if a GPU is available, if not just use the full tred
+#ifdef VAR_OPENACC
+      total_gpu = 0
+      free_gpu  = 0
+      call get_dev_mem(total_gpu,free_gpu)
+      select case(s)
+      case(4,3)
+
+         !subtract the memory required to store yv and tpl/tmi
+         free_gpu = free_gpu - 8 * (nb*nv + nor*nvr)
+
+         !decrease the number of async ids with minimal batch size until all fits into GPU memory
+         laleg_req = 1
+         do nids_use = nids, 0
+            !              #of async ids       w0 size          w2 size            w3 size
+            if(free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) > 0) exit
+         enddo
+
+         if(nids_use <= 0)call lsquit("ERROR(get_a22_and_prepb22_terms_ex): not enough memory on the GPU available",-1)
+
+         !increase the batch size until the intermediates to not fit into the GPU memory anymore
+         do laleg_req = 2, tred + 1
+            !            #of async ids      w0 size          w2 size            w3 size
+            if(free_gpu - nids_use * 8 * (nb*laleg_req*nv + nb*laleg_req*nb + laleg_req*nor*nvr) < 0 ) exit
+         enddo
+
+      !reduce the found requested size by one which was the last size that fulfilled the memory requirements
+         laleg_req = laleg_req - 1
+
+      case default
+         !default use the full batch
+         laleg_req = tred
+      end select
+#else
+      nids_use  = 1
       laleg_req = tred
+#endif
+
 
       select case(s)
       case(4,3)
+
+         !$acc enter data copyin(yv(1:nb*nv)) copyin(tpl%elm1) create(w0(1:nb*laleg_req*nv)) async(transp)
+
          !!SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         curr_id = 0
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
+            
+
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
+
+            curr_id = mod(curr_id,nids_use)+1
+
             !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
+
+            !acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
+            !acc& wait(transp) async(acc_h(curr_id)) 
+            !$acc enter data copyin(w2(1:nb*laleg*nb)) create(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) &
+            !$acc& wait(transp) async(acc_h(curr_id)) 
+
             !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
-            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
+            call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
+            &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
+
             !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            call dgemm('t','n',laleg*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*laleg)
+            call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
+            &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
+
             !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
-            call get_I_cged(w0,w2,laleg,nv)
+            call get_I_cged(w0,w2,laleg,nv,acc_h=acc_h(curr_id))
+
+#ifdef VAR_OPENACC
+            !(w3.1):sigma+ [i>= j alpha<=gamma] = t+ [c>=d i>=j]^T * (w2):I+ [alpha<=gamma c>=d]^T
+            call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tpl%elm1,nvr,w0,laleg,nul,w3(1+(faleg-1)*nor),nor,&
+            &i8*laleg*nvr,i8*nor*nvr,i8*laleg*nor,acc_h(curr_id),cub_h(curr_id))
+#else
             !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
-            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,0.0E0_realk,w3(faleg),tred)
+            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tpl%elm1,nvr,nul,w3(faleg),tred)
+#endif
+            !acc end data 
+            !$acc exit data copyout(w3(1+(faleg-1)*nor:nor+(faleg+laleg-2)*nor)) delete(w2(1:nb*laleg*nb)) &
+            !$acc& async(acc_h(curr_id))
          enddo
+
+         !$acc wait async(transp)
+         !$acc exit data delete(tpl%elm1) async(transp)
+         !$acc enter data copyin(tmi%elm1) async(transp)
+
+#ifdef VAR_OPENACC
+         call array_reorder_2d(p10,w3,nor,tred,[2,1],nul,w2)
+         call array_reorder_2d(p10,w2,tred,nor,[1,2],nul,w3)
+#endif
 
          !!ANTI-SYMMETRIC COMBINATION
          ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
+         curr_id = 0
          call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
          do faleg=1,tred,laleg_req
+
+            curr_id = mod(curr_id,nids_use)+1
+
             laleg = laleg_req
             if(tred-faleg+1<laleg_req) laleg = tred-faleg+1
-            !(w2):I- [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] - (w2):I[delta beta alpha gamma]
+
+            !(w2):I+ [beta delta alpha<=gamma] <= (w2):I [beta delta alpha gamma ] + (w2):I[delta beta alpha gamma]
             call get_I_plusminus_le(w2,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s2,faleg,laleg)
-            !(w0):I- [delta alpha<=gamma c] = (w2):I- [beta delta alpha<=gamma] * Lambda^h[beta c]
-            call dgemm('t','n',nb*laleg,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nb*laleg)
-            !(w2):I- [alpha<=gamma c d] = (w0):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-            call dgemm('t','n',laleg*nv,nv,nb,1.0E0_realk,w0,nb,yv,nb,0.0E0_realk,w2,nv*laleg)
-            !(w0):I- [alpha<=gamma c<=d] <= (w2):I- [alpha<=gamma c d]
-            call get_I_cged(w0,w2,laleg,nv)
-            !(w3.2):sigma- [alpha<=gamma i<=j] = (w0):I- [alpha<=gamma c>=d] * t- [c>=d i>=j]
-            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,0.0E0_realk,w3(tred*nor+faleg),tred)
+
+            !acc data copyin(w2(1:nb*laleg*nb)) copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))&
+            !acc& wait(transp) async(acc_h(curr_id))
+
+            !$acc enter data copyin(w2(1:nb*laleg*nb)) create(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor))&
+            !$acc& wait(transp) async(acc_h(curr_id))
+
+            !(w0):I+ [delta alpha<=gamma c] = (w2):I+ [beta, delta alpha<=gamma] * Lambda^h[beta c]
+            call ls_dgemm_acc('t','n',nb*laleg,nv,nb,p10,w2,nb,yv,nb,nul,w0,nb*laleg,&
+            &i8*nb*laleg*nb,i8*nv*nb,i8*nb*laleg*nv,acc_h(curr_id),cub_h(curr_id))
+
+            !(w2):I+ [alpha<=gamma c d] = (w0):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+            call ls_dgemm_acc('t','n',laleg*nv,nv,nb,p10,w0,nb,yv,nb,nul,w2,nv*laleg,&
+            &i8*laleg*nb*nv,i8*nb*nv,i8*laleg*nv*nv,acc_h(curr_id),cub_h(curr_id))
+
+            !(w0):I+ [alpha<=gamma c>=d] <= (w2):I+ [alpha<=gamma c d] 
+            call get_I_cged(w0,w2,laleg,nv,acc_h=acc_h(curr_id))
+
+            !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * t+ [c>=d i>=j]
+#ifdef VAR_OPENACC
+            call ls_dgemm_acc('t','t',nor,laleg,nvr,0.5E0_realk,tmi%elm1,nvr,w0,laleg,nul,w3(tred*nor+1+(faleg-1)*nor),nor,&
+            &i8*laleg*nvr,i8*nor*nvr,i8*laleg*nor,acc_h(curr_id),cub_h(curr_id))
+#else
+            call dgemm('n','n',laleg,nor,nvr,0.5E0_realk,w0,laleg,tmi%elm1,nvr,nul,w3(tred*nor+faleg),tred)
+#endif
+            !acc end data 
+            !$acc exit data copyout(w3(tred*nor+1+(faleg-1)*nor:tred*nor+nor+(faleg+laleg-2)*nor)) &
+            !$acc& delete(w2(1:nb*laleg*nb)) async(acc_h(curr_id))
+
          enddo
+         !$acc wait
+         !$acc exit data delete(yv(1:nb*nv),tmi%elm1,w0(1:nb*laleg_req*nv))
+
+#ifdef VAR_OPENACC
+         call array_reorder_2d(p10,w3(tred*nor+1:tred*nor+tred*nor),nor,tred,[2,1],nul,w2)
+         call array_reorder_2d(p10,w2,tred,nor,[1,2],nul,w3(tred*nor+1:tred*nor+tred*nor))
+
+#ifdef VAR_CUBLAS
+         ! Destroy the CUBLAS context
+         do curr_id = 1,nids
+            stat = cublasDestroy_v2(cub_h(curr_id))
+            if(stat/=0)print*,"warning: cublas destroy failed 1",stat
+         enddo
+#endif
+#endif
 
       case(2)
 
@@ -901,6 +1066,8 @@ module cc_tools_module
          dil_mem=dil_get_min_buf_size(tch,errc)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: BS: ',infpar%lg_mynum,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Buf size set failed!',-1)
+         dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch,dil_mem,errc,dil_buffer)
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC6: Buf alloc failed!',-1)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC6: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC6: Tens contr failed!',-1)
@@ -942,6 +1109,8 @@ module cc_tools_module
          dil_mem=dil_get_min_buf_size(tch,errc)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: BS: ',infpar%lg_mynum,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Buf size set failed!',-1)
+         dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch,dil_mem,errc,dil_buffer)
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC7: Buf alloc failed!',-1)
          call dil_tensor_contract(tch,DIL_TC_EACH,dil_mem,errc,locked=dil_lock_out)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC7: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_a22_and_prepb22_terms_exd): TC7: Tens contr failed!',-1)
@@ -1029,7 +1198,11 @@ module cc_tools_module
       integer(kind=ls_mpik) :: mode
       integer(kind=long)    :: o2v2
       logical               :: rest_o2_occ, rest_sio4,qu
-      real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
+#ifdef VAR_PTR_RESHAPE
+      real(realk), pointer, contiguous  :: h1(:,:,:,:), t1(:,:,:), h(:)
+#else
+      real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:), h(:)
+#endif
       !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
 #ifdef DIL_ACTIVE
 !{`DIL:
@@ -1378,6 +1551,8 @@ module cc_tools_module
           dil_mem=dil_get_min_buf_size(tch0,errc)
           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: BS: ',infpar%lg_mynum,errc,dil_mem
           if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Buf size set failed!',-1)
+          dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+          if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC8: Buf alloc failed!',-1)
           call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
           if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC8: TC: ',infpar%lg_mynum,errc
           if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC8: Tens contr failed!',-1)
@@ -1483,6 +1658,8 @@ module cc_tools_module
              dil_mem=dil_get_min_buf_size(tch0,errc)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: BS: ',infpar%lg_mynum,errc,dil_mem
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Buf size set failed!',-1)
+             dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+             if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC9: Buf alloc failed!',-1)
              call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC9: TC: ',infpar%lg_mynum,errc
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC9: Tens contr failed!',-1)
@@ -1584,6 +1761,8 @@ module cc_tools_module
              dil_mem=dil_get_min_buf_size(tch0,errc)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: BS: ',infpar%lg_mynum,errc,dil_mem
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Buf size set failed!',-1)
+             dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+             if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC10: Buf alloc failed!',-1)
              call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
              if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC10: TC: ',infpar%lg_mynum,errc
              if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC10: Tens contr failed!',-1)
@@ -1609,7 +1788,9 @@ module cc_tools_module
                call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 #ifdef VAR_PTR_RESHAPE
                t1(1:no2,1:no2,1:nor)     => w2
-               h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+               !this is a workaround for PGI 15.5 and 15.7
+               h => sio4%elm1
+               h1(1:no,1:no,1:no2,1:no2) => h
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
@@ -1678,6 +1859,8 @@ module cc_tools_module
                 dil_mem=dil_get_min_buf_size(tch0,errc)
                 if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC11: BS: ',infpar%lg_mynum,errc,dil_mem
                 if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC11: Buf size set failed!',-1)
+                dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch0,dil_mem,errc,dil_buffer)
+                if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC11: Buf alloc failed!',-1)
                 call dil_tensor_contract(tch0,DIL_TC_EACH,dil_mem,errc,locked=lock_outside)
                 if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC11: TC: ',infpar%lg_mynum,errc
                 if(errc.ne.0) call lsquit('ERROR(combine_and_transform_sigma): TC11: Tens contr failed!',-1)
@@ -1702,7 +1885,9 @@ module cc_tools_module
                   call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
 #ifdef VAR_PTR_RESHAPE
                   t1(1:no2,1:no2,1:nor)     => w2
-                  h1(1:no,1:no,1:no2,1:no2) => sio4%elm1
+                  !this is a workaround for PGI 15.5 and 15.7
+                  h => sio4%elm1
+                  h1(1:no,1:no,1:no2,1:no2) => h
 #elif defined(COMPILER_UNDERSTANDS_FORTRAN_2003)
                   call c_f_pointer(c_loc(w2(1)),t1,[no2,no2,nor])
                   call c_f_pointer(c_loc(sio4%elm1(1)),h1,[no,no,no2,no2])
@@ -1730,47 +1915,72 @@ module cc_tools_module
    !> indices
    !> \author Patrick Ettenhuber
    !> \date October 2012
-   subroutine get_I_cged(Int_out,Int_in,m,nv)
+   subroutine get_I_cged(Int_out,Int_in,m,nv,acc_h)
       implicit none
-      !> integral output with indices reduced to c>=d
-      real(realk),intent(inout)::Int_out(:)
-      !>full integral input m*c*d
-      real(realk),intent(in) :: Int_in(:)
       !> leading dimension m and virtual dimension
       integer,intent(in)::m,nv
-      integer ::d,pos,pos2,a,b,c,cged
+      !> integral output with indices reduced to c>=d
+      real(realk),intent(inout)::Int_out(m*(nv*(nv+1))/2)
+      !>full integral input m*c*d
+      real(realk),intent(in) :: Int_in(m*nv*nv)
+      integer ::d,pos,pos2,a,b,c,cged,dc
       logical :: doit
-#ifdef VAR_OMP
-      integer :: tid,nthr
-      integer, external :: omp_get_thread_num,omp_get_max_threads
-      !    nthr = omp_get_max_threads()
-      !    nthr = min(nthr,nv)
-      !    call omp_set_num_threads(nthr)
+#ifdef VAR_OPENACC
+      integer(kind=acc_handle_kind),intent(in),optional :: acc_h
+      integer(kind=acc_handle_kind) :: ac_
+#ifdef VAR_PGF90
+      logical :: stuff_here
+      stuff_here = acc_is_present(Int_out,m*(nv*(nv+1))/2*8) .and. acc_is_present(Int_in,m*nv*nv*8)
+#else
+      logical, parameter :: stuff_here = .true.
 #endif
-      !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-      !OMP PRIVATE(pos,pos2,d,tid,doit)
-#ifdef VAR_OMP
-      !    tid = omp_get_thread_num()
-#else 
-      !    doit = .true.
+#else
+      integer,intent(in),optional :: acc_h
+      integer :: ac_
+      logical, parameter :: stuff_here = .false.
 #endif
-      !    doit = .true.
-      pos =1
-      do d=1,nv
-#ifdef VAR_OMP
-         !      doit = (mod(d,nthr) == tid)
+      ac_ = 0
+#ifdef VAR_OPENACC
+      ac_ = acc_async_sync
 #endif
-         !      if(doit) then
-         pos2=1+(d-1)*m+(d-1)*nv*m
-         !        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
-         Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
-         !      endif
-         pos=pos+m*(nv-d+1)
-      enddo
-      !OMP END PARALLEL
-#ifdef VAR_OMP
-      !call omp_set_num_threads(omp_get_max_threads())
-#endif
+      if(present(acc_h)) ac_ = acc_h
+
+      if(stuff_here)then
+         !$acc parallel loop present(Int_out,Int_in) default(none) copyin(nv,m) private(pos,pos2,d,dc) async(ac_)
+         do d=1,nv
+
+            !calculate target position in array Int_out
+            pos =1
+            do dc=1,d-1
+               pos=pos+m*(nv-dc+1)
+            enddo
+
+            !calculate origin position in array Int_in
+            pos2=1+(d-1)*m+(d-1)*nv*m
+
+            !do the copy
+            Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+
+         enddo
+         !$acc end parallel loop
+      else
+         do d=1,nv
+
+            !calculate target position in array Int_out
+            pos =1
+            do dc=1,d-1
+               pos=pos+m*(nv-dc+1)
+            enddo
+
+            !calculate origin position in array Int_in
+            pos2=1+(d-1)*m+(d-1)*nv*m
+
+            !do the copy
+            Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+
+         enddo
+      endif
+
    end subroutine get_I_cged
 
    !Even though the following two functions are only needed inside
@@ -2117,6 +2327,8 @@ module cc_tools_module
          dil_mem=dil_get_min_buf_size(tch,errc)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: BS: ',infpar%lg_mynum,errc,dil_mem
          if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Buf size set failed!',-1)
+         dil_mem=dil_buf_size*8_INTL; call dil_prepare_buffer(tch,dil_mem,errc,dil_buffer)
+         if(errc.ne.0) call lsquit('ERROR(ccsd_residual_integral_driven): TC12: Buf alloc failed!',-1)
          call dil_tensor_contract(tch,DIL_TC_ALL,dil_mem,errc,locked=.false.)
          if(DIL_DEBUG) write(DIL_CONS_OUT,*)'#DIL: TC12: TC: ',infpar%lg_mynum,errc
          if(errc.ne.0) call lsquit('ERROR(get_B22_contrib_mo): TC12: Tens contr failed!',-1)
@@ -2454,6 +2666,221 @@ module cc_tools_module
       call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
    end subroutine successive_4ao_mo_trafo
 
+   subroutine solver_energy_full_mod(no,nv,nfrags,offset,t2,t1,integral,occ_orbitals, &
+         & virt_orbitals,FragOccEner,FragVirtEner,tmp_fragener,rmax,DTOA,DTVA,atom)
+
+      implicit none
+
+      !> solver doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
+      type(tensor), intent(inout) :: t2, integral
+      !> solver singles amplitudes
+      type(tensor), intent(inout) :: t1
+      !> dimensions
+      integer, intent(in) :: no, nv, nfrags, offset
+      !> occupied orbital information
+      type(decorbital), dimension(no+offset), intent(inout) :: occ_orbitals
+      !> virtual orbital information
+      type(decorbital), dimension(nv), intent(inout) :: virt_orbitals
+      !> Fragment energies array:
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragOccEner
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: FragVirtEner
+      real(realk), dimension(nfrags,nfrags), intent(inout) :: tmp_fragener
+      integer, intent(in) :: atom
+      real(realk), intent(in) :: rmax, DTOA(:,:),DTVA(:,:)
+      !> integers
+      integer :: i,j,a,b
+      integer :: atomI,atomJ,atomA,atomB
+      !> energy reals
+      real(realk) :: energy_tmp_1, energy_tmp_2
+      real(realk), pointer :: t1p(:,:), t2p(:,:,:,:), inp(:,:,:,:)
+
+      ! Pointer to avoid OMP problems:
+      inp => integral%elm4(:,:,:,:)
+      t2p => t2%elm4(:,:,:,:)
+      t1p => t1%elm2(:,:)
+
+      ! Get occupied partitioning energy:
+      if (.not.DECinfo%OnlyVirtPart) then
+         tmp_fragener=0.0e0_realk
+         energy_tmp_1=0.0e0_realk
+         energy_tmp_2=0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:FragOccEner),&
+         !$OMP SHARED(t2p,t1p,inp,no,nv,occ_orbitals,offset,DECinfo,DTVA,atom,rmax)
+         do j=1,no
+            atomJ = occ_orbitals(j+offset)%CentralAtom
+            do i=1,no
+               atomI = occ_orbitals(i+offset)%CentralAtom
+               if(atomI == atomJ .and. atomI == atom)then
+
+                  do b=1,nv
+                     if(DTVA(b,atom)<=rmax)then
+                        do a=1,nv
+                           if(DTVA(a,atom)<=rmax)then
+
+                              energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                              if(DECinfo%use_singles)then
+                                 energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                              else
+                                 energy_tmp_2 = 0.0E0_realk
+                              endif
+                              FragOccEner(AtomI,AtomJ) = FragOccEner(AtomI,AtomJ) &
+                                 & + energy_tmp_1 + energy_tmp_2
+
+                           endif
+                        end do
+                     endif
+                  end do
+               endif
+
+            end do
+         end do
+         !$END PARALLEL DO
+
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
+
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:tmp_fragener),&
+         !$OMP SHARED(t2p,t1p,inp,no,nv,occ_orbitals,offset,DECinfo,DTVA,atom,rmax)
+         do j=1,no
+            atomJ = occ_orbitals(j+offset)%CentralAtom
+            do i=1,no
+               atomI = occ_orbitals(i+offset)%CentralAtom
+               if(atomI == atomJ .and. atomI == atom)then
+
+                  do b=1,nv
+                     if(DTVA(b,atom)<=rmax)then
+                        do a=1,nv
+                           if(DTVA(a,atom)<=rmax)then
+
+                              energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                              if(DECinfo%use_singles)then
+                                 energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                              else
+                                 energy_tmp_2 = 0.0E0_realk
+                              endif
+                              tmp_fragener(AtomI,AtomJ) = tmp_fragener(AtomI,AtomJ) &
+                                 & + energy_tmp_1 + energy_tmp_2
+
+                           endif
+                        end do
+                     endif
+                  end do
+               endif
+
+            end do
+         end do
+         !$END PARALLEL DO
+
+         FragOccEner(:,:) = 2.0E0_realk * FragOccEner(:,:) - tmp_fragener
+
+         do AtomI=1,nfrags
+            do AtomJ=AtomI+1,nfrags
+               FragOccEner(AtomI,AtomJ) = FragOccEner(AtomI,AtomJ) + FragOccEner(AtomJ,AtomI)
+               FragOccEner(AtomJ,AtomI) = FragOccEner(AtomI,AtomJ)
+            end do
+         end do
+
+         ! reorder from (a,b,j,i) to (a,b,i,j)
+         call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
+
+      end if
+      if (.not.DECinfo%OnlyOccPart) then
+         tmp_fragener=0.0e0_realk
+         energy_tmp_1=0.0e0_realk
+         energy_tmp_2=0.0e0_realk
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomA,j,atomB,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:FragVirtEner),&
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo,DTOA,atom,rmax)
+         do b=1,nv
+            atomB = virt_orbitals(b)%CentralAtom
+            do a=1,nv
+               atomA = virt_orbitals(a)%CentralAtom
+               if(atomA == atomB .and. atomA == atom)then
+
+                  do j=1,no
+                     if(DTOA(j+offset,atom)<=rmax)then
+                        do i=1,no
+                           if(DTOA(i+offset,atom)<=rmax)then
+
+                              energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                              if(DECinfo%use_singles)then
+                                 energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                              else
+                                 energy_tmp_2 = 0.0E0_realk
+                              endif
+                              FragVirtEner(atomA,atomB) = FragVirtEner(atomA,atomB) &
+                                 & + energy_tmp_1 + energy_tmp_2
+                           endif
+
+                        end do
+                     endif
+                  end do
+
+               endif
+            end do
+         end do
+         !$END PARALLEL DO
+
+         ! reorder from (a,b,i,j) to (a,b,j,i)
+         call tensor_reorder(integral,[1,2,4,3])
+         inp => integral%elm4(:,:,:,:)
+
+         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomA,j,atomB,a,b,energy_tmp_1,energy_tmp_2),&
+         !$OMP REDUCTION(+:tmp_fragener),&
+         !$OMP SHARED(t2p,t1p,inp,no,nv,virt_orbitals,offset,DECinfo,DTOA,atom,rmax)
+         do b=1,nv
+            atomB = virt_orbitals(b)%CentralAtom
+            do a=1,nv
+               atomA = virt_orbitals(a)%CentralAtom
+
+               if(atomA == atomB .and. atomA == atom)then
+                  do j=1,no
+                     if(DTOA(j+offset,atom)<=rmax)then
+                        do i=1,no
+                           if(DTOA(i+offset,atom)<=rmax)then
+
+                              energy_tmp_1 = t2p(a,b,i,j) * inp(a,b,i,j)
+                              if(DECinfo%use_singles)then
+                                 energy_tmp_2 = t1p(a,i) * t1p(b,j) * inp(a,b,i,j)
+                              else
+                                 energy_tmp_2 = 0.0E0_realk
+                              endif
+                              tmp_fragener(atomA,atomB) = tmp_fragener(atomA,AtomB) &
+                                 & + energy_tmp_1 + energy_tmp_2
+
+                           endif
+                        end do
+                     endif
+                  end do
+               endif
+
+            end do
+         end do
+         !$END PARALLEL DO
+
+         FragVirtEner(:,:) = 2.0E0_realk * FragVirtEner(:,:) - tmp_fragener
+
+         do AtomI=1,nfrags
+            do AtomJ=AtomI+1,nfrags
+               FragVirtEner(AtomI,AtomJ) = FragVirtEner(AtomI,AtomJ) + FragVirtEner(AtomJ,AtomI)
+               FragVirtEner(AtomJ,AtomI) = FragVirtEner(AtomI,AtomJ)
+            end do
+         end do
+
+         ! reorder from (a,b,j,i) to (a,b,i,j) in case of later use
+         call tensor_reorder(integral,[1,2,4,3])
+
+      end if
+
+      inp => null()
+      t2p => null()
+      t1p => null()
+
+   end subroutine solver_energy_full_mod
 
    !> \brief: calculate atomic and pair fragment contributions to solver (CCSD, MP2 ...)
    !> correlation energy for full molecule calculation.

@@ -805,7 +805,7 @@ SUBROUTINE LSDALTON_DRIVER_SLAVE()
    implicit none
    call lsquit("ERROR(LSDALTON_DRIVER_SLAVE): this should never be called without MPI",-1)
 #else
-   use lsmpi_type, only: MPI_COMM_LSDALTON
+   use lsmpi_param, only: MPI_COMM_LSDALTON
    implicit none
    call lsmpi_slave(MPI_COMM_LSDALTON)
 #endif
@@ -817,7 +817,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use matrix_operations, only: set_matrix_default
   use init_lsdalton_mod, only: open_lsdalton_files
 #ifdef VAR_MPI
-  use lsmpi_type, only: PDMA4SLV
+  use lsparameters, only: PDMA4SLV
 #endif
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
@@ -878,6 +878,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use memory_handling, only: stats_mem
   use files, only: lsclose
   use lstiming, only: lstimer, init_timers, print_timers
+  use lsparameters
   use lstensorMem, only: lstmem_free
 #ifdef VAR_ENABLE_TENSORS
   use tensor_interface_module ,only: tensor_finalize_interface, tensor_free_bg_buf
@@ -890,6 +891,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_param
 #endif
   use gpu_device_handling, only: shutdown_GPU_devices 
 #ifdef VAR_ICHOR

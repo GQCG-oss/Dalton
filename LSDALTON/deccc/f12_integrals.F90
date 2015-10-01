@@ -40,7 +40,7 @@ module f12_integrals_module
   ! Patricks mat_transpose routine 
   use reorder_frontend_module!, only: mat_transpose(rows,column,pref1,A,pref2,AT)
 
-  ! Thomas free_cabs() for aa free MO_CABS_save_created, CMO_RI_save_created
+  ! Thomas 
   use CABS_operations
 
   ! MP2F12 C coupling routine
@@ -3344,8 +3344,6 @@ contains
     !    Free Memory
     ! ***********************************************************
 
-    !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
-    ! call free_cabs()
 
     !> F-term
     call mem_dealloc(Fkj)

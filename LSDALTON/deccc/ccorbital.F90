@@ -83,7 +83,7 @@ contains
     ! If we want to simulate full calculation, we simply assign ALL orbitals to atom 1
     if(DECinfo%simulate_full) then
        write(DECinfo%output,*) 'THIS IS A SIMULATED FULL MOLECULAR CALCULATION!'
-       call adjust_orbitals_for_full_simulation(nocc,nvirt,&
+       call adjust_orbitals_for_full_simulation(nocc,nvirt,MyMolecule%nbasis,&
             &OccOrbitals,UnoccOrbitals,natoms,DECinfo%simulate_natoms)
     end if
 
@@ -2429,7 +2429,7 @@ contains
   !> going through the usual DEC routines.
   !> \author Kasper Kristensen
   !> \date April 2011
-  subroutine adjust_orbitals_for_full_simulation(nocc,nvirt,&
+  subroutine adjust_orbitals_for_full_simulation(nocc,nvirt,nbasis,&
        &OccOrbitals,UnoccOrbitals,natoms,n)
 
     implicit none
@@ -2437,6 +2437,9 @@ contains
     integer, intent(in) :: nocc
     !> Number of virtupied orbitals in full molecule
     integer, intent(in) :: nvirt
+    !> Number of basis functions in full molecule
+    !> (usually, but not necessarily, nocc+nvirt)
+    integer,intent(in) :: nbasis
     !> Occupied orbital info for full molecule
     type(decorbital), dimension(nocc), intent(inout) :: OccOrbitals
     !> Unoccupied orbital info for full molecule
@@ -2446,12 +2449,11 @@ contains
     !> Number of atomic sites with orbitals assigned in the simulation (default: 1)
     !> Thus, the first n atoms will get all orbitals evenly assigned.
     integer,intent(in) :: n
-    integer :: i,j,orb,nocc_per_atom,nvirt_per_atom,atom,nbasis
+    integer :: i,j,orb,nocc_per_atom,nvirt_per_atom,atom
 
     ! Number of occupied/virtual orbitals per atom evenly distributed over n atoms
     nocc_per_atom = floor(real(nocc)/real(n))
     nvirt_per_atom = floor(real(nvirt)/real(n))
-    nbasis = nocc + nvirt
 
     ! Sanity check: This routine only makes sense to call
     ! if the full molecule if included for the fragments.
@@ -3112,7 +3114,7 @@ contains
           if( (nocc_per_atom(i)==0) ) then
              dofrag(i)=.false.
           else
-             if(PhantomAtom(i))then
+             if(PhantomAtom(i) .and. (.not. DECinfo%snoop)  )then
                 print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nvirt_per_atom(i)',nvirt_per_atom(i)
                 print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
                 dofrag(i)=.false.
@@ -3124,7 +3126,7 @@ contains
           if( (nvirt_per_atom(i)==0) ) then
              dofrag(i)=.false.
           else
-             if(PhantomAtom(i))then
+             if(PhantomAtom(i) .and. (.not. DECinfo%snoop) )then
                 print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nvirt_per_atom(i)',nvirt_per_atom(i)
                 print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
                 dofrag(i)=.false.
@@ -3136,7 +3138,7 @@ contains
           if( (nocc_per_atom(i)==0) .and. (nvirt_per_atom(i)==0) )then
              dofrag(i)=.false.
           else
-             if(PhantomAtom(i))then
+             if(PhantomAtom(i) .and. (.not. DECinfo%snoop) )then
                 print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nvirt_per_atom(i)',nvirt_per_atom(i)
                 print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
                 dofrag(i)=.false.

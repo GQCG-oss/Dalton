@@ -58,7 +58,6 @@ option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
 option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
-option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
@@ -76,6 +75,8 @@ option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
 option(ENABLE_DEC            "Enable Divide-Expand-Consolidate module"          OFF)
+option(ENABLE_LARGE_TEST     "Enable Large-scale (long) test cases"             OFF)
+option(ENABLE_DEVELOPER      "Enable Developer test cases and features"         OFF)
 
 # Gen1Int interface, OpenRSP and TDRSP needs QcMatrix library
 # Gao: please leave this comment here, and I am going to fix it after repo split

@@ -12,8 +12,9 @@ module ccsd_gradient_module
   use dec_typedef_module
   use lsparameters
   use tensor_interface_module
+  use matrix_module
   use matrix_operations
-
+  use typedeftype
   use dec_typedef_module
   use array2_simple_operations
   use array4_simple_operations
@@ -25,7 +26,15 @@ module ccsd_gradient_module
   use infpar_module
 #endif
   ! ========================= Implementation ========================
-contains
+  public :: z_vec_rhs_ccsd
+  public :: get_ccsdgradient_main
+  public :: update_full_ccsdgradient
+  public :: update_ccsddensity
+  public :: single_calculate_ccsdgradient_driver
+  public :: pair_calculate_ccsdgradient_driver
+  private
+
+  contains
 
   !> ----------------------------------------------------------------
   !> \brief Calculate contributions to gradient  

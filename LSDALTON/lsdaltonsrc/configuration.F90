@@ -66,7 +66,8 @@ use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
-use lsmpi_type, only: DFTSETFU,SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
+use lsmpi_type
+use lsmpi_param, only: SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
 #endif
 #ifdef BUILD_CGTODIFF
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
@@ -1661,7 +1662,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.MIXEDOVERLAP'); INTEGRAL%MIXEDOVERLAP = .TRUE.
         CASE ('.NO MM_FILES'); INTEGRAL%NO_MMFILES = .TRUE.
         CASE ('.DENSFIT'); integral%DENSFIT = .TRUE.                 
-        CASE ('.INTEREST'); integral%INTEREST = .TRUE.                 
         CASE ('.RUNMM');  integral%FMM = .TRUE.
         CASE ('.DECGRA'); integral%run_dec_gradient_test=.true.
         CASE ('.MEMDIST'); integral%MEMDIST = .TRUE.
@@ -3812,7 +3812,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    if(config%doF12)THEN
       if(.NOT. CABS_BASIS_PRESENT)then         
          WRITE(config%LUPRI,'(/A)') &
-              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
+              &     'You have specified .F12 in the dalton input but not supplied a CABS basis set' 
+         WRITE(config%LUPRI,'(/A)') &
+              &     'We recommend OBS:   cc-pV(X)Z-F12  Aux:aug-cc-pwCV(X)Z-RI CABS:cc-pV(X)Z-F12_OPTRI    X=D,T,Q'
+         WRITE(config%LUPRI,'(/A)') &
+              &     'or           OBS: aug-cc-pV(X)Z-F12  Aux:aug-cc-pwCV(X)Z-RI   CABS:aug-cc-pV(X)Z_OPTRI   '
          CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
       endif
       WRITE(config%LUPRI,'(A,F7.1)')'The F12 Geminal exponent for the Regular Basis = ',&

@@ -4,11 +4,11 @@
 !> \author: Janus Juul Eriksen
 !> \date: 2012-2014, Aarhus
 module ccsdpt_module
-  use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer, c_size_t
-
+  use, intrinsic :: iso_c_binding, only: c_loc, c_f_pointer, c_size_t, c_ptr
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
+  use lsmpi_module
 #endif
   use precision
   use dec_typedef_module

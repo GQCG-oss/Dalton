@@ -11,6 +11,7 @@ module dec_driver_slave_module
   use infpar_module
   use lsmpi_type
   use lsmpi_op, only: init_slave_timers, get_slave_timers
+  use lsmpi_module
   use typedeftype
   use dec_typedef_module
   use DALTONINFO, only: ls_free

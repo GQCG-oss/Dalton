@@ -4,6 +4,8 @@ subroutine dec_lsmpi_slave(comm)
    use precision
    use lstiming
    use infpar_module
+   use lsparameters
+   use lsmpi_param
    use lsmpi_type
    use integralinterfaceMod!, only: II_screeninit, &
    !           & II_bcast_screen, II_screenfree
@@ -67,14 +69,16 @@ subroutine dec_lsmpi_slave(comm)
          call RIMP2_integrals_and_amplitudes_slave
       case(DECRIMP2F12);
          call get_rif12_fragment_energy_slave
+      case(RIMP2F12Ccoup);
+         call RIMP2F12_Ccoupling_energy_slave
       case(LSTHCRIMP2INAMP);
-         call LSTHCRIMP2_integrals_and_amplitudes_slave
+         call lsquit('No LSTHCRIMP2_integrals_and_amplitudes_slave',-1)
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
       case(RIMP2F12FULL);
          call full_canonical_rimp2f12_slave
       case(LSTHCRIMP2FULL);
-!         call full_canonical_ls_thc_rimp2_slave
+         call lsquit('No full_canonical_ls_thc_rimp2_slave',-1)
       case(DECRIMP2GRAD);
          call RIMP2_gradient_slave
       case(CANONMP2FULL);
@@ -138,6 +142,9 @@ subroutine dec_lsmpi_slave(comm)
       case(QUITNOMOREJOBS); 
          infpar%lg_morejobs   = .false.
          stay_in_slaveroutine = .false.
+      case default
+         print*,'The dec_lsmpi_slave received unknown Job=',job
+         call lsquit('The dec_lsmpi_slave received unknown Job',-1)
       end select
 
    end do

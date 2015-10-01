@@ -50,7 +50,8 @@ CONTAINS
     CFG%start_it = 3 !default init
     if ((.not. CFG%arh_davidson)) then
        call mat_min_elm(CFG%P,minel,minel_pos)
-       if (minel < 0_realk) CFG%start_it = 4
+       CFG%minel_diagonal_hessian=minel
+       if (minel < -10.0_realk) CFG%start_it = 4
     else
        if (CFG%arh_extravec) CFG%start_it = 4
        if (CFG%arh_gradnorm .ge. 1E-3_realk) arh_thresh=0.0001_realk
@@ -91,7 +92,7 @@ CONTAINS
     !************************************************************
     converged =.false.
     call mat_init(res,rowdim,coldim)
-    do MoreRed=1,5
+    do MoreRed=1,3
        resnorm_2D =0_realk
        ReducedSpaceLoop: do iter=CFG%start_it,CFG%max_it-1
           call mem_alloc(xred,iter-1)
@@ -171,7 +172,7 @@ CONTAINS
           if (CFG%orb_debug) write(CFG%lupri,'(a,i4)') &
                & 'iter : Micro iterations converged in RedSpaceLoop number :', MoreRed
           exit
-       elseif ((.not. converged) .and. CFG%stepsize > 0.0009_realk .and. (MoreRed .ne. 5)) then 
+       elseif ((.not. converged) .and. CFG%stepsize > 0.0009_realk .and. (MoreRed .ne. 3)) then 
           CFG%stepsize = 0.5_realk*CFG%stepsize
           if (CFG%orb_debug) write(CFG%lupri,'(a,i4,a,f9.4)') &
                &'iter : Micro iterations not converged for RedSpaceLoop:', MoreRed, &
@@ -180,7 +181,7 @@ CONTAINS
              call mat_free(CFG%AllSigma(i))
              call mat_free(CFG%Allb(i))
           end do
-       elseif ((CFG%stepsize <0.0009_realk).or. (MoreRed==5)) then
+       elseif ((CFG%stepsize <0.0009_realk).or. (MoreRed==3)) then
           if (CFg%arh_davidson) resnorm_2d=CFG%arh_gradnorm
           write(CFG%lupri,*) 
           write(CFG%lupri,*) 'WARNING!  Did not converge micro iterations. Residual norm reduction is ',&

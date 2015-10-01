@@ -10,6 +10,7 @@ use profile_type, only: profileinput
 use av_utilities, only: AVitem
 use diagonalization, only: DiagItem
 use typedeftype
+use basis_typetype
 use molecule_typetype, only: moleculeinfo
 use opttype, only: OptItem
 use response_wrapper_type_module, only: MCDinputitem, ALPHAinputitem, BETAinputitem, &
