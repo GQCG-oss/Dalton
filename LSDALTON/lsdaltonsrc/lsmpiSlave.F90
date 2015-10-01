@@ -184,7 +184,7 @@ subroutine lsmpi_slave(comm)
       case(RIMP2INAMP);
          call RIMP2_integrals_and_amplitudes_slave
       case(LSTHCRIMP2INAMP);
-         call LSTHCRIMP2_integrals_and_amplitudes_slave
+         call lsquit('No LSTHCRIMP2_integrals_and_amplitudes_slave',-1)
       case(RIMP2FULL);
          call full_canonical_rimp2_slave
       case(RIMP2F12FULL);         
