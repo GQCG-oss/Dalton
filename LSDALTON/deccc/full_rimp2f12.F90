@@ -932,7 +932,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                   call ls_mpibcast(CalphaG,nsize,node,infpar%lg_comm)   !CalphaTmp(NBA,nocv,nocc)
                   IF(size(CalphaTmp).NE.nsize2)call lsquit('MPI Bcast error in Full RIMP2F12 B2',-1)
                   call ls_mpibcast(CalphaTmp,nsize2,node,infpar%lg_comm) !CalphaTmp(NBA,nocc,nvirt)
-                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,offset) 
+                  Call FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,offset) 
                ELSE
                   node = inode-1
                   !recieve
@@ -945,7 +945,7 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
                   ENDIF
                   call ls_mpibcast(CalphaMPI,nsize,node,infpar%lg_comm)
                   call ls_mpibcast(CalphaMPI2,nsize2,node,infpar%lg_comm)
-                  call FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nbasis,CalphaMPI,&
+                  call FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nocv,CalphaMPI,&
                        & CalphaMPI2,NBA2,CalphaG,CalphaTmp,E_21Ctmp,EpsOcc,EpsVirt,offset)
                   IF(use_bg_buf)THEN
                      call mem_pseudo_dealloc(CalphaMPI2)
@@ -1858,12 +1858,12 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     ENDIF
   end subroutine WriteFULLRIMP2F12RestartInfo
   
-  subroutine FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nbasis,Galpha,&
+  subroutine FullRIMP2F12_CcouplingEnergyCont(NBA,nocc,nvirt,nocv,Galpha,&
        & Galpha2,E,EpsOcc,EpsVirt,offset)
     implicit none
     real(realk),intent(inout) :: E
-    integer,intent(in) :: NBA,nocc,nvirt,nbasis,offset
-    real(realk),intent(in) :: Galpha(NBA,nbasis,nocc),Galpha2(NBA,nocc,nvirt)
+    integer,intent(in) :: NBA,nocc,nvirt,nocv,offset
+    real(realk),intent(in) :: Galpha(NBA,nocv,nocc),Galpha2(NBA,nocc,nvirt)
     real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
     !local variables
     integer :: A,B,J,I,ALPHA
@@ -1901,13 +1901,13 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
     E = TMP/32.0E0_realk
   end subroutine FullRIMP2F12_CcouplingEnergyCont
 
-  subroutine FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nbasis,GalphaMPI,&
+  subroutine FullRIMP2F12_CcouplingEnergyContMPI(NBA,nocc,nvirt,nocv,GalphaMPI,&
        & Galpha2MPI,NBA2,Galpha,Galpha2,E,EpsOcc,EpsVirt,offset)
     implicit none
     real(realk),intent(inout) :: E
-    integer,intent(in) :: NBA,nocc,nvirt,nbasis,NBA2,offset
-    real(realk),intent(in) :: GalphaMPI(NBA2,nbasis,nocc),Galpha2MPI(NBA2,nocc,nvirt)
-    real(realk),intent(in) :: Galpha(NBA,nbasis,nocc),Galpha2(NBA,nocc,nvirt)
+    integer,intent(in) :: NBA,nocc,nvirt,nocv,NBA2,offset
+    real(realk),intent(in) :: GalphaMPI(NBA2,nocv,nocc),Galpha2MPI(NBA2,nocc,nvirt)
+    real(realk),intent(in) :: Galpha(NBA,nocv,nocc),Galpha2(NBA,nocc,nvirt)
     real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
     !local variables
     integer :: A,B,J,I,ALPHA
