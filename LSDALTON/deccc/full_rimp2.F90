@@ -23,12 +23,12 @@ use files
   use memory_handling
   use MemoryLeakToolMod
   use BUILDAOBATCH
+  use lstiming
 
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_fragment_utils
   use array4_simple_operations
-  use array3_simple_operations
   use array2_simple_operations
   use ri_util_module
   !  use orbital_operations

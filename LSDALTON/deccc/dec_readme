@@ -88,7 +88,7 @@ Level 12
 dec_main
 
 Level 11
-snoop_main, snoop_tools
+snoop_main
 
 Level 10
 full_driver, dec_driver, decmpiSlave, full_rimp2f12
@@ -103,7 +103,7 @@ Level 7
 cc_driver, cc_debug_routines
 
 Level 6
-rpa
+rpa,snoop_tools
 
 Level 5
 pno_ccsd, ccsd, dec_atom, ccsdpt, mp2_gradient, f12_integrals, rif12_integrals, cc_response_tools

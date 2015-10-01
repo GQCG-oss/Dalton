@@ -19,11 +19,14 @@ module ccintegrals
   use II_XC_interfaceModule
   use IchorErimoduleHost
   use background_buffer_module
+  use get_idx_mod
+  use reorder_frontend_module
   ! MO-CCSD module:
   use tensor_interface_module
   use buildaobatch
   use memory_handling
   use daltoninfo
+  use tensor_parameters_module
 #ifdef VAR_MPI
   use lsmpi_param
   use lsmpi_type

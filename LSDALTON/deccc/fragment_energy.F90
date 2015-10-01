@@ -13,6 +13,12 @@ module fragment_energy_module
   !       & mem_TurnOffThread_Memory,mem_TurnONThread_Memory,init_threadmemvar
   use dec_typedef_module
   use rpa_module
+  use tensor_type_def_module
+  use tensor_interface_module
+  use background_buffer_module
+#ifdef VAR_MPI
+  use infpar_module
+#endif
 
   ! DEC DEPENDENCIES (within deccc directory)
   ! ****************************************

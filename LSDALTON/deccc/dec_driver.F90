@@ -12,7 +12,11 @@ module dec_driver_module
   use matrix_module!, only:matrix
   use matrix_operations!, only: mat_init, mat_zero,mat_free
   use dec_typedef_module
-
+  use crayio_tools_module
+  use tensor_type_def_module
+  use tensor_interface_module
+  use background_buffer_module
+  use lsparameters
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
@@ -35,10 +39,14 @@ module dec_driver_module
   use ccsd_gradient_module
 
 #ifdef VAR_MPI
+  use decmpi_module
   use infpar_module
   use dec_driver_slave_module
   use lsmpi_module
+  use lsmpi_param
+  use lsmpi_type
 #endif
+
 
 public:: DEC_wrapper,main_fragment_driver
 private

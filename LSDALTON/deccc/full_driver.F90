@@ -19,6 +19,9 @@ module full
   use matrix_operations
   use memory_handling
   use MemoryLeakToolMod
+  use tensor_type_def_module
+  use tensor_interface_module
+
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_fragment_utils
@@ -26,7 +29,6 @@ module full
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
   use array4_simple_operations
-  use array3_simple_operations
   use array2_simple_operations
   use mp2_module
   !  use orbital_operations

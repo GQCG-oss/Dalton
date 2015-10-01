@@ -15,6 +15,9 @@ module ccsd_gradient_module
   use matrix_module
   use matrix_operations
   use typedeftype
+  use reorder_frontend_module
+  use memory_handling
+  use LSTIMING
   use dec_typedef_module
   use array2_simple_operations
   use array4_simple_operations
@@ -22,6 +25,9 @@ module ccsd_gradient_module
   use ccintegrals
   use mp2_gradient_module
   use ccsd_module
+  use dec_fragment_utils
+  
+
 #ifdef VAR_MPI
   use infpar_module
 #endif
@@ -33,6 +39,7 @@ module ccsd_gradient_module
   public :: single_calculate_ccsdgradient_driver
   public :: pair_calculate_ccsdgradient_driver
   private
+
 
   contains
 

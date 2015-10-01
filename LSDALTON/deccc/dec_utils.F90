@@ -36,6 +36,7 @@ module dec_fragment_utils
   
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
+  use dec_tools_module
 
   !> Read 64 bit integer(s) from file and convert to 32 bit
   interface read_64bit_to_int

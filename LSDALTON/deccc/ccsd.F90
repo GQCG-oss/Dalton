@@ -43,7 +43,6 @@ module ccsd_module
   use dec_fragment_utils
   use array2_simple_operations!, only: array2_init, array2_add,&
   !         & array2_transpose, array2_free, array2_add_to
-  use array3_simple_operations!, only: array_reorder_3d
   use array4_simple_operations!, only: array4_init, operator(*),&
   !         & array_reorder_4d, mat_transpose, array4_contract1,&
   !         & array4_reorder, array4_free, array4_contract2_middle,&

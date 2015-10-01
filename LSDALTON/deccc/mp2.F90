@@ -52,6 +52,13 @@ module mp2_module
 !       & array4_close_file, array4_write_file_type1, mat_transpose, &
 !       & array4_read_file_type2
 
+ 
+public :: mp2f12_ccoupling_energy, MP2_integrals_and_amplitudes
+public :: get_vovo_integrals, get_simple_parallel_mp2_residual
+public :: MP2_integrals_and_amplitudes_workhorse
+public :: get_optimal_batch_sizes_for_mp2_integrals
+private
+
 
   !> Calculate integrals and amplitudes for MP2 energy (and possibly first order properties)
   interface MP2_integrals_and_amplitudes
@@ -416,9 +423,9 @@ contains
 
     ! Extract occupied and virtual EOS indices from columns of MyFragment%Co
     ! and MyFragment%Cv, i.e. the local EOS molecular orbital coefficients
-    LoccEOS = array2_init_plain([nbasis,noccEOS])
+    LoccEOS = array2_init([nbasis,noccEOS])
     call extract_occupied_EOS_MO_indices(LoccEOS,MyFragment)
-    LvirtEOS = array2_init_plain([nbasis,nvirtEOS])
+    LvirtEOS = array2_init([nbasis,nvirtEOS])
     call extract_virtual_EOS_MO_indices(LvirtEOS,MyFragment)
 
     ! For efficiency when calling dgemm, save transposed matrices
@@ -2382,9 +2389,9 @@ subroutine MP2F12_Ccoupling_energy(MyFragment,bat,E21)
 
     ! Extract occupied and virtual EOS indices from columns of MyFragment%Co
     ! and MyFragment%Cv, i.e. the local EOS molecular orbital coefficients
-    LoccEOS = array2_init_plain([nbasis,noccEOS])
+    LoccEOS = array2_init([nbasis,noccEOS])
     call extract_occupied_EOS_MO_indices(LoccEOS,MyFragment)
-    LvirtEOS = array2_init_plain([nbasis,nvirtEOS])
+    LvirtEOS = array2_init([nbasis,nvirtEOS])
     call extract_virtual_EOS_MO_indices(LvirtEOS,MyFragment)
 
     ! For efficiency when calling dgemm, save transposed matrices

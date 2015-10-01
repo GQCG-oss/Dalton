@@ -19,7 +19,6 @@ module full_mp3_module
   use dec_tools_module
   use dec_fragment_utils
   use array4_simple_operations
-  use array3_simple_operations
   use array2_simple_operations
   use fullmp2
   use ccintegrals

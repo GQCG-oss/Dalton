@@ -16,6 +16,8 @@ module dec_driver_slave_module
   use dec_typedef_module
   use DALTONINFO, only: ls_free
   use BUILDAOBATCH
+  use background_buffer_module
+
 
 
   ! DEC DEPENDENCIES (within deccc directory) 
@@ -29,6 +31,7 @@ module dec_driver_slave_module
   use ccsd_module
   use mp2_gradient_module
   use fragment_energy_module
+  use orbital_operations
 
 public :: main_fragment_driver_slave
 private

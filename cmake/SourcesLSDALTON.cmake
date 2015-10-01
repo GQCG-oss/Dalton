@@ -212,8 +212,6 @@ set(DDYNAM_SOURCES
     )
 set(DEC_SOURCES
     LSDALTON/deccc/array4_memory.F90
-    LSDALTON/deccc/array3_memory.F90
-    LSDALTON/deccc/ccarray3_simple.F90
     LSDALTON/deccc/CABS.F90
     LSDALTON/deccc/mp2.F90
     LSDALTON/deccc/rimp2.F90

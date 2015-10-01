@@ -22,13 +22,17 @@ use files
   use memory_handling
   use MemoryLeakToolMod
   use reorder_frontend_module
+  use screen_mod
+  use BUILDAOBATCH
+  use IchorErimoduleHost
+  use IntegralInterfaceDEC
+  use LSTIMING
 
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_tools_module
   use dec_fragment_utils
   use array4_simple_operations
-  use array3_simple_operations
   use array2_simple_operations
   use mp2_module
   !  use orbital_operations

@@ -20,10 +20,11 @@ use IIABSVALINT
 use lsparameters
 #ifdef VAR_MPI
 use infpar_module
+use lsmpi_op
 #endif
 use tensor_interface_module
 use tensor_basic_module
-
+use background_buffer_module
 
 ! DEC DEPENDENCIES (within deccc directory)   
 ! *****************************************
@@ -41,13 +42,13 @@ use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
 !       & get_ccsd_residual_integral_driven_oldtensor_wrapper
 use pno_ccsd_module
-use snoop_tools_module
 #ifdef MOD_UNRELEASED
 use ccsdpt_module
 !endif mod_unreleased
 #endif
 use orbital_operations
 use rpa_module
+use cc_tools_module
 
 
 

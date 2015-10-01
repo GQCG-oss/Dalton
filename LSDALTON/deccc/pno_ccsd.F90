@@ -14,7 +14,9 @@ module pno_ccsd_module
   use IntegralInterfaceDEC
   use lstiming
   use BUILDAOBATCH
-  
+  use reorder_frontend_module
+
+  use dec_tools_module
   use cc_tools_module
   use dec_fragment_utils
   use array4_simple_operations
