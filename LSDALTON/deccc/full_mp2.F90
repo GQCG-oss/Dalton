@@ -22,6 +22,10 @@ use files
   use memory_handling
   use MemoryLeakToolMod
   use reorder_frontend_module
+  use screen_mod
+  use BUILDAOBATCH
+  use IchorErimoduleHost
+  use IntegralInterfaceDEC
 
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************

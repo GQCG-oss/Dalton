@@ -18,6 +18,9 @@ module atomic_fragment_operations
   use lsparameters!, only: AORdefault
   use molecule_typetype
   use basis_typetype
+  use tensor_type_def_module
+  use tensor_interface_module
+  use background_buffer_module
 #ifdef VAR_MPI
   use infpar_module
 #endif

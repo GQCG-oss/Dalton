@@ -52,6 +52,11 @@ module mp2_module
 !       & array4_close_file, array4_write_file_type1, mat_transpose, &
 !       & array4_read_file_type2
 
+ 
+public :: mp2f12_ccoupling_energy, MP2_integrals_and_amplitudes
+public :: get_vovo_integrals, get_simple_parallel_mp2_residual
+private
+
 
   !> Calculate integrals and amplitudes for MP2 energy (and possibly first order properties)
   interface MP2_integrals_and_amplitudes

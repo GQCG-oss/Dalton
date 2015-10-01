@@ -19,6 +19,9 @@ module full
   use matrix_operations
   use memory_handling
   use MemoryLeakToolMod
+  use tensor_type_def_module
+  use tensor_interface_module
+
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
   use dec_fragment_utils
