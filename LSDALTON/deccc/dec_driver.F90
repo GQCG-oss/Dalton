@@ -12,7 +12,7 @@ module dec_driver_module
   use matrix_module!, only:matrix
   use matrix_operations!, only: mat_init, mat_zero,mat_free
   use dec_typedef_module
-
+  use crayio_tools_module
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************

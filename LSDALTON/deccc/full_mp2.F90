@@ -26,6 +26,7 @@ use files
   use BUILDAOBATCH
   use IchorErimoduleHost
   use IntegralInterfaceDEC
+  use LSTIMING
 
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************

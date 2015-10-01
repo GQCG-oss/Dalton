@@ -93,7 +93,31 @@ module array4_simple_operations
   real(realk) :: time_array4_contract_with_ao = 0.0E0_realk
 
 
-
+public :: operator(*), operator(+)
+public :: array4_free, array4_init_standard
+public :: array4_alloc, array4_init, array4_write_file
+public :: array4_dealloc,array4_duplicate
+public :: array4_write, array4_read_file
+public :: array4_read
+public :: array4_add_to
+public :: array4_scale
+public :: array4_contract1
+public :: array4_contract2_middle
+public :: array4_contract2
+public :: array4_contract_array2
+public :: array4_contract3
+public :: array4_reorder
+public :: array4_open_file
+public :: array4_close_file
+public :: array4_delete_file
+public :: array4_write_file_type1
+public :: array4_write_file_type2
+public :: array4_read_file_type1
+public :: array4_read_file_type2
+public :: array4_extract_eos_indices
+public :: array4_extract_eos_indices_both_schemes
+public :: transform_virt_amp_to_fos
+private
 contains
 
 

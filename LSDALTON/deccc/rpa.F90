@@ -11,12 +11,13 @@ module rpa_module
   use screen_mod!, only: DECscreenITEM
   use memory_handling!, only: mem_dealloc, mem_alloc
   use dec_typedef_module
+  use reorder_frontend_module
   use BUILDAOBATCH!,only:build_batchesofaos,determine_maxbatchorbitalsize,&
 !       & determine_MaxOrbitals
   use screen_mod!,only: free_decscreen, DECSCREENITEM
   use integralinterfaceDEC
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
-  use ccsd_module
+  use tensor_parameters_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -28,6 +29,7 @@ module rpa_module
 #ifdef VAR_MPI
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
 #endif
+  use ccsd_module
     use dec_fragment_utils
     use tensor_interface_module
     use array2_simple_operations!, only: array2_init, array2_add,&

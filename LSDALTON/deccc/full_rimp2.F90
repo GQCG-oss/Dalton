@@ -23,6 +23,7 @@ use files
   use memory_handling
   use MemoryLeakToolMod
   use BUILDAOBATCH
+  use lstiming
 
   !  DEC DEPENDENCIES (within deccc directory)   
   !  *****************************************
