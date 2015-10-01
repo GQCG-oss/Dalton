@@ -15,12 +15,7 @@ module array3_simple_operations
   use reorder_frontend_module
 
 
-  ! DEC DEPENDENCIES (within deccc directory)                                                         
-  ! *****************************************
-  use array3_memory_manager!, only: memory_allocate_3d, memory_deallocate_3d
-!  use dec_fragment_utils
-
-  !> Number of array
+  !> Number of arrays
   integer(kind=long) :: ArrayNumber=0
   !> Number of created arrays
   integer(kind=long) :: CreatedArrays=0
