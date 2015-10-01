@@ -152,6 +152,7 @@ implicit none
    opt%calctype                  = opt%hfcalc !Default is HF
    opt%cfg_prefer_CSR            = .false.
    opt%cfg_prefer_SCALAPACK      = .false.
+   opt%cfg_prefer_PDMM           = .false.
    opt%crashcalc                 = .false.
    opt%cfg_incremental           = .false.
    opt%cfg_saveF0andD0           = .false.
