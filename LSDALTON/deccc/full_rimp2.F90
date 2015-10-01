@@ -29,7 +29,6 @@ use files
   !  *****************************************
   use dec_fragment_utils
   use array4_simple_operations
-  use array3_simple_operations
   use array2_simple_operations
   use ri_util_module
   !  use orbital_operations

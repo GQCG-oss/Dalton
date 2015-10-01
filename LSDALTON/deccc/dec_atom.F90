@@ -43,6 +43,24 @@ module atomic_fragment_operations
   use CABS_operations
   use f12_routines_module
 
+public :: atomic_fragment_init_f12, expand_fragment
+public :: atomic_fragment_nullify,merged_fragment_init
+public :: fragment_adapted_transformation_matrices
+public :: add_fragment_to_file,atomic_fragment_init_basis_part
+public :: update_full_t1_from_atomic_frag,stresstest_mod_dofrag
+public :: get_fragmentt1_aosaos_from_full,create_dec_joblist_driver
+public :: extract_specific_fragmentt1,define_frag_expansion
+public :: redo_fragment_calculations,fragment_init_simulate_full
+public :: concatenate_joblists,atomic_fragment_init_integer_list
+public :: write_fragment_energies_for_restart_driver,reduce_fragment_comb_list
+public :: read_fragment_energies_for_restart_driver
+public :: copy_fragment_info_job,atomic_fragment_init_orbital_specific
+public :: calculate_mp2corrdens_frag,init_estimated_atomic_fragments
+public :: calculate_corrdens_aos,restart_atomic_fragments_from_file
+public :: calculate_corrdens_aos_occocc,update_full_t1_from_pair_frag
+public :: define_pair_calculations,create_dec_joblist_fragopt
+public :: define_frag_reduction, reduce_fragment
+private
 contains
 
 

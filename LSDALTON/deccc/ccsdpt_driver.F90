@@ -47,7 +47,6 @@ module ccsdpt_module
   use cc_tools_module
   use dec_fragment_utils
   use array2_simple_operations
-!  use array3_simple_operations
   use array4_simple_operations,only: array4_init,array4_init_standard, &
        & array4_free,array4_reorder, array4_contract1
   

@@ -33,7 +33,6 @@ use files
   use dec_tools_module
   use dec_fragment_utils
   use array4_simple_operations
-  use array3_simple_operations
   use array2_simple_operations
   use mp2_module
   !  use orbital_operations

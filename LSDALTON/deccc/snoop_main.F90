@@ -24,6 +24,7 @@ module snoop_main_module
 !       & ii_get_oneelectron_gradient, ii_get_nn_gradient
   use optimlocMOD, only: optimloc
   use configurationType
+  use DALTONINFO
 
 
   ! DEC DEPENDENCIES (within deccc directory)   
@@ -38,6 +39,7 @@ module snoop_main_module
   use array2_simple_operations
   use orbital_operations
   use atomic_fragment_operations
+  use f12_routines_module
 
   public :: snoop_driver
   private

@@ -23,7 +23,7 @@ use infpar_module
 #endif
 use tensor_interface_module
 use tensor_basic_module
-
+use background_buffer_module
 
 ! DEC DEPENDENCIES (within deccc directory)   
 ! *****************************************

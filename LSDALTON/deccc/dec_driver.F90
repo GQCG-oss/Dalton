@@ -13,6 +13,9 @@ module dec_driver_module
   use matrix_operations!, only: mat_init, mat_zero,mat_free
   use dec_typedef_module
   use crayio_tools_module
+  use tensor_type_def_module
+  use tensor_interface_module
+  use background_buffer_module
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
