@@ -47,4 +47,3 @@ linsca-ng                       Author: Thomas,Sonia,..         Status: DoNotDel
 linsca-release                  Author: Thomas,Simen            Status: DoNotDelete (2011 release of lsdalton)
 dec-cholesky                    Author: Pablo                   Status: DoNotDelete
 dec-quad                        Author: Johannes                Status: DoNotDelete
-Hackathon                       Author: Patrick E.              Status: DoNotDelete
