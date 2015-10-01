@@ -20,6 +20,7 @@ use IIABSVALINT
 use lsparameters
 #ifdef VAR_MPI
 use infpar_module
+use lsmpi_op
 #endif
 use tensor_interface_module
 use tensor_basic_module

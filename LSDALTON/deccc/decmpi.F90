@@ -18,6 +18,7 @@ module decmpi_module
   use background_buffer_module
   use tensor_basic_module
   use tensor_interface_module
+  use LSTIMING
 !
   use DEC_settings_mod
   use dec_fragment_utils

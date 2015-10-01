@@ -14,6 +14,7 @@ module rimp2_gradient_module
   use lsparameters
   use background_buffer_module
   use molecule_module
+  use memory_handling
 #ifdef VAR_MPI
   use lsmpi_type
   use infpar_module
@@ -101,12 +102,15 @@ subroutine RIMP2_gradient_slave()
   use lsmpi_type
   use infpar_module
   use background_buffer_module
+  use memory_handling
   
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************!
   use rimp2_gradient_module
   use array2_simple_operations
   use decmpi_module
+  use dec_fragment_utils
+
   implicit none
   type(decfrag) :: MyFragment
   !local variables

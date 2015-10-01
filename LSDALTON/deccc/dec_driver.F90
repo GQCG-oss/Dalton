@@ -16,6 +16,7 @@ module dec_driver_module
   use tensor_type_def_module
   use tensor_interface_module
   use background_buffer_module
+  use lsparameters
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
@@ -38,10 +39,14 @@ module dec_driver_module
   use ccsd_gradient_module
 
 #ifdef VAR_MPI
+  use decmpi_module
   use infpar_module
   use dec_driver_slave_module
   use lsmpi_module
+  use lsmpi_param
+  use lsmpi_type
 #endif
+
 
 public:: DEC_wrapper,main_fragment_driver
 private

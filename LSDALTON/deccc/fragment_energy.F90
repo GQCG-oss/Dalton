@@ -16,6 +16,9 @@ module fragment_energy_module
   use tensor_type_def_module
   use tensor_interface_module
   use background_buffer_module
+#ifdef VAR_MPI
+  use infpar_module
+#endif
 
   ! DEC DEPENDENCIES (within deccc directory)
   ! ****************************************

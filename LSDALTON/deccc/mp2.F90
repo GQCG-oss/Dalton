@@ -55,6 +55,8 @@ module mp2_module
  
 public :: mp2f12_ccoupling_energy, MP2_integrals_and_amplitudes
 public :: get_vovo_integrals, get_simple_parallel_mp2_residual
+public :: MP2_integrals_and_amplitudes_workhorse
+public :: get_optimal_batch_sizes_for_mp2_integrals
 private
 
 

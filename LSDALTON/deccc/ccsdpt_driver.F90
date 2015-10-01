@@ -28,6 +28,9 @@ module ccsdpt_module
   use background_buffer_module,only: mem_is_background_buf_init,mem_get_bg_buf_free
   use reorder_frontend_module
   use lspdm_basic_module,only: get_residence_of_tile
+  use tensor_type_def_module
+  use tensor_interface_module
+  
 #ifdef VAR_OPENACC
   use openacc
 #endif
@@ -3859,6 +3862,9 @@ end module ccsdpt_module
   use memory_handling
   use lstiming!, only: lstimer
   use typedeftype, only: Lsitem,lssetting
+  use tensor_type_def_module
+  use tensor_interface_module
+  use DALTONINFO
 
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
