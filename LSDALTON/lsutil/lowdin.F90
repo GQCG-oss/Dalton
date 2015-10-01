@@ -257,7 +257,6 @@ contains
      allocate(T1(n,n),T2(n,n))
      allocate(eigen_sqrt(n),eigen_minus_sqrt(n))
 
-     t1 = S
      DO J=1,n
         DO I=1,n
            T1(I,J) = S(I,J)
