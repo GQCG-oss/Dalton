@@ -17,7 +17,6 @@ DoNotDelete    Will be saved in the LSDalton repo (maybe as read only)
 List of branches that people have taken responsibility for.
 
 chandan_nmr                     Author: Thomas,Chandan          Status: Working
-ichor-improvements              Author: Thomas                  Status: Working
 dmp2opt                         Author: Johannes                Status: Working
 titan_branch                    Author: Patrick E., Janus       Status: Working
 qcmatrix                        Author: Bin Gao, Magnus, ..     Status: Working (new OpenRSP interface with QcMatrix library)
@@ -47,3 +46,5 @@ linsca-ng                       Author: Thomas,Sonia,..         Status: DoNotDel
 linsca-release                  Author: Thomas,Simen            Status: DoNotDelete (2011 release of lsdalton)
 dec-cholesky                    Author: Pablo                   Status: DoNotDelete
 dec-quad                        Author: Johannes                Status: DoNotDelete
+ichor-improvements              Author: Thomas                  Status: DoNotDelete
+
