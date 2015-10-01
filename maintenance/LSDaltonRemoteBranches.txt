@@ -23,13 +23,14 @@ qcmatrix                        Author: Bin Gao, Magnus, ..     Status: Working 
 idamarie/nonortho               Author: Ida-Marie Høyvik        Status: Working
 unres                           Author: Dmytro Bykov            Status: Working
 ThomasK/THC                     Author: Thomas                  Status: Working
+sarai/dmcc                      Author: Sarai Folkestad         Status: Working
+karen/hartreefock               Author: Karen Dundas            Status: Working
 
-NOorbitals                      Author: Ida-Marie Høyvik        Status: DoNotDelete
-NonOrthogonalOrbitals           Author: Ida-Marie Høyvik        Status: DoNotDelete
 pe/lsdalton                     Author: Magnus,Nanna,Simen      Status: DoNotDelete
 
 dec-karl                        Author: Karl                    Status: stale
 localize_wannier                Author: Karl                    Status: stale
+dmcc                            Author: Ida-Marie Høyvik        Status: stale
 wannier                         Author: Karl                    Status: Working
 
 
@@ -45,5 +46,7 @@ linsca-release                  Author: Thomas,Simen            Status: DoNotDel
 dec-cholesky                    Author: Pablo                   Status: DoNotDelete
 dec-quad                        Author: Johannes                Status: DoNotDelete
 ichor-improvements              Author: Thomas                  Status: DoNotDelete
+NOorbitals                      Author: Ida-Marie Høyvik        Status: DoNotDelete
+NonOrthogonalOrbitals           Author: Ida-Marie Høyvik        Status: DoNotDelete
 master_with_CUDA_fh             Author: Frank Heiden haydn@bbsyd.dk  Status: ??????????????????????
 
