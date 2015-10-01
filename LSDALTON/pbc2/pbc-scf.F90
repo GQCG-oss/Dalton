@@ -1,4 +1,3 @@
-#ifdef MOD_UNRELEASED
 MODULE pbc_scfdiis
   USE TYPEDEF
   USE precision
@@ -1193,5 +1192,4 @@ SUBROUTINE pbc_trans_k_energy(lattice,cenergies,nbast,nelectrons,bz)
 END SUBROUTINE pbc_trans_k_energy
 
 END MODULE pbc_scfdiis
-#endif
 

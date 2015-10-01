@@ -1,5 +1,4 @@
 
-#ifdef MOD_UNRELEASED
 
 MODULE PBC_kspce_rspc_operations
 use files
@@ -559,4 +558,3 @@ call mat_free(T2)
 END SUBROUTINE pbc_get_twop_matrix
 END MODULE PBC_kspce_rspc_operations
 
-#endif

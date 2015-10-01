@@ -1,5 +1,4 @@
 
-#ifdef MOD_UNRELEASED
 
 MODULE lattice_vectors
 use precision
@@ -607,4 +606,3 @@ END SUBROUTINE reset_integral_computed
 
 END MODULE lattice_vectors
 
-#endif

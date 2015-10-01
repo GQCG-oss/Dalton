@@ -1,5 +1,4 @@
 !> ???
-#ifdef MOD_UNRELEASED
 MODULE pbcffdata
 use files
 	USE precision
@@ -67,4 +66,3 @@ CONTAINS
 
 	END SUBROUTINE read_pbc_tlattice
 END MODULE pbcffdata
-#endif

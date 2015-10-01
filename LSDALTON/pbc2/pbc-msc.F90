@@ -1,5 +1,4 @@
 
-#ifdef MOD_UNRELEASED
 
 MODULE PBC_MSC
 use files
@@ -774,4 +773,3 @@ END SUBROUTINE print_bands
 
 END MODULE PBC_MSC
 
-#endif

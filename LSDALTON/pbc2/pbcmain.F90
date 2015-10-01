@@ -1,7 +1,7 @@
 !GIVE MODULE NAME
 MODULE pbc_setup
 use files
-#ifdef MOD_UNRELEASED
+!#ifdef MOD_UNRELEASED
   USE precision
   USE fundamental
   USE TYPEDEF
@@ -802,10 +802,10 @@ END SUBROUTINE pbc_init_recvec
 !  !ENDDO
 !
 !END SUBROUTINE pbc_scf
-#else
-contains
-  subroutine pbc_setup_empty()
-  end subroutine pbc_setup_empty
-#endif
+!#else
+!contains
+!  subroutine pbc_setup_empty()
+!  end subroutine pbc_setup_empty
+!#endif
 
 END MODULE pbc_setup

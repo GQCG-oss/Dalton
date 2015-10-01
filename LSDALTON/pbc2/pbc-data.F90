@@ -1,4 +1,3 @@
-#ifdef MOD_UNRELEASED
 MODULE pbc_data
   USE precision
   IMPLICIT NONE
@@ -97,4 +96,3 @@ MODULE pbc_data
   END TYPE splitBZgrid_t
 
 END MODULE pbc_data
-#endif

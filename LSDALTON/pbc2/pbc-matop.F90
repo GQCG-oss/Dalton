@@ -1,4 +1,3 @@
-#ifdef MOD_UNRELEASED
 MODULE pbc_matrix_operations
 	USE precision
 	USE typedef
@@ -757,4 +756,3 @@ END SUBROUTINE make_uptriag1_mat
 !
 !END SUBROUTINE zggram_schmidt
 END MODULE pbc_matrix_operations
-#endif

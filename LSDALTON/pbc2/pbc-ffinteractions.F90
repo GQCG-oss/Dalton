@@ -1,4 +1,3 @@
-#ifdef MOD_UNRELEASED
 
 MODULE pbc_ff_contrib
 use files
@@ -1756,4 +1755,3 @@ END SUBROUTINE pbc_local_expan_k
 
 
 END MODULE pbc_ff_contrib
-#endif

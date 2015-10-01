@@ -1,4 +1,3 @@
-#ifdef MOD_UNRELEASED
 SUBROUTINE readerikmats(molecule,setting,fock,Sabk,ndim,ll,numrealvec,&
            & nfsze,lmax,bz,tlat,lupri,luerr)
   USE TYPEDEF
@@ -879,4 +878,3 @@ if(l1 .ge. 0) then
 
 
 END SUBROUTINE COMPARE_MATRICES
-#endif

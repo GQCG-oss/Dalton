@@ -1,4 +1,3 @@
-#ifdef MOD_UNRELEASED
 MODULE pbc_interactions
   USE PRECISION
   USE fundamental
@@ -1463,5 +1462,4 @@ SUBROUTINE pbc_complete_Fock_mtx(lupri,nbast,fock_mtx,sizef,cut,lattice)
 END SUBROUTINE pbc_complete_Fock_mtx
 
 END MODULE pbc_interactions
-#endif
 
