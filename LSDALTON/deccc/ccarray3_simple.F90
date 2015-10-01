@@ -31,6 +31,8 @@ module array3_simple_operations
   real(realk) :: time_array3_init = 0.0E0_realk
   real(realk) :: time_array3_free = 0.0E0_realk
 
+  private
+
 contains
 
   !> \brief Initialize three-dimensional array
