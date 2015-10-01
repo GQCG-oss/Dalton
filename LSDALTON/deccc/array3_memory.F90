@@ -16,6 +16,10 @@ module array3_memory_manager
   !> Max allocated memory
   real(realk) :: array3_max_memory = 0.0E0_realk
 
+public :: memory_allocate_3d
+public :: memory_deallocate_3d
+public :: print_memory_currents_3d
+private
   contains
 
   !> \brief Allocate memory for 3d arrays with memory statistics

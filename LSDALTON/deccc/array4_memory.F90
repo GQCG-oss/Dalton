@@ -16,6 +16,10 @@ module array4_memory_manager
   !> Max allocated memory
   real(realk) :: array4_max_memory = 0.0E0_realk
 
+public :: memory_allocate_4d
+public :: memory_deallocate_4d
+public :: print_memory_currents4
+private
   contains
 
   !> \brief Allocate memory for 4d arrays with memory statistics
