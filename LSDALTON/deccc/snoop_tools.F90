@@ -41,6 +41,17 @@ module snoop_tools_module
 #endif
 
 
+public :: build_subsystem_lsitem_no_ghost
+public :: starting_orbitals_from_h1
+public :: starting_orbitals_from_h1_split
+public :: get_density_from_occ_orbitals_mat
+public :: build_subsystem_lsitem_ghost
+public :: snoop_write_restart_file
+public :: snoop_read_restart_file,get_orthogonal_basis_for_subsystem, &
+     & orbitals_subsystem_vs_full_sanity_check, &
+     & rotate_subsystem_orbitals_to_mimic_full_orbitals, &
+     & subsystemaos_equals_fullaos
+private
 contains
 
 
