@@ -28,10 +28,8 @@ NOorbitals                      Author: Ida-Marie Høyvik        Status: DoNotDe
 NonOrthogonalOrbitals           Author: Ida-Marie Høyvik        Status: DoNotDelete
 pe/lsdalton                     Author: Magnus,Nanna,Simen      Status: DoNotDelete
 
-dec-patrick                     Author: Patrick E.              Status: ??????????????????????
 dec-karl                        Author: Karl                    Status: stale
 localize_wannier                Author: Karl                    Status: stale
-master_with_CUDA_fh             Author: Frank Heiden haydn@bbsyd.dk  Status: ??????????????????????
 wannier                         Author: Karl                    Status: Working
 
 
@@ -47,4 +45,5 @@ linsca-release                  Author: Thomas,Simen            Status: DoNotDel
 dec-cholesky                    Author: Pablo                   Status: DoNotDelete
 dec-quad                        Author: Johannes                Status: DoNotDelete
 ichor-improvements              Author: Thomas                  Status: DoNotDelete
+master_with_CUDA_fh             Author: Frank Heiden haydn@bbsyd.dk  Status: ??????????????????????
 
