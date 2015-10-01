@@ -243,7 +243,7 @@ contains
      real(realk), intent(out)     :: S_sqrt(n,n), S_minus_sqrt(n,n)
      real(realk),allocatable      :: T1(:,:), T2(:,:), T3(:,:)
      real(realk),allocatable      :: eigen_sqrt(:), eigen_minus_sqrt(:)
-     integer                      :: i, infdiag, lupri
+     integer                      :: i, infdiag, lupri,j
      character*70                 :: msg
      integer                      :: lwork
      real(realk), dimension(:), allocatable :: work
@@ -258,6 +258,11 @@ contains
      allocate(eigen_sqrt(n),eigen_minus_sqrt(n))
 
      t1 = S
+     DO J=1,n
+        DO I=1,n
+           T1(I,J) = S(I,J)
+        ENDDO
+     ENDDO
 
 !     lwork = max(n*n,5*n)
 !============================================================

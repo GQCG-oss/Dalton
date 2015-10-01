@@ -1771,9 +1771,9 @@ subroutine full_canonical_rimp2_f12(MyMolecule,MyLsitem,Dmat,mp2f12_energy)
   end subroutine full_canonical_rimp2_f12
 
   subroutine ReadFULLRIMP2F12RestartInfo(ComputeTerm,RestartBuffer,n,master)
-    integer :: n
-    logical :: ComputeTerm(n),master
-    real(realk) :: RestartBuffer(n)
+    integer,intent(in) :: n
+    logical,intent(inout) :: ComputeTerm(n),master
+    real(realk),intent(inout) :: RestartBuffer(n)
     !local variables
     integer :: restart_lun,IntArray(n),n2,i
     logical :: file_exists
