@@ -8,7 +8,8 @@ INTEGER, public :: max_layer
 INTEGER, public :: n_neighbour
 INTEGER, public :: nearfield
 
-#ifdef MOD_UNRELEASED
+integer, parameter :: MaxPBCOpTypes = 4
+
 type, public ::rspace_lat_info_t
   logical :: is_active(1:3)
   real(realk) :: avec(1:3,1:3)      ! lattice vectors as *column* vectors
@@ -20,8 +21,6 @@ type,public :: rspcopdata_t
   character(len=40) :: filename
   character(len=100)  :: basename
 end type
-
-integer, parameter :: MaxPBCOpTypes = 4
 
 type,public ::lvec_data_t
   real(realk) :: lat_coord(1:3)   ! lattice coordinates of a cell
@@ -37,17 +36,14 @@ type,public ::lvec_data_t
   real(realk),pointer :: C(:,:)
   INTEGER(short)      :: maxGab
 end type
-#endif
 
 type, public :: lvec_list_t
-#ifdef MOD_UNRELEASED
   type(rspace_lat_info_t) :: ldef   ! definition of real-space lattice
   integer :: num_entries,nf_entries
   integer :: fdim(3)
   type(lvec_data_t), pointer :: lvec(:)
   type(lvec_data_t), pointer :: nflvec(:)
   type(rspcopdata_t) :: opdat(MaxPBCOpTypes+5)
-#endif
   logical            :: COMP_PBC
   logical            :: compare_elmnts
   logical            :: read_file
@@ -71,7 +67,6 @@ type, public :: lvec_list_t
   character(len=100) :: basename
 end type
 
-#ifdef MOD_UNRELEASED
 type, public :: lattice_cell_info_t
   type(latticecell_atom_pos_t),pointer :: atom(:)
   type(matrix),pointer :: getmultipole(:)
@@ -81,7 +76,6 @@ end type
 type, public :: latticecell_atom_pos_t
   real(realk) :: center(3)
 end type
-#endif
 
 TYPE(lvec_list_t), save :: pbc_control
 
