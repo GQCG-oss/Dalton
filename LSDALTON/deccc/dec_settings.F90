@@ -15,6 +15,7 @@ MODULE DEC_settings_mod
   use ls_util
   use matrix_module
   use matrix_operations
+  use lsparameters
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_param, only: LSMPIASYNCP
@@ -881,9 +882,13 @@ contains
     ! SNOOP - currently limited in several ways
     if(DECinfo%SNOOP) then
 
+       if(.not. DECinfo%full_molecular_cc) then
+          if(.not. developer) then
+             call lsquit('SNOOP and DEC are not compatible yet!',-1)
+          end if
+       end if
+
        ! For DEC, we currently include all pairs for SNOOP
-       write(DECinfo%output,*) 'WARNING: SNOOP currently requires all pairs to be calculated!'
-       write(DECinfo%output,*) '--> ignoring pair estimates and setting pair distance threshold to be huge!'
        DECinfo%pair_distance_threshold = huge(1.0_realk)
        DECinfo%PairEstimate=.false.
        DECinfo%PairEstimateIgnore = .true.
@@ -901,8 +906,6 @@ contains
 
        ! SNOOP only tested for occupied partitioning scheme
        if(.not. DECinfo%OnlyOccPart) then
-          write(DECinfo%output,*) 'WARNING: SNOOP ONLY TESTED FOR OCCUPIED PART. SCHEME'
-          write(DECinfo%output,*) 'WARNING: I TURN ON OCCUPIED PART. SCHEME'
           DECinfo%onlyoccpart=.true.
        end if
 

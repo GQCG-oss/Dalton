@@ -88,6 +88,9 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
+   ! By default, set developer logical in lsparameters to false
+   developer = .false.
+
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -1331,6 +1334,8 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
            call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
 #endif
+        CASE('.DEVELOPER')
+           developer = .true.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'

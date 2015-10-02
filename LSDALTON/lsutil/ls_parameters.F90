@@ -148,6 +148,7 @@ MODULE lsparameters
 save
 INTEGER :: AORdefault
 INTEGER :: AODFdefault
+logical :: developer=.false.
 CONTAINS
 SUBROUTINE init_AO_parameters()
   implicit none
