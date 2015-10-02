@@ -11,9 +11,7 @@ use typedef, only: typedef_init_setting, getNbasis, PRINT_MOLECULEINFO,&
      & PRINT_MOLECULE_AND_BASIS, typedef_set_default_setting, &
      & typedef_free_setting, print_basissetlibrary
 use lattice_type, only: lvec_list_t
-#ifdef MOD_UNRELEASED
- use lattice_vectors, only: pbc_setup_default
-#endif
+use lattice_vectors, only: pbc_setup_default
 use basis_type, only: copy_basissetinfo, free_basissetinfo,&
      & freeBrakebasinfo,initBrakebasinfo,&
      & copybrakebasinfo,buildbasisfrombrakebasinf,print_basissetinfo,&
@@ -199,9 +197,7 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ DALTONFILE',TIM1,TIM2,LUPRI)
 !*  STRUCTURE
 !*
 !*************************************************
-#ifdef MOD_UNRELEASED
   call pbc_setup_default(latt_config)
-#endif  
   CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
        & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%basis,&
        & latt_config,intinp%dalton%atombasis)

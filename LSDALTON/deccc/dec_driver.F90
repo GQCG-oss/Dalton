@@ -566,13 +566,11 @@ contains
             & OF DENSITY/GRADIENT CALCULATION!'
     else
        if(DECinfo%first_order) then
-#ifdef MOD_UNRELEASED
          if(DECinfo%ccmodel == MODEL_CCSD)then
            fullgrad%EHF = EHF
            ! Calculate CCSD density/gradient and save density matrices to file
            call get_CCSDgradient_main(MyMolecule,mylsitem,D,molgrad,fullgrad)
          end if
-#endif
          if(DECinfo%ccmodel == MODEL_MP2 .or. DECinfo%ccmodel == MODEL_RIMP2) then
            fullgrad%EHF = EHF
            ! Calculate MP2 density/gradient and save MP2 density matrices to file
@@ -1121,14 +1119,12 @@ subroutine print_dec_info()
              FragEnergies(atomA,atomA,j) = AtomicFragments(atomA)%energies(j)
           end do
 
-#ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then  ! density and/or gradient
         !Update the CCSD density
         if(DECinfo%ccmodel == MODEL_CCSD)then
           call update_CCSDdensity(AtomicFragments(atomA),grad,fullgrad)
         endif
        endif
-#endif
 
           ! Copy fragment information into joblist
           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
@@ -1196,14 +1192,12 @@ subroutine print_dec_info()
           singlejob%esti(1) = jobs%esti(jobdone)
           singlejob%dofragopt(1) = jobs%dofragopt(jobdone)
 
-#ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then  ! density and/or gradient
         !Update the CCSD density
         if(DECinfo%ccmodel == MODEL_CCSD)then
           call update_CCSDdensity(PairFragment,grad,fullgrad)
         endif
        endif
-#endif
 
           call atomic_fragment_free(PairFragment)
 
@@ -1212,12 +1206,10 @@ subroutine print_dec_info()
        ! Update stuff (same for single and pair)
        ! ***************************************
        if(DECinfo%first_order) then  ! density and/or gradient
-#ifdef MOD_UNRELEASED
 !        if(DECinfo%ccmodel == MODEL_CCSD)then
 !          call update_full_CCSDgradient(grad,fullgrad)
 !          call free_mp2grad(grad)
 !        endif
-#endif
         if(DECinfo%ccmodel == MODEL_MP2 .or. DECinfo%ccmodel == MODEL_RIMP2) then
           call update_full_mp2gradient(grad,fullgrad)
           call free_mp2grad(grad)

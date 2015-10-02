@@ -16,9 +16,7 @@ use OverlapType
 #ifdef VAR_ENABLE_TENSORS
 use tensor_interface_module, only: tensor,tensor_initialize_bg_buf_from_lsdalton_bg_buf, tensor_free_bg_buf
 #endif
-#ifdef MOD_UNRELEASED
 use lattice_type
-#endif
 #ifdef VAR_MPI
 use lsmpi_module
 #endif
@@ -73,14 +71,12 @@ public mem_deallocated_mem_type_matrix
 public copy_from_mem_stats
 public copy_to_mem_stats
 public max_mem_used_global
-#ifdef MOD_UNRELEASED
 public mem_allocated_lvec_data
 public mem_allocated_mem_lvec_data
 public mem_deallocated_mem_lvec_data
 public mem_allocated_lattice_cell
 public mem_allocated_mem_lattice_cell
 public mem_deallocated_mem_lattice_cell
-#endif
 public mem_add_external_memory
 public longintbuffersize
 logical,save :: PrintSCFmemory
@@ -123,10 +119,8 @@ integer(KIND=long),save :: mem_allocated_GLOBALLSAOTENSOR, max_mem_used_GLOBALLS
 integer(KIND=long),save :: mem_allocated_ATOMTYPEITEM, max_mem_used_ATOMTYPEITEM       !Count 'ATOMTYPEITEM' memory, integral code
 integer(KIND=long),save :: mem_allocated_ATOMITEM, max_mem_used_ATOMITEM       !Count 'ATOMITEM' memory, integral code
 integer(KIND=long),save :: mem_allocated_LSMATRIX, max_mem_used_LSMATRIX       !Count 'LSMATRIX' memory, integral code
-#ifdef MOD_UNRELEASED
 integer(KIND=long),save :: mem_allocated_lvec_data, max_mem_used_lvec_data !Count memory, density opt code
 integer(KIND=long),save :: mem_allocated_lattice_cell, max_mem_used_lattice_cell !Count memory, density opt code
-#endif
 
 !Memory distributed on types:
 integer(KIND=long),save :: mem_allocated_linkshell, max_mem_used_linkshell         !Count memory, type linkshell
@@ -218,12 +212,10 @@ integer(KIND=long),save :: max_mem_used_integralitem_tmp,max_mem_used_integrand_
 integer(KIND=long),save :: max_mem_used_overlap_tmp,max_mem_used_ODitem_tmp
 integer(KIND=long),save :: max_mem_used_FMM_tmp,max_mem_used_lstensor_tmp
 integer(KIND=long),save :: max_mem_used_intwork_tmp,max_mem_used_overlapT_tmp
-#ifdef MOD_UNRELEASED
 integer(KIND=long),save :: mem_tp_allocated_lvec_data, max_mem_tp_used_lvec_data
 integer(KIND=long),save :: max_mem_used_lvec_data_tmp
 integer(KIND=long),save :: mem_tp_allocated_lattice_cell, max_mem_tp_used_lattice_cell
 integer(KIND=long),save :: max_mem_used_lattice_cell_tmp
-#endif
 !Memory PARAMETERS
 !sizes of types found by SIZEOF() !which only works for some compilers
 !so these numbers are then hardcoded which requires that when
@@ -265,10 +257,8 @@ integer(KIND=long),parameter :: mem_intsize=4_long
 integer(KIND=long),parameter :: mem_int4size=4_long
 integer(KIND=long),parameter :: mem_int8size=8_long
 integer(KIND=long),parameter :: mem_shortintsize=1_long
-#ifdef MOD_UNRELEASED
 integer(KIND=long),save :: mem_lvec_datasize
 integer(KIND=long),save :: mem_lattice_cellsize
-#endif
 !$OMP THREADPRIVATE(mem_tp_allocated_global, max_mem_tp_used_global,&
 !$OMP mem_tp_allocated_Heap_global, max_mem_tp_used_Heap_global,&
 !$OMP mem_tp_allocated_type_matrix, max_mem_tp_used_type_matrix,&
@@ -308,10 +298,8 @@ integer(KIND=long),save :: mem_lattice_cellsize
 !$OMP mem_tp_allocated_overlapT, max_mem_tp_used_overlapT,&  
 !$OMP mem_tp_allocated_ODitem, max_mem_tp_used_ODitem,&
 !$OMP mem_tp_allocated_FMM, max_mem_tp_used_FMM,&
-#ifdef MOD_UNRELEASED
 !$OMP mem_tp_allocated_lvec_data, max_mem_tp_used_lvec_data,&
 !$OMP mem_tp_allocated_lattice_cell, max_mem_tp_used_lattice_cell,&
-#endif
 !$OMP mem_tp_allocated_lstensor, max_mem_tp_used_lstensor)
 
 !Interfaces for allocating/deallocating pointers
@@ -355,9 +343,7 @@ INTERFACE mem_alloc
 #ifdef VAR_ENABLE_TENSORS
       &             tensor_allocate_1dim, &
 #endif
-#ifdef MOD_UNRELEASED
       &             lvec_data_allocate_1dim, lattice_cell_allocate_1dim, &
-#endif
       &             lsmpi_local_allocate_dV4
    END INTERFACE
    !
@@ -390,9 +376,7 @@ INTERFACE mem_alloc
 #ifdef VAR_ENABLE_TENSORS
          &             tensor_deallocate_1dim, &
 #endif
-#ifdef MOD_UNRELEASED
          &             lvec_data_deallocate_1dim,lattice_cell_deallocate_1dim, &
-#endif
          &             lsmpi_deallocate_i8V,lsmpi_deallocate_i4V,lsmpi_deallocate_dV,lsmpi_local_deallocate_dV
    END INTERFACE
 
@@ -508,10 +492,8 @@ INTERFACE mem_alloc
       TYPE(ATOMITEM) :: ATOMITEMitem
       TYPE(LSMATRIX) :: LSMATRIXitem
       TYPE(MATRIX) :: MATRIXitem
-#ifdef MOD_UNRELEASED
       TYPE(lvec_data_t) :: lvec_dataitem
       TYPE(lattice_cell_info_t) :: lattice_cellitem
-#endif
       ! Size of buffer handling for long integer buffer
       longintbuffersize = 81
 
@@ -543,10 +525,8 @@ INTERFACE mem_alloc
       mem_LSMATRIXsize=56
       mem_MATRIXsize=368
       mem_OVERLAPsize=2272
-#ifdef MOD_UNRELEASED
       mem_lvec_datasize=1944
       mem_lattice_cellsize=104
-#endif
 #else
       !implemented for VAR_PGF90 VAR_GFORTRAN VAR_IFORT we think!
       !we assume that all other compilers work with sizeof()
@@ -575,11 +555,8 @@ INTERFACE mem_alloc
       mem_LSMATRIXsize=sizeof(LSMATRIXitem)
       mem_MATRIXsize=sizeof(MATRIXitem)
       mem_OVERLAPsize=sizeof(OVERLAPitem)
-#ifdef MOD_UNRELEASED
       mem_lvec_datasize=sizeof(lvec_dataitem)
       mem_lattice_cellsize=sizeof(lattice_cellitem)
-
-#endif
 
       !print *,sizeof(AOBATCHitem)
       !print *,sizeof(DECORBITALitem)
@@ -669,10 +646,8 @@ INTERFACE mem_alloc
       max_mem_used_ODitem = MAX(max_mem_used_ODitem,max_mem_used_ODitem_tmp)
       max_mem_used_FMM = MAX(max_mem_used_FMM,max_mem_used_FMM_tmp)
       max_mem_used_lstensor = MAX(max_mem_used_lstensor,max_mem_used_lstensor_tmp)
-#ifdef MOD_UNRELEASED
       max_mem_used_lvec_data = MAX(max_mem_used_lvec_data,max_mem_used_lvec_data_tmp)
       max_mem_used_lattice_cell = MAX(max_mem_used_lattice_cell,max_mem_used_lattice_cell_tmp)
-#endif
 
    end subroutine mem_TurnOffThread_Memory
 
@@ -720,10 +695,8 @@ INTERFACE mem_alloc
       max_mem_used_ODitem_tmp = 0
       max_mem_used_FMM_tmp = 0
       max_mem_used_lstensor_tmp = 0
-#ifdef MOD_UNRELEASED
       max_mem_used_lvec_data_tmp = 0
       max_mem_used_lattice_cell_tmp = 0
-#endif
    end subroutine mem_TurnONThread_Memory
 
    subroutine init_globalmemvar()
@@ -817,12 +790,10 @@ INTERFACE mem_alloc
       max_mem_used_FMM = 0
       mem_allocated_lstensor = 0
       max_mem_used_lstensor = 0
-#ifdef MOD_UNRELEASED
       mem_allocated_lvec_data = 0
       max_mem_used_lvec_data = 0
       mem_allocated_lattice_cell = 0
       max_mem_used_lattice_cell = 0
-#endif
       call init_threadmemvar()
    end subroutine init_globalmemvar
 
@@ -910,12 +881,10 @@ INTERFACE mem_alloc
       max_mem_tp_used_FMM = 0
       mem_tp_allocated_lstensor = 0
       max_mem_tp_used_lstensor = 0
-#ifdef MOD_UNRELEASED
       mem_tp_allocated_lvec_data = 0
       max_mem_tp_used_lvec_data = 0
       mem_tp_allocated_lattice_cell = 0
       max_mem_tp_used_lattice_cell = 0
-#endif
    end subroutine init_threadmemvar
 
    subroutine collect_thread_memory()
@@ -1013,12 +982,10 @@ INTERFACE mem_alloc
       max_mem_used_FMM_tmp = max_mem_used_FMM_tmp+max_mem_tp_used_FMM
       mem_allocated_lstensor = mem_allocated_lstensor+mem_tp_allocated_lstensor
       max_mem_used_lstensor_tmp = max_mem_used_lstensor_tmp+max_mem_tp_used_lstensor
-#ifdef MOD_UNRELEASED
       mem_allocated_lvec_data = mem_allocated_lvec_data+mem_tp_allocated_lvec_data
       max_mem_used_lvec_data_tmp = max_mem_used_lvec_data_tmp+max_mem_tp_used_lvec_data
       mem_allocated_lattice_cell = mem_allocated_lattice_cell+mem_tp_allocated_lattice_cell
       max_mem_used_lattice_cell_tmp = max_mem_used_lattice_cell_tmp+max_mem_tp_used_lattice_cell
-#endif
       !$OMP END CRITICAL
    end subroutine collect_thread_memory
 
@@ -1140,12 +1107,10 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_TRACEBACK
       WRITE(LUPRI,'("  Allocated memory (MP2GRAD):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2GRAD
-#ifdef MOD_UNRELEASED
       WRITE(LUPRI,'("  Allocated memory (type(lvec_data)):   ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lvec_data
       WRITE(LUPRI,'("  Allocated memory (type(lattice_cell)):",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lattice_cell
-#endif
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,'("                  Additional Memory information          ")')
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
@@ -1214,10 +1179,8 @@ INTERFACE mem_alloc
       CALL print_maxmem(lupri,max_mem_used_lstensor,'LStensor')
       CALL print_maxmem(lupri,max_mem_used_FMM,'FMM')
       CALL print_maxmem(lupri,max_mem_used_XCcalc,'XC')
-#ifdef MOD_UNRELEASED
       CALL print_maxmem(lupri,max_mem_used_lvec_data,'Lvec_data')
       CALL print_maxmem(lupri,max_mem_used_lattice_cell,'Lattice_cell')
-#endif
 
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,*)
@@ -1315,12 +1278,10 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_FMM
       WRITE(LUPRI,'("  Allocated MPI memory (XC    ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_XCcalc
-#ifdef MOD_UNRELEASED
       WRITE(LUPRI,'("  Allocated MPI memory (lvec_data):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lvec_data
       WRITE(LUPRI,'("  Allocated MPI memory (lattice_cell):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_lattice_cell
-#endif
 
       call print_maxmem(lupri,max_mem_used_global,'TOTAL')
 #ifdef VAR_SCALAPACK
@@ -1368,10 +1329,8 @@ INTERFACE mem_alloc
       CALL print_maxmem(lupri,max_mem_used_lstensor,'LStensor')
       CALL print_maxmem(lupri,max_mem_used_FMM,'FMM')
       CALL print_maxmem(lupri,max_mem_used_XCcalc,'XC ')
-#ifdef MOD_UNRELEASED
       CALL print_maxmem(lupri,max_mem_used_lvec_data,'Lvec_data')
       CALL print_maxmem(lupri,max_mem_used_lattice_cell,'Lattice_cell')
-#endif
 
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,*)
@@ -1467,12 +1426,10 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lstensor
       WRITE(LUPRI,'("  Allocated memory (FMM   ):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_FMM
-#ifdef MOD_UNRELEASED
       WRITE(LUPRI,'("  Allocated memory (lvec_data):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lvec_data
       WRITE(LUPRI,'("  Allocated memory (lattice_cell):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_lattice_cell
-#endif
 
       call print_maxmem(lupri,max_mem_tp_used_global,'TOTAL')
 #ifdef VAR_SCALAPACK
@@ -1519,10 +1476,8 @@ INTERFACE mem_alloc
       CALL print_maxmem(lupri,max_mem_tp_used_ODitem,'ODitem')
       CALL print_maxmem(lupri,max_mem_tp_used_lstensor,'LStensor')
       CALL print_maxmem(lupri,max_mem_tp_used_FMM,'FMM')
-#ifdef MOD_UNRELEASED
       CALL print_maxmem(lupri,max_mem_tp_used_lvec_data,'Lvec_data')
       CALL print_maxmem(lupri,max_mem_tp_used_lattice_cell,'Lattice_cell')
-#endif
 
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,*)
@@ -1656,10 +1611,8 @@ subroutine scf_stats_debug_mem(lupri,it)
       if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
       if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
       if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
-#ifdef MOD_UNRELEASED
       if (max_mem_used_lvec_data > 0_long) call print_maxmem(lupri,max_mem_used_lvec_data,'lvec_data')
       if (max_mem_used_lattice_cell > 0_long) call print_maxmem(lupri,max_mem_used_lattice_cell,'lattice_cell')
-#endif
       WRITE(LUPRI,*)
       call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
       if (mem_allocated_type_matrix > 0_long) call print_mem_alloc(lupri,mem_allocated_type_matrix,'type(matrix)')
@@ -1701,10 +1654,8 @@ subroutine scf_stats_debug_mem(lupri,it)
       if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
       if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
       if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
-#ifdef MOD_UNRELEASED
       if (mem_allocated_lvec_data > 0_long) call print_mem_alloc(lupri,mem_allocated_lvec_data,'lvec_data')
       if (mem_allocated_lattice_cell > 0_long) call print_mem_alloc(lupri,mem_allocated_lattice_cell,'lattice_cell')
-#endif
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       WRITE(LUPRI,*)
    ENDIF
@@ -1760,10 +1711,8 @@ subroutine debug_mem_stats(lupri)
    if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
    if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
    if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
-#ifdef MOD_UNRELEASED
    if (max_mem_used_lvec_data > 0_long) call print_maxmem(lupri,max_mem_used_lvec_data,'lvec_data')
    if (max_mem_used_lattice_cell > 0_long) call print_maxmem(lupri,max_mem_used_lattice_cell,'lattice_cell')
-#endif
    WRITE(LUPRI,*)
    call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
    if (mem_allocated_type_matrix > 0_long) call print_mem_alloc(lupri,mem_allocated_type_matrix,'type(matrix)')
@@ -1805,10 +1754,8 @@ subroutine debug_mem_stats(lupri)
    if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
    if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
    if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
-#ifdef MOD_UNRELEASED
    if (mem_allocated_lvec_data > 0_long) call print_mem_alloc(lupri,mem_allocated_lvec_data,'lvec_data')
    if (mem_allocated_lattice_cell > 0_long) call print_mem_alloc(lupri,mem_allocated_lattice_cell,'lattice_cell')
-#endif
    WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
    WRITE(LUPRI,*)
 
@@ -6087,7 +6034,6 @@ SUBROUTINE MATRIXP_deallocate_1dim(MATRIXITEM)
    NULLIFY(MATRIXITEM)
 END SUBROUTINE MATRIXP_deallocate_1dim
 
-#ifdef MOD_UNRELEASED
 SUBROUTINE Lvec_data_allocate_1dim(Lvec_dataITEM,n)
    implicit none
    integer,intent(in) :: n
@@ -6157,11 +6103,6 @@ SUBROUTINE Lattice_cell_deallocate_1dim(Lattice_cellITEM)
    ENDIF
    NULLIFY(Lattice_cellITEM)
 END SUBROUTINE Lattice_cell_deallocate_1dim
-
-
-#endif
-
-
 
 !----- MEMORY HANDLING -----!
 
@@ -8400,7 +8341,6 @@ subroutine mem_deallocated_mem_type_matrix(nsize,nsizeFULL)
 
 end subroutine mem_deallocated_mem_type_matrix
 
-#ifdef MOD_UNRELEASED
 !13 to keep track of memory used in the lvec_data structure
 subroutine mem_allocated_mem_lvec_data(nsize)
    implicit none
@@ -8543,10 +8483,6 @@ subroutine mem_deallocated_mem_lattice_cell(nsize)
       endif
    ENDIF
 end subroutine mem_deallocated_mem_lattice_cell
-
-
-
-#endif
 
 
 !> \brief Get how much memory is currently available.
@@ -8922,10 +8858,8 @@ subroutine copy_from_mem_stats(longintbufferInt)
    longintbufferInt(75) = mem_allocated_PNOSpaceInfo
    longintbufferInt(76) = max_mem_used_PNOSpaceInfo
    longintbufferInt(77) = max_mem_used_type_matrix_MPIFULL
-#ifdef MOD_UNRELEASED
    longintbufferInt(78) = mem_allocated_lvec_data
    longintbufferInt(79) = mem_allocated_lattice_cell
-#endif
    longintbufferInt(80) = mem_allocated_fragmentAOS
    longintbufferInt(81) = max_mem_used_fragmentAOS
    ! NOTE: If you add stuff here, remember to change
@@ -9010,10 +8944,8 @@ subroutine copy_to_mem_stats(longintbufferInt)
    mem_allocated_PNOSpaceInfo = longintbufferInt(75)
    max_mem_used_PNOSpaceInfo = longintbufferInt(76)
    max_mem_used_type_matrix_MPIFULL = longintbufferInt(77)
-#ifdef MOD_UNRELEASED
    mem_allocated_lvec_data = longintbufferInt(78)
    mem_allocated_lattice_cell = longintbufferInt(79)
-#endif
    mem_allocated_fragmentAOS = longintbufferInt(80)
    max_mem_used_fragmentAOS = longintbufferInt(81)
    ! NOTE: If you add stuff here, remember to change

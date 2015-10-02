@@ -2,7 +2,6 @@
 !> Contains test subroutines for the Hessian module.
 !> \brief Contains Hessian specific test routines.
 MODULE test_molecular_hessian_mod
-#ifdef MOD_UNRELEASED
   use precision ! realk
   use matrix_module,          only: matrix, matrixp
   use matrix_Operations,      only: mat_init, mat_mul, mat_free,&
@@ -21,7 +20,6 @@ MODULE test_molecular_hessian_mod
   use integralinterfaceMOD,   only: II_get_J_gradient, &
                                   & II_get_K_gradient, &
                                   & II_get_reorthoNormalization
-#endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
@@ -38,8 +36,6 @@ CONTAINS
 
   SUBROUTINE dummy_subroutine_hessian_test()
   END SUBROUTINE dummy_subroutine_hessian_test
-
-#ifdef MOD_UNRELEASED
 
 !> \brief Tests the different contributions used to build the Hessian tensor
 !> \author \latexonly P. Merlot  \endlatexonly
@@ -432,6 +428,5 @@ SUBROUTINE test_first_geoderiv_Exchange(D,Natoms,ndmat,thresh,setting,lupri,luer
   call lstimer('test_Ka',ts,te,lupri)
 END SUBROUTINE test_first_geoderiv_Exchange
 
-#endif
 !------------ END MODULE ------------
 END MODULE test_molecular_hessian_mod

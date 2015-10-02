@@ -39,18 +39,14 @@ module ccsdpt_kernels_module
   use cc_tools_module
   use dec_fragment_utils
 
-#ifdef MOD_UNRELEASED
   public :: ijk_loop_par
   public :: ijk_loop_ser
   public :: abc_loop_par
   public :: abc_loop_ser
-#endif
 
   private
 
 contains
-
-#ifdef MOD_UNRELEASED
 
 #ifdef VAR_MPI
   !> \brief: main ijk-loop (mpi version)
@@ -3020,12 +3016,5 @@ contains
     call LSTIMER('ABC_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine abc_loop_ser
-
-!endif mod_unreleased
-#endif
-
-  subroutine dummy_ccsdpt_kernels_routine()
-
-  end subroutine dummy_ccsdpt_kernels_routine
 
 end module ccsdpt_kernels_module

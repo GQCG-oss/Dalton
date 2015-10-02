@@ -18,7 +18,6 @@ module ccsdpt_full_module
   use reorder_frontend_module
   use dec_workarounds_module
   
-#ifdef MOD_UNRELEASED
   public :: trip_generator_ijk_case1
   public :: trip_generator_ijk_case2
   public :: trip_generator_ijk_case3
@@ -33,14 +32,10 @@ module ccsdpt_full_module
   public :: ccsdpt_energy_full_abc_case1
   public :: ccsdpt_energy_full_abc_case2
   public :: ccsdpt_energy_full_abc_case3
-#endif
 
   private
 
 contains
-
-#ifdef MOD_UNRELEASED
-
 
   !> \brief: generator for triples amplitudes, case(1)
   !> \author: Janus Juul Eriksen
@@ -1907,12 +1902,5 @@ contains
     end select TypeofContraction_abc_12_full
 
   end subroutine ccsdpt_contract_abc_12_full
-
-!endif mod_unreleased
-#endif
-
-  subroutine dummy_ccsdpt_full_routine()
-
-  end subroutine dummy_ccsdpt_full_routine
 
 end module ccsdpt_full_module

@@ -18,20 +18,17 @@ module ccsdpt_dec_module
   use reorder_frontend_module
   use dec_workarounds_module
   
-#ifdef MOD_UNRELEASED
   public :: ccsdpt_driver_ijk_case1
   public :: ccsdpt_driver_ijk_case2
   public :: ccsdpt_driver_ijk_case3
   public :: ccsdpt_driver_abc_case1
   public :: ccsdpt_driver_abc_case2
   public :: ccsdpt_driver_abc_case3
-#endif
 
   private
 
 contains
 
-#ifdef MOD_UNRELEASED
 
   !> \brief: driver routine for contractions in case(1) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
@@ -1945,13 +1942,5 @@ contains
                     & async_idx,cublas_handle)
 
   end subroutine ccsdpt_contract_abc_222
-
-
-!endif mod_unreleased
-#endif
-
-  subroutine dummy_ccsdpt_dec_routine()
-
-  end subroutine dummy_ccsdpt_dec_routine
 
 end module ccsdpt_dec_module

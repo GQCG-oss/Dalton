@@ -64,9 +64,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
   ! Profile 
-#ifdef MOD_UNRELEASED
   use profile_int, only: di_profile_lsint
-#endif
   ! DEC 
   use DEC_typedef_module, only: DECinfo  
   ! PROPERTIES SECTION
@@ -85,14 +83,10 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use lsmpi_type, only: lsmpi_finalize
   use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
-#ifdef MOD_UNRELEASED
   use pbc_setup, only: set_pbc_molecules
-#endif
-#ifdef MOD_UNRELEASED
   use numerical_hessian, only: get_numerical_hessian
   use molecular_hessian_mod, only: get_molecular_hessian
   use test_molecular_hessian_mod, only: test_Hessian_contributions
-#endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
   use HODItest_module, only: debugTestHODI
@@ -136,9 +130,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   type(matrix) :: Dmo, tmp
   integer             :: nelec
   Integer             :: Natoms
-#ifdef MOD_UNRELEASED
   Real(realk),pointer   ::      geomHessian(:,:)
-#endif
   type(matrix) :: tempm1,tempm2
 
   type(LowAccuracyStartType)  :: LAStype
@@ -188,12 +180,10 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      CALL LSTIMER('II_test_uncontAObatch',TIMSTR,TIMEND,lupri)
   ENDIF
 
-#ifdef MOD_UNRELEASED
   if(config%prof%doProf)then
      call di_profile_lsint(ls,config,lupri,nbast)
      return
   endif
-#endif
 
 
   ! Skip Hartree Fock part? Done when a HF calculation has already been carried out and we want to:
@@ -253,7 +243,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
      CALL Print_Memory_info(lupri,'after II_precalc_ScreesMat')
 
-#ifdef MOD_UNRELEASED
      do_pbc: if(config%latt_config%comp_pbc) then
         CALL mat_init(S,nbast,nbast)
 
@@ -313,7 +302,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         call config_shutdown(config)
 
      else
-#endif
         !default - non PBC
         CALL mat_init(S,nbast,nbast)
 
@@ -641,7 +629,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
-#ifdef MOD_UNRELEASED
         ! Numerical Derivatives
         if(config%response%tasks%doNumHess .or. &
              & config%response%tasks%doNumGrad .or. &
@@ -669,7 +656,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call mem_dealloc(geomHessian)
            CALL Print_Memory_info(lupri,'after get_molecular_hessian')
         ENDIF
-#endif
 
         ! END OF PROPERTIES SECTION
         !
@@ -691,9 +677,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            !DEALLOCATE(ls)
         endif
 
-#ifdef MOD_UNRELEASED
      endif do_pbc
-#endif
   end if SkipHF
 
 

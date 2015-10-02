@@ -1,4 +1,3 @@
-#ifdef MOD_UNRELEASED
 !> @file 
 !> Contains the trilevel and atoms starting guess in addition to the construction of the GCbasis se PCCP 2009, 11, 5805-5813 
 !> Trilevel and Atoms module
@@ -631,5 +630,4 @@ end subroutine print_hessian_and_vibrations
 
 
 end module Numerical_Hessian
-#endif
 

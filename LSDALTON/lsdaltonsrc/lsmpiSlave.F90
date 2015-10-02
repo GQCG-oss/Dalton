@@ -205,7 +205,6 @@ subroutine lsmpi_slave(comm)
 !         call rpa_res_slave
       case(RPAGETFOCK);
          call rpa_fock_slave
-#ifdef MOD_UNRELEASED
       case(CCGETGMO);
          call cc_gmo_data_slave
       case(MOCCSDDATA);
@@ -216,7 +215,6 @@ subroutine lsmpi_slave(comm)
          call ccsdpt_slave_work
       case(SET_FORCE_CRASH);
          call ls_mpibcast(force_crash,infpar%master,comm)
-#endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
 #endif

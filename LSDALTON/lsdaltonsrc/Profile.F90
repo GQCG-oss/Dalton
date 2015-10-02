@@ -16,9 +16,7 @@ use files
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
   use ProfileIchorMod
-#ifdef MOD_UNRELEASED
   use dal_interface, only: di_decpackedJ,di_decpackedJold
-#endif
 private
 public :: di_profile_lsint
 
@@ -31,7 +29,6 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   TYPE(lsitem)        :: ls
   type(configItem)    :: config
   integer             :: lupri,nbast
-#ifdef MOD_UNRELEASED
 !
   Type(Matrix) :: H1,S,K(1),J(1),F(1),CMO
   Type(Matrix),target :: D(1),TMP
@@ -369,7 +366,6 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
 !#endif
   call mat_free(D(1))
   call stats_mem(lupri)
-#endif
      
 END SUBROUTINE DI_PROFILE_LSINT
 

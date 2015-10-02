@@ -53,17 +53,13 @@ module ccsdpt_module
   use array4_simple_operations,only: array4_init,array4_init_standard, &
        & array4_free,array4_reorder, array4_contract1
   
-#ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_info,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e5_pair, ccsdpt_energy_e5_ddot, &
        & ccsdpt_decnp_e4_frag, ccsdpt_decnp_e5_frag
-#endif
 
   private
 
 contains
-
-#ifdef MOD_UNRELEASED
 
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
@@ -3818,16 +3814,7 @@ contains
 
   end subroutine convert_ccsd_and_vovo
 
-!endif mod_unreleased
-#endif
-
-  subroutine dummy_ccsdpt_routine()
-
-  end subroutine dummy_ccsdpt_routine
-
 end module ccsdpt_module
-
-#ifdef MOD_UNRELEASED
 
 #ifdef VAR_MPI
 
@@ -3968,6 +3955,4 @@ end module ccsdpt_module
 
   end subroutine ccsdpt_slave_work
 
-#endif
-!endif mod_unreleased
 #endif

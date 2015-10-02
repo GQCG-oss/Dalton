@@ -38,11 +38,9 @@ module fragment_energy_module
   use ccdriver, only: mp2_solver,fragment_ccsolver
   use f12_integrals_module
   use rif12_integrals_module
-#ifdef MOD_UNRELEASED
   use ccsd_gradient_module
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e5_frag,&
          & ccsdpt_energy_e5_pair, ccsdpt_decnp_e5_frag
-#endif
 
 public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
         & pair_driver, atomic_driver_advanced, plot_pair_energies 
@@ -328,7 +326,6 @@ contains
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
        ! calculate also MP2 density integrals
-#ifdef MOD_UNRELEASED
        if(DECinfo%first_order.or.DECinfo%CCSDmultipliers) then  
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
           !extract the indices here for later use in CCSD first order properties
@@ -338,12 +335,10 @@ contains
           call tensor_extract_eos_indices(t2,MyFragment%noccEOS,MyFragment%nvirtEOS,&
              &MyFragment%idxo,MyFragment%idxu,tensor_occEOS=t2occp,tensor_virtEOS=t2virtp)
        else
-#endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
           if (get_mp2) then
              call mp2_solver(MyFragment,VOVO,t2MP2,.true.)
           end if
-#ifdef MOD_UNRELEASED
        endif
 
        if(DECinfo%first_order) then
@@ -351,11 +346,9 @@ contains
           !call tensor_free(m2)
           !call tensor_free(m1)
        endif
-#endif
 
        call dec_fragment_time_get(times_ccsd)
 
-#ifdef MOD_UNRELEASED
        ! calculate ccsd(t) fragment energies
        ! ***********************************
        if(MyFragment%ccmodel==MODEL_CCSDpT) then
@@ -389,7 +382,6 @@ contains
           call tensor_free(t2_occEOS)
 
        endif CCSDF12
-#endif
 
        ! Calculate combined single+doubles amplitudes
        ! ********************************************
@@ -556,7 +548,6 @@ contains
     ! First order properties
     ! **********************
     if(DECinfo%first_order) then
-#ifdef MOD_UNRELEASED
        if(DECinfo%ccmodel == MODEL_CCSD)then
          if(pair) then
            ! Pair fragment
@@ -575,7 +566,6 @@ contains
            call tensor_free(m2virt)
          endif
        endif
-#endif
        if(DECinfo%ccmodel == MODEL_MP2.OR.DECinfo%ccmodel == MODEL_RIMP2)then
           if(pair) then
              ! Pair fragment
@@ -660,7 +650,6 @@ end subroutine AddF12CcouplingCorrection
      type(tensor) :: ccsdpt_t1, ccsdpt_t2
      type(tensor) :: ccsdpt_t2occ, ccsdpt_t2virt, t2occ, t2virt
      logical :: abc,bg
-#ifdef MOD_UNRELEASED
      bg  = mem_is_background_buf_init()
 
      ! Get (T) singles and doubles intermediates:
@@ -736,9 +725,6 @@ end subroutine AddF12CcouplingCorrection
      call tensor_free(ccsdpt_t2virt)
      call tensor_free(t2occ)
      call tensor_free(t2virt)
-#else
-     call lsquit("ERROR(get_ccsdpt_fragment_energies): not implemented in this version",-1)
-#endif
 
   end subroutine get_ccsdpt_fragment_energies
 
@@ -3928,11 +3914,9 @@ end subroutine AddF12CcouplingCorrection
     case(MODEL_CCSD)
        ! CCSD
        Eocc = energies(FRAGMODEL_OCCCCSD)
-#ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! CCSD(T): CCSD contribution + (T) contribution
        Eocc = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
-#endif
     case(MODEL_RIMP2)
        ! RI-MP2
        Eocc = energies(FRAGMODEL_OCCRIMP2)
@@ -3977,11 +3961,9 @@ end subroutine AddF12CcouplingCorrection
     case(MODEL_CCSD)
        ! CCSD
        Evirt = energies(FRAGMODEL_VIRTCCSD)
-#ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! CCSD(T): CCSD contribution + (T) contribution
        Evirt = energies(FRAGMODEL_VIRTCCSD) + energies(FRAGMODEL_VIRTpT)
-#endif
     case(MODEL_RIMP2)
        ! RI-MP2
        Evirt = energies(FRAGMODEL_VIRTRIMP2)
@@ -4026,11 +4008,9 @@ end subroutine AddF12CcouplingCorrection
     case(MODEL_CCSD)
        ! CCSD
        Elag = energies(FRAGMODEL_OCCCCSD)
-#ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! CCSD(T): CCSD contribution + (T) contribution
        Elag = energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_OCCpT)
-#endif
     case(MODEL_RIMP2)
        ! RI-MP2
        Elag = energies(FRAGMODEL_OCCRIMP2)
@@ -4146,13 +4126,10 @@ end subroutine AddF12CcouplingCorrection
        ! CCSD
        energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied
        energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
-#ifdef MOD_UNRELEASED
     case(MODEL_CCSDpT)
        ! Save also CCSD contribution for CCSD(T)
        energies(FRAGMODEL_OCCCCSD) = Eocc   ! occupied
        energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
-       !endif mod_unreleased
-#endif
     case(MODEL_RIMP2)
        ! RI-MP2
        energies(FRAGMODEL_OCCRIMP2) = Eocc     ! occupied

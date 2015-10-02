@@ -120,10 +120,8 @@ type ConfigItem
    !> Used to store info about Polarizable Continuum Model calculation
    type(pcmtype)      :: pcm
 #endif
-#ifdef MOD_UNRELEASED
    !> Used to store info about geometrical Hessian
    type(geoHessianconfig) :: geoHessian
-#endif
    !> Max memory available on gpu measured in GB. By default set to 2 GB
    real(realk) :: GPUMAXMEM
    !> Should a excited state geometry optimization be performed 

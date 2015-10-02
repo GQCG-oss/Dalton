@@ -665,7 +665,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call tensor_minit(qpfock, [nv,no], 2, local=local, atype='LDAR' )
     call tensor_minit(qqfock, [nv,nv], 2, local=local, atype='LDAR' )
 
-#ifdef MOD_UNRELEASED
     if(use_pnos)then
 
        !TODO: remove these sortings
@@ -734,13 +733,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
        end if
     endif
-#else
-    call get_ccsd_residual_integral_driven(ccmodel,omega2,t2,&
-       & fock%elm1,t1fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-       & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
-#endif
-
-
 
     !PART OF THE FIXME
     call tensor_free(ppfock)

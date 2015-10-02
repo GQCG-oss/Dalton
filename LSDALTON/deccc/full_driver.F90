@@ -215,7 +215,6 @@ contains
     else
 
 
-#ifdef MOD_UNRELEASED
        if(DECinfo%CCSDmultipliers)then
           call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co%elm2,MyMolecule%Cv%elm2,&
              & MyMolecule%fock%elm2, nbasis,nocc,nvirt,mylsitem, &
@@ -224,11 +223,6 @@ contains
           Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
              & mylsitem,print_level,fragment_job)
        endif
-#else
-       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nvirt,&
-             & mylsitem,print_level,fragment_job)
-#endif
-
     end if
 
   end subroutine full_cc_dispatch

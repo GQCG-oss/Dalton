@@ -42,10 +42,8 @@ use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
 !       & get_ccsd_residual_integral_driven_oldtensor_wrapper
 use pno_ccsd_module
-#ifdef MOD_UNRELEASED
 use ccsdpt_module
 !endif mod_unreleased
-#endif
 use orbital_operations
 use rpa_module
 use cc_tools_module
@@ -418,8 +416,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       Co => MyMolecule%Co%elm2
       oof => MyMolecule%oofock%elm2
    end if
-
-#ifdef MOD_UNRELEASED
 
    ! nenergies is set to 8: a CC solver model plus pT corrections, 
    ! (4th order, 5th order and both), for both virt and occ partionings
@@ -1102,12 +1098,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    call mem_dealloc(ccenergies)
 !else mod unreleased
-#else
-
-   call ccsolver_job(ccmodel,Co,Cv,fock,nbasis,nocc,nvirt,mylsitem,ccPrintLevel,oof,vvf,ccenergy,&
-      & VOVO,.false.,local,t1_final,t2_final)
-!endif mod unreleased
-#endif
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA &
      &.and. ccmodel /= MODEL_SOSEX ) then

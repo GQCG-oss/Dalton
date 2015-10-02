@@ -95,7 +95,6 @@ subroutine dec_lsmpi_slave(comm)
 !         call rpa_res_slave
       case(RPAGETFOCK);
          call rpa_fock_slave
-#ifdef MOD_UNRELEASED 
       case(CCGETGMO);
          call cc_gmo_data_slave
       case(MOCCSDDATA);
@@ -104,7 +103,6 @@ subroutine dec_lsmpi_slave(comm)
          call ccsdpt_slave_info
       case(CCSDPTSLAVE_WORK);
          call ccsdpt_slave_work
-#endif
       case(SIMPLE_MP2_PAR);
          call get_simple_parallel_mp2_residual_slave
       case(GROUPINIT);

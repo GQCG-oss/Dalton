@@ -10,14 +10,12 @@ module lsdalton_response_type_mod
      logical :: doDipoleMatrix
      !> Gradient
      logical :: doGrad
-#ifdef MOD_UNRELEASED
      !> Numerical Hessian
      logical :: doNumHess
      !> Numerical Gradient
      logical :: doNumGrad
      !> Numerical Gradient and Hessian
      logical :: doNumGradHess
-#endif
      !> MCD
      logical :: doMCD
      !> NMR shield
@@ -55,11 +53,9 @@ contains
     tasksitem%doDipole = .false.
     tasksitem%doDipoleMatrix = .false.
     tasksitem%doGrad = .false.
-#ifdef MOD_UNRELEASED
     tasksitem%doNumHess = .false.
     tasksitem%doNumGrad = .false.
     tasksitem%doNumGradHess = .false.
-#endif
     tasksitem%doMCD = .false.
     tasksitem%doNMRshield = .false.
     tasksitem%doNMRshield_selected = .false.

@@ -235,9 +235,7 @@ contains
     Gradient = 0E0_realk
     Eerr     = 0E0_realk
     ! Calculate gradient
-#ifdef MOD_UNRELEASED
     IF (.NOT.config%response%tasks%doNumGrad) THEN !Analytical gradient
-#endif
       ! Check whether it is a dec calculation
       If (config%doDEC) then
          ! Gradient from DEC (currently only MP2)
@@ -253,12 +251,10 @@ contains
          ! HF or DFT gradient
          Call II_get_molecular_gradient(Gradient,lupri,F,D,ls%setting,ls%input%do_dft,.TRUE.)
       Endif
-#ifdef MOD_UNRELEASED
     ELSE !Numerical gradient
       step = 1E-5_realk
       call get_num_grad(step,lupri,ls%luerr,ls,S,F,D,C,config,Gradient)
     ENDIF
-#endif
     !
   End subroutine Get_Gradient
 

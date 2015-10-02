@@ -609,7 +609,6 @@ contains
        case('.NOAOFOCK'); DECinfo%noaofock   = .true.
 
 
-#ifdef MOD_UNRELEASED
        ! PNO-CCSD SPECIFIC KEYWORDS
        ! **************************
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
@@ -623,7 +622,6 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
-#endif
 
        ! KEYWORDS RELATED TO F12
        ! ***********************

@@ -9,9 +9,7 @@ use files
   use TYPEDEF
   use molecule_module
   use lattice_type
-#ifdef MOD_UNRELEASED
   use lattice_vectors
-#endif
 contains
 !> \brief read the molecule file and build the molecule structure 
 !> \author T. Kjaergaard
@@ -689,7 +687,6 @@ call TestLength(LINE120,120,LINE,80)
 !      IntegralThreshold=1.00E-15_realk
 !    ENDIF
 
-#ifdef MOD_UNRELEASED
   !johannesfor reading lattice vectors in pbc
     IPOS = INDEX(LINE,'PBC')
     IF (IPOS .NE. 0) THEN
@@ -699,7 +696,6 @@ call TestLength(LINE120,120,LINE,80)
     IF (IPOS .NE. 0) THEN
       setup_pbclatt=.TRUE.
     ENDIF
-#endif
 
   ELSE
 !*******************************************************************
@@ -1052,13 +1048,10 @@ ENDDO
      CALL PRINT_GEOMETRY(MOLECULE,LUPRI)
   ENDIF
 
-#ifdef MOD_UNRELEASED
   IF(latt_config%setup_pbclatt) THEN
      !READ lattice vectors
      CALL READ_LATT_VECTORS(LUPRI,LUINFO,latt_config, angstrom)
   ENDIF
-#endif
-
 
   IF(ATOMBASIS)THEN
      BASISSETLIBRARY%GeminalScalingFactor = 1.0E0_realk

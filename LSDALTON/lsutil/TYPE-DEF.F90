@@ -625,7 +625,6 @@ LOGICAL           :: fopen = .false. !Determines wether the LSDALTON.OUT and LSD
 END TYPE LSITEM
 
 
-#ifdef MOD_UNRELEASED
 !*****************************************
 !*
 !* OBJECT CONTAINING INFORMATION ABOUT 
@@ -639,7 +638,6 @@ TYPE geoHessianConfig
    LOGICAL  :: DebugGen1Int
    INTEGER  :: IntPrint
 END TYPE geoHessianConfig
-#endif
 
 
 !*****************************************************************************

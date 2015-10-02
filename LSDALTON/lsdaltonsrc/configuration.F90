@@ -14,11 +14,7 @@ use tensor_interface_module, only: tensor_set_dil_backend_true, &
    &tensor_set_debug_mode_true, tensor_set_always_sync_true,lspdm_init_global_buffer, &
    tensor_set_global_segment_length, tensor_set_mpi_msg_len
 #endif
-#ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
-#else
-use typedeftype, only: lsitem,integralconfig
-#endif
 use opttype, only: opt_set_default_config
 use response_wrapper_type_module
 use response_wrapper_op_module, only: free_mcdinputitem, &
@@ -50,9 +46,7 @@ use dec_typedef_module,only: dec_set_default_config, DECinfo,MODEL_MP2,&
      & MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
-#ifdef MOD_UNRELEASED
-  use lattice_vectors, only: pbc_setup_default
-#endif
+use lattice_vectors, only: pbc_setup_default
 use localization_input
 use davidson_settings, only: davidson_default_SCF, davidson_default
 use molecule_type, only: free_moleculeinfo
@@ -73,9 +67,7 @@ use lsmpi_param, only: SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
 #endif
 use scf_stats, only: scf_stats_arh_header
-#ifdef MOD_UNRELEASED
 use molecular_hessian_mod, only: geohessian_set_default_config
-#endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
 use ls_util,only: capitalize_string
 #ifdef HAS_PCMSOLVER
@@ -146,10 +138,8 @@ implicit none
 #else
   config%response%noOpenRSP = .TRUE.  !Use LSDALTON own Response module
 #endif
-#ifdef MOD_UNRELEASED
   ! Molecular Hessian
   call geohessian_set_default_config(config%geoHessian)
-#endif
   ! geometry optimization
   call optimization_set_default_config(config%optinfo)
   ! Dynamics
@@ -170,9 +160,7 @@ implicit none
   config%GPUMAXMEM = 2.0E0_realk
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
-#ifdef MOD_UNRELEASED
   call pbc_setup_default(config%latt_config)
-#endif
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
   config%doplt         = .false.
@@ -623,7 +611,6 @@ DO
       call config_info_input(config,lucmd,readword,word)
    ENDIF
 
-#ifdef MOD_UNRELEASED
    ! Geometrical Hessian input section
    IF (WORD(1:12) == '**GEOHESSIAN') THEN
       READWORD = .TRUE.
@@ -633,8 +620,6 @@ DO
       config%geoHessian%IntPrint = 1
       call GEOHESSIAN_INPUT(config%geohessian,readword,word,lucmd,lupri)
    ENDIF
-#endif
-
 
    ! KK, change from $RESPONS to **RESPONS to be consistent with other input structure.
    ResponseInput: IF (WORD(1:9) == '**RESPONS') THEN
@@ -728,7 +713,6 @@ DO
 #endif
 !
    
-#ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
      !should be in MOLECULE.INP not LSDALTON.INP
@@ -836,7 +820,6 @@ DO
   ENDDO
 
    ENDIF
-#endif
 
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.
@@ -1146,15 +1129,13 @@ subroutine DEC_meaningful_input(config)
         else
            !No reason to Localize when Using canonical Orbitals
         endif
-        ! For the release we only include DEC-MP2
-#ifndef MOD_UNRELEASED
-        NotAcceptedModel = DECinfo%ccmodel/=MODEL_MP2 .AND. DECinfo%ccmodel/=MODEL_RIMP2
-        if(NotAcceptedModel .and. (.not. DECinfo%full_molecular_cc) ) then
-           print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
-           print *, 'using the **CC section rather than the **DEC section.'
-           call lsquit('DEC is currently only available for the MP2 and RI-MP2 model!',-1)
-        end if
-#endif
+        ! For the release we only include DEC-MP2, DEC-RI-MP2 ???
+!        NotAcceptedModel = DECinfo%ccmodel/=MODEL_MP2 .AND. DECinfo%ccmodel/=MODEL_RIMP2
+!        if(NotAcceptedModel .and. (.not. DECinfo%full_molecular_cc) ) then
+!           print *, 'Note that you may run a full molecular CC calculation (not linear-scaling)'
+!           print *, 'using the **CC section rather than the **DEC section.'
+!           call lsquit('DEC is currently only available for the MP2 and RI-MP2 model!',-1)
+!        end if
      end if OrbLocCheck
 
 #ifdef VAR_DEC
@@ -1708,7 +1689,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   ENDDO
 END subroutine INTEGRAL_INPUT
 
-#ifdef MOD_UNRELEASED
 !> \brief Read the **GEOHESSIAN section in the input file LSDALTON.INP
 !> \author Patrick Merlot
 !> \date 14/09/2012
@@ -1768,7 +1748,6 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
      ENDIF
   ENDDO
 END subroutine GEOHESSIAN_INPUT
-#endif
 
 !> \brief Read the **INFO section in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
@@ -2284,7 +2263,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                     config%response%tasks%dograd = .True.
              ! Joanna K
 
-#ifdef MOD_UNRELEASED
        CASE('*NUMHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the analytical gradient'
                     config%response%tasks%doNumHess = .True.
@@ -2294,7 +2272,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
         CASE('*NUMGRADHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the numerical gradient'
                     config%response%tasks%doNumGradHess = .True.
-#endif
         CASE('*SOLVER')
             do
                READ(LUCMD,'(A40)') word
@@ -2343,7 +2320,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                   config%response%rspsolverinput%rsp_mostart = .false.
                CASE('.NOPREC')
                   config%response%rspsolverinput%rsp_no_precond = .true.
-#ifdef MOD_UNRELEASED
                CASE('.EXCVECLINEQ')
                   !use excitation vectors as additional initial guess for lineq
                   config%response%rspsolverinput%UseExcitationVecs = .TRUE.    
@@ -2351,7 +2327,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                   !use SVD decomposition on the Residual in order to improve conv.
                   config%response%rspsolverinput%doSVD = .TRUE.     
                   !This is not fully tested more test on bigger systems required. 
-#endif 
                CASE('.RESTEXC')
                   READ (LUCMD,*) config%response%rspsolverinput%rsp_restart_nexci
                   config%response%rspsolverinput%rsp_restart_exci = .true.

@@ -2,7 +2,6 @@
 !> Contains the Hessian module, with routines specific to the molecular Hessian.
 !> \brief Contains Hessian specific routines.
 MODULE molecular_hessian_mod
-#ifdef MOD_UNRELEASED
     use precision ! realk
     use matrix_module,          only: matrix, matrixp
     use matrix_Operations,      only: mat_mul, mat_daxpy, &
@@ -30,11 +29,9 @@ MODULE molecular_hessian_mod
                                     & rsp_solver
     use RSP_util,               only: util_save_MOinfo,&
                                     & util_free_MOstuff
-#endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
-#ifdef MOD_UNRELEASED
 
   private   ::  get_first_order_rsp_vectors
 
@@ -49,15 +46,8 @@ MODULE molecular_hessian_mod
                 & get_first_geoderiv_twoElectron_mat, &
                 & get_first_geoderiv_Fock_mat,&
                 & get_geom_first_order_RHS_HF
-#endif
-
 
 CONTAINS
-
-  SUBROUTINE dummy_subroutine_hessian()
-  END SUBROUTINE dummy_subroutine_hessian
-
-#ifdef MOD_UNRELEASED
 
   !> \brief Set default settings for the geometrical Hessian calculation 
   !>        (default: do not compute the geometrical molecular Hessian)
@@ -686,7 +676,5 @@ CONTAINS
     call lstimer('Xa_build',ts,te,lupri)
   END SUBROUTINE get_first_order_rsp_vectors
 
-
-#endif
 END MODULE molecular_hessian_mod
 
