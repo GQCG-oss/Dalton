@@ -214,10 +214,11 @@ contains
     !> (:,:,5): Occupied E[5] contribution;  (:,:,6): Virtual E[5] contribution
     logical :: calcAF,ForcePrintTime
     integer(kind=ls_mpik) :: master,IERR,comm,sender
-    real(realk) :: Edft,dE_est2,dE_est3
+    real(realk) :: Edft,dE_est2,dE_est3,Eskip_est
 #ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
+    Eskip_est = 0.0E0_realk
     dE_est3 = 0.0E0_realk
     master=0
     ForcePrintTime = .TRUE.
@@ -316,7 +317,8 @@ contains
     ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nvirt,OccOrbitals,virtOrbitals, &
-         & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset,dE_est3)
+         & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies, &
+         & AFset,dE_est3,Eskip_est)
 
     ! Send CC models and pair FOTs to use for all pairs based on estimates
     if(esti) then
@@ -606,10 +608,10 @@ contains
 
     ! Print short summary
     call print_total_energy_summary(EHF,Edft,Ecorr,MyMolecule%EF12singles,&
-         & dE_est1,dE_est2,dE_est3)
+         & dE_est1,dE_est2,dE_est3,Eskip_est)
     if(DECinfo%ccmodel==MODEL_RPA)then
        call print_total_energy_summary(EHF,Edft,Esos,MyMolecule%EF12singles,&
-            &  Eerrs,dE_est2,dE_est3,doSOS=.true.)
+            &  Eerrs,dE_est2,dE_est3,Eskip_est,doSOS=.true.)
     endif
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
@@ -1322,7 +1324,8 @@ subroutine print_dec_info()
   !> \author Kasper Kristensen
   !> \date November 2013
   subroutine fragopt_and_estimated_frags(nOcc,nvirt,OccOrbitals,virtOrbitals, &
-       & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies,AFset,dE_est3)
+       & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies, &
+       & AFset,dE_est3,Eskip_est)
 
     implicit none
     !> Full molecule info (CC model for each pair fragment resulting from estimate analysis is stored 
@@ -1352,11 +1355,11 @@ subroutine print_dec_info()
     !> NOTE: If AFset=false, nothing (except some MPI communication) is effectively done here.
     logical,intent(in) :: AFset
     !> error energy estimate based on information from the fragment optimization
-    real(realk), intent(out) :: dE_est3
+    real(realk), intent(out) :: dE_est3, Eskip_est
     real(realk),pointer :: FragEnergiesPart(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
-    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est,deltaE_p
+    real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,deltaE_p
     integer :: nfrags,i,j,k
     type(joblist) :: jobs,fragoptjobs,estijobs
     integer(kind=ls_mpik) :: master

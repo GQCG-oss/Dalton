@@ -4209,7 +4209,8 @@ end function max_batch_dimension
   end subroutine orthogonalize_MOs
 
   !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_total_energy_summary(EHF,Edft,Ecorr,EF12sing,dE_est1,dE_est2,dE_est3,doSOS)
+  subroutine print_total_energy_summary(EHF,Edft,Ecorr,EF12sing,dE_est1,dE_est2,dE_est3, &
+        & Eskip_est,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF,Edft
@@ -4219,16 +4220,18 @@ end function max_batch_dimension
     real(realk),intent(in) :: EF12sing
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: dE_est1,dE_est2,dE_est3
+    !> Estimated energy contribution from skipped pairs
+    real(realk),intent(in) :: Eskip_est
     logical,intent(in),optional :: doSOS
     integer :: lupri
 
     lupri=6
     call print_total_energy_summary_lupri(EHF,Edft,Ecorr,EF12sing,dE_est1,dE_est2,&
-         & dE_est3,lupri,doSOS=doSOS)
+         & dE_est3,Eskip_est,lupri,doSOS=doSOS)
 
     lupri=DECinfo%output
     call print_total_energy_summary_lupri(EHF,Edft,Ecorr,EF12sing,dE_est1,dE_est2,&
-         & dE_est3,lupri,doSOS=doSOS)
+         & dE_est3,Eskip_est,lupri,doSOS=doSOS)
 
 
   end subroutine print_total_energy_summary
@@ -4238,7 +4241,7 @@ end function max_batch_dimension
   !> \author Kasper Kristensen
   !> \date April 2013
   subroutine print_total_energy_summary_lupri(EHF,Edft,Ecorr,EF12sing,&
-       & dE_est1,dE_est2,dE_est3,lupri,doSOS)
+       & dE_est1,dE_est2,dE_est3,Eskip_est,lupri,doSOS)
     implicit none
     !> HF energy
     real(realk),intent(in) :: EHF,Edft
@@ -4248,6 +4251,8 @@ end function max_batch_dimension
     real(realk),intent(in) :: EF12sing
     !> Estimated intrinsic DEC energy error
     real(realk),intent(in) :: dE_est1,dE_est2,dE_est3
+    !> Estimated energy contribution from skipped pairs
+    real(realk),intent(in) :: Eskip_est
     !> Logical unit number to print to
     integer,intent(in) :: lupri
     !> SOS cont
@@ -4358,6 +4363,7 @@ end function max_batch_dimension
 
     ! skip error print for full calculation (0 by definition)
     if(.not.DECinfo%full_molecular_cc)then  
+       call print_energy("Corrected DEC energy",Ehf+Ecorr+Eskip_est,lupri)
        write(lupri,*)
        if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
           call print_energy('Estimated DEC err 1',dE_est1,lupri)
@@ -4367,6 +4373,7 @@ end function max_batch_dimension
     end if
     write(lupri,*)
     write(lupri,*)
+    call ls_flshfo(lupri)
 
 
   end subroutine print_total_energy_summary_lupri
@@ -4405,7 +4412,6 @@ end function max_batch_dimension
      else
         write(lupri,'(15X,2a,f20.10)') 'E: ',printtext,energy
      end if
-     call ls_flshfo(lupri)
 
   end subroutine print_energy
 
