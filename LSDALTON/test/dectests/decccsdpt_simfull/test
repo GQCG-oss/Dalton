@@ -15,7 +15,7 @@ f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-6)
 
 f.add(from_string = 'Print single and pair fragment energies',
-      to_string   = 'Total CCSD(T) energy:',
+      to_string   = 'Total CCSD(T) energy',
       abs_tolerance = 1.0e-6)
 
 # to ignore sign set                      ignore_sign = True   

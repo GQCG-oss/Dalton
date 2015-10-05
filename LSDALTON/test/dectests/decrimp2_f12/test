@@ -21,7 +21,7 @@ f.add(string = 'RI-MP2 occupied',rel_tolerance = 1.1e-6)
 f.add(string = 'RI-MP2 virtual',rel_tolerance = 1.1e-6)
 f.add(string = 'RI-MP2 Lagrangian',rel_tolerance = 1.1e-6)
 
-f.add(string = 'Total RI-MP2F12 energy',
+f.add(string = 'Total RI-MP2-F12 energy',
             rel_tolerance = 1.1e-6)
 
 f.add(string = 'RIMP2 CORRECTION TO ENERGY',

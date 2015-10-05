@@ -46,7 +46,7 @@
       ----------------------------------------------------------------------------
       Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC,CCSD)
       Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
       Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
@@ -88,30 +88,36 @@
      for further information.
   
   
- Who compiled             | yangminwang
- Host                     | YANGs-MBP.st.client.au.dk
- System                   | Darwin-14.5.0
+ Who compiled             | pablo
+ Host                     | pablo-AU
+ System                   | Linux-3.13.0-37-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran-4.9
- Fortran compiler version | unknown
- C compiler               | /usr/local/bin/gcc-4.9
- C compiler version       | unknown
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
  C++ compiler             | /usr/bin/g++
- C++ compiler version     | Apple LLVM version 6.0 (clang-600.0.57) (based on 
-                          | LLVM 3.5svn)
- BLAS                     | /usr/lib/libblas.dylib
- LAPACK                   | /usr/lib/liblapack.dylib
+ C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ BLAS                     | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_gf_lp64.so;/opt/intel/composer_xe_2015.2.16
+                          | 4/mkl/lib/intel64/libmkl_sequential.so;/opt/intel/
+                          | composer_xe_2015.2.164/mkl/lib/intel64/libmkl_core
+                          | .so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/l
+                          | ib/x86_64-linux-gnu/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_lapack95_lp64.a;/opt/intel/composer_xe_2015
+                          | .2.164/mkl/lib/intel64/libmkl_gf_lp64.so
  Static linking           | OFF
- Last Git revision        | cad39393e36641a69a2203e44d60cc04fbb425c6
+ Last Git revision        | dd30ad7711dca5edfd74f8b03a89d3634a2e87ed
  Git branch               | master
- Configuration time       | 2015-09-23 19:09:19.807495
+ Configuration time       | 2015-10-05 20:33:28.157702
 
 Start simulation
-     Date and time (Linux)  : Wed Sep 23 20:59:13 2015
-     Host name              : YANGs-MBP.st.client.au.dk               
+     Date and time (Linux)  : Mon Oct  5 20:46:38 2015
+     Host name              : pablo-AU                                
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -202,15 +208,15 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/6-31G
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/cc-pV5Z-RI
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/cc-pV5Z-RI
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/aug-cc-pVDZ
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/aug-cc-pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -324,9 +330,9 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   1.0000000000000000E-008
 ** Get Fock matrix number   1
- The Coulomb energy contribution    41.377199186554655     
+ The Coulomb energy contribution    41.377199186554670     
  The Exchange energy contribution    8.3303117036832894     
- The Fock energy contribution   -33.046887482871362     
+ The Fock energy contribution   -33.046887482871384     
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -334,32 +340,32 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    50.128959265563843     
- The Exchange energy contribution    9.3554581332383648     
- The Fock energy contribution   -40.773501132325485     
+ The Coulomb energy contribution    50.128959265563836     
+ The Exchange energy contribution    9.3554581332383595     
+ The Fock energy contribution   -40.773501132325464     
   2    -75.8113401573   -0.30379843151    0.00      0.00000    0.00    0.0000000    3.04E+00  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    46.818165348279592     
- The Exchange energy contribution    8.9596453836114858     
- The Fock energy contribution   -37.858519964668112     
+ The Coulomb energy contribution    46.818165348279678     
+ The Exchange energy contribution    8.9596453836114982     
+ The Fock energy contribution   -37.858519964668169     
   3    -75.9828627904   -0.17152263307   -1.00      0.00000    0.00    0.0000000    1.58E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    46.738301704610969     
+ The Coulomb energy contribution    46.738301704610961     
  The Exchange energy contribution    8.9513905956042308     
- The Fock energy contribution   -37.786911109006731     
+ The Fock energy contribution   -37.786911109006724     
   4    -75.9838968382   -0.00103404780   -1.00      0.00000    0.00    0.0000000    3.15E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
@@ -367,9 +373,9 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    46.748576888690870     
- The Exchange energy contribution    8.9523898827344706     
- The Fock energy contribution   -37.796187005956391     
+ The Coulomb energy contribution    46.748576888690913     
+ The Exchange energy contribution    8.9523898827344830     
+ The Fock energy contribution   -37.796187005956426     
   5    -75.9839719591   -0.00007512089   -1.00      0.00000    0.00    0.0000000    6.42E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
@@ -377,9 +383,9 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    46.748339975495711     
- The Exchange energy contribution    8.9522970044014034     
- The Fock energy contribution   -37.796042971094309     
+ The Coulomb energy contribution    46.748339975495725     
+ The Exchange energy contribution    8.9522970044014070     
+ The Fock energy contribution   -37.796042971094323     
   6    -75.9839743939   -0.00000243481   -1.00      0.00000    0.00    0.0000000    1.29E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
@@ -387,19 +393,19 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    46.748967608116310     
- The Exchange energy contribution    8.9523689027873168     
- The Fock energy contribution   -37.796598705328996     
+ The Coulomb energy contribution    46.748967608116317     
+ The Exchange energy contribution    8.9523689027873221     
+ The Fock energy contribution   -37.796598705328989     
   7    -75.9839744728   -0.00000007885   -1.00      0.00000    0.00    0.0000000    1.36E-04  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    46.748933188405537     
- The Exchange energy contribution    8.9523680030528965     
- The Fock energy contribution   -37.796565185352641     
+ The Coulomb energy contribution    46.748933188405587     
+ The Exchange energy contribution    8.9523680030529142     
+ The Fock energy contribution   -37.796565185352677     
   8    -75.9839744737   -0.00000000095   -1.00      0.00000    0.00    0.0000000    1.29E-05  ###
 ** Make average of the last F and D matrices
 ** Get new density 
@@ -407,43 +413,43 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    46.748924991769044     
- The Exchange energy contribution    8.9523670995775806     
- The Fock energy contribution   -37.796557892191480     
+ The Coulomb energy contribution    46.748924991769016     
+ The Exchange energy contribution    8.9523670995775735     
+ The Fock energy contribution   -37.796557892191444     
   9    -75.9839744737   -0.00000000001   -1.00      0.00000    0.00    0.0000000    8.47E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  10
- The Coulomb energy contribution    46.748924701338886     
- The Exchange energy contribution    8.9523670460610205     
- The Fock energy contribution   -37.796557655277866     
+ The Coulomb energy contribution    46.748924701338865     
+ The Exchange energy contribution    8.9523670460610134     
+ The Fock energy contribution   -37.796557655277844     
  10    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    1.66E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  11
- The Coulomb energy contribution    46.748924836729380     
- The Exchange energy contribution    8.9523670625131331     
- The Fock energy contribution   -37.796557774216240     
+ The Coulomb energy contribution    46.748924836729415     
+ The Exchange energy contribution    8.9523670625131437     
+ The Fock energy contribution   -37.796557774216268     
  11    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    2.41E-08  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  12
- The Coulomb energy contribution    46.748924842673681     
- The Exchange energy contribution    8.9523670629497438     
- The Fock energy contribution   -37.796557779723940     
- 12    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
+ The Coulomb energy contribution    46.748924842673560     
+ The Exchange energy contribution    8.9523670629497261     
+ The Fock energy contribution   -37.796557779723827     
+ 12    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   0.54 seconds
- >>> wall Time used in **ITER is   0.54 seconds
+ >>>  CPU Time used in **ITER is   0.57 seconds
+ >>> wall Time used in **ITER is   0.57 seconds
 
 Total no. of matmuls in SCF optimization:         52
 
@@ -481,24 +487,24 @@ Calculation of virtual orbital energies converged in     4 iterations!
   9   -0.00000000001   -1.0000    0.0000    0.0000000
  10   -0.00000000000   -1.0000    0.0000    0.0000000
  11    0.00000000000   -1.0000    0.0000    0.0000000
- 12   -0.00000000000   -1.0000    0.0000    0.0000000
+ 12    0.00000000000   -1.0000    0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -75.50754172583407353159      0.467394077781431D+01
-    2           -75.81134015734033937406      0.303954501739685D+01
-    3           -75.98286279040831914244      0.158105545278061D+00
-    4           -75.98389683820607842790      0.315128716762763D-01
-    5           -75.98397195909828383265      0.641578434363912D-02
-    6           -75.98397439390805629955      0.129162743689662D-02
-    7           -75.98397447276275329386      0.136041514507976D-03
-    8           -75.98397447371624480184      0.128635572855398D-04
-    9           -75.98397447372278179500      0.846623520017402D-06
-   10           -75.98397447372283863842      0.166127378904967D-06
-   11           -75.98397447372275337329      0.241358232726484D-07
-   12           -75.98397447372286706013      0.920673972512813D-09
+    1           -75.50754172583404510988      0.467394077781432D+01
+    2           -75.81134015734033937406      0.303954501739682D+01
+    3           -75.98286279040829072073      0.158105545278046D+00
+    4           -75.98389683820607842790      0.315128716762787D-01
+    5           -75.98397195909831225435      0.641578434363656D-02
+    6           -75.98397439390805629955      0.129162743691066D-02
+    7           -75.98397447276281013728      0.136041514499096D-03
+    8           -75.98397447371635848867      0.128635573067401D-04
+    9           -75.98397447372275337329      0.846623518428486D-06
+   10           -75.98397447372283863842      0.166127355282183D-06
+   11           -75.98397447372283863842      0.241358140856902D-07
+   12           -75.98397447372281021671      0.920724222708718D-09
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -521,22 +527,22 @@ Calculation of virtual orbital energies converged in     4 iterations!
   %LOC%  
   %LOC% *******  LOCALIZE     4 VALENCE ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  1.68 mu =  0.0E+00 grd =  2.1E+00 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  1.68 mu =  0.0E+00 grd =  2.1E+00 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:            18.7
 Linesearch  :   1 Diff. in function value:            -0.6
 Linesearch  :   2 Diff. in function value:             3.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  1.68 mu =  0.0E+00 grd =  3.6E-01 it =  2 trust-region =  0.50 step = 0.67
+  %LOC%   2 sigma_2 =  1.68 mu =  0.0E+00 grd =  3.6E-01 it =  2 TR =  0.50 step = 0.67
 Linesearch  :   0 Original function value:            18.1
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.1
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  1.68 mu =  0.0E+00 grd =  2.0E-03 it =  2 trust-region =  0.50 step = 0.10
+  %LOC%   3 sigma_2 =  1.68 mu =  0.0E+00 grd =  2.0E-03 it =  2 TR =  0.50 step = 0.10
 Linesearch  :   0 Original function value:            18.1
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  4 sigma_2 =  1.68 mu =  0.0E+00 grd =  2.2E-08 it =  2 trust-region =  0.50 step = 0.00
+  %LOC%   4 sigma_2 =  1.68 mu =  0.0E+00 grd =  2.2E-08 it =  2 TR =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -544,37 +550,38 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal :-45.83
   %LOC%  *****************************************************
   %LOC% 
   %LOC%  
   %LOC% *******  LOCALIZE     8 VIRTUAL ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  2.58 mu =  0.0E+00 grd =  2.7E+01 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  2.58 mu =  0.0E+00 grd =  2.7E+01 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:           182.9
 Linesearch  :   1 Diff. in function value:           -40.4
 Linesearch  :   2 Diff. in function value:            24.5
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  2.43 mu = -3.2E+02 grd =  1.4E+01 it =  6 trust-region =  0.50 step = 1.00
+  %LOC%   2 sigma_2 =  2.43 mu = -3.2E+02 grd =  1.4E+01 it =  6 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           142.4
 Linesearch  :   1 Diff. in function value:           -15.4
 Linesearch  :   2 Diff. in function value:            24.9
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  2.39 mu = -7.6E+01 grd =  3.6E+00 it =  6 trust-region =  0.50 step = 1.00
+  %LOC%   3 sigma_2 =  2.39 mu = -7.6E+01 grd =  3.6E+00 it =  6 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           127.1
 Linesearch  :   1 Diff. in function value:            -3.2
 Linesearch  :   2 Diff. in function value:            14.0
 Linesearch done, we choose previous point 
-  %LOC%  4 sigma_2 =  2.37 mu = -1.6E+01 grd =  7.3E-01 it =  6 trust-region =  0.50 step = 1.00
+  %LOC%   4 sigma_2 =  2.37 mu = -1.6E+01 grd =  7.3E-01 it =  6 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           123.9
 Linesearch  :   1 Diff. in function value:            -0.1
 Linesearch  :   2 Diff. in function value:             0.4
 Linesearch done, we choose previous point 
-  %LOC%  5 sigma_2 =  2.37 mu =  0.0E+00 grd =  1.5E-02 it =  7 trust-region =  0.50 step = 0.15
+  %LOC%   5 sigma_2 =  2.37 mu =  0.0E+00 grd =  1.5E-02 it =  7 TR =  0.50 step = 0.15
 Linesearch  :   0 Original function value:           123.8
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  6 sigma_2 =  2.37 mu =  0.0E+00 grd =  1.8E-05 it =  7 trust-region =  0.50 step = 0.00
+  %LOC%   6 sigma_2 =  2.37 mu =  0.0E+00 grd =  1.8E-05 it =  7 TR =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -582,6 +589,7 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal :-65.27
   %LOC%  *****************************************************
   %LOC% 
 
@@ -600,13 +608,13 @@ Linesearch done, we choose previous point
 
 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
-  %LOC%   Max. sigma_2 and orb.number:    2.37   11
-  %LOC%   Max. sigma_4 and orb.number:    2.73   11
+  %LOC%   Max. sigma_2 and orb.number:    2.37   13
+  %LOC%   Max. sigma_4 and orb.number:    2.73   13
   %LOC%   Min. sigma_2 and orb.number:    1.57   10
   %LOC%   Min. sigma_4 and orb.number:    1.98   10
 
- >>>  CPU Time used in Orbital Localization is   0.75 seconds
- >>> wall Time used in Orbital Localization is   0.76 seconds
+ >>>  CPU Time used in Orbital Localization is   0.65 seconds
+ >>> wall Time used in Orbital Localization is   0.65 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -641,18 +649,18 @@ FULL: Distribute matrices        : F
  ###  Iteration     Residual norm         F12 Singles energy
  ###      1          1.266749334            0.00000000000    
  ###      2         0.3566827617E-01      -0.544797916302E-01
- ###      3         0.1908839973E-01      -0.560256272703E-01
- ###      4         0.1589414705E-02      -0.563698273657E-01
+ ###      3         0.1908839973E-01      -0.560256272704E-01
+ ###      4         0.1589414705E-02      -0.563698273658E-01
  ###      5         0.5715770662E-03      -0.563782774358E-01
  ###      6         0.1211880474E-03      -0.563791909325E-01
- ###      7         0.4596505360E-04      -0.563792648756E-01
+ ###      7         0.4596505360E-04      -0.563792648757E-01
  ###      8         0.1014121674E-04      -0.563792720443E-01
- ###      9         0.3112587750E-05      -0.563792728066E-01
- ###     10         0.5858951025E-06      -0.563792728443E-01
- ###     11         0.2099491975E-06      -0.563792728471E-01
- ###     12         0.1841877954E-07      -0.563792728473E-01
+ ###      9         0.3112587771E-05      -0.563792728067E-01
+ ###     10         0.5858951171E-06      -0.563792728444E-01
+ ###     11         0.2099491195E-06      -0.563792728472E-01
+ ###     12         0.1841874891E-07      -0.563792728474E-01
 F12 Singles equations solved in   12 iterations!
-F12 Singles energy correction:    -0.563792728473E-01
+F12 Singles energy correction:    -0.563792728474E-01
 
 DEC calculation is carried out...
 
@@ -799,22 +807,18 @@ Use F12 correction           =            TRUE
  FOP ===============================================
  FOP
  FOP Fragment includes all orbitals and fragment optimization is skipped
- CABS basis test is successful
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   2
  FOP ===============================================
  FOP
  FOP Fragment includes all orbitals and fragment optimization is skipped
- CABS basis test is successful
  FOP
  FOP ===============================================
  FOP  Site fragment generator for fragment,   3
  FOP ===============================================
  FOP
  FOP Fragment includes all orbitals and fragment optimization is skipped
- CABS basis test is successful
- CABS basis test is successful
 
 
  *****************************************************************************
@@ -827,9 +831,8 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 907.349 kB
+  Allocated memory,     TOTAL                 907.301 kB
   Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
 
 
  *****************************************************************************
@@ -842,9 +845,8 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 907.349 kB
+  Allocated memory,     TOTAL                 907.301 kB
   Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
 
 
  *****************************************************************************
@@ -857,7 +859,7 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 896.653 kB
+  Allocated memory,     TOTAL                 896.605 kB
   Max allocated memory, TOTAL                          9.517 MB
 
 
@@ -898,8 +900,8 @@ Use F12 correction           =            TRUE
 
 
   ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   1.08 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   1.03 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   0.79 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   0.79 seconds
  Preparing job list...
 
 
@@ -944,22 +946,21 @@ Use F12 correction           =            TRUE
 
  *** Calculating single and pair interaction energies ***
 
- CABS basis test is successful
- DEC-RI-MP2-F12 C coupling(E21_CC):    -0.5522435220387579E-04
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9437283651599
-     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.1000806514694
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0652940664317
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.5522435220465476E-04
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9437283651603
+     DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.1000806514693
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0652940664315
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0266471215905
          RIMP2F12 Energy contribution: E(B3,RI) =      0.0266471215905
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.8129545381013
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.8129545381002
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0882158674009
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0189982696391
      DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0189982696391
      DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0009103776313
      DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0023929036352
      DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0023929036352
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.1319778632956
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0477543547385
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.1319778632955
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0477543547384
      DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0038374834219
      DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0032047797803
      DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0061791617329
@@ -967,46 +968,46 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_V_term1:    -0.9437283651599190    
-  E21_V_term2:     0.8129545381013312    
-  E21_V_term3:     0.1899826963914591E-01
-  E21_V_term4:     0.1899826963914591E-01
-  E21_V_term5:     0.9103776313317054E-03
+  E21_V_term1:    -0.9437283651602641    
+  E21_V_term2:     0.8129545381001961    
+  E21_V_term3:     0.1899826963914904E-01
+  E21_V_term4:     0.1899826963914904E-01
+  E21_V_term5:     0.9103776313424322E-03
  ----------------------------------------
-  E21_Vsum:       -0.9186691014896423E-01
+  E21_Vsum:       -0.9186691015042751E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.1000806514693761    
-  E22_X_term2:   -0.8821586740091675E-01
-  E22_X_term3:   -0.2392903635166629E-02
-  E22_X_term4:   -0.2392903635166629E-02
+  E22_X_term1:    0.1000806514693489    
+  E22_X_term2:   -0.8821586740085076E-01
+  E22_X_term3:   -0.2392903635165708E-02
+  E22_X_term4:   -0.2392903635165708E-02
  ----------------------------------------
-  E22_Xsum:    0.7078976798126135E-02
+  E22_Xsum:    0.7078976798166711E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.6529406643171261E-01
-  E23_B_term2:    0.2664712159051728E-01
-  E23_B_term3:    0.2664712159051728E-01
-  E23_B_term4:   -0.1319778632956085    
-  E23_B_term5:    0.4775435473847126E-01
-  E23_B_term6:    0.3837483421929654E-02
-  E23_B_term7:   -0.3204779780277902E-02
-  E23_B_term8:    0.6179161732875985E-02
-  E23_B_term9:   -0.4954784036005228E-03
+  E23_B_term1:    0.6529406643146562E-01
+  E23_B_term2:    0.2664712159050003E-01
+  E23_B_term3:    0.2664712159050003E-01
+  E23_B_term4:   -0.1319778632954916    
+  E23_B_term5:    0.4775435473842267E-01
+  E23_B_term6:    0.3837483421921097E-02
+  E23_B_term7:   -0.3204779780278572E-02
+  E23_B_term8:    0.6179161732881402E-02
+  E23_B_term9:   -0.4954784036059196E-03
  ----------------------------------------
-  E23_B_sum:      0.4068118802653717E-01
+  E23_B_sum:      0.4068118802631480E-01
  ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
+                   DEC-RI-MP2-F12 CALCULATION                    
  ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0918669101
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0070789768
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0406811880
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0477601648
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0441067453
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0441067453
+  RI-MP2 CORRELATION ENERGY (For DEC) =          0.0000000000
+  F12 E21 CORRECTION TO ENERGY =            -0.0918669102
+  F12 E22 CORRECTION TO ENERGY =             0.0070789768
+  F12 E23 CORRECTION TO ENERGY =             0.0406811880
+  F12 E22+E23 CORRECTION TO ENERGY =         0.0477601648
+  F12 CORRECTION TO ENERGY =                -0.0441067453
+  MP2-F12 CORRELATION ENERGY (DEC) =         -0.0441067453
 
 
  **********************************************************************
@@ -1019,24 +1020,23 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 859.534 kB
+  Allocated memory,     TOTAL                 859.510 kB
   Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
- DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2778771512343690E-04
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.7495729711345
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2778771512338874E-04
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.7495729711346
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0861250407006
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0456169115013
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0456169115011
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0091422972976
          RIMP2F12 Energy contribution: E(B3,RI) =      0.0091422972976
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.6594902335583
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.6594902335575
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0763896568987
-     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0165956851649
-     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0165956851649
-     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0008782549584
+     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0165956851650
+     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0165956851650
+     DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0008782549583
      DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0023205648087
      DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0023205648087
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0914792791905
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0438244485059
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.0914792791904
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0438244485058
      DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0040355671579
      DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0029220119772
      DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0060369915229
@@ -1044,46 +1044,46 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_V_term1:    -0.7495729711345365    
-  E21_V_term2:     0.6594902335582695    
-  E21_V_term3:     0.1659568516494579E-01
-  E21_V_term4:     0.1659568516494579E-01
-  E21_V_term5:     0.8782549583528149E-03
+  E21_V_term1:    -0.7495729711346381    
+  E21_V_term2:     0.6594902335574936    
+  E21_V_term3:     0.1659568516495726E-01
+  E21_V_term4:     0.1659568516495726E-01
+  E21_V_term5:     0.8782549583492678E-03
  ----------------------------------------
-  E21_Vsum:       -0.5601311228802255E-01
+  E21_Vsum:       -0.5601311228888067E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.8612504070061551E-01
-  E22_X_term2:   -0.7638965689865368E-01
-  E22_X_term3:   -0.2320564808665471E-02
-  E22_X_term4:   -0.2320564808665471E-02
+  E22_X_term1:    0.8612504070057989E-01
+  E22_X_term2:   -0.7638965689866889E-01
+  E22_X_term3:   -0.2320564808666725E-02
+  E22_X_term4:   -0.2320564808666725E-02
  ----------------------------------------
-  E22_Xsum:    0.5094254184630888E-02
+  E22_Xsum:    0.5094254184577547E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.4561691150131300E-01
-  E23_B_term2:    0.9142297297647635E-02
-  E23_B_term3:    0.9142297297647635E-02
-  E23_B_term4:   -0.9147927919048117E-01
-  E23_B_term5:    0.4382444850590764E-01
-  E23_B_term6:    0.4035567157900053E-02
-  E23_B_term7:   -0.2922011977228732E-02
-  E23_B_term8:    0.6036991522909048E-02
-  E23_B_term9:   -0.2562436697172591E-03
+  E23_B_term1:    0.4561691150105860E-01
+  E23_B_term2:    0.9142297297631646E-02
+  E23_B_term3:    0.9142297297631646E-02
+  E23_B_term4:   -0.9147927919040222E-01
+  E23_B_term5:    0.4382444850582549E-01
+  E23_B_term6:    0.4035567157900395E-02
+  E23_B_term7:   -0.2922011977232081E-02
+  E23_B_term8:    0.6036991522916319E-02
+  E23_B_term9:   -0.2562436697142580E-03
  ----------------------------------------
-  E23_B_sum:      0.2314097844589785E-01
+  E23_B_sum:      0.2314097844561553E-01
  ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
+                   DEC-RI-MP2-F12 CALCULATION                    
  ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0560131123
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0050942542
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0231409784
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0282352326
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0277778797
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0277778797
+  RI-MP2 CORRELATION ENERGY (For DEC) =          0.0000000000
+  F12 E21 CORRECTION TO ENERGY =            -0.0560131123
+  F12 E22 CORRECTION TO ENERGY =             0.0050942542
+  F12 E23 CORRECTION TO ENERGY =             0.0231409784
+  F12 E22+E23 CORRECTION TO ENERGY =         0.0282352326
+  F12 CORRECTION TO ENERGY =                -0.0277778797
+  MP2-F12 CORRELATION ENERGY (DEC) =         -0.0277778797
 
 
  *****************************************************************************
@@ -1096,71 +1096,70 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 871.894 kB
+  Allocated memory,     TOTAL                 871.870 kB
   Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
- DEC-RI-MP2-F12 C coupling(E21_CC):    -0.3306280743294474E-04
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9265662031130
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.3306280743335300E-04
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.9265662031133
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0708120606304
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0553670025396
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0553670025393
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0297095490961
          RIMP2F12 Energy contribution: E(B3,RI) =      0.0297095490961
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.7950617483949
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0605056547068
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.7950617483935
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0605056547067
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0223559807075
      DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0223559807075
      DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0015055821256
      DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0024331803691
      DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0024331803691
-     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.1123352480997
-     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0269101176462
+     DEC RIMP2F12 Energy contribution: E(B4,RI) =     -0.1123352480996
+     DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0269101176463
      DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0023338144814
      DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0045872272564
      DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0090064228410
-     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0007058781973
+     DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0007058781974
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_V_term1:    -0.9265662031130142    
-  E21_V_term2:     0.7950617483949474    
-  E21_V_term3:     0.2235598070750968E-01
-  E21_V_term4:     0.2235598070750968E-01
-  E21_V_term5:     0.1505582125637884E-02
+  E21_V_term1:    -0.9265662031133248    
+  E21_V_term2:     0.7950617483935039    
+  E21_V_term3:     0.2235598070748504E-01
+  E21_V_term4:     0.2235598070748504E-01
+  E21_V_term5:     0.1505582125644250E-02
  ----------------------------------------
-  E21_Vsum:       -0.8528691117740957E-01
+  E21_Vsum:       -0.8528691117920664E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.7081206063040481E-01
-  E22_X_term2:   -0.6050565470675509E-01
-  E22_X_term3:   -0.2433180369061706E-02
-  E22_X_term4:   -0.2433180369061706E-02
+  E22_X_term1:    0.7081206063036902E-01
+  E22_X_term2:   -0.6050565470669900E-01
+  E22_X_term3:   -0.2433180369059614E-02
+  E22_X_term4:   -0.2433180369059614E-02
  ----------------------------------------
-  E22_Xsum:    0.5440045185526304E-02
+  E22_Xsum:    0.5440045185550794E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.5536700253958333E-01
-  E23_B_term2:    0.2970954909610233E-01
-  E23_B_term3:    0.2970954909610233E-01
-  E23_B_term4:   -0.1123352480997223    
-  E23_B_term5:    0.2691011764616900E-01
-  E23_B_term6:    0.2333814481424022E-02
-  E23_B_term7:   -0.4587227256364097E-02
-  E23_B_term8:    0.9006422841025588E-02
-  E23_B_term9:   -0.7058781973447746E-03
+  E23_B_term1:    0.5536700253930361E-01
+  E23_B_term2:    0.2970954909609043E-01
+  E23_B_term3:    0.2970954909609043E-01
+  E23_B_term4:   -0.1123352480995565    
+  E23_B_term5:    0.2691011764630431E-01
+  E23_B_term6:    0.2333814481418350E-02
+  E23_B_term7:   -0.4587227256357372E-02
+  E23_B_term8:    0.9006422841015936E-02
+  E23_B_term9:   -0.7058781973562517E-03
  ----------------------------------------
-  E23_B_sum:      0.3540810214697542E-01
+  E23_B_sum:      0.3540810214695299E-01
  ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
+                   DEC-RI-MP2-F12 CALCULATION                    
  ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0852869112
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0054400452
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0354081021
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0408481473
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0444387638
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0444387638
+  RI-MP2 CORRELATION ENERGY (For DEC) =          0.0000000000
+  F12 E21 CORRECTION TO ENERGY =            -0.0852869112
+  F12 E22 CORRECTION TO ENERGY =             0.0054400452
+  F12 E23 CORRECTION TO ENERGY =             0.0354081021
+  F12 E22+E23 CORRECTION TO ENERGY =         0.0408481473
+  F12 CORRECTION TO ENERGY =                -0.0444387638
+  MP2-F12 CORRELATION ENERGY (DEC) =         -0.0444387638
 
 
  *****************************************************************************
@@ -1173,17 +1172,16 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 871.894 kB
+  Allocated memory,     TOTAL                 871.870 kB
   Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
- DEC-RI-MP2-F12 C coupling(E21_CC):    -0.7573646493601705E-05
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.7573646493374906E-05
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2830353217468
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0488905249273
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0215978359643
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0215978359642
      DEC RIMP2F12 Energy contribution: E(B2,RI) =     -0.0001321129247
          RIMP2F12 Energy contribution: E(B3,RI) =     -0.0001321129247
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2415724920661
-     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0431777848026
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2415724920660
+     DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0431777848027
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0069376904928
      DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0069376904928
      DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0001992940767
@@ -1198,46 +1196,46 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_V_term1:    -0.2830353217468499    
-  E21_V_term2:     0.2415724920660778    
-  E21_V_term3:     0.6937690492796954E-02
-  E21_V_term4:     0.6937690492796954E-02
-  E21_V_term5:     0.1992940767244048E-03
+  E21_V_term1:    -0.2830353217468217    
+  E21_V_term2:     0.2415724920659569    
+  E21_V_term3:     0.6937690492799702E-02
+  E21_V_term4:     0.6937690492799702E-02
+  E21_V_term5:     0.1992940767185696E-03
  ----------------------------------------
-  E21_Vsum:       -0.2738815461845383E-01
+  E21_Vsum:       -0.2738815461854679E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.4889052492732777E-01
-  E22_X_term2:   -0.4317778480263604E-01
-  E22_X_term3:   -0.1317394620774787E-02
-  E22_X_term4:   -0.1317394620774787E-02
+  E22_X_term1:    0.4889052492731609E-01
+  E22_X_term2:   -0.4317778480268585E-01
+  E22_X_term3:   -0.1317394620775648E-02
+  E22_X_term4:   -0.1317394620775648E-02
  ----------------------------------------
-  E22_Xsum:    0.3077950883142163E-02
+  E22_Xsum:    0.3077950883078941E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.2159783596427032E-01
-  E23_B_term2:   -0.1321129246622307E-03
-  E23_B_term3:   -0.1321129246622307E-03
-  E23_B_term4:   -0.4295515480092753E-01
-  E23_B_term5:    0.3070219230226745E-01
-  E23_B_term6:    0.1073482825548060E-02
-  E23_B_term7:   -0.1207482564483438E-02
-  E23_B_term8:    0.2620776463434417E-02
-  E23_B_term9:   -0.8078236384527020E-04
+  E23_B_term1:    0.2159783596419270E-01
+  E23_B_term2:   -0.1321129246642558E-03
+  E23_B_term3:   -0.1321129246642558E-03
+  E23_B_term4:   -0.4295515480090031E-01
+  E23_B_term5:    0.3070219230229554E-01
+  E23_B_term6:    0.1073482825547955E-02
+  E23_B_term7:   -0.1207482564485385E-02
+  E23_B_term8:    0.2620776463437706E-02
+  E23_B_term9:   -0.8078236384091542E-04
  ----------------------------------------
-  E23_B_sum:      0.1148664197693954E-01
+  E23_B_sum:      0.1148664197691878E-01
  ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
+                   DEC-RI-MP2-F12 CALCULATION                    
  ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0273881546
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0030779509
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0114866420
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0145645929
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0128235618
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0128235618
+  RI-MP2 CORRELATION ENERGY (For DEC) =          0.0000000000
+  F12 E21 CORRECTION TO ENERGY =            -0.0273881546
+  F12 E22 CORRECTION TO ENERGY =             0.0030779509
+  F12 E23 CORRECTION TO ENERGY =             0.0114866420
+  F12 E22+E23 CORRECTION TO ENERGY =         0.0145645929
+  F12 CORRECTION TO ENERGY =                -0.0128235618
+  MP2-F12 CORRELATION ENERGY (DEC) =         -0.0128235618
 
 
  **********************************************************************
@@ -1250,19 +1248,18 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 852.958 kB
+  Allocated memory,     TOTAL                 852.934 kB
   Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
- DEC-RI-MP2-F12 C coupling(E21_CC):    -0.1187269394205036E-04
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.1187269394181664E-04
      DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.4447995549708
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0444266803951
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0267790520943
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0267790520941
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0088801256769
          RIMP2F12 Energy contribution: E(B3,RI) =      0.0088801256769
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.3831327927863
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.3831327927857
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0381702273778
-     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0123036760127
-     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0123036760127
+     DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0123036760126
+     DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0123036760126
      DEC RIMP2F12 Energy contribution: E(V5,RI) =      0.0005396275375
      DEC RIMP2F12 Energy contribution: E(X3,RI) =     -0.0017115291910
      DEC RIMP2F12 Energy contribution: E(X4,RI) =     -0.0017115291910
@@ -1270,51 +1267,51 @@ Use F12 correction           =            TRUE
      DEC RIMP2F12 Energy contribution: E(B5,RI) =      0.0204537340182
      DEC RIMP2F12 Energy contribution: E(B6,RI) =      0.0019455890338
      DEC RIMP2F12 Energy contribution: E(B7,RI) =     -0.0023698745133
-     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0048607810609
+     DEC RIMP2F12 Energy contribution: E(B8,RI) =      0.0048607810608
      DEC RIMP2F12 Energy contribution: E(B9,RI) =     -0.0002124839032
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_V_term1:    -0.4447995549708419    
-  E21_V_term2:     0.3831327927862639    
-  E21_V_term3:     0.1230367601265279E-01
-  E21_V_term4:     0.1230367601265279E-01
-  E21_V_term5:     0.5396275374695628E-03
+  E21_V_term1:    -0.4447995549708056    
+  E21_V_term2:     0.3831327927856907    
+  E21_V_term3:     0.1230367601263796E-01
+  E21_V_term4:     0.1230367601263796E-01
+  E21_V_term5:     0.5396275374643472E-03
  ----------------------------------------
-  E21_Vsum:       -0.3651978262180285E-01
+  E21_Vsum:       -0.3651978262237459E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.4442668039514465E-01
-  E22_X_term2:   -0.3817022737782198E-01
-  E22_X_term3:   -0.1711529190965924E-02
-  E22_X_term4:   -0.1711529190965924E-02
+  E22_X_term1:    0.4442668039511983E-01
+  E22_X_term2:   -0.3817022737781969E-01
+  E22_X_term3:   -0.1711529190964762E-02
+  E22_X_term4:   -0.1711529190964762E-02
  ----------------------------------------
-  E22_Xsum:    0.2833394635390818E-02
+  E22_Xsum:    0.2833394635370618E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.2677905209426193E-01
-  E23_B_term2:    0.8880125676929784E-02
-  E23_B_term3:    0.8880125676929784E-02
-  E23_B_term4:   -0.5408570556702908E-01
-  E23_B_term5:    0.2045373401815050E-01
-  E23_B_term6:    0.1945589033844559E-02
-  E23_B_term7:   -0.2369874513344062E-02
-  E23_B_term8:    0.4860781060853897E-02
-  E23_B_term9:   -0.2124839032476089E-03
+  E23_B_term1:    0.2677905209411562E-01
+  E23_B_term2:    0.8880125676924139E-02
+  E23_B_term3:    0.8880125676924139E-02
+  E23_B_term4:   -0.5408570556695996E-01
+  E23_B_term5:    0.2045373401822719E-01
+  E23_B_term6:    0.1945589033845196E-02
+  E23_B_term7:   -0.2369874513340771E-02
+  E23_B_term8:    0.4860781060848502E-02
+  E23_B_term9:   -0.2124839032471361E-03
  ----------------------------------------
-  E23_B_sum:      0.1513134357734970E-01
+  E23_B_sum:      0.1513134357733691E-01
  ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
+                   DEC-RI-MP2-F12 CALCULATION                    
  ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0365197826
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0028333946
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0151313436
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0179647382
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0185550444
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0185550444
+  RI-MP2 CORRELATION ENERGY (For DEC) =          0.0000000000
+  F12 E21 CORRECTION TO ENERGY =            -0.0365197826
+  F12 E22 CORRECTION TO ENERGY =             0.0028333946
+  F12 E23 CORRECTION TO ENERGY =             0.0151313436
+  F12 E22+E23 CORRECTION TO ENERGY =         0.0179647382
+  F12 CORRECTION TO ENERGY =                -0.0185550444
+  MP2-F12 CORRELATION ENERGY (DEC) =         -0.0185550444
 
 
  *****************************************************************************
@@ -1327,16 +1324,15 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 861.198 kB
+  Allocated memory,     TOTAL                 861.174 kB
   Max allocated memory, TOTAL                          9.517 MB
- CABS basis test is successful
- DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2154242615692335E-04
-     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2698086959288
+ DEC-RI-MP2-F12 C coupling(E21_CC):    -0.2154242615701339E-04
+     DEC RIMP2F12 Energy contribution: E(V1,RI) =     -0.2698086959289
      DEC RIMP2F12 Energy contribution: E(X1,RI) =      0.0200799947405
-     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0201349885282
+     DEC RIMP2F12 Energy contribution: E(B1,RI) =      0.0201349885281
      DEC RIMP2F12 Energy contribution: E(B2,RI) =      0.0129314417353
          RIMP2F12 Energy contribution: E(B3,RI) =      0.0129314417353
-     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2213242908848
+     DEC RIMP2F12 Energy contribution: E(V2,RI) =      0.2213242908844
      DEC RIMP2F12 Energy contribution: E(X2,RI) =     -0.0169409114466
      DEC RIMP2F12 Energy contribution: E(V3,RI) =      0.0054399694789
      DEC RIMP2F12 Energy contribution: E(V4,RI) =      0.0054399694789
@@ -1352,46 +1348,46 @@ Use F12 correction           =            TRUE
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_V_term1:    -0.2698086959288263    
-  E21_V_term2:     0.2213242908847848    
-  E21_V_term3:     0.5439969478933717E-02
-  E21_V_term4:     0.5439969478933717E-02
-  E21_V_term5:     0.5578167581957070E-03
+  E21_V_term1:    -0.2698086959288530    
+  E21_V_term2:     0.2213242908843929    
+  E21_V_term3:     0.5439969478933927E-02
+  E21_V_term4:     0.5439969478933927E-02
+  E21_V_term5:     0.5578167581944081E-03
  ----------------------------------------
-  E21_Vsum:       -0.3704664932797836E-01
+  E21_Vsum:       -0.3704664932839786E-01
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:    0.2007999474052780E-01
-  E22_X_term2:   -0.1694091144663922E-01
-  E22_X_term3:   -0.4798080356277636E-03
-  E22_X_term4:   -0.4798080356277636E-03
+  E22_X_term1:    0.2007999474051573E-01
+  E22_X_term2:   -0.1694091144662068E-01
+  E22_X_term3:   -0.4798080356277048E-03
+  E22_X_term4:   -0.4798080356277048E-03
  ----------------------------------------
-  E22_Xsum:    0.2179467222633050E-02
+  E22_Xsum:    0.2179467222639639E-02
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.2013498852818212E-01
-  E23_B_term2:    0.1293144173534291E-01
-  E23_B_term3:    0.1293144173534291E-01
-  E23_B_term4:   -0.3939275406464484E-01
-  E23_B_term5:    0.8880751346801000E-02
-  E23_B_term6:    0.1987601346826170E-03
-  E23_B_term7:   -0.1734777422181244E-02
-  E23_B_term8:    0.3409026370930198E-02
-  E23_B_term9:   -0.2550154965594443E-03
+  E23_B_term1:    0.2013498852809131E-01
+  E23_B_term2:    0.1293144173533754E-01
+  E23_B_term3:    0.1293144173533754E-01
+  E23_B_term4:   -0.3939275406457339E-01
+  E23_B_term5:    0.8880751346784420E-02
+  E23_B_term6:    0.1987601346814847E-03
+  E23_B_term7:   -0.1734777422180924E-02
+  E23_B_term8:    0.3409026370929610E-02
+  E23_B_term9:   -0.2550154965632955E-03
  ----------------------------------------
-  E23_B_sum:      0.1710386286789623E-01
+  E23_B_sum:      0.1710386286784428E-01
  ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
+                   DEC-RI-MP2-F12 CALCULATION                    
  ----------------------------------------------------------------
-  WANGY TOYCODE: MP2 CORRELATION ENERGY (For CC) =          0.0000000000
-  WANGY TOYCODE: F12 E21 CORRECTION TO ENERGY =            -0.0370466493
-  WANGY TOYCODE: F12 E22 CORRECTION TO ENERGY =             0.0021794672
-  WANGY TOYCODE: F12 E23 CORRECTION TO ENERGY =             0.0171038629
-  WANGY TOYCODE: F12 E22+E23 CORRECTION TO ENERGY =         0.0192833301
-  WANGY TOYCODE: F12 CORRECTION TO ENERGY =                -0.0177633192
-  WANGY TOYCODE: MP2-F12 CORRELATION ENERGY (CC) =         -0.0177633192
+  RI-MP2 CORRELATION ENERGY (For DEC) =          0.0000000000
+  F12 E21 CORRECTION TO ENERGY =            -0.0370466493
+  F12 E22 CORRECTION TO ENERGY =             0.0021794672
+  F12 E23 CORRECTION TO ENERGY =             0.0171038629
+  F12 E22+E23 CORRECTION TO ENERGY =         0.0192833301
+  F12 CORRECTION TO ENERGY =                -0.0177633192
+  MP2-F12 CORRELATION ENERGY (DEC) =         -0.0177633192
 
 
  **********************************************************************
@@ -1404,10 +1400,10 @@ Use F12 correction           =            TRUE
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                 852.958 kB
+  Allocated memory,     TOTAL                 852.934 kB
   Max allocated memory, TOTAL                          9.517 MB
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  32.11 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is  31.25 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is  30.52 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is  30.50 seconds
 
 
               ===============================================
@@ -1487,7 +1483,7 @@ Use F12 correction           =            TRUE
 
  Fragment       Energy
      1      -0.4416196968E-01    AF_MP2f12_OCC
-     2      -0.1283113540E-01    AF_MP2f12_OCC
+     2      -0.1283113541E-01    AF_MP2f12_OCC
      3      -0.1778486166E-01    AF_MP2f12_OCC
 
 
@@ -1515,13 +1511,14 @@ Use F12 correction           =            TRUE
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
 
-               E: Hartree-Fock energy :      -75.9839744737
-               E: Correlation energy  :       -0.2934360371
-               E: F12 singles         :       -0.0563792728
-               E: Total RI-MP2F12 energy:      -76.3337897836
-               E: Estimated DEC err 1 :        0.0000000000
-               E: Estimated DEC err 2 :        0.0006000000
-               E: Estimated DEC err 3 :        0.0000000000
+               E: Hartree-Fock energy        :      -75.9839744737
+               E: Correlation energy         :       -0.2934360371
+               E: F12 singles                :       -0.0563792728
+               E: Total RI-MP2-F12 energy    :      -76.3337897836
+
+               E: Estimated DEC err 1        :        0.0000000000
+               E: Estimated DEC err 2        :        0.0006000000
+               E: Estimated DEC err 3        :        0.0000000000
 
 
  >>>  CPU Time used in DEC FINAL is   0.01 seconds
@@ -1533,20 +1530,16 @@ Use F12 correction           =            TRUE
  Memory in use for array4      :   0.000     GB
  Max memory in use for array4  :   0.000     GB
  ------------------
- Allocated memory for array3   :   0.000     GB
- Memory in use for array3      :   0.000     GB
- Max memory in use for array3  :   0.000     GB
- ------------------
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         34.1350     s
-Total Wall time used in DEC          :         33.2160     s
+Total CPU  time used in DEC          :         32.2248     s
+Total Wall time used in DEC          :         32.2080     s
 ------------------------------------------------------
 
 
-Hostname       : YANGs-MBP.st.client.au.dk                         
-Job finished   : Date: 23/09/2015   Time: 20:59:51
+Hostname       : pablo-AU                                          
+Job finished   : Date: 05/10/2015   Time: 20:47:15
 
 
 
@@ -1556,10 +1549,10 @@ Job finished   : Date: 23/09/2015   Time: 20:59:51
 
 
 
- >>>  CPU Time used in *SCF is  38.26 seconds
- >>> wall Time used in *SCF is  37.35 seconds
+ >>>  CPU Time used in *SCF is  36.20 seconds
+ >>> wall Time used in *SCF is  36.19 seconds
 
-Total no. of matmuls used:                      1068
+Total no. of matmuls used:                      1071
 Total no. of Fock/KS matrix evaluations:          13
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
@@ -1618,7 +1611,7 @@ Total no. of Fock/KS matrix evaluations:          13
   Max allocated memory, character                     11.664 kB
   Max allocated memory, AOBATCH                       99.840 kB
   Max allocated memory, DECORBITAL                     6.208 kB
-  Max allocated memory, DECFRAG                      107.424 kB
+  Max allocated memory, DECFRAG                      107.376 kB
   Max allocated memory, BATCHTOORB                     0.000 Byte
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.000 Byte
@@ -1653,9 +1646,9 @@ Total no. of Fock/KS matrix evaluations:          13
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  38.37 seconds
- >>> wall Time used in LSDALTON is  37.46 seconds
+ >>>  CPU Time used in LSDALTON is  36.34 seconds
+ >>> wall Time used in LSDALTON is  36.32 seconds
 
 End simulation
-     Date and time (Linux)  : Wed Sep 23 20:59:51 2015
-     Host name              : YANGs-MBP.st.client.au.dk               
+     Date and time (Linux)  : Mon Oct  5 20:47:15 2015
+     Host name              : pablo-AU                                

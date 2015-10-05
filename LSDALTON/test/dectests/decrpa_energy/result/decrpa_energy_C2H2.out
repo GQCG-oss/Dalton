@@ -46,7 +46,7 @@
       ----------------------------------------------------------------------------
       Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC,CCSD)
       Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
       Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
@@ -101,13 +101,22 @@
  C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
  C++ compiler             | /usr/bin/g++
  C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ BLAS                     | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_gf_lp64.so;/opt/intel/composer_xe_2015.2.16
+                          | 4/mkl/lib/intel64/libmkl_sequential.so;/opt/intel/
+                          | composer_xe_2015.2.164/mkl/lib/intel64/libmkl_core
+                          | .so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/l
+                          | ib/x86_64-linux-gnu/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_lapack95_lp64.a;/opt/intel/composer_xe_2015
+                          | .2.164/mkl/lib/intel64/libmkl_gf_lp64.so
  Static linking           | OFF
- Last Git revision        | ca7377199bc4b98ce8643dc4f0030c9dc3b4f58b
+ Last Git revision        | dd30ad7711dca5edfd74f8b03a89d3634a2e87ed
  Git branch               | master
- Configuration time       | 2015-09-09 09:41:27.808667
+ Configuration time       | 2015-10-05 20:33:28.157702
 
 Start simulation
-     Date and time (Linux)  : Wed Sep  9 10:02:47 2015
+     Date and time (Linux)  : Mon Oct  5 20:48:07 2015
      Host name              : pablo-AU                                
                       
  -----------------------------------------
@@ -183,7 +192,7 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/home/pablo/Work/dalton/build_serial/basis/6-31G
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/6-31G
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -284,7 +293,7 @@ Matrix type: mtype_dense
  ================================================
  The Coulomb energy contribution    21.726141548067744     
  The Exchange energy contribution    5.1823957597629287     
- The Fock energy contribution   -16.543745788304825     
+ The Fock energy contribution   -16.543745788304815     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
@@ -292,21 +301,21 @@ Matrix type: mtype_dense
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
- The Coulomb energy contribution    16.471660524491377     
- The Exchange energy contribution    4.5528482958788494     
- The Fock energy contribution   -11.918812228612524     
+ The Coulomb energy contribution    16.471660524491362     
+ The Exchange energy contribution    4.5528482958788450     
+ The Fock energy contribution   -11.918812228612518     
   2    -37.2417446448   -1.11555631170    0.00      0.00000    0.00    5.28E-01  ###
- The Coulomb energy contribution    17.478963764804593     
+ The Coulomb energy contribution    17.478963764804590     
  The Exchange energy contribution    4.6566853621651036     
- The Fock energy contribution   -12.822278402639476     
+ The Fock energy contribution   -12.822278402639485     
   3    -37.3143365252   -0.07259188037   -1.00      0.00000    0.00    8.03E-02  ###
- The Coulomb energy contribution    17.441562324889954     
- The Exchange energy contribution    4.6473508302244104     
+ The Coulomb energy contribution    17.441562324889958     
+ The Exchange energy contribution    4.6473508302244122     
  The Fock energy contribution   -12.794211494665548     
   4    -37.3153570603   -0.00102053510   -1.00      0.00000    0.00    1.00E-02  ###
- The Coulomb energy contribution    17.424551712141128     
+ The Coulomb energy contribution    17.424551712141120     
  The Exchange energy contribution    4.6453709799227383     
- The Fock energy contribution   -12.779180732218393     
+ The Fock energy contribution   -12.779180732218384     
   5    -37.3153753736   -0.00001831338   -1.00      0.00000    0.00    5.08E-04  ###
 
  Level 1 atomic calculation on 6-31G Charge   1
@@ -354,19 +363,19 @@ Matrix type: mtype_dense
 total         14                               12
 ---------------------------------------------------------------------
                       
- The Coulomb energy contribution    58.199718831799935     
+ The Coulomb energy contribution    58.199718831799927     
  The Exchange energy contribution    10.964943674106074     
- The Fock energy contribution   -47.234775157693868     
-  Iteration 0 energy:  -77.312212523975290     
+ The Fock energy contribution   -47.234775157693853     
+  Iteration 0 energy:  -77.312212523975262     
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=       104 sparsity:     72.222 %
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   9.9999997473787516E-004
 ** Get Fock matrix number   1
- The Coulomb energy contribution    58.038982963195060     
- The Exchange energy contribution    10.589459453709638     
- The Fock energy contribution   -47.449523509485445     
+ The Coulomb energy contribution    58.038982963195039     
+ The Exchange energy contribution    10.589459453709624     
+ The Fock energy contribution   -47.449523509485417     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -380,7 +389,7 @@ Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.12479436815900104     
+ OAO gradnorm  0.12479436815899633     
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -395,12 +404,12 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  3:        0.0011401730 (mu =       0.00, xmax =   0.280286E-01, xnorm =   0.870492E-01, THR =   0.124794E-02)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    43
- >>>  CPU Time used in SCF iteration is   0.27 seconds
- >>> wall Time used in SCF iteration is   0.27 seconds
+ >>>  CPU Time used in SCF iteration is   0.26 seconds
+ >>> wall Time used in SCF iteration is   0.26 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    58.114510051769564     
- The Exchange energy contribution    10.595540230412157     
- The Fock energy contribution   -47.518969821357430     
+ The Coulomb energy contribution    58.114510051769464     
+ The Exchange energy contribution    10.595540230412116     
+ The Fock energy contribution   -47.518969821357352     
  0.60000 (xnorm)    0.02803    0.08705   -0.00        1.2712    0.0000         0          1    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -412,7 +421,7 @@ Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   3.2523240935191475E-002
+ OAO gradnorm   3.2523240935193189E-002
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -428,19 +437,19 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    53
  >>>  CPU Time used in SCF iteration is   0.26 seconds
- >>> wall Time used in SCF iteration is   0.26 seconds
+ >>> wall Time used in SCF iteration is   0.25 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    58.123684702094188     
- The Exchange energy contribution    10.595775258274726     
- The Fock energy contribution   -47.527909443819510     
+ The Coulomb energy contribution    58.123684702094124     
+ The Exchange energy contribution    10.595775258274706     
+ The Fock energy contribution   -47.527909443819425     
  0.60000 (xnorm)    0.00996    0.03132   -0.00        0.9982    0.9919         1          2    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   3    -76.4355869857   -0.00098909260    0.00      0.00000   -0.00    7.88E-04  ###
 SCF converged in      3 iterations
- >>>  CPU Time used in **ITER is   0.78 seconds
- >>> wall Time used in **ITER is   0.79 seconds
+ >>>  CPU Time used in **ITER is   0.77 seconds
+ >>> wall Time used in **ITER is   0.78 seconds
 
 Total no. of matmuls in SCF optimization:        169
 
@@ -475,9 +484,9 @@ Calculation of virtual orbital energies converged in     4 iterations!
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -76.42135701225389254887      0.124794368159001D+00
-    2           -76.43459789306980667334      0.325232409351915D-01
-    3           -76.43558698567179021666      0.788258654091769D-03
+    1           -76.42135701225377886203      0.124794368158996D+00
+    2           -76.43459789306950824539      0.325232409351932D-01
+    3           -76.43558698567170495153      0.788258654095665D-03
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -500,12 +509,13 @@ Calculation of virtual orbital energies converged in     4 iterations!
   %LOC%  
   %LOC% *******  LOCALIZE     2 CORE ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  0.31 mu =  0.0E+00 grd =  3.5E-08 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  0.31 mu =  0.0E+00 grd =  3.5E-08 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:             0.2
 Linesearch  :   1 Diff. in function value:             0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  0.31 mu =  0.0E+00 grd =  9.2E-19 it =  2 trust-region =  0.50 step = 0.00
+  %LOC% Step not accepted. Go back
+  %LOC%   2 sigma_2 =  0.31 mu =  0.0E+00 grd =  3.5E-08 it =  2 TR =  0.25 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -513,48 +523,49 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal : -0.00
   %LOC%  *****************************************************
   %LOC% 
   %LOC%  
   %LOC% *******  LOCALIZE     5 VALENCE ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  2.34 mu =  0.0E+00 grd =  2.9E+01 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  2.34 mu =  0.0E+00 grd =  2.9E+01 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:           125.9
 Linesearch  :   1 Diff. in function value:           -28.0
 Linesearch  :   2 Diff. in function value:             2.9
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  2.33 mu = -3.6E+02 grd =  2.1E+01 it =  8 trust-region =  0.50 step = 1.00
+  %LOC%   2 sigma_2 =  2.33 mu = -3.6E+02 grd =  2.1E+01 it =  8 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:            97.9
 Linesearch  :   1 Diff. in function value:           -20.9
 Linesearch  :   2 Diff. in function value:            -0.3
 Linesearch  :   3 Diff. in function value:            38.3
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  2.27 mu = -2.2E+02 grd =  1.8E+01 it =  6 trust-region =  0.50 step = 1.50
+  %LOC%   3 sigma_2 =  2.27 mu = -2.2E+02 grd =  1.8E+01 it =  6 TR =  0.50 step = 1.50
 Linesearch  :   0 Original function value:            76.7
 Linesearch  :   1 Diff. in function value:           -14.4
 Linesearch  :   2 Diff. in function value:            21.3
 Linesearch done, we choose previous point 
-  %LOC%  4 sigma_2 =  2.12 mu = -1.3E+02 grd =  6.4E+00 it =  7 trust-region =  0.50 step = 1.00
+  %LOC%   4 sigma_2 =  2.12 mu = -1.3E+02 grd =  6.4E+00 it =  7 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:            62.3
 Linesearch  :   1 Diff. in function value:            -1.9
 Linesearch  :   2 Diff. in function value:            17.1
 Linesearch done, we choose previous point 
-  %LOC%  5 sigma_2 =  2.00 mu = -3.1E+00 grd =  3.3E+00 it =  8 trust-region =  0.50 step = 1.00
+  %LOC%   5 sigma_2 =  2.00 mu = -3.1E+00 grd =  3.3E+00 it =  8 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:            60.5
 Linesearch  :   1 Diff. in function value:            -0.6
 Linesearch  :   2 Diff. in function value:             2.1
 Linesearch done, we choose previous point 
-  %LOC%  6 sigma_2 =  1.94 mu = -4.4E-01 grd =  2.0E-01 it =  9 trust-region =  0.50 step = 1.00
+  %LOC%   6 sigma_2 =  1.94 mu = -4.4E-01 grd =  2.0E-01 it =  9 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:            59.9
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  7 sigma_2 =  1.94 mu =  0.0E+00 grd =  8.7E-04 it =  5 trust-region =  0.50 step = 0.02
+  %LOC%   7 sigma_2 =  1.94 mu =  0.0E+00 grd =  8.7E-04 it =  5 TR =  0.50 step = 0.02
 Linesearch  :   0 Original function value:            59.9
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  8 sigma_2 =  1.94 mu =  0.0E+00 grd =  3.3E-08 it =  6 trust-region =  0.50 step = 0.00
+  %LOC%   8 sigma_2 =  1.94 mu =  0.0E+00 grd =  3.3E-08 it =  6 TR =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -562,39 +573,40 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal : -0.00
   %LOC%  *****************************************************
   %LOC% 
   %LOC%  
   %LOC% *******  LOCALIZE     5 VIRTUAL ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  2.36 mu =  0.0E+00 grd =  1.9E+01 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  2.36 mu =  0.0E+00 grd =  1.9E+01 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:           103.5
 Linesearch  :   1 Diff. in function value:           -12.0
 Linesearch  :   2 Diff. in function value:            33.5
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  2.35 mu = -5.6E+01 grd =  2.5E+00 it =  8 trust-region =  0.50 step = 1.00
+  %LOC%   2 sigma_2 =  2.35 mu = -5.6E+01 grd =  2.5E+00 it =  8 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:            91.5
 Linesearch  :   1 Diff. in function value:            -4.9
 Linesearch  :   2 Diff. in function value:            -3.0
 Linesearch  :   3 Diff. in function value:            -0.6
 Linesearch  :   4 Diff. in function value:             3.6
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  2.14 mu = -7.1E+01 grd =  4.3E+00 it =  5 trust-region =  0.50 step = 2.00
+  %LOC%   3 sigma_2 =  2.14 mu = -7.1E+01 grd =  4.3E+00 it =  5 TR =  0.50 step = 2.00
 Linesearch  :   0 Original function value:            83.0
 Linesearch  :   1 Diff. in function value:            -0.5
 Linesearch  :   2 Diff. in function value:             2.0
 Linesearch done, we choose previous point 
-  %LOC%  4 sigma_2 =  2.09 mu =  0.0E+00 grd =  1.0E-01 it =  5 trust-region =  0.50 step = 0.28
+  %LOC%   4 sigma_2 =  2.09 mu =  0.0E+00 grd =  1.0E-01 it =  5 TR =  0.50 step = 0.28
 Linesearch  :   0 Original function value:            82.5
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  5 sigma_2 =  2.09 mu =  0.0E+00 grd =  3.6E-04 it =  5 trust-region =  0.50 step = 0.02
+  %LOC%   5 sigma_2 =  2.09 mu =  0.0E+00 grd =  3.6E-04 it =  5 TR =  0.50 step = 0.02
 Linesearch  :   0 Original function value:            82.5
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  6 sigma_2 =  2.09 mu =  0.0E+00 grd =  3.7E-08 it =  5 trust-region =  0.50 step = 0.00
+  %LOC%   6 sigma_2 =  2.09 mu =  0.0E+00 grd =  3.7E-08 it =  5 TR =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -602,6 +614,7 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal :  0.00
   %LOC%  *****************************************************
   %LOC% 
 
@@ -633,8 +646,8 @@ Linesearch done, we choose previous point
  Number of virt. orb. in molecule =           15
 
 
- OCCUPIED: (Orbital index, MOS) =            6   1.9383020311317887     
- VIRTUAL : (Orbital index, MOS) =           17   2.4977881393084873     
+ OCCUPIED: (Orbital index, MOS) =            6   1.9383020311317924     
+ VIRTUAL : (Orbital index, MOS) =           13   2.4977881393084869     
 
 
  Preparing to do S^1/2 decomposition...
@@ -643,9 +656,9 @@ Matrix AO D  has nnz=       144 sparsity:     29.752 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   9.9999997473787516E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    58.123684702094089     
- The Exchange energy contribution    10.595775258274504     
- The Fock energy contribution   -47.527909443819595     
+ The Coulomb energy contribution    58.123684702093996     
+ The Exchange energy contribution    10.595775258274482     
+ The Fock energy contribution   -47.527909443819510     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -659,7 +672,7 @@ Matrix AO F  has nnz=       484 sparsity:    100.000 %
 Matrix OAO D has nnz=       484 sparsity:    100.000 %
 Matrix OAO F has nnz=       484 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.75450106522402427     
+ OAO gradnorm  0.75450106522403027     
  Number of densities in queue:           0
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -675,12 +688,12 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  4:        0.0012993988 (mu =       0.00, xmax =   0.136320E+00, xnorm =   0.506340E+00, THR =   0.754501E-02)
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    52
- >>>  CPU Time used in SCF iteration is   0.38 seconds
- >>> wall Time used in SCF iteration is   0.38 seconds
+ >>>  CPU Time used in SCF iteration is   0.30 seconds
+ >>> wall Time used in SCF iteration is   0.30 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    62.111188042784100     
+ The Coulomb energy contribution    62.111188042784057     
  The Exchange energy contribution    11.047177831899472     
- The Fock energy contribution   -51.064010210884682     
+ The Fock energy contribution   -51.064010210884589     
  0.60000 (xnorm)    0.13632    0.50634   -0.00        0.9159    0.0000         0          1    %%%
  Trust radius based on max norm!
  % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.59999999999999998       0.71999999999999997     
@@ -692,7 +705,7 @@ Matrix AO F  has nnz=       484 sparsity:    100.000 %
 Matrix OAO D has nnz=       484 sparsity:    100.000 %
 Matrix OAO F has nnz=       484 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.17333094929383092     
+ OAO gradnorm  0.17333094929384377     
  Number of densities in queue:           1
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -707,12 +720,12 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  3:        0.0016528588 (mu =       0.00, xmax =   0.286893E-01, xnorm =   0.115801E+00, THR =   0.173331E-02)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    55
- >>>  CPU Time used in SCF iteration is   0.38 seconds
- >>> wall Time used in SCF iteration is   0.38 seconds
+ >>>  CPU Time used in SCF iteration is   0.30 seconds
+ >>> wall Time used in SCF iteration is   0.30 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    61.048630044265835     
- The Exchange energy contribution    10.956964067649830     
- The Fock energy contribution   -50.091665976616035     
+ The Coulomb energy contribution    61.048630044265785     
+ The Exchange energy contribution    10.956964067649821     
+ The Fock energy contribution   -50.091665976615964     
  0.60000 (xnorm)    0.02869    0.11580   -0.00        0.9133    0.4512         1          2    %%%
  Trust radius based on max norm!
  % Expand trust-radius by a factor   1.2000000000000000      h(old), h(new):  0.59999999999999998       0.71999999999999997     
@@ -724,7 +737,7 @@ Matrix AO F  has nnz=       484 sparsity:    100.000 %
 Matrix OAO D has nnz=       484 sparsity:    100.000 %
 Matrix OAO F has nnz=       484 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   2.9705333448607409E-002
+ OAO gradnorm   2.9705333448605899E-002
  Number of densities in queue:           2
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -739,12 +752,12 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  3:        0.0002338673 (mu =       0.00, xmax =   0.392598E-02, xnorm =   0.192162E-01, THR =   0.297053E-03)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    52
- >>>  CPU Time used in SCF iteration is   0.37 seconds
- >>> wall Time used in SCF iteration is   0.37 seconds
+ >>>  CPU Time used in SCF iteration is   0.30 seconds
+ >>> wall Time used in SCF iteration is   0.30 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    61.191266899770341     
- The Exchange energy contribution    10.973560452941104     
- The Fock energy contribution   -50.217706446829268     
+ The Coulomb energy contribution    61.191266899770369     
+ The Exchange energy contribution    10.973560452941076     
+ The Fock energy contribution   -50.217706446829283     
  0.60000 (xnorm)    0.00393    0.01922   -0.00        1.0374    0.9422         2          3    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -756,7 +769,7 @@ Matrix AO F  has nnz=       484 sparsity:    100.000 %
 Matrix OAO D has nnz=       484 sparsity:    100.000 %
 Matrix OAO F has nnz=       484 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   2.1073940493421582E-003
+ OAO gradnorm   2.1073940493330726E-003
  Number of densities in queue:           3
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -771,12 +784,12 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  3:        0.0000175410 (mu =       0.00, xmax =   0.364602E-03, xnorm =   0.187501E-02, THR =   0.210739E-04)
 Newton equations converged in  3 iterations!
 No. of matmuls in get_density:    51
- >>>  CPU Time used in SCF iteration is   0.37 seconds
- >>> wall Time used in SCF iteration is   0.37 seconds
+ >>>  CPU Time used in SCF iteration is   0.30 seconds
+ >>> wall Time used in SCF iteration is   0.30 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    61.194410482126308     
- The Exchange energy contribution    10.973801063237490     
- The Fock energy contribution   -50.220609418888827     
+ The Coulomb energy contribution    61.194410482126237     
+ The Exchange energy contribution    10.973801063237467     
+ The Fock energy contribution   -50.220609418888770     
  0.60000 (xnorm)    0.00036    0.00188   -0.00        1.0565    0.8903         3          4    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
@@ -788,7 +801,7 @@ Matrix AO F  has nnz=       484 sparsity:    100.000 %
 Matrix OAO D has nnz=       484 sparsity:    100.000 %
 Matrix OAO F has nnz=       484 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm   3.0226955988715647E-004
+ OAO gradnorm   3.0226955989710945E-004
  Number of densities in queue:           4
 CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 
@@ -807,22 +820,22 @@ Error went down by   89.02%
   Error of red space iteration  6:        0.0000001196 (mu =       0.00, xmax =   0.891390E-04, xnorm =   0.282298E-03, THR =   0.302270E-06)
 Newton equations converged in  6 iterations!
 No. of matmuls in get_density:    81
- >>>  CPU Time used in SCF iteration is   0.38 seconds
- >>> wall Time used in SCF iteration is   0.38 seconds
+ >>>  CPU Time used in SCF iteration is   0.30 seconds
+ >>> wall Time used in SCF iteration is   0.30 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    61.192925244710963     
- The Exchange energy contribution    10.973641509980961     
- The Fock energy contribution   -50.219283734729999     
+ The Coulomb energy contribution    61.192925244710899     
+ The Exchange energy contribution    10.973641509980919     
+ The Fock energy contribution   -50.219283734729991     
  0.60000 (xnorm)    0.00009    0.00028   -0.00        1.0391    0.9115         4          5    %%%
  Trust radius based on max norm!
  Large ratio, double trust-radius
  Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
   6    -76.7925071481   -0.00000008036    0.00      0.00000   -0.00    4.00E-05  ###
 SCF converged in      6 iterations
- >>>  CPU Time used in **ITER is   2.24 seconds
- >>> wall Time used in **ITER is   2.24 seconds
+ >>>  CPU Time used in **ITER is   1.81 seconds
+ >>> wall Time used in **ITER is   1.81 seconds
 
-Total no. of matmuls in SCF optimization:       1891
+Total no. of matmuls in SCF optimization:       1899
 
  Number of occupied orbitals:           7
  Number of virtual orbitals:          15
@@ -858,12 +871,12 @@ Calculation of virtual orbital energies converged in    12 iterations!
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1           -76.43558698567170495153      0.754501065224024D+00
-    2           -76.77473485526130048129      0.173330949293831D+00
-    3           -76.79192842028550103350      0.297053334486074D-01
-    4           -76.79250308704071414923      0.210739404934216D-02
-    5           -76.79250706775839319107      0.302269559887156D-03
-    6           -76.79250714812278033605      0.399594629119864D-04
+    1           -76.43558698567159126469      0.754501065224030D+00
+    2           -76.77473485526115837274      0.173330949293844D+00
+    3           -76.79192842028527365983      0.297053334486059D-01
+    4           -76.79250308704035887786      0.210739404933307D-02
+    5           -76.79250706775822266081      0.302269559897109D-03
+    6           -76.79250714812255296238      0.399594629139225D-04
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -882,14 +895,13 @@ Calculation of virtual orbital energies converged in    12 iterations!
   %LOC%  
   %LOC% *******  LOCALIZE     2 CORE ORBITALS ******
   %LOC%  
-  %LOC% False minimum detected. Gradient norm =   7.69E-09
-  %LOC% Norm after random rotation =   2.02E-02
-  %LOC%  1 sigma_2 =  0.31 mu =  0.0E+00 grd =  1.0E-02 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  0.31 mu =  0.0E+00 grd =  3.9E-08 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:             0.2
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  0.31 mu =  0.0E+00 grd =  2.7E-08 it =  2 trust-region =  0.50 step = 0.00
+  %LOC% Step not accepted. Go back
+  %LOC%   2 sigma_2 =  0.31 mu =  0.0E+00 grd =  3.9E-08 it =  2 TR =  0.25 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -897,22 +909,23 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal : -0.00
   %LOC%  *****************************************************
   %LOC% 
   %LOC%  
   %LOC% *******  LOCALIZE     5 VALENCE ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  1.80 mu =  0.0E+00 grd =  5.3E-01 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  1.80 mu =  0.0E+00 grd =  5.3E-01 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:            41.1
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  1.80 mu =  0.0E+00 grd =  4.8E-04 it =  2 trust-region =  0.50 step = 0.04
+  %LOC%   2 sigma_2 =  1.80 mu =  0.0E+00 grd =  4.8E-04 it =  2 TR =  0.50 step = 0.04
 Linesearch  :   0 Original function value:            41.1
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  1.80 mu =  0.0E+00 grd =  1.0E-08 it =  6 trust-region =  0.50 step = 0.00
+  %LOC%   3 sigma_2 =  1.80 mu =  0.0E+00 grd =  1.0E-08 it =  6 TR =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -920,59 +933,60 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal : -0.00
   %LOC%  *****************************************************
   %LOC% 
   %LOC%  
   %LOC% *******  LOCALIZE    15 VIRTUAL ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  2.72 mu =  0.0E+00 grd =  4.4E+01 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  2.72 mu =  0.0E+00 grd =  4.4E+01 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:           622.7
 Linesearch  :   1 Diff. in function value:          -106.5
 Linesearch  :   2 Diff. in function value:            90.0
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  2.54 mu = -6.2E+02 grd =  1.7E+01 it =  8 trust-region =  0.50 step = 1.00
+  %LOC%   2 sigma_2 =  2.54 mu = -6.2E+02 grd =  1.7E+01 it =  8 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           516.2
 Linesearch  :   1 Diff. in function value:           -40.1
 Linesearch  :   2 Diff. in function value:           -20.8
 Linesearch  :   3 Diff. in function value:           212.9
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  2.63 mu = -3.1E+02 grd =  2.7E+01 it =  9 trust-region =  0.50 step = 1.50
+  %LOC%   3 sigma_2 =  2.63 mu = -3.1E+02 grd =  2.7E+01 it =  9 TR =  0.50 step = 1.50
 Linesearch  :   0 Original function value:           455.4
 Linesearch  :   1 Diff. in function value:           -50.4
 Linesearch  :   2 Diff. in function value:            19.7
 Linesearch done, we choose previous point 
-  %LOC%  4 sigma_2 =  2.52 mu = -3.0E+02 grd =  8.7E+00 it =  8 trust-region =  0.50 step = 1.00
+  %LOC%   4 sigma_2 =  2.52 mu = -3.0E+02 grd =  8.7E+00 it =  8 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           405.0
 Linesearch  :   1 Diff. in function value:           -25.9
 Linesearch  :   2 Diff. in function value:           -16.7
 Linesearch  :   3 Diff. in function value:           116.4
 Linesearch done, we choose previous point 
-  %LOC%  5 sigma_2 =  2.45 mu = -2.4E+02 grd =  8.5E+00 it =  8 trust-region =  0.50 step = 1.50
+  %LOC%   5 sigma_2 =  2.45 mu = -2.4E+02 grd =  8.5E+00 it =  8 TR =  0.50 step = 1.50
 Linesearch  :   0 Original function value:           362.4
 Linesearch  :   1 Diff. in function value:           -10.2
 Linesearch  :   2 Diff. in function value:            42.7
 Linesearch done, we choose previous point 
-  %LOC%  6 sigma_2 =  2.31 mu = -2.5E+01 grd =  8.4E-01 it = 10 trust-region =  0.50 step = 1.00
+  %LOC%   6 sigma_2 =  2.31 mu = -2.5E+01 grd =  8.4E-01 it = 10 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           352.2
 Linesearch  :   1 Diff. in function value:            -0.3
 Linesearch  :   2 Diff. in function value:             1.5
 Linesearch done, we choose previous point 
-  %LOC%  7 sigma_2 =  2.31 mu = -3.0E-02 grd =  1.5E-01 it = 15 trust-region =  0.50 step = 1.00
+  %LOC%   7 sigma_2 =  2.31 mu = -3.0E-02 grd =  1.5E-01 it = 15 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           351.9
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  8 sigma_2 =  2.31 mu = -2.2E-02 grd =  4.7E-02 it = 18 trust-region =  0.50 step = 1.00
+  %LOC%   8 sigma_2 =  2.31 mu = -2.2E-02 grd =  4.7E-02 it = 18 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           351.9
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  9 sigma_2 =  2.30 mu = -2.9E-03 grd =  2.2E-02 it = 18 trust-region =  0.50 step = 1.00
+  %LOC%   9 sigma_2 =  2.30 mu = -2.9E-03 grd =  2.2E-02 it = 18 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           351.9
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC% 10 sigma_2 =  2.30 mu =  0.0E+00 grd =  4.3E-05 it =  9 trust-region =  0.50 step = 0.00
+  %LOC%  10 sigma_2 =  2.30 mu =  0.0E+00 grd =  4.3E-05 it =  9 TR =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -980,6 +994,7 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal :  0.00
   %LOC%  *****************************************************
   %LOC% 
 
@@ -1003,8 +1018,8 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    2.03   10
   %LOC%   Min. sigma_4 and orb.number:    2.45   10
 
- >>>  CPU Time used in Orbital Localization is   1.73 seconds
- >>> wall Time used in Orbital Localization is   1.72 seconds
+ >>>  CPU Time used in Orbital Localization is   1.45 seconds
+ >>> wall Time used in Orbital Localization is   1.45 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -1055,7 +1070,6 @@ Simple orbital thr.                                 =       0.500E-01
 Expansion step size                                 =               5
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
-Fit Molecular Orbitals                              =            TRUE
 The Integral Screening threshold                    =             1.0000E-10
  
 DEC orbitals will be generated using  simple Lowdin charge analysis
@@ -1226,10 +1240,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.74 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.74 seconds
- >>>  WALL Time used in AO to MO transformation   0.04 seconds
- >>>  CPU Time used in AO to MO transformation   0.04 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP
@@ -1296,10 +1310,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
- >>>  WALL Time used in AO to MO transformation   0.02 seconds
- >>>  CPU Time used in AO to MO transformation   0.02 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.41 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.41 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP
  FOP
  FOP=========================================================
@@ -1366,10 +1380,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.75 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.75 seconds
- >>>  WALL Time used in AO to MO transformation   0.03 seconds
- >>>  CPU Time used in AO to MO transformation   0.03 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP
  FOP
  FOP=========================================================
@@ -1437,10 +1451,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.74 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.74 seconds
- >>>  WALL Time used in AO to MO transformation   0.04 seconds
- >>>  CPU Time used in AO to MO transformation   0.04 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.57 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP
  FOP
  FOP=========================================================
@@ -1534,10 +1548,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.74 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.74 seconds
- >>>  WALL Time used in AO to MO transformation   0.04 seconds
- >>>  CPU Time used in AO to MO transformation   0.04 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP
@@ -1604,10 +1618,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
- >>>  WALL Time used in AO to MO transformation   0.01 seconds
- >>>  CPU Time used in AO to MO transformation   0.02 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.41 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.41 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP
  FOP
  FOP=========================================================
@@ -1674,10 +1688,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.74 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.74 seconds
- >>>  WALL Time used in AO to MO transformation   0.03 seconds
- >>>  CPU Time used in AO to MO transformation   0.03 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP
  FOP
  FOP=========================================================
@@ -1745,10 +1759,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.74 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.74 seconds
- >>>  WALL Time used in AO to MO transformation   0.04 seconds
- >>>  CPU Time used in AO to MO transformation   0.04 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.57 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
  FOP
  FOP
  FOP=========================================================
@@ -1837,10 +1851,10 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.74 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.74 seconds
- >>>  WALL Time used in AO to MO transformation   0.04 seconds
- >>>  CPU Time used in AO to MO transformation   0.04 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.56 seconds
+ >>>  WALL Time used in AO to MO transformation   0.00 seconds
+ >>>  CPU Time used in AO to MO transformation   0.00 seconds
 
 
  *****************************************************************************
@@ -1887,8 +1901,8 @@ Use F12 correction           =           FALSE
      1       2      1.1898         -0.6602629990E-01    PF_ESTIMATE
 
 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   8.48 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   8.47 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   6.50 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   6.50 seconds
  Preparing job list...
 
 
@@ -1929,7 +1943,7 @@ Use F12 correction           =           FALSE
 
  *** Calculating single and pair interaction energies ***
 
- CCSOL: MAIN LOOP      :  15.9    s
+ CCSOL: MAIN LOOP      :  12.7    s
 
 
  *****************************************************************************
@@ -1952,7 +1966,7 @@ Use F12 correction           =           FALSE
  Distance(Ang), pair lagr. virt term =       1.1898         0.000000000    
 
 
- CCSOL: MAIN LOOP      :  16.7    s
+ CCSOL: MAIN LOOP      :  13.1    s
 
 
  **********************************************************************
@@ -1975,7 +1989,7 @@ Use F12 correction           =           FALSE
  Single Lagrangian virt term =      0.000000000    
 
 
- CCSOL: MAIN LOOP      :  17.5    s
+ CCSOL: MAIN LOOP      :  13.5    s
 
 
  **********************************************************************
@@ -1998,8 +2012,8 @@ Use F12 correction           =           FALSE
  Single Lagrangian virt term =      0.000000000    
 
 
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   2.46 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   2.46 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   1.13 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   1.13 seconds
 
 
               ===============================================
@@ -2094,12 +2108,13 @@ Use F12 correction           =           FALSE
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
 
-               E: Hartree-Fock energy :      -76.7925071481
-               E: Correlation energy  :       -0.1909522243
-               E: HF + dRPA energy    :      -76.9834593724
-               E: Estimated DEC err 1 :        0.0000920941
-               E: Estimated DEC err 2 :        0.0008000000
-               E: Estimated DEC err 3 :        0.0000482161
+               E: Hartree-Fock energy        :      -76.7925071481
+               E: Correlation energy         :       -0.1909522243
+               E: Total (HF + dRPA) energy   :      -76.9834593724
+
+               E: Estimated DEC err 1        :        0.0000920941
+               E: Estimated DEC err 2        :        0.0008000000
+               E: Estimated DEC err 3        :        0.0000482161
 
 
 
@@ -2110,16 +2125,17 @@ Use F12 correction           =           FALSE
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
 
-               E: Hartree-Fock energy :      -76.7925071481
-               E: SOSEX energy        :       -0.1190604107
-               E: HF + SOSEX energy   :      -76.9115675588
-               E: Estimated DEC err 1 :        0.0000585454
-               E: Estimated DEC err 2 :        0.0008000000
-               E: Estimated DEC err 3 :        0.0000482161
+               E: Hartree-Fock energy        :      -76.7925071481
+               E: Correlation energy         :       -0.1190604107
+               E: Total (HF + SOSEX) energy  :      -76.9115675588
+
+               E: Estimated DEC err 1        :        0.0000585454
+               E: Estimated DEC err 2        :        0.0008000000
+               E: Estimated DEC err 3        :        0.0000482161
 
 
  >>>  CPU Time used in DEC FINAL is   0.08 seconds
- >>> wall Time used in DEC FINAL is   0.08 seconds
+ >>> wall Time used in DEC FINAL is   0.07 seconds
 
  CC Memory summary
  -----------------
@@ -2127,20 +2143,16 @@ Use F12 correction           =           FALSE
  Memory in use for array4      :   0.000     GB
  Max memory in use for array4  :  0.3528E-03 GB
  ------------------
- Allocated memory for array3   :   0.000     GB
- Memory in use for array3      :   0.000     GB
- Max memory in use for array3  :   0.000     GB
- ------------------
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         11.0220     s
-Total Wall time used in DEC          :         11.0150     s
+Total CPU  time used in DEC          :         7.71364     s
+Total Wall time used in DEC          :         7.71000     s
 ------------------------------------------------------
 
 
 Hostname       : pablo-AU                                          
-Job finished   : Date: 09/09/2015   Time: 10:03:04
+Job finished   : Date: 05/10/2015   Time: 20:48:21
 
 
 
@@ -2150,8 +2162,8 @@ Job finished   : Date: 09/09/2015   Time: 10:03:04
 
 
 
- >>>  CPU Time used in *SCF is  15.06 seconds
- >>> wall Time used in *SCF is  15.05 seconds
+ >>>  CPU Time used in *SCF is  11.04 seconds
+ >>> wall Time used in *SCF is  11.03 seconds
 
 Total no. of matmuls used:                      3556
 Total no. of Fock/KS matrix evaluations:          10
@@ -2209,10 +2221,10 @@ Total no. of Fock/KS matrix evaluations:          10
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                      103.508 kB
   Max allocated memory, logical                        2.476 kB
-  Max allocated memory, character                      3.536 kB
+  Max allocated memory, character                      3.776 kB
   Max allocated memory, AOBATCH                       18.432 kB
   Max allocated memory, DECORBITAL                     8.384 kB
-  Max allocated memory, DECFRAG                      143.296 kB
+  Max allocated memory, DECFRAG                      143.168 kB
   Max allocated memory, BATCHTOORB                     0.336 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.432 kB
@@ -2247,9 +2259,9 @@ Total no. of Fock/KS matrix evaluations:          10
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is  17.60 seconds
- >>> wall Time used in LSDALTON is  17.59 seconds
+ >>>  CPU Time used in LSDALTON is  13.57 seconds
+ >>> wall Time used in LSDALTON is  13.56 seconds
 
 End simulation
-     Date and time (Linux)  : Wed Sep  9 10:03:04 2015
+     Date and time (Linux)  : Mon Oct  5 20:48:21 2015
      Host name              : pablo-AU                                

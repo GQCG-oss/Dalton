@@ -1,10 +1,11 @@
+ THIS IS A DEBUG BUILD
   
      ******************************************************************    
      **********  LSDALTON - An electronic structure program  **********    
      ******************************************************************    
   
   
-      This is output from LSDALTON 2015.0
+      This is output from LSDALTON 2016.alpha
   
   
       IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
@@ -43,29 +44,30 @@
                                                 
       LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
       ----------------------------------------------------------------------------
-      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC,CCSD)
+      Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
-      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
       Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
-      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (Orbital localization, SCF optimization)
       Robert Izsak,            University of Oslo,        Norway    (ADMM)
-      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
-      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
-      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
-      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Branislav Jansik,        Aarhus University,         Denmark   (Trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (Supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (Response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (Response, Integrals, DEC, SCF, Readin, MPI, Scalapack)
       Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
-      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Kasper Kristensen,       Aarhus University,         Denmark   (Response, DEC)
       Patrick Merlot,          University of Oslo,        Norway    (ADMM)
       Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
-      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
-      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
-      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Jeppe Olsen,             Aarhus University,         Denmark   (Supervision)
+      Simen Reine,             University of Oslo,        Norway    (Integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (Geometry optimizer, dynamics)
       Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
       Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
-      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
-      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Erik Tellgren,           University of Oslo,        Norway    (Density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (Response)
       Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
       Mark Watson,             University of Oslo,        Norway    (FMM)
       Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
@@ -86,23 +88,32 @@
      for further information.
   
   
- Who compiled             | erebolini
- Host                     | reboctcc
- System                   | Linux-3.13.0-44-generic
+ Who compiled             | pablo
+ Host                     | pablo-AU
+ System                   | Linux-3.13.0-37-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran-4.8
- Fortran compiler version | unknown
- C compiler               | /usr/bin/gcc-4.8
- C compiler version       | unknown
- C++ compiler             | /usr/bin/g++-4.8
- C++ compiler version     | unknown
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ BLAS                     | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_gf_lp64.so;/opt/intel/composer_xe_2015.2.16
+                          | 4/mkl/lib/intel64/libmkl_sequential.so;/opt/intel/
+                          | composer_xe_2015.2.164/mkl/lib/intel64/libmkl_core
+                          | .so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/l
+                          | ib/x86_64-linux-gnu/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_lapack95_lp64.a;/opt/intel/composer_xe_2015
+                          | .2.164/mkl/lib/intel64/libmkl_gf_lp64.so
  Static linking           | OFF
- Last Git revision        | 8da6291e0efa03ce29d723ce2719d32b78ae2b80
- Git branch               | pari-k
- Configuration time       | 2015-03-03 10:06:32.283393
+ Last Git revision        | dd30ad7711dca5edfd74f8b03a89d3634a2e87ed
+ Git branch               | master
+ Configuration time       | 2015-10-05 20:33:28.157702
 
 
 
@@ -151,8 +162,8 @@
  with the weight:   1.0000000000000000     
 
 Start simulation
-     Date and time (Linux)  : Thu Mar  5 17:03:05 2015
-     Host name              : reboctcc                                
+     Date and time (Linux)  : Mon Oct  5 20:49:34 2015
+     Host name              : pablo-AU                                
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -262,7 +273,7 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/home/erebolini/dalton/build-parik-profile/basis/6-31G
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/6-31G
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -375,53 +386,53 @@ Matrix type: mtype_dense
  Level 1 atomic calculation on 6-31G Charge   8
  ================================================
  The Coulomb energy contribution    46.487308777898320     
- The Exchange energy contribution    1.7934049698002039     
- The Fock energy contribution   -44.693903808098156     
+ The Exchange energy contribution    1.7934049698002019     
+ The Fock energy contribution   -44.693903808098106     
 Total Number of grid points:       14368
 
   Max allocated memory, Grid                    1.038 MB
 
-  KS electrons/energy:    7.99999998440386   -7.23026895936000 rel.err:-0.19E-08
+  KS electrons/energy:    7.99999998440386   -7.23026895935999 rel.err:-0.19E-08
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
   1    -71.5831876379    0.00000000000    0.00      0.00000    0.00    0.0000000    4.44E+00  ###
  The Coulomb energy contribution    30.867499945093655     
- The Exchange energy contribution    1.6467353179662414     
- The Fock energy contribution   -29.220764627127419     
-  KS electrons/energy:    7.99999998482283   -5.19379289265152 rel.err:-0.19E-08
+ The Exchange energy contribution    1.6467353179662410     
+ The Fock energy contribution   -29.220764627127416     
+  KS electrons/energy:    7.99999998482283   -5.19379289265151 rel.err:-0.19E-08
   2    -73.4455703485   -1.86238271054    0.00      0.00000    0.00    0.0000000    3.60E+00  ###
- The Coulomb energy contribution    36.095353534873162     
- The Exchange energy contribution    1.7051228138282191     
- The Fock energy contribution   -34.390230721044951     
-  KS electrons/energy:    7.99999998467630   -5.83604927977323 rel.err:-0.19E-08
+ The Coulomb energy contribution    36.095353534873169     
+ The Exchange energy contribution    1.7051228138282175     
+ The Fock energy contribution   -34.390230721044958     
+  KS electrons/energy:    7.99999998467632   -5.83604927977323 rel.err:-0.19E-08
   3    -74.2167418607   -0.77117151223   -1.00      0.00000    0.00    0.0000000    2.17E-01  ###
- The Coulomb energy contribution    36.452847396876059     
- The Exchange energy contribution    1.7089258778938774     
- The Fock energy contribution   -34.743921518982184     
+ The Coulomb energy contribution    36.452847396876052     
+ The Exchange energy contribution    1.7089258778938767     
+ The Fock energy contribution   -34.743921518982177     
   KS electrons/energy:    7.99999998467661   -5.88019476986236 rel.err:-0.19E-08
   4    -74.2196910369   -0.00294917617   -1.00      0.00000    0.00    0.0000000    2.85E-02  ###
- The Coulomb energy contribution    36.412609149916975     
- The Exchange energy contribution    1.7085086706719432     
- The Fock energy contribution   -34.704100479245007     
-  KS electrons/energy:    7.99999998467881   -5.87494624295625 rel.err:-0.19E-08
+ The Coulomb energy contribution    36.412609149916904     
+ The Exchange energy contribution    1.7085086706719417     
+ The Fock energy contribution   -34.704100479244964     
+  KS electrons/energy:    7.99999998467880   -5.87494624295624 rel.err:-0.19E-08
   5    -74.2197373213   -0.00004628447   -1.00      0.00000    0.00    0.0000000    2.54E-03  ###
- The Coulomb energy contribution    36.408767142683274     
- The Exchange energy contribution    1.7084687148157562     
- The Fock energy contribution   -34.700298427867523     
-  KS electrons/energy:    7.99999998467884   -5.87445141764694 rel.err:-0.19E-08
+ The Coulomb energy contribution    36.408767142683246     
+ The Exchange energy contribution    1.7084687148157558     
+ The Fock energy contribution   -34.700298427867494     
+  KS electrons/energy:    7.99999998467884   -5.87445141764693 rel.err:-0.19E-08
   6    -74.2197376845   -0.00000036317   -1.00      0.00000    0.00    0.0000000    1.01E-04  ###
 
  Level 1 atomic calculation on 6-31G Charge   1
  ================================================
  The Coulomb energy contribution   0.31435582677568180     
- The Exchange energy contribution   0.10244105605166492     
+ The Exchange energy contribution   0.10244105605166491     
  The Fock energy contribution  -0.21191477072401688     
 Total Number of grid points:       10026
 
   Max allocated memory, Grid                  753.473 kB
 
-  KS electrons/energy:    1.00000000000053   -0.08286392642614 rel.err: 0.53E-12
+  KS electrons/energy:    1.00000000000052   -0.08286392642614 rel.err: 0.52E-12
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -432,8 +443,8 @@ Total Number of grid points:       10026
   KS electrons/energy:    1.00000000000060   -0.07237701123706 rel.err: 0.60E-12
   2     -0.3729428015   -0.00376073511    0.00      0.00000    0.00    0.0000000    6.72E-03  ###
  The Coulomb energy contribution   0.29335941199907400     
- The Exchange energy contribution    9.9581126507972184E-002
- The Fock energy contribution  -0.19377828549110182     
+ The Exchange energy contribution    9.9581126507972156E-002
+ The Fock energy contribution  -0.19377828549110188     
   KS electrons/energy:    1.00000000000061   -0.07186335997318 rel.err: 0.61E-12
   3     -0.3729521229   -0.00000932137   -1.00      0.00000    0.00    0.0000000    4.78E-05  ###
  
@@ -443,18 +454,18 @@ Matrix type: mtype_dense
 
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        77 sparsity:     45.562 %
-Matrix AO D  has nnz=       104 sparsity:     62.130 %
+Matrix AO D  has nnz=       105 sparsity:     62.130 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   9.9999997473787516E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    67.988625820524206     
- The Exchange energy contribution    2.6656686864347368     
- The Fock energy contribution   -65.322957134089378     
+ The Coulomb energy contribution    67.988625820524135     
+ The Exchange energy contribution    2.6656686864347376     
+ The Fock energy contribution   -65.322957134089393     
 Total Number of grid points:       34420
 
   Max allocated memory, Grid                    1.934 MB
 
-  KS electrons/energy:    9.99999644662717   -8.90621382019161 rel.err:-0.36E-06
+  KS electrons/energy:    9.99999644662716   -8.90621382019161 rel.err:-0.36E-06
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -462,105 +473,105 @@ Total Number of grid points:       34420
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.14 seconds
- >>> wall Time used in SCF iteration is   0.14 seconds
+ >>>  CPU Time used in SCF iteration is   0.53 seconds
+ >>> wall Time used in SCF iteration is   0.53 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    30.814208707553544     
+ The Coulomb energy contribution    30.814208707553519     
  The Exchange energy contribution    2.1702432805895944     
- The Fock energy contribution   -28.643965426963984     
-  KS electrons/energy:   10.00000220077289   -4.95283723832728 rel.err: 0.22E-06
+ The Fock energy contribution   -28.643965426963927     
+  KS electrons/energy:   10.00000220077288   -4.95283723832727 rel.err: 0.22E-06
   2    -69.4386220306   -0.00811854835    0.00      0.00000    0.00    0.0000000    1.08E+01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.51 seconds
+ >>> wall Time used in SCF iteration is   0.51 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    50.048728409927264     
+ The Coulomb energy contribution    50.048728409927250     
  The Exchange energy contribution    2.4921265144594331     
- The Fock energy contribution   -47.556601895467850     
-  KS electrons/energy:    9.99999922868763   -6.75360260356510 rel.err:-0.77E-07
+ The Fock energy contribution   -47.556601895467821     
+  KS electrons/energy:    9.99999922868763   -6.75360260356509 rel.err:-0.77E-07
   3    -75.7151902987   -6.27656826804   -1.00      0.00000    0.00    0.0000000    3.09E+00  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.50 seconds
+ >>> wall Time used in SCF iteration is   0.50 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    48.409724347663790     
- The Exchange energy contribution    2.4711774006615421     
- The Fock energy contribution   -45.938546947002244     
-  KS electrons/energy:    9.99999950791255   -6.58432862809083 rel.err:-0.49E-07
+ The Coulomb energy contribution    48.409724347663868     
+ The Exchange energy contribution    2.4711774006615461     
+ The Fock energy contribution   -45.938546947002322     
+  KS electrons/energy:    9.99999950791256   -6.58432862809083 rel.err:-0.49E-07
   4    -75.8536103782   -0.13842007953   -1.00      0.00000    0.00    0.0000000    1.56E+00  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.51 seconds
+ >>> wall Time used in SCF iteration is   0.50 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    47.014875889560209     
- The Exchange energy contribution    2.4512462851302721     
- The Fock energy contribution   -44.563629604429984     
-  KS electrons/energy:    9.99999973903076   -6.43683933906807 rel.err:-0.26E-07
+ The Coulomb energy contribution    47.014875889560329     
+ The Exchange energy contribution    2.4512462851302743     
+ The Fock energy contribution   -44.563629604430048     
+  KS electrons/energy:    9.99999973903077   -6.43683933906807 rel.err:-0.26E-07
   5    -75.8944130068   -0.04080262864   -1.00      0.00000    0.00    0.0000000    2.35E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.49 seconds
+ >>> wall Time used in SCF iteration is   0.50 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    46.709490897922635     
- The Exchange energy contribution    2.4460304351105324     
- The Fock energy contribution   -44.263460462812056     
-  KS electrons/energy:    9.99999979265522   -6.40380139459106 rel.err:-0.21E-07
+ The Coulomb energy contribution    46.709490897922528     
+ The Exchange energy contribution    2.4460304351105311     
+ The Fock energy contribution   -44.263460462811999     
+  KS electrons/energy:    9.99999979265520   -6.40380139459105 rel.err:-0.21E-07
   6    -75.8954554973   -0.00104249045   -1.00      0.00000    0.00    0.0000000    5.96E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.50 seconds
+ >>> wall Time used in SCF iteration is   0.50 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    46.757414210299814     
+ The Coulomb energy contribution    46.757414210299785     
  The Exchange energy contribution    2.4465403735207034     
- The Fock energy contribution   -44.310873836779173     
-  KS electrons/energy:    9.99999978577123   -6.40902300212029 rel.err:-0.21E-07
+ The Fock energy contribution   -44.310873836779081     
+  KS electrons/energy:    9.99999978577122   -6.40902300212028 rel.err:-0.21E-07
   7    -75.8955168946   -0.00006139728   -1.00      0.00000    0.00    0.0000000    8.93E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.50 seconds
+ >>> wall Time used in SCF iteration is   0.50 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    46.763134509130559     
- The Exchange energy contribution    2.4465663528818862     
- The Fock energy contribution   -44.316568156248707     
-  KS electrons/energy:    9.99999978519617   -6.40973836617016 rel.err:-0.21E-07
+ The Coulomb energy contribution    46.763134509130694     
+ The Exchange energy contribution    2.4465663528818897     
+ The Fock energy contribution   -44.316568156248806     
+  KS electrons/energy:    9.99999978519616   -6.40973836617017 rel.err:-0.21E-07
   8    -75.8955188839   -0.00000198932   -1.00      0.00000    0.00    0.0000000    1.44E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.50 seconds
+ >>> wall Time used in SCF iteration is   0.51 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    46.764732391793146     
- The Exchange energy contribution    2.4465840513838151     
- The Fock energy contribution   -44.318148340409344     
-  KS electrons/energy:    9.99999978498656   -6.40991138934684 rel.err:-0.22E-07
+ The Coulomb energy contribution    46.764732391793189     
+ The Exchange energy contribution    2.4465840513838182     
+ The Fock energy contribution   -44.318148340409380     
+  KS electrons/energy:    9.99999978498657   -6.40991138934685 rel.err:-0.22E-07
   9    -75.8955189258   -0.00000004188   -1.00      0.00000    0.00    0.0000000    2.58E-04  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.13 seconds
- >>> wall Time used in SCF iteration is   0.13 seconds
+ >>>  CPU Time used in SCF iteration is   0.50 seconds
+ >>> wall Time used in SCF iteration is   0.50 seconds
 ** Get Fock matrix number  10
- The Coulomb energy contribution    46.764488557055884     
+ The Coulomb energy contribution    46.764488557055913     
  The Exchange energy contribution    2.4465805700729941     
- The Fock energy contribution   -44.317907986982910     
+ The Fock energy contribution   -44.317907986982917     
   KS electrons/energy:    9.99999978503077   -6.40988526688743 rel.err:-0.21E-07
  10    -75.8955189268   -0.00000000102   -1.00      0.00000    0.00    0.0000000    1.46E-05  ###
 SCF converged in     10 iterations
- >>>  CPU Time used in **ITER is   1.29 seconds
- >>> wall Time used in **ITER is   1.29 seconds
+ >>>  CPU Time used in **ITER is   5.05 seconds
+ >>> wall Time used in **ITER is   5.05 seconds
 
 Total no. of matmuls in SCF optimization:         71
 
@@ -602,16 +613,16 @@ Calculation of virtual orbital energies converged in     4 iterations!
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -69.43050348227173174109      0.118382304921408D+02
-    2           -69.43862203062285232136      0.107757603796692D+02
-    3           -75.71519029866625771774      0.309337219097745D+01
-    4           -75.85361037819126295290      0.155715473810366D+01
-    5           -75.89441300683540703176      0.235040035346020D+00
-    6           -75.89545549728801177025      0.595628775724112D-01
-    7           -75.89551689457016436791      0.892922342984073D-02
-    8           -75.89551888388706402111      0.143765028276743D-02
-    9           -75.89551892576434966031      0.257672559594155D-03
-   10           -75.89551892678531430647      0.146395120114088D-04
+    1           -69.43050348227163226511      0.118382304921408D+02
+    2           -69.43862203062263915854      0.107757603796691D+02
+    3           -75.71519029866610139834      0.309337219097746D+01
+    4           -75.85361037819112084435      0.155715473810370D+01
+    5           -75.89441300683520807979      0.235040035346086D+00
+    6           -75.89545549728791229427      0.595628775724354D-01
+    7           -75.89551689457015015705      0.892922342986009D-02
+    8           -75.89551888388686506914      0.143765028268170D-02
+    9           -75.89551892576434966031      0.257672559559620D-03
+   10           -75.89551892678521483049      0.146395120756179D-04
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -634,34 +645,34 @@ Calculation of virtual orbital energies converged in     4 iterations!
   %LOC%  
   %LOC% *******  LOCALIZE     4 VALENCE ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  1.69 mu =  0.0E+00 grd =  1.0E+00 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  1.69 mu =  0.0E+00 grd =  1.0E+00 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:            22.6
 Linesearch  :   1 Diff. in function value:            -2.5
 Linesearch  :   2 Diff. in function value:            -0.3
 Linesearch  :   3 Diff. in function value:            -1.1
 Linesearch  :   4 Diff. in function value:             1.2
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  1.69 mu = -4.6E+01 grd =  1.9E+00 it =  4 trust-region =  0.50 step = 2.00
+  %LOC%   2 sigma_2 =  1.69 mu = -4.6E+01 grd =  1.9E+00 it =  4 TR =  0.50 step = 2.00
 Linesearch  :   0 Original function value:            18.6
 Linesearch  :   1 Diff. in function value:            -1.4
 Linesearch  :   2 Diff. in function value:             1.8
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  1.69 mu = -2.1E+01 grd =  1.1E+00 it =  4 trust-region =  0.50 step = 1.00
+  %LOC%   3 sigma_2 =  1.69 mu = -2.1E+01 grd =  1.1E+00 it =  4 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:            17.1
 Linesearch  :   1 Diff. in function value:            -0.3
 Linesearch  :   2 Diff. in function value:             1.6
 Linesearch done, we choose previous point 
-  %LOC%  4 sigma_2 =  1.69 mu = -1.9E-01 grd =  5.0E-01 it =  4 trust-region =  0.50 step = 1.00
+  %LOC%   4 sigma_2 =  1.69 mu = -1.9E-01 grd =  5.0E-01 it =  4 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:            16.9
 Linesearch  :   1 Diff. in function value:            -0.1
 Linesearch  :   2 Diff. in function value:             0.2
 Linesearch done, we choose previous point 
-  %LOC%  5 sigma_2 =  1.69 mu =  0.0E+00 grd =  1.6E-02 it =  4 trust-region =  0.50 step = 0.32
+  %LOC%   5 sigma_2 =  1.69 mu =  0.0E+00 grd =  1.6E-02 it =  4 TR =  0.50 step = 0.32
 Linesearch  :   0 Original function value:            16.8
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  6 sigma_2 =  1.69 mu =  0.0E+00 grd =  3.2E-05 it =  4 trust-region =  0.50 step = 0.01
+  %LOC%   6 sigma_2 =  1.69 mu =  0.0E+00 grd =  3.2E-05 it =  4 TR =  0.50 step = 0.01
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -669,48 +680,49 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal :-43.42
   %LOC%  *****************************************************
   %LOC% 
   %LOC%  
   %LOC% *******  LOCALIZE     8 VIRTUAL ORBITALS ******
   %LOC%  
-  %LOC%  1 sigma_2 =  2.42 mu =  0.0E+00 grd =  1.6E+01 it =  1 trust-region =  0.50 step = 0.00
+  %LOC%   1 sigma_2 =  2.42 mu =  0.0E+00 grd =  1.6E+01 it =  1 TR =  0.50 step = 0.00
 Linesearch  :   0 Original function value:           161.5
 Linesearch  :   1 Diff. in function value:           -18.8
 Linesearch  :   2 Diff. in function value:             1.1
 Linesearch done, we choose previous point 
-  %LOC%  2 sigma_2 =  2.27 mu = -1.3E+02 grd =  7.0E+00 it =  9 trust-region =  0.50 step = 1.00
+  %LOC%   2 sigma_2 =  2.27 mu = -1.3E+02 grd =  7.0E+00 it =  9 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           142.7
 Linesearch  :   1 Diff. in function value:           -12.1
 Linesearch  :   2 Diff. in function value:            -3.1
 Linesearch  :   3 Diff. in function value:            21.0
 Linesearch done, we choose previous point 
-  %LOC%  3 sigma_2 =  2.12 mu = -1.3E+02 grd =  5.6E+00 it =  6 trust-region =  0.50 step = 1.50
+  %LOC%   3 sigma_2 =  2.12 mu = -1.3E+02 grd =  5.6E+00 it =  6 TR =  0.50 step = 1.50
 Linesearch  :   0 Original function value:           127.5
 Linesearch  :   1 Diff. in function value:            -6.9
 Linesearch  :   2 Diff. in function value:             4.7
 Linesearch done, we choose previous point 
-  %LOC%  4 sigma_2 =  2.20 mu = -5.1E+01 grd =  2.5E+00 it =  7 trust-region =  0.50 step = 1.00
+  %LOC%   4 sigma_2 =  2.20 mu = -5.1E+01 grd =  2.5E+00 it =  7 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           120.6
 Linesearch  :   1 Diff. in function value:            -3.3
 Linesearch  :   2 Diff. in function value:             3.6
 Linesearch done, we choose previous point 
-  %LOC%  5 sigma_2 =  2.32 mu = -2.7E+01 grd =  1.2E+00 it =  7 trust-region =  0.50 step = 1.00
+  %LOC%   5 sigma_2 =  2.32 mu = -2.7E+01 grd =  1.2E+00 it =  7 TR =  0.50 step = 1.00
 Linesearch  :   0 Original function value:           117.3
 Linesearch  :   1 Diff. in function value:            -0.7
 Linesearch  :   2 Diff. in function value:             4.2
 Linesearch done, we choose previous point 
-  %LOC%  6 sigma_2 =  2.36 mu =  0.0E+00 grd =  2.0E-01 it =  8 trust-region =  0.50 step = 0.69
+  %LOC%   6 sigma_2 =  2.36 mu =  0.0E+00 grd =  2.0E-01 it =  8 TR =  0.50 step = 0.69
 Linesearch  :   0 Original function value:           116.6
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  7 sigma_2 =  2.36 mu =  0.0E+00 grd =  3.6E-03 it =  9 trust-region =  0.50 step = 0.06
+  %LOC%   7 sigma_2 =  2.36 mu =  0.0E+00 grd =  3.6E-03 it =  9 TR =  0.50 step = 0.06
 Linesearch  :   0 Original function value:           116.6
 Linesearch  :   1 Diff. in function value:            -0.0
 Linesearch  :   2 Diff. in function value:             0.0
 Linesearch done, we choose previous point 
-  %LOC%  8 sigma_2 =  2.36 mu =  0.0E+00 grd =  1.1E-06 it =  9 trust-region =  0.50 step = 0.00
+  %LOC%   8 sigma_2 =  2.36 mu =  0.0E+00 grd =  1.1E-06 it =  9 TR =  0.50 step = 0.00
   %LOC% 
   %LOC%  ********* Orbital localization converged ************
   %LOC%  *                                                   *
@@ -718,6 +730,7 @@ Linesearch done, we choose previous point
   %LOC%  * function is below the threshold, and we exit      *
   %LOC%  * the localization procedure.                       *
   %LOC%  *                                                   *
+  %LOC%  *  Minimal Hessiag diagonal :-56.37
   %LOC%  *****************************************************
   %LOC% 
 
@@ -736,13 +749,13 @@ Linesearch done, we choose previous point
 
 
   %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
-  %LOC%   Max. sigma_2 and orb.number:    2.36   13
-  %LOC%   Max. sigma_4 and orb.number:    2.72   13
-  %LOC%   Min. sigma_2 and orb.number:    1.57   10
-  %LOC%   Min. sigma_4 and orb.number:    1.98   10
+  %LOC%   Max. sigma_2 and orb.number:    2.36   11
+  %LOC%   Max. sigma_4 and orb.number:    2.72   11
+  %LOC%   Min. sigma_2 and orb.number:    1.57   12
+  %LOC%   Min. sigma_4 and orb.number:    1.98   12
 
- >>>  CPU Time used in Orbital Localization is   0.05 seconds
- >>> wall Time used in Orbital Localization is   0.05 seconds
+ >>>  CPU Time used in Orbital Localization is   0.57 seconds
+ >>> wall Time used in Orbital Localization is   0.57 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -760,11 +773,13 @@ FULL: Number of core orbitals    :      1
 FULL: Number of valence orbitals :      4
 FULL: Number of occ. orbitals    :      5
 FULL: Number of virt. orbitals   :      8
+FULL: Local memory use type full :  0.32E-05
+FULL: Distribute matrices        : F
 
  Calculating carmom matrix for DEC calculation...
  get_available_memory: System identified to be LINUX!
- Available Memory (GB) =      0.38098    
- Memory found by system call to be:   0.3810     GB
+ Available Memory (GB) =       10.645    
+ Memory found by system call to be:    10.64     GB
 
 
 =============================================================================
@@ -793,7 +808,6 @@ Simple orbital thr.                                 =       0.500E-01
 Expansion step size                                 =               5
 Print level                                         =               0
 Fragment-adapted orbitals                           =           FALSE
-Fit Molecular Orbitals                              =            TRUE
 The Integral Screening threshold                    =             1.0000E-10
  
 DEC orbitals will be generated using  simple Lowdin charge analysis
@@ -822,7 +836,7 @@ Use Preconditioner           =            TRUE
 Precond. B                   =            TRUE
 Debug mode                   =           FALSE
 CC Solver distributes Memory =            TRUE
-Memory Usage Allowed(GB)     =            0.38
+Memory Usage Allowed(GB)     =           10.64
 Backup Time Interval(s)      =          300.00
 Use F12 correction           =           FALSE
  
@@ -848,9 +862,9 @@ Use F12 correction           =           FALSE
  **********************************************************************
 
  Maximum occ orbital extent (#AOs) =     13   -- Orbital index     2
- Maximum unocc orbital extent (#AOs) =      9   -- Orbital index     1
+ Maximum virt orbital extent (#AOs) =      9   -- Orbital index     1
  Average occ orbital extent (#AOs)  =      10.6000
- Average unocc orbital extent (#AOs) =       7.7500
+ Average virt orbital extent (#AOs) =       7.7500
 
 
  >>>  CPU Time used in DEC INIT is   0.00 seconds
@@ -884,7 +898,7 @@ Use F12 correction           =           FALSE
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            = 0.346    
+ 85% of available memory (GB)            =  9.05    
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       5       5
@@ -923,22 +937,12 @@ Use F12 correction           =           FALSE
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
  BATCH: Number of virtual batches =           1
- >>>  WALL Time used in MP2 Integral Calculation   0.02 seconds
- >>>  CPU Time used in MP2 Integral Calculation   0.02 seconds
+ >>>  WALL Time used in MP2 Integral Calculation   0.08 seconds
+ >>>  CPU Time used in MP2 Integral Calculation   0.08 seconds
  >>>  WALL Time used in AO to MO transformation   0.00 seconds
  >>>  CPU Time used in AO to MO transformation   0.00 seconds
-
-
- **********************************************************************
- Energy summary for fragment:       1
- **********************************************************************
- Single occupied energy =    -0.1498388287    
- Single virtual  energy =    -0.1498388287    
- Single Lagrangian occ term  =     0.8313013919E-01
- Single Lagrangian virt term =     0.6670868950E-01
-
-
  FOP Expansion Include Full Molecule !!!
+ FOP
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   0
@@ -975,8 +979,21 @@ Use F12 correction           =           FALSE
  FOP
 
  FOP reduction: Atom,FOT,O,V,B      1     0.100E-03      5      8     13
- >>>  CPU Time used in DEC Atomic Fragment Calculation is   0.04 seconds
- >>> wall Time used in DEC Atomic Fragment Calculation is   0.13 seconds
+
+ FOP SUMMARY: Fragment,   1  converged after    0 expansion and    1 reduction steps
+
+
+
+ ******************************************************************
+ *                SUMMARY ATOMIC FRAGMENT ERROR                   *
+ ******************************************************************
+
+ Total number of fragments:                                               3
+
+ Estimated contribution beyond the fragment energy contribution:      0.000000000    
+
+ >>>  CPU Time used in DEC Atomic Fragment Calculation is   0.15 seconds
+ >>> wall Time used in DEC Atomic Fragment Calculation is   0.15 seconds
  Preparing job list...
 
 
@@ -988,7 +1005,7 @@ Use F12 correction           =           FALSE
       1      5      8     13     0.00    / 0.972       0.00    /  1.54              FRAG_SIZE
 
  FRAGANALYSIS: Max/Ave/Min occ         :        5       /     5.0000    /       5
- FRAGANALYSIS: Max/Ave/Min unocc       :        8       /     8.0000    /       8
+ FRAGANALYSIS: Max/Ave/Min virt        :        8       /     8.0000    /       8
  FRAGANALYSIS: Max/Ave/Min basis       :       13       /     13.000    /      13
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :      0.0000    /     0.0000    /     0.0000    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :     0.97200    /    0.97200    /    0.97200    
@@ -1014,15 +1031,7 @@ Use F12 correction           =           FALSE
 
  *** Calculating single and pair interaction energies ***
 
- The Coulomb energy contribution    46.764464401520335     
- The Exchange energy contribution    2.4465802820024050     
- The Fock energy contribution   -44.317884119517934     
-Total Number of grid points:       34420
-
-  Max allocated memory, Grid                    1.934 MB
-
-  KS electrons/energy:    9.99999978503713   -6.40988259468328 rel.err:-0.21E-07
- CCSOL: MAIN LOOP      :  2.35    s
+ CCSOL: MAIN LOOP      :  7.14    s
 
 
  **********************************************************************
@@ -1045,8 +1054,8 @@ Total Number of grid points:       34420
  Single Lagrangian virt term =      0.000000000    
 
 
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.18 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.18 seconds
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.09 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.09 seconds
 
 
               ===============================================
@@ -1101,7 +1110,7 @@ Total Number of grid points:       34420
 
   Max allocated memory, Grid                    1.934 MB
 
-  KS electrons/energy:    9.99999978503394   -6.40988526688743 rel.err:-0.21E-07
+  KS electrons/energy:    9.99999978503395   -6.40988526688743 rel.err:-0.21E-07
 
 
 
@@ -1110,12 +1119,15 @@ Total Number of grid points:       34420
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
 
-               E: HF energy (KS orb)  :      -75.9788850710
-               E: DFT energy          :      -75.8955189268
-               E: Correlation energy  :       -0.0039760885
-               E: Estimated DEC error :        0.0000000000
-               E: HF + dRPA energy    :      -75.9828611595
-               E: KS + dRPA energy    :      -75.8994950153
+               E: HF energy (KS orbitals)    :      -75.9788850710
+               E: DFT energy                 :      -75.8955189268
+               E: Correlation energy         :       -0.0039760885
+               E: Total (HF + dRPA) energy   :      -75.9828611595
+               E: Total (KS + dRPA) energy   :      -75.8994950153
+
+               E: Estimated DEC err 1        :        0.0000000000
+               E: Estimated DEC err 2        :        0.0006000000
+               E: Estimated DEC err 3        :        0.0000000000
 
 
 
@@ -1126,16 +1138,19 @@ Total Number of grid points:       34420
              *                   DEC ENERGY SUMMARY                   *
              **********************************************************
 
-               E: HF energy (KS orb)  :      -75.9788850710
-               E: DFT energy          :      -75.8955189268
-               E: SOSEX energy        :       -0.0026115311
-               E: Estimated DEC error :        0.0000000000
-               E: HF + SOSEX energy   :      -75.9814966021
-               E: KS + SOSEX energy   :      -75.8981304578
+               E: HF energy (KS orbitals)    :      -75.9788850710
+               E: DFT energy                 :      -75.8955189268
+               E: Correlation energy         :       -0.0026115311
+               E: Total (HF + SOSEX) energy  :      -75.9814966021
+               E: Total (KS + SOSEX) energy  :      -75.8981304578
+
+               E: Estimated DEC err 1        :        0.0000000000
+               E: Estimated DEC err 2        :        0.0006000000
+               E: Estimated DEC err 3        :        0.0000000000
 
 
- >>>  CPU Time used in DEC FINAL is   0.13 seconds
- >>> wall Time used in DEC FINAL is   0.13 seconds
+ >>>  CPU Time used in DEC FINAL is   0.50 seconds
+ >>> wall Time used in DEC FINAL is   0.50 seconds
 
  CC Memory summary
  -----------------
@@ -1143,20 +1158,16 @@ Total Number of grid points:       34420
  Memory in use for array4      :   0.000     GB
  Max memory in use for array4  :  0.5120E-04 GB
  ------------------
- Allocated memory for array3   :   0.000     GB
- Memory in use for array3      :   0.000     GB
- Max memory in use for array3  :   0.000     GB
- ------------------
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :        0.348125     s
-Total Wall time used in DEC          :        0.525000     s
+Total CPU  time used in DEC          :        0.738747     s
+Total Wall time used in DEC          :        0.738000     s
 ------------------------------------------------------
 
 
-Hostname       : reboctcc                                          
-Job finished   : Date: 05/03/2015   Time: 17:03:08
+Hostname       : pablo-AU                                          
+Job finished   : Date: 05/10/2015   Time: 20:49:42
 
 
 
@@ -1166,10 +1177,10 @@ Job finished   : Date: 05/03/2015   Time: 17:03:08
 
 
 
- >>>  CPU Time used in *SCF is   1.90 seconds
- >>> wall Time used in *SCF is   2.08 seconds
+ >>>  CPU Time used in *SCF is   6.41 seconds
+ >>> wall Time used in *SCF is   6.42 seconds
 
-Total no. of matmuls used:                      1186
+Total no. of matmuls used:                      1447
 Total no. of Fock/KS matrix evaluations:          10
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
@@ -1209,43 +1220,43 @@ Total no. of Fock/KS matrix evaluations:          10
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Additional Memory information          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         68.508 MB
-  Max allocated memory, type(matrix)                  72.128 kB
+  Allocated memory (linkshell):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                          7.906 MB
+  Max allocated memory, type(matrix)                  55.920 kB
   Max allocated memory, real(realk)                    7.903 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                      233.536 kB
-  Max allocated memory, logical                      338.996 kB
-  Max allocated memory, character                      3.360 kB
-  Max allocated memory, AOBATCH                       13.104 kB
+  Max allocated memory, logical                      138.344 kB
+  Max allocated memory, character                      3.456 kB
+  Max allocated memory, AOBATCH                       13.312 kB
   Max allocated memory, DECORBITAL                     1.664 kB
-  Max allocated memory, DECFRAG                       46.464 kB
+  Max allocated memory, DECFRAG                       53.688 kB
   Max allocated memory, BATCHTOORB                     0.336 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
   Max allocated memory, MYPOINTER                      0.432 kB
   Max allocated memory, fragmentAOS                    0.000 Byte
   Max allocated memory, ARRAY2                         0.000 Byte
   Max allocated memory, ARRAY4                         0.000 Byte
-  Max allocated memory, ARRAY                         66.408 MB
+  Max allocated memory, ARRAY                          8.064 kB
   Max allocated memory, PNOSpaceInfo                   0.000 Byte
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
   Max allocated memory, ODBATCH                        2.640 kB
   Max allocated memory, LSAOTENSOR                     5.472 kB
-  Max allocated memory, SLSAOTENSOR                   13.800 kB
+  Max allocated memory, SLSAOTENSOR                   10.120 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                 306.112 kB
-  Max allocated memory, ATOMITEM                       3.264 kB
+  Max allocated memory, ATOMITEM                       3.072 kB
   Max allocated memory, LSMATRIX                       2.016 kB
   Max allocated memory, OverlapT                      40.896 kB
   Max allocated memory, linkshell                      0.432 kB
@@ -1263,9 +1274,9 @@ Total no. of Fock/KS matrix evaluations:          10
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   2.23 seconds
- >>> wall Time used in LSDALTON is   2.41 seconds
+ >>>  CPU Time used in LSDALTON is   7.64 seconds
+ >>> wall Time used in LSDALTON is   7.64 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Mar  5 17:03:08 2015
-     Host name              : reboctcc                                
+     Date and time (Linux)  : Mon Oct  5 20:49:42 2015
+     Host name              : pablo-AU                                

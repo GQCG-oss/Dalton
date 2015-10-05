@@ -9,15 +9,15 @@ from runtest_lsdalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'HF energy (KS orb)',
+f.add(string = 'HF energy (KS orbitals)',
       rel_tolerance = 1.0e-8)
 f.add(string = 'DFT energy',
       rel_tolerance = 1.0e-8)
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-4)
-f.add(string = 'HF + dRPA energy',
+f.add(string = 'Total (HF + dRPA) energy',
       rel_tolerance = 1.0e-4)
-f.add(string = 'KS + dRPA energy',
+f.add(string = 'Total (KS + dRPA) energy',
       rel_tolerance = 1.0e-4)
 
 #f.add(from_string = 'Summary For Counter Poise Correction',

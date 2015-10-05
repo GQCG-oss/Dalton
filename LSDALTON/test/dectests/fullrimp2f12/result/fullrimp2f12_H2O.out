@@ -46,7 +46,7 @@
       ----------------------------------------------------------------------------
       Vebjoern Bakken,         University of Oslo,        Norway    (Geometry optimizer)
       Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
-      Pablo Baudin,            Aarhus University,         Denmark   (DEC)
+      Pablo Baudin,            Aarhus University,         Denmark   (DEC,CCSD)
       Sonia Coriani,           University of Trieste,     Italy     (Response)
       Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
       Trygve Helgaker,         University of Oslo,        Norway    (Supervision)
@@ -88,30 +88,36 @@
      for further information.
   
   
- Who compiled             | yangminwang
- Host                     | YANGs-MBP.st.client.au.dk
- System                   | Darwin-14.5.0
+ Who compiled             | pablo
+ Host                     | pablo-AU
+ System                   | Linux-3.13.0-37-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran-4.9
- Fortran compiler version | unknown
- C compiler               | /usr/local/bin/gcc-4.9
- C compiler version       | unknown
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
  C++ compiler             | /usr/bin/g++
- C++ compiler version     | Apple LLVM version 6.0 (clang-600.0.57) (based on 
-                          | LLVM 3.5svn)
- BLAS                     | /usr/lib/libblas.dylib
- LAPACK                   | /usr/lib/liblapack.dylib
+ C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ BLAS                     | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_gf_lp64.so;/opt/intel/composer_xe_2015.2.16
+                          | 4/mkl/lib/intel64/libmkl_sequential.so;/opt/intel/
+                          | composer_xe_2015.2.164/mkl/lib/intel64/libmkl_core
+                          | .so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/l
+                          | ib/x86_64-linux-gnu/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2015.2.164/mkl/lib/intel64/
+                          | libmkl_lapack95_lp64.a;/opt/intel/composer_xe_2015
+                          | .2.164/mkl/lib/intel64/libmkl_gf_lp64.so
  Static linking           | OFF
- Last Git revision        | cad39393e36641a69a2203e44d60cc04fbb425c6
+ Last Git revision        | dd30ad7711dca5edfd74f8b03a89d3634a2e87ed
  Git branch               | master
- Configuration time       | 2015-09-23 18:55:16.611119
+ Configuration time       | 2015-10-05 20:33:28.157702
 
 Start simulation
-     Date and time (Linux)  : Wed Sep 23 18:59:05 2015
-     Host name              : YANGs-MBP.st.client.au.dk               
+     Date and time (Linux)  : Mon Oct  5 20:41:31 2015
+     Host name              : pablo-AU                                
                       
  -----------------------------------------
           PRINTING THE MOLECULE.INP FILE 
@@ -200,15 +206,15 @@ BASISSETLIBRARY
    
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/6-31G
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/6-31G
    
   CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/cc-pV5Z-RI
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/cc-pV5Z-RI
    
   CALLING BUILD BASIS WITH DEFAULT CABS      BASIS
    
- OPENING FILE/Users/yangminwang/dalton_debug/gfortran_debug/basis/aug-cc-pVDZ
+ OPENING FILE/home/pablo/Work/dalton_clean/build_serial/basis/aug-cc-pVDZ
  PRINT MOLECULE AND BASIS IN FULL INPUT
                       
 THE MOLECULE
@@ -315,9 +321,9 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
   Relative convergence threshold for solver:   1.0000000000000000E-002
   SCF Convergence criteria for gradient norm:   1.0000000000000000E-008
 ** Get Fock matrix number   1
- The Coulomb energy contribution    41.377199186554655     
+ The Coulomb energy contribution    41.377199186554670     
  The Exchange energy contribution    8.3303117036832894     
- The Fock energy contribution   -33.046887482871362     
+ The Fock energy contribution   -33.046887482871384     
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -325,116 +331,116 @@ Matrix AO D  has nnz=       105 sparsity:     62.130 %
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    50.128959265563843     
- The Exchange energy contribution    9.3554581332383648     
- The Fock energy contribution   -40.773501132325485     
+ The Coulomb energy contribution    50.128959265563836     
+ The Exchange energy contribution    9.3554581332383595     
+ The Fock energy contribution   -40.773501132325464     
   2    -75.8113401573   -0.30379843151    0.00      0.00000    0.00    0.0000000    3.04E+00  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    46.818165348279592     
- The Exchange energy contribution    8.9596453836114858     
- The Fock energy contribution   -37.858519964668112     
+ The Coulomb energy contribution    46.818165348279678     
+ The Exchange energy contribution    8.9596453836114982     
+ The Fock energy contribution   -37.858519964668169     
   3    -75.9828627904   -0.17152263307   -1.00      0.00000    0.00    0.0000000    1.58E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    46.738301704610969     
+ The Coulomb energy contribution    46.738301704610961     
  The Exchange energy contribution    8.9513905956042308     
- The Fock energy contribution   -37.786911109006731     
+ The Fock energy contribution   -37.786911109006724     
   4    -75.9838968382   -0.00103404780   -1.00      0.00000    0.00    0.0000000    3.15E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    46.748576888690870     
- The Exchange energy contribution    8.9523898827344706     
- The Fock energy contribution   -37.796187005956391     
+ The Coulomb energy contribution    46.748576888690913     
+ The Exchange energy contribution    8.9523898827344830     
+ The Fock energy contribution   -37.796187005956426     
   5    -75.9839719591   -0.00007512089   -1.00      0.00000    0.00    0.0000000    6.42E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    46.748339975495711     
- The Exchange energy contribution    8.9522970044014034     
- The Fock energy contribution   -37.796042971094309     
+ The Coulomb energy contribution    46.748339975495725     
+ The Exchange energy contribution    8.9522970044014070     
+ The Fock energy contribution   -37.796042971094323     
   6    -75.9839743939   -0.00000243481   -1.00      0.00000    0.00    0.0000000    1.29E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    46.748967608116310     
- The Exchange energy contribution    8.9523689027873168     
- The Fock energy contribution   -37.796598705328996     
+ The Coulomb energy contribution    46.748967608116317     
+ The Exchange energy contribution    8.9523689027873221     
+ The Fock energy contribution   -37.796598705328989     
   7    -75.9839744728   -0.00000007885   -1.00      0.00000    0.00    0.0000000    1.36E-04  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    46.748933188405537     
- The Exchange energy contribution    8.9523680030528965     
- The Fock energy contribution   -37.796565185352641     
+ The Coulomb energy contribution    46.748933188405587     
+ The Exchange energy contribution    8.9523680030529142     
+ The Fock energy contribution   -37.796565185352677     
   8    -75.9839744737   -0.00000000095   -1.00      0.00000    0.00    0.0000000    1.29E-05  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   9
- The Coulomb energy contribution    46.748924991769044     
- The Exchange energy contribution    8.9523670995775806     
- The Fock energy contribution   -37.796557892191480     
+ The Coulomb energy contribution    46.748924991769016     
+ The Exchange energy contribution    8.9523670995775735     
+ The Fock energy contribution   -37.796557892191444     
   9    -75.9839744737   -0.00000000001   -1.00      0.00000    0.00    0.0000000    8.47E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  10
- The Coulomb energy contribution    46.748924701338886     
- The Exchange energy contribution    8.9523670460610205     
- The Fock energy contribution   -37.796557655277866     
+ The Coulomb energy contribution    46.748924701338865     
+ The Exchange energy contribution    8.9523670460610134     
+ The Fock energy contribution   -37.796557655277844     
  10    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    1.66E-07  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  11
- The Coulomb energy contribution    46.748924836729380     
- The Exchange energy contribution    8.9523670625131331     
- The Fock energy contribution   -37.796557774216240     
+ The Coulomb energy contribution    46.748924836729415     
+ The Exchange energy contribution    8.9523670625131437     
+ The Fock energy contribution   -37.796557774216268     
  11    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    2.41E-08  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  12
- The Coulomb energy contribution    46.748924842673681     
- The Exchange energy contribution    8.9523670629497438     
- The Fock energy contribution   -37.796557779723940     
- 12    -75.9839744737   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
+ The Coulomb energy contribution    46.748924842673560     
+ The Exchange energy contribution    8.9523670629497261     
+ The Fock energy contribution   -37.796557779723827     
+ 12    -75.9839744737    0.00000000000   -1.00      0.00000    0.00    0.0000000    9.21E-10  ###
 SCF converged in     12 iterations
- >>>  CPU Time used in **ITER is   0.52 seconds
- >>> wall Time used in **ITER is   0.52 seconds
+ >>>  CPU Time used in **ITER is   0.58 seconds
+ >>> wall Time used in **ITER is   0.58 seconds
 
 Total no. of matmuls in SCF optimization:         52
 
@@ -472,24 +478,24 @@ Calculation of virtual orbital energies converged in     4 iterations!
   9   -0.00000000001   -1.0000    0.0000    0.0000000
  10   -0.00000000000   -1.0000    0.0000    0.0000000
  11    0.00000000000   -1.0000    0.0000    0.0000000
- 12   -0.00000000000   -1.0000    0.0000    0.0000000
+ 12    0.00000000000   -1.0000    0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -75.50754172583407353159      0.467394077781431D+01
-    2           -75.81134015734033937406      0.303954501739685D+01
-    3           -75.98286279040831914244      0.158105545278061D+00
-    4           -75.98389683820607842790      0.315128716762763D-01
-    5           -75.98397195909828383265      0.641578434363912D-02
-    6           -75.98397439390805629955      0.129162743689662D-02
-    7           -75.98397447276275329386      0.136041514507976D-03
-    8           -75.98397447371624480184      0.128635572855398D-04
-    9           -75.98397447372278179500      0.846623520017402D-06
-   10           -75.98397447372283863842      0.166127378904967D-06
-   11           -75.98397447372275337329      0.241358232726484D-07
-   12           -75.98397447372286706013      0.920673972512813D-09
+    1           -75.50754172583404510988      0.467394077781432D+01
+    2           -75.81134015734033937406      0.303954501739682D+01
+    3           -75.98286279040829072073      0.158105545278046D+00
+    4           -75.98389683820607842790      0.315128716762787D-01
+    5           -75.98397195909831225435      0.641578434363656D-02
+    6           -75.98397439390805629955      0.129162743691066D-02
+    7           -75.98397447276281013728      0.136041514499096D-03
+    8           -75.98397447371635848867      0.128635573067401D-04
+    9           -75.98397447372275337329      0.846623518428486D-06
+   10           -75.98397447372283863842      0.166127355282183D-06
+   11           -75.98397447372283863842      0.241358140856902D-07
+   12           -75.98397447372281021671      0.920724222708718D-09
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -517,21 +523,20 @@ FULL: Local memory use type full :  0.32E-05
 FULL: Distribute matrices        : F
 
  Orbital energies:
-           1  -20.560521096852213     
-           2  -1.3561320696583445     
-           3 -0.70984172879082308     
-           4 -0.56061253465497030     
-           5 -0.50136812868472003     
-           6  0.20364091105481050     
-           7  0.29972546483828216     
-           8   1.0572417564737195     
-           9   1.1644446952088492     
-          10   1.1868613396582284     
-          11   1.2156577874545660     
-          12   1.3793500295499865     
-          13   1.6961804296284195     
+           1  -20.560521096852234     
+           2  -1.3561320696583523     
+           3 -0.70984172879083296     
+           4 -0.56061253465498195     
+           5 -0.50136812868473113     
+           6  0.20364091105479862     
+           7  0.29972546483827295     
+           8   1.0572417564737164     
+           9   1.1644446952088370     
+          10   1.1868613396582202     
+          11   1.2156577874545573     
+          12   1.3793500295499737     
+          13   1.6961804296283911     
  Calculating carmom matrix for DEC calculation...
- CABS basis test is successful
  Memory set in input to be:    2.000     GB
  Using canonical orbitals as requested in input!
 
@@ -541,17 +546,17 @@ FULL: Distribute matrices        : F
  --------------------------------------
  ###  Iteration     Residual norm         F12 Singles energy
  ###      1          1.266749334            0.00000000000    
- ###      2         0.3566827617E-01      -0.544797916302E-01
+ ###      2         0.3566827617E-01      -0.544797916303E-01
  ###      3         0.1908839973E-01      -0.560256272704E-01
- ###      4         0.1589414705E-02      -0.563698273657E-01
- ###      5         0.5715770662E-03      -0.563782774358E-01
- ###      6         0.1211880474E-03      -0.563791909325E-01
- ###      7         0.4596505360E-04      -0.563792648756E-01
+ ###      4         0.1589414705E-02      -0.563698273658E-01
+ ###      5         0.5715770662E-03      -0.563782774359E-01
+ ###      6         0.1211880474E-03      -0.563791909326E-01
+ ###      7         0.4596505360E-04      -0.563792648757E-01
  ###      8         0.1014121674E-04      -0.563792720443E-01
- ###      9         0.3112587740E-05      -0.563792728066E-01
- ###     10         0.5858950943E-06      -0.563792728443E-01
- ###     11         0.2099492468E-06      -0.563792728471E-01
- ###     12         0.1841880105E-07      -0.563792728474E-01
+ ###      9         0.3112587752E-05      -0.563792728067E-01
+ ###     10         0.5858951029E-06      -0.563792728444E-01
+ ###     11         0.2099491884E-06      -0.563792728472E-01
+ ###     12         0.1841877550E-07      -0.563792728474E-01
 F12 Singles equations solved in   12 iterations!
 F12 Singles energy correction:    -0.563792728474E-01
 
@@ -562,7 +567,7 @@ Full molecular calculation is carried out...
               Full molecular driver               
  ================================================ 
 
- RIMP2 CORRELATION ENERGY =  -0.12885079913112790     
+ RIMP2 CORRELATION ENERGY =  -0.12885079913084740     
  LEAK TOOL STATISTICS IN full_canonical_rimp2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
             LeakTool Memory statistics          
@@ -577,69 +582,69 @@ Full molecular calculation is carried out...
   Max allocated memory, logical                        0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
- >>>  CPU Time used in FULL RIMP2 is   0.22 seconds
- >>> wall Time used in FULL RIMP2 is   0.20 seconds
+ >>>  CPU Time used in FULL RIMP2 is   0.18 seconds
+ >>> wall Time used in FULL RIMP2 is   0.18 seconds
   
 
  ================================================ 
             FULL-RI-MP2F12 ENERGY TERMS            
  ================================================ 
 
-         RIMP2F12 Energy contribution: E(V1,RI) =    -11.5707863656034
-         RIMP2F12 Energy contribution: E(X1,RI) =     11.0053367977794
-         RIMP2F12 Energy contribution: E(B1,RI) =      0.5983327294722
-         RIMP2F12 Energy contribution: E(B2,RI) =     -2.0516036490148
-         RIMP2F12 Energy contribution: E(B3,RI) =     -5.6273850964843
-         RIMP2F12 Energy contribution: E(V2,RI) =     10.5466455349404
-         RIMP2F12 Energy contribution: E(X2,RI) =    -10.7113473814426
+         RIMP2F12 Energy contribution: E(V1,RI) =    -11.5707863656051
+         RIMP2F12 Energy contribution: E(X1,RI) =     11.0053367977768
+         RIMP2F12 Energy contribution: E(B1,RI) =      0.5983327294695
+         RIMP2F12 Energy contribution: E(B2,RI) =     -2.0516036490147
+         RIMP2F12 Energy contribution: E(B3,RI) =     -5.6273850964819
+         RIMP2F12 Energy contribution: E(V2,RI) =     10.5466455349263
+         RIMP2F12 Energy contribution: E(X2,RI) =    -10.7113473814417
          RIMP2F12 Energy contribution: E(CC,RI) =     -0.0001583367778
          RIMP2F12 Energy contribution: E(V3,RI) =      0.0600126430522
-         RIMP2F12 Energy contribution: E(V4,RI) =      0.2106730610335
+         RIMP2F12 Energy contribution: E(V4,RI) =      0.2106730610332
          RIMP2F12 Energy contribution: E(V5,RI) =      0.0046416132298
          RIMP2F12 Energy contribution: E(X3,RI) =     -0.0454779905885
          RIMP2F12 Energy contribution: E(X4,RI) =     -0.0454779905885
-         RIMP2F12 Energy contribution: E(B4,RI) =     -3.1831177185727
-         RIMP2F12 Energy contribution: E(B5,RI) =      9.4764555983985
-         RIMP2F12 Energy contribution: E(B6,RI) =      0.9283636948988
+         RIMP2F12 Energy contribution: E(B4,RI) =     -3.1831177185741
+         RIMP2F12 Energy contribution: E(B5,RI) =      9.4764555984018
+         RIMP2F12 Energy contribution: E(B6,RI) =      0.9283636948992
          RIMP2F12 Energy contribution: E(B7,RI) =     -0.0691798023048
-         RIMP2F12 Energy contribution: E(B8,RI) =      0.1385399606828
+         RIMP2F12 Energy contribution: E(B8,RI) =      0.1385399606830
          RIMP2F12 Energy contribution: E(B9,RI) =     -0.0016029817141
  ----------------------------------------
   E21 V term                             
  ----------------------------------------
-  E21_CC_term:    -0.1583367777535033E-03
-  E21_V_term1:     -11.57078636560336    
-  E21_V_term2:      10.54664553494042    
-  E21_V_term3:     0.6001264305215639E-01
-  E21_V_term4:     0.2106730610335241    
-  E21_V_term5:     0.4641613229771854E-02
+  E21_CC_term:    -0.1583367777543635E-03
+  E21_V_term1:     -11.57078636560505    
+  E21_V_term2:      10.54664553492627    
+  E21_V_term3:     0.6001264305218342E-01
+  E21_V_term4:     0.2106730610332095    
+  E21_V_term5:     0.4641613229772698E-02
  ----------------------------------------
-  E21_Vsum:       -0.7489718501252378    
+  E21_Vsum:       -0.7489718501413722    
  ----------------------------------------
   E_22 X term                            
  ----------------------------------------
-  E22_X_term1:     11.00533679777936    
-  E22_X_term2:    -10.71134738144256    
-  E22_X_term3:   -0.4547799058847168E-01
-  E22_X_term4:   -0.4547799058847168E-01
+  E22_X_term1:     11.00533679777676    
+  E22_X_term2:    -10.71134738144173    
+  E22_X_term3:   -0.4547799058846855E-01
+  E22_X_term4:   -0.4547799058846855E-01
  ----------------------------------------
-  E22_Xsum:    0.2030334351598650    
+  E22_Xsum:    0.2030334351580879    
  ----------------------------------------
   E_22 B term                            
  ----------------------------------------
-  E23_B_term1:    0.5983327294722275    
-  E23_B_term2:    -2.051603649014839    
-  E23_B_term3:    -5.627385096484270    
-  E23_B_term4:    -3.183117718572742    
-  E23_B_term5:     9.476455598398472    
-  E23_B_term6:    0.9283636948988079    
-  E23_B_term7:   -0.6917980230475458E-01
-  E23_B_term8:    0.1385399606828484    
-  E23_B_term9:   -0.1602981714135425E-02
+  E23_B_term1:    0.5983327294695019    
+  E23_B_term2:    -2.051603649014651    
+  E23_B_term3:    -5.627385096481949    
+  E23_B_term4:    -3.183117718574147    
+  E23_B_term5:     9.476455598401760    
+  E23_B_term6:    0.9283636948991631    
+  E23_B_term7:   -0.6917980230475237E-01
+  E23_B_term8:    0.1385399606829699    
+  E23_B_term9:   -0.1602981714134107E-02
  ----------------------------------------
-  E23_B_sum:      0.2088027353616155    
+  E23_B_sum:      0.2088027353637603    
  ----------------------------------------------------------------
-                   WANGY DEC-MP2-F12 CALCULATION                 
+                       CC-MP2-F12 CALCULATION                    
  ----------------------------------------------------------------
   MP2 CORRELATION ENERGY (For CC) =         -0.1288507991
   F12 E21 CORRECTION TO ENERGY =            -0.7489718501
@@ -647,9 +652,9 @@ Full molecular calculation is carried out...
   F12 E23 CORRECTION TO ENERGY =             0.2088027354
   F12 E22+E23 CORRECTION TO ENERGY =         0.4118361705
   F12 CORRECTION TO ENERGY =                -0.3371356796
-  MP2-F12 CORRELATION ENERGY (CC) =         -0.4659864787
- >>>  CPU Time used in FULL RIMP2F12 is   4.11 seconds
- >>> wall Time used in FULL RIMP2F12 is   3.99 seconds
+  MP2-F12 CORRELATION ENERGY (CC) =         -0.4659864788
+ >>>  CPU Time used in FULL RIMP2F12 is   5.00 seconds
+ >>> wall Time used in FULL RIMP2F12 is   5.00 seconds
 
  ================================================ 
                  Energy Summary                   
@@ -657,7 +662,7 @@ Full molecular calculation is carried out...
 
  RIMP2 CORRECTION TO ENERGY =            -0.1288507991
  F12 CORRECTION TO ENERGY =              -0.3371356796
- RIMP2-F12 CORRECTION TO ENERGY =        -0.4659864787
+ RIMP2-F12 CORRECTION TO ENERGY =        -0.4659864788
 
 
 
@@ -666,10 +671,10 @@ Full molecular calculation is carried out...
              *                   CC ENERGY SUMMARY                    *
              **********************************************************
 
-               E: Hartree-Fock energy :      -75.9839744737
-               E: Correlation energy  :       -0.4659864787
-               E: F12 singles         :       -0.0563792728
-               E: Total RI-MP2F12 energy:      -76.5063402253
+               E: Hartree-Fock energy        :      -75.9839744737
+               E: Correlation energy         :       -0.4659864788
+               E: F12 singles                :       -0.0563792728
+               E: Total RI-MP2-F12 energy    :      -76.5063402253
 
 
 
@@ -679,20 +684,16 @@ Full molecular calculation is carried out...
  Memory in use for array4      :   0.000     GB
  Max memory in use for array4  :   0.000     GB
  ------------------
- Allocated memory for array3   :   0.000     GB
- Memory in use for array3      :   0.000     GB
- Max memory in use for array3  :   0.000     GB
- ------------------
 
 
 ------------------------------------------------------
-Total CPU  time used in CC           :         5.22259     s
-Total Wall time used in CC           :         5.07900     s
+Total CPU  time used in CC           :         6.29904     s
+Total Wall time used in CC           :         6.29700     s
 ------------------------------------------------------
 
 
-Hostname       : YANGs-MBP.st.client.au.dk                         
-Job finished   : Date: 23/09/2015   Time: 18:59:11
+Hostname       : pablo-AU                                          
+Job finished   : Date: 05/10/2015   Time: 20:41:38
 
 
 
@@ -702,10 +703,10 @@ Job finished   : Date: 23/09/2015   Time: 18:59:11
 
 
 
- >>>  CPU Time used in *SCF is   5.99 seconds
- >>> wall Time used in *SCF is   5.84 seconds
+ >>>  CPU Time used in *SCF is   6.95 seconds
+ >>> wall Time used in *SCF is   6.95 seconds
 
-Total no. of matmuls used:                       185
+Total no. of matmuls used:                       206
 Total no. of Fock/KS matrix evaluations:          13
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
@@ -755,7 +756,7 @@ Total no. of Fock/KS matrix evaluations:          13
   Allocated memory (FMM   ):                    0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                    0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                          9.517 MB
-  Max allocated memory, type(matrix)                 395.344 kB
+  Max allocated memory, type(matrix)                 354.304 kB
   Max allocated memory, real(realk)                    9.433 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
@@ -799,9 +800,9 @@ Total no. of Fock/KS matrix evaluations:          13
 
   Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
   This is a non MPI calculation so naturally no memory is allocated on slaves!
- >>>  CPU Time used in LSDALTON is   6.10 seconds
- >>> wall Time used in LSDALTON is   5.96 seconds
+ >>>  CPU Time used in LSDALTON is   7.10 seconds
+ >>> wall Time used in LSDALTON is   7.09 seconds
 
 End simulation
-     Date and time (Linux)  : Wed Sep 23 18:59:11 2015
-     Host name              : YANGs-MBP.st.client.au.dk               
+     Date and time (Linux)  : Mon Oct  5 20:41:38 2015
+     Host name              : pablo-AU                                

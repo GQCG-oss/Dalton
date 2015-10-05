@@ -17,13 +17,13 @@ f.add(string = 'Nuclear repulsion',
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-4)
 
-f.add(string = 'HF + dRPA energy',
+f.add(string = 'Total (HF + dRPA) energy',
       rel_tolerance = 1.0e-4)
 
-f.add(string = 'SOSEX energy',
-      rel_tolerance = 1.0e-4)
+#f.add(string = 'SOSEX energy',
+#      rel_tolerance = 1.0e-4)
 
-f.add(string = 'HF + SOSEX energy',
+f.add(string = 'Total (HF + SOSEX) energy',
       rel_tolerance = 1.0e-4)
 
 #f.add(from_string = 'Summary For Counter Poise Correction',
