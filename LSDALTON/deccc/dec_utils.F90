@@ -4363,7 +4363,7 @@ end function max_batch_dimension
 
     ! skip error print for full calculation (0 by definition)
     if(.not.DECinfo%full_molecular_cc)then  
-       call print_energy("Corrected DEC energy",Ehf+Ecorr+Eskip_est,lupri)
+       call print_energy("DEC energy + skipped pairs",Ehf+Ecorr+Eskip_est,lupri)
        write(lupri,*)
        if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart))then
           call print_energy('Estimated DEC err 1',dE_est1,lupri)
