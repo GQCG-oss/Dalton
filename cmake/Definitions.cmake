@@ -4,8 +4,6 @@ endif()
 
 if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
-#   currently not set, don't know why
-#   add_definitions(-DBUILD_GEN1INT_LSDALTON)
 endif()
 
 
@@ -29,7 +27,6 @@ endif()
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
-#add_definitions(-DTENSORS_IN_LSDALTON)
 
 if(ENABLE_TITANBUILD)
    add_definitions(-DVAR_HAVE_MPI3)

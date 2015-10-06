@@ -1,9 +1,0 @@
-ATOMBASIS
-SH2+ 2A1
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=16.0 Atoms=1 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      1.36707495000000
-H      1.10646951243800      0.00000000000000     -0.80288177022700

@@ -1,9 +1,0 @@
-ATOMBASIS
-anion: HOO- 1A'
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=8.0 Atoms=2 Basis=regbasis Aux=auxbasis
-O     -0.05990022040000      0.00000000000000     -0.70980120970000
-O     -0.05270308560000      0.00000000000000      0.81598630620000
-Charge=1.0 Atoms=1 Basis=regbasis Aux=auxbasis
-H      0.90082644790000      0.00000000000000     -0.84948077260000

@@ -1,9 +1,0 @@
-ATOMBASIS                               
-                                          
-                                          
-Atomtypes=2 Nosymmetry Angstrom                             
-Charge=3.0 Atoms=1 Basis=STO-3G Aux=6-31G**                 
-N   0.257  -0.363   0.000                                   
-Charge=1.0 Atoms=1 Basis=STO-3G Aux=6-31G**                 
-H   0.257   0.727   0.000            
-

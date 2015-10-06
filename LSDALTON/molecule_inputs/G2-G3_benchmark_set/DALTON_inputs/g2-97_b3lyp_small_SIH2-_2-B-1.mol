@@ -1,9 +1,0 @@
-ATOMBASIS
-SIH2- 2-B-1
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=14.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Si      0.00000000000000      0.00000000000000      0.13655400000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      1.11781900000000     -0.95588100000000
-H      0.00000000000000     -1.11781900000000     -0.95588100000000

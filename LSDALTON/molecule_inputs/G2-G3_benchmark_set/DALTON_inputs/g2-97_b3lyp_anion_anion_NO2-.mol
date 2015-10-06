@@ -1,9 +1,0 @@
-ATOMBASIS
-anion: NO2-
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=7.0 Atoms=1 Basis=regbasis Aux=auxbasis
-N     -0.43283074350000      0.00000000000000     -0.18489798210000
-Charge=8.0 Atoms=2 Basis=regbasis Aux=auxbasis
-O     -0.23355819740000      0.00000000000000      1.07091714460000
-O      0.61228509790000      0.00000000000000     -0.90913141030000

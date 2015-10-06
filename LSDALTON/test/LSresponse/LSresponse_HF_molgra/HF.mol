@@ -1,9 +1,0 @@
-BASIS
-6-31G
------------test----------
-
-Atomtypes=2 Generators=0
-Charge=1.0 Atoms=1 Basis=STO-3G
-H 0.000000000 0.0000000000   0.000000000000000
-Charge=9.0 Atoms=1 Basis=STO-3G
-F 1.96000000  0.0000000000   0.000000000000000

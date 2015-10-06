@@ -1,8 +1,0 @@
-ATOMBASIS
-Gallium Chloride
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=31.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Ga      0.00000000000000      0.00000000000000     -0.79319671940000
-Charge=17.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      1.44641754720000

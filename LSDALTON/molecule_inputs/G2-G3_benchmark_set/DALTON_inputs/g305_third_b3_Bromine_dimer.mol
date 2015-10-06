@@ -1,7 +1,0 @@
-ATOMBASIS
-Bromine dimer
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=35.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Br      0.00000000000000      0.00000000000000     -1.15882927740000
-Br      0.00000000000000      0.00000000000000      1.15882927740000
