@@ -15,15 +15,17 @@ C     PURPOSE: Solve the SOPPA linear response equations
 C              using an AO-driven algorithm. 
 C
 #ifdef VAR_MPI
-      use so_parutils, only: parsoppa_do_eres, my_mpi_integer
+      use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
+     &                       soppa_nint
 #endif
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-C  We need MXCALL and IRAT in order to assign space for load-balancing
-C  
-#include "maxorb.h"
-#include "distcl.h"
+C 
+C MXCALL has been replaced by SOPPA_NINT for hermite compatibility 
+!#include "maxorb.h"
+!#include "distcl.h"
+C  IRAT in order to assign space for load-balancing
 #include "iratdef.h"
 #endif
 #include "priunit.h"
@@ -126,7 +128,7 @@ C     process is to work with in so_eres.
 C------------------------------------------------------------------
 C
       call mpi_comm_size( mpi_comm_world, numprocs, ierr)
-      maxnumjobs = mxcall - min(mxcall, numprocs) + 1
+      maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
       if ( numprocs .eq. 1 ) then
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
@@ -136,6 +138,8 @@ C Not a real parallel job, don't bother
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
          LWORK1 = LWORK - KEND1
+         CALL SO_MEMMAX ('SO_LRSOLV.1A',LWORK1)
+         IF (LWORK1 .LT. 0) CALL STOPIT('SO_LRSOLV.1A',' ',KEND1,LWORK)
       endif
 #endif 
 C------------------

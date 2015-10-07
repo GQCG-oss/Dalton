@@ -27,9 +27,14 @@ module so_parutils
 #include "ccorb.h"
 #include "ccsdsym.h"
 #include "soppinf.h"
+! The module should be used with "only:", if this anyone wants to
+! use it differently, we should make private the default (so as not to export
+! common blocks)
+!   private
 !
 ! Maybe get this from iso_fortran_env, when supported in most compilers?
-!
+!   
+
    integer, parameter :: real8 = kind(1.0D0)
 !  Flags to be send to slaves to tell them, what work to do
    integer, parameter :: parsoppa_release_slave = 0,   &! Leave 
@@ -38,6 +43,9 @@ module so_parutils
 ! SOPPA communicator (needed if not all nodes participate in soppa)  
    integer(mpi_integer_kind) :: soppa_comm_active    ! communicator
    integer                   :: soppa_num_active     ! number of nodes
+
+! In order to work with both ERI and HERMITE direct...
+   integer            :: soppa_nint   ! number of calls to integral program
 !
 ! Make the defines in infpar, a fortran parameter (nicer IMO).
 ! also, maybe change the name?
@@ -47,22 +55,26 @@ module so_parutils
    integer(mpi_integer_kind), parameter :: one_mpi = 1, zero_mpi = 0
 #undef my_MPI_INTEGER
 
-   private soppa_update_common!, stupid_isao_bcast_routine
+   private soppa_update_common, stupid_isao_bcast_routine
 contains
 
 
    subroutine soppa_update_common()
 !
-!  Subroutine to broad-cast various common-blocks from master to slaves
-!  in parallel soppa calculations
+!  Subroutine that broad-casts various common-blocks from master to slaves
+!  in parallel soppa calculations.
 !  This routine is defined in order to take these quite verbose
 !  calls out of the main flow of the soppa_nodedriver/par_so_eres
-!  routines
-!
+!  routines.
+!  
 !  It must be called by the master and all slaves or not at all.
 !
 !  Rasmus Faber 13/7 - 2015
+!  Using code of F. Beyer
 !         
+!  Eventually we may want to replace as much of the broad-casting of easily
+!  recalculatable information with calls to the proper initiation routines
+!
 !Import all the common-blocks, which we don't want have
 !poluting the name spaces of routines, that import the module
 !
@@ -246,12 +258,17 @@ contains
      &                   nbast, i2bst, iaodis, iaodpk)
       endif
 
+      if (herdir) then 
+         print *, "HERDIR", maxshl
+         soppa_nint = maxshl
+      else ! ERIDI
+         print *,'ERI'
+         soppa_nint = mxcall
+      endif
 
 !      CALL DZERO(WORK(KAIJ),LAIJ)
 !      CALL DZERO(WORK(KAAB),LAAB)
 
-      !Eventually we may want to replace the broad-casting of easily
-      !recalculatable information with calls to the proper initiation routines
       return
       
    endsubroutine soppa_update_common
@@ -275,7 +292,7 @@ contains
 !
 !#include "parsoppa.h"
 ! Need MXCALL
-#include "distcl.h"
+!#include "distcl.h"
 !
       integer, intent(in) :: iprint, lwork
       real(real8)         :: work(*)
@@ -320,13 +337,13 @@ contains
       !  Set print-level for slave
       iprsop = iprint
       !
-      ! Setup communicator for soppa. Work will later be separated into
+      ! Set up communicator for soppa. Work will later be separated into
       ! integral distributions, which will be distributed among the nodes
-      ! If there are more processes than integral
-      ! distributions, we don't include the rest in the soppa communicator
+      ! If there are more processes than integral distributions, 
+      ! we don't include the rest in the soppa communicator.
       !
       numprocs = nodtot + 1 ! nodtot from infpar.h
-      if ( numprocs .le. mxcall ) then ! mxcall from distcl.h
+      if ( numprocs .le. soppa_nint ) then ! mxcall from distcl.h
          !
          ! Usual case:
          ! Just keep mpi_comm_world
@@ -336,7 +353,7 @@ contains
          ! This should happen so rarely, that we don't really need 
          ! to worry about it. Should be done in some intelligent 
          ! manner though
-         soppa_num_active  = mxcall 
+         soppa_num_active  = soppa_nint 
          if ( mynum .ge. soppa_num_active ) then 
             mycolor = MPI_UNDEFINED
          else 
@@ -390,7 +407,7 @@ contains
 !     Allocation of of space for load-balancing
 !
       call mpi_comm_size( mpi_comm_world, numprocs, ierr)
-      maxnumjobs = mxcall - min(mxcall, numprocs) + 1
+      maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
       lAssignedIndices = (maxnumjobs + 1) / irat
       kAssignedIndices = kend
       kend = kAssignedIndices + lAssignedIndices
@@ -414,8 +431,7 @@ contains
          
 !
 ! Go to an infinite loop... While we are here, the master 
-! broadcast job descriptions to the slaves
-! checking what work, we are to do
+! broadcasts job descriptions to the slaves.
 !
       do 
             ! Recieve work from master 
@@ -425,21 +441,23 @@ contains
             ! Act according to the job type recieved
          select case ( soppa_work_kind )
             !
-            ! Slave no longer needed in parallel soppa
-            !
          case (parsoppa_release_slave)
-
+            !
+            ! Slaves no longer needed in parallel soppa
+            !-------------------------------------------
             ! Free any SOPPA communicators
             if ( (soppa_comm_active .ne.  mpi_comm_world).and.         &
                  (mynum .lt. soppa_num_active)                ) then
                call mpi_comm_free( soppa_comm_active, ierr )
             endif
-            
+            !
+            ! Return to dalton_nodedriver
             return
             !
-            ! Calculate linear tranformation of trial-vectors
-            !
          case (parsoppa_do_eres)
+            !
+            ! Calculate linear tranformation of trial-vectors
+            !-------------------------------------------------
             !
             ! We need to communicate NOLDTR, NNEWTR, ISYMTR and NIT.
             ! These are joined together in the info_array.
@@ -450,7 +468,7 @@ contains
                          
             ! Inactive processes do nothing            
             if ( soppa_comm_active .eq. MPI_COMM_NULL ) cycle
-!
+            !
             ! For now decide which routine to call based on
             ! method argument
             !
@@ -475,7 +493,11 @@ contains
                      
 
             endif
+            !
          case default
+            !
+            ! Anything else 
+            !--------------
             call quit('Slave recieved invalid job-description'//     &
                             ' in AOSOPPA nodedriver.' )
          endselect
@@ -505,6 +527,8 @@ contains
 ! Locals
       integer(mpi_integer_kind)  :: ierr
       integer                    :: numprocs
+
+!      if (nodtot .eq. 0 ) return
          !
          ! Send the slave to the soppa_nodedriver
       call mpixbcast( PARA_SO_ERES, 1, 'INTEGE', 0)
@@ -529,11 +553,11 @@ contains
       !  Setup communicator for SOPPA, see comment in soppa_nodedriver
       ! 
       numprocs = nodtot + 1 ! from infpar.h
-      if ( numprocs .le. mxcall ) then ! mxcall from distcl.h
+      if ( numprocs .le. soppa_nint ) then ! mxcall from distcl.h
          soppa_num_active  = numprocs
          soppa_comm_active = mpi_comm_world
       else
-         soppa_num_active  = mxcall
+         soppa_num_active  = soppa_nint
          call mpi_comm_split( mpi_comm_world, zero_mpi, zero_mpi,  &
                               soppa_comm_active, ierr)
       endif
@@ -597,7 +621,7 @@ contains
 !  #include ! something that sets nbas(8), nsym
 !  integer, intent(in) :: aoindex
 !  integer :: i, isym, popsum
-!  sum = 0
+!  popsum = 0
 !  do isym = 1, nsym
 !     popsum = nbas(isym) + popsum
 !     if ( aoindex .le. popsum ) return 

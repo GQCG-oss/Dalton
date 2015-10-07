@@ -26,8 +26,10 @@ C              RES1D, RES2E, and RES2D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
-
-      use so_parutils, only: soppa_comm_active, soppa_num_active 
+#ifdef VAR_MPI
+      use so_parutils, only: soppa_comm_active, soppa_num_active,
+     &                       soppa_nint 
+#endif
 
 #include "implicit.h"
 
@@ -197,8 +199,8 @@ C
 C     MPI -- Allocate timings array
       if ( loadbal_dyn ) then
         KTIMING = KEND2
-        KEND2   = KTIMING + MXCALL
-        CALL DZERO(WORK(KTIMING),MXCALL)
+        KEND2   = KTIMING + SOPPA_NINT
+        CALL DZERO(WORK(KTIMING), SOPPA_NINT)
       endif 
 #endif
       LWORK2  = LWORK   - KEND2
@@ -343,7 +345,8 @@ C
             NTOSYM = 1
             DTIME  = SECOND()
             IF (HERDIR) THEN
-               CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
+               CALL HERDI1(WORK(KEND2),LWORK2,IPRINT)
+               KINDXB = KEND2
             ELSEIF(INEWTR.EQ.1) THEN
 C Can we get away with doing this once?
 C Because we CAN'T move KEND2 forwards in each loop cycle,
@@ -360,9 +363,9 @@ C since that'll be leaking memory
 
                KEND2  = KFREE
                LWORK2 = LFREE
-               DTIME     = SECOND()  - DTIME
-               SOTIME(8) = SOTIME(8) + DTIME
             ENDIF
+            DTIME     = SECOND()  - DTIME
+            SOTIME(8) = SOTIME(8) + DTIME
          ELSE
             NTOSYM = NSYM
          ENDIF
@@ -377,26 +380,27 @@ C-----------------------------------------------------------------
 C         IF ( (nit .ne. 1 .or. inewtr .ne. 1) 
          IF ( .not. (nit .eq. 1 .and. inewtr .eq. 1) 
      &                        .or.  numprocs .eq. 1 ) THEN
-C After first pass, load-balancing has been done
+C           After first pass, load-balancing has been done
             CONTINUE
          ELSEIF( mynum .eq. 0 )THEN
-C Master does the balancing
-C            write(lupri,*) 'Entering load-balancing'
+C           Master does the balancing
             call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
      &                     work(kindxb), work(kend2), lwork2)
-!            write (luerr,'(10i5)') mynum, AssignedIndices
          ELSE 
-C Slaves receives the scatter, send arguments should be ignored
+C           Slaves receives the scatter, send arguments should be ignored
             call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
      &                        AssignedIndices, maxnumjobs, mpi_integer,
      &                        0, soppa_comm_active, ierr )
-!            write (luerr,'(10i5)') mynum, AssignedIndices
          ENDIF
 #endif
          DO 210 ISYMD1 = 1,NTOSYM
 C
             IF (DIRECT) THEN
-               NTOT = MXCALL
+               IF (HERDIR) THEN
+                  NTOT = MAXSHL
+               ELSE
+                  NTOT = MXCALL
+               ENDIF
             ELSE
                NTOT = NBAS(ISYMD1)
             ENDIF
@@ -451,9 +455,9 @@ C
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
 C
-                     DTIME     = SECOND()  - DTIME
-                     SOTIME(9) = SOTIME(9) + DTIME
                   ENDIF
+                  DTIME     = SECOND()  - DTIME
+                  SOTIME(9) = SOTIME(9) + DTIME
 C
                   LRECNR  = ( (NBUFX(0) -1) / IRAT ) + 1
                   KRECNR  = KEND2
@@ -916,26 +920,31 @@ C     Communicate the timings if needed
 C--------------------------------------
       if ( loadbal_dyn ) then
          if (mynum .eq.0) then
+C  Master
+C --------           
 C Recieve the timings            
-            call mpi_reduce( mpi_in_place, work(ktiming), mxcall,
+            call mpi_reduce( mpi_in_place, work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       IERR)
+C
 C Redo the loadbalancing based on the timings and distribute them
             ksorted = kend2
-            ktmp = (soppa_num_active*maxnumjobs)
+            ktmp    = (soppa_num_active*maxnumjobs)
             knasjob = ksorted + (ktmp+1)/irat
             kswork  = knasjob + (soppa_num_active+1)/irat
             kendf   = kswork + soppa_num_active
 C
             call dynloadbal_parsoppa( AssignedIndices, maxnumjobs,
-     &                                work(ktiming), mxcall,
-     &                                work(ksorted),work(knasjob),
+     &                                work(ktiming), soppa_nint,
+     &                                work(ksorted), work(knasjob),
      &                                work(kswork) )  
             !                    add empty work-space...
             !                    currently it can start at kend2
          else
+C   Slave
+C  ---------          
 C  Send the timings            
-            call mpi_reduce( work(ktiming), work(ktiming), mxcall,
+            call mpi_reduce( work(ktiming), work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       IERR)
 C  Recieve the new indices
@@ -1021,13 +1030,15 @@ C The improvement over the presorted balancing scheme is expected to be very sma
 C 
 C F.Beyer Oct. 2014.
 
-      use so_parutils, only : soppa_comm_active, soppa_num_active
+      use so_parutils, only : soppa_comm_active, soppa_num_active,
+     &                        soppa_nint
 
 #include "implicit.h"
 #include "mpif.h"
 !#include"parsoppa.h" !fetches ntot
 #include "maxorb.h"
 #include "distcl.h"
+#include "priunit.h"
 
       ! Dummy parameters
       double precision, dimension(ltimings), intent(inout) :: timings
@@ -1040,10 +1051,10 @@ C F.Beyer Oct. 2014.
       ! Bookkeeping
       integer :: maxrows, maxcols, numprocs, numrecipients
       integer :: getnumjobs, targetID, myid
-      integer :: colindex, rowindex, assignILLL, col
-      integer :: ntot 
-      ntot = mxcall
-
+      integer :: colindex, rowindex, assignILLL, col,i
+      integer :: ntot
+  
+      ntot = soppa_nint
       ! In case the amount of work is smaller than
       ! the number of MPI processes...
       maxcols = soppa_num_active
@@ -1076,7 +1087,12 @@ C F.Beyer Oct. 2014.
 
       ENDDO
 
-       
+C     PRINT HOW WORK IS DISTRIBUTED
+      write (LUPRI,'(a)') 'AOSOPPA Work distribution'
+      write (LUPRI,'(a)') 'NODE       Expected time '
+      do i = 1, maxcols
+           write (LUPRI, '(i5,f20.5)') i, sumofwork(i) 
+      enddo 
       ! Send the info to every slave that does computation (some slaves might be stalled in the polling barrier in case there are too many MPI processes compared to the number of tasks).
       call mpi_scatter( sortedindices, maxnumjobs, mpi_integer, 
      &                  localIndices, maxnumjobs, mpi_integer,
@@ -1102,21 +1118,23 @@ C
 C     The routine makes a best guess of loadbalancing by giving 
 C     every MPI process an equal number of distributions to handle.
 C     Testing shows this is a better first guess that giving every
-C     MPI process and equal number of ILLL indices to work with 
+C     MPI process an equal number of ILLL indices to work with 
 C     (since there is a different number of distributions 
 C     associated with every ILLL index).
 C
 C     F.Beyer Oct. 2014.
 
-      use so_parutils, only: soppa_comm_active
+      use so_parutils, only: soppa_comm_active, soppa_nint,
+     &                       soppa_num_active
+
 C#include "implicit.h"
 #include "priunit.h"
 #include "mpif.h"
 C#include "parsoppa.h" ! to get the value for NTOT and KINDXB
 #include "maxorb.h"
-C Use MXCALL from distcl.h instead
-#include "distcl.h"
 #include "iratdef.h"
+C fetch HERDIR
+#include "ccsdinp.h"
 C     Dummy parameters
       integer, intent(in) :: lwork, maxnumjobs
       double precision :: work(lwork) !intent in
@@ -1128,27 +1146,43 @@ C     Pre-sorting load balancing variables
 C      integer :: presortarray, finalsorted
       integer :: col, ntot
       integer :: kpresortarray, kend, kfinalsorted, ktmp
-      ntot = mxcall
+
+      ntot = soppa_nint
       
       ! numprocs = soppa_num_active !! not consistent with other use 
-      call mpi_comm_size(soppa_comm_active, numprocs, ierr)  
-      
+!      call mpi_comm_size(soppa_comm_active, numprocs, ierr)  
+      numprocs = soppa_num_active
+
+
+      IF (.NOT. HERDIR) THEN
+C     ERI code
+
 C     FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
-      kpresortarray = 1
-      kend = kpresortarray + 2* ntot / irat      
-      call presortaodist(ntot, indexb, work(kpresortarray) )
+         kpresortarray = 1
+         kend = kpresortarray + 2* ntot / irat      
+         call presortaodist(ntot, indexb, work(kpresortarray) )
 
 
 C     CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
-      kfinalsorted = kend 
-      ktmp = kfinalsorted + (maxnumjobs * numprocs + 1) /irat
-      kend = ktmp + 2*numprocs / irat
-      if( kend .gt. lwork ) then
-         call quit('Insufficient memory in presorted loadbalancer!')
-      endif
-      call partitionAOindices(ntot, maxnumjobs, numprocs, 
+         kfinalsorted = kend 
+         ktmp = kfinalsorted + (maxnumjobs * numprocs + 1) /irat
+         kend = ktmp + 2*numprocs / irat
+         if( kend .gt. lwork ) then
+            call quit('Insufficient memory in presorted loadbalancer!')
+         endif
+         call partitionAOindices(ntot, maxnumjobs, numprocs, 
      &              work(kpresortarray), work(kfinalsorted),
      &              work(ktmp) )
+      else
+C     HERDIR code
+         kfinalsorted = 1
+         kend = kfinalsorted + ( maxnumjobs * numprocs + 
+     &             mod(maxnumjobs*numprocs,irat) )/irat
+         if( kend .gt. lwork ) then
+            call quit('Insufficient memory in presorted loadbalancer!')
+         endif
+         call herdir_presort( work(kfinalsorted) ) 
+      endif
 
 
 C     TRANSFER AO INDICES TO SLAVES
@@ -1161,8 +1195,51 @@ C     Use scatter
       end subroutine 
 
 
+      subroutine herdir_presort ( sorted, maxnumjobs )
+C     This is a subroutine for doing the initial distribution of the    
+C     AO-indices in a parallel SOPPA calculation.
+C     This subroutine works with Hermite (HERDIR) integral generator,
+C     as the code by F. Beyer only supports using ERI
+C
+      use so_parutils, only: soppa_num_active, soppa_nint
+      implicit none
+      integer, intent(out) :: sorted( maxnumjobs, soppa_num_active )
+      integer, intent(in)  :: maxnumjobs
+      integer              :: intnum, inext, icol, inum
 
+      sorted = 0
+      inext = 0
+      icol = 1
+C     For now just do it the stupid way ( round robin )
 
+C     initial implementation, is this what chokes ifort?
+C      do intnum = 1, soppa_nint
+C         inext = inext + 1
+C         if ( inext .gt. soppa_num_active ) then
+C             inext = 1
+C             icol = icol + 1
+C         endif
+C         sorted ( icol, inext ) = intnum
+C      enddo
+
+C     Distribute first an even number      
+      inum = soppa_nint/soppa_num_active
+      do icol = 1, soppa_num_active
+         do inext = 1, inum
+            sorted( inext, icol ) = inext + inum*(icol-1)
+         enddo
+      enddo
+C     Distribute the remainder
+      do icol = 1, mod(soppa_nint, soppa_num_active)
+         sorted ( inum+1, soppa_num_active-icol+1) =
+     &            inum*soppa_num_active + icol       
+      enddo
+C     Debug print
+      do inext = 1, soppa_num_active 
+         print '(10i3)', sorted(:,inext)
+      enddo
+      return
+      end subroutine 
 
 
       
@@ -1215,15 +1292,12 @@ C     F.Beyer Oct. 2014
 #endif
 !VAR_MPI at the beginning of PAR_SO_ERES
 
-!#ifdef NOTDEFINED
+#ifdef NOTDEFINED
       subroutine stupid_checksum( nameofdata , checkdata, ldata )
 C   For debugging purposes
 C  Calculate a few "checksums" of the data in order to ensure 
 C  that it is (relatively) intact
 C
-C  This is not a cryptografic checksum, just calculat the sum
-C  in a few different ways (also since we want to keep the order
-C  of the significant bits) 
          implicit none 
 #include "priunit.h"
          integer, parameter  :: dp = kind(1.0D0)
@@ -1250,4 +1324,4 @@ C  of the significant bits)
 90       format(A15,3F20.15)
 
       end subroutine stupid_checksum
-!#endif
+#endif

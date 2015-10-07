@@ -65,7 +65,9 @@ C
 ! This variable ensures that common blocks are only sent to the slaves
 ! once. 
       LOGICAL update_common_blocks, get_mxcall
-
+      LOGICAL so_get_herdir, herdir
+      
+      herdir = so_get_herdir()
       update_common_blocks = .true.
 C     In pure aorpa calculations, eridi has no been initialized      
       get_mxcall = (.not.aosop).and.(.not.aosoc).and.(.not.DCRPA).and.
@@ -308,15 +310,19 @@ C In AORPA we cannot be sure that the number of integral distributions
 C is known in advance. This is needed in order to allocate memory for
 C load-distribution later on
                if (get_mxcall) then
-                  kccfbt  = kend2
-                  kindxbt = kccfbt + mxprim*mxcont
-                  kend3   = kindxbt + 8*mxshel*mxcont/irat
-                  lwork3 = lwork - kend3
-                  call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
-     &                        krdbc1, krdbc2, kodpp1, kodpp2,
-     &                        krdpp1, krdpp2, kfree,  lfree,
-     &                        kend3, work(kccfbt), work(kindxbt),
-     &                        work(kend3), lwork3, iprint)
+                  if (herdir) then
+                     call herdi1(work(kend2), lwork2, iprint)
+                  else 
+                     kccfbt  = kend2
+                     kindxbt = kccfbt + mxprim*mxcont
+                     kend3   = kindxbt + 8*mxshel*mxcont/irat
+                     lwork3 = lwork - kend3
+                     call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
+     &                           krdbc1, krdbc2, kodpp1, kodpp2,
+     &                           krdpp1, krdpp2, kfree,  lfree,
+     &                           kend3, work(kccfbt), work(kindxbt),
+     &                           work(kend3), lwork3, iprint)
+                  endif
                   get_mxcall = .false.
                endif
 C Note that for rpa, the second and third argument should be ignored
@@ -783,3 +789,16 @@ C
  9000 FORMAT(/' -----------------------------------')
  9001 FORMAT(' -----------------------------------')
       END
+
+#ifdef VAR_MPI
+      LOGICAL FUNCTION SO_GET_HERDIR()
+C        WORK AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS 
+C        THE VARIABLE "SKIP"
+C        RETURNS THE VALUE OF HERDIR from ccsdinp.h
+         
+#include "ccsdinp.h"
+      SO_GET_HERDIR = HERDIR
+      RETURN
+      END
+#endif      
+

@@ -34,8 +34,10 @@ C LFOCKD: Number of entries in the Fock Matrix
 C ISYMTR: Symmetry of trial-vector
 C WORK: temporary work-vector 
 C LWORK: Total needed length of the work-vector.
-
-      use so_parutils, only: soppa_comm_active, soppa_num_active 
+#ifdef VAR_MPI
+      use so_parutils, only: soppa_comm_active, soppa_num_active,
+     &                       soppa_nint 
+#endif
 
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -173,8 +175,8 @@ C
 C     MPI -- Allocate timings array
       if ( loadbal_dyn ) then
         KTIMING = KEND2
-        KEND2   = KTIMING + MXCALL
-        CALL DZERO(WORK(KTIMING),MXCALL)
+        KEND2   = KTIMING + SOPPA_NINT 
+        CALL DZERO(WORK(KTIMING),SOPPA_NINT)
       endif 
 #endif
 C
@@ -290,7 +292,7 @@ C
             NTOSYM = 1
             DTIME  = SECOND()
             IF (HERDIR) THEN
-               CALL HERDI1(WORK(KEND2),LWRK2,IPRINT)
+               CALL HERDI1(WORK(KEND2),LWORK2,IPRINT)
             ELSEIF(INEWTR.EQ.1)THEN
 C Only first cycle, was leaking memory               
                KCCFB1 = KEND2
@@ -322,26 +324,28 @@ C-----------------------------------------------------------------
 C         IF ( (nit .ne. 1 .or. inewtr .ne. 1) 
          IF ( .not. (nit .eq. 1 .and. inewtr .eq. 1) 
      &                        .or.  numprocs .eq. 1 ) THEN
-C After first pass, load-balancing has been done
+C           After first pass, load-balancing has been done
             CONTINUE
          ELSEIF( mynum .eq. 0 )THEN
-C Master does the balancing
-            write(lupri,*) 'Entering load-balancing'
+C           Master does the balancing
             call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
      &                     work(kindxb), work(kend2), lwork2)
-!            write (luerr,'(10i5)') mynum, AssignedIndices
          ELSE 
-C Slaves receives the scatter, send arguments should be ignored
+C           Slaves receives the scatter, send arguments should be ignored
             call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
      &                        AssignedIndices, maxnumjobs, mpi_integer,
      &                        0, soppa_comm_active, ierr )
-!            write (luerr,'(10i5)') mynum, AssignedIndices
          ENDIF 
+
 #endif
          DO 210 ISYMD1 = 1,NTOSYM
 C
             IF (DIRECT) THEN
-               NTOT = MXCALL
+               IF(HERDIR) THEN
+                  NTOT = MAXSHL
+               ELSE
+                  NTOT = MXCALL
+               ENDIF
             ELSE
                NTOT = NBAS(ISYMD1)
             ENDIF
@@ -398,9 +402,9 @@ C
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
 C
-                     DTIME     = SECOND()  - DTIME
-                     SOTIME(9) = SOTIME(9) + DTIME
                   ENDIF
+                  DTIME     = SECOND()  - DTIME
+                  SOTIME(9) = SOTIME(9) + DTIME
 C
                   LRECNR = ((NBUFX(0) - 1)/IRAT) +1
 C
@@ -620,7 +624,7 @@ C     Communicate the timings if needed
 C--------------------------------------
       if ( loadbal_dyn ) then
          if (mynum .eq.0) then
-            call mpi_reduce( mpi_in_place, work(ktiming), mxcall,
+            call mpi_reduce( mpi_in_place, work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       IERR)
             ksorted = kend2
@@ -630,12 +634,12 @@ C--------------------------------------
             kendf   = kswork + soppa_num_active
 
             call dynloadbal_parsoppa( AssignedIndices, maxnumjobs,
-     &                                work(ktiming), mxcall,
+     &                                work(ktiming), soppa_nint,
      &                                work(ksorted),work(knasjob),
      &                                work(kswork) ) 
          else
 C  Send the timings            
-            call mpi_reduce( work(ktiming), work(ktiming), mxcall,
+            call mpi_reduce( work(ktiming), work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       IERR)
 C  Recieve the new indices
