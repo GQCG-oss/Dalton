@@ -7,9 +7,6 @@
 [submodule "external/pelib"]
 	path = external/pelib
 	url = https://gitlab.com/pe-software/pelib-public.git
-[submodule "external/ls-matrix-defop"]
-	path = external/ls-matrix-defop
-	url = https://gitlab.com/ajthorva/matrix-defop.git
 [submodule "external/qfitlib"]
 	path = external/qfitlib
 	url = https://github.com/cstein/qfitlib.git
