@@ -42,7 +42,6 @@ add_definitions(-DBINARY_INFO_AVAILABLE)
 if(cmake_build_type_tolower STREQUAL "debug")
   add_definitions(-DVAR_LSDEBUGINT)
   add_definitions(-DVAR_LSDEBUG)
-  add_definitions(-DVAR_DEBUGICHOR)
   set(reorder_definitions " --debug_version ${reorder_definitions}")
 endif()
 
@@ -99,10 +98,6 @@ endif()
 
 if(ENABLE_RSP)
     add_definitions(-DVAR_RSP)
-endif()
-
-if(ENABLE_ICHOR)
-    add_definitions(-DVAR_ICHOR)
 endif()
 
 if(ENABLE_QCMATRIX)
