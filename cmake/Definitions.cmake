@@ -96,10 +96,6 @@ if(ENABLE_DEBUGPBC)
     add_definitions(-DDEBUGPBC)
 endif()
 
-if(ENABLE_RSP)
-    add_definitions(-DVAR_RSP)
-endif()
-
 if(ENABLE_QCMATRIX)
     add_definitions(-DENABLE_QCMATRIX)
 endif()
