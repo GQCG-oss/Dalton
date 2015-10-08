@@ -428,6 +428,9 @@ C
 C         --- Normalize CI vector (i.e. CREF)
 C         6-Dec-1984-hjaaj: SIRSAV changed so CREF normally normalized now
 C
+      print*, 'nconf', nconf
+      print*, 'wrk(kcref)', wrk(kcref)
+
       IF (NCONF .GT. 1) THEN
          C0NORM = DNRM2(NCONF,WRK(KCREF),1)
          THREQL = SQRT(NCONF*THRLDP)
@@ -2186,6 +2189,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
+
       IF ( ABS(DEPRED/EMCSCF).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
