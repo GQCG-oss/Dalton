@@ -1,9 +1,0 @@
-ATOMBASIS
-Water
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      0.96853940000000
-H      0.94129266811500      0.00000000000000     -0.22811550211500

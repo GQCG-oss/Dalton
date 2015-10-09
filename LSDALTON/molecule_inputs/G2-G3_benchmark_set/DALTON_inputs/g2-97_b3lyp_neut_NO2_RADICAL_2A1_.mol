@@ -1,9 +1,0 @@
-ATOMBASIS
-NO2 RADICAL 2A1,
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=7.0 Atoms=1 Basis=regbasis Aux=auxbasis
-N      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=8.0 Atoms=2 Basis=regbasis Aux=auxbasis
-O      0.00000000000000      0.00000000000000      1.20310253000000
-O      0.86785315428500      0.00000000000000     -0.83323862145900

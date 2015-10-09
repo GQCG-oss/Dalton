@@ -1,8 +1,0 @@
-BASIS
-6-31G Aux=cc-pVDZ CABS=aug-cc-pVDZ
-%cc-pVDZ, cc-pVTZ
-
-Atomtypes=1 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=2
-H    0.0000     0.7572 -0.4692
-H    0.0000    -0.7572 -0.4692

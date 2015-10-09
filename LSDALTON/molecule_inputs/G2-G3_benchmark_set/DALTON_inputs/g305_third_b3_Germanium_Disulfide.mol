@@ -1,9 +1,0 @@
-ATOMBASIS
-Germanium Disulfide
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=32.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Ge      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=16.0 Atoms=2 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      2.01063155220000
-S      0.00000000000000      0.00000000000000     -2.01063155220000

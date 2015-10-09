@@ -1,9 +1,0 @@
-ATOMBASIS
-CH2 3-B1
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=1 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      1.08207824000000
-H      0.78941708981300      0.00000000000000     -0.74007700666400

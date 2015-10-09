@@ -1,8 +1,0 @@
-ATOMBASIS
-CLO 2-PI
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=17.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O      0.00000000000000      0.00000000000000      1.61959205000000
