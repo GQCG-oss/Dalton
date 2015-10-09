@@ -528,7 +528,7 @@ C  /* Deck getdate */
       SUBROUTINE GETDATE
 #include "implicit.h"
 #include "priunit.h"
-#if defined (SYS_UNIX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
+#if defined (SYS_DARWIN) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_SUN) || defined (SYS_LINUX) || defined (SYS_AIX)
       CHARACTER*(24) FDATE
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
@@ -559,6 +559,9 @@ C  /* Deck getdate */
 #endif
 #if defined (SYS_LINUX)
       WRITE (LUPRI,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
+#endif
+#if defined (SYS_DARWIN)
+      WRITE (LUPRI,'(T6,2A)') 'Date and time (Darwin) : ',FDATE()
 #endif
 #if defined (SYS_AIX)
       WRITE (LUPRI,'(T6,2A)') 'Date and time (IBM-AIX): ',FDATE()

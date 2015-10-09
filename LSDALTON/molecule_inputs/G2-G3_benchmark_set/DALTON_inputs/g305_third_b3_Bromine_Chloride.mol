@@ -1,8 +1,0 @@
-ATOMBASIS
-Bromine Chloride
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=35.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Br      0.00000000000000      0.00000000000000     -0.70867418680000
-Charge=17.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      1.45903509050000

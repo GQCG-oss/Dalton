@@ -150,7 +150,7 @@ C
       RTENBD = 0.4D0
       RTENGD = 0.8D0
       RTRJMN = 0.1D0
-      RTRJMX = 3.0D0
+      RTRJMX = 10.1D0
       LNSRCH = .FALSE.
       RATFUN = .FALSE.
       TRSTRG = .FALSE.
@@ -1132,7 +1132,7 @@ C
 C
       IF (BAKER) THEN
          WRITE(LUPRI,'(A/)')
-     &        ' Baker''s convergence criteria will be used.'
+     &        " Baker's convergence criteria will be used."
          IF (NATNRM) THEN
             WRITE(LUPRI,'(A/)')
      &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
@@ -2658,14 +2658,14 @@ C     as quadratic as the ground state, and thus we should not walk to far
 C     away. This is necessary for instance to get test15 through....
 C
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
-         WRITE (LUPRI,'(/A)') ' INFO >>>> As this is an excited '//
-     &        'optimization some thresholds have been updated'
+         WRITE (LUPRI,'(/A)') ' INFO  As this is an excited state '
+     &      //'optimization some default thresholds have been updated'
          IF (TRSTRA .EQ. 0.5D0) TRSTRA = 0.25D0
          IF (TRSTIN .EQ. 1.2D0) TRSTIN = 1.10D0
          IF (RTENBD .EQ. 0.4D0) RTENBD = 0.85D0
          IF (RTRJMN .EQ. 0.1D0) RTRJMN = 0.80D0
          IF (RTENGD .EQ. 0.8D0) RTENGD = 0.90D0
-         IF (RTRJMX .EQ. 3.0D0) RTRJMX = 1.20D0
+         IF (RTRJMX .EQ. 10.1D0) RTRJMX = 1.20D0
          WRITE(LUPRI,'(/A/A/,(A,F10.4))')
      &        ' Restricted step control parameters',
      &        ' ----------------------------------',
@@ -7585,29 +7585,31 @@ C
 C
 C     Output from the testing is written.
 C
-      IF (.NOT. NATNRM .AND. (IPRINT .GT. 2)) THEN
-         CALL TITLER('Output from MINEND','*',103)
+      IF (.NOT. NATNRM .AND. (IPRINT .GT. 2 .OR. MINEND .OR. BRKSYM))
+     &   THEN
+         CALL TITLER('Output from geometry convergence control (MINEND)'
+     &      ,'*',103)
          LOGTXT = 'no  '
          IF (CNVERG) LOGTXT = 'yes '
          IF ((ITRNMR .LT. 1) .OR. (ITRBRK .EQ. (ITRNMR-1)))
      &        LOGTXT = 'N/A '
-         WRITE(LUPRI,'(/A,1P,A5)') ' Energy converged      ',LOGTXT
+         WRITE(LUPRI,'(/A,A5)') ' Energy converged      ',LOGTXT
          LOGTXT = 'no  '
          IF (CNVGRD) LOGTXT = 'yes '
-         WRITE(LUPRI,'(A,1P,A5)') ' Gradient converged    ',LOGTXT
+         WRITE(LUPRI,'(A,A5)') ' Gradient converged    ',LOGTXT
          LOGTXT = 'no  '
          IF (CNVSTP) LOGTXT = 'yes '
-         WRITE(LUPRI,'(A,1P,A5)') ' Step converged        ',LOGTXT
+         WRITE(LUPRI,'(A,A5)') ' Step converged        ',LOGTXT
          IF (.NOT. BAKER) THEN
-            WRITE(LUPRI,'(A,1P,I3)') ' Conditions fullfilled ',ICONV
-            WRITE(LUPRI,'(A,1P,I3)') ' Required conditions   ',ICONDI
+            WRITE(LUPRI,'(A,I3)') ' Conditions fullfilled ',ICONV
+            WRITE(LUPRI,'(A,I3)') ' Required conditions   ',ICONDI
          END IF
-         WRITE(LUPRI,'(A,1P,I3)') ' Totally sym. index    ',INDHES(0)
-         WRITE(LUPRI,'(A,1P,I3)') ' Hessian index         ',INDTOT
+         WRITE(LUPRI,'(A,I3)') ' Totally sym. index    ',INDHES(0)
+         WRITE(LUPRI,'(A,I3)') ' Hessian index         ',INDTOT
          LOGTXT = 'no  '
          IF (MINEND) LOGTXT = 'yes '
          IF (BRKSYM) LOGTXT = 'yes*'
-         WRITE(LUPRI,'(A,1P,A5)') ' End of optimization   ',LOGTXT
+         WRITE(LUPRI,'(A,A5)') ' End of optimization   ',LOGTXT
          IF (BRKSYM) WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
       END IF
       deallocate ( GRDMOL, HESMOL )

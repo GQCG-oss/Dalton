@@ -1,8 +1,0 @@
-ATOMBASIS
-ClF+
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=17.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=9.0 Atoms=1 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      0.00000000000000      1.57240822000000

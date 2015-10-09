@@ -1,8 +1,0 @@
-BASIS
-STO-3G
-LSint test, H2
-STO-3G
-Atomtypes=1 Nosymmetry
-Charge=1.0 Atoms=2
-H     0.452350000   0.000000000   0.00000000
-H    -0.452350000   0.000000000   0.00000000

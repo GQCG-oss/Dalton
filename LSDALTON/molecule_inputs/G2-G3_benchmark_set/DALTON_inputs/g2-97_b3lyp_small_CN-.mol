@@ -1,8 +1,0 @@
-ATOMBASIS
-CN-
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=1 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=7.0 Atoms=1 Basis=regbasis Aux=auxbasis
-N      0.00000000000000      0.00000000000000      1.18407696000000

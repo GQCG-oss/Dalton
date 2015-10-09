@@ -1,7 +1,7 @@
 set(reorder_definitions "")
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store -fcray-pointer")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -ffloat-store -fcray-pointer")
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -m32"
@@ -87,7 +87,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
-    set(reorder_definitions "nocollapse ${reorder_definitions}")
+    set(reorder_definitions " --nocollapse ${reorder_definitions}")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -113,9 +113,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
             )
     endif()
     if(ENABLE_OMP) 
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -mp -Mconcur"
-            )
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mp " )
+        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -Mconcur")
     endif()
 # WARNING you may need to add -Mcuda=5.5 
 # For now use --extra-fc-flags="-Mcuda=5.5"
@@ -150,13 +149,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
             )
     endif()
     set_source_files_properties(${DALTON_FREE_FORTRAN_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
-    set_source_files_properties(${LSDALTON_FREE_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
     set_source_files_properties(${DALTON_FIXED_FORTRAN_SOURCES}   PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_FIXED_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
     set_source_files_properties(${DALTON_OWN_BLAS_SOURCES}        PROPERTIES COMPILE_FLAGS "-qfixed")
     set_source_files_properties(${DALTON_OWN_LAPACK_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_OWN_BLAS_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_OWN_LAPACK_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfixed")
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -C"

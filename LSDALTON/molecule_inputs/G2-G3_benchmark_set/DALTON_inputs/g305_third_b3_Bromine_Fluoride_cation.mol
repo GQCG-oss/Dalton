@@ -1,8 +1,0 @@
-ATOMBASIS
-Bromine Fluoride cation
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=35.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Br      0.00000000000000      0.00000000000000     -0.34582910660000
-Charge=9.0 Atoms=1 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      0.00000000000000      1.34489097030000

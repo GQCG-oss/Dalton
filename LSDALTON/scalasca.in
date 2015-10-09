@@ -1,3 +1,0 @@
-#!/bin/sh
-
-scalasca -instrument @SCALASCA_INSTRUMENT@ "$@"

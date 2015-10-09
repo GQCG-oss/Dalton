@@ -1,7 +1,0 @@
-ATOMBASIS
-F2
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=9.0 Atoms=2 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      0.00000000000000      0.00000000000000
-F      0.00000000000000      0.00000000000000      1.40325215000000

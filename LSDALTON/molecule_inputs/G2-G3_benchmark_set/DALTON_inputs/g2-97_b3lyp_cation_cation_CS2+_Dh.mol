@@ -1,9 +1,0 @@
-ATOMBASIS
-cation: CS2+ Dh
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=16.0 Atoms=2 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      1.56312828170000
-S      0.00000000000000      0.00000000000000     -1.56312828170000
-Charge=6.0 Atoms=1 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000      0.00000000000000

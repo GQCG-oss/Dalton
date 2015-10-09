@@ -58,12 +58,10 @@ option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
 option(ENABLE_XCFUN          "Enable XCFUN"                                     ON)
-option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
-option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_QMMM_CUDA      "Enable QMMM CUDA library"                         OFF) # radovan: untested
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
 option(ENABLE_QCMATRIX       "Enable QcMatrix library"                          OFF)
@@ -74,8 +72,9 @@ option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
-option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
 option(ENABLE_DEC            "Enable Divide-Expand-Consolidate module"          OFF)
+option(ENABLE_LARGE_TEST     "Enable Large-scale (long) test cases"             OFF)
+option(ENABLE_DEVELOPER      "Enable Developer test cases and features"         OFF)
 
 # Gen1Int interface, OpenRSP and TDRSP needs QcMatrix library
 # Gao: please leave this comment here, and I am going to fix it after repo split
@@ -87,7 +86,6 @@ set(EXTERNAL_LIBS)
 
 include(ConfigVersion)
 include(SourcesDALTON)
-include(SourcesLSDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(CheckFortranStandardCompatibility)
@@ -103,7 +101,6 @@ include(ConfigMath)
 include(ConfigExplicitLibs)
 include(ConfigMPI)
 include(ConfigSafeGuards)
-include(ConfigTesting)
 include(GenericMacros)
 include(BinaryInfo)
 include(mergestaticlibs)
@@ -159,8 +156,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft
     ${CMAKE_SOURCE_DIR}/DALTON/abacus
-    ${CMAKE_SOURCE_DIR}/LSDALTON/dft
-    ${CMAKE_SOURCE_DIR}/LSDALTON/geomopt
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     ${PROJECT_BINARY_DIR}
     )
@@ -189,11 +184,6 @@ configure_script(
     ${CMAKE_SOURCE_DIR}/dalton.in
     ${CMAKE_BINARY_DIR}/dalton
     )
-set(opt_lsdalton "1") #TRUE, ie. lsdalton
-configure_script(
-    ${CMAKE_SOURCE_DIR}/dalton.in
-    ${CMAKE_BINARY_DIR}/lsdalton
-    )
 configure_script(
     ${CMAKE_SOURCE_DIR}/DALTON/dalton_config.in
     ${CMAKE_BINARY_DIR}/dalton_config.h
@@ -206,24 +196,17 @@ if(USE_BUILTIN_BLAS)
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_BLAS_SOURCES}
         )
-    set(LSDALTON_FIXED_FORTRAN_SOURCES
-        ${LSDALTON_FIXED_FORTRAN_SOURCES}
-        ${LSDALTON_OWN_BLAS_SOURCES}
-        )
 endif()
 if(USE_BUILTIN_LAPACK)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_LAPACK_SOURCES}
         )
-    set(LSDALTON_FIXED_FORTRAN_SOURCES
-        ${LSDALTON_FIXED_FORTRAN_SOURCES}
-        ${LSDALTON_OWN_LAPACK_SOURCES}
-        )
 endif()
 
 include(LibsDALTON)
-include(LibsLSDALTON)
+
+include(ConfigTesting)
 
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
@@ -233,7 +216,6 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
 execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest.py        ${CMAKE_BINARY_DIR}/test)
 execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
-execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/LSDALTON/test/runtest_lsdalton.py ${CMAKE_BINARY_DIR}/test)
 
 # this controlls "make install" target
 include(ConfigMakeInstall)
@@ -242,5 +224,5 @@ include(ConfigMakeInstall)
 include(ConfigMakeRelease)
 
 # give information about system, compiler flags, and size of static allocations
-set(STATIC_MEM_INFO_BINARIES dalton lsdalton)
+set(STATIC_MEM_INFO_BINARIES dalton)
 include(ConfigInfo)
