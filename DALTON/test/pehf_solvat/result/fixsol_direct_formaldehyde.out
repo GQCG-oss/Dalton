@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release Dalton2016.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 19:48:06 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:01 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_solvat
-   2) /home/magnus/Projects/dalton_devel/dalton/build_pelib/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pehf_solvat
+   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
@@ -151,25 +151,23 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.6-200.fc21.x86_64
+ System                   | Linux-4.1.6-201.fc22.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/local/bin/mpicxx
- C++ compiler version     | unknown
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
+ C compiler               | /usr/lib64/ccache/gcc
+ C compiler version       | gcc (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
+ C++ compiler             | /usr/lib64/ccache/g++
+ C++ compiler version     | g++ (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
  BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 5238537d2eab9c23858149b88466e4eda8e39bfc
- Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-23 15:06:18.814013
-
- * Sequential calculation.
+ Last Git revision        | d1c270db496b20a5be5e473a23a9100ee6b8cb96
+ Git branch               | pe/develop
+ Configuration time       | 2015-10-12 14:06:40.447738
 
 
    Content of the .dal input file
@@ -240,7 +238,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -248,7 +246,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -256,7 +254,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -453,7 +451,7 @@ H           -2.508043   -1.382001     .040282
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 19:48:06 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:01 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -530,38 +528,41 @@ H           -2.508043   -1.382001     .040282
 @  1  -112.146955539     -1.852982730353E-02    1.56586D+00   -1.12D+02
       Virial theorem: -V/T =      2.002523
 @      MULPOP C       1.10; O      -0.82; H      -0.14; H      -0.14; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
      ------------------------------------------
 
        Input density no.:   1
-    Sum of induced charges:     -0.00303370
+    Sum of induced charges:     -0.00295185
 
-@  2  -112.307462174     -3.746903994158E-04    8.58830D-01   -1.61D-01
-      Virial theorem: -V/T =      2.010917
-@      MULPOP C      -0.40; O       0.18; H       0.11; H       0.11; 
+@  2  -112.342491108     -1.079513060839E-03    4.72041D-01   -1.96D-01
+      Virial theorem: -V/T =      2.010135
+@      MULPOP C      -0.15; O      -0.02; H       0.08; H       0.08; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
      ------------------------------------------
 
        Input density no.:   1
-    Sum of induced charges:     -0.00286615
+    Sum of induced charges:     -0.00286748
 
-@  3  -112.355806459     -2.800491586149E-03    4.86389D-02   -4.83D-02
-      Virial theorem: -V/T =      2.008529
-@      MULPOP C       0.09; O      -0.22; H       0.07; H       0.06; 
+@  3  -112.355610295     -2.616629075075E-03    7.22093D-02   -1.31D-02
+      Virial theorem: -V/T =      2.008655
+@      MULPOP C       0.06; O      -0.20; H       0.07; H       0.07; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
      ------------------------------------------
 
        Input density no.:   1
-    Sum of induced charges:     -0.00286360
+    Sum of induced charges:     -0.00286195
 
-@  4  -112.356034842     -2.619730020115E-03    1.11782D-02   -2.28D-04
-      Virial theorem: -V/T =      2.008428
+@  4  -112.356018141     -2.631405417855E-03    1.43979D-02   -4.08D-04
+      Virial theorem: -V/T =      2.008409
 @      MULPOP C       0.08; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
 
@@ -569,10 +570,10 @@ H           -2.508043   -1.382001     .040282
      ------------------------------------------
 
        Input density no.:   1
-    Sum of induced charges:     -0.00286727
+    Sum of induced charges:     -0.00286666
 
-@  5  -112.356047678     -2.603005741619E-03    3.09579D-03   -1.28D-05
-      Virial theorem: -V/T =      2.008413
+@  5  -112.356045291     -2.607665827841E-03    4.56737D-03   -2.71D-05
+      Virial theorem: -V/T =      2.008407
 @      MULPOP C       0.08; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
 
@@ -580,9 +581,9 @@ H           -2.508043   -1.382001     .040282
      ------------------------------------------
 
        Input density no.:   1
-    Sum of induced charges:     -0.00286883
+    Sum of induced charges:     -0.00286894
 
-@  6  -112.356049486     -2.592718531014E-03    6.21254D-04   -1.81D-06
+@  6  -112.356049519     -2.591701361534E-03    5.05511D-04   -4.23D-06
       Virial theorem: -V/T =      2.008420
 @      MULPOP C       0.08; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
@@ -591,9 +592,9 @@ H           -2.508043   -1.382001     .040282
      ------------------------------------------
 
        Input density no.:   1
-    Sum of induced charges:     -0.00286893
+    Sum of induced charges:     -0.00286894
 
-@  7  -112.356049556     -2.591851518491E-03    6.87967D-05   -6.91D-08
+@  7  -112.356049556     -2.591868936930E-03    4.79592D-05   -3.69D-08
       Virial theorem: -V/T =      2.008421
 @      MULPOP C       0.08; O      -0.21; H       0.07; H       0.07; 
  -----------------------------------------------------------------------------
@@ -604,10 +605,10 @@ H           -2.508043   -1.382001     .040282
        Input density no.:   1
     Sum of induced charges:     -0.00286897
 
-@  8  -112.356049556     -2.591738882993E-03    5.71442D-06   -5.69D-10
+@  8  -112.356049556     -2.591736733390E-03    7.00962D-06   -3.05D-10
 
 @ *** DIIS converged in   8 iterations !
-@     Converged SCF energy, gradient:   -112.356049556148    5.71D-06
+@     Converged SCF energy, gradient:   -112.356049556144    7.01D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -619,14 +620,14 @@ H           -2.508043   -1.382001     .040282
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.30250083   -11.12290682    -1.33989089    -0.79816337    -0.63447182
-         -0.54379195    -0.44458887    -0.35039894     0.28855430     0.62842039
-          0.75172846     0.92472541
+1 A     -20.30250115   -11.12290641    -1.33989089    -0.79816332    -0.63447178
+         -0.54379194    -0.44458888    -0.35039901     0.28855432     0.62842048
+          0.75172854     0.92472549
 
-    E(LUMO) :     0.28855430 au (symmetry 1)
-  - E(HOMO) :    -0.35039894 au (symmetry 1)
+    E(LUMO) :     0.28855432 au (symmetry 1)
+  - E(HOMO) :    -0.35039901 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.63895324 au
+    gap     :     0.63895334 au
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -636,15 +637,15 @@ H           -2.508043   -1.382001     .040282
        ---------------------------------------------
 
        Continuum solvation contributions:
-            Electronic                -0.010675471237
-            Nuclear                    0.008083732354
-            Total                     -0.002591738883
+            Electronic                -0.010675491076
+            Nuclear                    0.008083754342
+            Total                     -0.002591736733
 
-       Total PE energy:            -0.002591738883
+       Total PE energy:            -0.002591736733
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.583       0.583
+ >>>> CPU and wall time for SCF :       0.549       0.548
 
 
                        .-----------------------------------.
@@ -656,18 +657,18 @@ H           -2.508043   -1.382001     .040282
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -112.356049556148                 
+@    Final HF energy:            -112.356049556144                 
 @    Nuclear repulsion:            31.249215315972
-@    Electronic energy:          -143.602673133237
-@    Embedding energy:             -0.002591738883
+@    Electronic energy:          -143.602673135383
+@    Embedding energy:             -0.002591736733
 
-@    Final gradient norm:           0.000005714421
+@    Final gradient norm:           0.000007009625
 
  
-     Date and time (Linux)  : Mon Feb 23 19:48:06 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:02 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  23Feb15   FOCKDIIS
+File label for MO orbitals:  12Oct15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -680,8 +681,8 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
    3 C   :2px   -0.0004   0.0001  -0.0092  -0.0135   0.5325  -0.0197   0.0053
    4 C   :2py    0.0064  -0.0008   0.1586   0.2158   0.0253   0.4509  -0.0191
    5 C   :2pz   -0.0002   0.0000  -0.0051  -0.0069   0.0039  -0.0144  -0.6018
-   6 O   :1s    -0.9943  -0.0001  -0.2194  -0.1016  -0.0015   0.0904   0.0000
-   7 O   :1s    -0.0261   0.0058   0.7669   0.4444   0.0075  -0.4849  -0.0000
+   6 O   :1s    -0.9943  -0.0001  -0.2194  -0.1016  -0.0015   0.0904  -0.0000
+   7 O   :1s    -0.0261   0.0058   0.7669   0.4444   0.0075  -0.4849   0.0000
    8 O   :2px   -0.0003   0.0001   0.0096  -0.0103   0.4456   0.0460   0.0061
    9 O   :2py    0.0057  -0.0016  -0.1699   0.1802   0.0318  -0.6764  -0.0216
   10 O   :2pz   -0.0002   0.0001   0.0055  -0.0058   0.0029   0.0219  -0.6806
@@ -704,11 +705,11 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.59 seconds
- >>>> Total wall time used in SIRIUS :      0.59 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.55 seconds
+ >>>> Total wall time used in SIRIUS :      0.55 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 19:48:06 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:02 2015
      Host name              : foeroyar                                
 
 
@@ -716,9 +717,9 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.62 seconds
- >>>> Total wall time used in DALTON:   0.62 seconds
+ >>>> Total CPU  time used in DALTON:   0.59 seconds
+ >>>> Total wall time used in DALTON:   0.59 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 19:48:06 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:02 2015
      Host name              : foeroyar                                

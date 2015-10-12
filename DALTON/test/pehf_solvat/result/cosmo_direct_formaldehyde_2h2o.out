@@ -50,7 +50,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2015.alpha (2015), see http://daltonprogram.org
+       Release Dalton2016.alpha (2015), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -136,14 +136,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Feb 23 19:45:49 2015
+     Date and time (Linux)  : Mon Oct 12 14:07:56 2015
      Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/pehf_solvat
-   2) /home/magnus/Projects/dalton_devel/dalton/build_pelib/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build/test/pehf_solvat
+   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
 Compilation information
@@ -151,25 +151,23 @@ Compilation information
 
  Who compiled             | magnus
  Host                     | foeroyar
- System                   | Linux-3.18.6-200.fc21.x86_64
+ System                   | Linux-4.1.6-201.fc22.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (GCC) 4.9.2 20150212 (Red Hat 4.9.2-6)
- C++ compiler             | /usr/local/bin/mpicxx
- C++ compiler version     | unknown
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
+ C compiler               | /usr/lib64/ccache/gcc
+ C compiler version       | gcc (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
+ C++ compiler             | /usr/lib64/ccache/g++
+ C++ compiler version     | g++ (GCC) 5.1.1 20150618 (Red Hat 5.1.1-4)
  BLAS                     | /lib64/libblas.so
  LAPACK                   | /lib64/liblapack.so
  Static linking           | OFF
- Last Git revision        | 5238537d2eab9c23858149b88466e4eda8e39bfc
- Git branch               | [32mpe/develop[m
- Configuration time       | 2015-02-23 15:06:18.814013
-
- * Sequential calculation.
+ Last Git revision        | d1c270db496b20a5be5e473a23a9100ee6b8cb96
+ Git branch               | pe/develop
+ Configuration time       | 2015-10-12 14:06:40.447738
 
 
    Content of the .dal input file
@@ -239,7 +237,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -247,7 +245,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -255,7 +253,7 @@ H           -2.508043   -1.382001     .040282
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build_pelib/basis/STO-3G"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -494,7 +492,7 @@ H           -2.508043   -1.382001     .040282
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Feb 23 19:45:50 2015
+     Date and time (Linux)  : Mon Oct 12 14:07:56 2015
      Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
@@ -569,13 +567,14 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.44669425     0.53459442    -0.24087378
+                 -0.44572710     0.53335412    -0.23992989
 
-    Sum of induced charges:     -0.00192841
+    Sum of induced charges:     -0.00192839
 
-@  1  -112.189410275     -6.098456341765E-02    1.51545D+00   -1.12D+02
-      Virial theorem: -V/T =      2.002903
+@  1  -112.189348942     -6.092322987547E-02    1.51561D+00   -1.12D+02
+      Virial theorem: -V/T =      2.002902
 @      MULPOP C       1.10; O      -0.82; H      -0.14; H      -0.14; 
+   1  Level shift: doubly occupied orbital energies shifted by -2.00D-01
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -585,13 +584,14 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.19315891     0.35423339    -0.23442121
+                 -0.24428965     0.39431179    -0.23489746
 
-    Sum of induced charges:     -0.00173087
+    Sum of induced charges:     -0.00173612
 
-@  2  -112.346400599     -2.168075208345E-02    7.38306D-01   -1.57D-01
-      Virial theorem: -V/T =      2.010156
-@      MULPOP C      -0.34; O       0.08; H       0.14; H       0.12; 
+@  2  -112.372938926     -2.679234048310E-02    4.00023D-01   -1.84D-01
+      Virial theorem: -V/T =      2.009459
+@      MULPOP C      -0.10; O      -0.10; H       0.11; H       0.09; 
+   2  Level shift: doubly occupied orbital energies shifted by -1.00D-01
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -601,13 +601,14 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.28028589     0.42572876    -0.23703438
+                 -0.27672260     0.42255680    -0.23604092
 
-    Sum of induced charges:     -0.00172719
+    Sum of induced charges:     -0.00172589
 
-@  3  -112.382505542     -3.191414828820E-02    4.56443D-02   -3.61D-02
-      Virial theorem: -V/T =      2.008021
-@      MULPOP C       0.10; O      -0.27; H       0.10; H       0.07; 
+@  3  -112.382362131     -3.147915659103E-02    6.08267D-02   -9.42D-03
+      Virial theorem: -V/T =      2.008114
+@      MULPOP C       0.08; O      -0.25; H       0.10; H       0.07; 
+   3  Level shift: doubly occupied orbital energies shifted by -2.50D-02
  -----------------------------------------------------------------------------
 
       Info from polarizable embedding library:
@@ -617,12 +618,12 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.27634045     0.42356160    -0.23712603
+                 -0.27601341     0.42279305    -0.23619006
 
-    Sum of induced charges:     -0.00172408
+    Sum of induced charges:     -0.00172380
 
-@  4  -112.382697090     -3.151068698349E-02    8.04840D-03   -1.92D-04
-      Virial theorem: -V/T =      2.007907
+@  4  -112.382655902     -3.152374186116E-02    1.14069D-02   -2.94D-04
+      Virial theorem: -V/T =      2.007888
 @      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
  -----------------------------------------------------------------------------
 
@@ -633,12 +634,12 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.27614905     0.42341182    -0.23719827
+                 -0.27566267     0.42245659    -0.23625210
 
-    Sum of induced charges:     -0.00172530
+    Sum of induced charges:     -0.00172515
 
-@  5  -112.382703017     -3.148589317082E-02    1.77302D-03   -5.93D-06
-      Virial theorem: -V/T =      2.007893
+@  5  -112.382672407     -3.146628254630E-02    3.60942D-03   -1.65D-05
+      Virial theorem: -V/T =      2.007887
 @      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
  -----------------------------------------------------------------------------
 
@@ -649,44 +650,12 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.27603116     0.42329918    -0.23723618
-
-    Sum of induced charges:     -0.00172559
-
-@  6  -112.382703675     -3.146650976565E-02    5.60338D-04   -6.58D-07
-      Virial theorem: -V/T =      2.007897
-@      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
- -----------------------------------------------------------------------------
-
-      Info from polarizable embedding library:
-     ------------------------------------------
-
-       Input density no.:   1
-
-                        Total induced dipole moment
-                       X              Y              Z
-                 -0.27601811     0.42328389    -0.23725731
-
-    Sum of induced charges:     -0.00172559
-
-@  7  -112.382703762     -3.146395145675E-02    1.28345D-04   -8.71D-08
-      Virial theorem: -V/T =      2.007898
-@      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
- -----------------------------------------------------------------------------
-
-      Info from polarizable embedding library:
-     ------------------------------------------
-
-       Input density no.:   1
-
-                        Total induced dipole moment
-                       X              Y              Z
-                 -0.27601538     0.42328108    -0.23726519
+                 -0.27542153     0.42221882    -0.23629923
 
     Sum of induced charges:     -0.00172560
 
-@  8  -112.382703770     -3.146348511267E-02    6.26859D-05   -8.15D-09
-      Virial theorem: -V/T =      2.007898
+@  6  -112.382675165     -3.142438869237E-02    5.17944D-04   -2.76D-06
+      Virial theorem: -V/T =      2.007899
 @      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
  -----------------------------------------------------------------------------
 
@@ -697,12 +666,12 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.27601663     0.42328247    -0.23727043
+                 -0.27542838     0.42222167    -0.23631328
 
-    Sum of induced charges:     -0.00172559
+    Sum of induced charges:     -0.00172556
 
-@  9  -112.382703772     -3.146376110524E-02    1.66675D-05   -2.21D-09
-      Virial theorem: -V/T =      2.007898
+@  7  -112.382675220     -3.142485943388E-02    1.30770D-04   -5.52D-08
+      Virial theorem: -V/T =      2.007900
 @      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
  -----------------------------------------------------------------------------
 
@@ -713,14 +682,46 @@ H           -2.508043   -1.382001     .040282
 
                         Total induced dipole moment
                        X              Y              Z
-                 -0.27601689     0.42328283    -0.23727188
+                 -0.27542482     0.42221847    -0.23632050
 
-    Sum of induced charges:     -0.00172559
+    Sum of induced charges:     -0.00172557
 
-@ 10  -112.382703772     -3.146384350337E-02    2.86309D-06   -1.50D-10
+@  8  -112.382675228     -3.142430116423E-02    6.87358D-05   -7.47D-09
+      Virial theorem: -V/T =      2.007900
+@      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.27542609     0.42221985    -0.23632704
+
+    Sum of induced charges:     -0.00172556
+
+@  9  -112.382675231     -3.142458567188E-02    1.63840D-05   -2.90D-09
+      Virial theorem: -V/T =      2.007900
+@      MULPOP C       0.09; O      -0.26; H       0.10; H       0.07; 
+ -----------------------------------------------------------------------------
+
+      Info from polarizable embedding library:
+     ------------------------------------------
+
+       Input density no.:   1
+
+                        Total induced dipole moment
+                       X              Y              Z
+                 -0.27542621     0.42222019    -0.23632851
+
+    Sum of induced charges:     -0.00172556
+
+@ 10  -112.382675231     -3.142465984874E-02    3.49655D-06   -1.40D-10
 
 @ *** DIIS converged in  10 iterations !
-@     Converged SCF energy, gradient:   -112.382703772439    2.86D-06
+@     Converged SCF energy, gradient:   -112.382675230757    3.50D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -732,14 +733,14 @@ H           -2.508043   -1.382001     .040282
 
  Sym       Hartree-Fock orbital energies
 
-1 A     -20.30401371   -11.13559540    -1.35539714    -0.80713633    -0.64522651
-         -0.56287426    -0.45957918    -0.36572159     0.27567258     0.62754530
-          0.74643194     0.91355932
+1 A     -20.30401765   -11.13555926    -1.35535626    -0.80711434    -0.64520211
+         -0.56282134    -0.45953255    -0.36569079     0.27571000     0.62754528
+          0.74644226     0.91358915
 
-    E(LUMO) :     0.27567258 au (symmetry 1)
-  - E(HOMO) :    -0.36572159 au (symmetry 1)
+    E(LUMO) :     0.27571000 au (symmetry 1)
+  - E(HOMO) :    -0.36569079 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.64139417 au
+    gap     :     0.64140079 au
 
     .--------------------------------------------------.
     | Final results from polarizable embedding library |
@@ -749,45 +750,45 @@ H           -2.508043   -1.382001     .040282
        ---------------------------------------------
 
        Electrostatic contributions:
-            Electronic                -0.209511651983
+            Electronic                -0.209505355746
             Nuclear                    0.196501001970
             Multipole                  0.000000000000
-            Total                     -0.013010650013
+            Total                     -0.013004353776
 
        Polarization contributions:
-            Electronic                -0.058936896968
-            Nuclear                    0.056709845127
-            Multipole                 -0.005312016522
-            Total                     -0.007539068363
+            Electronic                -0.058861833597
+            Nuclear                    0.056639704057
+            Multipole                 -0.005302050922
+            Total                     -0.007524180462
 
        Continuum solvation contributions:
-            Electronic                -0.032778138294
-            Nuclear                    0.030354772292
-            Multipole                 -0.008490759126
-            Total                     -0.010914125128
+            Electronic                -0.032338839671
+            Nuclear                    0.029933153576
+            Multipole                 -0.008490439516
+            Total                     -0.010896125611
 
-       Total PE energy:            -0.031463843503
+       Total PE energy:            -0.031424659849
 
                Polarizable embedding information:
               ------------------------------------
 
                        Induced dipole moments
        site          X              Y              Z
-          1    -0.12014870     0.15115449    -0.07047264
-          2    -0.12129195     0.00200771    -0.00899967
-          3    -0.01880257     0.00897944    -0.03458729
-          4     0.02261529     0.07463590    -0.06601422
-          5    -0.00507650     0.16593417    -0.00608484
-          6    -0.03331246     0.02057112    -0.05111321
+          1    -0.11983977     0.15080199    -0.07020271
+          2    -0.12111335     0.00188727    -0.00891866
+          3    -0.01871776     0.00889511    -0.03444380
+          4     0.02259812     0.07440377    -0.06576459
+          5    -0.00507977     0.16571917    -0.00602093
+          6    -0.03327368     0.02051288    -0.05097781
 
                       Total induced dipole moment
                      X              Y              Z
-               -0.27601689     0.42328283    -0.23727188
+               -0.27542621     0.42222019    -0.23632851
 
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       3.505       3.503
+ >>>> CPU and wall time for SCF :       3.999       4.002
 
 
                        .-----------------------------------.
@@ -799,18 +800,18 @@ H           -2.508043   -1.382001     .040282
 @    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -112.382703772439                 
+@    Final HF energy:            -112.382675230757                 
 @    Nuclear repulsion:            31.249215315972
-@    Electronic energy:          -143.600455244908
-@    Embedding energy:             -0.031463843503
+@    Electronic energy:          -143.600465886881
+@    Embedding energy:             -0.031424659849
 
-@    Final gradient norm:           0.000002863092
+@    Final gradient norm:           0.000003496552
 
  
-     Date and time (Linux)  : Mon Feb 23 19:45:53 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:00 2015
      Host name              : foeroyar                                
 
-File label for MO orbitals:  23Feb15   FOCKDIIS
+File label for MO orbitals:  12Oct15   FOCKDIIS
 
  (Only coefficients >0.0100 are printed.)
 
@@ -819,39 +820,39 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
 
     Orbital         1        2        3        4        5        6        7
    1 C   :1s    -0.0005  -0.9926  -0.1219   0.1891  -0.0043  -0.0206  -0.0000
-   2 C   :1s     0.0074  -0.0329   0.2733  -0.5918   0.0171   0.0576   0.0006
-   3 C   :2px   -0.0004   0.0001  -0.0079  -0.0036   0.5323  -0.0000   0.0023
+   2 C   :1s     0.0074  -0.0329   0.2733  -0.5917   0.0170   0.0577   0.0006
+   3 C   :2px   -0.0004   0.0001  -0.0079  -0.0037   0.5323  -0.0000   0.0023
    4 C   :2py    0.0064  -0.0009   0.1581   0.2033   0.0045   0.4582  -0.0155
    5 C   :2pz   -0.0002   0.0000  -0.0057  -0.0052   0.0028  -0.0118  -0.5852
    6 O   :1s    -0.9942  -0.0001  -0.2207  -0.1027   0.0010   0.0851   0.0010
-   7 O   :1s    -0.0262   0.0059   0.7727   0.4533   0.0001  -0.4612  -0.0048
-   8 O   :2px   -0.0004   0.0001   0.0198   0.0073   0.4695   0.0279   0.0087
-   9 O   :2py    0.0057  -0.0017  -0.1621   0.2055   0.0450  -0.6750  -0.0259
-  10 O   :2pz   -0.0002   0.0001   0.0040  -0.0076   0.0002   0.0273  -0.6956
-  11 H   :1s    -0.0002   0.0064   0.0296  -0.2439   0.2843  -0.1491  -0.0038
-  12 H   :1s    -0.0003   0.0065   0.0302  -0.2581  -0.2714  -0.1883   0.0009
+   7 O   :1s    -0.0262   0.0059   0.7726   0.4533   0.0002  -0.4613  -0.0048
+   8 O   :2px   -0.0004   0.0001   0.0198   0.0072   0.4695   0.0279   0.0087
+   9 O   :2py    0.0057  -0.0017  -0.1622   0.2054   0.0451  -0.6750  -0.0259
+  10 O   :2pz   -0.0002   0.0001   0.0040  -0.0076   0.0002   0.0273  -0.6955
+  11 H   :1s    -0.0002   0.0064   0.0296  -0.2440   0.2843  -0.1491  -0.0038
+  12 H   :1s    -0.0003   0.0065   0.0302  -0.2581  -0.2715  -0.1883   0.0009
 
     Orbital         8        9       10       11       12
-   1 C   :1s    -0.0003  -0.0000   0.2011   0.0137   0.1060
-   2 C   :1s     0.0031  -0.0007  -1.2615  -0.0910  -0.7167
-   3 C   :2px    0.2174  -0.0076   0.0385  -1.1484   0.1088
-   4 C   :2py   -0.0023   0.0265   0.4834  -0.0765  -1.1485
-   5 C   :2pz   -0.0024   0.8388  -0.0159  -0.0082   0.0366
+   1 C   :1s    -0.0002  -0.0000   0.2011   0.0137   0.1060
+   2 C   :1s     0.0031  -0.0006  -1.2615  -0.0908  -0.7168
+   3 C   :2px    0.2173  -0.0076   0.0383  -1.1484   0.1088
+   4 C   :2py   -0.0023   0.0265   0.4834  -0.0766  -1.1485
+   5 C   :2pz   -0.0023   0.8387  -0.0159  -0.0082   0.0366
    6 O   :1s    -0.0052   0.0002  -0.0225  -0.0050  -0.1188
-   7 O   :1s     0.0244  -0.0009   0.1228   0.0355   0.8892
-   8 O   :2px   -0.8578   0.0050  -0.0073   0.3119   0.0421
-   9 O   :2py   -0.0290  -0.0258  -0.1940  -0.0279  -0.9332
+   7 O   :1s     0.0244  -0.0009   0.1227   0.0355   0.8892
+   8 O   :2px   -0.8578   0.0050  -0.0072   0.3119   0.0421
+   9 O   :2py   -0.0290  -0.0257  -0.1940  -0.0279  -0.9332
   10 O   :2pz   -0.0084  -0.7495   0.0065   0.0041   0.0302
-  11 H   :1s     0.3542   0.0020   0.8577   0.8916  -0.1344
-  12 H   :1s    -0.3601  -0.0002   0.9312  -0.8062  -0.0609
+  11 H   :1s     0.3542   0.0019   0.8579   0.8915  -0.1344
+  12 H   :1s    -0.3601  -0.0002   0.9311  -0.8063  -0.0609
 
 
 
- >>>> Total CPU  time used in SIRIUS :      3.51 seconds
- >>>> Total wall time used in SIRIUS :      3.50 seconds
+ >>>> Total CPU  time used in SIRIUS :      4.00 seconds
+ >>>> Total wall time used in SIRIUS :      4.00 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 19:45:53 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:00 2015
      Host name              : foeroyar                                
 
 
@@ -859,9 +860,9 @@ File label for MO orbitals:  23Feb15   FOCKDIIS
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   3.59 seconds
- >>>> Total wall time used in DALTON:   3.59 seconds
+ >>>> Total CPU  time used in DALTON:   4.09 seconds
+ >>>> Total wall time used in DALTON:   4.09 seconds
 
  
-     Date and time (Linux)  : Mon Feb 23 19:45:53 2015
+     Date and time (Linux)  : Mon Oct 12 14:08:00 2015
      Host name              : foeroyar                                
