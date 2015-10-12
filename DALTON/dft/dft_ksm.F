@@ -171,6 +171,7 @@ C
 #include "inforb.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "dftcom.h"
 C
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &     RHOA(NBLEN), GRADA(3,NBLEN),NBLCNT(8),NBLOCKS(2,LDAIB,8),
@@ -185,16 +186,21 @@ C
 C     Exchange-correlation contribution to Kohn-Sham matrix
 C
       DO IPNT = 1, NBLEN
-         GRD = SQRT(GRADA(1,IPNT)**2+GRADA(2,IPNT)**2+GRADA(3,IPNT)**2)
-         CALL DFTPTF0(RHOA(IPNT),GRD,WGHT(IPNT),VX)
-         ENERGY_DFTKSM = ENERGY_DFTKSM
-     &        + DFTENE(RHOA(IPNT),GRD)*WGHT(IPNT)
-         VXC(1,IPNT) = VX(1)
-         IF(GRD.GT.1D-40) THEN
-            VXC(2,IPNT) = VX(2)/(0.5*GRD)
+         IF (RHOA(I).GT.DFTHR0) THEN
+          GRD = SQRT(GRADA(1,IPNT)**2+GRADA(2,IPNT)**2+GRADA(3,IPNT)**2)
+            CALL DFTPTF0(RHOA(IPNT),GRD,WGHT(IPNT),VX)
+            ENERGY_DFTKSM = ENERGY_DFTKSM
+     &           + DFTENE(RHOA(IPNT),GRD)*WGHT(IPNT)
+            VXC(1,IPNT) = VX(1)
+            IF(GRD.GT.1D-40) THEN
+               VXC(2,IPNT) = VX(2)/(0.5*GRD)
+            ELSE
+               VXC(2,IPNT) = 0D0
+            END IF
          ELSE
+            VXC(1,IPNT) = 0D0
             VXC(2,IPNT) = 0D0
-         END IF
+         ENDIF
       END DO
       CALL DISTGGAB(NBLEN,NBLCNT,NBLOCKS,LDAIB,1,NBLEN,
      &              VXC,GAO,GRADA,FKSM)
