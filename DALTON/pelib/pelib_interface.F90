@@ -2263,7 +2263,6 @@ subroutine pelib_ifc_start_slaves(runtyp)
 #include "infpar.h"
     integer, parameter :: iprtyp = POLARIZABLE_EMBEDDING
     call qenter('pelib_ifc_start_slaves')
-    if (.not. use_pelib()) call quit('PElib not active')
     if (nodtot >= 1) then
         call mpixbcast(iprtyp, 1, 'INTEGER', master)
         call mpixbcast(runtyp, 1, 'INTEGER', master)
