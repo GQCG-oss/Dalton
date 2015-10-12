@@ -1,8 +1,0 @@
-ATOMBASIS
-LiNa
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=3.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Li      2.26567007760000      0.00000000000000      0.00000000000000
-Charge=11.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Na     -0.61791002120000      0.00000000000000      0.00000000000000

@@ -1,9 +1,0 @@
-ATOMBASIS
-anion: CF2- 2B1
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=1 Basis=regbasis Aux=auxbasis
-C     -0.54454343560000      0.00000000000000     -0.45692619600000
-Charge=9.0 Atoms=2 Basis=regbasis Aux=auxbasis
-F     -0.53915385180000      0.00000000000000      1.01116780370000
-F      0.90218280890000      0.00000000000000     -0.70655033970000

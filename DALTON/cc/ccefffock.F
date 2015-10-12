@@ -82,7 +82,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "cclr.h"
 #include "ccfro.h"
 #include "drw2el.h"
@@ -1189,9 +1189,7 @@ C-------------------------------------------------------
 C
 #if defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC)
          NFRL = 2
-#endif
-#if defined (SYS_LINUX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_ALLIANT) \
-|| defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)
+#elif defined (SYS_UNIX)
          NFRL = 8
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)

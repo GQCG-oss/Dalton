@@ -274,7 +274,7 @@ C  /* Deck twocal */
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, DISTRI, SQ12EL,
-     &        SUSCEP, ADISTR, RELCAL, GENCNT
+     &        SUSCEP, ADISTR, RELCAL, GENCNT, SOFOCK
       DIMENSION DMAT(*), FMAT(*), HESSEE(*),GMAT(*), IREPDM(*),
      &          IFCTYP(*), INDXAB(*), JSTRSH(*), NPRIMS(*), NCONTS(*),
      &          IORBSH(*),GABRAO(*),DMRAO(*), DMRSO(*),DINTSKP(*),
@@ -364,7 +364,7 @@ C
 #if defined (BUILD_PELIB)
       else if (pe_twoint) then
 !
-!        Only intermolecular integrals for peqm module
+!        Only intermolecular integrals for PElib
 !        =============================================
 !
        call twopeqm(WORK(KLAST),LWRK,HESSEE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
@@ -1280,7 +1280,6 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "dummy.h"
-C      PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DOINDX,

@@ -25,6 +25,7 @@ C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -39,7 +40,7 @@ C
 #include "inftap.h"
 #include "infrank.h"
 #include "inforb.h"
-! gnrinf.h: QM3, PEQM, THR_REDFAC
+! gnrinf.h: QM3, THR_REDFAC
 #include "gnrinf.h"
 C
       LOGICAL NEWDEF, BCFREQ, COMFREQ, NXTLAB
@@ -576,7 +577,7 @@ C
      *      ' Test of contributions from A2 terms.'
          IF (X2TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from X2 terms.'
-         IF (PEQM) THEN
+         IF (USE_PELIB()) THEN
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF
@@ -595,6 +596,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_dolf
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -618,7 +620,6 @@ C
       PARAMETER ( NTABLE = 33)                                          !MK
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
-      INTEGER PE_IFC_LF_L
 C
       DATA TABLE /'.BPROP ', '.BFREQ ', '.APROP ', '.ROOTS ',
      *            '.MAXITP', '.THCLR ', '.MAXITL', '.THCPP ',
@@ -945,19 +946,18 @@ C                 B operators
                GO TO 100
  24            CONTINUE
                   TWOPHO = .TRUE.
-                  IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-                     IF (PE_IFC_LF_L()==1) THEN
-                       LABEL='XLFDIPLN'
-                       ASMOP( INDPRP(LABEL)) = .TRUE.
-                       BSMOP( INDPRP(LABEL)) = .TRUE.
-                       LABEL='YLFDIPLN'
-                       ASMOP( INDPRP(LABEL)) = .TRUE.
-                       BSMOP( INDPRP(LABEL)) = .TRUE.
-                       LABEL='ZLFDIPLN'
-                       ASMOP( INDPRP(LABEL)) = .TRUE.
-                       BSMOP( INDPRP(LABEL)) = .TRUE.
-                     ELSE 
+                  IF (USE_PELIB()) THEN
+                     IF (PELIB_IFC_DOLF()) THEN
+                        LABEL='XLFDIPLN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='YLFDIPLN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                        LABEL='ZLFDIPLN'
+                        ASMOP( INDPRP(LABEL)) = .TRUE.
+                        BSMOP( INDPRP(LABEL)) = .TRUE.
+                     ELSE
                         LABEL='XDIPLEN'
                         ASMOP( INDPRP(LABEL)) = .TRUE.
                         BSMOP( INDPRP(LABEL)) = .TRUE.
@@ -968,8 +968,7 @@ C                 B operators
                         ASMOP( INDPRP(LABEL)) = .TRUE.
                         BSMOP( INDPRP(LABEL)) = .TRUE.
                      END IF
-#endif 
-                  ELSE 
+                  ELSE
                      LABEL='XDIPLEN'
                      ASMOP( INDPRP(LABEL)) = .TRUE.
                      BSMOP( INDPRP(LABEL)) = .TRUE.
@@ -1187,7 +1186,7 @@ C
      *      ,MAXITO
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
-         IF (PEQM) THEN
+         IF (USE_PELIB()) THEN
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF

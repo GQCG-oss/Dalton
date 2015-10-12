@@ -631,7 +631,6 @@ C  /* Deck dalton_exedrv */
 #ifdef BUILD_OPENRSP
           use openrsp_input, only: read_openrsp_input
 #endif
-
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
@@ -641,6 +640,11 @@ C
       use pcm_scf
       use pcmmod_cfg
 #endif
+      use pelib_interface, only: use_pelib, pelib_ifc_finalize,
+     &                           pelib_ifc_deactivate, pelib_ifc_domep,
+     &                           pelib_ifc_domep_noqm,
+     &                           pelib_ifc_mep_noqm,
+     &                           pelib_ifc_dolf, pelib_ifc_lf
 
 #include "implicit.h"
 #include "dummy.h"
@@ -687,7 +691,6 @@ C
       DIMENSION CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
-      INTEGER PE_IFC_MEP, PE_IFC_MEP_NOQM
 
 #include "trkoor.h"
 #include "taymol.h"
@@ -706,16 +709,20 @@ C
 !     search **OPENRSP in input
       rewind (lucmd)
       openrsp_input_found = .false.
+      use_openrsp = .false.
       do
          read (lucmd, '(a)', end=2) word
          if (word == '**OPENR') then
             call read_openrsp_input('DALTON.INP', lucmd)
             openrsp_input_found = .true.
+            use_openrsp = .true.
             exit
          end if
       end do
 2     rewind(lucmd)
       call gpclose(lucmd, 'KEEP')
+#else
+      use_openrsp = .false.
 #endif
 
 C
@@ -1084,6 +1091,7 @@ C search for $RESPON in input (legacy driver)
             DO
                READ (LUCMD,'(A7)',END=135) WORD
                IF (WORD .EQ. '$RESPON') THEN
+                  USE_OPENRSP = .TRUE.
                   CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
                   EXIT
                END IF
@@ -1107,18 +1115,14 @@ Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
 C Request effective dipole integrals using PE library
-         IF (PEQM) THEN
-             CALL PE_IFC_LF
+         IF (USE_PELIB()) THEN
+             IF (PELIB_IFC_DOLF()) THEN
+                 CALL PELIB_IFC_LF()
+             END IF
          END IF
 Classical MEP calculations using PE library
-         IF (PEMEP) THEN
-            IF (PE_IFC_MEP() == 0) THEN
-                CALL QUIT('ERROR: .PEMEP requires also .MEP in *PEQM.')
-            ELSE IF (PE_IFC_MEP() == 1) THEN
-                IF (PE_IFC_MEP_NOQM() == 1) THEN
-                    CALL PE_IFC_MEPCALC_NOQM()
-                END IF
-            END IF
+         IF (PELIB_IFC_DOMEP() .AND. PELIB_IFC_DOMEP_NOQM()) THEN
+             CALL PELIB_IFC_MEP_NOQM()
          END IF
 
 Cholesky
@@ -1184,6 +1188,7 @@ C search for $RESPON in input
          DO
             READ (LUCMD,'(A7)',END=145) WORD
             IF (WORD .EQ. '$RESPON') then
+               USE_OPENRSP = .TRUE.
                CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
                EXIT
             END IF
@@ -1232,10 +1237,11 @@ C
       CALL PLTORB(WORK(KKIND),LMWORK)
 
 C
-!     release memory used in PElib
-#if defined (BUILD_PELIB)
-      IF (PEQM) CALL PE_IFC_FINALIZE()
-#endif
+!     release memory used in PElib and deactivate it
+      IF (USE_PELIB()) THEN
+        CALL PELIB_IFC_FINALIZE()
+        CALL PELIB_IFC_DEACTIVATE()
+      END IF
 
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
@@ -1273,6 +1279,8 @@ C
       use pcm_write
 #endif
       use qmcmm_input, only: qmnpinp
+      use pelib_interface, only: use_pelib, pelib_ifc_activate,
+     &                           pelib_ifc_input_reader
 
 #include "implicit.h"
 #include "dummy.h"
@@ -1303,7 +1311,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 14, NTABLE = 36, D0 = 0.D0)
+      PARAMETER (NDIR = 14, NTABLE = 35, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1333,7 +1341,7 @@ C
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
-     &            '.QFIT  ', '.LSLIB ', '.PEMEP '/
+     &            '.QFIT  ', '.LSLIB '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1383,8 +1391,11 @@ C
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
-C     NEWTRA is in /INFTRA/ for practical reasons
-      NEWTRA = .FALSE.
+
+C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
+      NEWTRA = .FALSE.        ! if true, use "new" transformation for Mulliken integrals
+      NEWTRA_USEDRC = .FALSE.  ! if NEWTRA and NEWTRA_USEDRC both true, also use "new" transformation for Dirac integrals
+
       OPTNEW = .FALSE.
       NEWSYM = .FALSE.
       NEWBAS = .TRUE.
@@ -1394,8 +1405,6 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
-      PEQM   = .FALSE.
-      PEMEP  = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       QFIT   = .FALSE.
@@ -1513,8 +1522,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.EXTPCM',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB ',
-C 35   : '.PEMEP '.
+C 31-35: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  ', '.LSLIB '
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1528,7 +1536,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133,134,135,136), I
+     &                131,132,133,134,135), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1658,12 +1666,7 @@ C        '.DOUGLA'
          GOTO 100
 !        '.PEQM  '
  133     CONTINUE
-#if defined (BUILD_PELIB)
-            PEQM = .TRUE.
-#else
-            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
-            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
-#endif
+            CALL PELIB_IFC_ACTIVATE()
          GOTO 100
 !        '.QFIT  '
  134     CONTINUE
@@ -1681,15 +1684,6 @@ C        '.DOUGLA'
 #else
          WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
          CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
-#endif
-         GOTO 100
-!        '.PEMEP '
- 136     CONTINUE
-#if defined (BUILD_PELIB)
-            PEMEP = .TRUE.
-#else
-            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
-            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1807,7 +1801,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)')
      &  'Information for WESTA will be calculated and written to files.'
-      IF (PEQM) WRITE(LUPRI,'(4X,A)')
+      IF (USE_PELIB()) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
       IF(QFIT) WRITE(LUPRI,'(4X,A)')
@@ -1908,12 +1902,8 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 CONTINUE
-#if defined (BUILD_PELIB)
-        CALL PE_IFC_INPUT_READER(WORD)
-#else
-        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
-#endif
-      GOTO 200
+        CALL PELIB_IFC_INPUT_READER(WORD)
+      GO TO 200
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
    11 CONTINUE

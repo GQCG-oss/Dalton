@@ -86,15 +86,6 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-if(ENABLE_LSLIB)
-    add_definitions( -DBUILD_LSLIB )
-    add_dependencies(dalton lsdalton)
-    set(DALTON_LIBS
-        lsdalton
-        ${DALTON_LIBS}
-        )
-endif()
-
 if(ENABLE_PELIB)
     include(LibsPElib)
     add_dependencies(dalton pelib)

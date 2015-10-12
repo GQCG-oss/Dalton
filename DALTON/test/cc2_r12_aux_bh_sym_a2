@@ -60,8 +60,6 @@ cat > cc2_r12_aux_bh_sym_a2.dal <<'%EOF%'
 .CC
 *ORBITAL INPUT
 .NOSUPSYM
-.MOSTART
- H1DIAG
 *SCF INPUT
 .THRESH
  1.0D-12

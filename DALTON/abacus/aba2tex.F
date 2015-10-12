@@ -249,6 +249,7 @@ C  /* Deck twoexp */
 C
 C     TUH
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -634,7 +635,7 @@ C
                   CALL ADDGRD(GSOLNN)
                END IF
                IF (PCM) CALL ADDGRD(GSOLCV)
-               IF (PEQM) CALL ADDGRD(PEGRAD)
+               IF (USE_PELIB()) CALL ADDGRD(PEGRAD)
                CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
                NCDEP3 = 3*NUCDEP

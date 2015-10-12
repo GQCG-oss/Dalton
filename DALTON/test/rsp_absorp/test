@@ -24,7 +24,7 @@ f.add(string = "ZDIPLEN  total ",
 
 # first and second hyperpolarizability
 f.add(re = '[XYZ]DIPLEN   [XYZ]DIPLEN',
-      rel_tolerance = 2.0e-5)
+      rel_tolerance = 1.0e-4)
 
 test.run(['rsp_absorp.dal'], ['LiH_Sadlej-pVTZ.mol'], f={'out': f})
 

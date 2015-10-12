@@ -24,6 +24,7 @@
 C
       SUBROUTINE TMOINP(WORD)
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_dolf
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -44,7 +45,6 @@ C
       PARAMETER ( NTABLE = 20)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
-      INTEGER PE_IFC_LF_L
 C
       DATA TABLE /'.CPROP ', '.CFREQ ', '.BPROP ', '.BFREQ ',
      *            '.APROP ', '.ROOTS ', '.MAXITP', '.THCPP ', 
@@ -201,9 +201,8 @@ C
                GO TO 100         
  20            CONTINUE
                   THREEPHOTON = .TRUE.
-                  IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-                     IF (PE_IFC_LF_L()==1) THEN
+                  IF (USE_PELIB()) THEN
+                     IF (PELIB_IFC_DOLF()) THEN
                         LABEL='XLFDIPLN'
                         ATMOP( INDPRP(LABEL)) = .TRUE.
                         BTMOP( INDPRP(LABEL)) = .TRUE.
@@ -230,7 +229,6 @@ C
                         BTMOP( INDPRP(LABEL)) = .TRUE.
                         CTMOP( INDPRP(LABEL)) = .TRUE.
                      END IF
-#endif
                   ELSE
                      LABEL='XDIPLEN'
                      ATMOP( INDPRP(LABEL)) = .TRUE.

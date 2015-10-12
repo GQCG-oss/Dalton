@@ -3850,7 +3850,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "cclr.h"
 C
       CALL QENTER('MP2_KARI')
@@ -5465,7 +5465,7 @@ celena#include "ccisao.h" sonst falscher Wert fuer ISAO() in D2h
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "cclr.h"
 #include "ccfro.h"
 C
@@ -6313,7 +6313,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "cclr.h"
 #include "ccfro.h"
 C
@@ -6732,7 +6732,7 @@ C
 #include "ccsdio.h"
 #include "distcl.h"
 #include "cbieri.h"
-#include "eribuf.h"
+#include "eritap.h"
 #include "cclr.h"
 #include "ccfro.h"
 #include "drw2el.h"
@@ -7558,7 +7558,7 @@ C
 #if defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_DEC)
          NFRL = 2
 #endif
-#if defined (SYS_LINUX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_ALLIANT) || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)
+#if defined (SYS_UNIX)
          NFRL = 8
 #endif
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)

@@ -1,9 +1,0 @@
-ATOMBASIS
-cation: CH2+
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=1 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000      0.09387393880000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      1.03288739690000     -0.28162181630000
-H      0.00000000000000     -1.03288739690000     -0.28162181630000

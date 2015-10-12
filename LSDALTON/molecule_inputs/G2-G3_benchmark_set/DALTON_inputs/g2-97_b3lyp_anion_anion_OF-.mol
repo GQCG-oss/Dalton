@@ -1,8 +1,0 @@
-ATOMBASIS
-anion: OF-
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O      0.00000000000000      0.00000000000000     -0.80472720560000
-Charge=9.0 Atoms=1 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      0.00000000000000      0.71531307160000

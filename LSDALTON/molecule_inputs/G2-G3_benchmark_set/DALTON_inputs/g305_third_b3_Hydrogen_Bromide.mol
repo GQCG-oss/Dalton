@@ -1,8 +1,0 @@
-ATOMBASIS
-Hydrogen Bromide
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=35.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Br      0.00000000000000      0.00000000000000     -0.03951061970000
-Charge=1.0 Atoms=1 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      1.38287168920000

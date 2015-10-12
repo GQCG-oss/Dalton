@@ -25,6 +25,7 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -212,7 +213,7 @@ C     ***** Dipole moment gradient *****
 C     **********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASDIP .AND. .NOT. PEQM) THEN
+      IF (.NOT. PASDIP .AND. .NOT. USE_PELIB()) THEN
          CALL DIPCTL(WORK(KLAST),LWRK,PASDIP)
          IF (PASDIP) CALL ABAWRIT_RESTART
          CALL FLSHFO(LUPRI)
@@ -301,7 +302,7 @@ C
       IF (MOLHES .OR. SHIELD .OR. MAGSUS .OR. VCD .OR.
      &    DIPDER .OR. POLAR .OR. QPGRAD .OR. (SPNSPN .AND. DOPSO) .OR.
      &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT
-     &    .AND. .NOT. PEQM) THEN
+     &    .AND. .NOT. USE_PELIB()) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASREL,.FALSE.)
          IF (PASREL) CALL ABAWRIT_RESTART
@@ -540,7 +541,7 @@ CAMT Add empirical DFT-D gradient...
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLTT)
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLNN)
          IF (PCM) CALL ADDGRD(GSOLCV)
-         IF (PEQM) CALL ADDGRD(PEGRAD)
+         IF (USE_PELIB()) CALL ADDGRD(PEGRAD)
       END IF
 C
 C     Calculated dipole moment
@@ -549,9 +550,9 @@ C
 C
 C     Calculated elements of dipole gradient
 C
-      IF (.NOT. PEQM) CALL DZERO(DIP1,9*NUCDEP)
+      IF (.NOT. USE_PELIB()) CALL DZERO(DIP1,9*NUCDEP)
 Clf to be adjusted for PCM IR intensities calculation
-      IF (DIPDER .AND. .NOT. PEQM) THEN
+      IF (DIPDER .AND. .NOT. USE_PELIB()) THEN
          CALL DIPADD(DDIPN)
          CALL DIPADD(DDIPE)
          CALL DIPADD(DDIPS)
@@ -692,6 +693,7 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (one of **START, **EACH , or **PROPE)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -1931,7 +1933,7 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
         WRITE(LUPRI,'(6X,A)') 'Environment is modeled using'//
      &                 ' the polarizable embedding scheme (PE library).'
         IF (POLAR) THEN

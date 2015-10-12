@@ -138,8 +138,6 @@ C
 #include "iratdef.h"
 #include "inftap.h"
 C
-      PARAMETER (LBUF = 600)
-C
       LOGICAL LOCDBG  ! local debug flag
       PARAMETER (LOCDBG = .false.)
 C
@@ -154,6 +152,7 @@ C
      *            'CCAODER5','CCAODER6','CCAODER7','CCAODER8'/
 #include "ccorb.h"
 #include "ccsdsym.h"
+#include "eribuf.h"
 
 *----------------------------------------------------------------------*
 * open files for sorted integrals:
@@ -166,19 +165,9 @@ C
 *----------------------------------------------------------------------*
 *     set buffer information.
 *----------------------------------------------------------------------*
-      IF (NBAST .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-         IBIT1 = 2**8  - 1
-         IBIT2 = 2**16 - 1
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-         IBIT1 = 2**16 - 1
-         IBIT2 = 0   ! not used when NIBUF .eq. 2
-      END IF
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+      LBUF = 600
 
-      
 *----------------------------------------------------------------------*
 *     Buffer allocation.
 *----------------------------------------------------------------------*
@@ -231,7 +220,7 @@ C
          IOFF2 = 1
 C
          NTOTD  = NBAS(ISYMD)
-	 IF (NTOTD .EQ. 0) GOTO 100
+      IF (NTOTD .EQ. 0) GOTO 100
 
          NUMBAT = MIN(NTOTD,LWRK1/LENGTH(ISYMD))
 C

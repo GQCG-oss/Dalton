@@ -45,7 +45,7 @@ C     ... do not try to flush unused units (e.g. LUPRI on a slave) /hjaaj
 #if  defined (SYS_AIX)  || defined (SYS_IRIX) || defined (SYS_NEC)  \
   || defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_LINUX) \
   || defined (SYS_SUN)  || defined (SYS_HAL) || defined (SYS_T90)   \
-  || defined (SYS_HPUX) || defined (SYS_SX)
+  || defined (SYS_HPUX) || defined (SYS_SX)  || defined (SYS_DARWIN)
 C
 C        Force transfer of all buffered output to the file or device
 C        associated with logical unit IUNIT.
@@ -309,13 +309,16 @@ C      WRITE (LUPRIN,'(T6,2A)') 'Date and time (HP-UX)  : ',FDATE()
 #if defined (SYS_SX)
       WRITE (LUPRIN,'(T6,2A)') 'Data and time (SX)     : ',FDATE()
 #endif
-#if defined (SYS_LINUX) && !(defined(GFORTRAN) && GFORTRAN <= 402)
-c     bug in gfortran-4.0.2 causes a segfault here.
+#if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
+#if defined (SYS_DARWIN)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Darwin) : ',FDATE()
+#endif
+
 #if defined (SYS_LINUX) || defined (SYS_UNIX) || defined (SYS_HPUX)\
  || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC)   \
- || defined (SYS_SUN)
+ || defined (SYS_SUN) || defined (SYS_DARWIN)
 #ifdef VAR_G95
       IRET = HOSTNM(HSTNAM)
 #else
@@ -517,7 +520,7 @@ C
 
       C = C + A/B
 
-C The print statements below will onl be printed if the integer divide by zero
+C The print statements below will only be printed if the integer divide by zero
 C code above does not cause the program to exit.
 #endif
 
@@ -532,6 +535,9 @@ C     Use stderr on unix/linux systems, if LUPRI not defined yet.
 #endif
 #if defined (SYS_LINUX)
       WRITE(LUPRI,*) 'Linux has no obvious system traceback facility.'
+#endif
+#if defined (SYS_LINUX)
+      WRITE(LUPRI,*) 'Darwin has no obvious system traceback facility.'
 #endif
 #if defined (SYS_HPUX)
       WRITE(LUPRI,*) 'HP-UX has no obvious system traceback facility.'

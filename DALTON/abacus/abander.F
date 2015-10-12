@@ -302,6 +302,7 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -339,24 +340,19 @@ C
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    (DOROSCF .AND. NSYM.gt.1 .AND. .NOT.DIRCAL) .OR.  ! high spin HF or DFT, with symmetry
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
-     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
-     &    PEQM) THEN
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
       ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. CCPT .OR.
      &        DOROSCF .OR.  ! high spin HF or DFT, no symmetry
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
      &        DRCCD .OR. SOSEX .OR. RCCD .OR.  !RPA Methods with analytic gradient only
      &        DPCM .OR.
-     &        DODFTD) THEN !AMT Only gradients for empirical disp correction so far
+     &        DODFTD .OR. !AMT Only gradients for empirical disp correction so far
+     &        USE_PELIB()) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
       END IF
-#if defined (BUILD_PELIB)
-      IF (PEQM) THEN
-        NAORDR = 1
-      END IF
-#endif
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR
@@ -1831,6 +1827,7 @@ c
 #include "huckel.h"
       LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG,
      &        ALRCAL, PRPCAL, FNDKEY
+      LOGICAL LASTE
       CHARACTER*(*) MBKLIN
       DIMENSION MBKLIN(NMBKLN)
       DIMENSION FUNVAL(NINTIN,NDIME), COOR (NCOOR), SYMCOR(NCOOR,NCOOR),
@@ -4476,6 +4473,7 @@ C
 C     /*Deck gsphes*/
       SUBROUTINE GSPHES(SYMCOR,SMCINV,CHESS1,CHESS2,WORK,ICRIRP,
      &                  NDCOOR,LWORK,LTXT,IPRINT,TEXT)
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -4484,7 +4482,6 @@ C     /*Deck gsphes*/
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "cbinum.h"
-! gnrinf.h: PEQM
 #include "gnrinf.h"
       INTEGER BEGIN, LAST
       LOGICAL HESEXS
@@ -4597,7 +4594,7 @@ C
                END IF
 CRF        Shouldn't this file be closed?
                CALL GPCLOSE(LUHES,'KEEP')
-            ELSE IF (PEQM) THEN
+            ELSE IF (USE_PELIB()) THEN
                LUHES = -1
                CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',
      &                     IDUMMY,.FALSE.)

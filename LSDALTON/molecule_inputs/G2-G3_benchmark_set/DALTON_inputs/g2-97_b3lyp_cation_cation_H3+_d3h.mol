@@ -1,8 +1,0 @@
-ATOMBASIS
-cation: H3+ d3h
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=1.0 Atoms=3 Basis=regbasis Aux=auxbasis
-H     -0.24979976650000      0.00000000000000     -0.43266588720000
-H     -0.24979976650000      0.00000000000000      0.43266588720000
-H      0.49959953290000      0.00000000000000      0.00000000000000
