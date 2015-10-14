@@ -126,7 +126,7 @@ C
 C
       PARAMETER(NMODEL = 22)
       !sonia: prevent projection in L0
-      logical lcvsbck,lionbck
+      logical lcvsbck,lionbck,lrmcorebck
       !
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
@@ -663,12 +663,15 @@ C
                     ENDDO
                  ELSE
                     lcvsbck = LCVSEXCI
-                    lionbck = LIONIZEEXCI
+                    lionbck = LIONIZEXCI
+                    lrmcorebck = LRMCORE
                     LCVSEXCI = .false.
-                    LIONIZEEXCI = .false.
+                    LIONIZEXCI = .false.
+                    LRMCORE = .false.
                     CALL CC_FOP(IDUMMY,WORK,LWORK,APROXR12)
                     LCVSEXCI = lcvsbck
-                    LIONIZEEXCI = lionbck 
+                    LIONIZEXCI = lionbck 
+                    LRMCORE = lrmcorebck
                  ENDIF
              ENDIF
 C
