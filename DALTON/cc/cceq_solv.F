@@ -918,8 +918,23 @@ C              ----------------------
                   IF (DEBUG) WRITE(LUPRI,*)
      &                    '--- CCNEX projection from gradient --- '
                   CALL PRJDRV(ISIDE,ISTATPRJ,ISYPR,1,NCCVAR,
-     *                            WRK(LGD),WRK(KWRK1))
+     &                            WRK(LGD),WRK(KWRK1))
                END IF
+               IF (LCVSEXCI.or.LIONIZEXCI) THEN
+                  !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
+                  CALL CC_FREEZE_EXCI(WRK(LGD),ISYMTR,
+     &             MAXCORE,MAXION,
+     &             NRHFCORE,IRHFCORE,
+     &             NVIRION,IVIRION,LBOTHEXCI)
+               END IF
+               IF (LRMCORE) THEN
+                  !write(lupri,*)'CCNEX: freeze the core'
+                  CALL CC_FREEZE_CORE(WRK(LGD),ISYMTR,
+     &             MAXCORE,MAXION,
+     &             NRHFCORE,IRHFCORE,
+     &             NVIRION,IVIRION,.false.)
+               END IF
+               !
                LGD = LGD + NCCVAR
             END DO
          ELSE
@@ -1065,9 +1080,9 @@ C        -------------------------------------------------------
             !WRITE(LUPRI,*)'CCNEX CVS or IONISATION  (resid)'
                KOFF = KRES+(JR-1)*NCCVAR
                CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,LBOTHEXCI)
+     &         MAXCORE,MAXION,
+     &         NRHFCORE,IRHFCORE,
+     &         NVIRION,IVIRION,LBOTHEXCI)
             END DO
          END IF
          IF (LRMCORE) THEN
@@ -1075,9 +1090,9 @@ C        -------------------------------------------------------
             !WRITE(LUPRI,*)'freeze core in resid'
                KOFF = KRES+(JR-1)*NCCVAR
                CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,.FALSE.)
+     &         MAXCORE,MAXION,
+     &         NRHFCORE,IRHFCORE,
+     &         NVIRION,IVIRION,.FALSE.)
             END DO
          END IF
 C        ------------------------------------------
@@ -1184,20 +1199,20 @@ C        -----------------------------------------------------------
             !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
                koff = KRES+(JR-1)*NCCVAR
                CALL CC_FREEZE_EXCI(WRK(Koff),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,LBOTHEXCI)
-            end do
+     &         MAXCORE,MAXION,
+     &         NRHFCORE,IRHFCORE,
+     &         NVIRION,IVIRION,LBOTHEXCI)
+            END DO
          END IF
          IF (LRMCORE) THEN
             DO JR = 1,NFIN
             !write(lupri,*)'CCNEX CVS or IONISATION upd trials'
                koff = KRES+(JR-1)*NCCVAR
                CALL CC_FREEZE_CORE(WRK(Koff),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,.false.)
-            end do
+     &         MAXCORE,MAXION,
+     &         NRHFCORE,IRHFCORE,
+     &         NVIRION,IVIRION,.false.)
+            END DO
          END IF
 CCN
 C        -----------------------------------
@@ -1442,18 +1457,18 @@ C
                  write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
      &           'project out valence occupied or virtual'
                  CALL CC_FREEZE_EXCI(WRK(LSVEC),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,LBOTHEXCI)
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,LBOTHEXCI)
                END IF
                !freeze core
                IF (LRMCORE) THEN
                  write(lupri,*)'CCRED CVS/IONIS sigma_',ivenu,
      &           'project out core or virtual'
                  CALL CC_FREEZE_CORE(WRK(LSVEC),ISYMTR,
-     &          MAXCORE,MAXION,
-     &          NRHFCORE,IRHFCORE,
-     &          NVIRION,IVIRION,.false.)
+     &            MAXCORE,MAXION,
+     &            NRHFCORE,IRHFCORE,
+     &            NVIRION,IVIRION,.false.)
                END IF
 !sonia
                LSVEC = LSVEC + NCCVAR
@@ -1655,9 +1670,9 @@ C GETGD bruger GD + 3 exxtra. NCCVAR - skal vaere foerst i memory.
                   CALL CC_GETGD(WRK(LGDVEC),ILSTNR,ISIDE,LIST,
      *                          WRK(KWRK1),LWRK1)
 C
-cs ------------------
+cs -------------------------------
 C            Project from gradient
-cs ------------------
+cs -------------------------------
                IF (LPROJECT) THEN
                   ISYPR = ILSTSYM(LIST,ILSTNR)
                   IF (DEBUG) THEN
@@ -1667,6 +1682,20 @@ cs ------------------
      *                            WRK(LGDVEC),WRK(KWRK1))
                END IF
 cs ------------------
+               IF (LCVSEXCI.or.LIONIZEXCI) THEN
+                  !write(lupri,*)'CCNEX:CVS or IONISATION (1)'
+                  CALL CC_FREEZE_EXCI(WRK(LGDVEC),ISYMTR,
+     &             MAXCORE,MAXION,
+     &             NRHFCORE,IRHFCORE,
+     &             NVIRION,IVIRION,LBOTHEXCI)
+               END IF
+               IF (LRMCORE) THEN
+               write(lupri,*)'CCRED: freeze the core in grad'
+                  CALL CC_FREEZE_CORE(WRK(LGDVEC),ISYMTR,
+     &             MAXCORE,MAXION,
+     &             NRHFCORE,IRHFCORE,
+     &             NVIRION,IVIRION,.false.)
+               END IF
 C
                   LGDVEC = LGDVEC + NCCVAR
  1100          CONTINUE
