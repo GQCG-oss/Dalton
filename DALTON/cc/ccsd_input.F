@@ -307,7 +307,7 @@ c module, hence:
                GO TO 1000
    18          CONTINUE
 C                '*CCXOPA'
-                  CALL CC_OPAINP(WORD)
+                  CALL CC_OPAINP(WORD,MSYM)
                GO TO 1000
    19          CONTINUE
                   E0SKIP = .TRUE.
@@ -640,7 +640,7 @@ C                '.DKABAR', direct KappaBar calculation in nondir CC
                GO TO 1000
    99          CONTINUE
 C                '*CCOPA ' one-photon absorption strengths
-                  CALL CC_OPAINP(WORD)
+                  CALL CC_OPAINP(WORD,MSYM)
                GO TO 1000
   100          CONTINUE
 C                '*NODDY '
@@ -655,7 +655,7 @@ C                 '.DIRDER' direct calculation of derivative integrals
                GO TO 1000
  103           CONTINUE
 C                 '.CCTPA ' two-photon absorption strengths
-                  CALL CC_OPAINP(WORD)
+                  CALL CC_OPAINP(WORD,MSYM)
                GO TO 1000
  104           CONTINUE
 C                 '.INT4V ' use VVVV integrals in CC3 left transformation
@@ -2428,7 +2428,7 @@ C
       RETURN
       END
 c/* deck cc_opainp */
-      SUBROUTINE CC_OPAINP(WORD)
+      SUBROUTINE CC_OPAINP(WORD,MSYM)
 C---------------------------------------------------------------------*
 C
 C    Purpose: Read input for absorption strenghts
@@ -2446,13 +2446,15 @@ C=====================================================================*
 #include "ccopainf.h"
 #include "cctpainf.h"
 #include "ccxopainf.h"
+!sonia
+#include "ccxscvs.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 18)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2464,7 +2466,7 @@ C=====================================================================*
 
       LOGICAL GSTOPA, GSTTPA, XSTOPA
       INTEGER IXSYM, IXSTATE, IXSYM2, IXSTATE2, IJUMP
-      INTEGER INDPRP_CC
+      INTEGER INDPRP_CC, MSYM, I, J
 
 #if defined (SYS_CRAY)
       REAL SMFREQ
@@ -2479,7 +2481,7 @@ C=====================================================================*
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
      *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
-     *             '.DIPOLE'/
+     *             '.DIPOLE','.XCVSEP','.XRMCOR'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2519,6 +2521,11 @@ C=====================================================================*
         QR22N1  = .TRUE.
         NSEQR2  = 0 
         NQR2OP  = 0 
+        !sonia
+        LXSCVS = .false.
+        LXRMCORE = .false.
+        CALL IZERO(NXCORE,8)
+        CALL IZERO(IXCORE,8*MXCORE)
       ELSE IF (GSTTPA) THEN
         NSMSEL   = 0
         NSMOPER  = 0
@@ -2553,7 +2560,7 @@ c         table look up:
 
 c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2839,11 +2846,50 @@ C           ------------------------------------------------------
             END IF
             GO TO 100
 C           ------------------------------------------------------
-C           .DIPOLE is the synonim od .DIPLEN.
+C           .DIPOLE is the synonim of .DIPLEN.
 C           ------------------------------------------------------
 16          CONTINUE
             GO TO 4
+C           ------------------------------------------------------
+C           .XSCVSEP 
+C           ------------------------------------------------------
+17          CONTINUE
+            LXSCVS = .true.
+              WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NXCORE(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                 READ(LUCMD,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
+              WRITE(LUPRI,*)'XOPA: # active core orbs per sym'
+              write(lupri,*) (NXCORE(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested core orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
 
+            GO TO 100
+C           ------------------------------------------------------
+C           .XRMCORE
+C           ------------------------------------------------------
+18          CONTINUE
+            LXRMCORE = .true.
+              WRITE(LUPRI,*)'CCSD_INPUT: core-val requested'
+              !how many per symmetry
+              READ(LUCMD,*) (NXCORE(I),I=1,MSYM)
+              !which ones
+              DO I = 1, MSYM
+                 READ(LUCMD,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
+              WRITE(LUPRI,*)'XOPA: # frozen core orbs per sym'
+              write(lupri,*) (NXCORE(I),I=1,MSYM)
+              WRITE(LUPRI,*)'Indices of requested core orbs'
+              DO I = 1, MSYM
+                 write(LUpri,*) (IXCORE(J,I),J=1,NXCORE(I))
+              END DO
+
+            GO TO 100
 C
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
