@@ -5,7 +5,7 @@ C  /* Deck cc_freeze_exci */
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     09-7-2015 Sonia Coriani
-!     Specular to CVS separation
+!     Specular to CVS separation - could be replaced by CC_CORE()
 C
 C     Purpose: Project out specific CORE excitations 
 C              from a trial vector (by zeroing 
@@ -254,3 +254,24 @@ C
 
       RETURN
       END
+C  /* Deck cc_cvs_interface */
+      SUBROUTINE CC_cvs_INTERFACE(MSYM)
+C
+C PURPOSE:
+C  interface for transfer of CVS info module
+C  Sonia, 2015
+#include "implicit.h"
+#include "priunit.h"
+#include "ccexcicvs.h"
+#include "ccxscvs.h"
+C
+      integer MSYM
+
+      NRHFCORE = NXCORE
+      IRHFCORE = IXCORE
+      LCVSEXCI = LXSCVS
+      LRMCORE  = LXRMCORE
+
+      RETURN
+      END
+
