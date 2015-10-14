@@ -123,6 +123,7 @@ Cholesky
 Cholesky
 C
 #include "ccexcicvs.h"
+#include "ccxscvs.h"
 C
       PARAMETER(NMODEL = 22)
       !sonia: prevent projection in L0
@@ -822,7 +823,13 @@ C-----------------------------------------------
 C
          !IF (LRSPSYM) THEN
          !Do not enter if Lanczos calculation. Sonia
-         IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
+         !IF ((LRSPSYM).and.(.NOT.CCLRLCZ)) THEN
+         !reactivate for Excited state calculation
+         IF (LRSPSYM) THEN
+           if (LXSCVS.or.LXRMCORE) then
+              !transfer info for projection
+              call cc_cvs_interface(MSYM)
+           end if
            CALL CC_SOLRSP(WORK,LWORK,APROXR12)
          END IF
 C
