@@ -1663,8 +1663,6 @@ C
 C        single configuration has always natural orbitals
          IF (CNOLBL .EQ. 'ONLYNO') THEN
             TRCNO  = .FALSE.
-         ELSE
-            CNOLBL = 'ONLYFD'
          END IF
          GO TO 9000
       END IF
@@ -1706,11 +1704,9 @@ C
          IF (LW22 .LT. 0) CALL ERRWRK('OPTST.CICTL',-KW22,LFREE)
 C
 C      A  single configuration will already have natural orbitals
-         IF (MAXCIT .EQ. 0) THEN
+         IF (MAXCIT .LE. 0) THEN
             IF (CNOLBL .EQ. 'ONLYNO') THEN
                TRCNO  = .FALSE.
-            ELSE
-               CNOLBL = 'ONLYFD'
             END IF
          END IF
 C
@@ -1799,8 +1795,6 @@ C
 C
 C
       GO TO 9000
-C
-C *** ICSTRT = 4, 5, 6, or 7 ***
 C     (See what codes means at beginning of this subroutine)
 C
 C === start guess should already be on LUIT1 (SIRIUS.RST)

@@ -225,7 +225,7 @@ C-- SIRTR1, ..., ORBSIG
       KFTV   = KFXV   + NOSIM*N2ORBX * N_VS
 C-- SIRTR1, ORBSIG, CISIG
       LFTV   = MCSIM*N2ORBX
-      IF (DOMCSRDFT) LFTV = 2*LFTV
+      IF (DOMCSRDFT) LFTV = LFTV + MCSIM*N2ORBX
 C     ... Extra allocation for "FTC" in MCSCF-SRDFT
 C         Will be constructed in TR1FCY
       IF (DFT_SPINDNS) LFTV = LFTV + MCSIM*N2ORBX ! for FTS
@@ -368,6 +368,11 @@ C                  because CREF is projected out of SCVEC later
                   JSCVEC = KSCVEC + (ICSIM-1)*NVAR
                   CALL GETAC1(WRK(JFTC),WRK(KSRW))
                   CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC))
+                  IF (DFT_SPINDNS) THEN
+                     JFTC  = KFTV + (2*NCSIM+ICSIM-1)*N2ORBX ! FTS matrix
+                     CALL GETAC1(WRK(JFTC),WRK(KSRW))
+                     CALL DGEASP(NASHT,WRK(KSRW),WRK(KSRLTRAC)) ! add FTSAC to SRLTRAC
+                  END IF
                   IF (IPRLIN .GT. 10) THEN
                      WRITE(LUPRI,'(/A,I3)')
      &               'MCSRDFT "FTC"="V^([2c],xc-SR)" no.',ICSIM
@@ -394,6 +399,11 @@ C
                JH2XAC = KH2XAC + (IOSIM-1)*NNASHX*NNASHX
                CALL GETAC1(WRK(JFXC),WRK(KCW))
                CALL DGETSP(NASHT,WRK(KCW),WRK(JFXCAC))
+               IF (DFT_SPINDNS) THEN
+                  JFXS  = KFXV + (NOSIM+IOSIM-1)*N2ORBX ! FXS matrix
+                  CALL GETAC1(WRK(JFXS),WRK(KCW))
+                  CALL DGEASP(NASHT,WRK(KCW),WRK(JFXCAC)) ! add FXSAC to FXCAC
+               END IF
                IF (P6FLAG(22) .OR. IPRLIN .GE. 22) THEN
                   WRITE (LUPRI,6010) IOSIM,NOSIM
                   CALL OUTPAK(WRK(JFXCAC),NASHT,1,LUPRI)

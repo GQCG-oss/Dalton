@@ -773,9 +773,9 @@ C           2 because DC, DV or DXC, DXV
             NDOFF = 1
 C           1 because DC or DXC
          END IF
-         KSRAO = 1
          IF (LSRHYBR) NSRAO = NSRAO + 1
 C        ... one more EXCMAT from SRDFT when LSRHYBR
+         KSRAO = 1
          KLAST = KSRAO + NSRAO*N2BASX
          IF (DOERG .AND. NSR_DMAT .GT. 1) THEN
             WRITE(LUPRI,*) 'SRFCK.SRDFT only for one SRMAT when DOERG',
@@ -934,20 +934,24 @@ C
      &         CALL DAXPY(N2BASX,-D1,DMAT(1,2),1,DMAT(1,1),1)
 C        ... restore DC = DTOT - DV
             ECSR = -DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KSRAO),1)
+            EVSR = D0
+            ESSR = D0
             IF (NASHT.GT.0) THEN
                EVSR = -DDOT(N2BASX,DMAT(1,2),1,WRK(KSRAO),1)
-            ELSE
-               EVSR = D0
+            IF (DFT_SPINDNS) THEN
+               ESSR = -DDOT(N2BASX,DMAT(1,2),1,WRK(KSRAO+N2BASX),1)
             END IF
-            ESRDFTY  = ESRDFT + ECSR + EVSR + EJKVSR + EKSR_S
+            END IF
+            ESRDFTY  = ESRDFT + ECSR + EVSR + ESSR + EJKVSR + EKSR_S 
 !
 C
 C           ESRDFT = Exsr + Ecsr
-C           EKSR_S =  0.5*Tr( Ksr Dspin ) * HFXFAC
+C           EKSR_S =  0.5*Tr( Ksr Ds ) * HFXFAC
 C           ECSR   = -0.5*Tr( Vxcsr Dc )
 C           EVSR   =     -Tr( Vxcsr Dv )
+C           ESSR   =     -Tr( V[Ds]xcsr Dv )
 C           EJKVSR = -0.5*Tr( (Jsr+HFXFAC*Ksr) Dv)
-C           note: ECSR + EVSR + EJKVSR corrections are added
+C           note: ECSR + EVSR + ESSR + EJKVSR + EKSR_S corrections are added
 C                 to get right contributions from MCSCF code.
 C
 C           For print, short-range Coulomb and Exchange energies:
@@ -964,10 +968,11 @@ C
                WRITE (LUPRI,'(A,F20.10)')
      &         ' - 0.5 Tr(Vxc-sr Dcore)           ',ECSR,
      &         ' -     Tr(Vxc-sr Dval)            ',EVSR,
+     &         ' -     Tr(V[Ds]xc-sr Dval)        ',ESSR,
      &         ' - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )',EJKVSR,
      &         ' = EsrDFTY                        ',ESRDFTY,
-     &         '   EJsr charge density            ',EJSR,
-     &         '   EKsr charge density            ',EKSR
+     &         '   EJsr = sr Coulomb energy       ',EJSR,
+     &         '   EKsr = sr Exchange energy      ',EKSR
 !           END IF
          END IF ! (DOERG)
          IF (IPRFCK .GT. 0) THEN 

@@ -23,8 +23,7 @@
 !
 !
 
-!define SRDFT_DEBUG
-#undef SRDFT_DEBUG
+#define noSRDFT_DEBUG
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -658,9 +657,11 @@ C
 C
 #ifdef SRDFT_DEBUG
       write(lupri,*) 'Entered SRDFT1, SRDFT_DEBUG defined'
-      WRITE(LUPRI,*) 'SRDFT1: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1: ND_SIM =',ND_SIM
-      WRITE(LUPRI,*) 'SRDFT1: DOGGA  =',DOGGA
+      WRITE(LUPRI,*) 'SRDFT1: CHIVAL =',CHIVAL
+      WRITE(LUPRI,*) 'SRDFT1: HFXFAC =',HFXFAC
+      WRITE(LUPRI,*) 'SRDFT1: DOERG,DOATR,DOGRD,DOGGA  =',
+     &   DOERG,DOATR,DOGRD,DOGGA
       WRITE(LUPRI,*) 'SRDFT1: ERFEXP(0:2)=',ERFEXP(0:2)
 #endif
 

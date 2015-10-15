@@ -101,6 +101,7 @@ C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,N2ORBX,NASHT
 C   INFLIN : NVARPT,LSYMRF,LSYMPT,NCONRF,NCONST,NWOPPT
 C CBGETDIS : DISTYP,IADINT
+C dftcom.h : DFT_SPINDNS, ?
 C
 #include "maxorb.h"
 #include "inforb.h"
@@ -166,6 +167,8 @@ C
          DO 200 IGD = 1,NGD
 
             CALL GETAC1(FDC(1,IGD),WRK(KFDCAC))
+            IF (DFT_SPINDNS)
+     &         CALL QUIT('DFT_SPINDNS not implemented here yet, sorry')
             IF (LONDON) CALL DSCAL(N2ASHX,DM1,WRK(KFDCAC),1)
             CALL DZERO(GD(1,IGD),NCONST)
 
@@ -999,12 +1002,14 @@ C Used from common blocks:
 C  INFORB : NORBT, NASHT, N2ASHX, NNASHX, MULD2H(8,8)
 C  INFIND : IROW(:),ISMO(:),NSM(:),ICH(:),IOBTYP(:)
 C  INFVAR : JWOPSY
+C  dftcom.h : DFT_SINPDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
 #include "infvar.h"
+#include "dftcom.h"
 C
       KH2AC1 = 1
       KNEED  = KH2AC1 + N2ASHX
@@ -1012,6 +1017,8 @@ C
 C
       CALL GETAC1(H2XCD,WRK(KH2AC1))
 C     CALL GETAC1(HH, HHAC)
+      IF (DFT_SPINDNS)
+     &   CALL QUIT('DFT_SPINDNS not implemented here yet, sorry')
 C
 C We now have the triangular packed one-index transformed integrals
 C in H2ACF:

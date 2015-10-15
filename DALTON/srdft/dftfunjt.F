@@ -360,9 +360,13 @@ C     derivative wrt rhot ---------------------
 C     derivative wrt rhos ---------------------
 !      central 2nd-order approximation
        if (dospin) then
+       if (abs(rhos) .gt. 1.d-14) then
          call ESRSPIN(rhot,rhosm,mu,dospin,E0m)
          call ESRSPIN(rhot,rhosp,mu,dospin,E0p)
          d1Edrhos = (E0p - E0m)/(2.d0*hrs)
+       else
+         d1Edrhos = 0.0d0
+       end if
        endif
 
 C Second-order derivatives --------------------------------------------

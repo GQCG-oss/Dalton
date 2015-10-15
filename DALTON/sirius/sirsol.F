@@ -533,6 +533,7 @@ C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
 C   INFPRI: IPRSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -543,6 +544,7 @@ C
 #include "infind.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       LOGICAL     FIRST, FNDLAB
       PARAMETER  (MXLMAX = 50)
@@ -756,6 +758,8 @@ C
      &             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          IF (IPRSOL .GE. 15) THEN
             WRITE (LUPRI,'(/A)') ' Rlm_ao matrix:'
@@ -1303,6 +1307,7 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
 C    INFTAP : LUSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -1313,6 +1318,7 @@ C
 #include "inflin.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
 C     Statement functions
 C
@@ -1409,6 +1415,8 @@ C
      *             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          TLM   = TN(LM) - SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
 C
@@ -1449,6 +1457,8 @@ C
       JRXCAC = KRXCAC
       DO 600 ICSIM = 1,NCSIM
          CALL GETAC2(WRK(JRXC),WRK(JRXCAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          TXC    = SOLELM(DV,WRK(JRXCAC),WRK(JRXC),TXCAC)
          WRK(KTXCAC-1+ICSIM) = TXCAC
          JRXC   = JRXC   + NNORBX
@@ -1456,6 +1466,8 @@ C
   600 CONTINUE
 C
       CALL GETAC2(WRK(KRYC),WRK(KRYCAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
 C
       CALL SOLSC(NCSIM,0,BCVEC,CREF,SVEC,WRK(KRXCAC),WRK(KRYCAC),
      *           WRK(KTXCAC),TYCAC,INDXCI,WRK(KW30),LW30)
@@ -1542,6 +1554,7 @@ C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 C    INFTAP : LUSOL
 C    INFPRI : IPRSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -1552,6 +1565,7 @@ C
 #include "inflin.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       LOGICAL FULHES
 C
@@ -1701,6 +1715,8 @@ C
      *             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          TELM  = SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
          TLM   = TN(LM) - TELM
@@ -1741,7 +1757,11 @@ C           900720: I think OK, i.e. that only RLM of sym 1
 C           such that RXLM is of sym LSYMPT is needed.
 C           CALL TR1UH1(UBOVEC,H1,H1X,IH1SYM)
 C
-            IF (NASHT .GT. 0) CALL GETAC2(WRK(KRXLM),WRK(KRLMAC))
+            IF (NASHT .GT. 0) THEN
+               CALL GETAC2(WRK(KRXLM),WRK(KRLMAC))
+               IF (DFT_SPINDNS) CALL QUIT(
+     &         'DFT_SPINDNS not implemented here yet, sorry!')
+            END IF
             IF (IPRSOL .GE. 60) THEN
                WRITE (LUPRI,'(/A,I5)') ' Rlm_X_mo matrix, IOSIM =',IOSIM
                CALL OUTPAK(WRK(KRXLM),NORBT,1,LUPRI)
@@ -1807,6 +1827,8 @@ C
                WRK(KOVLP-1+IOSIM) = D0
             END IF
             CALL GETAC2(WRK(JRXYO),WRK(JRXYOA))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
             TXYO   = SOLELM(DV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)
             IF (IPRSOL .GE. 40) WRITE (LUPRI,'(/A,I5,3F15.10)')
      *         ' IOSIM, C_OVLP, TXYOAC, TXYO :',
