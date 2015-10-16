@@ -233,16 +233,16 @@ C
       KFREE  = 1
       LFREE  = MEMX
       L_ICDTRA = MMORBX
-      CALL MEMGET2('INTE','CDTRA',K_ICDTRA,L_CDTRA,WRK,KFREE,LFREE)
-      CALL MEMGET2('INTE','TRTYP',KTRTYP,MXCORB,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ICDTRA',K_ICDTRA,L_ICDTRA,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ITRTYP',K_ITRTYP,MXCORB,WRK,KFREE,LFREE)
 C
 C     Set MO loop limits for the four integral indices
 C
-      CALL N_TRALIM(NTRLVL,WRK(K_ICDTRA),WRK(KTRTYP))
+      CALL N_TRALIM(NTRLVL,WRK(K_ICDTRA),WRK(K_ITRTYP))
 C
 C     Initialize output integral file : LUMINT
 C
-      CALL N_TRAINI(NTRLVL,CMO,WRK(K_ICDTRA),WRK(KTRTYP))
+      CALL N_TRAINI(NTRLVL,CMO,WRK(K_ICDTRA),WRK(K_ITRTYP))
 C
 C     Now we are ready for the transformation
 C
@@ -250,6 +250,8 @@ C
      &            WRK(K_ICDTRA),WRK(KFREE),LFREE)
 C
 C
+      CALL MEMREL('Releasing WORK in N_TRACT2',WRK,
+     &            1,1,KFREE,LFREE)
       CALL QEXIT ('N_TRACT2')
 C
       RETURN
@@ -2984,7 +2986,7 @@ C
       CALL QEXIT ('N_TRASET')
       RETURN
       END
-C  /* Deck N_trase0 */
+C  /* Deck N_traset_0 */
       SUBROUTINE N_TRASET_0
 C
 C 19-Jun-1990 Hans Joergen Aa. Jensen
