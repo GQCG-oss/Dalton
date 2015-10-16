@@ -1932,6 +1932,7 @@ CAMT--------------
      &                       'to zero.'
          CALL QUIT('ERROR: .POLARI and .PEQM are not compatible'//
      &             ' (see output file for more details)')
+        END IF
       END IF
 C
 C

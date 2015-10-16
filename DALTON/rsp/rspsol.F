@@ -1774,7 +1774,6 @@ C
                        EVECS(KYCONF+IG,ISIM) = EVECS(KYCONF+IG,ISIM)
      *                         - D2 * ZYMAT(K,L,ISIM)
                      END IF
-                   END IF
                   END IF
                   IF ( ITYPL.EQ.JTACT ) THEN ! inactive-active
                    IF (ONEIND) THEN
