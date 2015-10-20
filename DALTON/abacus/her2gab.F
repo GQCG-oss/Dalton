@@ -1957,8 +1957,8 @@ C     File AOPROPER present; see if it is opened
         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,
      &     'AOPROPER','OLD',' ','UNFORMATTED',IDUMMY,.FALSE.)
       ELSE
-        WRITE(LUPRI,'(/A)') 'GETGAB: AOPROPER not found !'
-        CALL QUIT('GETGAB: AOPROPER not found !')
+        CALL GPOPEN(LUPROP,
+     &     'AOPROPER','NEW',' ','UNFORMATTED',IDUMMY,.FALSE.)
       ENDIF
 C
 C     Get GAB-matrix
