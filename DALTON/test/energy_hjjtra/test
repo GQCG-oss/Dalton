@@ -36,6 +36,6 @@ f.add(from_string = 'Occupancies of natural orbitals',
       abs_tolerance = 1.0e-6)
 
 
-test.run(['energy_hjjtra.dal'], ['H2O_cc-pVDZ.mol'], {'out': f})
+test.run(['energy_hjjtra.dal'], ['H2O_cc-pVDZ.mol'], f={'out': f})
 
 sys.exit(test.return_code)
