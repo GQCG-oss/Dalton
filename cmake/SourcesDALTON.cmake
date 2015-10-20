@@ -508,6 +508,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/rsp/absorp.F
     DALTON/rsp/abscomplex.F
     DALTON/rsp/complexpp.F
+    DALTON/rsp/abscrs.F
     DALTON/rsp/gpcpp.F
     DALTON/rsp/deq27.F
     DALTON/rsp/expone.F
