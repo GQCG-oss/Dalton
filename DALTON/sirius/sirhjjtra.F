@@ -55,6 +55,7 @@
 !  inforb.h : NNORBX, NORBT, ???
 !  inftra.h : NCDTRA,IPRTRA
 !  inftap.h : LUINTM, LBINTM
+#include "iratdef.h"
 #include "gnrinf.h"
 #include "inforb.h"
 #include "inftra.h"
@@ -62,10 +63,11 @@
 
       integer JTRSIR, NTRLVL, MX_NDMAT
       integer KFREE, LFREE, KFRSAV, KUCMO, KDMAT, KFMAT, I
-      integer, allocatable :: ICDTRA(:), ITRTYP(:)
+      integer, allocatable :: ICDTRA(:), ITRTYP(:), ICD_NODE(:)
       character*8 TABLE(2),LAB123(3)
       data        TABLE /'MO2INTHJ','END INTM'/
       data        LAB123/'********','********','********'/
+      logical     FEXIST, OLDDX
 
 C --- start of executable code
 
@@ -73,6 +75,7 @@ C --- start of executable code
 
       allocate(ICDTRA(NNORBX))
       allocate(ITRTYP(NORBT))
+      allocate(ICD_NODE(NNORBX))
 
       KFREE  = 1
       LFREE  = LWORK
@@ -112,6 +115,20 @@ C --- start of executable code
       call GETDAT(LAB123(2),LAB123(3))   ! place date in LAB123(2) and time in LAB123(3)
       WRITE (LUINTM) LAB123,TABLE(1)
       WRITE (LUINTM) NNORBX, NCDTRA, ICDTRA
+!
+!...  Open direct access file for final MO integrals
+!     (the ICDTRA array which links a C,D to a record has been saved on LUINTM)
+!
+      CALL GPINQ('MO2INT_HJJTRA','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         IF (LUMINT .LE. 0) CALL
+     &      GPOPEN(LUMINT,'MO2INT_HJJTRA','OLD','DIRECT',' ',LBUF,OLDDX)
+         CALL GPCLOSE(LUMINT,'DELETE')
+      END IF
+      LUMINT = -1
+      LBUF = IRAT*NNORBT
+      CALL GPOPEN(LUMINT,'MO2INT_HJJTRA','NEW',
+     &   'DIRECT','UNFORMATTED',LBUF,OLDDX)
 
 #ifdef VAR_MPI
       if (HJJTRA_TYPE .eq. 1 .AND. PARCAL) then
@@ -134,8 +151,10 @@ C --- start of executable code
      &      WORK,KFREE,LFREE)
 
          call UPKCMO(CMO,WORK(KUCMO))
-         call HJJTRA_FCK_DISTRIBUTED(ICDTRA, ITRTYP, WORK(KUCMO),
-     &      MX_NDMAT, WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
+         ICD_NODE(:) = 0
+         call HJJTRA_FCK_DISTRIBUTED(ICDTRA, ITRTYP, ICD_NODE, 0,
+     &      WORK(KUCMO), MX_NDMAT,
+     &      WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
 
          call MEMREL('after HJJTRA_FCK_DISTRIBUTED',WORK,
      &      1,KFRSAV,KFREE,LFREE)
@@ -146,21 +165,24 @@ C --- start of executable code
 
       WRITE (LUINTM) LAB123,TABLE(2)
       CALL REWSPL(LUINTM)
+      CALL GPCLOSE(LUINTM, 'KEEP')
 
       deallocate ( ICDTRA )
       deallocate ( ITRTYP )
+      deallocate ( ICD_NODE )
       call QEXIT('HJJTRA_CTL')
       return
       end
 
-      subroutine HJJTRA_FCK_DISTRIBUTED(
-     &     ICDTRA, ITRTYP, UCMO, MX_NDMAT, DMAT, FMAT, WORK, LWORK)
+      subroutine HJJTRA_FCK_DISTRIBUTED( ICDTRA, ITRTYP,
+     &   ICD_NODE, MYNUM, UCMO, MX_NDMAT, DMAT, FMAT, WORK, LWORK)
 !
 !  Written by Hans Joergen Aa. Jensen October 2014
 !
       ! implicit none
 #include "implicit.h"
-      integer ICDTRA(NNORBX), ITRTYP(NORBT), MX_NDMAT, LWORK
+      integer ICDTRA(NNORBX), ITRTYP(NORBT), ICD_NODE(NNORBX)
+      integer MYNUM, MX_NDMAT, LWORK
       real*8  DMAT(N2BASX,MX_NDMAT), FMAT(N2BASX,MX_NDMAT)
       real*8  UCMO(NBAST,NORBT), WORK(LWORK)
 #include "priunit.h"
@@ -171,6 +193,7 @@ C --- start of executable code
 !  infind.h : ISMO(:)
 !  inftap.h : LUMINT
 !  dftcom.h : HFXFAC
+!  mtags.h  : MTAG7
 #include "maxorb.h"
 #include "maxash.h"
 #include "infinp.h"
@@ -178,12 +201,12 @@ C --- start of executable code
 #include "infind.h"
 #include "inftap.h"
 #include "dftcom.h"
+#include "mtags.h"
 #include "cbihrs.h"
 
 !  infpri.h : IPRTRA -- TODO : infpri.h not OK for implicit none yet
 #include "infpri.h"
 
-#include "iratdef.h"
 
       integer ICD, IC, ID, NDMAT,  LBUF
       integer, allocatable :: ICD_REC(:), IFCTYP(:), ISYMDM(:)
@@ -208,12 +231,13 @@ C --- start of executable code
       END IF
 #if HJJTRA_DEBUG > 0
       write(LUPRI,*) 'HJJTRA_FCK_DISTRIBUTED called'
-      write(LUPRI,*) 'LWORK:',LWORK
+      write(LUPRI,*) 'MYNUM, LWORK:',MYNUM,LWORK
 #if HJJTRA_DEBUG > 5
       write(LUPRI,*) 'Test output of UCMO:'
       call OUTPUT(UCMO,1,NBAST,1,NORBT,NBAST,NORBT,-1,LUPRI)
       IPRFCK = 19
 #endif
+      call flshfo(lupri)
 #endif
 
 !     for RDSUPM calls
@@ -221,20 +245,6 @@ C --- start of executable code
       HFXFAC      = 0.0D0
       NOSSUP_SAVE = NOSSUP
       NOSSUP      = .true.
-!
-!...  Open direct access file for final MO integrals
-!     (the ICDTRA array which links a C,D to a record has been saved on LUINTM)
-!
-      CALL GPINQ('MO2INT_HJJTRA','EXIST',FEXIST)
-      IF (FEXIST) THEN
-         IF (LUMINT .LE. 0) CALL
-     &      GPOPEN(LUMINT,'MO2INT_HJJTRA','OLD','DIRECT',' ',LBUF,OLDDX)
-         CALL GPCLOSE(LUMINT,'DELETE')
-      END IF
-      LUMINT = -1
-      LBUF = IRAT*NNORBT
-      CALL GPOPEN(LUMINT,'MO2INT_HJJTRA','NEW',
-     &   'DIRECT','UNFORMATTED',LBUF,OLDDX)
 
       IFCTYP(1:MX_NDMAT) = 11 ! symmetric density matrix, only Coulomb
 
@@ -244,15 +254,19 @@ C --- start of executable code
          do ID = 1, IC
             ICD = ICD + 1
          if (ICDTRA(ICD) .le. 0) cycle
+         if (ICD_NODE(ICD) .ne. MYNUM) cycle
             NDMAT = NDMAT + 1
             ISYMDM(NDMAT)  = MULD2H(ISMO(IC), ISMO(ID))
             ICD_REC(NDMAT) = ICDTRA(ICD)
             call HJJTRA_CD_DMAT(IC,ID,UCMO,DMAT(1,NDMAT))
-#if HJJTRA_DEBUG > 5
+#if HJJTRA_DEBUG > 2
             write(lupri,*) 'NDMAT, IC, ID, CD_DMAT:',
      &         NDMAT,IC,ID,ICD,ICDTRA(ICD)
+#if HJJTRA_DEBUG > 5
             call output(DMAT(1,NDMAT),1,NBAST,1,NBAST,
      &         NBAST,NBAST,-1,LUPRI)
+#endif
+            call flshfo(lupri)
 #endif
             if (NDMAT .eq. MX_NDMAT) then
                call DZERO(FMAT,NDMAT*N2BASX)
@@ -260,11 +274,13 @@ C --- start of executable code
                if (LUSUPM .ne. -1) then
 #if HJJTRA_DEBUG > 1
          write (lupri,*) 'calling RDSUPM, NDMAT',NDMAT
+         call flshfo(lupri)
 #endif
                   call RDSUPM(NDMAT,FMAT,DMAT,ISYMDM,WORK,LWORK)
                else
 #if HJJTRA_DEBUG > 1
          write (lupri,*) 'calling SIRFCK, NDMAT',NDMAT
+         call flshfo(lupri)
 #endif
                   call SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRFCK,
      &                     WORK,LWORK)
@@ -273,12 +289,20 @@ C --- start of executable code
                   call GETTIM(TCPU2,TWAL2)
 #if HJJTRA_DEBUG > 1
          write (lupri,*) 'CPU and wall time',TCPU2-TCPU1,TWAL2-TWAL1
+         call flshfo(lupri)
 #endif
                   TCPU_FCK = TCPU_FCK + TCPU2 - TCPU1
                   TWAL_FCK = TWAL_FCK + TWAL2 - TWAL1
                end if
-               call HJJTRA_WR_LUMINT(UCMO,NDMAT,FMAT,DMAT,
-     &                     ICD_REC,ISYMDM)
+               call HJJTRA_AB_TO_MO(UCMO,NDMAT,FMAT,DMAT,ISYMDM)
+               IF (MYNUM .NE. 0) THEN
+                  CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG7)
+                  CALL MPIXSEND(NDMAT,1,'INTEGER',MASTER,MTAG7)
+                  CALL MPIXSEND(ICD_REC,NDMAT,'INTEGER',MASTER,MTAG7)
+                  CALL MPIXSEND(DMAT,NDMAT*NNORBT,'DOUBLE',MASTER,MTAG7)
+               ELSE
+                  call HJJTRA_WR_LUMINT(NDMAT,DMAT,ICD_REC)
+               END IF
                if (TIMING) then
                   call GETTIM(TCPU1,TWAL1)
                   TCPU_WR  = TCPU_WR  + TCPU1 - TCPU2
@@ -291,18 +315,21 @@ C --- start of executable code
 
       if (NDMAT .gt. 0) then
 #if HJJTRA_DEBUG > 0
-         write (lupri,*) 'calling SIRFCK, NDMAT',NDMAT
+         write (lupri,*) 'the rest, calling SIRFCK, NDMAT',NDMAT
+         call flshfo(lupri)
 #endif
          call DZERO(FMAT,NDMAT*N2BASX)
          if (TIMING) call GETTIM(TCPU1,TWAL1)
          if (LUSUPM .ne. -1) then
 #if HJJTRA_DEBUG > 1
             write (lupri,*) 'calling RDSUPM, NDMAT',NDMAT
+         call flshfo(lupri)
 #endif
             call RDSUPM(NDMAT,FMAT,DMAT,ISYMDM,WORK,LWORK)
          else
 #if HJJTRA_DEBUG > 1
             write (lupri,*) 'calling SIRFCK, NDMAT',NDMAT
+         call flshfo(lupri)
 #endif
             call SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRFCK,
      &                  WORK,LWORK)
@@ -312,8 +339,14 @@ C --- start of executable code
             TCPU_FCK = TCPU_FCK + TCPU2 - TCPU1
             TWAL_FCK = TWAL_FCK + TWAL2 - TWAL1
          end if
-         call HJJTRA_WR_LUMINT(UCMO,NDMAT,FMAT,DMAT,
-     &               ICD_REC,ISYMDM)
+         IF (MYNUM .NE. 0) THEN
+            CALL MPIXSEND(MYNUM,1,'INTEGER',MASTER,MTAG7)
+            CALL MPIXSEND(NDMAT,1,'INTEGER',MASTER,MTAG7)
+            CALL MPIXSEND(ICD_REC,NDMAT,'INTEGER',MASTER,MTAG7)
+            CALL MPIXSEND(DMAT,NDMAT*NNORBT,'DOUBLE',MASTER,MTAG7)
+         ELSE
+            call HJJTRA_WR_LUMINT(NDMAT,DMAT,ICD_REC)
+         END IF
          if (TIMING) then
             call GETTIM(TCPU1,TWAL1)
             TCPU_WR  = TCPU_WR  + TCPU1 - TCPU2
@@ -331,6 +364,7 @@ C --- start of executable code
          TWAL2 = TWAL1 - TWAL0 - TWAL_FCK - TWAL_WR
          write(lupri,*) 'CPU and WALL time (s) rest   ',
      &      TCPU2,TWAL2
+         call flshfo(lupri)
       end if
 
       HFXFAC = HFXFAC_SAVE
@@ -372,18 +406,17 @@ C --- start of executable code
 
       end
 ! ===================================================================
-      subroutine HJJTRA_WR_LUMINT(UCMO,NDMAT,FMAT,DMAT,ICD_REC,ISYMDM)
+      subroutine HJJTRA_AB_TO_MO(UCMO,NDMAT,H2CD_AO,H2CD_MO,ICDSYM)
 !
 !  Written by Hans Joergen Aa. Jensen October 2014
 !
       implicit none
-      integer NDMAT, ICD_REC(NDMAT), ISYMDM(NDMAT), IOS
-      real*8  UCMO(NCMOT), DMAT(N2BASX,NDMAT), FMAT(N2BASX,NDMAT)
-      real*8  H2CDPK(NNORBT)  ! automatic array
+      integer NDMAT, ICDSYM(NDMAT), IOS
+      real*8  UCMO(NCMOT), H2CD_AO(N2BASX,NDMAT), H2CD_MO(NNORBT,NDMAT)
 #include "priunit.h"
 
 ! Used from include files:
-!  inforb.h : NCMOT,N2BASX, ...
+!  inforb.h : NCMOT,N2BASX,NSYM, ...
 !  inftap.h : LUMINT
 #include "inforb.h"
 #include "inftap.h"
@@ -391,30 +424,58 @@ C --- start of executable code
       integer IDMAT, IC, ID
 
       do IDMAT = 1, NDMAT
-         ! step 1: transform to MO basis, using DMAT(:,1) and FMAT(:,1) as work arrays
+         ! step 1: transform to MO basis
          call DGEMM('T','N',NORBT,NBAST,NBAST,1.0D0,
      &                 UCMO,NBAST,
-     &                 FMAT(1,IDMAT),NBAST, 0.0D0,
-     &                 DMAT,NORBT)
+     &                 H2CD_AO(1,IDMAT),NBAST, 0.0D0,
+     &                 H2CD_MO(1,IDMAT),NORBT) !  H2CD_MO used as work array here
          call DGEMM('N','N',NORBT,NORBT,NBAST,1.0D0,
-     &                 DMAT,NORBT,
+     &                 H2CD_MO(1,IDMAT),NORBT,
      &                 UCMO,NBAST, 0.0D0,
-     &                 FMAT,NORBT)
+     &                 H2CD_AO,NORBT) ! H2CD_AO(:,1) used as work array here
          ! step 2: pack
-         call DGETSP(NORBT,FMAT,DMAT)
-         call TRDPAK(DMAT,H2CDPK,NORB,IORB,NORBT, ISYMDM(IDMAT),1)
+         call DGETSP(NORBT,H2CD_AO,H2CD_MO(1,IDMAT))
+         IF (NSYM .GT. 1) THEN
+            CALL DCOPY(NNORBX,H2CD_MO(1,IDMAT),1,H2CD_AO,1)
+            CALL TRDPAK(H2CD_AO,H2CD_MO(1,IDMAT),NORB,IORB,NORBT,
+     &         ICDSYM(IDMAT),1)
+         END IF
 #if HJJTRA_DEBUG > 5
          write (LUPRI,*) 'IDMAT, rec, sym',
-     &      IDMAT,ICD_REC(IDMAT),ISYMDM(IDMAT)
-         write (LUPRI,*) 'Unpacked H2CD'
-         call OUTPUT(FMAT,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
-         if (idmat == 1) then
-         write (LUPRI,*) 'Packed H2CDPK'
-         call OUTPKB(H2CDPK,NORB,NSYM,-1,LUPRI)
+     &      IDMAT,ICD_REC(IDMAT),ICDSYM(IDMAT)
+         write (LUPRI,*) 'Unpacked H2CD_MO'
+         call OUTPUT(H2CD_AO,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+         if (ICDSYM(idmat) == 1) then
+         write (LUPRI,*) 'Packed H2CD_MO'
+         call OUTPKB(H2CD_MO(1,IDMAT),NORB,NSYM,-1,LUPRI)
          end if
 #endif
-         ! step 3: write to file
-         write(LUMINT, rec=ICD_REC(IDMAT), iostat=IOS) H2CDPK
+      end do
+
+      end
+
+! ===================================================================
+      subroutine HJJTRA_WR_LUMINT(NDMAT,H2CD_MO,ICD_REC)
+!
+!  Written by Hans Joergen Aa. Jensen October 2014
+!
+      implicit none
+      integer NDMAT, ICD_REC(NDMAT), IOS
+      real*8  H2CD_MO(NNORBT,NDMAT)
+#include "priunit.h"
+
+! Used from include files:
+!  inforb.h : NNORBT, ...
+!  inftap.h : LUMINT
+#include "inforb.h"
+#include "inftap.h"
+
+      integer IDMAT
+
+      do IDMAT = 1, NDMAT
+         ! write NDMAT (**|CD) MO integral distributions to file
+         write(LUMINT, rec=ICD_REC(IDMAT), iostat=IOS)
+     &      H2CD_MO(1:NNORBT,IDMAT)
          if (IOS .ne. 0) then
             call QENTER('HJJTRA_WR_LUMINT')
             write(lupri,*) 'IDMAT, rec, IOS',IDMAT,ICD_REC(IDMAT),IOS
@@ -437,37 +498,91 @@ C --- start of executable code
       implicit none
       integer ICDTRA(NNORBX), ITRTYP(NORBT), LWORK
       real*8  CMO(NCMOT), WORK(LWORK)
+
 #include "priunit.h"
 
 ! Used from include files:
+!  gnrinf.h : SRINTS
+!  blocks.h : NSYMBL
 !  inforb.h : N2BASX, NORBT,NNORBX, ...
-!  infpar.h, mpif.h : for MPI
+!  infpar.h, mpif.h : for MPI: MYNUM
 !  iprtyp.h : defined parallel calculation types  
 #include "maxorb.h"
+#include "gnrinf.h"
+#include "blocks.h"
 #include "inforb.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "iprtyp.h"
+#include "mtags.h"
 
-      integer IPRTYP, IPRINT
+      integer, allocatable :: ICD_NODE(:)
+      integer IPRTYP, IPRINT_local, ICD, NCDTRA, IWHO, NWHO
+      integer NDMAT, IDIST, N2GAB
 
-!     start nodes on this task
-!     1) make sure basis set information etc. is transferred
+!     start nodes on the distributed 2-electron integral transformation task
+
       IPRTYP = CALL_HJJTRA_DISTRIBUTED
       write(lupri,*) 'IPRTYP=',IPRTYP
       call MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
-      IPRINT = 29
-      call MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
+      IPRINT_local = 29 ! TODO set print level in input
+      call MPIXBCAST(IPRINT_local,1,'INTEGER',MASTER)
 
-!     transfer information to nodes; we assume basis set information
-!     already has been transferred in a Fock matrix call
+!     Now nodes are in subroutine HJJTRA_DISTRIBUITED_NODE.
+!     Transfer information to nodes; we assume basis set information
+!     already has been transferred in a Fock matrix call.
+
+      allocate( ICD_NODE(NNORBX) )
+      ICD_NODE(:) = 0
+      NCDTRA = 0
+      DO ICD = 1,NNORBX
+         IF (ICDTRA(ICD) .EQ. 0) CYCLE
+         ICD_NODE(ICD) = MOD(NCDTRA,NODTOT) + 1
+         NCDTRA = NCDTRA + 1
+      END DO
 
       write (*,*) 'HJJTRA_DISTRIBUTED_MASTER has started slaves'
       write (lupri,*) 'HJJTRA_DISTRIBUTED_MASTER has started slaves'
+      write (lupri,*) 'ICD_NODE is'
+      write (lupri,'(20I5)') ICD_NODE(1:NNORBX)
       call flush(lupri)
-      call sleep(5)
-      call quit('more programming to do ...')
-      
+      call MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)
+      call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
+      call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
+      call MPIXBCAST(CMO,NCMOT,'DOUBLE',MASTER)
+      call MPIXBCAST(ICD_NODE,NNORBX,'INTEGER',MASTER)
+
+      write (lupri,*) 'all 5 MPIXBCAST finished'
+      call flush(lupri)
+      IDIST = 0
+  100 CONTINUE
+
+      IWHO = -1
+      CALL MPIXRECV(NWHO,1,'INTEGER',IWHO,MTAG7)
+      CALL MPIXRECV(NDMAT,1,'INTEGER',NWHO,MTAG7)
+      IF (NDMAT .LE. 0) THEN
+         call quit('NDMAT .le. 0')
+      END IF
+      ! we reuse ICD_NODE to store ICD_REC
+      ! CALL MPIXRECV(ICD_REC,NDMAT,'INTEGER',NWHO,MTAG7)
+      CALL MPIXRECV(ICD_NODE,NDMAT,'INTEGER',NWHO,MTAG7)
+      write(lupri,*) 'received from node',NWHO, NDMAT
+      write(lupri,'(A,(20I5))') 'CD records:',ICD_NODE(1:NDMAT)
+      call flshfo(lupri)
+      IF (NDMAT*NNORBT .GT. LWORK) CALL QUIT('NDMAT*NNORBT .gt. lwork')
+      CALL MPIXRECV(WORK,NDMAT*NNORBT,'DOUBLE',NWHO,MTAG7)
+      call HJJTRA_WR_LUMINT(NDMAT,WORK,ICD_NODE)
+      write(lupri,*) 'and written to LUMINT'
+      call flshfo(lupri)
+
+      IDIST = IDIST + NDMAT
+      IF (IDIST .GT. NCDTRA) THEN
+         call quit('IDIST .gt. NCDTRA, uha')
+      ELSE IF (IDIST .LT. NCDTRA) THEN
+         GO TO 100
+      END IF
+
+      deallocate( ICD_NODE )
       return
       end
 ! ===================================================================
@@ -478,19 +593,98 @@ C --- start of executable code
       implicit none
       integer LWORK, IPRINT
       real*8  WORK(LWORK)
+
+      integer, allocatable :: ICDTRA(:), ITRTYP(:), ICD_NODE(:)
+      real*8 , allocatable :: CMO(:)
+      integer ICD, NCDTRA, MX_NDMAT
+      integer KFREE, LFREE, KDMAT, KFMAT, KUCMO
+      logical PARCAL_SAVE, DIRFCK_SAVE
 #include "priunit.h"
 
 ! Used from include files:
+!  gnrinf.h : PARCAL, SRINTS
+!  infinp.h : DIRFCK
+!  inforb.h : NORBT, NNORBX, NCMOT
 !  infpar.h, mpif.h : for MPI
+!  inftap.h : LUSUPM
 #include "maxorb.h"
+#include "gnrinf.h"
+#include "infinp.h"
+#include "inforb.h"
 #include "infpar.h"
+#include "inftap.h"
 #include "mpif.h"
 
       write (lupri,*)
      &'HJJTRA_DISTRIBUTED_NODE has started, MYNYM =',MYNUM
+      write (lupri,*) 'NORBT, NNORBX, NCMOT',
+     &                 NORBT, NNORBX, NCMOT
       call flush(lupri)
-      call sleep(2)
-      call quit('more programming to do ...')
+
+!    Some set up for this task (AO to MO transformation)
+
+      KFREE = 1
+      LFREE = LWORK
+
+      PARCAL_save = PARCAL
+      PARCAL = .FALSE. ! be sure the Fock matrices are NOT constructed in parallel
+                       ! we are parallelizing on the distributions
+      DIRFCK_save = DIRFCK
+      DIRFCK = .TRUE.  ! NEVER read from AOTWOINT when parallel
+      LUSUPM = -1      ! do not use supermatrix from file AO2SUPINT
+
+
+      allocate( ICDTRA(NNORBX) )
+      allocate( ITRTYP(NORBT) )
+      allocate( CMO(NCMOT) )
+      allocate( ICD_NODE(NNORBX) )
+
+      call MPIXBCAST(SRINTS,1,'LOGICAL',MASTER)
+      call MPIXBCAST(ICDTRA,NNORBX,'INTEGER',MASTER)
+      call MPIXBCAST(ITRTYP,NORBT,'INTEGER',MASTER)
+      call MPIXBCAST(CMO,NCMOT,'DOUBLE',MASTER)
+      call MPIXBCAST(ICD_NODE,NNORBX,'INTEGER',MASTER)
+      
+      NCDTRA = 0
+      DO ICD = 1,NNORBX
+         IF (ICD_NODE(ICD) .EQ. MYNUM) NCDTRA = NCDTRA + 1
+      END DO
+
+      write (lupri,*) 'icdtra, itrtyp, cmo', icdtra(1),itrtyp(1),cmo(1)
+      write (lupri,*) 'ncdtra',ncdtra
+      call flush(lupri)
+
+      IF (NCDTRA .EQ. 0) THEN
+      ! nothing to do for me this time ...
+         RETURN
+      END IF
+
+         MX_NDMAT = LFREE/(4*N2BASX) ! use half of free memory for DMAT and FMAT
+         MX_NDMAT = MIN(NCDTRA,MX_NDMAT)
+         write(lupri,*) 'MX_NDMAT, NNORBX =',MX_NDMAT,NNORBX
+         call MEMGET2('REAL','DMAT',  KDMAT,MX_NDMAT*N2BASX,
+     &      WORK,KFREE,LFREE)
+         call MEMGET2('REAL','FMAT',  KFMAT,MX_NDMAT*N2BASX,
+     &      WORK,KFREE,LFREE)
+
+         call MEMGET2('REAL','UCMO',  KUCMO,NBAST*NORBT,
+     &      WORK,KFREE,LFREE)
+         call UPKCMO(CMO,WORK(KUCMO))
+
+      write(lupri,*) MYNUM,' is calling hjjtra_fck_distributed'
+      call flush(lupri)
+      CALL  HJJTRA_FCK_DISTRIBUTED(
+     &     ICDTRA, ITRTYP, ICD_NODE, MYNUM, WORK(KUCMO), MX_NDMAT,
+     &     WORK(KDMAT), WORK(KFMAT), WORK(KFREE), LFREE)
+      call flush(lupri)
+
+      deallocate( ICDTRA )
+      deallocate( ITRTYP )
+      deallocate( CMO )
+      deallocate( ICD_NODE )
+
+      PARCAL = PARCAL_save
+      DIRFCK = DIRFCK_save
 
       return
       end
@@ -522,12 +716,14 @@ C --- start of executable code
       real*8   :: H2CD(NORBT,NORBT), WORK(*)
 
 ! Used from include files:
-!  inforb.h : NORBT, ???
+!  inforb.h : NORBT, NNORBT, NNORBX, ???
 !  infind.h : ISMO(:)
 !  inftra.h : NCDTRA
 !  inftap.h : LUINTM, LUMINT
 #include "maxorb.h"
 #include "maxash.h"
+#include "dummy.h"
+#include "iratdef.h"
 #include "inforb.h"
 #include "infind.h"
 #include "inftra.h"
@@ -538,19 +734,27 @@ C --- start of executable code
       integer       :: ITYPC, ITYPD, ITYPCD
       integer, parameter :: LEN_ICDTRA = 160000
       integer, save :: ICDTRA(LEN_ICDTRA), ICD_SAVE
+      logical       :: OLDDX
 
 #if HJJTRA_DEBUG > 3
       write(LUPRI,*) 'HJJTRA_NXTH2M called, IC, ID, IDIST =',
      &   IC, ID, IDIST
+      write(LUPRI,*) 'HJJTRA_NXTH2M called, LUINTM, LUMINT ='
+     &   LUINTM, LUMINT
       call flshfo(LUPRI)
 #endif
 
       if (IDIST .le. 0) then
          !allocate(ICDTRA(1:NNORBX))
-         if (LUINTM .le. 0)
-     &      call quit('LUINTM.le.0 in HJJTRA_NXTH2M')
-         if (LUMINT .le. 0)
-     &      call quit('LUMINT.le.0 in HJJTRA_NXTH2M')
+         if (LUINTM .le. 0) THEN
+            CALL GPOPEN(LUINTM,FNINTM,'OLD',' ',
+     &                  'UNFORMATTED',IDUMMY,.FALSE.)
+         END IF
+         LBUF = IRAT*NNORBT
+         IF (LUMINT .LE. 0) THEN
+            CALL GPOPEN(LUMINT,'MO2INT_HJJTRA','OLD','DIRECT',' ',
+     &         LBUF,OLDDX)
+         END IF
          rewind (LUINTM)
          call MOLLAB('MO2INTHJ',LUINTM,LUPRI)
          read (LUINTM) MMORBX, NCDTRA, ICDTRA(1:MMORBX)
