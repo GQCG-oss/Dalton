@@ -1,7 +1,0 @@
-ATOMBASIS
-neutralEA: C2
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=6.0 Atoms=2 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000     -0.62797159050000
-C      0.00000000000000      0.00000000000000      0.62797159050000

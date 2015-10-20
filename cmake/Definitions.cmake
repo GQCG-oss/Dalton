@@ -4,8 +4,6 @@ endif()
 
 if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
-#   currently not set, don't know why
-#   add_definitions(-DBUILD_GEN1INT_LSDALTON)
 endif()
 
 
@@ -18,10 +16,6 @@ if(ENABLE_CHEMSHELL)
     add_definitions(-DVAR_CHEMSHELL)
 endif()
 
-if(ENABLE_PELIB)
-    add_definitions(-DBUILD_PELIB)
-endif()
-
 if(ENABLE_QFITLIB)
     add_definitions(-DBUILD_QFITLIB)
 endif()
@@ -29,7 +23,6 @@ endif()
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
-#add_definitions(-DTENSORS_IN_LSDALTON)
 
 if(ENABLE_TITANBUILD)
    add_definitions(-DVAR_HAVE_MPI3)
@@ -45,7 +38,6 @@ add_definitions(-DBINARY_INFO_AVAILABLE)
 if(cmake_build_type_tolower STREQUAL "debug")
   add_definitions(-DVAR_LSDEBUGINT)
   add_definitions(-DVAR_LSDEBUG)
-  add_definitions(-DVAR_DEBUGICHOR)
   set(reorder_definitions " --debug_version ${reorder_definitions}")
 endif()
 
@@ -98,14 +90,6 @@ endif()
 
 if(ENABLE_DEBUGPBC)
     add_definitions(-DDEBUGPBC)
-endif()
-
-if(ENABLE_RSP)
-    add_definitions(-DVAR_RSP)
-endif()
-
-if(ENABLE_ICHOR)
-    add_definitions(-DVAR_ICHOR)
 endif()
 
 if(ENABLE_QCMATRIX)

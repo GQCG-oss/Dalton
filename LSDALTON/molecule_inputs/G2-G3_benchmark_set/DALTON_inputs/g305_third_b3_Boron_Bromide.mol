@@ -1,8 +1,0 @@
-ATOMBASIS
-Boron Bromide
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=35.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Br      0.00000000000000      0.00000000000000     -0.23951618550000
-Charge=5.0 Atoms=1 Basis=regbasis Aux=auxbasis
-B      0.00000000000000      0.00000000000000      1.67661329830000

@@ -1,9 +1,0 @@
-ATOMBASIS
-neutralIP: S2O Cs
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=16.0 Atoms=2 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      0.00000000000000
-S      0.00000000000000      0.00000000000000      1.92326374000000
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O      1.31509349125100      0.00000000000000     -0.69356540046200

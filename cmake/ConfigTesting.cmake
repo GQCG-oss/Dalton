@@ -21,7 +21,6 @@ else()
 endif()
 
 include(TestsDALTON)
-include(TestsLSDALTON)
 if(ENABLE_OPENRSP)
     include(TestsOpenRSP)
 endif()

@@ -1,9 +1,0 @@
-ATOMBASIS
-Krypton Difluoride
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=36.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Kr      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=9.0 Atoms=2 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      0.00000000000000      1.88739795520000
-F      0.00000000000000      0.00000000000000     -1.88739795520000

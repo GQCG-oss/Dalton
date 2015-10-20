@@ -1,8 +1,0 @@
-BASIS
-cc-pVTZdenfit
-H2 toy geometry
-Test segmented basis set format
-Atomtypes=1 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=2
-H     0.0000000000   0.0000000000   0.0000000000
-He    0.0000000000   0.0000000000   1.0218840000

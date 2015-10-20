@@ -149,13 +149,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
             )
     endif()
     set_source_files_properties(${DALTON_FREE_FORTRAN_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
-    set_source_files_properties(${LSDALTON_FREE_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
     set_source_files_properties(${DALTON_FIXED_FORTRAN_SOURCES}   PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_FIXED_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
     set_source_files_properties(${DALTON_OWN_BLAS_SOURCES}        PROPERTIES COMPILE_FLAGS "-qfixed")
     set_source_files_properties(${DALTON_OWN_LAPACK_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_OWN_BLAS_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_OWN_LAPACK_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfixed")
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -C"

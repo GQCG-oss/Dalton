@@ -1,7 +1,0 @@
-ATOMBASIS
-CL2
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=17.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      0.00000000000000
-Cl      0.00000000000000      0.00000000000000      2.04231295000000

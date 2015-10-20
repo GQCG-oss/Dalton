@@ -1,9 +1,0 @@
-BASIS
-6-31G
-HeH, CCSD( T)/cc-pVQZ opt. geometry
-Test open shell response
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=1
-H     0.0000000000   0.0000000000   0.0000000000
-Charge=2.0 Atoms=1
-He    0.0000000000   0.0000000000   3.9218840000

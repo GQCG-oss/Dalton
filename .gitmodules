@@ -7,9 +7,6 @@
 [submodule "external/pelib"]
 	path = external/pelib
 	url = https://gitlab.com/pe-software/pelib-public.git
-[submodule "external/ls-matrix-defop"]
-	path = external/ls-matrix-defop
-	url = https://gitlab.com/ajthorva/matrix-defop.git
 [submodule "external/qfitlib"]
 	path = external/qfitlib
 	url = https://github.com/cstein/qfitlib.git
@@ -22,9 +19,3 @@
 [submodule "external/xcint"]
 	path = external/xcint
 	url = https://github.com/bast/xcint.git
-[submodule "external/IchorIntegralLibrary"]
-	path = external/IchorIntegralLibrary
-	url = git@gitlab.com:dalton/IchorIntegralLibrary.git
-[submodule "external/tensor_lib"]
-	path = external/tensor_lib
-	url = https://gitlab.com/pett/tensor_lib.git

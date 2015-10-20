@@ -765,7 +765,6 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
-    DALTON/pelib/pelib_interface.F90
    )
 if(ENABLE_PCMSOLVER)
    set(DAL_PCM_SOURCES

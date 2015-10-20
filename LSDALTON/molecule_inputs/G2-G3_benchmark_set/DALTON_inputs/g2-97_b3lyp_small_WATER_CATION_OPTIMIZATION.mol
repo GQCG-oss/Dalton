@@ -1,9 +1,0 @@
-ATOMBASIS
-WATER CATION OPTIMIZATION
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      1.01249046000000
-H      0.95312928733400      0.00000000000000     -0.34158672869100

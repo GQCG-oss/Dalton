@@ -1,9 +1,0 @@
-ATOMBASIS
-anion: S2O- Doublet A" Cs
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=16.0 Atoms=2 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      0.00000000000000
-S      0.00000000000000      0.00000000000000      2.04774502000000
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O      1.39066838026100      0.00000000000000     -0.68008607579900

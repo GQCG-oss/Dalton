@@ -1,9 +1,0 @@
-ATOMBASIS
-MgCl2
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=12.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Mg      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=17.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Cl     -2.17636222810000      0.00002994990000      0.00000000000000
-Cl      2.17636222810000     -0.00002994990000      0.00000000000000

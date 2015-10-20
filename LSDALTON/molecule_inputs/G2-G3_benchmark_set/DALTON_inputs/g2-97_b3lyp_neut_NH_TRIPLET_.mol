@@ -1,8 +1,0 @@
-ATOMBASIS
-NH,TRIPLET,
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=7.0 Atoms=1 Basis=regbasis Aux=auxbasis
-N      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=1 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      1.04782793000000
