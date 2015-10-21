@@ -832,7 +832,7 @@ C    If by symmetry the vectors Nx or Ny are zero, set Nxy to zero and
 C    skip the calculation
 C    =================================================================
 C
-      IF ((KZYVX .OR. KZYVY) .EQ. 0) THEN
+      IF ((KZYVX .EQ. 0) .OR. (KZYVY .EQ. 0)) THEN
          CALL DZERO(WRK(ABS_XYMEMREF(INXY)),2*KZYVXY)
       ELSE
 C                                                                                             
