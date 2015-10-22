@@ -89,12 +89,12 @@ c /* deck CC_XOPA */
      &                               '******************************',
      & '*                                   ',
      &                               '                             *',
-     & '*------    OUTPUT FROM COUPLED CLUST',
-     &                               'ER LINEAR RESPONSE    -------*',
-     & '*------  CALCULATION OF ONE-PHOTON A',
-     &                               'ABSORPTION STRENGHTS  -------*',
-     & '*------     FOR EXCITED TO EXCITED S',
-     &                               'TATE TRANSITIONS      -------*',
+     & '*<<<<<<    OUTPUT FROM COUPLED CLUST',
+     &                               'ER LINEAR RESPONSE    >>>>>>>*',
+     & '*<<<<<<  CALCULATION OF ONE-PHOTON A',
+     &                               'BSORPTION STRENGTHS  >>>>>>>*',
+     & '*<<<<<<     FOR EXCITED TO EXCITED S',
+     &                               'TATE TRANSITIONS      >>>>>>>*',
      & '*                                   ',
      &                               '                             *',
      & '************************************',
@@ -397,7 +397,7 @@ c /* deck ccxopa_setup */
          ISTATEI = IQR2ST(IRSD,1)
          ISTATEF = IQR2ST(IRSD,2)
        ELSE IF (ITURN.EQ.2) THEN
-         ! switch state indeces (and thereby also the sign of the freqs)
+         ! switch state indices (and thereby also the sign of the freqs)
          ! to get the conjugated transition moments
          ISTATEI = IQR2ST(IRSD,2)
          ISTATEF = IQR2ST(IRSD,1)
@@ -458,6 +458,11 @@ c /* deck ccxopa_setup */
           WIBF   = ZERO
 
           IF (.NOT.CIS) THEN
+            if (lskiplineq) then
+               write(lupri,*)'Sonia XOPA: Skip (W_i-W_f) contrib'
+               NXE2TRAN = 0
+               WXINIF   = ZERO
+            else
             IF (QR22N1) THEN
               IN2VEC=IN2AMP(ISTATEI,-EIGVI,ISYMI,ISTATEF,+EIGVF,ISYMF)
               CALL CC_SETXE('Xi ',IXE2TRAN,IX2DOTS,MXXTRAN,MXXVEC,
@@ -473,6 +478,7 @@ c /* deck ccxopa_setup */
               MFVEC  = MAX(MFVEC, IVEC)
               WIBF   = FCONS(IVEC,ITRAN)
             END IF
+            end if
           END IF
 
 *---------------------------------------------------------------------*
