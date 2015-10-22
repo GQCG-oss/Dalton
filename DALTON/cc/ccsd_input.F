@@ -2346,7 +2346,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 19)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2373,7 +2373,7 @@ C=====================================================================*
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
      *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
-     *             '.DIPOLE'/
+     *             '.DIPOLE','.XCVSEP','.XRMCOR','.SKIPLE'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2413,6 +2413,12 @@ C=====================================================================*
         QR22N1  = .TRUE.
         NSEQR2  = 0 
         NQR2OP  = 0 
+        !sonia
+        LXSCVS = .false.
+        LXRMCORE = .false.
+        LSKIPLINEQ = .false.
+        CALL IZERO(NXCORE,8)
+        CALL IZERO(IXCORE,8*MXCORE)
       ELSE IF (GSTTPA) THEN
         NSMSEL   = 0
         NSMOPER  = 0
@@ -2447,7 +2453,7 @@ c         table look up:
 
 c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2738,6 +2744,15 @@ C           ------------------------------------------------------
 16          CONTINUE
             GO TO 4
 
+C
+C           ------------------------------------------------------
+C           .SKIPLEquation: skip calculation of the term involving
+C           linear equations
+C           ------------------------------------------------------
+19          CONTINUE
+            LSKIPLINEQ = .true.
+              WRITE(LUPRI,*)'CCSD_INPUT: skip Nij*xksi or TX*B' 
+            GO TO 100
 C
           ELSE
            WRITE (LUPRI,'(/5A/)') ' Prompt "',WORD,
