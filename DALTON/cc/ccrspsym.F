@@ -1751,6 +1751,10 @@ C
                LABEL = LBLOPR(IQR2OP(IOPER))
                ISYMO = ISYOPR(IQR2OP(IOPER))
                IF (ISYMO.EQ.ISYMFI) THEN
+            if (LSKIPLINEQ) then
+                   write(lupri,*)'SONIA XOPAIND WARNING'
+                   write(lupri,*)'XOPAIND: skip lin eqs'
+            else
                 IF (.NOT.QR22N1) THEN
                  INUM=IR1TAMP(LABEL,.FALSE.,EIGVI-EIGVF,ISYMO)
                  INUM=IR1TAMP(LABEL,.FALSE.,EIGVF-EIGVI,ISYMO)
@@ -1758,6 +1762,7 @@ C
                  INUM=IN2AMP(ISTATEI,-EIGVI,ISYMI,ISTATEF,+EIGVF,ISYMF)
                  INUM=IN2AMP(ISTATEF,-EIGVF,ISYMF,ISTATEI,+EIGVI,ISYMI)
                 END IF
+            end if
                END IF
               END DO
             END IF 
