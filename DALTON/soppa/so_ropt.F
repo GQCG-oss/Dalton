@@ -142,15 +142,15 @@ C
 C
             IF (LINEAR .AND. DABS(EVNM).LT.T1MIN) THEN
 C                    
-                  WRITE(LUPRI,'(/,1X,A,E18.9)') 
-     &              'WARNING: Norm is ',EVNM
+C                  WRITE(LUPRI,'(/,1X,A,E18.9)') 
+C     &              'WARNING: Norm is ',EVNM
 C
-                  WRITE(LUPRI,'(/,1X,A)') 
-     &              'I Try to remove the Z part of (Y Z)'
+C                  WRITE(LUPRI,'(/,1X,A)') 
+C     &              'I Try to remove the Z part of (Y Z)'
 C
-                  CALL DZERO(EIVEC(LEIVH+1,JVEC),LEIVH)
+C                  CALL DZERO(EIVEC(LEIVH+1,JVEC),LEIVH)
 C
-                  GOTO 201
+C                  GOTO 201
 C
             ELSE
 C

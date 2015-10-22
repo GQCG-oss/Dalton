@@ -17,7 +17,7 @@ C
 C
       PARAMETER   (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER   (D100 = 100.0D0)
-      PARAMETER   (THRNM = 1.0D-15, OVLMIN = 1.0D-4)
+      PARAMETER   (THRNM = 1.0D-15, OVLMIN = 10D-20 ) ! Try (from rp) 1.0D-4) 
       CHARACTER*3 YES, NO
 C
       DIMENSION EIVEC(LEIVEC,LEIVEC)
@@ -243,7 +243,7 @@ C
       IF (LWORK1 .LT. 0) THEN
          WRITE(LUPRI,*) 
      &      'NOTICE: Requirement is due to high print level'
-         CALL STOPIT('RP_OPTVEC.2',' ',KEND1,LWORK)
+         CALL STOPIT('SO_OPTVEC.2',' ',KEND1,LWORK)
       ENDIF
 C
       DO ITR = 1,NTRMX

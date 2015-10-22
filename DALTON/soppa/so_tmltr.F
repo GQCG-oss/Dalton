@@ -6,7 +6,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Andrea Ligabue, January 2004
 C
-C     Develepode starting frm CCSD_TCMEPKX 
+C     Developed starting frm CCSD_TCMEPKX 
 C     Henrik Koch and Alfredo Sanchez.                Dec 1994
 C     Made workable for non-symmetric T2AM, Keld Bak, Dec 1996
 C

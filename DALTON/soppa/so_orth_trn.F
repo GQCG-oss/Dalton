@@ -99,7 +99,8 @@ C
 C
          ITURN = 0
 C
-         IF(LTYPE.EQ.'LINEAR') THEN
+C         IF(LTYPE.EQ.'LINEAR') THEN
+         IF (.FALSE.) THEN
 C
 C-----------------------------------------------------------------------
 C        For zero frequency linear response, the result will
@@ -309,6 +310,7 @@ C
      &       'I make a first normalization with norm',DNORM
 C
            DNORMI = ONE  / DSQRT(DABS(DNORM))
+C           print *, dnorm
 C
            CALL DSCAL(LTR1E,DNORMI,WORK(K1TR1E),1)
            CALL DSCAL(LTR1D,DNORMI,WORK(K1TR1D),1)
@@ -316,7 +318,7 @@ C
            CALL DSCAL(LTR2D,DNORMI,WORK(K1TR2D),1)
 C
            DNORM = DDOT(LTR1E,WORK(K1TR1E),1,WORK(KRSO1E),1)
-     &           - DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1D),1)
+     &           + DDOT(LTR1D,WORK(K1TR1D),1,WORK(KRSO1D),1)
 C
            CALL DCOPY(LTR2E,WORK(K1TR2E),1,WORK(KTTR2),1)
            CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
@@ -328,7 +330,7 @@ C
            CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
            CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
 C
-           DNORM = DNORM + DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
+           DNORM = DNORM - DDOT(LTR2D,WORK(KTTR2),1,WORK(K1TR2D),1)
 C
          ENDIF
 C
@@ -336,6 +338,7 @@ C-------------------------------------------------------
 C        Normalize new trial vector first (second) time.
 C-------------------------------------------------------
 C
+C         print *, dnorm 
          DNORMI = ONE / DSQRT( DABS(DNORM) )
 C
          CALL DSCAL(LTR1E,DNORMI,WORK(K1TR1E),1)

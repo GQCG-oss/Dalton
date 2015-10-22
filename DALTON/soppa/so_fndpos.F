@@ -41,7 +41,8 @@ C
       GO TO 1
 C     
    10 CONTINUE
-C
+
+      BACKSPACE(LU)
       RETURN
 C
       END

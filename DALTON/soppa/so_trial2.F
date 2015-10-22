@@ -33,6 +33,7 @@ C
       CHARACTER*3 YES, NO
       CHARACTER*3 CONV(LCONV)
       CHARACTER*6 LTYPE
+      CHARACTER*8 LABEL
 C
       DIMENSION   EIVAL(LEIVAL), RESINM(LRESINM)
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
@@ -304,12 +305,16 @@ C        Write residual on file for later use in calculation of
 C        linear response functions
 C--------------------------------------------------------------
 C
+              LURV1E = -1
               CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
+              LURV1D = -1
               CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
+              LURV2E = -1
               CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
+              LURV2D = -1 
               CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
 C             find the right positions

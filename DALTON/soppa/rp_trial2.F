@@ -33,6 +33,7 @@ C
       CHARACTER*3 YES, NO
       CHARACTER*3 CONV(LCONV)
       CHARACTER*6 LTYPE
+      CHARACTER*8 LABEL
 C
       DIMENSION   EIVAL(LEIVAL), RESINM(LRESINM)
       DIMENSION   WORK(LWORK)
@@ -238,8 +239,10 @@ C-----------------------------------------------------------
 C
         IF (LTYPE .EQ. 'LINEAR') THEN
 C
+           LURV1E = -1
            CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &                 .FALSE.)
+           LURV1D = -1 
            CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &                 .FALSE.)
 C          find the right postion

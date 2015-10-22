@@ -1,0 +1,355 @@
+C
+C  /* Deck so_trial3 */
+      SUBROUTINE SO_TRIAL3(NNEWTR,ISYMTR,IFREQ,FRVAL,NFRVAL,NEXCI,
+     &                     DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
+C
+C     This routine is part of the atomic integral direct SOPPA program.
+C
+C     Keld Bak, May 1996
+C     Andrea Ligabue December 2003
+C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
+C
+C     PURPOSE: Determine the initial trialvectors.
+C
+C     IFREQ     freq counter in the FRVAL(NFRVAL) array
+CW
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "soppinf.h"
+#include "ccsdsym.h"
+C
+      PARAMETER (ONE = 1.0D0, STHR = 1.0D-5, EPSI = 1.0D-8)
+      PARAMETER (HALF = 0.5D0 ,TWO = 2.0D0)
+C
+      DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
+      DIMENSION   FRVAL(NFRVAL)
+      DIMENSION   WORK(LWORK)
+C
+C------------------
+C     Add to trace.
+C------------------
+C
+      CALL QENTER('SO_TRIAL3')
+C
+C---------------------------------
+C     1. allocation of work space.
+C---------------------------------
+C
+      LEDIA1 = NT1AM(ISYMTR)
+CPFP   2009-Jun
+      LEDIA2 = NT2AM(ISYMTR)
+C      LEDIA2 = N2P2HOP(ISYMTR)
+Cend-PFP
+      LSDIA1 = NT1AM(ISYMTR)
+C
+      KEDIA1  = 1
+      KEDIA2  = KEDIA1 + LEDIA1
+      KSDIA1  = KEDIA2 + LEDIA2
+      KEND1   = KSDIA1 + LSDIA1
+      LWORK1  = LWORK  - KEND1
+C
+      CALL SO_MEMMAX ('SO_TRIAL3.1',LWORK1)
+      IF (LWORK1 .LT. 0) CALL STOPIT('SO_TRIAL3.1',' ',KEND1,LWORK)
+C
+C------------------------------------------
+C     Read diagonal E[2] and S[2] elements.
+C------------------------------------------
+C
+      CALL GPOPEN  (LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+     &               .FALSE.)
+      REWIND LUDIAG
+C
+      READ(LUDIAG) ( WORK(KEDIA1+I-1), I = 1,LEDIA1)
+      READ(LUDIAG) ( WORK(KEDIA2+I-1), I = 1,LEDIA2)
+      READ(LUDIAG) ( WORK(KSDIA1+I-1), I = 1,LSDIA1)
+C
+      CALL GPCLOSE (LUDIAG,'KEEP')
+C
+C---------------------------------
+C     2. allocation of work space.
+C---------------------------------
+C
+cLig  I try to use less memeory as I can so I read the part of the GP I
+cLig  need, compute the part of the trial, write on file and then again
+cLig  ... so I can use the same space, but I need at least nt2am for 
+cLig  TV and nt2am * 2 for gp vector. The negative effect of that is
+cLig  that I can really write only the TV in this format (1E 1D 2E 2D)
+      LTRIAL  = LEDIA2 
+      LGPVC1  = LEDIA1 * 2
+      LGPVC2  = LEDIA2 * 2
+C
+      KTRIAL  = KEND1
+      KGPVEC  = KTRIAL + LTRIAL
+      KEND2   = KGPVEC + LGPVC2
+      LWORK2  = LWORK  - KEND2
+C
+      CALL SO_MEMMAX ('SO_TRIAL3.2',LWORK2)
+      IF (LWORK2 .LT. 0) CALL STOPIT('SO_TRIAL3.2',' ',KEND2,LWORK)
+C
+C--------------------------------------------
+C     Open files for storing of trialvectors.
+C--------------------------------------------
+C
+      CALL SO_OPEN(LUTR1E,FNTR1E,LEDIA1)
+      CALL SO_OPEN(LUTR1D,FNTR1D,LEDIA1)
+      CALL SO_OPEN(LUTR2E,FNTR2E,LEDIA2)
+      CALL SO_OPEN(LUTR2D,FNTR2D,LEDIA2)
+C
+C---------------------------------------------------------
+C     Create initial new trial vectors and write to files.
+C---------------------------------------------------------
+C
+      NNEWTR = NEXCI
+cLig  just another stupid loop, since nexci is always 1 and nnewtr =
+cLig  nexci ... remove ?
+C
+      DO 100 INEWTR=1,NNEWTR
+C
+C----------------------------------------------------------------------
+C     For the first frequency: use the GP to create the starrting trial
+C                              vector.
+C     Otherwise use the last trial vector of the previous frequency      
+C----------------------------------------------------------------------
+C
+      IF((IFREQ.EQ.1).OR.DABS(FRVAL(IFREQ)).LT.EPSI) THEN
+C
+C------------------------------------------------------------------
+C           Read the 1E and 1D part of the  GP vector from the file
+C------------------------------------------------------------------
+C
+            CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
+C
+            CALL SO_READ(WORK(KGPVEC),LGPVC1,LUGPV1,FNGPV1,1)
+C
+            CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
+C
+C-------------------------------------------------------------
+C           Calculate the 1E part of the trial vector as
+C           (E[2]diag - omega*S[2]diag) * GP and write on file
+C-------------------------------------------------------------
+C
+            CALL DZERO(WORK(KTRIAL),LTRIAL)             
+C
+            DO IELEM=1,LEDIA1
+C
+              TMP = ONE / ( WORK(KEDIA1+IELEM-1) - FRVAL(IFREQ) *
+     &                      WORK(KSDIA1+IELEM-1) )
+              WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+IELEM-1)
+C
+            END DO
+C
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+C
+C-------------------------------------------------------------
+C           Calculate the 1D part of the trial vector as
+C           (E[2]diag + omega*S[2]diag) * GP and write on file
+C-------------------------------------------------------------
+C
+            CALL DZERO(WORK(KTRIAL),LTRIAL)             
+C
+cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
+C
+              DO IELEM=1,LEDIA1
+C
+                TMP = ONE / ( WORK(KEDIA1+IELEM-1) + FRVAL(IFREQ) *
+     &                        WORK(KSDIA1+IELEM-1) )
+                WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+LEDIA1+IELEM-1)
+C
+              END DO
+C
+cLig            END IF
+C
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+C
+C------------------------------------------------------------------
+C           Read the 2E and 2D part of the  GP vector from the file
+C------------------------------------------------------------------
+C
+            CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
+C
+            CALL SO_READ(WORK(KGPVEC),LGPVC2,LUGPV2,FNGPV2,1)
+C
+            CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
+C
+C------------------------------------------------------------------
+C           Transform the 2E and 2D part of the  GP vector from the 
+C           right to left side
+C------------------------------------------------------------------
+C
+            IF(IPRSOP.GT.100) THEN 
+C
+              CALL AROUND('GP before LTR transformation')
+              CALL OUTPUT(WORK(KGPVEC),1,LEDIA2,1,2,LEDIA2,2,1,LUPRI)
+C
+            ENDIF
+C
+            CALL SO_TMLTR(WORK(KGPVEC),HALF,ISYMTR)
+            CALL SO_TMLTR(WORK(KGPVEC+LEDIA2),HALF,ISYMTR)
+C
+            IF(IPRSOP.GT.10) THEN
+C
+              CALL AROUND('GP after LTR transformation')
+              CALL OUTPUT(WORK(KGPVEC),1,LEDIA2,1,2,LEDIA2,2,1,LUPRI)
+C
+            ENDIF
+cLig            CALL CCSD_TCMEPKX(WORK(KGPVEC),TWO,ISYMTR)
+cLig            CALL CCSD_TCMEPKX(WORK(KGPVEC+LEDIA2),TWO,ISYMTR)
+cLig            CALL DSCAL(LGPVC2,HALF,WORK(KGPVEC),1)
+cLig            CALL AROUND('GP after LTR and RTL')
+cLig            CALL OUTPUT(WORK(KGPVEC),1,LEDIA2,1,2,LEDIA2,2,1,LUPRI)
+C
+C-------------------------------------------------------------
+C           Calculate the 2E part of the trial vector as
+C           (E[2]diag - omega) * GP and write on file
+C-------------------------------------------------------------
+C
+            CALL DZERO(WORK(KTRIAL),LTRIAL)             
+C
+            DO IELEM=1,LEDIA2
+C
+              TMP = ONE / ( WORK(KEDIA2+IELEM-1) - FRVAL(IFREQ) ) 
+              WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+IELEM-1)
+C
+            END DO
+C
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
+C
+C-------------------------------------------------------------
+C           Calculate the 2D part of the trial vector as
+C           (E[2]diag + omega) * GP and write on file
+C-------------------------------------------------------------
+C
+            CALL DZERO(WORK(KTRIAL),LTRIAL)             
+C
+cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
+C
+              DO IELEM=1,LEDIA2
+C
+                TMP = ONE / ( WORK(KEDIA2+IELEM-1) + FRVAL(IFREQ) ) 
+                WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+LEDIA2+IELEM-1)
+C
+              END DO
+C
+cLig            END IF
+C
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
+C
+C---------------------------------------------------------------
+C        For other frequencies use the last trial vector on file
+C---------------------------------------------------------------
+C
+         ELSE
+C
+cspas should NOLDTR not be 1 here ?
+cLig  this operation is quite stupid since it goes to read and write 
+cLig  always in the same space ... since inewtr is also always 1 !
+            NOLDTR = 1 
+C
+            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,NOLDTR)
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+C     
+            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,NOLDTR)
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+C     
+            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,NOLDTR)
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
+C     
+            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,NOLDTR)
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
+C     
+         ENDIF
+C
+  100 CONTINUE
+C
+      IF( IPRSOP .GE. 6) THEN
+C
+C--------------------------------------
+C     Write new trial vecotrs to output
+C--------------------------------------
+C
+         DO 200 INEWTR=1,NNEWTR
+
+               WRITE(LUPRI,'(I3,A,A)') INEWTR,
+     &             '. raw trial vector in SO_TRIAL3 before',
+     &             ' orthonormalization'
+C
+               CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+               CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+               CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
+               CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
+C
+  200    CONTINUE
+C
+      ENDIF
+C
+C-----------------------------------------------
+C     Orthogonalize new trial vectors over S[2].
+C-----------------------------------------------
+C
+Cekd: Same problem as for RP_ORTH_TRN, Cannot send in explicit zeros
+C     as they may be assigned inside routine.
+Corig  CALL SO_ORTH_TRN(0,NNEWTR,0,ISYMTR,
+C     &                 DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
+C
+      NLINDP = 0
+      NOLDTR = 0
+      CALL SO_ORTH_TRN('LINEAR',NOLDTR,NNEWTR,NLINDP,ISYMTR,
+     &                 DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK(KEND2),LWORK2)
+C
+      IF( IPRSOP .GE. 6) THEN
+C
+C------------------------------------------------------
+C     Write new trial orthogonalized  vecotrs to output
+C------------------------------------------------------
+C
+         DO 300 INEWTR=1,NNEWTR
+
+               WRITE(LUPRI,'(I3,A,A)') INEWTR,
+     &             '. raw trial vector in RP_TRIAL3 after',
+     &             ' orthonormalization'
+C
+               CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+               CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+               CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
+               CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
+               WRITE (LUPRI,'(I8,1X,F14.8)') 
+     &             (I,WORK(KTRIAL+I-1),I=1,LEDIA2)
+C
+  300    CONTINUE
+C
+      ENDIF
+C
+C------------------------------------
+C     Close files with trial vectors.
+C------------------------------------
+C
+      CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
+      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+C
+C-----------------------
+C     Remove from trace.
+C-----------------------
+C
+      CALL FLSHFO(LUPRI)
+C
+      CALL QEXIT('SO_TRIAL3')
+C
+      RETURN
+      END

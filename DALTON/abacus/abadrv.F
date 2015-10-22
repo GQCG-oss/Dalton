@@ -346,19 +346,35 @@ C
 C     Added an extra dimension to keep complex numbers in case of
 C     absorption, panor+kr-02
 C
-         KPOLDD = KLAST
-         KPOLDQ = KPOLDD + 2*9*MXFR
-         KPOLDL = KPOLDQ + 2*27*MXFR
-         KPOLDA = KPOLDL + 2*9*MXFR
-         KPOLVL = KPOLDA + 2*9*MXFR
-         KPOLVV = KPOLVL + 2*9*MXFR
-         KFOVIB = KPOLVV + 2*9*MXFR
-         KLST1  = KFOVIB + (3*NATOMS+3)*(3*NATOMS+3)*NSYM*MXFR
-         LWRK1  = LWORK - KLST1 + 1
          IF (.NOT. PASLNR) THEN
-            CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
-     &                  WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
-     &                  WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
+            IF(.NOT.(AORPA.OR.DCRPA.OR.AOSOP.OR.AOSOC) )THEN
+               KPOLDD = KLAST
+               KPOLDQ = KPOLDD + 2*9*MXFR
+               KPOLDL = KPOLDQ + 2*27*MXFR
+               KPOLDA = KPOLDL + 2*9*MXFR
+               KPOLVL = KPOLDA + 2*9*MXFR
+               KPOLVV = KPOLVL + 2*9*MXFR
+               KFOVIB = KPOLVV + 2*9*MXFR
+               KLST1  = KFOVIB + (3*NATOMS+3)*(3*NATOMS+3)*NSYM*MXFR
+               LWRK1  = LWORK - KLST1 + 1
+               CALL LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
+     &                     WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
+     &                     WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
+            ELSE
+               NMODEL = 4
+               KPOLDD = KLAST
+               KPOLDQ = KPOLDD + 2*9*NFRVAL*NMODEL
+               KPOLDL = KPOLDQ + 2*27*NFRVAL*NMODEL
+               KPOLDA = KPOLDL + 2*9*NFRVAL*NMODEL
+               KPOLVL = KPOLDA + 2*9*NFRVAL*NMODEL
+               KPOLVV = KPOLVL + 2*9*NFRVAL*NMODEL
+               KLST1  = KPOLVV + 2*9*NFRVAL*NMODEL
+               LWRK1  = LWORK - KLST1 + 1
+               CALL SO_LNRABA(WORK(KPOLDD),WORK(KPOLDQ),WORK(KPOLDL),
+     &                        WORK(KPOLDA),WORK(KLST1),LWRK1,PASLNR)
+C              Is this for vibrational stuff?               
+               KFOVIB = KLST1 
+            ENDIF
             IF (PASLNR) CALL ABAWRIT_RESTART
             CALL FLSHFO(LUPRI)
          END IF
@@ -2602,8 +2618,17 @@ C
 C     Frequency-dependent linear response properties
 C     Polarizabilities and G tensors
 C
-      IF (ABALNR) CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
-     &                        IPRDEF,WORK,LWORK)
+      IF (ABALNR) THEN
+         IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
+CRF         Merging AO-SOPPA, adjust call signature           
+            CALL SO_LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
+     &                     WORK,LWORK)
+                           
+         ELSE
+            CALL LNROUT(POLDD,POLDL,POLDA,POLVL,POLVV,FOVIBG,
+     &                  IPRDEF,WORK,LWORK)
+         ENDIF
+      ENDIF
 C
 C     Excitation energies and (oriented) electronic circular dichroism
 C
