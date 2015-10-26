@@ -147,10 +147,6 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using SCALASCA profiler mode [default: %(default)s]')
-    group.add_argument('--vampirtrace',
-            action='store_true',
-            default=False,
-            help='build using Vampirtrace instrumentation [default: %(default)s]')
     
     group = parser.add_argument_group('advanced options')
     group.add_argument('--check',
@@ -256,7 +252,6 @@ def gen_cmake_command(args):
     command += ' -DENABLE_REAL_SP=%s'        % translate_cmake(args.real_sp)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
-    command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
