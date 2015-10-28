@@ -424,6 +424,7 @@ C
 #include "inflin.h"
 #include "ccom.h"
 #include "linaba.h"
+#include "soppinf.h"
 C
       CHARACTER*8 RTNLBL(2)
 C
@@ -523,15 +524,16 @@ C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
 C        or if ITRLVL on file too small.
       ELSE IF (ABASOP) THEN
 C        ... SOPPA requires full integral transformation
-         IF(.NOT.DIRFCK) THEN
-            KTRLVL = 10
-         ELSE
+C        --- But not if run through AO-SOPPA module        
+         IF(AOSOP.OR.AORPA.OR.DCRPA.OR.AOSOC.OR.AOHRP) THEN
             KTRLVL = 0
+         ELSE
+            KTRLVL = 10
          ENDIF
          ITRLVL = KTRLVL
          FLAG(14) = .TRUE. 
          FLAG(34) = .FALSE.
-         IF (.NOT.DIRFCK) CALL SIR_INTOPEN
+         IF (KTRLVL.GT.0) CALL SIR_INTOPEN
       ELSE
 C        ... Hartree-Fock, MO integral file will normally
 C        not exist, but open to define name 'MOTWOINT' instead

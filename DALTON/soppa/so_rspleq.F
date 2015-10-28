@@ -30,6 +30,7 @@ C
 C
       PARAMETER ( D100 = 100.0D0 )
       CHARACTER MODEL*5,LABEL*8
+      LOGICAL   IMAGPROP
 C
 #include "codata.h"
 #include "wrkrsp.h"
@@ -55,9 +56,9 @@ C---------------------------------------------
 C     Calculate the gradient property vectors.
 C---------------------------------------------
 C
-      LGPVC1  = 2 * NT1AM(ISYMTR)
+      LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
-      LGPVC2  = 2 * NT2AM(ISYMTR)
+      LGPVC2  =  NT2AM(ISYMTR)
 C      LGPVC2  = 2 * N2P2HOP(ISYMTR)
 Cend-PFP
 C
@@ -69,8 +70,9 @@ C
       CALL SO_MEMMAX ('SO_RSPLEQ.1',LWORK1)
       IF (LWORK1 .LT.0) CALL STOPIT('SO_RSPLEQ.1',' ',KEND1,LWORK)
 C
-      CALL SO_GETGP(WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,LABEL,
-     &              ISYMTR,T2MP,LT2MP,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+      CALL SO_GETGP(WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,
+     &              LABEL,ISYMTR,IMAGPROP,MODEL,
+     &              T2MP,LT2MP,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &              DENSAI,LDENSAI,WORK(KEND1),LWORK1)
 C
 C---------------------------------------
@@ -84,14 +86,14 @@ C
       CALL SO_WRITE(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
 C
       IF(IPRSOP.GE.5) THEN
-         LGPVC1H = LGPVC1 /2
-         LGPVC2H = LGPVC2 /2
+C         LGPVC1H = LGPVC1 /2
+C         LGPVC2H = LGPVC2 /2
          CALL AROUND('In SO_RSPLEQ:  '//MODEL//
      &               ' gradient property vector.'//LABEL)
          IF(AOSOP) WRITE(LUPRI,'(1X,A)')
      &       'It lack the DENSAI contribution'
-         CALL OUTPUT(WORK(KGPVC1),1,LGPVC1H,1,2,LGPVC1H,2,1,LUPRI)
-         CALL OUTPUT(WORK(KGPVC2),1,LGPVC2H,1,2,LGPVC2H,2,1,LUPRI)
+         CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
+         CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
       ENDIF
 C     
       CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
@@ -127,7 +129,8 @@ C     Solve linear response equations for SOPPA.
 C-----------------------------------------------
 C
       NEXCI = 1
-      CALL SO_LRSOEQ(MODEL,LABEL,ISYMTR,NEXCI,MAXIT,FRVAL,NFRVAL,
+      CALL SO_LRSOEQ(MODEL,LABEL,ISYMTR,IMAGPROP,
+     &               NEXCI,MAXIT,FRVAL,NFRVAL,
      &               WORK(KRESINM),LRESINM,WORK(KCONV),LCONV,DENSIJ,
      &               LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,T2MP,LT2MP,
      &               FOCKD,LFOCKD,WORK(KREDE),WORK(KREDS),LMXRED,
@@ -147,26 +150,26 @@ CPFP   2009-Jun
 C      LTR2E   = N2P2HOP(ISYMTR)
 C      LTR2D   = N2P2HOP(ISYMTR)
 Cend-PFP
-      KTR1E   = KEND
-      KTR1D   = KTR1E   + LTR1E
-      KRESO1E = KTR1D   + LTR1D
-      KRESO1D = KRESO1E + LRESO1E
-      KTR2E   = KRESO1D + LRESO1D
-      KTR2D   = KTR2E   + LTR2E
-      KEND2   = KTR2D   + LTR2D
-      LWORK2  = LWORK   - KEND2
+C      KTR1E   = KEND
+C      KTR1D   = KTR1E   + LTR1E
+C      KRESO1E = KTR1D   + LTR1D
+c      KRESO1D = KRESO1E + LRESO1E
+c      KTR2E   = KRESO1D + LRESO1D
+C      KTR2D   = KTR2E   + LTR2E
+C      KEND2   = KTR2D   + LTR2D
+C      LWORK2  = LWORK   - KEND2
 C
-      CALL SO_MEMMAX ('SO_RSPLEQ.3',LWORK2)
-      IF (LWORK2 .LT. 0) CALL STOPIT('SO_RSPLEQ.3',' ',KEND2,LWORK)
+C      CALL SO_MEMMAX ('SO_RSPLEQ.3',LWORK2)
+C      IF (LWORK2 .LT. 0) CALL STOPIT('SO_RSPLEQ.3',' ',KEND2,LWORK)
 C
 C----------------
 C     Open files.
 C----------------
 C
-      CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
-      CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
-      CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
-      CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
+C      CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
+c      CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
+C      CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
+C      CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
 C
 C-----------------------------------------------------------
 C     Calculate p-h and 2p-2h weight in excitation operator
@@ -252,15 +255,16 @@ C-----------------
 C     Close files.
 C-----------------
 C
-      CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
-      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
-      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+c      CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
+C      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+C      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+C      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
 C
 C-----------------------
 C     Remove from trace.
 C-----------------------
 C
+      WRITE(LUPRI,'(A)') 'End of rspleq'
       CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('SO_RSPLEQ')

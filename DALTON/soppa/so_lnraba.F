@@ -6,11 +6,16 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Stephan P. A. Sauer, Februrary 1999
 C     Stephan P. A. Sauer: 3.12.2003
+C     Rasmus Faber, October 2015: Added MPI
 C
 C     PURPOSE: Main driver routine for the calculation of frequency
 C              dependent linear response properties with the atomic 
 C              integral direct SOPPA program.
 C
+#ifdef VAR_MPI
+      use so_parutils, only: soppa_initialize_slaves,
+     &                       soppa_release_slaves 
+#endif         
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -21,9 +26,13 @@ C
 #include "ccsdsym.h"
 c#include "infdim.h"
 #include "inforb.h"
-c#include "iratdef.h"
-c#include "maxaqn.h"
-c#include "maxorb.h"
+C for irat 
+#include "iratdef.h"
+#include "maxaqn.h"
+C for mxshel, mxprim
+#include "maxorb.h"
+C for mxcont
+#include "aovec.h"
 c#include "mxcent.h"
 c#include "nuclei.h"
 c#include "symmet.h"
@@ -37,6 +46,16 @@ C
 C
       CHARACTER*5 MODEL
       CHARACTER*8 LABEL1
+#ifdef VAR_MPI
+!
+! This variable ensures that common blocks are only sent to the slaves
+! once. 
+      LOGICAL update_common_blocks, get_mxcall
+      LOGICAL so_get_herdir, herdir, so_get_direct
+      
+      update_common_blocks = .true.
+      get_mxcall = .false.
+#endif
 C
 C------------------
 C     Add to trace.
@@ -65,9 +84,16 @@ C---------------------------------------------------------------
 C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
-C
+C     On the flip side, this cause a crash if CC has been run
       IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP) 
-     &           .AND. (.NOT.AOSOC) )    CALL RP_INIT(WORK,LWORK)
+     &           .AND. (.NOT.AOSOC) ) THEN   
+         CALL RP_INIT(WORK,LWORK)
+#ifdef VAR_MPI
+C     In pure aorpa calculations, eridi has not been initialized      
+         herdir = so_get_herdir()
+         get_mxcall = so_get_direct()
+#endif
+      ENDIF
 C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
@@ -135,7 +161,7 @@ C---------------------------------------------------------------------
 C     Initialize arrays of transition moments and excitation energies.
 C---------------------------------------------------------------------
 C
-      CALL DZERO(SNDPRP,2)
+C      CALL DZERO(SNDPRP,2)
       CALL DZERO(POLDD,2*9*NFRVAL*4)
       CALL DZERO(POLDQ,2*27*NFRVAL*4)
       CALL DZERO(POLDL,2*9*NFRVAL*4)
@@ -195,6 +221,36 @@ C
      &            ' p-h + h-p variables.      :',2*NT1AM(ISYM)
                   WRITE(LUPRI,9001)
                END IF
+#ifdef VAR_MPI
+C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+C In AORPA we cannot be sure that the number of integral distributions
+C is known in advance. This is needed in order to allocate memory for
+C load-distribution later on
+               if (get_mxcall) then
+                  if (herdir) then
+                     call herdi1(work(kend1), lwork1, iprint)
+                  else 
+                     kccfbt  = kend1
+                     kindxbt = kccfbt + mxprim*mxcont
+                     kend3   = kindxbt + 8*mxshel*mxcont/irat
+                     lwork3 = lwork - kend3
+                     call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
+     &                           krdbc1, krdbc2, kodpp1, kodpp2,
+     &                           krdpp1, krdpp2, kfree,  lfree,
+     &                           kend3, work(kccfbt), work(kindxbt),
+     &                           work(kend3), lwork3, iprint)
+                  endif
+                  get_mxcall = .false.
+               endif
+C Note that for rpa, the second and third argument should be ignored
+               call soppa_initialize_slaves ( update_common_blocks,
+     &                                        WORK(KEND1), 1, model)
+               update_common_blocks = .false.
+#endif
 C
 C------------------------------------------------------------------
 C              Determine RPA solution vectors for the given operator
@@ -213,6 +269,12 @@ C
      &                       DUMMY,1,POLDD(1,1,1,1,1),
      &                       POLDQ(1,1,1,1,1,1),POLDL(1,1,1,1,1),
      &                       POLDA(1,1,1,1,1),WORK(KEND1),LWORK1)
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+               call soppa_release_slaves()
+#endif
 
 C
             END IF
@@ -282,11 +344,21 @@ C
      &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
      &                       WORK(KDENSAB),LDENSAB,WORK(KEND1),LWORK1)
 C
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
+C
+#ifdef VAR_MPI
+               call soppa_initialize_slaves ( update_common_blocks,
+     &                                       WORK(KT2AM), LT2AM, model) 
+               update_common_blocks = .false.
+#endif
+C
 C--------------------------------
-C              Initialize DENSAI.
+C              Initialize DENSAI. Currently done in rspleq
 C--------------------------------
 C
-               CALL DZERO(WORK(KDENSAI),LDENSAI)
+C               CALL DZERO(WORK(KDENSAI),LDENSAI) 
 C
 C------------------------------------------------------------------
 C              Determine SOPPA excitation energies and excitation
@@ -309,6 +381,12 @@ C
      &                       POLDD(1,1,1,1,2),POLDQ(1,1,1,1,1,2),
      &                       POLDL(1,1,1,1,2),POLDA(1,1,1,1,2),
      &                       WORK(KEND1),LWORK1)
+#ifdef VAR_MPI
+C-------------------------------------------------------
+C              Release slaves to the global node-driver.
+C-------------------------------------------------------
+               call soppa_release_slaves()
+#endif
 C
             END IF
 C     

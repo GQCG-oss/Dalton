@@ -1,6 +1,7 @@
 C
 C  /* Deck rp_lrsoeq */
-      SUBROUTINE RP_LRSOEQ(LABEL,ISYMTR,NEXCI,MAXIT,FRVAL,NFRVAL,RESINM,
+      SUBROUTINE RP_LRSOEQ(LABEL,ISYMTR,IMAGPROP,NEXCI,MAXIT,
+     &                     FRVAL,NFRVAL,RESINM,
      &                     LRESINM,CONV,LCONV,FOCKD,LFOCKD,
      &                     REDE,REDS,LMXRED,WORK,LWORK)
 C
@@ -27,7 +28,17 @@ C       REDE    matrix E[2]
 C       REDS    matrix S[2]
 C       LMXRED
 C
+#ifdef VAR_MPI
+      use so_parutils, only: parsoppa_do_eres, my_mpi_integer,  
+     &                       soppa_nint
+#endif
 #include "implicit.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+C  IRAT in order to assign space for load-balancing
+#include "iratdef.h"
+#endif
+C      
 #include "priunit.h"
 C
 #include "soppinf.h"
@@ -35,7 +46,7 @@ C
 C
       PARAMETER (EPSI = 1.0D-8)
 C
-      LOGICAL   NONEWT
+      LOGICAL   NONEWT, IMAGPROP
 C
       CHARACTER*3 CONV(LCONV)
       CHARACTER*8 LABEL
@@ -43,6 +54,18 @@ C
       DIMENSION FRVAL(NFRVAL),  RESINM(LRESINM)
       DIMENSION REDE(LMXRED),   REDS(LMXRED)
       DIMENSION FOCKD(LFOCKD),  WORK(LWORK)
+      INTEGER   NIT, NOLDTR, NNEWTR
+#ifdef VAR_MPI
+      INTEGER   CP_ISYMTR
+C     This array is only there to ensure that the four above variables
+C     are allocated consecutively, so that it can be send together. Only
+C     use it for this purpose.
+C     The definition must match that in soppa_nodedriver
+      INTEGER   INFO_ARRAY(4)
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+      INTEGER(MPI_INTEGER_KIND) :: IERR
+#endif
 C
 C------------------
 C     Add to trace.
@@ -61,7 +84,25 @@ C
 C
       KREDC   = 1
       KEND1   = KREDC  + (2*NSAVMX)**2
-      LWORK1  = LWORK  - KEND1
+#ifdef VAR_MPI
+C------------------------------------------------------------------
+C     For MPI, we need som space in which to store the indices each
+C     process is to work with in so_eres.
+C------------------------------------------------------------------
+C
+      call mpi_comm_size( mpi_comm_world, numprocs, ierr)
+      maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
+      if ( numprocs .eq. 1 ) then
+C Not a real parallel job, don't bother
+         lAssignedIndices = 1
+         kAssignedIndices = 0
+      else  
+         lAssignedIndices = (maxnumjobs + 1) /IRAT
+         kAssignedIndices = KEND1
+         KEND1 = kAssignedIndices + lAssignedIndices
+      endif
+#endif 
+      LWORK1 = LWORK - KEND1
 C
       CALL SO_MEMMAX ('RP_LRSOEQ.1',LWORK1)
       IF (LWORK1 .LT.0) CALL STOPIT('RP_LRSOEQ.1',' ',KEND1,LWORK)
@@ -104,7 +145,7 @@ C     or just using the final ones from the previous frequency
 C------------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL RP_TRIAL3(NNEWTR,NOLDTR,ISYMTR,IFREQ,FRVAL,NFRVAL,
+      CALL RP_TRIAL3(NNEWTR,NOLDTR,ISYMTR,IMAGPROP,IFREQ,FRVAL,NFRVAL,
      &               NEXCI,WORK(KEND1),LWORK1)
       DTIME      = SECOND()   - DTIME
       SOTIME(32) = SOTIME(32) + DTIME
@@ -147,8 +188,21 @@ C        Make E[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
+#ifdef VAR_MPI
+C In parallel, send slaves to so_eres
+C
+         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+     &                   mpi_comm_world, ierr )
+C ISYMTR is a non-local parameter, we need to copy it to the info-array
+         CP_ISYMTR = ISYMTR
+         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+     &                   MPI_COMM_WORLD, IERR)
+#endif
          DTIME      = SECOND()
          CALL RP_ERES(NOLDTR,NNEWTR,FOCKD,LFOCKD,NIT,ISYMTR,
+#ifdef VAR_MPI
+     &                WORK(kAssignedIndices),maxnumjobs,
+#endif
      &                WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(35) = SOTIME(35) + DTIME
@@ -175,12 +229,10 @@ C
          LREDC  = 2 * ( NOLDTR + NNEWTR )
 C
          DTIME      = SECOND()
-CPFP all arguments are necessary? in particular LABEL, LREDC and LREDOL 
-C         CALL RP_REDLE(NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,REDE,LREDE,REDS,
-C     &                 LREDS,WORK(KREDC),LREDC,LREDOL,FRVAL,NFRVAL,
-C     &                 IFREQ,ENORM,PROP,WORK(KEND1),LWORK1)
 C
-         CALL RP_REDLE(NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,REDE,LREDE,REDS,
+C         CALL RP_REDLE(NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,IMAGPROP,
+         CALL SO_REDLE(.FALSE.,NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,
+     &                 IMAGPROP,REDE,LREDE,REDS,
      &                 LREDS,WORK(KREDC),LREDC,LREDOL,FRVAL,NFRVAL,
      &                 IFREQ,ENORM,PROP,WORK(KEND1),LWORK1)
 Cend-PFP
@@ -208,10 +260,16 @@ C
 C
 cLig << DEBUG
 c         write(lupri,'(A,I5,I3)') 'nnewtr prima di trial2',nnewtr,nit
+         LDUMMY = 1    
          DTIME      = SECOND()
-         CALL RP_TRIAL2('LINEAR',NONEWT,NOLDTR,NNEWTR,NLINDP,
+C         CALL RP_TRIAL2('LINEAR',NONEWT,NOLDTR,NNEWTR,NLINDP,
+C     &                  FRVAL(IFREQ),1,RESINM,LRESINM,CONV,LCONV,NCONV,
+C     &                  ISYMTR,NEXCI,ENORM,LABEL,WORK(KEND1),LWORK1)
+         CALL SO_TRIAL2('AORPA','LINEAR',NONEWT,NOLDTR,NNEWTR,NLINDP,
      &                  FRVAL(IFREQ),1,RESINM,LRESINM,CONV,LCONV,NCONV,
-     &                  ISYMTR,NEXCI,ENORM,LABEL,WORK(KEND1),LWORK1)
+     &                  ISYMTR,IMAGPROP,
+     &                  NEXCI,DUMMY,LDUMMY,DUMMY,LDUMMY,
+     &                  ENORM,LABEL,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(34) = SOTIME(34) + DTIME
 C         write(lupri,'(A,I5)') 'nnewtr dopo di trial2',nnewtr

@@ -40,15 +40,25 @@ CKeinSPASmehr
       DIMENSION BSRLON(3,NSYM,MXNEXI), EXENG(NSYM,MXNEXI)
       DIMENSION T2AM(LT2AM), WORK(LWORK)
 C
+      PARAMETER( ONE=1.0D0 )
+C      
       CHARACTER*8 LABEL
       CHARACTER*5 MODEL
+      LOGICAL  IMAGPROP,DOUBLES
+
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_TRMOM')
+C------------------------
+C     Do we need doubles?
+C------------------------
 C
+      DOUBLES = MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'AOSOC'.OR.
+     &          MODEL.EQ.'DCRPA'
+C      
 C-------------------------------
 C     Loop over property labels.
 C-------------------------------
@@ -78,17 +88,27 @@ C-------------------------------------
 C           Allocation of work space.
 C-------------------------------------
 C
-            LGPVC1  = 2 * NT1AM(ISYMTR) 
-            LGPVC2  = 2 * NT2AM(ISYMTR) 
+CRF            LGPVC1  = 2 * NT1AM(ISYMTR) 
+CRF            LGPVC2  = 2 * NT2AM(ISYMTR) 
+            LGPVC1  = NT1AM(ISYMTR) 
             LGPVC1H = NT1AM(ISYMTR) 
-            LGPVC2H = NT2AM(ISYMTR) 
             LTR1    = NT1AM(ISYMTR)
-            LTR2    = NT2AM(ISYMTR)
             LTRMOM  = NEXCI
             LTRM1E  = NEXCI
             LTRM1D  = NEXCI
-            LTRM2E  = NEXCI
-            LTRM2D  = NEXCI
+            IF(DOUBLES)THEN
+               LTR2    = NT2AM(ISYMTR)
+               LGPVC2  = NT2AM(ISYMTR) 
+               LGPVC2H = NT2AM(ISYMTR) 
+               LTRM2E  = NEXCI
+               LTRM2D  = NEXCI
+            ELSE
+               LTR2    = 0
+               LGPVC2  = 0
+               LGPVC2H = 0 
+               LTRM2E  = 0 
+               LTRM2D  = 0
+            ENDIF
 C
             KGPVC1  = 1
             KGPVC2  = KGPVC1 + LGPVC1
@@ -110,15 +130,20 @@ C           Calculate the gradient property vector and write to output.
 C----------------------------------------------------------------------
 C
             CALL SO_GETGP(WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,
-     &                    LABEL,ISYMTR,T2AM,LT2AM,DENSIJ,LDENSIJ,
+     &                    LABEL,ISYMTR,IMAGPROP,MODEL,
+     &                    T2AM,LT2AM,DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
-     &                    WORK(KEND1),LWORK1)
-C
+     &                    WORK(KEND1),LWORK1)            
             IF ( IPRSOP .GE. 5) THEN
                WRITE(LUPRI,'(2A)') 'In SO_TRMOM : GP vector: ',LABEL
-               CALL OUTPUT(WORK(KGPVC1),1,LGPVC1H,1,2,LGPVC1H,2,1,LUPRI)
-               CALL OUTPUT(WORK(KGPVC2),1,LGPVC2H,1,2,LGPVC2H,2,1,LUPRI)
+               CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
+               IF(DOUBLES) 
+     &           CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
             ENDIF
+C
+C           Factor for D-ex part of gradient
+            DFACTOR = -ONE
+            IF (IMAGPROP) DFACTOR = ONE
 C
 C--------------------------------------------
 C           Open files with solution vectors.
@@ -126,8 +151,10 @@ C--------------------------------------------
 C
             CALL SO_OPEN(LUTR1E,FNTR1E,LTR1)
             CALL SO_OPEN(LUTR1D,FNTR1D,LTR1)
-            CALL SO_OPEN(LUTR2E,FNTR2E,LTR2)
-            CALL SO_OPEN(LUTR2D,FNTR2D,LTR2)
+            IF(DOUBLES) THEN
+               CALL SO_OPEN(LUTR2E,FNTR2E,LTR2)
+               CALL SO_OPEN(LUTR2D,FNTR2D,LTR2)
+            ENDIF
 C
 C-----------------------------------------------------------
 C           Loop over excitations of the specified symmetry.
@@ -140,12 +167,15 @@ C              Read excitation part of solution vectors.
 C-------------------------------------------------------
 C
                CALL SO_READ(WORK(KTR1),LTR1,LUTR1E,FNTR1E,IEXCI)
-               CALL SO_READ(WORK(KTR2),LTR2,LUTR2E,FNTR2E,IEXCI)
+               IF(DOUBLES)
+     &             CALL SO_READ(WORK(KTR2),LTR2,LUTR2E,FNTR2E,IEXCI)
 C
                IF ( IPRSOP .GE. 5) THEN
-                  WRITE(LUPRI,'(A)') 'Exci. part of solution vector: '
+                  WRITE(LUPRI,'(A,I2)') 'Exci. part'// 
+     &                       ' of solution vector: ', IEXCI
                   CALL OUTPUT(WORK(KTR1),1,LTR1,1,1,LTR1,1,1,LUPRI)
-                  CALL OUTPUT(WORK(KTR2),1,LTR2,1,1,LTR2,1,1,LUPRI)
+                  IF(DOUBLES)
+     &                 CALL OUTPUT(WORK(KTR2),1,LTR2,1,1,LTR2,1,1,LUPRI)
                ENDIF
 C
 C-------------------------------------------------------------
@@ -154,20 +184,23 @@ C-------------------------------------------------------------
 C
                WORK(KTRM1E+IEXCI-1) = 
      &            DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KTR1),1)
-               WORK(KTRM2E+IEXCI-1) = 
-     &            DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KTR2),1)
+               IF(DOUBLES)
+     &            WORK(KTRM2E+IEXCI-1) = 
+     &                  DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KTR2),1)
 C
 C----------------------------------------------------------
 C              Read de-excitation part of solution vectors.
 C----------------------------------------------------------
 C
                CALL SO_READ(WORK(KTR1),LTR1,LUTR1D,FNTR1D,IEXCI)
-               CALL SO_READ(WORK(KTR2),LTR2,LUTR2D,FNTR2D,IEXCI)
+               IF(DOUBLES)
+     &                 CALL SO_READ(WORK(KTR2),LTR2,LUTR2D,FNTR2D,IEXCI)
 C
                IF ( IPRSOP .GE. 5) THEN
                   WRITE(LUPRI,'(A)') 'De-ex. part of solution vector: '
                   CALL OUTPUT(WORK(KTR1),1,LTR1,1,1,LTR1,1,1,LUPRI)
-                  CALL OUTPUT(WORK(KTR2),1,LTR2,1,1,LTR2,1,1,LUPRI)
+                  IF(DOUBLES)
+     &                 CALL OUTPUT(WORK(KTR2),1,LTR2,1,1,LTR2,1,1,LUPRI)
                ENDIF
 C
 C----------------------------------------------------------------
@@ -195,10 +228,11 @@ c                  WRITE(LUPRI,*) 'Revision of program needed for',LABEL
 c                  GO TO 200
 C
 c               END IF
-               WORK(KTRM1D+IEXCI-1) = 
-     &             DDOT(LGPVC1H,WORK(KGPVC1+LGPVC1H),1,WORK(KTR1),1)
-               WORK(KTRM2D+IEXCI-1) = 
-     &             DDOT(LGPVC2H,WORK(KGPVC2+LGPVC2H),1,WORK(KTR2),1)
+               WORK(KTRM1D+IEXCI-1) = DFACTOR * 
+     &             DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KTR1),1)
+               IF(DOUBLES)
+     &             WORK(KTRM2D+IEXCI-1) = DFACTOR *
+     &                         DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KTR2),1)
                
 C
 C-------------------------------------------------------------------
@@ -206,9 +240,12 @@ C              Calculate total transiton moment and write to output.
 C-------------------------------------------------------------------
 C
                WORK(KTRMOM+IEXCI-1) = WORK(KTRM1E+IEXCI-1) 
-     &                              + WORK(KTRM2E+IEXCI-1)
      &                              + WORK(KTRM1D+IEXCI-1) 
-     &                              + WORK(KTRM2D+IEXCI-1)
+               IF(DOUBLES)THEN
+                  WORK(KTRMOM+IEXCI-1) = WORK(KTRMOM+IEXCI-1) 
+     &                                 + WORK(KTRM2E+IEXCI-1)
+     &                                 + WORK(KTRM2D+IEXCI-1)
+               ENDIF
 C
                IF ( IPRSOP .GE. 4) THEN
 C
@@ -240,8 +277,10 @@ C--------------------------------------------
 C
             CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
             CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
-            CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-            CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+            IF(DOUBLES)THEN
+               CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+               CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+            ENDIF
 C
 C-------------------------------------------------------
 C           Write tabel of transition moments to output.
@@ -249,7 +288,11 @@ C-------------------------------------------------------
 C
             IF ( IPRSOP .GE. 1) THEN
 C
-               IF (MODEL .EQ. 'DCRPA') THEN
+               IF (MODEL .EQ. 'AORPA') THEN
+                  WRITE(LUPRI,'(/,1X,A,A,A,I3)') LABEL,
+     &                  ' RPA transition moments for excitation',
+     &                  ' symmetry',ISYMTR
+               ELSE IF (MODEL .EQ. 'DCRPA') THEN
                   WRITE(LUPRI,'(/,1X,A,A,A,I3)') LABEL,
      &                  ' RPA(D) transition moments for excitation',
      &                  ' symmetry',ISYMTR

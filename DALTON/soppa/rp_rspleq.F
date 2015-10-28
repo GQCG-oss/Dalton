@@ -31,6 +31,7 @@ C
       CHARACTER*8 LABEL
 C
       PARAMETER ( D100 = 100.0D0 )
+      LOGICAL IMAGPROP
 C
 #include "codata.h"
 #include "wrkrsp.h"
@@ -55,25 +56,32 @@ C---------------------------------------------
 C     Calculate the gradient property vectors.
 C---------------------------------------------
 C
-      LGPVCH  = NT1AM(ISYMTR)
+      LGPVC1  = NT1AM(ISYMTR)
       LGPVEC  = 2 * LGPVCH
 C
       KGPVEC  = 1
-      KEND1   = KGPVEC + LGPVEC 
+      KEND1   = KGPVEC + LGPVC1 !+ LGPVEC 
       LWORK1  = LWORK  - KEND1
+
+      LDUMMY = 1
+C      KDUMMY = KEND1
 C
       CALL SO_MEMMAX ('RP_RSPLEQ.1',LWORK1)
       IF (LWORK1 .LT.0) CALL STOPIT('RP_RSPLEQ.1',' ',KEND1,LWORK)
 C
-      CALL RP_GETGP(WORK(KGPVEC),LGPVEC,LABEL,ISYMTR,WORK(KEND1),LWORK1)
+C      CALL RP_GETGP(WORK(KGPVEC),LGPVEC,LABEL,ISYMTR,WORK(KEND1),LWORK1)
+      CALL SO_GETGP(WORK(KGPVEC),LGPVC1,DUMMY,LDUMMY,
+     &              LABEL,ISYMTR,IMAGPROP,'AORPA',
+     &              DUMMY,LDUMMY,DUMMY,LDUMMY,DUMMY,LDUMMY,
+     &              DUMMY,LDUMMY,WORK(KEND1),LWORK1)
 C
 C---------------------------------------
 C     Save property gradients on a file.
 C---------------------------------------
 C
-      CALL SO_OPEN(LUGPVE,FNGPVE,LGPVEC)
+      CALL SO_OPEN(LUGPVE,FNGPVE,LGPVC1)
 C
-      CALL SO_WRITE(WORK(KGPVEC),LGPVEC,LUGPVE,FNGPVE,1)
+      CALL SO_WRITE(WORK(KGPVEC),LGPVC1,LUGPVE,FNGPVE,1)
 C
       IF ( IPRSOP .GE. 5) THEN
 C
@@ -81,7 +89,7 @@ C
      &                ' for : '//LABEL)
 C         WRITE (LUPRI,'(2A)') 'In RP_RSPLEQ:  RPA GP vector for : ',
 C     &                        LABEL
-         CALL OUTPUT(WORK(KGPVEC),1,LGPVCH,1,2,LGPVCH,2,1,LUPRI)
+         CALL OUTPUT(WORK(KGPVEC),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
 C
       ENDIF
 C
@@ -125,7 +133,7 @@ C     Solve linear response equations for RPA
 C--------------------------------------------
 C
       NEXCI = 1
-      CALL RP_LRSOEQ(LABEL,ISYMTR,NEXCI,MAXIT,FRVAL,NFRVAL,
+      CALL RP_LRSOEQ(LABEL,ISYMTR,IMAGPROP,NEXCI,MAXIT,FRVAL,NFRVAL,
      &               WORK(KRESINM),LRESINM,WORK(KCONV),LCONV,FOCKD,
      &               LFOCKD,WORK(KREDE),WORK(KREDS),LMXRED,
      &               WORK(KEND2),LWORK2)

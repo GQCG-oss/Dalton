@@ -19,6 +19,8 @@ C
       DIMENSION DIAG1(LDIAG1), FOCKD(LFOCKD)
 C
 #include "ccorb.h"
+C    As a brilliant feat of code obfusication, somebody defined
+C    a lot of one letter variables as integers in ccsdsym
 #include "ccsdsym.h"
 C
 C------------------

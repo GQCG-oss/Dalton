@@ -87,7 +87,7 @@ C
                KEND2   = KSCR4 + LSCR4
                LWORK2  = LWORK - KEND2
 C
-               CALL SO_MEMMAX ('SO_SIGAI.2',KEND2)
+               CALL SO_MEMMAX ('SO_SIGAI.2',LWORK2)
                IF (LWORK2 .LT. 0) 
      &             CALL STOPIT('SO_SIGAI.2',' ',KEND2,LWORK)
 C

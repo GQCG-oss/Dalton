@@ -1,6 +1,7 @@
 C
 C  /* Deck so_redle */
-      SUBROUTINE SO_REDLE(NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,REDE,LREDE,
+      SUBROUTINE SO_REDLE(DOUBLES,NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,
+     &                    IMAGPROP,REDE,LREDE,
      &                    REDS,LREDS,REDC,LREDC,LREDOL,FRVAL,NFRVAL,
      &                    IFREQ,ENORM,PROP,WORK,LWORK)
 C
@@ -11,14 +12,27 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C     Andrea Ligabue, January 2004: linear response functions 
 C                                    implemented
 C
-C        Set up and solve the reduced eigenvalue problem. Save the
+C        Set up and solve the reduced linear response problem. Save the
 C        new reduced matrices and the optimized trial and solution
 C        vectors which may be written to disk.
 C
-C NEXCI           # of excitation energies to be calculated in the
-C                 given symmetry
-C NOLDTR          # of old trial vectors
-C NNEWTR          # of new trial vectors
+C NEXCI         # of frequencies for that property (for us is always 1)
+C NOLDTR        # of old trial vectors
+C NNEWTR        # of new trial vectors
+C LABEL         name of the property
+C ISYMTR        symmetry of the property
+C REDE          E[2] reduced matrix
+C LREDE         dimension of the E[2] reduced matrix
+C REDS          S[2] reduced matrix
+C LREDS         dimension of the S[2] reduced matrix
+C LREDOL        dimension of the old E[2] and S[2] matrix
+C FRVAL         array with the frequencies fot that property
+C NFRVAL        dimension of the array FRVAL
+C IFREQ        for which components of the FRVAL array we are computing
+C ENORM         is the norm used to generate the new Z vector; i need that 
+C               to compute the residual 
+C WORK
+C LWORK
 C
 C23456789012345678901234567890123456789012345678901234567890123456789012
 C
@@ -35,9 +49,13 @@ C--------------------------------
 C
       DIMENSION REDE(LREDE,LREDE),REDS(LREDS,LREDS),REDC(LREDC)
       DIMENSION FRVAL(NFRVAL)
+cLig  <> I have to check if I really need to dimension these here!
+cLig  and if it is true, I have to use the work array and check the 
+cLig  memory requirment in teh calling subroutine (RP_LRSOEQ)
       DIMENSION WORK(LWORK)
       DIMENSION KPVT(LREDE),INERT(3),DET(2)
       CHARACTER*8 LABEL
+      LOGICAL   IMAGPROP,DOUBLES
 C
 C------------------
 C     Add to trace.
@@ -71,9 +89,9 @@ C
      &             SO_REDLE.2')
       ENDIF
 C
-C==========================================
-C     Set up the reduced eigenvalue problem
-C==========================================
+C===============================================
+C     Set up the reduced linear response problem
+C===============================================
 C
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.
@@ -84,7 +102,11 @@ C--------------------------------------------------------------------
 C
       LTR1E    = NT1AM(ISYMTR)
 CPFP   2009-Jun
-      LTR2E    = NT2AM(ISYMTR)
+      IF(DOUBLES)THEN
+         LTR2E    = NT2AM(ISYMTR)
+      ELSE
+         LTR2E    = 0
+      ENDIF
 C      LTR2E    = N2P2HOP(ISYMTR)
 Cend-PFP
       LI       = NOLDTR + NNEWTR
@@ -126,7 +148,7 @@ C     Calculate new elements of the reduced matrices
 C---------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_INCRED(NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+      CALL SO_INCRED(DOUBLES,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
      &               LREDOL,LTR1E,LTR2E,WORK(KIS),WORK(KIE),
      &               WORK(KIN),LI,WORK(KJS),WORK(KJE),WORK(KJN),LJ,
      &               WORK(KEND1),LWORK1)
@@ -155,7 +177,8 @@ C     Calculate new elements of the reduced GP vector
 C----------------------------------------------------
 C
       DTIME = SECOND()
-      CALL SO_REDGP(NOLDTR,NNEWTR,ISYMTR,REDC,LREDC,WORK(KEND1),LWORK1)
+      CALL SO_REDGP(DOUBLES,NOLDTR,NNEWTR,ISYMTR,IMAGPROP,
+     &              REDC,LREDC,WORK(KEND1),LWORK1)
       DTIME = SECOND() - DTIME
 cLig  check the number in the SOTIME array
       SOTIME(28) = SOTIME(28) + DTIME
@@ -172,9 +195,9 @@ C
 C
       ENDIF
 C
-C======================================
-C     Solve the reduced linear problem.
-C======================================
+C===============================================
+C     Solve the reduced linear response problem.
+C===============================================
 C
 C----------------------------------
 C     Work space allocation no. 2.
@@ -233,7 +256,7 @@ C
       NSIM = 1
       CALL DSPSLI(LREDE,NSIM,WORK(KEMOS),REDC,KPVT,INFO,DET,INERT)
 C
-      IF( IPRSOP .GE. 10 ) THEN
+      IF( IPRSOP .GE. 1 ) THEN
 C
 C---------------------------
 C     Print reduced C vector
@@ -283,13 +306,14 @@ C
       SOTIME(38) = SOTIME(38) + DTIME
 C
 C-----------------------------------------------------------------
-C     Calculate the value of the property with the trial vector used
+C     Calculate the value of the property with the trial vectors used
 C     for the linear problem before they will be changed by the 
-C     RP_OPTVEC and write solution vector on the file
+C     SO_OPTVEC and write solution vector on the file
 C-----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_PROP(NOLDTR,NNEWTR,ISYMTR,REDC,LREDC,LABEL,FRVAL(IFREQ),
+      CALL SO_PROP(DOUBLES,NOLDTR,NNEWTR,ISYMTR,IMAGPROP,
+     &             REDC,LREDC,LABEL,FRVAL(IFREQ),
      &             PROP,WORK(KEND2),LWORK2)
       DTIME      = SECOND()   - DTIME
 cLig  I'm quite sure to have to change this SOTIME 
@@ -302,7 +326,8 @@ C     (solution) vectors
 C-----------------------------------------------------------------
 C
       DTIME      = SECOND()   - DTIME
-      CALL SO_OPTVEC(NOLDTR,NNEWTR,NEXCI,WORK(KZETA),LEIVEC,ISYMTR,
+      CALL SO_OPTVEC(DOUBLES,NOLDTR,NNEWTR,NEXCI,
+     &               WORK(KZETA),LEIVEC,ISYMTR,
      &               WORK(KEND2),LWORK2)
       DTIME      = SECOND()   - DTIME
       SOTIME(37) = SOTIME(37) + DTIME

@@ -1,6 +1,7 @@
 C  /* Deck so_redev */
-      SUBROUTINE SO_REDEV(NEXCI,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,
-     &                    LREDS,LREDOL,EXVAL,LEXVAL,WORK,LWORK)
+      SUBROUTINE SO_REDEV(DOUBLES,NEXCI,NOLDTR,NNEWTR,ISYMTR,
+     &                    REDE,LREDE,REDS,LREDS,
+     &                    LREDOL,EXVAL,LEXVAL,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -13,6 +14,7 @@ C        Set up and solve the reduced eigenvalue problem. Save the
 C        new reduced matrices and the optimized trial and solution
 C        vectors which may be written to disk.
 C
+C DOUBLES         Include Doubles vector
 C NEXCI           # of excitation energies to be calculated in the
 C                 given symmetry
 C NOLDTR          # of old trial vectors
@@ -38,6 +40,7 @@ C
       DIMENSION REDE(LREDE,LREDE),REDS(LREDS,LREDS)
       DIMENSION EXVAL(LEXVAL)
       DIMENSION WORK(LWORK)
+      LOGICAL   DOUBLES
 C
 C------------------
 C     Add to trace.
@@ -83,7 +86,11 @@ C     that they use the same work space.
 C--------------------------------------------------------------------
 C
       LTR1E    = NT1AM(ISYMTR)
-      LTR2E    = NT2AM(ISYMTR)
+      IF(DOUBLES)THEN
+         LTR2E    = NT2AM(ISYMTR)
+      ELSE
+         LTR2E    = 0
+      ENDIF
       LI       = NOLDTR + NNEWTR
       LJ       = NOLDTR + NNEWTR
 C
@@ -104,7 +111,7 @@ C     Calculate new elements of the reduced matrices
 C---------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_INCRED(NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+      CALL SO_INCRED(DOUBLES,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
      &               LREDOL,LTR1E,LTR2E,WORK(KIS),WORK(KIE),
      &               WORK(KIN),LI,WORK(KJS),WORK(KJE),WORK(KJN),LJ,
      &               WORK(KEND1),LWORK1)
@@ -245,7 +252,8 @@ C     (solution) vectors
 C-----------------------------------------------------------------
 C
       DTIME      = SECOND()   - DTIME
-      CALL SO_OPTVEC(NOLDTR,NNEWTR,NEXCI,WORK(KEIVEC),LEIVEC,ISYMTR,
+      CALL SO_OPTVEC(DOUBLES,NOLDTR,NNEWTR,NEXCI,
+     &               WORK(KEIVEC),LEIVEC,ISYMTR,
      &               WORK(KEND2A),LWORK2A)
       DTIME      = SECOND()   - DTIME
       SOTIME(37) = SOTIME(37) + DTIME

@@ -46,6 +46,7 @@ C
       INTEGER   NIT, NOLDTR, NNEWTR
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
+      INTEGER   MAXNUMJOBS
 C     This array is only there to ensure that the four above variables
 C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
@@ -123,7 +124,7 @@ C
 C
 #ifdef VAR_MPI
 C------------------------------------------------------------------
-C     For MPI, we need som space in which to store the indices each
+C     For MPI, we need some space in which to store the indices each
 C     process is to work with in so_eres.
 C------------------------------------------------------------------
 C
@@ -258,7 +259,8 @@ C
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
-         CALL SO_REDEV(NEXCI,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+         CALL SO_REDEV(.TRUE.,NEXCI,NOLDTR,NNEWTR,ISYMTR,
+     &                 REDE,LREDE,REDS,LREDS,
      &                 LREDOL,EXVAL,LEXVAL,WORK(KEND1),LWORK1)
 
          DTIME      = SECOND()   - DTIME
@@ -287,10 +289,11 @@ C
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
-         CALL SO_TRIAL2('EXCITA',NONEWT,NOLDTR,NNEWTR,NLINDP,EXVAL,
-     &                  LEXVAL,RESINM,LRESINM,CONV,LCONV,
-     &                  NCONV,ISYMTR,NEXCI,DENSIJ,LDENSIJ,
-     &                  DENSAB,LDENSAB,DUMMY,DUMMY,WORK(KEND1),LWORK1)
+         CALL SO_TRIAL2(MODEL,'EXCITA',NONEWT,NOLDTR,NNEWTR,NLINDP,
+     &                  EXVAL,LEXVAL,RESINM,LRESINM,CONV,LCONV,
+     &                  NCONV,ISYMTR,DUMMY,
+     &                  NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                  DUMMY,DUMMY,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(34) = SOTIME(34) + DTIME
          CALL GETTIM (DUMMY,WTIMEE)

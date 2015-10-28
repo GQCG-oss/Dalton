@@ -43,7 +43,7 @@ C
       CHARACTER*5 MODEL
       DIMENSION   SNDPRP(2)
 C
-      LOGICAL   HASDOUBLES
+      LOGICAL   HASDOUBLES, IMAGPROP
       PARAMETER (DP5=0.5D0)
 C
 C------------------
@@ -60,26 +60,33 @@ C
       IF (.NOT.HASDOUBLES) THEN
 C
          LGPVC1  = NT1AM(ISYMTR) 
-         LGPVEC  = 2 * LGPVC1
-         LSLV1E  = NT1AM(ISYMTR) 
-         LSLV1D  = NT1AM(ISYMTR) 
+CRF         LGPVEC  = 2 * LGPVC1
+         LGPVEC  = LGPVC1
+         LSLV1   = NT1AM(ISYMTR) 
+CRF         LSLV1D  = NT1AM(ISYMTR) 
 C
          KGPVEC  = 1
          KGPVC1  = KGPVEC
-         KGPVC1D = KGPVC1 + LGPVC1
+C         KGPVC1D = KGPVC1 + LGPVC1
          KSLV1   = KGPVEC + LGPVEC 
          KSLV1E  = KSLV1
-         KSLV1D  = KSLV1E + LSLV1E
-         KEND1   = KSLV1D + LSLV1D 
+         KSLV1D  = KSLV1E + LSLV1
+         KEND1   = KSLV1D + LSLV1
+C 
+         LGPVC2  = 1
+         KGPVC2  = KEND1         
 C
       ELSE ! IF (AOSOP .OR. AOSOC) THEN
 C
-         LGPVC1 = 2*NT1AM(ISYMTR) 
+CRF         LGPVC1 = 2*NT1AM(ISYMTR) 
+         LGPVC1 = NT1AM(ISYMTR) 
 CPFP   2009-Jun
-         LGPVC2 = 2*NT2AM(ISYMTR) 
+CRF         LGPVC2 = 2*NT2AM(ISYMTR) 
+         LGPVC2 = NT2AM(ISYMTR) 
 C         LGPVC2 = N2P2HOP(ISYMTR) 
 Cend-PFP
-         LGPVEC = 2 * (LGPVC1 + LGPVC2)
+CRf         LGPVEC = 2 * (LGPVC1 + LGPVC2)
+         LGPVEC = (LGPVC1 + LGPVC2)
          LSLV1  = NT1AM(ISYMTR)
 CPFP   2009-Jun
          LSLV2  = NT2AM(ISYMTR)
@@ -146,42 +153,48 @@ C----------------------------------------------------------------------
 C           Calculate the gradient property vectors and write to output
 C----------------------------------------------------------------------
 C
-            IF ( MODEL .EQ. 'AORPA' ) THEN
+C            IF ( MODEL .EQ. 'AORPA' ) THEN
 C
-               CALL RP_GETGP(WORK(KGPVEC),LGPVEC,LABEL2,ISYMTR,
-     &                       WORK(KEND1),LWORK1)
+C               CALL RP_GETGP(WORK(KGPVEC),LGPVEC,LABEL2,ISYMTR,
+C     &                       WORK(KEND1),LWORK1)
 C
-            ELSE IF ( (MODEL .EQ. 'AOSOP') .OR.
-     &                (MODEL .EQ. 'AOSOC')       ) THEN
+C            ELSE IF ( (MODEL .EQ. 'AOSOP') .OR.
+C     &                (MODEL .EQ. 'AOSOC')       ) THEN
 C
 cLig <> since I have changed the SO_GETGP function you have to call with
 cLig    LGPVC1*2 and LGPVC2*2
+CRF  I changed that back !!!!
+CRF  Also we should be able to call the same GETGP for RPA
                CALL SO_GETGP(WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,
-     &                       LABEL2,ISYMTR,T2AM,LT2AM,DENSIJ,LDENSIJ,
+     &                       LABEL2,ISYMTR,IMAGPROP,MODEL,
+     &                       T2AM,LT2AM,DENSIJ,LDENSIJ,
      &                       DENSAB,LDENSAB,DENSAI,LDENSAI,
      &                       WORK(KEND1),LWORK1)
+
+               DFACTOR = -1.0D0
+               IF (IMAGPROP) DFACTOR = 1.0D0
 C
-            END IF
+C            END IF
 C
             IF ( IPRSOP .GE. 5) THEN
                IF ( MODEL .EQ. 'AORPA' ) THEN
                   CALL AROUND('In SO_POLAR:  RPA gradient property '//
      &                         'vector.'//LABEL2)
-                  CALL OUTPUT(WORK(KGPVEC),1,LGPVC1,1,2,LGPVC1,2,1,
+                  CALL OUTPUT(WORK(KGPVEC),1,LGPVC1,1,1,LGPVC1,1,1,
      &                        LUPRI)
                ELSE IF ( MODEL .EQ. 'AOSOP' ) THEN
                   CALL AROUND('In SO_POLAR:  SOPPA gradient property '//
      &                         'vector.'//LABEL2)
-                  CALL OUTPUT(WORK(KGPVC1),1,LGPVC1/2,1,2,LGPVC1/2,2,1,
+                  CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,
      &                        LUPRI)
-                  CALL OUTPUT(WORK(KGPVC2),1,LGPVC2/2,1,2,LGPVC2/2,2,1,
+                  CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,
      &                        LUPRI)
                ELSE IF ( MODEL .EQ. 'AOSOC' ) THEN
                   CALL AROUND('In SO_POLAR:  SOPPA(CCSD) gradient '//
      &                         'property vector.'//LABEL2)
-                  CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,2,LGPVC1,2,1,
+                  CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,
      &                        LUPRI)
-                  CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,2,LGPVC2,2,1,
+                  CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,
      &                        LUPRI)
                END IF
             END IF
@@ -200,13 +213,13 @@ C----------------------------------------------------------
 C
                   CALL SO_FNDPOS(LABEL1,FRVAL(IFRVAL),LUSV1E)
                   CALL SO_FNDPOS(LABEL1,FRVAL(IFRVAL),LUSV1D)
+                  CALL SO_REAVE(WORK(KSLV1E),LSLV1,ISYMTR,LABEL1,
+     &                          FRVAL(IFRVAL),LUSV1E)
+                  CALL SO_REAVE(WORK(KSLV1D),LSLV1,ISYMTR,LABEL1,
+     &                          FRVAL(IFRVAL),LUSV1D)
 C
                   IF ( HASDOUBLES ) THEN
 C
-                    CALL SO_REAVE(WORK(KSLV1E),LSLV1,ISYMTR,LABEL1,
-     &                            FRVAL(IFRVAL),LUSV1E)
-                    CALL SO_REAVE(WORK(KSLV1D),LSLV1,ISYMTR,LABEL1,
-     &                            FRVAL(IFRVAL),LUSV1D)
 C
                     CALL SO_FNDPOS(LABEL1,FRVAL(IFRVAL),LUSV2E)
                     CALL SO_FNDPOS(LABEL1,FRVAL(IFRVAL),LUSV2D)
@@ -216,12 +229,12 @@ C
                     CALL SO_REAVE(WORK(KSLV2D),LSLV2,ISYMTR,LABEL1,
      &                            FRVAL(IFRVAL),LUSV2D)
 C
-                  ELSE
+C                  ELSE
 C
-                    CALL SO_REAVE(WORK(KSLV1E),LSLV1E,ISYMTR,LABEL1,
-     &                            FRVAL(IFRVAL),LUSV1E)
-                    CALL SO_REAVE(WORK(KSLV1D),LSLV1D,ISYMTR,LABEL1,
-     &                            FRVAL(IFRVAL),LUSV1D)
+C                    CALL SO_REAVE(WORK(KSLV1E),LSLV1,ISYMTR,LABEL1,
+C     &                            FRVAL(IFRVAL),LUSV1E)
+C                    CALL SO_REAVE(WORK(KSLV1D),LSLV1,ISYMTR,LABEL1,
+C     &                            FRVAL(IFRVAL),LUSV1D)
 C
                   ENDIF
 C
@@ -230,7 +243,7 @@ C
      &                   'Solution Vector no. ',IFRVAL,
      &                   ' for operator ',LABEL1,
      &                   ' and frequency ',FREQ
-                     CALL OUTPUT(WORK(KSLV1),1,LSLV1E,1,2,LSLV1E,
+                     CALL OUTPUT(WORK(KSLV1),1,LSLV1,1,2,LSLV1,
      &                           2,1,LUPRI)
                   ENDIF
 C
@@ -238,17 +251,20 @@ C---------------------------------------------------------------------
 C           Calculate second order properties SNDPRP.
 C---------------------------------------------------------------------
 C
-                  IF ( MODEL .EQ. 'AORPA' ) THEN
+C           Singles contribution                  
+                  SNDPRP(1)= DDOT(LGPVC1,WORK(KGPVC1),1,WORK(KSLV1E),1)
+     &                      +DFACTOR *
+     &                       DDOT(LGPVC1,WORK(KGPVC1),1,WORK(KSLV1D),1)
+C                  IF ( MODEL .EQ. 'AORPA' ) THEN
 C
-                     SNDPRP(1)=DDOT(LGPVEC,WORK(KGPVEC),1,WORK(KSLV1),1)
+C                     SNDPRP(1)=DDOT(LGPVEC,WORK(KGPVEC),1,WORK(KSLV1),1)
 C
-                  ELSE IF ( (MODEL .EQ. 'AOSOP') .OR. 
-     &                      (MODEL .EQ. 'AOSOC')      ) THEN
-C
-                     SNDPRP(1)=DDOT(LGPVC1,WORK(KGPVC1),1,WORK(KSLV1),1)
-C
-                     SNDPRP(1)=SNDPRP(1)
-     &                        +DDOT(LGPVC2,WORK(KGPVC2),1,WORK(KSLV2),1)
+                  IF ( HASDOUBLES ) THEN
+C           Doubles contribution
+                     SNDPRP(1) = SNDPRP(1)
+     &                      + DDOT(LGPVC2,WORK(KGPVC2),1,WORK(KSLV2E),1)
+     &                      + DFACTOR *
+     &                        DDOT(LGPVC2,WORK(KGPVC2),1,WORK(KSLV2D),1)
 C
                   ENDIF
 C

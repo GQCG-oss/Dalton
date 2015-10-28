@@ -1,8 +1,9 @@
 C
 C  /* Deck so_trial2 */
-      SUBROUTINE SO_TRIAL2(LTYPE,NONEWT,NOLDTR,NNEWTR,NLINDP,
+      SUBROUTINE SO_TRIAL2(MODEL,LTYPE,NONEWT,NOLDTR,NNEWTR,NLINDP,
      &                     EIVAL,LEIVAL,RESINM,LRESINM,CONV,LCONV,
-     &                     NCONV,ISYMTR,NEXCI,DENSIJ,LDENSIJ,
+     &                     NCONV,ISYMTR,IMAGPROP,
+     &                     NEXCI,DENSIJ,LDENSIJ,
      &                     DENSAB,LDENSAB,ENORM,LABEL,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -38,6 +39,8 @@ C
       DIMENSION   EIVAL(LEIVAL), RESINM(LRESINM)
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION   WORK(LWORK)
+      LOGICAL IMAGPROP, DOUBLES
+      CHARACTER*5 MODEL
 C
 C------------------
 C     Add to trace.
@@ -52,6 +55,10 @@ C
       YES = 'yes'
       NO  = ' no'
 C
+C---------------------------------------------
+C     Does this method have doubles aplitudes?
+C---------------------------------------------
+      DOUBLES = MODEL .EQ. 'AOSOP' .OR. MODEL.EQ.'AOSOC'
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.  Notice that the RESULT and TRIAL
 C     vectors are of equal length and are chosen to use the same work
@@ -64,32 +71,46 @@ C
       LTR1E   = LRES1E
       LRES1D  = NT1AM(ISYMTR)
       LTR1D   = LRES1D
-      LRES2E  = NT2AM(ISYMTR)
-      LTR2E   = LRES2E
-      LRES2D  = NT2AM(ISYMTR)
-      LTR2D   = LRES2D
       LRESI1E = NT1AM(ISYMTR)
       LRESI1D = NT1AM(ISYMTR)
-      LRESI2E = NT2AM(ISYMTR)
-      LRESI2D = NT2AM(ISYMTR)
       LRESO1E = NT1AM(ISYMTR)
       LEDIA1  = LRESO1E
       LRESO1D = NT1AM(ISYMTR)
       LSDIA1  = LRESO1D
-      LRESO2E = NT2AM(ISYMTR)
-      LEDIA2  = LRESO2E
-      LRESO2D = NT2AM(ISYMTR)
+      IF(DOUBLES)THEN
+         LRES2E  = NT2AM(ISYMTR)
+         LTR2E   = LRES2E
+         LRES2D  = NT2AM(ISYMTR)
+         LTR2D   = LRES2D
+         LRESI2E = NT2AM(ISYMTR)
+         LRESI2D = NT2AM(ISYMTR)
+         LRESO2E = NT2AM(ISYMTR)
+         LEDIA2  = LRESO2E
+         LRESO2D = NT2AM(ISYMTR)
+      ELSE
+C   Setting all doubles lengths to zero, should allow us to keep
+C   the following allocations unmodified
+         LRES2E  = 0
+         LTR2E   = 0
+         LRES2D  = 0
+         LTR2D   = 0
+         LRESI2E = 0
+         LRESI2D = 0
+         LRESO2E = 0
+         LEDIA2  = 0
+         LRESO2D = 0
+      ENDIF
 C
       IF(LTYPE.EQ.'LINEAR') THEN
               LGPVC1H = NT1AM(ISYMTR)
               LGPVC2H = NT2AM(ISYMTR)
-              LGPVC1  = 2 * LGPVC1H
-              LGPVC2  = 2 * LGPVC2H
+              LGPVC1  = LGPVC1H
+              LGPVC2  = LGPVC2H
       ELSE
-              LGPVC1H = 1
-              LGPVC2H = 1
-              LGPVC1  = 1
-              LGPVC2  = 1
+              LGPVC1H = 0
+              LGPVC2H = 0
+              LGPVC1  = 0
+              LGPVC2  = 0
       ENDIF
 C
       KRES1E  = 1
@@ -118,19 +139,20 @@ C
 C
       IF(LTYPE.EQ.'LINEAR') THEN
               KGPVC1  = KEND1B
-              KGPVC1E = KGPVC1
-              KGPVC1D = KGPVC1E + LGPVC1H
-              KGPVC2  = KGPVC1D + LGPVC1H
-              KGPVC2E = KGPVC2  
-              KGPVC2D = KGPVC2E + LGPVC2H
-              KEND1C  = KGPVC2E + LGPVC2H
+CRF            KGPVC1E = KGPVC1
+CRF            KGPVC1D = KGPVC1E + LGPVC1H
+CRF              KGPVC2  = KGPVC1D + LGPVC1H
+              KGPVC2  = KGPVC1 + LGPVC1
+CRF              KGPVC2E = KGPVC2  
+CRF              KGPVC2D = KGPVC2E + LGPVC2H
+              KEND1C  = KGPVC2 + LGPVC2
       ELSE
               KGPVC1  = KEND1B
-              KGPVC1E = KEND1B
-              KGPVC1D = KEND1B
+!              KGPVC1E = KEND1B
+!              KGPVC1D = KEND1B
               KGPVC2  = KEND1B
-              KGPVC2E = KEND1B
-              KGPVC2D = KEND1B
+!              KGPVC2E = KEND1B
+!              KGPVC2D = KEND1B
               KEND1C  = KEND1B
       ENDIF
 C
@@ -145,14 +167,16 @@ C
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
       CALL SO_OPEN(LURO1E,FNRO1E,LRESO1E)
       CALL SO_OPEN(LURO1D,FNRO1D,LRESO1D)
-      CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
-      CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
-      CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
-      CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
+      IF(DOUBLES) THEN
+         CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
+         CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
+         CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
+         CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
+      ENDIF
 C
       IF(LTYPE.EQ.'LINEAR') THEN
-              CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
-              CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
+         CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
+         IF(DOUBLES) CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
       ENDIF
 C
 C-------------------------------------------------------------------
@@ -178,25 +202,29 @@ C
          CALL SO_READ(WORK(KRES1D), LRES1D, LURS1D,FNRS1D,IEXCI)
          CALL SO_READ(WORK(KRESO1E),LRESO1E,LURO1E,FNRO1E,IEXCI)
          CALL SO_READ(WORK(KRESO1D),LRESO1D,LURO1D,FNRO1D,IEXCI)
-         CALL SO_READ(WORK(KRES2E), LRES2E, LURS2E,FNRS2E,IEXCI)
-         CALL SO_READ(WORK(KRES2D), LRES2D, LURS2D,FNRS2D,IEXCI)
-         CALL SO_READ(WORK(KRESO2E),LRESO2E,LUTR2E,FNTR2E,IEXCI)
-         CALL SO_READ(WORK(KRESO2D),LRESO2D,LUTR2D,FNTR2D,IEXCI)
-         CALL DSCAL(LRESO2D,-ONE,WORK(KRESO2D),1)
+         IF(DOUBLES)THEN
+            CALL SO_READ(WORK(KRES2E), LRES2E, LURS2E,FNRS2E,IEXCI)
+            CALL SO_READ(WORK(KRES2D), LRES2D, LURS2D,FNRS2D,IEXCI)
+            CALL SO_READ(WORK(KRESO2E),LRESO2E,LUTR2E,FNTR2E,IEXCI)
+            CALL SO_READ(WORK(KRESO2D),LRESO2D,LUTR2D,FNTR2D,IEXCI)
+            CALL DSCAL(LRESO2D,-ONE,WORK(KRESO2D),1)
+         ENDIF
 C
          IF(LTYPE.EQ.'LINEAR') THEN
-                 CALL SO_READ(WORK(KGPVC1),LGPVC1,LUGPV1,FNGPV1,1)
+            CALL SO_READ(WORK(KGPVC1),LGPVC1,LUGPV1,FNGPV1,1)
+            IF(DOUBLES)THEN
                  CALL SO_READ(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
-                 CALL SO_TMLTR(WORK(KGPVC2E),HALF,ISYMTR)
-                 CALL SO_TMLTR(WORK(KGPVC2D),HALF,ISYMTR)
+                 CALL SO_TMLTR(WORK(KGPVC2),HALF,ISYMTR)
+            ENDIF
 C
-           IF(IPRSOP.GT.10) THEN
+            IF(IPRSOP.GT.10) THEN
 C
-              CALL AROUND("Left GP vector before SO_RESIDUAL")
-              CALL OUTPUT(WORK(KGPVC1),1,LGPVC1H,1,2,LGPVC1H,2,1,LUPRI)
-              CALL OUTPUT(WORK(KGPVC2),1,LGPVC2H,1,2,LGPVC2H,2,1,LUPRI)
+               CALL AROUND("Left GP vector before SO_RESIDUAL")
+               CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1H,1,1,LUPRI)
+               IF(DOUBLES)
+     &         CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2H,1,1,LUPRI)
 C
-           ENDIF
+            ENDIF
 C
          ENDIF
 C
@@ -204,7 +232,7 @@ C-------------------------------------------------------------
 C        Calculate residual vector and norm of result vectors.
 C-------------------------------------------------------------
 C
-         CALL SO_RESIDUAL(LTYPE,RESINM(IEXCI),WORK(KRESI1E),
+         CALL SO_RESIDUAL(DOUBLES,LTYPE,RESINM(IEXCI),WORK(KRESI1E),
      &                    LRESI1E,WORK(KRESI1D),LRESI1D,
      &                    WORK(KRESI2E),
      &                    LRESI2E,WORK(KRESI2D),LRESI2D,EIVAL(IEXCI),
@@ -213,9 +241,9 @@ C
      &                    WORK(KRESO1E),LRESO1E,WORK(KRESO1D),
      &                    LRESO1D,WORK(KRESO2E),LRESO2E,
      &                    WORK(KRESO2D),LRESO2D,
-     &                    WORK(KGPVC1E),LGPVC1H,WORK(KGPVC1D),LGPVC1H,
-     &                    WORK(KGPVC2E),LGPVC2H,WORK(KGPVC2D),LGPVC2H,
-     &                    ENORM)
+     &                    WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,
+C     &                    WORK(KGPVC2E),LGPVC2H,WORK(KGPVC2D),LGPVC2H,
+     &                    ENORM,IMAGPROP)
 C
 C-----------------------------------------------
 C        Determine the threshold the excitation.
@@ -273,13 +301,20 @@ C------------------------------------------------
 C           Read diagonal E[2] and S[2] elements.
 C------------------------------------------------
 C
-            CALL GPOPEN(LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',
-     &                  IDUMMY,.FALSE.)
+            IF (DOUBLES) THEN
+               CALL GPOPEN(LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+            ELSE 
+               CALL GPOPEN(LUDIAG,'RP_DIAG','UNKNOWN',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+            ENDIF
             REWIND LUDIAG
 C
             READ(LUDIAG) ( WORK(KEDIA1+I-1), I = 1,LEDIA1)
-            READ(LUDIAG) ( WORK(KEDIA2+I-1), I = 1,LEDIA2)
-            READ(LUDIAG) ( WORK(KSDIA1+I-1), I = 1,LSDIA1)
+            IF (DOUBLES)THEN
+               READ(LUDIAG) ( WORK(KEDIA2+I-1), I = 1,LEDIA2)
+               READ(LUDIAG) ( WORK(KSDIA1+I-1), I = 1,LSDIA1)
+            ENDIF
 C
             CALL GPCLOSE (LUDIAG,'KEEP')
 C
@@ -287,6 +322,12 @@ C------------------------------------------------------------
 C           Calculate raw new trial vector and write to file.
 C------------------------------------------------------------
 C
+            IF(.NOT.DOUBLES) THEN
+            CALL RP_NEWTRIAL(NNEWTR,NOLDTR,WORK(KTR1E),LTR1E,
+     &                       WORK(KTR1D),LTR1D,EIVAL(IEXCI),
+     &                       WORK(KEDIA1),LEDIA1,WORK(KRESI1E),LRESI1E,
+     &                       WORK(KRESI1D),LRESI1D)
+            ELSE
             CALL SO_NEWTRIAL(NNEWTR,NOLDTR,WORK(KTR1E),LTR1E,
      &                       WORK(KTR1D),LTR1D,WORK(KTR2E),LTR2E,
      &                       WORK(KTR2D),LTR2D,EIVAL(IEXCI),
@@ -295,6 +336,7 @@ C
      &                       LRESI1E,WORK(KRESI1D),LRESI1D,
      &                       WORK(KRESI2E),LRESI2E,WORK(KRESI2D),
      &                       LRESI2D)
+            ENDIF
 C
          END IF
 C
@@ -302,7 +344,7 @@ C
 C
 C--------------------------------------------------------------
 C        Write residual on file for later use in calculation of
-C        linear response functions
+C        linear response functions (When?)
 C--------------------------------------------------------------
 C
               LURV1E = -1
@@ -311,6 +353,17 @@ C
               LURV1D = -1
               CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
+              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1E)
+              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1D)
+C
+              CALL SO_WRTVE(WORK(KRESI1E),LRESI1E,ISYMTR,LABEL,
+     &                      EIVAL(IEXCI),LURV1E)
+              CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
+     &                      EIVAL(IEXCI),LURV1D)
+              CALL GPCLOSE(LURV1E,'KEEP')
+              CALL GPCLOSE(LURV1D,'KEEP')
+C
+            IF(DOUBLES)THEN
               LURV2E = -1
               CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
@@ -318,24 +371,15 @@ C
               CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
      &                    IDUMMY,.FALSE.)
 C             find the right positions
-              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1E)
-              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1D)
               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
               CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
-C
-              CALL SO_WRTVE(WORK(KRESI1E),LRESI1E,ISYMTR,LABEL,
-     &                      EIVAL(IEXCI),LURV1E)
-              CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
-     &                      EIVAL(IEXCI),LURV1D)
               CALL SO_WRTVE(WORK(KRESI2E),LRESI2E,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV2E)
               CALL SO_WRTVE(WORK(KRESI2D),LRESI2D,ISYMTR,LABEL,
      &                      EIVAL(IEXCI),LURV2D)
-C
-              CALL GPCLOSE(LURV1E,'KEEP')
-              CALL GPCLOSE(LURV1D,'KEEP')
               CALL GPCLOSE(LURV2E,'KEEP')
               CALL GPCLOSE(LURV2D,'KEEP')
+            ENDIF
          ENDIF
 C
   100 CONTINUE
@@ -348,8 +392,13 @@ C     vector. Finally write the new trial vector to file.
 C----------------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_ORTH_TRN(LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,DENSIJ,LDENSIJ,
-     &                 DENSAB,LDENSAB,WORK,LWORK)
+      IF(.NOT.DOUBLES)THEN
+         CALL RP_ORTH_TRN(LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,WORK,LWORK)
+      ELSE   
+         CALL SO_ORTH_TRN(LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,
+     &                    DENSIJ,LDENSIJ,
+     &                    DENSAB,LDENSAB,WORK,LWORK)
+      ENDIF
       DTIME      = SECOND()   - DTIME
       SOTIME(39) = SOTIME(39) + DTIME
 C
@@ -370,14 +419,16 @@ C
       CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
       CALL SO_CLOSE(LURO1E,FNRO1E,'KEEP')
       CALL SO_CLOSE(LURO1D,FNRO1D,'KEEP')
-      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
-      CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
-      CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+      IF(DOUBLES)THEN
+         CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+         CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+         CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
+         CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+      ENDIF
 C
       IF(LTYPE.EQ.'LINEAR') THEN
-              CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
-              CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
+         CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
+         IF(DOUBLES) CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
       ENDIF
 C
 C-----------------------

@@ -140,7 +140,7 @@ C
      &           - DDOT(LEIVH,EIVEC(LEIVH+1,JVEC),1,
      &             EIVEC(LEIVH+1,JVEC),1)
 C
-            IF (LINEAR .AND. DABS(EVNM).LT.T1MIN) THEN
+C            IF (LINEAR .AND. DABS(EVNM).LT.T1MIN) THEN
 C                    
 C                  WRITE(LUPRI,'(/,1X,A,E18.9)') 
 C     &              'WARNING: Norm is ',EVNM
@@ -152,7 +152,7 @@ C                  CALL DZERO(EIVEC(LEIVH+1,JVEC),LEIVH)
 C
 C                  GOTO 201
 C
-            ELSE
+C            ELSE
 C
               EVNM = ONE / DSQRT( DABS(EVNM) )
 C
@@ -166,7 +166,7 @@ C
                     ENORM = ENORM * EVNM
               ENDIF
 C
-            ENDIF
+C            ENDIF
 C
   300    CONTINUE
 C
@@ -356,7 +356,7 @@ C
       CALL DGEMM('N','N',LEIVEC,LEIVEC,LEIVEC,ONE,WORK(KMAT1),LEIVEC,
      &           EIVEC,LEIVEC,ZERO,REDS,LEIVEC)
 C
-      IF ( IPRSOP .GE. 6 ) THEN
+      IF ( IPRSOP .GE. 5 ) THEN
 C
 C---------------------------------------------
 C        Print reduced E[2] and S[2] matrices.

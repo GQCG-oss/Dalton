@@ -33,7 +33,8 @@
      &           FNSV2E = 'SO_SV2E', FNSV2D = 'SO_SV2D',                &
      &           FNRV1E = 'SO_RV1E', FNRV1D = 'SO_RV1D',                &
      &           FNRV2E = 'SO_RV2E', FNRV2D = 'SO_RV2D',                &
-     &           FNGPVE = 'SO_GPVE', FNSOLA = 'SO_SOLA',                &
+!    FNGPVE should be replaced by FNGPV1, for now use same name
+     &           FNGPVE = 'SO_GPV1', FNSOLA = 'SO_SOLA',                &
      &           FNGPV1 = 'SO_GPV1', FNGPV2 = 'SO_GPV2')            
       PARAMETER (LSOTIM = 43)
       PARAMETER (LSOWTI = 4)

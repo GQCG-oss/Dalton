@@ -1,6 +1,7 @@
 C
 C  /* Deck rp_trial3 */
-      SUBROUTINE RP_TRIAL3(NNEWTR,NOLDTR,ISYMTR,IFREQ,FRVAL,NFRVAL,
+      SUBROUTINE RP_TRIAL3(NNEWTR,NOLDTR,ISYMTR,IMAGPROP,IFREQ,
+     &                     FRVAL,NFRVAL,
      &                     NEXCI,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -29,6 +30,7 @@ C
 C
       DIMENSION FRVAL(NFRVAL)
       DIMENSION WORK(LWORK)
+      LOGICAL IMAGPROP
 C
 C------------------
 C     Add to trace.
@@ -65,7 +67,7 @@ C---------------------------------
 C     2. allocation of work space.
 C---------------------------------
 C
-      LGPVEC = NT1AM(ISYMTR)*2
+      LGPVEC = NT1AM(ISYMTR)
       LTRIAL = NT1AM(ISYMTR)
 C
       KGPVEC  = KEND1
@@ -74,7 +76,10 @@ C
       LWORK2  = LWORK  - KEND2
 C
       CALL SO_MEMMAX ('RP_TRIAL3.2',LWORK2)
-      IF (LWORK1 .LT.0) CALL STOPIT('RP_TRIAL3.2',' ',KEND2,LWORK)
+      IF (LWORK2 .LT.0) CALL STOPIT('RP_TRIAL3.2',' ',KEND2,LWORK)
+CRF Factor for creating D gradient from E gradient
+      DFACTOR  = -ONE
+      IF (IMAGPROP) DFACTOR = ONE   
 C
 C----------------------------------
 C     Open files for trial vectors.
@@ -141,9 +146,9 @@ C
 C
                DO IELEM = 1, LEDIA1
 C     
-                  TMP = ONE / ( WORK(KEDIA1+IELEM-1) + FRVAL(IFREQ) )
+                  TMP = DFACTOR / ( WORK(KEDIA1+IELEM-1) + FRVAL(IFREQ))
                   WORK(KTRIAL+IELEM-1) = TMP 
-     &                                 * WORK(KGPVEC + LEDIA1 + IELEM-1)
+     &                                 * WORK(KGPVEC + IELEM-1)
 C
                END DO
 C
@@ -158,11 +163,12 @@ C
 cspas should NOLDTR not be 1 here ?
             NOLDTR = 1 
 C
-            CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,NOLDTR)
-            CALL SO_WRITE(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,INEWTR)
+CRF don't do a thing
+C            CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,NOLDTR)
+C            CALL SO_WRITE(WORK(KTRIAL),LTRIAL,LUTR1E,FNTR1E,INEWTR)
 C     
-            CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,NOLDTR)
-            CALL SO_WRITE(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,INEWTR)
+C            CALL SO_READ(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,NOLDTR)
+C            CALL SO_WRITE(WORK(KTRIAL),LTRIAL,LUTR1D,FNTR1D,INEWTR)
 C     
          ENDIF
 C

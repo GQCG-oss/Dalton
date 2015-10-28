@@ -1,6 +1,7 @@
 C
 C  /* Deck so_trial3 */
-      SUBROUTINE SO_TRIAL3(NNEWTR,ISYMTR,IFREQ,FRVAL,NFRVAL,NEXCI,
+      SUBROUTINE SO_TRIAL3(NNEWTR,ISYMTR,IMAGPROP,
+     &                     IFREQ,FRVAL,NFRVAL,NEXCI,
      &                     DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -11,7 +12,21 @@ C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
 C     PURPOSE: Determine the initial trialvectors.
 C
-C     IFREQ     freq counter in the FRVAL(NFRVAL) array
+C   INPUT:
+C     ISYMTR    Symmetry of trial vectors to generate            
+C     IMAGPROP  Is property imaginary?
+C     NEXCI     Number of trial vectors to create
+C     IFREQ     Freq counter in the FRVAL(NFRVAL) array
+C     FRVAL(NFRVAL) All frequencies to consider
+C               Density Matrices:
+C     DENSIJ(LDENSIJ), DENSAB(LDENSAB)
+C
+C   OUTPUT:
+C     NNEWTR    Number of trial vectors created 
+C               (now always == NEXCI)   
+C
+C   SCRATCH:
+C     WORK(LWORK)         
 CW
 #include "implicit.h"
 #include "priunit.h"
@@ -25,6 +40,7 @@ C
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION   FRVAL(NFRVAL)
       DIMENSION   WORK(LWORK)
+      LOGICAL     IMAGPROP
 C
 C------------------
 C     Add to trace.
@@ -75,10 +91,11 @@ cLig  need, compute the part of the trial, write on file and then again
 cLig  ... so I can use the same space, but I need at least nt2am for 
 cLig  TV and nt2am * 2 for gp vector. The negative effect of that is
 cLig  that I can really write only the TV in this format (1E 1D 2E 2D)
-      LTRIAL  = LEDIA2 
-      LGPVC1  = LEDIA1 * 2
-      LGPVC2  = LEDIA2 * 2
-C
+      LTRIAL  = LEDIA2
+CRF Generate D part from E part 
+      LGPVC1  = LEDIA1 !* 2
+      LGPVC2  = LEDIA2 !* 2
+C  
       KTRIAL  = KEND1
       KGPVEC  = KTRIAL + LTRIAL
       KEND2   = KGPVEC + LGPVC2
@@ -86,6 +103,10 @@ C
 C
       CALL SO_MEMMAX ('SO_TRIAL3.2',LWORK2)
       IF (LWORK2 .LT. 0) CALL STOPIT('SO_TRIAL3.2',' ',KEND2,LWORK)
+CRF Factor for creating D gradient from E gradient
+      DFACTOR  = -ONE
+      IF (IMAGPROP) DFACTOR = ONE   
+C
 C
 C--------------------------------------------
 C     Open files for storing of trialvectors.
@@ -152,9 +173,9 @@ cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
 C
               DO IELEM=1,LEDIA1
 C
-                TMP = ONE / ( WORK(KEDIA1+IELEM-1) + FRVAL(IFREQ) *
+                TMP = DFACTOR / ( WORK(KEDIA1+IELEM-1) + FRVAL(IFREQ) *
      &                        WORK(KSDIA1+IELEM-1) )
-                WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+LEDIA1+IELEM-1)
+                WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+IELEM-1)
 C
               END DO
 C
@@ -185,12 +206,12 @@ C
             ENDIF
 C
             CALL SO_TMLTR(WORK(KGPVEC),HALF,ISYMTR)
-            CALL SO_TMLTR(WORK(KGPVEC+LEDIA2),HALF,ISYMTR)
+CRF no longer            CALL SO_TMLTR(WORK(KGPVEC+LEDIA2),HALF,ISYMTR)
 C
             IF(IPRSOP.GT.10) THEN
 C
               CALL AROUND('GP after LTR transformation')
-              CALL OUTPUT(WORK(KGPVEC),1,LEDIA2,1,2,LEDIA2,2,1,LUPRI)
+              CALL OUTPUT(WORK(KGPVEC),1,LEDIA2,1,1,LEDIA2,1,1,LUPRI)
 C
             ENDIF
 cLig            CALL CCSD_TCMEPKX(WORK(KGPVEC),TWO,ISYMTR)
@@ -226,7 +247,7 @@ cLig            IF (ABS(FRVAL(IFREQ)).GT.EPSI) THEN
 C
               DO IELEM=1,LEDIA2
 C
-                TMP = ONE / ( WORK(KEDIA2+IELEM-1) + FRVAL(IFREQ) ) 
+                TMP = DFACTOR / ( WORK(KEDIA2+IELEM-1) + FRVAL(IFREQ) ) 
                 WORK(KTRIAL+IELEM-1) = TMP * WORK(KGPVEC+LEDIA2+IELEM-1)
 C
               END DO
@@ -244,19 +265,21 @@ C
 cspas should NOLDTR not be 1 here ?
 cLig  this operation is quite stupid since it goes to read and write 
 cLig  always in the same space ... since inewtr is also always 1 !
-            NOLDTR = 1 
 C
-            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,NOLDTR)
-            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+CRF --- No need to do anything!!!
+C            NOLDTR = 1 
+C
+C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,NOLDTR)
+C            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
 C     
-            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,NOLDTR)
-            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,NOLDTR)
+C            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
 C     
-            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,NOLDTR)
-            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
+C            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,NOLDTR)
+C            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2E,FNTR2E,INEWTR)
 C     
-            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,NOLDTR)
-            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
+C            CALL SO_READ(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,NOLDTR)
+C            CALL SO_WRITE(WORK(KTRIAL),LEDIA2,LUTR2D,FNTR2D,INEWTR)
 C     
          ENDIF
 C

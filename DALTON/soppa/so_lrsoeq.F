@@ -1,6 +1,7 @@
 C
 C  /* Deck so_lrsoeq */
-      SUBROUTINE SO_LRSOEQ(MODEL,LABEL,ISYMTR,NEXCI,MAXIT,FRVAL,NFRVAL,
+      SUBROUTINE SO_LRSOEQ(MODEL,LABEL,ISYMTR,IMAGPROP,
+     &                     NEXCI,MAXIT,FRVAL,NFRVAL,
      &                     RESINM,LRESINM,CONV,LCONV,DENSIJ,LDENSIJ,
      &                     DENSAB,LDENSAB,DENSAI,LDENSAI,T2MP,LT2MP,
      &                     FOCKD,LFOCKD,REDE,REDS,LMXRED,WORK,LWORK)
@@ -19,13 +20,22 @@ C     LABEL             property label
 C     ISYMTR            property symmetry
 C     FRVAL(NFRVAL)     frequencies
 C
+#ifdef VAR_MPI
+      use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
+     &                       soppa_nint
+#endif
 #include "implicit.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+C  IRAT in order to assign space for load-balancing
+#include "iratdef.h"
+#endif
 #include "priunit.h"
 C
 #include "soppinf.h"
 #include "ccsdsym.h"
 C
-      LOGICAL   NONEWT
+      LOGICAL   NONEWT,IMAGPROP, IMAGPROP2
 C
       CHARACTER*3 CONV(LCONV)
       CHARACTER MODEL*5,LABEL*8
@@ -34,6 +44,20 @@ C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
       DIMENSION REDE(LMXRED),    REDS(LMXRED)
+
+      INTEGER NIT, NOLDTR, NNEWTR
+#ifdef VAR_MPI
+      INTEGER   CP_ISYMTR
+      INTEGER   MAXNUMJOBS
+C     This array is only there to ensure that the four above variables
+C     are allocated consecutively, so that it can be send together. Only
+C     use it for this purpose.
+C     The definition must match that in soppa_nodedriver
+      INTEGER   INFO_ARRAY(4)
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+      INTEGER(MPI_INTEGER_KIND) :: IERR
+#endif
 C
 C------------------
 C     Add to trace.
@@ -69,7 +93,25 @@ C-------------------------
 C
       KREDC   = 1
       KEND1   = (2*NSAVMX)**2
-      LWORK1  = LWORK - KEND1
+#ifdef VAR_MPI
+C------------------------------------------------------------------
+C     For MPI, we need some space in which to store the indices each
+C     process is to work with in so_eres.
+C------------------------------------------------------------------
+C
+      call mpi_comm_size( mpi_comm_world, numprocs, ierr)
+      maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
+      if ( numprocs .eq. 1 ) then
+C Not a real parallel job, don't bother
+         lAssignedIndices = 1
+         kAssignedIndices = 0
+      else  
+         lAssignedIndices = (maxnumjobs + 1) /IRAT
+         kAssignedIndices = KEND1
+         KEND1 = kAssignedIndices + lAssignedIndices
+      endif
+#endif 
+      LWORK1 = LWORK - KEND1
 C
       CALL SO_MEMMAX('SO_LRSOEQ.1',LWORK1)
       IF(LWORK1.LT.0) CALL STOPIT('SO_LRSOEQ.1','  ',KEND1,LWORK)
@@ -86,8 +128,9 @@ C     with (C +-C) as R or the last TV of the previous frequency
 C------------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_TRIAL3(NNEWTR,ISYMTR,IFREQ,FRVAL,NFRVAL,
-     &               NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+      CALL SO_TRIAL3(NNEWTR,ISYMTR,IMAGPROP,IFREQ,FRVAL,NFRVAL,
+     &               NEXCI,!LABEL,
+     &               DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &               WORK(KEND1),LWORK1)
       DTIME      = SECOND()   - DTIME
 cLig  <> we have to define and write properly the index insotime array
@@ -122,8 +165,9 @@ C
          WRITE(LUPRI,'(14X,3A,I1)') 
      &        'SOPPA iterations, Property ',LABEL,', frequency ', IFREQ
       ELSE IF (MODEL .EQ. 'AOSOC') THEN
-         WRITE(LUPRI,'(11X,A,I1)') 
-     &        'SOPPA(CCSD)  iterations, Excitation symmetry ',ISYMTR
+         WRITE(LUPRI,'(11X,3A,I1)') 
+     &        'SOPPA(CCSD)  iterations, Property ',LABEL,', frequency ',
+     &        IFREQ 
       ELSE
          WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOEQ'
          CALL QUIT('ERROR: Wrong model in SO_LRSOEQ')
@@ -168,10 +212,23 @@ C        Make E[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
+#ifdef VAR_MPI
+C In parallel, send slaves to so_eres
+C
+         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+     &                   mpi_comm_world, ierr )
+C ISYMTR is a non-local parameter, we need to copy it to the info-array
+         CP_ISYMTR = ISYMTR
+         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+     &                   MPI_COMM_WORLD, IERR)
+#endif
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,NIT,ISYMTR,
+#ifdef VAR_MPI
+     &                WORK(kAssignedIndices),maxnumjobs,
+#endif
      &                WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(35) = SOTIME(35) + DTIME
@@ -211,9 +268,9 @@ C-----------------------------------------------------------------------
 C          Calculate the gradient property vectors with the right DENSAI
 C-----------------------------------------------------------------------
 C
-           LGPVC1  = 2 * NT1AM(ISYMTR)
+           LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
-           LGPVC2  = 2 * NT2AM(ISYMTR)
+           LGPVC2  =  NT2AM(ISYMTR)
 C           LGPVC2  = 2 * N2P2HOP(ISYMTR)
 Cend-PFP
            KGPVC1  = KEND1
@@ -225,8 +282,11 @@ C
            IF (LWORK2 .LT.0) CALL STOPIT('SO_LRSOEQ.2',' ',KEND2,LWORK)
 C
            CALL SO_GETGP(WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,LABEL,
-     &                  ISYMTR,T2MP,LT2MP,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                  ISYMTR,IMAGPROP2,MODEL,
+     &                  T2MP,LT2MP,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                  DENSAI,LDENSAI,WORK(KEND2),LWORK2)
+           IF ( .NOT.(IMAGPROP.EQV.IMAGPROP2) ) 
+     &         WRITE(LUPRI,'(A)') 'WARNING: Problem with property type'
 C
 C---------------------------------------------------------
 C          Save the complete property gradients on a file.
@@ -239,12 +299,12 @@ C
            CALL SO_WRITE(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
 C
            IF(IPRSOP.GE.5) THEN
-              LGPVC1H = LGPVC1 /2
-              LGPVC2H = LGPVC2 /2
+C              LGPVC1H = LGPVC1 /2
+C              LGPVC2H = LGPVC2 /2
               CALL AROUND('In SO_LRSOEQ:  '//MODEL//
      &                    ' gradient property vector.'//LABEL)
-              CALL OUTPUT(WORK(KGPVC1),1,LGPVC1H,1,2,LGPVC1H,2,1,LUPRI)
-              CALL OUTPUT(WORK(KGPVC2),1,LGPVC2H,1,2,LGPVC2H,2,1,LUPRI)
+              CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
+              CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
            ENDIF
 C     
            CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
@@ -262,7 +322,8 @@ C
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
-         CALL SO_REDLE(NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,REDE,LREDE,
+         CALL SO_REDLE(.TRUE.,NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,IMAGPROP,
+     &                 REDE,LREDE,
      &                 REDS,LREDS,WORK(KREDC),LREDC,LREDOL,FRVAL,NFRVAL,
      &                 IFREQ,ENORM,PROP,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
@@ -292,9 +353,10 @@ C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
 cLig <> I have to add some parameters to that call and modify so_trial2
-         CALL SO_TRIAL2('LINEAR',NONEWT,NOLDTR,NNEWTR,NLINDP,
+         CALL SO_TRIAL2(MODEL,'LINEAR',NONEWT,NOLDTR,NNEWTR,NLINDP,
      &                  FRVAL(IFREQ),1,RESINM,LRESINM,CONV,LCONV,NCONV,
-     &                  ISYMTR,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                  ISYMTR,IMAGPROP,
+     &                  NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                  ENORM,LABEL,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(34) = SOTIME(34) + DTIME

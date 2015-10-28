@@ -1,6 +1,7 @@
 C
 C  /* Deck so_redgp */
-      SUBROUTINE SO_REDGP(NOLDTR,NNEWTR,ISYMTR,REDC,LREDC,WORK,LWORK)
+      SUBROUTINE SO_REDGP(DOUBLES,NOLDTR,NNEWTR,ISYMTR,IMAGPROP,
+     &                    REDC,LREDC,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -11,6 +12,9 @@ C
 C     REDC(LREDC)       the reduced C
 C     PURPOSE: Calculates the reduced eigenvalue problem.
 C
+C     INPUT
+C        DOUBLES    Are there a doubles contribution?
+C        IMAGPROP   Are there gradient imaginary?         
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -26,6 +30,7 @@ C---------------------------------
 C
       DIMENSION REDC(LREDC)
       DIMENSION WORK(LWORK)
+      LOGICAL IMAGPROP, DOUBLES
 C
 C------------------
 C     Add to trace.
@@ -33,17 +38,21 @@ C------------------
 C
       CALL QENTER('SO_REDGP')
 C
+C  Factor for d-ex gradient
+      DFACTOR = -1.0D0
+      IF(IMAGPROP) DFACTOR = ONE 
+C
 C---------------------------------
 C     1. allocation of work space.
 C---------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
 CPFP   2009-Jun
-      LTR2E   = NT2AM(ISYMTR)
+      IF (DOUBLES) LTR2E   = NT2AM(ISYMTR)
 C      LTR2E   = N2P2HOP(ISYMTR)
 Cend-PFP
-      LGPVC1  = LTR1E *2
-      LGPVC2  = LTR2E *2
+      LGPVC1  = LTR1E
+      IF (DOUBLES) LGPVC2  = LTR2E
 C
       NTRIAL = NNEWTR + NOLDTR
 C
@@ -53,8 +62,12 @@ C
       LOFF2   = NTRIAL
 C
       KGPVC1  = 1
-      KGPVC2  = KGPVC1 + LGPVC1
-      KOFF1   = KGPVC2 + LGPVC2
+      IF(DOUBLES) THEN
+         KGPVC2  = KGPVC1 + LGPVC1
+         KOFF1   = KGPVC2 + LGPVC2
+      ELSE 
+         KOFF1   = KGPVC1 + LGPVC1
+      ENDIF
       KOFF2   = KOFF1  + LOFF1
       KEND1   = KOFF2  + LOFF2 
       LWORK1  = LWORK  - KEND1
@@ -70,17 +83,23 @@ C
       N1READ = LTR1E / LTR
 C
       L1LTR  = LTR1E - ( N1READ * LTR )
+      IF (DOUBLES)THEN
+         N2READ = LTR2E / LTR
 C
-      N2READ = LTR2E / LTR
-C
-      L2LTR  = LTR2E - ( N2READ * LTR )
+         L2LTR  = LTR2E - ( N2READ * LTR )
+      ENDIF
 C
 C---------------------------------
 C     2. allocation of work space.
 C---------------------------------
-C
-      LOFF3  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
-      LOFF4  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
+C Are these excessive?
+      IF(DOUBLES) THEN
+         LOFF3  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
+         LOFF4  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
+      ELSE
+         LOFF3  = MIN((LTR * NTRIAL),(LTR1E * NTRIAL))
+         LOFF4  = MIN((LTR * NTRIAL),(LTR1E * NTRIAL))
+      ENDIF
 C
       KOFF3   = KEND1
       KOFF4   = KOFF3  + LOFF3
@@ -90,30 +109,28 @@ C
       CALL SO_MEMMAX ('SO_REDGP.2',LWORK2)
       IF (LWORK2 .LT. 0) CALL STOPIT('SO_REDGP.2',' ',KEND2,LWORK)
 C
-C--------------------------------------
-C     Open files with property vectors.
-C--------------------------------------
+C------------------------------------------------------
+C     Open, read and close files with property vectors.
+C------------------------------------------------------
 C
       CALL SO_OPEN(LUGPV1,FNGPV1,LTR1E)
-      CALL SO_OPEN(LUGPV2,FNGPV2,LTR2E)
-C
       CALL SO_READ(WORK(KGPVC1),LGPVC1,LUGPV1,FNGPV1,1)
-      CALL SO_READ(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
+      CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
+C
+      IF (DOUBLES) THEN
+         CALL SO_OPEN(LUGPV2,FNGPV2,LTR2E)
+         CALL SO_READ(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
+         CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
+      ENDIF
 C
       IF(IPRSOP.GT.10) THEN
 C
          CALL AROUND("Right GP vector inside SO_REDGP")
-         CALL OUTPUT(WORK(KGPVC1),1,LTR1E,1,2,LTR1E,2,1,LUPRI)
-         CALL OUTPUT(WORK(KGPVC2),1,LTR2E,1,2,LTR2E,2,1,LUPRI)
+         CALL OUTPUT(WORK(KGPVC1),1,LTR1E,1,1,LTR1E,1,1,LUPRI)
+         IF(DOUBLES) 
+     &         CALL OUTPUT(WORK(KGPVC2),1,LTR2E,1,1,LTR2E,1,1,LUPRI)
 C
       ENDIF
-C
-C---------------------------------------
-C     Close files with property vectors.
-C---------------------------------------
-C
-      CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
-      CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
 C
       CALL DZERO(WORK(KOFF1),LOFF1)
       CALL DZERO(WORK(KOFF2),LOFF2)
@@ -144,9 +161,9 @@ cLigC
 cLig       ENDIF
 C
 C
-C-----------------------------------
-C     Open files with trial vectors.
-C-----------------------------------
+C-------------------------------------------
+C     Open files with singles trial vectors.
+C-------------------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1E)
@@ -173,14 +190,14 @@ cLig     &              WORK(KGPVC1),LTR1E,ONE,WORK(KOFF1),NTRIAL)
          CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF3),LTR,
      &              WORK(KGPVC1),LTR,ONE,WORK(KOFF1),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF4),LTR,
-     &              WORK(KGPVC1+LTR1E),LTR,ONE,WORK(KOFF1),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,LTR,DFACTOR,WORK(KOFF4),LTR,
+     &              WORK(KGPVC1),LTR,ONE,WORK(KOFF1),NTRIAL)
 C
          CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF4),LTR,
      &              WORK(KGPVC1),LTR,ONE,WORK(KOFF2),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF3),LTR,
-     &              WORK(KGPVC1+LTR1E),LTR,ONE,WORK(KOFF2),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,LTR,DFACTOR,WORK(KOFF3),LTR,
+     &              WORK(KGPVC1),LTR,ONE,WORK(KOFF2),NTRIAL)
 C
       END DO
 C
@@ -200,19 +217,26 @@ cLig     &              WORK(KGPVC1),LTR1E,ONE,WORK(KOFF1),NTRIAL)
          CALL DGEMM('T','N',NTRIAL,1,L1LTR,ONE,WORK(KOFF3),L1LTR,
      &              WORK(KGPVC1),LTR,ONE,WORK(KOFF1),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,L1LTR,ONE,WORK(KOFF4),L1LTR,
-     &              WORK(KGPVC1+LTR1E),LTR,ONE,WORK(KOFF1),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,L1LTR,DFACTOR,WORK(KOFF4),L1LTR,
+     &              WORK(KGPVC1),LTR,ONE,WORK(KOFF1),NTRIAL)
 C
          CALL DGEMM('T','N',NTRIAL,1,L1LTR,ONE,WORK(KOFF4),L1LTR,
      &              WORK(KGPVC1),LTR,ONE,WORK(KOFF2),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,L1LTR,ONE,WORK(KOFF3),L1LTR,
-     &              WORK(KGPVC1+LTR1E),LTR,ONE,WORK(KOFF2),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,L1LTR,DFACTOR,WORK(KOFF3),L1LTR,
+     &              WORK(KGPVC1),LTR,ONE,WORK(KOFF2),NTRIAL)
 C
       END IF
+      CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
+      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
 C
+C---------------------------------      
+C     Jump to end if singles only.
+C---------------------------------      
+C
+      IF (.NOT.DOUBLES) GOTO 1010
 C-----------------------------------
-C     Open files with trial vectors.
+C     Open files with doubles trial vectors.
 C-----------------------------------
 C
       CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
@@ -234,14 +258,14 @@ cLig  <> 1b2E * 1C2E and 2b2D * 2C2D (that is +- 1C1E)
          CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF3),LTR,
      &              WORK(KGPVC2),LTR,ONE,WORK(KOFF1),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF4),LTR,
-     &              WORK(KGPVC2+LTR2E),LTR,ONE,WORK(KOFF1),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,LTR,DFACTOR,WORK(KOFF4),LTR,
+     &              WORK(KGPVC2),LTR,ONE,WORK(KOFF1),NTRIAL)
 C
          CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF4),LTR,
      &              WORK(KGPVC2),LTR,ONE,WORK(KOFF2),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,LTR,ONE,WORK(KOFF3),LTR,
-     &              WORK(KGPVC2+LTR2E),LTR,ONE,WORK(KOFF2),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,LTR,DFACTOR,WORK(KOFF3),LTR,
+     &              WORK(KGPVC2),LTR,ONE,WORK(KOFF2),NTRIAL)
 C
       END DO
 C
@@ -259,14 +283,14 @@ cLig  <> 1b2E * 1C2E and 2b2D * 2C2D (that is +- 1C1E)
          CALL DGEMM('T','N',NTRIAL,1,L2LTR,ONE,WORK(KOFF3),L2LTR,
      &              WORK(KGPVC2),L2LTR,ONE,WORK(KOFF1),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,L2LTR,ONE,WORK(KOFF4),L2LTR,
-     &              WORK(KGPVC2+LTR2E),L2LTR,ONE,WORK(KOFF1),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,L2LTR,DFACTOR,WORK(KOFF4),L2LTR,
+     &              WORK(KGPVC2),L2LTR,ONE,WORK(KOFF1),NTRIAL)
 C
          CALL DGEMM('T','N',NTRIAL,1,L2LTR,ONE,WORK(KOFF4),L2LTR,
      &              WORK(KGPVC2),L2LTR,ONE,WORK(KOFF2),NTRIAL)
 C
-         CALL DGEMM('T','N',NTRIAL,1,L2LTR,ONE,WORK(KOFF3),L2LTR,
-     &              WORK(KGPVC2+LTR2E),L2LTR,ONE,WORK(KOFF2),NTRIAL)
+         CALL DGEMM('T','N',NTRIAL,1,L2LTR,DFACTOR,WORK(KOFF3),L2LTR,
+     &              WORK(KGPVC2),L2LTR,ONE,WORK(KOFF2),NTRIAL)
 C
       END IF
 C
@@ -274,10 +298,11 @@ C-----------------
 C     Close files.
 C-----------------
 C
-      CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
-      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
       CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+C  Continuation point in the end
+1010  CONTINUE      
+
 C
 C----------------------------------------------------
 C     Move the elment in the right places of vector C

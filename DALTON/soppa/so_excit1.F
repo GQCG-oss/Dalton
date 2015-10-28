@@ -65,13 +65,11 @@ C
 ! This variable ensures that common blocks are only sent to the slaves
 ! once. 
       LOGICAL update_common_blocks, get_mxcall
-      LOGICAL so_get_herdir, herdir
+      LOGICAL so_get_herdir, herdir, so_get_direct
       
-      herdir = so_get_herdir()
+C      herdir = so_get_herdir()
       update_common_blocks = .true.
-C     In pure aorpa calculations, eridi has no been initialized      
-      get_mxcall = (.not.aosop).and.(.not.aosoc).and.(.not.DCRPA).and.
-     &         (.not.AOHRP)
+      get_mxcall = .false.
 #endif
 C
 C------------------
@@ -122,8 +120,15 @@ C     into distributions.
 C---------------------------------------------------------------
 C
       IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA) 
-     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC) )
-     &   CALL RP_INIT(WORK,LWORK)
+     &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC) ) THEN
+         CALL RP_INIT(WORK,LWORK)
+#ifdef VAR_MPI
+C     In pure aorpa calculations, eridi has not been initialized      
+         herdir = so_get_herdir()
+         get_mxcall = so_get_direct()
+#endif
+      ENDIF
+
 C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
@@ -278,9 +283,7 @@ C====================================
 C
             IF (AORPA) THEN
 C
-#ifdef VAR_MPI
                model = "AORPA"
-#endif
 C
                NVARPT = 2*NT1AM(ISYM)
 C
@@ -355,9 +358,12 @@ C-----------------------------------------------
 C              Determine RPA transition moments.
 C-----------------------------------------------
 C
-               CALL RP_TRMOM(ISYMTR,NLBTOT,NEXCI,TRLEN(1,1,1,1),
-     &                       TRVEL(1,1,1,1),TQLEN(1,1,1,1,1),
-     &                       TQVEL(1,1,1,1,1),TTLEN(1,1,1,1),
+               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
+     &                       DUMMY,LDUMMY,DUMMY,LDUMMY,
+     &                       DUMMY,LDUMMY,DUMMY,LDUMMY,
+     &                       TRLEN(1,1,1,1),TRVEL(1,1,1,1),
+     &                       TQLEN(1,1,1,1,1),TQVEL(1,1,1,1,1),
+     &                       TTLEN(1,1,1,1),
      &                       TRLON(1,1,1,1),TRMAG(1,1,1,1),
      &                       BSRLON(1,1,1,1),EXENG(1,1,1),
      &                       WORK(KEND2),LWORK2)
@@ -630,9 +636,9 @@ C-------------------------------------------------
 C              Determine SOPPA transition moments.
 C-------------------------------------------------
 C
-               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
-     &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
+               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
+     &                       WORK(KT2AM),LT2AM,WORK(KDENSIJ),LDENSIJ,
+     &                      WORK(KDENSAB),LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       TRLEN(1,1,1,4),TRVEL(1,1,1,4),
      &                       TQLEN(1,1,1,1,4),TQVEL(1,1,1,1,4),
      &                       TTLEN(1,1,1,4),
@@ -792,12 +798,22 @@ C
 
 #ifdef VAR_MPI
       LOGICAL FUNCTION SO_GET_HERDIR()
-C        WORK AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS 
+C        WORK-AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS 
 C        THE VARIABLE "SKIP"
 C        RETURNS THE VALUE OF HERDIR from ccsdinp.h
          
 #include "ccsdinp.h"
       SO_GET_HERDIR = HERDIR
+      RETURN
+      END
+C      
+      LOGICAL FUNCTION SO_GET_DIRECT()
+C        WORK-AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS 
+C        THE VARIABLE "SKIP"
+C        RETURNS THE VALUE OF DIRECT from ccsdinp.h
+         
+#include "ccsdinp.h"
+      SO_GET_DIRECT = DIRECT
       RETURN
       END
 #endif      

@@ -1,5 +1,6 @@
 C  /* Deck so_optvec */
-      SUBROUTINE SO_OPTVEC(NOLDTR,NNEWTR,NEXCI,EIVEC,LEIVEC,ISYMTR,
+      SUBROUTINE SO_OPTVEC(DOUBLES,NOLDTR,NNEWTR,NEXCI,
+     &                     EIVEC,LEIVEC,ISYMTR,
      &                     WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -19,6 +20,7 @@ C
       PARAMETER   (D100 = 100.0D0)
       PARAMETER   (THRNM = 1.0D-15, OVLMIN = 10D-20 ) ! Try (from rp) 1.0D-4) 
       CHARACTER*3 YES, NO
+      LOGICAL    DOUBLES
 C
       DIMENSION EIVEC(LEIVEC,LEIVEC)
       DIMENSION WORK(LWORK)
@@ -36,8 +38,13 @@ C----------------------------------------------------------
 C 
       LTR1E  = NT1AM(ISYMTR)
       LTR1D  = NT1AM(ISYMTR)
-      LTR2E  = NT2AM(ISYMTR)
-      LTR2D  = NT2AM(ISYMTR)
+      IF(DOUBLES)THEN
+         LTR2E  = NT2AM(ISYMTR)
+         LTR2D  = NT2AM(ISYMTR)
+      ELSE
+         LTR2E  = 0
+         LTR2D  = 0
+      ENDIF
 C
       NTRIAL = NOLDTR + NNEWTR
       NTRMX  = MIN(NTRIAL, (NSAVMX-1)*NEXCI )
@@ -58,24 +65,33 @@ C
 C
       L1LTR  = LTR1E - ( N1READ * LTR )
 C
-      N2READ = LTR2E / LTR
+      IF(DOUBLES)THEN
+         N2READ = LTR2E / LTR
 C
-      L2LTR  = LTR2E - ( N2READ * LTR )
+         L2LTR  = LTR2E - ( N2READ * LTR )
+      ENDIF
 C
 C------------------------------
 C     Allocation of work space.
 C------------------------------
 C
-      LOFF1  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
-      LOFF2  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
-      LOFF3  = MIN((LTR * NTRMX), (LTR2E * NTRMX))
-      LOFF4  = MIN((LTR * NTRMX), (LTR2E * NTRMX))
+      IF(DOUBLES)THEN
+         LOFF1  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
+         LOFF2  = MIN((LTR * NTRIAL),(LTR2E * NTRIAL))
+         LOFF3  = MIN((LTR * NTRMX), (LTR2E * NTRMX))
+         LOFF4  = MIN((LTR * NTRMX), (LTR2E * NTRMX))
+      ELSE
+         LOFF1  = MIN((LTR * NTRIAL),(LTR1E * NTRIAL))
+         LOFF2  = MIN((LTR * NTRIAL),(LTR1E * NTRIAL))
+         LOFF3  = MIN((LTR * NTRMX), (LTR1E * NTRMX))
+         LOFF4  = MIN((LTR * NTRMX), (LTR1E * NTRMX))
+      ENDIF
 C
       KOFF1   = 1
       KOFF2   = KOFF1 + LOFF1
       KOFF3   = KOFF2 + LOFF2
       KOFF4   = KOFF3 + LOFF3
-      KEND1   = KOFF4 + LOFF4 - 1
+      KEND1   = KOFF4 + LOFF4
       LWORK1  = LWORK - KEND1
 C
       CALL SO_MEMMAX ('SO_OPTVEC.1',LWORK1)
@@ -91,8 +107,10 @@ C-----------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
-      CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
-      CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
+      IF(DOUBLES)THEN
+         CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
+         CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
+      ENDIF
 C
 C-------------------------------------------------------------
 C     Transform the 1p1h excitation and de-excitation parts of
@@ -157,6 +175,8 @@ C
 C
       END IF
 C
+C     Only for double excitations
+      IF(DOUBLES)THEN
 C-------------------------------------------------------------
 C     Transform the 2p2h excitation and de-excitation parts of
 C     the trial vectors.
@@ -221,6 +241,9 @@ C
      &                    IOFF)
 C
       END IF
+C     
+C     All methods continue at this point
+      ENDIF
 C
 C-----------------------------------------------------------------------
 C     For zero frequency linear response, we could have problem if the
@@ -239,7 +262,7 @@ C
       KEND1   = KTTR2  + LTR2E
       LWORK1  = LWORK  - KEND1
 C
-      CALL SO_MEMMAX ('RP_OPTVEC.2',LWORK1)
+      CALL SO_MEMMAX ('SO_OPTVEC.2',LWORK1)
       IF (LWORK1 .LT. 0) THEN
          WRITE(LUPRI,*) 
      &      'NOTICE: Requirement is due to high print level'
@@ -255,24 +278,27 @@ C
      &      DDOT(LTR1D,WORK(KTR1D),1,WORK(KTR1D),1)
 C         
          OVLPI=TWO*DDOT(LTR1E,WORK(KTR1E),1,WORK(KTR1D),1)
+
+         IF(DOUBLES)THEN
 C
-         CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,ITR)
-         CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,ITR)
+            CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,ITR)
+            CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,ITR)
 C
-         CALL DCOPY(LTR2E,WORK(KTR2E),1,WORK(KTTR2),1)
-         CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-         CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
+            CALL DCOPY(LTR2E,WORK(KTR2E),1,WORK(KTTR2),1)
+            CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+            CALL DSCAL(LTR2E,HALF,WORK(KTTR2),1)
 C
-         T1 = T1 + DDOT(LTR2E,WORK(KTR2E),1,WORK(KTTR2),1)
-         OVLPI = OVLPI+DDOT(LTR2E,WORK(KTR2D),1,WORK(KTTR2),1)
+            T1 = T1 + DDOT(LTR2E,WORK(KTR2E),1,WORK(KTTR2),1)
+            OVLPI = OVLPI+DDOT(LTR2E,WORK(KTR2D),1,WORK(KTTR2),1)
 C
-         CALL DCOPY(LTR2D,WORK(KTR2D),1,WORK(KTTR2),1)
-         CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
-         CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
+            CALL DCOPY(LTR2D,WORK(KTR2D),1,WORK(KTTR2),1)
+            CALL CCSD_TCMEPKX(WORK(KTTR2),TWO,ISYMTR)
+            CALL DSCAL(LTR2D,HALF,WORK(KTTR2),1)
 C
-         T1 = T1 + DDOT(LTR2E,WORK(KTR2D),1,WORK(KTTR2),1)
-         OVLPI = OVLPI+DDOT(LTR2E,WORK(KTR2E),1,WORK(KTTR2),1)
+            T1 = T1 + DDOT(LTR2E,WORK(KTR2D),1,WORK(KTTR2),1)
+            OVLPI = OVLPI+DDOT(LTR2E,WORK(KTR2E),1,WORK(KTTR2),1)
 C
+         ENDIF
 C        test if Z + Y is zero
          TZPY  = T1 + OVLPI
          IF (IPRSOP .GE. 5) WRITE (LUPRI,'(/A/,(A,1P,D15.8))')
@@ -284,10 +310,11 @@ C        test if Z + Y is zero
      *         ' Z = -Y in new optimized trial vector no.',ITR,
      *         ' Y component removed.'
             CALL DZERO(WORK(KTR1D),LTR1D)
-            CALL DZERO(WORK(KTR2D),LTR2D)
+            IF(DOUBLES) CALL DZERO(WORK(KTR2D),LTR2D)
 C
             CALL SO_WRITE(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,ITR)
-            CALL SO_WRITE(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,ITR)
+            IF(DOUBLES) CALL SO_WRITE(WORK(KTR2D),LTR2D,LUTR2D,
+     &                                FNTR2D,ITR)
          ELSE IF (TZPY .GT. T1) THEN
 C           test if Z - Y is zero;
 C           only if TZPY = 2 * T1 can Z - Y be zero,
@@ -300,10 +327,11 @@ C           so TZPY .gt. T1 is a safe test.
      *         ' Z = Y in new optimized trial vector no.',ITR,
      *         ' Y component removed.'
                CALL DZERO(WORK(KTR1D),LTR1D)
-               CALL DZERO(WORK(KTR2D),LTR2D)
+               IF(DOUBLES) CALL DZERO(WORK(KTR2D),LTR2D)
 C
                CALL SO_WRITE(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,ITR)
-               CALL SO_WRITE(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,ITR)
+               IF(DOUBLES) CALL SO_WRITE(WORK(KTR2D),LTR2D,LUTR2D,
+     &                                   FNTR2D,ITR)
 C
             END IF
 C
@@ -330,13 +358,16 @@ C
 C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,ITR)
             CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,ITR)
-            CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,ITR)
-            CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,ITR)
-C
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &       (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
-     &       (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
+C
+            IF(DOUBLES)THEN
+               CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,ITR)
+               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,ITR)
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+     &         (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
+            ENDIF
+C
 C
          END DO
 C
@@ -348,8 +379,10 @@ C------------------------------------
 C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
-      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+      IF(DOUBLES)THEN
+         CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+         CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+      ENDIF
 C
 C===================================================
 C     Generate the E[2] transformed optimized trial.
@@ -361,8 +394,10 @@ C----------------------------------------------------
 C
       CALL SO_OPEN(LURS1E,FNRS1E,LTR1E)
       CALL SO_OPEN(LURS1D,FNRS1D,LTR1D)
-      CALL SO_OPEN(LURS2E,FNRS2E,LTR2E)
-      CALL SO_OPEN(LURS2D,FNRS2D,LTR2D)
+      IF(DOUBLES)THEN
+         CALL SO_OPEN(LURS2E,FNRS2E,LTR2E)
+         CALL SO_OPEN(LURS2D,FNRS2D,LTR2D)
+      ENDIF
 C
 C-------------------------------------------------------------
 C     Transform the 1p1h excitation and de-excitation parts of
@@ -427,6 +462,8 @@ C
 C
       END IF
 C
+C     Only Doubles methods do this block
+      IF(DOUBLES)THEN
 C-------------------------------------------------------------
 C     Transform the 2p2h excitation and de-excitation parts of
 C     the E[2] transformed trial vectors.
@@ -494,6 +531,8 @@ C
 C
       END IF
 C
+C     All methods continue here
+      ENDIF
       IF ( IPRSOP .GE. 8 ) THEN
 C
 C--------------------------------------------------------------------
@@ -521,13 +560,15 @@ C
 C
             CALL SO_READ(WORK(KTR1E),LTR1E,LURS1E,FNRS1E,ITR)
             CALL SO_READ(WORK(KTR1D),LTR1D,LURS1D,FNRS1D,ITR)
-            CALL SO_READ(WORK(KTR2E),LTR2E,LURS2E,FNRS2E,ITR)
-            CALL SO_READ(WORK(KTR2D),LTR2D,LURS2D,FNRS2D,ITR)
-C
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &         (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
-     &         (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
+            IF(DOUBLES)THEN
+               CALL SO_READ(WORK(KTR2E),LTR2E,LURS2E,FNRS2E,ITR)
+               CALL SO_READ(WORK(KTR2D),LTR2D,LURS2D,FNRS2D,ITR)
+C
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+     &            (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
+            ENDIF
 C
          END DO
 C
@@ -539,8 +580,10 @@ C-----------------------------------------------------
 C
       CALL SO_CLOSE(LURS1E,FNRS1E,'KEEP')
       CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
-      CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
-      CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+      IF(DOUBLES)THEN
+         CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
+         CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+      ENDIF
 C
 C===================================================
 C     Generate the S[2] transformed optimized trial.

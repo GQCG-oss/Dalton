@@ -95,6 +95,9 @@ C
 #endif      
       CALL QENTER('SO_ERES')
 #ifdef VAR_MPI
+C     Slaves need to zero DENSAI if it is (re)calculated.      
+      elseif ( MODEL .EQ.'AOSOP' .AND. NIT .EQ. 1) THEN
+         CALL DZERO(DENSAI,LDENSAI)
       endif
 #endif
 C
@@ -887,7 +890,7 @@ C Slaves are done
 #endif
 C
 C----------------------------------------
-C        Write new resultvectors to file.
+C        Write new result vectors to file.
 C----------------------------------------
 C
          CALL SO_WRITE(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)

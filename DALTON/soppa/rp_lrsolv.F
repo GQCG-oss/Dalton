@@ -212,7 +212,9 @@ C
          LREDS  = 2 * ( NOLDTR + NNEWTR )
 C
          DTIME      = SECOND()
-         CALL RP_REDEV(NEXCI,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+C         CALL RP_REDEV(NEXCI,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+         CALL SO_REDEV(.FALSE.,NEXCI,NOLDTR,NNEWTR,ISYMTR,
+     &                 REDE,LREDE,REDS,LREDS,
      &                 LREDOL,EXVAL,LEXVAL,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(33) = SOTIME(33) + DTIME
@@ -236,11 +238,15 @@ C-------------------------------------------------------------------
 C        
          IF (NIT .GE. MAXIT) NONEWT = .TRUE.
 C
+         LDUMMY = 1
 cLig  <> I have added the parameters needed for the new RP_TRIAL2
          DTIME      = SECOND()
-         CALL RP_TRIAL2('EXCITA',NONEWT,NOLDTR,NNEWTR,NLINDP,EXVAL,
-     &                  LEXVAL,RESINM,LRESINM,CONV,LCONV,NCONV,ISYMTR,
-     &                  NEXCI,DUMMY,DUMMY,WORK(KEND1),LWORK1)
+CRF      Merged the functionality of RP_TRIAL into so_trial
+         CALL SO_TRIAL2('AORPA','EXCITA',NONEWT,NOLDTR,NNEWTR,NLINDP,
+     &                  EXVAL,LEXVAL,RESINM,LRESINM,CONV,LCONV,
+     &                  NCONV,ISYMTR,DUMMY,
+     &                  NEXCI,DUMMY,LDUMMY,DUMMY,LDUMMY,
+     &                  DUMMY,DUMMY,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(34) = SOTIME(34) + DTIME
 C

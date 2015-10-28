@@ -640,27 +640,17 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/rp_check.F
     DALTON/soppa/rp_diag.F
     DALTON/soppa/rp_eres.F
-    DALTON/soppa/rp_getgp.F
-    DALTON/soppa/rp_incred.F
     DALTON/soppa/rp_init.F
     DALTON/soppa/rp_lrsoeq.F
     DALTON/soppa/rp_lrsolv.F
     DALTON/soppa/rp_newtrial.F
-    DALTON/soppa/rp_optvec.F
     DALTON/soppa/rp_orth_trn.F
-    DALTON/soppa/rp_prop.F
-    DALTON/soppa/rp_redev.F
-    DALTON/soppa/rp_redgp.F
-    DALTON/soppa/rp_redle.F
-    DALTON/soppa/rp_residual.F
     DALTON/soppa/rp_res_o.F
     DALTON/soppa/rp_rspleq.F
     DALTON/soppa/rp_rsplex.F
     DALTON/soppa/rp_sres.F
     DALTON/soppa/rp_trial1.F
-    DALTON/soppa/rp_trial2.F
     DALTON/soppa/rp_trial3.F
-    DALTON/soppa/rp_trmom.F
     DALTON/soppa/so_anal.F
     DALTON/soppa/so_aodens.F
     DALTON/soppa/so_bcktr.F
