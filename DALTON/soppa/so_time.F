@@ -75,7 +75,7 @@ C     Subtract from time in SO_TRIAL2 time spend in SO_ORTH_TRO and
 C     SO_ORTH_TRN.
 C------------------------------------------------------------------
 C
-      SOTIME(34) = SOTIME(34) - SOTIME(38) - SOTIME(39)
+C      SOTIME(34) = SOTIME(34) - SOTIME(38) - SOTIME(39)
 C
 C-----------------------------------------------------------
 C     Subtract from time in SO_SIGAI time spend in subparts.

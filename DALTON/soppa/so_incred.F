@@ -10,7 +10,8 @@ C
 C     Keld Bak, September 1996
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C     PURPOSE: Calculates the reduced eigenvalue problem.
+C     PURPOSE: Calculates the reduced E matrix.
+C
 C
 #include "implicit.h"
 #include "priunit.h"

@@ -74,11 +74,17 @@ C
 C
          DO 300 JVEC = 1,NEXCI
 C
-            EVNM = DDOT(LEIVH,EIVEC(1,JVEC),1,EIVEC(1,JVEC),1)
-     &           - DDOT(LEIVH,EIVEC(LEIVH+1,JVEC),1,
-     &             EIVEC(LEIVH+1,JVEC),1)
+C            EVNM = DDOT(LEIVH,EIVEC(1,JVEC),1,EIVEC(1,JVEC),1)
+C     &           - DDOT(LEIVH,EIVEC(LEIVH+1,JVEC),1,
+C     &             EIVEC(LEIVH+1,JVEC),1)
+            EVNM = 0.0D0
+            DO IVEC = 1,LEIVH
+               EVNM = EVNM + EIVEC(IVEC,JVEC)*EIVEC(IVEC,JVEC)
+               EVNM = EVNM - EIVEC(LEIVH+IVEC,JVEC)**2
+            ENDDO
 C
-            IF ( (EVNM - ONE) .GE. THRNM ) THEN
+CRF  If we do a linear response calculation, this is to be expected.            
+            IF ( ABS(EVNM - ONE) .GE. THRNM .AND.(.NOT.LINEAR) ) THEN
 C
                WRITE(LUPRI,'(/,1X,A,I3,A,/,1X,A,F18.9)') 
      &            'WARNING: Reduced trialvector ',
@@ -140,19 +146,34 @@ C
      &           - DDOT(LEIVH,EIVEC(LEIVH+1,JVEC),1,
      &             EIVEC(LEIVH+1,JVEC),1)
 C
-C            IF (LINEAR .AND. DABS(EVNM).LT.T1MIN) THEN
-C                    
+            IF (LINEAR .AND. DABS(EVNM).LT.T1MIN) THEN
+C
+C                             
+               EVNM2 = 0.0
+               DO IVEC = 1,LEIVH
+                  EVNM2 = EVNM2 + EIVEC(IVEC,JVEC)**2
+               ENDDO
+               IF (ABS(EVNM2).GT.ABS(EVNM))THEN
 C                  WRITE(LUPRI,'(/,1X,A,E18.9)') 
 C     &              'WARNING: Norm is ',EVNM
 C
 C                  WRITE(LUPRI,'(/,1X,A)') 
 C     &              'I Try to remove the Z part of (Y Z)'
-C
+
+                  DO IVEC = LEIVH+1,2*LEIVH
+                     EIVEC(IVEC,JVEC) = 0.0D0
+                  ENDDO
+                  EVNM = EVNM2
+               ELSE
+                  WRITE(LUPRI,'(1x,a)') 
+     &              'WARNING: cannot resolve linear dependence in '//
+     &              'reduced space'
+               ENDIF
 C                  CALL DZERO(EIVEC(LEIVH+1,JVEC),LEIVH)
 C
 C                  GOTO 201
 C
-C            ELSE
+            ENDIF            
 C
               EVNM = ONE / DSQRT( DABS(EVNM) )
 C

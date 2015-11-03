@@ -31,12 +31,15 @@ C
       DIMENSION FRVAL(NFRVAL)
       DIMENSION WORK(LWORK)
       LOGICAL IMAGPROP
+      LOGICAL     STATIC
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('RP_TRIAL3')
+C
+      STATIC = ABS(FRVAL(IFREQ)).LT.EPSI
 C
 C---------------------------------
 C     1. allocation of work space.
@@ -55,7 +58,7 @@ C-----------------------------------------
 C     Read diagonal E[2] and S[2] elements 
 C-----------------------------------------
 C
-      CALL GPOPEN  (LUDIAG,'RP_DIAG','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+      CALL GPOPEN  (LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &    .FALSE.)
       REWIND LUDIAG
 C
@@ -112,7 +115,7 @@ C        vector. I need also tu use the GP vector when freq. is 0
 C        Otherwise use the last trial vector of the previous frequency.
 C----------------------------------------------------------------------
 C
-      IF ((IFREQ .EQ. 1).OR.DABS(FRVAL(IFREQ)).LT.EPSI) THEN
+      IF ((IFREQ .EQ. 1).OR.STATIC) THEN
 C
 C--------------------------------------------
 C           Read the GP vector from the file.
@@ -142,7 +145,8 @@ C           (E[2]diag + omega)^-1 * GP
 C-------------------------------------------------------------------
 C
             CALL DZERO(WORK(KTRIAL),LTRIAL)
-C     
+C 
+            IF(.NOT.STATIC)THEN
 C
                DO IELEM = 1, LEDIA1
 C     
@@ -151,6 +155,7 @@ C
      &                                 * WORK(KGPVEC + IELEM-1)
 C
                END DO
+            ENDIF
 C
             CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
 C
@@ -180,7 +185,7 @@ C--------------------------------------
 C
       CALL SO_CLOSE(LUGPVE,FNGPVE,'KEEP')
 C
-      IF ( IPRSOP .GE. 6 ) THEN
+      IF ( IPRSOP .GE. 9 ) THEN
 C
 C------------------------------------------
 C        Write new trial vectors to output.
@@ -211,7 +216,7 @@ C
       NOLDTR = 0
       CALL RP_ORTH_TRN('LINEAR',NOLDTR,NNEWTR,NLINDP,ISYMTR,WORK,LWORK)
 C
-      IF ( IPRSOP .GE. 6 ) THEN
+      IF ( IPRSOP .GE. 9 ) THEN
 C
 C---------------------------------------------------------
 C        Write new trial othonormalized vectors to output.

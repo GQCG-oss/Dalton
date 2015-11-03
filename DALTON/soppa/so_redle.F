@@ -28,7 +28,7 @@ C LREDS         dimension of the S[2] reduced matrix
 C LREDOL        dimension of the old E[2] and S[2] matrix
 C FRVAL         array with the frequencies fot that property
 C NFRVAL        dimension of the array FRVAL
-C IFREQ        for which components of the FRVAL array we are computing
+C IFREQ         for which components of the FRVAL array we are computing
 C ENORM         is the norm used to generate the new Z vector; i need that 
 C               to compute the residual 
 C WORK
@@ -42,6 +42,7 @@ C
 #include "ccsdsym.h"
 C
       PARAMETER (ZERO = 0.0D+00, ONE = 1.0D0)
+      PARAMETER (THRSTATIC = 1.0D-8 )
 C
 C--------------------------------
 C     Dimensions of the arguments
@@ -55,7 +56,11 @@ cLig  memory requirment in teh calling subroutine (RP_LRSOEQ)
       DIMENSION WORK(LWORK)
       DIMENSION KPVT(LREDE),INERT(3),DET(2)
       CHARACTER*8 LABEL
-      LOGICAL   IMAGPROP,DOUBLES
+      LOGICAL   IMAGPROP, DOUBLES
+      LOGICAL   STATIC
+C
+      STATIC = .FALSE.
+      IF ( ABS(FRVAL(IFREQ)).LT. THRSTATIC ) STATIC = .TRUE.
 C
 C------------------
 C     Add to trace.
@@ -148,7 +153,8 @@ C     Calculate new elements of the reduced matrices
 C---------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_INCRED(DOUBLES,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+      CALL SO_INCRED(DOUBLES,NOLDTR,NNEWTR,ISYMTR,
+     &               REDE,LREDE,REDS,LREDS,
      &               LREDOL,LTR1E,LTR2E,WORK(KIS),WORK(KIE),
      &               WORK(KIN),LI,WORK(KJS),WORK(KJE),WORK(KJN),LJ,
      &               WORK(KEND1),LWORK1)
@@ -256,20 +262,25 @@ C
       NSIM = 1
       CALL DSPSLI(LREDE,NSIM,WORK(KEMOS),REDC,KPVT,INFO,DET,INERT)
 C
-      IF( IPRSOP .GE. 1 ) THEN
+C--------------------------------------------------------------
+C     Calculate the "diagonal" property from the reduced space.
+C     solution-vector and property gradient. 
+C     (This is not really needed, but hardly costs anything)      
+C--------------------------------------------------------------     
+      PROP = DDOT(LREDE,REDC,1,WORK(KZETA),1)
+C
+      IF( IPRSOP .GE. 2 ) THEN
 C
 C---------------------------
 C     Print reduced C vector
 C---------------------------
 C
-         CALL AROUND('Reduced solution Vector just after DSPSLI')
+         CALL AROUND('Reduced solution-vector just after DSPSLI')
 C
          CALL OUTPUT(REDC,1,LREDE,1,1,1,LREDE,1,LUPRI)
 C
-         POL = DDOT(LREDE,REDC,1,WORK(KZETA),1)
-C
          WRITE(LUPRI,'(/,1X,A,F15.8,A,F12.5,/)') "REDUCED GP * SV",
-     &      POL," AT FREQUENCY ", FRVAL(IFREQ)
+     &      PROP," AT FREQUENCY ", FRVAL(IFREQ)
 C
       ENDIF
 C

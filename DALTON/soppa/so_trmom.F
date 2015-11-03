@@ -96,18 +96,16 @@ CRF            LGPVC2  = 2 * NT2AM(ISYMTR)
             LTRMOM  = NEXCI
             LTRM1E  = NEXCI
             LTRM1D  = NEXCI
+            LTRM2E  = NEXCI
+            LTRM2D  = NEXCI
             IF(DOUBLES)THEN
                LTR2    = NT2AM(ISYMTR)
                LGPVC2  = NT2AM(ISYMTR) 
                LGPVC2H = NT2AM(ISYMTR) 
-               LTRM2E  = NEXCI
-               LTRM2D  = NEXCI
             ELSE
                LTR2    = 0
                LGPVC2  = 0
                LGPVC2H = 0 
-               LTRM2E  = 0 
-               LTRM2D  = 0
             ENDIF
 C
             KGPVC1  = 1
@@ -184,9 +182,12 @@ C-------------------------------------------------------------
 C
                WORK(KTRM1E+IEXCI-1) = 
      &            DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KTR1),1)
-               IF(DOUBLES)
-     &            WORK(KTRM2E+IEXCI-1) = 
-     &                  DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KTR2),1)
+               IF(DOUBLES)THEN
+                  WORK(KTRM2E+IEXCI-1) = 
+     &                       DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KTR2),1)
+               ELSE
+                  WORK(KTRM2E+IEXCI-1) = 0.0D0
+               ENDIF
 C
 C----------------------------------------------------------
 C              Read de-excitation part of solution vectors.
@@ -230,10 +231,12 @@ C
 c               END IF
                WORK(KTRM1D+IEXCI-1) = DFACTOR * 
      &             DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KTR1),1)
-               IF(DOUBLES)
-     &             WORK(KTRM2D+IEXCI-1) = DFACTOR *
+               IF(DOUBLES) THEN
+                  WORK(KTRM2D+IEXCI-1) = DFACTOR *
      &                         DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KTR2),1)
-               
+               ELSE
+                  WORK(KTRM2D+IEXCI-1) = 0.0D0
+               ENDIF
 C
 C-------------------------------------------------------------------
 C              Calculate total transiton moment and write to output.

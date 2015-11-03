@@ -1,7 +1,9 @@
 C
 C  /* Deck rp_newtrial */
-      SUBROUTINE RP_NEWTRIAL(NNEWTR,NOLDTR,TR1E,LTR1E,TR1D,LTR1D,EIVAL1,
-     &                       EDIA1,LEDIA1,RESI1E,LRESI1E,RESI1D,LRESI1D)
+      SUBROUTINE RP_NEWTRIAL(NNEWTR,NOLDTR,
+     &                       TR1E,LTR1E,TR1D,LTR1D,
+     &                       EIVAL1,EDIA1,LEDIA1,
+     &                       RESI1E,LRESI1E,RESI1D,LRESI1D)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C

@@ -87,7 +87,7 @@ C--------------------------------------------------------------------
 C
          CONTINUE
 C
-      ELSE IF ((MODEL.EQ.'AOSOC') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
+      ELSE IF ((MODEL.EQ.'AOSOP') .AND. AORPA .AND. (NEXCI.LE.LTR1))THEN
 C
 C--------------------------------------------------------------
 C        Use RPA eigenvectors as first trial vectors for SOPPA.

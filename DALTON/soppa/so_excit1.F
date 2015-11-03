@@ -6,7 +6,7 @@ C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak, July 1997
-C     SPAS :4/12-1997 : call to ccsd_init1 include. This should allow
+C     SPAS :4/12-1997 : call to ccsd_init1 included. This should allow
 C                       to run the RPA part without going through the
 C                       CC program.
 C     SPAS & PFP: 5/11-2013: triplet excitation energies included

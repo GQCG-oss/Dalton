@@ -111,7 +111,8 @@ C     Calculate new elements of the reduced matrices
 C---------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_INCRED(DOUBLES,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
+      CALL SO_INCRED(DOUBLES,NOLDTR,NNEWTR,ISYMTR,
+     &               REDE,LREDE,REDS,LREDS,
      &               LREDOL,LTR1E,LTR2E,WORK(KIS),WORK(KIE),
      &               WORK(KIN),LI,WORK(KJS),WORK(KJE),WORK(KJN),LJ,
      &               WORK(KEND1),LWORK1)

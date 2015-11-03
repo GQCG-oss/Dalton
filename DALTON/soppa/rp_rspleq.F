@@ -69,7 +69,6 @@ C
       CALL SO_MEMMAX ('RP_RSPLEQ.1',LWORK1)
       IF (LWORK1 .LT.0) CALL STOPIT('RP_RSPLEQ.1',' ',KEND1,LWORK)
 C
-C      CALL RP_GETGP(WORK(KGPVEC),LGPVEC,LABEL,ISYMTR,WORK(KEND1),LWORK1)
       CALL SO_GETGP(WORK(KGPVEC),LGPVC1,DUMMY,LDUMMY,
      &              LABEL,ISYMTR,IMAGPROP,'AORPA',
      &              DUMMY,LDUMMY,DUMMY,LDUMMY,DUMMY,LDUMMY,
@@ -102,12 +101,12 @@ C------------------------------
 C     Allocation of work space.
 C------------------------------
 C
-      DO IFREQ=1,NFRVAL
+C      DO IFREQ=1,NFRVAL
 C
-        IF((DABS(FRVAL(IFREQ)).LT.EPSI).AND.NSAVMX.LT.8) 
-     &      NSAVMX = MIN(NT1AM(ISYMTR),8)
+c        IF((DABS(FRVAL(IFREQ)).LT.EPSI).AND.NSAVMX.LT.8) 
+C     &      NSAVMX = MIN(NT1AM(ISYMTR),8)
 C
-      ENDDO
+C      ENDDO
 C
 C
 CSPAS: 8/1-2004: we do not solve for the different frequencies
@@ -138,38 +137,42 @@ C
      &               LFOCKD,WORK(KREDE),WORK(KREDS),LMXRED,
      &               WORK(KEND2),LWORK2)
 C
+C    This is a property calculation... Do we need to do anything
+C    similar?      
+      IF ( .FALSE. ) THEN
+C
 C------------------------------
 C     Allocation of work space.
 C------------------------------
 C
-      LTR1E   = NT1AM(ISYMTR)
-      LTR1D   = NT1AM(ISYMTR)
-      LRESO1E = NT1AM(ISYMTR)
-      LRESO1D = NT1AM(ISYMTR)
+         LTR1E   = NT1AM(ISYMTR)
+         LTR1D   = NT1AM(ISYMTR)
+         LRESO1E = NT1AM(ISYMTR)
+         LRESO1D = NT1AM(ISYMTR)
 C
-      KTR1E   = KEND2
-      KTR1D   = KTR1E   + LTR1E
-      KRESO1E = KTR1D   + LTR1D
-      KRESO1D = KRESO1E + LRESO1E
-      KEND3   = KRESO1D + LRESO1D
-      LWORK3  = LWORK   - KEND3
+         KTR1E   = KEND2
+         KTR1D   = KTR1E   + LTR1E
+C         KRESO1E = KTR1D   + LTR1D
+C         KRESO1D = KRESO1E + LRESO1E
+C         KEND3   = KRESO1D + LRESO1D
+         KEND3   = KTR1D + LTR1D
+         LWORK3  = LWORK   - KEND3
 C
-      CALL SO_MEMMAX ('RP_RSPLEQ.3',LWORK3)
-      IF (LWORK3 .LT.0) CALL STOPIT('RP_RSPLEQ.3',' ',KEND3,LWORK)
+         CALL SO_MEMMAX ('RP_RSPLEQ.3',LWORK3)
+         IF (LWORK3 .LT.0) CALL STOPIT('RP_RSPLEQ.3',' ',KEND3,LWORK)
 C
 C----------------
 C     Open files.
 C----------------
 C
-      CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
-      CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
+         CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
+         CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
 C
 C-----------------------------------------------------------
 C     Calculate p-h and h-p weight in excitation operator
 C     and write to output together with excitation energies.
 C-----------------------------------------------------------
 C
-      IF ( IPRSOP .GE. 1 ) THEN
 C
          DO IEXCI = 1,NEXCI
 C
@@ -182,12 +185,12 @@ C
 C
             ISYRES = MULD2H(ISYMOP,ISYMTR)
 C
-            CALL RP_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
-     &                    WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
-     &                    ISYRES,      ISYMTR) 
+C            CALL RP_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
+C     &                    WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
+C     &                    ISYRES,      ISYMTR) 
 C
-            W1ENM = DDOT(LTR1E,WORK(KTR1E),1,WORK(KRESO1E),1)
-            W1DNM = DDOT(LTR1D,WORK(KTR1D),1,WORK(KRESO1D),1)
+            W1ENM = DDOT(LTR1E,WORK(KTR1E),1,WORK(KTR1E),1)
+            W1DNM = -DDOT(LTR1D,WORK(KTR1D),1,WORK(KTR1D),1)
 C
             W1ENM = (W1ENM * D100)
             W1DNM = (W1DNM * D100)
@@ -219,14 +222,14 @@ C
 C
          END DO
 C
-      END IF
-C
 C-----------------
 C     Close files.
 C-----------------
 C
-      CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
-      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+         CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
+         CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+C
+      END IF
 C
 C-----------------------
 C     Remove from trace.

@@ -44,18 +44,18 @@ C
       DO 100 ISYMJ = 1,NSYM
 C
          ISYMBJ = MULD2H(ISYMJ,ISYMB)
-	 ISALBE = MULD2H(ISYMJ,ISYDIS)
+         ISALBE = MULD2H(ISYMJ,ISYDIS)
          ISYMAI = MULD2H(ISALBE,ISYMTR)
 C
          LSCR1  = N2BST(ISALBE)
          LSCR2  = NT1AM(ISYMAI)
          LSCR3  = NT1AM(ISYMAI)
 C
-         KSCR1   = 1
-         KSCR2   = KSCR1 + LSCR1
-         KSCR3   = KSCR2 + LSCR2
-         KEND1   = KSCR3 + LSCR3
-         LWORK1  = LWORK - KEND1
+         KSCR1  = 1
+         KSCR2  = KSCR1 + LSCR1
+         KSCR3  = KSCR2 + LSCR2
+         KEND1  = KSCR3 + LSCR3
+         LWORK1 = LWORK - KEND1
 C
          CALL SO_MEMMAX ('SO_RES_CB.1',LWORK1)
          IF (LWORK1 .LT. 0) CALL STOPIT('SO_RES_CB.1',' ',KEND1,LWORK)
@@ -88,10 +88,10 @@ C
                LSCR4  = NBAS(ISALFA)*NRHF(ISYMI)
                LSCR5  = NBAS(ISALFA)*NRHF(ISYMI)
 C
-               KSCR4   = KEND1
-               KSCR5   = KSCR4 + LSCR4
-               KEND2   = KSCR5 + LSCR5
-               LWORK2  = LWORK - KEND2
+               KSCR4  = KEND1
+               KSCR5  = KSCR4 + LSCR4
+               KEND2  = KSCR5 + LSCR5
+               LWORK2 = LWORK - KEND2
 C               
                CALL SO_MEMMAX ('SO_RES_CB.2',LWORK2)
                IF (LWORK2 .LT. 0) 

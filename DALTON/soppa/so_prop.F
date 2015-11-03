@@ -6,9 +6,9 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     A.L. January 2004
 C
-C     PURPOSE: Calculates the value of properties befor trial vectors
-C     orthonomarlization and write to a file the (1Z 2Z) 
-C     solution vector
+C     PURPOSE: Transforms thee reduced space solution vector to the 
+C     full space and writes it to a file (1Z 2Z).
+C     
 C
 C     NOLDTR    number of trial vectors keep from the preciding iteration
 C     NNEWTR    number of new trial vectors added in this iteration
@@ -20,6 +20,10 @@ C     FREQ      value of the frequency
 C     WORK
 C     LWORK
 C
+CRF  Is this routine really needed? Seems like it does double work, 
+CRF  since OPTVEC also does this transformation, though with a
+CRF  unit norm. Rather we could, when we know the calculation converged,
+CRF  rescale the 1st (best) trail vector and save it only once on FNSV?? 
 #include <implicit.h>
 #include <soppinf.h>
 #include <priunit.h>
@@ -30,7 +34,7 @@ C
 C
 C---------------------------------
 C     Dimensions of the arguments.
-C---------------------------------
+C-------------------------------
 C
       DIMENSION WORK(LWORK),REDZ(LREDZ)
       LOGICAL   IMAGPROP, DOUBLES
@@ -190,26 +194,26 @@ cLig <> get the GP vec DEBUG ... I don't need it to compute the
 cLig    solution vecotr
 CRF all this can be skipped
 C
-      CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
-      CALL SO_READ(WORK(KGPVC1),LGPVC1H,LUGPV1,FNGPV1,1)
-      CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
-      IF(DOUBLES)THEN
-         CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
-         CALL SO_READ(WORK(KGPVC2),LGPVC2H,LUGPV2,FNGPV2,1)
-         CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
-      ENDIF
+C      CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
+C      CALL SO_READ(WORK(KGPVC1),LGPVC1H,LUGPV1,FNGPV1,1)
+C      CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
+C      IF(DOUBLES)THEN
+C         CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
+C         CALL SO_READ(WORK(KGPVC2),LGPVC2H,LUGPV2,FNGPV2,1)
+C         CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
+C      ENDIF
 cLig DEBUG <> compute the property
 CRF generate for d-ex
-      DFACTOR = -1.0D0
-      IF (IMAGPROP) DFACTOR = 1.0D0      
-      PROP1  =      DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KSOVC1),1)
-     & + DFACTOR * DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KSOVC1+LGPVC1H),1) 
-      PROP = PROP1
-      IF(DOUBLES) THEN
-         PROP2 =      DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KSOVC2),1)
-     &   + DFACTOR * DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KSOVC2+LGPVC2H),1)
-         PROP = PROP + PROP2
-      ENDIF
+C      DFACTOR = -1.0D0
+C      IF (IMAGPROP) DFACTOR = 1.0D0      
+C      PROP1  =      DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KSOVC1),1)
+C     & + DFACTOR * DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KSOVC1+LGPVC1H),1) 
+C      PROP = PROP1
+C      IF(DOUBLES) THEN
+C         PROP2 =      DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KSOVC2),1)
+C     &   + DFACTOR * DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KSOVC2+LGPVC2H),1)
+C         PROP = PROP + PROP2
+C      ENDIF
 C
 C
 C-----------------

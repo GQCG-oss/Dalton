@@ -29,16 +29,16 @@ C
 C
       DO 100 ISALFA = 1, NSYM
 C
-	 ISYMA  = ISALFA
-	 ISYMI  = MULD2H(ISYMA,ISYRES)
+         ISYMA  = ISALFA
+         ISYMI  = MULD2H(ISYMA,ISYRES)
 C
          KOFF1  = ILMVIR(ISYMA) + 1
          KOFF2  = IT1AO(ISALFA,ISYMI) + 1
          KOFF3  = IT1AM(ISYMA,ISYMI) + 1
 
 C
-	 NTOTAL = MAX(NBAS(ISALFA),1)
-	 NTOTA  = MAX(NVIR(ISYMA),1)
+         NTOTAL = MAX(NBAS(ISALFA),1)
+         NTOTA  = MAX(NVIR(ISYMA),1)
 C
 C----------------------------------------------------------------------
 C        Multiply MO-coefficients C(alfa,a) and Sigma(alfa,i) matrices

@@ -264,7 +264,6 @@ C-----------------------
 C     Remove from trace.
 C-----------------------
 C
-      WRITE(LUPRI,'(A)') 'End of rspleq'
       CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('SO_RSPLEQ')

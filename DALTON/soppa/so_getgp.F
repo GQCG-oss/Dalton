@@ -29,7 +29,7 @@ C
 C     OUTPUT:         
 C        GPVC1(LGPVC1) 1p-1h gradient, excitation part
 C        GPVC2(LGPVC2) 2p-2h gradient, excitation part (IA)
-C        
+C        IMAGPROP      Whether the property operators are imaginary
 C         
 #include "implicit.h"
 #include "priunit.h"
@@ -179,23 +179,6 @@ C
      &       'excitation 1p1h and 2p2h gradient property vector')
          CALL CC_PRP(GPVC1,GPVC2,ISYMTR,1,1)
       ENDIF
-C
-C------------------------------------------------------------
-C     Calculate SOPPA de-excitation gradient property vector.
-C------------------------------------------------------------
-C
-C      IF (RTNLBL(2).EQ.'SYMMETRI') FACTOR = - ONE
-C      IF (RTNLBL(2).EQ.'ANTISYMM') FACTOR =   ONE
-C
-C      CALL DAXPY(LGPVC1H,FACTOR,GPVC1,1,GPVC1(1+LGPVC1H),1)
-C      CALL DAXPY(LGPVC2H,FACTOR,GPVC2,1,GPVC2(1+LGPVC2H),1)
-C
-C      IF (IPRSOP .GE. 6) THEN
-C         CALL AROUND('SO_GETGP: SOPPA '//
-C     &       'de-excitation 1p1h and 2p2h gradient property vector')
-c         CALL CC_PRP(GPVC1(1+LGPVC1H),GPVC2(1+LGPVC2H),ISYMTR,1,1)
-C      ENDIF
-
 C
 C     JUMP-POINT For exit
 1010  CONTINUE 

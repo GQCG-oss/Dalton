@@ -74,8 +74,10 @@ C-----------------------------------------------------------------
 C     Calculate diagonal parts of E[2] and S[2] and write to disk.
 C-----------------------------------------------------------------
 C
+      LDUMMY     = 0
       DTIME      = SECOND()
-      CALL RP_DIAG(FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
+      CALL SO_DIAG('AORPA',FOCKD,LFOCKD,DUMMY,LDUMMY,DUMMY,LDUMMY,
+     &             ISYMTR,WORK,LWORK)
       DTIME      = SECOND()   - DTIME
       SOTIME(31) = SOTIME(31) + DTIME
 C
@@ -199,10 +201,10 @@ C        Make S[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
-         DTIME      = SECOND()
-         CALL RP_SRES(NOLDTR,NNEWTR,ISYMTR,WORK(KEND1),LWORK1)
-         DTIME      = SECOND()   - DTIME
-         SOTIME(40) = SOTIME(40) + DTIME
+C         DTIME      = SECOND()
+C         CALL RP_SRES(NOLDTR,NNEWTR,ISYMTR,WORK(KEND1),LWORK1)
+C         DTIME      = SECOND()   - DTIME
+C         SOTIME(40) = SOTIME(40) + DTIME
 C
 C--------------------------------------------------------
 C        Set up and solve the reduced eigenvalue problem.

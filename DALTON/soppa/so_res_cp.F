@@ -798,7 +798,7 @@ c         CALL DZERO(WORK(KRESO1E),LRESO1E)
 c         CALL DZERO(WORK(KRESO1D),LRESO1D)
 C
          DTIME      = SECOND()
-         CALL SO_RES_OVL(RESO1E,LRESO1E,RESO1D,LRESO1D,
+         CALL SO_RES_O(RESO1E,LRESO1E,RESO1D,LRESO1D,
      &                   TR1E,LTR1E,TR1D,LTR1D,DENSIJ,
      &                   LDENSIJ,DENSAB,LDENSAB,ISYRES,ISYMTR)
          DTIME      = SECOND()   - DTIME
@@ -808,11 +808,11 @@ C-----------------------------------------
 C        Calculate the RPA overlap matrix.
 C-----------------------------------------
 C
-         DTIME      = SECOND()
-         CALL SO_RES_OVLR(RESO1E,LRESO1E,RESO1D,LRESO1D,
-     &                    TR1E,LTR1E,TR1D,LTR1D)
-         DTIME      = SECOND()   - DTIME
-         SOTIME(23) = SOTIME(23) + DTIME
+C         DTIME      = SECOND()
+c         CALL SO_RES_OVLR(RESO1E,LRESO1E,RESO1D,LRESO1D,
+C     &                    TR1E,LTR1E,TR1D,LTR1D)
+C         DTIME      = SECOND()   - DTIME
+C         SOTIME(23) = SOTIME(23) + DTIME
 C
 c        CALL SO_WRITE(WORK(KRESO1E),LRESO1E,LURO1E,FNRO1E,NEXCI+INEWTR)
 c        CALL SO_WRITE(WORK(KRESO1D),LRESO1D,LURO1D,FNRO1D,NEXCI+INEWTR)

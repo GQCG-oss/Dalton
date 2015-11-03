@@ -18,6 +18,7 @@
      &           FNTR2E = 'SO_TR2E', FNTR2D = 'SO_TR2D',                &
      &           FNRS1E = 'SO_RS1E', FNRS1D = 'SO_RS1D',                &
      &           FNRS2E = 'SO_RS2E', FNRS2D = 'SO_RS2D',                &
+!    FNRO1?: we probably shouldn't save S*Tr on disk...     
      &           FNRO1E = 'SO_RO1E', FNRO1D = 'SO_RO1D',                &
      &           FNDIAG = 'SO_DIAG', FNDENS = 'SO_DENS',                &
      &           FNFOCK = 'SO_FOCK',                                    &
@@ -45,6 +46,7 @@
 !
       INTEGER    LUTR1E, LUTR1D, LUTR2E, LUTR2D,                        &
      &           LURS1E, LURS1D, LURS2E, LURS2D,                        &
+!    LURO1?: we probably shouldn't save S*Tr on disk...     
      &           LURO1E, LURO1D,                                        &
      &           LUDIAG, LUDENS, LUFOCK,                                &
      &           LUSAI1, LUSAI2, LUSDA1, LUSDA2,                        &
@@ -53,6 +55,7 @@
      &           LUSC1E, LUSC1D, LUSC2E, LUSC2D,                        &
      &           LUSV1E, LUSV1D, LUSV2E, LUSV2D,                        &
      &           LURV1E, LURV1D, LURV2E, LURV2D,                        &
+!    LUGPVE should be replaced by LUGPV1     
      &           LUGPVE, LUSOLA, LUGPV1, LUGPV2,                        &
      &           SOMEMO
 !

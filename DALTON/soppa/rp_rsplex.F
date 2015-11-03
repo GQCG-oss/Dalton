@@ -118,12 +118,12 @@ C
 C
             ISYRES = MULD2H(ISYMOP,ISYMTR)
 C
-            CALL RP_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
-     &                    WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
-     &                    ISYRES,      ISYMTR) 
+C            CALL RP_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
+C     &                    WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
+C     &                    ISYRES,      ISYMTR) 
 C
-            W1ENM = DDOT(LTR1E,WORK(KTR1E),1,WORK(KRESO1E),1)
-            W1DNM = DDOT(LTR1D,WORK(KTR1D),1,WORK(KRESO1D),1)
+            W1ENM =  DDOT(LTR1E,WORK(KTR1E),1,WORK(KTR1E),1)
+            W1DNM = -DDOT(LTR1D,WORK(KTR1D),1,WORK(KTR1D),1)
 C
             W1ENM = (W1ENM * D100)
             W1DNM = (W1DNM * D100)

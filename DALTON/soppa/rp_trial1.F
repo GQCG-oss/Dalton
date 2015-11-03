@@ -44,7 +44,7 @@ C     Read diagonal E[2] elements which are taken as approximate
 C     eigenvalues.
 C---------------------------------------------------------------
 C
-      CALL GPOPEN(LUDIAG,'RP_DIAG','UNKNOWN',' ','UNFORMATTED',IDUMMY,
+      CALL GPOPEN(LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUDIAG
 C
@@ -99,65 +99,68 @@ C
       CALL SO_OPEN(LUTR1E,FNTR1E,LEDIA1)
       CALL SO_OPEN(LUTR1D,FNTR1D,LEDIA1)
 C
+      CALL DZERO(WORK(KTRIAL),LTRIAL)
       DO 200 INEWTR = 1, NNEWTR
-C
-         CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
          CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
 C
          WORK( KTRIAL + POINT(INEWTR) - 1 ) = ONE
 C
          CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+CRF let's only zero the relevant element...
+         WORK( KTRIAL + POINT(INEWTR) - 1 ) = 0.0D0
 C
   200 CONTINUE
 C
-      IF ( IPRSOP .GE. 6 ) THEN
+C      IF ( IPRSOP .GE. 6 ) THEN
 C
 C------------------------------------------
 C        Write new trial vectors to output.
 C------------------------------------------
 C
-         DO 300 INEWTR = 1,NNEWTR
+C         DO 300 INEWTR = 1,NNEWTR
 C
-            WRITE(LUPRI,'(I3,A)') INEWTR,
-     &         '. raw trial vector in RP_TRIAL1'
+C            WRITE(LUPRI,'(I3,A)') INEWTR,
+C     &         '. raw trial vector in RP_TRIAL1'
 C
-            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
-            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+C            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+C            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
 C
-  300    CONTINUE
+C  300    CONTINUE
 C
-      END IF
+C      END IF
 C
 C-----------------------------------------------
 C     Orthogonalize new trial vectors over S[2].
 C-----------------------------------------------
 C
+CRF Is this needed? In the current way of making the guess, it seems 
+CRF that the vectors must be orthogonal already.
       NLINDP = 0
       NOLDTR = 0
       CALL RP_ORTH_TRN('EXCITA',NOLDTR,NNEWTR,NLINDP,ISYMTR,WORK,LWORK)
 C
-      IF ( IPRSOP .GE. 6 ) THEN
+C      IF ( IPRSOP .GE. 6 ) THEN
 C
 C------------------------------------------
 C        Write new trial vectors to output.
 C------------------------------------------
 C
-         DO 400 INEWTR = 1,NNEWTR
+C         DO 400 INEWTR = 1,NNEWTR
 C
-            WRITE(LUPRI,'(I3,A)') INEWTR,
-     &         '. new trial vector from RP_TRIAL1'
+C            WRITE(LUPRI,'(I3,A)') INEWTR,
+C     &         '. new trial vector from RP_TRIAL1'
 C
-            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
-            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+C            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
+c            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+C            WRITE(LUPRI,'(I8,1X,F14.8)') (I,WORK(KTRIAL+I-1),I=1,LEDIA1)
 C
-  400    CONTINUE
+C  400    CONTINUE
 C
-      END IF
+C      END IF
 C
 C------------------------------------
 C     Close files with trial vectors.

@@ -35,12 +35,12 @@ C
       CHARACTER*3 CONV(LCONV)
       CHARACTER*6 LTYPE
       CHARACTER*8 LABEL
+      CHARACTER*5 MODEL
 C
       DIMENSION   EIVAL(LEIVAL), RESINM(LRESINM)
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION   WORK(LWORK)
       LOGICAL IMAGPROP, DOUBLES
-      CHARACTER*5 MODEL
 C
 C------------------
 C     Add to trace.
@@ -58,7 +58,7 @@ C
 C---------------------------------------------
 C     Does this method have doubles aplitudes?
 C---------------------------------------------
-      DOUBLES = MODEL .EQ. 'AOSOP' .OR. MODEL.EQ.'AOSOC'
+      DOUBLES = (MODEL.EQ.'AOSOP') .OR. (MODEL.EQ.'AOSOC')
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.  Notice that the RESULT and TRIAL
 C     vectors are of equal length and are chosen to use the same work
@@ -101,16 +101,20 @@ C   the following allocations unmodified
          LRESO2D = 0
       ENDIF
 C
-      IF(LTYPE.EQ.'LINEAR') THEN
-              LGPVC1H = NT1AM(ISYMTR)
-              LGPVC2H = NT2AM(ISYMTR)
-              LGPVC1  = LGPVC1H
-              LGPVC2  = LGPVC2H
+      IF (LTYPE.EQ.'LINEAR') THEN
+         LGPVC1H = NT1AM(ISYMTR)
+         IF(DOUBLES)THEN
+            LGPVC2H = NT2AM(ISYMTR)
+         ELSE
+            LGPVC2H = 0
+         END IF
+         LGPVC1  = LGPVC1H
+         LGPVC2  = LGPVC2H
       ELSE
-              LGPVC1H = 0
-              LGPVC2H = 0
-              LGPVC1  = 0
-              LGPVC2  = 0
+         LGPVC1H = 0
+         LGPVC2H = 0
+         LGPVC1  = 0
+         LGPVC2  = 0
       ENDIF
 C
       KRES1E  = 1
@@ -137,23 +141,34 @@ C
       KRESO2D  = KRESO2E + LRESO2E
       KEND1B   = KRESO2D + LRESO2D
 C
+C     We need to transform trial-vectors with S (S*Tr) , grap some space
+      IF (MODEL.EQ.'AORPA') THEN
+C        Only need to change sign on TR1D, done in place
+         KTMP1E = KRESO1E
+         KTMP1D = KRESO1D                  
+      ELSE
+C        Otherwise we borrow the space from the result vectors
+         KTMP1E = KRES1E
+         KTMP1D = KRES1D     
+      ENDIF   
+C
       IF(LTYPE.EQ.'LINEAR') THEN
-              KGPVC1  = KEND1B
+         KGPVC1  = KEND1B
 CRF            KGPVC1E = KGPVC1
 CRF            KGPVC1D = KGPVC1E + LGPVC1H
 CRF              KGPVC2  = KGPVC1D + LGPVC1H
-              KGPVC2  = KGPVC1 + LGPVC1
+         KGPVC2  = KGPVC1 + LGPVC1
 CRF              KGPVC2E = KGPVC2  
 CRF              KGPVC2D = KGPVC2E + LGPVC2H
-              KEND1C  = KGPVC2 + LGPVC2
+         KEND1C  = KGPVC2 + LGPVC2
       ELSE
-              KGPVC1  = KEND1B
+         KGPVC1  = KEND1B
 !              KGPVC1E = KEND1B
 !              KGPVC1D = KEND1B
-              KGPVC2  = KEND1B
+         KGPVC2  = KEND1B
 !              KGPVC2E = KEND1B
 !              KGPVC2D = KEND1B
-              KEND1C  = KEND1B
+         KEND1C  = KEND1B
       ENDIF
 C
       LWORK1C  = LWORK   - KEND1C
@@ -165,8 +180,6 @@ C
       CALL SO_OPEN(LURS1D,FNRS1D,LRES1D)
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
-      CALL SO_OPEN(LURO1E,FNRO1E,LRESO1E)
-      CALL SO_OPEN(LURO1D,FNRO1D,LRESO1D)
       IF(DOUBLES) THEN
          CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
          CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
@@ -198,13 +211,30 @@ C----------------------------
 C        Read result vectors.
 C----------------------------
 C
+         CALL SO_READ(WORK(KTMP1E),LRESO1E,LUTR1E,FNTR1E,IEXCI)
+         CALL SO_READ(WORK(KTMP1D),LRESO1D,LUTR1D,FNTR1D,IEXCI)
+         IF (MODEL.EQ.'AORPA') THEN
+C           S(1) == S(0) for RPA, that is simple             
+            CALL DSCAL(LRESO1D,-ONE,WORK(KRESO1D),1) !KRESO1D = KTMP1D
+         ELSE
+C           S(2) for doubles, that require some work
+            CALL SO_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
+     &                    WORK(KTMP1E), LRESO1E,WORK(KTMP1D) ,LRESO1D,
+     &                    DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+C           ISYRES == ISYMTR always for abelian symmetry, totally symmetry S..
+C           right?            
+     &                    ISYMTR,ISYMTR)                     
+         ENDIF
+C  Warning: For model != aorpa, the space for the result-vectors
+C  is used to perform the above transformation.
+
          CALL SO_READ(WORK(KRES1E), LRES1E, LURS1E,FNRS1E,IEXCI)
          CALL SO_READ(WORK(KRES1D), LRES1D, LURS1D,FNRS1D,IEXCI)
-         CALL SO_READ(WORK(KRESO1E),LRESO1E,LURO1E,FNRO1E,IEXCI)
-         CALL SO_READ(WORK(KRESO1D),LRESO1D,LURO1D,FNRO1D,IEXCI)
          IF(DOUBLES)THEN
             CALL SO_READ(WORK(KRES2E), LRES2E, LURS2E,FNRS2E,IEXCI)
             CALL SO_READ(WORK(KRES2D), LRES2D, LURS2D,FNRS2D,IEXCI)
+C           
+C           S(0) for doubles, factor of -1 on D part 
             CALL SO_READ(WORK(KRESO2E),LRESO2E,LUTR2E,FNTR2E,IEXCI)
             CALL SO_READ(WORK(KRESO2D),LRESO2D,LUTR2D,FNTR2D,IEXCI)
             CALL DSCAL(LRESO2D,-ONE,WORK(KRESO2D),1)
@@ -214,6 +244,7 @@ C
             CALL SO_READ(WORK(KGPVC1),LGPVC1,LUGPV1,FNGPV1,1)
             IF(DOUBLES)THEN
                  CALL SO_READ(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
+C  Property gradient on file is in the wrong basis
                  CALL SO_TMLTR(WORK(KGPVC2),HALF,ISYMTR)
             ENDIF
 C
@@ -232,17 +263,16 @@ C-------------------------------------------------------------
 C        Calculate residual vector and norm of result vectors.
 C-------------------------------------------------------------
 C
-         CALL SO_RESIDUAL(DOUBLES,LTYPE,RESINM(IEXCI),WORK(KRESI1E),
-     &                    LRESI1E,WORK(KRESI1D),LRESI1D,
-     &                    WORK(KRESI2E),
-     &                    LRESI2E,WORK(KRESI2D),LRESI2D,EIVAL(IEXCI),
+         CALL SO_RESIDUAL(DOUBLES,LTYPE,RESINM(IEXCI),
+     &                    WORK(KRESI1E),LRESI1E,WORK(KRESI1D),LRESI1D,
+     &                    WORK(KRESI2E),LRESI2E,WORK(KRESI2D),LRESI2D,
+     &                    EIVAL(IEXCI),
      &                    WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                    WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
-     &                    WORK(KRESO1E),LRESO1E,WORK(KRESO1D),
-     &                    LRESO1D,WORK(KRESO2E),LRESO2E,
+     &                    WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
+     &                    WORK(KRESO2E),LRESO2E,
      &                    WORK(KRESO2D),LRESO2D,
      &                    WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,
-C     &                    WORK(KGPVC2E),LGPVC2H,WORK(KGPVC2D),LGPVC2H,
      &                    ENORM,IMAGPROP)
 C
 C-----------------------------------------------
@@ -301,18 +331,15 @@ C------------------------------------------------
 C           Read diagonal E[2] and S[2] elements.
 C------------------------------------------------
 C
-            IF (DOUBLES) THEN
-               CALL GPOPEN(LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',
-     &                     IDUMMY,.FALSE.)
-            ELSE 
-               CALL GPOPEN(LUDIAG,'RP_DIAG','UNKNOWN',' ','UNFORMATTED',
-     &                     IDUMMY,.FALSE.)
-            ENDIF
+            CALL GPOPEN(LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',
+     &                   IDUMMY,.FALSE.)
             REWIND LUDIAG
 C
             READ(LUDIAG) ( WORK(KEDIA1+I-1), I = 1,LEDIA1)
             IF (DOUBLES)THEN
                READ(LUDIAG) ( WORK(KEDIA2+I-1), I = 1,LEDIA2)
+            ENDIF
+            IF(MODEL.NE.'AORPA')THEN
                READ(LUDIAG) ( WORK(KSDIA1+I-1), I = 1,LSDIA1)
             ENDIF
 C
@@ -322,20 +349,24 @@ C------------------------------------------------------------
 C           Calculate raw new trial vector and write to file.
 C------------------------------------------------------------
 C
-            IF(.NOT.DOUBLES) THEN
-            CALL RP_NEWTRIAL(NNEWTR,NOLDTR,WORK(KTR1E),LTR1E,
-     &                       WORK(KTR1D),LTR1D,EIVAL(IEXCI),
-     &                       WORK(KEDIA1),LEDIA1,WORK(KRESI1E),LRESI1E,
-     &                       WORK(KRESI1D),LRESI1D)
-            ELSE
-            CALL SO_NEWTRIAL(NNEWTR,NOLDTR,WORK(KTR1E),LTR1E,
-     &                       WORK(KTR1D),LTR1D,WORK(KTR2E),LTR2E,
-     &                       WORK(KTR2D),LTR2D,EIVAL(IEXCI),
-     &                       WORK(KEDIA1),LEDIA1,WORK(KEDIA2),LEDIA2,
-     &                       WORK(KSDIA1),LSDIA1,WORK(KRESI1E),
-     &                       LRESI1E,WORK(KRESI1D),LRESI1D,
-     &                       WORK(KRESI2E),LRESI2E,WORK(KRESI2D),
-     &                       LRESI2D)
+           IF(MODEL.EQ.'AORPA') THEN
+C Use special RPA routine, since for RPA "S" is not explicitly calculated
+C (and it would be a waste to do so)              
+              CALL RP_NEWTRIAL(NNEWTR,NOLDTR,WORK(KTR1E),LTR1E,
+     &                         WORK(KTR1D),LTR1D,EIVAL(IEXCI),
+     &                         WORK(KEDIA1),LEDIA1,
+     &                         WORK(KRESI1E),LRESI1E,
+     &                         WORK(KRESI1D),LRESI1D)
+           ELSE
+              CALL SO_NEWTRIAL(DOUBLES,NNEWTR,NOLDTR,
+     &                         WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
+     &                         WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+     &                         EIVAL(IEXCI),WORK(KEDIA1),LEDIA1,
+     &                         WORK(KEDIA2),LEDIA2,WORK(KSDIA1),LSDIA1,
+     &                         WORK(KRESI1E),LRESI1E,
+     &                         WORK(KRESI1D),LRESI1D,
+     &                         WORK(KRESI2E),LRESI2E,WORK(KRESI2D),
+     &                         LRESI2D)
             ENDIF
 C
          END IF
@@ -417,8 +448,6 @@ C
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LURS1E,FNRS1E,'KEEP')
       CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
-      CALL SO_CLOSE(LURO1E,FNRO1E,'KEEP')
-      CALL SO_CLOSE(LURO1D,FNRO1D,'KEEP')
       IF(DOUBLES)THEN
          CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
          CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')

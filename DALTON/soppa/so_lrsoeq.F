@@ -82,7 +82,7 @@ C     Calculate diagonal parts of E[2] and S[2] and write to disk.
 C-----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_DIAG(FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+      CALL SO_DIAG(MODEL,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             ISYMTR,WORK,LWORK)
       DTIME      = SECOND()   - DTIME
       SOTIME(31) = SOTIME(31) + DTIME
@@ -128,7 +128,7 @@ C     with (C +-C) as R or the last TV of the previous frequency
 C------------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_TRIAL3(NNEWTR,ISYMTR,IMAGPROP,IFREQ,FRVAL,NFRVAL,
+      CALL SO_TRIAL3(MODEL,NNEWTR,ISYMTR,IMAGPROP,IFREQ,FRVAL,NFRVAL,
      &               NEXCI,!LABEL,
      &               DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &               WORK(KEND1),LWORK1)
@@ -192,12 +192,13 @@ C
             WRITE(LUPRI,'(/,2X,A)') '================================'//
      &                              '=================================='
             IF (MODEL .EQ. 'AOSOP') THEN
-               WRITE(LUPRI,'(14X,I3,A,I1)') NIT,
-     &              '. SOPPA iteration, Frequency ',IFREQ
+               WRITE(LUPRI,'(14X,I3,A,I1,A,F8.5)') NIT,
+     &              '. SOPPA iteration, Symmetry ', ISYMTR, 
+     &              ', Frequency ',FRVAL(IFREQ)
             ELSE IF (MODEL .EQ. 'AOSOC') THEN
-               WRITE(LUPRI,'(11X,I3,A,I1)') NIT,
-     &              '. SOPPA(CCSD)  iteration, Excitation symmetry ',
-     &              ISYMTR
+               WRITE(LUPRI,'(11X,I3,A,I1,A,F8.5)') NIT,
+     &              '. SOPPA(CCSD)  iteration, Symmetry ', ISYMTR,
+     &              ', Frequency ', FRVAL(IFREQ)
             ELSE
                WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOEQ'
                CALL QUIT('ERROR: Wrong model in SO_LRSOEQ')
@@ -267,7 +268,8 @@ C
 C-----------------------------------------------------------------------
 C          Calculate the gradient property vectors with the right DENSAI
 C-----------------------------------------------------------------------
-C
+C          Only the one-partcle part need to be re-done -> 
+C          Maybe pass in MODEL = 'AOHRP'?
            LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
            LGPVC2  =  NT2AM(ISYMTR)
@@ -364,7 +366,7 @@ cLig <> I have to add some parameters to that call and modify so_trial2
          SOWTIM(4)  = SOWTIM(4)  + WTIMEE - WTIMES
 C
 C---------------------------------------------------------------------
-C        Write calculated excitation energies and residuals to output.
+C        Write residuals and "Diagonal properties"
 C---------------------------------------------------------------------
 C
          IF (IPRSOP .GE. 2) THEN
@@ -397,7 +399,7 @@ C
             WRITE(LUPRI,9001)
             WRITE(LUPRI,9002)
             WRITE(LUPRI,9003)
-            WRITE(LUPRI,9006)
+            WRITE(LUPRI,9006) NIT
             WRITE(LUPRI,9008)
 C
          ELSE
@@ -405,8 +407,8 @@ C
             WRITE(LUPRI,9001)
             WRITE(LUPRI,9002)
             WRITE(LUPRI,9003)
-            WRITE(LUPRI,9004) NLINDP
-            WRITE(LUPRI,9005) NEXCI - NLINDP
+            WRITE(LUPRI,9004) 
+C            WRITE(LUPRI,9005) NEXCI - NLINDP
             WRITE(LUPRI,9008)
 C
          END IF
@@ -447,15 +449,15 @@ C
      &       '----------------')
  9002 FORMAT(1X,'Iterations stopped since: ')
  9003 FORMAT(1X,'-------------------------')
- 9004 FORMAT(1X,I2,' of the excitations have linear dependent new',
-     &       ' trial vectors.')
- 9005 FORMAT(1X,I2,' of the excitations are converged.')
- 9006 FORMAT(1X,'All of the properties are converged.')
+ 9004 FORMAT(1X,'The new trial vector is linearly dependent',
+     &       ' on the previous one.')
+ 9006 FORMAT(1X,'The property converged after, ',I3,' iterations.')
  9007 FORMAT(1X,'Maximum number of ',I3,' iterations is reached.')
  9008 FORMAT(1X,'---------------------------------------------',
      &       '----------------',/)
- 9010 FORMAT(12X,'--------------------------------------------------')
- 9011 FORMAT(4X,'Label      Freq        Property (au)   Residual',
+ 9010 FORMAT('--------------------------------------------------',
+     &       '-----------------')
+ 9011 FORMAT(1X,'Label      Freq        Property (au)   Residual',
      &           '      Converged')
  9012 FORMAT(4X,A8,2X,F8.6,2X,F15.8,1X,1P,D14.4,6X,A)
       END

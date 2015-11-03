@@ -41,6 +41,8 @@ C
          NORBA = MAX(NORB(ISYMA),1)
          NRHFJ = MAX(NRHF(ISYMJ),1)
 C
+C  fact? \sum _j P_{ja} * \rho _{ji}
+C         
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
      &              SQ2,PRP1(KOFF1),NORBA,DENSIJ(KOFF2),NRHFJ,
      &              ONE,GPVC1(KOFF3),NVIRA)
@@ -51,6 +53,8 @@ C
          KOFF5 = IFCRHF(ISYMJ,ISYMI) + 1
 C
          NORBJ = MAX(NORB(ISYMJ),1)
+C
+C -fact? \sum _j P_{ij} * \rho _{aj}
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
      &              -SQ2,DENSAI(KOFF4),NVIRA,PRP1(KOFF5),NORBJ,
@@ -63,6 +67,8 @@ C
 C
          NVIRB = MAX(NVIR(ISYMB),1)
 C
+C  fact? \sum _b P_{ba} * \rho _{bi}
+C         
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
      &              SQ2,PRP1(KOFF6),NORBA,DENSAI(KOFF7),NVIRB,
      &              ONE,GPVC1(KOFF3),NVIRA)
@@ -73,6 +79,8 @@ C
          KOFF9 = IFCRHF(ISYMB,ISYMI) + NRHF(ISYMB) + 1
 C
          NORBB = MAX(NORB(ISYMB),1)
+C
+C -fact? \sum _b P_{bi} * \rho _{ba}         
 C
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NVIR(ISYMB),
      &              -SQ2,DENSAB(KOFF8),NVIRA,PRP1(KOFF9),NORBB,

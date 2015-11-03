@@ -77,8 +77,10 @@ C-----------------------------------------------------------------
 C     Calculate diagonal parts of E[2] and S[2] and write to disk.
 C-----------------------------------------------------------------
 C
+      LDUMMY  = 0
       DTIME      = SECOND()
-      CALL RP_DIAG(FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
+      CALL SO_DIAG('AORPA',FOCKD,LFOCKD,DUMMY,LDUMMY,DUMMY,LDUMMY,
+     &              ISYMTR,WORK,LWORK)
       DTIME      = SECOND()   - DTIME
       SOTIME(31) = SOTIME(31) + DTIME
 C
@@ -117,27 +119,29 @@ C------------------------------------------------------------------
 C       Check tu the value of NSVMX ... 
 C       rise it to 8 if FRVAL(IFREQ) eq 0
 C------------------------------------------------------------------
-C
+CRF     This seems to no longer be neccesary!
+C       Also changing NSAVMX here cause all kinds of trouble!
         NSAVMX = NSAVMXORIG
 C
-        IF ( DABS(FRVAL(IFREQ)) .LE. EPSI ) THEN
+C
+C        IF ( DABS(FRVAL(IFREQ)) .LE. EPSI ) THEN
 C                
-            IF (NSAVMX.LT.8) THEN
+C            IF (NSAVMX.LT.8) THEN
 C
-               NSAVMX = MIN(NT1AM(ISYMTR),8)
+C               NSAVMX = MIN(NT1AM(ISYMTR),8)
 C
-               WRITE(LUPRI,'(/,1X,A,I4,A,/,1X,A,/,1X,A,I4,A,I4)')
-     &         'WARNING: when frequency is 0 ',NSAVMXORIG,' vecotrs',
-     &         ' are not enough to get a good description of the space',
-     &         ' I have temporally rised from ',NSAVMXORIG,' to',
-     &         NSAVMX,' the number of trial vector'
+C               WRITE(LUPRI,'(/,1X,A,I4,A,/,1X,A,/,1X,A,I4,A,I4)')
+C     &         'WARNING: when frequency is 0 ',NSAVMXORIG,' vectors',
+C     &         ' are not enough to get a good description of the space',
+C     &         ' I have temporally rised from ',NSAVMXORIG,' to',
+C     &         NSAVMX,' the number of trial vector'
 C
-               IF(NSAVMX.LT.8) WRITE(LUPRI,'(/,1X,A,/,A,I5)') 
-     &         'I cannot rise NSAVMX to 8 becouse',
-     &         'the numbre of 1p1h is ',NT1AM(ISYMTR)
-            ENDIF
+C               IF(NSAVMX.LT.8) WRITE(LUPRI,'(/,1X,A,/,A,I5)') 
+C     &         'I cannot rise NSAVMX to 8 becouse',
+C     &         'the numbre of 1p1h is ',NT1AM(ISYMTR)
+C            ENDIF
 C
-        ENDIF
+C        ENDIF
 C
 C------------------------------------------------------------------
 C     Set up initial trial vectors using eq. (19) with (C +-C) as R
@@ -213,12 +217,14 @@ C--------------------------------------------------------------
 C        Make S[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
+CRF      This is trivial, waste of time to write it to and read it        
+C        from disk
+C         DTIME      = SECOND()
+C         CALL RP_SRES(NOLDTR,NNEWTR,ISYMTR,WORK(KEND1),LWORK1)
+c         DTIME      = SECOND()   - DTIME
+C         SOTIME(40) = SOTIME(40) + DTIME
+C         CALL FLSHFO(LUPRI)
 C
-         DTIME      = SECOND()
-         CALL RP_SRES(NOLDTR,NNEWTR,ISYMTR,WORK(KEND1),LWORK1)
-         DTIME      = SECOND()   - DTIME
-         SOTIME(40) = SOTIME(40) + DTIME
-         CALL FLSHFO(LUPRI)
 C
 C--------------------------------------------------------
 C        Set up and solve the reduced eigenvalue problem.
@@ -230,7 +236,6 @@ C
 C
          DTIME      = SECOND()
 C
-C         CALL RP_REDLE(NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,IMAGPROP,
          CALL SO_REDLE(.FALSE.,NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,
      &                 IMAGPROP,REDE,LREDE,REDS,
      &                 LREDS,WORK(KREDC),LREDC,LREDOL,FRVAL,NFRVAL,
@@ -258,13 +263,8 @@ C-------------------------------------------------------------------
 C        
          IF (NIT .GE. MAXIT) NONEWT = .TRUE.
 C
-cLig << DEBUG
-c         write(lupri,'(A,I5,I3)') 'nnewtr prima di trial2',nnewtr,nit
          LDUMMY = 1    
          DTIME      = SECOND()
-C         CALL RP_TRIAL2('LINEAR',NONEWT,NOLDTR,NNEWTR,NLINDP,
-C     &                  FRVAL(IFREQ),1,RESINM,LRESINM,CONV,LCONV,NCONV,
-C     &                  ISYMTR,NEXCI,ENORM,LABEL,WORK(KEND1),LWORK1)
          CALL SO_TRIAL2('AORPA','LINEAR',NONEWT,NOLDTR,NNEWTR,NLINDP,
      &                  FRVAL(IFREQ),1,RESINM,LRESINM,CONV,LCONV,NCONV,
      &                  ISYMTR,IMAGPROP,
@@ -272,7 +272,6 @@ C     &                  ISYMTR,NEXCI,ENORM,LABEL,WORK(KEND1),LWORK1)
      &                  ENORM,LABEL,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
          SOTIME(34) = SOTIME(34) + DTIME
-C         write(lupri,'(A,I5)') 'nnewtr dopo di trial2',nnewtr
 C
 C---------------------------------------------------------------------
 C        Write calculated excitation energies and residuals to output.
@@ -297,8 +296,6 @@ C---------------------------------------------------------------------
 C
       IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GO TO 100
 C
-      print *, nnewtr, nit, maxit
-C
       IF ( (NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT) ) THEN
 C
          IF ( NLINDP .EQ. 0 ) THEN
@@ -306,7 +303,7 @@ C
             WRITE(LUPRI,9001)
             WRITE(LUPRI,9002)
             WRITE(LUPRI,9003)
-            WRITE(LUPRI,9006)
+            WRITE(LUPRI,9006) NIT
             WRITE(LUPRI,9008)
 C
          ELSE
@@ -314,8 +311,8 @@ C
             WRITE(LUPRI,9001)
             WRITE(LUPRI,9002)
             WRITE(LUPRI,9003)
-            WRITE(LUPRI,9004) NLINDP
-            WRITE(LUPRI,9005) NEXCI - NLINDP
+            WRITE(LUPRI,9004) 
+C            WRITE(LUPRI,9005) NEXCI - NLINDP
             WRITE(LUPRI,9008)
 C
          END IF
@@ -354,10 +351,9 @@ C
      &       '----------------')
  9002 FORMAT(1X,'Iterations stopped since: ')
  9003 FORMAT(1X,'-------------------------')
- 9004 FORMAT(1X,I2,' of the excitations have linear dependent new',
-     &       ' trial vectors.')
- 9005 FORMAT(1X,I2,' of the excitations are converged.')
- 9006 FORMAT(1X,'All of the excitations are converged.')
+ 9004 FORMAT(1X,'The new trial vector is linearly dependent',
+     &       ' on the previous one.')
+ 9006 FORMAT(1X,'The property converged after, ',I3,' iterations.')
  9007 FORMAT(1X,'Maximum number of ',I3,' iterations is reached.')
  9008 FORMAT(1X,'---------------------------------------------',
      &       '----------------',/)

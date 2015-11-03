@@ -29,16 +29,16 @@ C
 C
       DO 100 ISDEL = 1, NSYM
 C
-	 ISYMI  = ISDEL
-	 ISYMA  = MULD2H(ISYMI,ISYRES)
+         ISYMI  = ISDEL
+         ISYMA  = MULD2H(ISYMI,ISYRES)
 C
          KOFF1  = IMATAV(ISDEL,ISYMA) + 1
          KOFF2  = ILMRHF(ISYMI) + 1
          KOFF3  = IT1AM(ISYMA,ISYMI) + 1
 
 C
-	 NTOTDL = MAX(NBAS(ISDEL),1)
-	 NTOTA  = MAX(NVIR(ISYMA),1)
+         NTOTDL = MAX(NBAS(ISDEL),1)
+         NTOTA  = MAX(NVIR(ISYMA),1)
 C
 C-----------------------------------------------------------------------
 C        Multiply MO-coefficients C(delta,i) and Sigma(delta,a) matrices

@@ -80,7 +80,7 @@ C     Calculate diagonal parts of E[2] and S[2] and write to disk.
 C-----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_DIAG(FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+      CALL SO_DIAG(MODEL,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &             ISYMTR,WORK,LWORK)
       DTIME      = SECOND()   - DTIME
       SOTIME(31) = SOTIME(31) + DTIME

@@ -24,10 +24,10 @@ C These are new, check dimension
       DIMENSION POLVL(2,3,3,NFRVAL,NMODEL),POLVV(2,3,3,NFRVAL,NMODEL)
       DIMENSION WORK(LWORK)
 
-      LOGICAL   JOBS(4)
+      LOGICAL   JOBS(NMODEL)
       CHARACTER(LEN=11), PARAMETER, DIMENSION(NMODEL) :: METHOD_NAMES = 
      &     (/ 'RPA        ', 'SOPPA      ', 'SOPPA(CCSD)', 
-     &        'DCRPA      '  /)
+     &        'Higher RPA '  /)
 
 C
 C------------------
@@ -35,8 +35,9 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_LNROUT')
-C      
-      JOBS = (/ AORPA, AOSOP, AOSOC, DCRPA /)
+C     
+C   Order must match so_lnraba      
+      JOBS = (/ AORPA, AOSOP, AOSOC, AOHRP /) 
 C
 C===============================================
 C     LOOP OVER METHODS
@@ -59,6 +60,8 @@ C
      &                IPRSOP,WORK,LWORK)
 C
       ENDDO
+C      
+      WRITE(LUPRI,9000)
 C
 C===============================================
 C     Write calculated RPA properties to output.

@@ -65,9 +65,11 @@ C
 C---------------------------------------------------
 C        Work space allocation for solution vectors.
 C---------------------------------------------------
-C
+C         
+C      Pointer for the correct column in E and S     
          LE2MAT  = (ICOL - 1) * NVAR
          LS2MAT  = (ICOL - 1) * NVAR
+C         
          LRES1E  = NT1AM(ISYMTR)
          LRES1D  = NT1AM(ISYMTR)
          LRES2E  = NT2AM(ISYMTR)
@@ -77,6 +79,7 @@ C
          LRESO2E = NT2AM(ISYMTR)
          LRESO2D = NT2AM(ISYMTR)
 C
+C      Positions on various parts in E and S         
          KRES1E  = KE2MAT  + LE2MAT
          KRES1D  = KRES1E  + LRES1E
          KRES2E  = KRES1D  + LRES1D
