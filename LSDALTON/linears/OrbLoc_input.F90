@@ -121,6 +121,11 @@ implicit none
            config%davidOrbLoc%conv_thresh= 0.1_realk
            config%davidOrbLoc%global_conv_thresh= 0.1_realk
            config%davidOrbLoc%local_conv_thresh= 0.01_realk
+       CASE('.RESTART LOCALIZATION')
+           config%davidOrbLoc%orbloc_restart = .true.
+           config%davidOrbLoc%OnlyLocalize=.true.
+       CASE('.SAVE ITERATIONS')
+           READ(input,*) config%davidOrbLoc%orbital_save_interval
        ! TESTING AND DEBUG OPTIONS
        CASE('.TEST PFM')
            config%davidOrbLoc%PFM_input%TESTCASE = .true.

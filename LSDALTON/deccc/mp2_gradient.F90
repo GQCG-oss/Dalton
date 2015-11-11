@@ -23,7 +23,7 @@ module mp2_gradient_module
   use dec_typedef_module
   use IntegralInterfaceMOD!,only: ii_get_twoelectron_gradient, ii_get_reorthonormalization, &
 !       & ii_get_oneelectron_gradient, ii_get_nn_gradient
-
+  use tensor_interface_module
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
@@ -34,6 +34,7 @@ module mp2_gradient_module
   use array4_simple_operations!,only: array4_init, array4_contract1, array4_free,&
  !      & array4_reorder, array4_contract3
   use ccintegrals!,only:dec_fock_transformation
+  use rimp2_gradient_module
 
   public :: init_fullmp2grad,free_fullmp2grad,single_calculate_mp2gradient_driver,&
        &pair_calculate_mp2gradient_driver,read_gradient_and_energies_for_restart, &
@@ -414,7 +415,7 @@ contains
     !> Atomic fragment
     type(decfrag),intent(inout) :: MyFragment
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
-    type(array4),intent(in) :: ThetaOCC
+    type(array4),intent(inout) :: ThetaOCC
     !> Theta array Theta_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
     type(array4),intent(in) :: ThetaVIRT
     !> (C I | D J) integrals stored as (C,I,J,D)   [using occ partitioning]
@@ -442,7 +443,6 @@ contains
     grad%Phioo = 0e0_realk
     grad%Phivv = 0e0_realk
     grad%Ltheta = 0e0_realk
-
 
     ! Sanity check 1: Gradient input structure is correct
     something_wrong=.false.
@@ -534,7 +534,7 @@ contains
 
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
-    type(array4),intent(in) :: ThetaOCC
+    type(array4),intent(inout) :: ThetaOCC
     !> Atomic fragment
     type(decfrag),intent(inout) :: MyFragment
     !> Structure containing MP2 gradient info, including Ltheta.
@@ -544,6 +544,7 @@ contains
     integer :: noccEOS, nvirtAOS, nbasis, matdim,i,j,natoms
     real(realk) :: tcpu,twall,tKcpu1,tKwall1
     logical :: something_wrong
+    logical,pointer :: dopair_occ(:,:)
 
     ! If only MP2 density is requested, skip expensive Ltheta calculation,
     ! set Ltheta (which is not used) to zero for consistency.
@@ -567,7 +568,6 @@ contains
     natoms = MyFragment%natoms
     ! Number of AO matrices to use as input in exchange gradient routine
     matdim = noccEOS*noccEOS
-
 
     ! Sanity check 1: Consistency of fragment and LSitem
     ! **************************************************
@@ -608,45 +608,52 @@ contains
     ! Get occupied MO coefficient matrix for EOS orbitals in array2 form
     CoccEOS = array2_init_plain([MyFragment%nbasis,MyFragment%noccEOS])
     call extract_occupied_EOS_MO_indices(CoccEOS,MyFragment)
-
-    ! Transform virtual Theta indices to AO indices
-    call transform_virtual_Theta_indices_to_AO(ThetaOCC, CvirtAOS, ThetaAO)
-
-    ! Get 4-index density: dens4index(mu,nu,i,j) = Cocc(mu,i)*Cocc(nu,j)
-    ! for occupied EOS indices i and j.
-    call get_4_dimensional_HFdensity(CoccEOS,dens4index)
-
-    ! Done with MO coefficient matrices
-    call array2_free(CvirtAOS)
-    call array2_free(CoccEOS)
-
-
+    
     ! Calculate Ltheta contribution
     ! *****************************
 
     call LSTIMER('START',tKcpu1,tKwall1,DECinfo%output)
-    call II_get_K_gradientfull(Grad%Ltheta(1:3,1:natoms),&
-         & dens4index%val,ThetaAO%val,nbasis,matdim,matdim,&
-         & MyFragment%MyLsitem%setting,DECinfo%output,DECinfo%output)
-    ! Timing
-    call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
 
+    IF(DECinfo%ccModel .EQ. MODEL_RIMP2)THEN
+       call mem_alloc(dopair_occ,MyFragment%noccEOS,MyFragment%noccEOS)
+       dopair_occ = .TRUE.
+       call RIMP2_gradient_driver(MyFragment,ThetaOCC%val,Grad%Ltheta,natoms,&
+            & nbasis,MyFragment%noccEOS,nvirtAOS,CoccEOS%val,CvirtAOS%val,&
+            & dopair_occ)
 
-    ! By definition:
-    !
-    ! Ltheta = 1/2 * sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
-    !
-    ! Due to conventions in II_get_K_gradientfull we effectively get
-    ! -1/4 sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
-    ! using the procedure above.
-    ! Therefore we multiply the final result by (-2)
-    Grad%Ltheta(1:3,1:natoms) = -2E0_realk*Grad%Ltheta(1:3,1:natoms)
+       call mem_dealloc(dopair_occ)
+       call array2_free(CvirtAOS)
+       call array2_free(CoccEOS)
+       ! Timing
+       call LSTIMER('LTHETA RI GRAD',tKcpu1,tKwall1,DECinfo%output)
+    ELSE
+       ! Transform virtual Theta indices to AO indices
+       call transform_virtual_Theta_indices_to_AO(ThetaOCC, CvirtAOS, ThetaAO)       
+       ! Get 4-index density: dens4index(mu,nu,i,j) = Cocc(mu,i)*Cocc(nu,j)
+       ! for occupied EOS indices i and j.
+       call get_4_dimensional_HFdensity(CoccEOS,dens4index)      
+       ! Done with MO coefficient matrices
+       call array2_free(CvirtAOS)
+       call array2_free(CoccEOS)
+       call II_get_K_gradientfull(Grad%Ltheta(1:3,1:natoms),&
+            & dens4index%val,ThetaAO%val,nbasis,matdim,matdim,&
+            & MyFragment%MyLsitem%setting,DECinfo%output,DECinfo%output)
+       ! Timing
+       call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
+       ! By definition:
+       !
+       ! Ltheta = 1/2 * sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
+       !
+       ! Due to conventions in II_get_K_gradientfull we effectively get
+       ! -1/4 sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
+       ! using the procedure above.
+       ! Therefore we multiply the final result by (-2)
+       Grad%Ltheta(1:3,1:natoms) = -2E0_realk*Grad%Ltheta(1:3,1:natoms)
+       ! Free stuff
+       call array4_free(ThetaAO)
+       call array4_free(dens4index)
+    ENDIF
 
-
-
-    ! Free stuff
-    call array4_free(ThetaAO)
-    call array4_free(dens4index)
     call LSTIMER('LTHETA TOTAL',tcpu,twall,DECinfo%output)
 
 
@@ -748,6 +755,7 @@ contains
     ! Get Theta arrays for occ and virt EOS
     ! *************************************
     call construct_theta_array(t2occ_arr4,ThetaOCC)
+
     call construct_theta_array(t2virt_arr4,ThetaVIRT)
     ! NOTE: It is not useful to reorder these arrays here as in done in single_calculate_mp2gradient_driver.
 
@@ -1023,7 +1031,7 @@ contains
 
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
-    type(array4),intent(in) :: ThetaOCC
+    type(array4),intent(inout) :: ThetaOCC
     !> Pair fragment
     type(decfrag),intent(inout) :: PairFragment
     !> Number of occupied EOS orbitals
@@ -1101,89 +1109,94 @@ contains
     CoccEOS = array2_init_plain([PairFragment%nbasis,PairFragment%noccEOS])
     call extract_occupied_EOS_MO_indices(CoccEOS,PairFragment)
 
-    ! Transform virtual Theta indices to AO indices
-    ! (required for calling gradient exchange routine).
-    call transform_virtual_Theta_indices_to_AO(ThetaOCC, CvirtAOS, ThetaAO)
+    IF(DECinfo%ccModel .EQ. MODEL_RIMP2)THEN
+       call RIMP2_gradient_driver(PairFragment,ThetaOCC%val,Grad%Ltheta,natoms_frag,&
+            & nbasis,PairFragment%noccEOS,nvirtAOS,CoccEOS%val,CvirtAOS%val,&
+            & dopair_occ)
+       call array2_free(CvirtAOS)
+       call array2_free(CoccEOS)
+       ! Timing
+       call LSTIMER('LTHETA RI GRAD',tKcpu1,tKwall1,DECinfo%output)
+    ELSE
+       ! Transform virtual Theta indices to AO indices
+       ! (required for calling gradient exchange routine).
+       call transform_virtual_Theta_indices_to_AO(ThetaOCC, CvirtAOS, ThetaAO)
+       
+       ! Get 4-index density: dens4index(mu,nu,i,j) = Cocc(mu,i)*Cocc(nu,j)
+       ! for occupied EOS indices i and j.
+       call get_4_dimensional_HFdensity(CoccEOS,dens4index)
+       
+       ! Done with MO coefficient matrices
+       call array2_free(CvirtAOS)
+       call array2_free(CoccEOS)
+       
+       ! Extract occupied pair EOS indices where "i" and "j" are assigned to different atoms
+       ! ***********************************************************************************
 
-    ! Get 4-index density: dens4index(mu,nu,i,j) = Cocc(mu,i)*Cocc(nu,j)
-    ! for occupied EOS indices i and j.
-    call get_4_dimensional_HFdensity(CoccEOS,dens4index)
-
-    ! Done with MO coefficient matrices
-    call array2_free(CvirtAOS)
-    call array2_free(CoccEOS)
-
-
-
-    ! Extract occupied pair EOS indices where "i" and "j" are assigned to different atoms
-    ! ***********************************************************************************
-
-    ! ThetaAO and 4-index density arrays contain all (i,j) combinations where
-    ! i and j are assigned to atom P OR atom Q. We now extract the ones where
-    !
-    ! (i assigned to P,   j assigned to Q)           or
-    ! (j assigned to P,   i assigned to Q)          
-    !
-    ! The are matdim possible (i,j) combinations satisfying this.
-    call mem_alloc(dens4index_pair,nbasis,nbasis,matdim)
-    call mem_alloc(thetaAO_pair,nbasis,nbasis,matdim)
-
-    ij = 0
-    do j=1,noccEOS
-       do i=1,noccEOS
-
-          if(dopair_occ(i,j)) then ! Extract orbital pair information
-             ij = ij+1
-
-             ! Theta array
-             thetaAO_pair(:,:,ij) = ThetaAO%val(:,:,i,j)
-
-             ! Density array
-             dens4index_pair(:,:,ij) = dens4index%val(:,:,i,j)
-
-          end if
-
+       ! ThetaAO and 4-index density arrays contain all (i,j) combinations where
+       ! i and j are assigned to atom P OR atom Q. We now extract the ones where
+       !
+       ! (i assigned to P,   j assigned to Q)           or
+       ! (j assigned to P,   i assigned to Q)          
+       !
+       ! The are matdim possible (i,j) combinations satisfying this.
+       call mem_alloc(dens4index_pair,nbasis,nbasis,matdim)
+       call mem_alloc(thetaAO_pair,nbasis,nbasis,matdim)
+       
+       ij = 0
+       do j=1,noccEOS
+          do i=1,noccEOS
+             
+             if(dopair_occ(i,j)) then ! Extract orbital pair information
+                ij = ij+1
+                
+                ! Theta array
+                thetaAO_pair(:,:,ij) = ThetaAO%val(:,:,i,j)
+                
+                ! Density array
+                dens4index_pair(:,:,ij) = dens4index%val(:,:,i,j)
+                
+             end if
+             
+          enddo
        enddo
-    enddo
-
-    ! Sanity check
-    if(ij /= matdim) then
-       write(DECinfo%output,*) 'ij     = ', ij
-       write(DECinfo%output,*) 'matdim = ', matdim
-       call lsquit('pair_fragment_Ltheta_contribution: ij counter is different from matdim', DECinfo%output)
-    end if
-
-    ! Done with 4 dimensional arrays in type array4 form
-    call array4_free(ThetaAO)
-    call array4_free(dens4index)
-
-
-
-    ! Calculate Ltheta contribution
-    ! *****************************
-    call LSTIMER('START',tKcpu1,tKwall1,DECinfo%output)
-    call II_get_K_gradientfull(Grad%Ltheta,&
-         & dens4index_pair,ThetaAO_pair,nbasis,matdim,matdim,&
-         & PairFragment%MyLsitem%setting,DECinfo%output,DECinfo%output)
-    call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
-
-
-    ! By definition:
-    !
-    ! Ltheta = 1/2 * sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
-    !
-    ! Due to conventions in II_get_K_gradient we effectively get
-    ! -1/4 sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
-    ! using the procedure above.
-    ! Therefore we multiply the final result by (-2)
-    Grad%Ltheta(1:3,1:natoms_frag) = -2E0_realk*Grad%Ltheta(1:3,1:natoms_frag)
-
-
-    ! Free stuff
-    call mem_dealloc(dens4index_pair)
-    call mem_dealloc(thetaAO_pair)
+       
+       ! Sanity check
+       if(ij /= matdim) then
+          write(DECinfo%output,*) 'ij     = ', ij
+          write(DECinfo%output,*) 'matdim = ', matdim
+          call lsquit('pair_fragment_Ltheta_contribution: ij counter is different from matdim', DECinfo%output)
+       end if
+       
+       ! Done with 4 dimensional arrays in type array4 form
+       call array4_free(ThetaAO)
+       call array4_free(dens4index)
+       
+       
+       
+       ! Calculate Ltheta contribution
+       ! *****************************
+       call LSTIMER('START',tKcpu1,tKwall1,DECinfo%output)
+       call II_get_K_gradientfull(Grad%Ltheta,&
+            & dens4index_pair,ThetaAO_pair,nbasis,matdim,matdim,&
+            & PairFragment%MyLsitem%setting,DECinfo%output,DECinfo%output)
+       call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
+       
+       
+       ! By definition:
+       !
+       ! Ltheta = 1/2 * sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
+       !
+       ! Due to conventions in II_get_K_gradient we effectively get
+       ! -1/4 sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
+       ! using the procedure above.
+       ! Therefore we multiply the final result by (-2)
+       Grad%Ltheta(1:3,1:natoms_frag) = -2E0_realk*Grad%Ltheta(1:3,1:natoms_frag)
+       ! Free stuff
+       call mem_dealloc(dens4index_pair)
+       call mem_dealloc(thetaAO_pair)
+    ENDIF
     call LSTIMER('LTHETA TOTAL',tcpu,twall,DECinfo%output)
-
 
   end subroutine pair_fragment_Ltheta_contribution
 
@@ -1434,8 +1447,9 @@ contains
          &gradient_fock2(:,:), gradient_reort(:,:), gradient_tot(:,:),&
          &gradient_Ltheta(:,:)
     real(realk) :: twall, tcpu,ttotcpu,ttotwall,gradnorm,gradrms
-    integer :: nbasis,i,natoms,j,counter
+    integer :: nbasis,i,natoms,j,counter,nST
     character(len=80) :: FileName
+    character(len=6)  :: MODELSTRING
 
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -1540,19 +1554,29 @@ contains
     ! ************************************************************************************
     !                                       Print gradient                               !
     ! ************************************************************************************
+    !MODIFY FOR MODEL
+    SELECT CASE(DECinfo%ccModel)
+    CASE(MODEL_MP2)
+       nST = 3; MODELSTRING(1:nST)='MP2'
+    CASE(MODEL_RIMP2)
+       nST = 6; MODELSTRING(1:nST)='RI-MP2'
+    CASE DEFAULT
+       WRITE (DECinfo%output,'(A)') ' Unknown Gradient Model'
+       CALL lsQUIT('Unknown Gradient Model in calculate_MP2_gradient',DECinfo%output)
+    END SELECT
 
     write(DECinfo%output,'(5X,a)') '*****************************************************&
          &***************************'
-    write(DECinfo%output,'(5X,a,17X,a,18X,a)') '*','MP2 MOLECULAR GRADIENT FROM DEC CALCULATION','*'
+    write(DECinfo%output,'(5X,a,17X,a,a,18X,a)') '*',MODELSTRING(1:nST),' MOLECULAR GRADIENT FROM DEC CALCULATION','*'
     write(DECinfo%output,'(5X,a)') '*****************************************************&
          &***************************'
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(5X,a,a,a,g20.8)') 'DEC-',MODELSTRING(1:nST),' GRADIENT NORM: ', gradnorm
+    write(DECinfo%output,'(5X,a,a,a,g20.8)') 'DEC-',MODELSTRING(1:nST),' GRADIENT RMS : ', gradrms
 
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,g20.8)') 'DEC-MP2 GRADIENT NORM: ', gradnorm
-    write(DECinfo%output,'(5X,a,g20.8)') 'DEC-MP2 GRADIENT RMS : ', gradrms
     write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(25X,a)') 'TOTAL MP2 MOLECULAR GRADIENT'
+    write(DECinfo%output,'(25X,a,a,a)') 'TOTAL ',MODELSTRING(1:nST),' MOLECULAR GRADIENT'
     write(DECinfo%output,'(25X,a)') "****************************"
     call print_gradient(natoms,gradient_tot,MyLsitem)
     write(DECinfo%output,*)
@@ -1645,13 +1669,10 @@ contains
     ! --------------------------------------------------------------------------
     do j=1,fraggrad%natoms
        jx=fraggrad%atoms_idx(j)
-       do i=1,3  ! Cartesion components of Ltheta
-          ix=i
-
-          ! Update full matrix Ltheta element by fragment (i,j) contribution
-          fullgrad%Ltheta(ix,jx) = fullgrad%Ltheta(ix,jx) + fraggrad%Ltheta(i,j)
-
-       end do
+       ! Update full matrix Ltheta element by fragment (i,j) contribution
+       fullgrad%Ltheta(1,jx) = fullgrad%Ltheta(1,jx) + fraggrad%Ltheta(1,j)
+       fullgrad%Ltheta(2,jx) = fullgrad%Ltheta(2,jx) + fraggrad%Ltheta(2,j)
+       fullgrad%Ltheta(3,jx) = fullgrad%Ltheta(3,jx) + fraggrad%Ltheta(3,j)
     end do
 
 
@@ -3528,7 +3549,6 @@ end if UNRELAXED2
        end if GetGuessVectors
 
        call mat_init(residual(iter),dim1,dim2)
-
        ! Get current residual
        if(full_equation) then ! Full equation to be solved
           call dec_get_kappabar_residual(kappabar(iter), RHS, &
@@ -3764,7 +3784,6 @@ end if UNRELAXED2
     ! ****************************************
     call mat_add(1E0_realk,RHS,-1E0_realk,E2_kappabar,residual)
 
-
     ! Free stuff
     ! **********
     call mat_free(E2_kappabar)
@@ -3827,8 +3846,6 @@ end if UNRELAXED2
     ! Total E2 transformation: E2_kappabar = E2fock_kappabar + Gkappabar
     ! *********************************************************
     call mat_add(1E0_realk, E2fock_kappabar, 1E0_realk, Gkappabar, E2_kappabar)
-
-
     ! Free matrices
     ! *************
     call mat_free(E2fock_kappabar)

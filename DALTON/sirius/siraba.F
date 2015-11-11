@@ -101,6 +101,7 @@ C Used from common blocks:
 C   INFORB : NNASHX,N2ASHX,N2ORBX,NASHT
 C   INFLIN : NVARPT,LSYMRF,LSYMPT,NCONRF,NCONST,NWOPPT
 C CBGETDIS : DISTYP,IADINT
+C dftcom.h : DFT_SPINDNS, ?
 C
 #include "maxorb.h"
 #include "inforb.h"
@@ -166,6 +167,8 @@ C
          DO 200 IGD = 1,NGD
 
             CALL GETAC1(FDC(1,IGD),WRK(KFDCAC))
+            IF (DFT_SPINDNS)
+     &         CALL QUIT('DFT_SPINDNS not implemented here yet, sorry')
             IF (LONDON) CALL DSCAL(N2ASHX,DM1,WRK(KFDCAC),1)
             CALL DZERO(GD(1,IGD),NCONST)
 
@@ -390,6 +393,8 @@ C
 C
 C
       CALL QENTER('ABATR1')
+!dbg  IPRLIN_save = IPRLIN
+!dbg  IPRLIN = 99
 C
 C *** Check input
 C
@@ -410,11 +415,12 @@ C
 C *** Print one-index transformation matrices, if desired
 C
       IF (P6FLAG(19) .OR. IPRLIN .GE. 19) THEN
-         DO 210 IDERIV = 1,NDERIV
+      write(lupri,*) 'Hello from ABATR1. ADDTR1, LONDON:',ADDTR1,LONDON
+         DO IDERIV = 1,NDERIV
             WRITE (LUPRI,2110) IDERIV,NDERIV
-            CALL OUTPUT(TR1MAT(1,IDERIV),1,NORBT,1,NORBT,NORBT,NORBT,
-     &                  1,LUPRI)
-  210    CONTINUE
+            CALL OUTPUT(TR1MAT(1,IDERIV),1,NORBT,1,NORBT,
+     &                  NORBT,NORBT,-1,LUPRI)
+         END DO
       END IF
  2110 FORMAT (/,' ABATR1: one-index transformation matrix',
      *  ' (no.',I3,' of',I3,')')
@@ -431,9 +437,11 @@ C               are added in TR1L2M
          END IF
       ELSE
          CALL DZERO(FXC,NDERIV*N2ORBX)
-         CALL DZERO(FXV,NDERIV*N2ORBX)
-         CALL DZERO(FXQ,(NDERIV*NASHT*NORBT))
-         CALL DZERO(H2XAC,(NDERIV*LH2XAC))
+         IF (NASHT.GT.0) THEN
+            CALL DZERO(FXV,NDERIV*N2ORBX)
+            CALL DZERO(FXQ,(NDERIV*NASHT*NORBT))
+            CALL DZERO(H2XAC,(NDERIV*LH2XAC))
+         END IF
       END IF
 C
 C
@@ -462,41 +470,73 @@ C *** Calculate various transformed Fock matrices from the atomic
 C     two-electron integrals and untransformed
 C     Fock matrices FC and FV.
 C
-      CALL TR1LFK(NDERIV,TR1MAT,CMO,UDV,FXC,FXV,
-     &            LONDON,WRK(KWRK1),LWRK1)
-C
-      DO 1200 IDERIV = 1,NDERIV
+      IF (ADDTR1) THEN
+      DO IDERIV = 1,NDERIV
          IF (P6FLAG(33) .OR. IPRLIN.GE.21 .AND. NASHT.GT.0) THEN
-            WRITE (LUPRI,3011) IDERIV,NDERIV
-            CALL OUTPUT(FXQ(1,IDERIV),1,NORBT,1,NASHT,NORBT,NASHT,
-     &                  1,LUPRI)
+            WRITE (LUPRI,5020) ' FDQ',IDERIV,NDERIV
+            CALL OUTPUT(FXQ(1,IDERIV),1,NORBT,1,NASHT,
+     &                  NORBT,NASHT,-1,LUPRI)
          END IF
          IF (P6FLAG(21) .OR. IPRLIN.GE.21) THEN
-            WRITE (LUPRI,5020) IDERIV,NDERIV
+            WRITE (LUPRI,5020) ' FDC',IDERIV,NDERIV
             CALL OUTPUT(FXC(1,IDERIV),1,NORBT,1,NORBT,
-     &                  NORBT,NORBT,1,LUPRI)
+     &                  NORBT,NORBT,-1,LUPRI)
             IF (NASHT.GT.0) THEN
-               WRITE (LUPRI,5030) IDERIV,NDERIV
+               WRITE (LUPRI,5020) ' FDV',IDERIV,NDERIV
                CALL OUTPUT(FXV(1,IDERIV),1,NORBT,1,NORBT,
-     &                     NORBT,NORBT,1,LUPRI)
+     &                     NORBT,NORBT,-1,LUPRI)
             END IF
          END IF
- 1200 CONTINUE
- 3011 FORMAT(/' FXQ contribution to one-index transformed Fock matrix ',
-     *  '(no.',I3,' of',I3,')')
- 5020 FORMAT (/' FXC matrix without FC transf. (no.',I3,' of',I3,')')
- 5030 FORMAT (/' FXV matrix without FV transf. (no.',I3,' of',I3,')')
-C
-C
+      END DO
+      END IF
+
+      CALL TR1LFK(NDERIV,TR1MAT,CMO,UDV,FXC,FXV,
+     &            LONDON,WRK(KWRK1),LWRK1,IPRLIN)
+
+      DO IDERIV = 1,NDERIV
+         IF (P6FLAG(33) .OR. IPRLIN.GE.21 .AND. NASHT.GT.0) THEN
+            WRITE (LUPRI,5020) ' FDQ + FSQ',IDERIV,NDERIV
+            CALL OUTPUT(FXQ(1,IDERIV),1,NORBT,1,NASHT,
+     &                  NORBT,NASHT,-1,LUPRI)
+         END IF
+         IF (P6FLAG(21) .OR. IPRLIN.GE.21) THEN
+            WRITE (LUPRI,5020) ' FDC + FSC without FC transf.',
+     &         IDERIV,NDERIV
+            CALL OUTPUT(FXC(1,IDERIV),1,NORBT,1,NORBT,
+     &                  NORBT,NORBT,-1,LUPRI)
+            IF (NASHT.GT.0) THEN
+                WRITE (LUPRI,5020) ' FDV + FSV without FV transf.',
+     &         IDERIV,NDERIV
+               CALL OUTPUT(FXV(1,IDERIV),1,NORBT,1,NORBT,
+     &                     NORBT,NORBT,-1,LUPRI)
+            END IF
+         END IF
+      END DO
+
       CALL TR1LFD(NDERIV,FXC,FXV,TR1MAT,FC,FV,
      &            LONDON,WRK(KWRK1),LWRK1)
+
+      DO IDERIV = 1,NDERIV
+         IF (P6FLAG(21) .OR. IPRLIN.GE.21) THEN
+            WRITE (LUPRI,5020) ' FDC + FSC',IDERIV,NDERIV
+            CALL OUTPUT(FXC(1,IDERIV),1,NORBT,1,NORBT,
+     &                  NORBT,NORBT,-1,LUPRI)
+            IF (NASHT.GT.0) THEN
+                WRITE (LUPRI,5020) ' FDV + FSV',IDERIV,NDERIV
+               CALL OUTPUT(FXV(1,IDERIV),1,NORBT,1,NORBT,
+     &                     NORBT,NORBT,-1,LUPRI)
+            END IF
+         END IF
+      END DO
 C
 C ***
 C
       IF (KWRK1 .NE. KFRSAV)
      &   CALL MEMREL('ABATR1',WRK,KFRSAV,KFRSAV,KWRK1,LWRK1)
  9999 CALL QEXIT('ABATR1')
+!dbg  IPRLIN = IPRLIN_save
       RETURN
+ 5020 FORMAT (/A,' (no.',I3,' of',I3,')')
       END
 C  /* Deck abalin */
       SUBROUTINE ABALIN(NCSIM,NOSIM,BCVECS,BOVECS,
@@ -610,14 +650,15 @@ C
       CALL PKSYM1(WRK(KFTMP),FC,NORB,NSYM,-1)
       CALL DSPTSI(NORBT,WRK(KFTMP),WRK(KFC))
       IF (NASHT .GT. 0) THEN
-         CALL MEMGET('REAL',KFV  ,N2ORBX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FV',KFV  ,N2ORBX,WRK,KFREE,LFREE)
          CALL PKSYM1(WRK(KFTMP),FV,NORB,NSYM,-1)
          CALL DSPTSI(NORBT,WRK(KFTMP),WRK(KFV))
       ELSE
          KFV = KFC
 C        ... to avoid compiler messages
       END IF
-      DO 5900 IOSIM = 1,NOSIM
+
+      DO IOSIM = 1,NOSIM
          CALL DSCAL(N2ORBX,DP5,FXC(1,IOSIM),1)
          CALL TR1LH1(TMAT(1,IOSIM),WRK(KFC),FXC(1,IOSIM),1,
      &               LONDON)
@@ -626,22 +667,8 @@ C        ... to avoid compiler messages
             CALL TR1LH1(TMAT(1,IOSIM),WRK(KFV),FXV(1,IOSIM),1,
      &                  LONDON)
          END IF
-C
-         IF (P6FLAG(21) .OR. IPRLIN.GE.21) THEN
-            WRITE (LUPRI,5020) IOSIM,NOSIM
-            CALL OUTPUT(FXC(1,IOSIM),1,NORBT,1,NORBT,
-     &                  NORBT,NORBT,1,LUPRI)
-            IF (NASHT.GT.0) THEN
-               WRITE (LUPRI,5030) IOSIM,NOSIM
-               CALL OUTPUT(FXV(1,IOSIM),1,NORBT,1,NORBT,
-     &                     NORBT,NORBT,1,LUPRI)
-            END IF
-         END IF
-C
- 5020 FORMAT (/' FXC matrix (no.',I3,' of',I3,')')
- 5030 FORMAT (/' FXV matrix (no.',I3,' of',I3,')')
-C
- 5900 CONTINUE
+      END DO
+
       CALL MEMREL('TR1LFD.FXC/V',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
 C *** End of subroutine TR1LFD
@@ -975,12 +1002,14 @@ C Used from common blocks:
 C  INFORB : NORBT, NASHT, N2ASHX, NNASHX, MULD2H(8,8)
 C  INFIND : IROW(:),ISMO(:),NSM(:),ICH(:),IOBTYP(:)
 C  INFVAR : JWOPSY
+C  dftcom.h : DFT_SINPDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
 #include "infind.h"
 #include "infvar.h"
+#include "dftcom.h"
 C
       KH2AC1 = 1
       KNEED  = KH2AC1 + N2ASHX
@@ -988,6 +1017,8 @@ C
 C
       CALL GETAC1(H2XCD,WRK(KH2AC1))
 C     CALL GETAC1(HH, HHAC)
+      IF (DFT_SPINDNS)
+     &   CALL QUIT('DFT_SPINDNS not implemented here yet, sorry')
 C
 C We now have the triangular packed one-index transformed integrals
 C in H2ACF:
@@ -1028,7 +1059,7 @@ C
       RETURN
       END
 C  /* Deck tr1l2d */
-      SUBROUTINE TR1L2D(A,B,C,D,E,F,G,H)
+      SUBROUTINE TR1L2D(I,B,C,D,J,LONDON,G,K)
 C
 C Apr 92 Hans Joergen Aa. Jensen
 C
@@ -1038,6 +1069,7 @@ C   of London orbitals
 C
 #include "implicit.h"
 #include "priunit.h"
+      logical LONDON
       CALL QENTER('TR1L2D')
 C
       CALL QTRACE (LUPRI)
@@ -1100,7 +1132,7 @@ C
          NORBA = NORB(IASYM)
          NORBB = NORB(IBSYM)
          NORBC = NORB(ICSYM)
-         IF (NORBA*NORBB*NORBC.NE.0) THEN
+      IF (NORBA.EQ.0 .OR. NORBB.EQ.0 .OR. NORBC.EQ.0) GO TO 1100
             IAST  = IORB(IASYM) + 1
             IBST  = IORB(IBSYM) + 1
             ICST  = IORB(ICSYM) + 1
@@ -1108,7 +1140,6 @@ C
      &                 H1(IAST,ICST),NORBT,
      &                 TMAT(ICST,IBST),NORBT,1.D0,
      &                 H1X(IAST,IBST),NORBT)
-         END IF
  1100 CONTINUE
 C
 C  ADD ONE-INDEX TRANSFORM FROM SECOND INTEGRAL INDEX
@@ -1191,7 +1222,7 @@ C
       END
 C  /* Deck tr1lfk */
       SUBROUTINE TR1LFK (NTMAT,TMAT,CMO,UDV,FXC,FXV,
-     &                   LONDON,WRK,LWRK)
+     &                   LONDON,WRK,LWRK,IPRLIN)
 C
 C     Hans Joergen Aa. Jensen and Rika Kobayashi 24-Apr-1992
 C     (based on GETFCK by Henrik Koch and Trygve Helgaker Nov 91)
@@ -1212,7 +1243,7 @@ C
 #include "iratdef.h"
       PARAMETER (D2 = 2.0D0, DM1 = -1.0D0)
 C
-      LOGICAL LONDON, DFTADX
+      LOGICAL   LONDON, DFTADX
       DIMENSION TMAT(N2ORBX,NTMAT),CMO(*),UDV(*)
       DIMENSION FXC(NORBT,NORBT,NTMAT), FXV(NORBT,NORBT,NTMAT)
       DIMENSION WRK(LWRK)
@@ -1221,11 +1252,13 @@ C Used from common blocks:
 C   INFINP : DIRFCK
 C   INFORB : N2ORBX,...
 C   INFVAR : JWOPSY
+C   INFPRI : IPRFCK (for SIRFCK)
 C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infvar.h"
+#include "infpri.h"
 #include "dftcom.h"
 C
       PARAMETER (MXTMAT = 50)
@@ -1273,9 +1306,40 @@ C     Scale anti-symmetric density to "get things right..."
   100 CONTINUE
       DFTADX = DFTADD
       IF (LONDON) DFTADD = .FALSE.
+
+         IF (IPRLIN.GE.21) THEN
+            IF (NISHT.GT.0) THEN
+               WRITE (LUPRI,5020) 'TR1LFK: DXCAO',1,NTMAT
+               CALL OUTPUT(WRK(KDXCAO),1,NBAST,1,NBAST,
+     &                     NBAST,NBAST,-1,LUPRI)
+            END IF
+            IF (NASHT.GT.0) THEN
+               WRITE (LUPRI,5020) 'TR1LFK: DXVAO',1,NTMAT
+               CALL OUTPUT(WRK(KDXVAO),1,NBAST,1,NBAST,
+     &                     NBAST,NBAST,-1,LUPRI)
+            END IF
+         END IF
+
+      IPRFCK_save = IPRFCK
+      IPRFCK = IPRLIN
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NXMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
+      IPRFCK = IPRFCK_save
       DFTADD = DFTADX
+
+         IF (IPRLIN.GE.21) THEN
+            IF (NISHT.GT.0) THEN
+               WRITE (LUPRI,5020) 'TR1LFK: FXCAO',1,NTMAT
+               CALL OUTPUT(WRK(KFXCAO),1,NBAST,1,NBAST,
+     &                     NBAST,NBAST,-1,LUPRI)
+            END IF
+            IF (NASHT.GT.0) THEN
+               WRITE (LUPRI,5020) 'TR1LFK: FXVAO',1,NTMAT
+               CALL OUTPUT(WRK(KFXVAO),1,NBAST,1,NBAST,
+     &                     NBAST,NBAST,-1,LUPRI)
+            END IF
+         END IF
+
 C
 C     Transform Fock matrices to MO basis
 C     FC(J,I) = FC(J,I) + sum(a,b) CMO(a,J) FCAO(a,b) CMO(b,I)
@@ -1294,7 +1358,7 @@ C
          NBASJ = NBAS(JSYM)
          JFXCAO = KFXCAO + NBAST*IBASI + IBASJ
          JFXVAO = KFXVAO + NBAST*IBASI + IBASJ
-         IF (NORBI*NORBJ*NBASI*NBASJ .NE. 0) THEN
+         IF (NORBI*NORBJ .NE. 0) THEN
          DO 3800 ITMAT = 1,NTMAT
          IF (NISHT .GT. 0) THEN
             CALL DGEMM('T','N',NORBJ,NBASI,NBASJ,1.D0,
@@ -1325,6 +1389,7 @@ C **  this symmetry block finished
 C
       CALL MEMREL('TR1LFK',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
+ 5020 FORMAT (/A,' (no.',I3,' of',I3,')')
       END
 C  /* Deck lfkden */
       SUBROUTINE LFKDEN(NTMAT,CMO,TMAT,UDV,DXCAO,DXVAO,
@@ -1429,7 +1494,7 @@ C *****  first calculate one-index transformation of first index
 C *****  of UDV(uv), the active density matrix.
 C        DXV(u,q) = sum(v) T(q,v) UDV(u,v) = sum(v) T(q,v) UDV(v,u)
 C        DXVT(q,u) = DXV(u,q) = sum(v) T(q,v) UDV(v,u)
-      IF (NASHI*NORBJ*NBASJ*NBASI .NE. 0) THEN
+      IF (NASHI*NORBJ .NE. 0) THEN
       DO 1800 ITMAT = 1,NTMAT
          CALL DGEMM('N','N',NORBJ,NASHI,NASHI,1.D0,
      &              TMAT(IORBJ+1,IORBI+NISHI+1,ITMAT),NORBT,
@@ -1495,7 +1560,7 @@ C        DXC(i,q) = 2*T(q,i)
 C        DXCAO(a,b) = sum(i) CMO(a,i) (sum(q) CMO(b,q) DXC(i,q))
 C                 = 2 sum(i) CMO(a,i) (sum(q) CMO(b,q) TMAT(q,i))
 C        The factor 2 is postponed to the DSCAL below
-         IF (NBASJ*NISHI*NORBJ*NBASI .NE. 0) THEN
+         IF (NISHI*NORBJ .NE. 0) THEN
       DO 3800 ITMAT = 1,NTMAT
          CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,1.D0,
      &              CMO(ICMOJ+1),NBASJ,
@@ -1542,3 +1607,4 @@ C
 C *** end of subroutine LFKDEN
 C
       END
+! -- end of siraba.F --

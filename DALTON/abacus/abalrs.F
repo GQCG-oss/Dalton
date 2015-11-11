@@ -82,20 +82,19 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in LRSINP.'
+     *            '" not recognized under *LINRES.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in LRSINP.')
-    1          CONTINUE
+               CALL QUIT('Illegal keyword under *LINRES.')
+    1          CONTINUE  ! .SKIP
                   SKIP = .TRUE.
                GO TO 100
-    2          CONTINUE
+    2          CONTINUE  ! .PRINT
                   READ (LUCMD,*) IPRCLC
                GO TO 100
-    3          CONTINUE
+    3          CONTINUE  ! .MAX IT
                   READ (LUCMD,*) MAXCLC
                GO TO 100
-C              .THRESH
-    4          CONTINUE
+    4          CONTINUE  ! .THRESH
                   READ (LUCMD,*) THRCLC
                   IF (THR_REDFAC .GT. 0.0D0) THEN
                      WRITE (LUPRI,'(4A,1P,D10.2)') '@ INFO ',
@@ -105,10 +104,10 @@ C              .THRESH
                      THRCLC = THRCLC*THR_REDFAC
                   END IF
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE  ! .MAXRED
                   READ (LUCMD,*) MXRM
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE  ! .MAXPHP
                   READ (LUCMD,*) MXPHP
                GO TO 100
     7             CONTINUE
@@ -116,27 +115,29 @@ C              .THRESH
     8          CONTINUE
                   CONTINUE
                GO TO 100
-    9             OOTV   = .TRUE.
+    9          CONTINUE  ! .OPTORB
+                  OOTV   = .TRUE.
                GO TO 100
-   10             CONTINUE
+   10          CONTINUE
                GO TO 100
-   11              CONTINUE
+   11          CONTINUE
                GO TO 100
-   12             CONTINUE
+   12          CONTINUE
                GO TO 100
-   13             CONTINUE
+   13          CONTINUE
                GO TO 100
-   14             CONTINUE
+   14          CONTINUE
                GO TO 100
-   15             CUT    = .TRUE.
+   15          CONTINUE  ! .STOP
+                  CUT    = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in LRSINP.'
+     *            '" not recognized under *LINRES.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in LRSINP.')
+               CALL QUIT('Illegal prompt under *LINRES.')
             END IF
       END IF
   300 CONTINUE
@@ -298,7 +299,7 @@ c -- hjaaj Aug 2004
             NABATY(I) = 1
  100     CONTINUE
          CALL ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,
-     &               EXVAL,NEXVAL,NABATY,NABAOP,'DUMMY   ',LUGDVE,
+     &               EXVAL,NEXVAL,NABATY,NABAOP,'NACME   ',LUGDVE,
      &               LUSOVE,LUREVE,THRCLC,MAXCLC,IPRCLC,MXRM,MXPHP,
      &               WORK,LWORK)
 #endif /* use_getrhs */

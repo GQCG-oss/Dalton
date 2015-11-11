@@ -12,15 +12,18 @@ module pno_ccsd_module
   use screen_mod
   use tensor_interface_module
   use IntegralInterfaceDEC
-  
+  use lstiming
+  use BUILDAOBATCH
   
   use cc_tools_module
   use dec_fragment_utils
+  use array4_simple_operations
   
   public :: get_ccsd_residual_pno_style, &
      & get_pno_trafo_matrices,      & 
      & get_pno_overlap_matrices,    &
-     & successive_4ao_mo_trafo, free_PNOSpaceInfo
+     & successive_4ao_mo_trafo, free_PNOSpaceInfo,&
+     & get_common_idx_summation_for_current_aibj
   
   private
   
@@ -2817,13 +2820,13 @@ module pno_ccsd_module
                     ! (w3): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
                     call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w3)
 
-                    call get_I_plusminus_le(w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s3)
+                    call get_I_plusminus_le(w3,'+',fa,fg,la,lg,nb,tlen,tred,goffs,s3,1,tred)
                     !(w4): I+ [delta alpha<=gamma beta] <= (w3): I+ [beta delta alpha<=gamma]
                     call array_reorder_3d(1.0E0_realk,w3,nb,nb,tred,[2,3,1],0.0E0_realk,w4)
                     ! (w2): I[beta delta alpha gamma] <= (w1): I[alpha beta gamma delta]
                     call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w3)
 
-                    call get_I_plusminus_le(w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s3)
+                    call get_I_plusminus_le(w3,'-',fa,fg,la,lg,nb,tlen,tred,goffs,s3,1,tred)
 
                     !(w5): I- [delta alpha<=gamma beta] <= (w3): I+ [beta delta alpha<=gamma]
                     call array_reorder_3d(1.0E0_realk,w3,nb,nb,tred,[2,3,1],0.0E0_realk,w5)

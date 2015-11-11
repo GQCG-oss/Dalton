@@ -201,6 +201,7 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -664,7 +665,7 @@ C
       THROVL = 1.0D-6
       CMAXMO = 1.0D3
       FCVORB   = .FALSE.
-      DEFLVL = 0.0D0
+      DEFLVL = 1.0D0 ! code value to tell not set by user
 C
 C********** Default values section CIVINP *****
 C
@@ -1522,8 +1523,8 @@ C
       IF (DOMP2 .OR. DOCCSD) THEN
         IF (DOCCSD. and. DOSCF .AND. (IOPRHF .GT. 0 .OR. HSROHF)) THEN
          INPERR = INPERR + 1
-         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell MP2/CC'//
-     &      ' not compatible with open shell RHF'
+         WRITE (LUPRI,'(/A)') ' Input ERROR: closed shell CC'//
+     &      ' is not compatible with open shell RHF'
         END IF
         IF (DOHFSRDFT) THEN
 C hjaaj May 2008 : THRRHF_MP2 too small for srMP2  NB NOTE BEMAERK TODO OBS
@@ -1671,11 +1672,11 @@ C
       IF (QMMM .AND. DOCI) THEN
          CALL QUIT('QMMM is currently not compatible with .CI')
       END IF
-      IF (PEQM .AND. DOCI) THEN
-         CALL QUIT('PEQM is currently not compatible with .CI')
+      IF (USE_PELIB() .AND. DOCI) THEN
+         CALL QUIT('.PEQM is currently not compatible with .CI')
       END IF
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
-     &            QMNPMM
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. QMNPMM
+     &            .OR. USE_PELIB()
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -2123,7 +2124,7 @@ C
        GO TO 910
  1800  CALL POPINP(WORD,INPERR,ALLOPT)
        GO TO 910
- 1900  CALL TRAINP(WORD,INPERR,ALLOPT)
+ 1900  CALL TRAINP(WORD,INPERR,ALLOPT)  ! *TRANFORMATION
        GO TO 910
 C2000  CONTINUE
 C      GO TO 1200
@@ -2582,18 +2583,20 @@ C *** Option 22: .GASCI
       ! Option 24: .NUMGRID
   124 continue
 #ifdef ENABLE_XCINT
-      ! radial precision threshold
-      d_radint = 0
-      read(lucmd, *) d_radint
-      ! minimum number of angular points
-      i_angmin = 0
-      read(lucmd, *) i_angmin
-      ! regular number of angular points
-      i_angint = 0
-      read(lucmd, *) i_angint
-      call xcint_set_grid(d_radint,
-     &                    i_angmin,
-     &                    i_angint)
+      if (xcint_is_active()) then
+        ! radial precision threshold
+        d_radint = 0
+        read(lucmd, *) d_radint
+        ! minimum number of angular points
+        i_angmin = 0
+        read(lucmd, *) i_angmin
+        ! regular number of angular points
+        i_angint = 0
+        read(lucmd, *) i_angint
+        call xcint_set_grid(d_radint,
+     &                      i_angmin,
+     &                      i_angint)
+      end if
 #else
       call quit('.NUMGRID is not available in this version')
 #endif
@@ -2730,7 +2733,7 @@ C
          call set_eri_contractions_xfac(hfxfac)
 
          ! sanity check
-         if (.not. xcint_is_active()) then
+         if (use_openrsp .and. .not. xcint_is_active()) then
             print *, 'You run OpenRSP DFT without .XCINT'
             print *, 'Either add .XCINT or deactivate'
             print *, 'this warning'
@@ -5279,6 +5282,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5671,7 +5675,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE-QM'
+       IF (USE_PELIB()) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications
@@ -5689,7 +5693,7 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the APSG: see later.'
       END IF
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
          WRITE(IWUNIT,'(/5X,A/5X,A/)')
      &   'Wave function environment is modeled using the',
      &   'polarizable embedding model (PE library).'

@@ -406,7 +406,7 @@ contains
     character, intent(in)      :: transa, transb
     REAL(realk), INTENT(in)    :: alpha, beta
     TYPE(Matrix), intent(inout):: c
-    TYPE(Matrix) :: b_temp
+    TYPE(Matrix) :: b_temp, c_temp
 #ifdef VAR_CSR
 !
     integer :: i,j,nnz
@@ -432,9 +432,14 @@ contains
 
     !check for zero-matrices and just return a zero-matrix
     if ((a%nnz .eq. 0) .or. (b%nnz .eq. 0)) then
-       if (c%nnz .ne. 0) then
-          call mat_csr_zero(c)
-       endif
+       !Thomas K: Hack to allow for non zero beta
+       IF(ABS(beta).LT.1.0E-25_realk)THEN
+          if (c%nnz .ne. 0) then
+             call mat_csr_zero(c)
+          endif
+       ELSE
+          call mat_csr_scal(beta,c)
+       ENDIF
        return
     endif
 
@@ -446,6 +451,12 @@ contains
     else
        call mat_csr_assign(b_temp, b)
     endif
+
+    IF(ABS(beta).GT.1.0E-25_realk)THEN
+       !Thomas K: Hack to allow for non zero beta
+       call mat_csr_init(c_temp, c%nrow, c%ncol)
+       call mat_csr_assign(c_temp, c)
+    ENDIF
 
     !zero matrix c if already in use 
     if (c%nnz .ne. 0) then
@@ -468,6 +479,11 @@ contains
     if (abs(1.0E0_realk-alpha) > 1.0E-7_realk) then
        call mat_csr_scal(alpha,c)
     endif
+    !Thomas K: Hack to allow for non zero beta
+    IF(ABS(beta).GT.1.0E-25_realk)THEN
+       call mat_csr_daxpy(beta,c_temp,c)
+       call mat_csr_free(c_temp)
+    ENDIF
 
 !RA: assert(info!=0)
     !print *, "Will clean result matrix, nnz is ", c%nnz

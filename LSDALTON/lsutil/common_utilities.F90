@@ -7,31 +7,6 @@
 !> that it belongs somewhere else than here.
 !> 
 
-
-   !> \brief LSDALTON wrapper to DGEMM C := alpha*op( A )*op( B ) + beta*C
-   !> \author T. Kjaergaard
-   !> \date 2015
-   subroutine LSDGEMM(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-     implicit none
-     character   :: TRANSA
-     character   :: TRANSB
-     Integer     :: M    !number of rows of the output matrix C
-     Integer     :: N    !number of columns of the output matrix C
-     Integer     :: K    !size of summation index 
-     real(8)     :: Alpha 
-     real(8)     :: A(:,:)
-     Integer     :: LDA  !first dimension of matrix A
-     real(8)     :: B(:,:)
-     Integer     :: LDB  !first dimension of matrix B
-     real(8)     :: Beta 
-     real(8)     :: C(:,:)
-     Integer     :: LDC  !first dimension of matrix C
-     !possible replace this with some GPU accelerated version
-     !or debug version to ensure no out of bounds errors. 
-     call DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, A, LDA, B, LDB, BETA, C, LDC)
-
-   end subroutine LSDGEMM
-
    !> \brief Interface to RGG for diagonalization of real general matrix, A*x = mu*S*X. Return eigenvalues and eigenvectors.
    !> \author S. Host
    !> \date 2005
@@ -651,6 +626,8 @@ end subroutine ls_dcopy
       integer             :: luprin
       real(realk) :: CTOT,WTOT
       integer :: user_exit_code,qqstatus
+      real(realk), allocatable :: dummy(:)
+      integer(8) :: ndum
 !
 !     Stamp date and time and hostname to output
 !
@@ -701,6 +678,17 @@ end subroutine ls_dcopy
 !#ifdef VAR_MPI
 !      IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
 !#endif
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+       ! force crashing to produce stack on cray env. with ATP_ENABLED=1
+       if (force_crash) then
+          print *, "FORCE CRASHING !!!"
+          ndum = 1000000
+          allocate(dummy(ndum*ndum))
+          dummy(1)      = 0.0e0_realk
+          dummy(ndum/2) = 0.0e0_realk
+          dummy(ndum)   = 0.0e0_realk
+      end if
+#endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!
 #if defined (SYS_LINUX)
       CALL EXIT(100)
@@ -853,7 +841,9 @@ end subroutine ls_dcopy
       logical    :: first = .true.
       real(realk), save :: TCPU0, twall0
       real(realk)       :: tcpu1, twall1
-      integer           :: dateandtime0(8), dateandtime1(8)
+      integer        :: dateandtime0(8), dateandtime1(8)
+      dateandtime0 = 0
+      dateandtime1 = 0
 
       if (first) then
          first = .false.

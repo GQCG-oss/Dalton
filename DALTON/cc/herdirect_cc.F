@@ -85,13 +85,7 @@ C
 C
 C     define NIBUF and NBITS in eribuf.h
 C
-      IF (NBASIS .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
+      CALL ERIBUF_INI
 C
       IF (LUINTR .LE. 0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
@@ -142,9 +136,11 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "blocks.h"
+#include "eritap.h"
 #include "eribuf.h"
 #include "r12int.h"
 C
+      CALL QENTER('HERDI2')
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
@@ -228,6 +224,7 @@ C
       CALL GPCLOSE(LUAORC(0),'KEEP')
       IF (U21INT) CALL GPCLOSE(LU21INT,'KEEP')
 C
+      CALL QEXIT('HERDI2')
       RETURN
       END
 C
@@ -267,16 +264,13 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "blocks.h"
+#include "eritap.h"
 #include "eribuf.h"
 C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
-         IF (NBASIS .LE. 255) THEN
-            NIBUF = 1
-         ELSE
-            NIBUF = 2
-         END IF
+         CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
 #if defined (SYS_NEC)
          LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
 #else

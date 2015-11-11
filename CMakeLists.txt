@@ -49,7 +49,7 @@ option(ENABLE_OMP            "Enable OpenMP parallelization"                    
 option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
-option(ENABLE_PELIB          "Enable PE library"                                ON)
+option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        ON)
 option(ENABLE_QFITLIB        "Enable charge fitting library (QFITLIB)"          ON)
 option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                         OFF)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
@@ -64,7 +64,6 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          OFF)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
-option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
 option(ENABLE_QMMM_CUDA      "Enable QMMM CUDA library"                         OFF) # radovan: untested
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
 option(ENABLE_QCMATRIX       "Enable QcMatrix library"                          OFF)
@@ -76,6 +75,8 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
+option(ENABLE_DEC            "Enable Divide-Expand-Consolidate module"          OFF)
+option(ENABLE_TENSORS        "Enable parallel distributed tensors"              OFF)
 
 option(ENABLE_SRDFT          "Enable srdft module"                              ON)
 

@@ -22,8 +22,7 @@
 !
 !
 
-#undef SRDFT_DEBUG
-!define SRDFT_DEBUG
+#define noSRDFT_DEBUG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
@@ -82,23 +81,25 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       IPRINT = MAX(IPRINT,5)
 !     Debug
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
-      WRITE(LUPRI,*) 'SRDFT1JT: DOATR,DOGRD,DOGGA  =',DOATR,DOGRD,DOGGA
-      WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2) =',ERFEXP(0:2)
       WRITE(LUPRI,*) 'SRDFT1JT: LUPRI  =',LUPRI, IPRINT
+      WRITE(LUPRI,*) 'SRDFT1JT: CHIVAL =',CHIVAL
       WRITE(LUPRI,*) 'SRDFT1JT: HFXFAC =',HFXFAC
-      WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI, DOERG
+      WRITE(LUPRI,*) 'SRDFT1JT: DOERG,DOATR,DOGRD,DOGGA  =',
+     &   DOERG,DOATR,DOGRD,DOGGA
+      WRITE(LUPRI,*) 'SRDFT1JT: ERFEXP(0:2) =',ERFEXP(0:2)
+      WRITE(LUPRI,*) 'SRDFT1JT: DOSRX_PBERI=',DOSRX_PBERI
       WRITE(LUPRI,*) 'DFT_SPINDNS=',DFT_SPINDNS
       WRITE(LUPRI,*) 'D_TOT_AO matrix:'
       call output(DMAT(1,1),1,nbast,1,nbast,nbast,nbast,-1,lupri)
       IF (DOATR) THEN
-         WRITE(LUPRI,*) 'DX_TOT_AO matrix:'
+         WRITE(LUPRI,*) 'DX_TOT_AO matrix for DOATR true:'
          call output(DMAT(1,2),1,nbast,1,nbast,nbast,nbast,-1,lupri)
       END IF
       IF (DFT_SPINDNS) THEN
          WRITE(LUPRI,*) 'D_SPIN_AO matrix:'
          call output(DMAT(1,3),1,nbast,1,nbast,nbast,nbast,-1,lupri)
          IF (DOATR) THEN
-            WRITE(LUPRI,*) 'DX_SPIN_AO matrix:'
+            WRITE(LUPRI,*) 'DX_SPIN_AO matrix for DOATR:'
             call output(DMAT(1,4),1,nbast,1,nbast,nbast,nbast,-1,lupri)
       END IF
       END IF
@@ -788,6 +789,10 @@ C***************************************************************************
       DIMENSION GAO(NBAST),GAO1(NBAST,3),
      &          EXCMAT(NBAST,NBAST,2),DGAO(NBAST,2),B0(2), B3(3,2)
 C
+      ! For small values of rho to avoid NaN 
+      do i = 1,4
+         if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
+      end do
 
       CALL DGEMV('N',NBAST,NBAST,D1,DTXMAT,NBAST,GAO,1,D0,DGAO(1,1),1)
       IF (DFT_SPINDNS) THEN

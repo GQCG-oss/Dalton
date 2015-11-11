@@ -87,7 +87,7 @@ C
 C     ... IPRTRA from cbirhs.h, used for IPRTRD in cbdtra.h for
 C         DERTRA, transferred to inftra.h for TRACTL in NSETUP
 C         below.
-      IPRINT = MAX(IPRIN4,IPRIN6,IPRNTR,IPRUSR,IPRDEF)
+      IPRSIR = MAX(IPRIN4,IPRIN6,IPRNTR,IPRUSR,IPRDEF)
 C
 C     Set /INFORB/ and /INFVAR/  parameters written on LUSIFC.
 C     (The rest will be defined in NSETUP)

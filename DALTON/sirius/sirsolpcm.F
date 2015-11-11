@@ -64,6 +64,7 @@ C   INFORB: NNASHX, NNBASX, NNORBX, etc.
 C   INFIND: IROW(*)
 C   INFTAP: LUSOL,  LUIT2
 C   INFPRI: IPRSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -79,6 +80,7 @@ C
 #include "infinp.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
 C ****** Comment edh: Extra include files: <pcmdef.h> <pcm.h> and <pcmlog.h> -not in SOLGRD. So for pe there might have to be some include files here!!!!  ******  
 C
@@ -194,6 +196,8 @@ C
 
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KJEN),WRK(KJENAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
       END IF
       IF (IPRPCM .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' JEN_ao matrix:'
@@ -261,6 +265,8 @@ Ckr
      &        NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KJ1),WRK(KJ1AC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          IF (NONEQ) THEN
             WRK(KPOT + I - 1) = SOLELM(DV,WRK(KJ1AC),WRK(KJ1),TJ1AC)
@@ -304,6 +310,8 @@ C     Expextation value of J + X(0) = PCMEN + PCMEE
 C     
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KJEN),WRK(KJENAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
       END IF
       TJEN     = SOLELM(DV,WRK(KJENAC),WRK(KJEN),TJENAC)
       IF (IPRPCM .GE. 6) THEN
@@ -900,6 +908,7 @@ C  Used from common blocks:
 C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : NWOPH
 C    INFLIN : NCONST, NVARPT, NWOPPT
+C   dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -910,6 +919,7 @@ C
 #include "inflin.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 #include "pcm.h"
 #include "pcmlog.h"
       DIMENSION VTEX(NTS,NCSIM)
@@ -966,6 +976,8 @@ C
       CALL UTHU(WRK(KJPXAO),WRK(KJPX),WRK(KUCMO),WRK(KW30),NBAST,NORBT)
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KJPX),WRK(KJPXAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
       END IF
       IF (IPRPCM .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' J+X_mo matrix:'
@@ -1013,6 +1025,8 @@ C
          JPCMXB = KPCMXB + (ICSIM - 1)*NNORBX
          JXBAC  = KXBAC  + (ICSIM - 1)*NNASHX
          CALL GETAC2(WRK(JPCMXB),WRK(JXBAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
          TEMP = SOLELM(DV,WRK(JXBAC),WRK(JPCMXB),XBAC)
          WRK(KEXBAC - 1 + ICSIM) = XBAC
       END DO
@@ -1111,6 +1125,7 @@ C    INFORB : NNASHX, NNORBX, NNBASX, etc.
 C    INFVAR : JWOP
 C    INFLIN : NWOPPT, NVARPT, NCONST, NCONRF
 C    INFPRI : IPRSOL
+C   dftcom.h : DFT_SPINDNS
 C
 #include "pcmdef.h"
 #include "maxash.h"
@@ -1128,6 +1143,7 @@ C
 #include "inflin.h"
 #include "inftap.h"
 #include "infpri.h"
+#include "dftcom.h"
 C
       LOGICAL FULHES, TOFILE, TRIMAT, EXP1VL
 C
@@ -1247,6 +1263,8 @@ Ckr
             CALL DGETSP(NORBT,WRK(KJ1XSQ),WRK(JJ1X))
             IF (NASHT .GT. 0) THEN
                CALL GETAC2(WRK(JJ1X),WRK(JJ1XAC))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
             END IF
             IF (IPRPCM .GE. 15) THEN
                WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
@@ -1340,6 +1358,8 @@ C
                WRK(KOVLP-1+IOSIM) = D0
             END IF
             CALL GETAC2(WRK(JPCMX),WRK(JPCMXA))
+         IF (DFT_SPINDNS) CALL QUIT(
+     &   'DFT_SPINDNS not implemented here yet, sorry!')
             TJPX   = SOLELM(DV,WRK(JPCMXA),WRK(JPCMX),TJPXAC)
             IF (IPRPCM .GE. 40) WRITE (LUPRI,'(/A,I5,3F15.10)')
      *         ' IOSIM, C_OVLP, TJPXAC, TJPX :',

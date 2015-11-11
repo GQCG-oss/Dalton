@@ -398,7 +398,11 @@ C .. 1.1 .. (MAKDV, TRACI)
 C .. 1.2 .. (FCKMAT)
       KFC    = KWRK1
       KFV    = KFC    + NNORBT
-      KWRK2  = KFV    + NNORBT
+      IF (DFT_SPINDNS) THEN
+         KWRK2  = KFV    + 2*NNORBT
+      ELSE
+         KWRK2  = KFV    + NNORBT
+      END IF
       IF (SRHYBR) KWRK2 = KWRK2 + NNORBT
 C     ... space for extra matrix for SRHYBR
 C         but we do not use this matrix in SIRCNO /hjaaj oct 04
@@ -457,10 +461,15 @@ C
       CALL FCKMAT((NASHT.EQ.0),WRK(KDV),CMO,EMY,WRK(KFC),WRK(KFV),
      *            WRK(KWRK2),LWRK2)
 C     CALL FCKMAT(ONLYFC,DV,CMO,EMY,FC,FV,WRK,LFREE)
-      IF (NASHT .GT. 0) CALL DAXPY(NNORBT,D1,WRK(KFV),1,WRK(KFC),1)
+      IF (NASHT .GT. 0) THEN
+         CALL DAXPY(NNORBT,D1,WRK(KFV),1,WRK(KFC),1)
+         IF (DFT_SPINDNS) THEN
+            CALL DAXPY(NNORBT,D1,WRK(KFV+NNORBT),1,WRK(KFC),1)
+         END IF
+      END IF
       IF (SUPSYM) CALL AVEFCK(WRK(KFC))
 C
-C     If (TRTOCO) then extract FDAC=FCAC+FVAC for TRACI to canon. orb.
+C     If (TRTOCO) then extract FDAC=FCAC+FVAC+FSAC for TRACI to canon. orb.
 C
       IF (TRTOCO) CALL GETAC(WRK(KFC),WRK(KDV))
 C

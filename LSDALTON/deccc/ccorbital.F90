@@ -17,12 +17,19 @@ module orbital_operations
   use dec_typedef_module
   use lsparameters
   use IntegralInterfaceMOD
-
+  use tensor_interface_module
 
   ! DEC DEPENDENCIES (within deccc directory)    
   ! *****************************************
   use dec_fragment_utils
+  use dec_tools_module
 
+  private 
+
+  public :: GenerateOrbitals_driver,copy_orbital,&
+       & get_number_of_orbitals_per_atom, which_fragments_to_consider,&
+       & check_lcm_against_canonical, force_occupied_subsystemlocality,&
+       & check_occupied_subsystemlocality
 
 contains
 

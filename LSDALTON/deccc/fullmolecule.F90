@@ -26,13 +26,12 @@ module full_molecule
 
   ! CABS
   use CABS_operations
-#ifdef MOD_UNRELEASED
   ! F12 MO-matrices
   use f12_routines_module!,only: get_F12_mixed_MO_Matrices, MO_transform_AOMatrix
-#endif
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
+  use dec_tools_module
   use array2_simple_operations
 
   integer, save :: mol_block_size = -14938343
@@ -54,7 +53,6 @@ contains
     type(matrix), optional, intent(in) :: D  ! Needed for creating the hJir MO-matrix
     real(realk) :: tcpu, twall
     
-
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! Init basic info (molecular dimensions etc.)
@@ -85,8 +83,7 @@ contains
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
-    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-#ifdef MOD_UNRELEASED
+    if(DECinfo%F12) then 
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be present for F12 calc",-1)
@@ -98,7 +95,6 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
-#endif
     end if
 
     
@@ -153,7 +149,8 @@ contains
     call molecule_mo_fock(molecule)
 
  
-    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+    if(DECinfo%use_canonical) then
+       ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule,mylsitem)
     end if
      
@@ -167,7 +164,6 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-#ifdef MOD_UNRELEASED
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
           call dec_get_RI_orbitals(molecule,mylsitem)
@@ -175,7 +171,6 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
-#endif
     end if
 
     ! Do not store AO Fock matrix if requested
@@ -207,6 +202,7 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    molecule%EF12singles = 0.0_realk
     molecule%Edisp = 0.0_realk
     molecule%Ect = 0.0_realk
     molecule%Esub = 0.0_realk
@@ -532,6 +528,15 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     integer :: nbasis,i,nocc,nvirt
     real(realk), pointer :: eival(:), C(:,:), S(:,:)
+
+    ! KK quick fix: Do NOT call this subroutine when nMO/=nbasis,
+    !               this is the case for SNOOP subsystems. 
+    !               A proper fix is needed here, on my todo-list... 
+    if(molecule%nMO/=molecule%nbasis) then
+       write(DECinfo%output,*) 'WARNING: Quitting dec_get_canonical_orbitals because nMO/=nbasis!'
+       write(DECinfo%output,*) 'WARNING: Proper solution is required!'
+       return
+    end if
 
     if(DECinfo%noaofock) then
        call lsquit('ERROR(dec_get_canonical_orbitals): You cannot use canonical orbitals &
@@ -890,6 +895,9 @@ contains
     if(associated(molecule%ov_abs_overlap)) then
        call mem_dealloc(molecule%ov_abs_overlap)
     end if
+
+    call free_cabs()
+
   end subroutine molecule_finalize
 
   !> \brief Get number of atomic orbitals on atoms, first and last index in AO basis for full molecular matrices
@@ -1104,8 +1112,8 @@ contains
      !     & molecule%fock,molecule%oofock)
 
      call tensor_minit(tmp, [nbasis,nocc], 2, local=loc, atype='TDAR',tdims=tdim  )
-     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Co,[2],[1],1,0.0E0_realk,tmp,ord )
-     call tensor_contract(1.0E0_realk,molecule%Co,tmp,[1],[1],1,0.0E0_realk,molecule%oofock,ord )
+     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Co,[2],[1],1,0.0E0_realk,tmp,ord,force_sync=.true.)
+     call tensor_contract(1.0E0_realk,molecule%Co,tmp,[1],[1],1,0.0E0_realk,molecule%oofock,ord,force_sync=.true.)
      call tensor_free(tmp)
 
 
@@ -1115,8 +1123,8 @@ contains
      !     & molecule%fock,molecule%qqfock)
 
      call tensor_minit(tmp, [nbasis,nvirt], 2, local=loc, atype='TDAR',tdims=tdim  )
-     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Cv,[2],[1],1,0.0E0_realk,tmp,ord)
-     call tensor_contract(1.0E0_realk,molecule%Cv,tmp,[1],[1],1,0.0E0_realk,molecule%vvfock,ord)
+     call tensor_contract(1.0E0_realk,molecule%fock,molecule%Cv,[2],[1],1,0.0E0_realk,tmp,ord,force_sync=.true.)
+     call tensor_contract(1.0E0_realk,molecule%Cv,tmp,[1],[1],1,0.0E0_realk,molecule%vvfock,ord,force_sync=.true.)
      call tensor_free(tmp)
 
   end subroutine molecule_mo_fock
@@ -1126,7 +1134,6 @@ contains
      type(fullmolecule), intent(inout) :: MyMolecule
      type(lsitem), intent(inout) :: MyLsitem
      type(matrix), intent(in) :: D
-#ifdef MOD_UNRELEASED
 
      integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
 
@@ -1150,17 +1157,17 @@ contains
      nocvfull = nocc + nvirt
 
      if(DECinfo%F12debug) then
-        print *, "--------------------------"
-        print *, "Molecule_mo_f12"
-        print *, "--------------------------"
-        print *, "nbasis:   ", nbasis
-        print *, "nocc:     ", nocc
-        print *, "nvirt:    ", nvirt
-        print *, "--------------------------"
-        print *, "ncabsAO:  ", ncabsAO
-        print *, "ncabsMO:  ", ncabsMO
-        print *, "nocvfull: ", nocc+nvirt
-        print *, "--------------------------"
+       ! print *, "--------------------------"
+       ! print *, "Molecule_mo_f12"
+       ! print *, "--------------------------"
+       ! print *, "nbasis:   ", nbasis
+       ! print *, "nocc:     ", nocc
+       ! print *, "nvirt:    ", nvirt
+       ! print *, "--------------------------"
+       ! print *, "ncabsAO:  ", ncabsAO
+       ! print *, "ncabsMO:  ", ncabsMO
+       ! print *, "nocvfull: ", nocc+nvirt
+       ! print *, "--------------------------"
      end if
 
      ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
@@ -1178,22 +1185,6 @@ contains
         & nocc,noccfull,nvirt,MyMolecule%hJir,MyMolecule%Krs,MyMolecule%Frs,&
         & MyMolecule%Fac,MyMolecule%Fij,MyMolecule%Frm,MyMolecule%Fcp)
 
-     if(DECinfo%F12debug) then  
-        print *,'-------------------------------------------'
-        print *,'molecule_mo_f12: Get all F12 Fock integrals'
-        print *,'-------------------------------------------'
-        print *, "norm2D(hJir)", norm2D(MyMolecule%hJir)
-        print *, "norm2D(Krs)",  norm2D(MyMolecule%Krs)
-        print *, "norm2D(Frs)",  norm2D(MyMolecule%Frs)
-        print *, "norm2D(Fac)",  norm2D(MyMolecule%Fac)
-        print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
-        print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
-        print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
-        ! print *, "norm2D(Fcd)",  norm2D(MyMolecule%Fcd)
-        print *,'-------------------------------------------' 
-     end if
-
-#endif
   end subroutine molecule_mo_f12
 
 
@@ -1208,11 +1199,10 @@ contains
     !> Full molecule information
     type(fullmolecule), intent(inout) :: MyMolecule
     real(realk), intent(inout) :: molmem
-    real(realk) :: O,V,A,tmp,GB
+    real(realk) :: O,V,A,tmp
     integer :: nnod, nblocks, nlocal_blocks
-
     ! GB conversion
-    GB = 1.000E9_realk ! 1 GB
+    real(realk), parameter :: GB=1.024E3_realk**3! 1GB
 
 
     ! Number of occupied (O), Virtual (V), atomic basis functions (A)
@@ -1226,27 +1216,27 @@ contains
     ! *********************************************
 
     ! MO coefficients, Fock
-    molmem = 2E0_realk*A*A
+    if (DEcinfo%noaofock) then
+       molmem = 1E0_realk*A*A
+    else
+       molmem = 2E0_realk*A*A
+    end if
 
     ! ppfock and qqfock
     tmp = O*O + V*V
     molmem = molmem + tmp
 
 
-    !Do we need to distribute the arrays? -> if more than 3GB and keyword, do distribute
 #ifdef VAR_MPI
-    if(Decinfo%distribute_fullmolecule)then
-       if(molmem>((3*GB)/realk))then
-          MyMolecule%mem_distributed = .true.
-       else
-          print *,"WARNING(calculate_fullmolecule_memory): a distributed full&
-          & molecular structure has been requested. However, the memory&
-          & requirements for this structure are so low, that we keep it in local&
-          & memory"
-          MyMolecule%mem_distributed = .false.
-       endif
+    !Do we need to distribute the arrays? -> if more than 10% of the available memory, the memory will be distributed
+    if(molmem>((0.1*DECinfo%memory*GB)/realk))then
+       MyMolecule%mem_distributed = .true.
     else
        MyMolecule%mem_distributed = .false.
+    endif
+
+    if(Decinfo%force_distribution)then
+       MyMolecule%mem_distributed = DECinfo%distribute_fullmolecule
     endif
 
     nnod = infpar%nodtot

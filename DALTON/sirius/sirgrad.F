@@ -1622,6 +1622,10 @@ C
       IF (NWOPT.GT.0) CALL DZERO(WRK(KORDIA),NWOPT)
       IF (NASHT .GE. 1) THEN
          CALL GETAC(FC,FCAC)
+         IF (DFT_SPINDNS) THEN
+            CALL GETAC(FV(NNORBT+1),WRK(KW3))
+            CALL DAXPY(NNASHX,1.0D0,WRK(KW3),1,FCAC,1)
+         END IF
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
      &      ' Active block of inactive Fock matrix FCAC'
@@ -1656,6 +1660,8 @@ C
          END IF
          CALL DZERO(FQ,NORBT*NASHT)
          CALL GETAC(FV,FCAC) ! put -K(DV), i.e. minus DV exchange, in FCAC
+         IF (DFT_SPINDNS) CALL QUIT(
+     &      'Sorry, DFT_SPINDNS not implemented yet for HSROHF')
          EMCACT = -ENRACT(DV,FCAC,FQ)/2
       ELSE IF (NASHT .EQ. 1) THEN
          CALL DZERO(FQ,NORBT)
@@ -2595,6 +2601,7 @@ C   INFOPT : GNORM(3),?
 C   -- GNORM, norm of the CI, the orbital, and the total gradient.
 C   INFDIM : ?
 C   INFTAP : LUIT2,?
+C  dftcom.h: DFT_SPINDNS
 C
 #include "maxorb.h"
 #include "infinp.h"
@@ -2605,6 +2612,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 #include "itinfo.h"
+#include "dftcom.h"
 C ---
       PARAMETER (IDTIM = 3)
 C     ... GRAD has IDTIM = 1
@@ -2727,6 +2735,10 @@ C     ... currently ORBGRD and ORBSIG always references FV
 C
       IF (NASHT .GE. 1) THEN
          CALL GETAC(FC,WRK(KFCAC))
+         IF (DFT_SPINDNS) THEN
+            CALL GETAC(FV(NNORBT+1),WRK(KWRK3))
+            CALL DAXPY(NNASHX,1.0D0,WRK(KWRK3),1,WRK(KFCAC),1)
+         EN DIF
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
      *         ' Active block of inactive Fock matrix FCAC'

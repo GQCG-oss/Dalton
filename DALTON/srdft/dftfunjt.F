@@ -321,10 +321,13 @@ C*****************************************************************************
 
       double precision hrt, hrs, hrt2, hrs2, hrts
       double precision rhotm, rhotp, rhosp, rhosm
+      double precision arhos
 
       double precision Em0, Ep0, Epp0
       double precision E0m, E0p, E0pp
       double precision Emm, Epp, Epm, Emp
+
+      logical  pure_spin
 
 C     check
       if(norder .le. 0 .or. norder .ge. 3) then
@@ -332,13 +335,24 @@ C     check
        call quit('DESRSPIN: norder must be 1 or 2')
       endif
 
+      arhos = abs(rhos)
+      if (arhos .gt. rhot) then
+         call quit('DESRSPIN error: |rhos| > rhot')
+      end if
+      pure_spin = (rhot - arhos .le. 1.d-14 ) ! pure alpha or pure beta
+
 C     energy
       call ESRSPIN(rhot,rhos,mu,dospin,E)
 !      print *,'D1SRSPIN: E=',E
 
 C     (optimal?) numerical step
       hrt = 1.d-4*rhot
-      hrs = 1.d-4*rhos
+      if (arhos .gt. 1.d-14) then
+      !   not closed shell
+         hrs = 1.d-4*rhos
+      else
+         hrs = 0.0d0
+      end if
 !      hg = 1.d-4*grd
 
 C     variations of variables
@@ -353,16 +367,33 @@ C First-order derivatives --------------------------------------------
 
 C     derivative wrt rhot ---------------------
 !      central 2nd-order approximation
-       call ESRSPIN(rhotm,rhos,mu,dospin,Em0)
-       call ESRSPIN(rhotp,rhos,mu,dospin,Ep0)
-       d1Edrhot = (Ep0 - Em0)/(2.d0*hrt)
+
+       if (pure_spin) then
+          call ESRSPIN(rhotm,rhosm,mu,dospin,Em0)
+          call ESRSPIN(rhotp,rhosp,mu,dospin,Ep0)
+          d1Edrhot = (Ep0 - Em0)/(2.d0*hrt)
+!         if (rhos .gt. 0.0d0) then
+!            d1Edrhos = d1Edrhot
+!         else
+!            d1Edrhos = -d1Edrhot
+!         end if
+       else
+          call ESRSPIN(rhotm,rhos,mu,dospin,Em0)
+          call ESRSPIN(rhotp,rhos,mu,dospin,Ep0)
+          d1Edrhot = (Ep0 - Em0)/(2.d0*hrt)
+          d1Edrhos = 0.0d0
+       end if
 
 C     derivative wrt rhos ---------------------
 !      central 2nd-order approximation
-       if (dospin) then
+       if (dospin .and. .not. pure_spin) then
+       if (hrs .gt. 0.0d0) then
          call ESRSPIN(rhot,rhosm,mu,dospin,E0m)
          call ESRSPIN(rhot,rhosp,mu,dospin,E0p)
          d1Edrhos = (E0p - E0m)/(2.d0*hrs)
+       else
+         d1Edrhos = 0.0d0
+       end if
        endif
 
 C Second-order derivatives --------------------------------------------
@@ -377,8 +408,11 @@ C Second-order derivatives --------------------------------------------
 C     derivative wrt rhot and rhot -----------------
 !      central 2nd-order approximation
        d2Edrhotdrhot = (Ep0 - 2.d0*E + Em0)/hrt2
-
       if (dospin) then
+       if (pure_spin) then
+         d2Edrhosdrhos = 0.0d0
+         d2Edrhotdrhos = 0.0d0
+       else if (hrs .gt. 0.0d0) then
 C       derivative wrt rhos and rhos -----------------------
 !        central 2nd-order approximation
          d2Edrhosdrhos = (E0p - 2.d0*E + E0m)/hrs2
@@ -390,6 +424,10 @@ C       derivative wrt rhot and rhos -----------------------
          call ESRSPIN(rhotm,rhosm,mu,dospin,Emm)
 !        central 2nd-order approximation
          d2Edrhotdrhos = (Epp - Emp - Epm + Emm)/(4.d0*hrts)
+        else
+         d2Edrhosdrhos = 0.0d0
+         d2Edrhotdrhos = 0.0d0
+        end if
        endif
      
       endif
@@ -3482,6 +3520,8 @@ C     Spin-polarized case
         rhoa=max((rhot+rhos)*.5d0,1.0d-15)
         rhob=max((rhot-rhos)*.5d0,1.0d-15)
         z=(rhoa-rhob)/(rhoa+rhob)
+        if (abs(z) > 1.0d0) 
+     &   call quit('in ESRC_LDAERFSPIN numerical problem for |z| = 1.0')
 
         call ecPW(rs,z,ec,ecd,ecz)
         call ecorrlr(rs,z,mu,eclr)

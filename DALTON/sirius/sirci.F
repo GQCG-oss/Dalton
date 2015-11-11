@@ -423,10 +423,10 @@ C     CALL CIINTS(DISKH2,CMO,EMY,FCAC,H2AC,WRK,LFREE)
 C
 !     set keyword for saving the final vector(s) in SIRSAV (called from CISAVE)
       keywrd = 'CISAVE' 
-      if(DOCISRDFT)then
+!     if(DOCISRDFT)then
 !       thrcit = 5.0d-4
 !       maxitc = 50
-      end if
+!     end if
 
 !     thrcit = 1.0d-11
 !     write(lupri,*) ' incoming thrcit (updated) ==> ',thrcit
@@ -526,6 +526,10 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
         ECI(I) = EMY_CI + energy_root(i)
   810 CONTINUE
 
+      IF (MAXITC .LE. 0) THEN
+         GO TO 9999
+      END IF
+
       IF(DOCISRDFT)THEN
 
         if(ci_program .eq. 'LUCITA   ')then
@@ -585,13 +589,12 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            ECIAUX = ELRCI+EMYDFTAUX+ESRDV-POTNUC 
 !
            if (IST .EQ. 1) then 
-           ECIAUX_gs = ECIAUX ! saving the GS auxiliary energy 
+              ECIAUX_gs = ECIAUX ! saving the GS auxiliary energy 
            end if
 !          write(lupri,*) 'eciaux_gs =', ECIAUX_gs
 !
-           write(lupri,*) '' 
-           write(lupri,*) 
-     &    'decomposition of the auxiliary CI-srDFT energy'
+           write(lupri,'(/A)') 
+     &    ' Decomposition of the auxiliary CI-srDFT energy:'
            WRITE(LUPRI,805) 'ELRCI        :',ELRCI
            WRITE(LUPRI,805) 'EMYDFTAUX    :',EMYDFTAUX
            WRITE(LUPRI,805) 'ESRDV        :',ESRDV
@@ -636,7 +639,7 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
       WRITE (J,'(//A,I2,3A/,(A,I5,0P,F25.15,1P,D15.2))')
      &   '@ Final CI energies and residuals in symmetry',LSYM,
      &     ' (irrep ',REP(LSYM-1),')',
-     &   ('@',I,ECI(I),WRK(KRESID+I-1), I = 1,NCROOT)
+     &   ('@',I,ECI(I),residual_croot(I), I = 1,NCROOT)
 
       IF (J .NE. LUPRI) THEN
          J = LUPRI
@@ -654,7 +657,6 @@ C
      &              WRK(kvec_generic),CMO,INDXCI,WRK(KW2),LW2)
 C       CALL CISAVE(NCROOT,NCIRED,ECI,RESID,EVEC,CMO,INDXCI,WRK,LFREE)
       end if
-C
       ICONV = 0
       J = 0
       DO 820 I = 1,NCROOT
@@ -2983,6 +2985,7 @@ C
 
 C     *** Calculate the diagonal of the CI matrix.
 C
+      IF (IPRSIR .GT. 10) WRITE (LUPRI,'(/a)') ' --- Calling CIDIAG ...'
       CALL CIDIAG(LSYM,.FALSE.,WRK(KFCAC),WRK(KH2AC),INDXCI,
      &            WRK(KCDIAG),WRK(KW1),LW1)
 C     CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
@@ -2991,6 +2994,7 @@ C
       DO 50 I = 0,NCONF-1
          WRK(KCDIAG+I) = WRK(KCDIAG+I) + EMY
    50 CONTINUE
+      IF (IPRSIR .GT. 10) WRITE(LUPRI,'(/a)') ' --- CIDIAG finished ...'
 
 #if defined (VAR_CIHAMTST)
 C
@@ -3020,8 +3024,10 @@ C
       IF (MAXPHP .GE. 1) THEN
          IPWAY = 1
          IPRPHP = IPRI6 - 3
+         IF (IPRSIR .GT. 10) WRITE (LUPRI,'(/a,i0)')
+     &      ' --- Calling PHPGET with MAXPHP = ',MAXPHP
          CALL PHPGET(LSYM,NCONF,INDXCI,WRK(KFCAC),WRK(KH2AC),
-     *               WRK(KCDIAG),EMY,IPWAY,IPRPHP,WRK(KW1),LW1)
+     &               WRK(KCDIAG),EMY,IPWAY,IPRPHP,WRK(KW1),LW1)
       END IF
 C
 C
@@ -3034,12 +3040,20 @@ C    The C-vectors are constructed in CIST or from the result of
 C    another run (another geometry).
 C
       NCSIM = NCROOT
+      IF (IPRSIR .GT. 10) WRITE (LUPRI,'(/a)') ' --- Calling CIST ...'
       CALL CIST(ICICTL,NCSIM,CMO,WRK(KCDIAG),EMY,WRK(KW1),LW1)
       IF (NCSIM .LE. 0) THEN
          WRITE (LUPRI,'(//A,I5)')
      *      ' *** ERROR after CIST, NCSIM =',NCSIM
          CALL QTRACE(LUPRI)
          CALL QUIT('*** ERROR (CICTL) NCSIM .le. 0 after CIST')
+      END IF
+      IF (IPRSIR .GT. 10) WRITE (LUPRI,'(/a)') ' --- CIST finished ...'
+C
+C    *******************************
+      IF (MAXITC .LE. 0) THEN
+         ITCI = 0
+         RETURN
       END IF
 C
 C     *****************************************************************
@@ -3088,9 +3102,6 @@ C          write(lupri,*) 'esrdv... ',esrdv
          END DO
 #endif
       ENDIF
-C
-C    *******************************
-      IF (MAXITC .LE. 0) RETURN
 C    *******************************
       CINMEM = (NCSIM .LE. MAXSIM)
 C

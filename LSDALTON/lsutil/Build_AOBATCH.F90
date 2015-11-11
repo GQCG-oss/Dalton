@@ -1474,7 +1474,7 @@ integer,intent(inout) :: MaxOrbitals
 character(len=1),intent(in) :: AOspec
 !
 integer :: I,A,norbitals,nbatLoc,iOrb,tmporb,allocnbatches
-logical :: uncont,intnrm,extend
+logical :: uncont,intnrm,extend,Family
 type(AOITEM) :: AO
 TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
 uncont=.FALSE.
@@ -1496,6 +1496,8 @@ ELSEIF(AOspec.EQ.'O')THEN
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
@@ -1505,6 +1507,7 @@ ELSE
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
 ENDIF
+setting%SCHEME%NOFAMILY = Family
 
 norbitals = 0
 MaxOrbitals = 0
@@ -1571,6 +1574,8 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 
+Family = setting%SCHEME%NOFAMILY
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
@@ -1580,6 +1585,7 @@ ELSE
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,extend)
 ENDIF
+setting%SCHEME%NOFAMILY = Family
 
 Family = .FALSE.
 do I=1,AO%nbatches
@@ -1673,7 +1679,7 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 Family = setting%SCHEME%NOFAMILY
-setting%SCHEME%NOFAMILY = .FALSE.
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
@@ -1758,7 +1764,7 @@ ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 Family = setting%SCHEME%NOFAMILY
-setting%SCHEME%NOFAMILY = .FALSE.
+setting%SCHEME%NOFAMILY = .TRUE.
 IF(extend)THEN
    call build_AO(lupri,setting%scheme,setting%scheme%AOprint,&
         & setting%molecule(1)%p,AObasis1,AO,uncont,intnrm,.FALSE.)
@@ -1807,6 +1813,7 @@ integer,pointer :: load(:)
 logical :: uncont,intnrm,extend
 type(AOITEM) :: AO
 TYPE(BASISSETINFO),pointer :: AObasis1,AObasis2
+
 uncont=.FALSE.
 intnrm = .false.; extend=.false.
 IF(AOspec.EQ.'R')THEN      !    The regular AO-basis
@@ -1838,9 +1845,9 @@ load = 0
 nAuxMPI = 0 
 do I=1,AO%nbatches
    idx = MINLOC(load)
+   load(idx(1)) = load(idx(1)) + (2*AO%BATCH(I)%maxAngmom+1)
    DO A=1,AO%BATCH(I)%nAngmom
       nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + AO%BATCH(I)%norbitals(A)
-      load(idx(1)) = load(idx(1)) + AO%BATCH(I)%norbitals(A)
    ENDDO
 enddo
 MaxnAuxMPI = MAXVAL(nAuxMPI)
@@ -1854,9 +1861,9 @@ do I=1,AO%nbatches
    K=0
    DO A=1,AO%BATCH(I)%nAngmom
       DO J=1,AO%BATCH(I)%nOrbitals(A)
-         nA = NA + 1
+         nA = NA + 1 !global index 
          nAuxMPI(idx(1)) = nAuxMPI(idx(1)) + 1
-         GIndexToLocal(NA) = nAuxMPI(idx(1))
+         GIndexToLocal(NA) = nAuxMPI(idx(1))         
          IndexToGlobal(nAuxMPI(idx(1)),idx(1)) = AO%BATCH(I)%startOrbital(A)+K
          K=K+1
       ENDDO

@@ -309,9 +309,18 @@ C  /* Deck er2ini */
 #include "cbiher.h"
 #include "cbieri.h"
 #include "erisel.h"
-#include "eribuf.h"
 #include "ericom.h"
 #include "gnrinf.h"
+
+      LOGICAL, SAVE :: FIRST_CALL = .TRUE.
+C
+C     set index packing in eribuf
+C     (before FIRST_CALL test, because NIBUF,NBITS may be reset by routines)
+C
+      CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
+
+      IF (.NOT. FIRST_CALL) RETURN
+      FIRST_CALL = .FALSE.
 C
 C     Initialize /CBIERI/
 C
@@ -343,7 +352,9 @@ C
       EXPERI = .FALSE.
       LBFINP = 600
       MAXDSD = 40
+
       MAXDST = MAXDSD
+
       DISTST = .FALSE.
       MXBCH0 = 1000000000
       MXBCH  = MXBCH0
@@ -354,6 +365,42 @@ C
       END DO
       GENCON_ERI = .FALSE.
       NCLERI = .FALSE.
+
+      RETURN
+      END
+C  /* Deck eribuf_ini */
+      SUBROUTINE ERIBUF_INI
+C
+C     July 2015, hjaaj
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+C
+C nuclei.h : NBASIS
+C cbiher.h : TWOBYTEPACKING
+C eribuf.h : NIBUF, NBITS, IBIT1, IBIT2
+C
+#include "nuclei.h"
+#include "cbiher.h"
+#include "eribuf.h"
+C
+C     set index packing in /CBIERI/
+C
+      IF (TWOBYTEPACKING .OR. NBASIS.GT.255) THEN
+         NIBUF = 2
+         NBITS = 16
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
+
+      ELSE
+         NIBUF = 1
+         NBITS = 8
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 2**(2*NBITS) - 1
+
+      END IF
 
       RETURN
       END
@@ -384,7 +431,7 @@ C
       IPRINT = IPRERI
       THRSH  = MAX(THRS,1.00D-15)
 C
-C     CALL ER2INI
+      CALL ER2INI
 C
 C     Memory
 C
@@ -520,7 +567,10 @@ C  /* Deck odcdrv */
 #include "aobtch.h"
 #include "iratdef.h"
 #include "infpar.h"
+#include "soppinf.h"
+      LOGICAL USE_SLAVE_CODE
 C
+      CALL QENTER('ODCDRV')
       MAXDER = 0
       IF (GDER) MAXDER = 1
       IF (BDER) MAXDER = 1
@@ -560,16 +610,13 @@ C
          NPERTS = 1
          NCORS = 1
       END IF
-      IF (NBASE .LE. 255) THEN
-         NIBUF = 1
-         NBITS = 8
-      ELSE
-         NIBUF = 2
-         NBITS = 16
-      END IF
       IF (DGABAB) THEN
          NIBUF = 1
          NBITS = 16
+         IBIT1 = 2**NBITS     - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
+      ELSE
+         CALL ERIBUF_INI  ! set NIBUF, NBITS, IBIT1, IBIT2
       END IF
 C
 C     Dimensions for CSQ
@@ -598,8 +645,17 @@ C
 C
       IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
+      USE_SLAVE_CODE = SLAVE
+#ifdef VAR_MPI
 C
-      IF (SLAVE) THEN
+C     AOSOPPA in parallel makes use of slaves in this subroutine.
+C     hence the slaves are redirected to parts of the code normally
+C     only available to the master.
+      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc)
+     &   USE_SLAVE_CODE = .FALSE.
+#endif
+C
+      IF (USE_SLAVE_CODE) THEN
          MXCLS2 = NODCL1*(NODCL2 + 1)/2
 C
          NTASK  = INT(NDEGDI*MXCLS2/(100*NODTOT))
@@ -639,6 +695,7 @@ C
      &               WORK(KCSQ),  WORK(KLAST),LWRK,IPRINT)
       END IF
 C
+      CALL QEXIT('ODCDRV')
       RETURN
       END
 C  /* Deck odcdr1 */
@@ -760,6 +817,8 @@ C     RODPP1(*,1): exponent for primitive a
 C     RODPP1(*,2): exponent for primitive b
 C     RODPP1(*,3): preexponential factors for ab
 C
+      CALL QENTER('ODCDR1')
+
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from subroutine ODCDR1',-1)
          WRITE (LUPRI,'(2X,A,2I4)') ' NODCL1, NODCL2 ', NODCL1, NODCL2
@@ -1231,6 +1290,7 @@ C
 C
       IPRINT = IPRKEP
 C
+      CALL QEXIT('ODCDR1')
       RETURN
       END
 C  /* Deck odcpar */
@@ -1270,6 +1330,7 @@ C  /* Deck odcpar */
 #include "erista.h"
 #include "hertop.h"
 C
+      CALL QENTER('ODCPAR')
 C
 C     Collect OD batches in passes
 C
@@ -1361,6 +1422,7 @@ C
          WRITE (LUPRI,'(A,I10)') ' LWORK in ODCPAR: ',LWORK
       END IF
 C
+      CALL QEXIT('ODCPAR')
       RETURN
       END
 C  /* Deck odcpa2 */
@@ -1649,6 +1711,8 @@ C  /* Deck erint0 */
 #include "symmet.h"
 #include "r12int.h"
 C
+      CALL QENTER('ERINT0')
+
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERINT0','*',103)
          WRITE (LUPRI,'(1X,A,I10  )')' LWORK in ERINT0: ',LWORK
@@ -1975,6 +2039,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('ERINT0')
       RETURN
       END
 C  /* Deck erints */

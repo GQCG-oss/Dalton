@@ -67,13 +67,11 @@ END INTERFACE
    PUBLIC::&
         & di_debug_general, &
         & di_debug_general2, &
-#ifdef MOD_UNRELEASED
         & di_debug_4center_eri, &
         & di_debug_4center, &
         & di_decpacked, &
         & di_decpackedJ, &
         & di_decpackedJOLD, &
-#endif
 !        & di_decbatchpacked, &
 !        & di_debug_ccfragment, &
         & di_get_fock_LSDALTON, &
@@ -100,10 +98,8 @@ CONTAINS
       real(realk) :: Etest,E
       logical :: debugProp
       IF(ls%input%dalton%DEBUGDECPACKED)then
-#ifdef MOD_UNRELEASED
 !         call di_decbatchpacked(lupri,luerr,ls,nbast,D)
          call di_decpacked(lupri,luerr,ls,nbast,D)
-#endif
       ENDIF
       IF(ls%setting%scheme%interest)then
          print*,'di_debug_4center_eri_interest'
@@ -986,170 +982,7 @@ CONTAINS
       call mat_free(tempm1)
       call mat_free(NONsym)
     end subroutine di_debug_PropertyIntegrals
-#ifdef MOD_UNRELEASED
-!!$   SUBROUTINE di_debug_4center_eri(lupri,lu_err,ls,nbast)
-!!$     IMPLICIT NONE
-!!$     integer,intent(in)      :: lupri,lu_err,nbast
-!!$     type(lsitem),intent(inout) :: ls
-!!$     !
-!!$     real(realk),pointer   :: integrals(:,:,:,:)
-!!$     integer :: iB,iA,iC,iD
-!!$     !THIS IS A SPECIAL HARDCODED DEBUG ROUTINE FOR WATER (TESTCASE LS_DEBUG4CENTER)
-!!$     call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-!!$     call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
-!!$     WRITE(lupri,*)'di_debug_4center_eri: some random 4 center integrals'
-!!$     !SAME ATOM ON ALL 4
-!!$     iA = 1; iB = 1; iC = 1; iD = 1
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 2; iC = 4; iD = 4
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 3; iB = 3; iC = 9; iD = 9
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 3; iC = 6; iD = 9
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     !SAME ATOM ON 1,2,3 and new on 4.
-!!$     iA = 1; iB = 1; iC = 1; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 2; iC = 4; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 3; iB = 3; iC = 9; iD = 12
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 3; iC = 6; iD = 12
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     !SAME ATOM ON LHS and same on RHS.
-!!$     iA = 1; iB = 1; iC = 11; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 2; iC = 11; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 3; iB = 3; iC = 11; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 3; iC = 11; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     !SAME ATOM ON LHS and different on RHS.
-!!$     iA = 1; iB = 1; iC = 13; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 2; iC = 13; iD = 11
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 3; iB = 3; iC = 10; iD = 12
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 2; iB = 3; iC = 10; iD = 12
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     !SAME ATOM ON 1 and same on 2,3,4
-!!$     iA = 10; iB = 10; iC = 10; iD = 10
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 11; iB = 10; iC = 10; iD = 10
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 12; iB = 10; iC = 10; iD = 10
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 13; iB = 10; iC = 10; iD = 10
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 10; iB = 1; iC = 1; iD = 1
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 11; iB = 1; iC = 1; iD = 1
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 12; iB = 1; iC = 1; iD = 1
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     iA = 13; iB = 1; iC = 1; iD = 1
-!!$     WRITE(lupri,'(4I3,F16.12)')iA,iB,iC,iD, integrals(ia,ib,ic,id)
-!!$     call mem_dealloc(integrals)
-!!$
-!!$   END SUBROUTINE di_debug_4center_eri
-!!$
-!!$   SUBROUTINE di_debug_4center(lupri,lu_err,ls,nbast,D)
-!!$      IMPLICIT NONE
-!!$      TYPE(Matrix),intent(in) :: D
-!!$      integer,intent(in)      :: lupri,lu_err,nbast
-!!$      type(lsitem),intent(inout) :: ls
-!!$      !
-!!$      TYPE(Matrix)  :: tempm1,tempm2,tempm3
-!!$      real(realk),pointer   :: integrals(:,:,:,:)
-!!$      real(realk) :: CoulombFactor,FAB,int
-!!$      integer,pointer :: orb2batch(:),batchdim(:)
-!!$      type(batchTOorb),pointer :: batch2orb(:)
-!!$      integer :: Abatch,Bbatch,IORB,JORB,dimA,dimB,J,nbatches
-!!$      integer :: iB,iA,iC,iD,offset,offset2,BORB,AORB,iprint
-!!$
-!!$      CoulombFactor = 2E0_realk
-!!$      !build the coulomb matrix 
-!!$      call mat_init(tempm1,nbast,nbast)
-!!$      call mat_init(tempm2,nbast,nbast)
-!!$      call mat_init(tempm3,nbast,nbast)
-!!$      CALL II_get_coulomb_mat(lupri,lu_err,ls%setting,D,tempm1,1)
-!!$
-!!$      allocate(orb2batch(nbast))
-!!$      CALL II_getBatchOrbitalInfo(ls%setting,nBast,orb2Batch,&
-!!$           & nBatches,lupri,lu_err)
-!!$      
-!!$
-!!$      allocate(batchdim(nbatches))
-!!$      batchdim = 0
-!!$      DO IORB=1,nbast
-!!$         batchdim(orb2batch(IORB)) = batchdim(orb2batch(IORB))+1 
-!!$      ENDDO
-!!$
-!!$      allocate(batch2orb(nbatches))
-!!$      DO Abatch=1,nbatches
-!!$         allocate(batch2orb(Abatch)%orbindex(batchdim(Abatch)))
-!!$         batch2orb(Abatch)%orbindex = 0
-!!$         batch2orb(Abatch)%norbindex = 0
-!!$      ENDDO
-!!$      DO IORB=1,nbast
-!!$         Abatch = orb2batch(IORB)
-!!$         batch2orb(Abatch)%norbindex = batch2orb(Abatch)%norbindex+1 
-!!$         J = batch2orb(Abatch)%norbindex
-!!$         batch2orb(Abatch)%orbindex(J) = IORB
-!!$      ENDDO
-!!$      DO Bbatch=1,nbatches
-!!$         dimB = batchdim(Bbatch)
-!!$         DO Abatch=1,nbatches
-!!$            dimA = batchdim(Abatch)
-!!$            nullify(integrals)
-!!$            allocate(integrals(dimA,dimB,nbast,nbast))
-!!$!            integrals=0E0_realk
-!!$            CALL II_get_ABres_4CenterEri(ls%setting,integrals,Abatch,&
-!!$                 & Bbatch,dimA,dimB,nbast,lupri,lu_err)            
-!!$            DO iB = 1,dimB
-!!$               !translate to orbitalindex: B orbital
-!!$               BORB = batch2orb(Bbatch)%orbindex(iB)
-!!$               offset2 = (BORB-1)*nbast
-!!$               DO iA = 1,dimA
-!!$                  !translate to orbitalindex: B orbital
-!!$                  AORB = batch2orb(Abatch)%orbindex(iA) 
-!!$                  FAB =0E0_realk
-!!$                  DO id=1,nbast
-!!$                     offset=(id-1)*nbast
-!!$                     DO ic=1,nbast
-!!$                        FAB=FAB+D%elms(ic+offset)*CoulombFactor*integrals(ia,ib,ic,id)
-!!$                     ENDDO
-!!$                  ENDDO
-!!$                  tempm2%elms(AORB+offset2) = FAB
-!!$               ENDDO
-!!$            ENDDO
-!!$            deallocate(integrals)
-!!$            nullify(integrals)
-!!$!            call mem_dealloc(integrals)
-!!$         ENDDO
-!!$      ENDDO
-!!$      DO Abatch=1,nbatches
-!!$         deallocate(batch2orb(Abatch)%orbindex)
-!!$      ENDDO
-!!$      deallocate(batch2orb)
-!!$      deallocate(batchdim)
-!!$      deallocate(orb2batch)
-!!$      call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm3)
-!!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER STD ',mat_trab(tempm1,tempm1)
-!!$      write(lupri,*) 'QQQ DI_DEBUG_4CENTER CHOL',mat_trab(tempm2,tempm2)
-!!$      IF(ABS(mat_trab(tempm3,tempm3)).LE. 1E-15_realk)THEN
-!!$         write(lupri,*)'QQQ SUCCESSFUL CHOLESKY TEST'
-!!$      ELSE
-!!$         CALL lsQUIT('CHOLESKY TEST TEST',lupri)
-!!$      ENDIF
-!!$      call mat_free(tempm1)
-!!$      call mat_free(tempm2)
-!!$      call mat_free(tempm3)
-!!$
-!!$    END SUBROUTINE DI_DEBUG_4CENTER
-#endif
+
     SUBROUTINE di_debug_magderiv_4center_eri(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
       integer,intent(in)      :: lupri,luerr,nbast
@@ -1951,194 +1784,6 @@ CONTAINS
       deallocate(Sx)
       WRITE(lupri,*)'di_magderivOverlap_test Successful'
     end subroutine di_magderivOverlap_test
-#ifdef MOD_UNRELEASED
-!!$   SUBROUTINE di_debug_ccfragment(lupri,luerr,ls,nbast,D,CMO,nocc)
-!!$      IMPLICIT NONE
-!!$      TYPE(Matrix),intent(in) :: D,CMO
-!!$      integer,intent(in)      :: lupri,luerr,nbast,nocc
-!!$      type(lsitem),intent(inout) :: ls
-!!$      !
-!!$      type(lsitem),pointer :: fragment_ls(:)
-!!$      type(AOITEM) :: AO
-!!$      TYPE(Matrix)  :: tempm1,tempm2,tempm3,tempm4,D2,refF
-!!$      real(realk),pointer   :: densPtmp(:,:)
-!!$      integer,pointer :: orb2batch(:),orb2atom(:),ATOMS(:)
-!!$      logical,pointer :: LATOMS(:)
-!!$      integer :: iatom,nbast1,nbast2,I,J,dim1,dim2,dim3,dim4,igamma
-!!$      integer :: delta,iorb,natoms,nBatches,natom2,iprint
-!!$      real(realk) :: MAXCMO
-!!$      iprint=0
-!!$      WRITE(LUPRI,*)'DEBUGGING THE CCFRAGMENT'
-!!$      WRITE(*,*)'DEBUGGING THE CCFRAGMENT'
-!!$
-!!$      !build the coulomb matrix 
-!!$      call mat_init(tempm1,nbast,nbast)
-!!$      call mat_init(tempm2,nbast,nbast)
-!!$      call mat_init(tempm3,nbast,nbast)
-!!$      call mat_init(refF,nbast,nbast)
-!!$      CALL II_get_coulomb_mat(LUPRI,LUERR,ls%setting,D,refF,1)
-!!$
-!!$      natoms = ls%input%molecule%natoms
-!!$      nullify(LATOMS)
-!!$      nullify(ATOMS)
-!!$      allocate(LATOMS(natoms))
-!!$      ALLOCATE(ATOMS(natoms))
-!!$
-!!$      nullify(orb2batch)
-!!$      allocate(orb2batch(nbast))
-!!$      CALL II_getBatchOrbitalInfo(ls%setting,&
-!!$           &nBast,orb2Batch,nBatches,lupri,luerr)
-!!$
-!!$      call BUILD_AO(LUPRI,ls%setting%SCHEME,0,ls%setting%MOLECULE(1)%p,ls%setting%BASIS(1)%p%REGULAR,AO&
-!!$     &,.false.,.false.,.false.)
-!!$
-!!$      call mem_alloc(orb2atom,nbast)
-!!$      do iorb = 1,nbast
-!!$         orb2atom(iorb) = AO%BATCH(orb2batch(iorb))%atom
-!!$      enddo
-!!$
-!!$      dim1=nbast
-!!$      dim2=nbast
-!!$
-!!$      nullify(fragment_ls)
-!!$      allocate(fragment_ls(nocc))
-!!$      call mat_zero(tempm3)
-!!$      MAXCMO = 0E0_realk
-!!$      DO iorb = 1,nocc
-!!$         do igamma=1,nbast
-!!$            MAXCMO = MAX(MAXCMO,CMO%elms(igamma+(iorb-1)*nbast))
-!!$         enddo
-!!$         LATOMS = .FALSE. 
-!!$         do igamma=1,nbast
-!!$            IF(ABS(MAXCMO*CMO%elms(igamma+(iorb-1)*nbast)).GT. 1E-13_realk)THEN
-!!$               LATOMS(orb2atom(igamma)) = .TRUE. 
-!!$            ENDIF
-!!$         enddo
-!!$!         print*,'LATOMS',LATOMS
-!!$         nbast1 = 0
-!!$         do igamma=1,nbast
-!!$            IF(LATOMS(orb2atom(igamma)))THEN
-!!$               nbast1 = nbast1+1
-!!$            ENDIF
-!!$         enddo
-!!$         dim3=nbast1
-!!$         dim4=nbast1
-!!$!         print*,'dim3',dim3,'dim4',dim4
-!!$         natom2=0
-!!$         ATOMS=0
-!!$         DO iatom = 1,natoms
-!!$            IF(LATOMS(iatom))THEN
-!!$               natom2=natom2+1
-!!$               ATOMS(natom2)=iatom
-!!$            ENDIF
-!!$         ENDDO
-!!$!         print*,'ATOMS',ATOMS
-!!$         nbast1 = 0
-!!$         nullify(DensPtmp)
-!!$         allocate(DensPtmp(dim3,dim4))
-!!$         DensPtmp = 0E0_realk
-!!$         do igamma=1,nbast
-!!$            if(LATOMS(orb2atom(igamma)))THEN
-!!$               nbast1 = nbast1+1
-!!$               nbast2 = 0
-!!$               do delta=1,nbast
-!!$                  if(LATOMS(orb2atom(delta)))THEN
-!!$                     nbast2 = nbast2+1
-!!$                     DensPtmp(nbast1,nbast2) = CMO%elms(igamma+(iorb-1)*nbast)*CMO%elms(delta+(iorb-1)*nbast)
-!!$                  endif
-!!$               enddo
-!!$            endif
-!!$         enddo
-!!$         call build_ccfragmentlsitem(LS,fragment_ls(iorb),ATOMS(1:NATOM2),NATOM2,LUPRI,IPRINT)
-!!$         ! here we set the ab in (ab|cd) to full
-!!$         fragment_ls(iorb)%SETTING%MOLECULE(1)%p => LS%SETTING%MOLECULE(1)%p
-!!$         fragment_ls(iorb)%SETTING%BASIS(1)%p => LS%SETTING%BASIS(1)%p
-!!$         fragment_ls(iorb)%SETTING%FRAGMENT(1)%p => LS%SETTING%FRAGMENT(1)%p
-!!$         fragment_ls(iorb)%SETTING%MOLECULE(2)%p => LS%SETTING%MOLECULE(2)%p
-!!$         fragment_ls(iorb)%SETTING%BASIS(2)%p => LS%SETTING%BASIS(2)%p
-!!$         fragment_ls(iorb)%SETTING%FRAGMENT(2)%p => LS%SETTING%FRAGMENT(2)%p
-!!$         fragment_ls(iorb)%SETTING%molID(1)=0
-!!$         fragment_ls(iorb)%SETTING%molID(2)=0
-!!$         fragment_ls(iorb)%SETTING%molID(3)=iorb
-!!$         fragment_ls(iorb)%SETTING%molID(4)=iorb
-!!$         fragment_ls(iorb)%SETTING%sameMOL=.TRUE.
-!!$         DO I=1,2
-!!$            DO J=3,4          
-!!$               fragment_ls(iorb)%SETTING%sameMOL(I,J) = .FALSE.
-!!$               fragment_ls(iorb)%SETTING%sameMOL(J,I) = .FALSE.
-!!$            ENDDO
-!!$         ENDDO
-!!$         call mat_init(D2,dim3,dim4)
-!!$         CALL mat_set_from_full(DensPtmp,1E0_realk, D2,'DenP')
-!!$         deallocate(DensPtmp)
-!!$         call mat_zero(tempm1)
-!!$         CALL II_get_coulomb_mat(LUPRI,LUERR,fragment_ls(iorb)%setting,D2,tempm1,1)
-!!$         call mat_free(D2)
-!!$
-!!$!         allocate(DensPtmp(nbast,nbast))
-!!$!         DensPtmp=0E0_realk
-!!$!         do delta=1,nbast
-!!$!            do gamma=1,nbast
-!!$!               DensPtmp(gamma,delta) = CMO%elms(gamma+(iorb-1)*nbast)*CMO%elms(delta+(iorb-1)*nbast)
-!!$!            enddo
-!!$!         enddo
-!!$!         call mat_init(D2,nbast,nbast)
-!!$!         CALL mat_set_from_full(DensPtmp,1E0_realk, D2,'DenP')
-!!$!         call mat_zero(tempm2)
-!!$!         CALL II_get_coulomb_mat(LUPRI,LUERR,ls%setting,D2,tempm2)
-!!$!         call mat_init(tempm4,nbast,nbast)
-!!$!         call mat_add(1E0_realk,tempm1,-1E0_realk,tempm2,tempm4)
-!!$!         write(lupri,*) 'QQQ DI_DEBUG',iorb,'             :',mat_trab(tempm2,tempm2)
-!!$!         write(lupri,*) 'QQQ DI_DEBUG lsfragment',iorb,'  :',mat_trab(tempm1,tempm1)
-!!$!         write(lupri,*) 'QQQ DIFF                         :',mat_trab(tempm4,tempm4)
-!!$!         IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
-!!$!            write(lupri,*)'QQQ SUCCESSFUL'
-!!$!         ELSE
-!!$!            WRITE(lupri,*)'ZZ THE FULL DMAT IORB =',iorb
-!!$!            call mat_print(D2,1,nbast,1,nbast,lupri)
-!!$!            WRITE(lupri,*)'THE FRAGMENT FOCK'
-!!$!            call mat_print(tempm1,1,nbast,1,nbast,lupri)
-!!$!            WRITE(lupri,*)'THE LS FOCK'
-!!$!            call mat_print(tempm2,1,nbast,1,nbast,lupri)
-!!$!            WRITE(lupri,*)'THE DIFF'
-!!$!            call mat_print(tempm4,1,nbast,1,nbast,lupri)            
-!!$!            WRITE(LUPRI,*)'ZZZ LS SETTING'
-!!$!            call PRINT_LSSETTING(ls%setting,LUPRI)
-!!$!            WRITE(LUPRI,*)'QQQ FRAGMNET SETTING'
-!!$!            call PRINT_LSSETTING(fragment(iorb)%setting,LUPRI)
-!!$!            
-!!$!            CALL lsQUIT('TEST TEST IORB')
-!!$!         ENDIF
-!!$!         call mat_free(D2)
-!!$!         call mat_free(tempm4)
-!!$
-!!$         call ls_free(fragment_ls(iorb))
-!!$         !** F = h + G
-!!$         call mat_daxpy(1E0_realk,tempm1,tempm3)
-!!$      ENDDO
-!!$
-!!$      call mat_init(tempm4,nbast,nbast)
-!!$      call mat_add(1E0_realk,tempm3,-1E0_realk,refF,tempm4)
-!!$      write(lupri,*) 'QQQ DI_DEBUG     STD   ',mat_trab(refF,refF)
-!!$      write(lupri,*) 'QQQ DI_DEBUG lsfragment',mat_trab(tempm3,tempm3)
-!!$      write(lupri,*) 'QQQ DIFF               ',mat_trab(tempm4,tempm4)
-!!$      IF(ABS(mat_trab(tempm4,tempm4)).LE. 1E-8_realk)THEN
-!!$         write(lupri,*)'QQQ SUCCESSFUL'
-!!$      ELSE
-!!$         WRITE(lupri,*)'THE DIFF'
-!!$         call mat_print(tempm4,1,nbast,1,nbast,lupri)
-!!$         CALL lsQUIT('TEST TEST',lupri)
-!!$      ENDIF
-!!$      call mem_dealloc(orb2atom)
-!!$      call mat_free(tempm1)
-!!$      call mat_free(tempm2)
-!!$      call mat_free(tempm3)
-!!$      call mat_free(tempm4)
-!!$      call mat_free(refF)
-!!$      call free_aoitem(lupri,AO)
-!!$
-!!$    END SUBROUTINE di_debug_ccfragment
-#endif
 
    SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls,EcontADMMout)
    ! ===================================================================
@@ -3002,7 +2647,6 @@ CONTAINS
            &lsint_fock_data%ls%setting,nbast,b,D,sigma_xc_cont,nbmat)
     end subroutine di_get_sigma_xc_contArray_lsd
 
-#ifdef MOD_UNRELEASED
     SUBROUTINE di_decpacked(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
       TYPE(Matrix),intent(in) :: D
@@ -3144,7 +2788,7 @@ CONTAINS
       call mat_free(tempm3)
 
     END SUBROUTINE DI_DECPACKED
-#endif
+
     SUBROUTINE di_decpackedJ(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
       TYPE(Matrix),intent(in) :: D

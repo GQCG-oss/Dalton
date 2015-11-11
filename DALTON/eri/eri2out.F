@@ -43,6 +43,9 @@ C  /* Deck eriout */
 #include "symmet.h"
 #include "hertop.h"
 #include "inftap.h"
+
+      CALL QENTER('ERIOUT')
+
 C
 C     Allocation for ERIOUT
 C
@@ -132,6 +135,8 @@ C
      &               IREPE,IPRINT)
       END IF
 C
+      CALL QEXIT('ERIOUT')
+
       RETURN
       END
 C  /* Deck eriou1 */
@@ -306,6 +311,7 @@ C  /* Deck eriwrt */
 #include "aovec.h"
 C
 #include "eridst.h"
+#include "eritap.h"
 #include "eribuf.h"
       CHARACTER*8 FAODER
       DIMENSION BUF(LBUF,NBUFS), BIN(LBIN),
@@ -328,9 +334,6 @@ C
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIWRT',-1)
 C
-      IBIT1 = 2**NBITS     - 1
-      IBIT2 = 0
-      IF (NIBUF .EQ. 2) IBIT2 = 2**(2*NBITS) - 1
       LBUF4 = LBUF ! LBUF4 is always integer*4
 C
 C     Initialization of LUINTX
@@ -338,10 +341,9 @@ C     ========================
 C
       IF (FIRST) THEN
          IF (DODIST) THEN
-           IF (LUINTR .LT. 0) THEN
-               CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',' ',
-     *                     IDUMMY,.FALSE.)
-            ENDIF
+           IF (LUINTR .LT. 0)
+     &         CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
+     &                     ' ',IDUMMY,.FALSE.)
             REWIND LUINTR
          ELSE IF (GDER .OR. BDER) THEN
             DO I = 1, NPERTS 
@@ -354,8 +356,11 @@ C
                CALL NEWLAB(FAODER,LUINTD(I),LUPRI)
             END DO
          ELSE
+            IF (LUINTA .LT. 0)
+     &         CALL GPOPEN(LUINTA,'AOTWOINT','UNKNOWN',' ',
+     &                     'UNFORMATTED',IDUMMY,.FALSE.)
             LUINTX = LUINTA
-            CALL REWSPL(LUINTX)
+            CALL REWSPL(LUINTA)
             CALL NEWLAB('BASINFO ',LUINTA,LUPRI)
             LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! in integer*4 units
             WRITE (LUINTA) MAXREP+1,NAOS,LBUF,NIBUF,NBITS,LENINT4
@@ -1518,10 +1523,6 @@ C
       KCCS1 = 1
       KCCS2 = NCCS1 + 1
 C
-      IBIT1 = 2**NBITS     - 1
-      IBIT2 = 0
-      IF (NIBUF .EQ. 2) IBIT2 = 2**(2*NBITS) - 1
-C
       DO A = 0, MAXREP
       IF (DOREP(A,1)) THEN
       DO B = 0, MAXREP
@@ -1667,7 +1668,6 @@ C  /* Deck eribrc */
      &          IPOINT(NCCS,4), IODXYZ(0:3)
 #include "cbieri.h"
 #include "ericom.h"
-#include "eribuf.h"
 #include "aobtch.h"
 #include "hertop.h"
 #include "nuclei.h"
@@ -2075,7 +2075,6 @@ C  /* Deck nrdint */
 #include "eribuf.h"
 #include "ibtpar.h"
 
-      IBIT1 = 2**NBITS - 1
       I = IAND(ISHFT(INDEX,-3*NBITS),IBIT1)
       J = IAND(ISHFT(INDEX,-2*NBITS),IBIT1)
       K = IAND(ISHFT(INDEX,  -NBITS),IBIT1)

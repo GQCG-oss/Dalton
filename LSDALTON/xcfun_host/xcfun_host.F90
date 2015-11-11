@@ -155,12 +155,13 @@ module xcfun_host
        allocate(WeightSingle(nStrings))
        call trim_strings(DFTfuncString,nStrings,DFTfuncStringSingle,WeightSingle)
        do I=1,nStrings
-          admm_ggacorr_single = ( (INDEX(DFTfuncStringSingle(I),'B88X')).NE.0 ) .OR. &
-         &                      ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR. &
-         &                      ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR. &
-         &                      ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR. &
-         &                      ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR. &
-         &                      ( (INDEX(DFTfuncStringSingle(I),'CAMCOMPX')).NE.0 )
+          admm_ggacorr_single = ( (INDEX(DFTfuncStringSingle(I),'B88X')).NE.0 ) .OR.    &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'LDAX')).NE.0 ) .OR.    &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'PBEX')).NE.0 ) .OR.    &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'KT3X')).NE.0 ) .OR.    &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'OPTX')).NE.0 ) .OR.    &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'CAMCOMPX')).NE.0) .OR. &
+         &                      ( (INDEX(DFTfuncStringSingle(I),'tfk')).NE.0)
           IF (admm_ggacorr_single) THEN
             WeightSingle(I) = hfweight
             admm_ggacorr = .TRUE.

@@ -571,6 +571,7 @@ C
 #if defined (HAS_PCMSOLVER)
       use pcmmod_cfg
 #endif
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
       DIMENSION ZYCVEC(*),ZYOVEC(*)
@@ -672,9 +673,9 @@ C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C CBN+JK 03.01.06 : This covers also mm/pcm
 C
-C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. QMNPMM
+C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
 C
-      IF (EMBEDDING .or. is_pcmsolver) THEN
+      IF (EMBEDDING .OR. USE_PELIB() .or. is_pcmsolver) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      &               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

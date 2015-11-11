@@ -1148,7 +1148,7 @@ contains
     !> True if the rho part of linear transformation should be calculated
     logical, intent(in) :: make_rhos
     type(Matrix) :: scr
-    integer :: i,ndim,l 
+    integer :: i,ndim,l,nnz
     ndim = S%nrow
 !    if(make_rhos)then
        call mem_alloc(rhos,nnew)
@@ -1160,6 +1160,13 @@ contains
 !    endif
        call mat_init(sigmas(i),Bvecs(1)%nrow,Bvecs(1)%ncol)
     enddo
+    
+    if (molcfg%solver%info_rsp_sparsity) then
+       do i=1,nnew
+          call mat_report_sparsity(Bvecs(i),'TrialVectorSparsity',nnz,molcfg%lupri)
+          Write(molcfg%lupri,'(A,I3,A,I9)')'TrialVector(',i,') NNZ=',NNZ
+       enddo
+    endif
 
     if((nnew .GT. 1).AND. .NOT.molcfg%solver%cfg_unres)then
       call make_lintran_vecsArray(molcfg,D,S,F,Bvecs,sigmas,rhos,make_rhos,nnew)
@@ -1889,11 +1896,13 @@ contains
     allocate(E2(2*ndim_red,2*ndim_red), S2(2*ndim_red,2*ndim_red))
     allocate(RHS(2*ndim_red), IPIV(2*ndim_red))
 
-    !Setup reduced E2, S2, and right hand side with proper dimension
-    E2 = red_E(1:2*ndim_red,1:2*ndim_red)
-    S2 = red_S(1:2*ndim_red,1:2*ndim_red)
 
     do igd = 1, ngd
+       !Setup reduced E2, S2, and right hand side with proper dimension
+       !This must be done inside the igd loop because DGESV destroys it. TK
+       E2 = red_E(1:2*ndim_red,1:2*ndim_red)
+       S2 = red_S(1:2*ndim_red,1:2*ndim_red)
+
        RHS = red_GD(1:2*ndim_red,igd)
 
        if (MOLCFG%SOLVER%INFO_RSP_REDSPACE) then

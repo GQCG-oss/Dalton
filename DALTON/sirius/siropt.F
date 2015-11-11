@@ -40,7 +40,7 @@ C Revisions
 C   6-Aug-1984/16-May-1984 - hjaaj
 C  14-May-1985 - hjaaj (update     -- sirupd)
 C  10-Nov-1985 - hjaaj (absorption -- sirorb)
-C  14-May-1986 - hjaaj (nr eq's    -- sirnr)
+C  14-May-1986 - hjaaj (nr eq.s    -- sirnr)
 C
 C Purpose: Control MCSCF optimization.
 C
@@ -57,6 +57,9 @@ C
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
+      use pelib_interface, only: use_pelib, pelib_ifc_fock,
+     &                           pelib_ifc_grad, pelib_ifc_energy
+
 #include "implicit.h"
 
 C
@@ -428,6 +431,9 @@ C
 C         --- Normalize CI vector (i.e. CREF)
 C         6-Dec-1984-hjaaj: SIRSAV changed so CREF normally normalized now
 C
+      print*, 'nconf', nconf
+      print*, 'wrk(kcref)', wrk(kcref)
+
       IF (NCONF .GT. 1) THEN
          C0NORM = DNRM2(NCONF,WRK(KCREF),1)
          THREQL = SQRT(NCONF*THRLDP)
@@ -523,11 +529,10 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (QMMM) THEN
          CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
-      ELSE IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-         CALL PE_GRAD(WRK(KCREF), WRK(KCMO), WRK(KCINDX), WRK(KDV),
-     &                WRK(KGTOT), ESOLT, WRK(KWRKG), LWRKG)
-#endif
+      ELSE IF (USE_PELIB()) THEN
+         CALL PELIB_IFC_GRAD(WRK(KCREF), WRK(KCMO), WRK(KCINDX),
+     &                       WRK(KDV), WRK(KGTOT), ESOLT,
+     &                       WRK(KWRKG), LWRKG)
       ELSE
          ESOLT = D0
       END IF
@@ -588,14 +593,14 @@ chj   END IF
       IF (PCM)    WRITE (LUW4,1019) ESOLT
       IF (QM3)    WRITE (LUW4,1017) EQM3
       IF (QMMM)   WRITE (LUW4,1017) ESOLT
-      IF (PEQM)   WRITE (LUW4,1021) ESOLT
+      IF (USE_PELIB()) WRITE (LUW4,1021) ESOLT
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT) WRITE (LUPRI,1016) ESOLT
          IF (PCM)    WRITE (LUPRI,1019) ESOLT
          IF (QM3) WRITE (LUPRI,1017) EQM3
          IF (QMMM) WRITE (LUPRI,1017) ESOLT
-         IF (PEQM) WRITE(LUPRI,1021) ESOLT
+         IF (USE_PELIB()) WRITE(LUPRI,1021) ESOLT
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total ',A,' energy',T27,':',F30.15,T54,
@@ -737,12 +742,11 @@ C                    need higher int. transf. level for NEO/NR
                      CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
-                  ELSE IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-                    CALL PE_GRAD(WRK(KCREF), WRK(KCMO), WRK(KCINDX),
-     &                           WRK(KDV), WRK(KGTOT), ESOLT,
-     &                           WRK(KWRKG), LWRKG)
-#endif
+                  ELSE IF (USE_PELIB()) THEN
+                    CALL PELIB_IFC_GRAD(WRK(KCREF), WRK(KCMO),
+     &                                  WRK(KCINDX), WRK(KDV),
+     &                                  WRK(KGTOT), ESOLT,
+     &                                  WRK(KWRKG), LWRKG)
                   END IF
 #endif
                ELSE
@@ -1105,26 +1109,30 @@ C CBN+JK 03.01.06
          CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
      &               WRK(KWRKG),LWRKG,IPRINT)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
-      ELSE IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+      ELSE IF (USE_PELIB()) THEN
         KFCSOL = KWRKG
         KENR = KFCSOL + NNORBX
         KDCAO = KENR + 1
         KDVAO = KDCAO + N2BASX
         KFDTAO = KDVAO + N2BASX
-        KWRKG = KFDTAO + NNBASX
-        LWRKG = LFREE - (KWRKG - 1)
-        CALL PE_FCKMO(WRK(KCMO), WRK(KDV), WRK(KFCSOL), WRK(KENR),
-     &                WRK(KWRKG), LWRKG)
-        CALL DAXPY(NNORBX, 1.0D0, WRK(KFC), 1, WRK(KFCSOL), 1)
+        KFCKAO = KFDTAO + NNBASX
+        KWRKG = KFCKAO + NNBASX
+        LWRKG = LFREE - KWRKG + 1
+        IF (LWRKG > LFREE) CALL ERRWRK('SIROPT-PEQM', -KWRKG, LFREE)
         CALL FCKDEN((NISHT>0), (NASHT>0), WRK(KDCAO), WRK(KDVAO),
-     &               WRK(KCMO), WRK(KDV), WRK(KWRKG), LWRKG)
+     &              WRK(KCMO), WRK(KDV), WRK(KWRKG), LWRKG)
+        IF (NISHT == 0) THEN
+           CALL DZERO(WRK(KDCAO), N2BASX)
+        END IF
         IF (NASHT > 0) THEN
-           CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
+           CALL DAXPY(N2BASX, 1.0D0, WRK(KDVAO), 1, WRK(KDCAO), 1)
         END IF
         CALL DGEFSP(NBAST, WRK(KDCAO), WRK(KFDTAO))
-        CALL PE_IFC_ENERGY(WRK(KFDTAO), 1)
-#endif
+        CALL PELIB_IFC_FOCK(WRK(KFDTAO), WRK(KFCKAO), WRK(KENR))
+        CALL UTHU(WRK(KFCKAO), WRK(KFCSOL), WRK(KCMO), WRK(KWRKG),
+     &            NBAST, NORBT)
+        CALL DAXPY(NNORBX, 1.0D0, WRK(KFC), 1, WRK(KFCSOL), 1)
+        CALL PELIB_IFC_ENERGY(WRK(KFDTAO))
       ELSE
          KFCSOL = KFC
       END IF
@@ -1135,7 +1143,7 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (SOLVNT .OR. QM3)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-         IF (PEQM) THEN
+         IF (USE_PELIB()) THEN
             WRITE(LUW4,'(A)')
      &   '    (incl. contribution from polarizable embedding potential)'
          END IF
@@ -1144,7 +1152,7 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-            IF (PEQM) THEN
+            IF (USE_PELIB()) THEN
                 WRITE(LUW4,'(A)')
      &   '    (incl. contribution from polarizable embedding potential)'
             END IF
@@ -1660,8 +1668,6 @@ C
 C        single configuration has always natural orbitals
          IF (CNOLBL .EQ. 'ONLYNO') THEN
             TRCNO  = .FALSE.
-         ELSE
-            CNOLBL = 'ONLYFD'
          END IF
          GO TO 9000
       END IF
@@ -1703,11 +1709,9 @@ C
          IF (LW22 .LT. 0) CALL ERRWRK('OPTST.CICTL',-KW22,LFREE)
 C
 C      A  single configuration will already have natural orbitals
-         IF (MAXCIT .EQ. 0) THEN
+         IF (MAXCIT .LE. 0) THEN
             IF (CNOLBL .EQ. 'ONLYNO') THEN
                TRCNO  = .FALSE.
-            ELSE
-               CNOLBL = 'ONLYFD'
             END IF
          END IF
 C
@@ -1796,8 +1800,6 @@ C
 C
 C
       GO TO 9000
-C
-C *** ICSTRT = 4, 5, 6, or 7 ***
 C     (See what codes means at beginning of this subroutine)
 C
 C === start guess should already be on LUIT1 (SIRIUS.RST)
@@ -2186,6 +2188,7 @@ C
       END IF
       ISTEP = 0
       DEACT = EMCSCF - EMCOLD
+
       IF ( ABS(DEPRED/EMCSCF).GT.THDE ) THEN
          RATIO = DEACT / DEPRED
          IF (GEOWLK .OR. P4FLAG(7)) WRITE (LUW4,1100) DEACT,DEPRED,RATIO
@@ -2563,6 +2566,7 @@ C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_fock
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
@@ -2917,7 +2921,7 @@ C Write qm/mm solvent part of the Fock matrix to interface file
        IF (QMMM) THEN
 
          IF (IPQMMM .GE. 15) THEN
-          WRITE(LUPRI,*) 'WRITING PE FOCK MAT. TO SIRIUS INTERFACE FILE'
+          WRITE(LUPRI,*)'WRITING QMMM FOCK MAT TO SIRIUS INTERFACE FILE'
          ENDIF
 
          KDCAO  = KWRK1
@@ -2953,9 +2957,9 @@ C Write qm/mm solvent part of the Fock matrix to interface file
      &               NBAST,NORBT)
 
          IF (IPQMMM .GE. 15) THEN
-           WRITE (LUPRI,'(/A)') ' PE_ao matrix from WR_SIRIFC:'
+           WRITE (LUPRI,'(/A)') ' QMMM_ao matrix from WR_SIRIFC:'
            CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
-           WRITE (LUPRI,'(/A)') ' PE_mo matrix from WR_SIRIFC'
+           WRITE (LUPRI,'(/A)') ' QMMM_mo matrix from WR_SIRIFC'
            CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
          ENDIF
 
@@ -2963,24 +2967,32 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
       END IF
 
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+      IF (USE_PELIB() .AND. (NCONF > 1)) THEN
          ! Calculate ground-state PE contribution which is subtracted from
-         ! the full Fock matrix in response for MCSCF wavefunction
-         IF (NCONF > 1) THEN
-            KPEFCK = KWRK1
-            KEPE   = KPEFCK + NNORBX
-            KWRK2  = KEPE + 1
-            LWRK2  = LFREE - KWRK2 + 1
-            IF (LWRK2 < 0) THEN
-               CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
-            END IF
-            CALL PE_FCKMO(CMO, DV, WRK(KPEFCK), WRK(KEPE),
-     &                    WRK(KWRK2), LWRK2)
-            WRITE (LUSIFC) LAB123, TABLE(12)
-            CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
+         ! the full Fock matrix in response for MCSCF and CI wavefunction
+         KFCKMO = KWRK1
+         KENR = KFCKMO + NNORBX
+         KDCAO = KENR + 1
+         KDVAO = KDCAO + N2BASX
+         KFDTAO = KDVAO + N2BASX
+         KFCKAO = KFDTAO + NNBASX
+         KWRK2 = KFCKAO + NNBASX
+         LWRK2 = LFREE - KWRK2 + 1
+         IF (LWRK2 > LFREE) CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
+         CALL FCKDEN((NISHT>0), (NASHT>0), WRK(KDCAO), WRK(KDVAO),
+     &               CMO, DV, WRK(KWRK2), LWRK2)
+         IF (NISHT == 0) THEN
+           CALL DZERO(WRK(KDCAO), N2BASX)
          END IF
-#endif
+         IF (NASHT > 0) THEN
+           CALL DAXPY(N2BASX, 1.0D0, WRK(KDVAO), 1, WRK(KDCAO), 1)
+         END IF
+         CALL DGEFSP(NBAST, WRK(KDCAO), WRK(KFDTAO))
+         CALL PELIB_IFC_FOCK(WRK(KFDTAO), WRK(KFCKAO), WRK(KENR))
+         CALL UTHU(WRK(KFCKAO), WRK(KFCKMO), CMO, WRK(KWRK2),
+     &             NBAST, NORBT)
+         WRITE (LUSIFC) LAB123, TABLE(12)
+         CALL WRITT(LUSIFC, NNORBX, WRK(KFCKMO))
       END IF
 C
 C     Revision 2000/05/24 12:43:25  hjj

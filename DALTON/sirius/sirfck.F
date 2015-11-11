@@ -227,6 +227,11 @@ CFRAN 17/02/2010 END
       HFXFACSAVE = HFXFAC
       CHIVALSAVE = CHIVAL
       IF (DO_CHOINT) THEN
+      IF (IPRFCK .GT. 0) THEN
+         WRITE(LUPRI,'(/A,I4,A/A,(20I5))')
+     &   'SIRFCK: Cholesky construction of',NDMAT,' Fock matrices',
+     &   '        IFCTYP:',(IFCTYP(I),I=1,NDMAT)
+      END IF
          DTIME  = SECOND()
          ICOUN3 = 0
 C
@@ -291,12 +296,17 @@ C
          DTIME = SECOND() - DTIME
          TSIRF = TSIRF    + DTIME
          IF (IPRFCK .GT. 0 .AND. ICOUN3 .EQ. NDMAT) THEN
-            WRITE(LUPRI,'(/,A,I3,A,F10.2,A,/)')
+            WRITE(LUPRI,'(/A,I3,A,F10.2,A,/)')
      &     ' >>> SIRFCK Cholesky: ',NDMAT,
      &     ' non-symmetric Fock matrices calculated in',DTIME,' seconds'
          ENDIF
 
       ELSE IF (DIRECT) THEN ! not Cholesky, AO-direct?
+      IF (IPRFCK .GT. 0) THEN
+         WRITE(LUPRI,'(/A,I4,A/A,(20I5))')
+     &   'SIRFCK: AO-direct construction of',NDMAT,' Fock matrices',
+     &   '        IFCTYP:',(IFCTYP(I),I=1,NDMAT)
+      END IF
 C
 C
 C     ****************** AO direct Fock matrices ***************
@@ -525,6 +535,12 @@ C
 #endif
 C
       ELSE ! not Cholesky and not AO-direct
+      IF (IPRFCK .GT. 0) THEN
+         WRITE(LUPRI,'(/A,I4,A/A,(20I5))')
+     &   'SIRFCK: Construction of',NDMAT,
+     &   ' Fock matrices from integrals on file',
+     &   '        IFCTYP:',(IFCTYP(I),I=1,NDMAT)
+      END IF
 C
 C     ****************** "conventional" AO Fock matrices ***************
 C                        (from AO integrals on file)
@@ -757,9 +773,9 @@ C           2 because DC, DV or DXC, DXV
             NDOFF = 1
 C           1 because DC or DXC
          END IF
-         KSRAO = 1
          IF (LSRHYBR) NSRAO = NSRAO + 1
 C        ... one more EXCMAT from SRDFT when LSRHYBR
+         KSRAO = 1
          KLAST = KSRAO + NSRAO*N2BASX
          IF (DOERG .AND. NSR_DMAT .GT. 1) THEN
             WRITE(LUPRI,*) 'SRFCK.SRDFT only for one SRMAT when DOERG',
@@ -918,20 +934,24 @@ C
      &         CALL DAXPY(N2BASX,-D1,DMAT(1,2),1,DMAT(1,1),1)
 C        ... restore DC = DTOT - DV
             ECSR = -DP5*DDOT(N2BASX,DMAT(1,1),1,WRK(KSRAO),1)
+            EVSR = D0
+            ESSR = D0
             IF (NASHT.GT.0) THEN
                EVSR = -DDOT(N2BASX,DMAT(1,2),1,WRK(KSRAO),1)
-            ELSE
-               EVSR = D0
+            IF (DFT_SPINDNS) THEN
+               ESSR = -DDOT(N2BASX,DMAT(1,2),1,WRK(KSRAO+N2BASX),1)
             END IF
-            ESRDFTY  = ESRDFT + ECSR + EVSR + EJKVSR + EKSR_S
+            END IF
+            ESRDFTY  = ESRDFT + ECSR + EVSR + ESSR + EJKVSR + EKSR_S 
 !
 C
 C           ESRDFT = Exsr + Ecsr
-C           EKSR_S =  0.5*Tr( Ksr Dspin ) * HFXFAC
+C           EKSR_S =  0.5*Tr( Ksr Ds ) * HFXFAC
 C           ECSR   = -0.5*Tr( Vxcsr Dc )
 C           EVSR   =     -Tr( Vxcsr Dv )
+C           ESSR   =     -Tr( V[Ds]xcsr Dv )
 C           EJKVSR = -0.5*Tr( (Jsr+HFXFAC*Ksr) Dv)
-C           note: ECSR + EVSR + EJKVSR corrections are added
+C           note: ECSR + EVSR + ESSR + EJKVSR + EKSR_S corrections are added
 C                 to get right contributions from MCSCF code.
 C
 C           For print, short-range Coulomb and Exchange energies:
@@ -948,10 +968,11 @@ C
                WRITE (LUPRI,'(A,F20.10)')
      &         ' - 0.5 Tr(Vxc-sr Dcore)           ',ECSR,
      &         ' -     Tr(Vxc-sr Dval)            ',EVSR,
+     &         ' -     Tr(V[Ds]xc-sr Dval)        ',ESSR,
      &         ' - 0.5 Tr( (Jsr+HFXFAC*Ksr) Dval )',EJKVSR,
      &         ' = EsrDFTY                        ',ESRDFTY,
-     &         '   EJsr charge density            ',EJSR,
-     &         '   EKsr charge density            ',EKSR
+     &         '   EJsr = sr Coulomb energy       ',EJSR,
+     &         '   EKsr = sr Exchange energy      ',EKSR
 !           END IF
          END IF ! (DOERG)
          IF (IPRFCK .GT. 0) THEN 
@@ -1000,12 +1021,12 @@ C------------------------------------------------------
 C
       IF (IPRFCK.GT.2) THEN
          CALL HEADER('Density and Fock matrices in SIRFCK',-1)
-         DO 300 I = 1, NDMAT
+         DO I = 1, NDMAT
             WRITE (LUPRI,'(//A,I3)') ' Density matrix No.',I
             CALL OUTPUT(DMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             WRITE (LUPRI,'(//A,I3)') ' Fock matrix No.',I
             CALL OUTPUT(FMAT(1,I),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-  300    CONTINUE
+         END DO
       END IF
 #endif
 C
@@ -1117,6 +1138,11 @@ C
       CALL REWSPL(LU2INT)
       CALL MOLLAB('BASINFO ',LU2INT,LUPRI)
       READ (LU2INT) MSYM, MBAS, LBUF, NIBUF, NBITS, LENINT4
+      IF (IPRFCK .GE. 5) THEN
+         WRITE(LUPRI,'(/3A,3I5)')
+     &   'SIRFCK2: File "',FN2INT,'" opened. LBUF,NIBUF,NBITS:',
+     &   LBUF,NIBUF,NBITS
+      END IF
       IF (MSYM .NE. NSYM) THEN
          CALL QUIT('SIRFCK2: NSYM from AOxxxINT .ne. NSYM in common')
       END IF
@@ -1147,17 +1173,21 @@ C
 C
       CALL MOLLAB('BASTWOEL',LU2INT,LUPRI)
 C
+      NREC = 0
+      NINTS_TOT = 0
     1 CONTINUE
 C
          CALL READI4(LU2INT,LENINT4,WRK(KINT))
-         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,WRK(KIIN4),NINT)
-         IF (NINT .EQ. 0)  GOTO 1
-         IF (NINT .EQ. -1) GOTO 2
+         NREC = NREC + 1
+         CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,WRK(KIIN4),NINTS)
+         IF (NINTS .EQ. 0)  GOTO 1
+         IF (NINTS .EQ. -1) GOTO 2
+         NINTS_TOT = NINTS_TOT + NINTS
 C
          DO 200 I = 1,NDMAT
             IF (IFCTYP(I) .EQ. 13) THEN
 C           ... e.g. singlet, symmetric density matrix
-              CALL FCKD13(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD13(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 22
      &          .OR. IFCTYP(I) .EQ. 23
      &          .OR. IFCTYP(I) .EQ. 12) THEN
@@ -1166,21 +1196,21 @@ C               (type 23: Coulomb term is zero because antisymmetric)
 C           ... e.g. singlet, antisymmetric density matrix OR
 C           ... or   triplet,     symmetric density matrix OR
 C           ... or   triplet, antisymmetric density matrix
-              CALL FCKD12(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD12(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 11) THEN
 C           ... Symmetric, Only Coulomb
-              CALL FCKD11(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD11(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 3) THEN
 C           ... Non-symmetric, Coulomb+Exchange
 C           ... e.g. singlet, non-symmetric (general) density matrix
-              CALL FCKD03(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD03(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 2) THEN
 C           ... Non-symmetric, Only Exchange
 C           ... e.g. triplet, non-symmetric (general) density matrix
-              CALL FCKD02(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD02(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (IFCTYP(I) .EQ. 1) THEN
 C           ... Non-symmetric, Only Coulomb
-              CALL FCKD01(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
+             CALL FCKD01(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINTS)
             ELSE IF (MOD(IFCTYP(I),10).EQ. 0 .OR. IFCTYP(I).EQ.21) THEN
 C              *0:  nothing
 C              21:  antisymmetric, only Coulomb gives a zero matrix
@@ -1194,6 +1224,11 @@ C
 C
     2 CONTINUE
       CALL GPCLOSE(LU2INT,'KEEP')
+      IF (IPRFCK .GE. 5) THEN
+         WRITE(LUPRI,'(/A,I6,A/I16,A)')
+     &   'SIRFCK2: ', NREC,' records with integrals read.',
+     &   NINTS_TOT,' integrals processed.'
+      END IF
 C
 C     Finish symmetric and antisymmetric Fock matrices
 C     Restore original density matrices
@@ -1546,7 +1581,7 @@ C     This subroutine completes antisymmetric Fock matrices
 C     accumulated by FCKD12 by antisymmetrization.
 C
 C     Note: 0.5 factor is required in order to preserve
-C     symmetric content of FMAT from before SIRFCK call.
+C     antisymmetric content of FMAT from before SIRFCK call.
 C
 #include "implicit.h"
 #include "priunit.h"

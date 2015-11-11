@@ -19,7 +19,7 @@ f.add(string = 'TOYCODE:',
       rel_tolerance = 1.0e-8)
 
 f.add(from_string = 'E: Hartree-Fock energy',
-      to_string   = 'E: Total CCSD-F12 energy',
+      to_string   = 'E: Tot CCSD-F12 energy',
       rel_tolerance = 1.0e-8)
 
 

@@ -10,7 +10,7 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(rel_tolerance = 1.0e-3,
+f.add(abs_tolerance = 1.0e-4,
       ignore_sign = True) # all lines
 
 test.run(['molden.inp'], ['CH2O_3-21G.mol'],

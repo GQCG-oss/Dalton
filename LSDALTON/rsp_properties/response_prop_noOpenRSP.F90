@@ -11,6 +11,7 @@ module response_noOpenRSP_module
   use lstiming
   use matrix_module, only: matrix
   use matrix_operations
+  use matrix_operations_aux 
   use matrix_util
   use rspsolver
   use decompMod, only: decompItem
@@ -19,7 +20,8 @@ module response_noOpenRSP_module
   use dal_interface
   use rsp_util
   use response_wrapper_type_module, only: ALPHAinputItem
-
+  use ls_Integral_Interface
+  use nuclei_selected_shielding_mod
   !***********************************************************************
   ! Driver routine for linear response (polarizability), NMR shielding and 
   ! excitation energies (quadratic response and hessian in the future)
@@ -70,8 +72,15 @@ subroutine lsdalton_response_noOpenRSP(ls,config,F,D,S)
           & ls%setting,config%decomp,config%response%rspsolverinput)     
      
      if(config%response%tasks%doNMRshield) then
+        WRITE(config%LUPRI,*)'NMRshieldresponse_noOpenRSP'
         call LSTIMER('START',t1,t2,config%LUPRI)
         call NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
+        call LSTIMER('NMRshield',t1,t2,config%LUPRI)
+     endif
+     if(config%response%tasks%doNMRshield_selected) then
+!        WRITE(config%LUPRI,*)'NMRshieldresponse_IANS'
+        call LSTIMER('START',t1,t2,config%LUPRI)     
+        call NMRshieldresponse_RSTNS(ls,molcfg,F,D,S)
         call LSTIMER('NMRshield',t1,t2,config%LUPRI)
      endif
      if(config%response%tasks%doALPHA)then
@@ -362,7 +371,8 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   Character(len=4),allocatable :: atomName(:)
   real(realk)                  :: TS,TE
   type(Matrix)                 :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1)
-  integer              :: ntrial,nrhs,nsol,nomega,nstart
+!  type(Matrix),pointer :: ChandanMat(:)
+  integer              :: ntrial,nrhs,nsol,nomega,nstart,NNZ
   character(len=1)        :: CHRXYZ(-3:3)
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
   Factor=53.2513539566280 !1e6*alpha^2 
@@ -474,7 +484,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   enddo
   call mat_free(tempm1)
 
-  !  Calculate the two electron Magnetic derivative Exchange matrix contribution to RHS
+  !Calculate the two electron Magnetic derivative Exchange matrix contribution to RHS
   call mat_zero(GbDs(1))
   call mat_zero(GbDs(2))
   call mat_zero(GbDs(3))
@@ -519,8 +529,8 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
      eival(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xa  '
      call mat_init(Xx(1),nbast,nbast)                            !# Matrices Allocated 7 (DX,RHS,Xx)
+     call util_scriptPx('T',D(1),S,RHS(icoor))
      if ( mat_dotproduct(RHS(icoor),RHS(icoor))>1.0d-10) then 
-        call util_scriptPx('T',D(1),S,RHS(icoor))
 
         ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
         nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
@@ -530,6 +540,11 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
         nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
         !ntrial and nstart seem to be obsolete 
         call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+        
+        if (molcfg%solver%info_rsp_sparsity) then
+           call mat_report_sparsity(RHS(icoor),'NMRshield RHS',nnz,lupri)
+           Write(lupri,'(A,I3,A,I9)')'RHS(',icoor,') NNZ=',NNZ
+        endif
         call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHS(icoor:icoor),EIVAL,Xx)
      else
         write(lupri,*) 'WARNING: RHS norm is less than threshold'
@@ -569,6 +584,9 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
 !  call mat_free(GbDs(3))
 
   ! now all 3 DX is known and lies in Dx(1),Dx(2) and Dx(3) 
+  
+
+
 
   !############################################################################
   !##      STEP 3: Make NMST = Tr D^b*h^k + Tr D*h^kb                        ## 
@@ -578,9 +596,10 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   write(lupri,*) 'NUCLEA MAGNETIC TENSOR                                   '
   write(lupri,*) '---------------------------------------------------------'
 
-  !Now compute the nuclear magnetic shield tensor (ACCORDING TO EQ 83.)
-  !NMST = tr D* h^kb + tr D^b*h^k
 
+  !Now compute the nuclear magnetic shield tensor (ACCORDING TO EQ 83.)
+  !NMST = tr D* h^kb + tr D^b*h^k +Tr D*h^bk
+ 
   !#############################################################################
   !##     Tr D^b*h^k
   !#############################################################################
@@ -600,18 +619,21 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   !#############################################################################
 
   !expval(3,3*NATOM) (magnetic X,Y,Z, atomic moment X,Y,Z, for each Atom)
-  call mem_alloc(expval,3,3*NATOMS)
-  call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,1,9*NATOMS,'NST    ')
+   call mem_alloc(expval,3,3*NATOMS)
+   call II_get_prop_expval(LUPRI,LUERR,molcfg%SETTING,expval,D,1,9*NATOMS,'NST    ')
   do icoor=1,3
      do jcoor=1,3*natoms  ! magnetic moment koordinate
 !        WRITE(lupri,*)'NMST:',- 2*factor*NMST(jcoor,icoor), 2*factor*expval(icoor,jcoor),'=',&
 !             & 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
-        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor) + expval(icoor,jcoor))
+        NMST(jcoor,icoor) = 2*factor*(- NMST(jcoor,icoor) +expval(icoor,jcoor))
      enddo
   enddo
   call mem_dealloc(expval)
 
-  allocate(atomname(natoms))
+
+   
+
+  allocate(atomname(natoms))    
   do jcoor=1,natoms  
      atomname(jcoor)=molcfg%setting%molecule(1)%p%ATOM(jcoor)%Name
   enddo
@@ -636,5 +658,66 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   WRITE(LUPRI,*) " Done with shielding tensor calculation"
 
 end subroutine NMRshieldresponse_noOpenRSP
+
+subroutine GetXfromRHS(molcfg,RHS,Dx,D,S,F,lupri)
+  implicit none
+  type(rsp_molcfg), intent(inout) :: molcfg
+  integer :: lupri
+  type(matrix),intent(in) :: D(1),S,F(1)
+  type(matrix),intent(inout) :: RHS(3)
+  type(matrix),intent(inout) :: Dx(3)
+  !
+  real(realk) :: eival(1)    
+  type(matrix) :: Xx(1),tempm1
+  integer :: ntrial,nrhs,nsol,nomega,nstart,icoor,nbast
+  nbast = S%nrow
+  do icoor = 1,3
+     call mat_zero(DX(icoor))
+     call mat_scal(-1.0d0,RHS(icoor))
+     call util_get_symm_part(RHS(icoor)) !Eq. 60 in the paper
+  enddo
+  
+  !#############################################################################
+  !##      Solve K([D,Xa]s) = RHS is now ready                                ## 
+  !##      Solve to get Da=[D,Xa]_S + D0^a --> Xa (Eq. 70)                    ##
+  !## We can use the RSP solver, since K([D,Xa]s) = sigma = -1/2 * E[2]Xa     ##
+  !#############################################################################
+  !FIXME try to solve response equations for more RHS at a time
+  do icoor = 1,3 
+     
+     eival(1)=0.0E0_realk
+     write(lupri,*)'Calling rsp solver for Xa  '
+     call mat_init(Xx(1),nbast,nbast)                            !# Matrices Allocated 7 (DX,RHS,Xx)
+     call util_scriptPx('T',D(1),S,RHS(icoor))
+     if ( mat_dotproduct(RHS(icoor),RHS(icoor))>1.0d-10) then 
+        ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
+        nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
+        nsol = 1   !# of solution (output) vectors
+        nomega = 1 !If lineq_x, number of laser freqs (input)
+        !Otherwise number of excitation energies (output) 
+        nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
+        !ntrial and nstart seem to be obsolete 
+        call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+        call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHS(icoor:icoor),EIVAL,Xx)
+     else
+        write(lupri,*) 'WARNING: RHS norm is less than threshold'
+        write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '
+        call mat_zero(Xx(1))
+     end if
+     
+     !############################################################################
+     !##      STEP 2: Make D^b=D_0^b+[D_0,X^b]_s                                ## 
+     !############################################################################   
+     !Generate [D_0,X^b]_s
+     
+     call mat_init(tempm1,nbast,nbast)
+     call ABCcommutator(nbast,D(1),Xx(1),S,tempm1)
+     call mat_free(Xx(1))
+     call mat_daxpy(-4.0d0,tempm1,Dx(icoor))
+     call mat_free(tempm1)
+     call mat_zero(RHS(icoor))
+  enddo
+end subroutine GetXfromRHS
+
 
 end module response_noOpenRSP_module

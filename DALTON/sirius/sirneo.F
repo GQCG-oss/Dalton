@@ -697,6 +697,7 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
       DIMENSION CREF(*), CMO(*), DV(*), PV(*), FC(*), FV(*)
       DIMENSION G(*), EVAL(*), EVEC(NREDL,*), IBNDX(*), WRK(*)
@@ -766,7 +767,8 @@ C     ... symmetrize CI vector
 #else
       DOPHP  = (MAXPHP .GT. 0)
 C CBN+JK 03.01.06
-      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM) DOPHP = .FALSE.
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM) DOPHP = .FALSE.
+      IF (USE_PELIB()) DOPHP = .FALSE.
       IF (BETA .NE. D1) DOPHP = .FALSE.
 C     ... only use PHP for beta = 1
 C     PHPMAERKE: implement for beta .ne. 1
@@ -1127,14 +1129,14 @@ C                 we have finished
                   IBNDX(IBNOFF+ISIMX) = 0
                END IF
             ELSE
-               IF (P4FLAG(6)) THEN
+!               IF (P4FLAG(6)) THEN
                   IF (JROOTX .EQ. ISTATE) THEN
                      WRITE (LUW4,9020) JROOTX,QCNRM,QONRM,QNRM,' ***'
                      WRITE (LUW4,9022) YCNRM,YONRM,YNRM
                   ELSE
                      WRITE (LUW4,9020) JROOTX,QCNRM,QONRM,QNRM
                   END IF
-               END IF
+!               END IF
                IF (JROOTX .EQ. ISTATE .AND. FORCEO) THEN
 C                 assure first trial vector is an orbital vector
                   NOVEC = NOVEC + 1
@@ -1157,16 +1159,21 @@ C                 CI trial vector, prepare for Davidson:
                   DO I = JCRV+1,JCRV+NCONF
                      IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
                   END DO
-               ELSE
+               ELSE 
 C                 orbital trial vector
-                  NOVEC = NOVEC + 1
-                  IBNDX(IBNOFF+ISIMX) = 2
-                  IF (KAPOPT) THEN
-                     WRK((KTHKAP-1)+NOVEC) =
-     *               MAX(FKAPC*QCNRM, FKAPO*QONRM)
-                  END IF
-                  FACTRN = 1.0 D-3
-                  CTEST = FACTRN * QONRM
+                   IF (NWOPT .EQ. 0) THEN
+                      !edh for open shell srdft we enter here??
+                       CALL QUIT('Enter orbital part with NWOPT=0')
+                   ELSE
+                      NOVEC = NOVEC + 1
+                   END IF
+                   IBNDX(IBNOFF+ISIMX) = 2
+                   IF (KAPOPT) THEN
+                      WRK((KTHKAP-1)+NOVEC) =
+     *                MAX(FKAPC*QCNRM, FKAPO*QONRM)
+                   END IF
+                   FACTRN = 1.0 D-3
+                   CTEST = FACTRN * QONRM
                   DO I = JORV+1,JORV+NWOPT
                      IF (ABS(WRK(I)) .LT. CTEST) WRK(I) = D0
                   END DO

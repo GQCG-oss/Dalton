@@ -2043,21 +2043,22 @@ The input here will usually only be used if either
 has been specified under \quotekw{\Sec{*WAVE FUNCTIONS}}
 (though it is also needed for MP2 calculations based on saved closed-shell HF
 orbitals).
-Single configuration cases with more than one open shell\index{open shell}
-are handled by the general \Sec{CONFIGURATION INPUT} section, although
-high-spin restricted open-shell Hartree--Fock or Kohn--Sham DFT calculations can be done
+High--spin spin-restricted open-shell Hartree--Fock or Kohn--Sham DFT calculations are activated by
 using the \quotekw{.SINGLY OCCUPIED} described here.
+Other single configuration cases with more than one open shell\index{open shell!SCF}
+can be handled by the general \quotekw{\Key{MCSCF}} option, by appropriate specifications
+in the \Sec{CONFIGURATION INPUT} section.
 
 \begin{description}
 \item[\Key{AUTOCCUPATION}]
-  Default for SCF calculations starting from H\"{u}ckel or H1DIAG
-  starting orbitals\index{starting orbitals}\index{H\"{u}ckel}.
+  Default for SCF calculations starting from extended H\"{u}ckel, EWMO, or H1DIAG
+  starting orbitals.
 
-  Allow the distribution of the Hartree--Fock occupation numbers over
+  Allow the distribution of the Hartree--Fock/DFT occupation numbers over
   symmetries\index{Hartree--Fock occupation}\index{HF occupation} to
   change based on changes in orbital ordering during DIIS\index{DIIS} optimization.
   This keyword is incompatible with \quotekw{.SINGLY OCCUPIED} and \quotekw{.COREHOLE}, or
-  if the HF calculation is followed by CI or MCSCF..
+  if the HF calculation is followed by CI or MCSCF.
 
 %\item[\Key{EDIIS}]
 %  Use a from Kudin {\it et al.} slightly modified (E)DIIS-scheme.
@@ -2146,13 +2147,6 @@ using the \quotekw{.SINGLY OCCUPIED} described here.
 \item[\Key{H1VIRT}] Use the virtual orbitals that diagonalize the
   one-electron Hamiltonian operator.
 
-\item[\Key{SINGLY OCCUPIED}]
-    \kw{READ (LUINP,*) (NROHF(I),I=1,NSYM)} \\
-  High spin restricted open-shell Hartree--Fock. Specify the number of
-  singly occupied orbitals in each irreducible representation
-  of the molecular point group. Only the high-spin state of these
-  singly-occupied orbitals will be made and used in the calculations.
-
 \item[\Key{MAX DIIS ITERATIONS}]
   \kw{READ (LUINP,*) MXDIIS} \\
   Maximum number of DIIS iterations\index{iteration number!DIIS, max}\index{DIIS!max iterations} (default = 60).
@@ -2192,7 +2186,7 @@ using the \quotekw{.SINGLY OCCUPIED} described here.
 
 \item[\Key{PRINT}]
   \kw{READ (LUINP,*) IPRRHF} \\
-  Resets general print level to \verb|IPRRHF| in Hartree--Fock calculation
+  Resets general print level to \verb|IPRRHF| in Hartree--Fock/DFT calculations
   (if not specified, global print levels will be used).
 
 \item[\Key{SHIFT}] 
@@ -2207,10 +2201,22 @@ using the \quotekw{.SINGLY OCCUPIED} described here.
   will automatically invoke level-shifting (step restriction) if
   DIIS seems to be stalling.
 
+\item[\Key{SINGLY OCCUPIED}] Default = no singly occupied orbitals \\
+    \kw{READ (LUINP,*) (NROHF(I),I=1,NSYM)} \\
+  High--spin spin-restricted open-shell Hartree--Fock or Kohn-Sham DFT.
+ \index{HSROHF}\index{HSRODFT}\index{ROHF!high spin}\index{RODFT!high spin}\index{ROKS!high spin}
+  Specify the number of singly occupied orbitals in each irreducible representation
+  of the molecular point group. Only the high-spin state of these
+  singly-occupied orbitals will be made and used in the calculations.
+  We recommend to always run high-spin open-shell geometry optimizations as direct calculations
+  (\quotekw{\Key{DIRECT}} under \quotekw{\Sec{DALTON}}),
+  because analytical molecular gradients are only implemented for direct calculations
+  (numerical gradients will be used for non-direct calculations).
+
 \item[\Key{THRESH}]
   Default = 1.0D-05 (1.0D-06 if MP2)\\
   \kw{READ (LUINP,*) THRRHF} \\
-  Hartree--Fock convergence threshold for energy gradient.  The convergence
+  Hartree--Fock/DFT convergence threshold for energy gradient.  The convergence
   of the energy will be approximately the square of this number.
 
 \end{description}
@@ -2265,6 +2271,7 @@ By default, starting orbitals and initial orbital occupation will
 be determined automatically on the basis of a H\"{u}ckel\index{H\"{u}ckel}
 calculation (for molecules where all nuclear charges are
 less than or equal to 36), corresponding to the \quotekw{.AUTOCC} keyword.
+\index{starting orbitals!SCF}\index{H\"{u}ckel!starting orbitals}.
 If problems is experienced due to the
 H\"{u}ckel starting guess, it can be avoided by requiring another set of
 starting orbitals ({\it e.g.\/} \verb|H1DIAG|).

@@ -11,6 +11,15 @@ C
 C     PURPOSE: Calculate RPA AO-density matrix DENS to be used for
 C              SOPPA.
 C
+C
+C
+C     Dummy argument library
+C
+C     CMO:: intent(in)        MO coefficient matrix. calculated with so_get_mo
+C     DENS:: intent(out)      Density matrix. Output from this routine
+C     ISYMTR:: intent(in)     
+C     TR1E:: intent(in)       Trial vector excitations
+C     TR1D:: intent(in)       Trial vector de-excitations
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -67,6 +76,7 @@ C
          KOFF3  = ILMRHF(ISYMI)         + 1
          KOFF4  = IAODIS(ISYMAL,ISYMBE) + 1
 C
+
          CALL DGEMM('T','T',NRHF(ISYMI),NBAS(ISYMBE),
      &              NVIR(ISYMA),ONE,TR1E(KOFF1),NTOTA,
      &              CMO(KOFF2),NTOTBE,ZERO,WORK(KSCR),NTOTI)

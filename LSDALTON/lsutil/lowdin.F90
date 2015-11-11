@@ -415,4 +415,74 @@ contains
 
    end subroutine lowdin_diag_S_minus_sqrt
 
+   ! Given matrix S, computes S^{-1}. OVERWRITE S
+   subroutine lowdin_diag_S_minus1(n, S, S_minus1, lupri)
+     implicit none
+     integer, intent(in)          :: n
+     real(realk), intent(inout)   :: S(n,n)
+     real(realk), intent(inout)   :: S_minus1(n,n)
+     real(realk),pointer          :: T(:,:)
+     real(realk)                  :: eigen_minus1(n)
+     integer                      :: i, infdiag, lupri
+     character*70                 :: msg
+     integer                      :: lwork,j
+!     real(realk) :: TS,TE
+     real(realk), pointer :: work(:)
+#ifdef VAR_LSESSL
+     integer :: liwork
+     integer, pointer :: iwork(:)
+     liwork = -1
+#endif
+     infdiag=0
+!     call LSTIMER('START ',TS,TE,lupri,.TRUE.)
+
+     ! we inquire the size of lwork (NOT max(n*n,5*n)
+     lwork = -1
+     call mem_alloc(work,5)
+#ifdef VAR_LSESSL
+     call mem_alloc(iwork,5)
+     call dsyevd('V','U',n,S,n,eigen_minus1,work,lwork,iwork,liwork,infdiag)
+     liwork = iwork(1)
+     call mem_dealloc(iwork)
+     call mem_alloc(iwork,liwork)
+#else
+     call dsyev('V','U',n,S,n,eigen_minus1,work,lwork,infdiag)
+#endif
+     lwork = NINT(work(1))
+     call mem_dealloc(work)
+!=============================================================
+     call mem_alloc(work,lwork)
+     !diagonalization
+#ifdef VAR_LSESSL
+     call dsyevd('V','U',n,S,n,eigen_minus1,work,lwork,iwork,liwork,infdiag)
+     call mem_dealloc(iwork)
+#else
+     call dsyev('V','U',n,S,n,eigen_minus1,work,lwork,infdiag)
+#endif
+     call mem_dealloc(work)
+
+     if(infdiag.ne. 0) then
+        write(lupri,*) 'lowdin_diag: dsyev failed, info=',infdiag
+        call lsquit('lowdin_diag: diagonalization failed.',lupri)
+     end if
+
+     !compute squareroot S^(-1) = V*E^(-1)*V'
+     call mem_alloc(T,n,n)
+
+     !$OMP PARALLEL DO PRIVATE(i,j) SHARED(eigen_minus1,S,T)
+     do i=1,n
+        eigen_minus1(i) = 1.0E0_realk/eigen_minus1(i)
+        !T = V*E^-1/2
+        do j=1,n
+           T(j,i) = S(j,i)*eigen_minus1(i)
+        enddo
+     enddo
+     !$OMP END PARALLEL DO 
+     ! S^-1 = T*V'
+     call dgemm('n','t',n,n,n,1.0E0_realk,T,n,S,n,0.0E0_realk,S_minus1,n)
+     !deallocate
+     call mem_dealloc(T)
+
+   end subroutine lowdin_diag_S_minus1
+
 end module lowdin_module
