@@ -2346,7 +2346,7 @@ C=====================================================================*
       PARAMETER (SECNAM='CC_OPAINP')
 
       INTEGER NTABLE
-      PARAMETER (NTABLE = 19)
+      PARAMETER (NTABLE = 20)
 
 * variables:
       LOGICAL SETGSTOPA, SETGSTTPA, SETXSTOPA
@@ -2373,7 +2373,7 @@ C=====================================================================*
       DATA TABLE / '.SELEXC','.NO2N+1','.OPERAT','.DIPLEN','.DIPVEL',
      *             '.ANGMOM','.HALFFR','.PRINT ','.USE X2','.USE O2',
      *             '.SELSTA','.STATES','.TRANSI','.SECMOM','.ROTSTR',
-     *             '.DIPOLE','.XCVSEP','.XRMCOR','.SKIPLE'/
+     *             '.DIPOLE','.XCVSEP','.XRMCOR','.SKIPLE','.EOMXTM'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -2417,6 +2417,7 @@ C=====================================================================*
         LXSCVS = .false.
         LXRMCORE = .false.
         LSKIPLINEQ = .false.
+        LEOMXOPA  = .false.
         CALL IZERO(NXCORE,8)
         CALL IZERO(IXCORE,8*MXCORE)
       ELSE IF (GSTTPA) THEN
@@ -2453,7 +2454,8 @@ c         table look up:
 
 c         jump to the appropriate input section:
           IF (IJUMP .LE. NTABLE) THEN
-            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19),IJUMP
+            GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
+     &            IJUMP
             CALL QUIT('Illegal address in computed GOTO in CC_OPAINP.')
 
 C           ---------------------------------------------------------
@@ -2752,6 +2754,19 @@ C           ------------------------------------------------------
 19          CONTINUE
             LSKIPLINEQ = .true.
               WRITE(LUPRI,*)'CCSD_INPUT: skip Nij*xksi or TX*B' 
+            GO TO 100
+C
+C           ------------------------------------------------------
+C           .EOMXTMO: XOPA in EOM framework
+C           linear equations
+C           ------------------------------------------------------
+20          CONTINUE
+            LSKIPLINEQ = .true.
+            LEOMXOPA = .true.
+            QR22N1   = .false.
+
+              WRITE(LUPRI,*)'CCSD_INPUT: skip Nij*xksi or TX*B' 
+              WRITE(LUPRI,*)'CCSD_INPUT: Add EOM extra term   '
             GO TO 100
 C
           ELSE
