@@ -334,6 +334,8 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/cc/cc_xetst.F
     DALTON/cc/cc_xieta.F
     DALTON/cc/cc_xopa.F
+    DALTON/cc/cc_eom_xopa.F
+    DALTON/cc/ccxopa_eomsetup.F
     DALTON/cc/cc_zkjam.F
     DALTON/cc/cccr_aa.F
     DALTON/cc/cccr_setup.F
