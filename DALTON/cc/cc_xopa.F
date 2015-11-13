@@ -138,7 +138,6 @@ c /* deck CC_XOPA */
       MXXVEC   = 2*NXQR2ST
       MXFVEC   = NQR2OP
 
-
       KRESULT  = 1
       KEND0    = KRESULT  + NBOPA
                
@@ -234,6 +233,27 @@ c /* deck CC_XOPA */
      & ' Time used for',NXE2TRAN,' O1/X1 vector calculation:',TIMXE2
       CALL FLSHFO(LUPRI)
 
+*---------------------------------------------------------------------*
+* calculate LE x Xksi{O} vector contributions:
+*---------------------------------------------------------------------*
+!      TIM1 = SECOND()
+!
+!      if (leomxopa) then
+!      CALL DZERO(WORK(KX2CONS),MXXVEC*NXE2TRAN)
+!
+!      IOPT   = 5
+!      IORDER = 1
+!      CALL CC_XIETA( WORK(KX2TRAN), NXE2TRAN, IOPT, IORDER, '---',
+!     &               'LE ',WORK(KX2DOTS),WORK(KX2CONS),
+!     &               '---',IDUMMY,DUMMY,
+!     &               .FALSE.,MXXVEC, WORK(KEND0), LEND0 )
+!
+!      TIMXE2 = SECOND() - TIM1
+!      IF (NXE2TRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
+!     & '>>> Time used for',NXE2TRAN,' O1/X1 vector calculation:',TIMXE2
+!      CALL FLSHFO(LUPRI)
+!      end if
+!
 *---------------------------------------------------------------------*
 * collect contributions and sum them up to the final results:
 *---------------------------------------------------------------------*
@@ -384,7 +404,6 @@ c /* deck ccxopa_setup */
       MFVEC   = 0
       MXE2VEC = 0
       MXEAVEC = 0
- 
 
 *---------------------------------------------------------------------*
 * start loop over all requested transition moments:
@@ -433,7 +452,6 @@ c /* deck ccxopa_setup */
         IF (LPDBS) CALL QUIT('perturbation-dependent basis sets not '//
      &              'implemented in CCXOPA_SETUP.')
 
-
         IF (ISYMO.EQ.ISYME) THEN 
 
           NBOPA = NBOPA + 1
@@ -458,11 +476,8 @@ c /* deck ccxopa_setup */
           WIBF   = ZERO
 
           IF (.NOT.CIS) THEN
-            if (lskiplineq) then
-               write(lupri,*)'Sonia XOPA: Skip (W_i-W_f) contrib'
-               NXE2TRAN = 0
-               WXINIF   = ZERO
-            else
+            !if (lskiplineq) then
+            !else
             IF (QR22N1) THEN
               IN2VEC=IN2AMP(ISTATEI,-EIGVI,ISYMI,ISTATEF,+EIGVF,ISYMF)
               CALL CC_SETXE('Xi ',IXE2TRAN,IX2DOTS,MXXTRAN,MXXVEC,
@@ -471,14 +486,20 @@ c /* deck ccxopa_setup */
               MXE2VEC  = MAX(MXE2VEC, IVEC)
               WXINIF   = X2CONS(IVEC,ITRAN)
             ELSE
+              !if (LEOMXOPA) then
+              ! write(lupri,*)'Sonia XOPA: Skip (W_i-W_f) contrib'
+              ! NXE2TRAN = 0
+              ! WXINIF   = ZERO
+              !else
               IR1VEC = IR1TAMP(LABEL,LORX,EIGVI-EIGVF,IDUM)
               CALL CC_SETF12(IFTRAN,IFDOTS,MXFTRAN,MXFVEC,
      &                       ISTATEI,ISTATEF,IR1VEC,ITRAN,IVEC)
               NFTRAN = MAX(NFTRAN,ITRAN)
               MFVEC  = MAX(MFVEC, IVEC)
               WIBF   = FCONS(IVEC,ITRAN)
+              !end if
             END IF
-            end if
+            !end if
           END IF
 
 *---------------------------------------------------------------------*
