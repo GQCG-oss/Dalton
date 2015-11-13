@@ -879,7 +879,12 @@ C
          IF (CCXOPA) THEN
            IF ((CCS .or. CC2 .or. CCSD .or. (CC3.AND.CC3RSP))
      &          .and. (.not. CCR12)) THEN
-            CALL CC_XOPA(WORK,LWORK)
+            write(lupri,*) "SONIA cc_drv: CALLING CC_eom_XOPA"
+            if (.false.) then
+              CALL CC_XOPA(WORK,LWORK)
+            else
+              CALL CC_eom_XOPA(WORK,LWORK)
+            end if
            ELSE
             WRITE(LUPRI,*) 'One-photon absorption strengths'//
      &         ' are not implemented for the requested model.'
