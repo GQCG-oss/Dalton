@@ -231,12 +231,21 @@ c /* deck CC_EOM_XOPA */
 
       CALL DZERO(WORK(KE1CONS),MXAVEC*NXE1TRAN)
 
+
+
       IOPT   = 5
       IORDER = 1
-      CALL CC_XIETA( WORK(KE1TRAN), NXE1TRAN, IOPT, IORDER, 'LE ',
+      if (leomxopa) then
+         CALL CCEOM_XIETA( WORK(KE1TRAN),NXE1TRAN,IOPT,IORDER,'LE ',
+     &                 '---',IDUMMY,       DUMMY,
+     &                 'RE ',WORK(KE1DOTS),WORK(KE1CONS),
+     &                       MXAVEC, WORK(KEND0), LEND0 )
+      else
+       CALL CC_XIETA( WORK(KE1TRAN), NXE1TRAN, IOPT, IORDER, 'LE ',
      &               '---',DUMMY,DUMMY,
      &               'RE ',WORK(KE1DOTS),WORK(KE1CONS),
      &               .FALSE.,MXAVEC, WORK(KEND0), LEND0 )
+      end if
 
       TIMXE1 = SECOND() - TIM1
       IF (NXE1TRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
