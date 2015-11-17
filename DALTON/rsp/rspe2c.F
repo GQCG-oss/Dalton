@@ -6751,7 +6751,7 @@ C  /* Deck TRCHAR */
       SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
 c
 #ifdef BUILD_QFITLIB
-      !use qfit
+      use qfit
 #endif
 C
 C
@@ -6853,13 +6853,13 @@ C     Memory allocation
       WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
       WRITE(LUPRI,'(5x,3F12.6)') TRDIP
 
+#ifdef BUILD_QFITLIB
       allocate( dens( N2BASX ) )
       call dcopy(n2basx,wrk(kdcao),1,dens,1)
-#ifdef BUILD_QFITLIB
-      !call qfit_set_transition_dipole( TRDIP )
-      !call qfit_fit( dens )
-      !deallocate( dens )
-      !CALL QFITRES
+      call qfit_set_transition_dipole( TRDIP )
+      call qfit_fit( dens )
+      deallocate( dens )
+      CALL QFITRES
 #endif
       RETURN
       END
