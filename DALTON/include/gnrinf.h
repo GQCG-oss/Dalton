@@ -14,12 +14,16 @@
      &        WRINDX, WLKREJ, WALKIN, RNRESP, USRIPR, SEGBAS,           &
      &        DOCCSD, OPTNEW, NEWSYM, NEWBAS, NEWPRP, RELCAL,           &
      &        TOTSYM, NMWALK, DKTRAN, GEOALL, WESTA,  SEGAUX,           &
-     &        ERFEXP, DOSRIN, SRINTS, CHI1ST, DKHINT, COMLAM,           &
+     &        CHI1ST, DKHINT,                                           &
      &        EMBEDDING, QM3, QMMM,   QMNPMM, PEQM,   QFIT,             &
      &        USE_LSLIB, USE_OPENRSP
 
-      DIMENSION ERFEXP(0:2)
-      REAL*8  GRADML, PANAS,  CHIVAL, VLAMBDA, THR_REDFAC
+      REAL*8  GRADML, PANAS,  CHIVAL, THR_REDFAC
+
+! srDFT variables
+
+      LOGICAL ERFEXP(0:2), DOSRIN, SRINTS, COMLAM
+      REAL*8  VLAMBDA
 
       INTEGER KCHARG, ITERNR, ITERMX, IPRUSR, LENBAS
       INTEGER GNRINFLAST
@@ -54,3 +58,4 @@
       PARAMETER (LBASDIR = 600)
       CHARACTER  BASDIR*(LBASDIR), WFTYPE*(12)
       COMMON /GNRCHR/ BASDIR, WFTYPE
+! -- end of DALTON/include/gnrinf.h ---

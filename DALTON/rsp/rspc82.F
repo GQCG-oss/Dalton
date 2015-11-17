@@ -1868,9 +1868,10 @@ C
          ENDIF
   110 CONTINUE
       IF (INEG.NE.IPOS) THEN
-         WRITE(LUPRI,'(3(/A))')' ***** WARNING *********'
-     &   ,' number of eigenvalues with negative metric differ from'
-     &   ,' number with positive metric'
+         WRITE(LUPRI,'(/A/A,I5)')' **WARNING**'//
+     &    ' number of eigenvalues with negative metric differ from'//
+     &    ' number with positive metric.',
+     &    ' Dimension of reduced matrix =', KZYRED
          IF (IPRRSP.GT.20) THEN
             WRITE(LUPRI,'(/A)') '   NUMBER    EIGENVALUE '
             WRITE(LUPRI,'(I10,1P,D20.8)') (I,ALFAR(I),I=1,KZYRED)
@@ -1879,15 +1880,21 @@ C
          IF (IPRRSP.GT.20) WRITE(LUPRI,'(/A)')
      &      '      NUMBER      EIGENVALUE      PAIRED EIGENVALUE'
          DO, I=1,IPOS
-            IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT)
-     &         WRITE(LUPRI,'(/A)')
-     &         ' **WARNING**  EIGENVALUES NOT PAIRED'
-            IF (IPRRSP.GT.20) WRITE(LUPRI,'(I10,1P,2D20.8)')
+            IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT) THEN
+               J = 1
+               WRITE(LUPRI,'(/A,I5)')
+     &         ' **WARNING**  EIGENVALUES NOT PAIRED.'//
+     &         ' Dimension of reduced matrix =', KZYRED
+            ELSE
+               J = 0
+            END IF
+            IF (IPRRSP.GT.20 .OR. J.NE.0) WRITE(LUPRI,'(I10,1P,2D20.8)')
      &         I,ALFAR(I),ALFAR(IPOS+I)
          END DO
          IF (IZER .GT. 0) THEN
-            WRITE(LUPRI,'(/A//A)')
-     &         ' WARNING: ZERO METRIC EIGENVALUE AND ZERO EIGENVALUE',
+            WRITE(LUPRI,'(/A/A,I5/A)')
+     &         ' WARNING: ZERO METRIC EIGENVALUE AND ZERO EIGENVALUE.',
+     &         ' Dimension of reduced matrix =', KZYRED,
      &         '     NUMBER       EIGENVALUE'
             WRITE(LUPRI,'(I10,1P,D20.8)')(I,ALFAR(IPOS+INEG+I),I=1,IZER)
          END IF
@@ -3070,9 +3077,10 @@ C
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
             IF (INEG.GT.0 .AND. .NOT.ABSORP) 
-     *           WRITE(LUPRI,'(/2A,I3,A,L8)')
+     *           WRITE(LUPRI,'(/2A,I3,A,L8,A,I6)')
      *         ' *** INFO, negative eigenvalues in reduced matrix.',
-     &         ' Symmetry',KSYMOP,',  triplet',TRPLET
+     &         ' Symmetry',KSYMOP,',  triplet',TRPLET,
+     &         ' Dimension of reduced matrix =',KZYRED
             IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. INEG.GT.0)) THEN
                POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET

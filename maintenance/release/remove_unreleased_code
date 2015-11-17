@@ -39,7 +39,7 @@ then
     for file in `cat $SCRIPT_DIR/paths_to_exclude`; do
         # file can be file or directory that's why we use -rf
         rm -rf $WORKING_DIRECTORY/$file
-        for list_of_sources in cmake/SourcesDALTON.cmake cmake/SourcesLSDALTON.cmake; do
+        for list_of_sources in cmake/SourcesDALTON.cmake; do
             # no in-place sed, not generally available on mac
             sed "\,$file,d" $WORKING_DIRECTORY/$list_of_sources > $TEMP_FILE
             mv $TEMP_FILE $WORKING_DIRECTORY/$list_of_sources

@@ -1,0 +1,37 @@
+(25-Sep-2015/hjaaj)
+
+README for $dalton_root/DALTON/test/ :
+
+To see how to revise test criteria, add new tests etc., please consult
+        http://runtest.readthedocs.org
+
+Some advice on good test criteria:
+
+1. Do never check on intermediate energies in SCF iterations nor the number of SCF iterations,
+   some of these numbers will probably change each time convergence algorithms are improved.
+   It is of course very OK to check on the first SCF energy in iteration 1 (from start guess)
+   and the final converged SCF energy and orbital energies.
+2. The same is true for MCSCF iterations and for geometry optimizations: never check on intermediate
+   energies, never check on number of iterations to convergence.
+3. Remember that most calculated values are linear in wave function convergence, only
+   total energies from variational wave functions are quadratic.
+   (MP2 and CCSD energies are thus linear in SCF convergence.)
+   Thus as rule of thumb, if wave function is converged to 1.d-6, then do not test sharper
+   than 1.d-5 (allowing for a prefactor of at most 10 - in some cases you may need to go to
+   e.g. 2.d-5). The answer to the question of "abs_tolerance" or "rel_tolerance" depends on the
+   property.
+4. For total energies remember that numerical noise from the 15 digits of double precision,
+   as well as integral screening thresholds, can make the reliable number of digits in
+   the total energy considerably less than quadratic accuracy of 1.d-10 (when the wave function is
+   converged to 1.d-5). For MCSCF, polarizable embedding, PCM and other combined models,
+   only the total energy has quadratic accuracy, the different partial energy contributions
+   (inactive energy, active energy, PE energy, PCM energy, ...) are only of linear accuracy.
+5. In response properties, the reliable digits in calculated values is also determined by
+   thresholds for the linear response equations.
+4. Use the "ignore_sign" option for properties like transition moments for which the sign
+   is undefined.
+5. Use the "ignore_below" option when you have "rel_tolerance" and calculated small numbers
+   (often numbers which ought to be exactly zero) which are affected by numerical noise,
+   e.g. because of deviation of the molecular geometry from exact point group symmetry.
+
+

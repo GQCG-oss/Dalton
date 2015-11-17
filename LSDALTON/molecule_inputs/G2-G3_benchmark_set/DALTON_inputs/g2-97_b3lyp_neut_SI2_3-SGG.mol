@@ -1,7 +1,0 @@
-ATOMBASIS
-SI2 3-SGG
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=14.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Si      0.00000000000000      0.00000000000000      0.00000000000000
-Si      0.00000000000000      0.00000000000000      2.28638903000000

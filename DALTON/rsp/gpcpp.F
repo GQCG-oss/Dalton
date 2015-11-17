@@ -56,6 +56,31 @@ C
       CALL WRITE_VEC(LU,N,VEC)
       WRITE(LU) 'EOFLABEL'
       END
+C
+      SUBROUTINE WRITE_XVEC2(LU,N,VEC,LABEL1,LABEL2,FREQ1,FREQ2,
+     &                       RESIDUAL_NORM)
+C
+#include "abslrs.h"
+C
+      INTEGER N,LU
+      CHARACTER*8 LABEL1,LABEL2,LAB1
+      REAL*8 FREQ1, FREQ2, RESIDUAL_NORM, VEC(N)
+C
+      REWIND (LU)
+ 100      READ(LU) LAB1
+      IF (LAB1.NE.'EOFLABEL') GOTO 100
+      BACKSPACE LU
+      WRITE(LU) LABEL1, LABEL2,FREQ1, FREQ2, ABS_DAMP,ABS_GRADSYM,
+     &          RESIDUAL_NORM,N
+      CALL WRITE_VEC(LU,N,VEC)
+      WRITE(LU) 'EOFLABEL'
+C
+C     End of WRITE_XVEC2
+C
+      END
+C
+C
+C
       SUBROUTINE READ_XVEC(LU,N,VEC,LABEL,ISYM,FREQ,
      &                  RSD,FOUND,CONV)
 C
@@ -69,6 +94,7 @@ C
       LOGICAL FOUND,CONV
       CHARACTER*8 LABX1,BLANK,LABEL
       PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
+      DIMENSION VEC(N)
 c      DIMENSION TMP(4*ABS_MKZVAR)
 C
       FOUND  = .FALSE.
@@ -109,6 +135,87 @@ C
  199  CONTINUE
  200  RETURN
       END
+C
+      SUBROUTINE READ_XVEC2(LU,N,VEC,LABEL1,LABEL2,ISYM,FREQ1,FREQ2,
+     &                  RSD,FOUND,CONV)
+C
+C Check if a linear equation needs to be solved or if a solution vector
+C already exists on file. FOUND indicates the result.
+C
+      IMPLICIT REAL*8 (A-H,O-Z)
+#include "abslrs.h"
+C
+      INTEGER ISYM,ISYMX1
+      LOGICAL FOUND,CONV
+      CHARACTER*8 LABX,LABY,BLANK,LABEL1,LABEL2
+      PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
+      PARAMETER(THR0=1.0D-10)
+      DIMENSION VEC(N)
+c      DIMENSION TMP(4*ABS_MKZVAR)
+C
+      FOUND  = .FALSE.
+      CONV = .FALSE.
+      REWIND (LU)
+C
+ 100     READ(LU,END=200,ERR=200)
+     &        LABX,LABY,FREQX,FREQY,DAMP1,ISYMX1,
+     &        RSDX,LEN
+      IF (LABX .EQ. 'EOFLABEL') GOTO 200
+c      write(luabspri,*)'freq',ABS(FREQ1),FREQX,
+c     &                        DAMP1,
+c     &                        ABS_DAMP,ABS_GRADSYM,ISYMX1,ISYM
+
+      IF ((LABEL2 .EQ. BLANK) .AND. ((ABS(ABS(FREQX)-FREQ1)).LE.THR)
+     &        .AND. (LABEL1.EQ.LABX) .AND. (ISYM.EQ.ISYMX1) .AND.
+     &        (DAMP1.EQ.ABS_DAMP)) THEN
+c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
+             IF (LEN .NE. N) THEN
+                WRITE (LUABSPRI,*)
+     &          ' Orbital data found on response'//
+     &          ' vector file does not match current orbital data',
+     &          ' LEN      : ',LEN,N
+                GOTO 200
+             ENDIF
+            FOUND = .TRUE.
+            IF ((RSDX-RSD) .LE. THR0) CONV = .TRUE.
+            IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
+            GOTO 199
+C Removed the ABS around FREQX/Y - Tobias
+        ELSEIF (((ABS(FREQX-FREQ1)).LE.THR) .AND.
+     &        ((ABS(FREQY-FREQ2)).LE.THR) .AND. (LABEL1.EQ.LABX)
+     &        .AND. (LABEL2.EQ.LABY) .AND. (ISYM.EQ.ISYMX1) .AND.
+     &        (DAMP1.EQ.ABS_DAMP)) THEN
+c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
+             IF (LEN .NE. N) THEN
+                WRITE (LUABSPRI,*)
+     &          ' Orbital data found on response'//
+     &          ' vector file does not match current orbital data',
+     &          ' LEN      : ',LEN,N
+                GOTO 200
+             ENDIF
+            FOUND = .TRUE.
+            IF ((RSDX-RSD) .LE. THR0) CONV = .TRUE.
+            IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
+            GOTO 199
+         ELSE
+c            IF (LEN .GT. 0) READ (LU)
+            IF (LEN .GT. 0) THEN
+              DO I=1,LEN
+               READ(LU) SCR
+              END DO
+            ENDIF
+            GO TO 100
+         END IF
+C
+ 199       CONTINUE
+ 200         RETURN
+C
+C     End of READ_XVEC2
+C
+      END
+C
+C
+C
       SUBROUTINE ABS_CHKONFILE(LU,FOUND,LABEL,ISYM,DAMP,NFREQ_ABS,
      &                        FREQ_ABS,THD,FLAGS)
 C

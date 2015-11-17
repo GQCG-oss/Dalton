@@ -98,7 +98,8 @@ C
       IF (IPRFIO .GE. 3) CALL FASTIO('STATUS')
 C
       IF (IPRTRA .GE. 2) THEN
-         WRITE (LUPRI,'(/A)') ' Spin-orbit MO integrals calculated.'
+         WRITE (LUPRI,'(/A)')
+     &   ' Transformation of spin-orbit 2-el. integrals to MO basis.'
       END IF
 C
       CALL N_TRACT2(ITRLVL,NOTUVX,NOCOUL,NOEXCH,MCOPT,CMO,DUMMY,
@@ -117,8 +118,9 @@ C        CALL FASTIO('ERRFIX=HARD')
 C
       IF (IPRTRA .GT. 0) THEN
          TRATIM = SECOND() - DST
-         WRITE (LUPRI,'(/A,F10.2)')
-     &      ' Total CPU time used in spin-orbit transformation:',TRATIM
+         WRITE (LUPRI,'(/A,F10.2,A)')
+     &   ' CPU time used in spin-orbit 2-el AO->MO transformation:',
+     &  TRATIM,' s'
       END IF
 C     restore LUORDA, LUMINT (may point to normal integrals)
       LUORDA   = LUORDASV
@@ -180,7 +182,7 @@ C
          IDATA(I,2) = NPQ
   200 CONTINUE
       IF (IPRTRA .GT. 1) WRITE(LUPRI,'(/A,I8)')
-     *   ' Symmetry of spin-orbit integrals from LUAHSO :',INTSYM
+     &   ' Symmetry of spin-orbit integrals from LUAHSO :',INTSYM
       CALL QEXIT('N_TRASET_2')
       RETURN
       END
@@ -354,8 +356,8 @@ C     for buffers.
 C
       IF (IDIST .EQ. 0) THEN
          KFRSAV = KFREE
-         CALL MEMGET('INTE',KIADRM,LIADRM,WRK,KFREE,LFREE)
-         CALL MEMGET('INTE',KICDTR,NNORBX,WRK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IADRM' ,KIADRM,LIADRM,WRK,KFREE,LFREE)
+         CALL MEMGET2('INTE','ICDTRA',KICDTR,NNORBX,WRK,KFREE,LFREE)
          KNEXT = KFREE
       ELSE
 C        ... check that IADRM has not been destroyed by calling
@@ -384,7 +386,7 @@ C            routine.
       END IF
 C
       KREL   = KFREE
-      CALL MEMGET('REAL',KBUF,2*NORBMA*NORBMA,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF',KBUF,2*NORBMA*NORBMA,WRK,KFREE,LFREE)
       CALL NX2HSO(IC,ID,H2CD,NEEDTP,IDIST,WRK(KIADRM),WRK(KICDTR),
      &            WRK(KBUF))
 C

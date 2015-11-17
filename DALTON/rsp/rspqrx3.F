@@ -273,6 +273,7 @@ C
 #include "dftcom.h"
 #include "absorp.h"
 #include "abslrs.h"
+#include "abscrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
 C
@@ -319,7 +320,7 @@ C
      &                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
          ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA
      &        .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
-     &        .OR.ABSLRS_NSCD) THEN
+     &        .OR.ABSLRS_NSCD.OR.ABSLRS_GAMMA.OR.ABSLRS_IDRI) THEN
 
             DFTSAV=DODFT
             DODFT=.FALSE.

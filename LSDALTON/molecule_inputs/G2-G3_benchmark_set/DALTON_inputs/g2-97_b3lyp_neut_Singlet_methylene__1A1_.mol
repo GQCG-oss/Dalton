@@ -1,9 +1,0 @@
-ATOMBASIS
-Singlet methylene, 1A1,
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=1 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      1.11942218000000
-H      1.10146804760900      0.00000000000000     -0.19968514509700

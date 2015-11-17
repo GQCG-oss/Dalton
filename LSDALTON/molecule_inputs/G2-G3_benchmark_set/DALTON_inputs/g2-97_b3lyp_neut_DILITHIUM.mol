@@ -1,7 +1,0 @@
-ATOMBASIS
-DILITHIUM
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=3.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Li      0.00000000000000      0.00000000000000      0.00000000000000
-Li      0.00000000000000      0.00000000000000      2.72305220000000

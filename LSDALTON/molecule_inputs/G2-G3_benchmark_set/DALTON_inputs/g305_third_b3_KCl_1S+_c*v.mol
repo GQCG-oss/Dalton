@@ -1,8 +1,0 @@
-ATOMBASIS
-KCl 1S+ c*v
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=19.0 Atoms=1 Basis=regbasis Aux=auxbasis
-K      0.00000000000000      0.00000000000000     -1.26403194830000
-Charge=17.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      1.41274158930000

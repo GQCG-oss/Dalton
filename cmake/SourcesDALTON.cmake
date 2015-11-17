@@ -508,6 +508,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/rsp/absorp.F
     DALTON/rsp/abscomplex.F
     DALTON/rsp/complexpp.F
+    DALTON/rsp/abscrs.F
     DALTON/rsp/gpcpp.F
     DALTON/rsp/deq27.F
     DALTON/rsp/expone.F
@@ -785,7 +786,6 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
-    DALTON/pelib/pelib_interface.F90
    )
 if(ENABLE_PCMSOLVER)
    set(DAL_PCM_SOURCES

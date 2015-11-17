@@ -2729,8 +2729,10 @@ C
 
 #ifdef BUILD_OPENRSP
 #ifdef ENABLE_XCINT
-         ! we pass hfxfac to the 2-el integral code
-         call set_eri_contractions_xfac(hfxfac)
+         if (xcint_is_active()) then
+            ! we pass hfxfac to the 2-el integral code
+            call set_eri_contractions_xfac(hfxfac)
+         end if
 
          ! sanity check
          if (use_openrsp .and. .not. xcint_is_active()) then

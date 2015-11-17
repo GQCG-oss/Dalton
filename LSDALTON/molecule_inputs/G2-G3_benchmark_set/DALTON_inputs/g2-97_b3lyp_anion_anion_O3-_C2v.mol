@@ -1,8 +1,0 @@
-ATOMBASIS
-anion: O3- C2v
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=8.0 Atoms=3 Basis=regbasis Aux=auxbasis
-O      0.00000000000000      0.00000000000000      0.00000000000000
-O      0.00000000000000      0.00000000000000      1.35997555000000
-O      1.22596972939700      0.00000000000000     -0.58866944816300

@@ -722,6 +722,8 @@ C
       end do
 2     rewind(lucmd)
       call gpclose(lucmd, 'KEEP')
+#else
+      use_openrsp = .false.
 #endif
 
 C
@@ -1090,6 +1092,7 @@ C search for $RESPON in input (legacy driver)
             DO
                READ (LUCMD,'(A7)',END=135) WORD
                IF (WORD .EQ. '$RESPON') THEN
+                  USE_OPENRSP = .TRUE.
                   CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
                   EXIT
                END IF
@@ -1175,6 +1178,7 @@ C search for $RESPON in input
          DO
             READ (LUCMD,'(A7)',END=145) WORD
             IF (WORD .EQ. '$RESPON') then
+               USE_OPENRSP = .TRUE.
                CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
                EXIT
             END IF

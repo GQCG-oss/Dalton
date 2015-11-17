@@ -1,9 +1,0 @@
-ATOMBASIS
-SCl2 C2v symmetry
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=16.0 Atoms=1 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=17.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      2.06542632000000
-Cl      1.99856218907000      0.00000000000000     -0.52128213068000

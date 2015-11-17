@@ -1,6 +1,0 @@
-ATOMBASIS
-li+ hf(full) 6-31g* -7.2359397
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=3.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Li      0.00000000000000      0.00000000000000      0.00000000000000

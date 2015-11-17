@@ -1,9 +1,0 @@
-ATOMBASIS
-anion: CCO-
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=2 Basis=regbasis Aux=auxbasis
-C      0.10036788900000      0.00000000000000      0.00000000000000
-C      1.41076259710000      0.00000000000000      0.00000000000000
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O     -1.13334786460000      0.00000000000000      0.00000000000000

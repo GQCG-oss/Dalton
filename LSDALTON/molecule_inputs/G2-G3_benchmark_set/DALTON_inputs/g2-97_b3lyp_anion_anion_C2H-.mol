@@ -1,9 +1,0 @@
-ATOMBASIS
-anion: C2H-
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=2 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000     -0.49406296790000
-C      0.00000000000000      0.00000000000000      0.75570931510000
-Charge=1.0 Atoms=1 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000     -1.56987808370000

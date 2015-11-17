@@ -1,9 +1,0 @@
-ATOMBASIS
-H2Cl+
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=17.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      1.31406268000000
-H      1.30684000604000      0.00000000000000     -0.13758606609300

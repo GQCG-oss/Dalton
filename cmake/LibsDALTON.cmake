@@ -86,20 +86,6 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-if(ENABLE_LSLIB)
-    add_definitions( -DBUILD_LSLIB )
-    add_dependencies(dalton lsdalton)
-    set(DALTON_LIBS
-        lsdalton
-        ${DALTON_LIBS}
-        )
-endif()
-
-if(ENABLE_PELIB)
-    include(LibsPElib)
-    add_dependencies(dalton pelib)
-endif()
-
 if(ENABLE_QFITLIB)
     include(LibsQFITlib)
     add_dependencies(dalton qfitlib)
@@ -108,6 +94,8 @@ endif()
 if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()
+
+include(LibsPElib)
 
 if(ENABLE_PCMSOLVER)
     set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
@@ -135,9 +123,9 @@ if(NOT ENABLE_CHEMSHELL)
         dalton.x
         ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
         )
-    
+
     set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)
-    
+
     target_link_libraries(
         dalton.x
         dalton
@@ -148,7 +136,7 @@ endif()
 
 # compile utilities
 
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools) 
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tools)
 
 add_library(peter_utils_blocks ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
 

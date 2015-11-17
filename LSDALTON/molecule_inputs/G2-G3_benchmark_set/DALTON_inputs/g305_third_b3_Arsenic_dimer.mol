@@ -1,7 +1,0 @@
-ATOMBASIS
-Arsenic dimer
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=33.0 Atoms=2 Basis=regbasis Aux=auxbasis
-As      0.00000000000000      0.00000000000000     -1.05319100680000
-As      0.00000000000000      0.00000000000000      1.05319100680000

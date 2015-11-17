@@ -1,9 +1,0 @@
-ATOMBASIS
-SiCl2 1A1 C2v symmetry
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=14.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Si      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=17.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      2.10944632000000
-Cl      2.06124176338800      0.00000000000000     -0.44838172334300

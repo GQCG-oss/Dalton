@@ -1,9 +1,0 @@
-ATOMBASIS
-Selenium Dihydride cation
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=34.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Se     -0.04156307850000      0.00000000000000     -0.03998871870000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H     -0.03246906340000      0.00000000000000      1.44794575000000
-H      1.44561373380000      0.00000000000000     -0.08832931300000
