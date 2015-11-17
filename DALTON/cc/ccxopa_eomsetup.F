@@ -283,7 +283,6 @@ c /* deck ccxopa_eomsetup */
 
               WL0Rf    = EOML0CONS(IVEC,ITRAN)
               !write(lupri,*) "WL0Rf:", WL0Rf 
-              !
               WLiXiRf = WLiXi*WL0Rf 
             ELSE
               IR1VEC = IR1TAMP(LABEL,LORX,EIGVI-EIGVF,IDUM)
@@ -305,7 +304,7 @@ c /* deck ccxopa_eomsetup */
 
               RESULT(ITMIF) = WIAF + WXINIF + WIBF - WLIXiRF
 
-              IF (LOCDBG) THEN
+              !IF (LOCDBG) THEN
                  WRITE (LUPRI,*) 'ISTATEI, EIGVI:',ISTATEI,EIGVI
                  WRITE (LUPRI,*) 'ISTATEF, EIGVF:',ISTATEF,EIGVF
                  WRITE (LUPRI,*) 'OPERATOR:',LABEL
@@ -317,7 +316,7 @@ c /* deck ccxopa_eomsetup */
                  WRITE (LUPRI,*) '(R^f*L0):',WL0Rf
                  WRITE (LUPRI,*) '(L^i x Xksi{X})(R^f*L0):',WLiXiRF
                  WRITE (LUPRI,*) 'Total result:',RESULT(ITMIF)
-              END IF
+              !END IF
 
            END IF
 
