@@ -1752,8 +1752,10 @@ C
                ISYMO = ISYOPR(IQR2OP(IOPER))
                IF (ISYMO.EQ.ISYMFI) THEN
             if (LSKIPLINEQ) then
+                   if (locdbg) then
                    write(lupri,*)'SONIA XOPAIND WARNING'
                    write(lupri,*)'XOPAIND: skip lin eqs'
+                   end if
             else
                 IF (.NOT.QR22N1) THEN
                  INUM=IR1TAMP(LABEL,.FALSE.,EIGVI-EIGVF,ISYMO)
