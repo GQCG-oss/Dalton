@@ -1072,6 +1072,85 @@ C *** End of subroutine CIPRP
 C
       RETURN
       END
+C  /* Deck cirpr_triplet */
+      SUBROUTINE CIPRP_TRIPLET(NSIM,CREF,SCVECS,LSCVEC,
+     &  PRPAC,XNDXCI,WRK,LFREE)
+C
+C hjaaj Nov 2015: triplet version of subroutine CIPRP
+C
+C Purpose:
+C   Compute CI sigma vector(s) for NSIM one-electron operators
+C   SCVECS(I) = SUM(J) <I|PRP(triplet)|J> * CREF(J)
+C
+C   calls lunar determinant routines
+C
+C Output:
+C   SCVECS; CI sigma vector(s)
+C
+C Scratch:
+C   WRK(LFREE)
+C
+C
+      use lucita_mcscf_ci_cfg
+#include "implicit.h"
+      DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
+      DIMENSION XNDXCI(*), WRK(LFREE)
+#include "iratdef.h"
+      LOGICAL   NOH2, IH8SM
+      PARAMETER ( NOH2 = .TRUE. , IH8SM = .FALSE. , D2 = 2.0D0 )
+#include "thrzer.h"
+C     NOH2  ... No 2-electron part
+C     IH8SM ... integrals do not have 8-fold symmetry
+C
+C Used from common blocks:
+C   INFORB : N2ASHX
+C   INFLIN : LSYMRF,NCONRF,LSYMST,NCONST
+C
+#include "maxorb.h"
+#include "inforb.h"
+#include "inflin.h"
+#include "priunit.h"
+C
+C
+C *** SCVECS(I) = SUM(J) <I|PRP|J> * CREF(J)
+C
+      KW1    = 1
+      LW1    = LFREE  - KW1
+C
+C     Set spin couplings
+C
+      ISPIN1 = 1
+      ISPIN2 = 0
+!
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .true.
+
+!     set vector exchange type: cref
+      if(cref_is_active_bvec_for_sigma)then 
+        vector_exchange_type1 = 2
+        cref_is_active_bvec_for_sigma = .false.
+      else
+!       set vector exchange type: bvec trial vector
+        vector_exchange_type1 = 2
+      end if
+
+C     ... singlet-singlet coupling of 2-electron integrals
+      DO 100 ISIM = 1, NSIM
+         CALL DZERO(SCVECS(1,ISIM),NCONST)
+         CALL CISIGD(LSYMRF,LSYMST,NCONRF,NCONST, CREF,SCVECS(1,ISIM),
+     &               PRPAC(1,ISIM),DUMMY,NOH2,IH8SM,
+     &               XNDXCI,ISPIN1,ISPIN2,WRK(KW1),LW1)
+C        CALL CISIGD(ICSYM,IHCSYM,NCDET,NHCDET, C,HC, FCAC,H2AC,
+C    &               NOH2,IH8SM,XNDXCI,ISPIN1,ISPIN2,WRK,LFREE)
+  100 CONTINUE
+C
+!     set flag for CI trial vector in MCSCF (needed for LUCITA interface)
+      mcscf_ci_trial_vector = .false.
+C
+C *** End of subroutine CIPRP_TRIPLET
+C
+      RETURN
+      END
 C  /* Deck cisigd */
       SUBROUTINE CISIGD(ICSYM,IHCSYM,NCVEC,NHCVEC,C,HC,
      *                  FCAC,H2AC,ONLYH1,IH8SM,

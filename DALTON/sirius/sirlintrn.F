@@ -242,7 +242,12 @@ C-- SIRTR1, ORBSIG
 C-- CISIGO/CISIGC
       IF ( .NOT.ORBLIN ) THEN
          KFXCAC = K3
-         KCW    = KFXCAC + MOSIM*NNASHX
+         KFXSAC = KFXCAC + MOSIM*NNASHX
+         IF (DFT_SPINDNS) THEN
+            KCW = KFXSAC + MOSIM*NNASHX
+         ELSE
+            KCW = KFXSAC
+         END IF
          LCW    = LFREE  - KCW
          MONE   = LACIMX + MOSIM*LBCIMX
          MTWO   = LACIMX + MCSIM*LBCIMX
@@ -369,11 +374,6 @@ C                  because CREF is projected out of SCVEC later
                   JSCVEC = KSCVEC + (ICSIM-1)*NVAR
                   CALL GETAC1(WRK(JFTC),WRK(KSRW))
                   CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC))
-                  IF (DFT_SPINDNS) THEN
-                     JFTC  = KFTV + (2*NCSIM+ICSIM-1)*N2ORBX ! FTS matrix
-                     CALL GETAC1(WRK(JFTC),WRK(KSRW))
-                     CALL DGEASP(NASHT,WRK(KSRW),WRK(KSRLTRAC)) ! add FTSAC to SRLTRAC
-                  END IF
                   IF (IPRLIN .GT. 10) THEN
                      WRITE(LUPRI,'(/A,I3)')
      &               'MCSRDFT "FTC"="V^([2c],xc-SR)" no.',ICSIM
@@ -384,6 +384,22 @@ C                  because CREF is projected out of SCVEC later
                   CALL SOLGC(CREF,WRK(KSRLTRAC),ESRLTR,WRK(KSRCVEC),
      &                       INDXCI,WRK(KSRW),LSRW)
                   CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
+                  IF (DFT_SPINDNS) THEN
+                     JFTC  = KFTV + (2*NCSIM+ICSIM-1)*N2ORBX    ! Triplet FTS matrix
+                     CALL GETAC1(WRK(JFTC),WRK(KSRW))
+                     CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC)) ! unpack triplet FTSAC to SRLTRAC
+                     IF (IPRLIN .GT. 10) THEN
+                        WRITE(LUPRI,'(/A,I3)')
+     &                'MCSRDFT "FSC"="V_triplet^([2c],xc-SR)" no.',ICSIM
+             CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+                        WRITE(LUPRI,'(/A,I3)')
+     &                'MCSRDFT triplet SRLTRAC no.',ICSIM
+                       CALL OUTPAK(WRK(KSRLTRAC),NASHT,-1,LUPRI)
+                    END IF
+                    CALL SOLGC_TRIPLET(CREF,WRK(KSRLTRAC),ESRLTR,
+     &                         WRK(KSRCVEC),INDXCI,WRK(KSRW),LSRW)
+                    CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
+                  END IF
                ENDDO
             END IF
          END IF
@@ -391,8 +407,7 @@ C                  because CREF is projected out of SCVEC later
          IF (NCONF .GT. 1 .OR. LSYMPT .NE. 1) THEN
 C
 C
-C *** Extract FXCAC from FXC and
-C     modify  FXCAC, H2XAC as needed by CI routines
+C *** Extract FXCAC from FXC and, if DFT_SPINDNS, FXSAC from FXS
 C
             DO 600 IOSIM = 1,NOSIM
                JFXC   = KFXC   + (IOSIM-1)*N2ORBX
@@ -400,17 +415,29 @@ C
                JH2XAC = KH2XAC + (IOSIM-1)*NNASHX*NNASHX
                CALL GETAC1(WRK(JFXC),WRK(KCW))
                CALL DGETSP(NASHT,WRK(KCW),WRK(JFXCAC))
-               IF (DFT_SPINDNS) THEN
-                  JFXS  = KFXV + (NOSIM+IOSIM-1)*N2ORBX ! FXS matrix
-                  CALL GETAC1(WRK(JFXS),WRK(KCW))
-                  CALL DGEASP(NASHT,WRK(KCW),WRK(JFXCAC)) ! add FXSAC to FXCAC
-               END IF
                IF (P6FLAG(22) .OR. IPRLIN .GE. 22) THEN
                   WRITE (LUPRI,6010) IOSIM,NOSIM
                   CALL OUTPAK(WRK(JFXCAC),NASHT,1,LUPRI)
                END IF
+               IF (DFT_SPINDNS) THEN
+                  JFXS   = KFXV   + (NOSIM+IOSIM-1)*N2ORBX ! FXS matrix
+                  JFXSAC = KFXSAC + (IOSIM-1)*NNASHX
+                  CALL GETAC1(WRK(JFXS),WRK(KCW))
+                  CALL DGETSP(NASHT,WRK(KCW),WRK(JFXSAC))  ! FXSAC matrix
+                  IF (P6FLAG(22) .OR. IPRLIN .GE. 22) THEN
+                     WRITE (LUPRI,6011) IOSIM,NOSIM
+                     CALL OUTPAK(WRK(JFXSAC),NASHT,1,LUPRI)
+                  END IF
+                  KSROVEC  = KCW
+                  KSRW     = KSRCVEC + NCONF
+                  LSRW     = LFREE - KSRW
+                  CALL SOLGC_TRIPLET(CREF,WRK(JFXSAC),ESRLTR,
+     &                       WRK(KSROVEC),INDXCI,WRK(KSRW),LSRW)
+                  CALL DAXPY(NCONF,D1,WRK(KSROVEC),1,WRK(JSOVEC),1)
+               END IF
   600       CONTINUE
- 6010       FORMAT (/' Modified FXCAC matrix (no.',I3,' of',I3,')')
+ 6010       FORMAT (/' FXCAC matrix (no.',I3,' of',I3,')')
+ 6011       FORMAT (/' FXSAC matrix (no.',I3,' of',I3,')')
 C
             DISTYP = 1
             IADINT = IADH2X
@@ -418,6 +445,8 @@ C
      *                  WRK(KFXCAC),WRK(KH2XAC),INDXCI,WRK(KCW),LCW)
 C           CALL CISIGO(NOSIM,SOVECS,CREF,EMYX,FXCAC,H2XAC,
 C    *                  INDXCI,WRK,LFREE)
+            IF (DFT_SPINDNS) THEN
+            END IF
          ELSE
             DO 800 IOSIM = 1,NOSIM
                WRK(KSOVEC+(IOSIM-1)*NVAR) = D0

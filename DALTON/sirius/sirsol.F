@@ -412,7 +412,75 @@ C
       CALL DAXPY(NCONF,(-D2*TELMAC),CREF,1,GLMCI,1)
 C
       CALL QEXIT('SOLGC ')
-      RETUrN
+      RETURN
+      END
+C  /* Deck solgc_triplet */
+      SUBROUTINE SOLGC_TRIPLET(CREF,RLMAC,TELMAC,GLMCI,INDXCI,WRK,LWRK)
+C
+C Triplet version 18. nov. 2015 hjaaj, based on SOLGC
+C
+C Purpose:
+C
+C  To calculate solvent CI gradient contribution for a value of LM
+C  (or several values summed) in RLMAC.
+C  ( ER(l,m) configuration gradient contribution. )
+C
+C
+C Input:
+C  CREF(NCONF)   CI reference vector
+C  RLMAC(NNASHX) solvent integrals
+C  TELMAC        CREF expectation value.
+C  INDXCI(*)     CI index vector
+C
+C Output:
+C  GLMCI(NCONF)  = CI gradient vector for Rlm =
+C                2 ( < i | R(l,m) | cref> - TE(l,m) cref(i) )
+C
+C Scratch:
+C  WRK(LWRK)
+C
+!     module dependencies
+      use lucita_mcscf_ci_cfg
+#include "implicit.h"
+      DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
+C
+      PARAMETER ( D2 = 2.0D0 )
+C
+C Used from common blocks:
+C   INFORB : N2ASHX
+C   INFVAR : NCONF
+C
+#include "maxorb.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "infinp.h"
+C
+C ***** Comment edh: The CIPRP subroutine computes CI sigma vectors (SCVECS)                     ******
+C ***** according to SUM(J) <I|PRP|J> * CREF(J):                                                 ******
+C ***** CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE). Here SCVECS = GLMCI and           ******  
+C ***** NSIM = 1 in accordance with CI gradient expression (c.f. K.V. Mikkelsen et al. JCP 1988) ****** 
+
+      CALL QENTER('SOLGC_TRIPLET ')
+      KURAC = 1
+      KWRK1 = KURAC + N2ASHX
+      LWRK1 = LWRK + 1 - KWRK1
+      if(ci_program .eq. 'SIRIUS-CI')then
+         CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
+C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
+      else if(ci_program .eq. 'LUCITA   ')then
+        CALL DCOPY(NNASHX,RLMAC,1,WRK(KURAC),1)
+        cref_is_active_bvec_for_sigma = .true.
+      end if
+
+      CALL CIPRP_TRIPLET(1,CREF,GLMCI,NCONF,WRK(KURAC),
+     &     INDXCI,WRK(KWRK1),LWRK1) !  SUM(J) <I|PRP|J> * CREF(J)  
+C     CALL CIPRP_TRIPLET(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
+C
+      CALL DSCAL(NCONF,D2,GLMCI,1)
+      CALL DAXPY(NCONF,(-D2*TELMAC),CREF,1,GLMCI,1)
+C
+      CALL QEXIT('SOLGC_TRIPLET ')
+      RETURN
       END
 C  /* Deck solgo */
       SUBROUTINE SOLGO(DCVAL,DV,RLM,GOLM)
