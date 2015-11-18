@@ -52,7 +52,7 @@ Cholesky
 Cholesky
 
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG=.true.)
+      PARAMETER (LOCDBG=.false.)
  
       INTEGER MAXXETRAN, MXVEC
       PARAMETER (MAXXETRAN = 100)
@@ -101,8 +101,10 @@ Cholesky
         IEND        = ISTART   + NTRAN
         KEND        = IEND     + NTRAN
         LEND        = LWORK    - KEND
+        if (locdbg) then
         WRITE (LUPRI,*) 'istart,iend,kend,lend,lwork,ntran',
      &  istart,iend,kend,lend,lwork,ntran
+        end if
 
         IF (LEND .LT. 0) THEN
            WRITE (LUPRI,*) 'Insufficient work space in CCEOM_XIETA.'
@@ -447,7 +449,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
       END DO
       IEND(NBATCH) = NXETRAN
 
-!      IF (LOCDBG) THEN
+      IF (LOCDBG) THEN
         WRITE (LUPRI,*) 'CCEOM_XIETA> batching statistics:'
         WRITE (LUPRI,*) 'CCEOM_XIETA> NBATCH : ',NBATCH
         WRITE (LUPRI,*) 'CCEOM_XIETA> ISTART : ',
@@ -455,7 +457,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
         WRITE (LUPRI,*) 'CCEOM_XIETA> IEND   : ',
      &       (IEND(IBATCH),  IBATCH=1,NBATCH)
         WRITE (LUPRI,*) 'WORK(0) = ',WORK(ITST)
-!      END IF
+      END IF
 
 *=====================================================================*
 * loop over the batches of transformations:
@@ -514,13 +516,13 @@ C
           KETA1  = KZETA1 + NT1AM(ISYCTR)
           KEND2  = KETA1  + NT1AM(ISYETA)
           IF (CC2 .OR. CCSD .OR. CCSDT) THEN
-             write(lupri,*)'SONIA: CCSD??? EOM_XIETA'
-             call flshfo(lupri)
+             !write(lupri,*)' EOM_XIETA'
+             !call flshfo(lupri)
              KETA2 = KEND2
              KEND2 = KETA2  + NT2AM(ISYETA)
           END IF
           LWRK2 = LWORK - KEND2
-          write(lupri,*)'SONIA: KETA1:', KETA1, ' KETA2:', KETA2
+          !write(lupri,*)'SONIA: KETA1:', KETA1, ' KETA2:', KETA2
           !write(lupri,*)'SONIA: KEND2:', KEND2
           !call dzero(WORK(KETA1),NT1AM(ISYETA)+NT2AM(ISYETA))
 
@@ -747,7 +749,7 @@ C
       LOGICAL  FCKCON,ETRAN, LOCDBG
       PARAMETER( LOCDBG = .false. )
 C
-      CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(L1) vector ')
+!      CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(L1) vector ')
       IF ( (IPRINT .GT. 10).or.locdbg ) THEN
          CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(L1) vector ')
       ENDIF
@@ -879,8 +881,8 @@ C-----------------------------------------------
 C
       !if (eomccsd.or.cccisd) then
 
-         DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-         WRITE(LUPRI,*) 'IN ONEP: FOCK out norm:',DN
+         !DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+         !WRITE(LUPRI,*) 'IN ONEP: FOCK out norm:',DN
 
          !write(lupri,*) 'X_mo integrals of EOM from CCDINTMO'
          ISYM = ISYMC
@@ -927,14 +929,14 @@ C
          ENDIF
       !end if
 
-       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-       WRITE(LUPRI,*) 'IN ONEP: FOCK out norm:',DN
+       !DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+       !WRITE(LUPRI,*) 'IN ONEP: FOCK out norm:',DN
 
       !X_pq
       CALL CC_FCKMO(WORK(KCTMO),WORK(KLAMDP),WORK(KLAMDH),
      *              WORK(KEND21),LEND21,ISYMC,1,1)
-       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-       WRITE(LUPRI,*) 'Integral norm after FCKMO out norm:',DN
+       !DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
+       !WRITE(LUPRI,*) 'Integral norm after FCKMO out norm:',DN
 C
 C----------------------------------------------------------
 C     Calculate 2Cia (stored ia) Hartree-Fock contribution.
@@ -1914,7 +1916,7 @@ C     General symmetry of both CLTR2 and T2AM for F-mat and etaC.
 C
 #include "implicit.h"
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .TRUE.)
+      PARAMETER (LOCDBG = .false.)
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0)
       DIMENSION ZMAT(*),CLTR2(*),T2AM(*),WORK(LWORK)
 #include "priunit.h"
