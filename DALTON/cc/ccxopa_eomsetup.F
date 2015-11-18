@@ -305,17 +305,19 @@ c /* deck ccxopa_eomsetup */
               RESULT(ITMIF) = WIAF + WXINIF + WIBF - WLIXiRF
 
               !IF (LOCDBG) THEN
-                 WRITE (LUPRI,*) 'ISTATEI, EIGVI:',ISTATEI,EIGVI
-                 WRITE (LUPRI,*) 'ISTATEF, EIGVF:',ISTATEF,EIGVF
-                 WRITE (LUPRI,*) 'OPERATOR:',LABEL
-                 WRITE (LUPRI,*) 'IDX = ',ITMIF
-                 WRITE (LUPRI,*) 'L^i A{X} x R^f :',WIAF
-                 WRITE (LUPRI,*) 'N^if x Xksi{X}:',WXINIF
-                 WRITE (LUPRI,*) 'L^i x B x R^f x R^X:',WIBF
-                 WRITE (LUPRI,*) '(L^i x Xksi{X}):',WLiXi
-                 WRITE (LUPRI,*) '(R^f*L0):',WL0Rf
-                 WRITE (LUPRI,*) '(L^i x Xksi{X})(R^f*L0):',WLiXiRF
-                 WRITE (LUPRI,*) 'Total result:',RESULT(ITMIF)
+                WRITE (LUPRI,*) '----- Summary after add ------'
+                WRITE (LUPRI,*) 'IDX of result = ',ITMIF
+                WRITE (LUPRI,*) 'ISTATEI, EIGVI:',ISTATEI,EIGVI
+                WRITE (LUPRI,*) 'ISTATEF, EIGVF:',ISTATEF,EIGVF
+                WRITE (LUPRI,*) 'OPERATOR:',LABEL
+                WRITE (LUPRI,*) 'L^i A{X} x R^f :',WIAF
+                WRITE (LUPRI,*) 'N^if x Xksi{X}:',WXINIF
+                WRITE (LUPRI,*) 'L^i x B x R^f x R^X:',WIBF
+                WRITE (LUPRI,*) 'L^i x Xksi{X}:',WLiXi
+                WRITE (LUPRI,*) 'R^f x L0:',WL0Rf
+                WRITE (LUPRI,*) '(L^i x Xksi{X})(R^f x L0):',WLiXiRF
+                WRITE (LUPRI,*) 'Total result:',RESULT(ITMIF)
+                WRITE (LUPRI,*) '------------------------------'
               !END IF
 
            END IF
