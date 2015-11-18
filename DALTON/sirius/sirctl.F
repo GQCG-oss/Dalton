@@ -516,7 +516,7 @@ C ***************************************************
 C        *** reset to CI/MCSCF flags ***
 C
       IF ( (DOSCF .OR. DOMP2) .AND.
-     &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB .OR. DOLUCITA) ) THEN
+     &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) ) THEN
          HSROHF = .FALSE.
 C        ... otherwise error in some MCSCF routines
 C            where HSROHF specifications erroneously will be used

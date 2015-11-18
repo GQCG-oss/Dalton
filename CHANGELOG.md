@@ -26,6 +26,7 @@
   because they were duplicates (text had "Third order" instead of "Second order").
 - Bugfixes for CC2 in environments (incl. external fields) by Ove Christiansen.
 - Bugfix for .TDA for MCSCF (i.e. zero B matrix in linear response in **RESPONSE)
+- Bugfix for .GASCI after .HSROHF
 
 ### Changed
 - OK to run ECD or OECD with SOPPA.
