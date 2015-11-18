@@ -282,7 +282,7 @@ c /* deck ccEOM_xieta1 */
 
 * local parameters:
       LOGICAL LOCDBG
-      PARAMETER (LOCDBG = .true.)
+      PARAMETER (LOCDBG = .false.)
       INTEGER ISYM0
       PARAMETER (ISYM0 = 1) ! symmetry of the reference state
 #if defined (SYS_CRAY)
@@ -371,11 +371,11 @@ c /* deck ccEOM_xieta1 */
       ELSE IF (IOPTRES.EQ.5) THEN
          IF (MXVEC*NXETRAN .LE. 0) THEN
             WRITE (LUPRI,*)
-     &           'WARNING: CCEOM_XIETA called, but nothing to do!'
+     &      'WARNING: CCEOM_XIETA called, but nothing to do!'
             RETURN
          END IF
       ELSE
-         CALL QUIT('Illegel value of IOPTRES in CCEOM_XIETA.')
+         CALL QUIT('Illegal value IOPTRES in CCEOM_XIETA.')
       END IF
 
       IOPTWR12 = 0
@@ -406,7 +406,7 @@ CCN        CALL QUIT('No CC3-R12 yet in CC_XIETA!')
          IOPTW  = 3
          IOPTWE = 24
       ELSE
-         CALL QUIT('Unk own coupled cluster model in CC_XIETA.')
+         CALL QUIT('Unknown CC model in CCEOM_XIETA.')
       END IF
 *---------------------------------------------------------------------*
 * prepare batching, make sure that for derivatives all transf. 
@@ -604,7 +604,7 @@ C
              WRITE(LUPRI,*) 'ECONS TRIPLES CONTRIBUTION:'
              DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
                 WRITE (LUPRI,*) 
-     &                'ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
+     &              '1 ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
                 IVEC = IVEC + 1
              END DO
            END IF                
@@ -619,7 +619,7 @@ C
              IVEC = 1
              DO WHILE (IEDOTS(IVEC,ITRAN).NE.0 .AND. IVEC.LE.MXVEC)
                 WRITE (LUPRI,*) 
-     &                'ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
+     &              ' 2 ECONS:',IVEC,ITRAN,ECONS(IVEC,ITRAN),IOPTW
                 IVEC = IVEC + 1
              END DO
            END IF
@@ -745,8 +745,9 @@ C
       CHARACTER LBLC*(*),LIST*(*),MODEL*10
       INTEGER IOPTCC2
       LOGICAL  FCKCON,ETRAN, LOCDBG
-      PARAMETER( LOCDBG = .true. )
+      PARAMETER( LOCDBG = .false. )
 C
+      CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(L1) vector ')
       IF ( (IPRINT .GT. 10).or.locdbg ) THEN
          CALL AROUND( 'IN CCCI_ETAC: Constructing ETAC(L1) vector ')
       ENDIF
@@ -791,7 +792,7 @@ C
          !if (EOMCCSD.or.CCCISD) then
            !Integrals in MO basis
            !highly redundant, but I need a second check
-           write(lupri,*)'CCCI_ETAC: EOM alloc for X_mo integrals'
+           !write(lupri,*)'CCCI_ETAC: EOM alloc for X_mo integrals'
            KINTAI = KEND1
            KINTAB = KINTAI + NT1AM(ISYMC)
            KINTIJ = KINTAB + NMATAB(ISYMC)
@@ -832,8 +833,8 @@ C
       IF ( .NOT. CCS) THEN
          IOPT = 1
          CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
-         skod = DDOT(NT1AM(1),WORK(KT1AM),1,WORK(KT1AM),1)
-         WRITE(LUPRI,1) 'Norm of T0_1:       ',skod
+         !skod = DDOT(NT1AM(1),WORK(KT1AM),1,WORK(KT1AM),1)
+         !WRITE(LUPRI,1) 'Norm of T0_1:       ',skod
       ENDIF
 C
       CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),
@@ -881,7 +882,7 @@ C
          DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
          WRITE(LUPRI,*) 'IN ONEP: FOCK out norm:',DN
 
-         write(lupri,*) 'X_mo integrals of EOM from CCDINTMO'
+         !write(lupri,*) 'X_mo integrals of EOM from CCDINTMO'
          ISYM = ISYMC
          CALL CCDINTMO(WORK(KINTIJ),WORK(KINTIA),WORK(KINTAB),
      *                 WORK(KINTAI),WORK(KCTMO),WORK(KLAMDP),
@@ -986,7 +987,7 @@ C
      *              WORK(KL1AM),WORK(KT2AM))
       skod = DDOT(NT1AM(ISYML),WORK(KL1AM),1,WORK(KL1AM),1)
       skod = skod+DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
-      WRITE(LUPRI,1) 'Norm of Tbar (full):       ',skod
+      !WRITE(LUPRI,1) 'Norm of Tbar (full):       ',skod
       IF (.NOT. CCS) CALL CC_T2SQ(WORK(KT2AM),WORK(KL2AM),ISYML)
 C
 C--------------------------------
@@ -998,7 +999,7 @@ C
          IOPT = 2
          CALL CC_RDRSP('R0',0,1,IOPT,MODEL,DUMMY,WORK(KT2AM))
          skod = DDOT(NT2AM(1),WORK(KT2AM),1,WORK(KT2AM),1)
-          WRITE(LUPRI,1) 'Norm of T2(0) (full):   ',skod
+         ! WRITE(LUPRI,1) 'Norm of T2(0) (full):   ',skod
       ENDIF
 C
 C--------------------------------
@@ -1013,24 +1014,24 @@ C
          IF (LEND3.LT. 0 )
      &        CALL QUIT(' TOO LITTLE WORKSPACE IN CC_ETAC-2')
 C
-         !IF ( DEBUG ) THEN
+         IF ( DEBUG.or.LOCDBG ) THEN
             XYI   = DDOT(NT1AM(ISYML),WORK(KL1AM),1,WORK(KL1AM),1)
             WRITE(LUPRI,1) 'CC_ETAC: L1AM vector:              ',XYI
             XYI   = DDOT(NT2SQ(ISYML),WORK(KL2AM),1,WORK(KL2AM),1)
             WRITE(LUPRI,1) 'CC_ETAC: L2AM vector:              ',XYI
             XXI   = DDOT(NT2AM(ISYMOP),WORK(KT2AM),1,WORK(KT2AM),1)
             WRITE(LUPRI,1) 'T2AM vector :                      ',XXI
-         !ENDIF
+         ENDIF
          CALL CC_XI(WORK(KXMAT),WORK(KL2AM),ISYML,WORK(KT2AM),1,
      *              WORK(KEND3),LEND3)
          CALL CC_YI(WORK(KYMAT),WORK(KL2AM),ISYML,WORK(KT2AM),1,
      *              WORK(KEND3),LEND3)
-         !IF ( DEBUG ) THEN
+         IF ( DEBUG.or.LOCDBG ) THEN
             XYI   = DDOT(NMATAB(ISYML),WORK(KYMAT),1,WORK(KYMAT),1)
             WRITE(LUPRI,1) 'CC_ETAC: YI  intermediate is:      ',XYI
             XXI   = DDOT(NMATIJ(ISYML),WORK(KXMAT),1,WORK(KXMAT),1)
             WRITE(LUPRI,1) 'CC_ETAC: XI  intermediate is:      ',XXI
-         !ENDIF
+         ENDIF
       ELSE
          KEND3 = KEND2
          LEND3 = LEND2
@@ -1043,11 +1044,11 @@ C----------------------------------------------
 C
       IF ( (.NOT.CCS) .AND. (.NOT.(CC2.AND.IOPTCC2.EQ.1)) ) THEN
       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-      WRITE(LUPRI,*) 'Integral norm before CC_21EFM out norm:',DN
+      !WRITE(LUPRI,*) 'Integral norm before CC_21EFM out norm:',DN
          CALL CC_21EFM(ETAC,WORK(KCTMO),ISYMC,WORK(KXMAT),
      *                 WORK(KYMAT),ISYML,WORK(KEND3),LEND3)
       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-      WRITE(LUPRI,*) 'Integral norm after CC_21EFM out norm:',DN
+      !WRITE(LUPRI,*) 'Integral norm after CC_21EFM out norm:',DN
 C
          IF ( DEBUG.or.locdbg ) THEN
             ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
@@ -1065,13 +1066,13 @@ C
          CALL DZERO(ETAC(1+NT1AM(ISYRES)),NT2AM(ISYRES))
 
       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-      WRITE(LUPRI,*) 'Integral norm before CC_L1FCK out norm:',DN
+      !WRITE(LUPRI,*) 'Integral norm before CC_L1FCK out norm:',DN
 
          CALL CC_L1FCK(ETAC(1+NT1AM(ISYRES)),WORK(KL1AM),WORK(KCTMO),
      *                 ISYML,ISYMC,WORK(KEND2),LEND2)
 
       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-      WRITE(LUPRI,*) 'Integral norm after CC_L1FCK out norm:',DN
+!      WRITE(LUPRI,*) 'Integral norm after CC_L1FCK out norm:',DN
 !     *                 ISYML,ISYMC,WORK(KEND2),LEND2)
 C
          IF ( DEBUG.or.locdbg ) THEN
@@ -1096,7 +1097,7 @@ C
       FCKCON = .TRUE.
       ETRAN  = .FALSE.
       DN = DDOT(N2BST(ISYMC),WORK(KCTMO),1,WORK(KCTMO),1)
-      WRITE(LUPRI,*) 'Integral norm before CCRHS_EFCK out norm:',DN
+!      WRITE(LUPRI,*) 'Integral norm before CCRHS_EFCK out norm:',DN
       CALL CCRHS_EFCK(WORK(KEI1),WORK(KEI2),WORK(KLAMDH),
      *                WORK(KCTMO),WORK(KEND3),LEND3,FCKCON,
      *                ETRAN,ISYMC)
@@ -1158,7 +1159,7 @@ C
      *                LEND3,ISYML,ISYMC)
 C
          IF (IPRINT .GT. 40 ) THEN
-            CALL AROUND( 'In CC_ETAC:  EtaC vector ' )
+            CALL AROUND( 'In CCCI_ETAC:  EtaC vector ' )
             CALL CC_PRP(ETAC(1),ETAC(1+NT1AM(ISYRES)),ISYMC,1,1)
          ENDIF
 C
@@ -1166,8 +1167,8 @@ C
             ETA1 = DDOT(NT1AM(ISYRES),ETAC(1),1,ETAC(1),1)
             ETA2 = DDOT(NT2AM(ISYRES),ETAC(1+NT1AM(ISYRES)),1,
      *                  ETAC(1+NT1AM(ISYRES)),1)
-            WRITE(LUPRI,1) 'Norm of eta1 - end of CC_ETAC:     ',ETA1
-            WRITE(LUPRI,1) 'Norm of eta2 - end of CC_ETAC:     ',ETA2
+            WRITE(LUPRI,1) 'Norm of eta1 - end of CCCI_ETAC:   ',ETA1
+            WRITE(LUPRI,1) 'Norm of eta2 - end of CCCI_ETAC:   ',ETA2
             CALL AROUND( 'END OF CC_ETAC ')
          ENDIF
       ENDIF
@@ -1231,8 +1232,8 @@ C
          IOPTTCME = 1
          !get ttilde (overwrites T2am)
          CALL CCSD_TCMEPK(WORK(KT2AM),1.0D0,ISYOPE,IOPTTCME)
-         write(lupri,*) ' norm of ttilde ', 
-     &         ddot(NT2AM(1),WORK(KT2AM),1,WORK(KT2AM),1)
+!         write(lupri,*) ' norm of ttilde ', 
+!     &         ddot(NT2AM(1),WORK(KT2AM),1,WORK(KT2AM),1)
          !square it up
          CALL CC_T2SQ(WORK(KT2AM),WORK(KT2SQ),1)
          !Square up L2 as well
@@ -1241,8 +1242,8 @@ C
          !zero-ed inside the subroutine called
          call CC_ZIsq(work(KZint),work(kl2sq),ISYML,
      &                work(kT2sq),1,WORK(kend3),LEND3)
-         write(lupri,*) ' Norm of Z intermediate ', 
-     &   ddot(NT2SQ(isyml),WORK(KZINT),1,WORK(KZINT),1)
+!         write(lupri,*) ' Norm of Z intermediate ', 
+!     &   ddot(NT2SQ(isyml),WORK(KZINT),1,WORK(KZINT),1)
 
          !if (iprint.ge.45) then
          !  write(lupri,*) 'CC_EOMETA: Zint intermediate'
