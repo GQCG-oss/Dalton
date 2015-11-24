@@ -1210,11 +1210,11 @@ C
       WUSED = WEND - WSTART
       IF (IPRSTAT .GT. 0) THEN
          WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+     &      ' CPU and wall time for CC :',TUSED,WUSED
          CALL FLSHFO(LUSTAT)
       END IF
       WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+     &      ' CPU and wall time for CC :',TUSED,WUSED
       CALL TSTAMP(' ',LUPRI)
       CALL FLSHFO(LUPRI)
 C

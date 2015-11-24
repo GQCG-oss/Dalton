@@ -298,9 +298,9 @@ C
       CALL QENTER('SIRUPD')
       TIMUPD = SECOND()
       WRITE (LUW4,'(///A//)')
-     *   '   <<<< MC optimization control switched to update >>>>'
+     *   '   ----- MC optimization control switched to update -----'
       IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(A//)')
-     *   '1  <<<< MC optimization control switched to update >>>>'
+     *   '1  ----- MC optimization control switched to update -----'
 C
 C
       HESFIX = FLAG(56)
@@ -346,7 +346,7 @@ C     CALL UPDST(LUIT7,REDINV,IBNDX,REF0,CMO,VECK,VECG,
 C    *           VECT,VECQ,G0,VECX,CSCAL,GSCAL)
 C
       TIM = SECOND() - TIM
-      WRITE (LUPRI,'(/A,T40,F12.2)') ' >>>> time for UPDST: ',TIM
+      WRITE (LUPRI,'(/A,T40,F12.2)') ' Time for UPDST: ',TIM
 C
 C     INITIALIZE VARIABLES USED IN BROYDEN ITERATIONS;
 C     NO INTEGRAL TRANSFORMATION IF RHF.
@@ -624,7 +624,7 @@ C     END IF
 CHJ-E
       TIMIT = SECOND() - TIMIT
       WRITE (LUPRI,'(/A,T40,F12.2)')
-     *   ' >>>> time for this update iteration:',TIMIT
+     *   ' Time for this update iteration:',TIMIT
       GO TO 500
 C
 C
@@ -651,7 +651,7 @@ C
  9000 CONTINUE
       TIMUPD = SECOND() - TIMUPD
       WRITE (LUPRI,'(/A,T40,F12.2)')
-     *    ' >>>> total time for update: ',TIMUPD
+     *    ' Total time for update: ',TIMUPD
       CALL QEXIT('SIRUPD')
       RETURN
 C

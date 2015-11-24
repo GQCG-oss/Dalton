@@ -143,11 +143,12 @@ C--- Cele  Debug
 
       if(DOCI.AND.ISTNEVCI.eq.0)then
          write(lupri,*)' '
-         write(lupri,*)'<<<<<<<<<<<===========>>>>>>>>>>>>'
+         write(lupri,*)'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
          write(lupri,*)'ATTENTION ATTENTION ATTENTION ATTENTION'
          write(lupri,'(a)')
      $        'Number of state is required with .CI keyword'
          write(lupri,*)'Please restart'
+         write(lupri,*)'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
          CALL QUIT('NEVPT2 error: .CI but .STATE not defined')
       endif
       nwall=0

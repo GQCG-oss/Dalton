@@ -120,15 +120,15 @@ C
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(1X,A)')
-     *'*<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>'//
-     *'>>>>>>>>>*'
+     *'*---- OUTPUT FROM COUPLED CLUSTER RESPONSE  ----'//
+     *'---------*'
       IF ( CCFOP  ) THEN
          WRITE (LUPRI,'(1X,A)')
      *   '*                                                        '//
      *   '         *'
          WRITE (LUPRI,'(1X,A)')
-     *   '*<<<<<  CALCULATION OF EXCITED STATE FIRST ORDER PROPERTI'//
-     *   'ES >>>>>>*'
+     *   '*-----  CALCULATION OF EXCITED STATE FIRST ORDER PROPERTI'//
+     *   'ES ------*'
       ENDIF
       WRITE (LUPRI,'(1X,A)')
      *'*                                                        '//

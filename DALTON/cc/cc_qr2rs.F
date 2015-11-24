@@ -78,15 +78,15 @@ C
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(1X,A)')
-     *'*<<<<<<<<< OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >'//
-     *'>>>>>>>>*'
+     *'*---------- OUTPUT FROM COUPLED CLUSTER QUADRATIC RESPONSE >'//
+     *'--------*'
       IF ( XOSCST ) THEN
          WRITE (LUPRI,'(1X,A)')
      *   '*                                                        '//
      *   '         *'
          WRITE (LUPRI,'(1X,A)')
-     *   '*<<<<< CALCULATION OF CC EXCITED STATE TRANSITION STRENGT'//
-     *   'HS >>>>>>*'
+     *   '*----- CALCULATION OF CC EXCITED STATE TRANSITION STRENGT'//
+     *   'HS ------*'
       ENDIF
       WRITE (LUPRI,'(1X,A)')
      *'*                                                        '//

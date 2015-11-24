@@ -164,7 +164,7 @@ C
          NROW_DIM = MXCOOR
          ITYPE = 2
       ELSE
-         WRITE (LUPRI,'(//A/2A//)') ' >>> ERROR in PRIHES ',
+         WRITE (LUPRI,'(//A/2A//)') ' ERROR in PRIHES ',
      &      '     - incorrect specification of keyword: ', KEY
          CALL QUIT('Incorrect keyword in PRIHES.')
       END IF
@@ -1840,7 +1840,7 @@ C
          ITYPEC = 2
          FIELD  = 'B'
          FACTOR = D10E6*ALPHA2
-cLig >> added instructions how to print shieldings with CTOCD
+cLig added instructions how to print shieldings with CTOCD
 C
 C     Nuclear shieldings (ctocd)
 C
@@ -1850,7 +1850,7 @@ C
          ITYPEC = 2
          FIELD  = 'B'
          FACTOR = D1
-cLig <<
+cLig
 C
 C     Nuclear shieldings (unscaled)
 C
@@ -1860,7 +1860,7 @@ C
          FIELD  = 'B'
          FACTOR = D1
       ELSE
-         WRITE (LUPRI,'(//A/2A/)') ' >>> ERROR in FCPRI ',
+         WRITE (LUPRI,'(//A/2A/)') ' ERROR in FCPRI ',
      &     '    - Illegal keyword ',KEY
          CALL QUIT('Illegal keyword in FCPRI')
       END IF
@@ -2191,7 +2191,7 @@ C
          ITYPEF = 1
          ITYPEC = 1
       ELSE
-         WRITE (LUPRI,'(//A/2A/)') ' >>> ERROR in PRISEC ',
+         WRITE (LUPRI,'(//A/2A/)') ' ERROR in PRISEC ',
      &     '    - Illegal keyword ',KEY
          CALL QUIT('Illegal keyword in PRISEC')
       END IF

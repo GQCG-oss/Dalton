@@ -958,15 +958,15 @@ C
       KBMAX = KMAX/32+1
       IF (IPRINT .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' *** test output from SUP'
-         WRITE (LUPRI,'(/A,I15)') ' >>> NP    ',NP
-         WRITE (LUPRI,'( A,I15)') ' >>> NPMAX ',NPMAX
-         WRITE (LUPRI,'( A,I15)') ' >>> II    ',II
-         WRITE (LUPRI,'( A,I15)') ' >>> ITP   ',ITP
-         WRITE (LUPRI,'( A,I15)') ' >>> IMAX  ',IMAX
-         WRITE (LUPRI,'( A,I15)') ' >>> JMAX  ',JMAX
-         WRITE (LUPRI,'( A,I15)') ' >>> KMAX  ',KMAX
-         WRITE (LUPRI,'( A,I15)') ' >>> KBMAX ',KBMAX
-         WRITE (LUPRI,'( A,I15)') ' >>> NWW   ',NWW
+         WRITE (LUPRI,'(/A,I15)') ' NP    ',NP
+         WRITE (LUPRI,'( A,I15)') ' NPMAX ',NPMAX
+         WRITE (LUPRI,'( A,I15)') ' II    ',II
+         WRITE (LUPRI,'( A,I15)') ' ITP   ',ITP
+         WRITE (LUPRI,'( A,I15)') ' IMAX  ',IMAX
+         WRITE (LUPRI,'( A,I15)') ' JMAX  ',JMAX
+         WRITE (LUPRI,'( A,I15)') ' KMAX  ',KMAX
+         WRITE (LUPRI,'( A,I15)') ' KBMAX ',KBMAX
+         WRITE (LUPRI,'( A,I15)') ' NWW   ',NWW
       END IF
       IF(KBMAX.GT.NWW) GO TO 950
       DO 15 I = 1,KBMAX

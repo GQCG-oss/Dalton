@@ -869,7 +869,7 @@ C
       CALL MEMGET('REAL',KLWOP,NKLWOP,WRK,KFREE,LFREE)
       IF (IPRSIR .GT. 60) THEN
          WRITE (LUPRI,*)
-         WRITE (LUPRI,*) '>>> test output from GETH2 <<<'
+         WRITE (LUPRI,*) '--- test output from GETH2 ---'
          WRITE (LUPRI,*) 'FULODG =',FULODG
          WRITE (LUPRI,*) 'LFRSAV =',LFRSAV
          WRITE (LUPRI,*) 'NEEDMU =',NEEDMU

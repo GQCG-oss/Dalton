@@ -74,7 +74,7 @@ C
 C
       CALL QENTER('SIRORB')
       WRITE (LUPRI,'(//A/)')
-     *    ' <<<< OUTPUT FROM ORBITAL ABSORPTION (SIRORB) >>>>'
+     *    ' ----- OUTPUT FROM ORBITAL ABSORPTION (SIRORB) -----'
       ACTROT   = FLAG(23)
       FLAG(23) = .TRUE.
 C
@@ -168,8 +168,8 @@ C
          ITORB = ITORB + 1
          WRITE (LUPRI,21000) ITMAC,ITORB
          IF (LUPRI .NE. LUW4) WRITE (LUW4,21000) ITMAC,ITORB
-21000    FORMAT(//,' <<< ORBITAL ABSORPTION ITERATION NO. (',I3,',',
-     *          I3,') >>>'/)
+21000    FORMAT(//,' --- ORBITAL ABSORPTION ITERATION NO. (',I3,',',
+     *          I3,') ---'/)
 C
          CALL FLSHFO(LUPRI)
          IF (LUPRI .NE. LUW4) CALL FLSHFO(LUW4)

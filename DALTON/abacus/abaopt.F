@@ -2566,9 +2566,9 @@ C
             THRSTP = MAX(THRSTP,5.0D-05)
 c           IF (CHGRDT) THEN
               NINFO = NINFO + 1
-              WRITE (LUPRI,'(/A)') ' INFO>>>> Due to numerical '//
+              WRITE (LUPRI,'(/A)') ' INFO: Due to numerical '//
      &        'integration in DFT optimization'
-              WRITE (LUPRI,'(A)') ' INFO>>>> thresholds for convergence'
+              WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization have been reset'
               WRITE (LUPRI,'(/A/,3(/20X,A,F10.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
@@ -2594,9 +2594,9 @@ C     the norm of the calculated molecular gradient changed with 1.0d-6.
       IF (.NOT.NATNRM .AND. .NOT. CHGRDT
      &    .AND. (1.99D0*THRGRD) .GT. GRDTHR
      &    .AND. (1.99D0*THRSTP) .GT. GRDTHR ) THEN
-         WRITE (LUPRI,'(/A,1P,D10.2/A)') ' INFO>>>> Due to convergence '
+         WRITE (LUPRI,'(/A,1P,D10.2/A)') ' INFO: Due to convergence '
      &        //'threshold for the wave function of',THRGRD,
-     &        ' INFO>>>> the default thresholds for'
+     &        ' INFO: the default thresholds for'
      &        //' convergence of geometry optimization have been reset.'
          WRITE (LUPRI,'(/A/,1P,3(/20X,A,D10.2))') ' Old thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
@@ -8105,9 +8105,9 @@ C
          THRSTP = GRDTHR
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
-         WRITE (LUPRI,'(/A)') ' INFO >>>> Due to limitations '//
+         WRITE (LUPRI,'(/A)') ' INFO: Due to limitations '//
      &        'of the accuracy of the numerical gradients'
-         WRITE (LUPRI,'(A)') ' INFO >>>> thresholds for convergence'
+         WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization has been reset'
          WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,

@@ -137,7 +137,7 @@ C    Check norm of XY vector
 C
          GDNORM = DNRM2(KZYVAR,WRK(KGD),1)
          IF (GDNORM .LT. THRNRM) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+            WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector is only',GDNORM
             CALL DZERO(WRK(KBVECS),KZYVAR)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),

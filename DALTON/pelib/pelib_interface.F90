@@ -292,7 +292,7 @@ subroutine pelib_ifc_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
     test = ddot(nconf, cref, 1, pegrd, 1)
     if (abs(test) > 1.0d-8) then
         nwarn = nwarn + 1
-        write(lupri,*) ' >>> PE GRADIENT WARNING <<< '
+        write(lupri,*) ' --- PE GRADIENT WARNING --- '
         write(lupri,*) ' < CREF | GRAD > =', test
     end if
 

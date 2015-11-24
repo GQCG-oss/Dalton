@@ -1731,7 +1731,7 @@ C
 C     Error check
 C
       IF (ICOUN1 .NE. NABSTO) THEN
-         WRITE(LUPRI,'(//,A,//)') ' >>> ERROR in CHO_ACTIVE'
+         WRITE(LUPRI,'(//,A,//)') ' --- ERROR in CHO_ACTIVE'
          WRITE(LUPRI,'(A,I5)') 'Computed number of active basis',NABSTO
          WRITE(LUPRI,'(A,I5)') 'Dimension of LACBAS            ',ICOUN1
          CALL QUIT('Inconsistent number of active basis in CHO_ACTIVE')

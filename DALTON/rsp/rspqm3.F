@@ -200,8 +200,8 @@ C         open the file for PCM_TO_MM data
       ENDIF
 
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QM3LNO >>>'
-         WRITE (LUPRI,'(/A)') ' >>> QM3LNO - svec(orb,1) on entry'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM QM3LNO ---'
+         WRITE (LUPRI,'(/A)') ' --- QM3LNO - svec(orb,1) on entry'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(EVECS(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '
@@ -652,7 +652,7 @@ C--------------------------------------------
       ENDIF
 
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> QM3LNO - svec(orb,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- QM3LNO - svec(orb,1) on exit'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(EVECS(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '
@@ -752,8 +752,8 @@ C#include "infpar.h"
       CALL DZERO(WRK(KUTRX),N2ORBX)
 
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QM3LNO >>>'
-         WRITE (LUPRI,'(/A)') ' >>> QM3LNO - svec(orb,1) on entry'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM QM3LNO ---'
+         WRITE (LUPRI,'(/A)') ' --- QM3LNO - svec(orb,1) on entry'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(EVECS(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '
@@ -877,7 +877,7 @@ C--------------------------------------------
       ENDIF
 
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> QM3LNO - svec(orb,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- QM3LNO - svec(orb,1) on exit'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(EVECS(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '

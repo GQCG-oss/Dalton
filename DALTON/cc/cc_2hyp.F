@@ -130,12 +130,12 @@ c /* deck CC_2HYP */
      &                               '*******************************',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<<  OUTPUT FROM COUPLED CLUST',
-     &                                'ER CUBIC RESPONSE   >>>>>>>>>*',
+     & '*----------  OUTPUT FROM COUPLED CLUST',
+     &                                'ER CUBIC RESPONSE   ---------*',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<     CALCULATION OF CC HYPER',
-     &                                'POLARIZABILITIES    >>>>>>>>>*',
+     & '*--------     CALCULATION OF CC HYPER',
+     &                                'POLARIZABILITIES    ---------*',
      & '*                                   ',
      &                               '                              *',
      & '************************************',
@@ -302,7 +302,7 @@ c /* deck CC_2HYP */
 
       TIMH = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',N0HTRAN,' H matrix transformations:   ',TIMH
+     & ' Time used for',N0HTRAN,' H matrix transformations:   ',TIMH
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -326,7 +326,7 @@ c /* deck CC_2HYP */
      
       TIMG = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',N0GTRAN+NAGTRAN,
+     &  ' Time used for',N0GTRAN+NAGTRAN,
      &           ' G matrix transformations:   ',TIMG
       CALL FLSHFO(LUPRI)
       
@@ -352,7 +352,7 @@ c /* deck CC_2HYP */
 
       TIMF = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',N0FTRAN+NAFTRAN,
+     &  ' Time used for',N0FTRAN+NAFTRAN,
      &          ' F matrix transformations:   ',TIMF
       CALL FLSHFO(LUPRI)
       
@@ -377,7 +377,7 @@ c /* deck CC_2HYP */
 
       TIMFA = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',N0FATRAN+NAFATRAN,
+     &  ' Time used for',N0FATRAN+NAFATRAN,
      &          ' F{O} matrix transformations:',TIMFA
       CALL FLSHFO(LUPRI)
       
@@ -398,7 +398,7 @@ c /* deck CC_2HYP */
       END IF
 
       TIMEA = SECOND() - TIM1
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &  NAEATRAN,' ETA{O} vector calculations :',TIMEA
       CALL FLSHFO(LUPRI)
       
@@ -414,7 +414,7 @@ c /* deck CC_2HYP */
 
         TIMX2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &    '>>> Time used for',NXTRAN, ' X2 x R2 dot products:',TIMX2
+     &    ' Time used for',NXTRAN, ' X2 x R2 dot products:',TIMX2
         CALL FLSHFO(LUPRI)
       
       END IF
@@ -431,7 +431,7 @@ c /* deck CC_2HYP */
 
         TIML2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,5X,F12.2," seconds.")')
-     &    '>>> Time used for',NLTRAN, ' L2 x R2 dot products:  ',TIML2
+     &    ' Time used for',NLTRAN, ' L2 x R2 dot products:  ',TIML2
         CALL FLSHFO(LUPRI)
       
       END IF
@@ -448,7 +448,7 @@ c /* deck CC_2HYP */
 
         TIMO2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &    '>>> Time used for',NOTRAN, ' R3 x X1 dot products:',TIMO2
+     &    ' Time used for',NOTRAN, ' R3 x X1 dot products:',TIMO2
         CALL FLSHFO(LUPRI)
 
       END IF
@@ -849,7 +849,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 *---------------------------------------------------------------------*
 * print frequency-dependent hyperpolarizabilities
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') ' Total time for',
      &  NBHYPPOL,' cubic response functions:   ', SECOND() - TIM0
 
       CALL CCCHYPPRT(WORK(KHYPPOL))
@@ -1030,7 +1030,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
       TIMH = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',N0HTRAN,' H matrix transformations:   ',TIMH
+     & ' Time used for',N0HTRAN,' H matrix transformations:   ',TIMH
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -1054,7 +1054,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
      
       TIMG = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',N0GTRAN+NAGTRAN,
+     &  ' Time used for',N0GTRAN+NAGTRAN,
      &           ' G matrix transformations:   ',TIMG
       CALL FLSHFO(LUPRI)
       
@@ -1081,7 +1081,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
       TIMF = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',N0FTRAN+NAFTRAN,
+     &  ' Time used for',N0FTRAN+NAFTRAN,
      &          ' F matrix transformations:   ',TIMF
       CALL FLSHFO(LUPRI)
       
@@ -1106,7 +1106,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
       TIMFA = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',N0FATRAN+NAFATRAN,
+     &  ' Time used for',N0FATRAN+NAFATRAN,
      &          ' F{O} matrix transformations:',TIMFA
       CALL FLSHFO(LUPRI)
       
@@ -1122,7 +1122,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
       END IF
 
       TIMEA = SECOND() - TIM1
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &  NAEATRAN,' ETA{O} vector calculations :',TIMEA
       CALL FLSHFO(LUPRI)
       
@@ -1138,7 +1138,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
         TIMX2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,5X,F12.2," seconds.")')
-     &    '>>> Time used for',NXTRAN, ' CX2 x CR2 dot products:',TIMX2
+     &    ' Time used for',NXTRAN, ' CX2 x CR2 dot products:',TIMX2
         CALL FLSHFO(LUPRI)
       
       END IF
@@ -1154,7 +1154,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
         TIML2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,5X,F12.2," seconds.")')
-     &    '>>> Time used for',NLTRAN, ' CL2 x CR2 dot products:',TIML2
+     &    ' Time used for',NLTRAN, ' CL2 x CR2 dot products:',TIML2
         CALL FLSHFO(LUPRI)
       
       END IF
@@ -1171,7 +1171,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 
         TIMO2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,5X,F12.2," seconds.")')
-     &    '>>> Time used for',NOTRAN, ' CL2 x CO2 dot products:',TIMO2
+     &    ' Time used for',NOTRAN, ' CL2 x CO2 dot products:',TIMO2
         CALL FLSHFO(LUPRI)
 
       END IF
@@ -1204,7 +1204,7 @@ c    &                  LBLOPR(IOP(D)),.FALSE.,SIGN*DCRFR(IFREQ),ISYM2)
 *---------------------------------------------------------------------*
 * print timing:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Total time for',
      &  NBEXPCOF,' expansion coefficients:    ', SECOND() - TIM2
 
 *---------------------------------------------------------------------*

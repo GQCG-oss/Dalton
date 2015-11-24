@@ -340,7 +340,7 @@ C
       IF (IPRINT .GT. 0) THEN
          CALL TIMER('START ',TIMSTR,TIMEND)
          WRITE (LUPRI,'(A)')
-     *      '  <<<<<<<<<< OUTPUT FROM REORT >>>>>>>>>> '
+     *      '  ---------- OUTPUT FROM REORT ---------- '
       END IF
 C
       IF (SOLVNT) THEN

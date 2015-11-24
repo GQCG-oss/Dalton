@@ -162,7 +162,7 @@ C     check INFLIN parameters
       IF (NWOPT .NE. NWOPPT) NUMERR = NUMERR + 1
       IF (NVAR  .NE. NVARPT) NUMERR = NUMERR + 1
       IF (NUMERR .GT. 0) THEN
-         WRITE (LUPRI,'(//A/I8,A/)') ' >>> FATAL ERROR (LINTRN)',
+         WRITE (LUPRI,'(//A/I8,A/)') ' --- FATAL ERROR (LINTRN)',
      *      NUMERR,' dimension error(s) in INFDIM and/or INFLIN'
          WRITE (LUPRI,'(A,2I8)')
      &      'NCONF ,NCONDI :',NCONF,NCONDI,

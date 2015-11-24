@@ -298,11 +298,11 @@ C
 C           *** rpa test for poul *** 860820-hj
 C
             IF ( FLAG(61) ) THEN
-               WRITE (LUPRI,'(////A/)') ' <<<<< RPATEST START >>>>>'
+               WRITE (LUPRI,'(////A/)') ' ----- RPATEST START -----'
                CALL RPATES(NCSIM,NOSIM,DV,FC,FV,WRK(KBVECS),
      *                     WRK(KBVECS+NCSIM*NCONF),WRK(KSVECS),LSVECS)
 C              CALL RPATES(NCSIM,NOSIM,DV,FC,FV,ZOVEC,ZCVEC,WRK,LFREE)
-               WRITE (LUPRI,'(//A/)') ' <<<<< RPATEST END >>>>>'
+               WRITE (LUPRI,'(//A/)') ' ----- RPATEST END -----'
 C              set print flags for wanted test output
                P6FLAG(11) = .TRUE.
                P6FLAG(19) = .TRUE.
@@ -2032,7 +2032,7 @@ C           ... if orbital trial vectors, test if available
                GO TO 46
    44          CONTINUE
                   WRITE (LUPRI,'(//A/)')
-     *            ' >>>NEOST : no orbital trial vectors this iteration',
+     *            ' ---NEOST : no orbital trial vectors this iteration',
      *            '            only CI part available on LUIT1.'
                   OTRIAL = .FALSE.
    46          CONTINUE

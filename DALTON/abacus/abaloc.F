@@ -697,7 +697,7 @@ C
                      CALL QUIT('Error: No antisymmetry label on LUPROP')
                   END IF
                ELSE
-                  WRITE (LUPRI,'(//3A)') ' >>> PROPERTY "',LABEL,
+                  WRITE (LUPRI,'(//3A)') ' PROPERTY "',LABEL,
      &                                   '" NOT FOUND ON LUPROP.'
                   CALL QUIT('PROPERTY NOT FOUND ON LUPROP.')
                END IF

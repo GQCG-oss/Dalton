@@ -220,7 +220,7 @@ C
             SKIP = SKIP .OR. .NOT.DOPERT(I,1)
   100    CONTINUE
          IF (SKIP .AND. GDALL) THEN
-            WRITE (LUPRI,'(/A/)') ' >>> Skip of TROINV is ignored '/
+            WRITE (LUPRI,'(/A/)') ' Skip of TROINV is ignored '/
      *                /'because all GD vectors needed.'
             SKIP   = .FALSE.
             HESTRO = .FALSE.
@@ -1372,7 +1372,7 @@ C
             LPRINT = .TRUE.
             GO TO 10
          END IF
-         WRITE (LUPRI,'(///A)') ' >>> WARNING from TRAROT:'
+         WRITE (LUPRI,'(///A)') ' WARNING from TRAROT:'
          NWNABA = NWNABA + 1
       END IF
       IF (LPRINT .OR. DIFMAX.GT.1.D-12)
@@ -1416,7 +1416,7 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 2 .OR. DIFMAX .GE. 1.0D-06) THEN
          IF (DIFMAX .GE. 1.0D-06) THEN
-            WRITE (LUPRI,'(///7X,A)') ' >>> WARNING from TRAROT:'
+            WRITE (LUPRI,'(///7X,A)') ' WARNING from TRAROT:'
             NWNABA = NWNABA + 1
          END IF
          CALL AROUND('Diff. between Hessian calculated directly'//
@@ -1462,7 +1462,7 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 2 .OR. DIFMAX .GE. 1.0D-06) THEN
          IF (DIFMAX .GE. 1.0D-06) THEN
-            WRITE (LUPRI,'(///7X,A)') ' >>> WARNING from TRAROT:'
+            WRITE (LUPRI,'(///7X,A)') ' WARNING from TRAROT:'
             NWNABA = NWNABA + 1
          END IF
          CALL AROUND('Diff. between APTs calculated'//
@@ -1816,7 +1816,7 @@ C
   500          CONTINUE
                DIF2 = SQRT(DIF2)
                IF (DIF2 .GE. 1.0D-10) THEN
-                  WRITE (LUPRI,'(///7X,A)') ' >>> WARNING from VECTRA:'
+                  WRITE (LUPRI,'(///7X,A)') ' WARNING from VECTRA:'
                   NWNABA = NWNABA + 1
                END IF
                WRITE (LUPRI,'(/,A,D12.6)') ' Square root deviation '//

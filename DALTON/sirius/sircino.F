@@ -60,7 +60,7 @@ C
       LFREE  = LFRSAV
 C
       IF (IPRCI .GE. 4) WRITE (LUW4,'(//A)')
-     *   ' >>>>> OUTPUT FROM SIRIUS.CINO MODULE <<<<<'
+     *   ' ----- OUTPUT FROM SIRIUS.CINO MODULE -----'
 C
       LRCINO = LROOTS
       IF (ICHECK .NE. 0) THEN
@@ -99,7 +99,7 @@ C
             CALL CICHCK(WRK(KW21),LW21,ICHECK)
          ELSE
             WRITE(LUW4,'(//2A/A/A,I5)')
-     *      ' >>> WARNING CINO <<<  REQUESTED SYMMETRY CHECK OF',
+     *      ' --- WARNING CINO ---  REQUESTED SYMMETRY CHECK OF',
      *      ' CI VECTOR NOT PERFORMED',
      *      ' CURRENT ALGORITHM ONLY WORKS AFTER SEVERAL CI ITERATIONS',
      *      ' MAXIMUM CI ITERATIONS   MAXCIT:',MAXCIT

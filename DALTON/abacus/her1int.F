@@ -42,7 +42,7 @@ C
      &          WORK(LWORK), INTADR(*), EXPVAL(NOPTYP), DENMAT(*)
 C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
+     &     ' ---------- OUTPUT FROM PR1DRV ---------- '
       IF (INTTYP .EQ. 12 .OR. INTTYP .EQ. 96) THEN
          NPOINT = NPQUAD
          NSHINT = 9*NATOM*NATOM
@@ -493,7 +493,7 @@ C     type 45 already defined together with type 1
          JMAXM = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-cLig >> setting for INTTYP 81 and 82
+cLig setting for INTTYP 81 and 82
       ELSE IF (INTTYP .EQ.81) THEN
          JMAXD  = 1
          JMAXM  = 2
@@ -504,7 +504,7 @@ cLig >> setting for INTTYP 81 and 82
          JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-cLig <<
+cLig
       ELSE IF (INTTYP .EQ.83) THEN
          JMAXD  = 1
          JMAXM  = 1
@@ -2175,7 +2175,7 @@ C        ----------------------------------------
          ELSE IF (INTTYP .EQ. 80) THEN
             CALL CNTFPV(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT)
 C
-cLig >> added the call to RAMINT and RMIINT
+cLig added the call to RAMINT and RMIINT
 C
 C        (r-r')l' integrals
 C        ------------------
@@ -2189,7 +2189,7 @@ C
          ELSE IF (INTTYP .EQ. 82) THEN
             CALL RMIINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC)
-cLig <<
+cLig
 C
 C        DPT correction to dipole
 C        ------------------------
@@ -6244,12 +6244,12 @@ C
                   DO 400 ICOOR = 1, 3
                      IREPCD = IEOR(IREPC,ISYMAX(ICOOR,2))
                      ISYMCA = IEOR(ISYMAX(ICOOR,2),ISYMAX(LCOOR,2))
-cLig >> added how to set the symmetry for RPSO integrals
+cLig added how to set the symmetry for RPSO integrals
                      IF(INTTYP.EQ.82) THEN
                        IREPCD = IEOR(IREPC,ISYMAX(ICOOR,1))
                        ISYMCA = IEOR(ISYMAX(ICOOR,1),ISYMAX(LCOOR,2))
                      ENDIF
-cLig <<
+cLig
                      FACSYM = - FACTOR*PT(IAND(ISYMCA,ISYMC))
      &                                *PT(IAND(IREPCD,ISYMC))
                      ITYP = 9*(IATOMC - 1) + 3*(LCOOR - 1) + ICOOR
@@ -9047,7 +9047,7 @@ C
       RETURN
       END
 C
-cLig >> added the RAMINT and RMIINT subroutines
+cLig added the RAMINT and RMIINT subroutines
 C  /* Deck ramint */
       SUBROUTINE RAMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      &                  SHLINT)

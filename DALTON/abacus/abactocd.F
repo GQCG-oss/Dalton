@@ -63,7 +63,7 @@ C
       CALL QENTER('CTOABA')
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRLNR .GT. 0) WRITE (LUPRI,'(A,/)')
-     *    '1 <<<<<<<<<< Output from CTOABA >>>>>>>>>> '
+     *    '1 ---------- Output from CTOABA ---------- '
 C
       IPRRSP = IPRLNR
 C

@@ -1659,7 +1659,7 @@ C
 C
       IF ( IDMTYP.NE.1 .AND. IDMTYP.NE.2) THEN
          WRITE (LUERR,'(//A/A,I10)')
-     *      ' >>> DENSD2 fatal error, illegal density matrix code',
+     *      ' --- DENSD2 fatal error, illegal density matrix code',
      *      '     IDMTYP =',IDMTYP
          CALL QUIT('DENSD2: Illegal IDMTYP')
       END IF

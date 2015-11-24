@@ -150,15 +150,15 @@ C
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(1X,A)')
-     *'*<<<<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER RESPONSE  >>>>'//
-     *'>>>>>>>>>*'
+     *'*---- OUTPUT FROM COUPLED CLUSTER RESPONSE  ----'//
+     *'---------*'
       IF ( CCFOP  ) THEN
          WRITE (LUPRI,'(1X,A)')
      *   '*                                                        '//
      *   '         *'
          WRITE (LUPRI,'(1X,A)')
-     *   '*<<<<<<<<<<    CALCULATION OF FIRST ORDER PROPERTIES    >'//
-     *   '>>>>>>>>>*'
+     *   '*----------    CALCULATION OF FIRST ORDER PROPERTIES    >'//
+     *   '---------*'
       ENDIF
       WRITE (LUPRI,'(1X,A)')
      *'*                                                        '//

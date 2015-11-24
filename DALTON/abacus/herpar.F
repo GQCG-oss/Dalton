@@ -2440,7 +2440,7 @@ CTROND     &               PERTUR,NODV,MAXDER,LONDON,NDMAT,ISYMDM,IFCTYP,
 CTROND     &               IATOM,.FALSE.)
 CTROND      END IF
 C
-C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
+C     ----- Print Section - Gradient and Hessian Elements -----
 C
       IF (EXPECT) THEN
          IF (JPRINT .GT. 5) THEN

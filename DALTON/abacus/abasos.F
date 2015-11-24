@@ -62,7 +62,7 @@ C
 C     IF (SKIP) RETURN
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRSOS .GT. 0) WRITE (LUPRI,'(A,/)')
-     &     '1 <<<<<<<<<< Output from SOSDRV >>>>>>>>>>'
+     &     '1 ---------- Output from SOSDRV ----------'
 C
 C--------------------------
 C     Check for no symmetry

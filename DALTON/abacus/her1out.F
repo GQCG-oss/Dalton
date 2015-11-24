@@ -204,13 +204,13 @@ C
      &                              'DIRECT',' ',LABUFI,OLDDX)
       NMAT = LSOINT/INDMAX
       IF (NMAT .EQ. 0) THEN
-         WRITE (LUPRI,'(//A/)') ' >>>> ERROR in SORONE: NMAT = 0.'
+         WRITE (LUPRI,'(//A/)') ' ERROR in SORONE: NMAT = 0.'
          CALL QUIT('NMAT zero in SORONE.')
       END IF
       IF (NMAT .GT. 2*NMATS) NMAT = 2*NMATS
       NPASS = (2*NMATS + NMAT - 1)/NMAT
       IF (IPRINT .GE. 10) THEN
-         CALL HEADER(' <<<<< Subroutine SORONE >>>>>',-1)
+         CALL HEADER(' ----- Subroutine SORONE -----',-1)
          WRITE (LUPRI, '(2X,A,I10)')   'LSOINT:     ', LSOINT
          WRITE (LUPRI, '(2X,A,I5)')    'NPASS:      ', NPASS
          WRITE (LUPRI, '(2X,A,2I5)')   'LABUFD/I:   ', LABUFD, LABUFI
@@ -387,7 +387,7 @@ C
       EQUIVALENCE (BUF(1),IBUF(1))
 
       IF (NDIM .EQ. 0) THEN
-         WRITE(LUPRI,'(//A/)') ' >>>>> Error in GETONE: NDIM = 0 '
+         WRITE(LUPRI,'(//A/)') ' Error in GETONE: NDIM = 0 '
          CALL QUIT('NDIM zero in GETONE.')
       END IF
       IF (NBUF .LT. LABUFD) THEN
@@ -574,7 +574,7 @@ C
             DFMAX2 = MAX(ABS(DIFF2),DFMAX2)
             IF (ABS(DIFF1) .GT. THRS10 .AND. ( .NOT. ESG ) ) THEN
                WRITE(LUPRI,'(1P,//1X,A,I3,//3X,A/3X,3(D12.4,7X)/)')
-     *           ' >>>>> WARNING - diff. between '//
+     *           ' WARNING - diff. between '//
      *           ' AO and SO reorth. gradient for coordinate',ISCOOR,
      *           ' AO gradient        SO gradient         Difference ',
      *           GRADFS(ISCOOR), TRACE1, DIFF1
@@ -582,7 +582,7 @@ C
             END IF
             IF (ABS(DIFF2) .GT. THRS10 .AND. ( .NOT. ESG ) ) THEN
                WRITE(LUPRI,'(1P,//1X,A,I3,//3X,A/3X,3(D12.4,7X)/)')
-     *           ' >>>>> WARNING - diff. between '//
+     *           ' WARNING - diff. between '//
      *           ' AO and SO 1-el. int. gradient for coordinate',ISCOOR,
      *           ' AO gradient        SO gradient         Difference ',
      *           GRADKE(ISCOOR) + GRADNA(ISCOOR), TRACE2, DIFF2

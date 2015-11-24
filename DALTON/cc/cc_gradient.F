@@ -84,8 +84,8 @@ C=====================================================================*
      &                               '*******************************',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<  OUTPUT FROM COUPLED CLUSTER ',
-     &                                  'GRADIENT SECTION  >>>>>>>>>*',
+     & '*--------  OUTPUT FROM COUPLED CLUSTER ',
+     &                                  'GRADIENT SECTION  ---------*',
      & '*                                   ',
      &                               '                              *',
      & '************************************',
@@ -227,7 +227,7 @@ C
 *---------------------------------------------------------------------*
 * print timing & return:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,A,F12.2," seconds.")') '>>> Total time used ',
+      WRITE (LUPRI,'(/A,A,F12.2," seconds.")') ' Total time used ',
      &  'in gradient section:', SECOND() - TIM0
 
       CALL FLSHFO(LUPRI)

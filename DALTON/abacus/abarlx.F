@@ -207,7 +207,7 @@ C
       IF (IPRINT .GT. 0 .OR. SYMTST) THEN
          CALL TIMER('START ',TIMEIN,TIMOUT)
          WRITE (LUPRI,'(A,/)')
-     *    '  <<<<<<<<<< Output from RELAX >>>>>>>>>> '
+     *    '  ---------- Output from RELAX ---------- '
       END IF
 C
       DOREAL = (MOLHES .OR. DIPDER .OR. VCD .OR. POLAR .OR. QPGRAD)

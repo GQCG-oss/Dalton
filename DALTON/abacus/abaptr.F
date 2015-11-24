@@ -1438,7 +1438,7 @@ C
       IF (IPRINT .GE. 02) WRITE(LUPRI,2100) NPTOT
       CALL QEXIT('PSORG')
       RETURN
- 1000 FORMAT (12X,'<<<<<<<<<<  P S O R T >>>>>>>>>>',//)
+ 1000 FORMAT (12X,'----------  P S O R T ----------',//)
  2000 FORMAT('    Statistics for bin sort of P-elements:',//,
      1       '    Number of shells                    ',I6,/,
      2       '    Number of bin chains                ',I6,/,

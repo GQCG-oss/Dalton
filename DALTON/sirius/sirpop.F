@@ -85,8 +85,8 @@ C
          MULLKM = .true.
       ELSE IF (POPKEY(1:5) .EQ. 'FINAL') THEN
 !        WRITE (LUPRI,'(//A/)')
-!    &   ' <<< SIRIUS Population Analysis. >>>'
-         CALL TITLER('<<< SIRIUS Population Analysis >>>',' ',200)
+!    &   ' --- SIRIUS Population Analysis. ---'
+         CALL TITLER('--- SIRIUS Population Analysis ---',' ',200)
          DIPOLM = .NOT.FLAG(71)
          QUADRM = .NOT.FLAG(72)
          MULLKM = .NOT.FLAG(73)

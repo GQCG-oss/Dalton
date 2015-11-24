@@ -878,13 +878,13 @@ C        REWIND (LU2DER)
 *---------------------------------------------------------------------*
       IF (IPRINT.GT.1 .OR. LOCDBG) THEN
          WRITE (LUPRI,'(/A,A,F12.2," seconds.")') 
-     &        '>>> Time used in TWO',
+     &        ' Time used in TWO',
      &   'INT:         ', TIM1 - TIM0
          WRITE (LUPRI,'(A,A,F12.2," seconds.")')
-     &        '>>> Time used in CCS',
+     &        ' Time used in CCS',
      &   'SORTDERAO:   ', TIM3 - TIM2
          WRITE (LUPRI,'(/A,A,F12.2," seconds.")')
-     &        '>>> Total time used ',
+     &        ' Total time used ',
      &   'in CCGETH2D :', SECOND() - TIM0
       END IF
 
