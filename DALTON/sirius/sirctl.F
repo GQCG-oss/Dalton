@@ -860,7 +860,8 @@ C
  8000 CALL GETTIM(TEND,WEND)
       TIMSIR = TEND - TIMSIR
       WALSIR = WEND - WALSIR
-      WRITE (LUPRI,7100)  TIMSIR, WALSIR
+      CALL TIMTXT(' Total CPU  time used in SIRIUS :',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in SIRIUS :',WTOT,LUPRI)
       CALL TSTAMP(' ',LUPRI)
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,7100)  TIMSIR, WALSIR
@@ -871,8 +872,8 @@ C
          CALL TSTAMP(' ',LUSTAT)
       END IF
  7100 FORMAT(//
-     &   /' >>>> Total CPU  time used in SIRIUS :',F10.2,' seconds',
-     &   /' >>>> Total wall time used in SIRIUS :',F10.2,' seconds')
+     &   /' Total CPU  time used in SIRIUS :',F10.2,' seconds',
+     &   /' Total wall time used in SIRIUS :',F10.2,' seconds')
 C
       IF (NINFO .GT. 0) THEN
          WRITE (LUPRI,7210) NINFO
