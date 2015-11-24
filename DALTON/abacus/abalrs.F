@@ -227,7 +227,7 @@ C
       IF (IPRCLC .GT. 0) THEN
          CALL TIMER('START ',TIMEIN,TIMOUT)
          WRITE (LUPRI,'(//A,/)')
-     *    '  <<<<<<<<<< Output from LRSDRV >>>>>>>>>> '
+     *    '  ---------- Output from LRSDRV ---------- '
       END IF
 C
       PASS = .TRUE.

@@ -280,14 +280,14 @@ C
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(1x,A)')
-     *'*<<<<<<<<<<                                             >'//
-     *'>>>>>>>>>*'
+     *'*----------                                             >'//
+     *'---------*'
       WRITE (LUPRI,'(1x,A)')
-     *'*<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >'//
-     *'>>>>>>>>>*'
+     *'*---------- OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >'//
+     *'---------*'
       WRITE (LUPRI,'(1x,A)')
-     *'*<<<<<<<<<<                                             >'//
-     *'>>>>>>>>>*'
+     *'*----------                                             >'//
+     *'---------*'
       WRITE (LUPRI,'(1x,A)')
      *'*                                                        '//
      *'         *'
@@ -3171,7 +3171,7 @@ C     Compute Y(a,j,k,l) for MP2-R12 first order properties (Y=B,V,X)
          WRITE(LUPRI,'(1X,A)')
      &     'Computation of V^aj_kl intermediate done'
          WRITE(LUPRI,'(/1X,A,F7.2,A)')
-     &     '>>> Time used for V^aj_kl is ',TIMVAJKL,' seconds'
+     &     ' Time used for V^aj_kl is ',TIMVAJKL,' seconds'
          WRITE(LUPRI,*)
       END IF
 C

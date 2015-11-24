@@ -5856,7 +5856,7 @@ C
          TIMSTP = WLKIRN(GRDDIA,EVAL,NCART,RADIUS,IPRINT)
          IF (TIMSTP .GT. TMAX) THEN
             WRITE (LUPRI,'(//A,2(/A,1P,E12.6),/A)')
-     &         ' >>>>> WARNING: Time step exceeded in WLKIRN!',
+     &         ' WARNING: Time step exceeded in WLKIRN!',
      &         ' Time step determined in WLKIRN:', TIMSTP,
      &         ' Maximum time step allowed:     ', TMAX,
      &         ' Calculation proceeds with TIMSTP = TMAX.'

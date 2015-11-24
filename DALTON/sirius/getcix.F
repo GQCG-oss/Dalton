@@ -75,7 +75,7 @@ C
 C     
       CALL QENTER('GETCIX')
       IF (IPRCIX .GT. 0) THEN
-         WRITE (LUPRI,'(//A/)') ' >>>>> OUTPUT FROM GETCIX <<<<<'
+         WRITE (LUPRI,'(//A/)') ' ----- OUTPUT FROM GETCIX -----'
          WRITE (LUPRI,'(A,3I5/)')
      *      ' ICSYM, IHCSYM, NOSYM :',ICSYM,IHCSYM,NOSYM
          DTIM = SECOND()
@@ -238,7 +238,7 @@ C
       CALL QENTER('SETCI ')
 C
       IF (IPRCIX .GT. 0)
-     &   WRITE (LUPRI,'(//A/)') ' >>>>> OUTPUT FROM SETCI <<<<<'
+     &   WRITE (LUPRI,'(//A/)') ' ----- OUTPUT FROM SETCI -----'
 C
 C CHCKCI returns true if new ci, either because it is first call
 C or because specifications have changed.

@@ -97,12 +97,12 @@ c /* deck CC_TPA */
      &                               '******************************',
      & '*                                   ',
      &                               '                             *',
-     & '*<<<<<<    OUTPUT FROM COUPLED CLUST',
-     &                               'ER LINEAR RESPONSE    >>>>>>>*',
+     & '*------    OUTPUT FROM COUPLED CLUST',
+     &                               'ER LINEAR RESPONSE    -------*',
      & '*                                   ',
      &                               '                             *',
-     & '*<<<<<<  CALCULATION OF TWO-PHOTON A',
-     &                               'ABSORPTION STRENGHTS  >>>>>>>*',
+     & '*------  CALCULATION OF TWO-PHOTON A',
+     &                               'ABSORPTION STRENGHTS  -------*',
      & '*                                   ',
      &                               '                             *',
      & '************************************',
@@ -248,7 +248,7 @@ c /* deck CC_TPA */
 
       TIMG = SECOND() - TIM1
       IF (NGTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',NGTRAN,' G matrix transformations:   ',TIMG
+     &  ' Time used for',NGTRAN,' G matrix transformations:   ',TIMG
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -264,7 +264,7 @@ c /* deck CC_TPA */
  
       TIMFA = SECOND() - TIM1
       IF (NFATRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &'>>> Time used for',NFATRAN,' F{O} matrix transformations:',TIMFA
+     &' Time used for',NFATRAN,' F{O} matrix transformations:',TIMFA
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -299,7 +299,7 @@ c /* deck CC_TPA */
 
       IF ((NF1TRAN+NF2TRAN+NF3TRAN).GT.0) 
      &  WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &   '>>> Time used for',NF1TRAN+NF2TRAN+NF3TRAN,
+     &   ' Time used for',NF1TRAN+NF2TRAN+NF3TRAN,
      &     ' F matrix transformations:',TIMF
       CALL FLSHFO(LUPRI)
 
@@ -341,7 +341,7 @@ c /* deck CC_TPA */
       TIMAA = SECOND() - TIM1
       IF ((NAA1TRAN+NAA2TRAN+NAA3TRAN).GT.0) 
      &  WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
-     &   '>>> Time used for',NAA1TRAN+NAA2TRAN+NAA3TRAN,
+     &   ' Time used for',NAA1TRAN+NAA2TRAN+NAA3TRAN,
      &       ' Eta{O} vector calculation:',TIMAA
       CALL FLSHFO(LUPRI)
 
@@ -358,7 +358,7 @@ c /* deck CC_TPA */
  
         TIMX2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &    '>>> Time used for',NXTRAN, ' X2 x RE dot products:',TIMX2
+     &    ' Time used for',NXTRAN, ' X2 x RE dot products:',TIMX2
         CALL FLSHFO(LUPRI)
  
       END IF 
@@ -375,7 +375,7 @@ c /* deck CC_TPA */
  
         TIMO1 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,5X,F12.2," seconds.")')
-     &    '>>> Time used for',NO1TRAN, ' M1 x O2 dot products:  ',TIMO1
+     &    ' Time used for',NO1TRAN, ' M1 x O2 dot products:  ',TIMO1
         CALL FLSHFO(LUPRI)
  
 
@@ -387,7 +387,7 @@ c /* deck CC_TPA */
  
         TIMO2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,5X,F12.2," seconds.")')
-     &    '>>> Time used for',NO2TRAN, ' LE x O2 dot products:  ',TIMO2
+     &    ' Time used for',NO2TRAN, ' LE x O2 dot products:  ',TIMO2
         CALL FLSHFO(LUPRI)
  
       END IF
@@ -420,7 +420,7 @@ cch
 *---------------------------------------------------------------------*
 * print timing:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') ' Total time for',
      &  NBTPA,' quadratic response func.:', SECOND() - TIM0
 
 *---------------------------------------------------------------------*

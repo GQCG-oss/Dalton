@@ -153,8 +153,8 @@ C
          NRS  = 1
          JSTA = -ISTATE
       ELSE
-         WRITE (LUPRI,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
-         WRITE (LUERR,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUPRI,'(//2A)') ' --- ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUERR,'(//2A)') ' --- ERROR (SIRSAV), KEYWRD = ',KEYWRD
          CALL QTRACE(LUERR)
          CALL QUIT('*** ERROR (SIRSAV) KEYWRD illegal.')
       END IF
@@ -427,7 +427,7 @@ C        ----------------------------------------------------
   500 CONTINUE
 C
 C        ******************************
-C        ***** <<<<< CISAVE >>>>> *****
+C        ***** ----- CISAVE ----- *****
 C        ******************************
 C
 C
@@ -483,7 +483,7 @@ C        ----------------------------------------------------
   600 CONTINUE
 C
 C        ******************************
-C        ***** <<<<< NRSAVE >>>>> *****
+C        ***** ----- NRSAVE ----- *****
 C        ******************************
 C
 C

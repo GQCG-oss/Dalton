@@ -283,14 +283,14 @@ C
       IF (FIRST) THEN
          READ (LUCSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LMAXCU) THEN
-            WRITE (LUERR,'(//2A,2(/A,I5))') ' >>> CC_SLVE ERROR,',
+            WRITE (LUERR,'(//2A,2(/A,I5))') ' --- CC_SLVE ERROR,',
      *      ' insufficient number of intgrals on LUCSOL',
      *      ' l max from CC     input :',LMAXCU,
      *      ' l max from LUCSOL  file  :',LMAXSS
             CALL QUIT('CC_SLVE: lmax on LUCSOL is too small')
          END IF
          IF ((LMAXSS+1)**2 .NE. LMTOT) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> CC_SLVE ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- CC_SLVE ERROR,',
      *      ' LUCSOL file info inconsistent',
      *      ' l_max               :',LMAXSS,
      *      ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
@@ -298,7 +298,7 @@ C
             CALL QUIT('CC_SLVE: LUCSOL info not internally consistent')
          END IF
          IF (NNNBAS .NE. NBAST) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> CC_SLVE ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- CC_SLVE ERROR,',
      *      ' LUCSOL file info inconsistent with SIRIUS input',
      *      ' NBAST - LUCSOL       :',NNNBAS,
      *      ' NBAST - SIRIUS      :',NBAST
@@ -349,7 +349,7 @@ C
         DO 500 M = -L,L
          LM = LM + 1
          IF (IPRINT .GE. 15) THEN
-           WRITE(LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+           WRITE(LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                               ' ===================='
            WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
          END IF
@@ -400,7 +400,7 @@ C
 C
          IF (IPRINT .GE. 6) THEN
             WRITE(LUPRI,'(A,2I5,/A,3F17.8)')
-     *      ' >>> l, m :',L,M,
+     *      ' --- l, m :',L,M,
      *      '     Te(lm), Tn(lm), T(lm) :',
      *         TELM,ETLM(LM,2),ETLM(LM,2)-TELM
          END IF
@@ -631,14 +631,14 @@ C
       IF (FIRST) THEN
          READ (LUCSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LMAXCU) THEN
-            WRITE (LUERR,'(//2A,2(/A,I5))') ' >>> CCSL_RHSTG ERROR,',
+            WRITE (LUERR,'(//2A,2(/A,I5))') ' --- CCSL_RHSTG ERROR,',
      *      ' insufficient number of intgrals on LUCSOL',
      *      ' l max from CC     input :',LMAXCU,
      *      ' l max from LUCSOL  file  :',LMAXSS
             CALL QUIT('CCSL_RHSTG: lmax on LUCSOL is too small')
          END IF
          IF ((LMAXSS+1)**2 .NE. LMTOT) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> CCSL_RHSTG ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- CCSL_RHSTG ERROR,',
      *      ' LUCSOL file info inconsistent',
      *      ' l_max               :',LMAXSS,
      *      ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
@@ -646,7 +646,7 @@ C
           CALL QUIT('CCSL_RHSTG: LUCSOL info not internally consistent')
          END IF
          IF (NNNBAS .NE. NBAST) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> CCSL_RHSTG ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- CCSL_RHSTG ERROR,',
      *      ' LUCSOL file info inconsistent with SIRIUS input',
      *      ' NBAST - LUCSOL       :',NNNBAS,
      *      ' NBAST - SIRIUS      :',NBAST
@@ -696,7 +696,7 @@ C
         DO 500 M = -L,L
          LM = LM + 1
          IF (IPRINT .GE. 15) THEN
-           WRITE(LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+           WRITE(LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                               ' ===================='
            WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
          END IF
@@ -871,7 +871,7 @@ C
         DO 500 M = -L,L
          LM = LM + 1
          IF (IPRINT .GE. 15) THEN
-           WRITE(LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+           WRITE(LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                               ' ===================='
            WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
          END IF
@@ -1449,7 +1449,7 @@ C
         DO 500 M = -L,L
          LM = LM + 1
          IF (IPRINT .GE. 15) THEN
-           WRITE(LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+           WRITE(LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                               ' ===================='
            WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
          END IF
@@ -1656,7 +1656,7 @@ C
         DO 500 M = -L,L
          LM = LM + 1
          IF (IPRINT .GE. 15) THEN
-           WRITE(LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+           WRITE(LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                               ' ===================='
            WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
          END IF
@@ -2073,7 +2073,7 @@ C
         DO 500 M = -L,L
          LM = LM + 1
          IF (IPRINT .GE. 15) THEN
-           WRITE(LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+           WRITE(LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                               ' ===================='
            WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
          END IF
@@ -2389,7 +2389,7 @@ C
         DO 500 M = -L,L
           LM = LM + 1
 C          IF (IPRINT .GE. 15) THEN
-            WRITE(LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+            WRITE(LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                                ' ===================='
             WRITE(LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYTLM(L+M+1))
 C          END IF

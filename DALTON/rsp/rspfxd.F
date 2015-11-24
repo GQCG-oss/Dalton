@@ -93,7 +93,7 @@ C
          NEEDED(1:5) = 1
       END IF
       IF (IPRFX.GT.200) THEN
-         WRITE(LUPRI,'(/A)')   '>>>>>> ENTERING RSPFXD <<<<<<'
+         WRITE(LUPRI,'(/A)')   '------ ENTERING RSPFXD ------'
          WRITE(LUPRI,'(A,I5)') 'IDAX =',IDAX
          WRITE(LUPRI,'(A,I5)') 'INTSYM =',INTSYM
          WRITE(LUPRI,'(A,I5)') 'ISYMDN =',ISYMDN

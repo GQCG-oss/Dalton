@@ -218,12 +218,12 @@ C
       ILOWOF = ILOWDI - 1
       NDIST  = IHGHDI - ILOWOF
 C
-C     >>> zero H2ACD
+C     --- zero H2ACD
 C
       LENGTH = N2ORBX * (IHGHDI - ILOWDI + 1)
       CALL DZERO(H2ACD,LENGTH)
 C
-C     >>> prepare for reading MO integrals ...
+C     --- prepare for reading MO integrals ...
 C
       KFREE  = 1
       LFREE  = LWRK

@@ -170,7 +170,7 @@ C
   100 CONTINUE
 C
       IF (LOCDBG) THEN
-        WRITE(LUPRI,*) '>>>>>CC_YI: Norm of Y-intermediate:',
+        WRITE(LUPRI,*) '-----CC_YI: Norm of Y-intermediate:',
      &    DDOT(NMATAB(ISYRES),YMAT,1,YMAT,1)
       END IF
 C
@@ -323,7 +323,7 @@ C
   100 CONTINUE
 C
       IF (LOCDBG) THEN 
-        WRITE(LUPRI,*) '>>>>>CC_XI: Norm of X-intermediate:', 
+        WRITE(LUPRI,*) '-----CC_XI: Norm of X-intermediate:', 
      &    DDOT(NMATIJ(ISYRES),XMAT,1,XMAT,1)
       END IF
 C

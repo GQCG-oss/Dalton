@@ -2420,7 +2420,7 @@ C
      &           ISYMA,' not found on file LUABSVECS'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
      &           ISYMA,' not converged on file LUABSVECS'
@@ -2450,7 +2450,7 @@ C
      &           ISYMB,' not found on file LUABSVECS'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
      &           ISYMB,' not converged on file LUABSVECS'
@@ -2480,7 +2480,7 @@ C
      &           ISYMC,' not found on file LUABSVECS'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
      &           ISYMC,' not converged on file LUABSVECS'

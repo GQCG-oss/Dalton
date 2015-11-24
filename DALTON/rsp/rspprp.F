@@ -634,7 +634,7 @@ C
             CALL QUIT('Error: No antisymmetry label on LUPROP')
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> PRPGET: PROPERTY "',WORD,
+         WRITE (LUPRI,'(//3A)') ' --- PRPGET: PROPERTY "',WORD,
      *        '" NOT FOUND ON AOPROPER.'
          CALL QUIT('PRPGET: PROPERTY NOT FOUND ON AOPROPER.')
       END IF

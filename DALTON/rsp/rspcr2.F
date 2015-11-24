@@ -177,7 +177,7 @@ C
             CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
          END IF
          IF (GDNORM .LT. THRNRM) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+            WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector is only',GDNORM
             CALL DZERO(WRK(KBVECS),KZYVAR)
             DO 450 IFREQ = 1,NFREQ

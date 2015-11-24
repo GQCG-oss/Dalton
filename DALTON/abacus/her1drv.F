@@ -1121,7 +1121,7 @@ C
 C     ***** Print Section *****
 C
       IF (IPRINT .GT. 05) THEN
-         WRITE (LUPRI, '(//A/)') ' <<<<< SUBROUTINE DSOFSO_1 >>>>>'
+         WRITE (LUPRI, '(//A/)') ' ----- SUBROUTINE DSOFSO_1 -----'
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NASH ', (NASH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NOCC ', (NOCC(I),I = 1,NSYM)

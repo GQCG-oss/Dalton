@@ -5101,7 +5101,7 @@ C       END DO
       NORB = NORB1 + NORB2 + NORB3
 *
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' >>>> WEIGHT <<<<< '
+        WRITE(6,*) ' ----- WEIGHT ----- '
         WRITE(6,*) ' NORB1 NORB2 NORB3 ',NORB1,NORB2,NORB3
         WRITE(6,*) ' NEL MNRS1 MXRS1 MNRS3 MXRS3 '
         WRITE(6,*)   NEL,MNRS1,MXRS1,MNRS3,MXRS3

@@ -377,11 +377,11 @@ C
       IF (WORK(1) .NE. WRKDLM .OR.
      &    WORK(LMWORK2) .NE. WRKDLM) THEN
          WRITE (LUPRI,'(//3A)')
-     *      ' >>> WARNING, ',PROG,' module has been out of bounds.'
+     *      ' WARNING, ',PROG,' module has been out of bounds.'
          IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
-     *      ' >>> WORK(0) has been destroyed'
+     *      ' WORK(0) has been destroyed'
          IF (WORK(LMWORK2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
-     *      ' >>> WORK(LMWORK+1) has been destroyed'
+     *      ' WORK(LMWORK+1) has been destroyed'
          CALL QUIT('WARNING, ' // PROG // ' has been out of bounds.')
       END IF
       RETURN
@@ -782,8 +782,8 @@ C        ---------------------------------------
             IF (LUCME.GT.0) REWIND (LUCME)
             SOLVNT = .FALSE.
             WRITE (LUPRI,'(//5X,A,I5,A//)')
-     &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
-     &       ' <<<<<<<<<<'
+     &      '@@---------- Geometry walk iteration number:',ITERNR,
+     &       ' ----------'
             CALL EXEHER(WORK(0),LMWORK,WRKDLM)
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
@@ -851,7 +851,7 @@ CLF
 C
             IF (WLKREJ) THEN
                WRITE (LUPRI,'(/A)')
-     &         '@ >>> Geometry step was rejected, must backstep ... >>>'
+     &         '@ Geometry step was rejected, must backstep ...'
 C
 C     We have to backstep, get old geometry and call for an update
 C
@@ -1243,8 +1243,8 @@ C
       end if
 #endif
 
-      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in DALTON:',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in DALTON:',WTOT,LUPRI)
 C
 C     Stamp date and time and hostname to output
 C

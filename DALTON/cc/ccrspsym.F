@@ -169,8 +169,8 @@ Cholesky
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(3X,A)')
-     *'*<<<<<<<<   OUTPUT FROM PROPERTY AND SYMMETRY ANALYSIS   '//
-     *'>>>>>>>>>*'
+     *'*--------   OUTPUT FROM PROPERTY AND SYMMETRY ANALYSIS   '//
+     *'---------*'
       WRITE (LUPRI,'(3X,A)')
      *'*                                                        '//
      *'         *'

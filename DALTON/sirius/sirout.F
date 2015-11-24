@@ -149,7 +149,7 @@ C  DINFO(41-50):   EVEC(2,1-10)  CI gradient-coef. of eigenvectors
 C  DINFO(51-60):   EVEC(3,1-10)  orb gradient-coef. of eigenvectors
 C                  (all four have NEVAL entries, starting w. /IEVAL1)
 C
-        CALL TITLER('>>> SIRIUS OPTIMIZATION STATISTICS <<<',' ',200)
+        CALL TITLER('--- SIRIUS OPTIMIZATION STATISTICS ---',' ',200)
 C       stamp date, time, and hostname to LUPRI
         CALL TSTAMP(' ',LUPRI)
 C
@@ -303,7 +303,7 @@ C *** FINAL RESULTS
 C
       CALL MOLCHR(ICHRG)
 C     ... get total molecular charge
-      CALL TITLER('>>> Final results from SIRIUS <<<',' ',200)
+      CALL TITLER('--- Final results from SIRIUS ---',' ',200)
       WRITE (LUPRI,5000) ISPIN,LSYM,REP(LSYM-1),GROUP,ICHRG
       IF (NFIELD .GT. 0) THEN
          WRITE (LUPRI,'(/A/A/A)')
@@ -489,10 +489,10 @@ C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
          IF (.NOT. MOISNO) WRITE (LUPRI,'(3(/A))')
-     *     '  >>> NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS'//
+     *     '  --- NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS'//
      &     ' PURPOSE ONLY',
-     *     '  >>> The orbital coefficients have NOT been transformed',
-     *     '  >>> to ordered natural orbitals.'
+     *     '  --- The orbital coefficients have NOT been transformed',
+     *     '  --- to ordered natural orbitals.'
          CALL MEMREL('SIROUT.GETNO ',WRK,KFRSAV,KREL1,KFREE,LFREE)
       END IF
 C

@@ -2287,7 +2287,7 @@ c
       IF (IPRINT .GT. 0) THEN
          WRITE (LUPRI,'(A,/)') '  '
          WRITE (LUPRI,'(A,/)')
-     *    '1 <<<<<<<<<< Output from CCLR_FDEXCI >>>>>>>>> '
+     *    '1 ---------- Output from CCLR_FDEXCI --------- '
          IF (CCR12) WRITE (LUPRI,'(A,/)') 'This is a R12 run.'
          WRITE (LUPRI,'(A,/)') '  '
       ENDIF

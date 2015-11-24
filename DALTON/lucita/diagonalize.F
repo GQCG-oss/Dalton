@@ -3741,12 +3741,12 @@ C
       CALL FLSHFO(LUWRTOUT)
 *
       RETURN
- 9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
- 9400 FORMAT(/' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
- 9401 FORMAT(' >>>  WALL TIME FOR SIGMA VECTOR CALL            : ',A)
- 9600 FORMAT(/' >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
- 9777 FORMAT(/' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
- 9778 FORMAT(' >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9300 FORMAT(' WALL TIME FOR CURRENT ITERATION            : ',A)
+ 9400 FORMAT(/' WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9401 FORMAT(' WALL TIME FOR SIGMA VECTOR CALL            : ',A)
+ 9600 FORMAT(/' WALL TIME IN STEP 3 OF CURRENT ITERATION   : ',A)
+ 9777 FORMAT(/' WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
+ 9778 FORMAT(' WALL TIME FOR INITIAL SIGMA VECTOR CALL    : ',A)
       END
 ***********************************************************************
 *                                                                     *
@@ -4539,7 +4539,7 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
           WRITE(6,'(A,2I3,F14.7,2E10.3)')
-     &    ' >>> CI-OPT Iter Root E g-norm g-red',
+     &    ' --- CI-OPT Iter Root E g-norm g-red',
      &                 ITER,IROOT,FINEIG(IROOT),
      &                 RNRM(ITER,IROOT),
      &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)

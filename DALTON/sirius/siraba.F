@@ -24,7 +24,7 @@
 C
 #ifdef NOTES
 !===========================================================================
-!>>> lontr1.u >>> London 1-index transformation of regular integrals
+!--- lontr1.u --- London 1-index transformation of regular integrals
 !941207-hjaaj:
 !c: removed SYMTD (=NODIFC) everywhere, not needed!
 !   cut CPU time in half in TR1LH1 for SYMTD false
@@ -384,7 +384,7 @@ C
       IF (NDERIV .LE. 0) GO TO 9999
       IF (NWOPT .NE. NWOPDI .AND. NDERIV .GT. 1) THEN
 C        SIRIUS/ABACUS program error, correct code.
-         WRITE (LUPRI,'(//2A,2I8)') ' >>> FATAL ERROR (ABATR1)',
+         WRITE (LUPRI,'(//2A,2I8)') ' --- FATAL ERROR (ABATR1)',
      *      ' dimension error; NWOPT and NWOPDI =',NWOPT,NWOPDI
          CALL QTRACE(LUPRI)
          CALL QUIT('FATAL ERROR (ABATR1) NWOPDI DIMENSION ERROR')

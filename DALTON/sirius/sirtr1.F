@@ -97,14 +97,14 @@ C *** Check input
 C
       IF (NWOPT .NE. NWOPDI .AND. NOSIM .GT. 1) THEN
 C        SIRIUS program error, correct code.
-         WRITE (LUPRI,'(//2A,2I8)') ' >>> FATAL ERROR (SIRTR1)',
+         WRITE (LUPRI,'(//2A,2I8)') ' --- FATAL ERROR (SIRTR1)',
      *      ' dimension error; NWOPT and NWOPDI =',NWOPT,NWOPDI
          CALL QTRACE(LUPRI)
          CALL QUIT('FATAL ERROR (SIRTR1) NWOPDI DIMENSION ERROR')
       END IF
 C     ... MOFCFV always false in this version (920514-hjaaj)
       IF (MOFCFV .AND. .NOT.USEDRC) THEN
-         WRITE (LUPRI,'(//2A)') ' >>> FATAL ERROR (SIRTR1)',
+         WRITE (LUPRI,'(//2A)') ' --- FATAL ERROR (SIRTR1)',
      &      ' MOFCFV true and USEDRC false'
          CALL QTRACE(LUPRI)
          CALL QUIT('FATAL ERROR (SIRTR1) MOFCFV true and USEDRC false')

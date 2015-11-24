@@ -665,7 +665,7 @@ c              introduced n, C. Villani Uni-Ka, Feb 2005
  2100    CONTINUE
  2000 CONTINUE
       RETURN
- 1110 FORMAT (/,'  <<<<<<<<<< SUBROUTINE WKEQ30 >>>>>>>>>>',/)
+ 1110 FORMAT (/,'  -------- SUBROUTINE WKEQ30 --------',/)
  1010 FORMAT ('  MAX1/2:     ',2I7)
  1030 FORMAT ('  I120:     ',I7)
  1100 FORMAT (/,1X,A4,'(',I1,',',I1,';',I1,')',/)
@@ -681,7 +681,7 @@ C     Written by Wim Klopper (University of Karlsruhe, 31 October 2002).
          ABP(I) = SIGN * (TEXPA(I) - TEXPB(I)) * HEXPPI(I)
   100 CONTINUE
       IF (IPRINT .GE. 20) THEN
-         WRITE(LUPRI,'(/A/)')   ' >>> (A - B) / (A + B) <<< '
+         WRITE(LUPRI,'(/A/)')   ' --- (A - B) / (A + B) --- '
          WRITE(LUPRI,'(5F14.8)') (ABP(I), I = 1, NUCAB)
       END IF
       RETURN

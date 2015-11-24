@@ -440,7 +440,7 @@ C
 #include "gamcom.h"
 
       IF (IPRINT .GT. 20) THEN
-         WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
+         WRITE (LUPRI,'(/A/)') ' ----- Output from Hernai ----- '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
          WRITE (LUPRI,'(A,I10)')   ' IADR   ', IADR
          WRITE (LUPRI,'(A,I10)')   ' ISTEPU ', ISTEPU

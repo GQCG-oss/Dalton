@@ -8709,7 +8709,7 @@ celena
 CCN
       DIRFCK = .TRUE.
       write(lupri,*)
-      write(lupri,*)'>>>> Detected R12 input:'
+      write(lupri,*)'---- Detected R12 input:'
       write(lupri,*)'Direct Fock matrix formation switched on!'
 CCN
       write(lupri,*)'Scale factors for CC excitations manifolds:'
@@ -10020,8 +10020,8 @@ C
       WRITE(LUPRI,'(A,/)') '       ----------------------------'
 C
       IF (ACTSEL .AND. (.NOT.  CHKACT)) THEN
-         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '>>> ERROR :',
-     &                '>>> *CHOACT was specified, but no definition',
+         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '--- ERROR :',
+     &                '--- *CHOACT was specified, but no definition',
      &                ' of active atoms or basis',
      &                ' functions was given',
      &                '    Program will stop'

@@ -100,8 +100,8 @@ C
       CALL MOLLB2(LBSIFC,RTNLBL,LUSIFC,IERROR)
       IF (IERROR .LT. 0) THEN
         WRITE (LUPRI,'(/A/3A)')
-     *      ' >>> FATAL ERROR (ABACUS.SETSIR)',
-     *      ' >>> label "', LBSIFC,
+     *      ' FATAL ERROR (ABACUS.SETSIR)',
+     *      ' label "', LBSIFC,
      *      '" not found on SIRIFC, the SIRIUS interface file.'
         CALL QUIT('"'//LBSIFC//'" label not found on SIRIFC file.')
       END IF
@@ -121,8 +121,8 @@ C
          READ (LUSIFC) (FLAG(I),I=1,NFLAG)
       ELSE
          WRITE (LUPRI,'(/A/A)')
-     &      ' >>> FATAL ERROR (ABACUS.SETSIR)',
-     &      ' >>> label "SIRFLAGS" not found on SIRIUS interface file.'
+     &      ' FATAL ERROR (ABACUS.SETSIR)',
+     &      ' label "SIRFLAGS" not found on SIRIUS interface file.'
          CALL QUIT('"SIRFLAGS" label not found on SIRIUS interface.')
       END IF
 C     disable SUPSYM for ABACUS /921216-hjaaj
@@ -224,7 +224,7 @@ C        Check that no frozen orbitals are used
 C
       DO 50 I = 1, NSYM
          IF (NFRO(I).NE.0) THEN
-            WRITE (LUPRI,'(/A/)') ' >>> ERROR in SETSIR '//
+            WRITE (LUPRI,'(/A/)') ' ERROR in SETSIR '//
      *           ' - Frozen orbitals not allowed in ABACUS.'
             WRITE (LUPRI,'(A,8I5)') ' NFRO:', (NFRO(J),J=1,NSYM)
             CALL QUIT(' ERROR in ABACUS.SETSIR - frozen orbitals used.')
@@ -321,14 +321,14 @@ C
       IF (NWOPT.NE.MWOPT .OR. NWOPH.NE.MWOPH) THEN
       IF (MCSSYM) THEN
          WRITE (LUPRI,'(/,A,2(/A,I5,A,I5))')
-     &      ' >>> (SETSIR) ERROR: super symmetry was used in SIRIUS',
+     &      ' (SETSIR) ERROR: super symmetry was used in SIRIUS',
      &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from SIRIFC:',MWOPT,
      &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from SIRIFC:',MWOPH
          WRITE (LUPRI,'(/A/A)')
      &      ' ABACUS cannot continue because MC orbital gradient',
      &      ' may be non-zero without super symmetry averaging.'
       ELSE
-         WRITE(LUPRI,'(/A,2(/A,I5,A,I5))') ' >>> (ABACUS.SETSIR) ERROR',
+         WRITE(LUPRI,'(/A,2(/A,I5,A,I5))') ' (ABACUS.SETSIR) ERROR',
      &      ' NWOPT from SETUP:',NWOPT,' and NWOPT from SIRIFC:',MWOPT,
      &      ' NWOPH from SETUP:',NWOPH,' and NWOPH from SIRIFC:',MWOPH
          WRITE(LUPRI,'(/A)') 'The JWOP array (with a zero vector):'

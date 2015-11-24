@@ -623,7 +623,7 @@ C#######################################################################
       PARAMETER (DH = 0.5D0)
       CALL QENTER('STXAPPENE')
       DEBUG=IPRSTX.GT.10
-      IF (DEBUG) PRINT *, '>>> STXAPPENE called'
+      IF (DEBUG) PRINT *, '--- STXAPPENE called'
 C
 C Read orbital energies from SIRIFC for open-shell case
 C we have to read FC, FV and diagonalize FC + 2*FV
@@ -830,7 +830,7 @@ C
 C
       CALL QENTER('STXDEN')
       DEBUG=IPRSTX.GT.10
-      IF (DEBUG) PRINT *,'>>>STXDEN called'
+      IF (DEBUG) PRINT *,'---STXDEN called'
 C
 C Get normal density matrix
 C
@@ -939,7 +939,7 @@ C
       LOGICAL DEBUG
 C
       DEBUG=IPRSTX.GT.10 .or. .true.
-      IF (DEBUG) PRINT *,'>>>STXFCK called'
+      IF (DEBUG) PRINT *,'---STXFCK called'
       CALL QENTER('STXFCK')
 C
 C Build two-electron STEX Fock matrix
@@ -1012,7 +1012,7 @@ C#######################################################################
       CALL QENTER('STXAPPFCK')
       DEBUG=IPRSTX.GT.10
 
-      if (debug) print *,'ENTER STXAPPFCK>>>'
+      if (debug) print *,'ENTER STXAPPFCK---'
       if (debug) write(LUPRI,*)'appfck unit ',lu
       IF (STEXMO) THEN
          NDIMT=NORBT
@@ -1194,11 +1194,11 @@ c     IF (NASHT2.EQ.1.or.NASHT2.EQ.2) THEN
       END
 C#######################################################################
       SUBROUTINE STXEIG
-      PRINT *,'>>>STXEIG called'
+      PRINT *,'---STXEIG called'
       END
 C#######################################################################
       SUBROUTINE STXSTM
-      PRINT *,'>>>STXSTM called'
+      PRINT *,'---STXSTM called'
       END
 C#######################################################################
       BLOCK DATA STXBD
@@ -1549,7 +1549,7 @@ C#######################################################################
       CALL QENTER('LTRA')
       DEBUG=IPRSTX.GT.10
       IF (DEBUG) THEN
-         print *,'ENTER LTRA>>>'
+         print *,'ENTER LTRA---'
          call STXoutful(cmocc,nbast,nocct,'LTRA input CMOCC')
       END IF
 C

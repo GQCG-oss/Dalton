@@ -154,7 +154,7 @@ C
       IF (IPRABSLRS.GE.2) THEN
        WRITE(LUABSPRI,'(/A,/A,I3,A,/A)')
      &        ' =======================================',
-     &        ' >>>>  Macro iteration number',ITER,'  <<<<<<',
+     &        ' ----  Macro iteration number',ITER,'  ------',
      &        ' ======================================='
       END IF
 C

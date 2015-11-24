@@ -229,15 +229,15 @@ C
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(1X,A)')
-     *'*<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >'//
-     *'>>>>>>>>>*'
+     *'*---------- OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >'//
+     *'---------*'
       IF ( CCEXCI ) THEN
          WRITE (LUPRI,'(1X,A)')
      *   '*                                                        '//
      *   '         *'
          WRITE (LUPRI,'(1X,A)')
-     *   '*<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >'//
-     *   '>>>>>>>>>*'
+     *   '*----------     CALCULATION OF EXCITATION ENERGIES      >'//
+     *   '---------*'
       ENDIF
       WRITE (LUPRI,'(1X,A)')
      *'*                                                        '//
@@ -1855,8 +1855,8 @@ C
      *   '*                                                        '//
      *   '         *'
          WRITE (LUPRI,'(1X,A)')
-     *   '*<<<<<<<<<<  CALCULATION OF PERTURBATIONAL CORRECTIONS  >'//
-     *   '>>>>>>>>>*'
+     *   '*----------  CALCULATION OF PERTURBATIONAL CORRECTIONS  >'//
+     *   '---------*'
       ENDIF
       WRITE (LUPRI,'(1X,A)')
      *'*                                                        '//

@@ -539,7 +539,7 @@ C
       KCDSYM = MULD2H(KSYMOP,ICDSYM)
 C
       IF (IPRHSO.GT.IPRFSO) THEN
-         WRITE(LUPRI,'(/A)')' <<<<<< Output from FSOMU >>>>>>'
+         WRITE(LUPRI,'(/A)')' ------ Output from FSOMU ------'
          WRITE(LUPRI,'(/A,2I5,5X,A,2X,A)')' Distribution CD',ICI1,IDI1,
      *                          COBTYP(ITYPC),COBTYP(ITYPD)
          WRITE(LUPRI,'(A,2I5)')' Reordered      ',ICI,IDI
@@ -861,7 +861,7 @@ C
       IF (ITYPD .EQ. JTACT) NDIW = IDIW - NISHT
 C
       IF (IPRHSO.GT.IPRQSO) THEN
-         WRITE(LUPRI,'(/A)') ' <<<<<< Output from QSOMU >>>>>>'
+         WRITE(LUPRI,'(/A)') ' ------ Output from QSOMU ------'
          WRITE(LUPRI,'(/A,2I5,5X,2A)')' Distribution CD',ICI,IDI,
      *                          COBTYP(ITYPC),COBTYP(ITYPD)
          WRITE(LUPRI,'(A,2I5)')       ' Symmetry       ',ICSYM,IDSYM
@@ -1159,7 +1159,7 @@ C  Local print level
 C
       IPRLOC = 20
       IF (IPRHSO.GT.IPRLOC) THEN
-         WRITE(LUPRI,'(/A)') ' <<<<<< Output from HSOSIG >>>>>>'
+         WRITE(LUPRI,'(/A)') ' ------ Output from HSOSIG ------'
       END IF
 C
 C ALLOCATE WORK SPACE

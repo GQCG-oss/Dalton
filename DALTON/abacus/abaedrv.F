@@ -304,7 +304,7 @@ C
       IF (IPRINT .GT. 0) THEN
          CALL TIMER('START ',TIMEIN,TIMOUT)
          WRITE (LUPRI,'(//A,/)')
-     *    '  <<<<<<<<<< Output from RESPON >>>>>>>>>> '
+     *    '  ---------- Output from RESPON ---------- '
       END IF
 C
       CALL GPOPEN(LUGDR,ABAGDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
@@ -479,7 +479,7 @@ C
       IF (NASHT.GT.0) CALL DSPTSI(NASHT,WRK(KDV),WRK(KUDV))
 C
       IF (IPRLIN.GT.100) THEN
-            WRITE(LUPRI,'(/A)')' <<<<< Output from RESMC >>>>> '
+            WRITE(LUPRI,'(/A)')' ----- Output from RESMC ----- '
          IF (NASHT.GT.0) THEN
             CALL HEADER('One-electron active density matrix packed',-1)
             CALL OUTPAK(WRK(KDV),NASHT,1,LUPRI)
@@ -660,7 +660,7 @@ C
   310    CONTINUE
       END IF
       IF (IPRLIN.GT.100) THEN
-         WRITE(LUPRI,'(/A)')' <<<<< Output from READMC >>>>> '
+         WRITE(LUPRI,'(/A)')' ----- Output from READMC ----- '
          IF (NASHT.GT.0) THEN
             CALL AROUND('One-electron active density matrix packed')
             CALL OUTPAK(DV,NASHT,1,LUPRI)

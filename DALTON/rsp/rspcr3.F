@@ -67,8 +67,8 @@ C
 C
       CALL QENTER('CRHYP')
       WRITE(LUPRI,'(//A,A)')
-     *' <<<<< CALCULATING CONTRIBUTIONS TO SECOND',
-     *' HYPERPOLARIZABILITY >>>>>'
+     *' ----- CALCULATING CONTRIBUTIONS TO SECOND',
+     *' HYPERPOLARIZABILITY -----'
       CALL FLSHFO(LUPRI)
 C
 C     We write the results to a complementary output file. This will then
@@ -497,7 +497,7 @@ C
      &           ISYMA,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
      &           ISYMA,' not converged on file RSPVEC'
@@ -526,7 +526,7 @@ C
      &           ISYMB,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
      &           ISYMB,' not converged on file RSPVEC'
@@ -554,7 +554,7 @@ C
      &           ISYMC,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
      &           ISYMC,' not converged on file RSPVEC'
@@ -582,7 +582,7 @@ C
      &           ISYMD,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',DLAB,
      &           ' with frequency ',FREQD, ' and symmetry',
      &           ISYMD,' not converged on file RSPVEC'
@@ -613,7 +613,7 @@ C
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,1X,A,F7.5,1X,F7.5,/A,I3,1X,I3,A)') 
-     &           ' @WARNING>>>> Response labels ',BLAB,CLAB,
+     &           ' @WARNING---- Response labels ',BLAB,CLAB,
      &           ' with frequencies ',FREQB, FREQC,
      &           ' and symmetries ',ISYMB,ISYMC,
      &           ' not converged on file RSPVEC'
@@ -640,7 +640,7 @@ C
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,1X,A,F7.5,1X,F7.5,/A,I3,1X,I3,A)') 
-     &           ' @WARNING>>>> Response labels ',BLAB,DLAB,
+     &           ' @WARNING---- Response labels ',BLAB,DLAB,
      &           ' with frequencies ',FREQB, FREQD,
      &           ' and symmetries ',ISYMB,ISYMD,
      &           ' not converged on file RSPVEC'
@@ -667,7 +667,7 @@ C
             CALL QUIT('Response vector not found on file')
          ELSE
             WRITE (LUPRI,'(/3A,1X,A,F7.5,1X,F7.5,/A,I3,1X,I3,A)') 
-     &           ' @WARNING>>>> Response labels ',CLAB,DLAB,
+     &           ' @WARNING---- Response labels ',CLAB,DLAB,
      &           ' with frequencies ',FREQC, FREQD,
      &           ' and symmetries ',ISYMC,ISYMD,
      &           ' not converged on file RSPVEC'

@@ -315,7 +315,7 @@ C
          TIMLIN = TIMLIN + TIM
          IF (IPRNR .GE. 2) THEN
             WRITE (LUPRI,'(/A,F12.2,/A,I4,A,I4,A/)')
-     *      ' >>> TIME USED IN ABALIN ',TIM,
+     *      ' TIME USED IN ABALIN ',TIM,
      *      '     FOR',NCSIM,' CI AND',NOSIM,' ORBITAL TRIAL VECTORS.'
          END IF
          IF (IPRNR .GE. 10) THEN
@@ -415,7 +415,7 @@ C
       IF (IPRNR .GE. 2) THEN
          TIMIT = SECOND() - TIMIT
          WRITE (LUPRI,'(/A,F12.2,/)')
-     *      ' >>> Time used in this microiteration',TIMIT
+     *      ' Time used in this microiteration',TIMIT
       END IF
 C
       IF (JCONV.LT.0) THEN
@@ -462,7 +462,7 @@ C
       END IF
       IF (IPRNR .GE. 1) THEN
          WRITE (LUPRI,'(//A,F10.2,A//A,2I4/)')
-     *      ' >>> Total time in microiterations',TIMMIC,' s.',
+     *      ' Total time in microiterations',TIMMIC,' s.',
      *      '   Total number of CI and orbital trial vectors :',
      *      MCLIN,MOLIN
         IF (IPRNR .GE. 2) THEN

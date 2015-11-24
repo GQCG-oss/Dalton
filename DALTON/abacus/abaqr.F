@@ -259,7 +259,7 @@ C
       CALL QENTER('AQRDRV')
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,/)')
-     *    '  <<<<<<<<<< Output from AQRDRV >>>>>>>>>> '
+     *    '  ---------- Output from AQRDRV ---------- '
 C
       PASS   = .TRUE.
       IPRRSP = IPRQR

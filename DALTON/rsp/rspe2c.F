@@ -1201,7 +1201,7 @@ C
          READ (LURSP1)JSYMOP, KZDIM,(IBTYP(I),I=1,KZDIM)
          IF ( IPRRSP.GT. 4 ) THEN
             WRITE (LUPRI,'(/A,2(/A,I5),/A,(T10,10I4))')
-     *      ' >>> Restart in LRST >>>',
+     *      ' --- Restart in LRST ---',
      *      ' OPERATOR SYMMETRY               :',JSYMOP,
      *      ' HALF-DIMENSION OF REDUCED SPACE :',KZDIM,
      *      ' IBTYP :',(IBTYP(I),I=1,KZDIM)
@@ -1226,7 +1226,7 @@ C
   51     CONTINUE
          IF (JZDIM .LT. KZDIM) THEN
             WRITE (LUPRI,'(/A/A,I5,A,I5/A)')
-     *      ' >>> Restart in LRST >>>',
+     *      ' --- Restart in LRST ---',
      *      ' Half-dimnsion of reduced space reduced from',KZDIM,
      *      ' to',JZDIM,
      *      ' because that was the number of sigma vectors on LURSP5'
@@ -2510,14 +2510,14 @@ C
       IF (IPRRSP .GE. 1) THEN
          IF (LINEQ) THEN
             WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
-     &   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
-     &   'FOR LINEAR RESPONSE PROPERTIES >>>',
+     &   ' ---  SOLVING SETS OF LINEAR EQUATIONS ',
+     &   'FOR LINEAR RESPONSE PROPERTIES ---',
      &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
      &   '); triplet = ',TRPLET
          ELSE
             WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
-     &   ' <<< EXCITATION ENERGIES',
-     &   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
+     &   ' --- EXCITATION ENERGIES',
+     &   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) ---',
      &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
      &   '); triplet = ',TRPLET
          END IF
@@ -3039,13 +3039,13 @@ C
       IF (IPRRSP .GE. 2) THEN
          IF (LINEQ) THEN
             WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
-     *   'FOR LINEAR RESPONSE PROPERTIES >>>',
+     *   ' ---  SOLVING SETS OF LINEAR EQUATIONS ',
+     *   'FOR LINEAR RESPONSE PROPERTIES ---',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
          ELSE
             WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<< EXCITATION ENERGIES',
-     *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
+     *   ' --- EXCITATION ENERGIES',
+     *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) ---',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
          END IF
       END IF
@@ -3767,7 +3767,7 @@ C for reduced E(2) and reduced S(2)
       KWRK1  = KEIVEC + MAXRM*MAXRM
       LWRK1  = LWRK + 1 - KWRK1
       IF (IPRPP .GT. 2 .OR. LWRK1 .LT. 2*KZYVAR) THEN
-         WRITE(LUPRI,'(/A)') ' >>> IN RSPPP:'
+         WRITE(LUPRI,'(/A)') ' --- IN RSPPP:'
          WRITE(LUPRI,*)' THCPP,MAXRM ',THCPP,MAXRM
          WRITE(LUPRI,*)' KSYMOP,NGPPP(KSYMOP) ',KSYMOP,NGPPP(KSYMOP)
          WRITE(LUPRI,*)' LWRK ,LWRK1 ',LWRK,LWRK1
@@ -4684,7 +4684,7 @@ C              ! Remove duplicates, they will cause linear dependency
          END IF
 C
          IF (DNORM_GD .LT. THRNRM) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+            WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector '//LBLLR(KSYMOP,IOP)//
      &                      ' is only',DNORM_GD
             CALL DZERO(WRK(KBVECS),KZYVAR)
@@ -4768,9 +4768,9 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
          KWRK1 = KVECB + KZYVAR
          LWRK1 = LWRK - KWRK1
          NINFO = NINFO + 1
-         WRITE (LUPRI,'(/A)')'@ INFO >>>>> Linear response functions'//
+         WRITE (LUPRI,'(/A)')'@ INFO ----- Linear response functions'//
      &        ' calculated using presolved response vectors',
-     &        '@ INFO >>>>> These results will not have quadratic '//
+     &        '@ INFO ----- These results will not have quadratic '//
      &        'accuracy'
          CALL LRNSL(CMO,UDV,PV,FC,XINDX,WRK(KVECB),WRK(KWRK1),LWRK1)
       ELSE
@@ -6231,8 +6231,8 @@ C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
       WRITE(LUPRI,'(A)')
-     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
-     &     'F U N C T I O N S   <<<<<<<<'
+     &     ' --- L I N E A R   R E S P O N S E   '//
+     &     'F U N C T I O N S ---  '
       CALL PRSYMB(LUPRI,'=',70,1)
 C
       KVECA = 1

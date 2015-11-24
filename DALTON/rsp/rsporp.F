@@ -779,7 +779,7 @@ C
 CSPAS:01.05.2009 bug fix for large number of  excitation energies
       IF (KOZYRE.GT.LIROW) THEN
          WRITE(LUPRI,'(//A/A,A,I5,A,I5,/A)')
-     *   ' >>> ERROR IN ORPRED >>>',
+     *   ' ERROR IN ORPRED ---',
      *   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
      *   ' NEEDED ',KOZYRE,', GIVEN :',LIROW,
      *   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'

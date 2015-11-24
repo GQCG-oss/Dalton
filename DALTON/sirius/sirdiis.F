@@ -1798,7 +1798,7 @@ C              in a solvent calculation with inertial polarization
 C
       IF ( IWRIFC .EQ. 1 ) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A)')
-     &      ' >>> Writing SIRIFC interface file'
+     &      ' --- Writing SIRIFC interface file'
          IF (ICI0 .EQ. 6) THEN
 Chj      ... if (GEOWLK) then
             IF (.NOT. OPTNEW) WRITE (LUPRI,'(//A/)')
@@ -1900,7 +1900,7 @@ C
      &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) .AND.
      &    .NOT. CHOINT) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3)')
-     &      ' >>> Transforming 2-el. integrals acc. to'//
+     &      ' --- Transforming 2-el. integrals acc. to'//
      &      ' .FINAL TRANSFORMATION =',ITRFIN
          JTRLVL = ITRFIN
          CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE)
@@ -2197,7 +2197,7 @@ C
       IF (DAMP .NE. D0) THEN
          CALL QUIT('DIIS_RED: DAMP not implemented yet')
 #if defined (VAR_KAPREDCODE)
-  >>>>>>>>>>>>>>>> NOTE: Hamilton and Pulay uses '* (D1 + DAMP)'
+   NOTE: Hamilton and Pulay uses '* (D1 + DAMP)'
                                         and not  ' + DAMP'
          DO 510 I = 1,NEVC
             II = KBTMP - 1 + IROW(I+1)

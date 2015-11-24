@@ -1720,7 +1720,7 @@ C
       CHARACTER*8 B(4), C
       PARAMETER ( C = '********' )
 C
-      WRITE (LUPRI, '(//A,I5)') ' >>> DUMP OF LABELS ON UNIT',LU
+      WRITE (LUPRI, '(//A,I5)') ' --- DUMP OF LABELS ON UNIT',LU
       IRDERR = 0
       IREC = 0
     1 READ (LU,END=3,ERR=6,IOSTAT=IOSVAL) B
@@ -1735,10 +1735,10 @@ C
          IRDERR = IRDERR + 1
          IREC = IREC + 1
          WRITE (LUPRI, '(/A,I6,A,I7)')
-     &      ' >>> ERROR reading rec. no.',IREC,'; IOSTAT value',IOSVAL
+     &      ' ERROR reading rec. no.',IREC,'; IOSTAT value',IOSVAL
          IF (IRDERR .LT. 5) GO TO 1
          WRITE (LUPRI, '(/A)')
-     &      ' >>> ERROR exit from DMPLAB: 5 consecutive read errors <<<'
+     &      ' ERROR exit from DMPLAB: 5 consecutive read errors ---'
     3 CONTINUE
       REWIND (LU)
 C
@@ -1892,13 +1892,13 @@ C
 C
   960 CONTINUE
       WRITE (LUPRI,'(///A,1P,D10.2/)')
-     1   ' >>> SOTMAT: DIAGONAL ELEMENT TOO SMALL:',X
+     1   ' --- SOTMAT: DIAGONAL ELEMENT TOO SMALL:',X
       IFAIL = 1
       GO TO 9999
 C
   980 CONTINUE
       WRITE (LUPRI,'(///2A,1P,D10.2/)')
-     1   ' >>> SOTMAT: U MATRIX TOO CLOSE TO SINGULARITY,',
+     1   ' --- SOTMAT: U MATRIX TOO CLOSE TO SINGULARITY,',
      2   ' DETERMINANT =',DET
       IFAIL = 2
 C

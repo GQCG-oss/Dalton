@@ -516,7 +516,7 @@ C
              write(lupri,'(/72A1/)')('-',I=1,72)
           endif
        ELSE
-       WRITE (*,'(//3A)') ' >>> DALTON error: "',label,'" matrix'//
+       WRITE (*,'(//3A)') ' DALTON error: "',label,'" matrix'//
      *      ' not found on LUPROP.'
        CALL QUIT('@GETMATRIX error: property not found on LUPROP')
        END IF

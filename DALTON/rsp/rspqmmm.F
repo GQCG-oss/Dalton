@@ -608,10 +608,10 @@ C
 C     Determine if full Hessian or only orbital Hessian
 C
       IF (IPQMMM .GE. 15) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QMMMLNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM QMMMLNO ---'
       END IF
       IF (IPQMMM .GE. 15) THEN
-         WRITE (LUPRI,'(/A)') ' >>> QMMMLNO - svec(1,nosim) on entry'
+         WRITE (LUPRI,'(/A)') ' --- QMMMLNO - svec(1,nosim) on entry'
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 

@@ -130,7 +130,7 @@ C
                CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
             END IF
          ELSE
-            WRITE (LUPRI,'(//3A)') ' >>> HUCDRV_1 error: "HUCKOVLP"'//
+            WRITE (LUPRI,'(//3A)') ' HUCDRV_1 error: "HUCKOVLP"'//
      *         ' matrix not found on AOPROPER.'
             CALL QUIT('HUCDRV_1 error: HUCKOVLP not found on AOPROPER')
          END IF
@@ -182,7 +182,7 @@ C
             CALL OUTPAK(TOTOVL,NROW,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> HUCDRV_1 error: "HUCKEL  "'//
+         WRITE (LUPRI,'(//3A)') ' HUCDRV_1 error: "HUCKEL  "'//
      &      ' matrix not found on AOPROPER.'
          CALL QUIT('HUCDRV_1 error:'//
      &      ' HUCKEL overlap not found on AOPROPER')

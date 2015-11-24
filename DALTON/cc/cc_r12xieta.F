@@ -794,7 +794,7 @@ C-----------------------------------------------------------------------
       WRITE(LUPRI,'(1X,A)')
      &     'Computation of CC-R12 VXINT response intermediates done'
          WRITE(LUPRI,'(/1X,A,F7.2,A)')
-     &     '>>> Time used for VXINT is ',time,' seconds'
+     &     ' Time used for VXINT is ',time,' seconds'
 
       if (locdbg) then
         write(lupri,*) 'Leaving CC_R12VXINT'
@@ -1328,7 +1328,7 @@ C-----------------------------------------------------------------------
       WRITE(LUPRI,'(1X,A)')
      &     'Computation of CC-R12 VXINT response intermediates done'
       WRITE(LUPRI,'(/1X,A,F7.2,A)')
-     &     '>>> Time used for VXINT is',time,' seconds'
+     &     ' Time used for VXINT is',time,' seconds'
       WRITE(LUPRI,*)
 
       if (locdbg) then

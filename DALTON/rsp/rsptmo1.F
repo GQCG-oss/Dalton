@@ -258,7 +258,7 @@ C
             WRITE (LUPRI,'(/2A)')
      *      ' Input ignored because no excited states specified.',
      *      ' Use the .ROOTS keyword.'
-            WRITE(LUPRI,'(/A)') ' <<<<<<< End of DALTON >>>>>>>'
+            WRITE(LUPRI,'(/A)') ' ----- End of DALTON -----'
             CALL QUIT('***** End of DALTON *****')
          END IF
          DO J=1,NBTMFR

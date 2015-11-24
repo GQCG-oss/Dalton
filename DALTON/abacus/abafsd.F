@@ -476,7 +476,7 @@ C
 C     ***** Print Section *****
 C
       IF (IPRINT .GT. 03) THEN
-         WRITE (LUPRI, '(//,A)') ' <<<<< SUBROUTINE DCDVSO  >>>>> '
+         WRITE (LUPRI, '(//,A)') ' ----- SUBROUTINE DCDVSO  ----- '
          WRITE (LUPRI, '(A,L5)') ' NODC ', NODC
          WRITE (LUPRI, '(A,L5)') ' NODV ', NODV
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
@@ -1302,7 +1302,7 @@ C
       ITRI(I) = I*(I - 1)/2
 C
       WRITE (LUPRI,'(/,A,/)')
-     *       ' <<<<<<<<<< Output from TESTTR >>>>>>>>>> '
+     *       ' ---------- Output from TESTTR ---------- '
       IAC = IPTCNT(3*(IATOM-1)+ICOOR,IOPSYM-1,1)
       GRDINT = GRADEE(IAC)
 C

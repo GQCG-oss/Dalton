@@ -1287,18 +1287,10 @@ C   Testing the energy contributions one by one:
 C-----------------------------------------------
 
       IF (IQM3PR .GT. 1) THEN
-        WRITE(LUPRI,'(//A/A/A)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+',
-
-     *       ' |<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
+        WRITE(LUPRI,'(A)')
+     *       ' |xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx '
      *      //'The different energy contributions outlined'
-     *      //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|',
-
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
+     *      //' xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx|'
         WRITE(LUPRI,'(A)')
      *       ' | Evdw                | E-nuclear           |'
      *      //' -Sum_s <N_s>        |'
@@ -1315,10 +1307,6 @@ C-----------------------------------------------
      &                F20.16,A,F20.16,A)')
      *       ' |',ECLVDW,' |',ENUQM3,' |',EELEL,' |',TEMP1,' |',
      *      OTILDE,' |'
-        WRITE(LUPRI,'(A/)')
-     *       ' +====================================='
-     *      //'======================================'
-     *      //'==================================+'
       END IF
 
       CALL QEXIT('QM3_ENERGY')
@@ -1551,7 +1539,7 @@ C     Determine if full Hessian or only orbital Hessian
       END IF
 
       IF (IQM3PR .GT. 15) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(orb) on entry'
+         WRITE (LUPRI,'(/A)') ' SOLLNO - svec(orb) on entry'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *               NSVEC,NOSIM,1,LUPRI)
       END IF
@@ -1596,7 +1584,7 @@ C        1.d. Calculate one-index transformed Tg integrals
 
 
          WRITE (LUPRI,'(/A,I3,A,I3)')
-     *      ' >>> SOLLNO - Rxo matrix no.',IOSIM,' of',NOSIM
+     *      ' --- SOLLNO - Rxo matrix no.',IOSIM,' of',NOSIM
          CALL OUTPAK(WRK(JRXYO),NORBT,1,LUPRI)
 
 
@@ -1765,7 +1753,7 @@ C
          DO 600 IOSIM = 1,NOSIM
             JRXYO = KRXYO + (IOSIM-1)*NNORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
-     *         ' >>> SOLLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
+     *         ' SOLLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
             CALL OUTPAK(WRK(JRXYO),NORBT,1,LUPRI)
   600    CONTINUE
       END IF
@@ -1778,7 +1766,7 @@ C     Tell SOLGO only to use the NWOPPT first JWOP entries
   800 CONTINUE
 C
       IF (IQM3PR .GT. 15) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(orb) on exit'
+         WRITE (LUPRI,'(/A)') ' SOLLNO - svec(orb) on exit'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *               NSVEC,NOSIM,1,LUPRI)
       END IF

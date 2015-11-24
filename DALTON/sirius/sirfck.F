@@ -290,7 +290,7 @@ C
          TSIRF = TSIRF    + DTIME
          IF (IPRFCK .GT. 0 .AND. ICOUN3 .EQ. NDMAT) THEN
             WRITE(LUPRI,'(/A,I3,A,F10.2,A,/)')
-     &     ' >>> SIRFCK Cholesky: ',NDMAT,
+     &     ' --- SIRFCK Cholesky: ',NDMAT,
      &     ' non-symmetric Fock matrices calculated in',DTIME,' seconds'
          ENDIF
 

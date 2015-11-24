@@ -1269,7 +1269,7 @@ C
             WRITE (LUPRI,'(//5X,A,I10)') 'Number of ' // ANDER //
      &              ' calculations needed:', NUMCAL
          ELSE
-            WRITE (LUPRI,'(//A,I10)') '@>>> Number of ' // ANDER //
+            WRITE (LUPRI,'(//A,I10)') '@Number of ' // ANDER //
      &        ' calculations done:', NUMCAL
          END IF
 

@@ -718,7 +718,7 @@ C
      &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(ILRLAB))),
      &   ' QRLRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
             IF (GPNORM .LT. THRSML) THEN
-               WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'//
+               WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'//
      &                      ' property vector is only',GPNORM
                CALL DZERO(WRK(KBVECS),KZYVAR)
                DO 450 IFREQ = 1,NFREQ
@@ -799,7 +799,7 @@ CTODO           END IF
      &   ' QRLRVE PRJ -- frequency :', WRK(KEIVAL+ifreq-1)
 
              IF (GPNORM .LT. THRSML) THEN
-               WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+               WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
                WRITE (LUPRI,*) '     property vector is only',GPNORM
                CALL DZERO(WRK(KBVECS),KZYVAR)
                CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),
@@ -932,7 +932,7 @@ C
          CALL QUIT('Response vector not found on file RSPVEC')
       ELSE
          WRITE (LUPRI,'(/3A,F12.8/A,I3,A)') 
-     &        '@ WARNING>>>>'//
+     &        '@ WARNING----'//
      &        ' Response label ',LABEL,' with frequency ', FREQ,
      &        ' and symmetry',MSYM,' not converged on file RSPVEC'
       END IF
@@ -2961,7 +2961,7 @@ C
      &                       'found on file')
                      ELSE
                         WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                       '@ WARNING>>>>'//
+     &                       '@ WARNING----'//
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
@@ -3023,7 +3023,7 @@ C
      &                          'found on file')
                         ELSE
                            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                          '@ WARNING>>>>'//
+     &                          '@ WARNING----'//
      &                          ' Response label ','EXCITLAB',
      &                          ' with frequency ',FREQB,
      &                          ' and symmetry',MSYMB,
@@ -3383,7 +3383,7 @@ C
      &   ' QRTRVE -- operator label : ',LRLAB(ILRLAB),
      &   ' QRTRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
          IF (GPNORM .LT. THRSML) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+            WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector is only',GPNORM
             CALL DZERO(WRK(KBVECS),KZYVAR)
             DO 450 IFREQ = 1,NFREQ
@@ -3690,8 +3690,8 @@ C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
       WRITE(LUPRI,'(A)') 
-     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
-     &     'F U N C T I O N S   <<<<<<<<'
+     &     ' ---  L I N E A R   R E S P O N S E   '//
+     &     'F U N C T I O N S --- '
       CALL PRSYMB(LUPRI,'=',70,1)
 C
       WRITE (LUPRI,'(/A/A//A/A,1P,D10.2)')

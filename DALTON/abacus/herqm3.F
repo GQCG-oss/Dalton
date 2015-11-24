@@ -422,7 +422,7 @@ C  /* Deck rdpot */
       SUBROUTINE QM3_RDPOT()
 C------------------------------------------------------------------------
 C
-C <<< General Input for MM potentials>>>
+C --- General Input for MM potentials---
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -5010,7 +5010,7 @@ C  /* Deck readmm */
       SUBROUTINE READMM(WORK,LWORK)
 C------------------------------------------------------------------------
 C
-C <<< General Input for QMMM electrostatic potentials>>>
+C --- General Input for QMMM electrostatic potentials---
 C
 #include "implicit.h"
 #include "dummy.h"

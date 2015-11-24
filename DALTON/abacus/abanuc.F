@@ -149,7 +149,7 @@ C
       IF (IPRINT .GT. 1) THEN
          CALL TIMER('START ',TIMSTR,TIMEND)
          WRITE (LUPRI,'(A)')
-     *      '  <<<<<<<<<< Output from NUCREP >>>>>>>>>> '
+     *      '  ---------- Output from NUCREP ---------- '
       END IF
 C
 C     **********************

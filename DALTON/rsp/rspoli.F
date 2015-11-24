@@ -1367,7 +1367,7 @@ C
 #endif
 C
 C     Z part of linear transformation (operator: V[2c])
-C     (The Y part configuration contribution is zero) <<<---- Manu: no, it is
+C     (The Y part configuration contribution is zero) ---- Manu: no, it is
 C                                                                   NOT !
 C
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),
