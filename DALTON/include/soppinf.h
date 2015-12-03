@@ -37,6 +37,10 @@
 !    FNGPVE should be replaced by FNGPV1, for now use same name
      &           FNGPVE = 'SO_GPV1', FNSOLA = 'SO_SOLA',                &
      &           FNGPV1 = 'SO_GPV1', FNGPV2 = 'SO_GPV2')            
+
+! Declare these
+      REAL*8 SOTIME, SOWTIM!, LSOSUB
+      INTEGER    LSOTIM, LSOWTI, LORWCI, LSOSUB
       PARAMETER (LSOTIM = 43)
       PARAMETER (LSOWTI = 4)
       PARAMETER (LORWCI = 4)
@@ -61,7 +65,21 @@
 !
 !
       INTEGER SOPPINFLAST, SOPPEXCLAST, RWINFLAST
-!
+      INTEGER IPRSOP, ISOSUB
+
+!RF These are integer arrays, those starting with N seems to contain
+!RF the sizes of certain quantities in a certain symmetry group,
+!RF while the one starting with I seems to contain offsets for the block
+!RF blocks of given symmetry.
+      INTEGER ISOO, ISVV, ITOO, ITVV
+      INTEGER NT2AMT1, NT2AMT2, NT2AMT3, NT2AMTT
+      INTEGER IT2AMT1, IT2AMT2, IT2AMT3
+      INTEGER NIJDEN, NABDEN, NAIDEN
+      INTEGER IIJDEN, IABDEN, IAIDEN
+      INTEGER N2P2HOP
+
+      INTEGER NSAVMX, NSAVMXORIG, LWTOTAL
+!      
       COMMON /SOPPINF/ SOTIME(LSOTIM), SOWTIM(LSOWTI),                  &
      &                 SOSUBNM(LSOSUB), SOMEMO(LSOSUB), ISOSUB, LWTOTAL,&
      &                 SOPCHK,IIJDEN(8,8),                              &
@@ -105,6 +123,8 @@
 !
 !
 !
+      INTEGER  NEXCI2 
+      REAL*8 THREX2
       COMMON /SOPPEXC/ NEXCI2(8),THREX2
 !
       COMMON /SOPPEXC/ SOPPEXCLAST
@@ -121,6 +141,7 @@
 !
 !
 !
+      REAL*8 SOORWC
       COMMON /RWINF/ SOORWC(LORWCI)
 !
       COMMON /RWINF/ RWINFLAST

@@ -41,7 +41,7 @@ C
          NORBA = MAX(NORB(ISYMA),1)
          NRHFJ = MAX(NRHF(ISYMJ),1)
 C
-C  fact? \sum _j P_{ja} * \rho _{ji}
+C  fact? \sum _j P_{aj} * \rho _{ji}
 C         
          CALL DGEMM('N','N',NVIR(ISYMA),NRHF(ISYMI),NRHF(ISYMJ),
      &              SQ2,PRP1(KOFF1),NORBA,DENSIJ(KOFF2),NRHFJ,

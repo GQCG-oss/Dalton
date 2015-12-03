@@ -149,7 +149,7 @@ C
             IF (LINEAR .AND. DABS(EVNM).LT.T1MIN) THEN
 C
 C                             
-               EVNM2 = 0.0
+               EVNM2 = 0.0D0
                DO IVEC = 1,LEIVH
                   EVNM2 = EVNM2 + EIVEC(IVEC,JVEC)**2
                ENDDO

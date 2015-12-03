@@ -371,47 +371,47 @@ C (and it would be a waste to do so)
 C
          END IF
 C
-         IF(LTYPE.EQ.'LINEAR') THEN
-C
-C--------------------------------------------------------------
-C        Write residual on file for later use in calculation of
-C        linear response functions (When?)
-C--------------------------------------------------------------
-C
-              LURV1E = -1
-              CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
-              LURV1D = -1
-              CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
-              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1E)
-              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1D)
-C
-              CALL SO_WRTVE(WORK(KRESI1E),LRESI1E,ISYMTR,LABEL,
-     &                      EIVAL(IEXCI),LURV1E)
-              CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
-     &                      EIVAL(IEXCI),LURV1D)
-              CALL GPCLOSE(LURV1E,'KEEP')
-              CALL GPCLOSE(LURV1D,'KEEP')
-C
-            IF(DOUBLES)THEN
-              LURV2E = -1
-              CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
-              LURV2D = -1 
-              CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
-     &                    IDUMMY,.FALSE.)
-C             find the right positions
-              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
-              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
-              CALL SO_WRTVE(WORK(KRESI2E),LRESI2E,ISYMTR,LABEL,
-     &                      EIVAL(IEXCI),LURV2E)
-              CALL SO_WRTVE(WORK(KRESI2D),LRESI2D,ISYMTR,LABEL,
-     &                      EIVAL(IEXCI),LURV2D)
-              CALL GPCLOSE(LURV2E,'KEEP')
-              CALL GPCLOSE(LURV2D,'KEEP')
-            ENDIF
-         ENDIF
+C         IF(LTYPE.EQ.'LINEAR') THEN
+CC
+CC--------------------------------------------------------------
+CC        Write residual on file for later use in calculation of
+CC        linear response functions (When?)
+CC--------------------------------------------------------------
+CC
+C              LURV1E = -1
+C              CALL GPOPEN(LURV1E,FNRV1E,'UNKNOWN',' ','UNFORMATTED',
+C     &                    IDUMMY,.FALSE.)
+C              LURV1D = -1
+C              CALL GPOPEN(LURV1D,FNRV1D,'UNKNOWN',' ','UNFORMATTED',
+C     &                    IDUMMY,.FALSE.)
+C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1E)
+C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV1D)
+CC
+C              CALL SO_WRTVE(WORK(KRESI1E),LRESI1E,ISYMTR,LABEL,
+C     &                      EIVAL(IEXCI),LURV1E)
+C              CALL SO_WRTVE(WORK(KRESI1D),LRESI1D,ISYMTR,LABEL,
+C     &                      EIVAL(IEXCI),LURV1D)
+C              CALL GPCLOSE(LURV1E,'KEEP')
+C              CALL GPCLOSE(LURV1D,'KEEP')
+CC
+C            IF(DOUBLES)THEN
+C              LURV2E = -1
+C              CALL GPOPEN(LURV2E,FNRV2E,'UNKNOWN',' ','UNFORMATTED',
+C     &                    IDUMMY,.FALSE.)
+C              LURV2D = -1 
+C              CALL GPOPEN(LURV2D,FNRV2D,'UNKNOWN',' ','UNFORMATTED',
+C     &                    IDUMMY,.FALSE.)
+CC             find the right positions
+C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2E)
+C              CALL SO_FNDPOS(LABEL,EIVAL(IEXCI),LURV2D)
+C              CALL SO_WRTVE(WORK(KRESI2E),LRESI2E,ISYMTR,LABEL,
+C     &                      EIVAL(IEXCI),LURV2E)
+C              CALL SO_WRTVE(WORK(KRESI2D),LRESI2D,ISYMTR,LABEL,
+C     &                      EIVAL(IEXCI),LURV2D)
+C              CALL GPCLOSE(LURV2E,'KEEP')
+C              CALL GPCLOSE(LURV2D,'KEEP')
+C            ENDIF
+C         ENDIF
 C
   100 CONTINUE
 C

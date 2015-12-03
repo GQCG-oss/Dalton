@@ -14,7 +14,7 @@ C
 C     Keld Bak, July 1997
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C     PURPOSE: Calculate RPA(D), SOPPA and SOPPA(CCSD) transition 
+C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition 
 C              moments.
 C
 #include "implicit.h"
@@ -52,6 +52,7 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_TRMOM')
+C
 C------------------------
 C     Do we need doubles?
 C------------------------

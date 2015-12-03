@@ -299,7 +299,7 @@ cLig  this operation is quite stupid since it goes to read and write
 cLig  always in the same space ... since inewtr is also always 1 !
 C
 CRF --- No need to do anything!!!
-C            NOLDTR = 1 
+            NOLDTR = 1 
 C
 C            CALL SO_READ(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,NOLDTR)
 C            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)

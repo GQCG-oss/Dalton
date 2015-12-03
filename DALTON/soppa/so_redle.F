@@ -322,13 +322,13 @@ C     for the linear problem before they will be changed by the
 C     SO_OPTVEC and write solution vector on the file
 C-----------------------------------------------------------------
 C
-      DTIME      = SECOND()
-      CALL SO_PROP(DOUBLES,NOLDTR,NNEWTR,ISYMTR,IMAGPROP,
-     &             REDC,LREDC,LABEL,FRVAL(IFREQ),
-     &             PROP,WORK(KEND2),LWORK2)
-      DTIME      = SECOND()   - DTIME
+C      DTIME      = SECOND()
+C      CALL SO_PROP(DOUBLES,NOLDTR,NNEWTR,ISYMTR,IMAGPROP,
+C     &             REDC,LREDC,LABEL,FRVAL(IFREQ),
+C     &             PROP,WORK(KEND2),LWORK2)
+C      DTIME      = SECOND()   - DTIME
 cLig  I'm quite sure to have to change this SOTIME 
-      SOTIME(38) = SOTIME(38) + DTIME
+C      SOTIME(38) = SOTIME(38) + DTIME
 cLig >>
 C
 C-----------------------------------------------------------------

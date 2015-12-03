@@ -32,6 +32,7 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,  
      &                       soppa_nint
 #endif
+      use so_info, only: sop_linres
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -295,6 +296,18 @@ C     the maximum number of iterations have not been reached.
 C---------------------------------------------------------------------
 C
       IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GO TO 100
+C
+C--------------------------------------------------------------      
+C     Calculate and save the pertubed density matrix
+C-------------------------------------------------------------
+C 
+      ENORMINV = 1.0D0/ENORM 
+      CALL SO_PERTDENS('AORPA',SOP_LINRES,1,
+     &                 FRVAL(IFREQ),1,LABEL,
+     &                 ISYMTR,IMAGPROP,ENORMINV,
+     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
+     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                 WORK(KEND1),LWORK1)
 C
       IF ( (NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT) ) THEN
 C

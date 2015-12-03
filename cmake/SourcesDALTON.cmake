@@ -648,6 +648,10 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/rp_rsplex.F
     DALTON/soppa/rp_trial1.F
     DALTON/soppa/rp_trial3.F
+    DALTON/soppa/so_pertdens.F
+    DALTON/soppa/so_pertd1.F
+    DALTON/soppa/so_pertd2.F
+    DALTON/soppa/so_propmo.F
     DALTON/soppa/so_anal.F
     DALTON/soppa/so_aodens.F
     DALTON/soppa/so_bcktr.F
@@ -763,6 +767,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
     DALTON/soppa/so_parutils.F90
+    DALTON/soppa/so_info.F90
     DALTON/qmcmm/herqmnp.F90
     DALTON/qmcmm/fock.F90
     DALTON/qmcmm/response.F90

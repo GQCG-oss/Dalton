@@ -51,8 +51,8 @@ C
 C
 C--------------------------------------------
 C     Get one electron AO property integrals.
-C--------------------------------------------
-C
+C--------------------------------------------     
+C     They are returned as a symmetry-blocked square array. 
       CALL DZERO(PRP1,LPRP1)
       CALL SO_ONEP(PRP1,LPRP1,LABEL,KSYMOP,RTNLBL,WORK(KEND1),LWORK1)
 C

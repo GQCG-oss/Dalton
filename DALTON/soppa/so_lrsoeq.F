@@ -24,6 +24,8 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
+      use so_info, only: sop_linres
+
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -369,15 +371,13 @@ C---------------------------------------------------------------------
 C        Write residuals and "Diagonal properties"
 C---------------------------------------------------------------------
 C
-         IF (IPRSOP .GE. 2) THEN
 C
-            WRITE(LUPRI,9010)
-            WRITE(LUPRI,9011)
-            WRITE(LUPRI,9010)
+C            WRITE(LUPRI,9010)
+C            WRITE(LUPRI,9011)
+C            WRITE(LUPRI,9010)
             WRITE(LUPRI,9012) LABEL,FRVAL(IFREQ),PROP,RESINM(1),CONV(1)
-            WRITE(LUPRI,9010)
+C            WRITE(LUPRI,9010)
 C     
-         END IF
 C
 C---------------------------------------
 C        Flush the standard output file.
@@ -386,11 +386,23 @@ C
          CALL FLSHFO(LUPRI)
 C
 C---------------------------------------------------------------------
-C     Go to next iteration if all eigenvalues are not converged and if
+C     Go to next iteration if the solution vector is not converged and
 C     the maximum number of iterations have not been reached.
 C---------------------------------------------------------------------
 C
       IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GO TO 100
+C
+C--------------------------------------------------------------      
+C     Calculate and save the pertubed density matrix
+C-------------------------------------------------------------
+C 
+      ENORMINV = 1.0D0/ENORM 
+      CALL SO_PERTDENS(MODEL,SOP_LINRES,1,
+     &                 FRVAL(IFREQ),1,LABEL,
+     &                 ISYMTR,IMAGPROP,ENORMINV,
+     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
+     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                 WORK(KEND1),LWORK1)
 C
       IF ((NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT)) THEN
 C
