@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -608,10 +608,10 @@ C
 C     Determine if full Hessian or only orbital Hessian
 C
       IF (IPQMMM .GE. 15) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QMMMLNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM QMMMLNO ---'
       END IF
       IF (IPQMMM .GE. 15) THEN
-         WRITE (LUPRI,'(/A)') ' >>> QMMMLNO - svec(1,nosim) on entry'
+         WRITE (LUPRI,'(/A)') ' --- QMMMLNO - svec(1,nosim) on entry'
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 

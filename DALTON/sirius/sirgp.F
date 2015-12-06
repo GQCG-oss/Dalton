@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -464,7 +464,7 @@ C
          GO TO 9999
       END IF
  8000 FORMAT(/5X,'Orbital operator symmetry =',I2,
-     *       /5X,'>> NO ELEMENTS <<')
+     *       /5X,'-- NO ELEMENTS --')
 C
 C Print XKAP as requested:
 C
@@ -613,7 +613,7 @@ C
  1200 FORMAT(/I8,' elements with absolute value less than',
      *       1P,D9.2,' not printed.')
  3000 FORMAT(/5X,'Orbital operator symmetry =',I2,
-     *       /5X,'>> NO ELEMENTS <<')
+     *       /5X,'-- NO ELEMENTS --')
 C
 C -- end of subroutine PRWOP
 C
@@ -709,7 +709,7 @@ C
       GO TO 9000
   400 CONTINUE
          WRITE (LUPRI,'(//A)')
-     *   ' >>> FATAL ERROR, label "**MOLORB" not found on SIRIUS input.'
+     *   ' --- FATAL ERROR, label "**MOLORB" not found on SIRIUS input.'
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -736,7 +736,7 @@ C
          CALL READT(LUIT1,NCMOT,CMO)
       ELSE IF (LBLERR .EQ. -1) THEN
          WRITE (LUPRI,'(//3A)')
-     & ' >>> FATAL ERROR, MO label "',MOLABL,'" not found on SIRIUS.RST'
+     & ' --- FATAL ERROR, MO label "',MOLABL,'" not found on SIRIUS.RST'
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
             JRDMO = JRDMO + 1
@@ -745,7 +745,7 @@ C
          END IF
       ELSE
          WRITE (LUPRI,'(//A/2A)')
-     &   ' >>> FATAL ERROR, could not read SIRIUS.RST',
+     &   ' --- FATAL ERROR, could not read SIRIUS.RST',
      &   '                  when searching for mo label :',MOLABL
          CALL QTRACE(LUPRI)
          IF (NOSTOP) THEN
@@ -790,7 +790,7 @@ C
  8000 CONTINUE
 C
       WRITE (LUPRI,'(//A/A)')
-     *   ' >>> FATAL INTERNAL ERROR, IRDMO options 5, 6, 8',
+     *   ' --- FATAL INTERNAL ERROR, IRDMO options 5, 6, 8',
      *   '     is not defined in READMO since May-95'
       IF (NOSTOP) THEN
          JRDMO = JRDMO + 1
@@ -1205,7 +1205,7 @@ C        ... file is opened automatically first time RDONEL is called.
 C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
          IF (NBT .NE. NBAST) THEN
             WRITE (LUPRI,'(//A,2(/A,I5))')
-     *      ' >>> RDONEL ERROR',
+     *      ' --- RDONEL ERROR',
      *      '     NBAST from first record on AOONEINT :',NBAST,
      *      '     NBAST from "SYMINPUT"   on AOONEINT :',NBT
             CALL QUIT('RDONEL ERROR, two different NBAST on AOONEINT')
@@ -1912,7 +1912,7 @@ C
 C
       CALL QENTER('SIRH1')
       IF (P6FLAG(18)) WRITE (LUPRI,'(/A)')
-     &   ' >>>>> One-electron Hamiltonian matrix from SIRH1 :'
+     &   ' ----- One-electron Hamiltonian matrix from SIRH1 :'
       CALL RDONEL('ONEHAMIL',.TRUE.,H1AO,NNBAST)
 C
 C     Add field-dependent terms
@@ -2002,14 +2002,14 @@ C
             CALL READT(LUPROP,NNBASX,PRPAO)
          ELSE
             WRITE (LUPRI,'(//3A/3(A,1X))')
-     &         ' >>> RDPROP error: property "',WORD,
+     &         ' --- RDPROP error: property "',WORD,
      &         '" on AOPROPER has no valid antisymmetry label.',
      &         '     Labels read on file:',RTNLBL(1),RTNLBL(2)
             CALL QTRACE(LUPRI)
             CALL QUIT('RDPROP error: No antisymmetry label on AOPROPER')
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> RDPROP error: property "',WORD,
+         WRITE (LUPRI,'(//3A)') ' --- RDPROP error: property "',WORD,
      *      '" not found on AOPROPER.'
          CALL QTRACE(LUPRI)
          CALL QUIT('RDPROP error: property not found on AOPROPER.')

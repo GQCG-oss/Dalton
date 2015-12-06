@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -528,7 +528,7 @@ C
  1020       CONTINUE
  1000    CONTINUE
       END IF
- 2000 FORMAT(//,' <<<<<<<<<< SUBROUTINE ODCGEN >>>>>>>>>>',
+ 2000 FORMAT(//,' ---------- SUBROUTINE ODCGEN ----------',
      *       //,' Overlap distribution arrays for electron ',I1,/)
       RETURN
       END
@@ -807,7 +807,7 @@ C
          WRITE (LUPRI, '(A,2I5)')   ' NSET  ', NSET1, NSET2
          WRITE (LUPRI, '(A,8I5)')  ' NUC12 ', (NUCT12(I),I=1,NODC12)
       END IF
- 1000 FORMAT(//,' <<<<<<<<<< SUBROUTINE ODCSEG >>>>>>>>>>',
+ 1000 FORMAT(//,' ---------- SUBROUTINE ODCSEG ----------',
      *       //,' Overlap distribution arrays for electron ',I1,/)
       RETURN
       END
@@ -1223,7 +1223,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT(//,' <<<<<<<<<< SUBROUTINE EXCOEF >>>>>>>>>>',
+ 1000 FORMAT(//,' ---------- SUBROUTINE EXCOEF ----------',
      &       //,' Overlap distribution coefficients for electron ',I1,/)
       END
 C  /* Deck twoodc */
@@ -1483,7 +1483,7 @@ C
  2100    CONTINUE
  2000 CONTINUE
       RETURN
- 1000 FORMAT (/,'  <<<<<<<<<< SUBROUTINE TWOODC >>>>>>>>>>',/)
+ 1000 FORMAT (/,'  ---------- SUBROUTINE TWOODC ----------',/)
  1010 FORMAT ('  MAX1/B:     ',2I7)
  1030 FORMAT ('  I120:     ',I7)
  1100 FORMAT (/,1X,A4,'(',I1,',',I1,';',I1,')',/)

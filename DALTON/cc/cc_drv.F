@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1210,11 +1210,11 @@ C
       WUSED = WEND - WSTART
       IF (IPRSTAT .GT. 0) THEN
          WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+     &      ' CPU and wall time for CC :',TUSED,WUSED
          CALL FLSHFO(LUSTAT)
       END IF
       WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for CC :',TUSED,WUSED
+     &      ' CPU and wall time for CC :',TUSED,WUSED
       CALL TSTAMP(' ',LUPRI)
       CALL FLSHFO(LUPRI)
 C

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -525,8 +525,8 @@ C
      *      GO TO 100
 C     ... skip this symmetry if no operators
          WRITE(LUPRI,'(//A/A,I5,3A)')
-     *      ' >>>>>>>>>> Linear response calculation',
-     *      ' >>>>>>>>>> Symmetry of excitation/property operator(s)',
+     *      ' ---------- Linear response calculation',
+     *      ' ---------- Symmetry of excitation/property operator(s)',
      *      KSYMOP,'  ( ',REP(KSYMOP-1),')'
          WRITE(LUPRI,'(3(/A,I5))')
      *      ' Number of excitations of this symmetry        ',
@@ -632,8 +632,8 @@ C
       WTOT = WEND - WSTR
       WRITE (LUPRI,'()')
       IF (QMMM) CALL QMMMTIMES('RESPONSE')
-      CALL TIMTXT('>>>> Total CPU  time used in RESPONSE:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in RESPONSE:',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in RESPONSE:',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in RESPONSE:',WTOT,LUPRI)
 C
 C     *******************************************
 C
@@ -645,7 +645,7 @@ C
 C  /* Deck rsprea */
       SUBROUTINE RSPREA
 C
-C <<< GENERAL INPUT FOR RESPONSE >>>
+C GENERAL INPUT FOR RESPONSE
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -688,7 +688,7 @@ C
       EXTERNAL RSPINF
 C
       WRITE (LUPRI,'(//A//)')
-     *   ' <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>'
+     *   ' -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------'
 C
 C     ***** PROCESS INPUT FOR RESPONSE *****
 C

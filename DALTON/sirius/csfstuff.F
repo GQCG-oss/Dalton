@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -536,7 +536,7 @@ C
       DIMENSION CSFVEC(*),DETVEC(*)
       DIMENSION DTOCMT(*),ICTSDT(*)
 C
-      IF( NTEST .GE. 20 ) WRITE(LUPRI,*) ' >>> CSDTVC SPEAKING <<<'
+      IF( NTEST .GE. 20 ) WRITE(LUPRI,*) ' --- CSDTVC SPEAKING ---'
       NDET = NDTASM(IREFSM)
       NCSF = NCSASM(IREFSM)
 C
@@ -673,7 +673,7 @@ C in a single block.
 C
 C.. Local memory
 C
-      IF( NTEST .GE. 10 ) WRITE(LUPRI,*) ' >>> OUTPUT FROM CNTOST <<< '
+      IF( NTEST .GE. 10 ) WRITE(LUPRI,*) ' --- OUTPUT FROM CNTOST --- '
       KLFREE = 1
 C Largest number of dets for a given type
       MXDT = 0
@@ -773,7 +773,7 @@ C
 C.. NUMBER OF ALPHA AND BETA STRING
       NTEST = 0
       IF( NTEST .GT. 10 ) THEN
-       WRITE(LUPRI,*) ' >>> IABNUS SPEAKING <<< '
+       WRITE(LUPRI,*) ' --- IABNUS SPEAKING --- '
        WRITE(LUPRI,*) ' NOCTPA,NOCTPB ', NOCTPA,NOCTPB
 C      WRITE(LUPRI,*) ' ALPHA AND BETA STRING '
 C      CALL IWRTMA(IASTR,1,NAEL,1,NAEL)
@@ -2083,7 +2083,7 @@ c
         IIRB = 1
         DO 190 ICNR = 1, ICNL
           IF(NTEST .GE. 20 )
-     &    write(LUPRI,*) ' >>> ICNL,ICNR <<< ',ICNL,ICNR
+     &    write(LUPRI,*) ' --- ICNL,ICNR --- ',ICNL,ICNR
           CALL GETCNF(SCR(KRCONF),IRTYP,IPCNF(ICNR),ICONF,IREFSM,NEL)
           NCSFR = NCSFTP(IRTYP)
           CALL CNHCN(SCR(KLCONF),ILTYP,SCR(KRCONF),IRTYP,SCR(KLPHPS),
@@ -3378,16 +3378,16 @@ c
       NERR = 0
       IF(IMXSO.GT.MXPST) THEN
         WRITE(LUPRI,*)
-     &  ' >> MXPST in CISIG9 insufficient,current value  <<',MXPST
+     &  ' -- MXPST in CISIG9 insufficient,current value  --',MXPST
         WRITE(LUPRI,*)
-     &  ' >> Raise MXPST in CISIG9 to atleast << ',IMXSO
+     &  ' -- Raise MXPST in CISIG9 to atleast -- ',IMXSO
         NERR = NERR + 1
       END IF
       IF(NOCTPA.GT.MXPTP.OR.NOCTPB.GT.MXPTP) THEN
         WRITE(LUPRI,*)
-     &  ' >> MXPTP in CISIG9 insufficient,current value  <<',MXPTP
+     &  ' -- MXPTP in CISIG9 insufficient,current value  --',MXPTP
         WRITE(LUPRI,*)
-     &  ' >> Raise MXPTP in CISIG9 to atleast <<' ,MAX(NOCTPA,NOCTPB)
+     &  ' -- Raise MXPTP in CISIG9 to atleast --' ,MAX(NOCTPA,NOCTPB)
         NERR = NERR + 1
       END IF
       IF (NERR .GT. 0) CALL QUIT('ERRORS in CISIG9')
@@ -3756,8 +3756,8 @@ C    &             LSTRIN,IOST,NOCTPA,ITYPSA(IOFFF),IFTP2)
      &             K,KTYP,LSTRIN,IOST,NOCTPA,IFTP2,1)
               IF (LSTRIN .GT. 2*MXPST) THEN
                  WRITE(LUPRI,'(2(/A,I10))')
-     &  ' >> MXPST in CISIG9 insufficient, current value  <<',MXPST,
-     &  ' >> Raise (2*MXPST) in CISIG9 to at least        <<',LSTRIN
+     &  ' -- MXPST in CISIG9 insufficient, current value  --',MXPST,
+     &  ' -- Raise (2*MXPST) in CISIG9 to at least        --',LSTRIN
                  CALL QUIT('CISIG9 after OINST3: MXPST too small')
               END IF
               IFRST = 0

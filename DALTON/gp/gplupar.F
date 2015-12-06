@@ -3660,7 +3660,7 @@ csk   CALL WRTMATMN(SUBSPH(ISTRED),1,NROOT,1,NROOT,LUWRT)
 csk   CALL WRTMATMN(SUBSPH(ISTRED2),1,JOFF-1,1,JOFF-1,LUWRT)
       IF( TIMING_par )
      &WRITE(LUWRT,9450) WALLTID
- 9450 FORMAT(' >>>  WALL TIME FOR REDUCING WORK                : ',A)
+ 9450 FORMAT(' WALL TIME FOR REDUCING WORK                : ',A)
 C
       END
 ***********************************************************************

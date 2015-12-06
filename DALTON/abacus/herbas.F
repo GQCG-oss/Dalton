@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -461,7 +461,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     &      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
+     &      ' BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
      &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
@@ -525,7 +525,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     &      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
+     &      ' BASLIB error, number of AO-blocks for PAOSET ',INTORB,
      &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
@@ -579,7 +579,7 @@ C
 C
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> BASLIB ERROR, number of primitives per block  ',INTEXP,
+     &  ' BASLIB ERROR, number of primitives per block  ',INTEXP,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
         CALL QUIT('BASLIB ERROR: Too many primitives')
@@ -1269,13 +1269,13 @@ C
      /   'Unsupported element in specified basis set file')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FIND_NQD error, number of primitives per block',ISPRIM,
+     &  ' FIND_NQD error, number of primitives per block',ISPRIM,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
         CALL QUIT('BASLIB FIND_NQD: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FIND_NQD error, number of contracted functions',ISCONT,
+     &  ' FIND_NQD error, number of contracted functions',ISCONT,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KAOVEC
         CALL QUIT('BASLIB FIND_NQD: Too many contracted functions')

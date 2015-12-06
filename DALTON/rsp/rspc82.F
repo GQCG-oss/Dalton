@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2774,7 +2774,7 @@ C
       CALL QENTER('RSPRED')
       IF (KZYRED.GT.MAXRM) THEN
          WRITE(LUPRI,'(//A/A,I5,/A,I5)')
-     *   ' >>> ERROR IN RSPRED >>>',
+     *   ' ERROR IN RSPRED ---',
      *   ' DIMENSION OF REDUCED SPACE IS  ',KZYRED,
      *   ' WHICH EXCEEDS ALLOWED DIMENSION',MAXRM
          CALL QUIT('RSPRED: TOO LARGE DIMENSION OF REDUCED SPACE')
@@ -2782,7 +2782,7 @@ C
 CSPAS:01.05.2009 bug fix for large number of  excitation energies
       IF (KZYRED.GT.LIROW) THEN
          WRITE(LUPRI,'(//A/A,A,I5,A,I5,/A)')
-     &   ' >>> ERROR IN RSPRED >>>',
+     &   ' ERROR IN RSPRED ---',
      &   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
      &   ' NEEDED ',KZYRED,', GIVEN :',LIROW,
      &   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'
@@ -2797,7 +2797,7 @@ C
       IF (ICTL.EQ.2) GO TO 1000
       IF (N .GT. MAXNVE) THEN
          WRITE(LUPRI,'(//A/A,I5,/A,I5)')
-     &   ' >>> ERROR IN RSPRED >>>',
+     &   ' ERROR IN RSPRED ---',
      &   ' Number of new trial vectors is ',N,
      &   ' which exceeds the allowed maximum, MAXNVE =',MAXNVE
          CALL QUIT('RSPRED: TOO MANY NEW TRIAL VECTORS')

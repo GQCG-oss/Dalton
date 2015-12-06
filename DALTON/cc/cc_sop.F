@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -115,12 +115,12 @@ CTOCD
      &                               '*******************************',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<  OUTPUT FROM COUPLED CLUST',
-     &                               'ER LINEAR RESPONSE   >>>>>>>>>*',
+     & '*--------  OUTPUT FROM COUPLED CLUST',
+     &                               'ER LINEAR RESPONSE   ---------*',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<     CALCULATION OF SECOND ',
-     &                               'ORDER PROPERTIES     >>>>>>>>>*',
+     & '*--------     CALCULATION OF SECOND ',
+     &                               'ORDER PROPERTIES     ---------*',
      & '*                                   ',
      &                               '                              *',
      & '************************************',
@@ -230,7 +230,7 @@ Cholesky
       TIMF = SECOND() - TIM1
 
       IF (NFTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',NFTRAN,' F matrix transformations:',TIMF
+     & ' Time used for',NFTRAN,' F matrix transformations:',TIMF
       CALL FLSHFO(LUPRI)
 *---------------------------------------------------------------------*
 * calculate J matrix contributions:
@@ -246,7 +246,7 @@ Cholesky
         TIMF = SECOND() - TIM1
 
         IF (NJTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &   '>>> Time used for',NJTRAN,' J matrix transformations:',TIMF
+     &   ' Time used for',NJTRAN,' J matrix transformations:',TIMF
         CALL FLSHFO(LUPRI)
       END IF
 *---------------------------------------------------------------------*
@@ -266,7 +266,7 @@ Cholesky
 
       TIMXE = SECOND() - TIM1
       IF (NXETRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
-     & '>>> Time used for',NXETRAN,' O1/X1 vector calculation:',TIMXE
+     & ' Time used for',NXETRAN,' O1/X1 vector calculation:',TIMXE
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -288,7 +288,7 @@ Cholesky
 
       TIMXI = SECOND() - TIM1
       IF (NXITRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',NXITRAN,' relaxation contributions:',TIMXI
+     & ' Time used for',NXITRAN,' relaxation contributions:',TIMXI
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -310,7 +310,7 @@ Cholesky
 
       TIMR = SECOND() - TIM1
       IF (NRTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
-     & '>>> Time used for',NRTRAN ,' 2. order relax. contrbs.:',TIMR
+     & ' Time used for',NRTRAN ,' 2. order relax. contrbs.:',TIMR
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -330,7 +330,7 @@ Cholesky
 *---------------------------------------------------------------------*
 * print timing:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') ' Total time for',
      &  NBSOP,' linear response function:', SECOND() - TIM0
 
 *---------------------------------------------------------------------*

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1438,7 +1438,7 @@ C
       IF (IPRINT .GE. 02) WRITE(LUPRI,2100) NPTOT
       CALL QEXIT('PSORG')
       RETURN
- 1000 FORMAT (12X,'<<<<<<<<<<  P S O R T >>>>>>>>>>',//)
+ 1000 FORMAT (12X,'----------  P S O R T ----------',//)
  2000 FORMAT('    Statistics for bin sort of P-elements:',//,
      1       '    Number of shells                    ',I6,/,
      2       '    Number of bin chains                ',I6,/,

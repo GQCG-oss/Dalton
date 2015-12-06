@@ -4,7 +4,7 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program,
-C...    Release DALTON2015 (2015), see http://daltonprogram.org"
+C...    Release DALTON2016 (2015), see http://daltonprogram.org"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -159,7 +159,7 @@ C
       IF (IPRABSLRS.GE.2) THEN
        WRITE(LUABSPRI,'(/A,/A,I3,A,/A)')
      &        ' =======================================',
-     &        ' >>>>  Macro iteration number',ITER,'  <<<<<<',
+     &        ' ----  Macro iteration number',ITER,'  ------',
      &        ' ======================================='
       END IF
 C

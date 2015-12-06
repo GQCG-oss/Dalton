@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -62,7 +62,7 @@ C
 C     IF (SKIP) RETURN
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRSOS .GT. 0) WRITE (LUPRI,'(A,/)')
-     &     '1 <<<<<<<<<< Output from SOSDRV >>>>>>>>>>'
+     &     '1 ---------- Output from SOSDRV ----------'
 C
 C--------------------------
 C     Check for no symmetry

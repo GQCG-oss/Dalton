@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -90,7 +90,7 @@ C
       NEEDED( 1:5) = 1
       IF (IKLVL.GE.2) NEEDED(6) = 1
       IF (IPRFX.GT.200) THEN
-         WRITE(LUPRI,'(/A)')   '>>>>>> ENTERING RSPFXD <<<<<<'
+         WRITE(LUPRI,'(/A)')   '------ ENTERING RSPFXD ------'
          WRITE(LUPRI,'(A,I5)') 'IDAX =',IDAX
          WRITE(LUPRI,'(A,I5)') 'INTSYM =',INTSYM
          WRITE(LUPRI,'(A,I5)') 'ISYMDN =',ISYMDN

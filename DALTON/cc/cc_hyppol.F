@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -131,12 +131,12 @@ c /* deck cc_hyppol */
      &                               '*******************************',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<< OUTPUT FROM COUPLED CLUSTER Q',
-     &                                  'UADRATIC RESPONSE >>>>>>>>>*',
+     & '*-------- OUTPUT FROM COUPLED CLUSTER Q',
+     &                                  'UADRATIC RESPONSE ---------*',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<     CALCULATION OF CC HYPER',
-     &                                'POLARIZABILITIES    >>>>>>>>>*',
+     & '*--------     CALCULATION OF CC HYPER',
+     &                                'POLARIZABILITIES    ---------*',
      & '*                                   ',
      &                               '                              *',
      & '************************************',
@@ -251,7 +251,7 @@ c /* deck cc_hyppol */
       TIMG = SECOND() - TIM1
 
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',NGTRAN,' G matrix transformations:',TIMG
+     &  ' Time used for',NGTRAN,' G matrix transformations:',TIMG
       CALL FLSHFO(LUPRI)
       
       
@@ -269,7 +269,7 @@ c /* deck cc_hyppol */
         TIMB = SECOND() - TIM1
 
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &   '>>> Time used for',NBTRAN,' B matrix transformations:',TIMB
+     &   ' Time used for',NBTRAN,' B matrix transformations:',TIMB
         CALL FLSHFO(LUPRI)
 
       ELSE
@@ -288,7 +288,7 @@ c /* deck cc_hyppol */
         TIMK = SECOND() - TIM1
 
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &   '>>> Time used for',NKTRAN,' K matrix transformations:',TIMK
+     &   ' Time used for',NKTRAN,' K matrix transformations:',TIMK
         CALL FLSHFO(LUPRI)
 
       ELSE
@@ -309,7 +309,7 @@ c /* deck cc_hyppol */
         TIMF = SECOND() - TIM1
 
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &   '>>> Time used for',NFTRAN,' F matrix transformations:',TIMF
+     &   ' Time used for',NFTRAN,' F matrix transformations:',TIMF
         CALL FLSHFO(LUPRI)
 
       ELSE
@@ -328,7 +328,7 @@ c /* deck cc_hyppol */
       TIMFA = SECOND() - TIM1
 
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',NFATRAN,' F{O} matrix transform.:  ',TIMFA
+     & ' Time used for',NFATRAN,' F{O} matrix transform.:  ',TIMFA
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -348,7 +348,7 @@ c /* deck cc_hyppol */
 
         TIMEA = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &       '>>> Time used for',
+     &       ' Time used for',
      &    NEATRAN,' ETA{O} vector calculat.: ', SECOND() - TIM1
         CALL FLSHFO(LUPRI)
 
@@ -371,7 +371,7 @@ c /* deck cc_hyppol */
 
         TIMAA = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &       '>>> Time used for',
+     &       ' Time used for',
      &    NAATRAN,' A{O} matrix transform. : ', SECOND() - TIM1
         CALL FLSHFO(LUPRI)
 
@@ -394,7 +394,7 @@ C    &                 WORK(KEND0), LEND0 )
 
         TIMR2 = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &       '>>> Time used for',
+     &       ' Time used for',
      &    NR2TRAN,' X1 x R2 dot products: ', SECOND() - TIM1
         CALL FLSHFO(LUPRI)
 
@@ -418,7 +418,7 @@ C    &                 WORK(KEND0), LEND0 )
      &               .FALSE.,MXVEC, WORK(KEND0), LEND0 )
 
       TIMXE = SECOND() - TIM1
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      & NXETRAN,' Xksi{O} and Eta{O2} vector calculat.: ', SECOND()-TIM1
       CALL FLSHFO(LUPRI)
 
@@ -750,7 +750,7 @@ C
 *---------------------------------------------------------------------*
 * print timing:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') ' Total time for',
      &  NBHYPPOL,' quadratic response func.:', SECOND() - TIM0
 
 *---------------------------------------------------------------------*
@@ -851,7 +851,7 @@ C
 
       TIMG = TIMG + SECOND() - TIM1
 
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &  NGTRAN,' G matrix transformations:', SECOND() - TIM1
       CALL FLSHFO(LUPRI)
 
@@ -869,7 +869,7 @@ C
 
         TIMB = TIMB + SECOND() - TIM1
 
-        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &    NBTRAN,' B matrix transformations:', SECOND() - TIM1
         CALL FLSHFO(LUPRI)
 
@@ -889,7 +889,7 @@ C
 
         TIMF = TIMF + SECOND() - TIM1
 
-        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &    NFTRAN,' F matrix transformations:', SECOND() - TIM1
         CALL FLSHFO(LUPRI)
 
@@ -906,7 +906,7 @@ C
 
       TIMFA = TIMFA + SECOND() - TIM1
 
-      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+      WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &   NFATRAN,' F{O} matrix transform.:  ', SECOND() - TIM1
       CALL FLSHFO(LUPRI)
 
@@ -922,7 +922,7 @@ C
 
         TIMEA = TIMEA + SECOND() - TIM1
 
-        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &      NEATRAN,' ETA{O} vector calculat.: ', SECOND() - TIM1
         CALL FLSHFO(LUPRI)
 
@@ -941,7 +941,7 @@ C
      &                 WORK(KEND0), LEND0 )
 
         TIMR2 = SECOND() - TIM1
-        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') '>>> Time used for',
+        WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') ' Time used for',
      &    NR2TRAN,' XC x CR2 dot products: ', SECOND() - TIM1
         CALL FLSHFO(LUPRI)
 
@@ -966,7 +966,7 @@ C
 *---------------------------------------------------------------------*
 * print timing:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') ' Total time for',
      &  NBEXPCOF,' expansion coeffients:    ', SECOND() - TIM2
 
 *---------------------------------------------------------------------*
@@ -1024,7 +1024,7 @@ C
 *---------------------------------------------------------------------*
 * print timing & return:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,A,F12.2," seconds.")') '>>> Total time used ',
+      WRITE (LUPRI,'(/A,A,F12.2," seconds.")') ' Total time used ',
      &  'in quadratic response section:', SECOND() - TIM0
 
       CALL FLSHFO(LUPRI)

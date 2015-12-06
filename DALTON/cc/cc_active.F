@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1731,7 +1731,7 @@ C
 C     Error check
 C
       IF (ICOUN1 .NE. NABSTO) THEN
-         WRITE(LUPRI,'(//,A,//)') ' >>> ERROR in CHO_ACTIVE'
+         WRITE(LUPRI,'(//,A,//)') ' --- ERROR in CHO_ACTIVE'
          WRITE(LUPRI,'(A,I5)') 'Computed number of active basis',NABSTO
          WRITE(LUPRI,'(A,I5)') 'Dimension of LACBAS            ',ICOUN1
          CALL QUIT('Inconsistent number of active basis in CHO_ACTIVE')

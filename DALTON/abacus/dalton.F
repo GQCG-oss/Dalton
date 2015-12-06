@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -32,7 +32,7 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2014_DALTON
+      PROGRAM DALTON2016_DALTON
 #endif
 C
       use parallel_models_mpi
@@ -258,7 +258,7 @@ C
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release Dalton2016.alpha (2015), see http://daltonprogram.org'
+     &'   Release Dalton2016.0 (2015), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')

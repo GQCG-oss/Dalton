@@ -5,7 +5,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -909,7 +909,7 @@ C
       CALL MEMGET('REAL',KLWOP,NKLWOP,WRK,KFREE,LFREE)
       IF (IPRSIR .GT. 60) THEN
          WRITE (LUPRI,*)
-         WRITE (LUPRI,*) '>>> test output from GETH2 <<<'
+         WRITE (LUPRI,*) '--- test output from GETH2 ---'
          WRITE (LUPRI,*) 'FULODG =',FULODG
          WRITE (LUPRI,*) 'LFRSAV =',LFRSAV
          WRITE (LUPRI,*) 'NEEDMU =',NEEDMU

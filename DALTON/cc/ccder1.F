@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -878,13 +878,13 @@ C        REWIND (LU2DER)
 *---------------------------------------------------------------------*
       IF (IPRINT.GT.1 .OR. LOCDBG) THEN
          WRITE (LUPRI,'(/A,A,F12.2," seconds.")') 
-     &        '>>> Time used in TWO',
+     &        ' Time used in TWO',
      &   'INT:         ', TIM1 - TIM0
          WRITE (LUPRI,'(A,A,F12.2," seconds.")')
-     &        '>>> Time used in CCS',
+     &        ' Time used in CCS',
      &   'SORTDERAO:   ', TIM3 - TIM2
          WRITE (LUPRI,'(/A,A,F12.2," seconds.")')
-     &        '>>> Total time used ',
+     &        ' Total time used ',
      &   'in CCGETH2D :', SECOND() - TIM0
       END IF
 

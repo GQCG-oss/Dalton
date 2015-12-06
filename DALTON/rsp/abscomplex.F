@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2673,7 +2673,7 @@ C     &              ABS(FREQA),ABS_THCLR,FOUND,CONV)
      &           ISYMA,' not found on file LUABSVECS'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
      &           ISYMA,' not converged on file LUABSVECS'
@@ -2705,7 +2705,7 @@ C     &              ABS(FREQB),ABS_THCLR,FOUND,CONV)
      &           ISYMB,' not found on file LUABSVECS'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
      &           ISYMB,' not converged on file LUABSVECS'
@@ -2737,7 +2737,7 @@ C     &              ABS(FREQC),ABS_THCLR,FOUND,CONV)
      &           ISYMC,' not found on file LUABSVECS'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
      &           ISYMC,' not converged on file LUABSVECS'

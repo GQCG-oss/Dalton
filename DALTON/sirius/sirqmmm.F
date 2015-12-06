@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -5284,7 +5284,7 @@ C *************************************************************
 
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) )THEN
          WRITE (LUPRI,'(/A/A,2I10)')
-     *        ' >>> PEGRD - gtot (input) - non-zero elements',
+     *        ' --- PEGRD - gtot (input) - non-zero elements',
      *        '     NCONF, NWOPT =',NCONF,NWOPT
          DO 40 I = 1,NCONF
             IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
@@ -5297,7 +5297,7 @@ C *************************************************************
       END IF
 
       IF ( (IPQMMM .GE. 15 .AND. NASHT .GT. 0) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PEGRD - DV matrix :'
+         WRITE (LUPRI,'(/A)') ' --- PEGRD - DV matrix :'
          CALL OUTPAK(DV,NASHT,1,LUPRI)
       END IF
 
@@ -5405,7 +5405,7 @@ C ******************* Orthogonality test **********************
 C *************************************************************
 C
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(/A)')' >>> PEGRD - grdj1, grdj2, diape, '//
+         WRITE (LUPRI,'(/A)')' --- PEGRD - grdj1, grdj2, diape, '//
      &                      'diape, cref'
          DO 430 I = 1,NCONF
             WRITE (LUPRI,'(A,I10,3F10.6)') ' conf #',I,
@@ -5417,7 +5417,7 @@ C
        TEST = DDOT(NCONF,CREF,1,WRK(KGRDPE),1)
        IF (ABS(TEST) .GT. 1.D-8) THEN
           NWARN = NWARN + 1
-          WRITE (LUPRI,*) ' >>> PEGRD WARNING <<< '
+          WRITE (LUPRI,*) ' --- PEGRD WARNING --- '
           WRITE (LUPRI,*) ' <CREF | GRAD > =',TEST
        END IF
 
@@ -5430,7 +5430,7 @@ C
 
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A/A,2I10)')
-     *      ' >>> PEGRD - grdB, gtot (accum) - non-zero grdpe',
+     *      ' --- PEGRD - grdB, gtot (accum) - non-zero grdpe',
      *      '     NCONF, NWOPT =',NCONF,NWOPT
          DO 440 I = 1,NCONF
             IF (WRK(KGRDPE-1+I) .NE. D0)
@@ -5446,7 +5446,7 @@ C
 C
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A/A,2I10)')
-     *      ' >>> PEGRD - gtot (output) - non-zero elements',
+     *      ' --- PEGRD - gtot (output) - non-zero elements',
      *      '     NCONF, NWOPT =',NCONF,NWOPT
          DO 840 I = 1,NCONF
             IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
@@ -5552,7 +5552,7 @@ C     8. KFPEMO : Polarizable Embedded (PE) Tg operator (MO basis)
       IF (LWRK1 .LT. 0) CALL ERRWRK('PEFCMO',-KWRK1,LWRK1)
 
       IF (IPQMMM .GE. 15 .AND. NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PEFCMO - DV matrix :'
+         WRITE (LUPRI,'(/A)') ' --- PEFCMO - DV matrix :'
          CALL OUTPAK(DV,NASHT,1,LUPRI)
       END IF
 
@@ -6104,17 +6104,17 @@ C *************************************************************
 C *************************************************************
 
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM PELNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM PELNO ---'
       END IF
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
          IF (FULHES) THEN
-            WRITE (LUPRI,'(/A)') ' >>> PELNO - svec(ci,1) on entry'
+            WRITE (LUPRI,'(/A)') ' --- PELNO - svec(ci,1) on entry'
             DO 30 I = 1,NCONST
                IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *              ' conf #',I,SVEC(I,1)
  30         CONTINUE
          END IF
-         WRITE (LUPRI,'(/A)') ' >>> PELNO - svec(orb) on entry'
+         WRITE (LUPRI,'(/A)') ' --- PELNO - svec(orb) on entry'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *        NSVEC,NOSIM,1,LUPRI)
       END IF

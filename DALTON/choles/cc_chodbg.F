@@ -23,7 +23,7 @@ C     ---------------
 
       IF (CHODBG) THEN
          WRITE(LUPRI,'(//,20X,A,A,A)')
-     &   '>>>>> OUTPUT FROM ',SECNAM,' <<<<<'
+     &   '----- OUTPUT FROM ',SECNAM,' -----'
       ELSE
          RETURN
       ENDIF
@@ -115,7 +115,7 @@ C     End of Cholesky debug section.
 C     ------------------------------
 
       WRITE(LUPRI,'(//,20X,A,A,A,//)')
-     & '>>>>> END OF ',SECNAM,' <<<<<'
+     & '----- END OF ',SECNAM,' -----'
 
 C
       RETURN

@@ -295,7 +295,7 @@ do
               checkout=`$checkfile $reffile`
               if [ "$benchmark" = "true" ]; then
                  if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
-                     CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+                     CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/" Total CPU  time used in DALTON\:"/""/`
                  else
                      CPU_usage="N/A"
                  fi
@@ -366,7 +366,7 @@ do
           fi
           if [ "$benchmark" = "true" ]; then
               if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
-                  CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+                  CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/" Total CPU  time used in DALTON\:"/""/`
               else
                   CPU_usage="N/A"
               fi
@@ -434,7 +434,7 @@ if [ "$benchmark" = "true" ]; then
 fi
 
 if [ "$reftest" = "true" ]; then
-   myprint " >>>>> THIS IS A TEST OF THE REFERENCE OUTPUTS >>>>>"
+   myprint " THIS IS A TEST OF THE REFERENCE OUTPUTS "
    myprint ""
 fi
 

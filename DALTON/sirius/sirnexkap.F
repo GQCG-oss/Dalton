@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1226,7 +1226,7 @@ C
       IF ( IPRKAP.GE.2) THEN
          TIMKAP = SECOND() - TIMKAP
          WRITE(LUPRI,'(//A,T40,F10.2,2(/T24,A,T40,F10.2,A,I3,A))')
-     *      ' >>> TIMING IN NEXKAP, TOTAL TIME',TIMKAP,
+     *      ' --- TIMING IN NEXKAP, TOTAL TIME',TIMKAP,
      *      'TIME IN KAPST', TIMST, ' FOR',MST, ' CALLS',
      *      'TIME IN KAPCTL',TIMCTL,' FOR',MCTL,' CALLS'
       END IF

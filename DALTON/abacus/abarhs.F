@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -481,7 +481,7 @@ C
 C
       CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRMAX .GT. 0) WRITE (LUPRI,'(A/)')
-     *   '  <<<<<<<<<< Output from RHSIDE >>>>>>>>>>'
+     *   '  ---------- Output from RHSIDE ----------'
 C
 C     Set for RHF and HSROHF
 C
@@ -1156,7 +1156,7 @@ C
       SUSCEP = IATOM .EQ. 0 .AND. (MAGSUS .OR. MOLGFA)
 C
       IF (IPRMAX .GT. 0) WRITE (LUPRI,'(/A/)')
-     &   '  <<<<<<<<<< Output from MAKEGD >>>>>>>>>>'
+     &   '  ---------- Output from MAKEGD ----------'
       IF (IPRMAX .GT. 5) THEN
          WRITE (LUPRI,'(1X,A,I5)')  ' IATOM ', IATOM
          WRITE (LUPRI,'(1X,A,3L5)') ' DERIV ', (DERIV(I),I=1,3)
@@ -3986,14 +3986,14 @@ C
       CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
       READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
       IF (LMAXSS .LT. LSOLMX) THEN
-         WRITE (LUPRI,'(//2A,2(/A,I5))') ' >>> SOLRH1 ERROR,',
+         WRITE (LUPRI,'(//2A,2(/A,I5))') ' SOLRH1 ERROR,',
      *   ' insufficient number of intgrals on LUSOL',
      *   ' l max from SIRIUS input :',LSOLMX,
      *   ' l max from LUSOL  file  :',LMAXSS
          CALL QUIT('SOLRH1: lmax on LUSOL is too small')
       END IF
       IF ((LMAXSS+1)**2 .NE. LMTOTX) THEN
-         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> SOLRH1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' SOLRH1 ERROR,',
      *   ' LUSOL file info inconsistent',
      *   ' l_max               :',LMAXSS,
      *   ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
@@ -4001,7 +4001,7 @@ C
          CALL QUIT('SOLRH1: LUSOL info not internally consistent')
       END IF
       IF (NNNBAS .NE. NBAST) THEN
-         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> SOLRH1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' SOLRH1 ERROR,',
      *   ' LUSOL file info inconsistent with SIRIUS input',
      *   ' NBAST - LUSOL       :',NNNBAS,
      *   ' NBAST - SIRIUS      :',NBAST
@@ -4016,7 +4016,7 @@ C
      &         ABS(CAVCNT(2) - CAVORG(2)) +
      &         ABS(CAVCNT(3) - CAVORG(3)) 
       IF (CAVDIF .GT. THRZER) THEN
-         WRITE (LUPRI,'(//2A,3(/A,3F20.15))') ' >>> SOLRH1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,3F20.15))') ' SOLRH1 ERROR,',
      &   ' LUSOL center of cavity not consistent with ABACUS value',
      &   ' CAVORG(1:3) from LUSOL        :',CAVCNT,
      &   ' CAVORG(1:3) from common block :',CAVORG

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -115,13 +115,13 @@ C
          ISECS  = NINT(TOTWAL) - 3600*IHOURS - 60*IMINS
 C
          WRITE(LUPRI,'(A,I5.2,A,I2.2,A,I2.2)')
-     &     '>>>> Total wall time used in PARDRV so far   :',
+     &     ' Total wall time used in PARDRV so far   :',
      &      IHOURS,':',IMINS,':',ISECS
          IF (IPRPAR .GT. 2) THEN
             WRITE(LUPRI,'(A,F11.2,/A,F11.2)')
-     &        '>>>> CPU  time used in PARDRV last iteration :',
+     &        ' CPU  time used in PARDRV last iteration :',
      &          CPU,
-     &        '>>>> Wall time used in PARDRV last iteration :',
+     &        ' Wall time used in PARDRV last iteration :',
      &          WALL
          END IF
       END IF
@@ -194,7 +194,7 @@ C
       ISECS  = NINT(TSOFAR) - 3600*IHOURS - 60*IMINS
 C
       WRITE(LUPRI,'(/A,I5.2,A,I2.2,A,I2.2)')
-     &     '>>>> Total CPU  time used in NODES  so far   :',
+     &     ' Total CPU  time used in NODES  so far   :',
      &     IHOURS,':',IMINS,':',ISECS
       CALL FLSHFO(LUPRI)
 C
@@ -1253,8 +1253,8 @@ C
          WTOT = WEND - WSTR
 C
          WRITE (LUPRI,'(/A,I10/)') 'Number of tasks performed:',N_TASKS
-         CALL TIMTXT('>>>> Total CPU  time used:',CTOT,LUPRI)
-         CALL TIMTXT('>>>> Total wall time used:',WTOT,LUPRI)
+         CALL TIMTXT(' Total CPU  time used:',CTOT,LUPRI)
+         CALL TIMTXT(' Total wall time used:',WTOT,LUPRI)
 C
 C        Stamp date and time and hostname to output
 C
