@@ -10,7 +10,10 @@ DALTON/test_cc
 external/gen1int/.git
 external/xcfun/.git
 external/pelib/.git
+external/qfitlib/.git
+external/efs/.git
 basis/cc-pVTZ_apra
+external/qmmm_cuda/
 external/pcmsolver/
 external/xcint/
 DALTON/test/nonconverted_runtests
