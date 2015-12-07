@@ -219,7 +219,7 @@
   
   subroutine read_input_pcm(word, kw_section)
 
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
      use pcmmod_cfg
 #endif
      use input_reader
@@ -231,7 +231,7 @@
      character(kw_length), intent(in) :: kw_section
 !    --------------------------------------------------------------------------
 
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
      call reset_available_kw_list()
 
      if (kw_matches(word, '.OLDINT')) then
