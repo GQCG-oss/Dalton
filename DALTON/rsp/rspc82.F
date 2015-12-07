@@ -568,7 +568,7 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
 #endif
       use pelib_interface, only: use_pelib
@@ -593,7 +593,7 @@ C
 #include "mxcent.h"
 C
       logical :: is_pcmsolver = .false.
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       if (pcmmod_is_pcm_calculation) then
         is_pcmsolver = .true.
       end if
