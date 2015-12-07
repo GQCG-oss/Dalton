@@ -272,7 +272,7 @@ C
      &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
      *'Vebjoern Bakken,','University of Oslo,','Norway',
      &  '(DALTON; geometry optimizer, symmetry detection)',
-     *'Radovan Bast,','KTH Stockholm,','Sweden',
+     *'Radovan Bast,','UiT The Arctic U. of Norway,','Norway',
      &  '(DALTON installation and execution frameworks)',
      *'Pablo Baudin,','University of Valencia,','Spain',
      &  '(Cholesky excitation energies)',
