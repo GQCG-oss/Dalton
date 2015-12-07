@@ -11,6 +11,8 @@ external/gen1int/.git
 external/xcfun/.git
 external/pelib/.git
 basis/cc-pVTZ_apra
+external/pcmsolver/
 external/xcint/
 DALTON/test/nonconverted_runtests
+DALTON/pcm
 DALTON/xcint

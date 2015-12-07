@@ -639,7 +639,7 @@ C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcm_scf
       use pcmmod_cfg
 #endif
@@ -1236,7 +1236,7 @@ C
 C
 ! Finalize pcm_scf if an EXTPCM calculation (PCM using PCMSolver
 ! library) was requested.
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       if (pcmmod_is_pcm_calculation) then
         call pcm_scf_finalize
         write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
@@ -1261,7 +1261,7 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
       use pcm_write
 #endif
@@ -1307,7 +1307,7 @@ C
 C
       LOGICAL ALLOPT
 
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       logical extpcm_input_provided
 #endif
 
@@ -1435,7 +1435,7 @@ C         been calculated.
 C
 C     Initialize /PCMLOG/ and /EXTPCM/
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       extpcm_input_provided = .false.
       pcmmod_is_pcm_calculation = .false.
 #endif
@@ -1913,7 +1913,7 @@ C     "*END OF" or "**something"
 
 !     *EXTPCM input
    14 CONTINUE
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
             call move_to_next_star(word,lucmd)
 #else
             WRITE(LUPRI,'(//A/)') 
@@ -1924,7 +1924,7 @@ C     "*END OF" or "**something"
 C     "*END OF" or "**something"
     1 CONTINUE
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
 !     read EXTPCM input if applicable
       if(extpcm_input_provided)then
         call read_menu_input('DALTON.INP', lucmd,
