@@ -2635,10 +2635,15 @@ C---------------------------------------------------------
 C        And finally scale diagonal (if not triples cont.)
 C---------------------------------------------------------
 C
-      IF (.NOT. CCSDT) CALL CCLR_DIASCL(RHO2,XHALF,ISYMTR)
+      IF (.NOT. CCSDT .AND. .NOT. MLCC3) THEN
 C
-      CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
-     *             IV + IVEC -1,RHO1(1,IV))
+         CALL CCLR_DIASCL(RHO2,XHALF,ISYMTR)
+C
+         CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
+     *                IV + IVEC -1,RHO1(1,IV))
+C
+      ENDIF
+C
       IF (.NOT. CCS   ) THEN
 C
 C--------------------------------
@@ -2661,6 +2666,41 @@ C
 C
       KEND1 = KENDS2
       LWRK1 = LWRKS2
+C
+C     MLCC3 or CC3 with new code
+C     --------------------------
+      IV = 1
+      IF(MLCC3) THEN
+C         
+         KT2AM = KEND1
+         KEND2 = KT2AM + NT2AMX
+         LWRK2 = LWORK - KEND2
+C         
+         CALL CC_RVEC(LUFC2,FC2AM,NT2AM(ISYMTR),NT2AM(ISYMTR),
+     *                IVEC+IV-1,WORK(KT2AM))
+         CALL CCLR_DIASCL(WORK(KT2AM),TWO,ISYMTR)
+C
+         IF(IPRINT .GT. 120) THEN
+            CALL AROUND(' RHO BEFORE ECCSD_DRV XXX  ')
+            CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,1,1)
+         END IF
+C
+         CALL MLCC3_DRV(RHO1(1,IV),RHO2,C1AM(1,IV),WORK(KT2AM),ECURR,
+     *                  MLCC3,WORK(KEND2),WORK(KEND2),LWRK2)
+C
+         IF(IPRINT .GT. 120) THEN
+            CALL AROUND(' RHO AFTER ECCSD_DRV ')
+            CALL CC_PRP(RHO1(1,IV),RHO2,ISYMTR,1,1)
+         END IF
+C
+         CALL CCLR_DIASCL(RHO2,XHALF,ISYMTR)
+         CALL CC_WVEC(LUFR1,FRHO1,NT1AM(ISYMTR),NT1AM(ISYMTR),
+     *                IV + IVEC -1,RHO1(1,IV))
+         CALL CC_WVEC(LUFR2,FRHO2,NRHO2,NT2AM(ISYMTR),
+     *                IV + ITR  -1,RHO2)
+      END IF
+C
+C
 C
 C=============================================================
 C

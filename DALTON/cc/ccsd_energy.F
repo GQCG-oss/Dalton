@@ -39,7 +39,7 @@ C
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER (XMONE = -1.0D0, IZERO = 0, TWO = 2.0D0, ZERO = 0.0D00)
-      LOGICAL   CCSAV, CC1BSV, CC1ASV, CCPTSV, CCP3SV, LCCEQ
+      LOGICAL   CCSAV, CC1BSV, CC1ASV, CCPTSV, CCP3SV, LCCEQ, MLCCSAVE
       LOGICAL   MP2R12TST,LRES
       DIMENSION WORK(LWORK)
       COMMON /LUDIIS/ LUTDIS, LUSDIS
@@ -1188,6 +1188,19 @@ C
         XTNCCPR = XTNCCCU
       ENDIF
 C
+C
+C     ---------------------
+C     |Multi-Level CCSD(T)|
+C     ---------------------
+C
+      IF (MLCCSDPT) THEN
+C
+         CALL MLCCSDPT_DRV(ECCP,WORK,WORK,LWORK)
+C
+         ETOT = EN2 + ECCP
+C
+      END IF
+C
 C-----------------------------------------------------
 C     IF Triples corrections open files for integrals.
 C-----------------------------------------------------
@@ -1433,6 +1446,19 @@ C----------------------
          ENDIF
       ENDIF
 C
+      IF (MLCCSDPT) THEN
+         WRITE(LUPRI,'(//,21X,A)') 'Perturbative triples corrections'
+         WRITE(LUPRI,'(21X,A,/)')  '--------------------------------'
+         WRITE(LUPRI,'(12X,A,F25.10)')
+     *        'MLCCSD(T) energy correction:', ECCP
+         WRITE(LURES,'(//,21X,A)') 'Perturbative triples corrections'
+         WRITE(LURES,'(21X,A,/)')  '--------------------------------'
+         WRITE(LURES,'(12X,A,F25.10)')
+     *        'MLCCSD(T) energy correction:', ECCP
+         WRITE(LUPRI,'(/,12X,A,F31.10)') 'Total energy MLCCSD(T):',ETOT
+         WRITE(LURES,'(/,12X,A,F31.10)') 'Total energy MLCCSD(T):',ETOT
+      ENDIF
+C
       IF (CCPTSV .OR. CCP3SV) THEN
          WRITE(LUPRI,'(//,21X,A)') 'Perturbative triples corrections'
          WRITE(LUPRI,'(21X,A,/)')  '--------------------------------'
@@ -1515,6 +1541,9 @@ C
          CALL AROUND( 'Calculating singlet intermediates for CCLR ')
          WRITE(LUPRI,'(/)')
 C
+         MLCCSAVE = MLCC3
+         MLCC3 = .FALSE.
+C
          CCSAV = CCSDT
          CCSDT = .FALSE.
   
@@ -1539,7 +1568,9 @@ C
          end if
 
          CCSDT = CCSAV
-
+C
+         MLCC3 = MLCCSAVE
+C
          WRITE(LUPRI,'(/)')
 C
       ELSE IF (RSPIM2.AND.IMSKIP) THEN
