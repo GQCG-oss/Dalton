@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -303,7 +303,7 @@ C
      &                                  xcint_is_active
 #endif
       use qmcmm_fock, only: qmnpmm_fock
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcm_scf
       use pcmmod_cfg
 #endif
@@ -327,7 +327,7 @@ C
       logical              :: file_exists
 #endif
 
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       real(8), allocatable :: density_ao(:), density_ao_symm(:)
       real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
 #endif
@@ -444,7 +444,7 @@ CAMT  If requested calculate the DFT-D dispersion energy correction
 
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM .OR.
      &    pcmmod_is_pcm_calculation) THEN
 #else              
@@ -573,7 +573,7 @@ C------------------
      &     .AND. .NOT. use_efs
 #endif
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       if (pcmmod_is_pcm_calculation) then
               dodifden = .false.
       end if
@@ -1087,7 +1087,7 @@ C
            DEALLOCATE(PE_DENMAT, PE_FCKMAT)
          END IF
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
          if (pcmmod_is_pcm_calculation) then
 ! Allocate scratch space for the PCM Fock matrix contribution in AO basis.
            allocate(fock_pcm_ao(nnbasx))
@@ -1199,7 +1199,7 @@ C
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
             IF (EMBEDDING .or. pcmmod_is_pcm_calculation) then
 #else                
             IF (EMBEDDING) THEN
@@ -1798,7 +1798,7 @@ C              in a solvent calculation with inertial polarization
 C
       IF ( IWRIFC .EQ. 1 ) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A)')
-     &      ' >>> Writing SIRIFC interface file'
+     &      ' --- Writing SIRIFC interface file'
          IF (ICI0 .EQ. 6) THEN
 Chj      ... if (GEOWLK) then
             IF (.NOT. OPTNEW) WRITE (LUPRI,'(//A/)')
@@ -1900,7 +1900,7 @@ C
      &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) .AND.
      &    .NOT. CHOINT) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3)')
-     &      ' >>> Transforming 2-el. integrals acc. to'//
+     &      ' --- Transforming 2-el. integrals acc. to'//
      &      ' .FINAL TRANSFORMATION =',ITRFIN
          JTRLVL = ITRFIN
          CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE)
@@ -2197,7 +2197,7 @@ C
       IF (DAMP .NE. D0) THEN
          CALL QUIT('DIIS_RED: DAMP not implemented yet')
 #if defined (VAR_KAPREDCODE)
-  >>>>>>>>>>>>>>>> NOTE: Hamilton and Pulay uses '* (D1 + DAMP)'
+   NOTE: Hamilton and Pulay uses '* (D1 + DAMP)'
                                         and not  ' + DAMP'
          DO 510 I = 1,NEVC
             II = KBTMP - 1 + IROW(I+1)

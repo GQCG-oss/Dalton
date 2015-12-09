@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -218,12 +218,12 @@ C
       ILOWOF = ILOWDI - 1
       NDIST  = IHGHDI - ILOWOF
 C
-C     >>> zero H2ACD
+C     --- zero H2ACD
 C
       LENGTH = N2ORBX * (IHGHDI - ILOWDI + 1)
       CALL DZERO(H2ACD,LENGTH)
 C
-C     >>> prepare for reading MO integrals ...
+C     --- prepare for reading MO integrals ...
 C
       KFREE  = 1
       LFREE  = LWRK

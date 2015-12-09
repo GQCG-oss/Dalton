@@ -1,8 +1,0 @@
-ATOMBASIS
-KF 1S+ c*v
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=19.0 Atoms=1 Basis=regbasis Aux=auxbasis
-K      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=9.0 Atoms=1 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      0.00000000000000     -2.12657184000000

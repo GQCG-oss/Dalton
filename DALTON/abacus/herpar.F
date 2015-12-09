@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -666,10 +666,11 @@ C
 #ifdef BUILD_OPENRSP
 !radovan: this breaks dft_camb3lyp_magsus test on master
 !         after the problem is fixed, remove the ifdef!
-
+        IF (USE_OPENRSP) THEN
 C added by Bin Gao, June 3, 2009
-         IF (MAXDIF .EQ. 2 .AND. .NOT.GENCTR)
+         IF (MAXDIF .EQ. 2 .AND. .NOT. GENCTR)
      &      NFMAT = 6*NDMAT
+        END IF
 #endif
       ELSE IF (ITYPE .EQ. 8) THEN
          NFMAT = 3*NDMAT*NUCDEG(IATOM)
@@ -720,6 +721,9 @@ C
       CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(EXPGRA,1,'LOGICAL',MASTER)
+#ifdef BUILD_OPENRSP
+      CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
+#endif
 C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
@@ -934,6 +938,7 @@ C
 #include "infpar.h"
 #include "parint.h"
 #include "expopt.h"
+#include "gnrinf.h"
 
 #ifdef VAR_MPI
 #ifndef USE_MPI_MOD_F90
@@ -971,10 +976,14 @@ C modified by Bin Gao, December 24, 2009
 !         after the problem is fixed, remove the ifdef!
 
 C modified by Bin Gao, December 21, 2009
+        IF (USE_OPENRSP) THEN
          CALL DZERO(FMAT,L_FCK)
          CALL DZERO(SUS2EL,L_SUS)
-#else
+        ELSE
+#endif
          CALL DZERO(FMAT,3*N2BASX)
+#ifdef BUILD_OPENRSP
+        END IF
 #endif
 COBL/AMT
 C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
@@ -1019,11 +1028,15 @@ C
 #ifdef BUILD_OPENRSP
 !radovan: this breaks dft_camb3lyp_magsus test on master
 !         after the problem is fixed, remove the ifdef!
+           IF (USE_OPENRSP) THEN
             CALL MPIXRECV(TMPMAT(1),L_FCK,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
-#else
+           ELSE
+#endif
             CALL MPIXRECV(TMPMAT(1),3*N2BASX,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(3*N2BASX,D1,TMPMAT,1,FMAT,1)
+#ifdef BUILD_OPENRSP
+           END IF
 #endif
             CALL MPIXRECV(TMPMAT(1),L_SUS,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_SUS,D1,TMPMAT,1,SUS2EL,1)
@@ -1648,6 +1661,9 @@ C
         CALL MPIXBCAST(ERFEXP,   1,'LOGICAL',MASTER)
         CALL MPIXBCAST(CHIVAL,   1,'DOUBLE' ,MASTER)
         CALL MPIXBCAST(EXPGRA,   1,'LOGICAL',MASTER)
+#ifdef BUILD_OPENRSP
+        CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
+#endif
 C
 C       IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                               ELSE calculate g_lr(R12)
@@ -2424,7 +2440,7 @@ CTROND     &               PERTUR,NODV,MAXDER,LONDON,NDMAT,ISYMDM,IFCTYP,
 CTROND     &               IATOM,.FALSE.)
 CTROND      END IF
 C
-C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
+C     ----- Print Section - Gradient and Hessian Elements -----
 C
       IF (EXPECT) THEN
          IF (JPRINT .GT. 5) THEN
@@ -2788,10 +2804,10 @@ C
                   WRITE(LUPRI,'(/1X,A)')'.ENCODE keyword is not in use.'
 #endif
                GO TO 100
-    5          CONTINUE
+    5          CONTINUE   ! .DEBUG
                   INFPAR_DEBUG = .TRUE.
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE   ! .RMA-MD
                   rma_model = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN

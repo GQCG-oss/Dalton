@@ -1,7 +1,0 @@
-ATOMBASIS
-anion: CC-
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=6.0 Atoms=2 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000     -0.63340888700000
-C      0.00000000000000      0.00000000000000      0.63340888700000

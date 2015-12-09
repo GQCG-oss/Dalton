@@ -1,8 +1,0 @@
-ATOMBASIS
-Sodium Chloride NaCl,
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=11.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Na      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=17.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Cl      0.00000000000000      0.00000000000000      2.37576315000000

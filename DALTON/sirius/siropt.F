@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -359,7 +359,7 @@ C
 C
       TIMST = SECOND() - TIMST
       IF (IPRI6 .GT. 1) WRITE (LUPRI,'(/A,F15.2,A)')
-     *   ' >>> Time used in SIROPT startup :',TIMST,' seconds.'
+     *   ' --- Time used in SIROPT startup :',TIMST,' seconds.'
 C
 C ***********************************************
 C *** START LOOP OVER MACRO ITERATIONS **********
@@ -386,10 +386,10 @@ C
          WRITE (LUW4,970) ITMAC
          IF (LUPRI.NE.LUW4) WRITE (LUPRI,970) ITMAC
       END IF
-  970 FORMAT(//' <<< MACRO ITERATION',I3,' >>>'
+  970 FORMAT(//' --- MACRO ITERATION',I3,' ---'
      *        /' --------------------------')
-  975 FORMAT(//' <<< MACRO ITERATION',I3,' BACKSTEP NO.',I3,' >>>')
-  977 FORMAT(//' <<< MACRO ITERATION',I3,' AFTER ABSORPTION >>>')
+  975 FORMAT(//' --- MACRO ITERATION',I3,' BACKSTEP NO.',I3,' ---')
+  977 FORMAT(//' --- MACRO ITERATION',I3,' AFTER ABSORPTION ---')
 C
       CALL FLSHFO(LUW4)
       IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
@@ -861,7 +861,7 @@ C        CALL SIRUPD(ICONV,MAXIT,REF1,GRD,CMO1,INDXCI,WRK,LFREE)
          IF (ICONV .GT. 0) THEN
             IF (FLAG(25)) THEN
                WRITE (LUPRI,'(//A/)')
-     &            ' >>> after UPDATE: recalculating gradient for SIRIFC'
+     &            ' --- after UPDATE: recalculating gradient for SIRIFC'
                ICONV    = 0
                UPDATE   = .FALSE.
                IF (.NOT. RHF_CALC) FLAG(14) = .TRUE.
@@ -982,7 +982,7 @@ C
   700 CONTINUE
       TIMMAC = SECOND() - TIMMAC
       IF (IPRI6 .GT. 0) WRITE (LUPRI,'(/A,F15.2,A)')
-     *   ' >>> Time used in this macro iteration :',TIMMAC,' seconds.'
+     *   ' --- Time used in this macro iteration :',TIMMAC,' seconds.'
 C
       IINFO(1)  = ITMAC
       DINFO(1)  = EMY
@@ -1220,8 +1220,8 @@ C     ... if (true) this QCHF will be followed by higher wf level
          CALL FLSHFO(LUW4)
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/2A,I3,A)')
-     *   ' >>> Transforming integrals for Abacus/response with',
-     *   ' ITRLVL =',ITRFIN,' <<<'
+     *   ' --- Transforming integrals for Abacus/response with',
+     *   ' ITRLVL =',ITRFIN,' ---'
          IF (ABS(ITRFIN) .EQ. LTRLVL) THEN
             IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/A)')
      *         ' Transformation skipped, was already performed.'
@@ -1736,7 +1736,7 @@ C
          IF (ICHECK .GT. 0) THEN
             IF (MAXCIT .LE. 0) THEN
                WRITE (LUPRI,'(//A/A)')
-     &         ' >>> INFO OPTST, symmetry check of CI vectors'//
+     &         ' --- INFO OPTST, symmetry check of CI vectors'//
      &         ' only works after CI iterations.',
      &         ' ".MAX CI ITERATIONS" reset to 3'
                MAXCIT = 3
@@ -2176,7 +2176,7 @@ C
       IF (ISTEP .EQ. 1 .AND. .NOT. OPTNEW) THEN
          GEOWLK = .TRUE.
          WRITE (LUW4,'(//A/)')
-     *      ' >>> step control for geometry walk (ABACUS interface)'
+     *      ' --- step control for geometry walk (ABACUS interface)'
       ELSE IF (ISTEP .LT. 0) THEN
          NOREJT = .TRUE.
       END IF
@@ -2627,8 +2627,8 @@ C
       REWIND (LUSIFC)
 
       IF (IPRI6 .GE. 5) WRITE (LUPRI,'(/A)')
-     *   ' >>> Writing Sirius interface file for'//
-     *   ' post-programs in WR_SIRIFC. <<<'
+     *   ' --- Writing Sirius interface file for'//
+     *   ' post-programs in WR_SIRIFC. ---'
 C
 C     Calculate Fock matrix
 C

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -112,7 +112,7 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
       use pcm_linear_response
 #endif 
@@ -373,7 +373,7 @@ C
      &                    WRK(KDVTR), WRK(KDVT), WRK(KDVTTR), EVECS,
      &                    EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
       END IF
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       if (pcmmod_is_pcm_calculation) then
         call hello_world
       end if
@@ -799,10 +799,10 @@ C     Determine if full Hessian or only orbital Hessian
 C
 C
       IF (IPRRSP .GE. 40) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM SLVLNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM SLVLNO ---'
       END IF
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SLVLNO - svec(1,nosim) on entry'
+         WRITE (LUPRI,'(/A)') ' --- SLVLNO - svec(1,nosim) on entry'
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 C
@@ -1005,13 +1005,13 @@ C
             DO 603 IOSIM = 1,NOSIM
                JRXYO = KRXYO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,'(/2A,I3,A,I3)')
-     *         ' >>> SLVLNO - TRIPLET ',
+     *         ' --- SLVLNO - TRIPLET ',
      *         '(Rxo) matrix no.',IOSIM,' of',NOSIM
                CALL OUTPUT(WRK(JRXYO),1,NORBT,1,NORBT,NORBT,NORBT,
      *                              1,LUPRI)
                JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,'(/A,I3,A,I3)')
-     *         ' >>> SLVLNO - (Ryo) matrix no.',IOSIM,' of',NOSIM
+     *         ' --- SLVLNO - (Ryo) matrix no.',IOSIM,' of',NOSIM
                CALL OUTPUT(WRK(JRXYOT),1,NORBT,1,NORBT,NORBT,NORBT,
      *                              1,LUPRI)
   603       CONTINUE
@@ -1019,7 +1019,7 @@ C
             DO 600 IOSIM = 1,NOSIM
                JRXYO = KRXYO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,'(/A,I3,A,I3)')
-     *         ' >>> SLVLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
+     *         ' --- SLVLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
                CALL OUTPUT(WRK(JRXYO),1,NORBT,1,NORBT,NORBT,NORBT,
      *                              1,LUPRI)
   600       CONTINUE
@@ -1113,7 +1113,7 @@ C
             IF (ABS(TEST) .GT. 1.D-8) THEN
                NWARN = NWARN + 1
                WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     *            ' >>> SLVLNO WARNING, for IOSIM =',IOSIM,
+     *            ' --- SLVLNO WARNING, for IOSIM =',IOSIM,
      *            ' <CREF | SVEC_solvent(iosim) > =',TEST
             END IF
   900    CONTINUE
@@ -1122,14 +1122,14 @@ C
 C        ... test print
 C
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SLVLNO - svec(ci,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- SLVLNO - svec(ci,1) on exit'
          DO 930 I = 1,KZCONF
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *         ' conf #',I,SVEC(I,1)
   930    CONTINUE
       END IF
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SLVLNO - svec(orb,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- SLVLNO - svec(orb,1) on exit'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(SVEC(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '
@@ -1186,7 +1186,7 @@ C     ... input check
 C
       IF (NCSIM .GT. 0 .AND. NOSIM .GT. 0) THEN
          WRITE (LUERR,'(//A/A,2I5)')
-     *   ' >>> SLVSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0',
+     *   ' --- SLVSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0',
      *   '     NCSIM, NOSIM =',NCSIM,NOSIM
          CALL QTRACE(LUERR)
          CALL QUIT('SLVSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0')

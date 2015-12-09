@@ -1,9 +1,0 @@
-ATOMBASIS
-SO2
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=16.0 Atoms=1 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=8.0 Atoms=2 Basis=regbasis Aux=auxbasis
-O      0.00000000000000      0.00000000000000      1.46359695000000
-O      1.27882339557500      0.00000000000000     -0.71184742394600

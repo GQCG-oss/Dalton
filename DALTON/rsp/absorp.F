@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -123,8 +123,8 @@ C
          END IF
 C
          IF (NEXCITED_STATES .GT. MXSTATES) THEN
-            WRITE(LUPRI,'(/2A,/)') ' >>> Warning the number of excited',
-     &           ' exceeds maximun, the maximum value is used <<<'
+            WRITE(LUPRI,'(/2A,/)') ' --- Warning the number of excited',
+     &           ' exceeds maximun, the maximum value is used ---'
             NEXCITED_STATES = MXSTATES
          END IF
 C
@@ -467,12 +467,12 @@ C
 C
       IF (IPRABS.GE.2) THEN
          WRITE(LUPRI,'(/3A,/A,I2,A,I4,A,/A,I7,A,//6X,A,/6X,A)')
-     &        ' >>> Value of linear polarizability for operator ',
+     &        ' --- Value of linear polarizability for operator ',
      &        LABEL, 'of <<<',' >>> symmetry',KSYMOP,
      &        ' in the reduced space of dimension',
      &        KZYRED, '. The  <<<',
      &        ' >>> full variational space has dimension',
-     &        KZYVAR,'.           <<<',
+     &        KZYVAR,'.           ---',
      &        ' Frequency   Damping         Real   Imaginary',
      &        '----------------------------------------------'
          DO IFREQ=1,NFREQ_ABS
@@ -971,7 +971,7 @@ C
 C
          IF (RESID(3,IFREQ,IOP,KSYMOP).LT.THCLR_ABSORP) THEN
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,1X,A,F8.4,A)')
-     &           '>>>>> Frequency:',FREQ_ABS(IFREQ),' converged <<<<<'
+     &           '----- Frequency:',FREQ_ABS(IFREQ),' converged -----'
             GO TO 100
          END IF
 C
@@ -1052,12 +1052,12 @@ C
 C
          IF (RESID(1,IFREQ,IOP,KSYMOP).LT.THCLR_ABSORP/DSQRT2) THEN
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,1X,A,1P,D9.2,A)')
-     &           '>>>>> Skip real equation because residual is only:',
-     &           RESID(1,IFREQ,IOP,KSYMOP), ' <<<<<'
+     &           '----- Skip real equation because residual is only:',
+     &           RESID(1,IFREQ,IOP,KSYMOP), ' -----'
          ELSE
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,/,1X,A,F8.4,A)')
-     &           '>>>>> Solving real equation for frequency:',
-     &           FREQ_ABS(IFREQ),' <<<<<<'
+     &           '----- Solving real equation for frequency:',
+     &           FREQ_ABS(IFREQ),' ------'
             THCRSP = 0.1D0*THCLR_ABSORP*DNORM_NT/DNORM_NR/DSQRT2
             CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &           .TRUE.,BLANK,BLANK,WRK(KGD1),REDGD,REDE,REDS,
@@ -1069,12 +1069,12 @@ C
 C
          IF (RESID(2,IFREQ,IOP,KSYMOP).LT.THCLR_ABSORP/DSQRT2) THEN
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,1X,A,1P,D9.2,A)')
-     &        '>>>>> Skip imaginary equation because residual is only:',
-     &           RESID(2,IFREQ,IOP,KSYMOP), ' <<<<<'
+     &        '----- Skip imaginary equation because residual is only:',
+     &           RESID(2,IFREQ,IOP,KSYMOP), ' -----'
          ELSE
             IF (IPRABS.GE.2) WRITE(LUPRI,'(/,/,1X,A,F8.4,A)')
-     &           '>>>>> Solving imaginary equation for frequency:',
-     &           FREQ_ABS(IFREQ),' <<<<<<'
+     &           '----- Solving imaginary equation for frequency:',
+     &           FREQ_ABS(IFREQ),' ------'
             THCRSP = 0.5D0*THCLR_ABSORP*DNORM_NT/DNORM_NI/DSQRT2
             CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &           .TRUE.,BLANK,BLANK,WRK(KGD2),REDGD,REDE,REDS,
@@ -1305,7 +1305,7 @@ C
       IF (IPRABS.GE.2) THEN
          WRITE(LUPRI,'(/A,/A,I3,A,/A)')
      &        ' =======================================',
-     &        ' >>>>  Macro iteration number',ITER,'  <<<<<<',
+     &        ' ----  Macro iteration number',ITER,'  ------',
      &        ' ======================================='
 C
       END IF
@@ -2329,7 +2329,7 @@ C
      &           ISYMA,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file RSPVEC')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',ALAB,
      &           ' with frequency ',FREQA, ' and symmetry',
      &           ISYMA,' not converged on file RSPVEC'
@@ -2359,7 +2359,7 @@ C
      &           ISYMB,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',BLAB,
      &           ' with frequency ',FREQB, ' and symmetry',
      &           ISYMB,' not converged on file RSPVEC'
@@ -2389,7 +2389,7 @@ C
      &           ISYMC,' not found on file RSPVEC'
             CALL QUIT('Response vector not found on file')
          ELSE
-            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING>>>>'//
+            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') ' @WARNING----'//
      &           ' Response label ',CLAB,
      &           ' with frequency ',FREQC, ' and symmetry',
      &           ISYMC,' not converged on file RSPVEC'

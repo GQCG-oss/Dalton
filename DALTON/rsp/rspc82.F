@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -568,7 +568,7 @@ C     EVECS(I)
 C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
 #endif
       use pelib_interface, only: use_pelib
@@ -593,7 +593,7 @@ C
 #include "mxcent.h"
 C
       logical :: is_pcmsolver = .false.
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       if (pcmmod_is_pcm_calculation) then
         is_pcmsolver = .true.
       end if
@@ -1867,9 +1867,10 @@ C
          ENDIF
   110 CONTINUE
       IF (INEG.NE.IPOS) THEN
-         WRITE(LUPRI,'(3(/A))')' ***** WARNING *********'
-     &   ,' number of eigenvalues with negative metric differ from'
-     &   ,' number with positive metric'
+         WRITE(LUPRI,'(/A/A,I5)')' **WARNING**'//
+     &    ' number of eigenvalues with negative metric differ from'//
+     &    ' number with positive metric.',
+     &    ' Dimension of reduced matrix =', KZYRED
          IF (IPRRSP.GT.20) THEN
             WRITE(LUPRI,'(/A)') '   NUMBER    EIGENVALUE '
             WRITE(LUPRI,'(I10,1P,D20.8)') (I,ALFAR(I),I=1,KZYRED)
@@ -1878,15 +1879,21 @@ C
          IF (IPRRSP.GT.20) WRITE(LUPRI,'(/A)')
      &      '      NUMBER      EIGENVALUE      PAIRED EIGENVALUE'
          DO, I=1,IPOS
-            IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT)
-     &         WRITE(LUPRI,'(/A)')
-     &         ' **WARNING**  EIGENVALUES NOT PAIRED'
-            IF (IPRRSP.GT.20) WRITE(LUPRI,'(I10,1P,2D20.8)')
+            IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.ZEROT) THEN
+               J = 1
+               WRITE(LUPRI,'(/A,I5)')
+     &         ' **WARNING**  EIGENVALUES NOT PAIRED.'//
+     &         ' Dimension of reduced matrix =', KZYRED
+            ELSE
+               J = 0
+            END IF
+            IF (IPRRSP.GT.20 .OR. J.NE.0) WRITE(LUPRI,'(I10,1P,2D20.8)')
      &         I,ALFAR(I),ALFAR(IPOS+I)
          END DO
          IF (IZER .GT. 0) THEN
-            WRITE(LUPRI,'(/A//A)')
-     &         ' WARNING: ZERO METRIC EIGENVALUE AND ZERO EIGENVALUE',
+            WRITE(LUPRI,'(/A/A,I5/A)')
+     &         ' WARNING: ZERO METRIC EIGENVALUE AND ZERO EIGENVALUE.',
+     &         ' Dimension of reduced matrix =', KZYRED,
      &         '     NUMBER       EIGENVALUE'
             WRITE(LUPRI,'(I10,1P,D20.8)')(I,ALFAR(IPOS+INEG+I),I=1,IZER)
          END IF
@@ -2766,7 +2773,7 @@ C
       CALL QENTER('RSPRED')
       IF (KZYRED.GT.MAXRM) THEN
          WRITE(LUPRI,'(//A/A,I5,/A,I5)')
-     *   ' >>> ERROR IN RSPRED >>>',
+     *   ' ERROR IN RSPRED ---',
      *   ' DIMENSION OF REDUCED SPACE IS  ',KZYRED,
      *   ' WHICH EXCEEDS ALLOWED DIMENSION',MAXRM
          CALL QUIT('RSPRED: TOO LARGE DIMENSION OF REDUCED SPACE')
@@ -2774,7 +2781,7 @@ C
 CSPAS:01.05.2009 bug fix for large number of  excitation energies
       IF (KZYRED.GT.LIROW) THEN
          WRITE(LUPRI,'(//A/A,A,I5,A,I5,/A)')
-     &   ' >>> ERROR IN RSPRED >>>',
+     &   ' ERROR IN RSPRED ---',
      &   ' DIMENSION OF INDEX VECTOR IROW IS TO SMALL; ',
      &   ' NEEDED ',KZYRED,', GIVEN :',LIROW,
      &   ' CHANGE DIMENSION IN infind.h AND RECOMPILE'
@@ -2789,7 +2796,7 @@ C
       IF (ICTL.EQ.2) GO TO 1000
       IF (N .GT. MAXNVE) THEN
          WRITE(LUPRI,'(//A/A,I5,/A,I5)')
-     &   ' >>> ERROR IN RSPRED >>>',
+     &   ' ERROR IN RSPRED ---',
      &   ' Number of new trial vectors is ',N,
      &   ' which exceeds the allowed maximum, MAXNVE =',MAXNVE
          CALL QUIT('RSPRED: TOO MANY NEW TRIAL VECTORS')
@@ -3055,9 +3062,10 @@ C
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
             IF (INEG.GT.0 .AND. .NOT.ABSORP) 
-     *           WRITE(LUPRI,'(/2A,I3,A,L8)')
+     *           WRITE(LUPRI,'(/2A,I3,A,L8,A,I6)')
      *         ' *** INFO, negative eigenvalues in reduced matrix.',
-     &         ' Symmetry',KSYMOP,',  triplet',TRPLET
+     &         ' Symmetry',KSYMOP,',  triplet',TRPLET,
+     &         ' Dimension of reduced matrix =',KZYRED
             IF (IPRRSP.GE.4 .OR. (.NOT.ABSORP .AND. INEG.GT.0)) THEN
                POL=DDOT(KZYRED,EIVEC(1,IGD),1,REDGD((IGD-1)*KZYRED+1),1)
                WRITE(LUPRI,1800) AFREQ,KZRED,POL,ISNDX,DET

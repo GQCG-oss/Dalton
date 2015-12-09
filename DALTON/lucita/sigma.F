@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2375,11 +2375,11 @@ C
         WRITE(LUWRT,80000) WALLTID2
       END IF
 *
-50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
+50000 FORMAT(' WALL TIME FOR WRITING SB TO DISK           :
      & ',A)
-60001 FORMAT(' >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :
+60001 FORMAT(' WALL TIME IN TOTAL FOR CURRENT S-BATCH     :
      & ',A)
-80000 FORMAT(' >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :
+80000 FORMAT(' WALL TIME FOR C-COEFFICIENT EXCHANGE       :
      & ',A)
 *
 C

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -55,7 +55,7 @@ C
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
 #endif
 #ifdef ENABLE_XCINT
@@ -126,7 +126,7 @@ C
       WINP = WEND - WSTART
       IF (IPRSTAT .GT. 0) THEN
          WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for SIRINP :',TINP,WINP
+     &      ' CPU and wall time for SIRINP :',TINP,WINP
       END IF
       CALL FLSHFO(LUW4)
       CALL FLSHFO(LUPRI)
@@ -375,7 +375,7 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
             if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//
      &      'PCMSolver')
@@ -423,9 +423,9 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
+     &      ' CPU and wall time for SCF :',TUSED,WUSED
          IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for SCF :',TUSED,WUSED
+     &      ' CPU and wall time for SCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
@@ -499,9 +499,9 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for MP2CTL :',TUSED,WUSED
+     &      ' CPU and wall time for MP2CTL :',TUSED,WUSED
          IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for MP2 :',TUSED,WUSED
+     &      ' CPU and wall time for MP2 :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
@@ -634,9 +634,9 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for CIMAIN :',TUSED,WUSED
+     &      ' CPU and wall time for CIMAIN :',TUSED,WUSED
          IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for CI :',TUSED,WUSED
+     &      ' CPU and wall time for CI :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
@@ -715,9 +715,9 @@ C
          TUSED = TEND - TSTART
          WUSED = WEND - WSTART
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for MCSCF :',TUSED,WUSED
+     &      ' CPU and wall time for MCSCF :',TUSED,WUSED
          IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for MCSCF :',TUSED,WUSED
+     &      ' CPU and wall time for MCSCF :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
@@ -773,9 +773,9 @@ C            transformation  /hjaaj June 09
          WUSED = WEND - WSTART
 
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for NEVPT2 :',TUSED,WUSED
+     &      ' CPU and wall time for NEVPT2 :',TUSED,WUSED
          IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for NEVPT2 :',TUSED,WUSED
+     &      ' CPU and wall time for NEVPT2 :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
@@ -822,9 +822,9 @@ C
          WUSED = WEND - WSTART
 
          IF (IPRSTAT .GT. 0) WRITE (LUSTAT,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for LUCITA CI :',TUSED,WUSED
+     &      ' CPU and wall time for LUCITA CI :',TUSED,WUSED
          IF (IPRSIR .GE. 0) WRITE (LUPRI,'(/A,2F12.3)')
-     &      ' >>>> CPU and wall time for LUCITA CI :',TUSED,WUSED
+     &      ' CPU and wall time for LUCITA CI :',TUSED,WUSED
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
@@ -860,7 +860,9 @@ C
  8000 CALL GETTIM(TEND,WEND)
       TIMSIR = TEND - TIMSIR
       WALSIR = WEND - WALSIR
-      WRITE (LUPRI,7100)  TIMSIR, WALSIR
+      WRITE (LUPRI,'()')
+      CALL TIMTXT(' Total CPU  time used in SIRIUS :',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in SIRIUS :',WTOT,LUPRI)
       CALL TSTAMP(' ',LUPRI)
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,7100)  TIMSIR, WALSIR
@@ -871,8 +873,8 @@ C
          CALL TSTAMP(' ',LUSTAT)
       END IF
  7100 FORMAT(//
-     &   /' >>>> Total CPU  time used in SIRIUS :',F10.2,' seconds',
-     &   /' >>>> Total wall time used in SIRIUS :',F10.2,' seconds')
+     &   /' Total CPU  time used in SIRIUS :',F10.2,' seconds',
+     &   /' Total wall time used in SIRIUS :',F10.2,' seconds')
 C
       IF (NINFO .GT. 0) THEN
          WRITE (LUPRI,7210) NINFO

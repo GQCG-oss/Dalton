@@ -26,7 +26,7 @@ C              RES1D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
-C >>> RP_ERES - Data dictionary: <<<
+C RP_ERES - Data dictionary:
 C NOLDTR: Number of Old trial vectors
 C NNEWTR: Numver of new trial vectors
 C FOCKD: The Fock Matrix

@@ -1,9 +1,0 @@
-ATOMBASIS
-ph2-
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=15.0 Atoms=1 Basis=regbasis Aux=auxbasis
-P      0.00000000000000      0.00000000000000      0.11916600000000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      1.03607000000000     -0.89374600000000
-H      0.00000000000000     -1.03607000000000     -0.89374600000000

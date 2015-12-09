@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -258,7 +258,7 @@ C
             WRITE (LUPRI,'(/2A)')
      *      ' Input ignored because no excited states specified.',
      *      ' Use the .ROOTS keyword.'
-            WRITE(LUPRI,'(/A)') ' <<<<<<< End of DALTON >>>>>>>'
+            WRITE(LUPRI,'(/A)') ' ----- End of DALTON -----'
             CALL QUIT('***** End of DALTON *****')
          END IF
          DO J=1,NBTMFR

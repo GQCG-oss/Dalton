@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -70,7 +70,7 @@ C
 C
       CALL QENTER('SIRCAN')
       IF (IPRCAN .GT. 0)
-     &   WRITE (LUW4,'(//A/)') ' <<<<< Output from SIRCAN'
+     &   WRITE (LUW4,'(//A/)') ' ----- Output from SIRCAN'
       REDOCI = FLAG(45)
       ONLYNO = FLAG(46)
       ONLYFD = FLAG(48)
@@ -179,14 +179,14 @@ C     CALL SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
 C
 C
 C Step 5: Redo CI calculation for natural orbitals.
-C         >>> NOTE: This is a test (debug) option
+C         --- NOTE: This is a test (debug) option
 C
       IF (REDOCI .AND. NCONF .GT. 1) THEN
          IF (FLAG(47)) THEN
 C            860719-hjaaj : 47 - transform CREF the old way (for test)
             ICIST  = 1
          ELSE
-            WRITE (LUPRI,'(//A/)') ' >> calling CICTL for test of TRACI'
+            WRITE (LUPRI,'(//A/)') ' -- calling CICTL for test of TRACI'
             ICIST  = 2
          END IF
 C
@@ -292,7 +292,7 @@ C
       IF (IPRCNO .GE. 2) CALL GETTIM (T0,W0)
       IF (IPRCNO .GE. 1) THEN
          WRITE (LUPRI,'(/2A/)')
-     &      '   <<< OUTPUT FROM SIRCNO     Keyword = ',KEYCNO
+     &      '   --- OUTPUT FROM SIRCNO     Keyword = ',KEYCNO
       END IF
       IF (KEYCNO .EQ. 'ONLYNO' .OR. KEYCNO .EQ. 'NATORB') THEN
          IF (IPRCNO .GE. 5) WRITE (LUPRI,'(A/)')
@@ -704,7 +704,7 @@ C
 C           CALL TRACI(NCVEC,CVEC,LCVEC,UMO,INDXCI,WRK,LFREE,IPRCNO)
             IF (IPRCNO .GT. 8 .AND. TRTONO) THEN
                WRITE (LUPRI,'(//A,I4/)')
-     *         '  >> SIRCNO TRACI test, calling MAKDV'//
+     *         '  -- SIRCNO TRACI test, calling MAKDV'//
      *         ' with CI vector = no.',ICREF
                CALL MAKDV(CVECS(1,ICREF),WRK(KDV),
      *                    INDXCI,WRK(KWRK1),LWRK1)
@@ -841,7 +841,7 @@ C
       LFREE  = LFRSAV
       IF (IPRINT .GE. 4) THEN
          WRITE (LUPRI,'(//A,I2)')
-     *      ' <<< output from getno    '//
+     *      ' --- output from getno    '//
      *      ' Symmetry of state vector :',ICSYM
       END IF
       IF (SUPSYM .AND. ORDER_in .AND. NOAVER) THEN

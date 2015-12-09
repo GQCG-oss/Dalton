@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2453,7 +2453,7 @@ C     a certain point group symmetry)
          IF (MSYM .NE. NSYM) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A,2I5/A)')
-     *   ' >>> SIR_GENINP-ERROR,'//
+     *   ' --- SIR_GENINP-ERROR,'//
      *   ' NSYM specified .ne. number of symmetries:',MSYM,NSYM,
      &   '     NSYM from input used in reading remaining input.'
             NSYM = MSYM
@@ -2703,11 +2703,13 @@ C
 
 #ifdef BUILD_OPENRSP
 #ifdef ENABLE_XCINT
-         ! we pass hfxfac to the 2-el integral code
-         call set_eri_contractions_xfac(hfxfac)
+         if (xcint_is_active()) then
+            ! we pass hfxfac to the 2-el integral code
+            call set_eri_contractions_xfac(hfxfac)
+         end if
 
          ! sanity check
-         if (.not. xcint_is_active()) then
+         if (use_openrsp .and. .not. xcint_is_active()) then
             print *, 'You run OpenRSP DFT without .XCINT'
             print *, 'Either add .XCINT or deactivate'
             print *, 'this warning'
@@ -5651,7 +5653,7 @@ C     ... get total charge
      &   NSYM,GROUP,LSYM,REP(LSYM-1)
  1000 FORMAT(/5X,'Wave function specification'
      &       /5X,'============================')
- 1002 FORMAT( '@    Wave function type        >>> ',A,' <<<',
+ 1002 FORMAT( '@    Wave function type        --- ',A,' ---',
      &       /'@    Number of closed shell electrons',I12,
      &       /'@    Number of electrons in active shells',I8,
      &       /'@    Total charge of the molecule',I16,

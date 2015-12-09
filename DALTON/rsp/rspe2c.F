@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1201,7 +1201,7 @@ C
          READ (LURSP1)JSYMOP, KZDIM,(IBTYP(I),I=1,KZDIM)
          IF ( IPRRSP.GT. 4 ) THEN
             WRITE (LUPRI,'(/A,2(/A,I5),/A,(T10,10I4))')
-     *      ' >>> Restart in LRST >>>',
+     *      ' --- Restart in LRST ---',
      *      ' OPERATOR SYMMETRY               :',JSYMOP,
      *      ' HALF-DIMENSION OF REDUCED SPACE :',KZDIM,
      *      ' IBTYP :',(IBTYP(I),I=1,KZDIM)
@@ -1226,7 +1226,7 @@ C
   51     CONTINUE
          IF (JZDIM .LT. KZDIM) THEN
             WRITE (LUPRI,'(/A/A,I5,A,I5/A)')
-     *      ' >>> Restart in LRST >>>',
+     *      ' --- Restart in LRST ---',
      *      ' Half-dimnsion of reduced space reduced from',KZDIM,
      *      ' to',JZDIM,
      *      ' because that was the number of sigma vectors on LURSP5'
@@ -1524,7 +1524,7 @@ C        CALL RSPORT (BVECS,NBX,NBPREV,IBTYP,THRLDP,OLDVEC,LU3)
      *                1,NOSIM,KZYWOP,NOSIM,1,LUPRI)
          ENDIF
          NTSIM = NTSIM + NLSIM
- 150  CONTINUE
+ 150  CONTINUE ! ISIM DO 150 ISIM = 1,KEXSIM,MAXSIM
       KEXSTV = NTSIM
       IF ((NLOAD.EQ.1).AND.(KEXSTV.LE.MAXSIM)) THEN
          BINMEM = .TRUE.
@@ -2510,14 +2510,14 @@ C
       IF (IPRRSP .GE. 1) THEN
          IF (LINEQ) THEN
             WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
-     &   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
-     &   'FOR LINEAR RESPONSE PROPERTIES >>>',
+     &   ' ---  SOLVING SETS OF LINEAR EQUATIONS ',
+     &   'FOR LINEAR RESPONSE PROPERTIES ---',
      &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
      &   '); triplet = ',TRPLET
          ELSE
             WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
-     &   ' <<< EXCITATION ENERGIES',
-     &   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
+     &   ' --- EXCITATION ENERGIES',
+     &   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) ---',
      &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
      &   '); triplet = ',TRPLET
          END IF
@@ -2594,8 +2594,6 @@ C
 C
 C Space for RSPNEX:
 C
-      MAXNEX = 30
-      MAXORP = 100
 C
 C REQUIREMENT FOR EACH TRIAL VECTOR
 C
@@ -2606,6 +2604,7 @@ C
       KUSE   = KZYVAR + NORBT*NORBT + 2*N2ASHX
       IF (.NOT.RSPCI) KUSE = KUSE + MAX(NCREF,KZCONF) + LACIMX
       IF (OPTORB) THEN
+         MAXORP = MAXVEC
          KOPT = 2*MAXORP*(MAXORP+1)/2 + 2*MAXORP + 3*KZYWOP*MAXORP
          KOPT = KOPT + KZYWOP
 C
@@ -2621,16 +2620,15 @@ C REQUIREMENT FOR EACH CALL TO RSPNEX
       KLEFT  = LWRK - KUSE
 C RSPNEX reads SOPPA 2p-2h diagonal of length KZCONF
       IF (SOPPA) KLEFT = KLEFT - KZCONF
-      NSIM3 = MIN(MAXNEX,(KLEFT-100)/KNEX)
+      NSIM3 = MIN(MAXVEC,(KLEFT-100)/KNEX)
       IF(IPRRSP.GE.10 .OR. NSIM3 .LE. 0)  WRITE(LUPRI,'(/A,I8)')
      *' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:',NSIM3
       IF (NSIM3.LE.0) THEN
          WRITE (LUPRI,8000) LWRK,(100+KLEFT+KNEX)
          WRITE (LUERR,8000) LWRK,(100+KLEFT+KNEX)
          CALL QTRACE(LUERR)
-         CALL QUIT('RSPCTL: INSUFFICIENT SPACE')
+         CALL QUIT('RSPCTL: INSUFFICIENT SPACE FOR RSPNEX')
       ENDIF
-      KVECS = 1
 C
 C CONSTRUCT E2 AND S2 EXPLICITLY USING UNIT TRIAL VECTORS
 C
@@ -2718,7 +2716,7 @@ C
       JEXSIM = KEXSTV
 C     ... JEXSIM is redefined in RSPNEX
 C
-C     --- START OF MICROITERATION LOOP ---
+C     --- 100: START OF MICROITERATION LOOP ---
 C
  100  CONTINUE
          CALL FLSHFO(LUPRI)
@@ -2726,8 +2724,8 @@ C
          IF (IPRRSP.GE.3)
      *   WRITE(LUPRI,'(/A,I5)') ' ** RSPCTL MICROITERATION NUMBER',ITMIC
 C
-C        CHECK IF ALL B VECTORS IN MEMORY
-C        IF NOT POSITION LURSP3
+C        200: start of loop for batch of max MAXSIM sigma vectors
+C        JEXSIM counts how many left
 C
  200     CONTINUE
          NSIM = MIN(MAXSIM,JEXSIM)
@@ -2743,11 +2741,15 @@ C
             ENDIF
  105     CONTINUE
          IF (IPRRSP.GE.15) WRITE(LUPRI,*)' NCSIM,NOSIM',NCSIM,NOSIM
-         KBCVEC= KVECS
+         KBCVEC= 1
          KBOVEC= KBCVEC + KZCONF*NCSIM
          KWRK1 = KBOVEC + KZYWOP*NOSIM
          LWRK1 = LWRK   - KWRK1
          IF (LWRK1.LT.0) CALL ERRWRK('RSPCTL 1',KWRK1-1,LWRK)
+C
+C        IF NOT all B vectors in memory,
+C        THEN position LURSP3 and READ NSIM B vectors into memory
+C
          IF (.NOT.BINMEM) THEN
             CALL REWSPL(LURSP3)
             IF (KOFFTY.EQ.1) READ (LURSP3)
@@ -2906,7 +2908,7 @@ C
 C        CREATE KEXSIM NEW LINEAR INDEPENDENT TRIAL VECTORS IN NEXT()
 C        FROM THE EIGENVECTORS OF THE REDUCED  RSP EQUATION
 C
-         IF (KEXSIM.LE.MAXSIM) THEN
+         IF (KEXSIM.LE.NSIM3 .AND. KEXSIM.LE.MAXSIM) THEN
             BINMEM=.TRUE.
          ELSE
             BINMEM=.FALSE.
@@ -3037,13 +3039,13 @@ C
       IF (IPRRSP .GE. 2) THEN
          IF (LINEQ) THEN
             WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
-     *   'FOR LINEAR RESPONSE PROPERTIES >>>',
+     *   ' ---  SOLVING SETS OF LINEAR EQUATIONS ',
+     *   'FOR LINEAR RESPONSE PROPERTIES ---',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
          ELSE
             WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<< EXCITATION ENERGIES',
-     *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
+     *   ' --- EXCITATION ENERGIES',
+     *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) ---',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
          END IF
       END IF
@@ -3765,7 +3767,7 @@ C for reduced E(2) and reduced S(2)
       KWRK1  = KEIVEC + MAXRM*MAXRM
       LWRK1  = LWRK + 1 - KWRK1
       IF (IPRPP .GT. 2 .OR. LWRK1 .LT. 2*KZYVAR) THEN
-         WRITE(LUPRI,'(/A)') ' >>> IN RSPPP:'
+         WRITE(LUPRI,'(/A)') ' --- IN RSPPP:'
          WRITE(LUPRI,*)' THCPP,MAXRM ',THCPP,MAXRM
          WRITE(LUPRI,*)' KSYMOP,NGPPP(KSYMOP) ',KSYMOP,NGPPP(KSYMOP)
          WRITE(LUPRI,*)' LWRK ,LWRK1 ',LWRK,LWRK1
@@ -4682,7 +4684,7 @@ C              ! Remove duplicates, they will cause linear dependency
          END IF
 C
          IF (DNORM_GD .LT. THRNRM) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+            WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector '//LBLLR(KSYMOP,IOP)//
      &                      ' is only',DNORM_GD
             CALL DZERO(WRK(KBVECS),KZYVAR)
@@ -4766,9 +4768,9 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
          KWRK1 = KVECB + KZYVAR
          LWRK1 = LWRK - KWRK1
          NINFO = NINFO + 1
-         WRITE (LUPRI,'(/A)')'@ INFO >>>>> Linear response functions'//
+         WRITE (LUPRI,'(/A)')'@ INFO ----- Linear response functions'//
      &        ' calculated using presolved response vectors',
-     &        '@ INFO >>>>> These results will not have quadratic '//
+     &        '@ INFO ----- These results will not have quadratic '//
      &        'accuracy'
          CALL LRNSL(CMO,UDV,PV,FC,XINDX,WRK(KVECB),WRK(KWRK1),LWRK1)
       ELSE
@@ -6229,8 +6231,8 @@ C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
       WRITE(LUPRI,'(A)')
-     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
-     &     'F U N C T I O N S   <<<<<<<<'
+     &     ' --- L I N E A R   R E S P O N S E   '//
+     &     'F U N C T I O N S ---  '
       CALL PRSYMB(LUPRI,'=',70,1)
 C
       KVECA = 1
@@ -6810,9 +6812,9 @@ C     Memory allocation
       WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
       WRITE(LUPRI,'(5x,3F12.6)') TRDIP
 
+#ifdef BUILD_QFITLIB
       allocate( dens( N2BASX ) )
       call dcopy(n2basx,wrk(kdcao),1,dens,1)
-#ifdef BUILD_QFITLIB
       call qfit_set_transition_dipole( TRDIP )
       call qfit_fit( dens )
       deallocate( dens )

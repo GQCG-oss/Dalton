@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -273,6 +273,7 @@ C
 #include "dftcom.h"
 #include "absorp.h"
 #include "abslrs.h"
+#include "abscrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
 C
@@ -319,7 +320,7 @@ C
      &                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
          ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA
      &        .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
-     &        .OR.ABSLRS_NSCD) THEN
+     &        .OR.ABSLRS_NSCD.OR.ABSLRS_GAMMA.OR.ABSLRS_IDRI) THEN
 
             DFTSAV=DODFT
             DODFT=.FALSE.

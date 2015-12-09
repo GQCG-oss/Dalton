@@ -355,9 +355,9 @@ C     --------------------------------------------
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
-      CALL TIMTXT('>>>> Total CPU  time used in '//SECNAM//':',CTOT,
+      CALL TIMTXT(' Total CPU  time used in '//SECNAM//':',CTOT,
      &            LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in '//SECNAM//':',WTOT,
+      CALL TIMTXT(' Total wall time used in '//SECNAM//':',WTOT,
      &            LUPRI)
       CALL QEXIT(SECNAM)
       RETURN

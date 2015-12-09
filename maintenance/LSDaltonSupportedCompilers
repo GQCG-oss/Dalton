@@ -1,0 +1,7 @@
+
+Compilers that is known to fail:
+
+1. ifort (IFORT) 11.1 20091130
+Using -DENABLE_DEC=ON -DENABLE_TENSORS=ON 
+This compiler fails when compiled with OpenMP (and using OMP_NUM_THREADS.GT.1) and COLLAPSE(3) is utilized. 
+

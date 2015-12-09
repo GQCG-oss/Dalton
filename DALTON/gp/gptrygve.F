@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -52,7 +52,7 @@ C
       END
       SUBROUTINE HEADER_A(HEAD,IN)
 C
-C     HEADER_A is same as HEADER, except with an '@ in column 1
+C     HEADER_A is same as HEADER, except with an '@' in column 1
 C     April 2014, Hans Joergen Aa. Jensen
 C
       CHARACTER HEAD*(*)
@@ -88,11 +88,11 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
             IF (LTEXT .GE. 10) THEN
-               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//' is'
+               OUT_TEXT = ' Time used in '//TEXT(1:LTEXT)//' is'
                LOUT = 18 + LTEXT + 3
             ELSE
                LBLANK = 10 - LTEXT
-               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//
+               OUT_TEXT = ' Time used in '//TEXT(1:LTEXT)//
      &                    BLANK(1:LBLANK)//' is'
                LOUT = 18 + 10 + 3
             END IF
@@ -254,14 +254,14 @@ C
  || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_NEC)  \
  || defined (SYS_DEC)  || defined (SYS_T3D)  || defined (SYS_LINUX)\
  || defined (SYS_SUN) || defined (SYS_HPUX) || defined (SYS_HAL)   \
- || defined (SYS_T90)
+ || defined (SYS_T90) || defined (SYS_DARWIN)
 C     Write to stderr
       WRITE (0,'(/A,I6,A/1X,A)') ' Node ',MYNUM,
      &   ':  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
       CALL GETTIM(CTOT,WTOT)
-      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL TIMTXT(' Total CPU  time used in DALTON:',CTOT,LUPRIN)
+      CALL TIMTXT(' Total wall time used in DALTON:',WTOT,LUPRIN)
       CALL QTRACE(LUPRIN)
       CALL FLSHFO(LUPRIN)
 C
@@ -346,7 +346,7 @@ C   Open files for direct access through WRITDX and READDX routines.
 C   The ....DX routines enables direct access, even when the number
 C   of elements per record (the logical record length) is greater
 C   than the maximum physical record length.
-C   >>> THIS IS MACHINE DEPENDENT <<<
+C   THIS IS MACHINE DEPENDENT 
 C
 C Input:
 C  LUDX     file unit number
@@ -410,7 +410,7 @@ C
          ENDIF
   600 CONTINUE
 #endif
-#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL)
+#if defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_NEC) || defined (SYS_LINUX) || defined (SYS_SUN) || defined (SYS_HAL) || defined (SYS_DARWIN)
 C
 C     Assume same for IBM-AIX--  1-Oct-1990 hjaaj
 C     Assume same for HP-UX  -- 21-Aug-1991 hjaaj
@@ -458,7 +458,7 @@ C
          OLDDX = .FALSE.
   600  CONTINUE
 #endif
-#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90)
+#if !defined (SYS_CRAY) && !defined (SYS_AIX) && !defined (SYS_HPUX) && !defined (SYS_DEC) && !defined (SYS_IRIX) && !defined (SYS_NEC) && !defined (SYS_T3D) && !defined (SYS_LINUX) && !defined (SYS_SUN) && !defined (SYS_HAL) && !defined (SYS_T90) && !defined (SYS_DARWIN)
  >>>>> insert appropriate OPEN statements in OPENDX.
 #endif
       RETURN
@@ -905,7 +905,7 @@ C
       END IF
 C
 C
-#ifdef SYS_LINUX
+#if defined (SYS_LINUX) || defined (SYS_DARWIN) || defined (SYS_UNIX)
 C     Just return if user has asked explicitly for stderr, stdinp, or stdout
 C     /HJAaJ Sep 2007
       IF (LUNIT .EQ. 0) GO TO 9002
@@ -966,7 +966,7 @@ C
          LUNIT = IUN
       ELSE
 C
-C     The user has requested a specific unit number. We don't 
+C     The user has requested a specific unit number. We do not
 C     quite trust the user, so we check that
 C     1) It is not unit 5 or 6
 C     2) The file either has been closed with status='KEEP' or is
@@ -978,10 +978,7 @@ C
 C     This avoids us writing to unit 7 of HP-systems (which corresponds to
 C     standard error on this machine)
 C
-         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6) .OR. (LUNIT .EQ. 7))
-     &      GOTO 9002
-#else
-         IF ((LUNIT .EQ. 5) .OR. (LUNIT .EQ. 6)) GOTO 9002
+         IF (LUNIT .EQ. 7) GOTO 9002
 #endif
          IF (IUNTAB(LUNIT) .EQ. 1) GOTO 9003
       END IF

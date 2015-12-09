@@ -8,7 +8,7 @@ install(
     )
 
 if(NOT ENABLE_CHEMSHELL)
-    foreach(_executable dalton.x lsdalton.x lslib_tester.x)
+    foreach(_executable dalton.x)
         install(
             TARGETS ${_executable}
             DESTINATION ${INSTALL_DIRECTORY}
@@ -20,7 +20,7 @@ if(NOT ENABLE_CHEMSHELL)
     endforeach()
 endif()
 
-foreach(_script dalton lsdalton)
+foreach(_script dalton)
     install(
         FILES ${CMAKE_BINARY_DIR}/${_script}
         DESTINATION ${INSTALL_DIRECTORY}

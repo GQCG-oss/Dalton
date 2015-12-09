@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -334,11 +334,16 @@ C for backward compatibility the old notation is retained
                CALL QUIT('BASLIB ERROR: Too high augmentation level')
             END IF
 C
-         ELSE IF (BASNAM(1:3) .EQ. 'ano') THEN
+         ELSE IF (BASNAM(1:4) .EQ. 'ano-') THEN
+            !ano-1, ano-2, ano-3, ano-4 from MOLCAS
             ANO = .TRUE.
             BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
             ISTART = len_BASNAM + 2
-         ELSE IF (BASNAM(1:3) .EQ. 'ANO') THEN
+         ELSE IF (BASNAM(1:7) .EQ. 'ANO-RCC') THEN
+            ANO = .FALSE. ! ANO-RCC is not written in MOLCAS format
+            BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
+            ISTART = len_BASNAM + 2
+         ELSE IF (BASNAM(1:7) .EQ. 'ANO-DK3') THEN
             ANO = .TRUE.
             BASTMP(1:len_BASNAM) = BASNAM(1:len_BASNAM)
             ISTART = len_BASNAM + 2
@@ -418,13 +423,13 @@ C Setting ALPHA, CPRIMU AND CPRIM to zero.
 C
             CALL DZERO(ALPHA(1, NBLOCK), KPRIM)
             CALL DZERO(CPRIMU(1,1, NBLOCK), KPRIM*KPRIM)
-            CALL DZERO(CPRIM (1,1, NBLOCK), KPRIM*KPRIM)
+            CALL DZERO(CPRIM (1, 1, NBLOCK), KPRIM*KPRIM)
 C
 C Reading the primitives and contraction coefficients from file in READNU
 C
             IF (ANO .OR. SADLEJ) THEN
                IQCORE = NINT(Q-QEFF)
-               CALL READ_ANO(INTEXP,INTORB,NBLOCK,KAOVEC, CPRIMU,ALPHA,
+               CALL READ_ANO(INTEXP,INTORB, NBLOCK,KAOVEC, CPRIMU,ALPHA,
      +                     KPRIM,ANO,SADLEJ,BASNAM,ISTART,POLFUN,IPOLST,
      +                     UNCONT,LUBAS,IQCORE,IPRINT)
                IF (INTORB .EQ. 0) THEN
@@ -456,7 +461,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     &      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
+     &      ' BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
      &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
@@ -520,7 +525,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     &      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
+     &      ' BASLIB error, number of AO-blocks for PAOSET ',INTORB,
      &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
@@ -562,6 +567,7 @@ C
 C
 C Close basis set file
 C
+
       BASNAM = BASSAV
 #ifdef PRG_DIRAC
       CLOSE (LUBAS, STATUS = 'KEEP')
@@ -573,7 +579,7 @@ C
 C
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> BASLIB ERROR, number of primitives per block  ',INTEXP,
+     &  ' BASLIB ERROR, number of primitives per block  ',INTEXP,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
         CALL QUIT('BASLIB ERROR: Too many primitives')
@@ -1046,10 +1052,10 @@ C
       CALL QUIT('BASLIB: '//
      &   'Unsupported element in specified basis set file')
       END
-C/* Deck finnqd */
+C/* Deck find_nqd */
       SUBROUTINE FIND_NQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
-     &                  NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
-     &                  UNCONT,LUBAS,IPRINT)
+     &                    NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
+     &                    UNCONT,LUBAS,IPRINT)
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1097,7 +1103,7 @@ C
 C Searching the file for the element.
 C
  20   CONTINUE
-         READ(LUBAS,'(A88)', IOSTAT = IOERR, ERR = 2000, END = 200)
+         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
          READ (STRING, '(A1)', IOSTAT = IOS) SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
@@ -1263,13 +1269,13 @@ C
      /   'Unsupported element in specified basis set file')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FIND_NQD error, number of primitives per block',ISPRIM,
+     &  ' FIND_NQD error, number of primitives per block',ISPRIM,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
         CALL QUIT('BASLIB FIND_NQD: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FIND_NQD error, number of contracted functions',ISCONT,
+     &  ' FIND_NQD error, number of contracted functions',ISCONT,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KAOVEC
         CALL QUIT('BASLIB FIND_NQD: Too many contracted functions')
@@ -1548,7 +1554,7 @@ C
          case (6)
             ch = 'H'
          case default
-            call quit('print_gaussian_inp: too high iqm')
+            call quit('print_gaussian_inp: too high l quantum number')
       end select
 
       do i = 1, npri
@@ -1744,7 +1750,8 @@ C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f,5s,5p,5d ECP
          ELSE
             WRITE(LUPRI,'(/A,I5)') 'READ_ANO FATAL ERROR: '//
      &         'ECP Huckel not implemented for this core charge:',IQCORE
-            CALL QUIT('READ_ANO ECP not implemented for this charge')
+            CALL QUIT(
+     &         'READ_ANO: ECP not implemented for this core charge')
          END IF
          ILOFF = ILCORE(IQM)
       ELSE

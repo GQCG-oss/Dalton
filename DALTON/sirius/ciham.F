@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -193,7 +193,7 @@ C
 C
       KFREEO = KFREE
 C
-      IF (NTEST .GT. 0) WRITE (LUPRI,*) '>>> Output from PHPDET <<<'
+      IF (NTEST .GT. 0) WRITE (LUPRI,*) '--- Output from PHPDET ---'
       IF (NTEST .GT. 10) THEN
          IF( ICOMBI .EQ. 0 ) THEN
              WRITE(LUPRI,*) ' DETERMINANTS IN USE '
@@ -884,7 +884,7 @@ C. FIRST OCCURANCE OF LOWEST ELEMENT AND LARGEST ELEMENT
         END IF
   100 CONTINUE
 C
-      IF (IPRT.GT.0) WRITE(LUPRI,*) ' >> output from FNDMN3 <<'
+      IF (IPRT.GT.0) WRITE(LUPRI,*) ' -- output from FNDMN3 --'
       IF(IPRT .GE. 5 ) THEN
          WRITE(LUPRI,*) ' LOWEST VALUE AND PLACE ',XMIN,IMIN
          WRITE(LUPRI,*) ' HIGHST VALUE AND PLACE ',XMAX,IMAX
@@ -982,7 +982,7 @@ C. FIRST OCCURANCE OF LOWEST ELEMENT AND LARGEST ELEMENT
         END IF
   100 CONTINUE
 C
-      IF (IPRT.GT.0) WRITE(LUPRI,*) ' >> output from FNDAMX <<'
+      IF (IPRT.GT.0) WRITE(LUPRI,*) ' -- output from FNDAMX --'
       IF(IPRT .GE. 5 ) THEN
          WRITE(LUPRI,*) ' LOWEST VALUE AND PLACE ',XMIN,IMIN
          WRITE(LUPRI,*) ' HIGHST VALUE AND PLACE ',XMAX,IMAX

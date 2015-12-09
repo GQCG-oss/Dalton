@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1083,7 +1083,7 @@ C
             IF ( NEXCR(KSYMOP).EQ.0 ) GOTO 100
 
             WRITE(LUPRI,'(//A/A,I2,3A/A,I5)')
-     &' <<<<< Solving eigenvalue equations for cubic response >>>>>',
+     &' ----- Solving eigenvalue equations for cubic response -----',
      &'       Symmetry',KSYMOP,'  ( ',REP(KSYMOP-1),')',
      &'       Number of excitations:',NEXCR(KSYMOP)
 C
@@ -1151,8 +1151,8 @@ C
             IF ( NLRCR(KSYMOP).EQ.0 ) GO TO 200
 
             WRITE(LUPRI,'(//A/A,I2,3A/A,I5)')
-     &' <<<<< Solving linear response equations'//
-     &   ' for cubic response >>>>>',
+     &' ----- Solving linear response equations'//
+     &   ' for cubic response -----',
      &'       Symmetry',KSYMOP,'  ( ',REP(KSYMOP-1),')',
      &'       Number of different response vectors:',NLRCR(KSYMOP)
 C
