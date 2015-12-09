@@ -347,37 +347,38 @@ use mlcc3_data
 !      
          if (word(1:1) .eq. '.') then
 !
-            if (word(1:7) .eq. '.ML3ACT') then
+!            if (word(1:7) .eq. '.ML3ACT') then
 !               
-               mlcc3_active = .true.
-               cycle
+!               mlcc3_active = .true.
+!               cycle
 !               
-            else if(word(1:7) .eq. '.ACTSPA') then
+!            else if(word(1:7) .eq. '.ACTSPA') then
 !
-               read(lunit,*) n_active
-               read(lunit,*) n_general
+!               read(lunit,*) n_active
+!               read(lunit,*) n_general
 !               
-               cycle
+!               cycle
 !
-            else if(word(1:7) .eq. '.ACTNRG') then
+!            else if(word(1:7) .eq. '.ACTNRG') then
 !
-               mlcc3_nrg_spa = .true.
+!               mlcc3_nrg_spa = .true.
 !
-               read(lunit,*) n_occ_inp
-               read(lunit,*) n_vir_inp
+!               read(lunit,*) n_occ_inp
+!               read(lunit,*) n_vir_inp
 !               
-               cycle
+!               cycle
 !
-            else if(word(1:7) .eq. '.ACTGEN') then
+!            else if(word(1:7) .eq. '.ACTGEN') then
 !
-               mlcc3_nrg_gen = .true.
+!               mlcc3_nrg_gen = .true.
 !
-               read(lunit,*) n_gen_o_inp
-               read(lunit,*) n_gen_v_inp
+!               read(lunit,*) n_gen_o_inp
+!               read(lunit,*) n_gen_v_inp
 !               
-               cycle
-!
-            else if(word(1:7) .eq. '.PRINT ') then
+!               cycle
+!!
+!            else if(word(1:7) .eq. '.PRINT ') then
+            if(word(1:7) .eq. '.PRINT ') then
 !
                read(lunit,*) print_mlcc3
 !               
