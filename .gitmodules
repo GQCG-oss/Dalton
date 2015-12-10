@@ -3,7 +3,7 @@
 	url = https://gitlab.com/bingao/gen1int.git
 [submodule "external/xcfun"]
 	path = external/xcfun
-  	url = git://repo.ctcc.no/xcfun.git
+  	url = https://github.com/dftlibs/xcfun.git
 [submodule "external/pelib"]
 	path = external/pelib
 	url = git@gitlab.com:pe-software/pelib.git
@@ -18,4 +18,4 @@
 	url = https://github.com/PCMSolver/pcmsolver.git
 [submodule "external/xcint"]
 	path = external/xcint
-	url = https://github.com/bast/xcint.git
+	url = https://github.com/dftlibs/xcint.git
