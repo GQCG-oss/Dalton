@@ -230,7 +230,7 @@ C
 C
       WRITE(LUPRI,'(1X,A)') LINE2
       WRITE(LUPRI,'(1X,A19,1X,I5,A1,I2,A1,I2,23X,A1)')
-     &      '|  Total wall time',SOHOUR,':',SOMIN,':',SOSEC,'|'
+     &      '|   Total wall time',SOHOUR,':',SOMIN,':',SOSEC,'|'
       WRITE(LUPRI,'(1X,A)') LINE1
 C
 C-----------------------

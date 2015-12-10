@@ -196,10 +196,6 @@ C
             CALL SO_ONEPMO(WORK(KPRP1),LPRP1,LABEL2,ISYMTR,
      &                     RTNLBL,WORK(KEND1),LWORK1)
 C
-            IF(.NOT.(IMAGPROP.EQV.(RTNLBL(2).EQ.'ANTISYMM')))THEN
-               WRITE(LUPRI,'(a)') 'Error in reading integrals in'//
-     &                            ' SO_POLAR'
-            END IF
             IMAGPROP = RTNLBL(2).EQ.'ANTISYMM' 
 
             DFACTOR = -1.0D0

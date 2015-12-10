@@ -117,6 +117,29 @@ C Not a real parallel job, don't bother
 C
       CALL SO_MEMMAX('SO_LRSOEQ.1',LWORK1)
       IF(LWORK1.LT.0) CALL STOPIT('SO_LRSOEQ.1','  ',KEND1,LWORK)
+C------------------
+C     Write banner.
+C------------------
+C 
+C      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
+C     &                        '*********************************'
+      WRITE(LUPRI,'(A)') ''
+      WRITE(LUPRI,9001)
+      IF (MODEL .EQ. 'AOSOP') THEN
+         WRITE(LUPRI,'(14X,3A)') 
+     &        'SOPPA iterations, Property ',LABEL
+      ELSE IF (MODEL .EQ. 'AOSOC') THEN
+         WRITE(LUPRI,'(11X,3A)') 
+     &        'SOPPA(CCSD)  iterations, Property ',LABEL
+      ELSE
+         WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOEQ'
+         CALL QUIT('ERROR: Wrong model in SO_LRSOEQ')
+      END IF
+C      WRITE(LUPRI,'(2X,A)') '*********************************'//
+C     &                        '*********************************'
+      WRITE(LUPRI,9001)
+      WRITE(LUPRI,9011) 
+      WRITE(LUPRI,9001)  
 C
 C------------------------------
 C     Loop over the frequencies
@@ -157,28 +180,8 @@ C     here will compensate
       IF( MODEL .EQ. 'AOSOP' ) 
      &   CALL DZERO(DENSAI, LDENSAI)
 C
-C------------------
-C     Write banner.
-C------------------
-C 
-      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
-     &                        '*********************************'
-      IF (MODEL .EQ. 'AOSOP') THEN
-         WRITE(LUPRI,'(14X,3A,I1)') 
-     &        'SOPPA iterations, Property ',LABEL,', frequency ', IFREQ
-      ELSE IF (MODEL .EQ. 'AOSOC') THEN
-         WRITE(LUPRI,'(11X,3A,I1)') 
-     &        'SOPPA(CCSD)  iterations, Property ',LABEL,', frequency ',
-     &        IFREQ 
-      ELSE
-         WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOEQ'
-         CALL QUIT('ERROR: Wrong model in SO_LRSOEQ')
-      END IF
-      WRITE(LUPRI,'(2X,A)') '*********************************'//
-     &                        '*********************************'
-C
 C----------------------------------------------------------------------
-C     Iteration loop for solving the linear equation/eigenvalue problem
+C     Iteration loop or solving the linear equation/eigenvalue problem
 C----------------------------------------------------------------------
 C
   100 CONTINUE
@@ -189,7 +192,7 @@ C--------------------------------------------------------------
 C
          NIT = NIT + 1
 C
-         IF ( IPRSOP .GE. 2 ) THEN
+         IF ( IPRSOP .GE. 5 ) THEN
 C
             WRITE(LUPRI,'(/,2X,A)') '================================'//
      &                              '=================================='
@@ -375,7 +378,7 @@ C
 C            WRITE(LUPRI,9010)
 C            WRITE(LUPRI,9011)
 C            WRITE(LUPRI,9010)
-            WRITE(LUPRI,9012) LABEL,FRVAL(IFREQ),PROP,RESINM(1),CONV(1)
+         WRITE(LUPRI,9012) NIT,FRVAL(IFREQ),PROP,RESINM(1),CONV(1)
 C            WRITE(LUPRI,9010)
 C     
 C
@@ -409,10 +412,10 @@ C
          IF ( NLINDP .EQ. 0 ) THEN
 C
             WRITE(LUPRI,9001)
-            WRITE(LUPRI,9002)
-            WRITE(LUPRI,9003)
-            WRITE(LUPRI,9006) NIT
-            WRITE(LUPRI,9008)
+C            WRITE(LUPRI,9002)
+C            WRITE(LUPRI,9003)
+C            WRITE(LUPRI,9006) NIT
+C            WRITE(LUPRI,9008)
 C
          ELSE
 C
@@ -457,7 +460,7 @@ C
 C
       RETURN
 C
- 9001 FORMAT(/,1X,'---------------------------------------------',
+ 9001 FORMAT(1X,'---------------------------------------------',
      &       '----------------')
  9002 FORMAT(1X,'Iterations stopped since: ')
  9003 FORMAT(1X,'-------------------------')
@@ -469,7 +472,7 @@ C
      &       '----------------',/)
  9010 FORMAT('--------------------------------------------------',
      &       '-----------------')
- 9011 FORMAT(1X,'Label      Freq        Property (au)   Residual',
-     &           '      Converged')
- 9012 FORMAT(4X,A8,2X,F8.6,2X,F15.8,1X,1P,D14.4,6X,A)
+ 9011 FORMAT(1X,'Iteration Frequency    Property (au)   Residual',
+     &           '    Converged')
+ 9012 FORMAT(2X,I5,4X,F8.6,2X,F15.8,1X,1P,D14.4,6X,A3)
       END
