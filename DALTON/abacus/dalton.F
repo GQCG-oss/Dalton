@@ -209,10 +209,10 @@ C
          CALL TITLER('Dalton - An Electronic Structure Program',
      &               '*',115)
 
-         WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON '//DALTON_VERSION
-
-         WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
+         WRITE (LUPRI,'(T5,A)') 'This is output from DALTON release '//
+     &DALTON_VERSION
+         WRITE (LUPRI,'(T10,A)')'( Web site: http://daltonprogram.org )'
+         WRITE (LUPRI,'(/3X,A/)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
@@ -254,12 +254,15 @@ C
      &'   O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski',
      &'   and H. Agren,',
      &'   "The Dalton quantum chemistry program system",',
-     &'   WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)',
-     &'',
+     &'   WIREs Comput. Mol. Sci. 2014, 4:269–284 '//
+     &    '(doi: 10.1002/wcms.1172)',
+     &' ',
      &'and',
-     &'',
+     &' ',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release '//DALTON_VERSION//', see http://daltonprogram.org'
+     &'   Release '//
+     &DALTON_VERSION
+     &//', see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -584,7 +587,8 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: '//DALTON_VERSION
+           WRITE(LUPRI,'(/A)') ' * Release: '//
+     &     DALTON_VERSION
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
