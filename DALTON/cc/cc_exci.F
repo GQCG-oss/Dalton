@@ -604,7 +604,8 @@ C
                  KIPLAC = KWRK1
                  KWRK2  = KIPLAC + MAXRED
                  LWRK2  = LWORK  - KWRK2
-                 IF (LWRK2 .LT. 0) STOP 'Not enough space for DV4DIS'
+                 IF (LWRK2 .LT. 0)
+     &              CALL QUIT('Not enough space for DV4DIS')
 C
                  CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                 FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,

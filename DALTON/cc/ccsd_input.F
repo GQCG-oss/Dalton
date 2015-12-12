@@ -9649,8 +9649,8 @@ C
      &          .OR. (LABEL .EQ. 'OVERLAP ')) GOTO 100
 C
             NOPER = NOPER + 1
-            IF (NOPER .GT. MAXOPR) STOP 
-     &                             'Too many label found by CC_CTOMAG'
+            IF (NOPER .GT. MAXOPR)
+     &         CALL QUIT('Too many label found by CC_CTOMAG')
 C
             READ(RECORD(2),'(I1)') SYMLBL(NOPER)
             LSTLBL(NOPER) = LABEL
@@ -9729,7 +9729,7 @@ C
       END DO
       GOTO 999
 C
-  300 STOP 'Error when reading in CC_CTOMAG'
+  300 CALL QUIT('Error when reading in CC_CTOMAG')
 C
   999 CONTINUE
       CALL GPCLOSE(LUPROP,'KEEP')
@@ -9893,7 +9893,7 @@ C
     2             CONTINUE
 C                    '.BOXDEF'
 C                    Boxes definition.           
-                     STOP '.BOXDEF not yet implemented'
+                     CALL QUIT('.BOXDEF not yet implemented')
 C_to_do              copy & paste from mkinp.f
                   GOTO 100   
 C
@@ -9918,7 +9918,7 @@ C
     5             CONTINUE
 C                    '.NBOEXP'
 C                    n-body interactions among boxes
-                     STOP '.NBOEXP not yet implemented'
+                     CALL QUIT('.NBOEXP not yet implemented')
 C_to_do              copy & paste from mkinp.f
                   GOTO 100
     6             CONTINUE
@@ -9977,7 +9977,7 @@ C                    Give list of diagonals to decompose
                         END IF
                      ELSE
                         WRITE(LUPRI,*) 'Number of active basis is zero'
-                        STOP 'Zero number of active basis'
+                        CALL QUIT('Zero number of active basis')
                      END IF
                      NABSTO = NINDIA
                   GOTO 100
@@ -10034,14 +10034,14 @@ C                    Define levels of active spaces
                      IF (NSPACE .GT. MXSPA) THEN
                         WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
      &                        'spaces is', MXSPA
-                        STOP 'Too many spaces under .SPACES'
+                        CALL QUIT('Too many spaces under .SPACES')
                      END IF
                      DO ISPA = 1,NSPACE
                         READ(LUCMD,*) NATOAC(ISPA)
                         IF (NATOAC(ISPA) .GT. MXACAT) THEN
                            WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
      &                           'active atoms in a subspace is',MXACT
-                           STOP 'Too many active atoms'
+                           CALL QUIT('Too many active atoms')
                         END IF
                         READ(LUCMD,*) (LABSPA(I,ISPA),I=1,NATOAC(ISPA))
                      END DO
@@ -10055,7 +10055,7 @@ C                    Limited number of localized orbital in each subspace
                      IF (MSPACE .GT. MXSPA) THEN
                         WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
      &                        'spaces is', MXSPA
-                        STOP 'Too many spaces under .LIMSPA'
+                        CALL QUIT('Too many spaces under .LIMSPA')
                      END IF
                      DO ISPA = 1,MSPACE
                         READ(LUCMD,*) (MXOC2(I,ISPA), I=1,MSYM)
@@ -10078,7 +10078,7 @@ c                    (right now only one)
                      IF (NSPAC2 .GT. MXSPA) THEN
                         WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
      &                        'spaces is', MXSPA
-                        STOP 'Too many spaces under .SPDILS'
+                        CALL QUIT('Too many spaces under .SPDILS')
                      END IF
                      DO ISPA = 1,NSPAC2
                         READ(LUCMD,*) NABSO2(ISPA)
@@ -10087,8 +10087,8 @@ c                    (right now only one)
      &                          'Number of occupied diagonals', 
      &                          NABSO2(ISPA)
                            WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                           STOP 
-     &                      'Too many occupied diagonals under SPDILS'
+                           CALL QUIT(
+     &                      'Too many occupied diagonals under SPDILS')
                         END IF
                         READ(LUCMD,*) (LACBA2(I,ISPA),I=1,NABSO2(ISPA))
                         READ(LUCMD,*) NABSV2(ISPA)
@@ -10097,8 +10097,8 @@ c                    (right now only one)
      &                          'Number of virtual diagonals', 
      &                          NABSV2(ISPA)
                            WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                           STOP 
-     &                      'Too many virtual diagonals under SPDILS'
+                           CALL QUIT(
+     &                      'Too many virtual diagonals under SPDILS')
                         END IF
                         IF (NABSV2(ISPA) .LT. 0) THEN
                            NABSV2(ISPA) = -NABSV2(ISPA)
@@ -10114,7 +10114,7 @@ c                    (right now only one)
                               WRITE(LUPRI,*) 'Error in number of ',
      &                               'active basis : NABSVI/ILAST',
      &                               NABSV2(ISPA),ILAST
-                              STOP 'Error defining active basis'
+                              CALL QUIT('Error defining active basis')
                            END IF
                         ELSE
                            READ(LUCMD,*) 
@@ -10180,7 +10180,7 @@ C
             WRITE(LUPRI,'(//,A,/,A,A)') '>>> ERROR :',
      &            'Options SPACES, .EXTERN, and .LIMPSPA ',
      &            'cannot be used (yet) in an atom-by-atom basis'
-            STOP '.SPACES switched on with no direct selection'
+            CALL QUIT('.SPACES switched on with no direct selection')
          END IF
 C
          IF (MINSPR .OR. ACTFRE .OR. CHKACT .OR. LIMLOC .OR. 
@@ -10198,7 +10198,7 @@ C
      &            NSPACE,
      &            'Number of spaces with limited number of orbitals :',
      &            MSPACE
-            STOP 'MSPACE .ne. NSPACE in CC_ACTINP'
+            CALL QUIT('MSPACE .ne. NSPACE in CC_ACTINP')
          END IF
 C
          IF (SPDILS .AND. (NSPAC2 .NE. NSPACE)) THEN
@@ -10207,7 +10207,7 @@ C
      &            NSPACE,
      &            'Number of spaces with given list of diagonals :',
      &            NSPAC2
-            STOP 'NSPAC2 .ne. NSPACE in CC_ACTINP'
+            CALL QUIT('NSPAC2 .ne. NSPACE in CC_ACTINP')
          END IF
 C
          IF (SPDILS) THEN

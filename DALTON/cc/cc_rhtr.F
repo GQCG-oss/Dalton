@@ -442,7 +442,7 @@ C
             KFC1TR = KEND1
             KEND2  = KFC1TR + N2BST(ISYMTR)
             LWRK2  = LWORK  - KEND2
-            IF (LWRK2 .LT. 0) STOP 'Not enough space for CHOFCK3'
+            IF (LWRK2 .LT. 0) CALL QUIT('Not enough space for CHOFCK3')
 C
             IOPTPV = .TRUE.
             CALL SCF_CHOFCK3(WORK(KDNSC1),WORK(KFCKC1),WORK(KEND2),
