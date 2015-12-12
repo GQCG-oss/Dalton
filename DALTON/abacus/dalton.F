@@ -29,6 +29,10 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
+
+! define DALTON_VERSION
+#include "dalton_config.h"
+
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
@@ -51,9 +55,6 @@ C
 #include "inftap.h"
 #include "prpc.h"
 #include "incore.h"
-
-! DALTON_VERSION
-#include "dalton_config.h"
 
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -258,7 +259,7 @@ C
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release Dalton2016.0 (2015), see http://daltonprogram.org'
+     &'   Release '//DALTON_VERSION//', see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -294,6 +295,8 @@ C
      &  '(SOPPA)',
      *'Janus J. Eriksen,','Aarhus University,','Denmark',
      &  '(Polarizable embedding model, TDA)',
+     *'Rasmus Faber,','University of Copenhagen,','Denmark',
+     &  '(Vib.avg. NMR with SOPPA, parallel AO-SOPPA)',
      *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
      &  '(doublet spin, ESR in RESPONS)',
      *'Lara Ferrighi,','Aarhus University,','Denmark',
@@ -310,6 +313,8 @@ C
      &  '(CC module)',
      *'Asger Halkier,','Aarhus University,','Denmark',
      &  '(CC module)',
+     *'Frederik Beyer Hansen,','University of Copenhagen,','Denmark',
+     &  '(Parallel AO-SOPPA)',
      *'Erik D. Hedegaard,','Univ. of Southern Denmark,','Denmark',
      & '(Polarizable embedding model, QM/MM)',
      *'Hanne Heiberg,','University of Oslo,','Norway',
@@ -365,7 +370,7 @@ C
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
      &  '(QM/MM)',
      *'Patrick Norman,','Linkoeping University,','Sweden',
-     &  '(Cubic response and complex response in RESPONS)',
+     &  '(Cubic response and complex frequency response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
      *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
@@ -579,7 +584,7 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: Dalton2016.alpha'
+           WRITE(LUPRI,'(/A)') ' * Release: '//DALTON_VERSION
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
