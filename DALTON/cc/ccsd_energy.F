@@ -918,6 +918,7 @@ C
          IF (CCSD.OR.CCPT.OR.CCP3)  ETY2 = 'CCSD '
          IF (CCD)   ETY2 = 'CCD  '
          IF (CCSDT) ETY2 = 'CC3  '
+         IF (MLCC3) ETY2 = 'CC3  '
          IF (CC1B)  ETY2 = 'CC-1b'
          IF (CC1A)  ETY2 = 'CC-1a'
          IF (CC2)   ETY2 = 'CC2  '
