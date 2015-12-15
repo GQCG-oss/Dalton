@@ -99,6 +99,8 @@ C
      &        IR2XBASM(8,8),IMATF(8,8),NMATF(8),IMAKLM(8,8),NMAKLM(8)
       INTEGER NADP(8),IADP(8,8),NLAMDX(8),ILAMDX(8,8)
 C
+      LOGICAL MLCC3_RESPONSE
+C
       CALL QENTER('CCRHSN')
 C
       CC2R12  = CC2 .AND. LMULBS
@@ -1670,6 +1672,18 @@ C--------------------------------------------------------------
 C     Add connected triples corrections to the vector function.
 C--------------------------------------------------------------
 C
+C        
+C     MLCC3 contribution
+      IF(MLCC3) THEN
+C     
+         MLCC3_RESPONSE = .FALSE. !ONLY ENERGY CALCULATION
+         FREQUENCY      = ZERO
+C     
+         CALL MLCC3_DRV(OMEGA1,OMEGA2,CDUMMY,CDUMMY,FREQUENCY,
+     *                  MLCC3_RESPONSE,WORK(KEND1),WORK(KEND1),LWRK2)
+      END IF
+C
+C         
       IF (CCSDT) THEN
 
          IF (NODDY_OMEGA) THEN
