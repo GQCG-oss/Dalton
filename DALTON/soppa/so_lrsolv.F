@@ -18,6 +18,8 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
+C
+      use so_info, only: sop_excita
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -37,6 +39,7 @@ C
 C
       CHARACTER*3 CONV(LCONV)
       CHARACTER*5 MODEL
+      CHARACTER*8 PDENS_LABEL
 C
       DIMENSION EXVAL(LEXVAL),   RESINM(LRESINM)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
@@ -262,7 +265,7 @@ C
          CALL SO_REDEV(.TRUE.,NEXCI,NOLDTR,NNEWTR,ISYMTR,
      &                 REDE,LREDE,REDS,LREDS,
      &                 LREDOL,EXVAL,LEXVAL,WORK(KEND1),LWORK1)
-
+C
          DTIME      = SECOND()   - DTIME
          SOTIME(33) = SOTIME(33) + DTIME
          CALL GETTIM (DUMMY,WTIMEE)
@@ -328,6 +331,18 @@ C     the maximum number of iterations have not been reached.
 C---------------------------------------------------------------------
 C
       IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GOTO 100
+C
+C--------------------------------------------------------------      
+C     Calculate and save the pertubed density matrix
+C-------------------------------------------------------------
+C
+      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR 
+      CALL SO_PERTDENS(MODEL,SOP_EXCITA,NEXCI,
+     &                 EXVAL,NEXCI,PDENS_LABEL,
+     &                 ISYMTR,.FALSE.,1.0D0,
+     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
+     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                 WORK(KEND1),LWORK1)
 C
       IF ((NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT)) THEN
 C

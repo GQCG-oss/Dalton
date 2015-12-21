@@ -1,8 +1,9 @@
 C
 C  /* Deck dc_calc */
       SUBROUTINE DC_CALC(ISYMTR,NEXCI,EXVAL,LEXVAL,
-     &                   DENSIJ,LDENSIJ,DENSAB,DENSAI,LDENSAI,
-     &                   LDENSAB,T2MP,LT2MP,FOCKD,LFOCKD,
+     &                   DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                   DENSAI,LDENSAI,
+     &                   T2MP,LT2MP,FOCKD,LFOCKD,
      &                   WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -12,6 +13,8 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Determine "double corrected RPA" excitation energies.
 C
+      use so_info, only: sop_excita
+C      
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -21,6 +24,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 C
       LOGICAL   NONEWT
+      CHARACTER*8 PDENS_LABEL
 C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)

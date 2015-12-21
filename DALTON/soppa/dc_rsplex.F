@@ -11,6 +11,8 @@ C
 C     PURPOSE: Controls calculation of "Double corrected RPA"
 C              excitation energies.
 C
+      use so_info, only: sop_excita 
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -21,6 +23,7 @@ C
 C
       PARAMETER ( ONE = 1.0D0, D100 = 100.0D0 )
 C
+      CHARACTER*8 PDENS_LABEL
 #include "codata.h"
 #include "wrkrsp.h"
 CSPAS:15/03-2006: merge with Dalton-2.0      
@@ -54,9 +57,11 @@ C----------------------------------------------------------
 C     Calculate "Double corrected RPA" excitation energies.
 C----------------------------------------------------------
 C
-      CALL DC_CALC(ISYMTR,NEXCI,EXVAL,LEXVAL,DENSIJ,LDENSIJ,
-     &             DENSAB,LDENSAB,DENSAI,LDENSAI,T2MP,LT2MP,FOCKD,
-     &             LFOCKD,WORK,LWORK)
+      CALL DC_CALC(ISYMTR,NEXCI,EXVAL,LEXVAL,
+     &             DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &             DENSAI,LDENSAI,
+     &             T2MP,LT2MP,FOCKD,LFOCKD,
+     &             WORK,LWORK)
 C
 C------------------------------
 C     Allocation of work space.
@@ -198,16 +203,14 @@ C
             CALL SO_ANAL(WORK(KTR1E),WORK(KTR1D),LTR1E,WORK(KTR2E),
      &                   WORK(KTR2D),LTR2E,THR1,THR2,ISYMTR)
 C
+ 200     CONTINUE
+C
 C---------------------------------------
 C        Write a closing line to output.
 C---------------------------------------
 C
-            IF ( IEXCI .EQ. NEXCI ) THEN
-               WRITE(LUPRI,'(/1X,A)')'-------------------------------'//
-     &                               '-------------------------------'
-            END IF
-C
- 200     CONTINUE
+         WRITE(LUPRI,'(/1X,A)')'-------------------------------'//
+     &                         '-------------------------------'
 C
       END IF
 C
@@ -219,6 +222,18 @@ C
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
       CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+C
+C--------------------------------------------------------------      
+C     Calculate and save the pertubed density matrix
+C-------------------------------------------------------------
+C
+      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR 
+      CALL SO_PERTDENS('DCRPA',SOP_EXCITA,NEXCI,
+     &                 EXVAL,NEXCI,PDENS_LABEL,
+     &                 ISYMTR,.FALSE.,1.0D0,
+     &                 T2MP,LT2MP,DENSIJ,LDENSIJ,
+     &                 DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                 WORK(KEND2),LWORK2)
 C
 C-----------------------
 C     Remove from trace.

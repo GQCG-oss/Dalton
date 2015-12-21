@@ -54,6 +54,7 @@ C
 #include "distcl.h"
 #include "cbieri.h"
 #include "soppinf.h"
+      INTEGER, PARAMETER :: NIT=1
 C
 C------------------
 C     Add to trace.
@@ -444,11 +445,11 @@ C
                   DTIME      = SECOND()
 CSPAS:27/8-13: the prop_exci_aorpad test works also if this block is not active!!
 C     has to be checked one day
-C                 IF ( (NIT .EQ. 1) .AND. (INEWTR .EQ. 1) ) THEN
-C                    CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
-C    &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
-C    &                               ISYMD,ISYDIS,WORK(KEND5),LWORK5)
-C                 END IF
+                  IF (INEWTR .EQ. 1) THEN
+                     CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
+     &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
+     &                               ISYMD,ISYDIS,WORK(KEND5),LWORK5)
+                  END IF
 CKeinSPASmehr
                   DTIME      = SECOND()   - DTIME
                   SOTIME(41) = SOTIME(41) + DTIME
@@ -653,9 +654,9 @@ C              It should be checked one day, whether it is really true,
 C              that we don't need the occ-vir part of the 
 C              second order density matrix or whether it was 
 C              calculated already
-C     IF ( NIT .EQ. 1 ) THEN      
-C        CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
-C     END IF
+      IF ( NIT .EQ. 1 ) THEN      
+         CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
+      END IF
 CKeinSPASmehr
       DTIME      = SECOND()   - DTIME
       SOTIME(41) = SOTIME(41) + DTIME

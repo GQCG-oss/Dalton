@@ -393,7 +393,8 @@ C---------------------------------------------------------------------
 C           Calculate second order properties SNDPRP.
 C---------------------------------------------------------------------
 C
-                  CALL SO_PROPMO(ISYMTR,SNDPRP(1),MODEL.NE.'AORPA',
+                  CALL SO_PROPMO(ISYMTR,SNDPRP(1),
+     &                           MODEL.NE.'AORPA',IMAGPROP,
      &                           WORK(KPRP1),LPRP1,
      &                           WORK(KPDENSIJ),LPDENSIJ,
      &                           WORK(KPDENSAB),LPDENSAB,

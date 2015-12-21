@@ -83,10 +83,14 @@ C     Check arguments here?
 C
 C---------------------------------------------------     
 C     Calculate AI part of response density
-C----------------------------------------------------
+C---------------------------------------------------
+C     Please note that though the terms are in AI order,
+C     actually the equations are for the the IA part of 
+C     perturbed density is calculated, meaning that we have
+C     a factor of -1 on AI term for imagninary properties     
 C
 C     Term one:
-C     D_{ai} <= \sqrt{2} *x_{ai}       
+C     D_{ai}* <= \sqrt{2} *x_{ai}       
 C
       THISFACT = FACTOR*SQRT2
       CALL DAXPY(LRDENSAI,THISFACT,SOLVEC1,1,RDENSAI,1)
@@ -95,9 +99,9 @@ C     This is all for RPA
       IF (MODEL.EQ.'AORPA') GOTO 1010
 C
 C     Term two:   
-C                  1          
-C     D_{ai} <= -------- \sum_j x_{aj} * \rho_{ij}   
-C               \sqrt{2}
+C                   1          
+C     D_{ai}* <= -------- \sum_j x_{aj} * \rho_{ij}   
+C                \sqrt{2}
       THISFACT = FACTOR*SQRT2 ! \rho is stored as half?
       DO ISYMI = 1, NSYM
 C         
@@ -116,9 +120,9 @@ C
       END DO   
 C
 C     Term three:   
-C                 - 1          
-C     D_{ai} <= -------- \sum_b x_{bi} * \rho_{ba}   
-C               \sqrt{2}
+C                  - 1          
+C     D_{ai}* <= -------- \sum_b x_{bi} * \rho_{ba}   
+C                \sqrt{2}
       THISFACT = -FACTOR*SQRT2 ! \rho is stored as half?
       DO ISYMI = 1, NSYM
 C         

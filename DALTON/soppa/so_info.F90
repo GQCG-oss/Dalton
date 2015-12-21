@@ -16,7 +16,7 @@ module so_info
                   (/ 'AORPA','DCRPA','AOHRP','AOSOP','AOSOC' /) 
 
    ! Array of method full model names names 
-   character(len=11), dimension(5), parameter :: sot_mod_fullname = &
+   character(len=11), dimension(5), parameter :: sop_mod_fullname = &
       (/'RPA        ','RPA(D)     ','Higher RPA ','SOPPA      ','SOPPA(CCSD)'/)
 
    ! Additional SOPPA filenames (Added here instead of soppinf.h)

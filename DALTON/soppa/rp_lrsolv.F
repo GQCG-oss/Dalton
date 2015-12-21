@@ -18,6 +18,7 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,  
      &                       soppa_nint
 #endif
+      use so_info, only: sop_excita
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -36,6 +37,7 @@ C
       LOGICAL   NONEWT
 C
       CHARACTER*3 CONV(LCONV)
+      CHARACTER*8 PDENS_LABEL
 C
       DIMENSION EXVAL(LEXVAL),  RESINM(LRESINM)
       DIMENSION FOCKD(LFOCKD),  WORK(LWORK)
@@ -281,6 +283,18 @@ C     the maximum number of iterations have not been reached.
 C---------------------------------------------------------------------
 C
       IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GO TO 100
+C
+C--------------------------------------------------------------      
+C     Calculate and save the pertubed density matrix
+C-------------------------------------------------------------
+C
+      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR 
+      CALL SO_PERTDENS('AORPA',SOP_EXCITA,NEXCI,
+     &                 EXVAL,NEXCI,PDENS_LABEL,
+     &                 ISYMTR,.FALSE.,1.0D0,
+     &                 DUMMY,0,DUMMY,0,
+     &                 DUMMY,0,DUMMY,0,
+     &                 WORK(KEND1),LWORK1)
 C
       IF ( (NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT) ) THEN
 C

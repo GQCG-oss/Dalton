@@ -536,10 +536,12 @@ C
 C--------------------------------------------------
 C              Determine RPA(D) transition moments.
 C--------------------------------------------------
-C
-               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
-     &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
+CRF -- Deactivated untill we figure out if the way it is done is
+C   -- actually meaningfull
+               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
+     &                       WORK(KT2AM),LT2AM,WORK(KDENSIJ),LDENSIJ,
+     &                       WORK(KDENSAB),LDENSAB,
+     6                       WORK(KDENSAI),LDENSAI,
      &                       TRLEN(1,1,1,3),TRVEL(1,1,1,3),
      &                       TQLEN(1,1,1,1,3),TQVEL(1,1,1,1,3),
      &                       TTLEN(1,1,1,3),
@@ -638,7 +640,8 @@ C-------------------------------------------------
 C
                CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
      &                       WORK(KT2AM),LT2AM,WORK(KDENSIJ),LDENSIJ,
-     &                      WORK(KDENSAB),LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                       WORK(KDENSAB),LDENSAB,
+     &                       WORK(KDENSAI),LDENSAI,
      &                       TRLEN(1,1,1,4),TRVEL(1,1,1,4),
      &                       TQLEN(1,1,1,1,4),TQVEL(1,1,1,1,4),
      &                       TTLEN(1,1,1,4),
