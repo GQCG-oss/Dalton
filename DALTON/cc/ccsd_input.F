@@ -103,7 +103,7 @@ C
 #include "center.h"
 Cholesky  
 C
-      PARAMETER (NTABLE = 126)
+      PARAMETER (NTABLE = 127)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
@@ -136,9 +136,9 @@ Cring-CCD for triplet (rTCCD), and SOSEX added
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
      &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.NOSORT',
      &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
-     &            '.D01SKI','*CHOACT','.CHO(T)','.T2UPDA','.RCCD  ',
-     &            '.RTCCD ','.DRCCD ','.SOSEX ','.T2STAR','.HURWIT',
-     &            '.DCPT2 '/
+     &            '.D01SKI','.CHO(T)','.T2UPDA','.RCCD  ','.RTCCD ',
+     &            '.DRCCD ','.SOSEX ','.T2STAR','.HURWIT','.DCPT2 ',
+     &            '*MLCC3 ','*MLCCPT'/
 
       DATA SET/.FALSE./
 C
@@ -196,6 +196,7 @@ C
             READ (LUCMD, '(A7)') WORD
             CALL UPCASE(WORD)
 
+C
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 1000
@@ -211,7 +212,8 @@ C
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
      *                92,93,94,95,96,97,98,99,100,101,102,103,104,
      *                105,106,107,108,109,110,111,112,113,114,115,
-     *                116,117,118,119,120,121,122,123,124,125,126), I
+     *                116,117,118,119,120,121,122,123,124,125,126,
+     *                127), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -711,16 +713,11 @@ C                '.D01SKI'
                  D01SKIP = .TRUE.
                GO TO 1000
  117           CONTINUE 
-C                '*CHOACT'
-                 ACTSEL = .TRUE.
-                 CALL CC_ACTINP(WORD,MSYM)
-               GO TO 1000
- 118           CONTINUE 
 C                '.CHO(T)'
                   CHOPT = .TRUE.
                   CCPT  = .TRUE.
                GO TO 1000
- 119           CONTINUE 
+ 118           CONTINUE 
 !                '.T2UPDATE'
                   READ (LUCMD, *) IT2UPD
                   IF (IT2UPD.LT.0) THEN
@@ -729,28 +726,28 @@ C                '.CHO(T)'
                      IT2UPD=1
                   END IF
                GO TO 1000
- 120           CONTINUE 
+ 119           CONTINUE 
                   !SONIA/FRAN
                   RCCD   = .TRUE.
 C                  write(lupri,*)'FRAN: activated ring CCD'
                GO TO 1000
- 121           CONTINUE 
+ 120           CONTINUE 
 !                 '.RTCCD' 
                   RTCCD   = .TRUE.
 C                  write(lupri,*)'SONIA: activated triplet-ring CCD'
                GO TO 1000
- 122           CONTINUE 
+ 121           CONTINUE 
 !                 '.DRCCD'
                   DRCCD   = .TRUE.
 C                  write(lupri,*)'FRAN: activated direct-ring CCD'
                GO TO 1000
- 123           CONTINUE 
+ 122           CONTINUE 
 !                '.SOSEX '
                   DRCCD=.TRUE.
                   SOSEX=.TRUE.
 C                  write(lupri,*)'SONIA: activated SOSEX (DRCCD)'
                GO TO 1000
- 124           CONTINUE
+ 123           CONTINUE
 !                 '.T2START'
                   READ (LUCMD, *) IT2START
                   IF (IT2START.LT.-1) THEN
@@ -766,18 +763,30 @@ C                  write(lupri,*)'SONIA: activated SOSEX (DRCCD)'
                    WRITE(LUPRI,*)'Using DEC-Style Initial T2 Guess (=0)'
                   ENDIF
                GO TO 1000
- 125           CONTINUE 
+ 124           CONTINUE 
 !                 '.HURWITZ'
                   HURWITZ_CHECK=.TRUE.
                   WRITE(LUPRI,*)'HURWITZ_CHECK activated in input'
                GO TO 1000
- 126           CONTINUE
+ 125           CONTINUE
 !                 '.DCPT2'
                   DCPT2   = .TRUE.
                   write(lupri,*)'DCPT2 Calculation.'
                   WRITE(LUPRI,*)'See Assfeld, Almlof and Truhlar, '
                   WRITE(LUPRI,*)'CPL 241, 438 (1995)'
-                  GO TO 1000
+               GO TO 1000
+ 126           CONTINUE
+C                '*MLCC3 '
+C                 Multi-Level CC3
+                  MLCC3 = .TRUE.
+                  call mlcc3_input(word,lucmd)
+               GO TO 1000
+ 127           CONTINUE
+C                '*MLCCPT '
+C                 Multi-Level CCSD(T)
+                  MLCCSDPT = .TRUE.
+                  call mlccsdpt_input(word,lucmd)
+               GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'
@@ -9640,8 +9649,8 @@ C
      &          .OR. (LABEL .EQ. 'OVERLAP ')) GOTO 100
 C
             NOPER = NOPER + 1
-            IF (NOPER .GT. MAXOPR) STOP 
-     &                             'Too many label found by CC_CTOMAG'
+            IF (NOPER .GT. MAXOPR)
+     &         CALL QUIT('Too many label found by CC_CTOMAG')
 C
             READ(RECORD(2),'(I1)') SYMLBL(NOPER)
             LSTLBL(NOPER) = LABEL
@@ -9720,13 +9729,14 @@ C
       END DO
       GOTO 999
 C
-  300 STOP 'Error when reading in CC_CTOMAG'
+  300 CALL QUIT('Error when reading in CC_CTOMAG')
 C
   999 CONTINUE
       CALL GPCLOSE(LUPROP,'KEEP')
 C
       RETURN
       END
+C
 C  /* Deck cc_actinp */
       SUBROUTINE CC_ACTINP(WORD,MSYM)
 C
@@ -9740,21 +9750,25 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "center.h"
+#include "maxorb.h"
+#include "peract.h"
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_ACTINP')
 C
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 22)
       CHARACTER*7 TABLE(NTABLE)
-      DATA TABLE /'.ATOMIC','.ACTFRE','.DIFADD','.NOSLDR','.THACOC',
-     &            '.THACVI','.SELDIA','.FULDEC','.DOSPRE','.MINSPR',
-     &            '.LIMLOC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.ATOMIC','.BOXDEF','.ACTFRE','.DIFADD','.NBOEXP',
+     &            '.NODRSL','.THACOC','.THACVI','.DIALST','.ORDER ',
+     &            '.FULDEC','.DOSPRE','.MINSPR','.LIMLOC','.EXTERN',
+     &            '.SPACES','.LIMSPA','.OMEZER','.SPDILS','.LOCONL',
+     &            '.ADDORB','.ADDEXP'/
 C
       LOGICAL SET, CHKACT
-      LOGICAL USRTHO, USRTHV
       SAVE SET
       DATA SET /.FALSE./
       DATA CHKACT /.FALSE./
+      DATA NEWACT /.FALSE./
 C
 C
       IF (SET) RETURN
@@ -9765,22 +9779,34 @@ C
       ATOMIC = .FALSE.
       ACTFRE = .FALSE.
       DIFADD = .FALSE.
+      NBOEXP = .FALSE.
       SELDIR = .TRUE.
+      DIALST = .FALSE.
       ACTSEL = .TRUE.
       LIMLOC = .FALSE.
+      EXTERN = .FALSE.
+      LIMSPA = .FALSE.
+      PERTCC = .FALSE.
+      LOCONL = .FALSE.
+      ADDORB = .FALSE.
+      ADDEXP = .FALSE.
+C
+      IEXPOC = 0
+      IEXPVI = 0
+C
+      CALL IZERO(IACORB,8*MXCORB)
 C
       DOSPREAD = .FALSE.
       MINSPR   = .FALSE.
 C
-      THACOC = 0.2D0
-      THACVI = 0.2D0
-      USRTHO = .FALSE.
-      USRTHV = .FALSE.
+      THACOC = 1.0D-2
+      THACVI = 1.0D-2
 C
-      DO I = 1,MSYM
-         MXOCC(I) = 9999
-         MXVIR(I) = 9999
-      END DO
+      NSPACE = 0
+C
+ctmp  DO I = 1,NUCIND
+ctmp     IORDEC(I) = I
+ctmp  END DO
 C
       ICHANG  = 0
 C
@@ -9807,7 +9833,8 @@ C
                IF (IJUMP .LE. NTABLE) THEN
 C
                   ICHANG = ICHANG + 1
-                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), IJUMP
+                  GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+     &                  16,17,18,19,20,21,22), IJUMP
 C
                   CALL QUIT
      &            ('Illegal address in computed GOTO in '//SECNAM)
@@ -9864,13 +9891,20 @@ C
                   GOTO 100   
 C
     2             CONTINUE
+C                    '.BOXDEF'
+C                    Boxes definition.           
+                     CALL QUIT('.BOXDEF not yet implemented')
+C_to_do              copy & paste from mkinp.f
+                  GOTO 100   
+C
+    3             CONTINUE
 C                    '.ACTFRE'
 C                    Freeze orbitals in active atomic space
                      ACTFRE = .TRUE.
                      READ(LUCMD,*) NACTFR
                   GOTO 100
 C
-    3             CONTINUE
+    4             CONTINUE
 C                    '.DIFADD'
 C                    Include in active space selected (diffuse) basis
                      DIFADD = .TRUE.
@@ -9881,31 +9915,29 @@ C                    Include in active space selected (diffuse) basis
                      END DO
                   GOTO 100
 C
-    4             CONTINUE
-C                    '.NOSLDR'
-C                    Decompose all OM's in atom-by-atom scheme
-                     SELDIR = .FALSE.
-                     IF (.NOT. USRTHO) THACOC = 1.0D-4
-                     IF (.NOT. USRTHV) THACVI = 1.0D-4
-                  GOTO 100
-C
     5             CONTINUE
+C                    '.NBOEXP'
+C                    n-body interactions among boxes
+                     CALL QUIT('.NBOEXP not yet implemented')
+C_to_do              copy & paste from mkinp.f
+                  GOTO 100
+    6             CONTINUE
+C                    '.NODRSL'
+C                    Decompose on atom by atom basis
+                     SELDIR = .FALSE.
+                  GOTO 100
+    7             CONTINUE
 C                    '.THACOC'
 C                    Threshold for decomposition of active occupied block
-                     USRTHO = .TRUE.
                      READ(LUCMD,*) THACOC
                   GOTO 100
-C
-    6             CONTINUE
+    8             CONTINUE
 C                    '.THACVI'
 C                    Threshold for decomposition of virtual occupied block
-                     USRTHV = .TRUE.
                      READ(LUCMD,*) THACVI
                   GOTO 100
-C
-    7             CONTINUE
-C
-C                    '.SELDIA'
+    9             CONTINUE
+C                    '.DIALST'
 C                    Give list of diagonals to decompose
                      DIALST = .TRUE.
                      CHKACT = .TRUE.
@@ -9926,35 +9958,41 @@ C                    Give list of diagonals to decompose
                         CALL QUIT(
      &                  'Too many occupied diagonals under SELDIA')
                      END IF
-                     IF (NABSVI .LT. 0) THEN
-                        NABSVI = -NABSVI
+                     IF (NINDIA .GT. 0) THEN
+                        READ(LUCMD,*) (LACBAS(I),I=1,NINDIA)
+                     ELSE IF (NINDIA .LT. 0) THEN
+                        NINDIA = -NINDIA
                         ILAST = 0
-                        DO WHILE (ILAST .LT. NABSVI)
+                        DO WHILE (ILAST .LT. NINDIA)
                            READ(LUCMD,*) NDITMP
                            IFIRST = ILAST + 1
                            ILAST  = ILAST + NDITMP
-                           READ(LUCMD,*) (LACBSV(I), I=IFIRST,ILAST)
+                           READ(LUCMD,*) (LACBAS(I), I=IFIRST,ILAST)
                         END DO
-                        IF (ILAST .NE. NABSVI) THEN
+                        IF (ILAST .NE. NINDIA) THEN
                            WRITE(LUPRI,*) 'Error in number of ',
      &                            'active basis : NABSVI/ILAST',
      &                            NABSVI,ILAST
                            CALL QUIT('Error defining active basis')
                         END IF
                      ELSE
-                        READ(LUCMD,*) (LACBSV(I),I=1,NABSVI)
+                        WRITE(LUPRI,*) 'Number of active basis is zero'
+                        CALL QUIT('Zero number of active basis')
                      END IF
+                     NABSTO = NINDIA
                   GOTO 100
-C
-    8             CONTINUE             
+   10             CONTINUE
+C                    '.ORDER'
+C                    Order to decompose atoms
+ctmp                 READ(LUCMD,*) (IORDEC(I), I=1,NUCIND)
+                  GOTO 100
+   11             CONTINUE             
 C                    '.FULDEC'
 C                    Select all the atoms
                      FULDEC = .TRUE.
-                     SELDIR = .TRUE.
                      CHKACT = .TRUE.
                   GOTO 100
-C
-    9             CONTINUE             
+   12             CONTINUE             
 C                    '.DOSPRE'
 C                    Calculate orbital spread
                      DOSPREAD = .TRUE.
@@ -9964,8 +10002,7 @@ C                    Calculate orbital spread
                         CALL QUIT('DOSPRE with NSYM .GT. 1')
                      END IF
                   GOTO 100
-C
-   10             CONTINUE             
+   13             CONTINUE             
 C                    'MINSPR'
 C                    Select diagonals to minimize orbital spreads
                      MINSPR   = .TRUE.
@@ -9976,21 +10013,134 @@ C                    Select diagonals to minimize orbital spreads
                         CALL QUIT('MINSPR with NSYM .GT. 1')
                      END IF
                   GOTO 100
-C
-   11             CONTINUE             
+   14             CONTINUE             
 C                    'LIMLOC'
 C                    Get limited number of localized orbitals
                      LIMLOC = .TRUE.
                      READ(LUCMD,*) (MXOCC(I), I=1,MSYM)
                      READ(LUCMD,*) (MXVIR(I), I=1,MSYM)
                   GOTO 100
-C                    '.XXXXXX'
-   12             CONTINUE             
-   13             CONTINUE             
-   14             CONTINUE             
    15             CONTINUE             
+C                    '.EXTERN'
+C                    Initial orbitals from external source
+                     EXTERN = .TRUE.
+                     NEWACT = .TRUE.
                   GOTO 100
-
+   16             CONTINUE             
+C                    '.SPACES'
+C                    Define levels of active spaces
+                     NEWACT = .TRUE.
+                     READ(LUCMD,*) NSPACE
+                     IF (NSPACE .GT. MXSPA) THEN
+                        WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
+     &                        'spaces is', MXSPA
+                        CALL QUIT('Too many spaces under .SPACES')
+                     END IF
+                     DO ISPA = 1,NSPACE
+                        READ(LUCMD,*) NATOAC(ISPA)
+                        IF (NATOAC(ISPA) .GT. MXACAT) THEN
+                           WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
+     &                           'active atoms in a subspace is',MXACT
+                           CALL QUIT('Too many active atoms')
+                        END IF
+                        READ(LUCMD,*) (LABSPA(I,ISPA),I=1,NATOAC(ISPA))
+                     END DO
+                  GOTO 100
+   17             CONTINUE             
+C                    '.LIMSPA'
+C                    Limited number of localized orbital in each subspace
+                     NEWACT = .TRUE.
+                     LIMSPA = .TRUE.
+                     READ(LUCMD,*) MSPACE
+                     IF (MSPACE .GT. MXSPA) THEN
+                        WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
+     &                        'spaces is', MXSPA
+                        CALL QUIT('Too many spaces under .LIMSPA')
+                     END IF
+                     DO ISPA = 1,MSPACE
+                        READ(LUCMD,*) (MXOC2(I,ISPA), I=1,MSYM)
+                        READ(LUCMD,*) (MXVI2(I,ISPA), I=1,MSYM)
+                     END DO
+                  GOTO 100
+   18             CONTINUE             
+C                    '.OMEZER'
+C                    Generate ACTORB for later use
+                     PERTCC = .TRUE.
+                     NEWACT = .TRUE.
+                  GOTO 100
+   19             CONTINUE             
+C                    '.SPDILS'
+C                    List of diagonals in each space
+c                    (right now only one)
+                     SPDILS = .TRUE.
+                     NEWACT = .TRUE.
+                     READ(LUCMD,*) NSPAC2
+                     IF (NSPAC2 .GT. MXSPA) THEN
+                        WRITE(LUPRI,'(2A,I3)') 'Maximum number of ',
+     &                        'spaces is', MXSPA
+                        CALL QUIT('Too many spaces under .SPDILS')
+                     END IF
+                     DO ISPA = 1,NSPAC2
+                        READ(LUCMD,*) NABSO2(ISPA)
+                        IF (NABSO2(ISPA) .GT. MXACBS) THEN
+                           WRITE(LUPRI,*) 
+     &                          'Number of occupied diagonals', 
+     &                          NABSO2(ISPA)
+                           WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
+                           CALL QUIT(
+     &                      'Too many occupied diagonals under SPDILS')
+                        END IF
+                        READ(LUCMD,*) (LACBA2(I,ISPA),I=1,NABSO2(ISPA))
+                        READ(LUCMD,*) NABSV2(ISPA)
+                        IF (NABSV2(ISPA) .GT. MXACBS) THEN
+                           WRITE(LUPRI,*) 
+     &                          'Number of virtual diagonals', 
+     &                          NABSV2(ISPA)
+                           WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
+                           CALL QUIT(
+     &                      'Too many virtual diagonals under SPDILS')
+                        END IF
+                        IF (NABSV2(ISPA) .LT. 0) THEN
+                           NABSV2(ISPA) = -NABSV2(ISPA)
+                           ILAST = 0
+                           DO WHILE (ILAST .LT. NABSV2(ISPA))
+                              READ(LUCMD,*) NDITMP
+                              IFIRST = ILAST + 1
+                              ILAST  = ILAST + NDITMP
+                              READ(LUCMD,*) 
+     &                            (LACBV2(I,ISPA), I=IFIRST,ILAST)
+                           END DO
+                           IF (ILAST .NE. NABSV2(ISPA)) THEN
+                              WRITE(LUPRI,*) 'Error in number of ',
+     &                               'active basis : NABSVI/ILAST',
+     &                               NABSV2(ISPA),ILAST
+                              CALL QUIT('Error defining active basis')
+                           END IF
+                        ELSE
+                           READ(LUCMD,*) 
+     &                         (LACBV2(I,ISPA),I=1,NABSV2(ISPA))
+                        END IF
+                     END DO
+                  GOTO 100
+   20             CONTINUE             
+C                    '.LOCONL'
+C                    Define subsapce, but don't freeze any
+                     LOCONL = .TRUE.
+                  GOTO 100
+   21             CONTINUE             
+C                    '.ADDORB'
+C                    Add HOMO and LUMO orbitals if not active
+                     ADDORB = .TRUE.
+                  GOTO 100
+C
+   22             CONTINUE             
+C                    '.ADDEXP'
+C                    Explicitly add orbitals to active space
+                     ADDEXP = .TRUE.
+                     READ(LUCMD,*) IEXPOC
+                     READ(LUCMD,*) IEXPVI
+                  GOTO 100
+C
 C
                ELSE
                   WRITE (LUPRI,'(/5A,/)') ' Prompt "',WORD,
@@ -10005,7 +10155,7 @@ C
      &         '" NOT RECOGNIZED IN ',SECNAM,'.'
                CALL QUIT('Illegal prompt in '//SECNAM)
             ELSE IF (WORD(1:1) .EQ.'*') THEN
-               BACKSPACE (LUCMD)
+!               BACKSPACE (LUCMD)
                GO TO 200
             END IF
 C
@@ -10015,18 +10165,61 @@ C
 C
 C     Check that input makes sense
 C
-      WRITE(LUPRI,'(//,A)') '       ----------------------------'
-      WRITE(LUPRI,'(A)') '          Info from Selact input'
-      WRITE(LUPRI,'(A,/)') '       ----------------------------'
-C
-      IF (ACTSEL .AND. (.NOT.  CHKACT)) THEN
-         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '--- ERROR :',
-     &                '--- *CHOACT was specified, but no definition',
-     &                ' of active atoms or basis',
+      IF (ACTSEL .AND. (.NOT. (CHKACT .OR. NEWACT))) THEN
+         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '>>> ERROR :',
+     &                '>>> *ACTIVE was specified, but no definition',
+     &                ' of active atoms, boxes or basis',
      &                ' functions was given',
      &                '    Program will stop'
          CALL QUIT(SECNAM//' called but no selection data given')
       END IF
+C
+      IF (NEWACT) THEN
+C
+         IF (.NOT. SELDIR) THEN
+            WRITE(LUPRI,'(//,A,/,A,A)') '>>> ERROR :',
+     &            'Options SPACES, .EXTERN, and .LIMPSPA ',
+     &            'cannot be used (yet) in an atom-by-atom basis'
+            CALL QUIT('.SPACES switched on with no direct selection')
+         END IF
+C
+         IF (MINSPR .OR. ACTFRE .OR. CHKACT .OR. LIMLOC .OR. 
+     &       DIALST) THEN
+            WRITE(LUPRI,'(//,2A,/,A,/,A)') 'Options .MINSPR, .ACTFRE,',
+     &                   ' .LIMLOC, .ATOMIC, .DIFADD, .DIALST, and ',
+     &                   '.FULDEC are not compatible to options ',
+     &                   '.SPACES, .EXTERN, and .LIMPSPA'
+            CALL QUIT(SECNAM//' called with not compatible options')
+         END IF
+C
+         IF (LIMSPA .AND. (MSPACE .NE. NSPACE)) THEN
+            WRITE(LUPRI,'(//,A,/,A,I2,/,A,I2)') '>>> ERROR :',
+     &            'Number of defined spaces                         :',
+     &            NSPACE,
+     &            'Number of spaces with limited number of orbitals :',
+     &            MSPACE
+            CALL QUIT('MSPACE .ne. NSPACE in CC_ACTINP')
+         END IF
+C
+         IF (SPDILS .AND. (NSPAC2 .NE. NSPACE)) THEN
+            WRITE(LUPRI,'(//,A,/,A,I2,/,A,I2)') '>>> ERROR :',
+     &            'Number of defined spaces                         :',
+     &            NSPACE,
+     &            'Number of spaces with given list of diagonals :',
+     &            NSPAC2
+            CALL QUIT('NSPAC2 .ne. NSPACE in CC_ACTINP')
+         END IF
+C
+         IF (SPDILS) THEN
+            THACOC = 1.0D-8
+            THACVI = 1.0D-8
+         END IF
+
+      END IF
+C
+      WRITE(LUPRI,'(//,A)') '       ----------------------------'
+      WRITE(LUPRI,'(A)') '          Info from Selact input'
+      WRITE(LUPRI,'(A,/)') '       ----------------------------'
 C
       IF (ATOMIC) THEN
          WRITE(LUPRI,*)
@@ -10046,6 +10239,12 @@ C
      &                  'select afterwards'
       END IF
 C
+      IF (DIALST) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Given explicit list of diagonals to decompose'
+      END IF
+C
       IF (LIMLOC) THEN
          IF (.NOT. SELDIR) THEN
             WRITE(LUPRI,*)
@@ -10053,12 +10252,23 @@ C
             WRITE(LUPRI,*) 'Fixed number of localized orbitals only',
      &                     ' available when direct selection in use'
             WRITE(LUPRI,*) 'LIMLOC will be ignored'
+         ELSE
+            WRITE(LUPRI,*) 'Fixed number of localized orbitals'
+            WRITE(LUPRI,'(a,8i6)') 'Occupied : ',(MXOCC(I), I=1,MSYM)
+            WRITE(LUPRI,'(a,8i6)') 'Virtual  : ',(MXVIR(I), I=1,MSYM)
          END IF
+      END IF
+C
+      IF (EXTERN) THEN
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
+         WRITE(LUPRI,*) 'Initial orbitals from external source'
       END IF
 C
       WRITE(LUPRI,*)
       WRITE(LUPRI,*)
 C
+      CALL FLSHFO(LUPRI)
+C
       RETURN
       END
-

@@ -10,7 +10,7 @@
      &        CCP3, CCRT, CCR3, CCR1A, CCR1B, CCT,
      &        rCCD, drCCD, SOSEX, rTCCD,
      &        CCSDT,CCR12, MTRIP, CHOPT, DCPT2,
-     &        ETACCPT, DIRKAPB
+     &        ETACCPT, DIRKAPB, MLCC3, MLCCSDPT
 
       INTEGER MXDIIS, MXLRV,
      &        IT2UPD, IT2START,
@@ -24,7 +24,7 @@
      &                   ICHANG,  IPRINT,  KEEPAOTWO, HERDIR,
      &                   ETACCPT, DIRKAPB,
      &                   FREEZE,  KEEPAOIN, NOEONL, NOSORT,
-     &                   HURWITZ_CHECK,
+     &                   HURWITZ_CHECK, MLCC3, MLCCSDPT,
      &                   SIRSOP,  LVVVV, ONLYMO, AOSOPPA
 
 

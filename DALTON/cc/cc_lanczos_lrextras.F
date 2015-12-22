@@ -289,7 +289,8 @@ C--------------------------------------------------------------------
 
       KLRO = 1        !L real Output
       KLIO = KLRO + J !L imaginary Output
-      IF (KLIO+J .GT. LWORK) STOP "Too little space in CC_BIORTOCOMP"
+      IF (KLIO+J .GT. LWORK)
+     &   CALL QUIT("Too little space in CC_BIORTOCOMP")
 
       DO K=1,J
          IF (SKIPNEXT) THEN

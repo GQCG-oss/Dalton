@@ -499,6 +499,21 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/lucita/transform.F
     DALTON/lucita/utils.F
     DALTON/lucita/vecmat.F
+    DALTON/mlcc/mlcc_work.F90
+    DALTON/mlcc/mlcc_block_import.F90
+    DALTON/mlcc/mlcc_typedef.F90
+    DALTON/mlcc/mlcc3_active_spaces.F90
+    DALTON/mlcc/mlcc3_data.F90
+    DALTON/mlcc/mlcc3_drv.F90
+    DALTON/mlcc/mlcc3_init.F90
+    DALTON/mlcc/mlcc3_intermediates.F90
+    DALTON/mlcc/mlcc3_omega.F90
+    DALTON/mlcc/mlcc3_h_omega.F90
+    DALTON/mlcc/mlcc3_reordering.F90
+    DALTON/mlcc/mlcc3_various.F90
+    DALTON/mlcc/mlccsdpt_drv.F90
+    DALTON/mlcc/mlccsdpt_integrals.F90
+    DALTON/mlcc/mlccsdpt_e_calc.F90
     DALTON/pdpack/arhpack.F
     DALTON/pdpack/eispack.F
     DALTON/pdpack/jacobi.F
