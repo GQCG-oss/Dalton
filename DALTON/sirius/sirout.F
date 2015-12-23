@@ -58,7 +58,7 @@ C
       use lucita_mcscf_srdftci_cfg
       use lucita_mcscf_ci_cfg
 
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
 #endif
       use qmcmm_fock, only: scf_qmnpmm_out

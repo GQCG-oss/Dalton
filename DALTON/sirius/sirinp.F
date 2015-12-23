@@ -260,6 +260,7 @@ C
 #include "dftcom.h"
 #include "dfterg.h"
 #include "stex.h"
+#include "center.h"
 
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
@@ -438,6 +439,9 @@ C     ... It is followed by an abacus run
 C added by Bin Gao for generating cube files
 C March 9, 2012
       DO_CUBE = .false.
+C 
+Cholesky orbitals
+      ACTSEL = .FALSE.
 C
 C********** Default values section HAMINP *****
 C

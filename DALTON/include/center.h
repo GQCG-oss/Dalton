@@ -1,32 +1,61 @@
       INTEGER MXBSCE, MXACAT, MXACBS
-      PARAMETER (MXBSCE = 100, MXACAT = 30, MXACBS = 600)
-      PARAMETER (MXEXBS = 100)
+      PARAMETER (MXBSCE = 2000, MXACAT = 50, MXACBS = 5000)
+      PARAMETER (MXEXBS = 500)
+      PARAMETER (MXSPA = 5, MAXSPA = MXSPA+1)
 C
       DOUBLE PRECISION THACOC, THACVI
 C
-      INTEGER NBCENT, IBCENT, NBSCEN, KBSCEN,
+      INTEGER NBCENT, IBCENT, NBSCEN, KBSCEN, 
      &        NACATM, LACTAT, LACBAS, NACTBS, NABSTO,
      &        NACTOC, NACTVI, NINAOC, NINAVI,
      &        IORACT, NORACT, NACTFR, NEXTBS, IEXTBS,
      &        NOCVEC, NVIVEC, NACINP, LACINP, IORDEC,
-     &        NFRACT, MXVECL, MXOCC, MXVIR
+     &        NSELD,  ISELD,  NFRACT, 
+     &        NABSOC, NABSVI, NACBSV,LACBSV,
+     &        NSPACE, NATOAC, LABSPA, NSPAOC, NSPAVI,
+     &        NLFTHF, NLFTVI, IOF2HF, IOF2VI, IEPSHF, IEPSVI,
+     &        NABSO2, LACBA2, NABSV2, LACBV2, IEXPVI, IEXPOC
+c
+c    &        NOPSHL, NACTOP, NOPVEC
 C
-      LOGICAL ACTSEL, ATOMIC, ACTFRE, DIFADD, SELDIR,
-     &        FULDEC, DOSPREAD, MINSPR, LIMLOC, DIALST
+      LOGICAL ACTSEL, ATOMIC, ACTFRE, DIFADD, NBOEXP, SELDIR,
+     &        OPNSHL, FULDEC, DOSPREAD, MINSPR,
+     &        DIALST, EXTERN, NEWACT, SPDILS, LOCONL, ADDORB,
+     &        ADDEXP
 C
       COMMON /CENTER/ THACOC, THACVI,
      &                NBCENT(MXCENT,8), IBCENT(MXCENT,8),
      &                NBSCEN(MXCENT), KBSCEN(MXBSCE,MXCENT),
      &                NACATM, LACTAT(MXACAT), LACBAS(MXACBS),
-     &                NACTBS(8), NABSTO, NACTFR,
+     &                NACTBS(8), NABSTO, NACTFR, 
      &                IORACT(8), NORACT(8),
      &                NACTOC(8), NACTVI(8), NINAOC(8), NINAVI(8),
      &                NEXTBS(8), IEXTBS(MXEXBS,8),
-     &                NOCVEC(MXCENT,8), NVIVEC(MXCENT,8),
-     &                NACINP, LACINP(MXACAT),
-     &                NFRACT(8), MXVECL, MXOCC(8), MXVIR(8),
-     &                NABSOC, NABSVI, NACBSV(8),LACBSV(MXACBS),
-     &                ACTSEL, ATOMIC, ACTFRE, DIFADD, SELDIR,
-     &                FULDEC, DOSPREAD, MINSPR, LIMLOC, DIALST
+     &                NOCVEC(MXCENT,8), NVIVEC(MXCENT,8), 
+     &                NACINP, LACINP(MXACAT), IORDEC(MXCENT),
+     &                NSELD(MXACAT), ISELD(MXBSCE,MXACAT), NFRACT(8),
+     &                NSPACE, NATOAC(MXSPA), LABSPA(MXACAT,MXSPA),
+     &                NSPAOC(8,MAXSPA), NSPAVI(8,MAXSPA),
+     &                NLFTHF(8), NLFTVI(8), IOF2HF(8,MAXSPA),
+     &                IOF2VI(8,MAXSPA), IEPSHF(8,MAXSPA),
+     &                IEPSVI(8,MAXSPA),
+     &                NABSOC, NABSVI, NACBSV(8),LACBSV(MXACBS), 
+     &                NABSO2(MXSPA), LACBA2(MXACBS,MXSPA),
+     &                NABSV2(MXSPA), LACBV2(MXACBS,MXSPA),
+     &                ACTSEL, ATOMIC, ACTFRE, DIFADD, NBOEXP, SELDIR,
+     &                OPNSHL, FULDEC, DOSPREAD, MINSPR,
+     &                DIALST, EXTERN, NEWACT, SPDILS, LOCONL,
+     &                ADDORB, ADDEXP, IEXPVI, IEXPOC
 C
+C    &                NOPSHL(8), NOPVEC(MXCENT,8), NACTOP(8),
+C
+C--------
+C
+      LOGICAL LIMLOC, LIMSPA
+      INTEGER MXVECL, MXOCC, MXVIR, MXOC2, MXVI2
+      COMMON /CENTR3/ MXVECL, MXOCC(8), MXVIR(8), MXOC2(8,MXSPA),
+     &                MXVI2(8,MXSPA), 
+     &                LIMLOC, LIMSPA
+      
+      
 

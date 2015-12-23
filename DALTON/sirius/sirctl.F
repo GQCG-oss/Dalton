@@ -61,7 +61,7 @@ C
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
 #endif
 #ifdef ENABLE_XCINT
@@ -383,7 +383,7 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
             if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//
      &      'PCMSolver')
