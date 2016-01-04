@@ -19,7 +19,7 @@ C
      &                       soppa_nint
 #endif
 C
-      use so_info, only: sop_excita
+      use so_info, only: so_full_name, sop_excita
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -36,10 +36,12 @@ C
 #include "ccsdsym.h"
 C
       LOGICAL   NONEWT
+      LOGICAL   DOUBLES
 C
       CHARACTER*3 CONV(LCONV)
       CHARACTER*5 MODEL
       CHARACTER*8 PDENS_LABEL
+      CHARACTER*11 FULL_NAME
 C
       DIMENSION EXVAL(LEXVAL),   RESINM(LRESINM)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
@@ -65,6 +67,11 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_LRSOLV')
+C
+      DOUBLES = (MODEL.EQ.'AOSOP') .OR. (MODEL.EQ.'AOSOC') .OR.
+     &          (MODEL.EQ.'DCRPA')
+C
+      FULL_NAME = SO_FULL_NAME(MODEL)      
 C
 C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
@@ -106,9 +113,14 @@ C     Set up initial trial vectors.
 C----------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_TRIAL1(MODEL,NNEWTR,WORK(KPOINT),LPOINT,ISYMTR,
-     &               NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &               WORK(KEND1),LWORK1)
+      IF (MODEL .EQ. 'AORPA') THEN
+         CALL RP_TRIAL1(NNEWTR,WORK(KPOINT),LPOINT,ISYMTR,
+     &                  NEXCI,WORK(KEND1),LWORK1)
+      ELSE 
+         CALL SO_TRIAL1(MODEL,NNEWTR,WORK(KPOINT),LPOINT,ISYMTR,
+     &                  NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                  WORK(KEND1),LWORK1)
+      ENDIF
       DTIME      = SECOND()   - DTIME
       SOTIME(32) = SOTIME(32) + DTIME
 C
@@ -152,16 +164,8 @@ C------------------
 C 
       WRITE(LUPRI,'(/,2X,A)') '*********************************'//
      &                        '*********************************'
-      IF (MODEL .EQ. 'AOSOP') THEN
-         WRITE(LUPRI,'(14X,A,I1)') 
-     &        'SOPPA iterations, Excitation symmetry ',ISYMTR
-      ELSE IF (MODEL .EQ. 'AOSOC') THEN
-         WRITE(LUPRI,'(11X,A,I1)') 
-     &        'SOPPA(CCSD)  iterations, Excitation symmetry ',ISYMTR
-      ELSE
-         WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOLV'
-         CALL QUIT('ERROR: Wrong model in SO_LRSOLV')
-      END IF
+         WRITE(LUPRI,'(11X,A,A,I1)') ADJUSTR(FULL_NAME),
+     &        '  iterations, Excitation symmetry ',ISYMTR
       WRITE(LUPRI,'(2X,A)') '*********************************'//
      &                        '*********************************'
 C
@@ -181,17 +185,10 @@ C
 C
             WRITE(LUPRI,'(/,2X,A)') '================================'//
      &                              '=================================='
-            IF (MODEL .EQ. 'AOSOP') THEN
-               WRITE(LUPRI,'(14X,I3,A,I1)') NIT,
-     &              '. SOPPA iteration, Excitation symmetry ',ISYMTR
-            ELSE IF (MODEL .EQ. 'AOSOC') THEN
-               WRITE(LUPRI,'(11X,I3,A,I1)') NIT,
-     &              '. SOPPA(CCSD)  iteration, Excitation symmetry ',
+            WRITE(LUPRI,'(11X,I3,3A,I1)') NIT,
+     &              '. ', TRIM(FULL_NAME),
+     &              '  iteration, Excitation symmetry ',
      &              ISYMTR
-            ELSE
-               WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOLV'
-               CALL QUIT('ERROR: Wrong model in SO_LRSOLV')
-            END IF
             WRITE(LUPRI,'(2X,A,/)') '================================'//
      &                              '=================================='
 C
@@ -229,16 +226,19 @@ C--------------------------------------------------------------
 C        Make S[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
-C
-         CALL GETTIM (DUMMY,WTIMES)
-         DTIME      = SECOND()
+C        Is this needed?
+         IF (MODEL.NE.'AORPA') THEN
+            CALL GETTIM (DUMMY,WTIMES)
+            DTIME      = SECOND()
 
-         CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                ISYMTR,WORK(KEND1),LWORK1)
-         DTIME      = SECOND()   - DTIME
-         SOTIME(40) = SOTIME(40) + DTIME
-         CALL GETTIM (DUMMY,WTIMEE)
-         SOWTIM(2)  = SOWTIM(2)  + WTIMEE - WTIMES
+            CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                   ISYMTR,WORK(KEND1),LWORK1)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(40) = SOTIME(40) + DTIME
+            CALL GETTIM (DUMMY,WTIMEE)
+            SOWTIM(2)  = SOWTIM(2)  + WTIMEE - WTIMES
+C
+         ENDIF
 C
          IF ( AOTEST ) THEN
 C
@@ -262,7 +262,7 @@ C
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
-         CALL SO_REDEV(.TRUE.,NEXCI,NOLDTR,NNEWTR,ISYMTR,
+         CALL SO_REDEV(DOUBLES,NEXCI,NOLDTR,NNEWTR,ISYMTR,
      &                 REDE,LREDE,REDS,LREDS,
      &                 LREDOL,EXVAL,LEXVAL,WORK(KEND1),LWORK1)
 C

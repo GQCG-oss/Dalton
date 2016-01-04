@@ -200,7 +200,8 @@ C
             THR1 = 0.1D0
             THR2 = 0.1D0
 C
-            CALL SO_ANAL(WORK(KTR1E),WORK(KTR1D),LTR1E,WORK(KTR2E),
+            CALL SO_ANAL(.TRUE.,WORK(KTR1E),WORK(KTR1D),LTR1E,
+     &                   WORK(KTR2E),
      &                   WORK(KTR2D),LTR2E,THR1,THR2,ISYMTR)
 C
  200     CONTINUE

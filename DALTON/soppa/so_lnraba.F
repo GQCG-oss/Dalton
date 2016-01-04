@@ -257,8 +257,13 @@ C              Determine RPA solution vectors for the given operator
 C              and set of frequencies.
 C------------------------------------------------------------------
 C
-               CALL RP_RSPLEQ(ISYMTR,LABEL1,FRVAL,NFRVAL,WORK(KFOCKD),
+C               CALL RP_RSPLEQ(ISYMTR,LABEL1,FRVAL,NFRVAL,WORK(KFOCKD),
+C     &                        LFOCKD,WORK(KEND1),LWORK1)
+               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
+     &                        DUMMY,0,DUMMY,0,DUMMY,0,
+     &                        DUMMY,0,WORK(KFOCKD),
      &                        LFOCKD,WORK(KEND1),LWORK1)
+               
 C
 C----------------------------------------------
 C              Calculate second order property.
@@ -366,8 +371,9 @@ C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
                CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
-     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
+     &                        WORK(KDENSIJ),LDENSIJ,
+     &                        WORK(KDENSAB),LDENSAB,
+     &                        WORK(KDENSAI),LDENSAI,WORK(KT2AM),
      &                        LT2AM,WORK(KFOCKD),LFOCKD,
      &                        WORK(KEND1),LWORK1)
 C

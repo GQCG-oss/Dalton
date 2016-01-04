@@ -24,7 +24,7 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
-      use so_info, only: sop_linres
+      use so_info, only: sop_linres, so_full_name
 
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -38,9 +38,11 @@ C
 #include "ccsdsym.h"
 C
       LOGICAL   NONEWT,IMAGPROP, IMAGPROP2
+      LOGICAL   DOUBLES
 C
       CHARACTER*3 CONV(LCONV)
       CHARACTER MODEL*5,LABEL*8
+      CHARACTER*11 FULL_NAME
 C
       DIMENSION FRVAL(NFRVAL),   RESINM(LRESINM)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
@@ -66,6 +68,10 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_LRSOEQ')
+C
+      DOUBLES = MODEL .EQ. 'AOSOP' .OR. MODEL .EQ. 'AOSOC'
+C
+      FULL_NAME = SO_FULL_NAME(MODEL)
 C
 C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
@@ -121,20 +127,12 @@ C------------------
 C     Write banner.
 C------------------
 C 
-C      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
-C     &                        '*********************************'
       WRITE(LUPRI,'(A)') ''
+      WRITE(LUPRI,'(/,2X,A)') '*********************************'//
+     &                        '*********************************'
       WRITE(LUPRI,9001)
-      IF (MODEL .EQ. 'AOSOP') THEN
-         WRITE(LUPRI,'(14X,3A)') 
-     &        'SOPPA iterations, Property ',LABEL
-      ELSE IF (MODEL .EQ. 'AOSOC') THEN
-         WRITE(LUPRI,'(11X,3A)') 
-     &        'SOPPA(CCSD)  iterations, Property ',LABEL
-      ELSE
-         WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOEQ'
-         CALL QUIT('ERROR: Wrong model in SO_LRSOEQ')
-      END IF
+      WRITE(LUPRI,'(11X,3A)') ADJUSTR(FULL_NAME),
+     &        ' iterations, Property ',LABEL
 C      WRITE(LUPRI,'(2X,A)') '*********************************'//
 C     &                        '*********************************'
       WRITE(LUPRI,9001)
@@ -153,10 +151,16 @@ C     with (C +-C) as R or the last TV of the previous frequency
 C------------------------------------------------------------------
 C
       DTIME      = SECOND()
-      CALL SO_TRIAL3(MODEL,NNEWTR,ISYMTR,IMAGPROP,IFREQ,FRVAL,NFRVAL,
-     &               NEXCI,!LABEL,
-     &               DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &               WORK(KEND1),LWORK1)
+      IF (MODEL.EQ.'AORPA') THEN
+         CALL RP_TRIAL3(NNEWTR,NOLDTR,ISYMTR,IMAGPROP,IFREQ,
+     &                  FRVAL,NFRVAL,
+     &                  NEXCI,WORK(KEND1),LWORK1)
+      ELSE
+         CALL SO_TRIAL3(MODEL,NNEWTR,ISYMTR,IMAGPROP,IFREQ,FRVAL,NFRVAL,
+     &                  NEXCI,!LABEL,
+     &                  DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                  WORK(KEND1),LWORK1)
+      ENDIF
       DTIME      = SECOND()   - DTIME
 cLig  <> we have to define and write properly the index insotime array
       SOTIME(32) = SOTIME(32) + DTIME
@@ -196,18 +200,10 @@ C
 C
             WRITE(LUPRI,'(/,2X,A)') '================================'//
      &                              '=================================='
-            IF (MODEL .EQ. 'AOSOP') THEN
-               WRITE(LUPRI,'(14X,I3,A,I1,A,F8.5)') NIT,
-     &              '. SOPPA iteration, Symmetry ', ISYMTR, 
-     &              ', Frequency ',FRVAL(IFREQ)
-            ELSE IF (MODEL .EQ. 'AOSOC') THEN
-               WRITE(LUPRI,'(11X,I3,A,I1,A,F8.5)') NIT,
-     &              '. SOPPA(CCSD)  iteration, Symmetry ', ISYMTR,
+            WRITE(LUPRI,'(11X,I3,3A,I1,A,F8.5)') NIT,'. ',
+     &              TRIM(FULL_NAME),
+     &              '  iteration, Symmetry ', ISYMTR,
      &              ', Frequency ', FRVAL(IFREQ)
-            ELSE
-               WRITE(LUPRI,'(A)') 'ERROR: Wrong model in SO_LRSOEQ'
-               CALL QUIT('ERROR: Wrong model in SO_LRSOEQ')
-            END IF
             WRITE(LUPRI,'(2X,A,/)') '================================'//
      &                              '=================================='
 C
@@ -248,8 +244,10 @@ C--------------------------------------------------------------
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
-         CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                ISYMTR,WORK(KEND1),LWORK1)
+         IF (MODEL .EQ. 'AORPA') THEN
+            CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                   ISYMTR,WORK(KEND1),LWORK1)
+         ENDIF
          DTIME      = SECOND()   - DTIME
          SOTIME(40) = SOTIME(40) + DTIME
          CALL GETTIM (DUMMY,WTIMEE)
@@ -268,7 +266,7 @@ C
 C
          END IF
 C
-         IF((NIT.EQ.1).AND.(IFREQ.EQ.1).AND.AOSOP) THEN
+         IF((NIT.EQ.1).AND.(IFREQ.EQ.1).AND.(MODEL.EQ.'AOSOP')) THEN
 C
 C-----------------------------------------------------------------------
 C          Calculate the gradient property vectors with the right DENSAI
@@ -329,7 +327,8 @@ C
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
-         CALL SO_REDLE(.TRUE.,NEXCI,NOLDTR,NNEWTR,LABEL,ISYMTR,IMAGPROP,
+         CALL SO_REDLE(DOUBLES,NEXCI,NOLDTR,NNEWTR,
+     &                 LABEL,ISYMTR,IMAGPROP,
      &                 REDE,LREDE,
      &                 REDS,LREDS,WORK(KREDC),LREDC,LREDOL,FRVAL,NFRVAL,
      &                 IFREQ,ENORM,PROP,WORK(KEND1),LWORK1)

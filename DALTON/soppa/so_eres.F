@@ -69,6 +69,8 @@ C
 #include "eritap.h"
 #include "soppinf.h"
 
+
+      logical :: singles_first, singles_second, doubles  
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
@@ -85,6 +87,7 @@ C  average?
        loadbal_dyn = .false.
        if (nit .eq. 1) loadbal_dyn = .true.
 #endif
+
 C
 C------------------
 C     Add to trace.
@@ -101,9 +104,17 @@ C     Slaves need to zero DENSAI if it is (re)calculated.
       endif
 #endif
 C
+C-------------------------------------------------------------
+C     Determine which terms to incude
+C-------------------------------------------------------------      
+C
+      singles_first = model .ne. 'DCRPA'
+      singles_second = model .ne. 'AORPA'
+      doubles = (model .eq. 'DCRPA') .or. (model .eq. 'AOSOP') .or.
+     &          (model .eq. 'AOSOC')
 C
 C------------------------------------------------------------------
-C     Determine the symmetri of the result vector from the symmetry
+C     Determine the symmetry of the result vector from the symmetry
 C     of the trial vector ISYMTR, and the opperator symmtry ISYMOP.
 C------------------------------------------------------------------
 C
@@ -161,17 +172,34 @@ C
       LBTR1D  = NT1AO(ISYMTR)
       LBTJ1E  = NMATAV(ISYMTR)
       LBTJ1D  = NMATAV(ISYMTR)
+                 
+      IF(DOUBLES) THEN
+         LTR2E   = NT2AM(ISYMTR)
+         LTR2D   = NT2AM(ISYMTR)
+         LRES2E  = NT2AM(ISYMTR)
+         LRES2D  = NT2AM(ISYMTR)
+      ELSE
+         LTR2E   = 0
+         LTR2D   = 0
+         LRES2E  = 0
+         LRES2D  = 0
+      ENDIF 
 
-      LTR2E   = NT2AM(ISYMTR)
-      LTR2D   = NT2AM(ISYMTR)
-      LRES2E  = NT2AM(ISYMTR)
-      LRES2D  = NT2AM(ISYMTR)
-      LSIGAI1 = NT1AO(ISYRES)
-      LSIGAI2 = NT1AO(ISYRES)
-      LSIGDA1 = NMATAV(ISYRES)
-      LSIGDA2 = NMATAV(ISYRES)
-      LAIJ    = NRHFT*NRHFT
-      LAAB    = NVIRT*NVIRT
+      IF (singles_second) THEN
+         LSIGAI1 = NT1AO(ISYRES)
+         LSIGAI2 = NT1AO(ISYRES)
+         LSIGDA1 = NMATAV(ISYRES)
+         LSIGDA2 = NMATAV(ISYRES)
+         LAIJ    = NRHFT*NRHFT
+         LAAB    = NVIRT*NVIRT
+      ELSE
+         LSIGAI1 = 0
+         LSIGAI2 = 0
+         LSIGDA1 = 0
+         LSIGDA2 = 0
+         LAIJ    = 0
+         LAAB    = 0
+      ENDIF
 C
       KTR1E   = KEND1
       KTR1D   = KTR1E   + LTR1E
@@ -201,9 +229,9 @@ C
 #ifdef VAR_MPI
 C     MPI -- Allocate timings array
       if ( loadbal_dyn ) then
-        KTIMING = KEND2
-        KEND2   = KTIMING + SOPPA_NINT
-        CALL DZERO(WORK(KTIMING), SOPPA_NINT)
+         KTIMING = KEND2
+         KEND2   = KTIMING + SOPPA_NINT
+         CALL DZERO(WORK(KTIMING), SOPPA_NINT)
       endif 
 #endif
       LWORK2  = LWORK   - KEND2
@@ -228,13 +256,15 @@ C----------------------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
       CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
-      CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
-      CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
-C
       CALL SO_OPEN(LURS1E,FNRS1E,LRES1E)
       CALL SO_OPEN(LURS1D,FNRS1D,LRES1D)
-      CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
-      CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
+C
+      IF (DOUBLES) THEN
+         CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
+         CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
+         CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
+         CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
+      ENDIF
 #ifdef VAR_MPI
       ENDIF
 #endif
@@ -252,14 +282,18 @@ C----------------------------------------------------
 C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
-            CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-            CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
+            IF (DOUBLES) THEN
+               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
+               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
+            ENDIF
 C
             WRITE(LUPRI,'(/,I3,A)') INEWTR,'. new trial vector'
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &           (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
-     &           (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
+            IF (DOUBLES) THEN
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+     &            (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
+            ENDIF
    50    CONTINUE
       END IF
 C
@@ -282,13 +316,16 @@ C--------------------------------------------------------------
 C
          CALL DZERO(WORK(KRES1E),LRES1E)
          CALL DZERO(WORK(KRES1D),LRES1D)
-         CALL DZERO(WORK(KRES2E),LRES2E)
-         CALL DZERO(WORK(KRES2D),LRES2D)
+        
+         IF (DOUBLES) CALL DZERO(WORK(KRES2E),LRES2E)
+         IF (DOUBLES) CALL DZERO(WORK(KRES2D),LRES2D)
 C
-         CALL DZERO(WORK(KSIGAI1),LSIGAI1)
-         CALL DZERO(WORK(KSIGAI2),LSIGAI2)
-         CALL DZERO(WORK(KSIGDA1),LSIGDA1)
-         CALL DZERO(WORK(KSIGDA2),LSIGDA2)
+         IF (SINGLES_SECOND) THEN
+            CALL DZERO(WORK(KSIGAI1),LSIGAI1)
+            CALL DZERO(WORK(KSIGAI2),LSIGAI2)
+            CALL DZERO(WORK(KSIGDA1),LSIGDA1)
+            CALL DZERO(WORK(KSIGDA2),LSIGDA2)
+         ENDIF
 C
          CALL DZERO(WORK(KFOCK),LFOCK)
 C
@@ -301,8 +338,10 @@ C
 #endif
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
             CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-            CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
-            CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
+            IF (DOUBLES) THEN
+               CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
+               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
+            ENDIF
 #ifdef VAR_MPI
          ENDIF
 C Rememember that the trial-vectors are contigous in memory         
@@ -589,7 +628,7 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
-                  IF ( (MODEL.NE.'AOSOC') .AND. (NIT.EQ.1) .AND. 
+                  IF ( (MODEL.EQ.'AOSOP') .AND. (NIT.EQ.1) .AND. 
      &               (  INEWTR.EQ.1) ) THEN
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
@@ -611,6 +650,8 @@ C
                   DTIME      = SECOND()   - DTIME
                   SOTIME(11) = SOTIME(11) + DTIME
 C
+                  IF (singles_second) THEN
+C
 C----------------------------------------------------------------------
 C                 Calculate part of the result vectors RES1E and RES1D,
 C                 specifically the first and the second term in eqs.
@@ -628,6 +669,9 @@ C
      &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(14) = SOTIME(14) + DTIME
+                  ENDIF
+C
+                  IF (DOUBLES) THEN
 C
 C-------------------------------------------------------------------
 C                 Calculate the part of the result vectors RES1E and
@@ -643,6 +687,7 @@ C
      &                            ISYMTR,WORK(KEND5),LWORK5)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(29) = SOTIME(29) + DTIME
+
 C
 C----------------------------------------------------------------------
 C                 Construct C-contribution to 2p2h result vectors RES2E
@@ -659,6 +704,10 @@ C
      &                          LWORK5)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(15) = SOTIME(15) + DTIME
+C                  
+                  ENDIF
+C
+                  IF (singles_second) THEN
 C
 C--------------------------------------------------------------------
 C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
@@ -689,6 +738,8 @@ C
      &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(17) = SOTIME(17) + DTIME
+
+                  ENDIF
 C
   230          CONTINUE  ! End of IDEL2 loop
 C
@@ -740,17 +791,20 @@ C           Result-vectors
      &                       MPI_REAL8, MPI_SUM, 0, 
      &                       soppa_comm_active, ierr)
 C
+            if (singles_second) then
+C
 C           Sigai / Sigda
-            call mpi_reduce( mpi_in_place, work(ksigai1), lsigtot,
-     &                       MPI_REAL8, MPI_SUM, 0,
-     &                       soppa_comm_active, ierr)
+               call mpi_reduce( mpi_in_place, work(ksigai1), lsigtot,
+     &                          MPI_REAL8, MPI_SUM, 0,
+     &                          soppa_comm_active, ierr)
 C
 C           Aij / Aab -- only calculated in first pass  
-            if ( inewtr .eq. 1 ) then
+               if ( inewtr .eq. 1 ) then
 C               write(lupri,*) 'Aij'            
-               call mpi_reduce ( mpi_in_place, work(kaij), latot,
-     &                           MPI_REAL8, MPI_SUM, 0,
-     &                           soppa_comm_active, ierr)
+                  call mpi_reduce ( mpi_in_place, work(kaij), latot,
+     &                              MPI_REAL8, MPI_SUM, 0,
+     &                              soppa_comm_active, ierr)
+               endif
             endif
          else
 C  Slaves pass the same buffer as the recieve-buffer...
@@ -765,16 +819,18 @@ C           Result-vectors
      &                       MPI_REAL8, MPI_SUM, 0, 
      &                       soppa_comm_active, ierr)
 C
-C           Sigai / Sigda
-            call mpi_reduce( work(ksigai1), work(ksigai1), lsigtot,
-     &                       MPI_REAL8, MPI_SUM, 0,
-     &                       soppa_comm_active, ierr)
+            if (singles_second) then
+C              Sigai / Sigda
+               call mpi_reduce( work(ksigai1), work(ksigai1), lsigtot,
+     &                          MPI_REAL8, MPI_SUM, 0,
+     &                          soppa_comm_active, ierr)
 C
-C           Aij / Aab            
-            if ( inewtr .eq. 1 ) then
-               call mpi_reduce ( work(kaij), work(kaij), latot,
-     &                           MPI_REAL8, MPI_SUM, 0,
-     &                           soppa_comm_active, ierr)
+C              Aij / Aab            
+               if ( inewtr .eq. 1 ) then
+                  call mpi_reduce ( work(kaij), work(kaij), latot,
+     &                              MPI_REAL8, MPI_SUM, 0,
+     &                              soppa_comm_active, ierr)
+               endif
             endif
 C
 C  After the reductions, the slaves are done; cycle loop
@@ -810,6 +866,7 @@ C        sigma2(alfa,i) to RES1D. I.e. the third terms in eqs. (34) and
 C        (35).
 C----------------------------------------------------------------------
 C
+         if (singles_second) then
          DTIME      = SECOND()
          CALL SO_RES_B(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                 WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),LSIGAI2,
@@ -859,6 +916,8 @@ C
          DTIME      = SECOND()   - DTIME
          SOTIME(21) = SOTIME(21) + DTIME
 C
+         endif
+C
 C------------------------------------------------------------------
 C        Calculate and add the RPA one-particle parts to the result
 C        vectors.
@@ -872,18 +931,21 @@ C
          DTIME      = SECOND()   - DTIME
          SOTIME(26) = SOTIME(26) + DTIME
 C
+         IF (DOUBLES) THEN
+C
 C-----------------------------------------------------------------
 C        Construct D-contribution to 2p2h result vectors RES2E and
 C        RES2D.
 C-----------------------------------------------------------------
 C
-         DTIME      = SECOND()
-         CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
-     &                  WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
-     &                  FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
+            DTIME      = SECOND()
+            CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
+     &                     WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
+     &                     FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
          
-         DTIME      = SECOND()   - DTIME
-         SOTIME(30) = SOTIME(30) + DTIME
+            DTIME      = SECOND()   - DTIME
+            SOTIME(30) = SOTIME(30) + DTIME
+         ENDIF
 #ifdef VAR_MPI
 C Slaves are done
          IF (MYNUM .NE. 0) GOTO 100
@@ -895,8 +957,10 @@ C----------------------------------------
 C
          CALL SO_WRITE(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
          CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
-         CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
-         CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+         IF (DOUBLES) THEN
+            CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
+            CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+         ENDIF
 C
   100 CONTINUE 
 C
@@ -908,7 +972,7 @@ C
 C-----------------------------------------------------------
 C     Communicate the second order density matrix if needed.
 C-----------------------------------------------------------
-      IF ( (MODEL .NE. 'AOSOC') .AND. 
+      IF ( (MODEL .EQ. 'AOSOP') .AND. 
      &     (NIT .EQ. 1)              ) THEN
          IF (MYNUM.EQ.0) THEN
             CALL MPI_REDUCE( MPI_IN_PLACE, DENSAI, LDENSAI, MPI_REAL8,
@@ -964,7 +1028,7 @@ C     Calculate the last part of the second order density matrix.
 C----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      IF ( (MODEL .NE. 'AOSOC')   .AND.
+      IF ( (MODEL .EQ. 'AOSOP')   .AND.
      &     (NIT .EQ. 1)         )  THEN
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
       END IF
@@ -982,12 +1046,14 @@ C------------------------------------------
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
             CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS1D,INEW)
-            CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
-            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
-     &           (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
+            IF (DOUBLES) THEN
+               CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
+               CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+     &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
+            ENDIF
   400    CONTINUE
 C
       END IF
@@ -998,13 +1064,15 @@ C-----------------
 C   
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
-      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
-C
       CALL SO_CLOSE(LURS1E,FNRS1E,'KEEP')
       CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
-      CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
-      CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+C
+      IF (DOUBLES) THEN
+         CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+         CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+         CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
+         CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+      ENDIF
 C
 C
 C-----------------------

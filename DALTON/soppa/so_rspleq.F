@@ -20,6 +20,8 @@ C
 C     For us, NEXCI is always 1, since we are going to compute 
 C     one frequency each run
 C
+      use so_info, only: so_has_doubles
+C         
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -31,6 +33,7 @@ C
       PARAMETER ( D100 = 100.0D0 )
       CHARACTER MODEL*5,LABEL*8
       LOGICAL   IMAGPROP
+      LOGICAL   DOUBLES
 C
 #include "codata.h"
 #include "wrkrsp.h"
@@ -51,6 +54,7 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_RSPLEQ')
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
 C
 C---------------------------------------------
 C     Calculate the gradient property vectors.
@@ -58,7 +62,11 @@ C---------------------------------------------
 C
       LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
-      LGPVC2  =  NT2AM(ISYMTR)
+      IF (DOUBLES) THEN
+         LGPVC2  =  NT2AM(ISYMTR)
+      ELSE
+         LGPVC2  = 0
+      ENDIF
 C      LGPVC2  = 2 * N2P2HOP(ISYMTR)
 Cend-PFP
 C
@@ -80,24 +88,27 @@ C     Save property gradients on a file.
 C---------------------------------------
 C
       CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
-      CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
-C
       CALL SO_WRITE(WORK(KGPVC1),LGPVC1,LUGPV1,FNGPV1,1)
-      CALL SO_WRITE(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
+C
+      IF (DOUBLES) THEN
+         CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
+         CALL SO_WRITE(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
+      ENDIF
 C
       IF(IPRSOP.GE.5) THEN
 C         LGPVC1H = LGPVC1 /2
 C         LGPVC2H = LGPVC2 /2
          CALL AROUND('In SO_RSPLEQ:  '//MODEL//
      &               ' gradient property vector.'//LABEL)
-         IF(AOSOP) WRITE(LUPRI,'(1X,A)')
+         IF(MODEL.EQ.'AOSOP') WRITE(LUPRI,'(1X,A)')
      &       'It lack the DENSAI contribution'
          CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
-         CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
+         IF(DOUBLES) CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,
+     &                           1,1,LGPVC2,1,1,LUPRI)
       ENDIF
 C     
       CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
-      CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
+      IF (DOUBLES)  CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
 C      MAXIT   = MAXCLC
       MAXIT = ABS_MAXITER
 C
