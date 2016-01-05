@@ -636,17 +636,10 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/dc_res_o.F
     DALTON/soppa/dc_rsplex.F
     DALTON/soppa/dc_sres.F
-    DALTON/soppa/rp_anal.F
     DALTON/soppa/rp_charge.F
-    DALTON/soppa/rp_check.F
-    DALTON/soppa/rp_eres.F
     DALTON/soppa/rp_init.F
-    DALTON/soppa/rp_lrsoeq.F
-    DALTON/soppa/rp_lrsolv.F
     DALTON/soppa/rp_newtrial.F
     DALTON/soppa/rp_orth_trn.F
-    DALTON/soppa/rp_rspleq.F
-    DALTON/soppa/rp_rsplex.F
     DALTON/soppa/rp_trial1.F
     DALTON/soppa/rp_trial3.F
     DALTON/soppa/so_pertdens.F

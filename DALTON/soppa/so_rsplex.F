@@ -28,9 +28,6 @@ C
 C
 #include "codata.h"
 #include "wrkrsp.h"
-CSPAS:15/03-2006: merge with Dalton-2.0      
-C#include "infpp.h"
-CKeinSPASmehr
 #include "inforb.h"
 #include "infpri.h"
 #include "ccsdsym.h"
@@ -47,7 +44,7 @@ C
      &          (MODEL.EQ.'DCRPA') 
 C      
 C-----------------------------------------------
-C     Solve linear response equations for SOPPA.
+C     Solve linear response equation
 C-----------------------------------------------
 C
       MAXIT   = MAXITE
@@ -66,20 +63,12 @@ C
       CALL SO_MEMMAX ('SO_RSPLEX.1',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_RSPLEX.1',' ',KEND1,LWORK)
 C
-      IF (.FALSE.)THEN ! (MODEL.EQ.'AORPA')THEN
-         CALL RP_LRSOLV(ISYMTR,NEXCI,MAXIT,EXVAL,LEXVAL,WORK(KRESINM),
-     &                  LRESINM,WORK(KCONV),LCONV,FOCKD,LFOCKD,
-     &                  WORK(KREDE),WORK(KREDS),LMXRED,
-     &                  WORK(KEND),LWORK1)
-
-      ELSE
-         CALL SO_LRSOLV(MODEL,ISYMTR,NEXCI,MAXIT,EXVAL,LEXVAL,
-     &                  WORK(KRESINM),LRESINM,WORK(KCONV),LCONV,DENSIJ,
-     &                  LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
-     &                  T2MP,LT2MP,
-     &                  FOCKD,LFOCKD,WORK(KREDE),WORK(KREDS),LMXRED,
-     &                  WORK(KEND),LWORK1)
-      ENDIF
+      CALL SO_LRSOLV(MODEL,ISYMTR,NEXCI,MAXIT,EXVAL,LEXVAL,
+     &               WORK(KRESINM),LRESINM,WORK(KCONV),LCONV,DENSIJ,
+     &               LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &               T2MP,LT2MP,
+     &               FOCKD,LFOCKD,WORK(KREDE),WORK(KREDS),LMXRED,
+     &               WORK(KEND),LWORK1)
 C
 C-----------------------------------------------------------
 C     Calculate p-h and 2p-2h weight in excitation operator
@@ -127,8 +116,21 @@ C
             CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
          ENDIF
 C
+C-----------------------------------------------------------
+C     Calculate p-h and h-p weight in excitation operator
+C     and write to output together with excitation energies.
+C-----------------------------------------------------------
+C
+C
          DO IEXCI = 1,NEXCI
 C
+            WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
+     &                             '-------------------------------'
+            IF (TRIPLET) THEN
+               WRITE(LUPRI,'(/17X,A)') 'Triplet Excitation Energies'
+            ELSE
+               WRITE(LUPRI,'(/17X,A)') 'Singlet Excitation Energies'
+            END IF
             WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
      &                             '-------------------------------'
             WRITE(LUPRI,'(A,I3,A,I3)')

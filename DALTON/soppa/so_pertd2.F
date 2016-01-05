@@ -170,7 +170,7 @@ C
 C     For totally symmetric perturbations, there is an aditional
 C     contribution
 C     Note for improvement: Make two versions of the above for
-C     ISYMTR = 1 and != 1, then icorperate this into the above inner
+C     ISYMTR = 1 and != 1, then incorperate this into the above inner
 C     loop in the first case.                     
                      IF (ISYMAB.EQ.1.AND.(ISYMC.EQ.ISYMB) ) THEN
                         DO I = 1, NOCCI
@@ -205,5 +205,5 @@ C           Square, I2 inner
          END IF
 
          RETURN
-         END
+         END FUNCTION
       END 

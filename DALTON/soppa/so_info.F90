@@ -67,7 +67,7 @@ contains
 
    pure function so_singles_second(model)
       ! 
-      !  Return true if model includes needs second order singles
+      !  Return true if model includes second order singles
       !  contributions
       !
       character(len=5), intent(in) :: model
@@ -76,6 +76,16 @@ contains
       so_singles_second = (model.eq.'DCRPA').or.(model.eq.'AOSOP').or.&
                           (model.eq.'AOSOC').or.(model.eq.'AOHRP')
       return
+   end function
+
+   pure function so_singles_first(model) 
+      !
+      !  Returns true if model includes second order singles.
+      !  Needed if we calculate perturbation correction.
+      character(len=5), intent(in) :: model
+      logical :: so_singles_first
+      
+      so_singles_first = .not.(model.eq.'DCRPA')
    end function
 
 end module so_info

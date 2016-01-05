@@ -26,6 +26,9 @@ C              RES1D, RES2E, and RES2D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
+      use so_info, only: so_singles_first, so_singles_second, 
+     &                   so_has_doubles
+
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
      &                       soppa_nint 
@@ -99,7 +102,8 @@ C
       CALL QENTER('SO_ERES')
 #ifdef VAR_MPI
 C     Slaves need to zero DENSAI if it is (re)calculated.      
-      elseif ( MODEL .EQ.'AOSOP' .AND. NIT .EQ. 1) THEN
+      elseif ( (MODEL .EQ.'AOSOP'.OR.MODEL .EQ. 'DCRPA')
+     &                   .AND. NIT .EQ. 1) THEN
          CALL DZERO(DENSAI,LDENSAI)
       endif
 #endif
@@ -108,10 +112,13 @@ C-------------------------------------------------------------
 C     Determine which terms to incude
 C-------------------------------------------------------------      
 C
-      singles_first = model .ne. 'DCRPA'
-      singles_second = model .ne. 'AORPA'
-      doubles = (model .eq. 'DCRPA') .or. (model .eq. 'AOSOP') .or.
-     &          (model .eq. 'AOSOC')
+C      singles_first = model .ne. 'DCRPA'
+      singles_first = so_singles_first(model)
+C      singles_second = model .ne. 'AORPA'
+      singles_second = so_singles_second(model)
+C      doubles = (model .eq. 'DCRPA') .or. (model .eq. 'AOSOP') .or.
+C     &          (model .eq. 'AOSOC')
+      doubles = so_has_doubles(model)
 C
 C------------------------------------------------------------------
 C     Determine the symmetry of the result vector from the symmetry
@@ -270,7 +277,11 @@ C
 #endif
 C
 
-      IF ( IPRSOP. GE. 7 ) THEN !Only printing related.
+      IF ( IPRSOP. GE. 7 
+#ifdef VAR_MPI
+     &      .AND. (MYNUM .EQ.0) 
+#endif
+     &                     ) THEN ! Only printing related.
 C------------------------------------------
 C        Write new trial vectors to output.
 C------------------------------------------
@@ -564,14 +575,15 @@ C
      &                        WORK(KRECNR),DIRECT)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(10) = SOTIME(10) + DTIME
+C                  
 C
 C---------------------------------------------
-C                 Work space allocation no. 4.
+C                    Work space allocation no. 4.
 C---------------------------------------------
 C
                   ISAIJ = MULD2H(ISYMD,1)
 C
-                  IF (NVIR(ISYMD) .GT. 0) THEN
+                  IF (NVIR(ISYMD) .GT. 0 .AND. DOUBLES) THEN
                      LT2M1 = NT2BCD(ISAIJ)
                   ELSE
                      LT2M1 = 0
@@ -584,18 +596,21 @@ C
                   CALL SO_MEMMAX ('SO_ERES.4',LWORK4)
                   IF (LWORK4 .LT. 0) 
      &                CALL STOPIT('SO_ERES.4',' ',KEND4,LWORK)
+C                   
+                  IF (DOUBLES) THEN
 C
 C------------------------------------------------------------
-C                 Construct the partially back-transformed T2
-C                 MP-amplitudes.
+C                    Construct the partially back-transformed T2
+C                    MP-amplitudes.
 C------------------------------------------------------------
 C
-                  DTIME      = SECOND()
-                  CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MP,
+                     DTIME      = SECOND()
+                     CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MP,
      &                         WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                         WORK(KEND4),LWORK4)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(12) = SOTIME(12) + DTIME
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(12) = SOTIME(12) + DTIME
+                  ENDIF
 C
 C---------------------------------------------
 C                 Work space allocation no. 5.
@@ -628,8 +643,8 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
-                  IF ( (MODEL.EQ.'AOSOP') .AND. (NIT.EQ.1) .AND. 
-     &               (  INEWTR.EQ.1) ) THEN
+                  IF ( (MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'DCRPA') .AND. 
+     &                           (NIT.EQ.1) .AND. (  INEWTR.EQ.1) ) THEN
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
      &                               ISYMD,ISYDIS,WORK(KEND5),
@@ -644,9 +659,17 @@ C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
 C
                   DTIME      = SECOND()
-                  CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
-     &                           WORK(KEND5),LWORK5,IDEL,ISYMD,.FALSE.,
-     &                           'crashifTrue',ISYMTR)
+                  IF (TRIPLET) THEN
+C
+                     CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
+     &                               WORK(KFOCK),WORK(KEND5),
+     &                               LWORK5,IDEL,ISYMD,ISYMTR)
+                  ELSE
+                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
+     &                              WORK(KEND5),LWORK5,
+     &                              IDEL,ISYMD,.FALSE.,
+     &                              'crashifTrue',ISYMTR)
+                  ENDIF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(11) = SOTIME(11) + DTIME
 C
@@ -860,61 +883,59 @@ C
          DTIME      = SECOND()   - DTIME
          SOTIME(25) = SOTIME(25) + DTIME
 C
-C----------------------------------------------------------------------
-C        Add contribution from sigma1(alfa,i) to RES1E and from 
-C        sigma2(alfa,i) to RES1D. I.e. the third terms in eqs. (34) and 
-C        (35).
-C----------------------------------------------------------------------
-C
          if (singles_second) then
-         DTIME      = SECOND()
-         CALL SO_RES_B(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                 WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),LSIGAI2,
-     &                 WORK(KCMO),LCMO,ISYRES)
-         DTIME      = SECOND()   - DTIME
-         SOTIME(18) = SOTIME(18) + DTIME
 C
-C--------------------------------------------------------------------
-C        Add contribution from sigda1(delta,a) to RES1E and from
-C        sigda2(delta,a) to RES1D. I.e. the fourth terms in eqs. (34)
-C        and (35).
-C--------------------------------------------------------------------
+C-------------------------------------------------------------------------
+C           Add contribution from sigma1(alfa,i) to RES1E and from 
+C           sigma2(alfa,i) to RES1D. I.e. the third terms in eqs. (34) and 
+C           (35).
+C-------------------------------------------------------------------------
 C
-         DTIME      = SECOND()
-         CALL SO_RES_C(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                 WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),LSIGDA2,
-     &                 WORK(KCMO),LCMO,ISYRES)
-         DTIME      = SECOND()   - DTIME
-         SOTIME(19) = SOTIME(19) + DTIME
-
-C--------------------------------------------------------------
-C        Calculate and add the symmetry correcting term to A in
-C        eq. (44).
-C--------------------------------------------------------------
+            DTIME      = SECOND()
+            CALL SO_RES_B(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
+     &                    WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),LSIGAI2,
+     &                    WORK(KCMO),LCMO,ISYRES)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(18) = SOTIME(18) + DTIME
 C
-         DTIME      = SECOND()
+C-----------------------------------------------------------------------
+C           Add contribution from sigda1(delta,a) to RES1E and from
+C           sigda2(delta,a) to RES1D. I.e. the fourth terms in eqs. (34)
+C           and (35).
+C-----------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_C(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
+     &                    WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),LSIGDA2,
+     &                    WORK(KCMO),LCMO,ISYRES)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(19) = SOTIME(19) + DTIME
 
-         CALL SO_RES_SYM(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                   WORK(KAIJ),LAIJ,WORK(KAAB),LAAB,WORK(KTR1E),
-     &                   LTR1E,WORK(KTR1D),LTR1D,ISYRES)
+C-----------------------------------------------------------------
+C           Calculate and add the symmetry correcting term to A in
+C           eq. (44).
+C-----------------------------------------------------------------
+C
+            DTIME      = SECOND()
 
-
-
-         DTIME      = SECOND()   - DTIME
-         SOTIME(20) = SOTIME(20) + DTIME
+            CALL SO_RES_SYM(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
+     &                      WORK(KAIJ),LAIJ,WORK(KAAB),LAAB,WORK(KTR1E),
+     &                      LTR1E,WORK(KTR1D),LTR1D,ISYRES)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(20) = SOTIME(20) + DTIME
 C
 C---------------------------------------------------------
-C        Calculate and add the Fock-term to A in eq. (40).
+C           Calculate and add the Fock-term to A in eq. (40).
 C---------------------------------------------------------
 C
-         DTIME      = SECOND()
-         CALL SO_RES_FCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                   WORK(KTR1E),LTR1E,WORK(KTR1D),
-     &                   LTR1D,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,
-     &                   LDENSAB,ISYRES,ISYMTR)
+            DTIME      = SECOND()
+            CALL SO_RES_FCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
+     &                      WORK(KTR1E),LTR1E,WORK(KTR1D),
+     &                      LTR1D,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,
+     &                      LDENSAB,ISYRES,ISYMTR)
 
-         DTIME      = SECOND()   - DTIME
-         SOTIME(21) = SOTIME(21) + DTIME
+            DTIME      = SECOND()   - DTIME
+            SOTIME(21) = SOTIME(21) + DTIME
 C
          endif
 C
@@ -1358,41 +1379,164 @@ C     F.Beyer Oct. 2014
       return
       end subroutine
 
-
-
-#endif
-!VAR_MPI at the beginning of PAR_SO_ERES
-
-#ifdef NOTDEFINED
-      subroutine stupid_checksum( nameofdata , checkdata, ldata )
-C   For debugging purposes
-C  Calculate a few "checksums" of the data in order to ensure 
-C  that it is (relatively) intact
+C /* deck presortaodist*/
+      subroutine presortaodist(Nindex, indxbt, outlist)
+C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
+C Pre-calculate IDEL2 indexes before starting a parallel calculation.
+C In other words, this subroutine calculates how many distributions are associated with the calculation.
 C
-         implicit none 
+C This routine assembles a matrix that counts the number of AOs
+C associated with an ILLL distribution index. This array is used by getallocsize
+C and partitionAOindices to pre-sort the integrals that need to be done 
+C
+C The first row in outlist is the number of distributions
+C The second row in outlist is the associated ILLL index
+#include "implicit.h"
 #include "priunit.h"
-         integer, parameter  :: dp = kind(1.0D0)
-         character(len=*),intent(in):: nameofdata
-         integer, intent(in) :: ldata
-         real(dp), intent(in):: checkdata(ldata)
-         real(dp)            :: signed_sum, abs_sum, squared_sum, temp
-         integer             :: i
-         
-         signed_sum = 0.0_dp
-         abs_sum = 0.0_dp
-         squared_sum = 0.0_dp
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "eridst.h"
 
-         do i = 1, ldata 
-            temp = checkdata(i)
-            signed_sum = temp + signed_sum
-            abs_sum = abs(temp) + abs_sum
-            squared_sum = temp*temp + squared_sum
-         enddo
+      integer,                       intent(in) :: Nindex
+      integer, dimension(*),         intent(in) :: indxbt
+      integer, dimension(2, Nindex), intent(out):: outlist
+      integer :: i
 
-         write (lupri,90) nameofdata, squared_sum, abs_sum, signed_sum
-!         write (*,90) nameofdata, squared_sum, abs_sum, signed_sum
+      do i=1, Nindex
+         call getdst(i, 0, 0)
+         call pickao(0)
+         call eridsi(indxbt, 0)
+         outlist(1, i) = ndistr
+         outlist(2, i) = i 
+      enddo
 
-90       format(A15,3F20.15)
+      return
 
-      end subroutine stupid_checksum
+      end subroutine
+
+
+C     /* deck getallocsize */
+      SUBROUTINE getallocsize(ntot, originalsort, maxnumjobs)
+C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
+C 
+C This subroutine is used to get the amount of storage that needs
+C to be allocated for a parallel SO_ERES run.
+C 
+C The subroutine calculates which process will be assigned the
+C most single jobs (not the largest total amount of work) for a
+C parallel RPA/SOPPA calculation. Its output is used to allocate 
+C the right amount of storage by the master when it starts pre-sorting
+C the integrals for the parallel calculation of the E matrix.
+C
+
+#include "implicit.h"
+#include "mpif.h"
+      integer,                     intent(in)  :: ntot
+      integer, dimension(2, ntot), intent(in)  :: originalsort
+      integer,                     intent(out) :: maxnumjobs
+
+      integer, dimension(:,:), allocatable  :: copysort
+      integer, dimension(:,:), allocatable  :: sumofwork
+      integer, dimension(2) :: temploc, tempwork, tempout
+      integer :: allocstatus, deallocstatus, numprocs
+
+
+
+      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
+      allocate( copysort(2, ntot), sumofwork(2, numprocs)
+     &         ,stat=allocstatus)
+      if(.not.(allocstatus.eq.0) ) then
+         call quit('Allocation error in GETALLOCSIZE')
+      endif
+
+      call izero(sumofwork, (2*numprocs) )
+      copysort = originalsort
+
+      DO i=1, ntot
+         ! Find location of largest chunk of work and the work itself
+         temploc = maxloc(copysort, DIM=2, mask=copysort.gt.0) 
+         addwork = copysort(1, temploc(1) )
+         copysort( 1,temploc(1) ) = 0
+
+         ! Find laziest slave and simulate the workload on the slave
+         tempwork = minloc(sumofwork, DIM=2) 
+         sumofwork(1, tempwork(1)) = sumofwork(1, tempwork(1)) + addwork! adding total number of distributions
+         sumofwork(2, tempwork(1)) = sumofwork(2, tempwork(1)) + 1  !adding total number of assigned indexes
+      ENDDO
+
+      tempout = maxloc(sumofwork, dim=2)
+      maxnumjobs = sumofwork( 2,tempout(2) )
+
+      deallocate(copysort, sumofwork, stat=deallocstatus)
+      if(.not.(deallocstatus.eq.0) ) then
+         call quit('Deallocation error in GETALLOCSIZE')
+      endif
+
+      return
+
+      END SUBROUTINE
+
+
+C     /* deck partitionAOindices */
+      SUBROUTINE  partitionAOindices(ntot, rows, cols, presortedarray,
+     &                               sorted, sumofwork)
+C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
+C
+C The output from this routine is the array 'sorted'.
+C The sorted matrix contains AO integral indexes for two-electron integrals.
+C Every column contains a list of ILLL indexes that are to be assigned as work 
+C to a single process. The total amount of work per column is estimated based
+C on the number of distributions that are related to the ILLL indexes in the column. 
+C
+C This pre-sorting of ILLL indexes for a parallel calculation approximates an
+C even distribution of total work for all processes when performing two-electron 
+C integrals in parallel for AOSOPPA and AORPA. 
+C
+      !use mpi
+#include "implicit.h"
+#include "mpif.h"
+
+      integer,                        intent(in)    :: ntot, rows, cols
+      integer, dimension(2, ntot),    intent(inout) :: presortedarray
+      integer, dimension(rows, cols), intent(out)   :: sorted
+
+      integer, dimension(2, cols), intent(out) :: sumofwork
+      integer, dimension(2) :: tempavail, templazy
+      integer :: numprocs, availloc, targetrow
+      integer :: allocstatus, deallocstatus
+
+      numprocs = cols
+ 
+      call izero(sorted, (rows*cols) )
+      call izero(sumofwork, (2*numprocs) )
+
+      DO i=1, ntot
+C        FIND LARGEST CHUNK OF AVAILABLE WORK AND ITS INDEX
+         tempavail = maxloc(presortedarray, DIM=2, 
+     &                      mask=presortedarray.gt.0) 
+         availloc = tempavail(1)
+         numdists = presortedarray(1, availloc) ! amount of available work
+         aoindex  = presortedarray(2, availloc) ! the index to be passed to process
+
+         presortedarray(1, availloc) = 0
+         presortedarray(2, availloc) = 0
+
+C        FIND THE LAZIEST PROCESS, GIVE IT WORK & INCREMENT THE ROW COUNTER
+         templazy = minloc(sumofwork, DIM=2) 
+         lazyloc = templazy(1) ! This is equal to: MYID+1 
+         sumofwork( 1,lazyloc ) = sumofwork( 1,lazyloc ) + numdists 
+         sumofwork( 2,lazyloc ) = sumofwork( 2,lazyloc ) + 1 
+         targetrow = sumofwork( 2,lazyloc )
+
+C        ADD AO-INDEX TO FIRST AVAILABLE ROW IN THE LAZY SLAVE'S COLUMN
+         sorted( targetrow,lazyloc ) = aoindex
+      ENDDO
+      
+      return
+
+      END SUBROUTINE
+
+
 #endif
+!VAR_MPI at the beginning of dynloadbal_parsoppa

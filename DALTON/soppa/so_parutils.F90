@@ -56,6 +56,7 @@ module so_parutils
 #undef my_MPI_INTEGER
 
    private soppa_update_common, stupid_isao_bcast_routine
+
 contains
 
 
@@ -271,7 +272,7 @@ contains
 
       return
       
-   endsubroutine soppa_update_common
+   end subroutine soppa_update_common
 
  
 
@@ -343,7 +344,7 @@ contains
       ! we don't include the rest in the soppa communicator.
       !
       numprocs = nodtot + 1 ! nodtot from infpar.h
-      if ( numprocs .le. soppa_nint ) then ! mxcall from distcl.h
+      if ( numprocs .le. soppa_nint ) then 
          !
          ! Usual case:
          ! Just keep mpi_comm_world
@@ -469,11 +470,8 @@ contains
             ! Inactive processes do nothing            
             if ( soppa_comm_active .eq. MPI_COMM_NULL ) cycle
             !
-            ! For now decide which routine to call based on
-            ! method argument
+            ! All should now run through same ERES routine
             !
-            if ( model .ne. 'AORPA' ) then
-
             call so_eres( model, noldtr, nnewtr,          &! General info
                   work(kdensij), ldensij,                 &! Densij
                   work(kdensab), ldensab,                 &! Densab
@@ -483,16 +481,6 @@ contains
                   nit, isymtr,                            &! Info
                   work(kassignedindices),maxnumjobs,      &! Load-balancing space           
      &            work(kend), lworkf )                     ! Work-array 
-
-            else
-               call rp_eres ( noldtr, nnewtr,             &! Trialvector info
-                     work(kfockd), lfockd,                &! Fock diagonal
-                     nit, isymtr,                         &! Info
-                     work(kassignedindices),maxnumjobs,   &! Load-balancing space 
-                     work(kend), lworkf )                  ! Work-array 
-                     
-
-            endif
             !
          case default
             !
@@ -506,7 +494,7 @@ contains
 
       ! We should never reach here...
 
-   endsubroutine soppa_nodedriver
+   end subroutine soppa_nodedriver
 
    subroutine soppa_initialize_slaves( update_common_blocks,         &
      &             t2mp, lt2mp, model )
@@ -574,7 +562,7 @@ contains
          
       return
 
-   endsubroutine soppa_initialize_slaves
+   end subroutine soppa_initialize_slaves
 
    subroutine soppa_release_slaves()
 !
@@ -600,14 +588,9 @@ contains
       return
    endsubroutine soppa_release_slaves
 
-! Give this the private attribute, once when rpa has been fixed    
    subroutine stupid_isao_bcast_routine()
-!#include "implicit.h"
-!#include "mpif.h"
-!#include "maxorb.h"
 ! For the isoa
 #include "ccisao.h" 
-!#include "infpar.h"
 !
 !  This is a simple (but stupid) work-around to the problem that
 !  the array ISAO exist in both infind.h and ccisao.h and that it seem
@@ -639,7 +622,87 @@ contains
 
    end subroutine stupid_isao_bcast_routine
 
+
 endmodule so_parutils
+!
+! This routine, though currently only used insides the module, sits here 
+! because fortran only recently got a void type (TYPE(*)), and it will be 
+! a pain to write overloaded interfaces for all possible combinations.
+! /* deck getbytespan */
+subroutine getbytespan(firstvar, lastvar, bytespan)
+! Frederik Beyer, March 2014.
+!
+! This subroutine calculates the memory span in bytes between two variables.
+!
+! This is used for easy updating of common block in parallel calculations.
+! The former approaches relied on counting the number of occurrences
+! of variables of a particular type and then transferring a common in
+! a series of mpi_bcasts; one for every datatype in the common block.
+! This approach utilizes the contiguous storage of variables in a common
+! block to calculate the span in bytes from the first variable
+! in the common block and up to, but not including, the last variable.
+!
+! Point the firstvar to the first variable in the common block  
+! and point lastvar to the last variable in the common block.
+!
+! Lastvar should have a name like <commonblockname>LAST
+! ie. CCSDGNINPLAST (see include/ccsdinp.h for an example)
+!
+! These <name>LAST variables are only there to facilitate easy common block
+! transfers. They are never explicitly needed in a calculation. 
+! They should always be of type int.
+!
+! Getbytespan calculates the total amount of bytes needed for an MPI_BCAST 
+! to transfer the whole block in one go (with datatype = mpi_byte), 
+! including the first but excluding the <name>last variable.
+!
+! Example of use:
+! to update the common block /eribuf/:
+!
+!      call getbytespan(lbuf, eribufLAST, bytesize)
+!      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
+
+#include "mpif.h"
+#include "priunit.h"
+
+      integer(mpi_integer_kind), intent(out) :: bytespan
+      integer,intent(in)   :: firstvar, lastvar
+!RF This should be mpi_address_kind
+      integer(mpi_address_kind) :: firstmem, lastmem
+      integer              :: totaltransfer = 0
+      integer, parameter   :: approxeager = 4096 ! Approximate upper limit for eager protocol transfers. Implementation dependent.
+      integer              :: numeagersends=0, numrendezsends=0 
+      logical, parameter   :: debug = .false.
+
+
+      call mpi_get_address(firstvar, firstmem, ierr) 
+      call mpi_get_address(lastvar, lastmem, ierr) 
+      bytespan = lastmem - firstmem 
+      if (bytespan.lt.1) then
+          call quit('subroutine getbytespan calculated a non-sensical ', &
+     &    'size for common block transfer.')
+      endif
+
+
+      if (debug) then
+         totaltransfer = bytespan + totaltransfer
+         if (bytespan.lt.approxeager) then
+            numeagersends   = numeagersends + 1
+         else
+            numrendezsends  = numrendezsends + 1
+         endif
+
+         write(lupri, '(a, i8)')  &
+     &   "Running amount of Bytes transferred via getbytespan: "  &
+     &   ,totaltransfer  
+         write(lupri, '(a, i8)') "Estimated transfers using the ", &
+     &               "eager protocol: ", numeagersends
+         write(lupri, '(a, i8)') "Estimated transfers using the ", &
+     &                "rendezvous protocol: ", numrendezsends
+      endif
+
+      return
+end subroutine 
 
 #else
 ! Dummy subroutune

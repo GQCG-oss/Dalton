@@ -16,15 +16,27 @@ C
 C     PURPOSE: Solve the SOPPA linear response equations 
 C              using an AO-driven algorithm. 
 C
-C     LABEL             property label
-C     ISYMTR            property symmetry
-C     FRVAL(NFRVAL)     frequencies
+C       LABEL   label of the property to be computed
+C       ISYMTR  symmetry
+C       NEXCI   (number of excitation) ... for us is always 1
+C       MAXIT   max # iteration 
+C       FRVAL   NFRVAL values of the frequencies
+C       NFRVAL  number of frequencies
+C       RESINM  LRESIMN values ...
+C       LRESINM equal to NFRVAL
+C       CONV    array of 8 elements
+C       LCONV   set to 8
+C       FOCKD
+C       LFOCKD
+C       REDE    matrix E[2]
+C       REDS    matrix S[2]
+C       LMXRED
 C
 #ifdef VAR_MPI
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
-      use so_info, only: sop_linres, so_full_name
+      use so_info, only: sop_linres, so_full_name, so_has_doubles
 
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -69,7 +81,7 @@ C------------------
 C
       CALL QENTER('SO_LRSOEQ')
 C
-      DOUBLES = MODEL .EQ. 'AOSOP' .OR. MODEL .EQ. 'AOSOC'
+      DOUBLES = so_has_doubles(model)
 C
       FULL_NAME = SO_FULL_NAME(MODEL)
 C
@@ -80,7 +92,7 @@ C==============================================================
 C
       IF (SOPCHK) THEN
 C
-         CALL SO_CHECK(DENSIJ,LDENSIJ,DENSAB,LDENSAB,T2MP,LT2MP,
+         CALL SO_CHECK(MODEL,DENSIJ,LDENSIJ,DENSAB,LDENSAB,T2MP,LT2MP,
      &                 FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
 C
       END IF
@@ -100,7 +112,7 @@ C     1. Memory allocation
 C-------------------------
 C
       KREDC   = 1
-      KEND1   = (2*NSAVMX)**2
+      KEND1   = KREDC + (2*NSAVMX)**2
 #ifdef VAR_MPI
 C------------------------------------------------------------------
 C     For MPI, we need some space in which to store the indices each

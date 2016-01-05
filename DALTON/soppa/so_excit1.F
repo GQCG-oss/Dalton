@@ -339,8 +339,12 @@ C              Determine RPA excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
 C------------------------------------------------------------------
 C
-               CALL RP_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                        WORK(KFOCKD),LFOCKD,WORK(KEND2),LWORK2)
+               CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
+     &                        DUMMY,0,DUMMY,
+     &                        0,DUMMY,0,DUMMY,
+     &                        0,WORK(KFOCKD),LFOCKD,
+     &                        WORK(KEND2),LWORK2)
+
 C
 C----------------------------------------------------
 C              Copy RPA excitation energies to EXENG.

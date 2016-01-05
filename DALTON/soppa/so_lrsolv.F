@@ -11,7 +11,7 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C     Andrea Ligabue, December 2003: linear response functions 
 C                                    implemented
 C
-C     PURPOSE: Solve the SOPPA linear response equations 
+C     PURPOSE: Solve the linear response equations 
 C              using an AO-driven algorithm. 
 C
 #ifdef VAR_MPI
@@ -79,10 +79,9 @@ C     by using unit vectors as trial vectors.
 C==============================================================
 C
       IF (SOPCHK) THEN
-C
-         CALL SO_CHECK(DENSIJ,LDENSIJ,DENSAB,LDENSAB,T2MP,LT2MP,
+         CALL SO_CHECK('MODEL',DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &                 T2MP,LT2MP,
      &                 FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
-C
       END IF
 C
 C-----------------------------------------------------------------
