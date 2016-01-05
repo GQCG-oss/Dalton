@@ -1,3 +1,13 @@
+2017.0 (20XX-XX-XX)
+===================
+
+- This will be in dalton2017. Please write something here if you implement new features!
+
+
+Do not make changes below this line! For the relase branch only.
+----------------------------------------------------------------
+
+
 2016.1 (20XX-XX-XX)
 ===================
 
