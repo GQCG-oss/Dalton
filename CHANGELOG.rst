@@ -1,3 +1,22 @@
+2016.1 (20XX-XX-XX)
+===================
+
+Should we keep the separation between common, dalton and lsdalton?
+
+- This will be the next patch.
+- Write me ...
+
+Common
+------
+
+DALTON
+------
+
+- Fixed error in the printing of the cpu/wall time used in Sirius
+
+LSDALTON
+--------
+
 2016.0 (2015-12-22)
 ===================
 
