@@ -861,8 +861,8 @@ C
       TIMSIR = TEND - TIMSIR
       WALSIR = WEND - WALSIR
       WRITE (LUPRI,'()')
-      CALL TIMTXT(' Total CPU  time used in SIRIUS :',CTOT,LUPRI)
-      CALL TIMTXT(' Total wall time used in SIRIUS :',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in SIRIUS :',TIMSIR,LUPRI)
+      CALL TIMTXT(' Total wall time used in SIRIUS :',WALSIR,LUPRI)
       CALL TSTAMP(' ',LUPRI)
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,7100)  TIMSIR, WALSIR
