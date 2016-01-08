@@ -16,11 +16,17 @@ C
 #include "ccsdsym.h"
 #include "inftap.h"
 #include "soppinf.h"
+CClark:7/1/2016
+#include "cbiexc.h"
+CClark:end
 C
       LOGICAL     FNDLB2
       DIMENSION   PRP1(LPRP1), WORK(LWORK)
       PARAMETER   (DM1 = -1.0D0, D0 = 0.0D0, D1 =1.0D0 )
-      CHARACTER*8 LABEL, RTNLBL(2)
+      CHARACTER*8 LABEL, RTNLBL(2),
+CClark:7/1/2016
+     &            FNAME
+CClark:end
       LOGICAL     EXTST, OPENED
 C
 C------------------
@@ -47,39 +53,53 @@ C     Open file containing one-electron AO property integrals
 C     and rewind.
 C------------------------------------------------------------
 C
-      CALL GPINQ('AOPROPER','OPENE',OPENED)
+CClark:20/11/2015
+      IF (LABEL(1:3) .EQ. 'COS' .OR. LABEL(1:3) .EQ. 'SIN') THEN
+C
+         FNAME = 'AOGOS   '
+         LUFILE = LUAOGOS
+C
+      ELSE 
+         FNAME = 'AOPROPER'
+         LUFILE = LUPROP
+C
+      ENDIF
+CClark:end
+C
+      CALL GPINQ(FNAME,'OPENE',OPENED)
       IF (OPENED) THEN
-         INQUIRE (FILE='AOPROPER',NUMBER=LUPROP)
-         WRITE(LUPRI,'(2A,I3)') ' SO_ONEP: file AOPROPER is already',
-     &                          ' opened with unit number ',LUPROP
+         INQUIRE (FILE=FNAME,NUMBER=LUFILE)
+         WRITE(LUPRI,'(4A,I3)') ' SO_ONEP: file',FNAME,' is already',
+     &                          ' opened with unit number ',LUFILE
       ELSE
-         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
+         IF (LUFILE .LE. 0) CALL GPOPEN(LUFILE,FNAME,'OLD',' ',
      &                                  'UNFORMATTED',IDUMMY,.FALSE.)
       ENDIF
-      REWIND LUPROP
+      REWIND LUFILE
 C
 C-----------------------
 C     Read AO integrals.
 C-----------------------
 C
-      IF ( FNDLB2(LABEL,RTNLBL,LUPROP,LUERR)) THEN
+      IF ( FNDLB2(LABEL,RTNLBL,LUFILE,LUERR)) THEN
 C
          IF ( RTNLBL(2) .EQ. 'SQUARE  ' ) THEN
             WRITE(LUPRI,*) 'WARNING: The code for square property ',
      &                 'integrals is not tested'
-            CALL READT(LUPROP,N2BASX,WORK(KPAOI))
+            CALL READT(LUFILE,N2BASX,WORK(KPAOI))
          ELSE IF ( RTNLBL(2) .EQ. 'SYMMETRI' ) THEN
-            CALL READT(LUPROP,NNBASX,WORK(KPAOI))
+            CALL READT(LUFILE,NNBASX,WORK(KPAOI))
          ELSE IF ( RTNLBL(2) .EQ. 'ANTISYMM' ) THEN
-            CALL READT(LUPROP,NNBASX,WORK(KPAOI))
+            CALL READT(LUFILE,NNBASX,WORK(KPAOI))
          ELSE
-            CALL QUIT('Error: No antisymmetry label on LUPROP')
+            CALL QUIT('Error: No antisymmetry label on '//FNAME)
          END IF
 C
       ELSE
 C
-         WRITE(LUPRI,'(/3A)') 'ERROR: ',LABEL,' integrals not on LUPROP'
-         CALL QUIT('Property integrals not found on LUPROP.')
+         WRITE(LUPRI,'(/4A)') 'ERROR: ',LABEL,
+     &                        ' integrals not on ',FNAME
+         CALL QUIT('Property integrals not found on '//TRIM(FNAME)//'.')
 C
       END IF
 C
@@ -87,7 +107,13 @@ C----------------
 C     Close file.
 C----------------
 C
-      CALL GPCLOSE (LUPROP,'KEEP')
+CClark:8/1/2016
+      IF (LABEL(1:3) .NE. 'COS' .AND. LABEL(1:3) .NE. 'SIN') THEN
+C
+         CALL GPCLOSE (LUFILE,'KEEP')
+C
+      ENDIF
+CClark:end
 C
 C---------------------------------------------------------------------
 C     Repack the integrals to the order used in the CC and SOPPA code.

@@ -29,7 +29,7 @@ C  /* Deck excinp */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-      PARAMETER (NTABLE = 16)
+      PARAMETER (NTABLE = 17)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbiexc.h"
@@ -46,7 +46,10 @@ C    *            '.MAXRED', '.MAXPHP','.TRIPLE','.XXXXXX',
      *            '.MAXRED', '.MAXPHP','.TRIPLE','.MAGPRP',
 Cend-PFP
      *            '.OPTORB', '.NEXCIT','.DIPSTR','.PRINT ',
-     *            '.ROTVEL', '.FNAC  ','.STOP  ','.SUMRUL'/
+     *            '.ROTVEL', '.FNAC  ','.STOP  ','.SUMRUL',
+CClark:7/1/2016
+     *            '.STOPPW'/
+CClark:end
 C
       NEWDEF = (WORD .EQ. '*EXCITA')
       ICHANG = 0
@@ -63,7 +66,8 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),
+     &                      I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -143,6 +147,13 @@ C                 DIPSTR = .TRUE.
 CKeinSPASmehr
                   ICHANG = ICHANG + 1
                GO TO 100
+CClark:7/1/2016
+   17          CONTINUE
+               STOPPW = .TRUE.
+               READ (LUCMD,*) QMIN,QMAX,QSTEP 
+               ICHANG = ICHANG + 1
+               GO TO 100
+CClark:end
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -198,6 +209,12 @@ C
      &         ' First order nonadiabatic coupling elements'
             IF (CUT) WRITE (LUPRI,'(//A)')
      &         ' Program is stopped after EXCITA.'
+CClark:7/1/2016
+            IF (SUMRUL) WRITE (LUPRI,'(A)') 
+     &         ' Dipole Oscillator Strength Sum Rule.'
+            IF (STOPPW) WRITE (LUPRI,'(A)')
+     &         ' Stopping Power from Generalized Oscillator Strength.'
+CClark:end
          END IF
       END IF
 
@@ -235,6 +252,10 @@ C
 CPFP 
       MAGPRP = .FALSE.
 Cend-PFP
+CClark:7/1/2016
+      SUMRUL = .FALSE.
+      STOPPW = .FALSE.
+CClark:end
       CALL IZERO(NEXCIT,8)
       THREXC = 1.D-04
       MAXITE = 60

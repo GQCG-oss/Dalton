@@ -4,7 +4,7 @@ C  /* Deck so_collect_tm */
 CSPAS:23/5-11: second and third moment sum rules
      &                         TQLEN,TQVEL,TTLEN,
 CKeinSPASmehr
-     &                         TRLON,TRMAG,BSRLON,EXENG)
+     &                         TRLON,TRMAG,TRGOS,BSRLON,EXENG)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C   
@@ -33,6 +33,9 @@ CSPAS:23/5-11: second and third moment sum rules
 CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI),        TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI),       EXENG(NSYM,MXNEXI)
+CClark:7/1/2016
+      DIMENSION TRGOS(3,MXNEXI)
+CClark:end
 C
 C------------------
 C     Add to trace.
@@ -130,6 +133,25 @@ C
      &                          -TRMOM * EXENG(ISYMTR,IEXCI)
          IF (LABEL(7:7).EQ.'Z') BSRLON(3,ISYMTR,IEXCI) =
      &                          -TRMOM * EXENG(ISYMTR,IEXCI)
+C
+CClark:22/12/2015
+      ELSE IF (LABEL(1:5).EQ.'COS K') THEN
+C
+         IF (LABEL(6:6).EQ.'X') TRGOS(1,IEXCI) = 
+     &       TRGOS(1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Y') TRGOS(2,IEXCI) = 
+     &       TRGOS(2,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Z') TRGOS(3,IEXCI) = 
+     &       TRGOS(3,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+C
+      ELSE IF (LABEL(1:5).EQ.'SIN K') THEN
+C
+         IF (LABEL(6:6).EQ.'X') TRGOS(1,IEXCI) = 
+     &      TRGOS(1,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Y') TRGOS(2,IEXCI) = 
+     &       TRGOS(2,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
+         IF (LABEL(6:6).EQ.'Z') TRGOS(3,IEXCI) = 
+     &       TRGOS(3,IEXCI) + TRMOM * TRMOM * EXENG(ISYMTR,IEXCI)
 C
       ENDIF
 C

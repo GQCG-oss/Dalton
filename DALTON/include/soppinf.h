@@ -53,6 +53,10 @@
 !    LURO1?: we probably shouldn't save S*Tr on disk...     
      &           LURO1E, LURO1D,                                        &
      &           LUDIAG, LUDENS, LUFOCK,                                &
+!Clark:7/1/2016
+     &           LUAOGOS,LUGOS,                                         &
+!Clark:end
+
      &           LUSAI1, LUSAI2, LUSDA1, LUSDA2,                        &
      &           LUBT1E, LUBT1D, LUBJ1E, LUBJ1D,                        &
      &           LURI1E, LURI1D, LURI2E, LURI2D,                        &
@@ -102,6 +106,9 @@
      &                 LURS1E, LURS1D, LURS2E, LURS2D,                  &
      &                 LURO1E, LURO1D,                                  &
      &                 LUDIAG, LUDENS, LUFOCK,                          &
+!Clark:7/1/2016
+     &                 LUAOGOS,LUGOS,                                   &
+!Clark:end
      &                 LUSAI1, LUSAI2, LUSDA1, LUSDA2,                  &
      &                 LUBT1E, LUBT1D, LUBJ1E, LUBJ1D,                  &
      &                 LURI1E, LURI1D, LURI2E, LURI2D,                  &

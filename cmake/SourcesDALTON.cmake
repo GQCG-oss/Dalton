@@ -730,6 +730,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_trial2.F
     DALTON/soppa/so_trial3.F
     DALTON/soppa/so_trmom.F
+    DALTON/soppa/so_trmom_1.F
     DALTON/soppa/so_twofock.F
     DALTON/soppa/so_write.F
     DALTON/soppa/so_writeset.F

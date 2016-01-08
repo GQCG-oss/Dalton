@@ -32,6 +32,11 @@ CKeinSPASmehr
 #include "soppinf.h"
 #include "mxcent.h"
 #include "nuclei.h"
+CClark:7/1/2016
+#include "dummy.h"
+#include "orgcom.h"
+#include "iratdef.h"
+CClark:end
 C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION TRLEN(3,NSYM,MXNEXI), TRVEL(3,NSYM,MXNEXI)
@@ -47,22 +52,22 @@ C
 C      
       CHARACTER*8 LABEL, PDENS_LABEL
       CHARACTER*5 MODEL
+      LOGICAL  IMAGPROP
+C
+CClark:7/1/2016
+      REAL*8      ORSAVE(3)
+      REAL*8      TRGOS(3,MXNEXI)
       CHARACTER*8 RTNLBL(2)
-      LOGICAL  IMAGPROP,DOUBLES
-
+      CHARACTER*8 LABAPPG(6)
+      INTEGER     LABSYMG(6)
+      LOGICAL     FNDLAB
+CClark:end
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_TRMOM')
-C
-C------------------------
-C     Do we need doubles?
-C------------------------
-C
-      DOUBLES = MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'AOSOC'.OR.
-     &          MODEL.EQ.'DCRPA'
 C
       WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ', ISYMTR
       LURDENSE = -1
@@ -81,154 +86,241 @@ C
          LABEL  = LABAPP(IPRLBL)
          KSYMOP = LABSYM(IPRLBL)
 C
-C-----------------------------------------------------------------
-C        Check if integrals are second moment of charge integrals.
-C-----------------------------------------------------------------
+CClark:7/1/2016
+C--------------------------------------------------------
+C     For this label, read integrals and process them.
+C--------------------------------------------------------
 C
-CSPAS:23/5-11: second and third moment sum rules
-C        IF ( LABEL(3:8) .EQ. 'SECMOM' ) GOTO 200
-CKeinSPASmehr
-C
-C---------------------------------------------------------------------
-C       If KSYMOP (the operator symmetry) equals ISYMTR (the reference
-C       state symmetry times excited state symmmety) calculate the
-C       transition moment.
-C---------------------------------------------------------------------
-C
-         IF (KSYMOP .EQ. ISYMTR) THEN
-C
-C-------------------------------------
-C           Allocation of work space.
-C-------------------------------------
-C
-            LTRMOM  = NEXCI
-C
-            KTRMOM  = 1 
-C
-C----------------------------------
-C     Space for MO property matrix.
-C----------------------------------
-C
-            LPRP1 = N2BST(ISYMTR)
-            KPRP1 = KTRMOM + LTRMOM
-            KEND1 = KPRP1 + LPRP1
-            LWORK1  = LWORK  - KEND1
-C
-
-C     And perturbed density matrix            
-            LPDENSIJ = NIJDEN(ISYMTR)
-            IF (MODEL.EQ.'AORPA') THEN
-               LPDENSAB = 0
-            ELSE
-               LPDENSAB = NABDEN(ISYMTR)
-            ENDIF
-            LPDENSAI = NAIDEN(ISYMTR)
-         
-            KPDENSIJ = KEND1 
-            KPDENSAB = KPDENSIJ + LPDENSIJ
-            KPDENSAI = KPDENSAB + LPDENSAB
-            KEND2    = KPDENSAI + LPDENSAI
-            LWORK2   = LWORK - KEND2
-
-            CALL SO_MEMMAX ('SO_TRMOM',LWORK2)
-            IF (LWORK2 .LT. 0)  CALL STOPIT('SO_TRMOM',' ',KEND2,LWORK)
-C
-C----------------------------------------------------------------------
-C           Transform the property integrals to MO basis 
-C----------------------------------------------------------------------
-C
-            CALL SO_ONEPMO(WORK(KPRP1),LPRP1,LABEL,ISYMTR,
-     &                     RTNLBL,WORK(KEND1),LWORK1)
-C
-            IMAGPROP = RTNLBL(2).EQ.'ANTISYMM' 
-C
-C           Factor for D-ex part of gradient
-            DFACTOR = -ONE
-            IF (IMAGPROP) DFACTOR = ONE
-C
-C-----------------------------------------------------------
-C           Loop over excitations of the specified symmetry.
-C-----------------------------------------------------------
-C
-            DO 100 IEXCI = 1,NEXCI
-C
-C-------------------------------------------------------------
-C              Calculate excitation part of transition moment.
-C-------------------------------------------------------------
-C
-               EEXCIT=EXENG(ISYMTR,IEXCI)
-               CALL SO_FNDPOS(PDENS_LABEL,EEXCIT,LURDENSE)
-               LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
-               IF (MODEL.EQ.'AORPA') THEN
-                  CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSE)
-                  CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
-               ELSE
-                  CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSE) 
-               ENDIF
-               CALL SO_PROPMO(ISYMTR,CONTE,
-     &                        MODEL.NE.'AORPA',IMAGPROP,
-     &                        WORK(KPRP1),LPRP1,
-     &                        WORK(KPDENSIJ),LPDENSIJ,
-     &                        WORK(KPDENSAB),LPDENSAB,
-     &                        WORK(KPDENSAI),LPDENSAI)
-C
-C----------------------------------------------------------------
-C              Calculate de-excitation part of transition moment.
-C----------------------------------------------------------------
-C
-               CALL SO_FNDPOS(PDENS_LABEL,EEXCIT,LURDENSD)
-               LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
-               IF (MODEL.EQ.'AORPA') THEN
-                  CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSD)
-                  CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
-               ELSE
-                  CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSD) 
-               ENDIF
-               CALL SO_PROPMO(ISYMTR,CONTD,
-     &                        MODEL.NE.'AORPA',IMAGPROP,
-     &                        WORK(KPRP1),LPRP1,
-     &                        WORK(KPDENSIJ),LPDENSIJ,
-     &                        WORK(KPDENSAB),LPDENSAB,
-     &                        WORK(KPDENSAI),LPDENSAI)
-C
-C-------------------------------------------------------------------
-C              Calculate total transiton moment and write to output.
-C-------------------------------------------------------------------
-C
-               WORK(KTRMOM+IEXCI-1) = CONTE + DFACTOR * CONTD
-               IF ( IPRSOP .GE. 4) THEN
-C
-                  WRITE(LUPRI,'(/,1X,A,A,I3,A)')
-     &            LABEL,' transition moment for state',IEXCI,':'
-                  WRITE(LUPRI,'(2(F10.5,A),F10.5)')
-     &            CONTE,' + ',CONTD*DFACTOR,
-     &            ' = ',WORK(KTRMOM+IEXCI-1)
-C
-               END IF
-C
-C---------------------------------------------------
-C              Collect transition moments in arrays.
-C---------------------------------------------------
-C
-               CALL SO_COLLECT_TM(ISYMTR,LABEL,IEXCI,
-     &                            WORK(KTRMOM+IEXCI-1),TRLEN,TRVEL,
-CSPAS:23/5-11: second and third moment sum rules
-     &                            TQLEN,TQVEL,TTLEN,
-CKeinSPASmehr
-     &                            TRLON,TRMAG,BSRLON,EXENG)
-C
-  100       CONTINUE
-C
-         END IF
+         CALL SO_TRMOM_1(MODEL,LABEL,KSYMOP,ISYMTR,NEXCI,
+     &                    T2AM,LT2AM,DENSIJ,LDENSIJ,
+     &                    DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                    TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
+     &                    BSRLON,EXENG,DUMMY,WORK,LWORK,
+     &                    LURDENSE,LURDENSD)
+CClark:end
 C
   200 CONTINUE
+C
+CClark:7/1/2016
+C---------------------------------------
+C     For calculation of stopping power.
+C---------------------------------------
+C
+      IF (STOPPW) THEN
+C
+C---------------------------------------
+C     Open file AOGOS(integrals) and GOS
+C---------------------------------------
+C
+         LUAOGOS = -1
+         LUGOS   = -1
+C
+         CALL GPOPEN(LUAOGOS,'AOGOS   ','UNKNOWN',' ',
+     &               'UNFORMATTED',IDUMMY,.FALSE.)
+         CALL GPOPEN(LUGOS,'GOS     ','UNKNOWN',' ',
+     &               'FORMATTED',IDUMMY,.FALSE.)
+         CALL GETDAT(RTNLBL(1),RTNLBL(2))
+         RTNLBL(2)='SYMMETRI'
+         CALL NEWLB2('EOFLABEL',RTNLBL,LUAOGOS,LUPRI)
+C
+C------------------------------
+C     Allocation of work space.
+C------------------------------
+C
+         LPAOI  = NNBASX*6
+C
+         KDLAB  = 1
+         KIDSYM = KDLAB  + 9*MXCENT
+         KIDADR = KIDSYM + 9*MXCENT
+         KPAOI  = KIDADR + 9*MXCENT
+         KEND1  = KPAOI + LPAOI
+         LWORK1 = LWORK - KEND1
+C
+         CALL SO_MEMMAX ('RP_TRMOM',LWORK1)
+         IF (LWORK1 .LT. 0) CALL STOPIT ('RP_TRMOM',' ',KEND1,LWORK)
+C
+C---------------------------------------------------
+C     Save origins and calculate domain of q values.
+C---------------------------------------------------
+C
+         CALL DCOPY(3,ORIGIN,1,ORSAVE,1)
 
+         LSTEP = INT((QMAX-QMIN)/QSTEP)
+C
+C--------------------------------------------
+C     Loop over x,y,z components of q values.
+C--------------------------------------------
+C
+         DO IQ=0,LSTEP
+C
+            ORIGIN(1)=QMIN+IQ*QSTEP
+            ORIGIN(2)=QMIN+IQ*QSTEP
+            ORIGIN(3)=QMIN+IQ*QSTEP
+C
+C-------------------------------
+CDeterminte Cos & Sin integrals.
+C-------------------------------
+C
+            NCOMP   = 6
+            NPATOM  = 0
+            NLBTOTG = 0
+C
+            CALL GET1IN(WORK(KPAOI),'EXPIKR ',NCOMP,WORK(KEND1),
+     &                  LWORK1,WORK(KDLAB),WORK(KIDSYM),
+     &                  WORK(KIDADR),IDUMMY,.FALSE.,NPATOM,.TRUE.,
+     &                  DUMMY,.FALSE.,DUMMY,IPRINT)
+C
+            IF (IPRSOP .GT. 5) THEN
+               CALL AROUND('COS KX/K Integrals in atomic basis')
+               CALL OUTPAK(WORK(KPAOI),NBAST,1,LUPRI)
+               CALL AROUND('COS KY/K Integrals in atomic basis')
+               CALL OUTPAK(WORK(KPAOI+NNBASX),NBAST,1,LUPRI)
+               CALL AROUND('COS KZ/K Integrals in atomic basis')
+               CALL OUTPAK(WORK(KPAOI+2*NNBASX),NBAST,1,LUPRI)
+               CALL AROUND('SIN KX/K Integrals in atomic basis')
+               CALL OUTPAK(WORK(KPAOI+3*NNBASX),NBAST,1,LUPRI)
+               CALL AROUND('SIN KY/K Integrals in atomic basis')
+               CALL OUTPAK(WORK(KPAOI+4*NNBASX),NBAST,1,LUPRI)
+               CALL AROUND('SIN KZ/K Integrals in atomic basis')
+               CALL OUTPAK(WORK(KPAOI+5*NNBASX),NBAST,1,LUPRI)
+            END IF
+C
+C------------------------------------------
+C     Set labels and symmetry of integrals.
+C------------------------------------------
+C
+            NLAB = 6
+C
+            CALL LABCOP(NLAB,NLBTOTG,WORK(KDLAB),WORK(KIDSYM),
+     &                  LABAPPG,LABSYMG)
+C
+C-------------------
+C     Write integals
+C-------------------
+C                 CALL GETDAT(RTNLBL(1),RTNLBL(2))
+C         Replace time information with symmetry information$
+C                 RTNLBL(2)='SYMMETRI'
+C
+C         Place LUAOGOS in correct position for writing
+            REWIND LUAOGOS
+            IF (.NOT.FNDLAB('EOFLABEL',LUAOGOS)) THEN
+               WRITE (LUPRI,'(/A)') 
+     &                ' End of file not found in AOGOS?'
+               CALL QUIT('Internal error, EOF not found in AOGOS')
+            END IF
+            BACKSPACE LUAOGOS
+
+C
+            LEN = MAX (4,NNBASX)
+            CALL NEWLB2(LABAPPG(1),RTNLBL,LUAOGOS,LUPRI)
+            CALL WRITI (LUAOGOS,IRAT*LEN,WORK(KPAOI))
+            CALL NEWLB2(LABAPPG(2),RTNLBL,LUAOGOS,LUPRI)
+            CALL WRITI (LUAOGOS,IRAT*LEN,WORK(KPAOI+NNBASX*1))
+            CALL NEWLB2(LABAPPG(3),RTNLBL,LUAOGOS,LUPRI)
+            CALL WRITI (LUAOGOS,IRAT*LEN,WORK(KPAOI+NNBASX*2))
+            CALL NEWLB2(LABAPPG(4),RTNLBL,LUAOGOS,LUPRI)
+            CALL WRITI (LUAOGOS,IRAT*LEN,WORK(KPAOI+NNBASX*3))
+            CALL NEWLB2(LABAPPG(5),RTNLBL,LUAOGOS,LUPRI)
+            CALL WRITI (LUAOGOS,IRAT*LEN,WORK(KPAOI+NNBASX*4))
+            CALL NEWLB2(LABAPPG(6),RTNLBL,LUAOGOS,LUPRI)
+            CALL WRITI (LUAOGOS,IRAT*LEN,WORK(KPAOI+NNBASX*5))
+C
+C-----------------------------------------
+C     We add an extra label to signify EOF
+C-----------------------------------------
+C
+            CALL NEWLB2('EOFLABEL',RTNLBL,LUAOGOS,LUPRI)
+C
+C-----------------------------------
+C     Set trgos into zeor before use
+C-----------------------------------
+C
+            CALL DZERO(TRGOS, 3*MXNEXI)
+C
+C----------------------------------
+C     Loop over cos/sin components.
+C----------------------------------
+C
+C
+            DO L=1,6
+C
+C--------------------------------------------------------------------
+C     Process these integrals (but the workspace has to be rewritten?
+C--------------------------------------------------------------------
+
+               LABEL  = LABAPPG(L)
+               KSYMOP = LABSYMG(L)
+C
+C-----------------------------------------------------------------
+C        For this label, read integrals and process them.
+C-----------------------------------------------------------------
+C
+               CALL SO_TRMOM_1(MODEL,LABEL,KSYMOP,ISYMTR,NEXCI,
+     &                         T2AM,LT2AM,DENSIJ,LDENSIJ,
+     &                         DENSAB,LDENSAB,DENSAI,LDENSAI,
+     &                         TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,
+     &                         TRMAG,BSRLON,EXENG,TRGOS,WORK,LWORK,
+     &                         LURDENSE,LURDENSD)
+C
+            END DO
+            
+            CALL DSCAL(NEXCI*3,2.0/ORIGIN(1)**2.0,TRGOS,1)
+C
+C----------------------------------
+C        Write GOS into LUGOS file.
+C----------------------------------
+C
+            DO IEXCI = 1, NEXCI
+C
+               WRITE (LUGOS,'(/A,D16.13)') 
+     &                                'Number of q valus:', ORIGIN(1)
+               WRITE (LUGOS,'(/A,I4,A,I4,A,I4)') 'ISYMTR=',ISYMTR,
+     &                                     'NEXCI=',NEXCI,'IEXCI=',IEXCI
+               WRITE (LUGOS,'(D20.13)') TRGOS(1,IEXCI)
+               WRITE (LUGOS,'(D20.13)') TRGOS(2,IEXCI)
+               WRITE (LUGOS,'(D20.13)') TRGOS(3,IEXCI)
+C
+            END DO
+C
+            IF ( IPRSOP .GE. 1) THEN
+C
+               DO IEXCI = 1,NEXCI
+C
+                  WRITE(LUPRI,'(/,1X,A,I3)')
+     &            ' RPA generalized oscilator strength',
+     &            ISYMTR
+                  WRITE(LUPRI,9001)
+                  WRITE(LUPRI,'(A)')
+     &            ' Exci. component  Total'
+                  WRITE(LUPRI,9002)
+C
+                  WRITE(LUPRI,'(1X,I3,3X,A,10X,D20.13)') IEXCI,'X',
+     &                  TRGOS(1,IEXCI)
+                  WRITE(LUPRI,'(1X,I3,3X,A,10X,D20.13)') IEXCI,'Y',
+     &                  TRGOS(2,IEXCI)
+                  WRITE(LUPRI,'(1X,I3,3X,A,10X,D20.13)') IEXCI,'Z',
+     &                  TRGOS(3,IEXCI)
+C
+               END DO
+C
+            ENDIF
+C
+         END DO
+C
+C------------------------------------------
+C     Load Origins back and close the file.
+C------------------------------------------
+C
+         CALL DCOPY(3,ORSAVE,1,ORIGIN,1)
+C
+         CALL GPCLOSE(LUAOGOS,'KEEP')
+         CALL GPCLOSE(LUGOS,'KEEP')
+C
+      ENDIF
+C
       CALL GPCLOSE(LURDENSE,'KEEP')
       CALL GPCLOSE(LURDENSD,'KEEP')
+CClark:end
 C
 C-----------------------
 C     Remove from trace.
