@@ -23,6 +23,30 @@ All notable changes to this project will be documented in this file.
 - QFIT library - fitting charges and, if desired, dipoles to simulate the electrostatic potential from a QM wave function: (Main author: Casper Steinmann)
 - Vibrational averaging of NMR coupling constants at SOPPA/MP2 level (Main author: Rasmus Faber)
 
+### Fixed (since version 2015.1)
+- Ahlrichs-TZV basis: Fixed error in an exponent for Boron.
+- ANO-RCC basis: Fixed Carbon basis set (wrong contraction coefficients, see [MOLCAS ANO-RCC](http://www.molcas.org/ANO/).
+- ANO-RCC basis: Modified the 3 Th h-functions by replacing them with the 3 Ac h-functions to Th.  
+                 (A mistake was made in the original work when the 3 Th h-functions were made,
+                  and this has never been redone. They are too diffuse, exponents
+                  (0.3140887600, 0.1256355100, 0.0502542000) for Th, Z=90, compared to
+                  (0.7947153600, 0.3149038200, 0.1259615200) for Ac, Z=89, and
+                  (0.8411791300, 0.3310795400, 0.1324318200) for Pa, Z=91.  
+                  We have selected to just replace the 3 Th h-functions with those from the Ac basis set,
+                  because the Ac g-functions are quite close to the Th g-functions, closer than Ac g-functions,
+                  and therefore differences in results compared to optimized Th h-functions should be minimal.)  
+                  Thanks to Kirk Peterson for pointing out the Th problem on http://daltonforum.org.
+- Fixed reading of ANO-RCC basis set library file.
+- Bug fix for when more than 30 excitation energies requested (EIGENVALUES NOT PAIRED problem reported by Frank Jensen).
+- Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
+- Fixed .NEWTRA integral transformation for 32 bit integers and exactly n\*256 orbitals and no integer overflow test
+  (the first 32 bits of (n\*256)**4 are zero !!!).
+- Improved performance of .NEWTRA integral transformation for response calculations.
+- Do not include floating orbitals in calculation of smallest atom-atom distance.
+- Enable Tamm-Dancoff approximation (.TDA) for embedding models, e.g. PE, PCM etc.
+- Provide date and time stamp also for Darwin (i.e. MacOSX).
+- Assume nobody uses gfortran version 4.0.2 any more (removed special test for that).
+
 
 ## [2015.1] (2015-07-20)
 
