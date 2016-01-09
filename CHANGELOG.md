@@ -1,58 +1,50 @@
+# Change Log
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+- This will be in dalton2017. Please write something here if you implement new features!
+
+### Changed
+
+### Removed
+
+### Fixed
 
 
-2015.2 (20XX-XX-XX)
-===================
+Do not make changes below this line! For the relase branch only.
+___
 
-- This will be the next patch.
-- Write me ...
+## [2016.1] (not yet released 20XX-XX-XX)
 
-Common
-------
+### Added
 
-- Fixed error in an exponent for Boron in Ahlrichs-TZV basis
-- ANO-RCC basis: Fixed Carbon basis set (wrong contraction coefficients, see [MOLCAS ANO-RCC](http://www.molcas.org/ANO/).
-- ANO-RCC basis: Modified the 3 Th h-functions by replacing them with the 3 Ac h-functions to Th.
-                 (A mistake was made in the original work when the 3 Th h-functions were made,
-                  and this has never been redone. They are too diffuse, exponents
-                  (0.3140887600, 0.1256355100, 0.0502542000) for Th, Z=90, compared to
-                  (0.7947153600, 0.3149038200, 0.1259615200) for Ac, Z=89, and
-                  (0.8411791300, 0.3310795400, 0.1324318200) for Pa, Z=91.
-                  We have selected to just replace the 3 Th h-functions with those from the Ac basis set,
-                  because the Ac g-functions are quite close to the Th g-functions, closer than Ac g-functions,
-                  and therefore differences in results compared to optimized Th h-functions should be minimal.)
-                  Thanks to Kirk Peterson for pointing out the Th problem on http://daltonforum.org.
+### Changed
 
-DALTON
-------
+### Removed
 
-- bug fix for when more than 30 excitation energies requested (EIGENVALUES NOT PAIRED problem reported by Frank Jensen)
-- fixed reading of ANO-RCC in herbas.F
-- Fixed some bugs for two byte packing of derivative and spin-orbit two-electron integrals.
-- Fixed .NEWTRA "new" integral transformation for 32 bit integers and n*256 orbitals and no integer overflow test
-  (the first 32 bits of (n*256)**4 are zero !!!).
-- Improved performance of .NEWTRA "new" integral transformation for response calculations.
-- Do not include floating orbitals in calculation of smallest atom-atom distance
-- Some minor corrections to the Dalton manual.
-- Enable Tamm-Dancoff approximation (.TDA) for embedding models, e.g. PE, PCM etc.
-- provide date and time stamp also for Darwin (i.e. MacOSX)
-- assume nobody uses gfortran version 4.0.2 any more (removed special test for that)
+### Fixed
+- Fixed error in the printing of the cpu/wall time used in Sirius
+
+## [2016.0] (2015-12-22)
+
+### Changed
+- Separated Dalton and LSDalton.
+
+### Added
+- New faster CC3 module (Main authors: Rolf H. Myhre and Henrik Koch)
+- Parallel AO-SOPPA (Main authors: Frederik Beyer Kjær Hansen and Rasmus Faber)
+- QFIT library - fitting charges and, if desired, dipoles to simulate the electrostatic potential from a QM wave function: (Main author: Casper Steinmann)
+- Vibrational averaging of NMR coupling constants at SOPPA/MP2 level (Main author: Rasmus Faber)
 
 
-LSDALTON
---------
+## [2015.1] (2015-07-20)
 
-2015.1 (2015-07-20)
-===================
-
-Common
-------
-
+### Common
 - Added ANO-RCC basis set.
 
-
-DALTON
-------
-
+### DALTON
 - Fixed a bug in an LRESC correction. 
 - Improved calculation of one LRESC correction.
 - Update PElib (v.1.2.3): Workaround for faulty system detection using Macports CMake
@@ -68,32 +60,47 @@ DALTON
 - Some minor corrections to the Dalton manual.
 - More reasonable output for TPCD.
 
-
-LSDALTON
---------
-
+### LSDALTON
 - Fixed .UNCONT for EMSL's Dalton basis set format.
 
 
-2015.0 (2015-02-18)
-===================
+## [2015.0] (2015-02-18)
 
-See the release notes at http://daltonprogram.org for a list of new features in
-Dalton and LSDalton.
+### Common
+- Read EMSL Dalton format
+- New included basis sets: pc-seg by Frank Jensen
+- Many small improvements here and there
+
+### DALTON
+- CPP (Complex Polarization Propagator): MChD, NSCD
+- Extensions of the polarizable embedding model (QM/MM via PE library):
+  - PE-MCSCF wave function and linear response
+  - PE-CPP damped linear response
+  - PE for magnetic linear response using London atomic orbitals (LAOs)
+- PCM-SOPPA excitation energies
+- QFIT (electrostatic potential fitted charges)
+- QM/CMM approach
+- DFT-D3 and DFT-D3(BJ) dispersion energy corrections
+
+### LSDALTON
+- Geometry optimizations:
+  - Quasi-Newton transition state optimization
+  - HOPE algorithm
+- Automated Counterpoise corrected DFT, HF, DEC-MP2 and CCSD interaction energies
+- Dynamics: Nose-Hoover thermostat
+- DFT-D3 and DFT-D3(BJ) dispersion energy corrections
+- Performance improvements:
+  - Charge-constrained ADMM exchange (energy+gradients)
+  - Optimized Complex Polarization Propagator (CPP) solver for LSresponse
+- Quadratic Response calculation to compute full dipole moment matrices in LSDalton
 
 
-2013.4 (2014-07-10)
-===================
+## [2013.4] (2014-07-10)
 
-DALTON
-------
-
+### DALTON
 - Memory bugfix for serial PCM calculations (segmentation fault for large PCM cavities).
 
-
-LSDALTON
---------
-
+### LSDALTON
 - Fixed a bug in the basis set reading. This bugfix affects almost no basis sets,
   and none of the standard basis sets, but a very few general contracted basis sets
   where the first contracted function had much smaller number of
@@ -101,18 +108,12 @@ LSDALTON
 - Reduced the memory requirements for internal MPI buffer handling.
 
 
-2013.3 (2014-06-11)
-===================
+## [2013.3] (2014-06-11)
 
-Common
-------
-
+### Common
 - aug-cc-pVTZ-lresc basis set added to $BASDIR.
 
-
-DALTON
-------
-
+### DALTON
 - Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
 - Removed the maximum of 20 excitations in summary output for second and third order transition moments.
 - Warning is issued when orbitals are deleted due to linear dependencies (before SCF),
@@ -139,27 +140,18 @@ DALTON
 - Bugfix for small non-default WORK array sizes. For specific small custom values of the WORK array size
   KBLOCK was larger than MXBLCK leading to unpredictable results due to array length mismatch in DALTON/abacus/herrdn.F.
 
-
-LSDALTON
---------
-
+### LSDALTON
 - Environment variable LSDALTON_LAUNCHER introduced.
 
 
-2013.2 (2014-03-05)
-===================
+## [2013.2] (2014-03-05)
 
-Common
-------
-
+### Common
 - Recognize CYGWIN as a LINUX and UNIX system, for proper definition of compilation flags.
 - Define M_PI in C-code if not already defined (problem seen with Cygwin).
 - Added setup option --blacs to be used in combination with --scalapack; defaults to --blacs=intelmpi.
 
-
-DALTON
-------
-
+### DALTON
 - Fixed a bug in printing results in CPP-QRF.
 - New CPP solver works also for non-direct calculation.
 - More efficient evaluation of numerical Hessian when C1 symmetry
@@ -172,10 +164,7 @@ DALTON
 - Improved manual for two-photon and non-adiabatic coupling.
 - Updated/corrected g-factors for Ag, Nd, and Tl (thanks to M. Jaszunski).
 
-
-LSDALTON
---------
-
+### LSDALTON
 - Print sensible error message when running out of memory.
 - Added functionality to search through several basis-set libraries.
 - Increased max length of WRKDIR from 60 to 200.
@@ -186,12 +175,9 @@ LSDALTON
   an exchange-correlation calculation - resulting in huge memory usage for large molecular system.
 
 
-2013.1 (2013-12-19)
-===================
+## [2013.1] (2013-12-19)
 
-DALTON
-------
-
+### DALTON
 - Correct the printout of relativistic corrections to the shielding (thanks to M. Jaszunski).
 - Compilation fix for DALTON/abacus/rma_windows.F90 (Intel 10.0.011).
 - Fix of error where basis set names were changed to upper case and could not be found (reported by Yurij Rusakov).
@@ -200,10 +186,7 @@ DALTON
 - added metric scaled output of orbital response vectors in \*\*RESPONS
   (for easier interpretation of excitation operators).
 
-
-LSDALTON
---------
-
+### LSDALTON
 - Fixed a bug in Jengine, related to screening for nonsymmetric density matrices.
   This may affect CCSD and some response calculation.
 - Modified the input section of the manual concerning
@@ -215,3 +198,29 @@ LSDALTON
 - Fixed a bug for LSDALTON geometry optimization and dynamics related to
   screening. The initial Cauchy-Schwartz screening matrices were incorrectly
   used in each subsequent geometry step
+
+
+## [2013.0] (2013-11-11)
+
+### DALTON
+- Subsystems CC using Cholesky decomposition
+- Multiscale modeling using the Polarizable Embedding (PE) library.
+- Static exchange (STEX) for X-ray spectroscopy
+- Damped response via Complex Polarization Propagator (CPP)
+- Quadratic response for open-shell DFT
+- Relativistic corrections to nuclear shielding constants
+- Empirical dispersion corrections DFT-D2, DFT-D3 and DFT-D3BJ
+- Various performance improvements and a few bug fixes
+
+### LSDALTON
+- Dynamics using HF and DFT
+- More response properties, including some magnetic properties like MCD
+- DEC-MP2 energy, density and gradient
+- Local orbitals
+- Improved SCF optimization routines
+- Massively parallel CCSD 
+- MPI parallelization of HF and DFT 
+- Improved integral code including MPI parallelism
+- Matrix operation parallelization using PBLAS/SCALAPACK
+- ADMM exchange (energy, gradients)
+
