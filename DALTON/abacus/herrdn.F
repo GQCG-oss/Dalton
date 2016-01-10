@@ -1989,7 +1989,7 @@ C
         ISTART = IPOS
         DO J = 1, 3
           CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NCTOT),'REA',
-    &                IERR)
+     &                IERR)
         END DO
         IF (QM3) THEN
           CALL FREFRM(MLINE(NMLINE),ISTART,ISUBSY(NCTOT),DUMMY,
@@ -2092,13 +2092,13 @@ C
      &    ' Current limit:',MXCENT
         CALL QUIT('*** ERROR *** MXCENT exceeded in CNTINP')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,1P,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
      &    ' Atomic coordinate ',CORD(J,NCTOT),
      &    ' too large in CNTINP.',
-     &    ' Note: Program is unstable for large coordinates.',
+     &    ' Note: Program is unstable for large coordinate values.',
      &    ' Maximum coordinate value:',CORMAX
         CALL QUIT('*** ERROR: Atomic coordinate too large in CNTINP')
-      END
+      END ! SUBROUTINE CNTINP
 C  /* Deck baspro */
       SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
@@ -6443,10 +6443,10 @@ C               for ZMAT (yet?)
      &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
          CALL QUIT('Too high angular quantum no. specified in input.')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
      &    ' Atomic coordinate ',CORD(J,NUCIND),
      &    ' too large in BUILDZ',
-     &    ' Note: Program is unstable for large coordinates.',
+     &    ' Note: Program is unstable for large coordinate values.',
      &    ' Maximum coordinate value:',CORMAX
         CALL QUIT('*** ERROR: Atomic coordinate too large in BUILDZ')
       END

@@ -84,23 +84,23 @@ cs
                   ICHANG = ICHANG + 1
                GO TO 100
     2          CONTINUE
-                  READ (LUCMD, '(I5)') IPRINT
+                  READ (LUCMD,*) IPRINT
                   ICHANG = ICHANG + 1
                GO TO 100
     3          CONTINUE
-                  READ (LUCMD,'(I5)') MAXITE
+                  READ (LUCMD,*) MAXITE
                   ICHANG = ICHANG + 1
                GO TO 100
     4          CONTINUE
-                  READ (LUCMD,'(D12.6)') THRESH
+                  READ (LUCMD,*) THRESH
                   ICHANG = ICHANG + 1
                GO TO 100
     5          CONTINUE
-                  READ (LUCMD,'(I5)') MXRM
+                  READ (LUCMD,*) MXRM
                   ICHANG = ICHANG + 1
                GO TO 100
     6          CONTINUE
-                  READ (LUCMD,'(I5)') MXPHP
+                  READ (LUCMD,*) MXPHP
                   ICHANG = ICHANG + 1
                GO TO 100
     7          CONTINUE
@@ -110,7 +110,7 @@ cs
                   ICHANG = ICHANG + 1
                GO TO 100
     9          CONTINUE
-                  READ (LUCMD, '(I5)') IPRQR
+                  READ (LUCMD,*) IPRQR
                   ICHANG = ICHANG + 1
                GO TO 100
    10          CONTINUE
@@ -122,16 +122,16 @@ cs
 cs possiamo avere piu' frequenze per .B FREQ,  fino ad un massimo
 cs pari a NFMAX. LBFREQ=label freq, cioe' freq nro 1, 2,...nfmax.
 cs
-                  READ(LUCMD, *) LBFREQ 
+                  READ (LUCMD,*) LBFREQ 
                   IF(LBFREQ.GT.NFMAX) THEN
-                    WRITE(LUPRI,'(A)')
-     *               ' Too many frequencies in QR input (B OP.)'
-                    CALL QUIT('Too many frequencies in QR input (B)')
+                    WRITE(LUPRI,'(//A)') 'ERROR:'//
+     *               ' Too many B frequencies in *QRPROP input'
+                    CALL QUIT('Too many B frequencies in *QRPROP input')
                   ENDIF
 cs
 cs le frequenze sono lette nel vettore QBREQ
 cs
-                  READ(LUCMD, *) (QBFREQ(J),J=1,LBFREQ)
+                  READ (LUCMD,*) (QBFREQ(J),J=1,LBFREQ)
                   ICHANG = ICHANG + 1
                GO TO 100
    12          CONTINUE

@@ -4916,8 +4916,8 @@ C
                           IF (IPRINT .GT. 4) THEN
                             CALL AROUND('Difference between '
      &                         //LABINT(IJ)//' and '//LABINT(JI))
-                            WRITE (LUPRI,'(A,E12.6)')
-     &                      ' Largest difference for this matrix: ',
+                            WRITE (LUPRI,'(A,1P,E13.6)')
+     &                      ' Largest difference for this matrix:',
      &                       DFMAX
                             CALL OUTPAK(DIFFER,NBAST,1,LUPRI)
                           END IF
@@ -4930,7 +4930,7 @@ C
          END IF
   200    CONTINUE
   100 CONTINUE
-      WRITE (LUPRI,'(/A,I4,A,E12.6)')
+      WRITE (LUPRI,'(/A,I4,A,1P,E12.5)')
      &   ' Largest difference found for',NPQUAD,
      &   ' quadrature points: ',DIFMAX
       RETURN

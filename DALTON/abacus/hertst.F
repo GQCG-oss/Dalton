@@ -2672,7 +2672,7 @@ C
      &         ' No differences larger than threshold found.'
          WRITE (LUPRI,*)
       END IF
-      WRITE (LUPRI,'(/,A,4I3,A,//,5X,D12.6,2(A,D12.6),/)')
+      WRITE (LUPRI,'(/,A,4I3,A,//,1P,D17.5,2(A,D12.5),/)')
      &         ' Largest difference found for element',
      &         IMAX,JMAX,KMAX,LMAX,': ',
      &         DINTM - TESTM, ' = ', DINTM ,' - ',TESTM

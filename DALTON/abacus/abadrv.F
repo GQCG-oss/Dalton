@@ -2384,7 +2384,7 @@ C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(/5X,A,19X,1P,D12.6,5X,D12.6)')
+            WRITE (LUPRI,'(/5X,A,1P,D31.6,D17.6)')
      &         '##     Norm of gradient:   ',ALPNRM,ALPNRL
 C
             MAXZ = 0
@@ -2450,7 +2450,7 @@ C                    WRITE (LUPRI,'(5X,A,I5,4X,A,3F20.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(5X,A,17X,1P,E12.6,8X,E12.6)')
+            WRITE (LUPRI,'(5X,A,9X,1P,2E20.6)')
      &         '@@    Norm of gradient:',ALPNRM,ALPNRL
 C
          ELSE IF (MOLGRD) THEN
