@@ -1694,7 +1694,7 @@ cLig
       IF (.NOT.HAMILT) WRITE (LUPRI,'(/A)')
      *    ' Ordinary (field-free non-relativistic) Hamiltonian '/
      *     /'integrals not calculated.'
-      IF (MGMO2T) WRITE (LUPRI,'(/A,D12.6)')
+      IF (MGMO2T) WRITE (LUPRI,'(/A,1P,D10.2)')
      &    ' Threshold for testing two-electron part of magnetic moment:'
      &    ,PRTHRS
       IF (NMRISS) THEN
