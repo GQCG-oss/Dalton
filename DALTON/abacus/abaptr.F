@@ -2164,7 +2164,7 @@ C
          DIFFER = PVTRA(P,Q,R,S) - PVAO(P,Q,R,S)
          DIFMAX = MAX(DIFMAX,ABS(DIFFER))
          IF (ABS(DIFFER) .GT. THRS) THEN
-            WRITE (LUPRI,'(2X,3E12.6,10X,4I5)')
+            WRITE (LUPRI,'(2X,1P,3E12.5,10X,4I5)')
      &         PVTRA(P,Q,R,S), PVAO(P,Q,R,S),DIFFER,P,Q,R,S
          END IF
   400 CONTINUE

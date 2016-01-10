@@ -2657,12 +2657,10 @@ C
       IPRTYP = IWKTYP
       IF (IWKTYP .EQ. 1 .AND. IWKIND .EQ. 0) IPRTYP = ENDING_SIGNAL
       IF (IMAGE) IPRTYP = DFT_HESSTAT_WORK
-      WRITE (LUPRI,'(/2A)') ' Walk type: ', WLKTYP(IPRTYP)
-      WRITE (LUPRI,'(/A,I3)') ' Iteration number:', IPOINT
-      IF (REJECT) WRITE (LUPRI,'(/A)')
-     &      '@ Previous step was rejected - attempting shorter step.'
-      WRITE (LUPRI,'(/A,F17.10)') '  Norm of molecular gradient:',GRDNRM
-      WRITE (LUPRI,'(/A,F17.10)') '@ Energy at current point:', ERGMOL
+      WRITE (LUPRI,'(/2A)')       '@ Walk type: ', WLKTYP(IPRTYP)
+      WRITE (LUPRI,'(/A,I5)')     '@ Iteration number:', IPOINT
+      WRITE (LUPRI,'(/A,F17.10)') '@ Norm of molecular gradient:',GRDNRM
+      WRITE (LUPRI,'(/A,F17.10)') '@ Energy at current point:   ',ERGMOL
       IF (IPOINT .GT. 0) THEN
          WRITE (LUPRI,'( A,F17.10)')
      &                      '  Energy at initial point:', ESTART
@@ -2670,11 +2668,13 @@ C
      &         '  Change in energy since start of walk:',
      &                   ERGMOL - ESTART,  ' au',
      &                   XKJMOL*(ERGMOL - ESTART), ' kJ/mol',
-     &                   XKCMOL*(ERGMOL - ESTART), ' kCal/mol'
+     &                   XKCMOL*(ERGMOL - ESTART), ' kcal/mol'
          IF (.NOT.REJECT) WRITE (LUPRI,'(/A,F6.2)')
      &      '@ Ratio between actual and predicted energies:',
      &       (ERGMOL - ERGMLX)/ERGSCX
       END IF
+      IF (REJECT) WRITE (LUPRI,'(/A)')
+     &      '@ Previous step was rejected - attempting shorter step.'
 C
       IF (IWKTYP .EQ. 3 .OR. IWKTYP .EQ. 7) THEN
 C
@@ -2698,25 +2698,24 @@ C
      &      '@ Accumulated time before step: ',
      &        TACCUM - TIMSTP, ' au  ',D15*XFSEC*(TACCUM - TIMSTP),' fs'
          EKINX = EKIN0 + ESTART - ERGMOL
-         WRITE (LUPRI,'(/A,1P,E12.6)')
-     &     ' Kinetic energy before step - exact       : ', EKINX
+         WRITE (LUPRI,'(/A,1P,E13.6)')
+     &      ' Kinetic energy before step - exact       :', EKINX
          IF (IPOINT .GT. 0) THEN
-            WRITE (LUPRI,'(/A,1P,E12.6)')
-     &        ' Kinetic energy at initial point          : ', EKIN0
-            WRITE (LUPRI,'(/A,1P,E12.6)')
-     &        ' Accumulated kinetic energy since start   : ',
-     &          EKINX - EKIN0
+            WRITE (LUPRI,'(/A,1P,E13.6)')
+     &      ' Kinetic energy at initial point          :', EKIN0
+            WRITE (LUPRI,'(/A,1P,E13.6)')
+     &      ' Accumulated kinetic energy since start   :', EKINX - EKIN0
             ERROR = D100*(EKINX - EKINTO)/EKINX
-            WRITE (LUPRI,'( A,1P,E12.6,A,0P,F5.1,A)')
-     &        '                            - from momenta: ', EKINTO,
-     &        ' (',ERROR,'% error)'
+            WRITE (LUPRI,'( A,1P,E13.6,A,0P,F5.1,A)')
+     &      '                            - from momenta:', EKINTO,
+     &      ' (',ERROR,'% error)'
          END IF
-         IF (ABS(VREL) .GT. D0) WRITE(LUPRI,'(/A,1P,E12.6,A,0P,F6.2,A)')
-     &      '@ Relative velocity before step            : ', ABS(VREL),
+         IF (ABS(VREL) .GT. D0) WRITE(LUPRI,'(/A,1P,E13.6,A,0P,F6.2,A)')
+     &      '@ Relative velocity before step            :', ABS(VREL),
      &      ' (',DM13*ABS(VREL)*XTANG/XFSEC, 'km/s)'
          IF (ABS(EKINPA) .GT. D0) THEN
-            WRITE (LUPRI,'( A,1P,E12.6,A,0P,F5.1,A)')
-     &      '@ Relative translational energy before step: ', EKINPA,
+            WRITE (LUPRI,'( A,1P,E13.6,A,0P,F5.1,A)')
+     &      '@ Relative translational energy before step:', EKINPA,
      &      ' (',D100*EKINPA/EKINTO,'% of total)'
          END IF
 C
@@ -2845,16 +2844,16 @@ C
                   GRADNR = D0
                END IF
                IF (PRJTRO) THEN
-                  WRITE (LUPRI,'(3(3X,I2,7X),1P,D12.6,3X,I2,10X,D8.2)')
+                  WRITE (LUPRI,'(3(I5,7X),1P,D12.5,I5,D18.2)')
      *                  IREP + 1, NCRREP(IREP,1) - NPRREP(IREP),
      *                  NPRREP(IREP), GRADNR, INDHES(IREP), CNDHES(IREP)
                ELSE
-                  WRITE (LUPRI,'(3(3X,I2,7X),1P,D12.6,3X,I2)')
+                  WRITE (LUPRI,'(3(I5,7X),1P,D12.5,I5)')
      *                  IREP + 1, NCRREP(IREP,1) - NPRREP(IREP),
      *                  NPRREP(IREP), GRADNR, INDHES(IREP)
                END IF
             ELSE
-               WRITE (LUPRI,'(3(3X,I2,7X))')
+               WRITE (LUPRI,'(3(I5,7X))')
      *                IREP + 1, NCRREP(IREP,1) - NPRREP(IREP),
      *                NPRREP(IREP)
             END IF
@@ -3130,7 +3129,7 @@ C
       END IF
 C
       IF (IPRWLK .GT. 2) THEN
-         WRITE (LUPRI,'(/A,1P,D12.6)') ' Norm of gradient   ',GRDNRM
+         WRITE (LUPRI,'(/A,1P,D14.6)') ' Norm of gradient ',GRDNRM
         IF (IWKTYP .NE. 6) THEN
 C        ... Hessian index not calculated for numerical differentiation
          WRITE (LUPRI,'(A,I5)')        ' Totally sym.  index',INDHES(0)
@@ -4465,11 +4464,11 @@ C
          WRITE (LUPRI,'(A,L5)')       ' INDXOK ', INDXOK
          WRITE (LUPRI,'(A,L5)')       ' KEEPSY ', KEEPSY
          WRITE (LUPRI,'(A,L5)')       ' WFPRED ', WFPRED
-         WRITE (LUPRI,'(A,1P,D12.6)') ' ANHRAD ', ANHRAD
-         WRITE (LUPRI,'(A,1P,D12.6)') ' ZERGRD ', ZERGRD
-         WRITE (LUPRI,'(A,1P,D12.6)') ' RADIUS ', RADIUS
-         WRITE (LUPRI,'(A,1P,D12.6)') ' XMXNUC ', XMXNUC
-         WRITE (LUPRI,'(A,1P,D12.6)') ' TIMSTP ', TIMSTP
+         WRITE (LUPRI,'(A,1P,D13.6)') ' ANHRAD ', ANHRAD
+         WRITE (LUPRI,'(A,1P,D13.6)') ' ZERGRD ', ZERGRD
+         WRITE (LUPRI,'(A,1P,D13.6)') ' RADIUS ', RADIUS
+         WRITE (LUPRI,'(A,1P,D13.6)') ' XMXNUC ', XMXNUC
+         WRITE (LUPRI,'(A,1P,D13.6)') ' TIMSTP ', TIMSTP
          CALL HEADER('Gradient in WLKGEO',-1)
          CALL OUTPUT(GRDDIA,1,1,1,NINTER,1,NCART,1,LUPRI)
          CALL HEADER('Eigenvalues in WLKGEO',-1)
@@ -4681,8 +4680,8 @@ C
          WRITE (LUPRI,'(A,I5)')       ' NNEG   ', NNEG
          WRITE (LUPRI,'(A,L5)')       ' IMAGE  ', IMAGE
          WRITE (LUPRI,'(A,L5)')       ' KEEPSY ', KEEPSY
-         WRITE (LUPRI,'(A,1P,D12.6)') ' RADIUS ', RADIUS
-         WRITE (LUPRI,'(A,1P,D12.6)') ' TIMSTP ', TIMSTP
+         WRITE (LUPRI,'(A,1P,D13.6)') ' RADIUS ', RADIUS
+         WRITE (LUPRI,'(A,1P,D13.6)') ' TIMSTP ', TIMSTP
          CALL HEADER('Gradient in WLKSTP',-1)
          CALL OUTPUT(GRDDIA,1,1,1,NVEC,1,NCART,1,LUPRI)
          CALL HEADER('Eigenvalues in WLKSTP',-1)
@@ -5855,7 +5854,7 @@ C        integration is to the boundary RADIUS
 C
          TIMSTP = WLKIRN(GRDDIA,EVAL,NCART,RADIUS,IPRINT)
          IF (TIMSTP .GT. TMAX) THEN
-            WRITE (LUPRI,'(//A,2(/A,1P,E12.6),/A)')
+            WRITE (LUPRI,'(//A,2(/A,1P,E12.5),/A)')
      &         ' WARNING: Time step exceeded in WLKIRN!',
      &         ' Time step determined in WLKIRN:', TIMSTP,
      &         ' Maximum time step allowed:     ', TMAX,
@@ -7684,7 +7683,7 @@ C
          CALL HEADER('OMO overlap matrix in WLKOR1',-1)
          CALL OUTPUT(S22OMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       END IF
-      WRITE (LUPRI,'(/A,E12.6,/A,2I4)')
+      WRITE (LUPRI,'(/A,1P,E12.5,/A,2I4)')
      &   ' Largest deviation from orthonormality of OMOs:',DIFMAX,
      &   ' - found for element ',IDIFMX,JDIFMX
 
@@ -7722,7 +7721,7 @@ C
             CALL HEADER('Antisymmetric part of WT in WLKOR1',-1)
             CALL OUTPUT(S22OMO,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
          END IF
-         WRITE (LUPRI,'(/A,E12.6,/A,2I4)')
+         WRITE (LUPRI,'(/A,1P,E12.5,/A,2I4)')
      &      ' Largest deviation from Hermiticity of UMO/OMO overlaps:',
      &        DIFMAX,
      &      ' - found for element ',IDIFMX,JDIFMX

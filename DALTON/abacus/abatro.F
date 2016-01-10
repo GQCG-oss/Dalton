@@ -108,7 +108,7 @@ C                 -- currently RDTRO only possible if NOROT
                WRITE (LUPRI,'(A,I5)') ' Print level in TROINV:',IPRINT
             END IF
             IF (THRESH .NE. THRSHD) THEN
-               WRITE(LUPRI,'(A,D12.6)')
+               WRITE(LUPRI,'(A,1P,D10.2)')
      *            ' Threshold for linear dependence: ',THRESH
             END IF
             IF (NOROT1) WRITE (LUPRI,'(/,A,/)')
@@ -863,10 +863,10 @@ C
   430 CONTINUE
  1000 CONTINUE
       IF (NSET .NE. NCDEP) THEN
-         WRITE (LUPRI,'(/,2A,/,A,/)')
-     &         ' ERROR in SETDEP - less than 6 (5)',
-     &         ' independent Cartesian directions',' found.'
-         WRITE (LUPRI,'(A,E12.6)')
+         WRITE (LUPRI,'(/A/)')
+     &         ' ERROR in SETDEP - less than 6 (5)'//
+     &         ' independent Cartesian directions found.'
+         WRITE (LUPRI,'(A,1P,E10.2)')
      &         ' Current threshold for dependency: ',THRESH
          WRITE (LUPRI,'(2A)')
      &         ' Attempt calculation with decreased',
@@ -1819,9 +1819,9 @@ C
                   WRITE (LUPRI,'(///7X,A)') ' WARNING from VECTRA:'
                   NWNABA = NWNABA + 1
                END IF
-               WRITE (LUPRI,'(/,A,D12.6)') ' Square root deviation '//
-     *            ' between vectors: ',  DIF2
-               WRITE (LUPRI,'(/,A,D12.6,A,I5)') ' Maximum difference ',
+               WRITE (LUPRI,'(/A,1P,D13.6)') ' Square root deviation '//
+     *            ' between vectors:',  DIF2
+               WRITE (LUPRI,'(/A,D13.6,A,I5)') ' Maximum difference',
      *                           DIFMAX, ' for element ', MAXELE
 C
 C           Write calculated vector
