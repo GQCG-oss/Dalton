@@ -12,6 +12,7 @@ C
 C     PURPOSE: Driver for printing final output for the RPA, HRPA, RPA(D), 
 C              SOPPA, and SOPPA(CCSD) excitation calculations.
 C
+      use so_info, only: sop_num_models
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -24,16 +25,21 @@ C
 #include "codata.h"
 C
 CSPAS: HRPA i.e. 5 models now
+CRF: Use the constant sop_num_models!!!!
 C     DIMENSION TRLEN(3,NSYM,MXNEXI,4), TRVEL(3,NSYM,MXNEXI,4)
 C     DIMENSION TQLEN(3,3,NSYM,MXNEXI,4), TQVEL(3,3,NSYM,MXNEXI,4)
 C     DIMENSION TRLON(3,NSYM,MXNEXI,4), TRMAG(3,NSYM,MXNEXI,4)
 C     DIMENSION TTLEN(10,NSYM,MXNEXI,4)
 C     DIMENSION BSRLON(3,NSYM,MXNEXI,4),EXENG(NSYM,MXNEXI,4)
-      DIMENSION TRLEN(3,NSYM,MXNEXI,5), TRVEL(3,NSYM,MXNEXI,5)
-      DIMENSION TQLEN(3,3,NSYM,MXNEXI,5), TQVEL(3,3,NSYM,MXNEXI,5)
-      DIMENSION TRLON(3,NSYM,MXNEXI,5), TRMAG(3,NSYM,MXNEXI,5)
-      DIMENSION TTLEN(10,NSYM,MXNEXI,5)
-      DIMENSION BSRLON(3,NSYM,MXNEXI,5),EXENG(NSYM,MXNEXI,5)
+      DIMENSION TRLEN(3,NSYM,MXNEXI,sop_num_models),
+     &          TRVEL(3,NSYM,MXNEXI,sop_num_models),
+     &          TQLEN(3,3,NSYM,MXNEXI,sop_num_models),
+     &          TQVEL(3,3,NSYM,MXNEXI,sop_num_models)
+      DIMENSION TRLON(3,NSYM,MXNEXI,sop_num_models), 
+     &          TRMAG(3,NSYM,MXNEXI,sop_num_models)
+      DIMENSION TTLEN(10,NSYM,MXNEXI,sop_num_models)
+      DIMENSION BSRLON(3,NSYM,MXNEXI,sop_num_models),
+     &          EXENG(NSYM,MXNEXI,sop_num_models)
 CKeinSPASmehr
       DIMENSION FONAC(*)
       DIMENSION FONA2(*)

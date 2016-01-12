@@ -19,7 +19,7 @@ C
      &                       soppa_nint
 #endif
 C
-      use so_info, only: so_full_name, sop_excita
+      use so_info, only: so_full_name, sop_excita, so_has_doubles
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -68,8 +68,7 @@ C------------------
 C
       CALL QENTER('SO_LRSOLV')
 C
-      DOUBLES = (MODEL.EQ.'AOSOP') .OR. (MODEL.EQ.'AOSOC') .OR.
-     &          (MODEL.EQ.'DCRPA')
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
 C
       FULL_NAME = SO_FULL_NAME(MODEL)      
 C
@@ -79,7 +78,7 @@ C     by using unit vectors as trial vectors.
 C==============================================================
 C
       IF (SOPCHK) THEN
-         CALL SO_CHECK('MODEL',DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+         CALL SO_CHECK(MODEL,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                 T2MP,LT2MP,
      &                 FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
       END IF

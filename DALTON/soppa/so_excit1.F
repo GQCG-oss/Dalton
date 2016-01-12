@@ -391,79 +391,82 @@ C           For HRPA do the following.
 C======================================
 C
 C
-cspas            IF (AOHRP) THEN
-cspas               NVARPT  = 2*NT1AM(ISYM)
-cspasC
-cspas               IF (IPRSOP .GE. 3) THEN
-cspas                  WRITE(LUPRI,9000)
-cspas                  WRITE(LUPRI,'(1X,A)') 'HRPA:'
-cspasC                 WRITE(LUPRI,'(3(A,I8,/),A,I8)')
-cspas                  WRITE(LUPRI,'(2(A,I8,/),A,I8)')
-cspas     &            ' Perturbation symmetry     :',ISYM,
-cspas     &            ' p-h variables.            :',2*NT1AM(ISYM),
-cspas     &            ' Total number of variables :',NVARPT
-cspas                  WRITE(LUPRI,9001)
-cspas               END IF
-cspasC
-cspas               NEXCI = MIN(NEXCIT(ISYM),NVARPT/2)
-cspas               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
-cspas                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)')
-cspas     &            'NOTICE: The number of excitations are reduced to '
-cspas     &            ,NEXCI,'as this is the full dimension of the '//
-cspas     &            'excitation space'
-cspas               END IF
-cspasC
-cspasC-----------------------------------------------------
-cspasC              Get T2 amplitudes and density matrices.
-cspasC-----------------------------------------------------
-cspasC
-cspas               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
-cspas     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
-cspas     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
-cspasC
-cspasC--------------------------------
-cspasC              Initialize DENSAI.
-cspasC--------------------------------
-cspasC
-cspas               CALL DZERO(WORK(KDENSAI),LDENSAI)
-cspasC
-cspasC-------------------------------------------------------------------
-cspasC              Determine HRPA excitation energies and excitation
-cspasC              vectors. The excitation vectors are written to file.
-cspasC-------------------------------------------------------------------
-cspasC
-cspas               CALL HR_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-cspas     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-cspas     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
-cspas     &                        LT2AM,WORK(KFOCKD),LFOCKD,
-cspas     &                        WORK(KEND2),LWORK2)
-cspasC
-cspasC-------------------------------------------------------
-cspasC              Copy HRPA exciation energies to EXENG.
-cspasC-------------------------------------------------------
-cspasC
-cspas               DO IEXVAL = 1,NEXCI
-cspas                  IF (IEXVAL .LE. MXNEXI)
-cspas     &               EXENG(ISYM,IEXVAL,2) = WORK(KEXVAL-1+IEXVAL)
-cspas                  IF (IEXVAL .GT. MXNEXI)
-cspas     &               WRITE(LUPRI,*)
-cspas     &                    'WARNING: IEXVAL greater than MXNEXI.'
-cspas              END DO
-cspasC
-cspasC---------------------------------------------------
-cspasC              Determine HRPA transition moments.
-cspasC---------------------------------------------------
-cspasC
-cspas               CALL HR_TRMOM(ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
-cspas     &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-cspas     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-cspas     &                       TRLEN(1,1,1,2),TRVEL(1,1,1,2),
-cspas     &                       TQLEN(1,1,1,1,2),TQVEL(1,1,1,1,2),
-cspas     &                       TTLEN(1,1,1,2),
-cspas     &                       TRLON(1,1,1,2),TRMAG(1,1,1,2),
-cspas     &                       BSRLON(1,1,1,2),EXENG(1,1,2),
-cspas     &                       WORK(KEND2),LWORK2)
-cspas            END IF
+            IF (AOHRP) THEN
+               NVARPT  = 2*NT1AM(ISYM)
+               MODEL = 'AOHRP'
+C
+               IF (IPRSOP .GE. 3) THEN
+                  WRITE(LUPRI,9000)
+                  WRITE(LUPRI,'(1X,A)') 'HRPA:'
+C                 WRITE(LUPRI,'(3(A,I8,/),A,I8)')
+                  WRITE(LUPRI,'(2(A,I8,/),A,I8)')
+     &            ' Perturbation symmetry     :',ISYM,
+     &            ' p-h variables.            :',2*NT1AM(ISYM),
+     &            ' Total number of variables :',NVARPT
+                  WRITE(LUPRI,9001)
+               END IF
+C
+               NEXCI = MIN(NEXCIT(ISYM),NVARPT/2)
+               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
+                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)')
+     &            'NOTICE: The number of excitations are reduced to '
+     &            ,NEXCI,'as this is the full dimension of the '//
+     &            'excitation space'
+               END IF
+C
+C-----------------------------------------------------
+C              Get T2 amplitudes and density matrices.
+C-----------------------------------------------------
+C
+               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
+     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
+     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
+C
+C--------------------------------
+C              Initialize DENSAI.
+C--------------------------------
+C
+               CALL DZERO(WORK(KDENSAI),LDENSAI)
+C
+C-------------------------------------------------------------------
+C              Determine HRPA excitation energies and excitation
+C              vectors. The excitation vectors are written to file.
+C-------------------------------------------------------------------
+C
+C
+               CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
+     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
+     &                        LT2AM,WORK(KFOCKD),LFOCKD,
+     &                        WORK(KEND2),LWORK2)
+C
+C-------------------------------------------------------
+C              Copy HRPA exciation energies to EXENG.
+C-------------------------------------------------------
+C
+               DO IEXVAL = 1,NEXCI
+                  IF (IEXVAL .LE. MXNEXI)
+     &               EXENG(ISYM,IEXVAL,2) = WORK(KEXVAL-1+IEXVAL)
+                  IF (IEXVAL .GT. MXNEXI)
+     &               WRITE(LUPRI,*)
+     &                    'WARNING: IEXVAL greater than MXNEXI.'
+              END DO
+C
+C---------------------------------------------------
+C              Determine HRPA transition moments.
+C---------------------------------------------------
+C
+               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
+     &                       WORK(KT2AM),LT2AM,WORK(KDENSIJ),LDENSIJ,
+     &                       WORK(KDENSAB),LDENSAB,
+     &                       WORK(KDENSAI),LDENSAI,
+     &                       TRLEN(1,1,1,2),TRVEL(1,1,1,2),
+     &                       TQLEN(1,1,1,1,2),TQVEL(1,1,1,1,2),
+     &                       TTLEN(1,1,1,2),
+     &                       TRLON(1,1,1,2),TRMAG(1,1,1,2),
+     &                       BSRLON(1,1,1,2),EXENG(1,1,2),
+     &                       WORK(KEND2),LWORK2)
+            END IF
 C
 C=======================================
 C           For RPA(D) do the following.
