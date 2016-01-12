@@ -1143,21 +1143,21 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   Polarizability tensor at reference geometry
   -------------------------------------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3
        1      17.57706736     0.00000000     0.23376637
        2       0.00000000    65.58544548     0.00000000
        3       0.23376637     0.00000000    17.57211707
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3
        1      17.54011897     0.00000000     0.23337073
        2       0.00000000    65.07605704     0.00000000
        3       0.23337073     0.00000000    17.53524943
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3
        1      17.51805534     0.00000000     0.23313325
@@ -1169,21 +1169,21 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   Non-London G tensor at reference geometry
   -----------------------------------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3
        1      -0.03817466     0.00000000     0.49875010
        2      -0.00000000     0.00192123    -0.00000000
        3       0.49350563     0.00000000     0.01921095
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3
        1      -0.03617740     0.00000000     0.47286874
        2      -0.00000000     0.00161145    -0.00000000
        3       0.46790963     0.00000000     0.01823057
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3
        1      -0.03493518     0.00000000     0.45675417
@@ -1195,21 +1195,21 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   London G tensor at reference geometry
   -------------------------------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3
        1      -0.03522231     0.00000000     0.43275653
        2      -0.00000000     0.00017990     0.00000000
        3       0.42688583     0.00000000     0.01456817
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3
        1      -0.03337777     0.00000000     0.41023933
        2      -0.00000000    -0.00001512     0.00000000
        3       0.40468796     0.00000000     0.01382222
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3
        1      -0.03223068     0.00000000     0.39622417
@@ -1221,7 +1221,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   A tensor at reference geometry
   ------------------------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1      -0.00000000    22.84571287    -0.00000000    22.84571287     0.00000000
@@ -1233,7 +1233,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        2       0.00000000     0.67794879     0.00000000   -11.74128577
        3     -22.64633904    -0.00000000   -22.64633904    -0.00000000
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1      -0.00000000    22.78699751    -0.00000000    22.78699751     0.00000000
@@ -1245,7 +1245,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        2       0.00000000     0.67587441     0.00000000   -11.70589307
        3     -22.58842739    -0.00000000   -22.58842739    -0.00000000
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1      -0.00000000    22.75194011    -0.00000000    22.75194011     0.00000000
@@ -17667,7 +17667,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   Polarizability tensor (alpha) gradient
   --------------------------------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000265     2.91185239    -0.00000154     0.00000082    -5.41727692
@@ -17724,7 +17724,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        8      -5.33626492
        9      -5.85814818
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000265     2.89181838    -0.00000153     0.00000083    -5.38400492
@@ -17781,7 +17781,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        8      -5.28781184
        9      -5.83572026
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000265     2.87992385    -0.00000153     0.00000083    -5.36421098
@@ -17843,7 +17843,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   Non-London G tensor gradient
   ----------------------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000017     0.00394621    -0.00000227    -0.00000056     0.02378484
@@ -17900,7 +17900,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        8       0.00365850
        9       0.00251202
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000017     0.00375973    -0.00000215    -0.00000053     0.02245073
@@ -17957,7 +17957,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        8       0.00344879
        9       0.00238242
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000016     0.00364207    -0.00000207    -0.00000051     0.02162820
@@ -18019,7 +18019,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   London G tensor gradient
   ------------------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000021    -0.00197745    -0.00000283    -0.00000070     0.04263170
@@ -18076,7 +18076,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        8       0.00172258
        9       0.00296114
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000020    -0.00184269    -0.00000268    -0.00000066     0.04028407
@@ -18133,7 +18133,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
        8       0.00163808
        9       0.00280603
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       0.00000019    -0.00176150    -0.00000258    -0.00000064     0.03883343
@@ -18195,7 +18195,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
   A tensor gradient
   -----------------
 
-  frequency:0.0932
+  frequency:     0.0932
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1      30.69972808     0.00000005     0.32660461   -16.38857371    -0.00000230
@@ -18342,7 +18342,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
       26       4.06212892
       27      10.96417931
     ==== End of matrix output ====
-  frequency:0.0886
+  frequency:     0.0886
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1      30.55472632     0.00000007     0.32668556   -16.30794389    -0.00000229
@@ -18489,7 +18489,7 @@ Maximum number of geometry steps reset in numerical differentiation to    43
       26       4.00770924
       27      10.93253012
     ==== End of matrix output ====
-  frequency:0.0856
+  frequency:     0.0856
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1      30.46885349     0.00000008     0.32675463   -16.26025033    -0.00000229
