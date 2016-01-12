@@ -454,7 +454,7 @@ C
                WRITE (LUPRI,*) 'IDXXIM = ',IDXXIM
                IVEC = 1
                DO WHILE(IXDOTS(IVEC,IDXXIM).NE.0 .AND. IVEC.LE.MXVEC)
-                  WRITE(LUPRI,'(A,2I5,2X,E18.12)') 'CCXIMCON> ',
+                  WRITE(LUPRI,'(A,2I5,2X,E19.12)') 'CCXIMCON> ',
      &              IXIM(IDXXIM),IXDOTS(IVEC,IDXXIM),XCONS(IVEC,IDXXIM)
                   IVEC = IVEC + 1
                END DO

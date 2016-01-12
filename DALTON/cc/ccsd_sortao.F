@@ -242,15 +242,15 @@ C     Print packing statistics:
 C-------------------------------------
 C
       IF (IPRINT.GT.0 .AND. LPACKINT) THEN
-         WRITE (LUPRI,'(//10X,A,F8.2,A)')
+         WRITE (LUPRI,'(//10X,A,F9.2,A)')
      &        'Time needed to pack integrals:   ',
      &                   PCKTIME, ' seconds'
-         WRITE (LUPRI,'(10X,A,G8.2)')
+         WRITE (LUPRI,'(10X,A,G9.2)')
      &        'Threshold used for packing:      ',
      &                   THRPCKINT
          NTOTINT  = MAX(NTOTINT,1)
          PCKRATIO = DBLE(NTOTPCK)/DBLE(NTOTINT)
-         WRITE (LUPRI,'(10X,A,F8.2,A)')
+         WRITE (LUPRI,'(10X,A,F9.2,A)')
      &        'Reduction obtained by packing:   ',
      &      100.0D0*(1.0D0 - PCKRATIO),' %'
       END IF

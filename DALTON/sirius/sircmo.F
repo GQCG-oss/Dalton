@@ -1454,7 +1454,7 @@ C *** Print molecular orbitals
 C
       IF (PROCC .AND. .NOT. CMOPRI) THEN
          THRPRI = 1.0D-2
-         WRITE(IOUT,'(/A,F6.4,A)')
+         WRITE(IOUT,'(/A,F7.4,A)')
      &   ' (Only coefficients >',THRPRI,' are printed.)'
       ELSE
          THRPRI = 1.0D-4

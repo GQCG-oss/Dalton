@@ -4740,7 +4740,7 @@ C                 CALL RSPPRC(WRK(KBVECS+(IVEC-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM_BV
+                  WRITE (LUPRI,'(A,D21.14)') ' Norm:', DNORM_BV
                END IF
   750       CONTINUE
             CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
@@ -4757,7 +4757,7 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:', DNORM_BV
+                  WRITE (LUPRI,'(A,D21.14)') ' Norm:', DNORM_BV
                END IF
   760       CONTINUE
   700    CONTINUE

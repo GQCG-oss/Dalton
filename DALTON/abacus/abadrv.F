@@ -2339,7 +2339,7 @@ C
      &           'Mass-velocity correction:     ',       RMASSV,' au'
             IF (DARWIN .AND. MASSVE) THEN
                RELTOT = DARWN + RMASSV
-               WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)')
+               WRITE (LUPRI,'(/5X,A,F17.10,A,F7.4,A)')
      &              'Total relativistic correction:         ',  RELTOT,
      &              ' au (', D100*RELTOT/EMCSCF,'%)'
                WRITE (LUPRI,'(5X,A,F17.10,A//)')
@@ -3638,7 +3638,7 @@ C
                   FACT = CONV*QMOM
                   FACT2 = FACT/CONV2
                   IF (IPRINT .GE. 0) THEN
-                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F10.8)')
+                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F11.8)')
      &                   'Spin     :',SPIN,'Quadrupole moment:',QMOM
                     WRITE (LUPRI,'(28X,A2,11X,A3,8X,A5)')
      &                   'au','MHz','Gauss'

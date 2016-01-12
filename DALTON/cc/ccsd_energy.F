@@ -1327,8 +1327,8 @@ c           WRITE(LUPRI,'(20X,A,F20.10)') ' Total energy CCSD(T):',ETOT
 c        ELSE
 c           WRITE(LUPRI,'(20X,A,F20.10)') ' Total energy CC(3):',ETOT
 c        ENDIF
-c        WRITE(LUPRI,'(A,F12.10)')' T1 contribution:', ECCP1
-c        WRITE(LUPRI,'(A,F12.10)')' T2 contribution:', ECCP2
+c        WRITE(LUPRI,'(A,F13.10)')' T1 contribution:', ECCP1
+c        WRITE(LUPRI,'(A,F13.10)')' T2 contribution:', ECCP2
 C
          CCSDT  = CCSAV
          CCPTSV = CCPT
@@ -3109,7 +3109,7 @@ C
       IF (ANAAOD) THEN
         CALL AROUND('Analysis of integral distributions')
 C
-        WRITE(LUPRI,'(10X,/,A,D10.5)') 'Threshold in analysis : ',
+        WRITE(LUPRI,'(10X,/,A,D12.5)') 'Threshold in analysis : ',
      &       THRDIS
         WRITE(LUPRI,'(10X,A,I7)')'Total number of dist.           : ',
      *                        ICOUNT2
@@ -4994,7 +4994,7 @@ C
       RETURN
 C
     1 FORMAT(3X,A8,8I8)
-    2 FORMAT(3X,A8,8D8.3)
+    2 FORMAT(3X,A8,8D10.3)
 C
       END
 C  /* Deck fock_reorder */
