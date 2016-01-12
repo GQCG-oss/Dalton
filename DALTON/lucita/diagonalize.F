@@ -1470,7 +1470,7 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
           CALL SCLVCD(LU3,LU5,WORK(IROOT),VEC1,0,LBLK)
   329   CONTINUE
 *
-* Transfer HC's to LU2
+* Transfer HCs to LU2
         CALL REWINE( LU2,LBLK)
         CALL REWINE( LU5,LBLK)
         DO 400 IVEC = 1,NROOT
@@ -1536,14 +1536,14 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
           WRITE(LUWRT,1300)
- 1300     FORMAT(/,'  Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/' Summary of iterations',
+     +           /' ---------------------')
           WRITE(LUWRT,1310)
  1310     FORMAT
      &    (/,'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(LUWRT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
         CALL REWINE(LU1,LBLK)
@@ -1577,8 +1577,8 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
 C
       call qexit('MICDV4')
 C
- 1030 FORMAT(/,3X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(/,I6,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/,3X,7F15.8,/,(2X,7F15.8))
+ 1120 FORMAT(/,I6,7F15.8,/,(5X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
       END
 
@@ -2079,18 +2079,18 @@ C?       WRITE(lupri,*) ' MICDV4 : Overlap ', WORK(IVEC)
  1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
           IF(IPRT.GE.400) THEN
             WRITE(lupri,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
+ 1200       FORMAT(/'The final approximation to eigenvector')
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
           WRITE(lupri,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/' Summary of iterations',
+     +           /' ---------------------')
           WRITE(lupri,1310)
  1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
+     &    (/' Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(lupri,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       ELSE
         DO 1601 IROOT = 1, NROOT
@@ -2110,8 +2110,8 @@ C?       WRITE(lupri,*) ' MICDV4 : Overlap ', WORK(IVEC)
       END IF
 C
       RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/2X,7F15.8,/,(2X,7F15.8))
+ 1120 FORMAT(/2X,I3,7F15.8,/,(5X,7F15.8))
       END
 
       SUBROUTINE CLASS_TRUNC(NCLS,ICLS_L,CLS_CT,CLS_ET,CLS_C,CLS_E,
@@ -2283,9 +2283,9 @@ C?    WRITE(6,*) ' E_CLS_MAX = ', E_CLS_MAX
 C?    WRITE(6,*)
 C?    WRITE(6,*) '  Class      Number     Dimension  '
 C?    WRITE(6,*) ' ================================= '
-C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
-C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
-C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
+C?    WRITE(6,'(A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
+C?    WRITE(6,'(A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
+C?    WRITE(6,'(A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
 *
 *. Eliminate classes with energy contributions less than E_TOT* FAC2
 *  (temporary elimination, these classes may be invoked later in
@@ -2365,11 +2365,11 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
       WRITE(6,*)
       WRITE(6,*) '             Number     Dimension  '
       WRITE(6,*) ' ================================= '
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') '(Temp)   ',
+      WRITE(6,'(A,5X,I5,5X,I10)') 'Passive  ', N_PAS_CLS,L_PAS_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') 'Truncated', N_TRN_CLS,L_TRN_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') '(Temp)   ',
      &N_TRN_CLS2,L_TRN_CLS2
-      WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
+      WRITE(6,'(A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
 *
       WRITE(6,*)
       WRITE(6,*) ' Information about classes '
@@ -2384,7 +2384,7 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
        DO JCLS = 1, NCLS
          IF(ABS(CLS_ET(JCLS)).GT.0.0D0.OR.ABS(CLS_CT(JCLS)).GT.0.0D0)
      &   THEN
-           WRITE(6,'(1H ,2X,I4,1X,I10,3X,4(E12.6,1X),1X,I2)')
+           WRITE(6,'(2X,I4,1X,I10,3X,4(E12.6,1X),1X,I2)')
      &     JCLS,ICLS_L(JCLS),CLS_ET(JCLS),CLS_E(JCLS),
      &     CLS_CT(JCLS),CLS_C(JCLS),ICLS_A(JCLS)
          END IF
@@ -2837,7 +2837,7 @@ C  MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
       WRITE(6,*) '   Order        Correction '
       WRITE(6,*) ' ==============================='
       DO IORD = 1, NORD
-        WRITE(6,'(1H ,3X,I3,E25.13)')IORD,EN(IORD)
+        WRITE(6,'(3X,I3,E25.13)')IORD,EN(IORD)
       END DO
 *
       ETOT = E0
@@ -4107,7 +4107,7 @@ C?      CALL WRTMT_LU(C(1,IORD+1),1,NDIM,1,NDIM)
       WRITE(6,*) '   Order             Correction '
       WRITE(6,*) ' ===================================='
       DO IORD = 1, NORD
-        WRITE(6,'(1H ,3X,I3,E20.8)')IORD,EN(IORD)
+        WRITE(6,'(3X,I3,E20.8)')IORD,EN(IORD)
       END DO
 *
       ETOT = E0 + ECORE
@@ -4329,19 +4329,19 @@ C?           WRITE(6,*) ' Updated overlap of trial vector ', OVLAP2
 *
       IF(CONVER) THEN
        WRITE(6,1010) NITER  ,ERROR(NITER+1)
- 1010  FORMAT(1H0,'  convergence was obtained in...',I3,' iterations',/,
-     +        1H ,'  norm of residual..............',1P,E15.8)
+ 1010  FORMAT(/'  convergence was obtained in...',I3,' iterations',
+     +        /'  norm of residual..............',1P,E15.8)
       ELSE
        WRITE(6,1020) MAXIT ,ERROR(MAXIT+1)
- 1020  FORMAT(1H0,' convergence was not obtained in',I3,'iterations',/,
-     +        1H ,' norm of residual...............',1P,E15.8)
+ 1020  FORMAT(/' convergence was not obtained in',I3,'iterations',
+     +        /' norm of residual...............',1P,E15.8)
       END IF
 *
       END IF
 *
       IF(NTEST.GE. 50 ) THEN
        WRITE(6,1025)
- 1025  FORMAT(1H0,' solution to set of linear equations')
+ 1025  FORMAT(/' solution to set of linear equations')
        CALL WRTVCD(VEC1,LU1,1,LBLK)
 C?     write(6,*) ' Matrix times solutiom through another cal to MV 8'
 C?     CALL MV8(VEC1,VEC2,0,0)
@@ -4350,11 +4350,11 @@ C?     call WRTMT_LU(vec2,1,nvar,1,nvar)
 C
       IF(NTEST.GT.0) THEN
       WRITE(6,1040)
- 1040 FORMAT(1H0,10X,'iteration point     norm of residual')
+ 1040 FORMAT(/10X,'iteration point     norm of residual')
       DO 350 I=1,NITER+1
        II=I-1
        WRITE(6,1050)II,ERROR(I)
- 1050  FORMAT(1H ,12X,I5,13X,E15.8)
+ 1050  FORMAT(12X,I5,13X,E15.8)
   350 CONTINUE
       END IF
 *
@@ -4860,13 +4860,13 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 2 )
      &   WRITE(6,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
+ 1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(6,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
+ 1180    FORMAT(/' Convergence was obtained in ',I3,' iterations')
         END IF
 *. Final eigenvalues
         DO 1601 IROOT = 1, NROOT
@@ -4885,20 +4885,20 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
           IF(IPRT.GE.400) THEN
             WRITE(6,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
+ 1200       FORMAT(/'The final approximation to eigenvector')
             CALL REWINE( LU1,-1)
             CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
             CALL WRTMT_LU(VEC1,1,NVAR,1,NVAR)
           END IF
           WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/' Summary of iterations',
+     +           /' ---------------------')
           WRITE(6,1310)
  1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
+     &    (/' Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(6,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       END IF
 *
@@ -4914,8 +4914,8 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1234 CONTINUE
 C
       RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/2X,7F15.8,/,(2X,7F15.8))
+ 1120 FORMAT(/2X,I3,7F15.8,/,(5X,7F15.8))
       END
 ***********************************************************************
 
@@ -5074,18 +5074,18 @@ C
       IF(NTEST .GT. 0 ) THEN
       IF(CONVER) THEN
        WRITE(6,1010) NITER  ,ERROR(NITER+1)
- 1010  FORMAT(1H0,'  convergence was obtained in...',I3,' iterations',/,
-     +        1H ,'  norm of residual..............',F13.8)
+ 1010  FORMAT(/'  convergence was obtained in...',I3,' iterations',
+     +        /'  norm of residual..............',F13.8)
       ELSE
        WRITE(6,1020) MAXIT ,ERROR(MAXIT +1 )
- 1020  FORMAT(1H0,' convergence was not obtained in',I3,'iterations',/,
-     +        1H ,' norm of residual...............',F13.8)
+ 1020  FORMAT(/' convergence was not obtained in',I3,'iterations',
+     +        /' norm of residual...............',F13.8)
       END IF
       END IF
 C
       IF(NTEST.GT. 50 ) THEN
        WRITE(6,1025)
- 1025  FORMAT(1H0,' solution to set of linear equations')
+ 1025  FORMAT(/' solution to set of linear equations')
        CALL REWINE(LU1,-1)
        CALL FRMDSC_LUCI(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
        CALL WRTMT_LU(VEC1,1,NVAR,1,NVAR)
@@ -5096,11 +5096,11 @@ C?     call WRTMT_LU(vec2,1,nvar,1,nvar)
 C
       IF(NTEST.GT.0) THEN
       WRITE(6,1040)
- 1040 FORMAT(1H0,10X,'iteration point     norm of residual')
+ 1040 FORMAT(/10X,'iteration point     norm of residual')
       DO 350 I=1,NITER+1
        II=I-1
        WRITE(6,1050)II,ERROR(I)
- 1050  FORMAT(1H ,12X,I5,13X,E15.8)
+ 1050  FORMAT(12X,I5,13X,E15.8)
   350 CONTINUE
       END IF
 C
