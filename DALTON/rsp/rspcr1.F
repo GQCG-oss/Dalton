@@ -765,7 +765,7 @@ C
       INCRLR = NLRLBL
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A)')' INCRLR: NEW OPERATOR'
-         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D12.6,2X,A,I5)')
+         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D13.6,2X,A,I5)')
      *   ' NUMBER:',NLRLBL,' LABEL: ',NEWLBL,' FREQUENCY: ',FRQVAL,
      *   'SYMMETRY',ISYM
       END IF
@@ -794,7 +794,7 @@ C
       INCRLR = NEXLBL
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A)')' INCRLR: NEW EXCITATION '
-         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D12.6,2(2X,A,I5))')
+         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D13.6,2(2X,A,I5))')
      *   ' NUMBER:',NEXLBL,' LABEL: ',NEWLBL,' FREQUENCY: ',TMPFRQ,
      *   'SYMMETRY',ISYM,' ROOT NUMBER',IROOT
       END IF
@@ -873,7 +873,7 @@ C
      *   ' INCR2: NEW TWO-INDEX VECTOR OF SYMMETRY',ISMCR2(NLRLB2,3)
          WRITE(LUPRI,'(A,I5,2X,A,A,2X,A,A)')' NUMBER:',
      *   NLRLB2,' LABEL1: ',NEWLB1,' LABEL2: ',NEWLB2
-         WRITE(LUPRI,'(A,D12.6,2X,A,D12.6)')
+         WRITE(LUPRI,'(A,D13.6,2X,A,D13.6)')
      *   ' FREQ1: ',FRQ1,' FREQ2: ',FRQ2
       END IF
 C
@@ -1195,7 +1195,7 @@ C
          WRITE(LUPRI,'(A)')' BEFORE SORTING'
          WRITE(LUPRI,'(/A)')'   I  CRLBL(I)  CRFREQ(I)  ISYMCR(I) '
          DO 90 I = 1,NLRLBL
-            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,D13.6,I12)')
      *      I,CRLBL(I),CRFREQ(I),ISYMCR(I)
   90     CONTINUE
       END IF
@@ -1235,7 +1235,7 @@ C
          WRITE(LUPRI,'(A)')'AFTER SORTING'
          WRITE(LUPRI,'(/A)')'   I  CRLBL(I)  CRFREQ(I)  ISYMCR(I) '
          DO 301 I = 1,NLRLBL
-            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,D13.6,I12)')
      *      I,CRLBL(I),CRFREQ(I),ISYMCR(I)
  301     CONTINUE
       END IF

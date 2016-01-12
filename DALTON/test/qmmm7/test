@@ -22,6 +22,7 @@ f.add(re = 'gamma\([XYZ]\;[XYZ]\,[XYZ]\,[XYZ]\)',
 f.add(re = 'Averaged gamma parallel to the applied field is',
       rel_tolerance = 1.0e-8)
 
-test.run(['qmmm7.dal'], ['ch2o_cc-pvdz.mol'], f={'out': f}, args='-put POTENTIAL.INP')
+test.run(['qmmm7.dal'], ['ch2o_cc-pvdz.mol'], f={'out': f}, args='-put POTENTIAL.INP',
+         accepted_errors=['cubic response not implemented for QMMM.'])
 
 sys.exit(test.return_code)

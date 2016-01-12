@@ -884,10 +884,10 @@ C
 C
       WRITE(LUPRI,'(//10X,A,8X,F10.4)')
      *     'Norm of Printed Amplitude Vector : ',SQRT(SUMOFP)
-      WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+      WRITE(LUPRI,'(//10X,A43,1X,F9.6)')
      *     'Printed all single excitations greater than',THR1
       IF (.NOT. (CCSEFF.OR.CCP2)) THEN
-         WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+         WRITE(LUPRI,'(//10X,A43,1X,F9.6)')
      *     'Printed all double excitations greater than',THR2
       ENDIF
 C

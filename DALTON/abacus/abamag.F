@@ -1997,7 +1997,7 @@ C
      &                        CHRNOS(ISYM)//':',-1)
                   WRITE (LUPRI,'(A,I5)') ' Coordinate:',ICOOR
                   WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
-                  WRITE (LUPRI,'(A,D20.14)') ' Norm:      ', DNORM
+                  WRITE (LUPRI,'(A,D21.14)') ' Norm:      ', DNORM
                   IF (ZERNRM(I)) WRITE (LUPRI,'(A)')
      &             ' *Note: vector excluded because norm .le. thrclc/10'
                END IF
@@ -2056,7 +2056,7 @@ ckr               IDORCT(IREC) = 1
                   WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
                   DN1 = DNRM2(NVARPT,WORK,1)
                   DN2 = DNRM2(NVARPT,WORK(1+NVARPT),1)
-                  WRITE (LUPRI,'(A,2(D20.14,2X))')
+                  WRITE (LUPRI,'(A,2(D21.14,2X))')
      &                   ' Norms:     ',DN1,DN2
                END IF
                IF (IPRTRP .GT. 10) THEN

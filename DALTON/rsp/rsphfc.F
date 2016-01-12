@@ -813,20 +813,20 @@ C
              WRITE(LUPRI,'(2X,A)') '-----------------------------'//
      &       '---------------------------------------------------'//
      &       '--------'
-             WRITE(LUPRI,'(2X,A,F8.2,A,F8.2,A,F8.2,A,F8.2,A,F4.2,A,'//
-     &             'F4.2,A,F4.2,A)')
+             WRITE(LUPRI,'(2X,A,F8.2,A,F8.2,A,F8.2,A,F8.2,A,F5.2,A,'//
+     &             'F5.2,A,F5.2,A)')
      &            '| Ix |',ATOTAL(IDX,1,1),' | ', ATOTAL(IDX,1,2),' | ',
      &             ATOTAL(IDX,1,3),' | A_(11) | ', ATOTVAL(IDX,1),
      &             ' | (11) | ', PVALVEC(IDX,1,1),' x ',
      &             PVALVEC(IDX,2,1), ' y ', PVALVEC(IDX,3,1), ' z |'
-             WRITE(LUPRI,'(2X,A,F8.2,A,F8.2,A,F8.2,A,F8.2,A,F4.2,A,'//
-     &             'F4.2,A,F4.2,A)')
+             WRITE(LUPRI,'(2X,A,F8.2,A,F8.2,A,F8.2,A,F8.2,A,F5.2,A,'//
+     &             'F5.2,A,F5.2,A)')
      &            '| Ix |',ATOTAL(IDX,2,1),' | ', ATOTAL(IDX,2,2),' | ',
      &             ATOTAL(IDX,2,3),' | A_(22) | ', ATOTVAL(IDX,2),
      &             ' | (22) | ', PVALVEC(IDX,1,2),' x ',
      &             PVALVEC(IDX,2,2), ' y ',PVALVEC(IDX,3,2), ' z |'
-             WRITE(LUPRI,'(2X,A,F8.2,A,F8.2,A,F8.2,A,F8.2,A,F4.2,A,'//
-     &             'F4.2,A,F4.2,A)')
+             WRITE(LUPRI,'(2X,A,F8.2,A,F8.2,A,F8.2,A,F8.2,A,F5.2,A,'//
+     &             'F5.2,A,F5.2,A)')
      &            '| Ix |',ATOTAL(IDX,3,1),' | ', ATOTAL(IDX,3,2),' | ',
      &             ATOTAL(IDX,3,3),' | A_(11) | ', ATOTVAL(IDX,3),
      &             ' | (11) | ', PVALVEC(IDX,1,3),' x ',

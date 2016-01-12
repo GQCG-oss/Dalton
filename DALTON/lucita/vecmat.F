@@ -812,7 +812,7 @@ C?    Call Abend2( ' Jeppe forced me to stop after INTANA ' )
       IDET     = 0
       ipot_max = 5
 C
-      WRITE(lupri,'(/A,E10.4,A,E10.4)')
+      WRITE(lupri,'(/A,E11.4,A,E11.4)')
      &'   Printout of coefficients in interval  ',XMIN,' to ',XMAX
       WRITE(lupri,'(A )')
      &'   ========================================================='

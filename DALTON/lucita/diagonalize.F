@@ -4330,11 +4330,11 @@ C?           WRITE(6,*) ' Updated overlap of trial vector ', OVLAP2
       IF(CONVER) THEN
        WRITE(6,1010) NITER  ,ERROR(NITER+1)
  1010  FORMAT(1H0,'  convergence was obtained in...',I3,' iterations',/,
-     +        1H ,'  norm of residual..............',E13.8)
+     +        1H ,'  norm of residual..............',1P,E15.8)
       ELSE
        WRITE(6,1020) MAXIT ,ERROR(MAXIT+1)
  1020  FORMAT(1H0,' convergence was not obtained in',I3,'iterations',/,
-     +        1H ,' norm of residual...............',E13.8)
+     +        1H ,' norm of residual...............',1P,E15.8)
       END IF
 *
       END IF

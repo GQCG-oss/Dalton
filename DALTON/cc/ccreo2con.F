@@ -302,7 +302,7 @@ C          WRITE (LUPRI,*) 'CCREO2CON>',RCONS(IVEC,IDXREO)
                WRITE (LUPRI,*) 'IDXREO = ',IDXREO
                IVEC = 1
                DO WHILE(IRDOTS(IVEC,IDXREO).NE.0 .AND. IVEC.LE.MXVEC)
-                  WRITE(LUPRI,'(A,2I5,2X,E18.12)') 'CCREO2CON> ',
+                  WRITE(LUPRI,'(A,2I5,2X,E19.12)') 'CCREO2CON> ',
      &              IREO(IDXREO),IRDOTS(IVEC,IDXREO),RCONS(IVEC,IDXREO)
                   IVEC = IVEC + 1
                END DO

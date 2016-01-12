@@ -2194,7 +2194,7 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
               IF (USRSCR) THEN
                 FCKTHR = -IFTHRS
                 FCKTHR = 10.0D0**FCKTHR
-                WRITE(LUPRI,'(2A,1P,D8.2)') 
+                WRITE(LUPRI,'(2A,1P,D9.2)') 
      &            ' * Screening threshold in direct Fock ',
      &            'matrix construction: ',FCKTHR
                 IF(IFTHRS.GE.16) WRITE(LUPRI,'(4X,A)') 
@@ -2209,7 +2209,7 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
      &    ' * Separate density screening of exchange integral batches'
             ENDIF
             IF (RELCAL .AND. (THRFAC(1).NE.D1.OR.THRFAC(2).NE.D1)) THEN
-              WRITE(LUPRI,'(A,2(/3X,A,1P,D9.3))')
+              WRITE(LUPRI,'(A,2(/3X,A,1P,D10.3))')
      +           ' * Threshold factors for omitting integrals:',
      +           'SL-integrals: ',THRFAC(1),
      +           'SS-integrals: ',THRFAC(2)

@@ -140,7 +140,7 @@ ERROR[5]="SYMMETRY IS NOT CORRECT"
 # Relativistic corrections:
 CRIT1=`$GREP "Darwin correction\: *           0*\.19745142.. au" $log | wc -l`
 CRIT2=`$GREP "Mass\-velocity correction\: * \-0*\.2489637(5|6).. au" $log | wc -l`
-CRIT3=`$GREP "Total relativistic correction\: * \-0*\.05151233.. au \((0| ).0677\%\)" $log | wc -l`
+CRIT3=`$GREP "Total relativistic correction\: * \-0*\.05151233.. au \(\ (0| ).0677\%\)" $log | wc -l`
 CRIT4=`$GREP "Non\-relativistic \+ relativistic energy\: * \-76\.10297185.. au" $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=4

@@ -1015,7 +1015,7 @@ C
      *    /' Optical and physical constants:'
      *    /' EPS=',F7.3,'; EPSINF=',F7.3,';',
      *     ' RSOLV=',F7.3,' A; VMOL=',F8.3,' ML/MOL;'
-     *    /' TCE=',1P,D11.5,0P,' 1/K; STEN=',F7.3,
+     *    /' TCE=',1P,D12.5,0P,' 1/K; STEN=',F7.3,
      *     ' DYN/CM;  DSTEN=',F8.4,'; CMF=',F8.4/)
       RETURN
       END

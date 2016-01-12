@@ -1904,7 +1904,7 @@ c        x component
      &         'FORMATTED', IDUMMY,.FALSE.)
          WRITE(LUMIDAS,*)' ',3*NUCDEP
          DO ICOOR = 1, 3*NUCDEP
-            WRITE(LUMIDAS,'(E22.16)')AMAT(1,ICOOR)
+            WRITE(LUMIDAS,'(E23.16)')AMAT(1,ICOOR)
          ENDDO
          CALL GPCLOSE(LUMIDAS,'KEEP')
 c        y component
@@ -1912,7 +1912,7 @@ c        y component
      &         'FORMATTED', IDUMMY,.FALSE.)
          WRITE(LUMIDAS,*)' ',3*NUCDEP
          DO ICOOR = 1, 3*NUCDEP
-            WRITE(LUMIDAS,'(E22.16)')AMAT(2,ICOOR)
+            WRITE(LUMIDAS,'(E23.16)')AMAT(2,ICOOR)
          ENDDO
          CALL GPCLOSE(LUMIDAS,'KEEP')
 c        z component
@@ -1920,7 +1920,7 @@ c        z component
      &         'FORMATTED', IDUMMY,.FALSE.)
          WRITE(LUMIDAS,*)' ',3*NUCDEP
          DO ICOOR = 1, 3*NUCDEP
-            WRITE(LUMIDAS,'(E22.16)')AMAT(3,ICOOR)
+            WRITE(LUMIDAS,'(E23.16)')AMAT(3,ICOOR)
          ENDDO
          CALL GPCLOSE(LUMIDAS,'KEEP')
       ENDIF
