@@ -26,6 +26,7 @@ ___
 
 ### Fixed
 - Fixed error in the printing of the cpu/wall time used in Sirius
+- Fixed error in PBEc functional: gave NaN when rho was zero.
 - Polished some format statements to reduce number of compiler warnings 
 
 ## [2016.0] (2015-12-22)

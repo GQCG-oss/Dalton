@@ -50,7 +50,7 @@ static void pbex_fourth(FunFourthFuncDrv *ds, real factor,
 
 //static integer fun_true(void) { return 1; }
 Functional PBExFunctional = {
-  "pbex",
+  "PBEx",
   pbex_isgga,
   3,
   pbex_read,
