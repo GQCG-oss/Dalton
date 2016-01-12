@@ -2290,7 +2290,7 @@ C Largest exchange contribution
                       IF(FCKMAX.LT.FCKTHR) THEN
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
                         IF(IPRINT.GE.5) WRITE(LUPRI,
-     &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
+     &              '(A,1P,D9.2,4(I4,A1,A6,1X,3A1))')
      &        '*Skip: ',FCKMAX,
      &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
      &        SPDCAR(NHKTSH(ISHELA)-1),')',

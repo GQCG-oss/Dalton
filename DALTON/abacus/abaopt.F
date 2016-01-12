@@ -2570,7 +2570,7 @@ c           IF (CHGRDT) THEN
      &        'integration in DFT optimization'
               WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization have been reset'
-              WRITE (LUPRI,'(/A/,3(/20X,A,F10.8))') ' New thresholds:',
+              WRITE (LUPRI,'(/A/,3(/20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
 c           END IF
@@ -8109,7 +8109,7 @@ C
      &        'of the accuracy of the numerical gradients'
          WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization has been reset'
-         WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
+         WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
       END IF

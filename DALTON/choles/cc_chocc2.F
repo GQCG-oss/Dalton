@@ -248,7 +248,7 @@ C        ------------------
 C     CC2 wave function has converged.
 C     --------------------------------
 
-      WRITE(LUPRI,'(/,1X,A,D10.4,A,F16.9)')
+      WRITE(LUPRI,'(/,1X,A,D11.4,A,F16.9)')
      & 'CC2 energy converged to within ',THRENR,' is ',ECC2
       WRITE(LUPRI,'(1X,A,F16.9)')
      & '- the CC2 correlation energy contribution is ',ECC2-ESCF

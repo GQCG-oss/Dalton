@@ -1423,7 +1423,7 @@ C
      *      ' and using tra.-rot. symmetry')
          CALL PRIHES(HESTR,'CENTERS',CSTRA,SCTRA)
       END IF
-      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E8.2)')
+      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E9.2)')
      *  ' Largest difference in',
      *  ' Hessian for element (',IDIFMX,',',JDIFMX,'): ',
      *    DIFMAX
@@ -1469,7 +1469,7 @@ C
      *      ' directly and using tra.-rot. symmetry')
          CALL FCPRI(DIPTR,'APT',CSTRA,SCTRA)
       END IF
-      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E8.2)')
+      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E9.2)')
      *  ' Largest difference in',
      *  ' dipole gradient for element (',IDIFMX,',',JDIFMX,'): ',
      *    DIFMAX

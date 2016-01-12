@@ -1072,7 +1072,7 @@ C              .PROP2Average
             WRITE(LUPRI,'(/A)')
      *      ' .NOAVDIA : Using exact E[2] orbital diagonal. '
          END IF
-         IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D10.6)')
+         IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D13.6)')
      *      ' Diagonal orbital E[2] shifted with ORBSFT =',ORBSFT
          IF (ORBSPC) WRITE(LUPRI,'(/A)') ' .ORBSPC:'//
      *      ' Calculation with only orbital operators included.'

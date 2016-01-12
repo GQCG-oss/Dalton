@@ -956,9 +956,9 @@ C
             CALL QUIT('Cholesky MOs non orthonormal')
          ELSE
            WRITE(LUPRI,'(A,I2)') 'Symmetry block',ISYM
-           WRITE(LUPRI,'(2A,D12.6)') 'Maximum deviation from one ',
+           WRITE(LUPRI,'(2A,D13.6)') 'Maximum deviation from one ',
      &                            'in diagonal elements      :', DNOMX
-           WRITE(LUPRI,'(2A,D12.6,/)') 'Maximum deviation from zero ',
+           WRITE(LUPRI,'(2A,D13.6,/)') 'Maximum deviation from zero ',
      &                            'in off-diagonal elements :', DOFMX
          END IF
 C
@@ -1145,7 +1145,7 @@ C
       IF (DBGPRT) THEN
          WRITE(LUPRI,'(//,A,/)') 'Information passed to MOMOS'
          DO I = 1,NORBT
-            WRITE(LUPRI,'(A,F12.6)') 'Energy',OREN(I)
+            WRITE(LUPRI,'(A,F13.6)') 'Energy',OREN(I)
 c    &                  '   Occupation',WORK(KOCCU+I-1)
          END DO
       END IF
@@ -2107,7 +2107,7 @@ C
       DO I = 1,NACTFR
          ISYM = ISYDIA(I)
          NRHFFR(ISYM) = NRHFFR(ISYM) + 1
-         WRITE(LUPRI,'(A,I3,A,I2,A,F12.6)') 'Freezing orbital',I,
+         WRITE(LUPRI,'(A,I3,A,I2,A,F13.6)') 'Freezing orbital',I,
      &         ' with symmetry',ISYM,' and orbital energy',FCKDIA(I)
       END DO
 C
@@ -3334,9 +3334,9 @@ C
             CALL QUIT('Cholesky MOs non orthonormal')
          ELSE
            WRITE(LUPRI,'(A,I2)') 'Symmetry block',ISYM
-           WRITE(LUPRI,'(2A,D12.6)') 'Maximum deviation from one ',
+           WRITE(LUPRI,'(2A,D13.6)') 'Maximum deviation from one ',
      &                            'in diagonal elements      :', DNOMX
-           WRITE(LUPRI,'(2A,D12.6,/)') 'Maximum deviation from zero ',
+           WRITE(LUPRI,'(2A,D13.6,/)') 'Maximum deviation from zero ',
      &                            'in off-diagonal elements :', DOFMX
          END IF
 C
@@ -3434,7 +3434,7 @@ C
 c        koff = kfkdia
 c        do isym = 1,nsym
 c           write(lupri,*)
-c           write(lupri,'(5F12.6)') (work(koff+i-1),i=1,norb(isym))
+c           write(lupri,'(5F13.6)') (work(koff+i-1),i=1,norb(isym))
 c           koff = koff + norb(isym)
 c        end do
 C
@@ -3784,7 +3784,7 @@ C
 c        koff = kfkdia
 c        do isym = 1,nsym
 c           write(lupri,*)
-c           write(lupri,'(5F12.6)') (work(koff+i-1),i=1,norb(isym))
+c           write(lupri,'(5F13.6)') (work(koff+i-1),i=1,norb(isym))
 c           koff = koff + norb(isym)
 c        end do
 C
@@ -3848,7 +3848,7 @@ C
       IF (DBGPRT) THEN
          WRITE(LUPRI,'(//,A,/)') 'Information passed to MOMOS'
          DO I = 1,NORBT
-            WRITE(LUPRI,'(A,F12.6)') 'Energy',OREN(I)
+            WRITE(LUPRI,'(A,F13.6)') 'Energy',OREN(I)
 c    &                  '   Occupation',WORK(KOCCU+I-1)
          END DO
       END IF
@@ -4099,7 +4099,7 @@ C
                DO J = 1,NRED
                   INDX = IVEC(J)
                   KOFF = KEND + INDX - 1
-c                 write(lupri,'(a,i3,4f12.6)') 
+c                 write(lupri,'(a,i3,4f13.6)') 
 c    &                 'orbital,diagonal,spread',indx,xmat(indx,indx),
 c    &                 work(koff)
                   IF ((XMAT(INDX,INDX) .GT. THRS) .AND. 

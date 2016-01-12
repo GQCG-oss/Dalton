@@ -304,7 +304,7 @@ C              (renamed from .AUXBAS) /hjaaj
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
             IF (ZCMVAL .NE. D1)
-     &           WRITE (LUPRI,'(A,F3.1)') ' Net charge of ionic core  ',
+     &           WRITE (LUPRI,'(A,F8.1)') ' Net charge of ionic core  ',
      &           ZCMVAL
             WRITE(LUPRI,'(/A/A/A/A/A)')
      &         ' Proper reference for these basis functions:'
@@ -1893,7 +1893,7 @@ C
          ELSE
             GEXP = Q_EXPONENT
          ENDIF
-         IF (IPREAD.GT.0) WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(NQ),
+         IF (IPREAD.GT.0) WRITE(LUPRI,'(2X,A2,A,1P,D16.5/)') ASYMB(NQ),
      &   '  : Exponent for nuclear gaussian charge distribution : ',GEXP
       ELSE
          GEXP = D0
@@ -6683,7 +6683,7 @@ Chj:  skip any additional comment lines before title lines
                      II=II+1
                      WRITE(LUSHB,'(I5,A5,I5)')II, SPD(J), NNUC
                      DO M=1,NNUC
-                        WRITE(LUSHB,'(I5,D15.9,D20.10)')
+                        WRITE(LUSHB,'(I5,D16.9,D20.10)')
      &                     M,PRIEXP(IPSTRT+M-1),CPRIMU(M,MM,KBCH)
                      END DO
                   END DO

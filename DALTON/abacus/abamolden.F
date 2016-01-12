@@ -422,7 +422,7 @@ C           call traorb to generate SO to AO transformation
                   WRITE(LUMOLDEN_MOS,'(2A)')     'Sym= ',REP(ISYM-1)
                   WRITE(LUMOLDEN_MOS,'(A,F9.4)') 'Ene= ',OREN(II)
                   WRITE(LUMOLDEN_MOS,'(A)')      'Spin= Alpha'
-                  WRITE(LUMOLDEN_MOS,'(A,F6.4)') 'Occup= ',OCCUP(jORB)
+                  WRITE(LUMOLDEN_MOS,'(A,F7.4)') 'Occup= ',OCCUP(jORB)
                   CALL DGEMV('T',NBAST,NBAST,1.0D0,ORBTRA,NBAST,
      &                 UCMO(1,jORB),1,0.0D0,ORBVEC,1)
                   DO IB = 1,NBAST

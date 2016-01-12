@@ -1099,12 +1099,12 @@ c     IF (NASHT2.EQ.1.or.NASHT2.EQ.2) THEN
 ! Get corresponding orbital index in ground state
 !
          CALL GETCMX(ICH,WORK(KMOV),NOCCT,INGSCH,OVMAX)
-         WRITE(LUPRI,'(7X,A/7X,A,I3,A,F6.4,A)')
+         WRITE(LUPRI,'(7X,A/7X,A,I3,A,F7.4,A)')
      &      'Core hole orbital has maxixmum overlap with ',
      &      'ground state orbital ',INGSCH,
      &      ' (',OVMAX,')'
       ELSE IF (NASHT2.EQ.0) THEN
-         WRITE(LUPRI,'(7X,A,I3,A,F6.4,A)')
+         WRITE(LUPRI,'(7X,A,I3,A,F7.4,A)')
      &      'Frozen orbital calculaton : orbital hole',
      &       ICH
       ELSE

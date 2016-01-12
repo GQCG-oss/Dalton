@@ -1282,8 +1282,8 @@ C
       AJUK=(A(LM)*A(LM)+X*X)
       AJUK=DSQRT(AJUK)
       IF(DABS(AJUK).LT.TESTIT)WRITE(6,3000)TESTIT,AJUK,A(LM)
- 3000 FORMAT(/,'***DENOMINATOR LT ',D12.6,'. VALUE=',D14.8,
-     &'. NUMERATOR=',D14.8)
+ 3000 FORMAT(/,'***DENOMINATOR LT ',D13.6,'. VALUE=',D15.8,
+     &'. NUMERATOR=',D15.8)
       Y=0.D0
       IF(DABS(AJUK).LT.TESTIT)GO TO 67
       Y=-A(LM)/AJUK
@@ -1294,7 +1294,7 @@ C  68 Y=-A(LM)/ DSQRT(A(LM)*A(LM)+X*X)
    70 Y=-Y
    75 AJUK=(1.D0-Y*Y)
       IF(AJUK.LT.0.D0)WRITE(6,3001) AJUK
- 3001 FORMAT(/,'***DSQRT OF ',D14.8)
+ 3001 FORMAT(/,'***DSQRT OF ',D15.8)
       IF(AJUK.LT.0.D0)AJUK=0.D0
       AJUK=DSQRT(AJUK)
       AJUK=2.D0*(1.D0+AJUK)
@@ -1637,7 +1637,7 @@ C           IJKLO = KL*(KL-1)/2+IJ + IPNTR(ISM,JSM,KSM)-1
 *
       NTEST = 0
       IF(NTEST.NE.0) THEN
-        WRITE(6,'(A,5I4,3X,E18.12)')
+        WRITE(6,'(A,5I4,3X,E19.12)')
      &  ' GIJKLL I J K L ,IJKLO,(IJ!KL) ', I,J,K,L,IJKLO,GIJKLL
       END IF
 *
@@ -3832,7 +3832,7 @@ C     IF(NTEST.NE.0.AND.IWAY.EQ.1) THEN
 
         WRITE(6,'(A,6I4)') ' IWAY IATP IBTP IASM IBSM IDC ',
      &                   IWAY,IATP,IBTP,IASM,IBSM,IDC
-        WRITE(6,'(A,I4,3X,2E13.8)') ' IPACK FACTOR SIGN_T',
+        WRITE(6,'(A,I4,3X,2E15.8)') ' IPACK FACTOR SIGN_T',
      &  IPACK,FACTOR,SIGN_T
         IF(NTEST.GE. 100 ) THEN
           WRITE(6,*) ' Slater determinant block '
