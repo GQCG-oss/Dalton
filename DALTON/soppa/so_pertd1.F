@@ -72,10 +72,6 @@ C
       INTEGER :: KOFFSOL, KOFFDEN, KOFFOUT    ! Offsets in arrays 
       DOUBLE PRECISION, PARAMETER :: ONE = 1.0D0
       DOUBLE PRECISION, PARAMETER :: SQRT2 = SQRT(2.0D0)
-Ctest     &                               SQRT2INV = ONE/SQRT2
-C     &                               SQRT2INV = SQRT2
-C
-      
 C
       CALL QENTER('SO_PERTD1')
 C

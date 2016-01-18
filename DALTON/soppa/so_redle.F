@@ -269,7 +269,7 @@ C     (This is not really needed, but hardly costs anything)
 C--------------------------------------------------------------     
       PROP = DDOT(LREDE,REDC,1,WORK(KZETA),1)
 C
-      IF( IPRSOP .GE. 2 ) THEN
+      IF( IPRSOP .GE. 5 ) THEN
 C
 C---------------------------
 C     Print reduced C vector

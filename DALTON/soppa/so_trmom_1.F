@@ -198,7 +198,7 @@ C
   100       CONTINUE
 C
 C---------------------------------------------------------
-C              Write tabel of trasition moments to output.
+C              Write tabel of transition moments to output.
 C---------------------------------------------------------
 C
 C

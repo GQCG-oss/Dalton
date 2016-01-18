@@ -34,6 +34,10 @@ module so_info
    character(len=11), dimension(sop_num_models), parameter :: sop_mod_fullname = &
       (/'RPA        ','RPA(D)     ','Higher RPA ','SOPPA      ','SOPPA(CCSD)'/)
 
+   ! Arrays of arguments the method needs to pass to GET_DENS
+   character(len=4), dimension(sop_num_models), parameter :: sop_dens_label = &
+      (/'NONE','MP2 ','MP2 ','MP2 ','CCSD'/)
+
    ! Additional SOPPA filenames (Added here instead of soppinf.h)
    character(len=11), parameter :: FN_RDENS  = 'soppa_densp', &
                                    FN_RDENSE = 'soppa_dense', &
@@ -60,6 +64,21 @@ contains
          end if
       end do
 
+      return
+   end function
+
+   pure function so_needs_densai(model)
+      !  Returns true if the "model" needs recalculation of
+      !  the O-V part of the density matrix
+      character(len=5),intent(in) :: model
+      logical :: so_needs_densai
+      integer :: i
+      do i = 1, sop_num_models
+         if ( model .eq. sop_models(i) ) then
+            so_needs_densai = (sop_dens_label(i) .eq. 'MP2 ')
+            exit
+         end if
+      end do
       return
    end function
 

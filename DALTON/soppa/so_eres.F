@@ -27,7 +27,7 @@ C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
       use so_info, only: so_singles_first, so_singles_second, 
-     &                   so_has_doubles
+     &                   so_has_doubles, so_needs_densai
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
@@ -73,7 +73,7 @@ C
 #include "soppinf.h"
 
 
-      logical :: singles_first, singles_second, doubles  
+      logical :: singles_first, singles_second, doubles, calc_densai  
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
@@ -90,7 +90,8 @@ C  average?
        loadbal_dyn = .false.
        if (nit .eq. 1) loadbal_dyn = .true.
 #endif
-
+C
+      calc_densai = (NIT.EQ.1) .AND. SO_NEEDS_DENSAI(MODEL)
 C
 C------------------
 C     Add to trace.
@@ -102,8 +103,7 @@ C
       CALL QENTER('SO_ERES')
 #ifdef VAR_MPI
 C     Slaves need to zero DENSAI if it is (re)calculated.      
-      elseif ( (MODEL .EQ.'AOSOP'.OR.MODEL .EQ. 'DCRPA')
-     &                   .AND. NIT .EQ. 1) THEN
+      elseif ( calc_densai ) THEN
          CALL DZERO(DENSAI,LDENSAI)
       endif
 #endif
@@ -645,8 +645,7 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
-                  IF ( (MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'DCRPA') .AND. 
-     &                           (NIT.EQ.1) .AND. (  INEWTR.EQ.1) ) THEN
+                  IF ( calc_densai .AND. (  INEWTR.EQ.1 ) ) THEN
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
      &                               ISYMD,ISYDIS,WORK(KEND5),
@@ -1005,8 +1004,7 @@ C
 C-----------------------------------------------------------
 C     Communicate the second order density matrix if needed.
 C-----------------------------------------------------------
-      IF ( (MODEL .EQ. 'AOSOP') .AND. 
-     &     (NIT .EQ. 1)              ) THEN
+      IF ( CALC_DENSAI ) THEN
          IF (MYNUM.EQ.0) THEN
             CALL MPI_REDUCE( MPI_IN_PLACE, DENSAI, LDENSAI, MPI_REAL8,
      &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, IERR)
@@ -1061,8 +1059,7 @@ C     Calculate the last part of the second order density matrix.
 C----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      IF ( (MODEL .EQ. 'AOSOP')   .AND.
-     &     (NIT .EQ. 1)         )  THEN
+      IF ( CALC_DENSAI )  THEN
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
       END IF
 C

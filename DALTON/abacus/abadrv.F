@@ -25,6 +25,8 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
+      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -361,7 +363,7 @@ C
      &                     WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
      &                     WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
             ELSE
-               NMODEL = 4
+               NMODEL = so_num_active_models()
                KPOLDD = KLAST
                KPOLDQ = KPOLDD + 2*9*NFRVAL*NMODEL
                KPOLDL = KPOLDQ + 2*27*NFRVAL*NMODEL
@@ -1241,7 +1243,7 @@ cs
  149     CONTINUE
             MCD = .TRUE.
          GOTO 100
- 150     CONTINUE
+ 150     CONTINUE ! .SOPPA
             ABASOP = .TRUE.
          GOTO 100
  151     CONTINUE

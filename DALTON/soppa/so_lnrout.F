@@ -11,23 +11,20 @@ C
 C     PURPOSE: Driver for printing final output for the RPA, 
 C              SOPPA, and SOPPA(CCSD) polarizabilities.
 C
+      use so_info, only: sop_num_models, so_get_active_models,
+     &                   sop_mod_fullname
 #include "implicit.h"
 #include "priunit.h"
 #include "soppinf.h"
 #include "cbilnr.h"
-C
-      INTEGER, PARAMETER :: NMODEL = 4
 C         
-      DIMENSION POLDD(2,3,3,NFRVAL,NMODEL)!,POLDQ(2,3,3,3,NFRVAL,4)
-      DIMENSION POLDL(2,3,3,NFRVAL,NMODEL),POLDA(2,3,3,NFRVAL,NMODEL)
+      DIMENSION POLDD(2,3,3,NFRVAL,*)!,POLDQ(2,3,3,3,NFRVAL,4)
+      DIMENSION POLDL(2,3,3,NFRVAL,*),POLDA(2,3,3,NFRVAL,*)
 C These are new, check dimension
-      DIMENSION POLVL(2,3,3,NFRVAL,NMODEL),POLVV(2,3,3,NFRVAL,NMODEL)
+      DIMENSION POLVL(2,3,3,NFRVAL,*),POLVV(2,3,3,NFRVAL,*)
       DIMENSION WORK(LWORK)
 
-      LOGICAL   JOBS(NMODEL)
-      CHARACTER(LEN=11), PARAMETER, DIMENSION(NMODEL) :: METHOD_NAMES = 
-     &     (/ 'RPA        ', 'SOPPA      ', 'SOPPA(CCSD)', 
-     &        'Higher RPA '  /)
+      LOGICAL   JOBS(sop_num_models)
 
 C
 C------------------
@@ -36,14 +33,16 @@ C------------------
 C
       CALL QENTER('SO_LNROUT')
 C     
-C   Order must match so_lnraba      
-      JOBS = (/ AORPA, AOSOP, AOSOC, AOHRP /) 
+C     Get list of models active in this job (no RPA(D) properties)      
+      call so_get_active_models( JOBS )
+C      JOBS(sop_model_rpad) = .false.
 C
 C===============================================
 C     LOOP OVER METHODS
 C===============================================
 C
-      DO I = 1, NMODEL         
+      IOUT = 1
+      DO I = 1, sop_num_models    
          IF(.NOT.JOBS(I) ) CYCLE 
 C
 C-----------------------------------------------
@@ -51,14 +50,15 @@ C     Write calculated properties to output.
 C-----------------------------------------------
 C
          WRITE(LUPRI,9000)
-         WRITE(LUPRI,'(30X,A,A)') TRIM(METHOD_NAMES(I)),' results:'
+         WRITE(LUPRI,'(30X,A,A)') TRIM(sop_mod_fullname(i)),' results:'
          WRITE(LUPRI,9001)
 C
-         CALL LNROUT (POLDD(1,1,1,1,I),POLDL(1,1,1,1,I),
-     &                POLDA(1,1,1,1,I),POLVL(1,1,1,1,I),
-     &                POLVV(1,1,1,1,I),FOVIBG,
+         CALL LNROUT (POLDD(1,1,1,1,IOUT),POLDL(1,1,1,1,IOUT),
+     &                POLDA(1,1,1,1,IOUT),POLVL(1,1,1,1,IOUT),
+     &                POLVV(1,1,1,1,IOUT),FOVIBG,
      &                IPRSOP,WORK,LWORK)
 C
+         IOUT = IOUT + 1 
       ENDDO
 C      
       WRITE(LUPRI,9000)

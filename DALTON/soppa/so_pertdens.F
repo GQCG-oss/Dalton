@@ -34,7 +34,8 @@ C        All written to disk
 C  
 C
       use so_info, only: sop_linres, sop_excita, sop_stat_trh, 
-     &                   fn_rdens, fn_rdense, fn_rdensd
+     &                   fn_rdens, fn_rdense, fn_rdensd,
+     &                   so_has_doubles
 C
       implicit none
 C Get MULD2H (group multiplication table)
@@ -83,8 +84,7 @@ C---------------------------------
 C      Allocation of work space
 C---------------------------------
 C
-      DOUBLES = (MODEL.EQ.'AOSOP').OR.(MODEL.EQ.'AOSOC').OR.
-     &          (MODEL.EQ.'DCRPA')
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
       IF (.NOT.DOUBLES) THEN
          LSOLV1 = NT1AM(ISYMTR)
          LSOLV2 = 0
