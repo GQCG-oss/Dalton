@@ -38,7 +38,7 @@ C     Quadruple indices
       INTEGER :: NAIBK, NAJBK, NAICJ, NBICJ, NAIAI, NAJAI, NAIBI, NBIBI
       INTEGER :: IOFFAB
       REAL*8  :: TMP      
-            
+C            
 C------------------------------
 C     Statement function INDEX.
 C------------------------------

@@ -18,7 +18,7 @@ C
      &                   so_get_active_models,
      &                   so_has_doubles,
      &                   so_singles_second,
-     &                   sop_dens_label
+     &                   sop_dens_label, sop_model_rpad
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
@@ -79,7 +79,10 @@ C
 C
 C     Get the active models and their number      
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
-      NUM_ACTIVE = COUNT ( ACTIVE_MODELS )     
+      NUM_ACTIVE = COUNT ( ACTIVE_MODELS ) 
+C
+C     No RPA(D) properties      
+      ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
@@ -252,9 +255,15 @@ C
          DO 100 IOPER = 1, NOPER(ISYM)
 C
             LABEL1 = LABOP(IOPER,ISYM)
-            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
-            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
-            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
+C Do only for DIPLEN?
+            IF (LABEL1(2:7).NE.'DIPLEN') CYCLE 
+                       
+CRF is there a common pattern here?
+            IDIP = ICHAR(LABEL1(1:1)) - ICHAR('X') + 1
+               
+C            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
+C            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
+C            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
 C
             ISYMTR = ISYM
 C
@@ -281,11 +290,11 @@ C
                   WRITE(LUPRI,9000)
                   WRITE(LUPRI,'(1X,A,2(/A,I8))') TRIM(FULLNAME)//':',
      &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h + h-p variables.      :',2*NT1AM(ISYM)
+     &            ' p-h + h-p variables       :',2*NT1AM(ISYM)
                   IF (DOUBLES) THEN
                      NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
                      WRITE(LUPRI,'(A,I8,/A,I8)') 
-     &               ' 2p-2h + 2h-2p variables.  :',2*NT2AM(ISYM),
+     &               ' 2p-2h + 2h-2p variables   :',2*NT2AM(ISYM),
 Cend-PFP
      &               ' Total number of variables :',NVARPT
                   ENDIF
@@ -330,7 +339,8 @@ C----------------------------------------------
 C              Calculate second order property.
 C----------------------------------------------
 C
-               CALL SO_POLAR(MODEL,ISYMTR,IDIP,LABEL1,WORK(KT2AM),LT2AM,
+               CALL SO_POLAR(MODEL,ISYMTR,IDIP,LABEL1,NLBTOT,
+     &                       WORK(KT2AM),LT2AM,
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
      &                       POLDD(1,1,1,1,IOUT),POLDQ(1,1,1,1,1,IOUT),

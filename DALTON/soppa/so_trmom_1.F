@@ -67,7 +67,6 @@ C       transition moment.
 C---------------------------------------------------------------------
 C
          IF (KSYMOP .EQ. ISYMTR) THEN
-            WRITE(LUPRI,*) 'Calculating ', LABEL
 C
 C-------------------------------------
 C           Allocation of work space.

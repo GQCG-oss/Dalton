@@ -1178,17 +1178,17 @@ C
   131    CONTINUE
             READ (LUCMD,*) (ORIGIN(ICOOR), ICOOR = 1,3)
          GOTO 100
-  132    CONTINUE
+  132    CONTINUE!   .NOMASV
             MASSVE = .FALSE.
          GOTO 100
-  133    CONTINUE
+  133    CONTINUE!   .MODARW
             DARWIN = .FALSE.
          GOTO 100
-  134    CONTINUE
+  134    CONTINUE!   .ALPHA
             ABA_ALPHA = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
-  135    CONTINUE
+  135    CONTINUE!   .VROA
             VROA   = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
@@ -1197,7 +1197,7 @@ C
             OPTROT = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
-  137    CONTINUE
+  137    CONTINUE!   .SOPPA(
             ABASOP = .TRUE.
             CCPPA  = .TRUE.
          GOTO 100
@@ -1218,7 +1218,7 @@ C
             READ (LUCMD,*) (DIPORG(ICOOR), ICOOR = 1, 3)
             DIPORG_SET = .TRUE.
          GOTO 100
- 143     CONTINUE
+ 143     CONTINUE!   .RAMAN
             RAMAN  = .TRUE.
             ABALNR = .TRUE.
          GOTO 100

@@ -35,7 +35,7 @@ C
 C     
 C     Get list of models active in this job (no RPA(D) properties)      
       call so_get_active_models( JOBS )
-C      JOBS(sop_model_rpad) = .false.
+      JOBS(sop_model_rpad) = .false.
 C
 C===============================================
 C     LOOP OVER METHODS
