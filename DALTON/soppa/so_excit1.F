@@ -10,25 +10,36 @@ C     SPAS :4/12-1997 : call to ccsd_init1 included. This should allow
 C                       to run the RPA part without going through the
 C                       CC program.
 C     SPAS & PFP: 5/11-2013: triplet excitation energies included
+C     RF: Jan. 2016   : Rewritten to loop over models instead of
+C                       repeating code for each.
 C
-C     PURPOSE: Main driver routine for the calculation of excitation 
+C     PURPOSE: Main driver routine for the calculation of excitation
 C              energies and transition moments with the atomic integral
 C              direct SOPPA program.
 C
+      use so_info, only: sop_num_models,
+     &                   sop_models, sop_mod_fullname,
+     &                   so_num_active_models,
+     &                   so_get_active_models,
+     &                   so_has_doubles,
+     &                   so_singles_second,
+     &                   so_needs_densai,
+     &                   sop_dens_label,
+     &                   sop_model_rpa, sop_model_rpad
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
-     &                       soppa_release_slaves 
-#endif         
-C         
+     &                       soppa_release_slaves
+#endif
+C
 #include "implicit.h"
-C 
+C
 #include "priunit.h"
 C
 #include "cbiexc.h"
 #include "ccsdsym.h"
 #include "infdim.h"
 #include "inforb.h"
-C for irat 
+C for irat
 #include "iratdef.h"
 #include "maxaqn.h"
 C for mxshel, mxprim
@@ -40,33 +51,40 @@ C for mxcont
 #include "soppinf.h"
 #include "symmet.h"
 #include "wrkrsp.h"
- 
+
 C
       PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
 CSPAS:5/11-13: HRPA included
-C     DIMENSION TRLEN(3,NSYM,MXNEXI,4),  TRVEL(3,NSYM,MXNEXI,4)
-C     DIMENSION TQLEN(3,3,NSYM,MXNEXI,4),  TQVEL(3,3,NSYM,MXNEXI,4)
-C     DIMENSION TTLEN(10,NSYM,MXNEXI,4)
-C     DIMENSION TRLON(3,NSYM,MXNEXI,4),  TRMAG(3,NSYM,MXNEXI,4)
-C     DIMENSION BSRLON(3,NSYM,MXNEXI,4), EXENG(NSYM,MXNEXI,4)
-      DIMENSION TRLEN(3,NSYM,MXNEXI,5),  TRVEL(3,NSYM,MXNEXI,5)
-      DIMENSION TQLEN(3,3,NSYM,MXNEXI,5),  TQVEL(3,3,NSYM,MXNEXI,5)
-      DIMENSION TTLEN(10,NSYM,MXNEXI,5)
-      DIMENSION TRLON(3,NSYM,MXNEXI,5),  TRMAG(3,NSYM,MXNEXI,5)
-      DIMENSION BSRLON(3,NSYM,MXNEXI,5), EXENG(NSYM,MXNEXI,5)
+CRF  Defer last dimension size...
+CRF  actual size will be set to NUM_ACTIVE later
+      DIMENSION TRLEN(3,NSYM,MXNEXI,*),
+     &          TRVEL(3,NSYM,MXNEXI,*)
+      DIMENSION TQLEN(3,3,NSYM,MXNEXI,*),
+     &          TQVEL(3,3,NSYM,MXNEXI,*)
+      DIMENSION TTLEN(10,NSYM,MXNEXI,*)
+      DIMENSION TRLON(3,NSYM,MXNEXI,*),
+     &          TRMAG(3,NSYM,MXNEXI,*)
+      DIMENSION BSRLON(3,NSYM,MXNEXI,*),
+     &          EXENG(NSYM,MXNEXI,*)
 CKeinSPASmehr
       DIMENSION SECMAT(3,MXNEXI,NSYM)
       DIMENSION WORK(LWORK)
 C
-      CHARACTER MODEL*5
+      CHARACTER*5  MODEL
+      CHARACTER*11 FULLNAME
+C
+
+      integer :: num_active
+      logical :: active_models(sop_num_models)
+      logical :: doubles, need_t2
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
-! once. 
+! once.
       LOGICAL update_common_blocks, get_mxcall
       LOGICAL so_get_herdir, herdir, so_get_direct
-      
+
 C      herdir = so_get_herdir()
       update_common_blocks = .true.
       get_mxcall = .false.
@@ -77,6 +95,11 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_EXCIT1')
+C
+C
+C     Get the active models and their number
+      CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
+      NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
@@ -100,13 +123,7 @@ C
       END IF
 C
 Cend-PFP
-C     TODO implement triplet excitations and remove this statement
-C     only a problem for parallel calculations, an appropriate parquit
-C     has been added higher up.
-C      IF (TRIPLET) THEN
-C         CALL QUIT('Triplet excitations are not yet fully integrated')
-C      ENDIF
-C      
+C
 C
 C-------------------------------------------
 C     Initializes memory statistics routine.
@@ -119,16 +136,38 @@ C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C
-      IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA) 
+      IF ( AORPA .AND. (.NOT.AOHRP) .AND. (.NOT.DCRPA)
      &           .AND. (.NOT.AOSOP) .AND. (.NOT.AOSOC) ) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
-C     In pure aorpa calculations, eridi has not been initialized      
+C     In pure aorpa calculations, eridi has not been initialized
          herdir = so_get_herdir()
          get_mxcall = so_get_direct()
 #endif
       ENDIF
 
+#ifdef VAR_MPI
+C
+C In AORPA we cannot be sure that the number of integral distributions
+C is known in advance. This is needed in order to allocate memory for
+C load-distribution later on
+      if (get_mxcall) then
+         if (herdir) then
+            call herdi1(work(1), lwork, iprint)
+         else
+            kccfbt  = 1
+            kindxbt = kccfbt + mxprim*mxcont
+            kend3   = kindxbt + 8*mxshel*mxcont/irat
+            lwork3 = lwork - kend3
+            call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
+     &                  krdbc1, krdbc2, kodpp1, kodpp2,
+     &                  krdpp1, krdpp2, kfree,  lfree,
+     &                  kend3, work(kccfbt), work(kindxbt),
+     &                  work(kend3), lwork3, iprint)
+         endif
+         get_mxcall = .false.
+      endif
+#endif
 C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
@@ -163,7 +202,7 @@ C
 CSPAS:5/11-2013: Patricio had the following statement before the IF statement
          LT2AM   = NT2AMX
 CPFP
-C        For triplet calculations LT2AM has to be twice as large, 
+C        For triplet calculations LT2AM has to be twice as large,
 C        because there are two version of the correlation coefficients
 C
          IF (TRIPLET) LT2AM = NT2AMX*2
@@ -178,6 +217,16 @@ C
          KDENSAI = KDENSAB + LDENSAB
          KEND1   = KDENSAI + LDENSAI
          LWORK1  = LWORK   - KEND1
+      ELSE
+         LT2AM   = 0
+         LDENSAI = 0
+         LDENSAB = 0
+         LDENSIJ = 0
+C        Force a crash of this is used
+         KT2AM   = LWORK + 1
+         KDENSIJ = LWORK + 1
+         KDENSAB = LWORK + 1
+         KDENSAI = LWORK + 1
 C
       END IF
 C
@@ -204,30 +253,20 @@ C     Initialize arrays of transition moments and excitation energies.
 C---------------------------------------------------------------------
 C
 CSPAS:5/11-13: HRPA included
-C     CALL DZERO(TRLEN, 3*NSYM*MXNEXI*4)
-C     CALL DZERO(TRVEL, 3*NSYM*MXNEXI*4)
-C     CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*4)
-C     CALL DZERO(TQVEL, 3*3*NSYM*MXNEXI*4)
-C     CALL DZERO(TTLEN, 10*NSYM*MXNEXI*4)
-C     CALL DZERO(TRLON, 3*NSYM*MXNEXI*4)
-C     CALL DZERO(TRMAG, 3*NSYM*MXNEXI*4)
-C     CALL DZERO(BSRLON,3*NSYM*MXNEXI*4)
-C     CALL DZERO(SECMAT,3*NSYM*MXNEXI)
-C     CALL DZERO(EXENG, NSYM*MXNEXI*4)
-      CALL DZERO(TRLEN, 3*NSYM*MXNEXI*5)
-      CALL DZERO(TRVEL, 3*NSYM*MXNEXI*5)
-      CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*5)
-      CALL DZERO(TQVEL, 3*3*NSYM*MXNEXI*5)
-      CALL DZERO(TTLEN, 10*NSYM*MXNEXI*5)
-      CALL DZERO(TRLON, 3*NSYM*MXNEXI*5)
-      CALL DZERO(TRMAG, 3*NSYM*MXNEXI*5)
-      CALL DZERO(BSRLON,3*NSYM*MXNEXI*5)
+      CALL DZERO(TRLEN, 3*NSYM*MXNEXI*NUM_ACTIVE)
+      CALL DZERO(TRVEL, 3*NSYM*MXNEXI*NUM_ACTIVE)
+      CALL DZERO(TQLEN, 3*3*NSYM*MXNEXI*NUM_ACTIVE)
+      CALL DZERO(TQVEL, 3*3*NSYM*MXNEXI*NUM_ACTIVE)
+      CALL DZERO(TTLEN, 10*NSYM*MXNEXI*NUM_ACTIVE)
+      CALL DZERO(TRLON, 3*NSYM*MXNEXI*NUM_ACTIVE)
+      CALL DZERO(TRMAG, 3*NSYM*MXNEXI*NUM_ACTIVE)
+      CALL DZERO(BSRLON,3*NSYM*MXNEXI*NUM_ACTIVE)
       CALL DZERO(SECMAT,3*NSYM*MXNEXI)
-      CALL DZERO(EXENG, NSYM*MXNEXI*5)
+      CALL DZERO(EXENG, NSYM*MXNEXI*NUM_ACTIVE)
 CKeinSPASmehr
 C
 C========================================================
-C     Determine excitation energies, response vectors and 
+C     Determine excitation energies, response vectors and
 C     linear transition moments.
 C========================================================
 C
@@ -240,10 +279,10 @@ C
 C
          NSAVMX = 2
 C
-         WRITE(LUPRI,'(1X,A,/,A,I2,A)') 
+         WRITE(LUPRI,'(1X,A,/,A,I2,A)')
      &   'NOTICE: Maximum number of trial vectors for each'//
      &   ' excitation',' is raised to',NSAVMX, ' as this is'//
-     &   ' minimal space allowed.'
+     &   ' allowed.'
 C
       END IF
 C
@@ -277,136 +316,51 @@ C
             ISYMTR = ISYM
             LEXVAL = NEXCIT(ISYM)
 C
-C====================================
-C           For RPA do the following.
-C====================================
+C=========================================
+C           Loop over the possible methods
+C=========================================
 C
-            IF (AORPA) THEN
-C
-               model = "AORPA"
-C
-               NVARPT = 2*NT1AM(ISYM)
-C
-               IF (IPRSOP .GE. 3) THEN
-                  WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A,2(/A,I8))') 'RPA:',
-     &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h + h-p variables.      :',2*NT1AM(ISYM)
-                  WRITE(LUPRI,9001)
-               END IF
-C
-               NEXCI  = MIN(NEXCIT(ISYM),NT1AM(ISYM))
-C
-               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
-                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)') 
-     &            'NOTICE: The number of excitations are reduced to '
-     &            ,NEXCI,'as this is the full dimension of the '//
-     &            'excitation space'
-               END IF
-#ifdef VAR_MPI
-C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-C In AORPA we cannot be sure that the number of integral distributions
-C is known in advance. This is needed in order to allocate memory for
-C load-distribution later on
-               if (get_mxcall) then
-                  if (herdir) then
-                     call herdi1(work(kend2), lwork2, iprint)
-                  else 
-                     kccfbt  = kend2
-                     kindxbt = kccfbt + mxprim*mxcont
-                     kend3   = kindxbt + 8*mxshel*mxcont/irat
-                     lwork3 = lwork - kend3
-                     call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
-     &                           krdbc1, krdbc2, kodpp1, kodpp2,
-     &                           krdpp1, krdpp2, kfree,  lfree,
-     &                           kend3, work(kccfbt), work(kindxbt),
-     &                           work(kend3), lwork3, iprint)
-                  endif
-                  get_mxcall = .false.
-               endif
-C Note that for rpa, the second and third argument should be ignored
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                        WORK(KEND2), 1, model)
-               update_common_blocks = .false.
-#endif
-C
-C------------------------------------------------------------------
-C              Determine RPA excitation energies and excitation
-C              vectors. The excitation vectors are written to file.
-C------------------------------------------------------------------
-C
-               CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                        DUMMY,0,DUMMY,
-     &                        0,DUMMY,0,DUMMY,
-     &                        0,WORK(KFOCKD),LFOCKD,
-     &                        WORK(KEND2),LWORK2)
+            IOUT = 0
+            DO IMODEL = 1, SOP_NUM_MODELS
+               IF (.NOT. ACTIVE_MODELS(IMODEL) ) CYCLE
 
-C
-C----------------------------------------------------
-C              Copy RPA excitation energies to EXENG.
-C----------------------------------------------------
-C
-               DO IEXVAL = 1,NEXCI
-                  IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,1) = WORK(KEXVAL-1+IEXVAL)
-                  IF (IEXVAL .GT. MXNEXI)
-     &               WRITE(LUPRI,*) 
-     &                    'WARNING: IEXVAL greater than MXNEXI.'
-               END DO
-C
-C-----------------------------------------------
-C              Determine RPA transition moments.
-C-----------------------------------------------
-C
-               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
-     &                       DUMMY,LDUMMY,DUMMY,LDUMMY,
-     &                       DUMMY,LDUMMY,DUMMY,LDUMMY,
-     &                       TRLEN(1,1,1,1),TRVEL(1,1,1,1),
-     &                       TQLEN(1,1,1,1,1),TQVEL(1,1,1,1,1),
-     &                       TTLEN(1,1,1,1),
-     &                       TRLON(1,1,1,1),TRMAG(1,1,1,1),
-     &                       BSRLON(1,1,1,1),EXENG(1,1,1),
-     &                       WORK(KEND2),LWORK2)
-C
-C--------------------------------------------------------
-C              Determine charge radius of excited states.
-C--------------------------------------------------------
-C
-               CALL RP_CHARGE(ISYMTR,NEXCI,SECMAT,WORK(KEND2),LWORK2)
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
-C
-            END IF
-C
-C======================================
-C           For HRPA do the following.
-C======================================
-C
-C
-            IF (AOHRP) THEN
-               NVARPT  = 2*NT1AM(ISYM)
-               MODEL = 'AOHRP'
+C              Increment output pointer
+               IOUT = IOUT + 1
+C----------------------------------------
+C              Look up info on this model
+C----------------------------------------
+               MODEL = SOP_MODELS(IMODEL)
+               FULLNAME = SOP_MOD_FULLNAME(IMODEL)
+               DOUBLES = SO_HAS_DOUBLES(IMODEL)
+               NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
 C
                IF (IPRSOP .GE. 3) THEN
                   WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A)') 'HRPA:'
-C                 WRITE(LUPRI,'(3(A,I8,/),A,I8)')
-                  WRITE(LUPRI,'(2(A,I8,/),A,I8)')
+                  WRITE(LUPRI,'(1X,A)') TRIM(FULLNAME)//':'
+                  WRITE(LUPRI,'(A,I8,/,A,I8)')
      &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h variables.            :',2*NT1AM(ISYM),
-     &            ' Total number of variables :',NVARPT
+     &            ' p-h variables             :',2*NT1AM(ISYM)
+                  IF (DOUBLES) THEN
+                     NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+CPFP   2009-Jun
+                     WRITE(LUPRI,'(A,I8,/,A,I8)')
+     &               ' 2p-2h variables           :',2*NT2AM(ISYM),
+c     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
+Cend-PFP
+     &               ' Total number of variables :',NVARPT
+                  ENDIF
                   WRITE(LUPRI,9001)
                END IF
 C
-               NEXCI = MIN(NEXCIT(ISYM),NVARPT/2)
+C              Adjust number of excitations of this symmetry down to
+C              the highest possible number
+C
+               IF (DOUBLES .AND.(.NOT.IMODEL.EQ.SOP_MODEL_RPAD) ) THEN
+                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
+               ELSE
+                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM))
+               ENDIF
+C
                IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
                   WRITE(LUPRI,'(1X,A,I5,/,1X,A)')
      &            'NOTICE: The number of excitations are reduced to '
@@ -418,351 +372,94 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
-     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
-     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
+               IF (NEED_T2) THEN
+                  CALL SO_GETT2(SOP_DENS_LABEL(IMODEL),
+     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
+     &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
+     &                          WORK(KDENSAB),LDENSAB,
+     &                          WORK(KEND2),LWORK2)
+               ENDIF
 C
-C--------------------------------
-C              Initialize DENSAI.
-C--------------------------------
+C---------------------------------------------------------
+C              Ready the slaves for parallel calculations.
+C---------------------------------------------------------
 C
-               CALL DZERO(WORK(KDENSAI),LDENSAI)
+#ifdef VAR_MPI
+               call soppa_initialize_slaves ( update_common_blocks,
+     &                                       WORK(KT2AM), LT2AM, model)
+               update_common_blocks = .false.
+#endif
 C
-C-------------------------------------------------------------------
-C              Determine HRPA excitation energies and excitation
+C-----------------------------------------
+C              Initialize DENSAI if needed
+C-----------------------------------------
+C
+               IF ( SO_NEEDS_DENSAI(MODEL))
+     &            CALL DZERO(WORK(KDENSAI),LDENSAI)
+C
+C------------------------------------------------------------------
+C              Determine excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
-C-------------------------------------------------------------------
+C------------------------------------------------------------------
 C
+               IF ( IMODEL .NE. SOP_MODEL_RPAD) THEN
+                  CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
+     &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                           LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                           WORK(KT2AM),
+     &                           LT2AM,WORK(KFOCKD),LFOCKD,
+     &                           WORK(KEND2),LWORK2)
+               ELSE ! RPA(D) still has it's own driver...
+                  CALL DC_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
+     &                           WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
+     &                           LDENSAB,WORK(KDENSAI),LDENSAI,
+     &                           WORK(KT2AM),
+     &                           LT2AM,WORK(KFOCKD),LFOCKD,
+     &                           WORK(KEND2),LWORK2)
+               ENDIF
 C
-               CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
-     &                        LT2AM,WORK(KFOCKD),LFOCKD,
-     &                        WORK(KEND2),LWORK2)
-C
-C-------------------------------------------------------
-C              Copy HRPA exciation energies to EXENG.
-C-------------------------------------------------------
+C-----------------------------------------------------
+C              Copy exciation energies to EXENG.
+C-----------------------------------------------------
 C
                DO IEXVAL = 1,NEXCI
                   IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,2) = WORK(KEXVAL-1+IEXVAL)
+     &               EXENG(ISYM,IEXVAL,IOUT) = WORK(KEXVAL-1+IEXVAL)
                   IF (IEXVAL .GT. MXNEXI)
      &               WRITE(LUPRI,*)
      &                    'WARNING: IEXVAL greater than MXNEXI.'
-              END DO
-C
-C---------------------------------------------------
-C              Determine HRPA transition moments.
-C---------------------------------------------------
-C
-               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
-     &                       WORK(KT2AM),LT2AM,WORK(KDENSIJ),LDENSIJ,
-     &                       WORK(KDENSAB),LDENSAB,
-     &                       WORK(KDENSAI),LDENSAI,
-     &                       TRLEN(1,1,1,2),TRVEL(1,1,1,2),
-     &                       TQLEN(1,1,1,1,2),TQVEL(1,1,1,1,2),
-     &                       TTLEN(1,1,1,2),
-     &                       TRLON(1,1,1,2),TRMAG(1,1,1,2),
-     &                       BSRLON(1,1,1,2),EXENG(1,1,2),
-     &                       WORK(KEND2),LWORK2)
-            END IF
-C
-C=======================================
-C           For RPA(D) do the following.
-C=======================================
-C
-            IF (DCRPA) THEN
-C
-               MODEL = 'DCRPA'
-C
-CPFP   2009-Jun
-               NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-               !NVARPT = 2*(NT1AM(ISYM)+N2P2HOP(ISYM)) ! TODO triplet excitations are not yet integrated
-Cend-PFP
-C
-               IF (IPRSOP .GE. 3) THEN
-                  WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A,4(/A,I8))') 'RPA(D):',
-     &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h variables.            :',2*NT1AM(ISYM),
-CPFP   2009-Jun
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-c     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
-Cend-PFP
-     &            ' Total number of variables :',NVARPT
-                  WRITE(LUPRI,9001)
-               END IF
-C
-               NEXCI  = MIN(NEXCIT(ISYM),NT1AM(ISYM))
-C
-               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
-                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)') 
-     &            'NOTICE: The number of excitations are reduced to '
-     &            ,NEXCI,'as this is the full dimension of the '//
-     &            'RPA excitation space'
-               END IF
-C
-C-----------------------------------------------------
-C              Get T2 amplitudes and density matrices.
-C-----------------------------------------------------
-C
-               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
-     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
-     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
-C
-C--------------------------------
-C              Initialize DENSAI.
-C--------------------------------
-C
-               CALL DZERO(WORK(KDENSAI),LDENSAI)
-C
-C------------------------------------------------------------------
-C              Determine RPA(D) excitation energies and excitation 
-C              vectors. The excitation vectors are written to file.
-C------------------------------------------------------------------
-C
-               CALL DC_RSPLEX(ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
-     &                        LT2AM,WORK(KFOCKD),LFOCKD,
-     &                        WORK(KEND2),LWORK2)
-C
-C-------------------------------------------------------
-C              Copy RPA(D) excitation energies to EXENG.
-C-------------------------------------------------------
-C
-               DO IEXVAL = 1,NEXCI
-                  IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,3) = WORK(KEXVAL-1+IEXVAL)
-                  IF (IEXVAL .GT. MXNEXI)
-     &               WRITE(LUPRI,*) 
-     &                    'WARNING: IEXVAL greater than MXNEXI.'
-               END DO
-C
-C--------------------------------------------------
-C              Determine RPA(D) transition moments.
-C--------------------------------------------------
-CRF -- Deactivated untill we figure out if the way it is done is
-C   -- actually meaningfull
-               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
-     &                       WORK(KT2AM),LT2AM,WORK(KDENSIJ),LDENSIJ,
-     &                       WORK(KDENSAB),LDENSAB,
-     6                       WORK(KDENSAI),LDENSAI,
-     &                       TRLEN(1,1,1,3),TRVEL(1,1,1,3),
-     &                       TQLEN(1,1,1,1,3),TQVEL(1,1,1,1,3),
-     &                       TTLEN(1,1,1,3),
-     &                       TRLON(1,1,1,3),TRMAG(1,1,1,3),
-     &                       BSRLON(1,1,1,3),EXENG(1,1,3),
-     &                       WORK(KEND2),LWORK2)
-C
-            END IF
-C
-C======================================
-C           For SOPPA do the following.
-C======================================
-C
-            IF (AOSOP) THEN
-C
-               MODEL = 'AOSOP'
-C
-CPFP   2009-Jun
-               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-               !NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM)) ! TODO triplet excitations are not yet integrated
-Cend-PFP
-C
-               IF (IPRSOP .GE. 3) THEN
-                  WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A)') 'SOPPA:'
-                  WRITE(LUPRI,'(3(A,I8,/),A,I8)')
-     &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h variables.            :',2*NT1AM(ISYM),
-CPFP   2009-Jun
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-c     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
-Cend-PFP
-     &            ' Total number of variables :',NVARPT
-                  WRITE(LUPRI,9001)
-               END IF
-C
-               NEXCI = MIN(NEXCIT(ISYM),NVARPT/2)
-C
-               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
-                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)') 
-     &            'NOTICE: The number of excitations are reduced to '
-     &            ,NEXCI,'as this is the full dimension of the '//
-     &            'excitation space'
-               END IF
-C
-C-----------------------------------------------------
-C              Get T2 amplitudes and density matrices.
-C-----------------------------------------------------
-C
-               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
-     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
-     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
-C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-#ifdef VAR_MPI
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model) 
-               update_common_blocks = .false.
-#endif
-C
-C--------------------------------
-C              Initialize DENSAI.
-C--------------------------------
-C
-               CALL DZERO(WORK(KDENSAI),LDENSAI)
-C
-C------------------------------------------------------------------
-C              Determine SOPPA excitation energies and excitation
-C              vectors. The excitation vectors are written to file.
-C------------------------------------------------------------------
-C
-               CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
-     &                        LT2AM,WORK(KFOCKD),LFOCKD,
-     &                        WORK(KEND2),LWORK2)
-C
-C-----------------------------------------------------
-C              Copy SOPPA exciation energies to EXENG.
-C-----------------------------------------------------
-C
-               DO IEXVAL = 1,NEXCI
-                  IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,4) = WORK(KEXVAL-1+IEXVAL)
-                  IF (IEXVAL .GT. MXNEXI)
-     &               WRITE(LUPRI,*) 
-     &                    'WARNING: IEXVAL greater than MXNEXI.'
                END DO
 C
 C-------------------------------------------------
-C              Determine SOPPA transition moments.
+C              Determine transition moments.
 C-------------------------------------------------
 C
                CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,
      &                       WORK(KT2AM),LT2AM,WORK(KDENSIJ),LDENSIJ,
      &                       WORK(KDENSAB),LDENSAB,
      &                       WORK(KDENSAI),LDENSAI,
-     &                       TRLEN(1,1,1,4),TRVEL(1,1,1,4),
-     &                       TQLEN(1,1,1,1,4),TQVEL(1,1,1,1,4),
-     &                       TTLEN(1,1,1,4),
-     &                       TRLON(1,1,1,4),TRMAG(1,1,1,4),
-     &                       BSRLON(1,1,1,4),EXENG(1,1,4),
+     &                       TRLEN(1,1,1,IOUT),TRVEL(1,1,1,IOUT),
+     &                       TQLEN(1,1,1,1,IOUT),TQVEL(1,1,1,1,IOUT),
+     &                       TTLEN(1,1,1,IOUT),
+     &                       TRLON(1,1,1,IOUT),TRMAG(1,1,1,IOUT),
+     &                       BSRLON(1,1,1,IOUT),EXENG(1,1,IOUT),
      &                       WORK(KEND2),LWORK2)
+
+C
+C------------------------------------------------------------------
+C              Determine charge radius of excited states (RPA only)
+C------------------------------------------------------------------
+C
+               IF ( IMODEL .EQ. SOP_MODEL_RPA)
+     &            CALL RP_CHARGE(ISYMTR,NEXCI,SECMAT,WORK(KEND2),LWORK2)
 #ifdef VAR_MPI
 C-------------------------------------------------------
 C              Release slaves to the global node-driver.
 C-------------------------------------------------------
                call soppa_release_slaves()
 #endif
-C
-            END IF
-C
-C============================================
-C           For SOPPA(CCSD) do the following.
-C============================================
-C
-            IF (AOSOC) THEN
-C
-               MODEL = 'AOSOC'
-C
-CPFP   2009-Jun
-               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-               !NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM)) ! TODO triplet excitations are not yet integrated
-Cend-PFP
-C
-               IF (IPRSOP .GE. 3) THEN
-                  WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A)') 'SOPPA(CCSD):'
-                  WRITE(LUPRI,'(3(A,I8,/),A,I8)')
-     &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h variables.            :',2*NT1AM(ISYM),
-CPFP   2009-Jun
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-     &            !' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
-Cend-PFP
-     &            ' Total number of variables :',NVARPT
-                  WRITE(LUPRI,9001)
-               END IF
-C
-               NEXCI = MIN(NEXCIT(ISYM),NVARPT/2)
-C
-               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
-                  WRITE(LUPRI,'(1X,A,I5,/,1X,A)')
-     &            'NOTICE: The number of excitations are reduced to '
-     &            ,NEXCI,'as this is the full dimension of the '//
-     &            'excitation space'
-               END IF
-C
-C-----------------------------------------------------
-C              Get T2 amplitudes and density matrices.
-C-----------------------------------------------------
-C
-               CALL SO_GETT2('CCSD',WORK(KT2AM),LT2AM,WORK(KDENSAI),
-     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
-     &                       WORK(KDENSAB),LDENSAB,WORK(KEND2),LWORK2)
-C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-#ifdef VAR_MPI
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model) 
-               update_common_blocks = .false.
-#endif
-C
-C----------------------------------------------------------------------
-C              Determine SOPPA(CCSD) excitation energies and excitation
-C              vectors. The excitation vectors are written to file.
-C----------------------------------------------------------------------
-C
-               CALL SO_RSPLEX(MODEL,ISYMTR,NEXCI,WORK(KEXVAL),LEXVAL,
-     &                        WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                        LDENSAB,WORK(KDENSAI),LDENSAI,WORK(KT2AM),
-     &                        LT2AM,WORK(KFOCKD),LFOCKD,
-     &                        WORK(KEND2),LWORK2)
-C
-C-----------------------------------------------------------
-C              Copy SOPPA(CCSD) exciation energies to EXENG.
-C-----------------------------------------------------------
-C
-               DO IEXVAL = 1,NEXCI
-                  IF (IEXVAL .LE. MXNEXI)
-     &               EXENG(ISYM,IEXVAL,5) = WORK(KEXVAL-1+IEXVAL)
-                  IF (IEXVAL .GT. MXNEXI)
-     &               WRITE(LUPRI,*) 
-     &                    'WARNING: IEXVAL greater than MXNEXI.'
-               END DO  
-C
-C-------------------------------------------------------
-C              Determine SOPPA(CCSD) transition moments.
-C-------------------------------------------------------
-C
-               CALL SO_TRMOM(MODEL,ISYMTR,NLBTOT,NEXCI,WORK(KT2AM),
-     &                       LT2AM,WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
-     &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       TRLEN(1,1,1,5),TRVEL(1,1,1,5),
-     &                       TQLEN(1,1,1,1,5),TQVEL(1,1,1,1,5),
-     &                       TTLEN(1,1,1,5),
-     &                       TRLON(1,1,1,5),TRMAG(1,1,1,5),
-     &                       BSRLON(1,1,1,5),EXENG(1,1,5),
-     &                       WORK(KEND2),LWORK2)
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
-C
-            END IF
-C
+
+            END DO
          END IF
 C
   100 CONTINUE
@@ -808,23 +505,23 @@ C
 
 #ifdef VAR_MPI
       LOGICAL FUNCTION SO_GET_HERDIR()
-C        WORK-AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS 
+C        WORK-AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS
 C        THE VARIABLE "SKIP"
 C        RETURNS THE VALUE OF HERDIR from ccsdinp.h
-         
+
 #include "ccsdinp.h"
       SO_GET_HERDIR = HERDIR
       RETURN
       END
-C      
+C
       LOGICAL FUNCTION SO_GET_DIRECT()
-C        WORK-AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS 
+C        WORK-AROUND TO THE ISSUE THAT TOO MANY COMMON BLOCKS HAS
 C        THE VARIABLE "SKIP"
 C        RETURNS THE VALUE OF DIRECT from ccsdinp.h
-         
+
 #include "ccsdinp.h"
       SO_GET_DIRECT = DIRECT
       RETURN
       END
-#endif      
+#endif
 

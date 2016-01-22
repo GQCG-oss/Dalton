@@ -1,8 +1,8 @@
 module so_info
 !
 !  This module contains configuration information for the AOSOPPA code.
-!  It also contains a few convenience functions. 
-!  
+!  It also contains a few convenience functions.
+!
 !
    implicit none
 
@@ -19,7 +19,10 @@ module so_info
                          sop_excita = 2    ! excitation energy
 
    ! Integer constants giving the position of each method in the following
-   ! arrays.
+   ! arrays. The methods will be used in the order listed here, so order them
+   ! such that reuse of results from previous methods makes sense.
+   ! Otherwise code outside of this module should not make any assumptions on the
+   ! actual values of these constats!
    integer, parameter :: sop_model_rpa     = 1, &
                          sop_model_rpad    = 2, &
                          sop_model_hrpa    = 3, &
@@ -28,9 +31,9 @@ module so_info
 
    ! Array of the allowed model labels
    character(len=5), dimension(sop_num_models), parameter :: sop_models = &
-                  (/ 'AORPA','DCRPA','AOHRP','AOSOP','AOSOC' /) 
+                  (/ 'AORPA','DCRPA','AOHRP','AOSOP','AOSOC' /)
 
-   ! Array of method full model names names 
+   ! Array of method full model names names
    character(len=11), dimension(sop_num_models), parameter :: sop_mod_fullname = &
       (/'RPA        ','RPA(D)     ','Higher RPA ','SOPPA      ','SOPPA(CCSD)'/)
 
@@ -42,7 +45,7 @@ module so_info
    character(len=11), parameter :: FN_RDENS  = 'soppa_densp', &
                                    FN_RDENSE = 'soppa_dense', &
                                    FN_RDENSD = 'soppa_densd'
-      
+
    interface so_has_doubles
       module procedure so_has_doubles_name, so_has_doubles_num
    end interface
@@ -93,7 +96,7 @@ contains
       return
    end function
 
-   pure subroutine so_get_active_models ( list ) 
+   pure subroutine so_get_active_models ( list )
       !  Returns list of active models in execution order.
       !  (Work around to the fact that the models are controlled by
       !   individual logical variables)
@@ -132,17 +135,17 @@ contains
       return
    end function
 
-   pure function so_singles_first(model) 
+   pure function so_singles_first(model)
       !  Returns true if model includes second order singles.
       !  Needed if we calculate perturbation correction.
       character(len=5), intent(in) :: model
       logical :: so_singles_first
-      
+
       so_singles_first = .not.(model.eq.'DCRPA')
    end function
 
-   pure function so_model_number(model) 
-      !  Reverse lookup function to get AOSOPPA 
+   pure function so_model_number(model)
+      !  Reverse lookup function to get AOSOPPA
       !  model number from old model labels
       character(len=5), intent(in) :: model
       integer :: i
@@ -152,6 +155,6 @@ contains
          if (model .eq. sop_models(i) ) so_model_number = i
       end do
       return
-   end function      
+   end function
 
 end module so_info

@@ -9,10 +9,10 @@ C     Stephan P. A. Sauer: 3.12.2003
 C     Rasmus Faber, October 2015: Added MPI
 C
 C     PURPOSE: Main driver routine for the calculation of frequency
-C              dependent linear response properties with the atomic 
+C              dependent linear response properties with the atomic
 C              integral direct SOPPA program.
 C
-      use so_info, only: sop_num_models, 
+      use so_info, only: sop_num_models,
      &                   sop_models, sop_mod_fullname,
      &                   so_num_active_models,
      &                   so_get_active_models,
@@ -22,8 +22,8 @@ C
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
-     &                       soppa_release_slaves 
-#endif         
+     &                       soppa_release_slaves
+#endif
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -34,7 +34,7 @@ C
 #include "ccsdsym.h"
 c#include "infdim.h"
 #include "inforb.h"
-C for irat 
+C for irat
 #include "iratdef.h"
 #include "maxaqn.h"
 C for mxshel, mxprim
@@ -62,10 +62,10 @@ C
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
-! once. 
+! once.
       LOGICAL update_common_blocks, get_mxcall
       LOGICAL so_get_herdir, herdir, so_get_direct
-      
+
       update_common_blocks = .true.
       get_mxcall = .false.
 #endif
@@ -77,11 +77,11 @@ C
       CALL QENTER('SO_LNRABA')
 C
 C
-C     Get the active models and their number      
+C     Get the active models and their number
       CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
-      NUM_ACTIVE = COUNT ( ACTIVE_MODELS ) 
+      NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
 C
-C     No RPA(D) properties      
+C     No RPA(D) properties
       ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
 C
 C-------------------------------------------
@@ -106,11 +106,11 @@ C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C     On the flip side, this cause a crash if CC has been run
-      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP) 
-     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)) THEN   
+      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP)
+     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
-C     In pure aorpa calculations, eridi has not been initialized      
+C     In pure aorpa calculations, eridi has not been initialized
          herdir = so_get_herdir()
          get_mxcall = so_get_direct()
 #endif
@@ -121,10 +121,11 @@ C
 C In AORPA we cannot be sure that the number of integral distributions
 C is known in advance. This is needed in order to allocate memory for
 C load-distribution later on
+C
       if (get_mxcall) then
          if (herdir) then
-            call herdi1(work(1), lwork1, iprint)
-         else 
+            call herdi1(work(1), lwork, iprint)
+         else
             kccfbt  = 1
             kindxbt = kccfbt + mxprim*mxcont
             kend3   = kindxbt + 8*mxshel*mxcont/irat
@@ -154,8 +155,8 @@ C----------------------------------
 C
       IPRSOP = IPRLNR
 C
-      IF (IPRLNR .GE. 0) 
-     &     CALL TITLER('Solving Linear Response Equations','¤',118)
+      IF (IPRLNR .GE. 0)
+     &     CALL TITLER('Solving Linear Response Equations','#',118)
 C
 C---------------------------------
 C     1. allocation of work space.
@@ -173,7 +174,7 @@ C
          LDENSIJ = NIJDEN(1)
          LDENSAB = NABDEN(1)
          LDENSAI = NAIDEN(1)
-C         
+C
          KT2AM   = KFOCKD  + LFOCKD
          KDENSIJ = KT2AM   + LT2AM
          KDENSAB = KDENSIJ + LDENSIJ
@@ -235,7 +236,7 @@ C
 C
          NSAVMX = 2
 C
-         WRITE(LUPRI,'(1X,A,/,A,I2,A)') 
+         WRITE(LUPRI,'(1X,A,/,A,I2,A)')
      &   'NOTICE: Maximum number of trial vectors for each'//
      &   ' property',' is raised to',NSAVMX, ' as this is'//
      &   ' minimal space allowed.'
@@ -256,11 +257,11 @@ C
 C
             LABEL1 = LABOP(IOPER,ISYM)
 C Do only for DIPLEN?
-            IF (LABEL1(2:7).NE.'DIPLEN') CYCLE 
-                       
+            IF (LABEL1(2:7).NE.'DIPLEN') CYCLE
+
 CRF is there a common pattern here?
             IDIP = ICHAR(LABEL1(1:1)) - ICHAR('X') + 1
-               
+
 C            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
 C            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
 C            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
@@ -272,19 +273,18 @@ C           Loop over the posible methods
 C========================================
 C
             IOUT = 1
-C            
+C
             DO IMODEL = 1, SOP_NUM_MODELS
 C
 C  Skip methods not treated in this calcultion
-               IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE            
+               IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
 C
 C  Look up info on this model
-C               
+C
                MODEL = SOP_MODELS(IMODEL)
                FULLNAME = SOP_MOD_FULLNAME(IMODEL)
                DOUBLES = SO_HAS_DOUBLES(IMODEL)
                NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
-               print *, MODEL, FULLNAME, DOUBLES, NEED_T2, IOUT
 C
                IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
@@ -293,7 +293,7 @@ C
      &            ' p-h + h-p variables       :',2*NT1AM(ISYM)
                   IF (DOUBLES) THEN
                      NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-                     WRITE(LUPRI,'(A,I8,/A,I8)') 
+                     WRITE(LUPRI,'(A,I8,/A,I8)')
      &               ' 2p-2h + 2h-2p variables   :',2*NT2AM(ISYM),
 Cend-PFP
      &               ' Total number of variables :',NVARPT
@@ -319,10 +319,10 @@ C              Ready the slaves for parallel calculations.
 C---------------------------------------------------------
 C
                call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model) 
+     &                                       WORK(KT2AM), LT2AM, model)
                update_common_blocks = .false.
 #endif
-C               
+C
 C------------------------------------------------------------------
 C              Determine SOPPA excitation energies and excitation
 C              vectors. The excitation vectors are written to file.
@@ -353,13 +353,13 @@ C-------------------------------------------------------
                call soppa_release_slaves()
 #endif
 C              INCREMENT OUTPUT POINTER
-               IOUT = IOUT + 1               
+               IOUT = IOUT + 1
 C
             END DO
 
-C     
+C
   100    CONTINUE
-C     
+C
   200 CONTINUE
 C
 C---------------------------------

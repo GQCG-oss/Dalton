@@ -412,9 +412,10 @@ C     ******************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
       NMODEL = 1
-CPFP 2009-Jun NMODEL increased from 4 to 5
-      IF (AORPA .OR. AOHRP .OR. DCRPA 
-     &          .OR. AOSOP .OR. AOSOC) NMODEL = 5
+CRF  2016-Jan Set NMODEL to actual AOSOPPA methods
+      IF (AORPA .OR. AOHRP .OR. DCRPA
+     &          .OR. AOSOP .OR. AOSOC)
+     &         NMODEL = so_num_active_models()
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
