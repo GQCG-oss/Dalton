@@ -609,28 +609,28 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
      &                       IST, ': ', ECIAUX-ECIAUX_gs
            endif
 !          compute the ensemble CI-srDFT energy 
-           EENSEMB = EENSEMB + weights(IST) * ECI(IST)
+           if(do_sc_ensemble_dft)
+     &     EENSEMB = EENSEMB + weights(IST) * ECI(IST)
 !          compute the ensemble ESRDV energy contribution 
 !          ESRDV_ens = ESRDV_ens + weights(IST) * ESRDV
         END DO
-
-        write(lupri,806) '*****************************************'
-        WRITE(LUPRI,806) 'Non-variational ensemble CI-srDFT energy:',
-     &                    EENSEMB
-!       WRITE(LUPRI,806) 'ESRDV_ens=', ESRDV_ens
-        write(lupri,806) '*****************************************'
-!           
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
   807   FORMAT(/1X,A,I2,A,F20.12)
 
-        veensemb = eensemb
         if(do_sc_ensemble_dft)then
-          call  get_sc_ensemble_energy(veensemb,EDFT,
+
+           WRITE(LUPRI,'(/A/A,F25.12/A)')
+     &        ' *****************************************',
+     &        ' Non-variational ensemble CI-srDFT energy:', EENSEMB,
+     &        ' *****************************************'
+
+           veensemb = eensemb
+           call  get_sc_ensemble_energy(veensemb,EDFT,
      &                                 cmo,nnashx,nnorbt,
      &                                 ncroot,weights,lupri,
      &                                 wrk(kw2),lw2)
-        end if
+         end if
       ENDIF
 
       J = LUW4
