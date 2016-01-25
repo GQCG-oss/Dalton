@@ -836,7 +836,7 @@ C
      &      ' larger than',ABS(THRESH)
          SCALE = D1 / C2NRM
       ELSE
-         WRITE (LUOUT,'(/A,1P,D12.4)')
+         WRITE (LUOUT,'(/A,1P,D10.2)')
      &      ' Print of vector elements larger than',ABS(THRESH)
          SCALE = D1
       END IF
@@ -869,7 +869,7 @@ C     *** We have reached the print limit
 C
          WRITE (LUOUT,910) IPR
       END IF
-  910 FORMAT(/' Print limit of',I6,' elements has been reached.')
+  910 FORMAT(/'INFO: Print limit of',I6,' elements has been reached.')
       C2SUM = SQRT(C2SUM)
       IF (IZER .EQ. NDIM) THEN
          WRITE (LUOUT,920) NDIM
