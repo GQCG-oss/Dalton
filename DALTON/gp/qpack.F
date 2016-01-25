@@ -207,6 +207,7 @@ C
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(A/)') ' ========================'
+      CALL FLSHFO(LUPRI)
 C920522-hjaaj: do not call TRACE because it will abort on some computers
 C9000 CALL our_own_traceback
  9000 CONTINUE
