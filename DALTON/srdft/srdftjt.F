@@ -58,6 +58,11 @@ C*****************************************************************************
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
 
+#define noSRDFT_DEBUG
+      !edh debug
+      real*8    print_thr
+#endif
+
       DIMENSION EXCMAT(NBAST,NBAST,*), DMAT(N2BASX,*), 
      &          CORX(NBUF),CORY(NBUF),CORZ(NBUF),WEIGHT(NBUF),
      &          GSO(NBAST*NTYPSO),NCNT(NBAST),
@@ -107,6 +112,10 @@ C
 #endif
 C     Initializations -------------------------------------------------------
 
+      ! edh debug
+#ifdef SRDFT_DEBUG
+      print_thr = 0.0d0
+#endif
 
       IF (ND_SIM .NE. 1) THEN
          WRITE(LUPRI,*) 'SRDFT1: illegal ND_SIM ',ND_SIM
@@ -140,7 +149,7 @@ C     THRELCTRN makes sure that error in no. of electrons
 C     from grid integration less than DFTHR
       THRELCTOT = 1.0D-7
       THRELCTRN = D0
-      THRESRHO  = 1.0D-12
+      THRESRHO  = 1.0D-8
       THRDRHO   = D0
       DFTHR0    = D0
       DFTHRI    = D0
@@ -235,6 +244,8 @@ C        Contribution to spin density (N_alpha - N_beta)
       ELSE
         RHO(2) = 0.0D0
       END IF
+      RHO(3) = RHO(1) + RHO(2)
+      RHO(4) = RHO(1) - RHO(2)
 
 C     Gradient of density
       IF (DOGGA) THEN
@@ -302,7 +313,7 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
      & call quit('DOGGA not yet for DFT_SPINDNS in DFTKSM call')
          CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
      &             d1Excdrhos,d1Excdgrda2,DOGGA,FROMVX,DFTHRL)
-       ENDIF
+       ENDIF      
 
 C
        ENDIF  !DOERG
@@ -315,22 +326,63 @@ C        matrix 3 is DSAO
 C        matrix 4 is DXSAO
          JDXTAO = 2
          JDXSAO = 4
-         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
+
+#ifdef SRDFT_DEBUG
+       ! edh debug
+       print_thr = 50000.0d0
+       do k = 1,2
+         do i = 1, nbast
+           do j = 1, i - 1
+             if (abs(excmat(j,i,k)) > print_thr) then
+                write(lupri,*)'edh 0 k, j, i', k, i, j, excmat(j,i,k)
+             endif
+           end do
+         end do
+       end do      
+#endif
+
+        CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
      &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DMAGAOSR,DOGGA)
        ENDIF
+
+#ifdef SRDFT_DEBUG
+       print_thr = 50000.0d0
+       do k = 1,2
+         do i = 1, nbast
+           do j = 1, i - 1
+             if (abs(excmat(j,i,k)) > print_thr) then
+                write(lupri,*)'edh 1 k, j, i', k, i, j, excmat(j,i,k)
+             endif
+           end do
+         end do
+       end do      
+#endif
 
 C
   300  CONTINUE
 C End of loop over points ------------------------------------------------
 C
        GO TO 200
-      ELSE IF (NPOINT .EQ.0 ) THEN
+       ELSE IF (NPOINT .EQ.0 ) THEN
          GO TO 200
-      END IF  !NPOINT.GT.0
+       END IF  !NPOINT.GT.0
 
 C Termination --------------------------------------------------------------
 
+#ifdef SRDFT_DEBUG
+       print_thr = 10.0d0
+       write(lupri,*) 'print_thr', print_thr
+       do k = 1,2
+         do i = 1, nbast
+           do j = 1, i - 1
+             if (abs(excmat(j,i,k)) > print_thr) then
+                write(lupri,*)'edh 2 k, j, i', k, i, j, excmat(j,i,k)
+             endif
+           end do
+         end do
+       end do      
+#endif
       CALL GPCLOSE(LUQUAD,'KEEP')
 
       IF (DOERG) THEN
@@ -847,6 +899,29 @@ C Total contribution -------------------------------------------------------
       IF (DFT_SPINDNS) THEN
          FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
          FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
+#define noSRDFT_DEBUG
+         if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
+            write(lupri,*) 'hjaaj: FRR,FRS,FSS',FRR,FRS,FSS
+            write(lupri,*) 'hjaaj: rho',rho(1:4)
+            write(lupri,*) 'hjaaj: B0',B0(1:2)
+            write(lupri,*) 'hjaaj: Ex, Ec',Ex, Ec
+            write(lupri,*) 'hjaaj: d1Exdrhot',d1Exdrhot
+            write(lupri,*) 'hjaaj: d1Exdrhos',d1Exdrhos
+            write(lupri,*) 'hjaaj: d1Ecdrhot',d1Ecdrhot
+            write(lupri,*) 'hjaaj: d1Ecdrhos',d1Ecdrhos
+            write(lupri,*) 'hjaaj: d2Exdrhotdrhot',d2Exdrhotdrhot
+            write(lupri,*) 'hjaaj: d2Exdrhotdrhos',d2Exdrhotdrhos
+            write(lupri,*) 'hjaaj: d2Exdrhosdrhos',d2Exdrhosdrhos
+            write(lupri,*) 'hjaaj: d2Ecdrhotdrhot',d2Ecdrhotdrhot
+            write(lupri,*) 'hjaaj: d2Ecdrhotdrhos',d2Ecdrhotdrhos
+            write(lupri,*) 'hjaaj: d2Ecdrhosdrhos',d2Ecdrhosdrhos
+                  FAC0R = FRR*B0(1) + FRS*B0(2)
+                  FAC0S = FRS*B0(1) + FSS*B0(2) ! as FSR = FRS
+            write(lupri,*) 'hjaaj: FAC0R,FAC0S',FAC0R,FAC0S
+            IF (abs(FAC0R) .gt. 1.d3 .or. abs(FAC0S) .gt. 1.d3)
+     &         call quit('hjaaj quit')
+         end if
+#endif 
       END IF
       IF (DOGGA) THEN
          ZNV = D1/RHOGRD(1)
