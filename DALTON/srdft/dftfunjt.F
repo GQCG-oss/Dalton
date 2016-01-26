@@ -347,12 +347,14 @@ C     energy
 
 C     (optimal?) numerical step
       hrt = 1.d-4*rhot
-      if (arhos .gt. 1.d-14) then
-      !   not closed shell
-         hrs = 1.d-4*rhos
-      else
-         hrs = 0.0d0
-      end if
+      hrs = hrt
+!      arhos_min = 1.d-10*max(1.d0,rhot) ! for numerical accuracy
+!      if (arhos .gt. 1.d-10*rhot) then
+!      !   not closed shell
+!         hrs = 1.d-4*rhos
+!      else
+!         hrs = 0.0d0
+!      end if
 !      hg = 1.d-4*grd
 
 C     variations of variables
