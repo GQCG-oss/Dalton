@@ -583,6 +583,8 @@ C     =============================
           WRITE(LUPRI,'(//A/)') ' <<< SRDFT: Spin DTRMAT >>>'
           CALL OUTPUT(DMAT(1,4),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
         END IF
+        WRITE(LUPRI,'(//A//)')' <<< SRDFT: Total spin EXCMAT on entry'
+        CALL OUTPUT(EXCMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
       END IF
 #endif
 
@@ -609,6 +611,10 @@ C
 #ifdef SRDFT_DEBUG
       WRITE(LUPRI,'(//A//)') ' <<< SRDFT: Total EXCMAT on exit >>>'
       CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      IF (DFT_SPINDNS) THEN
+        WRITE(LUPRI,'(//A//)')' <<< SRDFT: Total spin EXCMAT on exit'
+        CALL OUTPUT(EXCMAT(1,2),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      END IF
 #endif
       CALL TIMER('SRDFT ',TIMSTR,TIMEND)
       CALL QEXIT('SRDFT')
@@ -950,13 +956,6 @@ c             ... SRHYBR (RHOTOT) contribution
      &                        VXCT,VXBT,LDOGGA,.true.,DFTHRL)
                END IF
 C
-c#ifdef debug
-c               if (mod(IPNT,kpoint) .eq. 0) then
-               IF (IPNT.GE.IPNTSTART.AND.IPNT.LE.IPNTEND) then
-                  write (lupri,*) 'excmat(1,1,1),gso(1) after: ',
-     &                             excmat(1,1,1),gso(1)
-               endif
-c#endif
                ENDIF
 C
 C              Hessian transformation
