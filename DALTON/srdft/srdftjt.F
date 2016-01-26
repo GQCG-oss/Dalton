@@ -58,7 +58,7 @@ C*****************************************************************************
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
 
-#define noSRDFT_DEBUG
+#define SRDFT_DEBUG
       !edh debug
       real*8    print_thr
 #endif
