@@ -36,9 +36,9 @@ C
 C
       CALL QENTER('ORBLIN')
       NCSIM = -1
-      CALL LINTRN(NCSIM,NOSIM,DUMMY,BOVECS,
-     *            CMO,DUMMY,DUMMY,GORB,DV,PV,
-     *            FC,FV,DUMMY,DUMMY,DUMMY,WRK,KFRSAV,LFRSAV)
+      CALL LINTRN(NCSIM,NOSIM,DUMMY2,BOVECS,
+     *            CMO,DUMMY2,DUMMY,GORB,DV,PV,
+     *            FC,FV,DUMMY2,DUMMY2,IDUMMY,WRK,KFRSAV,LFRSAV)
 C     CALL LINTRN(NCSIM,NOSIM,BCVECS,BOVECS,
 C    *            CMO,CREF,EACTIV,GORB,DV,PV,
 C    *            FC,FV,FCAC,H2AC,INDXCI,WRK,KFRSAV,LFRSAV)
@@ -91,8 +91,8 @@ C
       use pelib_interface, only: use_pelib, pelib_ifc_lin
 #include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
-      DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
-      DIMENSION FC(*), FV(*), FCAC(*), H2AC(*)
+      DIMENSION CREF(*), GORB(*), CMO(*), DV(NNASHX,*), PV(*)
+      DIMENSION FC(*), FV(*), FCAC(NNASHX,*), H2AC(*)
       DIMENSION INDXCI(*),WRK(*)
 #include "iratdef.h"
 C
@@ -239,15 +239,10 @@ C-- SIRTR1, ORBSIG
       KUBO   = K3
       K3A    = KUBO  + NOSIM*N2ORBX
       L3A    = LFREE - K3A
-C-- CISIGO/CISIGC
+C-- CISIGO/CISIGC/SOLGC_TRIPLET
       IF ( .NOT.ORBLIN ) THEN
          KFXCAC = K3
-         KFXSAC = KFXCAC + MOSIM*NNASHX
-         IF (DFT_SPINDNS) THEN
-            KCW = KFXSAC + MOSIM*NNASHX
-         ELSE
-            KCW = KFXSAC
-         END IF
+         KCW    = KFXCAC + MOSIM*NNASHX
          LCW    = LFREE  - KCW
          MONE   = LACIMX + MOSIM*LBCIMX
          MTWO   = LACIMX + MCSIM*LBCIMX
@@ -327,17 +322,17 @@ C
 C --- initialize all sigma vectors to zero
 C     (We have now finished with PTV)
 C
-      CALL DZERO(WRK(KSCVEC),(KSEND-1))
+      CALL DZERO(WRK(KSCVEC),(KSEND-KSCVEC))
 C
 C --- calculate orbital part of sigma vector(s)
 C
       CALL ORBSIG(NCSIM,NOSIM,WRK(KSCVEC),WRK(KSOVEC),
-     *            WRK(KDTV),FC,WRK(KFTV),WRK(KFTQ),
-     *            BOVECS,DV,WRK(KFXC),WRK(KFXV),WRK(KFXQ),
-     *            GORB,WRK(K3),L3)
+     &            WRK(KDTV),FC,WRK(KFTV),WRK(KFTQ),
+     &            BOVECS,DV,WRK(KFXC),WRK(KFXV),WRK(KFXQ),
+     &            GORB,WRK(K3),L3)
 C     CALL ORBSIG(NCSIM,NOSIM,SCVECS,SOVECS,
-C    *            DTV,FC,FTV,FTQ,BOVECS,DV,FXC,FXV,FXQ,
-C    *            GORB,WRK,LWRK)
+C    &            DTV,FC,FTV,FTQ,BOVECS,DV,FXC,FXV,FXQ,
+C    &            GORB,WRK,LWRK)
 C
 C ***
 C
@@ -347,16 +342,16 @@ C
             DISTYP = 1
             IADINT = IADH2
             CALL CISIGC(NCSIM,BCVECS,WRK(KSCVEC),NVAR,FCAC,H2AC,
-     *                  INDXCI,WRK(KCW),LCW)
+     &                  INDXCI,WRK(KCW),LCW)
 C           CALL CISIGC(NSIM,BCVECS,SCVECS,LSCVEC,FCAC,H2AC,
-C    *                  INDXCI,WRK,LFREE)
-            DO 540 ICSIM = 1,NCSIM
+C    &                  INDXCI,WRK,LFREE)
+            DO ICSIM = 1,NCSIM
                JSCVEC = (KSCVEC-1) + (ICSIM-1)*NVAR
-               DO 520 I = 1,NCONF
+               DO I = 1,NCONF
                   WRK(JSCVEC+I) =
-     *               D2 * ( WRK(JSCVEC+I) - EACTIV * BCVECS(I,ICSIM) )
-  520          CONTINUE
-  540       CONTINUE
+     &               D2 * ( WRK(JSCVEC+I) - EACTIV * BCVECS(I,ICSIM) )
+               END DO
+            END DO
             IF (DOMCSRDFT) THEN
 C              ... special MCSRDFT contribution to csf sigma-vectors,
 C                  stored in FTV(1,NCSIM+ICSIM) in SIRTR1 after the 
@@ -370,35 +365,49 @@ C                  because CREF is projected out of SCVEC later
                KSRW     = KSRLTRAC + NNASHX
                LSRW     = LFREE - KSRW
                DO ICSIM = 1,NCSIM
-                  JFTC  = KFTV + (NCSIM+ICSIM-1)*N2ORBX
+                  JFTC  = KFTV + (NCSIM+ICSIM-1)*N2ORBX        ! Singlet srFT(DFT) matrix ( lrFTC is zero )
                   JSCVEC = KSCVEC + (ICSIM-1)*NVAR
                   CALL GETAC1(WRK(JFTC),WRK(KSRW))
                   CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC))
                   IF (IPRLIN .GT. 10) THEN
                      WRITE(LUPRI,'(/A,I3)')
      &               'MCSRDFT "FTC"="V^([2c],xc-SR)" no.',ICSIM
-             CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+                     CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,
+     &                  NORBT,NORBT,-1,LUPRI)
                      WRITE(LUPRI,'(/A,I3)') 'MCSRDFT SRLTRAC no.',ICSIM
                      CALL OUTPAK(WRK(KSRLTRAC),NASHT,-1,LUPRI)
                   END IF
-                  CALL SOLGC(CREF,WRK(KSRLTRAC),ESRLTR,WRK(KSRCVEC),
-     &                       INDXCI,WRK(KSRW),LSRW)
+                  CALL SOLGC(CREF,WRK(KSRLTRAC),ESRLTR,
+     &                       WRK(KSRCVEC),INDXCI,WRK(KSRW),LSRW)
                   CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
                   IF (DFT_SPINDNS) THEN
-                     JFTC  = KFTV + (2*NCSIM+ICSIM-1)*N2ORBX    ! Triplet FTS matrix
-                     CALL GETAC1(WRK(JFTC),WRK(KSRW))
-                     CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC)) ! unpack triplet FTSAC to SRLTRAC
+                  ! "regular" term, for singlet done in CISIGC, but here we need to do it separately
+                     KUFSAC = KSRW
+                     KUDS   = KUFSAC + N2ASHX
+                     CALL DSPTGE(NASHT,FCAC(1,2),WRK(KUFSAC))
+                     CALL DSPTGE(NASHT,  DV(1,2),WRK(KUDS  ))
+                     ES_expval_sr
+     &                  = DDOT(N2ASHX,WRK(KUFSAC),1,WRK(KUDS),1)
+                     CALL SOLGC_TRIPLET(BCVECS(1,ICSIM),FCAC(1,2),
+     &                    ES_expval_sr,WRK(KSRCVEC),INDXCI,
+     &                    WRK(KSRW),LSRW)
+                     CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
+                  ! ---
+                     JFTS  = KFTV + (2*NCSIM+ICSIM-1)*N2ORBX    ! Triplet srFTS(DFT) matrix
+                     CALL GETAC1(WRK(JFTS),WRK(KSRW))
+                     CALL DGETSP(NASHT,WRK(KSRW),WRK(KSRLTRAC)) ! pack triplet srFTSAC to SRLTRAC
                      IF (IPRLIN .GT. 10) THEN
                         WRITE(LUPRI,'(/A,I3)')
      &                'MCSRDFT "FSC"="V_triplet^([2c],xc-SR)" no.',ICSIM
-             CALL OUTPUT(WRK(JFTC),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+                        CALL OUTPUT(WRK(JFTS),1,NORBT,1,NORBT,
+     &                     NORBT,NORBT,-1,LUPRI)
                         WRITE(LUPRI,'(/A,I3)')
      &                'MCSRDFT triplet SRLTRAC no.',ICSIM
                        CALL OUTPAK(WRK(KSRLTRAC),NASHT,-1,LUPRI)
-                    END IF
-                    CALL SOLGC_TRIPLET(CREF,WRK(KSRLTRAC),ESRLTR,
-     &                         WRK(KSRCVEC),INDXCI,WRK(KSRW),LSRW)
-                    CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
+                     END IF
+                     CALL SOLGC_TRIPLET(CREF,WRK(KSRLTRAC),ESRLTR,
+     &                          WRK(KSRCVEC),INDXCI,WRK(KSRW),LSRW)
+                     CALL DAXPY(NCONF,D1,WRK(KSRCVEC),1,WRK(JSCVEC),1)
                   END IF
                ENDDO
             END IF
@@ -409,48 +418,53 @@ C
 C
 C *** Extract FXCAC from FXC and, if DFT_SPINDNS, FXSAC from FXS
 C
-            DO 600 IOSIM = 1,NOSIM
+            DO IOSIM = 1,NOSIM
                JFXC   = KFXC   + (IOSIM-1)*N2ORBX
                JFXCAC = KFXCAC + (IOSIM-1)*NNASHX
                JH2XAC = KH2XAC + (IOSIM-1)*NNASHX*NNASHX
-               CALL GETAC1(WRK(JFXC),WRK(KCW))
+               CALL GETAC1(WRK(JFXC),WRK(KCW))             ! Singlet FXC + srFX(DFT) matrix
                CALL DGETSP(NASHT,WRK(KCW),WRK(JFXCAC))
                IF (P6FLAG(22) .OR. IPRLIN .GE. 22) THEN
                   WRITE (LUPRI,6010) IOSIM,NOSIM
-                  CALL OUTPAK(WRK(JFXCAC),NASHT,1,LUPRI)
+                  CALL OUTPAK(WRK(JFXCAC),NASHT,-1,LUPRI)
                END IF
-               IF (DFT_SPINDNS) THEN
-                  JFXS   = KFXV   + (NOSIM+IOSIM-1)*N2ORBX ! FXS matrix
-                  JFXSAC = KFXSAC + (IOSIM-1)*NNASHX
-                  CALL GETAC1(WRK(JFXS),WRK(KCW))
-                  CALL DGETSP(NASHT,WRK(KCW),WRK(JFXSAC))  ! FXSAC matrix
-                  IF (P6FLAG(22) .OR. IPRLIN .GE. 22) THEN
-                     WRITE (LUPRI,6011) IOSIM,NOSIM
-                     CALL OUTPAK(WRK(JFXSAC),NASHT,1,LUPRI)
-                  END IF
-                  KSROVEC  = KCW
-                  KSRW     = KSRCVEC + NCONF
-                  LSRW     = LFREE - KSRW
-                  CALL SOLGC_TRIPLET(CREF,WRK(JFXSAC),ESRLTR,
-     &                       WRK(KSROVEC),INDXCI,WRK(KSRW),LSRW)
-                  CALL DAXPY(NCONF,D1,WRK(KSROVEC),1,WRK(JSOVEC),1)
-               END IF
-  600       CONTINUE
+            END DO
  6010       FORMAT (/' FXCAC matrix (no.',I3,' of',I3,')')
- 6011       FORMAT (/' FXSAC matrix (no.',I3,' of',I3,')')
 C
             DISTYP = 1
             IADINT = IADH2X
+            ! SOVECS are initialized in CISIGO
             CALL CISIGO(NOSIM,WRK(KSOVEC),CREF,WRK(KEMYX),
      *                  WRK(KFXCAC),WRK(KH2XAC),INDXCI,WRK(KCW),LCW)
 C           CALL CISIGO(NOSIM,SOVECS,CREF,EMYX,FXCAC,H2XAC,
 C    *                  INDXCI,WRK,LFREE)
+
             IF (DFT_SPINDNS) THEN
-            END IF
+               KFXSAC = KFXCAC ! FXCAC memory can be reused now
+               DO IOSIM = 1, NOSIM
+                  JFXS   = KFXV   + (NOSIM+IOSIM-1)*N2ORBX ! triplet srFXS matrix
+                  CALL GETAC1(WRK(JFXS),WRK(KCW))
+                  CALL DGETSP(NASHT,WRK(KCW),WRK(KFXSAC))  ! triplet srFXSAC matrix
+                  IF (P6FLAG(22) .OR. IPRLIN .GE. 22) THEN
+                     WRITE (LUPRI,6011) IOSIM,NOSIM
+                     CALL OUTPAK(WRK(KFXSAC),NASHT,1,LUPRI)
+                  END IF
+                  JSOVEC   = KSOVEC + (IOSIM-1)*NVAR
+                  KSROVEC  = KCW
+                  KSRW     = KSROVEC + NCONF
+                  LSRW     = LFREE - KSRW
+                  ESRLTR   = D0 ! CREF component of sigma vector is removed later
+                  CALL SOLGC_TRIPLET(CREF,WRK(KFXSAC),ESRLTR,
+     &                       WRK(KSROVEC),INDXCI,WRK(KSRW),LSRW)
+                  CALL DAXPY(NCONF,D1,WRK(KSROVEC),1,WRK(JSOVEC),1)
+               END DO ! IOSIM = 1, NOSIM
+            END IF ! DFT_SPINDNS
+ 6011       FORMAT (/' FXSAC matrix (no.',I3,' of',I3,')')
          ELSE
-            DO 800 IOSIM = 1,NOSIM
+            ! NCONF .eq. 1 and redundant
+            DO IOSIM = 1,NOSIM
                WRK(KSOVEC+(IOSIM-1)*NVAR) = D0
-  800       CONTINUE
+            END DO
          END IF
          END IF
       END IF
@@ -483,8 +497,8 @@ C
               CALL PRKAP (NWOPT,WRK(KSOVEC),PRFAC,LUPRI)
            END IF
            CALL DAXPY(NWOPT,D4,WRK(KUBO),1,WRK(KSOVEC+(IOSIM-1)*NVAR),1)
-         END DO
-      END IF
+         END DO ! IOSIM
+      END IF ! DFTRUN
       DFTADD = DFTADX 
 C
 C *** Now the solvent contribution, if any
@@ -501,37 +515,25 @@ C
          CALL PCMLIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
-         CALL GETTIM(T5,W5)
       ELSEIF (QMMM) THEN
          CALL PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
      &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &              WRK(K3A),L3A)
-         CALL FLSHFO(LUPRI)
-         CALL GETTIM(T5,W5)
       ELSE IF (USE_PELIB()) THEN
          CALL PELIB_IFC_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO,
      &                      INDXCI, DV, WRK(KDTV), WRK(KSCVEC),
      &                      WRK(KSOVEC), ORBLIN, WRK(K3A), L3A)
-         CALL GETTIM(T5,W5)
-      ELSE
-         T5 = T4
-         W5 = W4
       END IF
-      CALL FLSHFO(LUPRI)
-      CALL GETTIM(T5,W5)
 C
 C---------------------------
 C CBN 03.01.06
-C---------------------------
-C
       IF (QM3) THEN
          CALL QM3LIN(NOSIM,BOVECS,CREF,CMO,INDXCI,
      &               WRK(KSOVEC),ORBLIN,WRK(K3A),L3A)
-         CALL GETTIM(T5,W5)
       END IF
 C---------------------------
-C CBN 03.01.06
-C---------------------------
+      CALL FLSHFO(LUPRI)
+      CALL GETTIM(T5,W5)
 C
 C
       NCALLS(IDTIM)   = NCALLS(IDTIM)   + 1
@@ -568,7 +570,7 @@ C
 C
 #include "implicit.h"
       DIMENSION SCVECS(*), SOVECS(*)
-      DIMENSION DTV(*), FC(*), FTV(*), FTQ(*)
+      DIMENSION DTV(NNASHX,*), FC(NNORBT,*), FTV(*), FTQ(*)
       DIMENSION BOVECS(NWOPDI,*), DV(NNASHX,*), FXC(*), FXV(*), FXQ(*)
       DIMENSION GORB(*), WRK(LWRK)
 C
@@ -647,11 +649,11 @@ C
          IF (DFT_SPINDNS) CALL DSPTSI(NASHT,DV(1,2),WRK(KUDS))
          DO ICSIM = 1,NCSIM
             JSCVEC = (NCONF + 1) + (ICSIM-1)*NVAR
-            JFSR   = 1 + (NCSIM+ICSIM-1)*N2ORBX
-            CALL SRDFTSO(2.0D0,WRK(KUDV),FTV(JFSR),SCVECS(JSCVEC))
+            JFT_SR   = 1 + (NCSIM+ICSIM-1)*N2ORBX           ! singlet srFT  (inactive contribution: 2.0)
+            CALL SRDFTSO(2.0D0,WRK(KUDV),FTV(JFT_SR),SCVECS(JSCVEC))
             IF (DFT_SPINDNS) THEN
-               JFSR   = 1 + (2*NCSIM+ICSIM-1)*N2ORBX
-               CALL SRDFTSO(0.0D0,WRK(KUDS),FTV(JFSR),SCVECS(JSCVEC))
+               JFTS_SR   = 1 + (2*NCSIM+ICSIM-1)*N2ORBX     ! triplet srFTS (inactive contribution: 0.0)
+               CALL SRDFTSO(0.0D0,WRK(KUDS),FTV(JFTS_SR),SCVECS(JSCVEC))
             END IF
          END DO
 #endif
@@ -812,7 +814,7 @@ C **        first index active:
                 END IF
                 TEMP = TEMP + UDV(NXW,NKW,1)*FC(IFCXL,1)
                 IF (DFT_SPINDNS) THEN ! UDTS * FS
-                  TEMP = TEMP + 2.0D0*UDV(NXW,NKW,2)*FC(IFCXL,3)
+                  TEMP = TEMP + UDV(NXW,NKW,2)*FC(IFCXL,3)
                 END IF
   100         CONTINUE
               SCVECS(IG1,ICSIM) = SCVECS(IG1,ICSIM) +
@@ -833,7 +835,7 @@ C **        second index active:
                  END IF
                  TEMP = TEMP + UDV(NXW,NLW,1)*FC(IFCXK,1)
                  IF (DFT_SPINDNS) THEN ! UDTS * FS
-                   TEMP = TEMP + 2.0D0*UDV(NXW,NLW,2)*FC(IFCXK,3)
+                   TEMP = TEMP + UDV(NXW,NLW,2)*FC(IFCXK,3)
                  END IF
   200          CONTINUE
                SCVECS(IG1,ICSIM) = SCVECS(IG1,ICSIM) -
@@ -902,17 +904,15 @@ C **        first index inactive:
 C **        first index active:
               NKW = ISW(K) - NISHT
               TEMP = D0
-              temps = d0
               DO 1100 NX = 1,NASHK
                 NXW = IASHK + NX
                 IX  = IORBK + NISHK + NX
                 TEMP = TEMP + UDV(NXW,NKW,1)*FXC(IX,L,IOSIM) ! DV * FXC
                 IF (DFT_SPINDNS) THEN ! DS * FXS
-                   TEMPs = TEMPs
-     &                   + UDV(NXW,NKW,2)*FXV(IX,L,NOSIM+IOSIM)
+                   TEMP = TEMP
+     &                  + UDV(NXW,NKW,2)*FXV(IX,L,NOSIM+IOSIM)
                 END IF
  1100         CONTINUE
-              temp = temp + temps
               SOVECS(ISO + IG) = SOVECS(ISO + IG) +
      *          D2*(TEMP + FXQ(L,NKW,IOSIM))
 C
@@ -921,17 +921,15 @@ C
 C **        second index active:
                NLW = ISW(L) - NISHT
                TEMP = D0
-              temps = d0
                DO 1200 NX = 1,NASHL
                  NXW = IASHL + NX
                  IX  = IORBL + NISHL + NX
                  TEMP = TEMP + UDV(NXW,NLW,1)*FXC(IX,K,IOSIM) ! DV * FXC
                  IF (DFT_SPINDNS) THEN ! DS * FXS
-                    TEMPs = TEMPs
-     &                    + UDV(NXW,NLW,2)*FXV(IX,K,NOSIM+IOSIM)
+                    TEMP = TEMP
+     &                   + UDV(NXW,NLW,2)*FXV(IX,K,NOSIM+IOSIM)
                  END IF
  1200          CONTINUE
-              temp = temp + temps
                SOVECS(ISO + IG) = SOVECS(ISO + IG) -
      *           D2*(TEMP + FXQ(K,NLW,IOSIM))
             END IF

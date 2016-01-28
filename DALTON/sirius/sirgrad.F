@@ -196,8 +196,8 @@ C do spin density matrix
       IF (GETDV .AND. DFT_SPINDNS) THEN
          CALL DZERO(DVAO(1,1,2),N2BASX)
       IF (NASHT .GT. 0) THEN
-         CALL MEMGET('REAL',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KUDV ,N2ASHX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','DAO1',KDAO1,NASHT*NBAST,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','UDS',KUDV ,N2ASHX,WRK,KFREE,LFREE)
          CALL DSPTSI(NASHT,DV(1,2),WRK(KUDV))
          DO 2010 ISYM = 1,NSYM
             JSYM  = MULD2H(ISYM,JWOPSY)
@@ -412,8 +412,8 @@ C           we need an extra FSRAO and DSRAO for hybrid SRDFT-DFT
 C           in order to evaluate both SR-DFT term and DFT term
             NF = NF + 1
          END IF
-         CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KDCAO,ND*N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','NF*FAO',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','ND*DAO',KDCAO,ND*N2BASX,WRK,KFREE,LFREE)
          KFVAO = KFCAO + N2BASX
          KFSAO = KFVAO + N2BASX
          KSRAO = KFCAO + (NF-1)*N2BASX
@@ -549,6 +549,7 @@ C
 C
 C Used from common blocks:
 C   INFINP : DIRFCK
+C dftcom.h ! Manu: for HFXFAC
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -560,7 +561,7 @@ C
 #include "infdim.h"
 #include "infpri.h"
 #include "dfterg.h"
-#include "dftcom.h" ! Manu: for HFXFAC
+#include "dftcom.h"
 C
       LOGICAL NOFV
 C
@@ -626,10 +627,10 @@ C
 C ***** INACTIVE ENERGY : EMCMY; ESRDFTY is added in FCKMAT
 C
       IF (NISHT .GT. 0) THEN
-         EMCMY = DDOT(N2BASX,DCAO,1,WRK(KH1AO),1)
+         EMCMY1 = DDOT(N2BASX,DCAO,1,WRK(KH1AO),1)
          IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
-     &   ' Inactive one-electron energy :',EMCMY
-         EMCMY = EMCMY + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)+EDFTY
+     &   ' Inactive one-electron energy :',EMCMY1
+         EMCMY = EMCMY1 + HALF*DDOT(N2BASX,DCAO,1,FCAO,1)+EDFTY
 !! Manu debug
 #ifdef SIRGRAD_DEBUG
         write(lupri,*) 'printing H1AO ...'
@@ -639,7 +640,14 @@ C
 #endif
 !!
       ELSE
-         EMCMY = 0.0D0
+         EMCMY1 = 0.0D0
+         EMCMY  = 0.0D0
+      END IF
+      IF (P6FLAG(11) .AND. NASHT.GT.0) THEN
+         EMCAC1 = DDOT(N2BASX,DVAO,1,WRK(KH1AO),1)
+         WRITE (LUPRI,'(A,F25.12)')
+     &   ' Active   one-electron energy :',EMCAC1,
+     &   ' Total    one-electron energy :',EMCMY1+EMCAC1
       END IF
       IF (P6FLAG(11)) WRITE (LUPRI,'(A,F25.12)')
      &   ' Inactive total energy        :',EMCMY
@@ -1438,6 +1446,7 @@ C   PV, two-electron d.m. for CREF.
 C   H2AC, the two-electron integrals over active orbitals.
 C   FC, the inactive Fock matrix.
 C   FCAC, part of FC with active orbitals indices.
+C         if (DFT_SPINDNS) FCAC(:,2) is FSAC, part of FS with active orbital indices
 C   FV, the active Fock matrix.
 C   FQ, the "Q" Fock matrix
 C
@@ -1449,7 +1458,7 @@ C
 
 #include "implicit.h"
       DIMENSION CREF(*),CMO(*),DV(NNASHX,*),PV(*),FC(*),FV(*),FQ(*)
-      DIMENSION FCAC(*),H2AC(*)
+      DIMENSION FCAC(NNASHX,*),H2AC(*)
       DIMENSION INDXCI(*), G(*), WRK(LFREE)
 #include "iratdef.h"
 C
@@ -1623,13 +1632,17 @@ C
       IF (NASHT .GE. 1) THEN
          CALL GETAC(FC,FCAC)
          IF (DFT_SPINDNS) THEN
-            CALL GETAC(FV(NNORBT+1),WRK(KW3))
-            CALL DAXPY(NNASHX,1.0D0,WRK(KW3),1,FCAC,1)
+            CALL GETAC(FV(NNORBT+1),FCAC(1,2))  ! FSAC
          END IF
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
-     &      ' Active block of inactive Fock matrix FCAC'
-            CALL OUTPAK (FCAC,NASHT,1,LUPRI)
+     &      ' FCAC, active block of inactive Fock matrix FC'
+            CALL OUTPAK (FCAC,NASHT,-1,LUPRI)
+            IF (DFT_SPINDNS) THEN
+               WRITE(LUPRI,'(/A)')
+     &         ' FSAC, active block of spin-density Fock matrix FS'
+               CALL OUTPAK (FCAC(1,2),NASHT,-1,LUPRI)
+            EN DIF
          END IF
       END IF
       IF (NASHT .GT. 1 .AND. .NOT. HSROHF) THEN
@@ -1673,7 +1686,7 @@ C
 C
 C
 C ******************************************************************
-C Step 3: calculate Fock matrix contributions to the diagonal of the
+C Step 4: calculate Fock matrix contributions to the diagonal of the
 C         orbital Hessian.
 C
       IF (NWOPT .GT. 0) THEN
@@ -1793,15 +1806,17 @@ C
 C ******************************************************************
 C Step 5c: Write diagonal of orbital Hessian to LUIT2
 C
+ 5999 CONTINUE
       REWIND LUIT2
-      WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(2)
-      NWOPX = MAX(4,NWOPT)
-      CALL WRITT (LUIT2,NWOPX,WRK(KORDIA))
+      IF (NWOPT .GT. 0) THEN
+         WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(2)
+         NWOPX = MAX(4,NWOPT)
+         CALL WRITT (LUIT2,NWOPX,WRK(KORDIA))
+      END IF
       WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(3)
 C
 C ******************************************************************
 C
- 5999 CONTINUE
       CALL GETTIM(T5,W5)
 C
 C ******************************************************************
@@ -1814,6 +1829,15 @@ C        CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
      *               G,EMCACX,WRK(KWRK4),LWRK4)
 C        CALL CIGRAD(CREF,FCAC,H2AC,INDXCI,
 C    *               GCI,EMCACT,WRK,LFREE)
+         IF (DFT_SPINDNS) THEN
+            KGS_CI = KWRK4
+            KWRK5  = KGS_CI + NCONF
+            LWRK5  = LFREE- KWRK5
+            ES_AC  = 1.0D10 ! code for SOLGC_TRIPLET to remove CREF in GS_CI
+            CALL SOLGC_TRIPLET(CREF,FCAC(1,2),ES_AC,
+     &                         WRK(KGS_CI),INDXCI,WRK(KWRK5),LWRK5)
+            CALL DAXPY(NCONF,1.0D0,WRK(KGS_CI),1,G,1)
+         END IF
          DNCONF = NCONF
          DIFFOK = SQRT(DNCONF)*THRZER
          IF (ABS(EMCACT) .GT. THRZER) THEN
@@ -1967,7 +1991,7 @@ C
       CALL QENTER('ORBGRD')
 C
       IF (NWOPX .NE. NWOPT .AND. NWOPX .NE. NWOPH) THEN
-         WRITE (LUPRI,'(//A/A,2I10)')
+         WRITE (LUPRI,'(//A/A,3I10)')
      &      ' ORBGRD error, NWOPX .ne. NWOPT,NWOPH',
      &      ' NWOPX, NWOPT, NWOPH :',NWOPX,NWOPT,NWOPH
          CALL QUIT('ORBGRD error, NWOPX .ne. NWOPT,NWOPH')
@@ -2038,7 +2062,7 @@ C ** second index active:
                END IF
                TEMP = TEMP + UDV(NXW,NLW,1)*FC(J_XK)
                IF (DFT_SPINDNS) THEN
-                  TEMP = TEMP + UDV(NXW,NKW,2)*FV(J_XK,2)
+                  TEMP = TEMP + UDV(NXW,NLW,2)*FV(J_XK,2)
                END IF
   200       CONTINUE
             GORB(IG) = GORB(IG) - D2*(TEMP + FQ(K,NLW))
@@ -2682,7 +2706,13 @@ C
 C .. 1.1 .. (MAKDM, CIGRAD)
 C .. 1.2 .. (FCKMAT)
       KFCAC  = 1
-      KWRKF  = KFCAC + NNASHX
+      IF (DFT_SPINDNS) THEN
+         KFSAC  = KFCAC + NNASHX   ! FCAC
+         KWRKF  = KFSAC + NNASHX   ! FCAC, FSAC
+      ELSE
+         KFSAC  = KFCAC + NNASHX   ! FCAC
+         KWRKF  = KFSAC
+      END IF
       LWRKF  = LFREE - KWRKF
 C .. 1.3 .. (GETH2,  ORBGRD, CIGRAD)
       KH2AC  = KWRKF
@@ -2737,12 +2767,17 @@ C
          CALL GETAC(FC,WRK(KFCAC))
          IF (DFT_SPINDNS) THEN
             CALL GETAC(FV(NNORBT+1),WRK(KWRK3))
-            CALL DAXPY(NNASHX,1.0D0,WRK(KWRK3),1,WRK(KFCAC),1)
+            CALL DAXPY(NNASHX,1.0D0,WRK(KWRK3),1,WRK(KFSAC),1)
          EN DIF
          IF (P6FLAG(21)) THEN
             WRITE(LUPRI,'(/A)')
-     *         ' Active block of inactive Fock matrix FCAC'
-            CALL OUTPAK (WRK(KFCAC),NASHT,1,LUPRI)
+     &         ' FCAC, active block of inactive Fock matrix FC'
+            CALL OUTPAK (WRK(KFCAC),NASHT,-1,LUPRI)
+            IF (DFT_SPINDNS) THEN
+               WRITE(LUPRI,'(/A)')
+     &         ' FSAC, active block of spin-density Fock matrix FS'
+               CALL OUTPAK (WRK(KFSAC),NASHT,-1,LUPRI)
+            END IF
          END IF
       END IF
       CALL GETTIM(T2,W2)
@@ -2846,6 +2881,15 @@ C
      *               INDXCI,G,EMCACX,WRK(KWRK4),LWRK4)
 C        CALL CIGRAD(CREF,FCAC,H2AC,INDXCI,
 C    *               GCI,EMCACT,WRK,LFREE)
+         IF (DFT_SPINDNS) THEN
+            KGS_CI = KWRK4
+            KWRK5  = KGS_CI + NCONF
+            LWRK5  = LFREE- KWRK5
+            ES_AC  = 1.0D10 ! code for SOLGC_TRIPLET to remove CREF in GS_CI
+            CALL SOLGC_TRIPLET(CREF,WRK(KFSAC),ES_AC,
+     &                         WRK(KGS_CI),INDXCI,WRK(KWRK5),LWRK5)
+            CALL DAXPY(NCONF,1.0D0,WRK(KGS_CI),1,G,1)
+         END IF
          DNCONF = NCONF
          DIFFOK = SQRT(DNCONF)*THRZER
          IF (ABS(EMCACT) .GT. THRZER) THEN
@@ -2895,51 +2939,42 @@ C
       RETURN
       END
 C  /* Deck enract */
-      FUNCTION ENRACT(DV,FCAC,FQ)
+      REAL*8 FUNCTION ENRACT(DV,FCAC,FQ)
 C
 C PURPOSE:
 C  DETERMINE ACTIVE ELECTRONIC ENERGY OF MCSCF STATE
 C
 C  EACTIV = SUM(U,V) DV(U,V)*FI(U,V) + SUM(UVXY) P(UV,XY)*(UV/XY)
-C
 C         = SUM(U,V) DV(U,V)*FI(U,V) + 1/2 SUM(U) FQ(U,U)
 C
 #include "implicit.h"
 C
       DIMENSION DV(*),FCAC(*),FQ(NORBT,*)
-      PARAMETER ( DP5 = 0.5D0,  D2=2.0D0 )
 C
 C Used from common blocks:
 C  INFORB : NORBT,NNASHX,NASHT,NISHT
 C  INFIND : IROW(),ISX()
+C  dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
+#include "priunit.h"
 #include "inforb.h"
 #include "infind.h"
-#include "priunit.h"
+#include "dftcom.h"
 !
-      EACT = D2 * DDOT(NNASHX,DV,1,FCAC,1)
-!#define notLUCI_DEBUG
-#ifdef LUCI_DEBUG
-      do i = 1, NNASHX
-        write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',
-     &                   i,dv(i),fcac(i)
-      end do
-      write(lupri,*) 'ENRACT: eact after ddot... ==> ',eact
-#endif
+      EV_ACT = 2.0D0 * DDOT(NNASHX,DV,1,FCAC,1)
 !     diagonal elements counted twice now.
-      DO 100 NI = 1,NASHT
+      DO NI = 1,NASHT
         NII  = IROW(NI+1)
         I    = ISX(NISHT+NI)
-        EACT = EACT + DP5*FQ(I,NI) - DV(NII)*FCAC(NII)
-#ifdef LUCI_DEBUG
-        write(lupri,*) 'ENRACT: ni, nii, i elements  ... ==> ',ni,nii,i
-        write(lupri,*) 'ENRACT: eact after element ni... ==> ',ni,eact
-        write(lupri,*) 'ENRACT: FQ(i,ni)             ... ==> ',fq(i,ini)
+        EV_ACT = EV_ACT + 0.5D0*FQ(I,NI) - DV(NII)*FCAC(NII)
+      END DO
+      ENRACT = EV_ACT
+#ifdef SIRGRAD_DEBUG
+      write(lupri,'(/A,3F16.10)'))
+     &  'dbg ENRACT: EV_ACT =',EV_ACT
 #endif
- 100  CONTINUE
-      ENRACT = EACT
       RETURN
       END
 C  /* Deck adh2ac */

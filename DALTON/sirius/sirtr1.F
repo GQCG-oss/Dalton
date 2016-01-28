@@ -184,7 +184,7 @@ C
          DO 210 IOSIM = 1,NOSIM
             WRITE (LUPRI,2110) IOSIM,NOSIM
             CALL OUTPUT(UBO(1,IOSIM),1,NORBT,1,NORBT,NORBT,NORBT,
-     &                  1,LUPRI)
+     &                  -1,LUPRI)
   210    CONTINUE
       END IF
  2110 FORMAT (/,' SIRTR1: one-index transformation matrix',
@@ -247,24 +247,24 @@ C
          IF (P6FLAG(21) .OR. IPRLIN.GE.21) THEN
             WRITE (LUPRI,4020) ICSIM,NCSIM
             CALL OUTPUT(FTV(1,ICSIM),1,NORBT,1,NORBT,
-     &                  NORBT,NORBT,1,LUPRI)
+     &                  NORBT,NORBT,-1,LUPRI)
 !           write(lupri,*) 'hjaaj: domcsrdft =',domcsrdft
 !           call flshfo(lupri)
             IF (DOMCSRDFT) THEN
                WRITE (LUPRI,4021) ICSIM,NCSIM
                CALL OUTPUT(FTV(1,NCSIM+ICSIM),1,NORBT,1,NORBT,
-     &                  NORBT,NORBT,1,LUPRI)
+     &                  NORBT,NORBT,-1,LUPRI)
                IF (DFT_SPINDNS) THEN
                   WRITE (LUPRI,4022) ICSIM,NCSIM
                   CALL OUTPUT(FTV(1,2*NCSIM+ICSIM),1,NORBT,1,NORBT,
-     &                  NORBT,NORBT,1,LUPRI)
+     &                  NORBT,NORBT,-1,LUPRI)
                END IF
             END IF
          END IF
          IF (P6FLAG(33) .OR. IPRLIN.GE.21) THEN
             WRITE (LUPRI,3010) ICSIM,NCSIM
             CALL OUTPUT(FTQ(1,ICSIM),1,NORBT,1,NASHT,NORBT,NASHT,
-     &                     1,LUPRI)
+     &                     -1,LUPRI)
          END IF
  1100 CONTINUE
  4020 FORMAT(/' FTV matrix (no.',I3,' of',I3,')')
@@ -277,22 +277,22 @@ C
          IF (P6FLAG(21) .OR. IPRLIN.GE.21) THEN
             WRITE (LUPRI,5020) IOSIM,NOSIM
             CALL OUTPUT(FXC(1,IOSIM),1,NORBT,1,NORBT,
-     &                  NORBT,NORBT,1,LUPRI)
+     &                  NORBT,NORBT,-1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE (LUPRI,5030) IOSIM,NOSIM
                CALL OUTPUT(FXV(1,IOSIM),1,NORBT,1,NORBT,
-     &                     NORBT,NORBT,1,LUPRI)
+     &                     NORBT,NORBT,-1,LUPRI)
             IF (DFT_SPINDNS) THEN
                WRITE (LUPRI,5040) IOSIM,NOSIM
                CALL OUTPUT(FXV(1,NOSIM+IOSIM),1,NORBT,1,NORBT,
-     &                     NORBT,NORBT,1,LUPRI)
+     &                     NORBT,NORBT,-1,LUPRI)
             END IF
             END IF
          END IF
          IF (P6FLAG(33) .OR. IPRLIN.GE.21 .AND. NASHT.GT.0) THEN
             WRITE (LUPRI,3011) IOSIM,NOSIM
             CALL OUTPUT(FXQ(1,IOSIM),1,NORBT,1,NASHT,NORBT,NASHT,
-     &                  1,LUPRI)
+     &                  -1,LUPRI)
          END IF
  1200 CONTINUE
  5020 FORMAT(/' FXC matrix without FC transf. (no.',I3,' of',I3,')')

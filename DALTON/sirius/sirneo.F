@@ -253,20 +253,26 @@ C
       ITMIC  = 0
 
 #ifdef LUCI_DEBUG
-      write(lupri,*) 'bla bla IPRI6 raised from X to 101',IPRI6
+      write(lupri,*) 'SIRNEO LUC_DEBUG IPRI6 raised from X to 101',IPRI6
       IPRI6  = 101
 #endif
 C
   100 ITMIC  = ITMIC + 1
-         IF (IPRI6.ge.10) WRITE(LUPRI,'(/A,I5)')
+         IF (IPRI6.ge.10) THEN
+            WRITE(LUPRI,'(/A,I5)')
      &      ' ---> Micro iteration no.',ITMIC
+            CALL FLSHFO(LUPRI)
+         END IF
 C
          ITMICB = 0
   200    CONTINUE
             ITMICB = ITMICB + 1
             NTSIM = MIN(MAXSIM,NTSIML)
-            IF (IPRI6.ge.10) WRITE(LUPRI,'(A,2I5)')
-     &      ' ---> Batch no., NTSIM',ITMICB,NTSIM
+            IF (IPRI6.ge.10) THEN
+               WRITE(LUPRI,'(A,2I5)')
+     &         ' ---> Batch no., NTSIM',ITMICB,NTSIM
+               CALL FLSHFO(LUPRI)
+            END IF
 C
 C           test against max. dimension of reduced L
 C
@@ -970,12 +976,12 @@ C                 Check for later if we have any orbital trial vectors
 C                  (or NWOPT .EQ. 0), because then we should include
 C                  an orbital trial vector.
 C
-            IF (IPRI6 .gt. 210) THEN
-               WRITE (LUPRI,'(/A,I3,A)')
-     &           'Printing',NSIMX,' sigma part of residual vectors:'
-               CALL OUTPUT(WRK(KRVCS),1,NVAR,1,NSIMX,
-     &              NVAR,NSIMX,-1,LUPRI)
-            END IF
+         IF (IPRI6 .gt. 210) THEN
+            WRITE (LUPRI,'(/A,I3,A)')
+     &        'Printing',NSIMX,' sigma part of residual vectors:'
+            CALL OUTPUT(WRK(KRVCS),1,NVAR,1,NSIMX,
+     &           NVAR,NSIMX,-1,LUPRI)
+         END IF
          KB = KSC
          REWIND LUIT3
          READ (LUIT3)
@@ -1129,14 +1135,14 @@ C                 we have finished
                   IBNDX(IBNOFF+ISIMX) = 0
                END IF
             ELSE
-!               IF (P4FLAG(6)) THEN
+                IF (P4FLAG(6)) THEN
                   IF (JROOTX .EQ. ISTATE) THEN
                      WRITE (LUW4,9020) JROOTX,QCNRM,QONRM,QNRM,' ***'
                      WRITE (LUW4,9022) YCNRM,YONRM,YNRM
                   ELSE
                      WRITE (LUW4,9020) JROOTX,QCNRM,QONRM,QNRM
                   END IF
-!               END IF
+                END IF
                IF (JROOTX .EQ. ISTATE .AND. FORCEO) THEN
 C                 assure first trial vector is an orbital vector
                   NOVEC = NOVEC + 1
