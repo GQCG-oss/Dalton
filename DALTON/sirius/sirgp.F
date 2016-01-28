@@ -2324,8 +2324,9 @@ CPHPMAERKE  ... PHP not implemented for SOLVNT in this version.
             CALL READT (LUIT2,NCONF,WRK)
             CALL DAXPY (NCONF,DP5,WRK,1,DIAGL,1)
          END IF
-         DO 100 I = 1,NCONF
-  100       DIAGL(I) = DIAGL(I) - EACTVN
+         DO I = 1,NCONF
+            DIAGL(I) = DIAGL(I) - EACTVN
+         END DO
       ELSE
          DIAGL(1) = D0
       END IF

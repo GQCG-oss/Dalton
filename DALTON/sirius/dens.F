@@ -1082,13 +1082,13 @@ C  /* Deck makdm */
       KRHO2 = 1
       KWRK  = KRHO2 + NNASHX*NNASHX
       LWRK  = LFREE - KWRK
-      CALL MAKD2(CREF,RHO1,WORK(KRHO2),XNDXCI,WORK(KWRK),LWRK)
+      CALL MAKDM_2(CREF,RHO1,WORK(KRHO2),XNDXCI,WORK(KWRK),LWRK)
       CALL DSITSP(NNASHX,WORK(KRHO2),RHO2)
       CALL DSCAL(NNASHY,0.5D0,RHO2,1)
 C     ... old routines used PV = 0.5 * <| Eij Ekl - DELjk Eil |>
       RETURN
       END
-      SUBROUTINE MAKD2(CREF,RHO1,RHO2,XNDXCI,WORK,LFREE)
+      SUBROUTINE MAKDM_2(CREF,RHO1,RHO2,XNDXCI,WORK,LFREE)
 #endif
 C
 C     CONSTRUCT ONE (RHO1) AND SYMMETRIC TWO (RHO2) PARTICLE DENSITY
@@ -1248,7 +1248,7 @@ C     CONSTRUCT (RHO1S) ONE PARTICLE SPIN DENSITY MATRIX
 C
 C  OUTPUT:
 C
-C     RHO1S(KL)  = (0/ EA(KL)-EB(KL) /0)   K>L
+C     RHO1S(KL)  = (0/ EA(KL)-EB(KL) /0)   K>=L
 C
 C
 #include "implicit.h"
@@ -1323,7 +1323,7 @@ C  /* Deck maktdm */
       KRHO2 = 1
       KWRKD = KRHO2 + NCSIM*NNASHX*NNASHX
       LWRKD = LWRK + 1 - KWRK
-      CALL MAKTD2(CREF,RHO1,WORK(KRHO2),XNDXCI,WORK(KWRKD),LWRKD)
+      CALL MAKTDM_2(CREF,RHO1,WORK(KRHO2),XNDXCI,WORK(KWRKD),LWRKD)
       DO 100 I = 1,NCSIM
          JRHO2 = KRHO2 + (NCSIM-1)*NNASHX*NNASHX
          CALL DSITSP(NNASHX,WORK(JRHO2),RHO2(1,I))
@@ -1333,7 +1333,7 @@ C     ... old routines used PV = 0.5 * <| Eij Ekl - DELjk Eil |>
       CALL QEXIT('MAKTDM')
       RETURN
       END
-      SUBROUTINE MAKTD2(NCSIM,BCVECS,CREF,RHO1,RHO2,XNDXCI,WORK,LWRK)
+      SUBROUTINE MAKTDM_2(NCSIM,BCVECS,CREF,RHO1,RHO2,XNDXCI,WORK,LWRK)
 #endif /* VAR_PACKPV */
 C
 C     CONSTRUCT ONE (RHO1) AND SYMMETRIC TWO (RHO2) PARTICLE DENSITY
@@ -1378,7 +1378,7 @@ C
       INTEGER RHOTYP
       LOGICAL USEPSM, CSFEXP, TDM, NORHO2
 C
-      CALL QENTER('MAKTD2')
+      CALL QENTER('MAKTDM_2')
 C
       RHOTYP = 3
       ISPIN1 = 0
@@ -1428,7 +1428,7 @@ C          ... pack RHO1 as triangular matrix
 #undef LUCI_DEBUG
 #endif
          IF (IPRDNS .GE. 6) WRITE (LUPRI,'(/5X,A,2I5,2I10)')
-     *      'MAKTD2 : ICSIM, NCSIM, KFREE, LWRK =',
+     *      'MAKTDM_2 : ICSIM, NCSIM, KFREE, LWRK =',
      *      ICSIM,NCSIM,KFREED,LWRK
       END DO ! ICSIM = 1,NCSIM
 C
@@ -1452,14 +1452,13 @@ C            ... pack RHO1 as triangular matrix
            else if(ci_program .eq. 'LUCITA   ')then
              call dcopy(nnashx,work(krho1),1,rho1(1,ICSIM,2),1)
            end if
-!#define LUCI_DEBUG
          END DO ! ICSIM = 1,NCSIM
       END IF
 C
 C
-      CALL QEXIT('MAKTD2')
+      CALL QEXIT('MAKTDM_2')
       RETURN
-C     ... end of MAKTD2
+C     ... end of MAKTDM_2
       END
 C  /* Deck densid */
       SUBROUTINE DENSID(ILSYM,IRSYM,NCLDIM,NCRDIM,CL,CR,RHO1,RHO2,

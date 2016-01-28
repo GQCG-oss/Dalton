@@ -573,8 +573,7 @@ C
 C  /* Deck cidiag */
       SUBROUTINE CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
 C
-C Written 18-jan-1988 J.O.
-C ( after cidiag of hjaaj )
+C Written 18-jan-1988 J.O.  ( after cidiag of hjaaj )
 C NOH2 parameter 900717-hjaaj
 C
 C Part of routines for determinant based ci
@@ -591,10 +590,10 @@ C
      &    define_lucita_cfg_dynamic
 
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION FCAC(*),H2AC(*),DIAGC(*)
       DIMENSION XNDXCI(*), WRK(LFREE)
       LOGICAL   NOH2, FNDLAB
-#include "iratdef.h"
 C
 C Used from common blocks:
 C   INFINP : FLAG(*)
@@ -616,7 +615,6 @@ C
 #include "ciinfo.h"
 #include "spinfo.h"
 #include "csfbas.h"
-#include "priunit.h"
 C
 C *** local variables:
       LOGICAL     CSFEXP
@@ -693,7 +691,7 @@ C
            KW1    = KDETDG + NDTASM(ICSYM)
            LW1    = LFREE  - KW1
            CALL CIDIAD(WRK(KDETDG),FCAC,WRK(KFIJ),WRK(KFJI),XNDXCI,
-     *                 ICSYM,WRK(KW1),LW1)
+     &                 ICSYM,WRK(KW1),LW1)
            CALL CSDIAG(DIAGC,WRK(KDETDG),NCNFTP(1,ICSYM),NTYP,
      &                 XNDXCI(KICTS(1)),NDTFTP,NCSFTP,0,IPRDIA)
 C               CSDIAG(CSFDIA,DETDIA,NCNFTP,NTYP,
@@ -705,7 +703,6 @@ C
 C
 C *** Write diagonal of CI matrix on LUIT2 (label: 'CIDIAG2 ' )
 C
-         NC4 = MAX(4,NCONF)
          REWIND LUIT2
          IF( FNDLAB(TABLE(4),LUIT2) ) THEN
             BACKSPACE LUIT2
@@ -713,8 +710,16 @@ C
             REWIND LUIT2
          END IF
          WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(3)
+         NC4 = MAX(4,NCONF)
          CALL WRITT(LUIT2,NC4,DIAGC)
          WRITE (LUIT2) TABLE(1),TABLE(1),TABLE(1),TABLE(4)
+      END IF
+      IF (IPRDIA.GT.0 .OR. IPRSIR .GT. 20) THEN
+         write(lupri,*) 'CIDIAG LUJIT2',LUIT2
+         !call qdump(lupri)
+         write(lupri,'(/A)') 'CIDIAG: first 20 elements of CI diagonal'
+         NPRINT = MIN(20,NCONF)
+         write(lupri,'(I5,F20.10)') (I, DIAGC(I),I=1,NPRINT)
       END IF
 C
 C *** End of subroutine CIDIAG
@@ -861,7 +866,6 @@ C
 #include "implicit.h"
       DIMENSION BCVECS(NCONST,*),FCAC(*),H2AC(*),SCVECS(LSCVEC,*)
       DIMENSION XNDXCI(*), WRK(LFREE)
-#include "iratdef.h"
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .FALSE. , IH8SM = .TRUE. , D0 = 0.0D0 )
 C     NOH2  ... 2-electron part to be included
@@ -1016,7 +1020,6 @@ C
 #include "implicit.h"
       DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
       DIMENSION XNDXCI(*), WRK(LFREE)
-#include "iratdef.h"
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .TRUE. , IH8SM = .FALSE. , D2 = 2.0D0 )
 #include "thrzer.h"
@@ -1095,7 +1098,6 @@ C
 #include "implicit.h"
       DIMENSION CREF(NCONRF),PRPAC(N2ASHX,NSIM),SCVECS(LSCVEC,NSIM)
       DIMENSION XNDXCI(*), WRK(LFREE)
-#include "iratdef.h"
       LOGICAL   NOH2, IH8SM
       PARAMETER ( NOH2 = .TRUE. , IH8SM = .FALSE. , D2 = 2.0D0 )
 #include "thrzer.h"
@@ -1566,7 +1568,6 @@ C
       DIMENSION CREF(NCONRF), SOVECS(NVARPT,NOSIM),EMYX(NOSIM),XNDXCI(*)
       DIMENSION FXCAC(NNASHX,*),H2XAC(NNASHX,NNASHX,*)
       DIMENSION WRK(LFREE)
-#include "iratdef.h"
       PARAMETER (IDTIM = 10)
       PARAMETER ( D2 = 2.0D0 )
       LOGICAL   NOH2, IH8SM

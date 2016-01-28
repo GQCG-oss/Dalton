@@ -43,7 +43,7 @@ TO DO :: <  read CAVORG from LUSOL if label is new SOLVLRM
 hjaaj: someone (Kurt, Trygve, Kenneth?) had changed THRZER in SOLGRD 1.0D-10
        in Oslo stating
        "Default threshold (in COMDECK THRZER) for zero is a bit too tight here"
-       I don't see why that should be true so I have removed the change until
+       I do not see why that should be true so I have removed the change until
        further.  There must be a bug in SOLNC0 if abs(Tn(l,m)) .gt. 1.0D-14
        when symmetry of (l,m) is not totally symmetric.  /950824-hjaaj
 
@@ -362,10 +362,11 @@ C
 C Input:
 C  CREF(NCONF)   CI reference vector
 C  RLMAC(NNASHX) solvent integrals
-C  TELMAC        CREF expectation value.
+C  TELMAC        CREF expectation value. If gt 0.9e10, evaluated in routine.
 C  INDXCI(*)     CI index vector
 C
 C Output:
+C  TELMAC        (if input value gt 0.9e10)
 C  GLMCI(NCONF)  = CI gradient vector for Rlm =
 C                2 ( < i | R(l,m) | cref> - TE(l,m) cref(i) )
 C
@@ -375,18 +376,20 @@ C
 !     module dependencies
       use lucita_mcscf_ci_cfg
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
 C
-      PARAMETER ( D2 = 2.0D0 )
-C
 C Used from common blocks:
+C   INFINP : THRCGR,?
+C   INFPRI : IPRSIR
 C   INFORB : N2ASHX
 C   INFVAR : NCONF
 C
 #include "maxorb.h"
+#include "infinp.h"
+#include "infpri.h"
 #include "inforb.h"
 #include "infvar.h"
-#include "infinp.h"
 C
 C ***** Comment edh: The CIPRP subroutine computes CI sigma vectors (SCVECS)                     ******
 C ***** according to SUM(J) <I|PRP|J> * CREF(J):                                                 ******
@@ -408,9 +411,21 @@ C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
       CALL CIPRP(1,CREF,GLMCI,NCONF,WRK(KURAC),INDXCI,WRK(KWRK1),LWRK1) !  SUM(J) <I|PRP|J> * CREF(J)  
 C     CALL CIPRP(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
 C
-      CALL DSCAL(NCONF,D2,GLMCI,1)
-      CALL DAXPY(NCONF,(-D2*TELMAC),CREF,1,GLMCI,1)
+      CALL DSCAL(NCONF,2.0D0,GLMCI,1)
+      IF (TELMAC .GT. 0.9D10) THEN
+         TELMAC = DDOT(NCONF,GLMCI,1,CREF,1) / 2 ! assume CREF normalized
+      END IF
+      IF (TELMAC .ne. 0.0D0)
+     &   CALL DAXPY(NCONF,(-2.0D0*TELMAC),CREF,1,GLMCI,1)
 C
+      IF (IPRSIR .GE. 30) THEN
+         PTEST = MAX(1.D-10,1.D-2*THRCGR)
+         WRITE (LUPRI,'(//A/A)')
+     &         ' SOLGC Singlet configuration gradient',
+     &         ' ------------------------------------'
+         CALL PRVEC(NCONF,GLMCI,1,-PTEST,200,LUPRI)
+         CALL FLSHFO(LUPRI)
+      END IF
       CALL QEXIT('SOLGC ')
       RETURN
       END
@@ -429,12 +444,13 @@ C
 C Input:
 C  CREF(NCONF)   CI reference vector
 C  RLMAC(NNASHX) solvent integrals
-C  TELMAC        CREF expectation value.
+C  TELMAC        CREF expectation value. If gt 0.9e10, evaluated in routine.
 C  INDXCI(*)     CI index vector
 C
 C Output:
 C  GLMCI(NCONF)  = CI gradient vector for Rlm =
 C                2 ( < i | R(l,m) | cref> - TE(l,m) cref(i) )
+C  TELMAC        (if input value gt 0.9e10)
 C
 C Scratch:
 C  WRK(LWRK)
@@ -442,18 +458,20 @@ C
 !     module dependencies
       use lucita_mcscf_ci_cfg
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION CREF(*),RLMAC(*),GLMCI(*),INDXCI(*),WRK(LWRK)
 C
-      PARAMETER ( D2 = 2.0D0 )
-C
 C Used from common blocks:
+C   INFINP : THRCGR,?
+C   INFPRI : IPRSIR
 C   INFORB : N2ASHX
 C   INFVAR : NCONF
 C
 #include "maxorb.h"
+#include "infinp.h"
+#include "infpri.h"
 #include "inforb.h"
 #include "infvar.h"
-#include "infinp.h"
 C
 C ***** Comment edh: The CIPRP subroutine computes CI sigma vectors (SCVECS)                     ******
 C ***** according to SUM(J) <I|PRP|J> * CREF(J):                                                 ******
@@ -463,7 +481,7 @@ C ***** NSIM = 1 in accordance with CI gradient expression (c.f. K.V. Mikkelsen 
       CALL QENTER('SOLGC_TRIPLET ')
       KURAC = 1
       KWRK1 = KURAC + N2ASHX
-      LWRK1 = LWRK + 1 - KWRK1
+      LWRK1 = LWRK  + 1 - KWRK1
       if(ci_program .eq. 'SIRIUS-CI')then
          CALL DSPTSI(NASHT,RLMAC,WRK(KURAC))
 C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
@@ -472,12 +490,34 @@ C        ... unpack RLMAC using CALL DSPTSI(N,ASP,ASI)
         cref_is_active_bvec_for_sigma = .true.
       end if
 
+      ! GLMCI is initialized in CIPRP_TRIPLET
       CALL CIPRP_TRIPLET(1,CREF,GLMCI,NCONF,WRK(KURAC),
      &     INDXCI,WRK(KWRK1),LWRK1) !  SUM(J) <I|PRP|J> * CREF(J)  
 C     CALL CIPRP_TRIPLET(NSIM,CREF,SCVECS,LSCVEC,PRPAC,XNDXCI,WRK,LFREE)
 C
-      CALL DSCAL(NCONF,D2,GLMCI,1)
-      CALL DAXPY(NCONF,(-D2*TELMAC),CREF,1,GLMCI,1)
+      CALL DSCAL(NCONF,2.0D0,GLMCI,1)
+      if (iprsir.gt.30) GN1 = dnrm2(nconf,glmci,1)
+      IF (TELMAC .GT. 0.9D10) THEN
+         TELMAC = DDOT(NCONF,GLMCI,1,CREF,1) / 2 ! assume CREF normalized
+      END IF
+      IF (TELMAC .ne. 0.0D0)
+     &   CALL DAXPY(NCONF,(-2.0D0*TELMAC),CREF,1,GLMCI,1)
+
+      IF (IPRSIR .GE. 30) THEN
+         GN2 = dnrm2(nconf,glmci,1)
+         PTEST = MAX(1.D-10,1.D-2*THRCGR)
+         ptest = 1.d-14 !DEBUG
+         write (lupri,*) 'URLMAC'
+         call output(wrk(kurac),1,nasht,1,nasht,nasht,nasht,-1,lupri)
+         write (lupri,*) 'CREF'
+         CALL PRVEC(NCONF,CREF,1,-PTEST,200,LUPRI)
+         WRITE (LUPRI,'(//A/A/A,1P,2D10.2)')
+     &         ' SOLGC_Triplet configuration gradient',
+     &         ' ------------------------------------',
+     &         ' Norm before and after CREF removal',GN1,GN2
+         CALL PRVEC(NCONF,GLMCI,1,-PTEST,200,LUPRI)
+         CALL FLSHFO(LUPRI)
+      END IF
 C
       CALL QEXIT('SOLGC_TRIPLET ')
       RETURN
@@ -826,7 +866,7 @@ C
      &             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('SOLGRD: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          IF (IPRSOL .GE. 15) THEN
@@ -1483,7 +1523,7 @@ C
      *             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('SOLNC: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          TLM   = TN(LM) - SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
@@ -1525,7 +1565,7 @@ C
       JRXCAC = KRXCAC
       DO 600 ICSIM = 1,NCSIM
          CALL GETAC2(WRK(JRXC),WRK(JRXCAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('SOLNC: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
          TXC    = SOLELM(DV,WRK(JRXCAC),WRK(JRXC),TXCAC)
          WRK(KTXCAC-1+ICSIM) = TXCAC
@@ -1534,7 +1574,7 @@ C
   600 CONTINUE
 C
       CALL GETAC2(WRK(KRYC),WRK(KRYCAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('SOLNC: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
 C
       CALL SOLSC(NCSIM,0,BCVEC,CREF,SVEC,WRK(KRXCAC),WRK(KRYCAC),
@@ -1783,7 +1823,7 @@ C
      *             NBAST,NORBT)
          IF (NASHT .GT. 0) THEN
             CALL GETAC2(WRK(KRLM),WRK(KRLMAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('SOLLNO: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
          END IF
          TELM  = SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
@@ -1827,7 +1867,7 @@ C           CALL TR1UH1(UBOVEC,H1,H1X,IH1SYM)
 C
             IF (NASHT .GT. 0) THEN
                CALL GETAC2(WRK(KRXLM),WRK(KRLMAC))
-               IF (DFT_SPINDNS) CALL QUIT(
+               IF (DFT_SPINDNS) CALL QUIT('SOLLNO: '//
      &         'DFT_SPINDNS not implemented here yet, sorry!')
             END IF
             IF (IPRSOL .GE. 60) THEN
@@ -1895,7 +1935,7 @@ C
                WRK(KOVLP-1+IOSIM) = D0
             END IF
             CALL GETAC2(WRK(JRXYO),WRK(JRXYOA))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('SOLLNO: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
             TXYO   = SOLELM(DV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)
             IF (IPRSOL .GE. 40) WRITE (LUPRI,'(/A,I5,3F15.10)')

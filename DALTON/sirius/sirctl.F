@@ -478,6 +478,7 @@ C
             FLAG(25) = .FALSE. ! do not write to SIRIFC if MP2 followed by MC or CI
          END IF
          IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            NWARN = NWARN + 1
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
      &      'implemented in MP2 module and is ignored.'
          END IF
@@ -605,6 +606,7 @@ C        *** CI ***
 C
       IF (DOCI .OR. DOCINO) THEN
          IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
+            NWARN = NWARN + 1
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
      &      'implemented in CI module and is ignored.'
          END IF
