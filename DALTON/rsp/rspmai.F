@@ -73,6 +73,7 @@ C
 C
 C Used from common blocks:
 C INFTRA : USEDRC
+C dftcom.h : DFT_SPINDNS
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -108,6 +109,7 @@ C
 #include "esrhfc.h"
 #include "abslrs.h"
 #include "infvar.h"
+#include "dftcom.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX, NEED_PVX
 C
@@ -119,6 +121,12 @@ C
      &   '  RESPONSE  -  an MCSCF, MC-srDFT, DFT, '//
      &   'SOPPA and SOPPA-srDFT response property program',
      &   ('-',I=1,88)
+      IF (DFT_SPINDNS) THEN
+         WRITE(LUPRI,'(A)') ' using spin-density in srDFT part'
+         NDV = 2 ! DV,DS and FV,FS
+      ELSE
+         NDV = 1 ! DV and FV (no DS and no FS)
+      END IF
 C
 C     *************************
 C     ***** INPUT SECTION *****
@@ -285,7 +293,7 @@ C NEED ONLY SINGLET TWO ELECTRON DENSITY MATRIX
          CALL MEMGET('REAL',KPVX ,LPVX  ,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFOCK,N2ORBT,WRK,KFREE,LFREE)
          CALL MEMGET('REAL',KFC  ,NNORBT,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFV  ,NNORBT,WRK,KFREE,LFREE)
+         CALL MEMGET('REAL',KFV  ,NDV*NNORBT,WRK,KFREE,LFREE)
       END IF
       CALL MEMGET('REAL',KFCAC,NNASHX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2AC,NNASHX*NNASHX,WRK,KFREE,LFREE)
@@ -366,10 +374,16 @@ C
          KFREE_KTOT  = 1
 C
          CALL GETREF(WRK(KCREF),NCREF)
-         IF ( IPRRSP.GT.110 ) THEN
+         IF ( IPRRSP.GT.40 ) THEN
             WRITE(LUPRI,'(/A)')
      &           ' ***** ONE BODY DENSITY MATRIX from SIRIFC file'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
+            IF (DFT_SPINDNS) THEN
+               WRITE(LUPRI,'(/A)')
+     &           ' ***** ONE BODY spin DENSITY MATRIX from SIRIFC file'
+               CALL OUTPUT(WRK(KUDV+N2ASHX),1,NASHT,1,NASHT,
+     &         NASHT,NASHT,-1,LUPRI)
+            END IF
          END IF
          ISPIN1 = 0
          ISPIN2 = 0
@@ -398,9 +412,12 @@ C
      *                 1,0,.FALSE.,.TRUE.,
      *                 WRK(KINDX),WRK(KTOT),KFREE,LFREE)
          IF ( IPRRSP.GT.110 ) THEN
-            WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
+            WRITE(LUPRI,'(/A)')
+     &      ' ** SINGLET ONE-ELECTRON DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
-            KUDV2=KUDV+N2ASHX
+            KUDV2=KUDV+NDV*N2ASHX
+            WRITE(LUPRI,'(/A)')
+     &      ' ** TRIPLET ONE-ELECTRON DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV2),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
       ELSE IF ( TDHF .AND. NASHT .EQ. 1 ) THEN
@@ -409,7 +426,8 @@ C
          WRK(KPVX) = D0
          IF (TRPLET) WRK(KPVX+1) = D0
       ELSE IF ( TDHF .AND. HSROHF ) THEN
-         CALL DUNIT(WRK(KUDV),NASHT)
+         CALL DUNIT(WRK(KUDV),NASHT)        ! DV
+         CALL DUNIT(WRK(KUDV+N2ASHX),NASHT) ! DS
          CALL DZERO(WRK(KPVX),LPVMAT)
       END IF
       END IF ! for IF ( NEED_PVX )
@@ -422,6 +440,13 @@ C     CALL MIXS0(CMO,UDV,WRK,LWRK)
 C
       CALL AVEPRP(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KTOT),LFREE)
       CALL FLSHFO(LUPRI)
+
+      IF (DFT_SPINDNS) THEN
+         CALL QUIT('DFT_SPINDNS not implemented in **RESPONS')
+      END IF
+
+C     Call ZFS (Zero-Field Splitting) submodule
+C     ====================================================
       CALL ZFSDRV(WRK,LWRK)
 C
       IF (.NOT.DORESP) GO TO 9999
@@ -4123,8 +4148,8 @@ C
 #include "implicit.h"
 #include "infdim.h"
 C
-      DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
-     *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
+      DIMENSION CMO(*),UDV(N2ASHX,*),PV(*),XINDX(LCINDX),
+     *          FOCK(*),FC(*),FV(NNORBT,*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       LOGICAL   HSFOCK
 C
@@ -4147,6 +4172,7 @@ C
 #include "scbrhf.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+#include "dftcom.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4202,6 +4228,18 @@ C
       READ (LUSIFC) MISHT,MASHT, MOCCT, MORBT, MBAST, MCONF,MWOPT,MWOPH,
      &              NCDETS,MCMOT,MNASHX,MNASHY,MNORBT,M2ORBT,
      &              (IDUM,I=1,NDUM),MCTYPE_IFC
+      IF (MCTYPE_IFC .GT. 900) THEN
+         IF (.NOT. DFT_SPINDNS) THEN
+            CALL QUIT('ERROR in RSPMC:'//
+     &      'DFT_SPINDNS true on SIRIFC, but not in input')
+         END IF
+         MCTYPE = MCTYPE - 1000
+      END IF
+      IF (DFT_SPINDNS) THEN
+         NDV = 2 ! DV and DS
+      ELSE
+         NDV = 1 ! DV
+      END IF
       HSROHF = MCTYPE_IFC .EQ. -1
 C     READ (LUSIFC) NISHT,NASHT, NOCCT, NORBT, NBAST, NCONF,NWOPT,NWOPH,
 C    &              NCDETS,NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT
@@ -4347,11 +4385,12 @@ C
       CALL READT (LUSIFC,NCMOT,CMO)
       READ (LUSIFC)
       KDV   = 1 + N2BASX ! DV matrix may be needed later
-      KFREE = KDV + NNASHX
+      KFREE = KDV + NDV*NNASHX ! DV or DV,DS
       IF (NASHT .GT. 0) THEN
 C        read and unpack DV
-         CALL READT (LUSIFC,NNASHX,WRK(KDV))
+         CALL READT (LUSIFC,NDV*NNASHX,WRK(KDV))
          CALL DSPTSI(NASHT,WRK(KDV),UDV)
+         IF (DFT_SPINDNS) CALL DSPTSI(NASHT,WRK(KDV+NNASHX),UDV(1,2))
          IF (.NOT.RSPCI) THEN
             CALL READT (LUSIFC,N2ORBT,FOCK)
             IF (HSROHF) THEN
@@ -4360,7 +4399,7 @@ C        read and unpack DV
                CALL READT (LUSIFC,NNASHY,PV)
             END IF
             CALL READT (LUSIFC,NNORBT,FC)
-            CALL READT (LUSIFC,NNORBT,FV)
+            CALL READT (LUSIFC,NDV*NNORBT,FV) ! FV or FV,FS
          END IF
          CALL READT (LUSIFC,NNASHX,FCAC)
          CALL READT (LUSIFC,(NNASHX*NNASHX),H2AC)
@@ -4457,6 +4496,9 @@ C
             CALL OUTPUT(PV,1,2,1,LPVMAT,2,LPVMAT,-1,LUPRI)
          END IF
 C
+         IF (DFT_SPINDNS) THEN
+            CALL QUIT('DFT_SPINDNS not implemented for SOPPA')
+         END IF
          CALL READT (LUSIFC,NACTT*NACTT,UDV)
 C
          IF (IPRRSP.GT.20) THEN

@@ -239,7 +239,7 @@ C
 
 C      print *,'DOSRX_PBERI = ',DOSRX_PBERI  ! Manu
 C      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
-       write(lupri,*),'SRXFUN = ', SRXFUN  ! Manu
+!      print *,'SRXFUN = ', SRXFUN  ! Manu
 
       IF (.NOT.SETXFUN) THEN
           WRITE(LUPRI,'(/2A/,A/)')
@@ -410,7 +410,7 @@ C
   20  CONTINUE
 C
 CFRAN DEBUG
-      print *,'SRCFUN=',SRCFUN   ! Manu debug
+!     print *,'SRCFUN=',SRCFUN   ! Manu debug
 CFRAN END
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)')
@@ -436,7 +436,7 @@ C        then set HF exchange factor to zero.
          HFXSET = .TRUE.
       END IF
 CFRAN DEBUG
-      print *,'I exit SRDFT_INPUT routine!'
+!     print *,'I exit SRDFT_INPUT routine!'
 CFRAN END
       CALL QEXIT('SRFUN_INPUT')
       RETURN
@@ -1966,7 +1966,7 @@ C
       ENDIF
 C
 C
-C ... Get J^c,sr adn J^v,sr
+C ... Get J^c,sr and J^v,sr
 C
       IF(HFXFAC .NE. D0) THEN
 C        Coulomb + Exchange
@@ -2263,7 +2263,7 @@ C TODO
       !> step 3: compute diff_ejvsr / requires DIFFDVREF (sitting in _backup)
 
 C
-C ... Get J^c,sr adn J^v,sr
+C ... Get J^c,sr and J^v,sr
 C
       IF(HFXFAC .NE. D0) THEN
 C        Coulomb + Exchange
@@ -2321,8 +2321,9 @@ C
       CALL QENTER('SRDFTSO ')
       DCFAC = D2 * DCVAL
 C     ... DCVAL is the value of DC = <0| Eii |B>,
-C         = 2 <0|0> = 2 normally,
-C         = 2 <0|B> = 0 for transition density matrix
+C         = 2 <0|0> = 2 for singlet density matrix,
+C         = 2 <0|B> = 0 for singlet transition density matrix,
+C         = 0           for triplet density matrix
       DO 300 IG = 1,NWOPH
          K     = JWOP(1,IG)
          L     = JWOP(2,IG)

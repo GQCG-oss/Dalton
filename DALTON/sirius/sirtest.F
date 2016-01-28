@@ -21,6 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
+!#define noSPECIAL_LINTST
 C
 C  /* Deck lintst */
       SUBROUTINE LINTST(CMO,CREF,EACTVN,GORB,DV,PV,FC,FV,FCAC,H2AC,
@@ -46,13 +47,37 @@ C
       PARAMETER ( DTOL = 1.0D-8 )
       PARAMETER ( D1 = 1.0D0 , D0 = 0.0D0 )
 C
+      CALL QENTER('LINTST')
+      CALL HEADER('flag(61): construct MC Hessian explicitly',-1)
       KL2   = 1
       KBVEC = KL2    + NVAR*NVAR
       KWRK1 = KBVEC  + NVAR
       LWRK1 = LFREE  - KWRK1
 C
       CALL DZERO(WRK(KBVEC),NVAR)
+
+#ifdef SPECIAL_LINTST
+      ! modify to include the two columns you want details about
+      icol1 = 3
+      icol2 = 14
+      call dzero(WRK(KL2),NVAR*NVAR)
+      ipri4 = 999
+      ipri6 = 999
+      iprsir = 999
+      do i = 1,npflag
+         p6flag(i) = .true.
+      end do
+      do i = 1,npflag
+         p4flag(i) = .true.
+      end do
+      call dzero(cref,nconf)
+      cref(1) = 1.0d0 ! perhaps modify
+#endif
+
       DO 100 I = 1,NVAR
+#ifdef SPECIAL_LINTST
+      if (i .ne. icol1 .and. i .ne. icol2) cycle
+#endif
          IF (I.LE.NCONF) THEN
             NCSIM = 1
             NOSIM = 0
@@ -74,11 +99,11 @@ C
          IF (IPRI6.GT.90) THEN
             IF(NOSIM.GT.0)  THEN
                KDIM = NWOPT
-               WRITE(LUPRI,'(/A)')' ORBITAL TRIAL VECTOR'
+               WRITE(LUPRI,'(/A)')' LINTST ORBITAL TRIAL VECTOR'
             END IF
             IF(NCSIM.GT.0) THEN
                KDIM = NCONF
-               WRITE(LUPRI,'(/A)')' CONFIGURATION TRIAL VECTOR'
+               WRITE(LUPRI,'(/A)')' LINTST CONFIGURATION TRIAL VECTOR'
             END IF
             CALL OUTPUT(WRK(KBVEC),1,KDIM,1,1,KDIM,1,1,LUPRI)
          END IF
@@ -103,8 +128,8 @@ C
             WRK(KBVEC-1+IOFF) = D0
          END IF
  100  CONTINUE
-      IF (IPRI6 .GT. 10) THEN
-         WRITE(LUPRI,'(A,I8)')' L(2) MATRIX : DIMENSION ',NVAR
+      IF (IPRI6 .GT. 10 .OR. NVAR.LE.30) THEN
+         WRITE(LUPRI,'(A,I8)')' E[2] MATRIX : DIMENSION',NVAR
          CALL OUTPUT(WRK(KL2),1,NVAR,1,NVAR,NVAR,NVAR,-1,LUPRI)
       END IF
 C
@@ -121,7 +146,13 @@ C
       IOC    = 0
       JOC    = 0
       DO 150 I = 1,NVAR
+#ifdef SPECIAL_LINTST
+      if (i .ne. icol1 .and. i .ne. icol2) cycle
+#endif
          DO 160 J=1,I-1
+#ifdef SPECIAL_LINTST
+      if (j .ne. icol1 .and. j .ne. icol2) cycle
+#endif
             IF (I.LE.NCONF) THEN
                XL2IJ = WRK(KL2-1+(J-1)*NVAR+I)
                XL2JI = WRK(KL2-1+(I-1)*NVAR+J)
@@ -157,24 +188,26 @@ C
      *,IC,' JC=',JC,' DEV=',COMX
       IF ( COMX.GT.DTOL)
      *WRITE(LUPRI,'(/2(/A,I5,A,I5,A,1P,G16.8))')
-     *' IC=',IC,' JC=',JC,' L2(IC,JC)',WRK(KL2-1+(IC-1)*NVAR+JC),
-     *' IC=',JC,' JC=',IC,' L2(IC,JC)',WRK(KL2-1+(JC-1)*NVAR+IC)
+     *' IC=',JC,'  JC=',IC,' L2(IC,JC)',WRK(KL2-1+(IC-1)*NVAR+JC),
+     *' IC=',IC,'  JC=',JC,' L2(IC,JC)',WRK(KL2-1+(JC-1)*NVAR+IC)
       WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
      *' L2(I,J)-orbital block : MAXIMUM DEVIATION, IO='
      *,IO,' JO=',JO,' DEV=',ORMX
       IF ( ORMX.GT.DTOL)
      *WRITE(LUPRI,'(/2(/A,I5,A,I5,A,1P,G16.8))')
-     *' IO=',IO,' JO=',JO,' L2(IO,JO)',WRK(KL2-1+(IO-1)*NVAR+JO),
-     *' IO=',JO,' JO=',IO,' L2(IO,JO)',WRK(KL2-1+(JO-1)*NVAR+IO)
+     *' IO=',JO,'  JO=',IO,' L2(IO,JO)',WRK(KL2-1+(IO-1)*NVAR+JO),
+     *' IO=',IO,'  JO=',JO,' L2(IO,JO)',WRK(KL2-1+(JO-1)*NVAR+IO)
       WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
      *' L2(I,J) conf-orbital block : MAXIMUM DEVIATION, IOC='
      *,IOC,' JOC=',JOC,' DEV=',ORCOMX
       IF ( ORCOMX.GT.DTOL)
      *WRITE(LUPRI,'(/2(/A,I5,A,I5,A,1P,G16.8))')
-     *'IOC=',IOC,'JOC=',JOC,' L2(IOC,JOC)',WRK(KL2-1+(IOC-1)*NVAR+JOC),
-     *'IOC=',JOC,'JOC=',IOC,' L2(IOC,JOC)',WRK(KL2-1+(JOC-1)*NVAR+IOC)
+     *'IOC=',JOC,' JOC=',IOC,' L2(IOC,JOC)',WRK(KL2-1+(IOC-1)*NVAR+JOC),
+     *'IOC=',IOC,' JOC=',JOC,' L2(IOC,JOC)',WRK(KL2-1+(JOC-1)*NVAR+IOC)
 C
 C     End of LINTST.
 C
+      CALL QUIT('End of LINTST (flag(61))')
+      CALL QEXIT('LINTST')
       RETURN
       END

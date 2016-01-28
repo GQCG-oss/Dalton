@@ -5336,14 +5336,14 @@ C *************************************************************
       ! and now we get it from QMMM_FCK_AO
       IF (NASHT .GT. 0) THEN
          CALL GETAC2(WRK(KFPEM),WRK(KFPEAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('PEGRD: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
       END IF
 
 C
 C     Expextation value of FPE
 
-      TFPEMO     = SOLELM(DV,WRK(KFPEAC),WRK(KFPEM),TFPEAC)
+      TFPEMO = SOLELM(DV,WRK(KFPEAC),WRK(KFPEM),TFPEAC)
 
 C
 C ************* Write statements for debugging ****************
@@ -5841,7 +5841,7 @@ C        1. x-coord. 2. y-coord. 3. z-coord.
      &                    WRK(KMATAC + 1*NNASHX))
               CALL GETAC2(WRK(KMATMO + 2*NNORBT),
      &                    WRK(KMATAC + 2*NNASHX))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('PELNC: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
           ENDIF
 
@@ -5950,8 +5950,8 @@ C         --- 3.b) Add B*<0|F^(1)|B> to F^(1) operator ----
              IF (NASHT .GT. 0) THEN
                CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
      &                     WRK(KFXCAC + (ICSIM-1)*NNASHX))
-         IF (DFT_SPINDNS) CALL QUIT(
-     &   'DFT_SPINDNS not implemented here yet, sorry!')
+               IF (DFT_SPINDNS) CALL QUIT('PELNC: '//
+     &         'DFT_SPINDNS not implemented here yet, sorry!')
              END IF
 
              LCI = LCI + 3*NNZAL
@@ -5970,8 +5970,8 @@ C         --- 3.b) Add B*<0|F^(1)|B> to F^(1) operator ----
       CALL PEFCMO(WRK(KUCMO),WRK(KFPEMO),DV,WRK(KWRK1),LWRK1,IPQMMM)
 
       IF (NASHT .GT. 0) THEN
-          CALL GETAC2(WRK(KFPEMO),WRK(KFPEAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         CALL GETAC2(WRK(KFPEMO),WRK(KFPEAC))
+         IF (DFT_SPINDNS) CALL QUIT('PELNC: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
       END IF
 
@@ -6335,7 +6335,7 @@ c     &               1,NORBT,NORBT,NORBT,1,LUPRI)
              CALL GETAC2(WRK(JMTX),WRK(JMTXAC))
              CALL GETAC2(WRK(JMTX + 1*NNORBX),WRK(JMTXAC + 1*NNASHX))
              CALL GETAC2(WRK(JMTX + 2*NNORBX),WRK(JMTXAC + 2*NNASHX))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('PELNO: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
            END IF
 
@@ -6468,7 +6468,7 @@ C     Construct Fyo(PE) (corresponds to Fg(PE) one-index transformed)
 
            IF (NASHT .GT. 0) THEN                                 ! active part of f(PE)g operator (equivalent to Tg = Ryo in RFSCF)
              CALL GETAC2(WRK(JFPX),WRK(JFPXAC))
-         IF (DFT_SPINDNS) CALL QUIT(
+         IF (DFT_SPINDNS) CALL QUIT('PELNO: '//
      &   'DFT_SPINDNS not implemented here yet, sorry!')
            END IF
 
@@ -6512,4 +6512,4 @@ C     ...Restore the dipole origin.
       RETURN
 C     ... end of pelno.
       END
-
+!  -- end of sirqmmm.F --

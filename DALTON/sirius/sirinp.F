@@ -2018,10 +2018,10 @@ C 55 NEO,NR  include g(orb) H(diag)  ??
 C 56 var.UPD Fixed Hessian                                 UPD : FIXED
 C 57 UPDINI  Inverse Hess, diag. is initial approx. to     UPD : INVER
 C            inverse Hess
-C 58 CIST    take plus combination of degenerate roots     CIV : PLUS C
+C 58 CIST    Take plus combination of degenerate roots     CIV : PLUS C
 C 59
 C 60
-C 61
+C 61 SIRNEO  Construct E[2] explicitly and quit
 C 62
 C 63
 C 64
@@ -2334,7 +2334,7 @@ C *** Option 1 >CI    <  do a CI calculation (before MCSCF)
 C
 C *** Option 2 >FLAGS <  Set Flags directly as in old input
 C     set up control flags and print flags
-C     read namelist $NMLSIR ... $END
+C     read namelist &NMLSIR ... &END
  102  CONTINUE
          CALL IZERO(NPATH,NPDIM)
 #if defined (VAR_NONAMELIST)
@@ -2352,11 +2352,15 @@ C
             IF (IABS(NPATH(I)) .GT. NFLAG) THEN
                INPERR = INPERR + 1
                WRITE (LUPRI,'(/A,I10)')
-     *         ' *** ERROR Sirius .FLAGS, illegal value:',NPATH(I)
+     &         ' *** ERROR Sirius .FLAGS, illegal value:',NPATH(I)
             ELSE IF (NPATH(I).LT.0) THEN
                FLAG(-NPATH(I)) = .FALSE.
+               WRITE(LUPRI,'(A,I3,A)') 'INFO: flag',-NPATH(I),
+     &         ' deactivated with .FLAGS'
             ELSE IF (NPATH(I).GT.0) THEN
                FLAG(NPATH(I)) = .TRUE.
+               WRITE(LUPRI,'(A,I3,A)') 'INFO: flag',NPATH(I),
+     &         ' activated with .FLAGS'
             ELSE
                GO TO 299
             END IF
