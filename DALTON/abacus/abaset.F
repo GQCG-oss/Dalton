@@ -25,7 +25,7 @@ C
 #ifdef OLD_LOG
 !===========================================================================
 !
-!=============================================================================
+!===========================================================================
 !900105-hjaaj: flag(27) true se MAERKE, to do: transfer flags from Sirius
 !900216-hjaaj: call sir_intopen to open luintm, revised check if luintm ok.
 !900402-tuh:   H2MO defined according to info from LUSIFC
@@ -66,6 +66,7 @@ C   INFINP : ISTATE,ISPIN,NACTEL,POTNUC,LSOLMX,RSOL(3)
 C   INFOPT : EMCSCF,EPOT,EMY,EACTIV,ESOLT
 C   PAST   : PASDIP, PASORT, PASRES
 C   CBISOL : SOLVNT, ...
+C   DFTCOM : DFT_SPINDNS
 C
 #include "gnrinf.h"
 #include "abainf.h"
@@ -79,6 +80,7 @@ C
 #include "cbisol.h"
 #include "cbirhs.h"
 #include "spinfo.h"
+#include "dftcom.h"
 C
       CALL QENTER('SETSIR  ')
       DST = SECOND( )
@@ -113,6 +115,13 @@ C
      *            NISH,NASH,NORB,NBAS,
      *            NELMN1, NELMX1, NELMN3, NELMX3, MCTYPE,
      *            NAS1, NAS2, NAS3
+      IF (MCTYPE .GT. 900) THEN
+         IF (.NOT. DFT_SPINDNS) THEN
+            CALL QUIT('ERROR in SETSIR:'//
+     &      'DFT_SPINDNS true on SIRIFC, but not in input')
+         END IF
+         MCTYPE = MCTYPE - 1000
+      END IF
       HSROHF = (MCTYPE .EQ. -1)
 C
       REWIND LUSIFC

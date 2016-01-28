@@ -245,7 +245,7 @@ C.. 1.2 .. (GRAD, SIRORB and SIRNEO)
          KFQ = KSRHYB
       END IF
       KFCAC  = KFQ    + NASHT*NORBT
-      KCREF  = KFCAC  + NNASHX
+      KCREF  = KFCAC  + NDV*NNASHX ! FCAC, FSAC for DFT_SPINDNS
       KH2AC  = KCREF  + NCONF
       KWRK12 = KH2AC  + NNASHX*NNASHX
 C.. 1.2.1 .. (GRAD,SOLGRD,WR_SIRIFC)
@@ -431,9 +431,6 @@ C
 C         --- Normalize CI vector (i.e. CREF)
 C         6-Dec-1984-hjaaj: SIRSAV changed so CREF normally normalized now
 C
-      print*, 'nconf', nconf
-      print*, 'wrk(kcref)', wrk(kcref)
-
       IF (NCONF .GT. 1) THEN
          C0NORM = DNRM2(NCONF,WRK(KCREF),1)
          THREQL = SQRT(NCONF*THRLDP)
@@ -623,6 +620,9 @@ chj   END IF
          call sirpop('MCITER',WRK(KDV),WRK(KWRKG),LWRKG)
       END IF
 
+      ! next line is debug print for impatient developers ;-)
+      ! print *,'MCITER',ITMAC,EMCSCF,GNORM(1:3)
+
 C
 C
       IF (SOLVNT .AND. IPRI6 .GT. 1) THEN
@@ -646,14 +646,20 @@ C
       IF (P4FLAG(15) .AND. NCONF .GT. 1) THEN
 CHJ: in future version maybe CALL PRWF here (and above for CREF)
          PTEST = MAX(1.D-10,GNORM(1)*THRCGR)
-         WRITE (LUW4,3010) ITMAC, PTEST
+         WRITE (LUW4,3000) ITMAC
          CALL PRVEC(NCONF,WRK(KGTOT),1,-PTEST,200,LUW4)
          CALL PRMGN(NCONF,WRK(KGTOT),1,12,LUW4)
 #if defined (VAR_OLDCODE) || defined (VAR_SECSEC)
+         WRITE (LUW4,3010) ITMAC, PTEST
          DO 301 I = 1,NCONF
             GCI = WRK((KGTOT-1)+I)
             IF (ABS(GCI) .GE. PTEST) WRITE (LUW4,3011) I,GCI
   301    CONTINUE
+ 3010 FORMAT(//' Configuration gradient iteration no.',I3,
+     *        /' ---------------------------------------'
+     *       //' Cutoff for print:',1P,D10.2,
+     *       //' Configuration no.           value'
+     *        /' -----------------           -----')
  3011 FORMAT(I16,F20.10)
 #endif
       END IF
@@ -668,11 +674,8 @@ CHJ: in future version maybe CALL PRWF here (and above for CREF)
          END IF
          CALL PRKAP (NWOPT,WRK(KGTOT+NCONF),PRFAC,LUW4)
       END IF
- 3010 FORMAT(//' Configuration gradient iteration no.',I3,
-     *        /' ---------------------------------------'
-     *       //' Cutoff for print:',1P,D10.2,
-     *       //' Configuration no.           value'
-     *        /' -----------------           -----')
+ 3000 FORMAT(//' Configuration gradient iteration no.',I3,
+     *        /' ---------------------------------------')
  3020 FORMAT(//' Orbital gradient iteration no.',I3,
      *        /' ---------------------------------')
 C
@@ -2587,6 +2590,7 @@ C   INFPRI : ?
 C CBGETDIS : IADH2
 C   CBIREA : LMULBS
 C   R12INT : R12CAL
+C dftcom.h : DFT_SPINDNS
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -2609,6 +2613,7 @@ C
 #include "r12int.h"
 #include "qmmm.h"
 #include "gnrinf.h"
+#include "dftcom.h"
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
@@ -2731,6 +2736,7 @@ C
       ELSE
          MCTYPE_IFC = MCTYPE
       END IF
+      IF (DFT_SPINDNS) MCTYPE = MCTYPE + 1000
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,
@@ -2740,6 +2746,11 @@ C
 C
 C 880920-hjaaj: later write label here for orbitals
 C
+      IF (DFT_SPINDNS) THEN
+         NDV = 2  ! DV, DS; singlet and triplet active density matrices
+      ELSE
+         NDV = 1
+      END IF
       NC4    = MAX(4,NCONF)
       NW4    = MAX(4,NWOPT)
       NWH4   = MAX(4,NWOPH)
@@ -2752,7 +2763,7 @@ C
 C
       CALL WRITT (LUSIFC,NCMOT4,CMO) ! rec no. 3
       CALL WRITT (LUSIFC,NC4,CREF)   ! rec no. 4
-      CALL WRITT (LUSIFC,MMASHX,DV)  ! rec no. 5
+      CALL WRITT (LUSIFC,NDV*MMASHX,DV)  ! rec no. 5;  DV, (DS)
 C Write Fock matrix.
       CALL WRITT (LUSIFC,M2ORBT,WRK(KFOCK)) ! rec no. 6
       CALL WRITT (LUSIFC,M2ASHY,PV)  ! rec no. 7
@@ -2761,10 +2772,11 @@ C Write Fock matrix.
          CALL DZERO(WRK(KFOCK),NNORBT)
          CALL WRITT (LUSIFC,MMORBT,WRK(KFOCK))
       ELSE
-         CALL WRITT (LUSIFC,MMORBT,FV) ! rec. no. 9
+         CALL WRITT (LUSIFC,NDV*MMORBT,FV) ! rec. no. 9;  FC, (FS)
       END IF
 C
-      CALL WRITT (LUSIFC,MMASHX,FCAC) ! rec. no. 10
+      CALL WRITT (LUSIFC,NDV*MMASHX,FCAC) ! rec. no. 10;  FCAC, (FSAC)
+
       IF (IADH2 .GE. 0) THEN
 #if defined (VAR_NEWCODE)
 ... 27-Jun-1987/hjaaj -- noget lignende : MAERKE
