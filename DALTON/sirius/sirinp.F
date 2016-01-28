@@ -2334,7 +2334,7 @@ C *** Option 1 >CI    <  do a CI calculation (before MCSCF)
 C
 C *** Option 2 >FLAGS <  Set Flags directly as in old input
 C     set up control flags and print flags
-C     read namelist $NMLSIR ... $END
+C     read namelist &NMLSIR ... &END
  102  CONTINUE
          CALL IZERO(NPATH,NPDIM)
 #if defined (VAR_NONAMELIST)
