@@ -58,7 +58,7 @@ C*****************************************************************************
 
       LOGICAL   DOLND,DOGGA,DOERG,DOGRD,DOATR,FROMVX
 
-#define SRDFT_DEBUG
+#ifdef SRDFT_DEBUG
       !edh debug
       real*8    print_thr
 #endif
@@ -899,6 +899,7 @@ C Total contribution -------------------------------------------------------
       IF (DFT_SPINDNS) THEN
          FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
          FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
+#ifdef SRDFT_DEBUG
 #define noSRDFT_DEBUG
          if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
             write(lupri,*) 'hjaaj: FRR,FRS,FSS',FRR,FRS,FSS
