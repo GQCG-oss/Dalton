@@ -2306,7 +2306,7 @@ C     ... if idist .lt. 0 then no more distributions
          JDIST = JDIST + 1
          WRITE (LUPRI,'(/A,I5,A,2I5)')
      &      ' Mulliken distribution no.',JDIST,', IC and ID:',IC,ID
-         WRITE (LUPRI,'(A,I5)') ' IDIST form NXTH2M :',IDIST
+         WRITE (LUPRI,'(A,I5)') ' IDIST from NXTH2M :',IDIST
          CALL OUTPUT(WRK(KH2CD),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
       END IF
 C
