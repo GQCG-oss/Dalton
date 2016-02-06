@@ -334,6 +334,8 @@ C
       ELSE IF (SOPPA) THEN
          CALL TITLER('SOPPA response calculation','*',103)
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
+      ELSE IF (RSPCI) THEN
+         CALL TITLER('CI response calculation','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
          ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
@@ -521,10 +523,14 @@ C
      *       .AND.  NGPC6(KSYMOP).EQ.0 )
      *      GO TO 100
 C     ... skip this symmetry if no operators
-         WRITE(LUPRI,'(//A/A,I5,3A)')
-     *      ' ---------- Linear response calculation',
-     *      ' ---------- Symmetry of excitation/property operator(s)',
-     *      KSYMOP,'  ( ',REP(KSYMOP-1),')'
+         WRITE(LUPRI,'(A/A/A,I5,3A/A)')
+     &      ' -------------------------------------------------'//
+     &      '---------------',
+     &      ' ----- Linear response calculation',
+     &      ' ----- Symmetry of excitation/property operator(s)',
+     &      KSYMOP,'  ( ',REP(KSYMOP-1),')',
+     &      ' -------------------------------------------------'//
+     &      '---------------'
          WRITE(LUPRI,'(3(/A,I5))')
      *      ' Number of excitations of this symmetry        ',
      *      NPPCNV(KSYMOP),
@@ -1066,7 +1072,7 @@ C              .PROP2Average
             WRITE(LUPRI,'(/A)')
      *      ' .NOAVDIA : Using exact E[2] orbital diagonal. '
          END IF
-         IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D10.6)')
+         IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D13.6)')
      *      ' Diagonal orbital E[2] shifted with ORBSFT =',ORBSFT
          IF (ORBSPC) WRITE(LUPRI,'(/A)') ' .ORBSPC:'//
      *      ' Calculation with only orbital operators included.'

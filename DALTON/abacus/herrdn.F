@@ -304,7 +304,7 @@ C              (renamed from .AUXBAS) /hjaaj
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
             IF (ZCMVAL .NE. D1)
-     &           WRITE (LUPRI,'(A,F3.1)') ' Net charge of ionic core  ',
+     &           WRITE (LUPRI,'(A,F8.1)') ' Net charge of ionic core  ',
      &           ZCMVAL
             WRITE(LUPRI,'(/A/A/A/A/A)')
      &         ' Proper reference for these basis functions:'
@@ -1893,7 +1893,7 @@ C
          ELSE
             GEXP = Q_EXPONENT
          ENDIF
-         IF (IPREAD.GT.0) WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(NQ),
+         IF (IPREAD.GT.0) WRITE(LUPRI,'(2X,A2,A,1P,D16.5/)') ASYMB(NQ),
      &   '  : Exponent for nuclear gaussian charge distribution : ',GEXP
       ELSE
          GEXP = D0
@@ -1989,7 +1989,7 @@ C
         ISTART = IPOS
         DO J = 1, 3
           CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NCTOT),'REA',
-    &                IERR)
+     &                IERR)
         END DO
         IF (QM3) THEN
           CALL FREFRM(MLINE(NMLINE),ISTART,ISUBSY(NCTOT),DUMMY,
@@ -2092,13 +2092,13 @@ C
      &    ' Current limit:',MXCENT
         CALL QUIT('*** ERROR *** MXCENT exceeded in CNTINP')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,1P,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
      &    ' Atomic coordinate ',CORD(J,NCTOT),
      &    ' too large in CNTINP.',
-     &    ' Note: Program is unstable for large coordinates.',
+     &    ' Note: Program is unstable for large coordinate values.',
      &    ' Maximum coordinate value:',CORMAX
         CALL QUIT('*** ERROR: Atomic coordinate too large in CNTINP')
-      END
+      END ! SUBROUTINE CNTINP
 C  /* Deck baspro */
       SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
@@ -4674,7 +4674,7 @@ C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
       use pelib_interface, only: use_pelib
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcm_scf, only: pcm_scf_initialize
       use pcmmod_cfg
 #endif
@@ -4862,7 +4862,7 @@ C
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       if (pcmmod_is_pcm_calculation) then
         call pcm_scf_initialize(lupri)
         write(lupri, *) "PCMSolver interface correctly initialized"
@@ -6443,10 +6443,10 @@ C               for ZMAT (yet?)
      &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
          CALL QUIT('Too high angular quantum no. specified in input.')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
      &    ' Atomic coordinate ',CORD(J,NUCIND),
      &    ' too large in BUILDZ',
-     &    ' Note: Program is unstable for large coordinates.',
+     &    ' Note: Program is unstable for large coordinate values.',
      &    ' Maximum coordinate value:',CORMAX
         CALL QUIT('*** ERROR: Atomic coordinate too large in BUILDZ')
       END
@@ -6683,7 +6683,7 @@ Chj:  skip any additional comment lines before title lines
                      II=II+1
                      WRITE(LUSHB,'(I5,A5,I5)')II, SPD(J), NNUC
                      DO M=1,NNUC
-                        WRITE(LUSHB,'(I5,D15.9,D20.10)')
+                        WRITE(LUSHB,'(I5,D16.9,D20.10)')
      &                     M,PRIEXP(IPSTRT+M-1),CPRIMU(M,MM,KBCH)
                      END DO
                   END DO

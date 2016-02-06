@@ -615,7 +615,7 @@ C?    WRITE(6,'(1H ,A,5X,I5,5X,I10)') 'Active   ', N_ACT_CLS,L_ACT_CLS
        DO JCLS = 1, NCLS
          IF(ABS(CLS_ET(JCLS)).GT.0.0D0.OR.ABS(CLS_CT(JCLS)).GT.0.0D0)
      &   THEN
-           WRITE(6,'(1H ,2X,I4,1X,I10,3X,4(E12.6,1X),1X,I2)')
+           WRITE(6,'(1H ,2X,I4,1X,I10,3X,4(E13.6,1X),1X,I2)')
      &     JCLS,ICLS_L(JCLS),CLS_ET(JCLS),CLS_E(JCLS),
      &     CLS_CT(JCLS),CLS_C(JCLS),ICLS_A(JCLS)
          END IF
@@ -667,7 +667,7 @@ C        advice_sigma.f traci.f  rsbb2bvn.f
         WRITE(6,'(A)') '  Class         Energy          wf '
         WRITE(6,'(A)') ' ==========================================='
         DO ISPC = 1, NSPC
-          WRITE(6,'(2X,I3,3X,E12.6,2X,E12.6)')
+          WRITE(6,'(2X,I3,3X,E13.6,2X,E13.6)')
      &          ISPC,EBASC(ISPC),CBASC(ISPC)
         END DO
       END IF
@@ -3393,7 +3393,7 @@ C     CALL PRSYM(XJEP(1000),NVEC)
         WRITE(LUWRTOUT,*) ' Projected matrix'
         CALL PRSYM(APROJ,NVEC)
         WRITE(LUWRTOUT,*) ' eigen pairs '
-        WRITE(LUWRTOUT,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        WRITE(LUWRTOUT,'(2X,E14.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMT_LU(AVEC,NVEC,NROOT,NVEC,NROOT)
       END IF
 *
@@ -3963,11 +3963,11 @@ C?           WRITE(6,*) ' Updated overlap of trial vector ', OVLAP2
       IF(CONVER) THEN
        WRITE(6,1010) NITER  ,ERROR(NITER+1)
  1010  FORMAT(1H0,'  convergence was obtained in...',I3,' iterations',/,
-     +        1H ,'  norm of residual..............',E13.8)
+     +        1H ,'  norm of residual..............',E15.8)
       ELSE
        WRITE(6,1020) MAXIT ,ERROR(MAXIT+1)
  1020  FORMAT(1H0,' convergence was not obtained in',I3,'iterations',/,
-     +        1H ,' norm of residual...............',E13.8)
+     +        1H ,' norm of residual...............',E15.8)
       END IF
 *
       END IF
@@ -4335,7 +4335,7 @@ C
       IF( IPRT  .GE. 5 ) THEN
         WRITE(6,*) ' PROJECTED MATRIX AND EIGEN PAIRS '
         CALL PRSYM(APROJ,NVEC)
-        WRITE(6,'(2X,E13.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
+        WRITE(6,'(2X,E14.7)') (EIG(ITER,IROOT),IROOT = 1, NROOT)
         CALL WRTMT_LU(AVEC,NVEC,NROOT,MAXVEC,NROOT)
       END IF
 *
@@ -4712,11 +4712,11 @@ C
       IF(CONVER) THEN
        WRITE(6,1010) NITER  ,ERROR(NITER+1)
  1010  FORMAT(1H0,'  convergence was obtained in...',I3,' iterations',/,
-     +        1H ,'  norm of residual..............',F13.8)
+     +        1H ,'  norm of residual..............',F15.8)
       ELSE
        WRITE(6,1020) MAXIT ,ERROR(MAXIT +1 )
  1020  FORMAT(1H0,' convergence was not obtained in',I3,'iterations',/,
-     +        1H ,' norm of residual...............',F13.8)
+     +        1H ,' norm of residual...............',F15.8)
       END IF
       END IF
 C

@@ -1370,7 +1370,7 @@ C
       ENDIF
 C
       IF ( LPACKINT ) THEN
-         WRITE (LUPRI,'(//10X,A,G8.2)')
+         WRITE (LUPRI,'(//10X,A,G9.2)')
      &     'Threshold used for packing of integrals:',THRPCKINT
          WRITE (LUPRI,'(10X,A,F8.2,A)')
      &     'Time used for packing and unpacking:    ',

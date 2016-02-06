@@ -98,7 +98,7 @@ C
   110   CONTINUE
         IAXIS = IOR(IAXIS,IGEN(J))
   100 CONTINUE
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
 ! Save info on the generators in pcm_igen.
 ! It will possibly be needed to initialize symmetry handling in
 ! PCMSolver

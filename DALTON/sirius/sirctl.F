@@ -55,7 +55,7 @@ C
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       use pcmmod_cfg
 #endif
 #ifdef ENABLE_XCINT
@@ -379,7 +379,7 @@ C
             WRITE(LUPRI,'(//A/)') 'INFO: Second order QC-SCF skipped'//
      &      ' because it is not implemented for open-shell SCF'
          ELSE IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
             if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//
      &      'PCMSolver')
@@ -865,8 +865,8 @@ C
       TIMSIR = TEND - TIMSIR
       WALSIR = WEND - WALSIR
       WRITE (LUPRI,'()')
-      CALL TIMTXT(' Total CPU  time used in SIRIUS :',CTOT,LUPRI)
-      CALL TIMTXT(' Total wall time used in SIRIUS :',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in SIRIUS :',TIMSIR,LUPRI)
+      CALL TIMTXT(' Total wall time used in SIRIUS :',WALSIR,LUPRI)
       CALL TSTAMP(' ',LUPRI)
       IF (LUW4 .NE. LUPRI) THEN
          WRITE (LUW4,7100)  TIMSIR, WALSIR

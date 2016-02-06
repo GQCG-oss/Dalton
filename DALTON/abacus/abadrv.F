@@ -2339,7 +2339,7 @@ C
      &           'Mass-velocity correction:     ',       RMASSV,' au'
             IF (DARWIN .AND. MASSVE) THEN
                RELTOT = DARWN + RMASSV
-               WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)')
+               WRITE (LUPRI,'(/5X,A,F17.10,A,F7.4,A)')
      &              'Total relativistic correction:         ',  RELTOT,
      &              ' au (', D100*RELTOT/EMCSCF,'%)'
                WRITE (LUPRI,'(5X,A,F17.10,A//)')
@@ -2382,7 +2382,7 @@ C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(/5X,A,19X,1P,D12.6,5X,D12.6)')
+            WRITE (LUPRI,'(/5X,A,1P,D31.6,D17.6)')
      &         '##     Norm of gradient:   ',ALPNRM,ALPNRL
 C
             MAXZ = 0
@@ -2448,7 +2448,7 @@ C                    WRITE (LUPRI,'(5X,A,I5,4X,A,3F20.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(5X,A,17X,1P,E12.6,8X,E12.6)')
+            WRITE (LUPRI,'(5X,A,9X,1P,2E20.6)')
      &         '@@    Norm of gradient:',ALPNRM,ALPNRL
 C
          ELSE IF (MOLGRD) THEN
@@ -3638,7 +3638,7 @@ C
                   FACT = CONV*QMOM
                   FACT2 = FACT/CONV2
                   IF (IPRINT .GE. 0) THEN
-                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F10.8)')
+                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F11.8)')
      &                   'Spin     :',SPIN,'Quadrupole moment:',QMOM
                     WRITE (LUPRI,'(28X,A2,11X,A3,8X,A5)')
      &                   'au','MHz','Gauss'

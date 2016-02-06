@@ -441,7 +441,7 @@ ckr                  IDORCI(IREC,2) = 2
                      WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
                      DN1 = DNRM2(NVARPT,WORK,1)
                      DN2 = DNRM2(NVARPT,WORK(1+NVARPT),1)
-                     WRITE (LUPRI,'(A,2(D20.14,2X))') 
+                     WRITE (LUPRI,'(A,2(D21.14,2X))') 
      &                      ' Norms:     ',DN1,DN2
                   END IF
                   IF (IPRCLC .GT. 10) THEN

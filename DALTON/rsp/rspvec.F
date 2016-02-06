@@ -1043,7 +1043,7 @@ C                       LABEL = TRLBL(ICFRNU-NEXLB2)
                         IF ( ISPINC.EQ.1 ) THEN
                            WRITE(LUPRI,'(/A)') ' TRIPLET VECTOR '
                            WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                    D12.6,/A,I5)')
+     *                                    D13.6,/A,I5)')
      *                      ' QRHYP: SOLUTION VECTOR  LABEL',
 C    *                      TRLBL(ICFRNU-NEXLB2-NLRLBL),
      *                      LABEL,
@@ -1053,7 +1053,7 @@ C    *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
                         ELSE
                            WRITE(LUPRI,'(/A)') ' SINGLET VECTOR '
                            WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                    D12.6,/A,I5)')
+     *                                    D13.6,/A,I5)')
      *                      ' QRHYP: SOLUTION VECTOR  LABEL',
      *                      QRLBL(ICFRNU-NEXLB2),
      *                      ' FREQUENCY ',QRFREQ(ICFRNU-NEXLB2),
@@ -1123,7 +1123,7 @@ C
                               IF ( ISPINB.EQ.1 ) THEN
                                  WRITE(LUPRI,'(/A)') ' TRIPLET VECTOR '
                                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                        D12.6,/A,I5)')
+     *                                        D13.6,/A,I5)')
      *                           ' QRHYP: SOLUTION VECTOR  LABEL',
 C    *                             TRLBL(IBFRNU-NEXLB2-NLRLBL),
      *                           LABEL,
@@ -1134,7 +1134,7 @@ C    *                             TRFREQ(IBFRNU-NEXLB2-NLRLBL),
                               ELSE
                                  WRITE(LUPRI,'(/A)') ' SINGLET VECTOR '
                                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                        D12.6,/A,I5)')
+     *                                        D13.6,/A,I5)')
      *                           ' QRHYP: SOLUTION VECTOR  LABEL',
      *                             QRLBL(IBFRNU-NEXLB2),
      *                           ' FREQUENCY ',QRFREQ(IBFRNU-NEXLB2),
@@ -1338,7 +1338,7 @@ C                                FREQA  = QRFREQ(IAFRNU-NEXLB2)
      *                                  ' TRIPLET VECTOR'
                                     END IF
                                     WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                        D12.6,/A,I5)')
+     *                                        D13.6,/A,I5)')
      *                              ' QRHYP: SOLUTION VECTOR  LABEL',
      *                              LABEL,' FREQUENCY ',FREQA,
      *                              ' SYMMETRY',MSYMA
@@ -1458,7 +1458,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
      *                               ' TRIPLET VECTOR'
                                  END IF
                                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                     D12.6,/A,I5)')
+     *                                     D13.6,/A,I5)')
      *                           ' QRHYP: SOLUTION VECTOR  LABEL',
      *                           LABEL,' FREQUENCY ',FREQA,
      *                           ' SYMMETRY',MSYMA
@@ -1569,7 +1569,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
      *                               ' TRIPLET VECTOR'
                                  END IF
                                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                     D12.6,/A,I5)')
+     *                                     D13.6,/A,I5)')
      *                           ' QRHYP: SOLUTION VECTOR  LABEL',
      *                           LABEL,' FREQUENCY ',FREQA,
      *                           ' SYMMETRY',MSYMA
@@ -1876,7 +1876,7 @@ C
                      ELSE
                         WRITE(LUPRI,'(/A)') ' SINGLET VECTOR '
                      END IF
-                     WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,2X,D12.6)')
+                     WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,2X,D13.6)')
      *               ' QRSMO: EIGENVECTOR ',ICEXNU,
      *               ' SYMMETRY',MSYMC,' EXCITATION ENERGY',FREQC
                      CALL RSPPRC(VECC,MZCONF(MSYMC),
@@ -1927,7 +1927,7 @@ C                          FREQB  = TRFREQ(IBFRNU-NEXLB2-NLRLBL)
                            IF (ISPINB.EQ.1) THEN
                               WRITE(LUPRI,'(/A)') ' TRIPLET VECTOR '
                               WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                     D12.6,/A,I5)')
+     *                                     D13.6,/A,I5)')
      *                        ' QRSMO: SOLUTION VECTOR  LABEL',
      *                          TRLBL(IBFRNU-NEXLB2-NLRLBL),
 C    *                      ' FREQUENCY ',TRFREQ(IBFRNU-NEXLB2-NLRLBL),
@@ -1936,7 +1936,7 @@ C    *                      ' FREQUENCY ',TRFREQ(IBFRNU-NEXLB2-NLRLBL),
                            ELSE
                               WRITE(LUPRI,'(/A)') ' SINGLET VECTOR '
                               WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                     D12.6,/A,I5)')
+     *                                     D13.6,/A,I5)')
      *                        ' QRSMO: SOLUTION VECTOR  LABEL',
      *                          QRLBL(IBFRNU-NEXLB2),
      *                        ' FREQUENCY ',QRFREQ(IBFRNU-NEXLB2),
@@ -2048,7 +2048,7 @@ C
      *                              ' TRIPLET SOLUTION VECTOR'
                                  END IF
                                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                        D12.6,/A,I5)')
+     *                                        D13.6,/A,I5)')
      *                           ' QRSMO: SOLUTION VECTOR  LABEL',
      *                           LABEL, ' FREQUENCY ',FREQA,
      *                           ' SYMMETRY',MSYMA
@@ -2496,7 +2496,7 @@ C ---------------------------------------------------------------endofmcd-------
                   IF (PHOSPH .OR. CPPHOL) THEN                          !MK
                      XRATE=D4D3*(ALPHAC*W)**3*XDIP/XFSEC
                      WRITE(LUPRI,'(A)')'  Length gauge: '               !MK
-                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G10.3)')
      &               ' Partial rates (H_SO): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE,
      &               ' Transition moment : ',SQRT(XDIP)
@@ -2506,7 +2506,7 @@ C ---------------------------------------------------------------endofmcd-------
                   IF (PHOSPV .OR. CPPHOV) THEN                          !MK
                      XRATEV=D4D3*(ALPHAC*W)**3*XDIPF/XFSEC              !MK
                      WRITE(LUPRI,'(A)')'  Velocity gauge: '             !MK
-                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')                !MK
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G10.3)')                !MK
      &               ' Partial rates (H_SO): ',                         !MK
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEV,     !MK
      &               ' Transition moment : ',SQRT(XDIPF)                !MK
@@ -2519,7 +2519,7 @@ C ---------------------------------------------------------------endofmcd-------
                      XRATEA=D4D3*(ALPHAC*W)**3*XDIPA/XFSEC
                      WRITE(LUPRI,'(A)')'  Length gauge / mean field spin!MK
      &-orbit integrals: '                                               !MK
-                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G10.3)')
      &               ' Partial rates (AMFI): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA,
      &               ' Transition moment : ',SQRT(XDIPA)
@@ -2530,7 +2530,7 @@ C ---------------------------------------------------------------endofmcd-------
                      XRATEE=D4D3*(ALPHAC*W)**3*XDIPE/XFSEC
                      WRITE(LUPRI,'(A)')'  Length gauge / effective charg!MK
      &e spin-orbit integrals: '                                         !MK
-                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G10.3)')
      &               ' Partial rates (ECSO): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEE,
      &               ' Transition moment : ',SQRT(XDIPE)
@@ -2541,7 +2541,7 @@ C ---------------------------------------------------------------endofmcd-------
                      XRATEAV=D4D3*(ALPHAC*W)**3*XDIPAV/XFSEC            !MK
                      WRITE(LUPRI,'(A)')'  Velocity gauge / mean field sp!MK
      &in-orbit integrals: '                                             !MK
-                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')                !MK
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G10.3)')                !MK
      &               ' Partial rates (AMFI): ',                         !MK
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA,     !MK
      &               ' Transition moment : ',SQRT(XDIPAV)               !MK
@@ -2552,7 +2552,7 @@ C ---------------------------------------------------------------endofmcd-------
                      XRATEEV=D4D3*(ALPHAC*W)**3*XDIPEV/XFSEC            !MK
                      WRITE(LUPRI,'(A)')'  Velocity gauge / effective cha!MK
      &rge spin-orbit integrals: '                                       !MK
-                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')                !MK
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G10.3)')                !MK
      &               ' Partial rates (ECSO): ',                         !MK
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEEV,    !MK
      &               ' Transition moment : ',SQRT(XDIPEV)               !MK
@@ -2952,7 +2952,7 @@ C
      &                 FOUND,CONV,ANTSYM)
                   IF (.NOT. (FOUND .AND. CONV)) THEN
                      IF (.NOT. FOUND) THEN
-                        WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
+                        WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') 
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
@@ -2960,7 +2960,7 @@ C
                         CALL QUIT('Response vector not '//
      &                       'found on file')
                      ELSE
-                        WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
+                        WRITE (LUPRI,'(/3A,F8.5,/A,I3,A)') 
      &                       '@ WARNING----'//
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
@@ -2979,7 +2979,7 @@ C
                      ELSE
                         WRITE(LUPRI,'(/A)')' TRIPLET VECTOR '
                      END IF
-                     WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,2X,D12.6)')
+                     WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,2X,D13.6)')
      *               ' QREXM: EIGENVECTOR ',ICEXNU,
      *               ' SYMMETRY',MSYMC,' EXCITATION ENERGY'
      *               ,FREQC
@@ -3014,7 +3014,7 @@ C
      &                    FOUND,CONV,ANTSYM)
                      IF (.NOT. (FOUND .AND. CONV)) THEN
                         IF (.NOT. FOUND) THEN
-                           WRITE (LUPRI,'(/3A,F7.5,A,I3,/A)') 
+                           WRITE (LUPRI,'(/3A,F8.5,A,I3,/A)') 
      &                          ' Response label ','EXCITLAB',
      &                          ' with frequency ',FREQB,
      &                          ' and symmetry',MSYMB,
@@ -3022,7 +3022,7 @@ C
                            CALL QUIT('Response vector not '//
      &                          'found on file')
                         ELSE
-                           WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
+                           WRITE (LUPRI,'(/3A,F8.5,/A,I3,A)') 
      &                          '@ WARNING----'//
      &                          ' Response label ','EXCITLAB',
      &                          ' with frequency ',FREQB,
@@ -3139,7 +3139,7 @@ C
      *                          ' TRIPLET SOLUTION VECTOR'
                              END IF
                              WRITE(LUPRI,'(/A,3X,A,3X,A,2X,
-     *                                 D12.6,/A,I5)')
+     *                                 D13.6,/A,I5)')
      *                       ' QREXM: SOLUTION VECTOR  LABEL',LABEL,
      *                       ' FREQUENCY ',FREQA,' SYMMETRY',MSYMA
                              WRITE (LUPRI,'(/A)') ' EIGENVECTOR'
@@ -3731,7 +3731,7 @@ C
 C     Print out response vector
 C
                IF (IPRRSP.GT.10) THEN
-                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
+                  WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D13.6,/A,I5)')
      *                 ' LRHYP: B solution vector;  LABEL',
      *                 BQRLB(ISYM,IBOP),' FREQUENCY ',FRQ,
      *                 ' SYMMETRY',ISYM
@@ -3751,7 +3751,7 @@ C
 C     Print out gradient
 C
                   IF (IPRRSP.GT.10) THEN
-                     WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D12.6,/A,I5)')
+                     WRITE(LUPRI,'(/A,3X,A,3X,A,2X,D13.6,/A,I5)')
      *                    ' LRHYP: A gradient vector;  LABEL',
      *                    AQRLB(ISYM,IAOP),' FREQUENCY ',-FRQ,
      *                    ' SYMMETRY',ISYM

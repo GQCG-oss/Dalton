@@ -3927,7 +3927,7 @@ C
 C
          CALL HEADER('Transformed sqrt(mass)^-1 matrix',-1)
          DO IC1 = 1, NCOOR
-            WRITE (LUPRI,'(24F9.7)') (TM2TMP(IC1,IC2),IC2= 1, NCOOR)
+            WRITE (LUPRI,'(24F10.7)') (TM2TMP(IC1,IC2),IC2= 1, NCOOR)
          END DO
 C
 C        *** Mass-weighted hessian. ***

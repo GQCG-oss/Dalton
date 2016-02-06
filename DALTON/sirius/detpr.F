@@ -389,7 +389,7 @@ c
       IF(XMIN .LT. THRES  ) XMIN =  THRES
       IDET = 0
 C
-      WRITE(IOUT,'(//A,E10.4,A,E10.4/A)')
+      WRITE(IOUT,'(//A,E11.4,A,E11.4/A)')
      &'  Printout of coefficients in interval  ',XMIN,' to ',XMAX,
      &'  =============================================================='
       NOPRT = 0

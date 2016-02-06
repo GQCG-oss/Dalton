@@ -1247,13 +1247,13 @@ xyz coordinates of the center of cavity spheres, given in \angstrom{}.
 \subsection{Potential derived charges: \Sec{QFIT}}
 \label{subsec:qfit}
 
-Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only builtin grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|. Alternatively, a file with points given through the \verb|MEPFIL| keyword can be provided.
+Directives controlling the evaluation of charges (and higher ranks of multipole moments, see \verb|MPRANK| below) fitted to reproduce the molecular electrostatic potential evaluated on a grid surrounding the molecule. Currently, the only built-in grid is a Connolly-Merz grid where \verb|NSHELL| shells around the molecule are constructed from Van der Waal spheres placed on each nuclei of the molecule. The initial spheres are scaled by \verb|VDWSCL| and succesive spheres are scaled in increments of \verb|VDVINC|. Alternatively, a file with grid points given through the \verb|MEPFIL| keyword can be provided instead.
 
 \begin{description}
 \item[\Key{MPRANK}]\verb| |\newline
 \verb|READ (LUCMD,*) MPRANK|
 
-Specifies the highest rank of the multipole moments which are fitted to reproduce the electrostatic potential. It is possible to specify either 0 (charges), 1 (charges and dipoles) or 2 (charges, dipoles and quadrupoles). Please note, that using the dipole constraint (see below) with a rank $>=1$ is meaningless and will be ignored. The default value is 0 (charges).
+Specifies the highest rank of the multipole moments which are fitted to reproduce the electrostatic potential. It is possible to specify either 0 (charges) or 1 (charges and dipoles). Please note, that using the dipole constraint (see \verb|CONSTR| below) with a rank $>=1$ is meaningless and will be ignored. The default value is 0 (charges).
 
 \item[\Key{CONSTR}]\verb| |\newline
 \verb|READ (LUCMD,*) CONSTR|

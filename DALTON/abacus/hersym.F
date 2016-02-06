@@ -176,7 +176,7 @@ C
 C           CALL PRIGEOLU(LUCOOR,CORD)
             DO ICENT=1,N_ATOMS
                NAME=NAMEX(3*ICENT)(1:4)
-               WRITE(LUCOOR,'(2X,A,3(2X,E22.16))')
+               WRITE(LUCOOR,'(2X,A,3(2X,E23.16))')
      &              NAMEX(3*ICENT)(1:4),ATMARR(1,ICENT),
      &              ATMARR(2,ICENT),ATMARR(3,ICENT)
             ENDDO

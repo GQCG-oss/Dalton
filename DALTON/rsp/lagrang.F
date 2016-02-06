@@ -517,7 +517,7 @@ C
      *         ' ESR - hyperfine calculation carried out'
             IF (MAXESR.NE.60) WRITE(LUPRI,'(/A,I6)')
      *         ' MAXIMUM NUMBER OF ITERATIONS. MAXESR =',MAXESR
-            IF (THCESR.NE.1.0D-5) WRITE(LUPRI,'(/A,D12.6)')
+            IF (THCESR.NE.1.0D-5) WRITE(LUPRI,'(/A,D13.6)')
      *         ' THRESHOLD FOR CONVERGENCE. THCESR =',THCESR
             IF (IPRESR.NE.2) WRITE(LUPRI,'(/A,I5)')
      *         ' PRINT LEVEL IN ESR ROUTINES. IPRESR =',IPRESR
@@ -787,7 +787,7 @@ C
                   HYPFIN=((HYPVAL(ITMP,1)+HYPVAL(ITMP,2))
      *                   *XATGV*XTHZ*1.0D-6*ALPHA2)
      *                   /(2.0D0*XPRTMAS*DEGEN(ITMP)*REFSPIN)
-                  WRITE(LUPRI,'(A,F6.2,A,F7.5,A,F9.4,A,F9.4,A)')
+                  WRITE(LUPRI,'(A,F6.2,A,F8.5,A,F9.4,A,F9.4,A)')
      *               ' *   '//NAMN(NUCINF(ITMP))(1:4)//'  * ', XISMAS,
      *               ' * ', XATGV,' * ',HYPFIN,'  * ',HYPFIN/2.8025D0,
      *               ' *'
@@ -809,7 +809,7 @@ C
                   XATGV=DISOTP(INT(CHARGE(NUCINF(ITMP))),IATIS,'GVAL')
                   HYPFIN=(XATGV*XTHZ*1.0D-6*ALPHA2)
      *                   /(2.0D0*XPRTMAS*DEGEN(ITMP)*REFSPIN)
-                  WRITE(LUPRI,'(A,F7.5,A,F11.4,A,F11.4,A,F11.4,A)')
+                  WRITE(LUPRI,'(A,F8.5,A,F11.4,A,F11.4,A,F11.4,A)')
      *               ' *  '//NAMN(NUCINF(ITMP))(1:4)//' * ', XATGV,
      *               ' * ',HYPFIN*HYPVAL(ITMP,1),' * ',
      *               HYPFIN*HYPVAL(ITMP,2),'  * ',
@@ -835,7 +835,7 @@ C
      *      'MASS')
             HYPFIN=(XATGV*XTHZ*1.0D-6*ALPHA2)/
      *             (2.0D0*XPRTMAS*DEGEN(ITMP)*REFSPIN)
-            WRITE(LUPRI,'(/A,F6.2,A,F7.5,A)')
+            WRITE(LUPRI,'(/A,F6.2,A,F8.5,A)')
      *                  ' A Tensor components for '//
      *                  NAMN(NUCINF(ITMP))(1:4)//' ( Mass =',
      *                  XISMAS, ' G-val =', XATGV,') in MHz: '

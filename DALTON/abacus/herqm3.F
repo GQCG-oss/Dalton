@@ -308,7 +308,7 @@ C
         IF (QM3) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','   QM3',' | ',QM3,' |'
 C
-        IF (THDISC .NE. 1.0D-9) WRITE (LUPRI,'(1X,A2,A6,A3,1P,D7.1,A2)')
+        IF (THDISC .NE. 1.0D-9) WRITE (LUPRI,'(1X,A2,A6,A3,1P,D8.1,A2)')
      *         '| ','THDISC',' | ',THDISC,' |'
 C
         IF (MXDIIT .NE. 80) WRITE (LUPRI,'(1X,A2,A6,A3,I7,A2)')

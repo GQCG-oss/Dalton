@@ -2507,7 +2507,7 @@ C
 C
                WRITE(LU_MOLDENLOC,'(A,1X,F9.4)') 'Ene=',OREN(I)
                WRITE(LU_MOLDENLOC,'(A,1X)') 'Spin= Alpha'
-               WRITE(LU_MOLDENLOC,'(A,1X,F6.4)') 'Occup=',OCCUP(I)
+               WRITE(LU_MOLDENLOC,'(A,1X,F7.4)') 'Occup=',OCCUP(I)
 C
                DO 4 M=1,NBAST
 C
