@@ -1,9 +1,0 @@
-ATOMBASIS
-arsenic dihydride cation
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=33.0 Atoms=1 Basis=regbasis Aux=auxbasis
-As     -0.04414244730000      0.00000000000000     -0.04283569370000
-Charge=1.0 Atoms=2 Basis=regbasis Aux=auxbasis
-H     -0.03193411080000      0.00000000000000      1.49026681770000
-H      1.48863487270000      0.00000000000000     -0.07668892400000

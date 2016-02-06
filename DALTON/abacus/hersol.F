@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -348,7 +348,7 @@ C        ... skip cavity center
 C
          IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(/A,I3,/A,3F15.8)')
-     *         ' >>> SOLNUC test print for atom',IATOM,
+     *         ' SOLNUC test print for atom',IATOM,
      *         '     with coordinates :',PX,PY,PZ
          END IF
          CALL SOLNC1(PROPTY,MAXDIF,DIFDIP,IATOM,CHARGE(ICENT),
@@ -535,7 +535,6 @@ C
          DX0(0) = D1
          DY0(0) = D1
          DZ0(0) = D1
-CDIR$    NORECURRENCE
          DO 400 L = 1, LCAVMX
             DX0(L) = PXDIF ** L
             DY0(L) = PYDIF ** L
@@ -1618,14 +1617,14 @@ C
       CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
       READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
       IF (LMAXSS .LT. LSOLMX) THEN
-         WRITE (LUPRI,'(//2A,2(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,2(/A,I5))') ' MAGSO1 ERROR,',
      *   ' insufficient number of intgrals on LUSOL',
      *   ' l max from SIRIUS input :',LSOLMX,
      *   ' l max from LUSOL  file  :',LMAXSS
          CALL QUIT('MAGSO1: lmax on LUSOL is too small')
       END IF
       IF ((LMAXSS+1)**2 .NE. LMTOTX) THEN
-         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' MAGSO1 ERROR,',
      *   ' LUSOL file info inconsistent',
      *   ' l_max               :',LMAXSS,
      *   ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
@@ -1633,7 +1632,7 @@ C
          CALL QUIT('MAGSO1: LUSOL info not internally consistent')
       END IF
       IF (NNNBAS .NE. NBAST) THEN
-         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' MAGSO1 ERROR,',
      *   ' LUSOL file info inconsistent with SIRIUS input',
      *   ' NBAST - LUSOL       :',NNNBAS,
      *   ' NBAST - SIRIUS      :',NBAST
@@ -1642,7 +1641,7 @@ C
 c      IF (CAVCNT(1) .NE. CAVORG(1) .OR.
 c     &    CAVCNT(2) .NE. CAVORG(2) .OR.
 c     &    CAVCNT(3) .NE. CAVORG(3) ) THEN
-c         WRITE (LUPRI,'(//2A,3(/A,3F20.15))') ' >>> SOLRH1 ERROR,',
+c         WRITE (LUPRI,'(//2A,3(/A,3F20.15))') ' SOLRH1 ERROR,',
 c     &   ' LUSOL center of cavity not consistent with ABACUS value',
 c     &   ' CAVORG(1:3) from LUSOL        :',CAVCNT,
 c     &   ' CAVORG(1:3) from common block :',CAVORG
@@ -1788,14 +1787,14 @@ C
       CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
       READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
       IF (LMAXSS .LT. LSOLMX) THEN
-         WRITE (LUPRI,'(//2A,2(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,2(/A,I5))') ' MAGSO1 ERROR,',
      *   ' insufficient number of intgrals on LUSOL',
      *   ' l max from SIRIUS input :',LSOLMX,
      *   ' l max from LUSOL  file  :',LMAXSS
          CALL QUIT('MAGSO1: lmax on LUSOL is too small')
       END IF
       IF ((LMAXSS+1)**2 .NE. LMTOTX) THEN
-         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' MAGSO1 ERROR,',
      *   ' LUSOL file info inconsistent',
      *   ' l_max               :',LMAXSS,
      *   ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
@@ -1803,7 +1802,7 @@ C
          CALL QUIT('MAGSO1: LUSOL info not internally consistent')
       END IF
       IF (NNNBAS .NE. NBAST) THEN
-         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' MAGSO1 ERROR,',
      *   ' LUSOL file info inconsistent with SIRIUS input',
      *   ' NBAST - LUSOL       :',NNNBAS,
      *   ' NBAST - SIRIUS      :',NBAST
@@ -1812,7 +1811,7 @@ C
 c      IF (CAVCNT(1) .NE. CAVORG(1) .OR.
 c     &    CAVCNT(2) .NE. CAVORG(2) .OR.
 c     &    CAVCNT(3) .NE. CAVORG(3) ) THEN
-c         WRITE (LUPRI,'(//2A,3(/A,3F20.15))') ' >>> SOLRH1 ERROR,',
+c         WRITE (LUPRI,'(//2A,3(/A,3F20.15))') ' SOLRH1 ERROR,',
 c     &   ' LUSOL center of cavity not consistent with ABACUS value',
 c     &   ' CAVORG(1:3) from LUSOL        :',CAVCNT,
 c     &   ' CAVORG(1:3) from common block :',CAVORG
@@ -2005,14 +2004,14 @@ C
       CALL MOLLAB('SOLVRLM ',LUSOL,LUPRI)
       READ (LUSOL) LMAXSS, LMTOTX, NNNBAS, CAVCNT
       IF (LMAXSS .LT. LSOLMX) THEN
-         WRITE (LUPRI,'(//2A,2(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,2(/A,I5))') ' MAGSO1 ERROR,',
      *   ' insufficient number of intgrals on LUSOL',
      *   ' l max from SIRIUS input :',LSOLMX,
      *   ' l max from LUSOL  file  :',LMAXSS
          CALL QUIT('MAGSO1: lmax on LUSOL is too small')
       END IF
       IF ((LMAXSS+1)**2 .NE. LMTOTX) THEN
-         WRITE (LUPRI,'(//2A,3(/A,I5))') ' >>> MAGSO1 ERROR,',
+         WRITE (LUPRI,'(//2A,3(/A,I5))') ' MAGSO1 ERROR,',
      *   ' LUSOL file info inconsistent',
      *   ' l_max               :',LMAXSS,
      *   ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,

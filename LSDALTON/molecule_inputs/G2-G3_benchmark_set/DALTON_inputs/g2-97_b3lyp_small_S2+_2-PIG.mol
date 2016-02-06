@@ -1,7 +1,0 @@
-ATOMBASIS
-S2+ 2-PIG
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=16.0 Atoms=2 Basis=regbasis Aux=auxbasis
-S      0.00000000000000      0.00000000000000      0.00000000000000
-S      0.00000000000000      0.00000000000000      1.84443083000000

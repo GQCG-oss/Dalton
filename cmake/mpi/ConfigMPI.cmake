@@ -25,51 +25,87 @@ endif()
 
 if(MPI_FOUND)
 
-    # test whether we are able to compile a simple MPI program
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compatibility.F90" _source)
-    check_fortran_source_compiles(
-        ${_source}
-        MPI_COMPATIBLE
-        )
-  # if(NOT MPI_COMPATIBLE)
-  #     message(FATAL_ERROR "Your compiler is not MPI compatible")
-  # endif()
+   # test whether we are able to compile a simple MPI program
+   file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compatibility.F90" _source)
+   check_fortran_source_compiles(
+      ${_source}
+      MPI_COMPATIBLE
+      )
 
-    add_definitions(-DVAR_MPI)
+   if(NOT MPI_COMPATIBLE)
+      message("WARNING: Your compiler does not seem to be MPI compatible")
+   endif()
 
-    # test whether MPI module is compatible with compiler
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compiler-compatibility.F90" _source)
-    check_fortran_source_compiles(
-        ${_source}
-        MPI_COMPILER_MATCHES
-        )
-    if(MPI_COMPILER_MATCHES)
-        message("-- mpi.mod matches current compiler, setting -DUSE_MPI_MOD_F90")
-        add_definitions(-DUSE_MPI_MOD_F90)
-    else()
-        message("-- WARNING: mpi.mod compiled with different compiler, will use mpif.h instead")
-    endif()
+   add_definitions(-DVAR_MPI)
 
-    # test whether MPI integer type matches
-    file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-itype-compatibility.F90" _source)
-    check_fortran_source_compiles(
-        ${_source}
-        MPI_ITYPE_MATCHES
-        )
-    if(NOT MPI_ITYPE_MATCHES)
-        if(ENABLE_64BIT_INTEGERS)
-            message("-- No 64-bit integer MPI interface found, will use 32-bit integer MPI interface")
-            add_definitions(-DVAR_MPI_32BIT_INT)
-            set(USE_32BIT_MPI_INTERFACE TRUE)
-        else()
-            message("-- WARNING: Cannot determine whether MPI is built for 32bit integers")
-        endif()
-    endif()
+   # test whether we can use an mpi module
+   file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-f90-mod-i4.F90" _source)
+   check_fortran_source_compiles(${_source} MPI_F90_I4)
+   file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-f90-mod-i8.F90" _source)
+   check_fortran_source_compiles(${_source} MPI_F90_I8)
 
-    if(ENABLE_64BIT_INTEGERS AND FORCE_32BIT_MPI_INTERFACE)
-        message("-- 32-bit integer MPI interface activated by the user")
-        add_definitions(-DVAR_MPI_32BIT_INT)
-        set(USE_32BIT_MPI_INTERFACE TRUE)
-    endif()
+   if(MPI_F90_I4 OR MPI_F90_I8)
+      message("-- found mpi mod, setting -DUSE_MPI_MOD_F90")
+      add_definitions(-DUSE_MPI_MOD_F90)
+   else()
+      message("-- WARNING: mpi module not found, will use mpif.h instead")
+   endif()
 
+   if(MPI_F90_I8)
+
+      message("-- found 64bit integer mpi module")
+
+   elseif(MPI_F90_I4)
+
+
+      if(ENABLE_64BIT_INTEGERS)
+
+         message("-- found 32bit integer mpi module, setting -DVAR_MPI_32BIT_INT")
+         add_definitions(-DVAR_MPI_32BIT_INT)
+         set(USE_32BIT_MPI_INTERFACE TRUE)
+
+      else()
+
+         message("-- found 32bit integer mpi module")
+
+      endif()
+
+   else()
+
+      if(NOT FORCE_32BIT_MPI_INTERFACE)
+
+         if(ENABLE_64BIT_INTEGERS)
+            message("-- WARNING: integer check not successful, assuming a 64bit mpif.h instead (if this is not true, please specify -DFORCE_32BIT_MPI_INTERFACE=ON) ")
+         else()
+            message("-- WARNING: integer check not successful, assuming a 32bit mpif.h")
+         endif()
+
+      endif()
+
+   endif()
+
+
+   if(ENABLE_64BIT_INTEGERS AND FORCE_32BIT_MPI_INTERFACE)
+      message("-- 32-bit integer MPI interface activated by the user")
+      add_definitions(-DVAR_MPI_32BIT_INT)
+      set(USE_32BIT_MPI_INTERFACE TRUE)
+   endif()
+
+   # test current setup and check mpi 3 features
+   if(FORCE_DISABLE_MPI3)
+      message("-- Disabled MPI3 features")
+   else()
+      file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-3-features-simple.F90" _source)
+      check_fortran_source_compiles( ${_source} ENABLE_MPI3_FEATURES)
+
+      if(ENABLE_MPI3_FEATURES)
+         message("-- found an MPI 3 compatible MPI lib, setting -DVAR_HAVE_MPI3")
+         add_definitions(-DVAR_HAVE_MPI3)
+         set(MPI_DEFS "${MPI_DEFS} -DVAR_HAVE_MPI3")
+      endif()
+   endif()
+
+   if(ENABLE_TITANBUILD)
+      message("-- TITANBUILD requested, will use 32bit mpi module -- should not be necessary anymore")
+   endif()
 endif()

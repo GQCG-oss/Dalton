@@ -1,5 +1,5 @@
 C ==========================================================================
-C >>>>>>>>>>>              ECP specifics                          <<<<<<<<<<
+C ===========              ECP specifics                          ==========
 C ==========================================================================
 C MXECP maximum number of ECP atoms
 C MXEXP maximum number of exponents per ECP atoms

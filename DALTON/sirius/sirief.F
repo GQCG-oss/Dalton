@@ -121,7 +121,7 @@ C
          LSTART = NTSIRR * LSYM + 1
          CALL MATPCM(DPAK(1,LSTART),SPAK(1,LSTART),AS,CPAK(1,LSTART),
      $        NTSIRR,FACT,1)
-      ENDDO               
+      ENDDO              
 C
 Clf Check if the off-diagonal terms of DMATM1 are too big
 C   If they are not, then are properly stored
@@ -527,13 +527,12 @@ C
 C Computation of UMAT
 C
       CALL DZERO(WORK(1,1),NTS*NTS)
+      umat = 0.0d0
       DO ISYM = 0, MAXREP
          DO JSYM = 0, MAXREP
             UMAT(ISYM, JSYM) = ONE * PT(IAND(ISYM,JSYM))
          ENDDO
       ENDDO
-
-      
 
 C
 C Computation of WORK = DMAT * UMAT
@@ -666,7 +665,7 @@ C Authors: Luca Frediani and Kenneth Ruud
 C
 C Date: 2001 November 11th
 C
-C Purpose: MARICES MANIPULATION IN THE IEF CALCULATION
+C Purpose: MATRICES MANIPULATION IN THE IEF CALCULATION
 C 
 C     The input of this routine is one block of the packed
 C     block-diagonal matrix of the PCM calculation (in case we have a
@@ -1061,6 +1060,7 @@ C
 
 
       LOGICAL NEQ
+      REAL*8  WRK(LWRK)
 
       QTOT = 0.0D0
       IF (QSEFLG.EQ.-1.AND.VSEFLG.EQ.1) THEN
@@ -1111,7 +1111,7 @@ C
 
       
       INTEGER DO_FLAG
-      DIMENSION POTEN(*), CHG(*), WRK(LWRK)
+      REAL*8  POTEN(*), CHG(*), WRK(LWRK)
       LOGICAL NEQ
 
       IF ((DO_FLAG .NE. -1) .AND. (DO_FLAG .NE. 1) 

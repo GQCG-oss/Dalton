@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON 2013.2
+    This is output from DALTON 2014.0
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -24,32 +24,33 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
-       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
-       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
-       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
-       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
-       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
-       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
-       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
-       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
-       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
-       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
-       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
-       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
-       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
-       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
-       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
-       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
-       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Agren,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
        "The Dalton quantum chemistry program system",
        WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.2 (2013), see http://daltonprogram.org
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -64,10 +65,11 @@
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
-  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -76,6 +78,7 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
@@ -86,14 +89,16 @@
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
   Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
   Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
   Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
   Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
   Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
   Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
@@ -102,25 +107,26 @@
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
   Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
   Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
-  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
-  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
@@ -130,39 +136,40 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue May 27 14:55:21 2014
-     Host name              : rfb-ntf-m0022.bargi.uit.no              
+     Date and time (Linux)  : Tue Oct 14 15:26:15 2014
+     Host name              : spongebob                               
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /Users/ast018/dalton/DALTON/test/pcm_excit
-   2) /Users/ast018/dalton/build-master/basis
+   1) /home/roberto/Workspace/dalton/DALTON/test/pcm_excit
+   2) /home/roberto/Workspace/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | ast018
- Host                     | rfb-ntf-m0022.bargi.uit.no
- System                   | Darwin-13.1.0
+ Who compiled             | roberto
+ Host                     | spongebob
+ System                   | Linux-3.13.0-37-generic
  CMake generator          | Unix Makefiles
- Processor                | i386
+ Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /usr/local/bin/mpif90
- Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
- C compiler               | /usr/local/bin/mpicc
- C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
- C++ compiler             | /usr/local/bin/mpicxx
- C++ compiler version     | unknown
- BLAS                     | /usr/lib/libblas.dylib
- LAPACK                   | /usr/lib/liblapack.dylib
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
+                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
+ LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
+                          | e/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 0c3e398ca4c78bacad0308b5fa7e055981e33872
- Configuration time       | 2014-05-26 21:29:21.213348
-
- * Sequential calculation.
+ Last Git revision        | 0e8c20e5b1820f883090356a2a3cf05f844cfb02
+ Git branch               | pcm_public
+ Configuration time       | 2014-10-11 10:26:03.210432
 
 
    Content of the .dal input file
@@ -269,7 +276,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G  Radius=1.6 Alpha=1.2" from the basis set library.
   Basis set file used for this atomic type with Z =   6 :
-     "/Users/ast018/dalton/build-master/basis/STO-3G"
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -278,7 +285,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G  Radius=1.5 Alpha=1.2" from the basis set library.
   Basis set file used for this atomic type with Z =   8 :
-     "/Users/ast018/dalton/build-master/basis/STO-3G"
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -287,7 +294,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G  Radius=1.2 Alpha=1.2" from the basis set library.
   Basis set file used for this atomic type with Z =   1 :
-     "/Users/ast018/dalton/build-master/basis/STO-3G"
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -328,7 +335,8 @@ H     0.943102     0.000000    -0.544500
     B1  | B1   A1   A2   B2 
     B2  | B2   A2   A1   B1 
     A2  | A2   B2   B1   A1 
- ********SPHERES IN PCMSPHGEN************
+
+********SPHERES IN PCMSPHGEN************
  INDEX        X        Y         Z        R
    1    0.0000000000D+00    0.0000000000D+00    0.0000000000D+00    1.9200000000D+00
    2    0.0000000000D+00    0.0000000000D+00    2.3054658725D+00    1.8000000000D+00
@@ -539,12 +547,16 @@ H     0.943102     0.000000    -0.544500
 
 
  Threshold for neglecting two-electron integrals:  1.00D-12
- Number of two-electron integrals written:        1028 ( 33.4% )
- Megabytes written:                              0.014
+ HERMIT - Number of two-electron integrals written:        1028 ( 33.4% )
+ HERMIT - Megabytes written:                              0.014
 
 
  MEMORY USED TO GENERATE CAVITY =    432802
 
+ in pcmtns, vmat is
+   0.0000000000000000        0.0000000000000000        1.0000000000000000     
+   0.0000000000000000        1.0000000000000000        0.0000000000000000     
+   1.0000000000000000        0.0000000000000000        0.0000000000000000     
  Tessera cut in pieces and removed.
 
  Total number of spheres =    4
@@ -557,13 +569,15 @@ H     0.943102     0.000000    -0.544500
  Total number of tesserae =     268
  Surface area =   65.10262090 (A^2)    Cavity volume =   45.75393835 (A^3)
 
+ Surface area =  232.48567836045507 (AU^2)    Cavity volume =  308.76286956027883 (AU^3)
+
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
 
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>> Total CPU  time used in HERMIT:   0.05 seconds
- >>>> Total wall time used in HERMIT:   0.08 seconds
+ >>>> Total CPU  time used in HERMIT:   0.07 seconds
+ >>>> Total wall time used in HERMIT:   0.07 seconds
 
 
                         .----------------------------------.
@@ -598,8 +612,8 @@ H     0.943102     0.000000    -0.544500
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue May 27 14:55:21 2014
-     Host name              : rfb-ntf-m0022.bargi.uit.no              
+     Date and time (Linux)  : Tue Oct 14 15:26:15 2014
+     Host name              : spongebob                               
 
  Title lines from ".mol" input file:
                                                                              
@@ -736,7 +750,7 @@ H     0.943102     0.000000    -0.544500
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.719       0.775
+ >>>> CPU and wall time for SCF :       0.973       0.974
 
 
                        .-----------------------------------.
@@ -758,8 +772,8 @@ H     0.943102     0.000000    -0.544500
 @    Final gradient norm:           0.000009029420
 
  
-     Date and time (Linux)  : Tue May 27 14:55:21 2014
-     Host name              : rfb-ntf-m0022.bargi.uit.no              
+     Date and time (Linux)  : Tue Oct 14 15:26:16 2014
+     Host name              : spongebob                               
 
  (Only coefficients >0.0100 are printed.)
 
@@ -792,12 +806,12 @@ H     0.943102     0.000000    -0.544500
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.72 seconds
- >>>> Total wall time used in SIRIUS :      0.78 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.98 seconds
+ >>>> Total wall time used in SIRIUS :      0.98 seconds
 
  
-     Date and time (Linux)  : Tue May 27 14:55:21 2014
-     Host name              : rfb-ntf-m0022.bargi.uit.no              
+     Date and time (Linux)  : Tue Oct 14 15:26:16 2014
+     Host name              : spongebob                               
 
 
                      .---------------------------------------.
@@ -855,11 +869,11 @@ H     0.943102     0.000000    -0.544500
 
       3 Excitation energies are calculated for symmetry no.    4
 
- Integral transformation: Total CPU and WALL times (sec)       0.002       0.003
+ Integral transformation: Total CPU and WALL times (sec)       0.001       0.001
 
 
-   SCF energy         :     -111.716485633616543
- -- inactive part     :     -142.398777965269090
+   SCF energy         :     -111.716485633616500
+ -- inactive part     :     -142.398777965269062
  -- nuclear repulsion :       31.163673729192165
 
 
@@ -949,7 +963,7 @@ H     0.943102     0.000000    -0.544500
 @ Oscillator strength (LENGTH)   :   1.2068837      (Transition moment :  -1.3884016     )
 
 
- Time used in polarization propagator calculation is      0.24 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      0.33 CPU seconds for symmetry 1
 
 
  >>>>>>>>>> Linear response calculation
@@ -1032,7 +1046,7 @@ H     0.943102     0.000000    -0.544500
 @ Oscillator strength (LENGTH)   :  1.85751732E-02  (Transition moment : -0.18004970     )
 
 
- Time used in polarization propagator calculation is      0.19 CPU seconds for symmetry 2
+ Time used in polarization propagator calculation is      0.27 CPU seconds for symmetry 2
 
 
  >>>>>>>>>> Linear response calculation
@@ -1116,7 +1130,7 @@ RSPORT:    2 out of    3 new trial vectors linear dependent
 @ Oscillator strength (LENGTH)   :  1.66876361E-02  (Transition moment :  0.17704500     )
 
 
- Time used in polarization propagator calculation is      0.14 CPU seconds for symmetry 3
+ Time used in polarization propagator calculation is      0.20 CPU seconds for symmetry 3
 
 
  >>>>>>>>>> Linear response calculation
@@ -1185,19 +1199,19 @@ RSPORT:    2 out of    3 new trial vectors linear dependent
 @ Total energy :      -110.67396     au
 
 
- Time used in polarization propagator calculation is      0.05 CPU seconds for symmetry 4
+ Time used in polarization propagator calculation is      0.07 CPU seconds for symmetry 4
 
- >>>> Total CPU  time used in RESPONSE:   0.63 seconds
- >>>> Total wall time used in RESPONSE:   0.70 seconds
+ >>>> Total CPU  time used in RESPONSE:   0.87 seconds
+ >>>> Total wall time used in RESPONSE:   0.87 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   1.42 seconds
- >>>> Total wall time used in DALTON:   1.62 seconds
+ >>>> Total CPU  time used in DALTON:   1.93 seconds
+ >>>> Total wall time used in DALTON:   1.93 seconds
 
  
-     Date and time (Linux)  : Tue May 27 14:55:22 2014
-     Host name              : rfb-ntf-m0022.bargi.uit.no              
+     Date and time (Linux)  : Tue Oct 14 15:26:17 2014
+     Host name              : spongebob                               

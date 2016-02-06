@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -377,17 +377,20 @@ C
       IF (WORK(1) .NE. WRKDLM .OR.
      &    WORK(LMWORK2) .NE. WRKDLM) THEN
          WRITE (LUPRI,'(//3A)')
-     *      ' >>> WARNING, ',PROG,' module has been out of bounds.'
+     *      ' WARNING, ',PROG,' module has been out of bounds.'
          IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
-     *      ' >>> WORK(0) has been destroyed'
+     *      ' WORK(0) has been destroyed'
          IF (WORK(LMWORK2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
-     *      ' >>> WORK(LMWORK+1) has been destroyed'
+     *      ' WORK(LMWORK+1) has been destroyed'
          CALL QUIT('WARNING, ' // PROG // ' has been out of bounds.')
       END IF
       RETURN
       END
 C  /* Deck exeher */
       SUBROUTINE EXEHER(WORK, LMWORK, WRKDLM)
+
+      use qmcmm, only: read_pot_qmnpmm
+
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -624,11 +627,23 @@ C
       END
 C  /* Deck dalton_exedrv */
       SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
+
+#ifdef BUILD_OPENRSP
+          use openrsp_input, only: read_openrsp_input
+#endif
+          use pelib_interface, only: use_pelib, pelib_ifc_finalize,
+     &                               pelib_ifc_deactivate
+
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf
+      use pcmmod_cfg
+#endif
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -680,9 +695,34 @@ C
       REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       real(8), allocatable :: work(:)
+      logical :: openrsp_input_found
 
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
+
+#ifdef BUILD_OPENRSP
+      ! radovan: we need to read the **OPENRSP input before we run anything
+      call gpopen(lucmd, 'DALTON.INP','OLD',' ','FORMATTED',
+     &            idummy, .false.)
+!     search **OPENRSP in input
+      rewind (lucmd)
+      openrsp_input_found = .false.
+      use_openrsp = .false.
+      do
+         read (lucmd, '(a)', end=2) word
+         if (word == '**OPENR') then
+            call read_openrsp_input('DALTON.INP', lucmd)
+            openrsp_input_found = .true.
+            use_openrsp = .true.
+            exit
+         end if
+      end do
+2     rewind(lucmd)
+      call gpclose(lucmd, 'KEEP')
+#else
+      use_openrsp = .false.
+#endif
+
 C
 !     allocate memory using f90 utilities
       allocate(work(0:lmwork+1),stat=i)
@@ -742,8 +782,8 @@ C        ---------------------------------------
             IF (LUCME.GT.0) REWIND (LUCME)
             SOLVNT = .FALSE.
             WRITE (LUPRI,'(//5X,A,I5,A//)')
-     &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
-     &       ' <<<<<<<<<<'
+     &      '@@---------- Geometry walk iteration number:',ITERNR,
+     &       ' ----------'
             CALL EXEHER(WORK(0),LMWORK,WRKDLM)
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
@@ -811,7 +851,7 @@ CLF
 C
             IF (WLKREJ) THEN
                WRITE (LUPRI,'(/A)')
-     &         '@ >>> Geometry step was rejected, must backstep ... >>>'
+     &         '@ Geometry step was rejected, must backstep ...'
 C
 C     We have to backstep, get old geometry and call for an update
 C
@@ -1049,38 +1089,13 @@ C search for $RESPON in input (legacy driver)
             DO
                READ (LUCMD,'(A7)',END=135) WORD
                IF (WORD .EQ. '$RESPON') THEN
+                  USE_OPENRSP = .TRUE.
                   CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
                   EXIT
                END IF
             END DO
  135        CONTINUE
-C
-C     Search for **OPENRSP input
-C
-            REWIND (LUCMD)
-            DO
-               READ (LUCMD,'(A)',END=137) WORD
-               IF (WORD .EQ. '**OPENR') THEN
-                  CALL OPENRSP_DRIVER(WORK(10),LMWORK-9)
-                  EXIT
-               END IF
-            END DO
  137        CONTINUE
-#endif
-
-#ifdef BUILD_TDRSP
-C added by Bin Gao, March 21, 2010
-C solves the equation of motion of reduced single-electron density matrix in real time domain
-            rewind( LUCMD )
-C tries to find $TDRSP input
-            do while ( .true. )
-              read( LUCMD, '(A6)', end=136 ) WORD
-              if ( WORD .eq. '$TDRSP' ) then
-                call tdrsp_driver( WORK(10), LMWORK-9 )
-                exit
-              end if
-            end do
-136         continue
 #endif
 
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
@@ -1160,43 +1175,20 @@ C search for $RESPON in input
          DO
             READ (LUCMD,'(A7)',END=145) WORD
             IF (WORD .EQ. '$RESPON') then
+               USE_OPENRSP = .TRUE.
                CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9)
                EXIT
             END IF
          END DO
+
  145     CONTINUE
-!        search **OPENRSP in input, then run openrsp
-         rewind (lucmd)
-         do
-            read (lucmd, '(a)', end=147) word
-            if (word == '**OPENR') then
-               call read_openrsp_input('DALTON.INP', lucmd)
-               exit
-            end if
-         end do
-         call openrsp_driver(work(10), lmwork-9)
+         ! radovan: it's really bad to call the driver while reading the input
+         !          we should first read all input, then sanity check, then run the code
+         if (openrsp_input_found) then
+            call openrsp_driver(work(10), lmwork-9)
+         end if
  147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
 #endif
-
-#ifdef BUILD_TDRSP
-C added by Bin Gao, March 21, 2010
-C solves the equation of motion of reduced single-electron density matrix in real time domain
-         if ( LUCMD .lt. 0 ) then
-           call GPOPEN( LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &                  IDUMMY, .FALSE. )
-         end if
-         rewind( LUCMD )
-C tries to find $TDRSP input
-         do while ( .true. )
-           read( LUCMD, '(A)', end=146 ) WORD
-           if ( WORD .eq. '$TDRSP' ) then
-             call tdrsp_driver( WORK(10), LMWORK-9 )
-             exit
-           end if
-         end do
-146      if ( LUCMD .gt. 0 ) call GPCLOSE( LUCMD, 'KEEP' )
-#endif
-
 
          IF (RNABAC) THEN
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
@@ -1230,18 +1222,29 @@ C
 C
       CALL MOLPLT(WORK(KKIND),WORK(KKOL),TITMOL,WORK(KLAST),LLEFT)
       CALL PLTORB(WORK(KKIND),LMWORK)
+
 C
-!     release memory used in PElib
-#if defined (BUILD_PELIB)
-      IF (PEQM) CALL PE_IFC_FINALIZE()
-#endif
+!     release memory used in PElib and deactivate it
+      IF (USE_PELIB()) THEN
+        CALL PELIB_IFC_FINALIZE()
+        CALL PELIB_IFC_DEACTIVATE()
+      END IF
 
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
 C
-      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
+! Finalize pcm_scf if an EXTPCM calculation (PCM using PCMSolver
+! library) was requested.
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_scf_finalize
+        write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
+      end if
+#endif
+
+      CALL TIMTXT(' Total CPU  time used in DALTON:',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in DALTON:',WTOT,LUPRI)
 C
 C     Stamp date and time and hostname to output
 C
@@ -1258,6 +1261,14 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+      use pcm_write
+#endif
+      use qmcmm_input, only: qmnpinp
+      use pelib_interface, only: use_pelib, pelib_ifc_activate,
+     &                           pelib_ifc_input_reader
+
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1287,7 +1298,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 13, NTABLE = 35, D0 = 0.D0)
+      PARAMETER (NDIR = 14, NTABLE = 35, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1295,20 +1306,25 @@ C
 #endif
 C
       LOGICAL ALLOPT
+
+#if defined (HAS_PCMSOLVER)
+      logical extpcm_input_provided
+#endif
+
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN', '*QMNPMM', '*QFIT  '/
+     &            '*READIN', '*QMNPMM', '*QFIT  ', '*EXTPCM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
      &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
-     &            '.HJJTRA', 'xxxxxxx', 'xxxxxxx',
-     &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
+     &            '.EXTPCM', 'xxxxxxx', 'xxxxxxx',
+     &            '.HJJTRA', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
@@ -1378,7 +1394,6 @@ C     NEWTRA and NEWTRA_USEDRC are in /INFTRA/ for practical reasons
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
       DKHINT = .FALSE.
-      PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       QFIT   = .FALSE.
@@ -1420,8 +1435,12 @@ C         but we may restart with old integrals. FTRCTL is set
 C         true by EXEHER signalling that new AO integrals have
 C         been calculated.
 C
-C     Initialize /PCMLOG/
+C     Initialize /PCMLOG/ and /EXTPCM/
 C
+#if defined (HAS_PCMSOLVER)
+      extpcm_input_provided = .false.
+      pcmmod_is_pcm_calculation = .false.
+#endif
       PCM    = .FALSE.
       OUTFLD = .FALSE.
       NEWMAT = .TRUE.
@@ -1489,8 +1508,8 @@ C Table(01:34) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.PRESOR', '.CHOLES', '.HJJTRA',
-C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
+C 16-20: '.PRESOR', '.WESTA ', '.CHOLES', '.EXTPCM', 'xxxxxxx',
+C 21-25: 'xXXXXXX', '.HJJTRA', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.NEWTRA', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  '.
 C
@@ -1585,13 +1604,21 @@ C        ".WALK  "
             CHOINT = .TRUE.
             DIRCAL = .TRUE.
          GO TO 100
- 119     CONTINUE   ! .HJJTRA
-            READ(LUCMD, *) HJJTRA_TYPE
-            NEWTRA = .TRUE.
-         GO TO 100
+ 119     CONTINUE
+#ifdef HAS_PCMSOLVER
+            extpcm_input_provided = .true.
+#else
+      WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+      CALL QUIT('Recompile including the PCM Module')
+#endif
+         goto 100
  120     CONTINUE
  121     CONTINUE
- 122     CONTINUE
+         GO TO 100
+ 122     CONTINUE   ! .HJJTRA
+            READ(LUCMD, *) HJJTRA_TYPE
+            NEWTRA = .TRUE.
          GO TO 100
 C        '.OPTIMI'
  123     CONTINUE
@@ -1631,12 +1658,7 @@ C        '.DOUGLA'
          GOTO 100
 !        '.PEQM  '
  133     CONTINUE
-#if defined (BUILD_PELIB)
-            PEQM = .TRUE.
-#else
-            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
-            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
-#endif
+            CALL PELIB_IFC_ACTIVATE()
          GOTO 100
 !        '.QFIT  '
  134     CONTINUE
@@ -1670,6 +1692,7 @@ C
       WRITE (LUPRI,'(3X,A,I5)')  'Overall default print level:',IPRUSR
       IF (IPRSTAT .EQ. -10) IPRSTAT = IPRUSR + 1
       WRITE (LUPRI,'(3X,A,I5/)') 'Print level for DALTON.STAT:',IPRSTAT
+!     WRITE (LUERR,'(A,I5)')     ' Print level for DALTON.STAT',IPRSTAT
       WRITE (LUSTAT,'(A,I5)')    ' Print level for DALTON.STAT',IPRSTAT
 C     ... default print level for statistics /hjaaj apr 2000
       IF (TESTIN) WRITE (LUPRI,'(/A/)') ' *** Input test run only ***'
@@ -1774,7 +1797,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)')
      &  'Information for WESTA will be calculated and written to files.'
-      IF (PEQM) WRITE(LUPRI,'(4X,A)')
+      IF (USE_PELIB()) WRITE(LUPRI,'(4X,A)')
      &   'Environment is modeled using polarizable embedding scheme'//
      &   ' (PE library)'
       IF(QFIT) WRITE(LUPRI,'(4X,A)')
@@ -1802,7 +1825,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1875,12 +1898,8 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 CONTINUE
-#if defined (BUILD_PELIB)
-        CALL PE_IFC_INPUT_READER(WORD)
-#else
-        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
-#endif
-      GOTO 200
+        CALL PELIB_IFC_INPUT_READER(WORD)
+      GO TO 200
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
    11 CONTINUE
@@ -1900,8 +1919,36 @@ C     "*QMNPMM" input
 #endif
       GOTO 200
 C     "*END OF" or "**something"
+
+!     *EXTPCM input
+   14 CONTINUE
+#if defined (HAS_PCMSOLVER)
+            call move_to_next_star(word,lucmd)
+#else
+            WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+            CALL QUIT('Recompile including the PCM Module')
+#endif
+      GOTO 200
+C     "*END OF" or "**something"
     1 CONTINUE
 C
+#if defined (HAS_PCMSOLVER)
+!     read EXTPCM input if applicable
+      if(extpcm_input_provided)then
+        call read_menu_input('DALTON.INP', lucmd,
+     &                       '*EXTPCM', extpcm_input_provided)
+        pcmmod_is_pcm_calculation = .true.
+        if (.not. extpcm_input_provided) then
+        call quit('Oops, read_menu_input could not find *EXTPCM input')
+        end if
+      end if
+      if(pcmmod_is_pcm_calculation) then
+! Print useful info about DALTON+PCMSolver input options specified              
+              call report_after_pcm_input(lupri)
+      end if
+#endif
+
 #if defined (VAR_MPI) || defined (VAR_PVM)
       CALL PRLINP(WORD)
 #endif

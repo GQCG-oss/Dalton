@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python
 
 import sys
@@ -38,9 +39,7 @@ s.append(['LAPACK'           , r'@LAPACK_LIBRARIES@'     ])
 s.append(['Explicit libs'    , r'@EXPLICIT_LIBS@'        ])
 s.append(['Static linking'   , r'@ENABLE_STATIC_LINKING@'])
 s.append(['Last Git revision', r'@GIT_REVISION@'         ])
-# radovan: deactivated 2014-03-26
-#          not 100% portable and fails on some machines
-# s.append(['Git branch       ', r'@GIT_BRANCH@'           ])
+s.append(['Git branch       ', r'@GIT_BRANCH@'           ])
 
 output  = ''
 output += 'subroutine print_binary_info(lupri)\n'

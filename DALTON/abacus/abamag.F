@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1596,7 +1596,7 @@ C
       IF (SKIP) RETURN
       IF (IPRTRP .GT. 0) CALL TIMER('START ',TIMEIN,TIMOUT)
       IF (IPRTRP .GT. 0) WRITE (LUPRI,'(A/)')
-     &    ' <<<<<<<<<< Output from TRPDRV >>>>>>>>>> '
+     &    ' ---------- Output from TRPDRV ---------- '
 C
 C     Allocate necessary work space to TRPRH1
 C
@@ -2082,7 +2082,7 @@ cLig <> added include abainf.h
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
 #include "ctocdcc.h"
-cLig >> changed the values of the memory for CTOCD 
+cLig changed the values of the memory for CTOCD 
       KSPMAT = 1
       IF(CTOCD .OR. CTOMAG)  THEN
         KSMMAT = KSPMAT + 9*MXCENT
@@ -2091,7 +2091,7 @@ cLig >> changed the values of the memory for CTOCD
         KSMMAT = 1
         KCMAT =  1
       ENDIF
-cLig >>
+cLig
       KDMAT  = KCMAT  + 9*MXCENT
       KPMAT  = KDMAT  + 9*MXCENT
       KAVET  = KPMAT  + 9*MXCENT
@@ -2139,10 +2139,10 @@ cLig <> added the dimensions of sftpmat and sftmmat
      &          ANIS2(NUCDEP), ASYM2(NUCDEP), SKEW(NUCDEP),
      &          SPAN(NUCDEP), CSTRA(*), SCTRA(*),
      &          SFTPMAT(3,3,MXCENT), SFTMMAT(3,3,MXCENT)
-cLig >> added abainf.h and trkoor.h
+cLig added abainf.h and trkoor.h
 #include "abainf.h"
 #include "trkoor.h"
-cLig <<
+cLig
 #include "symmet.h"
 #include "sigma.h"
 #include "cbisol.h"
@@ -2197,12 +2197,12 @@ C
       END IF
 C
       IF (CTOCD .AND. (.NOT. CTOMAG)) THEN
-cLig >> added CTOCD-DZ results title
+cLig added CTOCD-DZ results title
         CALL HEADER('CTOCD-DZ results',1)
       ENDIF
       CALL HEADER('Shielding tensors in symmetry coordinates (ppm)',-1)
       IF (CTOCD .OR. CTOMAG) THEN
-cLig >> added call to FCPRI for shieldings
+cLig added call to FCPRI for shieldings
          CALL FCPRI(SIGMADZ,'CTOCD',CSTRA,SCTRA)
       ELSE
          CALL FCPRI(SIGMAT,'SIGMAS',CSTRA,SCTRA)
@@ -2213,7 +2213,7 @@ C
 C     Transform to non-symmetry basis
 C
       IF(CTOCD .OR. CTOMAG)  THEN
-cLig >> added the call to TRADIP ... for CTOCD
+cLig added the call to TRADIP ... for CTOCD
          CALL TRADIP(SIGMADZ,DMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          CALL TRADIP(SIGMAR,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
          IF (DONS) THEN
@@ -2344,11 +2344,11 @@ C  /* Deck shiana */
 #include "thrzer.h"
 #include "inftap.h"
 #include "codata.h"
-cLig >> added include mxcent abainf and sigma
+cLig added include mxcent abainf and sigma
 #include "mxcent.h"
 #include "abainf.h"
 #include "sigma.h"
-cLig <<
+cLig
       PARAMETER (FACTOR = 1.D6*ALPHA2)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*8, SGN*3, LAPRPC*8, LANAME*8
@@ -2444,27 +2444,27 @@ C
       END IF
       APAR = SQRT(DDOT(9,ANTI,1,ANTI,1)/D2)
       SPAR = ABS(ANIS)*SQRT(D1 + (ASYM**2)/D3)
-cLig >> added title for CTOCD shieldings
+cLig added title for CTOCD shieldings
       IF (CTOCD .OR. CTOMAG) THEN
          CALL TITLER('CTOCD-DZ: Chemical shielding for '
      &               //NAME//':','=',1)
       ELSE
-cLig <<
+cLig
 C
         CALL TITLER('Chemical shielding for '//NAME//':','=',1)
-cLig >> added title for the Gauge Origin
+cLig added title for the Gauge Origin
       ENDIF
       IF(DONS) THEN
         CALL HEADER('Gauge Origin set on the atom',1)
       ENDIF
-cLig <<
+cLig
       WRITE (LUPRI,'(3(/,1X,A,F12.4,A),/,2(/,1X,A,F12.4,A))')
      &   ' Shielding constant:',AVETOT,' ppm',
      &   ' Anisotropy:        ',ANIS,  ' ppm',
      &   ' Asymmetry:         ',ASYM,  '    ',
      &   ' S parameter:       ',SPAR,  ' ppm',
      &   ' A parameter:       ',APAR,  ' ppm'
-C << JK write results to DALTON.PROP file
+C JK write results to DALTON.PROP file
       LANAME = NAME//'  '
       LAPRPC = 'SH-CONST'
 C
@@ -2506,7 +2506,7 @@ CTOCD CALL WRIPRO(APAR  ,"SCF/DFT   ",401,
       CALL WRIPRO(APAR  , LABMET     ,401,
      *            LANAME,LAPRPC,LAPRPC,LAPRPC,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-C << JK
+C JK
       CALL HEADER('Total shielding tensor (ppm):',1)
 csonia 04/10/95
       IF (LUCME.GT.0) THEN
@@ -2514,7 +2514,7 @@ csonia 04/10/95
          WRITE (LUCME,'(A)')  'Total shielding tensor (ppm):'
       END IF
 csonia 04/10/95
-C << JK write shielding tensor to DALTON.PROP
+C JK write shielding tensor to DALTON.PROP
 cmbh change output slightly
       LAPRPC = '_COMP  '
       midasname=NAME//'  '
@@ -2564,7 +2564,7 @@ cmbh change output slightly
       CALL WRIPRO(TMAT(3,3),"SCF/DFT   ",402,
      *            LANAME,LBNAME,midasname,midasname,
      *            0.0D0,0.0D0,0.0D0,1,0,0,0)
-C << JK
+C JK
       WRITE (LUPRI,'(20X,3(A,13X),/)') 'Bx', 'By', 'Bz'
       DO 400 ICOOR = 1, 3
          WRITE (LUPRI,'(2X,A8,3F15.8)')
@@ -2839,7 +2839,7 @@ C
       IF ((.NOT. DOSD) .OR. (.NOT. DOFC) .OR. (.NOT. DOPSO)
      &                 .OR. (.NOT. DODSO)) THEN
          WRITE (LUPRI,'(A)')
-     &         ' >>>WARNING: Total spin-spin couplings not correct '//
+     &         ' WARNING: Total spin-spin couplings not correct '//
      &         'because some'
          WRITE (LUPRI,'(A)')
      &         '             contributions have not been calculated !'
@@ -3056,7 +3056,7 @@ C
       IF ((.NOT. DOSD) .OR. (.NOT. DOFC) .OR. (.NOT. DOPSO)
      &                 .OR. (.NOT. DODSO)) THEN
          WRITE (LUPRI,'(A)')
-     &         ' >>>WARNING: Total spin-spin couplings not correct '//
+     &         ' WARNING: Total spin-spin couplings not correct '//
      &         'because some'
          WRITE (LUPRI,'(A)')
      &         '             contributions have not been calculated !'

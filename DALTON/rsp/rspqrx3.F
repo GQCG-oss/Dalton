@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -241,6 +241,9 @@ C  /* Deck e3init */
      *                  ETRS,XINDX,UDV,PV,WRK,LWRK,KZYVA,KZYVB,KZYVC,
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
+
+      use qmcmm_response, only: qmcmm_qr
+      use pelib_interface, only: use_pelib, pelib_ifc_qro
 C
 C
 C
@@ -386,8 +389,7 @@ C
          END IF
       END IF
 
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+      IF (USE_PELIB()) THEN
          IF (.NOT. TDHF) THEN
             CALL QUIT('ERROR: PE-MCSCF quadratic response not'//
      &                ' implemented using the PE library.')
@@ -398,10 +400,10 @@ C
             CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response using the PE library.')
          ENDIF
-         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
-     &                  UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
-     &                  ISYMA, ISYMB, ISYMC, CMO, MJWOP)
-#endif
+         CALL PELIB_IFC_QRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB),
+     &                      WRK(KZYMC), UDV, WRK(KFREE), LFREE,
+     &                      KZYVA, KZYVB, KZYVC, ISYMA, ISYMB,
+     &                      ISYMC, CMO, MJWOP)
       END IF
 
       IF (QM3) THEN
@@ -449,11 +451,11 @@ C
 C
       IF (QMNPMM) THEN
          IF (TDHF) THEN
-            CALL QMNPMMQRO(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
+            CALL qmcmm_qr(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
      *                        WRK(KZYMC),UDV,WRK(KFREE),LFREE, KZYVA,
      *                        KZYVB,KZYVC, ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                        ISPINA,ISPINB,ISPINC)
-               CALL QMNPMMQRO(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
+               CALL qmcmm_qr(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
      *                        WRK(KZYMB), UDV,WRK(KFREE),LFREE,KZYVA,
      *                        KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
      *                        ISPINA,ISPINC,ISPINB) 

@@ -411,10 +411,10 @@ C     Determine if full Hessian or only orbital Hessian
 C
 C
       IF (IPRRSP .GE. 40) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM IEFLNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM IEFLNO ---'
       END IF
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(1,nosim) on entry'
+         WRITE (LUPRI,'(/A)') ' --- IEFLNO - svec(1,nosim) on entry'
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 C
@@ -638,7 +638,7 @@ C KPCMX: \tilde{J} + \tilde{X}
          DO IOSIM = 1,NOSIM
             JPCMX = KPCMX + (IOSIM-1)*N2ORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
-     *           ' >>> IEFLNO - (JPCMX) half.',IOSIM,' of',NOSIM
+     *           ' --- IEFLNO - (JPCMX) half.',IOSIM,' of',NOSIM
             CALL OUTPUT(WRK(JPCMX),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
          END DO
@@ -703,7 +703,7 @@ C
          DO IOSIM = 1,NOSIM
             JPCMX = KPCMX + (IOSIM-1)*N2ORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
-     *           ' >>> IEFLNO - (JPCMX) matrix no.',IOSIM,' of',NOSIM
+     *           ' --- IEFLNO - (JPCMX) matrix no.',IOSIM,' of',NOSIM
             CALL OUTPUT(WRK(JPCMX),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
          END DO
@@ -779,7 +779,7 @@ C
             IF (ABS(TEST) .GT. 1.D-8) THEN
                NWARN = NWARN + 1
                WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     *              ' >>> IEFLNO WARNING, for IOSIM =',IOSIM,
+     *              ' --- IEFLNO WARNING, for IOSIM =',IOSIM,
      *              ' <CREF | SVEC_solvent(iosim) > =',TEST
             END IF
  900     CONTINUE
@@ -790,14 +790,14 @@ C
 C        ... test print
 C
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(ci,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- IEFLNO - svec(ci,1) on exit'
          DO 930 I = 1,KZCONF
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *         ' conf #',I,SVEC(I,1)
   930    CONTINUE
       END IF
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> IEFLNO - svec(orb,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- IEFLNO - svec(orb,1) on exit'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(SVEC(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '

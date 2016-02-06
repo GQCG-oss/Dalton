@@ -2439,7 +2439,10 @@ extern "C" {
     void ipotdamped_slave_() {
 
 
-        int Ncenters;
+        // set to zero to remove warning about uninitialized Ncenters below
+        // is anyway overwritten by mpi_bcast
+        int Ncenters = 0;
+
         mpi_bcast(Ncenters);
 
         point   * NN = new point  [Ncenters]; //centers

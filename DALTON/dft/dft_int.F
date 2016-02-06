@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -120,7 +120,7 @@ C
       EXTERNAL DFT_ISGGA
       DIMENSION IORIDX(KMAX,2,8)
 
-#ifdef MOD_XCINT
+#ifdef ENABLE_XCINT
 #define EXPORT_GRID
 #endif
 #ifdef EXPORT_GRID
@@ -159,7 +159,7 @@ CAMT Require higher derivatives for explicit potential construction
       call mpi_comm_size(mpi_comm_world, nr_proc, ierr)
 #endif
       if (irank == 0) then
-         inquire(file='numerical_grid', exist=export_file_exists)
+         inquire(file='num_grid', exist=export_file_exists)
       end if
 #ifdef VAR_MPI
       if (nr_proc > 1) then
@@ -194,6 +194,9 @@ CAMT Require higher derivatives for explicit potential construction
                ry(nr_points_export + i) = coor(2, i)
                rz(nr_points_export + i) = coor(3, i)
                rw(nr_points_export + i) = weight(i)
+               if (dabs(rw(nr_points_export + i)) < 1.0e-40) then
+                  rw(nr_points_export + i) = 0.0d0
+              end if
             enddo
             nr_points_export = nr_points_export + nlen
          end if
@@ -267,17 +270,17 @@ CAMT Require higher derivatives for explicit potential construction
      &           form   = 'formatted',
      &           status = 'new',
      &           access = 'sequential',
-     &           file   = 'numerical_grid')
+     &           file   = 'num_grid')
             rewind lunit_export
             write(lunit_export, *) nr_proc
 
             ! write points from master
             write(lunit_export, *) nr_points_export
             do i = 1, nr_points_export
-               write(lunit_export, '(d20.12)') rx(i)
-               write(lunit_export, '(d20.12)') ry(i)
-               write(lunit_export, '(d20.12)') rz(i)
-               write(lunit_export, '(d20.12)') rw(i)
+               write(lunit_export, '(e20.12)') rx(i)
+               write(lunit_export, '(e20.12)') ry(i)
+               write(lunit_export, '(e20.12)') rz(i)
+               write(lunit_export, '(e20.12)') rw(i)
             enddo
          end if
 
@@ -316,10 +319,10 @@ CAMT Require higher derivatives for explicit potential construction
 
                   write(lunit_export, *) nr_points_export
                   do i = 1, nr_points_export
-                     write(lunit_export, '(d20.12)') rx(i)
-                     write(lunit_export, '(d20.12)') ry(i)
-                     write(lunit_export, '(d20.12)') rz(i)
-                     write(lunit_export, '(d20.12)') rw(i)
+                     write(lunit_export, '(e20.12)') rx(i)
+                     write(lunit_export, '(e20.12)') ry(i)
+                     write(lunit_export, '(e20.12)') rz(i)
+                     write(lunit_export, '(e20.12)') rw(i)
                   enddo
                end if
             end do

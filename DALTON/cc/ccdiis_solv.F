@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -106,7 +106,7 @@ C     print banner for solver:
 C
       IF (IPRLE.GT.0) THEN
          WRITE (LUPRI,'(///A/)') 
-     &        ' >>>>> COUPLED CLUSTER DIIS SOLVER <<<<<'
+     &        ' ----- COUPLED CLUSTER DIIS SOLVER -----'
          WRITE (LUPRI,'(3X,A)')
      &        ' Iter  #Vectors  time (min)   residual'
          WRITE (LUPRI,'(3X,A)')
@@ -149,7 +149,7 @@ C
 
          IF (IPRLE .GT. 5) THEN
             WRITE (LUPRI,*)
-     *      ' >>> Call CC_TRDRV with TRIPLET flag set to:',TRIPLET
+     *      ' --- Call CC_TRDRV with TRIPLET flag set to:',TRIPLET
          ENDIF
 C
          CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
@@ -230,7 +230,7 @@ C
          IF (IPRLE .GE. 2) THEN
             TIMIT = SECOND() - TIMIT
             WRITE (LUPRI,'(/A,F12.2,/)')
-     *         ' >>> TIME USED IN THIS ITERATION',TIMIT
+     *         ' --- TIME USED IN THIS ITERATION',TIMIT
          END IF
 C
          IF (JCONV.LT.0) THEN
@@ -284,12 +284,12 @@ C
          WRITE (LUPRI,'(T10,A,F15.2)') 'CCNEX    ',TIMNEX/60.0D0
          WRITE (LUPRI,'(T10,A)') '---------------------------'
          WRITE (LUPRI,'(T10,A,F14.2,//)') 'Total time',TIMMIC/60.0D0
-         CALL TIMTXT('>>>> Total CPU  time used in CCEQ_SOLV:',CTOT,
+         CALL TIMTXT(' Total CPU  time used in CCEQ_SOLV:',CTOT,
      &        LUPRI)
-         CALL TIMTXT('>>>> Total wall time used in CCEQ_SOLV:',WTOT,
+         CALL TIMTXT(' Total wall time used in CCEQ_SOLV:',WTOT,
      &        LUPRI)
          WRITE (LUPRI,'(//A/)')
-     &        ' >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<'
+     &        ' xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       END IF
 C
       IF (IPRLE .GT. 0) THEN
@@ -591,7 +591,7 @@ C
 C        Set norm of solution vector to 1 and save on file
 C
          DO IBVEC = 1, NBX
-           XNRM = DNORM2(NCCVAR,WRK(KSOL+(IBVEC-1)*NCCVAR),1)
+           XNRM = DNRM2(NCCVAR,WRK(KSOL+(IBVEC-1)*NCCVAR),1)
            CALL DSCAL(NCCVAR,1.0D0/XNRM,WRK(KSOL+(IBVEC-1)*NCCVAR),1)
 
            IVEC = ISIMC - 1 + IBVEC   
@@ -662,7 +662,7 @@ C
 
          DO JR = 1,NBX
             JROOTJ  = ISIMC - 1 + JR
-            QNORM   = DNORM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
+            QNORM   = DNRM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
             RNORM(JROOTJ) = QNORM
             RMXNORM = MAX(RMXNORM,QNORM)
 C
@@ -693,7 +693,7 @@ C
      *                        WRK(KWRK1),LWRK1)
 
 
-               XNRM = DNORM2(NCCVAR,WRK(KSOL1),1)
+               XNRM = DNRM2(NCCVAR,WRK(KSOL1),1)
                CALL DSCAL(NCCVAR,1.0D0/XNRM,WRK(KSOL1),1)
 
                CALL CC_PUTVEC(LUFC1,FILC1,LUFC2,FILC2,LUFC12,FILC12,

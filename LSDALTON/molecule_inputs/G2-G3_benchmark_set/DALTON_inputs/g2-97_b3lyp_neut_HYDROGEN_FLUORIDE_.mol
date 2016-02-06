@@ -1,8 +1,0 @@
-ATOMBASIS
-HYDROGEN FLUORIDE,
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=9.0 Atoms=1 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      0.00000000000000      0.00000000000000
-Charge=1.0 Atoms=1 Basis=regbasis Aux=auxbasis
-H      0.00000000000000      0.00000000000000      0.93389100000000

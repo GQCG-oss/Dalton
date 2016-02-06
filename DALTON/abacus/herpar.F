@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -33,7 +33,7 @@ C  /* Deck her_pardrv */
      &                      WORK,LWORK,ITYPE,MAXDER,IATOM,NODV,
      &                      NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                      ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                      DINTSKP,RELCAL,GENCTR)
+     &                      DINTSKP,RELCALC,GENCTR)
 
 C
 #include "implicit.h"
@@ -45,7 +45,7 @@ Cef begin
 #include "incore.h"
 Cef end
 C
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCAL, rma_model_save
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,RELCALC, rma_model_save
       LOGICAL   GENCTR
       DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), ISYMDM(*), IFCTYP(*),
      &          NSTAT(NODTOT), WORK(LWORK), HESSEE(*)
@@ -666,10 +666,11 @@ C
 #ifdef BUILD_OPENRSP
 !radovan: this breaks dft_camb3lyp_magsus test on master
 !         after the problem is fixed, remove the ifdef!
-
+        IF (USE_OPENRSP) THEN
 C added by Bin Gao, June 3, 2009
-         IF (MAXDIF .EQ. 2 .AND. .NOT.GENCTR)
+         IF (MAXDIF .EQ. 2 .AND. .NOT. GENCTR)
      &      NFMAT = 6*NDMAT
+        END IF
 #endif
       ELSE IF (ITYPE .EQ. 8) THEN
          NFMAT = 3*NDMAT*NUCDEG(IATOM)
@@ -720,6 +721,9 @@ C
       CALL MPIXBCAST(ERFEXP,1,'LOGICAL',MASTER)
       CALL MPIXBCAST(CHIVAL,1,'DOUBLE',MASTER)
       CALL MPIXBCAST(EXPGRA,1,'LOGICAL',MASTER)
+#ifdef BUILD_OPENRSP
+      CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
+#endif
 C
 Cef begin
       IF (AOSAVE .AND. NEWGEO .AND. (.NOT. FIRST)) THEN
@@ -934,6 +938,7 @@ C
 #include "infpar.h"
 #include "parint.h"
 #include "expopt.h"
+#include "gnrinf.h"
 
 #ifdef VAR_MPI
 #ifndef USE_MPI_MOD_F90
@@ -971,10 +976,14 @@ C modified by Bin Gao, December 24, 2009
 !         after the problem is fixed, remove the ifdef!
 
 C modified by Bin Gao, December 21, 2009
+        IF (USE_OPENRSP) THEN
          CALL DZERO(FMAT,L_FCK)
          CALL DZERO(SUS2EL,L_SUS)
-#else
+        ELSE
+#endif
          CALL DZERO(FMAT,3*N2BASX)
+#ifdef BUILD_OPENRSP
+        END IF
 #endif
 COBL/AMT
 C for CAMB3LYP, we must not zero the susceptibilities the second run in TWOLOP
@@ -1019,11 +1028,15 @@ C
 #ifdef BUILD_OPENRSP
 !radovan: this breaks dft_camb3lyp_magsus test on master
 !         after the problem is fixed, remove the ifdef!
+           IF (USE_OPENRSP) THEN
             CALL MPIXRECV(TMPMAT(1),L_FCK,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_FCK,D1,TMPMAT,1,FMAT,1)
-#else
+           ELSE
+#endif
             CALL MPIXRECV(TMPMAT(1),3*N2BASX,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(3*N2BASX,D1,TMPMAT,1,FMAT,1)
+#ifdef BUILD_OPENRSP
+           END IF
 #endif
             CALL MPIXRECV(TMPMAT(1),L_SUS,'DOUBLE',NWHO,MTAG7)
             CALL DAXPY(L_SUS,D1,TMPMAT,1,SUS2EL,1)
@@ -1493,7 +1506,7 @@ C
      &     IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,ISHLA,I2TYP,
      &     JSTRS,NPRIM,NCONT,IORBS,
      &     ICEDIF,IFTHRS,WORK(KGABAO),WORK(KDMRAO),
-     &     WORK(KDMRSO),DINTSKP,RELCAL,GENCTR)
+     &     WORK(KDMRSO),DINTSKP,RELCALC,GENCTR)
 
 !------------------------
 !     free memory windows
@@ -1648,6 +1661,9 @@ C
         CALL MPIXBCAST(ERFEXP,   1,'LOGICAL',MASTER)
         CALL MPIXBCAST(CHIVAL,   1,'DOUBLE' ,MASTER)
         CALL MPIXBCAST(EXPGRA,   1,'LOGICAL',MASTER)
+#ifdef BUILD_OPENRSP
+        CALL MPIXBCAST(USE_OPENRSP,1,'LOGICAL',MASTER)
+#endif
 C
 C       IF (CHIVAL .EQ. -1.0D0) THEN calculate 1/R12
 C                               ELSE calculate g_lr(R12)
@@ -1956,7 +1972,7 @@ Cef begin
      &     SQ12EL,INDHER,INDHSQ,IODDHR,TSKCPU,IWHICH,IJS,
      &     ISYMDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &     IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCTR)
+     &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCALC,GENCTR)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 
@@ -1971,11 +1987,12 @@ C
 #include "maxorb.h"
 #include "dummy.h"
 #include "mtags.h"
+#include "pcmlog.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DONE,
-     &        SOFOCK,RELCAL,GENCTR
+     &        SOFOCK,RELCALC,GENCTR
       DIMENSION DMAT(*), FMAT(*), GMAT(*),INDHSQ(*), 
      & IODDHR(*), INDHER(*), WORK(LWORK), ISYMDM(*), IFCTYP(*),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(MXSHEL,MXAOVC),
@@ -2014,7 +2031,7 @@ C
       END IF
 C
       FIRST = .TRUE.
-      DIRAC = RELCAL
+      DIRAC = RELCALC
       IF (EXPECT .AND. .NOT.NOPV) THEN
          CALL REWSPL(LUPAO)
       END IF
@@ -2423,7 +2440,7 @@ CTROND     &               PERTUR,NODV,MAXDER,LONDON,NDMAT,ISYMDM,IFCTYP,
 CTROND     &               IATOM,.FALSE.)
 CTROND      END IF
 C
-C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
+C     ----- Print Section - Gradient and Hessian Elements -----
 C
       IF (EXPECT) THEN
          IF (JPRINT .GT. 5) THEN
@@ -2443,10 +2460,11 @@ C
             CALL HEADER('Molecular gradient',-1)
             CALL ADDGRD(GRADFS)
             CALL ADDGRD(GRADKE)
-            IF (SOLVNT) THEN
+            IF (SOLVNT .OR. PCM) THEN
                CALL ADDGRD(GSOLTT)
                CALL ADDGRD(GSOLNN)
             END IF
+            IF (PCM) CALL ADDGRD(GSOLCV)
             CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP
@@ -2711,7 +2729,7 @@ C     For infpar.h
 C
       SLAVE  = .FALSE.
 C     ... this is the master in a parallel run
-      DEBUG  = .FALSE.
+      INFPAR_DEBUG  = .FALSE.
       NTASK  = 1
       IPRPAR = 0
       NDEGDI = 5
@@ -2786,10 +2804,10 @@ C
                   WRITE(LUPRI,'(/1X,A)')'.ENCODE keyword is not in use.'
 #endif
                GO TO 100
-    5          CONTINUE
-                  DEBUG = .TRUE.
+    5          CONTINUE   ! .DEBUG
+                  INFPAR_DEBUG = .TRUE.
                GO TO 100
-    6          CONTINUE
+    6          CONTINUE   ! .RMA-MD
                   rma_model = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN

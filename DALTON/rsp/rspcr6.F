@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -161,6 +161,7 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -246,70 +247,14 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-      IF (PEQM) THEN
-#ifdef MOD_UNRELEASED
-#if defined (BUILD_PELIB)
-         IF (.NOT. TDHF) THEN
-             CALL QUIT('ERROR: MCSCF cubic response not'//
-     &                 ' implemented with PE library.')
-         ELSE IF (NASHT > 0) THEN
-             CALL QUIT('ERROR: cubic response not implemented for'//
-     &                 ' open shell systems with PE library.')
-         ELSE IF (TRPLET) THEN
-             CALL QUIT('ERROR: triplets not implemented for cubic'//
-     &                 ' response with PE library.')
-         ENDIF
-         CALL PE_RSPCRO(VECB, VECC, VECD, ETRS, XINDX, WRK(KZYMB),
-     &                  WRK(KZYMC), WRK(KZYMD), UDV, WRK(KFREE), LFREE,
-     &                  KZYVA, KZYVB, KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
-     &                  ISYMD, CMO, MJWOP)
-#endif
-#else
+      IF (USE_PELIB()) THEN
          CALL QUIT('ERROR: cubic response not implemented'//
-     &             ' using the PE library (.PEQM).')
-#endif
+     &             ' with PE library (.PEQM).')
       END IF
 C
       IF (QMMM) THEN
-#ifdef MOD_UNRELEASED
-         IF (TDHF) THEN
-             CALL QMMMCRO(VECB, VECC, VECD,
-     *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
-     *                 UDV,WRK(KFREE),LFREE,
-     *                 KZYVA,KZYVB,KZYVC,KZYVD,
-     *                 ISYMA,ISYMB,ISYMC,ISYMD,CMO,MJWOP)
-            CALL QMMMCRO(VECB, VECD, VECC,
-     *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMD),WRK(KZYMC),
-     *                 UDV,WRK(KFREE),LFREE,
-     *                 KZYVA,KZYVB,KZYVD,KZYVC,
-     *                 ISYMA,ISYMB,ISYMD,ISYMC,CMO,MJWOP)
-            CALL QMMMCRO(VECC, VECB, VECD,
-     *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),WRK(KZYMD),
-     *                 UDV,WRK(KFREE),LFREE,
-     *                 KZYVA,KZYVC,KZYVB,KZYVD,
-     *                 ISYMA,ISYMC,ISYMB,ISYMD,CMO,MJWOP)
-            CALL QMMMCRO(VECC, VECD, VECB,
-     *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMD),WRK(KZYMB),
-     *                 UDV,WRK(KFREE),LFREE,
-     *                 KZYVA,KZYVC,KZYVD,KZYVB,
-     *                 ISYMA,ISYMC,ISYMD,ISYMB,CMO,MJWOP)
-            CALL QMMMCRO(VECD, VECC, VECB,
-     *                 ETRS,XINDX,WRK(KZYMD),WRK(KZYMC),WRK(KZYMB),
-     *                 UDV,WRK(KFREE),LFREE,
-     *                 KZYVA,KZYVD,KZYVC,KZYVB,
-     *                 ISYMA,ISYMD,ISYMC,ISYMB,CMO,MJWOP)
-            CALL QMMMCRO(VECD, VECB, VECC,
-     *                 ETRS,XINDX,WRK(KZYMD),WRK(KZYMB),WRK(KZYMC),
-     *                 UDV,WRK(KFREE),LFREE,
-     *                 KZYVA,KZYVD,KZYVB,KZYVC,
-     *                 ISYMA,ISYMD,ISYMB,ISYMC,CMO,MJWOP)
-         ELSE
-            CALL QUIT('CR-QM/MM only implemented for TDHF/TDDFT')
-         END IF
-#else
          CALL QUIT('ERROR: cubic response not implemented'//
      &             ' for QMMM.')
-#endif
       END IF
 
       IF (FLAG(16)) THEN

@@ -61,14 +61,18 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable 64bit integers [default: %(default)s]')
-    group.add_argument('--openacc',
+    group.add_argument('--gpu',
             action='store_true',
             default=False,
-            help='enable OpenACC [default: %(default)s]')
-    group.add_argument('--collapse',
+            help='enable GPU acceleration [default: %(default)s]')
+    group.add_argument('--cublas',
             action='store_true',
             default=False,
-            help='enable COLLAPSE clause for reorderings [default: %(default)s]')
+            help='enable the CUBLAS GPU library [default: %(default)s]')
+    group.add_argument('--real-sp',
+            action='store_true',
+            default=False,
+            help='enable single precision arithmetic for certain parts of LSDalton [default: %(default)s]')
     group.add_argument('--prefix',
             action='store',
             default=None,
@@ -143,10 +147,6 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using SCALASCA profiler mode [default: %(default)s]')
-    group.add_argument('--vampirtrace',
-            action='store_true',
-            default=False,
-            help='build using Vampirtrace instrumentation [default: %(default)s]')
     
     group = parser.add_argument_group('advanced options')
     group.add_argument('--check',
@@ -183,21 +183,7 @@ def parse_input():
             action='store_true',
             default=False,
             help='build using timings [default: %(default)s]')
-    
-    group = parser.add_argument_group('external libraries')
-    group.add_argument('--xcfun',
-            action='store_true',
-            default=False,
-            help='enable XCFun external library [default: %(default)s]')
-    group.add_argument('--interest',
-            action='store_true',
-            default=False,
-            help='enable interest external library [default: %(default)s]')
-    group.add_argument('--ichor',
-            action='store_true',
-            default=False,
-            help='enable ichor integrals library [default: %(default)s]')
-    
+
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
             action='store',
@@ -261,15 +247,12 @@ def gen_cmake_command(args):
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
     command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
-    command += ' -DENABLE_OPENACC=%s'        % translate_cmake(args.openacc)
-    command += ' -DENABLE_COLLAPSE=%s'       % translate_cmake(args.collapse)
+    command += ' -DENABLE_GPU=%s'            % translate_cmake(args.gpu)
+    command += ' -DENABLE_CUBLAS=%s'         % translate_cmake(args.cublas)
+    command += ' -DENABLE_REAL_SP=%s'        % translate_cmake(args.real_sp)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
-    command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
-    command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
-    command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
-    command += ' -DENABLE_ICHOR=%s'          % translate_cmake(args.ichor)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
     command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
@@ -310,6 +293,10 @@ def gen_cmake_command(args):
         command += ' -DENABLE_CRAY_WRAPPERS=ON'
         command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
+
+    if args.gpu:
+        command += ' -DENABLE_OPENACC=ON'
+        command += ' -DENABLE_CUDA=ON'
 
     if args.mkl != 'none':
         if args.mkl == None:

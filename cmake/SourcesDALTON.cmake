@@ -166,9 +166,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/average.F
     DALTON/abacus/angpso.F
     DALTON/abacus/angkin.F
-    DALTON/abacus/herqmnp.F
-    DALTON/rsp/rspqmnp.F
-    DALTON/sirius/sirqmnp.F
     DALTON/amfi/amfi.F
     DALTON/amfi/symtra.F
     DALTON/cc/asqr.F
@@ -448,7 +445,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/dft/dft_mos.F
     DALTON/dft/dft_rho.F
     DALTON/dft/dso_cb.F
-    DALTON/embedding/pe_dalton_interfaces.F
     DALTON/eri/eri2aob.F
     DALTON/eri/eri2ave.F
     DALTON/eri/eri2car1.F
@@ -765,7 +761,23 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/gp/memory_parallel.F90
     DALTON/abacus/rma_windows.F90
     DALTON/cc/dyn_index.F90
-    )
+    DALTON/qmcmm/herqmnp.F90
+    DALTON/qmcmm/fock.F90
+    DALTON/qmcmm/response.F90
+    DALTON/qmcmm/input.F90
+    DALTON/pelib/pelib_interface.F90
+   )
+if(ENABLE_PCMSOLVER)
+   set(DAL_PCM_SOURCES
+    DALTON/pcm/pcm_scf.F90
+    DALTON/pcm/pcm_integrals.F90
+    DALTON/pcm/pcm_linear_response.F90
+    DALTON/pcm/pcmmod_cfg.F90
+    DALTON/pcm/pcm_write.F90
+    DALTON/pcm/pcm_utils.F90
+   )
+   set(DALTON_FREE_FORTRAN_SOURCES "${DALTON_FREE_FORTRAN_SOURCES} ${DAL_PCM_SOURCES}")
+endif()
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F
     )

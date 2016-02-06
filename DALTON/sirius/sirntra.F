@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -45,7 +45,7 @@ C
 !NOTE: 900320 use NCOINT,NE1INT,NE2INT to count integrals written to LUMINT
 !=======================
 !/* Comdeck rev_log */
-!--------> lav TRACHK rutine (se ovenover) 940520/hjaaj !!!!!!!!!!
+!-------- lav TRACHK rutine (se ovenover) 940520/hjaaj !!!!!!!!!!
 !-- version n06 --
 !950102-hjaaj
 !TRA2E1: corrected OPHLF3 calculation
@@ -1670,7 +1670,7 @@ C           case 2b: (PQ/RS) -> (TA/UB) IF ISQ.GE.ISS AND ISP.NE.ISQ
       END IF
       IF (IPRTRA .GE. 3) THEN
          WRITE (LUPRI,'(/A/A,4I3/)')
-     &      ' <<<<<< Test output from TRA2 >>>>>>',
+     &      ' ----- Test output from TRA2 -----',
      &      ' ISP,ISQ,ISR,ISS =',ISP,ISQ,ISR,ISS
          WRITE (LUPRI,'(3(5X,A,L10))')
      &      'Do TUPQ :',DOTUPQ,

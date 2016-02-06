@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -302,6 +302,7 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -340,7 +341,7 @@ C
      &    (DOROSCF .AND. NSYM.gt.1 .AND. .NOT.DIRCAL) .OR.  ! high spin HF or DFT, with symmetry
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
      &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
-     &    PEQM) THEN
+     &    USE_PELIB()) THEN
          NAORDR = 0
       ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR. CCPT .OR.
      &        DOROSCF .OR.  ! high spin HF or DFT, no symmetry
@@ -578,8 +579,8 @@ C
 Chjaaj-Oct07: KTEST a simple device to check if arrays which
 C     supposedly not are used, are used anyway.
       KDERIV = KTEST  + 1
-      KFUVAL = KDERIV + NDERIV
-      KCOOR  = KFUVAL + NDIME*NINNER
+      KFUNVAL = KDERIV + NDERIV
+      KCOOR  = KFUNVAL + NDIME*NINNER
       KCSTAR = KCOOR  + 3*NCOOR
       KSYMCO = KCSTAR + 3*NCOOR
       KTRNRC = KSYMCO +   NCOOR**2
@@ -656,7 +657,7 @@ C
 Chjaaj-Oct07: KTEST is a simple device to check if arrays which
 C     supposedly not are used, are used anyway.
       WORK(KTEST) = -999.9D0
-      CALL NUMDR1(WORK(KDERIV),WORK(KFUVAL),WORK(KCOOR),WORK(KCSTAR),
+      CALL NUMDR1(WORK(KDERIV),WORK(KFUNVAL),WORK(KCOOR),WORK(KCSTAR),
      &            WORK(KSYMCO),WORK(KDCOEF),WORK(KTSTGD),WORK(KTSTSD),
      &            WORK(KENTST),WORK(KGRIRP),WORK(KCHRCT),WORK(KTRNRC),
      &            WORK(KTRMSS),WORK(KDKIN) ,WORK(KFREQ), WORK(KRNNRM),
@@ -739,7 +740,7 @@ C
       END
 C
 C  /* Deck numdr1 */
-      SUBROUTINE NUMDR1(DERIV,FUVAL,COOR,CSTART,SYMCOR,DCOEFF,TSTGDR,
+      SUBROUTINE NUMDR1(DERIV,FUNVAL,COOR,CSTART,SYMCOR,DCOEFF,TSTGDR,
      &                  TSTSDR,ENTST,GRIREP,CHRCTR,TRNCCR,TRAMSS,DKIN,
      &                  FREQ,RNNORM,WORK,KDPMTX,NMIDPC,ICRIRP,ISOTMP,
      &                  LWORK,NDERIV,NDIME,NINTIN,MAXADR,
@@ -771,7 +772,7 @@ C  /* Deck numdr1 */
       CHARACTER*(len_MLINE) MBKLIN(NMLINE) ! automatic array for backup of MLINE
       CHARACTER*8 ANDER, PRTEXT
       CHARACTER*6 TXT
-      DIMENSION DERIV(NDERIV), FUVAL(NINTIN,NDIME), CSTART(3*NCOOR),
+      DIMENSION DERIV(NDERIV), FUNVAL(NINTIN,NDIME), CSTART(3*NCOOR),
      &          COOR(3*NCOOR), SYMCOR(NCOOR,NCOOR),
      &          DCOEFF(LDPMTX,IFRSTD), TSTGDR(NCOOR), ENTST(LTHTST),
      &          TSTSDR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT),
@@ -856,7 +857,7 @@ C
          KEND = 0
          IDIMAX = 0
          IDIMIN = 2
-         CALL RERSTR(FUVAL,SYMCOR,DUMMY,DUMMY,ICRIRP,NDIME,NINTIN,
+         CALL RERSTR(FUNVAL,SYMCOR,DUMMY,DUMMY,ICRIRP,NDIME,NINTIN,
      &               KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
 C
 C        *** Restart for property derivatives. ***
@@ -930,7 +931,7 @@ c#endif
 C
          LWRK  = LWORK - KLAST + 1
 C
-         CALL NMDER(DERIV,FUVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
+         CALL NMDER(DERIV,FUNVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
      &        CHRCTR,WORK(KEGRAD),WORK(KEHESS),WORK(KLAST),ICRIRP,
      &        KDPMTX,NMIDPC,WORK(KIADRS),WORK(KINDST),WORK(KINDTM),
      &        WORK(KNPRTN),WORK(KIDCMP),WORK(KIEQVG),WORK(KICIN),
@@ -1007,14 +1008,11 @@ C
          IF (SDRTST) THEN
             KTMPGD = 2
             KTMPHS = KTMPGD + MXCOOR
-            KBKPGD = KTMPHS + NCOOR**2
-            KBKPHS = KBKPGD + NCOOR
-            KLAST  = KBKPHS + NCOOR**2
-            LWRK = LWORK - KLAST + 1
+            KLAST  = KTMPHS + NCOOR**2
+            LWRK   = LWORK - KLAST + 1
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in SDERTT')
             CALL SDERTT(TSTSDR,TSTGDR,SYMCOR,WORK(KTMPGD),WORK(KTMPHS),
-     &           WORK(KBKPGD),WORK(KBKPHS),WORK(KLAST),LWRK,
-     &           WRKDLM,IPRINT)
+     &           WORK(KLAST),LWRK, WRKDLM,IPRINT)
          END IF
 C
 C     *** Reevaluate restart parameter ***
@@ -1126,7 +1124,7 @@ C
             KEND   = 1
             IDIMAX = 0
             IDIMIN = 2
-            CALL RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
+            CALL RERSTR(FUNVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
      &                  KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
 C
 C           *** Restart for property derivatives. ***
@@ -1193,7 +1191,7 @@ c#endif
 C
          LWRK   = LWORK - KLAST + 1
 C
-         CALL NMDER(DERIV,FUVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
+         CALL NMDER(DERIV,FUNVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,GRIREP,
      &              CHRCTR,WORK(KEGRAD),WORK(KEHESS),WORK(KLAST),ICRIRP,
      &              KDPMTX,NMIDPC,WORK(KIADRS),WORK(KINDST),
      &              WORK(KINDTM),WORK(KNPRTN),WORK(KIDCMP),WORK(KIEQVG),
@@ -1271,7 +1269,7 @@ C
             WRITE (LUPRI,'(//5X,A,I10)') 'Number of ' // ANDER //
      &              ' calculations needed:', NUMCAL
          ELSE
-            WRITE (LUPRI,'(//A,I10)') '@>>> Number of ' // ANDER //
+            WRITE (LUPRI,'(//A,I10)') '@Number of ' // ANDER //
      &        ' calculations done:', NUMCAL
          END IF
 
@@ -1290,7 +1288,7 @@ C
       END
 C
 C  /* Deck nmder */
-      SUBROUTINE NMDER(DERIV,FUVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,
+      SUBROUTINE NMDER(DERIV,FUNVAL,COOR,CSTART,SYMCOR,ENTST,DCOEFF,
      &                 GRIREP,CHRCTR,EGRAD,EHESS,WORK,ICRIRP,KDPMTX,
      &                 NMIDPC,IADRSS,INDSTP,INDTMP,NPRTNR,IDCOMP,
      &                 IEQVGM,ICIN,IRPIND,MBKLIN,NMBKLN,NDERIV,LWORK,
@@ -1338,7 +1336,7 @@ C
       LOGICAL CALCMP, CLNRGY, LASTE, NOSYM, TOTSM, SYMDET, RSTDON,
      &        ALRCAL, PRTNR, CPRPBK
       CHARACTER*(len_MLINE) MBKLIN(NMBKLN), MLINE_in_upcase
-      DIMENSION FUVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
+      DIMENSION FUNVAL(NINTIN,NDIME), COOR(NCOOR), CSTART(NCOOR),
      &          DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD),
      &          SYMCOR(NCOOR,NCOOR), GRIREP(NGORDR,NGVERT),
      &          CHRCTR(NGORDR,NCVERT), EGRAD(MXCOOR),
@@ -1545,7 +1543,7 @@ C
 C                       *** Making the appropriate step, and  ***
 C                       ***      get the function value.      ***
 C
-                        CALL GTNPNT(FUVAL,GRIREP,SYMCOR,EGRAD,EHESS,
+                        CALL GTNPNT(FUNVAL,GRIREP,SYMCOR,EGRAD,EHESS,
      &                       COOR,CSTART,WORK,WRKDLM,INDSTP,ICRIRP,
      &                       NPRTNR,ICIN,KDPMTX,IRPIND,IDCOMP,LDPMTX,
      &                       IFRSTD,NLDPMX,IORDR,IRSRDR,IINNER,NMPRTN,
@@ -1581,7 +1579,7 @@ C
          IADRSS(1) = 0
          LASTE = .TRUE.
          IF (NAORDR.EQ.1) MINLIM = NCOOR
-         CALL GTNPNT(FUVAL,GRIREP,SYMCOR,EGRAD,EHESS,COOR,CSTART,WORK,
+         CALL GTNPNT(FUNVAL,GRIREP,SYMCOR,EGRAD,EHESS,COOR,CSTART,WORK,
      &        WRKDLM,INDSTP,ICRIRP,NPRTNR,ICIN,KDPMTX,IRPIND,IDCOMP,
      &        LDPMTX,IFRSTD,NLDPMX,0,IRSRDR,IINNER,NMPRTN,NDIME,
      &        MAXINR,LWORK,NMBKLN,MBKLIN,IDIME,NINTIN,IDIMAX,IDIMIN,
@@ -1595,7 +1593,7 @@ c#if defined (VAR_MPI)
 c      ELSE
 c         DO IDIME = 1, NDIME
 c         DO INTIN = 1, NINTIN
-c            FUVAL(INTIN,IDIME) = D0
+c            FUNVAL(INTIN,IDIME) = D0
 c         END DO
 c         END DO
 c#endif
@@ -1616,7 +1614,7 @@ cC     We collect results from one processor at a time, checking for double
 cC     counting
 cC
 c      IF (MYNUM .EQ. 0) THEN
-c         CALL DCOPY(NDIME,FTVAL,1,FUVAL,1)
+c         CALL DCOPY(NDIME,FTVAL,1,FUNVAL,1)
 c         DO IWHO = 1, NODTOT
 c            CALL MPI_RECV(NWHO,1,my_MPI_INTEGER,MPI_ANY_SOURCE,65,
 c     &                    MPI_COMM_WORLD,ISTAT,IERR)
@@ -1626,8 +1624,8 @@ c            DO IPOS = 1, NDIME
 cC
 cC     Molecular energies ought to be negative
 cC
-c               IF (.NOT. (FUVAL(IPOS) .LT. D0))
-c     &              FUVAL(IPOS) = FTVAL(IPOS)
+c               IF (.NOT. (FUNVAL(IPOS) .LT. D0))
+c     &              FUNVAL(IPOS) = FTVAL(IPOS)
 c            END DO
 c         END DO
 c      ELSE
@@ -1637,7 +1635,7 @@ c         CALL MPI_SEND(FTVAL,NDIME,MPI_DOUBLE_PRECISION,NODEID(MASTER),
 c     &                 65,MPI_COMM_WORLD,IERR)
 c      END IF
 c#else
-c      CALL MPI_REDUCE(FTVAL,FUVAL,NINTIN*NDIME,MPI_DOUBLE_PRECISION,
+c      CALL MPI_REDUCE(FTVAL,FUNVAL,NINTIN*NDIME,MPI_DOUBLE_PRECISION,
 c     &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
 c#endif
 c#endif
@@ -1675,7 +1673,7 @@ CRF       if only property derivatives are calculated this run
            KLAST  = KIDDCP +               NCOOR
            LWRK1  = LWORK - KLAST
            IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in NMNDER')
-           CALL NMNDER(DERIV,WORK(KCOEF),FUVAL,GRIREP,WORK(KLAST),
+           CALL NMNDER(DERIV,WORK(KCOEF),FUNVAL,GRIREP,WORK(KLAST),
      &          IADRSS,KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,WORK(KIMAX),
      &          WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),
      &          MXCOEF,NMORDR,NDIME,NTYPE,NDERIV,NINTIN,LDPMTX,IFRSTD,
@@ -1784,7 +1782,7 @@ C
       END
 C
 C  /* Deck gtnpnt */
-      SUBROUTINE GTNPNT(FUVAL,GRIREP,SYMCOR,EGRAD,EHESS,COOR,CSTART,
+      SUBROUTINE GTNPNT(FUNVAL,GRIREP,SYMCOR,EGRAD,EHESS,COOR,CSTART,
      &                  WORK,WRKDLM,INDSTP,ICRIRP,NPRTNR,ICIN,KDPMTX,
      &                  IRPIND,IDCOMP,LDPMTX,IFRSTD,NLDPMX,IORDR,IRSRDR,
      &                  IINNER,NMPRTN,NDIME,MAXINR,LWORK,NMBKLN,MBKLIN,
@@ -1827,9 +1825,10 @@ c
 #include "huckel.h"
       LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG,
      &        ALRCAL, PRPCAL, FNDKEY
+      LOGICAL LASTE
       CHARACTER*(*) MBKLIN
       DIMENSION MBKLIN(NMBKLN)
-      DIMENSION FUVAL(NINTIN,NDIME), COOR (NCOOR), SYMCOR(NCOOR,NCOOR),
+      DIMENSION FUNVAL(NINTIN,NDIME), COOR (NCOOR), SYMCOR(NCOOR,NCOOR),
      &          CSTART(NCOOR), EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR),
      &          GRIREP(NGORDR,NGVERT), WORK(LWORK)
       DIMENSION INDSTP(NTORDR), ICRIRP(NCOOR,2), NPRTNR(MAXINR),
@@ -1982,12 +1981,12 @@ C
 c#if defined (VAR_MPI)
 c                  FTVAL(1,IDIME) = ENERGY
 c#else
-                  FUVAL(1,IDIME) = ENERGY
+                  FUNVAL(1,IDIME) = ENERGY
 c#endif
                   WRITE(LURSTR,'(2I8,F24.16)') 1, IDIME, ENERGY
                   IF (PRTNR) THEN
                      IMDIME = IDIME - IINNER + NPRTNR(NMPRTN)
-                     FUVAL(1,IMDIME) = ENERGY
+                     FUNVAL(1,IMDIME) = ENERGY
                      WRITE(LURSTR,'(2I8,F24.16)') 1, IMDIME, ENERGY
                   END IF
                   CALL FLSHFO(LURSTR)
@@ -2042,7 +2041,7 @@ C
 c#if defined (VAR_MPI)
 c                     FTVAL(ICOOR,IDIME) = EGRAD(ICOOR)
 c#else
-                     FUVAL(ICOOR,IDIME) = EGRAD(ICOOR)
+                     FUNVAL(ICOOR,IDIME) = EGRAD(ICOOR)
 c#endif
                      WRITE(LURSTR,'(2I8,F24.16)') ICOOR, IDIME,
      &                                           EGRAD(ICOOR)
@@ -2076,7 +2075,7 @@ C
 c#if defined (VAR_MPI)
 c                     FTVAL(ICOOR12,IDIME) = EHESS(ICOOR1,ICOOR2)
 c#else
-                     FUVAL(ICOOR12,IDIME) = EHESS(ICOOR1,ICOOR2)
+                     FUNVAL(ICOOR12,IDIME) = EHESS(ICOOR1,ICOOR2)
 c#endif
                      WRITE(LURSTR,'(2I8,F24.16)') ICOOR12, IDIME,
      &                                           EHESS(ICOOR1,ICOOR2)
@@ -2096,7 +2095,7 @@ c            CLOSE(UNIT=99,STATUS='DELETE',ERR=108)
 c 108        CONTINUE
 c#endif
 c            DO INTIN = 1, NINTIN
-c               FUVAL(INTIN,IDIME) = D0
+c               FUNVAL(INTIN,IDIME) = D0
 c            END DO
 c            IDIME = IDIME + 1
 c         END IF
@@ -2105,7 +2104,7 @@ c#endif
          IF ((.NOT.RESTRT).OR.(RESTRT.AND.
      &              RSTDON.AND.(IDIME.GT.IDIMAX))) THEN
             DO 2100 INTIN = 1, NINTIN
-               FUVAL(INTIN,IDIME) = D0
+               FUNVAL(INTIN,IDIME) = D0
                WRITE(LURSTR,'(2I8,F24.16)') INTIN, IDIME, D0
  2100       CONTINUE
             CALL FLSHFO(LURSTR)
@@ -2925,7 +2924,7 @@ C
 C                       ************************************************
 C                       *** This subroutine finds the adress for the ***
 C                       ***      function value, from the indices    ***
-C                       ***   NEIND - The adress in the FUVAL-array  ***
+C                       ***   NEIND - The adress in the FUNVAL-array ***
 C                       ************************************************
 C
                         KITCMP = 1
@@ -3090,7 +3089,7 @@ C
 C                       ************************************************
 C                       *** This subroutine finds the adress for the ***
 C                       ***      function value, from the indices    ***
-C                       ***   NEIND - The adress in the FUVAL-array  ***
+C                       ***   NEIND - The adress in the FUNVAL-array ***
 C                       ************************************************
 C
                         KITCMP = 1
@@ -4938,7 +4937,7 @@ C
 C
 C
 C     /*Deck rerstr*/
-      SUBROUTINE RERSTR(FUVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
+      SUBROUTINE RERSTR(FUNVAL,SYMCOR,RNNORM,FREQ,ICRIRP,NDIME,NINTIN,
      &                  KEND,IDIMAX,IDIMIN,LURSTR,IPRINT,RSTDON)
 #include "implicit.h"
 #include "priunit.h"
@@ -4947,11 +4946,11 @@ C
 #include "trkoor.h"
 #include "numder.h"
       LOGICAL RSTDON
-      DIMENSION SYMCOR(NCOOR,NCOOR), FUVAL(NINTIN,NDIME), RNNORM(NCOOR),
-     &          FREQ(NCOOR)
+      DIMENSION SYMCOR(NCOOR,NCOOR), FUNVAL(NINTIN,NDIME),
+     &          RNNORM(NCOOR), FREQ(NCOOR)
       DIMENSION ICRIRP(NCOOR,2)
 C
-      CALL DZERO(FUVAL,NINTIN*NDIME)
+      CALL DZERO(FUNVAL,NINTIN*NDIME)
 C
       READ(LURSTR,*) II
 C
@@ -4973,7 +4972,7 @@ C
          IF (IOS.GE.0) THEN
             IDIMAX = MAX(IDIMAX,IDIME)
             IDIMIN = MIN(IDIMIN,IDIME)
-            FUVAL(IINTIN,IDIME) = ENERGY
+            FUNVAL(IINTIN,IDIME) = ENERGY
             GOTO 100
          END IF
       END IF

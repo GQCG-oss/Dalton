@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -680,6 +680,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -791,6 +792,7 @@ C       THRS    - integral threshold
 C       ADDSYM  - flag for automatic determination of symmetry
 C***********************************************************************
       CALL RDLINE(LUINFO)
+      CALL UPCASE(MLINE(NMLINE))
       CALL LINE4(MLINE(NMLINE),NONTYP,NSYMOP,CRT,KCHARG,THRS,ADDSYM,
      &           KASYM,ID3,DOCART,DOOWN)
 C --> Angstrom or Bohr?
@@ -816,12 +818,12 @@ C
         CALL QUIT('No atoms according to .mol input!')
       ELSE IF (NONTYP.LT.0) THEN
         WRITE (LUPRI,'(/A,I6//I3,1X,A)')
-     &    ' >>> READ_MOL error, no. of atomic types negative:',NONTYP,
+     &    ' READ_MOL error, no. of atomic types negative:',NONTYP,
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Negative number of atoms according to .mol input')
       ELSE IF (NONTYP.GT.KATOM) THEN
         WRITE (LUPRI,'(/A,I6/A,I6//I3,1X,A)')
-     &   ' >>> READ_MOL error, no. of atomic types    ',NONTYP,
+     &   ' READ_MOL error, no. of atomic types    ',NONTYP,
      &   '     is greater than current maximum number ',KATOM,
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Too many atomic types in .mol input')
@@ -918,6 +920,7 @@ C...  initializes Gen1Int interface
      &                       KBLOCK, NUC(:,1), NRC(:,1), KPRIM,
      &                       ALPHA(:,:,1), CPRIMU(:,:,:,1))
 #endif
+
 C
 C     ***********************************
 C     ***** Process PCM speres data *****
@@ -1141,10 +1144,11 @@ C
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
+      if (ipread .gt. 10 .OR. NSETS .gt. KSETS) 
+     &   write(lupri,*) 'setting NSETS =',NSETS
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
       END IF
-      if (ipread .gt. 10) write(lupri,*) 'setting NSETS =',NSETS
 C
 C     Run over atomic centers
 C     =======================
@@ -2294,7 +2298,7 @@ C       Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, number of shells                    ',
+     *  ' BASPRO error, number of shells                    ',
      *  KMAX,
      *  '                   current maximum number              ',
      *  MXSHEL,
@@ -2302,7 +2306,7 @@ C
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, number of contracted basis functions',
+     *  ' BASPRO error, number of contracted basis functions',
      *  NBASIS,
      *  '                   current maximum number              ',
      *  MXCORB,
@@ -2310,7 +2314,7 @@ C
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, number of primitive basis functions',
+     *  ' BASPRO error, number of primitive basis functions',
      *  NPBAS,
      *  '                   current maximum number             ',
      *  MXPRIM,
@@ -2320,7 +2324,7 @@ C
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
  5040 CONTINUE
         WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, # of shells when adding Huckel orbitals',
+     *  ' BASPRO error, # of shells when adding Huckel orbitals',
      *     ISHELL,
      *  '                   current maximum number                 ',
      *     MXSHEL,
@@ -2328,7 +2332,7 @@ C
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5050 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
-     *  ' >>> BASPRO error, # of contracted bf. after adding Huckel ',
+     *  ' BASPRO error, # of contracted bf. after adding Huckel ',
      *     'orbitals',
      *  IORBD,
      *  '                   current maximum number                  ',
@@ -2337,7 +2341,7 @@ C
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
-     *  ' >>> BASPRO error, # of primitive bf after adding Huckel ',
+     *  ' BASPRO error, # of primitive bf after adding Huckel ',
      *     'orbitals',
      *  IPRIMD,
      *  '                   current maximum number                 ',
@@ -2354,6 +2358,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use pelib_interface, only: use_pelib, pelib_ifc_init
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -2594,10 +2599,8 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-         IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-            CALL PE_IFC_INIT()
-#endif
+         IF (USE_PELIB()) THEN
+            CALL PELIB_IFC_INIT()
          END IF
       END IF
 C
@@ -2891,9 +2894,9 @@ C     K.Ruud, Nov.-2006
 C
          NWARN = NWARN + 1
          WRITE (LUPRI,'(//A/A/)')
-     &      '@ WARNING GTOINP >>> If primitive exponents'//
+     &      '@ WARNING GTOINP If primitive exponents'//
      &         ' are duplicated in several blocks,',
-     &      '@ WARNING GTOINP >>> Douglas-Kroll will not work correctly'
+     &      '@ WARNING GTOINP Douglas-Kroll will not work correctly'
       END IF
       RETURN
 C
@@ -2901,17 +2904,17 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
+     *  ' GTOINP error, number of AO-blocks            ',NBLOCK,
      *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of primitives per block      ',NUCIJ,
+     *  ' GTOINP error, number of primitives per block      ',NUCIJ,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of contracted functions      ',NRCIJ,
+     *  ' GTOINP error, number of contracted functions      ',NRCIJ,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many contracted functions')
       END
@@ -2981,17 +2984,17 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error, number of AO-blocks            ',NBLOCK,
+     *  ' CMBAS  error, number of AO-blocks            ',NBLOCK,
      *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('CMBAS: Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error, number of primitives per block      ',NUCI,
+     *  ' CMBAS  error, number of primitives per block      ',NUCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error, number of contracted functions      ',NRCI,
+     *  ' CMBAS  error, number of contracted functions      ',NRCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many contracted functions')
       END
@@ -3065,17 +3068,17 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM error, number of AO-blocks          ',NBLOCK,
+     *  ' CMBAS_CNUUM error, number of AO-blocks          ',NBLOCK,
      *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('CMBAS_CNUUM: Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM  error, number of primitives per block ',NUCI,
+     *  ' CMBAS_CNUUM  error, number of primitives per block ',NUCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS_CNUUM: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM  error, number of contracted functions ',NRCI,
+     *  ' CMBAS_CNUUM  error, number of contracted functions ',NRCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many contracted functions')
       END
@@ -3158,7 +3161,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     *      ' >>> ACPORB error, number of AO-blocks for UNCONT ',NRCIJ,
+     *      ' ACPORB error, number of AO-blocks for UNCONT ',NRCIJ,
      *      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for an uncontracted '//
@@ -3563,7 +3566,7 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *   ' >>> ORBPRO error, '//
+     *   ' ORBPRO error, '//
      *   'no. of contracted functions in an AO-block',NCONT,
      *   '                   '//
      *   'current maximum number           MXCONT = ',MXCONT
@@ -4670,6 +4673,11 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use pelib_interface, only: use_pelib
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf, only: pcm_scf_initialize
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4705,7 +4713,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF (QMMM .OR. PEQM) IPTEST = 0
+      IF (QMMM .OR. USE_PELIB()) IPTEST = 0
       IF ( IPREAD .GT. IPTEST )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
@@ -4853,6 +4861,13 @@ C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
+
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_scf_initialize(lupri)
+        write(lupri, *) "PCMSolver interface correctly initialized"
+      end if
+#endif
 
       RETURN
       END
@@ -6791,12 +6806,13 @@ C
 C
 C     Read in the fourth input line using the new input scheme
 C
+
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "infpar.h"
-! gnrinf.h : PEQM
 #include "gnrinf.h"
 ! molinp.h : len_MLINE
 #include "mxcent.h"
@@ -6987,7 +7003,7 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
-      IF (PEQM) THEN
+      IF (USE_PELIB()) THEN
         IF (ADDSYM) THEN
             ADDSYM = .FALSE.
         ELSE IF (NSYMOP > 0) THEN
@@ -7069,7 +7085,7 @@ C
          ISTART = ISTART + 10
       END IF
       IF (DOOWN) THEN
-         WRITE (TMPLN(ISTART:),'(A4)') 'OWN '
+         WRITE (TMPLN(ISTART:),'(A10)') 'OWN '
          ISTART = ISTART + 4
       END IF
 C

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -64,8 +64,20 @@ C
 !940501-hjaaj
 !FCKEIG: exit if ".FREEZE" not compatible with ORDRSS.
 !    ORDRSS now always called (this also fixes error in prev. version).
+!940408-hjaaj
+!DIIS_CTL: s/EMCACT/EACTIV/ to define active energy in /INFOPT/
+!940311-hjaaj
+!DIIS_CTL: s/EVCNRM/GRDNRM/ (so gradient norm is transferred to SIROUT)
+!        nice output to LUW4 if LUW4 .ne. LUPRI
 !931126-hjaaj
 !DIIS_CTL: call NEWORB after each iteration (for restart)
+!930720-hjaaj
+!SRDIIS: new parameter PROCC .FALSE. in CALL PRORB
+!930715-hjaaj
+!------: improved some print
+!SRDIIS: exit MXDGSS .GT. 0
+!930623-hjaaj
+!FCKEIG: inserted PARAMETER(D0=0.0D0)
 !===========================================================================
 #endif
 C  /* Deck srdiis */
@@ -75,6 +87,7 @@ C Copyright (c) 1993, 1997 Hans Joergen Aa. Jensen
 C
 C Driver for DIIS iterations in SIRIUS.
 C
+
 #include "implicit.h"
       DIMENSION CMO(*), WRK(*)
 C
@@ -99,9 +112,6 @@ Cholesky
 #include "ccdeco.h"
 #include "choscf.h"
 C
-C QM/NP/MM code
-#include "qmnpmm.h"
-C
       PARAMETER (NBLOC = 1)
       INTEGER LUBLOC(NBLOC)
       DATA LUBLOC / 21 /
@@ -123,22 +133,6 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
 
-      ! QM/NP/MM embedding
-      IF (QMNPMM) THEN
-         CALL GETDIM_RELMAT(IDIM,.TRUE.)
-         CALL MEMGET('REAL',KRELMAT,IDIM,WRK,KFREE,LFREE)
-         CALL COMP_RELMAT(WRK(KRELMAT),WRK(KFREE),LFREE)
-         CALL WRITE_RELMAT(WRK(KRELMAT))
-         IF (DOMMSUB.AND.DOMMPOL) THEN
-            CALL GETDIM_MMMAT(IDIM, .TRUE.)
-            CALL MEMGET('REAL',KMMRELMAT,IDIM,WRK,KFREE,LFREE)
-            CALL COMP_MMRELMAT(WRK(KMMRELMAT),WRK(KFREE),LFREE)
-         ELSE
-            KMMRELMAT = 1
-         END IF
-      ELSE
-         KRELMAT = 1
-      END IF
 C
 CHJMAERKE: define IPR_DIIS separately?
 C
@@ -277,7 +271,7 @@ C
       CALL DIIS_CTL(CMO,WRK(KCMO1),WRK(KGVEC),WRK(KBMAT),WRK(KH1AO),
      &            WRK(KFSAV),WRK(KEVSAV),WRK(KEGSAV),MXERRV,C2DIIS,
      &            WRK(KSMOAO),WRK(KDCAO),WRK(KFCAO),WRK(KDSAV),WRK(KDV),
-     &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK(KMMRELMAT),
+     &            WRK(KCVEC),WRK(KTNLM),
      &            WRK,KFREE,LFREE, IPR_DIIS,ICONV)
 C
  9990 CALL MEMREL('SRDIIS',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -289,13 +283,9 @@ C
 C  /* Deck DIIS_CTL */
       SUBROUTINE DIIS_CTL(CMO,CMO1,GVEC,BMAT,H1AO,FAOSAV,EVCSAV,EGSAV,
      *                    MXERRV,C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,
-     *                    CVEC,TNLM,RCPMAT,RMMMAT,WRK,KFRSAV,LFRSAV,
+     *                    CVEC,TNLM,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
 
-!#define USE_XCINT
-#ifdef USE_XCINT
-      use xcint_integrator
-#endif
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
@@ -305,6 +295,20 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+      use qmcmm, only: getdim_relmat, comp_relmat, write_relmat,
+     &                 getdim_mmmat, comp_mmrelmat
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_integrate_rks_scf,
+     &                                  xcint_uses_own_grid,
+     &                                  xcint_is_active
+#endif
+      use qmcmm_fock, only: qmnpmm_fock
+#if defined (HAS_PCMSOLVER)
+      use pcm_scf
+      use pcmmod_cfg
+#endif
+      use pelib_interface, only: use_pelib, pelib_ifc_fock,
+     &                           pelib_ifc_energy
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
@@ -312,7 +316,22 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
-      DIMENSION RCPMAT(*), RMMMAT(*)
+
+#ifdef ENABLE_XCINT
+      real(8)              :: xc_energy(1)
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: xc_mat(:)
+      real(8), allocatable :: buffer1(:)
+      real(8), allocatable :: buffer2(:)
+      real(8), allocatable :: xc_mat_tri(:)
+      logical              :: file_exists
+#endif
+
+#if defined (HAS_PCMSOLVER)
+      real(8), allocatable :: density_ao(:), density_ao_symm(:)
+      real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
+#endif
+
 C
 C Used from common blocks:
 C  INFINP : FLAG(*), HSROHF, DODFT; ?
@@ -362,7 +381,10 @@ C
 C------------------------
 #include "pcmdef.h"
 #include "pcm.h"
-C
+
+! QM/NP/MM code
+#include "qmnpmm.h"
+
       PARAMETER (THDDEF = 1.0D-5)
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0, DM1 = -1.0D0)
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
@@ -371,6 +393,13 @@ C
       LOGICAL   LCONV, LNEWOCC, HSROHF_save
       DIMENSION NISH_save(8), NCAN(8)
       CHARACTER*8 CMOLBL
+
+      REAL(8) :: PE_ENERGY
+      REAL(8), DIMENSION(:), ALLOCATABLE :: PE_DENMAT, PE_FCKMAT
+
+      real(8), allocatable :: relay_matrix(:, :, :)
+      real(8), allocatable :: mm_relay_matrix(:)
+      real(8), allocatable :: qmcmm_sol(:)
 
 !#define EXPERIMENTAL_DMAT_RESTART
 #ifdef EXPERIMENTAL_DMAT_RESTART
@@ -415,8 +444,13 @@ CAMT  If requested calculate the DFT-D dispersion energy correction
 
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
+#if defined (HAS_PCMSOLVER)
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM .OR.
+     &    pcmmod_is_pcm_calculation) THEN
+#else              
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
-C     this also includes the case of MMPCM
+#endif
+C     this also includes the case of MMPCM   
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
      &      ' Iter      Total energy       Solvation energy    '//
@@ -436,7 +470,7 @@ C     this also includes the case of MMPCM
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
-      ELSE IF (PEQM) THEN
+      ELSE IF (USE_PELIB()) THEN
         WRITE(LUW4,'(/A)')
      &      ' Iter      Total energy     Embedding energy      '//
      &      'Error norm     Delta(E)'
@@ -481,17 +515,23 @@ C        DV(1) = D0
       THDIIS = THRRHF
       IF (THDIIS .LE. D0) THDIIS = THDDEF
 C
-C     Level shift ("restricted step" type step reduction)
-C     - initial value: zero
+C     Level shift SHFTLVL ("restricted step" type step reduction)
+C     - initial value: see next code block
 C     - used to modify FD matrix: FDAO(shifted) = FDAO + SHFTLVL*DCAO
-C       - this corresponds to increasing occ-unocc orb.en. gap by
-C         SHFTLVL and approximately to add -SHFTLVL to the
-C         approximate Hessian diagonal implicit in the Roothaan diag.
+C       - this corresponds to increasing occ-unocc orb.en. gap by SHFTLVL
+C         and approximately to add abs(SHFTLVL) to the approximate
+C         Hessian diagonal implicit in the Roothaan diagonalization.
 C     -- Feb. 2001, Hans Joergen Aa. Jensen.
 C
 c     DEFLVL is read from SCF INPUT/.SHIFT
-      SHFTLVL = DEFLVL
-      SHFTFAC = 0.7D0
+      IF (DEFLVL .gt. 0.9D0) THEN ! .SHIFT not set in input
+         SHFTLVL = -0.20D0
+         DEFLVL  =  0.0D0 ! no default level shift in e.g. next geometry
+      ELSE ! .SHIFT has ben set in input
+         SHFTLVL = DEFLVL
+      END IF
+      SHFTFAC = 0.5D0
+
 C ---  hjaaj: find safe screening factor depending on
 C             convergence threshold:
 C     SCRFAC = 100*NBAST
@@ -533,6 +573,11 @@ C------------------
      &     .AND. .NOT. use_efs
 #endif
 C
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+              dodifden = .false.
+      end if
+#endif
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -845,40 +890,56 @@ C
                CALL DAXPY(N2BASX,-D1,DCAO(1+N2BASX),1,DCAO,1)
             END IF
 
-#ifdef USE_XCINT
-             allocate(dmat_ao(nbast*nbast))
-             allocate(fmat_ao(nbast*nbast))
-             allocate(fmat_ao_tri(nnbast))
-             dmat_ao     = 0.0d0
-             fmat_ao     = 0.0d0
-             fmat_ao_tri = 0.0d0
-             xc_energy   = 0.0d0
-             call daxpy(nbast*nbast, 0.5d0, dcao, 1,
-     &                  dmat_ao, 1)
-             call interface_ao_write()
-             call xc_integrate(
-     &                         xc_mat_dim=nbast,
-     &                         xc_nr_dmat=1,
-     &                         xc_dmat=dmat_ao,
-     &                         xc_nr_geo_pert=0,
-     &                         xc_nr_fld_pert=0,
-     &                         xc_energy=xc_energy,
-     &                         xc_fmat=fmat_ao
-     &                        )
-             emy = emy + xc_energy
+#ifdef ENABLE_XCINT
+            if (xcint_is_active()) then
+               if (.not. xcint_uses_own_grid()) then
+                  ! ulgy hack to get dalton grid, we don't care about the integrated result
+                  inquire(file='num_grid', exist=file_exists)
+                  if (.not. file_exists) then
+                     allocate(buffer1(nbast*nbast))
+                     allocate(buffer2(nbast*nbast))
+                     dummy_energy = 0.0d0
+                     call dft_add_ks(onlyfc, dummy_energy, dcao, ndmat,
+     &                               buffer1, buffer2,
+     &                               wrk(kfree), lfree, ipr_diis)
+                     deallocate(buffer1)
+                     deallocate(buffer2)
+                  end if
+               end if
 
-             call dgetsp(nbast, fmat_ao, fmat_ao_tri)
-             call daxpy(nnbast, 1.0d0, fmat_ao_tri, 1,
-     &                  faosav(1, indevc, 1), 1)
+               allocate(dmat_ao(nbast*nbast))
+               allocate(xc_mat(nbast*nbast))
+               allocate(xc_mat_tri(nnbast))
 
-             deallocate(dmat_ao)
-             deallocate(fmat_ao)
-             deallocate(fmat_ao_tri)
-#else
-            CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
-     &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
-     &                  WRK(KFREE),LFREE,IPR_DIIS)
-#endif /* USE_XCINT */
+               dmat_ao     = 0.0d0
+               xc_mat     = 0.0d0
+               xc_mat_tri = 0.0d0
+               xc_energy   = 0.0d0
+               xc_num_electrons = 0.0d0
+               call daxpy(nbast*nbast, 0.5d0, dcao, 1,
+     &                    dmat_ao, 1)
+
+               call xcint_integrate_rks_scf(dmat_ao,
+     &                                xc_energy,
+     &                                xc_mat,
+     &                                xc_num_electrons)
+               emy = emy + xc_energy(1)
+
+               call dgetsp(nbast, xc_mat, xc_mat_tri)
+               call daxpy(nnbast, 1.0d0, xc_mat_tri, 1,
+     &                    faosav(1, indevc, 1), 1)
+
+               deallocate(dmat_ao)
+               deallocate(xc_mat)
+               deallocate(xc_mat_tri)
+            else
+#endif /* ENABLE_XCINT */
+               CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+     &                    FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
+     &                    WRK(KFREE),LFREE,IPR_DIIS)
+#ifdef ENABLE_XCINT
+            end if
+#endif
          END IF
 
 CAMT If calculated add the empirical dispersion energy correction
@@ -923,13 +984,30 @@ c        density
            END IF
 
            IF (QMNPMM) THEN
-             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
-             CALL DZERO(WRK(KFCSOL),NNBAST)
-             CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),RCPMAT,RMMMAT,
-     &                        WRK(KFCSOL),ESOLT,WRK(KFREE),LFREE)
-             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DIIS_CTL.QMNPMM',WRK,1,KFCSOL,KFREE,
-     &                   LFREE)
+
+             idim = GETDIM_RELMAT(.TRUE.)
+             idim_side = idim**0.5
+             allocate(relay_matrix(idim_side, idim_side, 1))
+             CALL COMP_RELMAT(relay_matrix,WRK(KFREE),LFREE)
+             CALL WRITE_RELMAT(relay_matrix)
+
+             IF (DOMMSUB.AND.DOMMPOL) THEN
+                CALL GETDIM_MMMAT(IDIM, .TRUE.)
+                allocate(mm_relay_matrix(idim))
+                CALL COMP_MMRELMAT(mm_relay_matrix,WRK(KFREE),LFREE)
+             END IF
+
+             allocate(qmcmm_sol(nnbast))
+             qmcmm_sol = 0.0d0
+             CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),relay_matrix,
+     &                        mm_relay_matrix,
+     &                        qmcmm_sol,ESOLT,WRK(KFREE),LFREE)
+             CALL DAXPY(NNBAST,1.0d0,qmcmm_sol,1,FAOSAV(1,INDEVC,1),1)
+
+             deallocate(relay_matrix)
+             if (allocated(mm_relay_matrix)) deallocate(mm_relay_matrix)
+             deallocate(qmcmm_sol)
+
            END IF
 
            IF (FLAG(16)) THEN
@@ -993,27 +1071,87 @@ C            Now the PCM part ...
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,1,KFCSOL,KFREE,LFREE)
          END IF
 C
-         IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+         IF (USE_PELIB()) THEN
            IF (FLAG(16) .OR. PCM .OR. QMMM .OR. QMNPMM .OR. QM3) THEN
-             CALL QUIT(
-     &             'PEQM is not compatible with other embedding models')
+            CALL QUIT('.PEQM incompatible with other embedding models')
            END IF
-           CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
-           CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
+           ALLOCATE(PE_DENMAT(NNBASX), PE_FCKMAT(NNBASX))
            IF (NASHT == 0 .OR. HSROHF) THEN
-             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
+             PE_DENMAT = DAOSAV(:,1)
            ELSE
-             CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                        WRK(KEPE))
+             PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
            END IF
-           ESOLT = WRK(KEPE)
-           FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
-     &                          + WRK(KFPE:KFPE+NNBASX-1)
-           CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, 1, KFPE,
-     &                 KFREE, LFREE)
-#endif
+           CALL PELIB_IFC_FOCK(PE_DENMAT, PE_FCKMAT, PE_ENERGY)
+           ESOLT = PE_ENERGY
+           FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1) + PE_FCKMAT
+           DEALLOCATE(PE_DENMAT, PE_FCKMAT)
          END IF
+C
+#if defined (HAS_PCMSOLVER)
+         if (pcmmod_is_pcm_calculation) then
+! Allocate scratch space for the PCM Fock matrix contribution in AO basis.
+           allocate(fock_pcm_ao(nnbasx))
+           fock_pcm_ao = 0.0d0
+! Allocate scratch space for the density matrix to be passed to the PCM
+! subroutines
+           allocate(density_ao_symm(nnbasx))
+           density_ao_symm = 0.0d0
+! Allocate the PCM Fock matrix contribution in AO basis. 
+! It is of dimension NNBASX and we take the memory from the WRK array. 
+! We zero it out afterwards.
+!           call memget('REAL', kfcsol, nnbasx, wrk, kfree, lfree)
+!           call dzero(wrk(kfcsol), nnbasx)
+! DAOSAV(:, 1) = DCAO (density matrix for closed shells)
+! DAOSAV(:, 2) = DVAO (density matrix for open shells)
+! PCM doesn't care about closed/open shells, so we decide at this
+! higher level which one of them to pass, based on the wavefunction asked.          
+           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+             density_ao_symm(:) = daosav(:, 1)
+! We pass just DCAO, i.e. density_matrix = DCAO
+           else
+! We sum DCAO and DVAO, i.e. density_matrix = DCAO + DVAO
+             density_ao_symm(:) = daosav(:, 1) + daosav(:, 2)
+           end if
+! Call the energy driver with the symmetry-unpacked density matrix 
+           if (nsym > 1) then
+             allocate(density_ao(nnbasx))
+             density_ao = 0.0d0
+! Symmetry un-pack density_ao_symm to density_ao             
+             call pksym1(density_ao, density_ao_symm, nbas, nsym, -1)
+             call pcm_energy_driver(density_ao, esolt, wrk(kfree), 
+     &                               lfree)
+           else
+             call pcm_energy_driver(density_ao_symm, esolt, wrk(kfree), 
+     &                              lfree)
+           end if
+! Call the Fock driver           
+           call pcm_oper_ao_driver(fock_pcm_ao, 'TotASC'//char(0), 
+     &                             wrk(kfree), lfree)
+! Copy the PCM Fock matrix contribution on top of the AO basis Fock matrix
+           if (nsym > 1) then
+             allocate(fock_pcm_ao_symm(nnbasx))
+             fock_pcm_ao_symm = 0.0d0
+! Symmetry-pack fock_pcm_ao to fock_pcm_ao_symm 
+             call pksym1(fock_pcm_ao, fock_pcm_ao_symm, nbas, nsym, +1)
+             call daxpy(nnbast, -1.0d0, fock_pcm_ao_symm, 1, 
+     &                                  faosav(1, indevc, 1), 1)
+           else
+             call daxpy(nnbast, -1.0d0, fock_pcm_ao, 1, 
+     &                                  faosav(1, indevc, 1), 1)
+           end if
+! We can print it here, if needed.
+!lf            write(lupri,*) 'extpcm fock matrix'
+!lf            call outpak(wrk(kfcsol), nbast, 1, lupri)
+! Clean-up
+           deallocate(fock_pcm_ao)
+           deallocate(density_ao_symm)
+           if (nsym > 1) then
+             deallocate(fock_pcm_ao_symm)
+             deallocate(density_ao)
+           end if
+         end if
+#endif
+
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
@@ -1046,6 +1184,7 @@ C Project out .FREEZE'ed orbitals from the gradient matrix
 C
          IF (LNOROT) CALL PHPT(WRK(KPFROZ),WRK(KTMP1),NBAST)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
+         GRD_CHANGE = GRDNRM_old / GRDNRM
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .GT. 1) THEN
             WRITE (LUPRI,'(/A/A,I4,1P,G22.12,D15.5,D12.2,I5,L5)')
@@ -1060,7 +1199,11 @@ C
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
+#if defined (HAS_PCMSOLVER)
+            IF (EMBEDDING .or. pcmmod_is_pcm_calculation) then
+#else                
             IF (EMBEDDING) THEN
+#endif                    
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(A,I3,1P,2G20.12,D15.5,D12.2)')
@@ -1092,14 +1235,18 @@ C           this also includes the case of MMPCM
          END IF
          IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.FALSE.)
 
-         IF (GRDNRM .LE. THDIIS .and. SHFTLVL .EQ. D0) THEN  ! converged
-         ! do not accept as converged if non-zero level shift
-         ! because then the orbital energies are not correct /hjaaj
-            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+         IF (GRDNRM .LE. THDIIS) THEN  ! converged
+
             ICONV = 1
+
+C           No level shift at convergence, otherwise orbital energies
+C           for e.g. CC will not be correct
+            SHFTLVL = 0.0D0
+
+            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
+
             WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
-C
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
               !  Cholesky
@@ -1281,15 +1428,15 @@ C        Note that we only "stall" if energy goes up while gradient goes
 C          down or vice versa because DIIS minimizes gradient and it is
 C          OK wrt. DIIS if both goes up or both goes down /Feb-2004 hjaaj
 !  Mar. 2011 hjaaj: if abs(EMCDIF) .lt. 1.0D-5 the error can be grid related in DFT
-          IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
-              EMCDIF_test = 0.0D0
-          ELSE
-              EMCDIF_test = EMCDIF
-          END IF
+         IF (DODFT .AND. ABS(EMCDIF) .LT. 1.0D-5) THEN
+             EMCDIF_test = 0.0D0
+         ELSE
+             EMCDIF_test = EMCDIF
+         END IF
 C        Do not try that with open-shell - it does not work./pawsa
-!         IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
-          IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
-     &        GRDNRM .LE. 10.0D0 .AND.
+!        IF (ONLYFC .AND. JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND.
+         IF (JTDIIS.GT.1 .AND. ITDIIS.GT.3 .AND. J_removed.EQ.0 .AND.
+     &       GRDNRM .LE. 10.0D0 .AND.
      &       ( ABS(CVEC(INDEVC)) .LT. 0.1D0 .OR.
      &         ABS(CVEC(INDEVC)) .GT. 5.0D0 .OR.
      &         EMCDIF_test*(GRDNRM-GRDNRM_OLD) .LT. -1.0D-10 )
@@ -1345,9 +1492,12 @@ c            the formula is empirical EMCDIF is positive here.
              SHFTLVL = MAX(-12D0,SHFTLVL - MIN(4.0D0,ABS(EMCDIF)*10.D0))
 c            and slow down  the level shifting annealing...
              SHFTFAC = MIN(SHFTFAC + (1.D0-SHFTFAC)*0.25,0.85D0)
-         ELSE
-             SHFTLVL =  SHFTLVL*SHFTFAC
-c            make sure we get right HOMO-LUMO gap in the end.
+         ELSE IF (ITDIIS .GT. 1) THEN
+             IF (GRD_CHANGE .GE. 2.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            reduce level shift if convergence is good
+             IF (GRD_CHANGE .GE. 4.0D0) SHFTLVL =  SHFTLVL*SHFTFAC
+c            double reduce level shift if convergence is excellent
+             IF (SHFTLVL .GE. -1.D-2) SHFTLVL = 0.0D0
          END IF
   300    CONTINUE
 #endif    /* USE_OPT-SOLVER */
@@ -1357,10 +1507,6 @@ C          (open shell problems reported by users ...) / hjaaj 22-Jun-2005
 !        IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
 !        enabled again 6-Nov-2014 after testing a problematic open-shell DFT
 !        calculation which converged with level shift, but not without. /hjaaj
-
-C        No level shift at convergence, otherwise orbital energies
-C        for e.g. CC will not be correct
-         IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
 
 C        Iteration accepted; save current CMO for restart
          WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
@@ -1608,7 +1754,7 @@ C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
-         IF (PEQM) WRITE(LUW4,'(A)')
+         IF (USE_PELIB()) WRITE(LUW4,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
@@ -1616,7 +1762,7 @@ C-------------------
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-            IF (PEQM) WRITE(LUPRI,'(A)')
+            IF (USE_PELIB()) WRITE(LUPRI,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
@@ -1630,14 +1776,15 @@ C
          END IF
 C
       END IF
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
+      IF (USE_PELIB()) THEN
+        ALLOCATE(PE_DENMAT(NNBASX))
         IF (NASHT == 0 .OR. HSROHF) THEN
-            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
+            PE_DENMAT = DAOSAV(:,1)
         ELSE
-            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
+            PE_DENMAT = DAOSAV(:,1) + DAOSAV(:,2)
         END IF
-#endif
+        CALL PELIB_IFC_ENERGY(PE_DENMAT)
+        DEALLOCATE(PE_DENMAT)
       END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
@@ -1651,7 +1798,7 @@ C              in a solvent calculation with inertial polarization
 C
       IF ( IWRIFC .EQ. 1 ) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A)')
-     &      ' >>> Writing SIRIFC interface file'
+     &      ' --- Writing SIRIFC interface file'
          IF (ICI0 .EQ. 6) THEN
 Chj      ... if (GEOWLK) then
             IF (.NOT. OPTNEW) WRITE (LUPRI,'(//A/)')
@@ -1753,7 +1900,7 @@ C
      &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) .AND.
      &    .NOT. CHOINT) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3)')
-     &      ' >>> Transforming 2-el. integrals acc. to'//
+     &      ' --- Transforming 2-el. integrals acc. to'//
      &      ' .FINAL TRANSFORMATION =',ITRFIN
          JTRLVL = ITRFIN
          CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE)
@@ -2050,7 +2197,7 @@ C
       IF (DAMP .NE. D0) THEN
          CALL QUIT('DIIS_RED: DAMP not implemented yet')
 #if defined (VAR_KAPREDCODE)
-  >>>>>>>>>>>>>>>> NOTE: Hamilton and Pulay uses '* (D1 + DAMP)'
+   NOTE: Hamilton and Pulay uses '* (D1 + DAMP)'
                                         and not  ' + DAMP'
          DO 510 I = 1,NEVC
             II = KBTMP - 1 + IROW(I+1)

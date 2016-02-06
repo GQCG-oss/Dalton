@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -203,7 +203,7 @@ C     print banner for solver:
 C
       IF (IPRLE.GT.0) THEN
          WRITE (LUPRI,'(///A/)') 
-     &        ' >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<'
+     &        ' ----- COUPLED CLUSTER RESPONSE SOLVER -----'
 Chol
          IF (CHOINT .AND. CC2.AND. (NVEC.GT.0))
      &       WRITE(LUPRI,'(A,F12.5,/)')
@@ -234,7 +234,7 @@ C--------------------------------
 C
          IF (IPRLE .GT. 5) THEN
             WRITE (LUPRI,*)
-     *      ' >>> Call CC_TRDRV with TRIPLET and ECURR set to:',
+     *      ' --- Call CC_TRDRV with TRIPLET and ECURR set to:',
      *      TRIPLET, ECURR
          ENDIF                      
 C
@@ -330,7 +330,7 @@ C
          IF (IPRLE .GE. 2) THEN
             TIMIT = SECOND() - TIMIT
             WRITE (LUPRI,'(A,F12.2,/)')
-     *         ' >>> TIME USED IN THIS MICRO ITERATION',TIMIT
+     *         ' --- TIME USED IN THIS MICRO ITERATION',TIMIT
          END IF
 C
          IF (JCONV.LT.0) THEN
@@ -407,12 +407,12 @@ C
          WRITE (LUPRI,'(T10,A,F15.2)') 'CCNEX    ',TIMNEX/60.0D0
          WRITE (LUPRI,'(T10,A)') '---------------------------'
          WRITE (LUPRI,'(T10,A,F14.2,//)') 'Total time',TIMMIC/60.0D0
-         CALL TIMTXT('>>>> Total CPU  time used in CCEQ_SOLV:',CTOT,
+         CALL TIMTXT(' Total CPU  time used in CCEQ_SOLV:',CTOT,
      &        LUPRI)
-         CALL TIMTXT('>>>> Total wall time used in CCEQ_SOLV:',WTOT,
+         CALL TIMTXT(' Total wall time used in CCEQ_SOLV:',WTOT,
      &        LUPRI)
          WRITE (LUPRI,'(//A/)')
-     &        ' >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<'
+     &        ' xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
       END IF
 C
       IF (IPRLE .GT. 0 .AND. .NOT. LINQCC) THEN
@@ -916,7 +916,7 @@ C           ----------------------------------------------------------
 
             DO IBVEC = 1, NBVEC
                WRK(KTST+JR-1+IBVEC-1) = 
-     *         DNORM2(NCCVAR,WRK(KB+(IBVEC-1)*NCCVAR),1)
+     *         DNRM2(NCCVAR,WRK(KB+(IBVEC-1)*NCCVAR),1)
                IVEC = ISIMC - 1 + JR -1 + IBVEC   
                CALL CC_SAVE(WRK(KB+(IBVEC-1)*NCCVAR),IVEC+ISTRVE-1,
      *                      LIST,WRK(KWRK2),LWRK2)
@@ -1012,7 +1012,7 @@ C        ------------------------------------------
          IF (IPRLE .GT. 1) WRITE(LUPRI,*) ' '
          DO 2000 JR = 1,NBX
             JROOTJ = ISIMC - 1 + JR
-            QNORM = DNORM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
+            QNORM = DNRM2(NCCVAR,WRK(KRES+(JR-1)*NCCVAR),1)
      *             /MAX(WRK(KTST+JR-1),1.0D-14)
             RMXNORM = MAX(RMXNORM,QNORM)
 C
@@ -1847,7 +1847,7 @@ C
       NSAVE = NBADD
 C
       IF ((IPRLE.GT.120) .OR. LOCDBG) THEN
-         WRITE (LUPRI,'(//A/)') ' >>> Debug output from CCORT <<<'
+         WRITE (LUPRI,'(//A/)') ' --- Debug output from CCORT ---'
       END IF
 C
 C     work space allocation
@@ -1890,7 +1890,7 @@ C          Check norm of r12 part:
              WRITE(LUPRI,*) '(CCORT) Norm^2 (R12-part) = ',TST
              WRITE(LUPRI,'(A,I4,A)') 'WARNING: R12 part of input '//
      *                      'vector no. ',I,' in CCORT has norm < 0'
-C            WRITE(LUPRI,*) '>>>>>>> Check your '//
+C            WRITE(LUPRI,*) '------- Check your '//
 C    *                      'auxiliary basis and/or approximations!'
 C            CALL QUIT('R12 input vector in CCORT has norm < 0')
            END IF
@@ -2058,7 +2058,7 @@ C          Check norm of r12 part:
              WRITE(LUPRI,*) '(CCORT) Norm^2 (R12-part) = ',TST
              WRITE(LUPRI,'(A,I4,A)') 'WARNING: R12 part of result '//
      *                      'vector no. ',I,' in CCORT has norm < 0'
-C            WRITE(LUPRI,*) '>>>>>>> Check your '//
+C            WRITE(LUPRI,*) '------- Check your '//
 C    *                      'auxiliary basis and/or approximations!'
 C            CALL QUIT('R12 result vector in CCORT has norm < 0')
            END IF
@@ -2189,7 +2189,7 @@ C
 C *** End of subroutine CCORT
 C
       IF (IPRLE .GT. 20) THEN
-        WRITE (LUPRI,'(/A//)')' >>> End of debug output from CCORT <<<'
+        WRITE (LUPRI,'(/A//)')' --- End of debug output from CCORT ---'
       END IF
 
       RETURN

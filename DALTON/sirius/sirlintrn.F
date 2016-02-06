@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -88,6 +88,7 @@ C                               starting at WRK(1+NCSIM*NVAR)
 C                          else SOVECS(NWOPT,NOSIM),
 C                               starting at WRK(1)
 C
+      use pelib_interface, only: use_pelib, pelib_ifc_lin
 #include "implicit.h"
       DIMENSION BCVECS(NCONDI,*), BOVECS(NWOPDI,*)
       DIMENSION CREF(*), GORB(*), CMO(*), DV(*), PV(*)
@@ -161,7 +162,7 @@ C     check INFLIN parameters
       IF (NWOPT .NE. NWOPPT) NUMERR = NUMERR + 1
       IF (NVAR  .NE. NVARPT) NUMERR = NUMERR + 1
       IF (NUMERR .GT. 0) THEN
-         WRITE (LUPRI,'(//A/I8,A/)') ' >>> FATAL ERROR (LINTRN)',
+         WRITE (LUPRI,'(//A/I8,A/)') ' --- FATAL ERROR (LINTRN)',
      *      NUMERR,' dimension error(s) in INFDIM and/or INFLIN'
          WRITE (LUPRI,'(A,2I8)')
      &      'NCONF ,NCONDI :',NCONF,NCONDI,
@@ -463,13 +464,11 @@ C
      &              WRK(K3A),L3A)
          CALL FLSHFO(LUPRI)
          CALL GETTIM(T5,W5)
-      ELSE IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-         CALL PE_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO, INDXCI,
-     &               DV, WRK(KDTV), WRK(KSCVEC), WRK(KSOVEC), ORBLIN,
-     &               WRK(K3A), L3A)
+      ELSE IF (USE_PELIB()) THEN
+         CALL PELIB_IFC_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO,
+     &                      INDXCI, DV, WRK(KDTV), WRK(KSCVEC),
+     &                      WRK(KSOVEC), ORBLIN, WRK(K3A), L3A)
          CALL GETTIM(T5,W5)
-#endif
       ELSE
          T5 = T4
          W5 = W4

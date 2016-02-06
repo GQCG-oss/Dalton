@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -153,8 +153,8 @@ C
          NRS  = 1
          JSTA = -ISTATE
       ELSE
-         WRITE (LUPRI,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
-         WRITE (LUERR,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUPRI,'(//2A)') ' --- ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUERR,'(//2A)') ' --- ERROR (SIRSAV), KEYWRD = ',KEYWRD
          CALL QTRACE(LUERR)
          CALL QUIT('*** ERROR (SIRSAV) KEYWRD illegal.')
       END IF
@@ -358,12 +358,12 @@ C          /j(n+1)"> = exp(-xkap) /j(n)>. The modified vector
 C          x(j) - xkap is thus a guess for the orbital part of
 C          NEO eigenvector no. j in next iteration).
 C
-         DN = DNORM2(NCONF,WRK(KYJ),1)
+         DN = DNRM2(NCONF,WRK(KYJ),1)
          IF (DN.NE.D1 .AND. DN.NE.D0) THEN
             IF (DN .LE. THRTT) THEN
                DN = D1 / DN
                CALL DSCAL(NCONF,DN,WRK(KYJ),1)
-               DN = DNORM2(NCONF,WRK(KYJ),1)
+               DN = DNRM2(NCONF,WRK(KYJ),1)
             END IF
             DN = D1 / DN
             CALL DSCAL(NCONF,DN,WRK(KYJ),1)
@@ -427,7 +427,7 @@ C        ----------------------------------------------------
   500 CONTINUE
 C
 C        ******************************
-C        ***** <<<<< CISAVE >>>>> *****
+C        ***** ----- CISAVE ----- *****
 C        ******************************
 C
 C
@@ -483,7 +483,7 @@ C        ----------------------------------------------------
   600 CONTINUE
 C
 C        ******************************
-C        ***** <<<<< NRSAVE >>>>> *****
+C        ***** ----- NRSAVE ----- *****
 C        ******************************
 C
 C
@@ -496,7 +496,7 @@ C
       WRITE (LUIT1) LAB123(1), STAKEY, RSTKEY, TABLE(3)
 C
       NREDH  = NREDL - 1
-      STPLEN = DNORM2(NREDH,EVEC,1)
+      STPLEN = DNRM2(NREDH,EVEC,1)
       STPC = D0
       STPO = D0
       DO 6010 K = 1,NREDH
@@ -553,12 +553,12 @@ C
  6200 CONTINUE
 C
       IF (NCONF .GT. 1) THEN
-         DN = DNORM2(NCONF,WRK(KY),1)
+         DN = DNRM2(NCONF,WRK(KY),1)
          IF (DN.NE.D1) THEN
             IF (DN .LE. THRTT) THEN
                DN = D1 / DN
                CALL DSCAL(NCONF,DN,WRK(KY),1)
-               DN = DNORM2(NCONF,WRK(KY),1)
+               DN = DNRM2(NCONF,WRK(KY),1)
             END IF
             DN = D1 / DN
             CALL DSCAL(NCONF,DN,WRK(KY),1)

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -597,7 +597,7 @@ C
 C
          IF (IPRSOL .GE. 130) THEN
             WRITE (LUPRI,'(/A/A,2I10)')
-     *         ' >>> SOLGRD - gtot (input) - non-zero elements',
+     *         ' --- SOLGRD - gtot (input) - non-zero elements',
      *         '     NCONF, NWOPT =',NCONF,NWOPT
             DO 40 I = 1,NCONF
                IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
@@ -621,11 +621,11 @@ C
       IF ((IPRSOL .GE. 5 .AND. FIRST) .OR. IPRSOL .GE. 15) THEN
          IF (.NOT.INERSF) THEN
             WRITE (LUPRI,'(//A/A)')
-     *      ' >>> SOLGRD:  l     f(l) factor',
+     *      ' --- SOLGRD:  l     f(l) factor',
      *      '             === ================='
          ELSE
             WRITE (LUPRI,'(//A/A)')
-     *      ' >>> SOLGRD:  l  optical f(l) factor inertial f(l) factor',
+     *      ' --- SOLGRD:  l  optical f(l) factor inertial f(l) factor',
      *      '             === =================== ===================='
          END IF
          DO 140 L = 0,LSOLMX
@@ -648,14 +648,14 @@ C
       IF (FIRST) THEN
          READ (LUSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LSOLMX) THEN
-            WRITE (LUERR,'(//2A,2(/A,I5))') ' >>> SOLGRD ERROR,',
+            WRITE (LUERR,'(//2A,2(/A,I5))') ' --- SOLGRD ERROR,',
      *      ' insufficient number of intgrals on LUSOL',
      *      ' l max from SIRIUS input :',LSOLMX,
      *      ' l max from LUSOL  file  :',LMAXSS
             CALL QUIT('SOLGRD: lmax on LUSOL is too small')
          END IF
          IF ((LMAXSS+1)**2 .NE. LMTOT) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> SOLGRD ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- SOLGRD ERROR,',
      *      ' LUSOL file info inconsistent',
      *      ' l_max               :',LMAXSS,
      *      ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
@@ -663,7 +663,7 @@ C
             CALL QUIT('SOLGRD: LUSOL info not internally consistent')
          END IF
          IF (NNNBAS .NE. NBAST) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> SOLGRD ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- SOLGRD ERROR,',
      *      ' LUSOL file info inconsistent with SIRIUS input',
      *      ' NBAST - LUSOL       :',NNNBAS,
      *      ' NBAST - SIRIUS      :',NBAST
@@ -676,7 +676,7 @@ C
       CALL READT(LUSOL,NLMSOL,ERLM(1,2))
 C
       IF (IPRSOL .GE. 20 .AND. NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLGRD - DV matrix :'
+         WRITE (LUPRI,'(/A)') ' --- SOLGRD - DV matrix :'
          CALL OUTPAK(DV,NASHT,1,LUPRI)
       END IF
       IF (IPRSOL .GE. 7) THEN
@@ -697,7 +697,7 @@ C     Loop over l,m expansion
 C
       CALL UPKCMO(CMO,WRK(KUCMO))
       IF (IPRSOL .GE. 6)
-     *   WRITE (LUPRI, '(//A/)') ' >>> SOLGRD: START LOOP OVER LM'
+     *   WRITE (LUPRI, '(//A/)') ' --- SOLGRD: START LOOP OVER LM'
       CALL DZERO(WRK(KDIASH),NVAR)
       LM = 0
       DO 520 L = 0,LSOLMX
@@ -711,7 +711,7 @@ C
       DO 500 M = -L,L
          LM = LM + 1
          IF (IPRSOL .GE. 15) THEN
-            WRITE (LUPRI,'(/A,2I5/A)') ' >>> l, m :',L,M,
+            WRITE (LUPRI,'(/A,2I5/A)') ' --- l, m :',L,M,
      *                                ' ===================='
             WRITE (LUPRI,'(A,I2)') ' Symmetry :',ABS(ISYRLM(L+M+1))
          END IF
@@ -756,7 +756,7 @@ C
          TELM     = SOLELM(DV,WRK(KRLMAC),WRK(KRLM),TELMAC)
          IF (IPRSOL .GE. 6) THEN
             WRITE (LUPRI,'(A,2I5,/A,3F17.8)')
-     *      ' >>> l, m :',L,M,
+     *      ' --- l, m :',L,M,
      *      '     Te(lm), Tn(lm), T(lm) :',
      *         TELM,ERLM(LM,2),ERLM(LM,2)-TELM
             IF (IPRSOL .GE. 10) WRITE (LUPRI,'(A,F17.8)')
@@ -812,7 +812,7 @@ C
 C        test orthogonality
 C
          IF (IPRSOL .GE. 120) THEN
-           WRITE (LUPRI,'(/A)')' >>> SOLGRD - grdlm, dialm, diash, cref'
+           WRITE (LUPRI,'(/A)')' --- SOLGRD - grdlm, dialm, diash, cref'
            DO 430 I = 1,NCONF
               WRITE (LUPRI,'(A,I10,4F12.6)') ' conf #',I,
      *        WRK(KGRDLM-1+I),WRK(KDIALM-1+I),WRK(KDIASH-1+I),CREF(I)
@@ -822,7 +822,7 @@ C
          IF (ABS(TEST) .GT. 1.D-8) THEN
             NWARN = NWARN + 1
             WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     *      ' >>> SOLGRD WARNING, for LM =',LM,
+     *      ' --- SOLGRD WARNING, for LM =',LM,
      *      ' <CREF | GRADlm > =',TEST
          END IF
 C
@@ -836,7 +836,7 @@ C
          CALL DAXPY(NVARH,FAC,WRK(KGRDLM),1,G,1)
          IF (IPRSOL .GE. 140) THEN
             WRITE (LUPRI,'(/A/A,2I10)')
-     *         ' >>> SOLGRD - grdlm, gtot (accum) - non-zero grdlm',
+     *         ' --- SOLGRD - grdlm, gtot (accum) - non-zero grdlm',
      *         '     NCONF, NWOPT =',NCONF,NWOPT
             DO 440 I = 1,NCONF
                IF (WRK(KGRDLM-1+I) .NE. D0)
@@ -858,7 +858,7 @@ C
 C
          IF (IPRSOL .GE. 130) THEN
             WRITE (LUPRI,'(/A/A,2I10)')
-     *         ' >>> SOLGRD - gtot (output) - non-zero elements',
+     *         ' --- SOLGRD - gtot (output) - non-zero elements',
      *         '     NCONF, NWOPT =',NCONF,NWOPT
             DO 840 I = 1,NCONF
                IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
@@ -1010,11 +1010,11 @@ C
       IF (IPRINT .GE. 5 .AND. FIRST) THEN
          IF (.NOT.INERSF) THEN
             WRITE (LUPRI,'(//A/A)')
-     *      ' >>> SOLFCK:  l     f(l) factor',
+     *      ' --- SOLFCK:  l     f(l) factor',
      *      '             === ================='
          ELSE
             WRITE (LUPRI,'(//A/A)')
-     *      ' >>> SOLFCK:  l  optical f(l) factor inertial f(l) factor',
+     *      ' --- SOLFCK:  l  optical f(l) factor inertial f(l) factor',
      *      '             === =================== ===================='
          END IF
          DO 140 L = 0,LSOLMX
@@ -1039,14 +1039,14 @@ C
       IF (FIRST) THEN
          READ (LUSOL) LMAXSS, LMTOT, NNNBAS
          IF (LMAXSS .LT. LSOLMX) THEN
-            WRITE (LUERR,'(//2A,2(/A,I5))') ' >>> SOLFCK ERROR,',
+            WRITE (LUERR,'(//2A,2(/A,I5))') ' --- SOLFCK ERROR,',
      *      ' insufficient number of intgrals on LUSOL',
      *      ' l max from SIRIUS input :',LSOLMX,
      *      ' l max from LUSOL  file  :',LMAXSS
             CALL QUIT('SOLFCK: lmax on LUSOL is too small')
          END IF
          IF ((LMAXSS+1)**2 .NE. LMTOT) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> SOLFCK ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- SOLFCK ERROR,',
      *      ' LUSOL file info inconsistent',
      *      ' l_max               :',LMAXSS,
      *      ' (l_max + 1) ** 2    :',(LMAXSS+1)**2,
@@ -1054,7 +1054,7 @@ C
             CALL QUIT('SOLFCK: LUSOL info not internally consistent')
          END IF
          IF (NNNBAS .NE. NBAST) THEN
-            WRITE (LUERR,'(//2A,3(/A,I5))') ' >>> SOLFCK ERROR,',
+            WRITE (LUERR,'(//2A,3(/A,I5))') ' --- SOLFCK ERROR,',
      *      ' LUSOL file info inconsistent with SIRIUS input',
      *      ' NBAST - LUSOL       :',NNNBAS,
      *      ' NBAST - SIRIUS      :',NBAST
@@ -1083,7 +1083,7 @@ C
 C     Loop over l,m expansion
 C
       IF (IPRINT .GE. 10)
-     *   WRITE (LUPRI, '(//A)') ' >>> SOLFCK: START LOOP OVER LM'
+     *   WRITE (LUPRI, '(//A)') ' --- SOLFCK: START LOOP OVER LM'
       CALL DZERO(WRK(KTAO),NNBASX)
       LM = 0
       ESOLT = D0
@@ -1107,7 +1107,7 @@ C
          END IF
          IF (IPRINT .GE. 10) THEN
             WRITE (LUPRI,'(/A,2I5/A/A,I2)')
-     &         ' >>> l, m :',L,M,
+     &         ' --- l, m :',L,M,
      &         ' ====================',
      &         ' Symmetry   :',ABS(ISYRLM(L+M+1))
             IF (MOBAS) WRITE (LUPRI,'(A,1P,D16.8)')
@@ -1328,12 +1328,12 @@ C
       IF (KNEED .GT. LFREE) CALL ERRWRK('SOLLNC',KNEED,LFREE)
 C
       IF (IPRSOL .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(ci,1) on entry'
+         WRITE (LUPRI,'(/A)') ' --- SOLLNC - svec(ci,1) on entry'
          DO I = 1,NCONST
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *      ' conf #',I,SVEC(I,1)
          END DO
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(orb) on entry'
+         WRITE (LUPRI,'(/A)') ' --- SOLLNC - svec(orb) on entry'
          CALL OUTPUT(SVEC(1+NCONST,1),1,NWOPPT,1,NCSIM,
      *               NSVEC,NCSIM,1,LUPRI)
       END IF
@@ -1477,12 +1477,12 @@ C        ... tell SOLGO only to use the NWOPPT first JWOP entries
       END IF
 C
       IF (IPRSOL .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(ci,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- SOLLNC - svec(ci,1) on exit'
          DO I = 1,NCONST
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *      ' conf #',I,SVEC(I,1)
          END DO
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNC - svec(orb) on exit'
+         WRITE (LUPRI,'(/A)') ' --- SOLLNC - svec(orb) on exit'
          CALL OUTPUT(SVEC(1 + NCONST,1),1,NWOPPT,1,NCSIM,
      *               NSVEC,NCSIM,1,LUPRI)
       END IF
@@ -1561,17 +1561,17 @@ C
       END IF
 C
       IF (IPRSOL .GE. 40) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM SOLLNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM SOLLNO ---'
       END IF
       IF (IPRSOL .GE. 140) THEN
          IF (FULHES) THEN
-            WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(ci,1) on entry'
+            WRITE (LUPRI,'(/A)') ' --- SOLLNO - svec(ci,1) on entry'
             DO 30 I = 1,NCONST
                IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *              ' conf #',I,SVEC(I,1)
  30         CONTINUE
          END IF
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(orb) on entry'
+         WRITE (LUPRI,'(/A)') ' --- SOLLNO - svec(orb) on entry'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *               NSVEC,NOSIM,1,LUPRI)
       END IF
@@ -1753,7 +1753,7 @@ C
          DO 600 IOSIM = 1,NOSIM
             JRXYO = KRXYO + (IOSIM-1)*NNORBX
             WRITE (LUPRI,'(/A,I3,A,I3)')
-     *         ' >>> SOLLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
+     *         ' --- SOLLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
             CALL OUTPAK(WRK(JRXYO),NORBT,1,LUPRI)
   600    CONTINUE
       END IF
@@ -1820,7 +1820,7 @@ C
             IF (ABS(TEST) .GT. 1.D-8) THEN
                NWARN = NWARN + 1
                WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     *            ' >>> SOLLNO WARNING, for IOSIM =',IOSIM,
+     *            ' --- SOLLNO WARNING, for IOSIM =',IOSIM,
      *            ' <CREF | SVEC_solvent(iosim) > =',TEST
             END IF
   900    CONTINUE
@@ -1830,7 +1830,7 @@ C        ... test print
 C
       IF (FULHES) THEN
          IF (IPRSOL .GE. 140) THEN
-            WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(ci,1) on exit'
+            WRITE (LUPRI,'(/A)') ' --- SOLLNO - svec(ci,1) on exit'
             DO 930 I = 1,NCONST
                IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *         ' conf #',I,SVEC(I,1)
@@ -1838,7 +1838,7 @@ C
          END IF
       END IF
       IF (IPRSOL .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SOLLNO - svec(orb) on exit'
+         WRITE (LUPRI,'(/A)') ' --- SOLLNO - svec(orb) on exit'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *               NSVEC,NOSIM,1,LUPRI)
       END IF
@@ -1891,7 +1891,7 @@ C     ... input check
 C
       IF (NCSIM .GT. 0 .AND. NOSIM .GT. 0) THEN
          WRITE (LUERR,'(//A/A,2I5)')
-     *   ' >>> SOLSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0',
+     *   ' --- SOLSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0',
      *   '     NCSIM, NOSIM =',NCSIM,NOSIM
          CALL QTRACE(LUERR)
          CALL QUIT('SOLSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0')

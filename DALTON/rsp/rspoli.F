@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -74,10 +74,11 @@ C  /* Deck rspoli */
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
      *                  XINDX,CMO,WRK,LWRK)
 
-!#define USE_XCINT_RESPONSE
-#ifdef USE_XCINT_RESPONSE
-      use xcint_integrator
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_is_active,
+     &                                  xcint_integrate_rks_lr
 #endif
+
 #ifdef ENABLE_EFS
       use efs_interface
 #endif
@@ -157,11 +158,15 @@ C
       LOGICAL   DOFXC, DOFXV, DOFTC, DOFTV
       integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
-#ifdef USE_XCINT_RESPONSE
+
+#ifdef ENABLE_XCINT
       real(8), allocatable :: dmat_ao(:)
-      real(8), allocatable :: fmat_ao(:)
+      real(8), allocatable :: xc_mat(:)
       real(8), allocatable :: fmat_mo(:)
+      real(8)              :: num_electrons
+      logical              :: file_exists
 #endif
+
       CALL QENTER('RSPOLI')
 C
       IF (IPRRSP .GT. 5) THEN
@@ -1118,48 +1123,58 @@ C          Special case of alpha density only (old code)
      &              lfree,iprrsp)
              END DO
            ENDIF
-C          Proceed normal way otherwise
+
+
+           ! Proceed normal way otherwise
            IF ((NASHT.GT.0) .AND. (NISHT.GT.0)) THEN
              call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
-#ifdef USE_XCINT_RESPONSE
-             allocate(dmat_ao(nbast*nbast*2))
-             allocate(fmat_ao(nbast*nbast))
-             allocate(fmat_mo(norbt*norbt))
-             dmat_ao = 0.0d0
-             fmat_ao = 0.0d0
-             fmat_mo = 0.0d0
-             ! get unperturbed ao density matrix
-             call dft_get_ao_dens_mat(cmo, dmat_ao,
-     &                                wrk(kfree), lfree)
-             call dscal(nbast*nbast, 0.5d0, dmat_ao, 1)
-             ! get perturbed ao density matrix
-             call deq27(cmo, zymat, (/0.0d0/), dmat_ao(nbast*nbast + 1),
-     &                  (/0.0d0/), wrk(kfree), lfree)
-             call dscal(nbast*nbast, 0.5d0, dmat_ao(nbast*nbast + 1), 1)
-             xc_energy = 0.0d0
-             call xc_integrate(                     
-     &                         xc_mat_dim=nbast,    
-     &                         xc_nr_dmat=2,        
-     &                         xc_dmat=dmat_ao,
-     &                         xc_nr_geo_pert=0,
-     &                         xc_nr_fld_pert=1,
-     &                         xc_energy=xc_energy, 
-     &                         xc_fmat=fmat_ao    
-     &                        )
+#ifdef ENABLE_XCINT
+             if (xcint_is_active()) then
 
-             ! transform ao fock matrix contribution to mo
-             call lrao2mo(cmo, ksymop, fmat_ao,
-     &                    fmat_mo, wrk(kfree), lfree)
-             call daxpy(norbt*norbt, 1.0d0, fmat_mo, 1, fcx, 1)
-             deallocate(dmat_ao)
-             deallocate(fmat_ao)
-             deallocate(fmat_mo)
-#else
+               inquire(file='num_grid', exist=file_exists)
+               if (.not. file_exists) then
+                  call quit('ERROR: num_grid file not found')
+               end if
+
+               allocate(dmat_ao(nbast*nbast*2))
+               allocate(xc_mat(nbast*nbast))
+               allocate(fmat_mo(norbt*norbt))
+
+               do iosim = 1, nosim
+                 dmat_ao = 0.0d0
+                 xc_mat = 0.0d0
+                 fmat_mo = 0.0d0
+                 ! get unperturbed ao density matrix
+                 call dft_get_ao_dens_mat(cmo, dmat_ao,
+     &                                    wrk(kfree), lfree)
+                 ! get perturbed ao density matrix
+                 call deq27(cmo, zymat(1,iosim), (/0.0d0/),
+     &                      dmat_ao(nbast*nbast + 1),
+     &                      (/0.0d0/), wrk(kfree), lfree)
+                 ! scale density matrices
+                 call dscal(nbast*nbast*2, 0.5d0, dmat_ao, 1)
+                 call xcint_integrate_rks_lr(dmat_ao, xc_mat)
+                 ! transform ao fock matrix contribution to mo
+                 call lrao2mo(cmo, ksymop, xc_mat,
+     &                        fmat_mo, wrk(kfree), lfree)
+                 ! scale and copy on top of fcx
+                 call daxpy(norbt*norbt, 0.5d0, fmat_mo, 1,
+     &                      fcx(1,1,iosim), 1)
+               end do
+
+               deallocate(dmat_ao)
+               deallocate(xc_mat)
+               deallocate(fmat_mo)
+
+             else
+#endif /* ENABLE_XCINT */
              call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
-#endif /* ifdef USE_XCINT_RESPONSE */
+#ifdef ENABLE_XCINT
+             endif
+#endif
            ENDIF
 #ifdef DEBUG_RSPOLI
            write(lupri,*) 'DODFT: after call dft_lin_resp*'
@@ -1352,7 +1367,7 @@ C
 #endif
 C
 C     Z part of linear transformation (operator: V[2c])
-C     (The Y part configuration contribution is zero) <<<---- Manu: no, it is
+C     (The Y part configuration contribution is zero) ---- Manu: no, it is
 C                                                                   NOT !
 C
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,WRK(KCREF),

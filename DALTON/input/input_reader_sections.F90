@@ -13,6 +13,9 @@
          
       case ('*LUCITA')
         call read_input_lucita(word, kw_section)
+      
+      case ('*EXTPCM')
+        call read_input_pcm(word, kw_section)
          
       case default
 !       activate as soon as everything is merged to here
@@ -211,5 +214,43 @@
     end if
 
     call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+  
+  subroutine read_input_pcm(word, kw_section)
+
+#if defined (HAS_PCMSOLVER)
+     use pcmmod_cfg
+#endif
+     use input_reader
+
+     implicit none
+
+!    --------------------------------------------------------------------------
+     character(kw_length), intent(in) :: word
+     character(kw_length), intent(in) :: kw_section
+!    --------------------------------------------------------------------------
+
+#if defined (HAS_PCMSOLVER)
+     call reset_available_kw_list()
+
+     if (kw_matches(word, '.OLDINT')) then
+!        Use "old" (point-by-point) charge-attraction integrals evaluation subroutines
+         pcmmod_old_integration = .true.
+     end if
+
+     if (kw_matches(word, '.SEPARA')) then
+!        Split potentials and polarization charges in nuclear and electronic
+        pcmmod_separate = .true.
+     end if
+      
+     if (kw_matches(word, '.PRINT ')) then
+        call kw_read(word, pcmmod_print)
+     end if
+
+     call check_whether_kw_found(word, kw_section)
+#else
+     call quit('PCMSolver not included in this version.')
+#endif
 
   end subroutine

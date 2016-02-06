@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -5729,7 +5729,7 @@ C
       RETURN
       END
 C  /* Deck ccrda1 */
-      SUBROUTINE CCRDA1(XINT,IBUF,RBUF,IDELTA,IDEL2,KADR1,KADR2,
+      SUBROUTINE CCRDA1(XINT,IBUF4,RBUF,IDELTA,IDEL2,KADR1,KADR2,
      *                  IRECNR)
 C
 C     Written by Henrik Koch 25-Sep-1993

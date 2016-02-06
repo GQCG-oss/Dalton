@@ -1,9 +1,0 @@
-ATOMBASIS
-neutralIP: neutralEA: CF2
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=1 Basis=regbasis Aux=auxbasis
-C      0.00000000000000      0.00000000000000      0.60572218090000
-Charge=9.0 Atoms=2 Basis=regbasis Aux=auxbasis
-F      0.00000000000000      1.03518753430000     -0.20190739360000
-F      0.00000000000000     -1.03518753430000     -0.20190739360000

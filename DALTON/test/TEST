@@ -240,7 +240,8 @@ do
   step=1
   while [ "$step" -le "$numsteps" ]
   do
-      potfile=
+      potfile=''
+      pcmfile=''
       if [ "$multi" -eq 1 ]; then
           myprint "---------------------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
@@ -250,7 +251,18 @@ do
               cp -v $item'__'$step'.mol' $item'.mol'
           fi
           molfile=$item
-          if [ -r $item.pot ]; then potfile=$item ; fi
+          # use unique potfile for this step if available
+          if [ -r $item'__'$step.pot ]; then
+              cp -v $item'__'$step'.pot' $item'.pot'
+          elif [ -r $item.pot ]; then
+              potfile=$item
+          fi
+          # use unique pcmfile for this step if available
+          if [ -r $item'__'$step.pcm ]; then
+              cp -v $item'__'$step'.pcm' $item'.pcm'
+          elif [ -r $item.pcm ]; then
+              pcmfile=$item
+          fi
           cp $item'__'$step'.dal' $item'.dal'
           dalfile=$item
           logfile=./$item'__'$step'_'$item.log
@@ -259,7 +271,12 @@ do
           moldenfile=./$item'__'$step'_'$item.molden
       else
           molfile=$item
-          if [ -r $item.pot ]; then potfile=$item ; fi
+          if [ -r $item.pot ]; then
+              potfile=$item
+          fi
+          if [ -r $item.pcm ]; then
+              pcmfile=$item
+          fi
           dalfile=$item
           logfile=./$item.log
           checkfile=./$item.check
@@ -278,7 +295,7 @@ do
               checkout=`$checkfile $reffile`
               if [ "$benchmark" = "true" ]; then
                  if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
-                     CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+                     CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/" Total CPU  time used in DALTON\:"/""/`
                  else
                      CPU_usage="N/A"
                  fi
@@ -291,13 +308,28 @@ do
       else
           failed=false
           if [ "$step" -eq "1" ]; then
-#             make sure that directory is clear before start
-              $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
-              if [ $? -ne 0 ]; then failed=true; fi
+#           make sure that directory is clear before start
+	        if [ -n "$potfile" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	        elif [ -n "$pcmfile" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $pcmfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	        else
+                  $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	        fi
           else
-#             copy $item.tar.gz for multistep jobs (-f option)
-              $TIMING_OF $DALTON -f $item $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
-              if [ $? -ne 0 ]; then failed=true; fi
+	        if [ -n "$potfile" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ext log $dalfile $molfile $potfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	        elif [ -n "$pcmfile" ]; then
+                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ext log $dalfile $molfile $pcmfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	        else
+                  $TIMING_OF $DALTON -d $paramlist_this_test -f $item -ext log $dalfile $molfile > "$tmpfile" 
+                  if [ $? -ne 0 ]; then failed=true; fi
+	        fi
           fi
           grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
           grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
@@ -334,7 +366,7 @@ do
           fi
           if [ "$benchmark" = "true" ]; then
               if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
-                  CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+                  CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/" Total CPU  time used in DALTON\:"/""/`
               else
                   CPU_usage="N/A"
               fi
@@ -402,7 +434,7 @@ if [ "$benchmark" = "true" ]; then
 fi
 
 if [ "$reftest" = "true" ]; then
-   myprint " >>>>> THIS IS A TEST OF THE REFERENCE OUTPUTS >>>>>"
+   myprint " THIS IS A TEST OF THE REFERENCE OUTPUTS "
    myprint ""
 fi
 

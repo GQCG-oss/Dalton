@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -45,7 +45,8 @@ module gen1int_matrix
            MatDestroy          => mat_remove, &
            MatGetValues        => mat_get_block, &
            MatSetValues        => mat_set_block, &
-           MatBcast            => mat_mpi_bcast
+           MatBcast            => mat_mpi_bcast, &
+           matrix              => openrsp_matrix
 
   implicit none
 
@@ -282,7 +283,7 @@ module gen1int_matrix
     end if
     call mat_unacquire_block(A, elms)
 100 format("MatArrayAlmostEqual>> ",A,I8,",",I8)
-110 format("MatArrayAlmostEqual>> element(",I6,",",I6,")",Es16.8,",",Es16.8)
+110 format("MatArrayAlmostEqual>> element(",I4,",",I4,")",Es16.8," (Mat),",Es16.8," (array)")
   end subroutine MatArrayAlmostEqual
 
 #else
@@ -1005,7 +1006,7 @@ module gen1int_matrix
     end if
 100 format("MatArrayAlmostEqual>> ",A,L4,",",L4)
 110 format("MatArrayAlmostEqual>> ",A,I8,",",I8)
-120 format("MatArrayAlmostEqual>> element(",I6,",",I6,")",Es16.8,",",Es16.8)
+120 format("MatArrayAlmostEqual>> element(",I4,",",I4,")",Es16.8," (Mat),",Es16.8," (array)")
   end subroutine MatArrayAlmostEqual
 
   !> \brief test suite of matrix module

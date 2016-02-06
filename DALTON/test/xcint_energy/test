@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(string = '@    Electronic energy',
+      rel_tolerance = 1.0e-7)
+
+inputs = []
+inputs.append('b3lyp.dal')
+inputs.append('blyp.dal')
+inputs.append('camb3lyp.dal')
+inputs.append('lda.dal')
+inputs.append('pbe0.dal')
+inputs.append('blyp_xcint_grid.dal')
+
+test.run(inputs, ['h2o.mol'], f={'out': f})
+
+sys.exit(test.return_code)

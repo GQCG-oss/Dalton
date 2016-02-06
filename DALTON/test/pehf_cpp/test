@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 
 f.add(re= '.DIPLEN   .DIPLEN',
-      abs_tolerance = 1.0e-5)
+      abs_tolerance = 1.0e-4)
 
 test.run(['pehf_cpp.dal'], ['pehf_cpp.mol'], ['pehf_cpp.pot'], f={'out': f})
 

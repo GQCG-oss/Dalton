@@ -136,45 +136,40 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Thu Oct  9 10:17:46 2014
-     Host name              : c26-2.local                             
+     Date and time (Linux)  : Tue Oct 14 15:35:06 2014
+     Host name              : spongebob                               
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/dalton/DALTON/test/tpa_pcm_sym
-   2) /home/arnfinn/dalton/build-2014/basis
+   1) /home/roberto/Workspace/dalton/DALTON/test/tpa_pcm_sym
+   2) /home/roberto/Workspace/dalton/build/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | arnfinn
- Host                     | c26-2.local
- System                   | Linux-2.6.32-358.6.2.el6.x86_64
+ Who compiled             | roberto
+ Host                     | spongebob
+ System                   | Linux-3.13.0-37-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | ON
- Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
- Fortran compiler version | ifort (IFORT) 13.0.1 20121010
- C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
- C compiler version       | icc (ICC) 13.0.1 20121010
- C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
- C++ compiler version     | unknown
- BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
-                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
-                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
-                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
-                          | read.so;/usr/lib64/libm.so
- LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
-                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
-                          | ntel64/libmkl_intel_lp64.so
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
+                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
+ LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
+                          | e/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 6019746c9e86aa7f8d8929f03aa40caf461ed21d
- Configuration time       | 2014-10-09 09:27:10.054057
-
- * Sequential calculation.
+ Last Git revision        | 0e8c20e5b1820f883090356a2a3cf05f844cfb02
+ Git branch               | pcm_public
+ Configuration time       | 2014-10-11 10:26:03.210432
 
 
    Content of the .dal input file
@@ -291,7 +286,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-2014/basis/STO-3G"
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -300,7 +295,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/dalton/build-2014/basis/STO-3G"
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -309,7 +304,7 @@ H     0.943102     0.000000    -0.544500
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-2014/basis/STO-3G"
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -566,6 +561,10 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
 
  MEMORY USED TO GENERATE CAVITY =    432802
 
+ in pcmtns, vmat is
+   0.0000000000000000        0.0000000000000000        1.0000000000000000     
+   0.0000000000000000        1.0000000000000000        0.0000000000000000     
+   1.0000000000000000        0.0000000000000000        0.0000000000000000     
 
  Total number of spheres =    1
  Sphere             Center  (X,Y,Z) (A)               Radius (A)      Area (A^2)
@@ -574,13 +573,15 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
  Total number of tesserae =     392
  Surface area =  126.68181720 (A^2)    Cavity volume =  134.07420796 (A^3)
 
+ Surface area =  452.38897913469589 (AU^2)    Cavity volume =  904.77757050959428 (AU^3)
+
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
- 
+
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>> Total CPU  time used in HERMIT:   0.05 seconds
- >>>> Total wall time used in HERMIT:   0.06 seconds
+ >>>> Total CPU  time used in HERMIT:   0.11 seconds
+ >>>> Total wall time used in HERMIT:   0.11 seconds
 
 
                         .----------------------------------.
@@ -615,8 +616,8 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
  **********************************************************************
 
  
-     Date and time (Linux)  : Thu Oct  9 10:17:46 2014
-     Host name              : c26-2.local                             
+     Date and time (Linux)  : Tue Oct 14 15:35:06 2014
+     Host name              : spongebob                               
 
  Title lines from ".mol" input file:
                                                                              
@@ -726,22 +727,22 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
       Virial theorem: -V/T =      2.030205
 @      MULPOP C       0.39; O       0.59; H   _1  0.51; H   _2  0.51; 
  -----------------------------------------------------------------------------
-@ 10  -111.566156221     -0.330640960521       2.79D-06  -3.80D-11     5   1   1   0
+@ 10  -111.566156221     -0.330640960521       2.79D-06  -3.81D-11     5   1   1   0
       Virial theorem: -V/T =      2.030205
 @      MULPOP C       0.39; O       0.59; H   _1  0.51; H   _2  0.51; 
  -----------------------------------------------------------------------------
-@ 11  -111.566156221     -0.330640965306       1.81D-07  -2.63D-12     5   1   1   0
+@ 11  -111.566156221     -0.330640965306       1.81D-07  -2.60D-12     5   1   1   0
       Virial theorem: -V/T =      2.030205
 @      MULPOP C       0.39; O       0.59; H   _1  0.51; H   _2  0.51; 
  -----------------------------------------------------------------------------
-@ 12  -111.566156221     -0.330640964921       1.99D-08   0.00D+00     5   1   1   0
+@ 12  -111.566156221     -0.330640964921       1.99D-08   1.42D-14     5   1   1   0
       Virial theorem: -V/T =      2.030205
 @      MULPOP C       0.39; O       0.59; H   _1  0.51; H   _2  0.51; 
  -----------------------------------------------------------------------------
-@ 13  -111.566156221     -0.330640964929       3.01D-09  -4.26D-14     5   1   1   0
+@ 13  -111.566156221     -0.330640964929       3.01D-09   1.14D-13     5   1   1   0
 
 @ *** DIIS converged in  13 iterations !
-@     Converged SCF energy, gradient:   -111.566156220654    3.01D-09
+@     Converged SCF energy, gradient:   -111.566156220653    3.01D-09
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -769,7 +770,7 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.946       0.984
+ >>>> CPU and wall time for SCF :       1.780       1.781
 
 
                        .-----------------------------------.
@@ -784,15 +785,15 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
      SOLVATION MODEL: polarizable continuum model (PCM),
           dielectric constant =   78.390000
 
-@    Final HF energy:            -111.566156220654                 
+@    Final HF energy:            -111.566156220653                 
 @    Nuclear repulsion:            31.163673729192
 @    Electronic energy:          -142.399188984917
 
 @    Final gradient norm:           0.000000003005
 
  
-     Date and time (Linux)  : Thu Oct  9 10:17:47 2014
-     Host name              : c26-2.local                             
+     Date and time (Linux)  : Tue Oct 14 15:35:07 2014
+     Host name              : spongebob                               
 
  (Only coefficients >0.0100 are printed.)
 
@@ -825,12 +826,12 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.96 seconds
- >>>> Total wall time used in SIRIUS :      1.00 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.78 seconds
+ >>>> Total wall time used in SIRIUS :      1.78 seconds
 
  
-     Date and time (Linux)  : Thu Oct  9 10:17:47 2014
-     Host name              : c26-2.local                             
+     Date and time (Linux)  : Tue Oct 14 15:35:07 2014
+     Host name              : spongebob                               
 
 
                      .---------------------------------------.
@@ -897,11 +898,11 @@ PCMSPHGEN: SPHERE CENTERS FROM INPUT
 
           YDIPLEN 
 
- Integral transformation: Total CPU and WALL times (sec)       0.005       0.010
+ Integral transformation: Total CPU and WALL times (sec)       0.001       0.001
 
 
-   SCF energy         :     -111.566156220653554
- -- inactive part     :     -142.399188984916748
+   SCF energy         :     -111.566156220653397
+ -- inactive part     :     -142.399188984916606
  -- nuclear repulsion :       31.163673729192165
 
 
@@ -1013,9 +1014,9 @@ RSPORT:    2 out of    3 new trial vectors linear dependent
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   8.38D-15
- RSP solution vector no.    2; norm of residual   4.85D-15
- RSP solution vector no.    3; norm of residual   1.08D-14
+ RSP solution vector no.    1; norm of residual   1.28D-14
+ RSP solution vector no.    2; norm of residual   3.14D-15
+ RSP solution vector no.    3; norm of residual   6.97D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1052,9 +1053,9 @@ RSPORT:    2 out of    3 new trial vectors linear dependent
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:    6)
- RSP solution vector no.    1; norm of residual   3.48D-16
- RSP solution vector no.    2; norm of residual   3.57D-16
- RSP solution vector no.    3; norm of residual   1.84D-15
+ RSP solution vector no.    1; norm of residual   8.59D-16
+ RSP solution vector no.    2; norm of residual   1.22D-15
+ RSP solution vector no.    3; norm of residual   2.83D-15
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1095,28 +1096,28 @@ RSPORT:    2 out of    3 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.47241 a.u.
- after    9 linear transformations is      1.96790873D+01
+ after    9 linear transformations is      1.96802830D+01
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-20.13 * 10 ** 60.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.43213 a.u.
- after    9 linear transformations is      1.30302085D+01
+ after    9 linear transformations is      1.30307820D+01
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-26.79 * 10 ** 60.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.33115 a.u.
- after    9 linear transformations is     -1.30614474D+01
+ after    9 linear transformations is     -1.30599771D+01
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
- Determinant of reduced matrix is-80.47 * 10 ** 50.0
+ Determinant of reduced matrix is-80.48 * 10 ** 50.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  1,  triplet       F
 
  GP * SOLUTION vector at frequency     0.39612 a.u.
- after    9 linear transformations is      9.11114442D+00
+ after    9 linear transformations is      9.11157830D+00
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-26.45 * 10 ** 60.0
 RSPORT:    5 out of    9 new trial vectors linear dependent
@@ -1154,15 +1155,15 @@ RSPORT:    5 out of    9 new trial vectors linear dependent
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   26)
- RSP solution vector no.    1; norm of residual   7.21D-16
- RSP solution vector no.    2; norm of residual   4.06D-16
- RSP solution vector no.    3; norm of residual   3.79D-16
- RSP solution vector no.    4; norm of residual   1.10D-15
- RSP solution vector no.    5; norm of residual   6.72D-16
- RSP solution vector no.    6; norm of residual   6.96D-16
- RSP solution vector no.    7; norm of residual   8.99D-16
- RSP solution vector no.    8; norm of residual   5.60D-16
- RSP solution vector no.    9; norm of residual   8.33D-16
+ RSP solution vector no.    1; norm of residual   7.48D-16
+ RSP solution vector no.    2; norm of residual   4.60D-16
+ RSP solution vector no.    3; norm of residual   6.32D-16
+ RSP solution vector no.    4; norm of residual   5.86D-16
+ RSP solution vector no.    5; norm of residual   3.90D-16
+ RSP solution vector no.    6; norm of residual   4.31D-16
+ RSP solution vector no.    7; norm of residual   5.59D-16
+ RSP solution vector no.    8; norm of residual   4.02D-16
+ RSP solution vector no.    9; norm of residual   6.40D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1196,7 +1197,7 @@ RSPORT:    5 out of    9 new trial vectors linear dependent
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.331146D+00
 
-@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.33115):    -7.93150588209    
+@ QRLRVE:  << ZDIPLEN  ; ZDIPLEN  >> (   0.33115):    -7.93150588208    
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    1  ( A1 )    LABEL   ZDIPLEN     FREQUENCY   0.396124D+00
 
@@ -1230,51 +1231,51 @@ RSPORT:    5 out of    9 new trial vectors linear dependent
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.15689 a.u.
- after    9 linear transformations is      5.40401225D+00
+ after    9 linear transformations is      5.40398156D+00
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-27.36 * 10 ** 40.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.25564 a.u.
- after    9 linear transformations is      8.03764291D+00
+ after    9 linear transformations is      8.03764285D+00
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-10.68 * 10 ** 60.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.26047 a.u.
- after    9 linear transformations is      8.10167385D+00
+ after    9 linear transformations is      8.10167380D+00
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-11.02 * 10 ** 60.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.43213 a.u.
- after    9 linear transformations is      1.51152967D+01
+ after    9 linear transformations is      1.51152958D+01
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
- Determinant of reduced matrix is-77.12 * 10 ** 50.0
+ Determinant of reduced matrix is-77.13 * 10 ** 50.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.47241 a.u.
- after    9 linear transformations is      2.52040407D+01
+ after    9 linear transformations is      2.52040356D+01
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
  Determinant of reduced matrix is-37.98 * 10 ** 50.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.17776 a.u.
- after    9 linear transformations is      7.17371971D+00
+ after    9 linear transformations is      7.17371935D+00
  INERTIA (POS,ZER,NEG) of reduced matrix is   17    0    1
- Determinant of reduced matrix is-27.95 * 10 ** 50.0
+ Determinant of reduced matrix is-27.96 * 10 ** 50.0
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
 
  GP * SOLUTION vector at frequency     0.51861 a.u.
- after    9 linear transformations is     -9.71747832D+01
+ after    9 linear transformations is     -9.71749860D+01
  INERTIA (POS,ZER,NEG) of reduced matrix is   16    0    2
- Determinant of reduced matrix is 66.71 * 10 ** 40.0
+ Determinant of reduced matrix is 66.72 * 10 ** 40.0
 RSPORT:    6 out of    9 new trial vectors linear dependent
 
  *** INFO, negative eigenvalues in reduced matrix. Symmetry  2,  triplet       F
@@ -1331,15 +1332,15 @@ RSPORT:    6 out of    9 new trial vectors linear dependent
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   24)
- RSP solution vector no.    1; norm of residual   8.53D-16
- RSP solution vector no.    2; norm of residual   5.04D-16
- RSP solution vector no.    3; norm of residual   6.19D-16
- RSP solution vector no.    4; norm of residual   6.56D-16
- RSP solution vector no.    5; norm of residual   3.91D-16
- RSP solution vector no.    6; norm of residual   5.28D-16
- RSP solution vector no.    7; norm of residual   6.35D-16
- RSP solution vector no.    8; norm of residual   4.13D-16
- RSP solution vector no.    9; norm of residual   4.44D-16
+ RSP solution vector no.    1; norm of residual   6.40D-16
+ RSP solution vector no.    2; norm of residual   6.27D-16
+ RSP solution vector no.    3; norm of residual   5.88D-16
+ RSP solution vector no.    4; norm of residual   6.89D-16
+ RSP solution vector no.    5; norm of residual   6.21D-16
+ RSP solution vector no.    6; norm of residual   5.25D-16
+ RSP solution vector no.    7; norm of residual   9.40D-16
+ RSP solution vector no.    8; norm of residual   9.85D-16
+ RSP solution vector no.    9; norm of residual   7.43D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1377,7 +1378,7 @@ RSPORT:    6 out of    9 new trial vectors linear dependent
 
 @ QRLRVE: SINGLET SOLUTION FOR SYMMETRY    2  ( B1 )    LABEL   XDIPLEN     FREQUENCY   0.518615D+00
 
-@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.51861):    -96.7817200468    
+@ QRLRVE:  << XDIPLEN  ; XDIPLEN  >> (   0.51861):    -96.7817200467    
 
 
  Linear response calculations for quadratic response
@@ -1424,15 +1425,15 @@ RSPORT:    2 out of    9 new trial vectors linear dependent
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   14)
- RSP solution vector no.    1; norm of residual   1.79D-16
- RSP solution vector no.    2; norm of residual   3.15D-16
- RSP solution vector no.    3; norm of residual   3.59D-16
- RSP solution vector no.    4; norm of residual   2.48D-16
- RSP solution vector no.    5; norm of residual   4.36D-16
- RSP solution vector no.    6; norm of residual   3.60D-16
- RSP solution vector no.    7; norm of residual   4.84D-16
- RSP solution vector no.    8; norm of residual   2.59D-16
- RSP solution vector no.    9; norm of residual   4.50D-16
+ RSP solution vector no.    1; norm of residual   6.41D-16
+ RSP solution vector no.    2; norm of residual   2.43D-16
+ RSP solution vector no.    3; norm of residual   5.58D-16
+ RSP solution vector no.    4; norm of residual   6.17D-16
+ RSP solution vector no.    5; norm of residual   4.41D-16
+ RSP solution vector no.    6; norm of residual   4.82D-16
+ RSP solution vector no.    7; norm of residual   6.88D-16
+ RSP solution vector no.    8; norm of residual   5.92D-16
+ RSP solution vector no.    9; norm of residual   5.19D-16
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
@@ -1662,7 +1663,7 @@ RSPORT:    2 out of    9 new trial vectors linear dependent
  B operator label,  symmetry, spin:      XDIPLEN     2    0
  Excited state no., symmetry, spin:             3    4    0
 
- omega B, excitation energy, moment :    0.518615    1.037230    1.149592
+ omega B, excitation energy, moment :    0.518615    1.037230   -1.149592
 
 
  Second order moment in a.u. for
@@ -1686,7 +1687,7 @@ RSPORT:    2 out of    9 new trial vectors linear dependent
  B operator label,  symmetry, spin:      YDIPLEN     3    0
  Excited state no., symmetry, spin:             3    4    0
 
- omega B, excitation energy, moment :    0.518615    1.037230    1.149592
+ omega B, excitation energy, moment :    0.518615    1.037230   -1.149592
 
 
        *******************************************************************
@@ -1726,7 +1727,7 @@ RSPORT:    2 out of    9 new trial vectors linear dependent
        3   3   21.56     0.0     0.0     0.0     0.0     0.0     2.2
        4   1    1.37     0.0     0.0     0.0     0.0     0.0     0.0
        4   2    9.67     0.0     0.0     0.0     1.3     0.0     0.0
-       4   3   28.22     0.0     0.0     0.0     1.1     0.0     0.0
+       4   3   28.22     0.0     0.0     0.0    -1.1     0.0     0.0
      ---------------------------------------------------------------
 
 
@@ -1778,17 +1779,17 @@ RSPORT:    2 out of    9 new trial vectors linear dependent
      4   3   28.22   Circular     0.000E+00  0.881E-01  0.529E+00  0.309E+00    1.50
    ---------------------------------------------------------------------------------
 
- >>>> Total CPU  time used in RESPONSE:   7.71 seconds
- >>>> Total wall time used in RESPONSE:   7.91 seconds
+ >>>> Total CPU  time used in RESPONSE:  14.57 seconds
+ >>>> Total wall time used in RESPONSE:  14.58 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   8.75 seconds
- >>>> Total wall time used in DALTON:   9.02 seconds
+ >>>> Total CPU  time used in DALTON:  16.46 seconds
+ >>>> Total wall time used in DALTON:  16.48 seconds
 
  
-     Date and time (Linux)  : Thu Oct  9 10:17:55 2014
-     Host name              : c26-2.local                             
+     Date and time (Linux)  : Tue Oct 14 15:35:22 2014
+     Host name              : spongebob                               

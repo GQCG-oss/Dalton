@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1121,7 +1121,7 @@ C
 C     ***** Print Section *****
 C
       IF (IPRINT .GT. 05) THEN
-         WRITE (LUPRI, '(//A/)') ' <<<<< SUBROUTINE DSOFSO_1 >>>>>'
+         WRITE (LUPRI, '(//A/)') ' ----- SUBROUTINE DSOFSO_1 -----'
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NASH ', (NASH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NOCC ', (NOCC(I),I = 1,NSYM)
@@ -1509,8 +1509,8 @@ C
          GDIFE(I) = GSOLTT(I) - GRADE(I)
          GDIFN(I) = GSOLNN(I) - GRADN(I)
   100 CONTINUE
-      ERRORE = DNORM2(3*NUCDEP,GDIFE,1) .GT. THRSH
-      ERRORN = DNORM2(3*NUCDEP,GDIFN,1) .GT. THRSH
+      ERRORE = DNRM2(3*NUCDEP,GDIFE,1) .GT. THRSH
+      ERRORN = DNRM2(3*NUCDEP,GDIFN,1) .GT. THRSH
       IF (IPRINT .GT. 2 .OR. ERRORE) THEN
          IF (ERRORE) WRITE (LUPRI,'(A)')
      &     ' Error in electronic solvent part of gradient '

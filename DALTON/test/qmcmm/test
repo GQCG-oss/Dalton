@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = '  *** Computed FV vector start',
+      to_string = '  *** Computed FV vector end',
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = '  *** Computed MQ vector start',
+      to_string = '  *** Computed MQ vector end',
+      abs_tolerance = 1.0e-5)
+
+f.add(from_string = '     QM/NP/MM calculation converged     :',
+      num_lines = 7,
+      rel_tolerance = 1.0e-7)
+
+test.run(['qmcmm_damped.dal', 'qmcmm_nppoin.dal', 'qmcmm_nonpca.dal', 'qmcmm_mmpola.dal', 'qmcmm_lr_damped.dal', 'qmcmm_qr_damped.dal',
+          'qmcmm_lr_nodamp.dal', 'qmcmm_qr_nodamp.dal'],
+         ['qmcmm.mol'], f={'out': f}, args='-put POTENTIAL.INP')
+
+sys.exit(test.return_code)

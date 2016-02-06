@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -201,6 +201,7 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -415,6 +416,7 @@ C
       DOMC      = .FALSE.
       DONEVPT   = .FALSE.
       DOLUCITA  = .FALSE.
+      DOAPSG    = .FALSE.
 C  ---> Initialize SR-DFT stuff here !
       DOMCSRDFT = .FALSE.
       DOCISRDFT = .FALSE.
@@ -654,7 +656,7 @@ C
       THROVL = 1.0D-6
       CMAXMO = 1.0D3
       FCVORB   = .FALSE.
-      DEFLVL = 0.0D0
+      DEFLVL = 1.0D0 ! code value to tell not set by user
 C
 C********** Default values section CIVINP *****
 C
@@ -1661,11 +1663,11 @@ C
       IF (QMMM .AND. DOCI) THEN
          CALL QUIT('QMMM is currently not compatible with .CI')
       END IF
-      IF (PEQM .AND. DOCI) THEN
-         CALL QUIT('PEQM is currently not compatible with .CI')
+      IF (USE_PELIB() .AND. DOCI) THEN
+         CALL QUIT('.PEQM is currently not compatible with .CI')
       END IF
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
-     &            QMNPMM
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. QMNPMM
+     &            .OR. USE_PELIB()
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -1926,6 +1928,7 @@ C  *SOLVENT CALCULATION
 C  *PRINT LEVELS
 C  *AUXILIARY INPUT
 C  *LUCITA CALCULATION     ! large-scale CI
+C  *APSG INPUT
 C  *STEX INPUT
 C  *END OF (marks end of keyword input)
 C
@@ -2034,7 +2037,7 @@ C
 C
 C -- local variables and constants
 C
-      PARAMETER (NTBMOD = 26)
+      PARAMETER (NTBMOD = 27)
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
 C needed for lucita: nsym, norb
@@ -2050,7 +2053,7 @@ C
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
      *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
-     *            '*END OF'/
+     *            '*APSG I','*END OF'/
 C
 C
 C  ***************************************************
@@ -2070,7 +2073,7 @@ C
             IF (TABMOD(I) .EQ. WORD) THEN
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
-     *                2900,3000,2400,3200,3300,3400,3500,8000), I
+     *                2900,3000,2400,3200,3300,3400,3500,3600,8000), I
             END IF
  920     CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 8000
@@ -2163,6 +2166,10 @@ C March 9, 2012
 !      *CHOACT
  3500  CALL CC_ACTINP(WORD,NSYM)
        GO TO 910
+!      *APSG INPUT
+!3600  CALL APSG_INPUT(WORD,INPERR,ALLOPT)
+ 3600  CALL QUIT('*APSG INPUT not available in this version.')
+       GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN
@@ -2211,11 +2218,17 @@ C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
 C
 C 1-Oct 1987 Hans Agren
-#ifdef MOD_XCINT
-      use xcint_integrator
-      use eri_contractions
-#endif
 C
+#ifdef BUILD_OPENRSP
+      use eri_contractions, only: set_eri_contractions_xfac
+#endif
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_set_functional,
+     &                                  xcint_activate,
+     &                                  xcint_is_active,
+     &                                  xcint_set_grid
+#endif
+
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2223,9 +2236,8 @@ C
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
-#ifdef MOD_XCINT
-      real(8) :: hfx_out, mu_out, beta_out
-#endif
+      character(80) :: functional_line
+      logical functional_line_read
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2253,10 +2265,12 @@ C
      *            '.HF    ','.STOP  ','.PRINT ','.TITLE ','.MP2   ',
      *            '.NSYM  ','.CC ONL','.WESTA ','.INTERF','.BASIS ',
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
-     *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
+     *            '.KSPT2 ','.GASCI ','.XCINT ','.NUMGRI','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','.STEX  ','xXXXXXX','xXXXXXX'/
+     *            '.SRHYBR','.COPFAC','.STEX  ','.APSG  ','xXXXXXX'/
 C
+
+      functional_line_read = .false.
 C
 C
       SR_FUNCS = ' ERROR: .SRFUN was not specified in input.'
@@ -2439,7 +2453,7 @@ C     a certain point group symmetry)
          IF (MSYM .NE. NSYM) THEN
             INPERR = INPERR + 1
             WRITE (LUPRI,'(/A,2I5/A)')
-     *   ' >>> SIR_GENINP-ERROR,'//
+     *   ' --- SIR_GENINP-ERROR,'//
      *   ' NSYM specified .ne. number of symmetries:',MSYM,NSYM,
      &   '     NSYM from input used in reading remaining input.'
             NSYM = MSYM
@@ -2468,7 +2482,8 @@ C    Default: specified by integral program
   115 CONTINUE
         READ (LUCMD,*) (NBAS(I), I = 1,NSYM)
       GO TO 100
-C
+
+
 C *** Option 17 >DFT   <  Restricted Kohn-Sham DFT
   117 CONTINUE
          IF (DOSCF) THEN
@@ -2501,23 +2516,15 @@ C        ... no P-supermatrix for DFT
             GO TO 1101
          END IF
          WDFTMP = 0.0D0
-         CALL DFTsetFunc(TITLIN,INPERR)
-#ifdef MOD_XCFUN
-         CALL xcfun_select(TITLIN)
-#endif
-#ifdef MOD_XCINT
-         call parse_functional(titlin, hfx_out, mu_out, beta_out)
-         open(42,
-     &        file   = 'xc_functional',
-     &        status = 'unknown',
-     &        form   = 'formatted',
-     &        access = 'sequential')
-         rewind(42)
-         write(42, *) titlin
-         close(42, status = 'keep')
 
-         call set_eri_contractions_xfac(hfx_out)
-#endif
+         ! we save the functional line
+         ! we will parse it later
+         ! at this moment we do not know the integrator yet
+         do i = 1, 80
+            functional_line(i:i) = titlin(i:i)
+         end do
+         functional_line_read = .true.
+
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
@@ -2555,9 +2562,38 @@ C *** Option 22: .GASCI
         DOLUCITA = .TRUE.
         NUMRUN   = NUMRUN + 1
       GO TO 100
-C *** Options 23-25 not used
-  123 CONTINUE
-  124 CONTINUE
+
+      ! Option 23: .XCINT
+  123 continue
+#ifdef ENABLE_XCINT
+        call xcint_activate()
+#else
+        call quit('.XCINT is not available in this version')
+#endif
+      go to 100
+
+      ! Option 24: .NUMGRID
+  124 continue
+#ifdef ENABLE_XCINT
+      if (xcint_is_active()) then
+        ! radial precision threshold
+        d_radint = 0
+        read(lucmd, *) d_radint
+        ! minimum number of angular points
+        i_angmin = 0
+        read(lucmd, *) i_angmin
+        ! regular number of angular points
+        i_angint = 0
+        read(lucmd, *) i_angint
+        call xcint_set_grid(d_radint,
+     &                      i_angmin,
+     &                      i_angint)
+      end if
+#else
+      call quit('.NUMGRID is not available in this version')
+#endif
+      go to 100
+C *** Option 25 not used
   125 CONTINUE
       GO TO 100
 C
@@ -2622,23 +2658,85 @@ C     .COPFAC (for some srDFT testing)
   132 READ (LUCMD,*) COPFAC
       GO TO 100
 C
+C *** Option 32: .STEX
   133 CONTINUE
       DOSTEX = .TRUE.
       GO TO 100
+C *** Option 34: .APSG
   134 CONTINUE
+        DOAPSG = .TRUE.
+        MCTYPE = 11
+        NUMRUN   = NUMRUN + 1
+      GO TO 100
   135 CONTINUE
       GO TO 100
 C
  8000 CONTINUE
-C     if long-range WFT short-range DFT, process functional keywords :
+
+
+!     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
 #else
-      IF (ADDSRI) CALL QUIT('srDFT not implemented in this version')
+      IF (ADDSRI) CALL QUIT('srDFT is not available in this version')
 #endif
+
+      ! here we parse the functional
+      if (functional_line_read) then
+
+#ifdef ENABLE_XCINT
+         if (xcint_is_active()) then
+            this_mu   = 0.0d0
+            this_beta = 0.0d0
+            call xcint_set_functional(titlin,
+     &                                hfxfac, this_mu, this_beta)
+            call dftsetcam(this_mu, this_beta)
+         else
+#endif
+            call dftsetfunc(functional_line, inperr)
+#ifdef MOD_XCFUN
+            call xcfun_select(functional_line)
+#endif
+#ifdef ENABLE_XCINT
+         end if
+#endif
+
+#ifdef BUILD_OPENRSP
+#ifdef ENABLE_XCINT
+         if (xcint_is_active()) then
+            ! we pass hfxfac to the 2-el integral code
+            call set_eri_contractions_xfac(hfxfac)
+         end if
+
+         ! sanity check
+         if (use_openrsp .and. .not. xcint_is_active()) then
+            print *, 'You run OpenRSP DFT without .XCINT'
+            print *, 'Either add .XCINT or deactivate'
+            print *, 'this warning'
+            stop 1
+         end if
+#else
+         print *, 'You run OpenRSP DFT without XCint code compiled'
+         print *, 'This is probably not what you want'
+         stop 1
+#endif /* ENABLE_XCINT */
+#endif /* BUILD_OPENRSP */
+      end if
+
+C
+      IF (DOAPSG) THEN
+         IF (DOMC) THEN
+            WRITE(LUPRI,'(/2A)') WORD1,
+     &      ' input error: .MCSCF and .APSG not both allowed.'
+            INPERR = INPERR + 1
+         END IF
+         DOMC = .TRUE.
+         call quit('APSG is not available in this version')
+      END IF
 C
       RETURN
       END
+
 C  /* Deck haminp */
       SUBROUTINE HAMINP(WORD,INPERR,ALLOPT)
 C
@@ -2797,7 +2895,7 @@ C *** Option 1 >CAS  S<  CAS calculation: Active orbitals
          WRITE (LUPRI,*) '*CONFIG ERROR, both CAS and RAS specified.'
          INPERR = INPERR + 1
       END IF
-         MCTYPE = 1
+         IF (MCTYPE .NE. 11) MCTYPE = 1 ! if (not APSG) then CASSCF
          READ(LUCMD,*,ERR=8010) (NAS2(I),I=1,NSYM)
          DO 25 ISYM = 1,NSYM
             NAS1(ISYM) = 0
@@ -5129,6 +5227,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5267,6 +5366,7 @@ C
       WFTYPE = ' '
       NUMRUN_LOCAL = NUMRUN
       IF (DOLUCITA) THEN
+         IF (WFTYPE .EQ. ' ') WFTYPE='LUCITA'
          WRITE (IWUNIT,1050) 'Generalized Active Space CI (with LUCITA)'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
          IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
@@ -5287,7 +5387,12 @@ C     formulation of NEVPT.
            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
            IF (NUMRUN_LOCAL .GT. 0) WRITE (IWUNIT,1051) 'preceded by :'
          ENDIF
-         IF ( DOMC ) THEN
+         IF (DOAPSG) THEN
+            IF (WFTYPE .EQ. ' ') WFTYPE='APSG'
+            WRITE (IWUNIT,1050)
+     &      'Antisymmetrized Product of Strongly Orthogonal Geminals'
+            NUMRUN_LOCAL = NUMRUN_LOCAL - 1
+         ELSE IF ( DOMC ) THEN
             IF (WFTYPE .EQ. ' ') WFTYPE='MC-SCF'
             WRITE (IWUNIT,1050) 'MC-SCF optimization.'
             NUMRUN_LOCAL = NUMRUN_LOCAL - 1
@@ -5515,7 +5620,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
-       IF (PEQM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
+       IF (USE_PELIB()) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications
@@ -5529,7 +5634,11 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
-      IF (PEQM) THEN
+      IF (DOAPSG) THEN
+         WRITE(IWUNIT,'(/5X,A/)')
+     &   'For the specification of the APSG: see later.'
+      END IF
+      IF (USE_PELIB()) THEN
          WRITE(IWUNIT,'(/5X,A/5X,A/)')
      &   'Wave function environment is modeled using the',
      &   'polarizable embedding model (PE library).'
@@ -5544,7 +5653,7 @@ C     ... get total charge
      &   NSYM,GROUP,LSYM,REP(LSYM-1)
  1000 FORMAT(/5X,'Wave function specification'
      &       /5X,'============================')
- 1002 FORMAT( '@    Wave function type        >>> ',A,' <<<',
+ 1002 FORMAT( '@    Wave function type        --- ',A,' ---',
      &       /'@    Number of closed shell electrons',I12,
      &       /'@    Number of electrons in active shells',I8,
      &       /'@    Total charge of the molecule',I16,
@@ -5685,7 +5794,9 @@ C
             NWOPT_print = 0
          END IF
          NVAR_print = NCONF + NWOPT_print
-         IF (FLAG(27)) THEN
+         IF (DOAPSG) THEN
+            WRITE (IWUNIT,5020) NCONF,NWOPT_print,NVAR_print
+         ELSE IF (FLAG(27)) THEN
             WRITE (IWUNIT,5010) NCONF,NWOPT_print,NVAR_print
          ELSE
             WRITE (IWUNIT,5000) NCONF,NWOPT_print,NVAR_print
@@ -5700,6 +5811,12 @@ C
  5010 FORMAT (/,5X, 'Optimization information',
      *        /,5X, '========================',
      *        /'@    Number of determinants     ',I15,
+     *        /'@    Number of orbital rotations',I15,
+     *        /,5X, '------------------------------------------',
+     *        /'@    Total number of variables  ',I15)
+ 5020 FORMAT (/,5X, 'Optimization information',
+     *        /,5X, '========================',
+     *        /'@    Number of geminal coeffients',I14,
      *        /'@    Number of orbital rotations',I15,
      *        /,5X, '------------------------------------------',
      *        /'@    Total number of variables  ',I15)

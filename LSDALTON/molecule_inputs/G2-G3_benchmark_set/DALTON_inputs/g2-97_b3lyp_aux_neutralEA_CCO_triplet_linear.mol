@@ -1,9 +1,0 @@
-ATOMBASIS
-neutralEA: CCO (triplet linear)
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=2 Basis=regbasis Aux=auxbasis
-C      0.05949819220000      0.00000000000000      0.00000000000000
-C      1.42495199770000      0.00000000000000      0.00000000000000
-Charge=8.0 Atoms=1 Basis=regbasis Aux=auxbasis
-O     -1.11333764240000      0.00000000000000      0.00000000000000

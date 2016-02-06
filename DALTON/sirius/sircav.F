@@ -567,6 +567,9 @@ C
 	    STOT=STOT+SSFE(I)
   520    CONTINUE
 	 WRITE(LUPRI,9040) NTS,STOT,VOL
+              surf_conv =0.2800285205570702
+              vol_conv = 0.14818471148644433 
+         WRITE(LUPRI,9940) (STOT/surf_conv),(VOL/vol_conv)
       END IF
 C
 C     ----- set up for possible gradient calculation -----
@@ -656,6 +659,8 @@ C
  9040 FORMAT(/' Total number of tesserae =',I8
      *       /' Surface area =',F14.8,' (A^2)    Cavity volume =',
      *            F14.8,' (A^3)')
+ 9940 FORMAT(/' Surface area =',F20.14,' (AU^2)    Cavity volume =',
+     *            F20.14,' (AU^3)')
  9050 FORMAT( ' PEDRA: CONFUSION ABOUT SPHERE COUNTS. NESFP,NATM=',2I6)
  9060 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP GRADIENT RUN=',I10)
  9061 FORMAT(/' ADDITIONAL MEMORY NEEDED TO SETUP IEF RUN=',I10)
@@ -737,7 +742,6 @@ C
             ENDIF 
             NewSph(NESF1,1)=N1
             NewSph(NESF1,2)=N2
-            WRITE(LUPRI,*) 'new!',NESF1,N1,N2
           ENDIF
  10       CONTINUE
         ENDDO
@@ -2375,27 +2379,65 @@ C      SYMOP(4) = 'Oxy'
 C      SYMOP(5) = 'C2y'
 C      SYMOP(6) = 'C2x'
 C      SYMOP(7) = ' i '
+! This is the original initial part of the PREREP subroutine.
+! Some tests unveiled problems here, corrected with following "new
+! version" of the code" RDR 120214
+!     DO I = 0, 7
+!        LSYMOP(I) = .FALSE.
+!     END DO
+!     LSYMOP(0) = .TRUE.
+!     IF(GROUP.EQ.'C1 ') THEN
+!        LSYMOP(1) = .TRUE.
+!        LSYMOP(2) = .TRUE.
+!        LSYMOP(4) = .TRUE.
+!     ELSEIF(GROUP.EQ.'Cs '.OR.GROUP.EQ.'Ci ') THEN
+!        LSYMOP(1) = .TRUE.
+!        LSYMOP(2) = .TRUE.
+!     ELSEIF(GROUP.EQ.'C2 ') THEN
+!        LSYMOP(2) = .TRUE.
+!        LSYMOP(4) = .TRUE.
+!     ELSEIF(GROUP.EQ.'D2 '.OR.GROUP.EQ.'C2h') THEN
+!        LSYMOP(1) = .TRUE.
+!     ELSEIF(GROUP.EQ.'C2v') THEN
+!        LSYMOP(2) = .TRUE.
+!     ELSEIF(GROUP.NE.'D2h') THEN
+!        CALL QUIT('INVALID GROUP SPECIFICATION IN PREREP')
+!     ENDIF
       DO I = 0, 7
          LSYMOP(I) = .FALSE.
       END DO
       LSYMOP(0) = .TRUE.
-      IF(GROUP.EQ.'C1 ') THEN
-         LSYMOP(1) = .TRUE.
-         LSYMOP(2) = .TRUE.
-         LSYMOP(4) = .TRUE.
-      ELSEIF(GROUP.EQ.'C2 '.OR.GROUP.EQ.'Ci ') THEN
-         LSYMOP(1) = .TRUE.
-         LSYMOP(2) = .TRUE.
-      ELSEIF(GROUP.EQ.'Cs ') THEN
-         LSYMOP(2) = .TRUE.
-         LSYMOP(4) = .TRUE.
-      ELSEIF(GROUP.EQ.'D2 '.OR.GROUP.EQ.'C2v') THEN
-         LSYMOP(1) = .TRUE.
-      ELSEIF(GROUP.EQ.'C2h') THEN
-         LSYMOP(2) = .TRUE.
-      ELSEIF(GROUP.NE.'D2h') THEN
-         CALL QUIT('INVALID GROUP SPECIFICATION IN PREREP')
-      ENDIF
+      if (group == 'C1 ') then                                                           
+              ! C1 has 0 generators. Use all three planes of reflection 
+              lsymop(1) = .true.
+              lsymop(2) = .true.
+              lsymop(4) = .true.
+      else if (group == 'Cs ') then
+              ! Cs has 1 generator. Use Oxz plane and inversion 
+              lsymop(2) = .true.
+              lsymop(7) = .true.
+      else if (group == 'C2 ') then
+              ! C2 has 1 generator. Use Oxz and inversion 
+              lsymop(2) = .true.
+              lsymop(7) = .true.
+      else if (group == 'Ci ') then
+              ! Ci has 1 generator. Use Oxz and Oxy planes 
+              lsymop(2) = .true.
+              lsymop(4) = .true.
+      else if (group == 'C2h') then
+              ! C2h has 2 generators. Use Oxz plane 
+              lsymop(2) = .true.
+      else if (group == 'D2 ') then
+              ! D2 has 2 generators. Use Oyz plane 
+              lsymop(1) = .true.
+      else if (group == 'C2v') then
+              ! C2v has 2 generators. Use inversion 
+              lsymop(7) = .true.
+      else if (group /= 'D2h') then
+              ! D2h has 3 generators. No need to select other operations for the replication.
+              ! If we get here it  means something went awry before...
+              CALL QUIT('INVALID GROUP SPECIFICATION IN PREREP')
+      end if
       DO ISYMOP = 1,7
          IF(LSYMOP(ISYMOP)) THEN
 c     
@@ -2537,6 +2579,10 @@ C            write(lupri,*) 'iax',i,Jsop(i),iax(Jsop(i))
       ELSE
          CALL QUIT('BAD CASE IN PCMTNS')
       ENDIF
+      write(lupri, *) "in pcmtns, vmat is"
+      do i = 1, 3
+      write(lupri, *) (vmat(i, j), j = 1, 3)
+      end do
       RETURN
       END
 ClfC/* Deck ANLINT */

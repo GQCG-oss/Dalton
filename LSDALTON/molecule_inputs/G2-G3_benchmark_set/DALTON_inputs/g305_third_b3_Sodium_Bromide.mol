@@ -1,8 +1,0 @@
-ATOMBASIS
-Sodium Bromide
- 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=35.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Br      0.00000000000000      0.00000000000000     -0.60015503100000
-Charge=11.0 Atoms=1 Basis=regbasis Aux=auxbasis
-Na      0.00000000000000      0.00000000000000      1.90958418960000

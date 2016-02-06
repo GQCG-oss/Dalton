@@ -1,9 +1,0 @@
-BASIS
-regbasis Aux=auxbasis
-CO
-EXCITATION DIAGNOSTIC
-Atomtypes=2 Angstrom
-Charge=6.0 Atoms=1
-C           .000000     .000000     .000000
-Charge=8.0 Atoms=1
-O           .000000     .000000    1.128000

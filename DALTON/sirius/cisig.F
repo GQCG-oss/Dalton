@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,13 +23,13 @@
 !
 C
 #ifdef REV_LOG
-===========================================================================
+========================================================================
 Revision 1.2  2000/05/05 11:19:33  hjj
 bug fix: now always calculate ci diag. in CIDAG, previously it was only
 done if LUIT2 .ge. 0 (must be a leftover, the code LUIT2 .lt. 0 was not
 used anywhere, rather UPDGRD expected diagonal to be calculated with
 LUIT2 .lt. 0 !!!).
-===========================================================================
+========================================================================
 #endif
 C  /* Deck tpblm2 */
       SUBROUTINE TPBLM2(A,AT,LBLR,NBLR,LBLC,NBLC,IFLAG,IORD)
@@ -312,7 +312,7 @@ C
       DIMENSION T(*), C(*),C2(*)
 C LENGTH OF C2 MUST BE AT LEAST
 C
-      IF( NTEST .GE. 20 ) WRITE(LUPRI,*) ' >>>> INFORMATION FROM TRACI2'
+      IF( NTEST .GE. 20 ) WRITE(LUPRI,*) ' --- INFORMATION FROM TRACI2'
 C
 C
       DO 2000 IASM = 1, MAXSYM

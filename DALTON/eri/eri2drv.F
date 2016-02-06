@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -352,7 +352,9 @@ C
       EXPERI = .FALSE.
       LBFINP = 600
       MAXDSD = 40
+
       MAXDST = MAXDSD
+
       DISTST = .FALSE.
       MXBCH0 = 1000000000
       MXBCH  = MXBCH0
@@ -565,7 +567,10 @@ C  /* Deck odcdrv */
 #include "aobtch.h"
 #include "iratdef.h"
 #include "infpar.h"
+#include "soppinf.h"
+      LOGICAL USE_SLAVE_CODE
 C
+      CALL QENTER('ODCDRV')
       MAXDER = 0
       IF (GDER) MAXDER = 1
       IF (BDER) MAXDER = 1
@@ -640,8 +645,17 @@ C
 C
       IF (KLAST .GT. LWORK) CALL STOPIT('ODCDRV','HERPRP',KLAST,LWORK)
       LWRK   = LWORK - KLAST + 1
+      USE_SLAVE_CODE = SLAVE
+#ifdef VAR_MPI
 C
-      IF (SLAVE) THEN
+C     AOSOPPA in parallel makes use of slaves in this subroutine.
+C     hence the slaves are redirected to parts of the code normally
+C     only available to the master.
+      if (aorpa.or.aohrp.or.aosop.or.dcrpa.or.aosoc)
+     &   USE_SLAVE_CODE = .FALSE.
+#endif
+C
+      IF (USE_SLAVE_CODE) THEN
          MXCLS2 = NODCL1*(NODCL2 + 1)/2
 C
          NTASK  = INT(NDEGDI*MXCLS2/(100*NODTOT))
@@ -681,6 +695,7 @@ C
      &               WORK(KCSQ),  WORK(KLAST),LWRK,IPRINT)
       END IF
 C
+      CALL QEXIT('ODCDRV')
       RETURN
       END
 C  /* Deck odcdr1 */
@@ -802,6 +817,8 @@ C     RODPP1(*,1): exponent for primitive a
 C     RODPP1(*,2): exponent for primitive b
 C     RODPP1(*,3): preexponential factors for ab
 C
+      CALL QENTER('ODCDR1')
+
       IF (IPRINT .GT. 5) THEN
          CALL HEADER('Output from subroutine ODCDR1',-1)
          WRITE (LUPRI,'(2X,A,2I4)') ' NODCL1, NODCL2 ', NODCL1, NODCL2
@@ -1273,6 +1290,7 @@ C
 C
       IPRINT = IPRKEP
 C
+      CALL QEXIT('ODCDR1')
       RETURN
       END
 C  /* Deck odcpar */
@@ -1312,6 +1330,7 @@ C  /* Deck odcpar */
 #include "erista.h"
 #include "hertop.h"
 C
+      CALL QENTER('ODCPAR')
 C
 C     Collect OD batches in passes
 C
@@ -1403,6 +1422,7 @@ C
          WRITE (LUPRI,'(A,I10)') ' LWORK in ODCPAR: ',LWORK
       END IF
 C
+      CALL QEXIT('ODCPAR')
       RETURN
       END
 C  /* Deck odcpa2 */
@@ -1691,6 +1711,8 @@ C  /* Deck erint0 */
 #include "symmet.h"
 #include "r12int.h"
 C
+      CALL QENTER('ERINT0')
+
       IF (IPRINT .GT. 10) THEN
          CALL TITLER('Output from ERINT0','*',103)
          WRITE (LUPRI,'(1X,A,I10  )')' LWORK in ERINT0: ',LWORK
@@ -2017,6 +2039,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('ERINT0')
       RETURN
       END
 C  /* Deck erints */

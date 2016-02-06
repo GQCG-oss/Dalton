@@ -5,7 +5,7 @@ c -*-mode:fortran; fortran-continuation-string: "&" -*-
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -476,7 +476,7 @@ C
 C     ***** Print Section *****
 C
       IF (IPRINT .GT. 03) THEN
-         WRITE (LUPRI, '(//,A)') ' <<<<< SUBROUTINE DCDVSO  >>>>> '
+         WRITE (LUPRI, '(//,A)') ' ----- SUBROUTINE DCDVSO  ----- '
          WRITE (LUPRI, '(A,L5)') ' NODC ', NODC
          WRITE (LUPRI, '(A,L5)') ' NODV ', NODV
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
@@ -1302,7 +1302,7 @@ C
       ITRI(I) = I*(I - 1)/2
 C
       WRITE (LUPRI,'(/,A,/)')
-     *       ' <<<<<<<<<< Output from TESTTR >>>>>>>>>> '
+     *       ' ---------- Output from TESTTR ---------- '
       IAC = IPTCNT(3*(IATOM-1)+ICOOR,IOPSYM-1,1)
       GRDINT = GRADEE(IAC)
 C
@@ -1672,6 +1672,7 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
+         use pelib_interface, only: use_pelib, pelib_ifc_london
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1804,7 +1805,7 @@ C
             END IF
             CALL DAXPY(N2BASX*3,D1,WORK(KTMAT),1,WORK(KMATS),1)
          END IF
-C         
+C
          IF (QM3 .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
             KTMAT = KWRK
             MWRK  = KTMAT + 3*N2BASX
@@ -1832,14 +1833,12 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
          END IF
 
-         IF (PEQM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
-#if defined (BUILD_PELIB)
+         IF (USE_PELIB() .AND. (KEY.EQ.'HMAT') .AND. .NOT. NOLOND) THEN
             KTMAT = KWRK
             MWRK = KTMAT + 3 * N2BASX
             IF (MWRK > LWRK) CALL STOPIT('ONEDRL', 'PEQM', MWRK, LWRK)
-            CALL PE_IFC_LONDON(WORK(KTMAT))
+            CALL PELIB_IFC_LONDON(WORK(KTMAT))
             CALL DAXPY(3*N2BASX, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
-#endif
          END IF
 
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
@@ -1971,7 +1970,7 @@ C
  200           CONTINUE
                IF (NFIELD .GT. 0 .AND. KEY .EQ.'HMAT') THEN
                   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
-     &                 'UNFORMATTED',IDUMMY,.FALSE.)         
+     &                 'UNFORMATTED',IDUMMY,.FALSE.)
                   DO 556 IFIELD = 1, NFIELD
                      IF (EFIELD(IFIELD) .NE. 0.D0) THEN
                         IF (LFIELD(IFIELD)(2:8) .NE. 'DIPLEN ') THEN

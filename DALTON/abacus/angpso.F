@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -56,7 +56,7 @@ C ------------------------------------------------------
       integer*8 k
 
 C ------------------------------------------------------
-C  PARAMETROS :       MATRICES DE TRABAJO 
+C  PARAMETROS :       WORKING ARRAYS  
 C ------------------------------------------------------
 C
       double precision A1(NBAST,NBAST), A2(NBAST,NBAST), ORBC(NBAST)
@@ -66,9 +66,10 @@ C
 C ======================================================
 C ======================================================
 C ------------------------------------------------------
-C       LEO DALTON.INP  y saco LAS INTEGRALES
+C       READ DALTON.INP  and take out INTEGRALS
 C ------------------------------------------------------
-
+        B0(1)='12345678'
+        B0(2)='12345678'
 c       nlab=2 because we do in pairs from outside de loops obver
 c       all teh integrals, to avoid extra calculations
 c       LABEL(1)='XANGMOM'
@@ -78,7 +79,7 @@ c       LABEL(4)='PSO 001'
 c       LABEL(5)='PSO 002'
 c       LABEL(6)='PSO 003'
 C ------------------------------------------------------
-C       LEO DALTON.CM  y saco nbas(naos)
+C       READ DALTON.CM  for nbas(naos). Deprecated. not read anymore
 C ------------------------------------------------------
        naos = NBAST 
        nmos= naos
@@ -90,7 +91,7 @@ c      write(lupri,*)
 c      write(lupri,'(/72A1/)')('*',I=1,72)
 C
 C ------------------------------------------------------
-C     LEO SIRIUS.RST PARA LOS CMOS
+C     READ SIRIUS.RST for CMOS
 C ------------------------------------------------------
 
 cz    write(*,*) 'Opening SIRIUS.RST file'
@@ -100,9 +101,9 @@ cz    write(*,*)
 c            write(lupri,*) 'nelemsmol =',naos,'*',nmos
 c            write(*,*)
             k = 1
-c            write(lupri,*) '* Escribo xmos vector'
-c            write(lupri,*) '** Escribo i,j,k,cmos(i,j)=xmos(k)'
-c            write(lupri,*) 'Chq con DALTON.OUT ojo que ahi traspuesta'
+c            write(lupri,*) '* Write  xmos vector'
+c            write(lupri,*) '** write i,j,k,cmos(i,j)=xmos(k)'
+c            write(lupri,*) 'Chq  DALTON.OUT warning it has transopsed '
 c            write(lupri,*) xmos
 c            write(lupri,*)
 c            write(lupri,*)
@@ -117,9 +118,9 @@ C               write(lupri,*) i,j,k, cmos(i,j)
 C
 C
 C ----------------------------------------------------------
-C       SECCION CUENTA 
+C       We do the matrix prods here  
 C ----------------------------------------------------------
-C    Tengo :
+C    Tengo : most of this are deprecated, we now use an include
 C    naos        :  numero de orbitales de base atomica
 C    nmols       :  numero de orbitales de base molec 
 C    nelec(NOCCT):  Orbitales Ocupados, numero de closed shell electrons
@@ -131,7 +132,7 @@ C ----------------------------------------------------------
       LABEL(2)=char2
 c      write(lupri,*) 
 c      write(lupri,*) '*******************************************' 
-c      write(lupri,*) '***** Ahora deberia venir la cuenta *******' 
+c      write(lupri,*) '***** Debug : Starting Calculations *******' 
 c      write(lupri,*) '*******************************************' 
 c      write(lupri,*) 
       CALL READAOP( OVERLP, naos, 'OVERLAP ')
@@ -178,7 +179,7 @@ c           write(*,*) '< ',LABEL(j),' >< ',LABEL(k),' >  = ', Av
         ENDIF
 cjim-dbg       ENDDO
 C   *****************************
-C      ESCRIBO LAS MATRICES
+C      Writing the Matrices 
 C   *****************************
       IF (B0(2).Eq.'INTEGRAL') then
          write(lupri,*) ' ****** INTEGRALS OUTPUT   DETECTED !  *******'
@@ -200,7 +201,7 @@ C         SECCION CHEQUEO DE LA BASE
 C ----------------------------------------------------------
       IF (PRT.GT.3) THEN 
          write(lupri,*) '*******************************************' 
-         write(lupri,*) '********** Chequeo de la Base *************'
+         write(lupri,*) '********** Basis set check    *************'
          write(lupri,*) '*******************************************' 
          uno = 0.0
          do i = 1,NBAST
@@ -215,7 +216,7 @@ C        write(lupri,*)
          IF (B0(2).Eq.'INTEGRAL') then
             write(lupri,*) ' **** INTEGRALS OUTPUT   DETECTED ! *******'
             write(lupri,*) ' ************** Cmos OJO !! **************' 
-            write(lupri,*) ' ***** en DALTON.OUT esta traspuesta *****' 
+            write(lupri,*) ' ***** en DALTON.OUT has the transposed **' 
             write(lupri,*) ' ******      Cmos(NOCCT,naos)       ******' 
             write(lupri,*) ' *****************************************' 
 C           write(lupri,*) ((Cmos(i,j),j=1,naos), i=1,NOCCT)
@@ -224,10 +225,10 @@ C           write(lupri,*) ((Cmos(i,j),j=1,naos), i=1,NOCCT)
             enddo
          ENDIF
 C        ---------------------------------------------
-C          CHEQUEO Cmos tenga norma 1 EN BASE ATOMICA !!
+C          CHECK  Cmos has norm = 1 in atomic basis !!
 C        ---------------------------------------------
          write(lupri,*) 
-         write(lupri,*) 'Norma de Cmos por Filas en Base Atomica :' 
+         write(lupri,*) 'Norm of  Cmos by rows in atomic basis :' 
          Avv = 0.0
          do i = 1,NOCCT
             do j = 1,naos
@@ -237,7 +238,7 @@ C        ---------------------------------------------
             write(lupri,*) '  Orbital', i, ' : ',uno
             Avv = Avv + uno 
          enddo
-         write(lupri,*) '** Suma total norma de las FILAS :', Avv
+         write(lupri,*) '** Total summ of row norms :', Avv
          write(lupri,*) 
 C     ------------------------
 C     CHEQUEO Tr(PS) Mulliken 

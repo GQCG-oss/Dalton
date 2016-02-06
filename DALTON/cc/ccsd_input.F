@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -92,6 +92,7 @@ C
 #include "cbieri.h"
 #include "ccroper.h"
 #include "cch2d.h"
+#include "soppinf.h" 
 Cholesky
 #include "cc_cho.h"
 #include "ccdeco.h"
@@ -190,14 +191,6 @@ C
       NEWDEF = (WORD .EQ. '*CC INP' .OR. WORD .EQ. '**CC   '.OR.
      *          WORD .EQ. '*CC    ')
       IF (NEWDEF) THEN
-         IF (PARCAL) THEN
-           WRITE(LUPRI,*) "ERROR: CC is not MPI parallelized!"
-           ! WRITE(LUPRI,*) "For parallelization speedup, please use OMP"
-           ! hjaaj Oct 2013: no OpenMP in current code !
-           WRITE(LUPRI,*)
-     &     "For parallelization speedup, e.g. use parallel MKL"
-           CALL PARQUIT("CC")
-         ENDIF
          WORD1 = WORD
  1000    CONTINUE
             READ (LUCMD, '(A7)') WORD
@@ -793,6 +786,27 @@ C                  write(lupri,*)'SONIA: activated SOSEX (DRCCD)'
             END IF
       END IF
   300 CONTINUE
+
+#ifdef VAR_MPI      
+         IF (NEWDEF.AND.PARCAL) THEN
+CRF moved this to after the input is read  
+C
+C Beyer 
+C       SOPPA runs in parallel now and needs Coupled Cluster 
+C       Amplitudes. Hard coding a stop in parallel CC code will break all 
+C       parallel SOPPA routines. 
+C
+C       When CC runs in parallel you can remove this check and the #include "soppinf.h"
+C       from the list of COMMON block inclusions.
+           IF ( (.NOT. AOSOPPA) ) THEN 
+              WRITE(LUPRI,*) "WARNING: CC is not MPI parallelized!"
+              WRITE(LUPRI,*)
+     &        "For parallelization speedup, e.g. use parallel MKL"
+              CALL PARQUIT("CC ")
+           ENDIF
+C End Beyer
+         ENDIF
+#endif 
 C
 C---------------------------------------------------
 C     set some defaults...
@@ -8695,7 +8709,7 @@ celena
 CCN
       DIRFCK = .TRUE.
       write(lupri,*)
-      write(lupri,*)'>>>> Detected R12 input:'
+      write(lupri,*)'---- Detected R12 input:'
       write(lupri,*)'Direct Fock matrix formation switched on!'
 CCN
       write(lupri,*)'Scale factors for CC excitations manifolds:'
@@ -10006,8 +10020,8 @@ C
       WRITE(LUPRI,'(A,/)') '       ----------------------------'
 C
       IF (ACTSEL .AND. (.NOT.  CHKACT)) THEN
-         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '>>> ERROR :',
-     &                '>>> *CHOACT was specified, but no definition',
+         WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '--- ERROR :',
+     &                '--- *CHOACT was specified, but no definition',
      &                ' of active atoms or basis',
      &                ' functions was given',
      &                '    Program will stop'

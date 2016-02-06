@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -32,10 +32,13 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2014_DALTON
+      PROGRAM DALTON2016_DALTON
 #endif
 C
       use parallel_models_mpi
+#ifdef ENABLE_XCINT
+      use dalton_xcint_interface, only: xcint_is_active, xcint_finalize
+#endif
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -255,7 +258,7 @@ C
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release Dalton2015.1 (2015), see http://daltonprogram.org'
+     &'   Release Dalton2016.0 (2015), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -576,7 +579,7 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: Dalton2015.1'
+           WRITE(LUPRI,'(/A)') ' * Release: Dalton2016.alpha'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN
@@ -711,6 +714,13 @@ C
       end do
       ! clear the corresponding table and hope for the best
       call clear_iuntab()
+
+
+#ifdef ENABLE_XCINT
+      if (xcint_is_active()) then
+        call xcint_finalize()
+      end if
+#endif
 
 
       CALL QEXIT('DALTON main')
@@ -949,7 +959,7 @@ C
 C     /R12INT/ (WK/UniKA/26-11-2002).
 C
       DO I = 1, 5
-         LUR12(I) = -9100 - MXCOOR - I
+         LUR12(I) = -9100 - I
       ENDDO
 C
 C     /ERITAP/

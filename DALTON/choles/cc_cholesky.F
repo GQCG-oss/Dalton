@@ -237,7 +237,7 @@ C     Analyse the diagonal.
 C     ---------------------
 C
       IF (IPRINT .GT. 1) THEN
-         WRITE(LUPRI,'(//,A,/)') '>>> Checking initial diagonal'
+         WRITE(LUPRI,'(//,A,/)') '--- Checking initial diagonal'
          CALL CC_ANADI(DIAG,.TRUE.)
       END IF
       TIMDIA = SECOND() - TIMDIA
@@ -1649,10 +1649,10 @@ C
       CHOWAL = TIMWAL - CHOWAL
 C
       WRITE(LUPRI,'(//,A,F10.2,A)') 
-     &            ' >>>> Total CPU  time used in CHOLESKY :',
+     &            ' Total CPU  time used in CHOLESKY :',
      &            CHOCPU, ' seconds'
       WRITE(LUPRI,'(A,F10.2,A,///)') 
-     &            ' >>>> Total wall time used in CHOLESKY :',
+     &            ' Total wall time used in CHOLESKY :',
      &            CHOWAL, ' seconds'
 C
       CALL QEXIT('CHODRV')

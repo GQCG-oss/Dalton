@@ -1,7 +1,0 @@
-ATOMBASIS
-na2
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=11.0 Atoms=2 Basis=regbasis Aux=auxbasis
-Na      0.00000000000000      0.00000000000000      0.00000000000000
-Na      0.00000000000000      0.00000000000000      3.03883602000000

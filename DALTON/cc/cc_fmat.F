@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -5545,10 +5545,11 @@ c/* Deck CC_R12FMAT */
      &        KR12SCR, NR12SCR, KVAJKL,
      &        KZETA12, KCTR2, IOPT
       INTEGER ISYM1,ISYM2,LUNIT
-      INTEGER LUMIM,FILMIM,LENM,IINT2,KMINT
+      INTEGER LUMIM,LENM,IINT2,KMINT
       INTEGER KVABKL, KVINT
       INTEGER KT12AMP, KXINTTRI, KXINTSQ, KSCR, KFIELDAO, IFLD, IAN
       CHARACTER LISTL*3, LISTR*3, CDUMMY*8, MODEL*10
+      CHARACTER*(*) FILMIM
 
 #if defined (SYS_CRAY)
       REAL WORK(LWRK), THETA1(*), THETA2(*), THETAR12(*), ZETA1(*), 

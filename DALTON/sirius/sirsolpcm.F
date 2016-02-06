@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -131,7 +131,7 @@ C
 C     
       IF (IPRPCM .GE. 130) THEN
          WRITE (LUPRI,'(/A/A,2I10)')
-     *        ' >>> PCMGRD - gtot (input) - non-zero elements',
+     *        ' --- PCMGRD - gtot (input) - non-zero elements',
      *        '     NCONF, NWOPT =',NCONF,NWOPT
          DO 40 I = 1,NCONF
             IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
@@ -148,7 +148,7 @@ C     Read and check dimension information (if first read) and
 C     nuclear contributions to ERLM (always).
 C
       IF (IPRPCM .GE. 20 .AND. NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PCMGRD - DV matrix :'
+         WRITE (LUPRI,'(/A)') ' --- PCMGRD - DV matrix :'
          CALL OUTPAK(DV,NASHT,1,LUPRI)
       END IF
 C
@@ -325,7 +325,7 @@ C
 C     test orthogonality
 C     
       IF (IPRPCM .GE. 120) THEN
-         WRITE (LUPRI,'(/A)')' >>> PCMGRD - grdj1, grdj2, dialm, '//
+         WRITE (LUPRI,'(/A)')' --- PCMGRD - grdj1, grdj2, dialm, '//
      &                      'diash, cref'
          DO 430 I = 1,NCONF
             WRITE (LUPRI,'(A,I10,3F10.6)') ' conf #',I,
@@ -338,7 +338,7 @@ C
       IF (ABS(TEST) .GT. 1.D-8) THEN
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/A,/A,1P,D12.4)')
-     *   ' >>> PCMGRD WARNING, for B',
+     *   ' --- PCMGRD WARNING, for B',
      *   ' <CREF | GRADB > =',TEST
       END IF
 C     
@@ -346,14 +346,14 @@ C      TEST = DDOT(NCONF,CREF,1,WRK(KGRDJ1),1)
       IF (ABS(TEST) .GT. 1.D-8) THEN
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/A,/A,1P,D12.4)')
-     *   ' >>> PCMGRD WARNING, for J1 ',
+     *   ' --- PCMGRD WARNING, for J1 ',
      *   ' <CREF | GRADJ1 > =',TEST
       END IF
 C      TEST = DDOT(NCONF,CREF,1,WRK(KGRDJ2),1)
       IF (ABS(TEST) .GT. 1.D-8) THEN
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/A,/A,1P,D12.4)')
-     *   ' >>> PCMGRD WARNING, for J2',
+     *   ' --- PCMGRD WARNING, for J2',
      *   ' <CREF | GRADJ2 > =',TEST
       END IF
 C     
@@ -362,7 +362,7 @@ C
       CALL DAXPY(NVARH,-D1,WRK(KGRDLM),1,G,1)
       IF (IPRPCM .GE. 140) THEN
          WRITE (LUPRI,'(/A/A,2I10)')
-     *      ' >>> PCMGRD - grdB, gtot (accum) - non-zero grdlm',
+     *      ' --- PCMGRD - grdB, gtot (accum) - non-zero grdlm',
      *      '     NCONF, NWOPT =',NCONF,NWOPT
          DO 440 I = 1,NCONF
             IF (WRK(KGRDLM-1+I) .NE. D0)
@@ -380,7 +380,7 @@ C
 C     
       IF (IPRPCM .GE. 130) THEN
          WRITE (LUPRI,'(/A/A,2I10)')
-     *      ' >>> PCMGRD - gtot (output) - non-zero elements',
+     *      ' --- PCMGRD - gtot (output) - non-zero elements',
      *      '     NCONF, NWOPT =',NCONF,NWOPT
          DO 840 I = 1,NCONF
             IF (G(I) .NE. D0) WRITE (LUPRI,'(A,I10,3F15.10)')
@@ -923,12 +923,12 @@ C
       IF (KNEED .GT. LFREE) CALL ERRWRK('PCMLNC',KNEED,LFREE)
 C
       IF (IPRPCM .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(ci,1) on entry'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNC - svec(ci,1) on entry'
          DO I = 1,NCONST
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *      ' conf #',I,SVEC(I,1)
          END DO
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(orb) on entry'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNC - svec(orb) on entry'
          CALL OUTPUT(SVEC(1+NCONST,1),1,NWOPPT,1,NCSIM,
      *               NSVEC,NCSIM,1,LUPRI)
       END IF                                                                
@@ -1013,12 +1013,12 @@ C
 C     ... orbital part of sigma vector(s)
 C
       IF (IPRPCM .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(ci,1) in between'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNC - svec(ci,1) in between'
          DO I = 1,NCONST
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *      ' conf #',I,SVEC(I,1)
          END DO
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(orb) on exit 2'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNC - svec(orb) on exit 2'
          CALL OUTPUT(SVEC(1+NCONST,1),1,NWOPPT,1,NCSIM,
      *               NSVEC,NCSIM,1,LUPRI)
       END IF                                                                
@@ -1051,12 +1051,12 @@ C        ... tell SOLGO only to use the NWOPPT first JWOP entries
       END IF
 C
       IF (IPRPCM .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(ci,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNC - svec(ci,1) on exit'
          DO I = 1,NCONST
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *      ' conf #',I,SVEC(I,1)
          END DO
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNC - svec(orb) on exit'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNC - svec(orb) on exit'
          CALL OUTPUT(SVEC(1+NCONST,1),1,NWOPPT,1,NCSIM,
      *               NSVEC,NCSIM,1,LUPRI)
       END IF                                                                
@@ -1128,17 +1128,17 @@ C
       END IF
 C
       IF (IPRSOL .GE. 40) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM PCMLNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM PCMLNO ---'
       END IF
       IF (IPRPCM .GE. 140) THEN
          IF (FULHES) THEN
-            WRITE (LUPRI,'(/A)') ' >>> PCMLNO - svec(ci,1) on entry'
+            WRITE (LUPRI,'(/A)') ' --- PCMLNO - svec(ci,1) on entry'
             DO 30 I = 1,NCONST
                IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *              ' conf #',I,SVEC(I,1)
  30         CONTINUE
          END IF
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNO - svec(orb) on entry'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNO - svec(orb) on entry'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *        NSVEC,NOSIM,1,LUPRI)
       END IF
@@ -1353,7 +1353,7 @@ C
             IF (ABS(TEST) .GT. 1.D-8) THEN
                NWARN = NWARN + 1
                WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     *            ' >>> SOLLNO WARNING, for IOSIM =',IOSIM,
+     *            ' --- SOLLNO WARNING, for IOSIM =',IOSIM,
      *            ' <CREF | SVEC_solvent(iosim) > =',TEST
             END IF
   900    CONTINUE
@@ -1363,7 +1363,7 @@ C        ... test print
 C
       IF (FULHES) THEN
          IF (IPRSOL .GE. 140) THEN
-            WRITE (LUPRI,'(/A)') ' >>> PCMLNO - svec(ci,1) on exit'
+            WRITE (LUPRI,'(/A)') ' --- PCMLNO - svec(ci,1) on exit'
             DO 930 I = 1,NCONST
                IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *         ' conf #',I,SVEC(I,1)
@@ -1371,7 +1371,7 @@ C
          END IF
       END IF
       IF (IPRSOL .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> PCMLNO - svec(orb) on exit'
+         WRITE (LUPRI,'(/A)') ' --- PCMLNO - svec(orb) on exit'
          CALL OUTPUT(SVEC(JSOVEC,1),1,NWOPPT,1,NOSIM,
      *               NSVEC,NOSIM,1,LUPRI)
       END IF

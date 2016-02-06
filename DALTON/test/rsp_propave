@@ -126,9 +126,9 @@ ERROR[5]="ENERGY NOT CORRECT"
 
 # Average value
 CRIT1=`$GREP "Calculation of electronic one\-electron expectation values" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN * inactive part\: * \-1\.91204..." $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN * inactive part\: * \-1\.9120[45]..." $log | wc -l`
 CRIT3=`$GREP "ZDIPLEN * active part * \: * 0*\.00000000" $log | wc -l`
-CRIT4=`$GREP "ZDIPLEN * total * \: * \-1\.91204..." $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN * total * \: * \-1\.9120[45]..." $log | wc -l`
 TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[6]=4
 ERROR[6]="AVERAGE VALUE NOT CORRECT"

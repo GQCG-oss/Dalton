@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -379,12 +379,12 @@ C
 C
 C     Delete LR files to save disk space /910109-hjaaj
 C
-      LURSP1 = -1
-      CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
-      CALL GPCLOSE(LURSP1,'DELETE')
-      CALL GPCLOSE(LURSP3,'DELETE')
-      CALL GPCLOSE(LURSP5,'DELETE')
+C     LURSP1 = -1
+C     CALL GPOPEN(LURSP1,'RSPRST.E2C','UNKNOWN',' ','UNFORMATTED',
+C    &            IDUMMY,.FALSE.)
+      !CALL GPCLOSE(LURSP1,'DELETE')
+      !CALL GPCLOSE(LURSP3,'DELETE')
+      !CALL GPCLOSE(LURSP5,'DELETE')
 C
 C     *******************************************
 C
@@ -642,6 +642,7 @@ C
       IF (KZCONF .GT. 0) then
          IF (MCDPRJ) write(lupri,*)'SONIA: RESET MCDPRJ=false for MCSCF'
          MCDPRJ = .false.
+         !call quit
       END IF
       if (MCDPRJ) then
         write(lupri,*)'SONIA: allocating for projection'
@@ -697,211 +698,221 @@ C
                END IF
             END IF
   410    CONTINUE
-         if (mcdprj)
-     &   write(lupri,*)'SONIA: we requested NFREQ frequencies=',NFREQ
+         if (mcdprj) then
+           write(lupri,*)'MCDPRJ: requested NFREQ frequencies=',NFREQ
+         end if
 
          IF (NFREQ .EQ. 0) GOTO 680
 C
-         !SONIA: usual code
+         !SONIA: standard code
          if (.not.(mcdprj.and.LRLAB(ILRLAB)(2:7).eq.'DIPLEN')) then
 
-
-         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
+            CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &               ANTSYM,WRK(KGP),LWRK1)
-         GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
+            GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
-         WRITE (LUPRI,'(//A,I3,3A,/2A,/A,I3,/A,(T25,5F10.6))')
+            WRITE (LUPRI,'(//A,I3,3A,/2A,/A,I3,/A,(T25,5F10.6))')
      &   ' QRLRVE -- linear response calculation for symmetry',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &   ' QRLRVE -- operator label : ',LRLAB(ILRLAB),
      &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(ILRLAB))),
      &   ' QRLRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
-         IF (GPNORM .LT. THRSML) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'//
+            IF (GPNORM .LT. THRSML) THEN
+               WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'//
      &                      ' property vector is only',GPNORM
-            CALL DZERO(WRK(KBVECS),KZYVAR)
-            DO 450 IFREQ = 1,NFREQ
-               CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),BLANK,
+               CALL DZERO(WRK(KBVECS),KZYVAR)
+               DO 450 IFREQ = 1,NFREQ
+                  CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),
+     &                     BLANK,
      &                     WRK(KEIVAL+IFREQ-1),D0,KSYMOP,0,D0,ANTSYM)
- 450        CONTINUE
-            GO TO 680
-         END IF
+ 450           CONTINUE
+               GO TO 680
+            END IF
 C
-         KZRED  = 0
-         KZYRED = 0
-         KEXSIM = NFREQ
-         KEXCNV = KEXSIM
-         CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+            KZRED  = 0
+            KZYRED = 0
+            KEXSIM = NFREQ
+            KEXCNV = KEXSIM
+            CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      *               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
      *               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      *               WRK(KIBTYP),WRK(KEIVAL),WRK(KRESID),WRK(KEIVEC),
      *               XINDX,WRK(KWRK1),LWRK1)
-!        CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+!           CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
 !    *               LINEQ,GP,REDGP,REDE,REDS,
 !    *               IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 !
-         DO 580 IFREQ = 1,NFREQ,NFRQMX
-         if (mcdprj)
-     &      write(lupri,*)'SONIA: NFREQ=', NFREQ, ' NBX = ', NBX
-            NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
-            IBOFF = IFREQ - 1
-            CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+            DO 580 IFREQ = 1,NFREQ,NFRQMX
+               !do a batch of exc freqs at a time
+               if (mcdprj) then
+                  write(lupri,*)'MCDPRJ: NFREQ=', NFREQ, ' NBX = ', NBX
+               end if
+               NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
+               IBOFF = IFREQ - 1
+               CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
      &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-!           CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
+!              CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
 !
-            JBVECS = KBVECS
-            DO 560 JFREQ = IFREQ,IFREQ-1+NBX
-CTODO        IF (IPRRSP.GE.5) THEN
+               JBVECS = KBVECS
+               DO 560 JFREQ = IFREQ,IFREQ-1+NBX
+CTODO           IF (IPRRSP.GE.5) THEN
                   WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
      &            '@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &            ' LABEL',LRLAB(ILRLAB),
      &            ' FREQUENCY ',WRK(KEIVAL-1+JFREQ)
                   JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
-               DO JLRLAB = 1, NLRLAB
-               CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
+                  DO JLRLAB = 1, NLRLAB
+                     CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                     ANTSM2,WRK(KGP2),LGP2)
-               VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
-               WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
+                     VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
+                     WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
      &              '@ QRLRVE:  << ', LRLAB(JLRLAB),' ; '
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
-               END DO
-CTODO        END IF
-               IF (IPRRSP.GT.100) THEN
-                  WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
-                  CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-               END IF
-               CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
+                  END DO
+CTODO           END IF
+                  IF (IPRRSP.GT.100) THEN
+                     WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
+                    CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+                  END IF
+                  CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
      &                     BLANK,WRK(KEIVAL-1+JFREQ),D0,KSYMOP,0,
      &                     WRK(KRESID - 1 + JFREQ),ANTSYM)
-               JBVECS = JBVECS + KZYVAR
-  560       CONTINUE
-  580    CONTINUE
+                  JBVECS = JBVECS + KZYVAR
+  560          CONTINUE
+  580       CONTINUE
+
          else !SONIA: MCDPRJ special code
 
-       !SONIA: MCD, we want to ensure we solve for 1 freq at at time
-       !in the resonant case (diplen)
-       do ifreq = 1, NFREQ
-         WRITE(LUPRI,*)'SONIA: CALL SOLVER 1 freq at a time', ifreq
-         !get property gradient vector
-         CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
+           !SONIA: MCD, we want to ensure we solve for 1 freq at at time
+           !in the resonant case (diplen)
+           do ifreq = 1, NFREQ
+             WRITE(LUPRI,*)'SONIA: CALL SOLVER 1 freq at a time', ifreq
+             !get property gradient vector
+             CALL GETGPV(LRLAB(ILRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                  ANTSYM,WRK(KGP),LWRK1)
-         GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
-         WRITE (LUPRI,'(//A,I3,3A/2A,/A,(T25,5F10.6))')
+             GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
+             WRITE (LUPRI,'(//A,I3,3A/2A,/A,(T25,5F10.6))')
      &   ' QRLRVE PRJ -- linear response calculation for sym',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &   ' QRLRVE PRJ -- operator label : ',LRLAB(ILRLAB),
      &   ' QRLRVE PRJ -- frequency :', WRK(KEIVAL+ifreq-1)
 
-         IF (GPNORM .LT. THRSML) THEN
-           WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
-           WRITE (LUPRI,*) '     property vector is only',GPNORM
-           CALL DZERO(WRK(KBVECS),KZYVAR)
-           CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),BLANK,
+             IF (GPNORM .LT. THRSML) THEN
+               WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
+               WRITE (LUPRI,*) '     property vector is only',GPNORM
+               CALL DZERO(WRK(KBVECS),KZYVAR)
+               CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS),LRLAB(ILRLAB),
+     &                     BLANK,
      &                     WRK(KEIVAL+IFREQ-1),D0,KSYMOP,0,D0,ANTSYM)
-           GO TO 680
-         END IF
-         !read in the excitation vector for the resonant excitation
-         afrq=WRK(KEIVAL+ifreq-1)
-         CALL REARSP(LURSP,KLEN,WRK(KXf),'EXCITLAB',BLANK,
+               GO TO 680
+             END IF
+             !read in the excitation vector for the resonant excitation
+             afrq=WRK(KEIVAL+ifreq-1)
+             CALL REARSP(LURSP,KLEN,WRK(KXf),'EXCITLAB',BLANK,
      &               afrq,D0,KSYMOP,0,THCLR,FOUND,CONV,ANTSYM)
 
-         if ((found).and.(conv)) then
-           write(lupri,*)'SONIA: found redundant exci X_f on file'
-           !CALL RSPPRO(WRK(KXf),KZVAR,UDV,-LUPRI)
-           call dzero(WRK(KS2Xf),KZYVAR)
-           CALL RSPSLI(0,1,DUMMY,WRK(KXf),
+            if ((found).and.(conv)) then
+               write(lupri,*)'SONIA: found redundant exci X_f on file'
+               !CALL RSPPRO(WRK(KXf),KZVAR,UDV,-LUPRI)
+               call dzero(WRK(KS2Xf),KZYVAR)
+               CALL RSPSLI(0,1,DUMMY,WRK(KXf),
      *                 UDV,WRK(KS2Xf),XINDX,WRK(KWRK1),LWRK1)
-           write(lupri,*)'SONIA: S2X_f of excitation vector'
-           CALL RSPPRO(WRK(KS2Xf),KZVAR,UDV,-LUPRI)
-        write(lupri,*)'XfS2Xf=',ddot(KZYVAR,WRK(KXf),1,WRK(KS2Xf),1)
-           tt = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
-           write(lupri,*)'SONIA: ddot{Xf,GD}=', tt
-           !write(lupri,*)'SONIA: Property gradient before projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
-           !project out X_f as: GDp= GD-(ddot{Xf,GD})S[2]X_f
-           CALL DAXPY(KZYVAR,-TT,WRK(KS2Xf),1,WRK(KGP),1)
-           write(lupri,*)'SONIA: property gradient after projection'
-           !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
-           tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
-           write(lupri,*)'SONIA: hopefully zero, ddot{Xf|GDp}=', tt2
-         end if
-         KZRED  = 0
-         KZYRED = 0
-         KEXSIM = 1
-         KEXCNV = 1
-         kfreque = KEIVAL+ifreq-1
-         !sonia: call response control to start the LR solution...
-         !if (.true.) then
-         if (abs(tt).le.1.0d-16) then
-            !if gradient does not have components along Xf no need
-            !to go thru this misery? Maybe not...
-            write(lupri,*)'Calling regular RSPCTL,tt=', tt
-            CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+               write(lupri,*)'SONIA: S2X_f of excitation vector'
+               CALL RSPPRO(WRK(KS2Xf),KZVAR,UDV,-LUPRI)
+               write(lupri,*)'ddot{Xf,S2Xf}=',
+     &                       ddot(KZYVAR,WRK(KXf),1,WRK(KS2Xf),1)
+               tt = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
+               write(lupri,*)'SONIA: ddot{Xf,GD}=', tt
+               !write(lupri,*)'SONIA: Property gradient before projection'
+               !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
+               !project out X_f as: GDp= GD-(ddot{Xf,GD})S[2]X_f
+               CALL DAXPY(KZYVAR,-TT,WRK(KS2Xf),1,WRK(KGP),1)
+               write(lupri,*)'SONIA: property gradient after projection'
+               !CALL RSPPRO(WRK(KGP),KZVAR,UDV,-LUPRI)
+               tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KGP),1)
+               write(lupri,*)'SONIA: hopefully zero, ddot{Xf|GDp}=', tt2
+             end if
+             KZRED  = 0
+             KZYRED = 0
+             KEXSIM = 1
+             KEXCNV = 1
+             kfreque = KEIVAL+ifreq-1
+             !sonia: call response control to start the LR solution...
+             !if (.true.) then
+             if (abs(tt).le.1.0d-16) then
+                !if gradient does not have components along Xf no need
+                !to go thru this misery? Maybe not...
+                write(lupri,*)'Calling regular RSPCTL,tt=', tt
+                CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
      &               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      &               WRK(KIBTYP),WRK(Kfreque),WRK(KRESID),WRK(KEIVEC),
      &               XINDX,WRK(KWRK1),LWRK1)
 
-         else
-            !use the projecting algorithm...
-            write(lupri,*)'Calling RSPCTLMCD, tt=',tt
-            CALL RSPCTLMCD(CMO,UDV,PV,FC,FV,FCAC,H2AC,
+             else
+                !use the projecting algorithm...
+                write(lupri,*)'Calling RSPCTLMCD, tt=',tt
+                CALL RSPCTLMCD(CMO,UDV,PV,FC,FV,FCAC,H2AC,
      &               .TRUE.,LRLAB(ILRLAB),BLANK,WRK(KGP),
      &               WRK(KREDGP),WRK(KREDE),WRK(KREDS),
      &               WRK(KIBTYP),WRK(kfreque),WRK(KRESID),WRK(KEIVEC),
      &               XINDX,WRK(KXf),WRK(KS2Xf),WRK(KWRK1),LWRK1)
-            write(lupri,*)'Exit projecting response control'
-            call flshfo(lupri)
-         end if
+                write(lupri,*)'Exit projecting response control'
+                call flshfo(lupri)
+             end if
 
 !         DO 580 IFREQ = 1,NFREQ,NFRQMX
 !            NBX   = MIN(NFRQMX,(NFREQ+1-IFREQ))
 !            IBOFF = IFREQ - 1
-          NBX   = 1 !this is the number of freqs (sets of red space elements)
-          IBOFF = 0
-           !IBOFF = IFREQ - 1
-!          CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
+             NBX   = 1 !this is the number of freqs (sets of red space elements)
+             IBOFF = 0
+              !IBOFF = IFREQ - 1
+!             CALL RSPEVE(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
 !     &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-          CALL RSPEVE(WRK(KIBTYP),WRK(kfreque),WRK(KEIVEC),
+             CALL RSPEVE(WRK(KIBTYP),WRK(kfreque),WRK(KEIVEC),
      &                  WRK(KBVECS),WRK(KWRKE),NBX,IBOFF)
-          write(lupri,*)'Exit RSPEVE PRJ iboff,ifreq', iboff, ifreq
-          call flshfo(lupri)
+             tt2 = ddot(KZYVAR,WRK(KXf),1,WRK(KBVECS),1)
+             write(lupri,*)'SONIA: hopefully zero, ddot{Xf|Sol}=', tt2
 
-          JBVECS = KBVECS
-          !compute the LR function of the current solution vector
-          !DO 560 JFREQ = IFREQ,IFREQ-1+NBX
-!TODO     IF (IPRRSP.GE.5) THEN
-          JFREQ = IFREQ
-          WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
+             write(lupri,*)'Exit RSPEVE PRJ iboff,ifreq', iboff, ifreq
+             call flshfo(lupri)
+
+             JBVECS = KBVECS
+             !compute the LR function of the current solution vector
+             !DO 560 JFREQ = IFREQ,IFREQ-1+NBX
+!TODO        IF (IPRRSP.GE.5) THEN
+             JFREQ = IFREQ
+             WRITE(LUPRI,'(/A,I5,3A,3(3X,A),D14.6)')
      &      '@ QRLRVE: SINGLET SOLUTION FOR SYMMETRY',KSYMOP,
      &            '  ( ',REP(KSYMOP-1),')',
      &      ' LABEL',LRLAB(ILRLAB),
      &      ' FREQUENCY ',WRK(KEIVAL-1+IFREQ)
-          CALL FLSHFO(LUPRI)
-          JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
-          DO JLRLAB = 1, NLRLAB
-             CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
+             CALL FLSHFO(LUPRI)
+             JEIVEC = KEIVEC + (JFREQ-1)*KZYRED
+             DO JLRLAB = 1, NLRLAB
+                !make linear response 
+                CALL GETGPV(LRLAB(JLRLAB),FC,FV,CMO,UDV,PV,XINDX,
      &                     ANTSM2,WRK(KGP2),LGP2)
-             VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
-             WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
+                VAL = DDOT(KZYVAR,WRK(KGP2),1,WRK(JBVECS),1)
+                WRITE (LUPRI,'(/5A,F10.5,A,1P,G22.12)')
      &              '@ QRLRVE:  << ', LRLAB(JLRLAB),' ; '
      &              ,LRLAB(ILRLAB),' >> (',WRK(KEIVAL-1+JFREQ),'):',VAL
-          END DO
+             END DO
 !TODO        END IF
-          IF (IPRRSP.GT.100) THEN
-            WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
-            CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
-          END IF
-          !sonia: I dump the solution vector on file RSPVEC
-          CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
+             IF (IPRRSP.GT.100) THEN
+               WRITE (LUPRI,*) 'Column 1 = Z, Column 2 = Y'
+               CALL OUTPUT(WRK(JBVECS),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
+             END IF
+             !sonia: I dump the solution vector on file RSPVEC
+             CALL WRTRSP(LURSP,KZYVAR,WRK(JBVECS),LRLAB(ILRLAB),
      &                  BLANK,WRK(KEIVAL-1+JFREQ),D0,KSYMOP,0,
      &                  WRK(KRESID - 1 + JFREQ),ANTSYM)
-          JBVECS = JBVECS + KZYVAR
+             JBVECS = JBVECS + KZYVAR
 !  560      CONTINUE
 !  580    CONTINUE
-       end do !ifreq
-      end if  !SONIA extra MCDPRJ control...
+          end do !ifreq
+         end if  !SONIA extra MCDPRJ control...
   680 CONTINUE
 C
 C *** end of QRLRVE --
@@ -921,7 +932,7 @@ C
          CALL QUIT('Response vector not found on file RSPVEC')
       ELSE
          WRITE (LUPRI,'(/3A,F12.8/A,I3,A)') 
-     &        '@ WARNING>>>>'//
+     &        '@ WARNING----'//
      &        ' Response label ',LABEL,' with frequency ', FREQ,
      &        ' and symmetry',MSYM,' not converged on file RSPVEC'
       END IF
@@ -948,6 +959,7 @@ C
      &          SPNSD(*), SPNSU1(*), SPNSU2(*), SPNSU(*)
 C
       PARAMETER ( D0 = 0.0D0, THRFRQ = 1.0D-14, BLANK = '        ')
+      PARAMETER ( D1 = 1.0D0 )
 C
 #include "priunit.h"
 #include "pgroup.h"
@@ -971,10 +983,22 @@ C
 C
 C     Local variables:
 C
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GBC
+      DOUBLE PRECISION, ALLOCATABLE, DIMENSION(:) :: GA1
+
+      DOUBLE PRECISION GSUM1, GSUM2
       DIMENSION HYPVAL(MXQROP), MJWOP(2,MAXWOP,8)
       LOGICAL   DIPLEN, DOCAL, FOUND, CONV, DFTADX
 C
       CALL QENTER('QRHYP')
+
+      IF (QLOP) THEN
+         MZYMAX = MAXVAL(MZYVAR)
+         ALLOCATE(GA1(MZYMAX))
+         ALLOCATE(GBC(MZYMAX))
+      END IF
+
+
       IF (SOCOLL) CALL SOINIT
       IF (SSCOLL) CALL SSINIT(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,
      &                        SPNSU1,SPNSU2,SPNSU)
@@ -1045,6 +1069,7 @@ C    *                      ' FREQUENCY ',TRFREQ(ICFRNU-NEXLB2-NLRLBL),
                      END IF
                      DO 700 IBOP = 1,NBQROP(MSYMB)
                         DO 800 IBFR = 1,NBQRFR
+                          CALL DZERO(HYPVAL,NAQROP(MSYMA))
 C
 C  Check for special processes.
 C
@@ -1263,6 +1288,11 @@ C
      *                            -FREQB,-FREQC,XINDX,
      *                           UDV,PV,MJWOP,WRK(KX3WRK),LX3WRK,
      &                           CMO,FC,FV)
+                              IF (QLOP) THEN
+                                 CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),
+     &                           1,GBC,1)
+                                 CALL DSCAL(MZYVAR(MSYMA),-D1,GBC,1)
+                              END IF
                               IF (E3TEST) THEN
                                  CALL DCOPY(MZYVAR(MSYMA),WRK(KX3WRK),1,
      *                                      WRK(1),1)
@@ -1272,6 +1302,7 @@ C
                               CALL FLSHFO(LUPRI)
                               IF (ITSTLP.NE.0)
      *                           CALL QUIT('QRHYP:TSTJEP COMPLETED')
+                              IF (QLOP) GOTO 911
                               DO 910 IAOP = 1,NAQROP(MSYMA)
                                  IF ( ISPINA.EQ.0 ) THEN
                                     IAFRNU = NEXLB2 + INQRLR(
@@ -1338,6 +1369,7 @@ c                                   END IF
                                  END IF
                                  CALL FLSHFO(LUPRI)
   910                         CONTINUE
+  911                         CONTINUE
                            END IF
 C
 C  B[2] Nc term
@@ -1386,6 +1418,11 @@ C
      *                              UDV,PV,
      *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
+                           IF (QLOP) THEN
+                              CALL DAXPY(MZYVAR(MSYMA),D1,WRK(KB2C),
+     *                        1,GBC,1) 
+                           END IF
+                           IF (QLOP) GOTO 921
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1446,6 +1483,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   920                      CONTINUE
+  921                      CONTINUE
 C
 C  C[2] Nb term
 C  Calculate C[2] Nb and store in WRK(KC2B)
@@ -1492,6 +1530,11 @@ C
      *                           UDV,PV,
      *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
+                           IF (QLOP) THEN
+                              CALL DAXPY(MZYVAR(MSYMA),D1,WRK(KC2B),
+     *                        1,GBC,1) 
+                           END IF
+                           IF (QLOP) GOTO 931
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
                                  IAFRNU = NEXLB2 + INQRLR(
@@ -1543,6 +1586,7 @@ C                             FREQA  = QRFREQ(IAFRNU-NEXLB2)
                               END IF
                               CALL FLSHFO(LUPRI)
   930                      CONTINUE
+  931                      CONTINUE
 C
 C A2TEST
 C
@@ -1591,6 +1635,39 @@ C
                               END IF
                               CALL FLSHFO(LUPRI)
  940                       CONTINUE
+                        IF (QLOP) THEN
+C Subsection to save quadratic response vector on file for second order
+C density perturbation, for later python / loprop usage
+      !Allocate memory for vector called in CRLRV3
+C Add individual contributions from T3DRV, and both X2INIT contributions
+!Call RSPCTL through CRLRV3, right hand side is our vec from T3DRV + X2 + X2
+
+                        CALL CRLRV3( GBC, BQRLB(MSYMB,IBOP),
+     &                  CQRLB(MSYMC,ICOP),FREQB, FREQC, 
+     &                  CMO, UDV, PV, FOCK, FC, FV, FCAC, H2AC,
+     &                  XINDX, MJWOP, WRK, LWRK)
+                          CALL REARSP(LURSP,MZYVAR(MSYMA),GBC,
+     &                    BQRLB(MSYMB,IBOP),CQRLB(MSYMC,ICOP),
+     &                    FREQB,FREQC,1,1, 1.0D-2,FOUND,CONV,ANTSYM)
+
+C Add individual contributions from T3DRV, and both X2INIT contributions
+
+                           DO 960 IAOP = 1,NAQROP(MSYMA)
+C QLOP specifies to save quadratic RSPVEC for loprop/python usage 
+                              CALL GETGPV(AQRLB(MSYMA,IAOP),FC,FV,CMO,
+     &                        UDV,PV,XINDX,ANTSYM,WRK,LWRK)
+                              CALL DCOPY( MZYVAR(MSYMA),WRK,1,GA1,1)
+!                             CALL REARSP(LURSP,MZYVAR(MSYMA),GNA,
+!    &                        AQRLB(MSYMA,IAOP),BLANK,
+!    &                        FREQA,D0,1,1,1.0D-2,FOUND,CONV,ANTSYM)
+!       call qexit('A:'//AQRLB(MSYMA,IAOP)//BLANK)
+                              !GSUM1 = DDOT(MZYVAR(MSYMA),GNA,1,GXCB,1)
+!                             GSUM2 = DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
+!                             WRITE(LUPRI,*) "GSUM1, GSUM2", GSUM1,GSUM2
+                              HYPVAL(IAOP) = HYPVAL(IAOP)
+     &                              + DDOT(MZYVAR(MSYMA),GA1,1,GBC,1)
+ 960                       CONTINUE
+                        END IF
                            DO 950 IAOP = 1,NAQROP(MSYMA)
 C
                               DIPLEN = .FALSE.
@@ -1661,6 +1738,12 @@ C
          CALL SPNSO(SPNFC1,SPNFC2,SPNFC,SPNSD1,SPNSD2,SPNSD,SPNSU1,
      &               SPNSU2,SPNSU,WRK(KCSTRA),WRK(KSCTRA))
       END IF
+
+      IF (QLOP) THEN
+         DEALLOCATE(GA1)
+         DEALLOCATE(GBC)
+      END IF
+
       CALL GPCLOSE(LURSPRES,'KEEP')
       CALL QEXIT('QRHYP')
       RETURN
@@ -2250,7 +2333,7 @@ C
                               END IF
                               IF (LYESGP) THEN
 C
-C Calculate propriety gradient. Returned as first element in WRK
+C Calculate property gradient. Returned as first element in WRK
 C
                                  !backup variables in wrkrsp.h
                                  KSYMOPSV = KSYMOP
@@ -2878,7 +2961,7 @@ C
      &                       'found on file')
                      ELSE
                         WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                       '@ WARNING>>>>'//
+     &                       '@ WARNING----'//
      &                       ' Response label ','EXCITLAB',
      &                       ' with frequency ',FREQC,
      &                       ' and symmetry',MSYMC,
@@ -2940,7 +3023,7 @@ C
      &                          'found on file')
                         ELSE
                            WRITE (LUPRI,'(/3A,F7.5,/A,I3,A)') 
-     &                          '@ WARNING>>>>'//
+     &                          '@ WARNING----'//
      &                          ' Response label ','EXCITLAB',
      &                          ' with frequency ',FREQB,
      &                          ' and symmetry',MSYMB,
@@ -3300,7 +3383,7 @@ C
      &   ' QRTRVE -- operator label : ',LRLAB(ILRLAB),
      &   ' QRTRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
          IF (GPNORM .LT. THRSML) THEN
-            WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
+            WRITE (LUPRI,*) ' --- RSPCTL skipped because norm of'
             WRITE (LUPRI,*) '     property vector is only',GPNORM
             CALL DZERO(WRK(KBVECS),KZYVAR)
             DO 450 IFREQ = 1,NFREQ
@@ -3607,8 +3690,8 @@ C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
       WRITE(LUPRI,'(A)') 
-     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
-     &     'F U N C T I O N S   <<<<<<<<'
+     &     ' ---  L I N E A R   R E S P O N S E   '//
+     &     'F U N C T I O N S --- '
       CALL PRSYMB(LUPRI,'=',70,1)
 C
       WRITE (LUPRI,'(/A/A//A/A,1P,D10.2)')
@@ -3871,15 +3954,15 @@ C
 #include "sigmaso.h"
 
 C
-      FC1SUM = DNORM2(3*MXCOOR,SIGFC1,1)
-      FC2SUM = DNORM2(3*MXCOOR,SIGFC2,1)
-      FCSUM = DNORM2(3*MXCOOR,SIGFC,1)
-      SD1SUM = DNORM2(3*MXCOOR,SIGSD1,1)
-      SD2SUM = DNORM2(3*MXCOOR,SIGSD2,1)
-      SDSUM = DNORM2(3*MXCOOR,SIGSD,1)
-      FS1SUM = DNORM2(3*MXCOOR,SIGFS1,1)
-      FS2SUM = DNORM2(3*MXCOOR,SIGFS2,1)
-      FSSUM = DNORM2(3*MXCOOR,SIGFS,1)
+      FC1SUM = DNRM2(3*MXCOOR,SIGFC1,1)
+      FC2SUM = DNRM2(3*MXCOOR,SIGFC2,1)
+      FCSUM = DNRM2(3*MXCOOR,SIGFC,1)
+      SD1SUM = DNRM2(3*MXCOOR,SIGSD1,1)
+      SD2SUM = DNRM2(3*MXCOOR,SIGSD2,1)
+      SDSUM = DNRM2(3*MXCOOR,SIGSD,1)
+      FS1SUM = DNRM2(3*MXCOOR,SIGFS1,1)
+      FS2SUM = DNRM2(3*MXCOOR,SIGFS2,1)
+      FSSUM = DNRM2(3*MXCOOR,SIGFS,1)
       DO I = 1, 8
          DOSYM(I) = .TRUE.
       END DO
@@ -3889,21 +3972,21 @@ C
          DO I = 1, 3*MXCOOR
             SIGFC(I,1) = SIGFC1(I,1) + SIGFC2(I,1)
          END DO
-         FCSUM = DNORM2(3*MXCOOR,SIGFC,1)
+         FCSUM = DNRM2(3*MXCOOR,SIGFC,1)
       END IF
       IF (SDSUM .LT. THRZER .AND. (SD1SUM .GT. THRZER .AND. 
      &                             SD2SUM .GT. THRZER)) THEN
          DO I = 1, 3*MXCOOR
             SIGSD(I,1) = SIGSD1(I,1) + SIGSD2(I,1)
          END DO
-         SDSUM = DNORM2(3*MXCOOR,SIGSD,1)
+         SDSUM = DNRM2(3*MXCOOR,SIGSD,1)
       END IF
       IF (FSSUM .LT. THRZER .AND. (FS1SUM .GT. THRZER .AND. 
      &                             FS2SUM .GT. THRZER)) THEN
          DO I = 1, 3*MXCOOR
             SIGFS(I,1) = SIGFS1(I,1) + SIGFS2(I,1)
          END DO
-         FSSUM = DNORM2(3*MXCOOR,SIGFS,1)
+         FSSUM = DNRM2(3*MXCOOR,SIGFS,1)
       END IF
 C
       CALL TITLER('ABACUS - SO CORRECTIONS TO CHEMICAL SHIELDINGS',
@@ -4194,15 +4277,15 @@ C
 #include "sigmaso.h"
 
 C
-      FC1SUM = DNORM2(MXCOOR**2,SPNFC1,1)
-      FC2SUM = DNORM2(MXCOOR**2,SPNFC2,1)
-      FCSUM = DNORM2(MXCOOR**2,SPNFC,1)
-      SD1SUM = DNORM2(MXCOOR**2,SPNSD1,1)
-      SD2SUM = DNORM2(MXCOOR**2,SPNSD2,1)
-      SDSUM = DNORM2(MXCOOR**2,SPNSD,1)
-      FS1SUM = DNORM2(MXCOOR**2,SPNSU1,1)
-      FS2SUM = DNORM2(MXCOOR**2,SPNSU2,1)
-      FSSUM = DNORM2(MXCOOR**2,SPNSU,1)
+      FC1SUM = DNRM2(MXCOOR**2,SPNFC1,1)
+      FC2SUM = DNRM2(MXCOOR**2,SPNFC2,1)
+      FCSUM = DNRM2(MXCOOR**2,SPNFC,1)
+      SD1SUM = DNRM2(MXCOOR**2,SPNSD1,1)
+      SD2SUM = DNRM2(MXCOOR**2,SPNSD2,1)
+      SDSUM = DNRM2(MXCOOR**2,SPNSD,1)
+      FS1SUM = DNRM2(MXCOOR**2,SPNSU1,1)
+      FS2SUM = DNRM2(MXCOOR**2,SPNSU2,1)
+      FSSUM = DNRM2(MXCOOR**2,SPNSU,1)
       DO I = 1, 8
          DOSYM(I) = .TRUE.
       END DO
@@ -4212,21 +4295,21 @@ C
          DO I = 1, MXCOOR*MXCOOR
             SPNFC(I,1) = SPNFC1(I,1) + SPNFC2(I,1)
          END DO
-         FCSUM = DNORM2(MXCOOR**2,SPNFC,1)
+         FCSUM = DNRM2(MXCOOR**2,SPNFC,1)
       END IF
       IF (SDSUM .LT. THRZER .AND. (SD1SUM .GT. THRZER .AND. 
      &                             SD2SUM .GT. THRZER)) THEN
          DO I = 1, MXCOOR*MXCOOR
             SPNSD(I,1) = SPNSD1(I,1) + SPNSD2(I,1)
          END DO
-         SDSUM = DNORM2(MXCOOR**2,SPNSD,1)
+         SDSUM = DNRM2(MXCOOR**2,SPNSD,1)
       END IF
       IF (FSSUM .LT. THRZER .AND. (FS1SUM .GT. THRZER .AND. 
      &                             FS2SUM .GT. THRZER)) THEN
          DO I = 1, MXCOOR*MXCOOR
             SPNSU(I,1) = SPNSU1(I,1) + SPNSU2(I,1)
          END DO
-         FSSUM = DNORM2(MXCOOR**2,SPNSU,1)
+         FSSUM = DNRM2(MXCOOR**2,SPNSU,1)
       END IF
 C
       CALL TITLER('ABACUS - SO CORRECTIONS TO REDUCED J COUPLINGS',

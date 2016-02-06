@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -180,7 +180,7 @@ C
             ELSE
                IREMOV = IREMOV + 1
                WRITE (LUPRI,'(/A,I3)')
-     *         ' >>> CICHCK: removed CI start vector no.',J
+     *         ' --- CICHCK: removed CI start vector no.',J
             END IF
   700    CONTINUE
          IF (LROOTX .NE. LROOTS) THEN
@@ -214,7 +214,7 @@ C
             ELSE
                IREMOV = IREMOV + 1
                WRITE (LUPRI,'(/A,I3)')
-     *         ' >>> CICHCK: removed CI start vector no.',J
+     *         ' --- CICHCK: removed CI start vector no.',J
             END IF
   800    CONTINUE
          JSTATE = ISTATE
@@ -254,20 +254,20 @@ C
       IF (IREMOV .NE. 0) THEN
          IREMOV = MAX(0,IREMOV)
          WRITE (LUPRI,'(///A/A,I3,A,I3,3(/A,2I4)//A)')
-     *   ' >>> CICHCK; REMOVE CI VECTORS OF NON-DESIRED SYMMETRY',
+     *   ' --- CICHCK; REMOVE CI VECTORS OF NON-DESIRED SYMMETRY',
      *   '             OPTION =',CCHECK,
      *   ', number of CI trial vectors removed :',IREMOV,
      *   '             ISTATE, orignal and after reduce:',ISTATE,JSTATE,
      *   '             LROOTS, orignal and after reduce:',LROOTS,LROOTX,
      *   '             NROOTS, orignal and after reduce:',NROOTS,NROOTX,
-     *   ' >>> CICHCK; THE SYMMETRY TEST MATRIX:'
+     *   ' --- CICHCK; THE SYMMETRY TEST MATRIX:'
          CALL OUTPUT(TMAT,1,LROOTS,1,LROOTS,LROOTS,LROOTS,1,LUPRI)
          IF (NROOTX .LT. JSTATE) THEN
             WRITE (LUPRI,'(//A/A,I5/A,I3)')
-     *      ' >>> CICHCK option 2, cannot proceed:',
+     *      ' --- CICHCK option 2, cannot proceed:',
      *      '     number of trial vectors of right symmetry is',NROOTX,
      *      '     which is less than current reference state no.',JSTATE
-            CALL QUIT(' >>> CICHCK: too few trial CI '//
+            CALL QUIT(' --- CICHCK: too few trial CI '//
      &                'vecs. of right symmetry')
          END IF
       END IF

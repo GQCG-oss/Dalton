@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -529,7 +529,7 @@ C
         IF (IPRKAP.GE.5.OR.ABS(X).GT.DTEST) WRITE(LUPRI,'(/A,1P,D15.8)')
      *     ' COMPONENT 1 CONTRIBUTION TO ORBITAL RESIDUAL (NEO)',X
          X = X*X
-         QONORM = DNORM2(NWOPT,BOVEC(1,NBOVEC+1),1)
+         QONORM = DNRM2(NWOPT,BOVEC(1,NBOVEC+1),1)
          QONORM = QONORM**2 + X
          QONORM = SQRT(QONORM) / ABS(EOVEC(1)*OBETA)
 C        normalize residual norm so we get same value
@@ -551,7 +551,7 @@ C
             IF (FAC.NE.D0)
      *         CALL DAXPY(NWOPT,FAC,BOVEC(1,K),1,BOVEC(1,NBOVEC+1),1)
  1350    CONTINUE
-         QONORM = DNORM2(NWOPT,BOVEC(1,NBOVEC+1),1)
+         QONORM = DNRM2(NWOPT,BOVEC(1,NBOVEC+1),1)
       END IF
 C
 C     CONVERGENCE TEST (COMMON FOR NEO AND N-R)
@@ -1226,7 +1226,7 @@ C
       IF ( IPRKAP.GE.2) THEN
          TIMKAP = SECOND() - TIMKAP
          WRITE(LUPRI,'(//A,T40,F10.2,2(/T24,A,T40,F10.2,A,I3,A))')
-     *      ' >>> TIMING IN NEXKAP, TOTAL TIME',TIMKAP,
+     *      ' --- TIMING IN NEXKAP, TOTAL TIME',TIMKAP,
      *      'TIME IN KAPST', TIMST, ' FOR',MST, ' CALLS',
      *      'TIME IN KAPCTL',TIMCTL,' FOR',MCTL,' CALLS'
       END IF
@@ -1263,7 +1263,7 @@ C
       IVEC = NOLD
       DO 200 INEW = 1,NNEW
          IVEC = IVEC + 1
-         TT   = DNORM2(NVDIM,VEC(1,IVEC),1)
+         TT   = DNRM2(NVDIM,VEC(1,IVEC),1)
          IF (TT.LE.THRLDP) THEN
             LINDEP(INEW) = .TRUE.
             WRITE (LUPRI,8100) INEW,TT
@@ -1271,7 +1271,7 @@ C
             LINDEP(INEW) = .FALSE.
             IF (TT.LT.THRTT) THEN
                CALL DSCAL (NVDIM,(D1/TT),VEC(1,IVEC),1)
-               TT = DNORM2(NVDIM,VEC(1,IVEC),1)
+               TT = DNRM2(NVDIM,VEC(1,IVEC),1)
             END IF
             CALL DSCAL (NVDIM,(D1/TT),VEC(1,IVEC),1)
          END IF
@@ -1306,7 +1306,7 @@ C           ... orthogonalize using prev. vectors are normalized
                   CALL DAXPY(NVDIM,TT,VEC(1,JVEC),1,VEC(1,IVEC),1)
                END IF
  2300       CONTINUE
-            TT = DNORM2(NVDIM,VEC(1,IVEC),1)
+            TT = DNRM2(NVDIM,VEC(1,IVEC),1)
             IF (TT .LE. THRLDP) THEN
                LINDEP(INEW) = .TRUE.
                WRITE (LUPRI,8100) INEW,TT
@@ -1314,7 +1314,7 @@ C           ... orthogonalize using prev. vectors are normalized
                IF (TT .LT. THRRND) IROUND = IROUND+1
                IF (TT .LT. THRTT) THEN
                   CALL DSCAL(NVDIM,(D1/TT),VEC(1,IVEC),1)
-                  TT = DNORM2(NVDIM,VEC(1,IVEC),1)
+                  TT = DNRM2(NVDIM,VEC(1,IVEC),1)
                END IF
                CALL DSCAL(NVDIM,(D1/TT),VEC(1,IVEC),1)
             END IF

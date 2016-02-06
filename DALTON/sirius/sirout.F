@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -55,6 +55,11 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+#endif
+      use qmcmm_fock, only: scf_qmnpmm_out
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -144,7 +149,7 @@ C  DINFO(41-50):   EVEC(2,1-10)  CI gradient-coef. of eigenvectors
 C  DINFO(51-60):   EVEC(3,1-10)  orb gradient-coef. of eigenvectors
 C                  (all four have NEVAL entries, starting w. /IEVAL1)
 C
-        CALL TITLER('>>> SIRIUS OPTIMIZATION STATISTICS <<<',' ',200)
+        CALL TITLER('--- SIRIUS OPTIMIZATION STATISTICS ---',' ',200)
 C       stamp date, time, and hostname to LUPRI
         CALL TSTAMP(' ',LUPRI)
 C
@@ -298,7 +303,7 @@ C *** FINAL RESULTS
 C
       CALL MOLCHR(ICHRG)
 C     ... get total molecular charge
-      CALL TITLER('>>> Final results from SIRIUS <<<',' ',200)
+      CALL TITLER('--- Final results from SIRIUS ---',' ',200)
       WRITE (LUPRI,5000) ISPIN,LSYM,REP(LSYM-1),GROUP,ICHRG
       IF (NFIELD .GT. 0) THEN
          WRITE (LUPRI,'(/A/A/A)')
@@ -342,7 +347,12 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
-
+#ifdef HAS_PCMSOLVER
+      ELSE IF (pcmmod_is_pcm_calculation) THEN
+         WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
+     *        'SOLVATION MODEL: polarizable continuum model (PCM),'
+         WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
+#endif
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
@@ -366,7 +376,7 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE IF (QMNPMM) THEN
          CALL SCF_QMNPMM_OUT()
-      ELSE IF (PEQM) THEN
+      ELSE IF (USE_PELIB()) THEN
          CONTINUE
       ELSE
         ESOLT = D0
@@ -395,7 +405,7 @@ C        MCSCF calculation
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
          IF (FLAG(16) .OR. PCM) WRITE (LUPRI,5025) ESOLT
-         IF (PEQM) WRITE(LUPRI,5026) ESOLT
+         IF (USE_PELIB()) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       ELSE IF (DORHF) THEN
          IF (DOHFSRDFT) THEN
@@ -418,7 +428,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
-         IF (PEQM) WRITE(LUPRI,5026) ESOLT
+         IF (USE_PELIB()) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       END IF
 
@@ -479,10 +489,10 @@ C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
          IF (.NOT. MOISNO) WRITE (LUPRI,'(3(/A))')
-     *     '  >>> NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS'//
+     *     '  --- NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS'//
      &     ' PURPOSE ONLY',
-     *     '  >>> The orbital coefficients have NOT been transformed',
-     *     '  >>> to ordered natural orbitals.'
+     *     '  --- The orbital coefficients have NOT been transformed',
+     *     '  --- to ordered natural orbitals.'
          CALL MEMREL('SIROUT.GETNO ',WRK,KFRSAV,KREL1,KFREE,LFREE)
       END IF
 C

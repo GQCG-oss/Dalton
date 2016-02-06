@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -112,6 +112,12 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
+#if defined (HAS_PCMSOLVER)
+      use pcmmod_cfg
+      use pcm_linear_response
+#endif 
+      use qmcmm_response, only: qmcmm_lr
+      use pelib_interface, only: use_pelib, pelib_ifc_lr
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -318,7 +324,7 @@ C
 #endif
       ENDIF
       IF (PCM .AND. (.NOT. MMPCM)) THEN
-         LADDMM = .TRUE. 
+         LADDMM = .TRUE.
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM PCMLTR TO LINEAR TRANSFORMATION'
          CALL PCMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
@@ -331,7 +337,7 @@ C
          IF (NOSIM .GT. MXEPCM) THEN
            WRITE(LUPRI,*) 'Error Increase MXEPCM to at least: ',NOSIM 
            CALL QUIT('Increase MXEPCM')
-         ENDIF 
+         ENDIF
          LADDMM = .FALSE.
          DMMSAVE = 0.0D0
          FIRST1 = .TRUE.
@@ -339,10 +345,10 @@ C
             CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &                 WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &                 EVECS(NCSIM*KZYVAR+1),
-     &                 WRK(KFREE),LFREE)           
+     &                 WRK(KFREE),LFREE)
             IF (FIRST1) THEN
                CALL PCM_INIT_QVFLAGS('EL1')
-               CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY, 
+               CALL PCM_COMP_POT(CMO, UDV, WRK(KUDVTR), BOVECS, DUMMY,
      &                          DUMMY, NOSIM, IDUMMY, WRK(KFREE), LFREE)
                CALL PCM_COMP_CHG(NOSIM, NEQRSP, WRK(KFREE), LFREE)
             END IF
@@ -361,14 +367,17 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
-      IF (PEQM) THEN
-#if defined (BUILD_PELIB)
-        CALL PE_RSPLIN(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
-     &                 INDXCI, UDV, WRK(KDV), WRK(KUDVTR), WRK(KDVTR),
-     &                 WRK(KDVT), WRK(KDVTTR), EVECS,
-     &                 EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
-#endif
+      IF (USE_PELIB()) THEN
+        CALL PELIB_IFC_LR(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
+     &                    INDXCI, UDV, WRK(KDV), WRK(KUDVTR),
+     &                    WRK(KDVTR), WRK(KDVT), WRK(KDVTTR), EVECS,
+     &                    EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
       END IF
+#if defined (HAS_PCMSOLVER)
+      if (pcmmod_is_pcm_calculation) then
+        call hello_world
+      end if
+#endif 
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
@@ -389,10 +398,10 @@ C
       END IF
       IF (QMNPMM) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
-     *   ' CONTRIBUTIONS FROM QMNPMM_LNO TO LINEAR TRANSFORMATION'
-         CALL QMNPMM_LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
-     &                   UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &                   EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+     *   ' CONTRIBUTIONS FROM QMCMM_LR TO LINEAR TRANSFORMATION'
+         CALL qmcmm_lr(NOSIM,BOVECS,WRK(KCREF),CMO,
+     &                 UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
+     &                 EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
       ENDIF
 C
       IF ((NCSIM.GT.0).AND.(IPRRSP.GT.101)) THEN
@@ -790,10 +799,10 @@ C     Determine if full Hessian or only orbital Hessian
 C
 C
       IF (IPRRSP .GE. 40) THEN
-         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM SLVLNO >>>'
+         WRITE (LUPRI,'(//A)') ' --- TEST OUTPUT FROM SLVLNO ---'
       END IF
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SLVLNO - svec(1,nosim) on entry'
+         WRITE (LUPRI,'(/A)') ' --- SLVLNO - svec(1,nosim) on entry'
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 C
@@ -996,13 +1005,13 @@ C
             DO 603 IOSIM = 1,NOSIM
                JRXYO = KRXYO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,'(/2A,I3,A,I3)')
-     *         ' >>> SLVLNO - TRIPLET ',
+     *         ' --- SLVLNO - TRIPLET ',
      *         '(Rxo) matrix no.',IOSIM,' of',NOSIM
                CALL OUTPUT(WRK(JRXYO),1,NORBT,1,NORBT,NORBT,NORBT,
      *                              1,LUPRI)
                JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,'(/A,I3,A,I3)')
-     *         ' >>> SLVLNO - (Ryo) matrix no.',IOSIM,' of',NOSIM
+     *         ' --- SLVLNO - (Ryo) matrix no.',IOSIM,' of',NOSIM
                CALL OUTPUT(WRK(JRXYOT),1,NORBT,1,NORBT,NORBT,NORBT,
      *                              1,LUPRI)
   603       CONTINUE
@@ -1010,7 +1019,7 @@ C
             DO 600 IOSIM = 1,NOSIM
                JRXYO = KRXYO + (IOSIM-1)*N2ORBX
                WRITE (LUPRI,'(/A,I3,A,I3)')
-     *         ' >>> SLVLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
+     *         ' --- SLVLNO - (Rxo + Ryo) matrix no.',IOSIM,' of',NOSIM
                CALL OUTPUT(WRK(JRXYO),1,NORBT,1,NORBT,NORBT,NORBT,
      *                              1,LUPRI)
   600       CONTINUE
@@ -1104,7 +1113,7 @@ C
             IF (ABS(TEST) .GT. 1.D-8) THEN
                NWARN = NWARN + 1
                WRITE (LUPRI,'(/A,I5,/A,1P,D12.4)')
-     *            ' >>> SLVLNO WARNING, for IOSIM =',IOSIM,
+     *            ' --- SLVLNO WARNING, for IOSIM =',IOSIM,
      *            ' <CREF | SVEC_solvent(iosim) > =',TEST
             END IF
   900    CONTINUE
@@ -1113,14 +1122,14 @@ C
 C        ... test print
 C
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SLVLNO - svec(ci,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- SLVLNO - svec(ci,1) on exit'
          DO 930 I = 1,KZCONF
             IF (SVEC(I,1) .NE. D0) WRITE (LUPRI,'(A,I10,F15.10)')
      *         ' conf #',I,SVEC(I,1)
   930    CONTINUE
       END IF
       IF (IPRRSP .GE. 140) THEN
-         WRITE (LUPRI,'(/A)') ' >>> SLVLNO - svec(orb,1) on exit'
+         WRITE (LUPRI,'(/A)') ' --- SLVLNO - svec(orb,1) on exit'
          WRITE (LUPRI,'(/A)') ' Z - PART OR VECTOR '
          CALL OUTPUT(SVEC(KZCONF+1,1),1,KZWOPT,1,1,KZWOPT,1,1,LUPRI)
          WRITE (LUPRI,'(/A)') ' Y - PART OR VECTOR '
@@ -1177,7 +1186,7 @@ C     ... input check
 C
       IF (NCSIM .GT. 0 .AND. NOSIM .GT. 0) THEN
          WRITE (LUERR,'(//A/A,2I5)')
-     *   ' >>> SLVSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0',
+     *   ' --- SLVSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0',
      *   '     NCSIM, NOSIM =',NCSIM,NOSIM
          CALL QTRACE(LUERR)
          CALL QUIT('SLVSC ERROR, both NCSIM .gt. 0 and NOSIM .gt. 0')

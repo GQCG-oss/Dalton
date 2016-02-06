@@ -1,0 +1,849 @@
+#!/bin/bash
+
+################################################################################
+#                                                                              #
+# Shell-script for running (LS)DALTON                                          #
+#                                                                              #
+# Version 1.0 Feb. 1997 by T. Enevoldsen, Odense University                    #
+# Version 1.1 spring 2000 by K.Ruud and H.J.Aa.Jensen                          #
+# Version 2.1 Feb. 2005 by K.Ruud, H.J.Aa.Jensen, and P. Salek                 #
+# Version 2011 May 2011 by H.J.Aa.Jensen, with help from others                #
+# Version 2014 Aug 2014 by H.J.Aa.Jensen, with help from others                #
+#                                                                              #
+################################################################################
+
+opt_lsdalton=@opt_lsdalton@
+if [ $opt_lsdalton -eq 1 ] ; then #LSDALTON only
+  dalton="lsdalton"
+  DALTON="LSDALTON"
+else #DALTON only
+  dalton="dalton" 
+  DALTON="DALTON"
+fi
+
+
+# radovan: this is to figure out the location of this script
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
+DALTON_EXECUTABLE=$SCRIPT_DIR/$dalton.x
+
+which mpirun > /dev/null # check if mpirun exists, if not, then assume mpiexec
+if [ $? -eq 0 ]; then
+   MPIEXEC=mpirun
+else
+   MPIEXEC=mpiexec
+fi
+INSTALL_BASDIR=$SCRIPT_DIR/basis
+
+WRKDIR=`pwd` ; export WRKDIR
+# always search for basis sets in job work directory
+# (before standard dalton basis library in INSTALL_BASDIR, appended below)
+BASDIR=$WRKDIR
+#
+paramlist="$*"
+# default extensions
+OUTEXT="out"
+DALEXT="dal"
+MOLEXT="mol"
+POTEXT="pot"
+PCMEXT="pcm"
+
+GET_FILES=''
+PUT_FILES=''
+dalfil=''
+molfil=''
+potfil=''
+pcmfil=''
+SSH=ssh
+SCP=scp
+
+#default values for options
+optd=0
+optD=1
+optf=0
+optn=0
+opto=0
+optpg=0
+opt_cpexe=0
+opt_nobackup=0
+opt_noarch=0
+opt_noappend=0
+opt_lslib_test=0
+opt_restart=0
+optdens=0
+optx=0 
+#
+# Define usage message
+#
+usage (){
+        echo
+        echo "Usage: $0 [options] dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}] [pcmsolver{.$PCMEXT}]]"
+        echo
+        echo 'Options:'
+        echo ' -b dir           : prepend dir to directory list for basis set searches'
+        echo '                    (current directory and dalton basis library are included'
+        echo '                     automatically)'
+        echo ' -w dir           : change WRKDIR to dir'
+        echo '                    (default:' $WRKDIR')'
+        echo ' -o file          : redirect output from program to WRKDIR with "file" as file name'
+        echo ' -ow              : redirect output from program to WRKDIR with standard file name'
+        echo ' -dal file        : the '$dalton' input file'
+        echo ' -mol file        : the molecule input file'
+        echo ' -pot file        : the potential input file (for .QM3, .QMMM and .PEQM)'
+        echo ' -pcm file        : the pcm input file'
+        echo ' -ext log         : change output extension from ".out" to ".log"'
+        echo ' -nobackup        : do not backup files, simply overwrite outputs'
+        echo ' -f dal_mol[_pot] : extract dal_mol[_pot].tar.gz archive from WRKDIR into'
+        echo '                    DALTON_TMPDIR before calculation starts'
+        echo ' -noarch          : do not create tar.gz archive'
+        echo " -t dir           : set scratch directory DALTON_TMPDIR; this script will append"
+        echo "                    '/DALTON_scratch_$USER' to the path unless the path"
+        echo "                    contains 'DALTON_scratch' or you explicitly set -noappend"
+        echo ' -d               : delete job scratch directory before calculation starts'
+        echo ' -D               : do not delete job scratch directory after calculation stops'
+        echo ' -noappend        : do not append anything to the scratch directory; be careful'
+        echo '                    with this option since by default scratch is wiped after'
+        echo '                    calculation'
+        echo ' -get "file1 ..." : get files back from DALTON_TMPDIR after calculation stops'
+        echo ' -put "file1 ..." : put files to DALTON_TMPDIR before calculation starts'
+        echo ' -omp num         : set the number of OpenMP threads. Note that Dalton is not OpenMP'
+        echo '                    parallelized, however, this option can be used with e.g. threaded MKL'
+        echo ' -N num           : use num MPI processes'
+        echo '                    (defaults to 1 or DALTON_NUM_MPI_PROCS if defined)'
+        echo ' -cpexe           : copy '$dalton'.x to DALTON_TMPDIR before execution, either to'
+        echo '                    global scratch (if DALTON_USE_GLOBAL_SCRATCH is set) or to'
+        echo '                    local scratch on all nodes'
+        echo ' -rsh             : use rsh/rcp for communication with MPI nodes'
+        echo '                    (default: ssh/scp)'
+        echo ' -nodelist "node1 ..." : set nodelist DALTON_NODELIST, '$dalton'.x will be copied to'
+        echo '                         DALTON_TMPDIR on each node unless DALTON_USE_GLOBAL_SCRATCH'
+        echo '                         is defined (the script uses PBS_NODEFILE or SLURM_NODELIST'
+        echo '                         if available)'
+        echo ' -x dalmol1 dalmol2 : calculate NEXAFS spectrum from ground and core hole states'
+        echo " -exe exec        : change the executable from default ($DALTON_EXECUTABLE) to exec"
+        echo ' -pg              : do profiling with gprof'
+        if [ $opt_lsdalton -eq 1 ] ; then #LSDALTON only
+          echo ' -dens            : copy dens.restart and maybe fock.restart lcm_orbitals.u to dal_mol[_pot].tar.gz'
+          echo ' -restart         : run the calc twice to test restart option'
+          echo ' -lslib_test      : run lslib test'
+        else #DALTON only
+          echo ' -mb mem          : set dalton max usable work memory to mem Megabytes'
+          echo ' -mw mem          : set dalton max usable work memory to mem double precision words'
+          echo ' -nb mem          : set node max usable work memory to mem Megabytes'
+          echo ' -nw mem          : set node max usable work memory to mem double precision words'
+        fi
+        echo
+        echo "Environment variables understood by the $0 script:"
+        echo '    DALTON_TMPDIR             : scratch directory'
+        echo '    DALTON_USE_GLOBAL_SCRATCH : use global scratch directory, do not copy any files to worker nodes'
+        echo '    DALTON_NODELIST           : list of nodes, '$dalton'.x will be copied to DALTON_TMPDIR on each node'
+        echo '                                unless DALTON_USE_GLOBAL_SCRATCH is defined'
+        echo '    DALTON_LAUNCHER           : launcher for the '$dalton'.x binary'
+         }
+#
+# Define backup function
+#
+backup () {
+  if [ $opt_nobackup -eq 0 ]; then
+      if [ "$1" = "-v" ]; then ekko=1; shift
+      else ekko=0;
+      fi
+      for i in $* ; do
+         if [ -f "$i" ]; then
+            for j in 6 5 4 3 2 1 0 ; do
+               jp=`expr $j + 1`
+               if [ -f "$i.$j" ]; then 
+                  [ $ekko -eq 1 ] && echo "Backup: renaming $i.$j to $i.$jp"
+                  mv -f "$i.$j" "$i.$jp"
+               fi
+            done
+            if [ $ekko -eq 1 ]; then echo "Backup: renaming $i to $i.0"; fi
+            mv -f "$i" "$i.0"
+         fi
+      done
+  fi
+}
+error_dens=0
+error_restart=0
+error_lslib_test=0
+error_m=0
+error_M=0
+error_nb=0
+error_nw=0
+#
+# Interpret input
+#
+while [ -n "`echo $1 | grep '^-'`" ]; do
+    case $1 in
+      -b ) BASDIR="$2:$BASDIR"; shift;;
+      -d ) optd=1;;
+      -D ) optD=0;;
+      -nobackup ) opt_nobackup=1;;
+      -noarch ) opt_noarch=1;;
+      -cpexe ) opt_cpexe=1;;
+      -noappend ) opt_noappend=1;;
+      -pg ) optpg=1;;
+      -nodelist ) DALTON_NODELIST=$2; shift;;
+      -ext ) OUTEXT=$2; shift;;
+      -get ) GET_FILES=$2; shift;;
+      -put ) PUT_FILES=$2; shift;;
+      -pot ) POT_FILE=$2; shift;;
+      -rsh ) SCP=rcp; SSH=rsh;;
+      -f ) optf=$2; shift;;
+      -N ) optn=$2; shift;;
+      -omp ) export OMP_NUM_THREADS=$2; shift;;
+      -ow ) opto=2;;
+      -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
+#          OUTFIL and WRKDIR are read from environment inside (ls)dalton.x
+      -t ) DALTON_TMPDIR=$2; shift;;
+      -w ) WRKDIR=$2; shift;;
+      -exe ) DALTON_EXECUTABLE=$2; shift;;
+      -dal ) dalfil=$2; shift;;
+      -mol ) molfil=$2; shift;;
+      -pot ) potfil=$2; shift;;
+      -pcm ) pcmfil=$2; shift;;
+      -lslib_test ) opt_lslib_test=1; if [ $opt_lsdalton -eq 0 ]; then error_lslib_test=1; fi;;
+      -restart ) opt_restart=1; if [ $opt_lsdalton -eq 0 ]; then error_restart=1; fi;;
+      -dens ) optdens=1; if [ $opt_lsdalton -eq 0 ]; then error_dens=1; fi;;
+      -m|-mw ) WRKMEM=$2; export WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_m=1; fi; shift;;
+      -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_M=1; fi; shift;;
+         -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_nw=1; fi; shift;;
+         -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; if [ $opt_lsdalton -eq 1 ]; then error_nb=1; fi; shift;;
+      -x ) optx=1; gs=$2; ch=$3; shift;shift;;
+      * ) usage; exit 1;;
+   esac
+   shift
+done
+
+#Consistency testing
+if [ $opt_lsdalton -eq 1 ]; then
+  if [ $error_m -eq 1 ]; then
+    echo "ERROR: -m or -mw options only available for the dalton script"
+    exit 1
+  fi
+  if [ $error_M -eq 1 ]; then
+    echo "ERROR: -M or -mb options only available for the dalton script"
+    exit 1
+  fi
+  if [ $error_nw -eq 1 ]; then
+    echo "ERROR: -nw option only available for the dalton script"
+    exit 1
+  fi
+  if [ $error_nb -eq 1 ]; then
+    echo "ERROR: -nb option only available for the dalton script"
+    exit 1
+  fi
+else
+  if [ $error_dens -eq 1 ]; then
+    echo "ERROR: -dens options only available for the lsdalton script"
+    exit 1
+  fi
+  if [ $error_restart -eq 1 ]; then
+    echo "ERROR: -restart options only available for the lsdalton script"
+    exit 1
+  fi
+  if [ $error_lslib_test -eq 1 ]; then
+    echo "ERROR: -lslib_test options only available for the lsdalton script"
+    exit 1
+  fi
+fi
+
+if ! [ -s "$DALTON_EXECUTABLE" -a -x "$DALTON_EXECUTABLE" ]; then
+   echo "ERROR: $DALTON_EXECUTABLE does not exist or is not executable"
+   exit 1
+fi
+
+# append default basis set directory
+len_INSTALL_BASDIR=`echo $INSTALL_BASDIR | wc -c`
+if [ $len_INSTALL_BASDIR -gt 1 ]; then
+   # do not count newline char
+   BASDIR="$BASDIR:$INSTALL_BASDIR"
+fi
+export BASDIR
+
+if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set with "-t dir" option
+    scratch_dir_candidates="$SCRATCH /global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "DALTON_TMPDIR not defined by user."
+            echo " Guessing $dir is appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
+            break
+        fi
+    done
+
+    if [ -z "$DALTON_TMPDIR" ]; then
+        # DALTON_TMPDIR is still not set, better stop here
+        echo "ERROR: searched for suitable scratch directories among"
+        echo "       $scratch_dir_candidates"
+        echo "       but none of them exists."
+        echo "       Please either set the DALTON_TMPDIR environment variable"
+        echo "       or use -t to set the scratch directory."
+        exit 1
+    fi
+fi
+
+# -- identify input files and construct output file name
+
+# check for correct input
+if [ -z "$dalfil" ] && [ -z "$1" ]; then
+    echo 'Fatal error: Input file[s] not specified'
+    echo "Your command was: $0 $paramlist"
+    usage
+    exit 1
+fi
+
+if [ -n "$dalfil" ]; then
+    # dal given as -dal <filename>
+    # remove dal-ending
+    dalfil=`echo $dalfil | sed "s/\.$DALEXT//"`
+    if [ -n "$molfil" ]; then
+        molfil=`echo $molfil | sed "s/\.$MOLEXT//"`
+	    # otherwise molecule assumed defined inside dalfil
+    fi
+    if [ -n "$potfil" ]; then
+        potfil=`echo $potfil | sed "s/\.$POTEXT//"`
+    fi
+    if [ -n "$pcmfil" ]; then
+        pcmfil=`echo $pcmfil | sed "s/\.$PCMEXT//"`
+    fi
+elif [ -n "$1" ]; then
+    # input files given as arguments in the end of the dalton command
+    dalfil=`echo $1 | sed "s/\.$DALEXT//"`
+    if [ -z "$2" ]; then
+	    # only one argument given
+	    if [ -r ${dalfil}.$MOLEXT ]; then
+	        # molfil named the same as dalfil
+	        molfil=$dalfil
+	        # otherwise molecule assumed defined inside dalfil
+    	fi
+        if [ -r ${dalfil}.$POTEXT ]; then
+            potfil=$dalfil
+        fi
+        if [ -r ${dalfil}.$PCMEXT ]; then
+            pcmfil=$dalfil
+        fi
+    else
+        molfil=`echo $2 | sed "s/\.$MOLEXT//"`
+    	if [ -n "$3" ]; then
+            tmpfil=`echo $3 | sed "s/\.$POTEXT//" | sed "s/\.$PCMEXT//"`
+            if [ -r ${tmpfil}.$POTEXT ]; then
+                potfil=$tmpfil
+            elif [ -r ${tmpfil}.$PCMEXT ]; then
+                pcmfil=$tmpfil
+            fi
+        fi
+    fi
+fi
+
+if [ -z "$potfil" ] && [ -z "$pcmfil" ]; then
+    if [ "$dalfil" = "$molfil" ] || [ -z "$molfil" ]; then
+	    outnam=$dalfil
+    else
+	    outnam=${dalfil}_${molfil}
+    fi
+    input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
+elif [ -n "$potfil" ]; then
+    if [ "$dalfil" = "$molfil" ] && [ "$dalfil" = "$potfil" ] ; then
+	    outnam=$dalfil
+    else
+	    outnam=${dalfil}_${molfil}_${potfil}
+    fi
+    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+elif [ -n "$pcmfil" ]; then
+    if [ "$dalfil" = "$molfil" ] && [ "$dalfil" = "$pcmfil" ] ; then
+	    outnam=$dalfil
+    else
+	    outnam=${dalfil}_${molfil}_${pcmfil}
+    fi
+    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"
+fi
+
+if [ $opto -eq 2 ]; then   # -ow input option
+   OUTFIL=$outnam.$OUTEXT
+   export OUTFIL
+fi
+if [ -n "$OUTFIL" ]; then
+if [ -s  $OUTFIL -a -r $OUTFIL ]; then
+   backup -v $OUTFIL
+fi
+fi
+
+if [ $opt_noappend -eq 0 ]; then
+    if [[ "$DALTON_TMPDIR" != */ ]]; then
+        # if there is no final slash, we append it
+        DALTON_TMPDIR=${DALTON_TMPDIR}/
+    fi
+    # now we append DALTON_scratch_$USER
+    # better safe than sorry
+    DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
+fi
+#
+export DALTON_TMPDIR
+#
+if [ ! -d "$DALTON_TMPDIR" ]; then
+    mkdir -p $DALTON_TMPDIR 
+fi  
+if [ ! -d "$DALTON_TMPDIR" ]; then
+    # this means that user has no permission to create scratch dir, stop
+    echo "ERROR: you have no permission to create $DALTON_TMPDIR"
+    exit 1
+fi
+
+if [ $opt_noappend -eq 1 ]; then
+    DALTON_SCRATCH=$DALTON_TMPDIR
+else
+    DALTON_SCRATCH=$DALTON_TMPDIR/$outnam
+fi
+
+# now we know that the directory exists
+# we will now try whether user has write permission to this directory
+file=$DALTON_TMPDIR/test_whether_dalton_can_create_this_file.$$.tmp
+if [ -f $file ]; then
+    rm $file &> /dev/null
+fi
+touch $file &> /dev/null
+if [ -f $file ]; then
+    rm $file &> /dev/null
+else
+    rm $file &> /dev/null
+    echo "ERROR: you have no write permission to directory $DALTON_TMPDIR"
+    exit 1
+fi  
+
+if [ $opt_noappend -eq 1 ]; then
+    SCRATCHDIR=$DALTON_TMPDIR
+else
+    # append pid to scratch directory to avoid multiple tests running in the same directory
+    SCRATCHDIR=$DALTON_TMPDIR/${outnam}_$$
+fi
+
+echo
+echo "   ******************************************* "
+echo "   **** OUTPUT FROM "$DALTON" SHELL SCRIPT"
+echo "   ******************************************* "
+echo;
+echo "   DALTON release @DALTON_VERSION@"
+echo;
+echo "   Invocation: $0 $paramlist"
+echo; 
+echo "   `date`"
+echo;
+echo "   Calculation: $outnam  ($input_files)"
+echo "   PID        : $$"
+echo "   Input dir  : $WRKDIR"
+echo "   Scratch dir: $SCRATCHDIR"
+echo;
+
+dalton_exitcode=0
+if [ -d "$SCRATCHDIR" ]; then
+   if [ $optd -eq 1 ] ; then
+      rm -rf $SCRATCHDIR/*
+   fi
+else
+   mkdir -p $SCRATCHDIR
+fi
+cd $SCRATCHDIR
+if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
+   cp $WRKDIR/$dalfil.$DALEXT $DALTON.INP
+else
+   echo "$WRKDIR/$dalfil.$DALEXT does not exist or is not readable"
+   dalton_exitcode=1
+fi
+if [ -s $WRKDIR/$molfil.$MOLEXT -a -r $WRKDIR/$molfil.$MOLEXT ]; then
+   cp $WRKDIR/$molfil.$MOLEXT MOLECULE.INP
+else
+   echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
+   echo " => assuming user has written MOLECULE input in dalton input file"
+   if [ $opt_lsdalton -eq 1 ]; then #Copy only for lsdalton
+     cp $WRKDIR/$dalfil.$DALEXT MOLECULE.INP
+   fi
+fi
+if [ "$potfil" != "" ]; then 
+  if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
+     cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
+  else
+     echo "$WRKDIR/$potfil.$POTEXT does not exist or is not readable"
+     dalton_exitcode=1
+  fi
+fi
+
+if [ "x$pcmfil" != "x" ]; then 
+  if [ -s $WRKDIR/$pcmfil.$PCMEXT -a -r $WRKDIR/$pcmfil.$PCMEXT ]; then
+     cp $WRKDIR/$pcmfil.$PCMEXT pcmsolver.inp
+  else
+     echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
+     dalton_exitcode=1
+  fi
+fi
+
+# put files listed under -put to scratch directory
+if [ "$PUT_FILES" != "" ]; then
+   for file in $PUT_FILES; do
+       echo copying $file to scratch directory
+       cp $WRKDIR/$file $file
+   done
+fi
+
+if [ $optdens -eq 1 ] ; then
+   echo "copy $WRKDIR/$molfil.dens.restart"
+   [ -f $WRKDIR/$molfil.dens.restart ] && cp -f $WRKDIR/$molfil.dens.restart dens.restart
+   [ -f $WRKDIR/$molfil.fock.restart ] && cp -f $WRKDIR/$molfil.fock.restart fock.restart
+   [ -f $WRKDIR/$molfil.lcm_orbitals.u ] && cp -f $WRKDIR/$molfil.lcm_orbitals.u lcm_orbitals.u
+fi
+
+# put pot file listed under -pot to scratch directory
+if [ "$POT_FILE" != "" ]; then
+   echo copying $POT_FILE to scratch directory
+   cp $WRKDIR/$POT_FILE POTENTIAL.INP
+fi
+
+if [ "$optf" != "0" ] ; then
+   if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
+      echo "====================="
+      echo "The '-f' option is active, now unpacking $optf.tar.gz into:"
+      tar -z -x -v -f $WRKDIR/$optf.tar.gz
+      echo "====================="
+   elif [ -s $WRKDIR/$optf -a -r $WRKDIR/$optf ] ; then
+#     hjaaj: at least GNU tar finds out autmatically if tar, tar.gz or
+#     tar.bzip2 -- hopefully your tar program also does that!
+      echo "====================="
+      echo "The '-f' option is active, now unpacking $optf into:"
+      tar -x -v -f $WRKDIR/$optf
+      echo "====================="
+   else
+      echo "$WRKDIR/$optf.tar.gz does not exist or is not readable"
+      dalton_exitcode=1
+   fi
+fi
+
+if [ $opt_restart -eq 1 ] ; then
+ if [ -s $WRKDIR/$dalfil.$DALEXT.2 -a -r $WRKDIR/$dalfil.$DALEXT.2 ]; then
+    cp $WRKDIR/$dalfil.$DALEXT.2 LSDALTON.INP.2
+ else
+    echo "$WRKDIR/$dalfil.$DALEXT.2 does not exist or is not readable"
+    exit 1
+ fi
+fi
+
+if [ $dalton_exitcode = 1 ]; then
+   exit 1
+fi
+
+if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
+    if [ $optn -eq 0 ] ; then
+        # DALTON_NUM_MPI_PROCS is set but -N is not
+        # in this case default -N to DALTON_NUM_MPI_PROCS
+        optn=$DALTON_NUM_MPI_PROCS
+    fi
+fi
+
+# set environment variables for EFS code
+if [ -z "$EFS_MEM_MB" ]; then
+    export EFS_MEM_MB=4096
+fi
+if [ -z "$EFS_BUFFER_MB" ]; then
+    export EFS_BUFFER_MB=1024
+fi
+if [ -z "$QIC_DIR" ]; then
+    export QIC_DIR=$SCRIPT_DIR/external/efs-build/qic
+fi
+
+if [ $opt_cpexe -eq 1 ] ; then
+   cp $DALTON_EXECUTABLE $SCRATCHDIR/dalton.x
+   if [ $optn -gt 1 -a -z "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
+      if [ -n "$DALTON_NODELIST" ] ; then
+         NODELIST=$(echo "$DALTON_NODELIST" | tr ' ' '\n' | sort -u | tr '\n' ' ')
+      elif [ -n "$PBS_NODEFILE" ] ; then
+         NODELIST=`sort -u $PBS_NODEFILE`
+      elif [ -n "$SLURM_NODELIST" ] ; then
+         NODELIST=$(scontrol show hostname $SLURM_NODELIST)
+      else
+         echo " The '-cpexe' option is active and more than one MPI process requested,"
+         echo " but no nodelist was found. A list of nodes can be provided using the"
+         echo " '-nodelist \"node1 ...\"' option or by setting DALTON_NODELIST=\"node1 ...\"."
+         echo " Attempt to continue using executable in scratch on the local node."
+         NODELIST=$HOSTNAME
+      fi
+      for node in $NODELIST ; do
+         if [ ${node} == ${HOSTNAME%\.local} ] ; then
+            continue
+         else
+            $SSH ${node} "mkdir -p $SCRATCHDIR"
+            $SCP $DALTON_EXECUTABLE ${node}:$SCRATCHDIR/dalton.x
+         fi
+      done
+   fi
+   DALTON_EXECUTABLE=$SCRATCHDIR/dalton.x
+fi
+
+if [ $optn -gt 1 ] ; then # MPI case
+
+   if [ -z "$OMP_NUM_THREADS" ]; then
+      if [ $opt_lsdalton -eq 1 ]; then
+        echo 
+        echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
+        echo ' INFO : gnu and intel compilers defaults to all available cores, '
+        echo ' INFO : whereas portland compilers defaults to one'
+        echo 
+      else
+        export OMP_NUM_THREADS=1
+        echo
+        echo ' INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
+        echo ' INFO : and the cores are probably used by MPI'
+        echo
+      fi
+   fi
+
+   if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
+      echo ' DALTON_USE_GLOBAL_SCRATCH is defined: Dalton will use global scratch dir'
+   fi
+
+   if [ $opt_lslib_test -eq 1 ]; then
+      MPI=$LSLIB_TEST
+   else
+      MPI=$DALTON_EXECUTABLE
+   fi
+
+   if [ -a $MPI -a -x $MPI ]; then
+       $MPIEXEC -np $optn $MPI
+       dalton_exitcode=$?
+       if [ $opt_restart -eq 1 ] ; then
+          cp $DALTON.INP.2 $DALTON.INP
+          $MPIEXEC -np $optn $MPI
+       fi
+   else
+       echo "$MPI does not exist or is not executeable"
+       exit 1
+   fi
+   if [ $dalton_exitcode -ne 0 ];then
+      echo "Error in $MPIEXEC -np $optn $MPI, exit code $dalton_exitcode"
+#     No "exit $dalton_exitcode" here, because we want to save output and 
+#     tar-file for restart possibilities !!!!!!
+   fi
+
+   if [ $optpg -eq 1 ] ; then
+      gprof $DALTON_EXECUTABLE gmon.out > PROFILE
+   fi
+      
+   if [ "$optx" != "0" ] ; then
+      if [ -s $WRKDIR/$gs.tar.gz -a -r $WRKDIR/$gs.tar.gz ] ; then
+         echo "The '-x' option is active, now unpacking $gs.tar.gz into:"
+         gunzip < $WRKDIR/$gs.tar.gz | tar xvf - SIRIFC
+         if [ -s SIRIFC -a -r SIRIFC ] ; then
+            mv -v SIRIFC SIRIFC1
+         else
+            echo $WRKDIR/$gs.tar.gz does not contain interface file SIRIFC
+            dalton_exitcode=1
+         fi
+      else
+         echo "$WRKDIR/$gs.tar.gz does not exist or is not readable"
+         dalton_exitcode=1
+      fi
+      if [ -s $WRKDIR/$ch.tar.gz -a -r $WRKDIR/$ch.tar.gz ] ; then
+         echo "The '-x' option is active, now unpacking $ch.tar.gz into:"
+         gunzip < $WRKDIR/$ch.tar.gz | tar xvf - SIRIFC
+         if [ -s SIRIFC -a -r SIRIFC ] ; then
+            mv -v SIRIFC SIRIFC2
+         else
+            echo $WRKDIR/$ch.tar.gz does not contain interface file SIRIFC
+            dalton_exitcode=1
+         fi
+      else
+         echo "$WRKDIR/$ch.tar.gz does not exist or is not readable"
+         dalton_exitcode=1
+      fi
+   fi
+
+else # non-MPI case
+   if [ -z "$OMP_NUM_THREADS" ]; then
+      echo 
+      echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
+      echo ' INFO : gnu and intel compilers defaults to all available cores, '
+      echo ' INFO : whereas portland compilers defaults to one'
+      echo 
+   fi
+    if ! [ -s $DALTON_EXECUTABLE -a -x $DALTON_EXECUTABLE ]; then
+       echo; echo  "FATAL ERROR:"
+       echo "$DALTON_EXECUTABLE does not exist or is not executeable"
+       exit 1
+    fi
+    
+    if [ $opt_lslib_test -eq 1 ]; then
+        $LSLIB_TEST
+        dalton_exitcode=$?
+    else
+        if [ -n "$LSDALTON_LAUNCHER" ] && [ $opt_lsdalton -eq 1 ]; then
+           DALTON_EXE="$LSDALTON_LAUNCHER $DALTON_EXECUTABLE"
+        elif [ -n "$DALTON_LAUNCHER" ] && [ $opt_lsdalton -eq 0 ]; then
+           DALTON_EXE="$DALTON_LAUNCHER $DALTON_EXECUTABLE"
+        else
+           DALTON_EXE=$DALTON_EXECUTABLE
+        fi
+
+
+        $DALTON_EXE
+        dalton_exitcode=$?
+        if [ $dalton_exitcode -ne 0 ]; then
+          echo "Error in $DALTON_EXE, exit code $dalton_exitcode"
+ #        No "exit $dalton_exitcode" here, because we want to save output and 
+ #        tar-file for restart possibilities.
+        fi
+
+        if [ $opt_restart -eq 1 ] ; then
+            cp $DALTON.INP.2 $DALTON.INP
+            $DALTON_EXE
+            restart_exitcode=$?
+            if [ $dalton_exitcode -eq 0 ] ; then
+                dalton_exitcode=$restart_exitcode
+            fi
+        fi
+    fi
+
+    if [ $optpg -eq 1 ] ; then
+        gprof $DALTON_EXECUTABLE gmon.out > PROFILE
+    fi
+
+    if [ $optdens -eq 1 ] ; then
+        echo "copy dens.restart to $WRKDIR/$molfil.dens.restart back"
+        [ -f dens.restart ] && cp -f dens.restart $WRKDIR/$molfil.dens.restart
+        [ -f fock.restart ] && cp -f fock.restart $WRKDIR/$molfil.fock.restart
+        [ -f lcm_orbitals.u ] && cp -f lcm_orbitals.u $WRKDIR/$molfil.lcm_orbitals.u
+    fi
+fi
+
+if [ $dalton_exitcode -ne 0 ] ; then
+   echo; echo  "SERIOUS ERROR:"
+   echo "$DALTON finished with non-zero exit code: $dalton_exitcode"
+   echo; echo "File list in scratch directory:";echo
+   ls -lt
+   du -h
+fi
+
+# list of files which will be saved in $outnam.tar.gz
+# for subsequent calculations
+if [ $opt_lsdalton -eq 1 ]; then
+  filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history MOLECULE.OUT"
+else
+  filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
+fi
+pcmfiles="cavity.off PCM_mep_asc PEDRA.OUT"
+filelist="$filelist $pcmfiles $GET_FILES"
+
+if [ -s $DALTON.OUT.n0001 -a -r $DALTON.OUT.n0001 ]; then
+   tarfilelist="$DALTON.OUT.n*"
+else
+   tarfilelist=
+fi
+
+for i in $filelist ; do
+   if [ -s $i -a -r $i ] ; then
+      tarfilelist=$tarfilelist" "$i
+   fi
+done
+
+if [ $opt_noarch -eq 0 ]; then
+    if [ -s "first.wrl" -a -r "first.wrl" ] ; then
+       tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
+    else
+       tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
+    fi
+fi
+
+if [ -s $outnam.tar.gz ] ; then
+   backup -v $WRKDIR/$outnam.tar.gz
+   cp $outnam.tar.gz $WRKDIR
+   echo "$outnam.tar.gz has been copied to $WRKDIR"
+else
+    echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
+fi
+
+# copy files listed under -get back from scratch directory
+if [ "$GET_FILES" != "" ]; then
+   for file in $GET_FILES; do
+       echo copying $file back from scratch directory
+       cp $file $WRKDIR/$outnam.$file
+   done
+fi
+
+if [ $opto -eq 1 ] ; then
+   if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
+      echo "Output is in $WRKDIR/$OUTFIL as requested in input."
+   else
+      echo "$WRKDIR/$OUTFIL has not been created from the present run"
+      if [ $optD -eq 1 ] ; then
+         echo "$SCRATCHDIR is therefore not deleted by this script."
+      fi
+      exit 2
+   fi
+else
+   if [ -s $DALTON.OUT -a -r $DALTON.OUT ]; then
+      OUTFIL=$outnam.$OUTEXT
+      backup -v $WRKDIR/$OUTFIL
+      cp $DALTON.OUT $WRKDIR/$OUTFIL
+      [ -f PROFILE ] && cp -f PROFILE $WRKDIR/$outnam.prof.$OUTEXT
+   else
+      echo "$DALTON.OUT has not been created from the present run."
+      if [ $optD -eq 1 ] ; then
+         echo "$SCRATCHDIR is therefore not deleted by this script."
+      fi
+      echo "List of created files in $SCRATCHDIR :"
+      ls -sltr
+      exit 2
+   fi
+fi
+
+cd $WRKDIR
+
+# check if error exit, warnings, or info messages
+
+NERR=`grep -c ERROR $OUTFIL`
+if [ $dalton_exitcode -ne 0 -o $NERR -gt 0 ] ; then
+   echo "----------------------------------------------------------"
+   echo "WARNING for ERROR  ($DALTON program stopped with exit code $dalton_exitcode)"
+   if [ $optD -eq 1 ] ; then
+      echo "- THEREFORE scratch directory $SCRATCHDIR is not deleted"
+      echo "  by this script so you may restart the calculation, if possible"
+      echo "  ( $SCRATCHDIR may be deleted by your queueing system )"
+      echo "- REMEMBER to delete $SCRATCHDIR yourself !!!"; echo
+      optD=0
+   fi
+   [ $NERR -gt 0 ] && ( echo "Output from 'grep -n ERROR' :"; grep -n ERROR $OUTFIL )
+fi
+
+nwrn=`grep -c -i WARNING $OUTFIL`
+if [ $nwrn -gt 0 ] ; then
+   echo "----------------------------------------------------------"
+   echo "$nwrn WARNINGS have been issued by $DALTON,"
+   echo "output from 'grep -n -i WARNING'  (max 10 warnings):"
+   grep -n -i "WARNING" $OUTFIL | head -10
+fi
+
+ninfo=`grep -c '[^"]INFO' $OUTFIL`
+if [ $ninfo -gt 0 ] ; then
+   echo "----------------------------------------------------------"
+   echo "$ninfo informational messages have been issued by $DALTON,"
+   echo "output from 'grep -n INFO'  (max 10 lines):"
+   grep -n INFO $OUTFIL | grep -v 'Check output, result, and error' | head -10
+fi
+
+if [ $optD -eq 1 ] ; then
+   rm -rf $SCRATCHDIR
+fi
+
+echo; echo "   `date`"
+echo "   ***************************************** "
+
+if [ $dalton_exitcode -ne 0 ]; then
+   exit $dalton_exitcode
+fi
+

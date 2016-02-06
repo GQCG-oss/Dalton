@@ -11,13 +11,13 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Polarizable embedding energy contributions:',
       num_lines = 30,
-      rel_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 f.add(from_string = 'Dipole moment components',
       num_lines = 8,
-      rel_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 f.add(from_string = 'Polarizability tensor for frequency',
       num_lines = 7,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-5)
 
 test.run(['perohf_alpha.dal'], ['formaldehyde.mol'], ['2h2o.pot'], f={'out': f})
 

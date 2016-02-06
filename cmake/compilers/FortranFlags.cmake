@@ -1,3 +1,4 @@
+set(reorder_definitions "")
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -ffloat-store -fcray-pointer")
@@ -86,6 +87,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
             )
     endif()
+    set(reorder_definitions " --nocollapse ${reorder_definitions}")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -98,6 +100,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
     endif()
 
+# Simen: added to include c++ libraries needed for the final linking 
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -pgcpplibs")
+
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
@@ -108,9 +113,8 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
             )
     endif()
     if(ENABLE_OMP) 
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -mp -Mconcur"
-            )
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mp " )
+        set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -Mconcur")
     endif()
 # WARNING you may need to add -Mcuda=5.5 
 # For now use --extra-fc-flags="-Mcuda=5.5"
@@ -145,13 +149,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
             )
     endif()
     set_source_files_properties(${DALTON_FREE_FORTRAN_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
-    set_source_files_properties(${LSDALTON_FREE_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
     set_source_files_properties(${DALTON_FIXED_FORTRAN_SOURCES}   PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_FIXED_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
     set_source_files_properties(${DALTON_OWN_BLAS_SOURCES}        PROPERTIES COMPILE_FLAGS "-qfixed")
     set_source_files_properties(${DALTON_OWN_LAPACK_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_OWN_BLAS_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
-    set_source_files_properties(${LSDALTON_OWN_LAPACK_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfixed")
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -C"
@@ -165,9 +165,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
 
     set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
     # Patrick: For cray we want to use the system allocator since it is faster and has less memory requirements than the cray allocator
-    if(ENABLE_TITANBUILD)
-       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -hsystem_alloc")
-    endif()
+    #if(ENABLE_TITANBUILD)
+    #   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -hsystem_alloc")
+    #endif()
 
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE " ")
@@ -176,6 +176,24 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -s integer64"
             )
+    endif()
+# WARNING OpenMP (OMP) is activated as default with cray 
+    if(ENABLE_OMP) 
+      #do nothing OpenMP activated as default with cray 
+    else()
+      #can be deactivated using -x omp or -h noomp
+      set(CMAKE_Fortran_FLAGS
+        "${CMAKE_Fortran_FLAGS} -h noomp"
+        )
+    endif()
+# WARNING OpenACC is activated as default on cray 
+    if(ENABLE_OPENACC) 
+      #do nothing OpenACC activated as default with cray 
+    else()
+      #can be deactivated using -x acc or -h noacc
+      set(CMAKE_Fortran_FLAGS
+        "${CMAKE_Fortran_FLAGS} -h noacc"
+        )	  
     endif()
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS

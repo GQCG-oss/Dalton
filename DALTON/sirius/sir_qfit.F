@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -78,6 +78,7 @@ C
       SUBROUTINE QFITRES
 #if defined (BUILD_QFITLIB)
       use qfit
+      use qfit_variables, only : qfit_multipole_rank
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -87,27 +88,44 @@ C
 #include "moldip.h"
 #include "orgcom.h"
       real*8, dimension(:), allocatable :: charges
+      real*8, dimension(:), allocatable :: dipoles
+
+      integer :: k
 
 #if defined (BUILD_QFITLIB)
       CALL HEADER('Potential fitted charges (QFITLIB)',-1)
 
       allocate( charges( nucdep ) )
-      call qfit_get_results( charges )
+      allocate( dipoles( 3*nucdep ) )
+      call qfit_get_results( charges, dipoles )
 
-      write(lupri,9000)
-      write(lupri,*)
-
+      write(lupri,'(a)') " Charges:"
+      write(lupri,'(a,4a,3a12)') "  ", "    ", "        Q   "
       do m = 1, size(charges)
           write(lupri,'(a,a4,f12.6)') '@ ',namdep(m), charges(m)
       enddo
-      write(lupri,*)
-      write(lupri,'(a,f12.6)') '  Sum = total charge:', sum(charges)
+
+      if (qfit_multipole_rank >= 1) then
+          write(lupri,'(/a)') " Dipoles:"
+          write(lupri,'(a,4a,3a12)') "  ", "    ", "        X   ",
+     *     "        Y   ", "        Z   "
+          do m = 1, size(charges)
+              write(lupri,'(a,a4,3f12.6)') '@ ',namdep(m), 
+     *     (dipoles(m+(k-1)*3),k=1,3)
+          enddo
+      endif
+      if (qfit_multipole_rank >= 2) then
+          write(lupri,'(/a)') " Quadrupoles:"
+          write(lupri,'(a,4a,5a12)') "  ", "    ", "       XX   ",
+     *     "       XY   ", "       XZ   ", "       YY   ", "       ZZ  "
+          write(lupri,*)
+      endif
+      write(lupri,'(/a,f12.6)') '  Sum = total charge:', sum(charges)
 
       !call qfit_finalize
       deallocate( charges )
+      deallocate( dipoles )
 #endif
- 9000 format(4x,'Charges have been fitted to the molecular ',
-     *          'electrostatic potential.')
       END
 
       SUBROUTINE QFITGSCALC(CMO,WRK,KFRSAV,LFRSAV)

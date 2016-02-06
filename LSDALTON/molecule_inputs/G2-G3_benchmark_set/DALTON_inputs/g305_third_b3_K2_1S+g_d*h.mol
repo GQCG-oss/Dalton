@@ -1,7 +1,0 @@
-ATOMBASIS
-K2 1S+g d*h
- 
-Atomtypes=1 Angstrom Nosymmetry
-Charge=19.0 Atoms=2 Basis=regbasis Aux=auxbasis
-K      0.00000000000000      0.00000000000000     -1.97600289470000
-K      0.00000000000000      0.00000000000000      1.97600289470000

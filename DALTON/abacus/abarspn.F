@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -423,7 +423,7 @@ cs     *               WRK(KINDX),WRK(KWRK1),LWRK1)
 C      ELSE
         IF (IPRRSP.GE.0) THEN
            WRITE(LUPRI,'(//A,I5)')
-     *     ' >>>>>>>>>> Symmetry of excitation/property operator',
+     *     ' ---------- Symmetry of excitation/property operator',
      *     KSYMOP
            IF (EXCLC) THEN
               WRITE(LUPRI,'(/A,I5)') ' Number of excitations: ',NEXVAL
@@ -492,7 +492,7 @@ C
 C
       TIMRSP = SECOND() - TIMRSP
       IF (IPRRSP .GT. 0) WRITE (LUPRI,'(/A,F13.2,A)')
-     *   ' >>> Total time used in response solver is',TIMRSP,
+     *   ' Total time used in response solver is',TIMRSP,
      *   ' CPU seconds.'
 C
 C     *******************************************
@@ -607,8 +607,8 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
      *             WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
      *             WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kj / mole'
                IF (SOPPA) THEN
-                  TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
-                  TYNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)
+                  TXNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
+                  TYNRM = DNRM2(KZCONF,WRK(KBVECS+(INUM-1)
      &                           *KZYVAR+KZVAR),1)
                   T2P2HN = D100*(TXNRM*TXNRM + TYNRM*TYNRM)
                   TPHNRM = D100 - T2P2HN
@@ -836,7 +836,7 @@ C
                DNORM_GDORB = SQRT(DNORM_GDORB)
                IF (DNORM_GDORB .LT. 1.0D-9) THEN
                   WRITE (LUPRI,'(//A/3A,1P,D10.2/A,D10.2)')
-     &   ' >>> Solving SOPPA linear response skipped because norm of',
+     &   ' Solving SOPPA linear response skipped because norm of',
      &   '     p-h property vector '//LABEL//' is only',DNORM_GDORB,
      &   '     although 2p-2h property vecor has norm ',DNORM_GD
                   DNORM_GD = 0.0D0
@@ -854,7 +854,7 @@ C
             IF (DNORM_GD .LT. 1.0D-9) THEN
 
               WRITE (LUPRI,'(//A/3A,1P,D10.2)')
-     &         ' >>> Solving linear response skipped because norm of',
+     &         ' Solving linear response skipped because norm of',
      &         '     property vector '//LABEL//' is only',DNORM_GD
 
             ELSE ! else DNORM_GD is .ge. 1.0D-9, and we solve.

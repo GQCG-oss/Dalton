@@ -447,7 +447,7 @@ C     --------------------------------
 !     &        WORK(KAQnew2))
 
       if (locdbg) then
-        Write(lupri,*)'>>>AQ vector reread from file<<<'
+        Write(lupri,*)'---AQ vector reread from file---'
         !CALL CC_PRP(WORK(KAQnew1),WORK(KAQnew2),1,1,N2VEC)
       end if
 !
@@ -547,7 +547,7 @@ C     -------------------------------------------------
       if (.not.CCS)
      &   CALL CC_RVEC(LUP1A2,FP1A2,NT2AM(isyeta),NT2AM(isyeta),1,
      &                WORK(KPnewA2))
-      !Write(lupri,*)'>>>p*A vector reread from file<<<'
+      !Write(lupri,*)'---p*A vector reread from file---'
       !CALL CC_PRP(WORK(KPnewA1),WORK(KPnewA2),1,1,N2VEC)
 
       KR1 = KEND3
@@ -647,7 +647,7 @@ C
         if (.not.CCS) 
      &   CALL CC_RVEC(LUAQ12,FRHO2,NT2AM(isyhop),NT2AM(isyhop),1,
      &                WORK(KAQnew2))
-        !Write(lupri,*)'>>>AQnew vector reread from file, ichain:', i
+        !Write(lupri,*)'---AQnew vector reread from file, ichain:', i
         !CALL CC_PRP(WORK(KAQnew1),WORK(KAQnew2),1,1,N2VEC)
 
         CALL CC_WVEC(LUP11,FP11,NT1AM(ISYeta),
@@ -673,7 +673,7 @@ C
         if (.not.CCS) 
      &    CALL CC_RVEC(LUP1A2,FP1A2,NT2AM(isyeta),NT2AM(isyeta),1,
      &         WORK(KPnewA2))
-        !Write(lupri,*)'>>>pnew*A vector reread from file<<<'
+        !Write(lupri,*)'---pnew*A vector reread from file---'
         !CALL CC_PRP(WORK(KPnewA1),WORK(KPnewA2),1,1,N2VEC)
 
         alpha(i) = ddot(length,WORK(KPNEW1),1,WORK(KAQNEW1),1)
@@ -757,12 +757,13 @@ C
         IF (i.lt.jkaede) WORK(KTTRI+i-1+jkaede*i)     = xgamma(i)
         IF (i.gt.1)      WORK(KTTRI+i-1+jkaede*(i-2)) = beta(i-1)
       end do
-      CALL AROUND('>>> The T tridiagonal matrix <<< ') 
+      CALL AROUND('--- The T tridiagonal matrix --- ') 
       CALL OUTPUT(WORK(KTTRI),1,jkaede,1,jkaede,jkaede,jkaede,1,LUPRI)
 C
 C Diagonalize T matrix and find both R and L
 C
       !husk dgesv
+      IERR=0
       CALL DGEEV('V','V',jkaede,WORK(KTTRI),jkaede,
      &           WORK(KEIVAL),WORK(KWI),WORK(KEIVEL), jkaede, 
      &           WORK(KEIVER),jkaede,
@@ -933,7 +934,7 @@ C
      &               WORK(KEIVAL),WORK(KWI),isyhop)
 
       if (locdbg) then
-         !CALL AROUND('>>> The trans^F matrix <<<')
+         !CALL AROUND('--- The trans^F matrix ---')
          !CALL OUTPUT(Ftrans,1,jkaede,1,jkaede,jkaede,jkaede,1,LUPRI)
       end if
 C

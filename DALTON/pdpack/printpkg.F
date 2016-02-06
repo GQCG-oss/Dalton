@@ -1,6 +1,6 @@
 C FILE    : printpkg.F
 C
-C...   Dalton, Release DALTON2014, pdpack/printpkg.F
+C...   Dalton, Release DALTON2016, pdpack/printpkg.F
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
@@ -822,7 +822,7 @@ C
 C
 C
 C
-      C2NRM = DNORM2(NDIM,VEC,INCVEC)
+      C2NRM = DNRM2(NDIM,VEC,INCVEC)
       IF (THRESH .LE. D0) THEN
          THRES2 = -THRESH
          VSCALE = .FALSE.
@@ -924,7 +924,7 @@ C
 C
 C
 C
-      C2NRM = DNORM2(NDIM,VEC,INCVEC)
+      C2NRM = DNRM2(NDIM,VEC,INCVEC)
       IZER  = 0
       NLAST = NDIM*INCVEC
       VECMAX = D0

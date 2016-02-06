@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -318,7 +318,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION RHODIF1(*), RHODIF2(*)
       CHARACTER*(3) LISTL, LISTR
-      CHARACTER*(8) FILXI, FILETA
+      CHARACTER*(8) FILXI, FILETA, LABEL
       CHARACTER MODEL*(10)
       INTEGER IXETRAN(MXDIM_XEVEC,3)
 C     LOGICAL LORX 

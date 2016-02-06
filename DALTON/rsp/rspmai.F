@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -522,8 +522,8 @@ C
      *      GO TO 100
 C     ... skip this symmetry if no operators
          WRITE(LUPRI,'(//A/A,I5,3A)')
-     *      ' >>>>>>>>>> Linear response calculation',
-     *      ' >>>>>>>>>> Symmetry of excitation/property operator(s)',
+     *      ' ---------- Linear response calculation',
+     *      ' ---------- Symmetry of excitation/property operator(s)',
      *      KSYMOP,'  ( ',REP(KSYMOP-1),')'
          WRITE(LUPRI,'(3(/A,I5))')
      *      ' Number of excitations of this symmetry        ',
@@ -629,8 +629,8 @@ C
       WTOT = WEND - WSTR
       WRITE (LUPRI,'()')
       IF (QMMM) CALL QMMMTIMES('RESPONSE')
-      CALL TIMTXT('>>>> Total CPU  time used in RESPONSE:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in RESPONSE:',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in RESPONSE:',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in RESPONSE:',WTOT,LUPRI)
 C
 C     *******************************************
 C
@@ -642,7 +642,7 @@ C
 C  /* Deck rsprea */
       SUBROUTINE RSPREA
 C
-C <<< GENERAL INPUT FOR RESPONSE >>>
+C GENERAL INPUT FOR RESPONSE
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -685,7 +685,7 @@ C
       EXTERNAL RSPINF
 C
       WRITE (LUPRI,'(//,A,//)')
-     *   ' <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>'
+     *   ' -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------'
 C
 C     ***** PROCESS INPUT FOR RESPONSE *****
 C
@@ -1295,6 +1295,7 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1721,7 +1722,7 @@ C
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-         IF (PEQM) THEN
+         IF (USE_PELIB()) THEN
            WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF
@@ -1838,6 +1839,7 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2281,12 +2283,12 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
-         
+
          IF (QMNPMM) THEN
              WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
-         END IF    
+         END IF
 
-         IF (PEQM) THEN
+         IF (USE_PELIB()) THEN
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF
@@ -4077,6 +4079,7 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4371,7 +4374,7 @@ C
          ENDDO
       END IF
 C
-      IF (PEQM .AND. .NOT. TDHF) THEN
+      IF (USE_PELIB() .AND. .NOT. TDHF) THEN
          CALL MOLLAB('PEFMAT  ', LUSIFC, LUPRI)
          CALL READT (LUSIFC, NNORBX, WRK)
          FC(1:NNORBX) = FC(1:NNORBX) - WRK(1:NNORBX)
@@ -4766,6 +4769,7 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
+      use pelib_interface, only: use_pelib
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4914,7 +4918,7 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
-         IF (PEQM) THEN
+         IF (USE_PELIB()) THEN
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF

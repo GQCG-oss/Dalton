@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -112,6 +112,15 @@ C  /* Deck eridi2 */
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
      &                  IODPP1,IODPP2,RODPP1,RODPP2,
      &                  CCFBT,INDXBT,WORK,LWORK,IPRINT)
+C  ERIDI2 means: 2-Electron Repulsion Integrals, DIrect method.
+C  NGDER: Order of Geometrical Derivate
+C  NBDER: Order of Magnetic Field Derivative
+C  CCFBT: Contraction Coefficients for all primitive orbitals in the 
+C      basis set
+C  INDXBT: Is used in the sorting algorithm  for the two-electron 
+C     integrals. Dimensions of INDXBT is MXSHEL*MXCONT*8. INDXBT 
+C     contains the adresses for the primitive orbitals.
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -128,7 +137,7 @@ C  /* Deck eridi2 */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          INDEXA(*), CCFBT(*), INDXBT(*), WORK(LWORK)
       LOGICAL   OLDDX
-#include "ccom.h"
+#include "ccom.h" 
 #include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
@@ -144,6 +153,7 @@ C  /* Deck eridi2 */
 #include "iratdef.h"
 #include "inftap.h"
 C
+      CALL QENTER('ERIDI2')
       IPRINT = IPRERI
 C
       GDER   = NGDER .GT. 0 
@@ -153,6 +163,7 @@ C
       ELSE
          UNDIFF = .FALSE.
       END IF
+C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
       EXPERI = .FALSE.
@@ -221,6 +232,7 @@ C     ===================
 C
       IF (.NOT. INTSKP) THEN
          CALL TIMER('START ',TIMSTR,TIMEND)
+
          CALL ODCDRV(IODCL1,IODCL2,
      &               IODBC1,IODBC2,RODBC1,RODBC2,
      &               IODPP1,IODPP2,RODPP1,RODPP2,
@@ -248,6 +260,7 @@ C
          CALL GPCLOSE(LUAORC(ISCOOR),'KEEP')
       END DO
 C
+      CALL QEXIT('ERIDI2')
       RETURN
       END
 C  /* Deck eridid */
@@ -432,13 +445,13 @@ C  /* Deck pickao */
 #include "aobtch.h"
 C
       DO J = 1, 4
-      DO I = 1, NAOBCH
-         IF (KCLSBT(I).EQ.1) THEN
-             ACTVBT(I,J) = .TRUE.
-          ELSE
-             ACTVBT(I,J) = .FALSE.
-          ENDIF
-      END DO
+         DO I = 1, NAOBCH
+             IF (KCLSBT(I).EQ.1) THEN
+              ACTVBT(I,J) = .TRUE.
+             ELSE
+              ACTVBT(I,J) = .FALSE.
+             ENDIF
+         END DO
       END DO
 C
 C     First orbital
@@ -532,7 +545,6 @@ C
                END IF
                NACDST = NACDST + 1
                IACDST(NACDST) = I
-
                IF (FIRST) THEN
                   NHKDST = NHKTBT(I)
                   KHKDST = KHKTBT(I)

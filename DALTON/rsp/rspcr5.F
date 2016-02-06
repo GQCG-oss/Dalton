@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -35,6 +35,8 @@ C
       PARAMETER   (BLANK='        ', D0 = 0.0D0)
       DIMENSION   VEC(*)
 C
+      CALL QENTER('WRTRSP')
+
       REWIND (LU)
  100  READ(LU) LABEL
       IF (LABEL.NE.'EOFLABEL') GOTO 100
@@ -55,6 +57,7 @@ C
 C
       CALL FLSHFO(LU)
 C
+      CALL QEXIT('WRTRSP')
       RETURN
       END
       SUBROUTINE REARSP(LU,LEN,VEC,LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
@@ -78,7 +81,9 @@ C
       PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
       CHARACTER*20 FILE_NAME
       INTEGER INFORB_TEST(33)
+
 C
+      CALL QENTER('REARSP')
       FOUND  = .FALSE.
       CONV   = .FALSE.
       USOLVD = .FALSE.
@@ -216,6 +221,88 @@ C
      &      'vectors for property',LABX1, LABX2
       END IF
 C
- 200  RETURN
+ 200  CALL QEXIT('REARSP')
+      RETURN
+      END
+
+C
+      SUBROUTINE READE3(LU,LEN,VEC,LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
+     &                  RSD,ANTSYM)
+C
+C Modified version of REARSP with sole purpose of reading E3VEC
+C
+#include "implicit.h"
+#include "thrzer.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "gnrinf.h"
+#include "optinf.h"
+C
+      CHARACTER*8 LABX1,LABX2,LAB1,LAB2,BLANK
+      PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
+C
+      CALL QENTER('READE3')
+
+      REWIND (LU)
+  100 READ(LU,END=200,ERR=200)
+     &      LABX1,LABX2,FREQX1,FREQX2,ISYMX1,ISYMX2,ANTSYM,
+     &      RSDX,LEN,EMCX,NBSX,NRBX
+      IF (LABX1 .EQ. 'EOFLABEL') THEN
+      WRITE(LUPRI,*) "Something wrong in reading E3VEC OR X2VEC &
+     &    IN QRHYP"
+      GOTO 200
+      END IF
+C
+C
+      IF ((LABX1 .EQ. LAB1) .AND. (LABX2 .EQ. LAB2)) THEN
+      WRITE(LUPRI,*) "FOUND LABEL, writing it here:"
+      WRITE(LUPRI,*) LAB1, LAB2
+      ELSE 
+      GOTO 100
+      END IF
+ 200  CALL QEXIT('READE3')
+      RETURN
+      END
+
+      SUBROUTINE READX2(LU,LEN,VEC,LAB1,LAB2,FREQ1,FREQ2,ISYM1,ISYM2,
+     &                  RSD,ANTSYM,FIRST)
+C
+C Modified version of REARSP with sole purpose of reading X2VEC
+C
+#include "implicit.h"
+#include "thrzer.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "infopt.h"
+#include "inforb.h"
+#include "gnrinf.h"
+#include "optinf.h"
+C
+      LOGICAL FIRST
+      CHARACTER*8 LABX1,LABX2,LAB1,LAB2,BLANK
+      PARAMETER(THR = 1.0D-8, BLANK='        ', D0 = 0.0D0)
+C
+      CALL QENTER('READX2')
+
+      REWIND(LU)
+  100 READ(LU,END=200,ERR=200)
+     &      LABX1,LABX2,FREQX1,FREQX2,ISYMX1,ISYMX2,ANTSYM,
+     &      RSDX,LEN,EMCX,NBSX,NRBX
+      IF (LABX1 .EQ. 'EOFLABEL') THEN
+      WRITE(LUPRI,*) "READ EOFLABEL in X2VEC, QRHYP"
+      GOTO 200
+      END IF
+C
+C
+      IF ((LABX1 .EQ. LAB1) .AND. (LABX2 .EQ. LAB2) .AND. FIRST) THEN
+      WRITE(LUPRI,*) "FOUND LABELS, writing it here:"
+      WRITE(LUPRI,*) LAB1, LAB2
+      ELSE 
+      GOTO 100
+      END IF
+ 200  CALL QEXIT('READX2')
+      RETURN
       END
 ! -- end of rspcr5.F --

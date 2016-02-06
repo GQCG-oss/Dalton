@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1514,7 +1514,7 @@ C
          WRITE (LUPRI, 1170) (NINT(FETVEC(I)),I=1,36)
          WRITE (LUPRI, 1180) (NINT(FHOVEC(I)),I=1,18)
       END IF
- 1000 FORMAT (/,1X,'<<<<<<<<<< SUBROUTINE DIRECT >>>>>>>>>>',/)
+ 1000 FORMAT (/,1X,'---------- SUBROUTINE DIRECT ----------',/)
  1005 FORMAT (1X,'EXPECT/IATOM     ',L5,I5)
  1010 FORMAT (1X,'ONECEN,... FOUCEN',4L5)
  1020 FORMAT (1X,'INTEGRAL TYPE    ',A4)
