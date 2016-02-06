@@ -275,10 +275,12 @@ subroutine pelib_ifc_lf()
 #include "inftap.h"
 #include "orgcom.h"
     real*8, dimension(nnbasx) :: dip
-    real*8, dimension(3*nnbasx) :: fckmats
+!    real*8, dimension(3*nnbasx) :: fckmats
+    real*8, dimension(:),allocatable :: fckmats
     integer :: i, j, k
     logical :: lopen
     character*8 :: lblinf(2)
+    allocate(fckmats(3*nnbasx))
     call qenter('pelib_ifc_lf')
     if (.not. use_pelib()) call quit('PElib not active')
 
@@ -286,10 +288,12 @@ subroutine pelib_ifc_lf()
     call flshfo(lupri)
     lopen = .false.
     dip = 0.0d0
+    fckmats = 0.0d0
 
 #if defined(VAR_MPI)
     call pelib_ifc_start_slaves(8)
 #endif
+    call flshfo(lupri)
     call pe_master(runtype='effdipole', &
                    triang=.true.,       &
                    ndim=nbast,          &
@@ -319,6 +323,7 @@ subroutine pelib_ifc_lf()
     dip(:) = dip(:) + fckmats(2*nnbasx+1:3*nnbasx)
     call WRTPRO(dip,nnbasx,'ZLFDIPLN',lblinf,0)
 
+    deallocate(fckmats)
 !    rewind(luprop)
 !    call mollb2('LFDIPLNX',lblinf,luprop,LUPRI)
 !    call readt(luprop, nnbasx, dip)
