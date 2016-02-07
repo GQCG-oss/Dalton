@@ -73,7 +73,15 @@ C
 ! Moved writing of pre-MOLTWOEL information on LUINTM from TRAAB to TRACTL;
 !   added NSYM,NORB,NBAS and CMO to information.
 ! TRACTL: check ITRLVL,CMO against LUINTM information, abandon transformation
-drcctl if ITRLVL.gt.0 (not ci) and usedrc
+!   if the needed mo integrals already available.
+! SIR_INTOPEN: revised ITRLVL check against LUINTM for levels 2 and 3;
+!   rationalized file openings for different computer types;
+!   write warning if flag(14) and integrals not found.
+!900307-hjaaj
+! TRACTL: empty LUINTM in beginning of transformation to give more disk
+! space for temporary files during the transformation.
+!900305-hjaaj
+! TRACTL: only call drcctl if ITRLVL.gt.0 (not ci) and usedrc
 ! MAERKE: usikkert,indfoer USEDRC el. LVLDRC i parameterliste til TRACTL
 !900302-hjaaj
 ! TRACTL: reset /CBGETD/ to tell any H2AC on disk now obsolete.
@@ -597,14 +605,14 @@ C
 C....    FORMAT STATEMENTS
 C
   200 FORMAT(/' FIRST HALF-SORT STATISTICS'
-     1       /'  NUMBER OF PASSES OVER AO FILE',T30,I7
-     2       /'  NUMBER OF BLOCKS PER CHAIN',T27,I10
-     3       /'  TOTAL NUMBER OF CHAINS',T27,I10
-     4       /'  NUMBER OF BUFFERS PER PASS',T27,I10/)
-  201 FORMAT('  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I10)
-  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I8
-     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I8
-     2       /'  PERCENT NON-ZERO AO INTEGRALS',F17.2)
+     1       /'  NUMBER OF PASSES OVER AO FILE',T33,I4
+     2       /'  NUMBER OF BLOCKS PER CHAIN',T30,I7
+     3       /'  TOTAL NUMBER OF CHAINS',T30,I7
+     4       /'  NUMBER OF BUFFERS PER PASS',T30,I7/)
+  201 FORMAT('  NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I6)
+  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I6
+     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I6
+     2       /'  PERCENT NON-ZERO AO INTEGRALS',F15.2)
   203 FORMAT(/'  THRESHOLD FOR DISCARDING INTEGRALS',1P,D10.2)
       END
 C  /* Deck sortb */
@@ -878,14 +886,14 @@ C
 C....    FORMAT STATEMENTS
 C
   200 FORMAT(/,' SECOND HALF-SORT STATISTICS'/
-     1  '  NUMBER OF PASSES OVER FILE',T30,I7/
-     2  '  NUMBER OF BLOCKS PER CHAIN',T27,I10/
-     3  '  TOTAL NUMBER OF CHAINS',T27,I10/
-     4  '  NUMBER OF BUFFERS PER PASS',T27,I10/)
-  201 FORMAT(' NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I10)
-  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I8
-     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I8
-     2       /'  PERCENT NON-ZERO INTEGRALS',F20.2)
+     1  '  NUMBER OF PASSES OVER FILE',T33,I4/
+     2  '  NUMBER OF BLOCKS PER CHAIN',T30,I7/
+     3  '  TOTAL NUMBER OF CHAINS',T30,I7/
+     4  '  NUMBER OF BUFFERS PER PASS',T30,I7/)
+  201 FORMAT(' NUMBER OF INTEGRALS PER DIRECT ACCESS BUFFER',I6)
+  202 FORMAT(/'  NUMBER OF DA RECORDS FOR ALL INTEGRALS',I6
+     1       /'  NUMBER OF DA RECORDS ACTUALLY USED    ',I6
+     2       /'  PERCENT NON-ZERO INTEGRALS',F18.2)
       END
 C  /* Deck tracd */
 #include "vdir.h"
@@ -1568,7 +1576,7 @@ C        ***** FIND POSITION OF INTEGRAL (PQ/CD) *****
             IPQCD = NCDP   + IT(NQ)
          END IF
          PQCD=TRI(IPQCD)
-C        ***** LOOP OVER MO'S OF SYMMETRY ISQB *****
+C        ***** LOOP OVER MOs OF SYMMETRY ISQB *****
 C        ***** AND TRANSFORM SECOND INDEX      *****
          IF (ABS(PQCD) .GE. THRP)
      *      CALL DAXPY(NNBR,PQCD,CMOT(IMOQ),1,PBCD(NBRMIN),1)
@@ -1739,12 +1747,13 @@ C
       EXTERNAL BDTRA
 C
       IF (VFIRST) THEN
-C        if SIRIUS has been called, IPRTRA_SAVE will have value
-C        from SIRIUS in all TRACTL calls, if SIRIUS has
-C        not been called before ABACUS is called, then
-C        the value specified in RHSINP for DERTRA is
-C        used. This makes sure that the SIRIUS value is
-C        always used if it has been defined.
+C        If SIRIUS has been called, the print level IPRTRA_SAVE will have the value
+C        from SIRIUS in all TRACTL calls.
+C        If SIRIUS has not been called before ABACUS is called, then
+C        the value specified in RHSINP for DERTRA is used.
+C        This makes sure that the SIRIUS value is
+C        always used if it has been defined, and the abacus
+C        value is different.
 C
          IPRTRA_SAVE = IPRTRA
          VFIRST = .FALSE.
@@ -1752,6 +1761,7 @@ C
          IPRTRA = IPRTRA_SAVE
       END IF
 C
+      ITRLVL = ABS( KTRLVL )
       USEDRC_SAVE = USEDRC
 C
       IF (IPRTRA .GE. 0) THEN
@@ -1790,6 +1800,10 @@ C
 C
 C     Sort mo integrals to Dirac form, if requested
 C
+      IF (IPRTRA .GE. 5) THEN
+         WRITE(LUPRI,*) 'USEDRC, NEWTRA_USEDRC, ITRLVL:',
+     &                   USEDRC, NEWTRA_USEDRC, ITRLVL
+      END IF
       IF (USEDRC .AND. .NOT.NEWTRA_USEDRC .AND. ITRLVL .GT. 0) THEN
          CALL GETTIM(TCPU0,TWALL0)
          IF (ITRLVL .GE. 4) THEN
@@ -1891,7 +1905,7 @@ C
          WRITE(LUPRI,*) 'MWORK  = ', MWORK
       END IF
       IF (IPRTRA .GE. 20) THEN
-         WRITE(LUPRI,*) ' CMO array '
+         WRITE(LUPRI,*) 'CMO array'
          CALL PRORB(CMO,.FALSE.,LUPRI)
       END IF
 C
@@ -2457,7 +2471,7 @@ C
 C 831014-hjaaj: maybe here also save LUINTM buffer length
 C 860731-hjaaj: done
       WRITE (LUINTM) LBINTM,ITRLVL,NSYM,NORB,NBAS
-      WRITE (LUINTM) (CMO(I),I=1,NCMOT)
+      WRITE (LUINTM) CMO(1:NCMOT)
       WRITE (LUINTM) MISH(1:8), MASH(1:8)
 C
       CALL TRAAB(ITRLVL,LUDA2,WORK(LW1),WORK(LW2),WORK(LW2),
