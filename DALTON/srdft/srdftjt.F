@@ -622,7 +622,7 @@ C  Manu 01-02-2006 begin
 C  Manu 01-02-2006 end
 
 !     short-range spin-dependent exchange LDA ! JT 11-08-09
-      IF(DOSRX_LDAS) THEN
+      IF(DOSRX_LDA_S) THEN
         call ESRX_LDAERFSPIN(rho(1),rho(2),CHIVAL,DFT_SPINDNS,Ex)
         call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),
      >             CHIVAL,DFT_SPINDNS,NORDER,
@@ -723,7 +723,7 @@ C     Initialisations
       ENDIF
 
 !     short-range spin-dependent correlation LDA ! JT 18-08-09
-      IF(DOSRC_LDAS) THEN
+      IF(DOSRC_LDA_S) THEN
         call ESRC_LDAERFSPIN(rho(1),rho(2),CHIVAL,DFT_SPINDNS,Ec)
         call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),
      >             CHIVAL,DFT_SPINDNS,NORDER,

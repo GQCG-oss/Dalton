@@ -573,10 +573,11 @@ C
 ! for which "ISJT=.TRUE.", like in HF-srPBEgws. The computation of
 ! the srx energy must then be disabled when calculating the "md" src term.
 ! 
-                  DOSRX_PBETCS = .FALSE.
-                  DOSRX_PBEGWS = .FALSE.
-                  DOSRX_PBERI = .FALSE.
-                  DOSRX_LDAS = .FALSE.
+                  DOSRX_PBETCS   = .FALSE.
+                  DOSRX_PBEGWS   = .FALSE.
+                  DOSRX_PBERI    = .FALSE.
+                  DOSRX_LDA_S    = .FALSE.
+                  DOSRX_PBEGWS_S = .FALSE.
 !!!!!!!
 
                   CALL SRFUN_INPUT(SR_FUNCS)

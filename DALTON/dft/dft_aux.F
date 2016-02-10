@@ -107,10 +107,14 @@ C JT 11-08-09 beg
 C JT 11-08-09 end
 
 C JT 17-08-09 beg
-      DOSRX_LDAS = .FALSE.
-      DOSRC_LDAS = .FALSE.
-C JT 17-08-09 end
+      DOSRX_LDA_S = .FALSE.
+      DOSRC_LDA_S = .FALSE.
 
+C EDH 10-02-16
+      DOSRX_PBEGWS_S = .FALSE.
+      DOSRC_PBEGWS_S = .FALSE.
+
+C SR correlation functionals
       DOSRC_LDA = .FALSE.
       DOSRC_GGA = .FALSE.
       DOSRC_WIB = .FALSE.
