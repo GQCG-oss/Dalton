@@ -293,9 +293,9 @@ C****************************************************************************
      >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
-C     of a generic spin-dependent short-range functional ESRSPIN(rhot,rhos,mu,dospin,E)
+C     of a generic spin-dependent short-range LDA functional ESRSPIN(rhot,rhos,mu,dospin,E)
 C
-C     Input: ESR    : functional routine
+C     Input: ESRSPIN    : functional routine
 C            rhot   : total density
 C            rhos   : spin density
 C            dospin : use spin density
