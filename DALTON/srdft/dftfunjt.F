@@ -467,7 +467,8 @@ C            d2E(8) = d2Edrhosdgrds : second derivative wrt to rhos and grds
 C            d2E(9) = d2Edgrdtdgrds : second derivative wrt to grdt and grds
 C            d2E(10)= d2Edgrdsdgrds : second derivative wrt to grds and grds
 C
-C     Created: 17-08-09, J. Toulouse
+C     Created: 29-01-16, H. J. Aa. Jensen + Erik D. Hedegård)
+C     (from routine by J. Toulouse)
 C*****************************************************************************
       implicit none
 
@@ -715,7 +716,7 @@ C            d2E(8) = d2Edrhosdgrds : second derivative wrt to rhos and grds
 C            d2E(9) = d2Edgrdtdgrds : second derivative wrt to grdt and grds
 C            d2E(10)= d2Edgrdsdgrds : second derivative wrt to grds and grds
 C
-C     Created: 17-08-09, J. Toulouse
+C     Created: 07-02-16, H. J. Aa. Jensen (from routine by J. Toulouse)
 C*****************************************************************************
       implicit none
 
