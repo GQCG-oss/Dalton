@@ -3554,7 +3554,7 @@ C
 C     Input: rho    : density
 C            rhos   : spin-density
 C            grd    : norm of gradient of density
-C            grd    : norm of gradient of spin-density
+C            grds   : norm of gradient of spin-density
 C            mu     : Interation parameter
 C
 C     Ouput: e      : energy
