@@ -328,7 +328,6 @@ C        matrix 4 is DXSAO
          JDXSAO = 4
 
 #ifdef SRDFT_DEBUG
-       ! edh debug
        print_thr = 50000.0d0
        do k = 1,2
          do i = 1, nbast
@@ -503,6 +502,7 @@ C     functionals
       external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF     
 C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
+      external ESRX_PBEGWSERFSPIN, ESRC_PBEGWSERFSPIN
       external ESRC_MULOC_GGA, ESRC_MULOD_GGA, ESRC_MULOE_GGA   
 C     sr mdc func 
       external ESRC_MD_LDAERF
@@ -537,6 +537,9 @@ c  Exchange  ------------------------------------------------------------
       d2Exdrhosdrhos = 0.d0
       d2Exdgrddgrd = 0.d0
       d2Exdrhodgrd = 0.d0
+
+! edh: Initialize d1E and d2E array here...
+!
 CFRAN Extra terms initialized!
       Exa = 0.d0
       Exb = 0.d0
@@ -628,7 +631,18 @@ C  Manu 01-02-2006 end
      >             CHIVAL,DFT_SPINDNS,NORDER,
      >             d1Exdrhot,d1Exdrhos,
      >             d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos)
+! TODO: make d1Exxx and d2Exxx to arrays of d1E and d2E - to make
+!parameter list shorter... (as below)
       ENDIF
+      IF(DOSRX_PBEGWS_S) THEN
+        ! CHECK RHOGRDS(2) = grada - gradb ????
+        ! MAKE ROUTINE SRX_PBEGWSERFSPIN
+!       call ESRX_PBEGWSERFSPIN(rho(1),rho(2), RHOGRD(1), RHOGRDS(2),
+!    >                         CHIVAL,DFT_SPINDNS,Ex)
+        call DESRSPINGGA(ESRX_PBEGWSERFSPIN,rhot,rhos,grdt,grds,
+     >                   mu,norder, E, d1E, d2E)
+      ENDIF
+
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
       IF(DOLAX_LDAS)  THEN
@@ -730,6 +744,11 @@ C     Initialisations
      >             d1Ecdrhot,d1Ecdrhos,
      >             d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)
       ENDIF
+      IF(DOSRC_PBEGWS_S) THEN
+        CALL QUIT('PBE(GWS) spin-dependent correlation functional '//
+     >   'not implemented - run with LDA (SRCLDA_S) instead')
+      ENDIF
+C Kamal SHARKAS 20-05-11 beg
 C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
        IF(DOLANSC_LDAS) THEN

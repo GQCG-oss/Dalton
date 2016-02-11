@@ -3545,6 +3545,63 @@ C     LDA energy
       return
       end
 C****************************************************************************
+      subroutine ESRX_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,e)
+C*****************************************************************************
+C     WILL NOT WORK YET!!!! NEEDS MODIFICATION TO SPIN DENSITY !!!!
+C     Short-range PBE exchange functional from
+C       Goll, Werner, Stoll, PCCP 7, 3917 (2005)
+C
+C     Input: rho    : density
+C            rhos   : spin-density
+C            grd    : norm of gradient of density
+C            grd    : norm of gradient of spin-density
+C            mu     : Interation parameter
+C
+C     Ouput: e      : energy
+C
+C     Author: Erik Donovan Hedegård (after original code by J. Toulouse)
+C     Date  : 11-02-16
+C*****************************************************************************
+      implicit none
+
+      double precision rho, rhos, grd, grds, mu
+      double precision e
+
+      double precision rho13
+      double precision drho2
+
+      double precision exerflda
+      double precision exerfpbe
+      double precision t1,t2,t3,t4
+      double precision kappa,sq,fx
+
+      double precision XKSR(3)
+      logical ERFEXP(0:2)
+
+! function
+      double precision berf
+
+C     LDA energy
+      rho13 = rho**(1.d0/3.d0)
+      ERFEXP(0:2) = .false.
+      call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
+      exerflda = XKSR(1)
+
+      drho2 = grd*grd
+
+      kappa=0.804d0
+      sq=drho2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
+      fx=1.d0+kappa
+     &    -kappa/(1.d0+berf(1.616204596739954813d
+     &    -1*mu*rho**(-1.d0/3.d0))*sq/kappa)
+      exerfpbe=exerflda*fx
+
+      e = exerfpbe
+
+      return
+      end
+C****************************************************************************
+C****************************************************************************
       subroutine ELAX_PBEGWS(rhot,grd,VLAMBDA,e)
 C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
 C*****************************************************************************
@@ -3589,7 +3646,7 @@ C*****************************************************************************
       logical ERFEXP(0:2), MULOCAL(0:2)
       double precision XKSR(3), ZKSR(3)
 
-!     short-range LDA energy
+!     short-range LDA energy (order = 0)
       rho13 = rho**(1.d0/3.d0)
       ERFEXP(0:2) = .false.
       MULOCAL(0:2) = .false.
@@ -3622,6 +3679,93 @@ C*****************************************************************************
          arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma*Aa)
          ecerfpbe=ecerflda+rho*gamma*dlog(arglog)
        endif
+
+      e = ecerfpbe
+
+      return
+      end
+C****************************************************************************
+      subroutine ESRC_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,e)
+C*****************************************************************************
+C     WILL NOT WORK YET....
+C     Short-range spin-dependent PBE correlation functional from
+C       Goll et al. Chem. Phys. 329 (2006), 276
+C
+C     Input: rho    : density
+C            rho    : spin-density
+C            grd    : norm of gradient of density
+C            grds   : norm of gradient spin-density
+C            mu     : Interaction parameter
+C
+C     Ouput: e             : energy
+C
+C     Author: Erik Hedegård (after Molpro code by J. Toulouse + A. Savin)
+C     Date  : 11-02-16
+C*****************************************************************************
+      implicit none
+
+      double precision rho, rhos, grd, grds, mu
+      double precision e
+
+      double precision tol
+      parameter(tol=1d-12)
+      double precision rho13
+
+      double precision drho2
+      double precision ecerflda,eclda
+      double precision ecerfpbe
+      double precision t1
+      double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
+
+      logical ERFEXP(0:2), MULOCAL(0:2)
+      double precision XKSR(3), ZKSR(3)
+
+!     Adapt to LSDA !!!!!
+!     short-range LDA energy (order = 0)
+      rho13 = rho**(1.d0/3.d0)
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
+      call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
+      ecerflda = ZKSR(1)
+
+!     Adapt to LSDA !!!!!
+!     full-range LDA energy
+      call VCSRLDA(ZKSR,rho,rho13,0.d0,MULOCAL,0,ERFEXP)
+      eclda = ZKSR(1)
+
+!     Spin polarisation
+!     Define rhoa, rhob, zeta
+!     rhoa=max((rhoc(i)+rhoo(i))*.5d0,1.0d-15)
+!     rhob=max((rhoc(i)-rhoo(i))*.5d0,1.0d-15)
+!     zeta = (rhoa-rhob)/(rhoa+rhob)
+
+      alpha=2.78d0
+      gamma=3.1091d-2
+
+!     square of density gradient
+      drho2 = grd*grd
+
+!     if ((ecerflda/eclda).le.0d0) then
+!       ! edh define beta and check alpha!
+!       beta=0d0
+!     else
+!       beta=6.6725d-2*(ecerflda/eclda)**alpha
+!     endif
+!     phi=((1d0+zeta)**(2d0/3d0)+(1d0-zeta)**(2d0/3d0))/2d0
+!     phi2=phi*phi
+!     phi3=phi2*phi
+!     phi4=phi3*phi
+!     tq=drho2*6.346820607d-2*rho**(-7d0/3d0)/phi2
+!     Ab=dexp(-ecerflda/(rho*gamma*phi3))-1d0
+!     if(dabs(Ab).le.dabs(beta*tol)) then
+!       ecerfpbe=ecerflda
+!     else
+!       Aa=beta/(gamma*Ab)
+!       Ac=1d0+Aa*tq+Aa**2*tq**2
+!       if (Aa.lt.tol) Aa=tol
+!       arglog=1d0+beta*(1d0-1d0/Ac)/(gamma*Aa)
+!       ecerfpbe=ecerflda+rho*phi3*gamma*dlog(arglog)
+!     endif
 
       e = ecerfpbe
 
