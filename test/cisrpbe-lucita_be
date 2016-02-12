@@ -1,0 +1,73 @@
+#!/bin/sh
+
+info='
+   cisrlda-lucita_be 
+   -------------
+   Molecule:         Be  
+   Wave Function:    CI-srPBE (mu=0.4)    
+   Test Purpose:     Check srPBEgws functional at the (long-range)
+                     CI-LUCITA level w/symmetry. 
+                     Basis : cc-pVQZ
+'
+
+molecule='ATOMBASIS 
+Be
+aug-QZ
+Atomtypes=1 Generators=3 X Y Z 
+Charge=4.0 Atoms=1 Basis=aug-cc-pVQZ
+Be    0.0000000000000000  0.0000000000000000  0.00000
+'
+
+dalton='**DALTON INPUT
+.RUN WAVE 
+**WAVE FUNCTIONS
+.HFSRDFT
+.CISRDFT
+.SRFUN
+SRXPBEGWS SRCPBEGWS
+*SCF INPUT
+#.PRINT
+#6
+.HF OCC
+2 0 0 0 0 0 0 0 
+*CI INPUT
+.STATE
+1 
+.MAX ITERATION
+ 60
+*CONFIGURATION INPUT
+.SYMMETRI
+1
+.SPIN MUL
+1
+.INACTIVE
+1 0 0 0 0 0 0 0 
+.CAS SPACE
+1 1 1 0 1 0 0 0  
+.ELECTRONS
+2
+*OPTIMIZATION
+.CI PROGRAM
+LUCITA
+.DETERMINANTS
+.MAX MACRO
+40
+.THRESHOLD
+1.d-6
+*ORBITAL INPUT
+.NOSUPSYM
+**INTEGRALS
+.NOSUP
+*TWOINT
+.DOSRIN
+.ERF
+0.4
+**END OF INPUT
+'
+
+test='
+check_scfsrdft_energy CI-srDFT -14.167567112274 5e-7
+'                    
+
+. ./functions || { echo "'functions' library not found." ; exit 1; }
+check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
