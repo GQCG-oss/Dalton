@@ -121,7 +121,7 @@ ERROR[4]="INCORRECT WAVE FUNCTION"
 
 # SCF energy:
 #   @ Final HF-SRDFT energy:       -76.346541615413
-CRIT1=`$GREP "Final HF-SRDFT energy: * \-76\.3465416" $log | wc -l`
+CRIT1=`$GREP "Final HF-SRDFT energy: * \-76\.346541" $log | wc -l`
 TEST[5]=`expr $CRIT1`
 CTRL[5]=1
 ERROR[5]="PBE energy via HF-srPBE NOT CORRECT"
