@@ -2001,7 +2001,7 @@ C    *              DIPOLE(I), DEBYE*DIPOLE(I), DIPSI*DIPOLE(I)
             END IF
   100    CONTINUE
 c        WRITE (LUPRI,'(/18X,A,F9.5,A)') ' 1 a.u. = ',DEBYE,' Debye '
-c        WRITE (LUPRI,'(18X,A,F9.5,A)') ' 1 a.u. = ',SI,' (10**-30) C.m'
+c        WRITE (LUPRI,'(18X,A,F9.5,A)')  ' 1 a.u. = ',DIPSI,' (10**-30) C.m'
       END IF
       WRITE (LUPRI,'(/)')
       RETURN
@@ -2009,7 +2009,7 @@ c        WRITE (LUPRI,'(18X,A,F9.5,A)') ' 1 a.u. = ',SI,' (10**-30) C.m'
 C  /* Deck cmmass */
       SUBROUTINE CMMASS(GEOM,AMASS,NATTYP,NUMIS,IPRINT)
 C
-C     Determine center of mass from information in common blocks
+C     Determine center of mass in orgcom.h(CMXYZ) from information in common blocks
 C     K.Ruud, June-94
 C
 #include "implicit.h"
@@ -2086,7 +2086,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "qm3.h"
-#include "qmmm.h"
 
 C
       IF (IPRINT .GE. 0) CALL HEADER('Isotopic Masses',-1)
