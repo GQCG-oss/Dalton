@@ -3525,11 +3525,16 @@ C*****************************************************************************
 ! function 
       double precision berf
 
+! edh debug
+#include "priunit.h"
+
 C     LDA energy
       rho13 = rho**(1.d0/3.d0)
       ERFEXP(0:2) = .false.
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       exerflda = XKSR(1)
+
+      write(lupri,*)'LDA energy exerflda', exerflda
 
       drho2 = grd*grd
 
@@ -3545,7 +3550,7 @@ C     LDA energy
       return
       end
 C****************************************************************************
-      subroutine ESRX_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,e)
+      subroutine ESRX_PBEGWSERFSPIN(rho,rhos,grd,grds,dospin,mu,e)
 C*****************************************************************************
 C     WILL NOT WORK YET!!!! NEEDS MODIFICATION TO SPIN DENSITY !!!!
 C     Short-range PBE exchange functional from
@@ -3576,7 +3581,7 @@ C*****************************************************************************
       double precision kappa,sq,fx
 
       double precision XKSR(3)
-      logical ERFEXP(0:2)
+      logical ERFEXP(0:2), dospin
 
 ! function
       double precision berf
