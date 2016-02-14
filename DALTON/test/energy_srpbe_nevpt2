@@ -152,7 +152,7 @@ CTRL[6]=2
 ERROR[6]="MP2-srPBE ENERGY NOT CORRECT"
 
 # MCSCF energy:
-CRIT1=`$GREP "Final MC-SRDFT energy: * \-76\.33414177" $log | wc -l`
+CRIT1=`$GREP "Final MC-SRDFT energy: * \-76\.3341417" $log | wc -l`
 TEST[7]=`expr $CRIT1`
 CTRL[7]=1
 ERROR[7]="MC-srPBE ENERGY NOT CORRECT"
