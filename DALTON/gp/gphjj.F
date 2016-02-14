@@ -1188,17 +1188,21 @@ C  /* Deck readt */
       CHARACTER*60 FNAME
       DIMENSION X(N)
       IF (IT .LE. 0) GOTO 30
-      READ (IT,END=10,ERR=20) X
+      READ (IT,IOSTAT=IERR,END=10,ERR=20) X
       RETURN
  10   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
       WRITE (LUPRI,*) 'READT: END reading file ',FNAME,
      & ' UNIT ',IT, ' record length ',N
+      WRITE (  0  ,*) 'READT: END reading file ',FNAME,
+     & ' UNIT ',IT, ' record length ',N
       CALL QUIT('READT: END reading file')
  20   CONTINUE
       INQUIRE(UNIT=IT,NAME=FNAME)
       WRITE (LUPRI,*) 'READT: ERROR reading file ',FNAME,
-     & ' UNIT ',IT, ' record length ',N
+     & ' UNIT ',IT, ' record length ',N,' error code ',IERR
+      WRITE (  0  ,*) 'READT: ERROR reading file ',FNAME,
+     & ' UNIT ',IT, ' record length ',N,' error code ',IERR
       CALL QUIT('READT: Error reading file')
  30   CONTINUE
       WRITE (LUPRI,*) 'READT ERRROR: non-positive file unit number ',IT
