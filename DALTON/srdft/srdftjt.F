@@ -466,6 +466,7 @@ C    Based on the routine SRDFTEXC of J. K. Pedersen
 C
 C    Created : 15-02-05, J. Toulouse
 C    Modified: 17-08-09, J. Toulouse, add spin density
+C    Modified: 15-08-16, E. Hedegård, add spin density gradient
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -477,6 +478,7 @@ C*****************************************************************************
 #include "dftcom.h"
 
       double precision rho(4),rhg(3,4),CHIVAL,VLAMBDA ! input
+!     double precision rhogrd(2) ! local variable for norm of RHG(1:3,*)
       double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
       integer NORDER
       logical ERFEXP(0:2)
@@ -492,6 +494,10 @@ C The new terms
       double precision d1Exdgrdb,d1Exdgrda2a,d1Exdgrda2b
       double precision d2Exdrhoadrhoa,d2Exdrhobdrhob,d2Exdrhoadgrda
       double precision d2Exdrhobdgrdb
+! edh Terms for SPIN-GGA functional 
+! TODO: Double check with the above code.
+      double precision d1E(4)
+      double precision d2E(10)
       save icall
       data icall/0/
 C     functionals
@@ -540,6 +546,8 @@ c  Exchange  ------------------------------------------------------------
 
 ! edh: Initialize d1E and d2E array here...
 !
+      d1E(4)  = 0.0d0
+      d2E(10) = 0.0d0
 CFRAN Extra terms initialized!
       Exa = 0.d0
       Exb = 0.d0
@@ -635,12 +643,11 @@ C  Manu 01-02-2006 end
 !parameter list shorter... (as below)
       ENDIF
       IF(DOSRX_PBEGWS_S) THEN
-        ! CHECK RHOGRDS(2) = grada - gradb ????
         ! MAKE ROUTINE SRX_PBEGWSERFSPIN
-!       call ESRX_PBEGWSERFSPIN(rho(1),rho(2), RHOGRD(1), RHOGRDS(2),
-!    >                         CHIVAL,DFT_SPINDNS,Ex)
+        call ESRX_PBEGWSERFSPIN(rho(1),rho(2), RHOGRD(1), RHOGRD(2),
+     >                          CHIVAL,DFT_SPINDNS,Ex)
         call DESRSPINGGA(ESRX_PBEGWSERFSPIN,rhot,rhos,grdt,grds,
-     >                   mu,norder, E, d1E, d2E)
+     >                   mu,norder, Ex, d1E, d2E)
       ENDIF
 
 
