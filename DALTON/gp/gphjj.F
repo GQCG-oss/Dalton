@@ -1185,7 +1185,7 @@ C  /* Deck readt */
       SUBROUTINE READT (IT,N,X)
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER*60 FNAME
+      CHARACTER*120 FNAME
       DIMENSION X(N)
       IF (IT .LE. 0) GOTO 30
       READ (IT,IOSTAT=IERR,END=10,ERR=20) X
