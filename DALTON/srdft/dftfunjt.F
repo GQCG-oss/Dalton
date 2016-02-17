@@ -495,7 +495,9 @@ C*****************************************************************************
       double precision E0m0m, E0p0p, E0p0m, E0m0p
       double precision E00mm, E00pp, E00pm, E00mp
 
-      logical  pure_spin
+      logical  pure_spin, dospin
+!     edh dospin always true but later on we can use this routine
+!     general for open and closed shell cases...     
 
 C     check
       if(norder .le. 0 .or. norder .ge. 3) then
@@ -517,7 +519,7 @@ C     check
       end if
 
 C     energy
-      call ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
+      call ESRSPINGGA(rhot,rhos,grdt,grds,mu,dospin,E)
 !      print *,'D1SRSPIN: E=',E
 
 C     (optimal?) numerical step
@@ -561,8 +563,8 @@ C Special treatment of pure spin
 
          if (norder .ge. 1) then
            d1E(:) = 0.0d0
-           call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Em000)
-           call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Ep000)
+           call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,dospin,Em000)
+           call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,dospin,Ep000)
            d1E(1) = (Ep000 - Em000)/(2.d0*hrt) ! d1Edrhot
 !         if (rhos .gt. 0.0d0) then
 !            d1Edrhos = d1Edrhot
@@ -587,25 +589,25 @@ C First-order derivatives --------------------------------------------
 
 C     derivatives wrt rhot, rhos, grdt, grds ---------------------
 
-      call ESRSPINGGA(rhotm,rhos,grdt,grds,mu,Em000)
-      call ESRSPINGGA(rhotp,rhos,grdt,grds,mu,Ep000)
+      call ESRSPINGGA(rhotm,rhos,grdt,grds,mu,dospin,Em000)
+      call ESRSPINGGA(rhotp,rhos,grdt,grds,mu,dospin,Ep000)
       d1E(1) = (Ep000 - Em000)/(2.d0*hrt) ! d1Edrhot
 
       if (hrs .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhosm,grdt,grds,mu,E0m00)
-         call ESRSPINGGA(rhot,rhosp,grdt,grds,mu,E0p00)
+         call ESRSPINGGA(rhot,rhosm,grdt,grds,mu,dospin,E0m00)
+         call ESRSPINGGA(rhot,rhosp,grdt,grds,mu,dospin,E0p00)
          d1E(2) = (E0p00 - E0m00)/(2.d0*hrs) ! d1Edrhos
        end if
 
       if (hgt .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhos,grdtm,grds,mu,E00m0)
-         call ESRSPINGGA(rhot,rhos,grdtp,grds,mu,E00p0)
+         call ESRSPINGGA(rhot,rhos,grdtm,grds,mu,dospin,E00m0)
+         call ESRSPINGGA(rhot,rhos,grdtp,grds,mu,dospin,E00p0)
          d1E(3) = (E00p0 - E00m0)/(2.d0*hgt) ! d1Edgrdt
        end if
 
       if (hgs .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhos,grdt,grdsm,mu,E000m)
-         call ESRSPINGGA(rhot,rhos,grdt,grdsp,mu,E000p)
+         call ESRSPINGGA(rhot,rhos,grdt,grdsm,mu,dospin,E000m)
+         call ESRSPINGGA(rhot,rhos,grdt,grdsp,mu,dospin,E000p)
          d1E(4) = (E000p - E000m)/(2.d0*hgs) ! d1Edgrds
        end if
 
@@ -622,10 +624,10 @@ C        derivative wrt rhos and rhos -----------------------
          d2E(3) = (E0p00 - 2.d0*E + E0m00)/(hrs*hrs) ! d2Edrhosdrhos
 
 C        derivative wrt rhot and rhos -----------------------
-         call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Epp00)
-         call ESRSPINGGA(rhotm,rhosp,grdt,grds,mu,Emp00)
-         call ESRSPINGGA(rhotp,rhosm,grdt,grds,mu,Epm00)
-         call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Emm00)
+         call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,dospin,Epp00)
+         call ESRSPINGGA(rhotm,rhosp,grdt,grds,mu,dospin,Emp00)
+         call ESRSPINGGA(rhotp,rhosm,grdt,grds,mu,dospin,Epm00)
+         call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,dospin,Emm00)
          d2E(2) = (Epp00 - Emp00 - Epm00 + Emm00)/(4.d0*hrt*hrs) ! d2Edrhotdrhos
        end if
 
@@ -634,19 +636,19 @@ C        derivative wrt grdt and grdt -----------------------
          d2E(6) = (E00p0 - 2.d0*E + E00m0)/(hgt*hgt) ! d2Edgrdtgrdt
 
 C        derivative wrt rhot and grdt -----------------------
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,Ep0p0)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,Em0p0)
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,Ep0m0)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,Em0m0)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,dospin,Ep0p0)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,dospin,Em0p0)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,dospin,Ep0m0)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,dospin,Em0m0)
          d2E(4) = (Ep0p0 - Em0p0 - Ep0m0 + Em0m0)/(4.d0*hrt*hgt) ! d2Edrhotdgrdt
 
        if (hrs .gt. 0.0d00) then
 
 C        derivative wrt rhos and grdt -----------------------
-         call ESRSPINGGA(rhot,rhosp,grdtp,grds,mu,E0pp0)
-         call ESRSPINGGA(rhot,rhosm,grdtp,grds,mu,E0mp0)
-         call ESRSPINGGA(rhot,rhosp,grdtm,grds,mu,E0pm0)
-         call ESRSPINGGA(rhot,rhosm,grdtm,grds,mu,E0mm0)
+         call ESRSPINGGA(rhot,rhosp,grdtp,grds,mu,dospin,E0pp0)
+         call ESRSPINGGA(rhot,rhosm,grdtp,grds,mu,dospin,E0mp0)
+         call ESRSPINGGA(rhot,rhosp,grdtm,grds,mu,dospin,E0pm0)
+         call ESRSPINGGA(rhot,rhosm,grdtm,grds,mu,dospin,E0mm0)
          d2E(5) = (E0pp0 - E0mp0 - E0pm0 + E0mm0)/(4.d0*hrs*hgt) ! d2Edrhosdgrdt
        end if
 
@@ -657,29 +659,29 @@ C        derivative wrt grds and grds -----------------------
          d2E(10) = (E000p - 2.d0*E + E000m)/(hgs*hgs) ! d2Edgrdsgrds
 
 C        derivative wrt rhot and grds -----------------------
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,Ep00p)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,Em00p)
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,Ep00m)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,Em00m)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,dospin,Ep00p)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,dospin,Em00p)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,dospin,Ep00m)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,dospin,Em00m)
          d2E(7) = (Ep00p - Em00p - Ep00m + Em00m)/(4.d0*hrt*hgs) ! d2Edrhotdgrds
 
        if (hrs .gt. 0.0d00) then
 
 C        derivative wrt rhos and grds -----------------------
-         call ESRSPINGGA(rhot,rhosp,grdt,grdsp,mu,E0p0p)
-         call ESRSPINGGA(rhot,rhosm,grdt,grdsp,mu,E0m0p)
-         call ESRSPINGGA(rhot,rhosp,grdt,grdsm,mu,E0p0m)
-         call ESRSPINGGA(rhot,rhosm,grdt,grdsm,mu,E0m0m)
+         call ESRSPINGGA(rhot,rhosp,grdt,grdsp,mu,dospin,E0p0p)
+         call ESRSPINGGA(rhot,rhosm,grdt,grdsp,mu,dospin,E0m0p)
+         call ESRSPINGGA(rhot,rhosp,grdt,grdsm,mu,dospin,E0p0m)
+         call ESRSPINGGA(rhot,rhosm,grdt,grdsm,mu,dospin,E0m0m)
          d2E(8) = (E0p0p - E0m0p - E0p0m + E0m0m)/(4.d0*hrs*hgs) ! d2Edrhosdgrds
        end if
 
        if (hgt .gt. 0.0d00) then
 
 C        derivative wrt grdt and grds -----------------------
-         call ESRSPINGGA(rhot,rhos,grdtp,grdsp,mu,E00pp)
-         call ESRSPINGGA(rhot,rhos,grdtm,grdsp,mu,E00mp)
-         call ESRSPINGGA(rhot,rhos,grdtp,grdsm,mu,E00pm)
-         call ESRSPINGGA(rhot,rhos,grdtm,grdsm,mu,E00mm)
+         call ESRSPINGGA(rhot,rhos,grdtp,grdsp,mu,dospin,E00pp)
+         call ESRSPINGGA(rhot,rhos,grdtm,grdsp,mu,dospin,E00mp)
+         call ESRSPINGGA(rhot,rhos,grdtp,grdsm,mu,dospin,E00pm)
+         call ESRSPINGGA(rhot,rhos,grdtm,grdsm,mu,dospin,E00mm)
          d2E(9) = (E00pp - E00mp - E00pm + E00mm)/(4.d0*hgt*hgs) ! d2Edgrdtdgrds
        end if
 
@@ -3550,9 +3552,8 @@ C     LDA energy
       return
       end
 C****************************************************************************
-      subroutine ESRX_PBEGWSERFSPIN(rho,rhos,grd,grds,dospin,mu,e)
+      subroutine ESRX_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,dospin,e)
 C*****************************************************************************
-C     WILL NOT WORK YET!!!! NEEDS MODIFICATION TO SPIN DENSITY !!!!
 C     Short-range PBE exchange functional from
 C       Goll, Werner, Stoll, PCCP 7, 3917 (2005)
 C
@@ -3577,35 +3578,36 @@ C*****************************************************************************
 
       double precision exerflda
       double precision exerfpbe
-      double precision t1,t2,t3,t4
+      double precision t1,t2,t3,t4 ! not used now
       double precision kappa,sq,fx
 
-      double precision XKSR(3)
-      logical ERFEXP(0:2), dospin
+      logical dospin
 
 ! function
       double precision berf
 
-C     LDA energy
-      rho13 = rho**(1.d0/3.d0)
-      ERFEXP(0:2) = .false.
-      call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
-      exerflda = XKSR(1)
+C     LDA energy ----
+C     ! In ESRX_PBEGWS VXSRLDA is used for the same purpose, but     
+      ! as VXSRLDA does not include rhos ESRX_LDAERFSPIN is used instead 
+      call ESRX_LDAERFSPIN(rho,rhos,mu,dospin,exerflda)
 
-      drho2 = grd*grd
+      ! Only for debugging... Remove !!!!!
+      e = exerflda
 
-      kappa=0.804d0
-      sq=drho2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
-      fx=1.d0+kappa
-     &    -kappa/(1.d0+berf(1.616204596739954813d
-     &    -1*mu*rho**(-1.d0/3.d0))*sq/kappa)
-      exerfpbe=exerflda*fx
+!     GGA energy ----- Current no spin part???
+!     drho2 = grd*grd
+!
+!     kappa=0.804d0
+!     sq=drho2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
+!     fx=1.d0+kappa
+!    &    -kappa/(1.d0+berf(1.616204596739954813d
+!    &    -1*mu*rho**(-1.d0/3.d0))*sq/kappa)
+!     exerfpbe=exerflda*fx
 
-      e = exerfpbe
+!     e = exerfpbe
 
       return
       end
-C****************************************************************************
 C****************************************************************************
       subroutine ELAX_PBEGWS(rhot,grd,VLAMBDA,e)
 C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
@@ -3998,7 +4000,6 @@ C*****************************************************************************
       e = ZKSR(1)
       return
       end
-
 C****************************************************************************
       subroutine ESRX_LDAERFSPIN (rhot,rhos,mu,dospin,e)
 C*****************************************************************************
