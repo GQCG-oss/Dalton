@@ -646,11 +646,11 @@ C  Manu 01-02-2006 end
         ! MAKE ROUTINE SRX_PBEGWSERFSPIN
         call ESRX_PBEGWSERFSPIN(rho(1),rho(2), RHOGRD(1), RHOGRD(2),
      >                          CHIVAL,DFT_SPINDNS,Ex)
-        call DESRSPINGGA(ESRX_PBEGWSERFSPIN,rhot,rhos,grdt,grds,
-     >                   mu,norder, Ex, d1E, d2E)
-      ENDIF
-
-
+        ! edh debug 
+        !write(lupri,*)'Ex from GGAS', Ex
+        call DESRSPINGGA(ESRX_PBEGWSERFSPIN,rho(1),rho(2),RHOGRD(1),
+     >                   RHOGRD(2),CHIVAL,norder,Ex,d1E,d2E)
+       ENDIF 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
       IF(DOLAX_LDAS)  THEN
         call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ex)
