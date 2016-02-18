@@ -22,7 +22,7 @@
 !
 !
 
-#define SRDFT_DEBUG
+#define noSRDFT_DEBUG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
@@ -301,36 +301,35 @@ C      Summation with quadrature weigths
 C      Potentials with quadrature weigths
 !
        if (DOGGA .and. DFT_SPINDNS) then
-           d1Ex(1) = d1Exdrhot  
-           d1Ex(2) = d1Exdrhos   
-           d1Ex(3) = d1Exdgrd    
-           d1Ex(4) = d1Exdgrds   
+           d1Exdrhot = d1Ex(1)
+           d1Exdrhos = d1Ex(2)
+           d1Exdgrd  = d1Ex(3)
+           d1Exdgrds = d1Ex(4)
            !-----------------
-           d1Ec(1) = d1Ecdrhot 
-           d1Ec(2) = d1Ecdrhos   
-           d1Ec(3) = d1Ecdgrd    
-           d1Ec(4) = d1Ecdgrds   
+           d1Ecdrhot = d1Ec(1)
+           d1Ecdrhos = d1Ec(2)
+           d1Ecdgrd  = d1Ec(3)
+           d1Ecdgrds = d1Ec(4)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
-           d1Ex(1) = d1Exdrhot  
-           d1Ex(2) = d1Exdrhos 
-           d1Ex(3) = d1Exdgrda2
+           d1Exdrhot = d1Ex(1)
+           d1Exdrhos = d1Ex(2)
            !-----------------
-           d1Ec(1) = d1Ecdrhot 
-           d1Ec(2) = d1Ecdrhos 
-           d1Ec(3) = d1Ecdgrda2
+           d1Ecdrhot = d1Ec(1)
+           d1Ecdrhos = d1Ec(2)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
-           d1Ex(1) = d1Exdrhot  
-           d1Ex(2) = d1Exdgrd  
+           d1Exdrhot  = d1Ex(1)
+           d1Exdgrd   = d1Ex(2)
+           d1Exdgrda2 = d1Ex(3)
            !-----------------
-           d1Ec(1) = d1Ecdrhot 
-           d1Ec(2) = d1Ecdgrd  
+           d1Ecdrhot  = d1Ec(1) 
+           d1Ecdgrd   = d1Ec(2)
+           d1Ecdgrda2 = d1Ec(3)
        else if (.not. DOGGA .and. .not. DFT_SPINDNS) then
-           d1Ex(1) = d1Exdrhot  
-           d1Ec(1) = d1Ecdrhot 
+           d1Exdrhot = d1Ex(1)
+           d1Ecdrhot = d1Ec(1)
        else
           write(lupri,*) 'WARNING neither LDA nor GGA found! '
-       end if 
-
+       end if
 
        d1Exdrhot  = WGHTX*d1Exdrhot
        d1Exdrhos  = WGHTX*d1Exdrhos
@@ -347,9 +346,9 @@ C      Potentials with quadrature weigths
 C      Sum of exchange and correlation
        d1Excdrhot  = d1Exdrhot  + d1Ecdrhot
        d1Excdrhos  = d1Exdrhos  + d1Ecdrhos
-!       d1Excdgrd   = d1Exdgrd   + d1Ecdgrd 
+       d1Excdgrd   = d1Exdgrd   + d1Ecdgrd
        d1Excdgrda2 = d1Exdgrda2 + d1Ecdgrda2
-!       d1Excdgrds  = d1Exdgrds +  d1Ecdgrds       
+       d1Excdgrds  = d1Exdgrds +  d1Ecdgrds
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
        FROMVX = .FALSE.
@@ -694,7 +693,7 @@ C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
 
 C  Correlation  ----------------------------------------------------------
 
-C     Initialisations
+C     Initialisation
       Ec      = 0.d0
       d1Ec(:) = 0.0d0
       d2Ec(:) = 0.0d0
@@ -941,70 +940,70 @@ CFRAN RHOSGRD ADDED!
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
 
        if (DOGGA .and. DFT_SPINDNS) then
-           d1Ex(1)  = d1Exdrhot        
-           d1Ex(2)  = d1Exdrhos      
-           d1Ex(3)  = d1Exdgrd       
-           d1Ex(4)  = d1Exdgrds      
-           !----------------------- 
-           d1Ec(1)  = d1Ecdrhot      
-           d1Ec(2)  = d1Ecdrhos      
-           d1Ec(3)  = d1Ecdgrd       
-           d1Ec(4)  = d1Ecdgrds      
+           d1Exdrhot      =  d1Ex(1)
+           d1Exdrhos      =  d1Ex(2)
+           d1Exdgrd       =  d1Ex(3)
+           d1Exdgrds      =  d1Ex(4)
            !-----------------------
-           d2Ex(1)  = d2Exdrhotdrhot 
-           d2Ex(2)  = d2Exdrhotdrhos 
-           d2Ex(3)  = d2Exdrhosdrhos 
-           d2Ex(4)  = d2Exdrhodgrd   
-           d2Ex(5)  = d2Exdgrddgrd   
-           d2Ex(6)  = d2Exgrdtdgrdt  
-           d2Ex(7)  = d2Exrhotdgrds  
-           d2Ex(8)  = d2Exrhosdgrds  
-           d2Ex(9)  = d2Exgrdtdgrds  
-           d2Ex(10) = d2Exgrdsdgrds  
+           d1Ecdrhot      =  d1Ec(1)
+           d1Ecdrhos      =  d1Ec(2)
+           d1Ecdgrd       =  d1Ec(3)
+           d1Ecdgrds      =  d1Ec(4)
            !-----------------------
-           d2Ec(1)  = d2Ecdrhotdrhot 
-           d2Ec(2)  = d2Ecdrhotdrhos 
-           d2Ec(3)  = d2Ecdrhosdrhos 
-           d2Ec(4)  = d2Ecdrhodgrd   
-           d2Ec(5)  = d2Ecdgrddgrd   
-           d2Ec(6)  = d2Ecgrdtdgrdt  
-           d2Ec(7)  = d2Ecrhotdgrds  
-           d2Ec(8)  = d2Ecrhosdgrds  
-           d2Ec(9)  = d2Ecgrdtdgrds  
-           d2Ec(10) = d2Ecgrdsdgrds  
+           d2Exdrhotdrhot = d2Ex(1)
+           d2Exdrhotdrhos = d2Ex(2)
+           d2Exdrhosdrhos = d2Ex(3)
+           d2Exdrhodgrd   = d2Ex(4)
+           d2Exdgrddgrd   = d2Ex(5)
+           d2Exgrdtdgrdt  = d2Ex(6)
+           d2Exrhotdgrds  = d2Ex(7)
+           d2Exrhosdgrds  = d2Ex(8)
+           d2Exgrdtdgrds  = d2Ex(9)
+           d2Exgrdsdgrds  = d2Ex(10)
+           !-----------------------
+           d2Ecdrhotdrhot = d2Ec(1)
+           d2Ecdrhotdrhos = d2Ec(2)
+           d2Ecdrhosdrhos = d2Ec(3)
+           d2Ecdrhodgrd   = d2Ec(4)
+           d2Ecdgrddgrd   = d2Ec(5)
+           d2Ecgrdtdgrdt  = d2Ec(6)
+           d2Ecrhotdgrds  = d2Ec(7)
+           d2Ecrhosdgrds  = d2Ec(8)
+           d2Ecgrdtdgrds  = d2Ec(9)
+           d2Ecgrdsdgrds  = d2Ec(10)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
-           d1Ex(1)  = d1Exdrhot  
-           d1Ex(2)  = d1Exdrhos 
-           d1Ex(3)  = d1Exdgrda2
+           d1Exdrhot      = d1Ex(1)
+           d1Exdrhos      = d1Ex(2)
            !----------------------
-           d1Ec(1)  = d1Ecdrhot   
-           d1Ec(2)  = d1Ecdrhos 
-           d1Ec(3)  = d1Ecdgrda2
+           d1Ecdrhot      = d1Ec(1)
+           d1Ecdrhos      = d1Ec(2)
            !----------------------
-           d2Ex(1)  = d2Exdrhotdrhot 
-           d2Ex(2)  = d2Exdrhotdrhos
-           d2Ex(3)  = d2Exdrhosdrhos
+           d2Exdrhotdrhot = d2Ex(1)
+           d2Exdrhotdrhos = d2Ex(2)
+           d2Exdrhosdrhos = d2Ex(3)
            !----------------------
-           d2Ec(1)  = d2Ecdrhotdrhot 
-           d2Ec(2)  = d2Ecdrhotdrhos
-           d2Ec(3)  = d2Ecdrhosdrhos
+           d2Ecdrhotdrhot = d2Ec(1)
+           d2Ecdrhotdrhos = d2Ec(2)
+           d2Ecdrhosdrhos = d2Ec(3)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
-           d1Ex(1)  = d1Exdrhot  
-           d1Ex(2)  = d1Exdgrd 
+           d1Exdrhot      = d1Ex(1)
+           d1Exdgrd       = d1Ex(2)
+           d1Exdgrda2     = d1Ex(3)
            !----------------------
-           d1Ec(1)  = d1Ecdrhot 
-           d1Ec(2)  = d1Ecdgrd 
+           d1Ecdrhot      = d1Ec(1) 
+           d1Ecdgrd       = d1Ec(2)
+           d1Ecdgrda2     = d1Ec(3)
            !----------------------
-           d2Ex(1)  = d2Exdrhotdrhot 
-           d2Ex(2)  = d2Exdgrddgrd  
-           d2Ex(3)  = d2Exdrhodgrd  
+           d2Exdrhotdrhot = d2Ex(1) 
+           d2Exdgrddgrd   = d2Ex(2)
+           d2Exdrhodgrd   = d2Ex(3)
            !----------------------
-           d2Ec(1)  = d2Ecdrhotdrhot 
-           d2Ec(2)  = d2Ecdgrddgrd  
-           d2Ec(3)  = d2Ecdrhodgrd  
-       else if (.not. DOGGA .and. .not. DFT_SPINDNS) then 
-           d1Ex(1) = d1Exdrhot 
-           d1Ec(1) = d1Ecdrhot
+           d2Ecdrhotdrhot = d2Ec(1)
+           d2Ecdgrddgrd   = d2Ec(2)
+           d2Ecdrhodgrd   = d2Ec(3)
+       else if (.not. DOGGA .and. .not. DFT_SPINDNS) then
+           d1Exdrhot      = d1Ex(1)
+           d1Ecdrhot      = d1Ec(1)
        else
           write(lupri,*) 'WARNING neither LDA nor GGA found! '
        end if 
@@ -1018,7 +1017,6 @@ C Total contribution -------------------------------------------------------
          FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
          FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
 #ifdef SRDFT_DEBUG
-#define noSRDFT_DEBUG
          if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
             write(lupri,*) 'hjaaj: FRR,FRS,FSS',FRR,FRS,FSS
             write(lupri,*) 'hjaaj: rho',rho(1:4)
