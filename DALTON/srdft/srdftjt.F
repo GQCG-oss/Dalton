@@ -286,12 +286,12 @@ C
      >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
      >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
 
-
 C      Summation with quadrature weigths
        ExInt     = ExInt + WGHTX*Ex
        EcInt     = EcInt + WGHTC*Ec
 
 C      Potentials with quadrature weigths
+
        d1Exdrhot  = WGHTX*d1Exdrhot
        d1Exdrhos  = WGHTX*d1Exdrhos
        d1Ecdrhot  = WGHTC*d1Ecdrhot
@@ -926,7 +926,6 @@ C Total contribution -------------------------------------------------------
          FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
          FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
 #ifdef SRDFT_DEBUG
-#define noSRDFT_DEBUG
          if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
             write(lupri,*) 'hjaaj: FRR,FRS,FSS',FRR,FRS,FSS
             write(lupri,*) 'hjaaj: rho',rho(1:4)
