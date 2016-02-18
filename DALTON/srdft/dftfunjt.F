@@ -3644,7 +3644,7 @@ C*****************************************************************************
       return
       end
 C****************************************************************************
-      subroutine ESRC_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,e)
+      subroutine ESRC_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,dospin,e)
 C*****************************************************************************
 C     WILL NOT WORK YET....
 C     Short-range spin-dependent PBE correlation functional from
@@ -3676,21 +3676,18 @@ C*****************************************************************************
       double precision t1
       double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
 
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision XKSR(3), ZKSR(3)
+      logical dospin
 
-!     Adapt to LSDA !!!!!
-!     short-range LDA energy (order = 0)
       rho13 = rho**(1.d0/3.d0)
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
-      call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
-      ecerflda = ZKSR(1)
+C     LDA energy ----
+!     In ESRC_PBEGWS VCSRLDA is used for the same purpose, but
+!     as VCSRLDA does not include rhos ESRX_LDAERFSPIN is used instead
+      call ESRC_LDAERFSPIN(rho,rhos,mu,dospin,e)
+      ecerflda =  e
 
-!     Adapt to LSDA !!!!!
-!     full-range LDA energy
-      call VCSRLDA(ZKSR,rho,rho13,0.d0,MULOCAL,0,ERFEXP)
-      eclda = ZKSR(1)
+      ! full range LDA energy (mu = 0.0)
+      call ESRC_LDAERFSPIN(rho,rhos,0.0d0,dospin,e)
+      eclda = e
 
 !     Spin polarisation
 !     Define rhoa, rhob, zeta
@@ -3726,7 +3723,10 @@ C*****************************************************************************
 !       ecerfpbe=ecerflda+rho*phi3*gamma*dlog(arglog)
 !     endif
 
-      e = ecerfpbe
+! edh: only for debuggin should be removed!!!
+       e = ecerflda
+
+!      e = ecerfpbe
 
       return
       end

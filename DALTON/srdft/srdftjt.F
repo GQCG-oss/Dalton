@@ -665,11 +665,8 @@ C  Manu 01-02-2006 end
      >             CHIVAL,DFT_SPINDNS,NORDER,d1Ex,d2Ex)
       ENDIF
       IF(DOSRX_PBEGWS_S) THEN
-        ! MAKE ROUTINE SRX_PBEGWSERFSPIN
         call ESRX_PBEGWSERFSPIN(rho(1),rho(2), RHOGRD(1), RHOGRD(2),
      >                          CHIVAL,DFT_SPINDNS,Ex)
-        ! edh debug 
-        !write(lupri,*)'Ex from GGAS', Ex
         call DESRSPINGGA(ESRX_PBEGWSERFSPIN,rho(1),rho(2),RHOGRD(1),
      >                   RHOGRD(2),CHIVAL,norder,d1Ex,d2Ex)
        ENDIF 
@@ -761,10 +758,11 @@ C     Initialisation
      >             CHIVAL,DFT_SPINDNS,NORDER,d1Ec,d2Ec)
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
-        CALL QUIT('PBE(GWS) spin-dependent correlation functional '//
-     >   'not implemented - run with LDA (SRCLDA_S) instead')
+        call ESRC_PBEGWSERFSPIN(rho(1),rho(2), RHOGRD(1), RHOGRD(2),
+     >                          CHIVAL,DFT_SPINDNS,Ec)
+        call DESRSPINGGA(ESRC_PBEGWSERFSPIN,rho(1),rho(2),RHOGRD(1),
+     >                   RHOGRD(2),CHIVAL,norder,d1Ec,d2Ec)
       ENDIF
-C Kamal SHARKAS 20-05-11 beg
 C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
        IF(DOLANSC_LDAS) THEN
