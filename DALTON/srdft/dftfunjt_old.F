@@ -1,5 +1,7 @@
 C****************************************************************************
-      SUBROUTINE DESR(ESR,rho,grd,mu,norder,d1E,d2E)
+      SUBROUTINE DESR(ESR,rho,grd,mu,norder,
+     >                d1Edrho,d1Edgrd,d1Edgrda2,
+     >                d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic short-range functional ESR(rho,grd,mu,E)
@@ -10,25 +12,24 @@ C            grd    : norm of gradient of density
 C            mu     : Interation parameter
 C            norder : order of derivatives
 C
-C     Ouput: d1E(1) =  d1Edrho     : first derivative wrt to rho
-C            d1E(2) =  d1Edgrd     : first derivative wrt to grd  (for 2nd-order optimisation)
-C            d1E(3) =  d1Edgrda2   : first derivative wrt to grda2 (for HF optimisation)
+C     Ouput: d1Edrho       : first derivative wrt to rho
+C            d1Edgrd       : first derivative wrt to grd  (for 2nd-order optimisation)
+C            d1Edgrda2     : first derivative wrt to grda2 (for HF optimisation)
 C            (grda2 is the square of gradient of spin-alpha density)
-
-C            d2E(1) = d2Edrhodrho  : second derivative wrt to rho and rho
-C            d2E(2) = d2Edgrddgrd  : second derivative wrt to grd and grd
-C            d2E(3) = d2Edrhodgrd  : second derivative wrt to rho and grd
+C            d2Edrhodrho   : second derivative wrt to rho and rho
+C            d2Edgrddgrd   : second derivative wrt to grd and grd
+C            d2Edrhodgrd   : second derivative wrt to rho and grd
 C
 C     Author: J. Toulouse
 C     Date  : 16-02-05
-C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegård
 C*****************************************************************************
       implicit none
 
       external ESR
       integer norder
       double precision rho, grd, mu
-      double precision E, d1E(3), d2E(3)
+      double precision E, d1Edrho,d1Edgrd,d1Edgrda2
+      double precision d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd
 
       double precision hr, hg, hr2, hg2, hrg
       double precision rhom, rhop, rhopp, grdm, grdp, grdpp
@@ -65,7 +66,7 @@ C     derivative wrt rho ---------------------
 !      central 2nd-order approximation
        call ESR(rhom,grd,mu,Em0)
        call ESR(rhop,grd,mu,Ep0)
-       d1E(1) = (Ep0 - Em0)/(2.d0*hr)
+       d1Edrho = (Ep0 - Em0)/(2.d0*hr)
 !      else 
 !       stop 'rhom < 0'
 !!      forward 1st-order approximation
@@ -79,7 +80,7 @@ C     derivative wrt grd ---------------------
 !      central 2nd-order approximation
        call ESR(rho,grdm,mu,E0m)
        call ESR(rho,grdp,mu,E0p)
-       d1E(2) = (E0p - E0m)/(2.d0*hg)
+       d1Edgrd = (E0p - E0m)/(2.d0*hg)
 !      else
 !       stop 'grdm < 0'
 !!      forward 1st-order approximation
@@ -90,10 +91,10 @@ C     derivative wrt grd ---------------------
 
 C     derivative wrt grd2
       dgrddgrd2 = 1.d0/(2.d0*grd)
-      d1Edgrd2 = d1E(2) * dgrddgrd2
+      d1Edgrd2 = d1Edgrd * dgrddgrd2
 
 C     derivative wrt grda2
-      d1E(3) = 4.d0*d1Edgrd2
+      d1Edgrda2 = 4.d0*d1Edgrd2
 
 C Second-order derivatives --------------------------------------------
       if(norder .ge. 2) then
@@ -105,28 +106,27 @@ C Second-order derivatives --------------------------------------------
 C     derivative wrt rho and rho -----------------
 !      if(rhom .ge. 0.d0) then 
 !      central 2nd-order approximation
-       
-       d2E(1) = (Ep0 - 2.d0*E + Em0)/hr2
+       d2Edrhodrho = (Ep0 - 2.d0*E + Em0)/hr2
 !      else 
 !       stop 'rhom < 0'
 !!      forward 1st-order approximation
 !       rhopp = rho + 2.d0*hr
 !       call ESR(rhop,grd,mu,Ep0)
 !       call ESR(rhopp,grd,mu,Epp0)
-!       d2E(1) = (Epp0 -2.d0*Ep0 + E)/hr2
+!       d2Edrhodrho = (Epp0 -2.d0*Ep0 + E)/hr2
 !      endif
 
 C     derivative wrt grd and grd -----------------------
 !      if(grdm .ge. 0.d0) then
 !      central 2nd-order approximation
-       d2E(2) = (E0p - 2.d0*E + E0m)/hg2
+       d2Edgrddgrd = (E0p - 2.d0*E + E0m)/hg2
 !      else
 !       stop 'grdm < 0'
 !!      forward 1st-order approximation
 !       grdpp = grd + 2.d0*hg
 !       call ESR(rho,grdp,mu,E0p)
 !       call ESR(rho,grd,mu,E0pp)
-!       d2E(2) = (E0pp -2.d0*E0p + E)/hg2
+!       d2Edgrddgrd = (E0pp -2.d0*E0p + E)/hg2
 !      endif
 
 C     derivative wrt rho and grd -----------------------
@@ -136,12 +136,12 @@ C     derivative wrt rho and grd -----------------------
        call ESR(rhop,grdm,mu,Epm)
        call ESR(rhom,grdm,mu,Emm)
 !      central 2nd-order approximation
-       d2E(3) = (Epp - Emp - Epm + Emm)/(4.d0*hrg)
+       d2Edrhodgrd = (Epp - Emp - Epm + Emm)/(4.d0*hrg)
 !      else
 !       stop 'rhom < 0 or grdm < 0'
 !       call ESR(rhop,grdp,mu,Epp)
 !!      forward 1st-order approximation
-!       d2E(3) = (Epp - E0p - Ep0 + E)/hrg
+!       d2Edrhodgrd = (Epp - E0p - Ep0 + E)/hrg
 !      endif
      
       endif
@@ -149,7 +149,10 @@ C     derivative wrt rho and grd -----------------------
       return
       end
 C****************************************************************************
-      SUBROUTINE DELA(ESR,rhot,grd,VLAMBDA,norder,d1E,d2E)
+      SUBROUTINE DELA(ESR,rhot,grd,VLAMBDA,norder,
+     >                d1Edrho,d1Edgrd,d1Edgrda2,
+     >                d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
+
 C Linear complement exchange PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
 
@@ -159,23 +162,33 @@ C*****************************************************************************
       integer norder
 
       double precision rhot, grd, VLAMBDA
-      double precision d1E(3), d2E(3) 
+      double precision d1Edrho,d1Edgrd,d1Edgrda2
+      double precision d2Edrhodrho, d2Edgrddgrd, d2Edrhodgrd
 
-      call   DESR(ESR,rhot,grd,0.d0,norder,d1E,d2E)
+      call   DESR(ESR,rhot,grd,0.d0,norder,
+     >            d1Edrho,d1Edgrd,d1Edgrda2,
+     >            d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
 
-      d1E(1) = (1.d0- VLAMBDA) * d1E(1)
-      d1E(2) = (1.d0- VLAMBDA) * d1E(2)
-      d1E(3) = (1.d0- VLAMBDA) * d1E(3)
 
-      d2E(1) = (1.d0- VLAMBDA) * d2E(1)
-      d2E(2) = (1.d0- VLAMBDA) * d2E(2)
-      d2E(3) = (1.d0- VLAMBDA) * d2E(3)
+      d1Edrho = (1.d0- VLAMBDA) * d1Edrho
 
-      return
-      end
+      d1Edgrd = (1.d0- VLAMBDA) * d1Edgrd
+
+      d1Edgrda2 = (1.d0- VLAMBDA) * d1Edgrda2
+
+      d2Edrhodrho = (1.d0- VLAMBDA) * d2Edrhodrho
+
+      d2Edgrddgrd =  (1.d0- VLAMBDA) * d2Edgrddgrd
+
+      d2Edrhodgrd = (1.d0- VLAMBDA) * d2Edrhodgrd
+
+          return
+           end
 
 C****************************************************************************
-      SUBROUTINE DELANSC(ESR,rhot,grd,VLAMBDA,norder,d1E,d2E)
+      SUBROUTINE DELANSC(ESR,rhot,grd,VLAMBDA,norder,
+     >                d1Edrho,d1Edgrd,d1Edgrda2,
+     >                d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
 
 C Linear complement (NON-Scaled) correlation PBE GWS functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
@@ -185,23 +198,33 @@ C*****************************************************************************
       integer norder
 
       double precision rhot, grd, VLAMBDA
-      double precision d1E(3), d2E(3)
+      double precision d1Edrho,d1Edgrd,d1Edgrda2
+      double precision d2Edrhodrho, d2Edgrddgrd, d2Edrhodgrd
 
-      call   DESR(ESR,rhot,grd,0.d0,norder,d1E,d2E)
+      call   DESR(ESR,rhot,grd,0.d0,norder,
+     >            d1Edrho,d1Edgrd,d1Edgrda2,
+     >            d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
 
-      d1E(1) = (1.d0- VLAMBDA**2) * d1E(1)
-      d1E(2) = (1.d0- VLAMBDA**2) * d1E(2)
-      d1E(3) = (1.d0- VLAMBDA**2) * d1E(3)
 
-      d2E(1) = (1.d0- VLAMBDA**2) * d2E(1)
-      d2E(2) = (1.d0- VLAMBDA**2) * d2E(2)
-      d2E(3) = (1.d0- VLAMBDA**2) * d2E(3)
+      d1Edrho = (1.d0- VLAMBDA**2) * d1Edrho
 
-      return
-      end
+      d1Edgrd = (1.d0- VLAMBDA**2) * d1Edgrd
+
+      d1Edgrda2 = (1.d0- VLAMBDA**2) * d1Edgrda2
+
+      d2Edrhodrho = (1.d0- VLAMBDA**2) * d2Edrhodrho
+
+      d2Edgrddgrd =  (1.d0- VLAMBDA**2) * d2Edgrddgrd
+
+      d2Edrhodgrd = (1.d0- VLAMBDA**2) * d2Edrhodgrd
+
+          return
+           end
 
 C****************************************************************************
-      SUBROUTINE DELASC(ESR,rhot,grd,VLAMBDA,norder,d1E,d2E)
+      SUBROUTINE DELASC(ESR,rhot,grd,VLAMBDA,norder,
+     >                d1Edrho,d1Edgrd,d1Edgrda2,
+     >                d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
 
 C Linear complement Scaled correlation PBE functional, Kamal SHARKAS 20/05/2011
 C*****************************************************************************
@@ -211,49 +234,63 @@ C*****************************************************************************
       integer norder
 
       double precision rhot, rhotscaled, grd, grdscaled, VLAMBDA
-      double precision d1E(3), d2E(3)
-      double precision d1Ecoul(3), d2Ecoul(3)
-      double precision d1Esca(3), d2Esca(3)
+      double precision d1Edrho,d1Edgrd,d1Edgrda2
+      double precision d2Edrhodrho, d2Edgrddgrd, d2Edrhodgrd
+      double precision d1Edrhocoul,d1Edgrdcoul,d1Edgrda2coul
+      double precision d2Edrhodrhocoul, d2Edgrddgrdcoul, d2Edrhodgrdcoul
+      double precision d1Edrhosca,d1Edgrdsca,d1Edgrda2sca
+      double precision d2Edrhodrhosca, d2Edgrddgrdsca, d2Edrhodgrdsca
 
-!     d1Ecoul(1) = d1Edrhocoul
-!     d1Ecoul(2) = d1Edgrdcoul
-!     d1Ecoul(3) = d1Edgrda2coul
-!     d1Ecoul(1) = d2Edrhodrhocoul
-!     d1Ecoul(2) = d2Edgrddgrdcoul 
-!     d1Ecoul(3) = d2Edrhodgrdcoul
-      d1Ecoul(:) = 0.0d0
-      d2Ecoul(:) = 0.0d0
+      d1Edrhocoul = 0.d0
+      d1Edgrdcoul = 0.d0
+      d1Edgrda2coul = 0.d0
+      d2Edrhodrhocoul = 0.d0
+      d2Edgrddgrdcoul = 0.d0
+      d2Edrhodgrdcoul =  0.d0
 
-      call  DESR(ESR,rhot,grd,0.d0,norder,d1Ecoul,d2Ecoul)
+      call  DESR(ESR,rhot,grd,0.d0,norder,
+     >           d1Edrhocoul,d1Edgrdcoul,d1Edgrda2coul,
+     >           d2Edrhodrhocoul,d2Edgrddgrdcoul,d2Edrhodgrdcoul)
 
       rhotscaled = rhot/VLAMBDA**3
       grdscaled  = grd/VLAMBDA**4
 
-!     d1Esca(1) = d1Edrhosca
-!     d1Esca(2) = d1Edgrdsca 
-!     d1Esca(3) = d1Edgrda2sca 
-!     d2Esca(1) = d2Edrhodrhosca 
-!     d2Esca(2) = d2Edgrddgrdsca 
-!     d2Esca(3) = d2Edrhodgrdsca
-      d1Esca(:) = 0.0d0
-      d2Esca(:) = 0.0d0
+      d1Edrhosca = 0.d0
+      d1Edgrdsca = 0.d0
+      d1Edgrda2sca = 0.d0
+      d2Edrhodrhosca = 0.d0
+      d2Edgrddgrdsca = 0.d0
+      d2Edrhodgrdsca =  0.d0
 
-      call  DESR(ESR,rhotscaled,grdscaled,0.d0,norder,d1Esca,d2Esca)
+      call  DESR(ESR,rhotscaled,grdscaled,0.d0,norder,
+     >           d1Edrhosca,d1Edgrdsca,d1Edgrda2sca,
+     >           d2Edrhodrhosca,d2Edgrddgrdsca,d2Edrhodgrdsca)
 
-      d1E(1) = d1E(1) + (d1Ecoul(1) - VLAMBDA**2 * d1Esca(1))
-      d1E(2) = d1E(2) + (d1Ecoul(2) - VLAMBDA * d1Esca(2))
-      d1E(3) = d1E(3) + (d1Ecoul(3) - (d1Esca(3)/VLAMBDA**3))
 
-      d2E(1) = d2E(1) + (d2Ecoul(1) - (1.d0/VLAMBDA)*d2Esca(1))
-      d2E(2) = d2E(2) + (d2Ecoul(2) - (d2Esca(2)/VLAMBDA**3))
-      d2E(3) = d2E(3) + (d2Ecoul(3) - (d2Esca(3)/VLAMBDA**2))
+      d1Edrho = d1Edrho + (d1Edrhocoul - VLAMBDA**2 * d1Edrhosca)
 
-      return
-      end
+      d1Edgrd = d1Edgrd + (d1Edgrdcoul - VLAMBDA * d1Edgrdsca)
+
+      d1Edgrda2 = d1Edgrda2+(d1Edgrda2coul-(d1Edgrda2sca/VLAMBDA**3))
+
+      d2Edrhodrho= d2Edrhodrho + (d2Edrhodrhocoul -
+     >                 (1.d0/VLAMBDA)*d2Edrhodrhosca)
+
+      d2Edgrddgrd = d2Edgrddgrd + (d2Edgrddgrdcoul-
+     >                   (d2Edgrddgrdsca/VLAMBDA**3))
+
+      d2Edrhodgrd = d2Edrhodgrd + (d2Edrhodgrdcoul-
+     >                   (d2Edrhodgrdsca/VLAMBDA**2))
+
+
+          return
+           end
 C****************************************************************************
 
 C****************************************************************************
-      SUBROUTINE DESRSPIN(ESRSPIN,rhot,rhos,mu,dospin,norder,d1E,d2E)
+      SUBROUTINE DESRSPIN(ESRSPIN,rhot,rhos,mu,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic spin-dependent short-range LDA functional ESRSPIN(rhot,rhos,mu,dospin,E)
@@ -265,15 +302,13 @@ C            dospin : use spin density
 C            mu     : Interation parameter
 C            norder : order of derivatives
 C
-C     Ouput: d1E(1) = d1Edrhot      : first derivative wrt to rhot
-C            d1E(2) = d1Edrhos      : first derivative wrt to rhos
-C
-C            d2E(1) = d2Edrhotdrhot : second derivative wrt to rhot and rhot
-C            d2E(2) = d2Edrhotdrhos : second derivative wrt to rhot and rhos
-C            d2E(3) = d2Edrhosdrhos : second derivative wrt to rhos and rhos
+C     Ouput: d1Edrhot      : first derivative wrt to rhot
+C            d1Edrhos      : first derivative wrt to rhos
+C            d2Edrhotdrhot : second derivative wrt to rhot and rhot
+C            d2Edrhotdrhos : second derivative wrt to rhot and rhos
+C            d2Edrhosdrhos : second derivative wrt to rhos and rhos
 C
 C     Created: 17-08-09, J. Toulouse
-C     Revision: Introduce d1E and d2E arrays (17-02-16), E. D. Hedegård
 C*****************************************************************************
       implicit none
 
@@ -281,7 +316,8 @@ C*****************************************************************************
       integer norder
       logical dospin
       double precision rhot, rhos, mu
-      double precision E, d1E(2), d2E(3)
+      double precision E, d1Edrhot, d1Edrhos
+      double precision d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos
 
       double precision hrt, hrs, hrt2, hrs2, hrts
       double precision rhotm, rhotp, rhosp, rhosm
@@ -337,71 +373,71 @@ C     derivative wrt rhot ---------------------
        if (pure_spin) then
           call ESRSPIN(rhotm,rhosm,mu,dospin,Em0)
           call ESRSPIN(rhotp,rhosp,mu,dospin,Ep0)
-          d1E(1) = (Ep0 - Em0)/(2.d0*hrt)
+          d1Edrhot = (Ep0 - Em0)/(2.d0*hrt)
 !         if (rhos .gt. 0.0d0) then
-!            d1E(2) = d1E(1)
+!            d1Edrhos = d1Edrhot
 !         else
-!            d1E(2) = -d1E(1)
+!            d1Edrhos = -d1Edrhot
 !         end if
        else
           call ESRSPIN(rhotm,rhos,mu,dospin,Em0)
           call ESRSPIN(rhotp,rhos,mu,dospin,Ep0)
-          d1E(1) = (Ep0 - Em0)/(2.d0*hrt)
-          d1E(2) = 0.0d0
+          d1Edrhot = (Ep0 - Em0)/(2.d0*hrt)
+          d1Edrhos = 0.0d0
        end if
 
 C     derivative wrt rhos ---------------------
 !      central 2nd-order approximation
        if (dospin .and. .not. pure_spin) then
-         if (hrs .gt. 0.0d0) then
-           call ESRSPIN(rhot,rhosm,mu,dospin,E0m)
-           call ESRSPIN(rhot,rhosp,mu,dospin,E0p)
-           d1E(2) = (E0p - E0m)/(2.d0*hrs)
-         else
-           d1E(2) = 0.0d0
-         end if
+       if (hrs .gt. 0.0d0) then
+         call ESRSPIN(rhot,rhosm,mu,dospin,E0m)
+         call ESRSPIN(rhot,rhosp,mu,dospin,E0p)
+         d1Edrhos = (E0p - E0m)/(2.d0*hrs)
+       else
+         d1Edrhos = 0.0d0
+       end if
        endif
 
 C Second-order derivatives --------------------------------------------
       if(norder .ge. 2) then
 
-        hrt2= hrt*hrt
-        hrs2= hrs*hrs
-        hrts= hrt*hrs
-!       hg2= hg*hg
-!       hrg= hr*hg
+      hrt2= hrt*hrt
+      hrs2= hrs*hrs
+      hrts= hrt*hrs
+!      hg2= hg*hg
+!      hrg= hr*hg
 
-C       derivative wrt rhot and rhot -----------------
-!       central 2nd-order approximation
-        d2E(1) = (Ep0 - 2.d0*E + Em0)/hrt2
-        if (dospin) then
-          if (pure_spin) then
-            d2E(3) = 0.0d0
-            d2E(2) = 0.0d0
-          else if (hrs .gt. 0.0d0) then
+C     derivative wrt rhot and rhot -----------------
+!      central 2nd-order approximation
+       d2Edrhotdrhot = (Ep0 - 2.d0*E + Em0)/hrt2
+      if (dospin) then
+       if (pure_spin) then
+         d2Edrhosdrhos = 0.0d0
+         d2Edrhotdrhos = 0.0d0
+       else if (hrs .gt. 0.0d0) then
 C       derivative wrt rhos and rhos -----------------------
-!       central 2nd-order approximation
-            d2E(3) = (E0p - 2.d0*E + E0m)/hrs2
-       
-C         derivative wrt rhot and rhos -----------------------
-          call ESRSPIN(rhotp,rhosp,mu,dospin,Epp)
-          call ESRSPIN(rhotm,rhosp,mu,dospin,Emp)
-          call ESRSPIN(rhotp,rhosm,mu,dospin,Epm)
-          call ESRSPIN(rhotm,rhosm,mu,dospin,Emm)
-!         central 2nd-order approximation
-            d2E(2) = (Epp - Emp - Epm + Emm)/(4.d0*hrts)
-          else
-            d2E(3) = 0.0d0
-            d2E(2) = 0.0d0
-          end if
-        endif
+!        central 2nd-order approximation
+         d2Edrhosdrhos = (E0p - 2.d0*E + E0m)/hrs2
 
+C       derivative wrt rhot and rhos -----------------------
+         call ESRSPIN(rhotp,rhosp,mu,dospin,Epp)
+         call ESRSPIN(rhotm,rhosp,mu,dospin,Emp)
+         call ESRSPIN(rhotp,rhosm,mu,dospin,Epm)
+         call ESRSPIN(rhotm,rhosm,mu,dospin,Emm)
+!        central 2nd-order approximation
+         d2Edrhotdrhos = (Epp - Emp - Epm + Emm)/(4.d0*hrts)
+        else
+         d2Edrhosdrhos = 0.0d0
+         d2Edrhotdrhos = 0.0d0
+        end if
+       endif
+     
       endif
 
       return
       end
       SUBROUTINE DESRSPINGGA(ESRSPINGGA,rhot,rhos,grdt,grds,
-     >                mu,norder,d1E,d2E)
+     >                mu,norder, E, d1E, d2E)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic spin-dependent short-range GGA functional
@@ -936,8 +972,9 @@ C        derivative wrt grda and grdb -----------------------
       return
       end
 C****************************************************************************
-      SUBROUTINE DELSPIN(ESRSPIN,rhot,rhos,VLAMBDA,dospin,
-     &                                             norder,d1E,d2E)
+      SUBROUTINE DELSPIN(ESRSPIN,rhot,rhos,VLAMBDA,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
 
 C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
@@ -947,25 +984,31 @@ C*****************************************************************************
       integer norder
       logical dospin
       double precision rhot, rhos, VLAMBDA
-      double precision d1E(2), d2E(3)
+      double precision d1Edrhot, d1Edrhos
+      double precision d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos
 
-      call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,d1E,d2E)
+      call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
 
-      d1E(1) = (1.d0- VLAMBDA) * d1E(1)
 
-      if (dospin) d1E(2) = (1.d0- VLAMBDA) * d1E(2)
+      d1Edrhot = (1.d0- VLAMBDA) * d1Edrhot
 
-      d2E(1) = (1.d0- VLAMBDA) * d2E(1)
+       if (dospin) d1Edrhos = (1.d0- VLAMBDA) * d1Edrhos
 
-      if (dospin) d2E(2) = (1.d0 - VLAMBDA) * d2E(2)
-      if (dospin) d2E(3) = (1.d0 - VLAMBDA) * d2E(3)
+      d2Edrhotdrhot = (1.d0- VLAMBDA) * d2Edrhotdrhot
 
-      return
-      end
+       if (dospin) d2Edrhotdrhos = (1.d0- VLAMBDA) * d2Edrhotdrhos
+
+       if (dospin) d2Edrhosdrhos =  (1.d0- VLAMBDA) * d2Edrhosdrhos
+
+          return
+           end
 
 C****************************************************************************
-      SUBROUTINE DELSPINnSC(ESRSPIN,rhot,rhos,VLAMBDA,dospin,
-     &                                                norder,d1E,d2E)
+      SUBROUTINE DELSPINnSC(ESRSPIN,rhot,rhos,VLAMBDA,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
 C linear complement non-scaled spin-dependent correlation LDA functional, Kamal SHARKAS 23/04/2011
 C*****************************************************************************
       implicit none
@@ -974,19 +1017,24 @@ C*****************************************************************************
       integer norder
       logical dospin
       double precision rhot, rhos, VLAMBDA
-      double precision d1E(2), d2E(3)
+      double precision d1Edrhot, d1Edrhos
+      double precision d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos
 
-      call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,d1E,d2E)
+      call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
 
-      d1E(1) = (1.d0- VLAMBDA**2)* d1E(1)
-      if (dospin) d1E(2) = (1.d0- VLAMBDA**2)* d1E(2)
 
-      d2E(1) = (1.d0- VLAMBDA**2)* d2E(1)
-      if (dospin) d2E(2) = (1.d0- VLAMBDA**2)* d2E(2)
-      if (dospin) d2E(3) = (1.d0- VLAMBDA**2)* d2E(3)
+      d1Edrhot = (1.d0- VLAMBDA**2)* d1Edrhot
+        if (dospin) d1Edrhos = (1.d0- VLAMBDA**2)* d1Edrhos
 
-      return
-      end
+      d2Edrhotdrhot = (1.d0- VLAMBDA**2)* d2Edrhotdrhot
+        if (dospin) d2Edrhotdrhos = (1.d0- VLAMBDA**2)* d2Edrhotdrhos
+
+        if (dospin) d2Edrhosdrhos =  (1.d0- VLAMBDA**2)* d2Edrhosdrhos
+
+          return
+           end
 C****************************************************************************
 
 C****************************************************************************

@@ -500,7 +500,9 @@ C               be calling Becke and LYP functionals.
      >        .OR.DOSRC_PBEGWS.OR.DOSRC_MULOC_GGA.OR.DOSRC_MULOD_GGA
      >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
-     >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI
+     >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI 
+! edh insert .OR. DOSRX_PBEGWS_S and DOSRC_PBEGWS_S here...
+!     >        
 C
 
       NDER  = 0
