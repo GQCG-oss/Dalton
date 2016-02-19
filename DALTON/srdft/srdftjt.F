@@ -22,7 +22,7 @@
 !
 !
 
-#define noSRDFT_DEBUG
+#define SRDFT_DEBUG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
@@ -869,29 +869,31 @@ C***************************************************************************
 C
       double precision d1Ex(4), d1Ec(4), d2Ex(10), d2Ec(10)
 
-      double precision d1Exdrhot, d1Exdrhos, d1Exdgrd, d1Exdgrds      
-      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrd, d1Ecdgrds      
+      double precision d1Exdrhot, d1Exdrhos, d1Exdgrd, d1Exdgrds !d1Ex(4)
+      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrd, d1Ecdgrds !d1Ex(4)     
       double precision d1Exdgrda2
       double precision d1Ecdgrda2
 
       double precision d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
       double precision d2Exdrhodgrd, d2Exdgrddgrd, d2Exgrdtdgrdt
       double precision d2Exrhotdgrds, d2Exrhosdgrds, d2Exgrdtdgrds
-      double precision d2Exgrdsdgrds  
+      double precision d2Exgrdsdgrds ! d2Ex(10)  
 
       double precision d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos 
       double precision d2Ecdrhodgrd, d2Ecdgrddgrd, d2Ecgrdtdgrdt
       double precision d2Ecrhotdgrds, d2Ecrhosdgrds, d2Ecgrdtdgrds 
-      double precision d2Ecgrdsdgrds
+      double precision d2Ecgrdsdgrds ! d2Ec(10)
 
       ! For small values of rho to avoid NaN 
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
       end do
 
+      ! DGAO(1,1) = DTXMAT*GAO  
       CALL DGEMV('N',NBAST,NBAST,D1,DTXMAT,NBAST,GAO,1,D0,DGAO(1,1),1)
       IF (DFT_SPINDNS) THEN
         N_MAT = 2
+        ! DGAO(1,2) = DSXMAT*GAO
         CALL DGEMV('N',NBAST,NBAST,D1,DSXMAT,NBAST,GAO,1,D0,DGAO(1,2),1)
       ELSE
         N_MAT = 1
@@ -899,26 +901,32 @@ C
 C
       BMAX = 0.0D0
       DO I_MAT = 1, N_MAT ! 1->total, 2->spin
+         ! rho and rho_s
          B0(I_MAT) = DDOT(NBAST,DGAO(1,I_MAT),1,GAO,1)
          BMAX = MAX( BMAX,ABS(B0(I_MAT)) )
          IF (DOGGA) THEN
-            IF (DFT_SPINDNS)
-     &      CALL QUIT('SRDFTLTRJT not implemented for GGA & SPINDNS') ! see HJAAJ note below
+            IF (DFT_SPINDNS) write(lupri,*)'*** WARNING spin-grad'
             rhogrd(I_MAT) =
      &       sqrt( rhg(1,I_MAT)**2 + rhg(2,I_MAT)**2 + rhg(3,I_MAT)**2 )
-C           B3 = GAO1'*DGAO(1)
+C           B3(1) = GAO1'*DGAO(1,1); B3(2) = GAO1'*DGAO(1,2)
             CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,
      &         DGAO(1,I_MAT),1,D0,B3(1,I_MAT),1)
-C           DGAO= DTXMAT'*GAO  !!! HJAAJ: is this necessary ? We have D*XMAT symmetrized!
-            CALL DGEMV('T',NBAST,NBAST,D1,DTXMAT,NBAST,
-     &         GAO,1,D0,DGAO(1,I_MAT),1)
-C           B3 = B3 + GAO1'*DGAO
+C           DGAO(1,1)= DTXMAT'*GAO; DGAO(1,2) = DSXMAT'*GAO !!! HJAAJ: is this necessary ? We have D*XMAT symmetrized!
+            IF (I_MAT .EQ. 1) THEN  
+               CALL DGEMV('T',NBAST,NBAST,D1,DTXMAT,NBAST,
+     &                    GAO,1,D0,DGAO(1,I_MAT),1)
+            ELSE IF (I_MAT .EQ. 2) THEN 
+               CALL DGEMV('T',NBAST,NBAST,D1,DSXMAT,NBAST,
+     &                    GAO,1,D0,DGAO(1,I_MAT),1)
+            END IF 
+C           B3(1,I_MAT) = B3(1,I_MAT) + GAO1'*DGAO(1, I_MAT)
             CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,
      &         DGAO(1,I_MAT),1,D1,B3(1,I_MAT),1)
             BMAX = MAX(BMAX,
      &       ABS(B3(1,I_MAT)),ABS(B3(2,I_MAT)),ABS(B3(3,I_MAT)))
          END IF
       END DO
+      write(lupri,*)'test B3(1,1); B3(1,2)', B3(1,1), B3(1,2)
 C
       IF (BMAX.GT.DFTHRL) THEN 
 C
@@ -1048,7 +1056,7 @@ C
          RY = ZNV*RHG(2,1)
          RZ = ZNV*RHG(3,1)
          IF (DFT_SPINDNS) THEN
-            call quit('Spin dens. GGA not implemented yet SRDFTLTRJT')
+            !call quit('Spin dens. GGA not implemented yet SRDFTLTRJT')
          END IF
       END IF
 
