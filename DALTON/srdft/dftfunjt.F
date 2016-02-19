@@ -3523,10 +3523,9 @@ C*****************************************************************************
       implicit none
 
       double precision rho, rhos, grd, grds, mu
-      double precision e
-
-      double precision rho13
-      double precision drho2
+      double precision rhoa, rhob, grda, grdb
+      double precision e, ea, eb
+      double precision drho2, drho2a, drho2b ! grd*grd
 
       double precision exerflda
       double precision exerfpbe
@@ -3543,20 +3542,55 @@ C     ! In ESRX_PBEGWS VXSRLDA is used for the same purpose, but
       ! as VXSRLDA does not include rhos ESRX_LDAERFSPIN is used instead 
       call ESRX_LDAERFSPIN(rho,rhos,mu,dospin,exerflda)
 
-      ! Only for debugging... Remove !!!!!
-      e = exerflda
+!     GGA energy
+      if (.not.dospin) then
+         drho2 = grd*grd
 
-!     GGA energy ----- Current no spin part???
-!     drho2 = grd*grd
-!
-!     kappa=0.804d0
-!     sq=drho2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
-!     fx=1.d0+kappa
-!    &    -kappa/(1.d0+berf(1.616204596739954813d
-!    &    -1*mu*rho**(-1.d0/3.d0))*sq/kappa)
-!     exerfpbe=exerflda*fx
+         !test on density
+         !if (rho.lt.tol) goto 2
 
-!     e = exerfpbe
+         kappa=0.804d0
+         sq=drho2*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
+         fx=1.d0+kappa
+     &    -kappa/(1.d0+berf(1.616204596739954813d-1*mu
+     &                      *rho**(-1.d0/3.d0))*sq/kappa)
+         exerfpbe=exerflda*fx
+
+         e = exerfpbe
+      else
+         ! Alpha density
+         rhoa=max((rho+rhos),0d0)
+         grda = max((grd+grds),0d0)
+         !Square of alpha density gradient
+         drho2a = grda*grda
+
+         !test on density
+         !if (abs(rhoa).lt.tol) goto 2
+
+         kappa=0.804d0
+         sq=drho2a*2.6121172985233599567768d-2*rhoa**(-8d0/3d0)
+         fx=1d0+kappa
+     &    -kappa/(1.d0+berf(1.616204596739954813d-1*mu
+     &                      *rho**(-1.d0/3.d0))*sq/kappa)
+         exerfpbe=exerflda*fx
+
+         ea = exerfpbe
+         ! Beta density
+         rhob = max((rho-rhos),0d0)
+         grdb = max((grd-grds),0d0)
+         kappa=0.804d0
+         sq=drho2b*2.6121172985233599567768d-2*rhob**(-8d0/3d0)
+         fx=1d0+kappa
+     &       -kappa/(1d0+berf(1.616204596739954813d-1*mu
+     &                        *rhob**(-1.d0/3.d0))*sq/kappa)
+            exerfpbe=exerflda*fx
+
+            eb = exerfpbe
+
+            ! Total energy (spin scaled)
+            e = 0.5d0*(ea + eb)
+
+      end if
 
       return
       end
