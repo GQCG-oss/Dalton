@@ -492,17 +492,16 @@ C     =================================
       DFTHRI = 1.0D-13
       DOLND  = .FALSE.
 
-C     ... jkp : For gradient correction to SR-LDA we will
-C               be calling Becke and LYP functionals.
+C     ... jkp : For gradient correction to SR-LDA
       DOGGA = DOSRX_GGA.OR.DOSRC_GGA.OR.DOSRBCK.OR.DOSRGGA2.OR.
      >        DOSRX_WIB.OR.DOSRC_WIB.OR.DOSRX_PBEHSE.OR.DOSRX_PBETCS.OR.
      >        DOSRC_PBETCS.OR.DOSRX_PBERI.OR.DOSRC_PBERI.OR.DOSRX_PBEGWS
      >        .OR.DOSRC_PBEGWS.OR.DOSRC_MULOC_GGA.OR.DOSRC_MULOD_GGA
      >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
-     >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI 
+     >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
+     >        DOSRX_PBEGWS_S
 ! edh insert .OR. DOSRX_PBEGWS_S and DOSRC_PBEGWS_S here...
-!     >        
 C
 
       NDER  = 0
@@ -600,7 +599,6 @@ C JT 15-02-05 beg
          write(lupri,*) 'calling srdft1jt ? ISJT =', ISJT
          first_call = .false.
       end if
-
       IF(ISJT) THEN
         CALL SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
