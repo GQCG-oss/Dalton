@@ -958,11 +958,11 @@ CFRAN RHOSGRD ADDED!
            d2Ecdrhotdrhot = d2Ec(1)
            d2Ecdgrddgrd   = d2Ec(2)
            d2Ecdrhodgrd   = d2Ec(3)
-       else if (.not. DOGGA .and. .not. DFT_SPINDNS) then
+       else ! (.not. DOGGA .and. .not. DFT_SPINDNS)
            d1Exdrhot      = d1Ex(1)
            d1Ecdrhot      = d1Ec(1)
-       else
-          write(lupri,*) 'WARNING neither LDA nor GGA found! '
+           d2Exdrhotdrhot = d2Ex(1) 
+           d2Ecdrhotdrhot = d2Ec(1)
        end if 
 
 
