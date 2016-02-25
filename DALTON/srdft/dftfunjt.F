@@ -3522,7 +3522,7 @@ C     LDA energy
       call VXSRLDA(XKSR,rho,rho13,mu,0,ERFEXP)
       exerflda = XKSR(1)
 
-      write(lupri,*)'LDA energy exerflda', exerflda
+!      write(lupri,*)'LDA energy exerflda', exerflda
 
       kappa=0.804d0
       sq=grd*grd*2.6121172985233599567768d-2*rho**(-8.d0/3.d0)
