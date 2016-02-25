@@ -22,7 +22,7 @@
 !
 !
 
-#define SRDFT_DEBUG
+#define noSRDFT_DEBUG
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,CORX,CORY,CORZ,
@@ -79,11 +79,16 @@ C     ... RHG(1:3,2) = RHGS(1:3)  = grad ( rho_a - rho_b ) = grad ( rho_s )
 C     ... RHG(1:3,3) = RHG2A(1:3) = 2 grad ( rho_a )
 C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
+!     these are not initialized to zero!
       double precision d1Ex(4), d1Ec(4), d2Ex(10), d2Ec(10)
-      double precision d1Exdrhot, d1Exdrhos, d1Exdgrd, d1Exdgrds      
-      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrd, d1Ecdgrds      
+      double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
+      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
       double precision d1Exdgrda2
       double precision d1Ecdgrda2
+
+      double precision d1Excdrhot, d1Excdrhos, d1Excdgrdt, d1Excdgrds
+      double precision d1Excdgrda2
+
 
       CHARACTER*16 QUADNAME
 
@@ -303,12 +308,12 @@ C      Potentials with quadrature weigths
        if (DOGGA .and. DFT_SPINDNS) then
            d1Exdrhot = d1Ex(1)
            d1Exdrhos = d1Ex(2)
-           d1Exdgrd  = d1Ex(3)
+           d1Exdgrdt = d1Ex(3)
            d1Exdgrds = d1Ex(4)
            !-----------------
            d1Ecdrhot = d1Ec(1)
            d1Ecdrhos = d1Ec(2)
-           d1Ecdgrd  = d1Ec(3)
+           d1Ecdgrdt = d1Ec(3)
            d1Ecdgrds = d1Ec(4)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
            d1Exdrhot = d1Ex(1)
@@ -318,11 +323,11 @@ C      Potentials with quadrature weigths
            d1Ecdrhos = d1Ec(2)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
            d1Exdrhot  = d1Ex(1)
-           d1Exdgrd   = d1Ex(2)
+           d1Exdgrdt  = d1Ex(2)
            d1Exdgrda2 = d1Ex(3)
            !-----------------
            d1Ecdrhot  = d1Ec(1) 
-           d1Ecdgrd   = d1Ec(2)
+           d1Ecdgrdt  = d1Ec(2)
            d1Ecdgrda2 = d1Ec(3)
        else if (.not. DOGGA .and. .not. DFT_SPINDNS) then
            d1Exdrhot = d1Ex(1)
@@ -333,23 +338,25 @@ C      Potentials with quadrature weigths
 
        d1Exdrhot  = WGHTX*d1Exdrhot
        d1Exdrhos  = WGHTX*d1Exdrhos
-       d1Exdgrd   = WGHTX*d1Exdgrd
+       d1Exdgrdt  = WGHTX*d1Exdgrdt
        d1Exdgrda2 = WGHTX*d1Exdgrda2
        d1Exdgrds  = WGHTX*d1Exdgrds
  
        d1Ecdrhot  = WGHTC*d1Ecdrhot
        d1Ecdrhos  = WGHTC*d1Ecdrhos
-       d1Ecdgrd   = WGHTC*d1Ecdgrd
+       d1Ecdgrdt  = WGHTC*d1Ecdgrdt
        d1Ecdgrda2 = WGHTC*d1Ecdgrda2
        d1Ecdgrds  = WGHTC*d1Ecdgrds
 
 C      Sum of exchange and correlation
        d1Excdrhot  = d1Exdrhot  + d1Ecdrhot
        d1Excdrhos  = d1Exdrhos  + d1Ecdrhos
-       d1Excdgrd   = d1Exdgrd   + d1Ecdgrd
+       d1Excdgrdt  = d1Exdgrdt  + d1Ecdgrdt
        d1Excdgrda2 = d1Exdgrda2 + d1Ecdgrda2
        d1Excdgrds  = d1Exdgrds +  d1Ecdgrds
 
+!      edh how can d1Excdgrd not be used??? and why are Exc variables
+!      never initialized???
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
        FROMVX = .FALSE.
        CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
