@@ -395,7 +395,8 @@ C        matrix 4 is DXSAO
 
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
-     &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DMAGAOSR,DOGGA)
+     &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DMAGAOSR,DOGGA,
+     &                 IPNT)
        ENDIF
 
 #ifdef SRDFT_DEBUG
@@ -512,7 +513,7 @@ C****************************************************************************
 !    >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
 !    >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
       SUBROUTINE SRDFTEXCJT(RHO,RHG, CHIVAL,NORDER,ERFEXP,
-     >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA)
+     >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA, ipnt)
 C*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
 C    energies and derivatives
@@ -562,7 +563,9 @@ C     spin functionals
 C     sr mdc func 
       external ESRC_MD_LDAERF
        
-     
+      ! for debug prints (counter for grid points)
+      integer inpt 
+
 c  Exchange  ------------------------------------------------------------
 
       icall = icall + 1
@@ -698,7 +701,7 @@ C  Correlation  ----------------------------------------------------------
      >             CHIVAL,DFT_SPINDNS,NORDER,Ec,d1Ec,d2Ec,ipnt)
       ENDIF
       IF(DOSRC_PBEGWS_S) THEN
-        call DESRSPINGGA(ESRC_PBEGWSERFSPIN,rho(1),RHOGRD(1),CHIVAL,
+        call DESRSPINGGA(ESRC_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
      >                   norder,Ec,d1Ec,d2Ec,ipnt)
       ENDIF
 C Kamal SHARKAS 20-05-11 beg
@@ -762,7 +765,7 @@ C      mu_new = max(mu,CHIVAL)
 !     Short-range LDA functional with local CHIVAL parameter ! MNP 13-09-11 
       IF(DOSRC_MULOE_GGA) THEN
         ! d1Ec(3), d1Ec(3) here ...
-        call DESR(ESRC_MULOE_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec, 
+        call DESR(ESRC_MULOE_GGA,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,
      &            ipnt)
       ENDIF
 
@@ -772,7 +775,8 @@ C      mu_new = max(mu,CHIVAL)
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,
-     &                      CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DGAO,DOGGA)
+     &                      CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DGAO,DOGGA,
+     &                      IPNT)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
@@ -781,6 +785,7 @@ C     Based on the routine SRDFTLTR of J. K. Pedersen
 C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
+C     Modified: 16-02-16, E. Hedegård, add spin-gradient
 C***************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -817,7 +822,7 @@ C
 
       double precision d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos
       double precision d2Ecdrhotdgrdt, d2Ecdrhosdgrdt, d2Ecdgrdtdgrdt
-      double precision d2Ecdrhotdgrds, d2Edcrhosdgrds, d2Ecdgrdtdgrds
+      double precision d2Ecdrhotdgrds, d2Ecdrhosdgrds, d2Ecdgrdtdgrds
       double precision d2Ecdgrdsdgrds ! d2Ec(10)
 
       ! edh for debug
