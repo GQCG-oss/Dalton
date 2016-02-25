@@ -827,22 +827,22 @@ C***************************************************************************
 C
       double precision d1Ex(4), d1Ec(4), d2Ex(10), d2Ec(10)
 
-      double precision d1Exdrhot, d1Exdrhos, d1Exdgrd, d1Exdgrds !d1Ex(4)
-      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrd, d1Ecdgrds !d1Ex(4)     
+      double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds !d1Ex(4)
+      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(4)
       double precision d1Exdgrda2
       double precision d1Ecdgrda2
 
       double precision d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
-      double precision d2Exdrhodgrd, d2Exdgrddgrd, d2Exgrdtdgrdt
-      double precision d2Exrhotdgrds, d2Exrhosdgrds, d2Exgrdtdgrds
-      double precision d2Exgrdsdgrds ! d2Ex(10)  
+      double precision d2Exdrhotdgrdt, d2Exdrhosdgrdt, d2Exdgrdtdgrdt
+      double precision d2Exdrhotdgrds, d2Exdrhosdgrds, d2Exdgrdtdgrds
+      double precision d2Exdgrdsdgrds ! d2Ex(10)
 
-      double precision d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos 
-      double precision d2Ecdrhodgrd, d2Ecdgrddgrd, d2Ecgrdtdgrdt
-      double precision d2Ecrhotdgrds, d2Ecrhosdgrds, d2Ecgrdtdgrds 
-      double precision d2Ecgrdsdgrds ! d2Ec(10)
+      double precision d2Ecdrhotdrhot, d2Ecdrhotdrhos, d2Ecdrhosdrhos
+      double precision d2Ecdrhotdgrdt, d2Ecdrhosdgrdt, d2Ecdgrdtdgrdt
+      double precision d2Ecdrhotdgrds, d2Edcrhosdgrds, d2Ecdgrdtdgrds
+      double precision d2Ecdgrdsdgrds ! d2Ec(10)
 
-      ! For small values of rho to avoid NaN 
+      ! For small values of rho to avoid NaN
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
       end do
@@ -906,35 +906,35 @@ CFRAN RHOSGRD ADDED!
        if (DOGGA .and. DFT_SPINDNS) then
            d1Exdrhot      =  d1Ex(1)
            d1Exdrhos      =  d1Ex(2)
-           d1Exdgrd       =  d1Ex(3)
+           d1Exdgrdt      =  d1Ex(3)
            d1Exdgrds      =  d1Ex(4)
            !-----------------------
            d1Ecdrhot      =  d1Ec(1)
            d1Ecdrhos      =  d1Ec(2)
-           d1Ecdgrd       =  d1Ec(3)
+           d1Ecdgrdt      =  d1Ec(3)
            d1Ecdgrds      =  d1Ec(4)
            !-----------------------
            d2Exdrhotdrhot = d2Ex(1)
            d2Exdrhotdrhos = d2Ex(2)
            d2Exdrhosdrhos = d2Ex(3)
-           d2Exdrhodgrd   = d2Ex(4)
-           d2Exdgrddgrd   = d2Ex(5)
-           d2Exgrdtdgrdt  = d2Ex(6)
-           d2Exrhotdgrds  = d2Ex(7)
-           d2Exrhosdgrds  = d2Ex(8)
-           d2Exgrdtdgrds  = d2Ex(9)
-           d2Exgrdsdgrds  = d2Ex(10)
+           d2Exdrhotdgrdt = d2Ex(4)
+           d2Exdrhosdgrdt = d2Ex(5)
+           d2Exdgrdtdgrdt = d2Ex(6)
+           d2Exdrhotdgrds = d2Ex(7)
+           d2Exdrhosdgrds = d2Ex(8)
+           d2Exdgrdtdgrds = d2Ex(9)
+           d2Exdgrdsdgrds = d2Ex(10)
            !-----------------------
            d2Ecdrhotdrhot = d2Ec(1)
            d2Ecdrhotdrhos = d2Ec(2)
            d2Ecdrhosdrhos = d2Ec(3)
-           d2Ecdrhodgrd   = d2Ec(4)
-           d2Ecdgrddgrd   = d2Ec(5)
-           d2Ecgrdtdgrdt  = d2Ec(6)
-           d2Ecrhotdgrds  = d2Ec(7)
-           d2Ecrhosdgrds  = d2Ec(8)
-           d2Ecgrdtdgrds  = d2Ec(9)
-           d2Ecgrdsdgrds  = d2Ec(10)
+           d2Ecdrhotdgrdt = d2Ec(4)
+           d2Ecdrhosdgrdt = d2Ec(5)
+           d2Ecdgrdtdgrdt = d2Ec(6)
+           d2Ecdrhotdgrds = d2Ec(7)
+           d2Ecdrhosdgrds = d2Ec(8)
+           d2Ecdgrdtdgrds = d2Ec(9)
+           d2Ecdgrdsdgrds = d2Ec(10)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
            d1Exdrhot      = d1Ex(1)
            d1Exdrhos      = d1Ex(2)
@@ -951,20 +951,20 @@ CFRAN RHOSGRD ADDED!
            d2Ecdrhosdrhos = d2Ec(3)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
            d1Exdrhot      = d1Ex(1)
-           d1Exdgrd       = d1Ex(2)
+           d1Exdgrdt      = d1Ex(2)
            d1Exdgrda2     = d1Ex(3)
            !----------------------
            d1Ecdrhot      = d1Ec(1) 
-           d1Ecdgrd       = d1Ec(2)
+           d1Ecdgrdt      = d1Ec(2)
            d1Ecdgrda2     = d1Ec(3)
            !----------------------
            d2Exdrhotdrhot = d2Ex(1) 
-           d2Exdgrddgrd   = d2Ex(2)
-           d2Exdrhodgrd   = d2Ex(3)
+           d2Exdgrdtdgrdt = d2Ex(2)
+           d2Exdrhotdgrdt = d2Ex(3)
            !----------------------
            d2Ecdrhotdrhot = d2Ec(1)
            d2Ecdgrddgrd   = d2Ec(2)
-           d2Ecdrhodgrd   = d2Ec(3)
+           d2Ecdrhotdgrdt = d2Ec(3)
        else ! (.not. DOGGA .and. .not. DFT_SPINDNS)
            d1Exdrhot      = d1Ex(1)
            d1Ecdrhot      = d1Ec(1)
@@ -1006,9 +1006,9 @@ C Total contribution -------------------------------------------------------
       END IF
       IF (DOGGA) THEN
          ZNV = D1/RHOGRD(1)
-         FZ0 = ZNV*(WGHTX*d1Exdgrd  + WGHTC*d1Ecdgrd)
-         FRZ = WGHTX*d2Exdrhodgrd   + WGHTC*d2Ecdrhodgrd
-         FZZ = WGHTX*d2Exdgrddgrd   + WGHTC*d2Ecdgrddgrd
+         FZ0 = ZNV*(WGHTX*d1Exdgrdt + WGHTC*d1Ecdgrdt)
+         FRZ = WGHTX*d2Exdrhotdgrdt + WGHTC*d2Ecdrhotdgrdt
+         FZZ = WGHTX*d2Exdgrdtdgrdt + WGHTC*d2Ecdgrdtdgrdt
 C
          RX = ZNV*RHG(1,1)
          RY = ZNV*RHG(2,1)
