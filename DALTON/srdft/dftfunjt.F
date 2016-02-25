@@ -1,5 +1,5 @@
 C****************************************************************************
-      SUBROUTINE DESR(ESR,rho,grd,mu,norder,E,d1E,d2E)
+      SUBROUTINE DESR(ESR,rho,grd,mu,norder,E,d1E,d2E,ipnt)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic short-range functional ESR(rho,grd,mu,E)
@@ -40,6 +40,9 @@ C*****************************************************************************
       double precision Emm, Epp, Epm, Emp
       double precision d1Edgrd2, dsdgrd, dgrddgrd2
 
+! edh debug
+      integer ipnt
+#include "priunit.h"
 C     check
       if(norder .le. 0 .or. norder .ge. 3) then
        print *,'DESR: norder=',norder
@@ -51,6 +54,7 @@ C     check
 
 C     energy
       call ESR(rho,grd,mu,E)
+      !if (ipnt .le. 10) write(lupri,*)'E = ', E
 !      print *,'D1SR: E=',E
 
 C     (optimal?) numerical step
@@ -259,7 +263,8 @@ C*****************************************************************************
 C****************************************************************************
 
 C****************************************************************************
-      SUBROUTINE DESRSPIN(ESRSPIN,rhot,rhos,mu,dospin,norder,E,d1E,d2E)
+      SUBROUTINE DESRSPIN(ESRSPIN,rhot,rhos,mu,dospin,norder,E,d1E,d2E,
+     &                    ipnt)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic spin-dependent short-range LDA functional ESRSPIN(rhot,rhos,mu,dospin,E)
@@ -299,6 +304,9 @@ C*****************************************************************************
 
       logical  pure_spin
 
+! ehd debug
+      integer ipnt
+      
 C     check
       if(norder .le. 0 .or. norder .ge. 3) then
        print *,'DESRSPIN: norder=',norder
@@ -409,7 +417,8 @@ C         derivative wrt rhot and rhos -----------------------
 
       return
       end
-      SUBROUTINE DESRSPINGGA(ESRSPINGGA,rho,rhogrd,mu,norder,E,d1E,d2E)
+      SUBROUTINE DESRSPINGGA(ESRSPINGGA,rho,rhogrd,mu,norder,E,d1E,d2E,
+     &                       ipnt)
 C*****************************************************************************
 C     Compute first-order and/or second-order numerical derivatives 
 C     of a generic spin-dependent short-range GGA functional
@@ -468,6 +477,10 @@ C*****************************************************************************
       double precision E0m0m, E0p0p, E0p0m, E0m0p
       double precision E00mm, E00pp, E00pm, E00mp
 
+! edh debug
+#include "priunit.h"
+       integer ipnt
+
       logical  pure_spin
 
 C     check
@@ -493,12 +506,13 @@ C     check
       if (rhot .lt. 1.d-10) then ! no significant density in this point
          E = 0.0d0
          IF (NORDER.ge.1) d1E(:) = 0.0d0
-         IF (NORDER.ge.2) D2E(:) = 0.0d0
+         IF (NORDER.ge.2) d2E(:) = 0.0d0
          return
       end if
 
 C     energy
       call ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
+      if (ipnt .le. 10) write(lupri,*)'E = ', E
 !      print *,'D1SRSPIN: E=',E
 
 C     (optimal?) numerical step
