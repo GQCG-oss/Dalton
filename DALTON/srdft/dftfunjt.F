@@ -15,6 +15,9 @@ C            d1E(1) =  d1Edrho     : first derivative wrt to rho
 C            d1E(2) =  d1Edgrd     : first derivative wrt to grd  (for 2nd-order optimisation)
 C            d1E(3) =  d1Edgrda2   : first derivative wrt to grda2 (for HF optimisation)
 C            (grda2 is the square of gradient of spin-alpha density)
+!            edh: d1Edgrda2 is a very strange name and it is not true
+!            that it is the square of the spin-alpha density!!!!
+!            I have renamed it ngrd2 outside
 
 C            d2E(1) = d2Edrhodrho  : second derivative wrt to rho and rho
 C            d2E(2) = d2Edgrddgrd  : second derivative wrt to grd and grd
