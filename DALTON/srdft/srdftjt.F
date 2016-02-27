@@ -383,27 +383,18 @@ C      Sum of exchange and correlation
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
        FROMVX = .FALSE.
-       CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &             d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-       IF (DFT_SPINDNS) THEN
-         if (dogga)
-     & call quit('DOGGA not yet for DFT_SPINDNS in DFTKSM call')
-         CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
-     &             d1Excdrhos,d1Excdgrds,DOGGA,FROMVX,DFTHRL)
+       IF (DOGGA. AND. DFT_SPINDNS) THEN
+          CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
+     &         d1Excdrhot,d1Excdngrd2,d1Excdngrd2,d1Excdngrds2,DFTHRL)
+       ELSE IF (DOGGA .AND. .NOT. DFT_SPINDNS) THEN
+          CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
+     &         d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
+       ELSE IF (DFT_SPINDNS .AND. .NOT. DOGGA) THEN
+          CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
+     &         d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
+          CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
+     &         d1Excdrhos,d1Excdgrds,DOGGA,FROMVX,DFTHRL)
        ENDIF
-!      IF (DOGGA. AND. DFT_SPINDNS) THEN
-!         CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
-!    &                  d1Excdrhot,d1Excdngrd2,
-!    &                  d1Excdrhos,d1Excdngrds2,DFTHRL)
-!      ELSE IF (DOGGA .AND. .NOT. DFT_SPINDNS) THEN
-!         CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-!    &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-!      ELSE IF (DFT_SPINDNS .AND. .NOT. DOGGA) THEN
-!        if (dogga)
-!     & call quit('DOGGA not yet for DFT_SPINDNS in DFTKSM call')
-!         CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
-!    &                d1Excdrhos,d1Excdgrds,DOGGA,FROMVX,DFTHRL)
-!      ENDIF
 C
        ENDIF  !DOERG
 
@@ -416,8 +407,8 @@ C        matrix 4 is DXSAO
          JDXTAO = 2
          JDXSAO = 4
 
-#ifdef SRDFT_DEBUG
-       print_thr = 50000.0d0
+!#ifdef SRDFT_DEBUG
+       print_thr = 1000.0d0
        do k = 1,2
          do i = 1, nbast
            do j = 1, i - 1
@@ -427,7 +418,7 @@ C        matrix 4 is DXSAO
            end do
          end do
        end do      
-#endif
+!#endif
 
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
@@ -524,7 +515,7 @@ C     Print section
          WRITE(LUPRI,'(/A)') ' srDFT linear transformation finished'
       END IF
 
-      IF (IPRINT.GE.5) THEN
+!      IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(//A/)') ' <<< Kohn-Sham matrix >>>'
             CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             IF (DFT_SPINDNS) THEN
@@ -533,7 +524,7 @@ C     Print section
                CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,
      &         -1,LUPRI)
             END IF
-      END IF
+!      END IF
 
       END IF  ! IPRINT .GE. 2
 

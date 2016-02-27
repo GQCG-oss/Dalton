@@ -71,7 +71,8 @@ C hjaaj June 09: DSYMV must be faster nowadays than the code below
       RETURN
       END      
 C /* Deck dftksmggaspin */
-      SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RH,VXC,VXB,DFTHRL)
+      SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RH,VXC,VXB,
+     &                         VSC,VSB,DFTHRL)
 C
 C     Erik Hedgård (feb. 2016) based on DFTKSM by T. Helgaker
 C
