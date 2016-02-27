@@ -80,14 +80,14 @@ C     ... RHG(1:3,3) = RHG2A(1:3) = 2 grad ( rho_a )
 C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
 
 !     these are not initialized to zero!
-      double precision d1Ex(4), d1Ec(4), d2Ex(10), d2Ec(10)
+      double precision d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
       double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
       double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds
-      double precision d1Exdngrd2
-      double precision d1Ecdngrd2
+      double precision d1Exdngrd2, d1Exdngrds2
+      double precision d1Ecdngrd2, d1Ecdngrds2
 
       double precision d1Excdrhot, d1Excdrhos, d1Excdgrdt, d1Excdgrds
-      double precision d1Excdngrd2
+      double precision d1Excdngrd2, d1Excdngrds2
 
 
       CHARACTER*16 QUADNAME
@@ -128,19 +128,21 @@ C     Initializations -------------------------------------------------------
       print_thr = 0.0d0
 #endif
       ! edh the arrays are also zeroth in SRDFTEXCJT
-      d1Ex(4)    = 0.0d0
+      d1Ex(6)    = 0.0d0
       d1Exdrhot  = 0.0d0
       d1Exdrhos  = 0.0d0
       d1Exdgrdt  = 0.0d0
       d1Exdgrds  = 0.0d0
       d1Exdngrd2 = 0.0d0
+      d1Exdngrds2 = 0.0d0
       !----------------
-      d1Ec(4)    = 0.0d0
+      d1Ec(6)    = 0.0d0
       d1Ecdrhot  = 0.0d0
       d1Ecdrhos  = 0.0d0
       d1Ecdgrdt  = 0.0d0
       d1Ecdgrds  = 0.0d0
       d1Ecdngrd2 = 0.0d0
+      d1Ecdngrds2 = 0.0d0
 
 
       IF (ND_SIM .NE. 1) THEN
@@ -321,21 +323,25 @@ C      Summation with quadrature weigths
 C      Potentials with quadrature weigths
 !
        if (DOGGA .and. DFT_SPINDNS) then
-           d1Exdrhot = d1Ex(1)
-           d1Exdrhos = d1Ex(2)
-           d1Exdgrdt = d1Ex(3)
-           d1Exdgrds = d1Ex(4)
+           d1Exdrhot  = d1Ex(1)
+           d1Exdrhos  = d1Ex(2)
+           d1Exdgrdt  = d1Ex(3)
+           d1Exdgrds  = d1Ex(4)
+           d1Exdngrd2 = d1Ex(5)
+           d1Exdngrds2 = d1Ex(6)
            !-----------------
-           d1Ecdrhot = d1Ec(1)
-           d1Ecdrhos = d1Ec(2)
-           d1Ecdgrdt = d1Ec(3)
-           d1Ecdgrds = d1Ec(4)
+           d1Ecdrhot  = d1Ec(1)
+           d1Ecdrhos  = d1Ec(2)
+           d1Ecdgrdt  = d1Ec(3)
+           d1Ecdgrds  = d1Ec(4)
+           d1Ecdngrd2 = d1Ec(5)
+           d1Ecdngrds2 = d1Ec(6)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
-           d1Exdrhot = d1Ex(1)
-           d1Exdrhos = d1Ex(2)
+           d1Exdrhot  = d1Ex(1)
+           d1Exdrhos  = d1Ex(2)
            !-----------------
-           d1Ecdrhot = d1Ec(1)
-           d1Ecdrhos = d1Ec(2)
+           d1Ecdrhot  = d1Ec(1)
+           d1Ecdrhos  = d1Ec(2)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
            d1Exdrhot  = d1Ex(1)
            d1Exdgrdt  = d1Ex(2)
@@ -345,8 +351,8 @@ C      Potentials with quadrature weigths
            d1Ecdgrdt  = d1Ec(2)
            d1Ecdngrd2 = d1Ec(3)
        else
-           d1Exdrhot = d1Ex(1)
-           d1Ecdrhot = d1Ec(1)
+           d1Exdrhot  = d1Ex(1)
+           d1Ecdrhot  = d1Ec(1)
        end if
 
        d1Exdrhot  = WGHTX*d1Exdrhot
@@ -354,12 +360,14 @@ C      Potentials with quadrature weigths
        d1Exdgrdt  = WGHTX*d1Exdgrdt
        d1Exdngrd2 = WGHTX*d1Exdngrd2
        d1Exdgrds  = WGHTX*d1Exdgrds
+       d1Exdngrds2 = WGHTX*d1Exdngrd2
 
        d1Ecdrhot  = WGHTC*d1Ecdrhot
        d1Ecdrhos  = WGHTC*d1Ecdrhos
        d1Ecdgrdt  = WGHTC*d1Ecdgrdt
        d1Ecdngrd2 = WGHTC*d1Ecdngrd2
        d1Ecdgrds  = WGHTC*d1Ecdgrds
+       d1Ecdngrds2 = WGHTC*d1Ecdngrd2
 
 C      Sum of exchange and correlation
        d1Excdrhot  = d1Exdrhot  + d1Ecdrhot
@@ -367,6 +375,7 @@ C      Sum of exchange and correlation
        d1Excdgrdt  = d1Exdgrdt  + d1Ecdgrdt
        d1Excdngrd2 = d1Exdngrd2 + d1Ecdngrd2
        d1Excdgrds  = d1Exdgrds  + d1Ecdgrds
+       d1Excdngrds2 = d1Exdngrds2 + d1Ecdngrds2
 
 !      edh how can d1Excdgrd not be used??? and why are Exc variables
 !      never initialized???
@@ -382,10 +391,10 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
          CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
      &             d1Excdrhos,d1Excdgrds,DOGGA,FROMVX,DFTHRL)
        ENDIF
-
 !      IF (DOGGA. AND. DFT_SPINDNS) THEN
 !         CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
-!    &                  d1Excdrhot,d1Excdngrd,DFTHRL)
+!    &                  d1Excdrhot,d1Excdngrd2,
+!    &                  d1Excdrhos,d1Excdngrds2,DFTHRL)
 !      ELSE IF (DOGGA .AND. .NOT. DFT_SPINDNS) THEN
 !         CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
 !    &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
@@ -395,7 +404,6 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
 !         CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
 !    &                d1Excdrhos,d1Excdgrds,DOGGA,FROMVX,DFTHRL)
 !      ENDIF
-
 C
        ENDIF  !DOERG
 
@@ -566,8 +574,8 @@ C*****************************************************************************
       integer NORDER
       logical ERFEXP(0:2)
 
-      double precision Ex, d1Ex(4), d2Ex(10) 
-      double precision Ec, d1Ec(4), d2Ec(10) 
+      double precision Ex, d1Ex(6), d2Ex(10)
+      double precision Ec, d1Ec(6), d2Ec(10)
 
 C The new terms
       double precision mu, mu_new
@@ -836,12 +844,12 @@ C***************************************************************************
       DIMENSION GAO(NBAST),GAO1(NBAST,3),
      &          EXCMAT(NBAST,NBAST,2),DGAO(NBAST,2),B0(2), B3(3,2)
 C
-      double precision d1Ex(4), d1Ec(4), d2Ex(10), d2Ec(10)
+      double precision d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
 
-      double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds !d1Ex(4)
+      double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
+      double precision d1Exdngrd2, d1Exdngrds2 !d1Ex(6)
       double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(4)
-      double precision d1Exdngrd2
-      double precision d1Ecdngrd2
+      double precision d1Ecdngrd2, d1Ecdngrds2
 
       double precision d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
       double precision d2Exdrhotdgrdt, d2Exdrhosdgrdt, d2Exdgrdtdgrdt
@@ -922,11 +930,15 @@ CFRAN RHOSGRD ADDED!
            d1Exdrhos      =  d1Ex(2)
            d1Exdgrdt      =  d1Ex(3)
            d1Exdgrds      =  d1Ex(4)
+           d1Exdngrd2     =  d1Ex(5)
+           d1Exdngrds2    =  d1Ex(6)
            !-----------------------
            d1Ecdrhot      =  d1Ec(1)
            d1Ecdrhos      =  d1Ec(2)
            d1Ecdgrdt      =  d1Ec(3)
            d1Ecdgrds      =  d1Ec(4)
+           d1Ecdngrd2     =  d1Ec(5)
+           d1Ecdngrds2    =  d1Ec(6)
            !-----------------------
            d2Exdrhotdrhot = d2Ex(1)
            d2Exdrhotdrhos = d2Ex(2)

@@ -439,6 +439,8 @@ C     Ouput: d1E(1) = d1Edrhot      : first derivative wrt to rhot
 C            d1E(2) = d1Edrhos      : first derivative wrt to rhos
 C            d1E(3) = d1Edgrdt      : first derivative wrt to grdt (grad rhot)
 C            d1E(4) = d1Edgrds      : first derivative wrt to grds (grad rhos)
+C            d1E(5) = d1Engrdt2     : = (2.0d0/grdt)*d1E(3)
+C            d1E(6) = d1Engrds2     : = (2.0d0/grds)*d1E(4)
 C
 C            d2E(1) = d2Edrhotdrhot : second derivative wrt to rhot and rhot
 C            d2E(2) = d2Edrhotdrhos : second derivative wrt to rhot and rhos
@@ -461,7 +463,7 @@ C*****************************************************************************
 
       double precision rho(2), rhogrd(2), mu
       double precision rhot, rhos, grdt, grds
-      double precision E, d1E(4), d2E(10)
+      double precision E, d1E(6), d2E(10)
 
       double precision hrt, hrs,  hgt, hgs
       double precision hrt2, hrtrs, hrs2
@@ -599,13 +601,17 @@ C     derivatives wrt rhot, rhos, grdt, grds ---------------------
          call ESRSPINGGA(rhot,rhos,grdtm,grds,mu,E00m0)
          call ESRSPINGGA(rhot,rhos,grdtp,grds,mu,E00p0)
          d1E(3) = (E00p0 - E00m0)/(2.d0*hgt) ! d1Edgrdt
-       end if
+         d1E(5) = (2.0d0/grdt)*d1E(3)        ! d1Engrdt2
+      end if
 
       if (hgs .gt. 0.0d0) then
          call ESRSPINGGA(rhot,rhos,grdt,grdsm,mu,E000m)
          call ESRSPINGGA(rhot,rhos,grdt,grdsp,mu,E000p)
          d1E(4) = (E000p - E000m)/(2.d0*hgs) ! d1Edgrds
+         d1E(6) = (2.0d0/grds)*d1E(4)        ! d1Engrds2
        end if
+
+
 
 C Second-order derivatives --------------------------------------------
       if (norder .lt. 2) return
