@@ -144,21 +144,16 @@ C
  9001 FORMAT(' -----------------------------------------',
      &       '-----------------------------')
       END
-
-
+C
+CClark:01/03/2016
+C
       SUBROUTINE STOPP_WRITE(BETHE,STOPP)
-
-
-
+C
 #include "implicit.h"
 #include "priunit.h"
-
-C Need symmetry info (NSYM, NVIR, NRHF...)
-#include "ccorb.h"
 #include "cbiexc.h"
 C
       DIMENSION BETHE(3,LQ),STOPP(3,LVEL)
-CClark:11/01/2016
 C
 C---------------------------------------------
 C     Write Bethe sum rule and Stopping power.
@@ -186,7 +181,7 @@ C
       WRITE(LUPRI,'(1X,A/)')
      &   '         --------------'
       WRITE(LUPRI,'(1X,A)')
-     &   ' Velocity        Component       Value           '
+     &   ' Velocity     X Component    Y Component    Z Component'
       WRITE(LUPRI,'(1X,A)')
      &   ' ------------------------------------------------'
 C
@@ -194,19 +189,15 @@ C
 C
          VELOC = VMIN+(IVEL-1)*VSTEP
 C
-         WRITE(LUPRI,'(2X,G9.4,7X,A,10X,G17.6)')
-     &        VELOC,'X',STOPP(1,IVEL)
-         WRITE(LUPRI,'(2X,G9.4,7X,A,10X,G17.6)')
-     &        VELOC,'Y',STOPP(2,IVEL)
-         WRITE(LUPRI,'(2X,G9.4,7X,A,10X,G17.6)')
-     &        VELOC,'Z',STOPP(3,IVEL)
+         WRITE(LUPRI,'(2X,G9.4,3(4X,G11.5))')
+     &                VELOC,(STOPP(K,IVEL),K=1,3)
 C
       END DO
 C
-CClark:end
-    
       END
-
+C
+CClark:end
+C
       SUBROUTINE RP_WRITE_EXTEND(EXENG,SECMAT)
 C
 C     The output of RPA orbital extend is put here to clean up the above
