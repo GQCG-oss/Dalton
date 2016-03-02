@@ -13,7 +13,7 @@ C
 C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition 
 C              moments.
 CClark:endC
-      use so_info, only: FN_RDENSE, FN_RDENSD
+      use so_info, only: FN_RDENSE, FN_RDENSD, so_full_name
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -40,6 +40,7 @@ C
       CHARACTER*5 MODEL
       CHARACTER*8 RTNLBL(2)
       LOGICAL  IMAGPROP
+      DOUBLE PRECISION :: DLABEL 
 C
 CClark:7/1/2016
       DIMENSION   TRGOS(3,MXNEXI)
@@ -116,6 +117,18 @@ C
 C           Factor for D-ex part of gradient
             DFACTOR = -ONE
             IF (IMAGPROP) DFACTOR = ONE
+
+            IF ( IPRSOP .GE. 1) THEN
+
+                WRITE(LUPRI,'(/,1X,4A,I3)')
+     &          LABEL,' ',TRIM(SO_FULL_NAME(MODEL)),
+     &          ' transition moments for excitation symmetry',
+     &          ISYMTR
+                WRITE(LUPRI,9001)
+                WRITE(LUPRI,'(A)')
+     &          ' Exci.    1p-1h        1h-1p        Total'
+                WRITE(LUPRI,9002)
+            ENDIF
 C
 C-----------------------------------------------------------
 C           Loop over excitations of the specified symmetry.
@@ -127,16 +140,17 @@ C-------------------------------------------------------------
 C              Calculate excitation part of transition moment.
 C-------------------------------------------------------------
 C
-               EEXCIT=EXENG(ISYMTR,IEXCI)
-               CALL SO_FNDPOS(PDENS_LABEL,EEXCIT,LURDENSE)
+CRF          Note - Label is now number within irrep!            
+               DLABEL = DBLE(IEXCI)
+               CALL SO_FNDPOS(PDENS_LABEL,DLABEL,LURDENSE)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                IF (MODEL.EQ.'AORPA') THEN
                   CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSE)
+     &                          PDENS_LABEL,DLABEL,LURDENSE)
                   CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
                ELSE
                   CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSE) 
+     &                          PDENS_LABEL,DLABEL,LURDENSE) 
                ENDIF
                CALL SO_PROPMO(ISYMTR,CONTE,
      &                        MODEL.NE.'AORPA',IMAGPROP,
@@ -149,15 +163,15 @@ C----------------------------------------------------------------
 C              Calculate de-excitation part of transition moment.
 C----------------------------------------------------------------
 C
-               CALL SO_FNDPOS(PDENS_LABEL,EEXCIT,LURDENSD)
+               CALL SO_FNDPOS(PDENS_LABEL,DLABEL,LURDENSD)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
                IF (MODEL.EQ.'AORPA') THEN
                   CALL SO_REAVE(WORK(KPDENSAI),LPDENSAI,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSD)
+     &                          PDENS_LABEL,DLABEL,LURDENSD)
                   CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
                ELSE
                   CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYMTR,
-     &                          PDENS_LABEL,EEXCIT,LURDENSD) 
+     &                          PDENS_LABEL,DLABEL,LURDENSD) 
                ENDIF
                CALL SO_PROPMO(ISYMTR,CONTD,
      &                        MODEL.NE.'AORPA',IMAGPROP,
@@ -171,11 +185,9 @@ C              Calculate total transiton moment and write to output.
 C-------------------------------------------------------------------
 C
                WORK(KTRMOM+IEXCI-1) = CONTE + DFACTOR * CONTD
-               IF ( IPRSOP .GE. 4) THEN
+               IF ( IPRSOP .GE. 1) THEN
 C
-                  WRITE(LUPRI,'(/,1X,A,A,I3,A)')
-     &            LABEL,' transition moment for state',IEXCI,':'
-                  WRITE(LUPRI,'(2(F10.5,A),F10.5)')
+                  WRITE(LUPRI,'(1X,I3,2X,2(F10.5,A),F10.5)') IEXCI,
      &            CONTE,' + ',CONTD*DFACTOR,
      &            ' = ',WORK(KTRMOM+IEXCI-1)
 C
@@ -194,6 +206,7 @@ CClark:7/1/2016 add TRGOS to the argument list
      &                            TRLON,TRMAG,TRGOS,BSRLON,EXENG)
 CClark:end
 C
+
   100       CONTINUE
 C
 C---------------------------------------------------------
@@ -201,27 +214,7 @@ C              Write tabel of transition moments to output.
 C---------------------------------------------------------
 C
 C
-             IF ( IPRSOP .GE. 1) THEN
-C
-                WRITE(LUPRI,'(/,1X,A,A,I3)')
-     &          LABEL,' RPA transition moments for excitation symmetry',
-     &          ISYMTR
-                WRITE(LUPRI,9001)
-                WRITE(LUPRI,'(A)')
-     &          ' Exci.    1p-1h        1h-1p        Total'
-                WRITE(LUPRI,9002)
-C
-                DO IEXCI = 1,NEXCI
-C
-                   WRITE(LUPRI,'(1X,I3,2X,2(F10.5,A),F10.5)') IEXCI,
-     &             WORK(KTRME+IEXCI-1),' + ',WORK(KTRMD+IEXCI-1),
-     &             ' = ',WORK(KTRMOM+IEXCI-1)
-C
-                END DO
-C
-                WRITE(LUPRI,9001)
-C
-             END IF
+             IF ( IPRSOP .GE. 1) WRITE(LUPRI,9001)
 C
          END IF
 C

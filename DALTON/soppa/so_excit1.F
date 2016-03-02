@@ -361,7 +361,12 @@ C
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM))
                ENDIF
 C
-               IF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
+               IF ( NEXCI .EQ. 0 ) THEN
+                  WRITE (LUPRI,'(1X,A)') 
+     &               'There are no possible excitations of this '//
+     &               'symmetry!'
+                  CYCLE
+               ELSEIF ( NEXCI .LT. NEXCIT(ISYM) ) THEN
                   WRITE(LUPRI,'(1X,A,I5,/,1X,A)')
      &            'NOTICE: The number of excitations are reduced to '
      &            ,NEXCI,'as this is the full dimension of the '//

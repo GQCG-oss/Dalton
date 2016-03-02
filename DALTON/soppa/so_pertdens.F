@@ -1,70 +1,70 @@
-C 
+C
       SUBROUTINE SO_PERTDENS(MODEL,CALCTYPE,NUMMAT,
      &                       FRVAL,NFRVAL,LABEL,
      &                       ISYMTR,IMAGPROP,FACTOR,
      &                       T2AM,LT2AM,DENSIJ,LDENSIJ,
-     &                       DENSAB,LDENSAB,DENSAI,LDENSAI,WORK,LWORK) 
+     &                       DENSAB,LDENSAB,DENSAI,LDENSAI,WORK,LWORK)
 C
-C     Rasmus Faber, November 2015         
+C     Rasmus Faber, November 2015
 C
-C     PURPOSE: Calculating the Response/perturbed density matrix 
+C     PURPOSE: Calculating the Response/perturbed density matrix
 C              corresponding to the given solution/eigen vector.
 C              This should ease the calculation of the final property.
-C              In excitation energy calculations all eigevectors are 
-C              handled and both Excitation and De-Excitation parts are 
-C              written. For the calculation of response-functions only 
+C              In excitation energy calculations all eigevectors are
+C              handled and both Excitation and De-Excitation parts are
+C              written. For the calculation of response-functions only
 C              one file is written.
-C     
+C
 C     INPUT:
 C        MODEL    Determine which terms to include
 C        CALCTYPE Signals which calculation type it is.
 C        NUMMAT   Number of density matrices to calculate.
-C        ISYMTR   Symmetry of the trial-vector         
+C        ISYMTR   Symmetry of the trial-vector
 C        IMAGPROP Is the property imaginary
 C        FACTOR   Factor with which to scale all contributions,
-C                 use to correct for the fact that the solution vector 
+C                 use to correct for the fact that the solution vector
 C                 is normalized in SO_OPTVEC (LR only)
 C        T2AM     T2 amplitudes im complementary basis
 C        DENSAB
 C        DENSIJ   Second order densities (IA)
-C        DENSAI            
+C        DENSAI
 C
 C     OUTPUT:
 C        All written to disk
-C  
 C
-      use so_info, only: sop_linres, sop_excita, sop_stat_trh, 
+C
+      use so_info, only: sop_linres, sop_excita, sop_stat_trh,
      &                   fn_rdens, fn_rdense, fn_rdensd,
      &                   so_has_doubles
 C
       implicit none
 C Get MULD2H (group multiplication table)
-#include "ccorb.h" 
+#include "ccorb.h"
 C Symmetry-offsets in amplitudes
 #include "ccsdsym.h"
 C Symmetry-offsets in densities
 #include "soppinf.h"
-C        
+C
 C  Arguments
-C      
+C
       CHARACTER*5, INTENT(IN) :: MODEL
       CHARACTER*8, INTENT(IN) :: LABEL
 C
       LOGICAL,INTENT(IN) :: IMAGPROP
       INTEGER,INTENT(IN) ::  CALCTYPE, NUMMAT ,ISYMTR, NFRVAL,
      &                       LT2AM, LDENSIJ, LDENSAB, LDENSAI, LWORK
-C           
+C
       DOUBLE PRECISION,INTENT(IN) :: T2AM(LT2AM),
      &                            DENSIJ(LDENSIJ), DENSAB(LDENSAB),
      &                            DENSAI(LDENSAI), FRVAL(NFRVAL),
      &                            FACTOR
 C
       DOUBLE PRECISION, INTENT(INOUT) :: WORK(LWORK)
-C  
-    
+C
+
 C
 C     Local variables
-      DOUBLE PRECISION EFACT, DFACT
+      DOUBLE PRECISION EFACT, DFACT, DLABEL
       LOGICAL :: VALID, DOUBLES, STATIC
 C
       INTEGER :: IDENS, IDUMMY
@@ -72,7 +72,7 @@ C
      &           KRDENAI
       INTEGER :: LSOLV1, LSOLV2, LRDENIJ, LRDENAB, LRDENAI,
      &           LRDENTOT                          ! Array lengths
-      INTEGER :: KEND1, LWORK1 
+      INTEGER :: KEND1, LWORK1
       INTEGER :: LURDENSE, LURDENSD     ! File handles
       DOUBLE PRECISION, PARAMETER :: ONE = 1.0D0
       DOUBLE PRECISION, PARAMETER :: SQRT2 = SQRT(2.0D0)
@@ -115,10 +115,10 @@ C
 C
       STATIC = (CALCTYPE.EQ.SOP_LINRES).AND.
      &         ABS(FRVAL(1)).LT.SOP_STAT_TRH
-C      
+C
 C--------------------------
 C     Open the needed files
-C--------------------------      
+C--------------------------
 C     Solution vectors
       CALL SO_OPEN(LUTR1E,FNTR1E,LSOLV1)
       IF (.NOT.STATIC) CALL SO_OPEN(LUTR1D,FNTR1D,LSOLV1)
@@ -126,12 +126,12 @@ C     Solution vectors
          CALL SO_OPEN(LUTR2E,FNTR2E,LSOLV2)
          IF(.NOT.STATIC) CALL SO_OPEN(LUTR2D,FNTR2D,LSOLV2)
       ENDIF
-C     Density files      
-      LURDENSD = -1 
+C     Density files
+      LURDENSD = -1
       LURDENSE = -1
-      SELECT CASE (CALCTYPE) 
-C        Linear response, only one file saved        
-         CASE ( SOP_LINRES ) 
+      SELECT CASE (CALCTYPE)
+C        Linear response, only one file saved
+         CASE ( SOP_LINRES )
             CALL GPOPEN(LURDENSD,FN_RDENS,'UNKNOWN',' ','UNFORMATTED',
      &                  IDUMMY,.FALSE.)
             LURDENSE = LURDENSD
@@ -144,14 +144,14 @@ C        Excitation energies, two files :
 C        Any other -- is an error
          CASE DEFAULT
             print *, 'Invalid CALCTYPE argument in so_pertdens'
-      
+
       END SELECT
 C
 C------------------------------------
 C     Setup factors for E and D parts
 C------------------------------------
-C     For static properties E and D contributions are the same: 
-C     Just calculate E with a factor of 2      
+C     For static properties E and D contributions are the same:
+C     Just calculate E with a factor of 2
       IF (STATIC) THEN
          EFACT = 2*FACTOR
       ELSE
@@ -160,7 +160,7 @@ C     Just calculate E with a factor of 2
 C
 C     For real properties the D part has a minus, for excitation
 C     energies, we keep both, so just keep a positive factor.
-C      
+C
       IF ( IMAGPROP .OR. (CALCTYPE.EQ.SOP_EXCITA) ) THEN
          DFACT = FACTOR
       ELSE
@@ -173,13 +173,13 @@ C
 C---------------------------------------
 C        Process excitation contribution
 C---------------------------------------
-C     
+C
          CALL SO_READ(WORK(KSOLV1),LSOLV1,LUTR1E,FNTR1E,IDENS)
          IF (DOUBLES) CALL SO_READ(WORK(KSOLV2),LSOLV2,
      &                             LUTR2E,FNTR2E,IDENS)
 C----------------------------
 C        Singles contribution
-C----------------------------      
+C----------------------------
          CALL SO_PERTD1(MODEL,ISYMTR,EFACT,
      &               WORK(KRDENIJ),LRDENIJ,WORK(KRDENAB),LRDENAB,
      &               WORK(KRDENAI),LRDENAI,
@@ -190,32 +190,33 @@ C
 C----------------------------------------------------
 C        Doubles contributions to response densities.
 C----------------------------------------------------
-C      
-         IF (DOUBLES) THEN 
+C
+         IF (DOUBLES) THEN
             CALL SO_PERTD2(ISYMTR,EFACT,
      &                     WORK(KRDENIJ),LRDENIJ,WORK(KRDENAB),LRDENAB,
      &                     T2AM,LT2AM,WORK(KSOLV2),LSOLV2)
          END IF
 C
          IF (CALCTYPE.EQ.SOP_EXCITA) THEN
-            CALL SO_FNDPOS(LABEL,FRVAL(IDENS),LURDENSE)
+            DLABEL = DBLE(IDENS)
+            CALL SO_FNDPOS(LABEL,DLABEL,LURDENSE)
             CALL SO_WRTVE(WORK(KRDENIJ),LRDENTOT,ISYMTR,LABEL,
-     &                    FRVAL(IDENS),LURDENSE)
+     &                    DLABEL,LURDENSE)
             CALL DZERO( WORK(KRDENIJ), LRDENTOT)
          ENDIF
-C      
+C
          IF (.NOT.STATIC) THEN
 C
-C------------------------------------------      
+C------------------------------------------
 C           Process de-excitation contribution
 C------------------------------------------
-C     
+C
             CALL SO_READ(WORK(KSOLV1),LSOLV1,LUTR1D,FNTR1D,IDENS)
             IF (DOUBLES) CALL SO_READ(WORK(KSOLV2),LSOLV2,
      &                                LUTR2D,FNTR2D,IDENS)
 C-------------------------------
 C           Singles contribution
-C-------------------------------      
+C-------------------------------
             CALL SO_PERTD1(MODEL,ISYMTR,DFACT,
      &                     WORK(KRDENIJ),LRDENIJ,WORK(KRDENAB),LRDENAB,
      &                     WORK(KRDENAI),LRDENAI,
@@ -226,24 +227,33 @@ C
 C----------------------------------------------------
 C        Doubles contributions to response densities.
 C----------------------------------------------------
-C     
-            IF (DOUBLES) THEN 
+C
+            IF (DOUBLES) THEN
                CALL SO_PERTD2(ISYMTR,DFACT,
      &                        WORK(KRDENIJ),LRDENIJ,WORK(KRDENAB),
      &                        LRDENAB,T2AM,LT2AM,WORK(KSOLV2),LSOLV2)
             END IF
-C      
+C
          END IF
-C        
-C        Write on file         
-         CALL SO_FNDPOS(LABEL,FRVAL(IDENS),LURDENSD)
+C
+C        For excitation calculations, label by number in irrep
+C        (Since frequency based approach break down when we have
+C         Degeneracies)
+         IF (CALCTYPE.EQ.SOP_EXCITA) THEN
+            DLABEL = DBLE(IDENS)
+         ELSE
+C           Else label by frequency of the field
+            DLABEL = FRVAL(IDENS)
+         ENDIF
+C        Write on file
+         CALL SO_FNDPOS(LABEL,DLABEL,LURDENSD)
          CALL SO_WRTVE(WORK(KRDENIJ),LRDENTOT,ISYMTR,LABEL,
-     &                  FRVAL(IDENS),LURDENSD)
+     &                  DLABEL,LURDENSD)
       END DO
 C
 C
 C
-C      
+C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       IF(.NOT.STATIC) CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       IF(DOUBLES)THEN
@@ -258,4 +268,4 @@ C
       CALL QEXIT('SO_PERTDENS')
 
       RETURN
-      END SUBROUTINE   
+      END SUBROUTINE
