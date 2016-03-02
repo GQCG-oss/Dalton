@@ -74,7 +74,7 @@ C     Calculate p-h and 2p-2h weight in excitation operator
 C     and write to output together with excitation energies.
 C-----------------------------------------------------------
 C
-      IF ( IPRSOP .GE. 1 ) THEN
+      IF ( IPRSOP .GE. 1 .AND. NEXCI .GT. 0) THEN
 C
 C------------------------------
 C     Allocation of work space.

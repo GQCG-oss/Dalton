@@ -280,6 +280,7 @@ C  Skip methods not treated in this calcultion
                IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
 C
 C  Look up info on this model
+C  (the model number -> model conversion is defined in so_info.F90)
 C
                MODEL = SOP_MODELS(IMODEL)
                FULLNAME = SOP_MOD_FULLNAME(IMODEL)

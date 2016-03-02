@@ -1,22 +1,30 @@
 C  /* Deck so_res_b */
-      SUBROUTINE SO_RES_B(RES1E,LRES1E,RES1D,LRES1D,SIGAI1,LSIGAI1,
-     &                    SIGAI2,LSIGAI2,CMO,LCMO,ISYRES)
+      SUBROUTINE SO_RES_B(RES1,LRES1,SIGAI,LSIGAI,
+     &                    CMO,LCMO,ISYRES,FACTOR)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Keld Bak and Henrik Koch, September 1995
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C
-C     PURPOSE: Calculate the third contributions to RES1E and RES1D
+C     Rasmus Faber: 22.1.2016: Do only E or D
+
+C     PURPOSE: Calculate the third contributions to RES1E or RES1D
 C              in eqs. (34) and (35).
 C
-#include "implicit.h"
+C#include "implicit.h"
+      implicit none
 #include "priunit.h"
-      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+
+      double precision, PARAMETER :: ZERO = 0.0D0, HALF = 0.5D0, 
+     &                               ONE = 1.0D0, TWO = 2.0D0
 C
-      DIMENSION RES1E(LRES1E),   RES1D(LRES1D), SIGAI1(LSIGAI1)
-      DIMENSION SIGAI2(LSIGAI2), CMO(LCMO)
+      double precision, intent(inout) ::  RES1(LRES1) 
+      double precision, intent(in) ::  CMO(LCMO), SIGAI(LSIGAI)
+      double precision, intent(in) :: FACTOR
+      integer, intent(in)          :: LRES1, LSIGAI, LCMO, ISYRES
 C
+      integer :: ISALFA, ISYMA, ISYMI, KOFF1, KOFF2, KOFF3
+      integer :: NTOTAL, NTOTA
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
@@ -47,12 +55,12 @@ C        (35).
 C----------------------------------------------------------------------
 C
          CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
-     &              -ONE,CMO(KOFF1),NTOTAL,SIGAI1(KOFF2),NTOTAL,
-     &              ONE,RES1E(KOFF3),NTOTA)
+     &              FACTOR,CMO(KOFF1),NTOTAL,SIGAI(KOFF2),NTOTAL,
+     &              ONE,RES1(KOFF3),NTOTA)
 C
-         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
-     &              ONE,CMO(KOFF1),NTOTAL,SIGAI2(KOFF2),NTOTAL,
-     &              ONE,RES1D(KOFF3),NTOTA)
+C         CALL DGEMM('T','N',NVIR(ISYMA),NRHF(ISYMI),NBAS(ISALFA),
+C     &              ONE,CMO(KOFF1),NTOTAL,SIGAI2(KOFF2),NTOTAL,
+C     &              ONE,RES1D(KOFF3),NTOTA)
 C
   100 CONTINUE
 C

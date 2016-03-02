@@ -13,6 +13,10 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Determine "double corrected RPA" excitation energies.
 C
+#ifdef VAR_MPI
+      use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
+     &                       soppa_nint
+#endif
       use so_info, only: sop_excita
 C      
 #include "implicit.h"
@@ -29,20 +33,73 @@ C
       DIMENSION EXVAL(LEXVAL)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
+#ifdef VAR_MPI
+      INTEGER   CP_ISYMTR
+      INTEGER   MAXNUMJOBS
+C     This array is only there to ensure that the four above variables
+C     are allocated consecutively, so that it can be send together. Only
+C     use it for this purpose.
+C     The definition must match that in soppa_nodedriver
+      INTEGER   INFO_ARRAY(4)
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
+     &            (info_array(3), nnewtr),    (info_array(4),noldtr)
+      INTEGER(MPI_INTEGER_KIND) :: IERR
+
+      CALL PARQUIT('RPA(D) not implemented for parallel calculations')
+#endif
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('DC_CALC')
+      
+#ifdef VAR_MPI
+C------------------------------------------------------------------
+C     For MPI, we need some space in which to store the indices each
+C     process is to work with in so_eres.
+C------------------------------------------------------------------
+C
+      call mpi_comm_size( mpi_comm_world, numprocs, ierr)
+      maxnumjobs = soppa_nint - min(soppa_nint, numprocs) + 1
+      if ( numprocs .eq. 1 ) then
+C Not a real parallel job, don't bother
+         lAssignedIndices = 1
+         kAssignedIndices = 0
+      else
+         lAssignedIndices = (maxnumjobs + 1) /IRAT
+         kAssignedIndices = KEND1
+         KEND1 = kAssignedIndices + lAssignedIndices
+         LWORK1 = LWORK - KEND1
+         CALL SO_MEMMAX ('SO_LRSOLV.1A',LWORK1)
+         IF (LWORK1 .LT. 0) CALL STOPIT('SO_LRSOLV.1A',' ',KEND1,LWORK)
+      endif
+#else
+      KEND1 = 1
+      LWORK1 = LWORK
+#endif
 C
 C---------------------------------------------------------
 C     Make E[2] linear transformation of RPA eigenvectors.
 C---------------------------------------------------------
 C
+#ifdef VAR_MPI
+C In parallel, send slaves to so_eres
+C
+         call mpi_bcast( parsoppa_do_eres, 1, my_mpi_integer, 0,
+     &                   mpi_comm_world, ierr )
+C ISYMTR is a non-local parameter, we need to copy it to the info-array
+         CP_ISYMTR = ISYMTR
+         CALL MPI_BCAST( INFO_ARRAY, 4, MY_MPI_INTEGER, 0,
+     &                   MPI_COMM_WORLD, IERR)
+#endif
       DTIME      = SECOND()
-      CALL DC_ERES(0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,DENSAI,LDENSAI,
-     &             T2MP,LT2MP,FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
+      CALL SO_ERES('DCRPA',0,NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+     &             T2MP,LT2MP,FOCKD,LFOCKD,DENSAI,LDENSAI,1,ISYMTR,
+#ifdef VAR_MPI
+     &             WORK(kAssignedIndices),maxnumjobs,
+#endif      
+     &             WORK(KEND1),LWORK1)
       DTIME      = SECOND()   - DTIME
       SOTIME(35) = SOTIME(35) + DTIME
 C
@@ -66,12 +123,12 @@ C
       LTR2E = NT2AM(ISYMTR)
       LTR2D = NT2AM(ISYMTR)
 C
-      KTR1    = 1
-      KRES1   = KTR1   + LTR1E
-      KRESO1  = KRES1  + LTR1E
-      KRES2   = KRESO1 + LTR1E
-      KEND1   = KRES2  + LTR2E
-      LWORK1  = LWORK  - KEND1
+      KTR1   = 1
+      KRES1  = KTR1   + LTR1E
+      KRESO1 = KRES1  + LTR1E
+      KRES2  = KRESO1 + LTR1E
+      KEND1  = KRES2  + LTR2E
+      LWORK1 = LWORK  - KEND1
 C
       CALL SO_MEMMAX ('DC_CALC',LWORK1)
       IF (LWORK1 .LT. 0) CALL STOPIT('DC_CALC',' ',KEND1,LWORK)

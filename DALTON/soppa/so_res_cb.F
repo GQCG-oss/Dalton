@@ -143,9 +143,9 @@ C
 C
                LSCR4  = NBAS(ISALFA)*NRHF(ISYMI)
 C
-               KSCR4   = KEND1
-               KEND3   = KSCR4 + LSCR4
-               LWORK3  = LWORK - KEND3
+               KSCR4  = KEND1
+               KEND3  = KSCR4 + LSCR4
+               LWORK3 = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_CB.3',LWORK3)
                IF (LWORK3 .LT. 0) 

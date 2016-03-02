@@ -105,11 +105,11 @@ C
                LSCR4  = MAX(NBAS(ISALFA)*NVIR(ISYMA),
      &                      NBAS(ISALF2)*NRHF(ISYMI))
 C
-               KSCR2   = KEND2
-               KSCR3   = KSCR2 + LSCR2
-               KSCR4   = KSCR3 + LSCR3
-               KEND3   = KSCR4 + LSCR4
-               LWORK3  = LWORK - KEND3
+               KSCR2  = KEND2
+               KSCR3  = KSCR2 + LSCR2
+               KSCR4  = KSCR3 + LSCR3
+               KEND3  = KSCR4 + LSCR4
+               LWORK3 = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_TCB.3',LWORK3)
                IF (LWORK3 .LT. 0) 

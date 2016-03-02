@@ -73,24 +73,31 @@ C
 #include "soppinf.h"
 
 
-      logical :: singles_first, singles_second, doubles, calc_densai  
+      logical :: singles_first, singles_second, doubles, calc_densai
+C
+C     Logical variable which can be set to false if the dexcitation vector is
+C     to avoid calculating with only zeroes. Useful for static
+C     properties and first iteration of excitation energies.      
+      logical :: do_dex
+      logical :: tr2_zero
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
 C#include "parsoppa.h"
-C      integer, save :: numprocs
-       integer :: numprocs
-       logical :: loadbal_dyn
-       double precision ::  timeini, timefin
-       numprocs = nodtot + 1
+C     integer, save :: numprocs
+      integer :: numprocs
+      logical :: loadbal_dyn
+      double precision ::  timeini, timefin
+      numprocs = nodtot + 1
 C
 C  When to do dynamic load_balancing..?
 C  The sooner the better, but is the first iteration close to the
 C  average?
-       loadbal_dyn = .false.
-       if (nit .eq. 1) loadbal_dyn = .true.
+      loadbal_dyn = .false.
+      if (nit .eq. 1) loadbal_dyn = .true.
 #endif
 C
+      do_dex = .true.
       calc_densai = (NIT.EQ.1) .AND. SO_NEEDS_DENSAI(MODEL)
 C
 C------------------
@@ -112,13 +119,10 @@ C-------------------------------------------------------------
 C     Determine which terms to incude
 C-------------------------------------------------------------      
 C
-C      singles_first = model .ne. 'DCRPA'
       singles_first = so_singles_first(model)
-C      singles_second = model .ne. 'AORPA'
       singles_second = so_singles_second(model)
-C      doubles = (model .eq. 'DCRPA') .or. (model .eq. 'AOSOP') .or.
-C     &          (model .eq. 'AOSOC')
       doubles = so_has_doubles(model)
+      tr2_zero = MODEL.EQ.'DCRPA'
 C
 C------------------------------------------------------------------
 C     Determine the symmetry of the result vector from the symmetry
@@ -170,21 +174,30 @@ C     Work space allocation no. 2.
 C---------------------------------
 C
       LTR1E   = NT1AM(ISYMTR)
-      LTR1D   = NT1AM(ISYMTR)
+      LBTR1E  = NT1AO(ISYMTR)
+      IF (DO_DEX) THEN
+         LTR1D = NT1AM(ISYMTR)
+      ELSE
+         LTR1D = 0
+      ENDIF 
       LRES1E  = NT1AM(ISYMTR)
       LRES1D  = NT1AM(ISYMTR)
       LFOCK   = N2BST(ISYRES)
       LDENS   = N2BST(ISYMTR)
-      LBTR1E  = NT1AO(ISYMTR)
       LBTR1D  = NT1AO(ISYMTR)
       LBTJ1E  = NMATAV(ISYMTR)
       LBTJ1D  = NMATAV(ISYMTR)
                  
       IF(DOUBLES) THEN
          LTR2E   = NT2AM(ISYMTR)
-         LTR2D   = NT2AM(ISYMTR)
          LRES2E  = NT2AM(ISYMTR)
-         LRES2D  = NT2AM(ISYMTR)
+         IF (DO_DEX) THEN
+            LTR2D   = NT2AM(ISYMTR)
+            LRES2D  = NT2AM(ISYMTR)
+         ELSE 
+            LTR2D  = 0
+            LRES2D = 0
+         ENDIF
       ELSE
          LTR2E   = 0
          LTR2D   = 0
@@ -250,8 +263,10 @@ C----------------------------
 C     Initialize AIJ and AAB.
 C----------------------------
 C
-      CALL DZERO(WORK(KAIJ),LAIJ)
-      CALL DZERO(WORK(KAAB),LAAB)
+      IF(SINGLES_SECOND) THEN
+         CALL DZERO(WORK(KAIJ),LAIJ)
+         CALL DZERO(WORK(KAAB),LAAB)
+      ENDIF
 #ifdef VAR_MPI
 C MPI -- ONLY MASTER DOES THE READING
       IF ( MYNUM .EQ. 0 ) THEN
@@ -262,15 +277,17 @@ C     Open files with trial and result vectors.
 C----------------------------------------------
 C
       CALL SO_OPEN(LUTR1E,FNTR1E,LTR1E)
-      CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
+      IF (DO_DEX) CALL SO_OPEN(LUTR1D,FNTR1D,LTR1D)
       CALL SO_OPEN(LURS1E,FNRS1E,LRES1E)
       CALL SO_OPEN(LURS1D,FNRS1D,LRES1D)
 C
       IF (DOUBLES) THEN
          CALL SO_OPEN(LUTR2E,FNTR2E,LTR2E)
-         CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
          CALL SO_OPEN(LURS2E,FNRS2E,LRES2E)
-         CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
+         IF (DO_DEX) THEN
+            CALL SO_OPEN(LUTR2D,FNTR2D,LTR2D)
+            CALL SO_OPEN(LURS2D,FNRS2D,LRES2D)
+         ENDIF
       ENDIF
 #ifdef VAR_MPI
       ENDIF
@@ -292,10 +309,12 @@ C----------------------------------------------------
             INEW = NOLDTR + INEWTR
 C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
-            CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
+            IF(DO_DEX) 
+     &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
             IF (DOUBLES) THEN
-               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
-               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
+                     CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
+               IF(DO_DEX) 
+     &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
             ENDIF
 C
             WRITE(LUPRI,'(/,I3,A)') INEWTR,'. new trial vector'
@@ -329,7 +348,7 @@ C
          CALL DZERO(WORK(KRES1D),LRES1D)
         
          IF (DOUBLES) CALL DZERO(WORK(KRES2E),LRES2E)
-         IF (DOUBLES) CALL DZERO(WORK(KRES2D),LRES2D)
+         IF (DOUBLES.AND.DO_DEX) CALL DZERO(WORK(KRES2D),LRES2D)
 C
          IF (SINGLES_SECOND) THEN
             CALL DZERO(WORK(KSIGAI1),LSIGAI1)
@@ -348,18 +367,28 @@ C
          IF ( MYNUM .EQ. 0 ) THEN
 #endif
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
-            CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
+            IF (DO_DEX)
+     &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
             IF (DOUBLES) THEN
-               CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
-               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
+C              Quick fix for RPA(D) -> Later use this variable to
+C              speed up first iteration for excitation energies
+               IF (TR2_ZERO) THEN
+                  CALL DZERO(WORK(KTR2E),LTR2E)
+                  CALL DZERO(WORK(KTR2D),LTR2D)
+               ELSE
+                  CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
+                  IF(DO_DEX)
+     &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
+               ENDIF
+
             ENDIF
 #ifdef VAR_MPI
          ENDIF
 C Rememember that the trial-vectors are contigous in memory         
          LTRTOT = LTR1E + LTR1D + LTR2E + LTR2D
-         CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8, 
+         CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8,
      &                  0, SOPPA_COMM_ACTIVE, IERR)
-C Note for future adjustment: 
+C Note for future adjustment:
 C It may be worthwile using non-blocking communication here
 C since the next two calls only use the singles vectors.
 C
@@ -713,7 +742,6 @@ C
      &                               ISYMTR,WORK(KEND5),LWORK5)
                      DTIME      = SECOND()   - DTIME
                      SOTIME(29) = SOTIME(29) + DTIME
-
 C
 C----------------------------------------------------------------------
 C                 Construct C-contribution to 2p2h result vectors RES2E
@@ -757,7 +785,7 @@ C
 C
 C--------------------------------------------------------------------
 C                    Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
-C                 are used    SO_RES_C.
+C                    are used    SO_RES_C.
 C--------------------------------------------------------------------
 C
                      DTIME      = SECOND()
@@ -789,7 +817,6 @@ C
 C
   210    CONTINUE !end of ISYMD1 loop
 C
-C  888    continue !Continuation point in case of parallel run.
 C====================================================
 C        End of loop over distributions of integrals.
 C====================================================
@@ -903,9 +930,15 @@ C           (35).
 C-------------------------------------------------------------------------
 C
             DTIME      = SECOND()
-            CALL SO_RES_B(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                    WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),LSIGAI2,
-     &                    WORK(KCMO),LCMO,ISYRES)
+            CALL SO_RES_B(WORK(KRES1E),LRES1E,
+     &                    WORK(KSIGAI1),LSIGAI1,
+     &                    WORK(KCMO),LCMO,ISYRES,-ONE)
+            IF (DO_DEX) THEN
+               CALL SO_RES_B(WORK(KRES1D),LRES1D,
+     &                       WORK(KSIGAI2),LSIGAI2,
+     &                       WORK(KCMO),LCMO,ISYRES,ONE)
+
+            END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(18) = SOTIME(18) + DTIME
 C
@@ -991,7 +1024,8 @@ C
          CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
          IF (DOUBLES) THEN
             CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
-            CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+            IF(DO_DEX) 
+     &            CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
          ENDIF
 C
   100 CONTINUE 
@@ -1080,7 +1114,8 @@ C------------------------------------------
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
-               CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+               IF (DO_DEX) 
+     &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
                WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
             ENDIF
@@ -1093,15 +1128,17 @@ C     Close files.
 C-----------------
 C   
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
-      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+      IF (DO_DEX) CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LURS1E,FNRS1E,'KEEP')
       CALL SO_CLOSE(LURS1D,FNRS1D,'KEEP')
 C
       IF (DOUBLES) THEN
          CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-         CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
          CALL SO_CLOSE(LURS2E,FNRS2E,'KEEP')
-         CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+         IF (DO_DEX) THEN
+            CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+            CALL SO_CLOSE(LURS2D,FNRS2D,'KEEP')
+         ENDIF
       ENDIF
 C
 C
