@@ -423,7 +423,11 @@ CPFP 2009-Jun NMODEL increased from 4 to 5
          KTRMAG = KTRLON + 3*NSYM*MXNEXI*NMODEL
          KBSRLO = KTRMAG + 3*NSYM*MXNEXI*NMODEL
          KEXENG = KBSRLO + 3*NSYM*MXNEXI*NMODEL
-         KSECMT = KEXENG + NSYM*MXNEXI*NMODEL
+CClark:11/01/2016
+         KBETHE = KEXENG + 3*LQ*NMODEL
+         KSTOPP = KBETHE + 3*LVEL*NMODEL
+CClark:end
+         KSECMT = KSTOPP + NSYM*MXNEXI*NMODEL
          KFONAC = KSECMT + 3*NSYM*MXNEXI
          KFONA2 = KFONAC + 3*NUCDEP*NSYM*MXNEXI
          KRMLEN = KFONA2 + 3*NUCDEP*NSYM*MXNEXI
@@ -439,6 +443,9 @@ CPFP 2009-Jun NMODEL increased from 4 to 5
          CALL EXCITA(WORK(KTRLEN),WORK(KTRVEL),WORK(KTQLEN),
      &               WORK(KTQVEL),WORK(KTRLON),WORK(KTRMAG),
      &               WORK(KBSRLO),WORK(KTTLEN),WORK(KEXENG),
+CClark:11/01/2016
+     &               WORK(KBETHE),WORK(KSTOPP),
+CClark:end
      &               WORK(KFONAC),WORK(KFONA2),WORK(KSECMT),
      &               WORK(KLST2),LWRK2,PASEXC)
          IF (PASEXC) CALL ABAWRIT_RESTART
@@ -454,7 +461,11 @@ CPFP 2009-Jun NMODEL increased from 4 to 5
          KTRMAG = KTRLON
          KBSRLO = KTRMAG
          KEXENG = KBSRLO
-         KSECMT = KEXENG
+CClark:11/01/2016
+         KBETHE = KEXENG
+         KSTOPP = KBETHE
+CClark:end
+         KSECMT = KSTOPP
          KFONAC = KSECMT
          KFONA2 = KFONAC
          KRMLEN = KFONA2
@@ -622,7 +633,11 @@ C
      &            WORK(KFC),WORK(KSDFC),WORK(KTRLEN),
      &            WORK(KTRVEL),WORK(KTQLEN),WORK(KTQVEL),
      &            WORK(KTRMAG),WORK(KTRLON),WORK(KBSRLO),WORK(KTTLEN),
-     &            WORK(KEXENG),WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
+     &            WORK(KEXENG),
+CClark:11/01/2016
+     &            WORK(KBETHE),WORK(KSTOPP),
+CClark:end
+     &            WORK(KFONAC),WORK(KFONA2),WORK(KFOVIB),
      &            WORK(KSECMT),
      &            WORK(KRMLEN),WORK(KRQLEN),WORK(KRLEN),
      &            WORK(KRMVEL),WORK(KRQVEL),WORK(KRVEL),
@@ -2215,6 +2230,9 @@ C  /* Deck result */
      &                  CSTRA,SCTRA,SPNDSO,SPNPSO,
      &                  SPNSD,SPNFC,SPSDFC,TRLEN,TRVEL,TQLEN,TQVEL,
      &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,
+CClark:11/01/2016
+     &                  BETHE,STOPP,
+CClark:end
      &                  FONAC,FONA2,FOVIBG,SECMAT,
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
@@ -2241,7 +2259,11 @@ C
      &          SPSDFC(MXCOOR,MXCOOR)
       DIMENSION TRLEN(*), TRVEL(*), TQLEN(*), TQVEL(*), TTLEN(*),
      &          TRLON(*), TRMAG(*), BSRLON(*),
-     &          EXENG(*), FONAC(*), FONA2(*), FOVIBG(*),
+     &          EXENG(*), 
+CClark:11/01/2016
+     &          BETHE(*), STOPP(*),
+CClark:end
+     &          FONAC(*), FONA2(*), FOVIBG(*),
      &          SECMAT(*),
      &          RMLEN(*), RQLEN(*), RLEN(*),
      &          RMVEL(*), RQVEL(*), RVEL(*), SLEN(*), SVEL(*)
@@ -2638,7 +2660,11 @@ C         IF (AORPA .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
          IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
 Cend-PFP
             CALL SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
-     &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
+     &                     TTLEN,EXENG,
+CClark:11/01/2016
+     &                     BETHE,STOPP,
+CClark:end
+     &                     FONAC,FONA2,SECMAT,WORK,LWORK)
          ELSE
             CALL EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,
      &                  TRMAG,TRLON,BSRLON,TTLEN,EXENG,

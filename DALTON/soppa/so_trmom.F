@@ -7,7 +7,11 @@ CSPAS:23/5-11: second and third moment sum rules
 C    &                    TRLEN,TRVEL,TRLON,TRMAG,BSRLON,EXENG,
 C    &                    WORK,LWORK)
      &                    TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
-     &                    BSRLON,EXENG,WORK,LWORK)
+     &                    BSRLON,EXENG,
+CClark:11/01/2016
+     &                    BETHE,STOPP,
+CClark:end
+     &                    WORK,LWORK)
 CKeinSPASmehr
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -46,6 +50,9 @@ CSPAS:23/5-11: second and third moment sum rules
 CKeinSPASmehr
       DIMENSION TRLON(3,NSYM,MXNEXI), TRMAG(3,NSYM,MXNEXI)
       DIMENSION BSRLON(3,NSYM,MXNEXI), EXENG(NSYM,MXNEXI)
+CClark:11/01/2016
+      DIMENSION BETHE(3,LQ),STOPP(3,LVEL)
+CClark:end
       DIMENSION T2AM(LT2AM), WORK(LWORK)
 C
       PARAMETER( ONE=1.0D0 )
@@ -144,18 +151,16 @@ C     Save origins and calculate domain of q values.
 C---------------------------------------------------
 C
          CALL DCOPY(3,ORIGIN,1,ORSAVE,1)
-
-         LSTEP = INT((QMAX-QMIN)/QSTEP)
 C
 C--------------------------------------------
 C     Loop over x,y,z components of q values.
 C--------------------------------------------
 C
-         DO IQ=0,LSTEP
+         DO IQ = 1, LQ
 C
-            ORIGIN(1)=QMIN+IQ*QSTEP
-            ORIGIN(2)=QMIN+IQ*QSTEP
-            ORIGIN(3)=QMIN+IQ*QSTEP
+            ORIGIN(1)=QMIN+(IQ-1)*QSTEP
+            ORIGIN(2)=QMIN+(IQ-1)*QSTEP
+            ORIGIN(3)=QMIN+(IQ-1)*QSTEP
 C
 C-------------------------------
 CDeterminte Cos & Sin integrals.
@@ -279,6 +284,20 @@ C
                WRITE (LUGOS,'(D20.13)') TRGOS(1,IEXCI)
                WRITE (LUGOS,'(D20.13)') TRGOS(2,IEXCI)
                WRITE (LUGOS,'(D20.13)') TRGOS(3,IEXCI)
+C
+C-------------------------------------------
+C        Calculate Bethe and Stopping Power.
+C-------------------------------------------
+C
+               BETHE(1,IQ) = BETHE(1,IQ) + TRGOS(1,IEXCI)
+               BETHE(2,IQ) = BETHE(2,IQ) + TRGOS(2,IEXCI)
+               BETHE(3,IQ) = BETHE(3,IQ) + TRGOS(3,IEXCI)
+C
+               CALL SO_STOPPW(STOPP,TRGOS,ISYMTR,IEXCI,EXENG,IQ)
+C
+C               STOPP(1)    = STOPP(1) + TRGOS(1,IEXCI)*QSTEP
+C               STOPP(2)    = STOPP(2) + TRGOS(2,IEXCI)*QSTEP
+C               STOPP(3)    = STOPP(3) + TRGOS(3,IEXCI)*QSTEP
 C
             END DO
 C

@@ -1,7 +1,11 @@
 C
 C  /* Deck so_excit1 */
       SUBROUTINE SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
-     &                     BSRLON,SECMAT,EXENG,WORK,LWORK)
+     &                     BSRLON,SECMAT,EXENG,
+CClark:11/01/2016
+     &                     BETHE,STOPP,
+CClark:end
+     &                     WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -55,6 +59,9 @@ C     DIMENSION BSRLON(3,NSYM,MXNEXI,4), EXENG(NSYM,MXNEXI,4)
       DIMENSION TTLEN(10,NSYM,MXNEXI,5)
       DIMENSION TRLON(3,NSYM,MXNEXI,5),  TRMAG(3,NSYM,MXNEXI,5)
       DIMENSION BSRLON(3,NSYM,MXNEXI,5), EXENG(NSYM,MXNEXI,5)
+CClark:11/01/2016
+      DIMENSION BETHE(3,LQ,5),STOPP(3,LVEL,5)
+CClark:end
 CKeinSPASmehr
       DIMENSION SECMAT(3,MXNEXI,NSYM)
       DIMENSION WORK(LWORK)
@@ -370,6 +377,9 @@ C
      &                       TTLEN(1,1,1,1),
      &                       TRLON(1,1,1,1),TRMAG(1,1,1,1),
      &                       BSRLON(1,1,1,1),EXENG(1,1,1),
+CClark:11/01/2016
+     &                       BETHE(1,1,1),STOPP(1,1,1),
+CClark:end
      &                       WORK(KEND2),LWORK2)
 C
 C--------------------------------------------------------
@@ -551,6 +561,9 @@ C   -- actually meaningfull
      &                       TTLEN(1,1,1,3),
      &                       TRLON(1,1,1,3),TRMAG(1,1,1,3),
      &                       BSRLON(1,1,1,3),EXENG(1,1,3),
+CClark:11/01/2016
+     &                       BETHE(1,1,3),STOPP(1,1,3),
+CClark:end
      &                       WORK(KEND2),LWORK2)
 C
             END IF
@@ -651,6 +664,9 @@ C
      &                       TTLEN(1,1,1,4),
      &                       TRLON(1,1,1,4),TRMAG(1,1,1,4),
      &                       BSRLON(1,1,1,4),EXENG(1,1,4),
+CClark:11/01/2016
+     &                       BETHE(1,1,4),STOPP(1,1,4),
+CClark:end
      &                       WORK(KEND2),LWORK2)
 #ifdef VAR_MPI
 C-------------------------------------------------------
@@ -750,6 +766,9 @@ C
      &                       TTLEN(1,1,1,5),
      &                       TRLON(1,1,1,5),TRMAG(1,1,1,5),
      &                       BSRLON(1,1,1,5),EXENG(1,1,5),
+CClark:11/01/2016
+     &                       BETHE(1,1,5),STOPP(1,1,5),
+CClark:end
      &                       WORK(KEND2),LWORK2)
 #ifdef VAR_MPI
 C-------------------------------------------------------

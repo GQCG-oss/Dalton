@@ -1,7 +1,11 @@
 C
 C  /* Deck so_excout */
       SUBROUTINE SO_EXCOUT(TRLEN,TRVEL,TQLEN,TQVEL,TRMAG,TRLON,BSRLON,
-     &                     TTLEN,EXENG,FONAC,FONA2,SECMAT,WORK,LWORK)
+     &                     TTLEN,EXENG,
+CClark:11/01/2016
+     &                     BETHE,STOPP,
+CClark:end
+     &                     FONAC,FONA2,SECMAT,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -34,6 +38,9 @@ C     DIMENSION BSRLON(3,NSYM,MXNEXI,4),EXENG(NSYM,MXNEXI,4)
       DIMENSION TRLON(3,NSYM,MXNEXI,5), TRMAG(3,NSYM,MXNEXI,5)
       DIMENSION TTLEN(10,NSYM,MXNEXI,5)
       DIMENSION BSRLON(3,NSYM,MXNEXI,5),EXENG(NSYM,MXNEXI,5)
+CClark:11/01/2016
+      DIMENSION BETHE(3,LQ,5),STOPP(3,LVEL,5)
+CClark:end
 CKeinSPASmehr
       DIMENSION FONAC(*)
       DIMENSION FONA2(*)
@@ -82,6 +89,52 @@ C
 C     END IF
 CKeinSPASmehr
 C
+CClark:11/01/2016
+C
+C---------------------------------------------
+C     Write Bethe sum rule and Stopping power.
+C---------------------------------------------
+
+      WRITE(LUPRI,'(//,1X,A)')
+     &   '         Bethe sum rule                   '
+      WRITE(LUPRI,'(1X,A/)')
+     &   '         --------------'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' Q value      X Component    Y Component    Z Component'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' ------------------------------------------------------'
+      WRITE(LUPRI,'(1X,A,I4,3(1X,A,G10.4))')
+     &   'LQ=',LQ,'QMAX=',QMAX,'QMIN=',QMIN,'QSTEP=',QSTEP
+      DO IQ = 1, LQ
+C
+         WRITE(LUPRI,'(2X,G9.4,3(4X,G11.5))')
+     &                QMIN+(IQ-1)*QSTEP,(BETHE(K,IQ,1),K=1,3)
+C
+      END DO
+C
+      WRITE(LUPRI,'(//,1X,A)')
+     &   '         Stopping Power                 '
+      WRITE(LUPRI,'(1X,A/)')
+     &   '         --------------'
+      WRITE(LUPRI,'(1X,A)')
+     &   ' Velocity        Component       Value           '
+      WRITE(LUPRI,'(1X,A)')
+     &   ' ------------------------------------------------'
+C
+      DO IVEL = 1, LVEL
+C
+         VELOC = VMIN+(IVEL-1)*VSTEP
+C
+         WRITE(LUPRI,'(2X,G9.4,7X,A,10X,G17.6)')
+     &        VELOC,'X',STOPP(1,IVEL,1)
+         WRITE(LUPRI,'(2X,G9.4,7X,A,10X,G17.6)')
+     &        VELOC,'Y',STOPP(2,IVEL,1)
+         WRITE(LUPRI,'(2X,G9.4,7X,A,10X,G17.6)')
+     &        VELOC,'Z',STOPP(3,IVEL,1)
+C
+      END DO
+C
+CClark:end
 C--------------------------------------------------
 C     Write <R**2> of molecular orbitals to output.
 C--------------------------------------------------

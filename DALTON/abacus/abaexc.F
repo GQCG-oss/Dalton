@@ -150,7 +150,14 @@ CKeinSPASmehr
 CClark:7/1/2016
    17          CONTINUE
                STOPPW = .TRUE.
-               READ (LUCMD,*) QMIN,QMAX,QSTEP 
+               READ (LUCMD,*) QMIN,QMAX,QSTEP
+               READ (LUCMD,*) VMIN,VMAX,VSTEP
+               LVEL = INT((VMAX-VMIN)/VSTEP+1.0001)
+CClark: QMAX reset by qmax=2*me*Vmax/hbar according to Bonderup)
+               WRITE (LUPRI,'(1A)')
+     &         'Qmax reset to 2*Vmax according to Bonderup'
+               QMAX = 2*VMAX
+               LQ   = INT((QMAX-QMIN)/QSTEP+1.0001)
                ICHANG = ICHANG + 1
                GO TO 100
 CClark:end
@@ -270,8 +277,11 @@ C
       END
 C  /* Deck excita */
       SUBROUTINE EXCITA(TRLEN,TRVEL,TQLEN,TQVEL,
-     &                  TRLON,TRMAG,BSRLON,TTLEN,EXENG,FONAC,
-     &                  FONA2,SECMAT,WORK,LWORK,PASS)
+     &                  TRLON,TRMAG,BSRLON,TTLEN,EXENG,
+CClark:11/01/2016
+     &                  BETHE,STOPP,
+CClark:end
+     &                  FONAC,FONA2,SECMAT,WORK,LWORK,PASS)
 C
 CSPAS:23/5-11: second and third moment sum rules added (in TTLEN)
 C
@@ -290,6 +300,9 @@ C
       DIMENSION TTLEN(10,NSYM,MXNEXI,*)
       DIMENSION TRLON(3,NSYM,MXNEXI,*), TRMAG(3,NSYM,MXNEXI,*)
       DIMENSION BSRLON(3,NSYM,MXNEXI,*),EXENG(NSYM,MXNEXI,*)
+CClark:11/01/2016
+      DIMENSION BETHE(3,LQ,*),STOPP(3,LVEL,*)
+CClark:end
       DIMENSION FONAC(3*NATOMS,NSYM,MXNEXI),FONA2(3*NATOMS,NSYM,MXNEXI)
       DIMENSION SECMAT(3,MXNEXI,NSYM)
 C
@@ -302,7 +315,11 @@ C
 C
       IF (AORPA .OR. AOHRP .OR. DCRPA .OR. AOSOP .OR. AOSOC) THEN
          CALL SO_EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,TRLON,TRMAG,
-     &                  BSRLON,SECMAT,EXENG,WORK,LWORK)
+     &                  BSRLON,SECMAT,EXENG,
+CClark:11/01/2016
+     &                  BETHE,STOPP,
+CClark:end
+     &                  WORK,LWORK)
       ELSE
          CALL EXCIT1(TRLEN,TRVEL,TQLEN,TQVEL,TTLEN,
      &               TRLON,TRMAG,BSRLON,EXENG,FONAC,FONA2,

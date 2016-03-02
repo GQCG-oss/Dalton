@@ -9,6 +9,8 @@ Cend-PFP
 CClark:7/1/2016
      &        STOPPW
       REAL*8          QMIN,QMAX,QSTEP
+      REAL*8          VMIN,VMAX,VSTEP
+      INTEGER         LQ,LVEL
 CClark:end
       PARAMETER       (MAXPP = 200)
       CHARACTER*8     LABAPP
@@ -16,6 +18,8 @@ CClark:end
       COMMON /CBIEXC/ THREXC,
 CClark:7/1/2016
      &                QMIN,QMAX,QSTEP,
+     &                VMIN,VMAX,VSTEP,
+     &                LQ,LVEL,
 CClark:end
      &                NEXCIT(8), MAXITE, MXNEXI, MXRM,
      &                MXPHP, NABAPP, IPREXC, IPR1IN,

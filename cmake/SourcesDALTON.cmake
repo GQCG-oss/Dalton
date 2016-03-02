@@ -717,6 +717,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_sort.F
     DALTON/soppa/so_sqait2.F
     DALTON/soppa/so_sres.F
+    DALTON/soppa/so_stoppw.F
     DALTON/soppa/so_t2m1.F
     DALTON/soppa/so_t2mp.F
     DALTON/soppa/so_test1.F
