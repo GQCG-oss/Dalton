@@ -154,14 +154,15 @@ add_dalton_runtest(prop_exci_aosoppa             "dalton;runtest;prop;aosoppa;sh
 add_dalton_runtest(prop_exci_aosoppcc            "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aorpa_direct        "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosopcc_direct      "dalton;runtest;prop;aosoppa;short")
-
+add_dalton_runtest(prop_alpha_aorpa              "dalton;runtest;prop;aosoppa;short")
+add_dalton_runtest(prop_alpha_aosoppa            "dalton;runtest;prop;aosoppa;short")
 
 add_dalton_runtest(prop_vibana                   "dalton;runtest;prop;medium")
 add_dalton_runtest(prop_expgrad                  "dalton;runtest;prop;dft;medium")
 add_dalton_runtest(prop_nucquad                  "dalton;runtest;prop;short")
 add_dalton_runtest(prop_roa                      "dalton;runtest;prop;medium")
-add_dalton_test(prop_exci_aorpa_sing             "dalton;prop;short")
-add_dalton_test(prop_exci_aorpa_trip             "dalton;prop;short")
+add_dalton_test(prop_exci_aorpa_sing             "dalton;prop;aosoppa;short")
+add_dalton_test(prop_exci_aorpa_trip             "dalton;prop;aosoppa;short")
 add_dalton_test(prop_exci_morpa_trip             "dalton;prop;short")
 
 add_dalton_runtest(rsp_cpp_mcd                   "dalton;runtest;rsp;dft;medium")

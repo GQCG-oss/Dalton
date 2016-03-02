@@ -526,7 +526,8 @@ C
 C Construct orbital property vector
 C
       IF (KZWOPT.GT.0) THEN
-         IF (SOPPA .AND. .NOT. HIRPA) THEN
+CRF         IF (SOPPA .AND. .NOT. HIRPA) THEN
+         IF (SOPPA) THEN
 C        ... make second order TMs in WRK(KPRPSE).
             CALL PRPOMP(WRK(KPRPMO),WRK(KPRPSE),UDV)
 C        ... CONSTRUCT TMS TO SECOND ORDER

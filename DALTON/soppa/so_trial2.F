@@ -19,6 +19,8 @@ C              new trial-vectors. These are orthonormalized against the
 C              privious optimal trial-vectors and among themself 
 C              including the ones obtained from pairing.
 C
+      use so_info, only: so_has_doubles, so_singles_second
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -40,7 +42,7 @@ C
       DIMENSION   EIVAL(LEIVAL), RESINM(LRESINM)
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION   WORK(LWORK)
-      LOGICAL IMAGPROP, DOUBLES
+      LOGICAL     IMAGPROP, DOUBLES, UNIT_S
 C
 C------------------
 C     Add to trace.
@@ -58,7 +60,10 @@ C
 C---------------------------------------------
 C     Does this method have doubles aplitudes?
 C---------------------------------------------
-      DOUBLES = (MODEL.EQ.'AOSOP') .OR. (MODEL.EQ.'AOSOC')
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
+C     S matrix is a unit matrix if we don't have second order singles
+C     contributions
+      UNIT_S = .NOT. SO_SINGLES_SECOND(MODEL)
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.  Notice that the RESULT and TRIAL
 C     vectors are of equal length and are chosen to use the same work
@@ -423,10 +428,10 @@ C     vector. Finally write the new trial vector to file.
 C----------------------------------------------------------------------
 C
       DTIME      = SECOND()
-      IF(.NOT.DOUBLES)THEN
+      IF(UNIT_S)THEN
          CALL RP_ORTH_TRN(LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,WORK,LWORK)
       ELSE   
-         CALL SO_ORTH_TRN(LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,
+         CALL SO_ORTH_TRN(DOUBLES,LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,
      &                    DENSIJ,LDENSIJ,
      &                    DENSAB,LDENSAB,WORK,LWORK)
       ENDIF

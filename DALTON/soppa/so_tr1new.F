@@ -1,6 +1,7 @@
 C
 C  /* Deck so_tr1new */
-      SUBROUTINE SO_TR1NEW(NNEWTR,POINT,LPOINT,ISYMTR,NEXCI,DENSIJ,
+      SUBROUTINE SO_TR1NEW(MODEL,NNEWTR,POINT,LPOINT,ISYMTR,NEXCI,
+     &                     DENSIJ,
      &                     LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -20,7 +21,9 @@ C     Section C pp. 4176
 C     SO_TR1NEW is called to create a brand new set of trial vectors for 
 C     SOPPA or SOPPA(CCSD) based on approximate diagonal elements of the 
 C     Hessian.
-
+C
+      use so_info, only : so_has_doubles, so_singles_second
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -29,22 +32,29 @@ C
 C
       PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, STHR = 1.0D-5)
 C
+      CHARACTER*5 MODEL
       INTEGER   POINT(LPOINT)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION WORK(LWORK)
+      LOGICAL   DOUBLES
 C
 C------------------
 C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_TR1NEW')
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
 C
 C---------------------------------
 C     1. allocation of work space.
 C---------------------------------
 C
       LEDIA1 = NT1AM(ISYMTR)
-      LEDIA2 = NT2AM(ISYMTR)
+      IF (DOUBLES) THEN
+         LEDIA2 = NT2AM(ISYMTR)
+      ELSE
+         LEDIA2 = 0
+      ENDIF
       LSDIA1 = NT1AM(ISYMTR)
 C
       KEDIA1  = 1
@@ -65,7 +75,7 @@ C
       REWIND LUDIAG
 C
       READ(LUDIAG) ( WORK(KEDIA1+I-1), I = 1,LEDIA1)
-      READ(LUDIAG) ( WORK(KEDIA2+I-1), I = 1,LEDIA2)
+      IF (DOUBLES) READ(LUDIAG) ( WORK(KEDIA2+I-1), I = 1,LEDIA2)
       READ(LUDIAG) ( WORK(KSDIA1+I-1), I = 1,LSDIA1)
 C
       CALL GPCLOSE (LUDIAG,'KEEP')
@@ -91,6 +101,7 @@ C
          END IF
 C
   100 CONTINUE
+
 C
 C---------------------------------
 C     2. allocation of work space.
@@ -130,17 +141,23 @@ C---------------------------------------------------------
 C     Create initial new trial vectors and write to files.
 C---------------------------------------------------------
 C
+      CALL DZERO(WORK(KTRIAL),LTRIAL)
       DO 200 INEWTR = 1, NNEWTR
 C
-         CALL DZERO(WORK(KTRIAL),LTRIAL)
 C
          CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
-         CALL SO_WRITE(WORK(KTRIAL+LEDIA1),LEDIA2,LUTR2D,FNTR2D,INEWTR)
+         IF (DOUBLES) THEN 
+            CALL SO_WRITE(WORK(KTRIAL+LEDIA1),LEDIA2,
+     &                                        LUTR2D,FNTR2D,INEWTR)
+         END IF
 C
          WORK( KTRIAL + POINT(INEWTR) - 1 ) = ONE
-C
          CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
-         CALL SO_WRITE(WORK(KTRIAL+LEDIA1),LEDIA2,LUTR2E,FNTR2E,INEWTR)
+         IF (DOUBLES) THEN
+            CALL SO_WRITE(WORK(KTRIAL+LEDIA1),LEDIA2,
+     &                                        LUTR2E,FNTR2E,INEWTR)
+         END IF
+         WORK( KTRIAL + POINT(INEWTR) - 1 ) = ZERO
 C
   200 CONTINUE
 C

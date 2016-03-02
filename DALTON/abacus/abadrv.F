@@ -25,6 +25,8 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
+      USE SO_INFO, ONLY: SO_NUM_ACTIVE_MODELS
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -361,7 +363,7 @@ C
      &                     WORK(KPOLDA),WORK(KPOLVL),WORK(KPOLVV),
      &                     WORK(KFOVIB),WORK(KLST1),LWRK1,PASLNR)
             ELSE
-               NMODEL = 4
+               NMODEL = so_num_active_models()
                KPOLDD = KLAST
                KPOLDQ = KPOLDD + 2*9*NFRVAL*NMODEL
                KPOLDL = KPOLDQ + 2*27*NFRVAL*NMODEL
@@ -410,9 +412,10 @@ C     ******************************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
       NMODEL = 1
-CPFP 2009-Jun NMODEL increased from 4 to 5
-      IF (AORPA .OR. AOHRP .OR. DCRPA 
-     &          .OR. AOSOP .OR. AOSOC) NMODEL = 5
+CRF  2016-Jan Set NMODEL to actual AOSOPPA methods
+      IF (AORPA .OR. AOHRP .OR. DCRPA
+     &          .OR. AOSOP .OR. AOSOC)
+     &         NMODEL = so_num_active_models()
       IF (DOEXCI .AND. .NOT. PASEXC) THEN
          KTRLEN = KLST1
          KTRVEL = KTRLEN + 3*NSYM*MXNEXI*NMODEL
@@ -1191,17 +1194,17 @@ C
   131    CONTINUE
             READ (LUCMD,*) (ORIGIN(ICOOR), ICOOR = 1,3)
          GOTO 100
-  132    CONTINUE
+  132    CONTINUE!   .NOMASV
             MASSVE = .FALSE.
          GOTO 100
-  133    CONTINUE
+  133    CONTINUE!   .MODARW
             DARWIN = .FALSE.
          GOTO 100
-  134    CONTINUE
+  134    CONTINUE!   .ALPHA
             ABA_ALPHA = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
-  135    CONTINUE
+  135    CONTINUE!   .VROA
             VROA   = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
@@ -1210,7 +1213,7 @@ C
             OPTROT = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
-  137    CONTINUE
+  137    CONTINUE!   .SOPPA(
             ABASOP = .TRUE.
             CCPPA  = .TRUE.
          GOTO 100
@@ -1231,7 +1234,7 @@ C
             READ (LUCMD,*) (DIPORG(ICOOR), ICOOR = 1, 3)
             DIPORG_SET = .TRUE.
          GOTO 100
- 143     CONTINUE
+ 143     CONTINUE!   .RAMAN
             RAMAN  = .TRUE.
             ABALNR = .TRUE.
          GOTO 100
@@ -1256,7 +1259,7 @@ cs
  149     CONTINUE
             MCD = .TRUE.
          GOTO 100
- 150     CONTINUE
+ 150     CONTINUE ! .SOPPA
             ABASOP = .TRUE.
          GOTO 100
  151     CONTINUE

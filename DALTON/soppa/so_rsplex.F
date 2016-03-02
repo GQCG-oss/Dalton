@@ -11,7 +11,7 @@ C
 C     PURPOSE: Drive the calculation and analysis of SOPPA and 
 C              SOPPA(CCSD) excitation energies and vectors.
 C
-      use so_info, only: so_full_name
+      use so_info, only: so_full_name, so_has_doubles
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -40,8 +40,7 @@ C------------------
 C
       CALL QENTER('SO_RSPLEX')
 C
-      DOUBLES = (MODEL.EQ.'AOSOC') .OR. (MODEL.EQ.'AOSOP') .OR.
-     &          (MODEL.EQ.'DCRPA') 
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
 C      
 C-----------------------------------------------
 C     Solve linear response equation

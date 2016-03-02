@@ -9,13 +9,21 @@ C     Stephan P. A. Sauer: 3.12.2003
 C     Rasmus Faber, October 2015: Added MPI
 C
 C     PURPOSE: Main driver routine for the calculation of frequency
-C              dependent linear response properties with the atomic 
+C              dependent linear response properties with the atomic
 C              integral direct SOPPA program.
+C
+      use so_info, only: sop_num_models,
+     &                   sop_models, sop_mod_fullname,
+     &                   so_num_active_models,
+     &                   so_get_active_models,
+     &                   so_has_doubles,
+     &                   so_singles_second,
+     &                   sop_dens_label, sop_model_rpad
 C
 #ifdef VAR_MPI
       use so_parutils, only: soppa_initialize_slaves,
-     &                       soppa_release_slaves 
-#endif         
+     &                       soppa_release_slaves
+#endif
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -26,7 +34,7 @@ C
 #include "ccsdsym.h"
 c#include "infdim.h"
 #include "inforb.h"
-C for irat 
+C for irat
 #include "iratdef.h"
 #include "maxaqn.h"
 C for mxshel, mxprim
@@ -40,19 +48,24 @@ c#include "wrkrsp.h"
 C
 c     PARAMETER (HALF = 0.5D0,ESUDIP = 64604.885D0,ESUECD = 471.44360D0)
 C
-      DIMENSION POLDD(2,3,3,NFRVAL,4), POLDQ(2,3,3,3,NFRVAL,4)
-      DIMENSION POLDL(2,3,3,NFRVAL,4), POLDA(2,3,3,NFRVAL,4)
+      DIMENSION POLDD(2,3,3,NFRVAL,*), POLDQ(2,3,3,3,NFRVAL,*)
+      DIMENSION POLDL(2,3,3,NFRVAL,*), POLDA(2,3,3,NFRVAL,*)
       DIMENSION WORK(LWORK)
 C
       CHARACTER*5 MODEL
       CHARACTER*8 LABEL1
+      CHARACTER*11 FULLNAME
+C
+      integer :: num_active
+      logical :: active_models(sop_num_models)
+      logical :: doubles, need_t2
 #ifdef VAR_MPI
 !
 ! This variable ensures that common blocks are only sent to the slaves
-! once. 
+! once.
       LOGICAL update_common_blocks, get_mxcall
       LOGICAL so_get_herdir, herdir, so_get_direct
-      
+
       update_common_blocks = .true.
       get_mxcall = .false.
 #endif
@@ -62,6 +75,14 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_LNRABA')
+C
+C
+C     Get the active models and their number
+      CALL SO_GET_ACTIVE_MODELS (ACTIVE_MODELS)
+      NUM_ACTIVE = COUNT ( ACTIVE_MODELS )
+C
+C     No RPA(D) properties
+      ACTIVE_MODELS(SOP_MODEL_RPAD) = .FALSE.
 C
 C-------------------------------------------
 C     Start timing the AO-SOPPA calculation.
@@ -85,15 +106,39 @@ C     If only RPA initialize some pointers and sort AO-integrals
 C     into distributions.
 C---------------------------------------------------------------
 C     On the flip side, this cause a crash if CC has been run
-      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP) 
-     &           .AND. (.NOT.AOSOC) ) THEN   
+      IF ( AORPA .AND. (.NOT.DCRPA) .AND. (.NOT.AOSOP)
+     &           .AND. (.NOT.AOSOC) .AND. (.NOT.AOHRP)) THEN
          CALL RP_INIT(WORK,LWORK)
 #ifdef VAR_MPI
-C     In pure aorpa calculations, eridi has not been initialized      
+C     In pure aorpa calculations, eridi has not been initialized
          herdir = so_get_herdir()
          get_mxcall = so_get_direct()
 #endif
       ENDIF
+
+#ifdef VAR_MPI
+C
+C In AORPA we cannot be sure that the number of integral distributions
+C is known in advance. This is needed in order to allocate memory for
+C load-distribution later on
+C
+      if (get_mxcall) then
+         if (herdir) then
+            call herdi1(work(1), lwork, iprint)
+         else
+            kccfbt  = 1
+            kindxbt = kccfbt + mxprim*mxcont
+            kend3   = kindxbt + 8*mxshel*mxcont/irat
+            lwork3 = lwork - kend3
+            call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
+     &                  krdbc1, krdbc2, kodpp1, kodpp2,
+     &                  krdpp1, krdpp2, kfree,  lfree,
+     &                  kend3, work(kccfbt), work(kindxbt),
+     &                  work(kend3), lwork3, iprint)
+            endif
+         get_mxcall = .false.
+      endif
+#endif
 C
 C---------------------------------------------------
 C     Initialize a few pointerarrays and dimensions.
@@ -110,8 +155,8 @@ C----------------------------------
 C
       IPRSOP = IPRLNR
 C
-      IF (IPRLNR .GE. 0) 
-     &     CALL TITLER('Solving Linear Response Equations','¤',118)
+      IF (IPRLNR .GE. 0)
+     &     CALL TITLER('Solving Linear Response Equations','#',118)
 C
 C---------------------------------
 C     1. allocation of work space.
@@ -123,7 +168,7 @@ C
       KEND1   = KFOCKD  + LFOCKD
       LWORK1  = LWORK   - KEND1
 C
-      IF (DCRPA .OR. AOSOP .OR. AOSOC) THEN
+      IF (DCRPA .OR. AOSOP .OR. AOHRP .OR. AOSOC) THEN
 C
          LT2AM   = NT2AMX
          LDENSIJ = NIJDEN(1)
@@ -136,8 +181,19 @@ C
          KDENSAI = KDENSAB + LDENSAB
          KEND1   = KDENSAI + LDENSAI
          LWORK1  = LWORK   - KEND1
-C
+      ELSE
+         LT2AM   = 0
+         LDENSIJ = 0
+         LDENSAB = 0
+         LDENSAI = 0
+C        Force a crash of this is used
+         KT2AM   = LWORK + 1
+         KDENSIJ = LWORK + 1
+         KDENSAB = LWORK + 1
+         KDENSAI = LWORK + 1
       END IF
+C
+C
 C
       CALL SO_MEMMAX ('SO_LNRABA.1',LWORK1)
       IF (LWORK1 .LT .0) CALL STOPIT('SO_LNRABA.1',' ',KEND1,LWORK)
@@ -162,10 +218,10 @@ C     Initialize arrays of transition moments and excitation energies.
 C---------------------------------------------------------------------
 C
 C      CALL DZERO(SNDPRP,2)
-      CALL DZERO(POLDD,2*9*NFRVAL*4)
-      CALL DZERO(POLDQ,2*27*NFRVAL*4)
-      CALL DZERO(POLDL,2*9*NFRVAL*4)
-      CALL DZERO(POLDA,2*9*NFRVAL*4)
+      CALL DZERO(POLDD,2*9*NFRVAL*NUM_ACTIVE)
+      CALL DZERO(POLDQ,2*27*NFRVAL*NUM_ACTIVE)
+      CALL DZERO(POLDL,2*9*NFRVAL*NUM_ACTIVE)
+      CALL DZERO(POLDA,2*9*NFRVAL*NUM_ACTIVE)
 C
 C==========================================
 C     Determine linear response properties.
@@ -180,7 +236,7 @@ C
 C
          NSAVMX = 2
 C
-         WRITE(LUPRI,'(1X,A,/,A,I2,A)') 
+         WRITE(LUPRI,'(1X,A,/,A,I2,A)')
      &   'NOTICE: Maximum number of trial vectors for each'//
      &   ' property',' is raised to',NSAVMX, ' as this is'//
      &   ' minimal space allowed.'
@@ -200,144 +256,48 @@ C
          DO 100 IOPER = 1, NOPER(ISYM)
 C
             LABEL1 = LABOP(IOPER,ISYM)
-            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
-            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
-            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
+C Do only for DIPLEN?
+            IF (LABEL1(2:7).NE.'DIPLEN') CYCLE
+
+CRF is there a common pattern here?
+            IDIP = ICHAR(LABEL1(1:1)) - ICHAR('X') + 1
+
+C            IF (LABEL1 .EQ.'XDIPLEN') IDIP = 1
+C            IF (LABEL1 .EQ.'YDIPLEN') IDIP = 2
+C            IF (LABEL1 .EQ.'ZDIPLEN') IDIP = 3
 C
             ISYMTR = ISYM
 C
-C====================================
-C           For RPA do the following.
-C====================================
+C========================================
+C           Loop over the posible methods
+C========================================
 C
-            IF (AORPA) THEN
+            IOUT = 1
 C
-               MODEL = 'AORPA'
+            DO IMODEL = 1, SOP_NUM_MODELS
 C
-               IF (IPRSOP .GE. 3) THEN
+C  Skip methods not treated in this calcultion
+               IF (.NOT.ACTIVE_MODELS(IMODEL) ) CYCLE
+C
+C  Look up info on this model
+C
+               MODEL = SOP_MODELS(IMODEL)
+               FULLNAME = SOP_MOD_FULLNAME(IMODEL)
+               DOUBLES = SO_HAS_DOUBLES(IMODEL)
+               NEED_T2 = DOUBLES.OR.SO_SINGLES_SECOND(MODEL)
+C
+               IF (IPRSOP .GE. 1) THEN
                   WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A,2(/A,I8))') 'RPA:',
+                  WRITE(LUPRI,'(1X,A,2(/A,I8))') TRIM(FULLNAME)//':',
      &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h + h-p variables.      :',2*NT1AM(ISYM)
-                  WRITE(LUPRI,9001)
-               END IF
-#ifdef VAR_MPI
-C
-C---------------------------------------------------------
-C              Ready the slaves for parallel calculations.
-C---------------------------------------------------------
-C
-C In AORPA we cannot be sure that the number of integral distributions
-C is known in advance. This is needed in order to allocate memory for
-C load-distribution later on
-               if (get_mxcall) then
-                  if (herdir) then
-                     call herdi1(work(kend1), lwork1, iprint)
-                  else 
-                     kccfbt  = kend1
-                     kindxbt = kccfbt + mxprim*mxcont
-                     kend3   = kindxbt + 8*mxshel*mxcont/irat
-                     lwork3 = lwork - kend3
-                     call eridi1(kodcl1, kodcl2, kodbc1, kodbc2,
-     &                           krdbc1, krdbc2, kodpp1, kodpp2,
-     &                           krdpp1, krdpp2, kfree,  lfree,
-     &                           kend3, work(kccfbt), work(kindxbt),
-     &                           work(kend3), lwork3, iprint)
-                  endif
-                  get_mxcall = .false.
-               endif
-C Note that for rpa, the second and third argument should be ignored
-               call soppa_initialize_slaves ( update_common_blocks,
-     &                                        WORK(KEND1), 1, model)
-               update_common_blocks = .false.
-#endif
-C
-C------------------------------------------------------------------
-C              Determine RPA solution vectors for the given operator
-C              and set of frequencies.
-C------------------------------------------------------------------
-C
-C               CALL RP_RSPLEQ(ISYMTR,LABEL1,FRVAL,NFRVAL,WORK(KFOCKD),
-C     &                        LFOCKD,WORK(KEND1),LWORK1)
-               CALL SO_RSPLEQ(MODEL,LABEL1,ISYMTR,FRVAL,NFRVAL,
-     &                        DUMMY,0,DUMMY,0,DUMMY,0,
-     &                        DUMMY,0,WORK(KFOCKD),
-     &                        LFOCKD,WORK(KEND1),LWORK1)
-               
-C
-C----------------------------------------------
-C              Calculate second order property.
-C----------------------------------------------
-C
-               CALL SO_POLAR(MODEL,ISYMTR,IDIP,LABEL1,DUMMY,1,DUMMY,1,
-     &                       DUMMY,1,
-     &                       DUMMY,1,POLDD(1,1,1,1,1),
-     &                       POLDQ(1,1,1,1,1,1),POLDL(1,1,1,1,1),
-     &                       POLDA(1,1,1,1,1),WORK(KEND1),LWORK1)
-#ifdef VAR_MPI
-C-------------------------------------------------------
-C              Release slaves to the global node-driver.
-C-------------------------------------------------------
-               call soppa_release_slaves()
-#endif
-
-C
-            END IF
-CPFP  2009 Implementation of AOHRP to be done ??
-            IF (AOHRP) THEN
-C
-C
-               IF (IPRSOP .GE. 3) THEN
-                  WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A,2(/A,I8))') 'RPA:',
-     &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h + h-p variables.      :',2*NT1AM(ISYM)
-                  WRITE(LUPRI,9001)
-               END IF
-C
-C------------------------------------------------------------------
-C              Determine RPA solution vectors for the given operator
-C              and set of frequencies.
-C------------------------------------------------------------------
-C
-c               CALL RP_RSPLEQ(ISYMTR,LABEL1,FRVAL,NFRVAL,WORK(KFOCKD),
-c     &                        LFOCKD,WORK(KEND1),LWORK1)
-C
-C----------------------------------------------
-C              Calculate second order property.
-C----------------------------------------------
-C
-c               CALL SO_POLAR(ISYMTR,IDIP,LABEL1,DUMMY,1,DUMMY,1,DUMMY,1,
-c     &                       DUMMY,1,POLDD(1,1,1,1,1),
-c     &                       POLDQ(1,1,1,1,1,1),POLDL(1,1,1,1,1),
-c     &                       POLDA(1,1,1,1,1),WORK(KEND1),LWORK1)
-c
-C
-            END IF
+     &            ' p-h + h-p variables       :',2*NT1AM(ISYM)
+                  IF (DOUBLES) THEN
+                     NVARPT = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+                     WRITE(LUPRI,'(A,I8,/A,I8)')
+     &               ' 2p-2h + 2h-2p variables   :',2*NT2AM(ISYM),
 Cend-PFP
-C
-C======================================
-C           For SOPPA do the following.
-C======================================
-C
-            IF (AOSOP) THEN
-C
-               MODEL = 'AOSOP'
-CPFP   2009-Jun
-               NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-C               NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
-Cend-PFP
-               IF (IPRSOP .GE. 3) THEN
-                  WRITE(LUPRI,9000)
-                  WRITE(LUPRI,'(1X,A)') 'SOPPA:'
-                  WRITE(LUPRI,'(3(A,I8,/),A,I8)')
-     &            ' Perturbation symmetry     :',ISYM,
-     &            ' p-h variables.            :',2*NT1AM(ISYM),
-CPFP   2009-Jun
-     &            ' 2p-2h variables.          :',2*NT2AM(ISYM),
-C     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM),
-Cend-PFP
-     &            ' Total number of variables :',NVARPT
+     &               ' Total number of variables :',NVARPT
+                  ENDIF
                   WRITE(LUPRI,9001)
                END IF
 C
@@ -345,25 +305,23 @@ C-----------------------------------------------------
 C              Get T2 amplitudes and density matrices.
 C-----------------------------------------------------
 C
-               CALL SO_GETT2('MP2 ',WORK(KT2AM),LT2AM,WORK(KDENSAI),
-     &                       LDENSAI,WORK(KDENSIJ),LDENSIJ,
-     &                       WORK(KDENSAB),LDENSAB,WORK(KEND1),LWORK1)
+               IF(NEED_T2) THEN
+                  CALL SO_GETT2(sop_dens_label(imodel),
+     &                          WORK(KT2AM),LT2AM,WORK(KDENSAI),
+     &                          LDENSAI,WORK(KDENSIJ),LDENSIJ,
+     &                          WORK(KDENSAB),LDENSAB,
+     &                          WORK(KEND1),LWORK1)
+               END IF
+#ifdef VAR_MPI
 C
 C---------------------------------------------------------
 C              Ready the slaves for parallel calculations.
 C---------------------------------------------------------
 C
-#ifdef VAR_MPI
                call soppa_initialize_slaves ( update_common_blocks,
-     &                                       WORK(KT2AM), LT2AM, model) 
+     &                                       WORK(KT2AM), LT2AM, model)
                update_common_blocks = .false.
 #endif
-C
-C--------------------------------
-C              Initialize DENSAI. Currently done in rspleq
-C--------------------------------
-C
-C               CALL DZERO(WORK(KDENSAI),LDENSAI) 
 C
 C------------------------------------------------------------------
 C              Determine SOPPA excitation energies and excitation
@@ -381,11 +339,12 @@ C----------------------------------------------
 C              Calculate second order property.
 C----------------------------------------------
 C
-               CALL SO_POLAR(MODEL,ISYMTR,IDIP,LABEL1,WORK(KT2AM),LT2AM,
+               CALL SO_POLAR(MODEL,ISYMTR,IDIP,LABEL1,NLBTOT,
+     &                       WORK(KT2AM),LT2AM,
      &                       WORK(KDENSIJ),LDENSIJ,WORK(KDENSAB),
      &                       LDENSAB,WORK(KDENSAI),LDENSAI,
-     &                       POLDD(1,1,1,1,2),POLDQ(1,1,1,1,1,2),
-     &                       POLDL(1,1,1,1,2),POLDA(1,1,1,1,2),
+     &                       POLDD(1,1,1,1,IOUT),POLDQ(1,1,1,1,1,IOUT),
+     &                       POLDL(1,1,1,1,IOUT),POLDA(1,1,1,1,IOUT),
      &                       WORK(KEND1),LWORK1)
 #ifdef VAR_MPI
 C-------------------------------------------------------
@@ -393,11 +352,14 @@ C              Release slaves to the global node-driver.
 C-------------------------------------------------------
                call soppa_release_slaves()
 #endif
+C              INCREMENT OUTPUT POINTER
+               IOUT = IOUT + 1
 C
-            END IF
-C     
+            END DO
+
+C
   100    CONTINUE
-C     
+C
   200 CONTINUE
 C
 C---------------------------------
@@ -428,8 +390,6 @@ C
 C-----------------------
 C     Remove from trace.
 C-----------------------
-C
-      CALL FLSHFO(LUPRI)
 C
       CALL QEXIT('SO_LNRABA')
 C

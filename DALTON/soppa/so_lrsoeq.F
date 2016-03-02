@@ -36,7 +36,8 @@ C
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
-      use so_info, only: sop_linres, so_full_name, so_has_doubles
+      use so_info, only: sop_linres, so_full_name, so_has_doubles,
+     &                   so_needs_densai
 
 #include "implicit.h"
 #ifdef VAR_MPI
@@ -193,8 +194,8 @@ C
 C     At the moment SO_ERES will allways calculate DENSAI
 C     when NIT == 1, it has no sense of "IFREQ". Zeroing it 
 C     here will compensate
-      IF( MODEL .EQ. 'AOSOP' ) 
-     &   CALL DZERO(DENSAI, LDENSAI)
+      IF ( SO_NEEDS_DENSAI(MODEL) ) 
+     &    CALL DZERO(DENSAI, LDENSAI)
 C
 C----------------------------------------------------------------------
 C     Iteration loop or solving the linear equation/eigenvalue problem
@@ -278,7 +279,8 @@ C
 C
          END IF
 C
-         IF((NIT.EQ.1).AND.(IFREQ.EQ.1).AND.(MODEL.EQ.'AOSOP')) THEN
+         IF((NIT.EQ.1).AND.(IFREQ.EQ.1).AND.
+     &                   SO_NEEDS_DENSAI(MODEL) ) THEN
 C
 C-----------------------------------------------------------------------
 C          Calculate the gradient property vectors with the right DENSAI
@@ -287,7 +289,8 @@ C          Only the one-partcle part need to be re-done ->
 C          Maybe pass in MODEL = 'AOHRP'?
            LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
-           LGPVC2  =  NT2AM(ISYMTR)
+C           LGPVC2  =  NT2AM(ISYMTR)
+           LGPVC2 = 0
 C           LGPVC2  = 2 * N2P2HOP(ISYMTR)
 Cend-PFP
            KGPVC1  = KEND1
@@ -299,7 +302,7 @@ C
            IF (LWORK2 .LT.0) CALL STOPIT('SO_LRSOEQ.2',' ',KEND2,LWORK)
 C
            CALL SO_GETGP(WORK(KGPVC1),LGPVC1,WORK(KGPVC2),LGPVC2,LABEL,
-     &                  ISYMTR,IMAGPROP2,MODEL,
+     &                  ISYMTR,IMAGPROP2,'AOHRP',
      &                  T2MP,LT2MP,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                  DENSAI,LDENSAI,WORK(KEND2),LWORK2)
            IF ( .NOT.(IMAGPROP.EQV.IMAGPROP2) ) 
@@ -310,10 +313,10 @@ C          Save the complete property gradients on a file.
 C---------------------------------------------------------
 C
            CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
-           CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
+C           CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
 C
            CALL SO_WRITE(WORK(KGPVC1),LGPVC1,LUGPV1,FNGPV1,1)
-           CALL SO_WRITE(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
+C           CALL SO_WRITE(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
 C
            IF(IPRSOP.GE.5) THEN
 C              LGPVC1H = LGPVC1 /2
@@ -321,11 +324,11 @@ C              LGPVC2H = LGPVC2 /2
               CALL AROUND('In SO_LRSOEQ:  '//MODEL//
      &                    ' gradient property vector.'//LABEL)
               CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
-              CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
+C              CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
            ENDIF
 C     
            CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
-           CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
+C           CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
 C
          ENDIF
 C
@@ -397,7 +400,7 @@ C---------------------------------------
 C        Flush the standard output file.
 C---------------------------------------
 C
-         CALL FLSHFO(LUPRI)
+C         CALL FLSHFO(LUPRI)
 C
 C---------------------------------------------------------------------
 C     Go to next iteration if the solution vector is not converged and

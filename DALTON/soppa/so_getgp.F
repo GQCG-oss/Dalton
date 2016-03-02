@@ -38,7 +38,7 @@ C
 #include "ccsdsym.h"
 #include "soppinf.h"
 C
-      PARAMETER   (ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER   (ONE = 1.0D0, TWO = 2.0D0, SQ2 = DSQRT(TWO) )
       DIMENSION   GPVC1(LGPVC1), GPVC2(LGPVC2), T2AM(LT2AM)
       DIMENSION   DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION   WORK(LWORK)
@@ -50,7 +50,7 @@ C
      &          .OR.MODEL.EQ.'DCRPA'
       LGPVC1H = LGPVC1 
       IF(DOUBLES) LGPVC2H = LGPVC2 
-      SQ2 = DSQRT(TWO)
+C      SQ2 = DSQRT(TWO)
 C
 C------------------
 C     Add to trace.

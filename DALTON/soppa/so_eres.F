@@ -27,7 +27,7 @@ C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
       use so_info, only: so_singles_first, so_singles_second, 
-     &                   so_has_doubles
+     &                   so_has_doubles, so_needs_densai
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
@@ -73,7 +73,7 @@ C
 #include "soppinf.h"
 
 
-      logical :: singles_first, singles_second, doubles  
+      logical :: singles_first, singles_second, doubles, calc_densai  
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
@@ -90,7 +90,8 @@ C  average?
        loadbal_dyn = .false.
        if (nit .eq. 1) loadbal_dyn = .true.
 #endif
-
+C
+      calc_densai = (NIT.EQ.1) .AND. SO_NEEDS_DENSAI(MODEL)
 C
 C------------------
 C     Add to trace.
@@ -102,8 +103,7 @@ C
       CALL QENTER('SO_ERES')
 #ifdef VAR_MPI
 C     Slaves need to zero DENSAI if it is (re)calculated.      
-      elseif ( (MODEL .EQ.'AOSOP'.OR.MODEL .EQ. 'DCRPA')
-     &                   .AND. NIT .EQ. 1) THEN
+      elseif ( calc_densai ) THEN
          CALL DZERO(DENSAI,LDENSAI)
       endif
 #endif
@@ -383,9 +383,10 @@ C        Backtransformation of trial vectors.
 C--------------------------------------------
 C
          DTIME     = SECOND()
-         CALL SO_BCKTR(WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,WORK(KBTR1E),
-     &                 LBTR1E,WORK(KBTR1D),LBTR1D,WORK(KBTJ1E),LBTJ1E,
-     &                 WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,ISYMTR)
+         CALL SO_BCKTR(WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
+     &                 WORK(KBTR1E),LBTR1E,WORK(KBTR1D),LBTR1D,
+     &                 WORK(KBTJ1E),LBTJ1E,WORK(KBTJ1D),LBTJ1D,
+     &                 WORK(KCMO),LCMO,ISYMTR)
          DTIME     = SECOND()  - DTIME
          SOTIME(7) = SOTIME(7) + DTIME
 
@@ -583,7 +584,8 @@ C---------------------------------------------
 C
                   ISAIJ = MULD2H(ISYMD,1)
 C
-                  IF (NVIR(ISYMD) .GT. 0 .AND. DOUBLES) THEN
+                  IF ((NVIR(ISYMD) .GT. 0) .AND.
+     &                (DOUBLES.OR.SINGLES_SECOND) ) THEN
                      LT2M1 = NT2BCD(ISAIJ)
                   ELSE
                      LT2M1 = 0
@@ -593,11 +595,11 @@ C
                   KEND4   = KT2M1  + LT2M1
                   LWORK4  = LWORK  - KEND4
 C
-                  CALL SO_MEMMAX ('SO_ERES.4',LWORK4)
-                  IF (LWORK4 .LT. 0) 
-     &                CALL STOPIT('SO_ERES.4',' ',KEND4,LWORK)
+                  IF (DOUBLES.OR.SINGLES_SECOND) THEN
+                     CALL SO_MEMMAX ('SO_ERES.4',LWORK4)
+                     IF (LWORK4 .LT. 0) 
+     &                   CALL STOPIT('SO_ERES.4',' ',KEND4,LWORK)
 C                   
-                  IF (DOUBLES) THEN
 C
 C------------------------------------------------------------
 C                    Construct the partially back-transformed T2
@@ -643,8 +645,7 @@ C                 Calculate part of the second order density matrix.
 C-------------------------------------------------------------------
 C
                   DTIME      = SECOND()
-                  IF ( (MODEL.EQ.'AOSOP'.OR.MODEL.EQ.'DCRPA') .AND. 
-     &                           (NIT.EQ.1) .AND. (  INEWTR.EQ.1) ) THEN
+                  IF ( calc_densai .AND. (  INEWTR.EQ.1 ) ) THEN
                      CALL SO_DENSAI1(DENSAI,LDENSAI,WORK(KDSRHF),LDSRHF,
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
      &                               ISYMD,ISYDIS,WORK(KEND5),
@@ -683,15 +684,16 @@ C----------------------------------------------------------------------
 C
 
 
-                  DTIME      = SECOND()
-                  CALL SO_RES_A(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                          WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
-     &                          WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
-     &                          WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
-     &                          WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
-     &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(14) = SOTIME(14) + DTIME
+                     DTIME      = SECOND()
+                     CALL SO_RES_A(WORK(KRES1E),LRES1E,
+     &                             WORK(KRES1D),LRES1D,
+     &                             WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
+     &                             WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
+     &                             WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
+     &                             WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
+     &                             ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(14) = SOTIME(14) + DTIME
                   ENDIF
 C
                   IF (DOUBLES) THEN
@@ -702,14 +704,15 @@ C                 RES1D which originate from the C matrices. See
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
 C
-                  DTIME      = SECOND()
-                  CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
-     &                            LRES1D,WORK(KTR2E),LTR2E,
-     &                            WORK(KTR2D),LTR2D,WORK(KDSRHF),LDSRHF,
-     &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                            ISYMTR,WORK(KEND5),LWORK5)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(29) = SOTIME(29) + DTIME
+                     DTIME      = SECOND()
+                     CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
+     &                               LRES1D,WORK(KTR2E),LTR2E,
+     &                               WORK(KTR2D),LTR2D,
+     &                               WORK(KDSRHF),LDSRHF,
+     &                               WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                               ISYMTR,WORK(KEND5),LWORK5)
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(29) = SOTIME(29) + DTIME
 
 C
 C----------------------------------------------------------------------
@@ -717,16 +720,18 @@ C                 Construct C-contribution to 2p2h result vectors RES2E
 C                 and RES2D.
 C----------------------------------------------------------------------
 C
-                  DTIME      = SECOND()
-                  CALL SO_RES_CB(WORK(KRES2E),LRES2E,WORK(KRES2D),
-     &                          LRES2D,
-     &                          WORK(KDSRHF),LDSRHF,WORK(KBTR1E),LBTR1E,
-     &                          WORK(KBTR1D),LBTR1D,WORK(KBTJ1E),LBTJ1E,
-     &                          WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                          IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
-     &                          LWORK5)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(15) = SOTIME(15) + DTIME
+                     DTIME      = SECOND()
+                     CALL SO_RES_CB(WORK(KRES2E),LRES2E,WORK(KRES2D),
+     &                             LRES2D,
+     &                             WORK(KDSRHF),LDSRHF,
+     &                             WORK(KBTR1E),LBTR1E,
+     &                             WORK(KBTR1D),LBTR1D,
+     &                             WORK(KBTJ1E),LBTJ1E,
+     &                             WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+     &                             IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
+     &                             LWORK5)
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(15) = SOTIME(15) + DTIME
 C                  
                   ENDIF
 C
@@ -737,30 +742,36 @@ C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
 C                 are used in SO_RES_B.
 C--------------------------------------------------------------------
 C
-                  DTIME      = SECOND()
-                  CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),
-     &                          LSIGAI2,WORK(KT2M1),LT2M1,WORK(KXINT),
-     &                          LXINT,WORK(KBTR1E),LBTR1E,WORK(KBTR1D),
-     &                          LBTR1D,WORK(KBTJ1E),LBTJ1E,WORK(KBTJ1D),
-     &                          LBTJ1D,WORK(KCMO),LCMO,ISYMD,ISYDIS,
-     &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(16) = SOTIME(16) + DTIME
+                     DTIME      = SECOND()
+                     CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),
+     &                             LSIGAI2,
+     &                             WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
+     &                             WORK(KBTR1E),LBTR1E,
+     &                             WORK(KBTR1D),LBTR1D,
+     &                             WORK(KBTJ1E),LBTJ1E,
+     &                             WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+     &                             ISYMD,ISYDIS,
+     &                             ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(16) = SOTIME(16) + DTIME
 C
 C--------------------------------------------------------------------
-C                 Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
-C                 are used SO_RES_C.
+C                    Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
+C                 are used    SO_RES_C.
 C--------------------------------------------------------------------
 C
-                  DTIME      = SECOND()
-                  CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),
-     &                          LSIGDA2,T2MP,LT2MP,WORK(KDSRHF),LDSRHF,
-     &                          WORK(KBTR1E),LBTR1E,WORK(KBTR1D),LBTR1D,
-     &                          WORK(KBTJ1E),LBTJ1E,WORK(KBTJ1D),LBTJ1D,
-     &                          WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                          ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(17) = SOTIME(17) + DTIME
+                     DTIME      = SECOND()
+                     CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
+     &                             WORK(KSIGDA2),LSIGDA2,
+     &                             T2MP,LT2MP,WORK(KDSRHF),LDSRHF,
+     &                             WORK(KBTR1E),LBTR1E,
+     &                             WORK(KBTR1D),LBTR1D,
+     &                             WORK(KBTJ1E),LBTJ1E,
+     &                             WORK(KBTJ1D),LBTJ1D,
+     &                             WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                             ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+                     DTIME      = SECOND()   - DTIME
+                     SOTIME(17) = SOTIME(17) + DTIME
 
                   ENDIF
 C
@@ -993,8 +1004,7 @@ C
 C-----------------------------------------------------------
 C     Communicate the second order density matrix if needed.
 C-----------------------------------------------------------
-      IF ( (MODEL .EQ. 'AOSOP') .AND. 
-     &     (NIT .EQ. 1)              ) THEN
+      IF ( CALC_DENSAI ) THEN
          IF (MYNUM.EQ.0) THEN
             CALL MPI_REDUCE( MPI_IN_PLACE, DENSAI, LDENSAI, MPI_REAL8,
      &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, IERR)
@@ -1049,8 +1059,7 @@ C     Calculate the last part of the second order density matrix.
 C----------------------------------------------------------------
 C
       DTIME      = SECOND()
-      IF ( (MODEL .EQ. 'AOSOP')   .AND.
-     &     (NIT .EQ. 1)         )  THEN
+      IF ( CALC_DENSAI )  THEN
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
       END IF
 C

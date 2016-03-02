@@ -96,21 +96,22 @@ C---------------------------------------------------------
 C     Create initial new trial vectors and write to files.
 C---------------------------------------------------------
 C
-      CALL SO_OPEN(LUTR1E,FNTR1E,LEDIA1)
-      CALL SO_OPEN(LUTR1D,FNTR1D,LEDIA1)
+      IF (NNEWTR.GT.0) THEN
+         CALL SO_OPEN(LUTR1E,FNTR1E,LEDIA1)
+         CALL SO_OPEN(LUTR1D,FNTR1D,LEDIA1)
 C
-      CALL DZERO(WORK(KTRIAL),LTRIAL)
-      DO 200 INEWTR = 1, NNEWTR
+         CALL DZERO(WORK(KTRIAL),LTRIAL)
+         DO 200 INEWTR = 1, NNEWTR
 C
-         CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1D,FNTR1D,INEWTR)
 C
-         WORK( KTRIAL + POINT(INEWTR) - 1 ) = ONE
+            WORK( KTRIAL + POINT(INEWTR) - 1 ) = ONE
 C
-         CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
+            CALL SO_WRITE(WORK(KTRIAL),LEDIA1,LUTR1E,FNTR1E,INEWTR)
 CRF let's only zero the relevant element...
-         WORK( KTRIAL + POINT(INEWTR) - 1 ) = 0.0D0
+            WORK( KTRIAL + POINT(INEWTR) - 1 ) = 0.0D0
 C
-  200 CONTINUE
+  200    CONTINUE
 C
 C      IF ( IPRSOP .GE. 6 ) THEN
 C
@@ -138,9 +139,9 @@ C-----------------------------------------------
 C
 CRF Is this needed? In the current way of making the guess, it seems 
 CRF that the vectors must be orthogonal already.
-      NLINDP = 0
-      NOLDTR = 0
-      CALL RP_ORTH_TRN('EXCITA',NOLDTR,NNEWTR,NLINDP,ISYMTR,WORK,LWORK)
+         NLINDP = 0
+         NOLDTR = 0
+C      CALL RP_ORTH_TRN('EXCITA',NOLDTR,NNEWTR,NLINDP,ISYMTR,WORK,LWORK)
 C
 C      IF ( IPRSOP .GE. 6 ) THEN
 C
@@ -166,8 +167,9 @@ C------------------------------------
 C     Close files with trial vectors.
 C------------------------------------
 C
-      CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
-      CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+         CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
+         CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
+      ENDIF
 C
 C-----------------------
 C     Remove from trace.

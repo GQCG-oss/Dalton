@@ -70,14 +70,19 @@ the CC2 model, and although they all three are of at least second order
 in all terms they differ in the terms included. The SOPPA(CC2) and
 SOPPA(CCSD) models are thus not implemented in the \cc\ module but are
 implemented in the \response\ and \abacus\ modules of the \dalton\ program,
-using the same code as SOPPA. Starting with Dalton2011 a second
+using the same code as SOPPA.
+
+Starting with Dalton2011 a second
 implementation of the SOPPA equations is available which makes use of
 an atomic integral direct algorithm thereby avoiding the storage of the
 two-electron repulsion integrals in the molecular orbital basis
 \cite{spas025, spas037, spas089}. This implementation can currently be
-used to calculate singlet electronic excitation energies and
-corresponding transition moments and oscillator strengths using the
-SOPPA, SOPPA(CCSD) and RPA(D) models.\index{RPA(D)}
+used to calculate singlet electronic excitation energies, transition 
+moments and dynamic polarizabilities using the
+SOPPA, SOPPA(CCSD), HRPA and RPA(D) models.\index{RPA(D)}
+An advantage of the atomic integral direct implementation is that it has 
+been parallelized with MPI, and thus can be run in parallel if Dalton has
+been compiled with MPI support.
 
 
 \section{Input description molecular orbital based SOPPA}\label{sec:soppainput}
@@ -287,19 +292,21 @@ correlation coefficients or the CCSD singles and doubles amplitudes.
 This is invoked by the keyword \Key{CC} in the \Sec{*WAVE FUNCTIONS}
 input module together with the keywords \Key{MP2} and \Key{AO-SOPPA} or
 \Key{CCSD} and \Key{AO-SOPPA} in \Sec{CC INPUT} section of the
-\Sec{*WAVE FUNCTIONS} input module. Furthermore in the
-\Sec{*PROPERTIES} input module it has to be specified by the keywords
-\Key{SOPPA} and \Key{EXCITA} that a SOPPA calculation of optical
-properties should be carried out. Finally in the \Sec{SOPPA} section of
-the \Sec{*PROPERTIES} input module the atomic integral direct
-calculation has to be invoked by the one of the three keywords
-\Key{AOSOP}, \Key{DCRPA}  or \Key{AOSOC} for either a SOPPA, RPA(D) or
-SOPPA(CCSD) calculation. Alternatively an atomic integral direct SOPPA
-or SOPPA(CCSD) calculation can be invoked by adding the \Key{DIRECT}
-keyword in the \Sec{SOPPA} section of the \Sec{*PROPERTIES} input
-module in addition to the \Key{SOPPA} and \Key{EXCITA} or
-\Key{SOPPA(CCSD)} and \Key{EXCITA} keywords in the \Sec{*PROPERTIES}
-input module. Further keywords, which control the details of an atomic
+\Sec{*WAVE FUNCTIONS} input module. 
+
+There are two ways of requesting that the calculation use the atomic 
+orbital based approach. 
+For SOPPA and SOPPA(CCSD) one can specify the 
+appropriate keyword as normal in the \Sec{*PROPERTIES} input module
+and \Key{DIRECT} in the \Sec{SOPPA} section. 
+Alternatively if \Key{SOPPA} is specified in \Sec{*PROPERTIES}, one 
+can overwrite the method actually used in the \Sec{SOPPA} section by using
+\Key{AOSOP}, \Key{DCRPA}, \Key{AOHRP}  or \Key{AOSOC} for either a 
+SOPPA, RPA(D), HRPA or SOPPA(CCSD) calculation using the AO based approach.
+The advantage of the latter approach is that the method specification is 
+non-exclusive, so several different response calculations can be 
+carried out as part of the same Dalton job. 
+Further keywords, which control the details of an atomic
 orbital direct SOPPA, RPA(D) or SOPPA(CCSD) calculation, are described
 in chapter \ref{sec:soppa}.
 

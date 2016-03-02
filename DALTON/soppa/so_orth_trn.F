@@ -1,6 +1,6 @@
 C
 C  /* Deck so_orth_trn */
-      SUBROUTINE SO_ORTH_TRN(LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,
+      SUBROUTINE SO_ORTH_TRN(DOUBLES,LTYPE,NOLDTR,NNEWTR,NLINDP,ISYMTR,
      &                       DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                       WORK,LWORK)
 C
@@ -31,7 +31,7 @@ C
       LOGICAL   DOUBLES
 C
       CHARACTER*6 LTYPE
-      DOUBLES = .TRUE.
+C     DOUBLES = .TRUE.
 C
 C------------------
 C     Add to trace.
@@ -111,56 +111,6 @@ C
          ITURN = 0
 C
 C         IF(LTYPE.EQ.'LINEAR') THEN
-         IF (.FALSE.) THEN
-C
-C-----------------------------------------------------------------------
-C        For zero frequency linear response, the result will
-C        be Z = Y for real perturbations and Z = -Y for imaginary
-C        perturbations; trial vectors will have the same structure.
-C
-C
-C        However, if Z = Y or Z = -Y then (Z Y) and (Y Z) are linear
-C        dependent and we want instead (Z 0) and (0 Z) as trial vectors.
-C        (I try to use as much as I can the name used in RSPORT)         
-C-----------------------------------------------------------------------
-C
-         T1=DDOT(LTR1E,WORK(K1TR1E),1,WORK(K1TR1E),1)+
-     &      DDOT(LTR1D,WORK(K1TR1D),1,WORK(K1TR1D),1)+
-     &      DDOT(LTR2E,WORK(K1TR2E),1,WORK(K1TR2E),1)+
-     &      DDOT(LTR2D,WORK(K1TR2D),1,WORK(K1TR2D),1) 
-C
-         OVLPI=TWO*DDOT(LTR1E,WORK(K1TR1E),1,WORK(K1TR1D),1)+
-     &         TWO*DDOT(LTR2E,WORK(K1TR2E),1,WORK(K1TR2D),1) 
-C        test if Z + Y is zero
-         TZPY  = T1 + OVLPI
-         IF (IPRSOP .GE. 5) WRITE (LUPRI,'(/A/,(A,1P,D15.8))')
-     *      ' ** In SO_ORTH_TRN:  TEST OF Z = Y OR Z = -Y:',
-     *      ' (Z Y) norm squared =',T1,
-     *      ' Z + Y norm squared =',TZPY
-         IF (TZPY .LE. OVLMIN*T1) THEN
-            IF (IPRSOP .GE. 5) WRITE (LUPRI,'(/A,I4/A)')
-     *         ' Z = -Y in new trial vector no.',INEWTR,
-     *         ' Y component removed.'
-            CALL DZERO(WORK(K1TR1D),LTR1D)
-            CALL DZERO(WORK(K1TR2D),LTR2D)
-         ELSE IF (TZPY .GT. T1) THEN
-C           test if Z - Y is zero;
-C           only if TZPY = 2 * T1 can Z - Y be zero,
-C           so TZPY .gt. T1 is a safe test.
-            TZMY = T1 - OVLPI
-            IF (IPRSOP .GE. 5) WRITE (LUPRI,'(A,1P,D15.8)')
-     *         ' Z - Y norm squared =',TZMY
-            IF (TZMY .LE. OVLMIN*T1) THEN
-               IF (IPRSOP .GE. 5) WRITE (LUPRI,'(/A,I4/A)')
-     *         ' Z = Y in new trial vector no.',INEWTR,
-     *         ' Y component removed.'
-               CALL DZERO(WORK(K1TR1D),LTR1D)
-               CALL DZERO(WORK(K1TR2D),LTR2D)
-            END IF
-C
-         ENDIF
-C
-         ENDIF
 C
   200    CONTINUE
 C

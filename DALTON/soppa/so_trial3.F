@@ -29,6 +29,8 @@ C
 C   SCRATCH:
 C     WORK(LWORK)         
 CW
+      use so_info, only: so_has_doubles
+C         
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -58,8 +60,7 @@ C
 CRF Doubles branches should be usefull to enable HRPA.
 CRF However, RPA still has it's own version of the routine,
 CRF since in that case we have no explicit     
-C      DOUBLES = (MODEL.EQ.'AOSOP').OR.(MODEL.EQ.'AOSOC')
-      DOUBLES = .TRUE.
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
       
 C
 C---------------------------------
@@ -360,7 +361,7 @@ C     &                 DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK,LWORK)
 C Needed? For normalizing new vector?
       NLINDP = 0
       NOLDTR = 0
-      CALL SO_ORTH_TRN('LINEAR',NOLDTR,NNEWTR,NLINDP,ISYMTR,
+      CALL SO_ORTH_TRN(DOUBLES,'LINEAR',NOLDTR,NNEWTR,NLINDP,ISYMTR,
      &                 DENSIJ,LDENSIJ,DENSAB,LDENSAB,WORK(KEND2),LWORK2)
 C
       IF( IPRSOP .GE. 10) THEN
@@ -400,8 +401,10 @@ C------------------------------------
 C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
-      CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
-      CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+      IF (DOUBLES) THEN
+         CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
+         CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
+      ENDIF
 C
 C-----------------------
 C     Remove from trace.

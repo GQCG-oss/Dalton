@@ -106,51 +106,51 @@ Cend-PFP
      &       '" not recognized in SOPPA.'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal keyword in SOPPA')
-    1    CONTINUE
+    1    CONTINUE !.HIRPA
             HIRPA  = .TRUE.
             GOTO 100
-    2    CONTINUE
+    2    CONTINUE !.SOPW4
             SOPW4  = .TRUE.
             GOTO 100
-    3    CONTINUE
+    3    CONTINUE !.DIRECT
             IF (CCPPA) THEN
                AOSOC = .TRUE.
             ELSE 
                AOSOP = .TRUE.
             ENDIF
             GOTO 100
-    4    CONTINUE
+    4    CONTINUE !.AORPA
             AORPA  = .TRUE.
             GOTO 100
-    5    CONTINUE
+    5    CONTINUE !.DCRPA
             DCRPA  = .TRUE.
             AORPA  = .TRUE.
             GOTO 100
-    6    CONTINUE
+    6    CONTINUE !.AOSOP
             AOSOP  = .TRUE.
             GOTO 100
-    7    CONTINUE
+    7    CONTINUE !.AOSOC
             AOSOC  = .TRUE.
             GOTO 100
-    8    CONTINUE
+    8    CONTINUE !.SOPCHK
             SOPCHK = .TRUE.
             GOTO 100
-    9    CONTINUE
+    9    CONTINUE !.AOTEST
             AOTEST = .TRUE.
             GOTO 100
-   10    CONTINUE
+   10    CONTINUE !.NSAVMX
             READ (LUCMD,*) NSAVMX
             NSAVMXORIG = NSAVMX
             GOTO 100
-   11    CONTINUE
+   11    CONTINUE !.NEXCI2
             LNEXC2 = .TRUE.
 C           NSYM is set to 8 since NSYM has not yet been set !!
             READ (LUCMD,*) (NEXCI2(I),I=1,NSYM)
             GOTO 100
-   12    CONTINUE
+   12    CONTINUE !.THREX2
             READ (LUCMD,*) THREX2
             GOTO 100
-   13    CONTINUE
+   13    CONTINUE !.AOHRP
             AOHRP  = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN

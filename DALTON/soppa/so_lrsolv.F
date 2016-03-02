@@ -8,23 +8,23 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Stephan Sauer and Keld Bak, May 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C     Andrea Ligabue, December 2003: linear response functions 
+C     Andrea Ligabue, December 2003: linear response functions
 C                                    implemented
 C
-C     PURPOSE: Solve the linear response equations 
-C              using an AO-driven algorithm. 
+C     PURPOSE: Solve the linear response equations
+C              using an AO-driven algorithm.
 C
 #ifdef VAR_MPI
       use so_parutils, only: parsoppa_do_eres, my_mpi_integer,
      &                       soppa_nint
 #endif
 C
-      use so_info, only: so_full_name, sop_excita
+      use so_info, only: so_full_name, sop_excita, so_has_doubles
 #include "implicit.h"
 #ifdef VAR_MPI
 #include "mpif.h"
-C 
-C MXCALL has been replaced by SOPPA_NINT for hermite compatibility 
+C
+C MXCALL has been replaced by SOPPA_NINT for hermite compatibility
 !#include "maxorb.h"
 !#include "distcl.h"
 C  IRAT in order to assign space for load-balancing
@@ -47,7 +47,7 @@ C
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), DENSAI(LDENSAI)
       DIMENSION T2MP(LT2MP),     FOCKD(LFOCKD),   WORK(LWORK)
       DIMENSION REDE(LMXRED),    REDS(LMXRED)
-      
+
       INTEGER   NIT, NOLDTR, NNEWTR
 #ifdef VAR_MPI
       INTEGER   CP_ISYMTR
@@ -57,7 +57,7 @@ C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
-      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 #endif
@@ -68,10 +68,9 @@ C------------------
 C
       CALL QENTER('SO_LRSOLV')
 C
-      DOUBLES = (MODEL.EQ.'AOSOP') .OR. (MODEL.EQ.'AOSOC') .OR.
-     &          (MODEL.EQ.'DCRPA')
+      DOUBLES = SO_HAS_DOUBLES(MODEL)
 C
-      FULL_NAME = SO_FULL_NAME(MODEL)      
+      FULL_NAME = SO_FULL_NAME(MODEL)
 C
 C==============================================================
 C     For checking, calculate E[2] and S[2] matrices explicitly
@@ -79,7 +78,7 @@ C     by using unit vectors as trial vectors.
 C==============================================================
 C
       IF (SOPCHK) THEN
-         CALL SO_CHECK('MODEL',DENSIJ,LDENSIJ,DENSAB,LDENSAB,
+         CALL SO_CHECK(MODEL,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                 T2MP,LT2MP,
      &                 FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
       END IF
@@ -115,7 +114,7 @@ C
       IF (MODEL .EQ. 'AORPA') THEN
          CALL RP_TRIAL1(NNEWTR,WORK(KPOINT),LPOINT,ISYMTR,
      &                  NEXCI,WORK(KEND1),LWORK1)
-      ELSE 
+      ELSE
          CALL SO_TRIAL1(MODEL,NNEWTR,WORK(KPOINT),LPOINT,ISYMTR,
      &                  NEXCI,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                  WORK(KEND1),LWORK1)
@@ -148,7 +147,7 @@ C
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
-      else  
+      else
          lAssignedIndices = (maxnumjobs + 1) /IRAT
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
@@ -156,11 +155,11 @@ C Not a real parallel job, don't bother
          CALL SO_MEMMAX ('SO_LRSOLV.1A',LWORK1)
          IF (LWORK1 .LT. 0) CALL STOPIT('SO_LRSOLV.1A',' ',KEND1,LWORK)
       endif
-#endif 
+#endif
 C------------------
 C     Write banner.
 C------------------
-C 
+C
       WRITE(LUPRI,'(/,2X,A)') '*********************************'//
      &                        '*********************************'
          WRITE(LUPRI,'(11X,A,A,I1)') ADJUSTR(FULL_NAME),
@@ -194,7 +193,7 @@ C
          END IF
 C
 C--------------------------------------------------------------
-C        Make E[2] linear transformation of trialvectors giving 
+C        Make E[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
@@ -279,14 +278,14 @@ C
          NOLDTR = MIN(NOLDTR + NNEWTR, (NSAVMX - 1) * NEXCI )
 C
 C-------------------------------------------------------------------
-C        Determine the residual from the current optimal solution 
+C        Determine the residual from the current optimal solution
 C        vectors and decide if convergence is obtained for any of
 C        the vectors. For the non-converged vectors create new
-C        trial-vectors. These are orthogonalized against the 
+C        trial-vectors. These are orthogonalized against the
 C        previous optimal trial-vectors and among themself including
 C        the vectors obtained from pairing.
 C-------------------------------------------------------------------
-C        
+C
          IF (NIT .GE. MAXIT) NONEWT = .TRUE.
 C
          CALL GETTIM (DUMMY,WTIMES)
@@ -315,7 +314,7 @@ C
      &                           CONV(IEXCI)
  200        CONTINUE
             WRITE(LUPRI,9010)
-C     
+C
          END IF
 C
 C---------------------------------------
@@ -331,11 +330,11 @@ C---------------------------------------------------------------------
 C
       IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GOTO 100
 C
-C--------------------------------------------------------------      
+C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
 C-------------------------------------------------------------
 C
-      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR 
+      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR
       CALL SO_PERTDENS(MODEL,SOP_EXCITA,NEXCI,
      &                 EXVAL,NEXCI,PDENS_LABEL,
      &                 ISYMTR,.FALSE.,1.0D0,
@@ -374,7 +373,7 @@ C
 C
          NNEWTR = 0
 C
-      ELSE 
+      ELSE
 C
          CALL QUIT('ERROR occured in SO_LRSOLV')
 C
