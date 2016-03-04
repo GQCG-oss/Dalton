@@ -27,18 +27,14 @@ C
 C General Purpose routines for Complex Polarization Propagator
 C
       SUBROUTINE READ_VEC(LU,N,X)
-      INTEGER LU,N,I
+      INTEGER LU,N
       REAL*8 X(N)
-      DO I=1,N
-         READ(LU) X(I)
-      END DO
+      READ(LU) X
       END
       SUBROUTINE WRITE_VEC(LU,N,X)
-      INTEGER LU,N,I
+      INTEGER LU,N
       REAL*8 X(N)
-      DO I=1,N
-         WRITE(LU) X(I)
-      END DO
+      WRITE(LU) X
       END
       SUBROUTINE WRITE_XVEC(LU,N,VEC,LABEL,FREQ,RESIDUAL_NORM)
 C
@@ -123,12 +119,7 @@ c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
              IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
              GOTO 199
          ELSE
-c            IF (LEN .GT. 0) READ (LU)
-            IF (LEN .GT. 0) THEN
-              DO I=1,LEN
-               READ(LU) SCR
-              END DO
-            ENDIF
+            IF (LEN .GT. 0) READ (LU)
             GO TO 100
          END IF
 C
@@ -198,12 +189,7 @@ c     &        .AND. (ABS_GRADSYM.EQ.ISYMX1)) THEN
             IF (LEN .GT. 0) CALL READ_VEC(LU,LEN,VEC)
             GOTO 199
          ELSE
-c            IF (LEN .GT. 0) READ (LU)
-            IF (LEN .GT. 0) THEN
-              DO I=1,LEN
-               READ(LU) SCR
-              END DO
-            ENDIF
+            IF (LEN .GT. 0) READ (LU)
             GO TO 100
          END IF
 C
@@ -236,11 +222,7 @@ C
       IF (LAB1.NE.LABEL .OR.
      &   ISYM1.NE.ISYM  .OR.
      &   RSD  .GT.THD   .OR. DAMP1.NE.DAMP) THEN
-         IF (LEN .GT. 0) THEN
-            DO I=1,LEN
-              READ(LU) SCR
-            END DO
-         ENDIF
+         IF (LEN .GT. 0) READ(LU)
          GOTO 100
       ELSE
 C
@@ -250,9 +232,7 @@ C
          END IF
       END DO
 C
-      DO I=1,LEN
-        READ(LU,END=900,ERR=900) SCR
-      END DO
+      IF (LEN.GT.0) READ(LU,END=900,ERR=900)
 C      
       GOTO 100
       ENDIF
