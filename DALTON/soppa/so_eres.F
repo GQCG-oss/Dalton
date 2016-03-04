@@ -683,125 +683,13 @@ C
                   END IF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(41) = SOTIME(41) + DTIME
-C
-C----------------------------------------------
-C                 Calculate the AO-Fock matrix.
-C----------------------------------------------
-C
-                  DTIME      = SECOND()
+
                   IF (TRIPLET) THEN
-C
-                     CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
-     &                               WORK(KFOCK),WORK(KEND5),
-     &                               LWORK5,IDEL,ISYMD,ISYMTR)
+                     CALL LOOP_BODY_TRIPLET
                   ELSE
-                     CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
-     &                              WORK(KEND5),LWORK5,
-     &                              IDEL,ISYMD,.FALSE.,
-     &                              'crashifTrue',ISYMTR)
-                  ENDIF
-                  DTIME      = SECOND()   - DTIME
-                  SOTIME(11) = SOTIME(11) + DTIME
-C
-                  IF (singles_second) THEN
-C
-C----------------------------------------------------------------------
-C                 Calculate part of the result vectors RES1E and RES1D,
-C                 specifically the first and the second term in eqs.
-C                 (34,35). Also calculate Aij and Aab in eqs. (43,44).
-C----------------------------------------------------------------------
-C
-
-
-                     DTIME      = SECOND()
-                     CALL SO_RES_A(WORK(KRES1E),LRES1E,
-     &                             WORK(KRES1D),LRES1D,
-     &                             WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
-     &                             WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
-     &                             WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
-     &                             WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
-     &                             ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-                     DTIME      = SECOND()   - DTIME
-                     SOTIME(14) = SOTIME(14) + DTIME
+                     CALL LOOP_BODY_SINGLET
                   ENDIF
 C
-                  IF (DOUBLES) THEN
-C
-C-------------------------------------------------------------------
-C                 Calculate the part of the result vectors RES1E and
-C                 RES1D which originate from the C matrices. See 
-C                 eqs. (72) and (73).
-C-------------------------------------------------------------------
-C
-                     DTIME      = SECOND()
-                     CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
-     &                               LRES1D,WORK(KTR2E),LTR2E,
-     &                               WORK(KTR2D),LTR2D,
-     &                               WORK(KDSRHF),LDSRHF,
-     &                               WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                               ISYMTR,WORK(KEND5),LWORK5)
-                     DTIME      = SECOND()   - DTIME
-                     SOTIME(29) = SOTIME(29) + DTIME
-C
-C----------------------------------------------------------------------
-C                 Construct C-contribution to 2p2h result vectors RES2E
-C                 and RES2D.
-C----------------------------------------------------------------------
-C
-                     DTIME      = SECOND()
-                     CALL SO_RES_CB(WORK(KRES2E),LRES2E,WORK(KRES2D),
-     &                             LRES2D,
-     &                             WORK(KDSRHF),LDSRHF,
-     &                             WORK(KBTR1E),LBTR1E,
-     &                             WORK(KBTR1D),LBTR1D,
-     &                             WORK(KBTJ1E),LBTJ1E,
-     &                             WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                             IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
-     &                             LWORK5)
-                     DTIME      = SECOND()   - DTIME
-                     SOTIME(15) = SOTIME(15) + DTIME
-C                  
-                  ENDIF
-C
-                  IF (singles_second) THEN
-C
-C--------------------------------------------------------------------
-C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
-C                 are used in SO_RES_B.
-C--------------------------------------------------------------------
-C
-                     DTIME      = SECOND()
-                     CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),
-     &                             LSIGAI2,
-     &                             WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
-     &                             WORK(KBTR1E),LBTR1E,
-     &                             WORK(KBTR1D),LBTR1D,
-     &                             WORK(KBTJ1E),LBTJ1E,
-     &                             WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
-     &                             ISYMD,ISYDIS,
-     &                             ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-                     DTIME      = SECOND()   - DTIME
-                     SOTIME(16) = SOTIME(16) + DTIME
-C
-C--------------------------------------------------------------------
-C                    Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
-C                    are used    SO_RES_C.
-C--------------------------------------------------------------------
-C
-                     DTIME      = SECOND()
-                     CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
-     &                             WORK(KSIGDA2),LSIGDA2,
-     &                             T2MP,LT2MP,WORK(KDSRHF),LDSRHF,
-     &                             WORK(KBTR1E),LBTR1E,
-     &                             WORK(KBTR1D),LBTR1D,
-     &                             WORK(KBTJ1E),LBTJ1E,
-     &                             WORK(KBTJ1D),LBTJ1D,
-     &                             WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                             ISYRES,ISYMTR,WORK(KEND5),LWORK5)
-                     DTIME      = SECOND()   - DTIME
-                     SOTIME(17) = SOTIME(17) + DTIME
-
-                  ENDIF
 C
   230          CONTINUE  ! End of IDEL2 loop
 C
@@ -1149,6 +1037,174 @@ C
       CALL QEXIT('SO_ERES')
 C
       RETURN
+C
+C------------------------------------------------------------------------
+C  The body of the above loop over integral distributions has been moved
+C  into these internal subroutines.
+C------------------------------------------------------------------------
+C
+      CONTAINS
+C  Be aware that variables fall through from the outer scope!
+C
+
+         SUBROUTINE LOOP_BODY_SINGLET
+C        Singlet case
+         DOUBLE PRECISION DTIME
+C         
+C
+C----------------------------------------------
+C        Calculate the AO-Fock matrix.
+C----------------------------------------------
+C
+         DTIME      = SECOND()
+         CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),WORK(KFOCK),
+     &                  WORK(KEND5),LWORK5,
+     &                  IDEL,ISYMD,.FALSE.,
+     &                  'crashifTrue',ISYMTR)
+         DTIME      = SECOND()   - DTIME
+         SOTIME(11) = SOTIME(11) + DTIME
+         IF (singles_second) THEN
+C
+C----------------------------------------------------------------------
+C        Calculate part of the result vectors RES1E and RES1D,
+C                 specifically the first and the second term in eqs.
+C                 (34,35). Also calculate Aij and Aab in eqs. (43,44).
+C----------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_A(WORK(KRES1E),LRES1E,
+     &                    WORK(KRES1D),LRES1D,
+     &                    WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
+     &                    WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
+     &                    WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
+     &                    WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
+     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(14) = SOTIME(14) + DTIME
+C
+C--------------------------------------------------------------------
+C        Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
+C                 are used in SO_RES_B.
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),
+     &                    LSIGAI2,
+     &                    WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
+     &                    WORK(KBTR1E),LBTR1E,
+     &                    WORK(KBTR1D),LBTR1D,
+     &                    WORK(KBTJ1E),LBTJ1E,
+     &                    WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+     &                    ISYMD,ISYDIS,
+     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(16) = SOTIME(16) + DTIME
+C
+C--------------------------------------------------------------------
+C           Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
+C                    are used SO_RES_C.
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
+     &                    WORK(KSIGDA2),LSIGDA2,
+     &                    T2MP,LT2MP,WORK(KDSRHF),LDSRHF,
+     &                    WORK(KBTR1E),LBTR1E,
+     &                    WORK(KBTR1D),LBTR1D,
+     &                    WORK(KBTJ1E),LBTJ1E,
+     &                    WORK(KBTJ1D),LBTJ1D,
+     &                    WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(17) = SOTIME(17) + DTIME
+         ENDIF
+C
+         IF (DOUBLES) THEN
+C
+C-------------------------------------------------------------------
+C        Calculate the part of the result vectors RES1E and
+C        RES1D which originate from the C matrices. See 
+C                 eqs. (72) and (73).
+C-------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_TCB(WORK(KRES1E),LRES1E,WORK(KRES1D),
+     &                      LRES1D,WORK(KTR2E),LTR2E,
+     &                      WORK(KTR2D),LTR2D,
+     &                      WORK(KDSRHF),LDSRHF,
+     &                      WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                      ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(29) = SOTIME(29) + DTIME
+C
+C----------------------------------------------------------------------
+C        Construct C-contribution to 2p2h result vectors RES2E
+C                 and RES2D.
+C----------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_CB(WORK(KRES2E),LRES2E,WORK(KRES2D),
+     &                    LRES2D,
+     &                    WORK(KDSRHF),LDSRHF,
+     &                    WORK(KBTR1E),LBTR1E,
+     &                    WORK(KBTR1D),LBTR1D,
+     &                    WORK(KBTJ1E),LBTJ1E,
+     &                    WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+     &                    IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
+     &                    LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(15) = SOTIME(15) + DTIME
+C                  
+         ENDIF
+
+         END SUBROUTINE 
+C
+         SUBROUTINE LOOP_BODY_TRIPLET
+C        Triplet case... To be filled by Pi
+C
+C----------------------------------------------
+C        Calculate the AO-Fock matrix.
+C----------------------------------------------
+C
+         DTIME      = SECOND()
+         CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
+     &                   WORK(KFOCK),WORK(KEND5),
+     &                   LWORK5,IDEL,ISYMD,ISYMTR)
+         DTIME      = SECOND()   - DTIME
+         SOTIME(11) = SOTIME(11) + DTIME
+
+         IF (singles_second) THEN
+CRF   A^(2) Doesn't mix spins - Same for singlet and triplet
+C----------------------------------------------------------------------
+C        Calculate part of the result vectors RES1E and RES1D,
+C        specifically the first and the second term in eqs.
+C        (34,35). Also calculate Aij and Aab in eqs. (43,44).
+C----------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_A(WORK(KRES1E),LRES1E,
+     &                    WORK(KRES1D),LRES1D,
+     &                    WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
+     &                    WORK(KDSRHF),LDSRHF,WORK(KCMO),LCMO,
+     &                    WORK(KT2M1),LT2M1,WORK(KAIJ),LAIJ,
+     &                    WORK(KAAB),LAAB,INEWTR,ISYMD,ISYDIS,
+     &                    ISYRES,ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(14) = SOTIME(14) + DTIME
+
+CRF         B^(2) terms go here: Pi -> Check what we need!
+
+         ENDIF
+
+         IF (DOUBLES) THEN
+
+CRF         C^T*Tr2 => Res_1 and C*Tr_1 => Res_2 goes here!
+CRF         Pi: Check if existing implementation can be dropped in..?            
+
+         ENDIF
+
+         END SUBROUTINE
+C         
       END SUBROUTINE
 
 C
