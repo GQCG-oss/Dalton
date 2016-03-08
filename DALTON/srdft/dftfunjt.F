@@ -517,7 +517,7 @@ C     check
 
 C     energy
       call ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
-      !if (ipnt .le. 10) write(lupri,*)'E = ', E
+      !if (ipnt .eq. 1) write(lupri,*)'E = ', E
 !      print *,'D1SRSPIN: E=',E
 
 C     (optimal?) numerical step
@@ -720,6 +720,8 @@ C            d2E(9) = d2Edgrdtdgrds : second derivative wrt to grdt and grds
 C            d2E(10)= d2Edgrdsdgrds : second derivative wrt to grds and grds
 C
 C     Created: 07-02-16, H. J. Aa. Jensen (from routine by J. Toulouse)
+      ! edh Needs to be adapted to DESRSPINGGA (d1E arrays reshuffle and
+      ! make additional gradient array
 C*****************************************************************************
       implicit none
 
