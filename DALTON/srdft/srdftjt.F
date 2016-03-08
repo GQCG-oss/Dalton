@@ -328,18 +328,32 @@ C      Potentials with quadrature weigths
 !
        if (DOGGA .and. DFT_SPINDNS) then
            if (ipnt .eq. 1) write(lupri,*)'case 1 active'
-           d1Exdrhot  = d1Ex(1)
-           d1Exdrhos  = d1Ex(2)
-           d1Exdgrdt  = d1Ex(3)
-           d1Exdgrds  = d1Ex(4)
-           d1Exdngrd2 = d1Ex(5)
+!          d1Exdrhot  = d1Ex(1)
+!          d1Exdrhos  = d1Ex(2)
+!          d1Exdgrdt  = d1Ex(3)
+!          d1Exdgrds  = d1Ex(4)
+!          d1Exdngrd2 = d1Ex(5)
+!          d1Exdngrds2 = d1Ex(6)
+! change list to match GGA rather than LSDA:
+           d1Exdrhot   = d1Ex(1)
+           d1Exdgrdt   = d1Ex(2)
+           d1Exdngrd2  = d1Ex(3)
+           d1Exdrhos   = d1Ex(4)
+           d1Exdgrds   = d1Ex(5)
            d1Exdngrds2 = d1Ex(6)
            !-----------------
-           d1Ecdrhot  = d1Ec(1)
-           d1Ecdrhos  = d1Ec(2)
-           d1Ecdgrdt  = d1Ec(3)
-           d1Ecdgrds  = d1Ec(4)
-           d1Ecdngrd2 = d1Ec(5)
+!          d1Ecdrhot  = d1Ec(1)
+!          d1Ecdrhos  = d1Ec(2)
+!          d1Ecdgrdt  = d1Ec(3)
+!          d1Ecdgrds  = d1Ec(4)
+!          d1Ecdngrd2 = d1Ec(5)
+!          d1Ecdngrds2 = d1Ec(6)
+! change list to mathc GGA rather than LSDA:
+           d1Ecdrhot   = d1Ec(1)
+           d1Ecdgrdt   = d1Ec(2)
+           d1Ecdngrd2  = d1Ec(3)
+           d1Ecdrhos   = d1Ec(4)
+           d1Ecdgrds   = d1Ec(5)
            d1Ecdngrds2 = d1Ec(6)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
            if (ipnt .eq. 1) write(lupri,*)'case 2 active'
@@ -605,10 +619,6 @@ C*****************************************************************************
 
 C The new terms
       double precision mu, mu_new
-!     double precision Exa,Exb d1Exdrhoa,d1Exdrhob,d1Exdgrda
-!     double precision d1Exdgrdb,d1Exdgrda2a,d1Exdgrda2b
-!     double precision d2Exdrhoadrhoa,d2Exdrhobdrhob,d2Exdrhoadgrda
-!     double precision d2Exdrhobdgrdb
 
       save icall
       data icall/0/
@@ -877,7 +887,7 @@ C
 
       double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
       double precision d1Exdngrd2, d1Exdngrds2 !d1Ex(6)
-      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(4)
+      double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(6)
       double precision d1Ecdngrd2, d1Ecdngrds2
 
       double precision d2Exdrhotdrhot, d2Exdrhotdrhos, d2Exdrhosdrhos
@@ -955,19 +965,33 @@ CFRAN RHOSGRD ADDED!
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
 
        if (DOGGA .and. DFT_SPINDNS) then
-           d1Exdrhot      =  d1Ex(1)
-           d1Exdrhos      =  d1Ex(2)
-           d1Exdgrdt      =  d1Ex(3)
-           d1Exdgrds      =  d1Ex(4)
-           d1Exdngrd2     =  d1Ex(5)
-           d1Exdngrds2    =  d1Ex(6)
+!          d1Exdrhot      =  d1Ex(1)
+!          d1Exdrhos      =  d1Ex(2)
+!          d1Exdgrdt      =  d1Ex(3)
+!          d1Exdgrds      =  d1Ex(4)
+!          d1Exdngrd2     =  d1Ex(5)
+!          d1Exdngrds2    =  d1Ex(6)
+! change list to match GGA rather than LSDA:
+           d1Exdrhot      = d1Ex(1)
+           d1Exdgrdt      = d1Ex(2)
+           d1Exdngrd2     = d1Ex(3)
+           d1Exdrhos      = d1Ex(4)
+           d1Exdgrds      = d1Ex(5)
+           d1Exdngrds2    = d1Ex(6)
            !-----------------------
-           d1Ecdrhot      =  d1Ec(1)
-           d1Ecdrhos      =  d1Ec(2)
-           d1Ecdgrdt      =  d1Ec(3)
-           d1Ecdgrds      =  d1Ec(4)
-           d1Ecdngrd2     =  d1Ec(5)
-           d1Ecdngrds2    =  d1Ec(6)
+!          d1Ecdrhot      =  d1Ec(1)
+!          d1Ecdrhos      =  d1Ec(2)
+!          d1Ecdgrdt      =  d1Ec(3)
+!          d1Ecdgrds      =  d1Ec(4)
+!          d1Ecdngrd2     =  d1Ec(5)
+!          d1Ecdngrds2    =  d1Ec(6)
+! change list to match GGA rather than LSDA:
+           d1Ecdrhot      = d1Ec(1)
+           d1Ecdgrdt      = d1Ec(2)
+           d1Ecdngrd2     = d1Ec(3)
+           d1Ecdrhos      = d1Ec(4)
+           d1Ecdgrds      = d1Ec(5)
+           d1Ecdngrds2    = d1Ec(6)
            !-----------------------
            d2Exdrhotdrhot = d2Ex(1)
            d2Exdrhotdrhos = d2Ex(2)

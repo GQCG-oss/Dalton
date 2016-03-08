@@ -436,10 +436,10 @@ C            mu         : Interation parameter
 C            norder     : order of derivatives
 C
 C     Ouput: d1E(1) = d1Edrhot      : first derivative wrt to rhot
-C            d1E(2) = d1Edrhos      : first derivative wrt to rhos
-C            d1E(3) = d1Edgrdt      : first derivative wrt to grdt (grad rhot)
-C            d1E(4) = d1Edgrds      : first derivative wrt to grds (grad rhos)
-C            d1E(5) = d1Engrdt2     : = (2.0d0/grdt)*d1E(3)
+C            d1E(2) = d1Edgrdt      : first derivative wrt to grdt (grad rhot)
+C            d1E(3) = d1Engrdt2     : = (2.0d0/grdt)*d1E(3)
+C            d1E(4) = d1Edrhos      : first derivative wrt to rhos
+C            d1E(5) = d1Edgrds      : first derivative wrt to grds (grad rhos)
 C            d1E(6) = d1Engrds2     : = (2.0d0/grds)*d1E(4)
 C
 C            d2E(1) = d2Edrhotdrhot : second derivative wrt to rhot and rhot
@@ -591,23 +591,23 @@ C     derivatives wrt rhot, rhos, grdt, grds ---------------------
       call ESRSPINGGA(rhotp,rhos,grdt,grds,mu,Ep000)
       d1E(1) = (Ep000 - Em000)/(2.d0*hrt) ! d1Edrhot
 
-      if (hrs .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhosm,grdt,grds,mu,E0m00)
-         call ESRSPINGGA(rhot,rhosp,grdt,grds,mu,E0p00)
-         d1E(2) = (E0p00 - E0m00)/(2.d0*hrs) ! d1Edrhos
-       end if
-
       if (hgt .gt. 0.0d0) then
          call ESRSPINGGA(rhot,rhos,grdtm,grds,mu,E00m0)
          call ESRSPINGGA(rhot,rhos,grdtp,grds,mu,E00p0)
-         d1E(3) = (E00p0 - E00m0)/(2.d0*hgt) ! d1Edgrdt
-         d1E(5) = (2.0d0/grdt)*d1E(3)        ! d1Engrdt2
+         d1E(2) = (E00p0 - E00m0)/(2.d0*hgt) ! d1Edgrdt
+         d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdt2
       end if
+
+      if (hrs .gt. 0.0d0) then
+         call ESRSPINGGA(rhot,rhosm,grdt,grds,mu,E0m00)
+         call ESRSPINGGA(rhot,rhosp,grdt,grds,mu,E0p00)
+         d1E(4) = (E0p00 - E0m00)/(2.d0*hrs) ! d1Edrhos
+       end if
 
       if (hgs .gt. 0.0d0) then
          call ESRSPINGGA(rhot,rhos,grdt,grdsm,mu,E000m)
          call ESRSPINGGA(rhot,rhos,grdt,grdsp,mu,E000p)
-         d1E(4) = (E000p - E000m)/(2.d0*hgs) ! d1Edgrds
+         d1E(5) = (E000p - E000m)/(2.d0*hgs) ! d1Edgrds
          d1E(6) = (2.0d0/grds)*d1E(4)        ! d1Engrds2
        end if
 
