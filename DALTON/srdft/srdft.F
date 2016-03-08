@@ -500,8 +500,7 @@ C     ... jkp : For gradient correction to SR-LDA
      >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
      >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
-     >        DOSRX_PBEGWS_S
-! edh insert .OR. DOSRX_PBEGWS_S and DOSRC_PBEGWS_S here...
+     >        DOSRX_PBEGWS_S .OR. DOSRC_PBEGWS_S
 C
 
       NDER  = 0
@@ -954,11 +953,11 @@ C  --- NOTE ! This uses FROMVX.
 !      WRITE(LUPRI,*) 'SRDFT1JT: IPNT=',IPNT,' VXC=',VXC !JT
 
                CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHGSR,VXC,VXB,
-     &                     LDOGGA,.true.,DFTHRL)
+     &                     LDOGGA,.true.,DFTHRL,IPNT)
                IF (LSRHYBR) THEN
 c             ... SRHYBR (RHOTOT) contribution
                   CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHGT,
-     &                        VXCT,VXBT,LDOGGA,.true.,DFTHRL)
+     &                        VXCT,VXBT,LDOGGA,.true.,DFTHRL,IPNT)
                END IF
 C
                ENDIF
@@ -1997,14 +1996,14 @@ C
      >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
 C
 C
-      IF (IPRINT.GT.5) THEN
+!      IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,'(//5X,A//)')
      >   '<<<<  Short-range core Hartree matrix >>>>'
          CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
      >   '<<<<  Short-range valence Hartree matrix >>>>'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      ENDIF
+!      ENDIF
 C
 c ... Add up in KFCAO
 C
@@ -2019,11 +2018,11 @@ C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
-      IF (IPRINT.GT.5) THEN
+!      IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,'(//5X,A//)')
      >   '<<<<  Short-range Exchange-Correlation Fock-matrix >>>>'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-      ENDIF
+!      ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
 C
 C Manu: compute the third term in EMYDFTAUX.
