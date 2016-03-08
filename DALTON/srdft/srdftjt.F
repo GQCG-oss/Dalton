@@ -640,6 +640,10 @@ C     sr mdc func
 
 c  Exchange  ------------------------------------------------------------
 
+      Ex         = 0.0d0
+      d1Ex(1:6)  = 0.0d0
+      d2Ex(1:10) = 0.0d0
+
       icall = icall + 1
       IF (ERFEXP(0)) THEN
          write (lupri,*)
@@ -717,6 +721,10 @@ C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
 
 
 C  Correlation  ----------------------------------------------------------
+
+      Ec         = 0.0d0
+      d1Ec(1:6)  = 0.0d0
+      d2Ec(1:10) = 0.0d0
 
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
@@ -964,7 +972,9 @@ CFRAN RHOSGRD ADDED!
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
 
+       if (ipnt .eq. 1) write(lupri,*)'d2Ec', d2Ec
        if (DOGGA .and. DFT_SPINDNS) then
+           !if (ipnt .eq. 1) write(lupri,*)'case 1 (NORDER=2)'
 !          d1Exdrhot      =  d1Ex(1)
 !          d1Exdrhos      =  d1Ex(2)
 !          d1Exdgrdt      =  d1Ex(3)
@@ -1015,6 +1025,7 @@ CFRAN RHOSGRD ADDED!
            d2Ecdgrdtdgrds = d2Ec(9)
            d2Ecdgrdsdgrds = d2Ec(10)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
+           !if (ipnt .eq. 1) write(lupri,*)'case 2 (NORDER=2)'
            d1Exdrhot      = d1Ex(1)
            d1Exdrhos      = d1Ex(2)
            !----------------------
@@ -1029,6 +1040,7 @@ CFRAN RHOSGRD ADDED!
            d2Ecdrhotdrhos = d2Ec(2)
            d2Ecdrhosdrhos = d2Ec(3)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
+           !if (ipnt .eq. 1) write(lupri,*)'case 3 (NORDER=2)'
            d1Exdrhot      = d1Ex(1)
            d1Exdgrdt      = d1Ex(2)
            d1Exdngrd2     = d1Ex(3)
@@ -1119,7 +1131,11 @@ C Total contribution -------------------------------------------------------
          FZ0 = ZNV*(WGHTX*d1Exdgrdt + WGHTC*d1Ecdgrdt)
          FRZ = WGHTX*d2Exdrhotdgrdt + WGHTC*d2Ecdrhotdgrdt
          FZZ = WGHTX*d2Exdgrdtdgrdt + WGHTC*d2Ecdgrdtdgrdt
- 
+!ehd debug
+!        IF (IPNT .EQ. 1) THEN
+!           WRITE(LUPRI,*)'ZNV, RHOGRD(1)', ZNV, RHOGRD(1)
+!           WRITE(LUPRI,*)'FZ0, FRZ, FZZ', FZ0, FRZ, FZZ
+!        END IF 
          RX = ZNV*RHG(1,1)
          RY = ZNV*RHG(2,1)
          RZ = ZNV*RHG(3,1)
@@ -1127,29 +1143,31 @@ C Total contribution -------------------------------------------------------
          call quit('SRDFTLTRJT: we should not end here')
       END IF
 
-#ifdef SRDFT_DEBUG
-         if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
-            write(lupri,*) 'hjaaj: FRR,FRS,FSS',FRR,FRS,FSS
-            write(lupri,*) 'hjaaj: rho',rho(1:4)
-            write(lupri,*) 'hjaaj: B0',B0(1:2)
-            write(lupri,*) 'hjaaj: Ex, Ec',Ex, Ec
-            write(lupri,*) 'hjaaj: d1Exdrhot',d1Exdrhot
-            write(lupri,*) 'hjaaj: d1Exdrhos',d1Exdrhos
-            write(lupri,*) 'hjaaj: d1Ecdrhot',d1Ecdrhot
-            write(lupri,*) 'hjaaj: d1Ecdrhos',d1Ecdrhos
-            write(lupri,*) 'hjaaj: d2Exdrhotdrhot',d2Exdrhotdrhot
-            write(lupri,*) 'hjaaj: d2Exdrhotdrhos',d2Exdrhotdrhos
-            write(lupri,*) 'hjaaj: d2Exdrhosdrhos',d2Exdrhosdrhos
-            write(lupri,*) 'hjaaj: d2Ecdrhotdrhot',d2Ecdrhotdrhot
-            write(lupri,*) 'hjaaj: d2Ecdrhotdrhos',d2Ecdrhotdrhos
-            write(lupri,*) 'hjaaj: d2Ecdrhosdrhos',d2Ecdrhosdrhos
-                  FAC0R = FRR*B0(1) + FRS*B0(2)
-                  FAC0S = FRS*B0(1) + FSS*B0(2) ! as FSR = FRS
-            write(lupri,*) 'hjaaj: FAC0R,FAC0S',FAC0R,FAC0S
-            IF (abs(FAC0R) .gt. 1.d3 .or. abs(FAC0S) .gt. 1.d3)
-     &         call quit('hjaaj quit')
-         end if
-#endif 
+!#ifdef SRDFT_DEBUG
+          if (ipnt .eq. 1) then
+           !if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
+              write(lupri,*) 'hjaaj: FRR,FRS,FSS',FRR,FRS,FSS
+              write(lupri,*) 'hjaaj: rho',rho(1:4)
+              write(lupri,*) 'hjaaj: B0',B0(1:2)
+              write(lupri,*) 'hjaaj: Ex, Ec',Ex, Ec
+              write(lupri,*) 'hjaaj: d1Exdrhot',d1Exdrhot
+              write(lupri,*) 'hjaaj: d1Exdrhos',d1Exdrhos
+              write(lupri,*) 'hjaaj: d1Ecdrhot',d1Ecdrhot
+              write(lupri,*) 'hjaaj: d1Ecdrhos',d1Ecdrhos
+              write(lupri,*) 'hjaaj: d2Exdrhotdrhot',d2Exdrhotdrhot
+              write(lupri,*) 'hjaaj: d2Exdrhotdrhos',d2Exdrhotdrhos
+              write(lupri,*) 'hjaaj: d2Exdrhosdrhos',d2Exdrhosdrhos
+              write(lupri,*) 'hjaaj: d2Ecdrhotdrhot',d2Ecdrhotdrhot
+              write(lupri,*) 'hjaaj: d2Ecdrhotdrhos',d2Ecdrhotdrhos
+              write(lupri,*) 'hjaaj: d2Ecdrhosdrhos',d2Ecdrhosdrhos
+                    FAC0R = FRR*B0(1) + FRS*B0(2)
+                    FAC0S = FRS*B0(1) + FSS*B0(2) ! as FSR = FRS
+              write(lupri,*) 'hjaaj: FAC0R,FAC0S',FAC0R,FAC0S
+              IF (abs(FAC0R) .gt. 1.d3 .or. abs(FAC0S) .gt. 1.d3)
+     &           call quit('hjaaj quit')
+           !end if
+          end if 
+!#endif 
 !     END IF
 
 
