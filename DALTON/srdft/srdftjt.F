@@ -869,8 +869,8 @@ C
 C     Created : 15-02-05, J. Toulouse
 C     Modified: 17-08-09, J. Toulouse, add spin density
 C     Modified: 16-02-16, E. Hedegård, add spin-gradient
-C***************************************************************************
-#include "implicit.h"
+C*************************************************************************** 
+         implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "pi.h"
@@ -881,18 +881,32 @@ C***************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, DP5 = 0.5D0,
-     >           D13=1.0D0/3.0D0)
-      LOGICAL DOGGA,ERFEXP(0:2)
-
-      DIMENSION RHO(4), RHG(3,4)
+!     input
+      integer KSYMOP
+      logical DOGGA,ERFEXP(0:2)
+      double precision RHO(4), RHG(3,4)
+      double precision CHIVAL,VLAMBDA 
       double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
-      DIMENSION DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
-      DIMENSION GAO(NBAST),GAO1(NBAST,3),
-     &          EXCMAT(NBAST,NBAST,2),DGAO(NBAST,2),B0(2), B3(3,2)
-C
-      double precision d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
+      double precision DTXMAT(NBAST,NBAST),DSXMAT(NBAST,NBAST)
+      double precision GAO(NBAST),GAO1(NBAST,3), DGAO(NBAST,2)
+      double precision WGHTX,WGHTC
+!     output
+      double precision EXCMAT(NBAST,NBAST,2)
 
+!     local
+      integer I, J, ISYM, JSYM, JEND, JSTR, ISTR, IEND
+      integer I_MAT, N_MAT, NORDER
+
+      double precision ddot
+
+      double precision BR, B0(2), B3(3,2), BMAX
+      double precision AR, AB, AX, AY, AZ, RX, RY, RZ
+      double precision FAC0R, FAC0S, FACR 
+      double precision FRR, FRS, FRZ, FZZ, FSS, FZ0
+      double precision G0, GX, GY, GZ
+      double precision ZNV
+!     XC energies, and derivatives
+      double precision Ex, Ec, d1Ex(6), d1Ec(6), d2Ex(10), d2Ec(10)
       double precision d1Exdrhot, d1Exdrhos, d1Exdgrdt, d1Exdgrds
       double precision d1Exdngrd2, d1Exdngrds2 !d1Ex(6)
       double precision d1Ecdrhot, d1Ecdrhos, d1Ecdgrdt, d1Ecdgrds !d1Ex(6)
@@ -917,11 +931,13 @@ C
       end do
 
       ! DGAO(1,1) = DTXMAT*GAO  
-      CALL DGEMV('N',NBAST,NBAST,D1,DTXMAT,NBAST,GAO,1,D0,DGAO(1,1),1)
+      CALL DGEMV('N',NBAST,NBAST,1.0d0,
+     &            DTXMAT,NBAST,GAO,1,0.0d0,DGAO(1,1),1)
       IF (DFT_SPINDNS) THEN
         N_MAT = 2
         ! DGAO(1,2) = DSXMAT*GAO
-        CALL DGEMV('N',NBAST,NBAST,D1,DSXMAT,NBAST,GAO,1,D0,DGAO(1,2),1)
+        CALL DGEMV('N',NBAST,NBAST,1.0d0,DSXMAT,
+     &              NBAST,GAO,1,0.0d0,DGAO(1,2),1)
       ELSE
         N_MAT = 1
       END IF
@@ -935,19 +951,19 @@ C
             rhogrd(I_MAT) =
      &       sqrt( rhg(1,I_MAT)**2 + rhg(2,I_MAT)**2 + rhg(3,I_MAT)**2 )
 C           B3(1) = GAO1'*DGAO(1,1); B3(2) = GAO1'*DGAO(1,2)
-            CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,
-     &         DGAO(1,I_MAT),1,D0,B3(1,I_MAT),1)
+            CALL DGEMV('T',NBAST,3,1.0d0,GAO1,NBAST,
+     &         DGAO(1,I_MAT),1,0.0d0,B3(1,I_MAT),1)
 C           DGAO(1,1)= DTXMAT'*GAO; DGAO(1,2) = DSXMAT'*GAO !!! HJAAJ: is this necessary ? We have D*XMAT symmetrized!
             IF (I_MAT .EQ. 1) THEN  
-               CALL DGEMV('T',NBAST,NBAST,D1,DTXMAT,NBAST,
-     &                    GAO,1,D0,DGAO(1,I_MAT),1)
+               CALL DGEMV('T',NBAST,NBAST,1.0d0,DTXMAT,NBAST,
+     &                    GAO,1,0.0d0,DGAO(1,I_MAT),1)
             ELSE IF (I_MAT .EQ. 2) THEN 
-               CALL DGEMV('T',NBAST,NBAST,D1,DSXMAT,NBAST,
-     &                    GAO,1,D0,DGAO(1,I_MAT),1)
+               CALL DGEMV('T',NBAST,NBAST,1.0d0,DSXMAT,NBAST,
+     &                    GAO,1,0.0d0,DGAO(1,I_MAT),1)
             END IF 
 C           B3(1,I_MAT) = B3(1,I_MAT) + GAO1'*DGAO(1, I_MAT)
-            CALL DGEMV('T',NBAST,3,D1,GAO1,NBAST,
-     &         DGAO(1,I_MAT),1,D1,B3(1,I_MAT),1)
+            CALL DGEMV('T',NBAST,3,1.0d0,GAO1,NBAST,
+     &         DGAO(1,I_MAT),1,1.0d0,B3(1,I_MAT),1)
             BMAX = MAX(BMAX,
      &       ABS(B3(1,I_MAT)),ABS(B3(2,I_MAT)),ABS(B3(3,I_MAT)))
          END IF
@@ -1054,7 +1070,7 @@ CFRAN RHOSGRD ADDED!
            d2Exdrhotdgrdt = d2Ex(3)
            !----------------------
            d2Ecdrhotdrhot = d2Ec(1)
-           d2Ecdgrddgrd   = d2Ec(2)
+           d2Ecdgrdtdgrdt = d2Ec(2)
            d2Ecdrhotdgrdt = d2Ec(3)
        else ! (.not. DOGGA .and. .not. DFT_SPINDNS)
            d1Exdrhot      = d1Ex(1)
@@ -1112,7 +1128,7 @@ C Total contribution -------------------------------------------------------
 
       IF (DOGGA .AND. DFT_SPINDNS) THEN
          ! pure gradient
-         ZNV = D1/RHOGRD(1)
+         ZNV = 1.0d0/RHOGRD(1)
          FZ0 = ZNV*(WGHTX*d1Exdgrdt + WGHTC*d1Ecdgrdt)
          FRZ = WGHTX*d2Exdrhotdgrdt + WGHTC*d2Ecdrhotdgrdt
          FZZ = WGHTX*d2Exdgrdtdgrdt + WGHTC*d2Ecdgrdtdgrdt
@@ -1127,7 +1143,7 @@ C Total contribution -------------------------------------------------------
          FSS = WGHTX*d2Exdrhosdrhos + WGHTC*d2Ecdrhosdrhos
          FRS = WGHTX*d2Exdrhotdrhos + WGHTC*d2Ecdrhotdrhos
       ELSE IF (DOGGA .AND. .NOT. DFT_SPINDNS) THEN
-         ZNV = D1/RHOGRD(1)
+         ZNV = 1.0d0/RHOGRD(1)
          FZ0 = ZNV*(WGHTX*d1Exdgrdt + WGHTC*d1Ecdgrdt)
          FRZ = WGHTX*d2Exdrhotdgrdt + WGHTC*d2Ecdrhotdgrdt
          FZZ = WGHTX*d2Exdgrdtdgrdt + WGHTC*d2Ecdgrdtdgrdt
