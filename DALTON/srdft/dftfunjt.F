@@ -517,7 +517,7 @@ C     check
 
 C     energy
       call ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
-      if (ipnt .le. 10) write(lupri,*)'E = ', E
+      !if (ipnt .le. 10) write(lupri,*)'E = ', E
 !      print *,'D1SRSPIN: E=',E
 
 C     (optimal?) numerical step

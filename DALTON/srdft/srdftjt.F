@@ -127,8 +127,8 @@ C     Initializations -------------------------------------------------------
 #ifdef SRDFT_DEBUG
       print_thr = 0.0d0
 #endif
-      ! edh the arrays are also zeroth in SRDFTEXCJT
-      d1Ex(6)    = 0.0d0
+      ! edh the arrays are also zeroed in SRDFTEXCJT
+      d1Ex(1:6)  = 0.0d0
       d1Exdrhot  = 0.0d0
       d1Exdrhos  = 0.0d0
       d1Exdgrdt  = 0.0d0
@@ -136,13 +136,20 @@ C     Initializations -------------------------------------------------------
       d1Exdngrd2 = 0.0d0
       d1Exdngrds2 = 0.0d0
       !----------------
-      d1Ec(6)    = 0.0d0
+      d1Ec(1:6)  = 0.0d0
       d1Ecdrhot  = 0.0d0
       d1Ecdrhos  = 0.0d0
       d1Ecdgrdt  = 0.0d0
       d1Ecdgrds  = 0.0d0
       d1Ecdngrd2 = 0.0d0
       d1Ecdngrds2 = 0.0d0
+      !---------------
+      d1Excdrhot  = 0.0d0
+      d1Excdrhos  = 0.0d0
+      d1Excdgrdt  = 0.0d0
+      d1Excdgrds  = 0.0d0
+      d1Excdngrd2 = 0.0d0
+      d1Excdngrds2 = 0.0d0
 
 
       IF (ND_SIM .NE. 1) THEN
@@ -295,13 +302,10 @@ C
         END DO
       ENDIF
 C
-
 C     Number of electrons
       ELCTRN = ELCTRN + DELCTRN
 
-
       IF (DOERG) THEN
-
 C
 C     Exchange and correlation energies and derivatives
       NORDER = 1  ! first-order derivatives
@@ -315,7 +319,7 @@ C
 !    >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
-
+       if (ipnt .eq. 1) write(lupri,*)'d1Ex', d1Ex
 C      Summation with quadrature weigths
        ExInt     = ExInt + WGHTX*Ex
        EcInt     = EcInt + WGHTC*Ec
@@ -323,6 +327,7 @@ C      Summation with quadrature weigths
 C      Potentials with quadrature weigths
 !
        if (DOGGA .and. DFT_SPINDNS) then
+           if (ipnt .eq. 1) write(lupri,*)'case 1 active'
            d1Exdrhot  = d1Ex(1)
            d1Exdrhos  = d1Ex(2)
            d1Exdgrdt  = d1Ex(3)
@@ -337,12 +342,14 @@ C      Potentials with quadrature weigths
            d1Ecdngrd2 = d1Ec(5)
            d1Ecdngrds2 = d1Ec(6)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
+           if (ipnt .eq. 1) write(lupri,*)'case 2 active'
            d1Exdrhot  = d1Ex(1)
            d1Exdrhos  = d1Ex(2)
            !-----------------
            d1Ecdrhot  = d1Ec(1)
            d1Ecdrhos  = d1Ec(2)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
+           if (ipnt .eq. 1) write(lupri,*)'case 3 active'
            d1Exdrhot  = d1Ex(1)
            d1Exdgrdt  = d1Ex(2)
            d1Exdngrd2 = d1Ex(3)
@@ -351,6 +358,7 @@ C      Potentials with quadrature weigths
            d1Ecdgrdt  = d1Ec(2)
            d1Ecdngrd2 = d1Ec(3)
        else
+           if (ipnt .eq. 1) write(lupri,*)'case 4 active'
            d1Exdrhot  = d1Ex(1)
            d1Ecdrhot  = d1Ec(1)
        end if
@@ -377,24 +385,51 @@ C      Sum of exchange and correlation
        d1Excdgrds  = d1Exdgrds  + d1Ecdgrds
        d1Excdngrds2 = d1Exdngrds2 + d1Ecdngrds2
 
-!      edh how can d1Excdgrd not be used??? and why are Exc variables
-!      never initialized???
+       if (ipnt .eq. 1) then
+          write(lupri,*)'d1Excdrhot', d1Excdrhot
+          write(lupri,*)'d1Exdrhot', d1Exdrhot
+          write(lupri,*)'d1Ecdrhot', d1Ecdrhot
 
+          write(lupri,*)'d1Excdgrdt', d1Excdgrdt
+          write(lupri,*)'d1Exdgrdt', d1Exdgrdt
+          write(lupri,*)'d1Ecdgrdt', d1Ecdgrdt
+
+          write(lupri,*)'d1Excdngrd2', d1Excdngrd2
+          write(lupri,*)'d1Exdngrd2', d1Exdngrd2
+          write(lupri,*)'d1Ecdngrd2', d1Ecdngrd2
+       end if
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
+       ! Ignore spin in start CI ...
+       if (ipnt .eq. 1) then
+          write(lupri,*)'DOERG,DOATR',DOERG,DOATR
+          write(lupri,*)'excmat before DFTKSM'
+         !CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+       end if
+
        FROMVX = .FALSE.
-       IF (DOGGA. AND. DFT_SPINDNS) THEN
-          CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
-     &         d1Excdrhot,d1Excdngrd2,d1Excdngrd2,d1Excdngrds2,DFTHRL)
-       ELSE IF (DOGGA .AND. .NOT. DFT_SPINDNS) THEN
-          CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &         d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-       ELSE IF (DFT_SPINDNS .AND. .NOT. DOGGA) THEN
-          CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
-     &         d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL)
-          CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
-     &         d1Excdrhos,d1Excdgrds,DOGGA,FROMVX,DFTHRL)
-       ENDIF
+       if (domcsrdft .and. docisrdft) then        ! (DOCISRDFT .and. DOMCSRDFT) is only true for start-CI  (cf. routine OPST)
+           CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
+     &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL,IPNT)
+           if (ipnt .eq. 1) then
+              write(lupri,*)'excmat after DFTKSM'
+              !CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+           endif
+       else if (domcsrdft .and. .not. docisrdft) then
+          if (dogga. and. dft_spindns) then       ! special treatment if gga + spin
+              CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
+     &             d1Excdrhot,d1Excdngrd2,d1Excdngrd2,d1Excdngrds2,
+     &             DFTHRL,IPNT)
+          else                                    ! pure GGA or pure spin
+             CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
+     &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL, IPNT)
+             if (dft_spindns .and. .not. dogga) then
+                 CALL DFTKSM(EXCMAT(1,1,2),GSO(KSO0),GSO(KSO1),RHG(1,2),
+     &                       d1Excdrhos,0.0d0,DOGGA,FROMVX,DFTHRL,IPNT)
+             end if
+          end if
+       end if
+C
 C
        ENDIF  !DOERG
 
@@ -407,7 +442,7 @@ C        matrix 4 is DXSAO
          JDXTAO = 2
          JDXSAO = 4
 
-!#ifdef SRDFT_DEBUG
+#ifdef SRDFT_DEBUG
        print_thr = 1000.0d0
        do k = 1,2
          do i = 1, nbast
@@ -418,7 +453,7 @@ C        matrix 4 is DXSAO
            end do
          end do
        end do      
-!#endif
+#endif
 
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
@@ -609,6 +644,9 @@ c  Exchange  ------------------------------------------------------------
          end do
       ELSE
          rhogrd(1) = sqrt(rhg(1,1)**2 + rhg(2,1)**2 + rhg(3,1)**2)
+         rhogrd(2) = 0.0d0
+         rhogrd(3) = 0.0d0
+         rhogrd(4) = 0.0d0
       END IF
 
 !     short-range exchange PBE of HSE

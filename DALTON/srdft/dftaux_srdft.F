@@ -72,7 +72,7 @@ C hjaaj June 09: DSYMV must be faster nowadays than the code below
       END      
 C /* Deck dftksmggaspin */
       SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RH,VXC,VXB,
-     &                         VSC,VSB,DFTHRL)
+     &                         VSC,VSB,DFTHRL,IPNT)
 C
 C     Erik Hedgård (feb. 2016) based on DFTKSM by T. Helgaker
 C
@@ -86,6 +86,7 @@ C
       double precision FC, FCS
       double precision DFTHRL
 
+      integer ipnt
 C
 #include <inforb.h>
 #include <dftinf.h>
@@ -106,8 +107,8 @@ C
                CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J,1),1)
             END IF
             FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
-            IF (DABS(FC).GT.DFTHRL) THEN
-               CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J,2),1)
+            IF (DABS(FCS).GT.DFTHRL) THEN
+               CALL DAXPY(NBAST,FCS,GAO,1,EXCMAT(1,J,2),1)
             END IF
          END DO
       ELSE
@@ -129,9 +130,9 @@ C
                   END DO
                END IF
                FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
-               IF (DABS(FC).GT.DFTHRL) THEN
+               IF (DABS(FCS).GT.DFTHRL) THEN
                   DO I = ISTR, IEND
-                  EXCMAT(I,J,2) = EXCMAT(I,J,2) + FC*GAO(I)
+                  EXCMAT(I,J,2) = EXCMAT(I,J,2) + FCS*GAO(I)
                   END DO
                END IF
             END DO
@@ -140,7 +141,8 @@ C
       RETURN
       END
 C /* Deck dftksm */
-      SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RH,VXC,VXB,DOGGA,FROMVX,DFTHRL)
+      SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RH,VXC,VXB,DOGGA,FROMVX,DFTHRL,
+     & IPNT)
 C
 C     T. Helgaker oct 2000
 C
@@ -149,6 +151,8 @@ C
 C
       LOGICAL DOGGA, FROMVX
       DIMENSION GAO(NBAST), GAO1(NBAST,3), EXCMAT(NBAST,NBAST),RH(3)
+
+      integer ipnt
 C
 #include <inforb.h>
 #include <dftinf.h>
