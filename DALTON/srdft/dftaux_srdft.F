@@ -70,6 +70,75 @@ C hjaaj June 09: DSYMV must be faster nowadays than the code below
       RHO13 = RHO**DP3
       RETURN
       END      
+C /* Deck dftksmggaspin */
+      SUBROUTINE DFTKSMGGASPIN(EXCMAT,GAO,GAO1,RH,VXC,VXB,
+     &                         VSC,VSB,DFTHRL)
+C
+C     Erik Hedgård (feb. 2016) based on DFTKSM by T. Helgaker
+C
+      implicit none
+C
+      integer          I, J, ISYM, ISTR, IEND
+      double precision GAO(NBAST), GAO1(NBAST,3), RH(3,2)
+      double precision EXCMAT(NBAST,NBAST,2)
+      double precision FX, FY, FZ, SX, SY, SZ
+      double precision VXB, VXC, VSB, VSC
+      double precision FC, FCS
+      double precision DFTHRL
+
+C
+#include <inforb.h>
+#include <dftinf.h>
+C
+C     Exchange-correlation contribution to Kohn-Sham matrix
+C
+      IF (NSYM.EQ.1) THEN
+         FX = VXB*RH(1,1)
+         FY = VXB*RH(2,1)
+         FZ = VXB*RH(3,1)
+         SX = VSB*RH(1,2)
+         SY = VSB*RH(2,2)
+         SZ = VSB*RH(3,2)
+         ! chech these .... no coupling terms??
+         DO J = 1, NBAST
+            FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
+            IF (DABS(FC).GT.DFTHRL) THEN
+               CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J,1),1)
+            END IF
+            FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
+            IF (DABS(FC).GT.DFTHRL) THEN
+               CALL DAXPY(NBAST,FC,GAO,1,EXCMAT(1,J,2),1)
+            END IF
+         END DO
+      ELSE
+         FX = VXB*RH(1,1)
+         FY = VXB*RH(2,1)
+         FZ = VXB*RH(3,1)
+         SX = VSB*RH(1,2)
+         SY = VSB*RH(2,2)
+         SZ = VSB*RH(3,2)
+         DO ISYM = 1, NSYM
+            ISTR = IBAS(ISYM) + 1
+            IEND = IBAS(ISYM) + NBAS(ISYM)
+            DO J = ISTR, IEND
+               FC = VXC*GAO(J)+FX*GAO1(J,1)+FY*GAO1(J,2)+FZ*GAO1(J,3)
+               ! spin
+               IF (DABS(FC).GT.DFTHRL) THEN
+                  DO I = ISTR, IEND
+                     EXCMAT(I,J,1) = EXCMAT(I,J,1) + FC*GAO(I)
+                  END DO
+               END IF
+               FCS = VSC*GAO(J)+SX*GAO1(J,1)+SY*GAO1(J,2)+SZ*GAO1(J,3)
+               IF (DABS(FC).GT.DFTHRL) THEN
+                  DO I = ISTR, IEND
+                  EXCMAT(I,J,2) = EXCMAT(I,J,2) + FC*GAO(I)
+                  END DO
+               END IF
+            END DO
+         END DO
+      END IF
+      RETURN
+      END
 C /* Deck dftksm */
       SUBROUTINE DFTKSM(EXCMAT,GAO,GAO1,RH,VXC,VXB,DOGGA,FROMVX,DFTHRL)
 C
