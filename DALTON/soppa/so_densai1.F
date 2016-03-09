@@ -17,7 +17,7 @@ C
 C
 C     PURPOSE: Start calculating the second-order SOPPA one-electron
 C              density matricx Dai by adding up integrals multiplied
-C              with T2 amplitudes. 
+C              with T2 amplitudes.
 C              Multiplication with MO-energies and factors is
 C              done in SO_DENSAI2
 C

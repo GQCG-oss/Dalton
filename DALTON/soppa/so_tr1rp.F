@@ -12,9 +12,9 @@ C              this routine we just zero the 2p2h vectors.
 
 C     Reference litterature:
 
-C     'Atomic integral driven second order polarization propagator 
+C     'Atomic integral driven second order polarization propagator
 C     calculations of the excitation spectra of napthalene and anthracene'
-C     Keld L. Bak, Henrik Koch, Jens Oddershede, Ove Christiansen 
+C     Keld L. Bak, Henrik Koch, Jens Oddershede, Ove Christiansen
 C     and Stephan P. A Sauer
 C     Journal of Chemical Physics, 112, 9, (2000)
 

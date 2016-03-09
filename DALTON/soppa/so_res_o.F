@@ -26,15 +26,15 @@ C------------------
 C
       CALL QENTER('SO_RES_O')
 C
-C-----------------------------------      
+C-----------------------------------
 C     Initialize to the RPA overlap.
 C-----------------------------------
 C
       CALL DCOPY(LRESO1E,TR1E,1,RESO1E,1)
       DO I = 1, LRESO1D
          RESO1D(I) = -TR1D(I)
-      END DO  
-C      
+      END DO
+C
 C----------------------------------------------
 C     Calculate the overlap matrix in eq. (67).
 C----------------------------------------------

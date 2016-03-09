@@ -6,13 +6,13 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     A.L. January 2004
 C
-C     PURPOSE: Transforms thee reduced space solution vector to the 
+C     PURPOSE: Transforms thee reduced space solution vector to the
 C     full space and writes it to a file (1Z 2Z).
-C     
+C
 C
 C     NOLDTR    number of trial vectors keep from the preciding iteration
 C     NNEWTR    number of new trial vectors added in this iteration
-C     ISYMTR    symmetry of the properties      
+C     ISYMTR    symmetry of the properties
 C     REDZ      REDZ(LREDZ) will be the (1Z^R 2Z) array
 C     LREDZ     dimension of the REDZ array 2*(NNEWTR + NOLDTR)
 C     LABEL     lablel of the propoerty
@@ -20,10 +20,10 @@ C     FREQ      value of the frequency
 C     WORK
 C     LWORK
 C
-CRF  Is this routine really needed? Seems like it does double work, 
+CRF  Is this routine really needed? Seems like it does double work,
 CRF  since OPTVEC also does this transformation, though with a
 CRF  unit norm. Rather we could, when we know the calculation converged,
-CRF  rescale the 1st (best) trail vector and save it only once on FNSV?? 
+CRF  rescale the 1st (best) trail vector and save it only once on FNSV??
 #include <implicit.h>
 #include <soppinf.h>
 #include <priunit.h>
@@ -59,15 +59,15 @@ C      LGPVC2   = NT2AM(ISYMTR)
       IF (DOUBLES) THEN
          LGPVC2   = 2*NT2AM(ISYMTR)
          LGPVC2H  = NT2AM(ISYMTR)
-      ELSE ! set doubles lenghts to zero 
+      ELSE ! set doubles lenghts to zero
          LGPVC2  = 0
          LGPVC2H = 0
       ENDIF
 C
       KSOVC1   = 1
-      KSOVC2   = KSOVC1 + LGPVC1 
+      KSOVC2   = KSOVC1 + LGPVC1
       KGPVC1   = KSOVC2 + LGPVC2
-      KGPVC2   = KGPVC1 + LGPVC1H 
+      KGPVC2   = KGPVC1 + LGPVC1H
       KSOVC1E  = KGPVC2 + LGPVC2H
       KSOVC1D  = KSOVC1E + LGPVC1H
       KSOVC2E  = KSOVC1D + LGPVC1H
@@ -86,7 +86,7 @@ C
       CALL SO_OPEN(LUTR1D,FNTR1D,LGPVC1H)
 C
 C     Initialize unit numbers before GPOPEN
-      LUSV1E = -1      
+      LUSV1E = -1
       CALL GPOPEN(LUSV1E,FNSV1E,'UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       LUSV1D = -1
@@ -103,7 +103,7 @@ C     Initialize unit numbers before GPOPEN
      &               .FALSE.)
       ENDIF
 C
-C      
+C
 C      CALL DZERO(WORK(KSOVC1E),LGPVC1H)
 C      CALL DZERO(WORK(KSOVC1D),LGPVC1H)
       CALL DZERO(WORK(KSOVC1),LGPVC1)
@@ -134,7 +134,7 @@ cLig          WRITE(LUPRI,'(1X,A,F10.8)') 'C2: ',REDZ(ITRIAL+NTRIAL)
 cLig DEBUG >>
         ENDIF
 cLig  (1b 2b)i * Zi
-CRF     Contribution of the straigt vectors 
+CRF     Contribution of the straigt vectors
         CALL DAXPY(LGPVC1H,REDZ(ITRIAL),WORK(KSOVC1E),1,
      &             WORK(KSOVC1),1)
         CALL DAXPY(LGPVC1H,REDZ(ITRIAL),WORK(KSOVC1D),1,
@@ -162,7 +162,7 @@ C
       IF(IPRSOP.GT.5) THEN
         CALL AROUND('Solution Vector')
         CALL OUTPUT(WORK(KSOVC1),1,LGPVC1H,1,2,LGPVC1H,2,1,LUPRI)
-        IF(DOUBLES) 
+        IF(DOUBLES)
      &    CALL OUTPUT(WORK(KSOVC2),1,LGPVC2H,1,2,LGPVC2H,2,1,LUPRI)
       ENDIF
 C
@@ -205,9 +205,9 @@ C      ENDIF
 cLig DEBUG <> compute the property
 CRF generate for d-ex
 C      DFACTOR = -1.0D0
-C      IF (IMAGPROP) DFACTOR = 1.0D0      
+C      IF (IMAGPROP) DFACTOR = 1.0D0
 C      PROP1  =      DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KSOVC1),1)
-C     & + DFACTOR * DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KSOVC1+LGPVC1H),1) 
+C     & + DFACTOR * DDOT(LGPVC1H,WORK(KGPVC1),1,WORK(KSOVC1+LGPVC1H),1)
 C      PROP = PROP1
 C      IF(DOUBLES) THEN
 C         PROP2 =      DDOT(LGPVC2H,WORK(KGPVC2),1,WORK(KSOVC2),1)

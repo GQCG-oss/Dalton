@@ -10,7 +10,7 @@ C     Stephan Sauer, June 1996
 C     based on RSPORD by Jeppe Olsen, November 1984
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C        Analyse and order the eigenvalues and eigenvectors of the 
+C        Analyse and order the eigenvalues and eigenvectors of the
 C        reduced eigenvalue problem.
 C
 C NTRIAL          total # of trial vectors and paired trial vectors
@@ -94,7 +94,7 @@ C
             ALFAI(I) = ALFAI(I) / BETA(I)
          ELSE
             ISING = ISING + 1
-            WRITE(LUPRI,'(/,A,/,A,I6,1P,3D13.6)') 
+            WRITE(LUPRI,'(/,A,/,A,I6,1P,3D13.6)')
      &            ' *** Singularity in reduced eigenvalue problem :',
      &            '     I,ALFAR(I),ALFAI(I),BETA(I):',
      &                  I, ALFAR(I),ALFAI(I),BETA(I)
@@ -102,7 +102,7 @@ C
 C
          IF (ABS(ALFAI(I)) .GT. ZERO) THEN
             ICMPLX = ICMPLX + 1
-            WRITE(LUPRI,'(/,A,A,/,A,I6,1P,2D13.6)') 
+            WRITE(LUPRI,'(/,A,A,/,A,I6,1P,2D13.6)')
      &            ' *** Complex eigenvalue in reduced eigenvalue ',
      &            'problem :','     Real and imaginary part :  ',
      &            I,ALFAR(I),ALFAI(I)
@@ -125,7 +125,7 @@ C
             IF (ABS(BETA(I)) .GE. SMALL) THEN
 C
                IF (ABS(ALFAI(I)) .GT. ZERO) THEN
-                  WRITE(LUPRI,'(1X,A,I4,2P,2D14.6)') 
+                  WRITE(LUPRI,'(1X,A,I4,2P,2D14.6)')
      &                  'I, ALFAR(I), ALFAI(I)         :',
      &                   I, ALFAR(I), ALFAI(I)
                ELSE
@@ -136,7 +136,7 @@ C
 C
             ELSE
 C
-               WRITE(LUPRI,'(1X,A,I4,2P,3D14.6)') 
+               WRITE(LUPRI,'(1X,A,I4,2P,3D14.6)')
      &               'I, ALFAR(I), ALFAI(I), BETA(I):',
      &                I, ALFAR(I), ALFAI(I), BETA(I)
             END IF
@@ -265,7 +265,7 @@ C
 C
       IF ( IPRSOP .GE. 4 ) THEN
 C
-         WRITE(LUPRI,'(3(/,A,I6))') 
+         WRITE(LUPRI,'(3(/,A,I6))')
      &          ' *** Eigenvectors with positive metric:',IPOS,
      &          '     Eigenvectors with zero metric:    ',IZER,
      &          '     Eigenvectors with negative metric:',INEG
@@ -332,7 +332,7 @@ C
 C
             DO I = 1, IPOS
                IF (ABS(ABS(ALFAR(I))-ABS(ALFAR(IPOS+I))).GT.SMALL2) THEN
-                  WRITE(LUPRI,'(/A)') 
+                  WRITE(LUPRI,'(/A)')
      &                  ' **WARNING** Eigenvalues not paired'
                   WRITE(LUPRI,'(I10,5X,1P,D15.8,6X,D15.8)')
      &                            I,ALFAR(I),ALFAR(IPOS+I)

@@ -10,16 +10,16 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Stephan Sauer and Keld Bak, May 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C     Andrea Ligabue, December 2003: linear response functions 
+C     Andrea Ligabue, December 2003: linear response functions
 C                                    implemented
 C
-C     PURPOSE: Solve the SOPPA linear response equations 
-C              using an AO-driven algorithm. 
+C     PURPOSE: Solve the SOPPA linear response equations
+C              using an AO-driven algorithm.
 C
 C       LABEL   label of the property to be computed
 C       ISYMTR  symmetry
 C       NEXCI   (number of excitation) ... for us is always 1
-C       MAXIT   max # iteration 
+C       MAXIT   max # iteration
 C       FRVAL   NFRVAL values of the frequencies
 C       NFRVAL  number of frequencies
 C       RESINM  LRESIMN values ...
@@ -71,7 +71,7 @@ C     are allocated consecutively, so that it can be send together. Only
 C     use it for this purpose.
 C     The definition must match that in soppa_nodedriver
       INTEGER   INFO_ARRAY(4)
-      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit), 
+      EQUIVALENCE (info_array(1), cp_isymtr), (info_array(2),nit),
      &            (info_array(3), nnewtr),    (info_array(4),noldtr)
       INTEGER(MPI_INTEGER_KIND) :: IERR
 #endif
@@ -126,12 +126,12 @@ C
 C Not a real parallel job, don't bother
          lAssignedIndices = 1
          kAssignedIndices = 0
-      else  
+      else
          lAssignedIndices = (maxnumjobs + 1) /IRAT
          kAssignedIndices = KEND1
          KEND1 = kAssignedIndices + lAssignedIndices
       endif
-#endif 
+#endif
       LWORK1 = LWORK - KEND1
 C
       CALL SO_MEMMAX('SO_LRSOEQ.1',LWORK1)
@@ -139,7 +139,7 @@ C
 C------------------
 C     Write banner.
 C------------------
-C 
+C
       WRITE(LUPRI,'(A)') ''
       WRITE(LUPRI,'(/,2X,A)') '*********************************'//
      &                        '*********************************'
@@ -149,8 +149,8 @@ C
 C      WRITE(LUPRI,'(2X,A)') '*********************************'//
 C     &                        '*********************************'
       WRITE(LUPRI,9001)
-      WRITE(LUPRI,9011) 
-      WRITE(LUPRI,9001)  
+      WRITE(LUPRI,9011)
+      WRITE(LUPRI,9001)
 C
 C------------------------------
 C     Loop over the frequencies
@@ -192,9 +192,9 @@ C
       NONEWT = .FALSE.
 C
 C     At the moment SO_ERES will allways calculate DENSAI
-C     when NIT == 1, it has no sense of "IFREQ". Zeroing it 
+C     when NIT == 1, it has no sense of "IFREQ". Zeroing it
 C     here will compensate
-      IF ( SO_NEEDS_DENSAI(MODEL) ) 
+      IF ( SO_NEEDS_DENSAI(MODEL) )
      &    CALL DZERO(DENSAI, LDENSAI)
 C
 C----------------------------------------------------------------------
@@ -223,7 +223,7 @@ C
          END IF
 C
 C--------------------------------------------------------------
-C        Make E[2] linear transformation of trialvectors giving 
+C        Make E[2] linear transformation of trialvectors giving
 C        resultvectors.
 C--------------------------------------------------------------
 C
@@ -285,7 +285,7 @@ C
 C-----------------------------------------------------------------------
 C          Calculate the gradient property vectors with the right DENSAI
 C-----------------------------------------------------------------------
-C          Only the one-partcle part need to be re-done -> 
+C          Only the one-partcle part need to be re-done ->
 C          Maybe pass in MODEL = 'AOHRP'?
            LGPVC1  =  NT1AM(ISYMTR)
 CPFP   2009-Jun
@@ -294,8 +294,8 @@ C           LGPVC2  =  NT2AM(ISYMTR)
 C           LGPVC2  = 2 * N2P2HOP(ISYMTR)
 Cend-PFP
            KGPVC1  = KEND1
-           KGPVC2  = KGPVC1 + LGPVC1 
-           KEND2   = KGPVC2 + LGPVC2 
+           KGPVC2  = KGPVC1 + LGPVC1
+           KEND2   = KGPVC2 + LGPVC2
            LWORK2  = LWORK  - KEND2
 C
            CALL SO_MEMMAX ('SO_LRSOEQ.2',LWORK2)
@@ -305,7 +305,7 @@ C
      &                  ISYMTR,IMAGPROP2,'AOHRP',
      &                  T2MP,LT2MP,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                  DENSAI,LDENSAI,WORK(KEND2),LWORK2)
-           IF ( .NOT.(IMAGPROP.EQV.IMAGPROP2) ) 
+           IF ( .NOT.(IMAGPROP.EQV.IMAGPROP2) )
      &         WRITE(LUPRI,'(A)') 'WARNING: Problem with property type'
 C
 C---------------------------------------------------------
@@ -326,7 +326,7 @@ C              LGPVC2H = LGPVC2 /2
               CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
 C              CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
            ENDIF
-C     
+C
            CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
 C           CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
 C
@@ -361,14 +361,14 @@ C
          NOLDTR = MIN(NOLDTR + NNEWTR, (NSAVMX - 1) * NEXCI )
 C
 C-------------------------------------------------------------------
-C        Determine the residues from the current optimal solution 
+C        Determine the residues from the current optimal solution
 C        vectors and decide if convergence is obtained for any of
 C        the vectors. For the non-converged vectors create new
-C        trial-vectors. These are orthogonalized against the 
+C        trial-vectors. These are orthogonalized against the
 C        previous optimal trial-vectors and among themself including
 C        the vectors obtained from pairing.
 C-------------------------------------------------------------------
-C        
+C
          IF (NIT .GE. MAXIT) NONEWT = .TRUE.
 C
          CALL GETTIM (DUMMY,WTIMES)
@@ -394,7 +394,7 @@ C            WRITE(LUPRI,9011)
 C            WRITE(LUPRI,9010)
          WRITE(LUPRI,9012) NIT,FRVAL(IFREQ),PROP,RESINM(1),CONV(1)
 C            WRITE(LUPRI,9010)
-C     
+C
 C
 C---------------------------------------
 C        Flush the standard output file.
@@ -409,11 +409,11 @@ C---------------------------------------------------------------------
 C
       IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GO TO 100
 C
-C--------------------------------------------------------------      
+C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
 C-------------------------------------------------------------
-C 
-      ENORMINV = 1.0D0/ENORM 
+C
+      ENORMINV = 1.0D0/ENORM
       CALL SO_PERTDENS(MODEL,SOP_LINRES,1,
      &                 FRVAL(IFREQ),1,LABEL,
      &                 ISYMTR,IMAGPROP,ENORMINV,
@@ -436,7 +436,7 @@ C
             WRITE(LUPRI,9001)
             WRITE(LUPRI,9002)
             WRITE(LUPRI,9003)
-            WRITE(LUPRI,9004) 
+            WRITE(LUPRI,9004)
 C            WRITE(LUPRI,9005) NEXCI - NLINDP
             WRITE(LUPRI,9008)
 C
@@ -452,7 +452,7 @@ C
 C
          NNEWTR = 0
 C
-      ELSE 
+      ELSE
 C
          CALL QUIT('ERROR occured in SO_LRSOEQ')
 C

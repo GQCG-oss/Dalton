@@ -369,7 +369,7 @@ C
                ENDIF
 C
                IF ( NEXCI .EQ. 0 ) THEN
-                  WRITE (LUPRI,'(1X,A)') 
+                  WRITE (LUPRI,'(1X,A)')
      &               'There are no possible excitations of this '//
      &               'symmetry!'
                   CYCLE

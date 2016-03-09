@@ -86,7 +86,7 @@ C
       IF (LWORK3 .LT. 0) CALL STOPIT('RP_TRIAL1.3',' ',KEND3,LWORK)
 C
 C-----------------------------------------------------------
-C     Set the number of new trial vectors equal to number of 
+C     Set the number of new trial vectors equal to number of
 C     excitations.
 C-----------------------------------------------------------
 C
@@ -137,7 +137,7 @@ C-----------------------------------------------
 C     Orthogonalize new trial vectors over S[2].
 C-----------------------------------------------
 C
-CRF Is this needed? In the current way of making the guess, it seems 
+CRF Is this needed? In the current way of making the guess, it seems
 CRF that the vectors must be orthogonal already.
          NLINDP = 0
          NOLDTR = 0

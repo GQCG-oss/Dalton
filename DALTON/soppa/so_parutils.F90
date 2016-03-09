@@ -16,12 +16,12 @@ module so_parutils
 #include "mxcent.h"
 #include "aovec.h"
 #include "iratdef.h"
-#include "iprtyp.h" 
-#include "maxaqn.h" 
-#include "chrnos.h" 
+#include "iprtyp.h"
+#include "maxaqn.h"
+#include "chrnos.h"
 #include "ibtpar.h"
 !
-! These common-blocks are needed across this module 
+! These common-blocks are needed across this module
 !
 #include "infpar.h"
 #include "ccorb.h"
@@ -33,14 +33,14 @@ module so_parutils
 !   private
 !
 ! Maybe get this from iso_fortran_env, when supported in most compilers?
-!   
+!
 
    integer, parameter :: real8 = kind(1.0D0)
 !  Flags to be send to slaves to tell them, what work to do
-   integer, parameter :: parsoppa_release_slave = 0,   &! Leave 
+   integer, parameter :: parsoppa_release_slave = 0,   &! Leave
      &                   parsoppa_do_eres  = 1  ! Call eres routine
 !
-! SOPPA communicator (needed if not all nodes participate in soppa)  
+! SOPPA communicator (needed if not all nodes participate in soppa)
    integer(mpi_integer_kind) :: soppa_comm_active    ! communicator
    integer                   :: soppa_num_active     ! number of nodes
 
@@ -49,7 +49,7 @@ module so_parutils
 !
 ! Make the defines in infpar, a fortran parameter (nicer IMO).
 ! also, maybe change the name?
-   integer(mpi_integer_kind), parameter :: my_mpi_integer = my_MPI_INTEGER 
+   integer(mpi_integer_kind), parameter :: my_mpi_integer = my_MPI_INTEGER
    ! Actually every call to MPI functions should be explicitly typed,
    ! but it is a pain to write 1_mpi_integer_kind everywhere...
    integer(mpi_integer_kind), parameter :: one_mpi = 1, zero_mpi = 0
@@ -67,12 +67,12 @@ contains
 !  This routine is defined in order to take these quite verbose
 !  calls out of the main flow of the soppa_nodedriver/par_so_eres
 !  routines.
-!  
+!
 !  It must be called by the master and all slaves or not at all.
 !
 !  Rasmus Faber 13/7 - 2015
 !  Using code of F. Beyer
-!         
+!
 !  Eventually we may want to replace as much of the broad-casting of easily
 !  recalculatable information with calls to the proper initiation routines
 !
@@ -83,14 +83,14 @@ contains
 
 #include "priunit.h"
 ! These include files depend on previous include files
-!#include "infpar.h" 
-#include "eribuf.h" 
+!#include "infpar.h"
+#include "eribuf.h"
 #include "eritap.h"
 
 ! The rest...
 #include "inftap.h"
 !#include "ccorb.h"
-#include "infind.h" 
+#include "infind.h"
 #include "blocks.h"
 #include "ccsdinp.h"
 !#include "ccsdsym.h"
@@ -102,11 +102,11 @@ contains
 !#include "parsoppa.h"
 #include "aobtch.h"
 #include "odclss.h"
-#include "ccom.h" 
-#include "ericom.h" 
-#include "eridst.h" 
-#include "erithr.h"   
-#include "erimem.h"  
+#include "ccom.h"
+#include "ericom.h"
+#include "eridst.h"
+#include "erithr.h"
+#include "erimem.h"
 #include "odbtch.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -119,7 +119,7 @@ contains
 #include "ccpack.h"
 #include "ccinftap.h"
 
-      integer(mpi_integer_kind) :: bytesize, ierr 
+      integer(mpi_integer_kind) :: bytesize, ierr
          !
          !The infinite list of getbytespan -- mpi_bcast starts here
          !
@@ -237,7 +237,7 @@ contains
       call getbytespan(luiajb, cc_tapLAST, bytesize)
       call mpi_bcast(luiajb,bytesize,mpi_byte,0,mpi_comm_world, ierr)
 
-      call getbytespan(gradml, gnrinfLAST, bytesize) 
+      call getbytespan(gradml, gnrinfLAST, bytesize)
       call mpi_bcast(gradml, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
 
       call stupid_isao_bcast_routine()
@@ -250,16 +250,16 @@ contains
       call mpi_bcast(fnvajkl, 10, mpi_character, 0, mpi_comm_world,ierr)
       call mpi_bcast(vclthr, 24, mpi_byte, 0, mpi_comm_world, ierr)
 
-      ! The slaves need to create the iadrpk array by 
+      ! The slaves need to create the iadrpk array by
       ! calling the module functions rather than with a bcast
-      ! iadrpk_dim is initialized in get_iadrpk, no need to send it 
-!      call mpi_bcast(iadrpk_dim, 1, mpi_integer, 0,mpi_comm_world,ierr) 
+      ! iadrpk_dim is initialized in get_iadrpk, no need to send it
+!      call mpi_bcast(iadrpk_dim, 1, mpi_integer, 0,mpi_comm_world,ierr)
       if (.not. allocated(iadrpk) ) then
          call get_iadrpk(lupri, nsym, muld2h, nbas,           &
      &                   nbast, i2bst, iaodis, iaodpk)
       endif
 
-      if (herdir) then 
+      if (herdir) then
          print *, "HERDIR", maxshl
          soppa_nint = maxshl
       else ! ERIDI
@@ -271,10 +271,10 @@ contains
 !      CALL DZERO(WORK(KAAB),LAAB)
 
       return
-      
+
    end subroutine soppa_update_common
 
- 
+
 
    subroutine soppa_nodedriver (work, lwork, iprint)
 !
@@ -282,12 +282,12 @@ contains
 ! SOPPA calculations. The slaves go here from dalton_nodriver, when
 ! they are activated for SOPPA work.
 ! Upon entry they are updated with at lot of stuff, which is needed
-! across SOPPA routines. 
+! across SOPPA routines.
 ! The slaves then wait to be told to call a particular SOPPA routine.
 ! (Currently only SO_ERES)
-! 
+!
 ! Once the SOPPA part of the calculation is over they can be released
-! back to dalton_nodedriver 
+! back to dalton_nodedriver
 !
 ! Rasmus Faber 13/7 - 2015
 !
@@ -299,7 +299,7 @@ contains
       real(real8)         :: work(*)
       logical :: update_common_blocks
       integer :: soppa_work_kind
-! Use proper integerkind for mpi-arguments, irrespective of 
+! Use proper integerkind for mpi-arguments, irrespective of
 ! what flags are use for compilation of MPI and Dalton
 ! Not that it will change things right away, but perhaps one day
       integer(mpi_integer_kind) :: ierr, numprocs, mycolor
@@ -323,7 +323,7 @@ contains
       !
       call mpi_bcast( model, 5, mpi_character, 0, mpi_comm_world, &
                       ierr )
-      ! Do we need to do an allreduce to check that all 
+      ! Do we need to do an allreduce to check that all
       ! Processes agree not to update the common-blocks?
       ! For now just let master tell the slaves
       call mpi_bcast(update_common_blocks, 1, mpi_logical,        &
@@ -333,69 +333,69 @@ contains
          ! Recieve all the system and symmetry information
          ! from the master here.
          ! Master MUST also call this routine
-         call soppa_update_common() 
+         call soppa_update_common()
       endif
       !  Set print-level for slave
       iprsop = iprint
       !
       ! Set up communicator for soppa. Work will later be separated into
       ! integral distributions, which will be distributed among the nodes
-      ! If there are more processes than integral distributions, 
+      ! If there are more processes than integral distributions,
       ! we don't include the rest in the soppa communicator.
       !
       numprocs = nodtot + 1 ! nodtot from infpar.h
-      if ( numprocs .le. soppa_nint ) then 
+      if ( numprocs .le. soppa_nint ) then
          !
          ! Usual case:
          ! Just keep mpi_comm_world
-         soppa_num_active  = numprocs 
+         soppa_num_active  = numprocs
          soppa_comm_active = mpi_comm_world
-      else 
-         ! This should happen so rarely, that we don't really need 
-         ! to worry about it. Should be done in some intelligent 
+      else
+         ! This should happen so rarely, that we don't really need
+         ! to worry about it. Should be done in some intelligent
          ! manner though
-         soppa_num_active  = soppa_nint 
-         if ( mynum .ge. soppa_num_active ) then 
+         soppa_num_active  = soppa_nint
+         if ( mynum .ge. soppa_num_active ) then
             mycolor = MPI_UNDEFINED
-         else 
+         else
             mycolor = 0
          endif
          call mpi_comm_split( mpi_comm_world, mycolor, mynum, &
                               soppa_comm_active, ierr)
       endif
-      
+
       !
       ! Allocate the work-array
-      ! 
+      !
       ! This is allocations, which persist across iterations
       ! We need at least DENSIJ, DENSAB, FOCKD, DENSAI, and
       ! the mp2 - amplitudes
       !
       kend = 1 ! Start from one, or some suitably alligned location?
 
-      ! 
+      !
       ! These allocations mirror exactly those of so_excit1
       !
       lfockd = norbt   ! from ccorb.h
       kfockd = kend
       kend   = kfockd + lfockd
-      
-      ! following only if not RPA...      
+
+      ! following only if not RPA...
       if ( model .ne. 'AORPA' ) then
-         lt2am   = nt2amx             ! from ccsdsym.h 
+         lt2am   = nt2amx             ! from ccsdsym.h
          ldensij = nijden(1)          ! from soppinf.h
          ldensab = nabden(1)          ! from soppinf.h
          ldensai = naiden(1)          ! from soppinf.h
 
-         kt2am   = kend 
+         kt2am   = kend
          kdensij = kt2am   + lt2am    ! densij and densab is not
          kdensab = kdensij + ldensij  ! currently used on slaves
          kdensai = kdensab + ldensab
          kend    = kdensai + ldensai
-         ! 
+         !
          ! Zero densai (To mirror initialization in so_excit1)
          call dzero( work(kdensai), ldensai )
-      else 
+      else
          ! For RPA initialize the addresses as negative, to ensure a crash
          ! if they are for some reason accessed anyway
          kt2am   = -1
@@ -412,30 +412,30 @@ contains
       lAssignedIndices = (maxnumjobs + 1) / irat
       kAssignedIndices = kend
       kend = kAssignedIndices + lAssignedIndices
-      
+
       lworkf = lwork - kend
       if ( kend .gt. lwork ) call stopit('SOPPA_NODEDRIVER', '2',   &
      &                                    kend, lwork )
 
-      ! Recieve the stuff, which is already known.  
+      ! Recieve the stuff, which is already known.
       if ( model .ne. 'AORPA' ) then
          ! The MP2 amplitudes
-         call mpi_bcast( work(kt2am), lt2am, mpi_real8, 0,        & 
+         call mpi_bcast( work(kt2am), lt2am, mpi_real8, 0,        &
      &                   mpi_comm_world, ierr )
-         ! Densab and Densij could be added here, but is currently 
+         ! Densab and Densij could be added here, but is currently
          ! not used by the slaves...
       endif
 !
 !     Bugfix: need to call er2ini here, so that it does not overwrite
 !             configured values later
       call er2ini
-         
+
 !
-! Go to an infinite loop... While we are here, the master 
+! Go to an infinite loop... While we are here, the master
 ! broadcasts job descriptions to the slaves.
 !
-      do 
-            ! Recieve work from master 
+      do
+            ! Recieve work from master
          call mpi_bcast ( soppa_work_kind, 1, my_mpi_integer, 0,       &
      &               mpi_comm_world, ierr )
 
@@ -465,9 +465,9 @@ contains
             ! MODEL has allready have been communicated
             !
             call mpi_bcast( info_array(1), 4, my_mpi_integer, 0,     &
-                            mpi_comm_world, ierr) 
-                         
-            ! Inactive processes do nothing            
+                            mpi_comm_world, ierr)
+
+            ! Inactive processes do nothing
             if ( soppa_comm_active .eq. MPI_COMM_NULL ) cycle
             !
             ! All should now run through same ERES routine
@@ -479,12 +479,12 @@ contains
                   work(kfockd), lfockd,                   &! Fockd
                   work(kdensai), ldensai,                 &! Densai
                   nit, isymtr,                            &! Info
-                  work(kassignedindices),maxnumjobs,      &! Load-balancing space           
-     &            work(kend), lworkf )                     ! Work-array 
+                  work(kassignedindices),maxnumjobs,      &! Load-balancing space
+     &            work(kend), lworkf )                     ! Work-array
             !
          case default
             !
-            ! Anything else 
+            ! Anything else
             !--------------
             call quit('Slave recieved invalid job-description'//     &
                             ' in AOSOPPA nodedriver.' )
@@ -534,12 +534,12 @@ contains
      &                   0, mpi_comm_world, ierr )
 !
       if ( update_common_blocks ) then
-   
+
          call soppa_update_common()
       endif
       !
       !  Setup communicator for SOPPA, see comment in soppa_nodedriver
-      ! 
+      !
       numprocs = nodtot + 1 ! from infpar.h
       if ( numprocs .le. soppa_nint ) then ! mxcall from distcl.h
          soppa_num_active  = numprocs
@@ -550,7 +550,7 @@ contains
                               soppa_comm_active, ierr)
       endif
       !
-      ! Send allready known stuff such as the 
+      ! Send allready known stuff such as the
       !
       if ( model .ne. 'AORPA' ) then
          ! The MP2 (or CC T2) amplitudes
@@ -559,7 +559,7 @@ contains
       endif
 
 
-         
+
       return
 
    end subroutine soppa_initialize_slaves
@@ -574,11 +574,11 @@ contains
 ! called
       integer(mpi_integer_kind) :: ierr
 !
-! Send release signal      
+! Send release signal
       call mpixbcast(parsoppa_release_slave, 1, 'INTEGE', 0)
-!     
+!
 ! Deallocate the communicator
-! 
+!
       if (soppa_comm_active .ne. mpi_comm_world )  then
 !         write (*,*) 'Freeing soppa comm'
 !         write (*,*) soppa_comm_active, mpi_comm_world
@@ -590,7 +590,7 @@ contains
 
    subroutine stupid_isao_bcast_routine()
 ! For the isoa
-#include "ccisao.h" 
+#include "ccisao.h"
 !
 !  This is a simple (but stupid) work-around to the problem that
 !  the array ISAO exist in both infind.h and ccisao.h and that it seem
@@ -607,7 +607,7 @@ contains
 !  popsum = 0
 !  do isym = 1, nsym
 !     popsum = nbas(isym) + popsum
-!     if ( aoindex .le. popsum ) return 
+!     if ( aoindex .le. popsum ) return
 !  enddo
 !  ! Some error statement, here would be in order
 !  end function isao
@@ -615,7 +615,7 @@ contains
       integer(mpi_integer_kind)  :: bytesize, ierr
 
 !    This size SHOULD be MXCORB x "integer size"
-!    But since this is a cc block, someone may change that to MXCORB_CC       
+!    But since this is a cc block, someone may change that to MXCORB_CC
       call getbytespan(isao, ccisaolast, bytesize )
       call mpi_bcast(isao, bytesize, mpi_byte, master, mpi_comm_world,   &
      &               ierr)
@@ -625,8 +625,8 @@ contains
 
 endmodule so_parutils
 !
-! This routine, though currently only used insides the module, sits here 
-! because fortran only recently got a void type (TYPE(*)), and it will be 
+! This routine, though currently only used insides the module, sits here
+! because fortran only recently got a void type (TYPE(*)), and it will be
 ! a pain to write overloaded interfaces for all possible combinations.
 ! /* deck getbytespan */
 subroutine getbytespan(firstvar, lastvar, bytespan)
@@ -642,18 +642,18 @@ subroutine getbytespan(firstvar, lastvar, bytespan)
 ! block to calculate the span in bytes from the first variable
 ! in the common block and up to, but not including, the last variable.
 !
-! Point the firstvar to the first variable in the common block  
+! Point the firstvar to the first variable in the common block
 ! and point lastvar to the last variable in the common block.
 !
 ! Lastvar should have a name like <commonblockname>LAST
 ! ie. CCSDGNINPLAST (see include/ccsdinp.h for an example)
 !
 ! These <name>LAST variables are only there to facilitate easy common block
-! transfers. They are never explicitly needed in a calculation. 
+! transfers. They are never explicitly needed in a calculation.
 ! They should always be of type int.
 !
-! Getbytespan calculates the total amount of bytes needed for an MPI_BCAST 
-! to transfer the whole block in one go (with datatype = mpi_byte), 
+! Getbytespan calculates the total amount of bytes needed for an MPI_BCAST
+! to transfer the whole block in one go (with datatype = mpi_byte),
 ! including the first but excluding the <name>last variable.
 !
 ! Example of use:
@@ -671,13 +671,13 @@ subroutine getbytespan(firstvar, lastvar, bytespan)
       integer(mpi_address_kind) :: firstmem, lastmem
       integer              :: totaltransfer = 0
       integer, parameter   :: approxeager = 4096 ! Approximate upper limit for eager protocol transfers. Implementation dependent.
-      integer              :: numeagersends=0, numrendezsends=0 
+      integer              :: numeagersends=0, numrendezsends=0
       logical, parameter   :: debug = .false.
 
 
-      call mpi_get_address(firstvar, firstmem, ierr) 
-      call mpi_get_address(lastvar, lastmem, ierr) 
-      bytespan = lastmem - firstmem 
+      call mpi_get_address(firstvar, firstmem, ierr)
+      call mpi_get_address(lastvar, lastmem, ierr)
+      bytespan = lastmem - firstmem
       if (bytespan.lt.1) then
           call quit('subroutine getbytespan calculated a non-sensical ', &
      &    'size for common block transfer.')
@@ -694,7 +694,7 @@ subroutine getbytespan(firstvar, lastvar, bytespan)
 
          write(lupri, '(a, i8)')  &
      &   "Running amount of Bytes transferred via getbytespan: "  &
-     &   ,totaltransfer  
+     &   ,totaltransfer
          write(lupri, '(a, i8)') "Estimated transfers using the ", &
      &               "eager protocol: ", numeagersends
          write(lupri, '(a, i8)') "Estimated transfers using the ", &
@@ -702,12 +702,12 @@ subroutine getbytespan(firstvar, lastvar, bytespan)
       endif
 
       return
-end subroutine 
+end subroutine
 
 #else
 ! Dummy subroutune
 subroutine so_parutils()
    call quit('MPI dummy subroutine called')
 endsubroutine
-#endif 
+#endif
 

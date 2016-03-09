@@ -11,8 +11,8 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Calculate SIGMA1(ALFA,I) and SIGMA2(ALFA,I)
 C                                     ~ ~
-C              which are defined as ( k c | alfa delta ) x 
-C              T2M1( c k i delta) with summation of repeated indices. 
+C              which are defined as ( k c | alfa delta ) x
+C              T2M1( c k i delta) with summation of repeated indices.
 C              See also eq. (34) and (35).
 C
 #include "implicit.h"
@@ -88,7 +88,7 @@ C
                LWORK2  = LWORK - KEND2
 C
                CALL SO_MEMMAX ('SO_SIGAI.2',LWORK2)
-               IF (LWORK2 .LT. 0) 
+               IF (LWORK2 .LT. 0)
      &             CALL STOPIT('SO_SIGAI.2',' ',KEND2,LWORK)
 C
                NTOTGM = MAX(NBAS(ISGAM),1)
@@ -136,7 +136,7 @@ C
                LWORK3  = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_SIGAI.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &             CALL STOPIT('SO_SIGAI.3',' ',KEND3,LWORK)
 C
                NTOTGM = MAX(NBAS(ISGAM),1)
@@ -180,7 +180,7 @@ C
      &             CALL STOPIT('SO_SIGAI.4',' ',KEND4,LWORK)
 C
 C----------------------------------------------------------------------
-C              Extract T2M1 amplitudes for given symmetries of C, K and 
+C              Extract T2M1 amplitudes for given symmetries of C, K and
 C              I.
 C----------------------------------------------------------------------
 C

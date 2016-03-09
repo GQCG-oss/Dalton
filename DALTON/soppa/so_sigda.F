@@ -89,7 +89,7 @@ C
                LWORK2  = LWORK - KEND2
 C
                CALL SO_MEMMAX ('SO_SIGDA.2',LWORK2)
-               IF (LWORK2 .LT. 0) 
+               IF (LWORK2 .LT. 0)
      &             CALL STOPIT('SO_SIGDA.2',' ',KEND2,LWORK)
 C
                NTOTK  = MAX(NRHF(ISYMK),1)
@@ -139,7 +139,7 @@ C
                LWORK3  = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_SIGDA.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &             CALL STOPIT('SO_SIGDA.3',' ',KEND3,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)

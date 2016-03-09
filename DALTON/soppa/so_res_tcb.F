@@ -112,7 +112,7 @@ C
                LWORK3 = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_TCB.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &             CALL STOPIT('SO_RES_TCB.3',' ',KEND3,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
@@ -166,7 +166,7 @@ C
                LWORK4  = LWORK  - KEND4
 C
                CALL SO_MEMMAX ('SO_RES_TCB.4',LWORK4)
-               IF (LWORK4 .LT. 0) 
+               IF (LWORK4 .LT. 0)
      &             CALL STOPIT('SO_RES_TCB.4',' ',KEND4,LWORK)
 C
                CALL SO_BEXTRACT(WORK(KPTR2E),LPTR2E,WORK(KPTR2D),LPTR2D,

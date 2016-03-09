@@ -8,7 +8,7 @@ C
 C     Keld Bak, May 1996
 C     Stephan P. A. Sauer, November 2003: merge with DALTON 2.0
 C
-C     PURPOSE: Calculate diagonale parts of the SOPPA E[2] matrix 
+C     PURPOSE: Calculate diagonale parts of the SOPPA E[2] matrix
 C              (excluding first and second order contributions in
 C              the one-particle part) and of the S[2] matrix.
 C
@@ -26,7 +26,7 @@ C
 C
       LOGICAL   DOUBLES
 C
-      CHARACTER*5 MODEL      
+      CHARACTER*5 MODEL
 C
 C------------------
 C     Add to trace.
@@ -35,7 +35,7 @@ C
       CALL QENTER('SO_DIAG')
 C
       DOUBLES = (MODEL.EQ.'AOSOP').OR.(MODEL.EQ.'AOSOC').OR.
-     &          (MODEL.EQ.'DCRPA')      
+     &          (MODEL.EQ.'DCRPA')
 C
 C------------------------------------------------------------------
 C     Determine the symmetri of the result vector from the symmetry
@@ -64,14 +64,14 @@ C
       IF (LWORK1 .LT. 0) CALL STOPIT('SO_DIAG',' ',KEND1,LWORK)
 C------------------------
 C     Open file
-C------------------------      
+C------------------------
       LUDIAG = -1
       CALL GPOPEN(LUDIAG,'SO_DIAG','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND(LUDIAG)
 
 C------------------------------------------------------------------------
-C     Calculate the diagonal one-electron parts of the SOPPA E[2] matrix, 
+C     Calculate the diagonal one-electron parts of the SOPPA E[2] matrix,
 C     the first and second order contributions are excluded.
 C------------------------------------------------------------------------
 C
@@ -80,7 +80,7 @@ C
 C
       IF (DOUBLES) THEN
 C------------------------------------------------------------------------
-C     Calculate the diagonal two-electron parts of the SOPPA E[2] matrix. 
+C     Calculate the diagonal two-electron parts of the SOPPA E[2] matrix.
 C------------------------------------------------------------------------
 C
          CALL SO_EDIAG2(WORK(KDIAG2),LDIAG2,FOCKD,LFOCKD,ISYRES,
@@ -120,7 +120,7 @@ C
 C------------------------------------------
 C     Finalization -- All methods continue.
 C------------------------------------------
-C      
+C
 1010  CALL GPCLOSE (LUDIAG,'KEEP')
 C
 C

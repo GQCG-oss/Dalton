@@ -117,7 +117,7 @@ C
          IF (IMODEL .EQ. SOP_MODEL_RPA)
      &            CALL RP_WRITE_EXTEND(EXENG(1,1,IOUT),SECMAT)
 
-         CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,IOUT) ) 
+         CALL STOPP_WRITE(BETHE(1,1,IOUT),STOPP(1,1,IOUT) )
 CSPAS:26/01-08:
 C     moved because otherwise we get a lot of non-sense output
 C     for the orbital extend

@@ -15,10 +15,10 @@ C#include "implicit.h"
       implicit none
 #include "priunit.h"
 
-      double precision, PARAMETER :: ZERO = 0.0D0, HALF = 0.5D0, 
+      double precision, PARAMETER :: ZERO = 0.0D0, HALF = 0.5D0,
      &                               ONE = 1.0D0, TWO = 2.0D0
 C
-      double precision, intent(inout) ::  RES1(LRES1) 
+      double precision, intent(inout) ::  RES1(LRES1)
       double precision, intent(in) ::  CMO(LCMO), SIGAI(LSIGAI)
       double precision, intent(in) :: FACTOR
       integer, intent(in)          :: LRES1, LSIGAI, LCMO, ISYRES

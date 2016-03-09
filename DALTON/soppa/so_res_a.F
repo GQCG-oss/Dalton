@@ -87,7 +87,7 @@ C
                LWORK2  = LWORK - KEND2
 C
                CALL SO_MEMMAX ('SO_RES_A.2',LWORK2)
-               IF (LWORK2 .LT. 0) 
+               IF (LWORK2 .LT. 0)
      &             CALL STOPIT('SO_RES_A.2',' ',KEND2,LWORK)
 C
                KOFF2  = KSCR1 + IAODIS(ISYMAL,ISYMBE)
@@ -176,7 +176,7 @@ C
                LWORK3  = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_A.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &             CALL STOPIT('SO_RES_A.3',' ',KEND3,LWORK)
 C
                NTOTA  = MAX(NVIR(ISYMA),1)
@@ -198,7 +198,7 @@ C
      &                    ZERO,WORK(KSCR4),NTOTA)
 C
 C---------------------------------------------------------------
-C              MO-integrals times trial-vector to get 2. part of 
+C              MO-integrals times trial-vector to get 2. part of
 C                ~ ~
 C              ( a d | k delta).
 C---------------------------------------------------------------
@@ -240,7 +240,7 @@ C
                LWORK4  = LWORK - KEND4
 C
                CALL SO_MEMMAX ('SO_RES_A.4',LWORK4)
-               IF (LWORK4 .LT. 0) 
+               IF (LWORK4 .LT. 0)
      &             CALL STOPIT('SO_RES_A.4',' ',KEND4,LWORK)
 C
                NTOTL  = MAX(NRHF(ISYML),1)

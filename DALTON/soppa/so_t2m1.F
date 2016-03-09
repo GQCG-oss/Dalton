@@ -75,7 +75,7 @@ C
                LWORK2  = LWORK  - KEND2
 C
                CALL SO_MEMMAX ('SO_T2M1.2',LWORK2)
-               IF (LWORK2 .LT. 0) 
+               IF (LWORK2 .LT. 0)
      &             CALL STOPIT('SO_T2M1.2',' ',KEND2,LWORK)
 C
                NBJ1 = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1)

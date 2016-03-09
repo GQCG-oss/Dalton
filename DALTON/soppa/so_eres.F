@@ -1,9 +1,9 @@
 C  /* Deck so_eres */
-      SUBROUTINE SO_ERES(MODEL,  NOLDTR, NNEWTR,  DENSIJ,  LDENSIJ, 
+      SUBROUTINE SO_ERES(MODEL,  NOLDTR, NNEWTR,  DENSIJ,  LDENSIJ,
      &                   DENSAB, LDENSAB, T2MP,    LT2MP,   FOCKD,
      &                   LFOCKD, DENSAI,  LDENSAI, NIT,     ISYMTR,
 #ifdef VAR_MPI
-     &                   AssignedIndices, maxnumjobs,     
+     &                   AssignedIndices, maxnumjobs,
 #endif
      &                   WORK,   LWORK)
 C
@@ -14,11 +14,11 @@ C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C     Frederik Beyer & Stephan P. A. Sauer: 27.08.2013: call to ERI corrected
 C
 C     PURPOSE: Driver routine for making a linear transformation of
-C              a trialvector with the SOPPA hessian matricx E[2]. 
-C              The trial vector consists of four parts TR1E, TR1D, 
-C              TR2E, and TR2D. E refers to excitations and D to 
+C              a trialvector with the SOPPA hessian matricx E[2].
+C              The trial vector consists of four parts TR1E, TR1D,
+C              TR2E, and TR2D. E refers to excitations and D to
 C              de-excitations. 1 refer to the one-particle part and
-C              2 to the two-particle part. The linear transformed 
+C              2 to the two-particle part. The linear transformed
 C              trialvector is refered to as the resultvector and is
 C              kept in four corresponding arrays. For the linear
 C              transformation with E[2] the result vector is in RES1E,
@@ -26,12 +26,12 @@ C              RES1D, RES2E, and RES2D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
-      use so_info, only: so_singles_first, so_singles_second, 
+      use so_info, only: so_singles_first, so_singles_second,
      &                   so_has_doubles, so_needs_densai
 
 #ifdef VAR_MPI
       use so_parutils, only: soppa_comm_active, soppa_num_active,
-     &                       soppa_nint 
+     &                       soppa_nint
 #endif
 
 #include "implicit.h"
@@ -50,8 +50,8 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       DIMENSION INDEXA(MXCORB)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB), T2MP(LT2MP)
-      DIMENSION FOCKD(LFOCKD)   
-      DIMENSION DENSAI(LDENSAI) !intent(out) 
+      DIMENSION FOCKD(LFOCKD)
+      DIMENSION DENSAI(LDENSAI) !intent(out)
       DIMENSION WORK(LWORK)
       CHARACTER MODEL*5
       integer :: inewtr, nnewtr, isymd1, ntosym
@@ -77,7 +77,7 @@ C
 C
 C     Logical variable which can be set to false if the dexcitation vector is
 C     to avoid calculating with only zeroes. Useful for static
-C     properties and first iteration of excitation energies.      
+C     properties and first iteration of excitation energies.
       logical :: do_dex
       logical :: tr2_zero
 #ifdef VAR_MPI
@@ -106,10 +106,10 @@ C------------------
 C
 #ifdef VAR_MPI
       if (mynum .eq. 0 ) then
-#endif      
+#endif
       CALL QENTER('SO_ERES')
 #ifdef VAR_MPI
-C     Slaves need to zero DENSAI if it is (re)calculated.      
+C     Slaves need to zero DENSAI if it is (re)calculated.
       elseif ( calc_densai ) THEN
          CALL DZERO(DENSAI,LDENSAI)
       endif
@@ -117,7 +117,7 @@ C     Slaves need to zero DENSAI if it is (re)calculated.
 C
 C-------------------------------------------------------------
 C     Determine which terms to incude
-C-------------------------------------------------------------      
+C-------------------------------------------------------------
 C
       singles_first = so_singles_first(model)
       singles_second = so_singles_second(model)
@@ -179,7 +179,7 @@ C
          LTR1D = NT1AM(ISYMTR)
       ELSE
          LTR1D = 0
-      ENDIF 
+      ENDIF
       LRES1E  = NT1AM(ISYMTR)
       LRES1D  = NT1AM(ISYMTR)
       LFOCK   = N2BST(ISYRES)
@@ -187,14 +187,14 @@ C
       LBTR1D  = NT1AO(ISYMTR)
       LBTJ1E  = NMATAV(ISYMTR)
       LBTJ1D  = NMATAV(ISYMTR)
-                 
+
       IF(DOUBLES) THEN
          LTR2E   = NT2AM(ISYMTR)
          LRES2E  = NT2AM(ISYMTR)
          IF (DO_DEX) THEN
             LTR2D   = NT2AM(ISYMTR)
             LRES2D  = NT2AM(ISYMTR)
-         ELSE 
+         ELSE
             LTR2D  = 0
             LRES2D = 0
          ENDIF
@@ -203,7 +203,7 @@ C
          LTR2D   = 0
          LRES2E  = 0
          LRES2D  = 0
-      ENDIF 
+      ENDIF
 
       IF (singles_second) THEN
          LSIGAI1 = NT1AO(ISYRES)
@@ -252,7 +252,7 @@ C     MPI -- Allocate timings array
          KTIMING = KEND2
          KEND2   = KTIMING + SOPPA_NINT
          CALL DZERO(WORK(KTIMING), SOPPA_NINT)
-      endif 
+      endif
 #endif
       LWORK2  = LWORK   - KEND2
 C
@@ -294,9 +294,9 @@ C
 #endif
 C
 
-      IF ( IPRSOP. GE. 7 
+      IF ( IPRSOP. GE. 7
 #ifdef VAR_MPI
-     &      .AND. (MYNUM .EQ.0) 
+     &      .AND. (MYNUM .EQ.0)
 #endif
      &                     ) THEN ! Only printing related.
 C------------------------------------------
@@ -309,19 +309,19 @@ C----------------------------------------------------
             INEW = NOLDTR + INEWTR
 C
             CALL SO_READ(WORK(KTR1E),LTR1E,LUTR1E,FNTR1E,INEW)
-            IF(DO_DEX) 
+            IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR1D),LTR1D,LUTR1D,FNTR1D,INEW)
             IF (DOUBLES) THEN
                      CALL SO_READ(WORK(KTR2E),LTR2E,LUTR2E,FNTR2E,INEW)
-               IF(DO_DEX) 
+               IF(DO_DEX)
      &               CALL SO_READ(WORK(KTR2D),LTR2D,LUTR2D,FNTR2D,INEW)
             ENDIF
 C
             WRITE(LUPRI,'(/,I3,A)') INEWTR,'. new trial vector'
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(KTR1E+I-1),WORK(KTR1D+I-1),I=1,LTR1E)
             IF (DOUBLES) THEN
-               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &            (I,WORK(KTR2E+I-1),WORK(KTR2D+I-1),I=1,LTR2E)
             ENDIF
    50    CONTINUE
@@ -346,7 +346,7 @@ C--------------------------------------------------------------
 C
          CALL DZERO(WORK(KRES1E),LRES1E)
          CALL DZERO(WORK(KRES1D),LRES1D)
-        
+
          IF (DOUBLES) CALL DZERO(WORK(KRES2E),LRES2E)
          IF (DOUBLES.AND.DO_DEX) CALL DZERO(WORK(KRES2D),LRES2D)
 C
@@ -384,7 +384,7 @@ C              speed up first iteration for excitation energies
             ENDIF
 #ifdef VAR_MPI
          ENDIF
-C Rememember that the trial-vectors are contigous in memory         
+C Rememember that the trial-vectors are contigous in memory
          LTRTOT = LTR1E + LTR1D + LTR2E + LTR2D
          CALL MPI_BCAST(WORK(KTR1E), LTRTOT, MPI_REAL8,
      &                  0, SOPPA_COMM_ACTIVE, IERR)
@@ -394,7 +394,7 @@ C since the next two calls only use the singles vectors.
 C
 C Also, depending on the communication overhead, it may be better
 C to transform on host only and then send it to the slaves..?
-#endif         
+#endif
 C
 C---------------------------------------------------
 C        Calculate RPA-density matrices in AO basis.
@@ -433,7 +433,7 @@ C
             ELSEIF(INEWTR.EQ.1) THEN
 C Can we get away with doing this once?
 C Because we CAN'T move KEND2 forwards in each loop cycle,
-C since that'll be leaking memory               
+C since that'll be leaking memory
                KCCFB1 = KEND2
                KINDXB = KCCFB1 + MXPRIM*MXCONT
                KEND2  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
@@ -460,8 +460,8 @@ C-----------------------------------------------------------------
 C        In MPI calculations, we need to distribute the indices.
 C        On first pass, we set this using the pre-sorted approach.
 C-----------------------------------------------------------------
-C         IF ( (nit .ne. 1 .or. inewtr .ne. 1) 
-         IF ( .not. (nit .eq. 1 .and. inewtr .eq. 1) 
+C         IF ( (nit .ne. 1 .or. inewtr .ne. 1)
+         IF ( .not. (nit .eq. 1 .and. inewtr .eq. 1)
      &                        .or.  numprocs .eq. 1 ) THEN
 C           After first pass, load-balancing has been done
             CONTINUE
@@ -469,7 +469,7 @@ C           After first pass, load-balancing has been done
 C           Master does the balancing
             call presortloadbal_parsoppa(AssignedIndices,   maxnumjobs,
      &                     work(kindxb), work(kend2), lwork2)
-         ELSE 
+         ELSE
 C           Slaves receives the scatter, send arguments should be ignored
             call mpi_scatter( AssignedIndices, maxnumjobs, mpi_integer,
      &                        AssignedIndices, maxnumjobs, mpi_integer,
@@ -499,14 +499,14 @@ C
 
 C-------------------------------------------------
 C           Main loop over integral-distributions.
-C-------------------------------------------------   
+C-------------------------------------------------
 
 #ifdef VAR_MPI
 C------------------------------------------------------------------
 C           For_parallel calculations, we have som stuff to set up.
 C------------------------------------------------------------------
             DO 220 ILLLDUMMY = 1, nloopidx
-               if ( numprocs .gt. 1 ) then 
+               if ( numprocs .gt. 1 ) then
                   ILLL = assignedIndices(illldummy)
 C                 A zero indicates that we have no more work, exit loop
                   IF (ILLL .eq. 0) exit
@@ -535,7 +535,7 @@ C
      &                           WORK(KRDBC1),WORK(KRDBC2),
      &                           WORK(KODPP1),WORK(KODPP2),
      &                           WORK(KRDPP1),WORK(KRDPP2),
-     &                           WORK(KCCFB1),WORK(KINDXB), 
+     &                           WORK(KCCFB1),WORK(KINDXB),
      &                           WORK(KEND2),LWORK2,IPRINT)
 C
                   ENDIF
@@ -548,7 +548,7 @@ C
                   LWORK2B  = LWORK  - KEND2B
 C
                   CALL SO_MEMMAX ('SO_ERES.2B',LWORK2B)
-                  IF (LWORK2 .LT. 0) 
+                  IF (LWORK2 .LT. 0)
      &                CALL STOPIT('SO_ERES.2B',' ',KEND2B,LWORK)
 C
                ELSE
@@ -559,10 +559,10 @@ C
 C-------------------------------------------------------------------
 C   Loop over number of distributions in disk.
 C   In the case of ERI there are more than one distribution and IDEL2
-C   loops over them and the actual index of the delta orbital IDEL is 
-C   then obtained from the array INDEXA. In the case of a not direct 
-C   calculation there is only one distribution on the disk, which 
-C   implies that IDEL2 is always 1 and that IDEL is systematically 
+C   loops over them and the actual index of the delta orbital IDEL is
+C   then obtained from the array INDEXA. In the case of a not direct
+C   calculation there is only one distribution on the disk, which
+C   implies that IDEL2 is always 1 and that IDEL is systematically
 C   incremented by one each time.
 C--------------------------------------------------------------------
 C
@@ -593,7 +593,7 @@ C
                   LWORK3  = LWORK - KEND3
 C
                   CALL SO_MEMMAX ('SO_ERES.3',LWORK3)
-                  IF (LWORK3 .LT. 0) 
+                  IF (LWORK3 .LT. 0)
      &                CALL STOPIT('SO_ERES.3',' ',KEND3,LWORK)
 C
 C--------------------------------------------
@@ -605,7 +605,7 @@ C
      &                        WORK(KRECNR),DIRECT)
                   DTIME      = SECOND()   - DTIME
                   SOTIME(10) = SOTIME(10) + DTIME
-C                  
+C
 C
 C---------------------------------------------
 C                    Work space allocation no. 4.
@@ -626,9 +626,9 @@ C
 C
                   IF (DOUBLES.OR.SINGLES_SECOND) THEN
                      CALL SO_MEMMAX ('SO_ERES.4',LWORK4)
-                     IF (LWORK4 .LT. 0) 
+                     IF (LWORK4 .LT. 0)
      &                   CALL STOPIT('SO_ERES.4',' ',KEND4,LWORK)
-C                   
+C
 C
 C------------------------------------------------------------
 C                    Construct the partially back-transformed T2
@@ -654,7 +654,7 @@ C
                   LWORK5  = LWORK  - KEND5
 C
                   CALL SO_MEMMAX ('SO_ERES.5',LWORK5)
-                  IF (LWORK5 .LT. 0) 
+                  IF (LWORK5 .LT. 0)
      &                CALL STOPIT('SO_ERES.5',' ',KEND5,LWORK)
 C
 C----------------------------------------------------------------
@@ -699,7 +699,7 @@ C
                    itimeilll = ktiming + illl - 1
                    work(itimeilll) = work(itimeilll) + timefin - timeini
                ENDIF
-#endif              
+#endif
 C
   220       CONTINUE !End of ILLL loop
 C
@@ -713,10 +713,10 @@ C
 C-------------------------------------------------
 C        Communicate the result vectors to master.
 C-------------------------------------------------
-C  Note for further development: 
+C  Note for further development:
 C  In the following, non-blocking reductions could be used,
 C  since the one-particle result-vector is first needed in the
-C  second call, sigai and sigda in the third and fourth call, 
+C  second call, sigai and sigda in the third and fourth call,
 C  and the two-particle vector is just written to file.
 C  The alternative approach, is to do all these calculations
 C  one the slaves, and only reduce in the end, this would save
@@ -727,17 +727,17 @@ C  Use the fact that memory are together
          lsigtot = lsigai1 + lsigai2 + lsigda1 + lsigda2
          latot   = laij + laab
 !         write(*,*) lrestot, lsigtot, latot
-C  Master use inplace operations       
+C  Master use inplace operations
          if (mynum .eq. 0 ) then
 C
 C           Fock-matrix
-            call mpi_reduce( mpi_in_place, work(kfock), lfock, 
-     &                       MPI_REAL8, MPI_SUM, 0, 
+            call mpi_reduce( mpi_in_place, work(kfock), lfock,
+     &                       MPI_REAL8, MPI_SUM, 0,
      &                       soppa_comm_active, ierr)
 C
 C           Result-vectors
             call mpi_reduce( mpi_in_place, work(kres1e), lrestot,
-     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       MPI_REAL8, MPI_SUM, 0,
      &                       soppa_comm_active, ierr)
 C
             if (singles_second) then
@@ -747,9 +747,9 @@ C           Sigai / Sigda
      &                          MPI_REAL8, MPI_SUM, 0,
      &                          soppa_comm_active, ierr)
 C
-C           Aij / Aab -- only calculated in first pass  
+C           Aij / Aab -- only calculated in first pass
                if ( inewtr .eq. 1 ) then
-C               write(lupri,*) 'Aij'            
+C               write(lupri,*) 'Aij'
                   call mpi_reduce ( mpi_in_place, work(kaij), latot,
      &                              MPI_REAL8, MPI_SUM, 0,
      &                              soppa_comm_active, ierr)
@@ -759,13 +759,13 @@ C               write(lupri,*) 'Aij'
 C  Slaves pass the same buffer as the recieve-buffer...
 C
 C           Fock-matrix
-            call mpi_reduce( work(kfock), work(kfock), lfock, 
-     &                       MPI_REAL8, MPI_SUM, 0, 
+            call mpi_reduce( work(kfock), work(kfock), lfock,
+     &                       MPI_REAL8, MPI_SUM, 0,
      &                       soppa_comm_active, ierr)
 C
-C           Result-vectors            
+C           Result-vectors
             call mpi_reduce( work(kres1e), work(kres1e), lrestot,
-     &                       MPI_REAL8, MPI_SUM, 0, 
+     &                       MPI_REAL8, MPI_SUM, 0,
      &                       soppa_comm_active, ierr)
 C
             if (singles_second) then
@@ -774,7 +774,7 @@ C              Sigai / Sigda
      &                          MPI_REAL8, MPI_SUM, 0,
      &                          soppa_comm_active, ierr)
 C
-C              Aij / Aab            
+C              Aij / Aab
                if ( inewtr .eq. 1 ) then
                   call mpi_reduce ( work(kaij), work(kaij), latot,
      &                              MPI_REAL8, MPI_SUM, 0,
@@ -798,7 +798,7 @@ C
          SOTIME(24) = SOTIME(24) + DTIME
 C
 C------------------------------------------------------------------
-C        Calculate and add the RPA two-particle parts to the result 
+C        Calculate and add the RPA two-particle parts to the result
 C        vectors.
 C------------------------------------------------------------------
 C
@@ -812,8 +812,8 @@ C
          if (singles_second) then
 C
 C-------------------------------------------------------------------------
-C           Add contribution from sigma1(alfa,i) to RES1E and from 
-C           sigma2(alfa,i) to RES1D. I.e. the third terms in eqs. (34) and 
+C           Add contribution from sigma1(alfa,i) to RES1E and from
+C           sigma2(alfa,i) to RES1D. I.e. the third terms in eqs. (34) and
 C           (35).
 C-------------------------------------------------------------------------
 C
@@ -895,7 +895,7 @@ C
             CALL SO_RES_CD(WORK(KRES2E),LRES2E,WORK(KRES2D),LRES2D,
      &                     WORK(KTR2E),LTR2E,WORK(KTR2D),LTR2D,
      &                     FOCKD,LFOCKD,ISYRES,WORK(KEND2),LWORK2)
-         
+
             DTIME      = SECOND()   - DTIME
             SOTIME(30) = SOTIME(30) + DTIME
          ENDIF
@@ -912,11 +912,11 @@ C
          CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
          IF (DOUBLES) THEN
             CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
-            IF(DO_DEX) 
+            IF(DO_DEX)
      &            CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
          ENDIF
 C
-  100 CONTINUE 
+  100 CONTINUE
 C
 C==================================
 C     End of loop over excitations.
@@ -930,7 +930,7 @@ C-----------------------------------------------------------
          IF (MYNUM.EQ.0) THEN
             CALL MPI_REDUCE( MPI_IN_PLACE, DENSAI, LDENSAI, MPI_REAL8,
      &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, IERR)
-         ELSE 
+         ELSE
             CALL MPI_REDUCE( DENSAI, DENSAI, LDENSAI, MPI_REAL8,
      &                       MPI_SUM, 0, SOPPA_COMM_ACTIVE, IERR)
          ENDIF
@@ -941,8 +941,8 @@ C--------------------------------------
       if ( loadbal_dyn ) then
          if (mynum .eq.0) then
 C  Master
-C --------           
-C Recieve the timings            
+C --------
+C Recieve the timings
             call mpi_reduce( mpi_in_place, work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       IERR)
@@ -957,13 +957,13 @@ C
             call dynloadbal_parsoppa( AssignedIndices, maxnumjobs,
      &                                work(ktiming), soppa_nint,
      &                                work(ksorted), work(knasjob),
-     &                                work(kswork) )  
+     &                                work(kswork) )
             !                    add empty work-space...
             !                    currently it can start at kend2
          else
 C   Slave
-C  ---------          
-C  Send the timings            
+C  ---------
+C  Send the timings
             call mpi_reduce( work(ktiming), work(ktiming), soppa_nint,
      &                       MPI_REAL8, MPI_SUM, 0, SOPPA_COMM_ACTIVE,
      &                       IERR)
@@ -998,13 +998,13 @@ C------------------------------------------
      &                '. new E[2] linear transformed trial vector'
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
             CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS1D,INEW)
-            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+            WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             IF (DOUBLES) THEN
                CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
-               IF (DO_DEX) 
+               IF (DO_DEX)
      &            CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
-               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
+               WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)')
      &             (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
             ENDIF
   400    CONTINUE
@@ -1014,7 +1014,7 @@ C
 C-----------------
 C     Close files.
 C-----------------
-C   
+C
       CALL SO_CLOSE(LUTR1E,FNTR1E,'KEEP')
       IF (DO_DEX) CALL SO_CLOSE(LUTR1D,FNTR1D,'KEEP')
       CALL SO_CLOSE(LURS1E,FNRS1E,'KEEP')
@@ -1050,7 +1050,7 @@ C
          SUBROUTINE LOOP_BODY_SINGLET
 C        Singlet case
          DOUBLE PRECISION DTIME
-C         
+C
 C
 C----------------------------------------------
 C        Calculate the AO-Fock matrix.
@@ -1123,7 +1123,7 @@ C
 C
 C-------------------------------------------------------------------
 C        Calculate the part of the result vectors RES1E and
-C        RES1D which originate from the C matrices. See 
+C        RES1D which originate from the C matrices. See
 C                 eqs. (72) and (73).
 C-------------------------------------------------------------------
 C
@@ -1154,10 +1154,10 @@ C
      &                    LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(15) = SOTIME(15) + DTIME
-C                  
+C
          ENDIF
 
-         END SUBROUTINE 
+         END SUBROUTINE
 C
          SUBROUTINE LOOP_BODY_TRIPLET
 C        Triplet case... To be filled by Pi
@@ -1199,12 +1199,12 @@ CRF         B^(2) terms go here: Pi -> Check what we need!
          IF (DOUBLES) THEN
 
 CRF         C^T*Tr2 => Res_1 and C*Tr_1 => Res_2 goes here!
-CRF         Pi: Check if existing implementation can be dropped in..?            
+CRF         Pi: Check if existing implementation can be dropped in..?
 
          ENDIF
 
          END SUBROUTINE
-C         
+C
       END SUBROUTINE
 
 C
@@ -1215,13 +1215,13 @@ C
      &                                timings, ltimings,
      &                                sortedindices, numassignjobs,
      &                                sumofwork)
-C    Dynamic Load Balancing for the parallel SOPPA calculations (and parallel RPA). 
+C    Dynamic Load Balancing for the parallel SOPPA calculations (and parallel RPA).
 C    The routine assumed that the MPI processes that does the load balancing is the master. If any other routine enters, there will be issues with the updated ILLL indices in the AssignedIndices array.  Right now, any slave that enters is immediately evicted from the routine.
 C
-C The routine takes an array of timings as input. The timings are creatd on the fly by every parallel process and the index corresponds to the ILLL index in the parallel calculation. The time is given in integers from calling system_clock. The timings are not given in any human-readable form. This choice was made so that one can reuse the subroutine getallocsize, which relies on an integer input array. 
+C The routine takes an array of timings as input. The timings are creatd on the fly by every parallel process and the index corresponds to the ILLL index in the parallel calculation. The time is given in integers from calling system_clock. The timings are not given in any human-readable form. This choice was made so that one can reuse the subroutine getallocsize, which relies on an integer input array.
 C The work is resorted once the actual time associated with an ILLL index is known and the indices are rebalanced once more and sent to all slaves.
 C The improvement over the presorted balancing scheme is expected to be very small, but gets better the larger the basis set.
-C 
+C
 C F.Beyer Oct. 2014.
 
       use so_parutils, only : soppa_comm_active, soppa_num_active,
@@ -1247,7 +1247,7 @@ C F.Beyer Oct. 2014.
       integer :: getnumjobs, targetID, myid
       integer :: colindex, rowindex, assignILLL, col,i
       integer :: ntot
-  
+
       ntot = soppa_nint
       ! In case the amount of work is smaller than
       ! the number of MPI processes...
@@ -1272,10 +1272,10 @@ C F.Beyer Oct. 2014.
               numassignjobs(colindex) = numassignjobs(colindex) + 1
               rowindex = numassignjobs(colindex)
               sortedindices(rowindex, colindex) = assignILLL
-              
+
               ! Update the slave's expected work/walltime and
               ! remove the work from the timings array
-              sumofwork(colindex) = sumofwork(colindex) 
+              sumofwork(colindex) = sumofwork(colindex)
      &                             +timings(assignILLL)
               timings(assignILLL) = -1.0D0
 
@@ -1285,12 +1285,12 @@ C     PRINT HOW WORK IS DISTRIBUTED
       write (LUPRI,'(a)') 'AOSOPPA Work distribution'
       write (LUPRI,'(a)') 'NODE       Expected time '
       do i = 1, maxcols
-           write (LUPRI, '(i5,f20.5)') i, sumofwork(i) 
-      enddo 
+           write (LUPRI, '(i5,f20.5)') i, sumofwork(i)
+      enddo
       ! Send the info to every slave that does computation (some slaves might be stalled in the polling barrier in case there are too many MPI processes compared to the number of tasks).
-      call mpi_scatter( sortedindices, maxnumjobs, mpi_integer, 
+      call mpi_scatter( sortedindices, maxnumjobs, mpi_integer,
      &                  localIndices, maxnumjobs, mpi_integer,
-     &                  0, soppa_comm_active, ierr) 
+     &                  0, soppa_comm_active, ierr)
 
       ! Update the master's own array of ILLL indices
       ! should be done by the scatter
@@ -1304,16 +1304,16 @@ C     PRINT HOW WORK IS DISTRIBUTED
 
 
       subroutine presortloadbal_parsoppa(localIndices, maxnumjobs,
-     &           indexb, 
-     &           work, lwork) 
-C     This subroutine load balances parallel SOPPA/RPA 
+     &           indexb,
+     &           work, lwork)
+C     This subroutine load balances parallel SOPPA/RPA
 C     calculation.
 C
-C     The routine makes a best guess of loadbalancing by giving 
+C     The routine makes a best guess of loadbalancing by giving
 C     every MPI process an equal number of distributions to handle.
 C     Testing shows this is a better first guess that giving every
-C     MPI process an equal number of ILLL indices to work with 
-C     (since there is a different number of distributions 
+C     MPI process an equal number of ILLL indices to work with
+C     (since there is a different number of distributions
 C     associated with every ILLL index).
 C
 C     F.Beyer Oct. 2014.
@@ -1336,15 +1336,15 @@ C     Dummy parameters
       integer, dimension(maxnumjobs), intent(out) :: localIndices
 
 C     Pre-sorting load balancing variables
-      integer :: getnumjobs, getindices, myid, numprocs, ierr            
+      integer :: getnumjobs, getindices, myid, numprocs, ierr
 C      integer :: presortarray, finalsorted
       integer :: col, ntot
       integer :: kpresortarray, kend, kfinalsorted, ktmp
 
       ntot = soppa_nint
-      
-      ! numprocs = soppa_num_active !! not consistent with other use 
-!      call mpi_comm_size(soppa_comm_active, numprocs, ierr)  
+
+      ! numprocs = soppa_num_active !! not consistent with other use
+!      call mpi_comm_size(soppa_comm_active, numprocs, ierr)
       numprocs = soppa_num_active
 
 
@@ -1353,44 +1353,44 @@ C     ERI code
 
 C     FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
          kpresortarray = 1
-         kend = kpresortarray + 2* ntot / irat      
+         kend = kpresortarray + 2* ntot / irat
          call presortaodist(ntot, indexb, work(kpresortarray) )
 
 
 C     CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
-         kfinalsorted = kend 
+         kfinalsorted = kend
          ktmp = kfinalsorted + (maxnumjobs * numprocs + 1) /irat
          kend = ktmp + 2*numprocs / irat
          if( kend .gt. lwork ) then
             call quit('Insufficient memory in presorted loadbalancer!')
          endif
-         call partitionAOindices(ntot, maxnumjobs, numprocs, 
+         call partitionAOindices(ntot, maxnumjobs, numprocs,
      &              work(kpresortarray), work(kfinalsorted),
      &              work(ktmp) )
       else
 C     HERDIR code
          kfinalsorted = 1
-         kend = kfinalsorted + ( maxnumjobs * numprocs + 
+         kend = kfinalsorted + ( maxnumjobs * numprocs +
      &             mod(maxnumjobs*numprocs,irat) )/irat
          if( kend .gt. lwork ) then
             call quit('Insufficient memory in presorted loadbalancer!')
          endif
-         call herdir_presort( work(kfinalsorted) ) 
+         call herdir_presort( work(kfinalsorted) )
       endif
 
 
 C     TRANSFER AO INDICES TO SLAVES
-C     Use scatter 
+C     Use scatter
       call mpi_scatter( work(kfinalsorted), maxnumjobs, mpi_integer,
      &                  localIndices, maxnumjobs, mpi_integer,
      &                  0, soppa_comm_active, ierr )
 
       return
-      end subroutine 
+      end subroutine
 
 
       subroutine herdir_presort ( sorted, maxnumjobs )
-C     This is a subroutine for doing the initial distribution of the    
+C     This is a subroutine for doing the initial distribution of the
 C     AO-indices in a parallel SOPPA calculation.
 C     This subroutine works with Hermite (HERDIR) integral generator,
 C     as the code by F. Beyer only supports using ERI
@@ -1416,7 +1416,7 @@ C         endif
 C         sorted ( icol, inext ) = intnum
 C      enddo
 
-C     Distribute first an even number      
+C     Distribute first an even number
       inum = soppa_nint/soppa_num_active
       do icol = 1, soppa_num_active
          do inext = 1, inum
@@ -1426,26 +1426,26 @@ C     Distribute first an even number
 C     Distribute the remainder
       do icol = 1, mod(soppa_nint, soppa_num_active)
          sorted ( inum+1, soppa_num_active-icol+1) =
-     &            inum*soppa_num_active + icol       
+     &            inum*soppa_num_active + icol
       enddo
 C     Debug print
-      do inext = 1, soppa_num_active 
+      do inext = 1, soppa_num_active
          print '(10i3)', sorted(:,inext)
       enddo
       return
-      end subroutine 
+      end subroutine
 
 
-      
+
       subroutine pollingbarrier(pollinginterval)
-C     This subroutine is implemented in case there is ever a need to 
+C     This subroutine is implemented in case there is ever a need to
 C     remove certain processes from a calculation.
 C
-C     The processes will repeatedly poll until they receive a non-blocking 
+C     The processes will repeatedly poll until they receive a non-blocking
 C     send from the master with a logical value equal to .true.
 C
 C     F.Beyer Oct. 2014
-      
+
 #include "implicit.h"
 #include "mpif.h"
 
@@ -1457,16 +1457,16 @@ C     F.Beyer Oct. 2014
 
       call mpi_comm_rank(mpi_comm_world, myid, ierr)
       print *, 'I am in the polling barrier ', myid
-           
+
       ! Initiate the polling variables and ask for the non-blocking update
-      exitbarrier = .false. 
+      exitbarrier = .false.
       call mpi_irecv(exitbarrier, 1, MPI_LOGICAL, 0, myid,
-     &               mpi_comm_world, request, ierr) 
+     &               mpi_comm_world, request, ierr)
 
       ! Polling barrier, the process will cycle repeatedly until released.
-130   continue 
+130   continue
 #ifdef VAR_IFORT
-      call sleepqq(pollinginterval)  
+      call sleepqq(pollinginterval)
 #endif
       call mpi_test(request, flag, mpistatus, ierr)
       if (.not. flag) goto 130
@@ -1489,7 +1489,7 @@ C In other words, this subroutine calculates how many distributions are associat
 C
 C This routine assembles a matrix that counts the number of AOs
 C associated with an ILLL distribution index. This array is used by getallocsize
-C and partitionAOindices to pre-sort the integrals that need to be done 
+C and partitionAOindices to pre-sort the integrals that need to be done
 C
 C The first row in outlist is the number of distributions
 C The second row in outlist is the associated ILLL index
@@ -1510,7 +1510,7 @@ C The second row in outlist is the associated ILLL index
          call pickao(0)
          call eridsi(indxbt, 0)
          outlist(1, i) = ndistr
-         outlist(2, i) = i 
+         outlist(2, i) = i
       enddo
 
       return
@@ -1521,13 +1521,13 @@ C The second row in outlist is the associated ILLL index
 C     /* deck getallocsize */
       SUBROUTINE getallocsize(ntot, originalsort, maxnumjobs)
 C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
-C 
+C
 C This subroutine is used to get the amount of storage that needs
 C to be allocated for a parallel SO_ERES run.
-C 
+C
 C The subroutine calculates which process will be assigned the
 C most single jobs (not the largest total amount of work) for a
-C parallel RPA/SOPPA calculation. Its output is used to allocate 
+C parallel RPA/SOPPA calculation. Its output is used to allocate
 C the right amount of storage by the master when it starts pre-sorting
 C the integrals for the parallel calculation of the E matrix.
 C
@@ -1557,12 +1557,12 @@ C
 
       DO i=1, ntot
          ! Find location of largest chunk of work and the work itself
-         temploc = maxloc(copysort, DIM=2, mask=copysort.gt.0) 
+         temploc = maxloc(copysort, DIM=2, mask=copysort.gt.0)
          addwork = copysort(1, temploc(1) )
          copysort( 1,temploc(1) ) = 0
 
          ! Find laziest slave and simulate the workload on the slave
-         tempwork = minloc(sumofwork, DIM=2) 
+         tempwork = minloc(sumofwork, DIM=2)
          sumofwork(1, tempwork(1)) = sumofwork(1, tempwork(1)) + addwork! adding total number of distributions
          sumofwork(2, tempwork(1)) = sumofwork(2, tempwork(1)) + 1  !adding total number of assigned indexes
       ENDDO
@@ -1587,13 +1587,13 @@ C A subroutine associated with the atomic integral parallel RPA/SOPPA calculatio
 C
 C The output from this routine is the array 'sorted'.
 C The sorted matrix contains AO integral indexes for two-electron integrals.
-C Every column contains a list of ILLL indexes that are to be assigned as work 
+C Every column contains a list of ILLL indexes that are to be assigned as work
 C to a single process. The total amount of work per column is estimated based
-C on the number of distributions that are related to the ILLL indexes in the column. 
+C on the number of distributions that are related to the ILLL indexes in the column.
 C
 C This pre-sorting of ILLL indexes for a parallel calculation approximates an
-C even distribution of total work for all processes when performing two-electron 
-C integrals in parallel for AOSOPPA and AORPA. 
+C even distribution of total work for all processes when performing two-electron
+C integrals in parallel for AOSOPPA and AORPA.
 C
       !use mpi
 #include "implicit.h"
@@ -1609,14 +1609,14 @@ C
       integer :: allocstatus, deallocstatus
 
       numprocs = cols
- 
+
       call izero(sorted, (rows*cols) )
       call izero(sumofwork, (2*numprocs) )
 
       DO i=1, ntot
 C        FIND LARGEST CHUNK OF AVAILABLE WORK AND ITS INDEX
-         tempavail = maxloc(presortedarray, DIM=2, 
-     &                      mask=presortedarray.gt.0) 
+         tempavail = maxloc(presortedarray, DIM=2,
+     &                      mask=presortedarray.gt.0)
          availloc = tempavail(1)
          numdists = presortedarray(1, availloc) ! amount of available work
          aoindex  = presortedarray(2, availloc) ! the index to be passed to process
@@ -1625,16 +1625,16 @@ C        FIND LARGEST CHUNK OF AVAILABLE WORK AND ITS INDEX
          presortedarray(2, availloc) = 0
 
 C        FIND THE LAZIEST PROCESS, GIVE IT WORK & INCREMENT THE ROW COUNTER
-         templazy = minloc(sumofwork, DIM=2) 
-         lazyloc = templazy(1) ! This is equal to: MYID+1 
-         sumofwork( 1,lazyloc ) = sumofwork( 1,lazyloc ) + numdists 
-         sumofwork( 2,lazyloc ) = sumofwork( 2,lazyloc ) + 1 
+         templazy = minloc(sumofwork, DIM=2)
+         lazyloc = templazy(1) ! This is equal to: MYID+1
+         sumofwork( 1,lazyloc ) = sumofwork( 1,lazyloc ) + numdists
+         sumofwork( 2,lazyloc ) = sumofwork( 2,lazyloc ) + 1
          targetrow = sumofwork( 2,lazyloc )
 
 C        ADD AO-INDEX TO FIRST AVAILABLE ROW IN THE LAZY SLAVE'S COLUMN
          sorted( targetrow,lazyloc ) = aoindex
       ENDDO
-      
+
       return
 
       END SUBROUTINE

@@ -53,7 +53,7 @@ C
       READ (LUSIFC) (WORK(I), I=1,NORBTS)
 C
       CALL GPCLOSE(LUSIFC,'KEEP')
-      IF (FROIMP .OR. FROEXP) 
+      IF (FROIMP .OR. FROEXP)
      &   CALL CCSD_DELFRO(WORK(KSCR1),WORK(KEND),LWORK)
 C
 C----------------------------
@@ -94,7 +94,7 @@ C
                            NAI = IT1AM(ISYMA,ISYMI)
      &                         + NVIR(ISYMA)*(I - 1) + A
 C
-                           IF ( (ISYMAI .EQ. ISYMBJ) .AND. 
+                           IF ( (ISYMAI .EQ. ISYMBJ) .AND.
      &                          (NAI .GT. NBJ) ) GOTO 700
 C
                            MA = IORB(ISYMA) + NRHF(ISYMA) +  A

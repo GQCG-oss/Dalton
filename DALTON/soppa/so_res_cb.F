@@ -77,7 +77,7 @@ C
 C
 C----------------------------------------------------------------------
 C                                       ~ ~
-C              Generate first part of ( a i | j delta ) for given j and 
+C              Generate first part of ( a i | j delta ) for given j and
 C              delta and given symmetry of ai in KSCR2 and KSCR3 for
 C              excitations and de-excitations, respectively.
 C----------------------------------------------------------------------
@@ -92,9 +92,9 @@ C
                KSCR5  = KSCR4 + LSCR4
                KEND2  = KSCR5 + LSCR5
                LWORK2 = LWORK - KEND2
-C               
+C
                CALL SO_MEMMAX ('SO_RES_CB.2',LWORK2)
-               IF (LWORK2 .LT. 0) 
+               IF (LWORK2 .LT. 0)
      &             CALL STOPIT('SO_RES_CB.2',' ',KEND2,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
@@ -148,7 +148,7 @@ C
                LWORK3 = LWORK - KEND3
 C
                CALL SO_MEMMAX ('SO_RES_CB.3',LWORK3)
-               IF (LWORK3 .LT. 0) 
+               IF (LWORK3 .LT. 0)
      &             CALL STOPIT('SO_RES_CB.3',' ',KEND3,LWORK)
 C
                NTOTAL = MAX(NBAS(ISALFA),1)
@@ -196,7 +196,7 @@ C
             LWORK4  = LWORK - KEND4
 C
             CALL SO_MEMMAX ('SO_RES_CB.4',LWORK4)
-            IF (LWORK4 .LT. 0) 
+            IF (LWORK4 .LT. 0)
      &          CALL STOPIT('SO_RES_CB.4',' ',KEND4,LWORK)
 C
             DO 400 B = 1,NVIR(ISYMB)

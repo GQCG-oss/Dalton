@@ -11,7 +11,7 @@ C
 C     PURPOSE: Controls calculation of "Double corrected RPA"
 C              excitation energies.
 C
-      use so_info, only: sop_excita 
+      use so_info, only: sop_excita
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -26,7 +26,7 @@ C
       CHARACTER*8 PDENS_LABEL
 #include "codata.h"
 #include "wrkrsp.h"
-CSPAS:15/03-2006: merge with Dalton-2.0      
+CSPAS:15/03-2006: merge with Dalton-2.0
 C#include "infpp.h"
 CKeinSPASmehr
 #include "inforb.h"
@@ -44,7 +44,7 @@ C
 C------------------
 C     Write banner.
 C------------------
-C 
+C
       WRITE(LUPRI,'(/,2X,A,/,15X,A,I1,/,2X,A,/)')
      &     '*****************************************************'//
      &     '*************',
@@ -111,7 +111,7 @@ C
       IF ( IPRSOP .GE. 1 ) THEN
 C
          DO 200 IEXCI = 1,NEXCI
-C     
+C
             WRITE(LUPRI,'(/1X,A)') '-------------------------------'//
      &                             '-------------------------------'
             WRITE(LUPRI,'(A,I3,A,I3,//A,1P,G16.8,A,3(/26X,G16.8,A),/)')
@@ -133,7 +133,7 @@ cKeld     &                 ISYRES,      ISYMTR)
             CALL SO_RES_O(WORK(KRESO1E),LRESO1E,WORK(KRESO1D),LRESO1D,
      &                    WORK(KTR1E),  LTR1E,  WORK(KTR1D),  LTR1D,
      &                    DENSIJ,      LDENSIJ,DENSAB,      LDENSAB,
-     &                    ISYRES,      ISYMTR) 
+     &                    ISYRES,      ISYMTR)
 C
             W1ENM = DDOT(LTR1E,WORK(KTR1E),1,WORK(KRESO1E),1)
             W1DNM = DDOT(LTR1D,WORK(KTR1D),1,WORK(KRESO1D),1)
@@ -224,11 +224,11 @@ C
       CALL SO_CLOSE(LUTR2E,FNTR2E,'KEEP')
       CALL SO_CLOSE(LUTR2D,FNTR2D,'KEEP')
 C
-C--------------------------------------------------------------      
+C--------------------------------------------------------------
 C     Calculate and save the pertubed density matrix
 C-------------------------------------------------------------
 C
-      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR 
+      WRITE(PDENS_LABEL,'(A7,I1)') 'EXCITA ',ISYMTR
       CALL SO_PERTDENS('DCRPA',SOP_EXCITA,NEXCI,
      &                 EXVAL,NEXCI,PDENS_LABEL,
      &                 ISYMTR,.FALSE.,1.0D0,

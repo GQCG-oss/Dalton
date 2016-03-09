@@ -216,7 +216,7 @@ cKeld      WRITE(LUPRI,'(//10X,A,8X,F10.4)')
 cKeld     *     'Norm of Printed Amplitude Vector : ',SQRT(SUMOFP)
       WRITE(LUPRI,'(/1X,A53,1X,F8.6)')
      *  'Printed all single excitation amplitudes greater than',THR1
-      IF (DOUBLES) 
+      IF (DOUBLES)
      *    WRITE(LUPRI,'(1X,A53,1X,F8.6)')
      *      'Printed all double excitation amplitudes greater than',THR2
 C

@@ -10,7 +10,7 @@ CClark:7/1/2016
 C     This routine is to read integrals and process them
 C     for certain label in SOPPA program.
 C
-C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition 
+C     PURPOSE: Calculate RPA, RPA(D), SOPPA and SOPPA(CCSD) transition
 C              moments.
 CClark:endC
       use so_info, only: FN_RDENSE, FN_RDENSD, so_full_name
@@ -35,12 +35,12 @@ CKeinSPASmehr
       DIMENSION T2AM(LT2AM), WORK(LWORK)
 C
       PARAMETER( ONE=1.0D0 )
-C      
+C
       CHARACTER*8 LABEL, PDENS_LABEL
       CHARACTER*5 MODEL
       CHARACTER*8 RTNLBL(2)
       LOGICAL  IMAGPROP
-      DOUBLE PRECISION :: DLABEL 
+      DOUBLE PRECISION :: DLABEL
 C
 CClark:7/1/2016
       DIMENSION   TRGOS(3,MXNEXI)
@@ -75,7 +75,7 @@ C-------------------------------------
 C
             LTRMOM  = NEXCI
 C
-            KTRMOM  = 1 
+            KTRMOM  = 1
 C
 C----------------------------------
 C     Space for MO property matrix.
@@ -87,7 +87,7 @@ C
             LWORK1  = LWORK  - KEND1
 C
 
-C     And perturbed density matrix            
+C     And perturbed density matrix
             LPDENSIJ = NIJDEN(ISYMTR)
             IF (MODEL.EQ.'AORPA') THEN
                LPDENSAB = 0
@@ -95,8 +95,8 @@ C     And perturbed density matrix
                LPDENSAB = NABDEN(ISYMTR)
             ENDIF
             LPDENSAI = NAIDEN(ISYMTR)
-         
-            KPDENSIJ = KEND1 
+
+            KPDENSIJ = KEND1
             KPDENSAB = KPDENSIJ + LPDENSIJ
             KPDENSAI = KPDENSAB + LPDENSAB
             KEND2    = KPDENSAI + LPDENSAI
@@ -106,13 +106,13 @@ C     And perturbed density matrix
             IF (LWORK2 .LT. 0)  CALL STOPIT('SO_TRMOM',' ',KEND2,LWORK)
 C
 C----------------------------------------------------------------------
-C           Transform the property integrals to MO basis 
+C           Transform the property integrals to MO basis
 C----------------------------------------------------------------------
 C
             CALL SO_ONEPMO(WORK(KPRP1),LPRP1,LABEL,ISYMTR,
      &                     RTNLBL,WORK(KEND1),LWORK1)
 C
-            IMAGPROP = RTNLBL(2).EQ.'ANTISYMM' 
+            IMAGPROP = RTNLBL(2).EQ.'ANTISYMM'
 C
 C           Factor for D-ex part of gradient
             DFACTOR = -ONE
@@ -140,7 +140,7 @@ C-------------------------------------------------------------
 C              Calculate excitation part of transition moment.
 C-------------------------------------------------------------
 C
-CRF          Note - Label is now number within irrep!            
+CRF          Note - Label is now number within irrep!
                DLABEL = DBLE(IEXCI)
                CALL SO_FNDPOS(PDENS_LABEL,DLABEL,LURDENSE)
                LPDENSTOT = LPDENSIJ + LPDENSAB + LPDENSAI
@@ -150,7 +150,7 @@ CRF          Note - Label is now number within irrep!
                   CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
                ELSE
                   CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYMTR,
-     &                          PDENS_LABEL,DLABEL,LURDENSE) 
+     &                          PDENS_LABEL,DLABEL,LURDENSE)
                ENDIF
                CALL SO_PROPMO(ISYMTR,CONTE,
      &                        MODEL.NE.'AORPA',IMAGPROP,
@@ -171,7 +171,7 @@ C
                   CALL DZERO(WORK(KPDENSIJ),LPDENSIJ)
                ELSE
                   CALL SO_REAVE(WORK(KPDENSIJ),LPDENSTOT,ISYMTR,
-     &                          PDENS_LABEL,DLABEL,LURDENSD) 
+     &                          PDENS_LABEL,DLABEL,LURDENSD)
                ENDIF
                CALL SO_PROPMO(ISYMTR,CONTD,
      &                        MODEL.NE.'AORPA',IMAGPROP,

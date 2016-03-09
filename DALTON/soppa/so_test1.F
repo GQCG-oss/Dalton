@@ -12,12 +12,12 @@ C  /* Deck so_test1 */
      &                    ISYMTR,  WORK,    LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
-C 
+C
 C     Keld Bak, August 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
 C     PURPOSE: Test of orhtonormality of trialvectors and the
-C              correctnes of the linear transformed vectors 
+C              correctnes of the linear transformed vectors
 C              which are generated as linear combinations of
 C              previously calculated linear transformed vectors.
 C
@@ -78,16 +78,16 @@ C
             CALL SO_READ(TR2DJ, LTR2D, LUTR2D, FNTR2D, JTRIAL)
 C
             DOTP = DDOT(LTR1E,TR1EI,1,TR1EJ,1)
-     &           + DDOT(LTR1D,TR1DI,1,TR1DJ,1) 
-     &           + DDOT(LTR2E,TR2EI,1,TR2EJ,1) 
-     &           + DDOT(LTR2D,TR2DI,1,TR2DJ,1) 
+     &           + DDOT(LTR1D,TR1DI,1,TR1DJ,1)
+     &           + DDOT(LTR2E,TR2EI,1,TR2EJ,1)
+     &           + DDOT(LTR2D,TR2DI,1,TR2DJ,1)
 C
             IF ( ITRIAL .EQ. JTRIAL ) THEN
 C
                IF ( DABS( DOTP - ONE ) .GT. 1.D-14 ) THEN
                   WRITE(LUPRI,*) 'WARNING: Norm of trial vector',
      &                        ITRIAL,' is ',DOTP
-                  PROBL = .TRUE. 
+                  PROBL = .TRUE.
                END IF
 C
             ELSE
@@ -95,20 +95,20 @@ C
                IF ( DABS( DOTP ) .GT. 1.D-14 ) THEN
                   WRITE(LUPRI,*) 'WARNING: Dotp of trial vectors',
      &                        ITRIAL,' and ',JTRIAL,' is ',DOTP
-                  PROBL = .TRUE. 
+                  PROBL = .TRUE.
                END IF
 C
             END IF
 C
             DOTP = DDOT(LTR1E,TR1EI,1,TR1DJ,1)
-     &           + DDOT(LTR1D,TR1DI,1,TR1EJ,1) 
-     &           + DDOT(LTR2E,TR2EI,1,TR2DJ,1) 
-     &           + DDOT(LTR2D,TR2DI,1,TR2EJ,1) 
+     &           + DDOT(LTR1D,TR1DI,1,TR1EJ,1)
+     &           + DDOT(LTR2E,TR2EI,1,TR2DJ,1)
+     &           + DDOT(LTR2D,TR2DI,1,TR2EJ,1)
 C
             IF ( DABS( DOTP ) .GT. 1.D-14 ) THEN
                WRITE(LUPRI,*) 'WARNING: Dotp of trial vector',
      &                     ITRIAL,' and the paired',JTRIAL,' is ',DOTP
-               PROBL = .TRUE. 
+               PROBL = .TRUE.
             END IF
 C
   200    CONTINUE

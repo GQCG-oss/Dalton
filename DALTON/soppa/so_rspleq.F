@@ -9,7 +9,7 @@ C
 C     Andrea Ligabue December 2003
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
 C
-C     PURPOSE: Drive the calculation and analysis of SOPPA and 
+C     PURPOSE: Drive the calculation and analysis of SOPPA and
 C              SOPPA(CCSD) response properties
 C
 C     MODEL             SOPPA or SOPPA(CCSD)
@@ -17,11 +17,11 @@ C     LABEL             property label
 C     ISYMTR            property symmetry
 C     FRVAL(NFRVAL)     frequencies
 C
-C     For us, NEXCI is always 1, since we are going to compute 
+C     For us, NEXCI is always 1, since we are going to compute
 C     one frequency each run
 C
       use so_info, only: so_has_doubles
-C         
+C
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -37,7 +37,7 @@ C
 C
 #include "codata.h"
 #include "wrkrsp.h"
-CSPAS:15/03-2006: merge with Dalton-2.0      
+CSPAS:15/03-2006: merge with Dalton-2.0
 C#include "infpp.h"
 CKeinSPASmehr
 #include "inforb.h"
@@ -71,8 +71,8 @@ C      LGPVC2  = 2 * N2P2HOP(ISYMTR)
 Cend-PFP
 C
       KGPVC1  = 1
-      KGPVC2  = KGPVC1 + LGPVC1 
-      KEND1   = KGPVC2 + LGPVC2 
+      KGPVC2  = KGPVC1 + LGPVC1
+      KEND1   = KGPVC2 + LGPVC2
       LWORK1  = LWORK  - KEND1
 C
       CALL SO_MEMMAX ('SO_RSPLEQ.1',LWORK1)
@@ -106,7 +106,7 @@ C         LGPVC2H = LGPVC2 /2
          IF(DOUBLES) CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,
      &                           1,1,LGPVC2,1,1,LUPRI)
       ENDIF
-C     
+C
       CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
       IF (DOUBLES)  CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
 C      MAXIT   = MAXCLC

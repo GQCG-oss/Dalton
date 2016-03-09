@@ -6,11 +6,11 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Andrea Ligabue, december 2003
 C
-C     Read solution or residual vector from file 
+C     Read solution or residual vector from file
 C     and all the needed information related to that vector
 C
 C     ARRAY      solution/residual vecotr
-C     LARRAY     ARRAY length 
+C     LARRAY     ARRAY length
 C     ISYMTR     symmetry of the property
 C     LABEL      property label
 C     FREQ       frequency of the solution/residual

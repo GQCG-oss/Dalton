@@ -7,7 +7,7 @@ C     This routine is part of the atomic integral direct SOPPA program.
 C
 C     Stephan Sauer, May 1996
 C     Stephan P. A. Sauer: 10.11.2003: merge with Dalton 2.0
-C     Andrea Ligabue, December 2003: linear response functions 
+C     Andrea Ligabue, December 2003: linear response functions
 C                                    implemented
 C
 C        Set up and solve the reduced eigenvalue problem. Save the
@@ -53,7 +53,7 @@ C     Check dimensions of the matrices
 C-------------------------------------
 C
       IF (LREDE .NE. LREDS) THEN
-         WRITE(LUPRI,*) 
+         WRITE(LUPRI,*)
      &        'SO_REDEV : Dimensions of reduced E[2] and S[2] matrices',
      &        ' LREDE : ',LREDE,' and LREDS : ',LREDS,' are different'
          CALL QUIT('Incompatible dimensions of reduced matrices in //
@@ -80,7 +80,7 @@ C==========================================
 C
 C--------------------------------------------------------------------
 C     Work space allocation no. 1.
-C     Notice that the E[2] linear transformed trial vector and the 
+C     Notice that the E[2] linear transformed trial vector and the
 C     S[2] linear transformed trial vector are of equal length and
 C     that they use the same work space.
 C--------------------------------------------------------------------
@@ -152,8 +152,8 @@ C
       LREDES  = LREDE
       LREDSS  = LREDS
       LREDST  = LREDS
-      LSCR1   = NTRIAL      
-C     
+      LSCR1   = NTRIAL
+C
       KEIVEC   = 1
       KEND2A   = KEIVEC + LEIVEC*LEIVEC
       LWORK2A  = LWORK  - KEND2A
@@ -164,7 +164,7 @@ C
       KREDES  = KBETA  + LBETA
       KREDSS  = KREDES + LREDES*LREDES
       KREDST  = KREDSS
-      KEND2B  = KREDSS + LREDSS*LREDSS   
+      KEND2B  = KREDSS + LREDSS*LREDSS
 C
       KSCR1   = KEND2A
       KEND2C  = KEND2A + LSCR1*LSCR1
@@ -176,9 +176,9 @@ C
       IF (LWORK2 .LT. 0) CALL STOPIT('SO_REDEV.2',' ',KEND2,LWORK)
 C
 C-------------------------------------------------------
-C     Use EISPACK routine for real general matrices 
+C     Use EISPACK routine for real general matrices
 C     in generalized eigenvalue problem.
-C     The reduced E[2] and S[2] matrices are backuped to 
+C     The reduced E[2] and S[2] matrices are backuped to
 C     WORK(KREDES) and WORK(KREDSS).
 C-------------------------------------------------------
 C
@@ -187,7 +187,7 @@ C
 C
 C Online documentation for EISPACK routine RGG on netlib.org/eispack/rgg.f
 C WORK(KEIVEC) is the output with real and imaginary parts of the eigenvectors.
-      MATZ  = 1 
+      MATZ  = 1
       CALL RGG(LREDE,NTRIAL,REDE,REDS,WORK(KALFAR),WORK(KALFAI),
      &         WORK(KBETA),MATZ,WORK(KEIVEC),IERR)
 C
@@ -202,7 +202,7 @@ C
       CALL DCOPY(LREDS*LREDS,WORK(KREDSS),1,REDS,1)
 C
 C-----------------------------------------------
-C     Order reduced eigenvalues and eigenvectors 
+C     Order reduced eigenvalues and eigenvectors
 C-----------------------------------------------
 C
       DTIME      = SECOND()

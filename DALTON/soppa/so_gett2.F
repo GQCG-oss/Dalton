@@ -42,12 +42,12 @@ C
          CALL GPOPEN(LUTAM,'MP2__TAM','OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
          REWIND LUTAM
-C     
+C
          READ(LUTAM)
          READ(LUTAM) (T2AM(I), I = 1,LT2AM)
-         
+
          CALL GPCLOSE(LUTAM,'KEEP')
-         
+
       ELSE IF ( KEY(1:4) .EQ. 'CCSD' ) THEN
 C
 C--------------------------------------------------
@@ -61,11 +61,11 @@ C
 C
          READ(LUTAM) (DENSAI(I), I = 1,LDENSAI)
          CALL DSCAL(LDENSAI,HALF,DENSAI,1)
-         
+
          READ(LUTAM) (T2AM(I), I = 1,LT2AM)
-         
+
          CALL GPCLOSE(LUTAM,'KEEP')
-         
+
       END IF
 C
 C----------------------------------------------------

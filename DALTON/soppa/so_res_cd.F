@@ -42,7 +42,7 @@ C
       DO 100 ISYMBJ = 1,NSYM
 C
          ISYMAI = MULD2H(ISYMBJ,ISYRES)
-C        Since nothing is done in the end, skip this it.         
+C        Since nothing is done in the end, skip this it.
          IF (ISYMAI.GT.ISYMBJ) GOTO 100
 C
 C---------------------------------
@@ -53,7 +53,7 @@ C
          LFAI   = NT1AM(ISYMAI)
 C
          KFBJ    = 1
-         IF(ISYMAI.LT.ISYMBJ) THEN 
+         IF(ISYMAI.LT.ISYMBJ) THEN
             KFAI    = KFBJ  + LFBJ
          ELSE ! They're the same!!!
             KFAI = KFBJ
@@ -146,11 +146,11 @@ C  402          CONTINUE
 C
 C  401       CONTINUE
 
-            IOFF = IT2AM(ISYMAI, ISYMBJ) + 1 
-            CALL EXTR2_TOTSYM( TR2E(IOFF), RES2E(IOFF), 
-     &                         WORK(KFBJ), ISYMBJ) 
-            CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF), 
-     &                         WORK(KFBJ), ISYMBJ) 
+            IOFF = IT2AM(ISYMAI, ISYMBJ) + 1
+            CALL EXTR2_TOTSYM( TR2E(IOFF), RES2E(IOFF),
+     &                         WORK(KFBJ), ISYMBJ)
+            CALL EXTR2_TOTSYM( TR2D(IOFF), RES2D(IOFF),
+     &                         WORK(KFBJ), ISYMBJ)
          ELSE IF ( ISYMAI .LT. ISYMBJ) THEN
 C
 C            DO 501 NBJ = 1,NT1AM(ISYMBJ)
@@ -187,12 +187,12 @@ C
       CALL QEXIT('SO_RES_CD')
 C
       RETURN
-      CONTAINS 
-         pure SUBROUTINE EXTR2_TOTSYM ( TR2, RES2, EPAIR, ISYM) 
+      CONTAINS
+         pure SUBROUTINE EXTR2_TOTSYM ( TR2, RES2, EPAIR, ISYM)
             DOUBLE PRECISION, INTENT(IN) :: TR2(*), EPAIR(*)
             DOUBLE PRECISION, INTENT(INOUT) :: RES2(*)
-            integer, intent(in) :: isym            
-C            
+            integer, intent(in) :: isym
+C
             integer :: nbj, nai, naibj, ioffbj
             double precision :: eaibj
 C
@@ -200,7 +200,7 @@ C            ioffsym = it2am(isym,isym)
 
             do nbj = 1, nt1am(isym)
                ioffbj = nbj*(nbj-1)/2
-               do nai = 1, nbj 
+               do nai = 1, nbj
                   naibj = ioffbj + nai
                   eaibj = epair(nbj) + epair(nai)
                   res2(naibj) = res2(naibj) + eaibj*tr2(naibj)
@@ -209,7 +209,7 @@ C            ioffsym = it2am(isym,isym)
             return
          end subroutine
 
-         pure subroutine extr2_asym ( tr2, res2, epair1, epair2, 
+         pure subroutine extr2_asym ( tr2, res2, epair1, epair2,
      &                                isym1, isym2 )
             double precision, intent(in) :: tr2(*), epair1(*), epair2(*)
             double precision, intent(inout) :: res2(*)

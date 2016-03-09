@@ -53,7 +53,7 @@ C     Subtract from time in SO_RES all time spend in subroutines
 C     which are timed separately.
 C---------------------------------------------------------------
 C
-      SOTIME(35) = SOTIME(35) 
+      SOTIME(35) = SOTIME(35)
      &           - SOTIME(1)  - SOTIME(6)  - SOTIME(7)  - SOTIME(8)
      &           - SOTIME(9)  - SOTIME(10) - SOTIME(11) - SOTIME(12)
      &           - SOTIME(13) - SOTIME(14) - SOTIME(15) - SOTIME(16)
@@ -81,7 +81,7 @@ C-----------------------------------------------------------
 C     Subtract from time in SO_SIGAI time spend in subparts.
 C-----------------------------------------------------------
 C
-      SOTIME(16) = SOTIME(16) 
+      SOTIME(16) = SOTIME(16)
      &           - SOTIME(40) - SOTIME(41) - SOTIME(42) - SOTIME(43)
 C
 C------------------------------

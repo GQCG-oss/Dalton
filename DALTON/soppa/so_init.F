@@ -37,10 +37,10 @@ C
 C
             ISYMJ = MULD2H(ISYMI,ISYMIJ)
 C
-C             
+C
             IIJDEN(ISYMI,ISYMJ) = ICOUN1
             IABDEN(ISYMI,ISYMJ) = ICOUN2
-CRF I flipped the indicies on IAIDEN! 
+CRF I flipped the indicies on IAIDEN!
             IAIDEN(ISYMJ,ISYMI) = ICOUN3
 C
             ICOUN1 = ICOUN1 + NRHF(ISYMI) * NRHF(ISYMJ)

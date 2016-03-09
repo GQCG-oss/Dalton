@@ -8,7 +8,7 @@ C
 C     Stephan P. A. Sauer, February 1999
 C     Rasmus Faber, October 2015, rewrite for merge with modern Dalton
 C
-C     PURPOSE: Driver for printing final output for the RPA, 
+C     PURPOSE: Driver for printing final output for the RPA,
 C              SOPPA, and SOPPA(CCSD) polarizabilities.
 C
       use so_info, only: sop_num_models, so_get_active_models,
@@ -17,7 +17,7 @@ C
 #include "priunit.h"
 #include "soppinf.h"
 #include "cbilnr.h"
-C         
+C
       DIMENSION POLDD(2,3,3,NFRVAL,*)!,POLDQ(2,3,3,3,NFRVAL,4)
       DIMENSION POLDL(2,3,3,NFRVAL,*),POLDA(2,3,3,NFRVAL,*)
 C These are new, check dimension
@@ -32,8 +32,8 @@ C     Add to trace.
 C------------------
 C
       CALL QENTER('SO_LNROUT')
-C     
-C     Get list of models active in this job (no RPA(D) properties)      
+C
+C     Get list of models active in this job (no RPA(D) properties)
       call so_get_active_models( JOBS )
       JOBS(sop_model_rpad) = .false.
 C
@@ -42,8 +42,8 @@ C     LOOP OVER METHODS
 C===============================================
 C
       IOUT = 1
-      DO I = 1, sop_num_models    
-         IF(.NOT.JOBS(I) ) CYCLE 
+      DO I = 1, sop_num_models
+         IF(.NOT.JOBS(I) ) CYCLE
 C
 C-----------------------------------------------
 C     Write calculated properties to output.
@@ -58,9 +58,9 @@ C
      &                POLVV(1,1,1,1,IOUT),FOVIBG,
      &                IPRSOP,WORK,LWORK)
 C
-         IOUT = IOUT + 1 
+         IOUT = IOUT + 1
       ENDDO
-C      
+C
       WRITE(LUPRI,9000)
 C
 C===============================================

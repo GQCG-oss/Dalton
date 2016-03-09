@@ -17,7 +17,7 @@ C     Dummy argument library
 C
 C     CMO:: intent(in)        MO coefficient matrix. calculated with so_get_mo
 C     DENS:: intent(out)      Density matrix. Output from this routine
-C     ISYMTR:: intent(in)     
+C     ISYMTR:: intent(in)
 C     TR1E:: intent(in)       Trial vector excitations
 C     TR1D:: intent(in)       Trial vector de-excitations
 #include "implicit.h"
