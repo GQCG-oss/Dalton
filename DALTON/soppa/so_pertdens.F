@@ -107,7 +107,7 @@ C
       KRDENAI = KRDENAB + LRDENAB
       KSOLV1 = KRDENAI + LRDENAI
       KSOLV2 = KSOLV1 + LSOLV1
-      KEND1  = KSOLV2 + KSOLV2
+      KEND1  = KSOLV2 + LSOLV2
       LWORK1 = LWORK - KEND1
 
       CALL SO_MEMMAX ('SO_PERTDENS.1',LWORK1)
@@ -192,9 +192,11 @@ C        Doubles contributions to response densities.
 C----------------------------------------------------
 C
          IF (DOUBLES) THEN
+C
             CALL SO_PERTD2(ISYMTR,EFACT,
      &                     WORK(KRDENIJ),LRDENIJ,WORK(KRDENAB),LRDENAB,
-     &                     T2AM,LT2AM,WORK(KSOLV2),LSOLV2)
+     &                     T2AM,LT2AM,WORK(KSOLV2),LSOLV2,
+     &                     WORK(KEND1),LWORK1)
          END IF
 C
          IF (CALCTYPE.EQ.SOP_EXCITA) THEN
@@ -231,7 +233,8 @@ C
             IF (DOUBLES) THEN
                CALL SO_PERTD2(ISYMTR,DFACT,
      &                        WORK(KRDENIJ),LRDENIJ,WORK(KRDENAB),
-     &                        LRDENAB,T2AM,LT2AM,WORK(KSOLV2),LSOLV2)
+     &                        LRDENAB,T2AM,LT2AM,WORK(KSOLV2),LSOLV2,
+     &                        WORK(KEND1),LWORK1)
             END IF
 C
          END IF
