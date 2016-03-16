@@ -310,13 +310,6 @@ C
 C     Exchange and correlation energies and derivatives
       NORDER = 1  ! first-order derivatives
 C
-!     CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
-!    >           Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2,
-!    >           d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos,
-!    >           d2Exdgrddgrd,d2Exdrhodgrd,
-!    >           Ec,d1Ecdrhot,d1Ecdrhos,d1Ecdgrd,d1Ecdgrda2,
-!    >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
-!    >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
        if (ipnt .eq. 1) write(lupri,*)'d1Ex', d1Ex
@@ -567,13 +560,6 @@ C     Print section
       END
 
 C****************************************************************************
-!     SUBROUTINE SRDFTEXCJT(RHO,RHG, CHIVAL,NORDER,ERFEXP,
-!    >           Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2,
-!    >           d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos,
-!    >           d2Exdgrddgrd,d2Exdrhodgrd,
-!    >           Ec,d1Ecdrhot,d1Ecdrhos,d1Ecdgrd,d1Ecdgrda2,
-!    >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
-!    >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
       SUBROUTINE SRDFTEXCJT(RHO,RHG, CHIVAL,NORDER,ERFEXP,
      >           Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA, ipnt)
 C*****************************************************************************
@@ -965,14 +951,6 @@ C
 C Exchange and correlation derivatives ------------------------------------
 
       NORDER = 2  ! first-order and second-order derivatives
-CFRAN RHOSGRD ADDED!
-!     CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
-!    >           Ex,d1Exdrhot,d1Exdrhos,d1Exdgrd,d1Exdgrda2,
-!    >           d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos,
-!    >           d2Exdgrddgrd,d2Exdrhodgrd,
-!    >           Ec,d1Ecdrhot,d1Ecdrhos,d1Ecdgrd,d1Ecdgrda2,
-!    >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
-!    >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
 
