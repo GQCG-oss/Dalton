@@ -638,10 +638,10 @@ C        derivative wrt grdt and grdt -----------------------
          d2E(6) = (E00p0 - 2.d0*E + E00m0)/(hgt*hgt) ! d2Edgrdtgrdt
 
 C        derivative wrt rhot and grdt -----------------------
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,Ep0p0)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,Em0p0)
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,Ep0m0)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,Em0m0)
+         call ESRSPINGGA(rhotp,rhos,grdtp,grds,mu,Ep0p0)
+         call ESRSPINGGA(rhotm,rhos,grdtp,grds,mu,Em0p0)
+         call ESRSPINGGA(rhotp,rhos,grdtm,grds,mu,Ep0m0)
+         call ESRSPINGGA(rhotm,rhos,grdtm,grds,mu,Em0m0)
          d2E(4) = (Ep0p0 - Em0p0 - Ep0m0 + Em0m0)/(4.d0*hrt*hgt) ! d2Edrhotdgrdt
 
        if (hrs .gt. 0.0d00) then
