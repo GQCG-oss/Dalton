@@ -40,6 +40,7 @@ C
 #include "priunit.h"
 C
 #include "cbiexc.h"
+CPi for NT2AMX, NT1AM(), NT2AM() (t2 amplitude vectors?)
 #include "ccsdsym.h"
 #include "infdim.h"
 #include "inforb.h"

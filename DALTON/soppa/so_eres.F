@@ -123,6 +123,19 @@ C
       singles_second = so_singles_second(model)
       doubles = so_has_doubles(model)
       tr2_zero = MODEL.EQ.'DCRPA'
+CPi
+C---------------------------------------------------------
+C     Pi 140316:
+C     Adjust lengt of T2 amplitudes vector in TRIPLET case
+C     Copied from SPAS/PFP Triplet version
+C---------------------------------------------------------
+C
+      LT2MPH = LT2MP
+      IF (TRIPLET) THEN
+        LT2MPH = INT(LT2MP/2)
+      END IF
+CPi end
+C
 C
 C------------------------------------------------------------------
 C     Determine the symmetry of the result vector from the symmetry
@@ -636,9 +649,11 @@ C                    MP-amplitudes.
 C------------------------------------------------------------
 C
                      DTIME      = SECOND()
-                     CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MP,
-     &                         WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                         WORK(KEND4),LWORK4)
+CPi-140316 Change LT2MP -> LT2MPH
+                     CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MPH,
+CPi end
+     &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                            WORK(KEND4),LWORK4)
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
                   ENDIF
@@ -1088,8 +1103,8 @@ C                 are used in SO_RES_B.
 C--------------------------------------------------------------------
 C
             DTIME      = SECOND()
-            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),
-     &                    LSIGAI2,
+            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
+     &                    WORK(KSIGAI2),LSIGAI2,
      &                    WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
      &                    WORK(KBTR1E),LBTR1E,
      &                    WORK(KBTR1D),LBTR1D,
@@ -1108,7 +1123,10 @@ C
             DTIME      = SECOND()
             CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
      &                    WORK(KSIGDA2),LSIGDA2,
-     &                    T2MP,LT2MP,WORK(KDSRHF),LDSRHF,
+CPi-160316 change LT2MP -> LT2MPH
+     &                    T2MP,LT2MPH,
+Cend-Pi
+     &                    WORK(KDSRHF),LDSRHF,
      &                    WORK(KBTR1E),LBTR1E,
      &                    WORK(KBTR1D),LBTR1D,
      &                    WORK(KBTJ1E),LBTJ1E,
@@ -1192,15 +1210,69 @@ C
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
 
-CRF         B^(2) terms go here: Pi -> Check what we need!
-
+CPi-160316
+C-------------------------------------------------------------------
+C           Construct the partially back-transformed T2 MP-amplitudes
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_T2M1(WORK(KT2M1),LT2M1,
+     &                   T2MP(LT2MPH+1),LT2MPH,
+     &                   WORK(KCMO),LCMO,
+     &                   IDEL,ISYMD,ISYDIS,
+     &                   WORK(KEND4),LWORK4)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(12) = SOTIME(12) + DTIME
+C
+C--------------------------------------------------------------------
+C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
+C                 are used in SO_RES_B.
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
+     &                    WORK(KSIGAI2),LSIGAI2,
+     &                    WORK(KT2M1),LT2M1,
+     &                    WORK(KXINT),LXINT,
+     &                    WORK(KBTR1E),LBTR1E,
+     &                    WORK(KBTR1D),LBTR1D,
+     &                    WORK(KBTJ1E),LBTJ1E,
+     &                    WORK(KBTJ1D),LBTJ1D,
+     &                    WORK(KCMO),LCMO,
+     &                    ISYMD,ISYDIS,ISYRES,ISYMTR,
+     &                    WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(16) = SOTIME(16) + DTIME
+C
+C--------------------------------------------------------------------
+C                 Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
+C                 are used SO_RES_C.
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
+     &                    WORK(KSIGDA2),LSIGDA2,
+     &                    T2MP(LT2MPH+1),LT2MPH,
+     &                    WORK(KDSRHF),LDSRHF,
+     &                    WORK(KBTR1E),LBTR1E,
+     &                    WORK(KBTR1D),LBTR1D,
+     &                    WORK(KBTJ1E),LBTJ1E,
+     &                    WORK(KBTJ1D),LBTJ1D,
+     &                    WORK(KCMO),LCMO,
+     &                    IDEL,ISYMD,ISYDIS,ISYRES,ISYMTR,
+     &                    WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(17) = SOTIME(17) + DTIME
+C
+Cend-Pi
+C
          ENDIF
-
+C
          IF (DOUBLES) THEN
-
+C
 CRF         C^T*Tr2 => Res_1 and C*Tr_1 => Res_2 goes here!
-CRF         Pi: Check if existing implementation can be dropped in..?            
-
+CRF         Pi: Check if existing implementation can be dropped in?
+C
          ENDIF
 
          END SUBROUTINE

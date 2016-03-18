@@ -24,6 +24,9 @@ C
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
+CPi-160316 include Triplet flah
+#include "soppinf.h"
+Cend-Pi
 C
 C------------------------------
 C     Statement function INDEX.
@@ -37,6 +40,18 @@ C------------------
 C
       CALL QENTER('SO_T2MP')
 C
+CPi-160316
+C---------------------------------------------------------------------
+C     If Triplet, initialize pointer to the last part of T2AM in which
+C     the triplet amplitudes will be stored.
+C---------------------------------------------------------------------
+C
+      LT2AMH = LT2AM
+      IF (TRIPLET) THEN
+         LT2AMH = INT(LT2AM/2)
+      END IF
+C
+Cend-Pi
 C
 C---------------------------------------------------
 C     Loop over T2-amplitudes for a =< b and i =< j.
@@ -100,12 +115,30 @@ C
      &                           + INDEX(NAI,NBJ)
                            NAJBI = IT2AM(ISYMAJ,ISYMBI)
      &                           + INDEX(NAJ,NBI)
+CPi-160316
+C------------------------------------------------------
+C                          Transform singlet amplitudes
+C------------------------------------------------------
 C
                            T2MP1 = TWO * T2AM(NAIBJ)
      &                           - ONE * T2AM(NAJBI)
                            T2MP2 = TWO * T2AM(NAJBI)
      &                           - ONE * T2AM(NAIBJ)
 C
+C-----------------------------------------------------------------------
+C                          Transform triplet amplitudes and save in last
+C                          part of T2AM vector. Include -1 here? Yes!
+C-----------------------------------------------------------------------
+C
+                           IF (TRIPLET) THEN
+                              T2AM(LT2AMH+NAJBI) = - ONE * T2AM(NAIBJ)
+                              T2AM(LT2AMH+NAIBJ) = - ONE * T2AM(NAJBI)
+                           END IF
+C
+C-----------------------------------------------------------------------
+C                          Save singlet amplitudes in first part of T2MP
+C-----------------------------------------------------------------------
+Cend-Pi
                            T2AM(NAIBJ) = T2MP1
                            T2AM(NAJBI) = T2MP2
 C
