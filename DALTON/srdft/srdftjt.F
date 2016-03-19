@@ -393,26 +393,16 @@ C      Sum of exchange and correlation
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
        ! Ignore spin in start CI ...
-       if (ipnt .eq. 1) then
-          write(lupri,*)'DOERG,DOATR',DOERG,DOATR
-          write(lupri,*)'excmat before DFTKSM'
-         !CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-       end if
-
        FROMVX = .FALSE.
-       if (domcsrdft .and. docisrdft) then        ! (DOCISRDFT .and. DOMCSRDFT) is only true for start-CI  (cf. routine OPST)
+       if (domcsrdft .and. docisrdft) then  !  only true for start-CI  (cf. routine OPST)
            CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL,IPNT)
-           if (ipnt .eq. 1) then
-              write(lupri,*)'excmat after DFTKSM'
-              !CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-           endif
        else if (domcsrdft .and. .not. docisrdft) then
-          if (dogga. and. dft_spindns) then       ! special treatment if gga + spin
+          if (dogga. and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
      &             d1Excdrhot,d1Excdngrd2,d1Excdngrd2,d1Excdngrds2,
      &             DFTHRL,IPNT)
-          else                                    ! pure GGA or pure spin
+          else                              ! pure GGA or pure spin
              CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL, IPNT)
              if (dft_spindns .and. .not. dogga) then
@@ -420,6 +410,10 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
      &                       d1Excdrhos,0.0d0,DOGGA,FROMVX,DFTHRL,IPNT)
              end if
           end if
+       else ! if hfsrdft
+          IF (DFT_SPINDNS) CALL QUIT('no HSRDFT with open shells')
+             CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
+     &            d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL,IPNT)
        end if
 C
 C
