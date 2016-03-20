@@ -28,9 +28,9 @@ Some advice on good test criteria:
    (inactive energy, active energy, PE energy, PCM energy, ...) are only of linear accuracy.
 5. In response properties, the reliable digits in calculated values is also determined by
    thresholds for the linear response equations.
-4. Use the "ignore_sign" option for properties like transition moments for which the sign
+6. Use the "ignore_sign" option for properties like transition moments for which the sign
    is undefined.
-5. Use the "ignore_below" option when you have "rel_tolerance" and calculated small numbers
+7. Use the "ignore_below" option when you have "rel_tolerance" and calculated small numbers
    (often numbers which ought to be exactly zero) which are affected by numerical noise,
    e.g. because of deviation of the molecular geometry from exact point group symmetry.
 
