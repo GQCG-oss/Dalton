@@ -318,7 +318,6 @@ C      Summation with quadrature weigths
 C      Potentials with quadrature weigths
 !
        if (DOGGA .and. DFT_SPINDNS) then
-           if (ipnt .eq. 1) write(lupri,*)'case 1 active'
            d1Exdrhot   = d1Ex(1)
            d1Exdgrdt   = d1Ex(2)
            d1Exdngrd2  = d1Ex(3)
@@ -333,14 +332,12 @@ C      Potentials with quadrature weigths
            d1Ecdgrds   = d1Ec(5)
            d1Ecdngrds2 = d1Ec(6)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
-           if (ipnt .eq. 1) write(lupri,*)'case 2 active'
            d1Exdrhot  = d1Ex(1)
            d1Exdrhos  = d1Ex(2)
            !-----------------
            d1Ecdrhot  = d1Ec(1)
            d1Ecdrhos  = d1Ec(2)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
-           if (ipnt .eq. 1) write(lupri,*)'case 3 active'
            d1Exdrhot  = d1Ex(1)
            d1Exdgrdt  = d1Ex(2)
            d1Exdngrd2 = d1Ex(3)
@@ -349,7 +346,6 @@ C      Potentials with quadrature weigths
            d1Ecdgrdt  = d1Ec(2)
            d1Ecdngrd2 = d1Ec(3)
        else
-           if (ipnt .eq. 1) write(lupri,*)'case 4 active'
            d1Exdrhot  = d1Ex(1)
            d1Ecdrhot  = d1Ec(1)
        end if
@@ -375,20 +371,6 @@ C      Sum of exchange and correlation
        d1Excdngrd2 = d1Exdngrd2 + d1Ecdngrd2
        d1Excdgrds  = d1Exdgrds  + d1Ecdgrds
        d1Excdngrds2 = d1Exdngrds2 + d1Ecdngrds2
-
-       if (ipnt .eq. 1) then
-          write(lupri,*)'d1Excdrhot', d1Excdrhot
-          write(lupri,*)'d1Exdrhot', d1Exdrhot
-          write(lupri,*)'d1Ecdrhot', d1Ecdrhot
-
-          write(lupri,*)'d1Excdgrdt', d1Excdgrdt
-          write(lupri,*)'d1Exdgrdt', d1Exdgrdt
-          write(lupri,*)'d1Ecdgrdt', d1Ecdgrdt
-
-          write(lupri,*)'d1Excdngrd2', d1Excdngrd2
-          write(lupri,*)'d1Exdngrd2', d1Exdngrd2
-          write(lupri,*)'d1Ecdngrd2', d1Ecdngrd2
-       end if
 
 C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin components)
        ! Ignore spin in start CI ...
@@ -439,29 +421,12 @@ C        matrix 4 is DXSAO
          end do
        end do      
 #endif
-        if (ipnt .eq. 1) then
-            write(lupri,*)'edh before SRDFTLTRJT' 
-            WRITE(LUPRI,*) ' <<< Kohn-Sham matrix >>>'
-            CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-            WRITE(LUPRI,*)' <<< Kohn-Sham matrix from spin-density>>>'
-            CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,
-     &                  NBAST,NBAST,NBAST,-1,LUPRI)
-        end if
 
         CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
      &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG,DMAGAOSR,DOGGA,
      &                 IPNT)
-
-        if (ipnt .eq. 1) then
-            write(lupri,*)'edh after SRDFTLTRJT'
-            WRITE(LUPRI,*)'<<< Kohn-Sham matrix >>>'
-            CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-            WRITE(LUPRI,*)' <<< Kohn-Sham matrix from spin-density>>>'
-            CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,
-     &                  NBAST,NBAST,NBAST,-1,LUPRI)
-        end if
-    
+     
        ENDIF
 
 #ifdef SRDFT_DEBUG
@@ -553,7 +518,7 @@ C     Print section
          WRITE(LUPRI,'(/A)') ' srDFT linear transformation finished'
       END IF
 
-!      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(//A/)') ' <<< Kohn-Sham matrix >>>'
             CALL OUTPUT(EXCMAT,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
             IF (DFT_SPINDNS) THEN
@@ -562,7 +527,7 @@ C     Print section
                CALL OUTPUT(EXCMAT(1,1,2),1,NBAST,1,NBAST,NBAST,NBAST,
      &         -1,LUPRI)
             END IF
-!      END IF
+      END IF
 
       END IF  ! IPRINT .GE. 2
 
@@ -774,9 +739,6 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_PBEGWS_S) THEN
         call DESRSPINGGA(ESRC_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
      >                   norder,Ec,d1Ec,d2Ec,ipnt)
-      if (ipnt .eq. 1) write(lupri,*) 'Ec', Ec
-      if (ipnt .eq. 1) write(lupri,*) 'd1Ec', d1Ec
-      if (ipnt .eq. 1) write(lupri,*) 'd2Ec', d2Ec
       ENDIF
 C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
@@ -918,18 +880,10 @@ C***************************************************************************
       ! edh for debug
       integer ipnt
 
-      if (ipnt .eq. 1) write(lupri,*)'entering SRDFTLTRJT'
       ! For small values of rho to avoid NaN
       do i = 1,4
          if (abs(rho(i)) .lt. 1.d-30) rho(i) = 1.d-30
       end do
-
-      if (ipnt .eq. 1) then 
-         write(lupri,*)'DGAO(1,1) and DGAI(1,2)'
-         call output(DGAO(1,1),1,nbast,1,nbast,nbast,nbast,-1,lupri)
-         call output(DGAO(1,2),1,nbast,1,nbast,nbast,nbast,-1,lupri)
-      end if 
-
 
       ! DGAO(1,1) = DTXMAT*GAO  
       CALL DGEMV('N',NBAST,NBAST,1.0d0,
@@ -980,10 +934,7 @@ C Exchange and correlation derivatives ------------------------------------
       NORDER = 2  ! first-order and second-order derivatives
       CALL SRDFTEXCJT(RHO,RHG,CHIVAL,NORDER,ERFEXP,
      >                Ex,d1Ex,d2Ex,Ec,d1Ec,d2Ec,VLAMBDA,ipnt)
-       if (ipnt .eq. 1) write(lupri,*)'d1Ex', d1Ex
-       if (ipnt .eq. 1) write(lupri,*)'d2Ex', d2Ex
        if (DOGGA .and. DFT_SPINDNS) then
-           if (ipnt .eq. 1) write(lupri,*)'case 1 active'
            d1Exdrhot      = d1Ex(1)
            d1Exdgrdt      = d1Ex(2)
            d1Exdngrd2     = d1Ex(3)
@@ -1020,7 +971,6 @@ C Exchange and correlation derivatives ------------------------------------
            d2Ecdgrdtdgrds = d2Ec(9)
            d2Ecdgrdsdgrds = d2Ec(10)
        else if (DFT_SPINDNS .and. .not. DOGGA) then
-           if (ipnt .eq. 1) write(lupri,*)'case 2 active'
            d1Exdrhot      = d1Ex(1)
            d1Exdrhos      = d1Ex(2)
            !----------------------
@@ -1035,7 +985,6 @@ C Exchange and correlation derivatives ------------------------------------
            d2Ecdrhotdrhos = d2Ec(2)
            d2Ecdrhosdrhos = d2Ec(3)
        else if (DOGGA .and. .not. DFT_SPINDNS) then
-           if (ipnt .eq. 1) write(lupri,*)'case 3 active'
            d1Exdrhot      = d1Ex(1)
            d1Exdgrdt      = d1Ex(2)
            d1Exdngrd2     = d1Ex(3)
@@ -1052,7 +1001,6 @@ C Exchange and correlation derivatives ------------------------------------
            d2Ecdgrdtdgrdt = d2Ec(2)
            d2Ecdrhotdgrdt = d2Ec(3)
        else ! (.not. DOGGA .and. .not. DFT_SPINDNS)
-           if (ipnt .eq. 1) write(lupri,*)'case 4 active'
            d1Exdrhot      = d1Ex(1)
            d1Ecdrhot      = d1Ec(1)
            d2Exdrhotdrhot = d2Ex(1) 
@@ -1190,10 +1138,6 @@ C Linear transformation -----------------------------------------------------
                FAC0S = FRS*B0(1) + FSS*B0(2) ! as FSR = FRS
             else
                FAC0R = FRR*B0(1)
-            end if
-            if (ipnt .eq. 1) then
-               write(lupri,*) 'hjaaj: BR', BR(1:2)
-               write(lupri,*) 'hjaaj: FAC0R,FAC0S',FAC0R,FAC0S
             end if
             IF (NSYM.EQ.1) THEN
                DO I = 1, NBAST

@@ -3828,9 +3828,6 @@ C*****************************************************************************
 #include "priunit.h"
       integer ipnt
 
-      if (ipnt .eq. 1) write(lupri,*) 'rho, rhos', rho, rhos
-      if (ipnt .eq. 1) write(lupri,*) 'grd, grds', grd, grds
-      if (ipnt .eq. 1) write(lupri,*) 'mu', mu
       rho13 = rho**(1.d0/3.d0)
 C     LDA energy ----
 !     In ESRC_PBEGWS VCSRLDA is used for the same purpose, but
@@ -4296,7 +4293,6 @@ C*****************************************************************************
 
 C     Spin-unpolarized case
 
-      if (ipnt .eq. 1) write(lupri,*)'LDA do spin', dospin
       if (.not.dospin) then
 
         rs = rsfac/(rhot**f13)
