@@ -52,47 +52,31 @@
      &        ICLASS(MXCORB), ICNTAO(MXCORB), IPAR(0:7), JSOP(0:7),     &
      &        NCOS(8,-mxbsets:mxbsets), ICOS(8,-mxbsets:mxbsets),       &
      &        I2COSX(8,8,-mxbsets:mxbsets,-mxbsets:mxbsets),            &
-     &        SYMMTILAST,  SYMMTRLAST,                                  &
+     &        SYMMTIlast,  SYMMTRlast,                                  &
      &        PCM_IGEN(4), I2_SYMMTI 
 
       COMMON /SYMMTI/ I1_SYMMTI, MAXREP, MAXOPR, MULT, ISYMAX, ISYMAO,  &
      &                NPARSU, NAOS,  NPARNU, IPTSYM, IPTCNT, NCRREP,    &
      &                IPTCOR, NAXREP, IPTAX, IPTXYZ, IPTNUC,            &
      &                NROTS,  NINVC,  NREFL, IXVAL,  ICLASS, ICNTAO,    &
-     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX, PCM_IGEN , &
-     &                I2_SYMMTI
-!     OBS! ALWAYS add new variables BEFORE the end tag: I2_SYMMTI
-
-
-      COMMON /SYMMTI/ SYMMTILAST
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+     &                IPAR,   JSOP,   NCOS,  ICOS,   I2COSX, PCM_IGEN,  &
+     &                I2_SYMMTI,                                        & !     OBS! ALWAYS add new variables BEFORE the end tag: I2_SYMMTI
+     &   SYMMTIlast !  Very important:
+      !  Always keep SYMMTIlast as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
 
 
       INTEGER LEN_SYMMTR
       PARAMETER (LEN_SYMMTR = 16) ! length of SYMMTR, used in MPI calls 
-      ! Beyersays: Note that this distance is hardcoded. If for whatever 
+      ! Beyer says: Note that this distance is hardcoded. If for whatever 
       ! reason the length of the block changes you can still use 
       ! getbytesize(fmult, symmtrlast, SizeInBytes) to get the actual 
       ! size of the common block.
 
       REAL*8 FMULT(0:7), PT(0:7)
-      COMMON /SYMMTR/ FMULT, PT
-      COMMON /SYMMTR/ SYMMTRLAST
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+      COMMON /SYMMTR/ FMULT, PT,                                        &
+     &   SYMMTRlast !  Very important:
+      !  Always keep SYMMTRlast as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
+
 ! --- end of symmet.h ---
