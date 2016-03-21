@@ -1996,14 +1996,14 @@ C
      >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
 C
 C
-!      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,'(//5X,A//)')
      >   '<<<<  Short-range core Hartree matrix >>>>'
          CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
          WRITE(LUPRI,'(//5X,A//)')
      >   '<<<<  Short-range valence Hartree matrix >>>>'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-!      ENDIF
+      ENDIF
 C
 c ... Add up in KFCAO
 C
@@ -2018,11 +2018,11 @@ C
 C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
       CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
      >           WRK(KFREE),LFREE,IPRFCK)
-!      IF (IPRINT.GT.5) THEN
+      IF (IPRINT.GT.5) THEN
          WRITE(LUPRI,'(//5X,A//)')
      >   '<<<<  Short-range Exchange-Correlation Fock-matrix >>>>'
          CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
-!      ENDIF
+      ENDIF
       EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
 C
 C Manu: compute the third term in EMYDFTAUX.

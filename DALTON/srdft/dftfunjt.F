@@ -56,7 +56,7 @@ C     check
       if (norder .ge. 2) d2E(:) = 0.0d0
 
 C     energy
-      call ESR(rho,grd,mu,E)
+      call ESR(rho,grd,mu,E,ipnt)
       !if (ipnt .le. 10) write(lupri,*)'E = ', E
 !      print *,'D1SR: E=',E
 
@@ -75,13 +75,13 @@ C First-order derivatives --------------------------------------------
 C     derivative wrt rho ---------------------
 !      if(rhom .ge. 0.d0) then 
 !      central 2nd-order approximation
-       call ESR(rhom,grd,mu,Em0)
-       call ESR(rhop,grd,mu,Ep0)
+       call ESR(rhom,grd,mu,Em0,ipnt)
+       call ESR(rhop,grd,mu,Ep0,ipnt)
        d1E(1) = (Ep0 - Em0)/(2.d0*hr)
 !      else 
 !       stop 'rhom < 0'
 !!      forward 1st-order approximation
-!       call ESR(rhop,grd,mu,Ep0)
+!       call ESR(rhop,grd,mu,Ep0,ipnt)
 !       d1Edrho = (Ep0 - E)/hr
 !      endif
 !      print *,'D1SR: d1Edrho=',d1Edrho
@@ -89,13 +89,13 @@ C     derivative wrt rho ---------------------
 C     derivative wrt grd ---------------------
 !      if(grdm .ge. 0.d0) then
 !      central 2nd-order approximation
-       call ESR(rho,grdm,mu,E0m)
-       call ESR(rho,grdp,mu,E0p)
+       call ESR(rho,grdm,mu,E0m,ipnt)
+       call ESR(rho,grdp,mu,E0p,ipnt)
        d1E(2) = (E0p - E0m)/(2.d0*hg)
 !      else
 !       stop 'grdm < 0'
 !!      forward 1st-order approximation
-!       call ESR(rho,grdp,mu,E0p)
+!       call ESR(rho,grdp,mu,E0p,ipnt)
 !       d1Edgrd = (E0p - E)/hg
 !      endif
 !      print *,'D1SR: d1Edgrd=',d1Edgrd
@@ -123,8 +123,8 @@ C     derivative wrt rho and rho -----------------
 !       stop 'rhom < 0'
 !!      forward 1st-order approximation
 !       rhopp = rho + 2.d0*hr
-!       call ESR(rhop,grd,mu,Ep0)
-!       call ESR(rhopp,grd,mu,Epp0)
+!       call ESR(rhop,grd,mu,Ep0,ipnt)
+!       call ESR(rhopp,grd,mu,Epp0,ipnt)
 !       d2E(1) = (Epp0 -2.d0*Ep0 + E)/hr2
 !      endif
 
@@ -136,22 +136,22 @@ C     derivative wrt grd and grd -----------------------
 !       stop 'grdm < 0'
 !!      forward 1st-order approximation
 !       grdpp = grd + 2.d0*hg
-!       call ESR(rho,grdp,mu,E0p)
-!       call ESR(rho,grd,mu,E0pp)
+!       call ESR(rho,grdp,mu,E0p,ipnt)
+!       call ESR(rho,grd,mu,E0pp,ipnt)
 !       d2E(2) = (E0pp -2.d0*E0p + E)/hg2
 !      endif
 
 C     derivative wrt rho and grd -----------------------
 !      if(rhom.ge. 0.d0 .and. grdm .ge. 0.d0) then
-       call ESR(rhop,grdp,mu,Epp)
-       call ESR(rhom,grdp,mu,Emp)
-       call ESR(rhop,grdm,mu,Epm)
-       call ESR(rhom,grdm,mu,Emm)
+       call ESR(rhop,grdp,mu,Epp,ipnt)
+       call ESR(rhom,grdp,mu,Emp,ipnt)
+       call ESR(rhop,grdm,mu,Epm,ipnt)
+       call ESR(rhom,grdm,mu,Emm,ipnt)
 !      central 2nd-order approximation
        d2E(3) = (Epp - Emp - Epm + Emm)/(4.d0*hrg)
 !      else
 !       stop 'rhom < 0 or grdm < 0'
-!       call ESR(rhop,grdp,mu,Epp)
+!       call ESR(rhop,grdp,mu,Epp,ipnt)
 !!      forward 1st-order approximation
 !       d2E(3) = (Epp - E0p - Ep0 + E)/hrg
 !      endif
@@ -326,7 +326,7 @@ C     check
       pure_spin = (rhot - arhos .le. 1.d-14 ) ! pure alpha or pure beta
 
 C     energy
-      call ESRSPIN(rhot,rhos,mu,dospin,E)
+      call ESRSPIN(rhot,rhos,mu,dospin,E,ipnt)
 !      print *,'D1SRSPIN: E=',E
 
 C     (optimal?) numerical step
@@ -355,8 +355,8 @@ C     derivative wrt rhot ---------------------
 !      central 2nd-order approximation
 
        if (pure_spin) then
-          call ESRSPIN(rhotm,rhosm,mu,dospin,Em0)
-          call ESRSPIN(rhotp,rhosp,mu,dospin,Ep0)
+          call ESRSPIN(rhotm,rhosm,mu,dospin,Em0,ipnt)
+          call ESRSPIN(rhotp,rhosp,mu,dospin,Ep0,ipnt)
           d1E(1) = (Ep0 - Em0)/(2.d0*hrt)
 !         if (rhos .gt. 0.0d0) then
 !            d1E(2) = d1E(1)
@@ -364,8 +364,8 @@ C     derivative wrt rhot ---------------------
 !            d1E(2) = -d1E(1)
 !         end if
        else
-          call ESRSPIN(rhotm,rhos,mu,dospin,Em0)
-          call ESRSPIN(rhotp,rhos,mu,dospin,Ep0)
+          call ESRSPIN(rhotm,rhos,mu,dospin,Em0,ipnt)
+          call ESRSPIN(rhotp,rhos,mu,dospin,Ep0,ipnt)
           d1E(1) = (Ep0 - Em0)/(2.d0*hrt)
           d1E(2) = 0.0d0
        end if
@@ -374,8 +374,8 @@ C     derivative wrt rhos ---------------------
 !      central 2nd-order approximation
        if (dospin .and. .not. pure_spin) then
          if (hrs .gt. 0.0d0) then
-           call ESRSPIN(rhot,rhosm,mu,dospin,E0m)
-           call ESRSPIN(rhot,rhosp,mu,dospin,E0p)
+           call ESRSPIN(rhot,rhosm,mu,dospin,E0m,ipnt)
+           call ESRSPIN(rhot,rhosp,mu,dospin,E0p,ipnt)
            d1E(2) = (E0p - E0m)/(2.d0*hrs)
          else
            d1E(2) = 0.0d0
@@ -404,10 +404,10 @@ C       derivative wrt rhos and rhos -----------------------
             d2E(3) = (E0p - 2.d0*E + E0m)/hrs2
        
 C         derivative wrt rhot and rhos -----------------------
-          call ESRSPIN(rhotp,rhosp,mu,dospin,Epp)
-          call ESRSPIN(rhotm,rhosp,mu,dospin,Emp)
-          call ESRSPIN(rhotp,rhosm,mu,dospin,Epm)
-          call ESRSPIN(rhotm,rhosm,mu,dospin,Emm)
+          call ESRSPIN(rhotp,rhosp,mu,dospin,Epp,ipnt)
+          call ESRSPIN(rhotm,rhosp,mu,dospin,Emp,ipnt)
+          call ESRSPIN(rhotp,rhosm,mu,dospin,Epm,ipnt)
+          call ESRSPIN(rhotm,rhosm,mu,dospin,Emm,ipnt)
 !         central 2nd-order approximation
             d2E(2) = (Epp - Emp - Epm + Emm)/(4.d0*hrts)
           else
@@ -516,7 +516,7 @@ C     check
       end if
 
 C     energy
-      call ESRSPINGGA(rhot,rhos,grdt,grds,mu,E)
+      call ESRSPINGGA(rhot,rhos,grdt,grds,mu,E,ipnt)
       !if (ipnt .eq. 1) write(lupri,*)'E = ', E
 !      print *,'D1SRSPIN: E=',E
 
@@ -561,8 +561,8 @@ C Special treatment of pure spin
 
          if (norder .ge. 1) then
            d1E(:) = 0.0d0
-           call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Em000)
-           call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Ep000)
+           call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Em000,ipnt)
+           call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Ep000,ipnt)
            d1E(1) = (Ep000 - Em000)/(2.d0*hrt) ! d1Edrhot
 !         if (rhos .gt. 0.0d0) then
 !            d1Edrhos = d1Edrhot
@@ -587,26 +587,26 @@ C First-order derivatives --------------------------------------------
 
 C     derivatives wrt rhot, rhos, grdt, grds ---------------------
 
-      call ESRSPINGGA(rhotm,rhos,grdt,grds,mu,Em000)
-      call ESRSPINGGA(rhotp,rhos,grdt,grds,mu,Ep000)
+      call ESRSPINGGA(rhotm,rhos,grdt,grds,mu,Em000,ipnt)
+      call ESRSPINGGA(rhotp,rhos,grdt,grds,mu,Ep000,ipnt)
       d1E(1) = (Ep000 - Em000)/(2.d0*hrt) ! d1Edrhot
 
       if (hgt .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhos,grdtm,grds,mu,E00m0)
-         call ESRSPINGGA(rhot,rhos,grdtp,grds,mu,E00p0)
+         call ESRSPINGGA(rhot,rhos,grdtm,grds,mu,E00m0,ipnt)
+         call ESRSPINGGA(rhot,rhos,grdtp,grds,mu,E00p0,ipnt)
          d1E(2) = (E00p0 - E00m0)/(2.d0*hgt) ! d1Edgrdt
          d1E(3) = (2.0d0/grdt)*d1E(2)        ! d1Engrdt2
       end if
 
       if (hrs .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhosm,grdt,grds,mu,E0m00)
-         call ESRSPINGGA(rhot,rhosp,grdt,grds,mu,E0p00)
+         call ESRSPINGGA(rhot,rhosm,grdt,grds,mu,E0m00,ipnt)
+         call ESRSPINGGA(rhot,rhosp,grdt,grds,mu,E0p00,ipnt)
          d1E(4) = (E0p00 - E0m00)/(2.d0*hrs) ! d1Edrhos
        end if
 
       if (hgs .gt. 0.0d0) then
-         call ESRSPINGGA(rhot,rhos,grdt,grdsm,mu,E000m)
-         call ESRSPINGGA(rhot,rhos,grdt,grdsp,mu,E000p)
+         call ESRSPINGGA(rhot,rhos,grdt,grdsm,mu,E000m,ipnt)
+         call ESRSPINGGA(rhot,rhos,grdt,grdsp,mu,E000p,ipnt)
          d1E(5) = (E000p - E000m)/(2.d0*hgs) ! d1Edgrds
          d1E(6) = (2.0d0/grds)*d1E(4)        ! d1Engrds2
        end if
@@ -626,10 +626,10 @@ C        derivative wrt rhos and rhos -----------------------
          d2E(3) = (E0p00 - 2.d0*E + E0m00)/(hrs*hrs) ! d2Edrhosdrhos
 
 C        derivative wrt rhot and rhos -----------------------
-         call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Epp00)
-         call ESRSPINGGA(rhotm,rhosp,grdt,grds,mu,Emp00)
-         call ESRSPINGGA(rhotp,rhosm,grdt,grds,mu,Epm00)
-         call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Emm00)
+         call ESRSPINGGA(rhotp,rhosp,grdt,grds,mu,Epp00,ipnt)
+         call ESRSPINGGA(rhotm,rhosp,grdt,grds,mu,Emp00,ipnt)
+         call ESRSPINGGA(rhotp,rhosm,grdt,grds,mu,Epm00,ipnt)
+         call ESRSPINGGA(rhotm,rhosm,grdt,grds,mu,Emm00,ipnt)
          d2E(2) = (Epp00 - Emp00 - Epm00 + Emm00)/(4.d0*hrt*hrs) ! d2Edrhotdrhos
        end if
 
@@ -638,19 +638,19 @@ C        derivative wrt grdt and grdt -----------------------
          d2E(6) = (E00p0 - 2.d0*E + E00m0)/(hgt*hgt) ! d2Edgrdtgrdt
 
 C        derivative wrt rhot and grdt -----------------------
-         call ESRSPINGGA(rhotp,rhos,grdtp,grds,mu,Ep0p0)
-         call ESRSPINGGA(rhotm,rhos,grdtp,grds,mu,Em0p0)
-         call ESRSPINGGA(rhotp,rhos,grdtm,grds,mu,Ep0m0)
-         call ESRSPINGGA(rhotm,rhos,grdtm,grds,mu,Em0m0)
+         call ESRSPINGGA(rhotp,rhos,grdtp,grds,mu,Ep0p0,ipnt)
+         call ESRSPINGGA(rhotm,rhos,grdtp,grds,mu,Em0p0,ipnt)
+         call ESRSPINGGA(rhotp,rhos,grdtm,grds,mu,Ep0m0,ipnt)
+         call ESRSPINGGA(rhotm,rhos,grdtm,grds,mu,Em0m0,ipnt)
          d2E(4) = (Ep0p0 - Em0p0 - Ep0m0 + Em0m0)/(4.d0*hrt*hgt) ! d2Edrhotdgrdt
 
        if (hrs .gt. 0.0d00) then
 
 C        derivative wrt rhos and grdt -----------------------
-         call ESRSPINGGA(rhot,rhosp,grdtp,grds,mu,E0pp0)
-         call ESRSPINGGA(rhot,rhosm,grdtp,grds,mu,E0mp0)
-         call ESRSPINGGA(rhot,rhosp,grdtm,grds,mu,E0pm0)
-         call ESRSPINGGA(rhot,rhosm,grdtm,grds,mu,E0mm0)
+         call ESRSPINGGA(rhot,rhosp,grdtp,grds,mu,E0pp0,ipnt)
+         call ESRSPINGGA(rhot,rhosm,grdtp,grds,mu,E0mp0,ipnt)
+         call ESRSPINGGA(rhot,rhosp,grdtm,grds,mu,E0pm0,ipnt)
+         call ESRSPINGGA(rhot,rhosm,grdtm,grds,mu,E0mm0,ipnt)
          d2E(5) = (E0pp0 - E0mp0 - E0pm0 + E0mm0)/(4.d0*hrs*hgt) ! d2Edrhosdgrdt
        end if
 
@@ -661,29 +661,29 @@ C        derivative wrt grds and grds -----------------------
          d2E(10) = (E000p - 2.d0*E + E000m)/(hgs*hgs) ! d2Edgrdsgrds
 
 C        derivative wrt rhot and grds -----------------------
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,Ep00p)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,Em00p)
-         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,Ep00m)
-         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,Em00m)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsp,mu,Ep00p,ipnt)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsp,mu,Em00p,ipnt)
+         call ESRSPINGGA(rhotp,rhos,grdt,grdsm,mu,Ep00m,ipnt)
+         call ESRSPINGGA(rhotm,rhos,grdt,grdsm,mu,Em00m,ipnt)
          d2E(7) = (Ep00p - Em00p - Ep00m + Em00m)/(4.d0*hrt*hgs) ! d2Edrhotdgrds
 
        if (hrs .gt. 0.0d00) then
 
 C        derivative wrt rhos and grds -----------------------
-         call ESRSPINGGA(rhot,rhosp,grdt,grdsp,mu,E0p0p)
-         call ESRSPINGGA(rhot,rhosm,grdt,grdsp,mu,E0m0p)
-         call ESRSPINGGA(rhot,rhosp,grdt,grdsm,mu,E0p0m)
-         call ESRSPINGGA(rhot,rhosm,grdt,grdsm,mu,E0m0m)
+         call ESRSPINGGA(rhot,rhosp,grdt,grdsp,mu,E0p0p,ipnt)
+         call ESRSPINGGA(rhot,rhosm,grdt,grdsp,mu,E0m0p,ipnt)
+         call ESRSPINGGA(rhot,rhosp,grdt,grdsm,mu,E0p0m,ipnt)
+         call ESRSPINGGA(rhot,rhosm,grdt,grdsm,mu,E0m0m,ipnt)
          d2E(8) = (E0p0p - E0m0p - E0p0m + E0m0m)/(4.d0*hrs*hgs) ! d2Edrhosdgrds
        end if
 
        if (hgt .gt. 0.0d00) then
 
 C        derivative wrt grdt and grds -----------------------
-         call ESRSPINGGA(rhot,rhos,grdtp,grdsp,mu,E00pp)
-         call ESRSPINGGA(rhot,rhos,grdtm,grdsp,mu,E00mp)
-         call ESRSPINGGA(rhot,rhos,grdtp,grdsm,mu,E00pm)
-         call ESRSPINGGA(rhot,rhos,grdtm,grdsm,mu,E00mm)
+         call ESRSPINGGA(rhot,rhos,grdtp,grdsp,mu,E00pp,ipnt)
+         call ESRSPINGGA(rhot,rhos,grdtm,grdsp,mu,E00mp,ipnt)
+         call ESRSPINGGA(rhot,rhos,grdtp,grdsm,mu,E00pm,ipnt)
+         call ESRSPINGGA(rhot,rhos,grdtm,grdsm,mu,E00mm,ipnt)
          d2E(9) = (E00pp - E00mp - E00pm + E00mm)/(4.d0*hgt*hgs) ! d2Edgrdtdgrds
        end if
 
@@ -3564,7 +3564,7 @@ C****************************************************************************
       subroutine ESRX_PBEGWSERFSPIN(rhot,rhos,grdt,grds,mu,e)
 C*****************************************************************************
 C     Short-range PBE exchange functional from
-C       Goll, Werner, Stoll, PCCP 7, 3917 (2005)
+C       Goll et al. Chem. Phys. 329 (2006), 276
 C
 C     Input: rhot   : density
 C            rhos   : spin-density
@@ -3584,7 +3584,9 @@ C*****************************************************************************
       double precision e, ea, eb
 
       double precision kappa,sq,fx
-
+! debug
+      integer ipnt
+      
 ! function
       double precision berf
 
@@ -3640,7 +3642,7 @@ C*****************************************************************************
       return
        end
 C****************************************************************************
-      subroutine ESRC_PBEGWSERF(rho,grd,mu,e)
+      subroutine ESRC_PBEGWSERF(rho,grd,mu,e,ipnt)
 C*****************************************************************************
 C     Short-range PBE correlation functional from
 C       Goll, Werner, Stoll, PCCP 7, 3917 (2005)
@@ -3665,23 +3667,43 @@ C*****************************************************************************
 
       double precision drho2
       double precision ecerflda,eclda
+      ! debug
+      double precision ecerflda_2,eclda_2
       double precision ecerfpbe
       double precision t1
       double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
  
       logical ERFEXP(0:2), MULOCAL(0:2)
       double precision XKSR(3), ZKSR(3)
+! debug
+#include "priunit.h"
+      integer ipnt
+
+      if (ipnt .eq. 1) write(lupri,*) 'rho', rho
+      if (ipnt .eq. 1) write(lupri,*) 'grd', grd
+      if (ipnt .eq. 1) write(lupri,*) 'mu', mu
 
 !     short-range LDA energy (order = 0)
       rho13 = rho**(1.d0/3.d0)
       ERFEXP(0:2) = .false.
       MULOCAL(0:2) = .false.
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
-      ecerflda = ZKSR(1)
+      ecerflda_2 = ZKSR(1)
+      call ESRC_LDAERFSPIN(rho,0.0d0,mu,.false.,e,ipnt)
+      ecerflda =  e
+
+      if (ipnt .eq. 1) write(lupri,*) 'ecerflda', ecerflda
+      if (ipnt .eq. 1) write(lupri,*) 'ecerflda_2', ecerflda_2
 
 !     full-range LDA energy
-      call VCSRLDA(ZKSR,rho,rho13,0.d0,MULOCAL,0,ERFEXP)
-      eclda = ZKSR(1)
+      !call VCSRLDA(ZKSR,rho,rho13,0.d0,MULOCAL,0,ERFEXP)
+      !eclda_2 = ZKSR(1)
+      call ESRC_LDAERFSPIN(rho,0.0d0,0.0d0,.false.,e,ipnt)
+      eclda = e
+      !eclda_2 = ZKSR(1)
+
+
+      !if (ipnt .eq. 1) write(lupri,*) 'eclda full range', eclda
 
       alpha=2.78d0
       gamma=3.1091d-2
@@ -3705,15 +3727,14 @@ C*****************************************************************************
          arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma*Aa)
          ecerfpbe=ecerflda+rho*gamma*dlog(arglog)
        endif
-
+      if (ipnt .eq. 1) write(lupri,*)'Ec in pbe routine', ecerfpbe
       e = ecerfpbe
 
       return
       end
 C****************************************************************************
-      subroutine ESRC_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,dospin,e)
+      subroutine ESRC_PBEGWSERFSPIN(rho,rhos,grd,grds,mu,e,ipnt)
 C*****************************************************************************
-C     WILL NOT WORK YET....
 C     Short-range spin-dependent PBE correlation functional from
 C       Goll et al. Chem. Phys. 329 (2006), 276
 C
@@ -3730,70 +3751,91 @@ C     Date  : 11-02-16
 C*****************************************************************************
       implicit none
 
-      double precision rho, rhos, grd, grds, mu
+      double precision rho13
+      double precision rho, rhos, grd, grds, grd2, mu
+      double precision rhoa,rhob
+      double precision zeta
       double precision e
 
       double precision tol
       parameter(tol=1d-12)
-      double precision rho13
 
-      double precision drho2
       double precision ecerflda,eclda
+      ! debugging
+      double precision ecerflda_2, eclda_2
+
       double precision ecerfpbe
       double precision t1
-      double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
+      double precision alpha, beta, gamma
+      double precision phi, phi2, phi3, phi4
+      double precision Aa, Ab, Ac, tq, arglog
+      ! debugging
+      logical ERFEXP(0:2), MULOCAL(0:2)
+      double precision ZKSR(3)
 
-      logical dospin
+! debug
+#include "priunit.h"
+      integer ipnt
 
+      if (ipnt .eq. 1) write(lupri,*) 'rho, rhos', rho, rhos
+      if (ipnt .eq. 1) write(lupri,*) 'grd, grds', grd, grds
+      if (ipnt .eq. 1) write(lupri,*) 'mu', mu
       rho13 = rho**(1.d0/3.d0)
 C     LDA energy ----
 !     In ESRC_PBEGWS VCSRLDA is used for the same purpose, but
 !     as VCSRLDA does not include rhos ESRX_LDAERFSPIN is used instead
-      call ESRC_LDAERFSPIN(rho,rhos,mu,dospin,e)
+      call ESRC_LDAERFSPIN(rho,rhos,mu,.false.,e,ipnt)
       ecerflda =  e
+      ERFEXP(0:2) = .false.
+      MULOCAL(0:2) = .false.
+      call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
+      ecerflda_2 =  ZKSR(1)
+
+      if (ipnt .eq. 1) write(lupri,*) 'ecerflda_2', ecerflda
+      if (ipnt .eq. 1) write(lupri,*) 'ecerflda_2', ecerflda_2
 
       ! full range LDA energy (mu = 0.0)
-      call ESRC_LDAERFSPIN(rho,rhos,0.0d0,dospin,e)
+      call ESRC_LDAERFSPIN(rho,rhos,0.0d0,.false.,e,ipnt)
       eclda = e
+
+      !if (ipnt .eq. 1) write(lupri,*) 'eclda full range', eclda
 
 !     Spin polarisation
 !     Define rhoa, rhob, zeta
-!     rhoa=max((rhoc(i)+rhoo(i))*.5d0,1.0d-15)
-!     rhob=max((rhoc(i)-rhoo(i))*.5d0,1.0d-15)
-!     zeta = (rhoa-rhob)/(rhoa+rhob)
+      rhoa=max((rho + rhos)*.5d0,1.0d-15)
+      rhob=max((rho - rhos)*.5d0,1.0d-15)
+      zeta = (rhoa-rhob)/(rhoa+rhob)
 
       alpha=2.78d0
       gamma=3.1091d-2
 
 !     square of density gradient
-      drho2 = grd*grd
+      grd2 = grd*grd
 
-!     if ((ecerflda/eclda).le.0d0) then
+      if ((ecerflda/eclda).le.0d0) then
 !       ! edh define beta and check alpha!
-!       beta=0d0
-!     else
-!       beta=6.6725d-2*(ecerflda/eclda)**alpha
-!     endif
-!     phi=((1d0+zeta)**(2d0/3d0)+(1d0-zeta)**(2d0/3d0))/2d0
-!     phi2=phi*phi
-!     phi3=phi2*phi
-!     phi4=phi3*phi
-!     tq=drho2*6.346820607d-2*rho**(-7d0/3d0)/phi2
-!     Ab=dexp(-ecerflda/(rho*gamma*phi3))-1d0
-!     if(dabs(Ab).le.dabs(beta*tol)) then
-!       ecerfpbe=ecerflda
-!     else
-!       Aa=beta/(gamma*Ab)
-!       Ac=1d0+Aa*tq+Aa**2*tq**2
-!       if (Aa.lt.tol) Aa=tol
-!       arglog=1d0+beta*(1d0-1d0/Ac)/(gamma*Aa)
-!       ecerfpbe=ecerflda+rho*phi3*gamma*dlog(arglog)
-!     endif
+        beta=0d0
+      else
+        beta=6.6725d-2*(ecerflda/eclda)**alpha
+      endif
+      phi=((1d0+zeta)**(2d0/3d0)+(1d0-zeta)**(2d0/3d0))/2d0
+      phi2=phi*phi
+      phi3=phi2*phi
+      phi4=phi3*phi
+      tq=grd2*6.346820607d-2*rho**(-7d0/3d0)/phi2
+      Ab=dexp(-ecerflda/(rho*gamma*phi3))-1d0
+      if(dabs(Ab).le.dabs(beta*tol)) then
+        ecerfpbe=ecerflda
+      else
+        Aa=beta/(gamma*Ab)
+        Ac=1d0+Aa*tq+Aa**2*tq**2
+        if (Aa.lt.tol) Aa=tol
+        arglog=1d0+beta*(1d0-1d0/Ac)/(gamma*Aa)
+        ecerfpbe=ecerflda+rho*phi3*gamma*dlog(arglog)
+      endif
 
-! edh: only for debuggin should be removed!!!
-       e = ecerflda
-
-!      e = ecerfpbe
+       if (ipnt .eq. 1) write(lupri,*)'Ec in pbe routine', ecerfpbe
+       e = ecerfpbe
 
       return
       end
@@ -4174,7 +4216,7 @@ C*****************************************************************************
 C*****************************************************************************
 
 C****************************************************************************
-      subroutine ESRC_LDAERFSPIN (rhot,rhos,mu,dospin,e)
+      subroutine ESRC_LDAERFSPIN (rhot,rhos,mu,dospin,e,ipnt)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional from 
 C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
@@ -4207,7 +4249,13 @@ C*****************************************************************************
       parameter(pi = 3.141592653589793d0)
       parameter(rsfac = 0.620350490899400d0)
 
+!debug
+      integer ipnt
+#include"priunit.h"
+
 C     Spin-unpolarized case
+
+      if (ipnt .eq. 1) write(lupri,*)'LDA do spin', dospin
       if (.not.dospin) then
 
         rs = rsfac/(rhot**f13)

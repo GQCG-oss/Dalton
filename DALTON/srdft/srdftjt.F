@@ -93,7 +93,7 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       CHARACTER*16 QUADNAME
 
       IPRINT = IPRINT_inp
-!#ifdef SRDFT_DEBUG
+#ifdef SRDFT_DEBUG
       IPRINT = MAX(IPRINT,5)
 !     Debug
       WRITE(LUPRI,*) 'SRDFT1JT: entering, ND_SIM = ',ND_SIM
@@ -120,7 +120,7 @@ C     ... RHG(1:3,4) = RHG2B(1:3) = 2 grad ( rho_b )
       END IF
       END IF
 C
-!#endif
+#endif
 C     Initializations -------------------------------------------------------
 
       ! edh debug
@@ -216,7 +216,6 @@ C
       kpoint = npoint/10
 
       IF (NPOINT.GT.0) THEN
-C      jpnt = 0  !debug
       NPNTS = NPNTS + NPOINT
       CALL REAQUA_OLD(CORX,CORY,CORZ,WEIGHT,LUQUAD,NPOINT)
 
@@ -731,6 +730,9 @@ C  Correlation  ----------------------------------------------------------
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBEGWSERF,rho,RHOGRD,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec,ipnt)
+      if (ipnt .eq. 1) write(lupri,*) 'Ec', Ec
+      if (ipnt .eq. 1) write(lupri,*) 'd1Ec', d1Ec
+      if (ipnt .eq. 1) write(lupri,*) 'd2Ec', d2Ec
       ENDIF
 
 !     rational interpolation
@@ -769,6 +771,9 @@ C  Correlation  ----------------------------------------------------------
       IF(DOSRC_PBEGWS_S) THEN
         call DESRSPINGGA(ESRC_PBEGWSERFSPIN,rho,RHOGRD,CHIVAL,
      >                   norder,Ec,d1Ec,d2Ec,ipnt)
+      if (ipnt .eq. 1) write(lupri,*) 'Ec', Ec
+      if (ipnt .eq. 1) write(lupri,*) 'd1Ec', d1Ec
+      if (ipnt .eq. 1) write(lupri,*) 'd2Ec', d2Ec
       ENDIF
 C Kamal SHARKAS 20-05-11 beg
 C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
@@ -1103,7 +1108,7 @@ C Total contribution -------------------------------------------------------
          call quit('SRDFTLTRJT: we should not end here')
       END IF
 
-!#ifdef SRDFT_DEBUG
+#ifdef SRDFT_DEBUG
           if (ipnt .eq. 1) then
            !if (abs(FSS) .gt. 0.d0 .or. abs(FRS) .gt. 0.d0) then
               write(lupri,*) 'hjaaj: rho',rho(1:4)
@@ -1153,7 +1158,7 @@ C Total contribution -------------------------------------------------------
      &                               FSZ_S,FRZ_S,FZZ_S,FZZ_SS
            !end if
           end if 
-!#endif 
+#endif
 
 
 C Linear transformation -----------------------------------------------------
@@ -1245,20 +1250,6 @@ C Linear transformation -----------------------------------------------------
                         END IF
                         DO J = JSTR, MIN(I,JEND)
                            EXCMAT(J,I,1) = EXCMAT(J,I,1)+FAC0R*G0*GAO(J)
-!                          IF (DFT_SPINDNS) THEN
-!                             EXCMAT(J,I,2) = EXCMAT(J,I,2)
-!    &                                      + FAC0S*G0*GAO(J)
-!                          END IF
-!                          IF (DOGGA) THEN
-!                             AX = GX*GAO(J) + G0*GAO1(J,1)
-!                             AY = GY*GAO(J) + G0*GAO1(J,2)
-!                             AZ = GZ*GAO(J) + G0*GAO1(J,3)
-!                             AR(1) = AX*RX(1) + AY*RY(1) + AZ*RZ(1)
-!                             AB(1) = AX*B3(1,1) +
-!    &                        AY*B3(2,1)+ AZ*B3(3,1) - AR(1)*BR(1)
-!                             EXCMAT(J,I,1) = EXCMAT(J,I,1)
-!    &                        + FACR*AR(1) + FZ0*AB(1)
-!                          END IF
                            if (dogga .and. dft_spindns) then
                               ! spin
                               EXCMAT(J,I,2) = EXCMAT(J,I,2) +
