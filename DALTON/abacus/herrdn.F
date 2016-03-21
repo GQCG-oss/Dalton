@@ -98,7 +98,7 @@ cBASPRO: Now takes care of the generation of the symmetry-dependant atoms
 c        through the array ISTBNU.
 c941119-tsaue:
 cREADIN: added extra index to arrays IQM,NBLCK,JCO,NUC,NRC,SEG,ALPHA,
-c        CPRIMU ta accomodat both large and small components
+c        CPRIMU ta accomodate both large and small components
 cACPORB: implemented readin of exponents only
 cSYMGRP: New routine determining irreps, characters etc.
 cDBLGRP: new routine for handling double group symmetry
@@ -162,14 +162,16 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized for *MOLBAS.'
+               WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword for *MOLBAS.')
-C                 '.PRINT '
+               CALL QUIT('Illegal keyword for '//WORD1)
     1          CONTINUE
                   IPREAD_ini = IPREAD
-                  READ (LUCMD, *) IPREAD
+                  READ (LUCMD, *,IOSTAT=IOS) IPREAD
+                  IF (IOS.NE.0) THEN
+                     CALL QUIT('Error in reading .PRINT')
+                  ENDIF
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
     2          CONTINUE
@@ -252,15 +254,15 @@ C              (renamed from .AUXBAS) /hjaaj
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized for *MOLBAS.'
+               WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt for *MOLBAS.')
+               CALL QUIT('Illegal prompt for '//WORD1)
             END IF
       END IF
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for *MOLBAS:',0)
+         CALL HEADER('Changes of defaults for '//WORD1,0)
          IF (IPREAD .NE. IPREAD_ini) THEN
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
@@ -304,9 +306,9 @@ C              (renamed from .AUXBAS) /hjaaj
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
             IF (ZCMVAL .NE. D1)
-     &           WRITE (LUPRI,'(A,F8.1)') ' Net charge of ionic core  ',
-     &           ZCMVAL
-            WRITE(LUPRI,'(/A/A/A/A/A)')
+     &           WRITE (LUPRI,'(A,F10.3)')
+     &         ' Net charge of ionic core',ZCMVAL
+                 WRITE(LUPRI,'(/A/A/A/A/A)')
      &         ' Proper reference for these basis functions:'
      &        ,' K. Kaufmann, W. Baumeister, and M. Jungen'
      &        ,' "Universal Gaussian basis sets for an optimum'
@@ -315,9 +317,9 @@ C              (renamed from .AUXBAS) /hjaaj
 
             IF (LCMMAX .GT. 4) THEN
                WRITE (LUPRI,'(/A)')
-     &           ' FATAL ERROR: Center of mass basis functions is'//
-     &           ' not defined for l(max) .gt. 4'
-               CALL QUIT('Error in *MOLBAS input processing')
+     &           ' ERROR: Center of mass basis functions are'//
+     &           ' not defined for l(max) > 4'
+               CALL QUIT('Error in input processing for '//WORD1)
             END IF
          END IF
          WRITE (LUPRI,'()')
@@ -992,6 +994,7 @@ C     ****************************************
 C     ***** Output on LUONEL *****************
 C     ****************************************
 C
+
       IF (HERMIT) CALL WRONEL(TTITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO,
      &                        KANG)
 C
@@ -1887,7 +1890,7 @@ C     include character ASYMB(0:NSYMB)*2 with atomic symbols
 C
       NQ = NINT(Q)
 C
-      IF (GAUNUC.AND.(NQ.GT.0)) THEN
+      IF (GAUNUC .AND. NQ.GT.0) THEN
          IF (Q_EXPONENT.LE.D0) THEN
             CALL NUCSIZ(NQ,GEXP)
          ELSE
@@ -2297,27 +2300,21 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' BASPRO error, number of shells                    ',
-     *  KMAX,
-     *  '                   current maximum number              ',
-     *  MXSHEL,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of shells                 ',KMAX,
+     *  '               current maximum number (MXSHEL)  ',MXSHEL,
      *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' BASPRO error, number of contracted basis functions',
-     *  NBASIS,
-     *  '                   current maximum number              ',
-     *  MXCORB,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of contracted basis functions',NBASIS,
+     *  '               current maximum number (MXCORB)     ',MXCORB,
      *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' BASPRO error, number of primitive basis functions',
-     *  NPBAS,
-     *  '                   current maximum number             ',
-     *  MXPRIM,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of primitive basis functions',NPBAS,
+     *  '               current maximum number (MXPRIM)    ',MXPRIM,
      *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
@@ -2380,8 +2377,8 @@ C*****************************************************************************
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &          SEG(KBLOCK,KSETS),
-     &          ALPHA (KPRIM,KBLOCK,KSETS),
-     &          CPRIM (KPRIM,KPRIM,KBLOCK,KSETS),
+     &          ALPHA(KPRIM,KBLOCK,KSETS),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       CHARACTER*1  KASYM(3,3)
@@ -4840,8 +4837,8 @@ C
 C
 C     Print internuclear distances (if not an atom)
 C
-         LUIP = -100
-         IF ((IPREAD .GT. 0) .OR. (GEOALL)) THEN
+         IF (IPREAD .GT. 0 .OR. GEOALL) THEN
+            LUIP = -100
             CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,
      &         WORK(ISTRT),LWORK)
             IF (NUCDEP .GT. 2 .AND. NBONDS .LE. 0) THEN
@@ -4858,7 +4855,7 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
+         IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
@@ -4952,15 +4949,24 @@ C
       END IF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucsiz */
       SUBROUTINE NUCSIZ(INUC,DELTA)
 C.......................................................................
 C
-C     For a nucleus of atomic no. "charge", calculate the exponent delta
-C     for a gaussian charge distribution approximation to the finite nuc
+C     For a nucleus of atomic no. "INUC", calculate the exponent DELTA
+C     for a Gaussian charge distribution approximation to the finite
+C     Nucleus. Uses the Formula and Nuclear Masses from
+C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
+C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
+C     Conversion Factor Bohr/fm 52917.7249.
+C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER (DP3=1.0D0/3.0D0)
+      PARAMETER (FAC=1.5D10,AF=0.529177249D0,BF=0.836D0,CF=0.570D0)
+      PARAMETER (FAC2=2.556D0)
 C     include character ASYMB(0:NSYNB)*2 with atomic symbols
 #include "asymb.h"
       DIMENSION AMASS(103)
@@ -4991,10 +4997,11 @@ C     include character ASYMB(0:NSYNB)*2 with atomic symbols
       IF (INUC.LE.103) THEN
          A = AMASS(INUC)
       ELSE
-         A = INUC*2.556D0
+         A = INUC*FAC2
       END IF
-      A = A**(1.0D0/3.0D0)
-      DELTA = 1.5D10*(.52917706D0/(.836D0*A+0.57D0))**2
+      A = A**DP3
+      DELTA = (AF/(BF*A+CF))
+      DELTA = FAC*DELTA*DELTA
       RETURN
       END
 C  /* Deck sphlab */
@@ -5653,6 +5660,7 @@ C
       CHARACTER*(len_NEXT_INPUT_LINE) NEXT_INPUT_LINE
       INTEGER    NMLN_LASTREAD
       DATA       NMLN_LASTREAD /0/
+      SAVE       NMLN_LASTREAD
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
