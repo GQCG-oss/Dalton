@@ -125,24 +125,28 @@ C  /* Deck reainp */
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER ( NTABLE = 12, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 13, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
+! numder.h : NOMOVE
 #include "cbirea.h"
+#include "numder.h"
 #include "r12int.h"
 #include "qm3.h"
 C
       DATA TABLE /'.PRINT ', '.CONTIN', '.MAXPRI', '.BIGVEC',
      *            '.ONLYOV', '.SYMTHR', '.CM FUN', '.ZCMVAL',
-     *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX'/
+     *            '.WRTLIN', '.UNCONT', '.ANGSTR', '.R12AUX',
+     &            '.NOMOVE'/
 C
 C     ... in qm3.h, for QM3:
       ONLYOV = .FALSE.
 C
       NEWDEF = (WORD .EQ. '*READIN' .OR. WORD .EQ. '*MOLBAS')
       ICHANG = 0
+      IPREAD_ini = IPREAD
       IF (NEWDEF) THEN
          WORD1 = WORD
   100    CONTINUE
@@ -166,7 +170,7 @@ C
      *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword for '//WORD1)
-    1          CONTINUE
+    1          CONTINUE ! .PRINT
                   IPREAD_ini = IPREAD
                   READ (LUCMD, *,IOSTAT=IOS) IPREAD
                   IF (IOS.NE.0) THEN
@@ -190,23 +194,19 @@ C                 Sonia, 2012
                   NCMEND = NINT(CMEND)
                   LCNTNUUM = .true.
                GO TO 100
-C                 '.MAXPRI'
-    3          CONTINUE
+    3          CONTINUE ! .MAXPRI
                   READ (LUCMD, *,IOSTAT=IOS) MAXPRI
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .MAXPRI')
                   ENDIF
                GO TO 100
-C                 '.BIGVEC'
-    4          CONTINUE
+    4          CONTINUE ! .BIGVEC
                   BIGVC = .TRUE.
                GO TO 100
-C                 '.ONLYOV'
-    5          CONTINUE
+    5          CONTINUE ! .ONLYOV
                   ONLYOV= .TRUE.
                GO TO 100
-C                 '.SYMTHR'
-    6          CONTINUE
+    6          CONTINUE ! .SYMTHR
                   READ (LUCMD, *,IOSTAT=IOS) TOL_SYMADD
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error in reading .SYMTHR')
@@ -226,30 +226,29 @@ C              '.CM FUN'
                   NCMSTR = NINT(2*CMSTR + 0.01D0)
                   NCMEND = NINT(2*CMEND + 0.01D0)
                GO TO 100
-C              '.ZCMVAL'
-    8          CONTINUE
+    8          CONTINUE ! .ZCMVAL
                   READ (LUCMD,*,IOSTAT=IOS) ZCMVAL
                   IF (IOS.NE.0) THEN
                     CALL QUIT('Error reading .ZCMVAL')
                   ENDIF
                GO TO 100
-C              '.WRTLIN'  (ach easier to debug intgral input)
-    9          CONTINUE
+    9          CONTINUE ! .WRTLIN  (ach easier to debug intgral input)
                   WRTLIN= .TRUE.
                GO TO 100
-C              '.UNCONT'
-   10          CONTINUE
+   10          CONTINUE ! .UNCONT
                   UNCONT = .TRUE.
                GO TO 100
-C              '.ANGSTR'
-   11          CONTINUE
+   11          CONTINUE ! .ANGSTR
                   ANGS = .TRUE.
                GO TO 100
-   12          CONTINUE
-C              '.R12AUX'
+   12          CONTINUE ! '.R12AUX'
 C              (moved here June 09, because LMULBS used in READIN
 C              (renamed from .AUXBAS) /hjaaj
                   LMULBS = .TRUE.
+   13          CONTINUE ! .NOMOVE
+C setting NOMOVE to true disables redefinition of coordinates for automatically
+C determined symmetry
+                  NOMOVE = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -270,8 +269,8 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (ONLYOV) WRITE (LUPRI,'(A)')
      &  ' Stop after calculation of overlap integrals (.ONLYOV) for QM3'
          IF (TOL_SYMADD .NE. 0.0D0) THEN
-            WRITE (LUPRI,'(A,1P,G9.2)')
-     &      ' Symmetry detection threshold: ',TOL_SYMADD
+            WRITE (LUPRI,'(A,1P,G10.2)')
+     &      ' Symmetry detection threshold:',TOL_SYMADD
          END IF
          IF (UNCONT) THEN
             WRITE (LUPRI,'(/A)')
@@ -296,7 +295,7 @@ C              (renamed from .AUXBAS) /hjaaj
          IF (LCMMAX .GT. -1) THEN
             if (LCNTNUUM) then
             WRITE (LUPRI,'(/A,I5)')
-     &           ' Continuum center of mass basis fctns  with l(max) =',
+     &           ' Continuum center of mass basis fctns with l(max) =',
      &           LCMMAX
             else
             WRITE (LUPRI,'(/A,I5)')
@@ -342,10 +341,10 @@ C
 #include "maxaqn.h"
 #include "ccom.h"
 #include "cbirea.h"
+#include "numder.h"
 #include "ecpinf.h"
 #include "qm3.h"
 #include "r12int.h"
-#include "numder.h"
 #include "nuclei.h"
 C
       LOGICAL FIRST_CALL
@@ -544,7 +543,8 @@ C
       IF (IOS.NE.0) THEN
          WRITE (LUPRI,'(/A,I5/A/A)') 'Error in input line no. ',NMLINE,
      &   MLINE(NMLINE),'Error in reading basis keyword'
-         CALL QUIT('Error in reading basis keyword in .mol file')
+         CALL QUIT(
+     /   'Error in reading basis keyword in first line of .mol file')
       ENDIF
 
 #ifdef PRG_DIRAC
@@ -642,7 +642,7 @@ C
       CALL STOPIT('READIN','READ_MOL',KLAST,LWORK)
 C5030 CONTINUE
       CALL QUIT('Wrong keyword. Expecting FINISH')
-      END ! SUBROUITNE READIN
+      END ! SUBROUTINE READIN
 C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
      &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
@@ -7015,11 +7015,10 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
         IF (ADDSYM) THEN
             ADDSYM = .FALSE.
         ELSE IF (NSYMOP > 0) THEN
-            WRITE(LUPRI,'(/A)') 'ERROR: point group symmetry is'//
-     &                          ' incompatible with polarizable'//
-     &                          ' embedding'
-            CALL QUIT('point group symmetry is incompatible with'//
-     &                ' polarizable embedding')
+            WRITE(LUPRI,'(/A)') 'ERROR: Point group symmetry is'//
+     &         ' incompatible with polarizable embedding'
+            CALL QUIT('ERROR: Point group symmetry is'//
+     &         ' incompatible with polarizable embedding')
         END IF
       END IF
       RETURN
