@@ -1081,7 +1081,7 @@ C  new calculation type needs to be added in include/iprtyp.h
          ELSE IF (IPRTYP.EQ.ERI_WORK) THEN
             CALL ERI_NODSTR(WORK(1),MWORK,IPRINT)
 C        ELSE IF (IPRTYP.EQ.GEM_WORK) THEN
-C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
+C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYNUM,MYNUM,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_KSM_WORK) THEN
             CALL DFT_KSMSLAVE(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.DFT_C_WORK) THEN
@@ -1175,9 +1175,9 @@ C added by Bin Gao, May 12, 2012
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
          ELSE IF (IPRTYP.EQ.PARA_RP_ERES) THEN
-            CALL PAR_RP_ERES(work(1), mwork, mytid )
+            CALL PAR_RP_ERES(work(1), mwork, mynum )
          ELSE IF (IPRTYP.EQ.PARA_SO_ERES) THEN
-            CALL PAR_SO_ERES(work(1), mwork, mytid )
+            CALL PAR_SO_ERES(work(1), mwork, mynum )
 #ifdef MOD_CGTO_DIFF_ERI
          ! added by Bin Gao, Oct. 27, 2012
          ! cgto-diff-eri code to calculate arbitray order geometric derivatives
@@ -1232,10 +1232,10 @@ C added by Bin Gao, May 12, 2012
 
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
-     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
+     &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
      &         ': Unknown calculation type request',IPRTYP
             WRITE(*,'(/A,I5,A,I10)')
-     &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,
+     &         '(DALTON_NODEDRIVER) ERROR on slave',mynum,
      &         ': Unknown calculation type request',IPRTYP
             CALL QUIT('DALTON_NODEDRIVER: Unknown calculation type')
          END IF
@@ -1277,13 +1277,6 @@ C
       MASTER = NASTER
       MYTID  = NYTID
 C
-#if defined (VAR_PVM)
-C
-C     NCODE is the first variable PVM-slaves must receive
-C
-      CALL PVMXRECV(MASTER,MTAG0)
-      CALL PVMXUNPACK(NCODE,1,'INTEGER')
-#endif
 C     Get my name
 C
       CALL GETNAME(MYNAME)
@@ -1294,6 +1287,11 @@ C
       CALL MPIXSEND(MYNAME,20,'STRING',MASTER,MTAG8)
 #endif
 #if defined (VAR_PVM)
+C
+C     NCODE is the first variable PVM-slaves must receive
+C
+      CALL PVMXRECV(MASTER,MTAG0)
+      CALL PVMXUNPACK(NCODE,1,'INTEGER')
       CALL PVMXINITSEND(NCODE)
       CALL PVMXPACK(MYTID,1,'INTEGER')
       CALL PVMXPACK(MYNAME,20,'STRING')
