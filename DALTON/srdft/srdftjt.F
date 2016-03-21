@@ -599,8 +599,8 @@ C*****************************************************************************
       double precision Ex, d1Ex(6), d2Ex(10)
       double precision Ec, d1Ec(6), d2Ec(10)
 
-C The new terms
-      double precision mu, mu_new
+C The new terms (edh: mu_new required??)
+      double precision mu !, mu_new
 
       save icall
       data icall/0/
@@ -609,7 +609,8 @@ C     functionals
       external ESRX_PBEGWSERF
       external ESRC_PBETCSJERF, ESRC_PBETCSERF, ESRC_PBERIERF
       external ESRC_LYPRIERF
-      external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF     
+      external ESRC_PBEWIERF,   ESRC_PBEGWSERF, ESRC_PBELOERF
+      external ESRC_PBEGWSERF_PW92
 C     spin functionals
       external ESRX_LDAERFSPIN, ESRC_LDAERFSPIN
       external ESRX_PBEGWSERFSPIN, ESRC_PBEGWSERFSPIN
@@ -730,9 +731,13 @@ C  Correlation  ----------------------------------------------------------
         ! d1Ec(3), d1Ec(3) here ...
         call DESR(ESRC_PBEGWSERF,rho,RHOGRD,CHIVAL,NORDER,
      >            Ec,d1Ec,d2Ec,ipnt)
-      if (ipnt .eq. 1) write(lupri,*) 'Ec', Ec
-      if (ipnt .eq. 1) write(lupri,*) 'd1Ec', d1Ec
-      if (ipnt .eq. 1) write(lupri,*) 'd2Ec', d2Ec
+      ENDIF
+
+!     Modified short-range correlation PBE of GWS
+      IF(DOSRC_PBEGWS_PW92) THEN
+        ! d1Ec(3), d1Ec(3) here ...
+        call DESR(ESRC_PBEGWSERF_PW92,rho,RHOGRD,CHIVAL,NORDER,
+     >            Ec,d1Ec,d2Ec,ipnt)
       ENDIF
 
 !     rational interpolation
@@ -748,8 +753,6 @@ C  Correlation  ----------------------------------------------------------
         call DESR(ESRC_LYPRIERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,
      &            ipnt)
       ENDIF
-
-
 !     PBE local energy formula
       IF(DOSRC_PBELO) THEN
         call DESR(ESRC_PBELOERF,rho,RHOGRD,CHIVAL,NORDER,Ec,d1Ec,d2Ec,

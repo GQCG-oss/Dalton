@@ -46,18 +46,18 @@ C     variables for SRCPBERI
       double precision mu_0, mu_0_m6, mu_0_m7, mu_0_m4
       common /cb_srcpbe_RI/ mu_0, mu_0_m6, mu_0_m7, mu_0_m4
 C
-      PARAMETER  (NXTABLE = 21, NCTABLE = 31)
+      PARAMETER  (NXTABLE = 21, NCTABLE = 32)
       CHARACTER*10 XTABLE(NXTABLE),CTABLE(NCTABLE)
       CHARACTER SRFTMP*80
       PARAMETER  (maxfld=3)
       CHARACTER*(10) fields(maxfld)
       integer lenfld(maxfld)
       LOGICAL SETXFUN,SETCFUN
-      DATA XTABLE /'NULL      ','SRXLDA    ','SRXGGA    ','SRBCK     ', ! 1:4
-     &             'HFEXCH    ','SRGGA2    ','SRXWIB    ','SRXWI2    ', ! 5:8
-     &             'SRXWI3    ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
-     &             'SRXPBERI  ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
-     &             'LXLDAS    ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
+      DATA XTABLE /'NULL       ','SRXLDA    ','SRXGGA    ','SRBCK     ', ! 1:4
+     &             'HFEXCH     ','SRGGA2    ','SRXWIB    ','SRXWI2    ', ! 5:8
+     &             'SRXWI3     ','SRXWI4    ','SRXPBEHSE ','SRXPBETCS ', ! 9:12
+     &             'SRXPBERI   ','SRXPBEGWS ','SRXLDA_S  ','NULL_S    ', ! 13:16
+     &             'LXLDAS     ','LXLDA     ','LXPBEGWS  ','LXBCK     ', ! 17:20
      &             'SRXPBEGWSS'/                                        ! 21:25
       DATA CTABLE /'NULL      ','SRCLDA    ','SRCGGA    ','SRCMULO_A ', ! 1:4
      &             'SRLYPT    ','SRCWIB    ','SRCWI2    ','SRCWI3    ', ! 5:8
@@ -66,7 +66,7 @@ C
      &             'SRCMULO_B ','SRCMULO_C ','SRCMULO_D ','SRCMULO_E ', ! 17:20
      &             'NULL_S    ','SRCMDLDA  ','LNSCLDAS  ','LNSCLDA   ', ! 21:24
      &             'LSCLDA    ','LNSCPBEGWS','LSCPBEGWS ','LNCLYP    ', ! 25:28
-     &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS' /             ! 29:32
+     &             'LSCLYP    ','SRCLYPRI  ','SRCPBEGWSS','SRCPBEGWSC'/ ! 29:32
 
 C K. Sharkas and J. Toulouse beg
 C List of lambda-dependent complement density functionals for linear separation of the electron-electron interaction.
@@ -258,7 +258,7 @@ C
         IF (CTABLE(II) .EQ. SRCFUN) THEN
           GO TO (201,202,203,204,205,206,207,208,209,210,211,212,213,
      &           214,215,216,217,218,219,220,221,222,223,224,225,226,
-     &           227,228,229,230,231),II
+     &           227,228,229,230,231,232),II
         END IF
  200  CONTINUE
       SETCFUN = .FALSE.
@@ -411,12 +411,13 @@ C Short-range spin-dependent correlation PBE function of GWS (edh 10-02-15)
       DFT_SPINDNS    = .TRUE.
       ISJT    = .TRUE.
       GO TO 20
+C Modified short-range spin-dependent correlation PBE function of GWS (edh 21-03-15)
+232   DOSRC_PBEGWS_PW92 = .TRUE.
+      ISJT    = .TRUE.
+      GO TO 20
 C
   20  CONTINUE
 C
-CFRAN DEBUG
-!     print *,'SRCFUN=',SRCFUN   ! Manu debug
-CFRAN END
       IF (.NOT.SETCFUN) THEN
           WRITE(LUPRI,'(/2A/A/)')
      > '  SRFUN_INPUT : Invalid or no SR correlation func. specified : '
@@ -440,9 +441,6 @@ C        then set HF exchange factor to zero.
          HFXFAC = 0.0D0
          HFXSET = .TRUE.
       END IF
-CFRAN DEBUG
-!     print *,'I exit SRDFT_INPUT routine!'
-CFRAN END
       CALL QEXIT('SRFUN_INPUT')
       RETURN
       END
@@ -500,7 +498,7 @@ C     ... jkp : For gradient correction to SR-LDA
      >        .OR.DOSRC_MULOE_GGA.OR.DOSRC_PBELO.OR.DOLAX_PBEGWS.OR.
      >        DOLANSC_PBEGWS.OR.DOLASC_PBEGWS.OR.DOLAX_GGABCK.OR.
      >        DOLANC_GGALYP.OR.DOLASC_GGALYP.OR.DOSRC_LYPRI .OR.
-     >        DOSRX_PBEGWS_S .OR. DOSRC_PBEGWS_S
+     >        DOSRX_PBEGWS_S .OR. DOSRC_PBEGWS_S .OR. DOSRC_PBEGWS_PW92
 C
 
       NDER  = 0

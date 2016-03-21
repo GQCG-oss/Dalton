@@ -3645,7 +3645,8 @@ C****************************************************************************
       subroutine ESRC_PBEGWSERF(rho,grd,mu,e,ipnt)
 C*****************************************************************************
 C     Short-range PBE correlation functional from
-C       Goll, Werner, Stoll, PCCP 7, 3917 (2005)
+C     Goll, Werner, Stoll, PCCP 7, 3917 (2005)
+C     Based on the VWN LDA parameterization
 C
 C     Input: rho    : density
 C            grd    : norm of gradient of density
@@ -3667,8 +3668,6 @@ C*****************************************************************************
 
       double precision drho2
       double precision ecerflda,eclda
-      ! debug
-      double precision ecerflda_2,eclda_2
       double precision ecerfpbe
       double precision t1
       double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
@@ -3679,36 +3678,21 @@ C*****************************************************************************
 #include "priunit.h"
       integer ipnt
 
-      if (ipnt .eq. 1) write(lupri,*) 'rho', rho
-      if (ipnt .eq. 1) write(lupri,*) 'grd', grd
-      if (ipnt .eq. 1) write(lupri,*) 'mu', mu
-
 !     short-range LDA energy (order = 0)
       rho13 = rho**(1.d0/3.d0)
       ERFEXP(0:2) = .false.
       MULOCAL(0:2) = .false.
       call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
-      ecerflda_2 = ZKSR(1)
-      call ESRC_LDAERFSPIN(rho,0.0d0,mu,.false.,e,ipnt)
-      ecerflda =  e
-
-      if (ipnt .eq. 1) write(lupri,*) 'ecerflda', ecerflda
-      if (ipnt .eq. 1) write(lupri,*) 'ecerflda_2', ecerflda_2
+      ecerflda = ZKSR(1)
 
 !     full-range LDA energy
-      !call VCSRLDA(ZKSR,rho,rho13,0.d0,MULOCAL,0,ERFEXP)
-      !eclda_2 = ZKSR(1)
-      call ESRC_LDAERFSPIN(rho,0.0d0,0.0d0,.false.,e,ipnt)
-      eclda = e
-      !eclda_2 = ZKSR(1)
-
-
-      !if (ipnt .eq. 1) write(lupri,*) 'eclda full range', eclda
+      call VCSRLDA(ZKSR,rho,rho13,0.d0,MULOCAL,0,ERFEXP)
+      eclda = ZKSR(1)
 
       alpha=2.78d0
       gamma=3.1091d-2
 
-!     square of density gradient 
+!     square of density gradient
       drho2 = grd*grd
 
       if ((ecerflda/eclda).le.0.d0) then
@@ -3727,7 +3711,79 @@ C*****************************************************************************
          arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma*Aa)
          ecerfpbe=ecerflda+rho*gamma*dlog(arglog)
        endif
-      if (ipnt .eq. 1) write(lupri,*)'Ec in pbe routine', ecerfpbe
+
+      e = ecerfpbe
+
+      return
+      end
+C****************************************************************************
+      subroutine ESRC_PBEGWSERF_PW92(rho,grd,mu,e,ipnt)
+C*****************************************************************************
+C     Modified version of Short-range PBE correlation functional from
+C     Goll, Werner, Stoll, PCCP 7, 3917 (2005)
+C     Based on the LDA parameterization of Perdew and Wang (PW92);
+C     Perdew, Wang, PRB 45, 13244 (1992), rather than VWN
+C
+C     Input: rho    : density
+C            grd    : norm of gradient of density
+C            mu     : Interaction parameter
+C
+C     Ouput: e             : energy
+C
+C     Author: E. Hedegård (based on routine by J. Toulouse)
+C     Date  : 21-03-16
+C*****************************************************************************
+      implicit none
+
+      double precision rho, grd, mu
+      double precision e
+
+      double precision tol
+      parameter(tol=1d-12)
+      double precision rho13
+
+      double precision drho2
+      double precision ecerflda,eclda
+      double precision ecerfpbe
+      double precision t1
+      double precision alpha, beta, gamma, Aa,Ab, Ac, tq, arglog
+ 
+! debug
+#include "priunit.h"
+      integer ipnt
+
+!     short-range LDA energy (order = 0)
+      rho13 = rho**(1.d0/3.d0)
+      call ESRC_LDAERFSPIN(rho,0.0d0,mu,.false.,e,ipnt)
+      ecerflda =  e
+
+!     full-range LDA energy
+      call ESRC_LDAERFSPIN(rho,0.0d0,0.0d0,.false.,e,ipnt)
+      eclda = e
+
+      alpha=2.78d0
+      gamma=3.1091d-2
+
+!     square of density gradient
+      drho2 = grd*grd
+
+      if ((ecerflda/eclda).le.0.d0) then
+         beta=0.d0
+      else
+         beta=6.6725d-2*(ecerflda/eclda)**alpha
+      endif
+      tq=drho2*6.346820607d-2*rho**(-7.d0/3.d0)
+      Ab=dexp(-ecerflda/(rho*gamma))-1.d0
+      if (dabs(Ab).le.dabs(beta*tol)) then
+         ecerfpbe=ecerflda
+       else
+         Aa=beta/(gamma*Ab)
+         if (Aa.lt.tol) Aa=tol
+         Ac=1.d0+Aa*tq+Aa**2*tq**2
+         arglog=1.d0+beta*(1.d0-1.d0/Ac)/(gamma*Aa)
+         ecerfpbe=ecerflda+rho*gamma*dlog(arglog)
+       endif
+
       e = ecerfpbe
 
       return
@@ -3761,17 +3817,12 @@ C*****************************************************************************
       parameter(tol=1d-12)
 
       double precision ecerflda,eclda
-      ! debugging
-      double precision ecerflda_2, eclda_2
 
       double precision ecerfpbe
       double precision t1
       double precision alpha, beta, gamma
       double precision phi, phi2, phi3, phi4
       double precision Aa, Ab, Ac, tq, arglog
-      ! debugging
-      logical ERFEXP(0:2), MULOCAL(0:2)
-      double precision ZKSR(3)
 
 ! debug
 #include "priunit.h"
@@ -3786,19 +3837,10 @@ C     LDA energy ----
 !     as VCSRLDA does not include rhos ESRX_LDAERFSPIN is used instead
       call ESRC_LDAERFSPIN(rho,rhos,mu,.false.,e,ipnt)
       ecerflda =  e
-      ERFEXP(0:2) = .false.
-      MULOCAL(0:2) = .false.
-      call VCSRLDA(ZKSR,rho,rho13,mu,MULOCAL,0,ERFEXP)
-      ecerflda_2 =  ZKSR(1)
-
-      if (ipnt .eq. 1) write(lupri,*) 'ecerflda_2', ecerflda
-      if (ipnt .eq. 1) write(lupri,*) 'ecerflda_2', ecerflda_2
 
       ! full range LDA energy (mu = 0.0)
       call ESRC_LDAERFSPIN(rho,rhos,0.0d0,.false.,e,ipnt)
       eclda = e
-
-      !if (ipnt .eq. 1) write(lupri,*) 'eclda full range', eclda
 
 !     Spin polarisation
 !     Define rhoa, rhob, zeta
@@ -3834,7 +3876,6 @@ C     LDA energy ----
         ecerfpbe=ecerflda+rho*phi3*gamma*dlog(arglog)
       endif
 
-       if (ipnt .eq. 1) write(lupri,*)'Ec in pbe routine', ecerfpbe
        e = ecerfpbe
 
       return
