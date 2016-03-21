@@ -22,7 +22,7 @@
 !
 !
 C
-C FILE    : hergp.F
+C FILE    : abacus/hergp.F
 C
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
@@ -260,13 +260,13 @@ C
      &          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       real(8), allocatable :: AMAT(:,:)
 C
-      allocate( AMAT(NCOOR,NCOOR) )
       CALL TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,0)
       DO 100 I = 1, NCOOR
          DO 200 J = 1, I - 1
             SHESS(J,I) = SHESS(I,J)
   200    CONTINUE
   100 CONTINUE
+      allocate( AMAT(NCOOR,NCOOR) )
       CALL DGEMM('N','N',NCOOR,NCOOR,NCOOR,1.D0,
      &           SCTRA(1,1),NCOOR,
      &           SHESS,NDIMS,0.D0,
@@ -278,6 +278,7 @@ C
       deallocate( AMAT )
       RETURN
       END
+
 C  /* Deck prigeolu */
       SUBROUTINE PRIGEOLU(LU,COORD)
 C
@@ -352,7 +353,6 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
-
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -458,7 +458,7 @@ C
 C  /* Deck rmolchr */
       SUBROUTINE RMOLCHR(ICHRG)
 C
-C     Calculates total charge of molecule
+C     Calculates sum of all nuclear charges
 C
 #include "implicit.h"
 #include "maxaqn.h"
@@ -494,35 +494,32 @@ C
 C     Extended to Z=54 on march 10, 1994, K.Ruud
 C     Extended to Z=86 feb. 1996, S. Kirpekar
 C     Extended to Z=109 1997/06/20 Joern Thyssen
-C     Corrected Z=55-109 for correct units 
-C                        1999/04/23 W.A. de Jong
+C     Corrected Z=55-109 for correct units 1999/04/23 W.A. de Jong
 C     Extended to Z=118 1997/05/28 Trond Saue
 C     Corrected elements 108 and 109, data from 
-C       Handbook of Chemistry and Physics, 83rd Edition, Thierfelder and R. Bast
-C     Updated magnetic and quadrupole moments
-C                        2003/03/06 Joost van Stralen
+C       Handbook of Chemistry and Physics, 83rd Edition, by Thierfelder and R. Bast
+C     Updated magnetic and quadrupole moments,  2003/03/06 Joost van Stralen
+C     Updated 209Po magnetic moment (2016/02/03 Andre Gomes)
+C       NJ Stone, TABLE OF NUCLEAR MAGNETIC DIPOLE AND ELECTRIC QUADRUPOLE MOMENTS,
+C       IAEA  International Nuclear Data Committee, INDC(NDS)-0658, February 2014
+C
 C     Proton mass and electron charge:
 C        1986 CODATA Recommended Values
 C
 C     Nuclear masses:
-C        A. H. Wapstra and K. Bos,
-C        Atomic Data and Nuclear Tables 19 (1977) 177
+C        A. H. Wapstra and K. Bos, Atomic Data and Nuclear Tables 19 (1977) 177
 C
 C     Abundancies:
 C        Handbook of Chemistry and Physics, 73rd Edition
 C        
 C     Nuclear moments and spins:
-C
-C        P. Raghavan,
-C        Atomic Data and Nuclear Data Tables 42 (1989) 189
+C        P. Raghavan, Atomic Data and Nuclear Data Tables 42 (1989) 189
 C
 C        2014-03-03 Radovan Bast: updated Ag value as suggested by Michal Jaszunski in private communication
 C                                 corrected values for Nd (lines interchanged) and Tl (typo)
 C                                 as suggested by Michal Jaszunski in private communication
 C
-C
 C     Quadrupole moments:
-C
 C        P.Pykkoe
 C        Molecular Physics 99 (2001) 1617
 C 
@@ -534,7 +531,6 @@ C        (IUPAC Recommendations 2001)
 C
 C     Nuclear masses, Abundancies, nuclear moments, spins 
 C     and quadrupole moments for Z= 55 to Z = 86:
-C
 C       I. Mills, T. Cvitas, K. Homann, N. Kallay, and K. Kuchitsu
 C       Quantities, Units and Symbols in Physical Chemistry
 C       (IUPAC, Blackwell Scientific, Oxford, 1988)
@@ -1352,7 +1348,7 @@ C
 C
 C     Po:
 C
-     &208.982404D0,100.000000D0,   0.500000D0, 0.000000D0,   0.000000D0,
+     &208.982404D0,100.000000D0,   0.500000D0, 0.688000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1726,9 +1722,10 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
       ELSE IF (TYPE .EQ. 'LARMOR') THEN
          SPIN = DATNUC(3,ISOTOP,IATOM)
          IF (SPIN .GT. THRESH) THEN
-           DISOTP = ABS(ECHARGE*DATNUC(4,ISOTOP,IATOM)/(D4*PI*SPIN*DMP))
+            DISOTP = ABS(ECHARGE*DATNUC(4,ISOTOP,IATOM)
+     &                   /(D4*PI*SPIN*DMP))
          ELSE
-           DISOTP = D0
+            DISOTP = D0
          END IF
       ELSE IF (TYPE .EQ. 'QMOM') THEN
          DISOTP = DATNUC(5,ISOTOP,IATOM)
@@ -1896,9 +1893,9 @@ C
          IOFFAX = IOFFAX + NAXIS
   100 CONTINUE
 cmbh write dipole moment gradients here
-         LUMIDAS=-1
       IF(DONE .AND. ITYPEF.EQ.1 .AND. ITYPEC.EQ.1 
      &   .AND. FIELD.EQ.'E') THEN
+         LUMIDAS=-1
 c        x component
          CALL GPOPEN(LUMIDAS,'midasifc.muXder','UNKNOWN',' ',
      &         'FORMATTED', IDUMMY,.FALSE.)
@@ -1958,11 +1955,14 @@ C
       DO 100 ICOOR = 1, 3
          PERDIP(ICOOR,IPTAX(ICOOR,ITYPEF)) = D1
   100 CONTINUE
+C.....get transformation matrix SCTRA from symmetry to Cartesian coordinates
       CALL TRACOR(CSTRA,SCTRA,ITYPEC,NCOOR,0)
+C.....calculate XMATRI = PERDIP * SDIPDR
       CALL DGEMM('N','N',3,NCOOR,3,1.D0,
      &           PERDIP,3,
      &           SDIPDR,3,0.D0,
      &           XMATRI,3)
+C.....calculate CDIPDR = XMATRI*SCTRA(t)
       CALL DGEMM('N','T',3,NCOOR,NCOOR,1.D0,
      &           XMATRI,3,
      &           SCTRA(1,1),NCOOR,0.D0,
@@ -2064,8 +2064,8 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
       RETURN
       END
 C  /* Deck vibmas */
-      SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,GEOM,
-     &                  ORIGIN,IPRINT)
+      SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
+     &                  GEOM,ORIGIN,IPRINT)
 #include "implicit.h"
 C
 C     Sets up masses and calculates total mass for an isotopic

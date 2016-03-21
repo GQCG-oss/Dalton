@@ -25,9 +25,12 @@ ___
 ### Removed
 
 ### Fixed
+- Make sure molecule is not moved in ADDSYM during numerical differentiation
 - Fixed error in the printing of the cpu/wall time used in Sirius
 - Fixed error in PBEc functional: gave NaN when rho was zero.
 - Polished some format statements to reduce number of compiler warnings 
+- Fixed error in memory addressing for MCSCF g-tensor calculations
+- Fixed 2 errors in author list for WIRE dalton publication in dalton output
 
 ## [2016.0] (2015-12-22)
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-RELEASE_VERSION=`cat ../../VERSION`
-DALTON_MANUAL=Dalton_${RELEASE_VERSION}_manual.pdf
+RELEASE_VERSION=`cut -d ' ' -f 1 ../../VERSION`
+DALTON_MANUAL=${RELEASE_VERSION}_manual.pdf
 pdflatex  Master
 bibtex    Master
 pdflatex  Master
