@@ -1,5 +1,5 @@
 C  /* Deck so_t2mp */
-      SUBROUTINE SO_T2MP(T2AM,LT2AM)
+      SUBROUTINE SO_T2MP(T2AM,LT2AMH)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
 C
@@ -19,7 +19,7 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (FOUR = 4.0D0)
 C
-      DIMENSION T2AM(LT2AM)
+      DIMENSION T2AM(LT2AMH)
 C
 #include "ccorb.h"
 #include "ccsdinp.h"
@@ -46,10 +46,10 @@ C     If Triplet, initialize pointer to the last part of T2AM in which
 C     the triplet amplitudes will be stored.
 C---------------------------------------------------------------------
 C
-      LT2AMH = LT2AM
-      IF (TRIPLET) THEN
-         LT2AMH = INT(LT2AM/2)
-      END IF
+C      LT2AMH = LT2AM
+C      IF (TRIPLET) THEN
+C         LT2AMH = INT(LT2AM/2)
+C      END IF
 C
 Cend-Pi
 C

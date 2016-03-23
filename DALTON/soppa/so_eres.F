@@ -123,9 +123,9 @@ C
       singles_second = so_singles_second(model)
       doubles = so_has_doubles(model)
       tr2_zero = MODEL.EQ.'DCRPA'
-CPi
+C
+CPi-140316
 C---------------------------------------------------------
-C     Pi 140316:
 C     Adjust lengt of T2 amplitudes vector in TRIPLET case
 C     Copied from SPAS/PFP Triplet version
 C---------------------------------------------------------
@@ -134,7 +134,22 @@ C
       IF (TRIPLET) THEN
         LT2MPH = INT(LT2MP/2)
       END IF
-CPi end
+Cend-Pi
+C
+C------------------------------------------------------
+C     Write singlet and triplet T2 amplitudes to output
+C------------------------------------------------------
+C
+      IF ( IPRSOP. GE. 10 ) THEN
+C
+         CALL AROUND('singlet T2AM in HR_ERES')
+         CALL OUTPUT(T2MP,1,LT2MPH,1,1,LT2MPH,1,1,LUPRI)
+         IF (TRIPLET) THEN
+            CALL AROUND('triplet T2AM in HR_ERES')
+            CALL OUTPUT(T2MP(LT2MPH+1),1,LT2MPH,1,1,LT2MPH,1,1,LUPRI)
+         END IF
+C
+      END IF
 C
 C
 C------------------------------------------------------------------
@@ -651,7 +666,7 @@ C
                      DTIME      = SECOND()
 CPi-140316 Change LT2MP -> LT2MPH
                      CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MPH,
-CPi end
+Cend-Pi
      &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                            WORK(KEND4),LWORK4)
                      DTIME      = SECOND()   - DTIME
@@ -840,7 +855,6 @@ C
                CALL SO_RES_B(WORK(KRES1D),LRES1D,
      &                       WORK(KSIGAI2),LSIGAI2,
      &                       WORK(KCMO),LCMO,ISYRES,ONE)
-
             END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(18) = SOTIME(18) + DTIME
@@ -852,9 +866,17 @@ C           and (35).
 C-----------------------------------------------------------------------
 C
             DTIME      = SECOND()
-            CALL SO_RES_C(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                    WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),LSIGDA2,
-     &                    WORK(KCMO),LCMO,ISYRES)
+C            CALL SO_RES_C(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
+C     &                    WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),LSIGDA2,
+C     &                    WORK(KCMO),LCMO,ISYRES)
+            CALL SO_RES_C(WORK(KRES1E),LRES1E,
+     &                    WORK(KSIGDA1),LSIGDA1,
+     &                    WORK(KCMO),LCMO,ISYRES,ONE)
+            IF (DO_DEX) THEN
+               CALL SO_RES_C(WORK(KRES1D),LRES1D,
+     &                       WORK(KSIGDA2),LSIGDA2,
+     &                       WORK(KCMO),LCMO,ISYRES,-ONE)
+            END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(19) = SOTIME(19) + DTIME
 
@@ -1220,7 +1242,7 @@ C
      &                   T2MP(LT2MPH+1),LT2MPH,
      &                   WORK(KCMO),LCMO,
      &                   IDEL,ISYMD,ISYDIS,
-     &                   WORK(KEND4),LWORK4)
+     &                   WORK(KEND5),LWORK5)
             DTIME      = SECOND()   - DTIME
             SOTIME(12) = SOTIME(12) + DTIME
 C
