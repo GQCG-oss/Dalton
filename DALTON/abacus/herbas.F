@@ -403,6 +403,7 @@ C
          CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
 C
  10      CONTINUE
+         IF ( .NOT. NEWEL) THEN
 
             IF (INTEXP.GT.KPRIM) GOTO 5010
             IF (abs(INTORB).GT.INTEXP) THEN
@@ -412,7 +413,6 @@ C
      &         '       in basis ',BASNAM
             END IF
 C
-         IF ( .NOT. NEWEL) THEN
             NBLOCK = NBLOCK + 1
             IF (NBLOCK .GT. KAOVEC) THEN
                CALL QUIT('Too many AO blocks'//
@@ -484,7 +484,7 @@ C Define the type of the next relevant line in file
 C
             CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
             GOTO 10
-         END IF
+         END IF ! .not. NEWEL
       END IF
 C
       IF (POLFUN) THEN
@@ -1015,22 +1015,62 @@ C
       CHARACTER*(*) BASNAM
       CHARACTER*300 STRING  ! long because contains the full directory path
       CHARACTER SIGN
+      CHARACTER*12  EMSL_ELEMENT_NAME(96)
+      CHARACTER*5 EMSL_NAME_CHECK
+      DATA EMSL_ELEMENT_NAME(1:96) /
+     & 'HYDROGEN','HELIUM',
+     & 'LITHIUM','BERYLLIUM',
+     & 'BORON','CARBON','NITROGEN','OXYGEN','FLUORINE','NEON',
+     & 'SODIUM','MAGNESIUM',
+     & 'ALUMINUM','SILICON','PHOSPHOROUS','SULFUR','CHLORINE','ARGON',
+     & 'POTASSIUM','CALCIUM',
+     & 'SCANDIUM','TITANIUM','VANADIUM','CHROMIUM','MANGANESE',
+     &   'IRON','COBALT','NICKEL','COPPER','ZINC','GALLIUM',
+     & 'GERMANIUM','ARSENIC','SELENIUM','BROMINE','KRYPTON',
+     & 'RUBIDIUM','STRONTIUM',
+     & 'YTTRIUM','ZIRCONIUM','NIOBIUM','MOLYBDENUM','TECHNETIUM',
+     &   'RUTHENIUM','RHODIUM','PALLADIUM','SILVER','CADMIUM',
+     & 'INDIUM','TIN','ANTIMONY','TELLURIUM','IODINE','XENON',
+     & 'CESIUM','BARIUM',
+     & 'LANTHANUM','CERIUM','PRASEODYMIUM','NEODYMIUM',
+     &   'PROMETHIUM','SAMARIUM','EUROPIUM',
+     &   'GADOLIUM','TERBIUM','DYSPROSIUM','HOLMIUM','ERBIUM',
+     &   'THULIUM','YTTERBIUM',
+     & 'LUTETIUM','HAFNIUM','TANTALUM','TUNGSTEN','RHENIUM',
+     &   'OSMIUM','IRIDIUM','PLATINUM','GOLD','MERCURY',
+     & 'THALLIUM','LEAD','BISMUTH','POLONIUM','ASTATINE','RADON',
+     & 'FRANCIUM','RADIUM',
+     & 'ACTINIUM','THORIUM','PROTACTINIUM','URANIUM','NEPTUNIUM',
+     &   'PLUTONIUM','AMERICIUM','CURIUM'/
 C
       CALL FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C Searching the file for the element.
 C
+      IF (INTQ .GT. 0 .AND. INTQ .LE. 96) THEN
+         EMSL_NAME_CHECK = EMSL_ELEMENT_NAME(INTQ)(1:5)
+      ELSE
+      END IF
+      NUCEL = -1
  20   CONTINUE
          READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +       STRING
          READ (STRING, '(A1)',IOSTAT=IOS) SIGN
-         IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
+         IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN       ! <- traditional Dalton basis set file
             READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
             IF (IOS.NE.0) THEN
                CALL QUIT('FIND_ELEMENT: Error in reading NUCEL')
             ENDIF
- 110        FORMAT (BN, A1, I4)
             IF (INTQ .EQ. NUCEL) RETURN
+ 110        FORMAT (BN, A1, I4)
+         ELSE IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) THEN  ! <- basis set file made by EMSL
+            ! we do not know how many lines the element name is repeated in,
+            ! therefore we continue until it is not found in order that FIND_POS can work correctly
+            ! (EMSL always print "! s functions" for the first block, so this is OK=
+  30        READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+     +          STRING
+            IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) GO TO 30
+            RETURN
          END IF
       GOTO 20
 C
@@ -1414,7 +1454,8 @@ C
          INTISG = 0
       ELSE IF (SIGN .EQ. ' ') THEN
          READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
-      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
+      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A') .OR. ! <- traditional Dalton basis set file
+     &         INDEX(STRING,'->') .GT. 0) THEN           ! <- basis set file made by EMSL
          NEWEL = .TRUE.
          IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A)')
      &      'Output from FIND_POS: New element'
