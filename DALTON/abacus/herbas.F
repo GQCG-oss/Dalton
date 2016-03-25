@@ -93,7 +93,7 @@ C*************************************************************
 C
       CHARACTER*80 BASNAM,  BASTMP, BASSAV
       CHARACTER*80 BASREF(10)
-      LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, NQVD
+      LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, NQVD, EMSL_TYPE
 #ifdef PRG_DIRAC
 C     Define a maximum number of primitives that can go in one block
 C     for UNCONTRACTED basis sets. The value given is for s-functions
@@ -396,11 +396,12 @@ C
          CALL FIND_NQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,
      &       SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
       ELSE
-         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT)
+         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
-         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS,
+     &      IPRINT, EMSL_TYPE)
 C
  10      CONTINUE
          IF ( .NOT. NEWEL) THEN
@@ -435,7 +436,7 @@ C
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1 ! why this? Can we imagine user wants 2 0 1, i.e. 2s 0p 1d ??????
                   CALL FIND_POS ( NEWEL, INTEXP, INTORB,
-     &                            INTISG, LUBAS, IPRINT)
+     &                            INTISG, LUBAS, IPRINT, EMSL_TYPE)
                   GOTO 10
                END IF
             ELSE
@@ -482,7 +483,8 @@ C
 C
 C Define the type of the next relevant line in file
 C
-            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG,
+     &         LUBAS, IPRINT, EMSL_TYPE)
             GOTO 10
          END IF ! .not. NEWEL
       END IF
@@ -1002,7 +1004,7 @@ C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck FIND_ELEMENT */
-      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT)
+      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1013,6 +1015,7 @@ C*              proofing the subroutine.                 *
 C*********************************************************
 C
       CHARACTER*(*) BASNAM
+      LOGICAL       EMSL_TYPE
       CHARACTER*300 STRING  ! long because contains the full directory path
       CHARACTER SIGN
       CHARACTER*12  EMSL_ELEMENT_NAME(96)
@@ -1046,33 +1049,48 @@ C
       CALL FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C Searching the file for the element.
+C Traditional Dalton basis set layout with and 'a' or 'A' in first column
+C to identify next element.
 C
-      IF (INTQ .GT. 0 .AND. INTQ .LE. 96) THEN
-         EMSL_NAME_CHECK = EMSL_ELEMENT_NAME(INTQ)(1:5)
-      ELSE
-      END IF
-      NUCEL = -1
+      EMSL_TYPE = .FALSE.
  20   CONTINUE
-         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 100)
      +       STRING
          READ (STRING, '(A1)',IOSTAT=IOS) SIGN
          IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN       ! <- traditional Dalton basis set file
-            READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
+            READ (STRING, '(BN,A1,I4)',IOSTAT=IOS) SIGN, NUCEL
             IF (IOS.NE.0) THEN
                CALL QUIT('FIND_ELEMENT: Error in reading NUCEL')
             ENDIF
             IF (INTQ .EQ. NUCEL) RETURN
- 110        FORMAT (BN, A1, I4)
-         ELSE IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) THEN  ! <- basis set file made by EMSL
-            ! we do not know how many lines the element name is repeated in,
-            ! therefore we continue until it is not found in order that FIND_POS can work correctly
-            ! (EMSL always print "! s functions" for the first block, so this is OK=
-  30        READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
-     +          STRING
-            IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) GO TO 30
-            RETURN
          END IF
       GOTO 20
+C
+C Searching the file for the element again. This time with
+C the EMSL Dalton basis set layout without and 'a' or 'A' in first column.
+C Element must be identified by name from the table EMSL_ELEMENT_NAME.
+C
+  100 IF (INTQ .GT. 0 .AND. INTQ .LE. 96) THEN
+         EMSL_NAME_CHECK = EMSL_ELEMENT_NAME(INTQ)(1:5)
+      ELSE
+         GOTO 200
+      END IF
+      EMSL_TYPE = .TRUE.
+      REWIND LUBAS
+      NUCEL = -1
+ 30   CONTINUE
+         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+     +       STRING
+         IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) THEN  ! <- basis set file made by EMSL
+            ! we do not know how many lines the element name is repeated in,
+            ! therefore we continue until it is not found in order that FIND_POS can work correctly
+            ! (EMSL always print "! s functions" for the first block, so this is OK)
+ 35         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+     +          STRING
+            IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) GO TO 35
+            RETURN
+         END IF
+      GOTO 30
 C
 C Error messages
 C
@@ -1417,7 +1435,8 @@ C*                          coefficients                 *
 C*********************************************************
 C
 C/* Deck find_pos */
-      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG,
+     &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1427,7 +1446,7 @@ C*            what kind of sentence it is.               *
 C*     STRING - A character string to help bulletproofing*
 C*              the subroutine.                          *
 C*********************************************************
-      LOGICAL   NEWEL
+      LOGICAL   NEWEL, EMSL_TYPE
       CHARACTER SIGN
       CHARACTER*300 STRING
 
@@ -1454,11 +1473,11 @@ C
          INTISG = 0
       ELSE IF (SIGN .EQ. ' ') THEN
          READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
-      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A') .OR. ! <- traditional Dalton basis set file
-     &         INDEX(STRING,'->') .GT. 0) THEN           ! <- basis set file made by EMSL
+      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A') .OR.                ! <- traditional Dalton basis set file
+     &         (EMSL_TYPE .AND. INDEX(STRING,'->') .GT. 0) ) THEN       ! <- basis set file made by EMSL without "a" or "A"
          NEWEL = .TRUE.
-         IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A)')
-     &      'Output from FIND_POS: New element'
+         IF (IPRINT.GE.10) WRITE(lupri,'(/A)')
+     &      '  Output from FIND_POS: New element'
          RETURN
       ELSE
          GOTO 20
