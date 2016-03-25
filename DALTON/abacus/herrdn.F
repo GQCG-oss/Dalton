@@ -1147,7 +1147,7 @@ C
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
-      if (ipread .gt. 10 .OR. NSETS .gt. KSETS) 
+      if (ipread .gt. 10 .OR. NSETS .gt. KSETS)
      &   write(lupri,*) 'setting NSETS =',NSETS
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
@@ -3428,7 +3428,7 @@ C
 C
 #ifdef ENABLE_EFS
       call MPI_COMM_RANK(MPI_COMM_WORLD, irank, ierror)
-      if ((.not. efs_interface_is_initialized) 
+      if ((.not. efs_interface_is_initialized)
      &    .and. (irank.eq.MASTER)) then
 
         jblock = 0
@@ -3490,7 +3490,7 @@ C
 #endif
 
           call efs_add_atomtype( atype%centers,
-     &        atype%gtos, atype%nr_centers, 
+     &        atype%gtos, atype%nr_centers,
      &        atype%nr_gtos )
 
           !free memory
@@ -4672,8 +4672,7 @@ Clf       031104 - Bush Jr. re-elected
 C
       use pelib_interface, only: use_pelib
 #ifdef HAS_PCMSOLVER
-      use pcm_scf, only: pcm_scf_initialize
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg, pcm_initialize
 #endif
 #include "implicit.h"
 #include "dummy.h"
@@ -4860,8 +4859,9 @@ C
       END IF
 
 #ifdef HAS_PCMSOLVER
-      if (pcmmod_is_pcm_calculation) then
-        call pcm_scf_initialize(lupri)
+      if (pcm_cfg%do_pcm) then
+        call report_after_pcm_input(lupri, pcm_cfg)
+        call pcm_initialize(lupri, lupri)
         write(lupri, *) "PCMSolver interface correctly initialized"
       end if
 #endif

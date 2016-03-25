@@ -112,10 +112,10 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-#ifdef HAS_PCMSOLVER
-      use pcmmod_cfg
-      use pcm_linear_response
-#endif 
+#if defined (HAS_PCMSOLVER)
+      use pcm_config, only: pcm_configuration, pcm_cfg
+      use pcm_linrsp, only: pcm_lr_driver
+#endif
       use qmcmm_response, only: qmcmm_lr
       use pelib_interface, only: use_pelib, pelib_ifc_lr
 C
@@ -335,7 +335,7 @@ C
 
       IF (MMPCM) THEN
          IF (NOSIM .GT. MXEPCM) THEN
-           WRITE(LUPRI,*) 'Error Increase MXEPCM to at least: ',NOSIM 
+           WRITE(LUPRI,*) 'Error Increase MXEPCM to at least: ',NOSIM
            CALL QUIT('Increase MXEPCM')
          ENDIF
          LADDMM = .FALSE.
@@ -373,11 +373,14 @@ C
      &                    WRK(KDVTR), WRK(KDVT), WRK(KDVTTR), EVECS,
      &                    EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
       END IF
-#ifdef HAS_PCMSOLVER
-      if (pcmmod_is_pcm_calculation) then
-        call hello_world
+#if defined (HAS_PCMSOLVER)
+      if (pcm_cfg%do_pcm) then
+         call pcm_lr_driver(nosim,bovecs,cmo,indxci,
+     &               udv,wrk(kdv),wrk(kudvtr),wrk(kdvtr),
+     &               wrk(kdvt),wrk(kdvttr),
+     &               evecs(ncsim*kzyvar+1),wrk(kfree),lfree)
       end if
-#endif 
+#endif
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
@@ -877,7 +880,7 @@ C
 C     Unpack symmetry blocked CMO
 C
       CALL UPKCMO(CMO,WRK(KUCMO))
-C     
+C
 C     Calculate unpacked orbital trial vectors in UBO
 C
 C

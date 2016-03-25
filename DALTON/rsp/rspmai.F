@@ -388,7 +388,7 @@ C
 C
          END IF
 C
-C Include triplet one-electron density 
+C Include triplet one-electron density
 C
             CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
      *                 WRK(KUDV+N2ASHX),WRK(KFREE),
@@ -478,7 +478,7 @@ C     =============================================
 C
       IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1))) THEN
 C     Use the old linear response solver
-C     for MCSCF (or SCF if OLDCPP is requested by user)         
+C     for MCSCF (or SCF if OLDCPP is requested by user)
          CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
      *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
      *                WRK(KINDX),WRK(KWRK1),LWRK1)
@@ -2291,7 +2291,7 @@ C
          ENDIF
 
          IF (QMNPMM) THEN
-             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
+             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation'
          END IF
 
          IF (USE_PELIB()) THEN
@@ -4086,6 +4086,9 @@ C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
       use pelib_interface, only: use_pelib
+#if defined (HAS_PCMSOLVER)
+      use pcm_config, only: pcm_configuration, pcm_cfg
+#endif
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4366,6 +4369,14 @@ Cjje
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
+#if defined (HAS_PCMSOLVER)
+      else if (pcm_cfg%do_pcm) then
+       CALL MOLLAB('EXTPCMMAT',LUSIFC,LUPRI)
+       CALL READT (LUSIFC,NNORBT,WRK)
+       DO I = 1,NNORBT
+          FC(I) = FC(I) + WRK(I)
+       ENDDO
+#endif
       END IF
 Cjje
 C
@@ -4962,7 +4973,7 @@ C  *** END OF ESG
 C
       RETURN
       END
-    
+
       SUBROUTINE ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
       IMPLICIT NONE
 #include <maxorb.h>
@@ -4971,11 +4982,11 @@ C
 #include <priunit.h>
       CALL QENTER('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
-         WRITE(LUPRI, *) 
+         WRITE(LUPRI, *)
      &      'Please use **WAVE FUNCTION *OPTIMIZATION .DETERMINANTS'
          CALL QUIT(
      &      'A TRIPLET RESPONSE CALCULATION REQUIRES DETERMINANTS'
-     &      ) 
+     &      )
       END IF
       CALL QEXIT('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
       END

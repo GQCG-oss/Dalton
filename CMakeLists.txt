@@ -51,7 +51,6 @@ option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable Polarizable Embedding (PE) library"        ON)
 option(ENABLE_QFITLIB        "Enable charge fitting library (QFITLIB)"          ON)
-option(ENABLE_PCMSOLVER      "Enable PCMSolver library"                         OFF)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
@@ -127,31 +126,6 @@ if(ENABLE_GPU)
     endif()
 endif()
 
-
-if(ENABLE_PCMSOLVER)
-    find_package(ZLIB)
-    if(NOT ZLIB_FOUND)                              
-        set(ENABLE_PCMSOLVER OFF)
-        message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
-        message(STATUS " PCMSolver dependencies NOT satisfied:")
-        if(NOT ZLIB_FOUND)
-            message(STATUS "  - install Zlib development libraries")
-        endif()
-    else()
-        add_definitions(-DHAS_PCMSOLVER)                                                  
-        message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-	
-	add_PCMSOLVER()
-        
-	set(PCMSOLVER_LIBS
-            stdc++
-            pcm
-            getkw
-            ${ZLIB_LIBRARIES}
-            ${EXTERNAL_LIBS})
-    endif()
-endif()
-
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft
@@ -175,6 +149,9 @@ set(CPP)
 if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
+
+# PCMSolver configuration
+include(pcmsolver)
 
 # configure INSTALL_WRKMEM and INSTALL_MMWORK
 include(ConfigWORKMEM)
