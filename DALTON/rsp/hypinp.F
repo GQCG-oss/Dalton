@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1550,7 +1550,7 @@ C
       INQRLR = NLRLBL
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A)')' INQRLR: NEW OPERATOR'
-         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D12.6,2X,A,I5)')
+         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D13.6,2X,A,I5)')
      *   ' NUMBER:',NLRLBL,' LABEL: ',NEWLBL,' FREQUENCY: ',FRQVAL,
      *   'SYMMETRY',ISYM
       END IF
@@ -1581,7 +1581,7 @@ C
          WRITE(LUPRI,'(A)')' BEFORE SORTING'
          WRITE(LUPRI,'(/A)')'   I  QRLBL(I)  QRFREQ(I)  ISYMQR(I) '
          DO 90 I = 1,NLRLBL
-            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,D13.6,I12)')
      *      I,QRLBL(I),QRFREQ(I),ISYMQR(I)
   90     CONTINUE
       END IF
@@ -1621,7 +1621,7 @@ C
          WRITE(LUPRI,'(A)')'AFTER SORTING'
          DO 301 I = 1,NLRLBL
             WRITE(LUPRI,'(/A)')'   I  QRLBL(I)  QRFREQ(I)  ISYMQR(I) '
-            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,D13.6,I12)')
      *      I,QRLBL(I),QRFREQ(I),ISYMQR(I)
  301     CONTINUE
       END IF
@@ -1741,7 +1741,7 @@ C
       INQRTR = NTRLBL
       IF (IPRRSP.GT.40) THEN
          WRITE(LUPRI,'(/A)')' INQRTR: NEW OPERATOR'
-         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D12.6,2X,A,I5)')
+         WRITE(LUPRI,'(A,I5,2X,A,A,2X,/A,D13.6,2X,A,I5)')
      *   ' NUMBER:',NTRLBL,' LABEL: ',NEWLBL,' FREQUENCY: ',FRQVAL,
      *   'SYMMETRY',ISYM
       END IF
@@ -1772,7 +1772,7 @@ C
          WRITE(LUPRI,'(A)')' BEFORE SORTING'
          WRITE(LUPRI,'(/A)')'   I  TRLBL(I)  TRFREQ(I)  ISYMTR(I) '
          DO 90 I = 1,NTRLBL
-            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,D13.6,I12)')
      *      I,TRLBL(I),TRFREQ(I),ISYMTR(I)
   90     CONTINUE
       END IF
@@ -1813,7 +1813,7 @@ C
      *   ' AFTER SORTING'
          DO 301 I = 1,NTRLBL
             WRITE(LUPRI,'(/A)')'   I  TRLBL(I)  TRFREQ(I)  ISYMTR(I) '
-            WRITE(LUPRI,'(I5,5X,A,D12.6,I12)')
+            WRITE(LUPRI,'(I5,5X,A,D13.6,I12)')
      *      I,TRLBL(I),TRFREQ(I),ISYMTR(I)
  301     CONTINUE
       END IF

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -217,7 +217,7 @@ C
       CALL DZERO(WRK,KWRK1)
 
       IF (IPRPP .GT. 2 .OR. LWRK1 .LT. 2*KZYVAR) THEN
-         WRITE(LUPRI,'(/A)') ' >>> IN INVE2VEC:'
+         WRITE(LUPRI,'(/A)') ' --- IN INVE2VEC:'
          WRITE(LUPRI,*)' THCPP,MAXRM ',THCPP,MAXRM
          WRITE(LUPRI,*)' KSYMOP,NGPPP(KSYMOP) ',KSYMOP,NGPPP(KSYMOP)
          WRITE(LUPRI,*)' LWRK ,LWRK1 ',LWRK,LWRK1

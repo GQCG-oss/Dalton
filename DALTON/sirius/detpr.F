@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -389,7 +389,7 @@ c
       IF(XMIN .LT. THRES  ) XMIN =  THRES
       IDET = 0
 C
-      WRITE(IOUT,'(//A,E10.4,A,E10.4/A)')
+      WRITE(IOUT,'(//A,E11.4,A,E11.4/A)')
      &'  Printout of coefficients in interval  ',XMIN,' to ',XMAX,
      &'  =============================================================='
       NOPRT = 0

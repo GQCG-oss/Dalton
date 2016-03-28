@@ -6,7 +6,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -128,7 +128,7 @@ static void pbec_fourth(FunFourthFuncDrv *ds,   real factor,
                           const FunDensProp* dp);
  
 Functional PBEcFunctional = {
-  "PBEC",       /* name */
+  "PBEc",       /* name */
   pbec_isgga,   /* gga-corrected */
    1,
   pbec_read,
@@ -163,6 +163,7 @@ pbec_energy(const FunDensProp *dp)
     real t43;
 
     t1 = rhob+rhoa;
+    if (t1 < 1e-15) {res = 0e0; return res;}
     t2 = pow(3.0,.3333333333333333);
     t3 = 1/pow(4.0,.3333333333333333);
     t4 = pow(3.141592653589793,.3333333333333333);

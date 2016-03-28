@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -111,8 +111,8 @@ C
       CALL GETTIM(TEND,WEND)
       TIMHER = TEND - TIMHER
       WALHER = WEND - WALHER
-      CALL TIMTXT('>>>> Total CPU  time used in DKH_INTF:',TIMHER,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DKH_INTF:',WALHER,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in DKH_INTF:',TIMHER,LUPRI)
+      CALL TIMTXT(' Total wall time used in DKH_INTF:',WALHER,LUPRI)
       CALL QEXIT('DKH_INTF')
       RETURN
       END
@@ -298,7 +298,7 @@ C
             CALL OUTPAK(OVERLP,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: Overlap matrix'//
+         WRITE (LUPRI,'(//3A)') ' DKH_DRI1 error: Overlap matrix'//
      *      ' not found on AODKHINT.'
          CALL QUIT('DKH_DRI1 error: property not found on AODKHINT')
       END IF
@@ -314,7 +314,7 @@ C
          II = I*(I + 1)/2
          IF (TRMAT1(II) .LT. 1.0D-8) THEN
             WRITE (LUPRI,*)
-     &      ' >>> ERROR DKH_DRIV: Linear dependency in '//
+     &      ' ERROR DKH_DRIV: Linear dependency in '//
      &      'primitive basis used in Douglas-Kroll-Hess ', I, TRMAT1(II)
             write (lupri,*) 'The corresponding eigenvector:'
             call output(eigvec(1,i),1,1,1,nbast,1,nbast,-1,lupri)
@@ -348,7 +348,7 @@ C
             CALL OUTPAK(OVERLP,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: Kinetic energy'//
+         WRITE (LUPRI,'(//3A)') ' DKH_DRI1 error: Kinetic energy'//
      *      ' matrix not found on AODKHINT.'
          CALL QUIT('DKH_DR1 error: property not found on AODKHINT')
       END IF
@@ -396,7 +396,7 @@ C
             CALL OUTPAK(VMAT,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: potential'//
+         WRITE (LUPRI,'(//3A)') ' DKH_DRI1 error: potential'//
      *      ' energy matrix not found on AODKHINT.'
          CALL QUIT('DKH_DRI1 error: property not found on AODKHINT')
       END IF
@@ -412,7 +412,7 @@ C
             CALL OUTPAK(PVPMAT,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKH_DRI1 error: pVp integral'//
+         WRITE (LUPRI,'(//3A)') ' DKH_DRI1 error: pVp integral'//
      *      ' matrix not found on AODKHINT.'
          CALL QUIT('DKH_DRI1 error: property not found on AODKHINT')
       END IF
@@ -721,7 +721,7 @@ C
      &               LWRK,ANTI,NOPTYP,NBAST,NPRIM,LABINT,
      &               INTREP,PROPRI,IPRINT)
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKH_CONT ERROR: Primitive '//
+         WRITE (LUPRI,'(//3A)') ' DKH_CONT ERROR: Primitive '//
      &      'Douglas-Kroll-Hess integrals not found on AODKHINT file.'
          CALL QUIT('DKH_CONT: Integrals not found on AODKHINT file')
       END IF
@@ -850,7 +850,7 @@ C
             CALL OUTPAK(STDER0,NBAST,1,LUPRI)
          END IF
       ELSE
-         WRITE (LUPRI,'(//3A)') ' >>> DKTRF error: Douglas-Kroll-Hess'//
+         WRITE (LUPRI,'(//3A)') ' DKTRF error: Douglas-Kroll-Hess'//
      &      ' integrals not found on AODKHINT.'
          CALL QUIT('DKTRF error: Integrals not found on AODKHINT')
       END IF

@@ -441,6 +441,9 @@ endif()
 
 if(ENABLE_PCMSOLVER)
 	add_dalton_runtest(extpcm "dalton;runtest;short")
+	add_dalton_runtest(extpcm_lr_static "dalton;runtest;short;rsp")
+	add_dalton_runtest(extpcm_lr_dynamic "dalton;runtest;short;rsp")
+	add_dalton_runtest(extpcm_opa "dalton;runtest;short;rsp")
 endif()
 
 add_dalton_test(hfreqfromE                       "dalton;numder;short")

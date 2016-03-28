@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -97,14 +97,14 @@ C *** Check input
 C
       IF (NWOPT .NE. NWOPDI .AND. NOSIM .GT. 1) THEN
 C        SIRIUS program error, correct code.
-         WRITE (LUPRI,'(//2A,2I8)') ' >>> FATAL ERROR (SIRTR1)',
+         WRITE (LUPRI,'(//2A,2I8)') ' --- FATAL ERROR (SIRTR1)',
      *      ' dimension error; NWOPT and NWOPDI =',NWOPT,NWOPDI
          CALL QTRACE(LUPRI)
          CALL QUIT('FATAL ERROR (SIRTR1) NWOPDI DIMENSION ERROR')
       END IF
 C     ... MOFCFV always false in this version (920514-hjaaj)
       IF (MOFCFV .AND. .NOT.USEDRC) THEN
-         WRITE (LUPRI,'(//2A)') ' >>> FATAL ERROR (SIRTR1)',
+         WRITE (LUPRI,'(//2A)') ' --- FATAL ERROR (SIRTR1)',
      &      ' MOFCFV true and USEDRC false'
          CALL QTRACE(LUPRI)
          CALL QUIT('FATAL ERROR (SIRTR1) MOFCFV true and USEDRC false')
@@ -2306,7 +2306,7 @@ C     ... if idist .lt. 0 then no more distributions
          JDIST = JDIST + 1
          WRITE (LUPRI,'(/A,I5,A,2I5)')
      &      ' Mulliken distribution no.',JDIST,', IC and ID:',IC,ID
-         WRITE (LUPRI,'(A,I5)') ' IDIST form NXTH2M :',IDIST
+         WRITE (LUPRI,'(A,I5)') ' IDIST from NXTH2M :',IDIST
          CALL OUTPUT(WRK(KH2CD),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
       END IF
 C

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -334,6 +334,8 @@ C
       ELSE IF (SOPPA) THEN
          CALL TITLER('SOPPA response calculation','*',103)
          IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
+      ELSE IF (RSPCI) THEN
+         CALL TITLER('CI response calculation','*',103)
       ELSE
          CALL TITLER('MCSCF response calculation','*',103)
          ! IF (PARCAL) CALL PARQUIT('MCSCF RESPONSE')
@@ -386,7 +388,7 @@ C
 C
          END IF
 C
-C Include triplet one-electron density 
+C Include triplet one-electron density
 C
             CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
      *                 WRK(KUDV+N2ASHX),WRK(KFREE),
@@ -476,7 +478,7 @@ C     =============================================
 C
       IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1))) THEN
 C     Use the old linear response solver
-C     for MCSCF (or SCF if OLDCPP is requested by user)         
+C     for MCSCF (or SCF if OLDCPP is requested by user)
          CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
      *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
      *                WRK(KINDX),WRK(KWRK1),LWRK1)
@@ -521,10 +523,14 @@ C
      *       .AND.  NGPC6(KSYMOP).EQ.0 )
      *      GO TO 100
 C     ... skip this symmetry if no operators
-         WRITE(LUPRI,'(//A/A,I5,3A)')
-     *      ' >>>>>>>>>> Linear response calculation',
-     *      ' >>>>>>>>>> Symmetry of excitation/property operator(s)',
-     *      KSYMOP,'  ( ',REP(KSYMOP-1),')'
+         WRITE(LUPRI,'(A/A/A,I5,3A/A)')
+     &      ' -------------------------------------------------'//
+     &      '---------------',
+     &      ' ----- Linear response calculation',
+     &      ' ----- Symmetry of excitation/property operator(s)',
+     &      KSYMOP,'  ( ',REP(KSYMOP-1),')',
+     &      ' -------------------------------------------------'//
+     &      '---------------'
          WRITE(LUPRI,'(3(/A,I5))')
      *      ' Number of excitations of this symmetry        ',
      *      NPPCNV(KSYMOP),
@@ -629,8 +635,8 @@ C
       WTOT = WEND - WSTR
       WRITE (LUPRI,'()')
       IF (QMMM) CALL QMMMTIMES('RESPONSE')
-      CALL TIMTXT('>>>> Total CPU  time used in RESPONSE:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in RESPONSE:',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in RESPONSE:',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in RESPONSE:',WTOT,LUPRI)
 C
 C     *******************************************
 C
@@ -642,7 +648,7 @@ C
 C  /* Deck rsprea */
       SUBROUTINE RSPREA
 C
-C <<< GENERAL INPUT FOR RESPONSE >>>
+C GENERAL INPUT FOR RESPONSE
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -685,7 +691,7 @@ C
       EXTERNAL RSPINF
 C
       WRITE (LUPRI,'(//,A,//)')
-     *   ' <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>'
+     *   ' -------- OUTPUT FROM RESPONSE INPUT PROCESSING --------'
 C
 C     ***** PROCESS INPUT FOR RESPONSE *****
 C
@@ -1066,7 +1072,7 @@ C              .PROP2Average
             WRITE(LUPRI,'(/A)')
      *      ' .NOAVDIA : Using exact E[2] orbital diagonal. '
          END IF
-         IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D10.6)')
+         IF (ORBSFT.NE.1.0D-4) WRITE(LUPRI,'(/A,D13.6)')
      *      ' Diagonal orbital E[2] shifted with ORBSFT =',ORBSFT
          IF (ORBSPC) WRITE(LUPRI,'(/A)') ' .ORBSPC:'//
      *      ' Calculation with only orbital operators included.'
@@ -2285,7 +2291,7 @@ C
          ENDIF
 
          IF (QMNPMM) THEN
-             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
+             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation'
          END IF
 
          IF (USE_PELIB()) THEN
@@ -4080,6 +4086,9 @@ C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
       use pelib_interface, only: use_pelib
+#if defined (HAS_PCMSOLVER)
+      use pcm_config, only: pcm_configuration, pcm_cfg
+#endif
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4360,6 +4369,14 @@ Cjje
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
+#if defined (HAS_PCMSOLVER)
+      else if (pcm_cfg%do_pcm) then
+       CALL MOLLAB('EXTPCMMAT',LUSIFC,LUPRI)
+       CALL READT (LUSIFC,NNORBT,WRK)
+       DO I = 1,NNORBT
+          FC(I) = FC(I) + WRK(I)
+       ENDDO
+#endif
       END IF
 Cjje
 C
@@ -4956,7 +4973,7 @@ C  *** END OF ESG
 C
       RETURN
       END
-    
+
       SUBROUTINE ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS()
       IMPLICIT NONE
 #include <maxorb.h>
@@ -4965,11 +4982,11 @@ C
 #include <priunit.h>
       CALL QENTER('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
-         WRITE(LUPRI, *) 
+         WRITE(LUPRI, *)
      &      'Please use **WAVE FUNCTION *OPTIMIZATION .DETERMINANTS'
          CALL QUIT(
      &      'A TRIPLET RESPONSE CALCULATION REQUIRES DETERMINANTS'
-     &      ) 
+     &      )
       END IF
       CALL QEXIT('ASSERT_TRIPLET_RESPONSE_WITH_DETERMINANTS')
       END

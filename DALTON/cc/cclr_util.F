@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2815,8 +2815,13 @@ C
 Cholesky
 #include "maxorb.h"
 #include "ccdeco.h"
+Cmlcc
+#include "peract.h"
+#include "mxcent.h"
+#include "center.h"
+Cmlcc
 C
-      LOGICAL CCSEFF
+      LOGICAL CCSEFF, first1, first2
 Cholesky
 C
 C
@@ -2883,6 +2888,17 @@ C
       THR1 = MAX(THR1,1.0D-02)
       THR2 = MAX(THR2,1.0D-02)
       SUMOFP = 0.0D00
+      first1 = .true.
+      first2 = .true.
+      sumoftt = 0.0D00
+      sumofts = 0.0D00
+      sumofst = 0.0D00
+      sumofss = 0.0D00
+      sumofrr = 0.0D00
+      sumsing = 0.0D00
+      sum2int = 0.0D00
+      sum2se  = 0.0D00
+      sum2ext = 0.0D00
 C
       IF (DEBUG) THR1 = 0.0D0
 C
@@ -2936,12 +2952,74 @@ C
 C
                ENDIF
 C
+               if (first1) then
+               if ((mlcc3 .and. pertcc)
+     *             .and. nspace .eq. 1) then
+                  if (actorb(i,isymi)
+     *                .and. actorb(a+nrhf(isyma),isyma)) then
+C                     
+                     sumoftt = sumoftt + cam(nai)*cam(nai)
+C
+                  else if (actorb(i,isymi) .and.
+     *                     .not. actorb(a+nrhf(isyma),isyma)) then
+C
+                     sumofts = sumofts + cam(nai)*cam(nai)
+C
+                  else if (.not. actorb(i,isymi)
+     *                     .and. actorb(a+nrhf(isyma),isyma)) then
+C
+                     sumofst = sumofst + cam(nai)*cam(nai)
+C
+                  else if (.not. actorb(i,isymi)
+     *                     .and. .not. actorb(a+nrhf(isyma),isyma)) then
+C
+                     sumofss = sumofss + cam(nai)*cam(nai)
+C
+                  endif
+               endif
+C
+C
+               if ((mlcc3 .and. pertcc) 
+     *             .and. nspace .eq. 2) then
+                  if (iacorb(i,isymi) .eq. -5
+     *                .or. iacorb(a+nrhf(isyma),isyma) .eq. -5) then
+                     
+                     sumofrr = sumofrr + cam(nai)*cam(nai)
+
+                  else if (iacorb(i,isymi) .eq. 1
+     *                .and. iacorb(a+nrhf(isyma),isyma) .eq. 1) then
+                     
+                     sumoftt = sumoftt + cam(nai)*cam(nai)
+
+                  else if (iacorb(i,isymi) .eq. 1 .and.
+     *                .not. iacorb(a+nrhf(isyma),isyma) .eq. 1) then
+
+                     sumofts = sumofts + cam(nai)*cam(nai)
+
+                  else if (.not. iacorb(i,isymi) .eq. 1
+     *                .and. iacorb(a+nrhf(isyma),isyma) .eq. 1) then
+
+                     sumofst = sumofst + cam(nai)*cam(nai)
+
+                  else if (.not. iacorb(i,isymi) .eq. 1 .and.
+     *                .not. iacorb(a+nrhf(isyma),isyma) .eq. 1) then
+
+                     sumofss = sumofss + cam(nai)*cam(nai)
+
+                  endif
+               endif
+               endif
+C
+C
   120       CONTINUE
   110    CONTINUE
   100 CONTINUE
 C
+      sumsing = sumoftt + sumofst + sumofts + sumofss
+C
       IF ((N1.LT.1).AND.(SQRT(C1NOSQ/CNOSQ).GT.1.0D-3)) THEN
          THR1 = THR1/5.0D0
+         first1 = .false.
          GOTO 1
       ENDIF
 C
@@ -3020,6 +3098,56 @@ C
 C
                            ENDIF
 C
+                           if (first2) then
+                           if ((mlcc3 .and. pertcc) 
+     *                         .and. nspace .eq. 1) then
+                              if(actorb(i,isymi) .and. actorb(j,isymj)
+     *                         .and. actorb(a+nrhf(isyma),isyma)
+     *                         .and. actorb(b+nrhf(isymb),isymb)) then
+
+                                sum2int = sum2int+cam(kaibj)*cam(kaibj)
+
+                              else if (.not. actorb(i,isymi)
+     *                         .and. .not. actorb(j,isymj)
+     *                         .and. .not. actorb(a+nrhf(isyma),isyma)
+     *                         .and. .not. actorb(b+nrhf(isymb),isymb))
+     *                         then
+                               
+                                sum2ext = sum2ext+cam(kaibj)*cam(kaibj)
+
+                              else
+
+                                sum2se = sum2se+cam(kaibj)*cam(kaibj)
+
+                              endif
+                           endif
+C
+C
+                           if ((mlcc3 .and. pertcc) 
+     *                         .and. nspace .eq. 2) then
+C
+                           itest = iacorb(i,isymi) + iacorb(j,isymj)
+     *                         + iacorb(a+nrhf(isyma),isyma)
+     *                         + iacorb(b+nrhf(isymb),isymb) 
+C
+                              if(itest .eq. 4) then
+
+                                 sum2int = sum2int+cam(kaibj)*cam(kaibj)
+
+                              else if(itest .eq. 0) then
+
+                                 sum2ext = sum2ext+cam(kaibj)*cam(kaibj)
+
+                              else
+
+                                sum2se = sum2se+cam(kaibj)*cam(kaibj)
+
+                              endif
+C                               
+                           endif
+                           endif
+C
+C
   260                   CONTINUE
   250                CONTINUE
   240             CONTINUE
@@ -3030,6 +3158,7 @@ C
 C
       IF ((N2.LT.1).AND.(SQRT(C2NOSQ/CNOSQ).GT.1.0D-3)) THEN
          THR2 = THR2/5D00
+         first2 = .false.
          GOTO 2
       ENDIF
 C
@@ -3048,6 +3177,28 @@ C
      *     'Printed all double excitations greater than',THR2
       ENDIF
 C
+      if ((mlcc3 .and. pertcc) .and. nspace .le. 2) then
+         WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *        'Norm of T to T single amplitudes : ',sumoftt
+         WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *        'Norm of T to S single amplitudes : ',sumofts
+         WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *        'Norm of S to T single amplitudes : ',sumofst
+         WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *        'Norm of S to S single amplitudes : ',sumofss
+         if (nspace .eq. 2) then
+            WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *           'Norm of R single amplitudes : ',sumofrr
+         endif
+         WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *        'Norm of T to T double amplitudes : ',sum2int
+         WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *        'Norm of X to Y double amplitudes : ',sum2se
+         WRITE(LUPRI,'(//10X,A,8X,F10.4)')
+     *        'Norm of S to S double amplitudes : ',sum2ext
+      endif
+C
+C      
  9990 FORMAT(1X,'| ',I1,3X,I1,2X,' | ',I3,5X,I3,4X,' | ',I8,9x,
      *       ' | ',12x,' | ',1x, F10.6,'  |')
  9991 FORMAT(1X,'| ',I1,1X,I1,1X,I1,1X,I1,' | ',

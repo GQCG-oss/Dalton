@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1270,7 +1270,7 @@ C
             WRITE (LUPRI,'(//5X,A,I10)') 'Number of ' // ANDER //
      &              ' calculations needed:', NUMCAL
          ELSE
-            WRITE (LUPRI,'(//A,I10)') '@>>> Number of ' // ANDER //
+            WRITE (LUPRI,'(//A,I10)') '@Number of ' // ANDER //
      &        ' calculations done:', NUMCAL
          END IF
 
@@ -1793,6 +1793,9 @@ c     &                  FTVAL,RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#else
      &                  RSTDON,PRTNR,ALRCAL,CLNRGY,LASTE)
 c#endif
+C
+C     Purpose: Get next geometry point for mumerical differentiation
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -1826,7 +1829,7 @@ c#endif
 c
 #include "huckel.h"
       LOGICAL RUNPNT, CLNRGY, RSTDON, PRTNR, EXSIR, EXHER, EXABA, EXESG,
-     &        ALRCAL, PRPCAL, FNDKEY
+     &        ALRCAL, PRPCAL, FNDKEY, NOMOVE_bkp
       LOGICAL LASTE
       CHARACTER*(*) MBKLIN
       DIMENSION MBKLIN(NMBKLN)
@@ -1838,6 +1841,9 @@ c
      &          IRPIND(NMORDR), IDCOMP(NCOOR)
 C
       CALL QENTER('GTNPNT')
+
+      NOMOVE_bkp = NOMOVE
+      NOMOVE = .TRUE. ! do not change molecular coordinates when numerical differentiation
 C
 C     *** Symmetry initilization. ***
 C
@@ -1863,8 +1869,7 @@ C
       END IF
 CRF   A crude way of avoiding redudant calculations
       IF (PRPONL .AND. .NOT. CNMPRP) THEN
-         CALL QEXIT('GTNPNT')
-         RETURN
+         GO TO 9000
       END IF
 C
 C     *** Making the appropriate step, if any. ***
@@ -2119,8 +2124,10 @@ c#endif
          IDIME = IDIME + 1
       END IF
 C
+ 9000 CONTINUE
+      NOMOVE = NOMOVE_bkp
       CALL QEXIT('GTNPNT')
-      RETURN
+         RETURN
       END
 C
 C  /* Deck upd_molinp */
@@ -3944,7 +3951,7 @@ C
 C
          CALL HEADER('Transformed sqrt(mass)^-1 matrix',-1)
          DO IC1 = 1, NCOOR
-            WRITE (LUPRI,'(24F9.7)') (TM2TMP(IC1,IC2),IC2= 1, NCOOR)
+            WRITE (LUPRI,'(24F10.7)') (TM2TMP(IC1,IC2),IC2= 1, NCOOR)
          END DO
 C
 C        *** Mass-weighted hessian. ***

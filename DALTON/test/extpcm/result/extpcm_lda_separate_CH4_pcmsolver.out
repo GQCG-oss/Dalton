@@ -1,0 +1,709 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2014.0
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Agren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Tue Dec  2 11:28:05 2014
+     Host name              : spongebob                               
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /home/roberto/Workspace/dalton/DALTON/test/extpcm
+   2) /home/roberto/Workspace/dalton/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | roberto
+ Host                     | spongebob
+ System                   | Linux-3.13.0-40-generic
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/bin/gfortran
+ Fortran compiler version | GNU Fortran (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (Ubuntu 4.8.2-19ubuntu1) 4.8.2
+ BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
+                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
+ LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
+                          | e/atlas/liblapack.so
+ Static linking           | OFF
+ Last Git revision        | e580596fcf095ceccfdb878b9a6b601d02fa4da4
+ Git branch               | pcm
+ Configuration time       | 2014-12-02 10:38:55.972731
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN WAVE                                         
+.EXTPCM                                           
+*EXTPCM                                           
+.OLDINT                                           
+.SEPARATE                                         
+**WAVE FUNCTIONS                                  
+.DFT                                              
+ LDA                                              
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+STO-3G                                                                         
+Methane                                                                        
+using the STO-3G basis                                                         
+Atomtypes=2 Nosymmetry                                                         
+Charge=6.0 Atoms=1                                                             
+C      .000000000   .000000000  .000000000                                     
+Charge=1.0 Atoms=4                                                             
+H1     .629889144   .629889144  .629889144                                     
+H2    -.629889144  -.629889144  .629889144                                     
+H3     .629889144  -.629889144 -.629889144                                     
+H4    -.629889144   .629889144 -.629889144                                     
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+ --------------------------------------------------------------------------------
+  ===== Polarizable Continuum Model calculation set-up =====
+ * Polarizable Continuum Model using PCMSolver external module:
+   1: Converged potentials and charges at tesserae representative points written on file.
+   2: Use point-by-point charge-attraction integrals evaluation subroutines.
+   3: Separate potentials and apparent charges in nuclear and electronic.
+   4: Do not print potentials and charges.
+
+
+ * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.0.0
+   Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
+    With contributions from:
+     R. Bast            (CMake framework)
+     U. Ekstroem        (automatic differentiation library)
+     H. Harbrecht       (wavelet cavity and solvers libraries)
+     J. Juselius        (input parsing library and CMake framework)
+     C. S. Pomelli      (TsLess cavity library)
+     M. Randrianarivony (wavelet cavity library)
+     V. Weijo           (wavelet libraries and cavity visualization scripts)
+   Theory: - J. Tomasi, B. Mennucci and R. Cammi:
+            "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999
+   PCMSolver is distributed under the terms of the GNU Lesser General Public License.
+
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Methane                                                                 
+ 2: using the STO-3G basis                                                  
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   6.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   6 :
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    4
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/home/roberto/Workspace/dalton/build/basis/STO-3G"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           C          12.000000
+                           H1          1.007825
+                           H2          1.007825
+                           H3          1.007825
+                           H4          1.007825
+
+                       Total mass:    16.031300 amu
+                       Natural abundance:  98.841 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    5
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  C           1    6.0000    15     5      [6s3p|2s1p]                                        
+  H4          4    1.0000     3     1      [3s|1s]                                            
+  ----------------------------------------------------------------------
+  total:      5   10.0000    27     9
+  ----------------------------------------------------------------------
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:   15
+  C       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.0000000000
+  H1      :     4  x   0.6298891440    5  y   0.6298891440    6  z   0.6298891440
+  H2      :     7  x  -0.6298891440    8  y  -0.6298891440    9  z   0.6298891440
+  H3      :    10  x   0.6298891440   11  y  -0.6298891440   12  z  -0.6298891440
+  H4      :    13  x  -0.6298891440   14  y   0.6298891440   15  z  -0.6298891440
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            C           H1          H2          H3          H4    
+            ------      ------      ------      ------      ------
+ C     :    0.000000
+ H1    :    0.577332    0.000000
+ H2    :    0.577332    0.942780    0.000000
+ H3    :    0.577332    0.942780    0.942780    0.000000
+ H4    :    0.577332    0.942780    0.942780    0.942780    0.000000
+
+
+  Max    interatomic separation is    0.9428 Angstrom (    1.7816 Bohr)
+  between atoms    3 and    2, "H2    " and "H1    ".
+
+  Min HX interatomic separation is    0.5773 Angstrom (    1.0910 Bohr)
+
+@ WARNING: Number of short HX and YX bond lengths:    4    0
+@ WARNING: If not intentional, maybe your coordinates were in Angstrom,
+@ WARNING: but "Angstrom" was not specified in .mol file
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H1         C            0.577332
+  bond distance:  H2         C            0.577332
+  bond distance:  H2         H1           0.942780
+  bond distance:  H3         C            0.577332
+  bond distance:  H3         H1           0.942780
+  bond distance:  H3         H2           0.942780
+  bond distance:  H4         C            0.577332
+  bond distance:  H4         H1           0.942780
+  bond distance:  H4         H2           0.942780
+  bond distance:  H4         H3           0.942780
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H1         C          H2           109.471
+  bond angle:     H1         C          H3           109.471
+  bond angle:     H1         C          H4           109.471
+  bond angle:     H2         C          H3           109.471
+  bond angle:     H2         C          H4           109.471
+  bond angle:     H3         C          H4           109.471
+  bond angle:     C          H1         H2            35.264
+  bond angle:     C          H1         H3            35.264
+  bond angle:     C          H1         H4            35.264
+  bond angle:     H2         H1         H3            60.000
+  bond angle:     H2         H1         H4            60.000
+  bond angle:     H3         H1         H4            60.000
+  bond angle:     C          H2         H1            35.264
+  bond angle:     C          H2         H3            35.264
+  bond angle:     C          H2         H4            35.264
+  bond angle:     H1         H2         H3            60.000
+  bond angle:     H1         H2         H4            60.000
+  bond angle:     H3         H2         H4            60.000
+  bond angle:     C          H3         H1            35.264
+  bond angle:     C          H3         H2            35.264
+  bond angle:     C          H3         H4            35.264
+  bond angle:     H1         H3         H2            60.000
+  bond angle:     H1         H3         H4            60.000
+  bond angle:     H2         H3         H4            60.000
+  bond angle:     C          H4         H1            35.264
+  bond angle:     C          H4         H2            35.264
+  bond angle:     C          H4         H3            35.264
+  bond angle:     H1         H4         H2            60.000
+  bond angle:     H1         H4         H3            60.000
+  bond angle:     H2         H4         H3            60.000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.895789          1.000000    0.000000    0.000000
+   IB       0.895789          0.000000    1.000000    0.000000
+   IC       0.895789          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         564172.0544         564172.0544         564172.0544 MHz
+           18.818754           18.818754           18.818754 cm-1
+
+
+@  Nuclear repulsion energy :   25.365934555796 Hartree
+
+
+~~~~~~~~~~ PCMSolver ~~~~~~~~~~
+Using CODATA 2010 set of constants.
+Input parsing done API-side
+========== Cavity 
+Cavity type: GePol
+Average area = 1.07132 AU^2
+Probe radius = 2.61727 AU
+Number of spheres = 5 [initial = 5; added = 0]
+Number of finite elements = 200
+========== Solver 
+Solver Type: IEFPCM, isotropic
+PCM matrix hermitivitized
+============ Medium 
+Medium initialized from solvent built-in data.
+Solvent name:          Water
+Static  permittivity = 78.39
+Optical permittivity = 1.776
+Solvent radius =       1.385
+.... Inside 
+Green's function type: vacuum
+.... Outside 
+Green's function type: uniform dielectric
+Permittivity = 78.39
+
+
+ PCMSolver interface correctly initialized
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ HERMIT - Number of two-electron integrals written:         912 ( 88.1% )
+ HERMIT - Megabytes written:                              0.014
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    9
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+          -11.430057      -2.022135      -0.573203      -0.573203      -0.573203
+           -0.028742      -0.028742      -0.028742      -0.013175
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Dec  2 11:28:06 2014
+     Host name              : spongebob                               
+
+ Title lines from ".mol" input file:
+     Methane                                                                 
+     using the STO-3G basis                                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    Restricted, closed shell Kohn-Sham DFT calculation.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> KS-DFT <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                           |  A  
+                                       --- |  ---
+@    Occupied SCF orbitals               5 |    5
+     Secondary orbitals                  4 |    4
+     Total number of orbitals            9 |    9
+     Number of basis functions           9 |    9
+
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations             20
+     ------------------------------------------
+@    Total number of variables               21
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+ 
+     This is a DFT calculation of type: LDA
+
+
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy       Solvation energy    Error norm    Delta(E)
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.070081063452  10.0000322432    3.22D-05
+Polarization energy components
+   U_ee =   -25.57881047677433 , U_en =    25.59040888996412 , U_ne =    25.59040888996411 , U_nn =   -25.60207811684259
+
+@  1  -37.0085270163     -3.540684434711E-05    1.39004D+00   -3.70D+01
+      Virial theorem: -V/T =      1.874532
+@      MULPOP C       0.21; H1     -0.05; H2     -0.05; H3     -0.05; H4     -0.05; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.161213613386  10.0000406168    4.06D-05
+Polarization energy components
+   U_ee =   -25.58572789339674 , U_en =    25.59382416718384 , U_ne =    25.59382416718384 , U_nn =   -25.60207811684259
+
+@  2  -37.0984569858     -7.883793582764E-05    2.57891D-01   -8.99D-02
+      Virial theorem: -V/T =      1.866236
+@      MULPOP C      -1.91; H1      0.48; H2      0.48; H3      0.48; H4      0.48; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.143167043198  10.0000391510    3.92D-05
+Polarization energy components
+   U_ee =   -25.58474803580258 , U_en =    25.59337089555771 , U_ne =    25.59337089555773 , U_nn =   -25.60207811684259
+
+@  3  -37.1021184005     -4.218076486495E-05    6.17272D-03   -3.66D-03
+      Virial theorem: -V/T =      1.868671
+@      MULPOP C      -1.59; H1      0.40; H2      0.40; H3      0.40; H4      0.40; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.143578455027  10.0000391848    3.92D-05
+Polarization energy components
+   U_ee =   -25.58477075290881 , U_en =    25.59338153461825 , U_ne =    25.59338153461826 , U_nn =   -25.60207811684259
+
+@  4  -37.1021204717     -4.290025744424E-05    3.33281D-05   -2.07D-06
+      Virial theorem: -V/T =      1.868617
+@      MULPOP C      -1.60; H1      0.40; H2      0.40; H3      0.40; H4      0.40; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :     -7.143578520675  10.0000391848    3.92D-05
+Polarization energy components
+   U_ee =   -25.58477075587787 , U_en =    25.59338153596863 , U_ne =    25.59338153596863 , U_nn =   -25.60207811684259
+
+@  5  -37.1021204717     -4.290039160004E-05    2.76207D-06   -6.84D-11
+
+@ *** DIIS converged in   5 iterations !
+@     Converged SCF energy, gradient:    -37.102120471729    2.76D-06
+    - total time used in SIRFCK :              0.00 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    5
+
+ Sym       Kohn-Sham orbital energies
+
+1 A     -10.09391652    -0.92357682    -0.61541577    -0.61541578    -0.61541581
+          1.03922336     1.03922335     1.03922334     1.85889462
+
+    E(LUMO) :     1.03922334 au (symmetry 1)
+  - E(HOMO) :    -0.61541577 au (symmetry 1)
+  ------------------------------------------
+    gap     :     1.65463911 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       2.744       2.747
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+
+     SOLVATION MODEL: polarizable continuum model (PCM),
+
+       Solvation energy:          -0.000042900392
+
+@    Final DFT energy:            -37.102120471729                 
+@    Nuclear repulsion:            25.365934555796
+@    Electronic energy:           -62.468012127134
+
+@    Final gradient norm:           0.000002762068
+
+ 
+     Date and time (Linux)  : Tue Dec  2 11:28:09 2014
+     Host name              : spongebob                               
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 C   :1s     0.9903   0.2877   0.0000  -0.0000   0.0000   0.0000   0.0000
+   2 C   :1s     0.0992  -0.5214  -0.0000   0.0000  -0.0000  -0.0000  -0.0000
+   3 C   :2px    0.0000  -0.0000  -0.0312  -0.5488   0.5308  -1.0180   0.0450
+   4 C   :2py   -0.0000  -0.0000   0.6322   0.2793   0.3258  -1.5710   0.1332
+   5 C   :2pz    0.0000  -0.0000   0.4280  -0.4525  -0.4426  -0.1362  -1.8717
+   6 H1  :1s    -0.0199  -0.1592   0.2571  -0.1804   0.1035   2.1298   1.3235
+   7 H2  :1s    -0.0199  -0.1592  -0.0432  -0.0457  -0.3247  -1.9169   1.6020
+   8 H3  :1s    -0.0199  -0.1592  -0.2727  -0.0938   0.1618  -0.5387  -1.3938
+   9 H4  :1s    -0.0199  -0.1592   0.0588   0.3200   0.0594   0.3258  -1.5317
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.75 seconds
+ >>>> Total wall time used in SIRIUS :      2.75 seconds
+
+ 
+     Date and time (Linux)  : Tue Dec  2 11:28:09 2014
+     Host name              : spongebob                               
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+Dumping surface functions to .npy files
+
+
+PCMSolver interface correctly finalized
+
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   4.01 seconds
+ >>>> Total wall time used in DALTON:   4.01 seconds
+
+ 
+     Date and time (Linux)  : Tue Dec  2 11:28:09 2014
+     Host name              : spongebob                               

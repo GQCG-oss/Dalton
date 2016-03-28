@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -170,7 +170,7 @@ C
   100 CONTINUE
 C
       IF (LOCDBG) THEN
-        WRITE(LUPRI,*) '>>>>>CC_YI: Norm of Y-intermediate:',
+        WRITE(LUPRI,*) '-----CC_YI: Norm of Y-intermediate:',
      &    DDOT(NMATAB(ISYRES),YMAT,1,YMAT,1)
       END IF
 C
@@ -323,7 +323,7 @@ C
   100 CONTINUE
 C
       IF (LOCDBG) THEN 
-        WRITE(LUPRI,*) '>>>>>CC_XI: Norm of X-intermediate:', 
+        WRITE(LUPRI,*) '-----CC_XI: Norm of X-intermediate:', 
      &    DDOT(NMATIJ(ISYRES),XMAT,1,XMAT,1)
       END IF
 C

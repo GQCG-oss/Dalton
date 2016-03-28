@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -88,11 +88,11 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
             LTEXT = LNBLNK(TEXT)
             LTEXT = MIN(30,LTEXT)
             IF (LTEXT .GE. 10) THEN
-               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//' is'
+               OUT_TEXT = ' Time used in '//TEXT(1:LTEXT)//' is'
                LOUT = 18 + LTEXT + 3
             ELSE
                LBLANK = 10 - LTEXT
-               OUT_TEXT = '>>>  Time used in '//TEXT(1:LTEXT)//
+               OUT_TEXT = ' Time used in '//TEXT(1:LTEXT)//
      &                    BLANK(1:LBLANK)//' is'
                LOUT = 18 + 10 + 3
             END IF
@@ -260,8 +260,8 @@ C     Write to stderr
      &   ':  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
       CALL GETTIM(CTOT,WTOT)
-      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+      CALL TIMTXT(' Total CPU  time used in DALTON:',CTOT,LUPRIN)
+      CALL TIMTXT(' Total wall time used in DALTON:',WTOT,LUPRIN)
       CALL QTRACE(LUPRIN)
       CALL FLSHFO(LUPRIN)
 C
@@ -346,7 +346,7 @@ C   Open files for direct access through WRITDX and READDX routines.
 C   The ....DX routines enables direct access, even when the number
 C   of elements per record (the logical record length) is greater
 C   than the maximum physical record length.
-C   >>> THIS IS MACHINE DEPENDENT <<<
+C   THIS IS MACHINE DEPENDENT 
 C
 C Input:
 C  LUDX     file unit number

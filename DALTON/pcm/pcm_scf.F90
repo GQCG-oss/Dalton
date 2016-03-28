@@ -26,319 +26,229 @@
 
 
 module pcm_scf
-  
-   use iso_c_binding
 
-   implicit none 
+  use iso_c_binding, only: c_null_char
+  use pcmsolver
+  use pcm_config
+  use pcm_integrals, only: get_nuclear_mep, get_electronic_mep, get_mep
+  use pcm_write, only: pcm_write_file, pcm_write_file_separate
 
-   public pcm_scf_initialize
-   public pcm_scf_finalize
+  implicit none
 
-!   public collect_nctot
-!   public collect_atoms
-   public pcm_energy_driver
-   public pcm_oper_ao_driver
-!   public pcm_lintra_driver
+  public pcm_scf_driver
+  public pcm_mo_fock
 
-   private
+  private
 
-!  if false the interface will refuse to be accessed
-   logical :: is_initialized = .false.
+  real(8)              :: pcm_energy
+  ! A counter for the number of SCF iterations
+  integer, save        :: scf_iteration_counter = 1
 
-   real(c_double), allocatable :: tess_cent(:, :)
-   real(c_double)              :: pcm_energy
-   integer(c_int)              :: nr_points
-   integer(c_int)              :: nr_points_irr
-! A (maybe clumsy) way of passing LUPRI without using common blocks   
-   integer                     :: global_print_unit
-! A counter for the number of SCF iterations
-   integer, save               :: scf_iteration_counter = 1
+contains
 
-   contains 
-      
-      subroutine pcm_scf_initialize(print_unit)                              
-      
-      use pcmmod_cfg, only: pcmmod_host_provides_input
-     
-      integer, intent(in) :: print_unit
-      
-      integer :: host_provides_input = 0
+  function pcm_scf_driver(density_matrix, fock_matrix, work, lwork) result(pol_ene)
 
-      global_print_unit = print_unit 
+    real(8),    intent(in) :: density_matrix(*)
+    real(8),   intent(out) :: fock_matrix(*)
+    real(8), intent(inout) :: work(*)
+    integer, intent(inout) :: lwork
+    real(8)                :: pol_ene
 
-      if (pcmmod_host_provides_input) host_provides_input = 1 
+    character(7) :: mep_name, asc_name
+    real(8), allocatable :: asc(:)
+    integer              :: kfree, lfree
 
-      call set_up_pcm(host_provides_input)
-      call print_pcm
+    kfree = 1
+    lfree = lwork - kfree
 
-      call get_cavity_size(nr_points, nr_points_irr)
+    if(lfree .le. 0) then
+      call quit('Not enough mem in pcm_scf_driver')
+    end if
 
-      allocate(tess_cent(3, nr_points))
-      tess_cent = 0.0d0
-      call get_tesserae(tess_cent)
+    mep_name = 'TotMEP'//c_null_char
+    asc_name = 'TotASC'//c_null_char
+    call compute_mep_asc(density_matrix, work, lfree)
+    pol_ene = pcmsolver_compute_polarization_energy(context_, mep_name, asc_name)
+    pcm_energy = pol_ene
+    allocate(asc(pcm_global%nr_points))
+    asc = 0.0d0
+    call pcmsolver_get_surface_function(context_, pcm_global%nr_points, asc, asc_name)
+    call get_electronic_mep(pcm_global%nr_points, pcm_global%nr_points_irr, pcm_global%tess_cent, &
+      asc, fock_matrix, work(kfree), lfree, .true.)
+    deallocate(asc)
+    scf_iteration_counter = scf_iteration_counter + 1
 
-      pcm_energy = 0.0d0
-              
-      is_initialized = .true.
-                                                                 
-      end subroutine
-                                                                    
-      subroutine pcm_scf_finalize()
+  end function pcm_scf_driver
 
-      if (.not. is_initialized) then
-         print *, 'Error: pcm_scf was never initialized.'
-         stop 1
+  subroutine pcm_mo_fock(fock_matrix, mo_coeff, work, lwork)
+
+#include "inforb.h"
+
+    real(8),   intent(out) :: fock_matrix(*)
+    real(8),    intent(in) :: mo_coeff(*)
+    real(8), intent(inout) :: work(*)
+    integer, intent(inout) :: lwork
+
+    real(8), allocatable :: asc(:)
+    real(8), allocatable :: ao_oper(:), ao_oper_packed(:)
+    integer              :: kfree, lfree
+    integer              :: isym, jcmo, j1ao, j1mo
+    character(7)         :: asc_name
+
+    kfree = 1
+    lfree = lwork - kfree
+
+    if(lfree .le. 0) then
+      call quit('Not enough mem in pcm_mo_fock')
+    end if
+
+    asc_name = 'TotASC'//c_null_char
+    allocate(asc(pcm_global%nr_points))
+    asc = 0.0d0
+    allocate(ao_oper(nnbasx))
+    ao_oper = 0.0d0
+    call pcmsolver_get_surface_function(context_, pcm_global%nr_points, asc, asc_name)
+    call get_electronic_mep(pcm_global%nr_points, pcm_global%nr_points_irr, pcm_global%tess_cent, &
+                            asc, ao_oper, work(kfree), lfree, .true.)
+    deallocate(asc)
+
+    ! Now we have the AO basis operator in ao_oper. Transform to MO basis
+    allocate(ao_oper_packed(nnbasx))
+    ao_oper_packed = 0.0d0
+    call pksym1(ao_oper, ao_oper_packed, nbas, nsym, +1)
+
+    deallocate(ao_oper)
+
+    do isym = 1, nsym
+      jcmo = icmo(isym) + 1
+      j1ao = 1 + iibas(isym)
+      j1mo = 1 + iiorb(isym)
+      call uthu(ao_oper_packed(j1ao),fock_matrix(j1mo),mo_coeff(jcmo),work(kfree),nbas(isym),norb(isym))
+    end do
+
+    deallocate(ao_oper_packed)
+
+  end subroutine pcm_mo_fock
+
+  real(8) function get_pcm_energy()
+
+    get_pcm_energy = pcm_energy
+
+  end function get_pcm_energy
+
+  subroutine compute_mep_asc(density_matrix, work, lfree)
+    !
+    ! Calculate the molecular electrostatic potential and
+    ! the apparent surface charge at the cavity points.
+    !
+    ! The user can control via the DALTON input the following:
+    !    * switch between separate and total evaluation of the
+    !      nuclear and electronic parts;
+    !    * switch between point-by-point and vectorized
+    !      charge attraction integrals evaluation subroutines.
+    !
+    real(8), intent(in)    :: density_matrix(*)
+    real(8), intent(inout) :: work(*)
+    integer                :: lfree
+
+    ! Local variables
+    real(8), allocatable :: mep(:)
+    real(8), allocatable :: asc(:)
+    real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
+    real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
+    character(7)         :: potName, chgName
+    character(7)         :: potName1, chgName1, potName2, chgName2
+    integer              :: kfree, i, irrep
+
+    kfree   = 1
+
+    allocate(mep(pcm_global%nr_points))
+    mep = 0.0d0
+    allocate(asc(pcm_global%nr_points))
+    asc = 0.0d0
+    ! The totally symmetric irrep
+    irrep = 0
+
+    if (.not.(pcm_cfg%separate)) then
+      potName = 'TotMEP'//c_null_char
+      chgName = 'TotASC'//c_null_char
+      ! Calculate the (total) Molecular Electrostatic Potential
+      call get_mep(pcm_global%nr_points, pcm_global%nr_points_irr, pcm_global%tess_cent, mep, density_matrix, work(kfree), lfree)
+      ! Set a cavity surface function with the MEP
+      call pcmsolver_set_surface_function(context_, pcm_global%nr_points, mep, potName)
+      ! Compute polarization charges and set the proper surface function
+      call pcmsolver_compute_asc(context_, potName, chgName, irrep)
+      ! Get polarization charges @tesserae centers
+      call pcmsolver_get_surface_function(context_, pcm_global%nr_points, asc, chgName)
+
+      ! Print some information
+      if (pcm_cfg%print_level > 5) then
+        write(pcm_global%print_unit, '(20X, A, 6X, I6)') "MEP and ASC at iteration", scf_iteration_counter
+        write(pcm_global%print_unit, '(A, T27, A, T62, A)') "Finite element #", "Total MEP", "Total ASC"
+        do i = 1, pcm_global%nr_points
+          write(pcm_global%print_unit, '(I6, 2(20X, F15.12))') i, mep(i), asc(i)
+        end do
       end if
-! Free the memory taken from the free store both in Fortran and in C++
-      deallocate(tess_cent)
 
-      call tear_down_pcm
-                                                                    
-      is_initialized = .false.
-                                                                    
-      end subroutine
-                                                                    
-      subroutine check_if_interface_is_initialized()
+      ! Write to file MEP and ASC
+      call pcm_write_file(pcm_global%nr_points, mep, asc)
+    else
+      ! Allocation
+      allocate(nuc_pot(pcm_global%nr_points))
+      nuc_pot = 0.0d0
+      allocate(nuc_pol_chg(pcm_global%nr_points))
+      nuc_pol_chg = 0.0d0
+      allocate(ele_pot(pcm_global%nr_points))
+      ele_pot = 0.0d0
+      allocate(ele_pol_chg(pcm_global%nr_points))
+      ele_pol_chg = 0.0d0
 
-      if (.not. is_initialized) then
-         print *, 'Error: pcm_scf is not initialized.'
-         stop 1
+      potName1 = 'NucMEP'//c_null_char
+      chgName1 = 'NucASC'//c_null_char
+      call get_nuclear_mep(pcm_global%nr_points, pcm_global%nr_points_irr, pcm_global%tess_cent, nuc_pot)
+      call pcmsolver_set_surface_function(context_, pcm_global%nr_points, nuc_pot, potName1)
+      call pcmsolver_compute_asc(context_, potName1, chgName1, irrep)
+      call pcmsolver_get_surface_function(context_, pcm_global%nr_points, nuc_pol_chg, chgName1)
+
+      potName2 = 'EleMEP'//c_null_char
+      chgName2 = 'EleASC'//c_null_char
+      call get_electronic_mep(pcm_global%nr_points, pcm_global%nr_points_irr, pcm_global%tess_cent, ele_pot, &
+        density_matrix, work(kfree), lfree, .false.)
+      call pcmsolver_set_surface_function(context_, pcm_global%nr_points, ele_pot, potName2)
+      call pcmsolver_compute_asc(context_, potName2, chgName2, irrep)
+      call pcmsolver_get_surface_function(context_, pcm_global%nr_points, ele_pol_chg, chgName2)
+
+      ! Print some information
+      if (pcm_cfg%print_level > 5) then
+        write(pcm_global%print_unit, '(60X, A, 6X, I6)') "MEP and ASC at iteration", scf_iteration_counter
+        write(pcm_global%print_unit, '(A, T27, A, T62, A, T97, A, T132, A)') "Finite element #", &
+          "Nuclear MEP", "Nuclear ASC", "Electronic MEP", "Electronic ASC"
+        do i = 1, pcm_global%nr_points
+          write(pcm_global%print_unit, '(I6, 4(20X, F15.12))') i, nuc_pot(i), nuc_pol_chg(i), ele_pot(i), ele_pol_chg(i)
+        end do
       end if
 
-      end subroutine
+      ! Obtain vector of total MEP
+      potName  = 'TotMEP'//c_null_char
+      mep(:) = nuc_pot(:) + ele_pot(:)
+      call pcmsolver_set_surface_function(context_, pcm_global%nr_points, mep, potName)
 
-      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot')
+      ! Obtain vector of total polarization charges
+      chgName  = 'TotASC'//c_null_char
+      asc(:) = nuc_pol_chg(:) + ele_pol_chg(:)
+      call pcmsolver_set_surface_function(context_, pcm_global%nr_points, asc, chgName)
 
-#include "mxcent.h"
-#include "nuclei.h"
+      ! Write to file MEP and ASC
+      call pcm_write_file_separate(pcm_global%nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
 
-      integer(c_int), intent(out) :: nr_nuclei
+      deallocate(nuc_pot)
+      deallocate(nuc_pol_chg)
+      deallocate(ele_pot)
+      deallocate(ele_pol_chg)
+    end if
+    deallocate(mep)
+    deallocate(asc)
 
-      nr_nuclei = nucdep
+  end subroutine compute_mep_asc
 
-      end subroutine collect_nctot
-      
-      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
-  
-      use pcm_utils, only: getacord
-
-#include "mxcent.h"
-#include "nuclei.h"
-      
-      real(c_double), intent(out) :: atomic_charges(*)
-      real(c_double), intent(out) :: atomic_centers(3,*)
-      
-      integer :: i, j, k 
-
-! Get coordinates
-      call getacord(atomic_centers)
-! Get charges      
-      i = 0
-      do j = 1, nucind
-         do k = 1, nucdeg(j)
-            i = i + 1
-            atomic_charges(i) = charge(j)
-         enddo
-      enddo
-      
-      end subroutine collect_atoms
-
-      subroutine set_point_group(nr_gen, gen1, gen2, gen3) bind(c, name='set_point_group')
-
-#include "mxcent.h"                     
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
-
-      integer(c_int), intent(inout) :: nr_gen 
-      integer(c_int), intent(inout) :: gen1, gen2, gen3
-
-      nr_gen = pcm_igen(1) 
-      gen1   = pcm_igen(2) 
-      gen2   = pcm_igen(3)
-      gen3   = pcm_igen(4)
-
-      end subroutine set_point_group
-
-      subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
-
-      real(8)        :: density_matrix(*)
-      real(c_double) :: pol_ene
-      real(8)        :: work(*)
-      integer        :: lfree
-
-! Make sure that the interface is initialized first
-      call check_if_interface_is_initialized
-
-! OK, now compute MEP and ASC
-      call compute_mep_asc(density_matrix, work, lfree)
-
-! pcm_energy is the polarization energy:
-! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
-      call compute_polarization_energy(pol_ene)
-
-! Now make the value of the polarization energy known throughout the module
-      pcm_energy = pol_ene
-
-      end subroutine pcm_energy_driver
-      
-      subroutine pcm_oper_ao_driver(oper, charge_name, work, lwork)
-!
-! Calculate exp values of potentials on tesserae
-! Input: symmetry packed Density matrix in AO basis
-!        cavity points
-! Output: expectation values of electrostatic potential on tesserae
-!
-      use pcm_integrals, only: get_electronic_mep
-
-      real(8), intent(out)        :: oper(*)
-      real(8)                     :: work(*)
-      character(*), intent(in)    :: charge_name
-      integer                     :: lwork
-
-      real(c_double), allocatable :: asc(:)
-      integer                     :: kfree, lfree
-
-      call check_if_interface_is_initialized
-
-      kfree = 1
-      lfree = lwork - kfree
-                                                                                  
-      if(lfree .le. 0) then 
-              call quit('Not enough mem in pcm_oper_ao_driver')
-      end if
-       
-! Here we need the ASC, we can either get it from C++ (as it 
-! has been saved as a surface function) or from Fortran asking
-! for the mep and asc to be recomputed.
-! RDR, 220813 !WARNING! what happens in the second case if we use this
-! subroutine as a driver also for the linear response part??
-      allocate(asc(nr_points))
-      asc = 0.0d0
-      call get_surface_function(nr_points, asc, charge_name)
-      call get_electronic_mep(nr_points, nr_points_irr, tess_cent, asc, oper, work(kfree), lfree, .true.)
-      deallocate(asc)
-
-      scf_iteration_counter = scf_iteration_counter + 1
-
-      end subroutine pcm_oper_ao_driver
-
-      subroutine compute_mep_asc(density_matrix, work, lfree)
-!
-! Calculate the molecular electrostatic potential and
-! the apparent surface charge at the cavity points.
-!
-! The user can control via the DALTON input the following:
-!    * switch between separate and total evaluation of the
-!      nuclear and electronic parts;
-!    * switch between point-by-point and vectorized
-!      charge attraction integrals evaluation subroutines.
-!
-      use pcm_integrals, only: get_nuclear_mep, get_electronic_mep, get_mep
-      use pcm_write, only: pcm_write_file, pcm_write_file_separate
-      use pcmmod_cfg
-
-      real(8), intent(in)    :: density_matrix(*)
-      real(8), intent(inout) :: work(*)
-      integer                :: lfree
-
-! Local variables
-      real(c_double), allocatable :: mep(:)
-      real(c_double), allocatable :: asc(:)
-      real(c_double), allocatable :: nuc_pot(:), nuc_pol_chg(:)
-      real(c_double), allocatable :: ele_pot(:), ele_pol_chg(:)
-      character(7)                :: potName, chgName
-      character(7)                :: potName1, chgName1, potName2, chgName2
-      integer                     :: kfree, i, irrep
-      
-      kfree   = 1
-      
-      allocate(mep(nr_points))
-      mep = 0.0d0
-      allocate(asc(nr_points))
-      asc = 0.0d0
-      ! The totally symmetric irrep
-      irrep = 0
-
-      if (.not.(pcmmod_separate)) then
-         potName = 'TotMEP'//char(0) 
-         chgName = 'TotASC'//char(0)
-! Calculate the (total) Molecular Electrostatic Potential
-         call get_mep(nr_points, nr_points_irr, tess_cent, mep, density_matrix, work(kfree), lfree)
-! Set a cavity surface function with the MEP
-         call set_surface_function(nr_points, mep, potName)
-! Compute polarization charges and set the proper surface function
-         call compute_asc(potName, chgName, irrep)
-! Get polarization charges @tesserae centers
-         call get_surface_function(nr_points, asc, chgName)
-
-! Print some information
-         if (pcmmod_print > 5) then
-            write(global_print_unit, '(20X, A, 6X, I6)') "MEP and ASC at iteration", scf_iteration_counter
-            write(global_print_unit, '(A, T27, A, T62, A)') "Finite element #", "Total MEP", "Total ASC"
-            do i = 1, nr_points
-              write(global_print_unit, '(I6, 2(20X, F15.12))') i, mep(i), asc(i)
-            end do
-         end if
-
-! Write to file MEP and ASC
-         call pcm_write_file(nr_points, mep, asc)
-      else
-! Allocation
-         allocate(nuc_pot(nr_points))
-         nuc_pot = 0.0d0
-         allocate(nuc_pol_chg(nr_points))
-         nuc_pol_chg = 0.0d0
-         allocate(ele_pot(nr_points))
-         ele_pot = 0.0d0
-         allocate(ele_pol_chg(nr_points))
-         ele_pol_chg = 0.0d0
-      
-         potName1 = 'NucMEP'//char(0)
-         chgName1 = 'NucASC'//char(0)
-         call get_nuclear_mep(nr_points, nr_points_irr, tess_cent, nuc_pot)
-         call set_surface_function(nr_points, nuc_pot, potName1)
-         call compute_asc(potName1, chgName1, irrep)
-         call get_surface_function(nr_points, nuc_pol_chg, chgName1)
-
-         potName2 = 'EleMEP'//char(0)
-         chgName2 = 'EleASC'//char(0)
-         call get_electronic_mep(nr_points, nr_points_irr, tess_cent, ele_pot, density_matrix, work(kfree), lfree, .false.)
-         call set_surface_function(nr_points, ele_pot, potName2)
-         call compute_asc(potName2, chgName2, irrep)
-         call get_surface_function(nr_points, ele_pol_chg, chgName2)
-
-! Print some information
-        if (pcmmod_print > 5) then
-           write(global_print_unit, '(60X, A, 6X, I6)') "MEP and ASC at iteration", scf_iteration_counter
-           write(global_print_unit, '(A, T27, A, T62, A, T97, A, T132, A)') "Finite element #", &
-           "Nuclear MEP", "Nuclear ASC", "Electronic MEP", "Electronic ASC"
-           do i = 1, nr_points
-             write(global_print_unit, '(I6, 4(20X, F15.12))') i, nuc_pot(i), nuc_pol_chg(i), ele_pot(i), ele_pol_chg(i)
-           end do
-        end if
-
-! Obtain vector of total MEP
-        potName  = 'TotMEP'//char(0)
-        mep(:) = nuc_pot(:) + ele_pot(:)
-        call set_surface_function(nr_points, mep, potName)
-
-! Obtain vector of total polarization charges 
-        chgName  = 'TotASC'//char(0)
-        asc(:) = nuc_pol_chg(:) + ele_pol_chg(:)
-        call set_surface_function(nr_points, asc, chgName)
-
-! Write to file MEP and ASC
-        call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
- 
-        deallocate(nuc_pot)
-        deallocate(nuc_pol_chg)
-        deallocate(ele_pot)
-        deallocate(ele_pol_chg)
-      end if
-      deallocate(mep)
-      deallocate(asc)
-
-      end subroutine compute_mep_asc
-                                                                    
 end module

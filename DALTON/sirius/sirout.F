@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -55,8 +55,8 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-#if defined (HAS_PCMSOLVER)
-      use pcmmod_cfg
+#ifdef HAS_PCMSOLVER
+      use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
       use qmcmm_fock, only: scf_qmnpmm_out
       use pelib_interface, only: use_pelib
@@ -149,7 +149,7 @@ C  DINFO(41-50):   EVEC(2,1-10)  CI gradient-coef. of eigenvectors
 C  DINFO(51-60):   EVEC(3,1-10)  orb gradient-coef. of eigenvectors
 C                  (all four have NEVAL entries, starting w. /IEVAL1)
 C
-        CALL TITLER('>>> SIRIUS OPTIMIZATION STATISTICS <<<',' ',200)
+        CALL TITLER('--- SIRIUS OPTIMIZATION STATISTICS ---',' ',200)
 C       stamp date, time, and hostname to LUPRI
         CALL TSTAMP(' ',LUPRI)
 C
@@ -303,7 +303,7 @@ C *** FINAL RESULTS
 C
       CALL MOLCHR(ICHRG)
 C     ... get total molecular charge
-      CALL TITLER('>>> Final results from SIRIUS <<<',' ',200)
+      CALL TITLER('--- Final results from SIRIUS ---',' ',200)
       WRITE (LUPRI,5000) ISPIN,LSYM,REP(LSYM-1),GROUP,ICHRG
       IF (NFIELD .GT. 0) THEN
          WRITE (LUPRI,'(/A/A/A)')
@@ -315,14 +315,14 @@ csonia 04/10/95
      &         ' The molecule is placed in a static field.',
      &         ' Field strength (a.u.)          Field operator',
      &         ' ---------------------          --------------'
-csonia 04/10/95                                                               
+csonia 04/10/95
          DO 100 IFIELD = 1,NFIELD
             WRITE (LUPRI,'(1P,G18.8,18X,A8)')
      *         EFIELD(IFIELD),LFIELD(IFIELD)
 csonia 04/10/95
             IF (LUCME.GT.0) WRITE (LUCME,'(1P,G18.8,18X,A8)')
      &         EFIELD(IFIELD), LFIELD(IFIELD)
-csonia 04/10/95                                                            
+csonia 04/10/95
   100    CONTINUE
          WRITE (LUPRI,'()')
       END IF
@@ -348,7 +348,7 @@ csonia 04/10/95
      *           ,'dielectric constant =',EPS
          END IF
 #ifdef HAS_PCMSOLVER
-      ELSE IF (pcmmod_is_pcm_calculation) THEN
+      ELSE IF (pcm_cfg%do_pcm) THEN
          WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
      *        'SOLVATION MODEL: polarizable continuum model (PCM),'
          WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
@@ -434,7 +434,7 @@ C        ... DIIS-DFT or QC-DFT optimization
 
       IF (QMMM .AND. MMPROP) THEN
         CALL MM_PROPS(WRK(KFREE),LFREE,IPQMMM)
-      ENDIF 
+      ENDIF
 
  5000 FORMAT(/'@    Spin multiplicity:',T31,I5,
      *       /'@    Spatial symmetry:',T31,I5,
@@ -489,10 +489,10 @@ C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
 C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
          IF (.NOT. MOISNO) WRITE (LUPRI,'(3(/A))')
-     *     '  >>> NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS'//
+     *     '  --- NOTE THAT THE OCCUPATION NUMBERS ARE FOR ANALYSIS'//
      &     ' PURPOSE ONLY',
-     *     '  >>> The orbital coefficients have NOT been transformed',
-     *     '  >>> to ordered natural orbitals.'
+     *     '  --- The orbital coefficients have NOT been transformed',
+     *     '  --- to ordered natural orbitals.'
          CALL MEMREL('SIROUT.GETNO ',WRK,KFRSAV,KREL1,KFREE,LFREE)
       END IF
 C
@@ -513,7 +513,7 @@ C
      &                   WRK(KUCMO), WRK(KOVEC))
          CALL MEMREL('SIROUT.MOLDEN_MOS',WRK,KREL2,KREL2,KFREE,LFREE)
       END IF ! (MOLDEN)
-C     
+C
 C ***  Print final MCSCF orbitals ***
 C
       IF (IPRI4 .GE. 5) P4FLAG(5) = .TRUE.

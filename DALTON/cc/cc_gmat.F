@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -737,11 +737,11 @@ C
           Call CC_PRP(WORK(KCTR1(ITRAN)),WORK,ISYCTR,1,0)
           WRITE (LUPRI,*) MSGDBG, 
      &         'double one-index trans. Fock mat. (o/o):'
-          WRITE (LUPRI,'(5D20.14)')
+          WRITE (LUPRI,'(5D21.14)')
      &         (WORK(KFBCOO(ITRAN)-1+I),I=1,NMATIJ(ISYFBC))
           WRITE (LUPRI,*) MSGDBG, 
      &         'double one-index trans. Fock mat. (v/v):'
-          WRITE (LUPRI,'(5D20.14)') 
+          WRITE (LUPRI,'(5D21.14)') 
      &         (WORK(KFBCVV(ITRAN)-1+I),I=1,NMATAB(ISYFBC))
           WRITE (LUPRI,*) MSGDBG, 
      &         'contribution of double trans. F to DELTA:'

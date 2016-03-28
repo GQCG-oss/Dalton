@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -135,7 +135,7 @@ C
   300 CONTINUE
 C
       IF (NTEST .GE. 2 ) THEN
-        WRITE(LUPRI,'(/A)') ' >>> OUTPUT FROM STRPA2 (ras) <<<'
+        WRITE(LUPRI,'(/A)') ' --- OUTPUT FROM STRPA2 (ras) ---'
 C
         WRITE(LUPRI,'(/A/8I9)') ' Number of determinants per symmetry',
      &  (NDTASM(I),I=1,MAXSYM)
@@ -263,7 +263,7 @@ C
  100  CONTINUE
 C
       IF( NTEST .GE. 1 ) THEN
-        WRITE(LUPRI,'(/A)')    ' <<< output from NUMST2 >>>'
+        WRITE(LUPRI,'(/A)')    ' --- output from NUMST2 ---'
         WRITE(LUPRI,'(/A,I6)') ' Number of strings generated ...', 
      &                         NSTRIN
         WRITE(LUPRI,'(/A,I6)') ' Number of occupation classes ..',
@@ -675,7 +675,7 @@ C
       END IF
 C
       IF( NTEST .GE. 3 ) THEN
-        WRITE(LUPRI,'(//A/)') ' >>> Output from MEMDET <<<'
+        WRITE(LUPRI,'(//A/)') ' --- Output from MEMDET ---'
         WRITE(LUPRI,*)   'EQUAL =',EQUAL
         WRITE(LUPRI,*)   'KIASTR,KSTBAA,KSTASA and KIBSTR,KSTBAB,KSTASB'
         WRITE(LUPRI,*)    KIASTR,KSTBAA,KSTASA
@@ -795,7 +795,7 @@ C
       IORB3L = NORB
 C
       IF (NTEST .GE. 5) THEN
-         WRITE(LUPRI,'(//A//A,I3/)') ' >>> TEST OUTPUT FROM DETFO <<<',
+         WRITE(LUPRI,'(//A//A,I3/)') ' --- TEST OUTPUT FROM DETFO ---',
      &      ' MAXSYM  ',MAXSYM
          WRITE(LUPRI,*) ' NORB1 NORB2 NORB3 ',NORB1,NORB2,NORB3
          WRITE(LUPRI,*) ' IORB1F IORB1L IORB3F IORB3L '

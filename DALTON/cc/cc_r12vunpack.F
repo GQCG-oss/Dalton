@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -482,7 +482,7 @@ c     ----------------
       if (aproxr12(1:3).ne.aprox) then
         write(lupri,*)'aproxr12 =', aproxr12(1:3)
         write(lupri,*)'aprox    =', aprox(1:3)
-        call quit('>>> Warning: inconsistent R12 approximation')
+        call quit('--- Warning: inconsistent R12 approximation')
       end if
       call ccr12unpck(work(kbmat),1,work(kbsing),work(kbtrip),nrhfb,
      &                nrhfb)
@@ -830,7 +830,7 @@ c     ----------------
       if (aproxr12(1:3).ne.aprox) then
         write(lupri,*)'aproxr12 =', aproxr12(1:3)
         write(lupri,*)'aprox    =', aprox(1:3)
-        call quit('>>> Warning: inconsistent R12 approximation')
+        call quit('--- Warning: inconsistent R12 approximation')
       end if
       iopt = 2
       call ccr12unpck2(work(kpck),1,work(kbmatsq),'N',iopt)

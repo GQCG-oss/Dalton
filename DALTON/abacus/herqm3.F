@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -308,7 +308,7 @@ C
         IF (QM3) WRITE (LUPRI,'(1X,A2,A6,A3,L7,A2)')
      *         '| ','   QM3',' | ',QM3,' |'
 C
-        IF (THDISC .NE. 1.0D-9) WRITE (LUPRI,'(1X,A2,A6,A3,1P,D7.1,A2)')
+        IF (THDISC .NE. 1.0D-9) WRITE (LUPRI,'(1X,A2,A6,A3,1P,D8.1,A2)')
      *         '| ','THDISC',' | ',THDISC,' |'
 C
         IF (MXDIIT .NE. 80) WRITE (LUPRI,'(1X,A2,A6,A3,I7,A2)')
@@ -422,7 +422,7 @@ C  /* Deck rdpot */
       SUBROUTINE QM3_RDPOT()
 C------------------------------------------------------------------------
 C
-C <<< General Input for MM potentials>>>
+C --- General Input for MM potentials---
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -5010,7 +5010,7 @@ C  /* Deck readmm */
       SUBROUTINE READMM(WORK,LWORK)
 C------------------------------------------------------------------------
 C
-C <<< General Input for QMMM electrostatic potentials>>>
+C --- General Input for QMMM electrostatic potentials---
 C
 #include "implicit.h"
 #include "dummy.h"

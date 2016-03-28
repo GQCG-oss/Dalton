@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1757,7 +1757,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine DEROUT >>>>>>>>',/)
+ 1000 FORMAT (//,1X,' ---------- Subroutine DEROUT ----------',/)
  1110 FORMAT (2X,'TWOCEN,...:  ',2L5)
  1120 FORMAT (2X,'ICENT1/2/3/4:',4I7)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
@@ -1941,7 +1941,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine DEROUT >>>>>>>>',/)
+ 1000 FORMAT (//,1X,' ---------- Subroutine DEROUT ----------',/)
  1110 FORMAT (2X,'TWOCEN,...:  ',2L5)
  1120 FORMAT (2X,'ICENT1/2/3/4:',4I7)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
@@ -1992,7 +1992,7 @@ C
          CALL OUTPUT(GC2,1,3,1,3,3,3,1,LUPRI)
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine SO2OUT >>>>>>>>',/)
+ 1000 FORMAT (//,1X,' ---------- Subroutine SO2OUT ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck lndout */
@@ -2107,7 +2107,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
+ 1000 FORMAT (//,1X,' ---------- Subroutine LNDOUT ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck lndgc1 */
@@ -2178,7 +2178,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC1 >>>>>>>>',/)
+ 1000 FORMAT (//,1X,' ---------- Subroutine LNDGC1 ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck lndgc2 */
@@ -2291,7 +2291,7 @@ C
          END IF
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDGC2 >>>>>>>>',/)
+ 1000 FORMAT (//,1X,' ---------- Subroutine LNDGC2 ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck zfsout */
@@ -2344,7 +2344,7 @@ C
          CALL OUTPUT(ZFS,1,3,1,3,3,3,1,LUPRI)
       END IF
       RETURN
- 1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine SO2OUT >>>>>>>>',/)
+ 1000 FORMAT (//,1X,' ---------- Subroutine SO2OUT ----------',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
       END
 C  /* Deck pblock */

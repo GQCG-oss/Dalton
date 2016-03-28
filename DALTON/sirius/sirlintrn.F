@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -162,7 +162,7 @@ C     check INFLIN parameters
       IF (NWOPT .NE. NWOPPT) NUMERR = NUMERR + 1
       IF (NVAR  .NE. NVARPT) NUMERR = NUMERR + 1
       IF (NUMERR .GT. 0) THEN
-         WRITE (LUPRI,'(//A/I8,A/)') ' >>> FATAL ERROR (LINTRN)',
+         WRITE (LUPRI,'(//A/I8,A/)') ' --- FATAL ERROR (LINTRN)',
      *      NUMERR,' dimension error(s) in INFDIM and/or INFLIN'
          WRITE (LUPRI,'(A,2I8)')
      &      'NCONF ,NCONDI :',NCONF,NCONDI,

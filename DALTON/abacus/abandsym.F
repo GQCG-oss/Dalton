@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -626,7 +626,7 @@ C
          CORTRA(3,3,INMTRX) = -D1
 C
          CALL FNDATR(ATMTRA(1,1,INMTRX),COOR,CORTRA(1,1,INMTRX),TMPCOR,
-     &               'iversion center.')
+     &               'inversion center.')
       END IF
 C
       IF (IPRINT .GT. 20) THEN
@@ -751,7 +751,7 @@ C
 #include "nuclei.h"
 #include "trkoor.h"
 #include "fcsym.h"
-      CHARACTER*20 TEXT
+      CHARACTER*(*) TEXT
       LOGICAL FOUND
       DIMENSION AMAT(NUCDEP,NUCDEP), ATMCOR(NCOOR), TRAMAT(3,3),
      &          TMPTRA(3,3), TMPCOR(3)

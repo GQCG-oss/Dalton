@@ -17,7 +17,7 @@ if [ $opt_lsdalton -eq 1 ] ; then #LSDALTON only
   dalton="lsdalton"
   DALTON="LSDALTON"
 else #DALTON only
-  dalton="dalton" 
+  dalton="dalton"
   DALTON="DALTON"
 fi
 
@@ -80,7 +80,7 @@ opt_noappend=0
 opt_lslib_test=0
 opt_restart=0
 optdens=0
-optx=0 
+optx=0
 #
 # Define usage message
 #
@@ -161,7 +161,7 @@ backup () {
          if [ -f "$i" ]; then
             for j in 6 5 4 3 2 1 0 ; do
                jp=`expr $j + 1`
-               if [ -f "$i.$j" ]; then 
+               if [ -f "$i.$j" ]; then
                   [ $ekko -eq 1 ] && echo "Backup: renaming $i.$j to $i.$jp"
                   mv -f "$i.$j" "$i.$jp"
                fi
@@ -391,8 +391,8 @@ fi
 export DALTON_TMPDIR
 #
 if [ ! -d "$DALTON_TMPDIR" ]; then
-    mkdir -p $DALTON_TMPDIR 
-fi  
+    mkdir -p $DALTON_TMPDIR
+fi
 if [ ! -d "$DALTON_TMPDIR" ]; then
     # this means that user has no permission to create scratch dir, stop
     echo "ERROR: you have no permission to create $DALTON_TMPDIR"
@@ -418,7 +418,7 @@ else
     rm $file &> /dev/null
     echo "ERROR: you have no write permission to directory $DALTON_TMPDIR"
     exit 1
-fi  
+fi
 
 if [ $opt_noappend -eq 1 ]; then
     SCRATCHDIR=$DALTON_TMPDIR
@@ -435,7 +435,7 @@ echo;
 echo "   DALTON release @DALTON_VERSION@"
 echo;
 echo "   Invocation: $0 $paramlist"
-echo; 
+echo;
 echo "   `date`"
 echo;
 echo "   Calculation: $outnam  ($input_files)"
@@ -468,7 +468,7 @@ else
      cp $WRKDIR/$dalfil.$DALEXT MOLECULE.INP
    fi
 fi
-if [ "$potfil" != "" ]; then 
+if [ "$potfil" != "" ]; then
   if [ -s $WRKDIR/$potfil.$POTEXT -a -r $WRKDIR/$potfil.$POTEXT ]; then
      cp $WRKDIR/$potfil.$POTEXT POTENTIAL.INP
   else
@@ -477,9 +477,10 @@ if [ "$potfil" != "" ]; then
   fi
 fi
 
-if [ "x$pcmfil" != "x" ]; then 
+if [ "x$pcmfil" != "x" ]; then
   if [ -s $WRKDIR/$pcmfil.$PCMEXT -a -r $WRKDIR/$pcmfil.$PCMEXT ]; then
      cp $WRKDIR/$pcmfil.$PCMEXT pcmsolver.inp
+     python @PCMSolver_PARSE_DIR@/pcmsolver.py pcmsolver.inp
   else
      echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
      dalton_exitcode=1
@@ -590,11 +591,11 @@ if [ $optn -gt 1 ] ; then # MPI case
 
    if [ -z "$OMP_NUM_THREADS" ]; then
       if [ $opt_lsdalton -eq 1 ]; then
-        echo 
+        echo
         echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
         echo ' INFO : gnu and intel compilers defaults to all available cores, '
         echo ' INFO : whereas portland compilers defaults to one'
-        echo 
+        echo
       else
         export OMP_NUM_THREADS=1
         echo
@@ -627,14 +628,14 @@ if [ $optn -gt 1 ] ; then # MPI case
    fi
    if [ $dalton_exitcode -ne 0 ];then
       echo "Error in $MPIEXEC -np $optn $MPI, exit code $dalton_exitcode"
-#     No "exit $dalton_exitcode" here, because we want to save output and 
+#     No "exit $dalton_exitcode" here, because we want to save output and
 #     tar-file for restart possibilities !!!!!!
    fi
 
    if [ $optpg -eq 1 ] ; then
       gprof $DALTON_EXECUTABLE gmon.out > PROFILE
    fi
-      
+
    if [ "$optx" != "0" ] ; then
       if [ -s $WRKDIR/$gs.tar.gz -a -r $WRKDIR/$gs.tar.gz ] ; then
          echo "The '-x' option is active, now unpacking $gs.tar.gz into:"
@@ -666,18 +667,18 @@ if [ $optn -gt 1 ] ; then # MPI case
 
 else # non-MPI case
    if [ -z "$OMP_NUM_THREADS" ]; then
-      echo 
+      echo
       echo ' INFO : OMP_NUM_THREADS is not defined by the user, and default values will be assumed:'
       echo ' INFO : gnu and intel compilers defaults to all available cores, '
       echo ' INFO : whereas portland compilers defaults to one'
-      echo 
+      echo
    fi
     if ! [ -s $DALTON_EXECUTABLE -a -x $DALTON_EXECUTABLE ]; then
        echo; echo  "FATAL ERROR:"
        echo "$DALTON_EXECUTABLE does not exist or is not executeable"
        exit 1
     fi
-    
+
     if [ $opt_lslib_test -eq 1 ]; then
         $LSLIB_TEST
         dalton_exitcode=$?
@@ -695,7 +696,7 @@ else # non-MPI case
         dalton_exitcode=$?
         if [ $dalton_exitcode -ne 0 ]; then
           echo "Error in $DALTON_EXE, exit code $dalton_exitcode"
- #        No "exit $dalton_exitcode" here, because we want to save output and 
+ #        No "exit $dalton_exitcode" here, because we want to save output and
  #        tar-file for restart possibilities.
         fi
 
@@ -736,7 +737,7 @@ if [ $opt_lsdalton -eq 1 ]; then
 else
   filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin UNIT1 UNIT2 rsp_tensor_human final_geometry.xyz *.cube"
 fi
-pcmfiles="cavity.off PCM_mep_asc PEDRA.OUT"
+pcmfiles="cavity.off PCM_matrix PCM_mep_asc PEDRA.OUT *.npy *.npz *.vtk molec_dyadic.dat"
 filelist="$filelist $pcmfiles $GET_FILES"
 
 if [ -s $DALTON.OUT.n0001 -a -r $DALTON.OUT.n0001 ]; then

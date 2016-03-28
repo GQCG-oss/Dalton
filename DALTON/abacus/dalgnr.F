@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -377,11 +377,11 @@ C
       IF (WORK(1) .NE. WRKDLM .OR.
      &    WORK(LMWORK2) .NE. WRKDLM) THEN
          WRITE (LUPRI,'(//3A)')
-     *      ' >>> WARNING, ',PROG,' module has been out of bounds.'
+     *      ' WARNING, ',PROG,' module has been out of bounds.'
          IF (WORK(1) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
-     *      ' >>> WORK(0) has been destroyed'
+     *      ' WORK(0) has been destroyed'
          IF (WORK(LMWORK2) .NE. WRKDLM) WRITE (LUPRI,'(/A)')
-     *      ' >>> WORK(LMWORK+1) has been destroyed'
+     *      ' WORK(LMWORK+1) has been destroyed'
          CALL QUIT('WARNING, ' // PROG // ' has been out of bounds.')
       END IF
       RETURN
@@ -636,9 +636,8 @@ C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
-#if defined (HAS_PCMSOLVER)
-      use pcm_scf
-      use pcmmod_cfg
+#ifdef HAS_PCMSOLVER
+      use pcm_config, only: pcm_configuration, pcm_cfg, pcm_finalize
 #endif
       use pelib_interface, only: use_pelib, pelib_ifc_finalize,
      &                           pelib_ifc_deactivate,
@@ -783,8 +782,8 @@ C        ---------------------------------------
             IF (LUCME.GT.0) REWIND (LUCME)
             SOLVNT = .FALSE.
             WRITE (LUPRI,'(//5X,A,I5,A//)')
-     &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
-     &       ' <<<<<<<<<<'
+     &      '@@---------- Geometry walk iteration number:',ITERNR,
+     &       ' ----------'
             CALL EXEHER(WORK(0),LMWORK,WRKDLM)
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
@@ -852,7 +851,7 @@ CLF
 C
             IF (WLKREJ) THEN
                WRITE (LUPRI,'(/A)')
-     &         '@ >>> Geometry step was rejected, must backstep ... >>>'
+     &         '@ Geometry step was rejected, must backstep ...'
 C
 C     We have to backstep, get old geometry and call for an update
 C
@@ -1123,7 +1122,7 @@ Cholesky
 Cholesky
          IF (RNSIRI) CALL EXESIR(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (ACTSEL) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
+         IF (ACTSEL .AND. DOCCSD) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
 Cact
          IF (DOCCSD) CALL EXECC (WORK(0),LMWORK,WRKDLM)
 C
@@ -1242,15 +1241,15 @@ C
 C
 ! Finalize pcm_scf if an EXTPCM calculation (PCM using PCMSolver
 ! library) was requested.
-#if defined (HAS_PCMSOLVER)
-      if (pcmmod_is_pcm_calculation) then
-        call pcm_scf_finalize
+#ifdef HAS_PCMSOLVER
+      if (pcm_cfg%do_pcm) then
+        call pcm_finalize
         write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
       end if
 #endif
 
-      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in DALTON:',CTOT,LUPRI)
+      CALL TIMTXT(' Total wall time used in DALTON:',WTOT,LUPRI)
 C
 C     Stamp date and time and hostname to output
 C
@@ -1267,8 +1266,8 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#if defined (HAS_PCMSOLVER)
-      use pcmmod_cfg
+#ifdef HAS_PCMSOLVER
+      use pcm_config
       use pcm_write
 #endif
       use qmcmm_input, only: qmnpinp
@@ -1313,7 +1312,7 @@ C
 C
       LOGICAL ALLOPT
 
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       logical extpcm_input_provided
 #endif
 
@@ -1441,9 +1440,8 @@ C         been calculated.
 C
 C     Initialize /PCMLOG/ and /EXTPCM/
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
       extpcm_input_provided = .false.
-      pcmmod_is_pcm_calculation = .false.
 #endif
       PCM    = .FALSE.
       OUTFLD = .FALSE.
@@ -1611,7 +1609,7 @@ C        ".WALK  "
 #ifdef HAS_PCMSOLVER
             extpcm_input_provided = .true.
 #else
-      WRITE(LUPRI,'(//A/)') 
+      WRITE(LUPRI,'(//A/)')
      $           'ERROR: EXTPCM requested but PCM Module not compiled'
       CALL QUIT('Recompile including the PCM Module')
 #endif
@@ -1919,10 +1917,10 @@ C     "*END OF" or "**something"
 
 !     *EXTPCM input
    14 CONTINUE
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
             call move_to_next_star(word,lucmd)
 #else
-            WRITE(LUPRI,'(//A/)') 
+            WRITE(LUPRI,'(//A/)')
      $           'ERROR: EXTPCM requested but PCM Module not compiled'
             CALL QUIT('Recompile including the PCM Module')
 #endif
@@ -1930,19 +1928,15 @@ C     "*END OF" or "**something"
 C     "*END OF" or "**something"
     1 CONTINUE
 C
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
 !     read EXTPCM input if applicable
       if(extpcm_input_provided)then
         call read_menu_input('DALTON.INP', lucmd,
      &                       '*EXTPCM', extpcm_input_provided)
-        pcmmod_is_pcm_calculation = .true.
+        pcm_cfg%do_pcm = .true.
         if (.not. extpcm_input_provided) then
         call quit('Oops, read_menu_input could not find *EXTPCM input')
         end if
-      end if
-      if(pcmmod_is_pcm_calculation) then
-! Print useful info about DALTON+PCMSolver input options specified              
-              call report_after_pcm_input(lupri)
       end if
 #endif
 

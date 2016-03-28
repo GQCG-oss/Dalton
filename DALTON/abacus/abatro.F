@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -108,7 +108,7 @@ C                 -- currently RDTRO only possible if NOROT
                WRITE (LUPRI,'(A,I5)') ' Print level in TROINV:',IPRINT
             END IF
             IF (THRESH .NE. THRSHD) THEN
-               WRITE(LUPRI,'(A,D12.6)')
+               WRITE(LUPRI,'(A,1P,D10.2)')
      *            ' Threshold for linear dependence: ',THRESH
             END IF
             IF (NOROT1) WRITE (LUPRI,'(/,A,/)')
@@ -220,7 +220,7 @@ C
             SKIP = SKIP .OR. .NOT.DOPERT(I,1)
   100    CONTINUE
          IF (SKIP .AND. GDALL) THEN
-            WRITE (LUPRI,'(/A/)') ' >>> Skip of TROINV is ignored '/
+            WRITE (LUPRI,'(/A/)') ' Skip of TROINV is ignored '/
      *                /'because all GD vectors needed.'
             SKIP   = .FALSE.
             HESTRO = .FALSE.
@@ -863,10 +863,10 @@ C
   430 CONTINUE
  1000 CONTINUE
       IF (NSET .NE. NCDEP) THEN
-         WRITE (LUPRI,'(/,2A,/,A,/)')
-     &         ' ERROR in SETDEP - less than 6 (5)',
-     &         ' independent Cartesian directions',' found.'
-         WRITE (LUPRI,'(A,E12.6)')
+         WRITE (LUPRI,'(/A/)')
+     &         ' ERROR in SETDEP - less than 6 (5)'//
+     &         ' independent Cartesian directions found.'
+         WRITE (LUPRI,'(A,1P,E10.2)')
      &         ' Current threshold for dependency: ',THRESH
          WRITE (LUPRI,'(2A)')
      &         ' Attempt calculation with decreased',
@@ -1372,7 +1372,7 @@ C
             LPRINT = .TRUE.
             GO TO 10
          END IF
-         WRITE (LUPRI,'(///A)') ' >>> WARNING from TRAROT:'
+         WRITE (LUPRI,'(///A)') ' WARNING from TRAROT:'
          NWNABA = NWNABA + 1
       END IF
       IF (LPRINT .OR. DIFMAX.GT.1.D-12)
@@ -1416,14 +1416,14 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 2 .OR. DIFMAX .GE. 1.0D-06) THEN
          IF (DIFMAX .GE. 1.0D-06) THEN
-            WRITE (LUPRI,'(///7X,A)') ' >>> WARNING from TRAROT:'
+            WRITE (LUPRI,'(///7X,A)') ' WARNING from TRAROT:'
             NWNABA = NWNABA + 1
          END IF
          CALL AROUND('Diff. between Hessian calculated directly'//
      *      ' and using tra.-rot. symmetry')
          CALL PRIHES(HESTR,'CENTERS',CSTRA,SCTRA)
       END IF
-      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E8.2)')
+      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E9.2)')
      *  ' Largest difference in',
      *  ' Hessian for element (',IDIFMX,',',JDIFMX,'): ',
      *    DIFMAX
@@ -1462,14 +1462,14 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 2 .OR. DIFMAX .GE. 1.0D-06) THEN
          IF (DIFMAX .GE. 1.0D-06) THEN
-            WRITE (LUPRI,'(///7X,A)') ' >>> WARNING from TRAROT:'
+            WRITE (LUPRI,'(///7X,A)') ' WARNING from TRAROT:'
             NWNABA = NWNABA + 1
          END IF
          CALL AROUND('Diff. between APTs calculated'//
      *      ' directly and using tra.-rot. symmetry')
          CALL FCPRI(DIPTR,'APT',CSTRA,SCTRA)
       END IF
-      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E8.2)')
+      WRITE (LUPRI,'(7X,2A,2(I2,A),1P,E9.2)')
      *  ' Largest difference in',
      *  ' dipole gradient for element (',IDIFMX,',',JDIFMX,'): ',
      *    DIFMAX
@@ -1816,12 +1816,12 @@ C
   500          CONTINUE
                DIF2 = SQRT(DIF2)
                IF (DIF2 .GE. 1.0D-10) THEN
-                  WRITE (LUPRI,'(///7X,A)') ' >>> WARNING from VECTRA:'
+                  WRITE (LUPRI,'(///7X,A)') ' WARNING from VECTRA:'
                   NWNABA = NWNABA + 1
                END IF
-               WRITE (LUPRI,'(/,A,D12.6)') ' Square root deviation '//
-     *            ' between vectors: ',  DIF2
-               WRITE (LUPRI,'(/,A,D12.6,A,I5)') ' Maximum difference ',
+               WRITE (LUPRI,'(/A,1P,D13.6)') ' Square root deviation '//
+     *            ' between vectors:',  DIF2
+               WRITE (LUPRI,'(/A,D13.6,A,I5)') ' Maximum difference',
      *                           DIFMAX, ' for element ', MAXELE
 C
 C           Write calculated vector

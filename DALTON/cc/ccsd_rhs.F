@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -98,6 +98,8 @@ C
      &        IR2BASM(8,8),NR2BASM,IR1XBASM(8,8),NR1XBASM(8),
      &        IR2XBASM(8,8),IMATF(8,8),NMATF(8),IMAKLM(8,8),NMAKLM(8)
       INTEGER NADP(8),IADP(8,8),NLAMDX(8),ILAMDX(8,8)
+C
+      LOGICAL MLCC3_RESPONSE
 C
       CALL QENTER('CCRHSN')
 C
@@ -1670,6 +1672,18 @@ C--------------------------------------------------------------
 C     Add connected triples corrections to the vector function.
 C--------------------------------------------------------------
 C
+C        
+C     MLCC3 contribution
+      IF(MLCC3) THEN
+C     
+         MLCC3_RESPONSE = .FALSE. !ONLY ENERGY CALCULATION
+         FREQUENCY      = ZERO
+C     
+         CALL MLCC3_DRV(OMEGA1,OMEGA2,CDUMMY,CDUMMY,FREQUENCY,
+     *                  MLCC3_RESPONSE,WORK(KEND1),WORK(KEND1),LWRK2)
+      END IF
+C
+C         
       IF (CCSDT) THEN
 
          IF (NODDY_OMEGA) THEN

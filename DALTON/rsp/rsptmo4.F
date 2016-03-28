@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -78,8 +78,8 @@ C
       CALL GPOPEN(LURSPRES,'RESULTS.RSP','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       WRITE(LUPRI,'(//A,A)')
-     *' <<<<< CALCULATING CONTRIBUTIONS TO THIRD ORDER',
-     *' TRANSITION MOMENT >>>>>'
+     *' ----- CALCULATING CONTRIBUTIONS TO THIRD ORDER',
+     *' TRANSITION MOMENT -----'
 C
       IF (THREEPHOTON) THEN
          ALLOCATE ( RESTOM(3,3,3,MXEXCR,8), RESFRE(MXEXCR,8) )

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -259,7 +259,7 @@ C
       CALL QENTER('MP2CTL')
       CALL GETTIM(CPUMP2,WALMP2)
       IF (IPRMP2 .GE. 0) WRITE (LUPRI,'(//A//A/A)')
-     * ' >>>>> Output from SIRIUS MP2 module <<<<<'
+     * ' ----- Output from SIRIUS MP2 module -----'
      *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
 C
@@ -1025,7 +1025,7 @@ C
       ENMA = MP2_LSHIFT - ORBEN(IMP) + ORBEN(IAH)
       IF (IPRMP2 .GE. 30) THEN
          WRITE (LUPRI,'(//A/,2(/A,2I5))')
-     *      ' >>> TEST OUTPUT FROM MP2DEN',
+     *      ' --- TEST OUTPUT FROM MP2DEN',
      *      ' particle indices JMP, IMP     : ',JMP,IMP,
      *      ' hole     indices JAH, IAH     : ',JAH,IAH
          IF (IPRMP2 .GE. 40) WRITE (LUPRI,'(A,2I5,3(/A,1P,D11.4))')
@@ -1911,7 +1911,7 @@ C
                        !      assumed: NRHF(isym) .ge. NISH(isym)
                        !           and NVIR(isym) .le. NSSH(isym)
 C
-C     >>> zero H2PHD
+C     --- zero H2PHD
 C
       LENGTH = NP * NH * NH * (IPHIGH - IPLOW + 1)
       CALL DZERO(H2PHD,LENGTH)

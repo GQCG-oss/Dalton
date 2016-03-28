@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -317,7 +317,7 @@ C
       IF (IPRALL .GE. 1) THEN
          CALL TIMER('START ',TIMEIN,TIMOUT)
          WRITE (LUPRI,'(/A/)')
-     *     '  <<<<<<<<<< Output from TWOEXP >>>>>>>>>> '
+     *     '  ---------- Output from TWOEXP ---------- '
       END IF
 C
 C     No active orbitals
@@ -604,7 +604,7 @@ CTROND
      &                  ISYMDM,IFCTYP,0,.FALSE.)
          END IF
 C
-C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
+C     ----- Print Section - Gradient and Hessian Elements -----
 C
          IF (MOLHES) CALL ADDHES(WORK(KHESEE))
          KCSTRA = 1
@@ -746,7 +746,7 @@ C
 C     Print Section
 C
       IF (IPRINT .GT. 03) THEN
-         WRITE (LUPRI, '(//A/)') ' <<<<< Subroutine ONEDSF >>>>>'
+         WRITE (LUPRI, '(//A/)') ' ----- Subroutine ONEDSF -----'
          WRITE (LUPRI, '(A,8I5)') ' NISH ', (NISH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NASH ', (NASH(I),I = 1,NSYM)
          WRITE (LUPRI, '(A,8I5)') ' NOCC ', (NOCC(I),I = 1,NSYM)

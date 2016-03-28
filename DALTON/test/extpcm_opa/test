@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f_hf = Filter()
+f_hf.add(string = 'Nuclear repulsion:',
+      rel_tolerance = 1.0e-7)
+f_hf.add(string = 'Electronic energy:',
+      rel_tolerance = 1.0e-7)
+f_hf.add(string = 'Solvation energy:',
+      abs_tolerance = 1.0e-7)
+f_hf.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-7)
+f_hf.add(string = '@ Excitation energy :',
+              rel_tolerance = 1.0e-5)
+f_hf.add(string = '@ Oscillator strength (LENGTH)',
+              mask = [1],
+              ignore_below = 1.0e-9,
+              rel_tolerance = 1.0e-3)
+
+test.run(['excitation_hf.dal'], ['H2O.mol'], ['eq_pcmsolver.pcm', 'neq_pcmsolver.pcm'], f={'out': f_hf})
+test.run(['excitation_hf-symm.dal'], ['H2O_symm.mol'], ['eq_pcmsolver.pcm', 'neq_pcmsolver.pcm'], f= {'out': f_hf})
+
+f_dft = Filter()
+f_dft.add(string = 'Nuclear repulsion:',
+      rel_tolerance = 1.0e-7)
+f_dft.add(string = 'Electronic energy:',
+      rel_tolerance = 1.0e-7)
+f_dft.add(string = 'Solvation energy:',
+      abs_tolerance = 1.0e-7)
+f_dft.add(string = 'Final DFT energy:',
+      rel_tolerance = 1.0e-7)
+f_dft.add(string = '@ Excitation energy :',
+              rel_tolerance = 1.0e-5)
+f_dft.add(string = '@ Oscillator strength (LENGTH)',
+              mask = [1],
+              ignore_below = 1.0e-9,
+              rel_tolerance = 1.0e-3)
+
+test.run(['excitation_lda.dal'], ['H2O.mol'], ['eq_pcmsolver.pcm', 'neq_pcmsolver.pcm'], f={'out': f_dft})
+test.run(['excitation_lda-symm.dal'], ['H2O_symm.mol'], ['eq_pcmsolver.pcm', 'neq_pcmsolver.pcm'], f= {'out': f_dft})
+
+sys.exit(test.return_code)

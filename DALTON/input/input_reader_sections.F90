@@ -10,17 +10,21 @@
 !   ----------------------------------------------------------------------------
 
     select case (kw_section)
-         
+
       case ('*LUCITA')
         call read_input_lucita(word, kw_section)
-      
+
       case ('*EXTPCM')
+#ifdef HAS_PCMSOLVER
         call read_input_pcm(word, kw_section)
-         
+#else
+        call quit('you need to recompile with ENABLE_PCMSOLVER to use *EXTPCM')
+#endif
+
       case default
 !       activate as soon as everything is merged to here
 !       call quit('section '//kw_section//' not recognized')
-         
+
     end select
 
   end subroutine
@@ -106,7 +110,7 @@
 
         read(get_file_unit(),'(a)') input_line
         call upcase(input_line)
- 
+
         islash = index(input_line,'/')
         if(islash <= 1)then
           write(lupri,'(/a,i2,a,i2/a/2a)') 'ERROR for *LUCITA .GAS SHELL shell no.',                           &
@@ -214,43 +218,5 @@
     end if
 
     call check_whether_kw_found(word, kw_section)
-
-  end subroutine
-  
-  subroutine read_input_pcm(word, kw_section)
-
-#if defined (HAS_PCMSOLVER)
-     use pcmmod_cfg
-#endif
-     use input_reader
-
-     implicit none
-
-!    --------------------------------------------------------------------------
-     character(kw_length), intent(in) :: word
-     character(kw_length), intent(in) :: kw_section
-!    --------------------------------------------------------------------------
-
-#if defined (HAS_PCMSOLVER)
-     call reset_available_kw_list()
-
-     if (kw_matches(word, '.OLDINT')) then
-!        Use "old" (point-by-point) charge-attraction integrals evaluation subroutines
-         pcmmod_old_integration = .true.
-     end if
-
-     if (kw_matches(word, '.SEPARA')) then
-!        Split potentials and polarization charges in nuclear and electronic
-        pcmmod_separate = .true.
-     end if
-      
-     if (kw_matches(word, '.PRINT ')) then
-        call kw_read(word, pcmmod_print)
-     end if
-
-     call check_whether_kw_found(word, kw_section)
-#else
-     call quit('PCMSolver not included in this version.')
-#endif
 
   end subroutine

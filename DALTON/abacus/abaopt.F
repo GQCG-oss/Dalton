@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2604,11 +2604,11 @@ C
             THRSTP = MAX(THRSTP,5.0D-05)
 c           IF (CHGRDT) THEN
               NINFO = NINFO + 1
-              WRITE (LUPRI,'(/A)') ' INFO>>>> Due to numerical '//
+              WRITE (LUPRI,'(/A)') ' INFO: Due to numerical '//
      &        'integration in DFT optimization'
-              WRITE (LUPRI,'(A)') ' INFO>>>> thresholds for convergence'
+              WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization have been reset'
-              WRITE (LUPRI,'(/A/,3(/20X,A,F10.8))') ' New thresholds:',
+              WRITE (LUPRI,'(/A/,3(/20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
 c           END IF
@@ -2632,9 +2632,9 @@ C     the norm of the calculated molecular gradient changed with 1.0d-6.
       IF (.NOT.NATNRM .AND. .NOT. CHGRDT
      &    .AND. (1.99D0*THRGRD) .GT. GRDTHR
      &    .AND. (1.99D0*THRSTP) .GT. GRDTHR ) THEN
-         WRITE (LUPRI,'(/A,1P,D10.2/A)') ' INFO>>>> Due to convergence '
+         WRITE (LUPRI,'(/A,1P,D10.2/A)') ' INFO: Due to convergence '
      &        //'threshold for the wave function of',THRGRD,
-     &        ' INFO>>>> the default thresholds for'
+     &        ' INFO: the default thresholds for'
      &        //' convergence of geometry optimization have been reset.'
          WRITE (LUPRI,'(/A/,1P,3(/20X,A,D10.2))') ' Old thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
@@ -7930,10 +7930,7 @@ C
 C
       IF (ITER_GEO .GE. 0) THEN
          FILENM = 'XXXX_mol.inp'
-         WRITE(FILENM(1:4),'(I4)') (ITER_GEO + 1)
-         IF (ITER_GEO .LT. 9)   WRITE(FILENM(3:3),'(A1)') '0'
-         IF (ITER_GEO .LT. 99)  WRITE(FILENM(2:2),'(A1)') '0'
-         IF (ITER_GEO .LT. 999) WRITE(FILENM(1:1),'(A1)') '0'
+         WRITE(FILENM(1:4),'(I4.4)') (ITRNMR + 1)
          CALL GPOPEN(LUMOL,FILENM,'UNKNOWN',' ','FORMATTED',
      &      IDUMMY,.FALSE.)
          DO IMLINE = 1,NMLINE
@@ -7988,7 +7985,7 @@ C ===
          WRITE(LUHES,*)
          DO 100 J = 1, 3*NUCDEP
             DO 110 I = 1, 3*NUCDEP
-               WRITE(LUHES,'(F20.16)') TMPMT4(I,J)
+               WRITE(LUHES,'(F25.16)') TMPMT4(I,J)
  110        CONTINUE
             WRITE(LUHES,*)
  100     CONTINUE
@@ -8232,11 +8229,11 @@ C
          THRSTP = GRDTHR
          THRERG = GRDTHR
          THRSYM = SQRT(THRERG)
-         WRITE (LUPRI,'(/A)') ' INFO >>>> Due to limitations '//
+         WRITE (LUPRI,'(/A)') ' INFO: Due to limitations '//
      &        'of the accuracy of the numerical gradients'
-         WRITE (LUPRI,'(A)') ' INFO >>>> thresholds for convergence'
+         WRITE (LUPRI,'(A)') ' INFO: thresholds for convergence'
      &        //' of geometry optimization has been reset'
-         WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
+         WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
       END IF

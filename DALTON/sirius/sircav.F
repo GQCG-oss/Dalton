@@ -528,7 +528,7 @@ C      call flshfo(lupri)
  1246 FORMAT('ADDING TESSERA DATA TO THE LIST. NN=',I6)
  1247 FORMAT('CENTER: ',3F15.11)
  1248 FORMAT('BOH???: ',3F15.11)
- 1249 FORMAT('AREA=',F10.8,'ISPHE=',I4,'NVERT=',I3)
+ 1249 FORMAT('AREA=',F11.8,'ISPHE=',I4,'NVERT=',I3)
       CALL PLOTCAV(VERT,NUMTS)
       call flshfo(lupri)
 C
@@ -651,7 +651,7 @@ C
  9000 FORMAT(10X,'-- CENTER OF CHARGE --'/
      *        ' X =',F8.4,' A  Y =',F8.4,' A  Z =',F8.4,' A')
  9010 FORMAT(/' WARNING: The distance between center of tessera',I5,
-     *         'and',I5,' is ',F8.6,', less than ',F8.6,' A'/)
+     *         'and',I5,' is ',F9.6,', less than ',F9.6,' A'/)
  9020 FORMAT(/' Total number of spheres =',I5/
      *        ' Sphere             Center  (X,Y,Z) (A)            ',
      *           '   Radius (A)      Area (A^2)')
@@ -1727,7 +1727,7 @@ C
  1005 FORMAT('CHECKING INTERSECTIONS WITH SPHERE N.',I4)
  1010 FORMAT('Coordinates: X=',F12.8,'  Y=',F12.8,'  Z=',F12.8,
      $     ' R=',F12.8)
- 1015 FORMAT('VERT-OTHER CENTER DIST:',F10.8,' SPHERE RADIUS',F10.8)
+ 1015 FORMAT('VERT-OTHER CENTER DIST:',F11.8,' SPHERE RADIUS',F11.8)
  1020 FORMAT('THIS TESSERA IS COMPLETELY COVERED BY SPHERE N.',I4)
  1025 FORMAT('EDGE N.',I4,' STATUS: ',A18)
  1030 FORMAT('EDGE N.',I2,' IS IN STATUS ',A16,' CASE N.',I2)
@@ -1735,7 +1735,7 @@ C
  1040 FORMAT('CALLING INTER, CASE N.',I2,' INTERSECTING SPHERE:',I4)
  1045 FORMAT('P',I1,' X = ',F12.9,' Y = ',F12.9,' Z = ',F12.9)
  1050 FORMAT('AFTER INTER')
- 1055 FORMAT('DIST CHECK EDGE N.',I2,' DIFFERENCE:',F12.10)
+ 1055 FORMAT('DIST CHECK EDGE N.',I2,' DIFFERENCE:',F13.10)
       END
 C/* Deck inter */
       SUBROUTINE INTER(P1,P2,P3,P4,NS,I)
@@ -1868,7 +1868,7 @@ C
       END IF
       RETURN
 
- 1000 FORMAT('INTER, distance consistency check: ',F14.12)
+ 1000 FORMAT('INTER, distance consistency check: ',F15.12)
  1005 FORMAT(/'Final result from INTER!')
  1010 FORMAT('P',I1,' X = ',F12.9,' Y = ',F12.9,' Z = ',F12.9)
  1015 FORMAT('SPHERE',' X = ',F12.9,' Y = ',F12.9,' Z = ',F12.9,

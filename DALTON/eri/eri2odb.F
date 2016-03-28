@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -526,7 +526,7 @@ C
      &      'IODBCH(3,I):  ',(IODBCH(3,I),I=1,NBCHAB)
          WRITE (LUPRI,'(1X,A,10I5/,(15X,10I5))')
      &      'IODBCH(4,I):  ',(IODBCH(4,I),I=1,NBCHAB)
-         WRITE (LUPRI,'(1X,A,9E8.2/,(8X,9E8.2))')
+         WRITE (LUPRI,'(1X,A,9E9.2/,(8X,9E9.2))')
      &      'CSOD:  ',(RODBCH(1,I),I=1,NBCHAB)
       END IF
 C

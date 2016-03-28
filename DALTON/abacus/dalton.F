@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -29,10 +29,14 @@ C951009-kenneth : Changed name from PSISTAR to DALTON
 C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
+
+! define DALTON_VERSION
+#include "dalton_config.h"
+
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2014_DALTON
+      PROGRAM DALTON2017_DALTON
 #endif
 C
       use parallel_models_mpi
@@ -51,9 +55,6 @@ C
 #include "inftap.h"
 #include "prpc.h"
 #include "incore.h"
-
-! DALTON_VERSION
-#include "dalton_config.h"
 
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
@@ -208,10 +209,10 @@ C
          CALL TITLER('Dalton - An Electronic Structure Program',
      &               '*',115)
 
-         WRITE (LUPRI,'(T5,A)')
-     &'This is output from DALTON '//DALTON_VERSION
-
-         WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
+         WRITE (LUPRI,'(T5,A)') 'This is output from DALTON release '//
+     &DALTON_VERSION
+         WRITE (LUPRI,'(T10,A)')'( Web site: http://daltonprogram.org )'
+         WRITE (LUPRI,'(/3X,A/)') SEPARATOR(1:76)
          WRITE (LUPRI,'(T5,A)')
      &'NOTE:',
      &' ',
@@ -232,13 +233,13 @@ C
      &' ',
      &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',
      &'   L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',
-     &'   J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,',
+     &'   P. Dahle, E. K. Dalskov, U. Ekstroem,',
      &'   T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,',
      &'   L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,',
      &'   C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,',
      &'   H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,',
      &'   M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,',
-     &'   P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,',
+     &'   P. Joergensen, J. Kauczor, S. Kirpekar,',
      &'   T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,',
      &'   J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,',
      &'   O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,',
@@ -253,12 +254,15 @@ C
      &'   O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski',
      &'   and H. Agren,',
      &'   "The Dalton quantum chemistry program system",',
-     &'   WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)',
-     &'',
+     &'   WIREs Comput. Mol. Sci. 2014, 4:269–284 '//
+     &    '(doi: 10.1002/wcms.1172)',
+     &' ',
      &'and',
-     &'',
+     &' ',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release Dalton2016.alpha (2015), see http://daltonprogram.org'
+     &'   Release '//
+     &DALTON_VERSION
+     &//', see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -272,7 +276,7 @@ C
      &  '(AOSOPPA, non-adiabatic coupling, magnetic properties)',
      *'Vebjoern Bakken,','University of Oslo,','Norway',
      &  '(DALTON; geometry optimizer, symmetry detection)',
-     *'Radovan Bast,','KTH Stockholm,','Sweden',
+     *'Radovan Bast,','UiT The Arctic U. of Norway,','Norway',
      &  '(DALTON installation and execution frameworks)',
      *'Pablo Baudin,','University of Valencia,','Spain',
      &  '(Cholesky excitation energies)',
@@ -294,6 +298,8 @@ C
      &  '(SOPPA)',
      *'Janus J. Eriksen,','Aarhus University,','Denmark',
      &  '(Polarizable embedding model, TDA)',
+     *'Rasmus Faber,','University of Copenhagen,','Denmark',
+     &  '(Vib.avg. NMR with SOPPA, parallel AO-SOPPA)',
      *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
      &  '(doublet spin, ESR in RESPONS)',
      *'Lara Ferrighi,','Aarhus University,','Denmark',
@@ -310,6 +316,8 @@ C
      &  '(CC module)',
      *'Asger Halkier,','Aarhus University,','Denmark',
      &  '(CC module)',
+     *'Frederik Beyer Hansen,','University of Copenhagen,','Denmark',
+     &  '(Parallel AO-SOPPA)',
      *'Erik D. Hedegaard,','Univ. of Southern Denmark,','Denmark',
      & '(Polarizable embedding model, QM/MM)',
      *'Hanne Heiberg,','University of Oslo,','Norway',
@@ -365,7 +373,7 @@ C
      *'Christian B. Nielsen,','University of Copenhagen,','Denmark',
      &  '(QM/MM)',
      *'Patrick Norman,','Linkoeping University,','Sweden',
-     &  '(Cubic response and complex response in RESPONS)',
+     &  '(Cubic response and complex frequency response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
      *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
@@ -579,7 +587,8 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: Dalton2016.alpha'
+           WRITE(LUPRI,'(/A)') ' * Release: '//
+     &     DALTON_VERSION
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -93,7 +93,7 @@ C*************************************************************
 C
       CHARACTER*80 BASNAM,  BASTMP, BASSAV
       CHARACTER*80 BASREF(10)
-      LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, NQVD
+      LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, NQVD, EMSL_TYPE
 #ifdef PRG_DIRAC
 C     Define a maximum number of primitives that can go in one block
 C     for UNCONTRACTED basis sets. The value given is for s-functions
@@ -396,13 +396,15 @@ C
          CALL FIND_NQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,
      &       SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
       ELSE
-         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT)
+         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
-         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+         CALL FIND_POS ( NEWEL, INTEXP, INTORB, INTISG, LUBAS,
+     &      IPRINT, EMSL_TYPE)
 C
  10      CONTINUE
+         IF ( .NOT. NEWEL) THEN
 
             IF (INTEXP.GT.KPRIM) GOTO 5010
             IF (abs(INTORB).GT.INTEXP) THEN
@@ -412,7 +414,6 @@ C
      &         '       in basis ',BASNAM
             END IF
 C
-         IF ( .NOT. NEWEL) THEN
             NBLOCK = NBLOCK + 1
             IF (NBLOCK .GT. KAOVEC) THEN
                CALL QUIT('Too many AO blocks'//
@@ -435,7 +436,7 @@ C
                IF (INTORB .EQ. 0) THEN
                   NBLOCK = NBLOCK - 1 ! why this? Can we imagine user wants 2 0 1, i.e. 2s 0p 1d ??????
                   CALL FIND_POS ( NEWEL, INTEXP, INTORB,
-     &                            INTISG, LUBAS, IPRINT)
+     &                            INTISG, LUBAS, IPRINT, EMSL_TYPE)
                   GOTO 10
                END IF
             ELSE
@@ -461,7 +462,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     &      ' >>> BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
+     &      ' BASLIB error, number of AO-blocks in PAOSET  ',INTORB,
      &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
@@ -482,9 +483,10 @@ C
 C
 C Define the type of the next relevant line in file
 C
-            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+            CALL FIND_POS( NEWEL, INTEXP, INTORB, INTISG,
+     &         LUBAS, IPRINT, EMSL_TYPE)
             GOTO 10
-         END IF
+         END IF ! .not. NEWEL
       END IF
 C
       IF (POLFUN) THEN
@@ -525,7 +527,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     &      ' >>> BASLIB error, number of AO-blocks for PAOSET ',INTORB,
+     &      ' BASLIB error, number of AO-blocks for PAOSET ',INTORB,
      &      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for segmented basis set')
@@ -579,7 +581,7 @@ C
 C
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> BASLIB ERROR, number of primitives per block  ',INTEXP,
+     &  ' BASLIB ERROR, number of primitives per block  ',INTEXP,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
         CALL QUIT('BASLIB ERROR: Too many primitives')
@@ -1002,7 +1004,7 @@ C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck FIND_ELEMENT */
-      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT)
+      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1013,26 +1015,82 @@ C*              proofing the subroutine.                 *
 C*********************************************************
 C
       CHARACTER*(*) BASNAM
+      LOGICAL       EMSL_TYPE
       CHARACTER*300 STRING  ! long because contains the full directory path
       CHARACTER SIGN
+      CHARACTER*12  EMSL_ELEMENT_NAME(96)
+      CHARACTER*5 EMSL_NAME_CHECK
+      DATA EMSL_ELEMENT_NAME(1:96) /
+     & 'HYDROGEN','HELIUM',
+     & 'LITHIUM','BERYLLIUM',
+     & 'BORON','CARBON','NITROGEN','OXYGEN','FLUORINE','NEON',
+     & 'SODIUM','MAGNESIUM',
+     & 'ALUMINUM','SILICON','PHOSPHOROUS','SULFUR','CHLORINE','ARGON',
+     & 'POTASSIUM','CALCIUM',
+     & 'SCANDIUM','TITANIUM','VANADIUM','CHROMIUM','MANGANESE',
+     &   'IRON','COBALT','NICKEL','COPPER','ZINC','GALLIUM',
+     & 'GERMANIUM','ARSENIC','SELENIUM','BROMINE','KRYPTON',
+     & 'RUBIDIUM','STRONTIUM',
+     & 'YTTRIUM','ZIRCONIUM','NIOBIUM','MOLYBDENUM','TECHNETIUM',
+     &   'RUTHENIUM','RHODIUM','PALLADIUM','SILVER','CADMIUM',
+     & 'INDIUM','TIN','ANTIMONY','TELLURIUM','IODINE','XENON',
+     & 'CESIUM','BARIUM',
+     & 'LANTHANUM','CERIUM','PRASEODYMIUM','NEODYMIUM',
+     &   'PROMETHIUM','SAMARIUM','EUROPIUM',
+     &   'GADOLIUM','TERBIUM','DYSPROSIUM','HOLMIUM','ERBIUM',
+     &   'THULIUM','YTTERBIUM',
+     & 'LUTETIUM','HAFNIUM','TANTALUM','TUNGSTEN','RHENIUM',
+     &   'OSMIUM','IRIDIUM','PLATINUM','GOLD','MERCURY',
+     & 'THALLIUM','LEAD','BISMUTH','POLONIUM','ASTATINE','RADON',
+     & 'FRANCIUM','RADIUM',
+     & 'ACTINIUM','THORIUM','PROTACTINIUM','URANIUM','NEPTUNIUM',
+     &   'PLUTONIUM','AMERICIUM','CURIUM'/
 C
       CALL FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C Searching the file for the element.
+C Traditional Dalton basis set layout with and 'a' or 'A' in first column
+C to identify next element.
 C
+      EMSL_TYPE = .FALSE.
  20   CONTINUE
-         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 100)
      +       STRING
          READ (STRING, '(A1)',IOSTAT=IOS) SIGN
-         IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
-            READ (STRING, 110,IOSTAT=IOS) SIGN, NUCEL
+         IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN       ! <- traditional Dalton basis set file
+            READ (STRING, '(BN,A1,I4)',IOSTAT=IOS) SIGN, NUCEL
             IF (IOS.NE.0) THEN
                CALL QUIT('FIND_ELEMENT: Error in reading NUCEL')
             ENDIF
- 110        FORMAT (BN, A1, I4)
             IF (INTQ .EQ. NUCEL) RETURN
          END IF
       GOTO 20
+C
+C Searching the file for the element again. This time with
+C the EMSL Dalton basis set layout without and 'a' or 'A' in first column.
+C Element must be identified by name from the table EMSL_ELEMENT_NAME.
+C
+  100 IF (INTQ .GT. 0 .AND. INTQ .LE. 96) THEN
+         EMSL_NAME_CHECK = EMSL_ELEMENT_NAME(INTQ)(1:5)
+      ELSE
+         GOTO 200
+      END IF
+      EMSL_TYPE = .TRUE.
+      REWIND LUBAS
+      NUCEL = -1
+ 30   CONTINUE
+         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+     +       STRING
+         IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) THEN  ! <- basis set file made by EMSL
+            ! we do not know how many lines the element name is repeated in,
+            ! therefore we continue until it is not found in order that FIND_POS can work correctly
+            ! (EMSL always print "! s functions" for the first block, so this is OK)
+ 35         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
+     +          STRING
+            IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) GO TO 35
+            RETURN
+         END IF
+      GOTO 30
 C
 C Error messages
 C
@@ -1269,13 +1327,13 @@ C
      /   'Unsupported element in specified basis set file')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FIND_NQD error, number of primitives per block',ISPRIM,
+     &  ' FIND_NQD error, number of primitives per block',ISPRIM,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
         CALL QUIT('BASLIB FIND_NQD: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> FIND_NQD error, number of contracted functions',ISCONT,
+     &  ' FIND_NQD error, number of contracted functions',ISCONT,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KAOVEC
         CALL QUIT('BASLIB FIND_NQD: Too many contracted functions')
@@ -1377,7 +1435,8 @@ C*                          coefficients                 *
 C*********************************************************
 C
 C/* Deck find_pos */
-      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG, LUBAS, IPRINT)
+      SUBROUTINE FIND_POS(NEWEL, INTEXP, INTORB, INTISG,
+     &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1387,7 +1446,7 @@ C*            what kind of sentence it is.               *
 C*     STRING - A character string to help bulletproofing*
 C*              the subroutine.                          *
 C*********************************************************
-      LOGICAL   NEWEL
+      LOGICAL   NEWEL, EMSL_TYPE
       CHARACTER SIGN
       CHARACTER*300 STRING
 
@@ -1414,10 +1473,11 @@ C
          INTISG = 0
       ELSE IF (SIGN .EQ. ' ') THEN
          READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
-      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A')) THEN
+      ELSE IF ((SIGN .EQ. 'a') .OR. (SIGN .EQ. 'A') .OR.                ! <- traditional Dalton basis set file
+     &         (EMSL_TYPE .AND. INDEX(STRING,'->') .GT. 0) ) THEN       ! <- basis set file made by EMSL without "a" or "A"
          NEWEL = .TRUE.
-         IF (IPRINT.GE.10) WRITE(lupri,'(/2X,A)')
-     &      'Output from FIND_POS: New element'
+         IF (IPRINT.GE.10) WRITE(lupri,'(/A)')
+     &      '  Output from FIND_POS: New element'
          RETURN
       ELSE
          GOTO 20

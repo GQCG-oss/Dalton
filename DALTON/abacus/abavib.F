@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -324,7 +324,7 @@ C
             END IF
  16      CONTINUE
          IF (IDIFF .GT. 0) THEN
-            WRITE (LUPRI,'(/,A,/,12X,A)') ' WARNING>>> Coordinates on'//
+            WRITE (LUPRI,'(/,A,/,12X,A)') ' WARNINGCoordinates on'//
      &           ' DALTON.HES differ from MOLECULE.INP',
      &           'Coordinates from DALTON.HES will be used'
          END IF
@@ -1202,7 +1202,7 @@ C
      &        '  Normal mode    Frequency     Gradient',
      &        '  --------------------------------------'
          DO IMOD = 1, NUMMOD
-            WRITE (LUPRI,'(19X,I4,10X,F7.2,6X,F8.6)') IMOD,
+            WRITE (LUPRI,'(19X,I4,10X,F7.2,6X,F9.6)') IMOD,
      &           FREQAU(IMOD)*XTKAYS,WORK(KFMATF + IMOD - 1)*SQRT(XFAMU)
          END DO
       END IF
@@ -2692,7 +2692,7 @@ C
             A11 = - A11/PFAC
             A13 = -SQRT(D3)*FMATT(IMOD,IMOD,IMOD)
      &                    /(D36*SQRT(FREQAU(IMOD)**5))
-            WRITE (LUPRI,'(2X,I3,5X,F11.9,8X,F11.9)') IMOD,A11,A13
+            WRITE (LUPRI,'(2X,I3,5X,F12.9,8X,F12.9)') IMOD,A11,A13
          END DO
 C
          DO IMOD = 1, NUMMOD
@@ -2887,7 +2887,7 @@ C
          CALL TITLER('Output from VIBRO1','*',103)
          CALL HEADER('Polarizability tensor Cartesian gradient)',1)
          DO 100 F = 1, NFRVAL
-            WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+            WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
 C modified by Bin Gao and Kenneth Ruud, December 7, 2009
             CALL OUTPUT(ROAAFD(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                  1,LUPRI)
@@ -2897,19 +2897,19 @@ C     &                  1,LUPRI)
          IF (VROA) THEN
             CALL HEADER('Non-London G tensor Cartesian gradient',1)
             DO 110 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGND(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                     1,LUPRI)
   110       CONTINUE
             CALL HEADER('London G tensor Cartesian gradient',1)
             DO 120 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGLD(1,1,F,1),1,9,1,NCORD,9*MXFR,NCORD,
      &                     1,LUPRI)
   120       CONTINUE
             CALL HEADER('A tensor Cartesian gradient',1)
             DO 130 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAAD(1,1,1,F,1),1,27,1,NCORD,27*MXFR,NCORD,
      &                     1,LUPRI)
   130       CONTINUE
@@ -2920,7 +2920,7 @@ C
 C
          CALL HEADER('Polarizability tensor normal coord. gradient',1)
          DO 200 F = 1, NFRVAL
-            WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+            WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
             CALL OUTPUT(ROAAFQ(1,1,F,1),1,9,1,NUMMOD,9*NFRVAL,NCORD,
      &                  1,LUPRI)
   200    CONTINUE
@@ -2928,19 +2928,19 @@ C
            CALL HEADER('Non-London G tensor normal coordinate gradient',
      &                 1)
             DO 210 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGNQ(1,1,F,1),1,9,1,NUMMOD,9*NFRVAL,NCORD,
      &                     1,LUPRI)
   210       CONTINUE
             CALL HEADER('London G tensor normal coordinate gradient',1)
             DO 220 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAGLQ(1,1,F,1),1,9,1,NUMMOD,9*NFRVAL,NCORD,
      &                     1,LUPRI)
   220       CONTINUE
             CALL HEADER('A tensor normal coordinate gradient',1)
             DO 230 F = 1, NFRVAL
-               WRITE (LUPRI,'(1X,A,F6.4)') ' frequency:', FRVAL(F)
+               WRITE (LUPRI,'(1X,A,F7.4)') ' frequency:', FRVAL(F)
                CALL OUTPUT(ROAAQ(1,1,1,F,1),1,27,1,NUMMOD,27*NFRVAL,
      &                     NCORD,1,LUPRI)
   230       CONTINUE

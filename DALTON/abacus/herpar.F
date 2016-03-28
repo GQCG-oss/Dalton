@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2442,7 +2442,7 @@ CTROND     &               PERTUR,NODV,MAXDER,LONDON,NDMAT,ISYMDM,IFCTYP,
 CTROND     &               IATOM,.FALSE.)
 CTROND      END IF
 C
-C     <<<<< Print Section - Gradient and Hessian Elements >>>>>
+C     ----- Print Section - Gradient and Hessian Elements -----
 C
       IF (EXPECT) THEN
          IF (JPRINT .GT. 5) THEN

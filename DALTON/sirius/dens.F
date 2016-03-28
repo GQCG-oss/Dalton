@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1659,7 +1659,7 @@ C
 C
       IF ( IDMTYP.NE.1 .AND. IDMTYP.NE.2) THEN
          WRITE (LUERR,'(//A/A,I10)')
-     *      ' >>> DENSD2 fatal error, illegal density matrix code',
+     *      ' --- DENSD2 fatal error, illegal density matrix code',
      *      '     IDMTYP =',IDMTYP
          CALL QUIT('DENSD2: Illegal IDMTYP')
       END IF

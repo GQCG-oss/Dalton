@@ -4,7 +4,7 @@ C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program,
-C...    Release DALTON2015 (2015), see http://daltonprogram.org"
+C...    Release DALTON2016 (2015), see http://daltonprogram.org"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -159,7 +159,7 @@ C
       IF (IPRABSLRS.GE.2) THEN
        WRITE(LUABSPRI,'(/A,/A,I3,A,/A)')
      &        ' =======================================',
-     &        ' >>>>  Macro iteration number',ITER,'  <<<<<<',
+     &        ' ----  Macro iteration number',ITER,'  ------',
      &        ' ======================================='
       END IF
 C
@@ -385,7 +385,7 @@ C               w*S4T
            ENDDO
 C
            IF (IPRABSLRS.GT.10) THEN
-               WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)') 
+               WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D11.4),/,5X,A)') 
      &             ' Reduced ( E[2] - {w+ig}*S[2] )  matrix',
      &             ' with w =', FREQI,' and g =', ABS_DAMP,
      &             '========================================' 
@@ -415,7 +415,7 @@ C
            CALL DCOPY(NOS,WRK(KREDZGD+NOS+2*NOA),1,RDX(1,4,K),1)
 C
            IF (IPRABSLRS.GE.5) THEN
-              WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)') 
+              WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D11.4),/,5X,A)') 
      &           ' Reduced ( E[2] - {w+ig}*S[2] )-1 * B[1] vector',
      &           ' with w =', FREQI,' and g =', ABS_DAMP,
      &           '================================================' 
@@ -522,7 +522,7 @@ C               g*S3T
            ENDDO
 C
            IF (IPRABSLRS.GT.10) THEN
-               WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)') 
+               WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D11.4),/,5X,A)') 
      &             ' Reduced ( E[2] - {w+ig}*S[2] )  matrix',
      &             ' with w =', FREQI,' and g =', 0.d0,
      &             '========================================' 
@@ -552,7 +552,7 @@ C
            CALL DCOPY(NOS,WRK(KREDZGD+NOS+2*NOA),1,RDX(1,4,K),1)
 C
            IF (IPRABSLRS.GE.5) THEN
-              WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D10.4),/,5X,A)') 
+              WRITE(LUABSPRI,'(/,5X,A,/,5X,2(A,D11.4),/,5X,A)') 
      &           ' Reduced ( E[2] - {w+ig}*S[2] )-1 * B[1] vector',
      &           ' with w =', FREQI,' and g =', 0d0,
      &           '================================================' 
@@ -814,14 +814,14 @@ C
      &            'Damping:',ABS_DAMP,
      &            'Residual:',DNORM_RT/DNORM_GT
             END IF
-            WRITE(LUABSPRI,'(A,2(I4),2X,A,2X,F6.4,2X,A,2(D15.7))')
+            WRITE(LUABSPRI,'(A,2(I4),2X,A,2X,F7.4,2X,A,2(D15.7))')
      &             'ITER, IVEC:',ITER,K, LABEL,FREQS(K),
      &             ' RESID, RESID/X:',DNORM_RT/DNORM_GT,DNORM_RT/DNORM_X
 c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
 c     &        DNORM_RT/DNORM_GT
          ELSE
             NCONV=NCONV+1
-            WRITE(LUABSPRI,'(A,2(I3),2X,A,2X,F6.4,A,2(L1))')
+            WRITE(LUABSPRI,'(A,2(I3),2X,A,2X,F7.4,A,2(L1))')
      *           'ITER, IVEC:',ITER,K,LABEL,FREQS(K),
      *           ' RESID, RESID/X:',CONV(K),CONV(K)
 c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),

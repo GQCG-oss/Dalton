@@ -289,7 +289,8 @@ C--------------------------------------------------------------------
 
       KLRO = 1        !L real Output
       KLIO = KLRO + J !L imaginary Output
-      IF (KLIO+J .GT. LWORK) STOP "Too little space in CC_BIORTOCOMP"
+      IF (KLIO+J .GT. LWORK)
+     &   CALL QUIT("Too little space in CC_BIORTOCOMP")
 
       DO K=1,J
          IF (SKIPNEXT) THEN
@@ -573,7 +574,7 @@ C
             FQX(j,i) = ddot(Lspace,WORK(KFQ1),1,XVEC(1,j),1)
          end do
       end do
-!      CALL AROUND('>>> The FQQR matrix <<<')
+!      CALL AROUND('--- The FQQR matrix ---')
 !      CALL OUTPUT(FQX,1,Lchain,1,Lchain,Lchain,Lchain,1,LUPRI)
 
 
@@ -581,7 +582,7 @@ C
      *            ONE,FQX,Lchain,
      *            EVR,Lchain,ZERO,
      *            Ftrans,Lchain)
-!      CALL AROUND('>>> The trans^F matrix <<<')
+!      CALL AROUND('--- The trans^F matrix ---')
 !      CALL OUTPUT(Ftrans,1,Lchain,1,Lchain,Lchain,Lchain,1,LUPRI)
 
       RETURN 
@@ -883,10 +884,10 @@ C
 C
       WRITE(LUPRI,'(//10X,A,8X,F10.4)')
      *     'Norm of Printed Amplitude Vector : ',SQRT(SUMOFP)
-      WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+      WRITE(LUPRI,'(//10X,A43,1X,F9.6)')
      *     'Printed all single excitations greater than',THR1
       IF (.NOT. (CCSEFF.OR.CCP2)) THEN
-         WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+         WRITE(LUPRI,'(//10X,A43,1X,F9.6)')
      *     'Printed all double excitations greater than',THR2
       ENDIF
 C
@@ -1512,7 +1513,7 @@ C
 C
 C
       IF (LOCDBG) THEN
-         WRITE (LUPRI,'(//A/)') ' >>> Debug output from CCORT <<<'
+         WRITE (LUPRI,'(//A/)') ' --- Debug output from CCORT ---'
       END IF
       KEND1  = 1
       LWRK1  = LWRK - KEND1
@@ -1603,7 +1604,7 @@ C
 C *** End of subroutine CCBiORT
 C
       IF (LOCDBG) THEN
-        WRITE (LUPRI,'(/A//)')' >>> End debug output from CCBiORT <<<'
+        WRITE (LUPRI,'(/A//)')' --- End debug output from CCBiORT ---'
       END IF
 
       RETURN
@@ -1656,7 +1657,7 @@ C
 C
 C
       IF (LOCDBG) THEN
-         WRITE (LUPRI,'(//A/)') ' >>> Debug output from CCORT <<<'
+         WRITE (LUPRI,'(//A/)') ' --- Debug output from CCORT ---'
       END IF
       KEND1  = 1
       LWRK1  = LWRK - KEND1
@@ -1755,7 +1756,7 @@ C
 C *** End of subroutine CCBiORTPQ
 C
       IF (LOCDBG) THEN
-        WRITE (LUPRI,'(/A//)')' >>> End debug output from CCBiORTPQ <<<'
+        WRITE (LUPRI,'(/A//)')' --- End debug output from CCBiORTPQ ---'
       END IF
 
       RETURN

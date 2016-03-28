@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -98,7 +98,7 @@ cBASPRO: Now takes care of the generation of the symmetry-dependant atoms
 c        through the array ISTBNU.
 c941119-tsaue:
 cREADIN: added extra index to arrays IQM,NBLCK,JCO,NUC,NRC,SEG,ALPHA,
-c        CPRIMU ta accomodat both large and small components
+c        CPRIMU ta accomodate both large and small components
 cACPORB: implemented readin of exponents only
 cSYMGRP: New routine determining irreps, characters etc.
 cDBLGRP: new routine for handling double group symmetry
@@ -162,14 +162,16 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized for *MOLBAS.'
+               WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword for *MOLBAS.')
-C                 '.PRINT '
+               CALL QUIT('Illegal keyword for '//WORD1)
     1          CONTINUE
                   IPREAD_ini = IPREAD
-                  READ (LUCMD, *) IPREAD
+                  READ (LUCMD, *,IOSTAT=IOS) IPREAD
+                  IF (IOS.NE.0) THEN
+                     CALL QUIT('Error in reading .PRINT')
+                  ENDIF
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
     2          CONTINUE
@@ -252,15 +254,15 @@ C              (renamed from .AUXBAS) /hjaaj
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized for *MOLBAS.'
+               WRITE (LUPRI,'(/4A/)') ' ERROR: Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt for *MOLBAS.')
+               CALL QUIT('Illegal prompt for '//WORD1)
             END IF
       END IF
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for *MOLBAS:',0)
+         CALL HEADER('Changes of defaults for '//WORD1,0)
          IF (IPREAD .NE. IPREAD_ini) THEN
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
@@ -304,9 +306,9 @@ C              (renamed from .AUXBAS) /hjaaj
             WRITE (LUPRI,'(2(A,F4.1))')
      &           ' Sequence starts at n=',CMSTR,' and ends at n=', CMEND
             IF (ZCMVAL .NE. D1)
-     &           WRITE (LUPRI,'(A,F3.1)') ' Net charge of ionic core  ',
-     &           ZCMVAL
-            WRITE(LUPRI,'(/A/A/A/A/A)')
+     &           WRITE (LUPRI,'(A,F10.3)')
+     &         ' Net charge of ionic core',ZCMVAL
+                 WRITE(LUPRI,'(/A/A/A/A/A)')
      &         ' Proper reference for these basis functions:'
      &        ,' K. Kaufmann, W. Baumeister, and M. Jungen'
      &        ,' "Universal Gaussian basis sets for an optimum'
@@ -315,9 +317,9 @@ C              (renamed from .AUXBAS) /hjaaj
 
             IF (LCMMAX .GT. 4) THEN
                WRITE (LUPRI,'(/A)')
-     &           ' FATAL ERROR: Center of mass basis functions is'//
-     &           ' not defined for l(max) .gt. 4'
-               CALL QUIT('Error in *MOLBAS input processing')
+     &           ' ERROR: Center of mass basis functions are'//
+     &           ' not defined for l(max) > 4'
+               CALL QUIT('Error in input processing for '//WORD1)
             END IF
          END IF
          WRITE (LUPRI,'()')
@@ -818,12 +820,12 @@ C
         CALL QUIT('No atoms according to .mol input!')
       ELSE IF (NONTYP.LT.0) THEN
         WRITE (LUPRI,'(/A,I6//I3,1X,A)')
-     &    ' >>> READ_MOL error, no. of atomic types negative:',NONTYP,
+     &    ' READ_MOL error, no. of atomic types negative:',NONTYP,
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Negative number of atoms according to .mol input')
       ELSE IF (NONTYP.GT.KATOM) THEN
         WRITE (LUPRI,'(/A,I6/A,I6//I3,1X,A)')
-     &   ' >>> READ_MOL error, no. of atomic types    ',NONTYP,
+     &   ' READ_MOL error, no. of atomic types    ',NONTYP,
      &   '     is greater than current maximum number ',KATOM,
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Too many atomic types in .mol input')
@@ -992,6 +994,7 @@ C     ****************************************
 C     ***** Output on LUONEL *****************
 C     ****************************************
 C
+
       IF (HERMIT) CALL WRONEL(TTITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO,
      &                        KANG)
 C
@@ -1144,7 +1147,7 @@ C
 C     If (DOHUCKEL) use second set for atomic orbitals for Huckel guess
       BSET = 'Basis'
       MBSI = 1
-      if (ipread .gt. 10 .OR. NSETS .gt. KSETS) 
+      if (ipread .gt. 10 .OR. NSETS .gt. KSETS)
      &   write(lupri,*) 'setting NSETS =',NSETS
       IF (NSETS .GT. KSETS) THEN
          CALL QUIT('NSETS .gt. KSETS error')
@@ -1887,13 +1890,13 @@ C     include character ASYMB(0:NSYMB)*2 with atomic symbols
 C
       NQ = NINT(Q)
 C
-      IF (GAUNUC.AND.(NQ.GT.0)) THEN
+      IF (GAUNUC .AND. NQ.GT.0) THEN
          IF (Q_EXPONENT.LE.D0) THEN
             CALL NUCSIZ(NQ,GEXP)
          ELSE
             GEXP = Q_EXPONENT
          ENDIF
-         IF (IPREAD.GT.0) WRITE(LUPRI,'(2X,A2,A,1P,D15.5/)') ASYMB(NQ),
+         IF (IPREAD.GT.0) WRITE(LUPRI,'(2X,A2,A,1P,D16.5/)') ASYMB(NQ),
      &   '  : Exponent for nuclear gaussian charge distribution : ',GEXP
       ELSE
          GEXP = D0
@@ -1989,7 +1992,7 @@ C
         ISTART = IPOS
         DO J = 1, 3
           CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CORD(J,NCTOT),'REA',
-    &                IERR)
+     &                IERR)
         END DO
         IF (QM3) THEN
           CALL FREFRM(MLINE(NMLINE),ISTART,ISUBSY(NCTOT),DUMMY,
@@ -2092,13 +2095,13 @@ C
      &    ' Current limit:',MXCENT
         CALL QUIT('*** ERROR *** MXCENT exceeded in CNTINP')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,1P,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
      &    ' Atomic coordinate ',CORD(J,NCTOT),
      &    ' too large in CNTINP.',
-     &    ' Note: Program is unstable for large coordinates.',
+     &    ' Note: Program is unstable for large coordinate values.',
      &    ' Maximum coordinate value:',CORMAX
         CALL QUIT('*** ERROR: Atomic coordinate too large in CNTINP')
-      END
+      END ! SUBROUTINE CNTINP
 C  /* Deck baspro */
       SUBROUTINE BASPRO(WORK,LWORK,NONTYP,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,
      &                  NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,
@@ -2297,34 +2300,28 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, number of shells                    ',
-     *  KMAX,
-     *  '                   current maximum number              ',
-     *  MXSHEL,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of shells                 ',KMAX,
+     *  '               current maximum number (MXSHEL)  ',MXSHEL,
      *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, number of contracted basis functions',
-     *  NBASIS,
-     *  '                   current maximum number              ',
-     *  MXCORB,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of contracted basis functions',NBASIS,
+     *  '               current maximum number (MXCORB)     ',MXCORB,
      *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, number of primitive basis functions',
-     *  NPBAS,
-     *  '                   current maximum number             ',
-     *  MXPRIM,
+        WRITE (LUPRI,'(/A,I6/A,I6/A)')
+     *  ' BASPRO error, number of primitive basis functions',NPBAS,
+     *  '               current maximum number (MXPRIM)    ',MXPRIM,
      *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
  5040 CONTINUE
         WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
-     *  ' >>> BASPRO error, # of shells when adding Huckel orbitals',
+     *  ' BASPRO error, # of shells when adding Huckel orbitals',
      *     ISHELL,
      *  '                   current maximum number                 ',
      *     MXSHEL,
@@ -2332,7 +2329,7 @@ C
         CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5050 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
-     *  ' >>> BASPRO error, # of contracted bf. after adding Huckel ',
+     *  ' BASPRO error, # of contracted bf. after adding Huckel ',
      *     'orbitals',
      *  IORBD,
      *  '                   current maximum number                  ',
@@ -2341,7 +2338,7 @@ C
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
-     *  ' >>> BASPRO error, # of primitive bf after adding Huckel ',
+     *  ' BASPRO error, # of primitive bf after adding Huckel ',
      *     'orbitals',
      *  IPRIMD,
      *  '                   current maximum number                 ',
@@ -2384,8 +2381,8 @@ C*****************************************************************************
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &          SEG(KBLOCK,KSETS),
-     &          ALPHA (KPRIM,KBLOCK,KSETS),
-     &          CPRIM (KPRIM,KPRIM,KBLOCK,KSETS),
+     &          ALPHA(KPRIM,KBLOCK,KSETS),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       CHARACTER*1  KASYM(3,3)
@@ -2902,9 +2899,9 @@ C     K.Ruud, Nov.-2006
 C
          NWARN = NWARN + 1
          WRITE (LUPRI,'(//A/A/)')
-     &      '@ WARNING GTOINP >>> If primitive exponents'//
+     &      '@ WARNING GTOINP If primitive exponents'//
      &         ' are duplicated in several blocks,',
-     &      '@ WARNING GTOINP >>> Douglas-Kroll will not work correctly'
+     &      '@ WARNING GTOINP Douglas-Kroll will not work correctly'
       END IF
       RETURN
 C
@@ -2912,17 +2909,17 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of AO-blocks            ',NBLOCK,
+     *  ' GTOINP error, number of AO-blocks            ',NBLOCK,
      *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of primitives per block      ',NUCIJ,
+     *  ' GTOINP error, number of primitives per block      ',NUCIJ,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> GTOINP error, number of contracted functions      ',NRCIJ,
+     *  ' GTOINP error, number of contracted functions      ',NRCIJ,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('Too many contracted functions')
       END
@@ -2992,17 +2989,17 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error, number of AO-blocks            ',NBLOCK,
+     *  ' CMBAS  error, number of AO-blocks            ',NBLOCK,
      *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('CMBAS: Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error, number of primitives per block      ',NUCI,
+     *  ' CMBAS  error, number of primitives per block      ',NUCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS  error, number of contracted functions      ',NRCI,
+     *  ' CMBAS  error, number of contracted functions      ',NRCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many contracted functions')
       END
@@ -3076,17 +3073,17 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM error, number of AO-blocks          ',NBLOCK,
+     *  ' CMBAS_CNUUM error, number of AO-blocks          ',NBLOCK,
      *  '                   current maximum number MXAOVC =',KAOVEC
         CALL QUIT('CMBAS_CNUUM: Too many AO-blocks')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM  error, number of primitives per block ',NUCI,
+     *  ' CMBAS_CNUUM  error, number of primitives per block ',NUCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS_CNUUM: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> CMBAS_CNUUM  error, number of contracted functions ',NRCI,
+     *  ' CMBAS_CNUUM  error, number of contracted functions ',NRCI,
      *  '     current maximum number (use .MAXPRI to increase)  ',KPRIM
         CALL QUIT('CMBAS: Too many contracted functions')
       END
@@ -3169,7 +3166,7 @@ C           in her2drv:PAOSET, each segmented is put into its own block
 C           thus for UNCONT each primitive is in its own block and we
 C           must have at least KAOVEC blocks
                WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     *      ' >>> ACPORB error, number of AO-blocks for UNCONT ',NRCIJ,
+     *      ' ACPORB error, number of AO-blocks for UNCONT ',NRCIJ,
      *      '                   current maximum number MXAOVC =',KAOVEC,
      &      '  Increase MXAOVC and rebuild with make'
                CALL QUIT('Too many AO-blocks for an uncontracted '//
@@ -3439,7 +3436,7 @@ C
 C
 #ifdef ENABLE_EFS
       call MPI_COMM_RANK(MPI_COMM_WORLD, irank, ierror)
-      if ((.not. efs_interface_is_initialized) 
+      if ((.not. efs_interface_is_initialized)
      &    .and. (irank.eq.MASTER)) then
 
         jblock = 0
@@ -3501,7 +3498,7 @@ C
 #endif
 
           call efs_add_atomtype( atype%centers,
-     &        atype%gtos, atype%nr_centers, 
+     &        atype%gtos, atype%nr_centers,
      &        atype%nr_gtos )
 
           !free memory
@@ -3574,7 +3571,7 @@ C     Error messages:
 C
  5000 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6)')
-     *   ' >>> ORBPRO error, '//
+     *   ' ORBPRO error, '//
      *   'no. of contracted functions in an AO-block',NCONT,
      *   '                   '//
      *   'current maximum number           MXCONT = ',MXCONT
@@ -4682,9 +4679,8 @@ C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
       use pelib_interface, only: use_pelib
-#if defined (HAS_PCMSOLVER)
-      use pcm_scf, only: pcm_scf_initialize
-      use pcmmod_cfg
+#ifdef HAS_PCMSOLVER
+      use pcm_config, only: pcm_configuration, pcm_cfg, pcm_initialize
 #endif
 #include "implicit.h"
 #include "dummy.h"
@@ -4848,8 +4844,8 @@ C
 C
 C     Print internuclear distances (if not an atom)
 C
-         LUIP = -100
-         IF ((IPREAD .GT. 0) .OR. (GEOALL)) THEN
+         IF (IPREAD .GT. 0 .OR. GEOALL) THEN
+            LUIP = -100
             CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,
      &         WORK(ISTRT),LWORK)
             IF (NUCDEP .GT. 2 .AND. NBONDS .LE. 0) THEN
@@ -4866,13 +4862,14 @@ C
          IF (IPREAD .GT. 0) CALL ROTANA(WORK(1),WORK(KMASS),WORK(ISTRT),
      &            CMXYZ,AIMOM,BIMOM,CIMOM,LINEAR,NCENTS,NCOOR,IPREAD)
 C
-      IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
+         IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-#if defined (HAS_PCMSOLVER)
-      if (pcmmod_is_pcm_calculation) then
-        call pcm_scf_initialize(lupri)
+#ifdef HAS_PCMSOLVER
+      if (pcm_cfg%do_pcm) then
+        call report_after_pcm_input(lupri, pcm_cfg)
+        call pcm_initialize(lupri, lupri)
         write(lupri, *) "PCMSolver interface correctly initialized"
       end if
 #endif
@@ -4960,15 +4957,24 @@ C
       END IF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucsiz */
       SUBROUTINE NUCSIZ(INUC,DELTA)
 C.......................................................................
 C
-C     For a nucleus of atomic no. "charge", calculate the exponent delta
-C     for a gaussian charge distribution approximation to the finite nuc
+C     For a nucleus of atomic no. "INUC", calculate the exponent DELTA
+C     for a Gaussian charge distribution approximation to the finite
+C     Nucleus. Uses the Formula and Nuclear Masses from
+C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
+C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
+C     Conversion Factor Bohr/fm 52917.7249.
+C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER (DP3=1.0D0/3.0D0)
+      PARAMETER (FAC=1.5D10,AF=0.529177249D0,BF=0.836D0,CF=0.570D0)
+      PARAMETER (FAC2=2.556D0)
 C     include character ASYMB(0:NSYNB)*2 with atomic symbols
 #include "asymb.h"
       DIMENSION AMASS(103)
@@ -4999,10 +5005,11 @@ C     include character ASYMB(0:NSYNB)*2 with atomic symbols
       IF (INUC.LE.103) THEN
          A = AMASS(INUC)
       ELSE
-         A = INUC*2.556D0
+         A = INUC*FAC2
       END IF
-      A = A**(1.0D0/3.0D0)
-      DELTA = 1.5D10*(.52917706D0/(.836D0*A+0.57D0))**2
+      A = A**DP3
+      DELTA = (AF/(BF*A+CF))
+      DELTA = FAC*DELTA*DELTA
       RETURN
       END
 C  /* Deck sphlab */
@@ -5661,6 +5668,7 @@ C
       CHARACTER*(len_NEXT_INPUT_LINE) NEXT_INPUT_LINE
       INTEGER    NMLN_LASTREAD
       DATA       NMLN_LASTREAD /0/
+      SAVE       NMLN_LASTREAD
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
@@ -6451,10 +6459,10 @@ C               for ZMAT (yet?)
      &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
          CALL QUIT('Too high angular quantum no. specified in input.')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.5,A/A/A,E12.5)')
      &    ' Atomic coordinate ',CORD(J,NUCIND),
      &    ' too large in BUILDZ',
-     &    ' Note: Program is unstable for large coordinates.',
+     &    ' Note: Program is unstable for large coordinate values.',
      &    ' Maximum coordinate value:',CORMAX
         CALL QUIT('*** ERROR: Atomic coordinate too large in BUILDZ')
       END
@@ -6691,7 +6699,7 @@ Chj:  skip any additional comment lines before title lines
                      II=II+1
                      WRITE(LUSHB,'(I5,A5,I5)')II, SPD(J), NNUC
                      DO M=1,NNUC
-                        WRITE(LUSHB,'(I5,D15.9,D20.10)')
+                        WRITE(LUSHB,'(I5,D16.9,D20.10)')
      &                     M,PRIEXP(IPSTRT+M-1),CPRIMU(M,MM,KBCH)
                      END DO
                   END DO
