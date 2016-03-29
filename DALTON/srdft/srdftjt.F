@@ -349,11 +349,6 @@ C      Potentials with quadrature weigths
            d1Exdrhot  = d1Ex(1)
            d1Ecdrhot  = d1Ec(1)
        end if
-       if (ipnt .eq. 1) then
-          write (lupri,*)'d1Exdrhot', d1Exdrhot
-          write (lupri,*)'d1Ecdrhot', d1Ecdrhot
-       end if 
-
 
        d1Exdrhot  = WGHTX*d1Exdrhot
        d1Exdrhos  = WGHTX*d1Exdrhos
