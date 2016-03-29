@@ -349,6 +349,11 @@ C      Potentials with quadrature weigths
            d1Exdrhot  = d1Ex(1)
            d1Ecdrhot  = d1Ec(1)
        end if
+       if (ipnt .eq. 1) then
+          write (lupri,*)'d1Exdrhot', d1Exdrhot
+          write (lupri,*)'d1Ecdrhot', d1Ecdrhot
+       end if 
+
 
        d1Exdrhot  = WGHTX*d1Exdrhot
        d1Exdrhos  = WGHTX*d1Exdrhos
@@ -378,6 +383,11 @@ C      Exchange-correlation contribution to Kohn-Sham matrix (charge and spin co
        if (domcsrdft .and. docisrdft) then  !  only true for start-CI  (cf. routine OPST)
            CALL DFTKSM(EXCMAT,GSO(KSO0),GSO(KSO1),RHG(1,1),
      &                 d1Excdrhot,d1Excdngrd2,DOGGA,FROMVX,DFTHRL,IPNT)
+          if (ipnt .eq. 1) then
+             write(lupri,*)'DOGGA', DOGGA
+             write(lupri,*)'DOERG', DOERG
+             write(lupri,*)'d1Excdrhot', d1Excdrhot
+          end if 
        else if (domcsrdft .and. .not. docisrdft) then
           if (dogga. and. dft_spindns) then ! special treatment if gga + spin
               CALL DFTKSMGGASPIN(EXCMAT,GSO(KSO0),GSO(KSO1),RHG,
@@ -611,6 +621,14 @@ c  Exchange  ------------------------------------------------------------
          rhogrd(4) = 0.0d0
       END IF
 
+!     LDA exchange functional (to fit with corresponding correlation
+!     functional) - see explaination with DOSRC_LDA_PW92
+      IF(DOSRX_LDA_PW92) THEN
+        rho(2) = 0.0d0
+        call DESRSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),CHIVAL,DFT_SPINDNS,
+     >                NORDER,Ex,d1Ex,d2Ex,ipnt)
+      ENDIF 
+
 !     short-range exchange PBE of HSE
       IF(DOSRX_PBEHSE) THEN
         IF(.not. DFT_SPINDNS) THEN     
@@ -674,6 +692,14 @@ C  Correlation  ----------------------------------------------------------
       d1Ec(1:6)  = 0.0d0
       d2Ec(1:10) = 0.0d0
 
+      IF(DOSRC_LDA_PW92) THEN
+        ! d1Ec(3), d1Ec(3) here ...
+        ! DESRSPIN called with DFT_SPINDNS = false gives LDA functional
+        ! for closed shell (but with J. Toulouse new LDA based on PW92)
+        rho(2)   = 0.0d0
+        call DESRSPIN(ESRC_LDAERFSPIN,rho(1),rho(2),CHIVAL,DFT_SPINDNS,
+     >                NORDER,Ec,d1Ec,d2Ec,ipnt)
+      ENDIF
 !     short-range correlation PBE of TCS
       IF(DOSRC_PBETCS) THEN
 !        call VSRCPBEERF(ec,d1ecdrho,d1ecdgrd,d1ecdgrda2,d2ecdrhodrho,
@@ -1056,7 +1082,7 @@ C Total contribution -------------------------------------------------------
          RY(1) = ZNV(1)*RHG(2,1)
          RZ(1) = ZNV(1)*RHG(3,1)
       ELSE 
-         call quit('SRDFTLTRJT: we should not end here')
+         ! do nothing
       END IF
 
 #ifdef SRDFT_DEBUG
