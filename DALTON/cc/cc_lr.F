@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -98,15 +98,15 @@ C
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(1X,A)')
-     *'*<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >'//
-     *'>>>>>>>>>*'
+     *'*---------- OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >'//
+     *'---------*'
       IF ( DIPPOL ) THEN
          WRITE (LUPRI,'(1X,A)')
      *   '*                                                        '//
      *   '         *'
          WRITE (LUPRI,'(1X,A)')
-     *   '*<<<<<<<<<<      CALCULATION OF CC POLARIZABILITIES     >'//
-     *   '>>>>>>>>>*'
+     *   '*----------      CALCULATION OF CC POLARIZABILITIES     >'//
+     *   '---------*'
       ENDIF
       WRITE (LUPRI,'(1X,A)')
      *'*                                                        '//
@@ -1469,15 +1469,15 @@ C
      *'*                                                        '//
      *'         *'
       WRITE (LUPRI,'(1X,A)')
-     *'*<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >'//
-     *'>>>>>>>>>*'
+     *'*---------- OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >'//
+     *'---------*'
       IF ( OSCSTR ) THEN
          WRITE (LUPRI,'(1X,A)')
      *   '*                                                        '//
      *   '         *'
          WRITE (LUPRI,'(1X,A)')
-     *   '*<<<<<<<<<<      CALCULATION OF CC OSCILLATOR STRENGTHS  >'//
-     *   '>>>>>>>>>*'
+     *   '*----------      CALCULATION OF CC OSCILLATOR STRENGTHS  >'//
+     *   '---------*'
       ENDIF
       WRITE (LUPRI,'(1X,A)')
      *'*                                                        '//
@@ -2653,7 +2653,7 @@ C
 C
       TIMTOT = SECOND() - TIMTOT
       WRITE(LUPRI,'(/,1X,A,I5,A,F10.2,A)')
-     & '>>> Time for',NTOT,' linear response residues: ',
+     & ' Time for',NTOT,' linear response residues: ',
      & TIMTOT,' seconds.'
       CALL FLSHFO(LUPRI)
 C
@@ -5125,12 +5125,12 @@ C     -------------
      &                               '*******************************',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<  OUTPUT FROM COUPLED CLUST',
-     &                               'ER LINEAR RESPONSE   >>>>>>>>>*',
+     & '*--------  OUTPUT FROM COUPLED CLUST',
+     &                               'ER LINEAR RESPONSE   ---------*',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<      CALCULATION OF SECOND',
-     &                               ' ORDER RESIDUES      >>>>>>>>>*',
+     & '*--------      CALCULATION OF SECOND',
+     &                               ' ORDER RESIDUES      ---------*',
      & '*                                   ',
      &                               '                              *',
      & '************************************',
@@ -6506,7 +6506,7 @@ C     -----------------------
 
  999  TIMTOT = SECOND() - TIMTOT
       WRITE(LUPRI,'(/,1X,A,I7,A,F10.2,A)')
-     & '>>> Total time for',NTOT,' linear response residues: ',
+     & ' Total time for',NTOT,' linear response residues: ',
      & TIMTOT,' seconds.'
       CALL FLSHFO(LUPRI)
 

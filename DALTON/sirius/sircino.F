@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -60,7 +60,7 @@ C
       LFREE  = LFRSAV
 C
       IF (IPRCI .GE. 4) WRITE (LUW4,'(//A)')
-     *   ' >>>>> OUTPUT FROM SIRIUS.CINO MODULE <<<<<'
+     *   ' ----- OUTPUT FROM SIRIUS.CINO MODULE -----'
 C
       LRCINO = LROOTS
       IF (ICHECK .NE. 0) THEN
@@ -99,7 +99,7 @@ C
             CALL CICHCK(WRK(KW21),LW21,ICHECK)
          ELSE
             WRITE(LUW4,'(//2A/A/A,I5)')
-     *      ' >>> WARNING CINO <<<  REQUESTED SYMMETRY CHECK OF',
+     *      ' --- WARNING CINO ---  REQUESTED SYMMETRY CHECK OF',
      *      ' CI VECTOR NOT PERFORMED',
      *      ' CURRENT ALGORITHM ONLY WORKS AFTER SEVERAL CI ITERATIONS',
      *      ' MAXIMUM CI ITERATIONS   MAXCIT:',MAXCIT

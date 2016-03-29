@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -294,8 +294,8 @@ C
       CALL GETTIM(TEND,WEND)
       TIMHER = TEND - TIMHER
       WALHER = WEND - WALHER
-      CALL TIMTXT('>>>> Total CPU  time used in HERMIT:',TIMHER,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in HERMIT:',WALHER,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in HERMIT:',TIMHER,LUPRI)
+      CALL TIMTXT(' Total wall time used in HERMIT:',WALHER,LUPRI)
       CALL QEXIT('HERCTL')
       RETURN
       END
@@ -303,7 +303,7 @@ C
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
-C     <<< General Input for HERMIT >>>
+C     --- General Input for HERMIT ---
 C
 C     Trygve Helgaker, extensively extended by others 
 C
@@ -1088,7 +1088,7 @@ C           Integrals are computed for DIRCCR12 program (WK/UniKA/25-11-2002).
             DCCR12 = .TRUE.
             SUPMAT = .FALSE.
             GOTO 100
-cLig >> added what to do for RANGMO and RPSO options
+cLig added what to do for RANGMO and RPSO options
   211    CONTINUE
             RANGMO = .TRUE.
             ONEPRP = .TRUE.
@@ -1474,12 +1474,12 @@ c ach
                WRITE (LUPRI,'(10X,A)')
      &             '  (electron spin - nuclear magnetic field coupling)'
             END IF
-cLig >>
+cLig
             IF (RPSO) THEN
                WRITE (LUPRI,'(10X,A)')
      &              '- CTOCD-DZ diamagnetic shielding integrals'
             END IF
-cLig <<
+cLig
          END IF
          IF (HDO) WRITE (LUPRI,'(10X,A)')
      &       '- antisymmetrized half-derivative overlap integrals'
@@ -1678,14 +1678,14 @@ Cajt qdb
      &       ' Hamiltonian integrals'
          IF (PVIOLA) WRITE (LUPRI,'(10X,A)')
      &       '- parity violation electroweak interaction'
-cLig >> added message to display for RPSO and RAGNMO optiion
+cLig added message to display for RPSO and RAGNMO optiion
          IF (RANGMO) WRITE (LUPRI,'(10X,A)')
      &      '- Product between (r - r_go) and l_go for the'//
      &      '  computation of CTOCD-DZ magnetizability in an'//
      &      '  analytical way'
+cLig
          IF (LFDIPLN) WRITE (LUPRI,'(10X,A)')
      &     '- Effective dipole operator - only possible with PE library'
-cLig <<
       END IF
 
       WRITE (LUPRI,'(4(/A,3F20.12))')
@@ -1701,7 +1701,7 @@ cLig <<
       IF (.NOT.HAMILT) WRITE (LUPRI,'(/A)')
      *    ' Ordinary (field-free non-relativistic) Hamiltonian '/
      *     /'integrals not calculated.'
-      IF (MGMO2T) WRITE (LUPRI,'(/A,D12.6)')
+      IF (MGMO2T) WRITE (LUPRI,'(/A,1P,D10.2)')
      &    ' Threshold for testing two-electron part of magnetic moment:'
      &    ,PRTHRS
       IF (NMRISS) THEN
@@ -2165,7 +2165,7 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
               IF (USRSCR) THEN
                 FCKTHR = -IFTHRS
                 FCKTHR = 10.0D0**FCKTHR
-                WRITE(LUPRI,'(2A,1P,D8.2)') 
+                WRITE(LUPRI,'(2A,1P,D9.2)') 
      &            ' * Screening threshold in direct Fock ',
      &            'matrix construction: ',FCKTHR
                 IF(IFTHRS.GE.16) WRITE(LUPRI,'(4X,A)') 
@@ -2180,7 +2180,7 @@ C     IF (ICHANG .EQ. 0.AND..NOT.(DIRCAL.OR.CHI1ST)) GOTO 199
      &    ' * Separate density screening of exchange integral batches'
             ENDIF
             IF (RELCAL .AND. (THRFAC(1).NE.D1.OR.THRFAC(2).NE.D1)) THEN
-              WRITE(LUPRI,'(A,2(/3X,A,1P,D9.3))')
+              WRITE(LUPRI,'(A,2(/3X,A,1P,D10.3))')
      +           ' * Threshold factors for omitting integrals:',
      +           'SL-integrals: ',THRFAC(1),
      +           'SS-integrals: ',THRFAC(2)
@@ -3510,7 +3510,7 @@ C
                CALL TIMER('XDDXR3',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END  IF
-cLig >> call to PR1INT form RANGMO and RPSO options
+cLig call to PR1INT form RANGMO and RPSO options
 C
 C           ***** (r-r')l' integrals, for calculation of
 C           magetizability  *****
@@ -3547,7 +3547,7 @@ C
                CALL TIMER('PRPINT',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             END IF
-cLig <<
+cLig
          END IF
       END IF  ! (RUNONE)
       RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
@@ -4241,10 +4241,10 @@ C     Initialize R12 logical variables R12CAL (WK/UniKA/04-11-2002).
         NRXR12(I) = 0
         LOCFRO(I) = 0
       END DO
-cLig >> setting RANGMO and RPSO false
+cLig setting RANGMO and RPSO false
       RANGMO = .FALSE.
       RPSO   = .FALSE.
-cLig <<
+cLig
       DOLRINTS=.FALSE. ! jim-dgb DOLRINT init to FALSE
 C
       CALL DZERO(ORIGIN,3)

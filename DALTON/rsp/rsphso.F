@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -155,18 +155,18 @@ C ALLOCATE WORK SPACE
 C
       KWRK1 = 1
       LWRK1 = LWRK
-      CALL MEMGET('REAL', KFC    , NORBT*NORBT,WRK,KWRK1,LWRK1)
+      CALL MEMGET2('REAL','FC', KFC    , NORBT*NORBT,WRK,KWRK1,LWRK1)
       IF (LORB) THEN
-         CALL MEMGET('REAL', KFV    , NORBT*NORBT,WRK,KWRK1,LWRK1)
-         CALL MEMGET('REAL', KQA    , NORBT*NASHT,WRK,KWRK1,LWRK1)
-         CALL MEMGET('REAL', KQB    , NORBT*NASHT,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','FV', KFV    , NORBT*NORBT,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','QA', KQA    , NORBT*NASHT,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','QB', KQB    , NORBT*NASHT,WRK,KWRK1,LWRK1)
       END IF
-      CALL MEMGET('REAL', KH1 , NORBT*NORBT,WRK,KWRK1,LWRK1)
-      CALL MEMGET('REAL', KH2 , NORBT*NORBT,WRK,KWRK1,LWRK1)
+      CALL MEMGET2('REAL','H1', KH1 , NORBT*NORBT,WRK,KWRK1,LWRK1)
+      CALL MEMGET2('REAL','H2', KH2 , NORBT*NORBT,WRK,KWRK1,LWRK1)
       IF (LCON) THEN
-         CALL MEMGET('REAL',  KH2AC , NNASHX*NNASHX,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','H2AC',KH2AC,NNASHX*NNASHX,WRK,KWRK1,LWRK1)
       ELSE
-         CALL MEMGET('REAL',  KH2AC , 0            ,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','H2AC',KH2AC,0            ,WRK,KWRK1,LWRK1)
       END IF
 C
       IF (IPRHSO.GT.20 .AND. LORB .AND. NASHT.GT.0) THEN
@@ -214,8 +214,8 @@ C
      &               WRK(KH2AC),UDV,PV,CMO,LORB,LCON,WRK,KWRK1,LWRK1)
       ELSE
          TRPDEN=.TRUE.
-         CALL MEMGET('REAL',KD,N2ASHX,WRK,KWRK1,LWRK1)
-         CALL MEMGET('REAL',KP,2*N2ASHX*N2ASHX,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','D',KD,N2ASHX,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','P',KP,2*N2ASHX*N2ASHX,WRK,KWRK1,LWRK1)
          CALL DZERO(WRK(KD),N2ASHX)
          CALL DZERO(WRK(KP),2*N2ASHX*N2ASHX)
          IF (TDHF) THEN
@@ -226,7 +226,7 @@ C
 C
 C Need new density matrices
 C
-            CALL MEMGET('REAL',KCREF,MZCONF(1),WRK,KWRK1,LWRK1)
+            CALL MEMGET2('REAL','CREF',KCREF,MZCONF(1),WRK,KWRK1,LWRK1)
             CALL GETREF(WRK(KCREF),MZCONF(1))
             CALL RSPDM(IREFSY,IREFSY,MZCONF(1),MZCONF(1),
      &         WRK(KCREF),WRK(KCREF),
@@ -314,9 +314,9 @@ C
       IF (IPRHSO.GT.2) CALL TIMER('HSOCTL',HSOSTA,HSOTIM)
       IF (X2GRAD) THEN
          CALL MEMREL('X2GRAD',WRK,KFC,KFC,KWRK1,LWRK1)
-         CALL MEMGET('INTE',KMJWOP,16*MAXWOP,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('INTE','MJWOP',KMJWOP,16*MAXWOP,WRK,KWRK1,LWRK1)
          CALL HEADER('X2GRAD TEST FOR SPIN-ORBIT GRADIENT ELEMENTS',3)
-         CALL MEMGET('REAL',KGP2,KZYVAR,WRK,KWRK1,LWRK1)
+         CALL MEMGET2('REAL','GP2',KGP2,KZYVAR,WRK,KWRK1,LWRK1)
          CALL DZERO(WRK(KGP2),KZYVAR)
          CALL SETZY(WRK(KMJWOP))
          CALL HSOAL2 (WORD,WRK(KGP2),CMO,UDV,PV,XINDX,WRK(KMJWOP),
@@ -539,7 +539,7 @@ C
       KCDSYM = MULD2H(KSYMOP,ICDSYM)
 C
       IF (IPRHSO.GT.IPRFSO) THEN
-         WRITE(LUPRI,'(/A)')' <<<<<< Output from FSOMU >>>>>>'
+         WRITE(LUPRI,'(/A)')' ------ Output from FSOMU ------'
          WRITE(LUPRI,'(/A,2I5,5X,A,2X,A)')' Distribution CD',ICI1,IDI1,
      *                          COBTYP(ITYPC),COBTYP(ITYPD)
          WRITE(LUPRI,'(A,2I5)')' Reordered      ',ICI,IDI
@@ -861,7 +861,7 @@ C
       IF (ITYPD .EQ. JTACT) NDIW = IDIW - NISHT
 C
       IF (IPRHSO.GT.IPRQSO) THEN
-         WRITE(LUPRI,'(/A)') ' <<<<<< Output from QSOMU >>>>>>'
+         WRITE(LUPRI,'(/A)') ' ------ Output from QSOMU ------'
          WRITE(LUPRI,'(/A,2I5,5X,2A)')' Distribution CD',ICI,IDI,
      *                          COBTYP(ITYPC),COBTYP(ITYPD)
          WRITE(LUPRI,'(A,2I5)')       ' Symmetry       ',ICSYM,IDSYM
@@ -1159,7 +1159,7 @@ C  Local print level
 C
       IPRLOC = 20
       IF (IPRHSO.GT.IPRLOC) THEN
-         WRITE(LUPRI,'(/A)') ' <<<<<< Output from HSOSIG >>>>>>'
+         WRITE(LUPRI,'(/A)') ' ------ Output from HSOSIG ------'
       END IF
 C
 C ALLOCATE WORK SPACE
@@ -1172,14 +1172,15 @@ C        ... if KZCONF .ne. NCREF, we need CREF in determinants
       END IF
       KFREE = 1
       LFREE = LWRK
-      CALL MEMGET('REAL', KFCAC , N2ASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL', KREFCO , NDREF,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL', KHSQSQ , N2ASHX*N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAC' ,KFCAC,N2ASHX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','REFCO',KREFCO,NDREF,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HSQSQ',KHSQSQ,N2ASHX*N2ASHX,WRK,KFREE,LFREE)
       CALL DZERO(WRK(KFCAC),N2ASHX)
       CALL DZERO(WRK(KREFCO),NDREF)
       CALL DZERO(WRK(KHSQSQ),N2ASHX*N2ASHX)
       IF (TESTZY) THEN
-         CALL MEMGET('REAL', KHSQTR , N2ASHX*N2ASHX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','HSQTR',KHSQTR,N2ASHX*N2ASHX,
+     &      WRK,KFREE,LFREE)
          CALL DZERO(WRK(KHSQTR),N2ASHX*N2ASHX)
       END IF
       IADINT = -1
@@ -1417,7 +1418,7 @@ C
          CALL HSOFCKAO(WORD,CMO,UDV,FC,FV,WRK,KWRK1,LWRK1)
       ELSE
          CALL HSOFCKMO(FC,FV,QA,QB,H2AC,UDV,PV,LORB,LCON,
-     &   WRK,KWRK1,LWRK1)
+     &      WRK,KWRK1,LWRK1)
       END IF
       CALL QEXIT('HSOFCK')
       END 
@@ -1463,8 +1464,8 @@ C
 
       NDMAT=1
       IF (NASHT.GT.0) NDMAT = 2
-      CALL MEMGET('REAL',KFC,NDMAT*N2BASX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDC,NDMAT*N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC',KFC,NDMAT*N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DC',KDC,NDMAT*N2BASX,WRK,KFREE,LFREE)
       KFV = KFC + N2BASX
       KDV = KDC + N2BASX
 C
@@ -1558,7 +1559,6 @@ C
                CALL MAOPRI(WRK(KFC+N2BASX),':SKLFCK:Calculated F2')
             END IF
          END IF
-         CALL MEMCHK('HSOFCKAO.SKLFCK',WRK,KFC)
          CALL GETTIM(SO2CPU,SO2WAL)
          SOCPU=SO2CPU-SO1CPU
          SOWAL=SO2WAL-SO1WAL
@@ -1569,6 +1569,7 @@ C
      &   '   =================================',
      &   '   Spin-orbit 2-electron CPU  time ',SOCPU,' seconds',
      &   '   Spin-orbit 2-electron wall time ',SOWAL,' seconds'
+         CALL MEMCHK('HSOFCKAO.SKLFCK',WRK,KFC)
       ELSE
 C
 C Read AO integrals from disk (AO2SOINT)
@@ -1624,7 +1625,7 @@ C  /* Deck hsofckmo  */
 #include "priunit.h"
 #include "wrkrsp.h"
       INTEGER NEEDSO(-4:6)
-      CALL QENTER('HSOFCK')
+      CALL QENTER('HSOFCKMO')
       CALL DZERO(FC,N2ORBX)
       IF (LORB) THEN
          CALL DZERO(FV,N2ORBX)
@@ -1638,9 +1639,9 @@ C  /* Deck hsofckmo  */
          CALL QEXIT('HSOFCK')
          RETURN
       END IF
-      CALL MEMGET('REAL',KH2,N2ORBX,WRK,KWRK1,LWRK1)
-      CALL MEMGET('REAL',KPV12,N2ASHX,WRK,KWRK1,LWRK1)
-      CALL MEMGET('REAL',KPV21,N2ASHX,WRK,KWRK1,LWRK1)
+      CALL MEMGET2('REAL','H2'  ,KH2  ,N2ORBX,WRK,KWRK1,LWRK1)
+      CALL MEMGET2('REAL','PV12',KPV12,N2ASHX,WRK,KWRK1,LWRK1)
+      CALL MEMGET2('REAL','PV21',KPV21,N2ASHX,WRK,KWRK1,LWRK1)
 C
 C Read distributions
 C
@@ -1722,8 +1723,8 @@ C
  71         CONTINUE
          END IF
       END IF
-      CALL MEMREL('HSOFCK',WRK,KH2,KH2,KWRK1,LWRK1)
-      CALL QEXIT('HSOFCK')
+      CALL MEMREL('HSOFCKMO',WRK,KH2,KH2,KWRK1,LWRK1)
+      CALL QEXIT('HSOFCKMO')
       END
 C  /* Deck hsoorb */
       SUBROUTINE HSOORB(ONEIND,NSIM,FC,FCX,FVX,QAX,QBX,UDV,

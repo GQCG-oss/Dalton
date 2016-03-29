@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1015,7 +1015,7 @@ C
      *    /' Optical and physical constants:'
      *    /' EPS=',F7.3,'; EPSINF=',F7.3,';',
      *     ' RSOLV=',F7.3,' A; VMOL=',F8.3,' ML/MOL;'
-     *    /' TCE=',1P,D11.5,0P,' 1/K; STEN=',F7.3,
+     *    /' TCE=',1P,D12.5,0P,' 1/K; STEN=',F7.3,
      *     ' DYN/CM;  DSTEN=',F8.4,'; CMF=',F8.4/)
       RETURN
       END

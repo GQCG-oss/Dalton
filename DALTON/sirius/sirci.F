@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -113,12 +113,12 @@ C           ... restart CI in next macro CIDFT iteration ...
             IF(IMCITR.NE.1) EDIFF = ECIDFT - WORK(KECID + I - 2) 
             IF (IMCITR .GE. MXCIDFT) THEN
                WRITE(LUPRI,'(///A//A)') 
-     &  '  >>>>> CI-srDFT optimization -- Summary <<<<<',
+     &  '  ----- CI-srDFT optimization -- Summary -----',
      &  '  ** Maximum number of Macro CI-srDFT iterations reached **'
                GO TO 5
             ELSE IF ((ABS(EDIFF).LT.THRCIDFT).AND.(IMCITR.NE.1)) THEN
                WRITE(LUPRI,'(///A//A,I3,A)') 
-     &         '  >>>>> CI-DFT optimization -- Summary <<<<<',
+     &         '  ----- CI-DFT optimization -- Summary -----',
      &         '  ** Convergence reached in',IMCITR,
      &         ' CI-DFT macro iterations.'
                GO TO 5
@@ -217,9 +217,9 @@ C
       CALL QENTER('CICTL ')
       TIMTOT = SECOND()
       WRITE (LUW4,'(//A///)')
-     *   ' <<<<< Output from SIRIUS CI module (CICTL) >>>>>'
+     *   ' ----- Output from SIRIUS CI module (CICTL) -----'
       IF (LUPRI .NE. LUW4) WRITE (LUPRI,'(//A///)')
-     *   ' <<<<< Output from SIRIUS CI module (CICTL) >>>>>'
+     *   ' ----- Output from SIRIUS CI module (CICTL) -----'
       IF (NASHT .LE. 1) THEN
          WRITE(LUPRI,'(//A,I8/)')
      *      ' *** ERROR *** CICTL CALLED, BUT NASHT =',NASHT
@@ -2429,7 +2429,7 @@ C            we thus need more ...
          NRS = MIN( NCONF, 2 * NCSIM + 6)
          IF (NRS .GT. MXNLIS .AND. MXNLIS .GT. NCSIM) NRS = MXNLIS
          WRITE (LUPRI,'(//A/A/)')
-     *   ' >>> SIRCI.CIST1: plus combination of all degenerate',
+     *   ' --- SIRCI.CIST1: plus combination of all degenerate',
      *   '                 configurations is used as start vectors.'
       ELSE
          NRS = MIN(NCSIM + 3,NCONF)
@@ -2437,10 +2437,10 @@ C        ... we add 3 so we can expand if degeneracy.
       END IF
       IF (NRS .GT. MXNLIS) THEN
          WRITE (LUPRI,'(//A,I4,A/I9,A/)')
-     1      ' >>> SIRCI.CIST1 ERROR, LOCAL DIMENSION ONLY ALLOWS',
+     1      ' --- SIRCI.CIST1 ERROR, LOCAL DIMENSION ONLY ALLOWS',
      2      MXNLIS,' DIAGONAL ELEMENTS,', NRS,' WERE REQUESTED.'
          CALL QTRACE(LUPRI)
-         CALL QUIT('>>> SIRCI.CIST1 ERROR, MXNLIS PARAMETER TOO SMALL.')
+         CALL QUIT('--- SIRCI.CIST1 ERROR, MXNLIS PARAMETER TOO SMALL.')
       END IF
       IF (LWRK .LT. NRS+NCONF) CALL ERRWRK('CIST1',(NRS+NCONF),LWRK)
       CALL CIFNMN(NRS,NLIST,HDIAG,NCONF,WRK,LWRK)
@@ -2569,7 +2569,7 @@ C        ... MXNLIS too small, or NRS too small compared to NCSIM.
  1850    FORMAT(
      *   //' (CIST1) INTERNAL ERROR, we only got',I4,' start vectors',
      *    /'                      ',I4,' were requested',
-     *    /' >>> action: revise code in SIRCI.CIST1 or modify problem.')
+     *    /' --- action: revise code in SIRCI.CIST1 or modify problem.')
          CALL QUIT('CIST1 internal error, found too few start vectors.')
       END IF
       NCSIM = MCSIM
@@ -2717,7 +2717,8 @@ C
 C
 C     Write SIRIFC
 C
-      WRITE (LUSIFC) LAB123,TABLE(2)
+      LBSIFC = 'CIRESPON'
+      WRITE (LUSIFC) LAB123,LBSIFC
       ECACTV = ECIREF - EMY
       WRITE (LUSIFC) POTNUC,EMY,ECACTV,ECIREF,ISTACI,ISPIN,NACTEL,
      &               LSYM,MS2

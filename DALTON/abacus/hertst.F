@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2672,7 +2672,7 @@ C
      &         ' No differences larger than threshold found.'
          WRITE (LUPRI,*)
       END IF
-      WRITE (LUPRI,'(/,A,4I3,A,//,5X,D12.6,2(A,D12.6),/)')
+      WRITE (LUPRI,'(/,A,4I3,A,//,1P,D17.5,2(A,D12.5),/)')
      &         ' Largest difference found for element',
      &         IMAX,JMAX,KMAX,LMAX,': ',
      &         DINTM - TESTM, ' = ', DINTM ,' - ',TESTM

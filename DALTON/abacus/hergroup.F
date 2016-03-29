@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -98,7 +98,7 @@ C
   110   CONTINUE
         IAXIS = IOR(IAXIS,IGEN(J))
   100 CONTINUE
-#if defined (HAS_PCMSOLVER)
+#ifdef HAS_PCMSOLVER
 ! Save info on the generators in pcm_igen.
 ! It will possibly be needed to initialize symmetry handling in
 ! PCMSolver

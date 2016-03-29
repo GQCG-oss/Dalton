@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -278,7 +278,7 @@ C
       END IF
       CALL GETTIM(TIMLRS,TIMDUM)
       TIMLRS = TIMLRS - TIMSTR
-cLig >> added the call to CTOABA
+cLig added the call to CTOABA
 C
 C     *****************************
 C     ***** CTOCD-DZ response *****
@@ -291,7 +291,7 @@ C
       END IF
       CALL GETTIM(TIMCTO,TIMDUM)
       TIMCTO = TIMCTO - TIMSTR
-cLig <<
+cLig
 C
 C     **************************************
 C     ***** Relaxation terms (singlet) *****
@@ -680,8 +680,8 @@ cLig <> added the TIMCTO
       TIMABA = TEND - TIMABA
       WALABA = WEND - WALABA
       IF (QMMM) CALL QMMMTIMES('ABACUS')
-      CALL TIMTXT('>>>> Total CPU  time used in ABACUS:',TIMABA,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in ABACUS:',WALABA,LUPRI)
+      CALL TIMTXT(' Total CPU  time used in ABACUS:',TIMABA,LUPRI)
+      CALL TIMTXT(' Total wall time used in ABACUS:',WALABA,LUPRI)
       CALL QEXIT('ABACTL')
       RETURN
       END
@@ -1561,7 +1561,7 @@ C
       IF (SPNSPN) WRITE (LUPRI,'(5X,A)')
      &               ' Nuclear spin-spin coupling constants'
       IF (MAGSUS) WRITE (LUPRI,'(5X,A)') ' Magnetic susceptibilities'
-cLig >> added what to print when the CTOCD option is set true
+cLig added what to print when the CTOCD option is set true
       IF (CTOCD) THEN
          WRITE (LUPRI,'(5X,A)') ' CTOCD-DZ: '
          WRITE (LUPRI,'(5X,A)')
@@ -1576,7 +1576,7 @@ cLig >> added what to print when the CTOCD option is set true
      &          '     J. Chem. Phys. 118, 6830 (2003)',
      &          ' & J. Chem. Phys. 126, 154111 (2007))'
       END IF
-cLig <<
+cLig
       IF (VCD)    WRITE (LUPRI,'(5X,A)')
      &               ' Vibrational circular dichroism (VCD)'
       IF (NACME)  WRITE (LUPRI,'(5X,A)')
@@ -1746,11 +1746,11 @@ cLig <<
       IF (SPNSPN .AND. NASHT .LE. 1 .AND. .NOT.(ABASOP.OR.DFTRUN)) THEN
          NWARN = NWARN + 1
          WRITE (LUPRI,'(/A/A)')
-     &      '@ >>>>> WARNING - RHF calculations of spin-spin coupling'
+     &      '@ WARNING - RHF calculations of spin-spin coupling'
      &    //' constants are likely to give', 
-     &      '@ >>>>> WARNING - qualitatively incorrect results !!!'
+     &      '@ WARNING - qualitatively incorrect results !!!'
       END IF
-cLig >> added the control to right CTOCD input
+cLig added the control to right CTOCD input
       IF ((CTOCD).AND.(.NOT.(MAGSUS .OR. SHIELD))) THEN
          WRITE(LUPRI,'(/A/A)')
      &      'ERROR: Inconsistent input - CTOCD-DZ method',
@@ -1766,7 +1766,7 @@ cLig >> added the control to right CTOCD input
      &      ' .OR, .OR MVE or .ALPHA options are also used'
          CALL QUIT('Not supported input in ABAINP')
       ENDIF
-cLig <<
+cLig
 C  jim-gesc 1.3:  Print section 'lresc will be done '
 Cx jim-dbg :  here we can stop if london or smthg else.
 cx jim-dbg :  asking to specific logic : ex SOPPA
@@ -2217,7 +2217,7 @@ C  /* Deck result */
      &                  RMLEN,RQLEN,RLEN,RMVEL,RQVEL,RVEL,SLEN,SVEL,
      &                  WORK,LWORK)
 C
-C <<< Final results from ABACUS >>>
+C --- Final results from ABACUS ---
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -2353,7 +2353,7 @@ C
      &           'Mass-velocity correction:     ',       RMASSV,' au'
             IF (DARWIN .AND. MASSVE) THEN
                RELTOT = DARWN + RMASSV
-               WRITE (LUPRI,'(/5X,A,F17.10,A,F6.4,A)')
+               WRITE (LUPRI,'(/5X,A,F17.10,A,F7.4,A)')
      &              'Total relativistic correction:         ',  RELTOT,
      &              ' au (', D100*RELTOT/EMCSCF,'%)'
                WRITE (LUPRI,'(5X,A,F17.10,A//)')
@@ -2396,7 +2396,7 @@ C              WRITE (LUPRI,'(5X,A,I3,3X,A,I2,I5,4X,A,3F17.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(/5X,A,19X,1P,D12.6,5X,D12.6)')
+            WRITE (LUPRI,'(/5X,A,1P,D31.6,D17.6)')
      &         '##     Norm of gradient:   ',ALPNRM,ALPNRL
 C
             MAXZ = 0
@@ -2462,7 +2462,7 @@ C                    WRITE (LUPRI,'(5X,A,I5,4X,A,3F20.10)')
             END DO
             ALPNRM = SQRT(ALPNRM)
             ALPNRL = SQRT(ALPNRL)
-            WRITE (LUPRI,'(5X,A,17X,1P,E12.6,8X,E12.6)')
+            WRITE (LUPRI,'(5X,A,9X,1P,2E20.6)')
      &         '@@    Norm of gradient:',ALPNRM,ALPNRL
 C
          ELSE IF (MOLGRD) THEN
@@ -2671,7 +2671,7 @@ C
      &        STOPIT('ABARESULT','NQCRES',KLAST,LWORK)
          CALL NQCRES(IPRDEF,WORK(KAXIS))
       END IF
-cLig >> added the call to SUSRES and SHIRES for CTOCD
+cLig added the call to SUSRES and SHIRES for CTOCD
 C
 C     CTOCD-DZ Susceptibilities and Nuclear Shieldings
 C
@@ -2689,7 +2689,7 @@ C
            CTOCD = .FALSE.
         ENDIF
       ENDIF
-cLig <<
+cLig
 C
 C     Magnetic Susceptibilities
 C
@@ -3330,7 +3330,7 @@ C
             WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
 C
          END IF
-cLig >> what to do for CTOCD
+cLig what to do for CTOCD
       ELSE IF(CTOCD .OR. CTOMAG) THEN
 cDEBUG
 c 	write(LUPRI,*) 'Dentro SUSRES'
@@ -3344,7 +3344,7 @@ c	write(LUPRI,*) 'SUSDZD= ',SUSDZD
           PARSUS(I,J) = SUSREL(I,J)
           SUSTOT(I,J) = DIASUS(I,J) + PARSUS(I,J)
  110    CONTINUE
-cLig <<
+cLig
       ELSE
 C
          DO 200 J = 1, 3
@@ -3392,11 +3392,11 @@ C
          IF (.NOT. (CTOCD .OR. CTOMAG))
      &      WRITE (LUPRI,'(/A)')' London orbitals (GIAOs) used.'
       END IF
-cLig >> added a print statement
+cLig added a print statement
       IF (CTOCD .OR. CTOMAG) THEN
         WRITE (LUPRI,'(/,1X,A)')'CTOCD-DZ results:'
       ENDIF
-cLig <<
+cLig
       IF (D12 .AND. D23) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
          WRITE (LUPRI,'(3(/,1X,A,3(F12.4,A)))')
@@ -3652,7 +3652,7 @@ C
                   FACT = CONV*QMOM
                   FACT2 = FACT/CONV2
                   IF (IPRINT .GE. 0) THEN
-                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F10.8)')
+                    WRITE (LUPRI,'(10X,A10,F5.1,10X,A18,F11.8)')
      &                   'Spin     :',SPIN,'Quadrupole moment:',QMOM
                     WRITE (LUPRI,'(28X,A2,11X,A3,8X,A5)')
      &                   'au','MHz','Gauss'

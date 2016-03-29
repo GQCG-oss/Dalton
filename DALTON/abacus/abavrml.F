@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -508,7 +508,7 @@ C
      &        ATMARR(INUC,3), ATMARR(INUC,4), ' }'
          RAD = 0.5D0*ATMARR(INUC,5)
          IF (VIBRA) RAD = 0.15D0
-         WRITE(LUVRML,'(A,F5.3,A)') ' Sphere { radius ',RAD,' } }'
+         WRITE(LUVRML,'(A,F6.3,A)') ' Sphere { radius ',RAD,' } }'
  10   CONTINUE
       RETURN
       END
@@ -601,7 +601,7 @@ C
                WRITE(LUVRML,'(A,4F7.3,A)')
      &              ' Rotation { rotation ', 
      &              VEC3(1), VEC3(2), VEC3(3), ANG, ' }'
-               WRITE(LUVRML,'(A,F5.3,A,F5.3,A)')
+               WRITE(LUVRML,'(A,F6.3,A,F6.3,A)')
      &              ' Cylinder { parts SIDES radius ',RADIUS,' height ',
      &              H,' } }'
             END IF
@@ -875,7 +875,7 @@ C
             WRITE(LUVRML,'(A,4F7.3,A)')
      &           ' Rotation { rotation ', 
      &           VEC3(1), VEC3(2), VEC3(3), ANG, ' }'
-            WRITE(LUVRML,'(A,F5.3,A,F5.3,A)')
+            WRITE(LUVRML,'(A,F6.3,A,F6.3,A)')
      &           ' Cylinder { parts SIDES radius 0.03 height ',
      &           VECNRM,' } }'
             VEC1(1) = VEC1(1)+0.5D0*VEC2(1)
@@ -973,7 +973,7 @@ C
 C
 C     As VRML has no plane primitive, we use a cube with zero depth.
 C
-            WRITE(LUVRML,'(A,F5.3,A,F5.3,A)')
+            WRITE(LUVRML,'(A,F6.3,A,F6.3,A)')
      &           ' Cube { width ',2.0D0*VECNRM,' height ',
      &           2.0D0*VECNRM,' depth 0.000 } }'
          END IF

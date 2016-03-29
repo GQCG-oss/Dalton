@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -286,7 +286,7 @@ C
 C
       IF ( NTEST .GE. 20 ) THEN
         WRITE(LUPRI,*)
-     &     ' >>> IZNUM <<< ADRESS OF STRING (Old,new) '
+     &     ' --- IZNUM --- ADRESS OF STRING (Old,new) '
      &     ,IZ,IZNUM,' STRING:'
         CALL IWRTMA(IOCC,1,NEL,1,NEL)
       END IF
@@ -647,7 +647,7 @@ C
   100 CONTINUE
 C
       IF ( NTEST .GE. 10 ) THEN
-         WRITE(LUPRI,'(/A/)') ' >>> OUTPUT FROM CIOFF2 (ras) <<<'
+         WRITE(LUPRI,'(/A/)') ' --- OUTPUT FROM CIOFF2 (ras) ---'
          WRITE(LUPRI,*) ' Determinant CI vector of symmetry :',IREFSM
          WRITE(LUPRI,'(/A)') ' Offset array for type and symmetry'
          CALL IWRTMA(IOFF,NOCTPA,MAXSYM,NOCTPA,MAXSYM)
@@ -769,7 +769,7 @@ C
 C
       IF ( NTEST .GT. 0 ) THEN
          WRITE (LUPRI,'(//A,I4,A/A/)')
-     *   ' >>> Output from DETINF module at level',NTEST,' <<<',
+     *   ' --- Output from DETINF module at level',NTEST,' ---',
      *   ' =============================================='
          CALL GETTIM(TTSTRT,WTSTRT)
       END IF
@@ -852,7 +852,7 @@ C
 C*** 2  : STRINGS, SINGLE EXCITATIONS UND SO WEITER FOR ALPHA ELECTRONS
 C
       IF (NTEST .GE. 5) THEN
-         WRITE (LUPRI,'(/A)') ' >>> ALPHA  STRINGS'
+         WRITE (LUPRI,'(/A)') ' --- ALPHA  STRINGS'
          CALL GETTIM(TSTRT,WSTRT)
          TASTRT = TSTRT
       END IF
@@ -981,7 +981,7 @@ C
 C*** 3 : STRINGS, SINGLE EXCITATIONS FOR BETA ELECTRONS
 C
         IF (NTEST .GE. 5) THEN
-           WRITE (LUPRI,'(/A)') ' >>> BETA STRINGS'
+           WRITE (LUPRI,'(/A)') ' --- BETA STRINGS'
            CALL GETTIM(TSTRT,WSTRT)
            TBSTRT = TSTRT
         END IF

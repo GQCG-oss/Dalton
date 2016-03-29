@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -227,7 +227,7 @@ C
       IF (IPRCLC .GT. 0) THEN
          CALL TIMER('START ',TIMEIN,TIMOUT)
          WRITE (LUPRI,'(//A,/)')
-     *    '  <<<<<<<<<< Output from LRSDRV >>>>>>>>>> '
+     *    '  ---------- Output from LRSDRV ---------- '
       END IF
 C
       PASS = .TRUE.
@@ -441,7 +441,7 @@ ckr                  IDORCI(IREC,2) = 2
                      WRITE (LUPRI,'(A,I5)') ' Record:    ',IREC
                      DN1 = DNRM2(NVARPT,WORK,1)
                      DN2 = DNRM2(NVARPT,WORK(1+NVARPT),1)
-                     WRITE (LUPRI,'(A,2(D20.14,2X))') 
+                     WRITE (LUPRI,'(A,2(D21.14,2X))') 
      &                      ' Norms:     ',DN1,DN2
                   END IF
                   IF (IPRCLC .GT. 10) THEN

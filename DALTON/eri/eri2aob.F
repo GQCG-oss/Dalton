@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -107,7 +107,7 @@ C
             KEXP = KEXPBT(I) - 1
             KPRI = KCCFBT(I) - 1
             DO J = 1, NPRFBT(I)
-               WRITE (LUPRI,'(2X,E8.3,7(2X,E8.2))') EXPBT(KEXP + J),
+               WRITE (LUPRI,'(2X,E10.3,7(2X,E9.2))') EXPBT(KEXP + J),
      &             (CCFBT(KPRI + J + NPRFBT(I)*(K-1)),K=1,NCTFBT(I))
             END DO
          END DO

@@ -46,6 +46,7 @@
      &                NOAUX,  NODIHE, LINDHD, ADDCRD, REDRED, NOADDA,
      &                NATNRM, NOHSWR, PRJTRO
 
+      INTEGER MAXPRE
       PARAMETER (MAXPRE = 10)
       CHARACTER*80            PREBTX,         SPBSTX
       COMMON /OPTINF_C/       PREBTX(MAXPRE), SPBSTX

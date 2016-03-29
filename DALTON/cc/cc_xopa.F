@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -89,12 +89,12 @@ c /* deck CC_XOPA */
      &                               '******************************',
      & '*                                   ',
      &                               '                             *',
-     & '*<<<<<<    OUTPUT FROM COUPLED CLUST',
-     &                               'ER LINEAR RESPONSE    >>>>>>>*',
-     & '*<<<<<<  CALCULATION OF ONE-PHOTON A',
-     &                               'ABSORPTION STRENGHTS  >>>>>>>*',
-     & '*<<<<<<     FOR EXCITED TO EXCITED S',
-     &                               'TATE TRANSITIONS      >>>>>>>*',
+     & '*------    OUTPUT FROM COUPLED CLUST',
+     &                               'ER LINEAR RESPONSE    -------*',
+     & '*------  CALCULATION OF ONE-PHOTON A',
+     &                               'ABSORPTION STRENGHTS  -------*',
+     & '*------     FOR EXCITED TO EXCITED S',
+     &                               'TATE TRANSITIONS      -------*',
      & '*                                   ',
      &                               '                             *',
      & '************************************',
@@ -192,7 +192,7 @@ c /* deck CC_XOPA */
       TIMF = SECOND() - TIM1
 
       IF (NFTRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',NFTRAN,' F matrix transformations:',TIMF
+     & ' Time used for',NFTRAN,' F matrix transformations:',TIMF
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -211,7 +211,7 @@ c /* deck CC_XOPA */
 
       TIMXE1 = SECOND() - TIM1
       IF (NXE1TRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
-     & '>>> Time used for',NXE1TRAN,' A{X} matrix transformations:',
+     & ' Time used for',NXE1TRAN,' A{X} matrix transformations:',
      & TIMXE1
       CALL FLSHFO(LUPRI)
 
@@ -231,7 +231,7 @@ c /* deck CC_XOPA */
 
       TIMXE2 = SECOND() - TIM1
       IF (NXE2TRAN.GT.0) WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")') 
-     & '>>> Time used for',NXE2TRAN,' O1/X1 vector calculation:',TIMXE2
+     & ' Time used for',NXE2TRAN,' O1/X1 vector calculation:',TIMXE2
       CALL FLSHFO(LUPRI)
 
 *---------------------------------------------------------------------*
@@ -250,7 +250,7 @@ c /* deck CC_XOPA */
 *---------------------------------------------------------------------*
 * print timing:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') ' Total time for',
      &  NBOPA,' quadratic response func.:', SECOND() - TIM0
 
 *---------------------------------------------------------------------*

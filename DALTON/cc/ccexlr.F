@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -98,12 +98,12 @@ c /* deck ccexlr */
      &                               '*******************************',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<    OUTPUT FROM COUPLED CLU',
-     &                               'STER EXCITED STATE   >>>>>>>>>*',
+     & '*--------    OUTPUT FROM COUPLED CLU',
+     &                               'STER EXCITED STATE   ---------*',
      & '*                                   ',
      &                               '                              *',
-     & '*<<<<<<<<             LINEAR RESPONSE',
-     &                                ' SECTION            >>>>>>>>>*',
+     & '*--------             LINEAR RESPONSE',
+     &                                ' SECTION            ---------*',
      & '*                                   ',
      &                               '                              *',
      & '************************************',
@@ -198,7 +198,7 @@ c /* deck ccexlr */
       TIMG = SECOND() - TIM1
  
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',NGTRAN,' G matrix transformations:',TIMG
+     &  ' Time used for',NGTRAN,' G matrix transformations:',TIMG
       CALL FLSHFO(LUPRI) 
       
 *---------------------------------------------------------------------*
@@ -221,7 +221,7 @@ c /* deck ccexlr */
       TIMF = SECOND() - TIM1
  
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',NFTRAN,' F matrix transformations:',TIMF
+     &  ' Time used for',NFTRAN,' F matrix transformations:',TIMF
       CALL FLSHFO(LUPRI) 
       
 *---------------------------------------------------------------------*
@@ -240,7 +240,7 @@ c /* deck ccexlr */
         TIMB = SECOND() - TIM1
  
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &    '>>> Time used for',NF1TRAN,' F matrix transformations:',TIMB
+     &    ' Time used for',NF1TRAN,' F matrix transformations:',TIMB
         CALL FLSHFO(LUPRI) 
       END IF
 
@@ -256,7 +256,7 @@ c /* deck ccexlr */
       TIMFA = SECOND() - TIM1
  
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',NFATRAN,' F{O} matrix transformat.:',TIMFA
+     & ' Time used for',NFATRAN,' F{O} matrix transformat.:',TIMFA
       CALL FLSHFO(LUPRI) 
 
 *---------------------------------------------------------------------*
@@ -277,7 +277,7 @@ c /* deck ccexlr */
         TIMAA = SECOND() - TIM1
  
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &  '>>> Time used for',NAATRAN,' A{O} matrix transformat.:',TIMAA
+     &  ' Time used for',NAATRAN,' A{O} matrix transformat.:',TIMAA
         CALL FLSHFO(LUPRI) 
       END IF
 
@@ -304,7 +304,7 @@ c /* deck ccexlr */
 
       TIMEA = SECOND() - TIM1
       WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     & '>>> Time used for',NEATRAN,' ETA{O} vector calculat.: ',TIMEA
+     & ' Time used for',NEATRAN,' ETA{O} vector calculat.: ',TIMEA
       CALL FLSHFO(LUPRI)  
 *---------------------------------------------------------------------*
 * calculate N2 x O2 dot products:
@@ -320,7 +320,7 @@ c /* deck ccexlr */
 
         TIMO = SECOND() - TIM1
         WRITE (LUPRI,'(/A,I5,A,F12.2," seconds.")')
-     &     '>>> Time used for',NOTRAN,' N2 x O2 dot products: ', TIMO
+     &     ' Time used for',NOTRAN,' N2 x O2 dot products: ', TIMO
         CALL FLSHFO(LUPRI)
       END IF
 
@@ -341,7 +341,7 @@ c /* deck ccexlr */
 *---------------------------------------------------------------------*
 * print timing:
 *---------------------------------------------------------------------*
-      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') '>>> Total time for',
+      WRITE (LUPRI,'(/A,I4,A,F12.2," seconds.")') ' Total time for',
      & NBEXLR,' excited state linear response func.:', SECOND() - TIM0 
 
 *---------------------------------------------------------------------*
@@ -570,8 +570,8 @@ C     IF (IEXCII.EQ.IEXCIF) THEN
          FREQA = EIGVI - EIGVF - FREQB
          IF (MULD2H(ISYMA,ISYMB).EQ.MULD2H(ISYMSI,ISYMSF)) THEN
           IF (IOPER.EQ.1) THEN
-            WRITE(LUPRI, '("|",2(I3,1X,I3,F9.4,1X),
-     &               (A7,F8.4,2X),(A7,F8.4,1X),3(1X,G14.8),"|")')
+            WRITE(LUPRI, '("|",2(I3,1X,I3,F11.4,1X),
+     &               (A7,F11.4,2X),(A7,F11.4,1X),3(1X,G15.8),"|")')
      &       ISYMSI,ISTATI,EIGVI,ISYMSF,ISTATF,EIGVF,
      &       LBLOPR(IAEXLROP(IOPER)),FREQA,
      &       LBLOPR(IBEXLROP(IOPER)),FREQB,
@@ -579,7 +579,7 @@ C     IF (IEXCII.EQ.IEXCIF) THEN
      &       EXLRPRP(IFREQ,IOPER,IDXS,1)*EXLRPRP(IFREQ,IOPER,IDXS,2)
           ELSE
             WRITE(LUPRI, '("|",2(3X,1X,3X,9X,1X),
-     &               (A7,F8.4,2X),(A7,F8.4,1X),3(1X,G14.8),"|")')
+     &               (A7,F11.4,2X),(A7,F11.4,1X),3(1X,G15.8),"|")')
      &       LBLOPR(IAEXLROP(IOPER)),FREQA,
      &       LBLOPR(IBEXLROP(IOPER)),FREQB,
      &       EXLRPRP(IFREQ,IOPER,IDXS,1),EXLRPRP(IFREQ,IOPER,IDXS,2),
@@ -587,15 +587,15 @@ C     IF (IEXCII.EQ.IEXCIF) THEN
           END IF
          ELSE
           IF (IOPER.EQ.1) THEN
-            WRITE(LUPRI, '("|",2(I3,1X,I3,F9.4,1X),
-     &               (A7,F8.4,2X),(A7,F8.4,1X),3A14,"   |")')
+            WRITE(LUPRI, '("|",2(I3,1X,I3,F11.4,1X),
+     &               (A7,F11.4,2X),(A7,F11.4,1X),3A14,"   |")')
      &        ISYMSI,ISTATI,EIGVI,ISYMSF,ISTATF,EIGVF,
      &        LBLOPR(IAEXLROP(IOPER)),FREQA,
      &        LBLOPR(IBEXLROP(IOPER)),FREQB,
      &        '      ---     ', '      ---     ','      ---     '
           ELSE
             WRITE(LUPRI, '("|",2(3X,1X,3X,9X,1X),
-     &               (A7,F8.4,2X),(A7,F8.4,1X),3A14,"   |")')
+     &               (A7,F11.4,2X),(A7,F11.4,1X),3A14,"   |")')
      &        LBLOPR(IAEXLROP(IOPER)),FREQA,
      &        LBLOPR(IBEXLROP(IOPER)),FREQB,
      &        '      ---     ', '      ---     ','      ---     '
@@ -607,7 +607,7 @@ C     IF (IEXCII.EQ.IEXCIF) THEN
           FREQA = EIGVI - EIGVF - FREQB
           IF (MULD2H(ISYMA,ISYMB).EQ.MULD2H(ISYMSI,ISYMSF)) THEN
             WRITE(LUPRI, '("| ",32X,
-     &            (7X,F8.4,2X),(7X,F8.4,1X),3(1X,G14.8),"|")')
+     &            (7X,F11.4,2X),(7X,F11.4,1X),3(1X,G15.8),"|")')
      &          FREQA, FREQB,
      &        EXLRPRP(IFREQ,IOPER,IDXS,1),EXLRPRP(IFREQ,IOPER,IDXS,2),
      &        EXLRPRP(IFREQ,IOPER,IDXS,1)*EXLRPRP(IFREQ,IOPER,IDXS,2)

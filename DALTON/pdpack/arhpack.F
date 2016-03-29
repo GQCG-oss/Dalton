@@ -1,5 +1,5 @@
 C
-C...   Dalton, Release DALTON2014
+C...   Dalton, Release DALTON2016
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.

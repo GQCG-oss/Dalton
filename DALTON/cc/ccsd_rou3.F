@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -5215,10 +5215,10 @@ C
 C
       WRITE(LUPRI,'(//10X,A,8X,F10.4)')
      *     'Norm of Printed Amplitude Vector : ',SQRT(SUMOFP)
-      WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+      WRITE(LUPRI,'(//10X,A43,1X,F9.6)')
      *     'Printed all single excitations greater than',THR1
       IF (.NOT. (CCS.OR.CCP2)) THEN
-         WRITE(LUPRI,'(//10X,A43,1X,F8.6)')
+         WRITE(LUPRI,'(//10X,A43,1X,F9.6)')
      *     'Printed all double excitations greater than',THR2
       ENDIF
 C

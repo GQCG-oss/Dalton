@@ -18,9 +18,11 @@ f_hf.add(string = 'Solvation energy:',
 f_hf.add(string = 'Final HF energy:',
       rel_tolerance = 1.0e-7)
 
-test.run(['extpcm_hf.dal', 'extpcm_hf_separate.dal'], ['CH4.mol', 'H2O.mol'], {'out': f_hf}, args = '-put @pcmsolver.inp')
-# The following test does not run as the vectorized charge-attraction integrals have not been implemented yet
-#test.run(['extpcm_hf_newint.dal'], ['CH4.mol', 'H2O.mol'], {'out': f_hf}, args = '-put @pcmsolver.inp')
+# Small basis sets (without d-shell)
+test.run(['extpcm_hf.dal', 'extpcm_hf_separate.dal'], ['CH4.mol', 'H2O.mol', 'H2O_symm.mol'], ['pcmsolver.pcm'], f={'out': f_hf})
+test.run(['extpcm_hf_fastint.dal'], ['CH4.mol', 'H2O.mol'], ['pcmsolver.pcm'], f={'out': f_hf})
+# Large basis sets (with d-shell)
+#test.run(['extpcm_hf_fastint.dal'], ['H2O_6311++gss_cartesian.mol', 'H2O_6311++gss_spherical.mol'], ['pcmsolver.pcm'], f={'out': f_hf})
 
 f_dft = Filter()
 f_dft.add(string = 'Nuclear repulsion:',
@@ -31,6 +33,11 @@ f_dft.add(string = 'Solvation energy:',
       abs_tolerance = 1.0e-7)
 f_dft.add(string = 'Final DFT energy:',
       rel_tolerance = 1.0e-7)
-test.run(['extpcm_lda.dal', 'extpcm_lda_separate.dal'], ['CH4.mol', 'H2O.mol'], {'out': f_dft}, args = '-put @pcmsolver.inp')
+
+# Small basis sets (without d-shell)
+test.run(['extpcm_lda.dal', 'extpcm_lda_separate.dal'], ['CH4.mol', 'H2O.mol', 'H2O_symm.mol'], ['pcmsolver.pcm'], f={'out': f_dft})
+test.run(['extpcm_lda_fastint.dal'], ['CH4.mol', 'H2O.mol'], ['pcmsolver.pcm'], f={'out': f_dft})
+# Large basis sets (with d-shell)
+#test.run(['extpcm_lda_fastint.dal'], ['H2O_6311++gss_cartesian.mol', 'H2O_6311++gss_spherical.mol'], ['pcmsolver.pcm'], f={'out': f_dft})
 
 sys.exit(test.return_code)

@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -153,8 +153,8 @@ C
          NRS  = 1
          JSTA = -ISTATE
       ELSE
-         WRITE (LUPRI,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
-         WRITE (LUERR,'(//2A)') ' >>> ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUPRI,'(//2A)') ' --- ERROR (SIRSAV), KEYWRD = ',KEYWRD
+         WRITE (LUERR,'(//2A)') ' --- ERROR (SIRSAV), KEYWRD = ',KEYWRD
          CALL QTRACE(LUERR)
          CALL QUIT('*** ERROR (SIRSAV) KEYWRD illegal.')
       END IF
@@ -427,7 +427,7 @@ C        ----------------------------------------------------
   500 CONTINUE
 C
 C        ******************************
-C        ***** <<<<< CISAVE >>>>> *****
+C        ***** ----- CISAVE ----- *****
 C        ******************************
 C
 C
@@ -483,7 +483,7 @@ C        ----------------------------------------------------
   600 CONTINUE
 C
 C        ******************************
-C        ***** <<<<< NRSAVE >>>>> *****
+C        ***** ----- NRSAVE ----- *****
 C        ******************************
 C
 C

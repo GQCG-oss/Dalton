@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -205,7 +205,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
             NVEC = INCRLR('EXCITLAB',EXCIT2(KSYMOP,ISIM-1+IVEC),KSYMOP)
             IF (IPRRSP.GT.10) THEN
                WRITE(LUPRI,'(/A)')' SINGLET EXCITATION '
-               WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,2X,D12.6)')
+               WRITE(LUPRI,'(/A,I5,3X,A,I5,/A,2X,D13.6)')
      *         ' CRPPVE: EIGENVECTOR ',ISIM-1+IVEC,
      *         ' SYMMETRY',KSYMOP,' EXCITATION ENERGY',
      *         EXCIT2(KSYMOP,ISIM-1+IVEC)

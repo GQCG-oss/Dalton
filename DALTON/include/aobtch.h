@@ -1,26 +1,22 @@
+! FILE: aobtch.h
+! Used for eri and densfit
+
       LOGICAL ACTVBT
 
-      INTEGER AOBTCHLAST
+      INTEGER AOBTCHlast
 
-      COMMON /AOBTCH/ EXPBT(MXPRIM),
-     &                CORXBT(MXSHEL), CORYBT(MXSHEL), CORZBT(MXSHEL),
+      COMMON /AOBTCH/ EXPBT(MXPRIM),                                     ! real*8
+     &                CORXBT(MXSHEL), CORYBT(MXSHEL), CORZBT(MXSHEL),    ! integer
      &                NHKTBT(MXSHEL), KCKTBT(MXSHEL), KHKTBT(MXSHEL),
      &                NPRFBT(MXSHEL), NCTFBT(MXSHEL), ISTBBT(MXSHEL),
      &                MULTBT(MXSHEL), NCNTBT(MXSHEL), KCLSBT(MXSHEL),
      &                KNDXBT(MXSHEL), KCMTBT(MXSHEL),
      &                KEXPBT(MXSHEL), KCCFBT(MXSHEL),
-     &                KAOSRT(MXSHEL),
-     &                NORBBT(MXSHEL), ACTVBT(MXSHEL,4),
+     &                KAOSRT(MXSHEL), NORBBT(MXSHEL),
      &                NAOBCH, NBASE, NGAB, IORBRP(0:7),
-     &                MAXQN, KQNBT(MXQN), NQNBT(MXQN)
-
-      COMMON /AOBTCH/ AOBTCHLAST
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+     &                MAXQN, KQNBT(MXQN), NQNBT(MXQN),
+     &                ACTVBT(MXSHEL,4),                                  ! logical
+     &   AOBTCHlast !  Very important:
+      !  Always keep AOBTCHlast as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
+! -- end of aobtch.h

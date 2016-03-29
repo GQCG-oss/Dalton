@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -2702,7 +2702,7 @@ C Largest exchange contribution
                       IF(FCKMAX.LT.FCKTHR) THEN
                         DINTSKP(2,1) = DINTSKP(2,1) + NCCINT
                         IF(IPRINT.GE.5) WRITE(LUPRI,
-     &              '(A,1P,D8.2,4(I4,A1,A6,1X,3A1))')
+     &              '(A,1P,D9.2,4(I4,A1,A6,1X,3A1))')
      &        '*Skip: ',FCKMAX,
      &        ISHELA,'(',NAMDEP(ICENTA),COMP(LCLASH(ISHELA)),
      &        SPDCAR(NHKTSH(ISHELA)-1),')',

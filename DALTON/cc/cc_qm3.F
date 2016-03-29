@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -199,8 +199,8 @@ C
         IF (.NOT. NYQMMM) THEN
          WRITE(LUPRI,'(//1X,72A)') ('-',J=1,72)
          WRITE(LUPRI,'(1X,A56,A16)')
-     * '|<<<<<<<<<<<<<<< The MM/MM classical interaction energy ',
-     * '>>>>>>>>>>>>>>>|'
+     * '| --- The MM/MM classical interaction energy ',
+     * '--- |'
          WRITE(LUPRI,'(1X,72A)') ('-',J=1,72)
          WRITE(LUPRI,'(1X,A1,A50,A7,F12.8,A2)') '|',
      *  '  Eelec = Sum_n,s[ (Q_n*Q_s)/|R_n - R_s| ]        ',
@@ -250,14 +250,14 @@ C
 C
         IF (MODEL .EQ. 'CC2')THEN
           WRITE(LUPRI,'(1X,A1,A15,A18,A3,A19,A15,A1)')
-     *         '|','<<<<<<<<<<<<<< ',
+     *         '|','--------------- ',
      *         'Final output from ',MODEL,'/MM energy program ',
-     *         '>>>>>>>>>>>>>>>','|'
+     *         '---------------','|'
         ELSE IF (MODEL .EQ. 'CCSD') THEN
           WRITE(LUPRI,'(1X,A1,A15,A18,A4,A19,A14,A1)')
-     *         '|','<<<<<<<<<<<<<< ',
+     *         '|','-------------- ',
      *         'Final output from ',MODEL,'/MM energy program ',
-     *         '>>>>>>>>>>>>>>','|'
+     *         '--------------','|'
         END IF
 C
         WRITE(LUPRI,'(1X,A1,70A,A1)') '+',('=',J=1,70),'+'
@@ -595,9 +595,9 @@ C
      *     //'======================================'
      *     //'==================================+'
             WRITE(LUPRI,'(1X,A)')
-     *    '|<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< '
+     *    '|--------- '
      *     //'The different energy contributions outlined'
-     *     //' >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>|'
+     *     //' ---------|'
             WRITE(LUPRI,'(A)')
      *    ' +====================================='
      *     //'======================================'

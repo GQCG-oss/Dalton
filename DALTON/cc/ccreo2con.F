@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -302,7 +302,7 @@ C          WRITE (LUPRI,*) 'CCREO2CON>',RCONS(IVEC,IDXREO)
                WRITE (LUPRI,*) 'IDXREO = ',IDXREO
                IVEC = 1
                DO WHILE(IRDOTS(IVEC,IDXREO).NE.0 .AND. IVEC.LE.MXVEC)
-                  WRITE(LUPRI,'(A,2I5,2X,E18.12)') 'CCREO2CON> ',
+                  WRITE(LUPRI,'(A,2I5,2X,E19.12)') 'CCREO2CON> ',
      &              IREO(IDXREO),IRDOTS(IVEC,IDXREO),RCONS(IVEC,IDXREO)
                   IVEC = IVEC + 1
                END DO

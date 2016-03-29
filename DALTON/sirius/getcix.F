@@ -4,7 +4,7 @@
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2015 (2015), see http://daltonprogram.org"
+!...    Release DALTON2016 (2015), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -75,7 +75,7 @@ C
 C     
       CALL QENTER('GETCIX')
       IF (IPRCIX .GT. 0) THEN
-         WRITE (LUPRI,'(//A/)') ' >>>>> OUTPUT FROM GETCIX <<<<<'
+         WRITE (LUPRI,'(//A/)') ' ----- OUTPUT FROM GETCIX -----'
          WRITE (LUPRI,'(A,3I5/)')
      *      ' ICSYM, IHCSYM, NOSYM :',ICSYM,IHCSYM,NOSYM
          DTIM = SECOND()
@@ -238,7 +238,7 @@ C
       CALL QENTER('SETCI ')
 C
       IF (IPRCIX .GT. 0)
-     &   WRITE (LUPRI,'(//A/)') ' >>>>> OUTPUT FROM SETCI <<<<<'
+     &   WRITE (LUPRI,'(//A/)') ' ----- OUTPUT FROM SETCI -----'
 C
 C CHCKCI returns true if new ci, either because it is first call
 C or because specifications have changed.
