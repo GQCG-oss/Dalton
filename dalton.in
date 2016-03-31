@@ -125,9 +125,8 @@ usage (){
         echo ' -rsh             : use rsh/rcp for communication with MPI nodes'
         echo '                    (default: ssh/scp)'
         echo ' -nodelist "node1 ..." : set nodelist DALTON_NODELIST, '$dalton'.x will be copied to'
-        echo '                         DALTON_TMPDIR on each node unless DALTON_USE_GLOBAL_SCRATCH'
-        echo '                         is defined (the script uses PBS_NODEFILE or SLURM_NODELIST'
-        echo '                         if available)'
+        echo '                    DALTON_TMPDIR on each node unless DALTON_USE_GLOBAL_SCRATCH is'
+        echo '                    defined (the script uses PBS_NODEFILE or SLURM_NODELIST if available)'
         echo ' -x dalmol1 dalmol2 : calculate NEXAFS spectrum from ground and core hole states'
         echo " -exe exec        : change the executable from default ($DALTON_EXECUTABLE) to exec"
         echo ' -pg              : do profiling with gprof'
@@ -275,8 +274,8 @@ if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set 
     for dir in $scratch_dir_candidates; do
         if [ -d "$dir" ]; then
             DALTON_TMPDIR=$dir
-            echo "DALTON_TMPDIR not defined by user."
-            echo " Guessing $dir is appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
+            echo " INFO : DALTON_TMPDIR not defined by user."
+            echo " INFO : Guessing $dir is appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
             break
         fi
     done
@@ -605,7 +604,7 @@ if [ $optn -gt 1 ] ; then # MPI case
    fi
 
    if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
-      echo ' DALTON_USE_GLOBAL_SCRATCH is defined: Dalton will use global scratch dir'
+      echo ' DALTON_USE_GLOBAL_SCRATCH is defined, so Dalton will use global scratch dir.'
    fi
 
    if [ $opt_lslib_test -eq 1 ]; then
@@ -622,7 +621,7 @@ if [ $optn -gt 1 ] ; then # MPI case
           $MPIEXEC -np $optn $MPI
        fi
    else
-       echo "$MPI does not exist or is not executeable"
+       echo; echo "Fatal error: $MPI does not exist or is not executable"
        exit 1
    fi
    if [ $dalton_exitcode -ne 0 ];then
@@ -674,7 +673,7 @@ else # non-MPI case
    fi
     if ! [ -s $DALTON_EXECUTABLE -a -x $DALTON_EXECUTABLE ]; then
        echo; echo  "FATAL ERROR:"
-       echo "$DALTON_EXECUTABLE does not exist or is not executeable"
+       echo "$DALTON_EXECUTABLE does not exist or is not executable"
        exit 1
     fi
     
