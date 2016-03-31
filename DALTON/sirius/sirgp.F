@@ -648,9 +648,10 @@ C
 #include "priunit.h"
 #include "inforb.h"
 #include "inftap.h"
+#include "infpri.h"
 C
       LOGICAL      NOSTOP
-      CHARACTER*8  MOLABL
+      CHARACTER*8  MOLABL, RTNLBL(2)
       CHARACTER*10 PFMT
 C
       CALL QENTER('READMO')
@@ -731,9 +732,12 @@ C
          MOLABL = 'NEWORB  '
       END IF
       LBLERR = -1
-      CALL MOLLAB(MOLABL,LUIT1,LBLERR)
+      CALL MOLLB2(MOLABL,RTNLBL,LUIT1,LBLERR)
       IF (LBLERR .GE. 0) THEN
          CALL READT(LUIT1,NCMOT,CMO)
+         IF (IPRSIR .GT. 0) WRITE(LUPRI,'(4A,1X,A)')
+     &   '* Read MO coefficients from SIRIUS.RST with label "',MOLBL,
+     &   '" and header info: ',RTNLBL(1:2)
       ELSE IF (LBLERR .EQ. -1) THEN
          WRITE (LUPRI,'(//3A)')
      & ' --- FATAL ERROR, MO label "',MOLABL,'" not found on SIRIUS.RST'

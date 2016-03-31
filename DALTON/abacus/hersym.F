@@ -214,9 +214,9 @@ C
               TEXT = 'Centered and Rotated Coordinates'
               CALL PRNARR(TEXT , MXCENT, ATMARR)
             ELSE
-              WRITE (LUPRI,'(/A/)')
-     &  '   System could not be centered or rotated due to finite field'
-             END IF
+              WRITE (LUPRI,'(/A/)') '   System has not been centered '//
+     &           ' or rotated before symmetry analysis.'
+            END IF
          END IF
          IF (IPRSYM .GE. IPRTHR) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN

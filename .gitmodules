@@ -13,9 +13,6 @@
 [submodule "external/efs"]
 	path = external/efs
 	url = git@gitlab.com:dalton/efs.git
-[submodule "external/pcmsolver"]
-	path = external/pcmsolver
-	url = https://github.com/PCMSolver/pcmsolver.git
 [submodule "external/xcint"]
 	path = external/xcint
 	url = https://github.com/dftlibs/xcint.git
