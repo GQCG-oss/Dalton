@@ -3853,7 +3853,7 @@ C     CALL RSPCTL(CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *            LINEQ,GD,REDGD,REDE,REDS,
 C    *            IBTYP,EIVAL,EIVEC,XINDX,WRK,LWRK)
 C
-C   Save the excitation energies for excited state gradient 
+C   Save the excitation energies for excited state gradient
 C   (singlet only for the moment)
 C
       ISPN = 1
@@ -4187,7 +4187,7 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
             IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
      &                             WRK(KWRK2),LWRK2)
-     
+
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,LUPRI,
@@ -4642,18 +4642,17 @@ C
 C     Call RSPCTL to solve linear set of response equations
 C
       DO 600 IOP = 1,NGPLR(KSYMOP)
-         WRITE (LUPRI,'(//A,I2,3A/2A/A,I3/A,(T25,5F10.6))') 
+         WRITE (LUPRI,'(//A,I2,3A/2A/A,I3/A,(T30,5F10.6))')
      &  ' RSPLR -- linear response calculation for symmetry',KSYMOP,
      &    '  ( ',REP(KSYMOP-1),')',
      &  ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
      &  ' RSPLR -- operator spin  : ',OPRANK(INDPRP(LBLLR(KSYMOP,IOP))),
-     &  ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
+     &  ' RSPLR -- frequencies    :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &               WRK(KGD),LWRK1)
          DNORM_GD = DNRM2(KZYVAR,WRK(KGD),1)
-         write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
-            CALL HEADER('Gradient vectors in RSPLR for operator '//
+            CALL HEADER('Gradient vector in RSPLR for operator '//
      &                  LBLLR(KSYMOP,IOP)//':',-1)
             WRITE (LUPRI,'(/A,1P,D12.4)') ' Norm : ', DNORM_GD
             CALL OUTPUT(WRK(KGD),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
@@ -4742,7 +4741,7 @@ C                 CALL RSPPRC(WRK(KBVECS+(IVEC-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D21.14)') ' Norm:', DNORM_BV
+                  WRITE (LUPRI,'(A,1P,D15.4)') ' Norm:', DNORM_BV
                END IF
   750       CONTINUE
             CALL RSPRES(WRK(KIBTYP),WRK(KEIVAL),WRK(KEIVEC),
@@ -4759,7 +4758,7 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM_BV = DNRM2(KZYVAR,WRK(IBV),1)
-                  WRITE (LUPRI,'(A,D21.14)') ' Norm:', DNORM_BV
+                  WRITE (LUPRI,'(A,1P,D15.4)') ' Norm:', DNORM_BV
                END IF
   760       CONTINUE
   700    CONTINUE
@@ -4878,7 +4877,7 @@ C
       NREC = 2*NLAB -1
 C
 C     Open LURD file from ABACUS
-C   
+C
       LURD = -1
       CALL GPOPEN(LURD,ABARDR,'OLD','DIRECT',' ',IRAT*NVARMA,OLDDX)
 C     Read RD_Z from ABACUS
@@ -6261,7 +6260,7 @@ C
 C     Compute linear response value
 C
                VAL = DDOT(KZYVAR,WRK(KVECA),1,VECB,1)
-C              
+C
                WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12)')
      &              ' Linear response function in a.u.',
      &              ' A operator, symmetry, frequency: ',
@@ -6408,7 +6407,7 @@ C  /* Deck RSPPMO */
       SUBROUTINE RSPPMO (WOP,IOFFY,CMO2,LUPRI)
 C
 C     June 2008; PBHT MO overlap diagnostic
-C     Reference: 
+C     Reference:
 C       Excitation energies in density functional theory: An evaluation
 C       and a diagnostic test
 C       Michael J. G. Peach, Peter Benfield, Trygve Helgaker, and David J. Tozer,
@@ -6426,13 +6425,13 @@ C
 #include "infind.h"
 #include "inforb.h"
 #include "infvar.h"
- 
+
       IPRINT_local = 0
       CALL HEADER('PBHT MO Overlap Diagnostic',-1)
       WRITE(LUPRI,'(A/A/)')
      &  '  Reference: MJG Peach, P Benfield, T Helgaker, and DJ Tozer.',
      &  '             J Chem Phys 128, 044118 (2008)'
-      IF (NWOPT.GT.0) THEN 
+      IF (NWOPT.GT.0) THEN
          WRITE (LUPRI,'(/2X,A)') 'The dominant contributions:'
          WRITE (LUPRI,'(/2X,A/)')
      &      '    I    A    '//
@@ -6491,12 +6490,12 @@ C
 
       CALL HEADER('MO Overlap Diagnostic',-1)
 
-C     Memory allocation   
+C     Memory allocation
       KUCMO   = 1
       KWOPXY  = KUCMO  + NORBT*NBAST
       KINT    = KWOPXY + NDIM1
       KINTMO  = KINT   + 3*NNBASX
-      KINUMO  = KINTMO + 3*NNORBX 
+      KINUMO  = KINTMO + 3*NNORBX
       KDIAX   = KINUMO + 3*N2ORBX
       KDIAY   = KDIAX  + NORBT
       KDIAZ   = KDIAY  + NORBT
@@ -6507,14 +6506,14 @@ C     Memory allocation
       KINDXI  = KDIFR  + NDIM1
       KINDXA  = KINDXI + NDIM1
       KWRK2   = KINDXA + NDIM1
-      LWRK2   = LWRK   - KWRK2 
+      LWRK2   = LWRK   - KWRK2
 
       IF (LWRK2 .LT. 0) CALL ERRWRK('RSPMO2',-KWRK2,LWRK2)
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KWOPXY),NDIM1)
       CALL DZERO(WRK(KINT),3*NNBASX)
-      CALL DZERO(WRK(KINTMO),3*NNORBX) 
+      CALL DZERO(WRK(KINTMO),3*NNORBX)
       CALL DZERO(WRK(KINUMO),3*N2ORBX)
       CALL DZERO(WRK(KDIAX),NORBT)
       CALL DZERO(WRK(KDIAY),NORBT)
@@ -6535,7 +6534,7 @@ C     Memory allocation
           WRITE(LUPRI,*) I, WOP(I)
  111    CONTINUE
         WRITE(LUPRI,*)
-        WRITE(LUPRI,*) 'X part of Response Vector in RSPMO2' 
+        WRITE(LUPRI,*) 'X part of Response Vector in RSPMO2'
         DO 112 I=1,NDIM1
           WRITE(LUPRI,*) I, WOP(I)
  112    CONTINUE
@@ -6550,7 +6549,7 @@ C ADD X AND Y PARTS OF RESPONSE VECTOR
 
       DO 114 I=1,NDIM1
          WRK(KWOPXY+I-1) = WOP(I) - WOP(I+NDIM1)
- 114  CONTINUE     
+ 114  CONTINUE
 
       IF (LOCDEB) THEN
         WRITE(LUPRI,*)
@@ -6570,9 +6569,9 @@ C
       REWIND LU
       CALL MOLLAB('XDIPLEN ',LU,LUPRI)
       CALL READT(LU,NNBASX,WRK(KINT))
-     
+
       CALL MOLLAB('YDIPLEN ',LU,LUPRI)
-      CALL READT(LU,NNBASX,WRK(KINT+NNBASX)) 
+      CALL READT(LU,NNBASX,WRK(KINT+NNBASX))
 
       CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
       CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
@@ -6605,17 +6604,14 @@ C
       CALL DSPTSI(NORBT,WRK(KINTMO+2*NNORBX),WRK(KINUMO+2*N2ORBX))
 
       IF (LOCDEB) THEN
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) 'XDIPLEN in MO BASIS'
-        CALL OUTPUT(WRK(KINUMO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,*) 'YDIPLEN in MO BASIS'
+        WRITE(LUPRI,'(/A)') ' XDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO),1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+        WRITE(LUPRI,'(/A)') ' YDIPLEN in MO BASIS'
         CALL OUTPUT(WRK(KINUMO+N2ORBX),1,NORBT,1,NORBT,NORBT,
-     &              NORBT,1,LUPRI)
-        WRITE(LUPRI,*) 
-        WRITE(LUPRI,*) 'ZDIPLEN in MO BASIS'
+     &              NORBT,-1,LUPRI)
+        WRITE(LUPRI,'(/A)') ' ZDIPLEN in MO BASIS'
         CALL OUTPUT(WRK(KINUMO+2*N2ORBX),1,NORBT,1,NORBT,NORBT,
-     &              NORBT,1,LUPRI)
+     &              NORBT,-1,LUPRI)
       ENDIF
 
 C Take out the diagonal elements
@@ -6630,7 +6626,7 @@ C Take out the diagonal elements
           WRITE(LUPRI,*) 'NORBT:', NORBT
           WRITE(LUPRI,*) 'DIAGONAL ELEMENTS IN XDIP YDIP ZDIP'
           DO 117 I=1,NORBT
-            WRITE(LUPRI,*) I, WRK(KDIAX+I-1), WRK(KDIAY+I-1), 
+            WRITE(LUPRI,*) I, WRK(KDIAX+I-1), WRK(KDIAY+I-1),
      &                        WRK(KDIAZ+I-1)
  117      CONTINUE
         ENDIF
@@ -6690,7 +6686,7 @@ C Take out the diagonal elements
             KK = Int(WRK(KINDXI+I-1))
             LL = Int(WRK(KINDXA+I-1))
             Write(lupri,*) WRK(KDIFR+I-1), WRK(KWOPXY+I-1), KK, LL
- 333      CONTINUE 
+ 333      CONTINUE
         ENDIF
 
         TEMP1=D0
@@ -6758,15 +6754,15 @@ C     Memory allocation
       CALL DZERO(WRK(KINT),3*NNBASX)
 
       CALL RSPZYM(1,WOP,WRK(KUBOVE))
-      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1) 
+      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1)
 
       CALL DEQ27(CMO,WRK(KUBOVE),UDV,WRK(KDCAO),WRK(KDVAO),
      &           WRK(KWRK2),LWRK2)
 
       IF (NASHT .GT. 1) THEN
         CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
-        CALL DZERO(WRK(KDVAO),N2BASX) 
-      ENDIF 
+        CALL DZERO(WRK(KDVAO),N2BASX)
+      ENDIF
 
       IF (LOCDEB) THEN
           WRITE (LUPRI,'(/A)') ' Transition Density Matrix - Full'
@@ -6809,7 +6805,7 @@ C     Memory allocation
 
       TRDIP(1) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT),1)
       TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
-      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1) 
+      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1)
 
       WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
       WRITE(LUPRI,'(5x,3F12.6)') TRDIP
