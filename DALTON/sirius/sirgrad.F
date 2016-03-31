@@ -682,6 +682,8 @@ C
       KFRSAV = KFREE
 C
 C
+      LUSUPM_here = LUSUPM
+      ! setting "LUSUPM_here = -1" below for cases not OK in RDSUPM
       ISYMDM(1) = 1
       ISYMDM(2) = 1
       IF (HFXFAC .eq. 0.0D0) THEN
@@ -698,6 +700,7 @@ C JT Aug 09 beg
       IF (DFT_SPINDNS) THEN
          ISYMDM(3) = 1
          IFCTYP(3) = -12
+         LUSUPM_here = -1
       END IF
 C JT Aug 09 end
 C
@@ -749,19 +752,23 @@ C we need only the difference between Fa and Q which is
 C the negative of the exchange part
 C
          IFCTYP(2)=12
+         LUSUPM_here = -1
       END IF
+      IF (ADDSRI) LUSUPM_here = -1 ! no srDFT cases because of SRINTS (yet)
       CALL DZERO(FCAO,NDMAT*N2BASX)
-C     ... note: NDMAT = # of FCAO matrices; NFMAT = # of non-zero FCAO matrices
+C     ... note: NDMAT = # of DCAO and FCAO matrices; NFMAT = # of non-zero FCAO matrices
       IF (NFMAT .GT. 0) THEN
-      IF (LUSUPM .NE. -1 .AND.
-     &   .NOT. (HSROHF .OR. DODFT .OR.
-     &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
-         write(lupri,*) 'RDSUPM called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
+      IF (LUSUPM_here .NE. -1) THEN
+!    &   .NOT. (HSROHF .OR. DODFT .OR.
+!    &          DOCISRDFT .OR. DOHFSRDFT .OR. DOMCSRDFT)) THEN
+         if (iprsir .gt. 5) write(lupri,*)
+     &      'RDSUPM called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
          CALL RDSUPM(NFMAT,FCAO(IOFFAO),DCAO(IOFFAO),ISYMDM,
      &      WRK(KFREE),LFREE)
       ELSE
-         write(lupri,*) 'SIRFCK called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
-         IF (DIRFCK) THEN ! density matrice may be destroyed in SIRFCK
+         if (iprsir .gt. 5) write(lupri,*)
+     &      'SIRFCK called, NFMAT',NFMAT,ISYMDM(1:NFMAT)
+         IF (DIRFCK) THEN ! density matrices may be destroyed in SIRFCK
             CALL MEMGET('REAL',KDMAT_SAVE,N2BASX*NDMAT,WRK,KFREE,LFREE)
             CALL DCOPY(NDMAT*N2BASX,DCAO(IOFFAO),1,WRK(KDMAT_SAVE),1)
          END IF
