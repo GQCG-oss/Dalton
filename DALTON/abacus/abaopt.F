@@ -2198,7 +2198,6 @@ C
          IF (WRDRSP .EQ. '**RESPO') THEN
             REWIND (LUCMD)
             RNRESP = .TRUE.
-            CALL SETSIR(WORK(2),LWORK)
             CALL GPCLOSE(LUSIFC,'KEEP')
             CALL GPCLOSE(LUCMD,'KEEP')
             CALL RSPDRV(WORK(2),LWORK)
