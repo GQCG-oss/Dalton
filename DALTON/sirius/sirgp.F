@@ -1453,7 +1453,7 @@ C
       logical                        :: ex              = .false.
 !     ------------------------------------------------------------------
 
-      call qenter('aodens')
+      call qenter('write_aodens')
 
       !> open the unformatted file AO-densities
       inquire(FILE='AO-densities',exist=ex)
@@ -1545,7 +1545,7 @@ C
       !> close the file "AO-densities"
       close(1234, status="keep")
 
-      call qexit('aodens')
+      call qexit('write_aodens')
 
       end subroutine write_aodens
 
@@ -1639,7 +1639,7 @@ C
 C
 C     Local variables:
 C
-      LOGICAL FNDLAB, FNSUPM_OK, NOSYM
+      LOGICAL FNDLAB, FNSUPM_OK, NOSYM, F_EXIST
       character*8  FNSUPM_local
 
       CALL QENTER('RDSUPM')
@@ -1692,9 +1692,16 @@ C
 
          IF (.NOT. FNSUPM_OK) THEN
             IF (I.GT.1) CALL QUIT('CALL FORMSUP failed')
-            CALL TIMER('START ',TIMSTR,TIMEND)
+            inquire(file='AOTWOINT',EXIST=F_EXIST)
+            IF (.NOT. F_EXIST) THEN
+               CALL newTIMER('START ')
+               CALL MAKE_AOTWOINT(WORK,LFREE)
+               CALL newTIMER('MAKE_AOTWOINT')
+               CALL FLSHFO(LUPRI)
+            END IF
+            CALL newTIMER('START ')
             CALL FORMSUP(WORK,LFREE,NOSSUP,HFXFACSUP,THRSUP,IPRSUP)
-            CALL TIMER('FORMSUP',TIMSTR,TIMEND)
+            CALL newTIMER('FORMSUP')
             CALL FLSHFO(LUPRI)
             GO TO 100
          END IF
