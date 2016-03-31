@@ -1,3 +1,4 @@
+#define HERFCK_DEBUG -1
 !
 !...   Copyright (c) 2015 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -22,7 +23,7 @@
 !
 !
 C
-#ifdef UNDEF
+#ifdef OLD_LOG
 !=======================================================================
 !/* Comdeck herdirect_log */
 !941206-hjaaj
@@ -94,13 +95,15 @@ C
       IF (IPRINT.GT.2) THEN
          CALL HEADER('Density and Fock matrices from '//
      &               'distributions in TSTDIR',-1)
-         DO 300 I = 1, NDMAT
+         DO I = 1, NDMAT
             ISTR = NBAST*NBAST*(I - 1) + 1
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Density matrix No.',I
+            WRITE (LUPRI,'(//A,I3,A,I3)')
+     &         ' Density matrix No.',I,' of',NDMAT
             CALL OUTPUT(DMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-            WRITE (LUPRI,'(//,1X,A,I3)') ' Fock matrix No.',I
+            WRITE (LUPRI,'(//A,I3,A,I3)')
+     &         ' Fock matrix No.',I,' of',NDMAT
             CALL OUTPUT(FMAT(ISTR),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
-  300    CONTINUE
+         END DO
       END IF
       CALL TIMER('GETDIS',TIMSTR,TIMEND)
       RETURN
@@ -431,7 +434,7 @@ C
       RETURN
       END
 C  /* Deck herfck */
-      SUBROUTINE HERFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+      SUBROUTINE HERFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK_in,
      &                  WORK,LWORK)
 C
 C     PURPOSE : Driver routine for direct calculation of the
@@ -476,6 +479,8 @@ C defined parallel calculation types
 #include "iprtyp.h"
 C
       CALL QENTER('HERFCK')
+
+      IPRFCK = MAX(IPRFCK_in, HERFCK_DEBUG)
 C
 C     The new ERI routines have not been parallelized yet.
 C     RUNERI is the flag from input processing, to tell that we should use eri,
@@ -504,6 +509,8 @@ C
 C
       IF (USE_LSLIB .AND. MAXREP .EQ. 0) THEN
          ! only implemented for C1 symmetry
+         if (iprfck .gt. 1) write (lupri,'(/A)')
+     &   ' Direct Fock matrices using LSLIB_FCK'
          CALL DALTON_LSLIB_FCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
       ELSE IF (.NOT. USEERI) THEN
@@ -512,8 +519,9 @@ C
       ELSE
 #if defined (VAR_MPI) || defined (VAR_PVM)
          IF (PARCAL) THEN
-            if (iprfck .gt. 1) write (lupri,*) '- using parallel ERI'
-            CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)           
+            if (iprfck .gt. 1) write (lupri,'(/A)')
+     &      ' Direct Fock matrices using parallel ERI'
+            CALL MEMGET('INTE',KNSTAT,NODTOT,WORK,KFREE,LFREE)
             IPRTYP = ERI_WORK
             CALL PARDRV(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,WORK(KFREE),
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
@@ -531,7 +539,8 @@ C
 #else
            KFCKTP = KFREE
 #endif
-           if (iprfck .gt. 1) write (lupri,*) '- using sequential ERI'
+           if (iprfck .gt. 1) write (lupri,'(/A)')
+     &     ' Direct Fock matrices using sequential ERI'
            CALL ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
      &                 WORK(KFREE),LFREE)
@@ -608,10 +617,16 @@ C defined parallel calculation types
       IF (NDMAT .LE. 0) RETURN  
       CALL QENTER('HRFCK1')
       I2TYP = 0
+
 C
 C     Inquire if this is an ABACUS run or not:
 C
       CALL ABARUN(ABA)
+      IF (IPRFCK .GT. 3) THEN
+         write(lupri,'(/A,I4,2L10)')
+     &   '-- HRFCK1: NDMAT, PARCAL, ABA, SRINTS:',
+     &   NDMAT,PARCAL,ABA,SRINTS
+      END IF
 C
 C
 C----------------------------------------------------------------
@@ -688,11 +703,17 @@ C
          CALL GETGAB(WORK(KGAB),'GABAOXXX',N2GAB,
      &               WORK(KFREE),LFREE)
       END IF
+#if HERFCK_DEBUG > 1
+      write(lupri,*) 'hrfck1 after GETGAB';flush(LUPRI)
+#endif
 C
 C     Make reduced density matrix for screening
 C
       CALL MKDRAO(DMAT,WORK(KDRAO),NDMAT,
      &            WORK(KFREE),LFREE,IPRINT)
+#if HERFCK_DEBUG > 1
+      write(lupri,*) 'hrfck1 after MKDRAO';flush(LUPRI)
+#endif
 C
 C--------------------------------
 C     Calculate fock matrices.
@@ -707,6 +728,8 @@ C
          IPRTYP = HER_WORK
          HFXM0 = HFXMU
          HFXMU = D0
+         if (iprfck .gt. 1) write (lupri,'(/A)')
+     &      ' Direct Fock matrices using parallel HERMIT'
          CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
@@ -723,6 +746,9 @@ C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C
          IF (HFXMU.NE.D0) THEN
+#if HERFCK_DEBUG > 1
+      write(lupri,*)'and parallel HERMIT for HFXMU',HFXMU;flush(LUPRI)
+#endif
             IPRTYP = HER_WORK
             IATOM  = 1
             HFXFC0 = HFXFAC
@@ -768,6 +794,11 @@ C
          CALL TIMER('START ',TIMSTR,TIMEND)
          HFXM0 = HFXMU
          HFXMU = D0
+#if HERFCK_DEBUG > 1
+      IPRINT = max(IPRINT, HERFCK_DEBUG)
+#endif
+         if (iprfck .gt. 1) write (lupri,'(/A)')
+     &      ' Direct Fock matrices using sequential HERMIT'
          CALL TWOINT(WORK(KFREE),LFREE,DUMMY,FMAT,DMAT,NDMAT,
      &               ISYMDM,
      &               IFCTYP,DUMMY,IDUMMY,NUMDIS,1,ITYPE,MAXDER,0,
@@ -787,6 +818,9 @@ C
 C        Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C
          IF (HFXMU.NE.D0) THEN
+#if HERFCK_DEBUG > 1
+      write(lupri,*)'and sequential HERMIT for HFXMU',HFXMU;flush(LUPRI)
+#endif
             HFXFC0 = HFXFAC
             HFXFAC = HFXATT 
             CALL TWOINT(WORK(KFREE),LFREE,DUMMY,FMAT,DMAT,NDMAT,
@@ -808,6 +842,9 @@ C
          IF (IPRINT .GT. 0) CALL TIMER('HRFCK1/TWOINT',TIMSTR,TIMEND)
 #if defined (VAR_MPI) || defined (VAR_PVM)
       END IF
+#endif
+#if HERFCK_DEBUG > 1
+      write(lupri,*) 'hrfck1 calling SKLFCK';flush(LUPRI)
 #endif
       CALL SKLFCK(FMAT,DUMMY,WORK(KFREE),LFREE,IPRINT,.TRUE.,
      &            .FALSE.,.FALSE.,.FALSE.,NODV,MAXDER,.FALSE.,
