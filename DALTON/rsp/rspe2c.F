@@ -550,6 +550,7 @@ C END OF E2SYM
 C
       RETURN
       END
+#ifdef INCLUDE_NOT_USED_ROUTINES
 C  /* Deck fckode */
       SUBROUTINE FCKODE(NSIM,ICI,IDI,NCIW,NDIW,ICDTYP,H2,ZYMAT,
      *                  FCONE,FVONE,DENA,DENB)
@@ -604,7 +605,7 @@ C
 C   FCONE(P,Q) = (JR,PQ)*(ZYMAT(J,R)-ZYMAT(R,J))*2
 C
                ZYCD = ( ZYMAT(ICI,IDI,ISIM) -
-     *                           ZYMAT(IDI,ICI,ISIM))*D2
+     &                  ZYMAT(IDI,ICI,ISIM) )*D2
                IF ( ABS(ZYCD).GT.DTOL ) THEN
                   CALL DAXPY(N2ORBX,ZYCD,H2,1,FCONE(1,1,ISIM),1)
                END IF
@@ -679,7 +680,7 @@ C
 C   FVONE(P,Q) = (YR,PQ)*(DENB(R,Y)-DENA(R,Y))
 C
                   DENBA = (DENB(IDI,NCIW,ISIM) -
-     *                              DENA(IDI,NCIW,ISIM))
+     &                     DENA(IDI,NCIW,ISIM))
                   IF (ABS(DENBA).GT.DTOL) THEN
                      CALL DAXPY(N2ORBX,DENBA,H2,1,FVONE(1,1,ISIM),1)
                   END IF
@@ -696,12 +697,12 @@ C
 C   FVONE(P,Q) = SUM(R) (XQ,RP)*DENA(R,X)*0.5
 C
                   FVONE(IP,IDI,ISIM) = FVONE(IP,IDI,ISIM) +
-     *            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENA(IROFF,NCIW,ISIM),1)
+     &            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENA(IROFF,NCIW,ISIM),1)
 C
 C   FVONE(Q,P) = -SUM(R) (XQ,RP)*DENB(R,X)*0.5
 C
                   FVONE(IDI,IP,ISIM) = FVONE(IDI,IP,ISIM) -
-     *            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENB(IROFF,NCIW,ISIM),1)
+     &            DP5*DDOT(NORBR,H2(IROFF,IP),1,DENB(IROFF,NCIW,ISIM),1)
  700           CONTINUE
                IF (ICDTYP.EQ.3) THEN
                   ISWAP = ICI
@@ -725,7 +726,7 @@ C   FVONE(P,Q) = (YR,PQ)*(DENB(R,Y)-DENA(R,Y))
 C
                   IF ( .NOT. TRPLET ) THEN
                      DENBA = (DENB(ICI,NDIW,ISIM) -
-     *                              DENA(ICI,NDIW,ISIM))
+     *                        DENA(ICI,NDIW,ISIM))
                      IF (ABS(DENBA).GT.DTOL) THEN
                         CALL DAXPY(N2ORBX,DENBA,H2,1,FVONE(1,1,ISIM),1)
                      END IF
@@ -760,6 +761,7 @@ C END OF FCKODE
 C
       RETURN
       END
+#endif
 C  /* Deck fckoin */
       SUBROUTINE FCKOIN(NSIM,FC,FV,ZYMAT,FCONE,FVONE)
 C
@@ -788,13 +790,13 @@ C
       IF (IPRRSP.GT.90) THEN
          DO 3000 ISIM = 1,NSIM
             WRITE(LUPRI,*) ISIM,
-     &           ' ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
+     &           '. ONE-INDEX TRANSFORMED FOCK CORE MATRIX',
      *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT,
      *                  1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *           ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
+     *           '. ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX',
      *           ' BEFORE DIRECT [FC,ZYMAT] CONTRIBUTION'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
      *                     ,1,LUPRI)
@@ -840,8 +842,8 @@ C
                      IF (ABS(FV(IRQ)) .GT. THRZER) THEN
                         DO 520 IP=1,NORBIP
                            FVONE(IORBIP+IP,IORBIQ+IQ,ISIM) =
-     *                          FVONE(IORBIP+IP,IORBIQ+IQ,ISIM) +
-     *                          ZYMAT(IORBIP+IP,IORBIQ+IR,ISIM) *FV(IRQ)
+     &                          FVONE(IORBIP+IP,IORBIQ+IQ,ISIM) +
+     &                          ZYMAT(IORBIP+IP,IORBIQ+IR,ISIM) *FV(IRQ)
                            FVONE(IORBIQ+IQ,IORBIP+IP,ISIM) =
      &                          FVONE(IORBIQ+IQ,IORBIP+IP,ISIM) -
      &                          ZYMAT(IORBIQ+IR,IORBIP+IP,ISIM) *FV(IRQ)
@@ -857,22 +859,22 @@ C
 C
       IF (IPRRSP.GT.90) THEN
          DO 2000 ISIM = 1,NSIM
-            WRITE(LUPRI,*) ISIM,' ONE-INDEX TRANSFORMED FOCK CORE '//
-     &                          'MATRIX'
+            WRITE(LUPRI,*) ISIM,
+     &         '. ONE-INDEX TRANSFORMED FOCK CORE MATRIX'
             CALL OUTPUT(FCONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
-     *                  ,1,LUPRI)
+     &                  ,-1,LUPRI)
             IF (NASHT.GT.0) THEN
                WRITE(LUPRI,*) ISIM,
-     *                   ' ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX'
+     &         '. ONE-INDEX TRANSFORMED FOCK VALENCE MATRIX'
                CALL OUTPUT(FVONE(1,1,ISIM),1,NORBT,1,NORBT,NORBT,NORBT
-     *                     ,1,LUPRI)
+     &                     ,-1,LUPRI)
             END IF
  2000    CONTINUE
          WRITE(LUPRI,*)' CORE FOCK MATRIX '
-         CALL OUTPKB(FC(1),NORB,NSYM,1,LUPRI)
+         CALL OUTPKB(FC(1),NORB,NSYM,-1,LUPRI)
          IF (NASHT.GT.0) THEN
             WRITE (LUPRI,*)' VALENCE FOCK MATRIX '
-            CALL OUTPKB(FV(1),NORB,NSYM,1,LUPRI)
+            CALL OUTPKB(FV(1),NORB,NSYM,-1,LUPRI)
          END IF
       END IF
 C
