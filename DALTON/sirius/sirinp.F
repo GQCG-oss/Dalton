@@ -876,13 +876,16 @@ c        END IF
       END IF
 C
 C     set ITRFIN for ABAIPH
-C
-      IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
-         IF (DOMC .OR. DOCI) THEN
-            ITRFIN = 4
-            IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
-         END IF
-      END IF
+!     Apr. 2016: not any more, Abacus calls TRACTL
+!     and that is better, then it is known exactly what
+!     transformation level is needed.
+!
+!     IF (ABAIPH .AND. ITRFIN .EQ. -6789) THEN
+!        IF (DOMC .OR. DOCI) THEN
+!           ITRFIN = 4
+!           IF (NEWTRA) ITRFIN = 5 ! to get occ-sec integrals
+!        END IF
+!     END IF
 C
       IF (DOCI .AND. ISTACI .LE. 0) THEN
          IF (DORSP .AND. .NOT.DOMC) THEN

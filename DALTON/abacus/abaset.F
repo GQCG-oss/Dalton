@@ -506,7 +506,6 @@ C
       USEDRC = .FALSE.
       IPRTRA = IPRNTR
       IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
-         FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
          IF (NEWTRA) THEN
 C            ... we need (ia/ (inactive-secondary) Mulliken distributions;
@@ -514,9 +513,11 @@ C            they are only calculated for level 5 in "NEWTRA"
 C            transformation  /hjaaj June 09
             KTRLVL = 5
             ITRLVL = KTRLVL
+            FLAG(14) = .FALSE. ! cannot test in SIR_INTOPEN yet for NEWTRA
          ELSE
             KTRLVL = 4
             ITRLVL = KTRLVL
+            FLAG(14) = .TRUE.
          END IF
          CALL SIR_INTOPEN
 C        ... SIR_INTOPEN returns FLAG(14) false if no mo integral file
@@ -525,7 +526,11 @@ C        or if ITRLVL on file too small.
 C        ... SOPPA requires full integral transformation
          KTRLVL = 10
          ITRLVL = KTRLVL
-         FLAG(14) = .TRUE.
+         IF (NEWTRA) THEN
+            FLAG(14) = .FALSE. ! cannot test in SIR_INTOPEN yet for NEWTRA
+         ELSE
+            FLAG(14) = .TRUE.
+         END IF
          FLAG(34) = .FALSE.
          CALL SIR_INTOPEN
       ELSE
@@ -542,7 +547,7 @@ C        does exist. /980529-hjaaj
 
       IF (.NOT. FLAG(14)) THEN
       ! ... needed integrals not available
-         WRITE (LUPRI,1020)
+         WRITE (LUPRI,1020) KTRLVL
          KCMO  = 1
          KWTRA = KCMO + NCMOT
          LWTRA = LFREE - KWTRA
@@ -583,7 +588,8 @@ C
       END IF
  1020 FORMAT(/,' NSETUP: MO transformation level too low'
      &        ,' or no MO integral file found.',
-     &       /,' NSETUP: generating MO 2-el. integral file.'/)
+     &       /,' NSETUP: generating MO 2-el. integral file.'
+     &        ,' Transformation level:',I3/)
  1610 FORMAT(/,' NSETUP-ERROR, NCONF =',I10)
  1620 FORMAT(/,' NSETUP-ERROR, NCONF from interface file',I12,
      *       /,'               NCONF from SETCI         ',I12)
