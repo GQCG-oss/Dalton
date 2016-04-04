@@ -85,9 +85,11 @@ C
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
          IF(DOUBLES) THEN
-            LTR2E   = NT2AM(ISYMTR)
-            LTR2D   = NT2AM(ISYMTR)
-         ELSE 
+C            LTR2E   = NT2AM(ISYMTR)
+C            LTR2D   = NT2AM(ISYMTR)
+            LTR2E   = N2P2HOP(ISYMTR)
+            LTR2D   = N2P2HOP(ISYMTR)
+         ELSE
             LTR2E   = 0
             LTR2D   = 0
          ENDIF

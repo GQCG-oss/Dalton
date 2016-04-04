@@ -217,11 +217,17 @@ C
       LBTJ1D  = NMATAV(ISYMTR)
                  
       IF(DOUBLES) THEN
-         LTR2E   = NT2AM(ISYMTR)
-         LRES2E  = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LTR2E   = NT2AM(ISYMTR)
+C         LRES2E  = NT2AM(ISYMTR)
+         LTR2E   = N2P2HOP(ISYMTR)
+         LRES2E  = N2P2HOP(ISYMTR)
          IF (DO_DEX) THEN
-            LTR2D   = NT2AM(ISYMTR)
-            LRES2D  = NT2AM(ISYMTR)
+C            LTR2D   = NT2AM(ISYMTR)
+C            LRES2D  = NT2AM(ISYMTR)
+            LTR2D   = N2P2HOP(ISYMTR)
+            LRES2D  = N2P2HOP(ISYMTR)
+Cend-Pi
          ELSE 
             LTR2D  = 0
             LRES2D = 0
@@ -1291,6 +1297,41 @@ C
          ENDIF
 C
          IF (DOUBLES) THEN
+C
+C-------------------------------------------------------------------
+C        Calculate the part of the result vectors RES1E and
+C        RES1D which originate from the C matrices. See 
+C                 eqs. (72) and (73).
+C-------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_TCBT(WORK(KRES1E),LRES1E,
+     &                       WORK(KRES1D),LRES1D,
+     &                       WORK(KTR2E),LTR2E,
+     &                       WORK(KTR2D),LTR2D,
+     &                       WORK(KDSRHF),LDSRHF,
+     &                       WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                       ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(29) = SOTIME(29) + DTIME
+C
+C----------------------------------------------------------------------
+C        Construct C-contribution to 2p2h result vectors RES2E
+C                 and RES2D.
+C----------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_CBT(WORK(KRES2E),LRES2E,
+     &                      WORK(KRES2D),LRES2D,
+     &                      WORK(KDSRHF),LDSRHF,
+     &                      WORK(KBTR1E),LBTR1E,
+     &                      WORK(KBTR1D),LBTR1D,
+     &                      WORK(KBTJ1E),LBTJ1E,
+     &                      WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+     &                      IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
+     &                      LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(15) = SOTIME(15) + DTIME
 C
 CRF         C^T*Tr2 => Res_1 and C*Tr_1 => Res_2 goes here!
 CRF         Pi: Check if existing implementation can be dropped in?

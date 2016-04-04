@@ -79,7 +79,10 @@ C==============================================================
 C
       IF (SOPCHK) THEN
          CALL SO_CHECK(MODEL,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                 T2MP,LT2MP,
+CPi 04.04.16
+C     &                 T2MP,LT2MP,
+     &                 DENSAI,LDENSAI,T2MP,LT2MP,
+Cend-Pi
      &                 FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
       END IF
 C

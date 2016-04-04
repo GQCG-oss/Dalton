@@ -47,7 +47,10 @@ C--------------------------------------------
 C
       LTR1 = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-         LTR2 = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LTR2 = NT2AM(ISYMTR)
+         LTR2 = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2 = 0
       ENDIF

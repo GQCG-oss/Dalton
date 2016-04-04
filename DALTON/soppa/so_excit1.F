@@ -323,7 +323,12 @@ C
 C
             ISYMTR = ISYM
             LEXVAL = NEXCIT(ISYM)
+CPi 01-04-16
+C---------------------------------------
+C           Set length of 
+C---------------------------------------
 C
+Cend-Pi
 C=========================================
 C           Loop over the possible methods
 C=========================================
@@ -349,12 +354,13 @@ C
      &            ' Perturbation symmetry     :',ISYM,
      &            ' p-h variables             :',2*NT1AM(ISYM)
                   IF (DOUBLES) THEN
-                     NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
-CPFP   2009-Jun
+CPi 01-04-16
+C                     NVARPT  = 2*(NT1AM(ISYM)+NT2AM(ISYM))
+                     NVARPT  = 2*(NT1AM(ISYM)+N2P2HOP(ISYM))
                      WRITE(LUPRI,'(A,I8,/,A,I8)')
-     &               ' 2p-2h variables           :',2*NT2AM(ISYM),
-c     &            ' 2p-2h variables.          :',2*N2P2HOP(ISYM), ! TODO triplet excitations are not yet integrated
-Cend-PFP
+C     &               ' 2p-2h variables           :',2*NT2AM(ISYM),
+     &               ' 2p-2h variables           :',2*N2P2HOP(ISYM),
+Cend-Pi
      &               ' Total number of variables :',NVARPT
                   ENDIF
                   WRITE(LUPRI,9001)
@@ -364,7 +370,8 @@ C              Adjust number of excitations of this symmetry down to
 C              the highest possible number
 C
                IF (DOUBLES .AND.(.NOT.IMODEL.EQ.SOP_MODEL_RPAD) ) THEN
-                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
+C                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+NT2AM(ISYM))
+                  NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM)+N2P2HOP(ISYM))
                ELSE
                   NEXCI = MIN(NEXCIT(ISYM),NT1AM(ISYM))
                ENDIF

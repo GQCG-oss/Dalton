@@ -1,6 +1,9 @@
 C  /* Deck so_check */
       SUBROUTINE SO_CHECK(MODEL,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
-     &                    T2MP,LT2MP,
+CPi 04.04.16
+C     &                    T2MP,LT2MP,
+     &                    DENSAI,LDENSAI,T2MP,LT2MP,
+Cend-Pi
      &                    FOCKD,LFOCKD,ISYMTR,WORK,LWORK)
 C
 C     This routine is part of the atomic integral direct SOPPA program.
@@ -63,7 +66,10 @@ C     and trial vectors.
 C-----------------------------------------------------
 C
       IF (DOUBLES) THEN
-         NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
+CPi 01.04.16
+C         NVAR   = 2 * (NT1AM(ISYMTR)+NT2AM(ISYMTR))
+         NVAR   = 2 * (NT1AM(ISYMTR)+N2P2HOP(ISYMTR))
+Cend-Pi
       ELSE
          NVAR = 2*NT1AM(ISYMTR)
       END IF
@@ -72,10 +78,16 @@ C
       LS2MAT = NVAR * NVAR
       LTR1E  = NT1AM(ISYMTR)
       LTR1D  = NT1AM(ISYMTR)
-      LDENSAI = NT1AM(1)
+CPi 04.04.16
+C      LDENSAI = NT1AM(1)
+Cend-Pi
       IF (DOUBLES) THEN
-         LTR2E  = NT2AM(ISYMTR)
-         LTR2D  = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LTR2E  = NT2AM(ISYMTR)
+C         LTR2D  = NT2AM(ISYMTR)
+         LTR2E  = N2P2HOP(ISYMTR)
+         LTR2D  = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2E  = 0
          LTR2D  = 0
@@ -133,10 +145,14 @@ C
          LRESO1E = NT1AM(ISYMTR)
          LRESO1D = NT1AM(ISYMTR)
          IF (DOUBLES) THEN 
-            LRES2E  = NT2AM(ISYMTR)
-            LRES2D  = NT2AM(ISYMTR)
-            LRESO2E = NT2AM(ISYMTR)
-            LRESO2D = NT2AM(ISYMTR)
+C            LRES2E  = NT2AM(ISYMTR)
+C            LRES2D  = NT2AM(ISYMTR)
+C            LRESO2E = NT2AM(ISYMTR)
+C            LRESO2D = NT2AM(ISYMTR)
+            LRES2E  = N2P2HOP(ISYMTR)
+            LRES2D  = N2P2HOP(ISYMTR)
+            LRESO2E = N2P2HOP(ISYMTR)
+            LRESO2D = N2P2HOP(ISYMTR)
          ELSE
             LRES2E  = 0
             LRES2D  = 0
@@ -219,7 +235,7 @@ C Pack INFO_ARRAY variables and send them off
          DTIME      = SECOND()
          CALL SO_ERES(MODEL,0, 1, DENSIJ, LDENSIJ, DENSAB, LDENSAB,
      &               T2MP, LT2MP,  FOCKD,   LFOCKD, 
-     &               WORK(KDENSAI), LDENSAI, ICOL, ISYMTR,
+     &               DENSAI, LDENSAI, ICOL, ISYMTR,
 #ifdef VAR_MPI 
      &               WORK(kAssignedIndices),lAssignedIndices,
 #endif

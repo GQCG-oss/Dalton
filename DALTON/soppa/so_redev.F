@@ -87,7 +87,10 @@ C--------------------------------------------------------------------
 C
       LTR1E    = NT1AM(ISYMTR)
       IF(DOUBLES)THEN
-         LTR2E    = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LTR2E    = NT2AM(ISYMTR)
+         LTR2E    = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2E    = 0
       ENDIF
