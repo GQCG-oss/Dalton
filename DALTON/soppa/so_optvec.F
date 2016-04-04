@@ -96,7 +96,7 @@ C
       KOFF2   = KOFF1 + LOFF1
       KOFF3   = KOFF2 + LOFF2
       KOFF4   = KOFF3 + LOFF3
-CPi 04.04.16 old triplet version
+CPi 04.04.16 old triplet version has - 1 here
 C      KEND1   = KOFF4 + LOFF4 - 1
       KEND1   = KOFF4 + LOFF4
 Cend-Pi

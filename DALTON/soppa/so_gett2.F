@@ -99,17 +99,9 @@ C------------------------------------------------------
 C
       DTIME     = SECOND()
 CPi-150316
-C Using LT2AMH here gives wrong E[2] because LT2AMH is initialized again
-C in so_t2mp.
-C      CALL SO_T2MP(T2AM,LT2AMH)
-CPi-210316
-C      PRINT*, ' IN SO_GETT2 1: ',T2AM(1+10), T2AM(LT2AMH+1+10)
+C Using LT2AMH here and do not initialize LT2MPH in so_t2mp
 Cend-Pi
       CALL SO_T2MP(T2AM,LT2AMH)
-CPi-210316
-C      PRINT*, ' IN SO_GETT2 2: ',T2AM(1+10), T2AM(LT2AMH+1+10)
-Cend-Pi
-Cend-Pi
       DTIME     = SECOND()  - DTIME
       SOTIME(5) = SOTIME(5) + DTIME
 C

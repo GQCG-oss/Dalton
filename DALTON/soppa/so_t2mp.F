@@ -24,7 +24,7 @@ C
 #include "ccorb.h"
 #include "ccsdinp.h"
 #include "ccsdsym.h"
-CPi-160316 include Triplet flah
+CPi-160316 include Triplet flag
 #include "soppinf.h"
 Cend-Pi
 C
@@ -40,7 +40,7 @@ C------------------
 C
       CALL QENTER('SO_T2MP')
 C
-CPi-160316
+CPi-160316 Already done in so_gett2
 C---------------------------------------------------------------------
 C     If Triplet, initialize pointer to the last part of T2AM in which
 C     the triplet amplitudes will be stored.
