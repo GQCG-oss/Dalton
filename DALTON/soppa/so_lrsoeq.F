@@ -288,11 +288,7 @@ C-----------------------------------------------------------------------
 C          Only the one-partcle part need to be re-done ->
 C          Maybe pass in MODEL = 'AOHRP'?
            LGPVC1  =  NT1AM(ISYMTR)
-CPFP   2009-Jun
-C           LGPVC2  =  NT2AM(ISYMTR)
            LGPVC2 = 0
-C           LGPVC2  = 2 * N2P2HOP(ISYMTR)
-Cend-PFP
            KGPVC1  = KEND1
            KGPVC2  = KGPVC1 + LGPVC1
            KEND2   = KGPVC2 + LGPVC2
@@ -313,22 +309,16 @@ C          Save the complete property gradients on a file.
 C---------------------------------------------------------
 C
            CALL SO_OPEN(LUGPV1,FNGPV1,LGPVC1)
-C           CALL SO_OPEN(LUGPV2,FNGPV2,LGPVC2)
 C
            CALL SO_WRITE(WORK(KGPVC1),LGPVC1,LUGPV1,FNGPV1,1)
-C           CALL SO_WRITE(WORK(KGPVC2),LGPVC2,LUGPV2,FNGPV2,1)
 C
            IF(IPRSOP.GE.5) THEN
-C              LGPVC1H = LGPVC1 /2
-C              LGPVC2H = LGPVC2 /2
               CALL AROUND('In SO_LRSOEQ:  '//MODEL//
      &                    ' gradient property vector.'//LABEL)
               CALL OUTPUT(WORK(KGPVC1),1,LGPVC1,1,1,LGPVC1,1,1,LUPRI)
-C              CALL OUTPUT(WORK(KGPVC2),1,LGPVC2,1,1,LGPVC2,1,1,LUPRI)
            ENDIF
 C
            CALL SO_CLOSE(LUGPV1,FNGPV1,'KEEP')
-C           CALL SO_CLOSE(LUGPV2,FNGPV2,'KEEP')
 C
          ENDIF
 C

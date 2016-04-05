@@ -685,7 +685,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_ordeig.F
     DALTON/soppa/so_orth_trn.F
     DALTON/soppa/so_polar.F
-    DALTON/soppa/so_prop.F
     DALTON/soppa/so_prpint.F
     DALTON/soppa/so_read.F
     DALTON/soppa/so_readset.F

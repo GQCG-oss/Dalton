@@ -317,21 +317,6 @@ C
       SOTIME(38) = SOTIME(38) + DTIME
 C
 C-----------------------------------------------------------------
-C     Calculate the value of the property with the trial vectors used
-C     for the linear problem before they will be changed by the
-C     SO_OPTVEC and write solution vector on the file
-C-----------------------------------------------------------------
-C
-C      DTIME      = SECOND()
-C      CALL SO_PROP(DOUBLES,NOLDTR,NNEWTR,ISYMTR,IMAGPROP,
-C     &             REDC,LREDC,LABEL,FRVAL(IFREQ),
-C     &             PROP,WORK(KEND2),LWORK2)
-C      DTIME      = SECOND()   - DTIME
-cLig  I'm quite sure to have to change this SOTIME
-C      SOTIME(38) = SOTIME(38) + DTIME
-cLig >>
-C
-C-----------------------------------------------------------------
 C     Calculate the new optimal trial and linear transformed trial
 C     (solution) vectors
 C-----------------------------------------------------------------

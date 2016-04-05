@@ -53,76 +53,51 @@ C
       CALL DCOPY(NVIR(ISYMB),CMO(KOFF1),NBAS(ISYMD),WORK(KCDB),1)
 C
 C------------------------------------------------------------------
-C     Copy t2-amplitudes with B's having the symmetry of delta into
-C     PT2MP.
+C     Loop over symmetry-blocks, do reductions
 C------------------------------------------------------------------
 C
-      DO 100 ISYMJ = 1,NSYM
+C$OMP PARALLEL PRIVATE(ISYMBJ,ISYMJ,ISYMAI,NAIBJ1,NAIBJ,FACT,NBJ,NBJ1,
+C$OMP&                 J,B,NAI)
+      DO 100 ISYMBJ = 1,NSYM
 C
-         ISYMBJ = MULD2H(ISYMJ,ISYMB)
+         ISYMJ = MULD2H(ISYMBJ,ISYMB)
 C
-         DO 110 ISYMI = 1,NSYM
+         ISYMAI  = ISYMBJ
 C
-            ISYMAI  = ISYMBJ
-            ISYMA   = MULD2H(ISYMI,ISYMAI)
+         NAIBJ1 = IT2AM(ISYMAI,ISYMBJ)
+C$OMP DO
+         DO 120 J = 1,NRHF(ISYMJ)
 C
-            DO 120 J = 1,NRHF(ISYMJ)
+            KOFF = IT2BCD(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J-1)
+
+            NBJ1 = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1)
+C              Zero output array
+            DO NAI = 1, NT1AM(ISYMAI)
+               T2M1(KOFF+NAI) = ZERO
+            END DO
 C
-               LPT2MP  = NRHF(ISYMI)*NVIR(ISYMA)*NVIR(ISYMB)
+C           Do reduction for this symmetry-block
+C           T2 (ai<=bj) * C(b) -> T2M1 (ai,j)
 C
-               KPT2MP  = KEND1
-               KEND2   = KPT2MP + LPT2MP
-               LWORK2  = LWORK  - KEND2
+            DO 130 B = 1,NVIR(ISYMB)
 C
-               CALL SO_MEMMAX ('SO_T2M1.2',LWORK2)
-               IF (LWORK2 .LT. 0)
-     &             CALL STOPIT('SO_T2M1.2',' ',KEND2,LWORK)
+               NBJ  = NBJ1 + B
+               FACT = WORK(KCDB-1+B)
 C
-               NBJ1 = IT1AM(ISYMB,ISYMJ) + NVIR(ISYMB)*(J-1)
-               NAIB = KPT2MP - 1
+               DO 140 NAI = 1, NT1AM(ISYMAI)
 C
-               DO 130 B = 1,NVIR(ISYMB)
+                   NAIBJ = NAIBJ1 + INDEX(NAI,NBJ)
 C
-                  NBJ    = NBJ1 + B
+                   T2M1(KOFF+NAI) = FACT*T2MP(NAIBJ)+T2M1(KOFF+NAI)
 C
-                  NAIBJ1 = IT2AM(ISYMAI,ISYMBJ)
+  140          CONTINUE
 C
-                  DO 140 I = 1,NRHF(ISYMI)
+  130       CONTINUE
 C
-                     NAI1 = IT1AM(ISYMA,ISYMI) + NVIR(ISYMA)*(I-1)
-C
-                     DO 141 A = 1,NVIR(ISYMA)
-C
-                        NAI   = NAI1   + A
-                        NAIB  = NAIB   + 1
-                        NAIBJ = NAIBJ1 + INDEX(NAI,NBJ)
-C
-                        WORK(NAIB) = T2MP(NAIBJ)
-C
-  141                CONTINUE
-C
-  140             CONTINUE
-C
-  130          CONTINUE
-C
-C------------------------------------------------------------
-C              Calculate one-index transformed t2-amplitudes.
-C------------------------------------------------------------
-C
-               KOFF2 = IT2BCD(ISYMAI,ISYMJ) + NT1AM(ISYMAI)*(J-1)
-     &               + IT1AM(ISYMA,ISYMI) + 1
-C
-               NTOT  = MAX(NVIR(ISYMA)*NRHF(ISYMI),1)
-C
-               CALL DGEMV('N',NVIR(ISYMA)*NRHF(ISYMI),NVIR(ISYMB),ONE,
-     &                    WORK(KPT2MP),NTOT,WORK(KCDB),1,ZERO,
-     &                    T2M1(KOFF2),1)
-C
-  120       CONTINUE
-C
-  110    CONTINUE
-C
+  120    CONTINUE
+C$OMP END DO NOWAIT
   100 CONTINUE
+C$OMP END PARALLEL
 C
 C-----------------------
 C     Remove from trace.
