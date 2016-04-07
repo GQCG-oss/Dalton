@@ -1,7 +1,7 @@
 # DALTON Change Log
 All notable changes to the DALTON project will be documented in this file.
 
-## [2016.1] (2016-04-03)
+## [2016.1] (2016-04-07)
 
 ### Added
 - Possibility to read basis set files as made by the EMSL web site
