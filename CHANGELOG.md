@@ -1,5 +1,5 @@
-# Change Log
-All notable changes to this project will be documented in this file.
+# DALTON Change Log
+All notable changes to the DALTON project will be documented in this file.
 
 ## [2017.alpha Unreleased]
 
@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 Do not make changes below this line! For the relase branch only.
 
-## [2016.1] (2016-03-25)
+## [2016.1] (2016-04-07)
 
 ### Added
 - Possibility to read basis set files as made by the EMSL web site
@@ -23,6 +23,7 @@ Do not make changes below this line! For the relase branch only.
   emsl output as e.g. aug-pcseg-1; only LSDALTON has been able to read them so far)
 
 ### Fixed
+- MCSCF in **PROPERTIES for more than 255 basis functions (fixes problem with MCSCF shielding reported on daltonforum.org)
 - Make sure molecule is not moved in ADDSYM during numerical differentiation
 - Fixed error in the printing of the cpu/wall time used in Sirius
 - Fixed error in PBEc functional: gave NaN when rho was zero.
@@ -89,7 +90,7 @@ Do not make changes below this line! For the relase branch only.
 - More reasonable output for TPCD.
 
 ### LSDALTON
-- Fixed .UNCONT for EMSL's Dalton basis set format.
+- Fixed .UNCONT for EMSLs Dalton basis set format.
 
 
 ## [2015.0] (2015-02-18)
