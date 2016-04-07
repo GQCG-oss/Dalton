@@ -320,7 +320,7 @@ c
 
 
             call mcscf_lucita_interface(cvec(1,ivec),wrk(klc2),
-     &                                  wrk(klsot),dummy2,
+     &                                  wrk(klsot),vdummy,
      &                                  'rotate  Cvec',
      &                                  wrk(klfree),lfree_local,iprtci)
 
@@ -655,7 +655,7 @@ C *** Construct diagonal of CI matrix
      &                                 .false.) ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
          call dzero(diagc,nconf)
-         call mcscf_lucita_interface(diagc,dummy2,fcac,h2ac,
+         call mcscf_lucita_interface(diagc,vdummy,fcac,h2ac,
      &                               'return CIdia',wrk(kw1),lw1,
      &                               iprdia)
 !#define LUCI_DEBUG

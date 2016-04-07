@@ -161,7 +161,7 @@ C           ... use determinant expansion
      &                                    .false.)     ! io2io vector exchange between mcscf and lucita: default mem2io/io2mem
 
 
-           call mcscf_lucita_interface(c,dummy2,dummy2,dummy2,
+           call mcscf_lucita_interface(c,vdummy,vdummy,vdummy,
      &                                 'analyze Cvec',
      &                                 work(kfree),lwrk,iprsir)
          else if(ci_program .eq. 'SIRIUS-CI')then

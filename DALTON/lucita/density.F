@@ -824,7 +824,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
      &                    SB(IOFF),CB(JOFF),C2,
      &                    ADSXA,SXSTST,STSTSX,DXSTST,STSTDX,SXDXSX,
      &                    MXPNGAS,NOBPTS,IOBPTS,MAXI,MAXK,
-     &                    SSCR,CSCR,dummy2,dummy2,
+     &                    SSCR,CSCR,vdummy,vdummy,
      &                    I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &                    X,NSMOB,NSMST,NSMSX,NSMDX,
      &                    NIIA,NIIB,NJA,NJB,MXPOBS,

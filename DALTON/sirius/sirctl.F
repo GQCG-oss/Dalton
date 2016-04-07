@@ -880,11 +880,11 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
 !        ------------------------------------------
          if(.not.gasci_input_fci_dump)then
 !          a1. calculate dimensions of vector and resolution matrices
-           call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
+           call mcscf_lucita_interface(vdummy,vdummy,vdummy,vdummy,
      &                               'return CIdim',work,lfree,iprsir)
 !          a2. calculate dimensions of vector and resolution matrices
            call setup_lucita_mcci_wrkspc_dimensions('ijkl resort ',0)
-           call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
+           call mcscf_lucita_interface(vdummy,vdummy,vdummy,vdummy,
      &                                 'ijkl resort ',work,lfree,iprsir)
  
 !          b. set vector, resolution matrices and integral array length in common MC/CI module
@@ -894,8 +894,8 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
            call memget('REAL',K_VEC2,  len_hc_mc2lu,WORK,KFREE,LFREE)
 
 !          d. ------------------- start of LUCITA machinery ---------------------
-           CALL LUCITA('standard ci ',work(k_vec1),work(k_vec2),dummy2,
-     &                 dummy2,work(kfree),lfree)
+           CALL LUCITA('standard ci ',work(k_vec1),work(k_vec2),vdummy,
+     &                 vdummy,work(kfree),lfree)
 !          ---------------------- end of LUCITA machinery -----------------------
 
            CALL MEMREL('lucita-ci.done',work,kfrsav,kfrsav,kfree,lfree)

@@ -353,7 +353,7 @@ C    *                MELMN3,NOSYM,ICSF,NCNSM,REFSPC)
            call define_lucita_cfg_static(1)
 
 !          b. run 'return CIdim' and extract LUCITA common block information
-           call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
+           call mcscf_lucita_interface(vdummy,vdummy,vdummy,vdummy,
      &                                 'return CIdim',work,lfreel,
      &                                 IPRCIX)
 

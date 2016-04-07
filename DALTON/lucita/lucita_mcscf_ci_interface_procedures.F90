@@ -44,10 +44,15 @@ contains
       integer,   intent(in)    :: lwork
       integer,   intent(in)    :: print_lvl
       real(8),   intent(inout) :: work(lwork)
-      real(8),   intent(inout) :: c_or_cr(*)
-      real(8),   intent(inout) :: hc_or_cl(*)
-      real(8),   intent(inout) :: int1_or_rho1(*)
-      real(8),   intent(inout) :: int2_or_rho2(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+!     real(8),   intent(inout) :: hc_or_cl(*)
+!     real(8),   intent(inout) :: int1_or_rho1(*)
+!     real(8),   intent(inout) :: int2_or_rho2(*)
+      real(8)                  :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
+      real(8)                  :: int1_or_rho1(*)
+      real(8)                  :: int2_or_rho2(*)
       character, intent(in)    :: run_type*(*)
 !
 !-------------------------------------------------------------------------------
@@ -107,10 +112,15 @@ contains
       integer,   intent(inout) :: lwork
       integer,   intent(in)    :: print_lvl
       real(8),   intent(inout) :: work(lwork)
-      real(8),   intent(inout) :: c_or_cr(*)
-      real(8),   intent(inout) :: hc_or_cl(*)
-      real(8),   intent(inout) :: int1_or_rho1(*)
-      real(8),   intent(inout) :: int2_or_rho2(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+!     real(8),   intent(inout) :: hc_or_cl(*)
+!     real(8),   intent(inout) :: int1_or_rho1(*)
+!     real(8),   intent(inout) :: int2_or_rho2(*)
+      real(8)                  :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
+      real(8)                  :: int1_or_rho1(*)
+      real(8)                  :: int2_or_rho2(*)
       character, intent(in)    :: run_type*(*)
 !
 !-------------------------------------------------------------------------------
@@ -166,10 +176,15 @@ contains
       integer,   intent(inout) :: lwork
       integer,   intent(in)    :: print_lvl
       real(8),   intent(inout) :: work(lwork)
-      real(8),   intent(inout) :: c_or_cr(*)
-      real(8),   intent(inout) :: hc_or_cl(*)
-      real(8),   intent(inout) :: int1_or_rho1(*)
-      real(8),   intent(inout) :: int2_or_rho2(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+!     real(8),   intent(inout) :: hc_or_cl(*)
+!     real(8),   intent(inout) :: int1_or_rho1(*)
+!     real(8),   intent(inout) :: int2_or_rho2(*)
+      real(8)                  :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
+      real(8)                  :: int1_or_rho1(*)
+      real(8)                  :: int2_or_rho2(*)
       character, intent(in)    :: run_type*(*)
 !
 !-------------------------------------------------------------------------------
@@ -221,8 +236,11 @@ contains
 !
 !*******************************************************************************
 #include "priunit.h"
-      real(8),   intent(inout) :: c_or_cr(*)
-      real(8),   intent(inout) :: hc_or_cl(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+!     real(8),   intent(inout) :: hc_or_cl(*)
+      real(8)                  :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
       integer,   intent(inout) :: switch
       logical,   intent(inout) :: do_restore
 !-------------------------------------------------------------------------------
@@ -252,7 +270,9 @@ contains
 ! sirius
 ! nothing
 #include "priunit.h"
-      real(8),   intent(inout) :: c_or_cr(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+      real(8)                  :: c_or_cr(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 2
@@ -350,8 +370,11 @@ contains
 #include "ciinfo.h"
 ! nothing
 #include "priunit.h"
-      real(8),   intent(inout) :: c_or_cr(*)
-      real(8),   intent(inout) :: hc_or_cl(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+!     real(8),   intent(inout) :: hc_or_cl(*)
+      real(8)                  :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 2
@@ -410,7 +433,9 @@ contains
 ! sirius
 ! nothing
 #include "priunit.h"
-      real(8),   intent(inout) :: c_or_cr(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+      real(8)                  :: c_or_cr(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 2
@@ -470,8 +495,11 @@ contains
 ! sirius
 ! nothing
 #include "priunit.h"
-      real(8),   intent(inout) :: c_or_cr(*)
-      real(8),   intent(inout) :: hc_or_cl(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+!     real(8),   intent(inout) :: hc_or_cl(*)
+      real(8)                  :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 2
@@ -691,8 +719,11 @@ contains
 #include "ciinfo.h"
 ! nothing
 #include "priunit.h"
-      real(8),   intent(inout) :: hc_or_cl(*)
-      real(8),   intent(inout) :: c_or_cr(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: hc_or_cl(*)
+!     real(8),   intent(inout) :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
+      real(8)                  :: c_or_cr(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 1
@@ -756,7 +787,9 @@ contains
 ! sirius
 ! nothing
 #include "priunit.h"
-      real(8),   intent(inout) :: c_or_cr(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: c_or_cr(*)
+      real(8)                  :: c_or_cr(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 1
@@ -798,8 +831,11 @@ contains
 ! sirius
 ! nothing
 #include "priunit.h"
-      real(8),   intent(inout) :: hc_or_cl(*)
-      real(8),   intent(inout) :: c_or_cr(*)
+! hjaaj Apr 2016: intent(inout) does not work with paramter vdummy in parameter list
+!     real(8),   intent(inout) :: hc_or_cl(*)
+!     real(8),   intent(inout) :: c_or_cr(*)
+      real(8)                  :: hc_or_cl(*)
+      real(8)                  :: c_or_cr(*)
       integer,   intent(in)    :: print_lvl
 !-------------------------------------------------------------------------------
       integer                  :: push_pull = 1
