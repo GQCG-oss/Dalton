@@ -2570,6 +2570,10 @@ C    *) FCDIA, ISMO
 C    *) CMO
 C
       use pelib_interface, only: use_pelib, pelib_ifc_fock
+#if defined (HAS_PCMSOLVER)
+      use pcm_config, only: pcm_configuration, pcm_cfg
+      use pcm_scf
+#endif
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
@@ -2625,6 +2629,9 @@ C
      *            'PCMINFO ','PCMJXMAT','QMMMTMAT','PEFMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
+#if defined (HAS_PCMSOLVER)
+      real(8), allocatable :: fock_pcm_mo(:)
+#endif
 C
       CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
@@ -2925,6 +2932,21 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
+
+#if defined (HAS_PCMSOLVER)
+! Write PCM contribution to Fock matrix in MO basis to SIRIFC
+      if(pcm_cfg%do_pcm) then
+         kwrk2 = 1
+         lwrk2 = lfree - kwrk2 +1
+! Allocate scratch space for the PCM Fock matrix contribution in AO basis.
+         allocate(fock_pcm_mo(nnorbt))
+         fock_pcm_mo = 0.0d0
+! Calculate PCM contribution to Fock matrix in MO basis
+         call pcm_mo_fock(fock_pcm_mo, cmo, wrk(kwrk2), lwrk2)
+         WRITE (LUSIFC) LAB123,'EXTPCMMAT'
+         CALL WRITT (LUSIFC,MMORBT,fock_pcm_mo)
+      end if
+#endif
 
 C ****** edh: 24/11/2011 ******
 

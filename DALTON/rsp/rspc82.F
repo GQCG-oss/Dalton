@@ -166,7 +166,7 @@ C        ... no CREF needed for TDHF and for "OPTORB" /HJAaJ
          NDREF = 0
       ELSE IF (IREFSY .EQ. KSYMST) THEN
          NDREF = KZCONF
-C        ... either KZCONF .eq. NCREF or 
+C        ... either KZCONF .eq. NCREF or
 C            KZCONF .gt. NCREF and then we need CREF in KZCONF determinants
 C            instead of in NCREF CSFs.
       ELSE
@@ -293,7 +293,7 @@ C ELECTRON OPERATOR
      *                  WRK(KUFCAC),DUMMY,.TRUE.,.TRUE.,
      *                  XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
             IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
-C     
+C
                T1 = DDOT(KZCONF,WRK(KCREF),1,
      *                   SVEC(KCVETO+1+(ISIM-1)*KZYVAR+KZVAR),1)
                CALL DAXPY(KZCONF,(-T1),WRK(KCREF),1,
@@ -569,7 +569,7 @@ C
 C  THE FIRST (NCSIM+NOSIM)*KZYVAR VARIABLES IN WRK CONTAIN EVECS
 C
 #ifdef HAS_PCMSOLVER
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
       use pelib_interface, only: use_pelib
 #include "implicit.h"
@@ -594,7 +594,7 @@ C
 C
       logical :: is_pcmsolver = .false.
 #ifdef HAS_PCMSOLVER
-      if (pcmmod_is_pcm_calculation) then
+      if (pcm_cfg%do_pcm) then
         is_pcmsolver = .true.
       end if
 #endif
@@ -1495,7 +1495,7 @@ C
          IF (MMPCM) THEN
              IF (NSTATES.LE.0) THEN
               CALL QUIT('NSTATES.LE.0 for MMPCM')
-            ENDIF 
+            ENDIF
             DO 3333 KL=1,NBX
               ICQM3(KL) = KEX(KL)
  3333       CONTINUE
@@ -3076,7 +3076,7 @@ C
             INEG     = ISNDX(2)
             ISNDX(2) = ISNDX(3)
             ISNDX(3) = INEG
-            IF (INEG.GT.0 .AND. .NOT.ABSORP) 
+            IF (INEG.GT.0 .AND. .NOT.ABSORP)
      *           WRITE(LUPRI,'(/2A,I3,A,L8,A,I6)')
      *         ' *** INFO, negative eigenvalues in reduced matrix.',
      &         ' Symmetry',KSYMOP,',  triplet',TRPLET,

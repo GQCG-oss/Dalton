@@ -62,7 +62,7 @@ C
       use efs_interface
 #endif
 #ifdef HAS_PCMSOLVER
-      use pcmmod_cfg
+      use pcm_config, only: pcm_configuration, pcm_cfg
 #endif
 #ifdef ENABLE_XCINT
       use dalton_xcint_interface, only: xcint_is_active, xcint_init
@@ -384,7 +384,7 @@ C
          ICONVI = ICONV
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
 #ifdef HAS_PCMSOLVER
-            if (pcmmod_is_pcm_calculation) call quit('ERROR: DIIS '//
+            if (pcm_cfg%do_pcm) call quit('ERROR: DIIS '//
      &      'failed to converge and QC-SCF is not implemented with '//
      &      'PCMSolver')
 #endif

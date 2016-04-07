@@ -55,11 +55,11 @@ C  /* Deck addgrd */
 #include "implicit.h"
 #include "mxcent.h"
 #include "trkoor.h"
-      REAL*8 GRAD(MXCOOR)
+      REAL*8 GRAD(NCOOR)
       REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
-      DO, I = 1, NCOOR
+      DO I = 1, NCOOR
          GRDMOL(I) = GRDMOL(I) + GRAD(I)
       END DO
       CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
@@ -535,6 +535,11 @@ C       I. Mills, T. Cvitas, K. Homann, N. Kallay, and K. Kuchitsu
 C       Quantities, Units and Symbols in Physical Chemistry
 C       (IUPAC, Blackwell Scientific, Oxford, 1988)
 C
+C 07 Febr 2016 Miro Ilias: added nuclear mass for the Tc atom to enable automatic symmetry detection
+C (otherwise was getting NaNs), based on
+C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
+C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
+C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -963,7 +968,7 @@ C
 C
 C     Tc:
 C
-     &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
+     & 97.907216D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
@@ -2037,7 +2042,6 @@ C
                IF ((ICHARG .NE. 0 .AND. .NOT.NOORBT(IATOM))
      &              .OR. (ICHARG .EQ. 0 .AND. SOLVNT 
      &              .AND. (IATOM .EQ. NUCIND))) THEN
-                  NATTYP(JATOM + 1) = ICHARG
                   ICHTOT = ICHTOT + ICHARG
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
@@ -2045,7 +2049,8 @@ C
      &                    *CORD(KCOOR,IATOM)
  30               CONTINUE
                   JATOM = JATOM + 1
-                  NUMIS(JATOM) = ISOTOP(IATOM)
+                  NATTYP(JATOM) = ICHARG
+                  NUMIS(JATOM)  = ISOTOP(IATOM)
                END IF
             END IF
  20      CONTINUE

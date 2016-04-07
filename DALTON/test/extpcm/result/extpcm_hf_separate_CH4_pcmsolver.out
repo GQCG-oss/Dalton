@@ -43,7 +43,7 @@
        K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
        E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
        O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
-       and H. Aagren,
+       and H. Agren,
        "The Dalton quantum chemistry program system",
        WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
@@ -136,13 +136,13 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Sep  9 15:19:26 2014
+     Date and time (Linux)  : Tue Dec  2 11:22:58 2014
      Host name              : spongebob                               
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/roberto/Runs/dalton-runs/testing
+   1) /home/roberto/Workspace/dalton/DALTON/test/extpcm
    2) /home/roberto/Workspace/dalton/build/basis
 
 
@@ -151,7 +151,7 @@ Compilation information
 
  Who compiled             | roberto
  Host                     | spongebob
- System                   | Linux-3.13.0-35-generic
+ System                   | Linux-3.13.0-40-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
@@ -167,9 +167,9 @@ Compilation information
  LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
                           | e/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 9a7128af4870398082d147a67a2508a6ab1ecacf
- Git branch               | pcm_lsdalton
- Configuration time       | 2014-09-09 15:05:09.932617
+ Last Git revision        | e580596fcf095ceccfdb878b9a6b601d02fa4da4
+ Git branch               | pcm
+ Configuration time       | 2014-12-02 10:38:55.972731
 
 
    Content of the .dal input file
@@ -180,6 +180,7 @@ Compilation information
 .EXTPCM                                           
 *EXTPCM                                           
 .OLDINT                                           
+.SEPARATE                                         
 **WAVE FUNCTIONS                                  
 .SCF                                              
 **END OF DALTON INPUT                             
@@ -218,11 +219,11 @@ H4    -.629889144   .629889144 -.629889144
  * Polarizable Continuum Model using PCMSolver external module:
    1: Converged potentials and charges at tesserae representative points written on file.
    2: Use point-by-point charge-attraction integrals evaluation subroutines.
-   3: Use total potentials and apparent charges.
+   3: Separate potentials and apparent charges in nuclear and electronic.
    4: Do not print potentials and charges.
 
 
- * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 0.2.0
+ * PCMSolver, an API for the Polarizable Continuum Model electrostatic problem. Version 1.0.0
    Main authors: R. Di Remigio, L. Frediani, K. Mozgawa
     With contributions from:
      R. Bast            (CMake framework)
@@ -417,10 +418,11 @@ H4    -.629889144   .629889144 -.629889144
 
 ~~~~~~~~~~ PCMSolver ~~~~~~~~~~
 Using CODATA 2010 set of constants.
+Input parsing done API-side
 ========== Cavity 
 Cavity type: GePol
 Average area = 1.07132 AU^2
-Probe radius = 2.61727
+Probe radius = 2.61727 AU
 Number of spheres = 5 [initial = 5; added = 0]
 Number of finite elements = 200
 ========== Solver 
@@ -476,8 +478,8 @@ Permittivity = 78.39
  HERMIT - Number of two-electron integrals written:         912 ( 88.1% )
  HERMIT - Megabytes written:                              0.014
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -510,7 +512,7 @@ Permittivity = 78.39
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Sep  9 15:19:27 2014
+     Date and time (Linux)  : Tue Dec  2 11:23:00 2014
      Host name              : spongebob                               
 
  Title lines from ".mol" input file:
@@ -559,9 +561,9 @@ Permittivity = 78.39
      Threshold for SCF convergence     1.00D-05
 
 
- *********************************************
- ***** DIIS optimization of Hartree-Fock *****
- *********************************************
+ ***********************************************
+ ***** DIIS acceleration of SCF iterations *****
+ ***********************************************
 
  C1-DIIS algorithm; max error vectors =    8
 
@@ -569,23 +571,38 @@ Permittivity = 78.39
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -37.1228099518     -3.540684434444E-05    1.27890D+00   -3.71D+01
+Polarization energy components
+   U_ee =   -25.57881047677433 , U_en =    25.59040888996412 , U_ne =    25.59040888996411 , U_nn =   -25.60207811684259
+
+@  1  -37.1228099518     -3.540684434711E-05    1.27890D+00   -3.71D+01
       Virial theorem: -V/T =      1.877233
 @      MULPOP C       0.21; H1     -0.05; H2     -0.05; H3     -0.05; H4     -0.05; 
  -----------------------------------------------------------------------------
-@  2  -37.2004014532     -1.687318364455E-05    1.46070D-01   -7.76D-02
+Polarization energy components
+   U_ee =   -25.58401847358994 , U_en =    25.59303142203262 , U_ne =    25.59303142203263 , U_nn =   -25.60207811684259
+
+@  2  -37.2004014532     -1.687318364141E-05    1.46070D-01   -7.76D-02
       Virial theorem: -V/T =      1.871988
 @      MULPOP C      -1.33; H1      0.33; H2      0.33; H3      0.33; H4      0.33; 
  -----------------------------------------------------------------------------
-@  3  -37.2015320532     -2.854680604219E-05    6.72167D-03   -1.13D-03
+Polarization energy components
+   U_ee =   -25.58458872513292 , U_en =    25.59330487418171 , U_ne =    25.59330487418171 , U_nn =   -25.60207811684259
+
+@  3  -37.2015320532     -2.854680604258E-05    6.72167D-03   -1.13D-03
       Virial theorem: -V/T =      1.870972
 @      MULPOP C      -1.52; H1      0.38; H2      0.38; H3      0.38; H4      0.38; 
  -----------------------------------------------------------------------------
-@  4  -37.2015346694     -2.900570235642E-05    9.20409D-05   -2.62D-06
+Polarization energy components
+   U_ee =   -25.58459365873966 , U_en =    25.59330688208877 , U_ne =    25.59330688208877 , U_nn =   -25.60207811684259
+
+@  4  -37.2015346694     -2.900570235731E-05    9.20409D-05   -2.62D-06
       Virial theorem: -V/T =      1.870953
 @      MULPOP C      -1.52; H1      0.38; H2      0.38; H3      0.38; H4      0.38; 
  -----------------------------------------------------------------------------
-@  5  -37.2015346698     -2.900998371389E-05    1.49488D-06   -3.92D-10
+Polarization energy components
+   U_ee =   -25.58459364767310 , U_en =    25.59330687227413 , U_ne =    25.59330687227413 , U_nn =   -25.60207811684259
+
+@  5  -37.2015346698     -2.900998371302E-05    1.49488D-06   -3.92D-10
 
 @ *** DIIS converged in   5 iterations !
 @     Converged SCF energy, gradient:    -37.201534669825    1.49D-06
@@ -611,7 +628,7 @@ Permittivity = 78.39
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.772       0.779
+ >>>> CPU and wall time for SCF :       1.959       1.974
 
 
                        .-----------------------------------.
@@ -629,12 +646,12 @@ Permittivity = 78.39
 
 @    Final HF energy:             -37.201534669825                 
 @    Nuclear repulsion:            25.365934555796
-@    Electronic energy:           -62.567440215638
+@    Electronic energy:           -62.567440215637
 
 @    Final gradient norm:           0.000001494879
 
  
-     Date and time (Linux)  : Tue Sep  9 15:19:28 2014
+     Date and time (Linux)  : Tue Dec  2 11:23:02 2014
      Host name              : spongebob                               
 
  (Only coefficients >0.0100 are printed.)
@@ -655,28 +672,30 @@ Permittivity = 78.39
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.78 seconds
- >>>> Total wall time used in SIRIUS :      0.78 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.96 seconds
+ >>>> Total wall time used in SIRIUS :      1.98 seconds
 
  
-     Date and time (Linux)  : Tue Sep  9 15:19:28 2014
+     Date and time (Linux)  : Tue Dec  2 11:23:02 2014
      Host name              : spongebob                               
 
  NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
+
+Dumping surface functions to .npy files
+
+
+PCMSolver interface correctly finalized
+
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
-
-
-PCMSolver interface correctly finalized
-
- >>>> Total CPU  time used in DALTON:   1.76 seconds
- >>>> Total wall time used in DALTON:   1.77 seconds
+ >>>> Total CPU  time used in DALTON:   3.95 seconds
+ >>>> Total wall time used in DALTON:   3.97 seconds
 
  
-     Date and time (Linux)  : Tue Sep  9 15:19:28 2014
+     Date and time (Linux)  : Tue Dec  2 11:23:02 2014
      Host name              : spongebob                               

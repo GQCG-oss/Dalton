@@ -1,4 +1,8 @@
+! FILE: ccorb.h
+
       INTEGER MAXFRO
+      PARAMETER (MAXFRO = 300)
+
       INTEGER NSYM,NSYMFR,MULD2H,NLAMDS,N2BAST,
      *        NRHF,NVIR,NORB,NRHFT,NVIRT,NORBT,
      *        NRHFS,NVIRS,NORBS,NRHFTS,NVIRTS,NORBTS,
@@ -6,9 +10,7 @@
      *        NRHFFR,NVIRFR,
      *        KFRRHF,KFRVIR,NFC,NFV,
      *        NRHFA,NRHFSA,NRHFB,NRHFSB,NRHFTB,
-     *        CCORBLAST
-C
-      PARAMETER (MAXFRO = 300)
+     *        CCORBlast
 C
       LOGICAL LGLO
 C
@@ -19,16 +21,8 @@ C
      *               NRHFFR(8),NVIRFR(8),
      *               KFRRHF(MAXFRO,8),KFRVIR(MAXFRO,8),
      *               NFC,NFV,LGLO,NRHFA(8),NRHFSA(8),NRHFB(8),
-     *               NRHFSB(8),NRHFTB
-C
-C
-      COMMON /CCORB/ CCORBLAST
-      !   Very important !!!
-      !   Always keep this variable as the last variable in the common block. 
-      !   If you add more variables to the block add them before <name>last.
-      !   This variable is used to synchronize slaves for parallel
-      !   calculations. Other than acting as a target to calculate the size of a common
-      !   block, they have no use.
-      !   Use CALL GETBYTESPAN(firstvar, <name>last, SizeInBytes) from all processes 
-      !   to get the number of bytes needed to transfer the common block.
-      !   Then transfer the block with mpi_bcast(firstvar, SizeInBytes, mpi_byte, 0, mpi_comm_world, ierr)
+     *               NRHFSB(8),NRHFTB,
+     &   CCORBlast !  Very important:
+      !  Always keep CCORBlast as the last variable in the common block. 
+      !  See GETBYTESPAN(firstvar, <name>last, SizeInBytes) for explanation.
+! -- end of ccorb.h

@@ -802,17 +802,6 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/qmcmm/response.F90
     DALTON/qmcmm/input.F90
    )
-if(ENABLE_PCMSOLVER)
-   set(DAL_PCM_SOURCES
-    DALTON/pcm/pcm_scf.F90
-    DALTON/pcm/pcm_integrals.F90
-    DALTON/pcm/pcm_linear_response.F90
-    DALTON/pcm/pcmmod_cfg.F90
-    DALTON/pcm/pcm_write.F90
-    DALTON/pcm/pcm_utils.F90
-   )
-   set(DALTON_FREE_FORTRAN_SOURCES "${DALTON_FREE_FORTRAN_SOURCES} ${DAL_PCM_SOURCES}")
-endif()
 set(DALTON_OWN_BLAS_SOURCES
     DALTON/pdpack/gp_blas.F
     )

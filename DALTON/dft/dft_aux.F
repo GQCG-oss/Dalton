@@ -164,15 +164,16 @@ c     Pawel Salek, 2003-03-18.
 c     Write DFT SO integrals to AOPROPER.
 c
 #include "implicit.h"
+#include "dummy.h"
 #include "inforb.h"
 #include "inftap.h"
       DIMENSION SOINTS(N2BASX,3)
 c
       CHARACTER*1 CXYZ(3)
       DATA CXYZ /'X','Y','Z'/
-      CHARACTER*8 CDUMMY,RTNLBL(2)
+      CHARACTER*8 RTNLBL(2)
       IF(LWRK.LE.NNBASX) CALL QUIT('NO memory in WRITE_SOI')
-      CALL GETDAT(RTNLBL(1),CDUMMY)
+      CALL GETDAT(RTNLBL(1),RTNLBL(2))
       RTNLBL(2)='ANTISYMM'
       CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ','UNFORMATTED',IDUMMY,
      &            .FALSE.)
@@ -284,24 +285,26 @@ c
       END DO
       CALL DAXPY(N2ORBX,D2,WORK(KDA1),1,FMAT,1)
       END
+      SUBROUTINE dft_get_ao_dens_mat(cmo,dmat,work,lwork)
+c
 c     dft_get_ao_dens_mat:
 c     compute AO density matrix dmat using provided CMO.
 c     dmat must be previously allocated.
 c
-      SUBROUTINE dft_get_ao_dens_mat(cmo,dmat,work,lwork)
 #include "implicit.h"
+#include "dummy.h"
 #include "infvar.h"
       DIMENSION CMO(*), DMAT(*),WORK(LWORK)
       JKEEP = JWOPSY
       JWOPSY = 1
-      CALL FCKDEN(1,0,DMAT,DUMMY1,CMO,DUMMY2,WORK,LWORK)
+      CALL FCKDEN(1,0,DMAT,VDUMMY,CMO,VDUMMY,WORK,LWORK)
       JWOPSY = JKEEP
       END
+      SUBROUTINE dft_get_ao_dens_matab(cmo,dmata,dmatb,work,lwork)
 c
 c dft_get_ao_dens_matab:
 c   compute AO active and inactive density matrices using provided CMO.
 c
-      SUBROUTINE dft_get_ao_dens_matab(cmo,dmata,dmatb,work,lwork)
 #include "implicit.h"
 #include "inforb.h"
       DIMENSION CMO(*), DMATA(*),DMATB(*),WORK(LWORK)
