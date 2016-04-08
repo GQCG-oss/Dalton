@@ -50,7 +50,10 @@ C------------------------------
 C
       LDIAG1 = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-         LDIAG2 = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LDIAG2 = NT2AM(ISYMTR)
+         LDIAG2 = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LDIAG2 = 0
       END IF

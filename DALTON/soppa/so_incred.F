@@ -125,6 +125,7 @@ C     Transform right hand side result vectors to left hands and
 C     save on scratch files.
 C     (A.L.2004  I think that the transformation is from Left to
 C     Right)
+CPi   08.04.16: In TRIPLET case, do not call ccsd_tcmepkx
 C---------------------------------------------------------------
 C
       DO INEWTR = 1,NNEWTR
@@ -135,8 +136,10 @@ C
          IF(DOUBLES)THEN
             CALL SO_READ(WORK(KRES2),LTR2E,LURS2E,FNRS2E,INEWTR+NOLDTR)
 C
-            CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
-            CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            IF (.NOT.TRIPLET) THEN
+               CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
+               CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            END IF
 C
             CALL SO_WRITE(WORK(KRES2),LTR2E,LUSC2E,FNSC2E,INEWTR)
          ENDIF
@@ -151,8 +154,10 @@ C
          IF(DOUBLES)THEN
             CALL SO_READ(WORK(KRES2),LTR2E,LURS2D,FNRS2D,INEWTR+NOLDTR)
 C
-            CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
-            CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            IF (.NOT.TRIPLET) THEN
+               CALL CCSD_TCMEPKX(WORK(KRES2),TWO,ISYMTR)
+               CALL DSCAL(LTR2E,HALF,WORK(KRES2),1)
+            END IF
 C
             CALL SO_WRITE(WORK(KRES2),LTR2E,LUSC2D,FNSC2D,INEWTR)
          ENDIF

@@ -149,6 +149,8 @@ add_dalton_runtest(prop_nolondon_soppacc         "dalton;runtest;prop;soppa;shor
 add_dalton_runtest(prop_soppa_vibavg_twobas      "dalton;runtest;prop;soppa")
 add_dalton_runtest(prop_exci_ao                  "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aorpa               "dalton;runtest;prop;aosoppa;short")
+add_dalton_runtest(prop_exci_aohrpa_sing         "dalton;runtest;prop;aosoppa;short")
+add_dalton_runtest(prop_exci_aohrpa_trip         "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aorpad              "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosoppa             "dalton;runtest;prop;aosoppa;short")
 add_dalton_runtest(prop_exci_aosoppcc            "dalton;runtest;prop;aosoppa;short")

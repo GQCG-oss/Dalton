@@ -124,6 +124,34 @@ C
       doubles = so_has_doubles(model)
       tr2_zero = MODEL.EQ.'DCRPA'
 C
+CPi-140316
+C---------------------------------------------------------
+C     Adjust lengt of T2 amplitudes vector in TRIPLET case
+C     Copied from SPAS/PFP Triplet version
+C---------------------------------------------------------
+C
+      LT2MPH = LT2MP
+      IF (TRIPLET) THEN
+        LT2MPH = INT(LT2MP/2)
+      END IF
+Cend-Pi
+C
+C------------------------------------------------------
+C     Write singlet and triplet T2 amplitudes to output
+C------------------------------------------------------
+C
+      IF ( IPRSOP. GE. 10 ) THEN
+C
+         CALL AROUND('singlet T2AM in HR_ERES')
+         CALL OUTPUT(T2MP,1,LT2MPH,1,1,LT2MPH,1,1,LUPRI)
+         IF (TRIPLET) THEN
+            CALL AROUND('triplet T2AM in HR_ERES')
+            CALL OUTPUT(T2MP(LT2MPH+1),1,LT2MPH,1,1,LT2MPH,1,1,LUPRI)
+         END IF
+C
+      END IF
+C
+C
 C------------------------------------------------------------------
 C     Determine the symmetry of the result vector from the symmetry
 C     of the trial vector ISYMTR, and the opperator symmtry ISYMOP.
@@ -189,12 +217,18 @@ C
       LBTJ1D  = NMATAV(ISYMTR)
 
       IF(DOUBLES) THEN
-         LTR2E   = NT2AM(ISYMTR)
-         LRES2E  = NT2AM(ISYMTR)
+CPi 01.04.16
+C         LTR2E   = NT2AM(ISYMTR)
+C         LRES2E  = NT2AM(ISYMTR)
+         LTR2E   = N2P2HOP(ISYMTR)
+         LRES2E  = N2P2HOP(ISYMTR)
          IF (DO_DEX) THEN
-            LTR2D   = NT2AM(ISYMTR)
-            LRES2D  = NT2AM(ISYMTR)
-         ELSE
+C            LTR2D   = NT2AM(ISYMTR)
+C            LRES2D  = NT2AM(ISYMTR)
+            LTR2D   = N2P2HOP(ISYMTR)
+            LRES2D  = N2P2HOP(ISYMTR)
+Cend-Pi
+         ELSE 
             LTR2D  = 0
             LRES2D = 0
          ENDIF
@@ -636,9 +670,11 @@ C                    MP-amplitudes.
 C------------------------------------------------------------
 C
                      DTIME      = SECOND()
-                     CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MP,
-     &                         WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
-     &                         WORK(KEND4),LWORK4)
+CPi-140316 Change LT2MP -> LT2MPH
+                     CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MPH,
+Cend-Pi
+     &                            WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                            WORK(KEND4),LWORK4)
                      DTIME      = SECOND()   - DTIME
                      SOTIME(12) = SOTIME(12) + DTIME
                   ENDIF
@@ -825,7 +861,6 @@ C
                CALL SO_RES_B(WORK(KRES1D),LRES1D,
      &                       WORK(KSIGAI2),LSIGAI2,
      &                       WORK(KCMO),LCMO,ISYRES,ONE)
-
             END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(18) = SOTIME(18) + DTIME
@@ -837,9 +872,17 @@ C           and (35).
 C-----------------------------------------------------------------------
 C
             DTIME      = SECOND()
-            CALL SO_RES_C(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
-     &                    WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),LSIGDA2,
-     &                    WORK(KCMO),LCMO,ISYRES)
+C            CALL SO_RES_C(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
+C     &                    WORK(KSIGDA1),LSIGDA1,WORK(KSIGDA2),LSIGDA2,
+C     &                    WORK(KCMO),LCMO,ISYRES)
+            CALL SO_RES_C(WORK(KRES1E),LRES1E,
+     &                    WORK(KSIGDA1),LSIGDA1,
+     &                    WORK(KCMO),LCMO,ISYRES,ONE)
+            IF (DO_DEX) THEN
+               CALL SO_RES_C(WORK(KRES1D),LRES1D,
+     &                       WORK(KSIGDA2),LSIGDA2,
+     &                       WORK(KCMO),LCMO,ISYRES,-ONE)
+            END IF
             DTIME      = SECOND()   - DTIME
             SOTIME(19) = SOTIME(19) + DTIME
 
@@ -1088,8 +1131,8 @@ C                 are used in SO_RES_B.
 C--------------------------------------------------------------------
 C
             DTIME      = SECOND()
-            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,WORK(KSIGAI2),
-     &                    LSIGAI2,
+            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
+     &                    WORK(KSIGAI2),LSIGAI2,
      &                    WORK(KT2M1),LT2M1,WORK(KXINT),LXINT,
      &                    WORK(KBTR1E),LBTR1E,
      &                    WORK(KBTR1D),LBTR1D,
@@ -1108,7 +1151,10 @@ C
             DTIME      = SECOND()
             CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
      &                    WORK(KSIGDA2),LSIGDA2,
-     &                    T2MP,LT2MP,WORK(KDSRHF),LDSRHF,
+CPi-160316 change LT2MP -> LT2MPH
+     &                    T2MP,LT2MPH,
+Cend-Pi
+     &                    WORK(KDSRHF),LDSRHF,
      &                    WORK(KBTR1E),LBTR1E,
      &                    WORK(KBTR1D),LBTR1D,
      &                    WORK(KBTJ1E),LBTJ1E,
@@ -1192,15 +1238,109 @@ C
             DTIME      = SECOND()   - DTIME
             SOTIME(14) = SOTIME(14) + DTIME
 
-CRF         B^(2) terms go here: Pi -> Check what we need!
-
+CPi-160316
+C-------------------------------------------------------------------
+C           Construct the partially back-transformed T2 MP-amplitudes
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_T2M1(WORK(KT2M1),LT2M1,
+     &                   T2MP(LT2MPH+1),LT2MPH,
+     &                   WORK(KCMO),LCMO,
+     &                   IDEL,ISYMD,ISYDIS,
+     &                   WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(12) = SOTIME(12) + DTIME
+C
+C--------------------------------------------------------------------
+C                 Construct SIGMAI1(ALFA,I) and SIGMAI2(ALFA,I) which
+C                 are used in SO_RES_B.
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_SIGAI(WORK(KSIGAI1),LSIGAI1,
+     &                    WORK(KSIGAI2),LSIGAI2,
+     &                    WORK(KT2M1),LT2M1,
+     &                    WORK(KXINT),LXINT,
+     &                    WORK(KBTR1E),LBTR1E,
+     &                    WORK(KBTR1D),LBTR1D,
+     &                    WORK(KBTJ1E),LBTJ1E,
+     &                    WORK(KBTJ1D),LBTJ1D,
+     &                    WORK(KCMO),LCMO,
+     &                    ISYMD,ISYDIS,ISYRES,ISYMTR,
+     &                    WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(16) = SOTIME(16) + DTIME
+C
+C--------------------------------------------------------------------
+C                 Construct SIGDA1(DELTA,A) and SIGDA2(DELTA,A) which
+C                 are used SO_RES_C.
+C--------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_SIGDA(WORK(KSIGDA1),LSIGDA1,
+     &                    WORK(KSIGDA2),LSIGDA2,
+     &                    T2MP(LT2MPH+1),LT2MPH,
+     &                    WORK(KDSRHF),LDSRHF,
+     &                    WORK(KBTR1E),LBTR1E,
+     &                    WORK(KBTR1D),LBTR1D,
+     &                    WORK(KBTJ1E),LBTJ1E,
+     &                    WORK(KBTJ1D),LBTJ1D,
+     &                    WORK(KCMO),LCMO,
+     &                    IDEL,ISYMD,ISYDIS,ISYRES,ISYMTR,
+     &                    WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(17) = SOTIME(17) + DTIME
+C
+Cend-Pi
+C
          ENDIF
-
+C
          IF (DOUBLES) THEN
-
+C
+C-------------------------------------------------------------------
+C        Calculate the part of the result vectors RES1E and
+C        RES1D which originate from the C matrices. See 
+C                 eqs. (72) and (73).
+C-------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_TCBT(WORK(KRES1E),LRES1E,
+     &                       WORK(KRES1D),LRES1D,
+     &                       WORK(KTR2E),LTR2E,
+     &                       WORK(KTR2D),LTR2D,
+     &                       WORK(KDSRHF),LDSRHF,
+     &                       WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
+     &                       ISYMTR,WORK(KEND5),LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(29) = SOTIME(29) + DTIME
+C
+C----------------------------------------------------------------------
+C        Construct C-contribution to 2p2h result vectors RES2E
+C                 and RES2D.
+C----------------------------------------------------------------------
+C
+            DTIME      = SECOND()
+            CALL SO_RES_CBT(WORK(KRES2E),LRES2E,
+     &                      WORK(KRES2D),LRES2D,
+     &                      WORK(KDSRHF),LDSRHF,
+     &                      WORK(KBTR1E),LBTR1E,
+     &                      WORK(KBTR1D),LBTR1D,
+     &                      WORK(KBTJ1E),LBTJ1E,
+     &                      WORK(KBTJ1D),LBTJ1D,WORK(KCMO),LCMO,
+     &                      IDEL,ISYMD,ISYDIS,ISYMTR,WORK(KEND5),
+     &                      LWORK5)
+            DTIME      = SECOND()   - DTIME
+            SOTIME(15) = SOTIME(15) + DTIME
+C
 CRF         C^T*Tr2 => Res_1 and C*Tr_1 => Res_2 goes here!
+<<<<<<< HEAD
 CRF         Pi: Check if existing implementation can be dropped in..?
 
+=======
+CRF         Pi: Check if existing implementation can be dropped in?
+C
+>>>>>>> cb7abdda095321c4717b37ec611ee179db43d096
          ENDIF
 
          END SUBROUTINE

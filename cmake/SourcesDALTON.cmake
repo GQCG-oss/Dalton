@@ -649,6 +649,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_aodens.F
     DALTON/soppa/so_bcktr.F
     DALTON/soppa/so_bextract.F
+    DALTON/soppa/so_tbextract.F
     DALTON/soppa/so_check.F
     DALTON/soppa/so_close.F
     DALTON/soppa/so_collect_tm.F
@@ -695,6 +696,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_res_a.F
     DALTON/soppa/so_res_b.F
     DALTON/soppa/so_res_cb.F
+    DALTON/soppa/so_res_cbt.F
     DALTON/soppa/so_res_cd.F
     DALTON/soppa/so_res_c.F
     DALTON/soppa/so_res_cp.F
@@ -704,6 +706,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/soppa/so_res_ovl.F
     DALTON/soppa/so_res_sym.F
     DALTON/soppa/so_res_tcb.F
+    DALTON/soppa/so_res_tcbt.F
     DALTON/soppa/so_ropt.F
     DALTON/soppa/so_rpprp1.F
     DALTON/soppa/so_rspleq.F
