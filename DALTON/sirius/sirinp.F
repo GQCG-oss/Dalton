@@ -2002,7 +2002,7 @@ C 37 SIROPT  Dont switch to Broydn update in local region. UPD : genera
 C 38 SIROPT  Dont switch from NEO to NR in local region.   OPT : NEO AL
 C 39 SIROPT  Only NR local optimization, no NEO steps.     OPT : NR ALW
 C 40
-C 41 variuos OPT Optimal orbital trial vector (CALL NEXKAP)OPT : OPTIMA
+C 41 various OPT Optimal orbital trial vector (CALL NEXKAP)OPT : OPTIMA
 C 42
 C 43
 C 44
@@ -2011,7 +2011,7 @@ C 46 SIRCAN  Only NO transformation, inactive and          OPT : NATONL
 C    OPTST,SIRSAV sec. orbitals unchanged (no can. orbs)
 C 47 SIRCAN  temp. - use CICTL, not TRACI)
 C 48 SIRCAN,OPTST,SIRSAV CO's: diag. FD=FC+FV blocks       OPT : FOCKON
-C 49
+C 49 SIRDIIS do not use difference density                 DIIS: DIFDEN
 C 50
 C 51 various Orb. absor. level 1;   inact.-act.,act.-act.  OPT : ABSORB
 C 52 various Orb. absor. level 2; + inact.-sec.            OPT : ABSORB
