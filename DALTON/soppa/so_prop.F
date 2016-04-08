@@ -57,8 +57,12 @@ C      LGPVC1   = NT1AM(ISYMTR)
 C      LGPVC2   = NT2AM(ISYMTR)
       LGPVC1H  = NT1AM(ISYMTR)
       IF (DOUBLES) THEN
-         LGPVC2   = 2*NT2AM(ISYMTR)
-         LGPVC2H  = NT2AM(ISYMTR)
+CPi 08.04.16
+C         LGPVC2   = 2*NT2AM(ISYMTR)
+C         LGPVC2H  = NT2AM(ISYMTR)
+         LGPVC2   = 2*N2P2HOP(ISYMTR)
+         LGPVC2H  = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE ! set doubles lenghts to zero 
          LGPVC2  = 0
          LGPVC2H = 0

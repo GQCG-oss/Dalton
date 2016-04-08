@@ -106,14 +106,14 @@ C     that they use the same work space.
 C--------------------------------------------------------------------
 C
       LTR1E    = NT1AM(ISYMTR)
-CPFP   2009-Jun
       IF(DOUBLES)THEN
-         LTR2E    = NT2AM(ISYMTR)
+CPi 08.04.16
+C         LTR2E    = NT2AM(ISYMTR)
+         LTR2E    = N2P2HOP(ISYMTR)
+Cend-Pi
       ELSE
          LTR2E    = 0
       ENDIF
-C      LTR2E    = N2P2HOP(ISYMTR)
-Cend-PFP
       LI       = NOLDTR + NNEWTR
       LJ       = NOLDTR + NNEWTR
 C
