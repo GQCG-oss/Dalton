@@ -2,7 +2,7 @@ program mpi_test
 
    implicit none
 
-   #include "mpif.h"
+#include "mpif.h"
 
    integer :: ierr
 
