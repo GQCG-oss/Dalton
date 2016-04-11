@@ -1,0 +1,19 @@
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+.DIRECT
+**INTEGRALS                                       
+.MNF-SO                                           
+**WAVE FUNCTIONS                                  
+.DFT                                              
+CAMB3LYP                                          
+**RESPONSE                                        
+.TRPFLG                                           
+*QUADRATIC                                        
+.DOUBLE RESIDUE                                   
+.ISPABC                                           
+ 1 0 1                                            
+.PROPRT                                           
+Y1MNF-SO                                          
+.ROOTS                                            
+1 1 0 0
+**END OF INPUT                                    

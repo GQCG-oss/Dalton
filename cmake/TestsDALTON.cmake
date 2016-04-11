@@ -243,6 +243,7 @@ add_dalton_test(rsp_solvesr                      "dalton;rsp;medium")
 add_dalton_test(rsp_mnfphosph                    "dalton;rsp;medium")
 add_dalton_test(rsp_ecphosph                     "dalton;rsp;medium")
 add_dalton_test(rsp_twophot                      "dalton;rsp;short")
+add_dalton_runtest(rsp_soestm                    "dalton;rsp;short")
 
 add_dalton_runtest(qmmm1_short                   "dalton;runtest;qmmm;short;essential")
 add_dalton_runtest(qmmm1                         "dalton;runtest;qmmm;medium")
