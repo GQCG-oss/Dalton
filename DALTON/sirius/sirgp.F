@@ -831,9 +831,11 @@ C
 C Used from common blocks:
 C  INFORB : NCMOT
 C  INFTAP : LUIT1
+C exeinf.h : NEWCMO
 C
 #include "inforb.h"
 #include "inftap.h"
+#include "exeinf.h"
 C
       LOGICAL FNDLAB
       CHARACTER*8 MOLBL(3),LABTBL(3)
@@ -882,6 +884,7 @@ C     ...label 'NEWORB  '
       WRITE (LUIT1) MOLBL,LABTBL(3)
 C     ...label 'EODATA  '
       REWIND LUIT1
+      NEWCMO = .TRUE.
 C
       CALL QEXIT('NEWORB')
       RETURN

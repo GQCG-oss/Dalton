@@ -140,7 +140,7 @@ add_dalton_runtest(prop_ctocd                    "dalton;runtest;prop;short;esse
 add_dalton_runtest(prop_soppactocd               "dalton;runtest;prop;soppa;short;essential")
 add_dalton_runtest(prop_newtrasoppa              "dalton;runtest;prop;soppa;short")
 add_dalton_runtest(prop_newtrasoppacc            "dalton;runtest;prop;soppa;short")
-add_dalton_runtest(prop_newtramcscf              "dalton;runtest;prop;short")
+add_dalton_runtest(prop_newtramcscf              "dalton;runtest;prop;short;essential")
 add_dalton_runtest(prop_vibg1                    "dalton;runtest;prop;short;essential")
 add_dalton_runtest(prop_vibg2                    "dalton;runtest;prop;short;essential")
 add_dalton_runtest(prop_cpp_ecd                  "dalton;runtest;prop;short")
