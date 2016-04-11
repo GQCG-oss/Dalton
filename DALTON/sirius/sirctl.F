@@ -102,7 +102,7 @@ C
 
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCM_save
-      LOGICAL   DFT_SPINDNS_save, DFT_LOCALSPIN_save
+      LOGICAL   DFT_SPINDNS_save, DFT_LOCALSPIN_save, USEDRC_save
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
 
@@ -756,6 +756,7 @@ C
          KWRK1 = KCMO  + NCMOT
          LWRK1 = LWORK - KWRK1
          CALL READMO(WORK(KCMO),JRDMO,WORK(KWRK1),LWRK1)
+         USEDRC_save = USEDRC
          USEDRC = .TRUE.
          IF (NEWTRA) THEN
 C        ... koopro4 uses (ia/ (inactive-secondary) Mulliken distributions;
@@ -779,6 +780,7 @@ C            transformation  /hjaaj June 09
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
+         USEDRC = USEDRC_save
 
        END IF
       END IF
@@ -802,6 +804,7 @@ C
          CALL SET_INFORB_LUCITA('LUCITA') ! define inforb.h with LUCITA
                                           ! orbital occupations for TRACTL
          JTRALVL = 0 ! only active orbitals for all four indices
+         USEDRC_save = USEDRC
          USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
 
          FTRCTL = .true.
@@ -828,6 +831,7 @@ C
          CALL FLSHFO(LUW4)
          CALL FLSHFO(LUPRI)
          CALL FLSHFO(LUSTAT)
+         USEDRC = USEDRC_save
 
          CALL SET_INFORB_LUCITA('RESET ')
        END IF

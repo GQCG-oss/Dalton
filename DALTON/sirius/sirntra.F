@@ -331,8 +331,9 @@ C
                ! in RDAO2 outside RDAO2!
             END IF
             IF (ierr .gt. 0) THEN
-               call quit(
-     &            'SIR_INTOPEN_NEWTRA: AOTWOINT info not consistent')
+               write(lupri,'(/A)') ' SIR_INTOPEN_NEWTRA INFO: '//
+     %            'AOTWOINT info not consistent - deleting old AOTWOINT'
+               CALL GPCLOSE(LUINTA,'DELETE')
             END IF
          END IF
       END IF

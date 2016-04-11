@@ -88,7 +88,7 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
       CHARACTER MODEL*(10), MODWR*(10)
 
       LOGICAL MAYBE_MORE, RELAX, CICLC, HFCLC, TRPCLC,OOTV
-      LOGICAL EXCLC, FASAVE, OPTST, EX
+      LOGICAL EXCLC, NEWCMO_SAVE, OPTST, EX
       INTEGER IOPT, ISYM, IVEC, NSTAT, ORDER, IDUM, IPERT,LWRK0,LWRK1
       INTEGER NCMOT,NASHT,N2ASHX,LCINDX,KCMO,KUDV,KXINDX,KEND0,KEND1
       INTEGER LUGDVE, LUSOVE, MXRM, MXPHP, NCOSAV, IOPTWR, KSLVEC
@@ -203,10 +203,10 @@ C     PARAMETER (MXFRVAL = 1)  ! switch off simultaneous equations
       MXRM   = 40
       MXPHP  = 1
  
-      FASAVE = FABRHS
+      NEWCMO_SAVE = NEWCMO
       NCOSAV = NCONF
 
-      FABRHS = .TRUE.
+      NEWCMO = .TRUE.
       NCONF  = 1
 
       IF (DIRECT) CALL CCDFFOP
@@ -414,7 +414,7 @@ C         --------------------------------------------
      *            IDUMMY,.FALSE.)
       END IF
 
-      FABRHS = FASAVE
+      NEWCMO = NEWCMO_SAVE
       NCONF  = NCOSAV
 
       IF (LOCDBG) THEN

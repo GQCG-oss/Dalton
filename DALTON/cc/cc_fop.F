@@ -100,7 +100,7 @@ C
 #include "ccqrinf.h"
 C
       LOGICAL CCMMCONV,DIELCONV,CCDC
-      LOGICAL CC1BSV,CC1ASV,FASAVE,CICLC,HFCLC, DAR2SA,
+      LOGICAL CC1BSV,CC1ASV,NEWCMO_SAVE,CICLC,HFCLC, DAR2SA,
      *        TRPCLC,OOTV, EXCLC, RLORBS, LPROJECT, EX, TRIPLET,
      *        LDUM, ETASAV, LCCPTSV
       LOGICAL BP2SAV
@@ -1219,7 +1219,7 @@ C----------------------------------------------------
 C        Solve equations for ai-part of Zeta-kappa-0.
 C----------------------------------------------------
 C
-         FASAVE = FABRHS
+         NEWCMO_SAVE = NEWCMO
          NCOSAV = NCONF
 C
          IF (DIRECT) CALL CCDFFOP
@@ -1265,7 +1265,7 @@ C-tbp    MXRM   = 40
 
          MXPHP  = 1
 C
-         FABRHS = .TRUE.
+         NEWCMO = .TRUE.
          NCONF  = 1
 C
          IF (RHSNORM.GT.1.0D-12) THEN
@@ -1312,7 +1312,7 @@ C
          CALL CC_WRRSP('L0',0,1,IOPT,MODEL,WORK(KSOLUT),DUMMY,DUMMY,
      &                 WORK(KWRK2),LWRK2)
 C
-         FABRHS = FASAVE
+         NEWCMO = NEWCMO_SAVE
          NCONF  = NCOSAV
 C
          WRITE(LUPRI,'(/A,F10.6)')

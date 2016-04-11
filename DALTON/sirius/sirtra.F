@@ -98,7 +98,7 @@ drcctl if ITRLVL.gt.0 (not ci) and usedrc
 ! Write label 'END INTM' at end of LUINTM in TRAAB
 ! Write total time in tracd,sortb,traab in tractl if iprtra .gt.0
 !    and only write TRANSFORMATION level each time if iprtra .gt. 0
-!    and corrected 890615 tractl output error (wrt. ITRSAV) in TRACTL
+!    and corrected 890615 tractl output error in TRACTL
 !890220-hjaaj
 ! traab,tracd -- NOSYNC directive for read direct access to TRI(*)
 !===========================================================================
@@ -1088,7 +1088,7 @@ C                 -- ITRLVL.EQ.1 or 4 or 5:
                GO TO 150
             END IF
 C
-C     ***** START ADDRESSES FOR MO'S   *****
+C     ***** START ADDRESSES FOR MOs    *****
 C     ***** SET THE ARRAY PQRD TO ZERO *****
             IMOR = JCMO(ISR) + NCRMIN + (NR-JBASR-1)*MORBR
             IMOS = JCMO(ISS) + NDRMIN
@@ -1104,7 +1104,7 @@ C              ***** COMPUTE POSITION OF APPROPRIATE INTEGRAL *****
                   IPQRS = IPQRS2 + NS
                END IF
                PQRS = TRI(IPQRS)
-C              ***** LOOP OVER MO'S OF SYMMETRY ISS *****
+C              ***** LOOP OVER MOs OF SYMMETRY ISS *****
                IF (ABS(PQRS).GE.THRP)
      *         CALL DAXPY(NNDR,PQRS,CMOT(IMOS),1,PQRD(NDRMIN),1)
                IMOS = IMOS + MORBS
@@ -1565,7 +1565,7 @@ C        ***** FIND POSITION OF INTEGRAL (PQ/CD) *****
             IPQCD = NCDP   + IT(NQ)
          END IF
          PQCD=TRI(IPQCD)
-C        ***** LOOP OVER MO'S OF SYMMETRY ISQB *****
+C        ***** LOOP OVER MOs OF SYMMETRY ISQB  *****
 C        ***** AND TRANSFORM SECOND INDEX      *****
          IF (ABS(PQCD) .GE. THRP)
      *      CALL DAXPY(NNBR,PQCD,CMOT(IMOQ),1,PBCD(NBRMIN),1)
@@ -1703,7 +1703,7 @@ C   050125-hjaaj: new TRACTL_1 for dynamic allocation
 C
 C Input:
 C  KTRLVL, abs(KTRLVL) is transformation level, DELDA = (KTRLVL.lt.0)
-C  CMO,   mo coefficients
+C  CMO,   MO coefficients
 C  WORK,  work array
 C  KWORK, actual length of work array
 C
@@ -1715,6 +1715,7 @@ C
 #include "lbmxsq.h"
 C
 C Used from common blocks:
+C exeinf.h : FTRCTL, ITRLVL_LAST, LVLDRC_LAST
 C
 #include "priunit.h"
 #include "inforb.h"
@@ -1726,7 +1727,7 @@ C
 C
       DIMENSION MFRO(8)
       LOGICAL VFIRST, FOPEN, DELDA, FEXIST, USEDRC_SAVE
-      SAVE VFIRST, IPRTRA_SAVE, LDBUF, LRBUF, ITRSAV
+      SAVE VFIRST, IPRTRA_SAVE, LDBUF, LRBUF
       DATA VFIRST /.TRUE./
 C
 C     VFIRST is is used to control setting of print level, see below.
@@ -1749,16 +1750,38 @@ C
          IPRTRA = IPRTRA_SAVE
       END IF
 C
+C  FTRCTL in exeinf.h forces integral sort and transformation,
+C      FTRCTL is true if Hermit has calculated a new AOTWOINT file
+C      since last call of TRACTL, or if integral type has changed
+C      (example: switch between AO2SRINT and AOTWOINT for srDFT)
+C
+      IF (FTRCTL) THEN ! new geometry, force new integral transformation
+         ITRLVL_LAST = -999
+         LVLDRC_LAST = -999
+         LSRTAO = 0 ! force new integral sort and transformation in TRACTL_1
+         FTRCTL = .FALSE.
+      END IF
+C
       ITRLVL = ABS( KTRLVL )
       USEDRC_SAVE = USEDRC
 C
       IF (NEWTRA) THEN
          IF (ITRLVL .EQ. 0 .OR. ITRLVL .GE. 5) THEN ! zeroth, third or fourth order transformation
             USEDRC = .FALSE. ! use DRCCTL and not Dirac integrals from N_TRACTL
+            ! because a lot of MO integrals are calculated twice in N_TRACTL if ITRLVL .ge. 5
          END IF
          CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
          NEWTRA_USEDRC = USEDRC
          IF ( USEDRC_SAVE ) USEDRC = .TRUE.
+         ! not USEDRC = USEDRC_SAVE because USEDRC may have been activated inside N_TRACTL
+         ITRLVL_LAST = ITRLVL
+         IF (NEWTRA_USEDRC) THEN
+            IF (ITRLVL .EQ. 1 .OR. ITRLVL .EQ. 3) THEN ! see sirntra.F(TRALVL)
+               LVLDRC_SAVE = 0 ! act-act Dirac integrals
+            ELSE
+               LVLDRC_SAVE = 1 ! occ-occ Dirac integrals
+            END IF
+         END IF
       ELSE
          NEWTRA_USEDRC = .FALSE.
          KFRSAV = 1
@@ -1772,6 +1795,7 @@ C
          CALL TRACTL_1(KTRLVL,CMO,WORK(KITSMO),WORK(KITSAO),
      &        WORK(KITSW),WORK(KITSX),WORK(KIT),WORK(KFREE),LFREE)
          CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+         ! ITRLVL_LAST is set inside TRACTL_1, if integral transformation is not abandoned
       END IF
 C
 C     Sort mo integrals to Dirac form, if requested
@@ -1793,6 +1817,7 @@ C           ... all active-active distributions
             WRITE(LUPRI,2200) TCPU, TWALL
          END IF
          CALL FLSHFO(LUPRI)
+         LVLDRC_LAST = LVLDRC
       END IF
  2200 FORMAT(/' Sorting integrals to Dirac format:',
      &        ' Total CPU and WALL times (sec)',2F12.3)
@@ -1817,16 +1842,11 @@ C                 of IT, ITSMO, ITSAO, ITSW, ITSX
 C
 C Input:
 C  KTRLVL, abs(KTRLVL) is transformation level, DELDA = (KTRLVL.lt.0)
-C  CMO,   mo coefficients
+C  CMO,   MO coefficients
 C  WORK,  work array
 C  KWORK, actual length of work array
 C  MWORK, desired length of work array
 C         (dependent on size of physical memory)
-C
-C  FTRCTL in exeinf.h forces integral sort and transformation,
-C      FTRCTL is true if and only if Hermit has calculated
-C      a new AOTWOINT file since last call of TRACTL.
-C
 C
 C  SUBROUTINE CALLS:
 C          SORTA (BIN SORT OF INTEGRALS (PQ/RS))
@@ -1849,6 +1869,7 @@ C
       PARAMETER (DM1 = -1.0D0)
 C
 C Used from common blocks:
+C exeinf.h : ITRLVL_LAST
 C CBGETDIS : IAD*
 C INFDIM   : MWORK
 C
@@ -1864,7 +1885,7 @@ C
 C
       DIMENSION MFRO(8)
       LOGICAL FOPEN, DELDA, FEXIST
-      SAVE LDBUF, LRBUF, ITRSAV
+      SAVE LDBUF, LRBUF
 C
       CALL QENTER('TRACTL_1')
       ITRLVL = ABS(KTRLVL)
@@ -1881,14 +1902,7 @@ C
          CALL PRORB(CMO,.FALSE.,LUPRI)
       END IF
 C
-      IF (FTRCTL) THEN
-         ITRSAV = 999
-         LSRTAO = 0
-C        ... force new integral sort and transformation
-         FTRCTL = .FALSE.
-      END IF
-      IF (ITRLVL .NE. ITRSAV) THEN
-         ITRSAV = ITRLVL
+      IF (ITRLVL .NE. ITRLVL_LAST) THEN
          IF (IPRTRA .GT. 1) THEN
             JTER   = 1
          ELSE
@@ -2289,6 +2303,9 @@ C           and subtract from input CMO matrix
                GO TO 9999
             END IF
          END IF
+         ITRLVL_LAST = ITRLVL ! cannot be earlier, because we might have abandoned integral transformation
+      ELSE
+         ITRLVL_LAST = ITRLVL
       END IF
       IF (LSRTAO .LT. 0) THEN
 C     ... check if old LUDA exist, if yes then check if file
