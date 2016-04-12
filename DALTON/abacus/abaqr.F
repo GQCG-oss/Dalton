@@ -372,9 +372,9 @@ cs          CALL DCOPY (NBFREQ,BFREQ,1,BSMFR,1)
          ENDIF
    10 CONTINUE
 C
-C     We might need a somewhat more intelligent test for FABRHS
+C     We might need a somewhat more intelligent test for NEWCMO
 C
-      FABRHS = .TRUE.
+      NEWCMO = .TRUE.
       CICLC  = .FALSE.
       HFCLC  = NASHT .LE. 1
       TRIPLE = .FALSE.

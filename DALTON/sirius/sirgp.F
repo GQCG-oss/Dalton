@@ -736,7 +736,7 @@ C
       IF (LBLERR .GE. 0) THEN
          CALL READT(LUIT1,NCMOT,CMO)
          IF (IPRSIR .GT. 0) WRITE(LUPRI,'(4A,1X,A)')
-     &   '* Read MO coefficients from SIRIUS.RST with label "',MOLBL,
+     &   '* Read MO coefficients from SIRIUS.RST with label "',MOLABL,
      &   '" and header info: ',RTNLBL(1:2)
       ELSE IF (LBLERR .EQ. -1) THEN
          WRITE (LUPRI,'(//3A)')
@@ -831,9 +831,11 @@ C
 C Used from common blocks:
 C  INFORB : NCMOT
 C  INFTAP : LUIT1
+C exeinf.h : NEWCMO
 C
 #include "inforb.h"
 #include "inftap.h"
+#include "exeinf.h"
 C
       LOGICAL FNDLAB
       CHARACTER*8 MOLBL(3),LABTBL(3)
@@ -882,6 +884,7 @@ C     ...label 'NEWORB  '
       WRITE (LUIT1) MOLBL,LABTBL(3)
 C     ...label 'EODATA  '
       REWIND LUIT1
+      NEWCMO = .TRUE.
 C
       CALL QEXIT('NEWORB')
       RETURN
@@ -1447,8 +1450,7 @@ C
 !     ------------------------------------------------------------------
       integer                        :: i, j
       integer                        :: lscr
-      integer                        :: idummy
-      real*8                         :: dummy
+      real*8                         :: vdummy(2)
       real*8, allocatable            :: cmo(:)
       real*8, allocatable            :: dvao(:,:,:)
       real*8, allocatable            :: dcao(:,:,:)
@@ -1486,7 +1488,7 @@ C
       !> read MOs from SIRIUS.RST 
       !> a. if HF these are the final HF orbitals
       !> b. if MC these are the final MCSCF orbitals
-      call readmo(cmo,9,dummy,idummy)
+      call readmo(cmo,9,vdummy,0)
 
       select case(trim(density))
 

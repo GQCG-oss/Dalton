@@ -46,6 +46,7 @@ Pawel Salek, 2004.06, Himmelbjerg.
 
 #include <ctype.h>
 #include <string.h>
+#include <strings.h>
 #include <stdio.h>
 #include "general.h"
 

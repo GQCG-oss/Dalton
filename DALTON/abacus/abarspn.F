@@ -53,9 +53,8 @@ C      MXPHP  - maximum size for explicit subblock of configuration
 C               Hessian
 C  In common:
 C
-C      FABRHS - true : transform integrals to MO basis;
-C               normally true first time routine is called
-C               at a new geometry.
+C      NEWCMO - true : transform integrals to MO basis because possibly new CMO coefficients,
+C               normally true first time routine is called at a new geometry.
 C
 #include "implicit.h"
 #include "iratdef.h"
@@ -70,6 +69,7 @@ C
 C
 C Used from common blocks:
 C ABAINF : DODRCT
+C exeinf.h : FTRCTL, NEWCMO, ITRLVL_LAST, LVLDRC_LAST
 C INFLIN : NCONRF
 C INFINP : DIRFCK,HSORHF,...
 C INFORB : NASHT,...
@@ -130,8 +130,6 @@ C
       END IF
       CALL FLSHFO(LUPRI)
 
-      IF (DODRCT .AND. NCONRF.LE.1) FABRHS = .FALSE.
-C     ... no integral transformation for HF or DFT direct calculations.
 C
       REWIND LUGDVE
       REWIND LUSOVE
@@ -195,14 +193,9 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
-C     PERFORM INTEGRAL TRANSFORMATION
+C     PERFORM INTEGRAL TRANSFORMATION, if needed
 C
-cSPAS:29.11.2002 debugging newtra for SOPPA
-cSPAS IF (FABRHS) THEN
-!     IF (FABRHS .AND.
-!    &    .NOT. (SOPPA .AND. NEWTRA .AND. .NOT. CCPPA)) THEN
-cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
-      IF (FABRHS) THEN
+      IF (NEWCMO .OR. FTRCTL) THEN
       IF ( (NASHT .GT. 1 .AND. .NOT.HSROHF) .OR. .NOT.DIRFCK ) THEN ! no mo integrals needed for ao-direct HF or DFT
          KCMO   = 1
          KWTRA  = KCMO   + NCMOT
@@ -217,7 +210,7 @@ cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
          READ (LUSIFC)
          READ (LUSIFC)
          CALL READT (LUSIFC,NCMOT,WRK(KCMO))
-cs
+
          USEDRC = .TRUE.
          IF (RSPCI) THEN
             USEDRC = .FALSE.
@@ -231,15 +224,19 @@ cs
          ELSE
             JTRLVL = -4
          ENDIF
-cs
-         FLAGSV = DORSP
-         DORSP  = .TRUE.
-         CALL SIR_INTOPEN
-         DORSP  = FLAGSV
-         CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA)
+
+         IF (NEWCMO .OR. FTRCTL .OR.
+     &       (ABS(JTRLVL) .GT. ITRLVL_SAVE) .OR.
+     &       (USEDRC .AND. LVLDRC_SAVE .LT. 0) .OR. NEWCMO) THEN
+            FLAGSV = DORSP
+            DORSP  = .TRUE.
+            CALL SIR_INTOPEN
+            DORSP  = FLAGSV
+            CALL TRACTL(JTRLVL,WRK(KCMO),WRK(KWTRA),LWTRA)
+         END IF
+         NEWCMO = .FALSE.
       END IF
       END IF
-      FABRHS = .FALSE.
 C
 C     ORGANIZE CALCULATION FOR EACH PERTURBATION OPERATOR
 C

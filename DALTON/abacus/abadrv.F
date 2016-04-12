@@ -927,16 +927,16 @@ C
          DOPERT(I,2) = .TRUE.
    60 CONTINUE
 C
-C     Set FTRONV and FABRHS in /EXEINF/:
+C     Set FTRONV and NEWCMO in /EXEINF/:
 C
 C     TROINV is run twice. FTRONV keeps track of it, and setting it TRUE
 C     indicates first run.
 C
       FTRONV = .TRUE.
 C
-C     ABARHS has a variable of the same kind:
+C     NEWCMO means we need new MOTWOINT file because CMO has changed
 C
-      FABRHS = .TRUE.
+      NEWCMO = .TRUE.
 C
 C     **** Find Abacus input *****
 C
